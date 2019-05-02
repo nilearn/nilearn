@@ -1,5 +1,5 @@
 """Recursive Neighbor Agglomeration (ReNA):
-    fastclustering for approximation of structured signals
+fastclustering for approximation of structured signals
 """
 # Author: Andres Hoyos idrobo, Gael Varoquaux, Jonas Kahn and  Bertrand Thirion
 # License: simplified BSD
@@ -7,8 +7,10 @@
 import numpy as np
 import warnings
 from scipy.sparse import csgraph, coo_matrix, dia_matrix
-from sklearn.externals.joblib import Memory
-from sklearn.externals import six
+try:
+    from sklearn.externals.joblib import Memory
+except ImportError:
+    from joblib import Memory
 from sklearn.base import TransformerMixin, ClusterMixin
 from sklearn.base import BaseEstimator
 from sklearn.utils.validation import check_is_fitted
@@ -25,14 +27,14 @@ def _compute_weights(X, mask_img):
 
     Parameters
     ----------
-    X : ndarray, shape = [n_samples, n_features]
+    X: ndarray, shape = [n_samples, n_features]
         Training data.
 
-    mask_img : Niimg-like object used for masking the data.
+    mask_img: Niimg-like object used for masking the data.
 
     Returns
     -------
-    weights : ndarray
+    weights: ndarray
         Weights corresponding to all edges in the mask.
         shape: (n_edges,)
     """
@@ -61,16 +63,16 @@ def _make_3d_edges(vertices, is_mask):
 
     Parameters
     ----------
-    vertices : ndarray
+    vertices: ndarray
         The indices of the voxels.
 
-    is_mask : boolean
+    is_mask: boolean
         If is_mask is true, it returns the mask of edges.
         Retruns 1 if the edge is contained in the mask, 0 otherwise.
 
     Returns
     -------
-    edges : ndarray
+    edges: ndarray
         Edges corresponding to the image or mask.
         shape: (1, n_edges) if_mask,
                (2, n_edges) otherwise.
@@ -101,17 +103,17 @@ def _make_edges_and_weights(X, mask_img):
 
     Parameters
     ----------
-    X : ndarray, shape = [n_samples, n_features]
+    X: ndarray, shape = [n_samples, n_features]
         Training data.
 
-    mask_img : Niimg-like object used for masking the data.
+    mask_img: Niimg-like object used for masking the data.
 
     Returns
     -------
-    edges : ndarray
+    edges: ndarray
         Array containing [edges_deep, edges_right, edges_down]
 
-    weights : ndarray
+    weights: ndarray
         Weights corresponding to all edges in the mask.
         shape: (n_edges,)
     """
@@ -145,14 +147,14 @@ def weighted_connectivity_graph(X, mask_img):
 
     Parameters
     ----------
-    X : ndarray, shape = [n_samples, n_features]
+    X: ndarray, shape = [n_samples, n_features]
         Training data.
 
-    mask_img : Niimg-like object used for masking the data.
+    mask_img: Niimg-like object used for masking the data.
 
     Returns
     -------
-    connectivity : a sparse COO matrix
+    connectivity: a CSR matrix
         sparse matrix representation of the weighted adjacency graph
     """
     n_features = X.shape[1]
@@ -173,16 +175,15 @@ def _nn_connectivity(connectivity, threshold=1e-7):
 
     Parameters
     ----------
-    connectivity : a sparse matrix in COOrdinate format.
+    connectivity: a sparse matrix in COOrdinate format.
         sparse matrix representation of the weighted adjacency graph
 
-    threshold : float in the close interval [0, 1], optional (default 1e-7)
+    threshold: float in the close interval [0, 1], optional (default 1e-7)
         The treshold is setted to handle eccentricities.
-        In practice it is 1e-7.
 
     Returns
     -------
-    nn_connectivity : a sparse matrix in COOrdinate format.
+    nn_connectivity: a sparse matrix in COOrdinate format.
     """
     n_features = connectivity.shape[0]
 
@@ -220,27 +221,26 @@ def _reduce_data_and_connectivity(X, labels, n_components, connectivity,
 
     Parameters
     ----------
-    X : ndarray, shape = [n_samples, n_features]
+    X: ndarray, shape = [n_samples, n_features]
         Training data.
 
-    labels : ndarray
+    labels: ndarray
         Containts the label assignation for each voxel.
 
-    n_components : int
+    n_components: int
         The number of clusters in the current iteration.
 
-    connectivity : a sparse matrix in COOrdinate format.
+    connectivity: a sparse matrix in COOrdinate format.
         sparse matrix representation of the weighted adjacency graph
 
-    threshold : float in the close interval [0, 1], optional (default 1e-7)
+    threshold: float in the close interval [0, 1], optional (default 1e-7)
         The treshold is setted to handle eccentricities.
-        In practice it is 1e-7.
 
     Returns
     -------
-    reduced_connectivity : a sparse matrix in COOrdinate format.
+    reduced_connectivity: a sparse matrix in COOrdinate format.
 
-    reduced_X : ndarray
+    reduced_X: ndarray
         Data reduced with agglomerated signal for each cluster
     """
     n_features = len(labels)
@@ -279,27 +279,26 @@ def nearest_neighbor_grouping(X, connectivity, n_clusters, threshold=1e-7):
 
     Parameters
     ----------
-    X : ndarray, shape = [n_samples, n_features]
+    X: ndarray, shape = [n_samples, n_features]
         Training data.
 
-    connectivity : a sparse matrix in COOrdinate format.
+    connectivity: a sparse matrix in COOrdinate format.
         sparse matrix representation of the weighted adjacency graph
 
-    n_clusters : int
+    n_clusters: int
         The number of clusters to find.
 
-    threshold : float in the close interval [0, 1], optional (default 1e-7)
+    threshold: float in the close interval [0, 1], optional (default 1e-7)
         The treshold is setted to handle eccentricities.
-        In practice it is 1e-7.
 
     Returns
     -------
-    reduced_connectivity : a sparse matrix in COOrdinate format.
+    reduced_connectivity: a sparse matrix in COOrdinate format.
 
-    reduced_X : ndarray
+    reduced_X: ndarray
         Data reduced with agglomerated signal for each cluster
 
-    labels : ndarray, shape = [n_features]
+    labels: ndarray, shape = [n_features]
         It contains the clusters assignation.
     """
     # Nearest neighbor conenctivity
@@ -343,30 +342,29 @@ def recursive_neighbor_agglomeration(X, mask_img, n_clusters,
 
     Parameters
     ----------
-    X : ndarray, shape = [n_samples, n_features]
+    X: ndarray, shape = [n_samples, n_features]
         Training data.
 
-    mask_img : Niimg-like object used for masking the data.
+    mask_img: Niimg-like object used for masking the data.
 
-    n_clusters : int
+    n_clusters: int
         The number of clusters to find.
 
-    n_iter : int, optional (default 10)
+    n_iter: int, optional (default 10)
         Number of iterations.
 
-    threshold : float in the close interval [0, 1], optional (default 1e-7)
+    threshold: float in the close interval [0, 1], optional (default 1e-7)
         The treshold is setted to handle eccentricities.
-        In practice it is 1e-7.
 
-    verbose : int, optional (default 1)
+    verbose: int, optional (default 1)
         Verbosity level.
 
     Returns
     -------
-    n_components : int
+    n_components: int
         Number of clusters.
 
-    labels : ndarray, shape = [n_features]
+    labels: ndarray, shape = [n_features]
         Cluster assignation.
 
     References
@@ -409,42 +407,42 @@ class ReNA(BaseEstimator, ClusterMixin, TransformerMixin):
 
     Parameters
     ----------
-    mask_img : Niimg-like object used for masking the data.
+    mask_img: Niimg-like object used for masking the data.
 
-    n_clusters : int, optional (default 2)
+    n_clusters: int, optional (default 2)
         The number of clusters to find.
 
-    scaling : bool, optional (default False)
+    scaling: bool, optional (default False)
         If scaling is True, each cluster is scaled by the square root of its
         size, preserving the l2-norm of the image.
 
-    n_iter : int, optional (default 10)
+    n_iter: int, optional (default 10)
         Number of iterations of the recursive neighbor agglomeration
 
-    threshold : float in the open interval (0., 1.), optional (default 1e-7)
+    threshold: float in the open interval (0., 1.), optional (default 1e-7)
         Threshold used to handle eccentricities.
 
-    memory : instance of joblib.Memory or string
+    memory: instance of joblib.Memory or string
         Used to cache the masking process.
         By default, no caching is done. If a string is given, it is the
         path to the caching directory.
 
-    memory_level : integer, optional (default 1)
+    memory_level: integer, optional (default 1)
         Rough estimator of the amount of memory used by caching. Higher value
         means more memory for caching.
 
-    verbose : int, optional (default 1)
+    verbose: int, optional (default 1)
         Verbosity level.
 
     Attributes
     ----------
-    `labels_ ` : ndarray, shape = [n_features]
+    `labels_ `: ndarray, shape = [n_features]
         cluster labels for each feature.
 
-    `n_clusters_` : int
+    `n_clusters_`: int
         Number of clusters.
 
-    `sizes_` : ndarray, shape = [n_features]
+    `sizes_`: ndarray, shape = [n_features]
         It contains the size of each cluster.
 
     References
@@ -471,13 +469,13 @@ class ReNA(BaseEstimator, ClusterMixin, TransformerMixin):
 
         Parameters
         ----------
-        X : ndarray, shape = [n_samples, n_features]
+        X: ndarray, shape = [n_samples, n_features]
             Training data.
-        y : Ignored
+        y: Ignored
 
         Returns
         -------
-        self : `ReNA` object
+        self: `ReNA` object
         """
 
         X = check_array(X, ensure_min_features=2, ensure_min_samples=2,
@@ -489,7 +487,7 @@ class ReNA(BaseEstimator, ClusterMixin, TransformerMixin):
                              "object. Instead a %s object was provided."
                              % type(self.mask_img))
 
-        if self.memory is None or isinstance(self.memory, six.string_types):
+        if self.memory is None or isinstance(self.memory, str):
             self.memory_ = Memory(cachedir=self.memory,
                                   verbose=max(0, self.verbose - 1))
         else:
@@ -530,12 +528,12 @@ class ReNA(BaseEstimator, ClusterMixin, TransformerMixin):
 
         Parameters
         ----------
-        X : ndarray, shape = [n_samples, n_features]
+        X: ndarray, shape = [n_samples, n_features]
             Data to transform with the fitted clustering.
 
         Returns
         -------
-        X_red : ndarray, shape = [n_samples, n_clusters]
+        X_red: ndarray, shape = [n_samples, n_clusters]
             Data reduced with agglomerated signal for each cluster
         """
 
@@ -560,12 +558,12 @@ class ReNA(BaseEstimator, ClusterMixin, TransformerMixin):
 
         Parameters
         ----------
-        X_red : ndarray , shape = [n_samples, n_clusters]
+        X_red: ndarray , shape = [n_samples, n_clusters]
             Data reduced with agglomerated signal for each cluster
 
         Returns
         -------
-        X_inv : ndarray, shape = [n_samples, n_features]
+        X_inv: ndarray, shape = [n_samples, n_features]
             Data reduced expanded to the original feature space
         """
 
