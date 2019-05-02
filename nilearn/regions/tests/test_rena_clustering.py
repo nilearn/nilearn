@@ -1,6 +1,9 @@
 import numpy as np
 from nose.tools import assert_equal, assert_not_equal, assert_raises
-from sklearn.externals.joblib import Memory
+try:
+    from sklearn.externals.joblib import Memory
+except ImportError:
+    from joblib import Memory
 from nilearn._utils.data_gen import generate_fake_fmri
 from nilearn.regions.rena_clustering import ReNA
 from nilearn.input_data import NiftiMasker
