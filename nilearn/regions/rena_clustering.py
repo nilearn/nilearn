@@ -198,7 +198,7 @@ def _nn_connectivity(connectivity, threshold=1e-7):
 
     connectivity_ = inv_max * connectivity_
 
-    # Dealing with eccentricities, there are probably many neares neighbors
+    # Dealing with eccentricities, there are probably many nearest neighbors
     edge_mask = connectivity_.data > 1 - threshold
 
     j_idx = connectivity_.nonzero()[1][edge_mask]
