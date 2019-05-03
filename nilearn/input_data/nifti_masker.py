@@ -212,13 +212,17 @@ class NiftiMasker(BaseMasker, CacheMixin):
     def _reporting(self):
         from .. import plotting
 
-        try:  # compute middle image for plotting, if passed
+        if self.input_ is not None:
             dim = image.load_img(self.input_).shape
-            img = image.index_img(self.input_, dim[-1] // 2)
-        except TypeError:
+            if len(dim) == 4:
+                # compute middle image from 4D series for plotting
+                img = image.index_img(self.input_, dim[-1] // 2)
+            elif len(dim) == 3:
+                img = self.input_
+        else:
             img = self.mask_img_
 
-        display = plotting.plot_epi(img, black_bg=False)
+        display = plotting.plot_img(img, black_bg=False)
         display.add_contours(self.mask_img_, levels=[.5], colors='r')
         return display
 
