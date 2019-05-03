@@ -1,4 +1,3 @@
-import os
 import io
 import base64
 import warnings
@@ -63,18 +62,20 @@ def update_template(title, docstring, content,
     -------
     HTMLReport : an instance of a populated HTML report
     """
-    template_path = Path(__file__).resolve().parent.joinpath('data', 'html')
+    resource_path = Path(__file__).resolve().parent.joinpath('data')
+
     body_template_name = 'report_body_template.html'
-    body_template_path = template_path.joinpath(body_template_name)
+    body_template_path = resource_path.joinpath('html', body_template_name)
     tpl = tempita.HTMLTemplate.from_filename(body_template_path,
                                              encoding='utf-8')
-    body = tpl.substitute(title=title, content=content,
+    body = tpl.substitute(css=resource_path.joinpath('css'),
+                          title=title, content=content,
                           docstring=docstring,
                           parameters=parameters,
                           description=description)
 
     head_template_name = 'report_head_template.html'
-    head_template_path = template_path.joinpath(head_template_name)
+    head_template_path = resource_path.joinpath('html', head_template_name)
     with open(head_template_path, 'r') as head_file:
         head_tpl = Template(head_file.read())
 
@@ -114,9 +115,8 @@ def _embed_img(display):
 
     else:
         logo_name = 'nilearn-logo-small.png'
-        logo_path = os.path.join(
-            os.path.dirname(__file__), '..', '..',
-            'doc', 'logos', logo_name)
+        logo_dir = Path(__file__).resolve().parent.parent
+        logo_path = logo_dir.joinpath('doc', 'logos', logo_name)
         io_buffer = open(logo_path, 'rb')
 
     data = base64.b64encode(io_buffer.read())
