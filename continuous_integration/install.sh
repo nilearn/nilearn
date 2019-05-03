@@ -22,7 +22,7 @@ create_new_venv() {
     deactivate
     virtualenv --system-site-packages testvenv
     source testvenv/bin/activate
-    pip install nose
+    pip install nose nose-exclude
 }
 
 print_conda_requirements() {
@@ -95,7 +95,7 @@ if [[ "$DISTRIB" == "neurodebian" ]]; then
 
 elif [[ "$DISTRIB" == "conda" ]]; then
     create_new_conda_env
-    pip install nose-timer
+    pip install nose-exclude nose-timer
     # Note: nibabel is in setup.py install_requires so nibabel will
     # always be installed eventually. Defining NIBABEL_VERSION is only
     # useful if you happen to want a specific nibabel version rather
