@@ -212,7 +212,13 @@ class NiftiMasker(BaseMasker, CacheMixin):
     def _reporting(self):
         from .. import plotting
 
-        display = plotting.plot_epi(self.input_, black_bg=False)
+        try:  # compute middle image for plotting, if passed
+            dim = image.load_img(self.input_).shape
+            img = image.index_img(self.input_, dim[-1] // 2)
+        except TypeError:
+            img = self.mask_img_
+
+        display = plotting.plot_epi(img, black_bg=False)
         display.add_contours(self.mask_img_, levels=[.5], colors='r')
         return display
 
@@ -279,12 +285,7 @@ class NiftiMasker(BaseMasker, CacheMixin):
         if self.verbose > 10:
             print("[%s.fit] Finished fit" % self.__class__.__name__)
         if self.reports:  # save inputs for reporting
-            try:
-                dim = image.load_img(imgs).shape
-                img = image.index_img(imgs, dim[-1] // 2)
-                self.input_ = img
-            except TypeError:  # mask already provided
-                self.input_ = self.mask_img_
+            self.input_ = imgs
 
         return self
 
