@@ -140,3 +140,6 @@ def test_view_img_on_surf():
     assert len(img_4d.shape) == 4
     html = html_surface.view_img_on_surf(img, threshold='92.3%')
     check_html(html)
+    np.clip(img.get_data(), 0, None, out=img.get_data())
+    html = html_surface.view_img_on_surf(img, symmetric_cmap=False)
+    check_html(html)
