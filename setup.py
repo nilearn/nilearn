@@ -6,22 +6,6 @@ import sys
 import os
 
 from setuptools import setup, find_packages
-from nose.plugins import Plugin
-
-
-class ignore_externals(Plugin):
-    # no command line arg needed to activate plugin
-    enabled = True
-    name = "externals"
-
-    def configure(self, options, conf):
-        pass  # always on
-
-    def wantDirectory(self, dirname):
-        capture = None
-        if os.path.basename(dirname) == "externals":
-            capture = False
-        return capture
 
 
 def load_version():
@@ -114,6 +98,4 @@ if __name__ == "__main__":
                         'nilearn.datasets.tests.data': ['*.*'],
                         'nilearn.datasets.description': ['*.rst']},
           install_requires=install_requires,
-          entry_points={
-              'nose.plugins.0.10': ['plugin = plugin:ignore_externals']},
           )
