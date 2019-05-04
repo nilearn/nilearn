@@ -1,5 +1,4 @@
 nose
-nose-exclude
 coverage
 boto3
 patsy

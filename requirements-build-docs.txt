@@ -15,7 +15,6 @@ boto3
 pillow
 pandas
 nose-timer
-nose-exclude
 nibabel
 scikit-learn
 matplotlib
