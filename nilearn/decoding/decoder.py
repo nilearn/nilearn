@@ -299,11 +299,9 @@ class BaseDecoder(LinearModel, RegressorMixin, CacheMixin):
 
     See Also
     ------------
-    nilearn.decoding.DecoderRegressor - regression strategies for Neuroimaging.
-    nilearn.decoding.Decoder - classification strategies for Neuroimaging.
-    nilearn.decoding.SpaceNetClassifier - Graph-Net and TV-L1 priors/penalties
-    for classification problems.
-
+    nilearn.decoding.DecoderRegressor: Regression strategies for Neuroimaging,
+    nilearn.decoding.Decoder: Classification strategies for Neuroimaging,
+    nilearn.decoding.SpaceNetClassifier: Graph-Net and TV-L1 priors/penalties
     """
 
     def __init__(self, estimator='svc', mask=None, cv=10, param_grid=None,
@@ -703,8 +701,8 @@ class Decoder(BaseDecoder):
 
     See Also
     ------------
-    nilearn.decoding.DecoderRegressor - regression strategies for Neuro-imaging.
-    nilearn.decoding.SpaceNetClassifier - Graph-Net and TV-L1 priors/penalties.
+    nilearn.decoding.DecoderRegressor: regression strategies for Neuro-imaging,
+    nilearn.decoding.SpaceNetClassifier: Graph-Net and TV-L1 priors/penalties
     """
 
     def __init__(self, estimator='svc', mask=None, cv=10, param_grid=None,
@@ -838,8 +836,8 @@ class DecoderRegressor(BaseDecoder):
 
     See Also
     ------------
-    nilearn.decoding.Decoder - classification strategies for Neuroimaging.
-    nilearn.decoding.SpaceNetClassifier - Graph-Net and TV-L1 priors/penalties.
+    nilearn.decoding.Decoder: classification strategies for Neuroimaging,
+    nilearn.decoding.SpaceNetClassifier: Graph-Net and TV-L1 priors/penalties
     """
 
     def __init__(self, estimator='svr', mask=None, cv=10, param_grid=None,
