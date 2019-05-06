@@ -52,7 +52,7 @@ task_data = index_img(func_filename, task_mask)
 ##########################################################################
 # Decoding on the different masks
 # --------------------------------
-
+#
 # The classifier used here is a support vector classifier (svc). We use
 # class:`nilearn.decoding.Decoder` and specify the classifier.
 import numpy as np

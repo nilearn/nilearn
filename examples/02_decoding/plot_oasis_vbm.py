@@ -49,7 +49,8 @@ ____
 
 ######################################################################
 # Loading the data
-######################################################################
+# --------------------
+
 # First, we load the data
 import numpy as np
 from nilearn import datasets
@@ -72,7 +73,7 @@ from nilearn.input_data import NiftiMasker
 nifti_masker = NiftiMasker(standardize=False, smoothing_fwhm=2,
                            memory='nilearn_cache')
 gm_maps_masked = nifti_masker.fit_transform(gm_imgs_train)
-
+##########################################################################
 # The features with too low between-subject variance are removed using
 # :class:`sklearn.feature_selection.VarianceThreshold`.
 from sklearn.feature_selection import VarianceThreshold
