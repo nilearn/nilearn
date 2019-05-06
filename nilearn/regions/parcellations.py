@@ -222,13 +222,13 @@ class Parcellations(MultiPCA):
 
     Attributes
     ----------
-    labels_img_: Nifti1Image
+    `labels_img_`: Nifti1Image
         Labels image to each parcellation learned on fmri images.
 
-    masker_: instance of NiftiMasker or MultiNiftiMasker
+    `masker_`: instance of NiftiMasker or MultiNiftiMasker
         The masker used to mask the data
 
-    connectivity_: numpy.ndarray
+    `connectivity_`: numpy.ndarray
         voxel-to-voxel connectivity matrix computed from a mask.
         Note that this attribute is only seen if selected methods are
         Agglomerative Clustering type, 'ward', 'complete', 'average'.
@@ -291,10 +291,10 @@ class Parcellations(MultiPCA):
 
         Returns
         -------
-        labels_: numpy.ndarray
+        labels: numpy.ndarray
             Labels to each cluster in the brain.
 
-        connectivity_: numpy.ndarray
+        connectivity: numpy.ndarray
             voxel-to-voxel connectivity matrix computed from a mask.
             Note that, this attribute is returned only for selected methods
             such as 'ward', 'complete', 'average'.
