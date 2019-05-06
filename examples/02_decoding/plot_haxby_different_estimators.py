@@ -57,7 +57,8 @@ classification_target = stimuli[task_mask]
 # ---------------------
 
 # Then we define the various classifiers that we use
-classifiers = ['svc_l2', 'svc_l1', 'logistic_l1', 'logistic_l2']
+classifiers = ['svc_l2', 'svc_l1', 'logistic_l1',
+               'logistic_l2', 'ridge_classifier']
 
 # Here we compute prediction scores and run time for all these
 # classifiers
@@ -66,10 +67,8 @@ from nilearn.decoding import Decoder
 from sklearn.model_selection import LeaveOneGroupOut
 
 cv = LeaveOneGroupOut()
-cv.get_n_splits(groups=session_labels)
-cv.split(classification_target, groups=session_labels)
-
 classifiers_data = {}
+
 for classifier_name in sorted(classifiers):
     classifiers_data[classifier_name] = {}
     print(70 * '_')
