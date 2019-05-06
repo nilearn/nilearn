@@ -62,24 +62,24 @@ def _check_param_grid(estimator, X, y, param_grid=None):
 
     Parameters
     -----------
-    estimator : str, optional
+    estimator: str, optional
         The estimator to choose among: 'svc', 'svc_l2', 'svc_l1', 'logistic',
         'logistic_l1', 'logistic_l2', 'ridge', 'ridge_classifier',
         'ridge_regressor', and 'svr'. Note that the 'svc' and 'svc_l2';
         'logistic' and 'logistic_l2'; 'ridge' and 'ridge_regressor' correspond
         to the same estimator. Default 'svc'.
 
-    X : list of Niimg-like objects
+    X: list of Niimg-like objects
         See http://nilearn.github.io/manipulating_images/input_output.html
         Data on which model is to be fitted. If this is a list,
         the affine is considered the same for all.
 
-    y : array or list of length n_samples
+    y: array or list of length n_samples
         The dependent variable (age, sex, IQ, yes/no, etc.).
         Target variable to predict. Must have exactly as many elements as
         3D images in niimg.
 
-    param_grid : dict of str to sequence, or sequence of such. Default None
+    param_grid: dict of str to sequence, or sequence of such. Default None
         The parameter grid to explore, as a dictionary mapping estimator
         parameters to sequences of allowed values.
 
@@ -91,7 +91,7 @@ def _check_param_grid(estimator, X, y, param_grid=None):
 
     Returns
     -------
-    param_grid : dict of str to sequence, or sequence of such. Sensible default
+    param_grid: dict of str to sequence, or sequence of such. Sensible default
     dict has size 1.
 
     """
@@ -201,26 +201,24 @@ class BaseDecoder(LinearModel, RegressorMixin, CacheMixin):
 
     Parameters
     -----------
-    estimator : str, optional
+    estimator: str, optional
         The estimator to choose among: 'svc', 'svc_l2', 'svc_l1', 'logistic',
         'logistic_l1', 'logistic_l2', 'ridge', 'ridge_classifier',
         'ridge_regressor', and 'svr'. Note that the 'svc' and 'svc_l2';
         'logistic' and 'logistic_l2'; 'ridge' and 'ridge_classifier' correspond
         to the same estimator. Default 'svc'.
 
-    mask : filename, Nifti1Image, NiftiMasker, or MultiNiftiMasker, optional
+    mask: filename, Nifti1Image, NiftiMasker, or MultiNiftiMasker, optional
         Mask to be used on data. If an instance of masker is passed,
         then its mask and parameters will be used. If no mask is given, mask
         will be computed automatically from provided images by an inbuilt
         masker with default parameters. Refer to NiftiMasker or
         MultiNiftiMasker to check for default parameters. Default None
 
-    cv : cross-validation generator or int, optional. Default 10
-        A cross-validation generator. If None, a 3-fold cross
-        validation is used for regression or 3-fold stratified
-        cross-validation for classification.
+    cv: cross-validation generator or int, optional. Default 10
+        A cross-validation generator.
 
-    param_grid : dict of str to sequence, or sequence of such. Default None
+    param_grid: dict of str to sequence, or sequence of such. Default None
         The parameter grid to explore, as a dictionary mapping estimator
         parameters to sequences of allowed values.
 
@@ -230,72 +228,73 @@ class BaseDecoder(LinearModel, RegressorMixin, CacheMixin):
         useful to avoid exploring parameter combinations that make no sense
         or have no effect. See scikit-learn documentation for more information.
 
-    screening_percentile : int, float, optional, in the closed interval [0, 100]
+    screening_percentile: int, float, optional, in the closed interval [0, 100]
         Perform a univariate feature selection based on the Anova F-value for
         the input data. A float according to a percentile of the highest
         scores. Default: 20.
 
-    scoring : str, callable or None, optional. Default None
+    scoring: str, callable or None, optional. Default None
         The scoring strategy to use. See the scikit-learn documentation
         If callable, takes as arguments the fitted estimator, the
         test data (X_test) and the test target (y_test) if y is
         not None.
         e.g. scorer(estimator, X_test, y_test)
 
-        For regression: 'r2', 'mean_absolute_error', or 'mean_squared_error'.
-        Default 'r2'.
-        For classification: 'accuracy', 'f1', 'precision', 'recall' or 'roc_auc'
-        Default 'roc_auc'.
+        For regression, valid entries are: 'r2', 'mean_absolute_error', or
+        'mean_squared_error'. Default: 'r2'.
 
-    smoothing_fwhm : float, optional. Default: None
+        For classification, valid entries are: 'accuracy', 'f1', 'precision',
+        'recall' or 'roc_auc'. Default: 'roc_auc'.
+
+    smoothing_fwhm: float, optional. Default: None
         If smoothing_fwhm is not None, it gives the size in millimeters of the
         spatial smoothing to apply to the signal.
 
-    standardize : bool, optional. Default: True
+    standardize: bool, optional. Default: True
         If standardize is True, the time-series are centered and normed:
         their variance is put to 1 in the time dimension.
 
-    target_affine : 3x3 or 4x4 matrix, optional. Default: None
+    target_affine: 3x3 or 4x4 matrix, optional. Default: None
         This parameter is passed to image.resample_img. Please see the
         related documentation for details.
 
-    target_shape : 3-tuple of int, optional. Default: None
+    target_shape: 3-tuple of int, optional. Default: None
         This parameter is passed to image.resample_img. Please see the
         related documentation for details.
 
-    low_pass : None or float, optional
+    low_pass: None or float, optional
         This parameter is passed to signal.clean. Please see the related
         documentation for details
 
-    high_pass : None or float, optional
+    high_pass: None or float, optional
         This parameter is passed to signal.clean. Please see the related
         documentation for details
 
-    t_r : float, optional. Default: None
+    t_r: float, optional. Default: None
         This parameter is passed to signal.clean. Please see the related
         documentation for details.
 
-    mask_strategy : {'background' or 'epi'}, optional. Default: 'background'
+    mask_strategy: {'background' or 'epi'}, optional. Default: 'background'
         The strategy used to compute the mask: use 'background' if your
         images present a clear homogeneous background, and 'epi' if they
         are raw EPI images. Depending on this value, the mask will be
         computed from masking.compute_background_mask or
         masking.compute_epi_mask.
 
-    memory : instance of joblib.Memory or str
+    memory: instance of joblib.Memory or str
         Used to cache the masking process.
         By default, no caching is done. If a str is given, it is the
         path to the caching directory.
 
-    memory_level : int, optional. Default: 0
+    memory_level: int, optional. Default: 0
         Rough estimator of the amount of memory used by caching. Higher value
         means more memory for caching.
 
-    n_jobs : int, optional. Default: 1.
+    n_jobs: int, optional. Default: 1.
         The number of CPUs to use to do the computation. -1 means
         'all CPUs'.
 
-    verbose : int, optional. Default: 0.
+    verbose: int, optional. Default: 0.
         Verbosity level.
 
     See Also
@@ -338,12 +337,12 @@ class BaseDecoder(LinearModel, RegressorMixin, CacheMixin):
 
         Parameters
         ----------
-        X : list of Niimg-like objects
+        X: list of Niimg-like objects
             See http://nilearn.github.io/manipulating_images/input_output.html
             Data on which model is to be fitted. If this is a list,
             the affine is considered the same for all.
 
-        y : array or list of length n_samples
+        y: array or list of length n_samples
             The dependent variable (age, sex, IQ, yes/no, etc.).
             Target variable to predict. Must have exactly as many elements as
             3D images in niimg.
@@ -356,60 +355,60 @@ class BaseDecoder(LinearModel, RegressorMixin, CacheMixin):
 
         Attributes
         ----------
-        `masker_` : instance of NiftiMasker or MultiNiftiMasker
+        `masker_`: instance of NiftiMasker or MultiNiftiMasker
             The NiftiMasker used to mask the data.
 
-        `mask_img_` : Nifti1Image
+        `mask_img_`: Nifti1Image
             Mask computed by the masker object.
 
-        `classes_` : numpy.ndarray
+        `classes_`: numpy.ndarray
             Classes to predict. For classification only.
 
-        `screening_percentile_` : float
+        `screening_percentile_`: float
             Screening percentile corrected according to volume of mask,
             relative to the volume of standard brain.
 
-        `coef_` : numpy.ndarray, shape=(n_classes, n_features)
+        `coef_`: numpy.ndarray, shape=(n_classes, n_features)
             Contains the mean of the models weight vector across
             fold for each class.
 
-        `coef_img_` : dict of Nifti1Image
+        `coef_img_`: dict of Nifti1Image
             Dictionary containing `coef_` with class names as keys,
             and `coef_` transformed in Nifti1Images as values. In the case
             of a regression, it contains a single Nifti1Image at the key 'beta'.
 
-        `intercept_` : narray, shape (nclasses -1,)
+        `intercept_`: narray, shape (nclasses -1,)
             Intercept (a.k.a. bias) added to the decision function.
             It is available only when parameter intercept is set to True.
 
-        `cv_` : list of pairs of lists
+        `cv_`: list of pairs of lists
             List of the (n_folds,) folds. For the corresponding fold,
             each pair is composed of two lists of indices,
             one for the train samples and one for the test samples.
 
-        `std_coef_` : numpy.ndarray, shape=(n_classes, n_features)
+        `std_coef_`: numpy.ndarray, shape=(n_classes, n_features)
             Contains the standard deviation of the models weight vector across
             fold for each class.
 
-        `std_coef_img_` : dict of Nifti1Image
+        `std_coef_img_`: dict of Nifti1Image
             Dictionary containing `std_coef_` with class names as keys,
             and `coef_` transformed in Nifti1Image as values. In the case
             of a regression, it contains a single Nifti1Image at the key 'beta'.
 
-        `cv_y_true_` : numpy.ndarray, shape=(n_samples * n_folds, n_classes)
+        `cv_y_true_`: numpy.ndarray, shape=(n_samples * n_folds, n_classes)
             Ground truth labels for left out samples in inner cross-validation.
 
-        `cv_y_pred_` : numpy.ndarray, shape=(n_samples * n_folds, n_classes)
+        `cv_y_pred_`: numpy.ndarray, shape=(n_samples * n_folds, n_classes)
             Predicted labels for left out samples in inner cross-validation.
 
-        `cv_params_` : dict of lists
+        `cv_params_`: dict of lists
             Best point in the parameter grid for each tested fold
             in the inner cross validation loop.
 
-        `cv_indices_` : numpy.ndarray, shape=(n_samples * n_folds)
+        `cv_indices_`: numpy.ndarray, shape=(n_samples * n_folds)
             Indices of the inner cross-validation folds.
 
-        `cv_scores_` : dict, (classes, n_folds)
+        `cv_scores_`: dict, (classes, n_folds)
             Scores (misclassification) for each parameter, and on each fold
         """
         # Setup memory
@@ -546,14 +545,14 @@ class BaseDecoder(LinearModel, RegressorMixin, CacheMixin):
 
         Parameters
         ----------
-        X : list of Niimg-like objects
+        X: list of Niimg-like objects
             See <http://nilearn.github.io/manipulating_images/input_output.html>
             Data on prediction is to be made. If this is a list,
             the affine is considered the same for all.
 
         Returns
         -------
-        y_pred : ndarray, shape (n_samples,)
+        y_pred: ndarray, shape (n_samples,)
             Predicted class label per sample.
         """
         X = self.masker_.transform(X)
@@ -573,7 +572,7 @@ class BaseDecoder(LinearModel, RegressorMixin, CacheMixin):
 
         Parameters
         ----------
-        X : {array-like, sparse matrix}, shape = (n_samples, n_features)
+        X: {array-like, sparse matrix}, shape = (n_samples, n_features)
             Samples.
 
         Returns
@@ -610,24 +609,23 @@ class Decoder(BaseDecoder):
 
     Parameters
     -----------
-    estimator : str, optional
+    estimator: str, optional
         The estimator to choose among: 'svc', 'svc_l2', 'svc_l1', 'logistic',
         'logistic_l1', 'logistic_l2' and 'ridge_classifier'. Note that
         'svc' and 'svc_l2'; 'logistic' and 'logistic_l2' correspond to the same
          estimator. Default 'svc'.
 
-    mask : filename, Nifti1Image, NiftiMasker, or MultiNiftiMasker, optional
+    mask: filename, Nifti1Image, NiftiMasker, or MultiNiftiMasker, optional
         Mask to be used on data. If an instance of masker is passed,
         then its mask and parameters will be used. If no mask is given, mask
         will be computed automatically from provided images by an inbuilt
         masker with default parameters. Refer to NiftiMasker or
         MultiNiftiMasker to check for default parameters. Default None
 
-    cv : cross-validation generator, optional (default 10)
-        A cross-validation generator. If None, a 3-fold cross
-        validation is used for classification.
+    cv: cross-validation generator, optional (default 10)
+        A cross-validation generator.
 
-    param_grid : dict of str to sequence, or sequence of such. Default None
+    param_grid: dict of str to sequence, or sequence of such. Default None
         The parameter grid to explore, as a dictionary mapping estimator
         parameters to sequences of allowed values.
 
@@ -637,70 +635,70 @@ class Decoder(BaseDecoder):
         useful to avoid exploring parameter combinations that make no sense
         or have no effect. See scikit-learn documentation for more information.
 
-    screening_percentile : int, float, optional, in the closed interval [0, 100]
+    screening_percentile: int, float, optional, in the closed interval [0, 100]
         Perform an univariate feature selection based on the Anova F-value for
         the input data. A float according to a percentile of the highest
         scores. Default: 20.
 
-    scoring : str, callable or None, optional. Default: 'roc_auc'
+    scoring: str, callable or None, optional. Default: 'roc_auc'
         The scoring strategy to use. See the scikit-learn documentation
         If callable, takes as arguments the fitted estimator, the
         test data (X_test) and the test target (y_test) if y is
         not None.
         e.g. scorer(estimator, X_test, y_test)
 
-        For classification: 'accuracy', 'f1', 'precision', 'recall' or 'roc_auc'.
-        Default 'roc_auc'.
+        For classification, valid entries are: 'accuracy', 'f1', 'precision',
+        'recall' or 'roc_auc'. Default: 'roc_auc'.
 
-    smoothing_fwhm : float, optional. Default: None
+    smoothing_fwhm: float, optional. Default: None
         If smoothing_fwhm is not None, it gives the size in millimeters of the
         spatial smoothing to apply to the signal.
 
-    standardize : bool, optional. Default: True
+    standardize: bool, optional. Default: True
         If standardize is True, the time-series are centered and normed:
         their variance is put to 1 in the time dimension.
 
-    target_affine : 3x3 or 4x4 matrix, optional. Default: None
+    target_affine: 3x3 or 4x4 matrix, optional. Default: None
         This parameter is passed to image.resample_img. Please see the
         related documentation for details.
 
-    target_shape : 3-tuple of int, optional. Default: None
+    target_shape: 3-tuple of int, optional. Default: None
         This parameter is passed to image.resample_img. Please see the
         related documentation for details.
 
-    low_pass : None or float, optional
+    low_pass: None or float, optional
         This parameter is passed to signal.clean. Please see the related
         documentation for details
 
-    high_pass : None or float, optional
+    high_pass: None or float, optional
         This parameter is passed to signal.clean. Please see the related
         documentation for details
 
-    t_r : float, optional. Default: None
+    t_r: float, optional. Default: None
         This parameter is passed to signal.clean. Please see the related
         documentation for details.
 
-    mask_strategy : {'background' or 'epi'}, optional. Default: 'background'
+    mask_strategy: {'background' or 'epi'}, optional. Default: 'background'
         The strategy used to compute the mask: use 'background' if your
         images present a clear homogeneous background, and 'epi' if they
         are raw EPI images. Depending on this value, the mask will be
         computed from masking.compute_background_mask or
         masking.compute_epi_mask.
 
-    memory : instance of joblib.Memory or str
+    memory: instance of joblib.Memory or str
         Used to cache the masking process.
         By default, no caching is done. If a str is given, it is the
         path to the caching directory.
 
-    memory_level : int, optional. Default: 0
+    memory_level: int, optional. Default: 0
         Rough estimator of the amount of memory used by caching. Higher value
         means more memory for caching.
 
-    n_jobs : int, optional. Default: 1.
+    n_jobs: int, optional. Default: 1.
         The number of CPUs to use to do the computation. -1 means
         'all CPUs'.
 
-    verbose : int, optional. Default: 0.
+    verbose: int, optional. Default: 0.
         Verbosity level.
 
     See Also
@@ -749,23 +747,22 @@ class DecoderRegressor(BaseDecoder):
 
     Parameters
     -----------
-    estimator : str, optional
+    estimator: str, optional
         The estimator to choose among: 'ridge', 'ridge_regressor', and 'svr'.
         Note that the 'ridge' and 'ridge_regressor' correspond to the same
         estimator. Default 'svr'.
 
-    mask : filename, Nifti1Image, NiftiMasker, or MultiNiftiMasker, optional
+    mask: filename, Nifti1Image, NiftiMasker, or MultiNiftiMasker, optional
         Mask to be used on data. If an instance of masker is passed,
         then its mask and parameters will be used. If no mask is given, mask
         will be computed automatically from provided images by an inbuilt
         masker with default parameters. Refer to NiftiMasker or
         MultiNiftiMasker to check for default parameters. Default None
 
-    cv : cross-validation generator or int, optional (default 10)
-        A cross-validation generator. If None, a 3-fold cross
-        validation is used for regression.
+    cv: cross-validation generator or int, optional (default 10)
+        A cross-validation generator.
 
-    param_grid : dict of str to sequence, or sequence of such. Default None
+    param_grid: dict of str to sequence, or sequence of such. Default None
         The parameter grid to explore, as a dictionary mapping estimator
         parameters to sequences of allowed values.
 
@@ -775,70 +772,70 @@ class DecoderRegressor(BaseDecoder):
         useful to avoid exploring parameter combinations that make no sense
         or have no effect. See scikit-learn documentation for more information.
 
-    screening_percentile : int, float, optional, in the closed interval [0, 100]
+    screening_percentile: int, float, optional, in the closed interval [0, 100]
         Perform a univariate feature selection based on the Anova F-value for
         the input data. A float according to a percentile of the highest
         scores. Default: 20.
 
-    scoring : str, callable or None, optional. Default: 'r2'
+    scoring: str, callable or None, optional. Default: 'r2'
         The scoring strategy to use. See the scikit-learn documentation
         If callable, takes as arguments the fitted estimator, the
         test data (X_test) and the test target (y_test) if y is
         not None.
         e.g. scorer(estimator, X_test, y_test)
 
-        For regression: 'r2', 'mean_absolute_error', or 'mean_squared_error'.
-        Default 'r2'.
+        For regression, valid entries are: 'r2', 'mean_absolute_error',
+        or 'mean_squared_error'. Default: 'r2'.
 
-    smoothing_fwhm : float, optional. Default: None
+    smoothing_fwhm: float, optional. Default: None
         If smoothing_fwhm is not None, it gives the size in millimeters of the
         spatial smoothing to apply to the signal.
 
-    standardize : bool, optional. Default: True
+    standardize: bool, optional. Default: True
         If standardize is True, the time-series are centered and normed:
         their variance is put to 1 in the time dimension.
 
-    target_affine : 3x3 or 4x4 matrix, optional. Default: None
+    target_affine: 3x3 or 4x4 matrix, optional. Default: None
         This parameter is passed to image.resample_img. Please see the
         related documentation for details.
 
-    target_shape : 3-tuple of int, optional. Default: None
+    target_shape: 3-tuple of int, optional. Default: None
         This parameter is passed to image.resample_img. Please see the
         related documentation for details.
 
-    low_pass : None or float, optional
+    low_pass: None or float, optional
         This parameter is passed to signal.clean. Please see the related
         documentation for details
 
-    high_pass : None or float, optional
+    high_pass: None or float, optional
         This parameter is passed to signal.clean. Please see the related
         documentation for details
 
-    t_r : float, optional. Default: None
+    t_r: float, optional. Default: None
         This parameter is passed to signal.clean. Please see the related
         documentation for details.
 
-    mask_strategy : {'background' or 'epi'}, optional. Default: 'background'
+    mask_strategy: {'background' or 'epi'}, optional. Default: 'background'
         The strategy used to compute the mask: use 'background' if your
         images present a clear homogeneous background, and 'epi' if they
         are raw EPI images. Depending on this value, the mask will be
         computed from masking.compute_background_mask or
         masking.compute_epi_mask.
 
-    memory : instance of joblib.Memory or str
+    memory: instance of joblib.Memory or str
         Used to cache the masking process.
         By default, no caching is done. If a str is given, it is the
         path to the caching directory.
 
-    memory_level : int, optional. Default: 0
+    memory_level: int, optional. Default: 0
         Rough estimator of the amount of memory used by caching. Higher value
         means more memory for caching.
 
-    n_jobs : int, optional. Default: 1.
+    n_jobs: int, optional. Default: 1.
         The number of CPUs to use to do the computation. -1 means
         'all CPUs'.
 
-    verbose : int, optional. Default: 0.
+    verbose: int, optional. Default: 0.
         Verbosity level.
 
     See Also
