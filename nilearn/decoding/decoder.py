@@ -2,9 +2,9 @@
 regression strategies such as SVM, LogisticRegression and Ridge, with optional
 feature selection, integrated hyper-parameter selection and aggregation method.
 """
-# Authors : Yannick Schwartz
-#           Andres Hoyos-Idrobo
-#           Binh Nguyen <tuan-binh.nguyen@inria.fr>
+# Authors: Yannick Schwartz
+#          Andres Hoyos-Idrobo
+#          Binh Nguyen <tuan-binh.nguyen@inria.fr>
 #
 # License: simplified BSD
 
@@ -613,7 +613,7 @@ class Decoder(BaseDecoder):
         The estimator to choose among: 'svc', 'svc_l2', 'svc_l1', 'logistic',
         'logistic_l1', 'logistic_l2' and 'ridge_classifier'. Note that
         'svc' and 'svc_l2'; 'logistic' and 'logistic_l2' correspond to the same
-         estimator. Default 'svc'.
+        estimator. Default 'svc'.
 
     mask: filename, Nifti1Image, NiftiMasker, or MultiNiftiMasker, optional
         Mask to be used on data. If an instance of masker is passed,
@@ -703,10 +703,8 @@ class Decoder(BaseDecoder):
 
     See Also
     ------------
-    nilearn.decoding.DecoderRegressor - regression strategies for Neuroimaging.
-    nilearn.decoding.SpaceNetClassifier - Graph-Net and TV-L1 priors/penalties
-    for classification problems.
-
+    nilearn.decoding.DecoderRegressor - regression strategies for Neuro-imaging.
+    nilearn.decoding.SpaceNetClassifier - Graph-Net and TV-L1 priors/penalties.
     """
 
     def __init__(self, estimator='svc', mask=None, cv=10, param_grid=None,
@@ -841,9 +839,7 @@ class DecoderRegressor(BaseDecoder):
     See Also
     ------------
     nilearn.decoding.Decoder - classification strategies for Neuroimaging.
-    nilearn.decoding.SpaceNetClassifier - Graph-Net and TV-L1 priors/penalties
-    for classification problems.
-
+    nilearn.decoding.SpaceNetClassifier - Graph-Net and TV-L1 priors/penalties.
     """
 
     def __init__(self, estimator='svr', mask=None, cv=10, param_grid=None,
