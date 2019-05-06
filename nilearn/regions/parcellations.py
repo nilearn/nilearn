@@ -220,8 +220,8 @@ class Parcellations(MultiPCA):
     verbose: integer, optional
         Indicate the level of verbosity. By default, nothing is printed.
 
-    Returns
-    -------
+    Attributes
+    ----------
     labels_img_: Nifti1Image
         Labels image to each parcellation learned on fmri images.
 
