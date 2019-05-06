@@ -58,8 +58,8 @@ y_test = target[condition_mask_test]
 # performance of the decoder. This is done by defining accuracy as the
 # `scoring`.
 from nilearn.decoding import Decoder
-decoder = Decoder(estimator='svc', mask_strategy='epi', smoothing_fwhm=4,
-                  scoring='accuracy')
+decoder = Decoder(estimator='svc', mask_strategy='background',
+                  smoothing_fwhm=4, scoring='accuracy')
 
 decoder.fit(X_train, y_train)
 accuracy = np.mean(decoder.cv_scores_[b"house"]) * 100
