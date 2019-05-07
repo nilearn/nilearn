@@ -7,4 +7,8 @@ should define a __test__ attribute as False, i.e.
 __test__ = False
 
 For more information, see https://stackoverflow.com/a/50599106
+
+To ignore linting on these files, at the top define:
+
+# flake8: noqa
 """
