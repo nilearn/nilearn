@@ -283,34 +283,6 @@ def fetch_openneuro_dataset(
     return data_dir, sorted(downloaded)
 
 
-def _make_events_file_localizer_first_level(events_file):
-    """ Makes the first-level localizer fMRI dataset events file
-    BIDS compliant. Overwrites the original file.
-        Adds headers in first row.
-        Removes first column (spurious data).
-        Uses Tab character as value separator.
-    
-    Parameters
-    ----------
-    events_file: string
-        path to the localizer_first_level dataset's events file.
-    
-    Returns
-    -------
-    None
-    """
-    events = pd.read_csv(events_file, sep=' ', header=None, index_col=None,
-                           names=['session', 'trial_type', 'onset'],
-                           )
-    events.drop(labels='session', axis=1, inplace=True)
-    # duration is required in BIDS specification
-    events['duration'] = np.ones_like(events.onset)
-    # if events_file is open file handle, reset cursor to file beginning.
-    if hasattr(events_file, 'read') or hasattr(events_file, 'write'):
-        events_file.seek(0)
-    events.to_csv(events_file, sep='\t', index=False)
-
-
 def fetch_localizer_first_level(data_dir=None, verbose=1):
     """ Download a first-level localizer fMRI dataset
 
@@ -326,42 +298,35 @@ def fetch_localizer_first_level(data_dir=None, verbose=1):
         epi_img: the input 4D image
         events: a csv file describing the paardigm
     """
-    url = 'ftp://ftp.cea.fr/pub/dsv/madic/download/nipy'
+    url = 'https://osf.io/2bqxn/download'
+    epi_img = 'sub-12069_task-localizer_space-MNI305.nii.gz'
+    events = 'sub-12069_task-localizer_events.tsv'
+    opts = {'uncompress': True}
+    options = ('epi_img', 'events')
+    dir_ = 'localizer_first_level'
+    filenames = [(os.path.join(dir_, name), url, opts)
+                  for name in [epi_img, events]]
 
-    dataset_name = "localizer_first_level"
-    files = dict(epi_img="s12069_swaloc1_corr.nii.gz",
-                 events="localizer_paradigm.csv")
-    # The options needed for _fetch_files
-    options = [(filename, os.path.join(url, filename), {})
-               for _, filename in sorted(files.items())]
-
+    dataset_name = 'localizer_first_level'
     data_dir = _get_dataset_dir(dataset_name, data_dir=data_dir,
                                 verbose=verbose)
-    sub_files = _fetch_files(data_dir, options, resume=True,
-                             verbose=verbose)
+    files = _fetch_files(data_dir, filenames, verbose=verbose)
 
-    params = dict(zip(sorted(files.keys()), sub_files))
-    try:
-        _check_events_file_uses_tab_separators(params['events'])
-    except ValueError:
-        _make_events_file_localizer_first_level(events_file=
-                                                             params['events']
-                                                )
-    
+    params = dict(list(zip(options, files)))
     return Bunch(**params)
 
 
 def _download_spm_auditory_data(data_dir, subject_dir, subject_id):
-    print("Data absent, downloading...")
-    url = ("http://www.fil.ion.ucl.ac.uk/spm/download/data/MoAEpilot/"
-           "MoAEpilot.zip")
+    print('Data absent, downloading...')
+    url = ('http://www.fil.ion.ucl.ac.uk/spm/download/data/MoAEpilot/'
+           'MoAEpilot.zip')
     archive_path = os.path.join(subject_dir, os.path.basename(url))
     _fetch_file(url, subject_dir)
     try:
         _uncompress_file(archive_path)
     except:
-        print("Archive corrupted, trying to download it again.")
-        return fetch_spm_auditory(data_dir=data_dir, data_name="",
+        print('Archive corrupted, trying to download it again.')
+        return fetch_spm_auditory(data_dir=data_dir, data_name='',
                                   subject_id=subject_id)
 
 
@@ -387,32 +352,32 @@ def _prepare_downloaded_spm_auditory_data(subject_dir):
         if os.path.exists(file_path):
             subject_data[file_name] = file_path
         else:
-            print("%s missing from filelist!" % file_name)
+            print('%s missing from filelist!' % file_name)
             return None
 
     _subject_data = {}
-    _subject_data["func"] = sorted(
+    _subject_data['func'] = sorted(
             [subject_data[x] for x in subject_data.keys()
-             if re.match("^fM00223_0\d\d\.img$", os.path.basename(x))])
+             if re.match('^fM00223_0\d\d\.img$', os.path.basename(x))])
 
     # volumes for this dataset of shape (64, 64, 64, 1); let's fix this
-    for x in _subject_data["func"]:
+    for x in _subject_data['func']:
         vol = nib.load(x)
         if len(vol.shape) == 4:
             vol = nib.Nifti1Image(vol.get_data()[:, :, :, 0],
                                   vol.affine)
             nib.save(vol, x)
 
-    _subject_data["anat"] = [subject_data[x] for x in subject_data.keys()
-                             if re.match("^sM00223_002\.img$",
+    _subject_data['anat'] = [subject_data[x] for x in subject_data.keys()
+                             if re.match('^sM00223_002\.img$',
                                          os.path.basename(x))][0]
 
     # ... same thing for anat
-    vol = nib.load(_subject_data["anat"])
+    vol = nib.load(_subject_data['anat'])
     if len(vol.shape) == 4:
         vol = nib.Nifti1Image(vol.get_data()[:, :, :, 0],
                               vol.affine)
-        nib.save(vol, _subject_data["anat"])
+        nib.save(vol, _subject_data['anat'])
 
     return Bunch(**_subject_data)
     
@@ -464,7 +429,7 @@ def _make_events_file_spm_auditory_data(events_filepath):
     
 
 def fetch_spm_auditory(data_dir=None, data_name='spm_auditory',
-                       subject_id="sub001", verbose=1):
+                       subject_id='sub001', verbose=1):
     """Function to fetch SPM auditory single-subject data.
 
     Parameters
@@ -508,13 +473,13 @@ def _get_func_data_spm_multimodal(subject_dir, session, _subject_data):
     session_func = sorted(glob.glob(
             os.path.join(
                     subject_dir,
-                    ("fMRI/Session%i/fMETHODS-000%i-*-01.img" % (
+                    ('fMRI/Session%i/fMETHODS-000%i-*-01.img' % (
                         session, session + 4)
                      )
                     )
             ))
     if len(session_func) < 390:
-        print("Missing %i functional scans for session %i." % (
+        print('Missing %i functional scans for session %i.' % (
             390 - len(session_func), session))
         return None
     
@@ -525,9 +490,9 @@ def _get_func_data_spm_multimodal(subject_dir, session, _subject_data):
 def _get_session_trials_spm_multimodal(subject_dir, session, _subject_data):
     sess_trials = os.path.join(
             subject_dir,
-            "fMRI/trials_ses%i.mat" % (session))
+            'fMRI/trials_ses%i.mat' % (session))
     if not os.path.isfile(sess_trials):
-        print("Missing session file: %s" % sess_trials)
+        print('Missing session file: %s' % sess_trials)
         return None
     
     _subject_data['trials_ses%i' % (session)] = sess_trials
@@ -535,12 +500,12 @@ def _get_session_trials_spm_multimodal(subject_dir, session, _subject_data):
 
 
 def _get_anatomical_data_spm_multimodal(subject_dir, _subject_data):
-    anat = os.path.join(subject_dir, "sMRI/smri.img")
+    anat = os.path.join(subject_dir, 'sMRI/smri.img')
     if not os.path.isfile(anat):
-        print("Missing structural image.")
+        print('Missing structural image.')
         return None
     
-    _subject_data["anat"] = anat
+    _subject_data['anat'] = anat
     return _subject_data
 
 
@@ -576,15 +541,15 @@ def _glob_spm_multimodal_fmri_data(subject_dir):
 
 
 def _download_data_spm_multimodal(data_dir, subject_dir, subject_id):
-    print("Data absent, downloading...")
+    print('Data absent, downloading...')
     urls = [
         # fmri
-        ("http://www.fil.ion.ucl.ac.uk/spm/download/data/mmfaces/"
-        "multimodal_fmri.zip"),
+        ('http://www.fil.ion.ucl.ac.uk/spm/download/data/mmfaces/'
+        'multimodal_fmri.zip'),
 
         # structural
-        ("http://www.fil.ion.ucl.ac.uk/spm/download/data/mmfaces/"
-         "multimodal_smri.zip")
+        ('http://www.fil.ion.ucl.ac.uk/spm/download/data/mmfaces/'
+         'multimodal_smri.zip')
         ]
 
     for url in urls:
@@ -593,9 +558,9 @@ def _download_data_spm_multimodal(data_dir, subject_dir, subject_id):
         try:
             _uncompress_file(archive_path)
         except:
-            print("Archive corrupted, trying to download it again.")
+            print('Archive corrupted, trying to download it again.')
             return fetch_spm_multimodal_fmri(data_dir=data_dir,
-                                             data_name="",
+                                             data_name='',
                                              subject_id=subject_id)
 
     return _glob_spm_multimodal_fmri_data(subject_dir)
@@ -611,7 +576,7 @@ def _make_events_filepath_spm_multimodal_fmri(_subject_data, session):
 
 def _make_events_file_spm_multimodal_fmri(_subject_data, session):
     tr = 2.
-    timing = loadmat(_subject_data["trials_ses%i" % (session)],
+    timing = loadmat(_subject_data['trials_ses%i' % (session)],
                      squeeze_me=True, struct_as_record=False)
     faces_onsets = timing['onsets'][0].ravel()
     scrambled_onsets = timing['onsets'][1].ravel()
@@ -625,8 +590,8 @@ def _make_events_file_spm_multimodal_fmri(_subject_data, session):
     return events
 
 
-def fetch_spm_multimodal_fmri(data_dir=None, data_name="spm_multimodal_fmri",
-                              subject_id="sub001", verbose=1):
+def fetch_spm_multimodal_fmri(data_dir=None, data_name='spm_multimodal_fmri',
+                              subject_id='sub001', verbose=1):
     """Fetcher for Multi-modal Face Dataset.
 
     Parameters
