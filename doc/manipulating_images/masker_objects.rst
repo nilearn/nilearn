@@ -101,7 +101,7 @@ slice and create a :ref:`Niimg <niimg>` in memory:
 
 
 .. literalinclude:: ../../examples/04_manipulating_images/plot_mask_computation.py
-    :start-after: Load brain development fMRI dataset
+    :start-after: Load movie watching based brain development fmri dataset
     :end-before: # To display the background
 
 Controlling how the mask is computed from the data
@@ -425,4 +425,4 @@ seed position is used.
 
 .. topic:: **Examples**
 
-  * :ref:`sphx_glr_auto_examples_03_connectivity_plot_adhd_spheres.py`
+  * :ref:`sphx_glr_auto_examples_03_connectivity_plot_sphere_based_connectome.py`

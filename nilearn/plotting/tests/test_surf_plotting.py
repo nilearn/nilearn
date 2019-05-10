@@ -12,11 +12,11 @@ import matplotlib.pyplot as plt
 
 from nilearn.plotting.surf_plotting import (plot_surf, plot_surf_stat_map,
                                             plot_surf_roi)
-from nilearn.surface.tests.test_surface import _generate_surf
+from nilearn.surface.testing_utils import generate_surf
 
 
 def test_plot_surf():
-    mesh = _generate_surf()
+    mesh = generate_surf()
     rng = np.random.RandomState(0)
     bg = rng.randn(mesh[0].shape[0], )
 
@@ -41,7 +41,7 @@ def test_plot_surf():
 
 
 def test_plot_surf_error():
-    mesh = _generate_surf()
+    mesh = generate_surf()
     rng = np.random.RandomState(0)
 
     # Wrong inputs for view or hemi
@@ -68,7 +68,7 @@ def test_plot_surf_error():
 
 
 def test_plot_surf_stat_map():
-    mesh = _generate_surf()
+    mesh = generate_surf()
     rng = np.random.RandomState(0)
     bg = rng.randn(mesh[0].shape[0], )
     data = 10 * rng.randn(mesh[0].shape[0], )
@@ -130,7 +130,7 @@ def test_plot_surf_stat_map():
 
 
 def test_plot_surf_stat_map_error():
-    mesh = _generate_surf()
+    mesh = generate_surf()
     rng = np.random.RandomState(0)
     data = 10 * rng.randn(mesh[0].shape[0], )
 
@@ -152,33 +152,30 @@ def test_plot_surf_stat_map_error():
 
 
 def test_plot_surf_roi():
-    mesh = _generate_surf()
+    mesh = generate_surf()
     rng = np.random.RandomState(0)
-    roi1 = rng.randint(0, mesh[0].shape[0], size=5)
-    roi2 = rng.randint(0, mesh[0].shape[0], size=10)
+    roi_idx = rng.randint(0, mesh[0].shape[0], size=10)
+    roi_map = np.zeros(mesh[0].shape[0])
+    roi_map[roi_idx] = 1
     parcellation = rng.rand(mesh[0].shape[0])
 
     # plot roi
-    plot_surf_roi(mesh, roi_map=roi1)
-    plot_surf_roi(mesh, roi_map=roi1, colorbar=True)
+    plot_surf_roi(mesh, roi_map=roi_map)
+    plot_surf_roi(mesh, roi_map=roi_map, colorbar=True)
 
     # plot parcellation
     plot_surf_roi(mesh, roi_map=parcellation)
     plot_surf_roi(mesh, roi_map=parcellation, colorbar=True)
 
-    # plot roi list
-    plot_surf_roi(mesh, roi_map=[roi1, roi2])
-    plot_surf_roi(mesh, roi_map=[roi1, roi2], colorbar=True)
-
     # plot to axes
-    plot_surf_roi(mesh, roi_map=roi1, ax=None, figure=plt.gcf())
+    plot_surf_roi(mesh, roi_map=roi_map, ax=None, figure=plt.gcf())
 
     # plot to axes
     with tempfile.NamedTemporaryFile() as tmp_file:
-        plot_surf_roi(mesh, roi_map=roi1, ax=plt.gca(), figure=None,
+        plot_surf_roi(mesh, roi_map=roi_map, ax=plt.gca(), figure=None,
                       output_file=tmp_file.name)
     with tempfile.NamedTemporaryFile() as tmp_file:
-        plot_surf_roi(mesh, roi_map=roi1, ax=plt.gca(), figure=None,
+        plot_surf_roi(mesh, roi_map=roi_map, ax=plt.gca(), figure=None,
                       output_file=tmp_file.name, colorbar=True)
 
     # Save execution time and memory
@@ -186,13 +183,12 @@ def test_plot_surf_roi():
 
 
 def test_plot_surf_roi_error():
-    mesh = _generate_surf()
+    mesh = generate_surf()
     rng = np.random.RandomState(0)
-    roi1 = rng.randint(0, mesh[0].shape[0], size=5)
-    roi2 = rng.randint(0, mesh[0].shape[0], size=10)
+    roi_idx = rng.randint(0, mesh[0].shape[0], size=5)
 
     # Wrong input
     assert_raises_regex(ValueError,
-                        'Invalid input for roi_map',
+                        'roi_map does not have the same number of vertices',
                         plot_surf_roi, mesh,
-                        roi_map={'roi1': roi1, 'roi2': roi2})
+                        roi_map=roi_idx)
