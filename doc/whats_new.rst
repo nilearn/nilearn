@@ -113,6 +113,9 @@ Changes
   argument to control whether the colormap is centered around 0 and a `vmin`
   argument.
 
+- Users can now control the size and fontsize of colorbars in interactive
+  surface and connectome plots, or disable the colorbar alltogether.
+
 Fixes
 -----
 
