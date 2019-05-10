@@ -62,4 +62,3 @@ _check_module_dependencies()
 _python_deprecation_warnings()
 
 __all__ = ['__version__', 'datasets', 'design_matrix']
-_py2_deprecation_warning()
