@@ -37,7 +37,7 @@ _IM_FILTERS_AVAILABLE_ON_SERVER = tuple()
 _DEFAULT_BATCH_SIZE = 100
 _DEFAULT_MAX_IMAGES = 100
 
-AFFINE_STD = np.array([[3., 0., 0., -90.],
+STD_AFFINE = np.array([[3., 0., 0., -90.],
                        [0., 3., 0., -126.],
                        [0., 0., 3., -72.],
                        [0., 0., 0., 1.]])
@@ -1464,8 +1464,6 @@ def _download_image_nii_file(image_info, collection, download_params):
 
     if download_params['resample']:
 
-
-
         resampled_image_file_name = 'image_{0}_resampled.nii.gz'.format(image_id)
         resampled_image_absolute_path = os.path.join(
             collection['absolute_path'], resampled_image_file_name)
@@ -1478,7 +1476,7 @@ def _download_image_nii_file(image_info, collection, download_params):
         elif os.path.isfile(image_absolute_path):
             # Resample
             print('Resampling...')
-            im_resampled = resample_img(img = image_absolute_path, target_affine=AFFINE_STD)
+            im_resampled = resample_img(img = image_absolute_path, target_affine=STD_AFFINE)
             im_resampled.to_filename(resampled_image_absolute_path)
 
             image_info['absolute_path'] = resampled_image_absolute_path
@@ -1500,7 +1498,7 @@ def _download_image_nii_file(image_info, collection, download_params):
 
             # Resample here
             print('Resampling...')
-            im_resampled = resample_img(img=tmp_path, target_affine=AFFINE_STD)
+            im_resampled = resample_img(img=tmp_path, target_affine=STD_AFFINE)
             im_resampled.to_filename(resampled_image_absolute_path)
 
             # Remove temporary file
@@ -2122,7 +2120,7 @@ def _read_download_params(
     wanted_image_ids=None, max_images=None,
     max_consecutive_fails=_MAX_CONSECUTIVE_FAILS,
     max_fails_in_collection=_MAX_FAILS_IN_COLLECTION,
-    resample = False,
+    resample=False,
     batch_size=None, verbose=3, fetch_neurosynth_words=False,
         vectorize_words=True):
 
@@ -2265,7 +2263,7 @@ def _fetch_neurovault_implementation(
     max_images=_DEFAULT_MAX_IMAGES, collection_terms=basic_collection_terms(),
     collection_filter=_empty_filter, image_terms=basic_image_terms(),
     image_filter=_empty_filter, collection_ids=None, image_ids=None,
-    mode='download_new', data_dir=None, fetch_neurosynth_words=False,resample=False,
+    mode='download_new', data_dir=None, fetch_neurosynth_words=False, resample=False,
         vectorize_words=True, verbose=3, **kwarg_image_filters):
     """Download data from neurovault.org and neurosynth.org."""
     image_terms = dict(image_terms, **kwarg_image_filters)
@@ -2281,7 +2279,7 @@ def _fetch_neurovault_implementation(
         collection_terms=collection_terms,
         collection_filter=collection_filter, image_terms=image_terms,
         image_filter=image_filter, wanted_collection_ids=collection_ids,
-        wanted_image_ids=image_ids, max_images=max_images, resample = resample,verbose=verbose,
+        wanted_image_ids=image_ids, max_images=max_images, resample=resample,verbose=verbose,
         fetch_neurosynth_words=fetch_neurosynth_words,
         vectorize_words=vectorize_words)
     download_params = _prepare_download_params(download_params)
@@ -2506,7 +2504,7 @@ def fetch_neurovault(
         collection_filter=collection_filter, image_terms=image_terms,
         image_filter=image_filter, mode=mode,
         data_dir=data_dir,
-        fetch_neurosynth_words=fetch_neurosynth_words,resample=resample,
+        fetch_neurosynth_words=fetch_neurosynth_words, resample=resample,
         vectorize_words=vectorize_words, verbose=verbose,
         **kwarg_image_filters)
 
@@ -2621,7 +2619,7 @@ def fetch_neurovault_ids(
         mode=mode,
         collection_ids=collection_ids, image_ids=image_ids,
         data_dir=data_dir,
-        fetch_neurosynth_words=fetch_neurosynth_words,resample=resample,
+        fetch_neurosynth_words=fetch_neurosynth_words, resample=resample,
         vectorize_words=vectorize_words, verbose=verbose)
 
 
