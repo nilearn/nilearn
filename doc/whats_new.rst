@@ -114,7 +114,7 @@ Changes
   argument.
 
 - Users can now control the size and fontsize of colorbars in interactive
-  surface and connectome plots, or disable the colorbar alltogether.
+  surface and connectome plots, or disable the colorbar.
 
 Fixes
 -----
