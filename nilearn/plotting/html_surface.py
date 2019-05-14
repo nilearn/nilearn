@@ -128,7 +128,7 @@ def _fill_html_template(info, embed_js=True):
 def view_img_on_surf(stat_map_img, surf_mesh='fsaverage5',
                      threshold=None, cmap=cm.cold_hot,
                      black_bg=False, vmax=None, vmin=None, symmetric_cmap=True,
-                     colorbar=True, cbar_height=.5, cbar_fontsize=25):
+                     colorbar=True, colorbar_height=.5, colorbar_fontsize=25):
     """
     Insert a surface plot of a statistical map into an HTML page.
 
@@ -178,10 +178,10 @@ def view_img_on_surf(stat_map_img, surf_mesh='fsaverage5',
     colorbar : bool, optional (default=True)
         add a colorbar
 
-    cbar_height : float, optional (default=.5)
+    colorbar_height : float, optional (default=.5)
         height of the colorbar, relative to the figure height
 
-    cbar_fontsize : int, optional (default=25)
+    colorbar_fontsize : int, optional (default=25)
         fontsize of the colorbar tick labels
 
     Returns
@@ -205,15 +205,15 @@ def view_img_on_surf(stat_map_img, surf_mesh='fsaverage5',
         cmap=cmap, black_bg=black_bg, vmax=vmax, vmin=vmin,
         symmetric_cmap=symmetric_cmap)
     info['colorbar'] = colorbar
-    info['cbar_height'] = cbar_height
-    info['cbar_fontsize'] = cbar_fontsize
+    info['cbar_height'] = colorbar_height
+    info['cbar_fontsize'] = colorbar_fontsize
     return _fill_html_template(info, embed_js=True)
 
 
 def view_surf(surf_mesh, surf_map=None, bg_map=None, threshold=None,
               cmap=cm.cold_hot, black_bg=False, vmax=None, vmin=None,
-              symmetric_cmap=True, colorbar=True, cbar_height=.5,
-              cbar_fontsize=25):
+              symmetric_cmap=True, colorbar=True, colorbar_height=.5,
+              colorbar_fontsize=25):
     """
     Insert a surface plot of a surface map into an HTML page.
 
@@ -272,10 +272,10 @@ def view_surf(surf_mesh, surf_map=None, bg_map=None, threshold=None,
     colorbar : bool, optional (default=True)
         add a colorbar
 
-    cbar_height : float, optional (default=.5)
+    colorbar_height : float, optional (default=.5)
         height of the colorbar, relative to the figure height
 
-    cbar_fontsize : int, optional (default=25)
+    colorbar_fontsize : int, optional (default=25)
         fontsize of the colorbar tick labels
 
     Returns
@@ -305,6 +305,6 @@ def view_surf(surf_mesh, surf_map=None, bg_map=None, threshold=None,
         cmap=cmap, black_bg=black_bg, bg_map=bg_map,
         symmetric_cmap=symmetric_cmap, vmax=vmax, vmin=vmin)
     info['colorbar'] = colorbar
-    info['cbar_height'] = cbar_height
-    info['cbar_fontsize'] = cbar_fontsize
+    info['cbar_height'] = colorbar_height
+    info['cbar_fontsize'] = colorbar_fontsize
     return _fill_html_template(info, embed_js=True)
