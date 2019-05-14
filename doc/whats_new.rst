@@ -3,6 +3,11 @@
 
 NEW
 ---
+- Parcellation method ReNA: Fast agglomerative clustering based on recursive
+  nearest neighbor grouping.
+  Yields very fast & accurate models, without creation of giant
+  clusters.
+  :class:`nilearn.regions.ReNA`
 
 - Optimization to image resampling
   :func:`nilearn.image.resample_img` has been optimized to pad rather than
@@ -11,8 +16,8 @@ NEW
   when using the `mask_strategy="template"` option for brains in MNI space.
 - New brain development fMRI dataset fetcher
   :func:`nilearn.datasets.fetch_development_fmri` can be used to download
-  movie-watching data in children and adults. A light-weight dataset implemented
-  for teaching and usage in the examples.
+  movie-watching data in children and adults. A light-weight dataset
+  implemented for teaching and usage in the examples.
 
 Changes
 -------
