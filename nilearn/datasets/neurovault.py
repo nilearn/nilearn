@@ -32,7 +32,8 @@ from sklearn.feature_extraction import DictVectorizer
 
 from .._utils.compat import _basestring
 from .utils import _fetch_file, _get_dataset_dir, _get_dataset_descr
-
+from ..image import resample_img
+import uuid
 
 _NEUROVAULT_BASE_URL = 'http://neurovault.org/api/'
 _NEUROVAULT_COLLECTIONS_URL = urljoin(_NEUROVAULT_BASE_URL, 'collections/')
@@ -44,6 +45,11 @@ _IM_FILTERS_AVAILABLE_ON_SERVER = tuple()
 
 _DEFAULT_BATCH_SIZE = 100
 _DEFAULT_MAX_IMAGES = 100
+
+STD_AFFINE = np.array([[3., 0., 0., -90.],
+                       [0., 3., 0., -126.],
+                       [0., 0., 3., -72.],
+                       [0., 0., 0., 1.]])
 
 # if _MAX_CONSECUTIVE_FAILS downloads fail in a row, we consider there is a
 # problem(e.g. no internet connection, or the Neurovault server is down), and
@@ -1508,11 +1514,69 @@ def _download_image_nii_file(image_info, collection, download_params):
         collection['relative_path'], image_file_name)
     image_absolute_path = os.path.join(
         collection['absolute_path'], image_file_name)
-    _simple_download(
-        image_url, image_absolute_path,
-        download_params['temp_dir'], verbose=download_params['verbose'])
-    image_info['absolute_path'] = image_absolute_path
-    image_info['relative_path'] = image_relative_path
+
+    # Testing whether we need to resample or not
+    # The following behavior is intended :
+    # If resampling is needed,
+    # - check whether the resampled images are already on disk
+    #       - if yes, return them
+    #       - if not, check whether the non-resampled image is on disk
+    #           - if yes : use this image and resample it , keep the non resampled version
+    #           - if not : download the image as a tempfile, resample it, remove the tempfile
+
+
+    if download_params['resample']:
+
+        resampled_image_file_name = 'image_{0}_resampled.nii.gz'.format(image_id)
+        resampled_image_absolute_path = os.path.join(
+            collection['absolute_path'], resampled_image_file_name)
+        resampled_image_relative_path = os.path.join(
+            collection['relative_path'], resampled_image_file_name)
+
+        if os.path.isfile(resampled_image_absolute_path):
+            image_info['absolute_path'] = resampled_image_absolute_path
+            image_info['relative_path'] = resampled_image_relative_path
+        elif os.path.isfile(image_absolute_path):
+            # Resample
+            print('Resampling...')
+            im_resampled = resample_img(img = image_absolute_path, target_affine=STD_AFFINE)
+            im_resampled.to_filename(resampled_image_absolute_path)
+
+            image_info['absolute_path'] = resampled_image_absolute_path
+            image_info['relative_path'] = resampled_image_relative_path
+
+        else:
+
+            # Generate a temporary file name
+            struuid = str(uuid.uuid1())
+
+            tmp_file = 'tmp_{0}.nii.gz'.format(struuid)
+
+            tmp_path = os.path.join(
+                collection['absolute_path'], tmp_file)
+
+            _simple_download(
+                image_url, tmp_path,
+                download_params['temp_dir'], verbose=download_params['verbose'])
+
+            # Resample here
+            print('Resampling...')
+            im_resampled = resample_img(img=tmp_path, target_affine=STD_AFFINE)
+            im_resampled.to_filename(resampled_image_absolute_path)
+
+            # Remove temporary file
+            os.remove(tmp_path)
+
+            image_info['absolute_path'] = resampled_image_absolute_path
+            image_info['relative_path'] = resampled_image_relative_path
+
+    else:
+
+        _simple_download(
+            image_url, image_absolute_path,
+            download_params['temp_dir'], verbose=download_params['verbose'])
+        image_info['absolute_path'] = image_absolute_path
+        image_info['relative_path'] = image_relative_path
     return image_info, collection
 
 
@@ -2117,6 +2181,7 @@ def _read_download_params(
     wanted_image_ids=None, max_images=None,
     max_consecutive_fails=_MAX_CONSECUTIVE_FAILS,
     max_fails_in_collection=_MAX_FAILS_IN_COLLECTION,
+    resample=False,
     batch_size=None, verbose=3, fetch_neurosynth_words=False,
         vectorize_words=True):
 
@@ -2148,6 +2213,7 @@ def _read_download_params(
     download_params['max_consecutive_fails'] = max_consecutive_fails
     download_params['max_fails_in_collection'] = max_fails_in_collection
     download_params['batch_size'] = batch_size
+    download_params['resample'] = resample
     download_params['wanted_image_ids'] = wanted_image_ids
     download_params['wanted_collection_ids'] = wanted_collection_ids
     download_params['fetch_neurosynth_words'] = fetch_neurosynth_words
@@ -2259,7 +2325,7 @@ def _fetch_neurovault_implementation(
     max_images=_DEFAULT_MAX_IMAGES, collection_terms=basic_collection_terms(),
     collection_filter=_empty_filter, image_terms=basic_image_terms(),
     image_filter=_empty_filter, collection_ids=None, image_ids=None,
-    mode='download_new', data_dir=None, fetch_neurosynth_words=False,
+    mode='download_new', data_dir=None, fetch_neurosynth_words=False, resample=False,
         vectorize_words=True, verbose=3, **kwarg_image_filters):
     """Download data from neurovault.org and neurosynth.org."""
     image_terms = dict(image_terms, **kwarg_image_filters)
@@ -2275,7 +2341,7 @@ def _fetch_neurovault_implementation(
         collection_terms=collection_terms,
         collection_filter=collection_filter, image_terms=image_terms,
         image_filter=image_filter, wanted_collection_ids=collection_ids,
-        wanted_image_ids=image_ids, max_images=max_images, verbose=verbose,
+        wanted_image_ids=image_ids, max_images=max_images, resample=resample,verbose=verbose,
         fetch_neurosynth_words=fetch_neurosynth_words,
         vectorize_words=vectorize_words)
     download_params = _prepare_download_params(download_params)
@@ -2294,7 +2360,7 @@ def fetch_neurovault(
     image_terms=basic_image_terms(),
     image_filter=_empty_filter,
     mode='download_new', data_dir=None,
-    fetch_neurosynth_words=False, vectorize_words=True,
+    fetch_neurosynth_words=False, resample=False, vectorize_words=True,
         verbose=3, **kwarg_image_filters):
     """Download data from neurovault.org that match certain criteria.
 
@@ -2356,6 +2422,9 @@ def fetch_neurovault(
         If neurosynth words are downloaded, create a matrix of word
         counts and add it to the result. Also add to the result a
         vocabulary list. See ``sklearn.CountVectorizer`` for more info.
+
+    resample : bool, optional (default=False)
+        Resamples downloaded images to a 4x4x4 grid before saving them, to save disk space.
 
     verbose : int, optional (default=3)
         an integer in [0, 1, 2, 3] to control the verbosity level.
@@ -2491,14 +2560,14 @@ def fetch_neurovault(
         collection_filter=collection_filter, image_terms=image_terms,
         image_filter=image_filter, mode=mode,
         data_dir=data_dir,
-        fetch_neurosynth_words=fetch_neurosynth_words,
+        fetch_neurosynth_words=fetch_neurosynth_words, resample=resample,
         vectorize_words=vectorize_words, verbose=verbose,
         **kwarg_image_filters)
 
 
 def fetch_neurovault_ids(
     collection_ids=(), image_ids=(), mode='download_new', data_dir=None,
-        fetch_neurosynth_words=False, vectorize_words=True, verbose=3):
+        fetch_neurosynth_words=False, resample=False, vectorize_words=True, verbose=3):
     """Download specific images and collections from neurovault.org.
 
     Any downloaded data is saved on the local disk and subsequent
@@ -2533,6 +2602,9 @@ def fetch_neurovault_ids(
 
     fetch_neurosynth_words : bool, optional (default=False)
         whether to collect words from Neurosynth.
+
+    resample : bool, optional (default=False)
+        Resamples downloaded images to a 4x4x4 grid before saving them, to save disk space.
 
     vectorize_words : bool, optional (default=True)
         If neurosynth words are downloaded, create a matrix of word
@@ -2599,7 +2671,7 @@ def fetch_neurovault_ids(
         mode=mode,
         collection_ids=collection_ids, image_ids=image_ids,
         data_dir=data_dir,
-        fetch_neurosynth_words=fetch_neurosynth_words,
+        fetch_neurosynth_words=fetch_neurosynth_words, resample=resample,
         vectorize_words=vectorize_words, verbose=verbose)
 
 
