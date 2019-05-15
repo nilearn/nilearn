@@ -1,7 +1,50 @@
 <!-- CSS for the report -->
-<link rel="stylesheet" href="{{css}}/pure-min.css">
-<link rel="stylesheet" href="{{css}}/grids-responsive-min.css">
+<link rel="stylesheet" href="https://unpkg.com/purecss@1.0.0/build/pure-min.css" integrity="sha384-nn4HPE8lTHyVtfCBi5yW9d20FjT8BJwUXyWZT9InLYax14RDjBj46LmSztkmNP9w" crossorigin="anonymous">
+<link rel="stylesheet" href="https://unpkg.com/purecss@1.0.0/build/grids-responsive-min.css">
 <style type="text/css">
+
+/* Add a gutter to Pure's Columns */
+.pure-g > div {
+  -webkit-box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  box-sizing: border-box;
+}
+
+.pure-g > div {
+  padding: 0 0.5em;
+}
+
+/* Ensure button styling is retained offline */
+.pure-button {
+    /* Structure */
+    display: inline-block;
+    zoom: 1;
+    line-height: normal;
+    white-space: nowrap;
+    vertical-align: middle;
+    text-align: center;
+    cursor: pointer;
+    -webkit-user-drag: none;
+    -webkit-user-select: none;
+       -moz-user-select: none;
+        -ms-user-select: none;
+            user-select: none;
+    box-sizing: border-box;
+}
+
+
+.pure-button {
+    font-family: inherit;
+    font-size: 100%;
+    padding: 0.5em 1em;
+    color: #444; /* rgba not supported (IE 8) */
+    color: rgba(0, 0, 0, 0.80); /* rgba supported */
+    border: 1px solid #999;  /*IE 6/7/8*/
+    border: none rgba(0, 0, 0, 0);  /*IE9 + everything else*/
+    background-color: #E6E6E6;
+    text-decoration: none;
+    border-radius: 2px;
+}
 
 div.nilearn_report {
     padding-top: 5px;
@@ -50,7 +93,8 @@ div.nilearn_report .withtooltip .tooltiptext {
   font-size: 12pt;
   font-weight: 200;
   border-radius: 6px;
-  padding: 5px;
+  padding: 5px;css=resource_path.joinpath('css'),
+
   margin-left: 3pt;
   margin-top: -5pt;
 

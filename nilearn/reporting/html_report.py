@@ -72,20 +72,19 @@ def _update_template(title, docstring, content,
     -------
     HTMLReport : an instance of a populated HTML report
     """
-    resource_path = Path(__file__).resolve().parent.joinpath('data')
+    resource_path = Path(__file__).resolve().parent.joinpath('data', 'html')
 
     body_template_name = 'report_body_template.html'
-    body_template_path = resource_path.joinpath('html', body_template_name)
+    body_template_path = resource_path.joinpath(body_template_name)
     tpl = tempita.HTMLTemplate.from_filename(body_template_path,
                                              encoding='utf-8')
-    body = tpl.substitute(css=resource_path.joinpath('css'),
-                          title=title, content=content,
+    body = tpl.substitute(title=title, content=content,
                           docstring=docstring,
                           parameters=parameters,
                           description=description)
 
     head_template_name = 'report_head_template.html'
-    head_template_path = resource_path.joinpath('html', head_template_name)
+    head_template_path = resource_path.joinpath(head_template_name)
     with open(head_template_path, 'r') as head_file:
         head_tpl = Template(head_file.read())
 
@@ -149,7 +148,7 @@ class HTMLReport(plot_utils.HTMLDocument):
         """
         Used by the Jupyter notebook.
 
-        Users normally won't call this method explicitely.
+        Users normally won't call this method explicitly.
         """
         return self.body
 
