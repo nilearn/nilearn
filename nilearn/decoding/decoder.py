@@ -330,6 +330,18 @@ class BaseDecoder(LinearModel, RegressorMixin, CacheMixin):
         self.n_jobs = n_jobs
         self.verbose = verbose
 
+    def _check_estimator(self):
+        if not isinstance(self.estimator, _basestring):
+            warnings.warn('Use a custom estimator at your own risk.')
+
+        elif self.estimator in list(SUPPORTED_ESTIMATORS.keys()):
+            estimator = SUPPORTED_ESTIMATORS.get(self.estimator,
+                                                 self.estimator)
+        else:
+            raise ValueError("The list of known estimator is: %s" %
+                             list(SUPPORTED_ESTIMATORS.keys()))
+        return estimator
+
     def fit(self, X, y, groups=None):
         """Fit the decoder (learner).
 
@@ -411,23 +423,18 @@ class BaseDecoder(LinearModel, RegressorMixin, CacheMixin):
         """
         # Setup memory
         self.memory_ = _check_memory(self.memory, self.verbose)
+
+        # Check for valid estimator and memory type
+        estimator = self._check_estimator()
+
         # Nifti masking
         self.masker_ = check_embedded_nifti_masker(self, multi_subject=False)
         X = self.masker_.fit_transform(X)
         self.mask_img_ = self.masker_.mask_img_
 
         X, y = check_X_y(X, y, dtype=np.float, multi_output=True)
-        # Setup model
-        if not isinstance(self.estimator, _basestring):
-            warnings.warn('Use a custom estimator at your own risk.')
 
-        elif self.estimator in list(SUPPORTED_ESTIMATORS.keys()):
-            estimator = SUPPORTED_ESTIMATORS.get(self.estimator,
-                                                 self.estimator)
-        else:
-            raise ValueError("The list of known estimator is: %s" %
-                             list(SUPPORTED_ESTIMATORS.keys()))
-
+        # Setup scorer
         scorer = check_scoring(estimator, self.scoring)
         self.cv_ = list(check_cv(
             self.cv, y=y, classifier=self.is_classif).split(X, y,
