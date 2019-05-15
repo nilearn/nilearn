@@ -3,6 +3,11 @@
 
 NEW
 ---
+- Parcellation method ReNA: Fast agglomerative clustering based on recursive
+  nearest neighbor grouping.
+  Yields very fast & accurate models, without creation of giant
+  clusters.
+  :class:`nilearn.regions.ReNA`
 
 - Optimization to image resampling
   :func:`nilearn.image.resample_img` has been optimized to pad rather than
@@ -11,8 +16,8 @@ NEW
   when using the `mask_strategy="template"` option for brains in MNI space.
 - New brain development fMRI dataset fetcher
   :func:`nilearn.datasets.fetch_development_fmri` can be used to download
-  movie-watching data in children and adults. A light-weight dataset implemented
-  for teaching and usage in the examples.
+  movie-watching data in children and adults. A light-weight dataset 
+  implemented for teaching and usage in the examples.
 - New decoder object
   :class:`nilearn.decoding.Decoder` (for classification) and
   :class:`nilearn.decoding.DecoderRegressor` (for regression) implement a model
@@ -20,6 +25,7 @@ NEW
   The resulting average model is the one used as a classifier or a regressor.
   These two objects also leverage the `NiftiMaskers` to provide a direct
   interface with the Nifti files on disk.
+
 
 Changes
 -------

@@ -271,6 +271,7 @@ uses.
 
    RegionExtractor
    Parcellations
+   ReNA
 
 
 :mod:`nilearn.mass_univariate`: Mass-univariate analysis
