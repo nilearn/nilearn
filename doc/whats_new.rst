@@ -25,6 +25,12 @@ Changes
 - All the connectivity examples are changed from ADHD to brain development
   fmri dataset.
 
+- :func:`nilearn.plotting.view_img_on_surf`, :func:`nilearn.plotting.view_surf`
+  and :func:`nilearn.plotting.view_connectome` now allow disabling the colorbar,
+  and setting its height and the fontsize of its ticklabels.
+
+
+
 Fixes
 -----
 
@@ -111,6 +117,9 @@ Changes
 - :func:`nilearn.plotting.view_img_on_surf` now accepts a `symmetric_cmap`
   argument to control whether the colormap is centered around 0 and a `vmin`
   argument.
+
+- Users can now control the size and fontsize of colorbars in interactive
+  surface and connectome plots, or disable the colorbar.
 
 Fixes
 -----
