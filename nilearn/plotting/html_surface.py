@@ -296,7 +296,7 @@ def view_surf(surf_mesh, surf_map=None, bg_map=None, threshold=None,
     surf_mesh = surface.load_surf_mesh(surf_mesh)
     if surf_map is None:
         surf_map = np.ones(len(surf_mesh[0]))
-    if surf_map is not None:
+    else:
         surf_mesh, surf_map = surface.check_mesh_and_data(
             surf_mesh, surf_map)
     if bg_map is not None:
