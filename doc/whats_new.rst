@@ -16,7 +16,7 @@ NEW
   when using the `mask_strategy="template"` option for brains in MNI space.
 - New brain development fMRI dataset fetcher
   :func:`nilearn.datasets.fetch_development_fmri` can be used to download
-  movie-watching data in children and adults. A light-weight dataset 
+  movie-watching data in children and adults; a light-weight dataset 
   implemented for teaching and usage in the examples.
 - New decoder object
   :class:`nilearn.decoding.Decoder` (for classification) and
