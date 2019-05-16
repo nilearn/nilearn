@@ -14,7 +14,16 @@
   padding: 0 0.5em;
 }
 
-/* Ensure button styling is retained offline */
+/*!
+Pure-button class copied from pure-min.css,
+in case reports are displayed offline.
+
+Pure v1.0.0
+Copyright 2013 Yahoo!
+Licensed under the BSD License.
+https://github.com/yahoo/pure/blob/master/LICENSE.md
+*/
+
 .pure-button {
     /* Structure */
     display: inline-block;
@@ -32,8 +41,8 @@
     box-sizing: border-box;
 }
 
-
 .pure-button {
+    /* Button styling */
     font-family: inherit;
     font-size: 100%;
     padding: 0.5em 1em;
@@ -45,6 +54,10 @@
     text-decoration: none;
     border-radius: 2px;
 }
+
+/*!
+End pure-button class definition from pure-min.css
+*/
 
 div.nilearn_report {
     padding-top: 5px;
