@@ -9,7 +9,7 @@ Test the decoder module
 # License: simplified BSD
 
 import numpy as np
-from nose.tools import assert_equal, assert_raises, assert_true
+from nose.tools import assert_equal, assert_raises, assert_true, assert_warns
 from sklearn.datasets import load_iris, make_classification, make_regression
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.linear_model import LogisticRegression, Ridge, RidgeClassifier
@@ -57,7 +57,7 @@ y_multiclass = np.hstack([[0] * 35, [1] * 30, [2] * 35])
 def test_check_param_grid():
     # testing several estimators, each one with its specific regularization
     # parameter
-    
+
     # Regression
     for _, (regressor, param) in regressors.items():
         param_grid = _check_param_grid(regressor, X, y_regression, None)
@@ -87,18 +87,30 @@ def test_check_inputs_length():
                                         screening_percentile=100.).fit, X_, y)
 
 
-def test_check_estimator():
-    iris = load_iris()
-    X, y = iris.data, iris.target
-    y = 2 * (y > 0) - 1
-    X_, mask = to_niimgs(X, (2, 2, 2))
+def test_BaseDecoder_check_estimator():
+    # Check if the estimator is one of the supported estimators, and if not,
+    # if it is a string, and if not, then raise the error
 
-    for estimator in ['log_l1', 'log_l2', 'ridgo']:
-        assert_raises(ValueError, BaseDecoder(estimator=estimator).fit, X_, y)
+    supported_estimators = ['svc', 'svc_l2', 'svc_l1', 'logistic',
+        'logistic_l1', 'logistic_l2', 'ridge', 'ridge_classifier',
+        'ridge_regressor', 'svr']
+    
+    wrong_estimators = ['ridgo', 'svb']
+
+    for estimator in supported_estimators:
+        BaseDecoder(estimator=estimator)._check_estimator()
+
+    for estimator in wrong_estimators:
+        assert_raises(ValueError, 
+                      BaseDecoder(estimator=estimator)._check_estimator)
+
+    custom_estimator = random_forest
+    assert_warns(UserWarning,
+                 BaseDecoder(estimator=custom_estimator)._check_estimator)
 
 
 def test_parallel_fit():
-    # The goal of this test is to check that results of _parallel_fit is the 
+    # The goal of this test is to check that results of _parallel_fit is the
     # same for differnet controlled param_grid
     train = range(80)
     test = range(80, len(y_regression))
@@ -163,7 +175,6 @@ def test_decoder_binary_classification():
             groups = None
         model.fit(X, y, groups=groups)
         assert_true(accuracy_score(y, y_pred) > 0.9)
-
 
 def test_decoder_multiclass_classification():
     X, y = make_classification(n_samples=200, n_features=125, scale=3.0,

@@ -38,7 +38,6 @@ except ImportError:
 
 from .._utils import CacheMixin
 from .._utils.cache_mixin import _check_memory
-from .._utils.compat import _basestring
 from .._utils.param_validation import (_adjust_screening_percentile,
                                        check_feature_screening)
 from ..input_data.masker_validation import check_embedded_nifti_masker
@@ -103,9 +102,10 @@ def _check_param_grid(estimator, X, y, param_grid=None):
         elif isinstance(estimator, (LinearSVC, _BaseRidge, SVR)):
             loss = 'squared_hinge'
         else:
-            raise ValueError("%s is an unknown estimator."
-                             "The supported estimators are: %s" %
-                             (estimator, list(SUPPORTED_ESTIMATORS.keys())))
+            raise ValueError(
+                "Invalid estimator. The supported estimators are: {}".format(
+                             list(SUPPORTED_ESTIMATORS.keys()))
+            )
         # define sensible default for different types of estimators
         if hasattr(estimator, 'penalty') and (estimator.penalty == 'l1'):
             min_c = l1_min_c(X, y, loss=loss)
@@ -330,18 +330,6 @@ class BaseDecoder(LinearModel, RegressorMixin, CacheMixin):
         self.n_jobs = n_jobs
         self.verbose = verbose
 
-    def _check_estimator(self):
-        if not isinstance(self.estimator, _basestring):
-            warnings.warn('Use a custom estimator at your own risk.')
-
-        elif self.estimator in list(SUPPORTED_ESTIMATORS.keys()):
-            estimator = SUPPORTED_ESTIMATORS.get(self.estimator,
-                                                 self.estimator)
-        else:
-            raise ValueError("The list of known estimator is: %s" %
-                             list(SUPPORTED_ESTIMATORS.keys()))
-        return estimator
-
     def fit(self, X, y, groups=None):
         """Fit the decoder (learner).
 
@@ -421,12 +409,9 @@ class BaseDecoder(LinearModel, RegressorMixin, CacheMixin):
         `cv_scores_`: dict, (classes, n_folds)
             Scores (misclassification) for each parameter, and on each fold
         """
-        # Setup memory
+        self._check_estimator()
         self.memory_ = _check_memory(self.memory, self.verbose)
-
-        # Check for valid estimator and memory type
-        estimator = self._check_estimator()
-
+    
         # Nifti masking
         self.masker_ = check_embedded_nifti_masker(self, multi_subject=False)
         X = self.masker_.fit_transform(X)
@@ -435,7 +420,7 @@ class BaseDecoder(LinearModel, RegressorMixin, CacheMixin):
         X, y = check_X_y(X, y, dtype=np.float, multi_output=True)
 
         # Setup scorer
-        scorer = check_scoring(estimator, self.scoring)
+        scorer = check_scoring(self.estimator, self.scoring)
         self.cv_ = list(check_cv(
             self.cv, y=y, classifier=self.is_classif).split(X, y,
                                                             groups=groups))
@@ -468,7 +453,7 @@ class BaseDecoder(LinearModel, RegressorMixin, CacheMixin):
 
         for i, (class_index, coef, intercept, y_info, params, scores) \
                 in enumerate(parallel(delayed(self._cache(_parallel_fit))(
-                    estimator, X, y[:, c], train, test,
+                    self.estimator, X, y[:, c], train, test,
                     self.param_grid, self.is_classif, scorer,
                     self.mask_img_, c, self.screening_percentile_)
                 for c, (train, test) in itertools.product(
@@ -545,6 +530,20 @@ class BaseDecoder(LinearModel, RegressorMixin, CacheMixin):
         self.coef_img_ = coef_img
         self.std_coef_img_ = std_coef_img
 
+    def _check_estimator(self):
+        if not isinstance(self.estimator, str):
+            warnings.warn('Use a custom estimator at your own risk '
+                          'of the process not working as intended.')
+
+        elif self.estimator in list(SUPPORTED_ESTIMATORS.keys()):
+            self.estimator = SUPPORTED_ESTIMATORS.get(self.estimator,
+                                                      self.estimator)
+        else:
+            raise ValueError(
+                "Invalid estimator. Known estimators are: {}".format(
+                             list(SUPPORTED_ESTIMATORS.keys()))
+            )
+
     def decision_function(self, X):
         """Predict class labels for samples in X.
 
@@ -564,8 +563,9 @@ class BaseDecoder(LinearModel, RegressorMixin, CacheMixin):
 
         n_features = self.coef_.shape[1]
         if X.shape[1] != n_features:
-            raise ValueError("X has %d features per sample; expecting %d"
-                             % (X.shape[1], n_features))
+            raise ValueError(
+                "X has {} features per sample; expecting {}".format(
+                              (X.shape[1], n_features)))
 
         scores = safe_sparse_dot(X, self.coef_.T,
                                  dense_output=True) + self.intercept_
