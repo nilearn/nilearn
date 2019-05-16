@@ -295,11 +295,16 @@ def test_temp_file_removing():
     html = js_plotting_utils.HTMLDocument('hello')
     wb_open = webbrowser.open
     webbrowser.open = _open_mock
+    fd, tmpfile = tempfile.mkstemp()
     try:
+        os.close(fd)
+        assert_no_warnings(html.open_in_browser,
+                           file_name=tmpfile, temp_file_lifetime=None)
         html.open_in_browser(temp_file_lifetime=.5)
         assert os.path.isfile(html._temp_file)
         time.sleep(1.5)
         assert not os.path.isfile(html._temp_file)
+        assert_warns(UserWarning, html.open_in_browser, temp_file_lifetime=None)
         html.open_in_browser(temp_file_lifetime=None)
         assert os.path.isfile(html._temp_file)
         time.sleep(1.5)
@@ -308,6 +313,10 @@ def test_temp_file_removing():
         webbrowser.open = wb_open
         try:
             os.remove(html._temp_file)
+        except Exception:
+            pass
+        try:
+            os.remove(tmpfile)
         except Exception:
             pass
 
