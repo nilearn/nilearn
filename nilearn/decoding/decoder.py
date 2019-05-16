@@ -536,7 +536,7 @@ class BaseDecoder(LinearModel, RegressorMixin, CacheMixin):
             warnings.warn('Use a custom estimator at your own risk '
                           'of the process not working as intended.')
 
-        elif self.estimator in list(SUPPORTED_ESTIMATORS.keys()):
+        elif self.estimator in SUPPORTED_ESTIMATORS.keys():
             self.estimator = SUPPORTED_ESTIMATORS.get(self.estimator,
                                                       self.estimator)
         else:

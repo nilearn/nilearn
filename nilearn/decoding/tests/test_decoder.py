@@ -8,7 +8,13 @@ Test the decoder module
 #
 # License: simplified BSD
 
+import warnings
+
 import numpy as np
+from nilearn.decoding.decoder import (BaseDecoder, Decoder, DecoderRegressor,
+                                      _check_param_grid, _parallel_fit)
+from nilearn.decoding.tests.test_same_api import to_niimgs
+from nilearn.input_data import NiftiMasker
 from nose.tools import assert_equal, assert_raises, assert_true, assert_warns
 from sklearn.datasets import load_iris, make_classification, make_regression
 from sklearn.ensemble import RandomForestClassifier
@@ -23,10 +29,6 @@ except ImportError:
     # for scikit-learn 0.18 and 0.19
     from sklearn.metrics.scorer import check_scoring
 
-from nilearn.decoding.decoder import (BaseDecoder, Decoder, DecoderRegressor,
-                                      _check_param_grid, _parallel_fit)
-from nilearn.decoding.tests.test_same_api import to_niimgs
-from nilearn.input_data import NiftiMasker
 
 # Regression
 ridge = Ridge()
@@ -91,16 +93,24 @@ def test_BaseDecoder_check_estimator():
     # Check if the estimator is one of the supported estimators, and if not,
     # if it is a string, and if not, then raise the error
 
-    supported_estimators = ['svc', 'svc_l2', 'svc_l1', 'logistic',
-        'logistic_l1', 'logistic_l2', 'ridge', 'ridge_classifier',
-        'ridge_regressor', 'svr']
+    supported_estimators = [
+        'svc', 'svc_l2', 'svc_l1',
+        'logistic', 'logistic_l1', 'logistic_l2',
+        'ridge', 'ridge_classifier', 'ridge_regressor',
+         'svr'
+    ]
+    unsupported_estimators = ['ridgo', 'svb']
+    expected_warnings = ['Use a custom estimator at your own risk '
+                        'of the process not working as intended.']
+
+    with warnings.catch_warnings(record=True) as raised_warnings:
+        for estimator in supported_estimators:
+            BaseDecoder(estimator=estimator)._check_estimator()
+        list_warnings = [str(warning.message) for warning in raised_warnings]
+        for expected_warning in expected_warnings:
+            assert expected_warning not in list_warnings
     
-    wrong_estimators = ['ridgo', 'svb']
-
-    for estimator in supported_estimators:
-        BaseDecoder(estimator=estimator)._check_estimator()
-
-    for estimator in wrong_estimators:
+    for estimator in unsupported_estimators:
         assert_raises(ValueError, 
                       BaseDecoder(estimator=estimator)._check_estimator)
 
@@ -175,6 +185,7 @@ def test_decoder_binary_classification():
             groups = None
         model.fit(X, y, groups=groups)
         assert_true(accuracy_score(y, y_pred) > 0.9)
+
 
 def test_decoder_multiclass_classification():
     X, y = make_classification(n_samples=200, n_features=125, scale=3.0,
