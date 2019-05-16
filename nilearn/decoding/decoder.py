@@ -195,9 +195,10 @@ class BaseDecoder(LinearModel, RegressorMixin, CacheMixin):
 
     The `BaseDecoder` object supports classification and regression methods.
     It implements a model selection scheme that averages the best models
-    within a cross validation loop. The resulting average model is the
-    one used as a classifier or a regressor. This object also leverages the
-    `NiftiMaskers` to provide a direct interface with the Nifti files on disk.
+    within a cross validation loop (a technique sometimes known as CV bagging).
+    The resulting average model is the one used as a classifier or a regressor.
+    This object also leverages the `NiftiMaskers` to provide a direct interface
+    with the Nifti files on disk.
 
     Parameters
     -----------
