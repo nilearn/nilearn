@@ -1,10 +1,10 @@
 """
-Functional connectivity matrices for group analysis of connectomes
-==================================================================
+Functional connectivity predicts age group
+==========================================
 
 This example compares different kinds of functional connectivity between
-regions of interest : correlation, partial correlation, as well as a kind
-called **tangent**.
+regions of interest : correlation, partial correlation, and tangent space
+embedding.
 
 The resulting connectivity coefficients can be used to
 discriminate children from adults. In general, the **tangent kind**
@@ -165,67 +165,61 @@ plot_matrices(tangent_matrices[:4], 'tangent variability')
 ###############################################################################
 # What kind of connectivity is most powerful for classification?
 # --------------------------------------------------------------
-# *ConnectivityMeasure* can output the estimated subjects coefficients
-# as a 1D arrays through the parameter *vectorize*.
-connectivity_biomarkers = {}
-kinds = ['correlation', 'partial correlation', 'tangent']
-for kind in kinds:
-    conn_measure = ConnectivityMeasure(kind=kind, vectorize=True)
-    connectivity_biomarkers[kind] = conn_measure.fit_transform(pooled_subjects)
-
-# For each kind, all individual coefficients are stacked in a unique 2D matrix.
-print('{0} correlation biomarkers for each subject.'.format(
-    connectivity_biomarkers['correlation'].shape[1]))
-
-###############################################################################
-# Note that we use the **pooled groups**. This is crucial for **tangent** kind,
-# to get the displacements from a **unique** `mean_` of all subjects.
-
-###############################################################################
+# we will cross-validate different ways of computing connectivity
+#
 # We stratify the dataset into homogeneous classes according to phenotypic
 # and scan site. We then split the subjects into 3 folds with the same
 # proportion of each class as in the whole cohort
 from sklearn.model_selection import StratifiedKFold
 
 _, classes = np.unique(groups, return_inverse=True)
-cv = StratifiedKFold(n_splits=3)
-###############################################################################
-# and use the connectivity coefficients to classify children vs adults.
 
-# Note that in cv.split(X, y),
-# providing y is sufficient to generate the splits and
-# hence np.zeros(n_samples) may be used as a placeholder for X
-# instead of actual training data.
+######################################################################
+# Prepare cross-validation params
+from sklearn.model_selection import GridSearchCV, StratifiedShuffleSplit
+from sklearn.pipeline import Pipeline
 from sklearn.svm import LinearSVC
-from sklearn.model_selection import cross_val_score
+from sklearn.dummy import DummyClassifier
 
-mean_scores = []
-for kind in kinds:
-    svc = LinearSVC(random_state=0)
-    cv_scores = cross_val_score(svc,
-                                connectivity_biomarkers[kind],
-                                y=classes,
-                                cv=cv,
-                                groups=groups,
-                                scoring='accuracy',
-                                )
-    mean_scores.append(cv_scores.mean())
+kinds = ['correlation', 'partial correlation', 'tangent']
+pipe = Pipeline(
+    [('connectivity', 'passthrough'), ('classifier', 'passthrough')])
 
-###############################################################################
-# Finally, we can display the classification scores.
+# *ConnectivityMeasure* can output the estimated subjects coefficients
+# as a 1D arrays through the parameter *vectorize*.
 
-###############################################################################
-# Finally, we can display the classification scores.
-from nilearn.plotting import show
+param_grid = [
+    {'classifier': [DummyClassifier('most_frequent')]},
+    {'classifier': [
+        GridSearchCV(LinearSVC(), param_grid={'C': [.1, 1., 10.]}, cv=5)],
+     'connectivity': [ConnectivityMeasure(vectorize=True)],
+     'connectivity__kind': kinds}
+]
 
+cv = StratifiedShuffleSplit(n_splits=15, random_state=0, test_size=5)
+gs = GridSearchCV(pipe, param_grid, scoring='accuracy', cv=cv, verbose=1,
+                  refit=False)
+
+
+######################################################################
+# fit grid search
+gs.fit(pooled_subjects, classes, groups=groups)
+mean_scores = gs.cv_results_['mean_test_score']
+scores_std = gs.cv_results_['std_test_score']
+
+######################################################################
+# display the results
 plt.figure(figsize=(6, 4))
-positions = np.arange(len(kinds)) * .1 + .1
-plt.barh(positions, mean_scores, align='center', height=.05)
-yticks = [kind.replace(' ', '\n') for kind in kinds]
+positions = np.arange(len(kinds) + 1) * .1 + .1
+plt.barh(positions, mean_scores, align='center', height=.05, xerr=scores_std)
+yticks = ['dummy'] + list(gs.cv_results_['param_connectivity__kind'].data[1:])
+yticks = [t.replace(' ', '\n') for t in yticks]
 plt.yticks(positions, yticks)
 plt.xlabel('Classification accuracy')
-plt.grid(True)
+plt.gca().grid(True)
+plt.gca().set_axisbelow(True)
 plt.tight_layout()
+
 
 ###############################################################################
 # While the comparison is not fully conclusive on this small dataset,
@@ -234,4 +228,4 @@ plt.tight_layout()
 # Showed that across many cohorts and clinical questions, the tangent
 # kind should be preferred.
 
-show()
+plotting.show()
