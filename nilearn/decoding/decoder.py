@@ -16,7 +16,7 @@ from sklearn import clone
 from sklearn.base import RegressorMixin
 from sklearn.linear_model import LogisticRegression
 from sklearn.linear_model.base import LinearModel
-from sklearn.linear_model.ridge import Ridge, RidgeClassifier, _BaseRidge
+from sklearn.linear_model.ridge import RidgeCV, RidgeClassifierCV, _BaseRidgeCV
 from sklearn.model_selection import ParameterGrid, check_cv
 from sklearn.preprocessing import LabelBinarizer
 from sklearn.svm import SVR, LinearSVC
@@ -49,9 +49,9 @@ SUPPORTED_ESTIMATORS = dict(
     logistic_l1=LogisticRegression(penalty='l1', solver='liblinear'),
     logistic_l2=LogisticRegression(penalty='l2', solver='liblinear'),
     logistic=LogisticRegression(penalty='l2', solver='liblinear'),
-    ridge_classifier=RidgeClassifier(),
-    ridge_regressor=Ridge(),
-    ridge=Ridge(),
+    ridge_classifier=RidgeClassifierCV(),
+    ridge_regressor=RidgeCV(),
+    ridge=RidgeCV(),
     svr=SVR(kernel='linear'),
 )
 
@@ -65,8 +65,8 @@ def _check_param_grid(estimator, X, y, param_grid=None):
         The estimator to choose among: 'svc', 'svc_l2', 'svc_l1', 'logistic',
         'logistic_l1', 'logistic_l2', 'ridge', 'ridge_classifier',
         'ridge_regressor', and 'svr'. Note that the 'svc' and 'svc_l2';
-        'logistic' and 'logistic_l2'; 'ridge' and 'ridge_regressor' correspond
-        to the same estimator. Default 'svc'.
+        'logistic' and 'logistic_l2'; 'ridge' and 'ridge_regressor'
+        correspond to the same estimator. Default 'svc'.
 
     X: list of Niimg-like objects
         See http://nilearn.github.io/manipulating_images/input_output.html
@@ -99,7 +99,7 @@ def _check_param_grid(estimator, X, y, param_grid=None):
         # define loss function
         if isinstance(estimator, LogisticRegression):
             loss = 'log'
-        elif isinstance(estimator, (LinearSVC, _BaseRidge, SVR)):
+        elif isinstance(estimator, (LinearSVC, _BaseRidgeCV, SVR)):
             loss = 'squared_hinge'
         else:
             raise ValueError(
@@ -112,16 +112,16 @@ def _check_param_grid(estimator, X, y, param_grid=None):
         else:
             min_c = 0.5
 
-        if not isinstance(estimator, _BaseRidge):
+        if not isinstance(estimator, _BaseRidgeCV):
             param_grid['C'] = np.array([2, 20, 200]) * min_c
         else:
-            param_grid['alpha'] = 1. / np.array([1, 10, 100])
+            param_grid = {}
 
     return param_grid
 
 
 def _parallel_fit(estimator, X, y, train, test, param_grid, is_classif, scorer,
-                  mask_img, class_index, screening_percentile=None):
+                  mask_img, class_index, screening_percentile=100):
     """Find the best estimator for a fold within a job.
     This function tries several parameters for the estimator for the train and
     test fold provided and save the ones that performs best. These models are
@@ -133,12 +133,10 @@ def _parallel_fit(estimator, X, y, train, test, param_grid, is_classif, scorer,
     # screening
     selector = check_feature_screening(screening_percentile, mask_img,
                                        is_classif)
-    do_screening = (n_features > 100) and (screening_percentile < 100.)
+    do_screening = (n_features > 100) and selector is not None
 
-    X_train = X[train].copy()
-    y_train = y[train].copy()
-    X_test = X[test].copy()
-    y_test = y[test].copy()
+    X_train, y_train = X[train], y[train]
+    X_test, y_test = X[test], y[test]
 
     if (selector is not None) and do_screening:
         X_train = selector.fit_transform(X_train, y_train)
@@ -189,7 +187,7 @@ def _parallel_fit(estimator, X, y, train, test, param_grid, is_classif, scorer,
             best_score)
 
 
-class BaseDecoder(LinearModel, RegressorMixin, CacheMixin):
+class _BaseDecoder(LinearModel, RegressorMixin, CacheMixin):
     """A wrapper for popular classification/regression strategies in
     neuroimaging.
 
@@ -206,8 +204,8 @@ class BaseDecoder(LinearModel, RegressorMixin, CacheMixin):
         The estimator to choose among: 'svc', 'svc_l2', 'svc_l1', 'logistic',
         'logistic_l1', 'logistic_l2', 'ridge', 'ridge_classifier',
         'ridge_regressor', and 'svr'. Note that the 'svc' and 'svc_l2';
-        'logistic' and 'logistic_l2'; 'ridge' and 'ridge_classifier' correspond
-        to the same estimator. Default 'svc'.
+        'logistic' and 'logistic_l2'; 'ridge' and 'ridge_regressor' 
+        correspond to the same estimator. Default 'svc'.
 
     mask: filename, Nifti1Image, NiftiMasker, or MultiNiftiMasker, optional
         Mask to be used on data. If an instance of masker is passed,
@@ -341,7 +339,7 @@ class BaseDecoder(LinearModel, RegressorMixin, CacheMixin):
             Data on which model is to be fitted. If this is a list,
             the affine is considered the same for all.
 
-        y: array or list of length n_samples
+        y: numpy.ndarray of shape=(n_samples) or list of length n_samples
             The dependent variable (age, sex, IQ, yes/no, etc.).
             Target variable to predict. Must have exactly as many elements as
             3D images in niimg.
@@ -412,19 +410,12 @@ class BaseDecoder(LinearModel, RegressorMixin, CacheMixin):
         """
         self._check_estimator()
         self.memory_ = _check_memory(self.memory, self.verbose)
-    
-        # Nifti masking
-        self.masker_ = check_embedded_nifti_masker(self, multi_subject=False)
-        X = self.masker_.fit_transform(X)
-        self.mask_img_ = self.masker_.mask_img_
 
+        # Apply mask and do standardization
+        X = self._apply_mask(X, standardize=self.standardize)
         X, y = check_X_y(X, y, dtype=np.float, multi_output=True)
 
-        # Setup scorer
-        scorer = check_scoring(self.estimator, self.scoring)
-        self.cv_ = list(check_cv(
-            self.cv, y=y, classifier=self.is_classif).split(X, y,
-                                                            groups=groups))
+        scorer = self._get_scorer(X, y, groups)
 
         # Define the number problems to solve. In case of classification this
         # number corresponds to the number of binary problems to solve
@@ -452,11 +443,12 @@ class BaseDecoder(LinearModel, RegressorMixin, CacheMixin):
 
         parallel = Parallel(n_jobs=self.n_jobs, verbose=2 * self.verbose)
 
-        for i, (class_index, coef, intercept, y_info, params, scores) \
-                in enumerate(parallel(delayed(self._cache(_parallel_fit))(
-                    self.estimator, X, y[:, c], train, test,
-                    self.param_grid, self.is_classif, scorer,
-                    self.mask_img_, c, self.screening_percentile_)
+        for i, (class_index, coef, intercept,
+                y_info, params, scores) in enumerate(
+                    parallel(delayed(self._cache(_parallel_fit))(
+                        self.estimator, X, y[:, c], train, test,
+                        self.param_grid, self.is_classif, scorer,
+                        self.mask_img_, c, self.screening_percentile_)
                 for c, (train, test) in itertools.product(
                     range(n_problems), self.cv_))):
 
@@ -531,20 +523,6 @@ class BaseDecoder(LinearModel, RegressorMixin, CacheMixin):
         self.coef_img_ = coef_img
         self.std_coef_img_ = std_coef_img
 
-    def _check_estimator(self):
-        if not isinstance(self.estimator, str):
-            warnings.warn('Use a custom estimator at your own risk '
-                          'of the process not working as intended.')
-
-        elif self.estimator in SUPPORTED_ESTIMATORS.keys():
-            self.estimator = SUPPORTED_ESTIMATORS.get(self.estimator,
-                                                      self.estimator)
-        else:
-            raise ValueError(
-                "Invalid estimator. Known estimators are: {}".format(
-                             list(SUPPORTED_ESTIMATORS.keys()))
-            )
-
     def decision_function(self, X):
         """Predict class labels for samples in X.
 
@@ -603,8 +581,40 @@ class BaseDecoder(LinearModel, RegressorMixin, CacheMixin):
 
         return scores
 
+    def _check_estimator(self):
+        if not isinstance(self.estimator, str):
+            warnings.warn('Use a custom estimator at your own risk '
+                          'of the process not working as intended.')
 
-class Decoder(BaseDecoder):
+        elif self.estimator in SUPPORTED_ESTIMATORS.keys():
+            self.estimator = SUPPORTED_ESTIMATORS.get(self.estimator,
+                                                      self.estimator)
+        else:
+            raise ValueError(
+                "Invalid estimator. Known estimators are: {}".format(
+                             list(SUPPORTED_ESTIMATORS.keys()))
+            )
+
+    def _get_scorer(self, X, y, groups):
+        # Setup scorer
+        scorer = check_scoring(self.estimator, self.scoring)
+        self.cv_ = list(check_cv(
+            self.cv, y=y, classifier=self.is_classif).split(X, y,
+                                                            groups=groups))
+
+        return scorer
+
+    def _apply_mask(self, X, standardize=False):
+        # Nifti masking
+        self.masker_ = check_embedded_nifti_masker(self, multi_subject=False)
+        self.masker_.set_params(standardize=standardize)
+        X = self.masker_.fit_transform(X)
+        self.mask_img_ = self.masker_.mask_img_
+
+        return X
+
+
+class Decoder(_BaseDecoder):
     """A wrapper for popular classification strategies in neuroimaging.
 
     The `Decoder` object supports classification methods.
@@ -740,7 +750,7 @@ class Decoder(BaseDecoder):
         return y
 
 
-class DecoderRegressor(BaseDecoder):
+class DecoderRegressor(_BaseDecoder):
     """A wrapper for popular regression strategies in neuroimaging.
 
     The `DecoderRegressor` object supports regression methods.

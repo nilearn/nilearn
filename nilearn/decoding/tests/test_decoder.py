@@ -92,23 +92,20 @@ def test_check_inputs_length():
 def test_BaseDecoder_check_estimator():
     # Check if the estimator is one of the supported estimators, and if not,
     # if it is a string, and if not, then raise the error
-
-    supported_estimators = [
-        'svc', 'svc_l2', 'svc_l1',
-        'logistic', 'logistic_l1', 'logistic_l2',
-        'ridge', 'ridge_classifier', 'ridge_regressor',
-         'svr'
-    ]
+    supported_estimators = ['svc', 'svc_l2', 'svc_l1',
+                            'logistic', 'logistic_l1', 'logistic_l2',
+                            'ridge', 'ridge_classifier', 'ridge_regressor',
+                            'svr']
     unsupported_estimators = ['ridgo', 'svb']
     expected_warnings = ['Use a custom estimator at your own risk '
-                        'of the process not working as intended.']
+                         'of the process not working as intended.']
 
     with warnings.catch_warnings(record=True) as raised_warnings:
         for estimator in supported_estimators:
             BaseDecoder(estimator=estimator)._check_estimator()
-        list_warnings = [str(warning.message) for warning in raised_warnings]
-        for expected_warning in expected_warnings:
-            assert expected_warning not in list_warnings
+    warning_messages = [str(warning.message) for warning in raised_warnings]
+    for expected_warning_ in expected_warnings:
+        assert expected_warning_ not in warning_messages
     
     for estimator in unsupported_estimators:
         assert_raises(ValueError, 
