@@ -222,7 +222,9 @@ plt.tight_layout()
 
 
 ###############################################################################
-# While the comparison is not fully conclusive on this small dataset,
+# This is a small example to showcase nilearn features. In practice such
+# comparisons need to be performed on much larger cohorts and several
+# datasets.
 # `Dadi et al 2019
 # <https://www.sciencedirect.com/science/article/pii/S1053811919301594>`_
 # Showed that across many cohorts and clinical questions, the tangent
