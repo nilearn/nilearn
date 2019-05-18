@@ -182,18 +182,16 @@ from sklearn.svm import LinearSVC
 from sklearn.dummy import DummyClassifier
 
 kinds = ['correlation', 'partial correlation', 'tangent']
-pipe = Pipeline(
-    [('connectivity', 'passthrough'), ('classifier', 'passthrough')])
 
 # *ConnectivityMeasure* can output the estimated subjects coefficients
 # as a 1D arrays through the parameter *vectorize*.
+pipe = Pipeline(
+    [('connectivity', ConnectivityMeasure(vectorize=True)),
+     ('classifier', LinearSVC())])
 
 param_grid = [
     {'classifier': [DummyClassifier('most_frequent')]},
-    {'classifier': [
-        GridSearchCV(LinearSVC(), param_grid={'C': [.1, 1., 10.]}, cv=5)],
-     'connectivity': [ConnectivityMeasure(vectorize=True)],
-     'connectivity__kind': kinds}
+    {'connectivity__kind': kinds}
 ]
 
 cv = StratifiedShuffleSplit(n_splits=15, random_state=0, test_size=5)
