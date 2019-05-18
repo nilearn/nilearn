@@ -165,18 +165,11 @@ plot_matrices(tangent_matrices[:4], 'tangent variability')
 ###############################################################################
 # What kind of connectivity is most powerful for classification?
 # --------------------------------------------------------------
-# we will cross-validate different ways of computing connectivity
-#
-# We stratify the dataset into homogeneous classes according to phenotypic
-# and scan site. We then split the subjects into 3 folds with the same
-# proportion of each class as in the whole cohort
-from sklearn.model_selection import StratifiedKFold
+# we will use connectivity matrices as features to distinguish children from
+# adults. We use cross-validation and measure classification accuracy to
+# compare the different kinds of connectivity matrices.
 
-_, classes = np.unique(groups, return_inverse=True)
-
-######################################################################
-# Prepare cross-validation params
-from sklearn.model_selection import GridSearchCV, StratifiedShuffleSplit
+# prepare the classification pipeline
 from sklearn.pipeline import Pipeline
 from sklearn.svm import LinearSVC
 from sklearn.dummy import DummyClassifier
@@ -194,14 +187,18 @@ param_grid = [
     {'connectivity__kind': kinds}
 ]
 
+
+######################################################################
+# We use random splits of the subjects into training/testing sets.
+# StratifiedShuffleSplit allows preserving the proportion of children in the
+# test set.
+from sklearn.model_selection import GridSearchCV, StratifiedShuffleSplit
+
+_, classes = np.unique(groups, return_inverse=True)
 cv = StratifiedShuffleSplit(n_splits=15, random_state=0, test_size=5)
 gs = GridSearchCV(pipe, param_grid, scoring='accuracy', cv=cv, verbose=1,
                   refit=False)
-
-
-######################################################################
-# fit grid search
-gs.fit(pooled_subjects, classes, groups=groups)
+gs.fit(pooled_subjects, classes)
 mean_scores = gs.cv_results_['mean_test_score']
 scores_std = gs.cv_results_['std_test_score']
 
