@@ -12,24 +12,6 @@ discriminate children from adults. In general, the **tangent kind**
 <https://www.sciencedirect.com/science/article/pii/S1053811919301594>`_
 for a careful study.
 """
-# Matrix plotting from Nilearn: nilearn.plotting.plot_matrix
-import numpy as np
-import matplotlib.pylab as plt
-
-
-def plot_matrices(matrices, matrix_kind):
-    n_matrices = len(matrices)
-    fig = plt.figure(figsize=(n_matrices * 4, 4))
-    for n_subject, matrix in enumerate(matrices):
-        plt.subplot(1, n_matrices, n_subject + 1)
-        matrix = matrix.copy()  # avoid side effects
-        # Set diagonal to zero, for better visualization
-        np.fill_diagonal(matrix, 0)
-        vmax = np.max(np.abs(matrix))
-        title = '{0}, subject {1}'.format(matrix_kind, n_subject)
-        plotting.plot_matrix(matrix, vmin=-vmax, vmax=vmax, cmap='RdBu_r',
-                             title=title, figure=fig, colorbar=False)
-
 
 ###############################################################################
 # Load brain development fMRI dataset and MSDL atlas
@@ -57,7 +39,7 @@ from nilearn import input_data
 
 masker = input_data.NiftiMapsMasker(
     msdl_data.maps, resampling_target="data", t_r=2, detrend=True,
-    low_pass=.1, high_pass=.01, memory='nilearn_cache', memory_level=1)
+    low_pass=.1, high_pass=.01, memory='nilearn_cache', memory_level=1).fit([])
 
 ###############################################################################
 # Then we compute region signals and extract useful phenotypic informations.
@@ -66,12 +48,10 @@ pooled_subjects = []
 groups = []  # child or adult
 for func_file, confound_file, phenotypic in zip(
         rest_data.func, rest_data.confounds, rest_data.phenotypic):
-    time_series = masker.fit_transform(func_file, confounds=confound_file)
+    time_series = masker.transform(func_file, confounds=confound_file)
     pooled_subjects.append(time_series)
-    is_child = phenotypic['Child_Adult'] == 'child'
-    if is_child:
+    if phenotypic['Child_Adult'] == 'child':
         children.append(time_series)
-
     groups.append(phenotypic['Child_Adult'])
 
 print('Data has {0} children.'.format(len(children)))
@@ -101,10 +81,14 @@ mean_correlation_matrix = correlation_measure.mean_
 print('Mean correlation has shape {0}.'.format(mean_correlation_matrix.shape))
 
 ###############################################################################
-# We display the connectome matrices of the first 4 children
+# We display the connectome matrices of the first 3 children
 from nilearn import plotting
+from matplotlib import pyplot as plt
 
-plot_matrices(correlation_matrices[:4], 'correlation')
+_, axes = plt.subplots(1, 3, figsize=(15, 5))
+for i, (matrix, ax) in enumerate(zip(correlation_matrices, axes)):
+    plotting.plot_matrix(matrix, tri='lower', colorbar=False, axes=ax,
+                         title='correlation, child {}'.format(i))
 ###############################################################################
 # The blocks structure that reflect functional networks are visible.
 
@@ -119,19 +103,17 @@ plotting.plot_connectome(mean_correlation_matrix, msdl_coords,
 # We can also study **direct connections**, revealed by partial correlation
 # coefficients. We just change the `ConnectivityMeasure` kind
 partial_correlation_measure = ConnectivityMeasure(kind='partial correlation')
-
-###############################################################################
-# and repeat the previous operation.
 partial_correlation_matrices = partial_correlation_measure.fit_transform(
     children)
 
 ###############################################################################
-# Most of direct connections are weaker than full connections,
-plot_matrices(partial_correlation_matrices[:4], 'partial')
+# Most of direct connections are weaker than full connections.
 
+_, axes = plt.subplots(1, 3, figsize=(15, 5))
+for i, (matrix, ax) in enumerate(zip(partial_correlation_matrices, axes)):
+    plotting.plot_matrix(matrix, tri='lower', colorbar=False, axes=ax,
+                         title='partial correlation, child {}'.format(i))
 ###############################################################################
-# Compared to a connectome computed on correlations, the connectome graph
-# with partial correlations is more sparse:
 plotting.plot_connectome(
     partial_correlation_measure.mean_, msdl_coords,
     title='mean partial correlation over all children')
@@ -140,8 +122,8 @@ plotting.plot_connectome(
 # Extract subjects variabilities around a group connectivity
 # ----------------------------------------------------------
 # We can use **both** correlations and partial correlations to capture
-# reproducible connectivity patterns at the group-level and build a **robust**
-# **group connectivity matrix**. This is done by the **tangent** kind.
+# reproducible connectivity patterns at the group-level.
+# This is done by the **tangent** kind.
 tangent_measure = ConnectivityMeasure(kind='tangent')
 
 ###############################################################################
@@ -154,13 +136,17 @@ tangent_matrices = tangent_measure.fit_transform(children)
 # `tangent_matrices` model individual connectivities as
 # **perturbations** of the group connectivity matrix `tangent_measure.mean_`.
 # Keep in mind that these subjects-to-group variability matrices do not
-# straight reflect individual brain connections. For instance negative
+# directly reflect individual brain connections. For instance negative
 # coefficients can not be interpreted as anticorrelated regions.
-plot_matrices(tangent_matrices[:4], 'tangent variability')
+_, axes = plt.subplots(1, 3, figsize=(15, 5))
+for i, (matrix, ax) in enumerate(zip(tangent_matrices, axes)):
+    plotting.plot_matrix(matrix, tri='lower', colorbar=False, axes=ax,
+                         title='tangent offset, child {}'.format(i))
+
 
 ###############################################################################
-# The average tangent matrix cannot be interpreted, as the average
-# variation is expected to be zero
+# The average tangent matrix cannot be interpreted, as individual matrices
+# represent deviations from the mean
 
 ###############################################################################
 # What kind of connectivity is most powerful for classification?
@@ -193,6 +179,7 @@ param_grid = [
 # StratifiedShuffleSplit allows preserving the proportion of children in the
 # test set.
 from sklearn.model_selection import GridSearchCV, StratifiedShuffleSplit
+import numpy as np
 
 _, classes = np.unique(groups, return_inverse=True)
 cv = StratifiedShuffleSplit(n_splits=15, random_state=0, test_size=5)
