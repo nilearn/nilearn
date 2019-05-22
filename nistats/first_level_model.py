@@ -183,9 +183,9 @@ class FirstLevelModel(BaseEstimator, TransformerMixin, CacheMixin):
         This parameter specifies the desired drift model for the design
         matrices. It can be 'polynomial', 'cosine' or None.
 
-    period_cut : float, optional
-        This parameter specifies the cut period of the high-pass filter in
-        seconds for the design matrices. Used only if drift_model is 'cosine'.
+    high_pass : float, optional
+        This parameter specifies the cut frequency of the high-pass filter in
+        H for the design matrices. Used only if drift_model is 'cosine'.
 
     drift_order : int, optional
         This parameter specifices the order of the drift model (in case it is
@@ -274,7 +274,7 @@ class FirstLevelModel(BaseEstimator, TransformerMixin, CacheMixin):
     """
     @replace_parameters({'mask': 'mask_img'}, end_version='next')
     def __init__(self, t_r=None, slice_time_ref=0., hrf_model='glover',
-                 drift_model='cosine', period_cut=128, drift_order=1,
+                 drift_model='cosine', high_pass=.01, drift_order=1,
                  fir_delays=[0], min_onset=-24, mask_img=None, target_affine=None,
                  target_shape=None, smoothing_fwhm=None, memory=Memory(None),
                  memory_level=1, standardize=False, signal_scaling=0,
@@ -285,7 +285,7 @@ class FirstLevelModel(BaseEstimator, TransformerMixin, CacheMixin):
         self.slice_time_ref = slice_time_ref
         self.hrf_model = hrf_model
         self.drift_model = drift_model
-        self.period_cut = period_cut
+        self.high_pass = high_pass
         self.drift_order = drift_order
         self.fir_delays = fir_delays
         self.min_onset = min_onset
@@ -451,7 +451,7 @@ class FirstLevelModel(BaseEstimator, TransformerMixin, CacheMixin):
                 frame_times = np.linspace(start_time, end_time, n_scans)
                 design = make_first_level_design_matrix(frame_times, events[run_idx],
                                                         self.hrf_model, self.drift_model,
-                                                        self.period_cut, self.drift_order,
+                                                        self.high_pass, self.drift_order,
                                                         self.fir_delays, confounds_matrix,
                                                         confounds_names, self.min_onset)
             else:
@@ -587,7 +587,7 @@ class FirstLevelModel(BaseEstimator, TransformerMixin, CacheMixin):
 def first_level_models_from_bids(
         dataset_path, task_label, space_label, img_filters=None,
         t_r=None, slice_time_ref=0., hrf_model='glover', drift_model='cosine',
-        period_cut=128, drift_order=1, fir_delays=[0], min_onset=-24,
+        high_pass=.01, drift_order=1, fir_delays=[0], min_onset=-24,
         mask_img=None, target_affine=None, target_shape=None, smoothing_fwhm=None,
         memory=Memory(None), memory_level=1, standardize=False,
         signal_scaling=0, noise_model='ar1', verbose=0, n_jobs=1,
@@ -732,7 +732,7 @@ def first_level_models_from_bids(
         # Create model
         model = FirstLevelModel(
             t_r=t_r, slice_time_ref=slice_time_ref, hrf_model=hrf_model,
-            drift_model=drift_model, period_cut=period_cut,
+            drift_model=drift_model, high_pass=high_pass,
             drift_order=drift_order, fir_delays=fir_delays,
             min_onset=min_onset, mask_img=mask_img, target_affine=target_affine,
             target_shape=target_shape, smoothing_fwhm=smoothing_fwhm,
