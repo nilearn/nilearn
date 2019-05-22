@@ -197,9 +197,9 @@ plt.show()
 # 
 # By default the drift model is a set of slow oscillating functions (Discrete Cosine transform), with a cutoff at frequency 1/128 hz.
 # We can change this cut-off, e.g. to 1/64Hz.
-# This is done by setting high_pass=0.01(Hz)
+# This is done by setting high_pass=0.016(Hz).
 
-first_level_model = FirstLevelModel(t_r, high_pass=1./64)
+first_level_model = FirstLevelModel(t_r, high_pass=.016)
 first_level_model = first_level_model.fit(fmri_img, events=events)
 design_matrix = first_level_model.design_matrices_[0]
 plot_design_matrix(design_matrix)
