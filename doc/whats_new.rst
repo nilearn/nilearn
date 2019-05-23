@@ -5,6 +5,7 @@ Changelog
 ---------
 
 * Removed Python 2 deprecation warning for Python 3 installations.
+* ReStructuredText label of warning when running fmri_glm in plot_single_subject_single_run.py: make html fails for high_pass frequencies below 0.0067 (period_cutoff>150s)
 
 Contributors
 ------------
