@@ -3,6 +3,8 @@ import base64
 import warnings
 from pathlib import Path
 from string import Template
+from pkg_resources import resource_filename
+
 
 from nilearn.externals import tempita
 from nilearn.plotting import js_plotting_utils as plot_utils
@@ -27,10 +29,9 @@ def _embed_img(display):
         io_buffer.seek(0)
 
     else:
-        logo_name = 'nilearn-logo-small.png'
-        logo_dir = Path(__file__).resolve().parent.parent
-        logo_path = logo_dir.joinpath('doc', 'logos', logo_name)
-        io_buffer = open(logo_path, 'rb')
+        fn = resource_filename('nilearn',
+                               'reporting/data/undraw_blank_canvas.png')
+        io_buffer = open(fn, 'rb')
 
     data = base64.b64encode(io_buffer.read())
 
