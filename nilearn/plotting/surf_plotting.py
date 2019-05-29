@@ -515,7 +515,6 @@ def plot_surf_roi(surf_mesh, roi_map, bg_map=None,
     # messages in case of wrong inputs
 
     roi = load_surf_data(roi_map)
-    # vmin, vmax = np.min(roi), 1 + np.max(roi)
     if vmin is None:
         vmin = np.min(roi)
     if vmax is None:
