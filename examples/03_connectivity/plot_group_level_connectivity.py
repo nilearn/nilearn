@@ -154,52 +154,53 @@ for i, (matrix, ax) in enumerate(zip(tangent_matrices, axes)):
 # we will use connectivity matrices as features to distinguish children from
 # adults. We use cross-validation and measure classification accuracy to
 # compare the different kinds of connectivity matrices.
-
-# prepare the classification pipeline
-from sklearn.pipeline import Pipeline
-from sklearn.svm import LinearSVC
-from sklearn.dummy import DummyClassifier
-
-kinds = ['correlation', 'partial correlation', 'tangent']
-
-# *ConnectivityMeasure* can output the estimated subjects coefficients
-# as a 1D arrays through the parameter *vectorize*.
-pipe = Pipeline(
-    [('connectivity', ConnectivityMeasure(vectorize=True)),
-     ('classifier', LinearSVC())])
-
-param_grid = [
-    {'classifier': [DummyClassifier('most_frequent')]},
-    {'connectivity__kind': kinds}
-]
-
-
-######################################################################
 # We use random splits of the subjects into training/testing sets.
 # StratifiedShuffleSplit allows preserving the proportion of children in the
 # test set.
-from sklearn.model_selection import GridSearchCV, StratifiedShuffleSplit
+from sklearn.svm import LinearSVC
+from sklearn.model_selection import StratifiedShuffleSplit
+from sklearn.metrics import accuracy_score
 import numpy as np
 
+kinds = ['correlation', 'partial correlation', 'tangent']
 _, classes = np.unique(groups, return_inverse=True)
 cv = StratifiedShuffleSplit(n_splits=15, random_state=0, test_size=5)
-gs = GridSearchCV(pipe, param_grid, scoring='accuracy', cv=cv, verbose=1,
-                  refit=False)
-gs.fit(pooled_subjects, classes)
-mean_scores = gs.cv_results_['mean_test_score']
-scores_std = gs.cv_results_['std_test_score']
+pooled_subjects = np.asarray(pooled_subjects)
+
+scores = {}
+for kind in kinds:
+    print(kind)
+    scores[kind] = []
+    for train, test in cv.split(pooled_subjects, classes):
+        # *ConnectivityMeasure* can output the estimated subjects coefficients
+        # as a 1D arrays through the parameter *vectorize*.
+        connectivity = ConnectivityMeasure(kind=kind, vectorize=True)
+        # build vectorized connectomes for subjects in the train set
+        connectomes = connectivity.fit_transform(pooled_subjects[train])
+        # fit the classifier
+        classifier = LinearSVC().fit(connectomes, classes[train])
+        # make predictions for the left-out test subjects
+        predictions = classifier.predict(
+            connectivity.transform(pooled_subjects[test]))
+        # store the accuracy for this cross-validation fold
+        scores[kind].append(accuracy_score(classes[test], predictions))
+
 
 ######################################################################
 # display the results
+
+mean_scores = [np.mean(scores[kind]) for kind in kinds]
+scores_std = [np.std(scores[kind]) for kind in kinds]
+
 plt.figure(figsize=(6, 4))
-positions = np.arange(len(kinds) + 1) * .1 + .1
+positions = np.arange(len(kinds)) * .1 + .1
 plt.barh(positions, mean_scores, align='center', height=.05, xerr=scores_std)
-yticks = ['dummy'] + list(gs.cv_results_['param_connectivity__kind'].data[1:])
-yticks = [t.replace(' ', '\n') for t in yticks]
+yticks = [k.replace(' ', '\n') for k in kinds]
 plt.yticks(positions, yticks)
-plt.xlabel('Classification accuracy')
 plt.gca().grid(True)
 plt.gca().set_axisbelow(True)
+plt.gca().axvline(.8, color='red', linestyle='--')
+plt.xlabel('Classification accuracy\n(red line = chance level)')
 plt.tight_layout()
 
 
