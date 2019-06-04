@@ -61,7 +61,6 @@ ball_sample_points = surface._ball_sample_locations(
 for sample_points in [line_sample_points, ball_sample_points]:
     fig = plt.figure()
     ax = plt.subplot(projection='3d')
-    ax.set_aspect(1)
 
     ax.plot_trisurf(x, y, z, triangles=triangulation.triangles)
 
