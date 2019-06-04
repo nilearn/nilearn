@@ -188,7 +188,6 @@ def plot_surf(surf_mesh, surf_map=None, bg_map=None,
             figure = axes.get_figure()
         axes.set_xlim(*limits)
         axes.set_ylim(*limits)
-    axes.set_aspect(.74)
     axes.view_init(elev=elev, azim=azim)
     axes.set_axis_off()
 
