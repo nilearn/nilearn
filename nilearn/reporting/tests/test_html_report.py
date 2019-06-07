@@ -10,7 +10,7 @@ def _check_html(html_view):
     assert "data:image/png;base64," in str(html_view)
 
 
-def test_3d():
+def test_3d_reports():
     # Dummy 3D data
     data = np.zeros((9, 9, 9))
     data[3:-3, 3:-3, 3:-3] = 10
@@ -22,7 +22,7 @@ def test_3d():
     _check_html(html)
 
 
-def test_4d():
+def test_4d_reports():
     # Dummy mask
     mask = np.zeros((10, 10, 10), dtype=int)
     mask[3:7, 3:7, 3:7] = 1
@@ -45,17 +45,3 @@ def test_4d():
     masker = input_data.NiftiMasker(mask_img=mask_img, standardize=True)
     masker.fit_transform(data_img_4d)
     html = masker.generate_report()
-
-
-def test_empty():
-    # Dummy 3D data
-    data = np.zeros((9, 9, 9))
-    data[3:-3, 3:-3, 3:-3] = 10
-    data_img_3d = Nifti1Image(data, np.eye(4))
-
-    # test when reporting not enabled
-    mask = input_data.NiftiMasker(reports=False)
-    mask.fit(data_img_3d)
-    html = mask.generate_report()
-    _check_html(html)
-    assert 'undraw_blank_canvas.png' in str(html)
