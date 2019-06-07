@@ -84,7 +84,6 @@ def fast_svd(X, n_components, random_state=None):
     return U, S, V
 
 
-
 def mask_and_reduce(masker, imgs,
                     confounds=None,
                     reduction_ratio='auto',
@@ -218,10 +217,10 @@ def _mask_and_reduce_single(masker,
         n_samples = int(ceil(data_n_samples * reduction_ratio))
 
     U, S, V = cache(fast_svd, memory,
-                        memory_level=memory_level,
-                        func_memory_level=3)(this_data.T,
-                                             n_samples,
-                                             random_state=random_state)
+                    memory_level=memory_level,
+                    func_memory_level=3)(this_data.T,
+                                         n_samples,
+                                         random_state=random_state)
     U = U.T.copy()
     U = U * S[:, np.newaxis]
     return U

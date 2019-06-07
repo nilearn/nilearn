@@ -10,6 +10,7 @@ import shutil
 
 import nibabel as nb
 import numpy as np
+from numpy.lib import recfunctions
 from sklearn.datasets.base import Bunch
 
 from .utils import _get_dataset_dir, _fetch_files, _get_dataset_descr
@@ -804,6 +805,79 @@ def fetch_coords_dosenbach_2010(ordered_regions=True):
     params = dict(rois=out_csv[['x', 'y', 'z']],
                   labels=labels,
                   networks=out_csv['network'], description=fdescr)
+
+    return Bunch(**params)
+
+
+def fetch_coords_seitzman_2018(ordered_regions=True):
+    """Load the Seitzman et al. 300 ROIs. These ROIs cover cortical,
+    subcortical and cerebellar regions and are assigned to one of 13
+    networks (Auditory, CinguloOpercular, DefaultMode, DorsalAttention,
+    FrontoParietal, MedialTemporalLobe, ParietoMedial, Reward, Salience,
+    SomatomotorDorsal, SomatomotorLateral, VentralAttention, Visual) and
+    have a regional label (cortexL, cortexR, cerebellum, thalamus, hippocampus,
+    basalGanglia, amygdala, cortexMid).
+
+    .. versionadded:: 0.5.1
+
+    Parameters
+    ----------
+    ordered_regions : bool, optional
+        ROIs from same networks are grouped together and ordered with respect
+        to their locations (anterior to posterior).
+
+    Returns
+    -------
+    data: sklearn.datasets.base.Bunch
+        dictionary-like object, contains:
+        - "rois": Coordinates of 300 ROIs in MNI space
+        - "radius": Radius of each ROI in mm
+        - "networks": Network names
+        - "regions": Region names
+
+    References
+    ----------
+    Seitzman, B. A., Gratton, C., Marek, S., Raut, R. V., Dosenbach, N. U.,
+    Schlaggar, B. L., et al. (2018). A set of functionally-defined brain
+    regions with improved representation of the subcortex and cerebellum.
+    bioRxiv, 450452. http://doi.org/10.1101/450452
+    """
+    dataset_name = 'seitzman_2018'
+    fdescr = _get_dataset_descr(dataset_name)
+    package_directory = os.path.dirname(os.path.abspath(__file__))
+    roi_file = os.path.join(package_directory, "data",
+                            "seitzman_2018_ROIs_300inVol_MNI_allInfo.txt")
+    anatomical_file = os.path.join(package_directory, "data",
+                                   "seitzman_2018_ROIs_anatomicalLabels.txt")
+
+    rois = np.recfromcsv(roi_file, delimiter=" ")
+    rois = recfunctions.rename_fields(rois, {"netname": "network",
+                                             "radiusmm": "radius"})
+    rois.network = rois.network.astype(str)
+
+    # get integer regional labels and convert to text labels with mapping
+    # from header line
+    with open(anatomical_file, 'r') as fi:
+        header = fi.readline()
+    region_mapping = {}
+    for r in header.strip().split(","):
+        i, region = r.split("=")
+        region_mapping[int(i)] = region
+
+    anatomical = np.genfromtxt(anatomical_file, skip_header=1)
+    anatomical_names = np.array([region_mapping[a] for a in anatomical])
+
+    rois = recfunctions.merge_arrays((rois, anatomical_names),
+                                     asrecarray=True, flatten=True)
+    rois.dtype.names = rois.dtype.names[:-1] + ("region",)
+
+    if ordered_regions:
+        rois = np.sort(rois, order=['network', 'y'])
+
+    params = dict(rois=rois[['x', 'y', 'z']],
+                  radius=rois['radius'],
+                  networks=rois['network'].astype(str),
+                  regions=rois['region'], description=fdescr)
 
     return Bunch(**params)
 
