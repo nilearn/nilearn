@@ -12,6 +12,10 @@ import nibabel
 from sklearn.datasets.base import Bunch
 from sklearn.utils import deprecated
 
+import ssl
+import glob,urllib
+import requests
+
 from .utils import (_get_dataset_dir, _fetch_files, _get_dataset_descr,
                     _read_md5_sum_file, _tree, _filter_columns)
 from .._utils import check_niimg
@@ -2127,3 +2131,314 @@ def fetch_development_fmri(n_subjects=None, reduce_confounds=True,
 
     return Bunch(func=funcs, confounds=regressors, phenotypic=participants,
                  description=fdescr)
+  
+  
+def fetch_mpilmbb_data(n_subjects=10, data_dir=None, url=None, space='mni', direction='AP',run='all',
+                       resume=True, anat_only=False, verbose=1):
+
+    """
+    Download and load the MPI-Leipzig_Mind-Brain-Body resting-state dataset.
+
+    Parameters
+    ----------
+    n_subjects: int, string optional
+
+        The number of subjects to load from a maximum of 187 subjects.
+
+        If None is given all subjects are downloaded.
+        
+        Default: 10 
+
+    data_dir: string, optional
+
+        Path of the data directory. Used to force data storage in a specified location. 
+        
+        Default: None
+
+    url: string, optional
+
+        Override download URL. Used for test only (or if you setup a mirror of the data).
+        
+        Default: None
+
+    space: string, optional   
+
+        Data are available in MNI2mm and native space. 
+          
+        Choose from :  'mni','native','all'. if all is given , data from both spaces are downloaded. 
+
+        Default: mni 
+
+    direction: string, optional 
+
+        Data are available in two encoding-directions Anterior-Posterior or 'AP' and Posterior-Anterior or 'PA'. 
+            
+        Choose from : 'AP', 'PA', 'all'. 
+            
+        Default : 'AP'          
+
+    run:int, string, optional 
+
+       Each direction has 2 runs . Options are : 1, 2, 'all'. If 'all' both runs are downloaded. 
+       
+       Default: all
+       
+    anat_only: boolean, optional
+    
+        Option to only download 3D anatomical MP2RAGE images
+        
+        Default: False
+
+    Returns
+    -------
+    data: sklearn.datasets.base.Bunch
+
+        Dictionary-like object, the attributes of interest are :
+
+         1- 'anat': Paths to anatomical MP2RAGE Images
+
+         2- 'mni': Paths to functional Resting-state data in MNI2mm space
+
+         3- 'native': Paths to functional Resting-state data in native space
+
+         4- 'confounds': CSV files containing the nuisance variables
+
+    References
+    ----------
+    - Pre-processes data found at:
+    
+        https://ftp.gwdg.de/pub/misc/MPI-Leipzig_Mind-Brain-Body/derivatives/
+    
+    - Paper in Nature's scientific data journal: 
+    
+    MENDES, Natacha, OLIGSCHLAEGER, Sabine, LAUCKNER, Mark E., et al. " A functional connectome phenotyping dataset 
+    including cognitive state and personality measures " Scientific data, 2019, vol. 6, p. 180307.
+
+    """
+    # Data URL 
+    if url is None:
+        url = 'https://ftp.gwdg.de/pub/misc/MPI-Leipzig_Mind-Brain-Body/derivatives/'        
+        
+    # certificate verification. Without it 
+    # I get this error( certificate verify failed )
+    ssl._create_default_https_context = ssl._create_unverified_context   
+    
+    # Preliminary checks and declarations
+    dataset_name = 'MPI-Leipzig_Mind-Brain-Body'
+    
+    data_dir = _get_dataset_dir(dataset_name, data_dir=data_dir,verbose=1)
+
+    ids=[  'sub-010001', 'sub-010002', 'sub-010004', 'sub-010005','sub-010006', 'sub-010007', 'sub-010008', 'sub-010009',
+           'sub-010011', 'sub-010014', 'sub-010015', 'sub-010016','sub-010017', 'sub-010018', 'sub-010020', 'sub-010021',
+           'sub-010022', 'sub-010023', 'sub-010024', 'sub-010026','sub-010027', 'sub-010029', 'sub-010030', 'sub-010031',
+           'sub-010032', 'sub-010033', 'sub-010034', 'sub-010035','sub-010036', 'sub-010037', 'sub-010038', 'sub-010040',
+           'sub-010041', 'sub-010042', 'sub-010044', 'sub-010045','sub-010046', 'sub-010048', 'sub-010050', 'sub-010051',
+           'sub-010052', 'sub-010054', 'sub-010056', 'sub-010058','sub-010059', 'sub-010060', 'sub-010061', 'sub-010062',
+           'sub-010064', 'sub-010065', 'sub-010067', 'sub-010068','sub-010069', 'sub-010071', 'sub-010072', 'sub-010073',
+           'sub-010074', 'sub-010075', 'sub-010076', 'sub-010077','sub-010078', 'sub-010079', 'sub-010080', 'sub-010081',
+           'sub-010082', 'sub-010083', 'sub-010084', 'sub-010086','sub-010087', 'sub-010088', 'sub-010090', 'sub-010091',
+           'sub-010092', 'sub-010093', 'sub-010094', 'sub-010096','sub-010097', 'sub-010098', 'sub-010099', 'sub-010101',
+           'sub-010102', 'sub-010103', 'sub-010105', 'sub-010106','sub-010107', 'sub-010108', 'sub-010109', 'sub-010111',
+           'sub-010112', 'sub-010113', 'sub-010114', 'sub-010115','sub-010116', 'sub-010117', 'sub-010118', 'sub-010119',
+           'sub-010120', 'sub-010121', 'sub-010122', 'sub-010123','sub-010124', 'sub-010125', 'sub-010126', 'sub-010127',
+           'sub-010128', 'sub-010129', 'sub-010130', 'sub-010131','sub-010132', 'sub-010133', 'sub-010135', 'sub-010136',
+           'sub-010137', 'sub-010138', 'sub-010139', 'sub-010140','sub-010141', 'sub-010142', 'sub-010143', 'sub-010144',
+           'sub-010145', 'sub-010146', 'sub-010147', 'sub-010149','sub-010151', 'sub-010152', 'sub-010154', 'sub-010155',
+           'sub-010157', 'sub-010158', 'sub-010159', 'sub-010161','sub-010162', 'sub-010163', 'sub-010164', 'sub-010165',
+           'sub-010166', 'sub-010167', 'sub-010168', 'sub-010171','sub-010172', 'sub-010173', 'sub-010174', 'sub-010175',
+           'sub-010176', 'sub-010178', 'sub-010179', 'sub-010181','sub-010182', 'sub-010185', 'sub-010186', 'sub-010187',
+           'sub-010188', 'sub-010189', 'sub-010190', 'sub-010191','sub-010192', 'sub-010194', 'sub-010195', 'sub-010196',
+           'sub-010198', 'sub-010200', 'sub-010201', 'sub-010203','sub-010204', 'sub-010205', 'sub-010206', 'sub-010208',
+           'sub-010209', 'sub-010210', 'sub-010211', 'sub-010212','sub-010213', 'sub-010215', 'sub-010216', 'sub-010217',
+           'sub-010218', 'sub-010220', 'sub-010221', 'sub-010224','sub-010225', 'sub-010226', 'sub-010227', 'sub-010228',
+           'sub-010229', 'sub-010230', 'sub-010231', 'sub-010232','sub-010233' ]
+
+    max_subjects = len(ids)
+
+    if n_subjects is None:
+        n_subjects = max_subjects
+
+    if n_subjects > max_subjects:
+        warnings.warn('Warning: there are only %d subjects' % max_subjects)
+        n_subjects = max_subjects
+
+    ids = ids[:n_subjects]
+
+    opts = dict(uncompress=True)
+    
+    # Dataset description Dictionary ( No .rst file was found on the url)
+    fdescr={
+    "Name": "MPI-Leipzig Mind-Brain-Body",
+    "BIDSVersion":  "1.0.1",
+    "License": "CC0",
+    "Authors": ["Anahit Babayan", "Blazej Baczkowski", "Roberto	Cozatl", 
+    "Maria Dreyer", "Haakon Engen", "Miray Erbey",
+    "Marcel Falkiewicz", "Nicolas Farrugia", "Michael Gaebler", 
+    "Johannes Golchert", "Laura Golz", "Krzysztof Gorgolewski", 
+    "Philipp Haueis", "Julia Huntenburg", "Rebecca Jost",
+    "Yelyzaveta Kramarenko", "Sarah Krause", "Deniz Kumral",
+    "Mark Lauckner", "Daniel S. Margulies", "Natacha Mendes",
+    "Katharina Ohrnberger", "Sabine	Oligschläger", "Anastasia Osoianu",
+    "Jared Pool", "Janis Reichelt", "Andrea Reiter", "Josefin Röbbig", 
+    "Lina Schaare", "Jonathan Smallwood", "Arno Villringer"],
+    "HowToAcknowledge": "",
+    "Funding": "This work was partially supported by the Volkswagen Foundation (AZ.: 89 440)",
+    "ReferencesAndLinks": [""],
+    "DatasetDOI": ""
+          }
+
+    # Download Demographics CSV file
+    demog_url='https://ftp.gwdg.de/pub/misc/MPI-Leipzig_Mind-Brain-Body/rawdata/'
+    
+    demographics=_fetch_files(data_dir,[('participants.tsv',
+                                         demog_url+'participants.tsv',
+                                         {'move':'participants.tsv'})])
+
+    # Download dataset files and Quality Control pdfs for each subject
+    functionals=[]
+    confounds=[]
+    anatomical=[]
+    QC=[]
+
+    # Download Options
+    if space=='all':
+        spaces=['MNI2mm','native']
+
+    elif space=='mni':
+        spaces=['MNI2mm']
+
+    elif space=='native':
+        spaces=['native']
+
+    else:
+        raise ValueError('You provided invalid space. Please choose frol: "mni","native",or "all"')
+
+    if direction=='all':
+        directions=['AP','PA']
+
+    elif direction=='AP':
+        directions=['AP']
+
+    elif direction=='PA':
+        directions=['PA']
+
+    else: 
+        raise ValueError('You provided an invalid encoding direction. Please choose from :"AP","PA",or "all"')
+
+    if run=='all' :
+        runs=[1,2]
+
+    elif run==1:
+        runs=[1]
+        
+    elif run==2:
+        runs=[2]
+
+    else:
+        raise ValueError('You provided an invalid number of runs. Please choose from: 1, 2, or all ')
+
+    for i in range(len(ids)):
+        # Archives of data found as found on the ftp server
+        anat_archives=[url+'%s/anat/%s_ses-0%d_acq-mp2rage_brain.nii.gz'
+                       %(ids[i],ids[i],s) for s in range(1,3)]
+
+        func_archives=[url+'%s/func/%s_ses-02_task-rest_acq-%s_run-0%s_%s.nii.gz'
+                  % (ids[i],ids[i], d ,r,s) for s in spaces for d in directions for r in runs]
+
+        confds_archives=[url+'%s/func/%s_ses-02_task-rest_acq-%s_run-0%s_confounds.txt'
+                  % (ids[i],ids[i], d ,r) for d in directions for r in runs]
+
+        qc_archives=[url+'%s/func/%s_ses-02_task-rest_acq-%s_run-0%s_QC.pdf'
+                  % (ids[i],ids[i], d ,r) for d in directions for r in runs]
+
+        # Files to fetch: Anatomical MP2RAGE + Functional files ( 4 runs ) + confound files + Quality Control pdfs
+        anat_files=['%s/anat/%s_ses-0%d_acq-mp2rage_brain.nii.gz'
+                    %(ids[i],ids[i],s) for s in range(1,3)]
+
+        func_files=['%s/func/%s_ses-02_task-rest_acq-%s_run-0%s_%s.nii.gz'
+                  % (ids[i],ids[i], d ,r,s) for s in spaces for d in directions for r in runs  ] 
+
+        confds_files=['%s/func/%s_ses-02_task-rest_acq-%s_run-0%s_confounds.txt'
+                % (ids[i],ids[i], d ,r) for d in directions for r in runs] 
+
+        qc_files= ['%s/func/%s_ses-02_task-rest_acq-%s_run-0%s_QC.pdf'
+                % (ids[i],ids[i], d ,r) for d in directions for r in runs]
+
+        # Fetch Options
+        anat_opts=[] # Anatomical data options
+
+        for n in range(len(anat_files)):
+            anat_opts.append({'move':anat_files[n]})
+            
+        func_opts=[] # Functional data options
+        for n in range(len(func_files)):
+            func_opts.append({'move':func_files[n]})
+            
+        confds_opts=[]  # Confounds file options
+        for n in range(len(confds_files)):
+            confds_opts.append({'move':confds_files[n]})
+
+        qc_opts=[] # Quality Control files options
+        for n in range(len(qc_files)):
+            qc_opts.append({'move':qc_files[n]})
+
+        # If you only want to download 3D MP2RAGE images 
+        if anat_only==True:
+            # Subjects have anatomical images acquired during different sessions (ses-01 or ses-02) 
+            # We check if any of the files already exist using if else statement. this helps in overcoming potential 
+            #naming issue
+            r = requests.head(anat_archives[1])    
+            if  r.status_code == requests.codes.ok:
+                anat=_fetch_files(data_dir,[(anat_files[1],anat_archives[1],anat_opts[1])],
+                                  resume=resume, verbose=verbose)
+            else:
+                anat=_fetch_files(data_dir,[(anat_files[0],anat_archives[0],anat_opts[0])],
+                                  resume=resume, verbose=verbose)
+                
+            anatomical.append(anat)
+            mni=[]
+            native=[]
+            confounds=[]
+            
+        else:
+            # Subjects have anatomical images acquired during different sessions (ses-01 or ses-02) 
+            # We check if any of the files already exist using if else statement. this helps in overcoming potential 
+            # naming issue
+            r = requests.head(anat_archives[1])    
+            if  r.status_code == requests.codes.ok:
+                anat=_fetch_files(data_dir,[(anat_files[1],anat_archives[1],anat_opts[1])],
+                                  resume=resume, verbose=verbose)
+            else:
+                anat=_fetch_files(data_dir,[(anat_files[0],anat_archives[0],anat_opts[0])],
+                                  resume=resume, verbose=verbose)
+                
+            # fetching functional data in native abd/or standard MNI2mm spaces, confounds csv files
+            # and Quality Control pdf files
+            func =_fetch_files(data_dir,
+                              zip(func_files,func_archives,func_opts),
+                                 resume=resume, verbose=verbose)
+            confds=_fetch_files(data_dir,
+                              zip(confds_files,confds_archives,confds_opts),
+                                resume=resume, verbose=verbose)
+            qc= _fetch_files(data_dir,
+                             zip(qc_files,qc_archives,qc_opts),
+                                resume=resume, verbose=verbose)
+            anatomical.append(anat)
+            functionals.append(func)
+            confounds.append(confds)
+        
+            if space=='native':   
+                native=functionals[0]
+                mni=[]
+
+            elif space=='mni': 
+                native=[] 
+                mni=functionals[0]
+
+            else:
+                half=int(len(func_files)/2)
+                native=functionals[0][half:]
+                mni=functionals[0][0:half]
+
+    return Bunch(description=fdescr,anat=anatomical,mni=mni,native=native,
+                 confounds=confounds,demographics=demographics)
