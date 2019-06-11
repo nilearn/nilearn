@@ -198,7 +198,7 @@ brain. It is thus convenient to apply a brain mask in order to convert the
     :width: 100%
 
 Note that in an analysis pipeline, this operation is best done using the
-:ref:`masker objects <masker_objects>`. For completeness, we give code to
+:ref:`masker objects <masker_objects>`. For completeness, we give the code to
 do it manually below:
 
 .. literalinclude:: ../../examples/01_plotting/plot_visualization.py
