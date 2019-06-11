@@ -199,11 +199,12 @@ plt.show()
 # (Discrete Cosine transform) with a cut-off frequency. To remove
 # spurious low-frequency effects related to heart rate, breathing and
 # slow drifts in the scanner signal, the standard cutoff frequency
-# is 1/128 Hz. Depending on the design of the experiment, the user may
-# want to change this value. The cutoff period (1/high_pass) should be
-# set as the longest period between two trials of the same condition
-# multiplied by 2. For instance, if the longest period is 32s,
-# the high_pass frequency shall be 1/64 Hz ~ 0.016 Hz.
+# is 1/128 Hz ~ 0.01Hz. This is the default value set in the FirstLevelModel
+# function. Depending on the design of the experiment, the user may want to
+# change this value. The cutoff period (1/high_pass) should be set as the
+# longest period between two trials of the same condition multiplied by 2.
+# For instance, if the longest period is 32s, the high_pass frequency shall be
+# 1/64 Hz ~ 0.016 Hz.
 
 first_level_model = FirstLevelModel(t_r, high_pass=.016)
 first_level_model = first_level_model.fit(fmri_img, events=events)

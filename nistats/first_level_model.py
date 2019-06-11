@@ -185,7 +185,7 @@ class FirstLevelModel(BaseEstimator, TransformerMixin, CacheMixin):
 
     high_pass : float, optional
         This parameter specifies the cut frequency of the high-pass filter in
-        H for the design matrices. Used only if drift_model is 'cosine'.
+        Hz for the design matrices. Used only if drift_model is 'cosine'.
 
     drift_order : int, optional
         This parameter specifices the order of the drift model (in case it is
