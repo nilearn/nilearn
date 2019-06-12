@@ -57,7 +57,7 @@ events = pd.read_table(events_file)
 # software.
 
 import nilearn
-fsaverage = nilearn.datasets.fetch_surf_fsaverage5()
+fsaverage = nilearn.datasets.fetch_surf_fsaverage()
 
 #########################################################################
 # The projection function simply takes the fMRI data and the mesh.
