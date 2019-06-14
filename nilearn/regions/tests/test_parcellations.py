@@ -37,7 +37,7 @@ def test_parcellations_fit_on_single_nifti_image():
     data[4, 9, 3] = 2
     fmri_img = nibabel.Nifti1Image(data, affine=np.eye(4))
 
-    methods = ['kmeans', 'ward', 'complete', 'average']
+    methods = ['kmeans', 'ward', 'complete', 'average', 'rena']
     n_parcels = [5, 10, 15]
     for n_parcel, method in zip(n_parcels, methods):
         parcellator = Parcellations(method=method, n_parcels=n_parcel)
@@ -47,7 +47,7 @@ def test_parcellations_fit_on_single_nifti_image():
         # Test object returns attribute masker_
         assert_true(parcellator.masker_ is not None)
         assert_true(parcellator.mask_img_ is not None)
-        if method != 'kmeans':
+        if method not in ['kmeans', 'rena']:
             # Test that object returns attribute connectivity_
             # only for AgglomerativeClustering methods
             assert_true(parcellator.connectivity_ is not None)
@@ -76,6 +76,10 @@ def test_parcellations_fit_on_multi_nifti_images():
     parcellator.fit(fmri_imgs)
     assert_true(parcellator.labels_img_ is not None)
 
+    parcellator = Parcellations(method='rena', n_parcels=5)
+    parcellator.fit(fmri_imgs)
+    assert_true(parcellator.labels_img_ is not None)
+
     # Smoke test with explicit mask image
     mask_img = np.ones((10, 11, 12))
     mask_img = nibabel.Nifti1Image(mask_img, np.eye(4))
@@ -85,6 +89,10 @@ def test_parcellations_fit_on_multi_nifti_images():
     parcellator.fit(fmri_imgs)
 
     parcellator = Parcellations(method='ward', n_parcels=5,
+                                mask=mask_img)
+    parcellator.fit(fmri_imgs)
+
+    parcellator = Parcellations(method='rena', n_parcels=5,
                                 mask=mask_img)
     parcellator.fit(fmri_imgs)
 
@@ -102,7 +110,7 @@ def test_parcellations_transform_single_nifti_image():
 
     fmri_img = nibabel.Nifti1Image(data, affine=np.eye(4))
 
-    for method in ['kmeans', 'ward', 'complete', 'average']:
+    for method in ['kmeans', 'ward', 'complete', 'average', 'rena']:
         parcellator = Parcellations(method=method, n_parcels=parcels)
         parcellator.fit(fmri_img)
         # transform to signals
@@ -125,7 +133,7 @@ def test_parcellations_transform_multi_nifti_images():
     fmri_img = nibabel.Nifti1Image(data, affine=np.eye(4))
     fmri_imgs = [fmri_img, fmri_img, fmri_img]
 
-    for method in ['kmeans', 'ward', 'complete', 'average']:
+    for method in ['kmeans', 'ward', 'complete', 'average', 'rena']:
         parcellator = Parcellations(method=method, n_parcels=parcels)
         parcellator.fit(fmri_imgs)
         # transform multi images to signals. In return, we have length
@@ -184,7 +192,7 @@ def test_parcellations_transform_with_multi_confounds_multi_images():
     confounds = rng.randn(*(10, 3))
     confounds_list = (confounds, confounds, confounds)
 
-    for method in ['kmeans', 'ward', 'complete', 'average']:
+    for method in ['kmeans', 'ward', 'complete', 'average', 'rena']:
         parcellator = Parcellations(method=method, n_parcels=5)
         parcellator.fit(fmri_imgs)
 
@@ -207,11 +215,11 @@ def test_fit_transform():
     confounds = rng.randn(*(10, 3))
     confounds_list = [confounds, confounds, confounds]
 
-    for method in ['kmeans', 'ward', 'complete', 'average']:
+    for method in ['kmeans', 'ward', 'complete', 'average', 'rena']:
         parcellator = Parcellations(method=method, n_parcels=5)
         signals = parcellator.fit_transform(fmri_imgs)
         assert_true(parcellator.labels_img_ is not None)
-        if method != 'kmeans':
+        if method not in ['kmeans', 'rena']:
             assert_true(parcellator.connectivity_ is not None)
         assert_true(parcellator.masker_ is not None)
         # fit_transform with confounds
@@ -227,7 +235,7 @@ def test_inverse_transform_single_nifti_image():
     data[9, 10, 11] = 3
 
     fmri_img = nibabel.Nifti1Image(data, affine=np.eye(4))
-    methods = ['kmeans', 'ward', 'complete', 'average']
+    methods = ['kmeans', 'ward', 'complete', 'average', 'rena']
 
     for method in methods:
         parcellate = Parcellations(method=method, n_parcels=5)

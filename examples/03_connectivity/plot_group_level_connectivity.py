@@ -183,12 +183,12 @@ print('{0} correlation biomarkers for each subject.'.format(
 
 ###############################################################################
 # We stratify the dataset into homogeneous classes according to phenotypic
-# and scan site. We then split the subjects into 3 folds with the same
-# proportion of each class as in the whole cohort
-from sklearn.model_selection import StratifiedKFold
+# and scan site. We then split the subjects into 30 folds with the same
+# proportion of each class as in the whole cohort for cross-validation
+from sklearn.model_selection import StratifiedShuffleSplit
 
 _, classes = np.unique(groups, return_inverse=True)
-cv = StratifiedKFold(n_splits=3)
+cv = StratifiedShuffleSplit(n_splits=30)
 ###############################################################################
 # and use the connectivity coefficients to classify children vs adults.
 

@@ -165,7 +165,7 @@ class HTMLDocument(object):
 
         """
         if file_name is None:
-            fd, file_name = tempfile.mkstemp('.html', 'nilearn_surface_plot_')
+            fd, file_name = tempfile.mkstemp('.html', 'nilearn_plot_')
             os.close(fd)
             named_file = False
         else:
