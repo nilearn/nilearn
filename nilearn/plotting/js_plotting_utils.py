@@ -116,10 +116,11 @@ class HTMLDocument(object):
             return
         if len(HTMLDocument._all_open_html_repr
                ) > MAX_IMG_VIEWS_BEFORE_WARNING - 1:
-            warnings.warn('It seems you have created more than 10 '
+            warnings.warn('It seems you have created more than {} '
                           'nilearn views. As each view uses dozens '
                           'of megabytes of RAM, you might want to '
-                          'delete some of them.')
+                          'delete some of them.'.format(
+                              MAX_IMG_VIEWS_BEFORE_WARNING))
 
     def resize(self, width, height):
         """Resize the plot displayed in a Jupyter notebook."""
