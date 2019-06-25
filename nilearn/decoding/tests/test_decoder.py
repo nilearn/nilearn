@@ -11,17 +11,18 @@ Test the decoder module
 import warnings
 
 import numpy as np
-from nilearn.decoding.decoder import (BaseDecoder, Decoder, DecoderRegressor,
+from nilearn.decoding.decoder import (_BaseDecoder, Decoder, DecoderRegressor,
                                       _check_param_grid, _parallel_fit)
 from nilearn.decoding.tests.test_same_api import to_niimgs
 from nilearn.input_data import NiftiMasker
 from nose.tools import assert_equal, assert_raises, assert_true, assert_warns
 from sklearn.datasets import load_iris, make_classification, make_regression
 from sklearn.ensemble import RandomForestClassifier
-from sklearn.linear_model import LogisticRegression, Ridge, RidgeClassifier
+from sklearn.linear_model import LogisticRegression, RidgeCV, RidgeClassifierCV
 from sklearn.metrics import accuracy_score, r2_score
 from sklearn.model_selection import KFold, LeaveOneGroupOut
 from sklearn.svm import SVR, LinearSVC
+from sklearn.preprocessing import StandardScaler
 
 try:
     from sklearn.metrics import check_scoring
@@ -31,21 +32,21 @@ except ImportError:
 
 
 # Regression
-ridge = Ridge()
+ridge = RidgeCV()
 svr = SVR(kernel='linear')
 # Classification
 svc = LinearSVC()
 logistic_l1 = LogisticRegression(penalty='l1')
 logistic_l2 = LogisticRegression(penalty='l2')
-ridge_classifier = RidgeClassifier()
+ridge_classifier = RidgeClassifierCV()
 random_forest = RandomForestClassifier()
 
-regressors = {'ridge': (ridge, 'alpha'),
+regressors = {'ridge': (ridge, []),
               'svr': (svr, 'C')}
 classifiers = {'svc': (svc, 'C'),
                'logistic_l1': (logistic_l1, 'C'),
                'logistic_l2': (logistic_l2, 'C'),
-               'ridge_classifier': (ridge_classifier, 'alpha')}
+               'ridge_classifier': (ridge_classifier, [])}
 # Create a test dataset
 rand = np.random.RandomState(0)
 X = rand.rand(100, 10)
@@ -63,11 +64,11 @@ def test_check_param_grid():
     # Regression
     for _, (regressor, param) in regressors.items():
         param_grid = _check_param_grid(regressor, X, y_regression, None)
-        assert_equal(list(param_grid.keys())[0], param)
+        assert_equal(list(param_grid.keys()), list(param))
     # Classification
     for _, (classifier, param) in classifiers.items():
         param_grid = _check_param_grid(classifier, X, y_classif, None)
-        assert_equal(list(param_grid.keys())[0], param)
+        assert_equal(list(param_grid.keys()), list(param))
 
     # Using a non-linear estimator to raise the error
     for estimator in ['log_l1', random_forest]:
@@ -94,50 +95,53 @@ def test_BaseDecoder_check_estimator():
     # if it is a string, and if not, then raise the error
     supported_estimators = ['svc', 'svc_l2', 'svc_l1',
                             'logistic', 'logistic_l1', 'logistic_l2',
-                            'ridge', 'ridge_classifier', 'ridge_regressor',
-                            'svr']
+                            'ridge', 'ridge_classifier',
+                            'ridge_regressor', 'svr']
     unsupported_estimators = ['ridgo', 'svb']
     expected_warnings = ['Use a custom estimator at your own risk '
                          'of the process not working as intended.']
 
     with warnings.catch_warnings(record=True) as raised_warnings:
         for estimator in supported_estimators:
-            BaseDecoder(estimator=estimator)._check_estimator()
+            _BaseDecoder(estimator=estimator)._check_estimator()
     warning_messages = [str(warning.message) for warning in raised_warnings]
     for expected_warning_ in expected_warnings:
         assert expected_warning_ not in warning_messages
     
     for estimator in unsupported_estimators:
         assert_raises(ValueError, 
-                      BaseDecoder(estimator=estimator)._check_estimator)
+                      _BaseDecoder(estimator=estimator)._check_estimator)
 
     custom_estimator = random_forest
     assert_warns(UserWarning,
-                 BaseDecoder(estimator=custom_estimator)._check_estimator)
+                 _BaseDecoder(estimator=custom_estimator)._check_estimator)
 
 
 def test_parallel_fit():
     # The goal of this test is to check that results of _parallel_fit is the
     # same for differnet controlled param_grid
+    X, y = make_regression(n_samples=100, n_features=20,
+                           n_informative=5, noise=0.2, random_state=42)
     train = range(80)
-    test = range(80, len(y_regression))
+    test = range(80, len(y_classif))
     outputs = []
-    estimator = ridge
+    estimator = svr
+    # two param lists for svr
+    list_params = [[1e-1, 1e0, 1e1], [1e-1, 1e0, 5e0, 1e1]]
     # define a scorer
     scorer = check_scoring(estimator, 'r2')
-    # check two params lists for ridge
-    for params in [[1e-1, 1, 10], [10, 1e-1, 0, 1]]:
+
+    for params in list_params:
         param_grid = {}
-        param_grid['alpha'] = np.array(params)
+        param_grid['C'] = np.array(params)
         outputs.append(list(_parallel_fit(estimator=estimator, X=X,
-                                          y=y_regression,
+                                          y=y,
                                           train=train, test=test,
                                           param_grid=param_grid,
                                           is_classif=False, scorer=scorer,
                                           mask_img=None, class_index=1,
                                           screening_percentile=None)))
-    # check that every element of the output tuple is the same for both tries.
-    # Its tiresome because output is complicated.
+    # check that every element of the output tuple is the same for both tries
     for a, b in zip(outputs[0], outputs[1]):
         if isinstance(a, np.ndarray):
             np.testing.assert_array_almost_equal(a, b)
@@ -230,10 +234,13 @@ def test_decoder_classification_string_label():
 def test_decoder_regression():
     X, y = make_regression(n_samples=200, n_features=125,
                            n_informative=5, noise=0.2, random_state=42)
+    X = StandardScaler().fit_transform(X)
+    y = (y - y.mean()) / y.std()
     X, mask = to_niimgs(X, [5, 5, 5])
-    for screening_percentile in [100, 20]:
-        model = DecoderRegressor(estimator='ridge', mask=mask,
-                                 screening_percentile=screening_percentile)
-        model.fit(X, y)
-        y_pred = model.predict(X)
-        assert_true(r2_score(y, y_pred) > 0.95)
+    for regressor in regressors:
+        for screening_percentile in [100, 20]:
+            model = DecoderRegressor(estimator=regressor, mask=mask,
+                                     screening_percentile=screening_percentile)
+            model.fit(X, y)
+            y_pred = model.predict(X)
+            assert_true(r2_score(y, y_pred) > 0.95)
