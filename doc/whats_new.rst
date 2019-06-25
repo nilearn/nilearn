@@ -56,6 +56,8 @@ Fixes
 - When :func:`nilearn.plotting.plot_surf_stat_map` is used with a thresholded map
   but without a background map, the surface mesh is displayed in
   half-transparent grey to maintain a 3D perception.
+- :func:`nilearn.plotting.view_surf` now accepts surface data provided as a file
+  path.
 
 0.5.2
 =====
