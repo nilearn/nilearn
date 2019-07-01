@@ -35,11 +35,11 @@ inplace:
 
 test-code:
     pytest -s -vv --duration=0
-	# $(TEST_RUNNER) -s $(TEST_RUNNER_OPTIONS)
+#	$(TEST_RUNNER) -s $(TEST_RUNNER_OPTIONS)
 test-doc:
     pytest -s -vv --duration=0
-	# $(TEST_RUNNER) -s --with-doctest --doctest-tests --doctest-extension=rst \
-	# --doctest-extension=inc --doctest-fixtures=_fixture `find doc/ -name '*.rst'`
+#	$(TEST_RUNNER) -s --with-doctest --doctest-tests --doctest-extension=rst \
+#	--doctest-extension=inc --doctest-fixtures=_fixture `find doc/ -name '*.rst'`
 
 test-coverage:
 	rm -rf coverage .coverage
