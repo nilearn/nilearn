@@ -31,9 +31,9 @@ inplace:
 	$(PYTHON) setup.py build_ext -i
 
 test-code:
-    pytest -s -vv --duration=0
+	pytest -s -vv --duration=0
 test-doc:
-    pytest -s -vv --duration=0
+	pytest -s -vv --duration=0
 
 test-coverage:
 	rm -rf coverage .coverage
