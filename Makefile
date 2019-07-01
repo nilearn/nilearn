@@ -34,10 +34,14 @@ inplace:
 	$(PYTHON) setup.py build_ext -i
 
 test-code:
-	$(TEST_RUNNER) nilearn $(TEST_RUNNER_OPTIONS)
+    pwd
+    pytest -s -vv --duration=0
+	# $(TEST_RUNNER) -s $(TEST_RUNNER_OPTIONS)
 test-doc:
-	$(TEST_RUNNER) -s --with-doctest --doctest-tests --doctest-extension=rst \
-	--doctest-extension=inc --doctest-fixtures=_fixture `find doc/ -name '*.rst'`
+    pwd
+    pytest -s -vv --duration=0
+	# $(TEST_RUNNER) -s --with-doctest --doctest-tests --doctest-extension=rst \
+	# --doctest-extension=inc --doctest-fixtures=_fixture `find doc/ -name '*.rst'`
 
 test-coverage:
 	rm -rf coverage .coverage
