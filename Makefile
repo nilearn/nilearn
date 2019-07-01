@@ -4,9 +4,11 @@
 
 PYTHON ?= python
 CYTHON ?= cython
-NOSETESTS ?= nosetests
-NOSETESTS_OPTIONS := $(shell pip list | grep nose-timer > /dev/null && \
-                       echo '--with-timer --timer-top-n 50')
+TEST_RUNNER ?= pytest
+TEST_RUNNER_OPTIONS := --duration=0 -vv
+# TEST_RUNNER ?= nosetests
+# TEST_RUNNER_OPTIONS := $(shell pip list | grep nose-timer > /dev/null && \
+#                       echo '--with-timer --timer-top-n 50')
 CTAGS ?= ctags
 
 all: clean test doc-noplot
@@ -32,14 +34,14 @@ inplace:
 	$(PYTHON) setup.py build_ext -i
 
 test-code:
-	$(NOSETESTS) -s nilearn $(NOSETESTS_OPTIONS)
+	$(TEST_RUNNER) nilearn TEST_RUNNER_OPTIONS
 test-doc:
-	$(NOSETESTS) -s --with-doctest --doctest-tests --doctest-extension=rst \
+	$(TEST_RUNNER) -s --with-doctest --doctest-tests --doctest-extension=rst \
 	--doctest-extension=inc --doctest-fixtures=_fixture `find doc/ -name '*.rst'`
 
 test-coverage:
 	rm -rf coverage .coverage
-	$(NOSETESTS) -s --with-coverage --cover-html --cover-html-dir=coverage \
+	$(TEST_RUNNER) -s --with-coverage --cover-html --cover-html-dir=coverage \
 	--cover-package=nilearn nilearn
 
 test: test-code test-doc
