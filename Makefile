@@ -34,11 +34,9 @@ inplace:
 	$(PYTHON) setup.py build_ext -i
 
 test-code:
-    pwd
     pytest -s -vv --duration=0
 	# $(TEST_RUNNER) -s $(TEST_RUNNER_OPTIONS)
 test-doc:
-    pwd
     pytest -s -vv --duration=0
 	# $(TEST_RUNNER) -s --with-doctest --doctest-tests --doctest-extension=rst \
 	# --doctest-extension=inc --doctest-fixtures=_fixture `find doc/ -name '*.rst'`
