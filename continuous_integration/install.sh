@@ -22,7 +22,7 @@ create_new_venv() {
     deactivate
     virtualenv --system-site-packages testvenv
     source testvenv/bin/activate
-    pip install nose
+    pip install nose pytest
 }
 
 print_conda_requirements() {
