@@ -3,6 +3,15 @@
 
 NEW
 ---
+
+.. warning::
+
+ | **Python2 and 3.4 are no longer supported. We recommend upgrading to Python 3.6 minimum.**
+ |
+ | **Minimum supported versions of packages have been bumped up.**
+ | - scikit-learn -- v0.19
+ | - scipy -- v0.19
+
 - Parcellation method ReNA: Fast agglomerative clustering based on recursive
   nearest neighbor grouping.
   Yields very fast & accurate models, without creation of giant
