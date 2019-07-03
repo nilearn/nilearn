@@ -30,22 +30,22 @@ _NILEARN_INSTALL_MSG = 'See %s for installation information.' % (
 #   in some meaningful order (more => less 'core').
 REQUIRED_MODULE_METADATA = (
     ('numpy', {
-        'min_version': '1.11',
+        'min_version': '1.12',
         'required_at_installation': True,
         'install_info': _NILEARN_INSTALL_MSG}),
     ('scipy', {
-        'min_version': '0.17',
+        'min_version': '0.19',
         'required_at_installation': True,
         'install_info': _NILEARN_INSTALL_MSG}),
     ('sklearn', {
-        'min_version': '0.18',
+        'min_version': '0.19',
         'required_at_installation': True,
         'install_info': _NILEARN_INSTALL_MSG}),
     ('nibabel', {
         'min_version': '2.0.2',
         'required_at_installation': False}))
 
-OPTIONAL_MATPLOTLIB_MIN_VERSION = '1.5.1'
+OPTIONAL_MATPLOTLIB_MIN_VERSION = '2.0'
 
 
 def _import_module_with_version_check(
