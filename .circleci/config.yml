@@ -66,6 +66,7 @@ jobs:
       - run:
           name: Install packages in conda env
           command: |
+            conda install conda=4.6 --yes
             conda install -n testenv python=3.6 numpy scipy scikit-learn matplotlib pandas \
             lxml mkl sphinx numpydoc pillow pandas -yq
             conda install -n testenv nibabel sphinx-gallery junit-xml -c conda-forge -yq
@@ -127,6 +128,7 @@ jobs:
       - run:
           name: Install packages in conda env
           command: |
+            conda install conda=4.6 --yes
             conda create -n testenv python=3.6 numpy scipy scikit-learn matplotlib pandas \
             lxml mkl sphinx numpydoc pillow pandas -yq
             conda install -n testenv nibabel sphinx-gallery junit-xml -c conda-forge -yq
