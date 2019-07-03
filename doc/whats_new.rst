@@ -9,7 +9,6 @@ NEW
  | **Python2 and 3.4 are no longer supported. We recommend upgrading to Python 3.6 minimum.**
  |
  | **Minimum supported versions of packages have been bumped up.**
- | - Numpy -- v1.12
  | - Matplotlib -- v2.0
  | - Scikit-learn -- v0.19
  | - Scipy -- v0.19
