@@ -125,7 +125,8 @@ if not os.path.exists(outdir):
     os.mkdir(outdir)
 
 from os.path import join
-plot_design_matrix(design_matrix, output_file=join(outdir, 'design_matrix.png'))
+plot_design_matrix(
+    design_matrix, output_file=join(outdir, 'design_matrix.png'))
 
 ###############################################################################
 # The first column contains the expected response profile of regions which are
@@ -204,13 +205,13 @@ plt.show()
 # Statistical significance testing. One should worry about the
 # statistical validity of the procedure: here we used an arbitrary
 # threshold of 3.0 but the threshold should provide some guarantees on
-# the risk of false detections (aka type-1 errors in statistics). One
-# first suggestion is to control the false positive rate (fpr) at a
-# certain level, e.g. 0.001: this means that there is.1% chance of
-# declaring active an inactive voxel.
+# the risk of false detections (aka type-1 errors in statistics).
+# One suggestion is to control the false positive rate (fpr, denoted by
+# alpha) at a certain level, e.g. 0.001: this means that there is 0.1% chance
+# of declaring an inactive voxel, active.
 
 from nistats.thresholding import map_threshold
-_, threshold = map_threshold(z_map, level=.001, height_control='fpr')
+_, threshold = map_threshold(z_map, alpha=.001, height_control='fpr')
 print('Uncorrected p<0.001 threshold: %.3f' % threshold)
 plot_stat_map(z_map, bg_img=mean_img, threshold=threshold,
               display_mode='z', cut_coords=3, black_bg=True,
@@ -224,7 +225,7 @@ plt.show()
 # i.e. the probability of making only one false detection, say at
 # 5%. For that we use the so-called Bonferroni correction
 
-_, threshold = map_threshold(z_map, level=.05, height_control='bonferroni')
+_, threshold = map_threshold(z_map, alpha=.05, height_control='bonferroni')
 print('Bonferroni-corrected, p<0.05 threshold: %.3f' % threshold)
 plot_stat_map(z_map, bg_img=mean_img, threshold=threshold,
               display_mode='z', cut_coords=3, black_bg=True,
@@ -237,7 +238,7 @@ plt.show()
 # false discoveries among detections. This is called the false
 # discovery rate
 
-_, threshold = map_threshold(z_map, level=.05, height_control='fdr')
+_, threshold = map_threshold(z_map, alpha=.05, height_control='fdr')
 print('False Discovery rate = 0.05 threshold: %.3f' % threshold)
 plot_stat_map(z_map, bg_img=mean_img, threshold=threshold,
               display_mode='z', cut_coords=3, black_bg=True,
@@ -252,7 +253,7 @@ plt.show()
 # will be discarded.
 
 clean_map, threshold = map_threshold(
-    z_map, level=.05, height_control='fdr', cluster_threshold=10)
+    z_map, alpha=.05, height_control='fdr', cluster_threshold=10)
 plot_stat_map(clean_map, bg_img=mean_img, threshold=threshold,
               display_mode='z', cut_coords=3, black_bg=True,
               title='Active minus Rest (fdr=0.05), clusters > 10 voxels')
@@ -306,7 +307,7 @@ plt.show()
 # makes it easier to represent it.
 
 clean_map, threshold = map_threshold(
-    z_map, level=.05, height_control='fdr', cluster_threshold=10)
+    z_map, alpha=.05, height_control='fdr', cluster_threshold=10)
 plot_stat_map(clean_map, bg_img=mean_img, threshold=threshold,
               display_mode='z', cut_coords=3, black_bg=True,
               title='Effects of interest (fdr=0.05), clusters > 10 voxels')

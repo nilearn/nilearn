@@ -66,7 +66,7 @@ create_new_conda_env() {
     chmod +x miniconda.sh && ./miniconda.sh -b
     export PATH=/home/travis/miniconda3/bin:$PATH
     echo $PATH
-    conda update --quiet --yes conda
+    conda install conda=4.6 --yes
 
     # Configure the conda environment and put it in the path using the
     # provided versions
@@ -105,14 +105,9 @@ elif [[ "$DISTRIB" == "conda" ]]; then
     # than the latest available one.
     pip install pip --upgrade
     if [ -n "$NIBABEL_VERSION" ]; then
-        pip install nibabel=="$NIBABEL_VERSION"
+        pip install --prefer-binary nibabel=="$NIBABEL_VERSION"
     fi
-    # Install the latest available version of nilearn
-    pip install nilearn
-    # Install the latest available version of patsy
-    pip install patsy
-    # Install the latest available version of boto3
-    pip install boto3
+    pip install boto3 patsy nilearn
 
 
 else

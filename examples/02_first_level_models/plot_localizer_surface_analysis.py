@@ -43,7 +43,7 @@ fmri_img = data.epi_img
 
 #########################################################################
 # Second the experimental paradigm.
-events_file = data['events']
+events_file = data.events
 import pandas as pd
 events = pd.read_table(events_file)
 
@@ -57,7 +57,7 @@ events = pd.read_table(events_file)
 # software.
 
 import nilearn
-fsaverage = nilearn.datasets.fetch_surf_fsaverage5()
+fsaverage = nilearn.datasets.fetch_surf_fsaverage()
 
 #########################################################################
 # The projection function simply takes the fMRI data and the mesh.
@@ -112,43 +112,49 @@ basic_contrasts = dict([(column, contrast_matrix[i])
 
 #########################################################################
 # add some intermediate contrasts
-basic_contrasts["audio"] = (basic_contrasts["clicDaudio"]
-                            + basic_contrasts["clicGaudio"]
-                            + basic_contrasts["calculaudio"]
-                            + basic_contrasts["phraseaudio"]
-                            )
-basic_contrasts["video"] = (basic_contrasts["clicDvideo"]
-                            + basic_contrasts["clicGvideo"]
-                            + basic_contrasts["calculvideo"]
-                            + basic_contrasts["phrasevideo"]
-                            )
-basic_contrasts["computation"] = (basic_contrasts["calculaudio"]
-                                  + basic_contrasts["calculvideo"]
-                                  )
-basic_contrasts["sentences"] = (basic_contrasts["phraseaudio"]
-                                + basic_contrasts["phrasevideo"]
-                                )
+# one contrast adding all conditions with some auditory parts
+basic_contrasts['audio'] = (
+    basic_contrasts['audio_left_hand_button_press']
+    + basic_contrasts['audio_right_hand_button_press']
+    + basic_contrasts['audio_computation']
+    + basic_contrasts['sentence_listening'])
+
+# one contrast adding all conditions involving instructions reading
+basic_contrasts['visual'] = (
+    basic_contrasts['visual_left_hand_button_press']
+    + basic_contrasts['visual_right_hand_button_press']
+    + basic_contrasts['visual_computation']
+    + basic_contrasts['sentence_reading'])
+
+# one contrast adding all conditions involving computation
+basic_contrasts['computation'] = (basic_contrasts['visual_computation']
+                                  + basic_contrasts['audio_computation'])
+
+# one contrast adding all conditions involving sentences
+basic_contrasts['sentences'] = (basic_contrasts['sentence_listening']
+                                + basic_contrasts['sentence_reading'])
 
 #########################################################################
 # Finally make a dictionary of more relevant contrasts
 #
-# * "left - right button press" probes motor activity in left versus right button presses
-# * "audio - video" probes the difference of activity between listening to some content or reading the same type of content (instructions, stories)
-# * "computation - sentences" looks at the activity when performing a mental comptation task  versus simply reading sentences.
+# * 'left - right button press' probes motor activity in left versus right button presses
+# * 'audio - visual' probes the difference of activity between listening to some content or reading the same type of content (instructions, stories)
+# * 'computation - sentences' looks at the activity when performing a mental comptation task  versus simply reading sentences.
 #
 # Of course, we could define other contrasts, but we keep only 3 for simplicity.
 
 contrasts = {
-    "left - right button press": (basic_contrasts["clicGaudio"]
-                                  + basic_contrasts["clicGvideo"]
-                                  - basic_contrasts["clicDaudio"]
-                                  - basic_contrasts["clicDvideo"]
-                                  ),
-    "audio - video": basic_contrasts["audio"] - basic_contrasts["video"],
-    "computation - sentences": (basic_contrasts["computation"] -
-                                basic_contrasts["sentences"]
-                                )
-    }
+    'left - right button press': (
+        basic_contrasts['audio_left_hand_button_press']
+        - basic_contrasts['audio_right_hand_button_press']
+        + basic_contrasts['visual_left_hand_button_press']
+        - basic_contrasts['visual_right_hand_button_press']
+    ),
+    'audio - visual': basic_contrasts['audio'] - basic_contrasts['visual'],
+    'computation - sentences': (basic_contrasts['computation'] -
+                                basic_contrasts['sentences']
+    )
+}
 
 #########################################################################
 # contrast estimation

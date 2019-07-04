@@ -1,3 +1,15 @@
+0.1.0rc
+=======
+
+Changelog
+---------
+
+* Removed Python 2 deprecation warning for Python 3 installations.
+
+Contributors
+------------
+
+
 0.0.1b
 =======
 

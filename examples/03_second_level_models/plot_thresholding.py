@@ -47,12 +47,12 @@ z_map = second_level_model.compute_contrast(output_type='z_score')
 # false positive rate < .001, cluster size > 10 voxels
 from nistats.thresholding import map_threshold
 thresholded_map1, threshold1 = map_threshold(
-    z_map, level=.001, height_control='fpr', cluster_threshold=10)
+    z_map, alpha=.001, height_control='fpr', cluster_threshold=10)
 
 #########################################################################
 # Now use FDR <.05, (False Discovery Rate) no cluster-level threshold
 thresholded_map2, threshold2 = map_threshold(
-    z_map, level=.05, height_control='fdr')
+    z_map, alpha=.05, height_control='fdr')
 print('The FDR=.05 threshold is %.3g' % threshold2)
 
 #########################################################################
@@ -60,7 +60,7 @@ print('The FDR=.05 threshold is %.3g' % threshold2)
 # threshold.  As the data have not been intensively smoothed, we can
 # use a simple Bonferroni correction
 thresholded_map3, threshold3 = map_threshold(
-    z_map, level=.05, height_control='bonferroni')
+    z_map, alpha=.05, height_control='bonferroni')
 print('The p<.05 Bonferroni-corrected threshold is %.3g' % threshold3)
 
 #########################################################################

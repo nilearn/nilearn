@@ -114,8 +114,8 @@ class Contrast(object):
     (high-dimensional F constrasts may lead to memory breakage).
     """
 
-    def __init__(self, effect, variance, dim=None, dof=DEF_DOFMAX, contrast_type='t',
-                 tiny=DEF_TINY, dofmax=DEF_DOFMAX):
+    def __init__(self, effect, variance, dim=None, dof=DEF_DOFMAX,
+                 contrast_type='t', tiny=DEF_TINY, dofmax=DEF_DOFMAX):
         """
         Parameters
         ----------
@@ -184,7 +184,7 @@ class Contrast(object):
 
         # Case: one-dimensional contrast ==> t or t**2
         if self.contrast_type == 'F':
-            stat = np.sum((self.effect - baseline) ** 2, 0) / self.dim  /\
+            stat = np.sum((self.effect - baseline) ** 2, 0) / self.dim /\
                 np.maximum(self.variance, self.tiny)
         elif self.contrast_type == 't':
             # avoids division by zero
@@ -192,8 +192,8 @@ class Contrast(object):
                 np.maximum(self.variance, self.tiny))
         else:
             raise ValueError('Unknown statistic type')
-        self.stat_ = stat
-        return stat.ravel()
+        self.stat_ = stat.ravel()
+        return self.stat_
 
     def p_value(self, baseline=0.0):
         """Return a parametric estimate of the p-value associated
