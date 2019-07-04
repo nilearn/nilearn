@@ -66,7 +66,7 @@ create_new_conda_env() {
     chmod +x miniconda.sh && ./miniconda.sh -b
     export PATH=/home/travis/miniconda3/bin:$PATH
     echo $PATH
-    conda update --quiet --yes conda
+    conda install conda=4.6 --yes
 
     # Configure the conda environment and put it in the path using the
     # provided versions
