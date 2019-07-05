@@ -1,4 +1,5 @@
-"""Second-level fMRI model: a two-sample test 
+"""
+Second-level fMRI model: a two-sample test
 ==========================================
 
 Full step-by-step example of fitting a GLM to perform a second level analysis
@@ -7,7 +8,8 @@ in experimental data and visualizing the results.
 More specifically:
 
 1. A sample of n=16 visual activity fMRIs are downloaded.
-2. A two-sample t-test is applied to the brain maps in order to see the effect of the contrast difference across subjects.
+2. A two-sample t-test is applied to the brain maps in order to see the effect
+   of the contrast difference across subjects.
 
 The contrast is between responses to vertical versus horizontal
 checkerboards than are retinotopically distinct. At the individual
@@ -84,6 +86,7 @@ display = plotting.plot_glass_brain(
     title='vertical vs horizontal checkerboard (unc p<0.001')
 
 ###########################################################################
-# Unsurprisingly, we see activity in the primary visual cortex, both positive and negative.
+# Unsurprisingly, we see activity in the primary visual cortex, both positive
+# and negative.
 
 plotting.show()
