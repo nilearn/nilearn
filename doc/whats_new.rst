@@ -14,6 +14,8 @@ Fixes
 -----
 
 * Removed Python 2 deprecation warning for Python 3 installations.
+* fixed effect contrasts now average effect sizes across runs rather than
+  summing them.
 
 Contributors
 ------------

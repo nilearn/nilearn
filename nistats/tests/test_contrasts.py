@@ -3,6 +3,8 @@ from __future__ import with_statement
 import numpy as np
 
 from numpy.testing import assert_almost_equal
+from sklearn.datasets import make_regression
+from sklearn.linear_model import LinearRegression
 
 from nistats.first_level_model import run_glm
 from nistats.contrasts import (_fixed_effect_contrast,
@@ -56,6 +58,21 @@ def test_fixed_effect_contrast():
     z_vals = con.z_score()
     assert_almost_equal(z_vals.mean(), 0, 0)
     assert_almost_equal(z_vals.std(), 1, 0)
+
+
+def test_fixed_effect_contrast_nonzero_effect():
+    X, y = make_regression(n_features=5, n_samples=20, random_state=0)
+    y = y[:, None]
+    labels, results = run_glm(y, X, 'ols')
+    coef = LinearRegression(fit_intercept=False).fit(X, y).coef_
+    for i in range(X.shape[1]):
+        contrast = np.zeros(X.shape[1])
+        contrast[i] = 1.
+        fixed_effect = _fixed_effect_contrast([labels], [results], [contrast])
+        assert_almost_equal(fixed_effect.effect_size(), coef.ravel()[i])
+        fixed_effect = _fixed_effect_contrast(
+            [labels] * 3, [results] * 3, [contrast] * 3)
+        assert_almost_equal(fixed_effect.effect_size(), coef.ravel()[i])
 
 
 def test_F_contrast_add():

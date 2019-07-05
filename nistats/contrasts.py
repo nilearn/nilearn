@@ -89,6 +89,7 @@ def _fixed_effect_contrast(labels, results, con_vals, contrast_type=None):
     Adds the same contrast applied to all labels and results lists.
     """
     contrast = None
+    n_contrasts = 0
     for i, (lab, res, con_val) in enumerate(zip(labels, results, con_vals)):
         if np.all(con_val == 0):
             warn('Contrast for session %d is null' % i)
@@ -98,9 +99,10 @@ def _fixed_effect_contrast(labels, results, con_vals, contrast_type=None):
             contrast = contrast_
         else:
             contrast = contrast + contrast_
+        n_contrasts += 1
     if contrast is None:
         raise ValueError('all contrasts provided were null contrasts')
-    return contrast
+    return contrast * (1. / n_contrasts)
 
 
 class Contrast(object):
