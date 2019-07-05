@@ -79,14 +79,14 @@ def _poly_drift(order, frame_times):
     return pol
 
 
-def _cosine_drift(period_cut, frame_times):
-    """Create a cosine drift matrix with periods greater or equal to
-    period_cut.
+def _cosine_drift(high_pass, frame_times):
+    """Create a cosine drift matrix with frequencies  or equal to
+    high_pass.
 
     Parameters
     ----------
-    period_cut : float
-        Cut period of the high-pass filter in seconds
+    high_pass : float
+        Cut frequency of the high-pass filter in Hz
 
     frame_times : array of shape (n_scans,)
         The sampling times in seconds
@@ -100,10 +100,8 @@ def _cosine_drift(period_cut, frame_times):
     """
     n_frames = len(frame_times)
     n_times = np.arange(n_frames)
-    hfcut = 1. / period_cut  # input parameter is the period
     dt = frame_times[1] - frame_times[0]
-    order = int(np.floor(2 * n_frames * hfcut * dt))
-    # s.t. hfcut = 1 / (2 * dt) yields n_frames
+    order = int(np.floor(2 * n_frames * high_pass * dt))
     cosine_drift = np.zeros((n_frames, order + 1))
     normalizer = np.sqrt(2.0 / n_frames)
 
@@ -125,7 +123,7 @@ def _none_drift(frame_times):
     return np.reshape(np.ones_like(frame_times), (np.size(frame_times), 1))
 
 
-def _make_drift(drift_model, frame_times, order=1, period_cut=128.):
+def _make_drift(drift_model, frame_times, order, high_pass):
     """Create the drift matrix
 
     Parameters
@@ -139,8 +137,8 @@ def _make_drift(drift_model, frame_times, order=1, period_cut=128.):
     order : int, optional,
         order of the drift model (in case it is polynomial)
 
-    period_cut : float, optional (defaults to 128),
-        period cut in case of a cosine model (in seconds)
+    high_pass : float, optional,
+        high-pass frequency in case of a cosine model (in Hz)
 
     Returns
     -------
@@ -155,7 +153,7 @@ def _make_drift(drift_model, frame_times, order=1, period_cut=128.):
     if drift_model == 'polynomial':
         drift = _poly_drift(order, frame_times)
     elif drift_model == 'cosine':
-        drift = _cosine_drift(period_cut, frame_times)
+        drift = _cosine_drift(high_pass, frame_times)
     elif drift_model is None:
         drift = _none_drift(frame_times)
     else:
@@ -284,7 +282,7 @@ def _full_rank(X, cmax=1e15):
 
 def make_first_level_design_matrix(
     frame_times, events=None, hrf_model='glover',
-    drift_model='cosine', period_cut=128, drift_order=1, fir_delays=[0],
+    drift_model='cosine', high_pass=.01, drift_order=1, fir_delays=[0],
         add_regs=None, add_reg_names=None, min_onset=-24, oversampling=50):
     """Generate a design matrix from the input parameters
 
@@ -401,7 +399,7 @@ def make_first_level_design_matrix(
 
     # step 3: drifts
     drift, dnames = _make_drift(drift_model, frame_times, drift_order,
-                                period_cut)
+                                high_pass)
 
     if matrix is not None:
         matrix = np.hstack((matrix, drift))
