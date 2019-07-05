@@ -33,7 +33,7 @@ subject_data = fetch_spm_multimodal_fmri()
 tr = 2.  # repetition time, in seconds
 slice_time_ref = 0.  # we will sample the design matrix at the beggining of each acquisition
 drift_model = 'Cosine'  # We use a discrete cosin transform to model signal drifts.
-period_cut = 128.  # The cutoff for the drift model is 1/128 Hz.
+high_pass = .01  # The cutoff for the drift model is 0.01 Hz.
 hrf_model = 'spm + derivative'  # The hemodunamic response finction is the SPM canonical one
 
 #########################################################################
@@ -72,7 +72,7 @@ for idx, img in enumerate(fmri_img, start=1):
             events,
             hrf_model=hrf_model,
             drift_model=drift_model,
-            period_cut=period_cut,
+            high_pass=high_pass,
             )
 
     # put the design matrices in a list
