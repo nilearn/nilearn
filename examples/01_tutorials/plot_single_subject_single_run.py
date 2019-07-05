@@ -90,13 +90,13 @@ from nistats.first_level_model import FirstLevelModel
 # * standardize=False means that we do not want to rescale the time series to mean 0, variance 1
 # * hrf_model='spm' means that we rely on the SPM "canonical hrf" model (without time or dispersion derivatives)
 # * drift_model='cosine' means that we model the signal drifts as slow oscillating time functions
-# * period_cut=160(s) defines the cutoff frequency (its inverse actually).
+# * high_pass=0.01(Hz) defines the cutoff frequency (inverse of the time period).
 fmri_glm = FirstLevelModel(t_r=7,
                            noise_model='ar1',
                            standardize=False,
                            hrf_model='spm',
                            drift_model='cosine',
-                           period_cut=160)
+                           high_pass=.01)
 
 ###############################################################################
 # Now that we have specified the model, we can run it on the fMRI image
@@ -153,8 +153,10 @@ plt.show()
 
 from numpy import array
 conditions = {
-    'active': array([1., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0.]),
-    'rest':   array([0., 1., 0., 0., 0., 0., 0., 0., 0., 0., 0.]),
+    'active': array([1., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0.,
+                     0.]),
+    'rest':   array([0., 1., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0.,
+                     0.]),
 }
 
 ###############################################################################
