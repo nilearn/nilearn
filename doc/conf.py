@@ -57,7 +57,7 @@ source_suffix = '.rst'
 #source_encoding = 'utf-8'
 
 # Generate the plots for the gallery
-plot_gallery = True
+plot_gallery = 'True'
 
 # The master toctree document.
 master_doc = 'index'
@@ -259,19 +259,16 @@ _python_doc_base = 'http://docs.python.org/2.7'
 
 # Example configuration for intersphinx: refer to the Python standard library.
 intersphinx_mapping = {
-    _python_doc_base: None,
-    'http://docs.scipy.org/doc/numpy': None,
-    'http://docs.scipy.org/doc/scipy/reference': None,
-    'http://matplotlib.org/': None,
-    'http://scikit-learn.org/stable': None,
-    'http://nipy.org/nibabel': None,
-    'http://nilearn.github.io': None,
-    # add line for nilearn
-    # add line for patsy
-    #'http://scikit-image.org/docs/0.8.0/': None,
-    #'http://docs.enthought.com/mayavi/mayavi/': None,
-    #'http://statsmodels.sourceforge.net/': None,
-    #'http://pandas.pydata.org': None,
+    'python': (_python_doc_base, None),
+    'numpy': ('http://docs.scipy.org/doc/numpy', None),
+    'scipy': ('http://docs.scipy.org/doc/scipy/reference', None),
+    'matplotlib': ('http://matplotlib.org/', None),
+    'nipy': ('http://nipy.org/nibabel', None),
+    'nilearn': ('http://nilearn.github.io', None),
+    'nibabel': ('http://nipy.org/nibabel', None),
+    'sklearn': ('http://scikit-learn.org/stable', None),
+    'patsy': ('http://patsy.readthedocs.io/en/latest/', None),
+    'pandas': ('http://pandas.pydata.org/pandas-docs/stable/', None),
 }
 
 extlinks = {
@@ -283,14 +280,8 @@ sphinx_gallery_conf = {
     'doc_module'        : 'nistats',
     'backreferences_dir': os.path.join('modules', 'generated'),
     'reference_url'     : {
-        'nilearn': 'http://nilearn.github.io',
-        'matplotlib': 'http://matplotlib.org',
-        'numpy': 'http://docs.scipy.org/doc/numpy-1.11.0',
-        'scipy': 'http://docs.scipy.org/doc/scipy-0.17.0/reference',
-        'nibabel': 'http://nipy.org/nibabel',
-        'sklearn': 'http://scikit-learn.org/stable',
-        'patsy': 'http://patsy.readthedocs.io/en/latest/',
-        'pandas': 'http://pandas.pydata.org/pandas-docs/stable/'}
+        'nistats': None,
+        }
     }
 
 # Get rid of spurious warnings due to some interaction between
