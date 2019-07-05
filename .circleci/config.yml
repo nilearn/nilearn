@@ -68,8 +68,8 @@ jobs:
           command: |
             conda install conda=4.6 --yes
             conda install -n testenv python=3.6 numpy scipy scikit-learn matplotlib==3.0.3 pandas \
-            flake8 lxml nose cython mkl sphinx coverage patsy boto3 pillow pandas -yq
-            conda install -n testenv nibabel nilearn nose-timer -c conda-forge -yq
+            flake8 lxml nose cython mkl sphinx coverage numpydoc patsy boto3 pillow pandas -yq
+            conda install -n testenv nibabel sphinx-gallery nilearn nose-timer -c conda-forge -yq
       - run:
           name: Running CircleCI test (make html)
           command: |
@@ -125,8 +125,8 @@ jobs:
           command: |
             conda install conda=4.6 --yes
             conda create -n testenv python=3.6 numpy scipy scikit-learn matplotlib==3.0.3 pandas \
-            flake8 lxml nose cython mkl sphinx coverage patsy boto3 pillow pandas -yq
-            conda install -n testenv nibabel nilearn nose-timer -c conda-forge -yq
+            flake8 lxml nose cython mkl sphinx numpydoc coverage patsy boto3 pillow pandas -yq
+            conda install -n testenv nibabel sphinx-gallery nilearn nose-timer -c conda-forge -yq
       - run:
           name: Running CircleCI test (make html)
           command: |
