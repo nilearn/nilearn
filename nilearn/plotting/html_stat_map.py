@@ -3,7 +3,9 @@ Visualizing 3D stat maps in a Brainsprite viewer
 """
 import os
 import json
+import warnings
 from io import BytesIO
+from base64 import b64encode
 
 import numpy as np
 from matplotlib.image import imsave
@@ -19,7 +21,6 @@ from .._utils.niimg_conversions import check_niimg_3d
 from .._utils.param_validation import check_threshold
 from .._utils.extmath import fast_abs_percentile
 from .._utils.niimg import _safe_get_data
-from .._utils.compat import _encodebytes
 from ..datasets import load_mni152_template
 
 
@@ -49,11 +50,12 @@ def _data_to_sprite(data):
 
 def _threshold_data(data, threshold=None):
     """ Threshold a data array.
-        Returns: data (masked array), threshold (updated)
+        Returns: data (array), mask (boolean array) threshold (updated)
     """
     # If threshold is None, do nothing
     if threshold is None:
-        return data, threshold
+        mask = np.full(data.shape, False)
+        return data, mask, threshold
 
     # Deal with automatic settings of plot parameters
     if threshold == 'auto':
@@ -68,10 +70,17 @@ def _threshold_data(data, threshold=None):
 
     # Mask data
     if threshold == 0:
-        data = np.ma.masked_equal(data, 0, copy=False)
+        mask = (data == 0)
+        data = data * np.logical_not(mask)
     else:
-        data = np.ma.masked_inside(data, -threshold, threshold, copy=False)
-    return data, threshold
+        mask = (data >= -threshold) & (data <= threshold)
+        data = data * np.logical_not(mask)
+
+    if not np.any(mask):
+        warnings.warn("Threshold given was {0}, but "
+                      "the data has no values below {1}. ".format(threshold,
+                                                                  data.min()))
+    return data, mask, threshold
 
 
 def _save_sprite(data, output_sprite, vmax, vmin, mask=None, cmap='Greys',
@@ -101,7 +110,7 @@ def _bytesIO_to_base64(handle_io):
         Returns: data
     """
     handle_io.seek(0)
-    data = _encodebytes(handle_io.read()).decode('utf-8')
+    data = b64encode(handle_io.read()).decode('utf-8')
     handle_io.close()
     return data
 
@@ -130,8 +139,8 @@ def _mask_stat_map(stat_map_img, threshold=None):
 
     # threshold the stat_map
     if threshold is not None:
-        data, threshold = _threshold_data(data, threshold)
-        mask_img = new_img_like(stat_map_img, data.mask, stat_map_img.affine)
+        data, mask, threshold = _threshold_data(data, threshold)
+        mask_img = new_img_like(stat_map_img, mask, stat_map_img.affine)
     else:
         mask_img = new_img_like(stat_map_img, np.zeros(data.shape),
                                 stat_map_img.affine)
@@ -455,10 +464,12 @@ def view_img(stat_map_img, bg_img='MNI152',
     # Now create a json-like object for the viewer, and converts in html
     json_view = _json_view_data(bg_img, stat_map_img, mask_img, bg_min, bg_max,
                                 colors, cmap, colorbar)
+
     json_view['params'] = _json_view_params(
         stat_map_img.shape, stat_map_img.affine, colors['vmin'],
         colors['vmax'], cut_slices, black_bg, opacity, draw_cross, annotate,
         title, colorbar, value=False)
+
     html_view = _json_view_to_html(json_view)
 
     return html_view

@@ -146,7 +146,7 @@ def load_mni152_brain_mask():
 
     See Also
     --------
-    nilearn.datasets.load_mni152_template for details about version of the
+    nilearn.datasets.load_mni152_template : for details about version of the
         MNI152 T1 template and related.
     """
     # Load MNI template
@@ -440,6 +440,7 @@ def fetch_surf_fsaverage(mesh='fsaverage5', data_dir=None):
     mesh: str, optional (default='fsaverage5')
         Which mesh to fetch.
         'fsaverage5': the low-resolution fsaverage5 mesh (10242 nodes)
+        'fsaverage5_sphere': the low-resolution fsaverage5 spheres (10242 nodes)
         'fsaverage': the high-resolution fsaverage mesh (163842 nodes)
         (high-resolution fsaverage will result in
         more computation time and memory usage)
@@ -467,6 +468,7 @@ def fetch_surf_fsaverage(mesh='fsaverage5', data_dir=None):
 
     """
     meshes = {'fsaverage5': _fetch_surf_fsaverage5,
+              'fsaverage5_sphere': _fetch_surf_fsaverage5_sphere,
               'fsaverage': _fetch_surf_fsaverage}
     if mesh not in meshes:
         raise ValueError(
@@ -476,6 +478,11 @@ def fetch_surf_fsaverage(mesh='fsaverage5', data_dir=None):
 
 
 def _fetch_surf_fsaverage(data_dir=None):
+    """Helper function to ship fsaverage (highest resolution) surfaces
+    and sulcal information with Nilearn.
+
+    The source of the data is downloaded from nitrc.
+    """
     dataset_dir = _get_dataset_dir('fsaverage', data_dir=data_dir)
     url = 'https://www.nitrc.org/frs/download.php/10846/fsaverage.tar.gz'
     if not os.path.isdir(os.path.join(dataset_dir, 'fsaverage')):
@@ -571,3 +578,27 @@ def _fetch_surf_fsaverage5(data_dir=None, url=None, resume=True, verbose=1):
                  sulc_left=sulcs[0],
                  sulc_right=sulcs[1],
                  description=fdescr)
+
+def _fetch_surf_fsaverage5_sphere(data_dir=None):
+    """Helper function to ship fsaverage5 spherical meshes.
+
+    These meshes can be used for visualization purposes, but also to run
+    cortical surface-based searchlight decoding.
+
+    The source of the data is downloaded from OSF.
+    """
+
+    fsaverage_dir = _get_dataset_dir('fsaverage', data_dir=data_dir)
+    dataset_dir = _get_dataset_dir('fsaverage5_sphere', data_dir=fsaverage_dir)
+    url = 'https://osf.io/b79fy/download'
+    opts = {'uncompress': True}
+    names = ['sphere_right', 'sphere_left']
+    filenames = [('{}.gii'.format(name), url, opts)
+                 for name in names]
+    _fetch_files(dataset_dir, filenames)
+    result = {
+        name: os.path.join(dataset_dir, '{}.gii'.format(name))
+        for name in names}
+
+    result['description'] = str(_get_dataset_descr('fsaverage5_sphere'))
+    return Bunch(**result)

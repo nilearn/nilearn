@@ -116,6 +116,10 @@ def test_view_surf():
     html = html_surface.view_surf(
         fsaverage['pial_left'], destrieux, symmetric_cmap=False)
     check_html(html)
+    html = html_surface.view_surf(fsaverage['pial_right'],
+                                  fsaverage['sulc_right'],
+                                  threshold=None, cmap='Greys')
+    check_html(html)
     assert_raises(ValueError, html_surface.view_surf, mesh, mesh[0][::2, 0])
     assert_raises(ValueError, html_surface.view_surf, mesh, mesh[0][:, 0],
                   bg_map=mesh[0][::2, 0])
@@ -139,4 +143,7 @@ def test_view_img_on_surf():
     img_4d = image.new_img_like(img, img.get_data()[:, :, :, np.newaxis])
     assert len(img_4d.shape) == 4
     html = html_surface.view_img_on_surf(img, threshold='92.3%')
+    check_html(html)
+    np.clip(img.get_data(), 0, None, out=img.get_data())
+    html = html_surface.view_img_on_surf(img, symmetric_cmap=False)
     check_html(html)

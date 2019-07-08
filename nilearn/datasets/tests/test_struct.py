@@ -175,3 +175,14 @@ def test_fetch_surf_fsaverage():
 
         assert keys.issubset(set(dataset.keys()))
         assert_not_equal(dataset.description, '')
+
+def test_fetch_surf_fsaverage5_sphere():
+    for mesh in ['fsaverage5_sphere']:
+
+        dataset = struct.fetch_surf_fsaverage(
+            mesh, data_dir=tst.tmpdir)
+
+        keys = {'sphere_left', 'sphere_right'}
+
+        assert keys.issubset(set(dataset.keys()))
+        assert_not_equal(dataset.description, '')

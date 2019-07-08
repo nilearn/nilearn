@@ -10,9 +10,11 @@ from .signal_extraction import (
 )
 from .parcellations import Parcellations
 
+from .rena_clustering import ReNA
+
 __all__ = [
     'connected_regions', 'RegionExtractor',
     'connected_label_regions',
     'img_to_signals_labels', 'signals_to_img_labels',
     'img_to_signals_maps', 'signals_to_img_maps',
-    'Parcellations']
+    'Parcellations', 'ReNA']
