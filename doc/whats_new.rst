@@ -4,6 +4,21 @@
 NEW
 ---
 
+.. warning::
+
+ | **Python2 and 3.4 are no longer supported. We recommend upgrading to Python 3.6 minimum.**
+ |
+ | **Minimum supported versions of packages have been bumped up.**
+ | - Matplotlib -- v2.0
+ | - Scikit-learn -- v0.19
+ | - Scipy -- v0.19
+
+- Parcellation method ReNA: Fast agglomerative clustering based on recursive
+  nearest neighbor grouping.
+  Yields very fast & accurate models, without creation of giant
+  clusters.
+  :class:`nilearn.regions.ReNA`
+
 - Optimization to image resampling
   :func:`nilearn.image.resample_img` has been optimized to pad rather than
   resample images in the special case when there is only a translation
@@ -11,14 +26,20 @@ NEW
   when using the `mask_strategy="template"` option for brains in MNI space.
 - New brain development fMRI dataset fetcher
   :func:`nilearn.datasets.fetch_development_fmri` can be used to download
-  movie-watching data in children and adults. A light-weight dataset implemented
-  for teaching and usage in the examples.
+  movie-watching data in children and adults. A light-weight dataset
+  implemented for teaching and usage in the examples.
 
 Changes
 -------
 
 - All the connectivity examples are changed from ADHD to brain development
   fmri dataset.
+
+- :func:`nilearn.plotting.view_img_on_surf`, :func:`nilearn.plotting.view_surf`
+  and :func:`nilearn.plotting.view_connectome` now allow disabling the colorbar,
+  and setting its height and the fontsize of its ticklabels.
+
+
 
 Fixes
 -----
@@ -33,6 +54,8 @@ Fixes
 - When :func:`nilearn.plotting.plot_surf_stat_map` is used with a thresholded map
   but without a background map, the surface mesh is displayed in
   half-transparent grey to maintain a 3D perception.
+- :func:`nilearn.plotting.view_surf` now accepts surface data provided as a file
+  path.
 
 0.5.2
 =====
@@ -80,6 +103,7 @@ NEW
 - NiftiLabelsMasker now consumes less memory when extracting the signal from a 3D/4D
   image. This is especially noteworthy when extracting signals from large 4D images.
 - New function :func:`nilearn.datasets.fetch_atlas_schaefer_2018`
+- New function :func:`nilearn.datasets.fetch_coords_seitzman_2018`
 
 Changes
 -------
@@ -102,6 +126,13 @@ Changes
 
   - coords is now marker_coords
   - colors is now marker_color
+
+- :func:`nilearn.plotting.view_img_on_surf` now accepts a `symmetric_cmap`
+  argument to control whether the colormap is centered around 0 and a `vmin`
+  argument.
+
+- Users can now control the size and fontsize of colorbars in interactive
+  surface and connectome plots, or disable the colorbar.
 
 Fixes
 -----
