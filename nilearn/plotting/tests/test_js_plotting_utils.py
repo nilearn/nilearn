@@ -327,6 +327,14 @@ def test_open_view_warning():
     # should raise a warning about memory usage
     assert_warns(UserWarning, _open_views)
     assert_no_warnings(_open_one_view)
+    js_plotting_utils.set_max_img_views_before_warning(15)
+    assert_no_warnings(_open_views)
+    js_plotting_utils.set_max_img_views_before_warning(-1)
+    assert_no_warnings(_open_views)
+    js_plotting_utils.set_max_img_views_before_warning(None)
+    assert_no_warnings(_open_views)
+    js_plotting_utils.set_max_img_views_before_warning(6)
+    assert_warns(UserWarning, _open_views)
 
 
 def test_to_color_strings():
