@@ -5,7 +5,9 @@ import warnings
 import os
 import re
 import json
+import subprocess
 import numpy as np
+import pandas as pd
 import numbers
 
 import nibabel
@@ -13,7 +15,7 @@ from sklearn.datasets.base import Bunch
 from sklearn.utils import deprecated
 
 from .utils import (_get_dataset_dir, _fetch_files, _get_dataset_descr,
-                    _read_md5_sum_file, _tree, _filter_columns)
+                    _read_md5_sum_file, _tree, _filter_columns, _fetch_file)
 from .._utils import check_niimg
 from .._utils.compat import BytesIO, _basestring, _urllib
 from .._utils.numpy_conversions import csv_to_array
@@ -886,6 +888,7 @@ def fetch_localizer_contrasts(contrasts, n_subjects=None, get_tmaps=False,
         "button press vs calculation and sentence listening/reading":
             "auditory&visual motor vs cognitive processing"}
     allowed_contrasts = list(contrast_name_wrapper.values())
+
     # convert contrast names
     contrasts_wrapped = []
     # get a unique ID for each contrast. It is used to give a unique name to
@@ -893,21 +896,27 @@ def fetch_localizer_contrasts(contrasts, n_subjects=None, get_tmaps=False,
     contrasts_indices = []
     for contrast in contrasts:
         if contrast in allowed_contrasts:
-            contrasts_wrapped.append(contrast)
+            contrasts_wrapped.append(contrast.title().replace(" ", ""))
             contrasts_indices.append(allowed_contrasts.index(contrast))
         elif contrast in contrast_name_wrapper:
             name = contrast_name_wrapper[contrast]
-            contrasts_wrapped.append(name)
+            contrasts_wrapped.append(name.title().replace(" ", ""))
             contrasts_indices.append(allowed_contrasts.index(name))
         else:
             raise ValueError("Contrast \'%s\' is not available" % contrast)
 
-    # It is better to perform several small requests than a big one because:
-    # - Brainomics server has no cache (can lead to timeout while the archive
-    #   is generated on the remote server)
-    # - Local (cached) version of the files can be checked for each contrast
-    opts = {'uncompress': True}
+    # Get the dataset OSF index
+    dataset_name = "brainomics_localizer"
+    index_url = "ftp://ftp.cea.fr/pub/unati/nsap/localizer/.index.json"
+    data_dir = _get_dataset_dir(dataset_name, data_dir=data_dir,
+                                verbose=verbose)
+    index_file = _fetch_file(index_url, data_dir, verbose=verbose)
+    with open(index_file, "rt") as of:
+        index = json.load(of)      
 
+    # Build data URLs that will be fetched
+    files = {}
+    root_url = "https://osf.io/download"
     if isinstance(n_subjects, numbers.Number):
         subject_mask = np.arange(1, n_subjects + 1)
         subject_id_max = "S%02d" % n_subjects
@@ -916,26 +925,16 @@ def fetch_localizer_contrasts(contrasts, n_subjects=None, get_tmaps=False,
         subject_id_max = "S%02d" % np.max(n_subjects)
         n_subjects = len(n_subjects)
     subject_ids = ["S%02d" % s for s in subject_mask]
-    data_types = ["c map"]
+    data_types = ["cmaps"]
     if get_tmaps:
-        data_types.append("t map")
-    rql_types = str.join(", ", ["\"%s\"" % x for x in data_types])
-    root_url = "http://brainomics.cea.fr/localizer/"
-
-    base_query = ("Any X,XT,XL,XI,XF,XD WHERE X is Scan, X type XT, "
-                  "X concerns S, "
-                  "X label XL, X identifier XI, "
-                  "X format XF, X description XD, "
-                  'S identifier <= "%s", ' % (subject_id_max, ) +
-                  'X type IN(%(types)s), X label "%(label)s"')
-
-    urls = ["%sbrainomics_data_%d.zip?rql=%s&vid=data-zip"
-            % (root_url, i,
-               _urllib.parse.quote(base_query % {"types": rql_types,
-                                          "label": c},
-                            safe=',()'))
-            for c, i in zip(contrasts_wrapped, contrasts_indices)]
+        data_types.append("tmaps")
     filenames = []
+    def _is_valid_path(path, index, verbose):
+        if path not in index:
+            if verbose > 0:
+                print("Skiping path '{0}'...".format(path))
+            return False
+        return True
     for subject_id in subject_ids:
         for data_type in data_types:
             for contrast_id, contrast in enumerate(contrasts_wrapped):
@@ -943,80 +942,65 @@ def fetch_localizer_contrasts(contrasts, n_subjects=None, get_tmaps=False,
                     str.join('_', [data_type, contrast]), ' ', '_')
                 file_path = os.path.join(
                     "brainomics_data", subject_id, "%s.nii.gz" % name_aux)
-                file_tarball_url = urls[contrast_id]
-                filenames.append((file_path, file_tarball_url, opts))
+                path = os.path.join(
+                    "/derivatives", "spm1stlevel", "sub-%s" % subject_id,
+                    "sub-%s_task-localizer_acq-%s_%s.nii.gz" % (subject_id,
+                        contrast, data_type))
+                if _is_valid_path(path, index, verbose=verbose):
+                    file_url = os.path.join(root_url, index[path][1:])
+                    opts = {"move": file_path}
+                    filenames.append((file_path, file_url, opts))
+                    files.setdefault(data_type, []).append(file_path)
+
     # Fetch masks if asked by user
     if get_masks:
-        urls.append("%sbrainomics_data_masks.zip?rql=%s&vid=data-zip"
-                    % (root_url,
-                       _urllib.parse.quote(base_query % {"types": '"boolean mask"',
-                                                  "label": "mask"},
-                                    safe=',()')))
         for subject_id in subject_ids:
             file_path = os.path.join(
                 "brainomics_data", subject_id, "boolean_mask_mask.nii.gz")
-            file_tarball_url = urls[-1]
-            filenames.append((file_path, file_tarball_url, opts))
+            path = os.path.join(
+                "/derivatives", "spm1stlevel", "sub-%s" % subject_id,
+                "sub-%s_mask.nii.gz" % subject_id)
+            if _is_valid_path(path, index, verbose=verbose):
+                file_url = os.path.join(root_url, index[path][1:])
+                opts = {"move": file_path}
+                filenames.append((file_path, file_url, opts))
+                files.setdefault("masks", []).append(file_path)
+
     # Fetch anats if asked by user
     if get_anats:
-        urls.append("%sbrainomics_data_anats.zip?rql=%s&vid=data-zip"
-                    % (root_url,
-                       _urllib.parse.quote(base_query % {"types": '"normalized T1"',
-                                                  "label": "anatomy"},
-                                    safe=',()')))
         for subject_id in subject_ids:
             file_path = os.path.join(
                 "brainomics_data", subject_id,
                 "normalized_T1_anat_defaced.nii.gz")
-            file_tarball_url = urls[-1]
-            filenames.append((file_path, file_tarball_url, opts))
-    # Fetch subject characteristics (separated in two files)
-    if url is None:
-        url_csv = ("%sdataset/cubicwebexport.csv?rql=%s&vid=csvexport"
-                   % (root_url, _urllib.parse.quote("Any X WHERE X is Subject")))
-        url_csv2 = ("%sdataset/cubicwebexport2.csv?rql=%s&vid=csvexport"
-                    % (root_url,
-                       _urllib.parse.quote("Any X,XI,XD WHERE X is QuestionnaireRun, "
-                                    "X identifier XI, X datetime "
-                                    "XD", safe=',')
-                       ))
-    else:
-        url_csv = "%s/cubicwebexport.csv" % url
-        url_csv2 = "%s/cubicwebexport2.csv" % url
-    filenames += [("cubicwebexport.csv", url_csv, {}),
-                  ("cubicwebexport2.csv", url_csv2, {})]
+            path = os.path.join(
+                "/derivatives", "spm_preprocessing", "sub-%s" % subject_id,
+                "sub-%s_T1w.nii.gz" % subject_id)
+            if _is_valid_path(path, index, verbose=verbose):
+                file_url = os.path.join(root_url, index[path][1:])
+                opts = {"move": file_path}
+                filenames.append((file_path, file_url, opts))
+                files.setdefault("anats", []).append(file_path)
+
+    # Fetch subject characteristics
+    participants_file = os.path.join("brainomics_data", "participants.tsv")
+    path = "/participants.tsv"
+    if _is_valid_path(path, index, verbose=verbose):
+        file_url = os.path.join(root_url, index[path][1:])
+        opts = {"move": participants_file}
+        filenames.append((participants_file, file_url, opts))
 
     # Actual data fetching
-    dataset_name = 'brainomics_localizer'
-    data_dir = _get_dataset_dir(dataset_name, data_dir=data_dir,
-                                verbose=verbose)
     fdescr = _get_dataset_descr(dataset_name)
-    files = _fetch_files(data_dir, filenames, verbose=verbose)
-    anats = None
-    masks = None
-    tmaps = None
-    # combine data from both covariates files into one single recarray
-    from numpy.lib.recfunctions import join_by
-    ext_vars_file2 = files[-1]
-    csv_data2 = np.recfromcsv(ext_vars_file2, delimiter=';')
-    files = files[:-1]
-    ext_vars_file = files[-1]
-    csv_data = np.recfromcsv(ext_vars_file, delimiter=';')
-    files = files[:-1]
-    # join_by sorts the output along the key
-    csv_data = join_by('subject_id', csv_data, csv_data2,
-                       usemask=False, asrecarray=True)[subject_mask - 1]
-    if get_anats:
-        anats = files[-n_subjects:]
-        files = files[:-n_subjects]
-    if get_masks:
-        masks = files[-n_subjects:]
-        files = files[:-n_subjects]
-    if get_tmaps:
-        tmaps = files[1::2]
-        files = files[::2]
-    return Bunch(cmaps=files, tmaps=tmaps, masks=masks, anats=anats,
-                 ext_vars=csv_data, description=fdescr)
+    _fetch_files(data_dir, filenames, verbose=verbose)
+    for key, value in files.items():
+        files[key] = [os.path.join(data_dir, val) for val in value]
+
+    # Load covariates file
+    participants_file = os.path.join(data_dir, participants_file)
+    csv_data = pd.read_csv(participants_file, delimiter="\t")
+    csv_data = csv_data[csv_data["participant_id"].isin(subject_ids)]
+
+    return Bunch(ext_vars=csv_data, description=fdescr, **files)
 
 
 def fetch_localizer_calculation_task(n_subjects=1, data_dir=None, url=None,
@@ -1062,11 +1046,8 @@ def fetch_localizer_calculation_task(n_subjects=1, data_dir=None, url=None,
     data = fetch_localizer_contrasts(["calculation (auditory and visual cue)"],
                                      n_subjects=n_subjects,
                                      get_tmaps=False, get_masks=False,
-                                     get_anats=False, data_dir=data_dir,
+                                     get_anats=True, data_dir=data_dir,
                                      url=url, resume=True, verbose=verbose)
-    data.pop('tmaps')
-    data.pop('masks')
-    data.pop('anats')
     return data
 
 
