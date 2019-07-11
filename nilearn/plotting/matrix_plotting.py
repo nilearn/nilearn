@@ -37,7 +37,7 @@ def plot_matrix(mat, title=None, labels=None, figure=None, axes=None,
             Matrix to be plotted.
         title : string or None, optional
             A text to add in the upper left corner.
-        labels : list of strings, optional
+        labels : list or ndarray of strings, optional
             The label of each row and column
         figure : figure instance, figsize tuple, or None
             Sets the figure used. This argument can be either an existing
@@ -80,6 +80,10 @@ def plot_matrix(mat, title=None, labels=None, figure=None, axes=None,
         display : instance of matplotlib
             Axes image.
     """
+    # we need a list so an empty one will be cast to False
+    if isinstance(labels, np.ndarray):
+        labels = labels.tolist()
+
     if reorder:
         if not labels:
             raise ValueError("Labels are needed to show the reordering.")
@@ -103,7 +107,7 @@ def plot_matrix(mat, title=None, labels=None, figure=None, axes=None,
         labels = np.array(labels).copy()
         mat = mat.copy()
         # and reorder labels and matrix
-        labels = labels[index]
+        labels = labels[index].tolist()
         mat = mat[index, :][:, index]
 
     if tri == 'lower':
