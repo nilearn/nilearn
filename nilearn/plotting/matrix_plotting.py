@@ -81,7 +81,7 @@ def plot_matrix(mat, title=None, labels=None, figure=None, axes=None,
             Axes image.
     """
     if reorder:
-        if labels is None or labels is False:
+        if not labels:
             raise ValueError("Labels are needed to show the reordering.")
         try:
             from scipy.cluster.hierarchy import (linkage, optimal_leaf_ordering,
@@ -134,10 +134,10 @@ def plot_matrix(mat, title=None, labels=None, figure=None, axes=None,
                         cmap=cmap, **kwargs)
     axes.set_autoscale_on(False)
     ymin, ymax = axes.get_ylim()
-    if labels is False:
+    if not labels:
         axes.xaxis.set_major_formatter(plt.NullFormatter())
         axes.yaxis.set_major_formatter(plt.NullFormatter())
-    elif labels is not None:
+    else:
         axes.set_xticks(np.arange(len(labels)))
         axes.set_xticklabels(labels, size='x-small')
         for label in axes.get_xticklabels():
@@ -178,7 +178,7 @@ def plot_matrix(mat, title=None, labels=None, figure=None, axes=None,
     axes.set_ylim(ymin, ymax)
 
     if auto_fit:
-        if labels is not None and labels is not False:
+        if labels:
             fit_axes(axes)
         elif own_fig:
             plt.tight_layout(pad=.1,
