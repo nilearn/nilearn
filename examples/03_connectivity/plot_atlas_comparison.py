@@ -13,7 +13,8 @@ In the intermediary steps, we make use of
 :class:`nilearn.input_data.NiftiLabelsMasker` and
 :class:`nilearn.input_data.NiftiMapsMasker` to extract time series from nifti
 objects using different parcellation atlases.
-The time series of all subjects of the ADHD Dataset are concatenated and
+
+The time series of all subjects of the brain development dataset are concatenated and
 given directly to :class:`nilearn.connectome.ConnectivityMeasure` for
 computing parcel-wise correlation matrices for each atlas across all subjects.
 
@@ -35,7 +36,7 @@ print('Yeo atlas nifti image (3D) with 17 parcels and liberal mask is located '
 #########################################################################
 # Load functional data
 # --------------------
-data = datasets.fetch_adhd(n_subjects=10)
+data = datasets.fetch_development_fmri(n_subjects=10)
 
 print('Functional nifti images (4D, e.g., one subject) are located at : %r'
       % data['func'][0])

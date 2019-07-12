@@ -403,7 +403,7 @@ def clean(signals, sessions=None, detrend=True, standardize=True,
         specified. Mandatory if used together with low_pass or high_pass.
 
     low_pass, high_pass: float
-        Respectively low and high cutoff frequencies, in Hertz.
+        Respectively high and low cutoff frequencies, in Hertz.
 
     detrend: bool
         If detrending should be applied on timeseries (before

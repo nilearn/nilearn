@@ -1,6 +1,4 @@
-import functools
 import json
-import warnings
 
 import numpy as np
 from scipy import sparse
@@ -97,16 +95,18 @@ def _replacement_params_view_connectome():
         'threshold': 'edge_threshold',
         'cmap': 'edge_cmap',
         'marker_size': 'node_size',
-        }
+    }
+
 
 @replace_parameters(replacement_params=_replacement_params_view_connectome(),
                     end_version='0.6.0',
-                    lib_name='Nilearn',
+                    lib_name='Nilearn'
                     )
 def view_connectome(adjacency_matrix, node_coords, edge_threshold=None,
                     edge_cmap=cm.bwr, symmetric_cmap=True,
-                    linewidth=6., node_size=3., title=None
-                    ):
+                    linewidth=6., node_size=3., colorbar=True,
+                    colorbar_height=.5, colorbar_fontsize=25,
+                    title=None):
     """
     Insert a 3d plot of a connectome into an HTML page.
 
@@ -137,6 +137,15 @@ def view_connectome(adjacency_matrix, node_coords, edge_threshold=None,
     node_size : float, optional (default=3.)
         Size of the markers showing the seeds in pixels.
 
+    colorbar : bool, optional (default=True)
+        add a colorbar
+
+    colorbar_height : float, optional (default=.5)
+        height of the colorbar, relative to the figure height
+
+    colorbar_fontsize : int, optional (default=25)
+        fontsize of the colorbar tick labels
+
     Returns
     -------
     ConnectomeView : plot of the connectome.
@@ -161,9 +170,13 @@ def view_connectome(adjacency_matrix, node_coords, edge_threshold=None,
 
     """
     connectome_info = _get_connectome(
-        adjacency_matrix, node_coords, threshold=edge_threshold, cmap=edge_cmap,
+        adjacency_matrix, node_coords,
+        threshold=edge_threshold, cmap=edge_cmap,
         symmetric_cmap=symmetric_cmap, marker_size=node_size)
     connectome_info['line_width'] = linewidth
+    connectome_info['colorbar'] = colorbar
+    connectome_info['cbar_height'] = colorbar_height
+    connectome_info['cbar_fontsize'] = colorbar_fontsize
     if title is not None:
         connectome_info['title'] = title
     return _make_connectome_html(connectome_info)

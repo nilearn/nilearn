@@ -3,7 +3,8 @@
 
 <head>
     <title>connectome plot</title>
-    <meta charset="UTF-8" /> $INSERT_JS_LIBRARIES_HERE
+    <meta charset="UTF-8" />
+    $INSERT_JS_LIBRARIES_HERE
     <script>
         var connectomeInfo = $INSERT_CONNECTOME_JSON_HERE;
         var data = [];
@@ -43,13 +44,17 @@
             if(connectomeInfo["connectome"]["markers_only"]){
                 return;
             }
-            addColorbar(
-                connectomeInfo["connectome"]["colorscale"],
-                connectomeInfo["connectome"]["cmin"],
-                connectomeInfo["connectome"]["cmax"],
-                "connectome-plot", getLayout("connectome-plot",
-                                             "select-view", false),
-                getConfig());
+            if(connectomeInfo["connectome"]["colorbar"]){
+                addColorbar(
+                    connectomeInfo["connectome"]["colorscale"],
+                    connectomeInfo["connectome"]["cmin"],
+                    connectomeInfo["connectome"]["cmax"],
+                    "connectome-plot", getLayout("connectome-plot",
+                                                 "select-view", false),
+                    getConfig(),
+                    connectomeInfo["connectome"]["cbar_fontsize"],
+                    connectomeInfo["connectome"]["cbar_height"]);
+            }
         }
 
         function updateOpacity() {
@@ -161,7 +166,7 @@
         <option value="bottom">view: Bottom</option>
         <option value="custom">view: -</option>
     </select>
-    <input id="opacity-range" type="range" min="0" max="100" value="30"></input>
+    <input id="opacity-range" type="range" min="0" max="100" value="30"/>
 
 </body>
 

@@ -38,11 +38,11 @@ def plot_matrices(cov, prec, title, labels):
 # ------------------
 from nilearn import datasets
 msdl_atlas_dataset = datasets.fetch_atlas_msdl()
-adhd_dataset = datasets.fetch_adhd(n_subjects=n_subjects)
+rest_dataset = datasets.fetch_development_fmri(n_subjects=n_subjects)
 
 # print basic information on the dataset
 print('First subject functional nifti image (4D) is at: %s' %
-      adhd_dataset.func[0])  # 4D data
+      rest_dataset.func[0])  # 4D data
 
 
 ##############################################################################
@@ -57,13 +57,13 @@ mem = Memory('nilearn_cache')
 
 masker = input_data.NiftiMapsMasker(
     msdl_atlas_dataset.maps, resampling_target="maps", detrend=True,
-    low_pass=None, high_pass=0.01, t_r=2.5, standardize=True,
+    low_pass=None, high_pass=0.01, t_r=2, standardize=True,
     memory='nilearn_cache', memory_level=1, verbose=2)
 masker.fit()
 
 subject_time_series = []
-func_filenames = adhd_dataset.func
-confound_filenames = adhd_dataset.confounds
+func_filenames = rest_dataset.func
+confound_filenames = rest_dataset.confounds
 for func_filename, confound_filename in zip(func_filenames,
                                             confound_filenames):
     print("Processing file %s" % func_filename)
