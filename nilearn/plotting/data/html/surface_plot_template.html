@@ -24,8 +24,10 @@
                                    surfaceMapInfo["black_bg"]);
             layout['title'] = {
                 text: surfaceMapInfo['title'],
+                font: {size: surfaceMapInfo["title_fontsize"],
+                       color: textColor(surfaceMapInfo["black_bg"])},
                 yref: 'paper',
-                y: .9};
+                y: .95};
             let config = getConfig();
 
             Plotly.react(divId, data, layout, config);
@@ -36,7 +38,8 @@
                             surfaceMapInfo["cmax"],
                             divId, layout, config,
                             surfaceMapInfo["cbar_fontsize"],
-                            surfaceMapInfo["cbar_height"]);
+                            surfaceMapInfo["cbar_height"],
+                            color=textColor(surfaceMapInfo["black_bg"]));
             }
         }
 
