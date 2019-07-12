@@ -2128,7 +2128,8 @@ def fetch_development_fmri(n_subjects=None, reduce_confounds=True,
     return Bunch(func=funcs, confounds=regressors, phenotypic=participants,
                  description=fdescr)
 
-def fetch_surf_tva_localizer(data_dir=None, verbose=1):
+
+def fetch_surf_tva_localizer(data_dir=None, verbose=1, resume=True):
     """Download the data from one subject of the InterTVA dataset,
         for the event-related voice localizer run.
         The data provided here is a set of beta maps each estimated
@@ -2171,49 +2172,57 @@ def fetch_surf_tva_localizer(data_dir=None, verbose=1):
     # Dataset description
     fdescr = _get_dataset_descr(dataset_name)
 
+    url = 'https://cloud.int.univ-amu.fr/index.php/s/29fJPH5Gm2H9Pxj'
+
     # First, get the metadata
     phenotypic_file = 'labels_voicelocalizer_voice_vs_nonvoice.tsv'
-    phenotypic = (phenotypic_file, url + '8470/pheno_nki_nilearn.csv',
+    phenotypic = (phenotypic_file, url + 'InterTVA_sub-41_surfdata/labels_voicelocalizer_voice_vs_nonvoice.tsv',
                   {'move': phenotypic_file})
 
     phenotypic = _fetch_files(data_dir, [phenotypic], resume=resume,
                               verbose=verbose)[0]
 
-    # Load the csv file
-    phenotypic = np.genfromtxt(phenotypic, skip_header=True,
-                               names=['Subject', 'Age',
-                                      'Dominant Hand', 'Sex'],
-                               delimiter=',', dtype=['U9', '<f8',
-                                                     'U1', 'U1'])
-
-    # Keep phenotypic information for selected subjects
-    int_ids = np.asarray(ids)
-    phenotypic = phenotypic[[np.where(phenotypic['Subject'] == i)[0][0]
-                             for i in int_ids]]
-
-    # Download subjects' datasets
-    func_right = []
-    func_left = []
-    for i in range(len(ids)):
-
-        archive = url + '%i/%s_%s_preprocessed_fsaverage5_fwhm6.gii'
-        func = os.path.join('%s', '%s_%s_preprocessed_fwhm6.gii')
-        rh = _fetch_files(data_dir,
-                          [(func % (ids[i], ids[i], 'right'),
-                           archive % (nitrc_ids[i], ids[i], 'rh'),
-                           {'move': func % (ids[i], ids[i], 'right')}
-                            )],
-                          resume=resume, verbose=verbose)
-        lh = _fetch_files(data_dir,
-                          [(func % (ids[i], ids[i], 'left'),
-                           archive % (nitrc_ids[i], ids[i], 'lh'),
-                           {'move': func % (ids[i], ids[i], 'left')}
-                            )],
-                          resume=resume, verbose=verbose)
-
-        func_right.append(rh[0])
-        func_left.append(lh[0])
-
-    return Bunch(func_left=func_left, func_right=func_right,
-                 phenotypic=phenotypic,
+    return Bunch(phenotypic=phenotypic,
                  description=fdescr)
+
+
+
+
+    # # Load the csv file
+    # phenotypic = np.genfromtxt(phenotypic, skip_header=True,
+    #                            names=['Subject', 'Age',
+    #                                   'Dominant Hand', 'Sex'],
+    #                            delimiter=',', dtype=['U9', '<f8',
+    #                                                  'U1', 'U1'])
+    #
+    # # Keep phenotypic information for selected subjects
+    # int_ids = np.asarray(ids)
+    # phenotypic = phenotypic[[np.where(phenotypic['Subject'] == i)[0][0]
+    #                          for i in int_ids]]
+    #
+    # # Download subjects' datasets
+    # func_right = []
+    # func_left = []
+    # for i in range(len(ids)):
+    #
+    #     archive = url + '%i/%s_%s_preprocessed_fsaverage5_fwhm6.gii'
+    #     func = os.path.join('%s', '%s_%s_preprocessed_fwhm6.gii')
+    #     rh = _fetch_files(data_dir,
+    #                       [(func % (ids[i], ids[i], 'right'),
+    #                        archive % (nitrc_ids[i], ids[i], 'rh'),
+    #                        {'move': func % (ids[i], ids[i], 'right')}
+    #                         )],
+    #                       resume=resume, verbose=verbose)
+    #     lh = _fetch_files(data_dir,
+    #                       [(func % (ids[i], ids[i], 'left'),
+    #                        archive % (nitrc_ids[i], ids[i], 'lh'),
+    #                        {'move': func % (ids[i], ids[i], 'left')}
+    #                         )],
+    #                       resume=resume, verbose=verbose)
+    #
+    #     func_right.append(rh[0])
+    #     func_left.append(lh[0])
+    #
+    # return Bunch(func_left=func_left, func_right=func_right,
+    #              phenotypic=phenotypic,
+    #              description=fdescr)

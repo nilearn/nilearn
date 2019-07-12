@@ -668,3 +668,6 @@ def test_fetch_development_fmri():
                                        verbose=1)
     confounds = np.recfromcsv(data.confounds[0], delimiter='\t')
     assert_equal(len(confounds[0]), 28)
+
+def test_fetch_surf_tva_localizer():
+    data = func.fetch_surf_tva_localizer()
