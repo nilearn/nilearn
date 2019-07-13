@@ -41,11 +41,7 @@ def test_add_js_lib():
     assert _normalize_ws("""/*! jQuery v3.3.1 | (c) JS Foundation and other
                             contributors | jquery.org/license */""") in inline
     assert _normalize_ws("""**
-                            * plotly.js (gl3d - minified) v1.38.3
-                            * Copyright 2012-2018, Plotly, Inc.
-                            * All rights reserved.
-                            * Licensed under the MIT license
-                            */ """) in inline
+                            * plotly.js (gl3d - minified)""") in inline
     assert "decodeBase64" in inline
 
 

@@ -97,7 +97,7 @@ def test_fill_html_template():
     info = html_surface.full_brain_info(img)
     html = html_surface._fill_html_template(info)
     check_html(html)
-    assert "* plotly.js (gl3d - minified) v1.38.3" in html.html
+    assert "* plotly.js (gl3d - minified) v1." in html.html
 
 
 def test_view_surf():
