@@ -2165,64 +2165,34 @@ def fetch_surf_tva_localizer(data_dir=None, verbose=1, resume=True):
 
     # Preliminary checks and declarations
     dataset_name = 'intertva_localizer_surface'
-    data_dir = _get_dataset_dir(dataset_name, data_dir=data_dir,
-                                verbose=verbose)
+    #data_dir = _get_dataset_dir(dataset_name, data_dir=data_dir,
+    #                            verbose=verbose)
+    intertva_dir = _get_dataset_dir(dataset_name, data_dir=data_dir)
+    dataset_dir = _get_dataset_dir('InterTVA_sub-41_surfdata', data_dir=intertva_dir)
+    url = 'https://cloud.int.univ-amu.fr/index.php/s/29fJPH5Gm2H9Pxj/download'
 
-    ######## STOPPED HERE... TO BE CONTINUED
     # Dataset description
     fdescr = _get_dataset_descr(dataset_name)
 
-    url = 'https://cloud.int.univ-amu.fr/index.php/s/29fJPH5Gm2H9Pxj'
+    # First, get the metadata, i.e the labels to be used for the searchlight decoding
+    label_path = 'labels_voicelocalizer_voice_vs_nonvoice.tsv'
+    #label_file = (label_path, url + 'InterTVA_sub-41_surfdata/{}'.format(label_path),
+    #              {'move': label_path})
+    label_file = (label_path, url , {'uncompress': True})
 
-    # First, get the metadata
-    phenotypic_file = 'labels_voicelocalizer_voice_vs_nonvoice.tsv'
-    phenotypic = (phenotypic_file, url + 'InterTVA_sub-41_surfdata/labels_voicelocalizer_voice_vs_nonvoice.tsv',
-                  {'move': phenotypic_file})
+    label_localpath = _fetch_files(dataset_dir, [label_file], resume=resume,verbose=verbose)[0]
+    labels = np.genfromtxt(label_localpath, dtype='str', skip_header=1)[:,0]
 
-    phenotypic = _fetch_files(data_dir, [phenotypic], resume=resume,
-                              verbose=verbose)[0]
+    # Secondly, get the data itself, i.e the 144 single-trial beta maps projected on the surface
+    gifti_file_list = []
+    for current_trial in range(144):
+        gifti_path = 'fsaverage5.lh.beta_{:04d}.gii'.format(current_trial+1)
+        gifti_file = (gifti_path, url, {'uncompress': True})
+        gifti_file_list.append(gifti_file)
 
-    return Bunch(phenotypic=phenotypic,
+    giftis = _fetch_files(dataset_dir, gifti_file_list, resume=resume, verbose=verbose)
+    #giftis = []
+
+    return Bunch(func_left=giftis,
+                 phenotypic=labels,
                  description=fdescr)
-
-
-
-
-    # # Load the csv file
-    # phenotypic = np.genfromtxt(phenotypic, skip_header=True,
-    #                            names=['Subject', 'Age',
-    #                                   'Dominant Hand', 'Sex'],
-    #                            delimiter=',', dtype=['U9', '<f8',
-    #                                                  'U1', 'U1'])
-    #
-    # # Keep phenotypic information for selected subjects
-    # int_ids = np.asarray(ids)
-    # phenotypic = phenotypic[[np.where(phenotypic['Subject'] == i)[0][0]
-    #                          for i in int_ids]]
-    #
-    # # Download subjects' datasets
-    # func_right = []
-    # func_left = []
-    # for i in range(len(ids)):
-    #
-    #     archive = url + '%i/%s_%s_preprocessed_fsaverage5_fwhm6.gii'
-    #     func = os.path.join('%s', '%s_%s_preprocessed_fwhm6.gii')
-    #     rh = _fetch_files(data_dir,
-    #                       [(func % (ids[i], ids[i], 'right'),
-    #                        archive % (nitrc_ids[i], ids[i], 'rh'),
-    #                        {'move': func % (ids[i], ids[i], 'right')}
-    #                         )],
-    #                       resume=resume, verbose=verbose)
-    #     lh = _fetch_files(data_dir,
-    #                       [(func % (ids[i], ids[i], 'left'),
-    #                        archive % (nitrc_ids[i], ids[i], 'lh'),
-    #                        {'move': func % (ids[i], ids[i], 'left')}
-    #                         )],
-    #                       resume=resume, verbose=verbose)
-    #
-    #     func_right.append(rh[0])
-    #     func_left.append(lh[0])
-    #
-    # return Bunch(func_left=func_left, func_right=func_right,
-    #              phenotypic=phenotypic,
-    #              description=fdescr)

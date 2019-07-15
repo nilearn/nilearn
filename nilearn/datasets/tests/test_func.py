@@ -670,4 +670,18 @@ def test_fetch_development_fmri():
     assert_equal(len(confounds[0]), 28)
 
 def test_fetch_surf_tva_localizer():
+    # get the data
     data = func.fetch_surf_tva_localizer()
+
+    n_files = 144
+
+    assert_equal(len(data), 3)
+    assert_true(isinstance(data.phenotypic, np.ndarray))
+    assert_equal(data.phenotypic.shape, (n_files,))
+    assert_not_equal(data.description, '')
+    assert_equal(len(data.func_left), n_files)
+    for i in range(n_files):
+        assert_equal(os.path.exists(data.func_left[i]),True)
+
+
+
