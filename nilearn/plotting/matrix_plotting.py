@@ -83,6 +83,8 @@ def plot_matrix(mat, title=None, labels=None, figure=None, axes=None,
     # we need a list so an empty one will be cast to False
     if isinstance(labels, np.ndarray):
         labels = labels.tolist()
+    if labels and len(labels) != mat.shape[0]:
+        raise ValueError("Length of labels unequal to length of matrix.")
 
     if reorder:
         if not labels:
