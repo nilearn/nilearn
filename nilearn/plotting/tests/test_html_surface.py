@@ -108,8 +108,10 @@ def test_view_surf():
                                   fsaverage['sulc_right'], '90%')
     check_html(html)
     html = html_surface.view_surf(fsaverage['pial_right'], surf_map,
-                                  fsaverage['sulc_right'], .3)
+                                  fsaverage['sulc_right'], .3,
+                                  title="SOME_TITLE")
     check_html(html)
+    assert "SOME_TITLE" in html.html
     html = html_surface.view_surf(fsaverage['pial_right'])
     check_html(html)
     destrieux = datasets.fetch_atlas_surf_destrieux()['map_left']
@@ -132,7 +134,8 @@ def test_view_img_on_surf():
     check_html(html)
     html = html_surface.view_img_on_surf(img, threshold=0, surf_mesh=fsaverage)
     check_html(html)
-    html = html_surface.view_img_on_surf(img, threshold=.4)
+    html = html_surface.view_img_on_surf(img, threshold=.4, title="SOME_TITLE")
+    assert "SOME_TITLE" in html.html
     check_html(html)
     html = html_surface.view_img_on_surf(
         img, threshold=.4, cmap='hot', black_bg=True)
