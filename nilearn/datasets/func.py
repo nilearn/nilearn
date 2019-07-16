@@ -2183,7 +2183,12 @@ def fetch_surf_tva_localizer(data_dir=None, verbose=1, resume=True):
     label_localpath = _fetch_files(dataset_dir, [label_file], resume=resume,verbose=verbose)[0]
     labels = np.genfromtxt(label_localpath, dtype='str', skip_header=1)[:,0]
 
-    # Secondly, get the data itself, i.e the 144 single-trial beta maps projected on the surface
+    # Secondly, get the mask of a region of interest for this task
+    mask_path = 'fsaverage5.lh.stg_sts.gii'
+    mask_file = (mask_path, url, {'uncompress': True})
+    mask = _fetch_files(dataset_dir, [mask_file], resume=resume, verbose=verbose)[0]
+
+    # Finally, get the data itself, i.e the 144 single-trial beta maps projected on the surface
     gifti_file_list = []
     for current_trial in range(144):
         gifti_path = 'fsaverage5.lh.beta_{:04d}.gii'.format(current_trial+1)
@@ -2194,5 +2199,6 @@ def fetch_surf_tva_localizer(data_dir=None, verbose=1, resume=True):
     #giftis = []
 
     return Bunch(func_left=giftis,
+                 mask=mask,
                  phenotypic=labels,
                  description=fdescr)
