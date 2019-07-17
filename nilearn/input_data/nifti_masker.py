@@ -220,8 +220,7 @@ class NiftiMasker(BaseMasker, CacheMixin, ReportMixin):
             # compute middle image from 4D series for plotting
             img = image.index_img(img, dim[-1] // 2)
 
-        # img = self.mask_img_
-
+        display, display2 = None, None
         display = plotting.plot_img(img, black_bg=False)
         display.add_contours(mask, levels=[.5], colors='r')
 
@@ -231,6 +230,7 @@ class NiftiMasker(BaseMasker, CacheMixin, ReportMixin):
             if len(dim) == 4:
                 # compute middle image from 4D series for plotting
                 resampl_img = image.index_img(resampl_img, dim[-1] // 2)
+
             display2 = plotting.plot_img(resampl_img, black_bg=False)
             display2.add_contours(resampl_mask, levels=[.5], colors='r')
         else:

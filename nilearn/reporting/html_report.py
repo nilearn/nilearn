@@ -34,6 +34,7 @@ def _embed_img(display):
         io_buffer = open(fn, 'rb')
 
     data = base64.b64encode(io_buffer.read())
+    io_buffer.close()
 
     return '{}'.format(data.decode())
 
