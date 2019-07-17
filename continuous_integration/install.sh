@@ -22,7 +22,7 @@ create_new_venv() {
     deactivate
     virtualenv --system-site-packages testvenv
     source testvenv/bin/activate
-    pip install nose
+    pip install nose nose-exclude
 }
 
 print_conda_requirements() {
@@ -111,7 +111,7 @@ fi
 pip install psutil memory_profiler
 
 if [[ "$COVERAGE" == "true" ]]; then
-    pip install codecov
+    pip install codecov nose-exclude
 fi
 
 # numpy not installed when skipping the tests so we do not want to run
