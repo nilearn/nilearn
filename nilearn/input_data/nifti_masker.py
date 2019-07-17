@@ -213,19 +213,30 @@ class NiftiMasker(BaseMasker, CacheMixin, ReportMixin):
     def _reporting(self):
         from .. import plotting
 
-        if self.input_ is not None:
-            dim = image.load_img(self.input_).shape
-            if len(dim) == 4:
-                # compute middle image from 4D series for plotting
-                img = image.index_img(self.input_, dim[-1] // 2)
-            elif len(dim) == 3:
-                img = self.input_
-        else:
-            img = self.mask_img_
+        img, mask = self.input_
+
+        dim = image.load_img(img).shape
+        if len(dim) == 4:
+            # compute middle image from 4D series for plotting
+            img = image.index_img(img, dim[-1] // 2)
+
+        # img = self.mask_img_
 
         display = plotting.plot_img(img, black_bg=False)
-        display.add_contours(self.mask_img_, levels=[.5], colors='r')
-        return display
+        display.add_contours(mask, levels=[.5], colors='r')
+
+        if self.transform_ is not None:
+            resampl_img, resampl_mask = self.transform_
+            dim = image.load_img(resampl_img).shape
+            if len(dim) == 4:
+                # compute middle image from 4D series for plotting
+                resampl_img = image.index_img(resampl_img, dim[-1] // 2)
+            display2 = plotting.plot_img(resampl_img, black_bg=False)
+            display2.add_contours(resampl_mask, levels=[.5], colors='r')
+        else:
+            display2 = None
+
+        return display, display2
 
     def _check_fitted(self):
         if not hasattr(self, 'mask_img_'):
@@ -272,6 +283,9 @@ class NiftiMasker(BaseMasker, CacheMixin, ReportMixin):
         else:
             self.mask_img_ = _utils.check_niimg_3d(self.mask_img)
 
+        if self.reports:  # save inputs for reporting
+            self.input_ = [imgs, self.mask_img_]
+
         # If resampling is requested, resample also the mask
         # Resampling: allows the user to change the affine, the shape or both
         if self.verbose > 0:
@@ -281,16 +295,24 @@ class NiftiMasker(BaseMasker, CacheMixin, ReportMixin):
             target_affine=self.target_affine,
             target_shape=self.target_shape,
             copy=False, interpolation='nearest')
-        if self.target_affine is not None:
+        if self.target_affine is not None:  # resample image to target affine
             self.affine_ = self.target_affine
-        else:
+        else:  # resample image to mask affine
             self.affine_ = self.mask_img_.affine
         # Load data in memory
         self.mask_img_.get_data()
         if self.verbose > 10:
             print("[%s.fit] Finished fit" % self.__class__.__name__)
-        if self.reports:  # save inputs for reporting
-            self.input_ = imgs
+
+        if (self.target_shape, self.target_affine) is not None:
+            resampl_performed = True
+
+        # save tranformed inputs for reporting
+        if resampl_performed and self.reports:
+            resampl_imgs = self._cache(image.resample_img)(
+                imgs, target_affine=self.affine_,
+                copy=False, interpolation='nearest')
+            self.transform_ = [resampl_imgs, self.mask_img_]
 
         return self
 

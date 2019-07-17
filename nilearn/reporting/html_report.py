@@ -51,7 +51,7 @@ def _str_params(params):
     return params
 
 
-def _update_template(title, docstring, content,
+def _update_template(title, docstring, content, overlay,
                      parameters, description=None):
     """
     Populate a report with content.
@@ -64,6 +64,8 @@ def _update_template(title, docstring, content,
         The introductory docstring for the reported object
     content : img
         The content to display
+    overlay : img
+        Overlaid content, to appear on hover
     parameters : dict
         A dictionary of object parameters and their values
     description : str
@@ -80,6 +82,7 @@ def _update_template(title, docstring, content,
     tpl = tempita.HTMLTemplate.from_filename(str(body_template_path),
                                              encoding='utf-8')
     body = tpl.substitute(title=title, content=content,
+                          overlay=overlay,
                           docstring=docstring,
                           parameters=parameters,
                           description=description)
@@ -126,7 +129,8 @@ class ReportMixin:
             snippet = docstring.partition('Parameters\n    ----------\n')[0]
             report = _update_template(title=self.__class__.__name__,
                                       docstring=snippet,
-                                      content=_embed_img(self._reporting()),
+                                      content=_embed_img(self._reporting()[0]),
+                                      overlay=_embed_img(self._reporting()[1]),
                                       parameters=parameters,
                                       description=description)
         return report
