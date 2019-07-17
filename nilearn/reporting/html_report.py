@@ -129,8 +129,8 @@ class ReportMixin:
             snippet = docstring.partition('Parameters\n    ----------\n')[0]
             report = _update_template(title=self.__class__.__name__,
                                       docstring=snippet,
-                                      content=_embed_img(self._reporting()[0]),
-                                      overlay=_embed_img(self._reporting()[1]),
+                                      content=_embed_img(self._reporting()[1]),
+                                      overlay=_embed_img(self._reporting()[0]),
                                       parameters=parameters,
                                       description=description)
         return report

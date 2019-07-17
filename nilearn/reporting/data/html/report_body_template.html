@@ -121,17 +121,12 @@ div.nilearn_report .withtooltip:hover .tooltiptext {
   visibility: visible;
 }
 
-div.image {
+div.nilearn_report .image {
   position: relative;
   height: auto;
 }
 
-div.image .img {
-  width: 100%;
-  vertical-align: top;
-}
-
-div.image .overlay {
+div.nilearn_report .image .overlay {
   position: absolute;
   top: 0;
   left: 0;
@@ -140,7 +135,7 @@ div.image .overlay {
   -webkit-transition: .5s ease;
 }
 
-div.image:hover .overlay {
+div.nilearn_report .image:hover .overlay {
   opacity: 1;
 }
 
@@ -156,7 +151,7 @@ div.image:hover .overlay {
       <div class="image">
       <img class="pure-img" src="data:image/png;base64,{{content}}" alt="image"/>
       <div class="overlay">
-        <img class="pure-img" src="data:image/png;base64,{{overlay}}" alt="image"/>
+        <img class="pure-img" src="data:image/png;base64,{{overlay}}" alt="overlay"/>
       </div>
       </div>
   </div>

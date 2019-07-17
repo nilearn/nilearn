@@ -234,7 +234,7 @@ class NiftiMasker(BaseMasker, CacheMixin, ReportMixin):
             display2 = plotting.plot_img(resampl_img, black_bg=False)
             display2.add_contours(resampl_mask, levels=[.5], colors='r')
         else:
-            display2 = None
+            display2 = display
 
         return display, display2
 
@@ -304,15 +304,14 @@ class NiftiMasker(BaseMasker, CacheMixin, ReportMixin):
         if self.verbose > 10:
             print("[%s.fit] Finished fit" % self.__class__.__name__)
 
-        if (self.target_shape, self.target_affine) is not None:
-            resampl_performed = True
-
-        # save tranformed inputs for reporting
-        if resampl_performed and self.reports:
-            resampl_imgs = self._cache(image.resample_img)(
-                imgs, target_affine=self.affine_,
-                copy=False, interpolation='nearest')
-            self.transform_ = [resampl_imgs, self.mask_img_]
+        if (self.target_shape or self.target_affine) is not None:
+            if self.reports:
+                resampl_imgs = self._cache(image.resample_img)(
+                    imgs, target_affine=self.affine_,
+                    copy=False, interpolation='nearest')
+                self.transform_ = [resampl_imgs, self.mask_img_]
+        else:
+            self.transform_ = None
 
         return self
 
