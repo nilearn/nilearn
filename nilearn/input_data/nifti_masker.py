@@ -206,37 +206,56 @@ class NiftiMasker(BaseMasker, CacheMixin, ReportMixin):
                                     'image overlaid with the outlines of the '
                                     'mask. We recommend to inspect the report '
                                     'for the overlap between the mask and its '
-                                    'input image.')
+                                    'input image. ')
+        self._overlay_text = ('\n To see the input Nifti image before '
+                              'resampling, hover over the displayed image.')
 
         self._shelving = False
 
     def _reporting(self):
+        """
+        Returns
+        -------
+        displays : list
+            A list of all displays to be rendered.
+        """
         from .. import plotting
 
         img, mask = self.input_
-
-        dim = image.load_img(img).shape
-        if len(dim) == 4:
-            # compute middle image from 4D series for plotting
-            img = image.index_img(img, dim[-1] // 2)
-
-        display, display2 = None, None
-        display = plotting.plot_img(img, black_bg=False)
-        display.add_contours(mask, levels=[.5], colors='r')
-
-        if self.transform_ is not None:
-            resampl_img, resampl_mask = self.transform_
-            dim = image.load_img(resampl_img).shape
+        try:
+            dim = image.load_img(img).shape
             if len(dim) == 4:
                 # compute middle image from 4D series for plotting
-                resampl_img = image.index_img(resampl_img, dim[-1] // 2)
+                img = image.index_img(img, dim[-1] // 2)
+        except TypeError:  # images were not provided to fit
+            img = mask
 
-            display2 = plotting.plot_img(resampl_img, black_bg=False)
-            display2.add_contours(resampl_mask, levels=[.5], colors='r')
-        else:
-            display2 = display
+        # create display of retained input mask, image
+        # for visual comparison
+        init_display = plotting.plot_img(img, black_bg=False)
+        init_display.add_contours(mask, levels=[.5], colors='r')
 
-        return display, display2
+        if self.transform_ is None:
+            return [init_display]
+
+        else:  # if resampling was performed
+            self._report_description = (self._report_description +
+                                        self._overlay_text)
+
+            # create display of resampled NiftiImage and mask
+            # assuming that resampl_img has same dim as img
+            resampl_img, resampl_mask = self.transform_
+            try:
+                if len(dim) == 4:
+                    # compute middle image from 4D series for plotting
+                    resampl_img = image.index_img(resampl_img, dim[-1] // 2)
+            except NameError:  # images were not provided to fit
+                resampl_img = resampl_mask
+
+            final_display = plotting.plot_img(resampl_img, black_bg=False)
+            final_display.add_contours(resampl_mask, levels=[.5], colors='r')
+
+        return [init_display, final_display]
 
     def _check_fitted(self):
         if not hasattr(self, 'mask_img_'):
@@ -304,11 +323,14 @@ class NiftiMasker(BaseMasker, CacheMixin, ReportMixin):
         if self.verbose > 10:
             print("[%s.fit] Finished fit" % self.__class__.__name__)
 
-        if (self.target_shape or self.target_affine) is not None:
+        if (self.target_shape is not None) or (self.target_affine is not None):
             if self.reports:
-                resampl_imgs = self._cache(image.resample_img)(
-                    imgs, target_affine=self.affine_,
-                    copy=False, interpolation='nearest')
+                try:
+                    resampl_imgs = self._cache(image.resample_img)(
+                        imgs, target_affine=self.affine_,
+                        copy=False, interpolation='nearest')
+                except TypeError:  # imgs not provided to fit
+                    resampl_imgs = None
                 self.transform_ = [resampl_imgs, self.mask_img_]
         else:
             self.transform_ = None

@@ -3,8 +3,6 @@ import base64
 import warnings
 from pathlib import Path
 from string import Template
-from pkg_resources import resource_filename
-
 
 from nilearn.externals import tempita
 from nilearn.plotting import js_plotting_utils as plot_utils
@@ -22,25 +20,27 @@ def _embed_img(display):
     embed : str
         Binary image string
     """
-    if display is not None:
+    if display is None:  # no display, show single transparent pixel
+        data = ("iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAw" +
+                "CAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=")
+        return data
+
+    else:  # we were passed a matplotlib display
         io_buffer = io.BytesIO()
         display.savefig(io_buffer)
         display.close()
+
         io_buffer.seek(0)
+        data = base64.b64encode(io_buffer.read())
 
-    else:
-        fn = resource_filename('nilearn',
-                               'reporting/data/undraw_blank_canvas.png')
-        io_buffer = open(fn, 'rb')
-
-    data = base64.b64encode(io_buffer.read())
-    io_buffer.close()
-
-    return '{}'.format(data.decode())
+        return '{}'.format(data.decode())
 
 
 def _str_params(params):
     """
+    Convert NoneType values to the string 'None'
+    for display.
+
     Parameters
     ----------
     params: dict
@@ -101,6 +101,27 @@ class ReportMixin:
     A class to provide general reporting functionality
     """
 
+    def _define_overlay(self):
+        """
+        Determine whether an overlay was provided and
+        update the report text as appropriate.
+
+        Parameters
+        ----------
+
+        Returns
+        -------
+        """
+        displays = self._reporting()
+
+        if len(displays) == 1:  # set overlay to None
+            overlay, image = None, displays[0]
+
+        elif len(displays) == 2:
+            overlay, image = displays[0], displays[1]
+
+        return overlay, image
+
     def generate_report(self):
         """
         Generate a report for Nilearn objects.
@@ -121,17 +142,19 @@ class ReportMixin:
                                                  'generated. Please check '
                                                  'that reporting is enabled.'),
                                       content=_embed_img(None),
+                                      overlay=_embed_img(None),
                                       parameters=dict())
 
         else:
+            overlay, image = self._define_overlay()
             description = self._report_description
             parameters = _str_params(self.get_params())
             docstring = self.__doc__
             snippet = docstring.partition('Parameters\n    ----------\n')[0]
             report = _update_template(title=self.__class__.__name__,
                                       docstring=snippet,
-                                      content=_embed_img(self._reporting()[1]),
-                                      overlay=_embed_img(self._reporting()[0]),
+                                      content=_embed_img(image),
+                                      overlay=_embed_img(overlay),
                                       parameters=parameters,
                                       description=description)
         return report
