@@ -5,7 +5,7 @@ import numpy as np
 
 from sklearn.base import clone
 from sklearn.feature_extraction import image
-from sklearn.externals.joblib import Memory, delayed, Parallel
+from joblib import Memory, delayed, Parallel
 
 from .rena_clustering import ReNA
 from ..decomposition.multi_pca import MultiPCA

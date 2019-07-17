@@ -14,7 +14,7 @@ from scipy import linalg
 import sklearn
 import nilearn
 from sklearn.base import BaseEstimator, TransformerMixin
-from sklearn.externals.joblib import Memory, Parallel, delayed
+from joblib import Memory, Parallel, delayed
 from sklearn.linear_model import LinearRegression
 from sklearn.utils import check_random_state
 from sklearn.utils.extmath import randomized_svd, svd_flip

@@ -1,7 +1,7 @@
 import numpy as np
 from nose.tools import assert_equal, assert_not_equal, assert_raises
 try:
-    from sklearn.externals.joblib import Memory
+    from joblib import Memory
 except ImportError:
     from joblib import Memory
 from nilearn._utils.data_gen import generate_fake_fmri

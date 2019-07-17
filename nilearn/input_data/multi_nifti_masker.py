@@ -8,7 +8,7 @@ import collections
 import itertools
 import warnings
 
-from sklearn.externals.joblib import Memory, Parallel, delayed
+from joblib import Memory, Parallel, delayed
 
 from .. import _utils
 from .. import image

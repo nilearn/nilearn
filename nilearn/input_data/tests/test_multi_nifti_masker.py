@@ -14,7 +14,7 @@ from nibabel import Nifti1Image
 from nose import SkipTest
 from nose.tools import assert_true, assert_false, assert_raises, assert_equal
 from numpy.testing import assert_array_equal
-from sklearn.externals.joblib import Memory
+from joblib import Memory
 
 from nilearn._utils.exceptions import DimensionError
 from nilearn._utils.testing import assert_raises_regex, write_tmp_imgs
@@ -116,7 +116,7 @@ def test_3d_images():
 
 
 def test_joblib_cache():
-    from sklearn.externals.joblib import hash
+    from joblib import hash
     # Dummy mask
     mask = np.zeros((40, 40, 40))
     mask[20, 20, 20] = 1
