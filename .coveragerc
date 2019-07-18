@@ -1,0 +1,8 @@
+[run]
+branch = True
+source = nilearn
+parallel = True
+omit =
+    */nilearn/externals/*
+    **/setup.py
+
