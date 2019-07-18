@@ -3,6 +3,6 @@ branch = True
 source = nilearn
 parallel = True
 omit =
-    */nilearn/externals/*
+    **/nilearn/externals/**/*
     **/setup.py
 
