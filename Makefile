@@ -31,9 +31,9 @@ inplace:
 	$(PYTHON) setup.py build_ext -i
 
 test-code:
-	python -m pytest nilearn -s -vv --durations=0
+	python -m pytest --pyargs nilearn -s -vv --durations=0
 test-doc:
-	python -m pytest nilearn -s -vv --durations=0
+	python -m pytest --pyargs nilearn -s -vv --durations=0
 
 test-coverage:
 	rm -rf coverage .coverage
