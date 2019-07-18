@@ -32,10 +32,12 @@ inplace:
 	$(PYTHON) setup.py build_ext -i
 
 test-code:
-	$(NOSETESTS) -s nilearn $(NOSETESTS_OPTIONS)
+	$(NOSETESTS) -s nilearn $(NOSETESTS_OPTIONS) --exclude-test=nilearn.externals.tempita \
+	--exclude-test=nilearn.externals.conftest
 test-doc:
 	$(NOSETESTS) -s --with-doctest --doctest-tests --doctest-extension=rst \
-	--doctest-extension=inc --doctest-fixtures=_fixture `find doc/ -name '*.rst'`
+	--doctest-extension=inc --doctest-fixtures=_fixture `find doc/ -name '*.rst'` \
+	--exclude-test=nilearn.externals.tempita --exclude-test=nilearn.externals.conftest
 
 test-coverage:
 	rm -rf coverage .coverage
