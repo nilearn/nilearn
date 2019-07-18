@@ -52,7 +52,7 @@ from nilearn import image
 from nilearn import input_data
 
 # A "memory" to avoid recomputation
-from joblib import Memory
+from nilearn._utils.compat.joblib import Memory
 mem = Memory('nilearn_cache')
 
 masker = input_data.NiftiMapsMasker(

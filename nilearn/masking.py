@@ -8,7 +8,7 @@ import numbers
 
 import numpy as np
 from scipy import ndimage
-from joblib import Parallel, delayed
+from nilearn._utils.compat.joblib import Parallel, delayed
 
 from . import _utils
 from .image import new_img_like

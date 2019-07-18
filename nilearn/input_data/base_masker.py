@@ -10,7 +10,7 @@ import abc
 import numpy as np
 
 from sklearn.base import BaseEstimator, TransformerMixin
-from joblib import Memory
+from nilearn._utils.compat.joblib import Memory
 
 from .. import masking
 from .. import image

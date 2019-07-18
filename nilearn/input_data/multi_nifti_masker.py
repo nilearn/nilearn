@@ -8,7 +8,7 @@ import collections
 import itertools
 import warnings
 
-from joblib import Memory, Parallel, delayed
+from nilearn._utils.compat.joblib import Memory, Parallel, delayed
 
 from .. import _utils
 from .. import image

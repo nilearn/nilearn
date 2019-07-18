@@ -15,7 +15,7 @@ from distutils.version import LooseVersion
 import numpy as np
 import sklearn
 from sklearn.decomposition import dict_learning_online
-from joblib import Memory
+from nilearn._utils.compat.joblib import Memory
 from sklearn.linear_model import Ridge
 
 from .base import BaseDecomposition

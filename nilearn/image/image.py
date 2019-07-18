@@ -14,7 +14,7 @@ from scipy import ndimage
 from scipy.stats import scoreatpercentile
 import copy
 import nibabel
-from joblib import Parallel, delayed
+from nilearn._utils.compat.joblib import Parallel, delayed
 
 from .. import signal
 from .._utils import (check_niimg_4d, check_niimg_3d, check_niimg, as_ndarray,

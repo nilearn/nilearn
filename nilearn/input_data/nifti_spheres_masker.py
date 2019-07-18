@@ -7,7 +7,7 @@ Mask nifti images by spherical volumes for seed-region analyses
 import numpy as np
 import warnings
 from sklearn import neighbors
-from joblib import Memory
+from nilearn._utils.compat.joblib import Memory
 
 from ..image.resampling import coord_transform
 from .._utils.niimg_conversions import _safe_get_data

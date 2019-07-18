@@ -8,7 +8,7 @@ import warnings
 import numpy as np
 from scipy import linalg
 from sklearn.utils import check_random_state
-import joblib as joblib
+from nilearn._utils.compat import joblib
 
 
 def normalize_matrix_on_axis(m, axis=0):

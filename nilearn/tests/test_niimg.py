@@ -6,7 +6,7 @@ from nose.tools import assert_equal
 import nibabel as nb
 from nibabel import Nifti1Image
 from nibabel.tmpdirs import InTemporaryDirectory
-import joblib
+from nilearn._utils.compat import joblib
 
 from nilearn.image import new_img_like
 from nilearn._utils import niimg

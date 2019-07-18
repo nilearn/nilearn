@@ -10,7 +10,7 @@ import glob
 import nilearn as ni
 import numpy as np
 import itertools
-from joblib import Memory
+from nilearn._utils.compat.joblib import Memory
 
 from .cache_mixin import cache
 from .niimg import _safe_get_data, load_niimg
