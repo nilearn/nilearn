@@ -74,6 +74,7 @@ create_new_conda_env() {
     echo "conda requirements string: $REQUIREMENTS"
     conda create -n testenv --quiet --yes $REQUIREMENTS
     source activate testenv
+    pip install nose-exclude
 
     if [[ "$INSTALL_MKL" == "true" ]]; then
         # Make sure that MKL is used
