@@ -22,7 +22,7 @@ create_new_venv() {
     deactivate
     virtualenv --system-site-packages testvenv
     source testvenv/bin/activate
-    pip install nose nose-exclude
+    pip install nose
 }
 
 print_conda_requirements() {
@@ -33,9 +33,9 @@ print_conda_requirements() {
     # if yes which version to install. For example:
     #   - for numpy, NUMPY_VERSION is used
     #   - for scikit-learn, SCIKIT_LEARN_VERSION is used
-    TO_INSTALL_ALWAYS="pip nose nose-exclude"
+    TO_INSTALL_ALWAYS="pip nose"
     REQUIREMENTS="$TO_INSTALL_ALWAYS"
-    TO_INSTALL_MAYBE="python numpy scipy matplotlib nose-exclude scikit-learn pandas \
+    TO_INSTALL_MAYBE="python numpy scipy matplotlib scikit-learn pandas \
 flake8 lxml"
     for PACKAGE in $TO_INSTALL_MAYBE; do
         # Capitalize package name and add _VERSION
@@ -67,6 +67,7 @@ create_new_conda_env() {
     chmod +x ~/miniconda.sh && ~/miniconda.sh -b
     export PATH=$HOME/miniconda3/bin:$PATH
     echo $PATH
+    conda update --quiet --yes conda
 
     # Configure the conda environment and put it in the path using the
     # provided versions
@@ -74,7 +75,7 @@ create_new_conda_env() {
     echo "conda requirements string: $REQUIREMENTS"
     conda create -n testenv --quiet --yes $REQUIREMENTS
     source activate testenv
-    pip install nose-exclude
+    conda install nose-exclude -c conda-forge
 
     if [[ "$INSTALL_MKL" == "true" ]]; then
         # Make sure that MKL is used
@@ -89,13 +90,13 @@ create_new_conda_env() {
 
 if [[ "$DISTRIB" == "neurodebian" ]]; then
     create_new_venv
-    pip install nose-timer nose-exclude
+    pip install nose-timer
     bash <(wget -q -O- http://neuro.debian.net/_files/neurodebian-travis.sh)
-    sudo apt-get install -qq python-scipy python-nose python-nose-exclude python-nibabel python-sklearn
+    sudo apt-get install -qq python-scipy python-nose python-nibabel python-sklearn
 
 elif [[ "$DISTRIB" == "conda" ]]; then
     create_new_conda_env
-    pip install nose-timer nose-exclude
+    pip install nose-timer
     # Note: nibabel is in setup.py install_requires so nibabel will
     # always be installed eventually. Defining NIBABEL_VERSION is only
     # useful if you happen to want a specific nibabel version rather
@@ -112,7 +113,7 @@ fi
 pip install psutil memory_profiler
 
 if [[ "$COVERAGE" == "true" ]]; then
-    pip install codecov nose-exclude
+    pip install codecov
 fi
 
 # numpy not installed when skipping the tests so we do not want to run
