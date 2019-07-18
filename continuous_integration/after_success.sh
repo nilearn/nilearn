@@ -8,5 +8,8 @@ set -e
 # so we need to copy the coverage results from TEST_RUN_FOLDER
 if [[ "$SKIP_TESTS" != "true" && "$COVERAGE" == "true" ]]; then
     cp "$TEST_RUN_FOLDER/.coverage" .
+
     codecov || echo "Codecov upload failed"
 fi
+coverage combine
+coverage report --omit 'externals/*'
