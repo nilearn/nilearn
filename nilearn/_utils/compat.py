@@ -70,7 +70,7 @@ else:
 
 
 if sklearn.__version__ < '0.21':
-    from sklearn.utils.compat import joblib
+    from sklearn.externals import joblib
 else:
     import joblib
 
