@@ -121,5 +121,3 @@ fi
 if [[ "$SKIP_TESTS" != "true" ]]; then
     python setup.py install
 fi
-
-find . -type f -name "nilearn"
