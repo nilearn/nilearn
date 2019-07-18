@@ -75,7 +75,7 @@ create_new_conda_env() {
     echo "conda requirements string: $REQUIREMENTS"
     conda create -n testenv --quiet --yes $REQUIREMENTS
     source activate testenv
-    conda install nose-exclude -c conda-forge --yes
+#    conda install nose-exclude -c conda-forge --yes
 
     if [[ "$INSTALL_MKL" == "true" ]]; then
         # Make sure that MKL is used
@@ -110,7 +110,7 @@ else
     exit 1
 fi
 
-pip install psutil memory_profiler
+pip install psutil memory_profiler nose-exclude
 
 if [[ "$COVERAGE" == "true" ]]; then
     pip install codecov
