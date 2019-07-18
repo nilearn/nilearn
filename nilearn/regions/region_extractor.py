@@ -9,7 +9,7 @@ import numpy as np
 from scipy import ndimage
 from scipy.stats import scoreatpercentile
 
-from nilearn._utils.compat.joblib import Memory
+from nilearn._utils.compat import Memory
 
 from .. import masking
 from ..input_data import NiftiMapsMasker

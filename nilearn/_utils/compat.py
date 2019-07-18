@@ -73,3 +73,9 @@ if sklearn.__version__ < '0.21':
     from sklearn.utils.compat import joblib
 else:
     import joblib
+
+Memory = joblib.Memory
+Parallel = joblib.Parallel
+hash = joblib.hash
+delayed = joblib.delayed
+cpu_count = joblib.cpu_count
