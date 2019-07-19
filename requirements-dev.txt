@@ -1,8 +1,7 @@
 nose
 pytest
+pytest-cov
 coverage
-boto3
-patsy
 scipy
 scikit-learn
 pandas
