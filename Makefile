@@ -34,8 +34,7 @@ test-code:
 	python -m $(TEST_RUNNER) --pyargs nilearn --cov=nilearn -s -vv --durations=0
 
 test-doc:
-	$(TEST_RUNNER) -s --with-doctest --doctest-tests --doctest-extension=rst \
-	--doctest-extension=inc --doctest-fixtures=_fixture `find doc/ -name '*.rst'`
+	$(TEST_RUNNER) -s --doctest-glob='*.rst'
 
 
 test-coverage:
