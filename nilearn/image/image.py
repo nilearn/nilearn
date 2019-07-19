@@ -172,8 +172,8 @@ def _smooth_array(arr, affine, fwhm=None, ensure_finite=True, copy=True):
         filtering.
 
     copy: bool
-        if True, input array is not modified. False by default: the filtering
-        is performed in-place.
+        if True, input array is not modified. True by default: the filtering
+        is not performed in-place.
 
     Returns
     -------
@@ -705,7 +705,7 @@ def new_img_like(ref_niimg, data, affine=None, copy_header=False):
     return klass(data, affine, header=header)
 
 
-def threshold_img(img, threshold, mask_img=None):
+def threshold_img(img, threshold, mask_img=None, copy=True):
     """ Threshold the given input image, mostly statistical or atlas images.
 
     Thresholding can be done based on direct image intensities or selection
@@ -732,6 +732,10 @@ def threshold_img(img, threshold, mask_img=None):
         Mask image applied to mask the input data.
         If None, no masking will be applied.
 
+    copy: bool
+        if True, input array is not modified. True by default: the filtering
+        is not performed in-place.
+
     Returns
     -------
     threshold_img: Nifti1Image
@@ -742,6 +746,8 @@ def threshold_img(img, threshold, mask_img=None):
 
     img = check_niimg(img)
     img_data = _safe_get_data(img, ensure_finite=True)
+    if copy:
+        img_data = img_data.copy()
     affine = img.affine
 
     if mask_img is not None:

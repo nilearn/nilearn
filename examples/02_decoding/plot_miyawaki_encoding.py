@@ -152,7 +152,7 @@ cut_score[cut_score < 0] = 0
 # bring the scores into the shape of the background brain
 score_map_img = masker.inverse_transform(cut_score)
 
-thresholded_score_map_img = threshold_img(score_map_img, threshold=1e-6)
+thresholded_score_map_img = threshold_img(score_map_img, threshold=1e-6, copy=False)
 
 ##############################################################################
 # Plotting the statistical map on a background brain, we mark four voxels
