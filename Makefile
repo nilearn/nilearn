@@ -31,13 +31,13 @@ inplace:
 	$(PYTHON) setup.py build_ext -i
 
 test-code:
-	python -m pytest --pyargs nilearn -s -v --durations=0
+	python -m $(TEST_RUNNER) --pyargs nilearn -s -v --durations=0
 test-doc:
-	python -m pytest --pyargs nilearn -s -v --durations=0
+	python -m $(TEST_RUNNER) --pyargs nilearn -s -v --durations=0
 
 test-coverage:
 	rm -rf coverage .coverage
-	$(TEST_RUNNER) -s --with-coverage --cover-html --cover-html-dir=coverage \
+	$(TEST_RUNNER) -s --cov=nilearn --cover-html --cover-html-dir=coverage \
 	--cover-package=nilearn nilearn
 
 test: test-code test-doc
