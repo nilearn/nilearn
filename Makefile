@@ -34,7 +34,7 @@ test-code:
 	python -m $(TEST_RUNNER) --pyargs nilearn --cov=nilearn -s -vv --durations=0
 
 test-doc:
-	$(TEST_RUNNER) -s --doctest-glob='*.rst'
+	$(TEST_RUNNER) -s --doctest-glob='*.rst' --doctest-modules
 
 
 test-coverage:
