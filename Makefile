@@ -4,8 +4,6 @@
 
 PYTHON ?= python
 CYTHON ?= cython
-TEST_RUNNER ?= pytest
-TEST_RUNNER_OPTIONS := --durations=0 -vv
 CTAGS ?= ctags
 
 all: clean test doc-noplot
@@ -31,15 +29,15 @@ inplace:
 	$(PYTHON) setup.py build_ext -i
 
 test-code:
-	python -m $(TEST_RUNNER) --pyargs nilearn --cov=nilearn
+	python -m pytest --pyargs nilearn --cov=nilearn
 
 test-doc:
-	$(TEST_RUNNER) -s --doctest-glob='*.rst' `find doc/ -name '*.rst'`
+	pytest --doctest-glob='*.rst' `find doc/ -name '*.rst'`
 
 
 test-coverage:
 	rm -rf coverage .coverage
-	$(PYTEST) --pyargs nilearn --showlocals -vv --cov=nilearn --cov-report=html:coverage
+	pytest --pyargs nilearn --showlocals --cov=nilearn --cov-report=html:coverage
 
 test: test-code test-doc
 
