@@ -1,3 +1,5 @@
 include AUTHORS.rst
 include LICENSE
 include README.rst
+include pytest.ini
+include setup.cfg
