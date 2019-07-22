@@ -14,7 +14,7 @@ else:
 
 
 def pytest_collection_modifyitems(items):
-    
+
     # numpy changed the str/repr formatting of numpy arrays in 1.14. We want to
     # run doctests only for numpy >= 1.14.Adapted from scikit-learn
     if LooseVersion(np.__version__) < LooseVersion('1.14'):
@@ -22,7 +22,7 @@ def pytest_collection_modifyitems(items):
         skip_doctests = True
     else:
         skip_doctests = False
-        
+
     if skip_doctests:
         skip_marker = pytest.mark.skip(reason=reason)
         for item in items:
