@@ -92,19 +92,19 @@ class NiftiMasker(BaseMasker, CacheMixin):
 
     detrend : boolean, optional
         This parameter is passed to signal.clean. Please see the related
-        documentation for details. [1]
+        documentation for details. [1]_
 
     low_pass: None or float, optional
         This parameter is passed to signal.clean. Please see the related
-        documentation for details. [1]
+        documentation for details. [1]_
 
     high_pass: None or float, optional
         This parameter is passed to signal.clean. Please see the related
-        documentation for details. [1]
+        documentation for details. [1]_
 
     t_r : float, optional
         This parameter is passed to signal.clean. Please see the related
-        documentation for details. [1]
+        documentation for details. [1]_
 
     target_affine : 3x3 or 4x4 matrix, optional
         This parameter is passed to image.resample_img. Please see the
