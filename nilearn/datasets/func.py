@@ -907,12 +907,12 @@ def fetch_localizer_contrasts(contrasts, n_subjects=None, get_tmaps=False,
 
     # Get the dataset OSF index
     dataset_name = "brainomics_localizer"
-    index_url = "ftp://ftp.cea.fr/pub/unati/nsap/localizer/.index.json"
+    index_url = "https://osf.io/hwbm2/download"
     data_dir = _get_dataset_dir(dataset_name, data_dir=data_dir,
                                 verbose=verbose)
     index_file = _fetch_file(index_url, data_dir, verbose=verbose)
     with open(index_file, "rt") as of:
-        index = json.load(of)      
+        index = json.load(of)     
 
     # Build data URLs that will be fetched
     files = {}
@@ -943,9 +943,10 @@ def fetch_localizer_contrasts(contrasts, n_subjects=None, get_tmaps=False,
                 file_path = os.path.join(
                     "brainomics_data", subject_id, "%s.nii.gz" % name_aux)
                 path = os.path.join(
-                    "/derivatives", "spm1stlevel", "sub-%s" % subject_id,
-                    "sub-%s_task-localizer_acq-%s_%s.nii.gz" % (subject_id,
-                        contrast, data_type))
+                    "/localizer", "derivatives", "spm_1st_level",
+                    "sub-%s" % subject_id,
+                    "sub-%s_task-localizer_acq-%s_%s.nii.gz" % (
+                        subject_id, contrast, data_type))
                 if _is_valid_path(path, index, verbose=verbose):
                     file_url = os.path.join(root_url, index[path][1:])
                     opts = {"move": file_path}
@@ -958,8 +959,8 @@ def fetch_localizer_contrasts(contrasts, n_subjects=None, get_tmaps=False,
             file_path = os.path.join(
                 "brainomics_data", subject_id, "boolean_mask_mask.nii.gz")
             path = os.path.join(
-                "/derivatives", "spm1stlevel", "sub-%s" % subject_id,
-                "sub-%s_mask.nii.gz" % subject_id)
+                "/localizer", "derivatives", "spm_1st_level",
+                "sub-%s" % subject_id, "sub-%s_mask.nii.gz" % subject_id)
             if _is_valid_path(path, index, verbose=verbose):
                 file_url = os.path.join(root_url, index[path][1:])
                 opts = {"move": file_path}
@@ -973,8 +974,8 @@ def fetch_localizer_contrasts(contrasts, n_subjects=None, get_tmaps=False,
                 "brainomics_data", subject_id,
                 "normalized_T1_anat_defaced.nii.gz")
             path = os.path.join(
-                "/derivatives", "spm_preprocessing", "sub-%s" % subject_id,
-                "sub-%s_T1w.nii.gz" % subject_id)
+                "/localizer", "derivatives", "spm_preprocessing",
+                "sub-%s" % subject_id, "sub-%s_T1w.nii.gz" % subject_id)
             if _is_valid_path(path, index, verbose=verbose):
                 file_url = os.path.join(root_url, index[path][1:])
                 opts = {"move": file_path}
@@ -983,7 +984,7 @@ def fetch_localizer_contrasts(contrasts, n_subjects=None, get_tmaps=False,
 
     # Fetch subject characteristics
     participants_file = os.path.join("brainomics_data", "participants.tsv")
-    path = "/participants.tsv"
+    path = "/localizer/participants.tsv"
     if _is_valid_path(path, index, verbose=verbose):
         file_url = os.path.join(root_url, index[path][1:])
         opts = {"move": participants_file}
@@ -1000,7 +1001,8 @@ def fetch_localizer_contrasts(contrasts, n_subjects=None, get_tmaps=False,
     csv_data = pd.read_csv(participants_file, delimiter="\t")
     csv_data = csv_data[csv_data["participant_id"].isin(subject_ids)]
 
-    return Bunch(ext_vars=csv_data, description=fdescr, **files)
+    return Bunch(ext_vars=csv_data.to_records(index=False), description=fdescr,
+                 **files)
 
 
 def fetch_localizer_calculation_task(n_subjects=1, data_dir=None, url=None,
@@ -1046,19 +1048,21 @@ def fetch_localizer_calculation_task(n_subjects=1, data_dir=None, url=None,
     data = fetch_localizer_contrasts(["calculation (auditory and visual cue)"],
                                      n_subjects=n_subjects,
                                      get_tmaps=False, get_masks=False,
-                                     get_anats=True, data_dir=data_dir,
+                                     get_anats=False, data_dir=data_dir,
                                      url=url, resume=True, verbose=verbose)
     return data
 
 
-def fetch_localizer_button_task(data_dir=None, url=None, verbose=1):
+def fetch_localizer_button_task(n_subjects=1, data_dir=None, url=None,
+                                verbose=1):
     """Fetch left vs right button press contrast maps from the localizer.
-
-    This function ships only 2nd subject (S02) specific tmap and
-    its normalized T1 image.
 
     Parameters
     ----------
+    n_subjects: int, optional
+        The number of subjects to load. If None is given,
+        all 94 subjects are used.
+
     data_dir: string, optional
         Path of the data directory. Used to force data storage in a specified
         location.
@@ -1074,6 +1078,7 @@ def fetch_localizer_button_task(data_dir=None, url=None, verbose=1):
     -------
     data: Bunch
         Dictionary-like object, the interest attributes are :
+        'cmaps': string list, giving paths to nifti contrast maps
         'tmap': string, giving paths to nifti contrast maps
         'anat': string, giving paths to normalized anatomical image
 
@@ -1086,34 +1091,16 @@ def fetch_localizer_button_task(data_dir=None, url=None, verbose=1):
 
     See Also
     ---------
-    nilearn.datasets.fetch_localizer_calculation_task
+    nilearn.datasets.fetch_localizer_button_task
     nilearn.datasets.fetch_localizer_contrasts
 
     """
-    # The URL can be retrieved from the nilearn account on OSF (Open
-    # Science Framework). Uploaded files specific to S02 from
-    # fetch_localizer_contrasts ['left vs right button press']
-    if url is None:
-        url = 'https://osf.io/dx9jn/download'
-
-    tmap = "t_map_left_auditory_&_visual_click_vs_right_auditory&visual_click.nii.gz"
-    anat = "normalized_T1_anat_defaced.nii.gz"
-
-    opts = {'uncompress': True}
-
-    options = ('tmap', 'anat')
-    filenames = [(os.path.join('localizer_button_task', name), url, opts)
-                 for name in (tmap, anat)]
-
-    dataset_name = 'brainomics'
-    data_dir = _get_dataset_dir(dataset_name, data_dir=data_dir,
-                                verbose=verbose)
-    files = _fetch_files(data_dir, filenames, verbose=verbose)
-
-    fdescr = _get_dataset_descr('brainomics_localizer')
-
-    params = dict([('description', fdescr)] + list(zip(options, files)))
-    return Bunch(**params)
+    data = fetch_localizer_contrasts(["left vs right button press"],
+                                     n_subjects=n_subjects,
+                                     get_tmaps=True, get_masks=False,
+                                     get_anats=True, data_dir=data_dir,
+                                     url=url, resume=True, verbose=verbose)
+    return data
 
 
 def fetch_abide_pcp(data_dir=None, n_subjects=None, pipeline='cpac',

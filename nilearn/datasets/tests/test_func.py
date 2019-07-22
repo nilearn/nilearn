@@ -12,7 +12,8 @@ import gzip
 from sklearn.utils import check_random_state
 
 from nose import with_setup
-from nose.tools import assert_true, assert_equal, assert_not_equal
+from nose.tools import (
+    assert_true, assert_false, assert_equal, assert_not_equal)
 from . import test_utils as tst
 
 from nilearn.datasets import utils, func
@@ -146,193 +147,88 @@ def test_miyawaki2008():
     assert_not_equal(dataset.description, '')
 
 
-@with_setup(setup_mock, teardown_mock)
 @with_setup(tst.setup_tmpdata, tst.teardown_tmpdata)
 def test_fetch_localizer_contrasts():
-    local_url = "file://" + tst.datadir
-    ids = np.asarray([('S%2d' % i).encode() for i in range(94)])
-    ids = ids.view(dtype=[('subject_id', 'S3')])
-    tst.mock_fetch_files.add_csv('cubicwebexport.csv', ids)
-    tst.mock_fetch_files.add_csv('cubicwebexport2.csv', ids)
-
-    # Disabled: cannot be tested without actually fetching covariates CSV file
-    # All subjects
-    dataset = func.fetch_localizer_contrasts(["checkerboard"],
-                                             data_dir=tst.tmpdir,
-                                             url=local_url,
-                                             verbose=0)
-    assert_true(dataset.anats is None)
-    assert_true(dataset.tmaps is None)
-    assert_true(dataset.masks is None)
-    assert_true(isinstance(dataset.ext_vars, np.recarray))
-    assert_true(isinstance(dataset.cmaps[0], _basestring))
-    assert_equal(dataset.ext_vars.size, 94)
-    assert_equal(len(dataset.cmaps), 94)
-
-    # 20 subjects
-    dataset = func.fetch_localizer_contrasts(["checkerboard"],
-                                             n_subjects=20,
-                                             data_dir=tst.tmpdir,
-                                             url=local_url,
-                                             verbose=0)
-    assert_true(dataset.anats is None)
-    assert_true(dataset.tmaps is None)
-    assert_true(dataset.masks is None)
+    # 2 subjects
+    dataset = func.fetch_localizer_contrasts(
+        ["checkerboard"],
+        n_subjects=2,
+        data_dir=tst.tmpdir,
+        verbose=1)
+    assert_false(hasattr(dataset, "anats"))
+    assert_false(hasattr(dataset, "tmaps"))
+    assert_false(hasattr(dataset, "masks"))
     assert_true(isinstance(dataset.cmaps[0], _basestring))
     assert_true(isinstance(dataset.ext_vars, np.recarray))
-    assert_equal(len(dataset.cmaps), 20)
-    assert_equal(dataset.ext_vars.size, 20)
+    assert_equal(len(dataset.cmaps), 2)
+    assert_equal(dataset.ext_vars.size, 2)
 
     # Multiple contrasts
     dataset = func.fetch_localizer_contrasts(
         ["checkerboard", "horizontal checkerboard"],
-        n_subjects=20, data_dir=tst.tmpdir,
-        verbose=0)
-    assert_true(dataset.anats is None)
-    assert_true(dataset.tmaps is None)
-    assert_true(dataset.masks is None)
+        n_subjects=2,
+        data_dir=tst.tmpdir,
+        verbose=1)
     assert_true(isinstance(dataset.ext_vars, np.recarray))
     assert_true(isinstance(dataset.cmaps[0], _basestring))
-    assert_equal(len(dataset.cmaps), 20 * 2)  # two contrasts are fetched
-    assert_equal(dataset.ext_vars.size, 20)
-
-    # get_anats=True
-    dataset = func.fetch_localizer_contrasts(["checkerboard"],
-                                             data_dir=tst.tmpdir,
-                                             url=local_url,
-                                             get_anats=True,
-                                             verbose=0)
-    assert_true(dataset.masks is None)
-    assert_true(dataset.tmaps is None)
-    assert_true(isinstance(dataset.ext_vars, np.recarray))
-    assert_true(isinstance(dataset.anats[0], _basestring))
-    assert_true(isinstance(dataset.cmaps[0], _basestring))
-    assert_equal(dataset.ext_vars.size, 94)
-    assert_equal(len(dataset.anats), 94)
-    assert_equal(len(dataset.cmaps), 94)
-
-    # get_masks=True
-    dataset = func.fetch_localizer_contrasts(["checkerboard"],
-                                             data_dir=tst.tmpdir,
-                                             url=local_url,
-                                             get_masks=True,
-                                             verbose=0)
-    assert_true(dataset.anats is None)
-    assert_true(dataset.tmaps is None)
-    assert_true(isinstance(dataset.ext_vars, np.recarray))
-    assert_true(isinstance(dataset.cmaps[0], _basestring))
-    assert_true(isinstance(dataset.masks[0], _basestring))
-    assert_equal(dataset.ext_vars.size, 94)
-    assert_equal(len(dataset.cmaps), 94)
-    assert_equal(len(dataset.masks), 94)
-
-    # get_tmaps=True
-    dataset = func.fetch_localizer_contrasts(["checkerboard"],
-                                             data_dir=tst.tmpdir,
-                                             url=local_url,
-                                             get_tmaps=True,
-                                             verbose=0)
-    assert_true(dataset.anats is None)
-    assert_true(dataset.masks is None)
-    assert_true(isinstance(dataset.ext_vars, np.recarray))
-    assert_true(isinstance(dataset.cmaps[0], _basestring))
-    assert_true(isinstance(dataset.tmaps[0], _basestring))
-    assert_equal(dataset.ext_vars.size, 94)
-    assert_equal(len(dataset.cmaps), 94)
-    assert_equal(len(dataset.tmaps), 94)
+    assert_equal(len(dataset.cmaps), 2 * 2)  # two contrasts are fetched
+    assert_equal(dataset.ext_vars.size, 2)
 
     # all get_*=True
-    dataset = func.fetch_localizer_contrasts(["checkerboard"],
-                                             data_dir=tst.tmpdir,
-                                             url=local_url,
-                                             get_anats=True,
-                                             get_masks=True,
-                                             get_tmaps=True,
-                                             verbose=0)
-
+    dataset = func.fetch_localizer_contrasts(
+        ["checkerboard"],
+        n_subjects=1,
+        data_dir=tst.tmpdir,
+        get_anats=True,
+        get_masks=True,
+        get_tmaps=True,
+        verbose=1)
     assert_true(isinstance(dataset.ext_vars, np.recarray))
     assert_true(isinstance(dataset.anats[0], _basestring))
     assert_true(isinstance(dataset.cmaps[0], _basestring))
     assert_true(isinstance(dataset.masks[0], _basestring))
     assert_true(isinstance(dataset.tmaps[0], _basestring))
-    assert_equal(dataset.ext_vars.size, 94)
-    assert_equal(len(dataset.anats), 94)
-    assert_equal(len(dataset.cmaps), 94)
-    assert_equal(len(dataset.masks), 94)
-    assert_equal(len(dataset.tmaps), 94)
+    assert_equal(dataset.ext_vars.size, 1)
+    assert_equal(len(dataset.anats), 1)
+    assert_equal(len(dataset.cmaps), 1)
+    assert_equal(len(dataset.masks), 1)
+    assert_equal(len(dataset.tmaps), 1)
     assert_not_equal(dataset.description, '')
 
     # grab a given list of subjects
-    dataset2 = func.fetch_localizer_contrasts(["checkerboard"],
-                                              n_subjects=[2, 3, 5],
-                                              data_dir=tst.tmpdir,
-                                              url=local_url,
-                                              get_anats=True,
-                                              get_masks=True,
-                                              get_tmaps=True,
-                                              verbose=0)
-
-    # Check that we are getting only 3 subjects
+    dataset2 = func.fetch_localizer_contrasts(
+        ["checkerboard"],
+        n_subjects=[2, 3, 5],
+        data_dir=tst.tmpdir,
+        verbose=1)
     assert_equal(dataset2.ext_vars.size, 3)
-    assert_equal(len(dataset2.anats), 3)
     assert_equal(len(dataset2.cmaps), 3)
-    assert_equal(len(dataset2.masks), 3)
-    assert_equal(len(dataset2.tmaps), 3)
-    np.testing.assert_array_equal(dataset2.ext_vars,
-                                  dataset.ext_vars[[1, 2, 4]])
-    np.testing.assert_array_equal(dataset2.anats,
-                                  np.array(dataset.anats)[[1, 2, 4]])
-    np.testing.assert_array_equal(dataset2.cmaps,
-                                  np.array(dataset.cmaps)[[1, 2, 4]])
-    np.testing.assert_array_equal(dataset2.masks,
-                                  np.array(dataset.masks)[[1, 2, 4]])
-    np.testing.assert_array_equal(dataset2.tmaps,
-                                  np.array(dataset.tmaps)[[1, 2, 4]])
+    assert_equal([row[0] for row in dataset2.ext_vars], ["S02", "S03", "S05"])
 
 
-@with_setup(setup_mock, teardown_mock)
 @with_setup(tst.setup_tmpdata, tst.teardown_tmpdata)
 def test_fetch_localizer_calculation_task():
-    local_url = "file://" + tst.datadir
-    ids = np.asarray(['S%2d' % i for i in range(94)])
-    ids = ids.view(dtype=[('subject_id', 'S3')])
-    tst.mock_fetch_files.add_csv('cubicwebexport.csv', ids)
-    tst.mock_fetch_files.add_csv('cubicwebexport2.csv', ids)
-
-    # Disabled: cannot be tested without actually fetching covariates CSV file
-    # All subjects
-    dataset = func.fetch_localizer_calculation_task(data_dir=tst.tmpdir,
-                                                    url=local_url,
-                                                    verbose=0)
+    # 2 subjects
+    dataset = func.fetch_localizer_calculation_task(
+        n_subjects=2,
+        data_dir=tst.tmpdir,
+        verbose=1)
     assert_true(isinstance(dataset.ext_vars, np.recarray))
     assert_true(isinstance(dataset.cmaps[0], _basestring))
-    assert_equal(dataset.ext_vars.size, 1)
-    assert_equal(len(dataset.cmaps), 1)
-
-    # 20 subjects
-    dataset = func.fetch_localizer_calculation_task(n_subjects=20,
-                                                    data_dir=tst.tmpdir,
-                                                    url=local_url,
-                                                    verbose=0)
-    assert_true(isinstance(dataset.ext_vars, np.recarray))
-    assert_true(isinstance(dataset.cmaps[0], _basestring))
-    assert_equal(dataset.ext_vars.size, 20)
-    assert_equal(len(dataset.cmaps), 20)
+    assert_equal(dataset.ext_vars.size, 2)
+    assert_equal(len(dataset.cmaps), 2)
     assert_not_equal(dataset.description, '')
 
 
-@with_setup(setup_mock, teardown_mock)
 @with_setup(tst.setup_tmpdata, tst.teardown_tmpdata)
 def test_fetch_localizer_button_task():
-    local_url = "file://" + tst.datadir
-
-    # Disabled: cannot be tested without actually fetching covariates CSV file
-    # Only one subject
-    dataset = func.fetch_localizer_button_task(data_dir=tst.tmpdir,
-                                               url=local_url,
-                                               verbose=0)
-    assert_true(isinstance(dataset.tmap, _basestring))
-    assert_true(isinstance(dataset.anat, _basestring))
+    # 2 subjects
+    dataset = func.fetch_localizer_button_task(
+        n_subjects=2,
+        data_dir=tst.tmpdir,
+        verbose=1)
+    assert_true(isinstance(dataset.tmaps[0], _basestring))
+    assert_true(isinstance(dataset.anats[0], _basestring))
     assert_not_equal(dataset.description, '')
 
 
