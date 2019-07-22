@@ -67,7 +67,6 @@ create_new_conda_env() {
     chmod +x ~/miniconda.sh && ~/miniconda.sh -b
     export PATH=$HOME/miniconda3/bin:$PATH
     echo $PATH
-    conda update --quiet --yes conda
 
     # Configure the conda environment and put it in the path using the
     # provided versions

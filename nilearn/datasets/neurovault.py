@@ -2629,8 +2629,6 @@ def fetch_neurovault_motor_task(data_dir=None, verbose=1):
     Notes
     ------
 
-    This function is only a caller for the fetch_localizer_contrasts in order
-    to simplify examples reading and understanding.
     The 'left vs right button press' contrast is used:
     https://neurovault.org/images/10426/
 
@@ -2673,8 +2671,6 @@ def fetch_neurovault_auditory_computation_task(data_dir=None, verbose=1):
     Notes
     ------
 
-    This function is only a caller for the fetch_localizer_contrasts in order
-    to simplify examples reading and understanding.
     The 'auditory_calculation_vs_baseline' contrast is used:
     https://neurovault.org/images/32980/
 
