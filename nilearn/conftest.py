@@ -10,7 +10,7 @@ try:
 except ImportError:
     collect_ignore = ['plotting']
 else:
-    matplotlib
+    matplotlib  # Prevents flake8 erring due to unused entities.
 
 
 def pytest_collection_modifyitems(items):
