@@ -85,7 +85,7 @@ gsc = GroupSparseCovarianceCV(verbose=2)
 gsc.fit(subject_time_series)
 
 from sklearn import covariance
-gl = covariance.GraphLassoCV(verbose=2)
+gl = covariance.GraphicalLassoCV(verbose=2)
 gl.fit(np.concatenate(subject_time_series))
 
 

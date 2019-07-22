@@ -50,11 +50,11 @@ conditioned on all the others.
 
 To recover well the interaction structure, a **sparse inverse covariance
 estimator** is necessary. The GraphLasso, implemented in scikit-learn's
-estimator :class:`sklearn.covariance.GraphLassoCV` is a good, simple
+estimator :class:`sklearn.covariance.GraphicalLassoCV` is a good, simple
 solution. To use it, you need to create an estimator object::
 
-    >>> from sklearn.covariance import GraphLassoCV
-    >>> estimator = GraphLassoCV()
+    >>> from sklearn.covariance import GraphicalLassoCV
+    >>> estimator = GraphicalLassoCV()
 
 And then you can fit it on the activation time series, for instance
 extracted in :ref:`the previous section <functional_connectomes>`::
@@ -126,7 +126,7 @@ differing connection values across subjects.
 
 For this, nilearn provides the
 :class:`nilearn.connectome.GroupSparseCovarianceCV`
-estimator. Its usage is similar to the GraphLassoCV object, but it takes
+estimator. Its usage is similar to the GraphicalLassoCV object, but it takes
 a list of time series::
 
     >>> estimator.fit([time_series_1, time_series_2, ...])  # doctest: +SKIP
@@ -186,7 +186,7 @@ with different precision matrices, but sharing a common sparsity pattern:
 10 brain regions, for 20 subjects.
 
 A single-subject estimation can be performed using the
-:class:`sklearn.covariance.GraphLassoCV` estimator from scikit-learn.
+:class:`sklearn.covariance.GraphicalLassoCV` estimator from scikit-learn.
 
 It is also possible to fit a graph lasso on data from every subject all
 together.

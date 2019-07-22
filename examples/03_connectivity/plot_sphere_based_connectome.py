@@ -211,13 +211,13 @@ print('time series has {0} samples'.format(timeseries.shape[0]))
 ###############################################################################
 # in which situation the graphical lasso **sparse inverse covariance**
 # estimator captures well the covariance **structure**.
-from sklearn.covariance import GraphLassoCV
+from sklearn.covariance import GraphicalLassoCV
 
-covariance_estimator = GraphLassoCV(cv=3, verbose=1)
+covariance_estimator = GraphicalLassoCV(cv=3, verbose=1)
 
 
 ###############################################################################
-# We just fit our regions signals into the `GraphLassoCV` object
+# We just fit our regions signals into the `GraphicalLassoCV` object
 covariance_estimator.fit(timeseries)
 
 
@@ -271,7 +271,7 @@ spheres_masker = input_data.NiftiSpheresMasker(
 timeseries = spheres_masker.fit_transform(func_filename,
                                           confounds=confounds_filename)
 
-covariance_estimator = GraphLassoCV()
+covariance_estimator = GraphicalLassoCV()
 covariance_estimator.fit(timeseries)
 matrix = covariance_estimator.covariance_
 
@@ -321,7 +321,7 @@ spheres_masker = input_data.NiftiSpheresMasker(
 timeseries = spheres_masker.fit_transform(func_filename,
                                           confounds=confounds_filename)
 
-covariance_estimator = GraphLassoCV()
+covariance_estimator = GraphicalLassoCV()
 covariance_estimator.fit(timeseries)
 matrix = covariance_estimator.covariance_
 
