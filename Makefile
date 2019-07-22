@@ -31,7 +31,7 @@ inplace:
 	$(PYTHON) setup.py build_ext -i
 
 test-code:
-	python -m $(TEST_RUNNER) --pyargs nilearn --doctest-modules --cov=nilearn -s -vv --durations=0
+	python -m $(TEST_RUNNER) --pyargs nilearn --cov=nilearn
 
 test-doc:
 	$(TEST_RUNNER) -s --doctest-glob='*.rst' `find doc/ -name '*.rst'`
