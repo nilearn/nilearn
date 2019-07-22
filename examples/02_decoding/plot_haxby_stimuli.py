@@ -7,7 +7,6 @@ and Overlapping Representations of Faces and Objects in Ventral Temporal
 Cortex" (Science 2001)
 """
 
-from scipy.misc import imread
 import matplotlib.pyplot as plt
 
 from nilearn import datasets
@@ -27,8 +26,8 @@ for stim_type in sorted(stimulus_information.keys()):
     for i in range(48):
         plt.subplot(6, 8, i + 1)
         try:
-            plt.imshow(imread(file_names[i]), cmap=plt.cm.gray)
-        except:
+            plt.imshow(plt.imread(file_names[i]), cmap=plt.cm.gray)
+        except Exception:
             # just go to the next one if the file is not present
             pass
         plt.axis("off")
