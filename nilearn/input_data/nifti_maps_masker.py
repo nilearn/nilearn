@@ -3,7 +3,7 @@ Transformer for computing ROI signals.
 """
 
 import numpy as np
-from sklearn.externals.joblib import Memory
+from nilearn._utils.compat import Memory
 
 from .. import _utils
 from .._utils import logger, CacheMixin

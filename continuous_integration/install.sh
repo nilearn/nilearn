@@ -36,7 +36,7 @@ print_conda_requirements() {
     TO_INSTALL_ALWAYS="pip nose pytest"
     REQUIREMENTS="$TO_INSTALL_ALWAYS"
     TO_INSTALL_MAYBE="python numpy scipy matplotlib scikit-learn pandas \
-flake8 lxml"
+flake8 lxml joblib"
     for PACKAGE in $TO_INSTALL_MAYBE; do
         # Capitalize package name and add _VERSION
         PACKAGE_VERSION_VARNAME="${PACKAGE^^}_VERSION"
@@ -91,7 +91,7 @@ if [[ "$DISTRIB" == "neurodebian" ]]; then
     create_new_venv
     pip install nose-timer
     bash <(wget -q -O- http://neuro.debian.net/_files/neurodebian-travis.sh)
-    sudo apt-get install -qq python-scipy python-nose python-nibabel python-sklearn
+    sudo apt-get install -qq python-scipy python-nose python-nibabel python-sklearn python-joblib
 
 elif [[ "$DISTRIB" == "conda" ]]; then
     create_new_conda_env

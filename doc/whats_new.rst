@@ -13,6 +13,8 @@ NEW
  | - Scikit-learn -- v0.19
  | - Scipy -- v0.19
 
+- joblib is now a dependency
+
 - Parcellation method ReNA: Fast agglomerative clustering based on recursive
   nearest neighbor grouping.
   Yields very fast & accurate models, without creation of giant
