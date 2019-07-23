@@ -156,10 +156,11 @@ def _smooth_array(arr, affine, fwhm=None, ensure_finite=True, copy=True):
         are also accepted (only these coefficients are used).
         If fwhm='fast', the affine is not used and can be None
 
-    fwhm: scalar, numpy.ndarray, 'fast' or None
+    fwhm: scalar, numpy.ndarray/tuple/list, 'fast' or None
         Smoothing strength, as a full-width at half maximum, in millimeters.
-        If a scalar is given, width is identical on all three directions.
-        A numpy.ndarray must have 3 elements, giving the FWHM along each axis.
+        If a nonzero scalar is given, width is identical on all three directions.
+        A numpy.ndarray/list/tuple must have 3 elements, giving the FWHM along each axis.
+        If any of the elements is zero or None, smoothing is not performed along that axis.
         If fwhm == 'fast', a fast smoothing will be performed with
         a filter [0.2, 1, 0.2] in each direction and a normalisation
         to preserve the local average value.
