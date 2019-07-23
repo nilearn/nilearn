@@ -4,5 +4,6 @@ pytest-cov
 coverage
 scipy
 scikit-learn
+joblib
 pandas
 matplotlib
