@@ -8,9 +8,9 @@ import numpy as np
 import warnings
 from scipy.sparse import csgraph, coo_matrix, dia_matrix
 try:
-    from sklearn.externals.joblib import Memory
+    from nilearn._utils.compat import Memory
 except ImportError:
-    from joblib import Memory
+    from nilearn._utils.compat import Memory
 from sklearn.base import TransformerMixin, ClusterMixin
 from sklearn.base import BaseEstimator
 from sklearn.utils.validation import check_is_fitted

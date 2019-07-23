@@ -24,7 +24,7 @@ from sklearn.utils import check_array
 from sklearn.linear_model.base import LinearModel
 from sklearn.feature_selection import (SelectPercentile, f_regression,
                                        f_classif)
-from sklearn.externals.joblib import Memory, Parallel, delayed
+from nilearn._utils.compat import Memory, Parallel, delayed
 from sklearn.preprocessing import LabelBinarizer
 from sklearn.metrics import accuracy_score
 from ..input_data.masker_validation import check_embedded_nifti_masker
