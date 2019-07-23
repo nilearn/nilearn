@@ -205,7 +205,7 @@ def _smooth_array(arr, affine, fwhm=None, ensure_finite=True, copy=True):
         # SPM tends to put NaNs in the data outside the brain
         arr[np.logical_not(np.isfinite(arr))] = 0
 
-    if fwhm == 'fast':
+    if isinstance(fwhm, str) and (fwhm == 'fast'):
         arr = _fast_smooth_array(arr)
     elif fwhm is not None:
         # Keep only the scale part.
