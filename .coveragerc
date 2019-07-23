@@ -3,9 +3,11 @@ branch = True
 source = nilearn
 parallel = True
 omit =
+	*test*
 	conf\.py
 
 [report]
 omit =
+	*test*
 	conf\.py
 
