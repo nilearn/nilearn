@@ -188,7 +188,7 @@ def _smooth_array(arr, affine, fwhm=None, ensure_finite=True, copy=True):
     # See issue #1537
 
     
-    if isintance(fwhm, (int, float)) and  (fwhm == 0.0):
+    if isinstance(fwhm, (int, float)) and  (fwhm == 0.0):
         warnings.warn("The parameter 'fwhm' for smoothing is specified "
                       "as {0}. Converting to None (no smoothing will be performed)"
                       .format(fwhm))
