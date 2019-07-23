@@ -411,7 +411,6 @@ class _BaseDecoder(LinearModel, RegressorMixin, CacheMixin):
         self._check_estimator()
         self.memory_ = _check_memory(self.memory, self.verbose)
 
-        # Apply mask and do standardization
         X = self._apply_mask(X, standardize=self.standardize)
         X, y = check_X_y(X, y, dtype=np.float, multi_output=True)
 
@@ -424,104 +423,43 @@ class _BaseDecoder(LinearModel, RegressorMixin, CacheMixin):
         else:
             y = y[:, np.newaxis]
         if self.is_classif and self.n_classes_ > 2:
-            n_problems = self.n_classes_
+            self.n_problems_ = self.n_classes_
         else:
-            n_problems = 1
+            self.n_problems_ = 1
 
         # Return a suitable screening percentile according to the mask image
         self.screening_percentile_ = _adjust_screening_percentile(
             self.screening_percentile, self.mask_img_, verbose=self.verbose)
 
-        coefs = {}
-        intercepts = {}
-        cv_y_prob = {}
-        cv_y_true = {}
-        cv_indices = {}
-        cv_scores = {}
-        self.cv_params_ = {}
-        classes = self.classes_
-
         parallel = Parallel(n_jobs=self.n_jobs, verbose=2 * self.verbose)
 
-        for i, (class_index, coef, intercept,
-                y_info, params, scores) in enumerate(
-                    parallel(delayed(self._cache(_parallel_fit))(
-                        self.estimator, X, y[:, c], train, test,
-                        self.param_grid, self.is_classif, scorer,
-                        self.mask_img_, c, self.screening_percentile_)
-                for c, (train, test) in itertools.product(
-                    range(n_problems), self.cv_))):
+        parallel_fit_outputs = parallel(
+            delayed(self._cache(_parallel_fit))(
+                    self.estimator, X, y[:, c], train, test,
+                    self.param_grid, self.is_classif, scorer,
+                    self.mask_img_, c, self.screening_percentile_) 
+                    for c, (train, test) in itertools.product(
+                        range(self.n_problems_), self.cv_))
 
-            # Fetch the models to aggregate
-            coefs.setdefault(classes[class_index], []).append(coef)
-            intercepts.setdefault(classes[class_index], []).append(intercept)
+        self.parallel_fit_outputs = parallel_fit_outputs
 
-            cv_y_prob.setdefault(
-                classes[class_index], []).append(y_info['y_prob'])
-            cv_indices.setdefault(classes[class_index], []).extend(
-                [i] * len(y_info['y_prob']))
-            cv_scores.setdefault(classes[class_index], []).append(scores)
-
-            self.cv_params_.setdefault(classes[class_index], {})
-            for k in params:
-                self.cv_params_[classes[class_index]].setdefault(
-                    k, []).append(params[k])
-
-            if self.is_classif:
-                cv_y_true.setdefault(classes[class_index], []).extend(
-                    self._enc.inverse_transform(y[y_info['y_true_indices']]))
-            else:
-                cv_y_true.setdefault(classes[class_index], []).extend(
-                    y[y_info['y_true_indices']])
-
-            if (n_problems <= 2) and self.is_classif:
-                # Binary classification
-                other_class = np.setdiff1d(classes, classes[class_index])[0]
-                coefs.setdefault(other_class, []).append(-coef)
-                intercepts.setdefault(other_class, []).append(-intercept)
-                cv_y_prob.setdefault(other_class, []).append(y_info['inverse'])
-                # misc
-                cv_scores.setdefault(other_class, []).append(scores)
-                cv_y_true.setdefault(other_class, []).extend(
-                    self._enc.inverse_transform(y[y_info['y_true_indices']]))
-                self.cv_params_[other_class] = self.cv_params_[
-                    classes[class_index]]
-
-        self.cv_scores_ = cv_scores
-        self.cv_y_true_ = np.array(cv_y_true[list(cv_y_true.keys())[0]])
-        self.cv_indices_ = np.array(cv_indices[list(cv_indices.keys())[0]])
-        self.cv_y_prob_ = np.vstack(
-            [np.hstack(cv_y_prob[c]) for c in classes]).T
-
-        if self.is_classif:
-            if self.n_classes_ == 2:
-                self.cv_y_prob_ = self.cv_y_prob_[0, :]
-                indices = (self.cv_y_prob_ > 0).astype(np.int)
-            else:
-                indices = np.argmax(self.cv_y_prob_, axis=1)
-            self.cv_y_pred_ = classes[indices]
-        else:
-            self.cv_y_pred_ = self.cv_y_prob_
+        coefs, intercepts = self._fetch_parallel_fit_outputs(
+                                    parallel_fit_outputs, y)
 
         # Build the final model (the aggregated one)
         self.coef_ = np.vstack([np.mean(coefs[class_index], axis=0)
-                                for class_index in classes])
+                                for class_index in self.classes_])
         std_coef = np.vstack([np.std(coefs[class_index], axis=0)
-                              for class_index in classes])
+                              for class_index in self.classes_])
         self.intercept_ = np.hstack([np.mean(intercepts[class_index], axis=0)
-                                     for class_index in classes])
-        coef_img = {}
-        std_coef_img = {}
-        for class_index, coef, std in zip(classes, self.coef_, std_coef):
-            coef_img[class_index] = self.masker_.inverse_transform(coef)
-            std_coef_img[class_index] = self.masker_.inverse_transform(std)
+                                     for class_index in self.classes_])
 
         if self.is_classif and (self.n_classes_ == 2):
             self.coef_ = self.coef_[0, :][np.newaxis, :]
             self.intercept_ = self.intercept_[0]
 
-        self.coef_img_ = coef_img
-        self.std_coef_img_ = std_coef_img
+        self.coef_img_, self.std_coef_img_ = self._output_image(
+            self.classes_, self.coef_, std_coef)
 
     def decision_function(self, X):
         """Predict class labels for samples in X.
@@ -613,6 +551,101 @@ class _BaseDecoder(LinearModel, RegressorMixin, CacheMixin):
 
         return X
 
+    def _fetch_parallel_fit_outputs(self, parallel_fit_outputs, y):
+        """Fetch the outputs from parallel_fit to be ready for ensembling
+
+        Parameters
+        ----------
+
+        parallel_fit_outputs : list of tuples, each tuple contains results of
+            one _parallel_fit for each cv fold (and each classification in the
+            case of multiclass classification).
+        
+        y : ndarray, shape = (n_samples, )
+            Vector of responses.
+
+        Returns
+
+        coefs : dict
+            Coefficients for each classification/regression problem
+        intercepts : dict
+            Intercept for each classification/regression problem
+
+        TODO: write unit test
+        """
+
+        coefs = {}
+        intercepts = {}
+        cv_y_prob = {}
+        cv_y_true = {}
+        cv_indices = {}
+        cv_scores = {}
+        self.cv_params_ = {}
+        classes = self.classes_
+
+        for i, (class_index, coef, intercept,
+                y_info, params, scores) in enumerate(parallel_fit_outputs):
+
+            coefs.setdefault(classes[class_index], []).append(coef)
+            intercepts.setdefault(classes[class_index], []).append(intercept)
+
+            cv_y_prob.setdefault(
+                classes[class_index], []).append(y_info['y_prob'])
+            cv_indices.setdefault(classes[class_index], []).extend(
+                [i] * len(y_info['y_prob']))
+            cv_scores.setdefault(classes[class_index], []).append(scores)
+
+            self.cv_params_.setdefault(classes[class_index], {})
+            for k in params:
+                self.cv_params_[classes[class_index]].setdefault(
+                    k, []).append(params[k])
+
+            if self.is_classif:
+                cv_y_true.setdefault(classes[class_index], []).extend(
+                    self._enc.inverse_transform(y[y_info['y_true_indices']]))
+            else:
+                cv_y_true.setdefault(classes[class_index], []).extend(
+                    y[y_info['y_true_indices']])
+
+            if (self.n_problems_ <= 2) and self.is_classif:
+                # Binary classification
+                other_class = np.setdiff1d(classes, classes[class_index])[0]
+                coefs.setdefault(other_class, []).append(-coef)
+                intercepts.setdefault(other_class, []).append(-intercept)
+                cv_y_prob.setdefault(other_class, []).append(y_info['inverse'])
+                # misc
+                cv_scores.setdefault(other_class, []).append(scores)
+                cv_y_true.setdefault(other_class, []).extend(
+                    self._enc.inverse_transform(y[y_info['y_true_indices']]))
+                self.cv_params_[other_class] = self.cv_params_[
+                    classes[class_index]]
+
+        self.cv_scores = cv_scores
+        self.cv_y_true_ = np.array(cv_y_true[list(cv_y_true.keys())[0]])
+        self.cv_indices_ = np.array(cv_indices[list(cv_indices.keys())[0]])
+        self.cv_y_prob_ = np.vstack(
+            [np.hstack(cv_y_prob[c]) for c in classes]).T
+
+        if self.is_classif:
+            if self.n_classes_ == 2:
+                self.cv_y_prob_ = self.cv_y_prob_[0, :]
+                indices = (self.cv_y_prob_ > 0).astype(np.int)
+            else:
+                indices = np.argmax(self.cv_y_prob_, axis=1)
+            self.cv_y_pred_ = classes[indices]
+        else:
+            self.cv_y_pred_ = self.cv_y_prob_
+
+        return coefs, intercepts
+
+    def _output_image(self, classes, coefs, std_coef):
+        coef_img = {}
+        std_coef_img = {}
+        for class_index, coef, std in zip(classes, coefs, std_coef):
+            coef_img[class_index] = self.masker_.inverse_transform(coef)
+            std_coef_img[class_index] = self.masker_.inverse_transform(std)
+
+        return coef_img, std_coef_img
 
 class Decoder(_BaseDecoder):
     """A wrapper for popular classification strategies in neuroimaging.

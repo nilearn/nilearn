@@ -10,6 +10,7 @@ Test the decoder module
 
 import warnings
 
+import sklearn
 import numpy as np
 from nilearn.decoding.decoder import (_BaseDecoder, Decoder, DecoderRegressor,
                                       _check_param_grid, _parallel_fit)
@@ -52,14 +53,15 @@ rand = np.random.RandomState(0)
 X = rand.rand(100, 10)
 # Create different targets
 y_regression = rand.rand(100)
-y_classif = np.hstack([[-1] * 50, [1] * 50])
-y_classif_str = np.hstack([['face'] * 50, ['house'] * 50])
+y_classification = np.hstack([[-1] * 50, [1] * 50])
+y_classification_str = np.hstack([['face'] * 50, ['house'] * 50])
 y_multiclass = np.hstack([[0] * 35, [1] * 30, [2] * 35])
 
 
 def test_check_param_grid():
-    # testing several estimators, each one with its specific regularization
-    # parameter
+    """testing several estimators, each one with its specific regularization
+    parameter
+    """
 
     # Regression
     for _, (regressor, param) in regressors.items():
@@ -67,13 +69,13 @@ def test_check_param_grid():
         assert_equal(list(param_grid.keys()), list(param))
     # Classification
     for _, (classifier, param) in classifiers.items():
-        param_grid = _check_param_grid(classifier, X, y_classif, None)
+        param_grid = _check_param_grid(classifier, X, y_classification, None)
         assert_equal(list(param_grid.keys()), list(param))
 
     # Using a non-linear estimator to raise the error
     for estimator in ['log_l1', random_forest]:
         assert_raises(ValueError, _check_param_grid, estimator, X,
-                      y_classif, None)
+                      y_classification, None)
 
 
 def test_check_inputs_length():
@@ -90,9 +92,11 @@ def test_check_inputs_length():
                                         screening_percentile=100.).fit, X_, y)
 
 
-def test_BaseDecoder_check_estimator():
-    # Check if the estimator is one of the supported estimators, and if not,
-    # if it is a string, and if not, then raise the error
+def test_BaseDecoder_check_estimator_validity():
+    """Check if the estimator is one of the supported estimators, and if not,
+    if it is a string, and if not, then raise the error
+    """
+
     supported_estimators = ['svc', 'svc_l2', 'svc_l1',
                             'logistic', 'logistic_l1', 'logistic_l2',
                             'ridge', 'ridge_classifier',
@@ -118,20 +122,21 @@ def test_BaseDecoder_check_estimator():
 
 
 def test_parallel_fit():
-    # The goal of this test is to check that results of _parallel_fit is the
-    # same for differnet controlled param_grid
+    """The goal of this test is to check that results of _parallel_fit is the
+    same for differnet controlled param_grid
+    """
+
     X, y = make_regression(n_samples=100, n_features=20,
                            n_informative=5, noise=0.2, random_state=42)
     train = range(80)
-    test = range(80, len(y_classif))
+    test = range(80, len(y_classification))
     outputs = []
     estimator = svr
-    # two param lists for svr
-    list_params = [[1e-1, 1e0, 1e1], [1e-1, 1e0, 5e0, 1e1]]
+    svr_params = [[1e-1, 1e0, 1e1], [1e-1, 1e0, 5e0, 1e1]]
     # define a scorer
     scorer = check_scoring(estimator, 'r2')
 
-    for params in list_params:
+    for params in svr_params:
         param_grid = {}
         param_grid['C'] = np.array(params)
         outputs.append(list(_parallel_fit(estimator=estimator, X=X,
@@ -237,10 +242,34 @@ def test_decoder_regression():
     X = StandardScaler().fit_transform(X)
     y = (y - y.mean()) / y.std()
     X, mask = to_niimgs(X, [5, 5, 5])
-    for regressor in regressors:
+    for regressor_ in regressors:
         for screening_percentile in [100, 20]:
-            model = DecoderRegressor(estimator=regressor, mask=mask,
+            model = DecoderRegressor(estimator=regressor_, mask=mask,
                                      screening_percentile=screening_percentile)
             model.fit(X, y)
             y_pred = model.predict(X)
             assert_true(r2_score(y, y_pred) > 0.95)
+
+
+def test_decoder_check_scorer():
+    X, y = make_classification(n_samples=200, n_features=125, scale=3.0,
+                               n_informative=5, n_classes=4, random_state=42)
+    model = Decoder()
+    model._check_estimator()
+    scorer = model._get_scorer(X, y, groups=None)
+
+    # check the scorer type to be correct
+    assert_equal(type(scorer), sklearn.metrics.scorer._ThresholdScorer)
+
+def test_decoder_apply_mask():
+    X_init, y = make_classification(n_samples=200, n_features=125, scale=3.0,
+                               n_informative=5, n_classes=4, random_state=42)
+    X, _ = to_niimgs(X_init, [5, 5, 5])
+    model = Decoder(mask=NiftiMasker())
+    X_masked = model._apply_mask(X)
+
+    # test whether if _apply mask output has the same shape as original matrix
+    assert_equal(X_masked.shape, X_init.shape)
+
+
+# def test_fetch_parallel_fit_output():
