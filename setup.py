@@ -98,5 +98,4 @@ if __name__ == "__main__":
                         'nilearn.surface.tests.data': ['*.annot', '*.label'],
                         'nilearn.datasets.tests.data': ['*.*'],
                         'nilearn.datasets.description': ['*.rst']},
-          include_package_data=True,
           install_requires=install_requires,)
