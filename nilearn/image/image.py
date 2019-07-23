@@ -187,8 +187,8 @@ def _smooth_array(arr, affine, fwhm=None, ensure_finite=True, copy=True):
     # Here, we have to investigate use cases of fwhm. Particularly, if fwhm=0.
     # See issue #1537
 
-    # Check if all 
-    if sum(fwhm) == 0:
+    
+    if isintance(fwhm, (int, float)) and  (fwhm == 0.0):
         warnings.warn("The parameter 'fwhm' for smoothing is specified "
                       "as {0}. Converting to None (no smoothing will be performed)"
                       .format(fwhm))
@@ -217,6 +217,7 @@ def _smooth_array(arr, affine, fwhm=None, ensure_finite=True, copy=True):
         fwhm_over_sigma_ratio = np.sqrt(8 * np.log(2))
         vox_size = np.sqrt(np.sum(affine ** 2, axis=0))
         sigma = fwhm / (fwhm_over_sigma_ratio * vox_size)
+        print(sigma)
 
         for n, s in enumerate(sigma):
             if not ((s == None) or (s == 0.0)):
