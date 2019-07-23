@@ -210,8 +210,9 @@ def _smooth_array(arr, affine, fwhm=None, ensure_finite=True, copy=True):
     if isinstance(fwhm, str) and (fwhm == 'fast'):
         arr = _fast_smooth_array(arr)
     elif fwhm is not None:
-        if not isinstance(fwhm, (int, float)):
-            fwhm = np.where(fwhm == None, 0.0, fwhm)
+        # Assume fwhm is either a nonzero number or a tuple, transform it to array
+        fwhm = np.asarray(fwhm)
+        fwhm = np.where(fwhm == None, 0.0, fwhm)
 
         # Keep only the scale part.
         affine = affine[:3, :3]
