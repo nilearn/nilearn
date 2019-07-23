@@ -219,7 +219,7 @@ def _smooth_array(arr, affine, fwhm=None, ensure_finite=True, copy=True):
         sigma = fwhm / (fwhm_over_sigma_ratio * vox_size)
 
         for n, s in enumerate(sigma):
-            if s > 0.0:
+            if not ((s == None) or (s == 0.0)):
                 ndimage.gaussian_filter1d(arr, s, output=arr, axis=n)
 
     return arr
