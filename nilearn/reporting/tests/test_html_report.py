@@ -21,6 +21,16 @@ def test_3d_reports():
     html = mask.generate_report()
     _check_html(html)
 
+    # Check providing mask to init
+    mask = np.zeros((9, 9, 9))
+    mask[4:-4, 4:-4, 4:-4] = True
+    mask_img_3d = Nifti1Image(data, np.eye(4))
+
+    masker = input_data.NiftiMasker(mask_img=mask_img_3d)
+    masker.fit(data_img_3d)
+    html = masker.generate_report()
+    _check_html(html)
+
 
 def test_4d_reports():
     # Dummy mask
@@ -45,3 +55,4 @@ def test_4d_reports():
     masker = input_data.NiftiMasker(mask_img=mask_img, standardize=True)
     masker.fit_transform(data_img_4d)
     html = masker.generate_report()
+    _check_html(html)

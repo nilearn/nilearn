@@ -1,4 +1,5 @@
 import io
+import copy
 import base64
 import warnings
 from pathlib import Path
@@ -13,7 +14,7 @@ def _embed_img(display):
     Parameters
     ----------
     display: obj
-        A matplotlib object to display
+        A nilearn plotting object to display
 
     Returns
     -------
@@ -21,8 +22,8 @@ def _embed_img(display):
         Binary image string
     """
     if display is None:  # no display, show single transparent pixel
-        data = ("iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAw" +
-                "CAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=")
+        data = ("iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAA" +
+                "AAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=")
         return data
 
     else:  # we were passed a matplotlib display
@@ -46,10 +47,11 @@ def _str_params(params):
     params: dict
         A dictionary of input values to a function
     """
-    for k, v in params.items():
+    params_str = copy.deepcopy(params)
+    for k, v in params_str.items():
         if v is None:
-            params[k] = 'None'
-    return params
+            params_str[k] = 'None'
+    return params_str
 
 
 def _update_template(title, docstring, content, overlay,
@@ -172,6 +174,7 @@ class HTMLReport(plot_utils.HTMLDocument):
         """
         self.head_tpl = head_tpl
         self.body = body
+        self.html = self.get_standalone()
 
     def _repr_html_(self):
         """

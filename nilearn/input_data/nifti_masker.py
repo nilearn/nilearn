@@ -221,13 +221,14 @@ class NiftiMasker(BaseMasker, CacheMixin, ReportMixin):
         """
         from .. import plotting
 
-        img, mask = self.input_
-        try:
+        img = self.input_['images']
+        mask = self.input_['mask']
+        if img is not None:
             dim = image.load_img(img).shape
             if len(dim) == 4:
                 # compute middle image from 4D series for plotting
                 img = image.index_img(img, dim[-1] // 2)
-        except TypeError:  # images were not provided to fit
+        else:  # images were not provided to fit
             img = mask
 
         # create display of retained input mask, image
@@ -245,11 +246,11 @@ class NiftiMasker(BaseMasker, CacheMixin, ReportMixin):
             # create display of resampled NiftiImage and mask
             # assuming that resampl_img has same dim as img
             resampl_img, resampl_mask = self.transform_
-            try:
+            if resampl_img is not None:
                 if len(dim) == 4:
                     # compute middle image from 4D series for plotting
                     resampl_img = image.index_img(resampl_img, dim[-1] // 2)
-            except NameError:  # images were not provided to fit
+            else:  # images were not provided to fit
                 resampl_img = resampl_mask
 
             final_display = plotting.plot_img(resampl_img, black_bg=False)
@@ -303,7 +304,7 @@ class NiftiMasker(BaseMasker, CacheMixin, ReportMixin):
             self.mask_img_ = _utils.check_niimg_3d(self.mask_img)
 
         if self.reports:  # save inputs for reporting
-            self.input_ = [imgs, self.mask_img_]
+            self.input_ = {'images': imgs, 'mask': self.mask_img_}
 
         # If resampling is requested, resample also the mask
         # Resampling: allows the user to change the affine, the shape or both
@@ -325,11 +326,11 @@ class NiftiMasker(BaseMasker, CacheMixin, ReportMixin):
 
         if (self.target_shape is not None) or (self.target_affine is not None):
             if self.reports:
-                try:
+                if imgs is not None:
                     resampl_imgs = self._cache(image.resample_img)(
                         imgs, target_affine=self.affine_,
                         copy=False, interpolation='nearest')
-                except TypeError:  # imgs not provided to fit
+                else:  # imgs not provided to fit
                     resampl_imgs = None
                 self.transform_ = [resampl_imgs, self.mask_img_]
         else:
