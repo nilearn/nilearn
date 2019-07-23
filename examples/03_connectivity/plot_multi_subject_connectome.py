@@ -102,10 +102,10 @@ plotting.plot_connectome(gl.covariance_,
                          display_mode="lzr")
 plotting.plot_connectome(-gl.precision_, atlas_region_coords,
                          edge_threshold='90%',
-                         title="Sparse inverse covariance (GraphLasso)",
+                         title="Sparse inverse covariance (GraphicalLasso)",
                          display_mode="lzr",
                          edge_vmax=.5, edge_vmin=-.5)
-plot_matrices(gl.covariance_, gl.precision_, "GraphLasso", labels)
+plot_matrices(gl.covariance_, gl.precision_, "GraphicalLasso", labels)
 
 title = "GroupSparseCovariance"
 plotting.plot_connectome(-gsc.precisions_[..., 0],

@@ -49,7 +49,7 @@ conditioned on all the others.
 
 
 To recover well the interaction structure, a **sparse inverse covariance
-estimator** is necessary. The GraphLasso, implemented in scikit-learn's
+estimator** is necessary. The GraphicalLasso, implemented in scikit-learn's
 estimator :class:`sklearn.covariance.GraphicalLassoCV` is a good, simple
 solution. To use it, you need to create an estimator object::
 
@@ -95,7 +95,7 @@ of the estimator::
     The parameter controlling the sparsity is set by `cross-validation
     <http://scikit-learn.org/stable/modules/cross_validation.html>`_
     scheme. If you want to specify it manually, use the estimator
-    :class:`sklearn.covariance.GraphLasso`.
+    :class:`sklearn.covariance.GraphicalLasso`.
 
 .. topic:: **Full example**
 

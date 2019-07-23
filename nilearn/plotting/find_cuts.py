@@ -228,8 +228,8 @@ def find_cut_slices(img, direction='z', n_cuts=7, spacing='auto'):
     large and all the activated regions are covered, cuts with a spacing
     less than 'spacing' will be returned.
 
-    Warning
-    -------
+    Warnings
+    --------
     If a non-diagonal img is given. This function automatically reorders
     img to get it back to diagonal. This is to avoid finding same cuts in
     the slices.
