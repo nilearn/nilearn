@@ -217,8 +217,10 @@ def _smooth_array(arr, affine, fwhm=None, ensure_finite=True, copy=True):
         fwhm_over_sigma_ratio = np.sqrt(8 * np.log(2))
         vox_size = np.sqrt(np.sum(affine ** 2, axis=0))
         sigma = fwhm / (fwhm_over_sigma_ratio * vox_size)
+
         for n, s in enumerate(sigma):
-            ndimage.gaussian_filter1d(arr, s, output=arr, axis=n)
+            if s > 0.0:
+                ndimage.gaussian_filter1d(arr, s, output=arr, axis=n)
 
     return arr
 
