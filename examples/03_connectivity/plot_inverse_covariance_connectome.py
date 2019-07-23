@@ -51,8 +51,8 @@ time_series = masker.fit_transform(data.func[0],
 ##############################################################################
 # Compute the sparse inverse covariance
 # --------------------------------------
-from sklearn.covariance import GraphLassoCV
-estimator = GraphLassoCV()
+from sklearn.covariance import GraphicalLassoCV
+estimator = GraphicalLassoCV()
 
 estimator.fit(time_series)
 
