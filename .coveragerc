@@ -3,11 +3,9 @@ branch = True
 source = nilearn
 parallel = True
 omit =
-	plot_.*.py
 	conf\.py
 
 [report]
 omit =
-	plot_.*.py
 	conf\.py
 
