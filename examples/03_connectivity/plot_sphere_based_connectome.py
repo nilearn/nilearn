@@ -211,7 +211,11 @@ print('time series has {0} samples'.format(timeseries.shape[0]))
 ###############################################################################
 # in which situation the graphical lasso **sparse inverse covariance**
 # estimator captures well the covariance **structure**.
-from sklearn.covariance import GraphicalLassoCV
+try:
+    from sklearn.covariance import GraphicalLassoCV
+except ImportError:
+    # for Scitkit-Learn < v0.20.0
+    from sklearn.covariance import GraphLassoCV as GraphicalLassoCV
 
 covariance_estimator = GraphicalLassoCV(cv=3, verbose=1)
 

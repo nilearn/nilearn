@@ -84,8 +84,13 @@ from nilearn.connectome import GroupSparseCovarianceCV
 gsc = GroupSparseCovarianceCV(verbose=2)
 gsc.fit(subject_time_series)
 
-from sklearn import covariance
-gl = covariance.GraphicalLassoCV(verbose=2)
+try:
+    from sklearn.covariance import GraphicalLassoCV
+except ImportError:
+    # for Scitkit-Learn < v0.20.0
+    from sklearn.covariance import GraphLassoCV as GraphicalLassoCV
+
+gl = GraphicalLassoCV(verbose=2)
 gl.fit(np.concatenate(subject_time_series))
 
 
