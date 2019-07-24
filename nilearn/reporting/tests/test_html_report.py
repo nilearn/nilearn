@@ -9,12 +9,6 @@ import numpy as np
 from nibabel import Nifti1Image
 from nilearn import input_data
 
-try:
-    from lxml import etree
-    LXML_INSTALLED = True
-except ImportError:
-    LXML_INSTALLED = False
-
 from numpy.testing import assert_warns, assert_no_warnings
 
 # Note: html output by nilearn view_* functions
@@ -22,75 +16,8 @@ from numpy.testing import assert_warns, assert_no_warnings
 # warnings
 
 
-def check_html(html, check_selects=True, plot_div_id='surface-plot'):
-    fd, tmpfile = tempfile.mkstemp()
-    try:
-        os.close(fd)
-        html.save_as_html(tmpfile)
-        with open(tmpfile) as f:
-            saved = f.read()
-        assert saved == html.get_standalone()
-    finally:
-        os.remove(tmpfile)
-    assert "INSERT" not in html.html
-    assert html.get_standalone() == html.html
-    assert html._repr_html_() == html.get_iframe()
-    assert str(html) == html.get_standalone()
-    assert '<meta charset="UTF-8" />' in str(html)
-    _check_open_in_browser(html)
-    resized = html.resize(3, 17)
-    assert resized is html
-    assert (html.width, html.height) == (3, 17)
-    assert 'width="3" height="17"' in html.get_iframe()
-    assert 'width="33" height="37"' in html.get_iframe(33, 37)
-    if not LXML_INSTALLED:
-        return
-    root = etree.HTML(html.html.encode('utf-8'),
-                      parser=etree.HTMLParser(huge_tree=True))
-    head = root.find('head')
-    assert len(head.findall('script')) == 5
-    body = root.find('body')
-    div = body.find('div')
-    assert ('id', plot_div_id) in div.items()
-    if not check_selects:
-        return
-    selects = body.findall('select')
-    assert len(selects) == 3
-    hemi = selects[0]
-    assert ('id', 'select-hemisphere') in hemi.items()
-    assert len(hemi.findall('option')) == 2
-    kind = selects[1]
-    assert ('id', 'select-kind') in kind.items()
-    assert len(kind.findall('option')) == 2
-    view = selects[2]
-    assert ('id', 'select-view') in view.items()
-    assert len(view.findall('option')) == 7
-
-
 def _open_mock(f):
     print('opened {}'.format(f))
-
-
-def _check_open_in_browser(html):
-    wb_open = webbrowser.open
-    webbrowser.open = _open_mock
-    try:
-        html.open_in_browser(temp_file_lifetime=None)
-        temp_file = html._temp_file
-        assert html._temp_file is not None
-        assert os.path.isfile(temp_file)
-        html.remove_temp_file()
-        assert html._temp_file is None
-        assert not os.path.isfile(temp_file)
-        html.remove_temp_file()
-        html._temp_file = 'aaaaaaaaaaaaaaaaaaaaaa'
-        html.remove_temp_file()
-    finally:
-        webbrowser.open = wb_open
-        try:
-            os.remove(temp_file)
-        except Exception:
-            pass
 
 
 def test_temp_file_removing():
@@ -104,7 +31,7 @@ def test_temp_file_removing():
             html.open_in_browser(file_name=tmpfile, temp_file_lifetime=None)
         for warning in record:
             assert "Saved HTML in temporary file" not in str(warning.message)
-        html.open_in_browser(temp_file_lifetime=.5)
+        html.open_in_browser(temp_file_lifetime=0.5)
         assert os.path.isfile(html._temp_file)
         time.sleep(1.5)
         assert not os.path.isfile(html._temp_file)
@@ -155,7 +82,7 @@ def _check_html(html_view):
     """ Check the presence of some expected code in the html viewer
     """
     assert "Parameters" in str(html_view)
-    assert "data:image/png;base64," in str(html_view)
+    assert "data:image/svg+xml;base64," in str(html_view)
 
 
 def test_3d_reports():

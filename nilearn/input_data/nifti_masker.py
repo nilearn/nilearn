@@ -4,6 +4,7 @@ Transformer used to apply basic transformations on MRI data.
 # Author: Gael Varoquaux, Alexandre Abraham
 # License: simplified BSD
 
+import warnings
 from copy import copy as copy_object
 
 from nilearn._utils.compat import Memory
@@ -219,7 +220,15 @@ class NiftiMasker(BaseMasker, CacheMixin, ReportMixin):
         displays : list
             A list of all displays to be rendered.
         """
-        from .. import plotting
+        try:
+            from nilearn import plotting
+        except ImportError:
+            mpl_unavail_msg = ('Matplotlib is not imported! '
+                               'No reports will be generated.')
+            warnings.filterwarnings('always', message=mpl_unavail_msg)
+            warnings.warn(category=ImportWarning,
+                          message=mpl_unavail_msg)
+            return [None]
 
         img = self.input_['images']
         mask = self.input_['mask']
@@ -231,13 +240,10 @@ class NiftiMasker(BaseMasker, CacheMixin, ReportMixin):
         else:  # images were not provided to fit
             img = mask
 
-        try:
-            # create display of retained input mask, image
-            # for visual comparison
-            init_display = plotting.plot_img(img, black_bg=False)
-            init_display.add_contours(mask, levels=[.5], colors='r')
-        except ImportError:
-            return [None]
+        # create display of retained input mask, image
+        # for visual comparison
+        init_display = plotting.plot_img(img, black_bg=False)
+        init_display.add_contours(mask, levels=[.5], colors='r')
 
         if self.transform_ is None:
             return [init_display]
