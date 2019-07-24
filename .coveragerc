@@ -2,11 +2,9 @@
 branch = True
 parallel = True
 omit =
-	*test*
 	conf\.py
 
 [report]
 omit =
-	*test*
 	conf\.py
 
