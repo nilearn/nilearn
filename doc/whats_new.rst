@@ -3,6 +3,18 @@
 
 NEW
 ---
+
+.. warning::
+
+ | **Python2 and 3.4 are no longer supported. We recommend upgrading to Python 3.6 minimum.**
+ |
+ | **Minimum supported versions of packages have been bumped up.**
+ | - Matplotlib -- v2.0
+ | - Scikit-learn -- v0.19
+ | - Scipy -- v0.19
+
+- joblib is now a dependency
+
 - Parcellation method ReNA: Fast agglomerative clustering based on recursive
   nearest neighbor grouping.
   Yields very fast & accurate models, without creation of giant
@@ -44,6 +56,8 @@ Fixes
 - When :func:`nilearn.plotting.plot_surf_stat_map` is used with a thresholded map
   but without a background map, the surface mesh is displayed in
   half-transparent grey to maintain a 3D perception.
+- :func:`nilearn.plotting.view_surf` now accepts surface data provided as a file
+  path.
 
 0.5.2
 =====
