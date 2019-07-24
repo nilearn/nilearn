@@ -1360,7 +1360,7 @@ def _load_mixed_gambles(zmap_imgs):
 
 
 def fetch_mixed_gambles(n_subjects=1, data_dir=None, url=None, resume=True,
-                        return_raw_data=False, verbose=0):
+                        return_raw_data=False, verbose=1):
     """Fetch Jimura "mixed gambles" dataset.
 
     Parameters
@@ -1995,7 +1995,7 @@ def _fetch_development_fmri_functional(participants, data_dir, url, verbose):
 
 
 def fetch_development_fmri(n_subjects=None, reduce_confounds=True,
-                           data_dir=None, resume=True, verbose=0):
+                           data_dir=None, resume=True, verbose=1):
     """Fetch movie watching based brain development dataset (fMRI)
 
     The data is downsampled to 4mm resolution for convenience. The origin of
