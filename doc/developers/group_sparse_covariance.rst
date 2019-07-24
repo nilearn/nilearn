@@ -369,7 +369,7 @@ used), then a tighter grid near the found maximum is computed, and so
 on. This allows for a very precise determination of the maximum
 location while reducing a lot the required evaluation number. The code
 is very close to what is done in
-:class:`sklearn.covariance.GraphLassoCV`.
+:class:`sklearn.covariance.GraphicalLassoCV`.
 
 
 Warm restart
