@@ -24,6 +24,17 @@ from .._utils.extmath import fast_abs_percentile
 from .._utils.param_validation import check_threshold
 from .. import surface
 
+MAX_IMG_VIEWS_BEFORE_WARNING = 10
+
+
+def set_max_img_views_before_warning(new_value):
+    """Set the number of open views which triggers a warning.
+
+    If `None` or a negative number, disable the memory warning.
+    """
+    global MAX_IMG_VIEWS_BEFORE_WARNING
+    MAX_IMG_VIEWS_BEFORE_WARNING = new_value
+
 
 def add_js_lib(html, embed_js=True):
     """
@@ -99,11 +110,17 @@ class HTMLDocument(object):
 
     def _check_n_open(self):
         HTMLDocument._all_open_html_repr.add(self)
-        if len(HTMLDocument._all_open_html_repr) > 9:
-            warnings.warn('It seems you have created more than 10 '
+        if MAX_IMG_VIEWS_BEFORE_WARNING is None:
+            return
+        if MAX_IMG_VIEWS_BEFORE_WARNING < 0:
+            return
+        if len(HTMLDocument._all_open_html_repr
+               ) > MAX_IMG_VIEWS_BEFORE_WARNING - 1:
+            warnings.warn('It seems you have created more than {} '
                           'nilearn views. As each view uses dozens '
                           'of megabytes of RAM, you might want to '
-                          'delete some of them.')
+                          'delete some of them.'.format(
+                              MAX_IMG_VIEWS_BEFORE_WARNING))
 
     def resize(self, width, height):
         """Resize the plot displayed in a Jupyter notebook."""
