@@ -13,6 +13,7 @@ try:
     LXML_INSTALLED = True
 except ImportError:
     LXML_INSTALLED = False
+import pytest
 
 from nilearn.plotting import js_plotting_utils
 from nilearn import surface
@@ -291,11 +292,19 @@ def test_temp_file_removing():
     html = js_plotting_utils.HTMLDocument('hello')
     wb_open = webbrowser.open
     webbrowser.open = _open_mock
+    fd, tmpfile = tempfile.mkstemp()
     try:
+        os.close(fd)
+        with pytest.warns(None) as record:
+            html.open_in_browser(file_name=tmpfile, temp_file_lifetime=None)
+        for warning in record:
+            assert "Saved HTML in temporary file" not in str(warning.message)
         html.open_in_browser(temp_file_lifetime=.5)
         assert os.path.isfile(html._temp_file)
         time.sleep(1.5)
         assert not os.path.isfile(html._temp_file)
+        with pytest.warns(UserWarning, match="Saved HTML in temporary file"):
+            html.open_in_browser(temp_file_lifetime=None)
         html.open_in_browser(temp_file_lifetime=None)
         assert os.path.isfile(html._temp_file)
         time.sleep(1.5)
@@ -304,6 +313,10 @@ def test_temp_file_removing():
         webbrowser.open = wb_open
         try:
             os.remove(html._temp_file)
+        except Exception:
+            pass
+        try:
+            os.remove(tmpfile)
         except Exception:
             pass
 
