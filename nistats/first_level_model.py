@@ -114,7 +114,7 @@ def run_glm(Y, X, noise_model='ar1', bins=100, n_jobs=1, verbose=0):
 
     results : dict,
         Keys correspond to the different labels values
-        values are RegressionResults instances corresponding to the voxels.
+        values are SimpleRegressionResults instances corresponding to the voxels.
 
     """
     acceptable_noise_models = ['ar1', 'ols']
