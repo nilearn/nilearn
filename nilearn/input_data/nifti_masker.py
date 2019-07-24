@@ -12,7 +12,7 @@ from .base_masker import BaseMasker, filter_and_extract
 from .. import _utils
 from .. import image
 from .. import masking
-from ..reporting import ReportMixin
+from nilearn.reporting import ReportMixin
 from .._utils import CacheMixin
 from .._utils.class_inspect import get_params
 from .._utils.niimg import img_data_dtype
@@ -231,10 +231,13 @@ class NiftiMasker(BaseMasker, CacheMixin, ReportMixin):
         else:  # images were not provided to fit
             img = mask
 
-        # create display of retained input mask, image
-        # for visual comparison
-        init_display = plotting.plot_img(img, black_bg=False)
-        init_display.add_contours(mask, levels=[.5], colors='r')
+        try:
+            # create display of retained input mask, image
+            # for visual comparison
+            init_display = plotting.plot_img(img, black_bg=False)
+            init_display.add_contours(mask, levels=[.5], colors='r')
+        except ImportError:
+            return [None]
 
         if self.transform_ is None:
             return [init_display]
