@@ -1,6 +1,5 @@
 [run]
 branch = True
-source = nilearn
 parallel = True
 omit =
 	*test*
