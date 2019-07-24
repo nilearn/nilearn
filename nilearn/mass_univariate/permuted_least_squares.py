@@ -34,11 +34,11 @@ def normalize_matrix_on_axis(m, axis=0):
     ...     normalize_matrix_on_axis)
     >>> X = np.array([[0, 4], [1, 0]])
     >>> normalize_matrix_on_axis(X)
-    array([[ 0.,  1.],
-           [ 1.,  0.]])
+    array([[0., 1.],
+           [1., 0.]])
     >>> normalize_matrix_on_axis(X, axis=1)
-    array([[ 0.,  1.],
-           [ 1.,  0.]])
+    array([[0., 1.],
+           [1., 0.]])
 
     """
     if m.ndim > 2:
