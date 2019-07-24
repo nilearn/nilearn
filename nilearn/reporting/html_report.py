@@ -14,7 +14,7 @@ def _embed_img(display):
     Parameters
     ----------
     display: obj
-        A nilearn plotting object to display
+        A Nilearn plotting object to display
 
     Returns
     -------
@@ -28,7 +28,7 @@ def _embed_img(display):
 
     else:  # we were passed a matplotlib display
         io_buffer = io.BytesIO()
-        display.savefig(io_buffer)
+        display.frame_axes.figure.savefig(io_buffer, format='svg')
         display.close()
 
         io_buffer.seek(0)
