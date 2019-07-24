@@ -1380,7 +1380,7 @@ def fetch_mixed_gambles(n_subjects=1, data_dir=None, url=None, resume=True,
     resume: bool, optional (default True)
         If true, try resuming download if possible.
 
-    verbose: int, optional (default 0)
+    verbose: int, optional (default 1)
         Defines the level of verbosity of the output.
 
     return_raw_data: bool, optional (default True)
@@ -2024,7 +2024,7 @@ def fetch_development_fmri(n_subjects=None, reduce_confounds=True,
     resume: bool, optional (default True)
         Whether to resume download of a partly-downloaded file.
 
-    verbose: int, optional (default 0)
+    verbose: int, optional (default 1)
         Defines the level of verbosity of the output.
 
     Returns
