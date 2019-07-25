@@ -37,8 +37,10 @@ def plot_matrix(mat, title=None, labels=None, figure=None, axes=None,
             Matrix to be plotted.
         title : string or None, optional
             A text to add in the upper left corner.
-        labels : list or ndarray of strings, optional
-            The label of each row and column
+        labels : list, ndarray of strings, empty list, False, or None, optional
+            The label of each row and column. Needs to be the same
+            length as rows/columns of mat. If False, None, or an
+            empty list, no labels are plotted.
         figure : figure instance, figsize tuple, or None
             Sets the figure used. This argument can be either an existing
             figure, or a pair (width, height) that gives the size of a
