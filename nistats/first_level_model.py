@@ -269,7 +269,7 @@ class FirstLevelModel(BaseEstimator, TransformerMixin, CacheMixin):
 
     results : dict,
         with keys corresponding to the different labels values
-        values are RegressionResults instances corresponding to the voxels
+        values are SimpleRegressionResults instances corresponding to the voxels
 
     """
     @replace_parameters({'mask': 'mask_img'}, end_version='next')
