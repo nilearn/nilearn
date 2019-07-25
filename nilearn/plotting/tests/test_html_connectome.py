@@ -6,7 +6,7 @@ from nilearn.plotting import cm
 from nilearn.plotting.js_plotting_utils import decode
 from nilearn.plotting import html_connectome
 
-from nilearn.reporting.tests.test_html_report import check_html
+from .test_js_plotting_utils import check_html
 
 
 def test_prepare_line():
