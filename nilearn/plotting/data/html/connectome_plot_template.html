@@ -25,14 +25,6 @@
             data.push(info);
 
             let layout = getLayout("connectome-plot", "select-view", false);
-
-            layout['title'] = {
-                text: connectomeInfo['connectome']['title'],
-                font: {size: connectomeInfo['connectome']["title_fontsize"],
-                       color: textColor(connectomeInfo["black_bg"])},
-                yref: 'paper',
-                y: .9};
-
             let config = getConfig();
 
             Plotly.plot(divId, data, layout, config);
@@ -55,8 +47,7 @@
                                                  "select-view", false),
                     getConfig(),
                     connectomeInfo["connectome"]["cbar_fontsize"],
-                    connectomeInfo["connectome"]["cbar_height"],
-                    textColor(connectomeInfo["black_bg"]));
+                    connectomeInfo["connectome"]["cbar_height"]);
             }
         }
 

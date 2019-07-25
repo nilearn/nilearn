@@ -180,10 +180,9 @@ preparation::
    >>> masker # doctest: +ELLIPSIS +NORMALIZE_WHITESPACE
    NiftiMasker(detrend=False, dtype=None, high_pass=None, low_pass=None,
          mask_args=None, mask_img=None, mask_strategy='background',
-         memory=Memory(...), memory_level=1, reports=True,
-         sample_mask=None, sessions=None, smoothing_fwhm=None,
-         standardize=False, t_r=None, target_affine=None, target_shape=None,
-         verbose=0)
+         memory=Memory(...), memory_level=1, sample_mask=None,
+         sessions=None, smoothing_fwhm=None, standardize=False, t_r=None,
+         target_affine=None, target_shape=None, verbose=0)
 
 .. note::
 
@@ -235,7 +234,7 @@ Temporal Filtering and confound removal
 properties, before conversion to voxel signals.
 
 - **Standardization**. Parameter ``standardize``: Signals can be
-  standardized (scaled to unit variance).
+  standardized (scaled to unit variance). 
 
 - **Frequency filtering**. Low-pass and high-pass filters can be used to
   remove artifacts. Parameters: ``high_pass`` and ``low_pass``, specified
@@ -243,7 +242,7 @@ properties, before conversion to voxel signals.
   the ``t_r`` parameter: ``loss_pass=.5, t_r=2.1``).
 
 - **Confound removal**. Two ways of removing confounds are provided: simple
-  detrending or using prespecified confounds, such as behavioral or movement
+  detrending or using prespecified confounds, such as behavioral or movement 
   information.
 
   * Linear trends can be removed by activating the `detrend` parameter.
@@ -252,7 +251,7 @@ properties, before conversion to voxel signals.
     signal of interest (e.g., the neural correlates of cognitive tasks).
     It is not activated by default in :class:`NiftiMasker` but is recommended
     in almost all scenarios.
-
+    
   * More complex confounds, measured during the acquision, can be removed
     by passing them to :meth:`NiftiMasker.transform`. If the dataset
     provides a confounds file, just pass its path to the masker.

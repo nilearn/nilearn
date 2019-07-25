@@ -97,6 +97,5 @@ if __name__ == "__main__":
                         'nilearn.image.tests.data': ['*.mgz'],
                         'nilearn.surface.tests.data': ['*.annot', '*.label'],
                         'nilearn.datasets.tests.data': ['*.*'],
-                        'nilearn.datasets.description': ['*.rst'],
-                        'nilearn.reporting.data.html': ['*.html']},
+                        'nilearn.datasets.description': ['*.rst']},
           install_requires=install_requires,)

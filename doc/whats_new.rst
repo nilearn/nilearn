@@ -41,8 +41,7 @@ Changes
   and :func:`nilearn.plotting.view_connectome` now allow disabling the colorbar,
   and setting its height and the fontsize of its ticklabels.
 
-- :func:`nilearn.plotting.view_img_on_surf`, :func:`nilearn.plotting.view_surf`
-  and :func:`nilearn.plotting.view_connectome` can now display a title.
+
 
 Fixes
 -----
