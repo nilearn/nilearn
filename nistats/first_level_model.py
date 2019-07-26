@@ -114,7 +114,7 @@ def run_glm(Y, X, noise_model='ar1', bins=100, n_jobs=1, verbose=0):
 
     results : dict,
         Keys correspond to the different labels values
-        values are SimpleRegressionResults instances corresponding to the voxels.
+        values are RegressionResults instances corresponding to the voxels.
 
     """
     acceptable_noise_models = ['ar1', 'ols']
@@ -268,8 +268,11 @@ class FirstLevelModel(BaseEstimator, TransformerMixin, CacheMixin):
         a map of values on voxels used to identify the corresponding model
 
     results_ : dict,
-        with keys corresponding to the different labels values
-        values are SimpleRegressionResults instances corresponding to the voxels
+        with keys corresponding to the different labels values.
+        Values are SimpleRegressionResults corresponding to the voxels,
+        if minimize_memory is True,
+        RegressionResults if minimize_memory is False
+
 
     """
     @replace_parameters({'mask': 'mask_img'}, end_version='next')
