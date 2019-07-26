@@ -466,7 +466,10 @@ def test_csv_io():
     path = 'design_matrix.csv'
     with InTemporaryDirectory():
         DM.to_csv(path)
-        DM2 = pd.DataFrame().read_csv(path)
+        try:
+            DM2 = pd.DataFrame().read_csv(path)
+        except AttributeError:
+            DM2 = pd.DataFrame().from_csv(path)
 
     _, matrix, names = check_design_matrix(DM)
     _, matrix_, names_ = check_design_matrix(DM2)
