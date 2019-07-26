@@ -203,7 +203,8 @@ def test_fetch_localizer_contrasts():
         verbose=1)
     assert_equal(dataset2.ext_vars.size, 3)
     assert_equal(len(dataset2.cmaps), 3)
-    assert_equal([row[0] for row in dataset2.ext_vars], ["S02", "S03", "S05"])
+    assert_equal([row[0] for row in dataset2.ext_vars],
+                 [b"S02", b"S03", b"S05"])
 
 
 @with_setup(tst.setup_tmpdata, tst.teardown_tmpdata)

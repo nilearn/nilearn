@@ -7,7 +7,6 @@ import re
 import json
 import subprocess
 import numpy as np
-import pandas as pd
 import numbers
 
 import nibabel
@@ -998,11 +997,11 @@ def fetch_localizer_contrasts(contrasts, n_subjects=None, get_tmaps=False,
 
     # Load covariates file
     participants_file = os.path.join(data_dir, participants_file)
-    csv_data = pd.read_csv(participants_file, delimiter="\t")
-    csv_data = csv_data[csv_data["participant_id"].isin(subject_ids)]
+    csv_data = np.recfromcsv(participants_file, delimiter="\t")
+    _subject_ids = [sid.encode("utf8") for sid in subject_ids]
+    csv_data = csv_data[np.isin(csv_data["participant_id"], _subject_ids)]
 
-    return Bunch(ext_vars=csv_data.to_records(index=False), description=fdescr,
-                 **files)
+    return Bunch(ext_vars=csv_data, description=fdescr, **files)
 
 
 def fetch_localizer_calculation_task(n_subjects=1, data_dir=None, url=None,
