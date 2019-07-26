@@ -997,9 +997,15 @@ def fetch_localizer_contrasts(contrasts, n_subjects=None, get_tmaps=False,
 
     # Load covariates file
     participants_file = os.path.join(data_dir, participants_file)
-    csv_data = np.recfromcsv(participants_file, delimiter="\t")
-    _subject_ids = [sid.encode("utf8") for sid in subject_ids]
-    csv_data = csv_data[np.isin(csv_data["participant_id"], _subject_ids)]
+    csv_data = np.recfromcsv(participants_file, delimiter='\t')
+    subject_names = csv_data["participant_id"].tolist()
+    subjects_indices = []
+    for name in subject_ids:
+        name = name.encode("utf8")
+        if name not in subject_names:
+            continue
+        subjects_indices.append(subject_names.index(name))
+    csv_data = csv_data[subjects_indices]
 
     return Bunch(ext_vars=csv_data, description=fdescr, **files)
 
