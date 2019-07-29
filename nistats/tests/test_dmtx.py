@@ -466,7 +466,7 @@ def test_csv_io():
     path = 'design_matrix.csv'
     with InTemporaryDirectory():
         DM.to_csv(path)
-        DM2 = pd.read_csv(path)
+        DM2 = pd.read_csv(path, index_col=0)
 
     _, matrix, names = check_design_matrix(DM)
     _, matrix_, names_ = check_design_matrix(DM2)
