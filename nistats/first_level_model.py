@@ -264,12 +264,15 @@ class FirstLevelModel(BaseEstimator, TransformerMixin, CacheMixin):
 
     Attributes
     ----------
-    labels : array of shape (n_voxels,),
+    labels_ : array of shape (n_voxels,),
         a map of values on voxels used to identify the corresponding model
 
-    results : dict,
-        with keys corresponding to the different labels values
-        values are RegressionResults instances corresponding to the voxels
+    results_ : dict,
+        with keys corresponding to the different labels values.
+        Values are SimpleRegressionResults corresponding to the voxels,
+        if minimize_memory is True,
+        RegressionResults if minimize_memory is False
+
 
     """
     @replace_parameters({'mask': 'mask_img'}, end_version='next')
