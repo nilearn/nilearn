@@ -34,7 +34,7 @@ jobs:
             date +%F > today
             date +%U > week_num
       - restore_cache:
-          key: v1-packages+datasets-{{ checksum "week_num" }}
+          key: v1-packages+datasets-{{ checksum "week_num" }}-{{ checksum ".circleci/package-cache-timestamp" }}
       - restore_cache:
           key: v1-docs-{{ .Branch }}-{{ checksum "today" }}-{{ checksum ".circleci/manual-cache-timestamp" }}
 
