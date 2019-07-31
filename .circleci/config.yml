@@ -46,7 +46,7 @@ jobs:
             then
               echo "(Mini)Conda already present from the cache."
             else
-              wget https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh -O ~/miniconda.sh
+              wget https://repo.continuum.io/miniconda/Miniconda3-4.6.14-Linux-x86_64.sh -O ~/miniconda.sh
               chmod +x ~/miniconda.sh && ~/miniconda.sh -b
             fi
       - run:
@@ -66,7 +66,6 @@ jobs:
       - run:
           name: Install packages in conda env
           command: |
-            conda install conda=4.6 --yes
             conda install -n testenv python=3.6 numpy scipy scikit-learn matplotlib==3.0.3 pandas \
             flake8 lxml nose cython mkl sphinx coverage numpydoc patsy boto3 pillow pandas -yq
             conda install -n testenv nibabel sphinx-gallery nilearn nose-timer -c conda-forge -yq
@@ -117,13 +116,12 @@ jobs:
         # Installing required packages for `make -C doc check command` to work.
       - run: sudo -E apt-get -yq update
       - run: sudo -E apt-get -yq --no-install-suggests --no-install-recommends --force-yes install dvipng texlive-latex-base texlive-latex-extra
-      - run: wget https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh -O ~/miniconda.sh
+      - run: wget https://repo.continuum.io/miniconda/Miniconda3-4.6.14-Linux-x86_64.sh -O ~/miniconda.sh
       - run: chmod +x ~/miniconda.sh && ~/miniconda.sh -b
       - run: echo 'export PATH="$HOME/miniconda3/bin:$PATH"'  >> $BASH_ENV
       - run:
           name: Create conda env
           command: |
-            conda install conda=4.6 --yes
             conda create -n testenv python=3.6 numpy scipy scikit-learn matplotlib==3.0.3 pandas \
             flake8 lxml nose cython mkl sphinx numpydoc coverage patsy boto3 pillow pandas -yq
             conda install -n testenv nibabel sphinx-gallery nilearn nose-timer -c conda-forge -yq
