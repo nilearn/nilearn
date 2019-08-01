@@ -1,6 +1,7 @@
 import numpy as np
 from nibabel import Nifti1Image
 from nilearn import input_data
+from numpy.testing import assert_warns
 
 
 # Note: html output by nilearn view_* functions
@@ -20,6 +21,7 @@ def test_3d_reports():
     data = np.zeros((9, 9, 9))
     data[3:-3, 3:-3, 3:-3] = 10
     data_img_3d = Nifti1Image(data, np.eye(4))
+    
     # check 3d datasets
     mask = input_data.NiftiMasker()
     mask.fit(data_img_3d)
@@ -61,3 +63,34 @@ def test_4d_reports():
     masker.fit_transform(data_img_4d)
     html = masker.generate_report()
     _check_html(html)
+
+
+def _generate_empty_report():
+    data = np.zeros((9, 9, 9))
+    data[3:-3, 3:-3, 3:-3] = 10
+    data_img_3d = Nifti1Image(data, np.eye(4))
+
+    # turn off reporting
+    mask = input_data.NiftiMasker(reports=False)
+    mask.fit(data_img_3d)
+    mask.generate_report()
+
+
+def test_empty_report():
+    assert_warns(UserWarning, _generate_empty_report)
+
+
+def test_overlaid_report():
+    empty_svg = ("iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAA" +
+                 "AAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=")
+
+    # Dummy 3D data
+    data = np.zeros((9, 9, 9))
+    data[3:-3, 3:-3, 3:-3] = 10
+    data_img_3d = Nifti1Image(data, np.eye(4))
+
+    mask = input_data.NiftiMasker(target_affine=np.eye(3) * 8)
+    mask.fit(data_img_3d)
+    html = mask.generate_report()
+    assert empty_svg not in str(html)
+    
