@@ -27,7 +27,7 @@ def test_3d_reports():
     mask = np.zeros((9, 9, 9))
     mask[4:-4, 4:-4, 4:-4] = True
     mask_img_3d = Nifti1Image(data, np.eye(4))
-    
+
     # test .fit method
     mask = input_data.NiftiMasker()
     mask.fit(data_img_3d)
@@ -96,4 +96,3 @@ def test_overlaid_report():
     mask.fit(data_img_3d)
     html = mask.generate_report()
     assert empty_svg not in str(html)
-    
