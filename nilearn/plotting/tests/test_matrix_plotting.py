@@ -27,6 +27,9 @@ def test_matrix_plotting():
     # test if an array gets correctly cast to a list
     ax = plot_matrix(mat, labels=array(labels))
     plt.close()
+    # test if labels can be None
+    ax = plot_matrix(mat, labels=None)
+    plt.close()
     assert_raises(ValueError, plot_matrix, mat, labels=[0, 1, 2])
 
     import scipy
