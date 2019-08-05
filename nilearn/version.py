@@ -41,6 +41,10 @@ REQUIRED_MODULE_METADATA = (
         'min_version': '0.19',
         'required_at_installation': True,
         'install_info': _NILEARN_INSTALL_MSG}),
+    ('joblib', {
+        'min_version': '0.11',
+        'required_at_installation': True,
+        'install_info': _NILEARN_INSTALL_MSG}),
     ('nibabel', {
         'min_version': '2.0.2',
         'required_at_installation': False}))

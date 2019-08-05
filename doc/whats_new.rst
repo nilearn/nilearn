@@ -13,6 +13,8 @@ NEW
  | - Scikit-learn -- v0.19
  | - Scipy -- v0.19
 
+- joblib is now a dependency
+
 - Parcellation method ReNA: Fast agglomerative clustering based on recursive
   nearest neighbor grouping.
   Yields very fast & accurate models, without creation of giant
@@ -39,7 +41,8 @@ Changes
   and :func:`nilearn.plotting.view_connectome` now allow disabling the colorbar,
   and setting its height and the fontsize of its ticklabels.
 
-
+- :func:`nilearn.plotting.view_img_on_surf`, :func:`nilearn.plotting.view_surf`
+  and :func:`nilearn.plotting.view_connectome` can now display a title.
 
 Fixes
 -----
