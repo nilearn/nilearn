@@ -19,7 +19,7 @@ into homogeneous regions from functional imaging data.
     <http://journal.frontiersin.org/article/10.3389/fnins.2014.00167/full>`_
     Frontiers in neuroscience 8.167 (2014): 13.
 
-Data loading: Resting-state data
+Data loading: movie-watching data
 =================================
 
 .. currentmodule:: nilearn.datasets
@@ -27,8 +27,9 @@ Data loading: Resting-state data
 Clustering is commonly applied to resting-state data, but any brain
 functional data will give rise of a functional parcellation, capturing
 intrinsic brain architecture in the case of resting-state data.
-In the examples, we use rest data downloaded with the function 
-:func:`fetch_adhd` (see :ref:`loading_data`).
+In the examples, we use naturalistic stimuli-based movie watching
+brain development data downloaded with the function 
+:func:`fetch_development_fmri` (see :ref:`loading_data`).
 
 Applying clustering
 ====================
@@ -51,7 +52,7 @@ Applying clustering
     Both clustering algorithms (as well as many others) are provided by
     this object :class:`nilearn.regions.Parcellations` and full
     code example in
-    :ref:`here<sphx_glr_auto_examples_03_connectivity_plot_rest_parcellations.py>`.
+    :ref:`here<sphx_glr_auto_examples_03_connectivity_plot_data_driven_parcellations.py>`.
     Ward clustering is the easiest to use, as it can be done with the Feature
     agglomeration object. It is also quite fast. We detail it below.
 
@@ -117,8 +118,8 @@ using *ward.fit*. We directly use the result for visualization.
 To visualize the clusters, we assign random colors to each cluster
 for the labels visualization.
 
-.. figure:: ../auto_examples/03_connectivity/images/sphx_glr_plot_rest_parcellations_001.png
-   :target: ../auto_examples/03_connectivity/plot_rest_parcellations.html
+.. figure:: ../auto_examples/03_connectivity/images/sphx_glr_plot_data_driven_parcellations_001.png
+   :target: ../auto_examples/03_connectivity/plot_data_driven_parcellations.html
    :align: center
    :scale: 80
 
@@ -133,12 +134,12 @@ representation, taking the average on each parcel:
 - call *ward.inverse_transform* on the previous result to turn it back into
   the masked picture shape
 
-.. |left_img| image:: ../auto_examples/03_connectivity/images/sphx_glr_plot_rest_parcellations_002.png
-   :target: ../auto_examples/03_connectivity/plot_rest_parcellations.html
+.. |left_img| image:: ../auto_examples/03_connectivity/images/sphx_glr_plot_data_driven_parcellations_002.png
+   :target: ../auto_examples/03_connectivity/plot_data_driven_parcellations.html
    :width: 49%
 
-.. |right_img| image:: ../auto_examples/03_connectivity/images/sphx_glr_plot_rest_parcellations_003.png
-   :target: ../auto_examples/03_connectivity/plot_rest_parcellations.html
+.. |right_img| image:: ../auto_examples/03_connectivity/images/sphx_glr_plot_data_driven_parcellations_003.png
+   :target: ../auto_examples/03_connectivity/plot_data_driven_parcellations.html
    :width: 49%
 
 |left_img| |right_img|
@@ -152,6 +153,6 @@ approximated.
 
    All the steps discussed in this section can be seen implemented in
    :ref:`a full code example
-   <sphx_glr_auto_examples_03_connectivity_plot_rest_parcellations.py>`.
+   <sphx_glr_auto_examples_03_connectivity_plot_data_driven_parcellations.py>`.
 
 

@@ -1,6 +1,4 @@
-import functools
 import json
-import warnings
 
 import numpy as np
 from scipy import sparse
@@ -97,16 +95,18 @@ def _replacement_params_view_connectome():
         'threshold': 'edge_threshold',
         'cmap': 'edge_cmap',
         'marker_size': 'node_size',
-        }
+    }
+
 
 @replace_parameters(replacement_params=_replacement_params_view_connectome(),
                     end_version='0.6.0',
-                    lib_name='Nilearn',
+                    lib_name='Nilearn'
                     )
 def view_connectome(adjacency_matrix, node_coords, edge_threshold=None,
                     edge_cmap=cm.bwr, symmetric_cmap=True,
-                    linewidth=6., node_size=3.,
-                    ):
+                    linewidth=6., node_size=3., colorbar=True,
+                    colorbar_height=.5, colorbar_fontsize=25,
+                    title=None, title_fontsize=25):
     """
     Insert a 3d plot of a connectome into an HTML page.
 
@@ -137,6 +137,21 @@ def view_connectome(adjacency_matrix, node_coords, edge_threshold=None,
     node_size : float, optional (default=3.)
         Size of the markers showing the seeds in pixels.
 
+    colorbar : bool, optional (default=True)
+        add a colorbar
+
+    colorbar_height : float, optional (default=.5)
+        height of the colorbar, relative to the figure height
+
+    colorbar_fontsize : int, optional (default=25)
+        fontsize of the colorbar tick labels
+
+    title : str, optional (default=None)
+        title for the plot
+
+    title_fontsize : int, optional (default=25)
+        fontsize of the title
+
     Returns
     -------
     ConnectomeView : plot of the connectome.
@@ -161,9 +176,15 @@ def view_connectome(adjacency_matrix, node_coords, edge_threshold=None,
 
     """
     connectome_info = _get_connectome(
-        adjacency_matrix, node_coords, threshold=edge_threshold, cmap=edge_cmap,
+        adjacency_matrix, node_coords,
+        threshold=edge_threshold, cmap=edge_cmap,
         symmetric_cmap=symmetric_cmap, marker_size=node_size)
     connectome_info['line_width'] = linewidth
+    connectome_info['colorbar'] = colorbar
+    connectome_info['cbar_height'] = colorbar_height
+    connectome_info['cbar_fontsize'] = colorbar_fontsize
+    connectome_info['title'] = title
+    connectome_info['title_fontsize'] = title_fontsize
     return _make_connectome_html(connectome_info)
 
 
@@ -181,7 +202,8 @@ def _replacement_params_view_markers():
                     end_version='0.6.0',
                     lib_name='Nilearn',
                     )
-def view_markers(marker_coords, marker_color=None, marker_size=5.):
+def view_markers(marker_coords, marker_color=None, marker_size=5.,
+                 title=None, title_fontsize=25):
     """
     Insert a 3d plot of markers in a brain into an HTML page.
 
@@ -197,6 +219,12 @@ def view_markers(marker_coords, marker_color=None, marker_size=5.):
 
     marker_size : float or array-like, optional (default=3.)
         Size of the markers showing the seeds in pixels.
+
+    title : str, optional (default=None)
+        title for the plot
+
+    title_fontsize : int, optional (default=25)
+        fontsize of the title
 
     Returns
     -------
@@ -227,4 +255,6 @@ def view_markers(marker_coords, marker_color=None, marker_size=5.):
     if hasattr(marker_size, 'tolist'):
         marker_size = marker_size.tolist()
     connectome_info["marker_size"] = marker_size
+    connectome_info['title'] = title
+    connectome_info['title_fontsize'] = title_fontsize
     return _make_connectome_html(connectome_info)

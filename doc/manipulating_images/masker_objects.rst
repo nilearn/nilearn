@@ -92,8 +92,8 @@ Custom data loading: loading only the first 100 time points
 ------------------------------------------------------------
 
 Suppose we want to restrict a dataset to the first 100 frames. Below, we load
-a resting-state dataset with :func:`fetch_adhd()
-<nilearn.datasets.fetch_adhd>`, restrict it to 100 frames and
+a movie-watching dataset with :func:`fetch_development_fmri()
+<nilearn.datasets.fetch_development_fmri>`, restrict it to 100 frames and
 build a new niimg object that we can give to the masker. Although
 possible, there is no need to save your data to a file to pass it to a
 :class:`NiftiMasker`. Simply use :func:`nilearn.image.index_img` to apply a
@@ -101,7 +101,7 @@ slice and create a :ref:`Niimg <niimg>` in memory:
 
 
 .. literalinclude:: ../../examples/04_manipulating_images/plot_mask_computation.py
-    :start-after: Load ADHD resting-state dataset
+    :start-after: Load movie watching based brain development fmri dataset
     :end-before: # To display the background
 
 Controlling how the mask is computed from the data
@@ -177,7 +177,7 @@ preparation::
 
    >>> from nilearn import input_data
    >>> masker = input_data.NiftiMasker()
-   >>> masker # doctest: +ELLIPSIS
+   >>> masker # doctest: +ELLIPSIS +NORMALIZE_WHITESPACE
    NiftiMasker(detrend=False, dtype=None, high_pass=None, low_pass=None,
          mask_args=None, mask_img=None, mask_strategy='background',
          memory=Memory(...), memory_level=1, sample_mask=None,
@@ -425,4 +425,4 @@ seed position is used.
 
 .. topic:: **Examples**
 
-  * :ref:`sphx_glr_auto_examples_03_connectivity_plot_adhd_spheres.py`
+  * :ref:`sphx_glr_auto_examples_03_connectivity_plot_sphere_based_connectome.py`

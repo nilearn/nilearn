@@ -3,7 +3,8 @@
 
 <head>
     <title>connectome plot</title>
-    <meta charset="UTF-8" /> $INSERT_JS_LIBRARIES_HERE
+    <meta charset="UTF-8" />
+    $INSERT_JS_LIBRARIES_HERE
     <script>
         var connectomeInfo = $INSERT_CONNECTOME_JSON_HERE;
         var data = [];
@@ -24,6 +25,14 @@
             data.push(info);
 
             let layout = getLayout("connectome-plot", "select-view", false);
+
+            layout['title'] = {
+                text: connectomeInfo['connectome']['title'],
+                font: {size: connectomeInfo['connectome']["title_fontsize"],
+                       color: textColor(connectomeInfo["black_bg"])},
+                yref: 'paper',
+                y: .9};
+
             let config = getConfig();
 
             Plotly.plot(divId, data, layout, config);
@@ -37,13 +46,18 @@
             if(connectomeInfo["connectome"]["markers_only"]){
                 return;
             }
-            addColorbar(
-                connectomeInfo["connectome"]["colorscale"],
-                connectomeInfo["connectome"]["cmin"],
-                connectomeInfo["connectome"]["cmax"],
-                "connectome-plot", getLayout("connectome-plot",
-                                             "select-view", false),
-                getConfig());
+            if(connectomeInfo["connectome"]["colorbar"]){
+                addColorbar(
+                    connectomeInfo["connectome"]["colorscale"],
+                    connectomeInfo["connectome"]["cmin"],
+                    connectomeInfo["connectome"]["cmax"],
+                    "connectome-plot", getLayout("connectome-plot",
+                                                 "select-view", false),
+                    getConfig(),
+                    connectomeInfo["connectome"]["cbar_fontsize"],
+                    connectomeInfo["connectome"]["cbar_height"],
+                    textColor(connectomeInfo["black_bg"]));
+            }
         }
 
         function updateOpacity() {
@@ -155,7 +169,7 @@
         <option value="bottom">view: Bottom</option>
         <option value="custom">view: -</option>
     </select>
-    <input id="opacity-range" type="range" min="0" max="100" value="30"></input>
+    <input id="opacity-range" type="range" min="0" max="100" value="30"/>
 
 </body>
 

@@ -1,8 +1,108 @@
-0.5.1
-=====
+0.6.0a
+======
 
 NEW
 ---
+
+.. warning::
+
+ | **Python2 and 3.4 are no longer supported. We recommend upgrading to Python 3.6 minimum.**
+ |
+ | **Minimum supported versions of packages have been bumped up.**
+ | - Matplotlib -- v2.0
+ | - Scikit-learn -- v0.19
+ | - Scipy -- v0.19
+
+- joblib is now a dependency
+
+- Parcellation method ReNA: Fast agglomerative clustering based on recursive
+  nearest neighbor grouping.
+  Yields very fast & accurate models, without creation of giant
+  clusters.
+  :class:`nilearn.regions.ReNA`
+
+- Optimization to image resampling
+  :func:`nilearn.image.resample_img` has been optimized to pad rather than
+  resample images in the special case when there is only a translation
+  between two spaces. This is a common case in :class:`nilearn.input_data.NiftiMasker`
+  when using the `mask_strategy="template"` option for brains in MNI space.
+- New brain development fMRI dataset fetcher
+  :func:`nilearn.datasets.fetch_development_fmri` can be used to download
+  movie-watching data in children and adults. A light-weight dataset
+  implemented for teaching and usage in the examples.
+
+Changes
+-------
+
+- All the connectivity examples are changed from ADHD to brain development
+  fmri dataset.
+
+- :func:`nilearn.plotting.view_img_on_surf`, :func:`nilearn.plotting.view_surf`
+  and :func:`nilearn.plotting.view_connectome` now allow disabling the colorbar,
+  and setting its height and the fontsize of its ticklabels.
+
+- :func:`nilearn.plotting.view_img_on_surf`, :func:`nilearn.plotting.view_surf`
+  and :func:`nilearn.plotting.view_connectome` can now display a title.
+
+- Rework of the standardize-options of :func:`nilearn.signal.clean` and the various Maskers
+  in `nilearn.input_data`. You can now set `standardize` to `zscore` or `psc`. `psc` stands
+  for `Percent Signal Change`, which can be a meaningful metric for BOLD.
+
+Fixes
+-----
+
+- :func:`nilearn.plotting.plot_glass_brain` with colorbar=True does not crash when
+  images have NaNs.
+- add_contours now accepts `threshold` argument for filled=False. Now
+  `threshold` is equally applied when asked for fillings in the contours.
+- :func:`nilearn.plotting.plot_surf` and
+  :func:`nilearn.plotting.plot_surf_stat_map` no longer threshold zero values
+  when no threshold is given.
+- When :func:`nilearn.plotting.plot_surf_stat_map` is used with a thresholded map
+  but without a background map, the surface mesh is displayed in
+  half-transparent grey to maintain a 3D perception.
+- :func:`nilearn.plotting.view_surf` now accepts surface data provided as a file
+  path.
+
+0.5.2
+=====
+
+**Released April 2019**
+
+NEW
+---
+
+.. warning::
+
+ | This is the **last** release supporting Python2 and 3.4 .
+ | The lowest Python version supported is now Python3.5.
+ | We recommend switching to Python3.6 .
+
+Fixes
+-----
+
+- Plotting ``.mgz`` files in MNE broke in ``0.5.1`` and has been fixed.
+
+Contributors
+------------
+
+The following people contributed to this release::
+
+    11  Kshitij Chawla (kchawla-pi)
+     3  Gael Varoquaux
+     2  Alexandre Gramfort
+
+0.5.1
+=====
+
+**Released April 2019**
+
+NEW
+---
+- **Support for Python2 & Python3.4 wil be removed in the next release.**
+  We recommend Python 3.6 and up.
+  Users with a Python2 or Python3.4 environment will be warned
+  at their first Nilearn import.
 
 - Calculate image data dtype from header information
 - New display mode 'tiled' which allows 2x2 plot arrangement when plotting three cuts
@@ -10,31 +110,36 @@ NEW
 - NiftiLabelsMasker now consumes less memory when extracting the signal from a 3D/4D
   image. This is especially noteworthy when extracting signals from large 4D images.
 - New function :func:`nilearn.datasets.fetch_atlas_schaefer_2018`
-- Rework of the standardize-options of :func:`nilearn.signal.clean` and the various Maskers
-  in `nilearn.input_data`. You can now set `standardize` to `zscore` or `psc`. `psc` stands
-  for `Percent Signal Change`, which can be a meaningful metric for BOLD.
+- New function :func:`nilearn.datasets.fetch_coords_seitzman_2018`
 
 Changes
 -------
 
 - Lighting used for interactive surface plots changed; plots may look a bit
   different.
-- plotting.view_connectome default colormap is `bwr`, consistent with plot_connectome.
-- plotting.view_connectome parameter names are consistent with plot_connectome:
+- :func:`nilearn.plotting.view_connectome` default colormap is `bwr`, consistent with plot_connectome.
+- :func:`nilearn.plotting.view_connectome` parameter names are consistent with plot_connectome:
 
- - coords is now node_coord
- - marker_size is noe node_size
- - cmap is now edge_cmap
- - threshold is now edge_threshold
+  - coords is now node_coord
+  - marker_size is noe node_size
+  - cmap is now edge_cmap
+  - threshold is now edge_threshold
 
-- plotting.view_markers and plotting.view_connectome can accept different marker
+- :func:`nilearn.plotting.view_markers` and :func:`nilearn.plotting.view_connectome` can accept different marker
   sizes for each node / marker.
 
-- plotting.view_markers() default marker color is now 'red', consistent with add_markers().
-- plotting.view_markers() parameter names are consistent with add_markers():
+- :func:`nilearn.plotting.view_markers()` default marker color is now 'red', consistent with add_markers().
+- :func:`nilearn.plotting.view_markers` parameter names are consistent with add_markers():
 
- - coords is now marker_coords
- - colors is now marker_color
+  - coords is now marker_coords
+  - colors is now marker_color
+
+- :func:`nilearn.plotting.view_img_on_surf` now accepts a `symmetric_cmap`
+  argument to control whether the colormap is centered around 0 and a `vmin`
+  argument.
+
+- Users can now control the size and fontsize of colorbars in interactive
+  surface and connectome plots, or disable the colorbar.
 
 Fixes
 -----
@@ -42,6 +147,35 @@ Fixes
 - Example plot_seed_to_voxel_correlation now really saves z-transformed maps.
 - region_extractor.connected_regions and regions.RegionExtractor now correctly
   use the provided mask_img.
+- load_niimg no longer drops header if dtype is changed.
+- NiftiSpheresMasker no longer silently ignores voxels if no `mask_img` is specified.
+- Interactive brainsprites generated from `view_img` are correctly rendered in Jupyter Book.
+
+Known Issues
+-------------------
+
+- On Python2, :func:`nilearn.plotting.view_connectome()` &
+  :func:`nilearn.plotting.view_markers()`
+  do not show parameters names in function signature
+  when using help() and similar features.
+  Please refer to their docstrings for this information.
+- Plotting ``.mgz`` files in MNE is broken.
+
+Contributors
+------------
+
+The following people contributed to this release::
+
+   2  Bertrand Thirion
+  90  Kshitij Chawla (kchawla-pi)
+  22  fliem
+  16  Jerome Dockes
+  11  Gael Varoquaux
+   8  Salma Bougacha
+   7  himanshupathak21061998
+   2  Elizabeth DuPre
+   1  Eric Larson
+   1  Pierre Bellec
 
 0.5.0
 =====
@@ -1268,3 +1402,4 @@ Contributors (from ``git shortlog -ns 0.1``)::
      1  Matthias Ekman
      1  Michael Waskom
      1  Vincent Michel
+

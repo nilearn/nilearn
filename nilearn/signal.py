@@ -426,7 +426,7 @@ def clean(signals, sessions=None, detrend=True, standardize='zscore',
         Repetition time, in second (sampling period). Set to None if not.
 
     low_pass, high_pass: float
-        Respectively low and high cutoff frequencies, in Hertz.
+        Respectively high and low cutoff frequencies, in Hertz.
 
     detrend: bool
         If detrending should be applied on timeseries (before
