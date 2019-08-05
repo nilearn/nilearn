@@ -15,6 +15,7 @@ jobs:
       NUMPY_VERSION: "*"
       SCIPY_VERSION: "*"
       SCIKIT_LEARN_VERSION: "*"
+      JOBLIB_VERSION: "*"
       MATPLOTLIB_VERSION: "*"
 
     steps:
@@ -67,8 +68,8 @@ jobs:
           name: Install packages in conda env
           command: |
             conda install -n testenv python=3.6 numpy scipy scikit-learn matplotlib pandas \
-            lxml mkl sphinx pillow pandas -yq
-            conda install -n testenv nibabel -c conda-forge -yq
+            lxml mkl sphinx numpydoc pillow pandas -yq
+            conda install -n testenv nibabel sphinx-gallery junit-xml -c conda-forge -yq
       - run:
           name: Running CircleCI test (make html)
           command: |
@@ -76,6 +77,11 @@ jobs:
             pip install -e .
             set -o pipefail && cd doc && make html-strict 2>&1 | tee log.txt
           no_output_timeout: 7h
+      - store_test_results:
+          path: doc/_build/test-results
+      - store_artifacts:
+          path: doc/_build/test-results
+
       - save_cache:
           key: v1-packages+datasets-{{ checksum "week_num" }}
           paths:
@@ -123,8 +129,8 @@ jobs:
           name: Install packages in conda env
           command: |
             conda create -n testenv python=3.6 numpy scipy scikit-learn matplotlib pandas \
-            lxml mkl sphinx pillow pandas -yq
-            conda install -n testenv nibabel -c conda-forge -yq
+            lxml mkl sphinx numpydoc pillow pandas -yq
+            conda install -n testenv nibabel sphinx-gallery junit-xml -c conda-forge -yq
       - run:
           name: Running CircleCI test (make html)
           command: |
@@ -132,6 +138,10 @@ jobs:
             pip install -e .
             set -o pipefail && cd doc && make html-strict 2>&1 | tee log.txt
           no_output_timeout: 7h
+      - store_test_results:
+          path: doc/_build/test-results
+      - store_artifacts:
+          path: doc/_build/test-results
 
       - store_artifacts:
           path: doc/_build/html

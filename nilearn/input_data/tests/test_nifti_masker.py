@@ -233,7 +233,7 @@ def test_sessions():
 
 
 def test_joblib_cache():
-    from sklearn.externals.joblib import hash, Memory
+    from nilearn._utils.compat import hash, Memory
     mask = np.zeros((40, 40, 40))
     mask[20, 20, 20] = 1
     mask_img = Nifti1Image(mask, np.eye(4))

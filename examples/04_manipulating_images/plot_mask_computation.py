@@ -8,8 +8,8 @@ In this example, the Nifti masker is used to automatically compute a mask.
 
 * Another option is to use a template.
 
-* For raw EPI, as in resting-state time series, we need to use the
-  'epi' strategy of the NiftiMasker.
+* For raw EPI, as in resting-state or movie watching time series, we need to
+  use the 'epi' strategy of the NiftiMasker.
 
 In addition, we show here how to tweak the different parameters of the
 underlying routine that extract masks from EPI
@@ -25,10 +25,10 @@ from nilearn.plotting import plot_roi, plot_epi, show
 ###############################################################################
 # Computing a mask from the background
 ###############################################################################
-# 
+#
 # The default strategy to compute a mask, eg in NiftiMasker is to try to
 # detect the background.
-# 
+#
 # With data that has already been masked, this will work well, as it lies
 # on a homogeneous background
 
@@ -60,8 +60,8 @@ plot_roi(masker.mask_img_, miyawaki_mean_img,
 # From raw EPI data, there is no uniform background, and a different
 # strategy is necessary
 
-# Load ADHD resting-state dataset
-dataset = datasets.fetch_adhd(n_subjects=1)
+# Load movie watching based brain development fmri dataset
+dataset = datasets.fetch_development_fmri(n_subjects=1)
 epi_filename = dataset.func[0]
 
 # Restrict to 100 frames to speed up computation
@@ -81,7 +81,7 @@ plot_roi(masker.mask_img_, mean_img, title='EPI automatic mask')
 
 ###############################################################################
 # Generate mask with strong opening
-# 
+#
 # We can fine-tune the outline of the mask by increasing the number of
 # opening steps (`opening=10`) using the `mask_args` argument of the
 # NiftiMasker. This effectively performs erosion and dilation
@@ -94,7 +94,7 @@ plot_roi(masker.mask_img_, mean_img, title='EPI Mask with strong opening')
 
 ###############################################################################
 # Generate mask with a high lower cutoff
-# 
+#
 # The NiftiMasker calls the nilearn.masking.compute_epi_mask function to
 # compute the mask from the EPI. It has two important parameters:
 # lower_cutoff and upper_cutoff. These set the grey-value bounds in which
@@ -113,7 +113,7 @@ plot_roi(masker.mask_img_, mean_img,
 ###############################################################################
 # Computing the mask from the MNI template
 ###############################################################################
-# 
+#
 # A mask can also be computed from the MNI gray matter template. In this
 # case, it is resampled to the target image
 
@@ -126,7 +126,7 @@ plot_roi(masker.mask_img_, mean_img,
 ###############################################################################
 # After mask computation: extracting time series
 ###############################################################################
-# 
+#
 # Extract time series
 
 # trended vs detrended

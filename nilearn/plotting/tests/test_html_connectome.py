@@ -53,8 +53,10 @@ def test_view_connectome():
     adj, coord = _make_connectome()
     html = html_connectome.view_connectome(adj, coord)
     check_html(html, False, 'connectome-plot')
-    html = html_connectome.view_connectome(adj, coord, '85.3%')
+    html = html_connectome.view_connectome(adj, coord, '85.3%',
+                                           title="SOME_TITLE")
     check_html(html, False, 'connectome-plot')
+    assert "SOME_TITLE" in html.html
     html = html_connectome.view_connectome(adj, coord, '85.3%',
                                            linewidth=8.5, node_size=4.2)
     check_html(html, False, 'connectome-plot')
@@ -71,7 +73,7 @@ def test_params_deprecation_view_connectome():
                          'marker_size': 'node_size',
                          }
     deprecation_msg = (
-        'The parameter "{}" will be removed in Nilearn version 0.6.0. '
+        'The parameter "{}" will be removed in 0.6.0 release of Nilearn. '
         'Please use the parameter "{}" instead.'
     )
     warning_msgs = {old_: deprecation_msg.format(old_, new_)
@@ -170,7 +172,7 @@ def test_params_deprecation_view_markers():
                          'colors': 'marker_color',
                          }
     deprecation_msg = (
-        'The parameter "{}" will be removed in Nilearn version 0.6.0. '
+        'The parameter "{}" will be removed in 0.6.0 release of Nilearn. '
         'Please use the parameter "{}" instead.'
     )
     warning_msgs = {old_: deprecation_msg.format(old_, new_)
