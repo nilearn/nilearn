@@ -397,6 +397,10 @@ def clean(signals, sessions=None, detrend=True, standardize='zscore',
     sensitivity.
 
     Filtering is only meaningful on evenly-sampled signals.
+    
+    According to Lindquist et al. (2018), removal of confounds will be done
+    orthogonally to temporal filters (low- and/or high-pass filters), if both
+    are specified.
 
     Parameters
     ----------
@@ -419,7 +423,7 @@ def clean(signals, sessions=None, detrend=True, standardize='zscore',
         signal, as if all were in the same array.
 
     t_r: float
-        Repetition time, in second (sampling period).
+        Repetition time, in second (sampling period). Set to None if not.
 
     low_pass, high_pass: float
         Respectively low and high cutoff frequencies, in Hertz.
@@ -453,6 +457,11 @@ def clean(signals, sessions=None, detrend=True, standardize='zscore',
     "Statistical Parametric Maps in Functional Imaging: A General
     Linear Approach". Human Brain Mapping 2, no 4 (1994): 189-210.
     <http://dx.doi.org/10.1002/hbm.460020402>`_
+
+    Orthogonalization between temporal filters and confound removal is based on
+    suggestions in `Lindquist, M., Geuter, S., Wager, T., & Caffo, B. (2018).
+    Modular preprocessing pipelines can reintroduce artifacts into fMRI data.
+    bioRxiv, 407676. <http://dx.doi.org/10.1101/407676>`_
 
     See Also
     --------
