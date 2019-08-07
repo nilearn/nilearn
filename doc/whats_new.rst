@@ -44,6 +44,10 @@ Changes
 - :func:`nilearn.plotting.view_img_on_surf`, :func:`nilearn.plotting.view_surf`
   and :func:`nilearn.plotting.view_connectome` can now display a title.
 
+- Rework of the standardize-options of :func:`nilearn.signal.clean` and the various Maskers
+  in `nilearn.input_data`. You can now set `standardize` to `zscore` or `psc`. `psc` stands
+  for `Percent Signal Change`, which can be a meaningful metric for BOLD.
+
 Fixes
 -----
 
@@ -59,6 +63,7 @@ Fixes
   half-transparent grey to maintain a 3D perception.
 - :func:`nilearn.plotting.view_surf` now accepts surface data provided as a file
   path.
+- :func:`nilearn.plotting.plot_matrix` providing labels=None, False, or an empty list now correctly disables labels.
 
 0.5.2
 =====
@@ -176,7 +181,7 @@ The following people contributed to this release::
 0.5.0
 =====
 
-**Released November 2018**
+    **Released November 2018**
 
 NEW
 ---
@@ -1398,3 +1403,4 @@ Contributors (from ``git shortlog -ns 0.1``)::
      1  Matthias Ekman
      1  Michael Waskom
      1  Vincent Michel
+

@@ -10,7 +10,7 @@ from nilearn.plotting.matrix_plotting import plot_matrix
 
 
 def test_matrix_plotting():
-    from numpy import zeros
+    from numpy import zeros, array
     from distutils.version import LooseVersion
     mat = zeros((10, 10))
     labels = [str(i) for i in range(10)]
@@ -21,6 +21,17 @@ def test_matrix_plotting():
     # test if it returns an AxesImage
     ax.axes.set_title('Title')
     plt.close()
+    # test if an empty list works as an argument for labels
+    ax = plot_matrix(mat, labels=[])
+    plt.close()
+    # test if an array gets correctly cast to a list
+    ax = plot_matrix(mat, labels=array(labels))
+    plt.close()
+    # test if labels can be None
+    ax = plot_matrix(mat, labels=None)
+    plt.close()
+    assert_raises(ValueError, plot_matrix, mat, labels=[0, 1, 2])
+
     import scipy
     if LooseVersion(scipy.__version__) >= LooseVersion('1.0.0'):
         # test if a ValueError is raised when reorder=True without labels
