@@ -397,7 +397,7 @@ def clean(signals, sessions=None, detrend=True, standardize='zscore',
     sensitivity.
 
     Filtering is only meaningful on evenly-sampled signals.
-    
+
     According to Lindquist et al. (2018), removal of confounds will be done
     orthogonally to temporal filters (low- and/or high-pass filters), if both
     are specified.
@@ -467,7 +467,6 @@ def clean(signals, sessions=None, detrend=True, standardize='zscore',
     --------
         nilearn.image.clean_img
     """
-
     if isinstance(low_pass, bool):
         raise TypeError("low pass must be float or None but you provided "
                         "low_pass='{0}'".format(low_pass))

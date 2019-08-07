@@ -329,7 +329,8 @@ def test_standardization():
     trans_signals = masker.fit_transform(img)
 
     np.testing.assert_almost_equal(trans_signals.mean(0), 0)
-    np.testing.assert_almost_equal(trans_signals,
-                                   unstandarized_label_signals
-                                   / unstandarized_label_signals.mean(0)
-                                   * 100 - 100)
+    np.testing.assert_almost_equal(
+            trans_signals,
+            unstandarized_label_signals /
+            unstandarized_label_signals.mean(0) * 100 - 100,
+            )

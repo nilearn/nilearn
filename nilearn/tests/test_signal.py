@@ -227,8 +227,9 @@ def test_detrend():
 
     # "x" must be left untouched
     np.testing.assert_almost_equal(original, x, decimal=14)
-    assert_true(abs(detrended.mean(axis=0)).max()
-                < 15. * np.finfo(np.float).eps)
+    assert_true(
+            abs(detrended.mean(axis=0)).max() < 15. * np.finfo(np.float).eps
+            )
     np.testing.assert_almost_equal(detrended_scipy, detrended, decimal=14)
     # for this to work, there must be no trends at all in "signals"
     np.testing.assert_almost_equal(detrended, signals, decimal=14)
@@ -547,7 +548,7 @@ def test_clean_psc():
     cleaned_signals = clean(signals, standardize='psc')
     np.testing.assert_almost_equal(cleaned_signals.mean(0), 0)
 
-    std = cleaned_signals.std(axis=0)
+    cleaned_signals.std(axis=0)
     np.testing.assert_almost_equal(cleaned_signals.mean(0), 0)
     np.testing.assert_almost_equal(cleaned_signals,
                                    signals / signals.mean(0) * 100 - 100)
