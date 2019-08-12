@@ -128,7 +128,7 @@ class ReportMixin:
         """
         Generate a report for Nilearn objects.
 
-        Report is useful to visualize steps in a processing pipeline.
+        Reports are useful to visualize steps in a processing pipeline.
         Example use case: visualize the overlap of a mask and reference image
         in NiftiMasker.
 
@@ -174,6 +174,7 @@ class HTMLReport(HTMLDocument):
         """
         self.head_tpl = head_tpl
         self.body = body
+        super(HTMLReport, self).__init__(None)
         self.html = self.get_standalone()
 
     def _repr_html_(self):

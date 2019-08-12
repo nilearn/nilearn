@@ -49,8 +49,8 @@ masker = NiftiMasker()
 masker.fit(miyawaki_filename)
 
 # Plot the generated mask
-plot_roi(masker.mask_img_, miyawaki_mean_img,
-         title="Mask from already masked data")
+html = masker.generate_report()
+html
 
 
 ###############################################################################
@@ -77,7 +77,8 @@ plot_epi(mean_img, title='Mean EPI image')
 # We need to specify an 'epi' mask_strategy, as this is raw EPI data
 masker = NiftiMasker(mask_strategy='epi')
 masker.fit(epi_img)
-plot_roi(masker.mask_img_, mean_img, title='EPI automatic mask')
+html = masker.generate_report()
+html
 
 ###############################################################################
 # Generate mask with strong opening
@@ -90,7 +91,8 @@ plot_roi(masker.mask_img_, mean_img, title='EPI automatic mask')
 # skull parts in the image.
 masker = NiftiMasker(mask_strategy='epi', mask_args=dict(opening=10))
 masker.fit(epi_img)
-plot_roi(masker.mask_img_, mean_img, title='EPI Mask with strong opening')
+html = masker.generate_report()
+html
 
 ###############################################################################
 # Generate mask with a high lower cutoff
@@ -107,8 +109,8 @@ masker = NiftiMasker(mask_strategy='epi',
                      mask_args=dict(upper_cutoff=.9, lower_cutoff=.8,
                                     opening=False))
 masker.fit(epi_img)
-plot_roi(masker.mask_img_, mean_img,
-         title='EPI Mask: high lower_cutoff')
+html = masker.generate_report()
+html
 
 ###############################################################################
 # Computing the mask from the MNI template
@@ -119,8 +121,8 @@ plot_roi(masker.mask_img_, mean_img,
 
 masker = NiftiMasker(mask_strategy='template')
 masker.fit(epi_img)
-plot_roi(masker.mask_img_, mean_img,
-         title='Mask from template')
+html = masker.generate_report()
+html
 
 
 ###############################################################################

@@ -133,8 +133,7 @@ Alternatively, the mask computation parameters can still be modified.
 See the :class:`NiftiMasker` documentation for a complete list of
 mask computation parameters.
 
-The mask can be retrieved and visualized from the `mask_img_` attribute
-of the masker:
+The mask can be visualized using the `generate_report` method of the masker:
 
 .. literalinclude:: ../../examples/04_manipulating_images/plot_mask_computation.py
     :start-after: # We need to specify an 'epi' mask_strategy, as this is raw EPI data
