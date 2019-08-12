@@ -49,9 +49,8 @@ masker = NiftiMasker()
 masker.fit(miyawaki_filename)
 
 # Plot the generated mask
-html = masker.generate_report()
-html
-
+report = masker.generate_report()
+report
 
 ###############################################################################
 # Computing a mask from raw EPI data
@@ -77,8 +76,8 @@ plot_epi(mean_img, title='Mean EPI image')
 # We need to specify an 'epi' mask_strategy, as this is raw EPI data
 masker = NiftiMasker(mask_strategy='epi')
 masker.fit(epi_img)
-html = masker.generate_report()
-html
+report = masker.generate_report()
+report
 
 ###############################################################################
 # Generate mask with strong opening
@@ -91,8 +90,8 @@ html
 # skull parts in the image.
 masker = NiftiMasker(mask_strategy='epi', mask_args=dict(opening=10))
 masker.fit(epi_img)
-html = masker.generate_report()
-html
+report = masker.generate_report()
+report
 
 ###############################################################################
 # Generate mask with a high lower cutoff
@@ -109,8 +108,8 @@ masker = NiftiMasker(mask_strategy='epi',
                      mask_args=dict(upper_cutoff=.9, lower_cutoff=.8,
                                     opening=False))
 masker.fit(epi_img)
-html = masker.generate_report()
-html
+report = masker.generate_report()
+report
 
 ###############################################################################
 # Computing the mask from the MNI template
@@ -121,8 +120,8 @@ html
 
 masker = NiftiMasker(mask_strategy='template')
 masker.fit(epi_img)
-html = masker.generate_report()
-html
+report = masker.generate_report()
+report
 
 
 ###############################################################################
