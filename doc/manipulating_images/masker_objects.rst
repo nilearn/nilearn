@@ -143,7 +143,7 @@ or saved as a portable HTML file `report.save_as_html(output_filepath)`.
     :end-before: # Generate mask with strong opening
 
 
-.. figure:: ../auto_examples/04_manipulating_images/images/sphx_glr_plot_mask_computation_004.png
+.. figure:: ../images/niftiMasker_report.png
     :target: ../auto_examples/04_manipulating_images/plot_mask_computation.html
     :scale: 50%
 
@@ -165,7 +165,7 @@ Controling these arguments set the fine aspects of the mask. See the
 functions documentation, or :doc:`the NiftiMasker example
 <../auto_examples/04_manipulating_images/plot_mask_computation>`.
 
-.. figure:: ../auto_examples/04_manipulating_images/images/sphx_glr_plot_mask_computation_005.png
+.. figure:: ../images/niftiMasker_report_erode.png
     :target: ../auto_examples/04_manipulating_images/plot_mask_computation.html
     :scale: 50%
 
