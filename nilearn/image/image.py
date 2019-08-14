@@ -14,7 +14,7 @@ from scipy import ndimage
 from scipy.stats import scoreatpercentile
 import copy
 import nibabel
-from sklearn.externals.joblib import Parallel, delayed
+from nilearn._utils.compat import Parallel, delayed
 
 from .. import signal
 from .._utils import (check_niimg_4d, check_niimg_3d, check_niimg, as_ndarray,
@@ -172,8 +172,8 @@ def _smooth_array(arr, affine, fwhm=None, ensure_finite=True, copy=True):
         filtering.
 
     copy: bool
-        if True, input array is not modified. False by default: the filtering
-        is performed in-place.
+        if True, input array is not modified. True by default: the filtering
+        is not performed in-place.
 
     Returns
     -------
@@ -327,7 +327,7 @@ def _crop_img_to(img, slices, copy=True):
     return new_img_like(img, cropped_data, new_affine)
 
 
-def crop_img(img, rtol=1e-8, copy=True):
+def crop_img(img, rtol=1e-8, copy=True, pad=True, return_offset=False):
     """Crops img as much as possible
 
     Will crop img, removing as many zero entries as possible
@@ -349,10 +349,22 @@ def crop_img(img, rtol=1e-8, copy=True):
     copy: boolean
         Specifies whether cropped data is copied or not.
 
+    pad: boolean
+        Toggles adding 1-voxel of 0s around the border. Recommended.
+
+    return_offset: boolean
+        Specifies whether to return a tuple of the removed padding.
+
     Returns
     -------
     cropped_img: image
         Cropped version of the input image
+
+    offset: list (optional)
+        List of tuples representing the number of voxels removed (before, after)
+        the cropped volumes, i.e.:
+        [(x1_pre, x1_post), (x2_pre, x2_post), ..., (xN_pre, xN_post)]
+
     """
 
     img = check_niimg(img)
@@ -364,16 +376,53 @@ def crop_img(img, rtol=1e-8, copy=True):
     if data.ndim == 4:
         passes_threshold = np.any(passes_threshold, axis=-1)
     coords = np.array(np.where(passes_threshold))
-    start = coords.min(axis=1)
-    end = coords.max(axis=1) + 1
+
+    # Sets full range if no data are found along the axis
+    if coords.shape[1] == 0:
+        start, end = [0, 0, 0], list(data.shape)
+    else:
+        start = coords.min(axis=1)
+        end = coords.max(axis=1) + 1
 
     # pad with one voxel to avoid resampling problems
-    start = np.maximum(start - 1, 0)
-    end = np.minimum(end + 1, data.shape[:3])
+    if pad:
+        start = np.maximum(start - 1, 0)
+        end = np.minimum(end + 1, data.shape[:3])
 
-    slices = [slice(s, e) for s, e in zip(start, end)]
+    slices = [slice(s, e) for s, e in zip(start, end)][:3]
+    cropped_im = _crop_img_to(img, slices, copy=copy)
+    return cropped_im if not return_offset else (cropped_im, tuple(slices))
 
-    return _crop_img_to(img, slices, copy=copy)
+
+def _pad_array(array, pad_sizes):
+    """Pad an ndarray with zeros of quantity specified
+    as follows pad_sizes = [x1minpad, x1maxpad, x2minpad,
+    x2maxpad, x3minpad, ...]
+    """
+
+    if len(pad_sizes) % 2 != 0:
+        raise ValueError("Please specify as many max paddings as min"
+                         " paddings. You have specified %d arguments" %
+                         len(pad_sizes))
+
+    all_paddings = np.zeros([array.ndim, 2], dtype=np.int64)
+    all_paddings[:len(pad_sizes) // 2] = np.array(pad_sizes).reshape(-1, 2)
+
+    lower_paddings, upper_paddings = all_paddings.T
+    new_shape = np.array(array.shape) + upper_paddings + lower_paddings
+
+    padded = np.zeros(new_shape, dtype=array.dtype)
+    source_slices = [slice(max(-lp, 0), min(s + up, s))
+                     for lp, up, s in zip(lower_paddings,
+                                          upper_paddings,
+                                          array.shape)]
+    target_slices = [slice(max(lp, 0), min(s - up, s))
+                     for lp, up, s in zip(lower_paddings,
+                                          upper_paddings,
+                                          new_shape)]
+
+    padded[tuple(target_slices)] = array[source_slices].copy()
+    return padded
 
 
 def _compute_mean(imgs, target_affine=None,
@@ -636,14 +685,18 @@ def new_img_like(ref_niimg, data, affine=None, copy_header=False):
     header = None
     if copy_header:
         header = copy.deepcopy(ref_niimg.header)
-        header['scl_slope'] = 0.
-        header['scl_inter'] = 0.
+        if 'scl_slope' in header:
+            header['scl_slope'] = 0.
+        if 'scl_inter' in header:
+            header['scl_inter'] = 0.
         # 'glmax' is removed for Nifti2Image. Modify only if 'glmax' is
         # available in header. See issue #1611
         if 'glmax' in header:
             header['glmax'] = 0.
-        header['cal_max'] = np.max(data) if data.size > 0 else 0.
-        header['cal_min'] = np.min(data) if data.size > 0 else 0.
+        if 'cal_max' in header:
+            header['cal_max'] = np.max(data) if data.size > 0 else 0.
+        if 'cal_min' in header:
+            header['cal_min'] = np.min(data) if data.size > 0 else 0.
     klass = ref_niimg.__class__
     if klass is nibabel.Nifti1Pair:
         # Nifti1Pair is an internal class, without a to_filename,
@@ -652,7 +705,7 @@ def new_img_like(ref_niimg, data, affine=None, copy_header=False):
     return klass(data, affine, header=header)
 
 
-def threshold_img(img, threshold, mask_img=None):
+def threshold_img(img, threshold, mask_img=None, copy=True):
     """ Threshold the given input image, mostly statistical or atlas images.
 
     Thresholding can be done based on direct image intensities or selection
@@ -679,6 +732,10 @@ def threshold_img(img, threshold, mask_img=None):
         Mask image applied to mask the input data.
         If None, no masking will be applied.
 
+    copy: bool
+        if True, input array is not modified. True by default: the filtering
+        is not performed in-place.
+
     Returns
     -------
     threshold_img: Nifti1Image
@@ -689,6 +746,8 @@ def threshold_img(img, threshold, mask_img=None):
 
     img = check_niimg(img)
     img_data = _safe_get_data(img, ensure_finite=True)
+    if copy:
+        img_data = img_data.copy()
     affine = img.affine
 
     if mask_img is not None:

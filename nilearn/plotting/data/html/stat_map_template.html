@@ -1,24 +1,26 @@
 <!DOCTYPE html>
-<html>
-
+<html lang="en">
 <head>
+    <title>slice viewer</title>
+    <meta charset="UTF-8" />
 </head>
 <body>
   <div id="div_viewer">
     <!-- this is the canvas that will feature the brain slices -->
     <canvas id="3Dviewer">
     <!-- load a hidden version of the sprite image that includes all (sagital) brain slices -->
-    <img id="spriteImg" class="hidden" src="data:image/png;base64, $bg_base64" alt="background" />
+    <img id="spriteImg" class="hidden" src="data:image/png;base64,$bg_base64" alt="background" />
     <!-- the colormap -->
-    <img id="colorMap" class="hidden" src="data:image/png;base64, $cm_base64" alt="colormap">
+    <img id="colorMap" class="hidden" src="data:image/png;base64,$cm_base64" alt="colormap">
     <!-- another sprite image, with an overlay-->
-    <img id="overlayImg" class="hidden" src="data:image/png;base64, $stat_map_base64" alt="overlay">
+    <img id="overlayImg" class="hidden" src="data:image/png;base64,$stat_map_base64" alt="overlay">
+    </canvas>
   </div>
 
-  <script type="text/javascript" >
+  <script>
     $js_jquery
   </script>
-  <script type="text/javascript">
+  <script>
     $js_brainsprite
   </script>
 

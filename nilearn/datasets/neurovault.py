@@ -13,17 +13,18 @@ import re
 import json
 from glob import glob
 from tempfile import mkdtemp
-from collections import Container
 try:
     # python3
     from urllib.parse import urljoin, urlencode
     from urllib.request import build_opener, Request
     from urllib.error import URLError
+    from collections.abc import Container
 except ImportError:
     # python2
     from urlparse import urljoin
     from urllib import urlencode
     from urllib2 import build_opener, Request, URLError
+    from collections import Container
 
 import numpy as np
 from sklearn.datasets.base import Bunch
@@ -2628,8 +2629,6 @@ def fetch_neurovault_motor_task(data_dir=None, verbose=1):
     Notes
     ------
 
-    This function is only a caller for the fetch_localizer_contrasts in order
-    to simplify examples reading and understanding.
     The 'left vs right button press' contrast is used:
     https://neurovault.org/images/10426/
 
@@ -2672,8 +2671,6 @@ def fetch_neurovault_auditory_computation_task(data_dir=None, verbose=1):
     Notes
     ------
 
-    This function is only a caller for the fetch_localizer_contrasts in order
-    to simplify examples reading and understanding.
     The 'auditory_calculation_vs_baseline' contrast is used:
     https://neurovault.org/images/32980/
 

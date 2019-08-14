@@ -872,6 +872,30 @@ def test_invalid_in_display_mode_cut_coords_all_plots():
                             img, display_mode='ortho', cut_coords=2)
 
 
+def test_invalid_in_display_mode_tiled_cut_coords_single_all_plots():
+    img = _generate_img()
+
+    for plot_func in [plot_img, plot_anat, plot_roi, plot_epi,
+                      plot_stat_map,plot_prob_atlas]:
+        assert_raises_regex(ValueError,
+                            "The input given for display_mode='tiled' needs to "
+                            "be a list of 3d world coordinates.",
+                            plot_func,
+                            img, display_mode='tiled', cut_coords=2)
+
+
+def test_invalid_in_display_mode_tiled_cut_coords_all_plots():
+    img = _generate_img()
+
+    for plot_func in [plot_img, plot_anat, plot_roi, plot_epi,
+                      plot_stat_map,plot_prob_atlas]:
+        assert_raises_regex(ValueError,
+                            "The number cut_coords passed does not "
+                            "match the display_mode",
+                            plot_func,
+                            img, display_mode='tiled', cut_coords=(2,2))
+
+
 def test_outlier_cut_coords():
     """ Test to plot a subset of a large set of cuts found for a small area."""
     bg_img = load_mni152_template()
@@ -958,3 +982,30 @@ def test_add_markers_using_plot_glass_brain():
     coords = [(-34, -39, -9)]
     fig.add_markers(coords)
     fig.close()
+
+
+def test_plotting_functions_with_display_mode_tiled():
+    img = _generate_img()
+    plot_stat_map(img, display_mode='tiled')
+    plot_anat(display_mode='tiled')
+    plot_img(img, display_mode='tiled')
+    plt.close()
+
+
+def test_display_methods_with_display_mode_tiled():
+    img = _generate_img()
+    display = plot_img(img, display_mode='tiled')
+    display.add_overlay(img, threshold=0)
+    display.add_edges(img, color='c')
+    display.add_contours(img, contours=2, linewidth=4,
+                         colors=['limegreen', 'yellow'])
+
+
+def test_plot_glass_brain_colorbar_having_nans():
+    img = _generate_img()
+    data = img.get_data()
+
+    data[6, 5, 2] = np.inf
+    img = nibabel.Nifti1Image(data, np.eye(4))
+    plot_glass_brain(img, colorbar=True)
+    plt.close()

@@ -9,6 +9,7 @@ import webbrowser
 import tempfile
 import warnings
 import subprocess
+from string import Template
 import weakref
 try:
     from html import escape  # Unavailable in Py2
@@ -22,6 +23,17 @@ from matplotlib import cm as mpl_cm
 from .._utils.extmath import fast_abs_percentile
 from .._utils.param_validation import check_threshold
 from .. import surface
+
+MAX_IMG_VIEWS_BEFORE_WARNING = 10
+
+
+def set_max_img_views_before_warning(new_value):
+    """Set the number of open views which triggers a warning.
+
+    If `None` or a negative number, disable the memory warning.
+    """
+    global MAX_IMG_VIEWS_BEFORE_WARNING
+    MAX_IMG_VIEWS_BEFORE_WARNING = new_value
 
 
 def add_js_lib(html, embed_js=True):
@@ -56,7 +68,9 @@ def add_js_lib(html, embed_js=True):
         {}
         </script>
         """.format(jquery, plotly, js_utils)
-    return html.replace('INSERT_JS_LIBRARIES_HERE', js_lib)
+    if not isinstance(html, Template):
+        html = Template(html)
+    return html.safe_substitute({'INSERT_JS_LIBRARIES_HERE': js_lib})
 
 
 def get_html_template(template_name):
@@ -64,7 +78,7 @@ def get_html_template(template_name):
     template_path = os.path.join(
         os.path.dirname(__file__), 'data', 'html', template_name)
     with open(template_path, 'rb') as f:
-        return f.read().decode('utf-8')
+        return Template(f.read().decode('utf-8'))
 
 
 def _remove_after_n_seconds(file_name, n_seconds):
@@ -96,11 +110,17 @@ class HTMLDocument(object):
 
     def _check_n_open(self):
         HTMLDocument._all_open_html_repr.add(self)
-        if len(HTMLDocument._all_open_html_repr) > 9:
-            warnings.warn('It seems you have created more than 10 '
+        if MAX_IMG_VIEWS_BEFORE_WARNING is None:
+            return
+        if MAX_IMG_VIEWS_BEFORE_WARNING < 0:
+            return
+        if len(HTMLDocument._all_open_html_repr
+               ) > MAX_IMG_VIEWS_BEFORE_WARNING - 1:
+            warnings.warn('It seems you have created more than {} '
                           'nilearn views. As each view uses dozens '
                           'of megabytes of RAM, you might want to '
-                          'delete some of them.')
+                          'delete some of them.'.format(
+                              MAX_IMG_VIEWS_BEFORE_WARNING))
 
     def resize(self, width, height):
         """Resize the plot displayed in a Jupyter notebook."""
@@ -120,7 +140,7 @@ class HTMLDocument(object):
         if height is None:
             height = self.height
         escaped = escape(self.html, quote=True)
-        wrapped = ('<iframe srcdoc="{}" width={} height={} '
+        wrapped = ('<iframe srcdoc="{}" width="{}" height="{}" '
                    'frameBorder="0"></iframe>').format(escaped, width, height)
         return wrapped
 
@@ -162,16 +182,21 @@ class HTMLDocument(object):
 
         """
         if file_name is None:
-            fd, file_name = tempfile.mkstemp('.html', 'nilearn_surface_plot_')
+            fd, file_name = tempfile.mkstemp('.html', 'nilearn_plot_')
             os.close(fd)
+            named_file = False
+        else:
+            named_file = True
         self.save_as_html(file_name)
         self._temp_file = file_name
         file_size = os.path.getsize(file_name) / 1e6
         if temp_file_lifetime is None:
-            print(("Saved HTML in temporary file: {}\n"
-                   "file size is {:.1f}M, delete it when you're done, "
-                   "for example by calling this.remove_temp_file").format(
-                       file_name, file_size))
+            if not named_file:
+                warnings.warn(
+                    ("Saved HTML in temporary file: {}\n"
+                     "file size is {:.1f}M, delete it when you're done, "
+                     "for example by calling this.remove_temp_file").format(
+                         file_name, file_size))
         else:
             _remove_after_n_seconds(self._temp_file, temp_file_lifetime)
         webbrowser.open('file://{}'.format(file_name))
@@ -189,23 +214,30 @@ class HTMLDocument(object):
         self._temp_file = None
 
 
-def colorscale(cmap, values, threshold=None, symmetric_cmap=True, vmax=None):
-    """Normalize a cmap, put it in plotly format, get threshold and range"""
+def colorscale(cmap, values, threshold=None, symmetric_cmap=True,
+               vmax=None, vmin=None):
+    """Normalize a cmap, put it in plotly format, get threshold and range."""
     cmap = mpl_cm.get_cmap(cmap)
     abs_values = np.abs(values)
     if not symmetric_cmap and (values.min() < 0):
-        warnings.warn('you have specified symmetric_cmap=False'
+        warnings.warn('you have specified symmetric_cmap=False '
                       'but the map contains negative values; '
                       'setting symmetric_cmap to True')
         symmetric_cmap = True
+    if symmetric_cmap and vmin is not None:
+        warnings.warn('vmin cannot be chosen when cmap is symmetric')
+        vmin = None
+    if threshold is not None:
+        if vmin is not None:
+            warnings.warn('choosing both vmin and a threshold is not allowed; '
+                          'setting vmin to 0')
+        vmin = 0
     if vmax is None:
-        if symmetric_cmap:
-            vmax = abs_values.max()
-            vmin = - vmax
-        else:
-            vmin, vmax = values.min(), values.max()
-    else:
-        vmin = -vmax if symmetric_cmap else 0
+        vmax = abs_values.max()
+    if symmetric_cmap:
+        vmin = - vmax
+    if vmin is None:
+        vmin = values.min()
     norm = mpl.colors.Normalize(vmin=vmin, vmax=vmax)
     cmaplist = [cmap(i) for i in range(cmap.N)]
     abs_threshold = None

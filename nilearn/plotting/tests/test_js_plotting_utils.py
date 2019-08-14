@@ -13,6 +13,7 @@ try:
     LXML_INSTALLED = True
 except ImportError:
     LXML_INSTALLED = False
+import pytest
 
 from nilearn.plotting import js_plotting_utils
 from nilearn import surface
@@ -41,11 +42,7 @@ def test_add_js_lib():
     assert _normalize_ws("""/*! jQuery v3.3.1 | (c) JS Foundation and other
                             contributors | jquery.org/license */""") in inline
     assert _normalize_ws("""**
-                            * plotly.js (gl3d - minified) v1.38.3
-                            * Copyright 2012-2018, Plotly, Inc.
-                            * All rights reserved.
-                            * Licensed under the MIT license
-                            */ """) in inline
+                            * plotly.js (gl3d - minified)""") in inline
     assert "decodeBase64" in inline
 
 
@@ -134,12 +131,22 @@ def test_colorscale_asymmetric_cmap():
     assert colors['cmap'].N == 256
     assert (colors['norm'].vmax, colors['norm'].vmin) == (14, 0)
     assert not colors['symmetric_cmap']
+    values = np.arange(15) + 3
+    colors = js_plotting_utils.colorscale(cmap, values, symmetric_cmap=False)
+    assert (colors['vmin'], colors['vmax']) == (3, 17)
+    assert (colors['norm'].vmax, colors['norm'].vmin) == (17, 3)
 
 
-def test_colorscale_vmax():
+def test_colorscale_vmin_vmax():
     cmap = 'jet'
     values = np.arange(15)
     colors = js_plotting_utils.colorscale(cmap, values, vmax=7)
+    assert (colors['vmin'], colors['vmax']) == (-7, 7)
+    assert colors['cmap'].N == 256
+    assert (colors['norm'].vmax, colors['norm'].vmin) == (7, -7)
+    assert colors['symmetric_cmap']
+    colors = js_plotting_utils.colorscale(
+        cmap, values, vmax=7, vmin=-5)
     assert (colors['vmin'], colors['vmax']) == (-7, 7)
     assert colors['cmap'].N == 256
     assert (colors['norm'].vmax, colors['norm'].vmin) == (7, -7)
@@ -155,6 +162,23 @@ def test_colorscale_asymmetric_cmap_vmax():
     assert colors['cmap'].N == 256
     assert (colors['norm'].vmax, colors['norm'].vmin) == (7, 0)
     assert not colors['symmetric_cmap']
+    values = np.arange(15) + 3
+    colors = js_plotting_utils.colorscale(cmap, values, vmax=7,
+                                          symmetric_cmap=False)
+    assert (colors['vmin'], colors['vmax']) == (3, 7)
+    assert (colors['norm'].vmax, colors['norm'].vmin) == (7, 3)
+    colors = js_plotting_utils.colorscale(
+        cmap, values, vmax=7, symmetric_cmap=False, vmin=1)
+    assert (colors['vmin'], colors['vmax']) == (1, 7)
+    assert (colors['norm'].vmax, colors['norm'].vmin) == (7, 1)
+    colors = js_plotting_utils.colorscale(
+        cmap, values, vmax=10, symmetric_cmap=False, vmin=6, threshold=5)
+    assert (colors['vmin'], colors['vmax']) == (0, 10)
+    assert (colors['norm'].vmax, colors['norm'].vmin) == (10, 0)
+    colors = js_plotting_utils.colorscale(
+        cmap, values, vmax=10, symmetric_cmap=False, vmin=None, threshold=5)
+    assert (colors['vmin'], colors['vmax']) == (0, 10)
+    assert (colors['norm'].vmax, colors['norm'].vmin) == (10, 0)
 
 
 def test_colorscale_asymmetric_cmap_negative_values():
@@ -212,8 +236,8 @@ def check_html(html, check_selects=True, plot_div_id='surface-plot'):
     resized = html.resize(3, 17)
     assert resized is html
     assert (html.width, html.height) == (3, 17)
-    assert "width=3 height=17" in html.get_iframe()
-    assert "width=33 height=37" in html.get_iframe(33, 37)
+    assert 'width="3" height="17"' in html.get_iframe()
+    assert 'width="33" height="37"' in html.get_iframe(33, 37)
     if not LXML_INSTALLED:
         return
     root = etree.HTML(html.html.encode('utf-8'),
@@ -268,11 +292,19 @@ def test_temp_file_removing():
     html = js_plotting_utils.HTMLDocument('hello')
     wb_open = webbrowser.open
     webbrowser.open = _open_mock
+    fd, tmpfile = tempfile.mkstemp()
     try:
+        os.close(fd)
+        with pytest.warns(None) as record:
+            html.open_in_browser(file_name=tmpfile, temp_file_lifetime=None)
+        for warning in record:
+            assert "Saved HTML in temporary file" not in str(warning.message)
         html.open_in_browser(temp_file_lifetime=.5)
         assert os.path.isfile(html._temp_file)
         time.sleep(1.5)
         assert not os.path.isfile(html._temp_file)
+        with pytest.warns(UserWarning, match="Saved HTML in temporary file"):
+            html.open_in_browser(temp_file_lifetime=None)
         html.open_in_browser(temp_file_lifetime=None)
         assert os.path.isfile(html._temp_file)
         time.sleep(1.5)
@@ -281,6 +313,10 @@ def test_temp_file_removing():
         webbrowser.open = wb_open
         try:
             os.remove(html._temp_file)
+        except Exception:
+            pass
+        try:
+            os.remove(tmpfile)
         except Exception:
             pass
 
@@ -300,6 +336,14 @@ def test_open_view_warning():
     # should raise a warning about memory usage
     assert_warns(UserWarning, _open_views)
     assert_no_warnings(_open_one_view)
+    js_plotting_utils.set_max_img_views_before_warning(15)
+    assert_no_warnings(_open_views)
+    js_plotting_utils.set_max_img_views_before_warning(-1)
+    assert_no_warnings(_open_views)
+    js_plotting_utils.set_max_img_views_before_warning(None)
+    assert_no_warnings(_open_views)
+    js_plotting_utils.set_max_img_views_before_warning(6)
+    assert_warns(UserWarning, _open_views)
 
 
 def test_to_color_strings():

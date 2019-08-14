@@ -3,8 +3,9 @@ Visualizing 3D stat maps in a Brainsprite viewer
 """
 import os
 import json
+import warnings
 from io import BytesIO
-from string import Template
+from base64 import b64encode
 
 import numpy as np
 from matplotlib.image import imsave
@@ -20,7 +21,6 @@ from .._utils.niimg_conversions import check_niimg_3d
 from .._utils.param_validation import check_threshold
 from .._utils.extmath import fast_abs_percentile
 from .._utils.niimg import _safe_get_data
-from .._utils.compat import _encodebytes
 from ..datasets import load_mni152_template
 
 
@@ -50,11 +50,12 @@ def _data_to_sprite(data):
 
 def _threshold_data(data, threshold=None):
     """ Threshold a data array.
-        Returns: data (masked array), threshold (updated)
+        Returns: data (array), mask (boolean array) threshold (updated)
     """
     # If threshold is None, do nothing
     if threshold is None:
-        return data, threshold
+        mask = np.full(data.shape, False)
+        return data, mask, threshold
 
     # Deal with automatic settings of plot parameters
     if threshold == 'auto':
@@ -69,10 +70,17 @@ def _threshold_data(data, threshold=None):
 
     # Mask data
     if threshold == 0:
-        data = np.ma.masked_equal(data, 0, copy=False)
+        mask = (data == 0)
+        data = data * np.logical_not(mask)
     else:
-        data = np.ma.masked_inside(data, -threshold, threshold, copy=False)
-    return data, threshold
+        mask = (data >= -threshold) & (data <= threshold)
+        data = data * np.logical_not(mask)
+
+    if not np.any(mask):
+        warnings.warn("Threshold given was {0}, but "
+                      "the data has no values below {1}. ".format(threshold,
+                                                                  data.min()))
+    return data, mask, threshold
 
 
 def _save_sprite(data, output_sprite, vmax, vmin, mask=None, cmap='Greys',
@@ -102,7 +110,7 @@ def _bytesIO_to_base64(handle_io):
         Returns: data
     """
     handle_io.seek(0)
-    data = _encodebytes(handle_io.read()).decode('utf-8')
+    data = b64encode(handle_io.read()).decode('utf-8')
     handle_io.close()
     return data
 
@@ -131,8 +139,8 @@ def _mask_stat_map(stat_map_img, threshold=None):
 
     # threshold the stat_map
     if threshold is not None:
-        data, threshold = _threshold_data(data, threshold)
-        mask_img = new_img_like(stat_map_img, data.mask, stat_map_img.affine)
+        data, mask, threshold = _threshold_data(data, threshold)
+        mask_img = new_img_like(stat_map_img, mask, stat_map_img.affine)
     else:
         mask_img = new_img_like(stat_map_img, np.zeros(data.shape),
                                 stat_map_img.affine)
@@ -296,7 +304,7 @@ def _json_view_to_html(json_view):
 
     # Load the html template, and plug in all the data
     html_view = get_html_template('stat_map_template.html')
-    html_view = Template(html_view).safe_substitute(json_view)
+    html_view = html_view.safe_substitute(json_view)
 
     return StatMapView(html_view, width=width, height=height)
 
@@ -329,11 +337,23 @@ def _get_cut_slices(stat_map_img, cut_coords=None, threshold=None):
     return cut_slices
 
 
-def view_stat_map(stat_map_img, bg_img='MNI152', cut_coords=None,
-                  colorbar=True, title=None, threshold=1e-6, annotate=True,
-                  draw_cross=True, black_bg='auto', cmap=cm.cold_hot,
-                  symmetric_cmap=True, dim='auto', vmax=None,
-                  resampling_interpolation='continuous', opacity=1, **kwargs):
+def view_img(stat_map_img, bg_img='MNI152',
+             cut_coords=None,
+             colorbar=True,
+             title=None,
+             threshold=1e-6,
+             annotate=True,
+             draw_cross=True,
+             black_bg='auto',
+             cmap=cm.cold_hot,
+             symmetric_cmap=True,
+             dim='auto',
+             vmax=None,
+             vmin=None,
+             resampling_interpolation='continuous',
+             opacity=1,
+             **kwargs
+             ):
     """
     Interactive html viewer of a statistical map, with optional background
 
@@ -365,8 +385,7 @@ def view_stat_map(stat_map_img, bg_img='MNI152', cut_coords=None,
         as transparent. If auto is given, the threshold is determined
         automatically.
     annotate : boolean (default=True)
-        If annotate is True, current cuts and value of the map are added to the
-        viewer.
+        If annotate is True, current cuts are added to the viewer.
     draw_cross : boolean (default=True)
         If draw_cross is True, a cross is drawn on the plot to
         indicate the cuts.
@@ -394,6 +413,12 @@ def view_stat_map(stat_map_img, bg_img='MNI152', cut_coords=None,
         absolute value of the volume.
         If vmax is None and symmetric_cmap is False, vmax is the max
         value of the volume.
+    vmin : float, or None (default=None)
+        min value for mapping colors.
+        If `symmetric_cmap` is `True`, `vmin` is always equal to `-vmax` and
+        cannot be chosen.
+        If `symmetric_cmap` is `False`, `vmin` defaults to the min of the
+        image, or 0 when a threshold is used.
     resampling_interpolation : string, optional (default continuous)
         The interpolation method for resampling.
         Can be 'continuous', 'linear', or 'nearest'.
@@ -426,7 +451,8 @@ def view_stat_map(stat_map_img, bg_img='MNI152', cut_coords=None,
     mask_img, stat_map_img, data, threshold = _mask_stat_map(
         stat_map_img, threshold)
     colors = colorscale(cmap, data.ravel(), threshold=threshold,
-                        symmetric_cmap=symmetric_cmap, vmax=vmax)
+                        symmetric_cmap=symmetric_cmap, vmax=vmax,
+                        vmin=vmin)
 
     # Prepare the data for the cuts
     bg_img, bg_min, bg_max, black_bg = _load_bg_img(stat_map_img, bg_img,
@@ -438,10 +464,12 @@ def view_stat_map(stat_map_img, bg_img='MNI152', cut_coords=None,
     # Now create a json-like object for the viewer, and converts in html
     json_view = _json_view_data(bg_img, stat_map_img, mask_img, bg_min, bg_max,
                                 colors, cmap, colorbar)
+
     json_view['params'] = _json_view_params(
         stat_map_img.shape, stat_map_img.affine, colors['vmin'],
         colors['vmax'], cut_slices, black_bg, opacity, draw_cross, annotate,
         title, colorbar, value=False)
+
     html_view = _json_view_to_html(json_view)
 
     return html_view

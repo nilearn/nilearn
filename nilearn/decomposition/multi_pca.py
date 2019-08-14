@@ -3,7 +3,7 @@ PCA dimension reduction on multiple subjects.
 This is a good initialization method for ICA.
 """
 import numpy as np
-from sklearn.externals.joblib import Memory
+from nilearn._utils.compat import Memory
 from sklearn.utils.extmath import randomized_svd
 
 from .base import BaseDecomposition
@@ -32,7 +32,8 @@ class MultiPCA(BaseDecomposition):
         If smoothing_fwhm is not None, it gives the size in millimeters of the
         spatial smoothing to apply to the signal.
 
-    mask: Niimg-like object, instance of NiftiMasker or MultiNiftiMasker, optional
+    mask: Niimg-like object, instance of NiftiMasker or MultiNiftiMasker,
+        optional
         Mask to be used on data. If an instance of masker is passed,
         then its mask will be used. If no mask is given,
         it will be computed automatically by a MultiNiftiMasker with default

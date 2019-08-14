@@ -298,3 +298,39 @@ def test_nifti_maps_masker_overlap():
                                              allow_overlap=False)
     assert_raises_regex(ValueError, 'Overlap detected',
                         non_overlapping_masker.fit_transform, fmri_img)
+
+
+def test_standardization():
+    data_shape = (9, 9, 5)
+    n_samples = 500
+
+    signals = np.random.randn(np.prod(data_shape), n_samples)
+    means = np.random.randn(np.prod(data_shape), 1) * 50 + 1000
+    signals += means
+    img = nibabel.Nifti1Image(signals.reshape(data_shape + (n_samples,)),
+                              np.eye(4))
+
+    maps, _ = data_gen.generate_maps((9, 9, 5), 10)
+
+    # Unstandarized
+    masker = NiftiMapsMasker(maps, standardize=False)
+    unstandarized_label_signals = masker.fit_transform(img)
+
+    # z-score
+    masker = NiftiMapsMasker(maps,
+                             standardize='zscore')
+    trans_signals = masker.fit_transform(img)
+
+    np.testing.assert_almost_equal(trans_signals.mean(0), 0)
+    np.testing.assert_almost_equal(trans_signals.std(0), 1)
+
+    # psc
+    masker = NiftiMapsMasker(maps, standardize='psc')
+    trans_signals = masker.fit_transform(img)
+
+    np.testing.assert_almost_equal(trans_signals.mean(0), 0)
+    np.testing.assert_almost_equal(
+            trans_signals,
+            unstandarized_label_signals /
+            unstandarized_label_signals.mean(0) * 100 - 100,
+            )

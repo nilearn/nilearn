@@ -10,9 +10,9 @@ could have been computed with nilearn :func:`nilearn.image.mean_img` function.
 
 
 ###############################################################################
-# Fetching 2 subject resting state functionnal MRI from datasets.
+# Fetching 2 subject movie watching brain development fmri datasets.
 from nilearn import datasets
-dataset = datasets.fetch_adhd(n_subjects=2)
+dataset = datasets.fetch_development_fmri(n_subjects=2)
 
 
 ###############################################################################
@@ -22,7 +22,7 @@ print('Subject 2 resting state dataset at: %s' % dataset.func[1])
 
 
 ###############################################################################
-# Comparing the means of the 2 resting state datasets.
+# Comparing the means of the 2 movie watching datasets.
 from nilearn import plotting, image
 
 result_img = image.math_img("np.mean(img1, axis=-1) - np.mean(img2, axis=-1)",

@@ -11,8 +11,8 @@ from nose.tools import (
     assert_false,
     assert_equal,
     assert_raises,
-    )
-
+)
+from sklearn.utils import check_random_state
 from nibabel import Nifti1Image
 
 from nilearn import masking
@@ -20,7 +20,7 @@ from nilearn.masking import (compute_epi_mask, compute_multi_epi_mask,
                              compute_background_mask, compute_gray_matter_mask,
                              compute_multi_gray_matter_mask,
                              unmask, _unmask_3d, _unmask_4d, intersect_masks,
-                             MaskWarning, _extrapolate_out_mask)
+                             MaskWarning, _extrapolate_out_mask, _unmask_from_to_3d_array)
 from nilearn._utils.testing import (write_tmp_imgs, assert_raises_regex)
 from nilearn._utils.testing import assert_warns
 from nilearn._utils.exceptions import DimensionError
@@ -34,7 +34,7 @@ _TEST_DIM_ERROR_MSG = ("Input data has incompatible dimensionality: "
                        "Expected dimension is 3D and you provided "
                        "a %s image")
 
-                       
+
 def test_compute_epi_mask():
     mean_image = np.ones((9, 9, 3))
     mean_image[3:-2, 3:-2, :] = 10
@@ -114,7 +114,8 @@ def test_compute_gray_matter_mask():
     np.testing.assert_array_equal(mask1, mask.get_data())
 
     # Check that we get a useful warning for empty masks
-    assert_warns(masking.MaskWarning, compute_gray_matter_mask, image, threshold=1)
+    assert_warns(masking.MaskWarning,
+                 compute_gray_matter_mask, image, threshold=1)
 
     # Check that masks obtained from same FOV are the same
     img1 = Nifti1Image(np.full((9, 9, 9), np.random.rand()), np.eye(4))
@@ -152,7 +153,7 @@ def test_apply_mask():
             above_half_max = series > .5 * vmax
             for axis in (0, 1, 2):
                 proj = np.any(np.any(np.rollaxis(above_half_max,
-                              axis=axis), axis=-1), axis=-1)
+                                                 axis=axis), axis=-1), axis=-1)
                 np.testing.assert_equal(proj.sum(),
                                         9 / np.abs(affine[axis, axis]))
 
@@ -423,7 +424,7 @@ def test_compute_multi_gray_matter_mask():
 
     # Check results are the same if affine is the same
     imgs1 = [Nifti1Image(np.random.randn(9, 9, 9), np.eye(4)),
-            Nifti1Image(np.random.randn(9, 9, 9), np.eye(4))]
+             Nifti1Image(np.random.randn(9, 9, 9), np.eye(4))]
     mask1 = compute_multi_gray_matter_mask(imgs1)
 
     imgs2 = [Nifti1Image(np.random.randn(9, 9, 9), np.eye(4)),
@@ -476,79 +477,90 @@ def test_unmask_list(random_state=42):
 
 def test__extrapolate_out_mask():
     # Input data:
-    initial_data = np.zeros((5,5,5))
-    initial_data[1,2,2] = 1
-    initial_data[2,1,2] = 2
-    initial_data[2,2,1] = 3
-    initial_data[3,2,2] = 4
-    initial_data[2,3,2] = 5
-    initial_data[2,2,3] = 6
+    initial_data = np.zeros((5, 5, 5))
+    initial_data[1, 2, 2] = 1
+    initial_data[2, 1, 2] = 2
+    initial_data[2, 2, 1] = 3
+    initial_data[3, 2, 2] = 4
+    initial_data[2, 3, 2] = 5
+    initial_data[2, 2, 3] = 6
     initial_mask = initial_data.copy() != 0
 
     # Expected result
-    target_data = np.array([[[0. , 0. , 0. , 0. , 0. ],
-                             [0. , 0. , 0. , 0. , 0. ],
-                             [0. , 0. , 1. , 0. , 0. ],
-                             [0. , 0. , 0. , 0. , 0. ],
-                             [0. , 0. , 0. , 0. , 0. ]],
+    target_data = np.array([[[0., 0., 0., 0., 0.],
+                             [0., 0., 0., 0., 0.],
+                             [0., 0., 1., 0., 0.],
+                             [0., 0., 0., 0., 0.],
+                             [0., 0., 0., 0., 0.]],
 
-                            [[0. , 0. , 0. , 0. , 0. ],
-                             [0. , 0. , 1.5, 0. , 0. ],
-                             [0. , 2. , 1. , 3.5, 0. ],
-                             [0. , 0. , 3. , 0. , 0. ],
-                             [0. , 0. , 0. , 0. , 0. ]],
+                            [[0., 0., 0., 0., 0.],
+                             [0., 0., 1.5, 0., 0.],
+                             [0., 2., 1., 3.5, 0.],
+                             [0., 0., 3., 0., 0.],
+                             [0., 0., 0., 0., 0.]],
 
-                            [[0. , 0. , 2. , 0. , 0. ],
-                             [0. , 2.5, 2. , 4. , 0. ],
-                             [3. , 3. , 3.5, 6. , 6. ],
-                             [0. , 4. , 5. , 5.5, 0. ],
-                             [0. , 0. , 5. , 0. , 0. ]],
+                            [[0., 0., 2., 0., 0.],
+                             [0., 2.5, 2., 4., 0.],
+                             [3., 3., 3.5, 6., 6.],
+                             [0., 4., 5., 5.5, 0.],
+                             [0., 0., 5., 0., 0.]],
 
-                            [[0. , 0. , 0. , 0. , 0. ],
-                             [0. , 0. , 3. , 0. , 0. ],
-                             [0. , 3.5, 4. , 5. , 0. ],
-                             [0. , 0. , 4.5, 0. , 0. ],
-                             [0. , 0. , 0. , 0. , 0. ]],
+                            [[0., 0., 0., 0., 0.],
+                             [0., 0., 3., 0., 0.],
+                             [0., 3.5, 4., 5., 0.],
+                             [0., 0., 4.5, 0., 0.],
+                             [0., 0., 0., 0., 0.]],
 
-                            [[0. , 0. , 0. , 0. , 0. ],
-                             [0. , 0. , 0. , 0. , 0. ],
-                             [0. , 0. , 4. , 0. , 0. ],
-                             [0. , 0. , 0. , 0. , 0. ],
-                             [0. , 0. , 0. , 0. , 0. ]]])
+                            [[0., 0., 0., 0., 0.],
+                             [0., 0., 0., 0., 0.],
+                             [0., 0., 4., 0., 0.],
+                             [0., 0., 0., 0., 0.],
+                             [0., 0., 0., 0., 0.]]])
     target_mask = np.array([[[False, False, False, False, False],
                              [False, False, False, False, False],
-                             [False, False,  True, False, False],
+                             [False, False, True, False, False],
                              [False, False, False, False, False],
                              [False, False, False, False, False]],
 
                             [[False, False, False, False, False],
-                             [False, False,  True, False, False],
-                             [False,  True,  True,  True, False],
-                             [False, False,  True, False, False],
+                             [False, False, True, False, False],
+                             [False, True, True, True, False],
+                             [False, False, True, False, False],
                              [False, False, False, False, False]],
 
-                            [[False, False,  True, False, False],
-                             [False,  True,  True,  True, False],
-                             [ True,  True,  True,  True,  True],
-                             [False,  True,  True,  True, False],
-                             [False, False,  True, False, False]],
+                            [[False, False, True, False, False],
+                             [False, True, True, True, False],
+                             [True, True, True, True, True],
+                             [False, True, True, True, False],
+                             [False, False, True, False, False]],
 
                             [[False, False, False, False, False],
-                             [False, False,  True, False, False],
-                             [False,  True,  True,  True, False],
-                             [False, False,  True, False, False],
+                             [False, False, True, False, False],
+                             [False, True, True, True, False],
+                             [False, False, True, False, False],
                              [False, False, False, False, False]],
 
                             [[False, False, False, False, False],
                              [False, False, False, False, False],
-                             [False, False,  True, False, False],
+                             [False, False, True, False, False],
                              [False, False, False, False, False],
                              [False, False, False, False, False]]])
 
-
     # Test:
-    extrapolated_data, extrapolated_mask = _extrapolate_out_mask(initial_data, 
-                                                                 initial_mask, 
+    extrapolated_data, extrapolated_mask = _extrapolate_out_mask(initial_data,
+                                                                 initial_mask,
                                                                  iterations=1)
     assert_array_equal(extrapolated_data, target_data)
     assert_array_equal(extrapolated_mask, target_mask)
+
+
+def test_unmask_from_to_3d_array(size=5):
+    rng = check_random_state(42)
+    for ndim in range(1, 4):
+        shape = [size] * ndim
+        mask = np.zeros(shape).astype(np.bool)
+        mask[rng.rand(*shape) > .8] = 1
+        support = rng.randn(mask.sum())
+        full = _unmask_from_to_3d_array(support, mask)
+        np.testing.assert_array_equal(full.shape, shape)
+        np.testing.assert_array_equal(full[mask], support)
