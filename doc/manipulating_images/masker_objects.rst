@@ -145,7 +145,7 @@ or saved as a portable HTML file `report.save_as_html(output_filepath)`.
 
 .. figure:: ../images/niftiMasker_report.png
     :target: ../auto_examples/04_manipulating_images/plot_mask_computation.html
-    :scale: 50%
+    :scale: 25%
 
 Different masking strategies
 .............................
@@ -167,7 +167,7 @@ functions documentation, or :doc:`the NiftiMasker example
 
 .. figure:: ../images/niftiMasker_report_erode.png
     :target: ../auto_examples/04_manipulating_images/plot_mask_computation.html
-    :scale: 50%
+    :scale: 25%
 
 .. _masker_preprocessing_steps:
 
