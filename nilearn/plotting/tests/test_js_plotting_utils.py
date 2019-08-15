@@ -13,6 +13,7 @@ try:
     LXML_INSTALLED = True
 except ImportError:
     LXML_INSTALLED = False
+import pytest
 
 from nilearn.plotting import js_plotting_utils
 from nilearn import surface
@@ -41,11 +42,7 @@ def test_add_js_lib():
     assert _normalize_ws("""/*! jQuery v3.3.1 | (c) JS Foundation and other
                             contributors | jquery.org/license */""") in inline
     assert _normalize_ws("""**
-                            * plotly.js (gl3d - minified) v1.38.3
-                            * Copyright 2012-2018, Plotly, Inc.
-                            * All rights reserved.
-                            * Licensed under the MIT license
-                            */ """) in inline
+                            * plotly.js (gl3d - minified)""") in inline
     assert "decodeBase64" in inline
 
 
@@ -295,11 +292,19 @@ def test_temp_file_removing():
     html = js_plotting_utils.HTMLDocument('hello')
     wb_open = webbrowser.open
     webbrowser.open = _open_mock
+    fd, tmpfile = tempfile.mkstemp()
     try:
+        os.close(fd)
+        with pytest.warns(None) as record:
+            html.open_in_browser(file_name=tmpfile, temp_file_lifetime=None)
+        for warning in record:
+            assert "Saved HTML in temporary file" not in str(warning.message)
         html.open_in_browser(temp_file_lifetime=.5)
         assert os.path.isfile(html._temp_file)
         time.sleep(1.5)
         assert not os.path.isfile(html._temp_file)
+        with pytest.warns(UserWarning, match="Saved HTML in temporary file"):
+            html.open_in_browser(temp_file_lifetime=None)
         html.open_in_browser(temp_file_lifetime=None)
         assert os.path.isfile(html._temp_file)
         time.sleep(1.5)
@@ -308,6 +313,10 @@ def test_temp_file_removing():
         webbrowser.open = wb_open
         try:
             os.remove(html._temp_file)
+        except Exception:
+            pass
+        try:
+            os.remove(tmpfile)
         except Exception:
             pass
 
@@ -327,6 +336,14 @@ def test_open_view_warning():
     # should raise a warning about memory usage
     assert_warns(UserWarning, _open_views)
     assert_no_warnings(_open_one_view)
+    js_plotting_utils.set_max_img_views_before_warning(15)
+    assert_no_warnings(_open_views)
+    js_plotting_utils.set_max_img_views_before_warning(-1)
+    assert_no_warnings(_open_views)
+    js_plotting_utils.set_max_img_views_before_warning(None)
+    assert_no_warnings(_open_views)
+    js_plotting_utils.set_max_img_views_before_warning(6)
+    assert_warns(UserWarning, _open_views)
 
 
 def test_to_color_strings():

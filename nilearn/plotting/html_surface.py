@@ -127,8 +127,9 @@ def _fill_html_template(info, embed_js=True):
 
 def view_img_on_surf(stat_map_img, surf_mesh='fsaverage5',
                      threshold=None, cmap=cm.cold_hot,
-                     black_bg=False, vmax=None, vmin=None,
-                     symmetric_cmap=True):
+                     black_bg=False, vmax=None, vmin=None, symmetric_cmap=True,
+                     colorbar=True, colorbar_height=.5, colorbar_fontsize=25,
+                     title=None, title_fontsize=25):
     """
     Insert a surface plot of a statistical map into an HTML page.
 
@@ -175,6 +176,21 @@ def view_img_on_surf(stat_map_img, surf_mesh='fsaverage5',
         Make colormap symmetric (ranging from -vmax to vmax).
         You can set it to False if you are plotting only positive values.
 
+    colorbar : bool, optional (default=True)
+        add a colorbar
+
+    colorbar_height : float, optional (default=.5)
+        height of the colorbar, relative to the figure height
+
+    colorbar_fontsize : int, optional (default=25)
+        fontsize of the colorbar tick labels
+
+    title : str, optional (default=None)
+        title for the plot
+
+    title_fontsize : int, optional (default=25)
+        fontsize of the title
+
     Returns
     -------
     SurfaceView : plot of the stat map.
@@ -195,12 +211,18 @@ def view_img_on_surf(stat_map_img, surf_mesh='fsaverage5',
         volume_img=stat_map_img, mesh=surf_mesh, threshold=threshold,
         cmap=cmap, black_bg=black_bg, vmax=vmax, vmin=vmin,
         symmetric_cmap=symmetric_cmap)
+    info['colorbar'] = colorbar
+    info['cbar_height'] = colorbar_height
+    info['cbar_fontsize'] = colorbar_fontsize
+    info['title'] = title
+    info['title_fontsize'] = title_fontsize
     return _fill_html_template(info, embed_js=True)
 
 
 def view_surf(surf_mesh, surf_map=None, bg_map=None, threshold=None,
               cmap=cm.cold_hot, black_bg=False, vmax=None, vmin=None,
-              symmetric_cmap=True):
+              symmetric_cmap=True, colorbar=True, colorbar_height=.5,
+              colorbar_fontsize=25, title=None, title_fontsize=25):
     """
     Insert a surface plot of a surface map into an HTML page.
 
@@ -256,6 +278,21 @@ def view_surf(surf_mesh, surf_map=None, bg_map=None, threshold=None,
         If `symmetric_cmap` is `False`, `vmin` defaults to the min of the
         image, or 0 when a threshold is used.
 
+    colorbar : bool, optional (default=True)
+        add a colorbar
+
+    colorbar_height : float, optional (default=.5)
+        height of the colorbar, relative to the figure height
+
+    colorbar_fontsize : int, optional (default=25)
+        fontsize of the colorbar tick labels
+
+    title : str, optional (default=None)
+        title for the plot
+
+    title_fontsize : int, optional (default=25)
+        fontsize of the title
+
     Returns
     -------
     SurfaceView : plot of the stat map.
@@ -274,12 +311,18 @@ def view_surf(surf_mesh, surf_map=None, bg_map=None, threshold=None,
     surf_mesh = surface.load_surf_mesh(surf_mesh)
     if surf_map is None:
         surf_map = np.ones(len(surf_mesh[0]))
-    if surf_map is not None:
-        surface.check_mesh_and_data(surf_mesh, surf_map)
+    else:
+        surf_mesh, surf_map = surface.check_mesh_and_data(
+            surf_mesh, surf_map)
     if bg_map is not None:
-        surface.check_mesh_and_data(surf_mesh, bg_map)
+        _, bg_map = surface.check_mesh_and_data(surf_mesh, bg_map)
     info = one_mesh_info(
         surf_map=surf_map, surf_mesh=surf_mesh, threshold=threshold,
         cmap=cmap, black_bg=black_bg, bg_map=bg_map,
         symmetric_cmap=symmetric_cmap, vmax=vmax, vmin=vmin)
+    info['colorbar'] = colorbar
+    info['cbar_height'] = colorbar_height
+    info['cbar_fontsize'] = colorbar_fontsize
+    info['title'] = title
+    info['title_fontsize'] = title_fontsize
     return _fill_html_template(info, embed_js=True)

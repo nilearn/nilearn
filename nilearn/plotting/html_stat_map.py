@@ -5,6 +5,7 @@ import os
 import json
 import warnings
 from io import BytesIO
+from base64 import b64encode
 
 import numpy as np
 from matplotlib.image import imsave
@@ -20,7 +21,6 @@ from .._utils.niimg_conversions import check_niimg_3d
 from .._utils.param_validation import check_threshold
 from .._utils.extmath import fast_abs_percentile
 from .._utils.niimg import _safe_get_data
-from .._utils.compat import _encodebytes
 from ..datasets import load_mni152_template
 
 
@@ -110,7 +110,7 @@ def _bytesIO_to_base64(handle_io):
         Returns: data
     """
     handle_io.seek(0)
-    data = _encodebytes(handle_io.read()).decode('utf-8')
+    data = b64encode(handle_io.read()).decode('utf-8')
     handle_io.close()
     return data
 

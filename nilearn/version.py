@@ -34,18 +34,22 @@ REQUIRED_MODULE_METADATA = (
         'required_at_installation': True,
         'install_info': _NILEARN_INSTALL_MSG}),
     ('scipy', {
-        'min_version': '0.17',
+        'min_version': '0.19',
         'required_at_installation': True,
         'install_info': _NILEARN_INSTALL_MSG}),
     ('sklearn', {
-        'min_version': '0.18',
+        'min_version': '0.19',
+        'required_at_installation': True,
+        'install_info': _NILEARN_INSTALL_MSG}),
+    ('joblib', {
+        'min_version': '0.11',
         'required_at_installation': True,
         'install_info': _NILEARN_INSTALL_MSG}),
     ('nibabel', {
         'min_version': '2.0.2',
         'required_at_installation': False}))
 
-OPTIONAL_MATPLOTLIB_MIN_VERSION = '1.5.1'
+OPTIONAL_MATPLOTLIB_MIN_VERSION = '2.0'
 
 
 def _import_module_with_version_check(

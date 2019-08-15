@@ -4,7 +4,8 @@ Extract signals on spheres and plot a connectome
 
 This example shows how to extract signals from spherical regions.
 We show how to build spheres around user-defined coordinates, as well as
-centered on coordinates from Power-264 atlas [1] and Dosenbach-160 [2].
+centered on coordinates from the Power-264 atlas [1], the Dosenbach-160
+atlas [2], and the Seitzman-300 atlas [3].
 
 **References**
 
@@ -13,6 +14,11 @@ human brain." Neuron 72.4 (2011): 665-678.
 
 [2] Dosenbach N.U., Nardos B., et al. "Prediction of individual brain maturity
 using fMRI.", 2010, Science 329, 1358-1361.
+
+[3] `Seitzman, B. A., et al. "A set of functionally-defined brain regions with
+improved representation of the subcortex and cerebellum.", 2018, bioRxiv,
+450452
+<http://doi.org/10.1101/450452>`_
 
 We estimate connectomes using two different methods: **sparse inverse
 covariance** and **partial_correlation**, to recover the functional brain
@@ -64,11 +70,11 @@ from nilearn import input_data
 masker = input_data.NiftiSpheresMasker(
     dmn_coords, radius=8,
     detrend=True, standardize=True,
-    low_pass=0.1, high_pass=0.01, t_r=2.5,
+    low_pass=0.1, high_pass=0.01, t_r=2,
     memory='nilearn_cache', memory_level=1, verbose=2)
 
 # Additionally, we pass confound information so ensure our extracted 
-# signal is cleaned from counfounds.
+# signal is cleaned from confounds.
 
 func_filename = dataset.func[0]
 confounds_filename = dataset.confounds[0]
@@ -186,7 +192,7 @@ print('Stacked power coordinates in array of shape {0}.'.format(coords.shape))
 # and define spheres masker, with small enough radius to avoid regions overlap.
 
 spheres_masker = input_data.NiftiSpheresMasker(
-    seeds=coords, smoothing_fwhm=4, radius=5.,
+    seeds=coords, smoothing_fwhm=6, radius=5.,
     detrend=True, standardize=True, low_pass=0.1, high_pass=0.01, t_r=2)
 
 timeseries = spheres_masker.fit_transform(func_filename,
@@ -205,13 +211,17 @@ print('time series has {0} samples'.format(timeseries.shape[0]))
 ###############################################################################
 # in which situation the graphical lasso **sparse inverse covariance**
 # estimator captures well the covariance **structure**.
-from sklearn.covariance import GraphLassoCV
+try:
+    from sklearn.covariance import GraphicalLassoCV
+except ImportError:
+    # for Scitkit-Learn < v0.20.0
+    from sklearn.covariance import GraphLassoCV as GraphicalLassoCV
 
-covariance_estimator = GraphLassoCV(cv=3, verbose=1)
+covariance_estimator = GraphicalLassoCV(cv=3, verbose=1)
 
 
 ###############################################################################
-# We just fit our regions signals into the `GraphLassoCV` object
+# We just fit our regions signals into the `GraphicalLassoCV` object
 covariance_estimator.fit(timeseries)
 
 
@@ -259,13 +269,13 @@ coords = np.vstack((
 )).T
 
 spheres_masker = input_data.NiftiSpheresMasker(
-    seeds=coords, smoothing_fwhm=4, radius=4.5,
+    seeds=coords, smoothing_fwhm=6, radius=4.5,
     detrend=True, standardize=True, low_pass=0.1, high_pass=0.01, t_r=2)
 
 timeseries = spheres_masker.fit_transform(func_filename,
                                           confounds=confounds_filename)
 
-covariance_estimator = GraphLassoCV()
+covariance_estimator = GraphicalLassoCV()
 covariance_estimator.fit(timeseries)
 matrix = covariance_estimator.covariance_
 
@@ -282,6 +292,55 @@ print('Dosenbach networks names are {0}'.format(np.unique(dosenbach.networks)))
 
 plotting.show()
 
+
+###############################################################################
+# Connectome extracted from Seitzman's atlas
+# -----------------------------------------------------
+# We repeat the same steps for Seitzman's atlas.
+seitzman = datasets.fetch_coords_seitzman_2018()
+
+coords = np.vstack((
+    seitzman.rois['x'],
+    seitzman.rois['y'],
+    seitzman.rois['z'],
+)).T
+
+###############################################################################
+# Before calculating the connectivity matrix, let's look at the distribution
+# of the regions of the default mode network.
+dmn_rois = seitzman.networks == "DefaultMode"
+dmn_coords = coords[dmn_rois]
+zero_matrix = np.zeros((len(dmn_coords), len(dmn_coords)))
+plotting.plot_connectome(zero_matrix, dmn_coords,
+                         title='Seitzman default mode network',
+                         node_color='darkred', node_size=20)
+
+###############################################################################
+# Now let's calculate connectivity for the Seitzman atlas.
+spheres_masker = input_data.NiftiSpheresMasker(
+    seeds=coords, smoothing_fwhm=6, radius=4,
+    detrend=True, standardize=True, low_pass=0.1, high_pass=0.01, t_r=2,
+    allow_overlap=True)
+
+timeseries = spheres_masker.fit_transform(func_filename,
+                                          confounds=confounds_filename)
+
+covariance_estimator = GraphicalLassoCV()
+covariance_estimator.fit(timeseries)
+matrix = covariance_estimator.covariance_
+
+plotting.plot_matrix(matrix, vmin=-1., vmax=1., colorbar=True,
+                     title='Seitzman correlation matrix')
+
+plotting.plot_connectome(matrix, coords, title='Seitzman correlation graph',
+                         edge_threshold="99.7%", node_size=20, colorbar=True)
+
+
+###############################################################################
+# We can easily identify the networks from the matrix blocks.
+print('Seitzman networks names are {0}'.format(np.unique(seitzman.networks)))
+plotting.show()
+
 ###############################################################################
 # .. seealso::
 #
@@ -290,4 +349,3 @@ plotting.show()
 # .. seealso::
 #
 #     :ref:`sphx_glr_auto_examples_03_connectivity_plot_multi_subject_connectome.py`
-
