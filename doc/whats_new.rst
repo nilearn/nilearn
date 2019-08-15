@@ -64,6 +64,7 @@ Fixes
 - :func:`nilearn.plotting.view_surf` now accepts surface data provided as a file
   path.
 - :func:`nilearn.plotting.plot_matrix` providing labels=None, False, or an empty list now correctly disables labels.
+- :func:`nilearn.plotting.plot_surf_roi` now takes vmin, vmax parameters
 
 0.5.2
 =====
