@@ -5,7 +5,7 @@ import warnings
 from pathlib import Path
 from string import Template
 
-from .html_doc import HTMLDocument
+from .html_document import HTMLDocument
 from nilearn.externals import tempita
 
 
