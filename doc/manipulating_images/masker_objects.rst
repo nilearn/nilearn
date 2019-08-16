@@ -143,7 +143,8 @@ or saved as a portable HTML file `report.save_as_html(output_filepath)`.
     :end-before: # Generate mask with strong opening
 
 .. raw:: html
-       <iframe src="../images/niftimasker_report.html" width="50%"></iframe>
+
+    <iframe src="../images/niftimasker_report.html" width="50%"></iframe>
 
 
 Different masking strategies
@@ -165,6 +166,7 @@ functions documentation, or :doc:`the NiftiMasker example
 <../auto_examples/04_manipulating_images/plot_mask_computation>`.
 
 .. raw:: html
+
     <iframe src="../images/niftimasker_report_opening.html" width="25%"></iframe>
 
 .. _masker_preprocessing_steps:
