@@ -144,7 +144,7 @@ or saved as a portable HTML file `report.save_as_html(output_filepath)`.
 
 .. raw:: html
 
-    <iframe src="_static/niftimasker_report.html" width="35%" height=auto></iframe>
+    <iframe src="../_images/niftimasker_report.html" width="100%" height=auto></iframe>
 
 
 Different masking strategies
@@ -167,7 +167,7 @@ functions documentation, or :doc:`the NiftiMasker example
 
 .. raw:: html
 
-    <iframe src="_static/niftimasker_report_opening.html" width="35%" height=auto></iframe>
+    <iframe src="../images/niftimasker_report_opening.html" width="100%" height=auto></iframe>
 
 .. _masker_preprocessing_steps:
 
