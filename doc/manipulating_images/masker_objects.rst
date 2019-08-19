@@ -169,6 +169,7 @@ functions documentation, or :doc:`the NiftiMasker example
 
     <iframe src="../images/niftimasker_report_opening.html" width="100%" height=auto></iframe>
 
+
 .. _masker_preprocessing_steps:
 
 Common data preparation steps: smoothing, filtering, resampling
