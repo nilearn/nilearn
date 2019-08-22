@@ -1,5 +1,5 @@
 0.5.3
-=====
+=======
 
 **Released 22 Aug 2019**
 
@@ -63,6 +63,7 @@ NEW
 - NiftiLabelsMasker now consumes less memory when extracting the signal from a 3D/4D
   image. This is especially noteworthy when extracting signals from large 4D images.
 - New function :func:`nilearn.datasets.fetch_atlas_schaefer_2018`
+- New function :func:`nilearn.datasets.fetch_coords_seitzman_2018`
 
 Changes
 -------
@@ -85,6 +86,13 @@ Changes
 
   - coords is now marker_coords
   - colors is now marker_color
+
+- :func:`nilearn.plotting.view_img_on_surf` now accepts a `symmetric_cmap`
+  argument to control whether the colormap is centered around 0 and a `vmin`
+  argument.
+
+- Users can now control the size and fontsize of colorbars in interactive
+  surface and connectome plots, or disable the colorbar.
 
 Fixes
 -----
@@ -122,11 +130,10 @@ The following people contributed to this release::
    1  Eric Larson
    1  Pierre Bellec
 
-
 0.5.0
 =====
 
-**Released November 2018**
+    **Released November 2018**
 
 NEW
 ---
@@ -1348,3 +1355,4 @@ Contributors (from ``git shortlog -ns 0.1``)::
      1  Matthias Ekman
      1  Michael Waskom
      1  Vincent Michel
+

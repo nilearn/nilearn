@@ -227,12 +227,10 @@ htmlhelp_basename = 'PythonScientic'
 # (source start file, target name, title, author, documentclass
 # [howto/manual]).
 latex_documents = [
-  ('index', 'nilearn.tex', u'NeuroImaging with scikit-learn',
-   ur"""Gaël Varoquaux and Alexandre Abraham"""
-   + r"\\\relax ~\\\relax http://nilearn.github.io",
-   'manual'),
-
-]
+  ('index', 'nilearn.tex', 'NeuroImaging with scikit-learn',
+   'Gaël Varoquaux and Alexandre Abraham'
+   + r"\\\relax ~\\\relax http://nilearn.github.io", 'manual'),
+    ]
 
 # The name of an image file (relative to this directory) to place at the top of
 # the title page.
@@ -289,7 +287,7 @@ intersphinx_mapping = {
     'numpy': ('http://docs.scipy.org/doc/numpy', None),
     'scipy': ('http://docs.scipy.org/doc/scipy/reference', None),
     'matplotlib': ('http://matplotlib.org/', None),
-    'sklearn': ('http://scikit-learn.org/0.18', None),
+    'sklearn': ('http://scikit-learn.org/stable/', None),
     'nibabel': ('http://nipy.org/nibabel', None),
     'pandas': ('http://pandas.pydata.org', None),
 }
@@ -302,7 +300,8 @@ extlinks = {
 sphinx_gallery_conf = {
     'doc_module': 'nilearn',
     'backreferences_dir': os.path.join('modules', 'generated'),
-    'reference_url': {'nilearn': None}
+    'reference_url': {'nilearn': None},
+    'junit': '../test-results/sphinx-gallery/junit.xml',
     }
 
 # Get rid of spurious warnings due to some interaction between

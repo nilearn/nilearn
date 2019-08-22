@@ -78,8 +78,8 @@ Why is machine learning relevant to NeuroImaging? A few examples!
 
     Data-driven exploration of brain images. This includes the extraction of
     the major brain networks from resting-state data ("resting-state networks")
-    as well as the discovery of connectionally coherent functional modules
-    ("connectivity-based parcellation").
+    or movie-watching data as well as the discovery of connectionally coherent
+    functional modules ("connectivity-based parcellation").
     For example,
     :ref:`extracting_rsn` or :ref:`parcellating_brain` with clustering.
 
@@ -260,14 +260,14 @@ To loop over each individual volume of a 4D image, use :func:`image.iter_img`::
    :class: green
 
    Want to sharpen your skills with nilearn?
-   Compute the mean EPI for first subject of the ADHD
-   dataset downloaded with :func:`nilearn.datasets.fetch_adhd` and
+   Compute the mean EPI for first subject of the brain development
+   dataset downloaded with :func:`nilearn.datasets.fetch_development_fmri` and
    smooth it with an FWHM varying from 0mm to 20mm in increments of 5mm
 
    **Hints:**
 
       * Inspect the '.keys()' of the object returned by
-        :func:`nilearn.datasets.fetch_adhd`
+        :func:`nilearn.datasets.fetch_development_fmri`
 
       * Look at the "reference" section of the documentation: there is a
         function to compute the mean of a 4D image

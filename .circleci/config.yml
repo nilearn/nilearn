@@ -15,6 +15,7 @@ jobs:
       NUMPY_VERSION: "*"
       SCIPY_VERSION: "*"
       SCIKIT_LEARN_VERSION: "*"
+      JOBLIB_VERSION: "*"
       MATPLOTLIB_VERSION: "*"
 
     steps:
@@ -29,16 +30,12 @@ jobs:
       - run: sudo -E apt-get -yq update
       - run: sudo -E apt-get -yq --no-install-suggests --no-install-recommends --force-yes install dvipng texlive-latex-base texlive-latex-extra
       - run:
-          name: Today & Week  # Fixing the date and week of the year in files to generate & preserve cache key.
+          name: Today & Week  # Saving today's date and current week of the year in files to generate daily & weekly new cache key respectively.
           command: |
-            echo 2019-04-12 > today
-            echo 14 > week_num
-#            date +%F > today
-#            date +%U > week_num
+            date +%F > today
+            date +%U > week_num
       - restore_cache:
           key: v1-packages+datasets-{{ checksum "week_num" }}
-      - restore_cache:
-          key: master-docs-{{ .Environment.CIRCLE_PREVIOUS_BUILD_NUM }}
       - restore_cache:
           key: v1-docs-{{ .Branch }}-{{ checksum "today" }}-{{ checksum ".circleci/manual-cache-timestamp" }}
 
@@ -72,21 +69,26 @@ jobs:
           command: |
             conda install -n testenv python=3.6 numpy scipy scikit-learn matplotlib pandas \
             lxml mkl sphinx numpydoc pillow pandas -yq
-            conda install -n testenv nibabel sphinx-gallery -c conda-forge -yq
+            conda install -n testenv nibabel sphinx-gallery junit-xml -c conda-forge -yq
       - run:
           name: Running CircleCI test (make html)
           command: |
             source activate testenv
             pip install -e .
-            set -o pipefail && cd doc && make html-strict SPHINXOPTS="-j auto" 2>&1 | tee log.txt
+            set -o pipefail && cd doc && make html-strict 2>&1 | tee log.txt
           no_output_timeout: 7h
+      - store_test_results:
+          path: doc/_build/test-results
+      - store_artifacts:
+          path: doc/_build/test-results
+
       - save_cache:
           key: v1-packages+datasets-{{ checksum "week_num" }}
           paths:
             - ../nilearn_data
             - ../miniconda3
       - save_cache:
-          key: v1-docs-master-{{ checksum "today" }}-{{ checksum ".circleci/manual-cache-timestamp" }}
+          key: v1-docs-{{ .Branch }}-{{ checksum "today" }}-{{ checksum ".circleci/manual-cache-timestamp" }}
           paths:
             - doc
 
@@ -120,20 +122,6 @@ jobs:
         # Installing required packages for `make -C doc check command` to work.
       - run: sudo -E apt-get -yq update
       - run: sudo -E apt-get -yq --no-install-suggests --no-install-recommends --force-yes install dvipng texlive-latex-base texlive-latex-extra
-      - restore_cache:
-          key: v1-packages+datasets-{{ checksum "week_num" }}
-      - run:
-          name: Generate new cache from master build
-          command: |
-            python .circleci/clean-cache.py
-
-      - run:
-          name: Today & Week  # Fixing the date and week of the year in files to generate & preserve cache key.
-          command: |
-            echo 2019-04-12 > today
-            echo 14 > week_num
-#            date +%F > today
-#            date +%U > week_num
       - run: wget https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh -O ~/miniconda.sh
       - run: chmod +x ~/miniconda.sh && ~/miniconda.sh -b
       - run: echo 'export PATH="$HOME/miniconda3/bin:$PATH"'  >> $BASH_ENV
@@ -142,23 +130,18 @@ jobs:
           command: |
             conda create -n testenv python=3.6 numpy scipy scikit-learn matplotlib pandas \
             lxml mkl sphinx numpydoc pillow pandas -yq
-            conda install -n testenv nibabel sphinx-gallery -c conda-forge -yq
+            conda install -n testenv nibabel sphinx-gallery junit-xml -c conda-forge -yq
       - run:
           name: Running CircleCI test (make html)
           command: |
             source activate testenv
             pip install -e .
-            set -o pipefail && cd doc && make html-strict SPHINXOPTS="-j auto" 2>&1 | tee log.txt
+            set -o pipefail && cd doc && make html-strict 2>&1 | tee log.txt
           no_output_timeout: 7h
-      - save_cache:
-          key: v1-packages+datasets-{{ checksum "week_num" }}
-          paths:
-            - ../nilearn_data
-            - ../miniconda3
-      - save_cache:
-          key: master-docs-{{ .Environment.CIRCLE_BUILD_NUM }}
-          paths:
-            - doc
+      - store_test_results:
+          path: doc/_build/test-results
+      - store_artifacts:
+          path: doc/_build/test-results
 
       - store_artifacts:
           path: doc/_build/html
@@ -186,13 +169,13 @@ workflows:
                 - master
                 - test-circleci  # test branch to check if merges occur on master as expected.
 
-#  nightly:
-#    triggers:
-#      - schedule:
-#          cron: "0 6 * * *"
-#          filters:
-#            branches:
-#              only:
-#                - master
-#    jobs:
-#      - full-build
+  nightly:
+    triggers:
+      - schedule:
+          cron: "0 6 * * *"
+          filters:
+            branches:
+              only:
+                - master
+    jobs:
+      - full-build

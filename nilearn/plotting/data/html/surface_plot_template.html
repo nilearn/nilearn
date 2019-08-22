@@ -9,6 +9,7 @@
     <script>
         var surfaceMapInfo = $INSERT_STAT_MAP_JSON_HERE;
 
+
         function makePlot(surface, hemisphere, divId) {
 
             decodeHemisphere(surfaceMapInfo, surface, hemisphere);
@@ -21,14 +22,25 @@
             info['lighting'] = getLighting();
             let layout = getLayout("surface-plot", "select-view",
                                    surfaceMapInfo["black_bg"]);
+            layout['title'] = {
+                text: surfaceMapInfo['title'],
+                font: {size: surfaceMapInfo["title_fontsize"],
+                       color: textColor(surfaceMapInfo["black_bg"])},
+                yref: 'paper',
+                y: .95};
             let config = getConfig();
 
             Plotly.react(divId, data, layout, config);
 
-            addColorbar(surfaceMapInfo["colorscale"],
-                        surfaceMapInfo["cmin"],
-                        surfaceMapInfo["cmax"],
-                        divId, layout, config);
+            if(surfaceMapInfo["colorbar"]){
+                addColorbar(surfaceMapInfo["colorscale"],
+                            surfaceMapInfo["cmin"],
+                            surfaceMapInfo["cmax"],
+                            divId, layout, config,
+                            surfaceMapInfo["cbar_fontsize"],
+                            surfaceMapInfo["cbar_height"],
+                            color=textColor(surfaceMapInfo["black_bg"]));
+            }
         }
 
         function addPlot() {

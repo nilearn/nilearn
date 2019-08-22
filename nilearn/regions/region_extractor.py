@@ -9,7 +9,7 @@ import numpy as np
 from scipy import ndimage
 from scipy.stats import scoreatpercentile
 
-from sklearn.externals.joblib import Memory
+from nilearn._utils.compat import Memory
 
 from .. import masking
 from ..input_data import NiftiMapsMasker
@@ -403,7 +403,7 @@ class RegionExtractor(NiftiMapsMasker):
             else:
                 if self.thresholding_strategy == 'percentile':
                     self.threshold = "{0}%".format(self.threshold)
-                threshold_maps = threshold_img(maps_img, mask_img=self.mask_img,
+                threshold_maps = threshold_img(maps_img, mask_img=self.mask_img, copy=True,
                                                threshold=self.threshold)
 
         # connected component extraction
