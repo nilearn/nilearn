@@ -1,7 +1,6 @@
-0.5.2
+0.5.3
 =====
-
-**Released April 2019**
+**Released 22 Aug 2019**
 
 NEW
 ---
@@ -15,6 +14,17 @@ NEW
 Fixes
 -----
 
+- NotImplementedError in Nilearn for ax.set_axes()
+  (Matplotlib 3.1 dropped support for ax.set_axes())
+
+0.5.2
+=====
+
+**Released 17 April 2019**
+
+Fixes
+-----
+
 - Plotting ``.mgz`` files in MNE broke in ``0.5.1`` and has been fixed.
 
 Contributors
@@ -22,9 +32,8 @@ Contributors
 
 The following people contributed to this release::
 
-    11  Kshitij Chawla (kchawla-pi)
-     3  Gael Varoquaux
-     2  Alexandre Gramfort
+    Jerome Dockes (jeromedockes)
+    Kshitij Chawla (kchawla-pi)
 
 0.5.1
 =====
