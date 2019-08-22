@@ -228,7 +228,7 @@ htmlhelp_basename = 'PythonScientic'
 # [howto/manual]).
 latex_documents = [
   ('index', 'nilearn.tex', u'NeuroImaging with scikit-learn',
-   ur"""Gaël Varoquaux and Alexandre Abraham"""
+   'Gaël Varoquaux and Alexandre Abraham'
    + r"\\\relax ~\\\relax http://nilearn.github.io",
    'manual'),
 
