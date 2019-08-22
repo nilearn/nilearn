@@ -10,6 +10,7 @@ build
 *#
 
 nilearn.egg-info/
+env/
 dist/
 doc/.nojekyll
 doc/building_blocks/generated/

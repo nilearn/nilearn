@@ -13,12 +13,10 @@ neighborhood of each location of a domain.
 import time
 import sys
 import warnings
-from distutils.version import LooseVersion
 
 import numpy as np
 
-import sklearn
-from sklearn.externals.joblib import Parallel, delayed, cpu_count
+from nilearn._utils.compat import Parallel, delayed, cpu_count
 from sklearn import svm
 from sklearn.base import BaseEstimator
 from sklearn.exceptions import ConvergenceWarning

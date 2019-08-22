@@ -71,6 +71,7 @@ uses.
    fetch_atlas_harvard_oxford
    fetch_atlas_msdl
    fetch_coords_power_2011
+   fetch_coords_seitzman_2018
    fetch_atlas_smith_2009
    fetch_atlas_yeo_2011
    fetch_atlas_aal
@@ -80,6 +81,7 @@ uses.
    fetch_coords_dosenbach_2010
    fetch_abide_pcp
    fetch_adhd
+   fetch_development_fmri
    fetch_haxby
    fetch_icbm152_2009
    fetch_icbm152_brain_gm_mask
@@ -268,6 +270,7 @@ uses.
 
    RegionExtractor
    Parcellations
+   ReNA
 
 
 :mod:`nilearn.mass_univariate`: Mass-univariate analysis

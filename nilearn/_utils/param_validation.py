@@ -1,6 +1,7 @@
 """
 Utilities to check for valid parameters
 """
+
 import numpy as np
 import warnings
 import numbers

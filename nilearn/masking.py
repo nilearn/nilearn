@@ -8,7 +8,7 @@ import numbers
 
 import numpy as np
 from scipy import ndimage
-from sklearn.externals.joblib import Parallel, delayed
+from nilearn._utils.compat import Parallel, delayed
 
 from . import _utils
 from .image import new_img_like
@@ -52,7 +52,7 @@ def _load_mask_img(mask_img, allow_empty=False):
                 'The mask is invalid as it is empty: it masks all data.')
     elif len(values) == 2:
         # If there are 2 different values, one of them must be 0 (background)
-        if not 0 in values:
+        if 0 not in values:
             raise ValueError('Background of the mask must be represented with'
                              '0. Given mask contains: %s.' % values)
     elif len(values) != 2:
@@ -70,7 +70,7 @@ def _extrapolate_out_mask(data, mask, iterations=1):
     """
     if iterations > 1:
         data, mask = _extrapolate_out_mask(data, mask,
-                                          iterations=iterations - 1)
+                                           iterations=iterations - 1)
     new_mask = ndimage.binary_dilation(mask)
     larger_mask = np.zeros(np.array(mask.shape) + 2, dtype=np.bool)
     larger_mask[1:-1, 1:-1, 1:-1] = mask
@@ -82,7 +82,7 @@ def _extrapolate_out_mask(data, mask, iterations=1):
     outer_shell[1:-1, 1:-1, 1:-1] = np.logical_xor(new_mask, mask)
     outer_shell_x, outer_shell_y, outer_shell_z = np.where(outer_shell)
     extrapolation = list()
-    for i, j, k in [(1, 0, 0), (-1, 0, 0), 
+    for i, j, k in [(1, 0, 0), (-1, 0, 0),
                     (0, 1, 0), (0, -1, 0),
                     (0, 0, 1), (0, 0, -1)]:
         this_x = outer_shell_x + i
@@ -91,8 +91,8 @@ def _extrapolate_out_mask(data, mask, iterations=1):
         extrapolation.append(masked_data[this_x, this_y, this_z])
 
     extrapolation = np.array(extrapolation)
-    extrapolation = (np.nansum(extrapolation, axis=0)
-                     / np.sum(np.isfinite(extrapolation), axis=0))
+    extrapolation = (np.nansum(extrapolation, axis=0) /
+                     np.sum(np.isfinite(extrapolation), axis=0))
     extrapolation[np.logical_not(np.isfinite(extrapolation))] = 0
     new_data = np.zeros_like(masked_data)
     new_data[outer_shell] = extrapolation
@@ -162,7 +162,8 @@ def intersect_masks(mask_imgs, threshold=0.5, connected=True):
     if np.any(grp_mask > 0) and connected:
         grp_mask = largest_connected_component(grp_mask)
     grp_mask = _utils.as_ndarray(grp_mask, dtype=np.int8)
-    return new_img_like(_utils.check_niimg_3d(mask_imgs[0]), grp_mask, ref_affine)
+    return new_img_like(_utils.check_niimg_3d(mask_imgs[0]), grp_mask,
+                        ref_affine)
 
 
 def _post_process_mask(mask, affine, opening=2, connected=True,
@@ -173,7 +174,7 @@ def _post_process_mask(mask, affine, opening=2, connected=True,
     mask_any = mask.any()
     if not mask_any:
         warnings.warn("Computed an empty mask. %s" % warning_msg,
-            MaskWarning, stacklevel=2)
+                      MaskWarning, stacklevel=2)
     if connected and mask_any:
         mask = largest_connected_component(mask)
     if opening:
@@ -258,8 +259,8 @@ def compute_epi_mask(epi_img, lower_cutoff=0.2, upper_cutoff=0.85,
 
     # Delayed import to avoid circular imports
     from .image.image import _compute_mean
-    mean_epi, affine = cache(_compute_mean, memory)(epi_img,
-                                     target_affine=target_affine,
+    mean_epi, affine = \
+        cache(_compute_mean, memory)(epi_img, target_affine=target_affine,
                                      target_shape=target_shape,
                                      smooth=(1 if opening else False))
 
@@ -278,14 +279,15 @@ def compute_epi_mask(epi_img, lower_cutoff=0.2, upper_cutoff=0.85,
     delta = sorted_input[lower_cutoff + 1:upper_cutoff + 1] \
         - sorted_input[lower_cutoff:upper_cutoff]
     ia = delta.argmax()
-    threshold = 0.5 * (sorted_input[ia + lower_cutoff]
-                       + sorted_input[ia + lower_cutoff + 1])
+    threshold = 0.5 * (sorted_input[ia + lower_cutoff] +
+                       sorted_input[ia + lower_cutoff + 1])
 
     mask = mean_epi >= threshold
 
     mask, affine = _post_process_mask(mask, affine, opening=opening,
-        connected=connected, warning_msg="Are you sure that input "
-            "data are EPI images not detrended. ")
+                                      connected=connected,
+                                      warning_msg="Are you sure that input "
+                                      "data are EPI images not detrended. ")
     return new_img_like(epi_img, mask, affine)
 
 
@@ -370,9 +372,9 @@ def compute_multi_epi_mask(epi_imgs, lower_cutoff=0.2, upper_cutoff=0.85,
 
 
 def compute_background_mask(data_imgs, border_size=2,
-                     connected=False, opening=False,
-                     target_affine=None, target_shape=None,
-                     memory=None, verbose=0):
+                            connected=False, opening=False,
+                            target_affine=None, target_shape=None,
+                            memory=None, verbose=0):
     """ Compute a brain mask for the images by guessing the value of the
     background from the border of the image.
 
@@ -426,8 +428,9 @@ def compute_background_mask(data_imgs, border_size=2,
     # Delayed import to avoid circular imports
     from .image.image import _compute_mean
     data, affine = cache(_compute_mean, memory)(data_imgs,
-                target_affine=target_affine, target_shape=target_shape,
-                smooth=False)
+                                                target_affine=target_affine,
+                                                target_shape=target_shape,
+                                                smooth=False)
 
     background = np.median(get_border_data(data, border_size))
     if np.isnan(background):
@@ -438,16 +441,17 @@ def compute_background_mask(data_imgs, border_size=2,
         mask = data != background
 
     mask, affine = _post_process_mask(mask, affine, opening=opening,
-        connected=connected, warning_msg="Are you sure that input "
-            "images have a homogeneous background.")
+                                      connected=connected,
+                                      warning_msg="Are you sure that input "
+                                      "images have a homogeneous background.")
     return new_img_like(data_imgs, mask, affine)
 
 
 def compute_multi_background_mask(data_imgs, border_size=2, upper_cutoff=0.85,
-                           connected=True, opening=2, threshold=0.5,
-                           target_affine=None, target_shape=None,
-                           exclude_zeros=False, n_jobs=1,
-                           memory=None, verbose=0):
+                                  connected=True, opening=2, threshold=0.5,
+                                  target_affine=None, target_shape=None,
+                                  exclude_zeros=False, n_jobs=1,
+                                  memory=None, verbose=0):
     """ Compute a common mask for several sessions or subjects of data.
 
     Uses the mask-finding algorithms to extract masks for each session
@@ -502,12 +506,12 @@ def compute_multi_background_mask(data_imgs, border_size=2, upper_cutoff=0.85,
                         'image or a list of images' % data_imgs)
     masks = Parallel(n_jobs=n_jobs, verbose=verbose)(
         delayed(compute_background_mask)(img,
-                                  border_size=border_size,
-                                  connected=connected,
-                                  opening=opening,
-                                  target_affine=target_affine,
-                                  target_shape=target_shape,
-                                  memory=memory)
+                                         border_size=border_size,
+                                         connected=connected,
+                                         opening=opening,
+                                         target_affine=target_affine,
+                                         target_shape=target_shape,
+                                         memory=memory)
         for img in data_imgs)
 
     mask = intersect_masks(masks, connected=connected, threshold=threshold)
@@ -863,3 +867,30 @@ def unmask(X, mask_img, order="F"):
                         "got shape: %s" % str(X.shape))
 
     return new_img_like(mask_img, unmasked, affine)
+
+
+def _unmask_from_to_3d_array(w, mask):
+    """Unmask an image into whole brain, with off-mask voxels set to 0.
+    Used as a stand-alone function in low-level decoding (SpaceNet) and
+    clustering (ReNA) functions.
+
+    Parameters
+    ----------
+    w : ndarray, shape (n_features,)
+      The image to be unmasked.
+
+    mask : ndarray, shape (nx, ny, nz)
+      The mask used in the unmasking operation. It is required that
+      mask.sum() == n_features.
+
+    Returns
+    -------
+    out : 3d of same shape as `mask`.
+        The unmasked version of `w`
+    """
+
+    if mask.sum() != len(w):
+        raise ValueError("Expecting mask.sum() == len(w).")
+    out = np.zeros(mask.shape, dtype=w.dtype)
+    out[mask] = w
+    return out

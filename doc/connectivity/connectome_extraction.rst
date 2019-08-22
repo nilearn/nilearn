@@ -28,9 +28,10 @@ Connectome extraction: inverse covariance for direct connections
 Sparse inverse covariance for functional connectomes
 =====================================================
 
-Resting-state functional connectivity can be obtained by estimating a
-covariance (or correlation) matrix for signals from different brain
-regions. The same information can be represented as a weighted graph,
+Functional connectivity can be obtained by estimating a covariance
+(or correlation) matrix for signals from different brain
+regions decomposed, for example on resting-state or naturalistic-stimuli datasets.
+The same information can be represented as a weighted graph,
 vertices being brain regions, weights on edges being covariances
 (gaussian graphical model). However, coefficients in a covariance matrix
 reflect direct as well as indirect connections. Covariance matrices form
@@ -48,12 +49,12 @@ conditioned on all the others.
 
 
 To recover well the interaction structure, a **sparse inverse covariance
-estimator** is necessary. The GraphLasso, implemented in scikit-learn's
-estimator :class:`sklearn.covariance.GraphLassoCV` is a good, simple
+estimator** is necessary. The GraphicalLasso, implemented in scikit-learn's
+estimator :class:`sklearn.covariance.GraphicalLassoCV` is a good, simple
 solution. To use it, you need to create an estimator object::
 
-    >>> from sklearn.covariance import GraphLassoCV
-    >>> estimator = GraphLassoCV()
+    >>> from sklearn.covariance import GraphicalLassoCV
+    >>> estimator = GraphicalLassoCV()
 
 And then you can fit it on the activation time series, for instance
 extracted in :ref:`the previous section <functional_connectomes>`::
@@ -94,7 +95,7 @@ of the estimator::
     The parameter controlling the sparsity is set by `cross-validation
     <http://scikit-learn.org/stable/modules/cross_validation.html>`_
     scheme. If you want to specify it manually, use the estimator
-    :class:`sklearn.covariance.GraphLasso`.
+    :class:`sklearn.covariance.GraphicalLasso`.
 
 .. topic:: **Full example**
 
@@ -104,8 +105,8 @@ of the estimator::
 .. topic:: **Exercise: computing sparse inverse covariance**
    :class: green
 
-   Compute and visualize a connectome on the first subject of the ADHD
-   dataset downloaded with :func:`nilearn.datasets.fetch_adhd`
+   Compute and visualize a connectome on the first subject of the brain
+   development dataset downloaded with :func:`nilearn.datasets.fetch_development_fmri`
 
    **Hints:** The example above has the solution
 
@@ -125,7 +126,7 @@ differing connection values across subjects.
 
 For this, nilearn provides the
 :class:`nilearn.connectome.GroupSparseCovarianceCV`
-estimator. Its usage is similar to the GraphLassoCV object, but it takes
+estimator. Its usage is similar to the GraphicalLassoCV object, but it takes
 a list of time series::
 
     >>> estimator.fit([time_series_1, time_series_2, ...])  # doctest: +SKIP
@@ -164,10 +165,11 @@ group analysis only on the non zero coefficients.
    :class: green
 
    Try using the information above to compute a connectome on the
-   first 5 subjects of the ADHD dataset downloaded with
-   :func:`nilearn.datasets.fetch_adhd`
+   first 5 subjects of the brain development dataset downloaded with
+   :func:`nilearn.datasets.fetch_development_fmri`
 
-   **Hint:** The example above has the solution
+   **Hint:** The example above works through the solution for the ADHD dataset. 
+   adhd.
 
 
 .. topic:: **Reference**
@@ -184,7 +186,7 @@ with different precision matrices, but sharing a common sparsity pattern:
 10 brain regions, for 20 subjects.
 
 A single-subject estimation can be performed using the
-:class:`sklearn.covariance.GraphLassoCV` estimator from scikit-learn.
+:class:`sklearn.covariance.GraphicalLassoCV` estimator from scikit-learn.
 
 It is also possible to fit a graph lasso on data from every subject all
 together.
@@ -255,8 +257,9 @@ Deviations from this mean in the tangent space are provided in the connectivitie
 .. topic:: **Exercise: computing connectivity in tangent space**
    :class: green
 
-   Compute and visualize the tangent group connectome based on the NYU, OHSU and NeuroImage sites of the ADHD
-   dataset downloaded with :func:`nilearn.datasets.fetch_adhd`
+   Compute and visualize the tangent group connectome based on the brain
+   development
+   dataset downloaded with :func:`nilearn.datasets.fetch_development_fmri`
 
    **Hints:** The example above has the solution
 

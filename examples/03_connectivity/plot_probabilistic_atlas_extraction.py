@@ -1,13 +1,13 @@
 """
-Extracting signals of a probabilistic atlas of rest functional regions
-========================================================================
+Extracting signals of a probabilistic atlas of functional regions
+=================================================================
 
 This example extracts the signal on regions defined via a probabilistic
 atlas, to construct a functional connectome.
 
 We use the `MSDL atlas
 <https://team.inria.fr/parietal/18-2/spatial_patterns/spatial-patterns-in-resting-state/>`_
-of functional regions in rest.
+of functional regions in movie-watching.
 
 The key to extract signals is to use the
 :class:`nilearn.input_data.NiftiMapsMasker` that can transform nifti
@@ -30,7 +30,7 @@ atlas_filename = atlas['maps']
 labels = atlas['labels']
 
 # Load the functional datasets
-data = datasets.fetch_adhd(n_subjects=1)
+data = datasets.fetch_development_fmri(n_subjects=1)
 
 print('First subject resting-state nifti image (4D) is located at: %s' %
       data.func[0])

@@ -24,6 +24,17 @@ from .._utils.extmath import fast_abs_percentile
 from .._utils.param_validation import check_threshold
 from .. import surface
 
+MAX_IMG_VIEWS_BEFORE_WARNING = 10
+
+
+def set_max_img_views_before_warning(new_value):
+    """Set the number of open views which triggers a warning.
+
+    If `None` or a negative number, disable the memory warning.
+    """
+    global MAX_IMG_VIEWS_BEFORE_WARNING
+    MAX_IMG_VIEWS_BEFORE_WARNING = new_value
+
 
 def add_js_lib(html, embed_js=True):
     """
@@ -99,11 +110,17 @@ class HTMLDocument(object):
 
     def _check_n_open(self):
         HTMLDocument._all_open_html_repr.add(self)
-        if len(HTMLDocument._all_open_html_repr) > 9:
-            warnings.warn('It seems you have created more than 10 '
+        if MAX_IMG_VIEWS_BEFORE_WARNING is None:
+            return
+        if MAX_IMG_VIEWS_BEFORE_WARNING < 0:
+            return
+        if len(HTMLDocument._all_open_html_repr
+               ) > MAX_IMG_VIEWS_BEFORE_WARNING - 1:
+            warnings.warn('It seems you have created more than {} '
                           'nilearn views. As each view uses dozens '
                           'of megabytes of RAM, you might want to '
-                          'delete some of them.')
+                          'delete some of them.'.format(
+                              MAX_IMG_VIEWS_BEFORE_WARNING))
 
     def resize(self, width, height):
         """Resize the plot displayed in a Jupyter notebook."""
@@ -165,16 +182,21 @@ class HTMLDocument(object):
 
         """
         if file_name is None:
-            fd, file_name = tempfile.mkstemp('.html', 'nilearn_surface_plot_')
+            fd, file_name = tempfile.mkstemp('.html', 'nilearn_plot_')
             os.close(fd)
+            named_file = False
+        else:
+            named_file = True
         self.save_as_html(file_name)
         self._temp_file = file_name
         file_size = os.path.getsize(file_name) / 1e6
         if temp_file_lifetime is None:
-            print(("Saved HTML in temporary file: {}\n"
-                   "file size is {:.1f}M, delete it when you're done, "
-                   "for example by calling this.remove_temp_file").format(
-                       file_name, file_size))
+            if not named_file:
+                warnings.warn(
+                    ("Saved HTML in temporary file: {}\n"
+                     "file size is {:.1f}M, delete it when you're done, "
+                     "for example by calling this.remove_temp_file").format(
+                         file_name, file_size))
         else:
             _remove_after_n_seconds(self._temp_file, temp_file_lifetime)
         webbrowser.open('file://{}'.format(file_name))

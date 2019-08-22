@@ -49,8 +49,13 @@ for n in range(n_displayed):
 
 
 # Fit one graph lasso per subject
-from sklearn.covariance import GraphLassoCV
-gl = GraphLassoCV(verbose=1)
+try:
+    from sklearn.covariance import GraphicalLassoCV
+except ImportError:
+    # for Scitkit-Learn < v0.20.0
+    from sklearn.covariance import GraphLassoCV as GraphicalLassoCV
+
+gl = GraphicalLassoCV(verbose=1)
 
 for n, subject in enumerate(subjects[:n_displayed]):
     gl.fit(subject)

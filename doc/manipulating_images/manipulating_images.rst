@@ -8,7 +8,7 @@ This chapter discusses how nilearn can be used to do simple operations on
 brain images.
 
 
-.. contents:: **Chapters contents**
+.. contents:: **Chapter contents**
     :local:
     :depth: 1
 
@@ -198,7 +198,7 @@ brain. It is thus convenient to apply a brain mask in order to convert the
     :width: 100%
 
 Note that in an analysis pipeline, this operation is best done using the
-:ref:`masker objects <masker_objects>`. For completness, we give code to
+:ref:`masker objects <masker_objects>`. For completeness, we give the code to
 do it manually below:
 
 .. literalinclude:: ../../examples/01_plotting/plot_visualization.py
@@ -219,8 +219,8 @@ statistical test. This requires a chain of image
 operations on the input data. Here is a possible recipe for computing an
 ROI mask:
 
- * **Smoothing**: Before a statistical test, it is often use to smooth a bit
-   the image using :func:`nilearn.image.smooth_img`, typically fwhm=6 for
+ * **Smoothing**: Before a statistical test, it is often useful to smooth the image a bit
+   using :func:`nilearn.image.smooth_img`, typically fwhm=6 for
    fMRI.
 
  * **Selecting voxels**: Given the smoothed data, we can select voxels

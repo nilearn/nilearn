@@ -3,7 +3,7 @@ Transformer for computing ROI signals.
 """
 
 import numpy as np
-from sklearn.externals.joblib import Memory
+from nilearn._utils.compat import Memory
 
 from .. import _utils
 from .._utils import logger, CacheMixin
@@ -22,11 +22,11 @@ class _ExtractionFunctor(object):
         self._resampled_mask_img_ = _resampled_mask_img_
 
     def __call__(self, imgs):
-            from ..regions import signal_extraction
+        from ..regions import signal_extraction
 
-            return signal_extraction.img_to_signals_maps(
-                imgs, self._resampled_maps_img_,
-                mask_img=self._resampled_mask_img_)
+        return signal_extraction.img_to_signals_maps(
+            imgs, self._resampled_maps_img_,
+            mask_img=self._resampled_mask_img_)
 
 
 class NiftiMapsMasker(BaseMasker, CacheMixin):
@@ -58,9 +58,15 @@ class NiftiMapsMasker(BaseMasker, CacheMixin):
         If smoothing_fwhm is not None, it gives the full-width half maximum in
         millimeters of the spatial smoothing to apply to the signal.
 
-    standardize: boolean, optional
-        If standardize is True, the time-series are centered and normed:
-        their mean is put to 0 and their variance to 1 in the time dimension.
+    standardize: {'zscore', 'psc', True, False}, default is 'zscore'
+        Strategy to standardize the signal.
+        'zscore': the signal is z-scored. Timeseries are shifted
+        to zero mean and scaled to unit variance.
+        'psc':  Timeseries are shifted to zero mean value and scaled
+        to percent signal change (as compared to original mean signal).
+        True : the signal is z-scored. Timeseries are shifted
+        to zero mean and scaled to unit variance.
+        False : Do not standardize the data.
 
     detrend: boolean, optional
         This parameter is passed to signal.clean. Please see the related
@@ -116,10 +122,9 @@ class NiftiMapsMasker(BaseMasker, CacheMixin):
     # memory and memory_level are used by CacheMixin.
 
     def __init__(self, maps_img, mask_img=None,
-                 allow_overlap=True,
-                 smoothing_fwhm=None, standardize=False, detrend=False,
-                 low_pass=None, high_pass=None, t_r=None, dtype=None,
-                 resampling_target="data",
+                 allow_overlap=True, smoothing_fwhm=None, standardize=False,
+                 detrend=False, low_pass=None, high_pass=None, t_r=None,
+                 dtype=None, resampling_target="data",
                  memory=Memory(cachedir=None, verbose=0), memory_level=0,
                  verbose=0):
         self.maps_img = maps_img
