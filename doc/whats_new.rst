@@ -1,5 +1,6 @@
 0.5.3
 =====
+
 **Released 22 Aug 2019**
 
 NEW
@@ -17,6 +18,14 @@ Fixes
 - NotImplementedError in Nilearn for ax.set_axes()
   (Matplotlib 3.1 dropped support for ax.set_axes())
 
+Contributors
+------------
+
+The following people contributed to this release::
+
+    Jerome Dockes (jeromedockes)
+    Kshitij Chawla (kchawla-pi)
+
 0.5.2
 =====
 
@@ -32,8 +41,9 @@ Contributors
 
 The following people contributed to this release::
 
-    Jerome Dockes (jeromedockes)
-    Kshitij Chawla (kchawla-pi)
+    11  Kshitij Chawla (kchawla-pi)
+     3  Gael Varoquaux
+     2  Alexandre Gramfort
 
 0.5.1
 =====
