@@ -38,7 +38,7 @@ NEW
 
 Fixes
 -----
- - Fixes NotImplementedError with Matplotlib 3.1, which dropped support for set_axes()
+- Fixes NotImplementedError with Matplotlib 3.1, which dropped support for set_axes()
 
 Contributors
 ------------
