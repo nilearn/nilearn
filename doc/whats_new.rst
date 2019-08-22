@@ -23,19 +23,35 @@ Fixes
 - add_contours now accepts `threshold` argument for filled=False. Now
   `threshold` is equally applied when asked for fillings in the contours.
 
-0.5.2
+0.5.3
 =====
 
-**Released April 2019**
+**Released 22 Aug 2019**
 
 NEW
 ---
-
 .. warning::
 
  | This is the **last** release supporting Python2 and 3.4 .
  | The lowest Python version supported is now Python3.5.
  | We recommend switching to Python3.6 .
+
+Fixes
+-----
+ - Fixes NotImplementedError with Matplotlib 3.1, which dropped support for set_axes()
+
+Contributors
+------------
+
+The following people contributed to this release::
+
+    Jerome Dockes (jeromedockes)
+    Kshitij Chawla (kchawla-pi)
+
+0.5.2
+=====
+
+**Released 17 April 2019**
 
 Fixes
 -----
