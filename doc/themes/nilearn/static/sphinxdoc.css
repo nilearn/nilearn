@@ -337,3 +337,12 @@ div.viewcode-block:target {
     border-top: 1px solid #ac9;
     border-bottom: 1px solid #ac9;
 }
+
+/* Sphinx-gallery Report embedding */
+iframe.sg_report {
+    width: 95%;
+    height: 70vh;
+    margin: 20px auto;
+    display: block;
+    border-style: solid;
+}

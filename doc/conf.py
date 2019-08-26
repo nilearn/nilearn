@@ -310,6 +310,10 @@ sphinx_gallery_conf = {
 # details
 numpydoc_show_class_members = False
 
+# Scraper, copied from https://github.com/mne-tools/mne-python/
+from nilearn.reporting import _ReportScraper
+report_scraper = _ReportScraper()
+scrapers = ('matplotlib', report_scraper)
 
 def touch_example_backreferences(app, what, name, obj, options, lines):
     # generate empty examples files, so that we don't get
@@ -327,3 +331,5 @@ def touch_example_backreferences(app, what, name, obj, options, lines):
 def setup(app):
     app.add_javascript('copybutton.js')
     app.connect('autodoc-process-docstring', touch_example_backreferences)
+    report_scraper.app = app
+    app.connect('build-finished', report_scraper.copyfiles)

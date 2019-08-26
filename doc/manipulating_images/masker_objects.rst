@@ -142,10 +142,6 @@ or saved as a portable HTML file `report.save_as_html(output_filepath)`.
     :start-after: # We need to specify an 'epi' mask_strategy, as this is raw EPI data
     :end-before: # Generate mask with strong opening
 
-.. raw:: html
-
-    <iframe src="../_images/niftimasker_report.html" width="100%" height=auto></iframe>
-
 
 Different masking strategies
 .............................
@@ -164,10 +160,6 @@ called using the `mask_args` argument of the :class:`NiftiMasker`.
 Controling these arguments set the fine aspects of the mask. See the
 functions documentation, or :doc:`the NiftiMasker example
 <../auto_examples/04_manipulating_images/plot_mask_computation>`.
-
-.. raw:: html
-
-    <iframe src="../images/niftimasker_report_opening.html" width="100%" height=auto></iframe>
 
 
 .. _masker_preprocessing_steps:
