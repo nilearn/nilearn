@@ -442,7 +442,7 @@ def clean(signals, sessions=None, detrend=True, standardize=True,
         signals = as_ndarray(signals)
 
     if ensure_finite:
-        signals[np.logical_not(np.isfinite(signals))] = 0
+        signals = np.nan_to_num(signals, posinf=0.,  neginf=0.)
 
     # Read confounds
     if confounds is not None:
