@@ -64,6 +64,8 @@ Fixes
 - :func:`nilearn.plotting.view_surf` now accepts surface data provided as a file
   path.
 - :func:`nilearn.plotting.plot_matrix` providing labels=None, False, or an empty list now correctly disables labels.
+- :func:`nilearn.datasets.fetch_surf_nki_enhanced` is now downloading the correct
+  left and right functional surface data for each subject
 
 0.5.2
 =====
@@ -1403,4 +1405,3 @@ Contributors (from ``git shortlog -ns 0.1``)::
      1  Matthias Ekman
      1  Michael Waskom
      1  Vincent Michel
-
