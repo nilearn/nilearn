@@ -98,19 +98,19 @@ class NiftiMasker(BaseMasker, CacheMixin):
 
     detrend : boolean, optional
         This parameter is passed to signal.clean. Please see the related
-        documentation for details
+        documentation for details: :func:`nilearn.signal.clean`.
 
     low_pass: None or float, optional
         This parameter is passed to signal.clean. Please see the related
-        documentation for details
+        documentation for details: :func:`nilearn.signal.clean`.
 
     high_pass: None or float, optional
         This parameter is passed to signal.clean. Please see the related
-        documentation for details
+        documentation for details: :func:`nilearn.signal.clean`.
 
     t_r : float, optional
         This parameter is passed to signal.clean. Please see the related
-        documentation for details
+        documentation for details: :func:`nilearn.signal.clean`.
 
     target_affine : 3x3 or 4x4 matrix, optional
         This parameter is passed to image.resample_img. Please see the
@@ -285,7 +285,7 @@ class NiftiMasker(BaseMasker, CacheMixin):
 
         confounds: CSV file or array-like, optional
             This parameter is passed to signal.clean. Please see the related
-            documentation for details.
+            documentation for details: :func:`nilearn.signal.clean`.
             shape: (number of scans, number of confounds)
 
         Returns
