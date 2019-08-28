@@ -367,14 +367,14 @@ plt.show()
 # Removing confounds
 # ------------------
 #
-# A problematic feature of fMRI is the presence of unconctrolled
+# A problematic feature of fMRI is the presence of uncontrolled
 # confounds in the data, sue to scanner instabilities (spikes) or
 # physiological phenomena, such as motion, heart and
-# respiration-related blood oxygenation flucturations.  Side
-# measurements are sometimes acquired to charcterise these
+# respiration-related blood oxygenation fluctuations.  Side
+# measurements are sometimes acquired to characterise these
 # effects. Here we don't have access to those.  What we can do instead
 # is to estimate confounding effects from the data themselves, using
-# the compcorr approach, and take those into account in the model.
+# the CompCor approach, and take those into account in the model.
 #
 # For this we rely on the so-called `high_variance_confounds`_
 # routine of Nilearn.
