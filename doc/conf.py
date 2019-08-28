@@ -332,4 +332,3 @@ def setup(app):
     app.add_javascript('copybutton.js')
     app.connect('autodoc-process-docstring', touch_example_backreferences)
     report_scraper.app = app
-    app.connect('build-finished', report_scraper.copyfiles)

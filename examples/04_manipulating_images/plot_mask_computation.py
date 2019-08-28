@@ -50,7 +50,7 @@ masker.fit(miyawaki_filename)
 
 # Plot the generated mask
 report = masker.generate_report()
-report.save_as_html('default_niftimasker.html')
+report
 
 ###############################################################################
 # Computing a mask from raw EPI data
