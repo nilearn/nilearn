@@ -371,7 +371,7 @@ plt.show()
 # confounds in the data, sue to scanner instabilities (spikes) or
 # physiological phenomena, such as motion, heart and
 # respiration-related blood oxygenation fluctuations.  Side
-# measurements are sometimes acquired to characterise these
+# measurements are sometimes acquired to characterize these
 # effects. Here we don't have access to those.  What we can do instead
 # is to estimate confounding effects from the data themselves, using
 # the CompCor approach, and take those into account in the model.
