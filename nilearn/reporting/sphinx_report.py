@@ -32,3 +32,4 @@ class _ReportScraper(object):
                 # embed links/iframe
                 data = _SCRAPER_TEXT.format(report.get_standalone())
                 return data
+        return ''
