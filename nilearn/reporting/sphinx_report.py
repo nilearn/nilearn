@@ -10,7 +10,7 @@ _SCRAPER_TEXT = '''
 .. only:: builder_html
     .. container:: row
         .. raw:: html
-            <iframe class="sg_report" sandbox="allow-scripts" src="{0}"></iframe>
+            <iframe class="sg_report" src="{0}"></iframe>
 '''  # noqa: E501
 
 
@@ -30,6 +30,6 @@ class _ReportScraper(object):
             if (isinstance(report, HTMLReport) and
                     gallery_conf['builder_name'] == 'html'):
                 # embed links/iframe
-                data = _SCRAPER_TEXT.format(report.get_standalone())
+                data = _SCRAPER_TEXT.format(report.get_iframe())
                 return data
         return ''
