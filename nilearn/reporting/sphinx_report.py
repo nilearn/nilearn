@@ -8,8 +8,11 @@ from nilearn.reporting import HTMLReport
 
 _SCRAPER_TEXT = '''
 .. only:: builder_html
+
     .. container:: row
+
         .. raw:: html
+
             <iframe class="sg_report" src="{0}"></iframe>
 '''  # noqa: E501
 
