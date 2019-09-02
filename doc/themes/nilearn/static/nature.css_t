@@ -1689,3 +1689,21 @@ ul#tab li div.contents p{
 p.sphx-glr-horizontal {
     margin-top: 2em;
 }
+
+
+/* Sphinx-gallery Report embedding */
+/* fixed aspect ratio iframes https://benmarshall.me/responsive-iframes/ */
+div.sg-report {
+    position: relative;
+    padding-top: 50%;
+}
+
+iframe.sg-report {
+    width: 95%;
+    margin: 20px auto;
+    display: block;
+    border-style: none;
+    position: absolute; 
+    height: 100%;
+    top: 0;
+}

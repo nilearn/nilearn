@@ -52,7 +52,6 @@ masker.fit(miyawaki_filename)
 report = masker.generate_report()
 report
 
-
 ###############################################################################
 # Computing a mask from raw EPI data
 ###############################################################################
