@@ -500,7 +500,7 @@ def fetch_adhd(n_subjects=30, data_dir=None, url=None, resume=True,
 
     # Load the csv file
     phenotypic = np.genfromtxt(phenotypic, names=True, delimiter=',',
-                               dtype=None)
+                               dtype=None, encoding=None)
 
     # Keep phenotypic information for selected subjects
     int_ids = np.asarray(ids, dtype=int)
