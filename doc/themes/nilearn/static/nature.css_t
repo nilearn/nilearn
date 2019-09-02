@@ -1695,15 +1695,16 @@ p.sphx-glr-horizontal {
 /* fixed aspect ratio iframes https://benmarshall.me/responsive-iframes/ */
 div.sg-report {
     position: relative;
-    padding-top: 50%;
+    padding-top: 35%;
 }
 
 iframe.sg-report {
-    width: 95%;
-    margin: 20px auto;
     display: block;
     border-style: none;
     position: absolute; 
-    height: 100%;
-    top: 0;
+    transform: scale(.8);
+    width: 124%; /* More than 100% because of .8 scaling */
+    height: 120%;
+    top: -12%; /* Negative because of .8 scaling */
+    left: -10%;
 }
