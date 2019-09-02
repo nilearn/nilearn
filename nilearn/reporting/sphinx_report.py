@@ -13,7 +13,8 @@ _SCRAPER_TEXT = '''
 
         .. raw:: html
 
-            <iframe class="sg_report" src="{0}"></iframe>
+            <iframe class="sg_report" frameBorder="0" width="None" height="None"
+                srcdoc="{0}"></iframe>
 '''  # noqa: E501
 
 
@@ -33,6 +34,6 @@ class _ReportScraper(object):
             if (isinstance(report, HTMLReport) and
                     gallery_conf['builder_name'] == 'html'):
                 # embed links/iframe
-                data = _SCRAPER_TEXT.format(report.get_iframe())
+                data = _SCRAPER_TEXT.format(report.get_standalone())
                 return data
         return ''
