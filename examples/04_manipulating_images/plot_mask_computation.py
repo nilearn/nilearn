@@ -20,7 +20,7 @@ underlying routine that extract masks from EPI
 
 from nilearn.input_data import NiftiMasker
 import nilearn.image as image
-from nilearn.plotting import plot_roi, plot_epi, show
+from nilearn.plotting import plot_epi, show
 
 ###############################################################################
 # Computing a mask from the background
@@ -51,7 +51,6 @@ masker.fit(miyawaki_filename)
 # Plot the generated mask
 report = masker.generate_report()
 report
-
 
 ###############################################################################
 # Computing a mask from raw EPI data

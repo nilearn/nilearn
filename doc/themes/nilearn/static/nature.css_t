@@ -1692,19 +1692,18 @@ p.sphx-glr-horizontal {
 
 
 /* Sphinx-gallery Report embedding */
-/* fixed aspect ratio iframes https://benmarshall.me/responsive-iframes/ */
 div.sg-report {
-    position: relative;
-    padding-top: 35%;
+    padding: 0pt;
 }
 
-iframe.sg-report {
+div.sg-report iframe {
     display: block;
     border-style: none;
-    position: absolute; 
     transform: scale(.8);
-    width: 124%; /* More than 100% because of .8 scaling */
-    height: 120%;
-    top: -12%; /* Negative because of .8 scaling */
-    left: -10%;
+    height: 470px;
+    margin-left: -12%; /* Negative because of .8 scaling */
+    margin-top: -4%;
+    padding: 0pt;
+    margin-bottom: 0pt;
+    width: 126%; /* More than 100% because of .8 scaling */
 }

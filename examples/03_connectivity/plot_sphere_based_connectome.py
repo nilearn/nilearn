@@ -143,15 +143,14 @@ plotting.show()
 
 view = plotting.view_connectome(partial_correlation_matrix, dmn_coords)
 
-# uncomment this to open the plot in a web browser:
-# view.open_in_browser()
-
-
-##############################################################################
 # In a Jupyter notebook, if ``view`` is the output of a cell, it will
 # be displayed below the cell
-
 view
+
+##############################################################################
+
+# uncomment this to open the plot in a web browser:
+# view.open_in_browser()
 
 
 ##########################################################################
@@ -344,8 +343,6 @@ plotting.show()
 ###############################################################################
 # .. seealso::
 #
-#     :ref:`sphx_glr_auto_examples_03_connectivity_plot_atlas_comparison.py`
+#    * :ref:`sphx_glr_auto_examples_03_connectivity_plot_atlas_comparison.py`
 #
-# .. seealso::
-#
-#     :ref:`sphx_glr_auto_examples_03_connectivity_plot_multi_subject_connectome.py`
+#    * :ref:`sphx_glr_auto_examples_03_connectivity_plot_multi_subject_connectome.py`

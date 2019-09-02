@@ -2,7 +2,7 @@
 # Inspired from https://github.com/mne-tools/mne-python/
 import weakref
 
-from nilearn.reporting import HTMLReport
+from nilearn.reporting import HTMLDocument
 
 
 _SCRAPER_TEXT = '''
@@ -12,8 +12,7 @@ _SCRAPER_TEXT = '''
 
         .. raw:: html
 
-            <iframe class="sg-report" frameBorder="0" width="100%"
-                srcdoc='{0}'></iframe>
+            {0}
 
 '''  # noqa: E501
 
@@ -38,12 +37,11 @@ class _ReportScraper(object):
 
     def __call__(self, block, block_vars, gallery_conf):
         for report in block_vars['example_globals'].values():
-            if (isinstance(report, HTMLReport) and
+            if (isinstance(report, HTMLDocument) and
                     gallery_conf['builder_name'] == 'html'):
                 if report in self.displayed_reports:
                     continue
-                # embed links/iframe
-                report_str = report.get_standalone()
+                report_str = report._repr_html_()
                 data = _SCRAPER_TEXT.format(indent_and_espace(report_str))
                 self.displayed_reports.add(report)
                 return data
