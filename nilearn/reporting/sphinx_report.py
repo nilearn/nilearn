@@ -1,5 +1,6 @@
 # Scraper for sphinx-gallery
 # Inspired from https://github.com/mne-tools/mne-python/
+import weakref
 
 from nilearn.reporting import HTMLReport
 
@@ -30,7 +31,7 @@ class _ReportScraper(object):
 
     def __init__(self):
         self.app = None
-        self.files = dict()
+        self.displayed_reports = weakref.WeakSet()
 
     def __repr__(self):
         return '<ReportScraper>'
@@ -39,8 +40,11 @@ class _ReportScraper(object):
         for report in block_vars['example_globals'].values():
             if (isinstance(report, HTMLReport) and
                     gallery_conf['builder_name'] == 'html'):
+                if report in self.displayed_reports:
+                    continue
                 # embed links/iframe
                 report_str = report.get_standalone()
                 data = _SCRAPER_TEXT.format(indent_and_espace(report_str))
+                self.displayed_reports.add(report)
                 return data
         return ''
