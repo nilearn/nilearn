@@ -77,7 +77,7 @@ plot_epi(mean_img, title='Mean EPI image')
 masker = NiftiMasker(mask_strategy='epi')
 masker.fit(epi_img)
 report = masker.generate_report()
-report.save_as_html('epi_niftimasker.html')
+report
 
 ###############################################################################
 # Generate mask with strong opening
@@ -91,7 +91,7 @@ report.save_as_html('epi_niftimasker.html')
 masker = NiftiMasker(mask_strategy='epi', mask_args=dict(opening=10))
 masker.fit(epi_img)
 report = masker.generate_report()
-report.save_as_html('opening_niftimasker.html')
+report
 
 ###############################################################################
 # Generate mask with a high lower cutoff
@@ -109,7 +109,7 @@ masker = NiftiMasker(mask_strategy='epi',
                                     opening=False))
 masker.fit(epi_img)
 report = masker.generate_report()
-report.save_as_html('cutoff_niftimasker.html')
+report
 
 ###############################################################################
 # Computing the mask from the MNI template
@@ -121,8 +121,7 @@ report.save_as_html('cutoff_niftimasker.html')
 masker = NiftiMasker(mask_strategy='template')
 masker.fit(epi_img)
 report = masker.generate_report()
-report.save_as_html('template_niftimasker.html')
-
+report
 
 ###############################################################################
 # After mask computation: extracting time series
