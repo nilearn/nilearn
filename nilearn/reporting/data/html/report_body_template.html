@@ -63,7 +63,9 @@ div.nilearn_report {
     padding-top: 5px;
 }
 
+/* Isolate us a bit from the styles specified by other stylesheets */
 div.nilearn_report h1 {
+    text-align: left;
     padding-top: 15px;
 }
 
@@ -87,11 +89,6 @@ div.nilearn_report thead th {
 
 div.nilearn_report tbody tr:nth-child(even) {
    background-color: #ddd;
-}
-
-/* Isolate us a bit from the styles specified by other stylesheets */
-div.nilearn_report h1 {
-    text-align: left;
 }
 
 /* Tooltip container */
@@ -138,6 +135,8 @@ div.nilearn_report .image .overlay {
   left: 0;
   opacity: 0;
   transition: .5s ease;
+  height: auto;
+  width: 100%;
   -webkit-transition: .5s ease;
 }
 
@@ -156,7 +155,7 @@ div.nilearn_report .image:hover .overlay {
       <div class="image">
       <img class="pure-img" width="100%" src="data:image/svg+xml;base64,{{content}}" alt="image"/>
       <div class="overlay">
-        <img class="pure-img" src="data:image/svg+xml;base64,{{overlay}}" alt="overlay"/>
+        <img class="pure-img" width="100%" src="data:image/svg+xml;base64,{{overlay}}" alt="overlay"/>
       </div>
       </div>
   </div>
