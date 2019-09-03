@@ -1,3 +1,4 @@
+import shutil
 import tempfile
 import numpy as np
 import os.path as op
@@ -22,25 +23,25 @@ def _gen_report():
 
 def test_scraper():
     """Test report scraping."""
-    tmpdir = tempfile.mkdtemp()
-    # Mock a Sphinx + sphinx_gallery config
-    app = Bunch(builder=Bunch(srcdir=str(tmpdir),
-                              outdir=op.join(str(tmpdir), '_build', 'html')))
-    scraper = _ReportScraper()
-    scraper.app = app
-    gallery_conf = dict(src_dir=app.builder.srcdir, builder_name='html')
-    img_fname = op.join(app.builder.srcdir, 'auto_examples', 'images',
-                        'sg_img.png')
-    target_file = op.join(app.builder.srcdir, 'auto_examples', 'sg.py')
-    block_vars = dict(image_path_iterator=(img for img in [img_fname]),
-                      example_globals=dict(a=1), target_file=target_file)
-    # Confirm that HTML isn't accidentally inserted
-    block = None
-    rst = scraper(block, block_vars, gallery_conf)
-    assert rst == ''
+    with tempfile.TemporaryDirectory() as tmpdir:
+        # Mock a Sphinx + sphinx_gallery config
+        app = Bunch(builder=Bunch(srcdir=str(tmpdir),
+                                outdir=op.join(str(tmpdir), '_build', 'html')))
+        scraper = _ReportScraper()
+        scraper.app = app
+        gallery_conf = dict(src_dir=app.builder.srcdir, builder_name='html')
+        img_fname = op.join(app.builder.srcdir, 'auto_examples', 'images',
+                            'sg_img.png')
+        target_file = op.join(app.builder.srcdir, 'auto_examples', 'sg.py')
+        block_vars = dict(image_path_iterator=(img for img in [img_fname]),
+                        example_globals=dict(a=1), target_file=target_file)
+        # Confirm that HTML isn't accidentally inserted
+        block = None
+        rst = scraper(block, block_vars, gallery_conf)
+        assert rst == ''
 
-    # Confirm that HTML is correctly inserted for HTMLReport
-    report = _gen_report()
-    block_vars['example_globals']['report'] = report
-    rst = scraper(block, block_vars, gallery_conf)
-    assert "<detail" in rst
+        # Confirm that HTML is correctly inserted for HTMLReport
+        report = _gen_report()
+        block_vars['example_globals']['report'] = report
+        rst = scraper(block, block_vars, gallery_conf)
+        assert "<detail" in rst
