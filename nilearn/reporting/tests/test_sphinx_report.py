@@ -1,3 +1,4 @@
+import tempfile
 import numpy as np
 import os.path as op
 from nibabel import Nifti1Image
@@ -19,8 +20,9 @@ def _gen_report():
     return report
 
 
-def test_scraper(tmpdir):
+def test_scraper():
     """Test report scraping."""
+    tmpdir = tempfile.mkdtemp()
     # Mock a Sphinx + sphinx_gallery config
     app = Bunch(builder=Bunch(srcdir=str(tmpdir),
                               outdir=op.join(str(tmpdir), '_build', 'html')))
