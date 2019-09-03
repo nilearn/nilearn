@@ -10,7 +10,7 @@ The mask is computed and visualized.
 # Retrieve the brain development functional dataset
 
 from nilearn import datasets
-dataset = datasets.fetch_development_fmri()
+dataset = datasets.fetch_development_fmri(n_subjects=1)
 func_filename = dataset.func[0]
 
 # print basic information on the dataset
