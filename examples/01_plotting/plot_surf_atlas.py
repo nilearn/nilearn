@@ -124,14 +124,14 @@ plotting.show()
 
 view = plotting.view_surf(fsaverage.infl_left, parcellation,
                           cmap='gist_ncar', symmetric_cmap=False)
-# uncomment this to open the plot in a web browser:
-# view.open_in_browser()
-
-##############################################################################
 # In a Jupyter notebook, if ``view`` is the output of a cell, it will
 # be displayed below the cell
 
 view
+##############################################################################
+
+# uncomment this to open the plot in a web browser:
+# view.open_in_browser()
 
 ##############################################################################
 # you can also use :func:`nilearn.plotting.view_connectome` to open an
