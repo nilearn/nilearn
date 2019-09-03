@@ -21,7 +21,7 @@ def indent_and_espace(text, amount=12):
     return (''.join(amount * ' ' + line.replace("'", '"')
                 for line in text.splitlines(True)
                 if line)
-            + 12 * ' ')
+            + amount * ' ')
 
 
 class _ReportScraper(object):
