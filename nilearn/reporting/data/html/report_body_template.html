@@ -60,7 +60,7 @@ End pure-button class definition from pure-min.css
 */
 
 div.nilearn_report {
-    padding-top: 1px;
+    padding-top: 0px;
     border: solid rgb(150, 150, 150);
     border-width: 1pt;
     border-radius: 6pt;
@@ -74,10 +74,14 @@ div.nilearn_report h1 {
     margin-right: 0pt;
     padding-top: 5pt;
     font-size: 1.8em;
+    padding-left: 5pt;
 }
 
 div.nilearn_report h1:first-child {
-    margin-top: 1pt;
+    margin-top: 0pt;
+    background-color: #f5f5f5;
+    border-radius: 6pt 6pt 0pt 0pt;
+    padding-left: 5pt;
 }
 
 div.nilearn_report summary::-webkit-details-marker {
@@ -117,7 +121,7 @@ div.nilearn_report .withtooltip .tooltiptext {
   visibility: hidden;
   max-width: 35em;
   width: 90%;
-  background-color: rgba(24,24,24,0.85);
+  background-color: rgba(24,24,24,0.9);
   color: #fff;
   text-align: left;
   font-size: 12pt;
@@ -126,11 +130,14 @@ div.nilearn_report .withtooltip .tooltiptext {
   padding: 5px;css=resource_path.joinpath('css'),
 
   margin-left: 3pt;
-  margin-top: -5pt;
 
   /* Position the tooltip text - see examples below! */
   position: absolute;
   z-index: 1;
+
+  width: 99%;
+  left: 2pt;
+  top: 133%;
 }
 
 /* Show the tooltip text when you mouse over the tooltip container */
