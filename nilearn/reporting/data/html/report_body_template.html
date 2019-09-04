@@ -96,6 +96,7 @@ div.nilearn_report table {
     max-width: 100%;
     border-collapse: collapse;
     margin:50px auto;
+    float: right;
 }
 
 div.nilearn_report thead th {
@@ -107,7 +108,7 @@ div.nilearn_report tbody tr:nth-child(even) {
 }
 
 div.nilearn_report details {
-    overflow-x: scroll;
+    overflow-x: visible;
 }
 
 /* Tooltip container */
@@ -149,6 +150,7 @@ div.nilearn_report .image {
   position: relative;
   height: auto;
   width: 100%;
+  z-index: -1;
 }
 
 div.nilearn_report .image .overlay {
