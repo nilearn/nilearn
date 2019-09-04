@@ -172,10 +172,10 @@ class HTMLReport(HTMLDocument):
         """ The head_tpl is meant for display as a full page, eg writing on
             disk. The body is used for embedding in an existing page.
         """
+        html = head_tpl.substitute(body=body)
+        super(HTMLReport, self).__init__(html)
         self.head_tpl = head_tpl
         self.body = body
-        super(HTMLReport, self).__init__(None)
-        self.html = self.get_standalone()
 
     def _repr_html_(self):
         """
@@ -186,6 +186,3 @@ class HTMLReport(HTMLDocument):
 
     def __str__(self):
         return self.body
-
-    def get_standalone(self):
-        return self.head_tpl.substitute(body=self.body)
