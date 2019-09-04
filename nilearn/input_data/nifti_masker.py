@@ -211,9 +211,9 @@ class NiftiMasker(BaseMasker, CacheMixin, ReportMixin):
         self.reports = reports
         self._report_description = ('This report shows the input Nifti '
                                     'image overlaid with the outlines of the '
-                                    'mask. We recommend to inspect the report '
-                                    'for the overlap between the mask and its '
-                                    'input image. ')
+                                    'mask (in green). We recommend to inspect '
+                                    'the report for the overlap between the '
+                                    'mask and its input image. ')
         self._overlay_text = ('\n To see the input Nifti image before '
                               'resampling, hover over the displayed image.')
 
@@ -248,8 +248,10 @@ class NiftiMasker(BaseMasker, CacheMixin, ReportMixin):
 
         # create display of retained input mask, image
         # for visual comparison
-        init_display = plotting.plot_img(img, black_bg=False)
-        init_display.add_contours(mask, levels=[.5], colors='r')
+        init_display = plotting.plot_img(img,
+                                         black_bg=False,
+                                         cmap='CMRmap_r')
+        init_display.add_contours(mask, levels=[.5], colors='g')
 
         if self.transform_ is None:
             return [init_display]
@@ -268,8 +270,11 @@ class NiftiMasker(BaseMasker, CacheMixin, ReportMixin):
             else:  # images were not provided to fit
                 resampl_img = resampl_mask
 
-            final_display = plotting.plot_img(resampl_img, black_bg=False)
-            final_display.add_contours(resampl_mask, levels=[.5], colors='r')
+            final_display = plotting.plot_img(resampl_img,
+                                              black_bg=False,
+                                              cmap='CMRmap_r')
+            final_display.add_contours(resampl_mask, levels=[.5],
+                                       colors='g')
 
         return [init_display, final_display]
 
