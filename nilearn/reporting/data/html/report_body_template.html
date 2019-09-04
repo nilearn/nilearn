@@ -60,11 +60,10 @@ End pure-button class definition from pure-min.css
 */
 
 div.nilearn_report {
-    padding-top: 5px;
+    padding-top: 1px;
     border: solid rgb(150, 150, 150);
     border-width: 1pt;
     border-radius: 6pt;
-    overflow-x: auto;
 }
 
 /* Isolate us a bit from the styles specified by other stylesheets */
@@ -73,9 +72,12 @@ div.nilearn_report h1 {
     padding-top: 15px;
     margin-left: 0pt;
     margin-right: 0pt;
-    margin-top: 3pt;
     padding-top: 5pt;
     font-size: 1.8em;
+}
+
+div.nilearn_report h1:first-child {
+    margin-top: 1pt;
 }
 
 div.nilearn_report summary::-webkit-details-marker {
@@ -98,6 +100,10 @@ div.nilearn_report thead th {
 
 div.nilearn_report tbody tr:nth-child(even) {
    background-color: #ddd;
+}
+
+div.nilearn_report details {
+    overflow-x: scroll;
 }
 
 /* Tooltip container */

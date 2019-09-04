@@ -17,7 +17,6 @@ underlying routine that extract masks from EPI
 
 """
 
-
 from nilearn.input_data import NiftiMasker
 import nilearn.image as image
 from nilearn.plotting import plot_epi, show
