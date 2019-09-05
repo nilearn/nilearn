@@ -124,6 +124,22 @@ report = masker.generate_report()
 report
 
 ###############################################################################
+# Compute and resample a mask
+#
+# NiftiMasker also allows passing parameters directly to `image.resample_img`.
+# We can specify a `target_affine`, a `target_shape`, or both.
+# For more information on these arguments, see :doc:`plot_affine_transformation`.
+# 
+# The NiftiMasker report allows us to see the mask before and after resampling.
+# Simply hover over the report to see the mask from the original image.
+
+import numpy as np
+
+masker = NiftiMasker(mask_strategy='epi', target_affine=np.eye(3) * 8)
+masker.fit(epi_img)
+html = masker.generate_report()
+
+###############################################################################
 # After mask computation: extracting time series
 ###############################################################################
 #
