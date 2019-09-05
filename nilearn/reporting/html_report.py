@@ -28,7 +28,9 @@ def _embed_img(display):
 
     else:  # we were passed a matplotlib display
         io_buffer = io.BytesIO()
-        display.frame_axes.figure.savefig(io_buffer, format='svg')
+        display.frame_axes.figure.savefig(io_buffer, format='svg',
+                                          facecolor='white',
+                                          edgecolor='white')
         display.close()
 
         io_buffer.seek(0)
