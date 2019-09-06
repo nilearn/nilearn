@@ -138,7 +138,7 @@ class ReportMixin:
         -------
         report : HTMLReport
         """
-        if not hasattr(self, 'input_'):
+        if not hasattr(self, '_reporting_data'):
             warnings.warn('Report generation not enabled !'
                           'No visual outputs will be created.')
             report = _update_template(title='Empty Report',

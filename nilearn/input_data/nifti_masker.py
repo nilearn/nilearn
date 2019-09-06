@@ -236,8 +236,8 @@ class NiftiMasker(BaseMasker, CacheMixin, ReportMixin):
                           message=mpl_unavail_msg)
             return [None]
 
-        img = self.input_['images']
-        mask = self.input_['mask']
+        img = self._reporting_data['images']
+        mask = self._reporting_data['mask']
         if img is not None:
             dim = image.load_img(img).shape
             if len(dim) == 4:
@@ -324,7 +324,7 @@ class NiftiMasker(BaseMasker, CacheMixin, ReportMixin):
             self.mask_img_ = _utils.check_niimg_3d(self.mask_img)
 
         if self.reports:  # save inputs for reporting
-            self.input_ = {'images': imgs, 'mask': self.mask_img_}
+            self._reporting_data = {'images': imgs, 'mask': self.mask_img_}
 
         # If resampling is requested, resample also the mask
         # Resampling: allows the user to change the affine, the shape or both
