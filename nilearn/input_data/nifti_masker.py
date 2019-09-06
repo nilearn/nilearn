@@ -325,6 +325,8 @@ class NiftiMasker(BaseMasker, CacheMixin, ReportMixin):
 
         if self.reports:  # save inputs for reporting
             self._reporting_data = {'images': imgs, 'mask': self.mask_img_}
+        else:
+            self._reporting_data = None
 
         # If resampling is requested, resample also the mask
         # Resampling: allows the user to change the affine, the shape or both

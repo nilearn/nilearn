@@ -139,17 +139,28 @@ class ReportMixin:
         report : HTMLReport
         """
         if not hasattr(self, '_reporting_data'):
-            warnings.warn('Report generation not enabled !'
-                          'No visual outputs will be created.')
+            warnings.warn('NiftiMasker has not been fitted yet ! '
+                          'Make sure to run `fit` before inspecting reports.')
             report = _update_template(title='Empty Report',
                                       docstring=('This report was not '
-                                                 'generated. Please check '
-                                                 'that reporting is enabled.'),
+                                                 'generated. Please `fit` the '
+                                                 'NiftiMasker object.'),
                                       content=_embed_img(None),
                                       overlay=_embed_img(None),
                                       parameters=dict())
 
-        else:
+        elif self._reporting_data is None:
+            warnings.warn('Report generation not enabled ! '
+                          'No visual outputs will be created.')
+            report = _update_template(title='Empty Report',
+                                        docstring=('This report was not '
+                                                    'generated. Please check '
+                                                    'that reporting is enabled.'),
+                                        content=_embed_img(None),
+                                        overlay=_embed_img(None),
+                                        parameters=dict())
+
+        else:  # We can create a report
             overlay, image = self._define_overlay()
             description = self._report_description
             parameters = _str_params(self.get_params())
