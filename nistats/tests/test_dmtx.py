@@ -456,6 +456,17 @@ def test_oversampling():
         fir_delays=range(0, 4), oversampling=3)
     assert_almost_equal(X4.values, X5.values)
 
+    
+def test_high_pass():
+    """ test that high-pass values lead to reasonable design matrices"""
+    n_frames = 128
+    tr = 2.0
+    frame_times = np.arange(0, tr * n_frames, tr)
+    X = make_first_level_design_matrix(
+        frame_times, drift_model='Cosine', high_pass=1.)
+    assert X.shape[1] == n_frames
+
+    
 def test_csv_io():
     # test the csv io on design matrices
     tr = 1.0

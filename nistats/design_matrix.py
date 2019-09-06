@@ -100,8 +100,14 @@ def _cosine_drift(high_pass, frame_times):
     """
     n_frames = len(frame_times)
     n_times = np.arange(n_frames)
-    dt = frame_times[1] - frame_times[0]
-    order = int(np.floor(2 * n_frames * high_pass * dt))
+    dt = (frame_times[-1] - frame_times[0]) / (n_frames - 1)
+    if high_pass * dt >= .5:
+        warn('High-pass filter will span all accessible frequencies '
+             'and saturate the design matrix. '
+             'You may want to reduce the high_pass value.'
+             'The provided value is %f Hz' % high_pass)
+    order = np.minimum(n_frames - 1,
+                       int(np.floor(2 * n_frames * high_pass * dt)))
     cosine_drift = np.zeros((n_frames, order + 1))
     normalizer = np.sqrt(2.0 / n_frames)
 
