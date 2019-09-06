@@ -153,12 +153,12 @@ class ReportMixin:
             warnings.warn('Report generation not enabled ! '
                           'No visual outputs will be created.')
             report = _update_template(title='Empty Report',
-                                        docstring=('This report was not '
-                                                    'generated. Please check '
-                                                    'that reporting is enabled.'),
-                                        content=_embed_img(None),
-                                        overlay=_embed_img(None),
-                                        parameters=dict())
+                                      docstring=('This report was not '
+                                                 'generated. Please check '
+                                                 'that reporting is enabled.'),
+                                      content=_embed_img(None),
+                                      overlay=_embed_img(None),
+                                      parameters=dict())
 
         else:  # We can create a report
             overlay, image = self._define_overlay()

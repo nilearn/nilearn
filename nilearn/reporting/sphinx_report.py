@@ -16,12 +16,12 @@ _SCRAPER_TEXT = '''
 
 '''  # noqa: E501
 
+
 def indent_and_espace(text, amount=12):
     "Indent, skip empty lines, and escape string delimiters"
     return (''.join(amount * ' ' + line.replace("'", '"')
-                for line in text.splitlines(True)
-                if line)
-            + amount * ' ')
+                    for line in text.splitlines(True)
+                    if line) + amount * ' ')
 
 
 class _ReportScraper(object):

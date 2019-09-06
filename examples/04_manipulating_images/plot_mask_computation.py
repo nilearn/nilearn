@@ -129,8 +129,9 @@ report
 #
 # NiftiMasker also allows passing parameters directly to `image.resample_img`.
 # We can specify a `target_affine`, a `target_shape`, or both.
-# For more information on these arguments, see :doc:`plot_affine_transformation`.
-# 
+# For more information on these arguments,
+# see :doc:`plot_affine_transformation`.
+#
 # The NiftiMasker report allows us to see the mask before and after resampling.
 # Simply hover over the report to see the mask from the original image.
 
@@ -154,7 +155,6 @@ trended_data = trended.fit_transform(epi_img)
 detrended_data = detrended.fit_transform(epi_img)
 
 # The timeseries are numpy arrays, so we can manipulate them with numpy
-import numpy as np
 
 print("Trended: mean %.2f, std %.2f" %
       (np.mean(trended_data), np.std(trended_data)))
