@@ -251,7 +251,8 @@ class NiftiMasker(BaseMasker, CacheMixin, ReportMixin):
         init_display = plotting.plot_img(img,
                                          black_bg=False,
                                          cmap='CMRmap_r')
-        init_display.add_contours(mask, levels=[.5], colors='g')
+        init_display.add_contours(mask, levels=[.5], colors='g',
+                                  linewidths=2.5)
 
         if self.transform_ is None:
             return [init_display]
@@ -274,7 +275,7 @@ class NiftiMasker(BaseMasker, CacheMixin, ReportMixin):
                                               black_bg=False,
                                               cmap='CMRmap_r')
             final_display.add_contours(resampl_mask, levels=[.5],
-                                       colors='g')
+                                       colors='g', linewidths=2.5)
 
         return [init_display, final_display]
 
