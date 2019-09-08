@@ -1694,6 +1694,7 @@ p.sphx-glr-horizontal {
 /* Sphinx-gallery Report embedding */
 div.sg-report {
     padding: 0pt;
+    transform: scale(.95);
 }
 
 div.sg-report iframe {
