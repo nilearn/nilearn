@@ -264,6 +264,7 @@ uses.
    plot_design_matrix
    plot_contrast_matrix
    get_clusters_table
+   make_glm_report
 
 .. _utils_ref:
 

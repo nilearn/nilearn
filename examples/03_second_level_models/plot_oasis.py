@@ -73,6 +73,7 @@ design_matrix = pd.DataFrame(np.vstack((age, sex, intercept)).T,
 #############################################################################
 # Plot the design matrix
 from nistats.reporting import plot_design_matrix
+
 ax = plot_design_matrix(design_matrix)
 ax.set_title('Second level design matrix', fontsize=12)
 ax.set_ylabel('maps')
@@ -124,3 +125,26 @@ plotting.plot_stat_map(
 ###########################################################################
 # Note that there does not seem to be any significant effect of sex on
 # grey matter density on that dataset.
+
+###########################################################################
+# Generating a report
+# -------------------
+# It can be useful to quickly generate a
+# portable, ready-to-view report with most of the pertinent information.
+# This is easy to do if you have a fitted model and the list of contrasts,
+# which we do here.
+
+from nistats.reporting import make_glm_report
+
+icbm152_2009 = datasets.fetch_icbm152_2009()
+report = make_glm_report(model=second_level_model,
+                         contrasts=['age', 'sex'],
+                         bg_img=icbm152_2009['t1'],
+                         )
+
+#########################################################################
+# We have several ways to access the report:
+
+report  # This report can be viewed in a notebook
+# report.save_as_html('report.html')
+# report.open_in_browser()

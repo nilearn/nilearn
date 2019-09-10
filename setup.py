@@ -83,6 +83,7 @@ if __name__ == "__main__":
           ],
           packages=find_packages(),
           package_data={'nistats.tests': ['*.nii.gz', '*.npz'],
+                        'nistats.reporting.glm_reporter_templates': ['*.html'],
                         #'nistats.description': ['*.rst'],
                         },
           install_requires=install_requires,)

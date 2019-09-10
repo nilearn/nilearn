@@ -143,3 +143,22 @@ plt.show()
 # We can get a latex table from a Pandas Dataframe for display and publication
 from nistats.reporting import get_clusters_table
 print(get_clusters_table(z_map, norm.isf(0.001), 10).to_latex())
+
+#########################################################################
+# Generating a report
+# -------------------
+# Using the computed FirstLevelModel and contrast information,
+# we can quickly create a summary report.
+
+from nistats.reporting import make_glm_report
+
+report = make_glm_report(model=model,
+                         contrasts='StopSuccess - Go',
+                         )
+
+#########################################################################
+# We have several ways to access the report:
+
+report  # This report can be viewed in a notebook
+# report.save_as_html('report.html')
+# report.open_in_browser()

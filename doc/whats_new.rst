@@ -1,14 +1,15 @@
-0.1.0rc
+0.1.0b2
 =======
-
-Changelog
----------
 
 .. warning::
 
- | period_cut (in seconds) has been replaced by high_pass (in Hz)
- | in FirstLevelModel & design matrices.
+ | period_cut (in seconds) has been replaced by high_pass (in Hz) in FirstLevelModel & design matrices.
  | This is a code-breaking change. Please update your code accordingly.
+
+New
+---
+
+* Use :func:`nistats.reporting.make_glm_report` to easily generate HTML reports from fitted first and second level models and contrasts.
 
 Fixes
 -----
