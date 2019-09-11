@@ -22,7 +22,7 @@ create_new_venv() {
     deactivate
     virtualenv --system-site-packages testvenv
     source testvenv/bin/activate
-    pip install nose
+    pip install nose pytest
 }
 
 print_conda_requirements() {
@@ -33,7 +33,7 @@ print_conda_requirements() {
     # if yes which version to install. For example:
     #   - for numpy, NUMPY_VERSION is used
     #   - for scikit-learn, SCIKIT_LEARN_VERSION is used
-    TO_INSTALL_ALWAYS="pip nose"
+    TO_INSTALL_ALWAYS="pip nose pytest"
     REQUIREMENTS="$TO_INSTALL_ALWAYS"
     TO_INSTALL_MAYBE="python numpy scipy matplotlib scikit-learn pandas \
 flake8 lxml joblib"
@@ -62,7 +62,7 @@ create_new_conda_env() {
 
     # Use the miniconda installer for faster download / install of conda
     # itself
-    wget http://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh \
+    wget https://repo.continuum.io/miniconda/Miniconda3-4.6.14-Linux-x86_64.sh \
         -O ~/miniconda.sh
     chmod +x ~/miniconda.sh && ~/miniconda.sh -b
     export PATH=$HOME/miniconda3/bin:$PATH
@@ -74,6 +74,7 @@ create_new_conda_env() {
     echo "conda requirements string: $REQUIREMENTS"
     conda create -n testenv --quiet --yes $REQUIREMENTS
     source activate testenv
+    conda install pytest pytest-cov --yes
 
     if [[ "$INSTALL_MKL" == "true" ]]; then
         # Make sure that MKL is used

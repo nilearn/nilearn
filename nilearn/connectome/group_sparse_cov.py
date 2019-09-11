@@ -891,7 +891,7 @@ class GroupSparseCovarianceCV(BaseEstimator, CacheMixin):
     See also
     --------
     GroupSparseCovariance,
-    sklearn.covariance.GraphLassoCV
+    sklearn.covariance.GraphicalLassoCV
 
     Notes
     -----

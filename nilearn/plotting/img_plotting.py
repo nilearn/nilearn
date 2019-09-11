@@ -941,7 +941,7 @@ def plot_stat_map(stat_map_img, bg_img=MNI152TEMPLATE, cut_coords=None,
             See http://nilearn.github.io/manipulating_images/input_output.html
             The background image that the ROI/mask will be plotted on top of.
             If nothing is specified, the MNI152 template will be used.
-            To turn off background image, just pass "bg_img=False".
+            To turn off background image, just pass "bg_img=None".
         cut_coords : None, a tuple of floats, or an integer
             The MNI coordinates of the point where the cut is performed
             If display_mode is 'ortho' or 'tiled',

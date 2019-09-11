@@ -46,7 +46,7 @@ matrix:
 
 install: source continuous_integration/install.sh
 
-before_script: make clean
+before_script: make  clean
 
 script: source continuous_integration/test_script.sh
 
