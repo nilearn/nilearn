@@ -206,7 +206,7 @@ def test_hkernel():
     h = _hrf_kernel('fir', tr, fir_delays=np.arange(4))
     assert_equal(len(h), 4)
     for dh in h:
-        assert_equal(dh.sum(), 50.)
+        assert_almost_equal(dh.sum(), 1.)
     # 
     h = _hrf_kernel(None, tr)
     assert_equal(len(h), 1)
@@ -239,12 +239,11 @@ def test_make_regressor_2():
 def test_make_regressor_3():
     """ test the generated regressor
     """
-    condition = ([1, 20, 36.5], [0, 0, 0], [1, 1, 1])
+    condition = ([1, 20, 36.5], [2, 2, 2], [1, 1, 1])
     frame_times = np.linspace(0, 138, 70)
     hrf_model = 'fir'
     reg, reg_names = compute_regressor(condition, hrf_model, frame_times,
                                        fir_delays=np.arange(4))
-    assert_array_equal(np.unique(reg), np.array([0, 1]))
     assert_array_equal(np.sum(reg, 0), np.array([3, 3, 3, 3]))
     assert_equal(len(reg_names), 4)
 
