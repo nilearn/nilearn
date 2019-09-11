@@ -189,9 +189,11 @@ div.nilearn_report .image:hover .overlay {
   <div class="pure-u-1 pure-u-md-2-3">
       <div class="image">
       <img class="pure-img" width="100%" src="data:image/svg+xml;base64,{{content}}" alt="image"/>
+      {{if overlay}}
       <div class="overlay">
         <img class="pure-img" width="100%" src="data:image/svg+xml;base64,{{overlay}}" alt="overlay"/>
       </div>
+      {{endif}}
       </div>
   </div>
   <div class="pure-u-1 pure-u-md-1-3 raise">

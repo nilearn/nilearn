@@ -21,10 +21,8 @@ def _embed_img(display):
     embed : str
         Binary image string
     """
-    if display is None:  # no display, show single transparent pixel
-        data = ("iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAA" +
-                "AAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=")
-        return data
+    if display is None:  # no image to display
+        return None
 
     else:  # we were passed a matplotlib display
         io_buffer = io.BytesIO()
@@ -146,7 +144,7 @@ class ReportMixin:
                                                  'generated. Please `fit` the '
                                                  'NiftiMasker object.'),
                                       content=_embed_img(None),
-                                      overlay=_embed_img(None),
+                                      overlay=None,
                                       parameters=dict())
 
         elif self._reporting_data is None:
@@ -157,7 +155,7 @@ class ReportMixin:
                                                  'generated. Please check '
                                                  'that reporting is enabled.'),
                                       content=_embed_img(None),
-                                      overlay=_embed_img(None),
+                                      overlay=None,
                                       parameters=dict())
 
         else:  # We can create a report
