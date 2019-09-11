@@ -17,7 +17,7 @@ _SCRAPER_TEXT = '''
 '''  # noqa: E501
 
 
-def indent_and_espace(text, amount=12):
+def indent_and_escape(text, amount=12):
     "Indent, skip empty lines, and escape string delimiters"
     return (''.join(amount * ' ' + line.replace("'", '"')
                     for line in text.splitlines(True)
@@ -42,7 +42,7 @@ class _ReportScraper(object):
                 if report in self.displayed_reports:
                     continue
                 report_str = report._repr_html_()
-                data = _SCRAPER_TEXT.format(indent_and_espace(report_str))
+                data = _SCRAPER_TEXT.format(indent_and_escape(report_str))
                 self.displayed_reports.add(report)
                 return data
         return ''
