@@ -423,9 +423,9 @@ class _BaseDecoder(LinearModel, RegressorMixin, CacheMixin):
         else:
             y = y[:, np.newaxis]
         if self.is_classif and self.n_classes_ > 2:
-            self.n_problems_ = self.n_classes_
+            n_problems = self.n_classes_
         else:
-            self.n_problems_ = 1
+            n_problems = 1
 
         # Return a suitable screening percentile according to the mask image
         self.screening_percentile_ = _adjust_screening_percentile(
@@ -439,27 +439,27 @@ class _BaseDecoder(LinearModel, RegressorMixin, CacheMixin):
                     self.param_grid, self.is_classif, scorer,
                     self.mask_img_, c, self.screening_percentile_) 
                     for c, (train, test) in itertools.product(
-                        range(self.n_problems_), self.cv_))
+                        range(n_problems), self.cv_))
 
         self.parallel_fit_outputs = parallel_fit_outputs
 
         coefs, intercepts = self._fetch_parallel_fit_outputs(
-                                    parallel_fit_outputs, y)
+                                    parallel_fit_outputs, y, n_problems)
 
         # Build the final model (the aggregated one)
         self.coef_ = np.vstack([np.mean(coefs[class_index], axis=0)
                                 for class_index in self.classes_])
-        std_coef = np.vstack([np.std(coefs[class_index], axis=0)
+        self.std_coef_ = np.vstack([np.std(coefs[class_index], axis=0)
                               for class_index in self.classes_])
         self.intercept_ = np.hstack([np.mean(intercepts[class_index], axis=0)
                                      for class_index in self.classes_])
 
+        self.coef_img_, self.std_coef_img_ = self._output_image(
+            self.classes_, self.coef_, self.std_coef_)
+
         if self.is_classif and (self.n_classes_ == 2):
             self.coef_ = self.coef_[0, :][np.newaxis, :]
             self.intercept_ = self.intercept_[0]
-
-        self.coef_img_, self.std_coef_img_ = self._output_image(
-            self.classes_, self.coef_, std_coef)
 
     def decision_function(self, X):
         """Predict class labels for samples in X.
@@ -551,7 +551,7 @@ class _BaseDecoder(LinearModel, RegressorMixin, CacheMixin):
 
         return X
 
-    def _fetch_parallel_fit_outputs(self, parallel_fit_outputs, y):
+    def _fetch_parallel_fit_outputs(self, parallel_fit_outputs, y, n_problems):
         """Fetch the outputs from parallel_fit to be ready for ensembling
 
         Parameters
@@ -607,7 +607,7 @@ class _BaseDecoder(LinearModel, RegressorMixin, CacheMixin):
                 cv_y_true.setdefault(classes[class_index], []).extend(
                     y[y_info['y_true_indices']])
 
-            if (self.n_problems_ <= 2) and self.is_classif:
+            if (n_problems <= 2) and self.is_classif:
                 # Binary classification
                 other_class = np.setdiff1d(classes, classes[class_index])[0]
                 coefs.setdefault(other_class, []).append(-coef)
@@ -646,6 +646,7 @@ class _BaseDecoder(LinearModel, RegressorMixin, CacheMixin):
             std_coef_img[class_index] = self.masker_.inverse_transform(std)
 
         return coef_img, std_coef_img
+
 
 class Decoder(_BaseDecoder):
     """A wrapper for popular classification strategies in neuroimaging.
