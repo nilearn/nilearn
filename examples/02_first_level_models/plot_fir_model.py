@@ -57,22 +57,34 @@ for condition in conditions:
         [contrasts[name] for name in design_matrix.columns
          if name[:len(condition)] == condition], 0)
 
-contrasts["audio"] = np.sum(
+contrasts['audio'] = np.sum([contrasts[name] for name in
+                             ['audio_right_hand_button_press',
+                              'audio_left_hand_button_press',
+                              'audio_computation',
+                              'sentence_listening']], 0)
+contrasts['video'] = np.sum(
     [contrasts[name] for name in
-     ["clicDaudio", "clicGaudio", "calculaudio", "phraseaudio"]], 0)
-contrasts["video"] = np.sum(
-    [contrasts[name] for name in
-     ["clicDvideo", "clicGvideo", "calculvideo", "phrasevideo"]], 0)
-contrasts["computation"] = contrasts["calculaudio"] + contrasts["calculvideo"]
-contrasts["sentences"] = contrasts["phraseaudio"] + contrasts["phrasevideo"]
+     ['visual_right_hand_button_press',
+      'visual_left_hand_button_press',
+      'visual_computation',
+      'sentence_reading']], 0)
+
+contrasts['computation'] = contrasts['audio_computation'] +\
+                           contrasts['visual_computation']
+contrasts['sentences'] = contrasts['sentence_listening'] +\
+                         contrasts['sentence_reading']
 
 contrasts = {
-    "left-right": (contrasts["clicGaudio"] + contrasts["clicGvideo"]
-                   - contrasts["clicDaudio"] - contrasts["clicDvideo"]),
-    "H-V": contrasts["damier_H"] - contrasts["damier_V"],
-    "audio-video": contrasts["audio"] - contrasts["video"],
-    "sentences-computation": (contrasts["sentences"]-contrasts["computation"])
-    }
+    'left-right': (
+        contrasts['visual_left_hand_button_press'] +
+        contrasts['audio_left_hand_button_press'] -
+        contrasts['visual_right_hand_button_press'] -
+        contrasts['audio_right_hand_button_press']),
+    'H-V': (contrasts['horizontal_checkerboard'] -
+            contrasts['vertical_checkerboard']),
+    'audio-video': contrasts['audio'] - contrasts['video'],
+    'sentences-computation': (contrasts['sentences']-contrasts['computation'])
+}
 
 #########################################################################
 # Take a look at the contrasts.
