@@ -12,7 +12,7 @@ set -e
 
 # Fix SSL verification errors (default now, see PEP 476) by disabling all HTTP
 # verifications for all of Python (maybe a bit excessive).
-PYTHONHTTPSVERIFY=0 
+export PYTHONHTTPSVERIFY=0 
 
 # Fix the compilers to workaround avoid having the Python 3.4 build
 # lookup for g++44 unexpectedly.
