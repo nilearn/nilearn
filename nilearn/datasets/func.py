@@ -1781,7 +1781,7 @@ def fetch_surf_nki_enhanced(n_subjects=10, data_dir=None,
            'A00056097', 'A00056098', 'A00056164', 'A00056372', 'A00056452',
            'A00056489', 'A00056949']
 
-    nitrc_ids = range(8260, 8470)
+    nitrc_ids = range(8260, 8464)
     max_subjects = len(ids)
     if n_subjects is None:
         n_subjects = max_subjects
@@ -1789,7 +1789,6 @@ def fetch_surf_nki_enhanced(n_subjects=10, data_dir=None,
         warnings.warn('Warning: there are only %d subjects' % max_subjects)
         n_subjects = max_subjects
     ids = ids[:n_subjects]
-    nitrc_ids = nitrc_ids[:n_subjects]
 
     # Dataset description
     fdescr = _get_dataset_descr(dataset_name)
@@ -1823,13 +1822,13 @@ def fetch_surf_nki_enhanced(n_subjects=10, data_dir=None,
         func = os.path.join('%s', '%s_%s_preprocessed_fwhm6.gii')
         rh = _fetch_files(data_dir,
                           [(func % (ids[i], ids[i], 'right'),
-                           archive % (nitrc_ids[i], ids[i], 'rh'),
+                           archive % (nitrc_ids[2*i+1], ids[i], 'rh'),
                            {'move': func % (ids[i], ids[i], 'right')}
                             )],
                           resume=resume, verbose=verbose)
         lh = _fetch_files(data_dir,
                           [(func % (ids[i], ids[i], 'left'),
-                           archive % (nitrc_ids[i], ids[i], 'lh'),
+                           archive % (nitrc_ids[2*i], ids[i], 'lh'),
                            {'move': func % (ids[i], ids[i], 'left')}
                             )],
                           resume=resume, verbose=verbose)
