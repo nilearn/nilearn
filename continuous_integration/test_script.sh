@@ -2,6 +2,10 @@
 
 set -e
 
+# Fix SSL verification errors (default now, see PEP 476) by disabling all HTTP
+# verifications for all of Python (maybe a bit excessive).
+export PYTHONHTTPSVERIFY=0
+
 if [[ -n "$FLAKE8_VERSION" ]]; then
     source continuous_integration/flake8_diff.sh
 fi
