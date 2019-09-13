@@ -915,7 +915,7 @@ def fetch_localizer_contrasts(contrasts, n_subjects=None, get_tmaps=False,
 
     # Build data URLs that will be fetched
     files = {}
-    root_url = "https://osf.io/download"
+    root_url = "https://osf.io/download/{0}"
     if isinstance(n_subjects, numbers.Number):
         subject_mask = np.arange(1, n_subjects + 1)
         subject_id_max = "S%02d" % n_subjects
@@ -947,7 +947,7 @@ def fetch_localizer_contrasts(contrasts, n_subjects=None, get_tmaps=False,
                     "sub-%s_task-localizer_acq-%s_%s.nii.gz" % (
                         subject_id, contrast, data_type))
                 if _is_valid_path(path, index, verbose=verbose):
-                    file_url = os.path.join(root_url, index[path][1:])
+                    file_url = root_url.format(index[path][1:])
                     opts = {"move": file_path}
                     filenames.append((file_path, file_url, opts))
                     files.setdefault(data_type, []).append(file_path)
@@ -961,7 +961,7 @@ def fetch_localizer_contrasts(contrasts, n_subjects=None, get_tmaps=False,
                 "/localizer", "derivatives", "spm_1st_level",
                 "sub-%s" % subject_id, "sub-%s_mask.nii.gz" % subject_id)
             if _is_valid_path(path, index, verbose=verbose):
-                file_url = os.path.join(root_url, index[path][1:])
+                file_url = root_url.format(index[path][1:])
                 opts = {"move": file_path}
                 filenames.append((file_path, file_url, opts))
                 files.setdefault("masks", []).append(file_path)
@@ -976,7 +976,7 @@ def fetch_localizer_contrasts(contrasts, n_subjects=None, get_tmaps=False,
                 "/localizer", "derivatives", "spm_preprocessing",
                 "sub-%s" % subject_id, "sub-%s_T1w.nii.gz" % subject_id)
             if _is_valid_path(path, index, verbose=verbose):
-                file_url = os.path.join(root_url, index[path][1:])
+                file_url = root_url.format(index[path][1:])
                 opts = {"move": file_path}
                 filenames.append((file_path, file_url, opts))
                 files.setdefault("anats", []).append(file_path)
@@ -985,7 +985,7 @@ def fetch_localizer_contrasts(contrasts, n_subjects=None, get_tmaps=False,
     participants_file = os.path.join("brainomics_data", "participants.tsv")
     path = "/localizer/participants.tsv"
     if _is_valid_path(path, index, verbose=verbose):
-        file_url = os.path.join(root_url, index[path][1:])
+        file_url = root_url.format(index[path][1:])
         opts = {"move": participants_file}
         filenames.append((participants_file, file_url, opts))
 
