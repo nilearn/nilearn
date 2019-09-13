@@ -989,6 +989,15 @@ def fetch_localizer_contrasts(contrasts, n_subjects=None, get_tmaps=False,
         opts = {"move": participants_file}
         filenames.append((participants_file, file_url, opts))
 
+    # Fetch behavioural
+    behavioural_file = os.path.join(
+        "brainomics_data", "phenotype", "behavioural.tsv")
+    path = "/localizer/phenotype/behavioural.tsv"
+    if _is_valid_path(path, index, verbose=verbose):
+        file_url = root_url.format(index[path][1:])
+        opts = {"move": behavioural_file}
+        filenames.append((behavioural_file, file_url, opts)) 
+
     # Actual data fetching
     fdescr = _get_dataset_descr(dataset_name)
     _fetch_files(data_dir, filenames, verbose=verbose)
@@ -996,8 +1005,13 @@ def fetch_localizer_contrasts(contrasts, n_subjects=None, get_tmaps=False,
         files[key] = [os.path.join(data_dir, val) for val in value]
 
     # Load covariates file
+    from numpy.lib.recfunctions import join_by
     participants_file = os.path.join(data_dir, participants_file)
     csv_data = np.recfromcsv(participants_file, delimiter='\t')
+    behavioural_file = os.path.join(data_dir, behavioural_file)
+    csv_data2 = np.recfromcsv(behavioural_file, delimiter='\t')
+    csv_data = join_by(
+        "participant_id", csv_data, csv_data2, usemask=False, asrecarray=True)
     subject_names = csv_data["participant_id"].tolist()
     subjects_indices = []
     for name in subject_ids:
