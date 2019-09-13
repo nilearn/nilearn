@@ -233,39 +233,6 @@ def _convolve_regressors(events, hrf_model, frame_times, fir_delays=[0],
     return regressor_matrix, regressor_names
 
 
-def _full_rank(X, cmax=1e15):
-    """ Computes the condition number of X and if it is larger than cmax,
-    returns a matrix with a condition number smaller than cmax.
-
-    Parameters
-    ----------
-    X : array of shape(nrows, ncols)
-        input array
-
-    cmax : float, optional (default:1.e-15),
-        tolerance for condition number
-
-    Returns
-    -------
-    X : array of shape(nrows, ncols)
-        output array
-
-    cond : float,
-        actual condition number
-    """
-    from warnings import warn
-    U, s, V = linalg.svd(X, 0)
-    smax, smin = s.max(), s.min()
-    cond = smax / smin
-    if cond < cmax:
-        return X, cond
-
-    warn('Matrix is singular at working precision, regularizing...')
-    lda = (smax - cmax * smin) / (cmax - 1)
-    X = np.dot(U, np.dot(np.diag(s + lda), V))
-    return X, cmax
-
-
 ######################################################################
 # Design matrix creation
 ######################################################################
