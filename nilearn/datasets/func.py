@@ -941,11 +941,11 @@ def fetch_localizer_contrasts(contrasts, n_subjects=None, get_tmaps=False,
                     str.join('_', [data_type, contrast]), ' ', '_')
                 file_path = os.path.join(
                     "brainomics_data", subject_id, "%s.nii.gz" % name_aux)
-                path = os.path.join(
+                path = "/".join([
                     "/localizer", "derivatives", "spm_1st_level",
                     "sub-%s" % subject_id,
                     "sub-%s_task-localizer_acq-%s_%s.nii.gz" % (
-                        subject_id, contrast, data_type))
+                        subject_id, contrast, data_type)])
                 if _is_valid_path(path, index, verbose=verbose):
                     file_url = root_url.format(index[path][1:])
                     opts = {"move": file_path}
@@ -957,9 +957,9 @@ def fetch_localizer_contrasts(contrasts, n_subjects=None, get_tmaps=False,
         for subject_id in subject_ids:
             file_path = os.path.join(
                 "brainomics_data", subject_id, "boolean_mask_mask.nii.gz")
-            path = os.path.join(
+            path = "/".join([
                 "/localizer", "derivatives", "spm_1st_level",
-                "sub-%s" % subject_id, "sub-%s_mask.nii.gz" % subject_id)
+                "sub-%s" % subject_id, "sub-%s_mask.nii.gz" % subject_id])
             if _is_valid_path(path, index, verbose=verbose):
                 file_url = root_url.format(index[path][1:])
                 opts = {"move": file_path}
@@ -972,9 +972,9 @@ def fetch_localizer_contrasts(contrasts, n_subjects=None, get_tmaps=False,
             file_path = os.path.join(
                 "brainomics_data", subject_id,
                 "normalized_T1_anat_defaced.nii.gz")
-            path = os.path.join(
+            path = "/".join([
                 "/localizer", "derivatives", "spm_preprocessing",
-                "sub-%s" % subject_id, "sub-%s_T1w.nii.gz" % subject_id)
+                "sub-%s" % subject_id, "sub-%s_T1w.nii.gz" % subject_id])
             if _is_valid_path(path, index, verbose=verbose):
                 file_url = root_url.format(index[path][1:])
                 opts = {"move": file_path}
