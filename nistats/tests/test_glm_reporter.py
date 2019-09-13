@@ -23,6 +23,7 @@ except ImportError:
     not_have_mpl = True
 else:
     not_have_mpl = False
+    mpl  # So flake8 doesn't complain about not using import (F841)
 
 
 @dec.skipif(not_have_mpl)
@@ -39,12 +40,16 @@ def test_flm_reporting():
                                           )
         '''
         catches & raises UnicodeEncodeError in HTMLDocument.get_iframe()
-        HTMLDocument.get_iframe() mishandles certain unicode characters in Python2,
-        like the greek alpha symbol and raises this error.
-        Calling HTMLDocument.get_iframe() causes the tests to fail on Python2
-        if such a situation arises in future due to modifications.
+        Python2's limited unicode support causes  HTMLDocument.get_iframe() to
+        mishandle certain unicode characters, like the greek alpha symbol
+        and raises this error.
+        Calling HTMLDocument.get_iframe() here causes the tests
+        to fail on Python2, alerting us if such a situation arises
+        due to future modifications.
         '''
         report_iframe = report_flm.get_iframe()
+        # So flake8 doesn't complain about not using variable (F841)
+        report_iframe
         del mask, flm
 
 
@@ -63,6 +68,8 @@ def test_slm_reporting():
         report_slm = glmr.make_glm_report(model, c1)
         # catches & raises UnicodeEncodeError in HTMLDocument.get_iframe()
         report_iframe = report_slm.get_iframe()
+        # So flake8 doesn't complain about not using variable (F841)
+        report_iframe
         # Delete objects attached to files to avoid WindowsError when deleting
         # temporary directory (in Windows)
         del Y, FUNCFILE, func_img, model
@@ -200,12 +207,12 @@ def _generate_img():
                            [0., 2., 0., -126.],
                            [0., 0., 2., -72.],
                            [0., 0., 0., 1.]])
-    
+
     data_positive = np.zeros((7, 7, 3))
     rng = np.random.RandomState(42)
     data_rng = rng.rand(7, 7, 3)
     data_positive[1:-1, 2:-1, 1:] = data_rng[1:-1, 2:-1, 1:]
-    
+
     return nib.Nifti1Image(data_positive, mni_affine)
 
 
@@ -219,6 +226,8 @@ def test_stat_map_to_svg_slice_z():
                                                    plot_type='slice',
                                                    table_details=table_details,
                                                    )
+        # So flake8 doesn't complain about not using variable (F841)
+        stat_map_html_code
 
 
 def test_stat_map_to_svg_glass_z():
@@ -231,6 +240,8 @@ def test_stat_map_to_svg_glass_z():
                                                    plot_type='glass',
                                                    table_details=table_details,
                                                    )
+        # So flake8 doesn't complain about not using variable (F841)
+        stat_map_html_code
 
 
 def test_stat_map_to_svg_invalid_plot_type():
@@ -244,8 +255,11 @@ def test_stat_map_to_svg_invalid_plot_type():
                                                        bg_img=None,
                                                        display_mode='z',
                                                        plot_type='junk',
-                                                       table_details={'junk': 0},
+                                                       table_details={'junk': 0
+                                                                      },
                                                        )
+            # So flake8 doesn't complain about not using variable (F841)
+            stat_map_html_code
         except ValueError as raised_exception:
             assert str(raised_exception) == str(expected_error)
 
@@ -265,3 +279,5 @@ def test_plot_contrasts():
     contrast_plots = glmr._plot_contrasts(contrast,
                                           [dmtx],
                                           )
+    # So flake8 doesn't complain about not using variable (F841)
+    contrast_plots
