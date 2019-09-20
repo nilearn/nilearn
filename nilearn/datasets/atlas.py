@@ -1307,7 +1307,7 @@ def fetch_atlas_schaefer_2018(n_rois=400, yeo_networks=7, resolution_mm=1,
     References
     ----------
     For more information on this dataset, see
-    https://github.com/ThomasYeoLab/CBIG/tree/v0.8.1-Schaefer2018_LocalGlobal/stable_projects/brain_parcellation/Schaefer2018_LocalGlobal
+    https://github.com/ThomasYeoLab/CBIG/tree/v0.14.3-Schaefer2018_LocalGlobal/stable_projects/brain_parcellation/Schaefer2018_LocalGlobal
 
     Schaefer A, Kong R, Gordon EM, Laumann TO, Zuo XN, Holmes AJ,
     Eickhoff SB, Yeo BTT. Local-Global parcellation of the human
@@ -1320,6 +1320,13 @@ def fetch_atlas_schaefer_2018(n_rois=400, yeo_networks=7, resolution_mm=1,
     intrinsic functional connectivity. J Neurophysiol 106(3):1125-65, 2011.
 
     Licence: MIT.
+
+    Notes
+    -----
+    Release v0.14.3 of the Schaefer 2018 parcellation is used by
+    default. Versions prior to v0.14.3 are known to contain erroneous region
+    label names. For more details, see
+    https://github.com/ThomasYeoLab/CBIG/blob/master/stable_projects/brain_parcellation/Schaefer2018_LocalGlobal/Parcellations/Updates/Update_20190916_README.md
     """
     valid_n_rois = [100, 200, 300, 400, 500, 600, 800, 1000]
     valid_yeo_networks = [7, 17]
@@ -1338,9 +1345,9 @@ def fetch_atlas_schaefer_2018(n_rois=400, yeo_networks=7, resolution_mm=1,
 
     if base_url is None:
         base_url = ('https://raw.githubusercontent.com/ThomasYeoLab/CBIG/'
-                    'v0.8.1-Schaefer2018_LocalGlobal/stable_projects/'
-                    'brain_parcellation/Schaefer2018_LocalGlobal/'
-                    'Parcellations/MNI/'
+                    'v0.14.3-Update_Yeo2011_Schaefer2018_labelname/'
+                    'stable_projects/brain_parcellation/'
+                    'Schaefer2018_LocalGlobal/Parcellations/MNI/'
                     )
 
     files = []
