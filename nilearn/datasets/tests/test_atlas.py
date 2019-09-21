@@ -565,7 +565,7 @@ def test_fetch_atlas_pauli_2017():
 
 @with_setup(tst.setup_tmpdata, tst.teardown_tmpdata)
 def test_fetch_atlas_schaefer_2018():
-    valid_n_rois = [100, 200, 300, 400, 500, 600, 800, 1000]
+    valid_n_rois = list(range(100, 1100, 100))
     valid_yeo_networks = [7, 17]
     valid_resolution_mm = [1, 2]
 
