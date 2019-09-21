@@ -1307,7 +1307,7 @@ def fetch_atlas_schaefer_2018(n_rois=400, yeo_networks=7, resolution_mm=1,
     References
     ----------
     For more information on this dataset, see
-    https://github.com/ThomasYeoLab/CBIG/tree/v0.14.3-Schaefer2018_LocalGlobal/stable_projects/brain_parcellation/Schaefer2018_LocalGlobal
+    https://github.com/ThomasYeoLab/CBIG/tree/v0.14.3-Update_Yeo2011_Schaefer2018_labelname/stable_projects/brain_parcellation/Schaefer2018_LocalGlobal/Parcellations
 
     Schaefer A, Kong R, Gordon EM, Laumann TO, Zuo XN, Holmes AJ,
     Eickhoff SB, Yeo BTT. Local-Global parcellation of the human
