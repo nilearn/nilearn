@@ -38,16 +38,16 @@ def _pigtailed_cmap(cmap, swap_order=('green', 'red', 'blue')):
     orig_cdict = cmap._segmentdata.copy()
 
     cdict = dict()
-    cdict['green'] = [(0.5*(1-p), c1, c2)
-                        for (p, c1, c2) in reversed(orig_cdict[swap_order[0]])]
-    cdict['blue'] = [(0.5*(1-p), c1, c2)
-                        for (p, c1, c2) in reversed(orig_cdict[swap_order[1]])]
-    cdict['red'] = [(0.5*(1-p), c1, c2)
-                        for (p, c1, c2) in reversed(orig_cdict[swap_order[2]])]
+    cdict['green'] = [(0.5 * (1 - p), c1, c2)
+                      for (p, c1, c2) in reversed(orig_cdict[swap_order[0]])]
+    cdict['blue'] = [(0.5 * (1 - p), c1, c2)
+                     for (p, c1, c2) in reversed(orig_cdict[swap_order[1]])]
+    cdict['red'] = [(0.5 * (1 - p), c1, c2)
+                    for (p, c1, c2) in reversed(orig_cdict[swap_order[2]])]
 
     for color in ('red', 'green', 'blue'):
-        cdict[color].extend([(0.5*(1+p), c1, c2)
-                                    for (p, c1, c2) in orig_cdict[color]])
+        cdict[color].extend([(0.5 * (1 + p), c1, c2)
+                             for (p, c1, c2) in orig_cdict[color]])
 
     return cdict
 
@@ -168,10 +168,9 @@ for _cmapname in list(_cmaps_data.keys()):  # needed as dict changes within loop
     _cmapspec = _cmaps_data[_cmapname]
     _cmaps_data[_cmapname_r] = _revcmap(_cmapspec)
     _cmap_d[_cmapname] = _colors.LinearSegmentedColormap(
-                            _cmapname, _cmapspec, _cm.LUTSIZE)
+        _cmapname, _cmapspec, _cm.LUTSIZE)
     _cmap_d[_cmapname_r] = _colors.LinearSegmentedColormap(
-                            _cmapname_r, _cmaps_data[_cmapname_r],
-                            _cm.LUTSIZE)
+        _cmapname_r, _cmaps_data[_cmapname_r], _cm.LUTSIZE)
 
 ################################################################################
 # A few transparent colormaps
@@ -222,13 +221,15 @@ for k, v in _cmap_d.items():
 def dim_cmap(cmap, factor=.3, to_white=True):
     """ Dim a colormap to white, or to black.
     """
-    assert factor >= 0 and factor <=1, ValueError(
-            'Dimming factor must be larger than 0 and smaller than 1, %s was passed.'
-                                                        % factor)
+    assert 0 <= factor <= 1, ValueError(
+        'Dimming factor must be larger than 0 and smaller than 1, %s was '
+        'passed.' % factor)
     if to_white:
-        dimmer = lambda c: 1 - factor*(1-c)
+        def dimmer(c):
+            return 1 - factor * (1 - c)
     else:
-        dimmer = lambda c: factor*c
+        def dimmer(c):
+            return factor * c
     cdict = cmap._segmentdata.copy()
     for c_index, color in enumerate(('red', 'green', 'blue')):
         color_lst = list()
@@ -237,19 +238,17 @@ def dim_cmap(cmap, factor=.3, to_white=True):
         cdict[color] = color_lst
 
     return _colors.LinearSegmentedColormap(
-                                '%s_dimmed' % cmap.name,
-                                cdict,
-                                _cm.LUTSIZE)
+        '%s_dimmed' % cmap.name, cdict, _cm.LUTSIZE)
 
 
 def replace_inside(outer_cmap, inner_cmap, vmin, vmax):
     """ Replace a colormap by another inside a pair of values.
     """
     assert vmin < vmax, ValueError('vmin must be smaller than vmax')
-    assert vmin >= 0,    ValueError('vmin must be larger than 0, %s was passed.'
-                                        % vmin)
-    assert vmax <= 1,    ValueError('vmax must be smaller than 1, %s was passed.'
-                                        % vmax)
+    assert vmin >= 0, ValueError('vmin must be larger than 0, %s was passed.'
+                                 % vmin)
+    assert vmax <= 1, ValueError('vmax must be smaller than 1, %s was passed.'
+                                 % vmax)
     outer_cdict = outer_cmap._segmentdata.copy()
     inner_cdict = inner_cmap._segmentdata.copy()
 
@@ -267,7 +266,6 @@ def replace_inside(outer_cmap, inner_cmap, vmin, vmax):
                 this_cdict['green'].append((p, g, g))
                 this_cdict['blue'].append((p, b, b))
 
-
     for c_index, color in enumerate(('red', 'green', 'blue')):
         color_lst = list()
 
@@ -276,8 +274,9 @@ def replace_inside(outer_cmap, inner_cmap, vmin, vmax):
                 break
             color_lst.append((value, c1, c2))
 
-        color_lst.append((vmin, outer_cmap(vmin)[c_index],
-                                inner_cmap(vmin)[c_index]))
+        color_lst.append((vmin,
+                          outer_cmap(vmin)[c_index],
+                          inner_cmap(vmin)[c_index]))
 
         for value, c1, c2 in inner_cdict[color]:
             if value <= vmin:
@@ -286,8 +285,9 @@ def replace_inside(outer_cmap, inner_cmap, vmin, vmax):
                 break
             color_lst.append((value, c1, c2))
 
-        color_lst.append((vmax, inner_cmap(vmax)[c_index],
-                                outer_cmap(vmax)[c_index]))
+        color_lst.append((vmax,
+                          inner_cmap(vmax)[c_index],
+                          outer_cmap(vmax)[c_index]))
 
         for value, c1, c2 in outer_cdict[color]:
             if value <= vmax:
@@ -297,6 +297,5 @@ def replace_inside(outer_cmap, inner_cmap, vmin, vmax):
         cdict[color] = color_lst
 
     return _colors.LinearSegmentedColormap(
-                                '%s_inside_%s' % (inner_cmap.name, outer_cmap.name),
-                                cdict,
-                                _cm.LUTSIZE)
+        '%s_inside_%s' % (inner_cmap.name, outer_cmap.name),
+        cdict, _cm.LUTSIZE)
