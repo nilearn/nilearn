@@ -62,23 +62,26 @@ create_new_conda_env() {
 
     # Use the miniconda installer for faster download / install of conda
     # itself
-    wget https://repo.continuum.io/miniconda/Miniconda3-4.6.14-Linux-x86_64.sh \
-        -O ~/miniconda.sh
-    chmod +x ~/miniconda.sh && ~/miniconda.sh -b
-    export PATH=$HOME/miniconda3/bin:$PATH
-    echo $PATH
+	# wget https://repo.continuum.io/miniconda/Miniconda3-4.6.14-Linux-x86_64.sh \
+    #    -O ~/miniconda.sh
+    # chmod +x ~/miniconda.sh && ~/miniconda.sh -b
+    # export PATH=$HOME/miniconda3/bin:$PATH
+    # echo $PATH
 
     # Configure the conda environment and put it in the path using the
     # provided versions
     REQUIREMENTS=$(print_conda_requirements)
     echo "conda requirements string: $REQUIREMENTS"
-    conda create -n testenv --quiet --yes $REQUIREMENTS
-    source activate testenv
-    conda install pytest pytest-cov --yes
+    source testvenv/bin/activate
+    pip install --quiet $REQUIREMENTS
+    pip install pytest pytest-cov --quiet
+   # conda create -n testenv --quiet --yes $REQUIREMENTS
+   # source activate testenv
+   # conda install pytest pytest-cov --yes
 
     if [[ "$INSTALL_MKL" == "true" ]]; then
         # Make sure that MKL is used
-        conda install --quiet --yes mkl
+        pip install mkl
     elif [[ -z $CIRCLECI ]]; then
         # Travis doesn't use MKL but circle ci does for speeding up examples
         # generation in the html documentation.
