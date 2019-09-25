@@ -66,6 +66,9 @@ Fixes
 - :func:`nilearn.plotting.plot_matrix` providing labels=None, False, or an empty list now correctly disables labels.
 - :func:`nilearn.datasets.fetch_surf_nki_enhanced` is now downloading the correct
   left and right functional surface data for each subject
+- :func:`nilearn.datasets.fetch_atlas_schaefer_2018` now downloads from release
+  version 0.14.3 (instead of 0.8.1) by default, which includes corrected region label
+  names along with 700 and 900 region parcelations.
 - Colormap creation functions have been updated to avoid matplotlib deprecation warnings
   about colormap reversal
 
