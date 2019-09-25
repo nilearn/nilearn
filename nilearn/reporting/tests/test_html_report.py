@@ -40,6 +40,12 @@ def test_3d_reports():
     html = masker.generate_report()
     _check_html(html)
 
+    # check providing mask to init and no images to .fit
+    masker = input_data.NiftiMasker(mask_img=mask_img_3d)
+    masker.fit()
+    html = masker.generate_report()
+    _check_html(html)
+
 
 def test_4d_reports():
     # Dummy 4D data
@@ -84,8 +90,6 @@ def test_empty_report():
 
 def test_overlaid_report():
     pytest.importorskip('matplotlib')
-    empty_svg = ("iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAA" +
-                 "AAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=")
 
     # Dummy 3D data
     data = np.zeros((9, 9, 9))
@@ -95,4 +99,4 @@ def test_overlaid_report():
     mask = input_data.NiftiMasker(target_affine=np.eye(3) * 8)
     mask.fit(data_img_3d)
     html = mask.generate_report()
-    assert empty_svg not in str(html)
+    assert '<div class="overlay">' in str(html)
