@@ -24,7 +24,7 @@ def indent_and_escape(text, amount=12):
                     if line) + amount * ' ')
 
 
-class _ReportScraper(object):
+class _ReportScraper:
     """Scrape Reports for Sphinx display.
     """
 
