@@ -47,8 +47,6 @@ from ._looper import looper
 from .compat3 import (
     PY3, bytes, basestring_, next, is_unicode, coerce_text, iteritems)
 
-__test__ = False
-
 __all__ = ['TemplateError', 'Template', 'sub', 'HTMLTemplate',
            'sub_html', 'html', 'bunch']
 
