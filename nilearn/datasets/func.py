@@ -5,7 +5,6 @@ import warnings
 import os
 import re
 import json
-import subprocess
 import numpy as np
 import numbers
 
@@ -1110,7 +1109,7 @@ def fetch_localizer_button_task(n_subjects=1, data_dir=None, url=None,
 
     See Also
     ---------
-    nilearn.datasets.fetch_localizer_button_task
+    nilearn.datasets.fetch_localizer_calculation_task
     nilearn.datasets.fetch_localizer_contrasts
 
     """
@@ -1119,6 +1118,11 @@ def fetch_localizer_button_task(n_subjects=1, data_dir=None, url=None,
                                      get_tmaps=True, get_masks=False,
                                      get_anats=True, data_dir=data_dir,
                                      url=url, resume=True, verbose=verbose)
+    # TODO: remove -> only here for compatibility
+    if len(data["tmaps"]) == 1:
+        setattr(data, "tmap", data["tmaps"][0])
+    if len(data["anats"]) == 1:
+        setattr(data, "anat", data["anats"][0])
     return data
 
 
