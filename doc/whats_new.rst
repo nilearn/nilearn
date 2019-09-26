@@ -31,6 +31,8 @@ NEW
   movie-watching data in children and adults. A light-weight dataset
   implemented for teaching and usage in the examples.
 
+- the Localizer dataset now follows the BIDS organization.
+
 Changes
 -------
 
