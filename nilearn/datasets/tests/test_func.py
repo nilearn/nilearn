@@ -147,6 +147,7 @@ def test_miyawaki2008():
     assert_not_equal(dataset.description, '')
 
 
+@with_setup(setup_mock, teardown_mock)
 @with_setup(tst.setup_tmpdata, tst.teardown_tmpdata)
 def test_fetch_localizer_contrasts():
     # 2 subjects
