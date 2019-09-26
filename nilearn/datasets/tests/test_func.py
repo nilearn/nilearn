@@ -147,8 +147,46 @@ def test_miyawaki2008():
     assert_not_equal(dataset.description, '')
 
 
+with open(os.path.join(tst.datadir, "localizer_index.json")) as of:
+    LOCALIZER_INDEX = json.load(of)
+LOCALIZER_PARTICIPANTS = np.recfromcsv(
+    os.path.join(tst.datadir, "localizer_participants.tsv"), delimiter='\t')
+LOCALIZER_BEHAVIOURAL = np.recfromcsv(
+    os.path.join(tst.datadir, "localizer_behavioural.tsv"), delimiter='\t')
+def mock_localizer_index(*args, **kwargs):
+    return LOCALIZER_INDEX
+def mock_np_recfromcsv(*args, **kwargs):
+    if args[0].endswith("participants.tsv"):
+        return LOCALIZER_PARTICIPANTS
+    elif args[0].endswith("behavioural.tsv"):
+        return LOCALIZER_BEHAVIOURAL
+    else:
+        raise ValueError("Unexpected args!")
+
+
+def setup_localizer():
+    global original_json_load
+    global mock_json_load
+    mock_json_load = mock_localizer_index
+    original_json_load = json.load
+    json.load = mock_json_load
+
+    global original_np_recfromcsv
+    global mock_np_recfromcsv
+    mock_np_recfromcsv = mock_np_recfromcsv
+    original_np_recfromcsv = np.recfromcsv
+    np.recfromcsv = mock_np_recfromcsv
+
+def teardown_localizer():
+    global original_json_load
+    json.load = original_json_load
+
+    global original_np_recfromcsv
+    np.recfromcsv = original_np_recfromcsv
+
 @with_setup(setup_mock, teardown_mock)
 @with_setup(tst.setup_tmpdata, tst.teardown_tmpdata)
+@with_setup(setup_localizer, teardown_localizer)
 def test_fetch_localizer_contrasts():
     # 2 subjects
     dataset = func.fetch_localizer_contrasts(
@@ -208,7 +246,9 @@ def test_fetch_localizer_contrasts():
                  [b"S02", b"S03", b"S05"])
 
 
+@with_setup(setup_mock, teardown_mock)
 @with_setup(tst.setup_tmpdata, tst.teardown_tmpdata)
+@with_setup(setup_localizer, teardown_localizer)
 def test_fetch_localizer_calculation_task():
     # 2 subjects
     dataset = func.fetch_localizer_calculation_task(
@@ -222,7 +262,9 @@ def test_fetch_localizer_calculation_task():
     assert_not_equal(dataset.description, '')
 
 
+@with_setup(setup_mock, teardown_mock)
 @with_setup(tst.setup_tmpdata, tst.teardown_tmpdata)
+@with_setup(setup_localizer, teardown_localizer)
 def test_fetch_localizer_button_task():
     # 2 subjects
     dataset = func.fetch_localizer_button_task(
