@@ -268,7 +268,6 @@ def test_fetch_localizer_calculation_task():
 def test_fetch_localizer_button_task():
     # 2 subjects
     dataset = func.fetch_localizer_button_task(
-        n_subjects=2,
         data_dir=tst.tmpdir,
         verbose=1)
     assert_true(isinstance(dataset.tmaps[0], _basestring))

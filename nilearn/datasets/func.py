@@ -1071,7 +1071,7 @@ def fetch_localizer_calculation_task(n_subjects=1, data_dir=None, url=None,
     return data
 
 
-def fetch_localizer_button_task(n_subjects=1, data_dir=None, url=None,
+def fetch_localizer_button_task(n_subjects=None, data_dir=None, url=None,
                                 verbose=1):
     """Fetch left vs right button press contrast maps from the localizer.
 
@@ -1079,7 +1079,8 @@ def fetch_localizer_button_task(n_subjects=1, data_dir=None, url=None,
     ----------
     n_subjects: int, optional
         The number of subjects to load. If None is given,
-        all 94 subjects are used.
+        this function ships only 2nd subject (S02) specific tmap and
+        its normalized T1 image.
 
     data_dir: string, optional
         Path of the data directory. Used to force data storage in a specified
@@ -1113,6 +1114,8 @@ def fetch_localizer_button_task(n_subjects=1, data_dir=None, url=None,
     nilearn.datasets.fetch_localizer_contrasts
 
     """
+    if n_subjects is None:
+        n_subjects = [2]
     data = fetch_localizer_contrasts(["left vs right button press"],
                                      n_subjects=n_subjects,
                                      get_tmaps=True, get_masks=False,
