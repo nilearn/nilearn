@@ -133,6 +133,16 @@ class Parcellations(MultiPCA):
     n_parcels: int, default=50
         Number of parcellations to divide the brain data into.
 
+    connectivity : array-like or callable, optional
+        Connectivity matrix. Defines for each sample the neighboring samples
+        following a given structure of the data. This can be a connectivity
+        matrix itself or a callable that transforms the data into a
+        connectivity matrix. Default is 'auto', i.e, the hierarchical
+        clustering algorithm is determined using `image.grid_to_graph` to
+        capture each voxel's connectivity to every other voxel. Note that this
+        option is only applicable if selected methods are Agglomerative
+        Clustering type, 'ward', 'complete', 'average'.
+
     random_state: int or RandomState
         Pseudo number generator state used for random sampling.
 
@@ -248,10 +258,10 @@ class Parcellations(MultiPCA):
     """
     VALID_METHODS = ['kmeans', 'ward', 'complete', 'average', 'rena']
 
-    def __init__(self, method, n_parcels=50,
+    def __init__(self, method, n_parcels=50, connectivity='auto',
                  random_state=0, mask=None, smoothing_fwhm=4.,
-                 standardize=False, detrend=False,
-                 low_pass=None, high_pass=None, t_r=None,
+                 standardize=False, detrend=False, low_pass=None,
+                 high_pass=None, t_r=None,
                  target_affine=None, target_shape=None,
                  mask_strategy='epi', mask_args=None,
                  scaling=False, n_iter=10,
@@ -262,6 +272,7 @@ class Parcellations(MultiPCA):
         self.n_parcels = n_parcels
         self.scaling = scaling
         self.n_iter = n_iter
+        self.connectivity = connectivity
 
         MultiPCA.__init__(self, n_components=200,
                           random_state=random_state,
@@ -349,9 +360,12 @@ class Parcellations(MultiPCA):
 
         else:
             mask_ = _safe_get_data(mask_img_).astype(np.bool)
-            shape = mask_.shape
-            connectivity = image.grid_to_graph(n_x=shape[0], n_y=shape[1],
-                                               n_z=shape[2], mask=mask_)
+            if self.connectivity is 'auto':
+                shape = mask_.shape
+                connectivity = image.grid_to_graph(n_x=shape[0], n_y=shape[1],
+                                                   n_z=shape[2], mask=mask_)
+            else:
+                connectivity = self.connectivity
 
             from sklearn.cluster import AgglomerativeClustering
 
