@@ -40,14 +40,15 @@ ____
 #          Virgile Fritsch, <virgile.fritsch@inria.fr>, Apr 2014
 #          Gael Varoquaux, Apr 2014
 import numpy as np
-from scipy import linalg
 import matplotlib.pyplot as plt
 from nilearn import datasets
 from nilearn.input_data import NiftiMasker
 
 n_subjects = 100  # more subjects requires more memory
 
-### Load Oasis dataset ########################################################
+############################################################################
+# Load Oasis dataset
+# -------------------
 oasis_dataset = datasets.fetch_oasis_vbm(n_subjects=n_subjects)
 gray_matter_map_filenames = oasis_dataset.gray_matter_maps
 age = oasis_dataset.ext_vars['age'].astype(float)
@@ -58,7 +59,9 @@ print('First gray-matter anatomy image (3D) is located at: %s' %
 print('First white-matter anatomy image (3D) is located at: %s' %
       oasis_dataset.white_matter_maps[0])  # 3D data
 
-### Preprocess data ###########################################################
+#############################################################################
+# Preprocess data
+# ----------------
 nifti_masker = NiftiMasker(
     standardize=False,
     smoothing_fwhm=2,
@@ -67,7 +70,9 @@ gm_maps_masked = nifti_masker.fit_transform(gray_matter_map_filenames)
 n_samples, n_features = gm_maps_masked.shape
 print("%d samples, %d features" % (n_subjects, n_features))
 
-### Prediction with SVR #######################################################
+############################################################################
+# Prediction pipeline with ANOVA and SVR
+# ---------------------------------------
 print("ANOVA + SVR")
 # Define the prediction function to be used.
 # Here we use a Support Vector Classification, with a linear kernel
@@ -98,7 +103,9 @@ anova_svr = Pipeline([
 anova_svr.fit(gm_maps_masked, age)
 age_pred = anova_svr.predict(gm_maps_masked)
 
+#############################################################################
 # Visualization
+# --------------
 # Look at the SVR's discriminating weights
 coef = svr.coef_
 # reverse feature selection
@@ -112,22 +119,17 @@ weight_img = nifti_masker.inverse_transform(coef)
 from nilearn.plotting import plot_stat_map, show
 bg_filename = gray_matter_map_filenames[0]
 z_slice = 0
-from nilearn.image.resampling import coord_transform
-affine = weight_img.affine
-_, _, k_slice = coord_transform(0, 0, z_slice,
-                                linalg.inv(affine))
-k_slice = np.round(k_slice)
+
 
 fig = plt.figure(figsize=(5.5, 7.5), facecolor='k')
-weight_slice_data = weight_img.get_data()[..., k_slice, 0]
-vmax = max(-np.min(weight_slice_data), np.max(weight_slice_data)) * 0.5
+# Hard setting vmax to highlight weights more
 display = plot_stat_map(weight_img, bg_img=bg_filename,
                         display_mode='z', cut_coords=[z_slice],
-                        figure=fig, vmax=vmax)
+                        figure=fig, vmax=1)
 display.title('SVM weights', y=1.2)
 
 # Measure accuracy with cross validation
-from sklearn.cross_validation import cross_val_score
+from sklearn.model_selection import cross_val_score
 cv_scores = cross_val_score(anova_svr, gm_maps_masked, age)
 
 # Return the corresponding mean prediction accuracy
@@ -163,9 +165,7 @@ title = ('Negative $\log_{10}$ p-values'
          '\n(Non-parametric + max-type correction)')
 display.title(title, y=1.2)
 
-signed_neg_log_pvals_slice_data = \
-    signed_neg_log_pvals_unmasked.get_data()[..., k_slice, 0]
-n_detections = (np.abs(signed_neg_log_pvals_slice_data) > threshold).sum()
+n_detections = (signed_neg_log_pvals_unmasked.get_data() > threshold).sum()
 print('\n%d detections' % n_detections)
 
 show()

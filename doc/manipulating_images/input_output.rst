@@ -33,7 +33,7 @@ be readily passed to other nilearn functions.
 
 In nilearn, we often use the term *"niimg"* as abbreviation that denotes
 either a file name or a `NiftiImage object
-<http://nipy.org/nibabel/nibabel_images.html>`_. 
+<http://nipy.org/nibabel/nibabel_images.html>`_.
 
 Niimgs can be 3D or 4D. A 4D niimg may for instance represent a time
 series of 3D images. It can be **a list of file names**, if these contain
@@ -56,7 +56,7 @@ You can specify files with *wildcard* matching patterns (as in Unix
 shell):
 
  * **Matching multiple files**: suppose the dataset folder contains
-   subject_01.nii, subject_03.nii, and subject_03.nii; 
+   subject_01.nii, subject_03.nii, and subject_03.nii;
    ``dataset/subject_*.nii`` is a glob expression matching all filenames::
 
     >>> # Example with a smoothing process:
@@ -239,18 +239,18 @@ Text files: phenotype or behavior
 
 Phenotypic or behavioral data are often provided as text or CSV
 (Comma Separated Values) file. They
-can be loaded with `numpy.genfromtxt` but you may have to specify some options
-(typically `skip_header` ignores column titles if needed).
+can be loaded with `pd.read_csv` but you may have to specify some options
+(typically `sep` if fields aren't delimited with a comma).
 
 For the Haxby datasets, we can load the categories of the images
 presented to the subject::
 
     >>> from nilearn import datasets
     >>> haxby_dataset = datasets.fetch_haxby()  # doctest: +SKIP
-    >>> import numpy as np
-    >>> labels = np.recfromcsv(haxby_dataset.session_target[0], delimiter=" ")  # doctest: +SKIP
+    >>> import pandas as pd  # doctest: +SKIP
+    >>> labels = pd.read_csv(haxby_dataset.session_target[0], sep=" ")  # doctest: +SKIP
     >>> stimuli = labels['labels']  # doctest: +SKIP
-    >>> print(np.unique(stimuli))  # doctest: +SKIP
+    >>> print(stimuli.unique())  # doctest: +SKIP
     ['bottle' 'cat' 'chair' 'face' 'house' 'rest' 'scissors' 'scrambledpix'
      'shoe']
 
@@ -262,5 +262,3 @@ presented to the subject::
 |
 
 .. _nibabel: http://nipy.sourceforge.net/nibabel/
-
-

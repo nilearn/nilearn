@@ -14,18 +14,15 @@ from distutils.version import LooseVersion
 
 import numpy as np
 import sklearn
-from sklearn.base import TransformerMixin
 from sklearn.decomposition import dict_learning_online
-from sklearn.externals.joblib import Memory
+from nilearn._utils.compat import Memory
 from sklearn.linear_model import Ridge
 
-from .base import BaseDecomposition, mask_and_reduce
+from .base import BaseDecomposition
 from .canica import CanICA
 
-
-if LooseVersion(sklearn.__version__) >= LooseVersion('0.17'):
-    # check_input=False is an optimization available only in sklearn >=0.17
-    sparse_encode_args = {'check_input': False}
+# check_input=False is an optimization available in sklearn.
+sparse_encode_args = {'check_input': False}
 
 
 def _compute_loadings(components, data):
@@ -39,7 +36,7 @@ def _compute_loadings(components, data):
     return loadings
 
 
-class DictLearning(BaseDecomposition, TransformerMixin):
+class DictLearning(BaseDecomposition):
     """Perform a map learning algorithm based on spatial component sparsity,
     over a CanICA initialization.  This yields more stable maps than CanICA.
 
@@ -54,15 +51,15 @@ class DictLearning(BaseDecomposition, TransformerMixin):
         parameters.
 
     n_components: int
-        Number of components to extract.
+        Number of components to extract. By default n_components=20.
 
     batch_size : int, optional, default=20
         The number of samples to take in each batch.
 
-    n_epochs: float
+    n_epochs: float, default=1
         Number of epochs the algorithm should run on the data.
 
-    alpha: float, optional, default=1
+    alpha: float, optional, default=10
         Sparsity controlling parameter.
 
     dict_init: Niimg-like object, optional
@@ -75,7 +72,7 @@ class DictLearning(BaseDecomposition, TransformerMixin):
         - if set to 'auto', estimator will set the number of components per
           reduced session to be n_components.
 
-    method : {'lars', 'cd'}
+    method : {'lars', 'cd'}, default='cd'
         Coding method used by sklearn backend. Below are the possible values.
         lars: uses the least angle regression method to solve the lasso problem
         (linear_model.lars_path)
@@ -86,13 +83,17 @@ class DictLearning(BaseDecomposition, TransformerMixin):
     random_state: int or RandomState
         Pseudo number generator state used for random sampling.
 
-    smoothing_fwhm: float, optional
+    smoothing_fwhm: float, optional, default=4mm
         If smoothing_fwhm is not None, it gives the size in millimeters of the
         spatial smoothing to apply to the signal.
 
-    standardize : boolean, optional
+    standardize : boolean, optional, default=True
         If standardize is True, the time-series are centered and normed:
         their variance is put to 1 in the time dimension.
+
+    detrend : boolean, optional, default=True
+        If detrend is True, the time-series will be detrended before
+        components extraction.
 
     target_affine: 3x3 or 4x4 matrix, optional
         This parameter is passed to image.resample_img. Please see the
@@ -114,6 +115,22 @@ class DictLearning(BaseDecomposition, TransformerMixin):
         This parameter is passed to signal.clean. Please see the related
         documentation for details.
 
+    mask_strategy: {'background', 'epi' or 'template'}, optional
+        The strategy used to compute the mask: use 'background' if your
+        images present a clear homogeneous background, 'epi' if they
+        are raw EPI images, or you could use 'template' which will
+        extract the gray matter part of your data by resampling the MNI152
+        brain mask for your data's field of view.
+        Depending on this value, the mask will be computed from
+        masking.compute_background_mask, masking.compute_epi_mask or
+        masking.compute_gray_matter_mask. Default is 'epi'.
+
+    mask_args: dict, optional
+        If mask is None, these are additional parameters passed to
+        masking.compute_background_mask or masking.compute_epi_mask
+        to fine-tune mask computation. Please see the related documentation
+        for details.
+
     memory: instance of joblib.Memory or string
         Used to cache the masking process.
         By default, no caching is done. If a string is given, it is the
@@ -129,6 +146,29 @@ class DictLearning(BaseDecomposition, TransformerMixin):
 
     verbose: integer, optional
         Indicate the level of verbosity. By default, nothing is printed.
+
+    Attributes
+    ----------
+    `components_` : 2D numpy array (n_components x n-voxels)
+        Masked dictionary components extracted from the input images.
+
+        Deprecated since version 0.4.1. Use `components_img_` instead
+
+    `components_img_` : 4D Nifti image
+        4D image giving the extracted components. Each 3D image is a component.
+
+        New in version 0.4.1.
+
+    `masker_` : instance of MultiNiftiMasker
+        Masker used to filter and mask data as first step. If an instance of
+        MultiNiftiMasker is given in `mask` parameter,
+        this is a copy of it. Otherwise, a masker is created using the value
+        of `mask` and other NiftiMasker related parameters as initialization.
+
+    `mask_img_` : Niimg-like object
+        See http://nilearn.github.io/manipulating_images/input_output.html
+        The mask of the data. If no mask was given at masker creation, contains
+        the automatically computed mask.
 
     References
     ----------
@@ -192,37 +232,6 @@ class DictLearning(BaseDecomposition, TransformerMixin):
         self.loadings_init_ = self._cache(_compute_loadings)(
             self.components_init_, data)
 
-    def fit(self, imgs, y=None, confounds=None):
-        """Compute the mask and component maps across subjects
-
-        Parameters
-        ----------
-        imgs: list of Niimg-like objects
-            See http://nilearn.github.io/manipulating_images/input_output.html.
-            Data on which PCA must be calculated. If this is a list,
-            the affine is considered the same for all.
-
-        confounds: CSV file path or 2D matrix
-            This parameter is passed to nilearn.signal.clean. Please see the
-            related documentation for details
-        """
-        # Base logic for decomposition estimators
-        BaseDecomposition.fit(self, imgs)
-
-        if self.verbose:
-            print('[DictLearning] Loading data')
-        data = mask_and_reduce(self.masker_, imgs, confounds,
-                               reduction_ratio=self.reduction_ratio,
-                               n_components=self.n_components,
-                               random_state=self.random_state,
-                               memory_level=max(0, self.memory_level - 1),
-                               n_jobs=self.n_jobs, memory=self.memory)
-        if self.verbose:
-            print('[DictLearning] Learning initial components')
-        self._init_dict(data)
-        self._raw_fit(data)
-        return self
-
     def _raw_fit(self, data):
         """Helper function that direcly process unmasked data
 
@@ -231,6 +240,10 @@ class DictLearning(BaseDecomposition, TransformerMixin):
         data: ndarray,
             Shape (n_samples, n_features)
         """
+        if self.verbose:
+            print('[DictLearning] Learning initial components')
+        self._init_dict(data)
+
         _, n_features = data.shape
 
         if self.verbose:
@@ -261,5 +274,7 @@ class DictLearning(BaseDecomposition, TransformerMixin):
         for component in self.components_:
             if np.sum(component > 0) < np.sum(component < 0):
                 component *= -1
+        if hasattr(self, "masker_"):
+            self.components_img_ = self.masker_.inverse_transform(self.components_)
 
         return self

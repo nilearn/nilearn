@@ -8,8 +8,8 @@
    :target: https://ci.appveyor.com/project/nilearn-ci/nilearn
    :alt: AppVeyor Build Status
 
-.. image:: https://coveralls.io/repos/nilearn/nilearn/badge.svg?branch=master
-   :target: https://coveralls.io/r/nilearn/nilearn
+.. image:: https://codecov.io/gh/nilearn/nilearn/branch/master/graph/badge.svg
+   :target: https://codecov.io/gh/nilearn/nilearn
 
 nilearn
 =======
@@ -38,15 +38,16 @@ Dependencies
 
 The required dependencies to use the software are:
 
-* Python >= 2.7,
+* Python >= 3.5,
 * setuptools
-* Numpy >= 1.6.1
-* SciPy >= 0.9
-* Scikit-learn >= 0.14.1
-* Nibabel >= 1.1.0
+* Numpy >= 1.11
+* SciPy >= 0.19
+* Scikit-learn >= 0.19
+* Joblib >= 0.11
+* Nibabel >= 2.0.2
 
 If you are using nilearn plotting functionalities or running the
-examples, matplotlib >= 1.1.1 is required.
+examples, matplotlib >= 1.5.1 is required.
 
 If you want to run the tests, you need nose >= 1.2.1 and coverage >= 3.6.
 

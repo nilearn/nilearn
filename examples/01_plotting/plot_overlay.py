@@ -7,7 +7,7 @@ maps that compose it.
 
 Here we represent the nodes constituting the default mode network in the
 `MSDL atlas
-<https://team.inria.fr/parietal/research/spatial_patterns/spatial-patterns-in-resting-state/>`_.
+<https://team.inria.fr/parietal/18-2/spatial_patterns/spatial-patterns-in-resting-state/>`_.
 
 The tools that we need to leverage are:
 
@@ -21,11 +21,18 @@ Alternatively, :func:`nilearn.plotting.plot_prob_atlas` allows to plot the maps 
 with less control over the plot (see below)
 
 """
-
-from nilearn import datasets, plotting, image
+############################################################################
+# Fetching probabilistic atlas - MSDL atlas
+# -----------------------------------------
+from nilearn import datasets
 
 atlas_data = datasets.fetch_atlas_msdl()
 atlas_filename = atlas_data.maps
+
+#############################################################################
+# Visualizing a probabilistic atlas with plot_stat_map and add_overlay object
+# ---------------------------------------------------------------------------
+from nilearn import plotting, image
 
 # First plot the map for the PCC: index 4 in the atlas
 display = plotting.plot_stat_map(image.index_img(atlas_filename, 4),

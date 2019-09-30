@@ -10,7 +10,7 @@ import abc
 import numpy as np
 
 from sklearn.base import BaseEstimator, TransformerMixin
-from sklearn.externals.joblib import Memory
+from nilearn._utils.compat import Memory
 
 from .. import masking
 from .. import image
@@ -26,7 +26,8 @@ def filter_and_extract(imgs, extraction_function,
                        memory_level=0, memory=Memory(cachedir=None),
                        verbose=0,
                        confounds=None,
-                       copy=True):
+                       copy=True,
+                       dtype=None):
     """Extract representative time series using given function.
 
     Parameters
@@ -63,7 +64,8 @@ def filter_and_extract(imgs, extraction_function,
         print("[%s] Loading data from %s" % (
             class_name,
             _utils._repr_niimgs(imgs)[:200]))
-    imgs = _utils.check_niimg(imgs, atleast_4d=True, ensure_ndim=4)
+    imgs = _utils.check_niimg(imgs, atleast_4d=True, ensure_ndim=4,
+                              dtype=dtype)
 
     sample_mask = parameters.get('sample_mask')
     if sample_mask is not None:
@@ -103,7 +105,6 @@ def filter_and_extract(imgs, extraction_function,
     # Filtering
     # Confounds removing (from csv file or numpy array)
     # Normalizing
-
     if verbose > 0:
         print("[%s] Cleaning extracted signals" % class_name)
     sessions = parameters.get('sessions')
@@ -133,7 +134,7 @@ class BaseMasker(BaseEstimator, TransformerMixin, CacheMixin):
         Parameters
         ----------
         imgs: 3D/4D Niimg-like object
-            See http://nilearn.github.io/manipulating_images/input_output.html.
+            See http://nilearn.github.io/manipulating_images/input_output.html
             Images to process. It must boil down to a 4D image with scans
             number as last dimension.
 
@@ -156,7 +157,7 @@ class BaseMasker(BaseEstimator, TransformerMixin, CacheMixin):
         Parameters
         ----------
         imgs: 3D/4D Niimg-like object
-            See http://nilearn.github.io/manipulating_images/input_output.html.
+            See http://nilearn.github.io/manipulating_images/input_output.html
             Images to process. It must boil down to a 4D image with scans
             number as last dimension.
 
@@ -181,7 +182,7 @@ class BaseMasker(BaseEstimator, TransformerMixin, CacheMixin):
         Parameters
         ----------
         X : Niimg-like object
-            See http://nilearn.github.io/manipulating_images/input_output.html.
+            See http://nilearn.github.io/manipulating_images/input_output.html
 
         y : numpy array of shape [n_samples]
             Target values.

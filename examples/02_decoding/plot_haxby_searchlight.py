@@ -11,7 +11,8 @@ the fMRI (see the generated figures).
 
 #########################################################################
 # Load Haxby dataset
-import numpy as np
+# -------------------
+import pandas as pd
 from nilearn import datasets
 from nilearn.image import new_img_like, load_img
 
@@ -23,25 +24,27 @@ print('Anatomical nifti image (3D) is located at: %s' % haxby_dataset.mask)
 print('Functional nifti image (4D) is located at: %s' % haxby_dataset.func[0])
 
 fmri_filename = haxby_dataset.func[0]
-labels = np.recfromcsv(haxby_dataset.session_target[0], delimiter=" ")
+labels = pd.read_csv(haxby_dataset.session_target[0], sep=" ")
 y = labels['labels']
 session = labels['chunks']
 
 #########################################################################
 # Restrict to faces and houses
+# ------------------------------
 from nilearn.image import index_img
-condition_mask = np.logical_or(y == b'face', y == b'house')
+condition_mask = y.isin(['face', 'house'])
 
 fmri_img = index_img(fmri_filename, condition_mask)
 y, session = y[condition_mask], session[condition_mask]
 
 #########################################################################
 # Prepare masks
-#
+# --------------
 # - mask_img is the original mask
 # - process_mask_img is a subset of mask_img, it contains the voxels that
 #   should be processed (we only keep the slice z = 26 and the back of the
 #   brain to speed up computation)
+import numpy as np
 
 mask_img = load_img(haxby_dataset.mask)
 
@@ -55,6 +58,7 @@ process_mask_img = new_img_like(mask_img, process_mask)
 
 #########################################################################
 # Searchlight computation
+# -------------------------
 
 # Make processing parallel
 # /!\ As each thread will print its progress, n_jobs > 1 could mess up the
@@ -65,8 +69,8 @@ n_jobs = 1
 # Here we use a KFold cross-validation on the session, which corresponds to
 # splitting the samples in 4 folds and make 4 runs using each fold as a test
 # set once and the others as learning sets
-from sklearn.cross_validation import KFold
-cv = KFold(y.size, n_folds=4)
+from sklearn.model_selection import KFold
+cv = KFold(n_splits=4)
 
 import nilearn.decoding
 # The radius is the one of the Searchlight sphere that will scan the volume
@@ -79,6 +83,7 @@ searchlight.fit(fmri_img, y)
 
 #########################################################################
 # F-scores computation
+# ----------------------
 from nilearn.input_data import NiftiMasker
 
 # For decoding, standardizing is often very important
@@ -95,7 +100,7 @@ p_unmasked = nifti_masker.inverse_transform(p_values).get_data()
 
 #########################################################################
 # Visualization
-
+# --------------
 # Use the fmri mean image as a surrogate of anatomical data
 from nilearn import image
 mean_fmri = image.mean_img(fmri_img)

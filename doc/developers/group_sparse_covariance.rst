@@ -135,7 +135,7 @@ Synthetic dataset
 =================
 For testing purposes, a function for synthesis of signals based on
 sparse precision matrices has been written:
-`nilearn._utils.testing.generate_group_sparse_gaussian_graphs`.
+`nilearn._utils.data_gen.generate_group_sparse_gaussian_graphs`.
 Synthesizing such signals is a hard problem that wasn't solved in the
 present implementation. It is hopefully good enough.
 
@@ -166,7 +166,7 @@ precise location of zeros. Two different sparsity patterns with the
 same number of zeros can lead to two significantly different sparsity
 level in precision matrices. In practice, it means that for a given
 value of the `density` parameter in
-`nilearn._utils.testing.generate_group_sparse_gaussian_graphs`,
+`nilearn._utils.data_gen.generate_group_sparse_gaussian_graphs`,
 the actual number of zeros in the precision matrices can fluctuate
 widely depending on the random number generation.
 
@@ -369,7 +369,7 @@ used), then a tighter grid near the found maximum is computed, and so
 on. This allows for a very precise determination of the maximum
 location while reducing a lot the required evaluation number. The code
 is very close to what is done in
-:class:`sklearn.covariance.GraphLassoCV`.
+:class:`sklearn.covariance.GraphicalLassoCV`.
 
 
 Warm restart

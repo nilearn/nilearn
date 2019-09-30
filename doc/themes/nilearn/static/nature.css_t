@@ -9,12 +9,10 @@ body {
     letter-spacing: -0.01em;
     line-height: 150%;
     text-align: center;
-    background-color: #4eacc5;
     padding: 0;
-    border: 1px solid #aaa;
+    /*border: 1px solid #aaa;*/
     margin: 0px auto;
     min-width: 20em;
-    max-width: 84em;
     color: #3E4349;
 }
 
@@ -31,11 +29,17 @@ form.gsc-search-box {
 }
 
 div.search_form {
-    margin: -1em -1em -0.9em 0;
+    margin: -2em -1.5em -0.9em 0;
 }
 
 table.gsc-branding {
     display: none;
+}
+
+/* Override google search form */
+div.gsc-control-cse {
+    background-color: transparent !important;
+    border: none;
 }
 
 @media (max-width: 800px) {
@@ -304,11 +308,10 @@ div.related h3 {
 }
 
 div.related ul {
-    background-image: url(navigation.png);
     height: 2em;
     list-style: none;
     border-top: 1px solid #ddd;
-    border-bottom: 1px solid #ddd;
+    border-bottom: 2px solid #727272;
     margin: 0;
     padding-left: 10px;
 }
@@ -328,6 +331,12 @@ div.related ul li.right {
 div.related ul li#navbar-ecosystem {
     float: right;
     margin-right: 0.5em;
+}
+
+@media (max-width: 800px) {
+    div.related ul li#navbar-ecosystem {
+	display: none;
+    }
 }
 
 @media (min-width: 800px) {
@@ -371,9 +380,15 @@ div.related ul li a:hover {
     color: #3CA8E7;
 }
 
+div.related-wrapper {
+    background-color: #e8eef0;
+    /*background-image: linear-gradient(160deg, #e8eef0, #97c6d2);*/
+    background-image: linear-gradient(30deg, #e8eef0, #97c6d2);
+}
+
 div.body {
-    margin: 0;
-    padding: 1em 20px 30px 20px;
+    margin: 0 auto 0 auto;
+    padding: 1.5em 20px 30px 20px;
     max-width: 62em;
 }
 
@@ -405,10 +420,15 @@ div.body p.sphx-glr-script-out {
     margin: -.9ex 0ex;
 }
 
+div.body div.sphx-glr-download-link-note {
+    max-width: 8em;
+    float: right;
+    margin-right: -1em;
+}
+
 div.bodywrapper {
     margin: 0 246px 0 auto;
-    border-right: 1px solid #EEE;
-    max-width: 65.5em;
+    /*border-right: 1px solid #EEE;*/
 }
 
 @media (max-width: 800px) {
@@ -492,15 +512,15 @@ h6 {
 }
 
 div.body h2 {
-    margin-top: 40px;
+    margin-top: 50px;
 }
 
 div.body h3, div.body hr {
-    margin-top: 35px;
+    margin-top: 40px;
 }
 
 div.body h2 {
-    margin-top: 30px;
+    margin-top: 35px;
 }
 
 div.bodywrapper h1 {
@@ -512,8 +532,9 @@ div.bodywrapper h1 {
 
 div.sphinxsidebar {
     margin: 0;
-    padding: 0.5em 15px 15px 0;
-    width: 226px;
+    padding: 0 15px 15px 0;
+    min-width: 226px;
+    width: 17%;
     float: right;
     text-align: left;
 }
@@ -668,6 +689,7 @@ div.sphinxsidebar ul ul li {
 
 div.sphinxsidebarwrapper {
     width: 227px;
+    padding-top: .5em;
 }
 
 div.sphinxsidebarwrapper ul li p {
@@ -1137,6 +1159,7 @@ div#logo-banner {
     background-color: white;
     padding: 10px 10px 15px 15px;
     overflow: hidden;
+    background-image: linear-gradient(160deg, #fff, #dbdbdb);
 }
 
 
@@ -1147,7 +1170,6 @@ div#logo-banner {
 }
 
 div#logo-banner .logo {
-    background-color: white;
     padding: 7px 20px 0 15px;
     float: left;
     max-width: 16em;

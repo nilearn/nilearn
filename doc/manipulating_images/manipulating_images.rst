@@ -8,7 +8,7 @@ This chapter discusses how nilearn can be used to do simple operations on
 brain images.
 
 
-.. contents:: **Chapters contents**
+.. contents:: **Chapter contents**
     :local:
     :depth: 1
 
@@ -146,6 +146,8 @@ Computing and applying spatial masks
 Relevant functions:
 
 * compute a mask from EPI images: :func:`nilearn.masking.compute_epi_mask`
+* compute a grey-matter mask using the MNI template:
+  :func:`nilearn.masking.compute_gray_matter_mask`.
 * compute a mask from images with a flat background:
   :func:`nilearn.masking.compute_background_mask`
 * compute for multiple sessions/subjects:
@@ -166,15 +168,17 @@ can be computed from the data:
   the brain stands out of a constant background. This is typically the
   case when working on statistic maps output after a brain extraction
 - :func:`nilearn.masking.compute_epi_mask` for EPI images
+- :func:`nilearn.masking.compute_gray_matter_mask` to compute a
+  gray-matter mask using the MNI template.
+
+
+.. literalinclude:: ../../examples/01_plotting/plot_visualization.py
+     :start-after: # Simple computation of a mask from the fMRI data
+     :end-before: # Applying the mask to extract the corresponding time series
 
 .. figure:: ../auto_examples/01_plotting/images/sphx_glr_plot_visualization_002.png
     :target: ../auto_examples/01_plotting/plot_visualization.html
-    :align: right
     :scale: 50%
-
-.. literalinclude:: ../../examples/01_plotting/plot_visualization.py
-     :start-after: # Extracting a brain mask
-     :end-before: # Applying the mask to extract the corresponding time series
 
 
 .. _mask_4d_2_3d:
@@ -194,12 +198,11 @@ brain. It is thus convenient to apply a brain mask in order to convert the
     :width: 100%
 
 Note that in an analysis pipeline, this operation is best done using the
-:ref:`masker objects <masker_objects>`. For completness, we give code to
+:ref:`masker objects <masker_objects>`. For completeness, we give the code to
 do it manually below:
 
 .. literalinclude:: ../../examples/01_plotting/plot_visualization.py
      :start-after: # Applying the mask to extract the corresponding time series
-     :end-before: # Find voxels of interest
 
 .. figure:: ../auto_examples/01_plotting/images/sphx_glr_plot_visualization_003.png
     :target: ../auto_examples/01_plotting/plot_visualization.html
@@ -216,8 +219,8 @@ statistical test. This requires a chain of image
 operations on the input data. Here is a possible recipe for computing an
 ROI mask:
 
- * **Smoothing**: Before a statistical test, it is often use to smooth a bit
-   the image using :func:`nilearn.image.smooth_img`, typically fwhm=6 for
+ * **Smoothing**: Before a statistical test, it is often useful to smooth the image a bit
+   using :func:`nilearn.image.smooth_img`, typically fwhm=6 for
    fMRI.
 
  * **Selecting voxels**: Given the smoothed data, we can select voxels
@@ -231,7 +234,7 @@ ROI mask:
  * **Mask intersection and dilation**: Post-processing the results with
    simple morphological operations, mask intersection and dilation. 
 
-   * we can use another mask, such as a grey-matter matter, to select
+   * we can use another mask, such as a grey-matter mask, to select
      only the voxels which are common in both masks.
 
    * we can do `morphological dilation
@@ -246,6 +249,17 @@ ROI mask:
  * **Saving the result**: The final voxel mask is saved to disk using
    the 'to_filename' method of the image object.
    (or **nibabel.save**).
+
+
+.. seealso::
+
+   For extracting connected components:
+
+   * A function :func:`nilearn.regions.connected_regions` can be used readily
+     on probabilistic atlas Nifti-like images whereas
+
+   * A function :func:`nilearn.regions.connected_label_regions` can be used on
+     atlases denoted as labels. For instance, atlases labelled using KMeans.
 
 .. _nibabel: http://nipy.sourceforge.net/nibabel/
 

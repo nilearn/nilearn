@@ -11,7 +11,7 @@ import collections
 import numpy as np
 import nibabel
 
-from .compat import _basestring, get_affine
+from .compat import _basestring
 
 
 def _safe_get_data(img, ensure_finite=False):
@@ -90,7 +90,7 @@ def load_niimg(niimg, dtype=None):
     -----------
 
     niimg: Niimg-like object
-        See http://nilearn.github.io/manipulating_images/input_output.html.
+        See http://nilearn.github.io/manipulating_images/input_output.html
         Image to load.
 
     dtype: {dtype, "auto"}
@@ -116,8 +116,15 @@ def load_niimg(niimg, dtype=None):
     dtype = _get_target_dtype(niimg.get_data().dtype, dtype)
 
     if dtype is not None:
-        niimg = new_img_like(niimg, niimg.get_data().astype(dtype),
-                             get_affine(niimg))
+        # Copyheader and set dtype in header if header exists
+        if niimg.header is not None:
+            niimg = new_img_like(niimg, niimg.get_data().astype(dtype),
+                                niimg.affine, copy_header=True)
+            niimg.header.set_data_dtype(dtype)        
+        else:
+            niimg = new_img_like(niimg, niimg.get_data().astype(dtype),
+                                niimg.affine)
+
     return niimg
 
 
@@ -138,7 +145,7 @@ def copy_img(img):
 
     if not isinstance(img, nibabel.spatialimages.SpatialImage):
         raise ValueError("Input value is not an image")
-    return new_img_like(img, _safe_get_data(img).copy(), get_affine(img).copy(),
+    return new_img_like(img, _safe_get_data(img).copy(), img.affine.copy(),
                         copy_header=True)
 
 
@@ -159,7 +166,7 @@ def _repr_niimgs(niimgs):
             return "%s(\nshape=%s,\naffine=%s\n)" % \
                    (niimgs.__class__.__name__,
                     repr(niimgs.shape),
-                    repr(get_affine(niimgs)))
+                    repr(niimgs.affine))
     except:
         pass
     return repr(niimgs)
@@ -173,3 +180,23 @@ def short_repr(niimg):
         # Shorten the repr to have a useful error message
         this_repr = this_repr[:18] + '...'
     return this_repr
+
+
+def img_data_dtype(niimg):
+    """Determine type of data contained in image
+
+    Based on the information contained in ``niimg.dataobj``, determine the
+    dtype of ``np.array(niimg.dataobj).dtype``.
+    """
+
+    dataobj = niimg.dataobj
+
+    # Neuroimages that scale data should be interpreted as floating point
+    if nibabel.is_proxy(dataobj) and (dataobj.slope, dataobj.inter) != (1.0, 0.0):
+        return np.float_
+
+    # ArrayProxy gained the dtype attribute in nibabel 2.2
+    if hasattr(dataobj, 'dtype'):
+        return dataobj.dtype
+
+    return niimg.get_data_dtype()

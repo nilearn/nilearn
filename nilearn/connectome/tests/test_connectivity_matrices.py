@@ -10,9 +10,11 @@ from sklearn.utils import check_random_state
 from sklearn.covariance import EmpiricalCovariance, LedoitWolf
 
 from nilearn._utils.extmath import is_spd
+from nilearn._utils.testing import assert_raises_regex
+from nilearn.tests.test_signal import generate_signals
 from nilearn.connectome.connectivity_matrices import (
     _check_square, _check_spd, _map_eigenvalues, _form_symmetric,
-    _geometric_mean, sym_to_vec, prec_to_partial, cov_to_corr,
+    _geometric_mean, sym_matrix_to_vec, vec_to_sym_matrix, prec_to_partial,
     ConnectivityMeasure)
 
 
@@ -323,22 +325,76 @@ def test_geometric_mean_errors():
     assert_raises(ValueError, _geometric_mean, [mat2])
 
 
-def test_sym_to_vec():
+def test_sym_matrix_to_vec():
     sym = np.ones((3, 3))
     sqrt2 = 1. / sqrt(2.)
     vec = np.array([sqrt2, 1., sqrt2, 1., 1., sqrt2])
-    assert_array_almost_equal(sym_to_vec(sym), vec)
+    assert_array_almost_equal(sym_matrix_to_vec(sym), vec)
 
     vec = np.array([1., 1., 1.])
-    assert_array_almost_equal(sym_to_vec(sym, discard_diagonal=True), vec)
+    assert_array_almost_equal(sym_matrix_to_vec(sym, discard_diagonal=True),
+                              vec)
+
+    # Check sym_matrix_to_vec is the inverse function of vec_to_sym_matrix
+    n = 5
+    p = n * (n + 1) // 2
+    rand_gen = np.random.RandomState(0)
+    # when diagonal is included
+    vec = rand_gen.rand(p)
+    sym = vec_to_sym_matrix(vec)
+    assert_array_almost_equal(sym_matrix_to_vec(sym), vec)
+
+    # when diagonal given separately
+    diagonal = rand_gen.rand(n + 1)
+    sym = vec_to_sym_matrix(vec, diagonal=diagonal)
+    assert_array_almost_equal(sym_matrix_to_vec(sym, discard_diagonal=True),
+                              vec)
+
+    # multiple matrices case when diagonal is included
+    vecs = np.asarray([vec, 2. * vec, 0.5 * vec])
+    syms = vec_to_sym_matrix(vecs)
+    assert_array_almost_equal(sym_matrix_to_vec(syms), vecs)
+
+    # multiple matrices case when diagonal is given seperately
+    diagonals = np.asarray([diagonal, 3. * diagonal, -diagonal])
+    syms = vec_to_sym_matrix(vecs, diagonal=diagonals)
+    assert_array_almost_equal(sym_matrix_to_vec(syms, discard_diagonal=True),
+                              vecs)
 
 
-def test_cov_to_corr():
-    cov = np.array([[16., -6.], [-6., 4.]])
-    corr = np.array([[1., -.75], [-.75, 1.]])
-    assert_array_almost_equal(cov_to_corr(cov), corr)
-    
-    
+def test_vec_to_sym_matrix():
+    # Check error if unsuitable size
+    vec = np.ones(31)
+    assert_raises_regex(ValueError, 'Vector of unsuitable shape',
+                        vec_to_sym_matrix, vec)
+
+    # Check error if given diagonal shape incompatible with vec
+    vec = np.ones(3)
+    diagonal = np.zeros(4)
+    assert_raises_regex(ValueError, 'incompatible with vector',
+                        vec_to_sym_matrix, vec, diagonal)
+
+    # Check output value is correct
+    vec = np.ones(6, )
+    sym = np.array([[sqrt(2), 1., 1.], [1., sqrt(2), 1.],
+                    [1., 1., sqrt(2)]])
+    assert_array_almost_equal(vec_to_sym_matrix(vec), sym)
+
+    # Check output value is correct with seperate diagonal
+    vec = np.ones(3, )
+    diagonal = np.ones(3)
+    assert_array_almost_equal(vec_to_sym_matrix(vec, diagonal=diagonal), sym)
+
+    # Check vec_to_sym_matrix is the inverse function of sym_matrix_to_vec
+    # when diagonal is included
+    assert_array_almost_equal(vec_to_sym_matrix(sym_matrix_to_vec(sym)), sym)
+
+    # when diagonal is discarded
+    vec = sym_matrix_to_vec(sym, discard_diagonal=True)
+    diagonal = np.diagonal(sym) / sqrt(2)
+    assert_array_almost_equal(vec_to_sym_matrix(vec, diagonal=diagonal), sym)
+
+
 def test_prec_to_partial():
     prec = np.array([[2., -1., 1.], [-1., 2., -1.], [1., -1., 1.]])
     partial = np.array([[1., .5, -sqrt(2.) / 2.], [.5, 1., sqrt(2.) / 2.],
@@ -360,25 +416,32 @@ def test_connectivity_measure_errors():
                   [np.ones((100, 40)), np.ones((100, 41))])
 
 
+    # Raising an error for fit_transform with a single subject and
+    # kind=tangent
+    conn_measure = ConnectivityMeasure(kind='tangent')
+    assert_raises(ValueError, conn_measure.fit_transform,
+                  [np.ones((100, 40)), ])
+
+
 def test_connectivity_measure_outputs():
     n_subjects = 10
     n_features = 49
-    n_samples = 200
 
     # Generate signals and compute covariances
     emp_covs = []
     ledoit_covs = []
     signals = []
-    random_state = check_random_state(0)
     ledoit_estimator = LedoitWolf()
     for k in range(n_subjects):
-        signal = random_state.randn(n_samples, n_features)
+        n_samples = 200 + k
+        signal, _, _ = generate_signals(n_features=n_features, n_confounds=5,
+                                        length=n_samples, same_variance=False)
         signals.append(signal)
         signal -= signal.mean(axis=0)
         emp_covs.append((signal.T).dot(signal) / n_samples)
         ledoit_covs.append(ledoit_estimator.fit(signal).covariance_)
 
-    kinds = ["correlation", "tangent", "precision",
+    kinds = ["covariance", "correlation", "tangent", "precision",
              "partial correlation"]
 
     # Check outputs properties
@@ -427,3 +490,108 @@ def test_connectivity_measure_outputs():
                     d = np.sqrt(np.diag(np.diag(prec)))
                     assert_array_almost_equal(d.dot(cov_new).dot(d), -prec +
                                               2 * np.diag(np.diag(prec)))
+
+    # Check the mean_
+    for kind in kinds:
+        conn_measure = ConnectivityMeasure(kind=kind)
+        conn_measure.fit_transform(signals)
+        assert_equal((conn_measure.mean_).shape, (n_features, n_features))
+        if kind != 'tangent':
+            assert_array_almost_equal(
+                conn_measure.mean_,
+                np.mean(conn_measure.transform(signals), axis=0))
+
+    # Check that the mean isn't modified in transform
+    conn_measure = ConnectivityMeasure(kind='covariance')
+    conn_measure.fit(signals[:1])
+    mean = conn_measure.mean_
+    conn_measure.transform(signals[1:])
+    assert_array_equal(mean, conn_measure.mean_)
+
+    # Check vectorization option
+    for kind in kinds:
+        conn_measure = ConnectivityMeasure(kind=kind)
+        connectivities = conn_measure.fit_transform(signals)
+        conn_measure = ConnectivityMeasure(vectorize=True, kind=kind)
+        vectorized_connectivities = conn_measure.fit_transform(signals)
+        assert_array_almost_equal(vectorized_connectivities,
+                                  sym_matrix_to_vec(connectivities))
+
+    # Check not fitted error
+    assert_raises_regex(
+        ValueError, 'has not been fitted. ',
+        ConnectivityMeasure().inverse_transform,
+        vectorized_connectivities)
+
+    # Check inverse transformation
+    kinds.remove('tangent')
+    for kind in kinds:
+        # without vectorization: input matrices are returned with no change
+        conn_measure = ConnectivityMeasure(kind=kind)
+        connectivities = conn_measure.fit_transform(signals)
+        assert_array_almost_equal(
+            conn_measure.inverse_transform(connectivities), connectivities)
+
+        # with vectorization: input vectors are reshaped into matrices
+        # if diagonal has not been discarded
+        conn_measure = ConnectivityMeasure(kind=kind, vectorize=True)
+        vectorized_connectivities = conn_measure.fit_transform(signals)
+        assert_array_almost_equal(
+            conn_measure.inverse_transform(vectorized_connectivities),
+            connectivities)
+
+    # with vectorization if diagonal has been discarded
+    for kind in ['correlation', 'partial correlation']:
+        connectivities = ConnectivityMeasure(kind=kind).fit_transform(signals)
+        conn_measure = ConnectivityMeasure(kind=kind, vectorize=True,
+                                           discard_diagonal=True)
+        vectorized_connectivities = conn_measure.fit_transform(signals)
+        assert_array_almost_equal(
+            conn_measure.inverse_transform(vectorized_connectivities),
+            connectivities)
+
+    for kind in ['covariance', 'precision']:
+        connectivities = ConnectivityMeasure(kind=kind).fit_transform(signals)
+        conn_measure = ConnectivityMeasure(kind=kind, vectorize=True,
+                                           discard_diagonal=True)
+        vectorized_connectivities = conn_measure.fit_transform(signals)
+        diagonal = np.array([np.diagonal(conn) / sqrt(2) for conn in
+                             connectivities])
+        inverse_transformed = conn_measure.inverse_transform(
+            vectorized_connectivities, diagonal=diagonal)
+        assert_array_almost_equal(inverse_transformed, connectivities)
+        assert_raises_regex(ValueError,
+                            'can not reconstruct connectivity matrices',
+                            conn_measure.inverse_transform,
+                            vectorized_connectivities)
+
+    # for 'tangent' kind, covariance matrices are reconstructed
+    # without vectorization
+    tangent_measure = ConnectivityMeasure(kind='tangent')
+    displacements = tangent_measure.fit_transform(signals)
+    covariances = ConnectivityMeasure(kind='covariance').fit_transform(
+        signals)
+    assert_array_almost_equal(
+        tangent_measure.inverse_transform(displacements), covariances)
+
+    # with vectorization
+    # when diagonal has not been discarded
+    tangent_measure = ConnectivityMeasure(kind='tangent', vectorize=True)
+    vectorized_displacements = tangent_measure.fit_transform(signals)
+    assert_array_almost_equal(
+        tangent_measure.inverse_transform(vectorized_displacements),
+        covariances)
+
+    # when diagonal has been discarded
+    tangent_measure = ConnectivityMeasure(kind='tangent', vectorize=True,
+                                          discard_diagonal=True)
+    vectorized_displacements = tangent_measure.fit_transform(signals)
+    diagonal = np.array([np.diagonal(matrix) / sqrt(2) for matrix in
+                         displacements])
+    inverse_transformed = tangent_measure.inverse_transform(
+        vectorized_displacements, diagonal=diagonal)
+    assert_array_almost_equal(inverse_transformed, covariances)
+    assert_raises_regex(ValueError,
+                        'can not reconstruct connectivity matrices',
+                        tangent_measure.inverse_transform,
+                        vectorized_displacements)

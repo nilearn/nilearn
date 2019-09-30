@@ -10,11 +10,12 @@ import glob
 import nilearn as ni
 import numpy as np
 import itertools
-from sklearn.externals.joblib import Memory
+from nilearn._utils.compat import Memory
 
 from .cache_mixin import cache
 from .niimg import _safe_get_data, load_niimg
-from .compat import _basestring, izip, get_affine
+from .path_finding import _resolve_globbing
+from .compat import _basestring, izip
 
 from .exceptions import DimensionError
 
@@ -25,7 +26,7 @@ def _check_fov(img, affine, shape):
     """
     img = check_niimg(img)
     return (img.shape[:3] == shape and
-            np.allclose(get_affine(img), affine))
+            np.allclose(img.affine, affine))
 
 
 def _check_same_fov(*args, **kwargs):
@@ -57,7 +58,7 @@ def _check_same_fov(*args, **kwargs):
             kwargs.items(), 2):
         if not a_img.shape[:3] == b_img.shape[:3]:
             errors.append((a_name, b_name, 'shape'))
-        if not np.allclose(get_affine(a_img), get_affine(b_img)):
+        if not np.allclose(a_img.affine, b_img.affine):
             errors.append((a_name, b_name, 'affine'))
     if len(errors) > 0 and raise_error:
         raise ValueError('Following field of view errors were detected:\n' +
@@ -71,19 +72,8 @@ def _index_img(img, index):
 
     """Helper function for check_niimg_4d."""
     return new_img_like(
-        img, img.get_data()[:, :, :, index], get_affine(img),
+        img, img.get_data()[:, :, :, index], img.affine,
         copy_header=True)
-
-
-def _resolve_globbing(path):
-    if isinstance(path, _basestring):
-        path_list = sorted(glob.glob(os.path.expanduser(path)))
-        # Raise an error in case the niimgs list is empty.
-        if len(path_list) == 0:
-            raise ValueError("No files matching path: %s" % path)
-        path = path_list
-
-    return path
 
 
 def _iter_check_niimg(niimgs, ensure_ndim=None, atleast_4d=False,
@@ -134,7 +124,7 @@ def _iter_check_niimg(niimgs, ensure_ndim=None, atleast_4d=False,
             if i == 0:
                 ndim_minus_one = len(niimg.shape)
                 if ref_fov is None:
-                    ref_fov = (get_affine(niimg), niimg.shape[:3])
+                    ref_fov = (niimg.affine, niimg.shape[:3])
                     resample_to_first_img = True
 
             if not _check_fov(niimg, ref_fov[0], ref_fov[1]):
@@ -155,7 +145,7 @@ def _iter_check_niimg(niimgs, ensure_ndim=None, atleast_4d=False,
                         "reference FOV.\n"
                         "Reference affine:\n%r\nImage affine:\n%r\n"
                         "Reference shape:\n%r\nImage shape:\n%r\n"
-                        % (i, ref_fov[0], get_affine(niimg), ref_fov[1],
+                        % (i, ref_fov[0], niimg.affine, ref_fov[1],
                            niimg.shape))
             yield niimg
         except DimensionError as exc:
@@ -184,7 +174,7 @@ def check_niimg(niimg, ensure_ndim=None, atleast_4d=False, dtype=None,
     Parameters
     ----------
     niimg: Niimg-like object
-        See http://nilearn.github.io/manipulating_images/input_output.html.
+        See http://nilearn.github.io/manipulating_images/input_output.html
         If niimg is a string, consider it as a path to Nifti image and
         call nibabel.load on it. The '~' symbol is expanded to the user home
         folder.
@@ -273,12 +263,12 @@ def check_niimg(niimg, ensure_ndim=None, atleast_4d=False, dtype=None,
     if ensure_ndim == 3 and len(niimg.shape) == 4 and niimg.shape[3] == 1:
         # "squeeze" the image.
         data = _safe_get_data(niimg)
-        affine = get_affine(niimg)
+        affine = niimg.affine
         niimg = new_img_like(niimg, data[:, :, :, 0], affine)
     if atleast_4d and len(niimg.shape) == 3:
         data = niimg.get_data().view()
         data.shape = data.shape + (1, )
-        niimg = new_img_like(niimg, data, get_affine(niimg))
+        niimg = new_img_like(niimg, data, niimg.affine)
 
     if ensure_ndim is not None and len(niimg.shape) != ensure_ndim:
         raise DimensionError(len(niimg.shape), ensure_ndim)
@@ -294,7 +284,7 @@ def check_niimg_3d(niimg, dtype=None):
     Parameters
     ----------
     niimg: Niimg-like object
-        See http://nilearn.github.io/manipulating_images/input_output.html.
+        See http://nilearn.github.io/manipulating_images/input_output.html
         If niimg is a string, consider it as a path to Nifti image and
         call nibabel.load on it. If it is an object, check if the get_data()
         method and affine attribute are present, raise TypeError otherwise.
@@ -328,7 +318,7 @@ def check_niimg_4d(niimg, return_iterator=False, dtype=None):
     Parameters
     ----------
     niimg: 4D Niimg-like object
-        See http://nilearn.github.io/manipulating_images/input_output.html.
+        See http://nilearn.github.io/manipulating_images/input_output.html
         If niimgs is an iterable, checks if data is really 4D. Then,
         considering that it is a list of niimg and load them one by one.
         If niimg is a string, consider it as a path to Nifti image and
@@ -373,7 +363,7 @@ def concat_niimgs(niimgs, dtype=np.float32, ensure_ndim=None,
     Parameters
     ----------
     niimgs: iterable of Niimg-like objects or glob pattern
-        See http://nilearn.github.io/manipulating_images/input_output.html.
+        See http://nilearn.github.io/manipulating_images/input_output.html
         Niimgs to concatenate.
 
     dtype: numpy dtype, optional
@@ -473,4 +463,4 @@ def concat_niimgs(niimgs, dtype=np.float32, ensure_ndim=None,
         data[..., cur_4d_index:cur_4d_index + size] = niimg.get_data()
         cur_4d_index += size
 
-    return new_img_like(first_niimg, data, get_affine(first_niimg), copy_header=True)
+    return new_img_like(first_niimg, data, first_niimg.affine, copy_header=True)

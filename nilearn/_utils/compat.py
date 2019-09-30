@@ -7,13 +7,16 @@ import hashlib
 from distutils.version import LooseVersion
 
 import nibabel
+import sklearn
 
 
 if sys.version_info[0] == 3:
     import pickle
     import io
     import urllib
+    from base64 import encodebytes
 
+    _encodebytes = encodebytes
     _basestring = str
     cPickle = pickle
     StringIO = io.StringIO
@@ -33,7 +36,9 @@ else:
     import urlparse
     import types
     import itertools
+    from base64 import encodestring
 
+    _encodebytes = encodestring
     _basestring = basestring
     cPickle = cPickle
     StringIO = BytesIO = StringIO.StringIO
@@ -64,15 +69,13 @@ else:
         return m.hexdigest()
 
 
-if LooseVersion(nibabel.__version__) >= LooseVersion('2.0.0'):
-    def get_affine(img):
-        return img.affine
-
-    def get_header(img):
-        return img.header
+if sklearn.__version__ < '0.21':
+    from sklearn.externals import joblib
 else:
-    def get_affine(img):
-        return img.get_affine()
+    import joblib
 
-    def get_header(img):
-        return img.get_header()
+Memory = joblib.Memory
+Parallel = joblib.Parallel
+hash = joblib.hash
+delayed = joblib.delayed
+cpu_count = joblib.cpu_count

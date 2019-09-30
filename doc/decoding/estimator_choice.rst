@@ -68,7 +68,7 @@ There are two noteworthy strategies:
 
 The "One vs One" strategy is more computationally costly than the "One
 vs All". The former scales as the square of the number of classes,
-whereas the former is linear with the number of classes.
+whereas the latter is linear with the number of classes.
 
 .. seealso::
 
@@ -115,7 +115,7 @@ not perform as well on new data.
    :scale: 60
 
 With scikit-learn nested cross-validation is done via
-:class:`sklearn.grid_search.GridSearchCV`. It is unfortunately time
+:class:`sklearn.model_selection.GridSearchCV`. It is unfortunately time
 consuming, but the ``n_jobs`` argument can spread the load on multiple
 CPUs.
 

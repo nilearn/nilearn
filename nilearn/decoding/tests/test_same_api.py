@@ -9,9 +9,10 @@ import numpy as np
 import nibabel
 from sklearn.datasets import load_iris
 from sklearn.utils import check_random_state
+from nilearn.masking import _unmask_from_to_3d_array
 from nilearn.decoding.objective_functions import (
     _squared_loss, _squared_loss_grad, _logistic_loss_lipschitz_constant,
-    spectral_norm_squared, _unmask)
+    spectral_norm_squared)
 from nilearn.decoding.space_net_solvers import (
     _squared_loss_and_spatial_grad,
     _logistic_derivative_lipschitz_constant,
@@ -28,7 +29,7 @@ def _make_data(rng=None, masked=False, dim=(2, 2, 2)):
     if rng is None:
         rng = check_random_state(42)
     mask = np.ones(dim).astype(np.bool)
-    mask[rng.rand() < .7] = 0
+    mask[rng.rand(*dim) < .7] = 0
     w = np.zeros(dim)
     w[dim[0] // 2:, dim[1] // 2:, :dim[2] // 2] = 1
     n = 5
@@ -52,7 +53,8 @@ def to_niimgs(X, dim):
     mask[:X.shape[-1]] = 1
     assert_equal(mask.sum(), X.shape[1])
     mask = mask.reshape(dim)
-    X = np.rollaxis(np.array([_unmask(x, mask) for x in X]), 0, start=4)
+    X = np.rollaxis(
+        np.array([_unmask_from_to_3d_array(x, mask) for x in X]), 0, start=4)
     affine = np.eye(4)
     return nibabel.Nifti1Image(X, affine), nibabel.Nifti1Image(
         mask.astype(np.float), affine)
@@ -102,8 +104,9 @@ def test_graph_net_and_tvl1_same_for_pure_l1(max_iter=100, decimal=2):
     # when l1_ratio = 1.
     ###############################################################
 
-    X, y, _, mask = _make_data()
-    alpha = .1
+    X, y, _, mask = _make_data(dim=(3, 3, 3))
+    y = np.round(y)
+    alpha = 0.01
     unmasked_X = np.rollaxis(X, -1, start=0)
     unmasked_X = np.array([x[mask] for x in unmasked_X])
 

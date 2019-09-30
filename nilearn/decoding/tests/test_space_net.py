@@ -1,24 +1,21 @@
-import os
-import warnings
 import itertools
 from functools import partial
 from nose import SkipTest
 from nose.tools import (assert_equal, assert_true, assert_false,
                         assert_raises)
 import numpy as np
-import nibabel
+from scipy import linalg
 from sklearn.datasets import load_iris
-from sklearn.utils import extmath
 from sklearn.linear_model import Lasso
 from sklearn.utils import check_random_state
 from sklearn.linear_model import LogisticRegression
 from sklearn.metrics import accuracy_score
 from nilearn._utils.testing import assert_raises_regex, assert_warns
 from nilearn.decoding.space_net import (
-    _EarlyStoppingCallback, _space_net_alpha_grid, MNI152_BRAIN_VOLUME,
-    path_scores, BaseSpaceNet, _crop_mask, _univariate_feature_screening,
-    _get_mask_volume, SpaceNetClassifier, SpaceNetRegressor,
-    _adjust_screening_percentile)
+    _EarlyStoppingCallback, _space_net_alpha_grid, path_scores, BaseSpaceNet,
+    _crop_mask, _univariate_feature_screening, SpaceNetClassifier,
+    SpaceNetRegressor)
+from nilearn._utils.param_validation import _adjust_screening_percentile
 from nilearn.decoding.space_net_solvers import (_graph_net_logistic,
                                                 _graph_net_squared_loss)
 
@@ -112,8 +109,12 @@ def test_params_correctly_propagated_in_constructors():
 
 
 def test_screening_space_net():
+    for verbose in [0, 2]:
+        screening_percentile = assert_warns(UserWarning,
+                                            _adjust_screening_percentile, 10,
+                                            mask, verbose)
     screening_percentile = assert_warns(UserWarning,
-        _adjust_screening_percentile, 10, mask)
+                                        _adjust_screening_percentile, 10, mask)
     # We gave here a very small mask, judging by standards of brain size
     # thus the screening_percentile_ corrected for brain size should
     # be 100%
@@ -215,8 +216,12 @@ def test_log_reg_vs_graph_net_two_classes_iris(C=.01, tol=1e-10,
         mask=mask, alphas=1. / C / X.shape[0], l1_ratios=1., tol=tol,
         verbose=0, max_iter=1000, penalty="tv-l1", standardize=False,
         screening_percentile=100.).fit(X_, y)
-    sklogreg = LogisticRegression(penalty="l1", fit_intercept=True,
-                                  tol=tol, C=C).fit(X, y)
+    sklogreg = LogisticRegression(penalty="l1",
+                                  fit_intercept=True,
+                                  solver='liblinear',
+                                  tol=tol,
+                                  C=C,
+                                  ).fit(X, y)
 
     # compare supports
     np.testing.assert_array_equal((np.abs(tvl1.coef_) < zero_thr),
@@ -236,7 +241,7 @@ def test_lasso_vs_graph_net():
                              penalty="graph-net", max_iter=100)
     lasso.fit(X_, y)
     graph_net.fit(X, y)
-    lasso_perf = 0.5 / y.size * extmath.norm(np.dot(
+    lasso_perf = 0.5 / y.size * linalg.norm(np.dot(
         X_, lasso.coef_) - y) ** 2 + np.sum(np.abs(lasso.coef_))
     graph_net_perf = 0.5 * ((graph_net.predict(X) - y) ** 2).mean()
     np.testing.assert_almost_equal(graph_net_perf, lasso_perf, decimal=3)
@@ -281,16 +286,6 @@ def test_univariate_feature_screening(dim=(11, 12, 13), n_samples=10):
         assert_equal(X_.shape[1], n_features_)
         assert_equal(mask_.sum(), n_features_)
         assert_true(n_features_ <= n_features)
-
-
-def test_get_mask_volume():
-    # Test that hard-coded standard mask volume can be corrected computed
-    if os.path.isfile(mni152_brain_mask):
-        assert_equal(MNI152_BRAIN_VOLUME, _get_mask_volume(nibabel.load(
-            mni152_brain_mask)))
-    else:
-        warnings.warn("Couldn't find %s (for testing)" % (
-            mni152_brain_mask))
 
 
 def test_space_net_classifier_subclass():
@@ -371,3 +366,17 @@ def test_checking_inputs_length():
                                         alphas=1. / .01 / X.shape[0],
                                         l1_ratios=1., tol=1e-10,
                                         screening_percentile=100.).fit, X_, y)
+
+
+def test_targets_in_y_space_net_regressor():
+    # This tests whether raises an error when unique targets given in y
+    # are single.
+    iris = load_iris()
+    X, _ = iris.data, iris.target
+    y = np.ones((iris.target.shape))
+
+    imgs, mask = to_niimgs(X, (2, 2, 2))
+    regressor = SpaceNetRegressor(mask=mask)
+    assert_raises_regex(ValueError,
+                        "The given input y must have atleast 2 targets",
+                        regressor.fit, imgs, y)

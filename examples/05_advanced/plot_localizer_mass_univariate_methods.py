@@ -18,7 +18,6 @@ is included in the model.
 """
 # Author: Virgile Fritsch, <virgile.fritsch@inria.fr>, May. 2014
 import numpy as np
-from scipy import linalg
 import matplotlib.pyplot as plt
 from nilearn import datasets
 from nilearn.input_data import NiftiMasker
@@ -81,11 +80,6 @@ from nilearn.plotting import plot_stat_map, show
 
 # Various plotting parameters
 z_slice = 12  # plotted slice
-from nilearn.image.resampling import coord_transform
-affine = neg_log_pvals_anova_unmasked.affine
-_, _, k_slice = coord_transform(0, 0, z_slice,
-                                linalg.inv(affine))
-k_slice = np.round(k_slice)
 
 threshold = - np.log10(0.1)  # 10% corrected
 vmax = min(np.amax(neg_log_pvals_permuted_ols),
@@ -95,14 +89,11 @@ vmax = min(np.amax(neg_log_pvals_permuted_ols),
 fig = plt.figure(figsize=(5, 7), facecolor='k')
 
 display = plot_stat_map(neg_log_pvals_anova_unmasked,
-                        threshold=threshold, cmap=plt.cm.autumn,
+                        threshold=threshold,
                         display_mode='z', cut_coords=[z_slice],
                         figure=fig, vmax=vmax, black_bg=True)
 
-neg_log_pvals_anova_data = neg_log_pvals_anova_unmasked.get_data()
-neg_log_pvals_anova_slice_data = \
-    neg_log_pvals_anova_data[..., k_slice]
-n_detections = (neg_log_pvals_anova_slice_data > threshold).sum()
+n_detections = (neg_log_pvals_anova_unmasked.get_data() > threshold).sum()
 title = ('Negative $\log_{10}$ p-values'
          '\n(Parametric + Bonferroni correction)'
          '\n%d detections') % n_detections
@@ -113,15 +104,12 @@ display.title(title, y=1.2)
 fig = plt.figure(figsize=(5, 7), facecolor='k')
 
 display = plot_stat_map(neg_log_pvals_permuted_ols_unmasked,
-                        threshold=threshold, cmap=plt.cm.autumn,
+                        threshold=threshold,
                         display_mode='z', cut_coords=[z_slice],
                         figure=fig, vmax=vmax, black_bg=True)
 
-neg_log_pvals_permuted_ols_data = \
-    neg_log_pvals_permuted_ols_unmasked.get_data()
-neg_log_pvals_permuted_ols_slice_data = \
-    neg_log_pvals_permuted_ols_data[..., k_slice]
-n_detections = (neg_log_pvals_permuted_ols_slice_data > threshold).sum()
+n_detections = (neg_log_pvals_permuted_ols_unmasked.get_data()
+                > threshold).sum()
 title = ('Negative $\log_{10}$ p-values'
          '\n(Non-parametric + max-type correction)'
          '\n%d detections') % n_detections

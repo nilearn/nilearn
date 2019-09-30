@@ -4,9 +4,9 @@ Test the searchlight module
 # Author: Alexandre Abraham
 # License: simplified BSD
 
-from nose.tools import assert_equal
 import numpy as np
 import nibabel
+from nose.tools import assert_equal
 from nilearn.decoding import searchlight
 
 
@@ -19,8 +19,8 @@ def test_searchlight():
     data = rand.rand(5, 5, 5, frames)
     mask = np.ones((5, 5, 5), np.bool)
     mask_img = nibabel.Nifti1Image(mask.astype(np.int), np.eye(4))
-    # Create a condition array
-    cond = np.arange(frames, dtype=int) > (frames // 2)
+    # Create a condition array, with balanced classes
+    cond = np.arange(frames, dtype=int) >= (frames // 2)
 
     # Create an activation pixel.
     data[2, 2, 2, :] = 0
@@ -28,9 +28,8 @@ def test_searchlight():
     data_img = nibabel.Nifti1Image(data, np.eye(4))
 
     # Define cross validation
-    from sklearn.cross_validation import KFold
-    # avoid using KFold for compatibility with sklearn 0.10-0.13
-    cv = KFold(len(cond), 4)
+    from sklearn.model_selection import KFold
+    cv = KFold(n_splits=4)
     n_jobs = 1
 
     # Run Searchlight with different radii
@@ -72,3 +71,41 @@ def test_searchlight():
     sl.fit(data_img, cond)
     assert_equal(np.where(sl.scores_ == 1)[0].size, 33)
     assert_equal(sl.scores_[2, 2, 2], 1.)
+
+    # group cross validation
+    try:
+        from sklearn.model_selection import LeaveOneGroupOut
+        gcv = LeaveOneGroupOut()
+    except ImportError:
+        # won't import model selection if it's not there.
+        # the groups variable should have no effect.
+        gcv = cv
+
+    groups = np.random.permutation(np.arange(frames, dtype=int) >
+                                   (frames // 2))
+    sl = searchlight.SearchLight(mask_img, process_mask_img=mask_img, radius=1,
+                                 n_jobs=n_jobs, scoring='accuracy', cv=gcv)
+    sl.fit(data_img, cond, groups)
+    assert_equal(np.where(sl.scores_ == 1)[0].size, 7)
+    assert_equal(sl.scores_[2, 2, 2], 1.)
+
+    # adding superfluous group variable
+    sl = searchlight.SearchLight(mask_img, process_mask_img=mask_img, radius=1,
+                                 n_jobs=n_jobs, scoring='accuracy', cv=cv)
+    sl.fit(data_img, cond, groups)
+    assert_equal(np.where(sl.scores_ == 1)[0].size, 7)
+    assert_equal(sl.scores_[2, 2, 2], 1.)
+
+    # Check whether searchlight works on list of 3D images
+    rand = np.random.RandomState(0)
+    data = rand.rand(5, 5, 5)
+    data_img = nibabel.Nifti1Image(data, affine=np.eye(4))
+    imgs = [data_img] * 12
+
+    # labels
+    y = [0, 1] * 6
+
+    # run searchlight on list of 3D images
+    sl = searchlight.SearchLight(mask_img)
+    sl.fit(imgs, y)
+

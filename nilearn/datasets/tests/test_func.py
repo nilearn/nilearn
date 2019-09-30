@@ -8,6 +8,7 @@ import os
 import numpy as np
 import json
 import nibabel
+import gzip
 from sklearn.utils import check_random_state
 
 from nose import with_setup
@@ -107,14 +108,14 @@ def test_fetch_adhd():
 
     sub1 = [3902469, 7774305, 3699991]
     sub2 = [2014113, 4275075, 1019436,
-            3154996, 3884955,   27034,
-            4134561,   27018, 6115230,
-            27037, 8409791,   27011]
+            3154996, 3884955, 27034,
+            4134561, 27018, 6115230,
+            27037, 8409791, 27011]
     sub3 = [3007585, 8697774, 9750701,
-            10064,   21019,   10042,
+            10064, 21019, 10042,
             10128, 2497695, 4164316,
-            1552181, 4046678,   23012]
-    sub4 = [1679142, 1206380,   23008,
+            1552181, 4046678, 23012]
+    sub4 = [1679142, 1206380, 23008,
             4016887, 1418396, 2950754,
             3994098, 3520880, 1517058,
             9744150, 1562298, 3205761, 3624598]
@@ -324,30 +325,14 @@ def test_fetch_localizer_calculation_task():
 @with_setup(tst.setup_tmpdata, tst.teardown_tmpdata)
 def test_fetch_localizer_button_task():
     local_url = "file://" + tst.datadir
-    ids = np.asarray(['S%2d' % i for i in range(94)])
-    ids = ids.view(dtype=[('subject_id', 'S3')])
-    tst.mock_fetch_files.add_csv('cubicwebexport.csv', ids)
-    tst.mock_fetch_files.add_csv('cubicwebexport2.csv', ids)
 
     # Disabled: cannot be tested without actually fetching covariates CSV file
-    # All subjects
+    # Only one subject
     dataset = func.fetch_localizer_button_task(data_dir=tst.tmpdir,
                                                url=local_url,
                                                verbose=0)
-    assert_true(isinstance(dataset.ext_vars, np.recarray))
-    assert_true(isinstance(dataset.cmaps[0], _basestring))
-    assert_equal(dataset.ext_vars.size, 1)
-    assert_equal(len(dataset.cmaps), 1)
-
-    # 20 subjects
-    dataset = func.fetch_localizer_button_task(n_subjects=20,
-                                               data_dir=tst.tmpdir,
-                                               url=local_url,
-                                               verbose=0)
-    assert_true(isinstance(dataset.ext_vars, np.recarray))
-    assert_true(isinstance(dataset.cmaps[0], _basestring))
-    assert_equal(dataset.ext_vars.size, 20)
-    assert_equal(len(dataset.cmaps), 20)
+    assert_true(isinstance(dataset.tmap, _basestring))
+    assert_true(isinstance(dataset.anat, _basestring))
     assert_not_equal(dataset.description, '')
 
 
@@ -374,6 +359,7 @@ def test_fetch_abide_pcp():
                                    quality_checked=False, verbose=0,
                                    derivatives='func_preproc')
 
+
 def test__load_mixed_gambles():
     rng = check_random_state(42)
     n_trials = 48
@@ -388,7 +374,7 @@ def test__load_mixed_gambles():
         assert_equal(len(zmaps), len(gain))
 
 
-@with_setup(setup_mock)
+@with_setup(setup_mock, teardown_mock)
 @with_setup(tst.setup_tmpdata, tst.teardown_tmpdata)
 def test_fetch_mixed_gambles():
     local_url = "file://" + os.path.join(tst.datadir,
@@ -471,45 +457,85 @@ def test_fetch_megatrawls_netmats():
 @with_setup(setup_mock, teardown_mock)
 @with_setup(tst.setup_tmpdata, tst.teardown_tmpdata)
 def test_fetch_cobre():
-    ids_sc = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 15, 16, 21, 22, 25,
-              28, 29, 32, 34, 37, 39, 40, 41, 42, 44, 46, 47, 49, 59, 60,
-              64, 71, 72, 73, 75, 77, 78, 79, 80, 81, 82, 84, 85, 88, 89,
-              92, 94, 96, 97, 98, 99, 100, 101, 103, 105, 106, 108, 109, 110,
-              112, 117, 122, 126, 132, 133, 137, 142, 143, 145]
-    ids_con = [13, 14, 17, 18, 19, 20, 23, 24, 26, 27, 30, 31, 33, 35, 36,
-               38, 43, 45, 48, 50, 51, 52, 53, 54, 55, 56, 57, 58, 61, 62,
-               63, 65, 66, 67, 68, 69, 74, 76, 86, 87, 90, 91, 93, 95, 102,
-               104, 107, 111, 113, 114, 115, 116, 118, 119, 120, 121, 123,
-               124, 125, 127, 128, 129, 130, 131, 134, 135, 136, 138, 139,
-               140, 141, 144, 146, 147]
-    ids_sch = ['szxxx0040%03d' % i for i in ids_sc]
-    ids_cont = ['contxxx0040%03d' % i for i in ids_con]
-    ids = np.asarray(ids_sch + ids_cont, dtype='|U17')
-    sz = np.asarray([i.startswith('s') for i in ids], dtype='<f8')
-    age = np.ones(len(ids), dtype='<f8')
-    sex = np.ones(len(ids), dtype='<f8')
+    ids_n = [40000, 40001, 40002, 40003, 40004, 40005, 40006, 40007, 40008,
+             40009, 40010, 40011, 40012, 40013, 40014, 40015, 40016, 40017,
+             40018, 40019, 40020, 40021, 40022, 40023, 40024, 40025, 40026,
+             40027, 40028, 40029, 40030, 40031, 40032, 40033, 40034, 40035,
+             40036, 40037, 40038, 40039, 40040, 40041, 40042, 40043, 40044,
+             40045, 40046, 40047, 40048, 40049, 40050, 40051, 40052, 40053,
+             40054, 40055, 40056, 40057, 40058, 40059, 40060, 40061, 40062,
+             40063, 40064, 40065, 40066, 40067, 40068, 40069, 40071, 40072,
+             40073, 40074, 40075, 40076, 40077, 40078, 40079, 40080, 40081,
+             40082, 40084, 40085, 40086, 40087, 40088, 40089, 40090, 40091,
+             40092, 40093, 40094, 40095, 40096, 40097, 40098, 40099, 40100,
+             40101, 40102, 40103, 40104, 40105, 40106, 40107, 40108, 40109,
+             40110, 40111, 40112, 40113, 40114, 40115, 40116, 40117, 40118,
+             40119, 40120, 40121, 40122, 40123, 40124, 40125, 40126, 40127,
+             40128, 40129, 40130, 40131, 40132, 40133, 40134, 40135, 40136,
+             40137, 40138, 40139, 40140, 40141, 40142, 40143, 40144, 40145,
+             40146, 40147]
+
+    ids = np.asarray(ids_n, dtype='|U17')
+
+    current_age = np.ones(len(ids), dtype='<f8')
+    gender = np.ones(len(ids), dtype='<f8')
+    handedness = np.ones(len(ids), dtype='<f8')
+
+    subject_type = np.empty(len(ids), dtype="S10")
+    subject_type[0:74] = 'Control'
+    subject_type[74:146] = 'Patient'
+    diagnosis = np.ones(len(ids), dtype='<f8')
+    frames_ok = np.ones(len(ids), dtype='<f8')
     fd = np.ones(len(ids), dtype='<f8')
-    csv = np.rec.array([ids, sz, age, sex, fd],
-                       dtype=[('id', '|U17'), ('sz', '<f8'),
-                              ('age', '<f8'), ('sex', '<f8'),
-                              ('fd', '<f8')])
-    tst.mock_fetch_files.add_csv('cobre_model_group.csv', csv)
+    fd_scrubbed = np.ones(len(ids), dtype='<f8')
+
+    csv = np.rec.array([ids, current_age, gender, handedness, subject_type,
+                        diagnosis, frames_ok, fd, fd_scrubbed],
+                       dtype=[('ID', '|U17'), ('Current Age', '<f8'),
+                              ('Gender', '<f8'), ('Handedness', '<f8'),
+                              ('Subject Type', '|U17'), ('Diagnosis', '<f8'),
+                              ('Frames OK', '<f8'), ('FD', '<f8'),
+                              ('FD Scrubbed', '<f8')])
 
     # Create a dummy 'files'
     cobre_dir = os.path.join(tst.tmpdir, 'cobre')
     os.mkdir(cobre_dir)
-    dummy = os.path.join(cobre_dir, 'files')
-    dummy_data = []
-    for i in np.hstack([ids_sch, ids_cont]):
-        # Func file
-        f = 'fmri_' + i + '_session1_run1.nii.gz'
-        m = 'fmri_' + i + '_session1_run1_extra.mat'
-        dummy_data.append({'downloadUrl': 'whatever', 'name': f})
-        dummy_data.append({'downloadUrl': 'whatever', 'name': m})
 
-    # Add the CSV file
+    # Create the tsv
+    name_f = os.path.join(cobre_dir, 'phenotypic_data.tsv')
+    with open(name_f, 'wb') as f:
+        header = '# {0}\n'.format('\t'.join(csv.dtype.names))
+        f.write(header.encode())
+        np.savetxt(f, csv, delimiter='\t', fmt='%s')
+
+    # create an empty gz file
+    f_in = open(name_f)
+    name_f_gz = os.path.join(cobre_dir, 'phenotypic_data.tsv.gz')
+    f_out = gzip.open(name_f_gz, 'wb')
+    f_out.close()
+    f_in.close()
+
+    dummy = os.path.join(cobre_dir, '4197885')
+    dummy_data = []
+
+    for i in np.hstack(ids_n):
+        # Func file
+        f = 'fmri_00' + str(i) + '.nii.gz'
+
+        m = 'fmri_00' + str(i) + '.tsv.gz'
+        dummy_data.append({'download_url': 'whatever', 'name': f})
+        dummy_data.append({'download_url': 'whatever', 'name': m})
+
+    # Add the TSV file
     dummy_data.append({
-        'downloadUrl': 'whatever', 'name': 'cobre_model_group.csv'})
+        'download_url': 'whatever', 'name': 'phenotypic_data.tsv.gz'})
+    # Add JSON files
+    dummy_data.append({
+        'download_url': 'whatever', 'name': 'keys_confounds.json'})
+    dummy_data.append({
+        'download_url': 'whatever', 'name': 'keys_phenotypic_data.json'})
+
+    dummy_data = {'files': dummy_data}
     json.dump(dummy_data, open(dummy, 'w'))
     local_url = "file://" + dummy
 
@@ -517,32 +543,128 @@ def test_fetch_cobre():
     cobre_data = func.fetch_cobre(n_subjects=None, data_dir=tst.tmpdir,
                                   url=local_url)
 
-    phenotypic_names = ['description', 'func', 'mat_files', 'phenotypic']
+    phenotypic_names = ['func', 'confounds', 'phenotypic', 'description',
+                        'desc_con', 'desc_phenotypic']
+
     # test length of functional filenames to max 146
     assert_equal(len(cobre_data.func), 146)
-    # test length of corresponding matlab files of same length to max 146
-    assert_equal(len(cobre_data.mat_files), 146)
+    # test length of corresponding confounds files of same length to max 146
+    assert_equal(len(cobre_data.confounds), 146)
     # test return type variables
-    assert_equal(sorted(cobre_data), phenotypic_names)
+    assert_equal(sorted(cobre_data), sorted(phenotypic_names))
     # test functional filenames in a list
     assert_true(isinstance(cobre_data.func, list))
-    # test matlab files in a list
-    assert_true(isinstance(cobre_data.mat_files, list))
-
+    # test confounds files in a list
+    assert_true(isinstance(cobre_data.confounds, list))
     assert_true(isinstance(cobre_data.func[0], _basestring))
     # returned phenotypic data will be an array
     assert_true(isinstance(cobre_data.phenotypic, np.recarray))
-    # data description should not be empty
-    assert_not_equal(cobre_data.description, '')
 
     # Fetch only 30 subjects
     data_30_subjects = func.fetch_cobre(n_subjects=30, url=local_url,
                                         data_dir=tst.tmpdir)
     assert_equal(len(data_30_subjects.func), 30)
-    assert_equal(len(data_30_subjects.mat_files), 30)
+    assert_equal(len(data_30_subjects.confounds), 30)
 
     # Test more than maximum subjects
     test_150_subjects = func.fetch_cobre(n_subjects=150, url=local_url,
                                          data_dir=tst.tmpdir)
     assert_equal(len(test_150_subjects.func), 146)
     os.remove(dummy)
+
+
+@with_setup(setup_mock, teardown_mock)
+@with_setup(tst.setup_tmpdata, tst.teardown_tmpdata)
+def test_fetch_surf_nki_enhanced(data_dir=tst.tmpdir, verbose=0):
+
+    ids = np.asarray(['A00028185', 'A00035827', 'A00037511', 'A00039431',
+                      'A00033747', 'A00035840', 'A00038998', 'A00035072',
+                      'A00037112', 'A00039391'], dtype='U9')
+    age = np.ones(len(ids), dtype='<f8')
+    hand = np.asarray(len(ids) * ['x'], dtype='U1')
+    sex = np.asarray(len(ids) * ['x'], dtype='U1')
+    csv = np.rec.array([ids, age, hand, sex],
+                       dtype=[('id', '|U19'), ('age', '<f8'),
+                              ('hand', 'U1'), ('sex', 'U1')])
+
+    tst.mock_fetch_files.add_csv('NKI_enhanced_surface_phenotypics.csv', csv)
+
+    local_url = 'file://' + os.path.join(tst.datadir)
+
+    nki_data = func.fetch_surf_nki_enhanced(data_dir=tst.tmpdir, url=local_url)
+
+    assert_not_equal(nki_data.description, '')
+    assert_equal(len(nki_data.func_left), 10)
+    assert_equal(len(nki_data.func_right), 10)
+    assert_true(isinstance(nki_data.phenotypic, np.ndarray))
+    assert_equal(nki_data.phenotypic.shape, (10,))
+    assert_not_equal(nki_data.description, '')
+
+
+def _mock_participants_data(n_ids=5):
+    """Maximum 8 ids are allowed to mock
+    """
+    ids = ['sub-pixar052', 'sub-pixar073', 'sub-pixar074', 'sub-pixar110',
+           'sub-pixar042', 'sub-pixar109', 'sub-pixar068', 'sub-pixar007']
+    array_ids = np.asarray(ids[:n_ids], dtype='|U12')
+
+    age = np.ones(len(array_ids), dtype='<f8')
+    age_group = np.asarray(len(array_ids) * ['2yo'], dtype='U3')
+    child_adult = np.asarray(len(array_ids) * ['c'], dtype='U1')
+    gender = np.asarray(len(array_ids) * ['m'], dtype='U1')
+    handedness = np.asarray(len(array_ids) * ['r'], dtype='U1')
+    csv = np.rec.array([array_ids, age, age_group, child_adult, gender,
+                        handedness],
+                       dtype=[('participant_id', '|U12'),
+                              ('Age', '<f8'), ('AgeGroup', 'U3'),
+                              ('Child_Adult', 'U1'), ('Gender', 'U1'),
+                              ('Handedness', 'U1')])
+    return csv
+
+
+@with_setup(setup_mock, teardown_mock)
+@with_setup(tst.setup_tmpdata, tst.teardown_tmpdata)
+def test_fetch_development_fmri_participants():
+    csv = _mock_participants_data()
+    tst.mock_fetch_files.add_csv('participants.tsv', csv)
+    local_url = 'file://' + os.path.join(tst.datadir)
+
+    participants = func._fetch_development_fmri_participants(data_dir=tst.tmpdir,
+                                                             url=local_url,
+                                                             verbose=1)
+    assert_true(isinstance(participants, np.ndarray))
+    assert_equal(participants.shape, (5,))
+
+
+@with_setup(setup_mock, teardown_mock)
+@with_setup(tst.setup_tmpdata, tst.teardown_tmpdata)
+def test_fetch_development_fmri_functional():
+    csv = _mock_participants_data(n_ids=8)
+    local_url = 'file://' + os.path.join(tst.datadir)
+    funcs, confounds = func._fetch_development_fmri_functional(csv,
+                                                               data_dir=tst.tmpdir,
+                                                               url=local_url,
+                                                               verbose=1)
+    assert_equal(len(funcs), 8)
+    assert_equal(len(confounds), 8)
+
+
+@with_setup(tst.setup_tmpdata, tst.teardown_tmpdata)
+def test_fetch_development_fmri():
+    data = func.fetch_development_fmri(n_subjects=2,
+                                       data_dir=tst.tmpdir, verbose=1)
+    assert_equal(len(data.func), 2)
+    assert_equal(len(data.confounds), 2)
+    assert_true(isinstance(data.phenotypic, np.ndarray))
+    assert_equal(data.phenotypic.shape, (2,))
+    assert_not_equal(data.description, '')
+
+    # check reduced confounds
+    confounds = np.recfromcsv(data.confounds[0], delimiter='\t')
+    assert_equal(len(confounds[0]), 15)
+
+    # check full confounds
+    data = func.fetch_development_fmri(n_subjects=2, reduce_confounds=False,
+                                       verbose=1)
+    confounds = np.recfromcsv(data.confounds[0], delimiter='\t')
+    assert_equal(len(confounds[0]), 28)

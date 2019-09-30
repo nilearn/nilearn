@@ -13,7 +13,9 @@ Nilearn usage examples
     :local:
     :depth: 1
 
-General examples
-----------------
+.. _tutorial_examples:
 
-General-purpose and introductory examples for nilearn.
+Tutorial examples
+------------------
+
+Introductory examples that teach how to use nilearn.

@@ -116,7 +116,7 @@ print(stimuli.shape)
 # activity in this voxel.
 
 from sklearn.linear_model import Ridge
-from sklearn.cross_validation import KFold
+from sklearn.model_selection import KFold
 
 ##############################################################################
 # Using 10-fold cross-validation, we partition the data into 10 'folds'.
@@ -126,10 +126,10 @@ from sklearn.cross_validation import KFold
 from sklearn.metrics import r2_score
 
 estimator = Ridge(alpha=100.)
-cv = KFold(len(stimuli), 10)
+cv = KFold(n_splits=10)
 
 scores = []
-for train, test in cv:
+for train, test in cv.split(X=stimuli):
     # we train the Ridge estimator on the training set
     # and predict the fMRI activity for the test set
     predictions = Ridge(alpha=100.).fit(
@@ -152,13 +152,13 @@ cut_score[cut_score < 0] = 0
 # bring the scores into the shape of the background brain
 score_map_img = masker.inverse_transform(cut_score)
 
-thresholded_score_map_img = threshold_img(score_map_img, threshold=1e-6)
+thresholded_score_map_img = threshold_img(score_map_img, threshold=1e-6, copy=False)
 
 ##############################################################################
 # Plotting the statistical map on a background brain, we mark four voxels
 # which we will inspect more closely later on.
 from nilearn.plotting import plot_stat_map
-from nilearn.image.resampling import coord_transform
+from nilearn.image import coord_transform
 
 def index_to_xy_coord(x, y, z=10):
     '''Transforms data index to coordinates of the background + offset'''
