@@ -35,8 +35,6 @@ class HTMLDocument(object):
     use str(document) or document.html to get the content of the web page,
     and document.get_iframe() to have it wrapped in an iframe.
 
-    The head_tpl is meant for display as a full page, eg writing on
-    disk. The body is used for embedding in an existing page.
     """
     _all_open_html_repr = weakref.WeakSet()
 

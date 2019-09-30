@@ -229,12 +229,13 @@ class NiftiMasker(BaseMasker, CacheMixin, ReportMixin):
         try:
             from nilearn import plotting
         except ImportError:
-            mpl_unavail_msg = ('Matplotlib is not imported! '
-                               'No reports will be generated.')
-            warnings.filterwarnings('always', message=mpl_unavail_msg)
-            warnings.warn(category=ImportWarning,
-                          message=mpl_unavail_msg)
-            return [None]
+            with warnings.catch_warnings():
+                mpl_unavail_msg = ('Matplotlib is not imported! '
+                                'No reports will be generated.')
+                warnings.filterwarnings('always', message=mpl_unavail_msg)
+                warnings.warn(category=ImportWarning,
+                            message=mpl_unavail_msg)
+                return [None]
 
         img = self._reporting_data['images']
         mask = self._reporting_data['mask']
@@ -254,7 +255,7 @@ class NiftiMasker(BaseMasker, CacheMixin, ReportMixin):
         init_display.add_contours(mask, levels=[.5], colors='g',
                                   linewidths=2.5)
 
-        if self.transform_ is None:
+        if 'transform' not in self._reporting_data:
             return [init_display]
 
         else:  # if resampling was performed
@@ -263,7 +264,7 @@ class NiftiMasker(BaseMasker, CacheMixin, ReportMixin):
 
             # create display of resampled NiftiImage and mask
             # assuming that resampl_img has same dim as img
-            resampl_img, resampl_mask = self.transform_
+            resampl_img, resampl_mask = self._reporting_data['transform']
             if resampl_img is not None:
                 if len(dim) == 4:
                     # compute middle image from 4D series for plotting
@@ -355,9 +356,7 @@ class NiftiMasker(BaseMasker, CacheMixin, ReportMixin):
                         copy=False, interpolation='nearest')
                 else:  # imgs not provided to fit
                     resampl_imgs = None
-                self.transform_ = [resampl_imgs, self.mask_img_]
-        else:
-            self.transform_ = None
+                self._reporting_data['transform'] = [resampl_imgs, self.mask_img_]
 
         return self
 
