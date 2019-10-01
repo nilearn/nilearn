@@ -140,6 +140,11 @@ of the masker:
     :start-after: # A NiftiMasker with the default strategy
     :end-before: # Plot the generated mask using the .generate_report method
 
+.. figure:: ../auto_examples/04_manipulating_images/images/sphx_glr_plot_mask_computation_002.png
+    :target: ../auto_examples/04_manipulating_images/plot_mask_computation.html
+    :align: center
+    :scale: 40
+
 Alternatively, the mask can be visualized using the `generate_report`
 method of the masker. The generated report can be viewed in a Jupyter notebook,
 opened in a new browser tab using `report.open_in_browser()`,

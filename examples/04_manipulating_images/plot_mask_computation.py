@@ -51,6 +51,7 @@ masker.fit(miyawaki_filename)
 plot_roi(masker.mask_img_, miyawaki_mean_img,
          title="Mask from already masked data")
 
+###############################################################################
 # Plot the generated mask using the .generate_report method
 report = masker.generate_report()
 report
