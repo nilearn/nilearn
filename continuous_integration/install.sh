@@ -20,12 +20,12 @@ create_new_venv() {
     # virtualenv but we want to be in control of the numpy version
     # we are using for example through apt-get install
     deactivate
-    virtualenv --system-site-packages testvenv
+    python -m venv --clear --system-site-packages testvenv
     source testvenv/bin/activate
     pip install nose pytest
 }
 
-print_conda_requirements() {
+print_pip_requirements() {
     # Echo a conda requirement string for example
     # "pip nose python='2.7.3 scikit-learn=*". It has a hardcoded
     # list of possible packages to install and looks at _VERSION
@@ -70,8 +70,8 @@ create_new_conda_env() {
 
     # Configure the conda environment and put it in the path using the
     # provided versions
-    REQUIREMENTS=$(print_conda_requirements)
-    echo "conda requirements string: $REQUIREMENTS"
+    REQUIREMENTS=$(print_pip_requirements)
+    echo "pip requirements string: $REQUIREMENTS"
     source testvenv/bin/activate
     pip install --quiet $REQUIREMENTS
     pip install pytest pytest-cov --quiet
@@ -90,27 +90,26 @@ create_new_conda_env() {
     fi
 }
 
-if [[ "$DISTRIB" == "neurodebian" ]]; then
-    create_new_venv
-    pip install nose-timer
-    bash <(wget -q -O- http://neuro.debian.net/_files/neurodebian-travis.sh)
-    sudo apt-get install -qq python-scipy python-nose python-nibabel python-sklearn python-joblib
+create_new_venv
+pip install nose-timer
+bash <(wget -q -O- http://neuro.debian.net/_files/neurodebian-travis.sh)
+sudo apt-get install -qq python-scipy python-nose python-nibabel python-sklearn python-joblib
 
-elif [[ "$DISTRIB" == "conda" ]]; then
-    create_new_conda_env
-    pip install nose-timer
-    # Note: nibabel is in setup.py install_requires so nibabel will
-    # always be installed eventually. Defining NIBABEL_VERSION is only
-    # useful if you happen to want a specific nibabel version rather
-    # than the latest available one.
-    if [ -n "$NIBABEL_VERSION" ]; then
-        pip install nibabel=="$NIBABEL_VERSION"
-    fi
-
-else
-    echo "Unrecognized distribution ($DISTRIB); cannot setup CI environment."
-    exit 1
-fi
+#else
+#    create_new_conda_env
+#    pip install nose-timer
+#    # Note: nibabel is in setup.py install_requires so nibabel will
+#    # always be installed eventually. Defining NIBABEL_VERSION is only
+#    # useful if you happen to want a specific nibabel version rather
+#    # than the latest available one.
+#    if [ -n "$NIBABEL_VERSION" ]; then
+#        pip install nibabel=="$NIBABEL_VERSION"
+#    fi
+#
+#else
+#    echo "Unrecognized distribution ($DISTRIB); cannot setup CI environment."
+#    exit 1
+#fi
 
 pip install psutil memory_profiler
 
