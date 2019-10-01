@@ -27,6 +27,17 @@ nifti_masker = NiftiMasker(standardize=True, mask_strategy='epi',
                            memory="nilearn_cache", memory_level=2,
                            smoothing_fwhm=8)
 nifti_masker.fit(func_filename)
+mask_img = nifti_masker.mask_img_
+
+###########################################################################
+# Visualize the mask using the plot_roi method
+from nilearn.plotting import plot_roi
+from nilearn.image.image import mean_img
+
+# calculate mean image for the background
+mean_func_img = mean_img(func_filename)
+
+plot_roi(mask_img, mean_func_img, display_mode='y', cut_coords=4, title="Mask")
 
 ###########################################################################
 # Visualize the mask using the 'generate_report' method

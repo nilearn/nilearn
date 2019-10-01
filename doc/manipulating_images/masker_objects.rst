@@ -133,8 +133,15 @@ Alternatively, the mask computation parameters can still be modified.
 See the :class:`NiftiMasker` documentation for a complete list of
 mask computation parameters.
 
-The mask can be visualized using the `generate_report` method of the masker.
-The generated report can be viewed in a Jupyter notebook,
+The mask can be retrieved and visualized from the `mask_img_` attribute
+of the masker:
+
+.. literalinclude:: ../../examples/04_manipulating_images/plot_mask_computation.py
+    :start-after: # A NiftiMasker with the default strategy
+    :end-before: # Plot the generated mask using the .generate_report method
+
+Alternatively, the mask can be visualized using the `generate_report`
+method of the masker. The generated report can be viewed in a Jupyter notebook,
 opened in a new browser tab using `report.open_in_browser()`,
 or saved as a portable HTML file `report.save_as_html(output_filepath)`.
 
