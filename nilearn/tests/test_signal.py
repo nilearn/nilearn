@@ -444,7 +444,7 @@ def test_clean_confounds():
                                    np.zeros((20, 2)))
 
 
-def test_clean_frequencies():
+def test_clean_frequencies_using_power_spectrum_density():
 
     # Create signal
     sx = np.array([np.sin(np.linspace(0, 100, 100) * 1.5),
