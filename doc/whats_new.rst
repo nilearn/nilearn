@@ -13,11 +13,8 @@ NEW
  | - Scikit-learn -- v0.19
  | - Scipy -- v0.19
 
-  :ref:`Generated reports <auto_examples/04_manipulating_images/plot_mask_computation>`
-
-- New module :class:`nilearn.reporting`
-  for generating reports of :class:`nilearn.input_data.NiftiMasker`
-  instances viewable in a web browser, Jupyter Notebook, or VSCode.
+- A new method for :class:`nilearn.input_data.NiftiMasker` instances
+  for generating reports viewable in a web browser, Jupyter Notebook, or VSCode.
 
 - joblib is now a dependency
 
