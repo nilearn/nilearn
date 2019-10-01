@@ -137,12 +137,12 @@ class ReportMixin:
         report : HTMLReport
         """
         if not hasattr(self, '_reporting_data'):
-            warnings.warn('NiftiMasker has not been fitted yet ! '
+            warnings.warn('This object has not been fitted yet ! '
                           'Make sure to run `fit` before inspecting reports.')
             report = _update_template(title='Empty Report',
                                       docstring=('This report was not '
                                                  'generated. Please `fit` the '
-                                                 'NiftiMasker object.'),
+                                                 'object.'),
                                       content=_embed_img(None),
                                       overlay=None,
                                       parameters=dict())
