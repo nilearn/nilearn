@@ -30,7 +30,7 @@ matrix:
       env: DISTRIB="conda" PYTHON_VERSION="3.5"
            NUMPY_VERSION="*" SCIPY_VERSION="*" PANDAS_VERSION="*"
            SCIKIT_LEARN_VERSION="*" MATPLOTLIB_VERSION="*" COVERAGE="true"
-           JOBLIB_VERSION=".11"
+           JOBLIB_VERSION="0.11"
            LXML_VERSION="*"
     - name: "Python 3.6 latest package versions"
       python: "3.6"
