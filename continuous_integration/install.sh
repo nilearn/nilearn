@@ -56,27 +56,27 @@ print_conda_requirements() {
 }
 
 create_new_conda_env() {
-    # Skip Travis related code on circle ci.
-    if [ -z $CIRCLECI ]; then
-        # Deactivate the travis-provided virtual environment and setup a
-        # conda-based environment instead
-        deactivate
-    fi
-
-    # Use the miniconda installer for faster download / install of conda
-    # itself
-    wget https://repo.continuum.io/miniconda/Miniconda3-4.6.14-Linux-x86_64.sh \
-        -O ~/miniconda.sh
-    chmod +x ~/miniconda.sh && ~/miniconda.sh -b
-    export PATH=$HOME/miniconda3/bin:$PATH
-    echo $PATH
-
-    # Configure the conda environment and put it in the path using the
-    # provided versions
+#    # Skip Travis related code on circle ci.
+#    if [ -z $CIRCLECI ]; then
+#        # Deactivate the travis-provided virtual environment and setup a
+#        # conda-based environment instead
+#        deactivate
+#    fi
+#
+#    # Use the miniconda installer for faster download / install of conda
+#    # itself
+#    wget https://repo.continuum.io/miniconda/Miniconda3-4.6.14-Linux-x86_64.sh \
+#        -O ~/miniconda.sh
+#    chmod +x ~/miniconda.sh && ~/miniconda.sh -b
+#    export PATH=$HOME/miniconda3/bin:$PATH
+#    echo $PATH
+#
+#    # Configure the conda environment and put it in the path using the
+#    # provided versions
     REQUIREMENTS=$(print_conda_requirements)
-    echo "conda requirements string: $REQUIREMENTS"
-    conda create -n testenv python==$PYTHON_VERSION --yes
-    source activate testenv
+#    echo "conda requirements string: $REQUIREMENTS"
+#    conda create -n testenv python==$PYTHON_VERSION --yes
+#    source activate testenv
     pip install $REQUIREMENTS
     pip install pytest pytest-cov
 
