@@ -16,39 +16,40 @@ matrix:
   fast_finish: true
   allow_failures:
     # allow_failures keyed to skipping tests.
-    - env: SKIPT_TESTS="true"
+    - env: SKIP_TESTS="true"
   include:
     # without matplotlib
     - name: "Python 3.5 minimum package versions"
       python: "3.5"
       env: DISTRIB="conda" PYTHON_VERSION="3.5"
            NUMPY_VERSION="1.11" SCIPY_VERSION="0.19" PANDAS_VERSION="*"
-           SCIKIT_LEARN_VERSION="0.19" COVERAGE="true" JOBLIB_VERSION="*"
+           SCIKIT_LEARN_VERSION="0.19" COVERAGE="true" JOBLIB_VERSION="0.11"
            LXML_VERSION="*"
     - name: "Python 3.5 latest package versions"
       python: "3.5"
       env: DISTRIB="conda" PYTHON_VERSION="3.5"
            NUMPY_VERSION="*" SCIPY_VERSION="*" PANDAS_VERSION="*"
            SCIKIT_LEARN_VERSION="*" MATPLOTLIB_VERSION="*" COVERAGE="true"
-           JOBLIB_VERSION="0.11"
+           JOBLIB_VERSION=".11"
            LXML_VERSION="*"
     - name: "Python 3.6 latest package versions"
       python: "3.6"
       env: DISTRIB="conda" PYTHON_VERSION="3.6"
            NUMPY_VERSION="*" SCIPY_VERSION="*" PANDAS_VERSION="*"
            SCIKIT_LEARN_VERSION="*" MATPLOTLIB_VERSION="*" COVERAGE="true"
-           JOBLIB_VERSION="*"
+           JOBLIB_VERSION="0.12"
            LXML_VERSION="*"
     - name: "Python 3.7 latest package versions"
       python: "3.7"
       env: DISTRIB="conda" PYTHON_VERSION="3.7"
            NUMPY_VERSION="*" SCIPY_VERSION="*" PANDAS_VERSION="*"
            SCIKIT_LEARN_VERSION="*" MATPLOTLIB_VERSION="*" COVERAGE="true"
-           JOBLIB_VERSION="0.12" LXML_VERSION="*"
+           JOBLIB_VERSION="*" LXML_VERSION="*"
 
   # FLAKE8 linting on diff wrt common ancestor with upstream/master
     # Note: the python value is only there to trigger allow_failures
-    - python: 3.5
+    - name: Python 3.5 Flake8 no tests
+      python: 3.5
       env: DISTRIB="conda" PYTHON_VERSION="3.5" FLAKE8_VERSION="*" SKIP_TESTS="true"
 
 install: source continuous_integration/install.sh
