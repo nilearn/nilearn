@@ -71,14 +71,14 @@ create_new_conda_env() {
     # provided versions
     REQUIREMENTS=$(print_conda_requirements)
     echo "conda requirements string: $REQUIREMENTS"
-    conda create -n --quiet --yes testenv python==$PYTHON_VERSION
+    conda create -n --yes testenv python==$PYTHON_VERSION
     source activate testenv
-    pip install --quiet $REQUIREMENTS
-    pip install --quiet pytest pytest-cov
+    pip install $REQUIREMENTS
+    pip install pytest pytest-cov
 
     if [[ "$INSTALL_MKL" == "true" ]]; then
         # Make sure that MKL is used
-        pip install --quiet mkl
+        pip install mkl
     fi
 }
 
