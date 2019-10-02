@@ -1,4 +1,5 @@
 [run]
 branch = True
 parallel = True
-
+omit =
+    */nilearn/externals/*

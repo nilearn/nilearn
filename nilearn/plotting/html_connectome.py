@@ -7,9 +7,10 @@ from nilearn._utils import replace_parameters
 from .. import datasets
 from . import cm
 
-from .js_plotting_utils import (add_js_lib, HTMLDocument, mesh_to_plotly,
+from .js_plotting_utils import (add_js_lib, mesh_to_plotly,
                                 encode, colorscale, get_html_template,
                                 to_color_strings)
+from nilearn.reporting import HTMLDocument
 
 
 class ConnectomeView(HTMLDocument):

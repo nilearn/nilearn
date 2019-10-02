@@ -2,27 +2,21 @@ import os
 import re
 import base64
 import webbrowser
-import time
 import tempfile
 
 import numpy as np
 import matplotlib
-from numpy.testing import assert_warns, assert_no_warnings
-try:
-    from lxml import etree
-    LXML_INSTALLED = True
-except ImportError:
-    LXML_INSTALLED = False
-import pytest
 
 from nilearn.plotting import js_plotting_utils
 from nilearn import surface
 from nilearn.datasets import fetch_surf_fsaverage
 
-
-# Note: html output by nilearn view_* functions
-# should validate as html5 using https://validator.w3.org/nu/ with no
-# warnings
+from numpy.testing import assert_warns
+try:
+    from lxml import etree
+    LXML_INSTALLED = True
+except ImportError:
+    LXML_INSTALLED = False
 
 
 def _normalize_ws(text):
@@ -286,64 +280,6 @@ def _check_open_in_browser(html):
             os.remove(temp_file)
         except Exception:
             pass
-
-
-def test_temp_file_removing():
-    html = js_plotting_utils.HTMLDocument('hello')
-    wb_open = webbrowser.open
-    webbrowser.open = _open_mock
-    fd, tmpfile = tempfile.mkstemp()
-    try:
-        os.close(fd)
-        with pytest.warns(None) as record:
-            html.open_in_browser(file_name=tmpfile, temp_file_lifetime=None)
-        for warning in record:
-            assert "Saved HTML in temporary file" not in str(warning.message)
-        html.open_in_browser(temp_file_lifetime=.5)
-        assert os.path.isfile(html._temp_file)
-        time.sleep(1.5)
-        assert not os.path.isfile(html._temp_file)
-        with pytest.warns(UserWarning, match="Saved HTML in temporary file"):
-            html.open_in_browser(temp_file_lifetime=None)
-        html.open_in_browser(temp_file_lifetime=None)
-        assert os.path.isfile(html._temp_file)
-        time.sleep(1.5)
-        assert os.path.isfile(html._temp_file)
-    finally:
-        webbrowser.open = wb_open
-        try:
-            os.remove(html._temp_file)
-        except Exception:
-            pass
-        try:
-            os.remove(tmpfile)
-        except Exception:
-            pass
-
-
-def _open_views():
-    return [js_plotting_utils.HTMLDocument('') for i in range(12)]
-
-
-def _open_one_view():
-    for i in range(12):
-        v = js_plotting_utils.HTMLDocument('')
-    return v
-
-
-def test_open_view_warning():
-    # opening many views (without deleting the SurfaceView objects)
-    # should raise a warning about memory usage
-    assert_warns(UserWarning, _open_views)
-    assert_no_warnings(_open_one_view)
-    js_plotting_utils.set_max_img_views_before_warning(15)
-    assert_no_warnings(_open_views)
-    js_plotting_utils.set_max_img_views_before_warning(-1)
-    assert_no_warnings(_open_views)
-    js_plotting_utils.set_max_img_views_before_warning(None)
-    assert_no_warnings(_open_views)
-    js_plotting_utils.set_max_img_views_before_warning(6)
-    assert_warns(UserWarning, _open_views)
 
 
 def test_to_color_strings():

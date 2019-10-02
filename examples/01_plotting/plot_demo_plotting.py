@@ -33,6 +33,7 @@ haxby_func_filename = haxby_dataset.func[0]
 motor_images = datasets.fetch_neurovault_motor_task()
 stat_img = motor_images.images[0]
 
+
 ###############################################################################
 # Plotting statistical maps with function `plot_stat_map`
 # --------------------------------------------------------
@@ -54,15 +55,15 @@ plotting.plot_stat_map(stat_img,
 # for more details.
 
 view = plotting.view_img(stat_img, threshold=3)
+# In a Jupyter notebook, if ``view`` is the output of a cell, it will
+# be displayed below the cell
+view
+
+##############################################################################
 
 # uncomment this to open the plot in a web browser:
 # view.open_in_browser()
 
-##############################################################################
-# In a Jupyter notebook, if ``view`` is the output of a cell, it will
-# be displayed below the cell
-
-view
 
 ###############################################################################
 # Plotting statistical maps in a glass brain with function `plot_glass_brain`

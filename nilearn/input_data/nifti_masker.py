@@ -4,6 +4,7 @@ Transformer used to apply basic transformations on MRI data.
 # Author: Gael Varoquaux, Alexandre Abraham
 # License: simplified BSD
 
+import warnings
 from copy import copy as copy_object
 
 from nilearn._utils.compat import Memory
@@ -12,6 +13,7 @@ from .base_masker import BaseMasker, filter_and_extract
 from .. import _utils
 from .. import image
 from .. import masking
+from nilearn.reporting import ReportMixin
 from .._utils import CacheMixin
 from .._utils.class_inspect import get_params
 from .._utils.niimg import img_data_dtype
@@ -63,7 +65,7 @@ def filter_and_mask(imgs, mask_img_, parameters,
     return data
 
 
-class NiftiMasker(BaseMasker, CacheMixin):
+class NiftiMasker(BaseMasker, CacheMixin, ReportMixin):
     """Applying a mask to extract time-series from Niimg-like objects.
 
     NiftiMasker is useful when preprocessing (detrending, standardization,
@@ -184,7 +186,7 @@ class NiftiMasker(BaseMasker, CacheMixin):
                  mask_strategy='background',
                  mask_args=None, sample_mask=None, dtype=None,
                  memory_level=1, memory=Memory(cachedir=None),
-                 verbose=0
+                 verbose=0, reports=True,
                  ):
         # Mask is provided or computed
         self.mask_img = mask_img
@@ -206,8 +208,77 @@ class NiftiMasker(BaseMasker, CacheMixin):
         self.memory = memory
         self.memory_level = memory_level
         self.verbose = verbose
+        self.reports = reports
+        self._report_description = ('This report shows the input Nifti '
+                                    'image overlaid with the outlines of the '
+                                    'mask (in green). We recommend to inspect '
+                                    'the report for the overlap between the '
+                                    'mask and its input image. ')
+        self._overlay_text = ('\n To see the input Nifti image before '
+                              'resampling, hover over the displayed image.')
 
         self._shelving = False
+
+    def _reporting(self):
+        """
+        Returns
+        -------
+        displays : list
+            A list of all displays to be rendered.
+        """
+        try:
+            from nilearn import plotting
+        except ImportError:
+            with warnings.catch_warnings():
+                mpl_unavail_msg = ('Matplotlib is not imported! '
+                                'No reports will be generated.')
+                warnings.filterwarnings('always', message=mpl_unavail_msg)
+                warnings.warn(category=ImportWarning,
+                            message=mpl_unavail_msg)
+                return [None]
+
+        img = self._reporting_data['images']
+        mask = self._reporting_data['mask']
+        if img is not None:
+            dim = image.load_img(img).shape
+            if len(dim) == 4:
+                # compute middle image from 4D series for plotting
+                img = image.index_img(img, dim[-1] // 2)
+        else:  # images were not provided to fit
+            img = mask
+
+        # create display of retained input mask, image
+        # for visual comparison
+        init_display = plotting.plot_img(img,
+                                         black_bg=False,
+                                         cmap='CMRmap_r')
+        init_display.add_contours(mask, levels=[.5], colors='g',
+                                  linewidths=2.5)
+
+        if 'transform' not in self._reporting_data:
+            return [init_display]
+
+        else:  # if resampling was performed
+            self._report_description = (self._report_description +
+                                        self._overlay_text)
+
+            # create display of resampled NiftiImage and mask
+            # assuming that resampl_img has same dim as img
+            resampl_img, resampl_mask = self._reporting_data['transform']
+            if resampl_img is not None:
+                if len(dim) == 4:
+                    # compute middle image from 4D series for plotting
+                    resampl_img = image.index_img(resampl_img, dim[-1] // 2)
+            else:  # images were not provided to fit
+                resampl_img = resampl_mask
+
+            final_display = plotting.plot_img(resampl_img,
+                                              black_bg=False,
+                                              cmap='CMRmap_r')
+            final_display.add_contours(resampl_mask, levels=[.5],
+                                       colors='g', linewidths=2.5)
+
+        return [init_display, final_display]
 
     def _check_fitted(self):
         if not hasattr(self, 'mask_img_'):
@@ -254,6 +325,11 @@ class NiftiMasker(BaseMasker, CacheMixin):
         else:
             self.mask_img_ = _utils.check_niimg_3d(self.mask_img)
 
+        if self.reports:  # save inputs for reporting
+            self._reporting_data = {'images': imgs, 'mask': self.mask_img_}
+        else:
+            self._reporting_data = None
+
         # If resampling is requested, resample also the mask
         # Resampling: allows the user to change the affine, the shape or both
         if self.verbose > 0:
@@ -263,14 +339,25 @@ class NiftiMasker(BaseMasker, CacheMixin):
             target_affine=self.target_affine,
             target_shape=self.target_shape,
             copy=False, interpolation='nearest')
-        if self.target_affine is not None:
+        if self.target_affine is not None:  # resample image to target affine
             self.affine_ = self.target_affine
-        else:
+        else:  # resample image to mask affine
             self.affine_ = self.mask_img_.affine
         # Load data in memory
         self.mask_img_.get_data()
         if self.verbose > 10:
             print("[%s.fit] Finished fit" % self.__class__.__name__)
+
+        if (self.target_shape is not None) or (self.target_affine is not None):
+            if self.reports:
+                if imgs is not None:
+                    resampl_imgs = self._cache(image.resample_img)(
+                        imgs, target_affine=self.affine_,
+                        copy=False, interpolation='nearest')
+                else:  # imgs not provided to fit
+                    resampl_imgs = None
+                self._reporting_data['transform'] = [resampl_imgs, self.mask_img_]
+
         return self
 
     def transform_single_imgs(self, imgs, confounds=None, copy=True):

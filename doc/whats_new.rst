@@ -13,6 +13,9 @@ NEW
  | - Scikit-learn -- v0.19
  | - Scipy -- v0.19
 
+- A new method for :class:`nilearn.input_data.NiftiMasker` instances
+  for generating reports viewable in a web browser, Jupyter Notebook, or VSCode.
+
 - joblib is now a dependency
 
 - Parcellation method ReNA: Fast agglomerative clustering based on recursive
