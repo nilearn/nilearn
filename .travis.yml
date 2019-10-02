@@ -2,7 +2,6 @@ sudo: required
 dist: xenial
 
 language: python
-python: "3.5"
 
 virtualenv:
   system_site_packages: true
@@ -16,25 +15,33 @@ matrix:
   # setting the status
   fast_finish: true
   allow_failures:
-    # allow_failures seems to be keyed on the python version.
-    - python: 3.5
+    # allow_failures keyed to skipping tests.
+    - env: SKIPT_TESTS="true"
   include:
     # without matplotlib
-    - env: DISTRIB="conda" PYTHON_VERSION="3.5"
+    - name: "Python 3.5 minimum package versions"
+      python: "3.5"
+      env: DISTRIB="conda" PYTHON_VERSION="3.5"
            NUMPY_VERSION="1.11" SCIPY_VERSION="0.19" PANDAS_VERSION="*"
            SCIKIT_LEARN_VERSION="0.19" COVERAGE="true" JOBLIB_VERSION="*"
            LXML_VERSION="*"
-    - env: DISTRIB="conda" PYTHON_VERSION="3.5"
+    - name: "Python 3.5 latest package versions"
+      python: "3.5"
+      env: DISTRIB="conda" PYTHON_VERSION="3.5"
            NUMPY_VERSION="*" SCIPY_VERSION="*" PANDAS_VERSION="*"
            SCIKIT_LEARN_VERSION="*" MATPLOTLIB_VERSION="*" COVERAGE="true"
            JOBLIB_VERSION="0.11"
            LXML_VERSION="*"
-    - env: DISTRIB="conda" PYTHON_VERSION="3.6"
+    - name: "Python 3.6 latest package versions"
+      python: "3.6"
+      env: DISTRIB="conda" PYTHON_VERSION="3.6"
            NUMPY_VERSION="*" SCIPY_VERSION="*" PANDAS_VERSION="*"
            SCIKIT_LEARN_VERSION="*" MATPLOTLIB_VERSION="*" COVERAGE="true"
            JOBLIB_VERSION="*"
            LXML_VERSION="*"
-    - env: DISTRIB="conda" PYTHON_VERSION="3.7"
+    - name: "Python 3.7 latest package versions"
+      python: "3.7"
+      env: DISTRIB="conda" PYTHON_VERSION="3.7"
            NUMPY_VERSION="*" SCIPY_VERSION="*" PANDAS_VERSION="*"
            SCIKIT_LEARN_VERSION="*" MATPLOTLIB_VERSION="*" COVERAGE="true"
            JOBLIB_VERSION="0.12" LXML_VERSION="*"
