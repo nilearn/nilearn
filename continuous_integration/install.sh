@@ -44,8 +44,8 @@ echo_requirements_string() {
         # dereference $PACKAGE_VERSION_VARNAME to figure out the
         # version to install
         PACKAGE_VERSION="${!PACKAGE_VERSION_VARNAME}"
-        if [ -n "$PACKAGE_VERSION" ]; then
-            if [ "$PACKAGE_VERSION" == "*" ]; then
+        if [[ -n "$PACKAGE_VERSION" ]]; then
+            if [[ "$PACKAGE_VERSION" == "*" ]]; then
                 REQUIREMENTS="$REQUIREMENTS $PACKAGE"
             else
                 REQUIREMENTS="$REQUIREMENTS $PACKAGE==$PACKAGE_VERSION"
@@ -57,7 +57,7 @@ echo_requirements_string() {
 
 create_new_travisci_env() {
     REQUIREMENTS=$(echo_requirements_string)
-    pip install $REQUIREMENTS
+    pip install ${REQUIREMENTS}
     pip install pytest pytest-cov
 
     if [[ "$INSTALL_MKL" == "true" ]]; then
@@ -79,7 +79,7 @@ elif [[ "$DISTRIB" == "travisci" ]]; then
     # always be installed eventually. Defining NIBABEL_VERSION is only
     # useful if you happen to want a specific nibabel version rather
     # than the latest available one.
-    if [ -n "$NIBABEL_VERSION" ]; then
+    if [[ -n "$NIBABEL_VERSION" ]]; then
         pip install nibabel=="$NIBABEL_VERSION"
     fi
 
