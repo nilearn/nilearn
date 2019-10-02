@@ -45,7 +45,11 @@ print_conda_requirements() {
         # version to install
         PACKAGE_VERSION="${!PACKAGE_VERSION_VARNAME}"
         if [ -n "$PACKAGE_VERSION" ]; then
-            REQUIREMENTS="$REQUIREMENTS $PACKAGE==$PACKAGE_VERSION"
+            if [ "$PACKAGE_VERSION" == "*" ]; then
+                REQUIREMENTS="$REQUIREMENTS $PACKAGE"
+            else
+                REQUIREMENTS="$REQUIREMENTS $PACKAGE==$PACKAGE_VERSION"
+            fi
         fi
     done
     echo $REQUIREMENTS
