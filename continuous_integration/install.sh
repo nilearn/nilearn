@@ -71,7 +71,7 @@ create_new_conda_env() {
     # provided versions
     REQUIREMENTS=$(print_conda_requirements)
     echo "conda requirements string: $REQUIREMENTS"
-    conda create -n --yes testenv python==$PYTHON_VERSION
+    conda create -n testenv python==$PYTHON_VERSION --yes
     source activate testenv
     pip install $REQUIREMENTS
     pip install pytest pytest-cov
