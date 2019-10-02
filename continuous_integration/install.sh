@@ -25,7 +25,7 @@ create_new_venv() {
     pip install nose pytest
 }
 
-print_conda_requirements() {
+echo_requirements_string() {
     # Echo a conda requirement string for example
     # "pip nose python='2.7.3 scikit-learn=*". It has a hardcoded
     # list of possible packages to install and looks at _VERSION
@@ -55,8 +55,8 @@ print_conda_requirements() {
     echo $REQUIREMENTS
 }
 
-create_new_conda_env() {
-    REQUIREMENTS=$(print_conda_requirements)
+create_new_travisci_env() {
+    REQUIREMENTS=$(echo_requirements_string)
     pip install $REQUIREMENTS
     pip install pytest pytest-cov
 
@@ -72,8 +72,8 @@ if [[ "$DISTRIB" == "neurodebian" ]]; then
     bash <(wget -q -O- http://neuro.debian.net/_files/neurodebian-travis.sh)
     sudo apt-get install -qq python-scipy python-nose python-nibabel python-sklearn python-joblib
 
-elif [[ "$DISTRIB" == "conda" ]]; then
-    create_new_conda_env
+elif [[ "$DISTRIB" == "travisci" ]]; then
+    create_new_travisci_env
     pip install nose-timer
     # Note: nibabel is in setup.py install_requires so nibabel will
     # always be installed eventually. Defining NIBABEL_VERSION is only
