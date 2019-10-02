@@ -20,12 +20,12 @@ create_new_venv() {
     # virtualenv but we want to be in control of the numpy version
     # we are using for example through apt-get install
     deactivate
-    python -m venv --clear --system-site-packages testvenv
+    virtualenv --system-site-packages testvenv
     source testvenv/bin/activate
     pip install nose pytest
 }
 
-print_pip_requirements() {
+print_conda_requirements() {
     # Echo a conda requirement string for example
     # "pip nose python='2.7.3 scikit-learn=*". It has a hardcoded
     # list of possible packages to install and looks at _VERSION
@@ -62,54 +62,48 @@ create_new_conda_env() {
 
     # Use the miniconda installer for faster download / install of conda
     # itself
-	# wget https://repo.continuum.io/miniconda/Miniconda3-4.6.14-Linux-x86_64.sh \
-    #    -O ~/miniconda.sh
-    # chmod +x ~/miniconda.sh && ~/miniconda.sh -b
-    # export PATH=$HOME/miniconda3/bin:$PATH
-    # echo $PATH
+    wget https://repo.continuum.io/miniconda/Miniconda3-4.6.14-Linux-x86_64.sh \
+        -O ~/miniconda.sh
+    chmod +x ~/miniconda.sh && ~/miniconda.sh -b
+    export PATH=$HOME/miniconda3/bin:$PATH
+    echo $PATH
 
     # Configure the conda environment and put it in the path using the
     # provided versions
-    REQUIREMENTS=$(print_pip_requirements)
-    echo "pip requirements string: $REQUIREMENTS"
-    source testvenv/bin/activate
+    REQUIREMENTS=$(print_conda_requirements)
+    echo "conda requirements string: $REQUIREMENTS"
+    conda create -n testenv --quiet --yes
+    source activate testenv
     pip install --quiet $REQUIREMENTS
-    pip install pytest pytest-cov --quiet
-   # conda create -n testenv --quiet --yes $REQUIREMENTS
-   # source activate testenv
-   # conda install pytest pytest-cov --yes
+    pip install --quiet pytest pytest-cov
 
     if [[ "$INSTALL_MKL" == "true" ]]; then
         # Make sure that MKL is used
-        pip install mkl
-    elif [[ -z $CIRCLECI ]]; then
-        # Travis doesn't use MKL but circle ci does for speeding up examples
-        # generation in the html documentation.
-        # Make sure that MKL is not used
-        conda remove --yes --features mkl || echo "MKL not installed"
+        pip install --quiet mkl
     fi
 }
 
-create_new_venv
-pip install nose-timer
-bash <(wget -q -O- http://neuro.debian.net/_files/neurodebian-travis.sh)
-sudo apt-get install -qq python-scipy python-nose python-nibabel python-sklearn python-joblib
+if [[ "$DISTRIB" == "neurodebian" ]]; then
+    create_new_venv
+    pip install nose-timer
+    bash <(wget -q -O- http://neuro.debian.net/_files/neurodebian-travis.sh)
+    sudo apt-get install -qq python-scipy python-nose python-nibabel python-sklearn python-joblib
 
-#else
-#    create_new_conda_env
-#    pip install nose-timer
-#    # Note: nibabel is in setup.py install_requires so nibabel will
-#    # always be installed eventually. Defining NIBABEL_VERSION is only
-#    # useful if you happen to want a specific nibabel version rather
-#    # than the latest available one.
-#    if [ -n "$NIBABEL_VERSION" ]; then
-#        pip install nibabel=="$NIBABEL_VERSION"
-#    fi
-#
-#else
-#    echo "Unrecognized distribution ($DISTRIB); cannot setup CI environment."
-#    exit 1
-#fi
+elif [[ "$DISTRIB" == "conda" ]]; then
+    create_new_conda_env
+    pip install nose-timer
+    # Note: nibabel is in setup.py install_requires so nibabel will
+    # always be installed eventually. Defining NIBABEL_VERSION is only
+    # useful if you happen to want a specific nibabel version rather
+    # than the latest available one.
+    if [ -n "$NIBABEL_VERSION" ]; then
+        pip install nibabel=="$NIBABEL_VERSION"
+    fi
+
+else
+    echo "Unrecognized distribution ($DISTRIB); cannot setup CI environment."
+    exit 1
+fi
 
 pip install psutil memory_profiler
 
