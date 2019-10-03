@@ -1643,3 +1643,24 @@ ul#tab li div.contents p{
 p.sphx-glr-horizontal {
     margin-top: 2em;
 }
+
+
+
+/* Sphinx-gallery Report embedding */
+/* Authored by Elizabeth Dupre (emdupre) & Gael Varoquaux (GaelVaroquaux) for the Nilearn Project */
+div.sg-report {
+    padding: 0pt;
+    transform: scale(.95);
+}
+
+div.sg-report iframe {
+    display: block;
+    border-style: none;
+    transform: scale(.85);
+    height: 470px;
+    margin-left: -12%; /* Negative because of .8 scaling */
+    margin-top: -4%;
+    padding: 0pt;
+    margin-bottom: 0pt;
+    width: 126%; /* More than 100% because of .8 scaling */
+}

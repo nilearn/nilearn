@@ -20,7 +20,7 @@ from nistats.design_matrix import make_first_level_design_matrix
 from nistats.first_level_model import (FirstLevelModel,
                                        first_level_models_from_bids,
                                        )
-from nistats.reporting.glm_reporter import make_glm_report
+from nistats.reporting import make_glm_report
 from nistats.second_level_model import SecondLevelModel
 from nistats.utils import get_design_from_fslmat
 
