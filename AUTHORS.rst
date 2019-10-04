@@ -43,7 +43,7 @@ Mehdi Rahim, Philippe Gervais where payed by the `NiConnect
 project, funded by the French `Investissement d'Avenir
 <http://www.gouvernement.fr/investissements-d-avenir-cgi>`_.
 
-NiLearn is also supported by `DigiCosme <https://digicosme.lri.fr>`_ |digicomse logo|
+NiLearn is also supported by `DigiCosme <https://digicosme.lri.fr>`_ |digicosme logo|
 
 .. _citing:
 
