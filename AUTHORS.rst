@@ -25,6 +25,7 @@ The nilearn core developers are:
 * Bertrand Thirion https://github.com/bthirion
 * Chris Gorgolewski https://github.com/chrisgorgo
 * Danilo Bzdok https://github.com/banilo
+* Elizabeth DuPre https://github.com/emdupre
 * Gael Varoquaux https://github.com/GaelVaroquaux
 * Jerome Dockes https://github.com/jeromedockes
 * Julia Huntenburg https://github.com/juhuntenburg
