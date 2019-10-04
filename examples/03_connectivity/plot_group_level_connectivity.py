@@ -7,7 +7,7 @@ regions of interest : correlation, partial correlation, and tangent space
 embedding.
 
 The resulting connectivity coefficients can be used to
-discriminate children from adults. In general, the **tangent kind**
+discriminate children from adults. In general, the tangent space embedding
 **outperforms** the standard correlations: see `Dadi et al 2019
 <https://www.sciencedirect.com/science/article/pii/S1053811919301594>`_
 for a careful study.
@@ -123,7 +123,7 @@ plotting.plot_connectome(
 # ----------------------------------------------------------
 # We can use **both** correlations and partial correlations to capture
 # reproducible connectivity patterns at the group-level.
-# This is done by the **tangent** kind.
+# This is done by the tangent space embedding.
 tangent_measure = ConnectivityMeasure(kind='tangent')
 
 ###############################################################################
@@ -146,12 +146,12 @@ for i, (matrix, ax) in enumerate(zip(tangent_matrices, axes)):
 
 ###############################################################################
 # The average tangent matrix cannot be interpreted, as individual matrices
-# represent deviations from the mean
+# represent deviations from the mean, which is set to 0.
 
 ###############################################################################
 # What kind of connectivity is most powerful for classification?
 # --------------------------------------------------------------
-# we will use connectivity matrices as features to distinguish children from
+# We will use connectivity matrices as features to distinguish children from
 # adults. We use cross-validation and measure classification accuracy to
 # compare the different kinds of connectivity matrices.
 # We use random splits of the subjects into training/testing sets.

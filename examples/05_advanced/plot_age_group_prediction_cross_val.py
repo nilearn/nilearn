@@ -7,7 +7,7 @@ regions of interest : correlation, partial correlation, and tangent space
 embedding.
 
 The resulting connectivity coefficients can be used to
-discriminate children from adults. In general, the **tangent kind**
+discriminate children from adults. In general, the tangent space embedding
 **outperforms** the standard correlations: see `Dadi et al 2019
 <https://www.sciencedirect.com/science/article/pii/S1053811919301594>`_
 for a careful study.
