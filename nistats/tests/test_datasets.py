@@ -3,11 +3,10 @@ import os
 
 import numpy as np
 import pandas as pd
-
-from nibabel.tmpdirs import InTemporaryDirectory
+from nibabel.tmpdirs import TemporaryDirectory
 from nilearn._utils.compat import _basestring
+from nilearn.datasets import func, utils
 from nilearn.datasets.tests import test_utils as tst
-from nilearn.datasets import utils, func
 from nilearn.datasets.utils import _get_dataset_dir
 from nose import with_setup
 from nose.tools import (assert_equal,
@@ -15,7 +14,7 @@ from nose.tools import (assert_equal,
                         )
 
 from nistats import datasets
-
+from nistats.datasets import fetch_openneuro_dataset_index
 
 currdir = os.path.dirname(os.path.abspath(__file__))
 datadir = os.path.join(currdir, 'data')
@@ -41,35 +40,6 @@ def test_fetch_bids_langloc_dataset():
 
     assert_true(isinstance(datadir, _basestring))
     assert_true(isinstance(dl_files, list))
-
-
-@with_setup(setup_mock, teardown_mock)
-@with_setup(tst.setup_tmpdata, tst.teardown_tmpdata)
-def test_fetch_openneuro_dataset_index():
-    dataset_version = 'ds000030_R1.0.4'
-    data_prefix = '{}/{}/uncompressed'.format(
-        dataset_version.split('_')[0], dataset_version)
-    data_dir = _get_dataset_dir(data_prefix, data_dir=tst.tmpdir,
-                                verbose=1)
-    url_file = os.path.join(data_dir, 'urls.json')
-    # Prepare url files for subject and filter tests
-    file_list = [data_prefix + '/stuff.html',
-                 data_prefix + '/sub-xxx.html',
-                 data_prefix + '/sub-yyy.html',
-                 data_prefix + '/sub-xxx/ses-01_task-rest.txt',
-                 data_prefix + '/sub-xxx/ses-01_task-other.txt',
-                 data_prefix + '/sub-xxx/ses-02_task-rest.txt',
-                 data_prefix + '/sub-xxx/ses-02_task-other.txt',
-                 data_prefix + '/sub-yyy/ses-01.txt',
-                 data_prefix + '/sub-yyy/ses-02.txt']
-    json.dump(file_list, open(url_file, 'w'))
-
-    # Only 1 subject and not subject specific files get downloaded
-    datadir, dl_files = datasets.fetch_openneuro_dataset_index(
-        tst.tmpdir, dataset_version)
-    assert_true(isinstance(datadir, _basestring))
-    assert_true(isinstance(dl_files, list))
-    assert_true(len(dl_files) == 9)
 
 
 def test_select_from_index():
@@ -118,6 +88,30 @@ def test_select_from_index():
         exclusion_filters=['*ses-01*'])
     assert_true(len(new_urls) == 1)
     assert_true(data_prefix + '/sub-xxx/ses-02_task-rest.txt' in new_urls)
+
+
+def test_fetch_openneuro_dataset_index():
+    with TemporaryDirectory() as tmpdir:
+        dataset_version = 'ds000030_R1.0.4'
+        subdir_names = ['ds000030', 'ds000030_R1.0.4', 'uncompressed']
+        tmp_list = []
+        for subdir in subdir_names:
+            tmp_list.append(subdir)
+            subdirpath = os.path.join(tmpdir, *tmp_list)
+            os.mkdir(subdirpath)
+
+        filepath = os.path.join(subdirpath, 'urls.json')
+        mock_json_content = ['junk1', 'junk2']
+        with open(filepath, 'w') as f:
+            json.dump(mock_json_content, f)
+        urls_path, urls = fetch_openneuro_dataset_index(
+                data_dir=tmpdir,
+                dataset_version=dataset_version,
+                verbose=1,
+                )
+        urls_path = urls_path.replace('/', os.sep)
+        assert urls_path == filepath
+        assert urls == mock_json_content
 
 
 @with_setup(setup_mock, teardown_mock)

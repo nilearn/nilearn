@@ -1,22 +1,32 @@
 #!/usr/bin/env python
+import json
 import os
+
+try:
+    import boto3
+except ImportError:
+    BOTO_INSTALLED = False
+else:
+    BOTO_INSTALLED = True
 
 import numpy as np
 import pandas as pd
 import scipy.linalg as spl
-
 from nibabel.tmpdirs import InTemporaryDirectory
+from nilearn._utils.compat import _basestring
 from nilearn.datasets.tests import test_utils as tst
+from nilearn.datasets.utils import _get_dataset_dir
 from nose import with_setup
-from nose.tools import (assert_true,
-                        assert_equal,
-                        assert_raises,
-                        )
+from nose.tools import (assert_equal, assert_raises, assert_true)
 from numpy.testing import (assert_almost_equal,
                            assert_array_almost_equal,
+                           dec,
                            )
 from scipy.stats import norm
 
+from nistats._utils.datasets import make_fresh_openneuro_dataset_urls_index
+from nistats._utils.testing import _create_fake_bids_dataset
+from nistats.tests.test_datasets import setup_mock, teardown_mock
 from nistats.utils import (_check_run_tables,
                            _check_and_load_tables,
                            _check_list_length_match,
@@ -29,7 +39,6 @@ from nistats.utils import (_check_run_tables,
                            positive_reciprocal,
                            z_score,
                            )
-from nistats._utils.testing import _create_fake_bids_dataset
 
 
 def test_full_rank():
@@ -184,3 +193,36 @@ def test_get_design_from_fslmat():
             fsl_mat.write('\n')
     design_matrix = get_design_from_fslmat(fsl_mat_path)
     assert_true(design_matrix.shape == matrix.shape)
+
+
+@dec.skipif(not BOTO_INSTALLED)
+@with_setup(setup_mock, teardown_mock)
+@with_setup(tst.setup_tmpdata, tst.teardown_tmpdata)
+def test_make_fresh_openneuro_dataset_urls_index():
+    dataset_version = 'ds000030_R1.0.4'
+    data_prefix = '{}/{}/uncompressed'.format(
+        dataset_version.split('_')[0], dataset_version)
+    data_dir = _get_dataset_dir(data_prefix, data_dir=tst.tmpdir,
+                                verbose=1)
+    url_file = os.path.join(data_dir,
+                            'nistats_fetcher_openneuro_dataset_urls.json',
+                            )
+    # Prepare url files for subject and filter tests
+    file_list = [data_prefix + '/stuff.html',
+                 data_prefix + '/sub-xxx.html',
+                 data_prefix + '/sub-yyy.html',
+                 data_prefix + '/sub-xxx/ses-01_task-rest.txt',
+                 data_prefix + '/sub-xxx/ses-01_task-other.txt',
+                 data_prefix + '/sub-xxx/ses-02_task-rest.txt',
+                 data_prefix + '/sub-xxx/ses-02_task-other.txt',
+                 data_prefix + '/sub-yyy/ses-01.txt',
+                 data_prefix + '/sub-yyy/ses-02.txt']
+    with open(url_file, 'w') as f:
+        json.dump(file_list, f)
+
+    # Only 1 subject and not subject specific files get downloaded
+    datadir, dl_files = make_fresh_openneuro_dataset_urls_index(
+        tst.tmpdir, dataset_version)
+    assert_true(isinstance(datadir, _basestring))
+    assert_true(isinstance(dl_files, list))
+    assert_true(len(dl_files) == len(file_list))

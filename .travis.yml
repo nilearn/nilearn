@@ -44,7 +44,7 @@ matrix:
     - env: DISTRIB="conda" PYTHON_VERSION="*"
            NUMPY_VERSION="*" SCIPY_VERSION="*"
            SCIKIT_LEARN_VERSION="*" MATPLOTLIB_VERSION="*" COVERAGE="true"
-           PANDAS_VERSION="*"
+           PANDAS_VERSION="*" BOTO3=true
 install:
     - source continuous_integration/install.sh
 
