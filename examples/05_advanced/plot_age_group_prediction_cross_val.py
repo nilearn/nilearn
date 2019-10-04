@@ -19,7 +19,7 @@ for a careful study.
 # We study only 60 subjects from the dataset, to save computation time.
 from nilearn import datasets
 
-rest_data = datasets.fetch_development_fmri(n_subjects=60)
+development_dataset = datasets.fetch_development_fmri(n_subjects=60)
 
 ###############################################################################
 # We use probabilistic regions of interest (ROIs) from the MSDL atlas.
@@ -30,9 +30,10 @@ msdl_coords = msdl_data.region_coords
 
 masker = NiftiMapsMasker(
     msdl_data.maps, resampling_target="data", t_r=2, detrend=True,
-    low_pass=.1, high_pass=.01, memory='nilearn_cache', memory_level=1).fit([])
+    low_pass=.1, high_pass=.01, memory='nilearn_cache', memory_level=1).fit()
 masked_data = [masker.transform(func, confounds) for
-               (func, confounds) in zip(rest_data.func, rest_data.confounds)]
+               (func, confounds) in zip(
+                   development_dataset.func, development_dataset.confounds)]
 
 ###############################################################################
 # What kind of connectivity is most powerful for classification?
@@ -66,7 +67,7 @@ param_grid = [
 from sklearn.model_selection import GridSearchCV, StratifiedShuffleSplit
 from sklearn.preprocessing import LabelEncoder
 
-groups = [pheno['Child_Adult'] for pheno in rest_data.phenotypic]
+groups = [pheno['Child_Adult'] for pheno in development_dataset.phenotypic]
 classes = LabelEncoder().fit_transform(groups)
 
 cv = StratifiedShuffleSplit(n_splits=30, random_state=0, test_size=10)

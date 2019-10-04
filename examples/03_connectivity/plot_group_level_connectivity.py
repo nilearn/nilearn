@@ -19,7 +19,7 @@ for a careful study.
 # We study only 30 subjects from the dataset, to save computation time.
 from nilearn import datasets
 
-rest_data = datasets.fetch_development_fmri(n_subjects=30)
+development_dataset = datasets.fetch_development_fmri(n_subjects=30)
 
 ###############################################################################
 # We use probabilistic regions of interest (ROIs) from the MSDL atlas.
@@ -39,7 +39,7 @@ from nilearn import input_data
 
 masker = input_data.NiftiMapsMasker(
     msdl_data.maps, resampling_target="data", t_r=2, detrend=True,
-    low_pass=.1, high_pass=.01, memory='nilearn_cache', memory_level=1).fit([])
+    low_pass=.1, high_pass=.01, memory='nilearn_cache', memory_level=1).fit()
 
 ###############################################################################
 # Then we compute region signals and extract useful phenotypic informations.
@@ -47,7 +47,9 @@ children = []
 pooled_subjects = []
 groups = []  # child or adult
 for func_file, confound_file, phenotypic in zip(
-        rest_data.func, rest_data.confounds, rest_data.phenotypic):
+        development_dataset.func,
+        development_dataset.confounds,
+        development_dataset.phenotypic):
     time_series = masker.transform(func_file, confounds=confound_file)
     pooled_subjects.append(time_series)
     if phenotypic['Child_Adult'] == 'child':
@@ -169,7 +171,6 @@ pooled_subjects = np.asarray(pooled_subjects)
 
 scores = {}
 for kind in kinds:
-    print(kind)
     scores[kind] = []
     for train, test in cv.split(pooled_subjects, classes):
         # *ConnectivityMeasure* can output the estimated subjects coefficients
