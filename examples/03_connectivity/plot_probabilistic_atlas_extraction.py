@@ -88,11 +88,12 @@ plotting.show()
 
 view = plotting.view_connectome(correlation_matrix, coords, threshold='80%')
 
+# In a Jupyter notebook, if ``view`` is the output of a cell, it will
+# be displayed below the cell
+view
+
+##############################################################################
+
 # uncomment this to open the plot in a web browser:
 # view.open_in_browser()
 
-##############################################################################
-# In a Jupyter notebook, if ``view`` is the output of a cell, it will
-# be displayed below the cell
-
-view

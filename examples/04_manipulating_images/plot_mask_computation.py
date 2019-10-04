@@ -17,7 +17,6 @@ underlying routine that extract masks from EPI
 
 """
 
-
 from nilearn.input_data import NiftiMasker
 import nilearn.image as image
 from nilearn.plotting import plot_roi, plot_epi, show
@@ -48,9 +47,14 @@ plot_epi(miyawaki_mean_img, title='Mean EPI image')
 masker = NiftiMasker()
 masker.fit(miyawaki_filename)
 
-# Plot the generated mask
+# Plot the generated mask using the mask_img_ attribute
 plot_roi(masker.mask_img_, miyawaki_mean_img,
          title="Mask from already masked data")
+
+###############################################################################
+# Plot the generated mask using the .generate_report method
+report = masker.generate_report()
+report
 
 
 ###############################################################################
@@ -77,7 +81,8 @@ plot_epi(mean_img, title='Mean EPI image')
 # We need to specify an 'epi' mask_strategy, as this is raw EPI data
 masker = NiftiMasker(mask_strategy='epi')
 masker.fit(epi_img)
-plot_roi(masker.mask_img_, mean_img, title='EPI automatic mask')
+report = masker.generate_report()
+report
 
 ###############################################################################
 # Generate mask with strong opening
@@ -90,7 +95,8 @@ plot_roi(masker.mask_img_, mean_img, title='EPI automatic mask')
 # skull parts in the image.
 masker = NiftiMasker(mask_strategy='epi', mask_args=dict(opening=10))
 masker.fit(epi_img)
-plot_roi(masker.mask_img_, mean_img, title='EPI Mask with strong opening')
+report = masker.generate_report()
+report
 
 ###############################################################################
 # Generate mask with a high lower cutoff
@@ -107,8 +113,8 @@ masker = NiftiMasker(mask_strategy='epi',
                      mask_args=dict(upper_cutoff=.9, lower_cutoff=.8,
                                     opening=False))
 masker.fit(epi_img)
-plot_roi(masker.mask_img_, mean_img,
-         title='EPI Mask: high lower_cutoff')
+report = masker.generate_report()
+report
 
 ###############################################################################
 # Computing the mask from the MNI template
@@ -119,9 +125,27 @@ plot_roi(masker.mask_img_, mean_img,
 
 masker = NiftiMasker(mask_strategy='template')
 masker.fit(epi_img)
-plot_roi(masker.mask_img_, mean_img,
-         title='Mask from template')
+report = masker.generate_report()
+report
 
+###############################################################################
+# Compute and resample a mask
+###############################################################################
+#
+# NiftiMasker also allows passing parameters directly to `image.resample_img`.
+# We can specify a `target_affine`, a `target_shape`, or both.
+# For more information on these arguments,
+# see :doc:`plot_affine_transformation`.
+#
+# The NiftiMasker report allows us to see the mask before and after resampling.
+# Simply hover over the report to see the mask from the original image.
+
+import numpy as np
+
+masker = NiftiMasker(mask_strategy='epi', target_affine=np.eye(3) * 8)
+masker.fit(epi_img)
+report = masker.generate_report()
+report
 
 ###############################################################################
 # After mask computation: extracting time series
@@ -136,7 +160,6 @@ trended_data = trended.fit_transform(epi_img)
 detrended_data = detrended.fit_transform(epi_img)
 
 # The timeseries are numpy arrays, so we can manipulate them with numpy
-import numpy as np
 
 print("Trended: mean %.2f, std %.2f" %
       (np.mean(trended_data), np.std(trended_data)))

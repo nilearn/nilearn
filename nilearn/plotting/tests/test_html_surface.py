@@ -97,7 +97,7 @@ def test_fill_html_template():
     info = html_surface.full_brain_info(img)
     html = html_surface._fill_html_template(info)
     check_html(html)
-    assert "* plotly.js (gl3d - minified) v1.38.3" in html.html
+    assert "* plotly.js (gl3d - minified) v1." in html.html
 
 
 def test_view_surf():
@@ -108,13 +108,19 @@ def test_view_surf():
                                   fsaverage['sulc_right'], '90%')
     check_html(html)
     html = html_surface.view_surf(fsaverage['pial_right'], surf_map,
-                                  fsaverage['sulc_right'], .3)
+                                  fsaverage['sulc_right'], .3,
+                                  title="SOME_TITLE")
     check_html(html)
+    assert "SOME_TITLE" in html.html
     html = html_surface.view_surf(fsaverage['pial_right'])
     check_html(html)
     destrieux = datasets.fetch_atlas_surf_destrieux()['map_left']
     html = html_surface.view_surf(
         fsaverage['pial_left'], destrieux, symmetric_cmap=False)
+    check_html(html)
+    html = html_surface.view_surf(fsaverage['pial_right'],
+                                  fsaverage['sulc_right'],
+                                  threshold=None, cmap='Greys')
     check_html(html)
     assert_raises(ValueError, html_surface.view_surf, mesh, mesh[0][::2, 0])
     assert_raises(ValueError, html_surface.view_surf, mesh, mesh[0][:, 0],
@@ -128,7 +134,8 @@ def test_view_img_on_surf():
     check_html(html)
     html = html_surface.view_img_on_surf(img, threshold=0, surf_mesh=fsaverage)
     check_html(html)
-    html = html_surface.view_img_on_surf(img, threshold=.4)
+    html = html_surface.view_img_on_surf(img, threshold=.4, title="SOME_TITLE")
+    assert "SOME_TITLE" in html.html
     check_html(html)
     html = html_surface.view_img_on_surf(
         img, threshold=.4, cmap='hot', black_bg=True)

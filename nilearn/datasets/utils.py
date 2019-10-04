@@ -336,9 +336,13 @@ def _uncompress_file(file_, delete_archive=True, verbose=1):
             processed = True
         elif ext == '.gz' or header.startswith(b'\x1f\x8b'):
             import gzip
-            gz = gzip.open(file_)
             if ext == '.tgz':
                 filename = filename + '.tar'
+            elif ext == '':
+                # For gzip file, we rely on the assumption that there is an extenstion
+                shutil.move(file_, file_ + '.gz')
+                file_ = file_ + '.gz'
+            gz = gzip.open(file_)
             out = open(filename, 'wb')
             shutil.copyfileobj(gz, out, 8192)
             gz.close()
