@@ -3,38 +3,35 @@
 People
 ------
 
-This work is made available by a community of people, amongst which
+This work is made available by a community of people, which
+originated from
 the `INRIA Parietal Project Team <https://team.inria.fr/parietal/>`_
-and the `scikit-learn <http://scikit-learn.org/>`_ folks, in
-particular:
+and the `scikit-learn <http://scikit-learn.org/>`_ but grew much further.
 
-* Alexandre Abraham
-* `Alexandre Gramfort <http://alexandre.gramfort.net>`_
-* Vincent Michel
-* Bertrand Thirion
-* `Fabian Pedregosa <http://fa.bianp.net/>`_
-* `Gael Varoquaux <http://gael-varoquaux.info/>`_
-* Philippe Gervais
-* Michael Eickenberg
-* Danilo Bzdok
-* Loïc Estève
-* Kamalakar Reddy Daddy
-* Elvis Dohmatob
-* Alexandre Abadie
-* Andres Hoyos Idrobo
-* Salma Bougacha
-* Mehdi Rahim
-* Sylvain Lanuzel
-* `Kshitij Chawla <https://github.com/kchawla-pi>`_
+An up-to-date list of contributors can be seen in on `gitub
+<https://github.com/nilearn/nilearn/graphs/contributors>`_
 
-Many of also contributed outside of Parietal, notably:
+Additional credit goes to M. Hanke and Y. Halchenko for data and packaging.
 
-* `Chris Filo Gorgolewski <http://multiplecomparisons.blogspot.fr/>`_
-* `Ben Cipollini <http://cseweb.ucsd.edu/~bcipolli/>`_
-* Julia Huntenburg
-* Martin Perez-Guevara
+.. _core_devs:
 
-Thanks to M. Hanke and Y. Halchenko for data and packaging.
+Core developers
+.................
+
+The nilearn core developers are:
+
+* Alexandre Gramfort https://github.com/agramfort
+* Ben Cipollini https://github.com/bcipolli
+* Bertrand Thirion https://github.com/bthirion
+* Chris Gorgolewski https://github.com/chrisgorgo
+* Danilo Bzdok https://github.com/banilo
+* Gael Varoquaux https://github.com/GaelVaroquaux
+* Jerome Dockes https://github.com/jeromedockes
+* Julia Huntenburg https://github.com/juhuntenburg
+* KamalakerDadi https://github.com/KamalakerDadi
+* Kshitij Chawla https://github.com/kchawla-pi
+* Medhi Rahim https://github.com/mrahim
+* Salma Bougacha https://github.com/salma1601
 
 Funding
 ........
