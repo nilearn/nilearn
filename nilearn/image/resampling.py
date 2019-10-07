@@ -207,7 +207,8 @@ def get_mask_bounds(img):
 
     """
     img = _utils.check_niimg_3d(img)
-    mask = _utils.numpy_conversions._asarray(img.get_data(), dtype=np.bool)
+    data = np.asanyarray(img.dataobj)
+    mask = _utils.numpy_conversions._asarray(data, dtype=np.bool)
     affine = img.affine
     (xmin, xmax), (ymin, ymax), (zmin, zmax) = get_bounds(mask.shape, affine)
     slices = ndimage.find_objects(mask)
@@ -444,7 +445,7 @@ def resample_img(img, target_affine=None, target_shape=None,
     # We now know that some resampling must be done.
     # The value of "copy" is of no importance: output is always a separate
     # array.
-    data = img.get_data()
+    data = np.asanyarray(img.dataobj)
 
     # Get a bounding box for the transformed data
     # Embed target_affine in 4x4 shape if necessary

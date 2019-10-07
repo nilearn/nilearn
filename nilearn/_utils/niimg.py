@@ -40,7 +40,7 @@ def _safe_get_data(img, ensure_finite=False):
     # that's why we invoke a forced call to the garbage collector
     gc.collect()
 
-    data = img.get_data()
+    data = np.asanyarray(img.dataobj)
     if ensure_finite:
         non_finite_mask = np.logical_not(np.isfinite(data))
         if non_finite_mask.sum() > 0: # any non_finite_mask values?
@@ -113,17 +113,18 @@ def load_niimg(niimg, dtype=None):
                         " not compatible with nibabel format:\n"
                         + short_repr(niimg))
 
-    dtype = _get_target_dtype(niimg.get_data().dtype, dtype)
+    data = np.asanyarray(niimg.dataobj)
+    dtype = _get_target_dtype(data.dtype, dtype)
 
     if dtype is not None:
         # Copyheader and set dtype in header if header exists
         if niimg.header is not None:
-            niimg = new_img_like(niimg, niimg.get_data().astype(dtype),
-                                niimg.affine, copy_header=True)
-            niimg.header.set_data_dtype(dtype)        
+            niimg = new_img_like(niimg, data.astype(dtype),
+                                 niimg.affine, copy_header=True)
+            niimg.header.set_data_dtype(dtype)
         else:
-            niimg = new_img_like(niimg, niimg.get_data().astype(dtype),
-                                niimg.affine)
+            niimg = new_img_like(niimg, data.astype(dtype),
+                                 niimg.affine)
 
     return niimg
 
