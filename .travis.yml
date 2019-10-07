@@ -3,12 +3,9 @@ dist: xenial
 
 language: python
 
-#virtualenv:
-#  system_site_packages: true
-
 env:
   global:
-    - TEST_RUN_FOLDER="/tmp" # folder where the tests are run from
+    - TEST_RUN_FOLDER="/tmp"
 
 matrix:
   # Do not wait for the allowed_failures entry to finish before
@@ -37,8 +34,10 @@ matrix:
       env: DISTRIB="travisci" PYTHON_VERSION="3.6"
            NUMPY_VERSION="*" SCIPY_VERSION="*" PANDAS_VERSION="*"
            SCIKIT_LEARN_VERSION="*" MATPLOTLIB_VERSION="*" COVERAGE="true"
-           JOBLIB_VERSION="0.12"
-           LXML_VERSION="*"
+           JOBLIB_VERSION="0.12" LXML_VERSION="*"
+      # joblib.Memory switches from keyword cachedir to location in version 0.12
+      # Making sure we get the deprecation warning.
+
     - name: "Python 3.7 latest package versions"
       python: "3.7"
       env: DISTRIB="travisci" PYTHON_VERSION="3.7"

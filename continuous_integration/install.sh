@@ -26,7 +26,7 @@ create_new_venv() {
 }
 
 echo_requirements_string() {
-    # Echo a conda requirement string for example
+    # Echo a requirement string for example
     # "pip nose python='2.7.3 scikit-learn=*". It has a hardcoded
     # list of possible packages to install and looks at _VERSION
     # environment variables to know whether to install a given package and
