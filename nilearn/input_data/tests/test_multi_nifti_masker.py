@@ -14,7 +14,7 @@ from nibabel import Nifti1Image
 from nose import SkipTest
 from nose.tools import assert_true, assert_false, assert_raises, assert_equal
 from numpy.testing import assert_array_equal
-from sklearn.externals.joblib import Memory
+from nilearn._utils.compat import Memory
 
 from nilearn._utils.exceptions import DimensionError
 from nilearn._utils.testing import assert_raises_regex, write_tmp_imgs
@@ -116,7 +116,7 @@ def test_3d_images():
 
 
 def test_joblib_cache():
-    from sklearn.externals.joblib import hash
+    from nilearn._utils.compat import hash
     # Dummy mask
     mask = np.zeros((40, 40, 40))
     mask[20, 20, 20] = 1
@@ -196,3 +196,37 @@ def test_dtype():
 
     masked_img = masker.transform([[img]])
     assert(masked_img[0].dtype == np.float32)
+
+
+def test_standardization():
+    data_shape = (9, 9, 5)
+    n_samples = 500
+
+    signals = np.random.randn(2, np.prod(data_shape), n_samples)
+    means = np.random.randn(2, np.prod(data_shape), 1) * 50 + 1000
+    signals += means
+
+    img1 = Nifti1Image(signals[0].reshape(data_shape + (n_samples,)),
+                       np.eye(4))
+    img2 = Nifti1Image(signals[1].reshape(data_shape + (n_samples,)),
+                       np.eye(4))
+
+    mask = Nifti1Image(np.ones(data_shape), np.eye(4))
+
+    # z-score
+    masker = MultiNiftiMasker(mask, standardize='zscore')
+    trans_signals = masker.fit_transform([img1, img2])
+
+    for ts in trans_signals:
+        np.testing.assert_almost_equal(ts.mean(0), 0)
+        np.testing.assert_almost_equal(ts.std(0), 1)
+
+    # psc
+    masker = MultiNiftiMasker(mask, standardize='psc')
+    trans_signals = masker.fit_transform([img1, img2])
+
+    for ts, s in zip(trans_signals, signals):
+        np.testing.assert_almost_equal(ts.mean(0), 0)
+        np.testing.assert_almost_equal(ts,
+                                       (s / s.mean(1)[:, np.newaxis] *
+                                        100 - 100).T)

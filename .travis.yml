@@ -2,49 +2,58 @@ sudo: required
 dist: xenial
 
 language: python
-python: "3.5"
-
-virtualenv:
-  system_site_packages: true
 
 env:
   global:
-    - TEST_RUN_FOLDER="/tmp" # folder where the tests are run from
+    - TEST_RUN_FOLDER="/tmp"
 
 matrix:
   # Do not wait for the allowed_failures entry to finish before
   # setting the status
   fast_finish: true
   allow_failures:
-    # allow_failures seems to be keyed on the python version.
-    - python: 3.5
+    # allow_failures keyed to skipping tests.
+    - env: SKIP_TESTS="true"
   include:
     # without matplotlib
-    - env: DISTRIB="conda" PYTHON_VERSION="3.5"
-           NUMPY_VERSION="1.11" SCIPY_VERSION="0.17" PANDAS_VERSION="*"
-           SCIKIT_LEARN_VERSION="0.18" COVERAGE="true"
+    - name: "Python 3.5 minimum package versions"
+      python: "3.5"
+      env: DISTRIB="travisci" PYTHON_VERSION="3.5"
+           NUMPY_VERSION="1.11" SCIPY_VERSION="0.19" PANDAS_VERSION="*"
+           SCIKIT_LEARN_VERSION="0.19" COVERAGE="true" JOBLIB_VERSION="0.11"
            LXML_VERSION="*"
-    - env: DISTRIB="conda" PYTHON_VERSION="3.5"
+    - name: "Python 3.5 latest package versions"
+      python: "3.5"
+      env: DISTRIB="travisci" PYTHON_VERSION="3.5"
            NUMPY_VERSION="*" SCIPY_VERSION="*" PANDAS_VERSION="*"
            SCIKIT_LEARN_VERSION="*" MATPLOTLIB_VERSION="*" COVERAGE="true"
+           JOBLIB_VERSION="0.11"
            LXML_VERSION="*"
-    - env: DISTRIB="conda" PYTHON_VERSION="3.6"
+    - name: "Python 3.6 latest package versions"
+      python: "3.6"
+      env: DISTRIB="travisci" PYTHON_VERSION="3.6"
            NUMPY_VERSION="*" SCIPY_VERSION="*" PANDAS_VERSION="*"
            SCIKIT_LEARN_VERSION="*" MATPLOTLIB_VERSION="*" COVERAGE="true"
-           LXML_VERSION="*"
-    - env: DISTRIB="conda" PYTHON_VERSION="3.7"
+           JOBLIB_VERSION="0.12" LXML_VERSION="*"
+      # joblib.Memory switches from keyword cachedir to location in version 0.12
+      # Making sure we get the deprecation warning.
+
+    - name: "Python 3.7 latest package versions"
+      python: "3.7"
+      env: DISTRIB="travisci" PYTHON_VERSION="3.7"
            NUMPY_VERSION="*" SCIPY_VERSION="*" PANDAS_VERSION="*"
            SCIKIT_LEARN_VERSION="*" MATPLOTLIB_VERSION="*" COVERAGE="true"
-           LXML_VERSION="*"
+           JOBLIB_VERSION="*" LXML_VERSION="*"
 
   # FLAKE8 linting on diff wrt common ancestor with upstream/master
     # Note: the python value is only there to trigger allow_failures
-    - python: 3.5
-      env: DISTRIB="conda" PYTHON_VERSION="3.5" FLAKE8_VERSION="*" SKIP_TESTS="true"
+    - name: Python 3.5 Flake8 no tests
+      python: 3.5
+      env: DISTRIB="travisci" PYTHON_VERSION="3.5" FLAKE8_VERSION="*" SKIP_TESTS="true"
 
 install: source continuous_integration/install.sh
 
-before_script: make clean
+before_script: make  clean
 
 script: source continuous_integration/test_script.sh
 

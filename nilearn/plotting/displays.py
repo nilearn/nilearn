@@ -1020,7 +1020,7 @@ class BaseSlicer(object):
         Parameters
         ----------
         filename: string
-            The file name to save to. It's extension determines the
+            The file name to save to. Its extension determines the
             file type, typically '.png', '.svg' or '.pdf'.
 
         dpi: None or scalar

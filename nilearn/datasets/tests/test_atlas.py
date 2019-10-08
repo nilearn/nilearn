@@ -308,6 +308,24 @@ def test_fetch_coords_power_2011():
     assert_not_equal(bunch.description, '')
 
 
+def test_fetch_coords_seitzman_2018():
+    bunch = atlas.fetch_coords_seitzman_2018()
+    assert_equal(len(bunch.rois), 300)
+    assert_equal(len(bunch.radius), 300)
+    assert_equal(len(bunch.networks), 300)
+    assert_equal(len(bunch.regions), 300)
+    assert_equal(len(np.unique(bunch.networks)), 14)
+    assert_equal(len(np.unique(bunch.regions)), 8)
+    np.testing.assert_array_equal(bunch.networks, np.sort(bunch.networks))
+    assert_not_equal(bunch.description, '')
+
+    assert bunch.regions[0] == "cortexL"
+
+    bunch = atlas.fetch_coords_seitzman_2018(ordered_regions=False)
+    assert_true(np.any(bunch.networks != np.sort(bunch.networks)))
+
+
+
 @with_setup(setup_mock, teardown_mock)
 @with_setup(tst.setup_tmpdata, tst.teardown_tmpdata)
 def test_fetch_atlas_destrieux_2009():
@@ -547,7 +565,7 @@ def test_fetch_atlas_pauli_2017():
 
 @with_setup(tst.setup_tmpdata, tst.teardown_tmpdata)
 def test_fetch_atlas_schaefer_2018():
-    valid_n_rois = [100, 200, 300, 400, 500, 600, 800, 1000]
+    valid_n_rois = list(range(100, 1100, 100))
     valid_yeo_networks = [7, 17]
     valid_resolution_mm = [1, 2]
 
