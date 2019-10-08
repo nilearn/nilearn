@@ -67,6 +67,7 @@ Fixes
 - :func:`nilearn.plotting.view_surf` now accepts surface data provided as a file
   path.
 - :func:`nilearn.plotting.plot_matrix` providing labels=None, False, or an empty list now correctly disables labels.
+- :func:`nilearn.plotting.plot_surf_roi` now takes vmin, vmax parameters
 - :func:`nilearn.datasets.fetch_surf_nki_enhanced` is now downloading the correct
   left and right functional surface data for each subject
 - :func:`nilearn.datasets.fetch_atlas_schaefer_2018` now downloads from release
