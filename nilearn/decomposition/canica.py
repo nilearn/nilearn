@@ -10,7 +10,7 @@ from operator import itemgetter
 import numpy as np
 from scipy.stats import scoreatpercentile
 from sklearn.decomposition import fastica
-from sklearn.externals.joblib import Memory, delayed, Parallel
+from nilearn._utils.compat import Memory, delayed, Parallel
 from sklearn.utils import check_random_state
 
 from .multi_pca import MultiPCA

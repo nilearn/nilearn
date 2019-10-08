@@ -13,15 +13,9 @@ from distutils.version import LooseVersion
 import nibabel
 import sklearn
 
-from sklearn.externals.joblib import Memory
+from nilearn._utils.compat import Memory
 
 MEMORY_CLASSES = (Memory, )
-
-try:
-    from joblib import Memory as JoblibMemory
-    MEMORY_CLASSES = (Memory, JoblibMemory)
-except ImportError:
-    pass
 
 import nilearn
 

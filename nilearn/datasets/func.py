@@ -1360,7 +1360,7 @@ def _load_mixed_gambles(zmap_imgs):
 
 
 def fetch_mixed_gambles(n_subjects=1, data_dir=None, url=None, resume=True,
-                        return_raw_data=False, verbose=0):
+                        return_raw_data=False, verbose=1):
     """Fetch Jimura "mixed gambles" dataset.
 
     Parameters
@@ -1380,7 +1380,7 @@ def fetch_mixed_gambles(n_subjects=1, data_dir=None, url=None, resume=True,
     resume: bool, optional (default True)
         If true, try resuming download if possible.
 
-    verbose: int, optional (default 0)
+    verbose: int, optional (default 1)
         Defines the level of verbosity of the output.
 
     return_raw_data: bool, optional (default True)
@@ -1808,7 +1808,7 @@ def fetch_surf_nki_enhanced(n_subjects=10, data_dir=None,
            'A00056097', 'A00056098', 'A00056164', 'A00056372', 'A00056452',
            'A00056489', 'A00056949']
 
-    nitrc_ids = range(8260, 8470)
+    nitrc_ids = range(8260, 8464)
     max_subjects = len(ids)
     if n_subjects is None:
         n_subjects = max_subjects
@@ -1816,7 +1816,6 @@ def fetch_surf_nki_enhanced(n_subjects=10, data_dir=None,
         warnings.warn('Warning: there are only %d subjects' % max_subjects)
         n_subjects = max_subjects
     ids = ids[:n_subjects]
-    nitrc_ids = nitrc_ids[:n_subjects]
 
     # Dataset description
     fdescr = _get_dataset_descr(dataset_name)
@@ -1850,13 +1849,13 @@ def fetch_surf_nki_enhanced(n_subjects=10, data_dir=None,
         func = os.path.join('%s', '%s_%s_preprocessed_fwhm6.gii')
         rh = _fetch_files(data_dir,
                           [(func % (ids[i], ids[i], 'right'),
-                           archive % (nitrc_ids[i], ids[i], 'rh'),
+                           archive % (nitrc_ids[2*i+1], ids[i], 'rh'),
                            {'move': func % (ids[i], ids[i], 'right')}
                             )],
                           resume=resume, verbose=verbose)
         lh = _fetch_files(data_dir,
                           [(func % (ids[i], ids[i], 'left'),
-                           archive % (nitrc_ids[i], ids[i], 'lh'),
+                           archive % (nitrc_ids[2*i], ids[i], 'lh'),
                            {'move': func % (ids[i], ids[i], 'left')}
                             )],
                           resume=resume, verbose=verbose)
@@ -1995,7 +1994,7 @@ def _fetch_development_fmri_functional(participants, data_dir, url, verbose):
 
 
 def fetch_development_fmri(n_subjects=None, reduce_confounds=True,
-                           data_dir=None, resume=True, verbose=0):
+                           data_dir=None, resume=True, verbose=1):
     """Fetch movie watching based brain development dataset (fMRI)
 
     The data is downsampled to 4mm resolution for convenience. The origin of
@@ -2024,7 +2023,7 @@ def fetch_development_fmri(n_subjects=None, reduce_confounds=True,
     resume: bool, optional (default True)
         Whether to resume download of a partly-downloaded file.
 
-    verbose: int, optional (default 0)
+    verbose: int, optional (default 1)
         Defines the level of verbosity of the output.
 
     Returns

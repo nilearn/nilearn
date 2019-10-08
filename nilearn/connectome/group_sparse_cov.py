@@ -15,7 +15,7 @@ import scipy.linalg
 
 from sklearn.base import BaseEstimator
 from sklearn.covariance import empirical_covariance
-from sklearn.externals.joblib import Memory, delayed, Parallel
+from nilearn._utils.compat import Memory, delayed, Parallel
 from sklearn.model_selection import check_cv
 from sklearn.utils.extmath import fast_logdet
 
@@ -891,7 +891,7 @@ class GroupSparseCovarianceCV(BaseEstimator, CacheMixin):
     See also
     --------
     GroupSparseCovariance,
-    sklearn.covariance.GraphLassoCV
+    sklearn.covariance.GraphicalLassoCV
 
     Notes
     -----
