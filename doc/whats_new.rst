@@ -33,6 +33,10 @@ NEW
   :func:`nilearn.datasets.fetch_development_fmri` can be used to download
   movie-watching data in children and adults. A light-weight dataset
   implemented for teaching and usage in the examples.
+- New example in `examples/05_advanced/plot_age_group_prediction_cross_val.py`
+  to compare methods for classifying subjects into age groups based on
+  functional connectivity. Similar example in
+  `examples/03_connectivity/plot_group_level_connectivity.py` simplified.
 
 Changes
 -------
