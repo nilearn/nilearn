@@ -162,6 +162,14 @@ def test_plot_surf_roi():
     # plot roi
     plot_surf_roi(mesh, roi_map=roi_map)
     plot_surf_roi(mesh, roi_map=roi_map, colorbar=True)
+    # change vmin, vmax
+    img = plot_surf_roi(mesh, roi_map=roi_map,
+						vmin=1.2, vmax=8.9, colorbar=True)
+    cbar = img.axes[-1]
+    cbar_vmin = float(cbar.get_yticklabels()[0].get_text())
+    cbar_vmax = float(cbar.get_yticklabels()[-1].get_text())
+    assert cbar_vmin == 1.2
+    assert cbar_vmax == 8.9
 
     # plot parcellation
     plot_surf_roi(mesh, roi_map=parcellation)

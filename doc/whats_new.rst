@@ -51,6 +51,11 @@ Changes
   in `nilearn.input_data`. You can now set `standardize` to `zscore` or `psc`. `psc` stands
   for `Percent Signal Change`, which can be a meaningful metric for BOLD.
 
+- :func:`nilearn.plotting.plot_img` now has explicit keyword arguments `bg_img`,
+  `vmin` and `vmax` to control the background image and the bounds of the
+  colormap. These arguments were already accepted in `kwargs` but not documented
+  before.
+
 Fixes
 -----
 
@@ -67,6 +72,7 @@ Fixes
 - :func:`nilearn.plotting.view_surf` now accepts surface data provided as a file
   path.
 - :func:`nilearn.plotting.plot_matrix` providing labels=None, False, or an empty list now correctly disables labels.
+- :func:`nilearn.plotting.plot_surf_roi` now takes vmin, vmax parameters
 - :func:`nilearn.datasets.fetch_surf_nki_enhanced` is now downloading the correct
   left and right functional surface data for each subject
 - :func:`nilearn.datasets.fetch_atlas_schaefer_2018` now downloads from release

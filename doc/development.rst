@@ -122,12 +122,9 @@ Decisions are made public, through discussion on issues and pull requests
 in Github.
 
 The decisions are made by the core-contributors, ie people with write
-access to the repository, as listed `here
-<https://github.com/orgs/nilearn/people>`__
+access to the repository, as listed :ref:`here <core_devs>`
 
 If there are open questions, final decisions are made by the Temporary
 Benevolent Dictator, currently Gaël Varoquaux.
-
-
 
 .. include:: ../CONTRIBUTING.rst
