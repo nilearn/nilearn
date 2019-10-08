@@ -1,6 +1,6 @@
 """
-Functional connectivity predicts age group
-==========================================
+Classification of age groups using functional connectivity
+==========================================================
 
 This example compares different kinds of functional connectivity between
 regions of interest : correlation, partial correlation, and tangent space
