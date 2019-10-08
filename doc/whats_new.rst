@@ -51,6 +51,11 @@ Changes
   in `nilearn.input_data`. You can now set `standardize` to `zscore` or `psc`. `psc` stands
   for `Percent Signal Change`, which can be a meaningful metric for BOLD.
 
+- :func:`nilearn.plotting.plot_img` now has explicit keyword arguments `bg_img`,
+  `vmin` and `vmax` to control the background image and the bounds of the
+  colormap. These arguments were already accepted in `kwargs` but not documented
+  before.
+
 Fixes
 -----
 
