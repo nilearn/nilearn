@@ -7,7 +7,6 @@ and Overlapping Representations of Faces and Objects in Ventral Temporal
 Cortex" (Science 2001)
 """
 
-from scipy.misc import imread
 import matplotlib.pyplot as plt
 
 from nilearn import datasets
@@ -16,22 +15,19 @@ from nilearn.plotting import show
 haxby_dataset = datasets.fetch_haxby(subjects=[], fetch_stimuli=True)
 stimulus_information = haxby_dataset.stimuli
 
-for stim_type in sorted(stimulus_information.keys()):
-    if stim_type == b'controls':
-        # skip control images, there are too many
-        continue
+for stim_type in stimulus_information:
+    # skip control images, there are too many
+    if stim_type != 'controls':
 
-    file_names = stimulus_information[stim_type]
+        file_names = stimulus_information[stim_type]
 
-    plt.figure()
-    for i in range(48):
-        plt.subplot(6, 8, i + 1)
-        try:
-            plt.imshow(imread(file_names[i]), cmap=plt.cm.gray)
-        except:
-            # just go to the next one if the file is not present
-            pass
-        plt.axis("off")
-    plt.suptitle(stim_type)
+        fig, axes = plt.subplots(6, 8)
+        fig.suptitle(stim_type)
+
+        for img_path, ax in zip(file_names, axes.ravel()):
+            ax.imshow(plt.imread(img_path), cmap=plt.cm.gray)
+
+        for ax in axes.ravel():
+            ax.axis("off")
 
 show()

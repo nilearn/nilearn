@@ -143,15 +143,14 @@ plotting.show()
 
 view = plotting.view_connectome(partial_correlation_matrix, dmn_coords)
 
-# uncomment this to open the plot in a web browser:
-# view.open_in_browser()
-
-
-##############################################################################
 # In a Jupyter notebook, if ``view`` is the output of a cell, it will
 # be displayed below the cell
-
 view
+
+##############################################################################
+
+# uncomment this to open the plot in a web browser:
+# view.open_in_browser()
 
 
 ##########################################################################
@@ -211,13 +210,17 @@ print('time series has {0} samples'.format(timeseries.shape[0]))
 ###############################################################################
 # in which situation the graphical lasso **sparse inverse covariance**
 # estimator captures well the covariance **structure**.
-from sklearn.covariance import GraphLassoCV
+try:
+    from sklearn.covariance import GraphicalLassoCV
+except ImportError:
+    # for Scitkit-Learn < v0.20.0
+    from sklearn.covariance import GraphLassoCV as GraphicalLassoCV
 
-covariance_estimator = GraphLassoCV(cv=3, verbose=1)
+covariance_estimator = GraphicalLassoCV(cv=3, verbose=1)
 
 
 ###############################################################################
-# We just fit our regions signals into the `GraphLassoCV` object
+# We just fit our regions signals into the `GraphicalLassoCV` object
 covariance_estimator.fit(timeseries)
 
 
@@ -271,7 +274,7 @@ spheres_masker = input_data.NiftiSpheresMasker(
 timeseries = spheres_masker.fit_transform(func_filename,
                                           confounds=confounds_filename)
 
-covariance_estimator = GraphLassoCV()
+covariance_estimator = GraphicalLassoCV()
 covariance_estimator.fit(timeseries)
 matrix = covariance_estimator.covariance_
 
@@ -321,7 +324,7 @@ spheres_masker = input_data.NiftiSpheresMasker(
 timeseries = spheres_masker.fit_transform(func_filename,
                                           confounds=confounds_filename)
 
-covariance_estimator = GraphLassoCV()
+covariance_estimator = GraphicalLassoCV()
 covariance_estimator.fit(timeseries)
 matrix = covariance_estimator.covariance_
 
@@ -340,8 +343,6 @@ plotting.show()
 ###############################################################################
 # .. seealso::
 #
-#     :ref:`sphx_glr_auto_examples_03_connectivity_plot_atlas_comparison.py`
+#    * :ref:`sphx_glr_auto_examples_03_connectivity_plot_atlas_comparison.py`
 #
-# .. seealso::
-#
-#     :ref:`sphx_glr_auto_examples_03_connectivity_plot_multi_subject_connectome.py`
+#    * :ref:`sphx_glr_auto_examples_03_connectivity_plot_multi_subject_connectome.py`
