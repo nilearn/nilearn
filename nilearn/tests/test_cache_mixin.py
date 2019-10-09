@@ -96,8 +96,8 @@ def test__safe_cache_flush():
 
 def test_cache_memory_level():
     with tempfile.TemporaryDirectory() as temp_dir:
-        joblib_dir = (pathlib.Path(temp_dir) / 'joblib' /
-                    'nilearn' / 'tests' / 'test_cache_mixin' / 'f')
+        joblib_dir = (pathlib.Path(temp_dir) / 'joblib'
+                      / 'nilearn' / 'tests' / 'test_cache_mixin' / 'f')
         mem = Memory(cachedir=temp_dir, verbose=0)
         cache_mixin.cache(f, mem, func_memory_level=2, memory_level=1)(2)
         assert_equal(_get_n_subdirs(joblib_dir), 0)
@@ -175,8 +175,8 @@ def test_cache_mixin_wrong_dirs():
 
 def test_cache_shelving():
     with tempfile.TemporaryDirectory() as temp_dir:
-        joblib_dir = (pathlib.Path(temp_dir) / 'joblib' /
-                      'nilearn' / 'tests' / 'test_cache_mixin' / 'f')
+        joblib_dir = (pathlib.Path(temp_dir) / 'joblib'
+                      / 'nilearn' / 'tests' / 'test_cache_mixin' / 'f')
         mem = Memory(cachedir=temp_dir, verbose=0)
         res = cache_mixin.cache(f, mem, shelve=True)(2)
         assert_equal(res.get(), 2)
