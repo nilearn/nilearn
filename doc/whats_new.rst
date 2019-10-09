@@ -1,6 +1,8 @@
 0.6.0a
 ======
 
+**Released October 2019**
+
 NEW
 ---
 
@@ -86,6 +88,40 @@ Fixes
   names along with 700 and 900 region parcelations.
 - Colormap creation functions have been updated to avoid matplotlib deprecation warnings
   about colormap reversal
+
+Contributors
+------------
+
+The following people contributed to this release (in alphabetical order)::
+
+	Alexandre Abraham
+	Alexandre Gramfort
+	Ana Luisa
+	Ana Luisa Pinho
+	Andrés Hoyos Idrobo
+	Antoine Grigis
+	BAZEILLE Thomas
+	Bertrand Thirion
+	Colin Reininger
+	Céline Delettre
+	Dan Gale
+	Daniel Gomez
+	Elizabeth DuPre
+	Eric Larson
+	Franz Liem
+	Gael Varoquaux
+	Gilles de Hollander
+	Greg Kiar
+	Ian Abenes
+	Jake Vogel
+	Jerome Dockes
+	Jerome-Alexis Chevalier
+	Julia Huntenburg
+	Kamalakar Daddy
+	Kshitij Chawla (kchawla-pi)
+	Mehdi Rahim
+	Moritz Boos
+	Sylvain Takerkart
 
 0.5.2
 =====
