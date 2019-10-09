@@ -41,8 +41,9 @@ The required dependencies to use the software are:
 * Python >= 3.5,
 * setuptools
 * Numpy >= 1.11
-* SciPy >= 0.17
-* Scikit-learn >= 0.18
+* SciPy >= 0.19
+* Scikit-learn >= 0.19
+* Joblib >= 0.11
 * Nibabel >= 2.0.2
 
 If you are using nilearn plotting functionalities or running the

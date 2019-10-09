@@ -499,6 +499,27 @@ def test_threshold_img():
         # when threshold is a percentile
         thr_maps_percent2 = threshold_img(img, threshold='2%')
 
+def test_threshold_img_copy():
+
+    img_zeros = Nifti1Image(np.zeros((10, 10, 10, 10)), np.eye(4))
+    img_ones = Nifti1Image(np.ones((10, 10, 10, 10)), np.eye(4))
+
+    # Check that copy does not mutate. It returns modified copy.
+    thresholded = threshold_img(img_ones, 2)  # threshold 2 > 1
+
+    # Original img_ones should have all ones.
+    assert_array_equal(img_ones.get_data(), np.ones((10, 10, 10, 10)))
+    # Thresholded should have all zeros.
+    assert_array_equal(thresholded.get_data(), np.zeros((10, 10, 10, 10)))
+
+    # Check that not copying does mutate.
+    img_to_mutate = Nifti1Image(np.ones((10, 10, 10, 10)), np.eye(4))
+    thresholded = threshold_img(img_to_mutate, 2, copy=False)
+    # Check that original mutates
+    assert_array_equal(img_to_mutate.get_data(), np.zeros((10, 10, 10, 10)))
+    # And that returned value is also thresholded.
+    assert_array_equal(img_to_mutate.get_data(), thresholded.get_data())
+
 
 def test_isnan_threshold_img_data():
     shape = (10, 10, 10)

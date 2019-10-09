@@ -5,6 +5,7 @@ from nilearn.input_data import NiftiSpheresMasker
 from nilearn._utils.testing import assert_raises_regex
 from nose.tools import assert_false
 
+
 def test_seed_extraction():
     data = np.random.random((3, 3, 3, 5))
     img = nibabel.Nifti1Image(data, np.eye(4))
@@ -62,6 +63,7 @@ def test_anisotropic_sphere_extraction():
     affine_2[0, 0] = 4
     mask_img = nibabel.Nifti1Image(mask_img, affine=affine_2)
     masker = NiftiSpheresMasker([(2, 1, 2)], radius=1, mask_img=mask_img)
+
     masker.fit()
     s = masker.transform(img)
     assert_array_equal(s[:, 0], data[1, 0, 1])
@@ -151,3 +153,26 @@ def test_is_nifti_spheres_masker_give_nans():
     # When mask_img is provided, the seed interacts within the brain, so no nan
     masker = NiftiSpheresMasker(seeds=seed, radius=2., mask_img=mask_img)
     assert_false(np.isnan(np.sum(masker.fit_transform(img))))
+
+
+def test_standardization():
+    data = np.random.random((3, 3, 3, 5))
+    img = nibabel.Nifti1Image(data, np.eye(4))
+
+    # test zscore
+    masker = NiftiSpheresMasker([(1, 1, 1)], standardize='zscore')
+    # Test the fit
+    s = masker.fit_transform(img)
+
+    np.testing.assert_almost_equal(s.mean(), 0)
+    np.testing.assert_almost_equal(s.std(), 1)
+
+    # test psc
+    masker = NiftiSpheresMasker([(1, 1, 1)], standardize='psc')
+    # Test the fit
+    s = masker.fit_transform(img)
+
+    np.testing.assert_almost_equal(s.mean(), 0)
+    np.testing.assert_almost_equal(s.ravel(), data[1, 1, 1] /
+                                   data[1, 1, 1].mean() * 100 - 100,
+                                   )

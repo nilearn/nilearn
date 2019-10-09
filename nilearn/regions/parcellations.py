@@ -5,8 +5,9 @@ import numpy as np
 
 from sklearn.base import clone
 from sklearn.feature_extraction import image
-from sklearn.externals.joblib import Memory, delayed, Parallel
+from nilearn._utils.compat import Memory, delayed, Parallel
 
+from .rena_clustering import ReNA
 from ..decomposition.multi_pca import MultiPCA
 from ..input_data import NiftiLabelsMasker
 from .._utils.compat import _basestring
@@ -14,26 +15,43 @@ from .._utils.niimg import _safe_get_data
 from .._utils.niimg_conversions import _iter_check_niimg
 
 
-def _estimator_fit(data, estimator):
+def _estimator_fit(data, estimator, method=None):
     """ Estimator to fit on the data matrix
 
     Parameters
     ----------
-    data : numpy array
+    data: numpy array
         Data matrix
 
-    estimator : instance of estimator from sklearn
+    estimator: instance of estimator from sklearn
         MiniBatchKMeans or AgglomerativeClustering
+
+    method: str, {'kmeans', 'ward', 'complete', 'average', 'rena'}
+        A method to choose between for brain parcellations.
 
     Returns
     -------
-    labels_ : numpy.ndarray
+    labels_: numpy.ndarray
         labels_ estimated from estimator
     """
-    estimator = clone(estimator)
-    estimator.fit(data.T)
+    if method == 'rena':
+        rena = ReNA(mask_img=estimator.mask_img,
+                    n_clusters=estimator.n_clusters,
+                    scaling=estimator.scaling,
+                    n_iter=estimator.n_iter,
+                    threshold=estimator.threshold,
+                    memory=estimator.memory,
+                    memory_level=estimator.memory_level,
+                    verbose=estimator.verbose)
+        rena.fit(data)
+        labels_ = rena.labels_
 
-    return estimator.labels_
+    else:
+        estimator = clone(estimator)
+        estimator.fit(data.T)
+        labels_ = estimator.labels_
+
+    return labels_
 
 
 def _check_parameters_transform(imgs, confounds):
@@ -69,19 +87,19 @@ def _labels_masker_extraction(img, masker, confound):
 
     Parameters
     ----------
-    img : 4D Nifti image like object
+    img: 4D Nifti image like object
         Image to process.
 
-    masker : instance of NiftiLabelsMasker
+    masker: instance of NiftiLabelsMasker
         Used for extracting signals with fit_transform
 
-    confound : csv file or numpy array
+    confound: csv file or numpy array
         Confound used for signal cleaning while extraction.
         Passed to signal.clean
 
     Returns
     -------
-    signals : numpy array
+    signals: numpy array
         Signals extracted on given img
     """
     masker = clone(masker)
@@ -92,25 +110,33 @@ def _labels_masker_extraction(img, masker, confound):
 class Parcellations(MultiPCA):
     """Learn parcellations on fMRI images.
 
-    Four different types of clustering methods can be used such as kmeans,
-    ward, complete, average. Kmeans will call MiniBatchKMeans whereas
-    ward, complete, average are used within in Agglomerative Clustering.
-    All methods are leveraged from scikit-learn.
+    Five different types of clustering methods can be used:
+    kmeans, ward, complete, average and rena.
+    kmeans will call MiniBatchKMeans whereas
+    ward, complete, average are used within in Agglomerative Clustering and
+    rena will call ReNA.
+    kmeans, ward, complete, average are leveraged from scikit-learn.
+    rena is buit into nilearn.
 
     .. versionadded:: 0.4.1
 
     Parameters
     ----------
-    method : str, {'kmeans', 'ward', 'complete', 'average'}
+    method: str, {'kmeans', 'ward', 'complete', 'average', 'rena'}
         A method to choose between for brain parcellations.
+        For a small number of parcels, kmeans is usually advisable.
+        For a large number of parcellations (several hundreds, or thousands),
+        ward and rena are the best options. Ward will give higher quality
+        parcels, but with increased computation time. ReNA is most useful as a
+        fast data-reduction step, typically dividing the signal size by ten.
 
-    n_parcels : int, default=50
+    n_parcels: int, default=50
         Number of parcellations to divide the brain data into.
 
-    random_state : int or RandomState
+    random_state: int or RandomState
         Pseudo number generator state used for random sampling.
 
-    mask : Niimg-like object or NiftiMasker, MultiNiftiMasker instance
+    mask: Niimg-like object or NiftiMasker, MultiNiftiMasker instance
         Mask/Masker used for masking the data.
         If mask image if provided, it will be used in the MultiNiftiMasker.
         If an instance of MultiNiftiMasker is provided, then this instance
@@ -119,15 +145,15 @@ class Parcellations(MultiPCA):
         If None, mask will be automatically computed by a MultiNiftiMasker
         with default parameters.
 
-    smoothing_fwhm : float, optional default=4.
+    smoothing_fwhm: float, optional default=4.
         If smoothing_fwhm is not None, it gives the full-width half maximum in
         millimeters of the spatial smoothing to apply to the signal.
 
-    standardize : boolean, optional
+    standardize: boolean, optional
         If standardize is True, the time-series are centered and normed:
         their mean is put to 0 and their variance to 1 in the time dimension.
 
-    detrend : boolean, optional
+    detrend: boolean, optional
         Whether to detrend signals or not.
         This parameter is passed to signal.clean. Please see the related
         documentation for details
@@ -140,44 +166,69 @@ class Parcellations(MultiPCA):
         This parameter is passed to signal.clean. Please see the related
         documentation for details
 
-    t_r : float, optional
+    t_r: float, optional
         This parameter is passed to signal.clean. Please see the related
         documentation for details
 
-    target_affine : 3x3 or 4x4 matrix, optional
+    target_affine: 3x3 or 4x4 matrix, optional
         This parameter is passed to image.resample_img. Please see the
         related documentation for details. The given affine will be
         considered as same for all given list of images.
 
-    target_shape : 3-tuple of integers, optional
+    target_shape: 3-tuple of integers, optional
         This parameter is passed to image.resample_img. Please see the
         related documentation for details.
 
-    memory : instance of joblib.Memory or str
+    mask_strategy: {'background', 'epi' or 'template'}, optional
+        The strategy used to compute the mask: use 'background' if your
+        images present a clear homogeneous background, 'epi' if they
+        are raw EPI images, or you could use 'template' which will
+        extract the gray matter part of your data by resampling the MNI152
+        brain mask for your data's field of view.
+        Depending on this value, the mask will be computed from
+        masking.compute_background_mask, masking.compute_epi_mask or
+        masking.compute_gray_matter_mask. Default is 'epi'.
+
+    mask_args: dict, optional
+        If mask is None, these are additional parameters passed to
+        masking.compute_background_mask or masking.compute_epi_mask
+        to fine-tune mask computation. Please see the related documentation
+        for details.
+
+    scaling: bool, optional (default False)
+        Used only when the method selected is 'rena'. If scaling is True, each
+        cluster is scaled by the square root of its size, preserving the
+        l2-norm of the image.
+
+    n_iter: int, optional (default 10)
+        Used only when the method selected is 'rena'. Number of iterations of
+        the recursive neighbor agglomeration.
+
+    memory: instance of joblib.Memory or str
         Used to cache the masking process.
         By default, no caching is done. If a string is given, it is the
         path to the caching directory.
 
-    memory_level : integer, optional
+    memory_level: integer, optional
         Rough estimator of the amount of memory used by caching. Higher value
         means more memory for caching.
 
-    n_jobs : integer, optional
+    n_jobs: integer, optional
         The number of CPUs to use to do the computation. -1 means
         'all CPUs', -2 'all CPUs but one', and so on.
 
-    verbose : integer, optional
+    verbose: integer, optional
         Indicate the level of verbosity. By default, nothing is printed.
 
-    Returns
-    -------
-    labels_img_ : Nifti1Image
+    Attributes
+    ----------
+    `labels_img_`: Nifti1Image
         Labels image to each parcellation learned on fmri images.
 
-    masker_ : instance of NiftiMasker or MultiNiftiMasker
+    `masker_`: instance of NiftiMasker or MultiNiftiMasker
         The masker used to mask the data
 
-    connectivity_ : numpy.ndarray
+    `connectivity_`: numpy.ndarray
         voxel-to-voxel connectivity matrix computed from a mask.
         Note that this attribute is only seen if selected methods are
         Agglomerative Clustering type, 'ward', 'complete', 'average'.
@@ -189,12 +240,13 @@ class Parcellations(MultiPCA):
           parcellations using KMeans or various Agglomerative methods.
 
         * This object uses spatially-constrained AgglomerativeClustering for
-          method='ward' or 'complete' or 'average'. Spatial connectivity matrix
+          method='ward' or 'complete' or 'average' and spatially-constrained
+          ReNA clustering for method='rena'. Spatial connectivity matrix
           (voxel-to-voxel) is built-in object which means no need of explicitly
           giving the matrix.
 
     """
-    VALID_METHODS = ['kmeans', 'ward', 'complete', 'average']
+    VALID_METHODS = ['kmeans', 'ward', 'complete', 'average', 'rena']
 
     def __init__(self, method, n_parcels=50,
                  random_state=0, mask=None, smoothing_fwhm=4.,
@@ -202,10 +254,14 @@ class Parcellations(MultiPCA):
                  low_pass=None, high_pass=None, t_r=None,
                  target_affine=None, target_shape=None,
                  mask_strategy='epi', mask_args=None,
+                 scaling=False, n_iter=10,
                  memory=Memory(cachedir=None),
                  memory_level=0, n_jobs=1, verbose=1):
+
         self.method = method
         self.n_parcels = n_parcels
+        self.scaling = scaling
+        self.n_iter = n_iter
 
         MultiPCA.__init__(self, n_components=200,
                           random_state=random_state,
@@ -230,15 +286,15 @@ class Parcellations(MultiPCA):
 
         Parameters
         ----------
-        data : ndarray
+        data: ndarray
             Shape (n_samples, n_features)
 
         Returns
         -------
-        labels_ : numpy.ndarray
+        labels: numpy.ndarray
             Labels to each cluster in the brain.
 
-        connectivity_ : numpy.ndarray
+        connectivity: numpy.ndarray
             voxel-to-voxel connectivity matrix computed from a mask.
             Note that, this attribute is returned only for selected methods
             such as 'ward', 'complete', 'average'.
@@ -262,7 +318,7 @@ class Parcellations(MultiPCA):
         # happening in Travis
         try:
             from nilearn import plotting
-        except:
+        except Exception:
             pass
 
         components = MultiPCA._raw_fit(self, data)
@@ -280,6 +336,17 @@ class Parcellations(MultiPCA):
                                      verbose=max(0, self.verbose - 1))
             labels = self._cache(_estimator_fit,
                                  func_memory_level=1)(components.T, kmeans)
+
+        elif self.method == 'rena':
+            rena = ReNA(mask_img_, n_clusters=self.n_parcels,
+                        scaling=self.scaling, n_iter=self.n_iter,
+                        memory=self.memory, memory_level=self.memory_level,
+                        verbose=max(0, self.verbose - 1))
+            method = 'rena'
+            labels = \
+                self._cache(_estimator_fit, func_memory_level=1)(components.T,
+                                                                 rena, method)
+
         else:
             mask_ = _safe_get_data(mask_img_).astype(np.bool)
             shape = mask_.shape
@@ -315,7 +382,7 @@ class Parcellations(MultiPCA):
 
         Parameters
         ----------
-        imgs : List of Nifti-like images
+        imgs: List of Nifti-like images
             See http://nilearn.github.io/manipulating_images/input_output.html.
             Images to process.
 
@@ -367,11 +434,11 @@ class Parcellations(MultiPCA):
 
         Parameters
         ----------
-        imgs : List of Nifti-like images
+        imgs: List of Nifti-like images
             See http://nilearn.github.io/manipulating_images/input_output.html.
             Images for process for fit as well for transform to signals.
 
-        confounds : List of CSV files or arrays-like, optional
+        confounds: List of CSV files or arrays-like, optional
             Each file or numpy array in a list should have shape
             (number of scans, number of confounds).
             This parameter is passed to signal.clean. Given confounds
@@ -387,8 +454,7 @@ class Parcellations(MultiPCA):
             Example, for single image shape will be
             (number of scans, number of labels)
         """
-        return self.fit(imgs, confounds=confounds).transform(imgs,
-                                                             confounds=confounds)
+        return self.fit(imgs, confounds=confounds).transform(imgs, confounds)
 
     def inverse_transform(self, signals):
         """Transform signals extracted from parcellations back to brain
@@ -398,12 +464,12 @@ class Parcellations(MultiPCA):
 
         Parameters
         ----------
-        signals : List of 2D numpy.ndarray
+        signals: List of 2D numpy.ndarray
             Each 2D array with shape (number of scans, number of regions)
 
         Returns
         -------
-        imgs : List of or Nifti-like image
+        imgs: List of or Nifti-like image
             Brain image(s)
         """
         from .signal_extraction import signals_to_img_labels
