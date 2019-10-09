@@ -162,8 +162,12 @@ LOCALIZER_PARTICIPANTS = np.recfromcsv(
     os.path.join(tst.datadir, "localizer_participants.tsv"), delimiter='\t')
 LOCALIZER_BEHAVIOURAL = np.recfromcsv(
     os.path.join(tst.datadir, "localizer_behavioural.tsv"), delimiter='\t')
+
+
 def mock_localizer_index(*args, **kwargs):
     return LOCALIZER_INDEX
+
+
 def mock_np_recfromcsv(*args, **kwargs):
     if args[0].endswith("participants.tsv"):
         return LOCALIZER_PARTICIPANTS
@@ -186,12 +190,14 @@ def setup_localizer():
     original_np_recfromcsv = np.recfromcsv
     np.recfromcsv = mock_np_recfromcsv
 
+
 def teardown_localizer():
     global original_json_load
     json.load = original_json_load
 
     global original_np_recfromcsv
     np.recfromcsv = original_np_recfromcsv
+
 
 @with_setup(setup_mock, teardown_mock)
 @with_setup(tst.setup_tmpdata, tst.teardown_tmpdata)
