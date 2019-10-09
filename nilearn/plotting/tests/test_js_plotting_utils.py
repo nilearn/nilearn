@@ -309,3 +309,8 @@ def test_to_color_strings():
     colors = ['#0000ffff', '#ff0000ab', '#7f7f7f00']
     as_str = js_plotting_utils.to_color_strings(colors)
     assert as_str == ['#0000ff', '#ff0000', '#7f7f7f']
+
+
+def test_import_html_document_from_js_plotting():
+    from nilearn.plotting.js_plotting_utils import (
+        HTMLDocument, set_max_img_views_before_warning)  #noqa
