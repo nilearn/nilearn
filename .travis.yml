@@ -14,7 +14,7 @@ matrix:
   allow_failures:
     # allow_failures keyed to python 3.5 & skipping tests.
     - python: "3.5"
-      env: SKIP_TESTS="true"
+      env: DISTRIB="travisci" PYTHON_VERSION="3.5" FLAKE8_VERSION="*" SKIP_TESTS="true"
   include:
     - name: "Python 3.5 minimum package versions without Matplotlib"
       python: "3.5"
