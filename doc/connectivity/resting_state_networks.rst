@@ -64,13 +64,19 @@ We can visualize each component outlined over the brain:
 
 We can also plot the map for different components separately:
 
-.. |left_img| image:: ../auto_examples/03_connectivity/images/sphx_glr_plot_compare_decomposition_002.png
+.. |ic1| image:: ../auto_examples/03_connectivity/images/sphx_glr_plot_compare_decomposition_002.png
    :width: 23%
 
-.. |right_img| image:: ../auto_examples/03_connectivity/images/sphx_glr_plot_compare_decomposition_003.png
+.. |ic2| image:: ../auto_examples/03_connectivity/images/sphx_glr_plot_compare_decomposition_003.png
    :width: 23%
 
-.. centered:: |left_img| |right_img|
+.. |ic3| image:: ../auto_examples/03_connectivity/images/sphx_glr_plot_compare_decomposition_004.png
+   :width: 23%
+
+.. |ic4| image:: ../auto_examples/03_connectivity/images/sphx_glr_plot_compare_decomposition_005.png
+   :width: 23%
+
+.. centered:: |ic1| |ic2| |ic3| |ic4|
 
 .. seealso::
 
@@ -83,6 +89,14 @@ We can also plot the map for different components separately:
    displayed on your computer might not match those of the documentation. For
    a fair representation, you should display all components and
    investigate which one resemble those displayed above.
+
+Interpreting such components
+-----------------------------
+
+ICA, and related algorithms, extract patterns that coactivate in the
+signal. As a result, it finds functional networks, but also patterns of
+non neural activity, ie confounding signals. Both are visible in the
+plots of the components.
 
 An alternative to ICA: Dictionary learning
 ===========================================
@@ -102,30 +116,37 @@ good extracted maps.
 Sparsity of output map is controlled by a parameter alpha: using a
 larger alpha yields sparser maps.
 
-We can fit both estimators to compare them. 4D plotting offers an efficient way 
-to compare both resulting outputs.
+We can fit both estimators to compare them. 4D plotting (using
+:func:`nilearn.plotting.plot_prob_atlas`) offers an efficient way to
+compare both resulting outputs.
 
-.. |left_img_decomp| image:: ../auto_examples/03_connectivity/images/sphx_glr_plot_compare_decomposition_022.png
+.. figure:: ../auto_examples/03_connectivity/images/sphx_glr_plot_compare_decomposition_022.png
    :target: ../auto_examples/03_connectivity/plot_compare_decomposition.html
-   :width: 50%
-.. |right_img_decomp| image:: ../auto_examples/03_connectivity/images/sphx_glr_plot_compare_decomposition_023.png
-   :target: ../auto_examples/03_connectivity/plot_compare_decomposition.html
-   :width: 50%
+   :align: center
 
-.. |left_img_decomp_single| image:: ../auto_examples/03_connectivity/images/sphx_glr_plot_compare_decomposition_024.png
+.. figure:: ../auto_examples/03_connectivity/images/sphx_glr_plot_compare_decomposition_001.png
    :target: ../auto_examples/03_connectivity/plot_compare_decomposition.html
-   :width: 50%
-.. |right_img_decomp_single| image:: ../auto_examples/03_connectivity/images/sphx_glr_plot_compare_decomposition_025.png
-   :target: ../auto_examples/03_connectivity/plot_compare_decomposition.html
-   :width: 50%
+   :align: center
 
-
-.. centered:: |left_img_decomp| |right_img_decomp|
-.. centered:: |left_img_decomp_single| |right_img_decomp_single|
 
 Maps obtained with dictionary learning are often easier to exploit as they are
-less noisy than ICA maps, with blobs usually better defined. Typically,
+more contrasted than ICA maps, with blobs usually better defined. Typically,
 *smoothing can be lower than when doing ICA*.
+
+.. |dl1| image:: ../auto_examples/03_connectivity/images/sphx_glr_plot_compare_decomposition_023.png
+   :width: 23%
+
+.. |dl2| image:: ../auto_examples/03_connectivity/images/sphx_glr_plot_compare_decomposition_024.png
+   :width: 23%
+
+.. |dl3| image:: ../auto_examples/03_connectivity/images/sphx_glr_plot_compare_decomposition_025.png
+   :width: 23%
+
+.. |dl4| image:: ../auto_examples/03_connectivity/images/sphx_glr_plot_compare_decomposition_026.png
+   :width: 23%
+
+.. centered:: |dl1| |dl2| |dl3| |dl4|
+
 While dictionary learning computation time is comparable to CanICA, obtained
 atlases have been shown to outperform ICA in a variety of
 classification tasks.

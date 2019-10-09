@@ -1127,3 +1127,21 @@ def test_plot_glass_brain_colorbar_having_nans():
     img = nibabel.Nifti1Image(data, np.eye(4))
     plot_glass_brain(img, colorbar=True)
     plt.close()
+
+
+def test_plot_glass_brain_display_modes_without_img():
+    # Smoke test for work around from PR #1888
+    fig = plot_glass_brain(None, display_mode='lr')
+    fig = plot_glass_brain(None, display_mode='lzry')
+    fig.close()
+
+
+def test_plot_glass_brain_with_completely_masked_img():
+    # Smoke test for PR #1888 with display modes having 'l'
+    data = np.zeros((10, 20, 30))
+    affine = np.eye(4)
+
+    img = nibabel.Nifti1Image(data, affine)
+    plot_glass_brain(img, display_mode='lzry')
+    plot_glass_brain(img, display_mode='lr')
+    plt.close()

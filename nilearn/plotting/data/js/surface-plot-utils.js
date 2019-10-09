@@ -133,10 +133,20 @@ function updateLayout(plotDivId, viewSelectId, blackBg) {
     Plotly.relayout(plotDivId, layout);
 }
 
-function addColorbar(colorscale, cmin, cmax, divId, layout, config) {
+function textColor(black_bg){
+    if (black_bg){
+        return "white";
+    }
+    return "black";
+}
+
+function addColorbar(colorscale, cmin, cmax, divId, layout, config,
+                     fontsize=25, height=.5, color="black") {
     // hack to get a colorbar
     let dummy = {
         "opacity": 0,
+        "colorbar": {"tickfont": {"size": fontsize, "color": color},
+                     "len": height},
         "type": "mesh3d",
         "colorscale": colorscale,
         "x": [1, 0, 0],

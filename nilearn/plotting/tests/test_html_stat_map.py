@@ -109,13 +109,14 @@ def test_save_sprite():
     # Save the sprite using BytesIO
     sprite_io = BytesIO()
     html_stat_map._save_sprite(data, sprite_io, vmin=0, vmax=1,
-                               mask=mask, format='raw')
+                               mask=mask, format='png')
 
     # Load the sprite back in base64
     sprite_base64 = html_stat_map._bytesIO_to_base64(sprite_io)
 
     # Check the sprite is correct
-    assert sprite_base64 == '////AP////8=\n'
+    assert sprite_base64.startswith('iVBORw0KG')
+    assert sprite_base64.endswith('ABJRU5ErkJggg==')
 
 
 def test_save_cmap():
@@ -124,13 +125,14 @@ def test_save_cmap():
 
     # Save the cmap using BytesIO
     cmap_io = BytesIO()
-    html_stat_map._save_cm(cmap_io, 'cold_hot', format='raw', n_colors=2)
+    html_stat_map._save_cm(cmap_io, 'cold_hot', format='png', n_colors=2)
 
     # Load the colormap back in base64
     cmap_base64 = html_stat_map._bytesIO_to_base64(cmap_io)
 
     # Check the colormap is correct
-    assert cmap_base64 == '//////////8=\n'
+    assert cmap_base64.startswith('iVBORw0KG')
+    assert cmap_base64.endswith('ElFTkSuQmCC')
 
 
 def test_mask_stat_map():

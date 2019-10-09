@@ -420,6 +420,12 @@ div.body p.sphx-glr-script-out {
     margin: -.9ex 0ex;
 }
 
+div.body div.sphx-glr-download-link-note {
+    max-width: 8em;
+    float: right;
+    margin-right: -1em;
+}
+
 div.bodywrapper {
     margin: 0 246px 0 auto;
     /*border-right: 1px solid #EEE;*/
@@ -1682,4 +1688,23 @@ ul#tab li div.contents p{
 /* For the examples */
 p.sphx-glr-horizontal {
     margin-top: 2em;
+}
+
+
+/* Sphinx-gallery Report embedding */
+div.sg-report {
+    padding: 0pt;
+    transform: scale(.95);
+}
+
+div.sg-report iframe {
+    display: block;
+    border-style: none;
+    transform: scale(.85);
+    height: 470px;
+    margin-left: -12%; /* Negative because of .8 scaling */
+    margin-top: -4%;
+    padding: 0pt;
+    margin-bottom: 0pt;
+    width: 126%; /* More than 100% because of .8 scaling */
 }

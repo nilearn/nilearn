@@ -53,15 +53,16 @@ def test_view_connectome():
     adj, coord = _make_connectome()
     html = html_connectome.view_connectome(adj, coord)
     check_html(html, False, 'connectome-plot')
-    html = html_connectome.view_connectome(adj, coord, '85.3%')
+    html = html_connectome.view_connectome(adj, coord, '85.3%',
+                                           title="SOME_TITLE")
     check_html(html, False, 'connectome-plot')
+    assert "SOME_TITLE" in html.html
     html = html_connectome.view_connectome(adj, coord, '85.3%',
                                            linewidth=8.5, node_size=4.2)
     check_html(html, False, 'connectome-plot')
     html = html_connectome.view_connectome(
         adj, coord, '85.3%', linewidth=8.5, marker_size=np.arange(len(coord)))
     check_html(html, False, 'connectome-plot')
-
 
 
 def test_params_deprecation_view_connectome():
@@ -77,7 +78,7 @@ def test_params_deprecation_view_connectome():
     warning_msgs = {old_: deprecation_msg.format(old_, new_)
                     for old_, new_ in deprecated_params.items()
                     }
-    
+
     adj, coord = _make_connectome()
     with warnings.catch_warnings(record=True) as raised_warnings:
         html_connectome.view_connectome(adjacency_matrix=adj,
@@ -127,12 +128,12 @@ def test_params_deprecation_view_connectome():
                                         4.2,
                                         )
     old_params = ['coords', 'threshold', 'cmap', 'marker_size']
-    
+
     assert len(raised_warnings) == 4
     for old_param_, raised_warning_ in zip(old_params, raised_warnings):
         assert warning_msgs[old_param_] == str(raised_warning_.message)
         assert raised_warning_.category is DeprecationWarning
-        
+
 
 def test_get_markers():
     coords = np.arange(12).reshape((4, 3))

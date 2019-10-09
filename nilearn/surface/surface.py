@@ -236,7 +236,7 @@ def _masked_indices(sample_locations, img_shape, mask=None):
     for dim, size in enumerate(img_shape):
         kept = np.logical_and(kept, sample_locations[:, dim] < size)
     if mask is not None:
-        indices = np.asarray(np.round(sample_locations[kept]), dtype=int)
+        indices = np.asarray(np.floor(sample_locations[kept]), dtype=int)
         kept[kept] = mask[
             indices[:, 0], indices[:, 1], indices[:, 2]] != 0
     return ~kept
