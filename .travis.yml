@@ -12,12 +12,11 @@ matrix:
   # setting the status
   fast_finish: true
   allow_failures:
-    # allow_failures keyed to skipping tests.
-    - python: 3.5
+    # allow_failures keyed to python 3.5 & skipping tests.
+    - python: "3.5"
       env: SKIP_TESTS="true"
   include:
-    # without matplotlib
-    - name: "Python 3.5 minimum package versions"
+    - name: "Python 3.5 minimum package versions without Matplotlib"
       python: "3.5"
       env: DISTRIB="travisci" PYTHON_VERSION="3.5"
            NUMPY_VERSION="1.11" SCIPY_VERSION="0.19" PANDAS_VERSION="*"
