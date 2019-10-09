@@ -6,6 +6,7 @@ import json
 import os
 import shutil
 import tempfile
+import pathlib
 from distutils.version import LooseVersion
 
 import sklearn
@@ -16,6 +17,15 @@ import nilearn
 from nilearn._utils import cache_mixin, CacheMixin
 from nilearn._utils.testing import assert_raises_regex
 
+
+def _get_subdirs(top_dir):
+    top_dir = pathlib.Path(top_dir)
+    children = list(top_dir.glob("*"))
+    return [child for child in children if child.is_dir()]
+
+
+def _get_n_subdirs(top_dir):
+    return len(_get_subdirs(top_dir))
 
 
 def f(x):
@@ -104,17 +114,17 @@ def test__safe_cache_flush():
 
 def test_cache_memory_level():
     temp_dir = tempfile.mkdtemp()
-    job_glob = os.path.join(temp_dir, 'joblib', 'nilearn', 'tests',
-                            'test_cache_mixin', 'f', '*')
+    joblib_dir = (pathlib.Path(temp_dir) / 'joblib' /
+                  'nilearn' / 'tests' / 'test_cache_mixin' / 'f')
     mem = Memory(cachedir=temp_dir, verbose=0)
     cache_mixin.cache(f, mem, func_memory_level=2, memory_level=1)(2)
-    assert_equal(len(glob.glob(job_glob)), 0)
+    assert_equal(_get_n_subdirs(joblib_dir), 0)
     cache_mixin.cache(f, Memory(cachedir=None))(2)
-    assert_equal(len(glob.glob(job_glob)), 0)
+    assert_equal(_get_n_subdirs(joblib_dir), 0)
     cache_mixin.cache(f, mem, func_memory_level=2, memory_level=3)(2)
-    assert_equal(len(glob.glob(job_glob)), 2)
+    assert_equal(_get_n_subdirs(joblib_dir), 1)
     cache_mixin.cache(f, mem)(3)
-    assert_equal(len(glob.glob(job_glob)), 3)
+    assert_equal(_get_n_subdirs(joblib_dir), 2)
 
 
 class CacheMixinTest(CacheMixin):
@@ -184,15 +194,15 @@ def test_cache_mixin_wrong_dirs():
 def test_cache_shelving():
     try:
         temp_dir = tempfile.mkdtemp()
-        job_glob = os.path.join(temp_dir, 'joblib', 'nilearn', 'tests',
-                                'test_cache_mixin', 'f', '*')
+        joblib_dir = (pathlib.Path(temp_dir) / 'joblib' /
+                      'nilearn' / 'tests' / 'test_cache_mixin' / 'f')
         mem = Memory(cachedir=temp_dir, verbose=0)
         res = cache_mixin.cache(f, mem, shelve=True)(2)
         assert_equal(res.get(), 2)
-        assert_equal(len(glob.glob(job_glob)), 1)
+        assert_equal(_get_n_subdirs(joblib_dir), 1)
         res = cache_mixin.cache(f, mem, shelve=True)(2)
         assert_equal(res.get(), 2)
-        assert_equal(len(glob.glob(job_glob)), 1)
+        assert_equal(_get_n_subdirs(joblib_dir), 1)
     finally:
         del mem
         shutil.rmtree(temp_dir, ignore_errors=True)
