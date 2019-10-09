@@ -79,6 +79,8 @@ Fixes
   half-transparent grey to maintain a 3D perception.
 - :func:`nilearn.plotting.view_surf` now accepts surface data provided as a file
   path.
+- :func:`nilearn.plotting.plot_glass_brain` now correctly displays the left 'l' orientation even when
+  the given images are completely masked (empty images).
 - :func:`nilearn.plotting.plot_matrix` providing labels=None, False, or an empty list now correctly disables labels.
 - :func:`nilearn.plotting.plot_surf_roi` now takes vmin, vmax parameters
 - :func:`nilearn.datasets.fetch_surf_nki_enhanced` is now downloading the correct
@@ -239,7 +241,7 @@ The following people contributed to this release::
 0.5.0
 =====
 
-    **Released November 2018**
+**Released November 2018**
 
 NEW
 ---

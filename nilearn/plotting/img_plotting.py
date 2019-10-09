@@ -1079,6 +1079,8 @@ def plot_glass_brain(stat_map_img,
         The plotted image should be in MNI space for this function to work
         properly.
 
+        Only glass brain can be plotted by switching stat_map_img to None.
+
         Parameters
         ----------
         stat_map_img : Niimg-like object
@@ -1184,6 +1186,9 @@ def plot_glass_brain(stat_map_img,
         display_factory=display_factory, vmin=vmin, vmax=vmax,
         cbar_vmin=cbar_vmin, cbar_vmax=cbar_vmax, brain_color=brain_color,
         resampling_interpolation=resampling_interpolation, **kwargs)
+
+    if stat_map_img is None and 'l' in display.axes:
+        display.axes['l'].ax.invert_xaxis()
 
     return display
 
