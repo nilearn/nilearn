@@ -148,20 +148,20 @@ def test_miyawaki2008():
     assert_not_equal(dataset.description, '')
 
 
-with open(os.path.join(tst.datadir, "localizer_index.json")) as of:
+with open(os.path.join(tst.datadir, 'localizer_index.json')) as of:
     localizer_template = json.load(of)
 LOCALIZER_INDEX = {}
 for idx in range(1, 95):
     idx = str(idx).zfill(2)
-    sid = "S{0}".format(idx)
+    sid = 'S{0}'.format(idx)
     LOCALIZER_INDEX.update(
         dict((key.format(sid), uuid.uuid4().hex)
         for key in localizer_template))
-LOCALIZER_INDEX["/localizer/phenotype/behavioural.tsv"] = uuid.uuid4().hex
+LOCALIZER_INDEX['/localizer/phenotype/behavioural.tsv'] = uuid.uuid4().hex
 LOCALIZER_PARTICIPANTS = np.recfromcsv(
-    os.path.join(tst.datadir, "localizer_participants.tsv"), delimiter='\t')
+    os.path.join(tst.datadir, 'localizer_participants.tsv'), delimiter='\t')
 LOCALIZER_BEHAVIOURAL = np.recfromcsv(
-    os.path.join(tst.datadir, "localizer_behavioural.tsv"), delimiter='\t')
+    os.path.join(tst.datadir, 'localizer_behavioural.tsv'), delimiter='\t')
 
 
 def mock_localizer_index(*args, **kwargs):
@@ -169,12 +169,12 @@ def mock_localizer_index(*args, **kwargs):
 
 
 def mock_np_recfromcsv(*args, **kwargs):
-    if args[0].endswith("participants.tsv"):
+    if args[0].endswith('participants.tsv'):
         return LOCALIZER_PARTICIPANTS
-    elif args[0].endswith("behavioural.tsv"):
+    elif args[0].endswith('behavioural.tsv'):
         return LOCALIZER_BEHAVIOURAL
     else:
-        raise ValueError("Unexpected args!")
+        raise ValueError('Unexpected args!')
 
 
 def setup_localizer():
@@ -205,13 +205,13 @@ def teardown_localizer():
 def test_fetch_localizer_contrasts():
     # 2 subjects
     dataset = func.fetch_localizer_contrasts(
-        ["checkerboard"],
+        ['checkerboard'],
         n_subjects=2,
         data_dir=tst.tmpdir,
         verbose=1)
-    assert_false(hasattr(dataset, "anats"))
-    assert_false(hasattr(dataset, "tmaps"))
-    assert_false(hasattr(dataset, "masks"))
+    assert_false(hasattr(dataset, 'anats'))
+    assert_false(hasattr(dataset, 'tmaps'))
+    assert_false(hasattr(dataset, 'masks'))
     assert_true(isinstance(dataset.cmaps[0], _basestring))
     assert_true(isinstance(dataset.ext_vars, np.recarray))
     assert_equal(len(dataset.cmaps), 2)
@@ -219,7 +219,7 @@ def test_fetch_localizer_contrasts():
 
     # Multiple contrasts
     dataset = func.fetch_localizer_contrasts(
-        ["checkerboard", "horizontal checkerboard"],
+        ['checkerboard', 'horizontal checkerboard'],
         n_subjects=2,
         data_dir=tst.tmpdir,
         verbose=1)
@@ -230,7 +230,7 @@ def test_fetch_localizer_contrasts():
 
     # all get_*=True
     dataset = func.fetch_localizer_contrasts(
-        ["checkerboard"],
+        ['checkerboard'],
         n_subjects=1,
         data_dir=tst.tmpdir,
         get_anats=True,
@@ -251,14 +251,14 @@ def test_fetch_localizer_contrasts():
 
     # grab a given list of subjects
     dataset2 = func.fetch_localizer_contrasts(
-        ["checkerboard"],
+        ['checkerboard'],
         n_subjects=[2, 3, 5],
         data_dir=tst.tmpdir,
         verbose=1)
     assert_equal(dataset2.ext_vars.size, 3)
     assert_equal(len(dataset2.cmaps), 3)
     assert_equal([row[0] for row in dataset2.ext_vars],
-                 [b"S02", b"S03", b"S05"])
+                 [b'S02', b'S03', b'S05'])
 
 
 @with_setup(setup_mock, teardown_mock)
