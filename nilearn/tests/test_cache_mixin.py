@@ -1,15 +1,12 @@
 """
 Test the _utils.cache_mixin module
 """
-import glob
 import json
 import os
 import shutil
 import tempfile
 import pathlib
-from distutils.version import LooseVersion
 
-import sklearn
 from nose.tools import assert_false, assert_true, assert_equal
 from nilearn._utils.compat import Memory
 
@@ -36,8 +33,7 @@ def f(x):
 def test_check_memory():
     # Test if _check_memory returns a memory object with the cachedir equal to
     # input path
-    try:
-        temp_dir = tempfile.mkdtemp()
+    with tempfile.TemporaryDirectory() as temp_dir:
 
         mem_none = Memory(cachedir=None)
         mem_temp = Memory(cachedir=temp_dir)
@@ -52,17 +48,11 @@ def test_check_memory():
             assert_equal(memory.cachedir, mem_temp.cachedir)
             assert_true(memory, Memory)
 
-    finally:
-        if os.path.exists(temp_dir):
-            shutil.rmtree(temp_dir)
-
-
 
 def test__safe_cache_dir_creation():
     # Test the _safe_cache function that is supposed to flush the
     # cache if the nibabel version changes
-    try:
-        temp_dir = tempfile.mkdtemp()
+    with tempfile.TemporaryDirectory() as temp_dir:
         mem = Memory(cachedir=temp_dir)
         version_file = os.path.join(temp_dir, 'joblib', 'module_versions.json')
         assert_false(os.path.exists(version_file))
@@ -73,16 +63,12 @@ def test__safe_cache_dir_creation():
         os.unlink(version_file)
         cache_mixin._safe_cache(mem, f)
         assert_false(os.path.exists(version_file))
-    finally:
-        if os.path.exists(temp_dir):
-            shutil.rmtree(temp_dir)
 
 
 def test__safe_cache_flush():
     # Test the _safe_cache function that is supposed to flush the
     # cache if the nibabel version changes
-    try:
-        temp_dir = tempfile.mkdtemp()
+    with tempfile.TemporaryDirectory() as temp_dir:
         mem = Memory(cachedir=temp_dir)
         version_file = os.path.join(temp_dir, 'joblib', 'module_versions.json')
         # Create an mock version_file with old module versions
@@ -106,25 +92,21 @@ def test__safe_cache_flush():
         cache_mixin._safe_cache(mem, f)
         assert_true(os.path.exists(version_file))
         assert_false(os.path.exists(nibabel_dir))
-    finally:
-        pass
-        # if os.path.exists(temp_dir):
-        #    shutil.rmtree(temp_dir)
 
 
 def test_cache_memory_level():
-    temp_dir = tempfile.mkdtemp()
-    joblib_dir = (pathlib.Path(temp_dir) / 'joblib' /
-                  'nilearn' / 'tests' / 'test_cache_mixin' / 'f')
-    mem = Memory(cachedir=temp_dir, verbose=0)
-    cache_mixin.cache(f, mem, func_memory_level=2, memory_level=1)(2)
-    assert_equal(_get_n_subdirs(joblib_dir), 0)
-    cache_mixin.cache(f, Memory(cachedir=None))(2)
-    assert_equal(_get_n_subdirs(joblib_dir), 0)
-    cache_mixin.cache(f, mem, func_memory_level=2, memory_level=3)(2)
-    assert_equal(_get_n_subdirs(joblib_dir), 1)
-    cache_mixin.cache(f, mem)(3)
-    assert_equal(_get_n_subdirs(joblib_dir), 2)
+    with tempfile.TemporaryDirectory() as temp_dir:
+        joblib_dir = (pathlib.Path(temp_dir) / 'joblib' /
+                    'nilearn' / 'tests' / 'test_cache_mixin' / 'f')
+        mem = Memory(cachedir=temp_dir, verbose=0)
+        cache_mixin.cache(f, mem, func_memory_level=2, memory_level=1)(2)
+        assert_equal(_get_n_subdirs(joblib_dir), 0)
+        cache_mixin.cache(f, Memory(cachedir=None))(2)
+        assert_equal(_get_n_subdirs(joblib_dir), 0)
+        cache_mixin.cache(f, mem, func_memory_level=2, memory_level=3)(2)
+        assert_equal(_get_n_subdirs(joblib_dir), 1)
+        cache_mixin.cache(f, mem)(3)
+        assert_equal(_get_n_subdirs(joblib_dir), 2)
 
 
 class CacheMixinTest(CacheMixin):
@@ -192,8 +174,7 @@ def test_cache_mixin_wrong_dirs():
 
 
 def test_cache_shelving():
-    try:
-        temp_dir = tempfile.mkdtemp()
+    with tempfile.TemporaryDirectory() as temp_dir:
         joblib_dir = (pathlib.Path(temp_dir) / 'joblib' /
                       'nilearn' / 'tests' / 'test_cache_mixin' / 'f')
         mem = Memory(cachedir=temp_dir, verbose=0)
@@ -203,6 +184,3 @@ def test_cache_shelving():
         res = cache_mixin.cache(f, mem, shelve=True)(2)
         assert_equal(res.get(), 2)
         assert_equal(_get_n_subdirs(joblib_dir), 1)
-    finally:
-        del mem
-        shutil.rmtree(temp_dir, ignore_errors=True)
