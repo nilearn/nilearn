@@ -593,11 +593,10 @@ def clean(signals, sessions=None, detrend=True, standardize='zscore',
     if detrend and (standardize == 'psc'):
         # If the signal is detrended, we have to know the original mean
         # signal to calculate the psc.
-        signals = _standardize(signals + mean_signals, standardize=standardize, # temp comment to test flake8 errors
+        signals = _standardize(signals + mean_signals, standardize=standardize,
                                detrend=False)
     else:
         signals = _standardize(signals, standardize=standardize,
                                detrend=False)
 
     return signals
-
