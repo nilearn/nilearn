@@ -47,6 +47,11 @@ def test_get_connectome():
     assert {'_con_x', '_con_y', '_con_z', '_con_w', 'colorscale'
             }.issubset(connectome.keys())
     assert (connectome['cmin'], connectome['cmax']) == (-2.5, 2.5)
+    adj[adj == 0] = np.nan
+    connectome = html_connectome._get_connectome(adj, coord)
+    con_x = decode(connectome['_con_x'], '<f4')
+    assert (con_x == expected_x).all()
+    assert (connectome['cmin'], connectome['cmax']) == (-2.5, 2.5)
 
 
 def test_view_connectome():
