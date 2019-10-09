@@ -38,6 +38,8 @@ NEW
   functional connectivity. Similar example in
   `examples/03_connectivity/plot_group_level_connectivity.py` simplified.
 
+- the Localizer dataset now follows the BIDS organization.
+
 Changes
 -------
 
