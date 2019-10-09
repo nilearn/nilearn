@@ -824,7 +824,7 @@ def fetch_localizer_contrasts(contrasts, n_subjects=None, get_tmaps=False,
     if n_subjects is None:
         n_subjects = 94  # 94 subjects available
     if (isinstance(n_subjects, numbers.Number) and
-                    ((n_subjects > 94) or (n_subjects < 1))):
+            ((n_subjects > 94) or (n_subjects < 1))):
         warnings.warn("Wrong value for \'n_subjects\' (%d). The maximum "
                       "value will be used instead (\'n_subjects=94\')")
         n_subjects = 94  # 94 subjects available
@@ -910,7 +910,7 @@ def fetch_localizer_contrasts(contrasts, n_subjects=None, get_tmaps=False,
                                 verbose=verbose)
     index_file = _fetch_file(index_url, data_dir, verbose=verbose)
     with open(index_file, "rt") as of:
-        index = json.load(of)     
+        index = json.load(of)
 
     # Build data URLs that will be fetched
     files = {}
@@ -927,12 +927,14 @@ def fetch_localizer_contrasts(contrasts, n_subjects=None, get_tmaps=False,
     if get_tmaps:
         data_types.append("tmaps")
     filenames = []
+
     def _is_valid_path(path, index, verbose):
         if path not in index:
             if verbose > 0:
                 print("Skiping path '{0}'...".format(path))
             return False
         return True
+
     for subject_id in subject_ids:
         for data_type in data_types:
             for contrast_id, contrast in enumerate(contrasts_wrapped):
@@ -995,7 +997,7 @@ def fetch_localizer_contrasts(contrasts, n_subjects=None, get_tmaps=False,
     if _is_valid_path(path, index, verbose=verbose):
         file_url = root_url.format(index[path][1:])
         opts = {"move": behavioural_file}
-        filenames.append((behavioural_file, file_url, opts)) 
+        filenames.append((behavioural_file, file_url, opts))
 
     # Actual data fetching
     fdescr = _get_dataset_descr(dataset_name)

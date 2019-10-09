@@ -154,8 +154,8 @@ LOCALIZER_INDEX = {}
 for idx in range(1, 95):
     idx = str(idx).zfill(2)
     sid = 'S{0}'.format(idx)
-    LOCALIZER_INDEX.update(
-        dict((key.format(sid), uuid.uuid4().hex)
+    LOCALIZER_INDEX.update(dict(
+        (key.format(sid), uuid.uuid4().hex)
         for key in localizer_template))
 LOCALIZER_INDEX['/localizer/phenotype/behavioural.tsv'] = uuid.uuid4().hex
 LOCALIZER_PARTICIPANTS = np.recfromcsv(
