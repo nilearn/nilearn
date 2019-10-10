@@ -62,6 +62,9 @@ Changes
   colormap. These arguments were already accepted in `kwargs` but not documented
   before.
 
+- :func:`nilearn.plotting.view_connectome` now converts NaNs in the adjacency
+  matrix to 0.
+
 Fixes
 -----
 
