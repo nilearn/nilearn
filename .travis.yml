@@ -34,7 +34,7 @@ matrix:
     - env: DISTRIB="conda" PYTHON_VERSION="3.4"
            NUMPY_VERSION="1.11.0" SCIPY_VERSION="0.17"
            SCIKIT_LEARN_VERSION="0.18" MATPLOTLIB_VERSION="1.5.1"
-           PANDAS_VERSION="0.18.0" PATSY_VERSION="*"
+           PANDAS_VERSION="0.18.0"
     # Python 3.5 with latest versions.
     - env: DISTRIB="conda" PYTHON_VERSION="3.5"
            NUMPY_VERSION="*" SCIPY_VERSION="*"

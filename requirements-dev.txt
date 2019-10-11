@@ -1,7 +1,6 @@
 nose
 coverage
 nilearn
-patsy
 scipy
 scikit-learn
 pandas

@@ -272,7 +272,6 @@ intersphinx_mapping = {
     'nilearn': ('http://nilearn.github.io', None),
     'nibabel': ('http://nipy.org/nibabel', None),
     'sklearn': ('http://scikit-learn.org/stable', None),
-    'patsy': ('http://patsy.readthedocs.io/en/latest/', None),
     'pandas': ('http://pandas.pydata.org/pandas-docs/stable/', None),
 }
 

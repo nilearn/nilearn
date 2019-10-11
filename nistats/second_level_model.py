@@ -21,14 +21,13 @@ from nilearn._utils import CacheMixin
 from nilearn.input_data import NiftiMasker
 from nilearn.image import mean_img
 from nilearn.mass_univariate import permuted_ols
-from patsy import DesignInfo
 from sklearn.base import BaseEstimator, TransformerMixin, clone
 from sklearn.externals.joblib import Memory
 
 from .first_level_model import FirstLevelModel
 from .first_level_model import run_glm
 from .regression import SimpleRegressionResults
-from .contrasts import compute_contrast
+from .contrasts import compute_contrast, expression_to_contrast_vector
 from .utils import _basestring
 from .design_matrix import make_second_level_design_matrix
 from nistats._utils.helpers import replace_parameters
@@ -167,14 +166,14 @@ def _get_con_val(second_level_contrast, design_matrix):
             second_level_contrast = np.ones([1])
         else:
             raise ValueError('No second-level contrast is specified.')
-    if isinstance(second_level_contrast, np.ndarray):
+    if not isinstance(second_level_contrast, _basestring):
         con_val = second_level_contrast
         if np.all(con_val == 0):
             raise ValueError('Contrast is null')
     else:
-        design_info = DesignInfo(design_matrix.columns.tolist())
-        constraint = design_info.linear_constraint(second_level_contrast)
-        con_val = constraint.coefs
+        design_columns = design_matrix.columns.tolist()
+        con_val = expression_to_contrast_vector(
+            second_level_contrast, design_columns)
     return con_val
 
 
@@ -196,12 +195,7 @@ def _get_contrast(second_level_contrast, design_matrix):
         elif (np.nonzero(second_level_contrast)[0]).size != 1:
             raise ValueError('second_level_contrast must be '
                              'a list of 0s and 1s')
-        if isinstance(second_level_contrast, np.ndarray):
-            con_val = np.asarray(second_level_contrast, dtype=bool)
-        else:
-            design_info = DesignInfo(design_matrix.columns.tolist())
-            constraint = design_info.linear_constraint(second_level_contrast)
-            con_val = np.asarray(constraint.coefs, dtype=bool).ravel()
+        con_val = np.asarray(second_level_contrast, dtype=bool)
         contrast = np.asarray(design_matrix.columns.tolist())[con_val][0]
     return contrast
 
@@ -425,17 +419,14 @@ class SecondLevelModel(BaseEstimator, TransformerMixin, CacheMixin):
         Parameters
         ----------
         second_level_contrast: str or array of shape (n_col), optional
-            Where ``n_col`` is the number of columns of the design matrix,
-            The string can be a formula compatible with the linear constraint
-            of the Patsy library. Basically one can use the name of the
-            conditions as they appear in the design matrix of
-            the fitted model combined with operators /\*+- and numbers.
-            Please check the patsy documentation for formula examples:
-            http://patsy.readthedocs.io/en/latest/API-reference.html#patsy.DesignInfo.linear_constraint
-            The default (None) is accepted if the design matrix has a single
-            column, in which case the only possible contrast array([1]) is
-            applied; when the design matrix has multiple columns, an error is
-            raised.
+            Where ``n_col`` is the number of columns of the design matrix. The
+            string can be a formula compatible with `pandas.DataFrame.eval`.
+            Basically one can use the name of the conditions as they appear in
+            the design matrix of the fitted model combined with operators +-
+            and combined with numbers with operators +-`*`/. The default (None)
+            is accepted if the design matrix has a single column, in which case
+            the only possible contrast array([1]) is applied; when the design
+            matrix has multiple columns, an error is raised.
 
         first_level_contrast: str or array of shape (n_col) with respect to
                               FirstLevelModel, optional

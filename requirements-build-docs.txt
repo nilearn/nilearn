@@ -8,7 +8,6 @@ nose
 mkl
 sphinx
 coverage
-patsy
 pillow
 pandas
 nose-timer

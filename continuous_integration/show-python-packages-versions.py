@@ -1,6 +1,6 @@
 import sys
 
-DEPENDENCIES = ['numpy', 'scipy', 'nilearn', 'nibabel', 'pandas', 'patsy',
+DEPENDENCIES = ['numpy', 'scipy', 'nilearn', 'nibabel', 'pandas',
                 'sklearn', 'matplotlib']
 
 

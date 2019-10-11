@@ -49,9 +49,6 @@ REQUIRED_MODULE_METADATA = (
     ('pandas', {
         'min_version': '0.18.0',
         'install_info': _NISTATS_INSTALL_MSG}),
-    ('patsy', {
-        'min_version': '0.4.1',
-        'install_info': _NISTATS_INSTALL_MSG}),
 )
 
 OPTIONAL_MATPLOTLIB_MIN_VERSION = '1.5.1'

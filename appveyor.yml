@@ -28,7 +28,7 @@ install:
   # See similar fix which made for travis and circleci
   # https://github.com/nilearn/nilearn/pull/1525
   # Should be removed after a new matplotlib release 2.1.1
-  - "conda install pip numpy scipy scikit-learn nose wheel matplotlib boto3 pandas patsy -y -q"
+  - "conda install pip numpy scipy scikit-learn nose wheel matplotlib boto3 pandas -y -q"
   # Install other nistats dependencies
   - "pip install nilearn coverage nose-timer"
   - "python setup.py bdist_wheel"

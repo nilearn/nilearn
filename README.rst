@@ -36,7 +36,6 @@ The required dependencies to use the software are:
 * Nilearn >= 0.4.0
 * Pandas >= 0.18.0
 * Sklearn >= 0.18.0
-* Patsy >= 0.4.1
 
 If you are using nilearn plotting functionalities or running the
 examples, matplotlib >= 1.5.1 is required.

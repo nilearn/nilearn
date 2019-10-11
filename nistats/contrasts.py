@@ -9,12 +9,22 @@ from warnings import warn
 
 import numpy as np
 import scipy.stats as sps
+import pandas as pd
 
 from .utils import z_score
 
-
 DEF_TINY = 1e-50
 DEF_DOFMAX = 1e10
+
+
+def expression_to_contrast_vector(expression, design_columns):
+    if expression in design_columns:
+        contrast_vector = np.zeros(len(design_columns))
+        contrast_vector[list(design_columns).index(expression)] = 1.
+        return contrast_vector
+    df = pd.DataFrame(np.eye(len(design_columns)), columns=design_columns)
+    contrast_vector = df.eval(expression, engine="python").values
+    return contrast_vector
 
 
 def compute_contrast(labels, regression_result, con_val, contrast_type=None):

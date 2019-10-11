@@ -9,8 +9,24 @@ from sklearn.linear_model import LinearRegression
 from nistats.first_level_model import run_glm
 from nistats.contrasts import (_fixed_effect_contrast,
                                compute_contrast,
+                               expression_to_contrast_vector
                                )
 
+
+def test_expression_to_contrast_vector():
+    cols = "a face xy_z house window".split()
+    contrast = expression_to_contrast_vector(
+        "face / 10 + (window - face) * 2 - house", cols)
+    assert np.allclose(contrast, [0., -1.9, 0., -1., 2.])
+    contrast = expression_to_contrast_vector("xy_z", cols)
+    assert np.allclose(contrast, [0., 0., 1., 0., 0.])
+    cols = ["a", "b", "a - b"]
+    contrast = expression_to_contrast_vector("a - b", cols)
+    # this is patsy's behavior
+    assert np.allclose(contrast, [0., 0., 1.])
+    cols = ["column_1"]
+    contrast = expression_to_contrast_vector("column_1", cols)
+    assert np.allclose(contrast, [1.])
 
 
 def test_Tcontrast():

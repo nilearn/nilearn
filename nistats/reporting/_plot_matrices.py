@@ -10,9 +10,9 @@ from string import ascii_lowercase
 
 import numpy as np
 import matplotlib.pyplot as plt
-from patsy import DesignInfo
 
 from nistats.design_matrix import check_design_matrix
+from nistats.contrasts import expression_to_contrast_vector
 
 
 def plot_design_matrix(design_matrix, rescale=True, ax=None, output_file=None):
@@ -78,15 +78,14 @@ def plot_contrast_matrix(contrast_def, design_matrix, colorbar=False, ax=None,
     contrast_def : str or array of shape (n_col) or list of (string or
                    array of shape (n_col))
 
-        where ``n_col`` is the number of columns of the design matrix,
-        (one array per run). If only one array is provided when there
-        are several runs, it will be assumed that the same contrast is
-        desired for all runs. The string can be a formula compatible with
-        the linear constraint of the Patsy library. Basically one can use
-        the name of the conditions as they appear in the design matrix of
-        the fitted model combined with operators /\*+- and numbers.
-        Please checks the patsy documentation for formula examples:
-        http://patsy.readthedocs.io/en/latest/API-reference.html#patsy.DesignInfo.linear_constraint
+        where ``n_col`` is the number of columns of the design matrix, (one
+        array per run). If only one array is provided when there are several
+        runs, it will be assumed that the same contrast is desired for all
+        runs. The string can be a formula compatible with
+        `pandas.DataFrame.eval`. Basically one can use the name of the
+        conditions as they appear in the design matrix of the fitted model
+        combined with operators +- and combined with numbers with operators
+        +-`*`/.
 
     design_matrix: pandas DataFrame
 
@@ -107,15 +106,14 @@ def plot_contrast_matrix(contrast_def, design_matrix, colorbar=False, ax=None,
     Plot Axes object
 
     """
-    
+
     design_column_names = design_matrix.columns.tolist()
     if isinstance(contrast_def, str):
-        design_info = DesignInfo(design_column_names)
-        contrast_def = design_info.linear_constraint(contrast_def).coefs
-    
+        contrast_def = expression_to_contrast_vector(
+            contrast_def, design_column_names)
     maxval = np.max(np.abs(contrast_def))
     con_matrix = np.asmatrix(contrast_def)
-    
+
     if ax is None:
         plt.figure(figsize=(8, 4))
         ax = plt.gca()
