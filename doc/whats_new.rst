@@ -65,6 +65,9 @@ Changes
 - :func:`nilearn.plotting.view_connectome` now converts NaNs in the adjacency
   matrix to 0.
 
+- :func:`nilearn.datasets.fetch_neurovault` now does not filter out images that
+  have their metadata field `is_valid` cleared by default.
+
 Fixes
 -----
 
