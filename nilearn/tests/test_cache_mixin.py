@@ -10,7 +10,7 @@ from distutils.version import LooseVersion
 
 import sklearn
 from nose.tools import assert_false, assert_true, assert_equal
-from sklearn.externals.joblib import Memory
+from nilearn._utils.compat import Memory
 
 import nilearn
 from nilearn._utils import cache_mixin, CacheMixin

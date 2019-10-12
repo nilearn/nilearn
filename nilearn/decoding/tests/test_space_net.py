@@ -4,8 +4,8 @@ from nose import SkipTest
 from nose.tools import (assert_equal, assert_true, assert_false,
                         assert_raises)
 import numpy as np
+from scipy import linalg
 from sklearn.datasets import load_iris
-from sklearn.utils import extmath
 from sklearn.linear_model import Lasso
 from sklearn.utils import check_random_state
 from sklearn.linear_model import LogisticRegression
@@ -241,7 +241,7 @@ def test_lasso_vs_graph_net():
                              penalty="graph-net", max_iter=100)
     lasso.fit(X_, y)
     graph_net.fit(X, y)
-    lasso_perf = 0.5 / y.size * extmath.norm(np.dot(
+    lasso_perf = 0.5 / y.size * linalg.norm(np.dot(
         X_, lasso.coef_) - y) ** 2 + np.sum(np.abs(lasso.coef_))
     graph_net_perf = 0.5 * ((graph_net.predict(X) - y) ** 2).mean()
     np.testing.assert_almost_equal(graph_net_perf, lasso_perf, decimal=3)

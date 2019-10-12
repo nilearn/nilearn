@@ -8,7 +8,7 @@ import collections
 import itertools
 import warnings
 
-from sklearn.externals.joblib import Memory, Parallel, delayed
+from nilearn._utils.compat import Memory, Parallel, delayed
 
 from .. import _utils
 from .. import image
@@ -36,12 +36,18 @@ class MultiNiftiMasker(NiftiMasker, CacheMixin):
         fine tune the mask extraction.
 
     smoothing_fwhm: float, optional
-        If smoothing_fwhm is not None, it gives the size in millimeters of the
-        spatial smoothing to apply to the signal.
+        If smoothing_fwhm is not None, it gives the size in millimeters of
+        the spatial smoothing to apply to the signal.
 
-    standardize: boolean, optional
-        If standardize is True, the time-series are centered and normed:
-        their mean is put to 0 and their variance to 1 in the time dimension.
+    standardize: {'zscore', 'psc', True, False}, default is 'zscore'
+        Strategy to standardize the signal.
+        'zscore': the signal is z-scored. Timeseries are shifted
+        to zero mean and scaled to unit variance.
+        'psc':  Timeseries are shifted to zero mean value and scaled
+        to percent signal change (as compared to original mean signal).
+        True : the signal is z-scored. Timeseries are shifted
+        to zero mean and scaled to unit variance.
+        False : Do not standardize the data.
 
     detrend: boolean, optional
         This parameter is passed to signal.clean. Please see the related
@@ -121,13 +127,11 @@ class MultiNiftiMasker(NiftiMasker, CacheMixin):
     """
 
     def __init__(self, mask_img=None, smoothing_fwhm=None,
-                 standardize=False, detrend=False,
-                 low_pass=None, high_pass=None, t_r=None,
-                 target_affine=None, target_shape=None,
-                 mask_strategy='background', mask_args=None, dtype=None,
-                 memory=Memory(cachedir=None), memory_level=0,
-                 n_jobs=1, verbose=0
-                 ):
+                 standardize=False, detrend=False, low_pass=None,
+                 high_pass=None, t_r=None, target_affine=None,
+                 target_shape=None, mask_strategy='background',
+                 mask_args=None, dtype=None, memory=Memory(cachedir=None),
+                 memory_level=0, n_jobs=1, verbose=0):
         # Mask is provided or computed
         self.mask_img = mask_img
 

@@ -100,10 +100,10 @@ def test_searchlight():
     rand = np.random.RandomState(0)
     data = rand.rand(5, 5, 5)
     data_img = nibabel.Nifti1Image(data, affine=np.eye(4))
-    imgs = [data_img, data_img, data_img, data_img, data_img, data_img]
+    imgs = [data_img] * 12
 
     # labels
-    y = [0, 1, 0, 1, 0, 1]
+    y = [0, 1] * 6
 
     # run searchlight on list of 3D images
     sl = searchlight.SearchLight(mask_img)
