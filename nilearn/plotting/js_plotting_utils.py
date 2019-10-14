@@ -12,6 +12,9 @@ import matplotlib as mpl
 import numpy as np
 from matplotlib import cm as mpl_cm
 
+# included here for backward compatibility
+from nilearn.reporting.html_document import (
+    HTMLDocument, set_max_img_views_before_warning,)  # noqa
 from .._utils.extmath import fast_abs_percentile
 from .._utils.param_validation import check_threshold
 from .. import surface

@@ -232,7 +232,8 @@ def _crop_colorbar(cbar, cbar_vmin, cbar_vmax):
 def plot_img(img, cut_coords=None, output_file=None, display_mode='ortho',
              figure=None, axes=None, title=None, threshold=None,
              annotate=True, draw_cross=True, black_bg=False, colorbar=False,
-             resampling_interpolation='continuous', **kwargs):
+             resampling_interpolation='continuous',
+             bg_img=None, vmin=None, vmax=None, **kwargs):
     """ Plot cuts of a given image (by default Frontal, Axial, and Lateral)
 
         Parameters
@@ -290,6 +291,14 @@ def plot_img(img, cut_coords=None, output_file=None, display_mode='ortho',
             space. Can be "continuous" (default) to use 3rd-order spline
             interpolation, or "nearest" to use nearest-neighbor mapping.
             "nearest" is faster but can be noisier in some cases.
+        bg_img : Niimg-like object, optional
+            See http://nilearn.github.io/manipulating_images/input_output.html
+            The background image that the ROI/mask will be plotted on top of.
+            If nothing is specified, no background image is plotted.
+        vmin : float, optional
+            lower bound of the colormap. If `None`, the min of the image is used.
+        vmax : float, optional
+            upper bound of the colormap. If `None`, the max of the image is used.
         kwargs: extra keyword arguments, optional
             Extra keyword arguments passed to matplotlib.pyplot.imshow
     """  # noqa: E501
@@ -300,7 +309,8 @@ def plot_img(img, cut_coords=None, output_file=None, display_mode='ortho',
         threshold=threshold, annotate=annotate,
         draw_cross=draw_cross,
         resampling_interpolation=resampling_interpolation,
-        black_bg=black_bg, colorbar=colorbar, **kwargs)
+        black_bg=black_bg, colorbar=colorbar,
+        bg_img=bg_img, vmin=vmin, vmax=vmax, **kwargs)
 
     return display
 
@@ -1069,6 +1079,8 @@ def plot_glass_brain(stat_map_img,
         The plotted image should be in MNI space for this function to work
         properly.
 
+        Only glass brain can be plotted by switching stat_map_img to None.
+
         Parameters
         ----------
         stat_map_img : Niimg-like object
@@ -1174,6 +1186,9 @@ def plot_glass_brain(stat_map_img,
         display_factory=display_factory, vmin=vmin, vmax=vmax,
         cbar_vmin=cbar_vmin, cbar_vmax=cbar_vmax, brain_color=brain_color,
         resampling_interpolation=resampling_interpolation, **kwargs)
+
+    if stat_map_img is None and 'l' in display.axes:
+        display.axes['l'].ax.invert_xaxis()
 
     return display
 

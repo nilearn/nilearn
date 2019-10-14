@@ -474,6 +474,31 @@ def test_clean_frequencies_using_power_spectrum_density():
     assert_true(np.sum(Pxx_den_high[f <= high_pass / 2.]) <= 1e-4)
 
 
+def test_clean_finite_no_inplace_mod():
+    """
+    Test for verifying that the passed in signal array is not modified.
+    For PR #2125 . This test is failing on master, passing in this PR.
+    """
+    rng = np.random.RandomState(0)
+    n_samples = 2
+    # n_features  Must be higher than 500
+    n_features = 501
+    x_orig, _, _ = generate_signals(n_features=n_features,
+                              length=n_samples)
+    x_orig_inital_copy = x_orig.copy()
+
+    x_orig_with_nans = x_orig.copy()
+    x_orig_with_nans[0, 0] = np.nan
+    x_orig_with_nans_initial_copy = x_orig_with_nans.copy()
+
+    cleaned_x_orig = clean(x_orig)
+    assert np.array_equal(x_orig, x_orig_inital_copy)
+
+    cleaned_x_orig_with_nans = clean(x_orig_with_nans, ensure_finite=True)
+    assert np.isnan(x_orig_with_nans_initial_copy[0, 0])
+    assert np.isnan(x_orig_with_nans[0, 0])
+
+
 def test_high_variance_confounds():
 
     # C and F order might take different paths in the function. Check that the

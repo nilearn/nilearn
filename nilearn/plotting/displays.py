@@ -369,6 +369,13 @@ class GlassBrainAxes(BaseAxes):
         else:
             maximum_intensity_data = np.abs(data_selection).max(axis=max_axis)
 
+        # This work around can be removed bumping matplotlib > 2.1.0. See #1815
+        # in nilearn for the invention of this work around
+
+        if self.direction == 'l' and data_selection.min() is np.ma.masked and \
+                not (self.ax.get_xlim()[0] > self.ax.get_xlim()[1]):
+            self.ax.invert_xaxis()
+
         return np.rot90(maximum_intensity_data)
 
     def draw_position(self, size, bg_color, **kwargs):
@@ -789,12 +796,13 @@ class BaseSlicer(object):
         ims = []
         to_iterate_over = zip(self.axes.values(), data_2d_list)
         for display_ax, data_2d in to_iterate_over:
-            if data_2d is not None:
+            if data_2d is not None and data_2d.min() is not np.ma.masked:
                 # If data_2d is completely masked, then there is nothing to
-                # plot. Hence, continued to loop over. This problem came up
-                # with matplotlib 2.1.0. See issue #9280 in matplotlib.
-                if data_2d.min() is np.ma.masked:
-                    continue
+                # plot. Hence, no point to do imshow(). Moreover, we see
+                # problem came up with matplotlib 2.1.0 (issue #9280) when
+                # data is completely masked or with numpy < 1.14
+                # (issue #4595). This work aroung can be removed when bumping
+                # matplotlib version above 2.1.0
                 im = display_ax.draw_2d(data_2d, data_bounds, bounding_box,
                                         type=type, **kwargs)
                 ims.append(im)
@@ -1837,7 +1845,7 @@ class OrthoProjector(OrthoSlicer):
                               vmin=edge_vmin, vmax=edge_vmax,
                               **edge_kwargs)
             # To obtain the brain left view, we simply invert the x axis
-            if ax.direction == 'l':
+            if ax.direction == 'l' and not (ax.ax.get_xlim()[0] > ax.ax.get_xlim()[1]):
                 ax.ax.invert_xaxis()
 
         if colorbar:

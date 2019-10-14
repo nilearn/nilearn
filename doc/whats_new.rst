@@ -33,6 +33,12 @@ NEW
   :func:`nilearn.datasets.fetch_development_fmri` can be used to download
   movie-watching data in children and adults. A light-weight dataset
   implemented for teaching and usage in the examples.
+- New example in `examples/05_advanced/plot_age_group_prediction_cross_val.py`
+  to compare methods for classifying subjects into age groups based on
+  functional connectivity. Similar example in
+  `examples/03_connectivity/plot_group_level_connectivity.py` simplified.
+
+- the Localizer dataset now follows the BIDS organization.
 
 Changes
 -------
@@ -51,6 +57,14 @@ Changes
   in `nilearn.input_data`. You can now set `standardize` to `zscore` or `psc`. `psc` stands
   for `Percent Signal Change`, which can be a meaningful metric for BOLD.
 
+- :func:`nilearn.plotting.plot_img` now has explicit keyword arguments `bg_img`,
+  `vmin` and `vmax` to control the background image and the bounds of the
+  colormap. These arguments were already accepted in `kwargs` but not documented
+  before.
+
+- :func:`nilearn.plotting.view_connectome` now converts NaNs in the adjacency
+  matrix to 0.
+
 Fixes
 -----
 
@@ -66,7 +80,10 @@ Fixes
   half-transparent grey to maintain a 3D perception.
 - :func:`nilearn.plotting.view_surf` now accepts surface data provided as a file
   path.
+- :func:`nilearn.plotting.plot_glass_brain` now correctly displays the left 'l' orientation even when
+  the given images are completely masked (empty images).
 - :func:`nilearn.plotting.plot_matrix` providing labels=None, False, or an empty list now correctly disables labels.
+- :func:`nilearn.plotting.plot_surf_roi` now takes vmin, vmax parameters
 - :func:`nilearn.datasets.fetch_surf_nki_enhanced` is now downloading the correct
   left and right functional surface data for each subject
 - :func:`nilearn.datasets.fetch_atlas_schaefer_2018` now downloads from release
@@ -191,7 +208,7 @@ The following people contributed to this release::
 0.5.0
 =====
 
-    **Released November 2018**
+**Released November 2018**
 
 NEW
 ---
