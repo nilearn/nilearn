@@ -348,6 +348,16 @@ class _MNI152Template(SpatialImage):
             self.vmax = data.max()
             self._shape = anat_img.shape
 
+    @property
+    def _data_cache(self):
+        self.load()
+        return self.data
+
+    @property
+    def _dataobj(self):
+        self.load()
+        return self.data
+
     def get_data(self):
         self.load()
         return self.data
