@@ -72,7 +72,7 @@ def test_img_data_dtype():
                 # To verify later that sometimes these differ meaningfully
                 dtype_matches.append(
                     loaded.get_data_dtype() == niimg.img_data_dtype(loaded))
-                assert_equal(get_data(loaded).dtype,
+                assert_equal(np.array(loaded.dataobj).dtype,
                              niimg.img_data_dtype(loaded))
     # Verify that the distinction is worth making
     assert any(dtype_matches)
