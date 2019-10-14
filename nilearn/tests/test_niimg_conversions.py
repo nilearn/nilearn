@@ -46,6 +46,14 @@ class PhonyNiimage(nibabel.spatialimages.SpatialImage):
     def shape(self):
         return self.data.shape
 
+    @property
+    def _data_cache(self):
+        return self.data
+
+    @property
+    def _dataobj(self):
+        return self.data
+
 
 def test_check_same_fov():
 
