@@ -343,7 +343,7 @@ def test_plot_img_with_auto_cut_coords():
 
 
 def test_plot_img_with_resampling():
-    data = _generate_img().get_data()
+    data = get_data(_generate_img())
     affine = np.array([[1., -1.,  0.,  0.],
                        [1.,  1.,  0.,  0.],
                        [0.,  0.,  1.,  0.],

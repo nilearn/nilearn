@@ -216,7 +216,7 @@ def test_unmask():
     unmasked3D[np.logical_not(mask)] = 0
 
     # 4D Test, test value ordering at the same time.
-    t = unmask(masked4D, mask_img, order="C").get_data()
+    t = get_data(unmask(masked4D, mask_img, order="C"))
     assert_equal(t.ndim, 4)
     assert_true(t.flags["C_CONTIGUOUS"])
     assert_false(t.flags["F_CONTIGUOUS"])
@@ -232,7 +232,7 @@ def test_unmask():
     # 3D Test - check both with Nifti1Image and file
     for create_files in (False, True):
         with write_tmp_imgs(mask_img, create_files=create_files) as filename:
-            t = unmask(masked3D, filename, order="C").get_data()
+            t = get_data(unmask(masked3D, filename, order="C"))
             assert_equal(t.ndim, 3)
             assert_true(t.flags["C_CONTIGUOUS"])
             assert_false(t.flags["F_CONTIGUOUS"])

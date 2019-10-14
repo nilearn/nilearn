@@ -251,23 +251,23 @@ def test_check_niimg_wildcards():
     #######
     # Testing with an existing filename
     with testing.write_tmp_imgs(img_3d, create_files=True) as filename:
-        assert_array_equal(_utils.check_niimg(filename).get_data(),
+        assert_array_equal(get_data(_utils.check_niimg(filename)),
                            get_data(img_3d))
     # No globbing behavior
     with testing.write_tmp_imgs(img_3d, create_files=True) as filename:
-        assert_array_equal(_utils.check_niimg(filename,
-                                              wildcards=False).get_data(),
-                           get_data(img_3d))
+        assert_array_equal(
+            get_data(_utils.check_niimg(filename, wildcards=False)),
+            get_data(img_3d))
 
     #######
     # Testing with an existing filename
     with testing.write_tmp_imgs(img_4d, create_files=True) as filename:
-        assert_array_equal(_utils.check_niimg(filename).get_data(),
+        assert_array_equal(get_data(_utils.check_niimg(filename)),
                            get_data(img_4d))
     # No globbing behavior
     with testing.write_tmp_imgs(img_4d, create_files=True) as filename:
-        assert_array_equal(_utils.check_niimg(filename,
-                                              wildcards=False).get_data(),
+        assert_array_equal(get_data(_utils.check_niimg(filename,
+                                                       wildcards=False)),
                            get_data(img_4d))
 
     #######
@@ -278,7 +278,7 @@ def test_check_niimg_wildcards():
                                 create_files=True,
                                 use_wildcards=True) as globs:
         glob_input = tmp_dir + globs
-        assert_array_equal(_utils.check_niimg(glob_input).get_data()[..., 0],
+        assert_array_equal(get_data(_utils.check_niimg(glob_input))[..., 0],
                            get_data(img_3d))
     # Disabled globbing behavior should raise an ValueError exception
     with testing.write_tmp_imgs(img_3d,
@@ -297,7 +297,7 @@ def test_check_niimg_wildcards():
     with testing.write_tmp_imgs(img_3d, img_3d,
                                 create_files=True,
                                 use_wildcards=True) as globs:
-        assert_array_equal(_utils.check_niimg(glob_input).get_data(),
+        assert_array_equal(get_data(_utils.check_niimg(glob_input)),
                            get_data(img_4d))
 
     #######

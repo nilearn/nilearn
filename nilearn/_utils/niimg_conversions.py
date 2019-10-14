@@ -179,8 +179,8 @@ def check_niimg(niimg, ensure_ndim=None, atleast_4d=False, dtype=None,
         If niimg is a string, consider it as a path to Nifti image and
         call nibabel.load on it. The '~' symbol is expanded to the user home
         folder.
-        If it is an object, check if the get_data() method
-        and affine attribute are present, raise TypeError otherwise.
+        If it is an object, check if the affine attribute present and that
+        nilearn.image.get_data returns a result, raise TypeError otherwise.
 
     ensure_ndim: integer {3, 4}, optional
         Indicate the dimensionality of the expected niimg. An
@@ -287,8 +287,9 @@ def check_niimg_3d(niimg, dtype=None):
     niimg: Niimg-like object
         See http://nilearn.github.io/manipulating_images/input_output.html
         If niimg is a string, consider it as a path to Nifti image and
-        call nibabel.load on it. If it is an object, check if the get_data()
-        method and affine attribute are present, raise TypeError otherwise.
+        call nibabel.load on it.
+        If it is an object, check if the affine attribute present and that
+        nilearn.image.get_data returns a result, raise TypeError otherwise.
 
     dtype: {dtype, "auto"}
         Data type toward which the data should be converted. If "auto", the
@@ -299,7 +300,8 @@ def check_niimg_3d(niimg, dtype=None):
     -------
     result: 3D Niimg-like object
         Result can be nibabel.Nifti1Image or the input, as-is. It is guaranteed
-        that the returned object has get_data() method and affine attribute.
+        that the returned object has an affine attribute and that its data can
+        be retrieved with nilearn.image.get_data.
 
     Notes
     -----
@@ -323,8 +325,9 @@ def check_niimg_4d(niimg, return_iterator=False, dtype=None):
         If niimgs is an iterable, checks if data is really 4D. Then,
         considering that it is a list of niimg and load them one by one.
         If niimg is a string, consider it as a path to Nifti image and
-        call nibabel.load on it. If it is an object, check if the get_data()
-        method and affine attribute are present, raise an Exception otherwise.
+        call nibabel.load on it.
+        If it is an object, check if the affine attribute present and that
+        nilearn.image.get_data returns a result, raise TypeError otherwise.
 
     dtype: {dtype, "auto"}
         Data type toward which the data should be converted. If "auto", the

@@ -45,7 +45,7 @@ def _safe_get_data(img, ensure_finite=False):
     Returns
     -------
     data: numpy array
-        get_data() return from Nifti image.
+        nilearn.image.get_data return from Nifti image.
     """
     if hasattr(img, '_data_cache') and img._data_cache is None:
         # By loading directly dataobj, we prevent caching if the data is
