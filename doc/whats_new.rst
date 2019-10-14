@@ -25,7 +25,9 @@ NEW
   Yields very fast & accurate models, without creation of giant
   clusters.
   :class:`nilearn.regions.ReNA`
-
+- Plot connectome strength
+  Use :func:`nilearn.plotting.plot_connectome_strength` to plot the strength of a
+  connectome on a glass brain.  Strength is absolute sum of the edges at a node.
 - Optimization to image resampling
   :func:`nilearn.image.resample_img` has been optimized to pad rather than
   resample images in the special case when there is only a translation
