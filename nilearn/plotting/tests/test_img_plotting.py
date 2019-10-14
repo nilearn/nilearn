@@ -578,7 +578,7 @@ def test_connectome_strength():
             *args, output_file=filename, **kwargs
         )
         assert_true(display is None)
-        assert_true(os.path.isfile(filename) and  # noqa: W503
+        assert_true(os.path.isfile(filename) and  # noqa: W504
                     os.path.getsize(filename) > 0)
     finally:
         os.remove(filename)
