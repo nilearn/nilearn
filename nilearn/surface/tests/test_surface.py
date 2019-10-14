@@ -387,6 +387,11 @@ def test_load_uniform_ball_cloud():
         loaded = surface._load_uniform_ball_cloud(n_points)
         assert_array_almost_equal(computed, loaded)
     if sklearn.__version__ > '0.21':
+        # results of scikit-learn kmeans change after
+        # https://github.com/scikit-learn/scikit-learn/pull/9288
+        # (commit e8f2708e05a9982e86320d994abcbcf02a1536d9)
+        # so computed points will differ from the precomputed ones shipped with
+        # nilearn
         return
     for n_points in [10, 20]:
         computed = surface._uniform_ball_cloud(n_points)
