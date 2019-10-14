@@ -41,7 +41,7 @@ dataset = datasets.fetch_development_fmri(n_subjects=20)
 
 # print basic information on the dataset
 print('First subject functional nifti image (4D) is at: %s' %
-      dataset.func[16])  # 4D data
+      dataset.func[0])  # 4D data
 
 
 ##########################################################################
@@ -76,8 +76,8 @@ masker = input_data.NiftiSpheresMasker(
 # Additionally, we pass confound information to ensure our extracted
 # signal is cleaned from confounds.
 
-func_filename = dataset.func[16]
-confounds_filename = dataset.confounds[16]
+func_filename = dataset.func[0]
+confounds_filename = dataset.confounds[0]
 
 time_series = masker.fit_transform(func_filename,
                                    confounds=[confounds_filename])
