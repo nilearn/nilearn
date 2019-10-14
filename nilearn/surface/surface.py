@@ -500,8 +500,8 @@ def vol_to_surf(img, surf_mesh,
     img = load_img(img)
     if mask_img is not None:
         mask_img = _utils.check_niimg(mask_img)
-        mask = resampling.resample_to_img(
-            mask_img, img, interpolation='nearest', copy=False).get_data()
+        mask = get_data(resampling.resample_to_img(
+            mask_img, img, interpolation='nearest', copy=False))
     else:
         mask = None
     original_dimension = len(img.shape)
@@ -584,7 +584,7 @@ def load_surf_data(surf_data):
             surf_data = file_list[f]
             if (surf_data.endswith('nii') or surf_data.endswith('nii.gz') or
                     surf_data.endswith('mgz')):
-                data_part = np.squeeze(nibabel.load(surf_data).get_data())
+                data_part = np.squeeze(get_data(nibabel.load(surf_data)))
             elif (surf_data.endswith('curv') or surf_data.endswith('sulc') or
                     surf_data.endswith('thickness')):
                 data_part = fs.io.read_morph_data(surf_data)

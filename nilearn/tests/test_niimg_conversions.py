@@ -352,7 +352,7 @@ def test_iter_check_niimgs():
                                dir=None)
     img_4d.to_filename(filename)
     niimgs = list(_iter_check_niimg([filename]))
-    assert_array_equal(niimgs[0].get_data(),
+    assert_array_equal(get_data(niimgs[0]),
                        get_data(_utils.check_niimg(img_4d)))
     del img_4d
     del niimgs
@@ -360,7 +360,7 @@ def test_iter_check_niimgs():
 
     # Regular case
     niimgs = list(_iter_check_niimg(img_2_4d))
-    assert_array_equal(niimgs[0].get_data(),
+    assert_array_equal(get_data(niimgs[0]),
                        get_data(_utils.check_niimg(img_2_4d)))
 
 
@@ -492,13 +492,13 @@ def test_iterator_generator():
          for i in range(10)]
     cc = _utils.concat_niimgs(l)
     assert_equal(cc.shape[-1], 10)
-    assert_array_almost_equal(get_data(cc)[..., 0], l[0].get_data())
+    assert_array_almost_equal(get_data(cc)[..., 0], get_data(l[0]))
 
     # Same with iteration
     i = image.iter_img(l)
     cc = _utils.concat_niimgs(i)
     assert_equal(cc.shape[-1], 10)
-    assert_array_almost_equal(get_data(cc)[..., 0], l[0].get_data())
+    assert_array_almost_equal(get_data(cc)[..., 0], get_data(l[0]))
 
     # Now, a generator
     b = []

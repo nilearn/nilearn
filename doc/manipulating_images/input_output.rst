@@ -175,7 +175,7 @@ Analyze files) is the standard way of sharing data in neuroimaging
 research. Three main components are:
 
 :data:
-    raw scans in form of a numpy array: ``data = img.get_data()``
+    raw scans in form of a numpy array: ``data = nilearn.image.get_data(img)``
 :affine:
     returns the transformation matrix that maps
     from voxel indices of the numpy array to actual real-world
@@ -218,7 +218,7 @@ objects":
 **Niimg:** A Niimg-like object can be one of the following:
 
   * A string with a file path to a Nifti or Analyse image
-  * An ``SpatialImage`` from nibabel, ie an object exposing ``get_data()``
+  * An ``SpatialImage`` from nibabel, ie an object exposing ``get_fdata()``
     method and ``affine`` attribute, typically a ``Nifti1Image`` from nibabel_.
 
 **Niimg-4D:** Similarly, some functions require 4D Nifti-like

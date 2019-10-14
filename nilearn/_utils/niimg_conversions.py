@@ -209,7 +209,8 @@ def check_niimg(niimg, ensure_ndim=None, atleast_4d=False, dtype=None,
     -------
     result: 3D/4D Niimg-like object
         Result can be nibabel.Nifti1Image or the input, as-is. It is guaranteed
-        that the returned object has get_data() method and affine attribute.
+        that the returned object has an affine attribute and that its data can
+        be retrieved with nilearn.image.get_data.
 
     Notes
     -----

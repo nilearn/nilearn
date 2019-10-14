@@ -212,7 +212,7 @@ mask_vt_filename = haxby_dataset.mask_vt[0]
 # numbers to boolean type
 from nilearn.image import load_img
 
-vt = load_img(mask_vt_filename).get_data().astype(bool)
+vt = get_data(load_img(mask_vt_filename)).astype(bool)
 
 # We can then use a logical "and" operation - numpy.logical_and - to keep only
 # voxels that have been selected in both masks. In neuroimaging jargon, this

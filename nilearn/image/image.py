@@ -1002,8 +1002,8 @@ def load_img(img, wildcards=True, dtype=None):
         If niimg is a string, consider it as a path to Nifti image and
         call nibabel.load on it. The '~' symbol is expanded to the user home
         folder.
-        If it is an object, check if get_data()
-        and affine attributes are present, raise TypeError otherwise.
+        If it is an object, check if affine attribute is present, raise
+        TypeError otherwise.
 
     wildcards: bool, optional
         Use niimg as a regular expression to get a list of matching input
@@ -1022,7 +1022,8 @@ def load_img(img, wildcards=True, dtype=None):
     -------
     result: 3D/4D Niimg-like object
         Result can be nibabel.Nifti1Image or the input, as-is. It is guaranteed
-        that the returned object has get_data() and affine attributes.
+        that the returned object has an affine attributes and that
+        nilearn.image.get_data returns its data.
     """
     return check_niimg(img, wildcards=wildcards, dtype=dtype)
 

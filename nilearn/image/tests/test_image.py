@@ -324,11 +324,11 @@ def test_swap_img_hemispheres():
 
     # swapping operations work
     np.testing.assert_array_equal(  # one turn
-        image.swap_img_hemispheres(data_img).get_data(),
+        get_data(image.swap_img_hemispheres(data_img)),
         data[::-1])
     np.testing.assert_array_equal(  # two turns -> back to original data
         image.swap_img_hemispheres(
-            image.swap_img_hemispheres(data_img)).get_data(),
+            get_data(image.swap_img_hemispheres(data_img))),
         data)
 
 
