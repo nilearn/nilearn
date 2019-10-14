@@ -52,7 +52,7 @@ labels = [
     'Posterior Cingulate Cortex',
     'Left Temporoparietal junction',
     'Right Temporoparietal junction',
-    'Medial prefrontal cortex'
+    'Medial prefrontal cortex',
     ]
 
 ##########################################################################
