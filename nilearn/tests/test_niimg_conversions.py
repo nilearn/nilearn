@@ -318,12 +318,12 @@ def test_check_niimg_wildcards():
 
     # Testing with an exact filename matching (3d case)
     with testing.write_tmp_imgs(img_3d, create_files=True) as filename:
-        assert_array_equal(_utils.check_niimg(filename).get_data(),
+        assert_array_equal(get_data(_utils.check_niimg(filename)),
                            get_data(img_3d))
 
     # Testing with an exact filename matching (4d case)
     with testing.write_tmp_imgs(img_4d, create_files=True) as filename:
-        assert_array_equal(_utils.check_niimg(filename).get_data(),
+        assert_array_equal(get_data(_utils.check_niimg(filename)),
                            get_data(img_4d))
 
     # Reverting to default behavior
@@ -353,7 +353,7 @@ def test_iter_check_niimgs():
     img_4d.to_filename(filename)
     niimgs = list(_iter_check_niimg([filename]))
     assert_array_equal(niimgs[0].get_data(),
-                       _utils.check_niimg(img_4d).get_data())
+                       get_data(_utils.check_niimg(img_4d)))
     del img_4d
     del niimgs
     os.remove(filename)
@@ -361,7 +361,7 @@ def test_iter_check_niimgs():
     # Regular case
     niimgs = list(_iter_check_niimg(img_2_4d))
     assert_array_equal(niimgs[0].get_data(),
-                       _utils.check_niimg(img_2_4d).get_data())
+                       get_data(_utils.check_niimg(img_2_4d)))
 
 
 def _check_memory(list_img_3d):
