@@ -307,18 +307,20 @@ def test_4d_affine_bounding_box_error():
 
     # The first 2 should pass
     assert_almost_equal(l2_norm(small_data),
-                 l2_norm(get_data(small_to_big_with_shape)))
-    assert_almost_equal(l2_norm(small_data),
-                 l2_norm(get_data(small_to_big_without_shape_3D_affine)))
+                        l2_norm(get_data(small_to_big_with_shape)))
+    assert_almost_equal(
+        l2_norm(small_data),
+        l2_norm(get_data(small_to_big_without_shape_3D_affine)))
 
     # After correcting decision tree for 4x4 affine given + no target shape
     # from "use initial shape" to "calculate minimal bounding box respecting
     # the affine anchor and the data"
     assert_almost_equal(l2_norm(small_data),
-                 l2_norm(get_data(small_to_big_without_shape)))
+                        l2_norm(get_data(small_to_big_without_shape)))
 
-    assert_array_equal(small_to_big_without_shape.shape,
-                 small_data_4D_affine[:3, -1] + np.array(small_img.shape))
+    assert_array_equal(
+        small_to_big_without_shape.shape,
+        small_data_4D_affine[:3, -1] + np.array(small_img.shape))
 
 
 def test_raises_upon_3x3_affine_and_no_shape():

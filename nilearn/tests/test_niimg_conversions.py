@@ -219,10 +219,12 @@ def test_check_niimg():
 
     # check data dtype equal with dtype='auto'
     img_3d_check = _utils.check_niimg(img_3d, dtype='auto')
-    assert_equal(get_data(img_3d).dtype.kind, get_data(img_3d_check).dtype.kind)
+    assert_equal(
+        get_data(img_3d).dtype.kind, get_data(img_3d_check).dtype.kind)
 
     img_4d_check = _utils.check_niimg(img_4d, dtype='auto')
-    assert_equal(get_data(img_4d).dtype.kind, get_data(img_4d_check).dtype.kind)
+    assert_equal(
+        get_data(img_4d).dtype.kind, get_data(img_4d_check).dtype.kind)
 
 
 def test_check_niimg_wildcards():

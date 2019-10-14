@@ -117,7 +117,8 @@ def test_connected_regions():
 
     extraction_without_mask_img, index = connected_regions(maps)
     assert_true(np.all(get_data(extraction_with_mask_img)[mask == 0] == 0.))
-    assert_false(np.all(get_data(extraction_without_mask_img)[mask == 0] == 0.))
+    assert_false(
+        np.all(get_data(extraction_without_mask_img)[mask == 0] == 0.))
 
     # mask_img with different shape
     mask = np.zeros(shape=(10, 11, 12), dtype=np.int)
