@@ -18,6 +18,7 @@ from scipy.spatial import Delaunay
 
 import nibabel as nb
 from nibabel import gifti
+import sklearn
 
 from nilearn import datasets
 from nilearn import image
@@ -381,7 +382,13 @@ def test_load_uniform_ball_cloud():
             assert_equal(len(w), 0)
     assert_warns(surface.EfficiencyWarning,
                  surface._load_uniform_ball_cloud, n_points=3)
-    for n_points in [3, 10, 20]:
+    for n_points in [3, 7]:
+        computed = surface._uniform_ball_cloud(n_points)
+        loaded = surface._load_uniform_ball_cloud(n_points)
+        assert_array_almost_equal(computed, loaded)
+    if sklearn.__version__ > '0.21':
+        return
+    for n_points in [10, 20]:
         computed = surface._uniform_ball_cloud(n_points)
         loaded = surface._load_uniform_ball_cloud(n_points)
         assert_array_almost_equal(computed, loaded)
