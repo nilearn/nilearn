@@ -227,12 +227,10 @@ htmlhelp_basename = 'PythonScientic'
 # (source start file, target name, title, author, documentclass
 # [howto/manual]).
 latex_documents = [
-  ('index', 'nilearn.tex', u'NeuroImaging with scikit-learn',
-   ur"""Gaël Varoquaux and Alexandre Abraham"""
-   + r"\\\relax ~\\\relax http://nilearn.github.io",
-   'manual'),
-
-]
+  ('index', 'nilearn.tex', 'NeuroImaging with scikit-learn',
+   'Gaël Varoquaux and Alexandre Abraham'
+   + r"\\\relax ~\\\relax http://nilearn.github.io", 'manual'),
+    ]
 
 # The name of an image file (relative to this directory) to place at the top of
 # the title page.
@@ -283,13 +281,18 @@ trim_doctests_flags = True
 
 _python_doc_base = 'http://docs.python.org/3.6'
 
+# Scraper, copied from https://github.com/mne-tools/mne-python/
+from nilearn.reporting import _ReportScraper
+report_scraper = _ReportScraper()
+scrapers = ('matplotlib', report_scraper)
+
 # Example configuration for intersphinx: refer to the Python standard library.
 intersphinx_mapping = {
     'python': (_python_doc_base, None),
     'numpy': ('http://docs.scipy.org/doc/numpy', None),
     'scipy': ('http://docs.scipy.org/doc/scipy/reference', None),
     'matplotlib': ('http://matplotlib.org/', None),
-    'sklearn': ('http://scikit-learn.org/0.18', None),
+    'sklearn': ('http://scikit-learn.org/stable/', None),
     'nibabel': ('http://nipy.org/nibabel', None),
     'pandas': ('http://pandas.pydata.org', None),
 }
@@ -302,7 +305,9 @@ extlinks = {
 sphinx_gallery_conf = {
     'doc_module': 'nilearn',
     'backreferences_dir': os.path.join('modules', 'generated'),
-    'reference_url': {'nilearn': None}
+    'reference_url': {'nilearn': None},
+    'junit': '../test-results/sphinx-gallery/junit.xml',
+    'image_scrapers': scrapers,
     }
 
 # Get rid of spurious warnings due to some interaction between
@@ -310,7 +315,6 @@ sphinx_gallery_conf = {
 # https://github.com/phn/pytpm/issues/3#issuecomment-12133978 for more
 # details
 numpydoc_show_class_members = False
-
 
 def touch_example_backreferences(app, what, name, obj, options, lines):
     # generate empty examples files, so that we don't get
@@ -328,3 +332,4 @@ def touch_example_backreferences(app, what, name, obj, options, lines):
 def setup(app):
     app.add_javascript('copybutton.js')
     app.connect('autodoc-process-docstring', touch_example_backreferences)
+    report_scraper.app = app

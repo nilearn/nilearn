@@ -19,8 +19,8 @@ def test_searchlight():
     data = rand.rand(5, 5, 5, frames)
     mask = np.ones((5, 5, 5), np.bool)
     mask_img = nibabel.Nifti1Image(mask.astype(np.int), np.eye(4))
-    # Create a condition array
-    cond = np.arange(frames, dtype=int) > (frames // 2)
+    # Create a condition array, with balanced classes
+    cond = np.arange(frames, dtype=int) >= (frames // 2)
 
     # Create an activation pixel.
     data[2, 2, 2, :] = 0
@@ -100,10 +100,10 @@ def test_searchlight():
     rand = np.random.RandomState(0)
     data = rand.rand(5, 5, 5)
     data_img = nibabel.Nifti1Image(data, affine=np.eye(4))
-    imgs = [data_img, data_img, data_img, data_img, data_img, data_img]
+    imgs = [data_img] * 12
 
     # labels
-    y = [0, 1, 0, 1, 0, 1]
+    y = [0, 1] * 6
 
     # run searchlight on list of 3D images
     sl = searchlight.SearchLight(mask_img)

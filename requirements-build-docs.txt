@@ -17,4 +17,5 @@ pandas
 nose-timer
 nibabel
 scikit-learn
+joblib
 matplotlib

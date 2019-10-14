@@ -11,6 +11,7 @@ if [[ "$SKIP_TESTS" != "true" ]]; then
     # Copy setup.cfg to TEST_RUN_FOLDER where we are going to run the tests from
     # Mainly for nose config settings
     cp setup.cfg "$TEST_RUN_FOLDER"
+    cp .coveragerc "$TEST_RUN_FOLDER"
     # We want to back out of the current working directory to make
     # sure we are using nilearn installed in site-packages rather
     # than the one from the current working directory

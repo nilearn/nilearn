@@ -14,7 +14,7 @@ from scipy import linalg
 import sklearn
 import nilearn
 from sklearn.base import BaseEstimator, TransformerMixin
-from sklearn.externals.joblib import Memory, Parallel, delayed
+from nilearn._utils.compat import Memory, Parallel, delayed
 from sklearn.linear_model import LinearRegression
 from sklearn.utils import check_random_state
 from sklearn.utils.extmath import randomized_svd, svd_flip
@@ -82,7 +82,6 @@ def fast_svd(X, n_components, random_state=None):
                                  flip_sign=True,
                                  random_state=random_state)
     return U, S, V
-
 
 
 def mask_and_reduce(masker, imgs,
@@ -218,10 +217,10 @@ def _mask_and_reduce_single(masker,
         n_samples = int(ceil(data_n_samples * reduction_ratio))
 
     U, S, V = cache(fast_svd, memory,
-                        memory_level=memory_level,
-                        func_memory_level=3)(this_data.T,
-                                             n_samples,
-                                             random_state=random_state)
+                    memory_level=memory_level,
+                    func_memory_level=3)(this_data.T,
+                                         n_samples,
+                                         random_state=random_state)
     U = U.T.copy()
     U = U * S[:, np.newaxis]
     return U

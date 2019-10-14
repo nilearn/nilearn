@@ -12,11 +12,11 @@ import matplotlib.pyplot as plt
 
 from nilearn.plotting.surf_plotting import (plot_surf, plot_surf_stat_map,
                                             plot_surf_roi)
-from nilearn.surface.tests.test_surface import _generate_surf
+from nilearn.surface.testing_utils import generate_surf
 
 
 def test_plot_surf():
-    mesh = _generate_surf()
+    mesh = generate_surf()
     rng = np.random.RandomState(0)
     bg = rng.randn(mesh[0].shape[0], )
 
@@ -41,7 +41,7 @@ def test_plot_surf():
 
 
 def test_plot_surf_error():
-    mesh = _generate_surf()
+    mesh = generate_surf()
     rng = np.random.RandomState(0)
 
     # Wrong inputs for view or hemi
@@ -68,7 +68,7 @@ def test_plot_surf_error():
 
 
 def test_plot_surf_stat_map():
-    mesh = _generate_surf()
+    mesh = generate_surf()
     rng = np.random.RandomState(0)
     bg = rng.randn(mesh[0].shape[0], )
     data = 10 * rng.randn(mesh[0].shape[0], )
@@ -130,7 +130,7 @@ def test_plot_surf_stat_map():
 
 
 def test_plot_surf_stat_map_error():
-    mesh = _generate_surf()
+    mesh = generate_surf()
     rng = np.random.RandomState(0)
     data = 10 * rng.randn(mesh[0].shape[0], )
 
@@ -152,7 +152,7 @@ def test_plot_surf_stat_map_error():
 
 
 def test_plot_surf_roi():
-    mesh = _generate_surf()
+    mesh = generate_surf()
     rng = np.random.RandomState(0)
     roi_idx = rng.randint(0, mesh[0].shape[0], size=10)
     roi_map = np.zeros(mesh[0].shape[0])
@@ -162,6 +162,14 @@ def test_plot_surf_roi():
     # plot roi
     plot_surf_roi(mesh, roi_map=roi_map)
     plot_surf_roi(mesh, roi_map=roi_map, colorbar=True)
+    # change vmin, vmax
+    img = plot_surf_roi(mesh, roi_map=roi_map,
+						vmin=1.2, vmax=8.9, colorbar=True)
+    cbar = img.axes[-1]
+    cbar_vmin = float(cbar.get_yticklabels()[0].get_text())
+    cbar_vmax = float(cbar.get_yticklabels()[-1].get_text())
+    assert cbar_vmin == 1.2
+    assert cbar_vmax == 8.9
 
     # plot parcellation
     plot_surf_roi(mesh, roi_map=parcellation)
@@ -183,7 +191,7 @@ def test_plot_surf_roi():
 
 
 def test_plot_surf_roi_error():
-    mesh = _generate_surf()
+    mesh = generate_surf()
     rng = np.random.RandomState(0)
     roi_idx = rng.randint(0, mesh[0].shape[0], size=5)
 

@@ -86,7 +86,8 @@ if __name__ == "__main__":
               'Programming Language :: Python :: 3.7',
           ],
           packages=find_packages(),
-          package_data={'nilearn.datasets.data': ['*.nii.gz', '*.csv'],
+          package_data={'nilearn.datasets.data': ['*.nii.gz', '*.csv', '*.txt'
+                                                  ],
                         'nilearn.datasets.data.fsaverage5': ['*.gz'],
                         'nilearn.surface.data': ['*.csv'],
                         'nilearn.plotting.data.js': ['*.js'],
@@ -96,5 +97,6 @@ if __name__ == "__main__":
                         'nilearn.image.tests.data': ['*.mgz'],
                         'nilearn.surface.tests.data': ['*.annot', '*.label'],
                         'nilearn.datasets.tests.data': ['*.*'],
-                        'nilearn.datasets.description': ['*.rst']},
+                        'nilearn.datasets.description': ['*.rst'],
+                        'nilearn.reporting.data.html': ['*.html']},
           install_requires=install_requires,)
