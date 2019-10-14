@@ -92,7 +92,8 @@ Fixes
   version 0.14.3 (instead of 0.8.1) by default, which includes corrected region label
   names along with 700 and 900 region parcelations.
 - Colormap creation functions have been updated to avoid matplotlib deprecation warnings
-  about colormap reversal
+  about colormap reversal.
+- Neurovault fetcher no longer fails if unable to update dataset metadata file due to faulty permissions.
 
 Contributors
 ------------
