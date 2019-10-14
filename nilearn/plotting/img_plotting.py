@@ -1374,8 +1374,8 @@ optional
     adjacency_matrix = np.nan_to_num(adjacency_matrix)
 
     adjacency_matrix_shape = adjacency_matrix.shape
-    if (len(adjacency_matrix_shape) != 2 or
-            adjacency_matrix_shape[0] != adjacency_matrix_shape[1]):
+    if (len(adjacency_matrix_shape) != 2
+            or adjacency_matrix_shape[0] != adjacency_matrix_shape[1]):
         raise ValueError(
             "'adjacency_matrix' is supposed to have shape (n, n)."
             ' Its shape was {0}'.format(adjacency_matrix_shape))
@@ -1426,8 +1426,8 @@ optional
         )
         # reduce alpha for the least strong regions
         color[-1] = (
-            (region - strength_sorted.min()) *
-            (1 / (strength_sorted.max() - strength_sorted.min()))
+            (region - strength_sorted.min())
+            * (1 / (strength_sorted.max() - strength_sorted.min()))
         )
         # make color to be a 2D array
         color = [color]

@@ -578,8 +578,8 @@ def test_connectome_strength():
             *args, output_file=filename, **kwargs
         )
         assert_true(display is None)
-        assert_true(os.path.isfile(filename) and
-                    os.path.getsize(filename) > 0)
+        assert_true(os.path.isfile(filename)
+                    and os.path.getsize(filename) > 0)
     finally:
         os.remove(filename)
     plt.close()
@@ -659,7 +659,8 @@ def test_plot_connectome_strength_exceptions():
                         node_coords[:, 2], **kwargs)
 
     wrong_adjacency_matrix = np.zeros((3, 3))
-    assert_raises_regex(ValueError, r'Shape mismatch.+\(3L?, 3L?\).+\(2L?, 3L?\)',
+    assert_raises_regex(ValueError,
+                        r'Shape mismatch.+\(3L?, 3L?\).+\(2L?, 3L?\)',
                         plot_connectome_strength,
                         wrong_adjacency_matrix, node_coords, **kwargs)
 
