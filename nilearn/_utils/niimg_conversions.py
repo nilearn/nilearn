@@ -18,6 +18,7 @@ from .path_finding import _resolve_globbing
 from .compat import _basestring, izip
 
 from .exceptions import DimensionError
+from .niimg import get_data
 
 
 def _check_fov(img, affine, shape):
@@ -72,7 +73,7 @@ def _index_img(img, index):
 
     """Helper function for check_niimg_4d."""
     return new_img_like(
-        img, img.get_data()[:, :, :, index], img.affine,
+        img, get_data(img)[:, :, :, index], img.affine,
         copy_header=True)
 
 
@@ -266,7 +267,7 @@ def check_niimg(niimg, ensure_ndim=None, atleast_4d=False, dtype=None,
         affine = niimg.affine
         niimg = new_img_like(niimg, data[:, :, :, 0], affine)
     if atleast_4d and len(niimg.shape) == 3:
-        data = niimg.get_data().view()
+        data = get_data(niimg).view()
         data.shape = data.shape + (1, )
         niimg = new_img_like(niimg, data, niimg.affine)
 
@@ -445,7 +446,7 @@ def concat_niimgs(niimgs, dtype=np.float32, ensure_ndim=None,
 
     target_shape = first_niimg.shape[:3]
     if dtype == None:
-        dtype = first_niimg.get_data().dtype
+        dtype = get_data(first_niimg).dtype
     data = np.ndarray(target_shape + (sum(lengths), ),
                       order="F", dtype=dtype)
     cur_4d_index = 0
@@ -460,7 +461,7 @@ def concat_niimgs(niimgs, dtype=np.float32, ensure_ndim=None,
                 nii_str = "image #" + str(index)
             print("Concatenating {0}: {1}".format(index + 1, nii_str))
 
-        data[..., cur_4d_index:cur_4d_index + size] = niimg.get_data()
+        data[..., cur_4d_index:cur_4d_index + size] = get_data(niimg)
         cur_4d_index += size
 
     return new_img_like(first_niimg, data, first_niimg.affine, copy_header=True)

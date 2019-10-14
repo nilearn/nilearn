@@ -19,6 +19,7 @@ from nilearn._utils.compat import Memory
 from nilearn._utils.exceptions import DimensionError
 from nilearn._utils.testing import assert_raises_regex, write_tmp_imgs
 from nilearn.input_data.multi_nifti_masker import MultiNiftiMasker
+from nilearn.image import get_data
 
 
 def test_auto_mask():
@@ -41,7 +42,7 @@ def test_auto_mask():
     img2 = Nifti1Image(data2, np.eye(4))
 
     masker.fit([[img, img2]])
-    assert_array_equal(masker.mask_img_.get_data(),
+    assert_array_equal(get_data(masker.mask_img_),
                        np.logical_or(data, data2))
     # Smoke test the transform
     masker.transform([[img, ]])
@@ -67,7 +68,7 @@ def test_nan():
     img = Nifti1Image(data, np.eye(4))
     masker = MultiNiftiMasker(mask_args=dict(opening=0))
     masker.fit([img])
-    mask = masker.mask_img_.get_data()
+    mask = get_data(masker.mask_img_)
     assert_true(mask[1:-1, 1:-1, 1:-1].all())
     assert_false(mask[0].any())
     assert_false(mask[:, 0].any())
@@ -126,7 +127,7 @@ def test_joblib_cache():
         masker = MultiNiftiMasker(mask_img=filename)
         masker.fit()
         mask_hash = hash(masker.mask_img_)
-        masker.mask_img_.get_data()
+        get_data(masker.mask_img_)
         assert_true(mask_hash == hash(masker.mask_img_))
         # enables to delete "filename" on windows
         del masker
@@ -182,8 +183,8 @@ def test_compute_multi_gray_matter_mask():
     mask_ref = np.zeros((9, 9, 5))
     mask_ref[2:7, 2:7, 2] = 1
 
-    np.testing.assert_array_equal(mask.get_data(), mask_ref)
-    np.testing.assert_array_equal(mask2.get_data(), mask_ref)
+    np.testing.assert_array_equal(get_data(mask), mask_ref)
+    np.testing.assert_array_equal(get_data(mask2), mask_ref)
 
 
 def test_dtype():

@@ -25,6 +25,7 @@ from ..image import resampling
 from .._utils.compat import _basestring
 from .._utils.path_finding import _resolve_globbing
 from .. import _utils
+from nilearn.image import get_data
 
 
 def _uniform_ball_cloud(n_points=20, dim=3, n_monte_carlo=50000):
@@ -505,7 +506,7 @@ def vol_to_surf(img, surf_mesh,
         mask = None
     original_dimension = len(img.shape)
     img = _utils.check_niimg(img, atleast_4d=True)
-    frames = np.rollaxis(img.get_data(), -1)
+    frames = np.rollaxis(get_data(img), -1)
     mesh = load_surf_mesh(surf_mesh)
     sampling = sampling_schemes[interpolation]
     texture = sampling(

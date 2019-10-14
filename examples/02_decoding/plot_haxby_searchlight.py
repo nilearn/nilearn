@@ -14,7 +14,7 @@ the fMRI (see the generated figures).
 # -------------------
 import pandas as pd
 from nilearn import datasets
-from nilearn.image import new_img_like, load_img
+from nilearn.image import new_img_like, load_img, get_data
 
 # We fetch 2nd subject from haxby datasets (which is default)
 haxby_dataset = datasets.fetch_haxby()
@@ -49,7 +49,7 @@ import numpy as np
 mask_img = load_img(haxby_dataset.mask)
 
 # .astype() makes a copy.
-process_mask = mask_img.get_data().astype(np.int)
+process_mask = get_data(mask_img).astype(np.int)
 picked_slice = 29
 process_mask[..., (picked_slice + 1):] = 0
 process_mask[..., :picked_slice] = 0

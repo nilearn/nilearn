@@ -18,6 +18,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from nilearn import datasets
 from nilearn.input_data import NiftiMasker
+from nilearn.image import get_data
 
 
 ############################################################################
@@ -65,7 +66,7 @@ display = plot_stat_map(neg_log_pvals_anova_unmasked,
                         display_mode='z', cut_coords=[z_slice],
                         figure=fig)
 
-masked_pvals = np.ma.masked_less(neg_log_pvals_anova_unmasked.get_data(),
+masked_pvals = np.ma.masked_less(get_data(neg_log_pvals_anova_unmasked),
                                  threshold)
 
 title = ('Negative $\log_{10}$ p-values'

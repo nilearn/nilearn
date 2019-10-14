@@ -24,6 +24,7 @@ from nilearn._utils.exceptions import DimensionError
 from nilearn._utils.testing import assert_raises_regex
 from nilearn.image import index_img
 from nilearn.input_data.nifti_masker import NiftiMasker, filter_and_mask
+from nilearn.image import get_data
 
 
 def test_auto_mask():
@@ -97,7 +98,7 @@ def test_nan():
     img = Nifti1Image(data, np.eye(4))
     masker = NiftiMasker(mask_args=dict(opening=0))
     masker.fit(img)
-    mask = masker.mask_img_.get_data()
+    mask = get_data(masker.mask_img_)
     assert_true(mask[1:-1, 1:-1, 1:-1].all())
     assert_false(mask[0].any())
     assert_false(mask[:, 0].any())
@@ -117,7 +118,7 @@ def test_matrix_orientation():
     masker = NiftiMasker(mask_img=mask, standardize=True, detrend=True)
     timeseries = masker.fit_transform(fmri)
     assert(timeseries.shape[0] == fmri.shape[3])
-    assert(timeseries.shape[1] == mask.get_data().sum())
+    assert(timeseries.shape[1] == get_data(mask).sum())
     std = timeseries.std(axis=0)
     assert(std.shape[0] == timeseries.shape[1])  # paranoid
     assert(not np.any(std < 0.1))
@@ -127,7 +128,7 @@ def test_matrix_orientation():
     masker.fit()
     timeseries = masker.transform(fmri)
     recovered = masker.inverse_transform(timeseries)
-    np.testing.assert_array_almost_equal(recovered.get_data(), fmri.get_data())
+    np.testing.assert_array_almost_equal(get_data(recovered), get_data(fmri))
 
 
 def test_mask_3d():
@@ -164,7 +165,7 @@ def test_mask_4d():
     masker.fit()
     data_trans = masker.transform(data_imgs)
     data_trans_img = index_img(data_img_4d, sample_mask)
-    data_trans_direct = data_trans_img.get_data()[mask_bool, :]
+    data_trans_direct = get_data(data_trans_img)[mask_bool, :]
     data_trans_direct = np.swapaxes(data_trans_direct, 0, 1)
     assert_array_equal(data_trans, data_trans_direct)
 
@@ -242,7 +243,7 @@ def test_joblib_cache():
         masker = NiftiMasker(mask_img=filename)
         masker.fit()
         mask_hash = hash(masker.mask_img_)
-        masker.mask_img_.get_data()
+        get_data(masker.mask_img_)
         assert_true(mask_hash == hash(masker.mask_img_))
 
         # Test a tricky issue with memmapped joblib.memory that makes
@@ -290,27 +291,27 @@ def test_compute_epi_mask():
 
     # With an array with no zeros, exclude_zeros should not make
     # any difference
-    np.testing.assert_array_equal(mask1.get_data(), mask2.get_data())
+    np.testing.assert_array_equal(get_data(mask1), get_data(mask2))
 
     # Check that padding with zeros does not change the extracted mask
     mean_image2 = np.zeros((30, 30, 3))
-    mean_image2[3:12, 3:12, :] = mean_image.get_data()
+    mean_image2[3:12, 3:12, :] = get_data(mean_image)
     mean_image2 = Nifti1Image(mean_image2, np.eye(4))
 
     masker3 = NiftiMasker(mask_strategy='epi',
                           mask_args=dict(opening=False, exclude_zeros=True))
     masker3.fit(mean_image2)
     mask3 = masker3.mask_img_
-    np.testing.assert_array_equal(mask1.get_data(),
-                                  mask3.get_data()[3:12, 3:12])
+    np.testing.assert_array_equal(get_data(mask1),
+                                  get_data(mask3)[3:12, 3:12])
 
     # However, without exclude_zeros, it does
     masker4 = NiftiMasker(mask_strategy='epi', mask_args=dict(opening=False))
     masker4.fit(mean_image2)
     mask4 = masker4.mask_img_
 
-    assert_false(np.allclose(mask1.get_data(),
-                             mask4.get_data()[3:12, 3:12]))
+    assert_false(np.allclose(get_data(mask1),
+                             get_data(mask4)[3:12, 3:12]))
 
 
 def test_compute_gray_matter_mask():
@@ -333,8 +334,8 @@ def test_compute_gray_matter_mask():
     mask_ref = np.zeros((9, 9, 5))
     mask_ref[2:7, 2:7, 2] = 1
 
-    np.testing.assert_array_equal(mask1.get_data(), mask_ref)
-    np.testing.assert_array_equal(mask2.get_data(), mask_ref)
+    np.testing.assert_array_equal(get_data(mask1), mask_ref)
+    np.testing.assert_array_equal(get_data(mask2), mask_ref)
 
 
 def test_filter_and_mask_error():

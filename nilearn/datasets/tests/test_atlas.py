@@ -25,6 +25,7 @@ from . import test_utils as tst
 from nilearn._utils.compat import _basestring, _urllib
 
 from nilearn.datasets import utils, atlas
+from nilearn.image import get_data
 
 
 def setup_mock():
@@ -542,11 +543,11 @@ def test_fetch_atlas_talairach(data_dir=tst.tmpdir):
     atlas._fetch_files = _mock_talairach_fetch_files
     level_values = np.ones((81, 3)) * [0, 1, 2]
     talairach = atlas.fetch_atlas_talairach('hemisphere', data_dir=tst.tmpdir)
-    assert_array_equal(talairach.maps.get_data().ravel(),
+    assert_array_equal(get_data(talairach.maps).ravel(),
                        level_values.T.ravel())
     assert_array_equal(talairach.labels, ['Background', 'b', 'a'])
     talairach = atlas.fetch_atlas_talairach('ba', data_dir=tst.tmpdir)
-    assert_array_equal(talairach.maps.get_data().ravel(),
+    assert_array_equal(get_data(talairach.maps).ravel(),
                        level_values.ravel())
     assert_raises(ValueError, atlas.fetch_atlas_talairach, 'bad_level')
 

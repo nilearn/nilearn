@@ -14,6 +14,7 @@ from nilearn.input_data.nifti_maps_masker import NiftiMapsMasker
 from nilearn._utils import testing, as_ndarray, data_gen
 from nilearn._utils.exceptions import DimensionError
 from nilearn._utils.testing import assert_less, assert_raises_regex
+from nilearn.image import get_data
 
 
 def generate_random_img(shape, length=1, affine=np.eye(4),
@@ -128,8 +129,8 @@ def test_nifti_maps_masker_with_nans():
                                                      affine=np.eye(4))
 
     # nans
-    maps_data = maps_img.get_data()
-    mask_data = mask_img.get_data()
+    maps_data = get_data(maps_img)
+    mask_data = get_data(mask_img)
 
     maps_data[:, 9, 9] = np.nan
     maps_data[:, 5, 5] = np.inf
