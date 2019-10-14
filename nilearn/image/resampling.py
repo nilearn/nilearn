@@ -16,7 +16,7 @@ from scipy import ndimage, linalg
 from .image import crop_img
 from .. import _utils
 from .._utils.compat import _basestring
-from nilearn.image import get_data
+from .._utils.niimg import get_data
 
 ###############################################################################
 # Affine utils
