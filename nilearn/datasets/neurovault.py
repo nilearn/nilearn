@@ -1661,8 +1661,10 @@ def _update_image(image_info, download_params):
             'image_{0}_metadata.json'.format(image_info['id']))
         _write_metadata(image_info, metadata_file_path)
     except OSError:
-        warnings.warn("could not update metadata for image {}".format(
-            image_info["id"]))
+        warnings.warn(
+            "could not update metadata for image {}, "
+            "most likely because you do not have write "
+            "permissions to its metadata file".format(image_info["id"]))
     return image_info
 
 
