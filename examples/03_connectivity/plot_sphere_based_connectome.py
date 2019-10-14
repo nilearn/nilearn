@@ -24,8 +24,8 @@ We estimate connectomes using two different methods: **sparse inverse
 covariance** and **partial_correlation**, to recover the functional brain
 **networks structure**.
 
-We'll start by extracting signals from Default Mode Network regions and computing a
-connectome from them.
+We'll start by extracting signals from Default Mode Network regions and
+computing a connectome from them.
 
 """
 
@@ -37,7 +37,7 @@ connectome from them.
 # connectivity dataset.
 
 from nilearn import datasets
-dataset = datasets.fetch_development_fmri(n_subjects=1)
+dataset = datasets.fetch_development_fmri(n_subjects=20)
 
 # print basic information on the dataset
 print('First subject functional nifti image (4D) is at: %s' %
@@ -49,21 +49,21 @@ print('First subject functional nifti image (4D) is at: %s' %
 # ------------------------------------
 dmn_coords = [(0, -52, 18), (-46, -68, 32), (46, -68, 32), (1, 50, -5)]
 labels = [
-          'Posterior Cingulate Cortex',
-          'Left Temporoparietal junction',
-          'Right Temporoparietal junction',
-          'Medial prefrontal cortex',
-         ]
+    'Posterior Cingulate Cortex',
+    'Left Temporoparietal junction',
+    'Right Temporoparietal junction',
+    'Medial prefrontal cortex'
+    ]
 
 ##########################################################################
 # Extracts signal from sphere around DMN seeds
 # ----------------------------------------------
 #
-# We can compute the mean signal within **spheres** of a fixed radius 
+# We can compute the mean signal within **spheres** of a fixed radius
 # around a sequence of (x, y, z) coordinates with the object
 # :class:`nilearn.input_data.NiftiSpheresMasker`.
-# The resulting signal is then prepared by the masker object: Detrended, 
-# band-pass filtered and **standardized to 1 variance**. 
+# The resulting signal is then prepared by the masker object: Detrended,
+# band-pass filtered and **standardized to 1 variance**.
 
 from nilearn import input_data
 
@@ -73,7 +73,7 @@ masker = input_data.NiftiSpheresMasker(
     low_pass=0.1, high_pass=0.01, t_r=2,
     memory='nilearn_cache', memory_level=1, verbose=2)
 
-# Additionally, we pass confound information so ensure our extracted 
+# Additionally, we pass confound information to ensure our extracted
 # signal is cleaned from confounds.
 
 func_filename = dataset.func[0]
@@ -114,7 +114,8 @@ partial_correlation_matrix = connectivity_measure.fit_transform(
 # Display connectome
 # -------------------
 #
-# We display the graph of connections with `:func: nilearn.plotting.plot_connectome`.
+# We display the graph of connections with
+# `:func: nilearn.plotting.plot_connectome`.
 
 from nilearn import plotting
 
@@ -172,7 +173,8 @@ print('Power atlas comes with {0}.'.format(power.keys()))
 #
 #
 #     You can retrieve the coordinates for any atlas, including atlases
-#     not included in nilearn, using :func:`nilearn.plotting.find_parcellation_cut_coords`.
+#     not included in nilearn, using
+#     :func:`nilearn.plotting.find_parcellation_cut_coords`.
 
 
 ###############################################################################
@@ -231,8 +233,8 @@ print('Covariance matrix has shape {0}.'.format(matrix.shape))
 
 
 ###############################################################################
-# Plot matrix and graph
-# ---------------------
+# Plot matrix, graph, and strength
+# --------------------------------
 #
 # We use `:func: nilearn.plotting.plot_matrix` to visualize our correlation matrix
 # and display the graph of connections with `nilearn.plotting.plot_connectome`.
@@ -247,12 +249,40 @@ plotting.plot_connectome(matrix, coords, title='Power correlation graph',
 
 
 ###############################################################################
-# .. note:: 
-# 
-#     Note the 1. on the matrix diagonal: These are the signals variances, set to
-#     1. by the `spheres_masker`. Hence the covariance of the signal is a
+# .. note::
+#
+#     Note the 1. on the matrix diagonal: These are the signals variances, set
+#     to 1. by the `spheres_masker`. Hence the covariance of the signal is a
 #     correlation matrix.
 
+
+###############################################################################
+# Sometimes, the information in the correlation matrix is overwhelming and
+# aggregating edge strength from the graph would help. Use the function
+# `nilearn.plotting.plot_connectome_strength` to visualize this information.
+
+plotting.plot_connectome_strength(
+    matrix, coords, title='Connectome strength for Power atlas'
+)
+
+###############################################################################
+# From the correlation matrix, we observe that there is a positive and negative
+# structure. We could make two different plots by plotting these strengths
+# separately.
+
+from matplotlib.pyplot import cm
+
+# plot the positive part of of the matrix
+plotting.plot_connectome_strength(
+    np.clip(matrix, 0, matrix.max()), coords, cmap=cm.YlOrRd,
+    title='Strength of the positive edges of the Power correlation matrix'
+)
+
+# plot the negative part of of the matrix
+plotting.plot_connectome_strength(
+    np.clip(matrix, matrix.min(), 0), coords, cmap=cm.PuBu,
+    title='Strength of the negative edges of the Power correlation matrix'
+)
 
 ###############################################################################
 # Connectome extracted from Dosenbach's atlas
@@ -283,6 +313,17 @@ plotting.plot_matrix(matrix, vmin=-1., vmax=1., colorbar=True,
 
 plotting.plot_connectome(matrix, coords, title='Dosenbach correlation graph',
                          edge_threshold="99.7%", node_size=20, colorbar=True)
+plotting.plot_connectome_strength(
+    matrix, coords, title='Connectome strength for Power atlas'
+)
+plotting.plot_connectome_strength(
+    np.clip(matrix, 0, matrix.max()), coords, cmap=cm.YlOrRd,
+    title='Strength of the positive edges of the Power correlation matrix'
+)
+plotting.plot_connectome_strength(
+    np.clip(matrix, matrix.min(), 0), coords, cmap=cm.PuBu,
+    title='Strength of the negative edges of the Power correlation matrix'
+)
 
 
 ###############################################################################
