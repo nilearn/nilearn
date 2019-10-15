@@ -14,6 +14,7 @@ from scipy.stats import norm
 from nistats.thresholding import (fdr_threshold,
                                   map_threshold,
                                   )
+from nistats.utils import get_data
 
 
 def test_fdr():
