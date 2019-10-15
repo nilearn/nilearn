@@ -22,6 +22,8 @@ from scipy.io import loadmat
 from scipy.io.matlab.miobase import MatReadError
 from sklearn.datasets.base import Bunch
 
+from nistats.utils import get_data
+
 SPM_AUDITORY_DATA_FILES = ["fM00223/fM00223_%03i.img" % index
                            for index in range(4, 100)]
 SPM_AUDITORY_DATA_FILES.append("sM00223/sM00223_002.img")

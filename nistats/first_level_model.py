@@ -45,6 +45,7 @@ from .utils import (_basestring,
                     _check_events_file_uses_tab_separators,
                     get_bids_files,
                     parse_bids_filename,
+                    get_data
                     )
 from nistats._utils.helpers import replace_parameters
 

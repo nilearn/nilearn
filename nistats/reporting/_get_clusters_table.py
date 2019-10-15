@@ -12,6 +12,7 @@ import pandas as pd
 import nibabel as nib
 from scipy import ndimage
 from nilearn.image.resampling import coord_transform
+from nistats.utils import get_data
 
 
 def _local_max(data, affine, min_distance):

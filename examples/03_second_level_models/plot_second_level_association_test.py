@@ -82,6 +82,8 @@ plotting.show()
 # non parametric test
 from nilearn.image import math_img
 from nilearn.input_data import NiftiMasker
+from nistats.utils import get_data
+
 p_val = model.compute_contrast('fluency', output_type='p_value')
 n_voxels = np.sum(get_data(model.masker_.mask_img_))
 # Correcting the p-values for multiple testing and taking negative logarithm

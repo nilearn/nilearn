@@ -32,7 +32,7 @@ from nistats.first_level_model import (first_level_models_from_bids,
                                        mean_scaling,
                                        run_glm,
                                        )
-from nistats.utils import get_bids_files
+from nistats.utils import get_bids_files, get_data
 from nistats._utils.testing import (_create_fake_bids_dataset,
                                     _generate_fake_fmri_data,
                                     _write_fake_fmri_data,

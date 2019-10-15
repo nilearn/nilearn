@@ -8,6 +8,7 @@ import numpy as np
 from nilearn.input_data import NiftiMasker
 from scipy.ndimage import label
 from scipy.stats import norm
+from nistats.utils import get_data
 
 
 def fdr_threshold(z_vals, alpha):

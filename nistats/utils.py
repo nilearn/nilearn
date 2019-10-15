@@ -18,6 +18,17 @@ from scipy.stats import norm
 py3 = sys.version_info[0] >= 3
 
 
+def get_data(img):
+    # copy-pasted from https://github.com/nipy/nibabel/blob/de44a105c1267b07ef9e28f6c35b31f851d5a005/nibabel/dataobj_images.py#L204
+    # get_data is removed from nibabel because:
+    # see https://github.com/nipy/nibabel/wiki/BIAP8
+    if img._data_cache is not None:
+        return img._data_cache
+    data = np.asanyarray(img._dataobj)
+    img._data_cache = data
+    return data
+
+
 def _check_list_length_match(list_1, list_2, var_name_1, var_name_2):
     """Check length match of two given lists to raise error if necessary"""
     if len(list_1) != len(list_2):
