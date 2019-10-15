@@ -116,7 +116,7 @@ def get_clusters_table(stat_img, stat_threshold, cluster_threshold=None,
         reports the center of mass of the cluster, rather than any peaks/subpeaks.
     """
     cols = ['Cluster ID', 'X', 'Y', 'Z', 'Peak Stat', 'Cluster Size (mm3)']
-    stat_map = stat_img.get_data()
+    stat_map = get_data(stat_img)
     conn_mat = np.zeros((3, 3, 3), int)  # 6-connectivity, aka NN1 or "faces"
     conn_mat[1, 1, :] = 1
     conn_mat[1, :, 1] = 1

@@ -437,7 +437,7 @@ class FirstLevelModel(BaseEstimator, TransformerMixin, CacheMixin):
             # Build the experimental design for the glm
             run_img = check_niimg(run_img, ensure_ndim=4)
             if design_matrices is None:
-                n_scans = run_img.get_data().shape[3]
+                n_scans = get_data(run_img).shape[3]
                 if confounds is not None:
                     confounds_matrix = confounds[run_idx].values
                     if confounds_matrix.shape[0] != n_scans:

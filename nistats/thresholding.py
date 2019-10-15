@@ -123,7 +123,7 @@ def map_threshold(stat_img=None, mask_img=None, alpha=.001, threshold=3.,
 
     # Extract connected components above threshold
     label_map, n_labels = label(stat_map > threshold)
-    labels = label_map[masker.mask_img_.get_data() > 0]
+    labels = label_map[get_data(masker.mask_img_) > 0]
 
     for label_ in range(1, n_labels + 1):
         if np.sum(labels == label_) < cluster_threshold:
