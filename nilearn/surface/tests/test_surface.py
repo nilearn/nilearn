@@ -18,7 +18,6 @@ from scipy.spatial import Delaunay
 
 import nibabel as nb
 from nibabel import gifti
-import sklearn
 
 from nilearn import datasets
 from nilearn import image
@@ -386,17 +385,8 @@ def test_load_uniform_ball_cloud():
         computed = surface._uniform_ball_cloud(n_points)
         loaded = surface._load_uniform_ball_cloud(n_points)
         assert_array_almost_equal(computed, loaded)
-    if sklearn.__version__ > '0.21':
-        # results of scikit-learn kmeans change after
-        # https://github.com/scikit-learn/scikit-learn/pull/9288
-        # (commit e8f2708e05a9982e86320d994abcbcf02a1536d9)
-        # so computed points will differ from the precomputed ones shipped with
-        # nilearn
-        return
-    for n_points in [10, 20]:
-        computed = surface._uniform_ball_cloud(n_points)
-        loaded = surface._load_uniform_ball_cloud(n_points)
-        assert_array_almost_equal(computed, loaded)
+        assert (np.std(computed, axis=0) > .1).all()
+        assert (np.linalg.norm(computed, axis=1) <= 1).all()
 
 
 def test_sample_locations():
