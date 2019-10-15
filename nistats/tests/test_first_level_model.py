@@ -84,18 +84,20 @@ def test_high_level_glm_with_data():
             np.eye(rk)[:2], output_type='effect_size')
         variance_image = multi_session_model.compute_contrast(
             np.eye(rk)[:2], output_type='effect_variance')
-        assert_array_equal(get_data(z_image) == 0., load(mask).get_data() == 0.)
+        assert_array_equal(get_data(z_image) == 0., get_data(load(mask)) == 0.)
         assert_true(
-                (get_data(variance_image)[load(mask).get_data() > 0] > .001).all())
+                (get_data(variance_image)[get_data(load(mask)) > 0] > .001).all())
         
         all_images = multi_session_model.compute_contrast(
                 np.eye(rk)[:2], output_type='all')
         
-        assert_array_equal(all_images['z_score'].get_data(), get_data(z_image))
-        assert_array_equal(all_images['p_value'].get_data(), get_data(p_value))
-        assert_array_equal(all_images['stat'].get_data(), get_data(stat_image))
-        assert_array_equal(all_images['effect_size'].get_data(), get_data(effect_image))
-        assert_array_equal(all_images['effect_variance'].get_data(), get_data(variance_image))
+        assert_array_equal(get_data(all_images['z_score']), get_data(z_image))
+        assert_array_equal(get_data(all_images['p_value']), get_data(p_value))
+        assert_array_equal(get_data(all_images['stat']), get_data(stat_image))
+        assert_array_equal(get_data(all_images['effect_size']),
+                           get_data(effect_image))
+        assert_array_equal(get_data(all_images['effect_variance']),
+                           get_data(variance_image))
         # Delete objects attached to files to avoid WindowsError when deleting
         # temporary directory (in Windows)
         del (all_images,

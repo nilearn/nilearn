@@ -120,7 +120,7 @@ def map_threshold(stat_img=None, mask_img=None, alpha=.001, threshold=3.,
     stats *= (stats > threshold)
 
     # embed it back to 3D grid
-    stat_map = masker.inverse_transform(stats).get_data()
+    stat_map = get_data(masker.inverse_transform(stats))
 
     # Extract connected components above threshold
     label_map, n_labels = label(stat_map > threshold)
