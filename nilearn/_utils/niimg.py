@@ -18,14 +18,10 @@ def get_data(img):
     # copy-pasted from https://github.com/nipy/nibabel/blob/de44a105c1267b07ef9e28f6c35b31f851d5a005/nibabel/dataobj_images.py#L204
     # get_data is removed from nibabel because:
     # see https://github.com/nipy/nibabel/wiki/BIAP8
-    caching = "fill"
-    if caching not in ('fill', 'unchanged'):
-        raise ValueError('caching value should be "fill" or "unchanged"')
     if img._data_cache is not None:
         return img._data_cache
     data = np.asanyarray(img._dataobj)
-    if caching == 'fill':
-        img._data_cache = data
+    img._data_cache = data
     return data
 
 
