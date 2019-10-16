@@ -2110,8 +2110,13 @@ def fetch_development_fmri(n_subjects=None, reduce_confounds=True,
 
     # To keep the proportion of children versus adults
     percent_total = float(n_subjects) / max_subjects
-    n_child = np.round(percent_total * child_count).astype(int) if n_subjects > 1 else 0
-    n_adult = np.round(percent_total * adult_count).astype(int) if n_subjects > 1 else 1
+    n_child = np.round(percent_total * child_count).astype(int)
+    n_adult = np.round(percent_total * adult_count).astype(int)
+
+    # We want to return adults by default (i.e., `adults_or_children=both`) or
+    # if explicitly requested.
+    if (adults_or_children != 'children') and (n_subjects == 1):
+        n_adult, n_child = 1, 0
 
     # First, restrict the csv files to the adequate number of subjects
     child_ids = participants[participants['Child_Adult'] ==
