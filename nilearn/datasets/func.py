@@ -2054,6 +2054,10 @@ def fetch_development_fmri(n_subjects=None, reduce_confounds=True,
 
     Preprocessing details: https://osf.io/wjtyq/
 
+    Note that if n_subjects > 2, and adults_or_children is 'both',
+    fetcher will return a ratio of children and adults representative 
+    of the total sample. 
+
     References
     ----------
     Please cite this paper if you are using this dataset.
@@ -2112,6 +2116,9 @@ def fetch_development_fmri(n_subjects=None, reduce_confounds=True,
     # if explicitly requested.
     if (adults_or_children != 'children') and (n_subjects == 1):
         n_adult, n_child = 1, 0
+
+    if (adults_or_children == 'both') and (n_subjects == 2):
+        n_adult, n_child = 1, 1
 
     # First, restrict the csv files to the adequate number of subjects
     child_ids = participants[participants['Child_Adult'] ==
