@@ -30,7 +30,7 @@ jobs:
 
   - script: |
       pip install .
-      nosetests ./nilearn -v
+      pytest ./nilearn -v
     displayName: 'test'
 
   - task: PublishTestResults@2

@@ -37,8 +37,10 @@ def plot_matrix(mat, title=None, labels=None, figure=None, axes=None,
             Matrix to be plotted.
         title : string or None, optional
             A text to add in the upper left corner.
-        labels : list of strings, optional
-            The label of each row and column
+        labels : list, ndarray of strings, empty list, False, or None, optional
+            The label of each row and column. Needs to be the same
+            length as rows/columns of mat. If False, None, or an
+            empty list, no labels are plotted.
         figure : figure instance, figsize tuple, or None
             Sets the figure used. This argument can be either an existing
             figure, or a pair (width, height) that gives the size of a
@@ -80,8 +82,14 @@ def plot_matrix(mat, title=None, labels=None, figure=None, axes=None,
         display : instance of matplotlib
             Axes image.
     """
+    # we need a list so an empty one will be cast to False
+    if isinstance(labels, np.ndarray):
+        labels = labels.tolist()
+    if labels and len(labels) != mat.shape[0]:
+        raise ValueError("Length of labels unequal to length of matrix.")
+
     if reorder:
-        if labels is None or labels is False:
+        if not labels:
             raise ValueError("Labels are needed to show the reordering.")
         try:
             from scipy.cluster.hierarchy import (linkage, optimal_leaf_ordering,
@@ -103,7 +111,7 @@ def plot_matrix(mat, title=None, labels=None, figure=None, axes=None,
         labels = np.array(labels).copy()
         mat = mat.copy()
         # and reorder labels and matrix
-        labels = labels[index]
+        labels = labels[index].tolist()
         mat = mat[index, :][:, index]
 
     if tri == 'lower':
@@ -134,10 +142,10 @@ def plot_matrix(mat, title=None, labels=None, figure=None, axes=None,
                         cmap=cmap, **kwargs)
     axes.set_autoscale_on(False)
     ymin, ymax = axes.get_ylim()
-    if labels is False:
+    if not labels:
         axes.xaxis.set_major_formatter(plt.NullFormatter())
         axes.yaxis.set_major_formatter(plt.NullFormatter())
-    elif labels is not None:
+    else:
         axes.set_xticks(np.arange(len(labels)))
         axes.set_xticklabels(labels, size='x-small')
         for label in axes.get_xticklabels():
@@ -178,7 +186,7 @@ def plot_matrix(mat, title=None, labels=None, figure=None, axes=None,
     axes.set_ylim(ymin, ymax)
 
     if auto_fit:
-        if labels is not None and labels is not False:
+        if labels:
             fit_axes(axes)
         elif own_fig:
             plt.tight_layout(pad=.1,

@@ -20,6 +20,7 @@ from nilearn.plotting.find_cuts import find_cut_slices
 from nilearn.plotting.img_plotting import (MNI152TEMPLATE, plot_anat, plot_img,
                                            plot_roi, plot_stat_map, plot_epi,
                                            plot_glass_brain, plot_connectome,
+                                           plot_connectome_strength,
                                            plot_prob_atlas,
                                            _get_colorbar_and_data_ranges)
 
@@ -518,7 +519,8 @@ def test_plot_connectome_exceptions():
                         **kwargs)
 
     wrong_adjacency_matrix = np.zeros((3, 3))
-    assert_raises_regex(ValueError, r'Shape mismatch.+\(3L?, 3L?\).+\(2L?, 3L?\)',
+    assert_raises_regex(ValueError,
+                        r'Shape mismatch.+\(3L?, 3L?\).+\(2L?, 3L?\)',
                         plot_connectome,
                         wrong_adjacency_matrix, node_coords, **kwargs)
 
@@ -546,6 +548,122 @@ def test_plot_connectome_exceptions():
                         adjacency_matrix, node_coords,
                         node_kwargs={'c': 'blue'},
                         **kwargs)
+
+
+def test_connectome_strength():
+    # symmetric up to 1e-3 relative tolerance
+    adjacency_matrix = np.array([[1., -2., 0.3, 0.],
+                                 [-2.002, 1, 0., 0.],
+                                 [0.3, 0., 1., 0.],
+                                 [0., 0., 0., 1.]])
+    node_coords = np.arange(3 * 4).reshape(4, 3)
+
+    args = adjacency_matrix, node_coords
+    kwargs = dict()
+    plot_connectome_strength(*args, **kwargs)
+    plt.close()
+
+    # used to speed-up tests for the net plots
+    kwargs['display_mode'] = 'x'
+
+    # node_coords not an array but a list of tuples
+    plot_connectome_strength(adjacency_matrix,
+                             [tuple(each) for each in node_coords],
+                             **kwargs)
+
+    # saving to file
+    filename = tempfile.mktemp(suffix='.png')
+    try:
+        display = plot_connectome_strength(
+            *args, output_file=filename, **kwargs
+        )
+        assert_true(display is None)
+        assert_true(os.path.isfile(filename) and
+                    os.path.getsize(filename) > 0)
+    finally:
+        os.remove(filename)
+    plt.close()
+
+    # passing node args
+    plot_connectome_strength(*args, node_size=10, cmap='RdBu')
+    plt.close()
+    plot_connectome_strength(*args, node_size=10, cmap=plt.cm.RdBu)
+    plt.close()
+
+    # masked array support
+    masked_adjacency_matrix = np.ma.masked_array(
+        adjacency_matrix, np.abs(adjacency_matrix) < 0.5
+    )
+    plot_connectome_strength(
+        masked_adjacency_matrix, node_coords, **kwargs
+    )
+    plt.close()
+
+    # sparse matrix support
+    sparse_adjacency_matrix = sparse.coo_matrix(adjacency_matrix)
+    plot_connectome_strength(
+        sparse_adjacency_matrix, node_coords, **kwargs
+    )
+    plt.close()
+
+    # NaN matrix support
+    nan_adjacency_matrix = np.array([[1., np.nan, 0.],
+                                     [np.nan, 1., 2.],
+                                     [np.nan, 2., 1.]])
+    nan_node_coords = np.arange(3 * 3).reshape(3, 3)
+    plot_connectome_strength(nan_adjacency_matrix, nan_node_coords, **kwargs)
+    plt.close()
+
+    # smoke-test with hemispheric sagital cuts
+    plot_connectome_strength(*args, display_mode='lzry')
+    plt.close()
+
+
+def test_plot_connectome_strength_exceptions():
+    node_coords = np.arange(2 * 3).reshape((2, 3))
+
+    # Used to speed-up tests because the glass brain is always plotted
+    # before any error occurs
+    kwargs = {'display_mode': 'x'}
+
+    # adjacency_matrix is not symmetric
+    non_symmetric_adjacency_matrix = np.array([[1., 2],
+                                               [0.4, 1.]])
+    assert_raises_regex(ValueError,
+                        'should be symmetric',
+                        plot_connectome_strength,
+                        non_symmetric_adjacency_matrix, node_coords,
+                        **kwargs)
+
+    adjacency_matrix = np.array([[1., 2.],
+                                 [2., 1.]])
+    # adjacency_matrix mask is not symmetric
+    masked_adjacency_matrix = np.ma.masked_array(
+        adjacency_matrix, [[False, True], [False, False]])
+
+    assert_raises_regex(ValueError,
+                        'non symmetric mask',
+                        plot_connectome_strength,
+                        masked_adjacency_matrix, node_coords,
+                        **kwargs)
+
+    # wrong shapes for node_coords or adjacency_matrix
+    assert_raises_regex(ValueError,
+                        r'supposed to have shape \(n, n\).+\(1L?, 2L?\)',
+                        plot_connectome_strength, adjacency_matrix[:1, :],
+                        node_coords,
+                        **kwargs)
+
+    assert_raises_regex(ValueError, r'shape \(2L?, 3L?\).+\(2L?,\)',
+                        plot_connectome_strength, adjacency_matrix,
+                        node_coords[:, 2], **kwargs)
+
+    wrong_adjacency_matrix = np.zeros((3, 3))
+    assert_raises_regex(ValueError, r'Shape mismatch.+\(3L?, 3L?\).+\(2L?, 3L?\)',
+                        plot_connectome_strength,
+                        wrong_adjacency_matrix, node_coords, **kwargs)
+
+
 
 
 def test_singleton_ax_dim():
@@ -1008,4 +1126,22 @@ def test_plot_glass_brain_colorbar_having_nans():
     data[6, 5, 2] = np.inf
     img = nibabel.Nifti1Image(data, np.eye(4))
     plot_glass_brain(img, colorbar=True)
+    plt.close()
+
+
+def test_plot_glass_brain_display_modes_without_img():
+    # Smoke test for work around from PR #1888
+    fig = plot_glass_brain(None, display_mode='lr')
+    fig = plot_glass_brain(None, display_mode='lzry')
+    fig.close()
+
+
+def test_plot_glass_brain_with_completely_masked_img():
+    # Smoke test for PR #1888 with display modes having 'l'
+    data = np.zeros((10, 20, 30))
+    affine = np.eye(4)
+
+    img = nibabel.Nifti1Image(data, affine)
+    plot_glass_brain(img, display_mode='lzry')
+    plot_glass_brain(img, display_mode='lr')
     plt.close()
