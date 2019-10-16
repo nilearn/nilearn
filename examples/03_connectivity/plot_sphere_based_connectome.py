@@ -4,8 +4,8 @@ Extract signals on spheres and plot a connectome
 
 This example shows how to extract signals from spherical regions.
 We show how to build spheres around user-defined coordinates, as well as
-centered on coordinates from the Power-264 atlas [1], the Dosenbach-160
-atlas [2], and the Seitzman-300 atlas [3].
+centered on coordinates from the Power-264 atlas [1], and the Dosenbach-160
+atlas [2].
 
 **References**
 
@@ -14,11 +14,6 @@ human brain." Neuron 72.4 (2011): 665-678.
 
 [2] Dosenbach N.U., Nardos B., et al. "Prediction of individual brain maturity
 using fMRI.", 2010, Science 329, 1358-1361.
-
-[3] `Seitzman, B. A., et al. "A set of functionally-defined brain regions with
-improved representation of the subcortex and cerebellum.", 2018, bioRxiv,
-450452
-<http://doi.org/10.1101/450452>`_
 
 We estimate connectomes using two different methods: **sparse inverse
 covariance** and **partial_correlation**, to recover the functional brain
