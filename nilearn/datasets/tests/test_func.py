@@ -627,16 +627,18 @@ def test_fetch_development_fmri():
     data = func.fetch_development_fmri(n_subjects=1, reduce_confounds=False,
                                        verbose=1)
     age_group = data.phenotypic['Child_Adult'][0]
-    assert_equal(age_group,'adult')
+    assert_equal(age_group, 'adult')
 
     # check first subject is an child if requested with adults_or_children
     data = func.fetch_development_fmri(n_subjects=1, reduce_confounds=False,
-                                       verbose=1, adults_or_children='children')
+                                       verbose=1, adults_or_children='children'
+                                       )
     age_group = data.phenotypic['Child_Adult'][0]
     assert_equal(age_group, 'child')
 
     # check adults_or_children
     data = func.fetch_development_fmri(n_subjects=2, reduce_confounds=False,
-                                       verbose=1, adults_or_children='children')
-    assert(all([x=='child' for x in data.phenotypic['Child_Adult']]))
+                                       verbose=1, adults_or_children='children'
+                                       )
+    assert(all([x == 'child' for x in data.phenotypic['Child_Adult']]))
 
