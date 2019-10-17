@@ -43,7 +43,7 @@ NEW
   duplication across examples. The improved
   `examples/03_connectivity/plot_sphere_based_connectome.py` contains
   concepts previously reviewed in both examples.
-- Similarly, merged `examples/03_connectivity/plot_compare_decomposition.py`
+- Merged `examples/03_connectivity/plot_compare_decomposition.py`
   and `examples/03_connectivity/plot_canica_analysis.py` into an improved
   `examples/03_connectivity/plot_compare_decomposition.py`.
 
