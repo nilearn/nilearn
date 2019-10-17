@@ -641,4 +641,3 @@ def test_fetch_development_fmri():
                                        verbose=1, adults_or_children='children'
                                        )
     assert(all([x == 'child' for x in data.phenotypic['Child_Adult']]))
-
