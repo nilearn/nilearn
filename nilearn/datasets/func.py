@@ -1991,7 +1991,7 @@ def _fetch_development_fmri_functional(participants, data_dir, url, verbose):
 
 def fetch_development_fmri(n_subjects=None, reduce_confounds=True,
                            data_dir=None, resume=True, verbose=1,
-                           adults_or_children='both'):
+                           age_group='both'):
     """Fetch movie watching based brain development dataset (fMRI)
 
     The data is downsampled to 4mm resolution for convenience. The origin of
@@ -2023,10 +2023,10 @@ def fetch_development_fmri(n_subjects=None, reduce_confounds=True,
     verbose: int, optional (default 1)
         Defines the level of verbosity of the output.
 
-    adults_or_children: str, optional (default 'both')
-        Whether to fetch only adults, only children, or both
+    age_group: str, optional (default 'both')
+        Which age group to fetch
         - 'adults' = fetch adults only (n=33, ages 18-39)
-        - 'children' = fetch children only (n=122, ages 3-12)
+        - 'child' = fetch children only (n=122, ages 3-12)
         - 'both' = fetch full sample (n=155)
 
     Returns
@@ -2054,7 +2054,7 @@ def fetch_development_fmri(n_subjects=None, reduce_confounds=True,
 
     Preprocessing details: https://osf.io/wjtyq/
 
-    Note that if n_subjects > 2, and adults_or_children is 'both',
+    Note that if n_subjects > 2, and age_group is 'both',
     fetcher will return a ratio of children and adults representative
     of the total sample.
 
@@ -2085,19 +2085,19 @@ def fetch_development_fmri(n_subjects=None, reduce_confounds=True,
                                                         verbose=verbose)
 
     # Download functional and regressors based on participants
-    if adults_or_children not in ['both', 'children', 'adults']:
-        raise ValueError("Wrong value for adults_or_children={0}. "
-                         "Valid arguments are 'adults', 'children' "
-                         "or 'both'".format(adults_or_children))
+    if age_group not in ['both', 'child', 'adult']:
+        raise ValueError("Wrong value for age_group={0}. "
+                         "Valid arguments are 'adult', 'child' "
+                         "or 'both'".format(age_group))
 
     child_adult = participants['Child_Adult'].tolist()
 
-    if adults_or_children != 'adults':
+    if age_group != 'adult':
         child_count = child_adult.count('child')
     else:
         child_count = 0
 
-    if adults_or_children != 'children':
+    if age_group != 'child':
         adult_count = child_adult.count('adult')
     else:
         adult_count = 0
@@ -2111,9 +2111,9 @@ def fetch_development_fmri(n_subjects=None, reduce_confounds=True,
     if (isinstance(n_subjects, numbers.Number) and
             ((n_subjects > max_subjects) or (n_subjects < 1))):
         warnings.warn("Wrong value for n_subjects={0}. The maximum "
-                      "value (for Child_Adult={1}) will be used instead: "
+                      "value (for age_group={1}) will be used instead: "
                       "n_subjects={2}"
-                      .format(n_subjects, adults_or_children, max_subjects))
+                      .format(n_subjects, age_group, max_subjects))
         n_subjects = max_subjects
 
     # To keep the proportion of children versus adults
@@ -2121,12 +2121,12 @@ def fetch_development_fmri(n_subjects=None, reduce_confounds=True,
     n_child = np.round(percent_total * child_count).astype(int)
     n_adult = np.round(percent_total * adult_count).astype(int)
 
-    # We want to return adults by default (i.e., `adults_or_children=both`) or
+    # We want to return adults by default (i.e., `age_group=both`) or
     # if explicitly requested.
-    if (adults_or_children != 'children') and (n_subjects == 1):
+    if (age_group != 'child') and (n_subjects == 1):
         n_adult, n_child = 1, 0
 
-    if (adults_or_children == 'both') and (n_subjects == 2):
+    if (age_group == 'both') and (n_subjects == 2):
         n_adult, n_child = 1, 1
 
     # First, restrict the csv files to the adequate number of subjects
