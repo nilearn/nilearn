@@ -67,6 +67,10 @@ Changes
 - :func:`nilearn.plotting.view_connectome` now converts NaNs in the adjacency
   matrix to 0.
 
+- Removed the plotting connectomes example which used the Seitzman atlas
+  from `examples/03_connectivity/plot_sphere_based_connectome.py`.
+  The atlas data is unsuitable for the method & the example is redundant.
+
 Fixes
 -----
 
