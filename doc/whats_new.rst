@@ -42,7 +42,17 @@ NEW
   functional connectivity. Similar example in
   `examples/03_connectivity/plot_group_level_connectivity.py` simplified.
 
-- the Localizer dataset now follows the BIDS organization.
+- Merged `examples/03_connectivity/plot_adhd_spheres.py` and
+  `examples/03_connectivity/plot_sphere_based_connectome.py` to remove
+  duplication across examples. The improved
+  `examples/03_connectivity/plot_sphere_based_connectome.py` contains
+  concepts previously reviewed in both examples.
+- Merged `examples/03_connectivity/plot_compare_decomposition.py`
+  and `examples/03_connectivity/plot_canica_analysis.py` into an improved
+  `examples/03_connectivity/plot_compare_decomposition.py`.
+
+- The Localizer dataset now follows the BIDS organization.
+
 
 Changes
 -------
