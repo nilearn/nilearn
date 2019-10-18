@@ -15,7 +15,7 @@ def test_fast_abs_percentile():
     data = np.arange(100)
     rng.shuffle(data)
     for p in data:
-        yield nose.tools.assert_equal, fast_abs_percentile(data, p), p
+        nose.tools.assert_equal(fast_abs_percentile(data, p), p)
 
 
 def test_is_spd_with_non_symmetrical_matrix():

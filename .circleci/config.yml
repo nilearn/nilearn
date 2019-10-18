@@ -15,6 +15,7 @@ jobs:
       NUMPY_VERSION: "*"
       SCIPY_VERSION: "*"
       SCIKIT_LEARN_VERSION: "*"
+      JOBLIB_VERSION: "*"
       MATPLOTLIB_VERSION: "*"
 
     steps:
