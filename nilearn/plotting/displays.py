@@ -416,7 +416,7 @@ class GlassBrainAxes(BaseAxes):
                 marker_color = marker_color[relevant_coords]
             
             if not isinstance(marker_size, numbers.Number):
-                marker_size = marker_size[relevant_coords]
+                marker_size = np.array(marker_size)[relevant_coords]
             
 
         defaults = {'marker': 'o',
