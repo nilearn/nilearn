@@ -84,8 +84,8 @@ Changes
 Fixes
 -----
 
-- :func:`nilearn.plotting.plot_connectome` now correctly displays marker size on 'l' and 'r' orientations, 
-  if an array or a list is passed to the function.
+- :func:`nilearn.plotting.plot_connectome` now correctly displays marker size on 'l'
+  and 'r' orientations, if an array or a list is passed to the function.
 - :func:`nilearn.plotting.plot_glass_brain` with colorbar=True does not crash when
   images have NaNs.
 - add_contours now accepts `threshold` argument for filled=False. Now
