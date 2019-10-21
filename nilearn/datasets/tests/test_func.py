@@ -281,12 +281,23 @@ def test_fetch_localizer_calculation_task():
 @with_setup(tst.setup_tmpdata, tst.teardown_tmpdata)
 @with_setup(setup_localizer, teardown_localizer)
 def test_fetch_localizer_button_task():
-    # 2 subjects
-    dataset = func.fetch_localizer_button_task(
-        data_dir=tst.tmpdir,
-        verbose=1)
-    assert_true(isinstance(dataset.tmaps[0], _basestring))
-    assert_true(isinstance(dataset.anats[0], _basestring))
+    local_url = "file://" + tst.datadir
+
+    # Disabled: cannot be tested without actually fetching covariates CSV file
+    # Only one subject
+    dataset = func.fetch_localizer_button_task(data_dir=tst.tmpdir,
+                                               url=local_url,
+                                               verbose=1)
+
+    assert_true(isinstance(dataset.tmaps, list))
+    assert_true(isinstance(dataset.anats, list))
+
+    assert len(dataset.tmaps) == 1
+    assert len(dataset.anats) == 1
+
+    assert_true(isinstance(dataset.tmap, str))
+    assert_true(isinstance(dataset.anat, str))
+
     assert_not_equal(dataset.description, '')
 
 
