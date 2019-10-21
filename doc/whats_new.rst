@@ -134,6 +134,7 @@ The following people contributed to this release (in alphabetical order)::
 	Gael Varoquaux
 	Gilles de Hollander
 	Greg Kiar
+	Guillaume Lemaitre
 	Ian Abenes
 	Jake Vogel
 	Jerome Dockes
