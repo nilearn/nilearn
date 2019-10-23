@@ -613,17 +613,12 @@ def index_img(imgs, index):
 
     We can also select multiple frames using the `slice` constructor::
 
-    >>> full_timeseries = datasets.fetch_development_fmri(n_subjects=1,
-    ...                                                   verbose=0).func
-    <BLANKLINE>
-    Dataset created in .../development_fmri # doctest:+ELLIPSIS
-    <BLANKLINE>
-
-    >>> print(load_img(full_timeseries).shape)
+    >>> full_timeseries = datasets.fetch_development_fmri(n_subjects=1).func # doctest: +SKIP
+    >>> print(load_img(full_timeseries).shape) # doctest: +SKIP
     (50, 59, 50, 168)
 
-    >>> first_ten_frames = index_img(func, slice(0, 10))
-    >>> print(first_ten_frames.shape)
+    >>> first_ten_frames = index_img(full_timeseries, slice(0, 10)) # doctest: +SKIP
+    >>> print(first_ten_frames.shape) # doctest: +SKIP
     (50, 59, 50, 10)
     """
     imgs = check_niimg_4d(imgs)
