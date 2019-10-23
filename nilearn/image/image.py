@@ -615,6 +615,10 @@ def index_img(imgs, index):
 
     >>> full_timeseries = datasets.fetch_development_fmri(n_subjects=1,
     ...                                                   verbose=0).func
+    <BLANKLINE>
+    Dataset created in .../development_fmri # doctest:+ELLIPSIS
+    <BLANKLINE>
+
     >>> print(load_img(full_timeseries).shape)
     (50, 59, 50, 168)
 
