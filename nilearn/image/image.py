@@ -599,7 +599,7 @@ def index_img(imgs, index):
     First we concatenate two mni152 images to create a 4D-image::
 
      >>> from nilearn import datasets
-     >>> from nilearn.image import concat_imgs, index_img
+     >>> from nilearn.image import concat_imgs, index_img, load_img
      >>> joint_mni_image = concat_imgs([datasets.load_mni152_template(),
      ...                                datasets.load_mni152_template()])
      >>> print(joint_mni_image.shape)
@@ -610,6 +610,16 @@ def index_img(imgs, index):
      >>> single_mni_image = index_img(joint_mni_image, 1)
      >>> print(single_mni_image.shape)
      (91, 109, 91)
+
+    We can also select multiple frames using the `slice` constructor::
+
+    >>> full_timeseries = datasets.fetch_development_fmri(n_subjects=1).func
+    >>> print(load_img(full_timeseries).shape)
+    (50, 59, 50, 168)
+
+    >>> first_ten_frames = index_img(func, slice(0, 10))
+    >>> print(first_ten_frames.shape)
+    (50, 59, 50, 10)
     """
     imgs = check_niimg_4d(imgs)
     # duck-type for pandas arrays, and select the 'values' attr
