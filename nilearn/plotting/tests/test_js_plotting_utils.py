@@ -219,8 +219,9 @@ def check_html(html, check_selects=True, plot_div_id='surface-plot'):
         html.save_as_html(tmpfile)
         with open(tmpfile) as f:
             saved = f.read()
-        # Remove Window's '\r\n' line-end to Unix's '\n' before comparison.
-        standalone = html.get_standalone().replace('\r', '')
+        # If present, replace Windows line-end '\r\n' with Unix's '\n'
+        saved = saved.replace('\r\n', '\n')
+        standalone = html.get_standalone().replace('\r\n', '\n')
         assert_equal(saved, standalone)
     finally:
         os.remove(tmpfile)
