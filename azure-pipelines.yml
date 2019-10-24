@@ -15,7 +15,7 @@ jobs:
     matrix:
       Python35:
         python.version: '3.5'
-      Python38:
+      Python37:
         python.version: '3.7'
     maxParallel: 4
 
