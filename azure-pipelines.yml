@@ -16,7 +16,7 @@ jobs:
       Python35:
         python.version: '3.5'
       Python38:
-        python.version: '3.8'
+        python.version: '3.7'
     maxParallel: 4
 
   steps:
