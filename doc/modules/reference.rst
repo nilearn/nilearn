@@ -71,6 +71,7 @@ uses.
    fetch_atlas_harvard_oxford
    fetch_atlas_msdl
    fetch_coords_power_2011
+   fetch_coords_seitzman_2018
    fetch_atlas_smith_2009
    fetch_atlas_yeo_2011
    fetch_atlas_aal
@@ -269,6 +270,7 @@ uses.
 
    RegionExtractor
    Parcellations
+   ReNA
 
 
 :mod:`nilearn.mass_univariate`: Mass-univariate analysis
@@ -322,6 +324,7 @@ uses.
    plot_stat_map
    plot_glass_brain
    plot_connectome
+   plot_connectome_strength
    plot_prob_atlas
    plot_surf
    plot_surf_roi

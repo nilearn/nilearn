@@ -1651,19 +1651,25 @@ def _update_image(image_info, download_params):
     """
     if not download_params['write_ok']:
         return image_info
-    collection = _fetch_collection_for_image(
-        image_info, download_params)
-    image_info, collection = _download_image_terms(
-        image_info, collection, download_params)
-    metadata_file_path = os.path.join(
-        os.path.dirname(image_info['absolute_path']),
-        'image_{0}_metadata.json'.format(image_info['id']))
-    _write_metadata(image_info, metadata_file_path)
+    try:
+        collection = _fetch_collection_for_image(
+            image_info, download_params)
+        image_info, collection = _download_image_terms(
+            image_info, collection, download_params)
+        metadata_file_path = os.path.join(
+            os.path.dirname(image_info['absolute_path']),
+            'image_{0}_metadata.json'.format(image_info['id']))
+        _write_metadata(image_info, metadata_file_path)
+    except OSError:
+        warnings.warn(
+            "could not update metadata for image {}, "
+            "most likely because you do not have write "
+            "permissions to its metadata file".format(image_info["id"]))
     return image_info
 
 
 def _update(image_info, collection, download_params):
-    """Update local metadata for an image and its collection."""
+    "Update local metadata for an image and its collection."""
     image_info = _update_image(image_info, download_params)
     return image_info, collection
 
@@ -2629,8 +2635,6 @@ def fetch_neurovault_motor_task(data_dir=None, verbose=1):
     Notes
     ------
 
-    This function is only a caller for the fetch_localizer_contrasts in order
-    to simplify examples reading and understanding.
     The 'left vs right button press' contrast is used:
     https://neurovault.org/images/10426/
 
@@ -2673,8 +2677,6 @@ def fetch_neurovault_auditory_computation_task(data_dir=None, verbose=1):
     Notes
     ------
 
-    This function is only a caller for the fetch_localizer_contrasts in order
-    to simplify examples reading and understanding.
     The 'auditory_calculation_vs_baseline' contrast is used:
     https://neurovault.org/images/32980/
 

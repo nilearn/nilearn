@@ -3,7 +3,7 @@ import nibabel
 import numpy as np
 
 from sklearn.base import BaseEstimator
-from sklearn.externals.joblib import Memory
+from nilearn._utils.compat import Memory
 
 from nilearn._utils.testing import assert_warns
 from nilearn.input_data.masker_validation import check_embedded_nifti_masker
@@ -54,10 +54,10 @@ def test_check_embedded_nifti_masker():
             if param_key not in ['memory', 'memory_level', 'n_jobs',
                                  'verbose']:
                 assert_equal(getattr(masker, param_key),
-                            getattr(mask, param_key))
+                             getattr(mask, param_key))
             else:
                 assert_equal(getattr(masker, param_key),
-                            getattr(owner, param_key))
+                             getattr(owner, param_key))
 
     # Check use of mask as mask_img
     shape = (6, 8, 10, 5)

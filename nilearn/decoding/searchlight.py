@@ -16,7 +16,7 @@ import warnings
 
 import numpy as np
 
-from sklearn.externals.joblib import Parallel, delayed, cpu_count
+from nilearn._utils.compat import Parallel, delayed, cpu_count
 from sklearn import svm
 from sklearn.base import BaseEstimator
 from sklearn.exceptions import ConvergenceWarning
