@@ -38,7 +38,7 @@ jobs:
 
   - script: |
       codecov -f coverage.xml --token=$(CODECOV_TOKEN)
-      displayName: 'codecov'
+    displayName: 'codecov'
   - task: PublishTestResults@2
     inputs:
       testResultsFiles: '**/test-results.xml'
