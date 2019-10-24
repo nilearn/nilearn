@@ -32,8 +32,8 @@ jobs:
     displayName: 'Install dependencies'
 
   - script: |
-      pip install --site-packages .
-      python -m pytest --pyargs nilearn -n 2 --cov-report=xml --cov=nilearn --cov-append
+      pip install .
+      python -m pytest --pyargs nilearn --cov-report=xml --cov=nilearn --cov-append
     displayName: 'test'
 
   - task: PublishTestResults@2
