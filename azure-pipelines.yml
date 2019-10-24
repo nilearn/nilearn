@@ -33,7 +33,7 @@ jobs:
 
   - script: |
       pip install .
-      python -m pytest --pyargs nilearn --cov-report=xml --cov=nilearn --cov-append
+      python -m pytest --pyargs nilearn --cov-report=xml --cov=nilearn --cov-append --junitxml=**/test-results.xml
     displayName: 'test'
 
   - script: |
