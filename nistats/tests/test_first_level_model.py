@@ -68,7 +68,7 @@ def test_high_level_glm_with_data():
         z_image = multi_session_model.compute_contrast(np.eye(rk)[1])
         assert_equal(np.sum(z_image.get_data() != 0), n_voxels)
         assert_true(z_image.get_data().std() < 3.)
-        
+
         # with mask
         multi_session_model = FirstLevelModel(mask_img=mask).fit(
             fmri_data, design_matrices=design_matrices)
@@ -85,10 +85,10 @@ def test_high_level_glm_with_data():
         assert_array_equal(z_image.get_data() == 0., load(mask).get_data() == 0.)
         assert_true(
                 (variance_image.get_data()[load(mask).get_data() > 0] > .001).all())
-        
+
         all_images = multi_session_model.compute_contrast(
                 np.eye(rk)[:2], output_type='all')
-        
+
         assert_array_equal(all_images['z_score'].get_data(), z_image.get_data())
         assert_array_equal(all_images['p_value'].get_data(), p_value.get_data())
         assert_array_equal(all_images['stat'].get_data(), stat_image.get_data())
@@ -371,22 +371,22 @@ def test_first_level_models_from_bids():
                       bids_path, 'main', 'MNI', model_init=[])
         # test output is as expected
         models, m_imgs, m_events, m_confounds = first_level_models_from_bids(
-            bids_path, 'main', 'MNI', [('variant', 'some')])
+            bids_path, 'main', 'MNI', [('desc', 'preproc')])
         assert_true(len(models) == len(m_imgs))
         assert_true(len(models) == len(m_events))
         assert_true(len(models) == len(m_confounds))
         # test repeated run tag error when run tag is in filenames
-        # can arise when variant or space is present and not specified
+        # can arise when desc or space is present and not specified
         assert_raises(ValueError, first_level_models_from_bids,
-                      bids_path, 'main', 'T1w')  # variant not specified
+                      bids_path, 'main', 'T1w')  # desc not specified
         # test more than one ses file error when run tag is not in filenames
-        # can arise when variant or space is present and not specified
+        # can arise when desc or space is present and not specified
         assert_raises(ValueError, first_level_models_from_bids,
-                      bids_path, 'localizer', 'T1w')  # variant not specified
+                      bids_path, 'localizer', 'T1w')  # desc not specified
         # test issues with confound files. There should be only one confound
         # file per img. An one per image or None. Case when one is missing
         confound_files = get_bids_files(os.path.join(bids_path, 'derivatives'),
-                                        file_tag='confounds')
+                                        file_tag='desc-confounds_regressors')
         os.remove(confound_files[-1])
         assert_raises(ValueError, first_level_models_from_bids,
                       bids_path, 'main', 'MNI')
@@ -402,7 +402,7 @@ def test_first_level_models_from_bids():
         assert_raises(ValueError, first_level_models_from_bids,
                       bids_path, 'main', 'MNI')
 
-        # In case different variant and spaces exist and are not selected we
+        # In case different desc and spaces exist and are not selected we
         # fail and ask for more specific information
         shutil.rmtree(os.path.join(bids_path, 'derivatives'))
         # issue if no derivatives folder is present
@@ -415,9 +415,9 @@ def test_first_level_models_from_bids():
                                              tasks=['localizer', 'main'],
                                              n_runs=[1, 3], no_session=True)
         # test repeated run tag error when run tag is in filenames and not ses
-        # can arise when variant or space is present and not specified
+        # can arise when desc or space is present and not specified
         assert_raises(ValueError, first_level_models_from_bids,
-                      bids_path, 'main', 'T1w')  # variant not specified
+                      bids_path, 'main', 'T1w')  # desc not specified
 
 
 def test_first_level_models_with_no_signal_scaling():
@@ -462,35 +462,35 @@ def test_param_mask_deprecation_FirstLevelModel():
                                mask=mask_filepath,
                                target_shape=(2, 4, 4),
                                )
-        
+
         flm2 = FirstLevelModel(t_r=2.5,
                                slice_time_ref=1,
                                mask=mask_filepath,
                                target_shape=(2, 4, 4),
                                )
-        
+
         flm3 = FirstLevelModel(2.5, 0., 'glover', 'cosine', 128, 1, [0], -24,
                                mask_filepath, None, (2, 4, 4),
                                )
     assert flm1.mask_img == mask_filepath
     assert flm2.mask_img == mask_filepath
     assert flm3.mask_img == mask_filepath
-    
+
     with assert_raises(AttributeError):
         flm1.mask == mask_filepath
     with assert_raises(AttributeError):
         flm2.mask == mask_filepath
     with assert_raises(AttributeError):
         flm3.mask == mask_filepath
-    
+
     assert len(raised_warnings) == 2
-    
+
     raised_param_deprecation_warnings = [
         raised_warning_ for raised_warning_
         in raised_warnings if
         str(raised_warning_.message).startswith('The parameter')
         ]
-    
+
     for param_warning_ in raised_param_deprecation_warnings:
         assert str(param_warning_.message) == deprecation_msg
         assert param_warning_.category is DeprecationWarning
@@ -509,10 +509,10 @@ def test_param_mask_deprecation_first_level_models_from_bids():
                                               n_runs=[1, 3])
         with warnings.catch_warnings(record=True) as raised_warnings:
             first_level_models_from_bids(
-                    bids_path, 'main', 'MNI', [('variant', 'some')],
+                    bids_path, 'main', 'MNI', [('desc', 'preproc')],
                     mask=mask_filepath)
             first_level_models_from_bids(
-                    bids_path, 'main', 'MNI', [('variant', 'some')],
+                    bids_path, 'main', 'MNI', [('desc', 'preproc')],
                     mask_img=mask_filepath)
 
     raised_param_deprecation_warnings = [

@@ -33,8 +33,8 @@ To run this example, you must launch IPython via ``ipython
 # subject folders only contain bold.json and events.tsv files, while the
 # derivatives folder with preprocessed files contain preproc.nii and
 # confounds.tsv files.
-from nistats.datasets import fetch_bids_langloc_dataset
-data_dir, _ = fetch_bids_langloc_dataset()
+from nistats.datasets import fetch_language_localizer_demo_dataset
+data_dir, _ = fetch_language_localizer_demo_dataset()
 
 ##############################################################################
 # Here is the location of the dataset on disk
@@ -51,18 +51,17 @@ print(data_dir)
 # and the task_label as specified in the file names.
 from nistats.first_level_model import first_level_models_from_bids
 task_label = 'languagelocalizer'
-space_label = 'MNI152nonlin2009aAsym'
 _, models_run_imgs, models_events, models_confounds = \
     first_level_models_from_bids(
-        data_dir, task_label, space_label,
-        img_filters=[('variant', 'smoothResamp')])
+        data_dir, task_label,
+        img_filters=[('desc', 'preproc')])
 
 #############################################################################
 # We also need to get the TR information. For that we use a json file
 # of the dataset
 import os
-json_file = os.path.join(data_dir, 'sub-01', 'ses-02', 'func',
-                         'sub-01_ses-02_task-languagelocalizer_bold.json')
+json_file = os.path.join(data_dir, 'derivatives', 'sub-01', 'func',
+                         'sub-01_task-languagelocalizer_desc-preproc_bold.json')
 import json
 with open(json_file, 'r') as f:
     t_r = json.load(f)['RepetitionTime']
