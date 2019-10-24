@@ -1,8 +1,11 @@
 nose
 coverage
-boto3
-patsy
 scipy
 scikit-learn
 pandas
 matplotlib
+nibabel
+pytest
+pytest-cov
+numpy
+cython
