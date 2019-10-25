@@ -61,6 +61,7 @@ def test_colorscale_no_threshold():
     assert colors['cmap'].N == 256
     assert (colors['norm'].vmax, colors['norm'].vmin) == (13, -13)
     assert colors['abs_threshold'] is None
+    colors = js_plotting_utils.colorscale(cmap, values > 0, .5)
 
 
 def test_colorscale_threshold_0():
