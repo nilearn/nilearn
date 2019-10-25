@@ -11,8 +11,8 @@
 .. image:: https://codecov.io/gh/nilearn/nilearn/branch/master/graph/badge.svg
    :target: https://codecov.io/gh/nilearn/nilearn
 
-.. image:: https://dev.azure.com/kcinsightpi/NIlearn/_apis/build/status/nilearn.nilearn?branchName=master
-    :target: https://dev.azure.com/kcinsightpi/NIlearn/_apis/build/status/nilearn.nilearn?branchName=master
+.. image:: https://dev.azure.com/Parietal/Nilearn/_apis/build/status/nilearn.nilearn?branchName=master
+    :target: https://dev.azure.com/Parietal/Nilearn/_apis/build/status/nilearn.nilearn?branchName=master
 
 nilearn
 =======
