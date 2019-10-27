@@ -374,6 +374,11 @@ def test_vertex_outer_normals():
 
 
 def test_load_uniform_ball_cloud():
+    # Note: computed and shipped point clouds may differ since KMeans results
+    # change after
+    # https://github.com/scikit-learn/scikit-learn/pull/9288
+    # but the exact position of the points does not matter as long as they are
+    # well spread inside the unit ball
     for n_points in [10, 20, 40, 80, 160]:
         with warnings.catch_warnings(record=True) as w:
             points = surface._load_uniform_ball_cloud(n_points=n_points)
