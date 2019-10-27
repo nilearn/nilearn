@@ -27,7 +27,7 @@ uses.
    :toctree: generated/
    :template: function.rst
 
-   fetch_bids_langloc_dataset
+   fetch_language_localizer_demo_dataset
    fetch_openneuro_dataset_index
    select_from_index
    fetch_openneuro_dataset

@@ -84,6 +84,17 @@ def test_mahalanobis2():
     assert_true(np.allclose(mah, f_mah))
 
 
+def test_mahalanobis_errors():
+    effect = np.zeros((1, 2, 3))
+    cov = np.zeros((3, 3, 3))
+    with assert_raises(ValueError):
+        multiple_mahalanobis(effect, cov)
+
+    cov = np.zeros((1, 2, 3))
+    with assert_raises(ValueError):
+        multiple_mahalanobis(effect, cov)
+
+
 def test_multiple_fast_inv():
     shape = (10, 20, 20)
     X = np.random.randn(shape[0], shape[1], shape[2])
@@ -93,6 +104,18 @@ def test_multiple_fast_inv():
         X_inv_ref[i] = spl.inv(X[i])
     X_inv = multiple_fast_inverse(X)
     assert_almost_equal(X_inv_ref, X_inv)
+
+
+def test_multiple_fast_inverse_errors():
+    shape = (2, 2, 2)
+    X = np.zeros(shape)
+    with assert_raises(ValueError):
+        multiple_fast_inverse(X)
+
+    shape = (10, 20, 20)
+    X = np.zeros(shape)
+    with assert_raises(ValueError):
+        multiple_fast_inverse(X)
 
 
 def test_pos_recipr():

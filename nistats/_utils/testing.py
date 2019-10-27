@@ -63,44 +63,44 @@ def _create_fake_bids_dataset(base_dir='', n_sub=10, n_ses=2,
                              with_confounds=True, no_session=False):
     """Creates a fake bids dataset directory with dummy files.
     Returns fake dataset directory name.
-    
+
     Parameters
     ----------
     base_dir: string (Absolute path), optional
         Absolute directory path in which to create the fake BIDS dataset dir.
         Default: Current directory.
-        
+
     n_sub: int, optional
         Number of subject to be simulated in the dataset.
         Default: 10
-        
+
     n_ses: int, optional
         Number of sessions to be simulated in the dataset.
         Ignored if no_session=True.
         Default: 2
-        
+
     n_runs: List[int], optional
         Default: [1, 3]
-        
+
     with_derivatives: bool, optional
         In the case derivatives are included, they come with two spaces and
-        variants. Spaces are 'MNI' and 'T1w'. Variants are 'some' and 'other'.
-        Only space 'T1w' include both variants.
+        descriptions. Spaces are 'MNI' and 'T1w'. Descriptions are 'preproc'
+        and 'fmriprep'. Only space 'T1w' include both descriptions.
         Default: True
-        
+
     with_confounds: bool, optional
         Default: True
-        
+
     no_session: bool, optional
         Specifying no_sessions will only produce runs and files without the
         optional session field. In this case n_ses will be ignored.
         Default: False
-        
+
     Returns
     -------
     dataset directory name: string
         'bids_dataset'
-        
+
     Creates
     -------
         Directory with dummy files
@@ -158,18 +158,18 @@ def _create_fake_bids_dataset(base_dir='', n_sub=10, n_ses=2,
                         file_id = '_'.join(fields)
                         if n_run > 1:
                             file_id += '_' + run
-                        preproc = file_id + '_bold_space-MNI_variant-some_preproc.nii.gz'
+                        preproc = file_id + '_space-MNI_desc-preproc_bold.nii.gz'
                         preproc_path = os.path.join(func_path, preproc)
                         _write_fake_bold_img(preproc_path, [vox, vox, vox, 100])
-                        preproc = file_id + '_bold_space-T1w_variant-some_preproc.nii.gz'
+                        preproc = file_id + '_space-T1w_desc-preproc_bold.nii.gz'
                         preproc_path = os.path.join(func_path, preproc)
                         _write_fake_bold_img(preproc_path, [vox, vox, vox, 100])
-                        preproc = file_id + '_bold_space-T1w_variant-other_preproc.nii.gz'
+                        preproc = file_id + '_space-T1w_desc-fmriprep_bold.nii.gz'
                         preproc_path = os.path.join(func_path, preproc)
                         _write_fake_bold_img(preproc_path, [vox, vox, vox, 100])
                         if with_confounds:
                             confounds_path = os.path.join(func_path, file_id +
-                                                          '_confounds.tsv')
+                                                          '_desc-confounds_regressors.tsv')
                             _basic_confounds(100).to_csv(confounds_path,
                                                          sep='\t', index=None)
     return 'bids_dataset'

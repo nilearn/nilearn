@@ -29,6 +29,45 @@ SPM_AUDITORY_DATA_FILES = ["fM00223/fM00223_%03i.img" % index
 SPM_AUDITORY_DATA_FILES.append("sM00223/sM00223_002.img")
 
 
+def fetch_language_localizer_demo_dataset(data_dir=None, verbose=1):
+    """Download language localizer demo dataset.
+
+    Parameters
+    ----------
+    data_dir: string, optional
+        Path to store the downloaded dataset. if None employ nilearn
+        datasets default download directory.
+
+    verbose: int, optional
+        verbosity level (0 means no message).
+
+    Returns
+    -------
+    data_dir: string
+        Path to downloaded dataset
+
+    downloaded_files: list of string
+        Absolute paths of downloaded files on disk
+    """
+    url = 'https://osf.io/nh987/download'
+    main_folder = 'fMRI-language-localizer-demo-dataset'
+
+    data_dir = _get_dataset_dir(main_folder, data_dir=data_dir,
+                                verbose=verbose)
+    # The files_spec needed for _fetch_files
+    files_spec = [(main_folder + '.zip', url, {'move': main_folder + '.zip'})]
+    # Only download if directory is empty
+    # Directory will have been created by the call to _get_dataset_dir above
+    if not os.listdir(data_dir):
+        downloaded_files = _fetch_files(data_dir, files_spec, resume=True,
+                                        verbose=verbose)
+        _uncompress_file(downloaded_files[0])
+
+    file_list = [os.path.join(path, f) for
+                 path, dirs, files in os.walk(data_dir) for f in files]
+    return data_dir, sorted(file_list)
+
+# should be deprecated, even deleted, when the examples are adapted to use fetch_langloc_dataset
 def fetch_bids_langloc_dataset(data_dir=None, verbose=1):
     """Download language localizer example bids dataset.
 
@@ -178,6 +217,25 @@ def select_from_index(urls, inclusion_filters=[], exclusion_filters=[],
     return urls
 
 
+def patch_openneuro_dataset(file_list):
+    """Add symlinks for files not named according to latest BIDS conventions."""
+    rep = {'_T1w_brainmask': '_desc-brain_mask',
+           '_T1w_preproc': '_desc-preproc_T1w',
+           '_T1w_space-MNI152NLin2009cAsym_brainmask': '_space-MNI152NLin2009cAsym_desc-brain_mask',
+           '_T1w_space-MNI152NLin2009cAsym_class-': '_space-MNI152NLin2009cAsym_label-',
+           '_T1w_space-MNI152NLin2009cAsym_preproc': '_space-MNI152NLin2009cAsym_desc-preproc_T1w',
+           '_bold_confounds': '_desc-confounds_regressors',
+           '_bold_space-MNI152NLin2009cAsym_brainmask':'_space-MNI152NLin2009cAsym_desc-brain_mask',
+           '_bold_space-MNI152NLin2009cAsym_preproc':'_space-MNI152NLin2009cAsym_desc-preproc_bold'}
+    # Create a symlink if a file with the modified filename does not exist
+    for old in rep:
+        for name in file_list:
+            if old in name:
+                if not os.path.exists(name.replace(old, rep[old])):
+                    os.symlink(name, name.replace(old, rep[old]))
+                name = name.replace(old, rep[old])
+
+
 def fetch_openneuro_dataset(
         urls=None, data_dir=None, dataset_version='ds000030_R1.0.4',
         verbose=1):
@@ -243,7 +301,8 @@ def fetch_openneuro_dataset(
                 download_attempts -= 1
         if not success:
             raise Exception('multiple failures downloading %s' % file_spec[1])
-
+    patch_openneuro_dataset(downloaded)
+    
     return data_dir, sorted(downloaded)
 
 
@@ -297,18 +356,18 @@ def _download_spm_auditory_data(data_dir, subject_dir, subject_id):
 def _prepare_downloaded_spm_auditory_data(subject_dir):
     """ Uncompresses downloaded spm_auditory dataset and organizes
     the data into apprpriate directories.
-    
+
     Parameters
     ----------
     subject_dir: string
         Path to subject's data directory.
-        
+
     Returns
     -------
     _subject_data: skl.Bunch object
         Scikit-Learn Bunch object containing data of a single subject
          from the SPM Auditory dataset.
-    
+
     """
     subject_data = {}
     for file_name in SPM_AUDITORY_DATA_FILES:
@@ -344,8 +403,8 @@ def _prepare_downloaded_spm_auditory_data(subject_dir):
         nib.save(vol, _subject_data['anat'])
 
     return Bunch(**_subject_data)
-    
-    
+
+
 def _make_path_events_file_spm_auditory_data(spm_auditory_data):
     """
     Accepts data for spm_auditory dataset as Bunch
@@ -353,7 +412,7 @@ def _make_path_events_file_spm_auditory_data(spm_auditory_data):
     Parameters
     ----------
     spm_auditory_data: Bunch
-    
+
     Returns
     -------
     events_filepath: string
@@ -369,16 +428,16 @@ def _make_events_file_spm_auditory_data(events_filepath):
     """
     Accepts destination filepath including filename and
     creates the events.tsv file for the spm_auditory dataset.
-    
+
     Parameters
     ----------
     events_filepath: string
         The path where the events file will be created;
-    
+
     Returns
     -------
     None
-    
+
     """
     tr = 7.
     epoch_duration = 6 * tr  # duration in seconds
@@ -390,7 +449,7 @@ def _make_events_file_spm_auditory_data(events_filepath):
             {'onset': onset, 'duration': duration, 'trial_type': conditions})
     events.to_csv(events_filepath, sep='\t', index=False,
                        columns=['onset', 'duration', 'trial_type'])
-    
+
 
 def fetch_spm_auditory(data_dir=None, data_name='spm_auditory',
                        subject_id='sub001', verbose=1):
@@ -446,7 +505,7 @@ def _get_func_data_spm_multimodal(subject_dir, session, _subject_data):
         print('Missing %i functional scans for session %i.' % (
             390 - len(session_func), session))
         return None
-    
+
     _subject_data['func%i' % (session)] = session_func
     return _subject_data
 
@@ -458,7 +517,7 @@ def _get_session_trials_spm_multimodal(subject_dir, session, _subject_data):
     if not os.path.isfile(sess_trials):
         print('Missing session file: %s' % sess_trials)
         return None
-    
+
     _subject_data['trials_ses%i' % (session)] = sess_trials
     return _subject_data
 
@@ -468,7 +527,7 @@ def _get_anatomical_data_spm_multimodal(subject_dir, _subject_data):
     if not os.path.isfile(anat):
         print('Missing structural image.')
         return None
-    
+
     _subject_data['anat'] = anat
     return _subject_data
 
@@ -494,13 +553,13 @@ def _glob_spm_multimodal_fmri_data(subject_dir):
             events_filepath = _make_events_filepath_spm_multimodal_fmri(_subject_data, session)
             events.to_csv(events_filepath, sep='\t', index=False)
             _subject_data['events{}'.format(session)] = events_filepath
-        
+
 
     # glob for anat data
     _subject_data = _get_anatomical_data_spm_multimodal(subject_dir, _subject_data)
     if not _subject_data:
         return None
-    
+
     return Bunch(**_subject_data)
 
 

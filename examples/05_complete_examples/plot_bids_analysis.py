@@ -32,8 +32,8 @@ To run this example, you must launch IPython via ``ipython
 # subject folders only contain bold.json and events.tsv files, while the
 # derivatives folder with preprocessed files contain preproc.nii and
 # confounds.tsv files.
-from nistats.datasets import fetch_bids_langloc_dataset
-data_dir, _ = fetch_bids_langloc_dataset()
+from nistats.datasets import fetch_language_localizer_demo_dataset
+data_dir, _ = fetch_language_localizer_demo_dataset()
 
 ##############################################################################
 # Here is the location of the dataset on disk
@@ -50,11 +50,10 @@ print(data_dir)
 # and the task_label as specified in the file names.
 from nistats.first_level_model import first_level_models_from_bids
 task_label = 'languagelocalizer'
-space_label = 'MNI152nonlin2009aAsym'
 models, models_run_imgs, models_events, models_confounds = \
     first_level_models_from_bids(
-        data_dir, task_label, space_label,
-        img_filters=[('variant', 'smoothResamp')])
+        data_dir, task_label,
+        img_filters=[('desc', 'preproc')])
 
 #############################################################################
 # Quick sanity check on fit arguments
@@ -141,4 +140,3 @@ plotting.plot_glass_brain(zmap, colorbar=True, threshold=p001_unc,
                           title='Group language network (unc p<0.001)',
                           plot_abs=False, display_mode='x')
 plotting.show()
-

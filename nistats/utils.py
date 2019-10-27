@@ -45,7 +45,7 @@ def _read_events_table(table):
     ----------
     table: string
         Accepts the path to an events file
-    
+
     Returns
     -------
     loaded: pandas.Dataframe object
@@ -58,7 +58,7 @@ def _read_events_table(table):
         raise ValueError('table path %s could not be loaded' % table)
     if loaded.empty:
         try:
-            loaded = pd.read_table(table)
+            loaded = pd.read_csv(table, sep='\t')
         except:
             raise ValueError('table path %s could not be loaded' % table)
     return loaded
@@ -79,7 +79,7 @@ def _check_and_load_tables(tables_, var_name):
                             (var_name, type(table), table_idx))
     return tables
 
- 
+
 def _check_events_file_uses_tab_separators(events_files):
     """
     Raises a ValueError if provided list of text based data files
@@ -94,18 +94,18 @@ def _check_events_file_uses_tab_separators(events_files):
 
     Does not flag comma-separated-values-files for compatibility reasons;
     this may change in future as commas are not BIDS compliant.
-    
+
     parameters
     ----------
     events_files: str, List/Tuple[str]
         A single file's path or a collection of filepaths.
         Files are expected to be text files.
         Non-text files will raise ValueError.
-    
+
     Returns
     -------
     None
-    
+
     Raises
     ------
     ValueError:
@@ -363,8 +363,8 @@ def get_bids_files(main_path, file_tag='*', file_type='*', sub_label='*',
     filters: list of tuples (str, str), optional (default: [])
         Filters are of the form (field, label). Only one filter per field
         allowed. A file that does not match a filter will be discarded.
-        Filter examples would be (ses, 01), (variant, smooth) and
-        (task, localizer).
+        Filter examples would be ('ses', '01'), ('dir', 'ap') and
+        ('task', 'localizer').
 
     sub_folder: boolean, optional (default: True)
         Determines if the files searched are at the level of
