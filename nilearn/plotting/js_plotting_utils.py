@@ -87,6 +87,7 @@ def colorscale(cmap, values, threshold=None, symmetric_cmap=True,
         vmin = 0
     if vmax is None:
         vmax = abs_values.max()
+    # cast to float to avoid TypeError if vmax is a numpy boolean
     vmax = float(vmax)
     if symmetric_cmap:
         vmin = - vmax
