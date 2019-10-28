@@ -1,6 +1,12 @@
 0.6.0b
 ======
 
+Changes
+-------
+
+- :func:`nilearn.datasets.fetch_neurovault` now does not filter out images that
+  have their metadata field `is_valid` cleared by default.
+
 Fixes
 -----
 
