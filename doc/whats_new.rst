@@ -1,5 +1,5 @@
-0.6.0
-=====
+0.6.0b
+======
 
 NEW
 ---
@@ -19,8 +19,20 @@ Changes
 - All functions and examples now use `nilearn.image.get_data` rather than the
   deprecated method `nibabel.Nifti1Image.get_data`.
 
-0.6.0a
-======
+- :func:`nilearn.datasets.fetch_neurovault` now does not filter out images that
+  have their metadata field `is_valid` cleared by default.
+
+Fixes
+-----
+
+- :func:`nilearn.plotting.plot_connectome` now correctly displays marker size on 'l'
+  and 'r' orientations, if an array or a list is passed to the function.
+
+
+0.6.0a0
+=======
+
+**Released October 2019**
 
 NEW
 ---
@@ -44,7 +56,9 @@ NEW
   Yields very fast & accurate models, without creation of giant
   clusters.
   :class:`nilearn.regions.ReNA`
-
+- Plot connectome strength
+  Use :func:`nilearn.plotting.plot_connectome_strength` to plot the strength of a
+  connectome on a glass brain.  Strength is absolute sum of the edges at a node.
 - Optimization to image resampling
   :func:`nilearn.image.resample_img` has been optimized to pad rather than
   resample images in the special case when there is only a translation
@@ -59,7 +73,17 @@ NEW
   functional connectivity. Similar example in
   `examples/03_connectivity/plot_group_level_connectivity.py` simplified.
 
-- the Localizer dataset now follows the BIDS organization.
+- Merged `examples/03_connectivity/plot_adhd_spheres.py` and
+  `examples/03_connectivity/plot_sphere_based_connectome.py` to remove
+  duplication across examples. The improved
+  `examples/03_connectivity/plot_sphere_based_connectome.py` contains
+  concepts previously reviewed in both examples.
+- Merged `examples/03_connectivity/plot_compare_decomposition.py`
+  and `examples/03_connectivity/plot_canica_analysis.py` into an improved
+  `examples/03_connectivity/plot_compare_decomposition.py`.
+
+- The Localizer dataset now follows the BIDS organization.
+
 
 Changes
 -------
@@ -86,6 +110,10 @@ Changes
 - :func:`nilearn.plotting.view_connectome` now converts NaNs in the adjacency
   matrix to 0.
 
+- Removed the plotting connectomes example which used the Seitzman atlas
+  from `examples/03_connectivity/plot_sphere_based_connectome.py`.
+  The atlas data is unsuitable for the method & the example is redundant.
+
 Fixes
 -----
 
@@ -111,7 +139,43 @@ Fixes
   version 0.14.3 (instead of 0.8.1) by default, which includes corrected region label
   names along with 700 and 900 region parcelations.
 - Colormap creation functions have been updated to avoid matplotlib deprecation warnings
-  about colormap reversal
+  about colormap reversal.
+- Neurovault fetcher no longer fails if unable to update dataset metadata file due to faulty permissions.
+
+Contributors
+------------
+
+The following people contributed to this release (in alphabetical order)::
+
+	Alexandre Abraham
+	Alexandre Gramfort
+	Ana Luisa
+	Ana Luisa Pinho
+	Andrés Hoyos Idrobo
+	Antoine Grigis
+	BAZEILLE Thomas
+	Bertrand Thirion
+	Colin Reininger
+	Céline Delettre
+	Dan Gale
+	Daniel Gomez
+	Elizabeth DuPre
+	Eric Larson
+	Franz Liem
+	Gael Varoquaux
+	Gilles de Hollander
+	Greg Kiar
+	Guillaume Lemaitre
+	Ian Abenes
+	Jake Vogel
+	Jerome Dockes
+	Jerome-Alexis Chevalier
+	Julia Huntenburg
+	Kamalakar Daddy
+	Kshitij Chawla (kchawla-pi)
+	Mehdi Rahim
+	Moritz Boos
+	Sylvain Takerkart
 
 0.5.2
 =====
