@@ -12,6 +12,8 @@ Fixes
 
 - :func:`nilearn.plotting.plot_connectome` now correctly displays marker size on 'l'
   and 'r' orientations, if an array or a list is passed to the function.
+- :func:`nilearn.plotting.js_plotting_utils.colorscale` no longer raises
+  an error when `vmax` is a numpy boolean.
 
 
 0.6.0a0
