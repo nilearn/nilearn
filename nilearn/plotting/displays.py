@@ -29,6 +29,7 @@ from .. import _utils
 from ..image import new_img_like
 from ..image.resampling import (get_bounds, reorder_img, coord_transform,
                                 get_mask_bounds)
+from nilearn.image import get_data
 
 
 ###############################################################################
@@ -892,7 +893,7 @@ class BaseSlicer(object):
             The color used to display the edge map
         """
         img = reorder_img(img, resample='continuous')
-        data = img.get_data()
+        data = get_data(img)
         affine = img.affine
         single_color_cmap = colors.ListedColormap([color])
         data_bounds = get_bounds(data.shape, img.affine)

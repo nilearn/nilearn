@@ -23,6 +23,7 @@ from nilearn.decoding.space_net_solvers import (
     tvl1_solver)
 from nilearn.decoding.space_net import (BaseSpaceNet, SpaceNetClassifier,
                                         SpaceNetRegressor)
+from nilearn.image import get_data
 
 
 def _make_data(rng=None, masked=False, dim=(2, 2, 2)):
@@ -147,7 +148,7 @@ def test_graph_net_and_tvl1_same_for_pure_l1_logistic(max_iter=20,
     y = y > 0.
     alpha = 1. / X.shape[0]
     X_, mask_ = to_niimgs(X, (2, 2, 2))
-    mask = mask_.get_data().astype(np.bool).ravel()
+    mask = get_data(mask_).astype(np.bool).ravel()
 
     # results should be exactly the same for pure lasso
     a = _graph_net_logistic(X, y, alpha, 1., mask=mask,

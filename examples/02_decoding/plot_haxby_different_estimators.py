@@ -12,6 +12,7 @@ decoding task.
 
 # Fetch data using nilearn dataset fetcher
 from nilearn import datasets
+from nilearn.image import get_data
 # by default 2nd subject data will be fetched
 haxby_dataset = datasets.fetch_haxby()
 
@@ -193,7 +194,7 @@ for classifier_name, classifier in sorted(classifiers.items()):
     else:
         continue
     weight_img = masker.inverse_transform(weights)
-    weight_map = weight_img.get_data()
+    weight_map = get_data(weight_img)
     threshold = np.max(np.abs(weight_map)) * 1e-3
     plot_stat_map(weight_img, bg_img=mean_epi_img,
                   display_mode='z', cut_coords=[-15],

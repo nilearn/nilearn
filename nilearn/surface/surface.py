@@ -25,6 +25,7 @@ from ..image import resampling
 from .._utils.compat import _basestring
 from .._utils.path_finding import _resolve_globbing
 from .. import _utils
+from nilearn.image import get_data
 
 
 def _uniform_ball_cloud(n_points=20, dim=3, n_monte_carlo=50000):
@@ -499,13 +500,13 @@ def vol_to_surf(img, surf_mesh,
     img = load_img(img)
     if mask_img is not None:
         mask_img = _utils.check_niimg(mask_img)
-        mask = resampling.resample_to_img(
-            mask_img, img, interpolation='nearest', copy=False).get_data()
+        mask = get_data(resampling.resample_to_img(
+            mask_img, img, interpolation='nearest', copy=False))
     else:
         mask = None
     original_dimension = len(img.shape)
     img = _utils.check_niimg(img, atleast_4d=True)
-    frames = np.rollaxis(img.get_data(), -1)
+    frames = np.rollaxis(get_data(img), -1)
     mesh = load_surf_mesh(surf_mesh)
     sampling = sampling_schemes[interpolation]
     texture = sampling(
@@ -583,7 +584,7 @@ def load_surf_data(surf_data):
             surf_data = file_list[f]
             if (surf_data.endswith('nii') or surf_data.endswith('nii.gz') or
                     surf_data.endswith('mgz')):
-                data_part = np.squeeze(nibabel.load(surf_data).get_data())
+                data_part = np.squeeze(get_data(nibabel.load(surf_data)))
             elif (surf_data.endswith('curv') or surf_data.endswith('sulc') or
                     surf_data.endswith('thickness')):
                 data_part = fs.io.read_morph_data(surf_data)

@@ -6,7 +6,7 @@ from nilearn._utils.testing import (assert_less_equal, assert_raises_regex,
                                     write_tmp_imgs)
 from nilearn.decomposition.dict_learning import DictLearning
 from nilearn.decomposition.tests.test_canica import _make_canica_test_data
-from nilearn.image import iter_img
+from nilearn.image import iter_img, get_data
 from nilearn.input_data import NiftiMasker
 from nilearn.decomposition.tests.test_multi_pca import _tmp_dir
 
@@ -14,7 +14,7 @@ from nilearn.decomposition.tests.test_multi_pca import _tmp_dir
 def test_dict_learning():
     data, mask_img, components, rng = _make_canica_test_data(n_subjects=8)
     masker = NiftiMasker(mask_img=mask_img).fit()
-    mask = mask_img.get_data() != 0
+    mask = get_data(mask_img) != 0
     flat_mask = mask.ravel()
     dict_init = masker.inverse_transform(components[:, flat_mask])
     dict_learning = DictLearning(n_components=4, random_state=0,
@@ -30,7 +30,7 @@ def test_dict_learning():
     for estimator in [dict_learning,
                       dict_learning_auto_init]:
         estimator.fit(data)
-        maps[estimator] = estimator.components_img_.get_data()
+        maps[estimator] = get_data(estimator.components_img_)
         maps[estimator] = np.reshape(
                         np.rollaxis(maps[estimator], 3, 0)[:, mask],
                         (4, flat_mask.sum()))
@@ -74,7 +74,7 @@ def test_component_sign():
                                  smoothing_fwhm=0., alpha=1)
     dict_learning.fit(data)
     for mp in iter_img(dict_learning.components_img_):
-        mp = mp.get_data()
+        mp = get_data(mp)
         assert_less_equal(np.sum(mp[mp <= 0]), np.sum(mp[mp > 0]))
 
 

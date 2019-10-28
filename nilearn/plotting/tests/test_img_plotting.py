@@ -15,6 +15,7 @@ from scipy import sparse
 
 from nilearn._utils.testing import assert_raises_regex
 from nilearn.image.resampling import coord_transform
+from nilearn.image import get_data
 from nilearn.datasets import load_mni152_template
 from nilearn.plotting.find_cuts import find_cut_slices
 from nilearn.plotting.img_plotting import (MNI152TEMPLATE, plot_anat, plot_img,
@@ -147,7 +148,7 @@ def test_plot_stat_map():
 
     # Smoke test coordinate finder, with and without mask
     masked_img = nibabel.Nifti1Image(
-        np.ma.masked_equal(img.get_data(), 0),
+        np.ma.masked_equal(get_data(img), 0),
         mni_affine)
     plot_stat_map(masked_img, display_mode='x')
     plot_stat_map(img, display_mode='y', cut_coords=2)
@@ -293,7 +294,7 @@ def test_plot_with_axes_or_figure():
 def test_plot_stat_map_colorbar_variations():
     # This is only a smoke test
     img_positive = _generate_img()
-    data_positive = img_positive.get_data()
+    data_positive = get_data(img_positive)
     rng = np.random.RandomState(42)
     data_negative = -data_positive
     data_heterogeneous = data_positive * rng.randn(*data_positive.shape)
@@ -343,7 +344,7 @@ def test_plot_img_with_auto_cut_coords():
 
 
 def test_plot_img_with_resampling():
-    data = _generate_img().get_data()
+    data = get_data(_generate_img())
     affine = np.array([[1., -1.,  0.,  0.],
                        [1.,  1.,  0.,  0.],
                        [0.,  0.,  1.,  0.],
@@ -1042,7 +1043,7 @@ def test_outlier_cut_coords():
 
 def test_plot_stat_map_with_nans():
     img = _generate_img()
-    data = img.get_data()
+    data = get_data(img)
 
     data[6, 5, 1] = np.nan
     data[1, 5, 2] = np.nan
@@ -1071,7 +1072,7 @@ def test_plotting_functions_with_cmaps():
 
 def test_plotting_functions_with_nans_in_bg_img():
     bg_img = _generate_img()
-    bg_data = bg_img.get_data()
+    bg_data = get_data(bg_img)
 
     bg_data[6, 5, 1] = np.nan
     bg_data[1, 5, 2] = np.nan
@@ -1122,7 +1123,7 @@ def test_display_methods_with_display_mode_tiled():
 
 def test_plot_glass_brain_colorbar_having_nans():
     img = _generate_img()
-    data = img.get_data()
+    data = get_data(img)
 
     data[6, 5, 2] = np.inf
     img = nibabel.Nifti1Image(data, np.eye(4))
