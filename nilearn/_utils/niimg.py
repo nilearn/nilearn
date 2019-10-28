@@ -14,7 +14,7 @@ import nibabel
 from .compat import _basestring
 
 
-def get_data(img):
+def _get_data(img):
     # copy-pasted from https://github.com/nipy/nibabel/blob/de44a105c1267b07ef9e28f6c35b31f851d5a005/nibabel/dataobj_images.py#L204
     # get_data is removed from nibabel because:
     # see https://github.com/nipy/nibabel/wiki/BIAP8
@@ -51,7 +51,7 @@ def _safe_get_data(img, ensure_finite=False):
     # that's why we invoke a forced call to the garbage collector
     gc.collect()
 
-    data = get_data(img)
+    data = _get_data(img)
     if ensure_finite:
         non_finite_mask = np.logical_not(np.isfinite(data))
         if non_finite_mask.sum() > 0: # any non_finite_mask values?
@@ -124,16 +124,16 @@ def load_niimg(niimg, dtype=None):
                         " not compatible with nibabel format:\n"
                         + short_repr(niimg))
 
-    dtype = _get_target_dtype(get_data(niimg).dtype, dtype)
+    dtype = _get_target_dtype(_get_data(niimg).dtype, dtype)
 
     if dtype is not None:
         # Copyheader and set dtype in header if header exists
         if niimg.header is not None:
-            niimg = new_img_like(niimg, get_data(niimg).astype(dtype),
+            niimg = new_img_like(niimg, _get_data(niimg).astype(dtype),
                                 niimg.affine, copy_header=True)
             niimg.header.set_data_dtype(dtype)        
         else:
-            niimg = new_img_like(niimg, get_data(niimg).astype(dtype),
+            niimg = new_img_like(niimg, _get_data(niimg).astype(dtype),
                                 niimg.affine)
 
     return niimg

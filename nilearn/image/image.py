@@ -20,9 +20,28 @@ from .. import signal
 from .._utils import (check_niimg_4d, check_niimg_3d, check_niimg, as_ndarray,
                       _repr_niimgs)
 from .._utils.niimg_conversions import _index_img, _check_same_fov
-from .._utils.niimg import _safe_get_data, get_data
+from .._utils.niimg import _safe_get_data, _get_data
 from .._utils.compat import _basestring
 from .._utils.param_validation import check_threshold
+
+
+def get_data(img):
+    """Get the image data as a numpy array.
+
+    Parameters
+    ----------
+    img: Niimg-like object or iterable of Niimg-like objects
+        See http://nilearn.github.io/manipulating_images/input_output.html
+
+    Returns
+    -------
+    3-d or 4-d numpy array depending on the shape of `img`. This function
+    preserves the type of the image data. If `img` is an in-memory Nifti image
+    it returns the image data array itself -- not a copy.
+
+    """
+    img = check_niimg(img)
+    return _get_data(img)
 
 
 def high_variance_confounds(imgs, n_confounds=5, percentile=2.,
@@ -665,9 +684,11 @@ def new_img_like(ref_niimg, data, affine=None, copy_header=False):
     orig_ref_niimg = ref_niimg
     if (not isinstance(ref_niimg, _basestring)
             and not hasattr(ref_niimg, 'get_data')
+            and not hasattr(ref_niimg, 'get_fdata')
             and hasattr(ref_niimg, '__iter__')):
         ref_niimg = ref_niimg[0]
-    if not (hasattr(ref_niimg, 'get_data')
+    if not ((hasattr(ref_niimg, 'get_data')
+             or hasattr(ref_niimg, 'get_fdata'))
               and hasattr(ref_niimg, 'affine')):
         if isinstance(ref_niimg, _basestring):
             ref_niimg = nibabel.load(ref_niimg)
