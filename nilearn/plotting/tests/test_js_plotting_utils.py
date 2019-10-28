@@ -11,7 +11,8 @@ from nilearn.plotting import js_plotting_utils
 from nilearn import surface
 from nilearn.datasets import fetch_surf_fsaverage
 
-from numpy.testing import assert_warns
+from numpy.testing import assert_warns, assert_equal
+
 try:
     from lxml import etree
     LXML_INSTALLED = True
@@ -218,7 +219,10 @@ def check_html(html, check_selects=True, plot_div_id='surface-plot'):
         html.save_as_html(tmpfile)
         with open(tmpfile) as f:
             saved = f.read()
-        assert saved == html.get_standalone()
+        # If present, replace Windows line-end '\r\n' with Unix's '\n'
+        saved = saved.replace('\r\n', '\n')
+        standalone = html.get_standalone().replace('\r\n', '\n')
+        assert_equal(saved, standalone)
     finally:
         os.remove(tmpfile)
     assert "INSERT" not in html.html

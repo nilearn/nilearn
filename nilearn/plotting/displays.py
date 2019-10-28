@@ -403,7 +403,7 @@ class GlassBrainAxes(BaseAxes):
                 if self.direction == 'r' and xc >= 0:
                     relevant_coords.append(cidx)
                 elif self.direction == 'l' and xc <= 0:
-                        relevant_coords.append(cidx)
+                    relevant_coords.append(cidx)
             xdata = xdata[relevant_coords]
             ydata = ydata[relevant_coords]
             # if marker_color is string for example 'red' or 'blue', then
@@ -414,6 +414,9 @@ class GlassBrainAxes(BaseAxes):
             if not isinstance(marker_color, _utils.compat._basestring) and \
                     len(marker_color) != 1:
                 marker_color = marker_color[relevant_coords]
+
+            if not isinstance(marker_size, numbers.Number):
+                marker_size = np.asarray(marker_size)[relevant_coords]
 
         defaults = {'marker': 'o',
                     'zorder': 1000}
