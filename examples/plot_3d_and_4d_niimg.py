@@ -86,15 +86,19 @@ for img in image.iter_img(rsn):
 # ---------------------------------------------
 #
 # If we want to plot selected volumes in this 4D file, we can use index_img
-# with the slice() constructor to select the desired volumes. 
+# with the `slice` constructor to select the desired volumes. 
 # 
 # Afterwards, we'll use iter_img to loop through them following the same 
 # formula as before.
 selected_volumes = image.index_img(rsn, slice(3, 5))
 
+###############################################################################
+# If you're new to Python, one thing to note is that the slice constructor
+# uses 0-based indexing. This is standard in Python, but it may be unfamilar
+# if you're transitioning from another programming language.
+
 for img in image.iter_img(selected_volumes):
-    plotting.plot_stat_map(img, threshold=3, display_mode="z", cut_coords=1,
-                           colorbar=False)
+    plotting.plot_stat_map(img)
 
 
 ###############################################################################
