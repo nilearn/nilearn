@@ -28,6 +28,20 @@ Fixes
 Contributors
 ------------
 
+The following people contributed to this release (in alphabetical order)
+
+	Ana Luisa Pinho
+	Anthony Gifuni
+	Bertrand Thirion
+	Christopher J. Markiewicz
+	Christophe Pallier
+	Gael Varoquaux
+	Jerome Dockes
+	Jerome-Alexis Chevalier
+	Jessica Thompson
+	Kshitij Chawla (kchawla-pi)
+	Takis Panagopoulos
+	Tuan Binh Nguyen
 
 0.0.1b
 =======
