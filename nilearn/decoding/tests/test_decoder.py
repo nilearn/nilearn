@@ -150,9 +150,6 @@ def test_parallel_fit():
     for a, b in zip(outputs[0], outputs[1]):
         if isinstance(a, np.ndarray):
             np.testing.assert_array_almost_equal(a, b)
-        elif isinstance(a, dict) and 'y_prob' in a.keys():
-            np.testing.assert_array_almost_equal(a['y_prob'], b['y_prob'])
-            assert_equal(a['y_true_indices'], b['y_true_indices'])
         else:
             assert_equal(a, b)
 
@@ -251,19 +248,10 @@ def test_decoder_regression():
             assert_true(r2_score(y, y_pred) > 0.95)
 
 
-def test_decoder_check_scorer():
-    X, y = make_classification(n_samples=200, n_features=125, scale=3.0,
-                               n_informative=5, n_classes=4, random_state=42)
-    model = Decoder()
-    model._check_estimator()
-    scorer = model._get_scorer(X, y, groups=None)
-
-    # check the scorer type to be correct
-    assert_equal(type(scorer), sklearn.metrics.scorer._ThresholdScorer)
-
 def test_decoder_apply_mask():
-    X_init, y = make_classification(n_samples=200, n_features=125, scale=3.0,
-                               n_informative=5, n_classes=4, random_state=42)
+    X_init, y = make_classification(
+        n_samples=200, n_features=125, scale=3.0,
+        n_informative=5, n_classes=4, random_state=42)
     X, _ = to_niimgs(X_init, [5, 5, 5])
     model = Decoder(mask=NiftiMasker())
     X_masked = model._apply_mask(X)

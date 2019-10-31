@@ -115,19 +115,6 @@ print("explained variance for the cross-validation: %f" % prediction_score)
 print("")
 
 ######################################################################
-# One can also use other scores to measure the performance of the decoder
-from sklearn.metrics.scorer import mean_absolute_error
-cv_y_pred = decoder.cv_y_pred_
-cv_y_true = decoder.cv_y_true_
-
-prediction_score = mean_absolute_error(cv_y_true, cv_y_pred)
-
-print("=== DECODER ===")
-print("cross-validation score: %f years (mean absolute error)" %
-      prediction_score)
-print("")
-
-######################################################################
 # Visualization
 # --------------
 weight_img = decoder.coef_img_['beta']

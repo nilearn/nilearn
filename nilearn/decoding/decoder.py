@@ -150,41 +150,23 @@ def _parallel_fit(estimator, X, y, train, test, param_grid, is_classif, scorer,
         estimator.fit(X_train, y_train)
 
         if is_classif:
-            if hasattr(estimator, 'predict_proba'):
-                y_prob = estimator.predict_proba(X_test)
-                y_prob = y_prob[:, 1]
-                neg_prob = 1 - y_prob  # the complement of the probability
-            else:
-                decision = estimator.decision_function(X_test)
-                if decision.ndim == 2:
-                    y_prob = decision[:, 1]
-                    neg_prob = np.abs(decision[:, 0])
-                else:
-                    y_prob = decision
-                    neg_prob = -decision  # negative decision function
             score = scorer(estimator, X_test, y_test)
             if np.all(estimator.coef_ == 0):
                 score = 0
         else:  # regression
-            y_prob = estimator.predict(X_test)
             score = scorer(estimator, X_test, y_test)
 
+        # Store best parameters and estimator coefficients
         if (best_score is None) or (score >= best_score):
             best_score = score
             best_coef = estimator.coef_
             best_intercept = estimator.intercept_
-            best_y = {}
-            best_y['y_prob'] = y_prob
-            best_y['y_true_indices'] = test
             best_param = param
-            if is_classif:
-                best_y['inverse'] = neg_prob
 
     if (selector is not None) and do_screening:
         best_coef = selector.inverse_transform(best_coef)
 
-    return (class_index, best_coef, best_intercept, best_y, best_param,
-            best_score)
+    return class_index, best_coef, best_intercept, best_param, best_score
 
 
 class _BaseDecoder(LinearModel, RegressorMixin, CacheMixin):
@@ -392,18 +374,9 @@ class _BaseDecoder(LinearModel, RegressorMixin, CacheMixin):
             and `coef_` transformed in Nifti1Image as values. In the case
             of a regression, it contains a single Nifti1Image at the key 'beta'.
 
-        `cv_y_true_`: numpy.ndarray, shape=(n_samples * n_folds, n_classes)
-            Ground truth labels for left out samples in inner cross-validation.
-
-        `cv_y_pred_`: numpy.ndarray, shape=(n_samples * n_folds, n_classes)
-            Predicted labels for left out samples in inner cross-validation.
-
         `cv_params_`: dict of lists
             Best point in the parameter grid for each tested fold
             in the inner cross validation loop.
-
-        `cv_indices_`: numpy.ndarray, shape=(n_samples * n_folds)
-            Indices of the inner cross-validation folds.
 
         `cv_scores_`: dict, (classes, n_folds)
             Scores (misclassification) for each parameter, and on each fold
@@ -414,7 +387,11 @@ class _BaseDecoder(LinearModel, RegressorMixin, CacheMixin):
         X = self._apply_mask(X, standardize=self.standardize)
         X, y = check_X_y(X, y, dtype=np.float, multi_output=True)
 
-        scorer = self._get_scorer(X, y, groups)
+        # Setup scorer
+        scorer = check_scoring(self.estimator, self.scoring)
+        self.cv_ = list(check_cv(
+            self.cv, y=y, classifier=self.is_classif).split(X, y,
+                                                            groups=groups))
 
         # Define the number problems to solve. In case of classification this
         # number corresponds to the number of binary problems to solve
@@ -533,15 +510,6 @@ class _BaseDecoder(LinearModel, RegressorMixin, CacheMixin):
                              list(SUPPORTED_ESTIMATORS.keys()))
             )
 
-    def _get_scorer(self, X, y, groups):
-        # Setup scorer
-        scorer = check_scoring(self.estimator, self.scoring)
-        self.cv_ = list(check_cv(
-            self.cv, y=y, classifier=self.is_classif).split(X, y,
-                                                            groups=groups))
-
-        return scorer
-
     def _apply_mask(self, X, standardize=False):
         # Nifti masking
         self.masker_ = check_embedded_nifti_masker(self, multi_subject=False)
@@ -576,23 +544,16 @@ class _BaseDecoder(LinearModel, RegressorMixin, CacheMixin):
 
         coefs = {}
         intercepts = {}
-        cv_y_prob = {}
-        cv_y_true = {}
-        cv_indices = {}
         cv_scores = {}
         self.cv_params_ = {}
         classes = self.classes_
 
-        for i, (class_index, coef, intercept,
-                y_info, params, scores) in enumerate(parallel_fit_outputs):
+        for i, (class_index, coef, intercept, params, 
+                scores) in enumerate(parallel_fit_outputs):
 
             coefs.setdefault(classes[class_index], []).append(coef)
             intercepts.setdefault(classes[class_index], []).append(intercept)
 
-            cv_y_prob.setdefault(
-                classes[class_index], []).append(y_info['y_prob'])
-            cv_indices.setdefault(classes[class_index], []).extend(
-                [i] * len(y_info['y_prob']))
             cv_scores.setdefault(classes[class_index], []).append(scores)
 
             self.cv_params_.setdefault(classes[class_index], {})
@@ -600,41 +561,15 @@ class _BaseDecoder(LinearModel, RegressorMixin, CacheMixin):
                 self.cv_params_[classes[class_index]].setdefault(
                     k, []).append(params[k])
 
-            if self.is_classif:
-                cv_y_true.setdefault(classes[class_index], []).extend(
-                    self._enc.inverse_transform(y[y_info['y_true_indices']]))
-            else:
-                cv_y_true.setdefault(classes[class_index], []).extend(
-                    y[y_info['y_true_indices']])
-
             if (n_problems <= 2) and self.is_classif:
                 # Binary classification
                 other_class = np.setdiff1d(classes, classes[class_index])[0]
                 coefs.setdefault(other_class, []).append(-coef)
                 intercepts.setdefault(other_class, []).append(-intercept)
-                cv_y_prob.setdefault(other_class, []).append(y_info['inverse'])
-                # misc
-                cv_scores.setdefault(other_class, []).append(scores)
-                cv_y_true.setdefault(other_class, []).extend(
-                    self._enc.inverse_transform(y[y_info['y_true_indices']]))
                 self.cv_params_[other_class] = self.cv_params_[
                     classes[class_index]]
 
         self.cv_scores_ = cv_scores
-        self.cv_y_true_ = np.array(cv_y_true[list(cv_y_true.keys())[0]])
-        self.cv_indices_ = np.array(cv_indices[list(cv_indices.keys())[0]])
-        self.cv_y_prob_ = np.vstack(
-            [np.hstack(cv_y_prob[c]) for c in classes]).T
-
-        if self.is_classif:
-            if self.n_classes_ == 2:
-                self.cv_y_prob_ = self.cv_y_prob_[0, :]
-                indices = (self.cv_y_prob_ > 0).astype(np.int)
-            else:
-                indices = np.argmax(self.cv_y_prob_, axis=1)
-            self.cv_y_pred_ = classes[indices]
-        else:
-            self.cv_y_pred_ = self.cv_y_prob_
 
         return coefs, intercepts
 
