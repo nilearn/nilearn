@@ -16,7 +16,7 @@ from sklearn.datasets.base import Bunch
 from .utils import _get_dataset_dir, _fetch_files, _get_dataset_descr
 from .._utils import check_niimg
 from .._utils.compat import _basestring
-from ..image import new_img_like
+from ..image import new_img_like, get_data
 
 _TALAIRACH_LEVELS = ['hemisphere', 'lobe', 'gyrus', 'tissue', 'ba']
 
@@ -264,7 +264,7 @@ def fetch_atlas_harvard_oxford(atlas_name, data_dir=None,
     if lateralized:
         return Bunch(maps=atlas_img, labels=names)
 
-    atlas = atlas_img.get_data()
+    atlas = get_data(atlas_img)
 
     labels = np.unique(atlas)
     # Build a mask of both halves of the brain
@@ -1080,7 +1080,7 @@ def _separate_talairach_levels(atlas_img, labels, verbose=1):
         level_labels = {'*': 0}
         for region_nb, region in enumerate(labels[:, pos]):
             level_labels.setdefault(region, len(level_labels))
-            level_img[atlas_img.get_data() == region_nb] = level_labels[
+            level_img[get_data(atlas_img) == region_nb] = level_labels[
                 region]
         # shift this level to its own octet and add it to the new image
         level_img <<= 8 * pos
@@ -1185,7 +1185,7 @@ def fetch_atlas_talairach(level_name, data_dir=None, verbose=1):
     atlas_img = check_niimg(atlas_file)
     with open(labels_file) as fp:
         labels = json.load(fp)[position][1]
-    level_data = (atlas_img.get_data() >> 8 * position) & 255
+    level_data = (get_data(atlas_img) >> 8 * position) & 255
     atlas_img = new_img_like(atlas_img, data=level_data)
     description = _get_dataset_descr(
         'talairach_atlas').decode('utf-8').format(level_name)
@@ -1275,7 +1275,7 @@ def fetch_atlas_schaefer_2018(n_rois=400, yeo_networks=7, resolution_mm=1,
     ----------
     n_rois: int
         number of regions of interest {100, 200, 300, 400 (default), 500, 600,
-        800, 1000}
+        700, 800, 900, 1000}
 
     yeo_networks: int
         ROI annotation according to yeo networks {7 (default), 17}
@@ -1307,7 +1307,7 @@ def fetch_atlas_schaefer_2018(n_rois=400, yeo_networks=7, resolution_mm=1,
     References
     ----------
     For more information on this dataset, see
-    https://github.com/ThomasYeoLab/CBIG/tree/v0.8.1-Schaefer2018_LocalGlobal/stable_projects/brain_parcellation/Schaefer2018_LocalGlobal
+    https://github.com/ThomasYeoLab/CBIG/tree/v0.14.3-Update_Yeo2011_Schaefer2018_labelname/stable_projects/brain_parcellation/Schaefer2018_LocalGlobal/Parcellations
 
     Schaefer A, Kong R, Gordon EM, Laumann TO, Zuo XN, Holmes AJ,
     Eickhoff SB, Yeo BTT. Local-Global parcellation of the human
@@ -1320,8 +1320,15 @@ def fetch_atlas_schaefer_2018(n_rois=400, yeo_networks=7, resolution_mm=1,
     intrinsic functional connectivity. J Neurophysiol 106(3):1125-65, 2011.
 
     Licence: MIT.
+
+    Notes
+    -----
+    Release v0.14.3 of the Schaefer 2018 parcellation is used by
+    default. Versions prior to v0.14.3 are known to contain erroneous region
+    label names. For more details, see
+    https://github.com/ThomasYeoLab/CBIG/blob/master/stable_projects/brain_parcellation/Schaefer2018_LocalGlobal/Parcellations/Updates/Update_20190916_README.md
     """
-    valid_n_rois = [100, 200, 300, 400, 500, 600, 800, 1000]
+    valid_n_rois = list(range(100, 1100, 100))
     valid_yeo_networks = [7, 17]
     valid_resolution_mm = [1, 2]
     if n_rois not in valid_n_rois:
@@ -1338,9 +1345,9 @@ def fetch_atlas_schaefer_2018(n_rois=400, yeo_networks=7, resolution_mm=1,
 
     if base_url is None:
         base_url = ('https://raw.githubusercontent.com/ThomasYeoLab/CBIG/'
-                    'v0.8.1-Schaefer2018_LocalGlobal/stable_projects/'
-                    'brain_parcellation/Schaefer2018_LocalGlobal/'
-                    'Parcellations/MNI/'
+                    'v0.14.3-Update_Yeo2011_Schaefer2018_labelname/'
+                    'stable_projects/brain_parcellation/'
+                    'Schaefer2018_LocalGlobal/Parcellations/MNI/'
                     )
 
     files = []

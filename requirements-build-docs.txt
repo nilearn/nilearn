@@ -10,11 +10,8 @@ sphinx
 sphinx-gallery
 numpydoc
 coverage
-patsy
-boto3
 pillow
 pandas
-nose-timer
 nibabel
 scikit-learn
 joblib

@@ -16,6 +16,7 @@ from sklearn.base import BaseEstimator
 from sklearn.utils.validation import check_is_fitted
 from sklearn.utils import check_array
 from nilearn.masking import _unmask_from_to_3d_array
+from nilearn.image import get_data
 from nibabel import Nifti1Image
 
 
@@ -41,7 +42,7 @@ def _compute_weights(X, mask_img):
 
     n_samples, n_features = X.shape
 
-    mask = mask_img.get_data().astype('bool')
+    mask = get_data(mask_img).astype('bool')
     shape = mask.shape
 
     data = np.empty((shape[0], shape[1], shape[2], n_samples))
@@ -117,7 +118,7 @@ def _make_edges_and_weights(X, mask_img):
         Weights corresponding to all edges in the mask.
         shape: (n_edges,)
     """
-    mask = mask_img.get_data()
+    mask = get_data(mask_img)
     shape = mask.shape
     n_vertices = np.prod(shape)
 

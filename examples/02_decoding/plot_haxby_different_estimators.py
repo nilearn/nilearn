@@ -12,6 +12,7 @@ decoding task.
 
 # We start by loading data using nilearn dataset fetcher
 from nilearn import datasets
+from nilearn.image import get_data
 # by default 2nd subject data will be fetched
 haxby_dataset = datasets.fetch_haxby()
 
@@ -148,7 +149,7 @@ from nilearn.plotting import plot_stat_map, show
 
 for classifier_name in sorted(classifiers):
     coef_img = classifiers_data[classifier_name]['map']
-    threshold = np.max(np.abs(coef_img.get_data())) * 1e-3
+    threshold = np.max(np.abs(get_data(coef_img))) * 1e-3
     plot_stat_map(
         coef_img, bg_img=mean_epi_img, display_mode='z', cut_coords=[-15],
         threshold=threshold,

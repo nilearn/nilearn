@@ -46,6 +46,8 @@ bounding box shape).
 
 # Create the data with numpy
 import numpy as np
+from nilearn.image import get_data
+
 grid = np.mgrid[0:192, 0:128]
 circle = np.sum(
     (grid - np.array([32, 32])[:, np.newaxis, np.newaxis]) ** 2,
@@ -111,17 +113,17 @@ plt.imshow(image, interpolation="nearest", vmin=0, vmax=vmax)
 plt.title("The original data in voxel space")
 
 plt.figure()
-plt.imshow(img_in_mm_space.get_data()[:, :, 0], vmin=0, vmax=vmax)
+plt.imshow(get_data(img_in_mm_space)[:, :, 0], vmin=0, vmax=vmax)
 plt.title("The original data in mm space")
 
 plt.figure()
-plt.imshow(img_3d_affine_in_mm_space.get_data()[:, :, 0],
+plt.imshow(get_data(img_3d_affine_in_mm_space)[:, :, 0],
            vmin=0, vmax=vmax)
 plt.title("Transformed using a 3x3 affine -\n leads to "
           "re-estimation of bounding box")
 
 plt.figure()
-plt.imshow(img_4d_affine_in_mm_space.get_data()[:, :, 0],
+plt.imshow(get_data(img_4d_affine_in_mm_space)[:, :, 0],
            vmin=0, vmax=vmax)
 plt.title("Transformed using a 4x4 affine -\n Uses affine anchor "
           "and estimates bounding box size")

@@ -47,6 +47,11 @@ def test_get_connectome():
     assert {'_con_x', '_con_y', '_con_z', '_con_w', 'colorscale'
             }.issubset(connectome.keys())
     assert (connectome['cmin'], connectome['cmax']) == (-2.5, 2.5)
+    adj[adj == 0] = np.nan
+    connectome = html_connectome._get_connectome(adj, coord)
+    con_x = decode(connectome['_con_x'], '<f4')
+    assert (con_x == expected_x).all()
+    assert (connectome['cmin'], connectome['cmax']) == (-2.5, 2.5)
 
 
 def test_view_connectome():
@@ -65,7 +70,6 @@ def test_view_connectome():
     check_html(html, False, 'connectome-plot')
 
 
-
 def test_params_deprecation_view_connectome():
     deprecated_params = {'coords': 'node_coords',
                          'threshold': 'edge_threshold',
@@ -79,7 +83,7 @@ def test_params_deprecation_view_connectome():
     warning_msgs = {old_: deprecation_msg.format(old_, new_)
                     for old_, new_ in deprecated_params.items()
                     }
-    
+
     adj, coord = _make_connectome()
     with warnings.catch_warnings(record=True) as raised_warnings:
         html_connectome.view_connectome(adjacency_matrix=adj,
@@ -129,12 +133,13 @@ def test_params_deprecation_view_connectome():
                                         4.2,
                                         )
     old_params = ['coords', 'threshold', 'cmap', 'marker_size']
-    
-    assert len(raised_warnings) == 4
-    for old_param_, raised_warning_ in zip(old_params, raised_warnings):
-        assert warning_msgs[old_param_] == str(raised_warning_.message)
-        assert raised_warning_.category is DeprecationWarning
-        
+
+    raised_warning_messages = ''.join(
+        str(warning.message) for warning in raised_warnings)
+    print(raised_warning_messages)
+    for old_param_ in old_params:
+        assert warning_msgs[old_param_] in raised_warning_messages
+
 
 def test_get_markers():
     coords = np.arange(12).reshape((4, 3))

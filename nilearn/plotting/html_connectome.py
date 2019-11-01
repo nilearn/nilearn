@@ -7,9 +7,10 @@ from nilearn._utils import replace_parameters
 from .. import datasets
 from . import cm
 
-from .js_plotting_utils import (add_js_lib, HTMLDocument, mesh_to_plotly,
+from .js_plotting_utils import (add_js_lib, mesh_to_plotly,
                                 encode, colorscale, get_html_template,
                                 to_color_strings)
+from nilearn.reporting import HTMLDocument
 
 
 class ConnectomeView(HTMLDocument):
@@ -30,7 +31,7 @@ def _get_connectome(adjacency_matrix, coords, threshold=None,
                     marker_size=None, cmap=cm.cold_hot, symmetric_cmap=True):
     connectome = {}
     coords = np.asarray(coords, dtype='<f4')
-    adjacency_matrix = adjacency_matrix.copy()
+    adjacency_matrix = np.nan_to_num(adjacency_matrix, copy=True)
     colors = colorscale(
         cmap, adjacency_matrix.ravel(), threshold=threshold,
         symmetric_cmap=symmetric_cmap)

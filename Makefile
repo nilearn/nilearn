@@ -63,4 +63,3 @@ doc:
 .PHONY : pdf
 pdf:
 	make -C doc pdf
-

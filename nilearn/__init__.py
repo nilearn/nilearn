@@ -35,11 +35,17 @@ signal                  --- Set of preprocessing functions for time series
 import gzip
 import sys
 import warnings
+import os
 
 from distutils.version import LooseVersion
 
 from .version import _check_module_dependencies, __version__
 
+# Workaround issue discovered in intel-openmp 2019.5:
+# https://github.com/ContinuumIO/anaconda-issues/issues/11294
+#
+# see also https://github.com/scikit-learn/scikit-learn/pull/15020
+os.environ.setdefault("KMP_INIT_AT_FORK", "FALSE")
 
 def _py2_deprecation_warning():
     py2_warning = ('Python2 support is deprecated and will be removed in '

@@ -11,6 +11,7 @@ from .._utils.class_inspect import get_params
 from .._utils.niimg_conversions import _check_same_fov
 from .. import image
 from .base_masker import filter_and_extract, BaseMasker
+from nilearn.image import get_data
 
 
 class _ExtractionFunctor(object):
@@ -291,7 +292,7 @@ class NiftiMapsMasker(BaseMasker, CacheMixin):
             # Check if there is an overlap.
 
             # If float, we set low values to 0
-            data = self._resampled_maps_img_.get_data()
+            data = get_data(self._resampled_maps_img_)
             dtype = data.dtype
             if dtype.kind == 'f':
                 data[data < np.finfo(dtype).eps] = 0.

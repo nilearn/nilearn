@@ -7,17 +7,18 @@ except ImportError:
 from nilearn._utils.data_gen import generate_fake_fmri
 from nilearn.regions.rena_clustering import ReNA
 from nilearn.input_data import NiftiMasker
+from nilearn.image import get_data
 
 
 def test_rena_clustering():
     data_img, mask_img = generate_fake_fmri(shape=(10, 11, 12), length=5)
 
-    data = data_img.get_data()
-    mask = mask_img.get_data()
+    data = get_data(data_img)
+    mask = get_data(mask_img)
 
     X = np.empty((data.shape[3], int(mask.sum())))
     for i in range(data.shape[3]):
-        X[i, :] = np.copy(data[:, :, :, i])[mask_img.get_data() != 0]
+        X[i, :] = np.copy(data[:, :, :, i])[get_data(mask_img) != 0]
 
     nifti_masker = NiftiMasker(mask_img=mask_img).fit()
     n_voxels = nifti_masker.transform(data_img).shape[1]

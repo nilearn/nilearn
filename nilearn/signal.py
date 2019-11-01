@@ -488,7 +488,10 @@ def clean(signals, sessions=None, detrend=True, standardize='zscore',
         signals = as_ndarray(signals)
 
     if ensure_finite:
-        signals[np.logical_not(np.isfinite(signals))] = 0
+        mask = np.logical_not(np.isfinite(signals))
+        if mask.any():
+            signals = signals.copy()
+            signals[mask] = 0
 
     # Read confounds
     if confounds is not None:
