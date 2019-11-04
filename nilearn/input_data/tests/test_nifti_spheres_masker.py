@@ -4,6 +4,7 @@ from numpy.testing import assert_array_equal
 from nilearn.input_data import NiftiSpheresMasker
 from nilearn._utils.testing import assert_raises_regex
 from nose.tools import assert_false
+from nilearn.image import get_data
 
 
 def test_seed_extraction():
@@ -38,7 +39,7 @@ def test_sphere_extraction():
     masker.fit()
     s = masker.transform(img)
     assert_array_equal(s[:, 0],
-                       np.mean(data[np.logical_and(mask, mask_img.get_data())],
+                       np.mean(data[np.logical_and(mask, get_data(mask_img))],
                                axis=0))
 
 

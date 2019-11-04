@@ -16,7 +16,7 @@ from sklearn.datasets.base import Bunch
 from .utils import _get_dataset_dir, _fetch_files, _get_dataset_descr
 from .._utils import check_niimg
 from .._utils.compat import _basestring
-from ..image import new_img_like
+from ..image import new_img_like, get_data
 
 _TALAIRACH_LEVELS = ['hemisphere', 'lobe', 'gyrus', 'tissue', 'ba']
 
@@ -264,7 +264,7 @@ def fetch_atlas_harvard_oxford(atlas_name, data_dir=None,
     if lateralized:
         return Bunch(maps=atlas_img, labels=names)
 
-    atlas = atlas_img.get_data()
+    atlas = get_data(atlas_img)
 
     labels = np.unique(atlas)
     # Build a mask of both halves of the brain
@@ -1080,7 +1080,7 @@ def _separate_talairach_levels(atlas_img, labels, verbose=1):
         level_labels = {'*': 0}
         for region_nb, region in enumerate(labels[:, pos]):
             level_labels.setdefault(region, len(level_labels))
-            level_img[atlas_img.get_data() == region_nb] = level_labels[
+            level_img[get_data(atlas_img) == region_nb] = level_labels[
                 region]
         # shift this level to its own octet and add it to the new image
         level_img <<= 8 * pos
@@ -1185,7 +1185,7 @@ def fetch_atlas_talairach(level_name, data_dir=None, verbose=1):
     atlas_img = check_niimg(atlas_file)
     with open(labels_file) as fp:
         labels = json.load(fp)[position][1]
-    level_data = (atlas_img.get_data() >> 8 * position) & 255
+    level_data = (get_data(atlas_img) >> 8 * position) & 255
     atlas_img = new_img_like(atlas_img, data=level_data)
     description = _get_dataset_descr(
         'talairach_atlas').decode('utf-8').format(level_name)

@@ -96,4 +96,6 @@ if __name__ == "__main__":
                         'nilearn.datasets.tests.data': ['*.*'],
                         'nilearn.datasets.description': ['*.rst'],
                         'nilearn.reporting.data.html': ['*.html']},
-          install_requires=install_requires,)
+          install_requires=install_requires,
+          python_requires='>=3.5',
+          )

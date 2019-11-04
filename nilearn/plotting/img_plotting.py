@@ -38,6 +38,7 @@ from ..datasets import load_mni152_template
 from ..image import iter_img
 from .displays import get_slicer, get_projector
 from . import cm
+from nilearn.image import get_data
 
 
 def show():
@@ -339,7 +340,7 @@ class _MNI152Template(SpatialImage):
     def load(self):
         if self.data is None:
             anat_img = load_mni152_template()
-            data = anat_img.get_data()
+            data = get_data(anat_img)
             data = data.astype(np.float)
             anat_mask = ndimage.morphology.binary_fill_holes(data > 0)
             data = np.ma.masked_array(data, np.logical_not(anat_mask))
@@ -347,6 +348,16 @@ class _MNI152Template(SpatialImage):
             self.data = data
             self.vmax = data.max()
             self._shape = anat_img.shape
+
+    @property
+    def _data_cache(self):
+        self.load()
+        return self.data
+
+    @property
+    def _dataobj(self):
+        self.load()
+        return self.data
 
     def get_data(self):
         self.load()
@@ -888,7 +899,7 @@ def plot_prob_atlas(maps_img, bg_img=MNI152TEMPLATE, view_type='auto',
     filled = view_type.startswith('filled')
     for (map_img, color, thr) in zip(iter_img(maps_img), color_list,
                                      threshold):
-        data = map_img.get_data()
+        data = get_data(map_img)
         # To threshold or choose the level of the contours
         thr = check_threshold(thr, data,
                               percentile_func=fast_abs_percentile,

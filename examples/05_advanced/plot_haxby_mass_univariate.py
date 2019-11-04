@@ -122,6 +122,8 @@ from nilearn.plotting import plot_stat_map, show
 
 # Use the fmri mean image as a surrogate of anatomical data
 from nilearn import image
+from nilearn.image import get_data
+
 mean_fmri_img = image.mean_img(func_filename)
 
 threshold = -np.log10(0.1)  # 10% corrected
@@ -135,7 +137,7 @@ display = plot_stat_map(neg_log_pvals_bonferroni_unmasked, mean_fmri_img,
                         display_mode='z', cut_coords=[-1, ],
                         vmax=vmax)
 
-neg_log_pvals_bonferroni_data = neg_log_pvals_bonferroni_unmasked.get_data()
+neg_log_pvals_bonferroni_data = get_data(neg_log_pvals_bonferroni_unmasked)
 n_detections = (neg_log_pvals_bonferroni_data > threshold).sum()
 title = ('Negative $\log_{10}$ p-values'
          '\n(Parametric two-sided F-test'

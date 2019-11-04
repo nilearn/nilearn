@@ -1,8 +1,30 @@
 0.6.0b
 ======
 
+.. warning::
+
+ | **Python2 and 3.4 are no longer supported. Pip will raise an error in these environments.**
+ | **Minimum supported version of Python is now 3.5 .**
+ | **We recommend upgrading to Python 3.6 .**
+
+
+NEW
+---
+
+- A new function :func:`nilearn.image.get_data` to replace the deprecated
+  nibabel method `Nifti1Image.get_data`. Now use `nilearn.image.get_data(img)`
+  rather than `img.get_data()`. This is because Nibabel is removing the
+  `get_data` method. You may also consider using the Nibabel
+  `Nifti1Image.get_fdata`, which returns the data cast to floating-point.
+  See https://github.com/nipy/nibabel/wiki/BIAP8 .
+  As a benefit, the `get_data` function works on niimg-like objects such as
+  filenames (see http://nilearn.github.io/manipulating_images/input_output.html ).
+
 Changes
 -------
+
+- All functions and examples now use `nilearn.image.get_data` rather than the
+  deprecated method `nibabel.Nifti1Image.get_data`.
 
 - :func:`nilearn.datasets.fetch_neurovault` now does not filter out images that
   have their metadata field `is_valid` cleared by default.
