@@ -1,6 +1,13 @@
 0.6.0b
 ======
 
+.. warning::
+
+ | **Python2 and 3.4 are no longer supported. Pip will raise an error in these environments.**
+ | **Minimum supported version of Python is now 3.5 .**
+ | **We recommend upgrading to Python 3.6 .**
+
+
 NEW
 ---
 
