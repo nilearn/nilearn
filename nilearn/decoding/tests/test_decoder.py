@@ -13,7 +13,8 @@ import warnings
 import sklearn
 import numpy as np
 from nilearn.decoding.decoder import (_BaseDecoder, Decoder, DecoderRegressor,
-                                      _check_param_grid, _parallel_fit)
+                                      _check_estimator, _check_param_grid, 
+                                      _parallel_fit)
 from nilearn.decoding.tests.test_same_api import to_niimgs
 from nilearn.input_data import NiftiMasker
 from nose.tools import assert_equal, assert_raises, assert_true, assert_warns
@@ -92,7 +93,7 @@ def test_check_inputs_length():
                                         screening_percentile=100.).fit, X_, y)
 
 
-def test_BaseDecoder_check_estimator_validity():
+def test_check_estimator():
     """Check if the estimator is one of the supported estimators, and if not,
     if it is a string, and if not, then raise the error
     """
@@ -102,23 +103,22 @@ def test_BaseDecoder_check_estimator_validity():
                             'ridge', 'ridge_classifier',
                             'ridge_regressor', 'svr']
     unsupported_estimators = ['ridgo', 'svb']
-    expected_warnings = ['Use a custom estimator at your own risk '
-                         'of the process not working as intended.']
+    expected_warnings = 'Use a custom estimator at your own risk ' \
+                        'of the process not working as intended.'
 
     with warnings.catch_warnings(record=True) as raised_warnings:
         for estimator in supported_estimators:
-            _BaseDecoder(estimator=estimator)._check_estimator()
+            _check_estimator(_BaseDecoder(estimator=estimator).estimator)
     warning_messages = [str(warning.message) for warning in raised_warnings]
     for expected_warning_ in expected_warnings:
         assert expected_warning_ not in warning_messages
-    
-    for estimator in unsupported_estimators:
-        assert_raises(ValueError, 
-                      _BaseDecoder(estimator=estimator)._check_estimator)
 
+    for estimator in unsupported_estimators:
+        assert_raises(ValueError, _check_estimator,
+                      _BaseDecoder(estimator=estimator).estimator)
     custom_estimator = random_forest
-    assert_warns(UserWarning,
-                 _BaseDecoder(estimator=custom_estimator)._check_estimator)
+    assert_warns(UserWarning, _check_estimator,
+                 _BaseDecoder(estimator=custom_estimator).estimator)
 
 
 def test_parallel_fit():
@@ -258,6 +258,3 @@ def test_decoder_apply_mask():
 
     # test whether if _apply mask output has the same shape as original matrix
     assert_equal(X_masked.shape, X_init.shape)
-
-
-# def test_fetch_parallel_fit_output():

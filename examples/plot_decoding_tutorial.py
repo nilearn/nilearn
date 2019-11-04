@@ -150,6 +150,7 @@ fmri_niimgs_test = index_img(fmri_niimgs, np.arange(n_samples - 30, n_samples))
 conditions_train = conditions[:-30]
 conditions_test = conditions[-30:]
 
+decoder = Decoder(estimator='svc', mask=mask_filename, standardize=True)
 decoder.fit(fmri_niimgs_train, conditions_train)
 
 prediction = decoder.predict(fmri_niimgs_test)
@@ -172,6 +173,7 @@ cv = KFold(n_splits=5)
 fold = 0
 for train, test in cv.split(conditions):
     fold += 1
+    decoder = Decoder(estimator='svc', mask=mask_filename, standardize=True)
     decoder.fit(index_img(fmri_niimgs, train), conditions[train])
     prediction = decoder.predict(index_img(fmri_niimgs, test))
     print("CV Fold {:01d} | Prediction Accuracy: {:.3f}".format(fold, 

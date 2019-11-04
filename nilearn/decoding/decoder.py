@@ -120,6 +120,21 @@ def _check_param_grid(estimator, X, y, param_grid=None):
     return param_grid
 
 
+def _check_estimator(estimator):
+    if not isinstance(estimator, str):
+        warnings.warn('Use a custom estimator at your own risk '
+                      'of the process not working as intended.')
+    elif estimator in SUPPORTED_ESTIMATORS.keys():
+        estimator = SUPPORTED_ESTIMATORS.get(estimator)
+    else:
+        raise ValueError(
+            "Invalid estimator. Known estimators are: {}".format(
+                            list(SUPPORTED_ESTIMATORS.keys()))
+        )
+
+    return estimator
+
+
 def _parallel_fit(estimator, X, y, train, test, param_grid, is_classif, scorer,
                   mask_img, class_index, screening_percentile=100):
     """Find the best estimator for a fold within a job.
@@ -221,8 +236,8 @@ class _BaseDecoder(LinearModel, RegressorMixin, CacheMixin):
         not None.
         e.g. scorer(estimator, X_test, y_test)
 
-        For regression, valid entries are: 'r2', 'mean_absolute_error', or
-        'mean_squared_error'. Default: 'r2'.
+        For regression, valid entries are: 'r2', 'neg_mean_absolute_error', or
+        'neg_mean_squared_error'. Default: 'r2'.
 
         For classification, valid entries are: 'accuracy', 'f1', 'precision',
         'recall' or 'roc_auc'. Default: 'roc_auc'.
@@ -381,7 +396,7 @@ class _BaseDecoder(LinearModel, RegressorMixin, CacheMixin):
         `cv_scores_`: dict, (classes, n_folds)
             Scores (misclassification) for each parameter, and on each fold
         """
-        self._check_estimator()
+        self.estimator = _check_estimator(self.estimator)
         self.memory_ = _check_memory(self.memory, self.verbose)
 
         X = self._apply_mask(X, standardize=self.standardize)
@@ -417,8 +432,6 @@ class _BaseDecoder(LinearModel, RegressorMixin, CacheMixin):
                     self.mask_img_, c, self.screening_percentile_) 
                     for c, (train, test) in itertools.product(
                         range(n_problems), self.cv_))
-
-        self.parallel_fit_outputs = parallel_fit_outputs
 
         coefs, intercepts = self._fetch_parallel_fit_outputs(
                                     parallel_fit_outputs, y, n_problems)
@@ -496,20 +509,6 @@ class _BaseDecoder(LinearModel, RegressorMixin, CacheMixin):
 
         return scores
 
-    def _check_estimator(self):
-        if not isinstance(self.estimator, str):
-            warnings.warn('Use a custom estimator at your own risk '
-                          'of the process not working as intended.')
-
-        elif self.estimator in SUPPORTED_ESTIMATORS.keys():
-            self.estimator = SUPPORTED_ESTIMATORS.get(self.estimator,
-                                                      self.estimator)
-        else:
-            raise ValueError(
-                "Invalid estimator. Known estimators are: {}".format(
-                             list(SUPPORTED_ESTIMATORS.keys()))
-            )
-
     def _apply_mask(self, X, standardize=False):
         # Nifti masking
         self.masker_ = check_embedded_nifti_masker(self, multi_subject=False)
@@ -548,7 +547,7 @@ class _BaseDecoder(LinearModel, RegressorMixin, CacheMixin):
         self.cv_params_ = {}
         classes = self.classes_
 
-        for i, (class_index, coef, intercept, params, 
+        for i, (class_index, coef, intercept, params,
                 scores) in enumerate(parallel_fit_outputs):
 
             coefs.setdefault(classes[class_index], []).append(coef)
@@ -566,6 +565,7 @@ class _BaseDecoder(LinearModel, RegressorMixin, CacheMixin):
                 other_class = np.setdiff1d(classes, classes[class_index])[0]
                 coefs.setdefault(other_class, []).append(-coef)
                 intercepts.setdefault(other_class, []).append(-intercept)
+                cv_scores.setdefault(other_class, []).append(scores)
                 self.cv_params_[other_class] = self.cv_params_[
                     classes[class_index]]
 
@@ -767,8 +767,8 @@ class DecoderRegressor(_BaseDecoder):
         not None.
         e.g. scorer(estimator, X_test, y_test)
 
-        For regression, valid entries are: 'r2', 'mean_absolute_error',
-        or 'mean_squared_error'. Default: 'r2'.
+        For regression, valid entries are: 'r2', 'neg_mean_absolute_error',
+        or 'neg_mean_squared_error'. Default: 'r2'.
 
     smoothing_fwhm: float, optional. Default: None
         If smoothing_fwhm is not None, it gives the size in millimeters of the
