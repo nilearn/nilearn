@@ -107,17 +107,18 @@ plt.figure(figsize=(6, 6))
 
 all_categories = np.sort(np.hstack([categories, 'AVERAGE']))
 tick_position = np.arange(len(all_categories))
-plt.yticks(tick_position + 0.5, all_categories)
+plt.yticks(tick_position + 0.25, all_categories)
+height = 0.1
 
-for i, (color, classifier_name) in enumerate(zip(['b', 'm', 'k', 'r', 'g'],
+for i, (color, classifier_name) in enumerate(zip(['b', 'm', 'k', 'r'],
                                                  classifiers)):
     score_means = [np.mean(classifiers_data[classifier_name]['score'][category])
                    for category in all_categories]
 
     plt.barh(tick_position, score_means,
              label=classifier_name.replace('_', ' '),
-             height=.2, color=color)
-    tick_position = tick_position + .2
+             height=height, color=color)
+    tick_position = tick_position + height
 
 plt.xlabel('Classification accurancy (AUC score)')
 plt.ylabel('Visual stimuli category')
