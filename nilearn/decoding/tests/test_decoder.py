@@ -103,16 +103,15 @@ def test_check_estimator():
                             'ridge', 'ridge_classifier',
                             'ridge_regressor', 'svr']
     unsupported_estimators = ['ridgo', 'svb']
-    expected_warnings = 'Use a custom estimator at your own risk ' \
-                        'of the process not working as intended.'
+    expected_warning = ('Use a custom estimator at your own risk '
+                        'of the process not working as intended.')
 
     with warnings.catch_warnings(record=True) as raised_warnings:
         for estimator in supported_estimators:
             _check_estimator(_BaseDecoder(estimator=estimator).estimator)
     warning_messages = [str(warning.message) for warning in raised_warnings]
-    for expected_warning_ in expected_warnings:
-        assert expected_warning_ not in warning_messages
-
+    assert expected_warning not in warning_messages
+    
     for estimator in unsupported_estimators:
         assert_raises(ValueError, _check_estimator,
                       _BaseDecoder(estimator=estimator).estimator)
@@ -139,11 +138,11 @@ def test_parallel_fit():
     for params in svr_params:
         param_grid = {}
         param_grid['C'] = np.array(params)
-        outputs.append(list(_parallel_fit(estimator=estimator, X=X,
-                                          y=y,
+        outputs.append(list(_parallel_fit(estimator=estimator, X=X, y=y,
                                           train=train, test=test,
                                           param_grid=param_grid,
-                                          is_classif=False, scorer=scorer,
+                                          is_classification=False, 
+                                          scorer=scorer,
                                           mask_img=None, class_index=1,
                                           screening_percentile=None)))
     # check that every element of the output tuple is the same for both tries
