@@ -61,6 +61,7 @@ if __name__ == "__main__":
             if package.startswith('sklearn'):
                 package = package.replace('sklearn', 'scikit-learn')
             required_packages.append(package)
+        required_packages.append('sklearn==0.0')
         return required_packages
 
     setup(name=DISTNAME,
