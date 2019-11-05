@@ -38,9 +38,9 @@ from .._utils.param_validation import (_adjust_screening_percentile,
 from ..input_data.masker_validation import check_embedded_nifti_masker
 
 SUPPORTED_ESTIMATORS = dict(
-    svc_l1=LinearSVC(penalty='l1', dual=False),
-    svc_l2=LinearSVC(penalty='l2'),
-    svc=LinearSVC(penalty='l2'),
+    svc_l1=LinearSVC(penalty='l1', dual=False, max_iter=1e4),
+    svc_l2=LinearSVC(penalty='l2', max_iter=1e4),
+    svc=LinearSVC(penalty='l2', max_iter=1e4),
     logistic_l1=LogisticRegression(penalty='l1', solver='liblinear'),
     logistic_l2=LogisticRegression(penalty='l2', solver='liblinear'),
     logistic=LogisticRegression(penalty='l2', solver='liblinear'),
