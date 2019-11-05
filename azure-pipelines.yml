@@ -70,7 +70,7 @@ jobs:
 
   - script: |
       pip list
-      pip install dist/nilearn-0.6.0b0-py3-none-any.whl
+      pip install dist/nilearn-*-py3-none-any.whl
       pip list
     displayName: 'Install Nilearn from wheel'
 
