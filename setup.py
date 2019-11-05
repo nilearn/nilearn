@@ -51,10 +51,17 @@ if __name__ == "__main__":
         module_check_fn = _VERSION_GLOBALS['_check_module_dependencies']
         module_check_fn(is_nilearn_installing=True)
 
-    install_requires = \
-        ['%s>=%s' % (mod, meta['min_version'])
-            for mod, meta in _VERSION_GLOBALS['REQUIRED_MODULE_METADATA']
-         ]
+    def make_package_installation_list():
+        required_packages = []
+        install_requires = ['%s>=%s' % (mod, meta['min_version'])
+                            for mod, meta
+                            in _VERSION_GLOBALS['REQUIRED_MODULE_METADATA']
+                            ]
+        for package in install_requires:
+            if package.startswith('sklearn'):
+                package = package.replace('sklearn', 'scikit-learn')
+            required_packages.append(package)
+        return required_packages
 
     setup(name=DISTNAME,
           maintainer=MAINTAINER,
@@ -96,6 +103,6 @@ if __name__ == "__main__":
                         'nilearn.datasets.tests.data': ['*.*'],
                         'nilearn.datasets.description': ['*.rst'],
                         'nilearn.reporting.data.html': ['*.html']},
-          install_requires=install_requires,
+          install_requires=make_package_installation_list(),
           python_requires='>=3.5',
           )
