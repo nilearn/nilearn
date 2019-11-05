@@ -109,7 +109,7 @@ all_categories = np.sort(np.hstack([categories, 'AVERAGE']))
 tick_position = np.arange(len(all_categories))
 plt.yticks(tick_position + 0.5, all_categories)
 
-for i, (color, classifier_name) in enumerate(zip(['b', 'm', 'k', 'r'],
+for i, (color, classifier_name) in enumerate(zip(['b', 'm', 'k', 'r', 'g'],
                                                  classifiers)):
     score_means = [np.mean(classifiers_data[classifier_name]['score'][category])
                    for category in all_categories]
