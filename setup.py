@@ -53,8 +53,8 @@ if __name__ == "__main__":
 
     install_requires = \
         ['%s>=%s' % (mod, meta['min_version'])
-            for mod, meta in _VERSION_GLOBALS['REQUIRED_MODULE_METADATA']
-            if not meta['required_at_installation']]
+            for mod, meta in _VERSION_GLOBALS['REQUIRED_MODULE_METADATA']]
+            # if not meta['required_at_installation']]
 
     setup(name=DISTNAME,
           maintainer=MAINTAINER,
