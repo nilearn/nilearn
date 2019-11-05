@@ -23,12 +23,7 @@ from sklearn.svm import SVR, LinearSVC
 from sklearn.svm.bounds import l1_min_c
 from sklearn.utils.extmath import safe_sparse_dot
 from sklearn.utils.validation import check_is_fitted, check_X_y
-
-try:
-    from sklearn.externals.joblib import Parallel, delayed
-except ImportError:
-    # Scikit-learn will soon stop vendoring joblib
-    from joblib import Parallel, delayed
+from nilearn._utils.compat import Parallel, delayed
 
 try:
     from sklearn.metrics import check_scoring
@@ -135,8 +130,8 @@ def _check_estimator(estimator):
     return estimator
 
 
-def _parallel_fit(estimator, X, y, train, test, param_grid, is_classif, scorer,
-                  mask_img, class_index, screening_percentile=100):
+def _parallel_fit(estimator, X, y, train, test, param_grid, is_classification, 
+                  scorer, mask_img, class_index, screening_percentile=100):
     """Find the best estimator for a fold within a job.
     This function tries several parameters for the estimator for the train and
     test fold provided and save the ones that performs best. These models are
@@ -147,7 +142,7 @@ def _parallel_fit(estimator, X, y, train, test, param_grid, is_classif, scorer,
     # Checking if the size of the mask image allows us to perform feature
     # screening
     selector = check_feature_screening(screening_percentile, mask_img,
-                                       is_classif)
+                                       is_classification)
     do_screening = (n_features > 100) and selector is not None
 
     X_train, y_train = X[train], y[train]
@@ -164,7 +159,7 @@ def _parallel_fit(estimator, X, y, train, test, param_grid, is_classif, scorer,
         estimator = clone(estimator).set_params(**param)
         estimator.fit(X_train, y_train)
 
-        if is_classif:
+        if is_classification:
             score = scorer(estimator, X_test, y_test)
             if np.all(estimator.coef_ == 0):
                 score = 0
@@ -304,15 +299,15 @@ class _BaseDecoder(LinearModel, RegressorMixin, CacheMixin):
                  screening_percentile=20, scoring=None, smoothing_fwhm=None,
                  standardize=True, target_affine=None, target_shape=None,
                  low_pass=None, high_pass=None, t_r=None,
-                 mask_strategy='background', is_classif=True, memory=None,
-                 memory_level=0, n_jobs=1, verbose=0):
+                 mask_strategy='background', is_classification=True,
+                 memory=None, memory_level=0, n_jobs=1, verbose=0):
         self.estimator = estimator
         self.mask = mask
         self.cv = cv
         self.param_grid = param_grid
         self.screening_percentile = screening_percentile
         self.scoring = scoring
-        self.is_classif = is_classif
+        self.is_classification = is_classification
         self.smoothing_fwhm = smoothing_fwhm
         self.standardize = standardize
         self.target_affine = target_affine
@@ -404,17 +399,16 @@ class _BaseDecoder(LinearModel, RegressorMixin, CacheMixin):
 
         # Setup scorer
         scorer = check_scoring(self.estimator, self.scoring)
-        self.cv_ = list(check_cv(
-            self.cv, y=y, classifier=self.is_classif).split(X, y,
-                                                            groups=groups))
+        self.cv_ = list(check_cv(self.cv, y=y, 
+            classifier=self.is_classification).split(X, y, groups=groups))
 
         # Define the number problems to solve. In case of classification this
         # number corresponds to the number of binary problems to solve
-        if self.is_classif:
+        if self.is_classification:
             y = self._binarize_y(y)
         else:
             y = y[:, np.newaxis]
-        if self.is_classif and self.n_classes_ > 2:
+        if self.is_classification and self.n_classes_ > 2:
             n_problems = self.n_classes_
         else:
             n_problems = 1
@@ -428,7 +422,7 @@ class _BaseDecoder(LinearModel, RegressorMixin, CacheMixin):
         parallel_fit_outputs = parallel(
             delayed(self._cache(_parallel_fit))(
                     self.estimator, X, y[:, c], train, test,
-                    self.param_grid, self.is_classif, scorer,
+                    self.param_grid, self.is_classification, scorer,
                     self.mask_img_, c, self.screening_percentile_) 
                     for c, (train, test) in itertools.product(
                         range(n_problems), self.cv_))
@@ -440,14 +434,14 @@ class _BaseDecoder(LinearModel, RegressorMixin, CacheMixin):
         self.coef_ = np.vstack([np.mean(coefs[class_index], axis=0)
                                 for class_index in self.classes_])
         self.std_coef_ = np.vstack([np.std(coefs[class_index], axis=0)
-                              for class_index in self.classes_])
+                                   for class_index in self.classes_])
         self.intercept_ = np.hstack([np.mean(intercepts[class_index], axis=0)
-                                     for class_index in self.classes_])
+                                    for class_index in self.classes_])
 
         self.coef_img_, self.std_coef_img_ = self._output_image(
             self.classes_, self.coef_, self.std_coef_)
 
-        if self.is_classif and (self.n_classes_ == 2):
+        if self.is_classification and (self.n_classes_ == 2):
             self.coef_ = self.coef_[0, :][np.newaxis, :]
             self.intercept_ = self.intercept_[0]
 
@@ -500,7 +494,7 @@ class _BaseDecoder(LinearModel, RegressorMixin, CacheMixin):
 
         scores = self.decision_function(X)
 
-        if self.is_classif:
+        if self.is_classification:
             if len(scores.shape) == 1:
                 indices = (scores > 0).astype(np.int)
             else:
@@ -560,7 +554,7 @@ class _BaseDecoder(LinearModel, RegressorMixin, CacheMixin):
                 self.cv_params_[classes[class_index]].setdefault(
                     k, []).append(params[k])
 
-            if (n_problems <= 2) and self.is_classif:
+            if (n_problems <= 2) and self.is_classification:
                 # Binary classification
                 other_class = np.setdiff1d(classes, classes[class_index])[0]
                 coefs.setdefault(other_class, []).append(-coef)
@@ -704,7 +698,7 @@ class Decoder(_BaseDecoder):
             smoothing_fwhm=smoothing_fwhm, standardize=standardize,
             target_affine=target_affine, target_shape=target_shape,
             mask_strategy=mask_strategy, low_pass=low_pass, high_pass=high_pass,
-            t_r=t_r, memory=memory, is_classif=True,
+            t_r=t_r, memory=memory, is_classification=True,
             memory_level=memory_level, verbose=verbose, n_jobs=n_jobs)
 
     def _binarize_y(self, y):
@@ -841,5 +835,5 @@ class DecoderRegressor(_BaseDecoder):
             smoothing_fwhm=smoothing_fwhm, standardize=standardize,
             target_affine=target_affine, target_shape=target_shape,
             low_pass=low_pass, high_pass=high_pass, t_r=t_r,
-            mask_strategy=mask_strategy, memory=memory, is_classif=False,
+            mask_strategy=mask_strategy, memory=memory, is_classification=False,
             memory_level=memory_level, verbose=verbose, n_jobs=n_jobs)
