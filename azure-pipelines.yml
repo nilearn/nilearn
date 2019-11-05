@@ -63,12 +63,14 @@ jobs:
       architecture: 'x64'
 
   - script: |
+      set -e
       python -m pip install --upgrade pip
       pip install --prefer-binary setuptools wheel
       python setup.py sdist bdist_wheel
     displayName: 'Install dependencies & build Nilearn'
 
   - script: |
+      set -e
       pip list
       pip install dist/nilearn-*-py3-none-any.whl
       pip list
