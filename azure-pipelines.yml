@@ -101,7 +101,7 @@ jobs:
 
   - script: |
       set -e
-      pip install distnilearn-*-py3-none-any.whl
+      pip install dist/nilearn-*-py3-none-any.whl
       python -c "from nilearn.tests.test_package_installation import test_required_package_installation as test_pkg; test_pkg()"
     displayName: 'Install Nilearn from wheel & check required package installation'
 
@@ -123,14 +123,14 @@ jobs:
       architecture: 'x64'
 
   - script: |
-      $ErrorActionPreference = "Stop"
+      $env:ErrorActionPreference = "Stop"
       python -m pip install --upgrade pip
       pip install --prefer-binary setuptools wheel
       python setup.py sdist bdist_wheel
     displayName: 'Install dependencies & build Nilearn'
 
   - script: |
-      $ErrorActionPreference = "Stop"
+      $env:ErrorActionPreference = "Stop"
       pip install dist\nilearn-*-py3-none-any.whl
       python -c "from nilearn.tests.test_package_installation import test_required_package_installation as test_pkg; test_pkg()"
     displayName: 'Install Nilearn from wheel & check required package installation'
