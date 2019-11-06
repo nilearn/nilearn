@@ -8,7 +8,7 @@ trigger:
 
 jobs:
 
-- job: 'RunTests(Windows)'
+- job: 'TestWindows'
   pool:
     vmImage: 'vs2017-win2016'
   strategy:
@@ -45,7 +45,7 @@ jobs:
       testRunTitle: 'Python $(python.version)'
     condition: succeededOrFailed()
 
-- job: 'TestInstallation(Linux)'
+- job: 'TestLinuxInstallation'
   pool:
     vmImage: 'ubuntu-18.04'
   strategy:
@@ -76,7 +76,7 @@ jobs:
       pip list
     displayName: 'Install Nilearn from wheel'
 
-- job: 'TestInstallation(Windows)'
+- job: 'TestWindowsInstallation'
   pool:
     vmImage: 'vs2017-win2016'
   strategy:
