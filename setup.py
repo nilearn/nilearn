@@ -31,10 +31,16 @@ def is_installing():
 
 
 def list_required_packages():
-    required_packages = ['%s>=%s' % (mod, meta['min_version'])
+    required_packages = []
+    required_packages_orig = ['%s>=%s' % (mod, meta['min_version'])
                         for mod, meta
                         in _VERSION_GLOBALS['REQUIRED_MODULE_METADATA']
                         ]
+    for package in required_packages_orig:
+        if package.startswith('sklearn'):
+            package = package.replace('sklearn', 'scikit-learn')
+        required_packages.append(package)
+
     required_packages.append('sklearn')
     return required_packages
 
