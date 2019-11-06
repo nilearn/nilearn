@@ -131,6 +131,7 @@ jobs:
 
   - script: |
       $env:ErrorActionPreference = "Stop"
-      pip install dist\nilearn-*-py3-none-any.whl
+      $env:file = ls dist\nilearn-*-py3-none-any.whl
+      pip install $env:file
       python -c "from nilearn.tests.test_package_installation import test_required_package_installation as test_pkg; test_pkg()"
     displayName: 'Install Nilearn from wheel & check required package installation'
