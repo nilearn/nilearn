@@ -75,36 +75,6 @@ jobs:
       python -c "from nilearn.tests.test_package_installation import test_required_package_installation as test_pkg; test_pkg()"
     displayName: 'Install Nilearn from wheel & check required package installation'
 
-- job: 'test_installing_on_windows'
-  pool:
-    vmImage: 'vs2017-win2016'
-  strategy:
-    matrix:
-      Python35:
-        python.version: '3.5'
-      Python37:
-        python.version: '3.7'
-    maxParallel: 4
-
-  steps:
-  - task: UsePythonVersion@0
-    inputs:
-      versionSpec: '$(python.version)'
-      architecture: 'x64'
-
-  - script: |
-      set -e
-      python -m pip install --upgrade pip
-      pip install --prefer-binary setuptools wheel
-      python setup.py sdist bdist_wheel
-    displayName: 'Install dependencies & build Nilearn'
-
-  - script: |
-      set -e
-      pip install dist/nilearn-*-py3-none-any.whl
-      python -c "from nilearn.tests.test_package_installation import test_required_package_installation as test_pkg; test_pkg()"
-    displayName: 'Install Nilearn from wheel & check required package installation'
-
 - job: 'test_installing_on_macos'
   pool:
     vmImage: 'macOS-10.13'
@@ -131,6 +101,36 @@ jobs:
 
   - script: |
       set -e
-      pip install dist/nilearn-*-py3-none-any.whl
+      pip install distnilearn-*-py3-none-any.whl
+      python -c "from nilearn.tests.test_package_installation import test_required_package_installation as test_pkg; test_pkg()"
+    displayName: 'Install Nilearn from wheel & check required package installation'
+
+- job: 'test_installing_on_windows'
+  pool:
+    vmImage: 'vs2017-win2016'
+  strategy:
+    matrix:
+      Python35:
+        python.version: '3.5'
+      Python37:
+        python.version: '3.7'
+    maxParallel: 4
+
+  steps:
+  - task: UsePythonVersion@0
+    inputs:
+      versionSpec: '$(python.version)'
+      architecture: 'x64'
+
+  - script: |
+      set -e
+      python -m pip install --upgrade pip
+      pip install --prefer-binary setuptools wheel
+      python setup.py sdist bdist_wheel
+    displayName: 'Install dependencies & build Nilearn'
+
+  - script: |
+      set -e
+      pip install dist\nilearn-*-py3-none-any.whl
       python -c "from nilearn.tests.test_package_installation import test_required_package_installation as test_pkg; test_pkg()"
     displayName: 'Install Nilearn from wheel & check required package installation'
