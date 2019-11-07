@@ -35,9 +35,9 @@ commands:
             date +%F > today
             date +%U > week_num
       - restore_cache:
-          key: v1-packages+datasets-{{ checksum "week_num" }}
+          key: v1-packages+datasets-{{ checksum "week_num" }}-{{ checksum ".circleci/packages-cache-timestamp" }}
       - restore_cache:
-          key: v1-docs-{{ .Branch }}-{{ checksum "today" }}-{{ checksum ".circleci/manual-cache-timestamp" }}
+          key: v1-docs-{{ .Branch }}-{{ checksum "today" }}-{{ checksum ".circleci/docs-cache-timestamp" }}
 
   setupconda:
     description: "Downloads & installs conda if necessary"
@@ -112,7 +112,7 @@ commands:
             - ../nilearn_data
             - ../miniconda3
       - save_cache:
-          key: v1-docs-{{ .Branch }}-{{ checksum "today" }}-{{ checksum ".circleci/manual-cache-timestamp" }}
+          key: v1-docs-{{ .Branch }}-{{ checksum "today" }}-{{ checksum ".circleci/docs-cache-timestamp" }}
           paths:
             - doc
 
