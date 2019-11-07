@@ -12,17 +12,17 @@ commands:
       - run:
           name: Remove conflicting packages
           command: |
-          # Get rid of existing virtualenvs on circle ci as they conflict with conda.
-          # Trick found here:
-          # https://discuss.circleci.com/t/disable-autodetection-of-project-or-application-of-python-venv/235/10
+            # Get rid of existing virtualenvs on circle ci as they conflict with conda.
+            # Trick found here:
+            # https://discuss.circleci.com/t/disable-autodetection-of-project-or-application-of-python-venv/235/10
             cd && rm -rf ~/.pyenv && rm -rf ~/virtualenvs
 
-          # We need to remove conflicting texlive packages.
+            # We need to remove conflicting texlive packages.
             sudo -E apt-get -yq remove texlive-binaries --purge
       - run:
           name: Install packages for make -C doc check
           command: |
-          # Installing required packages for `make -C doc check command` to work.
+            # Installing required packages for `make -C doc check command` to work.
             sudo -E apt-get -yq update
             sudo -E apt-get -yq --no-install-suggests --no-install-recommends --force-yes install dvipng texlive-latex-base texlive-latex-extra
 
