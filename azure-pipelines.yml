@@ -168,8 +168,6 @@ jobs:
     matrix:
       Python27:
         python.version: '2.7'
-      Python34:
-        python.version: '3.4'
     maxParallel: 4
 
   steps:
@@ -191,11 +189,5 @@ jobs:
 
   - script: |
       set -e
-      pip install dist/nilearn-*-py3-none-any.whl
-      python -c "from nilearn.tests.test_package_installation import test_required_package_installation as test_pkg; test_pkg()"
-    displayName: 'Install Nilearn from wheel & check required package installation'
-
-  - script: |
-      set -e
-      python -c "from nilearn.tests.test_package_installation import test_required_package_installation as test_pkg; test_pkg()"
-    displayName: 'Test required package installation'
+      pip install dist/nilearn-*-py3-none-any.whl 2>&1 | grep "^ERROR"
+    displayName: 'Attempt to install Nilearn from wheel (expected to fail)'
