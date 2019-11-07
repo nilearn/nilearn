@@ -8,7 +8,6 @@ of fMRI data analyses.
 Author: Bertrand Thirion, Martin Perez-Guevara, 2016
 
 """
-
 import glob
 import json
 import os
@@ -464,6 +463,7 @@ class FirstLevelModel(BaseEstimator, TransformerMixin, CacheMixin):
                 sys.stderr.write('Starting masker computation \r')
 
             Y = self.masker_.transform(run_img)
+            del run_img
 
             if self.verbose > 1:
                 t_masking = time.time() - t_masking
