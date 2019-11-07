@@ -8,6 +8,7 @@ trigger:
 
 jobs:
 
+
 - job: 'run_tests_on_windows'
   pool:
     vmImage: 'vs2017-win2016'
@@ -27,21 +28,12 @@ jobs:
 
   - script: |
       python -m pip install --upgrade pip
-      pip install --prefer-binary setuptools wheel
       pip install --prefer-binary -r requirements-dev.txt
       pip install pytest-azurepipelines codecov
     displayName: 'Install dependencies'
 
   - script: |
-      python setup.py sdist bdist_wheel
-    displayName: 'Build distributions'
-  - script: |
-      set -e
-      pip install dist/nilearn-*-py3-none-any.whl
-      python -c "from nilearn.tests.test_package_installation import test_required_package_installation as test_pkg; test_pkg()"
-    displayName: 'Install binary'
-
-  - script: |
+      pip install .
       python -m pytest --pyargs nilearn --cov-report=xml --cov=nilearn --cov-append --junitxml=test-results.xml
     displayName: 'test'
 
@@ -53,6 +45,7 @@ jobs:
       testResultsFiles: '**/test-results.xml'
       testRunTitle: 'Python $(python.version)'
     condition: succeededOrFailed()
+
 
 - job: 'test_installing_on_linux'
   pool:
@@ -81,6 +74,7 @@ jobs:
       pip install dist/nilearn-*-py3-none-any.whl
       python -c "from nilearn.tests.test_package_installation import test_required_package_installation as test_pkg; test_pkg()"
     displayName: 'Install Nilearn from wheel & check required package installation'
+
 
 - job: 'test_installing_on_macos'
   pool:
