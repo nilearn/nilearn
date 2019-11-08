@@ -6,6 +6,7 @@
 version: 2.1
 
 commands:
+
   preinstall:
     description: "Cleans up unused packages; Updates system packages"
     steps:
@@ -39,8 +40,8 @@ commands:
       - restore_cache:
           key: v1-docs-{{ .Branch }}-{{ checksum "today" }}-{{ checksum ".circleci/docs-cache-timestamp" }}
 
-  setupconda:
-    description: "Downloads & installs conda if necessary"
+  cache_aware_conda_setup:
+    description: "Downloads & installs conda if not restord by cache"
     steps:
       - run:
           name: Download & install conda if absent
@@ -67,6 +68,16 @@ commands:
             else
               conda create -n testenv -yq
             fi
+
+  cache_ignorant_conda_setup:
+    description: "Downloads & installs only the fresh copy of conda."
+    steps:
+      - run:
+          name: setup conda afresh
+          command: |
+            wget https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh -O ~/miniconda.sh
+            chmod +x ~/miniconda.sh && ~/miniconda.sh -b
+            echo 'export PATH="$HOME/miniconda3/bin:$PATH"'  >> $BASH_ENV
 
   install_packages:
     description: "Installs the necessary Python packages"
@@ -118,6 +129,7 @@ commands:
 
 
 jobs:
+
   quick-build:
     docker:
       - image: circleci/python:3.7
@@ -134,12 +146,11 @@ jobs:
       - checkout
       - preinstall
       - restore_from_cache
-      - setupconda
+      - cache_aware_conda_setup
       - install_packages
       - build_docs
       - store_results
       - save_to_cache
-
 
   full-build:
     docker:
@@ -155,12 +166,7 @@ jobs:
     steps:
       - checkout
       - preinstall
-      - run:
-          name: setup conda
-          command: |
-            wget https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh -O ~/miniconda.sh
-            chmod +x ~/miniconda.sh && ~/miniconda.sh -b
-            echo 'export PATH="$HOME/miniconda3/bin:$PATH"'  >> $BASH_ENV
+      - cache_ignorant_conda_setup
       - install_packages
       - build_docs
       - store_results
