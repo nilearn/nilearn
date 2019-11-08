@@ -28,10 +28,10 @@ commands:
             sudo -E apt-get -yq --no-install-suggests --no-install-recommends --force-yes install dvipng texlive-latex-base texlive-latex-extra
 
   restore_from_cache:
-    description: "Restores the cache if present"
+    description: "Restores the cache of previously built docs & python packages if present"
     steps:
       - run:
-          name: Today & Week  # Saving today's date and current week of the year in files to generate daily & weekly new cache key respectively.
+          name: Generate cache keys from today's date for built docs & week number for python packages
           command: |
             date +%F > today
             date +%U > week_num
@@ -90,10 +90,10 @@ commands:
             conda install -n testenv nibabel sphinx-gallery junit-xml -c conda-forge -yq
 
   build_docs:
-    description: "Builds documentation using Sphinx's make html-strict"
+    description: "Installs Nilearn & builds documentation using Sphinx's make html-strict"
     steps:
       - run:
-          name: Running CircleCI test (make html)
+          name: Building documentation
           command: |
             source activate testenv
             pip install -e .
