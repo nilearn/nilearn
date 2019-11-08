@@ -463,7 +463,7 @@ class FirstLevelModel(BaseEstimator, TransformerMixin, CacheMixin):
                 sys.stderr.write('Starting masker computation \r')
 
             Y = self.masker_.transform(run_img)
-            del run_img
+            del run_img  # Delete unmasked image to save memory
 
             if self.verbose > 1:
                 t_masking = time.time() - t_masking
