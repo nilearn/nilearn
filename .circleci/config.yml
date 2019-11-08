@@ -79,7 +79,7 @@ commands:
             chmod +x ~/miniconda.sh && ~/miniconda.sh -b
             echo 'export PATH="$HOME/miniconda3/bin:$PATH"'  >> $BASH_ENV
 
-  install_packages:
+  install_dependencies:
     description: "Installs the necessary Python packages"
     steps:
       - run:
@@ -147,7 +147,7 @@ jobs:
       - preinstall
       - restore_from_cache
       - cache_aware_conda_setup
-      - install_packages
+      - install_dependencies
       - build_docs
       - store_results
       - save_to_cache
@@ -167,7 +167,7 @@ jobs:
       - checkout
       - preinstall
       - cache_ignorant_conda_setup
-      - install_packages
+      - install_dependencies
       - build_docs
       - store_results
 
