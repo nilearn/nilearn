@@ -1910,7 +1910,7 @@ def _fetch_development_fmri_participants(data_dir, url, verbose):
     return participants
 
 
-def _fetch_development_fmri_functional(participants, data_dir, url, verbose):
+def _fetch_development_fmri_functional(participants, data_dir, url, resume, verbose):
     """Helper function to fetch_development_fmri.
 
     This function helps in downloading functional MRI data in Nifti
@@ -1931,6 +1931,9 @@ def _fetch_development_fmri_functional(participants, data_dir, url, verbose):
     url: str, optional
         Override download URL. Used for test only (or if you setup a mirror of
         the data). Default: None
+
+    resume: bool, optional (default True)
+        Whether to resume download of a partly-downloaded file.
 
     verbose: int
         Defines the level of verbosity of the output.
@@ -1981,7 +1984,7 @@ def _fetch_development_fmri_functional(participants, data_dir, url, verbose):
         func_url = url.format(this_osf_id['key_b'][0])
         func_file = [(func.format(participant_id, participant_id), func_url,
                       {'move': func.format(participant_id)})]
-        path_to_func = _fetch_files(data_dir, func_file, verbose=verbose)[0]
+        path_to_func = _fetch_files(data_dir, func_file, resume=resume, verbose=verbose)[0]
         funcs.append(path_to_func)
     return funcs, regressors
 
@@ -2138,6 +2141,7 @@ def fetch_development_fmri(n_subjects=None, reduce_confounds=True,
     funcs, regressors = _fetch_development_fmri_functional(participants,
                                                            data_dir=data_dir,
                                                            url=None,
+                                                           resume=resume,
                                                            verbose=verbose)
 
     if reduce_confounds:
