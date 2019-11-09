@@ -2134,7 +2134,9 @@ def _filter_func_regressors_by_participants(participants, age_group):
     valid_age_groups = ('both', 'child', 'adult')
     if age_group not in valid_age_groups:
         raise ValueError("Wrong value for age_group={0}. "
-                         "Valid arguments are: {}".format(age_group, valid_age_groups))
+                         "Valid arguments are: {1}".format(age_group,
+                                                          valid_age_groups)
+                         )
 
     child_adult = participants['Child_Adult'].tolist()
 

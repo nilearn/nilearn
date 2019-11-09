@@ -6,10 +6,14 @@ Test the datasets module
 
 import os
 import uuid
+import warnings
+
 import numpy as np
 import json
 import nibabel
 import gzip
+
+import pytest
 from sklearn.utils import check_random_state
 
 from nose import with_setup
@@ -657,3 +661,24 @@ def test_fetch_development_fmri():
     data = func.fetch_development_fmri(n_subjects=2, reduce_confounds=False,
                                        verbose=1, age_group='child')
     assert(all([x == 'child' for x in data.phenotypic['Child_Adult']]))
+
+
+@with_setup(tst.setup_tmpdata, tst.teardown_tmpdata)
+def test_fetch_development_fmri_warning():
+    with warnings.catch_warnings(record=True) as raised_warnings:
+        data = func.fetch_development_fmri(n_subjects=-1)
+    raised_warnings_text = [str(warning.message) for warning in raised_warnings
+                            ]
+    expected_warning = (
+        'Wrong value for n_subjects=-1. '
+        'The maximum value (for age_group=both) will be used instead: '
+        'n_subjects=155'
+    )
+    assert expected_warning in raised_warnings_text
+
+
+@with_setup(tst.setup_tmpdata, tst.teardown_tmpdata)
+def test_fetch_development_fmri_exception():
+    with pytest.raises(ValueError, match='Wrong value for age_group'):
+        data = func.fetch_development_fmri(age_group='junk for test')
+
