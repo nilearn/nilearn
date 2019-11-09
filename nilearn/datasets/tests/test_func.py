@@ -613,6 +613,7 @@ def test_fetch_development_fmri_functional():
     funcs, confounds = func._fetch_development_fmri_functional(csv,
                                                                data_dir=tst.tmpdir,
                                                                url=local_url,
+                                                               resume=True,
                                                                verbose=1)
     assert_equal(len(funcs), 8)
     assert_equal(len(confounds), 8)
@@ -665,20 +666,11 @@ def test_fetch_development_fmri():
 
 @with_setup(tst.setup_tmpdata, tst.teardown_tmpdata)
 def test_fetch_development_fmri_warning():
-    with warnings.catch_warnings(record=True) as raised_warnings:
+    with pytest.warns(UserWarning, match='Wrong value for n_subjects='):
         data = func.fetch_development_fmri(n_subjects=-1)
-    raised_warnings_text = [str(warning.message) for warning in raised_warnings
-                            ]
-    expected_warning = (
-        'Wrong value for n_subjects=-1. '
-        'The maximum value (for age_group=both) will be used instead: '
-        'n_subjects=155'
-    )
-    assert expected_warning in raised_warnings_text
 
 
 @with_setup(tst.setup_tmpdata, tst.teardown_tmpdata)
 def test_fetch_development_fmri_exception():
     with pytest.raises(ValueError, match='Wrong value for age_group'):
         data = func.fetch_development_fmri(age_group='junk for test')
-
