@@ -78,9 +78,6 @@ if __name__ == "__main__":
               'Operating System :: POSIX',
               'Operating System :: Unix',
               'Operating System :: MacOS',
-              'Programming Language :: Python :: 2',
-              'Programming Language :: Python :: 2.7',
-              'Programming Language :: Python :: 3.4',
               'Programming Language :: Python :: 3.5',
               'Programming Language :: Python :: 3.6',
               'Programming Language :: Python :: 3.7',
@@ -99,4 +96,6 @@ if __name__ == "__main__":
                         'nilearn.datasets.tests.data': ['*.*'],
                         'nilearn.datasets.description': ['*.rst'],
                         'nilearn.reporting.data.html': ['*.html']},
-          install_requires=install_requires,)
+          install_requires=install_requires,
+          python_requires='>=3.5',
+          )

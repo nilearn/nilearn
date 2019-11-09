@@ -18,6 +18,7 @@ from .._utils import check_niimg
 from .._utils.compat import BytesIO, _basestring, _urllib
 from .._utils.numpy_conversions import csv_to_array
 from .._utils.exceptions import VisibleDeprecationWarning
+from nilearn.image import get_data
 
 
 @deprecated("fetch_haxby_simple will be removed in future releases. "
@@ -1073,7 +1074,7 @@ def fetch_localizer_calculation_task(n_subjects=1, data_dir=None, url=None,
     return data
 
 
-def fetch_localizer_button_task(n_subjects=None, data_dir=None, url=None,
+def fetch_localizer_button_task(data_dir=None, url=None,
                                 verbose=1):
     """Fetch left vs right button press contrast maps from the localizer.
 
@@ -1116,18 +1117,14 @@ def fetch_localizer_button_task(n_subjects=None, data_dir=None, url=None,
     nilearn.datasets.fetch_localizer_contrasts
 
     """
-    if n_subjects is None:
-        n_subjects = [2]
     data = fetch_localizer_contrasts(["left vs right button press"],
-                                     n_subjects=n_subjects,
+                                     n_subjects=[2],
                                      get_tmaps=True, get_masks=False,
                                      get_anats=True, data_dir=data_dir,
                                      url=url, resume=True, verbose=verbose)
-    # TODO: remove -> only here for compatibility
-    if len(data["tmaps"]) == 1:
-        setattr(data, "tmap", data["tmaps"][0])
-    if len(data["anats"]) == 1:
-        setattr(data, "anat", data["anats"][0])
+    # Additional keys for backward compatibility
+    data['tmap'] = data['tmaps'][0]
+    data['anat'] = data['anats'][0]
     return data
 
 
@@ -1321,7 +1318,7 @@ def _load_mixed_gambles(zmap_imgs):
     mask = []
     for zmap_img in zmap_imgs:
         # load subject data
-        this_X = zmap_img.get_data()
+        this_X = get_data(zmap_img)
         affine = zmap_img.affine
         finite_mask = np.all(np.isfinite(this_X), axis=-1)
         this_mask = np.logical_and(np.all(this_X != 0, axis=-1),

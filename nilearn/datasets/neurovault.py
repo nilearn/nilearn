@@ -2080,13 +2080,12 @@ def basic_image_terms():
     true:
 
         - It is not in MNI space.
-        - Its metadata field "is_valid" is cleared.
         - It is thresholded.
         - Its map type is one of "ROI/mask", "anatomical", or "parcellation".
         - Its image type is "atlas"
 
     """
-    return {'not_mni': False, 'is_valid': True, 'is_thresholded': False,
+    return {'not_mni': False, 'is_thresholded': False,
             'map_type': NotIn('ROI/mask', 'anatomical', 'parcellation'),
             'image_type': NotEqual('atlas')}
 

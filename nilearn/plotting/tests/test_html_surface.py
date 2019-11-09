@@ -8,6 +8,7 @@ from nilearn.plotting import html_surface
 from nilearn.plotting.js_plotting_utils import decode
 from nilearn.datasets import fetch_surf_fsaverage
 from nilearn._utils.exceptions import DimensionError
+from nilearn.image import get_data
 
 from .test_js_plotting_utils import check_colors, check_html
 
@@ -143,10 +144,10 @@ def test_view_img_on_surf():
     html = html_surface.view_img_on_surf(img, surf_mesh='fsaverage')
     check_html(html)
     assert_raises(DimensionError, html_surface.view_img_on_surf, [img, img])
-    img_4d = image.new_img_like(img, img.get_data()[:, :, :, np.newaxis])
+    img_4d = image.new_img_like(img, get_data(img)[:, :, :, np.newaxis])
     assert len(img_4d.shape) == 4
     html = html_surface.view_img_on_surf(img, threshold='92.3%')
     check_html(html)
-    np.clip(img.get_data(), 0, None, out=img.get_data())
+    np.clip(get_data(img), 0, None, out=get_data(img))
     html = html_surface.view_img_on_surf(img, symmetric_cmap=False)
     check_html(html)
