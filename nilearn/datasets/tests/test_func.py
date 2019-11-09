@@ -666,7 +666,7 @@ def test_fetch_development_fmri():
 @with_setup(tst.setup_tmpdata, tst.teardown_tmpdata)
 def test_fetch_development_fmri_invalid_n_subjects():
     max_subjects = 155
-    n_subjects = func._set_invalid_n_subjects_to_max(n_subjects=-1,
+    n_subjects = func._set_invalid_n_subjects_to_max(n_subjects=None,
                                                      max_subjects=max_subjects,
                                                      age_group='adult')
     assert n_subjects == max_subjects
