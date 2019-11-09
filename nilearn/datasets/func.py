@@ -1910,7 +1910,8 @@ def _fetch_development_fmri_participants(data_dir, url, verbose):
     return participants
 
 
-def _fetch_development_fmri_functional(participants, data_dir, url, resume, verbose):
+def _fetch_development_fmri_functional(participants, data_dir, url, resume,
+                                       verbose):
     """Helper function to fetch_development_fmri.
 
     This function helps in downloading functional MRI data in Nifti
@@ -1984,7 +1985,8 @@ def _fetch_development_fmri_functional(participants, data_dir, url, resume, verb
         func_url = url.format(this_osf_id['key_b'][0])
         func_file = [(func.format(participant_id, participant_id), func_url,
                       {'move': func.format(participant_id)})]
-        path_to_func = _fetch_files(data_dir, func_file, resume=resume, verbose=verbose)[0]
+        path_to_func = _fetch_files(data_dir, func_file, resume=resume,
+                                    verbose=verbose)[0]
         funcs.append(path_to_func)
     return funcs, regressors
 
@@ -2085,8 +2087,7 @@ def fetch_development_fmri(n_subjects=None, reduce_confounds=True,
                                                         verbose=verbose)
 
     adult_count, child_count = _filter_func_regressors_by_participants(
-            participants, age_group
-            )
+            participants, age_group)  # noqa: E126
     max_subjects = adult_count + child_count
 
     # Check validity of n_subjects
@@ -2135,7 +2136,7 @@ def _filter_func_regressors_by_participants(participants, age_group):
     if age_group not in valid_age_groups:
         raise ValueError("Wrong value for age_group={0}. "
                          "Valid arguments are: {1}".format(age_group,
-                                                          valid_age_groups)
+                                                           valid_age_groups)
                          )
 
     child_adult = participants['Child_Adult'].tolist()

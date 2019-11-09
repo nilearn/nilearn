@@ -6,7 +6,6 @@ Test the datasets module
 
 import os
 import uuid
-import warnings
 
 import numpy as np
 import json
@@ -667,10 +666,10 @@ def test_fetch_development_fmri():
 @with_setup(tst.setup_tmpdata, tst.teardown_tmpdata)
 def test_fetch_development_fmri_warning():
     with pytest.warns(UserWarning, match='Wrong value for n_subjects='):
-        data = func.fetch_development_fmri(n_subjects=-1)
+        func.fetch_development_fmri(n_subjects=-1)
 
 
 @with_setup(tst.setup_tmpdata, tst.teardown_tmpdata)
 def test_fetch_development_fmri_exception():
     with pytest.raises(ValueError, match='Wrong value for age_group'):
-        data = func.fetch_development_fmri(age_group='junk for test')
+        func.fetch_development_fmri(age_group='junk for test')
