@@ -2084,24 +2084,9 @@ def fetch_development_fmri(n_subjects=None, reduce_confounds=True,
                                                         url=None,
                                                         verbose=verbose)
 
-    # Download functional and regressors based on participants
-    if age_group not in ['both', 'child', 'adult']:
-        raise ValueError("Wrong value for age_group={0}. "
-                         "Valid arguments are 'adult', 'child' "
-                         "or 'both'".format(age_group))
-
-    child_adult = participants['Child_Adult'].tolist()
-
-    if age_group != 'adult':
-        child_count = child_adult.count('child')
-    else:
-        child_count = 0
-
-    if age_group != 'child':
-        adult_count = child_adult.count('adult')
-    else:
-        adult_count = 0
-
+    adult_count, child_count = _filter_func_regressors_by_participants(
+            participants, age_group
+            )
     max_subjects = adult_count + child_count
 
     # Check validity of n_subjects
@@ -2129,14 +2114,7 @@ def fetch_development_fmri(n_subjects=None, reduce_confounds=True,
     if (age_group == 'both') and (n_subjects == 2):
         n_adult, n_child = 1, 1
 
-    # First, restrict the csv files to the adequate number of subjects
-    child_ids = participants[participants['Child_Adult'] ==
-                             'child']['participant_id'][:n_child]
-    adult_ids = participants[participants['Child_Adult'] ==
-                             'adult']['participant_id'][:n_adult]
-    ids = np.hstack([adult_ids, child_ids])
-    participants = participants[np.in1d(participants['participant_id'], ids)]
-    participants = participants[np.argsort(participants, order='Child_Adult')]
+    participants = _filter_csv_by_n_subjects(participants, n_adult, n_child)
 
     funcs, regressors = _fetch_development_fmri_functional(participants,
                                                            data_dir=data_dir,
@@ -2145,18 +2123,56 @@ def fetch_development_fmri(n_subjects=None, reduce_confounds=True,
                                                            verbose=verbose)
 
     if reduce_confounds:
-        reduced_regressors = []
-        for in_file in regressors:
-            out_file = in_file.replace('desc-confounds',
-                                       'desc-reducedConfounds')
-            if not os.path.isfile(out_file):
-                confounds = np.recfromcsv(in_file, delimiter='\t')
-                selected_confounds = confounds[keep_confounds]
-                header = '\t'.join(selected_confounds.dtype.names)
-                np.savetxt(out_file, np.array(selected_confounds.tolist()),
-                           header=header, delimiter='\t', comments='')
-            reduced_regressors.append(out_file)
-        regressors = reduced_regressors
-
+        regressors = _reduce_confounds(regressors, keep_confounds)
     return Bunch(func=funcs, confounds=regressors, phenotypic=participants,
                  description=fdescr)
+
+
+def _filter_func_regressors_by_participants(participants, age_group):
+    """ Filter functional and regressors based on participants
+    """
+    valid_age_groups = ('both', 'child', 'adult')
+    if age_group not in valid_age_groups:
+        raise ValueError("Wrong value for age_group={0}. "
+                         "Valid arguments are: {}".format(age_group, valid_age_groups))
+
+    child_adult = participants['Child_Adult'].tolist()
+
+    if age_group != 'adult':
+        child_count = child_adult.count('child')
+    else:
+        child_count = 0
+
+    if age_group != 'child':
+        adult_count = child_adult.count('adult')
+    else:
+        adult_count = 0
+    return adult_count, child_count
+
+
+def _filter_csv_by_n_subjects(participants, n_adult, n_child):
+    """Restrict the csv files to the adequate number of subjects
+    """
+    child_ids = participants[participants['Child_Adult'] ==
+                             'child']['participant_id'][:n_child]
+    adult_ids = participants[participants['Child_Adult'] ==
+                             'adult']['participant_id'][:n_adult]
+    ids = np.hstack([adult_ids, child_ids])
+    participants = participants[np.in1d(participants['participant_id'], ids)]
+    participants = participants[np.argsort(participants, order='Child_Adult')]
+    return participants
+
+
+def _reduce_confounds(regressors, keep_confounds):
+    reduced_regressors = []
+    for in_file in regressors:
+        out_file = in_file.replace('desc-confounds',
+                                   'desc-reducedConfounds')
+        if not os.path.isfile(out_file):
+            confounds = np.recfromcsv(in_file, delimiter='\t')
+            selected_confounds = confounds[keep_confounds]
+            header = '\t'.join(selected_confounds.dtype.names)
+            np.savetxt(out_file, np.array(selected_confounds.tolist()),
+                       header=header, delimiter='\t', comments='')
+        reduced_regressors.append(out_file)
+    return reduced_regressors
