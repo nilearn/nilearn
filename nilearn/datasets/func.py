@@ -2090,17 +2090,9 @@ def fetch_development_fmri(n_subjects=None, reduce_confounds=True,
             participants, age_group)  # noqa: E126
     max_subjects = adult_count + child_count
 
-    # Check validity of n_subjects
-    if n_subjects is None:
-        n_subjects = max_subjects
-
-    if (isinstance(n_subjects, numbers.Number) and
-            ((n_subjects > max_subjects) or (n_subjects < 1))):
-        warnings.warn("Wrong value for n_subjects={0}. The maximum "
-                      "value (for age_group={1}) will be used instead: "
-                      "n_subjects={2}"
-                      .format(n_subjects, age_group, max_subjects))
-        n_subjects = max_subjects
+    n_subjects = _set_invalid_n_subjects_to_max(n_subjects,
+                                                max_subjects,
+                                                age_group)
 
     # To keep the proportion of children versus adults
     percent_total = float(n_subjects) / max_subjects
@@ -2164,6 +2156,22 @@ def _filter_csv_by_n_subjects(participants, n_adult, n_child):
     participants = participants[np.in1d(participants['participant_id'], ids)]
     participants = participants[np.argsort(participants, order='Child_Adult')]
     return participants
+
+
+def _set_invalid_n_subjects_to_max(n_subjects, max_subjects, age_group):
+    """ If n_subjects is invalid, sets it to max.
+    """
+    if n_subjects is None:
+        n_subjects = max_subjects
+
+    if (isinstance(n_subjects, numbers.Number) and
+            ((n_subjects > max_subjects) or (n_subjects < 1))):
+        warnings.warn("Wrong value for n_subjects={0}. The maximum "
+                      "value (for age_group={1}) will be used instead: "
+                      "n_subjects={2}"
+                      .format(n_subjects, age_group, max_subjects))
+        n_subjects = max_subjects
+    return n_subjects
 
 
 def _reduce_confounds(regressors, keep_confounds):
