@@ -16,6 +16,7 @@ Changes
 -------
 
 * Nistats now uses BIDS v1.2 & BIDS Derivatives terminology.
+* `run_img` variable deleted after masking in FirstLevelModel to reduce memory use.
 
 Fixes
 -----
