@@ -42,6 +42,7 @@ from .utils import (_basestring,
                     _check_events_file_uses_tab_separators,
                     get_bids_files,
                     parse_bids_filename,
+                    get_data
                     )
 from nistats._utils.helpers import replace_parameters
 
@@ -434,7 +435,7 @@ class FirstLevelModel(BaseEstimator, TransformerMixin, CacheMixin):
             # Build the experimental design for the glm
             run_img = check_niimg(run_img, ensure_ndim=4)
             if design_matrices is None:
-                n_scans = run_img.get_data().shape[3]
+                n_scans = get_data(run_img).shape[3]
                 if confounds is not None:
                     confounds_matrix = confounds[run_idx].values
                     if confounds_matrix.shape[0] != n_scans:

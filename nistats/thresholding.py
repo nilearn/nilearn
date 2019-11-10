@@ -8,6 +8,7 @@ import numpy as np
 from nilearn.input_data import NiftiMasker
 from scipy.ndimage import label
 from scipy.stats import norm
+from nistats.utils import get_data
 
 
 def fdr_threshold(z_vals, alpha):
@@ -119,11 +120,11 @@ def map_threshold(stat_img=None, mask_img=None, alpha=.001, threshold=3.,
     stats *= (stats > threshold)
 
     # embed it back to 3D grid
-    stat_map = masker.inverse_transform(stats).get_data()
+    stat_map = get_data(masker.inverse_transform(stats))
 
     # Extract connected components above threshold
     label_map, n_labels = label(stat_map > threshold)
-    labels = label_map[masker.mask_img_.get_data() > 0]
+    labels = label_map[get_data(masker.mask_img_) > 0]
 
     for label_ in range(1, n_labels + 1):
         if np.sum(labels == label_) < cluster_threshold:

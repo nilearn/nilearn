@@ -22,6 +22,8 @@ from scipy.io import loadmat
 from scipy.io.matlab.miobase import MatReadError
 from sklearn.datasets.base import Bunch
 
+from nistats.utils import get_data
+
 SPM_AUDITORY_DATA_FILES = ["fM00223/fM00223_%03i.img" % index
                            for index in range(4, 100)]
 SPM_AUDITORY_DATA_FILES.append("sM00223/sM00223_002.img")
@@ -385,7 +387,7 @@ def _prepare_downloaded_spm_auditory_data(subject_dir):
     for x in _subject_data['func']:
         vol = nib.load(x)
         if len(vol.shape) == 4:
-            vol = nib.Nifti1Image(vol.get_data()[:, :, :, 0],
+            vol = nib.Nifti1Image(get_data(vol)[:, :, :, 0],
                                   vol.affine)
             nib.save(vol, x)
 
@@ -396,7 +398,7 @@ def _prepare_downloaded_spm_auditory_data(subject_dir):
     # ... same thing for anat
     vol = nib.load(_subject_data['anat'])
     if len(vol.shape) == 4:
-        vol = nib.Nifti1Image(vol.get_data()[:, :, :, 0],
+        vol = nib.Nifti1Image(get_data(vol)[:, :, :, 0],
                               vol.affine)
         nib.save(vol, _subject_data['anat'])
 

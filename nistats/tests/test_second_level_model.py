@@ -29,6 +29,7 @@ from nistats.second_level_model import (SecondLevelModel,
                                         non_parametric_inference,
                                         )
 from nistats._utils.testing import _write_fake_fmri_data
+from nistats.utils import get_data
 
 # This directory path
 BASEDIR = os.path.dirname(os.path.abspath(__file__))
@@ -71,7 +72,7 @@ def test_high_level_non_parametric_inference_with_paths():
         neg_log_pvals_img = non_parametric_inference(Y, design_matrix=X,
                                                      second_level_contrast=c1,
                                                      mask=mask, n_perm=n_perm)
-        neg_log_pvals = neg_log_pvals_img.get_data()
+        neg_log_pvals = get_data(neg_log_pvals_img)
 
         assert_true(isinstance(neg_log_pvals_img, Nifti1Image))
         assert_array_equal(neg_log_pvals_img.affine, load(mask).affine)
@@ -261,7 +262,7 @@ def test_non_parametric_inference_permutation_computation():
         neg_log_pvals_img = non_parametric_inference(Y, design_matrix=X,
                                                      mask=mask, n_perm=100)
 
-        assert_equal(neg_log_pvals_img.get_data().shape, shapes[0][:3])
+        assert_equal(get_data(neg_log_pvals_img).shape, shapes[0][:3])
         del func_img, FUNCFILE, neg_log_pvals_img, X, Y
 
 
@@ -292,16 +293,16 @@ def test_second_level_model_contrast_computation():
 
         # Test output_type='all', and verify images are equivalent
         all_images = model.compute_contrast(c1, output_type='all')
-        assert_array_equal(all_images['z_score'].get_data(),
-                           z_image.get_data())
-        assert_array_equal(all_images['stat'].get_data(),
-                           stat_image.get_data())
-        assert_array_equal(all_images['p_value'].get_data(),
-                           p_image.get_data())
-        assert_array_equal(all_images['effect_size'].get_data(),
-                           effect_image.get_data())
-        assert_array_equal(all_images['effect_variance'].get_data(),
-                           variance_image.get_data())
+        assert_array_equal(get_data(all_images['z_score']),
+                           get_data(z_image))
+        assert_array_equal(get_data(all_images['stat']),
+                           get_data(stat_image))
+        assert_array_equal(get_data(all_images['p_value']),
+                           get_data(p_image))
+        assert_array_equal(get_data(all_images['effect_size']),
+                           get_data(effect_image))
+        assert_array_equal(get_data(all_images['effect_variance']),
+                           get_data(variance_image))
 
         # formula should work (passing variable name directly)
         model.compute_contrast('intercept')
