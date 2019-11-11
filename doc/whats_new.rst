@@ -1,5 +1,7 @@
-0.6.0b
-======
+0.6.0b0
+=======
+
+**Released November 2019**
 
 .. warning::
 
@@ -29,12 +31,25 @@ Changes
 - :func:`nilearn.datasets.fetch_neurovault` now does not filter out images that
   have their metadata field `is_valid` cleared by default.
 
+- Users can now specify fetching data for adults, children, or both from
+  :func:`nilearn.datasets.fetch_development_fmri` .
+
+
 Fixes
 -----
 
 - :func:`nilearn.plotting.plot_connectome` now correctly displays marker size on 'l'
   and 'r' orientations, if an array or a list is passed to the function.
 
+Contributors
+------------
+
+The following people contributed to this release (in alphabetical order)::
+
+	Jake Vogel
+	Jerome Dockes
+	Kshitij Chawla (kchawla-pi)
+	Roberto Guidotti
 
 0.6.0a0
 =======
