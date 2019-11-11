@@ -1,6 +1,8 @@
 0.6.0b0
 =======
 
+**Released November 2019**
+
 .. warning::
 
  | **Python2 and 3.4 are no longer supported. Pip will raise an error in these environments.**
@@ -29,6 +31,10 @@ Changes
 - :func:`nilearn.datasets.fetch_neurovault` now does not filter out images that
   have their metadata field `is_valid` cleared by default.
 
+- Users can now specify fetching data for adults, children, or both from
+  :func:`nilearn.datasets.fetch_development_fmri` .
+
+
 Fixes
 -----
 
@@ -43,7 +49,7 @@ The following people contributed to this release (in alphabetical order)::
 	Jake Vogel
 	Jerome Dockes
 	Kshitij Chawla (kchawla-pi)
-	robbisg
+	Roberto Guidotti
 
 0.6.0a0
 =======
