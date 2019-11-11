@@ -1,7 +1,7 @@
 0.6.0b0
 =======
 
-**Released October 2019**
+**Released November 2019**
 
 .. warning::
 
