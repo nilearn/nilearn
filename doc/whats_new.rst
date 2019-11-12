@@ -1,5 +1,5 @@
-0.6.0c
-======
+0.6.0b1
+=======
 
 NEW
 ---
@@ -12,9 +12,11 @@ NEW
   These two objects also leverage the `NiftiMaskers` to provide a direct
   interface with the Nifti files on disk.
 
+0.6.0b0
+=======
 
-0.6.0b
-======
+**Released November 2019**
+
 
 .. warning::
 
@@ -44,12 +46,25 @@ Changes
 - :func:`nilearn.datasets.fetch_neurovault` now does not filter out images that
   have their metadata field `is_valid` cleared by default.
 
+- Users can now specify fetching data for adults, children, or both from
+  :func:`nilearn.datasets.fetch_development_fmri` .
+
+
 Fixes
 -----
 
 - :func:`nilearn.plotting.plot_connectome` now correctly displays marker size on 'l'
   and 'r' orientations, if an array or a list is passed to the function.
 
+Contributors
+------------
+
+The following people contributed to this release (in alphabetical order)::
+
+	Jake Vogel
+	Jerome Dockes
+	Kshitij Chawla (kchawla-pi)
+	Roberto Guidotti
 
 0.6.0a0
 =======
