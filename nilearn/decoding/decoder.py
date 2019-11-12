@@ -1,6 +1,7 @@
 """High-level decoding object that exposes standard classification and
 regression strategies such as SVM, LogisticRegression and Ridge, with optional
-feature selection, integrated hyper-parameter selection and aggregation method.
+feature selection, integrated hyper-parameter selection and aggregation strategy 
+in which the best models within a cross validation loop is averaged.
 """
 # Authors: Yannick Schwartz
 #          Andres Hoyos-Idrobo
@@ -68,7 +69,7 @@ def _check_param_grid(estimator, X, y, param_grid=None):
         Data on which model is to be fitted. If this is a list,
         the affine is considered the same for all.
 
-    y: array or list of length n_samples
+    y: array or list of shape (n_samples)
         The dependent variable (age, sex, IQ, yes/no, etc.).
         Target variable to predict. Must have exactly as many elements as
         3D images in niimg.

@@ -155,7 +155,10 @@ decoder.fit(fmri_niimgs_train, conditions_train)
 
 prediction = decoder.predict(fmri_niimgs_test)
 
-# The prediction accuracy is calculated on the test data.
+# The prediction accuracy is calculated on the test data: this is the accuracy
+# of our model on examples it hasn't seen to examine how well the model perform
+# in general.
+
 print("Prediction Accuracy: {:.3f}".format(
     (prediction == conditions_test).sum() / float(len(conditions_test))))
 
