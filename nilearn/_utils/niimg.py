@@ -127,14 +127,16 @@ def load_niimg(niimg, dtype=None):
     dtype = _get_target_dtype(_get_data(niimg).dtype, dtype)
 
     if dtype is not None:
-        # Copyheader and set dtype in header if header exists
-        if niimg.header is not None:
+        # Copy header and set dtype in header if header exists
+        try:  # Is header iterable
+            'something' in niimg.header
+        except TypeError:  # incompatible with new_img_like(copy_header=True).
             niimg = new_img_like(niimg, _get_data(niimg).astype(dtype),
-                                niimg.affine, copy_header=True)
-            niimg.header.set_data_dtype(dtype)        
+                                 niimg.affine)
         else:
             niimg = new_img_like(niimg, _get_data(niimg).astype(dtype),
-                                niimg.affine)
+                                 niimg.affine, copy_header=True)
+            niimg.header.set_data_dtype(dtype)
 
     return niimg
 
