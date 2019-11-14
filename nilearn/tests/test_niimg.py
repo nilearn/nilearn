@@ -9,7 +9,7 @@ from nibabel.tmpdirs import InTemporaryDirectory
 from nilearn._utils.compat import joblib
 
 from nilearn.image import new_img_like
-from nilearn._utils import niimg
+from nilearn._utils import niimg, load_niimg
 from nilearn._utils.testing import assert_raises_regex
 from nilearn.image import get_data
 
@@ -77,3 +77,12 @@ def test_img_data_dtype():
     # Verify that the distinction is worth making
     assert any(dtype_matches)
     assert not all(dtype_matches)
+
+
+def test_load_niimg_non_iterable_header():
+    fake_fmri_data = np.random.rand(10, 10, 10, 10)
+    fake_affine = np.random.rand(4, 4)
+    fake_spatial_image = nb.spatialimages.SpatialImage(fake_fmri_data,
+                                                       fake_affine)
+    assert fake_spatial_image == load_niimg(fake_spatial_image)
+
