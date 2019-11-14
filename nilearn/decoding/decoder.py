@@ -215,7 +215,7 @@ class _BaseDecoder(LinearModel, RegressorMixin, CacheMixin):
         The parameter grid to explore, as a dictionary mapping estimator
         parameters to sequences of allowed values.
 
-        Input None or an empty dict signifies default parameters.
+        None or an empty dict signifies default parameters.
 
         A sequence of dicts signifies a sequence of grids to search, and is
         useful to avoid exploring parameter combinations that make no sense
@@ -342,7 +342,7 @@ class _BaseDecoder(LinearModel, RegressorMixin, CacheMixin):
             Target variable to predict. Must have exactly as many elements as
             3D images in niimg.
 
-        groups: None, optional
+        groups: None
             Group labels for the samples used while splitting the dataset into
             train/test set. Default None.
             
@@ -609,16 +609,15 @@ class Decoder(_BaseDecoder):
         masker with default parameters. Refer to NiftiMasker or
         MultiNiftiMasker to check for default parameters. Default None
 
-    cv: cross-validation generator, optional (default 10)
+    cv: cross-validation generator or int, optional (default 10)
         A cross-validation generator.
         See: https://scikit-learn.org/stable/modules/cross_validation.html
-
 
     param_grid: dict of str to sequence, or sequence of such. Default None
         The parameter grid to explore, as a dictionary mapping estimator
         parameters to sequences of allowed values.
 
-        Input None or an empty dict signifies default parameters.
+        None or an empty dict signifies default parameters.
 
         A sequence of dicts signifies a sequence of grids to search, and is
         useful to avoid exploring parameter combinations that make no sense
@@ -758,7 +757,7 @@ class DecoderRegressor(_BaseDecoder):
         The parameter grid to explore, as a dictionary mapping estimator
         parameters to sequences of allowed values.
 
-        Input None or an empty dict signifies default parameters.
+        None or an empty dict signifies default parameters.
 
         A sequence of dicts signifies a sequence of grids to search, and is
         useful to avoid exploring parameter combinations that make no sense
