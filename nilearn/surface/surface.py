@@ -712,7 +712,8 @@ def load_surf_mesh(surf_mesh):
         if (surf_mesh.endswith('orig') or surf_mesh.endswith('pial') or
                 surf_mesh.endswith('white') or surf_mesh.endswith('sphere') or
                 surf_mesh.endswith('inflated')):
-            coords, faces = fs.io.read_geometry(surf_mesh)
+            coords, faces, header = fs.io.read_geometry(surf_mesh, read_metadata=True)
+            coords += header['cras']
         elif surf_mesh.endswith('gii'):
             if LooseVersion(nibabel.__version__) >= LooseVersion('2.1.0'):
                 gifti_img = nibabel.load(surf_mesh)
