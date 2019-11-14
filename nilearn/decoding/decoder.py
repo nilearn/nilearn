@@ -1,7 +1,7 @@
 """High-level decoding object that exposes standard classification and
 regression strategies such as SVM, LogisticRegression and Ridge, with optional
 feature selection, integrated hyper-parameter selection and aggregation strategy 
-in which the best models within a cross validation loop is averaged.
+in which the best models within a cross validation loop are averaged.
 """
 # Authors: Yannick Schwartz
 #          Andres Hoyos-Idrobo
@@ -48,7 +48,7 @@ SUPPORTED_ESTIMATORS = dict(
     ridge_classifier=RidgeClassifierCV(),
     ridge_regressor=RidgeCV(),
     ridge=RidgeCV(),
-    svr=SVR(kernel='linear'),
+    svr=SVR(kernel='linear', max_iter=1e4),
 )
 
 
@@ -208,17 +208,19 @@ class _BaseDecoder(LinearModel, RegressorMixin, CacheMixin):
         MultiNiftiMasker to check for default parameters. Default None
 
     cv: cross-validation generator or int, optional. Default 10
-        A cross-validation generator.
+        A cross-validation generator. 
+        See: https://scikit-learn.org/stable/modules/cross_validation.html
 
     param_grid: dict of str to sequence, or sequence of such. Default None
         The parameter grid to explore, as a dictionary mapping estimator
         parameters to sequences of allowed values.
 
-        An empty dict signifies default parameters.
+        Input None or an empty dict signifies default parameters.
 
         A sequence of dicts signifies a sequence of grids to search, and is
         useful to avoid exploring parameter combinations that make no sense
-        or have no effect. See scikit-learn documentation for more information.
+        or have no effect. See scikit-learn documentation for more information,
+        for example: https://scikit-learn.org/stable/modules/grid_search.html
 
     screening_percentile: int, float, optional, in the closed interval [0, 100]
         Perform a univariate feature selection based on the Anova F-value for
@@ -226,7 +228,8 @@ class _BaseDecoder(LinearModel, RegressorMixin, CacheMixin):
         scores. Default: 20.
 
     scoring: str, callable or None, optional. Default None
-        The scoring strategy to use. See the scikit-learn documentation
+        The scoring strategy to use. See the scikit-learn documentation at
+        https://scikit-learn.org/stable/modules/model_evaluation.html#the-scoring-parameter-defining-model-evaluation-rules
         If callable, takes as arguments the fitted estimator, the
         test data (X_test) and the test target (y_test) if y is
         not None.
@@ -271,7 +274,9 @@ class _BaseDecoder(LinearModel, RegressorMixin, CacheMixin):
         images present a clear homogeneous background, and 'epi' if they
         are raw EPI images. Depending on this value, the mask will be
         computed from masking.compute_background_mask or
-        masking.compute_epi_mask.
+        masking.compute_epi_mask. 
+        
+        This parameter will be ignored if a mask image is provided.
 
     memory: instance of joblib.Memory or str
         Used to cache the masking process.
@@ -337,11 +342,16 @@ class _BaseDecoder(LinearModel, RegressorMixin, CacheMixin):
             Target variable to predict. Must have exactly as many elements as
             3D images in niimg.
 
-        groups: None or bool, optional
-            Must be specify in multi-label classification settings.
+        groups: None, optional
             Group labels for the samples used while splitting the dataset into
-            train/test set. This ‘groups’ parameter must always be specified to
-            calculate the number of splits.
+            train/test set. Default None.
+            
+            Note that this parameter must be specified in some scikit-learn
+            cross-validation generators to calculate the number of splits, e.g.
+            sklearn.model_selection.LeaveOneGroupOut or
+            sklearn.model_selection.LeavePGroupsOut.
+
+            For more details see https://scikit-learn.org/stable/modules/cross_validation.html#cross-validation-iterators-for-grouped-data
 
         Attributes
         ----------
@@ -367,9 +377,8 @@ class _BaseDecoder(LinearModel, RegressorMixin, CacheMixin):
             and `coef_` transformed in Nifti1Images as values. In the case
             of a regression, it contains a single Nifti1Image at the key 'beta'.
 
-        `intercept_`: narray, shape (nclasses -1,)
+        `intercept_`: narray, shape (nclasses,)
             Intercept (a.k.a. bias) added to the decision function.
-            It is available only when parameter intercept is set to True.
 
         `cv_`: list of pairs of lists
             List of the (n_folds,) folds. For the corresponding fold,
@@ -378,7 +387,8 @@ class _BaseDecoder(LinearModel, RegressorMixin, CacheMixin):
 
         `std_coef_`: numpy.ndarray, shape=(n_classes, n_features)
             Contains the standard deviation of the models weight vector across
-            fold for each class.
+            fold for each class. Note that folds are not independent, see
+            https://scikit-learn.org/stable/modules/cross_validation.html#cross-validation-iterators-for-grouped-data
 
         `std_coef_img_`: dict of Nifti1Image
             Dictionary containing `std_coef_` with class names as keys,
@@ -395,12 +405,12 @@ class _BaseDecoder(LinearModel, RegressorMixin, CacheMixin):
         self.estimator = _check_estimator(self.estimator)
         self.memory_ = _check_memory(self.memory, self.verbose)
 
-        X = self._apply_mask(X, standardize=self.standardize)
+        X = self._apply_mask(X)
         X, y = check_X_y(X, y, dtype=np.float, multi_output=True)
 
         # Setup scorer
         scorer = check_scoring(self.estimator, self.scoring)
-        self.cv_ = list(check_cv(self.cv, y=y, 
+        self.cv_ = list(check_cv(self.cv, y=y,
             classifier=self.is_classification).split(X, y, groups=groups))
 
         # Define the number problems to solve. In case of classification this
@@ -504,10 +514,9 @@ class _BaseDecoder(LinearModel, RegressorMixin, CacheMixin):
 
         return scores
 
-    def _apply_mask(self, X, standardize=False):
+    def _apply_mask(self, X):
         # Nifti masking
         self.masker_ = check_embedded_nifti_masker(self, multi_subject=False)
-        self.masker_.set_params(standardize=standardize)
         X = self.masker_.fit_transform(X)
         self.mask_img_ = self.masker_.mask_img_
 
@@ -532,8 +541,6 @@ class _BaseDecoder(LinearModel, RegressorMixin, CacheMixin):
             Coefficients for each classification/regression problem
         intercepts : dict
             Intercept for each classification/regression problem
-
-        TODO: write unit test
         """
 
         coefs = {}
@@ -604,16 +611,19 @@ class Decoder(_BaseDecoder):
 
     cv: cross-validation generator, optional (default 10)
         A cross-validation generator.
+        See: https://scikit-learn.org/stable/modules/cross_validation.html
+
 
     param_grid: dict of str to sequence, or sequence of such. Default None
         The parameter grid to explore, as a dictionary mapping estimator
         parameters to sequences of allowed values.
 
-        An empty dict signifies default parameters.
+        Input None or an empty dict signifies default parameters.
 
         A sequence of dicts signifies a sequence of grids to search, and is
         useful to avoid exploring parameter combinations that make no sense
-        or have no effect. See scikit-learn documentation for more information.
+        or have no effect. See scikit-learn documentation for more information,
+        for example: https://scikit-learn.org/stable/modules/grid_search.html
 
     screening_percentile: int, float, optional, in the closed interval [0, 100]
         Perform an univariate feature selection based on the Anova F-value for
@@ -621,7 +631,8 @@ class Decoder(_BaseDecoder):
         scores. Default: 20.
 
     scoring: str, callable or None, optional. Default: 'roc_auc'
-        The scoring strategy to use. See the scikit-learn documentation
+        The scoring strategy to use. See the scikit-learn documentation at
+        https://scikit-learn.org/stable/modules/model_evaluation.html#the-scoring-parameter-defining-model-evaluation-rules
         If callable, takes as arguments the fitted estimator, the
         test data (X_test) and the test target (y_test) if y is
         not None.
@@ -664,6 +675,8 @@ class Decoder(_BaseDecoder):
         are raw EPI images. Depending on this value, the mask will be
         computed from masking.compute_background_mask or
         masking.compute_epi_mask.
+
+        This parameter will be ignored if a mask image is provided.
 
     memory: instance of joblib.Memory or str
         Used to cache the masking process.
@@ -739,16 +752,18 @@ class DecoderRegressor(_BaseDecoder):
 
     cv: cross-validation generator or int, optional (default 10)
         A cross-validation generator.
+        See: https://scikit-learn.org/stable/modules/cross_validation.html
 
     param_grid: dict of str to sequence, or sequence of such. Default None
         The parameter grid to explore, as a dictionary mapping estimator
         parameters to sequences of allowed values.
 
-        An empty dict signifies default parameters.
+        Input None or an empty dict signifies default parameters.
 
         A sequence of dicts signifies a sequence of grids to search, and is
         useful to avoid exploring parameter combinations that make no sense
-        or have no effect. See scikit-learn documentation for more information.
+        or have no effect. See scikit-learn documentation for more information,
+        for example: https://scikit-learn.org/stable/modules/grid_search.html
 
     screening_percentile: int, float, optional, in the closed interval [0, 100]
         Perform a univariate feature selection based on the Anova F-value for
@@ -756,7 +771,8 @@ class DecoderRegressor(_BaseDecoder):
         scores. Default: 20.
 
     scoring: str, callable or None, optional. Default: 'r2'
-        The scoring strategy to use. See the scikit-learn documentation
+        The scoring strategy to use. See the scikit-learn documentation at
+        https://scikit-learn.org/stable/modules/model_evaluation.html#the-scoring-parameter-defining-model-evaluation-rules
         If callable, takes as arguments the fitted estimator, the
         test data (X_test) and the test target (y_test) if y is
         not None.
@@ -799,6 +815,8 @@ class DecoderRegressor(_BaseDecoder):
         are raw EPI images. Depending on this value, the mask will be
         computed from masking.compute_background_mask or
         masking.compute_epi_mask.
+
+        This parameter will be ignored if a mask image is provided.
 
     memory: instance of joblib.Memory or str
         Used to cache the masking process.
