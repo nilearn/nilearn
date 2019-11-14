@@ -253,7 +253,34 @@ def test_decoder_apply_mask():
         n_informative=5, n_classes=4, random_state=42)
     X, _ = to_niimgs(X_init, [5, 5, 5])
     model = Decoder(mask=NiftiMasker())
+
     X_masked = model._apply_mask(X)
 
     # test whether if _apply mask output has the same shape as original matrix
     assert_equal(X_masked.shape, X_init.shape)
+
+    # test whethere model.masker_ have some desire attributes manually set 
+    # after calling _apply_mask; by default these parameters are set to None
+    target_affine = 2 * np.eye(4)
+    target_shape = (1, 1, 1)
+    t_r = 1
+    high_pass = 1
+    low_pass = 2
+    smoothing_fwhm = 0.5
+    model = Decoder(
+        target_affine=target_affine, 
+        target_shape=target_shape,
+        t_r=t_r,
+        high_pass=high_pass,
+        low_pass=low_pass,
+        smoothing_fwhm=smoothing_fwhm
+
+    )
+    X_masked = model._apply_mask(X)
+    
+    assert_true(np.any(model.masker_.target_affine == target_affine))
+    assert_equal(model.masker_.target_shape, target_shape)
+    assert_equal(model.masker_.t_r, t_r)
+    assert_equal(model.masker_.high_pass, high_pass)
+    assert_equal(model.masker_.low_pass, low_pass)
+    assert_equal(model.masker_.smoothing_fwhm, smoothing_fwhm)
