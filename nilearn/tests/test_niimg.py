@@ -85,4 +85,3 @@ def test_load_niimg_non_iterable_header():
     fake_spatial_image = nb.spatialimages.SpatialImage(fake_fmri_data,
                                                        fake_affine)
     assert fake_spatial_image == load_niimg(fake_spatial_image)
-
