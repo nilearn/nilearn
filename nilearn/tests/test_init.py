@@ -24,7 +24,6 @@ def test_python_deprecation_warnings():
             _python_deprecation_warnings()
 
 
-
 def test_warnings_filter_scope():
     """
     Tests that warnings generated at Nilearn import in Python 3.5 envs
