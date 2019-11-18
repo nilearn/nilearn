@@ -21,7 +21,7 @@ from functools import wraps
 import numpy as np
 from nose import SkipTest
 from nose.tools import (assert_true, assert_false, assert_equal, assert_raises)
-from sklearn.utils.testing import assert_warns
+from from nilearn._utils.testing import assert_warns
 
 from nilearn.datasets import neurovault
 
