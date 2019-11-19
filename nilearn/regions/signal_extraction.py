@@ -18,7 +18,7 @@ from ..image import new_img_like
 
 # FIXME: naming scheme is not really satisfying. Any better idea appreciated.
 def img_to_signals_labels(imgs, labels_img, mask_img=None,
-                          background_label=0, order="F"):
+                          background_label=0, order="F", strategy='mean'):
     """Extract region signals from image.
 
     This function is applicable to regions defined by labels.
@@ -48,6 +48,10 @@ def img_to_signals_labels(imgs, labels_img, mask_img=None,
     order: str
         ordering of output array ("C" or "F"). Defaults to "F".
 
+    strategy: str
+        The name of a valid function to reduce the region with.
+        Must be one of: mean, median, mininum, maximum, standard_deviation, variance
+
     Returns
     -------
     signals: numpy.ndarray
@@ -76,6 +80,15 @@ def img_to_signals_labels(imgs, labels_img, mask_img=None,
     target_affine = imgs.affine
     target_shape = imgs.shape[:3]
 
+    # Check aggregating function
+    available_reduction_functions = ('mean', 'median',
+                                     'minimum', 'maximum',
+                                     'standard_deviation', 'variance')
+    if strategy in available_reduction_functions:
+        reduction_function = getattr(ndimage.measurements, strategy)
+    else:
+        raise ValueError("func not in %s" % (available_reduction_functions,))
+
     # Check shapes and affines.
     if labels_img.shape != target_shape:
         raise ValueError("labels_img and imgs shapes must be identical.")
@@ -103,10 +116,11 @@ def img_to_signals_labels(imgs, labels_img, mask_img=None,
     data = _safe_get_data(imgs)
     signals = np.ndarray((data.shape[-1], len(labels)), order=order,
                          dtype=data.dtype)
+
     for n, img in enumerate(np.rollaxis(data, -1)):
-        signals[n] = np.asarray(ndimage.measurements.mean(img,
-                                                          labels=labels_data,
-                                                          index=labels))
+        signals[n] = np.asarray(reduction_function(img,
+                                                   labels=labels_data,
+                                                   index=labels))
     # Set to zero signals for missing labels. Workaround for Scipy behaviour
     missing_labels = set(labels) - set(np.unique(labels_data))
     labels_index = dict([(l, n) for n, l in enumerate(labels)])
