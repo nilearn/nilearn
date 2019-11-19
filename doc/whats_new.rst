@@ -1,3 +1,12 @@
+0.6.0b1
+=======
+
+Fixes
+-----
+
+- Region means are no longer casted to Int type for Int images in
+  :class:`nilearn.input_data.NiftLabelsMasker`.
+
 0.6.0b0
 =======
 
