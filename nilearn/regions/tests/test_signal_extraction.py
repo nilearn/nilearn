@@ -428,4 +428,4 @@ def test_img_to_signals_labels_int_type():
     timeseries_int = masker.transform(fake_fmri_img_int)
     timeseries_float = masker.transform(fake_fmri_img_float)
     assert np.sum(timeseries_int) != 0
-    assert np.array_equal(timeseries_int, timeseries_float)
+    assert np.array_equiv(timeseries_int, timeseries_float)
