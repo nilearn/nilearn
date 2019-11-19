@@ -9,13 +9,14 @@ from nose.tools import assert_raises, assert_true
 
 import nibabel
 
+from nilearn.input_data import NiftiLabelsMasker
 from nilearn.regions import signal_extraction
 from nilearn._utils.testing import write_tmp_imgs, assert_raises_regex
 from nilearn._utils.data_gen import generate_timeseries, generate_regions_ts
 from nilearn._utils.data_gen import generate_labeled_regions, generate_maps
 from nilearn._utils.data_gen import generate_fake_fmri
 from nilearn._utils.exceptions import DimensionError
-from nilearn.image import get_data
+from nilearn.image import get_data, new_img_like
 
 _TEST_DIM_ERROR_MSG = ("Input data has incompatible dimensionality: "
                        "Expected dimension is 3D and you provided "
@@ -410,3 +411,21 @@ def test__trim_maps():
     np.testing.assert_equal(mask_data, maps_i_mask)
     mask_data[1, 1, 1] = 1  # reset, just in case.
     np.testing.assert_equal(np.asarray(list(range(4))), maps_i_indices)
+
+
+def test_img_to_signals_labels_int_type():
+    fake_fmri_data = np.random.RandomState(0).rand(10, 10, 10, 10, ) > 0.5
+    fake_affine = np.random.rand(4, 4)
+    fake_fmri_img_float = nibabel.Nifti1Image(fake_fmri_data.astype(np.float),
+                                              fake_affine)
+    fake_fmri_img_int = new_img_like(fake_fmri_img_float,
+                                     fake_fmri_data.astype(np.int))
+    fake_mask_data = np.ones((10, 10, 10), dtype=np.uint8)
+    fake_mask = nibabel.Nifti1Image(fake_mask_data, fake_affine)
+
+    masker = NiftiLabelsMasker(fake_mask)
+    masker.fit()
+    timeseries_int = masker.transform(fake_fmri_img_int)
+    timeseries_float = masker.transform(fake_fmri_img_float)
+    assert np.sum(timeseries_int) != 0
+    assert np.array_equal(timeseries_int, timeseries_float)

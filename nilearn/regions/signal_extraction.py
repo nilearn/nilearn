@@ -102,7 +102,7 @@ def img_to_signals_labels(imgs, labels_img, mask_img=None,
 
     data = _safe_get_data(imgs)
     signals = np.ndarray((data.shape[-1], len(labels)), order=order,
-                         dtype=np.float64)
+                         dtype=data.dtype)
     for n, img in enumerate(np.rollaxis(data, -1)):
         signals[n] = np.asarray(ndimage.measurements.mean(img,
                                                           labels=labels_data,
