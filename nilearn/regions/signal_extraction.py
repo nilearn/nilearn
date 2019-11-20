@@ -81,13 +81,13 @@ def img_to_signals_labels(imgs, labels_img, mask_img=None,
     target_shape = imgs.shape[:3]
 
     # Check aggregating function
-    available_reduction_functions = ('mean', 'median',
-                                     'minimum', 'maximum',
-                                     'standard_deviation', 'variance')
-    if strategy in available_reduction_functions:
+    available_reduction_strategies = ('mean', 'median',
+                                      'minimum', 'maximum',
+                                      'standard_deviation', 'variance')
+    if strategy in available_reduction_strategies:
         reduction_function = getattr(ndimage.measurements, strategy)
     else:
-        raise ValueError("func not in %s" % (available_reduction_functions,))
+        raise ValueError("strategy not in %s" % (available_reduction_strategies,))
 
     # Check shapes and affines.
     if labels_img.shape != target_shape:

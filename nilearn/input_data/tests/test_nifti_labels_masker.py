@@ -125,6 +125,36 @@ def test_nifti_labels_masker_with_nans_and_infs():
     assert_true(np.all(np.isfinite(sig)))
 
 
+def test_nifti_labels_masker_reduction_strategies():
+    """Tests:
+           1. whether the usage of different reduction strategies work.
+           2. whether unrecognised strategies raise a ValueError
+           3. whether the default option is backwards compatible (calls "mean")
+    """
+    affine = np.eye(4)
+    img_data = np.array([[[-2., -1., 0., 1., 2],
+                          [-2., -1., 0., 1., 2]]])
+
+    labels_data = np.array([[[0, 0, 0, 0, 0],
+                             [1, 1, 1, 1, 1]]], dtype=np.int8)
+
+    img = nibabel.Nifti1Image(img_data, affine)
+    labels = nibabel.Nifti1Image(labels_data, affine)
+
+    strategies = ("mean", "median", "minimum", "maximum", "standard_deviation", "variance")
+    expected_results = (0, 0, -2, 2, np.sqrt(2), 2)
+
+    for strategy, expected_result in zip(strategies, expected_results):
+        masker = NiftiLabelsMasker(labels, strategy=strategy)
+        # Here passing [img] within a list because it's a 3D object.
+        result = masker.fit_transform([img]).squeeze()
+        assert result == expected_result
+
+    assert_raises(ValueError, NiftiLabelsMasker, labels,
+                  strategy="A Strategy that does not exist should raise.")
+
+
+
 def test_nifti_labels_masker_resampling():
     # Test resampling in NiftiLabelsMasker
     shape1 = (10, 11, 12)
