@@ -27,7 +27,7 @@ except ImportError:
     from collections import Container
 
 import numpy as np
-from sklearn.datasets.base import Bunch
+from sklearn.utils import Bunch
 from sklearn.feature_extraction import DictVectorizer
 
 from .._utils.compat import _basestring
