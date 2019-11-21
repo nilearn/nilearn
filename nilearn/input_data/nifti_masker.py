@@ -18,6 +18,7 @@ from .._utils import CacheMixin
 from .._utils.class_inspect import get_params
 from .._utils.niimg import img_data_dtype
 from .._utils.niimg_conversions import _check_same_fov
+from nilearn.image import get_data
 
 
 class _ExtractionFunctor(object):
@@ -344,7 +345,7 @@ class NiftiMasker(BaseMasker, CacheMixin, ReportMixin):
         else:  # resample image to mask affine
             self.affine_ = self.mask_img_.affine
         # Load data in memory
-        self.mask_img_.get_data()
+        get_data(self.mask_img_)
         if self.verbose > 10:
             print("[%s.fit] Finished fit" % self.__class__.__name__)
 

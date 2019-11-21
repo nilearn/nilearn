@@ -6,10 +6,13 @@ Test the datasets module
 
 import os
 import uuid
+
 import numpy as np
 import json
 import nibabel
 import gzip
+
+import pytest
 from sklearn.utils import check_random_state
 
 from nose import with_setup
@@ -281,12 +284,23 @@ def test_fetch_localizer_calculation_task():
 @with_setup(tst.setup_tmpdata, tst.teardown_tmpdata)
 @with_setup(setup_localizer, teardown_localizer)
 def test_fetch_localizer_button_task():
-    # 2 subjects
-    dataset = func.fetch_localizer_button_task(
-        data_dir=tst.tmpdir,
-        verbose=1)
-    assert_true(isinstance(dataset.tmaps[0], _basestring))
-    assert_true(isinstance(dataset.anats[0], _basestring))
+    local_url = "file://" + tst.datadir
+
+    # Disabled: cannot be tested without actually fetching covariates CSV file
+    # Only one subject
+    dataset = func.fetch_localizer_button_task(data_dir=tst.tmpdir,
+                                               url=local_url,
+                                               verbose=1)
+
+    assert_true(isinstance(dataset.tmaps, list))
+    assert_true(isinstance(dataset.anats, list))
+
+    assert len(dataset.tmaps) == 1
+    assert len(dataset.anats) == 1
+
+    assert_true(isinstance(dataset.tmap, str))
+    assert_true(isinstance(dataset.anat, str))
+
     assert_not_equal(dataset.description, '')
 
 
@@ -598,6 +612,7 @@ def test_fetch_development_fmri_functional():
     funcs, confounds = func._fetch_development_fmri_functional(csv,
                                                                data_dir=tst.tmpdir,
                                                                url=local_url,
+                                                               resume=True,
                                                                verbose=1)
     assert_equal(len(funcs), 8)
     assert_equal(len(confounds), 8)
@@ -622,3 +637,47 @@ def test_fetch_development_fmri():
                                        verbose=1)
     confounds = np.recfromcsv(data.confounds[0], delimiter='\t')
     assert_equal(len(confounds[0]), 28)
+
+    # check first subject is an adult
+    data = func.fetch_development_fmri(n_subjects=1, reduce_confounds=False,
+                                       verbose=1)
+    age_group = data.phenotypic['Child_Adult'][0]
+    assert_equal(age_group, 'adult')
+
+    # check first subject is an child if requested with age_group
+    data = func.fetch_development_fmri(n_subjects=1, reduce_confounds=False,
+                                       verbose=1, age_group='child')
+    age_group = data.phenotypic['Child_Adult'][0]
+    assert_equal(age_group, 'child')
+
+    # check one of each age group returned if n_subject == 2
+    # and age_group == 'both
+    data = func.fetch_development_fmri(n_subjects=2, reduce_confounds=False,
+                                       verbose=1, age_group='both')
+    age_group = data.phenotypic['Child_Adult']
+    assert(all(age_group == ['adult', 'child']))
+
+    # check age_group
+    data = func.fetch_development_fmri(n_subjects=2, reduce_confounds=False,
+                                       verbose=1, age_group='child')
+    assert(all([x == 'child' for x in data.phenotypic['Child_Adult']]))
+
+
+@with_setup(tst.setup_tmpdata, tst.teardown_tmpdata)
+def test_fetch_development_fmri_invalid_n_subjects():
+    max_subjects = 155
+    n_subjects = func._set_invalid_n_subjects_to_max(n_subjects=None,
+                                                     max_subjects=max_subjects,
+                                                     age_group='adult')
+    assert n_subjects == max_subjects
+    with pytest.warns(UserWarning, match='Wrong value for n_subjects='):
+        func._set_invalid_n_subjects_to_max(n_subjects=-1,
+                                            max_subjects=max_subjects,
+                                            age_group='adult')
+
+
+@with_setup(tst.setup_tmpdata, tst.teardown_tmpdata)
+def test_fetch_development_fmri_exception():
+    with pytest.raises(ValueError, match='Wrong value for age_group'):
+        func._filter_func_regressors_by_participants(participants='junk',
+                                                     age_group='junk for test')

@@ -169,6 +169,7 @@ uses.
    coord_transform
    copy_img
    crop_img
+   get_data
    high_variance_confounds
    index_img
    iter_img

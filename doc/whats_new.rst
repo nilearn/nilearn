@@ -1,5 +1,60 @@
-0.6.0a
-======
+0.6.0b0
+=======
+
+**Released November 2019**
+
+.. warning::
+
+ | **Python2 and 3.4 are no longer supported. Pip will raise an error in these environments.**
+ | **Minimum supported version of Python is now 3.5 .**
+ | **We recommend upgrading to Python 3.6 .**
+
+
+NEW
+---
+
+- A new function :func:`nilearn.image.get_data` to replace the deprecated
+  nibabel method `Nifti1Image.get_data`. Now use `nilearn.image.get_data(img)`
+  rather than `img.get_data()`. This is because Nibabel is removing the
+  `get_data` method. You may also consider using the Nibabel
+  `Nifti1Image.get_fdata`, which returns the data cast to floating-point.
+  See https://github.com/nipy/nibabel/wiki/BIAP8 .
+  As a benefit, the `get_data` function works on niimg-like objects such as
+  filenames (see http://nilearn.github.io/manipulating_images/input_output.html ).
+
+Changes
+-------
+
+- All functions and examples now use `nilearn.image.get_data` rather than the
+  deprecated method `nibabel.Nifti1Image.get_data`.
+
+- :func:`nilearn.datasets.fetch_neurovault` now does not filter out images that
+  have their metadata field `is_valid` cleared by default.
+
+- Users can now specify fetching data for adults, children, or both from
+  :func:`nilearn.datasets.fetch_development_fmri` .
+
+
+Fixes
+-----
+
+- :func:`nilearn.plotting.plot_connectome` now correctly displays marker size on 'l'
+  and 'r' orientations, if an array or a list is passed to the function.
+
+Contributors
+------------
+
+The following people contributed to this release (in alphabetical order)::
+
+	Jake Vogel
+	Jerome Dockes
+	Kshitij Chawla (kchawla-pi)
+	Roberto Guidotti
+
+0.6.0a0
+=======
+
+**Released October 2019**
 
 NEW
 ---
@@ -107,7 +162,43 @@ Fixes
   version 0.14.3 (instead of 0.8.1) by default, which includes corrected region label
   names along with 700 and 900 region parcelations.
 - Colormap creation functions have been updated to avoid matplotlib deprecation warnings
-  about colormap reversal
+  about colormap reversal.
+- Neurovault fetcher no longer fails if unable to update dataset metadata file due to faulty permissions.
+
+Contributors
+------------
+
+The following people contributed to this release (in alphabetical order)::
+
+	Alexandre Abraham
+	Alexandre Gramfort
+	Ana Luisa
+	Ana Luisa Pinho
+	Andrés Hoyos Idrobo
+	Antoine Grigis
+	BAZEILLE Thomas
+	Bertrand Thirion
+	Colin Reininger
+	Céline Delettre
+	Dan Gale
+	Daniel Gomez
+	Elizabeth DuPre
+	Eric Larson
+	Franz Liem
+	Gael Varoquaux
+	Gilles de Hollander
+	Greg Kiar
+	Guillaume Lemaitre
+	Ian Abenes
+	Jake Vogel
+	Jerome Dockes
+	Jerome-Alexis Chevalier
+	Julia Huntenburg
+	Kamalakar Daddy
+	Kshitij Chawla (kchawla-pi)
+	Mehdi Rahim
+	Moritz Boos
+	Sylvain Takerkart
 
 0.5.2
 =====

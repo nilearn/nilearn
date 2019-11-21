@@ -121,15 +121,16 @@ cut_coords = first_plot.cut_coords
 
 # Grab number of voxels from attribute mask image (mask_img_).
 import numpy as np
-original_voxels = np.sum(ward.mask_img_.get_data())
+from nilearn.image import get_data
+original_voxels = np.sum(get_data(ward.mask_img_))
 
 # Compute mean over time on the functional image to use the mean
 # image for compressed representation comparisons
 mean_func_img = mean_img(dataset.func[0])
 
 # Compute common vmin and vmax
-vmin = np.min(mean_func_img.get_data())
-vmax = np.max(mean_func_img.get_data())
+vmin = np.min(get_data(mean_func_img))
+vmax = np.max(get_data(mean_func_img))
 
 plotting.plot_epi(mean_func_img, cut_coords=cut_coords,
                   title='Original (%i voxels)' % original_voxels,
