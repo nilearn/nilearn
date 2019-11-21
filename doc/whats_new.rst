@@ -1,3 +1,12 @@
+0.6.0b1
+=======
+
+Fixes
+-----
+
+- :func: `nilearn.image.smooth_image` no longer fails if `fwhm` is a `numpy.ndarray`.
+
+
 0.6.0b0
 =======
 
@@ -139,7 +148,6 @@ Changes
 Fixes
 -----
 
-- :func: `nilearn.image.smooth_image` no longer fails if `fwhm` is a `numpy.ndarray`.
 - :func:`nilearn.plotting.plot_glass_brain` with colorbar=True does not crash when
   images have NaNs.
 - add_contours now accepts `threshold` argument for filled=False. Now
