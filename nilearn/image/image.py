@@ -177,7 +177,7 @@ def _smooth_array(arr, affine, fwhm=None, ensure_finite=True, copy=True):
 
     fwhm: scalar, numpy.ndarray/tuple/list, 'fast' or None
         Smoothing strength, as a full-width at half maximum, in millimeters.
-        If a nonzero scalar is given, width is identical on all three directions.
+        If a nonzero scalar is given, width is identical in all three directions.
         A numpy.ndarray/list/tuple must have 3 elements, giving the FWHM along each axis.
         If any of the elements is zero or None, smoothing is not performed along that axis.
         If fwhm == 'fast', a fast smoothing will be performed with
@@ -185,7 +185,6 @@ def _smooth_array(arr, affine, fwhm=None, ensure_finite=True, copy=True):
         to preserve the local average value.
         If fwhm is None, no filtering is performed (useful when just removal
         of non-finite values is needed).
-
 
     ensure_finite: bool
         if True, replace every non-finite values (like NaNs) by zero before
@@ -206,47 +205,33 @@ def _smooth_array(arr, affine, fwhm=None, ensure_finite=True, copy=True):
     """
     # Here, we have to investigate use cases of fwhm. Particularly, if fwhm=0.
     # See issue #1537
-
-    
     if isinstance(fwhm, (int, float)) and  (fwhm == 0.0):
         warnings.warn("The parameter 'fwhm' for smoothing is specified "
                       "as {0}. Converting to None (no smoothing will be performed)"
                       .format(fwhm))
         fwhm = None
-
     if arr.dtype.kind == 'i':
         if arr.dtype == np.int64:
             arr = arr.astype(np.float64)
         else:
-            # We don't need crazy precision
-            arr = arr.astype(np.float32)
+            arr = arr.astype(np.float32)  # We don't need crazy precision.
     if copy:
         arr = arr.copy()
-
     if ensure_finite:
         # SPM tends to put NaNs in the data outside the brain
         arr[np.logical_not(np.isfinite(arr))] = 0
-
     if isinstance(fwhm, str) and (fwhm == 'fast'):
         arr = _fast_smooth_array(arr)
     elif fwhm is not None:
-        # Assume fwhm is either a nonzero number or a tuple, or a numpy array.
-        # Whatever it is at this point, transform it into an np.array
         fwhm = np.asarray(fwhm)
         fwhm = np.where(fwhm == None, 0.0, fwhm)
-
-        # Keep only the scale part.
-        affine = affine[:3, :3]
-
-        # Convert from a FWHM to a sigma:
-        fwhm_over_sigma_ratio = np.sqrt(8 * np.log(2))
+        affine = affine[:3, :3]  # Keep only the scale part.
+        fwhm_over_sigma_ratio = np.sqrt(8 * np.log(2))  # FWHM to sigma.
         vox_size = np.sqrt(np.sum(affine ** 2, axis=0))
         sigma = fwhm / (fwhm_over_sigma_ratio * vox_size)
-
         for n, s in enumerate(sigma):
             if s > 0.0:
                 ndimage.gaussian_filter1d(arr, s, output=arr, axis=n)
-
     return arr
 
 
