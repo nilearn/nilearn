@@ -234,7 +234,7 @@ data, which we call Niimgs or Niimg-4D. Accepted input arguments are:
    If you provide a sequence of Nifti images, all of them must have the same
    affine.
 
-.. topic:: Decreasing memory used when loading Nifti images
+.. topic:: **Decreasing memory used when loading Nifti images**
 
    When Nifti images are stored compressed (.nii.gz), loading them directly
    consumes more memory. As a result, large 4D images may
