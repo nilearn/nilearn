@@ -1,3 +1,14 @@
+0.6.0b1
+=======
+
+NEW
+---
+
+- **Support for Python3.5 wil be removed in the 0.7.x release.**
+  Users with a Python3.5 environment will be warned
+  at their first Nilearn import.
+
+
 0.6.0b0
 =======
 
