@@ -148,13 +148,18 @@ class NiftiLabelsMasker(BaseMasker, CacheMixin):
         self.memory_level = memory_level
         self.verbose = verbose
 
-        available_reduction_strategies = ('mean', 'median',
+        available_reduction_strategies = {'mean', 'median',
                                           'minimum', 'maximum',
-                                          'standard_deviation', 'variance')
-        if strategy in available_reduction_strategies:
-            self.strategy = strategy
-        else:
-            raise ValueError("strategy not in %s" % (available_reduction_strategies,))
+                                          'standard_deviation', 'variance'}
+
+        if strategy not in available_reduction_strategies:
+            raise ValueError(str.format(
+                "Invalid strategy '{}'. Valid strategies are {}.",
+                strategy,
+                available_reduction_strategies
+            ))
+
+        self.strategy = strategy
 
         if resampling_target not in ("labels", "data", None):
             raise ValueError("invalid value for 'resampling_target' "

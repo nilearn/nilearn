@@ -6,6 +6,7 @@ test_masking.py and test_signal.py for details.
 """
 
 from nose.tools import assert_raises, assert_equal, assert_true
+import pytest
 import numpy as np
 
 import nibabel
@@ -127,32 +128,44 @@ def test_nifti_labels_masker_with_nans_and_infs():
 
 def test_nifti_labels_masker_reduction_strategies():
     """Tests:
-           1. whether the usage of different reduction strategies work.
-           2. whether unrecognised strategies raise a ValueError
-           3. whether the default option is backwards compatible (calls "mean")
+    1. whether the usage of different reduction strategies work.
+    2. whether unrecognised strategies raise a ValueError
+    3. whether the default option is backwards compatible (calls "mean")
     """
-    affine = np.eye(4)
-    img_data = np.array([[[-2., -1., 0., 1., 2],
-                          [-2., -1., 0., 1., 2]]])
+    test_values = [-2., -1., 0., 1., 2]
+
+    img_data = np.array([[test_values,
+                          test_values]])
 
     labels_data = np.array([[[0, 0, 0, 0, 0],
                              [1, 1, 1, 1, 1]]], dtype=np.int8)
 
+    affine = np.eye(4)
     img = nibabel.Nifti1Image(img_data, affine)
     labels = nibabel.Nifti1Image(labels_data, affine)
 
-    strategies = ("mean", "median", "minimum", "maximum", "standard_deviation", "variance")
-    expected_results = (0, 0, -2, 2, np.sqrt(2), 2)
+    # What NiftiLabelsMasker should return for each reduction strategy?
+    expected_results = {"mean": np.mean(test_values),
+                        "median": np.median(test_values),
+                        "minimum": np.min(test_values),
+                        "maximum": np.max(test_values),
+                        "standard_deviation": np.std(test_values),
+                        "variance": np.var(test_values)}
 
-    for strategy, expected_result in zip(strategies, expected_results):
+    for strategy, expected_result in expected_results.items():
         masker = NiftiLabelsMasker(labels, strategy=strategy)
         # Here passing [img] within a list because it's a 3D object.
         result = masker.fit_transform([img]).squeeze()
         assert result == expected_result
 
-    assert_raises(ValueError, NiftiLabelsMasker, labels,
-                  strategy="A Strategy that does not exist should raise.")
+    with pytest.raises(ValueError, match="Invalid strategy 'TESTRAISE'"):
+        NiftiLabelsMasker(
+            labels,
+            strategy="TESTRAISE"
+        )
 
+    default_masker = NiftiLabelsMasker(labels)
+    assert default_masker.strategy == "mean"
 
 
 def test_nifti_labels_masker_resampling():

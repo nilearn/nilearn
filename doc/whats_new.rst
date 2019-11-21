@@ -1,3 +1,23 @@
+0.6.0b1
+=======
+
+Changes
+-------
+
+- Class :class:`nilearn.input_data.NiftiLabelsMasker` now accepts an optional
+  `strategy` parameter which allows it to change the function used to reduce
+  values within each labelled ROI. Available functions include mean, median,
+  minimum, maximum, standard_deviation and variance.
+  This change is also introduced in :func:`nilearn.regions.img_to_signals_labels`.
+
+Contributors
+------------
+
+The following people contributed to this release (in alphabetical order)::
+
+    Daniel Gomez (dangom)
+    Kshitij Chawla (kchawla-pi)
+
 0.6.0b0
 =======
 

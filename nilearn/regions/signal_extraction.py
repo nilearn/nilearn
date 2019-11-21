@@ -68,7 +68,7 @@ def img_to_signals_labels(imgs, labels_img, mask_img=None,
     --------
     nilearn.regions.signals_to_img_labels
     nilearn.regions.img_to_signals_maps
-    nilearn.input_data.NiftiLabelsMasker : Signal extraction on labels images 
+    nilearn.input_data.NiftiLabelsMasker : Signal extraction on labels images
         e.g. clusters
     """
 
@@ -80,14 +80,15 @@ def img_to_signals_labels(imgs, labels_img, mask_img=None,
     target_affine = imgs.affine
     target_shape = imgs.shape[:3]
 
-    # Check aggregating function
-    available_reduction_strategies = ('mean', 'median',
+    available_reduction_strategies = {'mean', 'median',
                                       'minimum', 'maximum',
-                                      'standard_deviation', 'variance')
-    if strategy in available_reduction_strategies:
-        reduction_function = getattr(ndimage.measurements, strategy)
-    else:
-        raise ValueError("strategy not in %s" % (available_reduction_strategies,))
+                                      'standard_deviation', 'variance'}
+    if strategy not in available_reduction_strategies:
+        raise ValueError(str.format(
+            "Invalid strategy '{}'. Valid strategies are {}.",
+            strategy,
+            available_reduction_strategies
+        ))
 
     # Check shapes and affines.
     if labels_img.shape != target_shape:
@@ -117,6 +118,7 @@ def img_to_signals_labels(imgs, labels_img, mask_img=None,
     signals = np.ndarray((data.shape[-1], len(labels)), order=order,
                          dtype=data.dtype)
 
+    reduction_function = getattr(ndimage.measurements, strategy)
     for n, img in enumerate(np.rollaxis(data, -1)):
         signals[n] = np.asarray(reduction_function(img,
                                                    labels=labels_data,
