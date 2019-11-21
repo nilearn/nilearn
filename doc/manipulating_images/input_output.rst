@@ -240,7 +240,7 @@ data, which we call Niimgs or Niimg-4D. Accepted input arguments are:
    consumes more memory. As a result, large 4D images may
    raise "MemoryError", especially on smaller computers and when using Nilearn
    routines that require intensive 4D matrix operations. One step to improve
-   the situation may be to gunzip the data onto disk as an initial step.
+   the situation may be to decompress the data onto disk as an initial step.
    If multiple images are loaded into memory sequentially, another solution may
    be to `uncache <https://nipy.org/nibabel/images_and_memory.html#using-uncache>`_ one before loading and performing operations on another.
 
