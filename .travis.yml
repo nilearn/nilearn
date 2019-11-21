@@ -18,8 +18,8 @@ matrix:
   include:
     - name: "Python 3.5 minimum package versions without Matplotlib"
       python: "3.5"
-      env: DISTRIB="travisci" PYTHON_VERSION="3.5"
-           NUMPY_VERSION="1.11" SCIPY_VERSION="0.19" PANDAS_VERSION="*"
+      env: DISTRIB="travisci" PYTHON_VERSION="3.5" NIBABEL_VERSION="2.0.2"
+           NUMPY_VERSION="1.11" SCIPY_VERSION="0.19" PANDAS_VERSION="23.0"
            SCIKIT_LEARN_VERSION="0.19" COVERAGE="true" JOBLIB_VERSION="0.11"
            LXML_VERSION="*"
     - name: "Python 3.5 latest package versions"
