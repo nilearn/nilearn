@@ -10,6 +10,11 @@ Changes
   minimum, maximum, standard_deviation and variance.
   This change is also introduced in :func:`nilearn.regions.img_to_signals_labels`.
 
+Fixes
+-----
+
+ - `pip install nilearn` now installs the necessary dependencies.
+
 Contributors
 ------------
 
