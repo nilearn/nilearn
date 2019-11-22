@@ -8,6 +8,10 @@ NEW
   Users with a Python3.5 environment will be warned
   at their first Nilearn import.
 
+Fixes
+-----
+
+- `pip install nilearn` now installs the necessary dependencies.
 
 0.6.0b0
 =======
