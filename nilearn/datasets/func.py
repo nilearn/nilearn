@@ -2169,7 +2169,7 @@ def fetch_surf_tva_localizer(data_dir=None, verbose=1, resume=True):
     #                            verbose=verbose)
     intertva_dir = _get_dataset_dir(dataset_name, data_dir=data_dir)
     dataset_dir = _get_dataset_dir('InterTVA_sub-41_surfdata', data_dir=intertva_dir)
-    url = 'https://cloud.int.univ-amu.fr/index.php/s/29fJPH5Gm2H9Pxj/download'
+    url = 'https://osf.io/aekp7/download'
 
     # Dataset description
     fdescr = _get_dataset_descr(dataset_name)
