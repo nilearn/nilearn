@@ -1,3 +1,11 @@
+0.6.0b1
+=======
+
+Fixes
+-----
+
+ - `pip install nilearn` now installs the necessary dependencies.
+
 0.6.0b0
 =======
 
