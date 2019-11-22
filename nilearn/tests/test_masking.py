@@ -4,6 +4,7 @@ Test the mask-extracting utilities.
 import distutils.version
 import warnings
 import numpy as np
+import pytest
 
 from numpy.testing import assert_array_equal
 from nose.tools import (
@@ -73,10 +74,8 @@ def test_compute_epi_mask():
     mean_image[0, 0, 0] = 1.2
     mean_image[0, 0, 2] = 1.1
     mean_image = Nifti1Image(mean_image, np.eye(4))
-    with warnings.catch_warnings(record=True) as w:
+    with pytest.warns(MaskWarning, match='Computed an empty mask'):
         compute_epi_mask(mean_image, exclude_zeros=True)
-    assert_equal(len(w), 1)
-    assert_true(isinstance(w[0].message, masking.MaskWarning))
 
 
 def test_compute_background_mask():
