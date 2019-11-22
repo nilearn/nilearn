@@ -9,8 +9,7 @@ import numpy as np
 import numbers
 
 import nibabel
-from sklearn.datasets.base import Bunch
-from sklearn.utils import deprecated
+from sklearn.utils import Bunch, deprecated
 
 from .utils import (_get_dataset_dir, _fetch_files, _get_dataset_descr,
                     _read_md5_sum_file, _tree, _filter_columns, _fetch_file)

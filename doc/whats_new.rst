@@ -6,6 +6,7 @@ Fixes
 
 - Region means are no longer zero or casted to Int type
   when image & labels are of type Int in :class:`nilearn.input_data.NiftiLabelsMasker`.
+- `pip install nilearn` now installs the necessary dependencies.
 
 0.6.0b0
 =======
