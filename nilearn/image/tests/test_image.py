@@ -488,6 +488,15 @@ def test_new_img_like():
     np.testing.assert_array_equal(get_data(img_nifti2), get_data(img2_nifti2))
 
 
+def test_new_img_like_non_iterable_header():
+    fake_fmri_data = np.random.rand(10, 10, 10, 10)
+    fake_affine = np.random.rand(4, 4)
+    fake_spatial_image = nibabel.spatialimages.SpatialImage(fake_fmri_data,
+                                                       fake_affine)
+    assert fake_spatial_image == new_img_like(fake_spatial_image,
+                                              copy_header=True)
+
+
 def test_validity_threshold_value_in_threshold_img():
     shape = (6, 8, 10)
     maps, _ = data_gen.generate_maps(shape, n_regions=2)

@@ -1,3 +1,11 @@
+0.6.0b1
+=======
+
+Fixes
+-----
+
+- :func:`nilearn._utils.load_niimg` no longer attempts to copy non-iterable headers. (PR #2212)
+
 0.6.0b0
 =======
 
