@@ -336,7 +336,7 @@ def test_load_surf_data_file_glob():
     else:
         # Avoid a bug in nibabel 1.2.0 where GiftiDataArray were not
         # initialized properly:
-        darray = gifti.GiftiDataArray.from_array(np.ones(15, 1),
+        darray = gifti.GiftiDataArray.from_array(np.ones((15, 1)),
                                                  intent='t test')
     gii = gifti.GiftiImage(darrays=[darray])
     gifti.write(gii, fnames[-1])
