@@ -24,7 +24,7 @@ from sklearn.utils import check_array
 from sklearn.linear_model.base import LinearModel
 from sklearn.feature_selection import (SelectPercentile, f_regression,
                                        f_classif)
-from sklearn.externals.joblib import Memory, Parallel, delayed
+from nilearn._utils.compat import Memory, Parallel, delayed
 from sklearn.preprocessing import LabelBinarizer
 from sklearn.metrics import accuracy_score
 from ..input_data.masker_validation import check_embedded_nifti_masker
@@ -37,6 +37,7 @@ from .._utils.cache_mixin import CacheMixin
 from nilearn.masking import _unmask_from_to_3d_array
 from .space_net_solvers import (tvl1_solver, _graph_net_logistic,
                                 _graph_net_squared_loss)
+from nilearn.image import get_data
 
 
 def _crop_mask(mask):
@@ -770,7 +771,7 @@ class BaseSpaceNet(LinearModel, RegressorMixin, CacheMixin):
         self.Xstd_ = X.std(axis=0)
         self.Xstd_[self.Xstd_ < 1e-8] = 1
         self.mask_img_ = self.masker_.mask_img_
-        self.mask_ = self.mask_img_.get_data().astype(np.bool)
+        self.mask_ = get_data(self.mask_img_).astype(np.bool)
         n_samples, _ = X.shape
         y = np.array(y).copy()
         l1_ratios = self.l1_ratios

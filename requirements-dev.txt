@@ -1,8 +1,14 @@
 nose
+pytest
+pytest-cov
 coverage
-boto3
-patsy
 scipy
 scikit-learn
+joblib
 pandas
 matplotlib
+nibabel
+pytest
+pytest-cov
+numpy
+cython
