@@ -33,7 +33,7 @@ def test_warnings_filter_scope():
         warnings.warn('Dummy warning 1')  # Will be raised.
         warnings.filterwarnings("ignore", message="Dummy warning")
         warnings.warn('Dummy warning 2')  # Will not be raised.
-        import nilearn  # Irrespective of warning raised in py3.5 ...
+        import nilearn  # noqa: F401 # Irrespective of warning raised in py3.5
         warnings.warn('Dummy warning 3')  # ...this should not be raised.
     assert str(raised_warnings[0].message) == 'Dummy warning 1'
     assert str(raised_warnings[-1].message) != 'Dummy warning 3'
