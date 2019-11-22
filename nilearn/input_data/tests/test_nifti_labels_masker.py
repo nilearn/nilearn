@@ -147,6 +147,7 @@ def test_nifti_labels_masker_reduction_strategies():
     # What NiftiLabelsMasker should return for each reduction strategy?
     expected_results = {"mean": np.mean(test_values),
                         "median": np.median(test_values),
+                        "sum": np.sum(test_values),
                         "minimum": np.min(test_values),
                         "maximum": np.max(test_values),
                         "standard_deviation": np.std(test_values),

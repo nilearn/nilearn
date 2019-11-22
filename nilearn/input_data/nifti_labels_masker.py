@@ -110,8 +110,8 @@ class NiftiLabelsMasker(BaseMasker, CacheMixin):
 
     strategy: str
         The name of a valid function to reduce each ROI.
-        Must be one of: mean, median, mininum, maximum, standard_deviation, variance
-
+        Must be one of: sum, mean, median, mininum, maximum, standard_deviation,
+        variance.
 
     See also
     --------
@@ -148,7 +148,7 @@ class NiftiLabelsMasker(BaseMasker, CacheMixin):
         self.memory_level = memory_level
         self.verbose = verbose
 
-        available_reduction_strategies = {'mean', 'median',
+        available_reduction_strategies = {'mean', 'median', 'sum',
                                           'minimum', 'maximum',
                                           'standard_deviation', 'variance'}
 
