@@ -50,8 +50,8 @@ def img_to_signals_labels(imgs, labels_img, mask_img=None,
 
     strategy: str
         The name of a valid function to reduce the region with.
-        Must be one of: sum, mean, median, mininum, maximum, standard_deviation,
-        variance
+        Must be one of: sum, mean, median, mininum, maximum, variance,
+        standard_deviation
 
     Returns
     -------
