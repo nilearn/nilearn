@@ -13,6 +13,7 @@ Fixes
 
 - Region means are no longer zero or casted to Int type
   when image & labels are of type Int in :class:`nilearn.input_data.NiftiLabelsMasker`.
+- :func: `nilearn.image.smooth_image` no longer fails if `fwhm` is a `numpy.ndarray`.
 - `pip install nilearn` now installs the necessary dependencies.
 
 0.6.0b0
@@ -1554,3 +1555,4 @@ Contributors (from ``git shortlog -ns 0.1``)::
      1  Matthias Ekman
      1  Michael Waskom
      1  Vincent Michel
+
