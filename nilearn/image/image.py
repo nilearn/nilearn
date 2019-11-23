@@ -177,9 +177,11 @@ def _smooth_array(arr, affine, fwhm=None, ensure_finite=True, copy=True):
 
     fwhm: scalar, numpy.ndarray/tuple/list, 'fast' or None
         Smoothing strength, as a full-width at half maximum, in millimeters.
-        If a nonzero scalar is given, width is identical in all three directions.
-        A numpy.ndarray/list/tuple must have 3 elements, giving the FWHM along each axis.
-        If any of the elements is zero or None, smoothing is not performed along that axis.
+        If a nonzero scalar is given, width is identical in all 3 directions.
+        A numpy.ndarray/list/tuple must have 3 elements,
+        giving the FWHM along each axis.
+        If any of the elements is zero or None,
+        smoothing is not performed along that axis.
         If fwhm == 'fast', a fast smoothing will be performed with
         a filter [0.2, 1, 0.2] in each direction and a normalisation
         to preserve the local average value.
@@ -205,9 +207,10 @@ def _smooth_array(arr, affine, fwhm=None, ensure_finite=True, copy=True):
     """
     # Here, we have to investigate use cases of fwhm. Particularly, if fwhm=0.
     # See issue #1537
-    if isinstance(fwhm, (int, float)) and  (fwhm == 0.0):
+    if isinstance(fwhm, (int, float)) and (fwhm == 0.0):
         warnings.warn("The parameter 'fwhm' for smoothing is specified "
-                      "as {0}. Converting to None (no smoothing will be performed)"
+                      "as {0}. Setting it to None "
+                      "(no smoothing will be performed)"
                       .format(fwhm))
         fwhm = None
     if arr.dtype.kind == 'i':
@@ -224,7 +227,7 @@ def _smooth_array(arr, affine, fwhm=None, ensure_finite=True, copy=True):
         arr = _fast_smooth_array(arr)
     elif fwhm is not None:
         fwhm = np.asarray(fwhm)
-        fwhm = np.where(fwhm == None, 0.0, fwhm)
+        fwhm = np.where(fwhm == None, 0.0, fwhm)  # noqa: E711
         affine = affine[:3, :3]  # Keep only the scale part.
         fwhm_over_sigma_ratio = np.sqrt(8 * np.log(2))  # FWHM to sigma.
         vox_size = np.sqrt(np.sum(affine ** 2, axis=0))
