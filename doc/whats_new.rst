@@ -1,10 +1,17 @@
 0.6.0b1
 =======
 
+NEW
+---
+
+- **Support for Python3.5 wil be removed in the 0.7.x release.**
+  Users with a Python3.5 environment will be warned
+  at their first Nilearn import.
+
 Fixes
 -----
 
- - `pip install nilearn` now installs the necessary dependencies.
+- `pip install nilearn` now installs the necessary dependencies.
 
 0.6.0b0
 =======
