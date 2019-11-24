@@ -5,7 +5,7 @@ import warnings
 import os
 import numpy as np
 from scipy import ndimage
-from sklearn.datasets.base import Bunch
+from sklearn.utils import Bunch
 
 from .utils import (_get_dataset_dir, _fetch_files,
                     _get_dataset_descr, _uncompress_file)
