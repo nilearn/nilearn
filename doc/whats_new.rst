@@ -1,3 +1,19 @@
+0.6.0b1
+=======
+
+NEW
+---
+
+- **Support for Python3.5 wil be removed in the 0.7.x release.**
+  Users with a Python3.5 environment will be warned
+  at their first Nilearn import.
+
+Fixes
+-----
+
+- :func: `nilearn.image.smooth_image` no longer fails if `fwhm` is a `numpy.ndarray`.
+- `pip install nilearn` now installs the necessary dependencies.
+
 0.6.0b0
 =======
 
@@ -302,10 +318,10 @@ Contributors
 The following people contributed to this release::
 
    2  Bertrand Thirion
-  90  Kshitij Chawla (kchawla-pi)
-  22  fliem
-  16  Jerome Dockes
-  11  Gael Varoquaux
+   90  Kshitij Chawla (kchawla-pi)
+   22  fliem
+   16  Jerome Dockes
+   11  Gael Varoquaux
    8  Salma Bougacha
    7  himanshupathak21061998
    2  Elizabeth DuPre
@@ -1537,3 +1553,4 @@ Contributors (from ``git shortlog -ns 0.1``)::
      1  Matthias Ekman
      1  Michael Waskom
      1  Vincent Michel
+
