@@ -8,12 +8,14 @@ DEPENDENCIES = ['numpy', 'scipy', 'scikit-learn', 'joblib', 'matplotlib',
 def print_package_version(package_name, indent='  '):
     try:
         dist = pkg_resources.get_distribution(package_name)
-        provenance_info = '{0} installed in {1}'.format(dist.version,
-                                                        dist.location)
     except pkg_resources.DistributionNotFound:
         provenance_info = 'not installed'
+    else:
+        provenance_info = '{0} installed in {1}'.format(dist.version,
+                                                        dist.location)
 
     print('{0}{1}: {2}'.format(indent, package_name, provenance_info))
+
 
 if __name__ == '__main__':
     print('=' * 120)
