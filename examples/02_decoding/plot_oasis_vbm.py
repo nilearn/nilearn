@@ -43,6 +43,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from nilearn import datasets
 from nilearn.input_data import NiftiMasker
+from nilearn.image import get_data
 
 n_subjects = 100  # more subjects requires more memory
 
@@ -165,7 +166,7 @@ title = ('Negative $\log_{10}$ p-values'
          '\n(Non-parametric + max-type correction)')
 display.title(title, y=1.2)
 
-n_detections = (signed_neg_log_pvals_unmasked.get_data() > threshold).sum()
+n_detections = (get_data(signed_neg_log_pvals_unmasked) > threshold).sum()
 print('\n%d detections' % n_detections)
 
 show()

@@ -43,15 +43,17 @@ function getAxisConfig() {
 }
 
 function getLighting() {
-    return {
-        "ambient": 0.5,
-        "diffuse": 1,
-        "fresnel": .1,
-        "specular": .05,
-        "roughness": .1,
-        "facenormalsepsilon": 1e-6,
-        "vertexnormalsepsilon": 1e-12
-    };
+    return {};
+    // i.e. use plotly defaults:
+    // {
+    //     "ambient": 0.8,
+    //     "diffuse": .8,
+    //     "fresnel": .2,
+    //     "specular": .05,
+    //     "roughness": .5,
+    //     "facenormalsepsilon": 1e-6,
+    //     "vertexnormalsepsilon": 1e-12
+    // };
 
 }
 
@@ -131,10 +133,20 @@ function updateLayout(plotDivId, viewSelectId, blackBg) {
     Plotly.relayout(plotDivId, layout);
 }
 
-function addColorbar(colorscale, cmin, cmax, divId, layout, config) {
+function textColor(black_bg){
+    if (black_bg){
+        return "white";
+    }
+    return "black";
+}
+
+function addColorbar(colorscale, cmin, cmax, divId, layout, config,
+                     fontsize=25, height=.5, color="black") {
     // hack to get a colorbar
     let dummy = {
         "opacity": 0,
+        "colorbar": {"tickfont": {"size": fontsize, "color": color},
+                     "len": height},
         "type": "mesh3d",
         "colorscale": colorscale,
         "x": [1, 0, 0],

@@ -9,6 +9,7 @@ from nibabel import Nifti1Image
 from nilearn import datasets, image
 from nilearn.plotting import html_stat_map
 from nilearn.image import new_img_like
+from nilearn.image import get_data
 from ..js_plotting_utils import colorscale
 from ..._utils.compat import _basestring
 
@@ -69,23 +70,32 @@ def test_threshold_data():
     data = np.arange(-3, 4)
 
     # Check that an 'auto' threshold leaves at least one element
-    data_t, thresh = html_stat_map._threshold_data(data, threshold='auto')
-    gtruth = np.array([False, True, True, True, True, True, False])
-    assert (data_t.mask == gtruth).all()
+    data_t, mask, thresh = html_stat_map._threshold_data(data, threshold='auto')
+    gtruth_m = np.array([False, True, True, True, True, True, False])
+    gtruth_d = np.array([-3, 0, 0, 0, 0, 0, 3])
+    assert (mask == gtruth_m).all()
+    assert (data_t == gtruth_d).all()
 
     # Check that threshold=None keeps everything
-    data_t, thresh = html_stat_map._threshold_data(data, threshold=None)
-    assert ~np.ma.is_masked(data_t)
+    data_t, mask, thresh = html_stat_map._threshold_data(data, threshold=None)
+    assert np.all(np.logical_not(mask))
+    assert np.all(data_t == data)
 
     # Check positive threshold works
-    data_t, thresh = html_stat_map._threshold_data(data, threshold=1)
+    data_t, mask, thresh = html_stat_map._threshold_data(data, threshold=1)
     gtruth = np.array([False, False, True, True, True, False, False])
-    assert (data_t.mask == gtruth).all()
+    assert (mask == gtruth).all()
 
     # Check 0 threshold works
-    data_t, thresh = html_stat_map._threshold_data(data, threshold=0)
+    data_t, mask, thresh = html_stat_map._threshold_data(data, threshold=0)
     gtruth = np.array([False, False, False, True, False, False, False])
-    assert (data_t.mask == gtruth).all()
+    assert (mask == gtruth).all()
+
+    # Check that overly lenient threshold returns array
+    data = np.arange(3, 10)
+    data_t, mask, thresh = html_stat_map._threshold_data(data, threshold=2)
+    gtruth = np.full(7, False)
+    assert (mask == gtruth).all()
 
 
 def test_save_sprite():
@@ -100,13 +110,14 @@ def test_save_sprite():
     # Save the sprite using BytesIO
     sprite_io = BytesIO()
     html_stat_map._save_sprite(data, sprite_io, vmin=0, vmax=1,
-                               mask=mask, format='raw')
+                               mask=mask, format='png')
 
     # Load the sprite back in base64
     sprite_base64 = html_stat_map._bytesIO_to_base64(sprite_io)
 
     # Check the sprite is correct
-    assert sprite_base64 == '////AP////8=\n'
+    assert sprite_base64.startswith('iVBORw0KG')
+    assert sprite_base64.endswith('ABJRU5ErkJggg==')
 
 
 def test_save_cmap():
@@ -115,13 +126,14 @@ def test_save_cmap():
 
     # Save the cmap using BytesIO
     cmap_io = BytesIO()
-    html_stat_map._save_cm(cmap_io, 'cold_hot', format='raw', n_colors=2)
+    html_stat_map._save_cm(cmap_io, 'cold_hot', format='png', n_colors=2)
 
     # Load the colormap back in base64
     cmap_base64 = html_stat_map._bytesIO_to_base64(cmap_io)
 
     # Check the colormap is correct
-    assert cmap_base64 == '//////////8=\n'
+    assert cmap_base64.startswith('iVBORw0KG')
+    assert cmap_base64.endswith('ElFTkSuQmCC')
 
 
 def test_mask_stat_map():
@@ -132,12 +144,12 @@ def test_mask_stat_map():
     # Try not to threshold anything
     mask_img, img, data_t, thre = html_stat_map._mask_stat_map(img,
                                                                threshold=None)
-    assert np.max(mask_img.get_data()) == 0
+    assert np.max(get_data(mask_img)) == 0
 
     # Now threshold at zero
     mask_img, img, data_t, thre = html_stat_map._mask_stat_map(img,
                                                                threshold=0)
-    assert np.min((data == 0) == mask_img.get_data())
+    assert np.min((data == 0) == get_data(mask_img))
 
 
 def test_load_bg_img():
@@ -303,9 +315,11 @@ def test_view_img():
         html_view = html_stat_map.view_img(img, threshold=2., vmax=4.)
         _check_html(html_view)
         html_view = html_stat_map.view_img(img, symmetric_cmap=False)
-        img_4d = image.new_img_like(img, img.get_data()[:, :, :, np.newaxis])
+        img_4d = image.new_img_like(img, get_data(img)[:, :, :, np.newaxis])
         assert len(img_4d.shape) == 4
         html_view = html_stat_map.view_img(img_4d, threshold=2., vmax=4.)
+        _check_html(html_view)
+        html_view = html_stat_map.view_img(img_4d, threshold=1e6)
         _check_html(html_view)
 
     # Check that all warnings were expected

@@ -71,6 +71,7 @@ uses.
    fetch_atlas_harvard_oxford
    fetch_atlas_msdl
    fetch_coords_power_2011
+   fetch_coords_seitzman_2018
    fetch_atlas_smith_2009
    fetch_atlas_yeo_2011
    fetch_atlas_aal
@@ -80,6 +81,7 @@ uses.
    fetch_coords_dosenbach_2010
    fetch_abide_pcp
    fetch_adhd
+   fetch_development_fmri
    fetch_haxby
    fetch_icbm152_2009
    fetch_icbm152_brain_gm_mask
@@ -92,6 +94,7 @@ uses.
    fetch_surf_fsaverage
    fetch_atlas_surf_destrieux
    fetch_atlas_talairach
+   fetch_atlas_schaefer_2018
    fetch_oasis_vbm
    fetch_megatrawls_netmats
    fetch_cobre
@@ -166,6 +169,7 @@ uses.
    coord_transform
    copy_img
    crop_img
+   get_data
    high_variance_confounds
    index_img
    iter_img
@@ -267,6 +271,7 @@ uses.
 
    RegionExtractor
    Parcellations
+   ReNA
 
 
 :mod:`nilearn.mass_univariate`: Mass-univariate analysis
@@ -320,6 +325,7 @@ uses.
    plot_stat_map
    plot_glass_brain
    plot_connectome
+   plot_connectome_strength
    plot_prob_atlas
    plot_surf
    plot_surf_roi

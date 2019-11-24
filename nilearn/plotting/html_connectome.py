@@ -2,12 +2,15 @@ import json
 
 import numpy as np
 from scipy import sparse
+
+from nilearn._utils import replace_parameters
 from .. import datasets
 from . import cm
 
-from .js_plotting_utils import (add_js_lib, HTMLDocument, mesh_to_plotly,
+from .js_plotting_utils import (add_js_lib, mesh_to_plotly,
                                 encode, colorscale, get_html_template,
                                 to_color_strings)
+from nilearn.reporting import HTMLDocument
 
 
 class ConnectomeView(HTMLDocument):
@@ -25,10 +28,10 @@ def _prepare_line(edges, nodes):
 
 
 def _get_connectome(adjacency_matrix, coords, threshold=None,
-                    cmap=cm.cold_hot, symmetric_cmap=True):
+                    marker_size=None, cmap=cm.cold_hot, symmetric_cmap=True):
     connectome = {}
     coords = np.asarray(coords, dtype='<f4')
-    adjacency_matrix = adjacency_matrix.copy()
+    adjacency_matrix = np.nan_to_num(adjacency_matrix, copy=True)
     colors = colorscale(
         cmap, adjacency_matrix.ravel(), threshold=threshold,
         symmetric_cmap=symmetric_cmap)
@@ -44,11 +47,17 @@ def _get_connectome(adjacency_matrix, coords, threshold=None,
     path_edges, path_nodes = _prepare_line(edges, nodes)
     connectome["_con_w"] = encode(np.asarray(s.data, dtype='<f4')[path_edges])
     c = coords[path_nodes]
+    if np.ndim(marker_size) > 0:
+        marker_size = np.asarray(marker_size)
+        marker_size = marker_size[path_nodes]
     x, y, z = c.T
     for coord, cname in [(x, "x"), (y, "y"), (z, "z")]:
         connectome["_con_{}".format(cname)] = encode(
             np.asarray(coord, dtype='<f4'))
     connectome["markers_only"] = False
+    if hasattr(marker_size, 'tolist'):
+        marker_size = marker_size.tolist()
+    connectome['marker_size'] = marker_size
     return connectome
 
 
@@ -70,15 +79,35 @@ def _make_connectome_html(connectome_info, embed_js=True):
     for hemi in ['pial_left', 'pial_right']:
         plot_info[hemi] = mesh_to_plotly(mesh[hemi])
     as_json = json.dumps(plot_info)
-    as_html = get_html_template('connectome_plot_template.html').replace(
-        'INSERT_CONNECTOME_JSON_HERE', as_json)
+    as_html = get_html_template(
+        'connectome_plot_template.html').safe_substitute(
+            {'INSERT_CONNECTOME_JSON_HERE': as_json})
     as_html = add_js_lib(as_html, embed_js=embed_js)
     return ConnectomeView(as_html)
 
 
-def view_connectome(adjacency_matrix, coords, threshold=None,
-                    cmap=cm.cyan_orange, symmetric_cmap=True,
-                    linewidth=6., marker_size=3.):
+def _replacement_params_view_connectome():
+    """ Returns a dict containing deprecated & replacement parameters
+        as key-value pair for view_connectome().
+        Avoids cluttering the global namespace.
+    """
+    return {
+        'coords': 'node_coords',
+        'threshold': 'edge_threshold',
+        'cmap': 'edge_cmap',
+        'marker_size': 'node_size',
+    }
+
+
+@replace_parameters(replacement_params=_replacement_params_view_connectome(),
+                    end_version='0.6.0',
+                    lib_name='Nilearn'
+                    )
+def view_connectome(adjacency_matrix, node_coords, edge_threshold=None,
+                    edge_cmap=cm.bwr, symmetric_cmap=True,
+                    linewidth=6., node_size=3., colorbar=True,
+                    colorbar_height=.5, colorbar_fontsize=25,
+                    title=None, title_fontsize=25):
     """
     Insert a 3d plot of a connectome into an HTML page.
 
@@ -87,10 +116,10 @@ def view_connectome(adjacency_matrix, coords, threshold=None,
     adjacency_matrix : ndarray, shape=(n_nodes, n_nodes)
         the weights of the edges.
 
-    coords : ndarray, shape=(n_nodes, 3)
+    node_coords : ndarray, shape=(n_nodes, 3)
         the coordinates of the nodes in MNI space.
 
-    threshold : str, number or None, optional (default=None)
+    edge_threshold : str, number or None, optional (default=None)
         If None, no thresholding.
         If it is a number only connections of amplitude greater
         than threshold will be shown.
@@ -98,7 +127,7 @@ def view_connectome(adjacency_matrix, coords, threshold=None,
         e.g. "25.3%", and only connections of amplitude above the
         given percentile will be shown.
 
-    cmap : str or matplotlib colormap, optional
+    edge_cmap : str or matplotlib colormap, optional
 
     symmetric_cmap : bool, optional (default=True)
         Make colormap symmetric (ranging from -vmax to vmax).
@@ -106,8 +135,23 @@ def view_connectome(adjacency_matrix, coords, threshold=None,
     linewidth : float, optional (default=6.)
         Width of the lines that show connections.
 
-    marker_size : float, optional (default=3.)
-        Size of the markers showing the seeds.
+    node_size : float, optional (default=3.)
+        Size of the markers showing the seeds in pixels.
+
+    colorbar : bool, optional (default=True)
+        add a colorbar
+
+    colorbar_height : float, optional (default=.5)
+        height of the colorbar, relative to the figure height
+
+    colorbar_fontsize : int, optional (default=25)
+        fontsize of the colorbar tick labels
+
+    title : str, optional (default=None)
+        title for the plot
+
+    title_fontsize : int, optional (default=25)
+        fontsize of the title
 
     Returns
     -------
@@ -133,29 +177,55 @@ def view_connectome(adjacency_matrix, coords, threshold=None,
 
     """
     connectome_info = _get_connectome(
-        adjacency_matrix, coords, threshold=threshold, cmap=cmap,
-        symmetric_cmap=symmetric_cmap)
-    connectome_info["line_width"] = linewidth
-    connectome_info["marker_size"] = marker_size
+        adjacency_matrix, node_coords,
+        threshold=edge_threshold, cmap=edge_cmap,
+        symmetric_cmap=symmetric_cmap, marker_size=node_size)
+    connectome_info['line_width'] = linewidth
+    connectome_info['colorbar'] = colorbar
+    connectome_info['cbar_height'] = colorbar_height
+    connectome_info['cbar_fontsize'] = colorbar_fontsize
+    connectome_info['title'] = title
+    connectome_info['title_fontsize'] = title_fontsize
     return _make_connectome_html(connectome_info)
 
 
-def view_markers(coords, colors=None, marker_size=5.):
+def _replacement_params_view_markers():
+    """ Returns a dict containing deprecated & replacement parameters
+        as key-value pair for view_markers().
+        Avoids cluttering the global namespace.
+    """
+    return {'coords': 'marker_coords',
+            'colors': 'marker_color',
+            }
+
+
+@replace_parameters(replacement_params=_replacement_params_view_markers(),
+                    end_version='0.6.0',
+                    lib_name='Nilearn',
+                    )
+def view_markers(marker_coords, marker_color=None, marker_size=5.,
+                 title=None, title_fontsize=25):
     """
     Insert a 3d plot of markers in a brain into an HTML page.
 
     Parameters
     ----------
-    coords : ndarray, shape=(n_nodes, 3)
+    marker_coords : ndarray, shape=(n_nodes, 3)
         the coordinates of the nodes in MNI space.
 
-    colors : ndarray, shape=(n_nodes,)
+    marker_color : ndarray, shape=(n_nodes,)
         colors of the markers: list of strings, hex rgb or rgba strings, rgb
         triplets, or rgba triplets (i.e. formats accepted by matplotlib, see
         https://matplotlib.org/users/colors.html#specifying-colors)
 
-    marker_size : float, optional (default=3.)
-        Size of the markers showing the seeds.
+    marker_size : float or array-like, optional (default=3.)
+        Size of the markers showing the seeds in pixels.
+
+    title : str, optional (default=None)
+        title for the plot
+
+    title_fontsize : int, optional (default=25)
+        fontsize of the title
 
     Returns
     -------
@@ -180,8 +250,12 @@ def view_markers(coords, colors=None, marker_size=5.):
         surface.
 
     """
-    if colors is None:
-        colors = ['black' for i in range(len(coords))]
-    connectome_info = _get_markers(coords, colors)
+    if marker_color is None:
+        marker_color = ['red' for i in range(len(marker_coords))]
+    connectome_info = _get_markers(marker_coords, marker_color)
+    if hasattr(marker_size, 'tolist'):
+        marker_size = marker_size.tolist()
     connectome_info["marker_size"] = marker_size
+    connectome_info['title'] = title
+    connectome_info['title_fontsize'] = title_fontsize
     return _make_connectome_html(connectome_info)

@@ -7,10 +7,10 @@ The mask is computed and visualized.
 """
 
 ###########################################################################
-# Retrieve the NYU test-retest dataset
+# Retrieve the brain development functional dataset
 
 from nilearn import datasets
-dataset = datasets.fetch_adhd(n_subjects=1)
+dataset = datasets.fetch_development_fmri(n_subjects=1)
 func_filename = dataset.func[0]
 
 # print basic information on the dataset
@@ -20,8 +20,9 @@ print('First functional nifti image (4D) is at: %s' % func_filename)
 # Compute the mask
 from nilearn.input_data import NiftiMasker
 
-# As this is raw resting-state EPI, the background is noisy and we cannot
-# rely on the 'background' masking strategy. We need to use the 'epi' one
+# As this is raw movie watching based EPI, the background is noisy and we
+# cannot rely on the 'background' masking strategy. We need to use the 'epi'
+# one
 nifti_masker = NiftiMasker(standardize=True, mask_strategy='epi',
                            memory="nilearn_cache", memory_level=2,
                            smoothing_fwhm=8)
@@ -29,7 +30,7 @@ nifti_masker.fit(func_filename)
 mask_img = nifti_masker.mask_img_
 
 ###########################################################################
-# Visualize the mask
+# Visualize the mask using the plot_roi method
 from nilearn.plotting import plot_roi
 from nilearn.image.image import mean_img
 
@@ -38,6 +39,13 @@ mean_func_img = mean_img(func_filename)
 
 plot_roi(mask_img, mean_func_img, display_mode='y', cut_coords=4, title="Mask")
 
+###########################################################################
+# Visualize the mask using the 'generate_report' method
+# This report can be displayed in a Jupyter Notebook,
+# opened in-browser using the .open_in_browser() method,
+# or saved to a file using the .save_as_html(output_filepath) method.
+report = nifti_masker.generate_report()
+report
 
 ###########################################################################
 # Preprocess data with the NiftiMasker
@@ -59,6 +67,10 @@ components = nifti_masker.inverse_transform(components_masked)
 # Visualize results
 from nilearn.plotting import plot_stat_map, show
 from nilearn.image import index_img
+from nilearn.image.image import mean_img
+
+# calculate mean image for the background
+mean_func_img = mean_img(func_filename)
 
 plot_stat_map(index_img(components, 0), mean_func_img,
               display_mode='y', cut_coords=4, title="Component 0")

@@ -4,8 +4,8 @@ from nose import SkipTest
 from nose.tools import (assert_equal, assert_true, assert_false,
                         assert_raises)
 import numpy as np
+from scipy import linalg
 from sklearn.datasets import load_iris
-from sklearn.utils import extmath
 from sklearn.linear_model import Lasso
 from sklearn.utils import check_random_state
 from sklearn.linear_model import LogisticRegression
@@ -18,6 +18,7 @@ from nilearn.decoding.space_net import (
 from nilearn._utils.param_validation import _adjust_screening_percentile
 from nilearn.decoding.space_net_solvers import (_graph_net_logistic,
                                                 _graph_net_squared_loss)
+from nilearn.image import get_data
 
 mni152_brain_mask = (
     "/usr/share/fsl/data/standard/MNI152_T1_1mm_brain_mask.nii.gz")
@@ -125,7 +126,7 @@ def test_logistic_path_scores():
     iris = load_iris()
     X, y = iris.data, iris.target
     _, mask = to_niimgs(X, [2, 2, 2])
-    mask = mask.get_data().astype(np.bool)
+    mask = get_data(mask).astype(np.bool)
     alphas = [1., .1, .01]
     test_scores, best_w = logistic_path_scores(
         _graph_net_logistic, X, y, mask, alphas, .5,
@@ -139,7 +140,7 @@ def test_squared_loss_path_scores():
     iris = load_iris()
     X, y = iris.data, iris.target
     _, mask = to_niimgs(X, [2, 2, 2])
-    mask = mask.get_data().astype(np.bool)
+    mask = get_data(mask).astype(np.bool)
     alphas = [1., .1, .01]
     test_scores, best_w = squared_loss_path_scores(
         _graph_net_squared_loss, X, y, mask, alphas, .5,
@@ -160,7 +161,7 @@ def test_tv_regression_simple():
     X += rng.randn(n, p)
     y = np.dot(X, W_init.ravel())
     X, mask = to_niimgs(X, dim)
-    print("%s %s" % (X.shape, mask.get_data().sum()))
+    print("%s %s" % (X.shape, get_data(mask).sum()))
     alphas = [.1, 1.]
 
     for l1_ratio in [1.]:
@@ -241,7 +242,7 @@ def test_lasso_vs_graph_net():
                              penalty="graph-net", max_iter=100)
     lasso.fit(X_, y)
     graph_net.fit(X, y)
-    lasso_perf = 0.5 / y.size * extmath.norm(np.dot(
+    lasso_perf = 0.5 / y.size * linalg.norm(np.dot(
         X_, lasso.coef_) - y) ** 2 + np.sum(np.abs(lasso.coef_))
     graph_net_perf = 0.5 * ((graph_net.predict(X) - y) ** 2).mean()
     np.testing.assert_almost_equal(graph_net_perf, lasso_perf, decimal=3)

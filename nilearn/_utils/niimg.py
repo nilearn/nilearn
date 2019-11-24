@@ -14,6 +14,17 @@ import nibabel
 from .compat import _basestring
 
 
+def _get_data(img):
+    # copy-pasted from https://github.com/nipy/nibabel/blob/de44a105c1267b07ef9e28f6c35b31f851d5a005/nibabel/dataobj_images.py#L204
+    # get_data is removed from nibabel because:
+    # see https://github.com/nipy/nibabel/wiki/BIAP8
+    if img._data_cache is not None:
+        return img._data_cache
+    data = np.asanyarray(img._dataobj)
+    img._data_cache = data
+    return data
+
+
 def _safe_get_data(img, ensure_finite=False):
     """ Get the data in the image without having a side effect on the
         Nifti1Image object
@@ -30,7 +41,7 @@ def _safe_get_data(img, ensure_finite=False):
     Returns
     -------
     data: numpy array
-        get_data() return from Nifti image.
+        nilearn.image.get_data return from Nifti image.
     """
     if hasattr(img, '_data_cache') and img._data_cache is None:
         # By loading directly dataobj, we prevent caching if the data is
@@ -40,7 +51,7 @@ def _safe_get_data(img, ensure_finite=False):
     # that's why we invoke a forced call to the garbage collector
     gc.collect()
 
-    data = img.get_data()
+    data = _get_data(img)
     if ensure_finite:
         non_finite_mask = np.logical_not(np.isfinite(data))
         if non_finite_mask.sum() > 0: # any non_finite_mask values?
@@ -113,11 +124,18 @@ def load_niimg(niimg, dtype=None):
                         " not compatible with nibabel format:\n"
                         + short_repr(niimg))
 
-    dtype = _get_target_dtype(niimg.get_data().dtype, dtype)
+    dtype = _get_target_dtype(_get_data(niimg).dtype, dtype)
 
     if dtype is not None:
-        niimg = new_img_like(niimg, niimg.get_data().astype(dtype),
-                             niimg.affine)
+        # Copyheader and set dtype in header if header exists
+        if niimg.header is not None:
+            niimg = new_img_like(niimg, _get_data(niimg).astype(dtype),
+                                niimg.affine, copy_header=True)
+            niimg.header.set_data_dtype(dtype)        
+        else:
+            niimg = new_img_like(niimg, _get_data(niimg).astype(dtype),
+                                niimg.affine)
+
     return niimg
 
 
@@ -173,3 +191,23 @@ def short_repr(niimg):
         # Shorten the repr to have a useful error message
         this_repr = this_repr[:18] + '...'
     return this_repr
+
+
+def img_data_dtype(niimg):
+    """Determine type of data contained in image
+
+    Based on the information contained in ``niimg.dataobj``, determine the
+    dtype of ``np.array(niimg.dataobj).dtype``.
+    """
+
+    dataobj = niimg.dataobj
+
+    # Neuroimages that scale data should be interpreted as floating point
+    if nibabel.is_proxy(dataobj) and (dataobj.slope, dataobj.inter) != (1.0, 0.0):
+        return np.float_
+
+    # ArrayProxy gained the dtype attribute in nibabel 2.2
+    if hasattr(dataobj, 'dtype'):
+        return dataobj.dtype
+
+    return niimg.get_data_dtype()

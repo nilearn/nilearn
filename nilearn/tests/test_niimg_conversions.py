@@ -27,6 +27,7 @@ from nilearn._utils.testing import assert_raises_regex
 from nilearn._utils.testing import with_memory_profiler
 from nilearn._utils.testing import assert_memory_less_than
 from nilearn._utils.niimg_conversions import _iter_check_niimg
+from nilearn.image import get_data
 
 
 class PhonyNiimage(nibabel.spatialimages.SpatialImage):
@@ -44,6 +45,14 @@ class PhonyNiimage(nibabel.spatialimages.SpatialImage):
     @property
     def shape(self):
         return self.data.shape
+
+    @property
+    def _data_cache(self):
+        return self.data
+
+    @property
+    def _dataobj(self):
+        return self.data
 
 
 def test_check_same_fov():
@@ -116,7 +125,7 @@ def test_check_niimg_3d():
 
     # check data dtype equal with dtype='auto'
     img_check = _utils.check_niimg_3d(img, dtype='auto')
-    assert_equal(img.get_data().dtype.kind, img_check.get_data().dtype.kind)
+    assert_equal(get_data(img).dtype.kind, get_data(img_check).dtype.kind)
 
 
 def test_check_niimg_4d():
@@ -131,11 +140,11 @@ def test_check_niimg_4d():
 
     # Tests with return_iterator=False
     img_4d_1 = _utils.check_niimg_4d([img_3d, img_3d])
-    assert_true(img_4d_1.get_data().shape == (10, 10, 10, 2))
+    assert_true(get_data(img_4d_1).shape == (10, 10, 10, 2))
     assert_array_equal(img_4d_1.affine, affine)
 
     img_4d_2 = _utils.check_niimg_4d(img_4d_1)
-    assert_array_equal(img_4d_2.get_data(), img_4d_2.get_data())
+    assert_array_equal(get_data(img_4d_2), get_data(img_4d_2))
     assert_array_equal(img_4d_2.affine, img_4d_2.affine)
 
     # Tests with return_iterator=True
@@ -149,8 +158,8 @@ def test_check_niimg_4d():
     img_3d_iterator_2 = _utils.check_niimg_4d(img_3d_iterator_1,
                                               return_iterator=True)
     for img_1, img_2 in zip(img_3d_iterator_1, img_3d_iterator_2):
-        assert_true(img_1.get_data().shape == (10, 10, 10))
-        assert_array_equal(img_1.get_data(), img_2.get_data())
+        assert_true(get_data(img_1).shape == (10, 10, 10))
+        assert_array_equal(get_data(img_1), get_data(img_2))
         assert_array_equal(img_1.affine, img_2.affine)
 
     img_3d_iterator_1 = _utils.check_niimg_4d([img_3d, img_3d],
@@ -158,8 +167,8 @@ def test_check_niimg_4d():
     img_3d_iterator_2 = _utils.check_niimg_4d(img_4d_1,
                                               return_iterator=True)
     for img_1, img_2 in zip(img_3d_iterator_1, img_3d_iterator_2):
-        assert_true(img_1.get_data().shape == (10, 10, 10))
-        assert_array_equal(img_1.get_data(), img_2.get_data())
+        assert_true(get_data(img_1).shape == (10, 10, 10))
+        assert_array_equal(get_data(img_1), get_data(img_2))
         assert_array_equal(img_1.affine, img_2.affine)
 
     # This should raise an error: a 3D img is given and we want a 4D
@@ -210,10 +219,12 @@ def test_check_niimg():
 
     # check data dtype equal with dtype='auto'
     img_3d_check = _utils.check_niimg(img_3d, dtype='auto')
-    assert_equal(img_3d.get_data().dtype.kind, img_3d_check.get_data().dtype.kind)
+    assert_equal(
+        get_data(img_3d).dtype.kind, get_data(img_3d_check).dtype.kind)
 
     img_4d_check = _utils.check_niimg(img_4d, dtype='auto')
-    assert_equal(img_4d.get_data().dtype.kind, img_4d_check.get_data().dtype.kind)
+    assert_equal(
+        get_data(img_4d).dtype.kind, get_data(img_4d_check).dtype.kind)
 
 
 def test_check_niimg_wildcards():
@@ -250,24 +261,24 @@ def test_check_niimg_wildcards():
     #######
     # Testing with an existing filename
     with testing.write_tmp_imgs(img_3d, create_files=True) as filename:
-        assert_array_equal(_utils.check_niimg(filename).get_data(),
-                           img_3d.get_data())
+        assert_array_equal(get_data(_utils.check_niimg(filename)),
+                           get_data(img_3d))
     # No globbing behavior
     with testing.write_tmp_imgs(img_3d, create_files=True) as filename:
-        assert_array_equal(_utils.check_niimg(filename,
-                                              wildcards=False).get_data(),
-                           img_3d.get_data())
+        assert_array_equal(
+            get_data(_utils.check_niimg(filename, wildcards=False)),
+            get_data(img_3d))
 
     #######
     # Testing with an existing filename
     with testing.write_tmp_imgs(img_4d, create_files=True) as filename:
-        assert_array_equal(_utils.check_niimg(filename).get_data(),
-                           img_4d.get_data())
+        assert_array_equal(get_data(_utils.check_niimg(filename)),
+                           get_data(img_4d))
     # No globbing behavior
     with testing.write_tmp_imgs(img_4d, create_files=True) as filename:
-        assert_array_equal(_utils.check_niimg(filename,
-                                              wildcards=False).get_data(),
-                           img_4d.get_data())
+        assert_array_equal(get_data(_utils.check_niimg(filename,
+                                                       wildcards=False)),
+                           get_data(img_4d))
 
     #######
     # Testing with a glob matching exactly one filename
@@ -277,8 +288,8 @@ def test_check_niimg_wildcards():
                                 create_files=True,
                                 use_wildcards=True) as globs:
         glob_input = tmp_dir + globs
-        assert_array_equal(_utils.check_niimg(glob_input).get_data()[..., 0],
-                           img_3d.get_data())
+        assert_array_equal(get_data(_utils.check_niimg(glob_input))[..., 0],
+                           get_data(img_3d))
     # Disabled globbing behavior should raise an ValueError exception
     with testing.write_tmp_imgs(img_3d,
                                 create_files=True,
@@ -296,8 +307,8 @@ def test_check_niimg_wildcards():
     with testing.write_tmp_imgs(img_3d, img_3d,
                                 create_files=True,
                                 use_wildcards=True) as globs:
-        assert_array_equal(_utils.check_niimg(glob_input).get_data(),
-                           img_4d.get_data())
+        assert_array_equal(get_data(_utils.check_niimg(glob_input)),
+                           get_data(img_4d))
 
     #######
     # Test when global variable is set to False => no globbing allowed
@@ -317,13 +328,13 @@ def test_check_niimg_wildcards():
 
     # Testing with an exact filename matching (3d case)
     with testing.write_tmp_imgs(img_3d, create_files=True) as filename:
-        assert_array_equal(_utils.check_niimg(filename).get_data(),
-                           img_3d.get_data())
+        assert_array_equal(get_data(_utils.check_niimg(filename)),
+                           get_data(img_3d))
 
     # Testing with an exact filename matching (4d case)
     with testing.write_tmp_imgs(img_4d, create_files=True) as filename:
-        assert_array_equal(_utils.check_niimg(filename).get_data(),
-                           img_4d.get_data())
+        assert_array_equal(get_data(_utils.check_niimg(filename)),
+                           get_data(img_4d))
 
     # Reverting to default behavior
     ni.EXPAND_PATH_WILDCARDS = True
@@ -351,16 +362,16 @@ def test_iter_check_niimgs():
                                dir=None)
     img_4d.to_filename(filename)
     niimgs = list(_iter_check_niimg([filename]))
-    assert_array_equal(niimgs[0].get_data(),
-                       _utils.check_niimg(img_4d).get_data())
+    assert_array_equal(get_data(niimgs[0]),
+                       get_data(_utils.check_niimg(img_4d)))
     del img_4d
     del niimgs
     os.remove(filename)
 
     # Regular case
     niimgs = list(_iter_check_niimg(img_2_4d))
-    assert_array_equal(niimgs[0].get_data(),
-                       _utils.check_niimg(img_2_4d).get_data())
+    assert_array_equal(get_data(niimgs[0]),
+                       get_data(_utils.check_niimg(img_2_4d)))
 
 
 def _check_memory(list_img_3d):
@@ -453,9 +464,9 @@ def test_concat_niimgs():
         nibabel.save(img3, tmpimg2)
         concatenated = _utils.concat_niimgs(os.path.join(tempdir, '*'))
         assert_array_equal(
-            concatenated.get_data()[..., 0], img1.get_data())
+            get_data(concatenated)[..., 0], get_data(img1))
         assert_array_equal(
-            concatenated.get_data()[..., 1], img3.get_data())
+            get_data(concatenated)[..., 1], get_data(img3))
     finally:
         _remove_if_exists(tmpimg1)
         _remove_if_exists(tmpimg2)
@@ -474,9 +485,9 @@ def test_concat_niimg_dtype():
         np.zeros(shape + [n_scans]).astype(np.int16), np.eye(4))
             for n_scans in [1, 5]]
     nimg = _utils.concat_niimgs(vols)
-    assert_equal(nimg.get_data().dtype, np.float32)
+    assert_equal(get_data(nimg).dtype, np.float32)
     nimg = _utils.concat_niimgs(vols, dtype=None)
-    assert_equal(nimg.get_data().dtype, np.int16)
+    assert_equal(get_data(nimg).dtype, np.int16)
 
 
 def nifti_generator(buffer):
@@ -491,13 +502,13 @@ def test_iterator_generator():
          for i in range(10)]
     cc = _utils.concat_niimgs(l)
     assert_equal(cc.shape[-1], 10)
-    assert_array_almost_equal(cc.get_data()[..., 0], l[0].get_data())
+    assert_array_almost_equal(get_data(cc)[..., 0], get_data(l[0]))
 
     # Same with iteration
     i = image.iter_img(l)
     cc = _utils.concat_niimgs(i)
     assert_equal(cc.shape[-1], 10)
-    assert_array_almost_equal(cc.get_data()[..., 0], l[0].get_data())
+    assert_array_almost_equal(get_data(cc)[..., 0], get_data(l[0]))
 
     # Now, a generator
     b = []

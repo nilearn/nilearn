@@ -13,8 +13,10 @@ import numpy as np
 import scipy
 from scipy import ndimage, linalg
 
+from .image import crop_img
 from .. import _utils
 from .._utils.compat import _basestring
+from .._utils.niimg import _get_data
 
 ###############################################################################
 # Affine utils
@@ -206,7 +208,7 @@ def get_mask_bounds(img):
 
     """
     img = _utils.check_niimg_3d(img)
-    mask = _utils.numpy_conversions._asarray(img.get_data(), dtype=np.bool)
+    mask = _utils.numpy_conversions._asarray(_get_data(img), dtype=np.bool)
     affine = img.affine
     (xmin, xmax), (ymin, ymax), (zmin, zmax) = get_bounds(mask.shape, affine)
     slices = ndimage.find_objects(mask)
@@ -289,7 +291,7 @@ def _resample_one_img(data, A, b, target_shape,
 
 def resample_img(img, target_affine=None, target_shape=None,
                  interpolation='continuous', copy=True, order="F",
-                 clip=True, fill_value=0):
+                 clip=True, fill_value=0, force_resample=False):
     """Resample a Niimg-like object
 
     Parameters
@@ -330,6 +332,9 @@ def resample_img(img, target_affine=None, target_shape=None,
 
     fill_value: float, optional
         Use a fill value for points outside of input volume (default 0).
+
+    force_resample: bool, optional
+        Intended for testing, this prevents the use of a padding optimzation
 
     Returns
     -------
@@ -418,17 +423,18 @@ def resample_img(img, target_affine=None, target_shape=None,
         input_img_is_string = False
 
     img = _utils.check_niimg(img)
+    shape = img.shape
+    affine = img.affine
 
     # noop cases
     if target_affine is None and target_shape is None:
         if copy and not input_img_is_string:
             img = _utils.copy_img(img)
         return img
+    if target_affine is affine and target_shape is shape:
+        return img
     if target_affine is not None:
         target_affine = np.asarray(target_affine)
-
-    shape = img.shape
-    affine = img.affine
 
     if (np.all(np.array(target_shape) == shape[:3]) and
             np.allclose(target_affine, affine)):
@@ -439,7 +445,7 @@ def resample_img(img, target_affine=None, target_shape=None,
     # We now know that some resampling must be done.
     # The value of "copy" is of no importance: output is always a separate
     # array.
-    data = img.get_data()
+    data = _get_data(img)
 
     # Get a bounding box for the transformed data
     # Embed target_affine in 4x4 shape if necessary
@@ -486,20 +492,17 @@ def resample_img(img, target_affine=None, target_shape=None,
     else:
         transform_affine = np.dot(linalg.inv(affine), target_affine)
     A, b = to_matrix_vector(transform_affine)
-    # If A is diagonal, ndimage.affine_transform is clever enough to use a
-    # better algorithm.
-    if np.all(np.diag(np.diag(A)) == A):
-        if LooseVersion(scipy.__version__) < LooseVersion('0.18'):
-            # Before scipy 0.18, ndimage.affine_transform was applying a
-            # different logic to the offset for diagonal affine
-            b = np.dot(linalg.inv(A), b)
-        A = np.diag(A)
 
     data_shape = list(data.shape)
     # Make sure that we have a list here
     if isinstance(target_shape, np.ndarray):
         target_shape = target_shape.tolist()
     target_shape = tuple(target_shape)
+
+    if LooseVersion(scipy.__version__) < LooseVersion('0.20'):
+        # Before scipy 0.20, force native data types due to endian issues
+        # that caused instability.
+        data = data.astype(data.dtype.newbyteorder('N'))
 
     if interpolation == 'continuous' and data.dtype.kind == 'i':
         # cast unsupported data types to closest support dtype
@@ -527,20 +530,58 @@ def resample_img(img, target_affine=None, target_shape=None,
 
     # Code is generic enough to work for both 3D and 4D images
     other_shape = data_shape[3:]
-    resampled_data = np.empty(list(target_shape) + other_shape,
+    resampled_data = np.zeros(list(target_shape) + other_shape,
                               order=order, dtype=resampled_data_dtype)
 
     all_img = (slice(None), ) * 3
 
-    # Iterate over a set of 3D volumes, as the interpolation problem is
-    # separable in the extra dimensions. This reduces the
-    # computational cost
-    for ind in np.ndindex(*other_shape):
-        _resample_one_img(data[all_img + ind], A, b, target_shape,
-                          interpolation_order,
-                          out=resampled_data[all_img + ind],
-                          copy=not input_img_is_string,
-                          fill_value=fill_value)
+    # if (A == I OR some combination of permutation(I) and sign-flipped(I)) AND
+    # all(b == integers):
+    if (np.all(np.eye(3) == A) and all(bt == np.round(bt) for bt in b) and
+        not force_resample):
+        # TODO: also check for sign flips
+        # TODO: also check for permutations of I
+
+        # ... special case: can be solved with padding alone
+        # crop source image and keep N voxels offset before/after volume
+        cropped_img, offsets = crop_img(img, pad=False, return_offset=True)
+
+        # TODO: flip axes that are flipped
+        # TODO: un-shuffle permuted dimensions
+
+        # offset the original un-cropped image indices by the relative
+        # translation, b.
+        indices = [(int(off.start - dim_b), int(off.stop - dim_b))
+                   for off, dim_b in zip(offsets[:3], b[:3])]
+
+        # If image are not fully overlapping, place only portion of image.
+        slices = []
+        for dimsize, index in zip(resampled_data.shape, indices):
+            slices.append(slice(np.max((0, index[0])),
+                                np.min((dimsize, index[1]))))
+        slices = tuple(slices)
+
+        # ensure the source image being placed isn't larger than the dest
+        subset_indices = tuple(slice(0, s.stop-s.start) for s in slices)
+        resampled_data[slices] = _get_data(cropped_img)[subset_indices]
+    else:
+        # If A is diagonal, ndimage.affine_transform is clever enough to use a
+        # better algorithm.
+        if np.all(np.diag(np.diag(A)) == A):
+            if LooseVersion(scipy.__version__) < LooseVersion('0.18'):
+                # Before scipy 0.18, ndimage.affine_transform was applying a
+                # different logic to the offset for diagonal affine
+                b = np.dot(linalg.inv(A), b)
+            A = np.diag(A)
+        # Iterate over a set of 3D volumes, as the interpolation problem is
+        # separable in the extra dimensions. This reduces the
+        # computational cost
+        for ind in np.ndindex(*other_shape):
+            _resample_one_img(data[all_img + ind], A, b, target_shape,
+                              interpolation_order,
+                              out=resampled_data[all_img + ind],
+                              copy=not input_img_is_string,
+                              fill_value=fill_value)
 
     if clip:
         # force resampled data to have a range contained in the original data
@@ -556,7 +597,7 @@ def resample_img(img, target_affine=None, target_shape=None,
 
 def resample_to_img(source_img, target_img,
                     interpolation='continuous', copy=True, order='F',
-                    clip=False, fill_value=0):
+                    clip=False, fill_value=0, force_resample=False):
     """Resample a Niimg-like source image on a target Niimg-like image
     (no registration is performed: the image should already be aligned).
 
@@ -593,6 +634,9 @@ def resample_to_img(source_img, target_img,
     fill_value: float, optional
         Use a fill value for points outside of input volume (default 0).
 
+    force_resample: bool, optional
+        Intended for testing, this prevents the use of a padding optimzation
+
     Returns
     -------
     resampled: nibabel.Nifti1Image
@@ -616,7 +660,8 @@ def resample_to_img(source_img, target_img,
                         target_affine=target.affine,
                         target_shape=target_shape,
                         interpolation=interpolation, copy=copy, order=order,
-                        clip=clip, fill_value=fill_value)
+                        clip=clip, fill_value=fill_value,
+                        force_resample=force_resample)
 
 
 def reorder_img(img, resample=None):
@@ -662,7 +707,7 @@ def reorder_img(img, resample=None):
                                 interpolation=resample)
 
     axis_numbers = np.argmax(np.abs(A), axis=0)
-    data = img.get_data()
+    data = _get_data(img)
     while not np.all(np.sort(axis_numbers) == axis_numbers):
         first_inversion = np.argmax(np.diff(axis_numbers)<0)
         axis1 = first_inversion + 1

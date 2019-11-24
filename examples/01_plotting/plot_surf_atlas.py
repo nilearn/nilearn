@@ -77,6 +77,42 @@ plotting.plot_surf_roi(fsaverage['infl_left'], roi_map=parcellation,
                        darkness=.5)
 plotting.show()
 
+###############################################################################
+# Display connectome from surface parcellation
+#
+# The following code extracts 3D coordinates of surface parcels (a.k.a. labels
+# in the Freesurfer naming convention). To do so we load the pial surface
+# of fsaverage subject, get the vertices contained in each parcel and compute
+# the mean location to obtain the coordinates.
+
+import numpy as np
+from nilearn import surface
+
+atlas = destrieux_atlas
+coordinates = []
+labels = destrieux_atlas['labels']
+for hemi in ['left', 'right']:
+    vert = destrieux_atlas['map_%s' % hemi]
+    rr, _ = surface.load_surf_mesh(fsaverage['pial_%s' % hemi])
+    for k, label in enumerate(labels):
+        if "Unknown" not in str(label):  # Omit the Unknown label.
+            # Compute mean location of vertices in label of index k
+            coordinates.append(np.mean(rr[vert == k], axis=0))
+
+coordinates = np.array(coordinates)  # 3D coordinates of parcels
+
+# We now make a synthetic connectivity matrix that connects labels
+# between left and right hemispheres.
+n_parcels = len(coordinates)
+corr = np.zeros((n_parcels, n_parcels))
+n_parcels_hemi = n_parcels // 2
+corr[np.arange(n_parcels_hemi), np.arange(n_parcels_hemi) + n_parcels_hemi] = 1
+corr = corr + corr.T
+
+plotting.plot_connectome(corr, coordinates,
+                         edge_threshold="90%",
+                         title='fsaverage Destrieux atlas')
+plotting.show()
 
 ##############################################################################
 # 3D visualization in a web browser
@@ -88,11 +124,20 @@ plotting.show()
 
 view = plotting.view_surf(fsaverage.infl_left, parcellation,
                           cmap='gist_ncar', symmetric_cmap=False)
+# In a Jupyter notebook, if ``view`` is the output of a cell, it will
+# be displayed below the cell
+
+view
+##############################################################################
+
 # uncomment this to open the plot in a web browser:
 # view.open_in_browser()
 
 ##############################################################################
-# In a Jupyter notebook, if ``view`` is the output of a cell, it will
-# be displayed below the cell
+# you can also use :func:`nilearn.plotting.view_connectome` to open an
+# interactive view of the connectome.
 
+view = plotting.view_connectome(corr, coordinates, edge_threshold='90%')
+# uncomment this to open the plot in a web browser:
+# view.open_in_browser()
 view

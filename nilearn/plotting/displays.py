@@ -29,6 +29,7 @@ from .. import _utils
 from ..image import new_img_like
 from ..image.resampling import (get_bounds, reorder_img, coord_transform,
                                 get_mask_bounds)
+from nilearn.image import get_data
 
 
 ###############################################################################
@@ -369,6 +370,13 @@ class GlassBrainAxes(BaseAxes):
         else:
             maximum_intensity_data = np.abs(data_selection).max(axis=max_axis)
 
+        # This work around can be removed bumping matplotlib > 2.1.0. See #1815
+        # in nilearn for the invention of this work around
+
+        if self.direction == 'l' and data_selection.min() is np.ma.masked and \
+                not (self.ax.get_xlim()[0] > self.ax.get_xlim()[1]):
+            self.ax.invert_xaxis()
+
         return np.rot90(maximum_intensity_data)
 
     def draw_position(self, size, bg_color, **kwargs):
@@ -396,7 +404,7 @@ class GlassBrainAxes(BaseAxes):
                 if self.direction == 'r' and xc >= 0:
                     relevant_coords.append(cidx)
                 elif self.direction == 'l' and xc <= 0:
-                        relevant_coords.append(cidx)
+                    relevant_coords.append(cidx)
             xdata = xdata[relevant_coords]
             ydata = ydata[relevant_coords]
             # if marker_color is string for example 'red' or 'blue', then
@@ -407,6 +415,9 @@ class GlassBrainAxes(BaseAxes):
             if not isinstance(marker_color, _utils.compat._basestring) and \
                     len(marker_color) != 1:
                 marker_color = marker_color[relevant_coords]
+
+            if not isinstance(marker_size, numbers.Number):
+                marker_size = np.asarray(marker_size)[relevant_coords]
 
         defaults = {'marker': 'o',
                     'zorder': 1000}
@@ -716,7 +727,9 @@ class BaseSlicer(object):
             (from matplotlib) for contours and contour_fillings can be
             different.
         """
-        self._map_show(img, type='contour', **kwargs)
+        if not filled:
+            threshold = None
+        self._map_show(img, type='contour', threshold=threshold, **kwargs)
         if filled:
             if 'levels' in kwargs:
                 levels = kwargs['levels']
@@ -787,12 +800,13 @@ class BaseSlicer(object):
         ims = []
         to_iterate_over = zip(self.axes.values(), data_2d_list)
         for display_ax, data_2d in to_iterate_over:
-            if data_2d is not None:
+            if data_2d is not None and data_2d.min() is not np.ma.masked:
                 # If data_2d is completely masked, then there is nothing to
-                # plot. Hence, continued to loop over. This problem came up
-                # with matplotlib 2.1.0. See issue #9280 in matplotlib.
-                if data_2d.min() is np.ma.masked:
-                    continue
+                # plot. Hence, no point to do imshow(). Moreover, we see
+                # problem came up with matplotlib 2.1.0 (issue #9280) when
+                # data is completely masked or with numpy < 1.14
+                # (issue #4595). This work aroung can be removed when bumping
+                # matplotlib version above 2.1.0
                 im = display_ax.draw_2d(data_2d, data_bounds, bounding_box,
                                         type=type, **kwargs)
                 ims.append(im)
@@ -879,7 +893,7 @@ class BaseSlicer(object):
             The color used to display the edge map
         """
         img = reorder_img(img, resample='continuous')
-        data = img.get_data()
+        data = get_data(img)
         affine = img.affine
         single_color_cmap = colors.ListedColormap([color])
         data_bounds = get_bounds(data.shape, img.affine)
@@ -1018,7 +1032,7 @@ class BaseSlicer(object):
         Parameters
         ----------
         filename: string
-            The file name to save to. It's extension determines the
+            The file name to save to. Its extension determines the
             file type, typically '.png', '.svg' or '.pdf'.
 
         dpi: None or scalar
@@ -1204,6 +1218,332 @@ class OrthoSlicer(BaseSlicer):
 
 
 ###############################################################################
+# class TiledSlicer
+###############################################################################
+
+class TiledSlicer(BaseSlicer):
+    """ A class to create 3 axes for plotting orthogonal
+    cuts of 3D maps, organized in a 2x2 grid.
+
+    Attributes
+    ----------
+
+    axes: dictionary of axes
+        The 3 axes used to plot each view.
+    frame_axes: axes
+        The axes framing the whole set of views.
+
+    Notes
+    -----
+
+    The extent of the different axes are adjusted to fit the data
+    best in the viewing area.
+    """
+    _cut_displayed = 'yxz'
+    _axes_class = CutAxes
+    _default_figsize = [2.0, 6.0]
+
+    @classmethod
+    def find_cut_coords(self, img=None, threshold=None, cut_coords=None):
+        """Instantiate the slicer and find cut coordinates.
+
+        Parameters
+        ----------
+        img: 3D Nifti1Image
+            The brain map.
+        threshold: float, optional
+            The lower threshold to the positive activation. If None, the
+            activation threshold is computed using the 80% percentile of
+            the absolute value of the map.
+
+        cut_coords: list of float, optional
+            xyz world coordinates of cuts.
+
+        Returns
+        ----------
+        cut_coords: list of float
+            xyz world coordinates of cuts.
+
+        """
+        if cut_coords is None:
+            if img is None or img is False:
+                cut_coords = (0, 0, 0)
+            else:
+                cut_coords = find_xyz_cut_coords(
+                    img, activation_threshold=threshold)
+            cut_coords = [cut_coords['xyz'.find(c)]
+                          for c in sorted(self._cut_displayed)]
+
+        return cut_coords
+
+    def _find_inital_axes_coord(self, index):
+        """Find coordinates for initial axes placement for xyz cuts.
+
+        Parameters
+        ----------
+        index: int
+            Index corresponding to current cut 'x', 'y' or 'z'.
+
+        Returns
+        ----------
+        [coord1, coord2, coord3, coord4]: list of int
+            x0, y0, x1, y1 coordinates used by matplotlib
+            to position axes in figure.
+
+        """
+
+        rect_x0, rect_y0, rect_x1, rect_y1 = self.rect
+
+        if index == 0:
+                coord1 = rect_x1 - rect_x0
+                coord2 = 0.5 * (rect_y1 - rect_y0) + rect_y0
+                coord3 = 0.5 * (rect_x1 - rect_x0) + rect_x0
+                coord4 = rect_y1 - rect_y0
+        elif index == 1:
+                coord1 = 0.5 * (rect_x1 - rect_x0) + rect_x0
+                coord2 = 0.5 * (rect_y1 - rect_y0) + rect_y0
+                coord3 = rect_x1 - rect_x0
+                coord4 = rect_y1 - rect_y0
+        elif index == 2:
+                coord1 = rect_x1 - rect_x0
+                coord2 = rect_y1 - rect_y0
+                coord3 = 0.5 * (rect_x1 - rect_x0) + rect_x0
+                coord4 = 0.5 * (rect_y1 - rect_y0) + rect_y0
+        return [coord1, coord2, coord3, coord4]
+
+    def _init_axes(self, **kwargs):
+        """Initializes and places axes for display of 'xyz' cuts.
+
+        Parameters
+        ----------
+        kwargs:
+            additional arguments to pass to self._axes_class
+
+        """
+
+        cut_coords = self.cut_coords
+        if len(cut_coords) != len(self._cut_displayed):
+            raise ValueError('The number cut_coords passed does not'
+                             ' match the display_mode')
+
+        facecolor = 'k' if self._black_bg else 'w'
+
+        self.axes = dict()
+        for index, direction in enumerate(self._cut_displayed):
+            fh = self.frame_axes.get_figure()
+            axes_coords = self._find_inital_axes_coord(index)
+            ax = fh.add_axes(axes_coords, aspect='equal')
+
+            if LooseVersion(matplotlib.__version__) >= LooseVersion("1.6"):
+                ax.set_facecolor(facecolor)
+            else:
+                ax.set_axis_bgcolor(facecolor)
+
+            ax.axis('off')
+            coord = self.cut_coords[
+                sorted(self._cut_displayed).index(direction)]
+            display_ax = self._axes_class(ax, direction, coord, **kwargs)
+            self.axes[direction] = display_ax
+            ax.set_axes_locator(self._locator)
+
+    def _adjust_width_height(self, width_dict, height_dict,
+                             rect_x0, rect_y0, rect_x1, rect_y1):
+        """ Adjusts absolute image width and height to ratios.
+
+        Parameters
+        ----------
+        width_dict: dict
+            Width of image cuts displayed in axes.
+        height_dict: dict
+            Height of image cuts displayed in axes.
+        rect_x0, rect_y0, rect_x1, rect_y1: float
+            Matplotlib figure boundaries.
+
+        Returns
+        ----------
+        width_dict: dict
+            Width ratios of image cuts for optimal positioning of axes.
+        height_dict: dict
+            Height ratios of image cuts for optimal positioning of axes.
+
+        """
+        total_height = 0
+        total_width = 0
+
+        if 'y' in self.axes:
+            ax = self.axes['y'].ax
+            total_height = total_height + height_dict[ax]
+            total_width = total_width + width_dict[ax]
+
+        if 'x' in self.axes:
+            ax = self.axes['x'].ax
+            total_width = total_width + width_dict[ax]
+
+        if 'z' in self.axes:
+            ax = self.axes['z'].ax
+            total_height = total_height + height_dict[ax]
+
+        for ax, width in width_dict.items():
+            width_dict[ax] = width / total_width * (rect_x1 - rect_x0)
+
+        for ax, height in height_dict.items():
+            height_dict[ax] = height / total_height * (rect_y1 - rect_y0)
+
+        return (width_dict, height_dict)
+
+    def _find_axes_coord(self, rel_width_dict, rel_height_dict,
+                         rect_x0, rect_y0, rect_x1, rect_y1):
+        """"find coordinates for inital axes placement for xyz cuts.
+
+        Parameters
+        ----------
+        rel_width_dict: dict
+            Width ratios of image cuts for optimal positioning of axes.
+        rel_height_dict: dict
+            Height ratios of image cuts for optimal positioning of axes.
+        rect_x0, rect_y0, rect_x1, rect_y1: float
+            Matplotlib figure boundaries.
+
+        Returns
+        ----------
+        coord1, coord2, coord3, coord4: dict
+            x0, y0, x1, y1 coordinates per axes used by matplotlib
+            to position axes in figure.
+
+        """
+
+        coord1 = dict()
+        coord2 = dict()
+        coord3 = dict()
+        coord4 = dict()
+
+        if 'y' in self.axes:
+            ax = self.axes['y'].ax
+            coord1[ax] = rect_x0
+            coord2[ax] = (rect_y1) - rel_height_dict[ax]
+            coord3[ax] = rect_x0 + rel_width_dict[ax]
+            coord4[ax] = rect_y1
+
+        if 'x' in self.axes:
+            ax = self.axes['x'].ax
+            coord1[ax] = (rect_x1) - rel_width_dict[ax]
+            coord2[ax] = (rect_y1) - rel_height_dict[ax]
+            coord3[ax] = rect_x1
+            coord4[ax] = rect_y1
+
+        if 'z' in self.axes:
+            ax = self.axes['z'].ax
+            coord1[ax] = rect_x0
+            coord2[ax] = rect_y0
+            coord3[ax] = rect_x0 + rel_width_dict[ax]
+            coord4[ax] = rect_y0 + rel_height_dict[ax]
+
+        return(coord1, coord2, coord3, coord4)
+
+    def _locator(self, axes, renderer):
+        """ The locator function used by matplotlib to position axes.
+            Here we put the logic used to adjust the size of the axes.
+        """
+
+        rect_x0, rect_y0, rect_x1, rect_y1 = self.rect
+
+        # image width and height
+        width_dict = dict()
+        height_dict = dict()
+
+        # A dummy axes, for the situation in which we are not plotting
+        # all three (x, y, z) cuts
+        dummy_ax = self._axes_class(None, None, None)
+        width_dict[dummy_ax.ax] = 0
+        height_dict[dummy_ax.ax] = 0
+        display_ax_dict = self.axes
+
+        if self._colorbar:
+            adjusted_width = self._colorbar_width / len(self.axes)
+            right_margin = self._colorbar_margin['right'] / len(self.axes)
+            ticks_margin = self._colorbar_margin['left'] / len(self.axes)
+            rect_x1 = rect_x1 - (adjusted_width + ticks_margin + right_margin)
+
+        for display_ax in display_ax_dict.values():
+            bounds = display_ax.get_object_bounds()
+            if not bounds:
+                # This happens if the call to _map_show was not
+                # succesful. As it happens asyncroniously (during a
+                # refresh of the figure) we capture the problem and
+                # ignore it: it only adds a non informative traceback
+                bounds = [0, 1, 0, 1]
+            xmin, xmax, ymin, ymax = bounds
+            width_dict[display_ax.ax] = (xmax - xmin)
+            height_dict[display_ax.ax] = (ymax - ymin)
+
+        # relative image height and width
+        rel_width_dict, rel_height_dict = self._adjust_width_height(
+                width_dict, height_dict,
+                rect_x0, rect_y0, rect_x1, rect_y1)
+
+        direction_ax = []
+        for d in self._cut_displayed:
+            direction_ax.append(display_ax_dict.get(d, dummy_ax).ax)
+
+        coord1, coord2, coord3, coord4 = self._find_axes_coord(
+                rel_width_dict, rel_height_dict,
+                rect_x0, rect_y0, rect_x1, rect_y1)
+
+        return transforms.Bbox([[coord1[axes], coord2[axes]],
+                               [coord3[axes], coord4[axes]]])
+
+    def draw_cross(self, cut_coords=None, **kwargs):
+        """ Draw a crossbar on the plot to show where the cut is performed.
+
+        Parameters
+        ----------
+        cut_coords: 3-tuple of floats, optional
+            The position of the cross to draw. If none is passed, the
+            ortho_slicer's cut coordinates are used.
+        kwargs:
+            Extra keyword arguments are passed to axhline
+        """
+        if cut_coords is None:
+            cut_coords = self.cut_coords
+        coords = dict()
+        for direction in 'xyz':
+            coord_ = None
+            if direction in self._cut_displayed:
+                sorted_cuts = sorted(self._cut_displayed)
+                index = sorted_cuts.index(direction)
+                coord_ = cut_coords[index]
+            coords[direction] = coord_
+        x, y, z = coords['x'], coords['y'], coords['z']
+
+        kwargs = kwargs.copy()
+        if 'color' not in kwargs:
+            try:
+                kwargs['color'] = '.8' if self._black_bg else 'k'
+            except KeyError:
+                pass
+
+        if 'y' in self.axes:
+            ax = self.axes['y'].ax
+            if x is not None:
+                ax.axvline(x, **kwargs)
+            if z is not None:
+                ax.axhline(z, **kwargs)
+
+        if 'x' in self.axes:
+            ax = self.axes['x'].ax
+            if y is not None:
+                ax.axvline(y, **kwargs)
+            if z is not None:
+                ax.axhline(z, **kwargs)
+
+        if 'z' in self.axes:
+            ax = self.axes['z'].ax
+            if x is not None:
+                ax.axvline(x, **kwargs)
+            if y is not None:
+                ax.axhline(y, **kwargs)
+
+###############################################################################
 # class BaseStackedSlicer
 ###############################################################################
 
@@ -1352,6 +1692,7 @@ class YZSlicer(OrthoSlicer):
 
 
 SLICERS = dict(ortho=OrthoSlicer,
+               tiled=TiledSlicer,
                xz=XZSlicer,
                yz=YZSlicer,
                yx=YXSlicer,
@@ -1508,7 +1849,7 @@ class OrthoProjector(OrthoSlicer):
                               vmin=edge_vmin, vmax=edge_vmax,
                               **edge_kwargs)
             # To obtain the brain left view, we simply invert the x axis
-            if ax.direction == 'l':
+            if ax.direction == 'l' and not (ax.ax.get_xlim()[0] > ax.ax.get_xlim()[1]):
                 ax.ax.invert_xaxis()
 
         if colorbar:

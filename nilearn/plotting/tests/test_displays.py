@@ -7,7 +7,9 @@ import nibabel
 import numpy as np
 
 from nilearn.plotting.displays import OrthoSlicer, XSlicer, OrthoProjector
+from nilearn.plotting.displays import TiledSlicer
 from nilearn.plotting.displays import LZRYProjector
+from nilearn.plotting.displays import LYRZProjector
 from nilearn.datasets import load_mni152_template
 
 ##############################################################################
@@ -22,11 +24,29 @@ def test_demo_ortho_slicer():
     oslicer.close()
 
 
+def test_demo_tiled_slicer():
+    tslicer = TiledSlicer(cut_coords=(0, 0, 0))
+    img = load_mni152_template()
+    tslicer.add_overlay(img, cmap=plt.cm.gray)
+    tslicer.close()
+
+
 def test_stacked_slicer():
     # Test stacked slicers, like the XSlicer
     img = load_mni152_template()
     slicer = XSlicer.init_with_figure(img=img, cut_coords=3)
     slicer.add_overlay(img, cmap=plt.cm.gray)
+    # Forcing a layout here, to test the locator code
+    with tempfile.TemporaryFile() as fp:
+        slicer.savefig(fp)
+    slicer.close()
+
+
+def test_tiled_slicer():
+    img = load_mni152_template()
+    slicer = TiledSlicer.init_with_figure(img=img, cut_coords=(0, 0, 0),
+                                          colorbar=True)
+    slicer.add_overlay(img, cmap=plt.cm.gray, colorbar=True)
     # Forcing a layout here, to test the locator code
     with tempfile.TemporaryFile() as fp:
         slicer.savefig(fp)
@@ -66,6 +86,7 @@ def test_contour_fillings_levels_in_add_contours():
     # without passing levels, should work with default levels from
     # matplotlib
     oslicer.add_contours(img, filled=True)
+    oslicer.close()
 
 
 def test_user_given_cmap_with_colorbar():
@@ -92,6 +113,10 @@ def test_data_complete_mask():
     oslicer = OrthoSlicer(cut_coords=(0, 0, 0))
     oslicer.add_overlay(img)
     oslicer.close()
+
+    lyrz_projector = LYRZProjector(cut_coords=(0, 0, 0, 0))
+    lyrz_projector.add_overlay(img)
+    lyrz_projector.close()
 
 
 def test_add_markers_cut_coords_is_none():

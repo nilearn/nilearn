@@ -25,6 +25,7 @@ from . import test_utils as tst
 from nilearn._utils.compat import _basestring, _urllib
 
 from nilearn.datasets import utils, atlas
+from nilearn.image import get_data
 
 
 def setup_mock():
@@ -308,6 +309,24 @@ def test_fetch_coords_power_2011():
     assert_not_equal(bunch.description, '')
 
 
+def test_fetch_coords_seitzman_2018():
+    bunch = atlas.fetch_coords_seitzman_2018()
+    assert_equal(len(bunch.rois), 300)
+    assert_equal(len(bunch.radius), 300)
+    assert_equal(len(bunch.networks), 300)
+    assert_equal(len(bunch.regions), 300)
+    assert_equal(len(np.unique(bunch.networks)), 14)
+    assert_equal(len(np.unique(bunch.regions)), 8)
+    np.testing.assert_array_equal(bunch.networks, np.sort(bunch.networks))
+    assert_not_equal(bunch.description, '')
+
+    assert bunch.regions[0] == "cortexL"
+
+    bunch = atlas.fetch_coords_seitzman_2018(ordered_regions=False)
+    assert_true(np.any(bunch.networks != np.sort(bunch.networks)))
+
+
+
 @with_setup(setup_mock, teardown_mock)
 @with_setup(tst.setup_tmpdata, tst.teardown_tmpdata)
 def test_fetch_atlas_destrieux_2009():
@@ -524,11 +543,11 @@ def test_fetch_atlas_talairach(data_dir=tst.tmpdir):
     atlas._fetch_files = _mock_talairach_fetch_files
     level_values = np.ones((81, 3)) * [0, 1, 2]
     talairach = atlas.fetch_atlas_talairach('hemisphere', data_dir=tst.tmpdir)
-    assert_array_equal(talairach.maps.get_data().ravel(),
+    assert_array_equal(get_data(talairach.maps).ravel(),
                        level_values.T.ravel())
     assert_array_equal(talairach.labels, ['Background', 'b', 'a'])
     talairach = atlas.fetch_atlas_talairach('ba', data_dir=tst.tmpdir)
-    assert_array_equal(talairach.maps.get_data().ravel(),
+    assert_array_equal(get_data(talairach.maps).ravel(),
                        level_values.ravel())
     assert_raises(ValueError, atlas.fetch_atlas_talairach, 'bad_level')
 
@@ -539,8 +558,37 @@ def test_fetch_atlas_pauli_2017():
     data = atlas.fetch_atlas_pauli_2017('labels', data_dir)
     assert_equal(len(data.labels), 16)
 
-    values = nibabel.load(data.maps).get_data()
+    values = get_data(nibabel.load(data.maps))
     assert_equal(len(np.unique(values)), 17)
 
     data = atlas.fetch_atlas_pauli_2017('prob', data_dir)
     assert_equal(nibabel.load(data.maps).shape[-1], 16)
+
+@with_setup(tst.setup_tmpdata, tst.teardown_tmpdata)
+def test_fetch_atlas_schaefer_2018():
+    valid_n_rois = list(range(100, 1100, 100))
+    valid_yeo_networks = [7, 17]
+    valid_resolution_mm = [1, 2]
+
+    assert_raises(ValueError, atlas.fetch_atlas_schaefer_2018, n_rois=44)
+    assert_raises(ValueError, atlas.fetch_atlas_schaefer_2018, yeo_networks=10)
+    assert_raises(ValueError, atlas.fetch_atlas_schaefer_2018, resolution_mm=3)
+
+    for n_rois, yeo_networks, resolution_mm in \
+            itertools.product(valid_n_rois, valid_yeo_networks,
+                              valid_resolution_mm):
+        data = atlas.fetch_atlas_schaefer_2018(n_rois=n_rois,
+                                               yeo_networks=yeo_networks,
+                                               resolution_mm=resolution_mm,
+                                               data_dir=tst.tmpdir,
+                                               verbose=0)
+        assert_not_equal(data.description, '')
+        assert_true(isinstance(data.maps, _basestring))
+        assert_true(isinstance(data.labels, np.ndarray))
+        assert_equal(len(data.labels), n_rois)
+        assert_true(data.labels[0].astype(str).startswith("{}Networks".
+                                              format(yeo_networks)))
+        img = nibabel.load(data.maps)
+        assert_equal(img.header.get_zooms()[0], resolution_mm)
+        assert_true(np.array_equal(np.unique(img.dataobj),
+                                   np.arange(n_rois+1)))
