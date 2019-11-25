@@ -6,10 +6,11 @@ import warnings
 import itertools
 
 from distutils.version import LooseVersion
-from nose import SkipTest
-from numpy.testing import (assert_array_equal, assert_array_almost_equal,
-                           assert_equal)
-from nose.tools import assert_true, assert_raises
+
+import pytest
+
+from numpy.testing import assert_array_equal, assert_array_almost_equal
+
 from nilearn._utils.testing import assert_raises_regex, assert_warns
 
 import numpy as np
@@ -196,7 +197,7 @@ def test_load_surf_mesh_file_gii():
     # older versions
 
     if not LooseVersion(nb.__version__) >= LooseVersion('2.1.0'):
-        raise SkipTest
+        raise pytest.skip('Nibabel version too old to handle intent codes')
 
     mesh = generate_surf()
 
@@ -235,7 +236,8 @@ def test_load_surf_mesh_file_gii():
 def test_load_surf_mesh_file_freesurfer():
     # Older nibabel versions does not support 'write_geometry'
     if LooseVersion(nb.__version__) <= LooseVersion('1.2.0'):
-        raise SkipTest
+        raise pytest.skip('Nibabel version too old to support "write_geometry"'
+                          )
 
     mesh = generate_surf()
     for suff in ['.pial', '.inflated', '.white', '.orig', 'sphere']:
@@ -251,7 +253,7 @@ def test_load_surf_mesh_file_freesurfer():
 
 def test_load_surf_mesh_file_error():
     if LooseVersion(nb.__version__) <= LooseVersion('1.2.0'):
-        raise SkipTest
+        raise pytest.skip()
 
     # test if files with unexpected suffixes raise errors
     mesh = generate_surf()
@@ -419,7 +421,7 @@ def test_sample_locations():
         true_locations = np.asarray([vertex + offsets for vertex in mesh[0]])
         assert_array_equal(locations.shape, true_locations.shape)
         assert_array_almost_equal(true_locations, locations)
-    assert_raises(ValueError, surface._sample_locations,
+    pytest.raises(ValueError, surface._sample_locations,
                   mesh, affine, 1., kind='bad_kind')
 
 
@@ -459,7 +461,7 @@ def test_projection_matrix():
     assert_array_almost_equal(proj.sum(axis=1)[:7], np.zeros(7))
     assert_array_almost_equal(proj.sum(axis=1)[7:], np.ones(proj.shape[0] - 7))
     # mask and img should have the same shape
-    assert_raises(ValueError, surface._projection_matrix,
+    pytest.raises(ValueError, surface._projection_matrix,
                   mesh, np.eye(4), img.shape, mask=np.ones((3, 3, 2)))
 
 
@@ -542,4 +544,4 @@ def test_check_mesh_and_data():
     assert (m[1] == mesh[1]).all()
     assert (d == data).all()
     data = mesh[0][::2, 0]
-    assert_raises(ValueError, surface.check_mesh_and_data, mesh, data)
+    pytest.raises(ValueError, surface.check_mesh_and_data, mesh, data)
