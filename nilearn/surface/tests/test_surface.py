@@ -234,11 +234,6 @@ def test_load_surf_mesh_file_gii():
 
 
 def test_load_surf_mesh_file_freesurfer():
-    # Older nibabel versions does not support 'write_geometry'
-    if LooseVersion(nb.__version__) <= LooseVersion('1.2.0'):
-        raise pytest.skip('Nibabel version too old to support "write_geometry"'
-                          )
-
     mesh = generate_surf()
     for suff in ['.pial', '.inflated', '.white', '.orig', 'sphere']:
         filename_fs_mesh = tempfile.mktemp(suffix=suff)
@@ -252,9 +247,6 @@ def test_load_surf_mesh_file_freesurfer():
 
 
 def test_load_surf_mesh_file_error():
-    if LooseVersion(nb.__version__) <= LooseVersion('1.2.0'):
-        raise pytest.skip()
-
     # test if files with unexpected suffixes raise errors
     mesh = generate_surf()
     wrong_suff = ['.vtk', '.obj', '.mnc', '.txt']
