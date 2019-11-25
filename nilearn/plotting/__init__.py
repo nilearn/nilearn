@@ -7,17 +7,11 @@ Plotting code for nilearn
 # Make sure that we don't get DISPLAY problems when running without X on
 # unices
 def _set_mpl_backend():
+    # We are doing local imports here to avoid poluting our namespace
+    import os
+    import sys
     try:
-        # We are doing local imports here to avoid poluting our namespace
         import matplotlib
-        import os
-        import sys
-        # Set the backend to a non-interactive one for unices without X
-        if (os.name == 'posix' and 'DISPLAY' not in os.environ
-            and not (sys.platform == 'darwin'
-                     and matplotlib.get_backend() == 'MacOSX'
-                     )):
-            matplotlib.use('Agg')
     except ImportError:
         from .._utils.testing import skip_if_running_nose
         # No need to fail when running tests
@@ -30,6 +24,12 @@ def _set_mpl_backend():
         # that the version is greater that the minimum required one
         _import_module_with_version_check('matplotlib',
                                           OPTIONAL_MATPLOTLIB_MIN_VERSION)
+        # Set the backend to a non-interactive one for unices without X
+        if (os.name == 'posix' and 'DISPLAY' not in os.environ
+            and not (sys.platform == 'darwin'
+                     and matplotlib.get_backend() == 'MacOSX'
+                     )):
+            matplotlib.use('Agg')
 
 _set_mpl_backend()
 
