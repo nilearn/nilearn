@@ -1,5 +1,4 @@
 from nilearn.decoding.space_net import BaseSpaceNet
-from nose.tools import assert_true
 import traceback
 
 

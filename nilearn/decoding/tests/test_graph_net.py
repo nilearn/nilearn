@@ -1,4 +1,3 @@
-from nose.tools import assert_true
 import numpy as np
 import scipy as sp
 from numpy.testing import assert_almost_equal

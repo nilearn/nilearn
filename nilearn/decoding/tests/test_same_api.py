@@ -4,7 +4,7 @@ for computing image gradient, loss functins, etc.).
 
 """
 
-from nose.tools import nottest, assert_equal, assert_true
+from nose.tools import nottest
 import numpy as np
 import nibabel
 from sklearn.datasets import load_iris

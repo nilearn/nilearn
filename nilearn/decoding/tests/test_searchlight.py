@@ -6,7 +6,6 @@ Test the searchlight module
 
 import numpy as np
 import nibabel
-from nose.tools import assert_equal
 from nilearn.decoding import searchlight
 
 

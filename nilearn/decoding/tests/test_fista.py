@@ -1,4 +1,3 @@
-from nose.tools import assert_equal, assert_true
 import numpy as np
 from nilearn.decoding.fista import mfista
 from nilearn.decoding.proximal_operators import _prox_l1

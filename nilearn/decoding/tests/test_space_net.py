@@ -1,9 +1,9 @@
 import itertools
 from functools import partial
 from nose import SkipTest
-from nose.tools import (assert_equal, assert_true, assert_false,
-                        assert_raises)
+
 import numpy as np
+import pytest
 from scipy import linalg
 from sklearn.datasets import load_iris
 from sklearn.linear_model import Lasso
@@ -320,8 +320,8 @@ def test_space_net_alpha_grid_pure_spatial():
 
 def test_string_params_case():
     # penalty
-    assert_raises(ValueError, BaseSpaceNet, penalty='TV-L1')
-    assert_raises(ValueError, BaseSpaceNet, penalty='Graph-Net')
+    pytest.raises(ValueError, BaseSpaceNet, penalty='TV-L1')
+    pytest.raises(ValueError, BaseSpaceNet, penalty='Graph-Net')
 
 
 def test_crop_mask_empty_mask():
@@ -363,7 +363,7 @@ def test_checking_inputs_length():
 
     for model in [SpaceNetRegressor, SpaceNetClassifier]:
 
-        assert_raises(ValueError, model(mask=mask,
+        pytest.raises(ValueError, model(mask=mask,
                                         alphas=1. / .01 / X.shape[0],
                                         l1_ratios=1., tol=1e-10,
                                         screening_percentile=100.).fit, X_, y)
