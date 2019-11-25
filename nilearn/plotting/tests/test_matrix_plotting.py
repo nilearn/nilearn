@@ -45,12 +45,11 @@ def test_matrix_plotting():
         for perm in permutations(idx, 2):
             mat[perm] = 1
         ax = plot_matrix(mat, labels=labels, reorder=True)
-        assert_equal(len(labels), len(ax.axes.get_xticklabels()))
+        assert len(labels) == len(ax.axes.get_xticklabels())
         reordered_labels = [int(lbl.get_text())
                             for lbl in ax.axes.get_xticklabels()]
         # block order does not matter
-        assert_true(reordered_labels[:3] == idx or reordered_labels[-3:] == idx,
-                    'Clustering does not find block structure.')
+        assert reordered_labels[:3] == idx or reordered_labels[-3:] == idx, 'Clustering does not find block structure.'
         plt.close()
         # test if reordering with specific linkage works
         ax = plot_matrix(mat, labels=labels, reorder='complete')
