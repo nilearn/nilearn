@@ -10,7 +10,7 @@ import nibabel
 import numpy as np
 
 from nose import with_setup
-from nose.tools import assert_true, assert_equal, assert_not_equal
+
 from . import test_utils as tst
 
 from nilearn.datasets import utils, struct

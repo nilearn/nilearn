@@ -16,8 +16,6 @@ import pytest
 from sklearn.utils import check_random_state
 
 from nose import with_setup
-from nose.tools import (
-    assert_true, assert_false, assert_equal, assert_not_equal)
 from . import test_utils as tst
 
 from nilearn.datasets import utils, func

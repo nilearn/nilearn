@@ -14,7 +14,6 @@ import gzip
 from tempfile import mkdtemp, mkstemp
 
 from nose import with_setup
-from nose.tools import assert_true, assert_false, assert_equal
 
 from nilearn import datasets
 from nilearn._utils.testing import (mock_request, wrap_chunk_read_,

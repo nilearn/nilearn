@@ -19,8 +19,9 @@ from collections import namedtuple
 from functools import wraps
 
 import numpy as np
+import pytest
+
 from nose import SkipTest
-from nose.tools import (assert_true, assert_false, assert_equal, assert_raises)
 from nilearn._utils.testing import assert_warns
 
 from nilearn.datasets import neurovault
@@ -109,7 +110,7 @@ def test_get_encoding():
     response = _FakeResponse({'Content-Type': 'text/json; charset=utf-8'})
     assert neurovault._get_encoding(response) == 'utf-8'
     response.headers.pop('Content-Type')
-    assert_raises(ValueError, neurovault._get_encoding, response)
+    pytest.raises(ValueError, neurovault._get_encoding, response)
     request = neurovault.Request('http://www.google.com')
     opener = neurovault.build_opener()
     try:
@@ -127,15 +128,15 @@ def test_get_batch():
     batch = neurovault._get_batch(neurovault._NEUROVAULT_COLLECTIONS_URL)
     assert('results' in batch)
     assert('count' in batch)
-    assert_raises(neurovault.URLError, neurovault._get_batch, 'http://')
+    pytest.raises(neurovault.URLError, neurovault._get_batch, 'http://')
     with _TestTemporaryDirectory() as temp_dir:
         with open(os.path.join(temp_dir, 'test_nv.txt'), 'w'):
             pass
-        assert_raises(ValueError, neurovault._get_batch, 'file://{0}'.format(
+        pytest.raises(ValueError, neurovault._get_batch, 'file://{0}'.format(
             os.path.join(temp_dir, 'test_nv.txt')))
     no_results_url = ('https://eutils.ncbi.nlm.nih.gov/entrez/eutils/'
                       'esearch.fcgi?db=pmc&retmode=json&term=fmri')
-    assert_raises(ValueError, neurovault._get_batch, no_results_url)
+    pytest.raises(ValueError, neurovault._get_batch, no_results_url)
 
 
 @ignore_connection_errors
@@ -398,7 +399,7 @@ def test_simple_download():
             os.path.join(temp_dir, 'image_35.nii.gz'), temp_dir)
         assert os.path.isfile(downloaded_file)
         with _FailingDownloads():
-            assert_raises(neurovault.URLError,
+            pytest.raises(neurovault.URLError,
                           neurovault._simple_download, 'http://',
                           os.path.join(temp_dir, 'bad.nii.gz'), temp_dir)
 
@@ -524,7 +525,7 @@ def test_download_image_terms():
             neurovault._download_image_terms(
                 image_info, collection, download_params)
             download_params['allow_neurosynth_failure'] = False
-            assert_raises(RuntimeError,
+            pytest.raises(RuntimeError,
                           neurovault._download_image_terms,
                           image_info, collection, download_params)
             with open(os.path.join(
@@ -583,7 +584,7 @@ def test_fetch_neurovault_ids():
     # test using explicit id list instead of filters, and downloading
     # an image which has no collection dir or metadata yet.
     with _TestTemporaryDirectory() as data_dir:
-        assert_raises(ValueError, neurovault.fetch_neurovault_ids, mode='bad')
+        pytest.raises(ValueError, neurovault.fetch_neurovault_ids, mode='bad')
         data = neurovault.fetch_neurovault_ids(
             image_ids=[111], collection_ids=[307], data_dir=data_dir)
         if len(data.images) == 2:

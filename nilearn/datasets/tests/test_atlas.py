@@ -11,12 +11,11 @@ import itertools
 import numpy as np
 
 import nibabel
+import pytest
 
 from distutils.version import LooseVersion
 
 from nose import with_setup, SkipTest
-from nose.tools import (assert_true, assert_equal, assert_raises,
-                        assert_not_equal)
 from numpy.testing import assert_array_equal
 
 from nilearn._utils.testing import assert_raises_regex
@@ -135,7 +134,7 @@ def test_downloader():
         ('bald.nii.gz', local_url, opts)
     ]
 
-    assert_raises(IOError, utils._fetch_files,
+    pytest.raises(IOError, utils._fetch_files,
                   os.path.join(tst.tmpdir, 'craddock_2012'), files,
                   verbose=0)
     dummy = open(os.path.join(datasetdir, 'random_all.nii.gz'), 'r')
@@ -549,7 +548,7 @@ def test_fetch_atlas_talairach(data_dir=tst.tmpdir):
     talairach = atlas.fetch_atlas_talairach('ba', data_dir=tst.tmpdir)
     assert_array_equal(get_data(talairach.maps).ravel(),
                        level_values.ravel())
-    assert_raises(ValueError, atlas.fetch_atlas_talairach, 'bad_level')
+    pytest.raises(ValueError, atlas.fetch_atlas_talairach, 'bad_level')
 
 @with_setup(tst.setup_tmpdata, tst.teardown_tmpdata)
 def test_fetch_atlas_pauli_2017():
@@ -570,9 +569,9 @@ def test_fetch_atlas_schaefer_2018():
     valid_yeo_networks = [7, 17]
     valid_resolution_mm = [1, 2]
 
-    assert_raises(ValueError, atlas.fetch_atlas_schaefer_2018, n_rois=44)
-    assert_raises(ValueError, atlas.fetch_atlas_schaefer_2018, yeo_networks=10)
-    assert_raises(ValueError, atlas.fetch_atlas_schaefer_2018, resolution_mm=3)
+    pytest.raises(ValueError, atlas.fetch_atlas_schaefer_2018, n_rois=44)
+    pytest.raises(ValueError, atlas.fetch_atlas_schaefer_2018, yeo_networks=10)
+    pytest.raises(ValueError, atlas.fetch_atlas_schaefer_2018, resolution_mm=3)
 
     for n_rois, yeo_networks, resolution_mm in \
             itertools.product(valid_n_rois, valid_yeo_networks,
