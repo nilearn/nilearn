@@ -68,7 +68,7 @@ def _make_canica_test_data(rng=None, n_subjects=8, noisy=False):
         components[rng.randn(*components.shape) > .8] *= -5.
 
     for mp in components:
-        assert_less_equal(mp.max(), -mp.min())  # Goal met ?
+        assert mp.max() <= -mp.min()  # Goal met ?
 
     # Create a "multi-subject" dataset
     data = _make_data_from_components(components, affine, shape, rng=rng,
@@ -104,7 +104,7 @@ def test_canica_square_img():
     # K should be a permutation matrix, hence its coefficients
     # should all be close to 0 1 or -1
     K_abs = np.abs(K)
-    assert_true(np.sum(K_abs > .9) == 4)
+    assert np.sum(K_abs > .9) == 4
     K_abs[K_abs > .9] -= 1
     assert_array_almost_equal(K_abs, 0, 1)
 
@@ -137,7 +137,7 @@ def test_component_sign():
         canica.fit(data)
         for mp in iter_img(canica.components_img_):
             mp = get_data(mp)
-            assert_less_equal(-mp.min(), mp.max())
+            assert -mp.min() <= mp.max()
 
 
 def test_threshold_bound():
@@ -152,13 +152,13 @@ def test_masker_attributes_with_fit():
     # Passing mask_img
     canica = CanICA(n_components=3, mask=mask_img, random_state=0)
     canica.fit(data)
-    assert_true(canica.mask_img_ == mask_img)
-    assert_true(canica.mask_img_ == canica.masker_.mask_img_)
+    assert canica.mask_img_ == mask_img
+    assert canica.mask_img_ == canica.masker_.mask_img_
     # Passing masker
     masker = MultiNiftiMasker(mask_img=mask_img)
     canica = CanICA(n_components=3, mask=masker, random_state=0)
     canica.fit(data)
-    assert_true(canica.mask_img_ == canica.masker_.mask_img_)
+    assert canica.mask_img_ == canica.masker_.mask_img_
     canica = CanICA(mask=mask_img, n_components=3)
     assert_raises_regex(ValueError,
                         "Object has no components_ attribute. "
@@ -183,9 +183,9 @@ def test_components_img():
     canica = CanICA(n_components=n_components, mask=mask_img)
     canica.fit(data)
     components_img = canica.components_img_
-    assert_true(isinstance(components_img, nibabel.Nifti1Image))
+    assert isinstance(components_img, nibabel.Nifti1Image)
     check_shape = data[0].shape[:3] + (n_components,)
-    assert_true(components_img.shape, check_shape)
+    assert components_img.shape, check_shape
 
 
 def test_with_globbing_patterns_with_single_subject():
@@ -197,10 +197,10 @@ def test_with_globbing_patterns_with_single_subject():
         input_image = _tmp_dir() + img
         canica.fit(input_image)
         components_img = canica.components_img_
-        assert_true(isinstance(components_img, nibabel.Nifti1Image))
+        assert isinstance(components_img, nibabel.Nifti1Image)
         # n_components = 3
         check_shape = data[0].shape[:3] + (3,)
-        assert_true(components_img.shape, check_shape)
+        assert components_img.shape, check_shape
 
 
 def test_with_globbing_patterns_with_multi_subjects():
@@ -213,7 +213,7 @@ def test_with_globbing_patterns_with_multi_subjects():
         input_image = _tmp_dir() + img
         canica.fit(input_image)
         components_img = canica.components_img_
-        assert_true(isinstance(components_img, nibabel.Nifti1Image))
+        assert isinstance(components_img, nibabel.Nifti1Image)
         # n_components = 3
         check_shape = data[0].shape[:3] + (3,)
-        assert_true(components_img.shape, check_shape)
+        assert components_img.shape, check_shape

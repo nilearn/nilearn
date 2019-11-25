@@ -40,8 +40,8 @@ def test_multi_pca():
                          random_state=0)
     # fit to the data and test for masker attributes
     multi_pca.fit(data)
-    assert_true(multi_pca.mask_img_ == mask_img)
-    assert_true(multi_pca.mask_img_ == multi_pca.masker_.mask_img_)
+    assert multi_pca.mask_img_ == mask_img
+    assert multi_pca.mask_img_ == multi_pca.masker_.mask_img_
 
     # Test that the components are the same if we put twice the same data, and
     # that fit output is deterministic
@@ -66,7 +66,7 @@ def test_multi_pca():
     masker = MultiNiftiMasker()
     multi_pca = MultiPCA(mask=masker, n_components=3)
     multi_pca.fit(data)
-    assert_true(multi_pca.mask_img_ == multi_pca.masker_.mask_img_)
+    assert multi_pca.mask_img_ == multi_pca.masker_.mask_img_
 
     # Smoke test the use of a masker and without CCA
     multi_pca = MultiPCA(mask=MultiNiftiMasker(mask_args=dict(opening=0)),
@@ -115,15 +115,15 @@ def test_multi_pca_score():
                          n_components=3)
     multi_pca.fit(imgs)
     s = multi_pca.score(imgs)
-    assert_true(np.all(s <= 1))
-    assert_true(np.all(0 <= s))
+    assert np.all(s <= 1)
+    assert np.all(0 <= s)
 
     # Assert that score does not fail with single subject data
     multi_pca = MultiPCA(mask=mask_img, random_state=0, memory_level=0,
                          n_components=3)
     multi_pca.fit(imgs[0])
     s = multi_pca.score(imgs[0])
-    assert_true(isinstance(s, float))
+    assert isinstance(s, float)
     assert(0. <= s <= 1.)
 
     # Assert that score is one for n_components == n_sample
@@ -140,9 +140,9 @@ def test_multi_pca_score():
     multi_pca.fit(imgs[0])
     masker = NiftiMasker(mask_img).fit()
     s = multi_pca._raw_score(masker.transform(imgs[0]), per_component=True)
-    assert_equal(s.shape, (5,))
-    assert_true(np.all(s <= 1))
-    assert_true(np.all(0 <= s))
+    assert s.shape == (5,)
+    assert np.all(s <= 1)
+    assert np.all(0 <= s)
 
 
 def test_components_img():
@@ -165,10 +165,10 @@ def test_components_img():
     # fit to the data and test for components images
     multi_pca.fit(data)
     components_img = multi_pca.components_img_
-    assert_true(isinstance(components_img, nibabel.Nifti1Image))
+    assert isinstance(components_img, nibabel.Nifti1Image)
     check_shape = data[0].shape[:3] + (n_components,)
-    assert_equal(components_img.shape, check_shape)
-    assert_equal(len(components_img.shape), 4)
+    assert components_img.shape == check_shape
+    assert len(components_img.shape) == 4
 
 
 def test_with_globbing_patterns_with_single_image():
@@ -182,11 +182,11 @@ def test_with_globbing_patterns_with_single_image():
         input_image = _tmp_dir() + img
         multi_pca.fit(input_image)
         components_img = multi_pca.components_img_
-        assert_true(isinstance(components_img, nibabel.Nifti1Image))
+        assert isinstance(components_img, nibabel.Nifti1Image)
         # n_components = 3
         check_shape = img_4d.shape[:3] + (3,)
-        assert_equal(components_img.shape, check_shape)
-        assert_equal(len(components_img.shape), 4)
+        assert components_img.shape == check_shape
+        assert len(components_img.shape) == 4
 
 
 def test_with_globbing_patterns_with_multiple_images():
@@ -201,8 +201,8 @@ def test_with_globbing_patterns_with_multiple_images():
         input_image = _tmp_dir() + imgs
         multi_pca.fit(input_image)
         components_img = multi_pca.components_img_
-        assert_true(isinstance(components_img, nibabel.Nifti1Image))
+        assert isinstance(components_img, nibabel.Nifti1Image)
         # n_components = 3
         check_shape = img_4d.shape[:3] + (3,)
-        assert_equal(components_img.shape, check_shape)
-        assert_equal(len(components_img.shape), 4)
+        assert components_img.shape == check_shape
+        assert len(components_img.shape) == 4
