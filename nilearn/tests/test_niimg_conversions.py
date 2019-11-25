@@ -125,7 +125,7 @@ def test_check_niimg_3d():
 
     # check data dtype equal with dtype='auto'
     img_check = _utils.check_niimg_3d(img, dtype='auto')
-    assert_equal(get_data(img).dtype.kind, get_data(img_check).dtype.kind)
+    assert get_data(img).dtype.kind == get_data(img_check).dtype.kind
 
 
 def test_check_niimg_4d():
@@ -140,7 +140,7 @@ def test_check_niimg_4d():
 
     # Tests with return_iterator=False
     img_4d_1 = _utils.check_niimg_4d([img_3d, img_3d])
-    assert_true(get_data(img_4d_1).shape == (10, 10, 10, 2))
+    assert get_data(img_4d_1).shape == (10, 10, 10, 2)
     assert_array_equal(img_4d_1.affine, affine)
 
     img_4d_2 = _utils.check_niimg_4d(img_4d_1)
@@ -151,14 +151,14 @@ def test_check_niimg_4d():
     img_3d_iterator = _utils.check_niimg_4d([img_3d, img_3d],
                                             return_iterator=True)
     img_3d_iterator_length = sum(1 for _ in img_3d_iterator)
-    assert_true(img_3d_iterator_length == 2)
+    assert img_3d_iterator_length == 2
 
     img_3d_iterator_1 = _utils.check_niimg_4d([img_3d, img_3d],
                                               return_iterator=True)
     img_3d_iterator_2 = _utils.check_niimg_4d(img_3d_iterator_1,
                                               return_iterator=True)
     for img_1, img_2 in zip(img_3d_iterator_1, img_3d_iterator_2):
-        assert_true(get_data(img_1).shape == (10, 10, 10))
+        assert get_data(img_1).shape == (10, 10, 10)
         assert_array_equal(get_data(img_1), get_data(img_2))
         assert_array_equal(img_1.affine, img_2.affine)
 
@@ -167,7 +167,7 @@ def test_check_niimg_4d():
     img_3d_iterator_2 = _utils.check_niimg_4d(img_4d_1,
                                               return_iterator=True)
     for img_1, img_2 in zip(img_3d_iterator_1, img_3d_iterator_2):
-        assert_true(get_data(img_1).shape == (10, 10, 10))
+        assert get_data(img_1).shape == (10, 10, 10)
         assert_array_equal(get_data(img_1), get_data(img_2))
         assert_array_equal(img_1.affine, img_2.affine)
 
@@ -219,12 +219,12 @@ def test_check_niimg():
 
     # check data dtype equal with dtype='auto'
     img_3d_check = _utils.check_niimg(img_3d, dtype='auto')
-    assert_equal(
-        get_data(img_3d).dtype.kind, get_data(img_3d_check).dtype.kind)
+    assert (
+        get_data(img_3d).dtype.kind == get_data(img_3d_check).dtype.kind)
 
     img_4d_check = _utils.check_niimg(img_4d, dtype='auto')
-    assert_equal(
-        get_data(img_4d).dtype.kind, get_data(img_4d_check).dtype.kind)
+    assert (
+        get_data(img_4d).dtype.kind == get_data(img_4d_check).dtype.kind)
 
 
 def test_check_niimg_wildcards():
@@ -239,7 +239,7 @@ def test_check_niimg_wildcards():
 
     file_not_found_msg = "File not found: '%s'"
 
-    assert_equal(ni.EXPAND_PATH_WILDCARDS, True)
+    assert ni.EXPAND_PATH_WILDCARDS == True
     # Check bad filename
     # Non existing file (with no magic) raise a ValueError exception
     assert_raises_regex(ValueError, file_not_found_msg % nofile_path,
@@ -393,21 +393,21 @@ def test_iter_check_niimgs_memory():
 
 def test_repr_niimgs():
     # Test with file path
-    assert_equal(_utils._repr_niimgs("test"), "test")
-    assert_equal(_utils._repr_niimgs(["test", "retest"]), "[test, retest]")
+    assert _utils._repr_niimgs("test") == "test"
+    assert _utils._repr_niimgs(["test", "retest"]) == "[test, retest]"
     # Create phony Niimg with filename
     affine = np.eye(4)
     shape = (10, 10, 10)
     img1 = Nifti1Image(np.ones(shape), affine)
-    assert_equal(
-        _utils._repr_niimgs(img1).replace("10L","10"),
+    assert (
+        _utils._repr_niimgs(img1).replace("10L","10") ==
         ("%s(\nshape=%s,\naffine=%s\n)" %
             (img1.__class__.__name__,
              repr(shape), repr(affine))))
     _, tmpimg1 = tempfile.mkstemp(suffix='.nii')
     nibabel.save(img1, tmpimg1)
-    assert_equal(
-        _utils._repr_niimgs(img1),
+    assert (
+        _utils._repr_niimgs(img1) ==
         ("%s('%s')" % (img1.__class__.__name__, img1.get_filename())))
 
 
@@ -448,7 +448,7 @@ def test_concat_niimgs():
     # smoke-test auto_resample
     concatenated = _utils.concat_niimgs((img1, img1b, img1c),
                                         auto_resample=True)
-    assert_true(concatenated.shape == img1.shape + (3, ))
+    assert concatenated.shape == img1.shape + (3, )
 
     # check error for non-forced but necessary resampling
     assert_raises_regex(ValueError, 'Field of view of image',
@@ -485,9 +485,9 @@ def test_concat_niimg_dtype():
         np.zeros(shape + [n_scans]).astype(np.int16), np.eye(4))
             for n_scans in [1, 5]]
     nimg = _utils.concat_niimgs(vols)
-    assert_equal(get_data(nimg).dtype, np.float32)
+    assert get_data(nimg).dtype == np.float32
     nimg = _utils.concat_niimgs(vols, dtype=None)
-    assert_equal(get_data(nimg).dtype, np.int16)
+    assert get_data(nimg).dtype == np.int16
 
 
 def nifti_generator(buffer):
@@ -501,18 +501,18 @@ def test_iterator_generator():
     l = [Nifti1Image(np.random.random((10, 10, 10)), np.eye(4))
          for i in range(10)]
     cc = _utils.concat_niimgs(l)
-    assert_equal(cc.shape[-1], 10)
+    assert cc.shape[-1] == 10
     assert_array_almost_equal(get_data(cc)[..., 0], get_data(l[0]))
 
     # Same with iteration
     i = image.iter_img(l)
     cc = _utils.concat_niimgs(i)
-    assert_equal(cc.shape[-1], 10)
+    assert cc.shape[-1] == 10
     assert_array_almost_equal(get_data(cc)[..., 0], get_data(l[0]))
 
     # Now, a generator
     b = []
     g = nifti_generator(b)
     cc = _utils.concat_niimgs(g)
-    assert_equal(cc.shape[-1], 10)
-    assert_equal(len(b), 10)
+    assert cc.shape[-1] == 10
+    assert len(b) == 10

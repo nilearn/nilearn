@@ -61,11 +61,11 @@ def test_generate_fake_fmri():
                 block_type=btype,
                 rand_gen=rand_gen)
 
-        assert_equal(fmri.shape[:-1], shape)
-        assert_equal(fmri.shape[-1], length)
+        assert fmri.shape[:-1] == shape
+        assert fmri.shape[-1] == length
 
         if n_block is not None:
-            assert_equal(target.size, length)
+            assert target.size == length
 
     assert_raises(ValueError, generate_fake_fmri, length=10, n_blocks=10,
                   block_size=None, rand_gen=rand_gen)

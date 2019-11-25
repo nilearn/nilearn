@@ -58,8 +58,8 @@ def test_compute_epi_mask():
                                   get_data(mask3)[3:12, 3:12])
     # However, without exclude_zeros, it does
     mask3 = compute_epi_mask(mean_image2, opening=False)
-    assert_false(np.allclose(get_data(mask1),
-                             get_data(mask3)[3:12, 3:12]))
+    assert not np.allclose(get_data(mask1),
+                             get_data(mask3)[3:12, 3:12])
 
     # Check that we get a ValueError for incorrect shape
     mean_image = np.ones((9, 9))
@@ -100,8 +100,8 @@ def test_compute_background_mask():
     mean_image = Nifti1Image(mean_image, np.eye(4))
     with warnings.catch_warnings(record=True) as w:
         compute_background_mask(mean_image)
-    assert_equal(len(w), 1)
-    assert_true(isinstance(w[0].message, masking.MaskWarning))
+    assert len(w) == 1
+    assert isinstance(w[0].message, masking.MaskWarning)
 
 
 def test_compute_gray_matter_mask():
@@ -163,7 +163,7 @@ def test_apply_mask():
     mask_img = Nifti1Image(mask, affine)
     full_mask_img = Nifti1Image(full_mask, affine)
     series = masking.apply_mask(data_img, mask_img, smoothing_fwhm=9)
-    assert_true(np.all(np.isfinite(series)))
+    assert np.all(np.isfinite(series))
 
     # veriy that 4D masks are rejected
     mask_img_4d = Nifti1Image(np.ones((40, 40, 40, 2)), np.eye(4))
@@ -177,7 +177,7 @@ def test_apply_mask():
     mask_data_3d[0, 1, 0] = True
     mask_data_3d[0, 1, 1] = True
     data_3d = masking.apply_mask(data_3d, Nifti1Image(mask_data_3d, np.eye(4)))
-    assert_equal(sorted(data_3d.tolist()), [3., 4., 12.])
+    assert sorted(data_3d.tolist()) == [3., 4., 12.]
 
     # Check data shape and affine
     assert_raises_regex(DimensionError, _TEST_DIM_ERROR_MSG % "2D",
@@ -216,32 +216,32 @@ def test_unmask():
 
     # 4D Test, test value ordering at the same time.
     t = get_data(unmask(masked4D, mask_img, order="C"))
-    assert_equal(t.ndim, 4)
-    assert_true(t.flags["C_CONTIGUOUS"])
-    assert_false(t.flags["F_CONTIGUOUS"])
+    assert t.ndim == 4
+    assert t.flags["C_CONTIGUOUS"]
+    assert not t.flags["F_CONTIGUOUS"]
     assert_array_equal(t, unmasked4D)
     t = unmask([masked4D], mask_img, order="F")
     t = [get_data(t_) for t_ in t]
-    assert_true(isinstance(t, list))
-    assert_equal(t[0].ndim, 4)
-    assert_false(t[0].flags["C_CONTIGUOUS"])
-    assert_true(t[0].flags["F_CONTIGUOUS"])
+    assert isinstance(t, list)
+    assert t[0].ndim == 4
+    assert not t[0].flags["C_CONTIGUOUS"]
+    assert t[0].flags["F_CONTIGUOUS"]
     assert_array_equal(t[0], unmasked4D)
 
     # 3D Test - check both with Nifti1Image and file
     for create_files in (False, True):
         with write_tmp_imgs(mask_img, create_files=create_files) as filename:
             t = get_data(unmask(masked3D, filename, order="C"))
-            assert_equal(t.ndim, 3)
-            assert_true(t.flags["C_CONTIGUOUS"])
-            assert_false(t.flags["F_CONTIGUOUS"])
+            assert t.ndim == 3
+            assert t.flags["C_CONTIGUOUS"]
+            assert not t.flags["F_CONTIGUOUS"]
             assert_array_equal(t, unmasked3D)
             t = unmask([masked3D], filename, order="F")
             t = [get_data(t_) for t_ in t]
-            assert_true(isinstance(t, list))
-            assert_equal(t[0].ndim, 3)
-            assert_false(t[0].flags["C_CONTIGUOUS"])
-            assert_true(t[0].flags["F_CONTIGUOUS"])
+            assert isinstance(t, list)
+            assert t[0].ndim == 3
+            assert not t[0].flags["C_CONTIGUOUS"]
+            assert t[0].flags["F_CONTIGUOUS"]
             assert_array_equal(t[0], unmasked3D)
 
     # Error test: shape

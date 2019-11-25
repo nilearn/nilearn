@@ -143,18 +143,17 @@ def test_as_ndarray():
         arr1 = np.ones(shape, dtype=in_dtype, order=in_order)
         arr2 = as_ndarray(arr1,
                           copy=copy, dtype=out_dtype, order=out_order)
-        assert_true(not are_arrays_identical(arr1[0], arr2[0]) == copied,
-                    msg=str(case))
+        assert not are_arrays_identical(arr1[0], arr2[0]) == copied, str(case)
         if out_dtype is None:
-            assert_true(arr2.dtype == in_dtype, msg=str(case))
+            assert arr2.dtype == in_dtype, str(case)
         else:
-            assert_true(arr2.dtype == out_dtype, msg=str(case))
+            assert arr2.dtype == out_dtype, str(case)
 
         result_order = out_order if out_order is not None else in_order
         if result_order == "F":
-            assert_true(arr2.flags["F_CONTIGUOUS"], msg=str(case))
+            assert arr2.flags["F_CONTIGUOUS"], str(case)
         else:
-            assert_true(arr2.flags["C_CONTIGUOUS"], msg=str(case))
+            assert arr2.flags["C_CONTIGUOUS"], str(case)
 
     # memmap
     filename = os.path.join(os.path.dirname(__file__), "data", "mmap.dat")
@@ -239,8 +238,8 @@ def test_csv_to_array():
     try:
         with open(filename, mode='wt') as fp:
             fp.write('1.,2.,3.,4.,5.\n')
-        assert_true(np.allclose(csv_to_array(filename),
-                    np.asarray([1., 2., 3., 4., 5.])))
+        assert np.allclose(csv_to_array(filename),
+                    np.asarray([1., 2., 3., 4., 5.]))
         assert_raises(TypeError, csv_to_array, filename, delimiters='?!')
     finally:
         os.remove(filename)

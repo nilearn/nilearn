@@ -27,7 +27,7 @@ def test_copy_img_side_effect():
     hash1 = joblib.hash(img1)
     niimg.copy_img(img1)
     hash2 = joblib.hash(img1)
-    assert_equal(hash1, hash2)
+    assert hash1 == hash2
 
 
 def test_new_img_like_side_effect():
@@ -36,21 +36,21 @@ def test_new_img_like_side_effect():
     new_img_like(img1, np.ones((2, 2, 2, 2)), img1.affine.copy(),
                  copy_header=True)
     hash2 = joblib.hash(img1)
-    assert_equal(hash1, hash2)
+    assert hash1 == hash2
 
 
 def test_get_target_dtype():
     img = Nifti1Image(np.ones((2, 2, 2), dtype=np.float64), affine=np.eye(4))
-    assert_equal(get_data(img).dtype.kind, 'f')
+    assert get_data(img).dtype.kind == 'f'
     dtype_kind_float = niimg._get_target_dtype(get_data(img).dtype,
                                                target_dtype='auto')
-    assert_equal(dtype_kind_float, np.float32)
+    assert dtype_kind_float == np.float32
 
     img2 = Nifti1Image(np.ones((2, 2, 2), dtype=np.int64), affine=np.eye(4))
-    assert_equal(get_data(img2).dtype.kind, 'i')
+    assert get_data(img2).dtype.kind == 'i'
     dtype_kind_int = niimg._get_target_dtype(get_data(img2).dtype,
                                              target_dtype='auto')
-    assert_equal(dtype_kind_int, np.int32)
+    assert dtype_kind_int == np.int32
 
 
 def test_img_data_dtype():
@@ -72,7 +72,7 @@ def test_img_data_dtype():
                 # To verify later that sometimes these differ meaningfully
                 dtype_matches.append(
                     loaded.get_data_dtype() == niimg.img_data_dtype(loaded))
-                assert_equal(np.array(loaded.dataobj).dtype,
+                assert (np.array(loaded.dataobj).dtype ==
                              niimg.img_data_dtype(loaded))
     # Verify that the distinction is worth making
     assert any(dtype_matches)
