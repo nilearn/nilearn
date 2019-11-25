@@ -69,13 +69,13 @@ def test_nan():
     masker = MultiNiftiMasker(mask_args=dict(opening=0))
     masker.fit([img])
     mask = get_data(masker.mask_img_)
-    assert_true(mask[1:-1, 1:-1, 1:-1].all())
-    assert_false(mask[0].any())
-    assert_false(mask[:, 0].any())
-    assert_false(mask[:, :, 0].any())
-    assert_false(mask[-1].any())
-    assert_false(mask[:, -1].any())
-    assert_false(mask[:, :, -1].any())
+    assert mask[1:-1, 1:-1, 1:-1].all()
+    assert not mask[0].any()
+    assert not mask[:, 0].any()
+    assert not mask[:, :, 0].any()
+    assert not mask[-1].any()
+    assert not mask[:, -1].any()
+    assert not mask[:, :, -1].any()
 
 
 def test_different_affines():
@@ -103,7 +103,7 @@ def test_3d_images():
     masker = MultiNiftiMasker(mask_img=mask_img)
     epis = masker.fit_transform([epi_img1, epi_img2])
     # This is mostly a smoke test
-    assert_equal(len(epis), 2)
+    assert len(epis) == 2
 
     # verify that 4D mask arguments are refused
     mask_img_4d = Nifti1Image(np.ones((2, 2, 2, 2), dtype=np.int8),
@@ -128,7 +128,7 @@ def test_joblib_cache():
         masker.fit()
         mask_hash = hash(masker.mask_img_)
         get_data(masker.mask_img_)
-        assert_true(mask_hash == hash(masker.mask_img_))
+        assert mask_hash == hash(masker.mask_img_)
         # enables to delete "filename" on windows
         del masker
 

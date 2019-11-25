@@ -147,13 +147,13 @@ def test_is_nifti_spheres_masker_give_nans():
 
     # Interaction of seed with nans
     masker = NiftiSpheresMasker(seeds=seed, radius=2.)
-    assert_false(np.isnan(np.sum(masker.fit_transform(img))))
+    assert not np.isnan(np.sum(masker.fit_transform(img)))
 
     mask = np.ones((9, 9, 9))
     mask_img = nibabel.Nifti1Image(mask, affine)
     # When mask_img is provided, the seed interacts within the brain, so no nan
     masker = NiftiSpheresMasker(seeds=seed, radius=2., mask_img=mask_img)
-    assert_false(np.isnan(np.sum(masker.fit_transform(img))))
+    assert not np.isnan(np.sum(masker.fit_transform(img)))
 
 
 def test_standardization():

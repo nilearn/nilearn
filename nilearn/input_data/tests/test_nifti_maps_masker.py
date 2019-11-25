@@ -51,7 +51,7 @@ def test_nifti_maps_masker():
                 as labels11:
             masker11 = NiftiMapsMasker(labels11, resampling_target=None)
             signals11 = masker11.fit().transform(fmri11_img)
-            assert_equal(signals11.shape, (length, n_regions))
+            assert signals11.shape == (length, n_regions)
             # enables to delete "labels11" on windows
             del masker11
 
@@ -62,7 +62,7 @@ def test_nifti_maps_masker():
         ValueError, 'has not been fitted. ',
         masker11.transform, fmri11_img)
     signals11 = masker11.fit().transform(fmri11_img)
-    assert_equal(signals11.shape, (length, n_regions))
+    assert signals11.shape == (length, n_regions)
 
     NiftiMapsMasker(labels11_img).fit_transform(fmri11_img)
 
@@ -89,12 +89,12 @@ def test_nifti_maps_masker():
     masker11 = NiftiMapsMasker(labels11_img, smoothing_fwhm=3,
                                resampling_target=None)
     signals11 = masker11.fit().transform(fmri11_img)
-    assert_equal(signals11.shape, (length, n_regions))
+    assert signals11.shape == (length, n_regions)
 
     masker11 = NiftiMapsMasker(labels11_img, smoothing_fwhm=3,
                                resampling_target=None)
     signals11 = masker11.fit_transform(fmri11_img)
-    assert_equal(signals11.shape, (length, n_regions))
+    assert signals11.shape == (length, n_regions)
 
     testing.assert_raises_regex(
         ValueError, 'has not been fitted. ',
@@ -102,7 +102,7 @@ def test_nifti_maps_masker():
 
     # Call inverse transform (smoke test)
     fmri11_img_r = masker11.inverse_transform(signals11)
-    assert_equal(fmri11_img_r.shape, fmri11_img.shape)
+    assert fmri11_img_r.shape == fmri11_img.shape
     np.testing.assert_almost_equal(fmri11_img_r.affine, fmri11_img.affine)
 
     # Test with data and atlas of different shape: the atlas should be
@@ -142,8 +142,8 @@ def test_nifti_maps_masker_with_nans():
 
     masker = NiftiMapsMasker(maps_img, mask_img=mask_img)
     sig = masker.fit_transform(fmri_img)
-    assert_equal(sig.shape, (length, n_regions))
-    assert_true(np.all(np.isfinite(sig)))
+    assert sig.shape == (length, n_regions)
+    assert np.all(np.isfinite(sig))
 
 
 def test_nifti_maps_masker_2():
@@ -189,19 +189,19 @@ def test_nifti_maps_masker_2():
     masker.fit()
     np.testing.assert_almost_equal(masker.mask_img_.affine,
                                    mask22_img.affine)
-    assert_equal(masker.mask_img_.shape, mask22_img.shape)
+    assert masker.mask_img_.shape == mask22_img.shape
 
     np.testing.assert_almost_equal(masker.mask_img_.affine,
                                    masker.maps_img_.affine)
-    assert_equal(masker.mask_img_.shape, masker.maps_img_.shape[:3])
+    assert masker.mask_img_.shape == masker.maps_img_.shape[:3]
 
     transformed = masker.transform(fmri11_img)
-    assert_equal(transformed.shape, (length, n_regions))
+    assert transformed.shape == (length, n_regions)
 
     fmri11_img_r = masker.inverse_transform(transformed)
     np.testing.assert_almost_equal(fmri11_img_r.affine,
                                    masker.maps_img_.affine)
-    assert_equal(fmri11_img_r.shape, (masker.maps_img_.shape[:3] + (length,)))
+    assert fmri11_img_r.shape == (masker.maps_img_.shape[:3] + (length,))
 
     # Target: maps
     masker = NiftiMapsMasker(maps33_img, mask_img=mask22_img,
@@ -210,19 +210,19 @@ def test_nifti_maps_masker_2():
     masker.fit()
     np.testing.assert_almost_equal(masker.maps_img_.affine,
                                    maps33_img.affine)
-    assert_equal(masker.maps_img_.shape, maps33_img.shape)
+    assert masker.maps_img_.shape == maps33_img.shape
 
     np.testing.assert_almost_equal(masker.mask_img_.affine,
                                    masker.maps_img_.affine)
-    assert_equal(masker.mask_img_.shape, masker.maps_img_.shape[:3])
+    assert masker.mask_img_.shape == masker.maps_img_.shape[:3]
 
     transformed = masker.transform(fmri11_img)
-    assert_equal(transformed.shape, (length, n_regions))
+    assert transformed.shape == (length, n_regions)
 
     fmri11_img_r = masker.inverse_transform(transformed)
     np.testing.assert_almost_equal(fmri11_img_r.affine,
                                    masker.maps_img_.affine)
-    assert_equal(fmri11_img_r.shape, (masker.maps_img_.shape[:3] + (length,)))
+    assert fmri11_img_r.shape == (masker.maps_img_.shape[:3] + (length,))
 
     # Test with clipped maps: mask does not contain all maps.
     # Shapes do matter in that case
@@ -248,21 +248,21 @@ def test_nifti_maps_masker_2():
     masker.fit()
     np.testing.assert_almost_equal(masker.maps_img_.affine,
                                    maps33_img.affine)
-    assert_equal(masker.maps_img_.shape, maps33_img.shape)
+    assert masker.maps_img_.shape == maps33_img.shape
 
     np.testing.assert_almost_equal(masker.mask_img_.affine,
                                    masker.maps_img_.affine)
-    assert_equal(masker.mask_img_.shape, masker.maps_img_.shape[:3])
+    assert masker.mask_img_.shape == masker.maps_img_.shape[:3]
 
     transformed = masker.transform(fmri11_img)
-    assert_equal(transformed.shape, (length, n_regions))
+    assert transformed.shape == (length, n_regions)
     # Some regions have been clipped. Resulting signal must be zero
-    assert_less((transformed.var(axis=0) == 0).sum(), n_regions)
+    assert (transformed.var(axis=0) == 0).sum() < n_regions
 
     fmri11_img_r = masker.inverse_transform(transformed)
     np.testing.assert_almost_equal(fmri11_img_r.affine,
                                    masker.maps_img_.affine)
-    assert_equal(fmri11_img_r.shape,
+    assert (fmri11_img_r.shape ==
                  (masker.maps_img_.shape[:3] + (length,)))
 
 
