@@ -489,6 +489,10 @@ def test_new_img_like():
 
 
 def test_new_img_like_non_iterable_header():
+    """
+    Tests that when an niimg's header is not iterable
+    & it is set to be copied, an error is not raised.
+    """
     fake_fmri_data = np.random.rand(10, 10, 10, 10)
     fake_affine = np.random.rand(4, 4)
     fake_spatial_image = nibabel.spatialimages.SpatialImage(fake_fmri_data,
