@@ -11,7 +11,7 @@ import warnings
 import gc
 
 import numpy as np
-from sklearn.utils.testing import assert_warns
+from numpy.testing import assert_warns  # noqa: F401
 
 from .compat import _basestring, _urllib
 from ..datasets.utils import _fetch_files

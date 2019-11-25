@@ -336,7 +336,7 @@ def test_load_surf_data_file_glob():
     else:
         # Avoid a bug in nibabel 1.2.0 where GiftiDataArray were not
         # initialized properly:
-        darray = gifti.GiftiDataArray.from_array(np.ones(15, 1),
+        darray = gifti.GiftiDataArray.from_array(np.ones((15, 1)),
                                                  intent='t test')
     gii = gifti.GiftiImage(darrays=[darray])
     gifti.write(gii, fnames[-1])
@@ -374,6 +374,11 @@ def test_vertex_outer_normals():
 
 
 def test_load_uniform_ball_cloud():
+    # Note: computed and shipped point clouds may differ since KMeans results
+    # change after
+    # https://github.com/scikit-learn/scikit-learn/pull/9288
+    # but the exact position of the points does not matter as long as they are
+    # well spread inside the unit ball
     for n_points in [10, 20, 40, 80, 160]:
         with warnings.catch_warnings(record=True) as w:
             points = surface._load_uniform_ball_cloud(n_points=n_points)
@@ -381,10 +386,12 @@ def test_load_uniform_ball_cloud():
             assert_equal(len(w), 0)
     assert_warns(surface.EfficiencyWarning,
                  surface._load_uniform_ball_cloud, n_points=3)
-    for n_points in [3, 10, 20]:
+    for n_points in [3, 7]:
         computed = surface._uniform_ball_cloud(n_points)
         loaded = surface._load_uniform_ball_cloud(n_points)
         assert_array_almost_equal(computed, loaded)
+        assert (np.std(computed, axis=0) > .1).all()
+        assert (np.linalg.norm(computed, axis=1) <= 1).all()
 
 
 def test_sample_locations():
