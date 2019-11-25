@@ -21,7 +21,6 @@ from functools import wraps
 import numpy as np
 import pytest
 
-from nose import SkipTest
 from nilearn._utils.testing import assert_warns
 
 from nilearn.datasets import neurovault
@@ -97,7 +96,7 @@ def ignore_connection_errors(func):
         try:
             func(*args, **kwargs)
         except neurovault.URLError:
-            raise SkipTest('connection problem')
+            raise pytest.skip(reason='connection problem')
 
     return test_wrap
 

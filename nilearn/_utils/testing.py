@@ -272,7 +272,7 @@ def skip_if_running_tests(msg=''):
     Parameters
     ----------
     msg: string, optional
-        The message issued when SkipTest is raised
+        The message issued when a test is skipped
     """
     if are_tests_running():
         pytest.skip(msg)

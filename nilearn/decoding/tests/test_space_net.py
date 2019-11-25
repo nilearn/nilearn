@@ -1,6 +1,5 @@
 import itertools
 from functools import partial
-from nose import SkipTest
 
 import numpy as np
 import pytest
@@ -65,7 +64,7 @@ def test_space_net_alpha_grid_same_as_sk():
             X, y, n_alphas=5), X.shape[0] * _alpha_grid(X, y, n_alphas=5,
                                                         fit_intercept=False))
     except ImportError:
-        raise SkipTest
+        raise pytest.skip()
 
 
 def test_early_stopping_callback_object(n_samples=10, n_features=30):

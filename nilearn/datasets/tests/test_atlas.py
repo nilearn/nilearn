@@ -13,9 +13,7 @@ import numpy as np
 import nibabel
 import pytest
 
-from distutils.version import LooseVersion
-
-from nose import with_setup, SkipTest
+from nose import with_setup
 from numpy.testing import assert_array_equal
 
 from nilearn._utils.testing import assert_raises_regex
@@ -492,11 +490,6 @@ def test_fetch_atlas_allen_2011():
 @with_setup(setup_mock, teardown_mock)
 @with_setup(tst.setup_tmpdata, tst.teardown_tmpdata)
 def test_fetch_atlas_surf_destrieux(data_dir=tst.tmpdir, verbose=0):
-
-    # Old nibabel versions does not support 'write_annot'
-    if LooseVersion(nibabel.__version__) <= LooseVersion('1.2.0'):
-        raise SkipTest
-
     data_dir = os.path.join(tst.tmpdir, 'destrieux_surface')
     os.mkdir(data_dir)
     # Create mock annots

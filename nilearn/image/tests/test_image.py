@@ -1,8 +1,6 @@
 """
 Test image pre-processing functions
 """
-from nose import SkipTest
-
 import platform
 import os
 import sys
@@ -395,7 +393,7 @@ def test_index_img():
 def test_pd_index_img():
     # confirm indices from pandas dataframes are handled correctly
     if 'pandas' not in sys.modules:
-        raise SkipTest
+        raise pytest.skip(reason='Pandas not available')
 
     affine = np.array([[1., 2., 3., 4.],
                        [5., 6., 7., 8.],
