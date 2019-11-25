@@ -67,8 +67,8 @@ def test_input_args_and_kwargs():
                     dgap_factor=dgap_factor,
                     callback=lambda _: cb_retval, verbose=verbose,
                     max_iter=100)
-                assert_equal(best_w.shape, mask.shape)
-                assert_true(isinstance(objective, list))
-                assert_true(isinstance(init, dict))
+                assert best_w.shape == mask.shape
+                assert isinstance(objective, list)
+                assert isinstance(init, dict)
                 for key in ["w", "t", "dgap_tol", "stepsize"]:
-                    assert_true(key in init)
+                    assert key in init

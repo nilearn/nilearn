@@ -85,7 +85,7 @@ def test_early_stopping_callback_object(n_samples=10, n_features=30):
             w[k - 1] = 1 - w[k - 1]
 
         escb(dict(w=w, counter=counter))
-        assert_equal(len(escb.test_scores), counter + 1)
+        assert len(escb.test_scores) == counter + 1
 
         # restart
         if counter > 20:
@@ -102,11 +102,11 @@ def test_params_correctly_propagated_in_constructors():
             mask="dummy", n_alphas=n_alphas, n_jobs=n_jobs, l1_ratios=l1_ratio,
             cv=cv, screening_percentile=perc, penalty=penalty,
             is_classif=is_classif)
-        assert_equal(cvobj.n_alphas, n_alphas)
-        assert_equal(cvobj.l1_ratios, l1_ratio)
-        assert_equal(cvobj.n_jobs, n_jobs)
-        assert_equal(cvobj.cv, cv)
-        assert_equal(cvobj.screening_percentile, perc)
+        assert cvobj.n_alphas == n_alphas
+        assert cvobj.l1_ratios == l1_ratio
+        assert cvobj.n_jobs == n_jobs
+        assert cvobj.cv == cv
+        assert cvobj.screening_percentile == perc
 
 
 def test_screening_space_net():
@@ -119,7 +119,7 @@ def test_screening_space_net():
     # We gave here a very small mask, judging by standards of brain size
     # thus the screening_percentile_ corrected for brain size should
     # be 100%
-    assert_equal(screening_percentile, 100)
+    assert screening_percentile == 100
 
 
 def test_logistic_path_scores():
@@ -132,8 +132,8 @@ def test_logistic_path_scores():
         _graph_net_logistic, X, y, mask, alphas, .5,
         np.arange(len(X)), np.arange(len(X)), {})[:2]
     test_scores = test_scores[0]
-    assert_equal(len(test_scores), len(alphas))
-    assert_equal(X.shape[1] + 1, len(best_w))
+    assert len(test_scores) == len(alphas)
+    assert X.shape[1] + 1 == len(best_w)
 
 
 def test_squared_loss_path_scores():
@@ -146,8 +146,8 @@ def test_squared_loss_path_scores():
         _graph_net_squared_loss, X, y, mask, alphas, .5,
         np.arange(len(X)), np.arange(len(X)), {})[:2]
     test_scores = test_scores[0]
-    assert_equal(len(test_scores), len(alphas))
-    assert_equal(X.shape[1] + 1, len(best_w))
+    assert len(test_scores) == len(alphas)
+    assert X.shape[1] + 1 == len(best_w)
 
 
 def test_tv_regression_simple():
@@ -200,7 +200,7 @@ def test_graph_net_classifier_score():
                              standardize=False, verbose=0,
                              screening_percentile=100.).fit(X_, y)
     accuracy = gnc.score(X_, y)
-    assert_equal(accuracy, accuracy_score(y, gnc.predict(X_)))
+    assert accuracy == accuracy_score(y, gnc.predict(X_))
 
 
 def test_log_reg_vs_graph_net_two_classes_iris(C=.01, tol=1e-10,
@@ -254,8 +254,8 @@ def test_params_correctly_propagated_in_constructors_biz():
         cvobj = BaseSpaceNet(
             mask="dummy", penalty=penalty, is_classif=is_classif, alphas=alpha,
             l1_ratios=l1_ratio)
-        assert_equal(cvobj.alphas, alpha)
-        assert_equal(cvobj.l1_ratios, l1_ratio)
+        assert cvobj.alphas == alpha
+        assert cvobj.l1_ratios == l1_ratio
 
 
 def test_crop_mask():
@@ -264,16 +264,16 @@ def test_crop_mask():
     box = mask[:2, :3, :4]
     box[rng.rand(*box.shape) < 3.] = 1  # mask covers 30% of brain
     idx = np.where(mask)
-    assert_true(idx[1].max() < 3)
+    assert idx[1].max() < 3
     tight_mask = _crop_mask(mask)
-    assert_equal(mask.sum(), tight_mask.sum())
-    assert_true(np.prod(tight_mask.shape) <= np.prod(box.shape))
+    assert mask.sum() == tight_mask.sum()
+    assert np.prod(tight_mask.shape) <= np.prod(box.shape)
 
 
 def test_univariate_feature_screening(dim=(11, 12, 13), n_samples=10):
     rng = np.random.RandomState(42)
     mask = rng.rand(*dim) > 100. / np.prod(dim)
-    assert_true(mask.sum() >= 100.)
+    assert mask.sum() >= 100.
     mask[dim[0] // 2, dim[1] // 3:, -dim[2] // 2:] = 1  # put spatial structure
     n_features = mask.sum()
     X = rng.randn(n_samples, n_features)
@@ -284,9 +284,9 @@ def test_univariate_feature_screening(dim=(11, 12, 13), n_samples=10):
         X_, mask_, support_ = _univariate_feature_screening(
             X, y, mask, is_classif, 20.)
         n_features_ = support_.sum()
-        assert_equal(X_.shape[1], n_features_)
-        assert_equal(mask_.sum(), n_features_)
-        assert_true(n_features_ <= n_features)
+        assert X_.shape[1] == n_features_
+        assert mask_.sum() == n_features_
+        assert n_features_ <= n_features
 
 
 def test_space_net_classifier_subclass():
@@ -295,8 +295,8 @@ def test_space_net_classifier_subclass():
         cvobj = SpaceNetClassifier(
             mask="dummy", penalty=penalty, alphas=alpha, l1_ratios=l1_ratio,
             verbose=verbose)
-        assert_equal(cvobj.alphas, alpha)
-        assert_equal(cvobj.l1_ratios, l1_ratio)
+        assert cvobj.alphas == alpha
+        assert cvobj.l1_ratios == l1_ratio
 
 
 def test_space_net_regressor_subclass():
@@ -305,8 +305,8 @@ def test_space_net_regressor_subclass():
         cvobj = SpaceNetRegressor(
             mask="dummy", penalty=penalty, alphas=alpha, l1_ratios=l1_ratio,
             verbose=verbose)
-        assert_equal(cvobj.alphas, alpha)
-        assert_equal(cvobj.l1_ratios, l1_ratio)
+        assert cvobj.alphas == alpha
+        assert cvobj.l1_ratios == l1_ratio
 
 
 def test_space_net_alpha_grid_pure_spatial():
@@ -314,8 +314,8 @@ def test_space_net_alpha_grid_pure_spatial():
     X = rng.randn(10, 100)
     y = np.arange(X.shape[0])
     for is_classif in [True, False]:
-        assert_false(np.any(np.isnan(_space_net_alpha_grid(
-            X, y, l1_ratio=0., logistic=is_classif))))
+        assert not np.any(np.isnan(_space_net_alpha_grid(
+            X, y, l1_ratio=0., logistic=is_classif)))
 
 
 def test_string_params_case():

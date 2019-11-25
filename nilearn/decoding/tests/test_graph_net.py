@@ -173,8 +173,7 @@ def test__squared_loss_derivative_lipschitz_constant():
             - _squared_loss_and_spatial_grad_derivative(X, y, x_2, mask,
                                                         grad_weight))
         point_difference = linalg.norm(x_1 - x_2)
-        assert_true(
-            gradient_difference <= lipschitz_constant * point_difference)
+        assert gradient_difference <= lipschitz_constant * point_difference
 
 
 def test_logistic_derivative_lipschitz_constant():
@@ -192,8 +191,7 @@ def test_logistic_derivative_lipschitz_constant():
             - _logistic_data_loss_and_spatial_grad_derivative(
                 X, y, x_2, mask, grad_weight))
         point_difference = linalg.norm(x_1 - x_2)
-        assert_true(
-            gradient_difference <= lipschitz_constant * point_difference)
+        assert gradient_difference <= lipschitz_constant * point_difference
 
 
 def test_max_alpha__squared_loss():
