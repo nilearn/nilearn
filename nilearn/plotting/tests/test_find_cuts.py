@@ -1,6 +1,6 @@
 import numpy as np
-from nose.tools import assert_equal, assert_true, assert_not_equal
 import nibabel
+
 from nilearn.plotting.find_cuts import (find_xyz_cut_coords, find_cut_slices,
                                         _transform_cut_coords,
                                         find_parcellation_cut_coords,

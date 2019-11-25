@@ -10,7 +10,8 @@ import matplotlib
 import matplotlib.pyplot as plt
 import nibabel
 import numpy as np
-from nose.tools import assert_raises, assert_true, assert_equal
+import pytest
+
 from scipy import sparse
 
 from nilearn._utils.testing import assert_raises_regex
@@ -327,7 +328,7 @@ def test_plot_empty_slice():
 def test_plot_img_invalid():
     # Check that we get a meaningful error message when we give a wrong
     # display_mode argument
-    assert_raises(Exception, plot_anat, display_mode='zzz')
+    pytest.raises(Exception, plot_anat, display_mode='zzz')
 
 
 def test_plot_img_with_auto_cut_coords():
@@ -1094,7 +1095,7 @@ def test_plotting_functions_with_nans_in_bg_img():
 def test_plotting_functions_with_dim_invalid_input():
     # Test whether error raises with bad error to input
     img = _generate_img()
-    assert_raises(ValueError, plot_stat_map, img, dim='-10')
+    pytest.raises(ValueError, plot_stat_map, img, dim='-10')
 
 
 def test_add_markers_using_plot_glass_brain():
