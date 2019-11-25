@@ -36,21 +36,21 @@ def test_get_dataset_dir():
 
     expected_base_dir = os.path.expanduser('~/nilearn_data')
     data_dir = utils._get_dataset_dir('test', verbose=0)
-    assert_equal(data_dir, os.path.join(expected_base_dir, 'test'))
+    assert data_dir == os.path.join(expected_base_dir, 'test')
     assert os.path.exists(data_dir)
     shutil.rmtree(data_dir)
 
     expected_base_dir = os.path.join(tst.tmpdir, 'test_nilearn_data')
     os.environ['NILEARN_DATA'] = expected_base_dir
     data_dir = utils._get_dataset_dir('test', verbose=0)
-    assert_equal(data_dir, os.path.join(expected_base_dir, 'test'))
+    assert data_dir == os.path.join(expected_base_dir, 'test')
     assert os.path.exists(data_dir)
     shutil.rmtree(data_dir)
 
     expected_base_dir = os.path.join(tst.tmpdir, 'nilearn_shared_data')
     os.environ['NILEARN_SHARED_DATA'] = expected_base_dir
     data_dir = utils._get_dataset_dir('test', verbose=0)
-    assert_equal(data_dir, os.path.join(expected_base_dir, 'test'))
+    assert data_dir == os.path.join(expected_base_dir, 'test')
     assert os.path.exists(data_dir)
     shutil.rmtree(data_dir)
 
@@ -58,7 +58,7 @@ def test_get_dataset_dir():
     expected_dataset_dir = os.path.join(expected_base_dir, 'test')
     data_dir = utils._get_dataset_dir(
         'test', default_paths=[expected_dataset_dir], verbose=0)
-    assert_equal(data_dir, os.path.join(expected_base_dir, 'test'))
+    assert data_dir == os.path.join(expected_base_dir, 'test')
     assert os.path.exists(data_dir)
     shutil.rmtree(data_dir)
 
@@ -72,7 +72,7 @@ def test_get_dataset_dir():
                                       default_paths=[no_write],
                                       verbose=0)
     # Non writeable dir is returned because dataset may be in there.
-    assert_equal(data_dir, no_write)
+    assert data_dir == no_write
     assert os.path.exists(data_dir)
     os.chmod(no_write, 0o600)
     shutil.rmtree(data_dir)
@@ -92,18 +92,18 @@ def test_get_dataset_dir():
 @with_setup(tst.setup_tmpdata, tst.teardown_tmpdata)
 def test_fetch_icbm152_2009():
     dataset = struct.fetch_icbm152_2009(data_dir=tst.tmpdir, verbose=0)
-    assert_true(isinstance(dataset.csf, _basestring))
-    assert_true(isinstance(dataset.eye_mask, _basestring))
-    assert_true(isinstance(dataset.face_mask, _basestring))
-    assert_true(isinstance(dataset.gm, _basestring))
-    assert_true(isinstance(dataset.mask, _basestring))
-    assert_true(isinstance(dataset.pd, _basestring))
-    assert_true(isinstance(dataset.t1, _basestring))
-    assert_true(isinstance(dataset.t2, _basestring))
-    assert_true(isinstance(dataset.t2_relax, _basestring))
-    assert_true(isinstance(dataset.wm, _basestring))
-    assert_equal(len(tst.mock_url_request.urls), 1)
-    assert_not_equal(dataset.description, '')
+    assert isinstance(dataset.csf, _basestring)
+    assert isinstance(dataset.eye_mask, _basestring)
+    assert isinstance(dataset.face_mask, _basestring)
+    assert isinstance(dataset.gm, _basestring)
+    assert isinstance(dataset.mask, _basestring)
+    assert isinstance(dataset.pd, _basestring)
+    assert isinstance(dataset.t1, _basestring)
+    assert isinstance(dataset.t2, _basestring)
+    assert isinstance(dataset.t2_relax, _basestring)
+    assert isinstance(dataset.wm, _basestring)
+    assert len(tst.mock_url_request.urls) == 1
+    assert dataset.description != ''
 
 
 @with_setup(setup_mock, teardown_mock)
@@ -117,38 +117,38 @@ def test_fetch_oasis_vbm():
     # Disabled: cannot be tested without actually fetching covariates CSV file
     dataset = struct.fetch_oasis_vbm(data_dir=tst.tmpdir, url=local_url,
                                      verbose=0)
-    assert_equal(len(dataset.gray_matter_maps), 403)
-    assert_equal(len(dataset.white_matter_maps), 403)
-    assert_true(isinstance(dataset.gray_matter_maps[0], _basestring))
-    assert_true(isinstance(dataset.white_matter_maps[0], _basestring))
-    assert_true(isinstance(dataset.ext_vars, np.recarray))
-    assert_true(isinstance(dataset.data_usage_agreement, _basestring))
-    assert_equal(len(tst.mock_url_request.urls), 3)
+    assert len(dataset.gray_matter_maps) == 403
+    assert len(dataset.white_matter_maps) == 403
+    assert isinstance(dataset.gray_matter_maps[0], _basestring)
+    assert isinstance(dataset.white_matter_maps[0], _basestring)
+    assert isinstance(dataset.ext_vars, np.recarray)
+    assert isinstance(dataset.data_usage_agreement, _basestring)
+    assert len(tst.mock_url_request.urls) == 3
 
     dataset = struct.fetch_oasis_vbm(data_dir=tst.tmpdir, url=local_url,
                                      dartel_version=False, verbose=0)
-    assert_equal(len(dataset.gray_matter_maps), 415)
-    assert_equal(len(dataset.white_matter_maps), 415)
-    assert_true(isinstance(dataset.gray_matter_maps[0], _basestring))
-    assert_true(isinstance(dataset.white_matter_maps[0], _basestring))
-    assert_true(isinstance(dataset.ext_vars, np.recarray))
-    assert_true(isinstance(dataset.data_usage_agreement, _basestring))
-    assert_equal(len(tst.mock_url_request.urls), 4)
-    assert_not_equal(dataset.description, '')
+    assert len(dataset.gray_matter_maps) == 415
+    assert len(dataset.white_matter_maps) == 415
+    assert isinstance(dataset.gray_matter_maps[0], _basestring)
+    assert isinstance(dataset.white_matter_maps[0], _basestring)
+    assert isinstance(dataset.ext_vars, np.recarray)
+    assert isinstance(dataset.data_usage_agreement, _basestring)
+    assert len(tst.mock_url_request.urls) == 4
+    assert dataset.description != ''
 
 
 def test_load_mni152_template():
     # All subjects
     template_nii = struct.load_mni152_template()
-    assert_equal(template_nii.shape, (91, 109, 91))
-    assert_equal(template_nii.header.get_zooms(), (2.0, 2.0, 2.0))
+    assert template_nii.shape == (91, 109, 91)
+    assert template_nii.header.get_zooms() == (2.0, 2.0, 2.0)
 
 
 def test_load_mni152_brain_mask():
     brain_mask = struct.load_mni152_brain_mask()
-    assert_true(isinstance(brain_mask, nibabel.Nifti1Image))
+    assert isinstance(brain_mask, nibabel.Nifti1Image)
     # standard MNI template shape
-    assert_equal(brain_mask.shape, (91, 109, 91))
+    assert brain_mask.shape == (91, 109, 91)
 
 
 @with_setup(setup_mock, teardown_mock)
@@ -158,7 +158,7 @@ def test_fetch_icbm152_brain_gm_mask():
     struct.load_mni152_template().to_filename(dataset.gm)
     grey_matter_img = struct.fetch_icbm152_brain_gm_mask(data_dir=tst.tmpdir,
                                                          verbose=0)
-    assert_true(isinstance(grey_matter_img, nibabel.Nifti1Image))
+    assert isinstance(grey_matter_img, nibabel.Nifti1Image)
 
 
 @with_setup(setup_mock, teardown_mock)
@@ -174,7 +174,7 @@ def test_fetch_surf_fsaverage():
                 'sulc_left', 'sulc_right'}
 
         assert keys.issubset(set(dataset.keys()))
-        assert_not_equal(dataset.description, '')
+        assert dataset.description != ''
 
 def test_fetch_surf_fsaverage5_sphere():
     for mesh in ['fsaverage5_sphere']:
@@ -185,4 +185,4 @@ def test_fetch_surf_fsaverage5_sphere():
         keys = {'sphere_left', 'sphere_right'}
 
         assert keys.issubset(set(dataset.keys()))
-        assert_not_equal(dataset.description, '')
+        assert dataset.description != ''

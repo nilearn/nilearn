@@ -41,32 +41,32 @@ def test_fetch_haxby():
         haxby = func.fetch_haxby(data_dir=tst.tmpdir, subjects=[i],
                                  verbose=0)
         # subject_data + (md5 + mask if first subj)
-        assert_equal(len(tst.mock_url_request.urls), 1 + 2 * (i == 1))
-        assert_equal(len(haxby.func), 1)
-        assert_equal(len(haxby.anat), 1)
-        assert_equal(len(haxby.session_target), 1)
-        assert_true(haxby.mask is not None)
-        assert_equal(len(haxby.mask_vt), 1)
-        assert_equal(len(haxby.mask_face), 1)
-        assert_equal(len(haxby.mask_house), 1)
-        assert_equal(len(haxby.mask_face_little), 1)
-        assert_equal(len(haxby.mask_house_little), 1)
+        assert len(tst.mock_url_request.urls) == 1 + 2 * (i == 1)
+        assert len(haxby.func) == 1
+        assert len(haxby.anat) == 1
+        assert len(haxby.session_target) == 1
+        assert haxby.mask is not None
+        assert len(haxby.mask_vt) == 1
+        assert len(haxby.mask_face) == 1
+        assert len(haxby.mask_house) == 1
+        assert len(haxby.mask_face_little) == 1
+        assert len(haxby.mask_house_little) == 1
         tst.mock_url_request.reset()
-        assert_not_equal(haxby.description, '')
+        assert haxby.description != ''
 
     # subjects with list
     subjects = [1, 2, 6]
     haxby = func.fetch_haxby(data_dir=tst.tmpdir, subjects=subjects,
                              verbose=0)
-    assert_equal(len(haxby.func), len(subjects))
-    assert_equal(len(haxby.mask_house_little), len(subjects))
-    assert_equal(len(haxby.anat), len(subjects))
-    assert_true(haxby.anat[2] is None)
-    assert_true(isinstance(haxby.mask, _basestring))
-    assert_equal(len(haxby.mask_face), len(subjects))
-    assert_equal(len(haxby.session_target), len(subjects))
-    assert_equal(len(haxby.mask_vt), len(subjects))
-    assert_equal(len(haxby.mask_face_little), len(subjects))
+    assert len(haxby.func) == len(subjects)
+    assert len(haxby.mask_house_little) == len(subjects)
+    assert len(haxby.anat) == len(subjects)
+    assert haxby.anat[2] is None
+    assert isinstance(haxby.mask, _basestring)
+    assert len(haxby.mask_face) == len(subjects)
+    assert len(haxby.session_target) == len(subjects)
+    assert len(haxby.mask_vt) == len(subjects)
+    assert len(haxby.mask_face_little) == len(subjects)
 
     subjects = ['a', 8]
     message = "You provided invalid subject id {0} in a list"
@@ -84,26 +84,26 @@ def test_fetch_haxby():
 def test_fetch_nyu_rest():
     # First session, all subjects
     nyu = func.fetch_nyu_rest(data_dir=tst.tmpdir, verbose=0)
-    assert_equal(len(tst.mock_url_request.urls), 2)
-    assert_equal(len(nyu.func), 25)
-    assert_equal(len(nyu.anat_anon), 25)
-    assert_equal(len(nyu.anat_skull), 25)
-    assert_true(np.all(np.asarray(nyu.session) == 1))
+    assert len(tst.mock_url_request.urls) == 2
+    assert len(nyu.func) == 25
+    assert len(nyu.anat_anon) == 25
+    assert len(nyu.anat_skull) == 25
+    assert np.all(np.asarray(nyu.session) == 1)
 
     # All sessions, 12 subjects
     tst.mock_url_request.reset()
     nyu = func.fetch_nyu_rest(data_dir=tst.tmpdir, sessions=[1, 2, 3],
                               n_subjects=12, verbose=0)
     # Session 1 has already been downloaded
-    assert_equal(len(tst.mock_url_request.urls), 2)
-    assert_equal(len(nyu.func), 36)
-    assert_equal(len(nyu.anat_anon), 36)
-    assert_equal(len(nyu.anat_skull), 36)
+    assert len(tst.mock_url_request.urls) == 2
+    assert len(nyu.func) == 36
+    assert len(nyu.anat_anon) == 36
+    assert len(nyu.anat_skull) == 36
     s = np.asarray(nyu.session)
-    assert_true(np.all(s[:12] == 1))
-    assert_true(np.all(s[12:24] == 2))
-    assert_true(np.all(s[24:] == 3))
-    assert_not_equal(nyu.description, '')
+    assert np.all(s[:12] == 1)
+    assert np.all(s[12:24] == 2)
+    assert np.all(s[24:] == 3)
+    assert nyu.description != ''
 
 
 @with_setup(setup_mock, teardown_mock)
@@ -132,23 +132,23 @@ def test_fetch_adhd():
 
     adhd = func.fetch_adhd(data_dir=tst.tmpdir, url=local_url,
                            n_subjects=12, verbose=0)
-    assert_equal(len(adhd.func), 12)
-    assert_equal(len(adhd.confounds), 12)
-    assert_equal(len(tst.mock_url_request.urls), 13)  # Subjects + phenotypic
-    assert_not_equal(adhd.description, '')
+    assert len(adhd.func) == 12
+    assert len(adhd.confounds) == 12
+    assert len(tst.mock_url_request.urls) == 13  # Subjects + phenotypic
+    assert adhd.description != ''
 
 
 @with_setup(setup_mock, teardown_mock)
 @with_setup(tst.setup_tmpdata, tst.teardown_tmpdata)
 def test_miyawaki2008():
     dataset = func.fetch_miyawaki2008(data_dir=tst.tmpdir, verbose=0)
-    assert_equal(len(dataset.func), 32)
-    assert_equal(len(dataset.label), 32)
-    assert_true(isinstance(dataset.mask, _basestring))
-    assert_equal(len(dataset.mask_roi), 38)
-    assert_true(isinstance(dataset.background, _basestring))
-    assert_equal(len(tst.mock_url_request.urls), 1)
-    assert_not_equal(dataset.description, '')
+    assert len(dataset.func) == 32
+    assert len(dataset.label) == 32
+    assert isinstance(dataset.mask, _basestring)
+    assert len(dataset.mask_roi) == 38
+    assert isinstance(dataset.background, _basestring)
+    assert len(tst.mock_url_request.urls) == 1
+    assert dataset.description != ''
 
 
 with open(os.path.join(tst.datadir, 'localizer_index.json')) as of:
@@ -212,13 +212,13 @@ def test_fetch_localizer_contrasts():
         n_subjects=2,
         data_dir=tst.tmpdir,
         verbose=1)
-    assert_false(hasattr(dataset, 'anats'))
-    assert_false(hasattr(dataset, 'tmaps'))
-    assert_false(hasattr(dataset, 'masks'))
-    assert_true(isinstance(dataset.cmaps[0], _basestring))
-    assert_true(isinstance(dataset.ext_vars, np.recarray))
-    assert_equal(len(dataset.cmaps), 2)
-    assert_equal(dataset.ext_vars.size, 2)
+    assert not hasattr(dataset, 'anats')
+    assert not hasattr(dataset, 'tmaps')
+    assert not hasattr(dataset, 'masks')
+    assert isinstance(dataset.cmaps[0], _basestring)
+    assert isinstance(dataset.ext_vars, np.recarray)
+    assert len(dataset.cmaps) == 2
+    assert dataset.ext_vars.size == 2
 
     # Multiple contrasts
     dataset = func.fetch_localizer_contrasts(
@@ -226,10 +226,10 @@ def test_fetch_localizer_contrasts():
         n_subjects=2,
         data_dir=tst.tmpdir,
         verbose=1)
-    assert_true(isinstance(dataset.ext_vars, np.recarray))
-    assert_true(isinstance(dataset.cmaps[0], _basestring))
-    assert_equal(len(dataset.cmaps), 2 * 2)  # two contrasts are fetched
-    assert_equal(dataset.ext_vars.size, 2)
+    assert isinstance(dataset.ext_vars, np.recarray)
+    assert isinstance(dataset.cmaps[0], _basestring)
+    assert len(dataset.cmaps) == 2 * 2  # two contrasts are fetched
+    assert dataset.ext_vars.size == 2
 
     # all get_*=True
     dataset = func.fetch_localizer_contrasts(
@@ -240,17 +240,17 @@ def test_fetch_localizer_contrasts():
         get_masks=True,
         get_tmaps=True,
         verbose=1)
-    assert_true(isinstance(dataset.ext_vars, np.recarray))
-    assert_true(isinstance(dataset.anats[0], _basestring))
-    assert_true(isinstance(dataset.cmaps[0], _basestring))
-    assert_true(isinstance(dataset.masks[0], _basestring))
-    assert_true(isinstance(dataset.tmaps[0], _basestring))
-    assert_equal(dataset.ext_vars.size, 1)
-    assert_equal(len(dataset.anats), 1)
-    assert_equal(len(dataset.cmaps), 1)
-    assert_equal(len(dataset.masks), 1)
-    assert_equal(len(dataset.tmaps), 1)
-    assert_not_equal(dataset.description, '')
+    assert isinstance(dataset.ext_vars, np.recarray)
+    assert isinstance(dataset.anats[0], _basestring)
+    assert isinstance(dataset.cmaps[0], _basestring)
+    assert isinstance(dataset.masks[0], _basestring)
+    assert isinstance(dataset.tmaps[0], _basestring)
+    assert dataset.ext_vars.size == 1
+    assert len(dataset.anats) == 1
+    assert len(dataset.cmaps) == 1
+    assert len(dataset.masks) == 1
+    assert len(dataset.tmaps) == 1
+    assert dataset.description != ''
 
     # grab a given list of subjects
     dataset2 = func.fetch_localizer_contrasts(
@@ -258,9 +258,9 @@ def test_fetch_localizer_contrasts():
         n_subjects=[2, 3, 5],
         data_dir=tst.tmpdir,
         verbose=1)
-    assert_equal(dataset2.ext_vars.size, 3)
-    assert_equal(len(dataset2.cmaps), 3)
-    assert_equal([row[0] for row in dataset2.ext_vars],
+    assert dataset2.ext_vars.size == 3
+    assert len(dataset2.cmaps) == 3
+    assert ([row[0] for row in dataset2.ext_vars] ==
                  [b'S02', b'S03', b'S05'])
 
 
@@ -273,11 +273,11 @@ def test_fetch_localizer_calculation_task():
         n_subjects=2,
         data_dir=tst.tmpdir,
         verbose=1)
-    assert_true(isinstance(dataset.ext_vars, np.recarray))
-    assert_true(isinstance(dataset.cmaps[0], _basestring))
-    assert_equal(dataset.ext_vars.size, 2)
-    assert_equal(len(dataset.cmaps), 2)
-    assert_not_equal(dataset.description, '')
+    assert isinstance(dataset.ext_vars, np.recarray)
+    assert isinstance(dataset.cmaps[0], _basestring)
+    assert dataset.ext_vars.size == 2
+    assert len(dataset.cmaps) == 2
+    assert dataset.description != ''
 
 
 @with_setup(setup_mock, teardown_mock)
@@ -292,16 +292,16 @@ def test_fetch_localizer_button_task():
                                                url=local_url,
                                                verbose=1)
 
-    assert_true(isinstance(dataset.tmaps, list))
-    assert_true(isinstance(dataset.anats, list))
+    assert isinstance(dataset.tmaps, list)
+    assert isinstance(dataset.anats, list)
 
     assert len(dataset.tmaps) == 1
     assert len(dataset.anats) == 1
 
-    assert_true(isinstance(dataset.tmap, str))
-    assert_true(isinstance(dataset.anat, str))
+    assert isinstance(dataset.tmap, str)
+    assert isinstance(dataset.anat, str)
 
-    assert_not_equal(dataset.description, '')
+    assert dataset.description != ''
 
 
 @with_setup(setup_mock, teardown_mock)
@@ -319,8 +319,8 @@ def test_fetch_abide_pcp():
     # All subjects
     dataset = func.fetch_abide_pcp(data_dir=tst.tmpdir, url=local_url,
                                    quality_checked=False, verbose=0)
-    assert_equal(len(dataset.func_preproc), 400)
-    assert_not_equal(dataset.description, '')
+    assert len(dataset.func_preproc) == 400
+    assert dataset.description != ''
 
     # Smoke test using only a string, rather than a list of strings
     dataset = func.fetch_abide_pcp(data_dir=tst.tmpdir, url=local_url,
@@ -338,8 +338,8 @@ def test__load_mixed_gambles():
             zmaps.append(nibabel.Nifti1Image(rng.randn(3, 4, 5, n_trials),
                                              affine))
         zmaps, gain, _ = func._load_mixed_gambles(zmaps)
-        assert_equal(len(zmaps), n_subjects * n_trials)
-        assert_equal(len(zmaps), len(gain))
+        assert len(zmaps) == n_subjects * n_trials
+        assert len(zmaps) == len(gain)
 
 
 @with_setup(setup_mock, teardown_mock)
@@ -352,9 +352,9 @@ def test_fetch_mixed_gambles():
                                             data_dir=tst.tmpdir, url=local_url,
                                             verbose=0, return_raw_data=True)
         datasetdir = os.path.join(tst.tmpdir, "jimura_poldrack_2012_zmaps")
-        assert_equal(mgambles["zmaps"][0], os.path.join(datasetdir, "zmaps",
-                                                        "sub001_zmaps.nii.gz"))
-        assert_equal(len(mgambles["zmaps"]), n_subjects)
+        assert mgambles["zmaps"][0] == os.path.join(datasetdir, "zmaps",
+                                                        "sub001_zmaps.nii.gz")
+        assert len(mgambles["zmaps"]) == n_subjects
 
 
 def test_check_parameters_megatrawls_datasets():
@@ -398,18 +398,18 @@ def test_fetch_megatrawls_netmats():
     megatrawl_netmats_data = func.fetch_megatrawls_netmats(data_dir=tst.tmpdir)
 
     # expected number of returns in output name should be equal
-    assert_equal(len(megatrawl_netmats_data), 5)
+    assert len(megatrawl_netmats_data) == 5
     # check if returned bunch should not be empty
     # dimensions
-    assert_not_equal(megatrawl_netmats_data.dimensions, '')
+    assert megatrawl_netmats_data.dimensions != ''
     # timeseries
-    assert_not_equal(megatrawl_netmats_data.timeseries, '')
+    assert megatrawl_netmats_data.timeseries != ''
     # matrices
-    assert_not_equal(megatrawl_netmats_data.matrices, '')
+    assert megatrawl_netmats_data.matrices != ''
     # correlation matrices
-    assert_not_equal(megatrawl_netmats_data.correlation_matrices, '')
+    assert megatrawl_netmats_data.correlation_matrices != ''
     # description
-    assert_not_equal(megatrawl_netmats_data.description, '')
+    assert megatrawl_netmats_data.description != ''
 
     # check if input provided for dimensions, timeseries, matrices to be same
     # to user settings
@@ -417,9 +417,9 @@ def test_fetch_megatrawls_netmats():
                                                  dimensionality=300,
                                                  timeseries='multiple_spatial_regression',
                                                  matrices='full_correlation')
-    assert_equal(netmats_data.dimensions, 300)
-    assert_equal(netmats_data.timeseries, 'multiple_spatial_regression')
-    assert_equal(netmats_data.matrices, 'full_correlation')
+    assert netmats_data.dimensions == 300
+    assert netmats_data.timeseries == 'multiple_spatial_regression'
+    assert netmats_data.matrices == 'full_correlation'
 
 
 @with_setup(setup_mock, teardown_mock)
@@ -515,29 +515,29 @@ def test_fetch_cobre():
                         'desc_con', 'desc_phenotypic']
 
     # test length of functional filenames to max 146
-    assert_equal(len(cobre_data.func), 146)
+    assert len(cobre_data.func) == 146
     # test length of corresponding confounds files of same length to max 146
-    assert_equal(len(cobre_data.confounds), 146)
+    assert len(cobre_data.confounds) == 146
     # test return type variables
-    assert_equal(sorted(cobre_data), sorted(phenotypic_names))
+    assert sorted(cobre_data) == sorted(phenotypic_names)
     # test functional filenames in a list
-    assert_true(isinstance(cobre_data.func, list))
+    assert isinstance(cobre_data.func, list)
     # test confounds files in a list
-    assert_true(isinstance(cobre_data.confounds, list))
-    assert_true(isinstance(cobre_data.func[0], _basestring))
+    assert isinstance(cobre_data.confounds, list)
+    assert isinstance(cobre_data.func[0], _basestring)
     # returned phenotypic data will be an array
-    assert_true(isinstance(cobre_data.phenotypic, np.recarray))
+    assert isinstance(cobre_data.phenotypic, np.recarray)
 
     # Fetch only 30 subjects
     data_30_subjects = func.fetch_cobre(n_subjects=30, url=local_url,
                                         data_dir=tst.tmpdir)
-    assert_equal(len(data_30_subjects.func), 30)
-    assert_equal(len(data_30_subjects.confounds), 30)
+    assert len(data_30_subjects.func) == 30
+    assert len(data_30_subjects.confounds) == 30
 
     # Test more than maximum subjects
     test_150_subjects = func.fetch_cobre(n_subjects=150, url=local_url,
                                          data_dir=tst.tmpdir)
-    assert_equal(len(test_150_subjects.func), 146)
+    assert len(test_150_subjects.func) == 146
     os.remove(dummy)
 
 
@@ -561,12 +561,12 @@ def test_fetch_surf_nki_enhanced(data_dir=tst.tmpdir, verbose=0):
 
     nki_data = func.fetch_surf_nki_enhanced(data_dir=tst.tmpdir, url=local_url)
 
-    assert_not_equal(nki_data.description, '')
-    assert_equal(len(nki_data.func_left), 10)
-    assert_equal(len(nki_data.func_right), 10)
-    assert_true(isinstance(nki_data.phenotypic, np.ndarray))
-    assert_equal(nki_data.phenotypic.shape, (10,))
-    assert_not_equal(nki_data.description, '')
+    assert nki_data.description != ''
+    assert len(nki_data.func_left) == 10
+    assert len(nki_data.func_right) == 10
+    assert isinstance(nki_data.phenotypic, np.ndarray)
+    assert nki_data.phenotypic.shape == (10,)
+    assert nki_data.description != ''
 
 
 def _mock_participants_data(n_ids=5):
@@ -600,8 +600,8 @@ def test_fetch_development_fmri_participants():
     participants = func._fetch_development_fmri_participants(data_dir=tst.tmpdir,
                                                              url=local_url,
                                                              verbose=1)
-    assert_true(isinstance(participants, np.ndarray))
-    assert_equal(participants.shape, (5,))
+    assert isinstance(participants, np.ndarray)
+    assert participants.shape == (5,)
 
 
 @with_setup(setup_mock, teardown_mock)
@@ -614,41 +614,41 @@ def test_fetch_development_fmri_functional():
                                                                url=local_url,
                                                                resume=True,
                                                                verbose=1)
-    assert_equal(len(funcs), 8)
-    assert_equal(len(confounds), 8)
+    assert len(funcs) == 8
+    assert len(confounds) == 8
 
 
 @with_setup(tst.setup_tmpdata, tst.teardown_tmpdata)
 def test_fetch_development_fmri():
     data = func.fetch_development_fmri(n_subjects=2,
                                        data_dir=tst.tmpdir, verbose=1)
-    assert_equal(len(data.func), 2)
-    assert_equal(len(data.confounds), 2)
-    assert_true(isinstance(data.phenotypic, np.ndarray))
-    assert_equal(data.phenotypic.shape, (2,))
-    assert_not_equal(data.description, '')
+    assert len(data.func) == 2
+    assert len(data.confounds) == 2
+    assert isinstance(data.phenotypic, np.ndarray)
+    assert data.phenotypic.shape == (2,)
+    assert data.description != ''
 
     # check reduced confounds
     confounds = np.recfromcsv(data.confounds[0], delimiter='\t')
-    assert_equal(len(confounds[0]), 15)
+    assert len(confounds[0]) == 15
 
     # check full confounds
     data = func.fetch_development_fmri(n_subjects=2, reduce_confounds=False,
                                        verbose=1)
     confounds = np.recfromcsv(data.confounds[0], delimiter='\t')
-    assert_equal(len(confounds[0]), 28)
+    assert len(confounds[0]) == 28
 
     # check first subject is an adult
     data = func.fetch_development_fmri(n_subjects=1, reduce_confounds=False,
                                        verbose=1)
     age_group = data.phenotypic['Child_Adult'][0]
-    assert_equal(age_group, 'adult')
+    assert age_group == 'adult'
 
     # check first subject is an child if requested with age_group
     data = func.fetch_development_fmri(n_subjects=1, reduce_confounds=False,
                                        verbose=1, age_group='child')
     age_group = data.phenotypic['Child_Adult'][0]
-    assert_equal(age_group, 'child')
+    assert age_group == 'child'
 
     # check one of each age group returned if n_subject == 2
     # and age_group == 'both
