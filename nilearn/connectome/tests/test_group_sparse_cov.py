@@ -1,6 +1,6 @@
-from nose.tools import assert_equal, assert_true, assert_raises
-
 import numpy as np
+import pytest
+
 from nilearn._utils.data_gen import generate_group_sparse_gaussian_graphs
 from nilearn.connectome.group_sparse_cov import (group_sparse_covariance,
                                                         group_sparse_scores)
@@ -52,9 +52,9 @@ def test_group_sparse_covariance():
     assert omega.shape == (10, 10, 5)
 
     # Test input argument checking
-    assert_raises(ValueError, group_sparse_covariance, signals, "")
-    assert_raises(ValueError, group_sparse_covariance, 1, alpha)
-    assert_raises(ValueError, group_sparse_covariance,
+    pytest.raises(ValueError, group_sparse_covariance, signals, "")
+    pytest.raises(ValueError, group_sparse_covariance, 1, alpha)
+    pytest.raises(ValueError, group_sparse_covariance,
                   [np.ones((2, 2)), np.ones((2, 3))], alpha)
 
     # Check consistency between classes
