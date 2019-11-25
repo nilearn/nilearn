@@ -1,5 +1,6 @@
 import numpy as np
-from nose.tools import assert_equal, assert_not_equal, assert_raises
+import pytest
+
 try:
     from nilearn._utils.compat import Memory
 except ImportError:
@@ -33,7 +34,7 @@ def test_rena_clustering():
 
     memory = Memory(cachedir=None)
     rena = ReNA(mask_img, n_clusters=-2, memory=memory)
-    assert_raises(ValueError, rena.fit, X)
+    pytest.raises(ValueError, rena.fit, X)
 
     rena = ReNA(mask_img, n_clusters=10, scaling=True)
     X_red = rena.fit_transform(X)
@@ -41,7 +42,7 @@ def test_rena_clustering():
 
     for n_iter in [-2, 0]:
         rena = ReNA(mask_img, n_iter=n_iter, memory=memory)
-        assert_raises(ValueError, rena.fit, X)
+        pytest.raises(ValueError, rena.fit, X)
 
     for n_clusters in [1, 2, 4, 8]:
         rena = ReNA(mask_img, n_clusters=n_clusters, n_iter=1,

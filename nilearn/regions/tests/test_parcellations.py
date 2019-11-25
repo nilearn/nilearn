@@ -4,7 +4,6 @@ Test the parcellations tools module
 import numpy as np
 import nibabel
 
-from nose.tools import assert_true, assert_equal
 from nilearn.regions.parcellations import (Parcellations,
                                            _check_parameters_transform)
 from nilearn._utils.testing import assert_raises_regex

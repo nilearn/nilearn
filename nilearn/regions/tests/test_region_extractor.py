@@ -4,9 +4,6 @@ import numpy as np
 import nibabel
 from scipy import ndimage
 
-from nose.tools import (assert_equal, assert_true, assert_not_equal,
-                        assert_greater, assert_false)
-
 from nilearn.regions import (connected_regions, RegionExtractor,
                              connected_label_regions)
 from nilearn.regions.region_extractor import (_threshold_maps_ratio,

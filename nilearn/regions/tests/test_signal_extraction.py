@@ -5,8 +5,7 @@ Test for "region" module.
 # License: simplified BSD
 
 import numpy as np
-from nose.tools import assert_raises, assert_true
-
+import pytest
 import nibabel
 
 from nilearn.regions import signal_extraction
@@ -150,7 +149,7 @@ def test_signals_extraction_with_labels():
 
     data_img = signal_extraction.signals_to_img_labels(signals, labels_img,
                                                        mask_img=mask_img)
-    assert_raises(TypeError, signal_extraction.signals_to_img_labels,
+    pytest.raises(TypeError, signal_extraction.signals_to_img_labels,
                   data_img, labels_4d_img, mask_img=mask_img)
     assert data_img.shape == (shape + (n_instants,))
 
@@ -195,17 +194,17 @@ def test_signals_extraction_with_labels():
     good_mask_img = nibabel.Nifti1Image(np.zeros((2, 3, 4)), np.eye(4))
     bad_mask1_img = nibabel.Nifti1Image(np.zeros((2, 3, 5)), np.eye(4))
     bad_mask2_img = nibabel.Nifti1Image(np.zeros((2, 3, 4)), 2 * np.eye(4))
-    assert_raises(ValueError, signal_extraction.img_to_signals_labels,
+    pytest.raises(ValueError, signal_extraction.img_to_signals_labels,
                   data_img, bad_labels1_img)
-    assert_raises(ValueError, signal_extraction.img_to_signals_labels,
+    pytest.raises(ValueError, signal_extraction.img_to_signals_labels,
                   data_img, bad_labels2_img)
-    assert_raises(ValueError, signal_extraction.img_to_signals_labels,
+    pytest.raises(ValueError, signal_extraction.img_to_signals_labels,
                   data_img, bad_labels1_img, mask_img=good_mask_img)
-    assert_raises(ValueError, signal_extraction.img_to_signals_labels,
+    pytest.raises(ValueError, signal_extraction.img_to_signals_labels,
                   data_img, bad_labels2_img, mask_img=good_mask_img)
-    assert_raises(ValueError, signal_extraction.img_to_signals_labels,
+    pytest.raises(ValueError, signal_extraction.img_to_signals_labels,
                   data_img, good_labels_img, mask_img=bad_mask1_img)
-    assert_raises(ValueError, signal_extraction.img_to_signals_labels,
+    pytest.raises(ValueError, signal_extraction.img_to_signals_labels,
                   data_img, good_labels_img, mask_img=bad_mask2_img)
 
 
@@ -264,17 +263,17 @@ def test_signal_extraction_with_maps():
     good_mask_img = nibabel.Nifti1Image(np.zeros((2, 3, 4)), np.eye(4))
     bad_mask1_img = nibabel.Nifti1Image(np.zeros((2, 3, 5)), np.eye(4))
     bad_mask2_img = nibabel.Nifti1Image(np.zeros((2, 3, 4)), 2 * np.eye(4))
-    assert_raises(ValueError, signal_extraction.img_to_signals_maps, data_img,
+    pytest.raises(ValueError, signal_extraction.img_to_signals_maps, data_img,
                   bad_maps1_img)
-    assert_raises(ValueError, signal_extraction.img_to_signals_maps, data_img,
+    pytest.raises(ValueError, signal_extraction.img_to_signals_maps, data_img,
                   bad_maps2_img)
-    assert_raises(ValueError, signal_extraction.img_to_signals_maps, data_img,
+    pytest.raises(ValueError, signal_extraction.img_to_signals_maps, data_img,
                   bad_maps1_img, mask_img=good_mask_img)
-    assert_raises(ValueError, signal_extraction.img_to_signals_maps, data_img,
+    pytest.raises(ValueError, signal_extraction.img_to_signals_maps, data_img,
                   bad_maps2_img, mask_img=good_mask_img)
-    assert_raises(ValueError, signal_extraction.img_to_signals_maps, data_img,
+    pytest.raises(ValueError, signal_extraction.img_to_signals_maps, data_img,
                   good_maps_img, mask_img=bad_mask1_img)
-    assert_raises(ValueError, signal_extraction.img_to_signals_maps, data_img,
+    pytest.raises(ValueError, signal_extraction.img_to_signals_maps, data_img,
                   good_maps_img, mask_img=bad_mask2_img)
 
 
