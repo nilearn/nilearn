@@ -13,6 +13,7 @@ Fixes
 
 - :func: `nilearn.image.smooth_image` no longer fails if `fwhm` is a `numpy.ndarray`.
 - `pip install nilearn` now installs the necessary dependencies.
+- Nilearn no longer ImportError for nose when Matplotlib is not installed.
 
 0.6.0b0
 =======
