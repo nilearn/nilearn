@@ -13,8 +13,9 @@ from tempfile import mkdtemp
 
 import nibabel
 import numpy as np
+import pytest
+
 from nibabel import Nifti1Image
-from nose.tools import assert_true, assert_false, assert_raises
 from numpy.testing import assert_array_equal, assert_equal
 
 from nilearn._utils import testing
@@ -140,7 +141,7 @@ def test_mask_3d():
     with testing.write_tmp_imgs(data_img, create_files=True)\
             as filename:
         masker = NiftiMasker(mask_img=filename)
-        assert_raises(TypeError, masker.fit)
+        pytest.raises(TypeError, masker.fit)
 
 
 def test_mask_4d():
@@ -230,7 +231,7 @@ def test_sessions():
     data[20, 20, 20] = 1
     data_img = Nifti1Image(data, np.eye(4))
     masker = NiftiMasker(sessions=np.ones(3, dtype=np.int))
-    assert_raises(ValueError, masker.fit_transform, data_img)
+    pytest.raises(ValueError, masker.fit_transform, data_img)
 
 
 def test_joblib_cache():

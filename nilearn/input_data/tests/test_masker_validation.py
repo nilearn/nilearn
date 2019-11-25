@@ -1,4 +1,3 @@
-from nose.tools import assert_true, assert_equal
 import nibabel
 import numpy as np
 

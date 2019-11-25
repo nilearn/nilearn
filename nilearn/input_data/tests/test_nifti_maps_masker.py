@@ -5,10 +5,10 @@ non_overlappingt the underlying functions (clean(), img_to_signals_labels(), etc
 test_masking.py and test_signal.py for details.
 """
 
-from nose.tools import assert_raises, assert_equal, assert_true
 import numpy as np
 
 import nibabel
+import pytest
 
 from nilearn.input_data.nifti_maps_masker import NiftiMapsMasker
 from nilearn._utils import testing, as_ndarray, data_gen
@@ -73,17 +73,17 @@ def test_nifti_maps_masker():
             labels11, mask12 = images
             masker11 = NiftiMapsMasker(labels11, resampling_target=None)
             masker11.fit()
-            assert_raises(ValueError, masker11.transform, fmri12_img)
-            assert_raises(ValueError, masker11.transform, fmri21_img)
+            pytest.raises(ValueError, masker11.transform, fmri12_img)
+            pytest.raises(ValueError, masker11.transform, fmri21_img)
 
             masker11 = NiftiMapsMasker(labels11, mask_img=mask12,
                                        resampling_target=None)
-            assert_raises(ValueError, masker11.fit)
+            pytest.raises(ValueError, masker11.fit)
             del masker11
 
     masker11 = NiftiMapsMasker(labels11_img, mask_img=mask21_img,
                                resampling_target=None)
-    assert_raises(ValueError, masker11.fit)
+    pytest.raises(ValueError, masker11.fit)
 
     # Transform, with smoothing (smoke test)
     masker11 = NiftiMapsMasker(labels11_img, smoothing_fwhm=3,
@@ -177,9 +177,9 @@ def test_nifti_maps_masker_2():
                                 masker.fit)
 
     # Test error checking
-    assert_raises(ValueError, NiftiMapsMasker, maps33_img,
+    pytest.raises(ValueError, NiftiMapsMasker, maps33_img,
                   resampling_target="mask")
-    assert_raises(ValueError, NiftiMapsMasker, maps33_img,
+    pytest.raises(ValueError, NiftiMapsMasker, maps33_img,
                   resampling_target="invalid")
 
     # Target: mask

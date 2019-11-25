@@ -9,10 +9,10 @@ from tempfile import mkdtemp
 
 import nibabel
 import numpy as np
+import pytest
 import sklearn
 from nibabel import Nifti1Image
-from nose import SkipTest
-from nose.tools import assert_true, assert_false, assert_raises, assert_equal
+
 from numpy.testing import assert_array_equal
 from nilearn._utils.compat import Memory
 
@@ -30,9 +30,9 @@ def test_auto_mask():
     masker = MultiNiftiMasker(mask_args=dict(opening=0))
     # Check that if we have not fit the masker we get a intelligible
     # error
-    assert_raises(ValueError, masker.transform, [[img, ]])
+    pytest.raises(ValueError, masker.transform, [[img, ]])
     # Check error return due to bad data format
-    assert_raises(ValueError, masker.fit, img)
+    pytest.raises(ValueError, masker.fit, img)
     # Smoke test the fit
     masker.fit([[img]])
 

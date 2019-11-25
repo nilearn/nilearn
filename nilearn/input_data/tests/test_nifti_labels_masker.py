@@ -5,15 +5,14 @@ not the underlying functions (clean(), img_to_signals_labels(), etc.). See
 test_masking.py and test_signal.py for details.
 """
 
-from nose.tools import assert_raises, assert_equal, assert_true
 import numpy as np
 
 import nibabel
+import pytest
 
 from nilearn.input_data.nifti_labels_masker import NiftiLabelsMasker
 from nilearn._utils import testing, as_ndarray, data_gen
 from nilearn._utils.exceptions import DimensionError
-from nilearn._utils.testing import assert_less
 from nilearn.image import get_data
 
 
@@ -73,16 +72,16 @@ def test_nifti_labels_masker():
     # Test all kinds of mismatch between shapes and between affines
     masker11 = NiftiLabelsMasker(labels11_img, resampling_target=None)
     masker11.fit()
-    assert_raises(ValueError, masker11.transform, fmri12_img)
-    assert_raises(ValueError, masker11.transform, fmri21_img)
+    pytest.raises(ValueError, masker11.transform, fmri12_img)
+    pytest.raises(ValueError, masker11.transform, fmri21_img)
 
     masker11 = NiftiLabelsMasker(labels11_img, mask_img=mask12_img,
                                  resampling_target=None)
-    assert_raises(ValueError, masker11.fit)
+    pytest.raises(ValueError, masker11.fit)
 
     masker11 = NiftiLabelsMasker(labels11_img, mask_img=mask21_img,
                                  resampling_target=None)
-    assert_raises(ValueError, masker11.fit)
+    pytest.raises(ValueError, masker11.fit)
 
     # Transform, with smoothing (smoke test)
     masker11 = NiftiLabelsMasker(labels11_img, smoothing_fwhm=3,
@@ -149,9 +148,9 @@ def test_nifti_labels_masker_resampling():
                                                      affine=affine)
 
     # Test error checking
-    assert_raises(ValueError, NiftiLabelsMasker, labels33_img,
+    pytest.raises(ValueError, NiftiLabelsMasker, labels33_img,
                   resampling_target="mask")
-    assert_raises(ValueError, NiftiLabelsMasker, labels33_img,
+    pytest.raises(ValueError, NiftiLabelsMasker, labels33_img,
                   resampling_target="invalid")
 
     # Target: labels
