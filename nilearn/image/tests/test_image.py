@@ -492,10 +492,10 @@ def test_new_img_like_non_iterable_header():
     fake_fmri_data = np.random.rand(10, 10, 10, 10)
     fake_affine = np.random.rand(4, 4)
     fake_spatial_image = nibabel.spatialimages.SpatialImage(fake_fmri_data,
-                                                       fake_affine)
-    new_img_like(fake_spatial_image,
-                 data=fake_fmri_data,
-                 copy_header=True)
+                                                            fake_affine)
+    assert new_img_like(fake_spatial_image,
+                        data=fake_fmri_data,
+                        copy_header=True)
 
 
 def test_validity_threshold_value_in_threshold_img():
