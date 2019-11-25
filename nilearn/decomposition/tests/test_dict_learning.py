@@ -1,8 +1,7 @@
 import numpy as np
 import nibabel
 
-from nilearn._utils.testing import (assert_less_equal, assert_raises_regex,
-                                    write_tmp_imgs)
+from nilearn._utils.testing import write_tmp_imgs
 from nilearn.decomposition.dict_learning import DictLearning
 from nilearn.decomposition.tests.test_canica import _make_canica_test_data
 from nilearn.image import iter_img, get_data
@@ -91,15 +90,16 @@ def test_masker_attributes_with_fit():
     dict_learning.fit(data)
     assert dict_learning.mask_img_ == dict_learning.masker_.mask_img_
     dict_learning = DictLearning(mask=mask_img, n_components=3)
-    assert_raises_regex(ValueError,
-                        "Object has no components_ attribute. "
-                        "This is probably because fit has not been called",
-                        dict_learning.transform, data)
+    np.testing.assert_raises_regex(ValueError,
+                                   "Object has no components_ attribute. "
+                                   "This is probably because "
+                                   "fit has not been called",
+                                   dict_learning.transform, data)
     # Test if raises an error when empty list of provided.
-    assert_raises_regex(ValueError,
-                        'Need one or more Niimg-like objects as input, '
-                        'an empty list was given.',
-                        dict_learning.fit, [])
+    np.testing.assert_raises_regex(ValueError,
+                                   'Need one or more Niimg-like objects '
+                                   'as input, an empty list was given.',
+                                   dict_learning.fit, [])
     # Test passing masker arguments to estimator
     dict_learning = DictLearning(n_components=3,
                                  target_affine=np.eye(4),

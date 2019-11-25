@@ -10,10 +10,11 @@ import numpy as np
 import nibabel
 import pytest
 
+from numpy.testing import assert_raises_regex
+
 from nilearn.input_data.nifti_maps_masker import NiftiMapsMasker
 from nilearn._utils import testing, as_ndarray, data_gen
 from nilearn._utils.exceptions import DimensionError
-from nilearn._utils.testing import assert_less, assert_raises_regex
 from nilearn.image import get_data
 
 

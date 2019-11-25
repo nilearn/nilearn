@@ -19,9 +19,9 @@ def _set_mpl_backend():
                      )):
             matplotlib.use('Agg')
     except ImportError:
-        from .._utils.testing import skip_if_running_nose
+        from .._utils.testing import skip_if_running_tests
         # No need to fail when running tests
-        skip_if_running_nose('matplotlib not installed')
+        skip_if_running_tests('matplotlib not installed')
         raise
     else:
         from ..version import (_import_module_with_version_check,

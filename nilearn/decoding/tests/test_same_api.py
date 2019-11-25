@@ -4,9 +4,10 @@ for computing image gradient, loss functins, etc.).
 
 """
 
-from nose.tools import nottest
 import numpy as np
 import nibabel
+import pytest
+
 from sklearn.datasets import load_iris
 from sklearn.utils import check_random_state
 from nilearn.masking import _unmask_from_to_3d_array
@@ -218,7 +219,7 @@ def test_coef_shape():
             assert model.coef_.ndim == 2
 
 
-@nottest
+@pytest.mark.skip(reason='Not a test')
 def test_w_shapes():
     """Test that solvers handle w of same shape (during callbacks, etc.)."""
     pass
