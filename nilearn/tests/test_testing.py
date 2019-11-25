@@ -1,7 +1,7 @@
 import itertools
-import numpy as np
 
-from nose.tools import assert_equal, assert_raises
+import numpy as np
+import pytest
 
 from nilearn._utils.testing import with_memory_profiler
 from nilearn._utils.testing import assert_memory_less_than, assert_raises_regex
@@ -67,5 +67,5 @@ def test_generate_fake_fmri():
         if n_block is not None:
             assert target.size == length
 
-    assert_raises(ValueError, generate_fake_fmri, length=10, n_blocks=10,
+    pytest.raises(ValueError, generate_fake_fmri, length=10, n_blocks=10,
                   block_size=None, rand_gen=rand_gen)

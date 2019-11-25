@@ -1,8 +1,6 @@
 import os
 import numpy as np
 
-from nose.tools import assert_equal
-
 import nibabel as nb
 from nibabel import Nifti1Image
 from nibabel.tmpdirs import InTemporaryDirectory

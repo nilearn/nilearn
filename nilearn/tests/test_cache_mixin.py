@@ -7,7 +7,6 @@ import shutil
 import tempfile
 from pathlib import Path
 
-from nose.tools import assert_false, assert_true, assert_equal
 from nilearn._utils.compat import Memory
 
 import nilearn

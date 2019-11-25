@@ -8,7 +8,7 @@ import numpy as np
 import os
 import tempfile
 
-from nose.tools import assert_true, assert_raises
+import pytest
 
 from nilearn._utils.numpy_conversions import as_ndarray, csv_to_array
 
@@ -228,8 +228,8 @@ def test_as_ndarray():
     assert(not are_arrays_identical(arr1[0], arr2[0]))
 
     # Unhandled cases
-    assert_raises(ValueError, as_ndarray, "test string")
-    assert_raises(ValueError, as_ndarray, [], order="invalid")
+    pytest.raises(ValueError, as_ndarray, "test string")
+    pytest.raises(ValueError, as_ndarray, [], order="invalid")
 
 
 def test_csv_to_array():
@@ -240,6 +240,6 @@ def test_csv_to_array():
             fp.write('1.,2.,3.,4.,5.\n')
         assert np.allclose(csv_to_array(filename),
                     np.asarray([1., 2., 3., 4., 5.]))
-        assert_raises(TypeError, csv_to_array, filename, delimiters='?!')
+        pytest.raises(TypeError, csv_to_array, filename, delimiters='?!')
     finally:
         os.remove(filename)

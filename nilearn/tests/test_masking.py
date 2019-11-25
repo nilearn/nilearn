@@ -7,12 +7,8 @@ import numpy as np
 import pytest
 
 from numpy.testing import assert_array_equal
-from nose.tools import (
-    assert_true,
-    assert_false,
-    assert_equal,
-    assert_raises,
-)
+import pytest
+
 from sklearn.utils import check_random_state
 from nibabel import Nifti1Image
 
@@ -66,7 +62,7 @@ def test_compute_epi_mask():
     mean_image[3:-3, 3:-3] = 10
     mean_image[5, 5] = 100
     mean_image = Nifti1Image(mean_image, np.eye(4))
-    assert_raises(ValueError, compute_epi_mask, mean_image)
+    pytest.raises(ValueError, compute_epi_mask, mean_image)
 
     # Check that we get a useful warning for empty masks
     mean_image = np.zeros((9, 9, 9))
@@ -93,7 +89,7 @@ def test_compute_background_mask():
     mean_image[3:-3, 3:-3] = 10
     mean_image[5, 5] = 100
     mean_image = Nifti1Image(mean_image, np.eye(4))
-    assert_raises(ValueError, compute_background_mask, mean_image)
+    pytest.raises(ValueError, compute_background_mask, mean_image)
 
     # Check that we get a useful warning for empty masks
     mean_image = np.zeros((9, 9, 9))
@@ -183,17 +179,17 @@ def test_apply_mask():
     assert_raises_regex(DimensionError, _TEST_DIM_ERROR_MSG % "2D",
                         masking.apply_mask, data_img,
                         Nifti1Image(mask[20, ...], affine))
-    assert_raises(ValueError, masking.apply_mask,
+    pytest.raises(ValueError, masking.apply_mask,
                   data_img, Nifti1Image(mask, affine / 2.))
     # Check that full masking raises error
-    assert_raises(ValueError, masking.apply_mask,
+    pytest.raises(ValueError, masking.apply_mask,
                   data_img, full_mask_img)
     # Check weird values in data
     mask[10, 10, 10] = 2
-    assert_raises(ValueError, masking.apply_mask,
+    pytest.raises(ValueError, masking.apply_mask,
                   data_img, Nifti1Image(mask, affine))
     mask[15, 15, 15] = 3
-    assert_raises(ValueError, masking.apply_mask,
+    pytest.raises(ValueError, masking.apply_mask,
                   Nifti1Image(data, affine), mask_img)
 
 
@@ -246,12 +242,12 @@ def test_unmask():
 
     # Error test: shape
     vec_1D = np.empty((500,), dtype=np.int)
-    assert_raises(TypeError, unmask, vec_1D, mask_img)
-    assert_raises(TypeError, unmask, [vec_1D], mask_img)
+    pytest.raises(TypeError, unmask, vec_1D, mask_img)
+    pytest.raises(TypeError, unmask, [vec_1D], mask_img)
 
     vec_2D = np.empty((500, 500), dtype=np.float64)
-    assert_raises(TypeError, unmask, vec_2D, mask_img)
-    assert_raises(TypeError, unmask, [vec_2D], mask_img)
+    pytest.raises(TypeError, unmask, vec_2D, mask_img)
+    pytest.raises(TypeError, unmask, [vec_2D], mask_img)
 
     # Error test: mask type
     assert_raises_regex(TypeError, 'mask must be a boolean array',
@@ -390,7 +386,7 @@ def test_intersect_masks():
 
 def test_compute_multi_epi_mask():
     # Check that an empty list of images creates a meaningful error
-    assert_raises(TypeError, compute_multi_epi_mask, [])
+    pytest.raises(TypeError, compute_multi_epi_mask, [])
     # As it calls intersect_masks, we only test resampling here.
     # Same masks as test_intersect_masks
     mask_a = np.zeros((4, 4, 1), dtype=np.bool)
@@ -403,7 +399,7 @@ def test_compute_multi_epi_mask():
 
     with warnings.catch_warnings():
         warnings.simplefilter("ignore", MaskWarning)
-        assert_raises(ValueError, compute_multi_epi_mask,
+        pytest.raises(ValueError, compute_multi_epi_mask,
                       [mask_a_img, mask_b_img])
     mask_ab = np.zeros((4, 4, 1), dtype=np.bool)
     mask_ab[2, 2] = 1
@@ -415,12 +411,12 @@ def test_compute_multi_epi_mask():
 
 
 def test_compute_multi_gray_matter_mask():
-    assert_raises(TypeError, compute_multi_gray_matter_mask, [])
+    pytest.raises(TypeError, compute_multi_gray_matter_mask, [])
 
     # Check error raised if images with different shapes are given as input
     imgs = [Nifti1Image(np.ones((9, 9, 9)), np.eye(4)),
             Nifti1Image(np.ones((9, 9, 8)), np.eye(4))]
-    assert_raises(ValueError, compute_multi_gray_matter_mask, imgs)
+    pytest.raises(ValueError, compute_multi_gray_matter_mask, imgs)
 
     # Check results are the same if affine is the same
     imgs1 = [Nifti1Image(np.random.randn(9, 9, 9), np.eye(4)),
@@ -449,11 +445,11 @@ def test_error_shape(random_state=42, shape=(3, 5, 7, 11)):
 
     X = rng.randn(n_samples, n_features, 2)
     # 3D X (unmask should raise a TypeError)
-    assert_raises(TypeError, unmask, X, mask_img)
+    pytest.raises(TypeError, unmask, X, mask_img)
 
     X = rng.randn(n_samples, n_features)
     # Raises an error because the mask is 4D
-    assert_raises(TypeError, unmask, X, mask_img)
+    pytest.raises(TypeError, unmask, X, mask_img)
 
 
 def test_nifti_masker_empty_mask_warning():

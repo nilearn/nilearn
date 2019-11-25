@@ -5,9 +5,10 @@ Test the _utils.param_validation module
 import numpy as np
 import warnings
 import os
-import nibabel
 
-from nose.tools import assert_equal, assert_true, assert_raises
+import nibabel
+import pytest
+
 from sklearn.base import BaseEstimator
 
 from nilearn._utils.testing import assert_raises_regex, assert_warns
@@ -90,7 +91,7 @@ def test_feature_screening():
                 assert check_feature_screening(
                     screening_percentile, mask_img, is_classif) == None
             elif screening_percentile == 101 or screening_percentile == -1:
-                assert_raises(ValueError, check_feature_screening,
+                pytest.raises(ValueError, check_feature_screening,
                               screening_percentile, mask_img, is_classif)
             elif screening_percentile == 20:
                 assert isinstance(check_feature_screening(

@@ -9,9 +9,7 @@ import warnings
 from distutils.version import LooseVersion
 
 import numpy as np
-from nose.tools import assert_true, assert_false, assert_raises
-from sklearn.utils.testing import assert_less
-import nibabel
+import pytest
 
 # Use nisignal here to avoid name collisions (using nilearn.signal is
 # not possible)
@@ -287,8 +285,8 @@ def test_clean_detrending():
     assert np.any(np.isfinite(y)), True
 
     # test boolean is not given to signal.clean
-    assert_raises(TypeError, nisignal.clean, x, low_pass=False)
-    assert_raises(TypeError, nisignal.clean, x, high_pass=False)
+    pytest.raises(TypeError, nisignal.clean, x, low_pass=False)
+    pytest.raises(TypeError, nisignal.clean, x, high_pass=False)
 
     # This should remove trends
     x_detrended = nisignal.clean(x, standardize=False, detrend=True,
@@ -342,7 +340,7 @@ def test_clean_frequencies():
     assert clean(sx, standardize=False, high_pass=0.2, low_pass=None,
                       t_r=2.5) .max() < 0.01
     assert clean(sx, standardize=False, low_pass=0.01, t_r=2.5).max() > 0.9
-    assert_raises(ValueError, clean, sx, low_pass=0.4, high_pass=0.5, t_r=2.5)
+    pytest.raises(ValueError, clean, sx, low_pass=0.4, high_pass=0.5, t_r=2.5)
 
 
 def test_clean_confounds():
@@ -418,17 +416,17 @@ def test_clean_confounds():
                               filename2, confounds[:, 2]])
 
     # Test error handling
-    assert_raises(TypeError, nisignal.clean, signals, confounds=1)
-    assert_raises(ValueError, nisignal.clean, signals, confounds=np.zeros(2))
-    assert_raises(ValueError, nisignal.clean, signals,
+    pytest.raises(TypeError, nisignal.clean, signals, confounds=1)
+    pytest.raises(ValueError, nisignal.clean, signals, confounds=np.zeros(2))
+    pytest.raises(ValueError, nisignal.clean, signals,
                   confounds=np.zeros((2, 2)))
-    assert_raises(ValueError, nisignal.clean, signals,
+    pytest.raises(ValueError, nisignal.clean, signals,
                   confounds=np.zeros((2, 3, 4)))
-    assert_raises(ValueError, nisignal.clean, signals[:-1, :],
+    pytest.raises(ValueError, nisignal.clean, signals[:-1, :],
                   confounds=filename1)
-    assert_raises(TypeError, nisignal.clean, signals,
+    pytest.raises(TypeError, nisignal.clean, signals,
                   confounds=[None])
-    assert_raises(ValueError, nisignal.clean, signals, t_r=None,
+    pytest.raises(ValueError, nisignal.clean, signals, t_r=None,
                   low_pass=.01)
 
     # Test without standardizing that constant parts of confounds are
@@ -527,7 +525,7 @@ def test_high_variance_confounds():
     outG = nisignal.high_variance_confounds(seriesG, percentile=1.,
                                             n_confounds=n_confounds,
                                             detrend=False)
-    assert_raises(AssertionError, np.testing.assert_almost_equal,
+    pytest.raises(AssertionError, np.testing.assert_almost_equal,
                   outC, outG, decimal=13)
     assert(outG.shape == (length, n_confounds))
 
