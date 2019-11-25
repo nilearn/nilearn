@@ -4,7 +4,7 @@ Transformer for computing ROI signals.
 
 import numpy as np
 
-from sklearn.externals.joblib import Memory
+from nilearn._utils.compat import Memory
 
 from .. import _utils
 from .._utils import logger, CacheMixin, _compose_err_msg
@@ -56,9 +56,15 @@ class NiftiLabelsMasker(BaseMasker, CacheMixin):
         If smoothing_fwhm is not None, it gives the full-width half maximum in
         millimeters of the spatial smoothing to apply to the signal.
 
-    standardize: boolean, optional
-        If standardize is True, the time-series are centered and normed:
-        their mean is put to 0 and their variance to 1 in the time dimension.
+    standardize: {'zscore', 'psc', True, False}, default is 'zscore'
+        Strategy to standardize the signal.
+        'zscore': the signal is z-scored. Timeseries are shifted
+        to zero mean and scaled to unit variance.
+        'psc':  Timeseries are shifted to zero mean value and scaled
+        to percent signal change (as compared to original mean signal).
+        True : the signal is z-scored. Timeseries are shifted
+        to zero mean and scaled to unit variance.
+        False : Do not standardize the data.
 
     detrend: boolean, optional
         This parameter is passed to signal.clean. Please see the related

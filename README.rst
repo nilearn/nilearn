@@ -4,12 +4,15 @@
    :target: https://travis-ci.org/nilearn/nilearn
    :alt: Travis Build Status
 
-.. image:: https://ci.appveyor.com/api/projects/status/github/nilearn/nilearn?branch=master&svg=true
-   :target: https://ci.appveyor.com/project/nilearn-ci/nilearn
+.. image:: https://ci.appveyor.com/api/projects/status/qynxxpx0hge4h0rn/branch/master?svg=true
+   :target: https://ci.appveyor.com/api/projects/status/qynxxpx0hge4h0rn/branch/master?svg=true
    :alt: AppVeyor Build Status
 
 .. image:: https://codecov.io/gh/nilearn/nilearn/branch/master/graph/badge.svg
    :target: https://codecov.io/gh/nilearn/nilearn
+
+.. image:: https://dev.azure.com/Parietal/Nilearn/_apis/build/status/nilearn.nilearn?branchName=master
+    :target: https://dev.azure.com/Parietal/Nilearn/_apis/build/status/nilearn.nilearn?branchName=master
 
 nilearn
 =======
@@ -43,6 +46,7 @@ The required dependencies to use the software are:
 * Numpy >= 1.11
 * SciPy >= 0.19
 * Scikit-learn >= 0.19
+* Joblib >= 0.11
 * Nibabel >= 2.0.2
 
 If you are using nilearn plotting functionalities or running the

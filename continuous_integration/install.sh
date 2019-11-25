@@ -22,21 +22,20 @@ create_new_venv() {
     deactivate
     virtualenv --system-site-packages testvenv
     source testvenv/bin/activate
-    pip install nose
+    pip install nose pytest
 }
 
-print_conda_requirements() {
-    # Echo a conda requirement string for example
+echo_requirements_string() {
+    # Echo a requirement string for example
     # "pip nose python='2.7.3 scikit-learn=*". It has a hardcoded
     # list of possible packages to install and looks at _VERSION
     # environment variables to know whether to install a given package and
     # if yes which version to install. For example:
     #   - for numpy, NUMPY_VERSION is used
     #   - for scikit-learn, SCIKIT_LEARN_VERSION is used
-    TO_INSTALL_ALWAYS="pip nose"
+    TO_INSTALL_ALWAYS="pip nose pytest"
     REQUIREMENTS="$TO_INSTALL_ALWAYS"
-    TO_INSTALL_MAYBE="python numpy scipy matplotlib scikit-learn pandas \
-flake8 lxml"
+    TO_INSTALL_MAYBE="numpy scipy matplotlib scikit-learn pandas flake8 lxml joblib"
     for PACKAGE in $TO_INSTALL_MAYBE; do
         # Capitalize package name and add _VERSION
         PACKAGE_VERSION_VARNAME="${PACKAGE^^}_VERSION"
@@ -45,44 +44,25 @@ flake8 lxml"
         # dereference $PACKAGE_VERSION_VARNAME to figure out the
         # version to install
         PACKAGE_VERSION="${!PACKAGE_VERSION_VARNAME}"
-        if [ -n "$PACKAGE_VERSION" ]; then
-            REQUIREMENTS="$REQUIREMENTS $PACKAGE=$PACKAGE_VERSION"
+        if [[ -n "$PACKAGE_VERSION" ]]; then
+            if [[ "$PACKAGE_VERSION" == "*" ]]; then
+                REQUIREMENTS="$REQUIREMENTS $PACKAGE"
+            else
+                REQUIREMENTS="$REQUIREMENTS $PACKAGE==$PACKAGE_VERSION"
+            fi
         fi
     done
     echo $REQUIREMENTS
 }
 
-create_new_conda_env() {
-    # Skip Travis related code on circle ci.
-    if [ -z $CIRCLECI ]; then
-        # Deactivate the travis-provided virtual environment and setup a
-        # conda-based environment instead
-        deactivate
-    fi
-
-    # Use the miniconda installer for faster download / install of conda
-    # itself
-    wget http://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh \
-        -O ~/miniconda.sh
-    chmod +x ~/miniconda.sh && ~/miniconda.sh -b
-    export PATH=$HOME/miniconda3/bin:$PATH
-    echo $PATH
-
-    # Configure the conda environment and put it in the path using the
-    # provided versions
-    REQUIREMENTS=$(print_conda_requirements)
-    echo "conda requirements string: $REQUIREMENTS"
-    conda create -n testenv --quiet --yes $REQUIREMENTS
-    source activate testenv
+create_new_travisci_env() {
+    REQUIREMENTS=$(echo_requirements_string)
+    pip install $PIP_FLAGS ${REQUIREMENTS}
+    pip install pytest pytest-cov
 
     if [[ "$INSTALL_MKL" == "true" ]]; then
         # Make sure that MKL is used
-        conda install --quiet --yes mkl
-    elif [[ -z $CIRCLECI ]]; then
-        # Travis doesn't use MKL but circle ci does for speeding up examples
-        # generation in the html documentation.
-        # Make sure that MKL is not used
-        conda remove --yes --features mkl || echo "MKL not installed"
+        pip install mkl
     fi
 }
 
@@ -90,16 +70,16 @@ if [[ "$DISTRIB" == "neurodebian" ]]; then
     create_new_venv
     pip install nose-timer
     bash <(wget -q -O- http://neuro.debian.net/_files/neurodebian-travis.sh)
-    sudo apt-get install -qq python-scipy python-nose python-nibabel python-sklearn
+    sudo apt-get install -qq python-scipy python-nose python-nibabel python-sklearn python-joblib
 
-elif [[ "$DISTRIB" == "conda" ]]; then
-    create_new_conda_env
+elif [[ "$DISTRIB" == "travisci" ]]; then
+    create_new_travisci_env
     pip install nose-timer
     # Note: nibabel is in setup.py install_requires so nibabel will
     # always be installed eventually. Defining NIBABEL_VERSION is only
     # useful if you happen to want a specific nibabel version rather
     # than the latest available one.
-    if [ -n "$NIBABEL_VERSION" ]; then
+    if [[ -n "$NIBABEL_VERSION" ]]; then
         pip install nibabel=="$NIBABEL_VERSION"
     fi
 
@@ -117,5 +97,5 @@ fi
 # numpy not installed when skipping the tests so we do not want to run
 # setup.py install
 if [[ "$SKIP_TESTS" != "true" ]]; then
-    python setup.py install
+    pip install $PIP_FLAGS .
 fi

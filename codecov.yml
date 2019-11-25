@@ -1,0 +1,2 @@
+ignore:
+  - "*externals/.*"  # ignore folders and all its contents

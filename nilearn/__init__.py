@@ -35,38 +35,33 @@ signal                  --- Set of preprocessing functions for time series
 import gzip
 import sys
 import warnings
+import os
 
 from distutils.version import LooseVersion
 
 from .version import _check_module_dependencies, __version__
 
+# Workaround issue discovered in intel-openmp 2019.5:
+# https://github.com/ContinuumIO/anaconda-issues/issues/11294
+#
+# see also https://github.com/scikit-learn/scikit-learn/pull/15020
+os.environ.setdefault("KMP_INIT_AT_FORK", "FALSE")
 
-def _py2_deprecation_warning():
-    py2_warning = ('Python2 support is deprecated and will be removed in '
-                   'the next release. Consider switching to Python 3.6 or 3.7.'
-                   )
-    warnings.filterwarnings('once', message=py2_warning)
-    warnings.warn(message=py2_warning,
-                  category=DeprecationWarning,
-                  stacklevel=3,
-                  )
 
-def _py34_deprecation_warning():
-    py34_warning = ('Python 3.4 support is deprecated and will be removed in '
-                   'the next release. Consider switching to Python 3.6 or 3.7.'
-                   )
-    warnings.filterwarnings('once', message=py34_warning)
-    warnings.warn(message=py34_warning,
-                  category=DeprecationWarning,
+def _py35_deprecation_warning():
+    py35_warning = ('Python 3.5 support is deprecated and will be removed in '
+                    'a future release. Consider switching to Python 3.6 or 3.7'
+                    )
+    warnings.filterwarnings('once', message=py35_warning)
+    warnings.warn(message=py35_warning,
+                  category=FutureWarning,
                   stacklevel=3,
                   )
 
 
 def _python_deprecation_warnings():
-    if sys.version_info.major == 2:
-        _py2_deprecation_warning()
-    elif sys.version_info.major == 3 and sys.version_info.minor == 4:
-        _py34_deprecation_warning()
+    if sys.version_info.major == 3 and sys.version_info.minor == 5:
+        _py35_deprecation_warning()
 
 
 _check_module_dependencies()

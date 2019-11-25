@@ -11,6 +11,7 @@ from nilearn.decomposition.canica import CanICA
 from nilearn.input_data import MultiNiftiMasker
 from nilearn.image import iter_img
 from nilearn.decomposition.tests.test_multi_pca import _tmp_dir
+from nilearn.image import get_data
 
 
 def _make_data_from_components(components, affine, shape, rng=None,
@@ -91,13 +92,13 @@ def test_canica_square_img():
     canica = CanICA(n_components=4, random_state=rng, mask=mask_img,
                     smoothing_fwhm=0., n_init=50)
     canica.fit(data)
-    maps = canica.components_img_.get_data()
+    maps = get_data(canica.components_img_)
     maps = np.rollaxis(maps, 3, 0)
 
     # FIXME: This could be done more efficiently, e.g. thanks to hungarian
     # Find pairs of matching components
     # compute the cross-correlation matrix between components
-    mask = mask_img.get_data() != 0
+    mask = get_data(mask_img) != 0
     K = np.corrcoef(components[:, mask.ravel()],
                     maps[:, mask])[4:, :4]
     # K should be a permutation matrix, hence its coefficients
@@ -135,7 +136,7 @@ def test_component_sign():
     for _ in range(3):
         canica.fit(data)
         for mp in iter_img(canica.components_img_):
-            mp = mp.get_data()
+            mp = get_data(mp)
             assert_less_equal(-mp.min(), mp.max())
 
 

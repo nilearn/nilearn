@@ -16,6 +16,7 @@ from scipy import ndimage, linalg
 from .image import crop_img
 from .. import _utils
 from .._utils.compat import _basestring
+from .._utils.niimg import _get_data
 
 ###############################################################################
 # Affine utils
@@ -207,7 +208,7 @@ def get_mask_bounds(img):
 
     """
     img = _utils.check_niimg_3d(img)
-    mask = _utils.numpy_conversions._asarray(img.get_data(), dtype=np.bool)
+    mask = _utils.numpy_conversions._asarray(_get_data(img), dtype=np.bool)
     affine = img.affine
     (xmin, xmax), (ymin, ymax), (zmin, zmax) = get_bounds(mask.shape, affine)
     slices = ndimage.find_objects(mask)
@@ -444,7 +445,7 @@ def resample_img(img, target_affine=None, target_shape=None,
     # We now know that some resampling must be done.
     # The value of "copy" is of no importance: output is always a separate
     # array.
-    data = img.get_data()
+    data = _get_data(img)
 
     # Get a bounding box for the transformed data
     # Embed target_affine in 4x4 shape if necessary
@@ -562,7 +563,7 @@ def resample_img(img, target_affine=None, target_shape=None,
 
         # ensure the source image being placed isn't larger than the dest
         subset_indices = tuple(slice(0, s.stop-s.start) for s in slices)
-        resampled_data[slices] = cropped_img.get_data()[subset_indices]
+        resampled_data[slices] = _get_data(cropped_img)[subset_indices]
     else:
         # If A is diagonal, ndimage.affine_transform is clever enough to use a
         # better algorithm.
@@ -706,7 +707,7 @@ def reorder_img(img, resample=None):
                                 interpolation=resample)
 
     axis_numbers = np.argmax(np.abs(A), axis=0)
-    data = img.get_data()
+    data = _get_data(img)
     while not np.all(np.sort(axis_numbers) == axis_numbers):
         first_inversion = np.argmax(np.diff(axis_numbers)<0)
         axis1 = first_inversion + 1
