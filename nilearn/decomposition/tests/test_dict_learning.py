@@ -1,7 +1,6 @@
 import numpy as np
 import nibabel
 
-from nose.tools import assert_true
 from nilearn._utils.testing import (assert_less_equal, assert_raises_regex,
                                     write_tmp_imgs)
 from nilearn.decomposition.dict_learning import DictLearning

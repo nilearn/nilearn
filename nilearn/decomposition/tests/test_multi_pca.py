@@ -4,9 +4,10 @@ Test the multi-PCA module
 import os
 import tempfile
 import numpy as np
-from nose.tools import assert_raises, assert_true
+import pytest
+
 import nibabel
-from numpy.testing import assert_almost_equal, assert_equal
+from numpy.testing import assert_almost_equal
 
 from nilearn.decomposition.multi_pca import MultiPCA
 from nilearn.input_data import MultiNiftiMasker, NiftiMasker
@@ -60,7 +61,7 @@ def test_multi_pca():
 
     # Check that asking for too little components raises a ValueError
     multi_pca = MultiPCA()
-    assert_raises(ValueError, multi_pca.fit, data[:2])
+    pytest.raises(ValueError, multi_pca.fit, data[:2])
 
     # Test fit on data with the use of a masker
     masker = MultiNiftiMasker()
@@ -77,7 +78,7 @@ def test_multi_pca():
     multi_pca.inverse_transform(multi_pca.transform(data[-2:]))
 
     # Smoke test to fit with no img
-    assert_raises(TypeError, multi_pca.fit)
+    pytest.raises(TypeError, multi_pca.fit)
 
     multi_pca = MultiPCA(mask=mask_img, n_components=3)
     assert_raises_regex(ValueError,

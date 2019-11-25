@@ -1,12 +1,13 @@
 """Test CanICA"""
 
 import numpy as np
-from numpy.testing import assert_array_almost_equal
-from nose.tools import assert_true, assert_raises
+import pytest
+
+from numpy.testing import assert_array_almost_equal, assert_raises_regex
 import nibabel
 
-from nilearn._utils.testing import (assert_less_equal, write_tmp_imgs,
-                                    assert_raises_regex)
+from nilearn._utils.testing import write_tmp_imgs
+
 from nilearn.decomposition.canica import CanICA
 from nilearn.input_data import MultiNiftiMasker
 from nilearn.image import iter_img
@@ -109,7 +110,7 @@ def test_canica_square_img():
     assert_array_almost_equal(K_abs, 0, 1)
 
     # Smoke test to make sure an error is raised when no data is passed.
-    assert_raises(TypeError, canica.fit)
+    pytest.raises(TypeError, canica.fit)
 
 
 def test_canica_single_subject():
@@ -143,7 +144,7 @@ def test_component_sign():
 def test_threshold_bound():
     # Smoke test to make sure an error is raised when threshold
     # is higher than number of components
-    assert_raises(ValueError, CanICA, n_components=4, threshold=5.)
+    pytest.raises(ValueError, CanICA, n_components=4, threshold=5.)
 
 
 def test_masker_attributes_with_fit():

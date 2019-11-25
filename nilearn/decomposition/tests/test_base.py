@@ -1,9 +1,7 @@
 import numpy as np
 from scipy import linalg
-from nose.tools import assert_true
 import nibabel
-from numpy.testing import assert_equal, assert_array_almost_equal
-from nilearn._utils.testing import assert_raises_regex
+from numpy.testing import assert_array_almost_equal
 from nilearn.input_data import MultiNiftiMasker
 from nilearn.decomposition.base import BaseDecomposition, mask_and_reduce
 from nilearn.decomposition.base import fast_svd
