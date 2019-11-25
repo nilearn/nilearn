@@ -5,12 +5,11 @@ import os
 import copy
 import math
 
-from nose import SkipTest
-from nose.tools import assert_equal, assert_raises, \
-    assert_false, assert_true, assert_almost_equal
-from numpy.testing import assert_array_equal, assert_array_almost_equal
-
+from numpy.testing import (assert_almost_equal,
+                           assert_array_equal,
+                           assert_array_almost_equal)
 import numpy as np
+import pytest
 
 from nibabel import Nifti1Image
 
@@ -232,10 +231,10 @@ def test_resampling_error_checks():
         resample_img(filename, target_shape=target_shape, target_affine=affine)
 
     # Missing parameter
-    assert_raises(ValueError, resample_img, img, target_shape=target_shape)
+    pytest.raises(ValueError, resample_img, img, target_shape=target_shape)
 
     # Invalid shape
-    assert_raises(ValueError, resample_img, img, target_shape=(2, 3),
+    pytest.raises(ValueError, resample_img, img, target_shape=(2, 3),
                   target_affine=affine)
 
     # Invalid interpolation
@@ -766,10 +765,9 @@ def test_coord_transform_trivial():
     assert x.shape == x_.shape
 
 
+@pytest.mark.skipif(os.environ.get('APPVEYOR') == 'True',
+                    reason='This test too slow (7-8 minutes) on AppVeyor')
 def test_resample_img_segmentation_fault():
-    if os.environ.get('APPVEYOR') == 'True':
-        raise SkipTest('This test too slow (7-8 minutes) on AppVeyor')
-
     # see https://github.com/nilearn/nilearn/issues/346
     shape_in = (64, 64, 64)
     aff_in = np.diag([2., 2., 2., 1.])
@@ -782,13 +780,13 @@ def test_resample_img_segmentation_fault():
         data = np.ones(shape_in + (fourth_dim, ), dtype=np.float64)
     except MemoryError:
         # This can happen on AppVeyor and for 32-bit Python on Windows
-        raise SkipTest('Not enough RAM to run this test')
+        pytest.skip('Not enough RAM to run this test')
+    else:
+        img_in = Nifti1Image(data, aff_in)
 
-    img_in = Nifti1Image(data, aff_in)
-
-    resample_img(img_in,
-                 target_affine=aff_out,
-                 interpolation='nearest')
+        resample_img(img_in,
+                     target_affine=aff_out,
+                     interpolation='nearest')
 
 
 def test_resampling_with_int_types_no_crash():

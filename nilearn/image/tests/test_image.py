@@ -1,7 +1,6 @@
 """
 Test image pre-processing functions
 """
-from nose.tools import assert_true, assert_false, assert_equal, assert_raises
 from nose import SkipTest
 
 import platform
@@ -12,6 +11,8 @@ import tempfile
 import nibabel
 from nibabel import Nifti1Image
 import numpy as np
+import pytest
+
 from numpy.testing import assert_array_equal, assert_allclose
 from nilearn._utils.testing import assert_raises_regex, assert_warns
 from nilearn._utils.exceptions import DimensionError
@@ -601,7 +602,7 @@ def test_clean_img():
     data_flat = data.T.reshape(100, -1)
     data_img = nibabel.Nifti1Image(data, np.eye(4))
 
-    assert_raises(
+    pytest.raises(
         ValueError, image.clean_img, data_img, t_r=None, low_pass=0.1)
 
     data_img_ = image.clean_img(
@@ -668,7 +669,7 @@ def test_largest_cc_img():
 
         # Test whether 4D Nifti throws the right error.
         img_4D = data_gen.generate_fake_fmri(shapes[0], length=17)
-        assert_raises(DimensionError, largest_connected_component_img, img_4D)
+        pytest.raises(DimensionError, largest_connected_component_img, img_4D)
 
     # tests adapted to non-native endian data dtype
     img1_change_dtype = nibabel.Nifti1Image(get_data(img1).astype('>f8'),
