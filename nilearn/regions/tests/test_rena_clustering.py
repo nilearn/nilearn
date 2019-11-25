@@ -28,8 +28,8 @@ def test_rena_clustering():
     X_red = rena.fit_transform(X)
     X_compress = rena.inverse_transform(X_red)
 
-    assert_equal(10, rena.n_clusters_)
-    assert_equal(X.shape, X_compress.shape)
+    assert 10 == rena.n_clusters_
+    assert X.shape == X_compress.shape
 
     memory = Memory(cachedir=None)
     rena = ReNA(mask_img, n_clusters=-2, memory=memory)
@@ -46,6 +46,6 @@ def test_rena_clustering():
     for n_clusters in [1, 2, 4, 8]:
         rena = ReNA(mask_img, n_clusters=n_clusters, n_iter=1,
                     memory=memory).fit(X)
-        assert_not_equal(n_clusters, rena.n_clusters_)
+        assert n_clusters != rena.n_clusters_
 
     del n_voxels, X_red, X_compress
