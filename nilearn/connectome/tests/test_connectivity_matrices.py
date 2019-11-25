@@ -253,7 +253,7 @@ def test_geometric_mean_properties():
     gmean = _geometric_mean(spds)
 
     # Generic
-    assert_true(isinstance(spds, list))
+    assert isinstance(spds, list)
     for spd, input_spd in zip(spds, input_spds):
         assert_array_equal(spd, input_spd)
     assert(is_spd(gmean, decimal=7))
@@ -279,7 +279,7 @@ def test_geometric_mean_properties():
     # Gradient norm is decreasing
     grad_norm = grad_geometric_mean(spds, tol=1e-20)
     difference = np.diff(grad_norm)
-    assert_true(np.amax(difference) <= 0.)
+    assert np.amax(difference) <= 0.
 
     # Check warning if gradient norm in the last step is less than
     # tolerance
@@ -288,10 +288,10 @@ def test_geometric_mean_properties():
     with warnings.catch_warnings(record=True) as w:
         warnings.simplefilter("always")
         gmean = _geometric_mean(spds, max_iter=max_iter, tol=tol)
-        assert_equal(len(w), 1)
+        assert len(w) == 1
     grad_norm = grad_geometric_mean(spds, max_iter=max_iter, tol=tol)
-    assert_equal(len(grad_norm), max_iter)
-    assert_true(grad_norm[-1] > tol)
+    assert len(grad_norm) == max_iter
+    assert grad_norm[-1] > tol
 
     # Evaluate convergence. A warning is printed if tolerance is not reached
     for p in [.5, 1.]:  # proportion of badly conditionned matrices
@@ -454,8 +454,8 @@ def test_connectivity_measure_outputs():
             connectivities = conn_measure.fit_transform(signals)
 
             # Generic
-            assert_true(isinstance(connectivities, np.ndarray))
-            assert_equal(len(connectivities), len(covs))
+            assert isinstance(connectivities, np.ndarray)
+            assert len(connectivities) == len(covs)
 
             for k, cov_new in enumerate(connectivities):
                 assert_array_equal(input_covs[k], covs[k])
@@ -495,7 +495,7 @@ def test_connectivity_measure_outputs():
     for kind in kinds:
         conn_measure = ConnectivityMeasure(kind=kind)
         conn_measure.fit_transform(signals)
-        assert_equal((conn_measure.mean_).shape, (n_features, n_features))
+        assert (conn_measure.mean_).shape == (n_features, n_features)
         if kind != 'tangent':
             assert_array_almost_equal(
                 conn_measure.mean_,

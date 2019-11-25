@@ -44,12 +44,12 @@ def test_group_sparse_covariance():
         signals, alpha, max_iter=4, tol=None, verbose=0, probe_function=probe)
     objective = probe.objective
     # check number of iterations
-    assert_equal(len(objective), 4)
+    assert len(objective) == 4
 
     # np.testing.assert_array_less is a strict comparison.
     # Zeros can occur in np.diff(objective).
-    assert_true(np.all(np.diff(objective) <= 0))
-    assert_equal(omega.shape, (10, 10, 5))
+    assert np.all(np.diff(objective) <= 0)
+    assert omega.shape == (10, 10, 5)
 
     # Test input argument checking
     assert_raises(ValueError, group_sparse_covariance, signals, "")
