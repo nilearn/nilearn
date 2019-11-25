@@ -96,7 +96,7 @@ def ignore_connection_errors(func):
         try:
             func(*args, **kwargs)
         except neurovault.URLError:
-            raise pytest.skip(reason='connection problem')
+            raise pytest.skip(msg='connection problem')
 
     return test_wrap
 
