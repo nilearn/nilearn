@@ -1,7 +1,8 @@
 """ Test the logger module
 
-This test file is in nilearn/tests because nosetests ignores modules whose
-name starts with an underscore.
+This test file is in nilearn/tests because Nosetest,
+which we historically used,
+ignores modules whose name starts with an underscore.
 """
 import contextlib
 
@@ -31,7 +32,7 @@ def run():
 
 def other_run():
     # Test too large values for stack_level
-    # stack_level should exceed nosetests stack levels as well
+    # stack_level should exceed testrunner's stack levels as well
     log("function other_run()", stack_level=100)
 
 
@@ -90,7 +91,7 @@ def test_log():
         other_run()
     assert out[0] == "[<top_level>] function other_run()\n"
 
-# Will be executed by nosetests upon importing
+# Will be executed by testrunner upon importing
 with capture_output() as out:
     log("message from no function")
 assert out[0] == "[<module>] message from no function\n"
