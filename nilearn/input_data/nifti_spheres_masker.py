@@ -7,11 +7,12 @@ Mask nifti images by spherical volumes for seed-region analyses
 import numpy as np
 import warnings
 from sklearn import neighbors
+import nibabel
 from nilearn._utils.compat import Memory
 
 from ..image.resampling import coord_transform
 from .._utils.niimg_conversions import _safe_get_data
-from .._utils import CacheMixin
+from .._utils import CacheMixin, logger
 from .._utils.niimg import img_data_dtype
 from .._utils.niimg_conversions import check_niimg_4d, check_niimg_3d
 from .._utils.class_inspect import get_params
@@ -192,7 +193,7 @@ def _iter_regions_from_spheres(seeds, affine, target_shape, radius, allow_overla
         See http://nilearn.github.io/manipulating_images/input_output.html
         Mask to apply to regions before extracting signals.
     """
-    A = _get_affinity_apply_mask(seeds, affine, target_shape, radius,
+    A = _apply_mask_get_rows(seeds, affine, target_shape, radius,
                                         allow_overlap,
                                         mask_img=mask_img)
 
@@ -247,16 +248,17 @@ class _InversionFunctor(object):
         n_seeds = len(self.seeds_)
 
         if self.mask_img is not None:
-            self.target_affine = self.mask_img.affine
-            self.target_shape = self.mask_img.shape
+            mask = check_niimg_3d(self.mask_img)
+            self.target_affine = mask.affine
+            self.target_shape = mask.shape
 
-        spheres = np.empty(np.prod(self.target_shape), dtype=np.int)
+        spheres = np.empty((np.prod(self.target_shape), n_seeds), dtype=np.int)
 
         for i, sphere in enumerate(_iter_regions_from_spheres(
                 self.seeds_, self.target_affine, self.target_shape, self.radius,
                 self.allow_overlap, mask_img=self.mask_img)):
-            spheres[sphere] = i + 1
-        return spheres.reshape(self.target_shape)
+            spheres[sphere, i] = 1
+        return spheres.reshape([*self.target_shape, n_seeds])
 
 
 class NiftiSpheresMasker(BaseMasker, CacheMixin):
@@ -473,11 +475,11 @@ class NiftiSpheresMasker(BaseMasker, CacheMixin):
         voxel_signals: nibabel.Nifti1Image
             Signal for each voxel. shape: that of maps.
         """
-        from nilearn.regions import signal_extraction
+        from ..regions import signal_extraction
 
         self._check_fitted()
 
-        # logger.log("computing image from signals", verbose=self.verbose)
+        logger.log("computing image from signals", verbose=self.verbose)
 
         invFunc = _InversionFunctor(self.seeds_, self.radius, self.mask_img,
                                     self.allow_overlap, np.int)
@@ -487,5 +489,5 @@ class NiftiSpheresMasker(BaseMasker, CacheMixin):
         inverse_map = nibabel.Nifti1Image(inverse_map,
                                           affine=invFunc.target_affine)
 
-        return signal_extraction.signals_to_img_labels(
+        return signal_extraction.signals_to_img_maps(
             region_signals, inverse_map, mask_img=self.mask_img)
