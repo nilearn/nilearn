@@ -85,6 +85,62 @@ def _apply_mask_and_get_affinity(seeds, niimg, radius, allow_overlap,
     return X, A
 
 
+def _apply_mask_get_rows(seeds, affine, target_shape, radius, allow_overlap,
+                                 mask_img=None):
+    seeds = list(seeds)
+
+    # Compute world coordinates of all in-mask voxels.
+
+    if mask_img is not None:
+        mask_img = check_niimg_3d(mask_img)
+        mask_img = image.resample_img(mask_img, target_affine=affine,
+                                      target_shape=target_shape,
+                                      interpolation='nearest')
+        mask, _ = masking._load_mask_img(mask_img)
+        mask_coords = list(zip(*np.where(mask != 0)))
+    else:
+        mask_coords = list(np.ndindex(*target_shape))
+
+    # For each seed, get coordinates of nearest voxel
+    nearests = []
+    for sx, sy, sz in seeds:
+        nearest = np.round(coord_transform(sx, sy, sz, np.linalg.inv(affine)))
+        nearest = nearest.astype(int)
+        nearest = (nearest[0], nearest[1], nearest[2])
+        try:
+            nearests.append(mask_coords.index(nearest))
+        except ValueError:
+            nearests.append(None)
+
+    mask_coords = np.asarray(list(zip(*mask_coords)))
+    mask_coords = coord_transform(mask_coords[0], mask_coords[1],
+                                  mask_coords[2], affine)
+    mask_coords = np.asarray(mask_coords).T
+
+    clf = neighbors.NearestNeighbors(radius=radius)
+    A = clf.fit(mask_coords).radius_neighbors_graph(seeds)
+    A = A.tolil()
+    for i, nearest in enumerate(nearests):
+        if nearest is None:
+            continue
+        A[i, nearest] = True
+
+    # Include the voxel containing the seed itself if not masked
+    mask_coords = mask_coords.astype(int).tolist()
+    for i, seed in enumerate(seeds):
+        try:
+            A[i, mask_coords.index(seed)] = True
+        except ValueError:
+            # seed is not in the mask
+            pass
+
+    if not allow_overlap:
+        if np.any(A.sum(axis=0) >= 2):
+            raise ValueError('Overlap detected between spheres')
+
+    return A
+
+
 def _iter_signals_from_spheres(seeds, niimg, radius, allow_overlap,
                                mask_img=None):
     """Utility function to iterate over spheres.
@@ -115,6 +171,39 @@ def _iter_signals_from_spheres(seeds, niimg, radius, allow_overlap,
         yield X[:, row]
 
 
+def _iter_regions_from_spheres(seeds, affine, target_shape, radius, allow_overlap,
+                               mask_img=None):
+    """Utility function to iterate over spheres.
+    Parameters
+    ----------
+    seeds: List of triplets of coordinates in native space
+        Seed definitions. List of coordinates of the seeds in the same space
+        as the images (typically MNI or TAL).
+    imgs: 3D/4D Niimg-like object
+        See http://nilearn.github.io/manipulating_images/input_output.html
+        Images to process. It must boil down to a 4D image with scans
+        number as last dimension.
+    radius: float
+        Indicates, in millimeters, the radius for the sphere around the seed.
+    allow_overlap: boolean
+        If False, an error is raised if the maps overlaps (ie at least two
+        maps have a non-zero value for the same voxel).
+    mask_img: Niimg-like object, optional
+        See http://nilearn.github.io/manipulating_images/input_output.html
+        Mask to apply to regions before extracting signals.
+    """
+    A = _get_affinity_apply_mask(seeds, affine, target_shape, radius,
+                                        allow_overlap,
+                                        mask_img=mask_img)
+
+
+    for i, row in enumerate(A.rows):
+
+        if len(row) == 0:
+            raise ValueError('Sphere around seed #%i is empty' % i)
+        yield row
+
+
 class _ExtractionFunctor(object):
 
     func_name = 'nifti_spheres_masker_extractor'
@@ -136,6 +225,38 @@ class _ExtractionFunctor(object):
                 mask_img=self.mask_img)):
             signals[:, i] = np.mean(sphere, axis=1)
         return signals, None
+
+
+class _InversionFunctor(object):
+
+    func_name = 'nifti_spheres_masker_inversion'
+
+    def __init__(self, seeds_, radius, mask_img, allow_overlap, dtype):
+        self.seeds_ = seeds_
+        self.radius = radius
+        self.mask_img = mask_img
+        self.allow_overlap = allow_overlap
+        self.dtype = dtype
+        self.target_affine = np.array([[  -3.,   -0.,   -0.,   90.],
+                                       [  -0.,    3.,   -0., -126.],
+                                       [   0.,    0.,    3.,  -72.],
+                                       [   0.,    0.,    0.,    1.]])
+        self.target_shape = [61, 73, 61]
+
+    def __call__(self, signals):
+        n_seeds = len(self.seeds_)
+
+        if self.mask_img is not None:
+            self.target_affine = self.mask_img.affine
+            self.target_shape = self.mask_img.shape
+
+        spheres = np.empty(np.prod(self.target_shape), dtype=np.int)
+
+        for i, sphere in enumerate(_iter_regions_from_spheres(
+                self.seeds_, self.target_affine, self.target_shape, self.radius,
+                self.allow_overlap, mask_img=self.mask_img)):
+            spheres[sphere] = i + 1
+        return spheres.reshape(self.target_shape)
 
 
 class NiftiSpheresMasker(BaseMasker, CacheMixin):
@@ -334,3 +455,37 @@ class NiftiSpheresMasker(BaseMasker, CacheMixin):
             verbose=self.verbose)
 
         return signals
+
+    def inverse_transform(self, region_signals):
+        # TODO Adjust Documentation, decide on labels or maps masker
+        """Compute voxel signals from region signals
+
+        Any mask given at initialization is taken into account.
+
+        Parameters
+        ----------
+        region_signals: 2D numpy.ndarray
+            Signal for each region.
+            shape: (number of scans, number of regions)
+
+        Returns
+        -------
+        voxel_signals: nibabel.Nifti1Image
+            Signal for each voxel. shape: that of maps.
+        """
+        from nilearn.regions import signal_extraction
+
+        self._check_fitted()
+
+        # logger.log("computing image from signals", verbose=self.verbose)
+
+        invFunc = _InversionFunctor(self.seeds_, self.radius, self.mask_img,
+                                    self.allow_overlap, np.int)
+
+        inverse_map = invFunc(region_signals)
+
+        inverse_map = nibabel.Nifti1Image(inverse_map,
+                                          affine=invFunc.target_affine)
+
+        return signal_extraction.signals_to_img_labels(
+            region_signals, inverse_map, mask_img=self.mask_img)
