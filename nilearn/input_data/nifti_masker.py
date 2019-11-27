@@ -79,7 +79,10 @@ class NiftiMasker(BaseMasker, CacheMixin, ReportMixin):
         See http://nilearn.github.io/manipulating_images/input_output.html
         Mask for the data. If not given, a mask is computed in the fit step.
         Optional parameters (mask_args and mask_strategy) can be set to
-        fine tune the mask extraction.
+        fine tune the mask extraction. If the mask and the images have different
+	resolutions, the images are resampled to the mask resolution. If target_shape
+	and/or target_affine are provided, the mask is resampled first. After this,
+	the images are resampled to the resampled mask. 
 
     sessions : numpy array, optional
         Add a session level to the preprocessing. Each session will be
