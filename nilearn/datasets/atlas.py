@@ -1199,9 +1199,10 @@ def fetch_atlas_pauli_2017(version='prob', data_dir=None, verbose=1):
     Parameters
     ----------
 
-    version: str, optional (default='prob')
-        Which version of the atlas should be download. This can be 'prob'
-        for the probabilistic atlas or 'det' for the deterministic atlas.
+    version: str, optional (default='pro')
+        Which version of the atlas should be download. This can be
+        'prob' for the probabilistic atlas or 'det' for the
+        deterministic atlas.
 
     data_dir : str, optional (default=None)
         Path of the data directory. Used to force data storage in a specified
@@ -1230,10 +1231,10 @@ def fetch_atlas_pauli_2017(version='prob', data_dir=None, verbose=1):
 
     if version == 'prob':
         url_maps = 'https://osf.io/w8zq2/download'
-        filename = 'pauli_2017_labels.nii.gz'
-    elif version == 'labels':
-        url_maps = 'https://osf.io/5mqfx/download'
         filename = 'pauli_2017_prob.nii.gz'
+    elif version == 'det':
+        url_maps = 'https://osf.io/5mqfx/download'
+        filename = 'pauli_2017_det.nii.gz'
     else:
         raise NotImplementedError('{} is no valid version for '.format(version) + \
                                   'the Pauli atlas')
