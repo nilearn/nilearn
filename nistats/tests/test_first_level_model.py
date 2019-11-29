@@ -35,7 +35,7 @@ from nistats._utils.testing import (_create_fake_bids_dataset,
                                     _generate_fake_fmri_data,
                                     _write_fake_fmri_data,
                                     )
-
+from nistats.contrasts import compute_fixed_effects
 
 BASEDIR = os.path.dirname(os.path.abspath(__file__))
 FUNCFILE = os.path.join(BASEDIR, 'functional.nii.gz')
@@ -57,6 +57,60 @@ def test_high_level_glm_one_session():
     assert_true(isinstance(z1, Nifti1Image))
 
 
+def test_explicit_fixed_effects():
+    """ tests the fixed effects performed manually/explicitly"""
+    with InTemporaryDirectory():
+        shapes, rk = ((7, 8, 7, 15), (7, 8, 7, 16)), 3
+        mask, fmri_data, design_matrices = _write_fake_fmri_data(shapes, rk)
+        contrast = np.eye(rk)[1]
+        # session 1
+        multi_session_model = FirstLevelModel(mask_img=mask).fit(
+            fmri_data[0], design_matrices=design_matrices[:1])
+        dic1 = multi_session_model.compute_contrast(
+            contrast, output_type='all')
+
+        # session 2
+        multi_session_model.fit(
+            fmri_data[1], design_matrices=design_matrices[1:])
+        dic2 = multi_session_model.compute_contrast(
+            contrast, output_type='all')
+
+        # fixed effects model
+        multi_session_model.fit(
+            fmri_data, design_matrices=design_matrices)
+        fixed_fx_dic = multi_session_model.compute_contrast(
+            contrast, output_type='all')
+
+        # manual version
+        contrasts = [dic1['effect_size'], dic2['effect_size']]
+        variance = [dic1['effect_variance'], dic2['effect_variance']]
+        fixed_fx_contrast, fixed_fx_variance, fixed_fx_stat = compute_fixed_effects(
+            contrasts, variance, mask)
+
+        assert_almost_equal(
+            fixed_fx_contrast.get_data(), fixed_fx_dic['effect_size'].get_data())
+        assert_almost_equal(
+            fixed_fx_variance.get_data(), fixed_fx_dic['effect_variance'].get_data())
+        assert_almost_equal(
+            fixed_fx_stat.get_data(), fixed_fx_dic['stat'].get_data())
+
+        # test without mask variable
+        fixed_fx_contrast, fixed_fx_variance, fixed_fx_stat = compute_fixed_effects(
+            contrasts, variance)
+        assert_almost_equal(
+            fixed_fx_contrast.get_data(), fixed_fx_dic['effect_size'].get_data())
+        assert_almost_equal(
+            fixed_fx_variance.get_data(), fixed_fx_dic['effect_variance'].get_data())
+        assert_almost_equal(
+            fixed_fx_stat.get_data(), fixed_fx_dic['stat'].get_data())
+        
+        # ensure that using unbalanced effects size and variance images
+        # raises an error
+        assert_raises(ValueError, compute_fixed_effects, contrasts * 2, variance,
+                      mask)
+        del mask, multi_session_model
+
+        
 def test_high_level_glm_with_data():
     # New API
     with InTemporaryDirectory():

@@ -31,7 +31,7 @@ from sklearn.externals.joblib import (Parallel,
                                       delayed,
                                       )
 
-from .contrasts import _fixed_effect_contrast, expression_to_contrast_vector
+from .contrasts import _compute_fixed_effect_contrast, expression_to_contrast_vector
 from .design_matrix import make_first_level_design_matrix
 from .regression import (ARModel,
                          OLSModel,
@@ -566,8 +566,8 @@ class FirstLevelModel(BaseEstimator, TransformerMixin, CacheMixin):
         if output_type not in valid_types:
             raise ValueError('output_type must be one of {}'.format(valid_types))
 
-        contrast = _fixed_effect_contrast(self.labels_, self.results_,
-                                          con_vals, stat_type)
+        contrast = _compute_fixed_effect_contrast(self.labels_, self.results_,
+                                                  con_vals, stat_type)
 
         output_types = valid_types[:-1] if output_type == 'all' else [output_type]
 
