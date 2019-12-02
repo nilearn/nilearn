@@ -6,6 +6,7 @@ test_masking.py and test_signal.py for details.
 """
 
 from nose.tools import assert_raises, assert_equal, assert_true
+import pytest
 import numpy as np
 
 import nibabel
@@ -123,6 +124,49 @@ def test_nifti_labels_masker_with_nans_and_infs():
     sig = masker.fit_transform(fmri_img)
     assert_equal(sig.shape, (length, n_regions))
     assert_true(np.all(np.isfinite(sig)))
+
+
+def test_nifti_labels_masker_reduction_strategies():
+    """Tests:
+    1. whether the usage of different reduction strategies work.
+    2. whether unrecognised strategies raise a ValueError
+    3. whether the default option is backwards compatible (calls "mean")
+    """
+    test_values = [-2., -1., 0., 1., 2]
+
+    img_data = np.array([[test_values,
+                          test_values]])
+
+    labels_data = np.array([[[0, 0, 0, 0, 0],
+                             [1, 1, 1, 1, 1]]], dtype=np.int8)
+
+    affine = np.eye(4)
+    img = nibabel.Nifti1Image(img_data, affine)
+    labels = nibabel.Nifti1Image(labels_data, affine)
+
+    # What NiftiLabelsMasker should return for each reduction strategy?
+    expected_results = {"mean": np.mean(test_values),
+                        "median": np.median(test_values),
+                        "sum": np.sum(test_values),
+                        "minimum": np.min(test_values),
+                        "maximum": np.max(test_values),
+                        "standard_deviation": np.std(test_values),
+                        "variance": np.var(test_values)}
+
+    for strategy, expected_result in expected_results.items():
+        masker = NiftiLabelsMasker(labels, strategy=strategy)
+        # Here passing [img] within a list because it's a 3D object.
+        result = masker.fit_transform([img]).squeeze()
+        assert result == expected_result
+
+    with pytest.raises(ValueError, match="Invalid strategy 'TESTRAISE'"):
+        NiftiLabelsMasker(
+            labels,
+            strategy="TESTRAISE"
+        )
+
+    default_masker = NiftiLabelsMasker(labels)
+    assert default_masker.strategy == "mean"
 
 
 def test_nifti_labels_masker_resampling():

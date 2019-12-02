@@ -8,12 +8,30 @@ NEW
   Users with a Python3.5 environment will be warned
   at their first Nilearn import.
 
+Changes
+-------
+
+- Class :class:`nilearn.input_data.NiftiLabelsMasker` now accepts an optional
+  `strategy` parameter which allows it to change the function used to reduce
+  values within each labelled ROI. Available functions include mean, median,
+  minimum, maximum, standard_deviation and variance.
+  This change is also introduced in :func:`nilearn.regions.img_to_signals_labels`.
+
 Fixes
 -----
 
 - :func: `nilearn.image.smooth_image` no longer fails if `fwhm` is a `numpy.ndarray`.
 - `pip install nilearn` now installs the necessary dependencies.
-- Nilearn no longer ImportError for nose when Matplotlib is not installed.
+- :func:`nilearn.image.new_img_like` no longer attempts to copy non-iterable headers. (PR #2212)
+- Nilearn no longer raises ImportError for nose when Matplotlib is not installed.
+
+Contributors
+------------
+
+The following people contributed to this release (in alphabetical order)::
+
+    Daniel Gomez (dangom)
+    Kshitij Chawla (kchawla-pi)
 
 0.6.0b0
 =======
