@@ -613,18 +613,14 @@ def index_img(imgs, index):
 
     We can also select multiple frames using the `slice` constructor::
 
-     >>> functional_scan = datasets.fetch_development_fmri(
-     ...    n_subjects=1, verbose=0).func # doctest: +ELLIPSIS
-     <BLANKLINE>
-     Dataset created in .../development_fmri
-     <BLANKLINE>
-     >>> full_timeseries = load_img(functional_scan)
-     >>> print(full_timeseries.shape)
-     (50, 59, 50, 168)
+     >>> five_mni_images = concat_imgs([datasets.load_mni152_template()] * 5)
+     >>> print(five_mni_images.shape)
+     (91, 109, 91, 5)
     
-     >>> first_ten_frames = index_img(full_timeseries, slice(0, 10))
-     >>> print(first_ten_frames.shape)
-     (50, 59, 50, 10)
+     >>> first_three_images = index_img(five_mni_images,
+     ...                                slice(0, 3))
+     >>> print(first_three_images.shape)
+     (91, 109, 91, 3)
     """
     imgs = check_niimg_4d(imgs)
     # duck-type for pandas arrays, and select the 'values' attr
