@@ -1199,7 +1199,7 @@ def fetch_atlas_pauli_2017(version='prob', data_dir=None, verbose=1):
     Parameters
     ----------
 
-    version: str, optional (default='pro')
+    version: str, optional (default='prob')
         Which version of the atlas should be download. This can be
         'prob' for the probabilistic atlas or 'det' for the
         deterministic atlas.
