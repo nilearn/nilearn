@@ -22,6 +22,7 @@ Fixes
 
 - :func: `nilearn.image.smooth_image` no longer fails if `fwhm` is a `numpy.ndarray`.
 - `pip install nilearn` now installs the necessary dependencies.
+- :func:`nilearn.image.new_img_like` no longer attempts to copy non-iterable headers. (PR #2212)
 
 Contributors
 ------------
