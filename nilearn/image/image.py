@@ -599,7 +599,7 @@ def index_img(imgs, index):
     First we concatenate two mni152 images to create a 4D-image::
 
      >>> from nilearn import datasets
-     >>> from nilearn.image import concat_imgs, index_img, load_img
+     >>> from nilearn.image import concat_imgs, index_img
      >>> joint_mni_image = concat_imgs([datasets.load_mni152_template(),
      ...                                datasets.load_mni152_template()])
      >>> print(joint_mni_image.shape)
