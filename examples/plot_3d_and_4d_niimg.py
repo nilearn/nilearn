@@ -94,8 +94,8 @@ selected_volumes = image.index_img(rsn, slice(3, 5))
 
 ###############################################################################
 # If you're new to Python, one thing to note is that the slice constructor
-# uses 0-based indexing. This is standard in Python, but it may be unfamilar
-# if you're transitioning from another programming language.
+# uses 0-based indexing. You can confirm this by matching these slices
+# to the previous plot above.
 
 for img in image.iter_img(selected_volumes):
     plotting.plot_stat_map(img)
