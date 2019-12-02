@@ -27,6 +27,8 @@ from nilearn._utils.compat import _basestring, _urllib
 from nilearn.datasets import utils, atlas
 from nilearn.image import get_data
 
+import pytest
+
 
 def setup_mock():
     return tst.setup_mock(utils, atlas)
@@ -555,7 +557,7 @@ def test_fetch_atlas_talairach(data_dir=tst.tmpdir):
 def test_fetch_atlas_pauli_2017():
     data_dir = os.path.join(tst.tmpdir, 'pauli_2017')
 
-    data = atlas.fetch_atlas_pauli_2017('labels', data_dir)
+    data = atlas.fetch_atlas_pauli_2017('det', data_dir)
     assert_equal(len(data.labels), 16)
 
     values = get_data(nibabel.load(data.maps))
@@ -563,6 +565,9 @@ def test_fetch_atlas_pauli_2017():
 
     data = atlas.fetch_atlas_pauli_2017('prob', data_dir)
     assert_equal(nibabel.load(data.maps).shape[-1], 16)
+
+    with pytest.raises(NotImplementedError):
+        atlas.fetch_atlas_pauli_2017('junk for testing', data_dir)
 
 @with_setup(tst.setup_tmpdata, tst.teardown_tmpdata)
 def test_fetch_atlas_schaefer_2018():
