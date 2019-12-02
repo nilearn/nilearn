@@ -1,15 +1,16 @@
 """
 Plotting code for nilearn
 """
-# Authors: Chris Filo Gorgolewski, Gael Varoquaux
+# Original Authors: Chris Filo Gorgolewski, Gael Varoquaux
+import os
+import sys
+
 
 ###############################################################################
 # Make sure that we don't get DISPLAY problems when running without X on
 # unices
 def _set_mpl_backend():
     # We are doing local imports here to avoid poluting our namespace
-    import os
-    import sys
     try:
         import matplotlib
     except ImportError:
