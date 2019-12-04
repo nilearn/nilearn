@@ -69,6 +69,15 @@ def test_parcellations_warnings():
         parcellator_n7.fit(img)
 
 
+def test_parcellations_no_warnings():
+    data = np.zeros((10, 11, 12, 5))
+    img = nibabel.Nifti1Image(data, affine=np.eye(4))
+    parcellator_n7 = Parcellations(method='kmeans', n_parcels=1)
+    with pytest.warns(None) as record:
+        parcellator_n7.fit(img)
+    assert [r.category is not UserWarning for r in record.list]
+
+
 def test_parcellations_fit_on_multi_nifti_images():
     data = np.zeros((10, 11, 12, 5))
     data[9, 10, 2] = 1
