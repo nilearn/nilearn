@@ -18,7 +18,7 @@ print('Datasets are stored in: %r' % datasets.get_data_dirs())
 ###############################################################################
 # Let's now retrieve a motor contrast from a Neurovault repository
 motor_images = datasets.fetch_neurovault_motor_task()
-print(motor_images.images)
+motor_images.images
 
 ###############################################################################
 # motor_images is a list of filenames. We need to take the first one
@@ -46,7 +46,7 @@ plotting.plot_stat_map(tmap_filename, threshold=3)
 # We can download resting-state networks from the Smith 2009 study on
 # correspondance between rest and task
 rsn = datasets.fetch_atlas_smith_2009()['rsn10']
-print(rsn)
+rsn
 
 ###############################################################################
 # It is a 4D nifti file. We load it into the memory to print its

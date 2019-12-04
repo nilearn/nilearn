@@ -119,7 +119,7 @@ from nilearn.image import get_data
 
 fmri_data = get_data(fmri_img)
 # number of voxels being x*y*z, samples in 4th dimension
-print(fmri_data.shape)
+fmri_data.shape
 
 ##############################################################################
 # **Selecting features using T-test**: The Student's t-test
