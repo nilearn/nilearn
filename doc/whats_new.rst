@@ -11,6 +11,9 @@ NEW
 Changes
 -------
 
+- Add a warning to :class:`nilearn.regions.Parcellations`
+  if the generated number of parcels does not match the requested number
+  of parcels.
 - Class :class:`nilearn.input_data.NiftiLabelsMasker` now accepts an optional
   `strategy` parameter which allows it to change the function used to reduce
   values within each labelled ROI. Available functions include mean, median,
@@ -32,6 +35,7 @@ Contributors
 The following people contributed to this release (in alphabetical order)::
 
     Daniel Gomez (dangom)
+    Elizabeth DuPre (emdupre)
     Kshitij Chawla (kchawla-pi)
     Ryan Hammonds (ryanhammonds)
 
