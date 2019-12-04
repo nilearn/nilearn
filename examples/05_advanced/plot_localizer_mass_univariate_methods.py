@@ -22,6 +22,7 @@ import matplotlib.pyplot as plt
 from nilearn import datasets
 from nilearn.input_data import NiftiMasker
 from nilearn.mass_univariate import permuted_ols
+from nilearn.image import get_data
 
 ##############################################################################
 # Load Localizer contrast
@@ -93,7 +94,7 @@ display = plot_stat_map(neg_log_pvals_anova_unmasked,
                         display_mode='z', cut_coords=[z_slice],
                         figure=fig, vmax=vmax, black_bg=True)
 
-n_detections = (neg_log_pvals_anova_unmasked.get_data() > threshold).sum()
+n_detections = (get_data(neg_log_pvals_anova_unmasked) > threshold).sum()
 title = ('Negative $\log_{10}$ p-values'
          '\n(Parametric + Bonferroni correction)'
          '\n%d detections') % n_detections
@@ -108,7 +109,7 @@ display = plot_stat_map(neg_log_pvals_permuted_ols_unmasked,
                         display_mode='z', cut_coords=[z_slice],
                         figure=fig, vmax=vmax, black_bg=True)
 
-n_detections = (neg_log_pvals_permuted_ols_unmasked.get_data()
+n_detections = (get_data(neg_log_pvals_permuted_ols_unmasked)
                 > threshold).sum()
 title = ('Negative $\log_{10}$ p-values'
          '\n(Non-parametric + max-type correction)'

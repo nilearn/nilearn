@@ -1,5 +1,95 @@
-0.6.0a
-======
+0.6.0b1
+=======
+
+NEW
+---
+
+- **Support for Python3.5 wil be removed in the 0.7.x release.**
+  Users with a Python3.5 environment will be warned
+  at their first Nilearn import.
+
+Changes
+-------
+
+- Class :class:`nilearn.input_data.NiftiLabelsMasker` now accepts an optional
+  `strategy` parameter which allows it to change the function used to reduce
+  values within each labelled ROI. Available functions include mean, median,
+  minimum, maximum, standard_deviation and variance.
+  This change is also introduced in :func:`nilearn.regions.img_to_signals_labels`.
+
+Fixes
+-----
+
+- :func: `nilearn.image.smooth_image` no longer fails if `fwhm` is a `numpy.ndarray`.
+- `pip install nilearn` now installs the necessary dependencies.
+- :func:`nilearn.image.new_img_like` no longer attempts to copy non-iterable headers. (PR #2212)
+- Nilearn no longer raises ImportError for nose when Matplotlib is not installed.
+- The arg `version='det'` in :func:`nilearn.datasets.fetch_atlas_pauli_2017` now  works as expected.
+
+Contributors
+------------
+
+The following people contributed to this release (in alphabetical order)::
+
+    Daniel Gomez (dangom)
+    Kshitij Chawla (kchawla-pi)
+    Ryan Hammonds (ryanhammonds)
+
+0.6.0b0
+=======
+
+**Released November 2019**
+
+.. warning::
+
+ | **Python2 and 3.4 are no longer supported. Pip will raise an error in these environments.**
+ | **Minimum supported version of Python is now 3.5 .**
+ | **We recommend upgrading to Python 3.6 .**
+
+
+NEW
+---
+
+- A new function :func:`nilearn.image.get_data` to replace the deprecated
+  nibabel method `Nifti1Image.get_data`. Now use `nilearn.image.get_data(img)`
+  rather than `img.get_data()`. This is because Nibabel is removing the
+  `get_data` method. You may also consider using the Nibabel
+  `Nifti1Image.get_fdata`, which returns the data cast to floating-point.
+  See https://github.com/nipy/nibabel/wiki/BIAP8 .
+  As a benefit, the `get_data` function works on niimg-like objects such as
+  filenames (see http://nilearn.github.io/manipulating_images/input_output.html ).
+
+Changes
+-------
+
+- All functions and examples now use `nilearn.image.get_data` rather than the
+  deprecated method `nibabel.Nifti1Image.get_data`.
+
+- :func:`nilearn.datasets.fetch_neurovault` now does not filter out images that
+  have their metadata field `is_valid` cleared by default.
+
+- Users can now specify fetching data for adults, children, or both from
+  :func:`nilearn.datasets.fetch_development_fmri` .
+
+
+Fixes
+-----
+
+- :func:`nilearn.plotting.plot_connectome` now correctly displays marker size on 'l'
+  and 'r' orientations, if an array or a list is passed to the function.
+
+Contributors
+------------
+
+The following people contributed to this release (in alphabetical order)::
+
+	Jake Vogel
+	Jerome Dockes
+	Kshitij Chawla (kchawla-pi)
+	Roberto Guidotti
+
+0.6.0a0
+=======
 
 **Released October 2019**
 
@@ -249,10 +339,10 @@ Contributors
 The following people contributed to this release::
 
    2  Bertrand Thirion
-  90  Kshitij Chawla (kchawla-pi)
-  22  fliem
-  16  Jerome Dockes
-  11  Gael Varoquaux
+   90  Kshitij Chawla (kchawla-pi)
+   22  fliem
+   16  Jerome Dockes
+   11  Gael Varoquaux
    8  Salma Bougacha
    7  himanshupathak21061998
    2  Elizabeth DuPre

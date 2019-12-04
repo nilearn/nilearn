@@ -25,6 +25,9 @@ from . import test_utils as tst
 from nilearn._utils.compat import _basestring, _urllib
 
 from nilearn.datasets import utils, atlas
+from nilearn.image import get_data
+
+import pytest
 
 
 def setup_mock():
@@ -542,11 +545,11 @@ def test_fetch_atlas_talairach(data_dir=tst.tmpdir):
     atlas._fetch_files = _mock_talairach_fetch_files
     level_values = np.ones((81, 3)) * [0, 1, 2]
     talairach = atlas.fetch_atlas_talairach('hemisphere', data_dir=tst.tmpdir)
-    assert_array_equal(talairach.maps.get_data().ravel(),
+    assert_array_equal(get_data(talairach.maps).ravel(),
                        level_values.T.ravel())
     assert_array_equal(talairach.labels, ['Background', 'b', 'a'])
     talairach = atlas.fetch_atlas_talairach('ba', data_dir=tst.tmpdir)
-    assert_array_equal(talairach.maps.get_data().ravel(),
+    assert_array_equal(get_data(talairach.maps).ravel(),
                        level_values.ravel())
     assert_raises(ValueError, atlas.fetch_atlas_talairach, 'bad_level')
 
@@ -554,14 +557,17 @@ def test_fetch_atlas_talairach(data_dir=tst.tmpdir):
 def test_fetch_atlas_pauli_2017():
     data_dir = os.path.join(tst.tmpdir, 'pauli_2017')
 
-    data = atlas.fetch_atlas_pauli_2017('labels', data_dir)
+    data = atlas.fetch_atlas_pauli_2017('det', data_dir)
     assert_equal(len(data.labels), 16)
 
-    values = nibabel.load(data.maps).get_data()
+    values = get_data(nibabel.load(data.maps))
     assert_equal(len(np.unique(values)), 17)
 
     data = atlas.fetch_atlas_pauli_2017('prob', data_dir)
     assert_equal(nibabel.load(data.maps).shape[-1], 16)
+
+    with pytest.raises(NotImplementedError):
+        atlas.fetch_atlas_pauli_2017('junk for testing', data_dir)
 
 @with_setup(tst.setup_tmpdata, tst.teardown_tmpdata)
 def test_fetch_atlas_schaefer_2018():

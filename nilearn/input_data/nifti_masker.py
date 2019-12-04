@@ -18,6 +18,7 @@ from .._utils import CacheMixin
 from .._utils.class_inspect import get_params
 from .._utils.niimg import img_data_dtype
 from .._utils.niimg_conversions import _check_same_fov
+from nilearn.image import get_data
 
 
 class _ExtractionFunctor(object):
@@ -78,7 +79,10 @@ class NiftiMasker(BaseMasker, CacheMixin, ReportMixin):
         See http://nilearn.github.io/manipulating_images/input_output.html
         Mask for the data. If not given, a mask is computed in the fit step.
         Optional parameters (mask_args and mask_strategy) can be set to
-        fine tune the mask extraction.
+        fine tune the mask extraction. If the mask and the images have different
+        resolutions, the images are resampled to the mask resolution. If target_shape
+        and/or target_affine are provided, the mask is resampled first. 
+        After this, the images are resampled to the resampled mask. 
 
     sessions : numpy array, optional
         Add a session level to the preprocessing. Each session will be
@@ -344,7 +348,7 @@ class NiftiMasker(BaseMasker, CacheMixin, ReportMixin):
         else:  # resample image to mask affine
             self.affine_ = self.mask_img_.affine
         # Load data in memory
-        self.mask_img_.get_data()
+        get_data(self.mask_img_)
         if self.verbose > 10:
             print("[%s.fit] Finished fit" % self.__class__.__name__)
 

@@ -11,17 +11,10 @@ import warnings
 import gc
 
 import numpy as np
-from sklearn.utils.testing import assert_warns
+from numpy.testing import assert_raises_regex, assert_warns  # noqa: F401
 
 from .compat import _basestring, _urllib
 from ..datasets.utils import _fetch_files
-
-
-try:
-    from nose.tools import assert_raises_regex
-except ImportError:
-    # For Py 2.7
-    from nose.tools import assert_raises_regexp as assert_raises_regex
 
 
 # we use memory_profiler library for memory consumption checks

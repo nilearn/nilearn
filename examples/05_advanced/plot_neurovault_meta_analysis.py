@@ -15,7 +15,7 @@ import scipy
 
 from nilearn.datasets import fetch_neurovault_ids
 from nilearn import plotting
-from nilearn.image import new_img_like, load_img, math_img
+from nilearn.image import new_img_like, load_img, math_img, get_data
 
 
 ######################################################################
@@ -88,7 +88,7 @@ for this_meta in images_meta:
 
     # Convert data, create new image.
     z_img = new_img_like(
-        t_img, t_to_z(t_img.get_data(), deg_of_freedom=deg_of_freedom))
+        t_img, t_to_z(get_data(t_img), deg_of_freedom=deg_of_freedom))
 
     z_imgs.append(z_img)
 

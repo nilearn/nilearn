@@ -18,6 +18,7 @@ from .._utils.class_inspect import get_params
 from .._utils.compat import _basestring, izip
 from .._utils.niimg_conversions import _iter_check_niimg
 from .nifti_masker import NiftiMasker, filter_and_mask
+from nilearn.image import get_data
 
 
 class MultiNiftiMasker(NiftiMasker, CacheMixin):
@@ -227,7 +228,7 @@ class MultiNiftiMasker(NiftiMasker, CacheMixin):
         else:
             self.affine_ = self.mask_img_.affine
         # Load data in memory
-        self.mask_img_.get_data()
+        get_data(self.mask_img_)
         return self
 
     def transform_imgs(self, imgs_list, confounds=None, copy=True, n_jobs=1):

@@ -3,42 +3,46 @@
 # It doesn't operate on master branch. New branches are always built from scratch.
 # full-build always rebuilds from scratch, without any cache. Only for changes in master branch.
 
-version: 2
+version: 2.1
 
-jobs:
-  quick-build:
-    docker:
-      - image: circleci/python:3.6
-    environment:
-      DISTRIB: "conda"
-      PYTHON_VERSION: "3.6"
-      NUMPY_VERSION: "*"
-      SCIPY_VERSION: "*"
-      SCIKIT_LEARN_VERSION: "*"
-      JOBLIB_VERSION: "*"
-      MATPLOTLIB_VERSION: "*"
+commands:
 
+  preinstall:
+    description: "Cleans up unused packages; Updates system packages"
     steps:
-      - checkout
-        # Get rid of existing virtualenvs on circle ci as they conflict with conda.
-        # Trick found here:
-        # https://discuss.circleci.com/t/disable-autodetection-of-project-or-application-of-python-venv/235/10
-      - run: cd && rm -rf ~/.pyenv && rm -rf ~/virtualenvs
-        # We need to remove conflicting texlive packages.
-      - run: sudo -E apt-get -yq remove texlive-binaries --purge
-        # Installing required packages for `make -C doc check command` to work.
-      - run: sudo -E apt-get -yq update
-      - run: sudo -E apt-get -yq --no-install-suggests --no-install-recommends --force-yes install dvipng texlive-latex-base texlive-latex-extra
       - run:
-          name: Today & Week  # Saving today's date and current week of the year in files to generate daily & weekly new cache key respectively.
+          name: Remove conflicting packages
+          command: |
+            # Get rid of existing virtualenvs on circle ci as they conflict with conda.
+            # Trick found here:
+            # https://discuss.circleci.com/t/disable-autodetection-of-project-or-application-of-python-venv/235/10
+            cd && rm -rf ~/.pyenv && rm -rf ~/virtualenvs
+
+            # We need to remove conflicting texlive packages.
+            sudo -E apt-get -yq remove texlive-binaries --purge
+      - run:
+          name: Install packages for make -C doc check
+          command: |
+            # Installing required packages for `make -C doc check command` to work.
+            sudo -E apt-get -yq update
+            sudo -E apt-get -yq --no-install-suggests --no-install-recommends --force-yes install dvipng texlive-latex-base texlive-latex-extra
+
+  restore_from_cache:
+    description: "Restores the cache of previously built docs & python packages if present"
+    steps:
+      - run:
+          name: Generate cache keys from today's date for built docs & week number for python packages
           command: |
             date +%F > today
             date +%U > week_num
       - restore_cache:
-          key: v1-packages+datasets-{{ checksum "week_num" }}
+          key: v1-packages+datasets-{{ checksum "week_num" }}-{{ checksum ".circleci/packages-cache-timestamp" }}
       - restore_cache:
-          key: v1-docs-{{ .Branch }}-{{ checksum "today" }}-{{ checksum ".circleci/manual-cache-timestamp" }}
+          key: v1-docs-{{ .Branch }}-{{ checksum "today" }}-{{ checksum ".circleci/docs-cache-timestamp" }}
 
+  cache_aware_conda_setup:
+    description: "Downloads & installs conda if not restord by cache"
+    steps:
       - run:
           name: Download & install conda if absent
           command: |
@@ -64,34 +68,46 @@ jobs:
             else
               conda create -n testenv -yq
             fi
+
+  cache_ignorant_conda_setup:
+    description: "Downloads & installs only the fresh copy of conda."
+    steps:
+      - run:
+          name: setup conda afresh
+          command: |
+            wget https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh -O ~/miniconda.sh
+            chmod +x ~/miniconda.sh && ~/miniconda.sh -b
+            echo 'export PATH="$HOME/miniconda3/bin:$PATH"'  >> $BASH_ENV
+      - run: conda create -n testenv
+
+  install_dependencies:
+    description: "Installs the necessary Python packages"
+    steps:
       - run:
           name: Install packages in conda env
           command: |
-            conda install -n testenv python=3.6 numpy scipy scikit-learn matplotlib pandas \
+            conda install -n testenv python=3.7 numpy scipy scikit-learn matplotlib pandas \
             lxml mkl sphinx numpydoc pillow pandas -yq
             conda install -n testenv nibabel sphinx-gallery junit-xml -c conda-forge -yq
+
+  build_docs:
+    description: "Installs Nilearn & builds documentation using Sphinx's make html-strict"
+    steps:
       - run:
-          name: Running CircleCI test (make html)
+          name: Building documentation
           command: |
             source activate testenv
             pip install -e .
             set -o pipefail && cd doc && make html-strict 2>&1 | tee log.txt
           no_output_timeout: 7h
+
+  store_results:
+    description: "Stores build times and artifacts"
+    steps:
       - store_test_results:
           path: doc/_build/test-results
       - store_artifacts:
           path: doc/_build/test-results
-
-      - save_cache:
-          key: v1-packages+datasets-{{ checksum "week_num" }}
-          paths:
-            - ../nilearn_data
-            - ../miniconda3
-      - save_cache:
-          key: v1-docs-{{ .Branch }}-{{ checksum "today" }}-{{ checksum ".circleci/manual-cache-timestamp" }}
-          paths:
-            - doc
-
       - store_artifacts:
           path: doc/_build/html
       - store_artifacts:
@@ -99,13 +115,50 @@ jobs:
       - store_artifacts:
           path: doc/log.txt
 
+  save_to_cache:
+    description: "Caches the downloaded packages & buit docs."
+    steps:
+      - save_cache:
+          key: v1-packages+datasets-{{ checksum "week_num" }}
+          paths:
+            - ../nilearn_data
+            - ../miniconda3
+      - save_cache:
+          key: v1-docs-{{ .Branch }}-{{ checksum "today" }}-{{ checksum ".circleci/docs-cache-timestamp" }}
+          paths:
+            - doc
+
+
+jobs:
+
+  quick-build:
+    docker:
+      - image: circleci/python:3.7
+    environment:
+      DISTRIB: "conda"
+      PYTHON_VERSION: "3.7"
+      NUMPY_VERSION: "*"
+      SCIPY_VERSION: "*"
+      SCIKIT_LEARN_VERSION: "*"
+      JOBLIB_VERSION: "*"
+      MATPLOTLIB_VERSION: "*"
+
+    steps:
+      - checkout
+      - preinstall
+      - restore_from_cache
+      - cache_aware_conda_setup
+      - install_dependencies
+      - build_docs
+      - store_results
+      - save_to_cache
 
   full-build:
     docker:
-      - image: circleci/python:3.6
+      - image: circleci/python:3.7
     environment:
       DISTRIB: "conda"
-      PYTHON_VERSION: "3.6"
+      PYTHON_VERSION: "3.7"
       NUMPY_VERSION: "*"
       SCIPY_VERSION: "*"
       SCIKIT_LEARN_VERSION: "*"
@@ -113,42 +166,11 @@ jobs:
 
     steps:
       - checkout
-        # Get rid of existing virtualenvs on circle ci as they conflict with conda.
-        # Trick found here:
-        # https://discuss.circleci.com/t/disable-autodetection-of-project-or-application-of-python-venv/235/10
-      - run: cd && rm -rf ~/.pyenv && rm -rf ~/virtualenvs
-        # We need to remove conflicting texlive packages.
-      - run: sudo -E apt-get -yq remove texlive-binaries --purge
-        # Installing required packages for `make -C doc check command` to work.
-      - run: sudo -E apt-get -yq update
-      - run: sudo -E apt-get -yq --no-install-suggests --no-install-recommends --force-yes install dvipng texlive-latex-base texlive-latex-extra
-      - run: wget https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh -O ~/miniconda.sh
-      - run: chmod +x ~/miniconda.sh && ~/miniconda.sh -b
-      - run: echo 'export PATH="$HOME/miniconda3/bin:$PATH"'  >> $BASH_ENV
-      - run:
-          name: Install packages in conda env
-          command: |
-            conda create -n testenv python=3.6 numpy scipy scikit-learn matplotlib pandas \
-            lxml mkl sphinx numpydoc pillow pandas -yq
-            conda install -n testenv nibabel sphinx-gallery junit-xml -c conda-forge -yq
-      - run:
-          name: Running CircleCI test (make html)
-          command: |
-            source activate testenv
-            pip install -e .
-            set -o pipefail && cd doc && make html-strict 2>&1 | tee log.txt
-          no_output_timeout: 7h
-      - store_test_results:
-          path: doc/_build/test-results
-      - store_artifacts:
-          path: doc/_build/test-results
-
-      - store_artifacts:
-          path: doc/_build/html
-      - store_artifacts:
-          path: coverage
-      - store_artifacts:
-          path: doc/log.txt
+      - preinstall
+      - cache_ignorant_conda_setup
+      - install_dependencies
+      - build_docs
+      - store_results
 
 
 workflows:

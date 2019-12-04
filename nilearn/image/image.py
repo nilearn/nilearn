@@ -20,9 +20,28 @@ from .. import signal
 from .._utils import (check_niimg_4d, check_niimg_3d, check_niimg, as_ndarray,
                       _repr_niimgs)
 from .._utils.niimg_conversions import _index_img, _check_same_fov
-from .._utils.niimg import _safe_get_data
+from .._utils.niimg import _safe_get_data, _get_data
 from .._utils.compat import _basestring
 from .._utils.param_validation import check_threshold
+
+
+def get_data(img):
+    """Get the image data as a numpy array.
+
+    Parameters
+    ----------
+    img: Niimg-like object or iterable of Niimg-like objects
+        See http://nilearn.github.io/manipulating_images/input_output.html
+
+    Returns
+    -------
+    3-d or 4-d numpy array depending on the shape of `img`. This function
+    preserves the type of the image data. If `img` is an in-memory Nifti image
+    it returns the image data array itself -- not a copy.
+
+    """
+    img = check_niimg(img)
+    return _get_data(img)
 
 
 def high_variance_confounds(imgs, n_confounds=5, percentile=2.,
@@ -81,7 +100,7 @@ def high_variance_confounds(imgs, n_confounds=5, percentile=2.,
     else:
         # Load the data only if it doesn't need to be masked
         imgs = check_niimg_4d(imgs)
-        sigs = as_ndarray(imgs.get_data())
+        sigs = as_ndarray(get_data(imgs))
         # Not using apply_mask here saves memory in most cases.
         del imgs  # help reduce memory consumption
         sigs = np.reshape(sigs, (-1, sigs.shape[-1])).T
@@ -156,16 +175,18 @@ def _smooth_array(arr, affine, fwhm=None, ensure_finite=True, copy=True):
         are also accepted (only these coefficients are used).
         If fwhm='fast', the affine is not used and can be None
 
-    fwhm: scalar, numpy.ndarray, 'fast' or None
+    fwhm: scalar, numpy.ndarray/tuple/list, 'fast' or None
         Smoothing strength, as a full-width at half maximum, in millimeters.
-        If a scalar is given, width is identical on all three directions.
-        A numpy.ndarray must have 3 elements, giving the FWHM along each axis.
+        If a nonzero scalar is given, width is identical in all 3 directions.
+        A numpy.ndarray/list/tuple must have 3 elements,
+        giving the FWHM along each axis.
+        If any of the elements is zero or None,
+        smoothing is not performed along that axis.
         If fwhm == 'fast', a fast smoothing will be performed with
         a filter [0.2, 1, 0.2] in each direction and a normalisation
         to preserve the local average value.
         If fwhm is None, no filtering is performed (useful when just removal
         of non-finite values is needed).
-
 
     ensure_finite: bool
         if True, replace every non-finite values (like NaNs) by zero before
@@ -186,38 +207,34 @@ def _smooth_array(arr, affine, fwhm=None, ensure_finite=True, copy=True):
     """
     # Here, we have to investigate use cases of fwhm. Particularly, if fwhm=0.
     # See issue #1537
-    if fwhm == 0.:
+    if isinstance(fwhm, (int, float)) and (fwhm == 0.0):
         warnings.warn("The parameter 'fwhm' for smoothing is specified "
-                      "as {0}. Converting to None (no smoothing option)"
+                      "as {0}. Setting it to None "
+                      "(no smoothing will be performed)"
                       .format(fwhm))
         fwhm = None
-
     if arr.dtype.kind == 'i':
         if arr.dtype == np.int64:
             arr = arr.astype(np.float64)
         else:
-            # We don't need crazy precision
-            arr = arr.astype(np.float32)
+            arr = arr.astype(np.float32)  # We don't need crazy precision.
     if copy:
         arr = arr.copy()
-
     if ensure_finite:
         # SPM tends to put NaNs in the data outside the brain
         arr[np.logical_not(np.isfinite(arr))] = 0
-
-    if fwhm == 'fast':
+    if isinstance(fwhm, str) and (fwhm == 'fast'):
         arr = _fast_smooth_array(arr)
     elif fwhm is not None:
-        # Keep only the scale part.
-        affine = affine[:3, :3]
-
-        # Convert from a FWHM to a sigma:
-        fwhm_over_sigma_ratio = np.sqrt(8 * np.log(2))
+        fwhm = np.asarray(fwhm)
+        fwhm = np.where(fwhm == None, 0.0, fwhm)  # noqa: E711
+        affine = affine[:3, :3]  # Keep only the scale part.
+        fwhm_over_sigma_ratio = np.sqrt(8 * np.log(2))  # FWHM to sigma.
         vox_size = np.sqrt(np.sum(affine ** 2, axis=0))
         sigma = fwhm / (fwhm_over_sigma_ratio * vox_size)
         for n, s in enumerate(sigma):
-            ndimage.gaussian_filter1d(arr, s, output=arr, axis=n)
-
+            if s > 0.0:
+                ndimage.gaussian_filter1d(arr, s, output=arr, axis=n)
     return arr
 
 
@@ -266,7 +283,7 @@ def smooth_img(imgs, fwhm):
     for img in imgs:
         img = check_niimg(img)
         affine = img.affine
-        filtered = _smooth_array(img.get_data(), affine, fwhm=fwhm,
+        filtered = _smooth_array(get_data(img), affine, fwhm=fwhm,
                                  ensure_finite=True, copy=True)
         ret.append(new_img_like(img, filtered, affine, copy_header=True))
 
@@ -308,7 +325,7 @@ def _crop_img_to(img, slices, copy=True):
 
     img = check_niimg(img)
 
-    data = img.get_data()
+    data = get_data(img)
     affine = img.affine
 
     cropped_data = data[tuple(slices)]
@@ -368,7 +385,7 @@ def crop_img(img, rtol=1e-8, copy=True, pad=True, return_offset=False):
     """
 
     img = check_niimg(img)
-    data = img.get_data()
+    data = get_data(img)
     infinity_norm = max(-data.min(), data.max())
     passes_threshold = np.logical_or(data < -rtol * infinity_norm,
                                      data > rtol * infinity_norm)
@@ -448,7 +465,7 @@ def _compute_mean(imgs, target_affine=None,
         target_affine=target_affine, target_shape=target_shape,
         copy=False)
     affine = mean_data.affine
-    mean_data = mean_data.get_data()
+    mean_data = get_data(mean_data)
 
     if smooth:
         nan_mask = np.isnan(mean_data)
@@ -565,7 +582,7 @@ def swap_img_hemispheres(img):
     img = reorder_img(img)
 
     # create swapped nifti object
-    out_img = new_img_like(img, img.get_data()[::-1], img.affine,
+    out_img = new_img_like(img, get_data(img)[::-1], img.affine,
                            copy_header=True)
 
     return out_img
@@ -610,6 +627,17 @@ def index_img(imgs, index):
      >>> single_mni_image = index_img(joint_mni_image, 1)
      >>> print(single_mni_image.shape)
      (91, 109, 91)
+
+    We can also select multiple frames using the `slice` constructor::
+
+     >>> five_mni_images = concat_imgs([datasets.load_mni152_template()] * 5)
+     >>> print(five_mni_images.shape)
+     (91, 109, 91, 5)
+    
+     >>> first_three_images = index_img(five_mni_images,
+     ...                                slice(0, 3))
+     >>> print(first_three_images.shape)
+     (91, 109, 91, 3)
     """
     imgs = check_niimg_4d(imgs)
     # duck-type for pandas arrays, and select the 'values' attr
@@ -665,9 +693,11 @@ def new_img_like(ref_niimg, data, affine=None, copy_header=False):
     orig_ref_niimg = ref_niimg
     if (not isinstance(ref_niimg, _basestring)
             and not hasattr(ref_niimg, 'get_data')
+            and not hasattr(ref_niimg, 'get_fdata')
             and hasattr(ref_niimg, '__iter__')):
         ref_niimg = ref_niimg[0]
-    if not (hasattr(ref_niimg, 'get_data')
+    if not ((hasattr(ref_niimg, 'get_data')
+             or hasattr(ref_niimg, 'get_fdata'))
               and hasattr(ref_niimg, 'affine')):
         if isinstance(ref_niimg, _basestring):
             ref_niimg = nibabel.load(ref_niimg)
@@ -685,18 +715,23 @@ def new_img_like(ref_niimg, data, affine=None, copy_header=False):
     header = None
     if copy_header:
         header = copy.deepcopy(ref_niimg.header)
-        if 'scl_slope' in header:
-            header['scl_slope'] = 0.
-        if 'scl_inter' in header:
-            header['scl_inter'] = 0.
-        # 'glmax' is removed for Nifti2Image. Modify only if 'glmax' is
-        # available in header. See issue #1611
-        if 'glmax' in header:
-            header['glmax'] = 0.
-        if 'cal_max' in header:
-            header['cal_max'] = np.max(data) if data.size > 0 else 0.
-        if 'cal_min' in header:
-            header['cal_min'] = np.min(data) if data.size > 0 else 0.
+        try:
+            'something' in header
+        except TypeError:
+            pass
+        else:
+            if 'scl_slope' in header:
+                header['scl_slope'] = 0.
+            if 'scl_inter' in header:
+                header['scl_inter'] = 0.
+            # 'glmax' is removed for Nifti2Image. Modify only if 'glmax' is
+            # available in header. See issue #1611
+            if 'glmax' in header:
+                header['glmax'] = 0.
+            if 'cal_max' in header:
+                header['cal_max'] = np.max(data) if data.size > 0 else 0.
+            if 'cal_min' in header:
+                header['cal_min'] = np.min(data) if data.size > 0 else 0.
     klass = ref_niimg.__class__
     if klass is nibabel.Nifti1Pair:
         # Nifti1Pair is an internal class, without a to_filename,
@@ -972,7 +1007,7 @@ def clean_img(imgs, sessions=None, detrend=True, standardize=True,
     if mask_img is not None:
         signals = masking.apply_mask(imgs_, mask_img)
     else:
-        signals = imgs_.get_data().reshape(-1, imgs_.shape[-1]).T
+        signals = get_data(imgs_).reshape(-1, imgs_.shape[-1]).T
 
     # Clean signal
     data = signal.clean(
@@ -1002,8 +1037,8 @@ def load_img(img, wildcards=True, dtype=None):
         If niimg is a string, consider it as a path to Nifti image and
         call nibabel.load on it. The '~' symbol is expanded to the user home
         folder.
-        If it is an object, check if get_data()
-        and affine attributes are present, raise TypeError otherwise.
+        If it is an object, check if affine attribute is present, raise
+        TypeError otherwise.
 
     wildcards: bool, optional
         Use niimg as a regular expression to get a list of matching input
@@ -1022,7 +1057,8 @@ def load_img(img, wildcards=True, dtype=None):
     -------
     result: 3D/4D Niimg-like object
         Result can be nibabel.Nifti1Image or the input, as-is. It is guaranteed
-        that the returned object has get_data() and affine attributes.
+        that the returned object has an affine attributes and that
+        nilearn.image.get_data returns its data.
     """
     return check_niimg(img, wildcards=wildcards, dtype=dtype)
 

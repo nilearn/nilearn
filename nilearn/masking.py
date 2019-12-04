@@ -15,6 +15,7 @@ from .image import new_img_like
 from ._utils.cache_mixin import cache
 from ._utils.ndimage import largest_connected_component, get_border_data
 from ._utils.niimg import _safe_get_data, img_data_dtype
+from nilearn.image import get_data
 
 
 class MaskWarning(UserWarning):
@@ -42,7 +43,7 @@ def _load_mask_img(mask_img, allow_empty=False):
         boolean version of the mask
     """
     mask_img = _utils.check_niimg_3d(mask_img)
-    mask = mask_img.get_data()
+    mask = get_data(mask_img)
     values = np.unique(mask)
 
     if len(values) == 1:
@@ -570,12 +571,12 @@ def compute_gray_matter_mask(target_img, threshold=.5,
     template = load_mni152_brain_mask()
     dtype = img_data_dtype(target_img)
     template = new_img_like(template,
-                            template.get_data().astype(dtype))
+                            get_data(template).astype(dtype))
 
     from .image.resampling import resample_to_img
     resampled_template = cache(resample_to_img, memory)(template, target_img)
 
-    mask = resampled_template.get_data() >= threshold
+    mask = get_data(resampled_template) >= threshold
 
     mask, affine = _post_process_mask(mask, target_img.affine, opening=opening,
                                       connected=connected,
@@ -721,7 +722,7 @@ def _apply_mask_fmri(imgs, mask_img, dtype='f',
 
     mask_img = _utils.check_niimg_3d(mask_img)
     mask_affine = mask_img.affine
-    mask_data = _utils.as_ndarray(mask_img.get_data(),
+    mask_data = _utils.as_ndarray(get_data(mask_img),
                                   dtype=np.bool)
 
     if smoothing_fwhm is not None:

@@ -9,8 +9,7 @@ import numpy as np
 import numbers
 
 import nibabel
-from sklearn.datasets.base import Bunch
-from sklearn.utils import deprecated
+from sklearn.utils import Bunch, deprecated
 
 from .utils import (_get_dataset_dir, _fetch_files, _get_dataset_descr,
                     _read_md5_sum_file, _tree, _filter_columns, _fetch_file)
@@ -18,6 +17,7 @@ from .._utils import check_niimg
 from .._utils.compat import BytesIO, _basestring, _urllib
 from .._utils.numpy_conversions import csv_to_array
 from .._utils.exceptions import VisibleDeprecationWarning
+from nilearn.image import get_data
 
 
 @deprecated("fetch_haxby_simple will be removed in future releases. "
@@ -1317,7 +1317,7 @@ def _load_mixed_gambles(zmap_imgs):
     mask = []
     for zmap_img in zmap_imgs:
         # load subject data
-        this_X = zmap_img.get_data()
+        this_X = get_data(zmap_img)
         affine = zmap_img.affine
         finite_mask = np.all(np.isfinite(this_X), axis=-1)
         this_mask = np.logical_and(np.all(this_X != 0, axis=-1),
@@ -1909,7 +1909,8 @@ def _fetch_development_fmri_participants(data_dir, url, verbose):
     return participants
 
 
-def _fetch_development_fmri_functional(participants, data_dir, url, verbose):
+def _fetch_development_fmri_functional(participants, data_dir, url, resume,
+                                       verbose):
     """Helper function to fetch_development_fmri.
 
     This function helps in downloading functional MRI data in Nifti
@@ -1930,6 +1931,9 @@ def _fetch_development_fmri_functional(participants, data_dir, url, verbose):
     url: str, optional
         Override download URL. Used for test only (or if you setup a mirror of
         the data). Default: None
+
+    resume: bool, optional (default True)
+        Whether to resume download of a partly-downloaded file.
 
     verbose: int
         Defines the level of verbosity of the output.
@@ -1980,13 +1984,15 @@ def _fetch_development_fmri_functional(participants, data_dir, url, verbose):
         func_url = url.format(this_osf_id['key_b'][0])
         func_file = [(func.format(participant_id, participant_id), func_url,
                       {'move': func.format(participant_id)})]
-        path_to_func = _fetch_files(data_dir, func_file, verbose=verbose)[0]
+        path_to_func = _fetch_files(data_dir, func_file, resume=resume,
+                                    verbose=verbose)[0]
         funcs.append(path_to_func)
     return funcs, regressors
 
 
 def fetch_development_fmri(n_subjects=None, reduce_confounds=True,
-                           data_dir=None, resume=True, verbose=1):
+                           data_dir=None, resume=True, verbose=1,
+                           age_group='both'):
     """Fetch movie watching based brain development dataset (fMRI)
 
     The data is downsampled to 4mm resolution for convenience. The origin of
@@ -2018,6 +2024,12 @@ def fetch_development_fmri(n_subjects=None, reduce_confounds=True,
     verbose: int, optional (default 1)
         Defines the level of verbosity of the output.
 
+    age_group: str, optional (default 'both')
+        Which age group to fetch
+        - 'adults' = fetch adults only (n=33, ages 18-39)
+        - 'child' = fetch children only (n=122, ages 3-12)
+        - 'both' = fetch full sample (n=155)
+
     Returns
     -------
     data: Bunch
@@ -2042,6 +2054,10 @@ def fetch_development_fmri(n_subjects=None, reduce_confounds=True,
     Science Framework (OSF). Located here: https://osf.io/5hju4/files/
 
     Preprocessing details: https://osf.io/wjtyq/
+
+    Note that if n_subjects > 2, and age_group is 'both',
+    fetcher will return a ratio of children and adults representative
+    of the total sample.
 
     References
     ----------
@@ -2069,52 +2085,104 @@ def fetch_development_fmri(n_subjects=None, reduce_confounds=True,
                                                         url=None,
                                                         verbose=verbose)
 
-    max_subjects = len(participants)
+    adult_count, child_count = _filter_func_regressors_by_participants(
+            participants, age_group)  # noqa: E126
+    max_subjects = adult_count + child_count
+
+    n_subjects = _set_invalid_n_subjects_to_max(n_subjects,
+                                                max_subjects,
+                                                age_group)
+
+    # To keep the proportion of children versus adults
+    percent_total = float(n_subjects) / max_subjects
+    n_child = np.round(percent_total * child_count).astype(int)
+    n_adult = np.round(percent_total * adult_count).astype(int)
+
+    # We want to return adults by default (i.e., `age_group=both`) or
+    # if explicitly requested.
+    if (age_group != 'child') and (n_subjects == 1):
+        n_adult, n_child = 1, 0
+
+    if (age_group == 'both') and (n_subjects == 2):
+        n_adult, n_child = 1, 1
+
+    participants = _filter_csv_by_n_subjects(participants, n_adult, n_child)
+
+    funcs, regressors = _fetch_development_fmri_functional(participants,
+                                                           data_dir=data_dir,
+                                                           url=None,
+                                                           resume=resume,
+                                                           verbose=verbose)
+
+    if reduce_confounds:
+        regressors = _reduce_confounds(regressors, keep_confounds)
+    return Bunch(func=funcs, confounds=regressors, phenotypic=participants,
+                 description=fdescr)
+
+
+def _filter_func_regressors_by_participants(participants, age_group):
+    """ Filter functional and regressors based on participants
+    """
+    valid_age_groups = ('both', 'child', 'adult')
+    if age_group not in valid_age_groups:
+        raise ValueError("Wrong value for age_group={0}. "
+                         "Valid arguments are: {1}".format(age_group,
+                                                           valid_age_groups)
+                         )
+
+    child_adult = participants['Child_Adult'].tolist()
+
+    if age_group != 'adult':
+        child_count = child_adult.count('child')
+    else:
+        child_count = 0
+
+    if age_group != 'child':
+        adult_count = child_adult.count('adult')
+    else:
+        adult_count = 0
+    return adult_count, child_count
+
+
+def _filter_csv_by_n_subjects(participants, n_adult, n_child):
+    """Restrict the csv files to the adequate number of subjects
+    """
+    child_ids = participants[participants['Child_Adult'] ==
+                             'child']['participant_id'][:n_child]
+    adult_ids = participants[participants['Child_Adult'] ==
+                             'adult']['participant_id'][:n_adult]
+    ids = np.hstack([adult_ids, child_ids])
+    participants = participants[np.in1d(participants['participant_id'], ids)]
+    participants = participants[np.argsort(participants, order='Child_Adult')]
+    return participants
+
+
+def _set_invalid_n_subjects_to_max(n_subjects, max_subjects, age_group):
+    """ If n_subjects is invalid, sets it to max.
+    """
     if n_subjects is None:
         n_subjects = max_subjects
 
     if (isinstance(n_subjects, numbers.Number) and
             ((n_subjects > max_subjects) or (n_subjects < 1))):
         warnings.warn("Wrong value for n_subjects={0}. The maximum "
-                      "value will be used instead n_subjects={1}"
-                      .format(n_subjects, max_subjects))
+                      "value (for age_group={1}) will be used instead: "
+                      "n_subjects={2}"
+                      .format(n_subjects, age_group, max_subjects))
         n_subjects = max_subjects
+    return n_subjects
 
-    # Download functional and regressors based on participants
-    child_count = participants['Child_Adult'].tolist().count('child')
-    adult_count = participants['Child_Adult'].tolist().count('adult')
 
-    # To keep the proportion of children versus adults
-    n_child = np.round(float(n_subjects) / max_subjects * child_count).astype(int)
-    n_adult = np.round(float(n_subjects) / max_subjects * adult_count).astype(int)
-
-    # First, restrict the csv files to the adequate number of subjects
-    child_ids = participants[participants['Child_Adult'] ==
-                             'child']['participant_id'][:n_child]
-    adult_ids = participants[participants['Child_Adult'] ==
-                             'adult']['participant_id'][:n_adult]
-    ids = np.hstack([child_ids, adult_ids])
-    participants = participants[np.in1d(participants['participant_id'],
-                                        ids)]
-
-    funcs, regressors = _fetch_development_fmri_functional(participants,
-                                                           data_dir=data_dir,
-                                                           url=None,
-                                                           verbose=verbose)
-
-    if reduce_confounds:
-        reduced_regressors = []
-        for in_file in regressors:
-            out_file = in_file.replace('desc-confounds',
-                                       'desc-reducedConfounds')
-            if not os.path.isfile(out_file):
-                confounds = np.recfromcsv(in_file, delimiter='\t')
-                selected_confounds = confounds[keep_confounds]
-                header = '\t'.join(selected_confounds.dtype.names)
-                np.savetxt(out_file, np.array(selected_confounds.tolist()),
-                           header=header, delimiter='\t', comments='')
-            reduced_regressors.append(out_file)
-        regressors = reduced_regressors
-
-    return Bunch(func=funcs, confounds=regressors, phenotypic=participants,
-                 description=fdescr)
+def _reduce_confounds(regressors, keep_confounds):
+    reduced_regressors = []
+    for in_file in regressors:
+        out_file = in_file.replace('desc-confounds',
+                                   'desc-reducedConfounds')
+        if not os.path.isfile(out_file):
+            confounds = np.recfromcsv(in_file, delimiter='\t')
+            selected_confounds = confounds[keep_confounds]
+            header = '\t'.join(selected_confounds.dtype.names)
+            np.savetxt(out_file, np.array(selected_confounds.tolist()),
+                       header=header, delimiter='\t', comments='')
+        reduced_regressors.append(out_file)
+    return reduced_regressors

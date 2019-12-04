@@ -18,6 +18,7 @@ from .path_finding import _resolve_globbing
 from .compat import _basestring, izip
 
 from .exceptions import DimensionError
+from .niimg import _get_data
 
 
 def _check_fov(img, affine, shape):
@@ -72,7 +73,7 @@ def _index_img(img, index):
 
     """Helper function for check_niimg_4d."""
     return new_img_like(
-        img, img.get_data()[:, :, :, index], img.affine,
+        img, _get_data(img)[:, :, :, index], img.affine,
         copy_header=True)
 
 
@@ -178,8 +179,8 @@ def check_niimg(niimg, ensure_ndim=None, atleast_4d=False, dtype=None,
         If niimg is a string, consider it as a path to Nifti image and
         call nibabel.load on it. The '~' symbol is expanded to the user home
         folder.
-        If it is an object, check if the get_data() method
-        and affine attribute are present, raise TypeError otherwise.
+        If it is an object, check if the affine attribute present and that
+        nilearn.image.get_data returns a result, raise TypeError otherwise.
 
     ensure_ndim: integer {3, 4}, optional
         Indicate the dimensionality of the expected niimg. An
@@ -208,7 +209,8 @@ def check_niimg(niimg, ensure_ndim=None, atleast_4d=False, dtype=None,
     -------
     result: 3D/4D Niimg-like object
         Result can be nibabel.Nifti1Image or the input, as-is. It is guaranteed
-        that the returned object has get_data() method and affine attribute.
+        that the returned object has an affine attribute and that its data can
+        be retrieved with nilearn.image.get_data.
 
     Notes
     -----
@@ -266,7 +268,7 @@ def check_niimg(niimg, ensure_ndim=None, atleast_4d=False, dtype=None,
         affine = niimg.affine
         niimg = new_img_like(niimg, data[:, :, :, 0], affine)
     if atleast_4d and len(niimg.shape) == 3:
-        data = niimg.get_data().view()
+        data = _get_data(niimg).view()
         data.shape = data.shape + (1, )
         niimg = new_img_like(niimg, data, niimg.affine)
 
@@ -286,8 +288,9 @@ def check_niimg_3d(niimg, dtype=None):
     niimg: Niimg-like object
         See http://nilearn.github.io/manipulating_images/input_output.html
         If niimg is a string, consider it as a path to Nifti image and
-        call nibabel.load on it. If it is an object, check if the get_data()
-        method and affine attribute are present, raise TypeError otherwise.
+        call nibabel.load on it.
+        If it is an object, check if the affine attribute present and that
+        nilearn.image.get_data returns a result, raise TypeError otherwise.
 
     dtype: {dtype, "auto"}
         Data type toward which the data should be converted. If "auto", the
@@ -298,7 +301,8 @@ def check_niimg_3d(niimg, dtype=None):
     -------
     result: 3D Niimg-like object
         Result can be nibabel.Nifti1Image or the input, as-is. It is guaranteed
-        that the returned object has get_data() method and affine attribute.
+        that the returned object has an affine attribute and that its data can
+        be retrieved with nilearn.image.get_data.
 
     Notes
     -----
@@ -322,8 +326,9 @@ def check_niimg_4d(niimg, return_iterator=False, dtype=None):
         If niimgs is an iterable, checks if data is really 4D. Then,
         considering that it is a list of niimg and load them one by one.
         If niimg is a string, consider it as a path to Nifti image and
-        call nibabel.load on it. If it is an object, check if the get_data()
-        method and affine attribute are present, raise an Exception otherwise.
+        call nibabel.load on it.
+        If it is an object, check if the affine attribute present and that
+        nilearn.image.get_data returns a result, raise TypeError otherwise.
 
     dtype: {dtype, "auto"}
         Data type toward which the data should be converted. If "auto", the
@@ -445,7 +450,7 @@ def concat_niimgs(niimgs, dtype=np.float32, ensure_ndim=None,
 
     target_shape = first_niimg.shape[:3]
     if dtype == None:
-        dtype = first_niimg.get_data().dtype
+        dtype = _get_data(first_niimg).dtype
     data = np.ndarray(target_shape + (sum(lengths), ),
                       order="F", dtype=dtype)
     cur_4d_index = 0
@@ -460,7 +465,7 @@ def concat_niimgs(niimgs, dtype=np.float32, ensure_ndim=None,
                 nii_str = "image #" + str(index)
             print("Concatenating {0}: {1}".format(index + 1, nii_str))
 
-        data[..., cur_4d_index:cur_4d_index + size] = niimg.get_data()
+        data[..., cur_4d_index:cur_4d_index + size] = _get_data(niimg)
         cur_4d_index += size
 
     return new_img_like(first_niimg, data, first_niimg.affine, copy_header=True)
