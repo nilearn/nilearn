@@ -116,7 +116,7 @@ def img_to_signals_labels(imgs, labels_img, mask_img=None,
         labels_data[np.logical_not(mask_data)] = background_label
 
     data = _safe_get_data(imgs)
-    target_datatype = np.float64
+    target_datatype = np.float
     # Nilearn issue: 2135, PR: 2195 for why this is necessary.
     signals = np.ndarray((data.shape[-1], len(labels)), order=order,
                          dtype=target_datatype)
