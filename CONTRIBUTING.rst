@@ -23,7 +23,7 @@ Opening an issue
 Nilearn uses issues for tracking bugs, requesting potential features, and
 holding project discussions.
 
-Labels can be assigned a variety of issues, such as:
+Core developers can assign labels on issues, such as:
 
 - |Discussion| These issues discuss ongoing discussions on the project where community feedback is requested.
 - |Enhancement| These issues discuss potential enhancements or additions to the project.
