@@ -214,6 +214,9 @@ class NiftiLabelsMasker(BaseMasker, CacheMixin):
 
             mask_data, mask_affine = masking._load_mask_img(self.mask_img_)
 
+        if not hasattr(self, '_resampled_labels_img_'):
+            self._resampled_labels_img_ = self.labels_img_
+
         return self
 
     def fit_transform(self, imgs, confounds=None):

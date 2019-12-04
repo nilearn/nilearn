@@ -66,6 +66,11 @@ def test_nifti_labels_masker():
     signals11 = masker11.fit().transform(fmri11_img)
     assert_equal(signals11.shape, (length, n_regions))
 
+    # No exception should be raised either
+    masker11 = NiftiLabelsMasker(labels11_img, resampling_target=None)
+    masker11.fit()
+    masker11.inverse_transform(signals11)
+
     masker11 = NiftiLabelsMasker(labels11_img, mask_img=mask11_img,
                                  resampling_target=None)
     signals11 = masker11.fit().transform(fmri11_img)
