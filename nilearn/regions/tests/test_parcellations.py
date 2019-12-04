@@ -75,7 +75,7 @@ def test_parcellations_no_warnings():
     parcellator_n7 = Parcellations(method='kmeans', n_parcels=1)
     with pytest.warns(None) as record:
         parcellator_n7.fit(img)
-    assert [r.category is not UserWarning for r in record.list]
+    assert all([r.category is not UserWarning for r in record.list])
 
 
 def test_parcellations_fit_on_multi_nifti_images():
