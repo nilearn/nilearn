@@ -414,24 +414,24 @@ def test__trim_maps():
     np.testing.assert_equal(np.asarray(list(range(4))), maps_i_indices)
 
 
-@pytest.mark.parametrize('orig_dtype',
+@pytest.mark.parametrize('target_dtype',
                          (np.float, np.float32, np.float64, np.int, np.uint),
                          )
-def test_img_to_signals_labels_int_type(orig_dtype):
-    fake_fmri_data = np.random.RandomState(0).rand(10, 10, 10, 10, ) > 0.5
-    fake_affine = np.random.rand(4, 4)
+def test_img_to_signals_labels_int_type(target_dtype):
+    fake_fmri_data = np.random.RandomState(0).rand(10, 10, 10, 10) > 0.5
+    fake_affine = np.random.rand(4, 4).astype(np.float64)
     fake_fmri_img_orig = nibabel.Nifti1Image(
-                                        fake_fmri_data.astype(orig_dtype),
+                                        fake_fmri_data.astype(np.float64),
                                         fake_affine,
                                         )
-    fake_fmri_img_int = new_img_like(fake_fmri_img_orig,
-                                     fake_fmri_data.astype(np.int))
+    fake_fmri_img_target_dtype = new_img_like(fake_fmri_img_orig,
+                                     fake_fmri_data.astype(target_dtype))
     fake_mask_data = np.ones((10, 10, 10), dtype=np.uint8)
     fake_mask = nibabel.Nifti1Image(fake_mask_data, fake_affine)
 
     masker = NiftiLabelsMasker(fake_mask)
     masker.fit()
-    timeseries_int = masker.transform(fake_fmri_img_int)
+    timeseries_int = masker.transform(fake_fmri_img_target_dtype)
     timeseries_float = masker.transform(fake_fmri_img_orig)
     assert np.sum(timeseries_int) != 0
     assert np.array_equiv(timeseries_int, timeseries_float)

@@ -118,7 +118,6 @@ def img_to_signals_labels(imgs, labels_img, mask_img=None,
     data = _safe_get_data(imgs)
     target_datatype = np.float64
     # Nilearn issue: 2135, PR: 2195 for why this is necessary.
-    # Anything except float64 leads to precsion errors in some case.
     signals = np.ndarray((data.shape[-1], len(labels)), order=order,
                          dtype=target_datatype)
     reduction_function = getattr(ndimage.measurements, strategy)
