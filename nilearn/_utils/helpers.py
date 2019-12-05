@@ -2,10 +2,10 @@ import functools
 import warnings
 
 
-def replace_parameters(replacement_params,
-                       end_version='future',
-                       lib_name='Nilearn',
-                       ):
+def rename_parameters(replacement_params,
+                      end_version='future',
+                      lib_name='Nilearn',
+                      ):
     """
     Decorator to deprecate & replace specificied parameters
     in the decorated functions and methods
