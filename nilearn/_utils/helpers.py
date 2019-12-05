@@ -74,8 +74,7 @@ def _warn_deprecated_params(replacement_params, end_version, lib_name, kwargs):
                                                             replacement_param,
                                                             )
         )
-        warnings.filterwarnings('always', message=param_deprecation_msg)
-        warnings.warn(category=DeprecationWarning,
+        warnings.warn(category=FutureWarning,
                       message=param_deprecation_msg,
                       stacklevel=3)
 
