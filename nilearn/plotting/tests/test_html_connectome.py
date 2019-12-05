@@ -66,7 +66,7 @@ def test_view_connectome():
                                            linewidth=8.5, node_size=4.2)
     check_html(html, False, 'connectome-plot')
     html = html_connectome.view_connectome(
-        adj, coord, '85.3%', linewidth=8.5, marker_size=np.arange(len(coord)))
+        adj, coord, '85.3%', linewidth=8.5, node_size=np.arange(len(coord)))
     check_html(html, False, 'connectome-plot')
 
 

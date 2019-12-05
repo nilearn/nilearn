@@ -493,7 +493,7 @@ Or you can save it to an html file::
 
 :func:`view_connectome`: 3D plot of a connectome::
 
-      >>> view = plotting.view_connectome(correlation_matrix, coords, threshold='90%')    # doctest: +SKIP
+      >>> view = plotting.view_connectome(correlation_matrix, coords, edge_threshold='90%')    # doctest: +SKIP
       >>> view.open_in_browser() # doctest: +SKIP
 
 
