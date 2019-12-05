@@ -22,13 +22,14 @@ Searchlights are also not limited to classification; regression (e.g.,
 `Kahnt et al, 2011
 <https://www.sciencedirect.com/science/article/pii/S0896627311002960?via%3Dihub>`_) 
 and representational similarity analysis (e.g., `Clarke and Tyler, 2014 
-<https://www.jneurosci.org/content/34/14/4766.short>`_) can also be 
-performed. 
+<https://www.jneurosci.org/content/34/14/4766.short>`_) are other uses of 
+searchlights. Currently, only classification and regression are supported 
+in nilearn.
 
 .. topic:: **Further Reading**
     
     For a critical review on searchlights, see `Etzel et al (2013) 
-    <https://www.sciencedirect.com/science/article/pii/S1053811913002917>`_. 
+    <https://www.sciencedirect.com/science/article/pii/S1053811913002917>`_.
 
 
 Preparing the data
@@ -42,20 +43,20 @@ Masking
 -------
 
 One of the main elements that distinguish Searchlight from other algorithms is
-the notion of structuring element that scans the entire volume. If this seems
-rather intuitive, it has in fact an impact on the masking procedure.
+the notion of structuring element that scans the entire volume. This has an 
+impact on the masking procedure.
 
-Most of the time, fMRI data is masked and then given to the algorithm. This is
-not possible in the case of Searchlight because, to compute the score of
-non-masked voxels, some masked voxels may be needed. This is why two masks will
-be used here :
+Two masks are used with :class:`Searchlight`:
 
 - *mask_img* is the anatomical mask
-- *process_mask_img* is a subset of mask and contains voxels to be processed.
+- *process_mask_img* is a subset of the brain mask and defines the boundaries 
+  of where the searchlight scans the volume. Often times we are interested in
+  only performing a searchlight within a specific area of the brain (e.g., 
+  frontal cortex). If no *process_mask_img* is set, then Searchlight defaults
+  to performing a searchlight over the whole brain.  
 
-*process_mask_img* will then be used to restrain computation and *mask_img* will 
-ensure that no value outside the brain is taken into account when iterating 
-with the sphere.
+*mask_img* ensures that only voxels with useable signals are included in the 
+searchlight. This could be a full-brain mask or a gray-matter mask. 
 
 
 Setting up the searchlight
@@ -108,8 +109,10 @@ Sphere radius
 An important parameter is the radius of the sphere that will run through 
 the data. The sphere size determines the number of voxels/features to use 
 for classification (i.e. more voxels are included with larger spheres). 
-Note that :class:`SearchLight` defines sphere radius in milimeters; the
-number of voxels included in the sphere will depend on the voxel size. 
+
+.. note::
+    :class:`SearchLight` defines sphere radius in milimeters; the number 
+    of voxels included in the sphere will depend on the voxel size. 
 
 For reference, Kriegskorte et al. use a 4mm radius because it yielded 
 the best detection performance in their simulation of 2mm isovoxel data.
@@ -122,8 +125,8 @@ Searchlight
 
 The results of the searchlight can be found in the `scores_` attribute of the 
 :class:`SearchLight` object after fitting it to the data. Below is a 
-visualization of the results from `Searchlight analysis of face 
-vs house recognition <sphx-glr-auto-examples-02-decoding-plot-haxby-searchlight-py>`.
+visualization of the results from :ref:`Searchlight analysis of face 
+vs house recognition <sphx_glr_auto_examples_02_decoding_plot_haxby_searchlight_py>`.
 We can see here that voxels in the visual cortex contains information 
 to distinguish pictures showed to the volunteers, which was the
 expected result.
@@ -243,5 +246,4 @@ viewing faces.
 .. topic:: **Example code**
 
    All the steps discussed in this section can be seen implemented in
-   :ref:`a full code example
-    <sphx_glr_auto_examples_02_decoding_plot_haxby_searchlight.py>`.
+   :ref:`a full code example <sphx_glr_auto_examples_02_decoding_plot_haxby_searchlight.py>`.
