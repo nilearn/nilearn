@@ -3,7 +3,7 @@ import json
 import numpy as np
 from scipy import sparse
 
-from nilearn._utils import replace_parameters
+from nilearn._utils import rename_parameters
 from .. import datasets
 from . import cm
 
