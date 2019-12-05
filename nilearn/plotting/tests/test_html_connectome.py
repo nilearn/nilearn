@@ -135,7 +135,7 @@ def test_params_deprecation_view_connectome():
     old_params = ['coords', 'threshold', 'cmap', 'marker_size']
     for old_param_, raised_warning_ in zip(old_params, raised_warnings):
         assert warning_msgs[old_param_] == str(raised_warning_.message)
-        assert raised_warning_.category is DeprecationWarning
+        assert raised_warning_.category is FutureWarning
 
 
 def test_get_markers():
@@ -199,4 +199,4 @@ def test_params_deprecation_view_markers():
     assert len(raised_warnings) == 2
     for old_param_, raised_warning_ in zip(old_params, raised_warnings):
         assert warning_msgs[old_param_] == str(raised_warning_.message)
-        assert raised_warning_.category is DeprecationWarning
+        assert raised_warning_.category is FutureWarning
