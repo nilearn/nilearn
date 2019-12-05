@@ -99,10 +99,6 @@ def _replacement_params_view_connectome():
     }
 
 
-@replace_parameters(replacement_params=_replacement_params_view_connectome(),
-                    end_version='0.6.0',
-                    lib_name='Nilearn'
-                    )
 def view_connectome(adjacency_matrix, node_coords, edge_threshold=None,
                     edge_cmap=cm.bwr, symmetric_cmap=True,
                     linewidth=6., node_size=3., colorbar=True,
@@ -199,10 +195,6 @@ def _replacement_params_view_markers():
             }
 
 
-@replace_parameters(replacement_params=_replacement_params_view_markers(),
-                    end_version='0.6.0',
-                    lib_name='Nilearn',
-                    )
 def view_markers(marker_coords, marker_color=None, marker_size=5.,
                  title=None, title_fontsize=25):
     """
