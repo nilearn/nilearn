@@ -86,19 +86,6 @@ def _make_connectome_html(connectome_info, embed_js=True):
     return ConnectomeView(as_html)
 
 
-def _replacement_params_view_connectome():
-    """ Returns a dict containing deprecated & replacement parameters
-        as key-value pair for view_connectome().
-        Avoids cluttering the global namespace.
-    """
-    return {
-        'coords': 'node_coords',
-        'threshold': 'edge_threshold',
-        'cmap': 'edge_cmap',
-        'marker_size': 'node_size',
-    }
-
-
 def view_connectome(adjacency_matrix, node_coords, edge_threshold=None,
                     edge_cmap=cm.bwr, symmetric_cmap=True,
                     linewidth=6., node_size=3., colorbar=True,
@@ -183,16 +170,6 @@ def view_connectome(adjacency_matrix, node_coords, edge_threshold=None,
     connectome_info['title'] = title
     connectome_info['title_fontsize'] = title_fontsize
     return _make_connectome_html(connectome_info)
-
-
-def _replacement_params_view_markers():
-    """ Returns a dict containing deprecated & replacement parameters
-        as key-value pair for view_markers().
-        Avoids cluttering the global namespace.
-    """
-    return {'coords': 'marker_coords',
-            'colors': 'marker_color',
-            }
 
 
 def view_markers(marker_coords, marker_color=None, marker_size=5.,

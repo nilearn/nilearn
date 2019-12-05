@@ -3,6 +3,14 @@
 
 NEW
 ---
+.. warning::
+
+  - :func:`nilearn.plotting.view_connectome` no longer accepts old parameter names.
+  Instead of `coords`, `threshold`, `cmap`, `marker_size`,
+  use `node_coords`, `edge_threshold`, `edge_cmap`, `node_size` respectively.
+
+  - :func:`nilearn.plotting.view_marker` no longer accepts old parameter names.
+  Instead of `coord`, `color` use `marker_coords`, `marker_color` respectively.
 
 - **Support for Python3.5 wil be removed in the 0.7.x release.**
   Users with a Python3.5 environment will be warned
