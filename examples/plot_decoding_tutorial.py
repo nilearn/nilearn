@@ -48,7 +48,7 @@ print('First subject functional nifti images (4D) are at: %s' %
 #
 # Because fmri data is 4D (it consists of many 3D EPI images), we cannot 
 # plot it directly using :func:`nilearn.plotting.plot_epi` (which accepts 
-# just /D input). Here we are using :func:`nilearn.image.mean_img` to 
+# just 3D input). Here we are using :func:`nilearn.image.mean_img` to 
 # extract a single 3D EPI image from the fmri data.
 #
 from nilearn import plotting
@@ -64,7 +64,7 @@ plotting.view_img(mean_img(fmri_filename), threshold=None)
 # matrices, we will use the :class:`nilearn.input_data.NiftiMasker` to 
 # extract the fMRI data on a mask and convert it to data series.
 #
-# A mask of the Ventral Temporal streaming coming from the
+# A mask of the Ventral Temporal (VT) cortex coming from the
 # Haxby study is available:
 mask_filename = haxby_dataset.mask_vt[0]
 
@@ -85,9 +85,9 @@ fmri_masked = masker.fit_transform(fmri_filename)
 
 ###########################################################################
 # .. seealso::
-# 	You can ask the NiftiMasker to fit his own mask given the data. In
-# 	this case, it is interresting to have a look at a report to see the
-# 	computed mask by using :func:`masker.generate_report()`.
+# 	You can ask the NiftiMasker to derive a mask given the data. In
+# 	this case, it is interesting to have a look at a report to see the
+# 	computed mask by using :func:`masker.generate_report`.
 #
 # The variable "fmri_masked" is a numpy array:
 print(fmri_masked)
@@ -108,7 +108,7 @@ print(fmri_masked.shape)
 # instead, we use a series of 3D grids (one for each volume in the 4D file), 
 # so we can get a measurement for each voxel at each timepoint. These are 
 # reflected in the shape of the matrix ! You can check this by checking the 
-# number of positive voxels in our brain mask.
+# number of non-negative voxels in our binary brain mask.
 #
 # .. seealso::
 # 	There are many other strategies in Nilearn `for masking data and for
@@ -147,7 +147,7 @@ print(behavioral)
 ###########################################################################
 # The task was a visual-recognition task, and the labels denote the 
 # experimental condition: the type of object that was presented to the 
-# subject. This is what we are going to try to predict
+# subject. This is what we are going to try to predict.
 conditions = behavioral['labels']
 conditions
 
@@ -162,7 +162,7 @@ print(fmri_masked.shape)
 ###########################################################################
 # Not all of this data has an interest to us for decoding, so we will keep
 # only fmri signals corresponding to faces or cats. We create a mask of
-# the samples belonging to the condition, this mask is then applied to the
+# the samples belonging to the condition; this mask is then applied to the
 # fmri data to restrict the classification to the face vs cat discrimination.
 # As a consequence, the input data is much less bigger (i.e. fmri signal is shorter):
 condition_mask = conditions.isin(['face', 'cat'])
