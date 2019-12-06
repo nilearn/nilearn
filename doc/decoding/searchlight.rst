@@ -9,6 +9,10 @@ in nilearn with the `nilearn.decoding.SearchLight` estimator.
 
 .. currentmodule:: nilearn.decoding
 
+.. contents:: **Contents**
+    :local:
+    :depth: 1
+
 Principle of the Searchlight
 ============================
 
