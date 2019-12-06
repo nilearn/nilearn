@@ -50,7 +50,7 @@ One of the main elements that distinguish Searchlight from other algorithms is
 the notion of structuring element that scans the entire volume. This has an 
 impact on the masking procedure.
 
-Two masks are used with :class:`Searchlight`:
+Two masks are used with :class:`SearchLight`:
 
 - *mask_img* is the anatomical mask
 - *process_mask_img* is a subset of the brain mask and defines the boundaries 
