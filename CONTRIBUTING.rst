@@ -68,3 +68,22 @@ Coding guidelines
 Nilearn follows the coding conventions used by scikit-learn. `Please read them
 <http://scikit-learn.org/stable/developers/contributing.html#coding-guidelines>`_
 before you start implementing your changes.
+
+Documentation
+--------------
+
+To build our documentation, we are using `sphinx <https://www.sphinx-doc.org/en/master/usage/quickstart.html>`_ for the main documentation and `sphinx-gallery <https://sphinx-gallery.github.io/stable/index.html>`_ for the example tutorials.
+If you want to make changes to the example tutorials, please do the following :
+
+1. First, ensure that you have installed sphynx and sphynx gallery
+2. Clone the nilearn repostiory and go to ``nilearn/examples``
+3. Make your changes using `reStructuredText files <http://docutils.sourceforge.net/rst.html>`_
+4. You can now go to `nilearn/doc` and build the examples locally:
+
+``python3 -m sphinx -b html -d _build/doctrees . _build/html``
+
+5. Once you are correct with the html outputs in ``nilearn/doc/_build/html/auto_examples/``, you are good to submit the PR!
+
+TIPS : To reduce building time, we suggest you to use the ``filename_pattern`` to build just one specific file.
+
+``python3 -m sphinx -D sphinx_gallery_conf.filename_pattern=plot_decoding_tutorial.py -b html -d _build/doctrees . _build/html``
