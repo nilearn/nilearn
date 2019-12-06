@@ -108,7 +108,7 @@ def test_nifti_maps_masker():
     # Now try on a masker that has never seen the call to "transform"
     masker2 = NiftiMapsMasker(labels11_img, resampling_target=None)
     masker2.fit()
-    fmri11_img_rr = masker2.inverse_transform(signals11)
+    masker2.inverse_transform(signals11)
 
     # Test with data and atlas of different shape: the atlas should be
     # resampled to the data
@@ -120,10 +120,9 @@ def test_nifti_maps_masker():
                                         length=length)
     masker = NiftiMapsMasker(labels11_img, mask_img=mask21_img)
 
-    signals = masker.fit_transform(fmri22_img)
+    masker.fit_transform(fmri22_img)
     np.testing.assert_array_equal(masker._resampled_maps_img_.affine,
                                   affine2)
-
 
 
 def test_nifti_maps_masker_with_nans():
