@@ -1,13 +1,13 @@
 .. _searchlight:
+.. currentmodule:: nilearn.decoding
 
 ===========================================================
 Searchlight : finding voxels containing information
 ===========================================================
 
 This page overviews searchlight analyses and how they are approached
-in nilearn with the `nilearn.decoding.SearchLight` estimator.
+in nilearn with the :class:`SearchLight` estimator.
 
-.. currentmodule:: nilearn.decoding
 
 .. contents:: **Contents**
     :local:
@@ -46,9 +46,9 @@ the number of samples used for decoding.
 Masking
 -------
 
-One of the main elements that distinguish Searchlight from other algorithms is
-the notion of structuring element that scans the entire volume. This has an 
-impact on the masking procedure.
+One of the main elements that distinguish :class:`SearchLight` from other 
+algorithms is the notion of structuring element that scans the entire volume. 
+This has an impact on the masking procedure.
 
 Two masks are used with :class:`SearchLight`:
 
@@ -56,8 +56,8 @@ Two masks are used with :class:`SearchLight`:
 - *process_mask_img* is a subset of the brain mask and defines the boundaries 
   of where the searchlight scans the volume. Often times we are interested in
   only performing a searchlight within a specific area of the brain (e.g., 
-  frontal cortex). If no *process_mask_img* is set, then Searchlight defaults
-  to performing a searchlight over the whole brain.  
+  frontal cortex). If no *process_mask_img* is set, then :class:`SearchLight` 
+  defaults to performing a searchlight over the whole brain.  
 
 *mask_img* ensures that only voxels with useable signals are included in the 
 searchlight. This could be a full-brain mask or a gray-matter mask. 
@@ -70,11 +70,11 @@ Classifier
 ----------
 
 The classifier used by default by :class:`SearchLight` is LinearSVC with C=1 but
-this can be customed easily by passing an estimator parameter to the
+this can be customized easily by passing an estimator parameter to the
 Searchlight. See scikit-learn documentation for `other classifiers
 <http://scikit-learn.org/stable/supervised_learning.html>`_. You can 
 also pass scikit-learn `Pipelines <https://scikit-learn.org/stable/modules/compose.html>`_
-to the Searchlight in order to combine estimators and preprocessing steps 
+to the :class:`SearchLight` in order to combine estimators and preprocessing steps 
 (e.g., feature scaling) for your searchlight.
 
 Score function
@@ -115,11 +115,12 @@ the data. The sphere size determines the number of voxels/features to use
 for classification (i.e. more voxels are included with larger spheres). 
 
 .. note::
-    :class:`SearchLight` defines sphere radius in milimeters; the number 
-    of voxels included in the sphere will depend on the voxel size. 
 
-For reference, Kriegskorte et al. use a 4mm radius because it yielded 
-the best detection performance in their simulation of 2mm isovoxel data.
+    :class:`SearchLight` defines sphere radius in milimeters; the number 
+    of voxels included in the sphere will therefore depend on the voxel size. 
+
+    For reference, Kriegskorte et al. use a 4mm radius because it yielded 
+    the best detection performance in their simulation of 2mm isovoxel data.
 	
 Visualization
 =============
@@ -131,9 +132,10 @@ The results of the searchlight can be found in the `scores_` attribute of the
 :class:`SearchLight` object after fitting it to the data. Below is a 
 visualization of the results from :ref:`Searchlight analysis of face 
 vs house recognition <sphx_glr_auto_examples_02_decoding_plot_haxby_searchlight_py>`.
-We can see here that voxels in the visual cortex contains information 
-to distinguish pictures showed to the volunteers, which was the
-expected result.
+The searchlight was restriced to a slice in the back of the brain. Within 
+this slice, we can see that a cluster of voxels in visual cortex 
+contains information to distinguish pictures showed to the volunteers, 
+which was the expected result.
 
 .. figure:: ../auto_examples/02_decoding/images/sphx_glr_plot_haxby_searchlight_001.png
    :target: ../auto_examples/02_decoding/plot_haxby_searchlight.html
