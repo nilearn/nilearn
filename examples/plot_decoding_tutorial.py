@@ -164,7 +164,7 @@ print(fmri_masked.shape)
 # only fmri signals corresponding to faces or cats. We create a mask of
 # the samples belonging to the condition; this mask is then applied to the
 # fmri data to restrict the classification to the face vs cat discrimination.
-# As a consequence, the input data is much less bigger (i.e. fmri signal is shorter):
+# As a consequence, the input data is much small (i.e. fmri signal is shorter):
 condition_mask = conditions.isin(['face', 'cat'])
 fmri_masked = fmri_masked[condition_mask]
 print(fmri_masked.shape)
