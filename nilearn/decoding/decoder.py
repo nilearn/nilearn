@@ -536,6 +536,7 @@ class _BaseDecoder(LinearModel, RegressorMixin, CacheMixin):
             Vector of responses.
 
         Returns
+        -------
 
         coefs : dict
             Coefficients for each classification/regression problem
