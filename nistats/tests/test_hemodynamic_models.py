@@ -141,7 +141,10 @@ def test_sample_condition_3():
     assert_equal(reg[380], 1)
     assert_equal(reg[210], 1)
     assert_equal(np.sum(reg > 0), 60)
-
+    # check robustness to non-int oversampling
+    reg_, rf_ = _sample_condition(condition, frame_times, oversampling=10.,
+                                min_onset=0)
+    assert_almost_equal(reg, reg_)
 
 def test_sample_condition_4():
     """ Test the experimental condition sampling -- negative amplitude
@@ -246,6 +249,10 @@ def test_make_regressor_3():
                                        fir_delays=np.arange(4))
     assert_array_equal(np.sum(reg, 0), np.array([3, 3, 3, 3]))
     assert_equal(len(reg_names), 4)
+    reg_, reg_names_ = compute_regressor(condition, hrf_model, frame_times,
+                                         fir_delays=np.arange(4),
+                                         oversampling=50.)
+    assert_array_equal(reg, reg_)
 
 
 def test_design_warnings():

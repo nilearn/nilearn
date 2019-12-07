@@ -27,6 +27,7 @@ Fixes
 * :func:`nistats.first_level_model.first_level_models_from_bids` uses correct BIDS v1.2 conventions.
 * Explicit method for fixed effects to support image-based summary
   statistics approach.
+* FIR delays are now integers.
   
 Contributors
 ------------

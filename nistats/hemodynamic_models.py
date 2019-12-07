@@ -457,8 +457,8 @@ def compute_regressor(exp_condition, hrf_model, frame_times, con_id='cond',
     oversampling : int, optional
         oversampling factor to perform the convolution
 
-    fir_delays : 1D-array-like, optional
-        delays (in scans) used in case of a finite impulse reponse model
+    fir_delays : [int] 1D-array-like, optional
+        delays (in scans) used in case of a finite impulse response model
 
     min_onset : float, optional
         minimal onset relative to frame_times[0] (in seconds)
@@ -482,9 +482,8 @@ def compute_regressor(exp_condition, hrf_model, frame_times, con_id='cond',
      - 'glover + derivative': the Glover hrf + time derivative (2 regressors)
      - 'glover + derivative + dispersion': idem + dispersion derivative
                                         (3 regressors)
-    'fir': finite impulse response basis, a set of delayed dirac models
-           with arbitrary length. This one currently assumes regularly spaced
-           frame times (i.e. fixed time of repetition).
+    'fir': list or array,
+        finite impulse response basis, a set of delayed dirac models.
     
     It is expected that spm standard and Glover model would not yield
     large differences in most cases.
@@ -492,6 +491,13 @@ def compute_regressor(exp_condition, hrf_model, frame_times, con_id='cond',
     In case of glover and spm models, the derived regressors are
     orthogonalized wrt the main one.
     """
+    # fir_delays should be integers
+    if fir_delays is not None:
+        fir_delays = [int(x) for x in fir_delays]
+
+    # oversampling should be an integer
+    oversampling = int(oversampling)
+        
     # this is the average tr in this session, not necessarily the true tr
     tr = float(frame_times.max()) / (np.size(frame_times) - 1)
 
