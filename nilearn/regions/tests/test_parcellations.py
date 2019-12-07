@@ -4,6 +4,7 @@ Test the parcellations tools module
 import numpy as np
 import nibabel
 
+import pytest
 from nose.tools import assert_true, assert_equal
 from nilearn.regions.parcellations import (Parcellations,
                                            _check_parameters_transform)
@@ -58,6 +59,23 @@ def test_parcellations_fit_on_single_nifti_image():
             assert_true(labels_img.shape, (data.shape[0],
                                            data.shape[1],
                                            data.shape[2]))
+
+
+def test_parcellations_warnings():
+    data = np.zeros((10, 11, 12, 5))
+    img = nibabel.Nifti1Image(data, affine=np.eye(4))
+    parcellator = Parcellations(method='kmeans', n_parcels=7)
+    with pytest.warns(UserWarning):
+        parcellator.fit(img)
+
+
+def test_parcellations_no_warnings():
+    data = np.zeros((10, 11, 12, 5))
+    img = nibabel.Nifti1Image(data, affine=np.eye(4))
+    parcellator = Parcellations(method='kmeans', n_parcels=1)
+    with pytest.warns(None) as record:
+        parcellator.fit(img)
+    assert all([r.category is not UserWarning for r in record.list])
 
 
 def test_parcellations_fit_on_multi_nifti_images():

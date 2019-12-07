@@ -627,6 +627,17 @@ def index_img(imgs, index):
      >>> single_mni_image = index_img(joint_mni_image, 1)
      >>> print(single_mni_image.shape)
      (91, 109, 91)
+
+    We can also select multiple frames using the `slice` constructor::
+
+     >>> five_mni_images = concat_imgs([datasets.load_mni152_template()] * 5)
+     >>> print(five_mni_images.shape)
+     (91, 109, 91, 5)
+    
+     >>> first_three_images = index_img(five_mni_images,
+     ...                                slice(0, 3))
+     >>> print(first_three_images.shape)
+     (91, 109, 91, 3)
     """
     imgs = check_niimg_4d(imgs)
     # duck-type for pandas arrays, and select the 'values' attr
@@ -704,18 +715,23 @@ def new_img_like(ref_niimg, data, affine=None, copy_header=False):
     header = None
     if copy_header:
         header = copy.deepcopy(ref_niimg.header)
-        if 'scl_slope' in header:
-            header['scl_slope'] = 0.
-        if 'scl_inter' in header:
-            header['scl_inter'] = 0.
-        # 'glmax' is removed for Nifti2Image. Modify only if 'glmax' is
-        # available in header. See issue #1611
-        if 'glmax' in header:
-            header['glmax'] = 0.
-        if 'cal_max' in header:
-            header['cal_max'] = np.max(data) if data.size > 0 else 0.
-        if 'cal_min' in header:
-            header['cal_min'] = np.min(data) if data.size > 0 else 0.
+        try:
+            'something' in header
+        except TypeError:
+            pass
+        else:
+            if 'scl_slope' in header:
+                header['scl_slope'] = 0.
+            if 'scl_inter' in header:
+                header['scl_inter'] = 0.
+            # 'glmax' is removed for Nifti2Image. Modify only if 'glmax' is
+            # available in header. See issue #1611
+            if 'glmax' in header:
+                header['glmax'] = 0.
+            if 'cal_max' in header:
+                header['cal_max'] = np.max(data) if data.size > 0 else 0.
+            if 'cal_min' in header:
+                header['cal_min'] = np.min(data) if data.size > 0 else 0.
     klass = ref_niimg.__class__
     if klass is nibabel.Nifti1Pair:
         # Nifti1Pair is an internal class, without a to_filename,

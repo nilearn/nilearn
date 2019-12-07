@@ -36,7 +36,7 @@ print('Datasets shipped with nilearn are stored in: %r' % datasets.get_data_dirs
 motor_images = datasets.fetch_neurovault_motor_task()
 stat_img = motor_images.images[0]
 # stat_img is just the name of the file that we downloded
-print(stat_img)
+stat_img
 
 ###############################################################################
 # Demo glass brain plotting

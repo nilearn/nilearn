@@ -21,7 +21,7 @@ def _mock_args_for_testing_replace_parameter():
     return mock_kwargs_with_deprecated_params_used, replacement_params
 
 
-def test_replace_parameters():
+def test_rename_parameters():
     """ Integration tests that deprecates mock parameters in a mock function
     and checks that the deprecated parameters transfer their values correctly
     to replacement parameters and all deprecation warning are raised as
@@ -40,7 +40,7 @@ def test_replace_parameters():
          ),
         ]
     
-    @helpers.replace_parameters(replacement_params, '0.6.1rc', 'other_lib', )
+    @helpers.rename_parameters(replacement_params, '0.6.1rc', 'other_lib', )
     def mock_function(replacement_param_0, replacement_param_1,
                       unchanged_param_0, unchanged_param_1):
         return (replacement_param_0, replacement_param_1, unchanged_param_0,
@@ -60,6 +60,7 @@ def test_replace_parameters():
     raised_warnings.sort(key=lambda mem: str(mem.message))
     for raised_warning_, expected_warning_ in zip(raised_warnings,
                                                   expected_warnings):
+        assert raised_warning_.category is FutureWarning
         assert str(raised_warning_.message) == expected_warning_
 
 
@@ -107,4 +108,5 @@ def test_future_warn_deprecated_params():
     for raised_warning_, expected_warning_ in zip(raised_warnings,
                                                   expected_warnings
                                                   ):
+        assert raised_warning_.category is FutureWarning
         assert str(raised_warning_.message) == expected_warning_
