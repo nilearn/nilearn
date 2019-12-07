@@ -1,3 +1,18 @@
+0.7.0a
+======
+
+NEW
+---
+
+- New decoder object
+  :class:`nilearn.decoding.Decoder` (for classification) and
+  :class:`nilearn.decoding.DecoderRegressor` (for regression) implement a model
+  selection scheme that averages the best models within a cross validation loop.
+  The resulting average model is the one used as a classifier or a regressor.
+  These two objects also leverage the `NiftiMaskers` to provide a direct
+  interface with the Nifti files on disk.
+
+
 0.6.0b1
 =======
 
@@ -16,13 +31,6 @@ NEW
 - **Support for Python3.5 wil be removed in the 0.7.x release.**
   Users with a Python3.5 environment will be warned
   at their first Nilearn import.
-- New decoder object
-  :class:`nilearn.decoding.Decoder` (for classification) and
-  :class:`nilearn.decoding.DecoderRegressor` (for regression) implement a model
-  selection scheme that averages the best models within a cross validation loop.
-  The resulting average model is the one used as a classifier or a regressor.
-  These two objects also leverage the `NiftiMaskers` to provide a direct
-  interface with the Nifti files on disk.
 
 Changes
 -------
