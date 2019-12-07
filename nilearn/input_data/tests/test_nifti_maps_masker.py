@@ -105,6 +105,11 @@ def test_nifti_maps_masker():
     assert_equal(fmri11_img_r.shape, fmri11_img.shape)
     np.testing.assert_almost_equal(fmri11_img_r.affine, fmri11_img.affine)
 
+    # Now try on a masker that has never seen the call to "transform"
+    masker2 = NiftiMapsMasker(labels11_img, resampling_target=None)
+    masker2.fit()
+    masker2.inverse_transform(signals11)
+
     # Test with data and atlas of different shape: the atlas should be
     # resampled to the data
     shape22 = (5, 5, 6)

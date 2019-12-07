@@ -39,6 +39,8 @@ Fixes
 - :func:`nilearn.image.new_img_like` no longer attempts to copy non-iterable headers. (PR #2212)
 - Nilearn no longer raises ImportError for nose when Matplotlib is not installed.
 - The arg `version='det'` in :func:`nilearn.datasets.fetch_atlas_pauli_2017` now  works as expected.
+- :func:`nilearn.input_data.NiftiLabelsMasker.inverse_transform` now works without the need to call
+  transform first.
 
 Contributors
 ------------
