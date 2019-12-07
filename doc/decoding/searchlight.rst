@@ -131,7 +131,7 @@ Searchlight
 The results of the searchlight can be found in the `scores_` attribute of the 
 :class:`SearchLight` object after fitting it to the data. Below is a 
 visualization of the results from :ref:`Searchlight analysis of face 
-vs house recognition <sphx_glr_auto_examples_02_decoding_plot_haxby_searchlight_py>`.
+vs house recognition <sphx_glr_auto_examples_02_decoding_plot_haxby_searchlight.py>`.
 The searchlight was restriced to a slice in the back of the brain. Within 
 this slice, we can see that a cluster of voxels in visual cortex 
 contains information to distinguish pictures showed to the volunteers, 
