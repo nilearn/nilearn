@@ -83,8 +83,10 @@ If you want to make changes to the example tutorials, please do the following :
 
 ::      python3 -m sphinx -b html -d _build/doctrees . _build/html
 
-6. Once you are happy with the html outputs in ``nilearn/doc/_build/html/auto_examples/``, you are good to submit the PR!
+6. Visually review the output in ``nilearn/doc/_build/html/auto_examples/``. If all looks well and there were no errors, commit and push the changes.
+7. You can now open a Pull Request from Nilearn's Pull Request page.
 For more details about the Fork Clone Push worksflow, read here <https://guides.github.com/activities/forking/>_
+
 
 TIPS : To reduce building time, we suggest you to use the ``filename_pattern`` to build just one specific file.
 
