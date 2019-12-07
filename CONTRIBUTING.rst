@@ -85,6 +85,7 @@ If you want to make changes to the example tutorials, please do the following :
 
 6. Visually review the output in ``nilearn/doc/_build/html/auto_examples/``. If all looks well and there were no errors, commit and push the changes.
 7. You can now open a Pull Request from Nilearn's Pull Request page.
+
 For more details about the Fork Clone Push worksflow, read here <https://guides.github.com/activities/forking/>_
 
 
