@@ -10,14 +10,9 @@ Test the decoder module
 
 import warnings
 
-import sklearn
+import pytest
 import numpy as np
-from nilearn.decoding.decoder import (_BaseDecoder, Decoder, DecoderRegressor,
-                                      _check_estimator, _check_param_grid, 
-                                      _parallel_fit)
-from nilearn.decoding.tests.test_same_api import to_niimgs
-from nilearn.input_data import NiftiMasker
-from nose.tools import assert_equal, assert_raises, assert_true, assert_warns
+
 from sklearn.datasets import load_iris, make_classification, make_regression
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.linear_model import LogisticRegression, RidgeCV, RidgeClassifierCV
@@ -25,6 +20,12 @@ from sklearn.metrics import accuracy_score, r2_score
 from sklearn.model_selection import KFold, LeaveOneGroupOut
 from sklearn.svm import SVR, LinearSVC
 from sklearn.preprocessing import StandardScaler
+
+from nilearn.decoding.decoder import (_BaseDecoder, Decoder, DecoderRegressor,
+                                      _check_estimator, _check_param_grid,
+                                      _parallel_fit)
+from nilearn.decoding.tests.test_same_api import to_niimgs
+from nilearn.input_data import NiftiMasker
 
 try:
     from sklearn.metrics import check_scoring
@@ -67,15 +68,15 @@ def test_check_param_grid():
     # Regression
     for _, (regressor, param) in regressors.items():
         param_grid = _check_param_grid(regressor, X, y_regression, None)
-        assert_equal(list(param_grid.keys()), list(param))
+        assert list(param_grid.keys()) == list(param)
     # Classification
     for _, (classifier, param) in classifiers.items():
         param_grid = _check_param_grid(classifier, X, y_classification, None)
-        assert_equal(list(param_grid.keys()), list(param))
+        assert list(param_grid.keys()) == list(param)
 
     # Using a non-linear estimator to raise the error
     for estimator in ['log_l1', random_forest]:
-        assert_raises(ValueError, _check_param_grid, estimator, X,
+        pytest.raises(ValueError, _check_param_grid, estimator, X,
                       y_classification, None)
 
 
@@ -89,7 +90,7 @@ def test_check_inputs_length():
     y = y[:-10]
 
     for model in [DecoderRegressor, Decoder]:
-        assert_raises(ValueError, model(mask=mask,
+        pytest.raises(ValueError, model(mask=mask,
                                         screening_percentile=100.).fit, X_, y)
 
 
@@ -113,16 +114,16 @@ def test_check_estimator():
     assert expected_warning not in warning_messages
     
     for estimator in unsupported_estimators:
-        assert_raises(ValueError, _check_estimator,
+        pytest.raises(ValueError, _check_estimator,
                       _BaseDecoder(estimator=estimator).estimator)
     custom_estimator = random_forest
-    assert_warns(UserWarning, _check_estimator,
+    pytest.warns(UserWarning, _check_estimator,
                  _BaseDecoder(estimator=custom_estimator).estimator)
 
 
 def test_parallel_fit():
     """The goal of this test is to check that results of _parallel_fit is the
-    same for differnet controlled param_grid
+    same for different controlled param_grid
     """
 
     X, y = make_regression(n_samples=100, n_features=20,
@@ -150,7 +151,7 @@ def test_parallel_fit():
         if isinstance(a, np.ndarray):
             np.testing.assert_array_almost_equal(a, b)
         else:
-            assert_equal(a, b)
+            assert a == b
 
 
 def test_decoder_binary_classification():
@@ -162,20 +163,20 @@ def test_decoder_binary_classification():
     model = Decoder(mask=NiftiMasker())
     model.fit(X, y)
     y_pred = model.predict(X)
-    assert_true(accuracy_score(y, y_pred) > 0.95)
+    assert accuracy_score(y, y_pred) > 0.95
 
     # decoder object use predict_proba for scoring with logistic model
     model = Decoder(estimator='logistic_l2', mask=mask)
     model.fit(X, y)
     y_pred = model.predict(X)
-    assert_true(accuracy_score(y, y_pred) > 0.95)
+    assert accuracy_score(y, y_pred) > 0.95
 
     # check different screening_percentile value
     for screening_percentile in [100, 20]:
         model = Decoder(mask=mask, screening_percentile=screening_percentile)
         model.fit(X, y)
         y_pred = model.predict(X)
-        assert_true(accuracy_score(y, y_pred) > 0.95)
+        assert accuracy_score(y, y_pred) > 0.95
 
     # check cross-validation scheme and fit attribute with groups enabled
     for cv in [KFold(n_splits=5), LeaveOneGroupOut()]:
@@ -186,7 +187,7 @@ def test_decoder_binary_classification():
         else:
             groups = None
         model.fit(X, y, groups=groups)
-        assert_true(accuracy_score(y, y_pred) > 0.9)
+        assert accuracy_score(y, y_pred) > 0.9
 
 
 def test_decoder_multiclass_classification():
@@ -198,14 +199,14 @@ def test_decoder_multiclass_classification():
     model = Decoder(mask=NiftiMasker())
     model.fit(X, y)
     y_pred = model.predict(X)
-    assert_true(accuracy_score(y, y_pred) > 0.95)
+    assert accuracy_score(y, y_pred) > 0.95
 
     # check different screening_percentile value
     for screening_percentile in [100, 20]:
         model = Decoder(mask=mask, screening_percentile=screening_percentile)
         model.fit(X, y)
         y_pred = model.predict(X)
-        assert_true(accuracy_score(y, y_pred) > 0.95)
+        assert accuracy_score(y, y_pred) > 0.95
 
     # check cross-validation scheme and fit attribute with groups enabled
     for cv in [KFold(n_splits=5), LeaveOneGroupOut()]:
@@ -216,7 +217,7 @@ def test_decoder_multiclass_classification():
         else:
             groups = None
         model.fit(X, y, groups=groups)
-        assert_true(accuracy_score(y, y_pred) > 0.9)
+        assert accuracy_score(y, y_pred) > 0.9
 
 
 def test_decoder_classification_string_label():
@@ -229,7 +230,7 @@ def test_decoder_classification_string_label():
     model = Decoder(mask=mask)
     model.fit(X, y_str)
     y_pred = model.predict(X)
-    assert_true(accuracy_score(y_str, y_pred) > 0.95)
+    assert accuracy_score(y_str, y_pred) > 0.95
 
 
 def test_decoder_regression():
@@ -244,7 +245,7 @@ def test_decoder_regression():
                                      screening_percentile=screening_percentile)
             model.fit(X, y)
             y_pred = model.predict(X)
-            assert_true(r2_score(y, y_pred) > 0.95)
+            assert r2_score(y, y_pred) > 0.95
 
 
 def test_decoder_apply_mask():
@@ -257,7 +258,7 @@ def test_decoder_apply_mask():
     X_masked = model._apply_mask(X)
 
     # test whether if _apply mask output has the same shape as original matrix
-    assert_equal(X_masked.shape, X_init.shape)
+    assert X_masked.shape == X_init.shape
 
     # test whethere model.masker_ have some desire attributes manually set 
     # after calling _apply_mask; by default these parameters are set to None
@@ -274,13 +275,13 @@ def test_decoder_apply_mask():
         high_pass=high_pass,
         low_pass=low_pass,
         smoothing_fwhm=smoothing_fwhm
-
     )
-    X_masked = model._apply_mask(X)
+
+    model._apply_mask(X)
     
-    assert_true(np.any(model.masker_.target_affine == target_affine))
-    assert_equal(model.masker_.target_shape, target_shape)
-    assert_equal(model.masker_.t_r, t_r)
-    assert_equal(model.masker_.high_pass, high_pass)
-    assert_equal(model.masker_.low_pass, low_pass)
-    assert_equal(model.masker_.smoothing_fwhm, smoothing_fwhm)
+    assert np.any(model.masker_.target_affine == target_affine)
+    assert model.masker_.target_shape == target_shape
+    assert model.masker_.t_r == t_r
+    assert model.masker_.high_pass == high_pass
+    assert model.masker_.low_pass == low_pass
+    assert model.masker_.smoothing_fwhm == smoothing_fwhm
