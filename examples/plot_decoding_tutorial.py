@@ -111,11 +111,10 @@ print(fmri_masked.shape)
 # number of non-negative voxels in our binary brain mask.
 #
 # .. seealso::
-# 	There are many other strategies in Nilearn `for masking data and for
-# 	generating masks 
-# 	<https://nilearn.github.io/manipulating_images/manipulating_images.html#computing-and-applying-spatial-masks>`_.
+# 	There are many other strategies in Nilearn :ref:`for masking data and for
+# 	generating masks <computing_and_applying_mask>`
 # 	I'd encourage you to spend some time exploring the documentation for these.
-# 	We can also `display this time series <https://nilearn.github.io/auto_examples/03_connectivity/plot_adhd_spheres.html#display-time-series>`_ to get an intuition of how the 
+# 	We can also `display this time series :ref:`sphx_glr_auto_examples_03_connectivity_plot_sphere_based_connectome.py`_ to get an intuition of how the 
 # 	whole brain signal is changing over time.
 #
 # We'll display the first three voxels by sub-selecting values from the 
