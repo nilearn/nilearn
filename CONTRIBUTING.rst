@@ -81,13 +81,11 @@ If you want to make changes to the example tutorials, please do the following :
 4. Make your changes using `reStructuredText files <https://www.sphinx-doc.org/en/2.0/usage/restructuredtext/basics.html>`_
 5. You can now go to `nilearn/doc` and build the examples locally:
 
-::
-        python3 -m sphinx -b html -d _build/doctrees . _build/html
+::      python3 -m sphinx -b html -d _build/doctrees . _build/html
 
 6. Once you are happy with the html outputs in ``nilearn/doc/_build/html/auto_examples/``, you are good to submit the PR!
 For more details about the Fork Clone Push worksflow, read here <https://guides.github.com/activities/forking/>_
 
 TIPS : To reduce building time, we suggest you to use the ``filename_pattern`` to build just one specific file.
 
-::
-        python3 -m sphinx -D sphinx_gallery_conf.filename_pattern=plot_decoding_tutorial.py -b html -d _build/doctrees . _build/html
+::      python3 -m sphinx -D sphinx_gallery_conf.filename_pattern=plot_decoding_tutorial.py -b html -d _build/doctrees . _build/html
