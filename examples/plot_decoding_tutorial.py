@@ -102,22 +102,22 @@ print(fmri_masked.shape)
 #
 # .. image:: /images/masking.jpg
 #
-# Essentially, we can think about overlaying a 3D grid on an image. Then, 
-# our mask tells us which cubes or "voxels" (like 3D pixels) to sample from. 
-# Since our Nifti images are 4D files, we can't overlay a single grid -- 
-# instead, we use a series of 3D grids (one for each volume in the 4D file), 
-# so we can get a measurement for each voxel at each timepoint. These are 
-# reflected in the shape of the matrix ! You can check this by checking the 
+# Essentially, we can think about overlaying a 3D grid on an image. Then,
+# our mask tells us which cubes or "voxels" (like 3D pixels) to sample from.
+# Since our Nifti images are 4D files, we can't overlay a single grid --
+# instead, we use a series of 3D grids (one for each volume in the 4D file),
+# so we can get a measurement for each voxel at each timepoint. These are
+# reflected in the shape of the matrix ! You can check this by checking the
 # number of non-negative voxels in our binary brain mask.
 #
 # .. seealso::
 # 	There are many other strategies in Nilearn :ref:`for masking data and for
 # 	generating masks <computing_and_applying_mask>`
 # 	I'd encourage you to spend some time exploring the documentation for these.
-# 	We can also `display this time series :ref:`sphx_glr_auto_examples_03_connectivity_plot_sphere_based_connectome.py`_ to get an intuition of how the 
+# 	We can also `display this time series :ref:`sphx_glr_auto_examples_03_connectivity_plot_sphere_based_connectome.py` to get an intuition of how the
 # 	whole brain signal is changing over time.
 #
-# We'll display the first three voxels by sub-selecting values from the 
+# We'll display the first three voxels by sub-selecting values from the
 # matrix. You can also find more information on how to slice arrays `here
 # <https://docs.scipy.org/doc/numpy-1.13.0/reference/arrays.indexing.html#basic-slicing-and-indexing>`_.
 import matplotlib.pyplot as plt
