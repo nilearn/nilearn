@@ -87,8 +87,10 @@ fmri_masked = masker.fit_transform(fmri_filename)
 # .. seealso::
 # 	You can ask the NiftiMasker to derive a mask given the data. In
 # 	this case, it is interesting to have a look at a report to see the
-# 	computed mask by using :func:`masker.generate_report`.
-#
+# 	computed mask by using `masker.generate_report`.
+masker.generate_report()
+
+###########################################################################
 # The variable "fmri_masked" is a numpy array:
 print(fmri_masked)
 
