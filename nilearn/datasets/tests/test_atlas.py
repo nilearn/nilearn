@@ -549,8 +549,6 @@ def test_fetch_atlas_pauli_2017():
 
     data = atlas.fetch_atlas_pauli_2017('det', data_dir)
     assert len(data.labels) == 16
-    data = atlas.fetch_atlas_pauli_2017('labels', data_dir)
-    assert len(data.labels) == 16
 
     values = get_data(nibabel.load(data.maps))
     assert len(np.unique(values)) == 17
