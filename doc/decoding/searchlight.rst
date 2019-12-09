@@ -1,88 +1,86 @@
 .. _searchlight:
+.. currentmodule:: nilearn.decoding
 
 ===========================================================
 Searchlight : finding voxels containing information
 ===========================================================
 
-.. currentmodule:: nilearn.decoding
+This page overviews searchlight analyses and how they are approached
+in nilearn with the :class:`SearchLight` estimator.
+
+
+.. contents:: **Contents**
+    :local:
+    :depth: 1
 
 Principle of the Searchlight
 ============================
 
-Searchlight was introduced in `Information-based functional brain mapping
-<http://www.pnas.org/content/103/10/3863>`_, Nikolaus Kriegeskorte,
-Rainer Goebel and Peter Bandettini (PNAS 2006) and consists in scanning the
-images volume with a *searchlight*. Briefly, a ball of given radius is
-scanned across the brain volume and the prediction accuracy of a
-classifier trained on the corresponding voxels is measured.
+Searchlight analysis was introduced in `Information-based functional brain 
+mapping <http://www.pnas.org/content/103/10/3863>`_ (Kriegeskorte et al., 
+2006), and consists of scanning the brain with a *searchlight*. Briefly, a 
+ball of given radius is scanned across the brain volume and the prediction 
+accuracy of a classifier trained on the corresponding voxels is measured. 
+
+Searchlights are also not limited to classification; regression (e.g., 
+`Kahnt et al, 2011
+<https://www.sciencedirect.com/science/article/pii/S0896627311002960?via%3Dihub>`_) 
+and representational similarity analysis (e.g., `Clarke and Tyler, 2014 
+<https://www.jneurosci.org/content/34/14/4766.short>`_) are other uses of 
+searchlights. Currently, only classification and regression are supported 
+in nilearn.
+
+.. topic:: **Further Reading**
+    
+    For a critical review on searchlights, see `Etzel et al (2013) 
+    <https://www.sciencedirect.com/science/article/pii/S1053811913002917>`_.
+
 
 Preparing the data
-====================
+==================
 
-Loading
--------
-
-Fetching the data from internet and loading it can be done with the
-provided functions (see :ref:`loading_data`):
-
-.. literalinclude:: ../../examples/02_decoding/plot_haxby_searchlight.py
-    :start-after: # Load Haxby dataset
-    :end-before: # Restrict to faces and houses
-
-Reshaping the data
--------------------
-
-For this example we need:
-
-- to put X in the form *n_samples* x *n_features*
-- compute a mean image for visualization background
-- limit our analysis to the `face` and `house` conditions
-  (like in the :ref:`introduction to decoding <decoding_intro>`)
-
-.. literalinclude:: ../../examples/02_decoding/plot_haxby_searchlight.py
-    :start-after: # Restrict to faces and houses
-    :end-before: # Prepare masks
+:class:`SearchLight` requires a series of brain volumes as input, `X`, each with 
+a corresponding label, `y`. The number of brain volumes therefore correspond to
+the number of samples used for decoding.
 
 Masking
 -------
 
-One of the main elements that distinguish Searchlight from other algorithms is
-the notion of structuring element that scans the entire volume. If this seems
-rather intuitive, it has in fact an impact on the masking procedure.
+One of the main elements that distinguish :class:`SearchLight` from other 
+algorithms is the notion of structuring element that scans the entire volume. 
+This has an impact on the masking procedure.
 
-Most of the time, fMRI data is masked and then given to the algorithm. This is
-not possible in the case of Searchlight because, to compute the score of
-non-masked voxels, some masked voxels may be needed. This is why two masks will
-be used here :
+Two masks are used with :class:`SearchLight`:
 
 - *mask_img* is the anatomical mask
-- *process_mask_img* is a subset of mask and contains voxels to be processed.
+- *process_mask_img* is a subset of the brain mask and defines the boundaries 
+  of where the searchlight scans the volume. Often times we are interested in
+  only performing a searchlight within a specific area of the brain (e.g., 
+  frontal cortex). If no *process_mask_img* is set, then :class:`SearchLight` 
+  defaults to performing a searchlight over the whole brain.  
 
-*process_mask_img* will then be used to restrain computation to one slice, in the
-back of the brain. *mask_img* will ensure that no value outside the brain is
-taken into account when iterating with the sphere.
+*mask_img* ensures that only voxels with useable signals are included in the 
+searchlight. This could be a full-brain mask or a gray-matter mask. 
 
-.. literalinclude:: ../../examples/02_decoding/plot_haxby_searchlight.py
-        :start-after: #   brain to speed up computation)
-        :end-before: # Searchlight computation
 
-Third Step: Setting up the searchlight
-=======================================
+Setting up the searchlight
+==========================
 
 Classifier
 ----------
 
 The classifier used by default by :class:`SearchLight` is LinearSVC with C=1 but
-this can be customed easily by passing an estimator parameter to the
-cross validation. See scikit-learn documentation for `other classifiers
-<http://scikit-learn.org/stable/supervised_learning.html>`_.
+this can be customized easily by passing an estimator parameter to the
+Searchlight. See scikit-learn documentation for `other classifiers
+<http://scikit-learn.org/stable/supervised_learning.html>`_. You can 
+also pass scikit-learn `Pipelines <https://scikit-learn.org/stable/modules/compose.html>`_
+to the :class:`SearchLight` in order to combine estimators and preprocessing steps 
+(e.g., feature scaling) for your searchlight.
 
 Score function
 --------------
 
-Here we use precision as metrics to measure the proportion of true
-positives among all positive results for one class. Others metrics can be
-specified by the "scoring" argument to the :class:`SearchLight`, as
+Metrics can be specified by the "scoring" argument to the :class:`SearchLight`, as
 detailed in the `scikit-learn documentation
 <http://scikit-learn.org/dev/modules/model_evaluation.html#the-scoring-parameter-defining-model-evaluation-rules>`_
 
@@ -91,30 +89,38 @@ Cross validation
 
 :class:`SearchLight` will iterate on the volume and give a score to each voxel. This
 score is computed by running a classifier on selected voxels. In order to make
-this score as accurate as possible (and avoid overfitting), a cross validation
-is made.
+this score as accurate as possible (and avoid overfitting), cross-validation
+is used.
 
-As :class:`SearchLight` is computationally costly, we have chosen a cross
-validation method that does not take too much time.
-*K*-Fold along with *K* = 4 is a
-good compromise between running time and quality.
+Cross-validation can be defined using the "cv" argument. As it
+is computationally costly, *K*-Fold cross validation with *K* = 3 is set as the 
+default. A `scikit-learn cross-validation generator 
+<https://scikit-learn.org/stable/modules/classes.html#splitter-classes>`_ can also 
+be passed to set a specific type of cross-validation. 
 
-.. literalinclude:: ../../examples/02_decoding/plot_haxby_searchlight.py
-    :start-after: # set once and the others as learning sets
-    :end-before: import nilearn.decoding
+Leave-one-run-out cross-validation (LOROCV) is a common approach for searchlights. 
+This approach is a specific use-case of grouped cross-validation, where the 
+cross-validation folds are determined by the acquisition runs. The held-out fold
+in a given iteration of cross-validation consist of data from a separate run, 
+which keeps training and validation sets properly independent. For this reason, 
+LOROCV is often recommended. This can be performed by using `LeaveOneGroupOut 
+<https://scikit-learn.org/stable/modules/generated/sklearn.model_selection.LeaveOneGroupOut.html>`_,
+and then setting the group/run labels when fitting the estimator. 
 
-Running Searchlight
-===================
+Sphere radius
+-------------
 
-Running :class:`SearchLight` is straightforward now that everything is set.
-The only
-parameter left is the radius of the ball that will run through the data.
-Kriegskorte et al. use a 5.6mm radius because it yielded the best detection
-performance in their simulation.
+An important parameter is the radius of the sphere that will run through 
+the data. The sphere size determines the number of voxels/features to use 
+for classification (i.e. more voxels are included with larger spheres). 
 
-.. literalinclude:: ../../examples/02_decoding/plot_haxby_searchlight.py
-    :start-after: cv = KFold(n_splits=4)
-    :end-before: # F-scores computation
+.. note::
+
+    :class:`SearchLight` defines sphere radius in milimeters; the number 
+    of voxels included in the sphere will therefore depend on the voxel size. 
+
+    For reference, Kriegskorte et al. use a 4mm radius because it yielded 
+    the best detection performance in their simulation of 2mm isovoxel data.
 	
 Visualization
 =============
@@ -122,14 +128,14 @@ Visualization
 Searchlight
 -----------
 
-As the activation map is cropped, we use the mean image of all scans as a
-background. We can see here that voxels in the visual cortex contains
-information to distinguish pictures showed to the volunteers, which was the
-expected result.
-
-.. literalinclude:: ../../examples/02_decoding/plot_haxby_searchlight.py
-    :start-after: # Visualization
-    :end-before: # F_score results
+The results of the searchlight can be found in the `scores_` attribute of the 
+:class:`SearchLight` object after fitting it to the data. Below is a 
+visualization of the results from :ref:`Searchlight analysis of face 
+vs house recognition <sphx_glr_auto_examples_02_decoding_plot_haxby_searchlight.py>`.
+The searchlight was restriced to a slice in the back of the brain. Within 
+this slice, we can see that a cluster of voxels in visual cortex 
+contains information to distinguish pictures showed to the volunteers, 
+which was the expected result.
 
 .. figure:: ../auto_examples/02_decoding/images/sphx_glr_plot_haxby_searchlight_001.png
    :target: ../auto_examples/02_decoding/plot_haxby_searchlight.html
@@ -148,9 +154,6 @@ Parametric Mapping* (SPM), using ANOVA (analysis of variance), and
 parametric tests (F-tests ot t-tests).
 Here we compute the *p-values* of the voxels [1]_.
 To display the results, we use the negative log of the p-value.
-
-.. literalinclude:: ../../examples/02_decoding/plot_haxby_searchlight.py
-    :start-after: # F_score results
 
 .. figure:: ../auto_examples/02_decoding/images/sphx_glr_plot_haxby_searchlight_002.png
    :target: ../auto_examples/02_decoding/plot_haxby_searchlight.html
@@ -184,10 +187,6 @@ distribution: The higher the rank of the original score, the smaller
 is its associated p-value. The
 :func:`nilearn.mass_univariate.permuted_ols` function returns the
 p-values computed with a permutation test.
-
-.. literalinclude:: ../../examples/05_advanced/plot_haxby_mass_univariate.py
-   :start-after: # Perform massively univariate analysis with permuted OLS
-   :end-before: neg_log_pvals_unmasked
 
 The number of tests performed is generally large when full-brain
 analysis is performed (> 50,000 voxels). This increases the
@@ -249,3 +248,8 @@ viewing faces.
     signal). nilearn
     :func:`nilearn.mass_univariate.permuted_ols` function automatically
     adopts the suitable strategy according to the input data.
+
+.. topic:: **Example code**
+
+   All the steps discussed in this section can be seen implemented in
+   :ref:`a full code example <sphx_glr_auto_examples_02_decoding_plot_haxby_searchlight.py>`.

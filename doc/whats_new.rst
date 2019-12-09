@@ -3,6 +3,15 @@
 
 NEW
 ---
+.. warning::
+
+  - :func:`nilearn.plotting.view_connectome` no longer accepts old parameter names.
+    Instead of `coords`, `threshold`, `cmap`, and `marker_size`,
+    use `node_coords`, `edge_threshold`, `edge_cmap`, `node_size` respectively.
+
+  - :func:`nilearn.plotting.view_markers` no longer accepts old parameter names.
+    Instead of `coord` and `color`, use `marker_coords` and `marker_color` respectively.
+
 
 - **Support for Python3.5 wil be removed in the 0.7.x release.**
   Users with a Python3.5 environment will be warned
@@ -23,11 +32,15 @@ Changes
 Fixes
 -----
 
+- :class:`nilearn.input_data.NiftiLabelsMasker` no longer truncates region means to their integral part
+  when input images are of integer type.
 - :func: `nilearn.image.smooth_image` no longer fails if `fwhm` is a `numpy.ndarray`.
 - `pip install nilearn` now installs the necessary dependencies.
 - :func:`nilearn.image.new_img_like` no longer attempts to copy non-iterable headers. (PR #2212)
 - Nilearn no longer raises ImportError for nose when Matplotlib is not installed.
 - The arg `version='det'` in :func:`nilearn.datasets.fetch_atlas_pauli_2017` now  works as expected.
+- :func:`nilearn.input_data.NiftiLabelsMasker.inverse_transform` now works without the need to call
+  transform first.
 
 Contributors
 ------------

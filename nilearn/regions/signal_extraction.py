@@ -116,9 +116,10 @@ def img_to_signals_labels(imgs, labels_img, mask_img=None,
         labels_data[np.logical_not(mask_data)] = background_label
 
     data = _safe_get_data(imgs)
+    target_datatype = np.float32 if data.dtype == np.float32 else np.float64
+    # Nilearn issue: 2135, PR: 2195 for why this is necessary.
     signals = np.ndarray((data.shape[-1], len(labels)), order=order,
-                         dtype=data.dtype)
-
+                         dtype=target_datatype)
     reduction_function = getattr(ndimage.measurements, strategy)
     for n, img in enumerate(np.rollaxis(data, -1)):
         signals[n] = np.asarray(reduction_function(img,

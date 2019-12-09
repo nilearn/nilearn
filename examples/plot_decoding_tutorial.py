@@ -21,10 +21,10 @@ meant to be copied to analyze new data: many of the steps are unecessary.
 
 ###########################################################################
 # Retrieve and load the fMRI data from the  Haxby study
-# -----------------------------------------------------
+# ------------------------------------------------------
 #
 # First download the data
-# .......................
+# ........................
 #
 # The :func:`nilearn.datasets.fetch_haxby` function will download the
 # Haxby dataset if not present on the disk, in the nilearn data directory.
@@ -40,34 +40,55 @@ print('First subject functional nifti images (4D) are at: %s' %
       fmri_filename)  # 4D data
 
 ###########################################################################
-# Convert the fMRI volume's to a data matrix
-# ..........................................
+# Visualizing the fmri volume
+# ............................
 #
-# We will use the :class:`nilearn.input_data.NiftiMasker` to extract the
-# fMRI data on a mask and convert it to data series.
+# One way to visualize a fmri volume is using :func:`nilearn.plotting.plot_epi`.
+# We will visualize the previously fecthed fmri data from Haxby dataset.
 #
-# The mask is a mask of the Ventral Temporal streaming coming from the
-# Haxby study:
+# Because fmri data is 4D (it consists of many 3D EPI images), we cannot 
+# plot it directly using :func:`nilearn.plotting.plot_epi` (which accepts 
+# just 3D input). Here we are using :func:`nilearn.image.mean_img` to 
+# extract a single 3D EPI image from the fmri data.
+#
+from nilearn import plotting
+from nilearn.image import mean_img
+plotting.view_img(mean_img(fmri_filename), threshold=None)
+
+###########################################################################
+# Feature extraction: from fMRI volumes to a data matrix
+# .......................................................
+#
+# These are some really lovely images, but for machine learning we need 
+# matrices to work with the actual data. To transform our Nifti images into
+# matrices, we will use the :class:`nilearn.input_data.NiftiMasker` to 
+# extract the fMRI data on a mask and convert it to data series.
+#
+# A mask of the Ventral Temporal (VT) cortex coming from the
+# Haxby study is available:
 mask_filename = haxby_dataset.mask_vt[0]
 
 # Let's visualize it, using the subject's anatomical image as a
 # background
-from nilearn import plotting
 plotting.plot_roi(mask_filename, bg_img=haxby_dataset.anat[0],
                  cmap='Paired')
 
 ###########################################################################
 # Now we use the NiftiMasker.
 #
-# We first create a masker, giving it the options that we care
-# about. Here we use standardizing of the data, as it is often important
-# for decoding
+# We first create a masker, and ask it to normalize the data to improve the
+# decoding. The masker will extract a 2D array ready for machine learning
+# with nilearn:
 from nilearn.input_data import NiftiMasker
 masker = NiftiMasker(mask_img=mask_filename, standardize=True)
-
-# We give the masker a filename and retrieve a 2D array ready
-# for machine learning with scikit-learn
 fmri_masked = masker.fit_transform(fmri_filename)
+
+###########################################################################
+# .. seealso::
+# 	You can ask the NiftiMasker to derive a mask given the data. In
+# 	this case, it is interesting to have a look at a report to see the
+# 	computed mask by using `masker.generate_report`.
+masker.generate_report()
 
 ###########################################################################
 # The variable "fmri_masked" is a numpy array:
@@ -79,40 +100,74 @@ print(fmri_masked)
 print(fmri_masked.shape)
 
 ###########################################################################
-# Load the behavioral labels
-# ..........................
+# One way to think about what just happened is to look at it visually:
 #
-# The behavioral labels are stored in a CSV file, separated by spaces.
+# .. image:: /images/masking.jpg
+#
+# Essentially, we can think about overlaying a 3D grid on an image. Then,
+# our mask tells us which cubes or "voxels" (like 3D pixels) to sample from.
+# Since our Nifti images are 4D files, we can't overlay a single grid --
+# instead, we use a series of 3D grids (one for each volume in the 4D file),
+# so we can get a measurement for each voxel at each timepoint. These are
+# reflected in the shape of the matrix ! You can check this by checking the
+# number of non-negative voxels in our binary brain mask.
+#
+# .. seealso::
+# 	There are many other strategies in Nilearn :ref:`for masking data and for
+# 	generating masks <computing_and_applying_mask>`
+# 	I'd encourage you to spend some time exploring the documentation for these.
+# 	We can also `display this time series :ref:`sphx_glr_auto_examples_03_connectivity_plot_sphere_based_connectome.py` to get an intuition of how the
+# 	whole brain signal is changing over time.
+#
+# We'll display the first three voxels by sub-selecting values from the
+# matrix. You can also find more information on how to slice arrays `here
+# <https://docs.scipy.org/doc/numpy-1.13.0/reference/arrays.indexing.html#basic-slicing-and-indexing>`_.
+import matplotlib.pyplot as plt
+plt.plot(fmri_masked[5:150, :3])
+
+plt.title('Voxel Time Series')
+plt.xlabel('Scan number')
+plt.ylabel('Normalized signal')
+plt.tight_layout()
+
+###########################################################################
+# Load the behavioral labels
+# ...........................
+#
+# Now that the brain images are converted to a data matrix, we can apply 
+# machine-learning to them, for instance to predict the task that the subject 
+# was doing. The behavioral labels are stored in a CSV file, separated by
+# spaces.
 #
 # We use pandas to load them in an array.
 import pandas as pd
 # Load behavioral information
-behavioral = pd.read_csv(haxby_dataset.session_target[0], sep=" ")
+behavioral = pd.read_csv(haxby_dataset.session_target[0], delimiter=' ')
 print(behavioral)
 
 ###########################################################################
-# Retrieve the experimental conditions, that we are going to use as
-# prediction targets in the decoding
+# The task was a visual-recognition task, and the labels denote the 
+# experimental condition: the type of object that was presented to the 
+# subject. This is what we are going to try to predict.
 conditions = behavioral['labels']
-print(conditions)
+conditions
 
 ###########################################################################
 # Restrict the analysis to cats and faces
 # ........................................
 #
 # As we can see from the targets above, the experiment contains many
-# conditions, not all that interest us for decoding.
-#
-# To keep only data corresponding to faces or cats, we create a
-# mask of the samples belonging to the condition.
-condition_mask = conditions.isin(['face', 'cat'])
-
-# We apply this mask in the sampe direction to restrict the
-# classification to the face vs cat discrimination
-fmri_masked = fmri_masked[condition_mask]
+# conditions. As a consequence the data is quite big:
+print(fmri_masked.shape)
 
 ###########################################################################
-# We now have less samples
+# Not all of this data has an interest to us for decoding, so we will keep
+# only fmri signals corresponding to faces or cats. We create a mask of
+# the samples belonging to the condition; this mask is then applied to the
+# fmri data to restrict the classification to the face vs cat discrimination.
+# As a consequence, the input data is much small (i.e. fmri signal is shorter):
+condition_mask = conditions.isin(['face', 'cat'])
+fmri_masked = fmri_masked[condition_mask]
 print(fmri_masked.shape)
 
 ###########################################################################
@@ -123,7 +178,7 @@ print(conditions.shape)
 
 ###########################################################################
 # Decoding with an SVM
-# ----------------------
+# ---------------------
 #
 # We will now use the `scikit-learn <http://www.scikit-learn.org>`_
 # machine-learning toolbox on the fmri_masked data.
@@ -175,7 +230,7 @@ print((prediction == conditions[-30:]).sum() / float(len(conditions[-30:])))
 
 ###########################################################################
 # Implementing a KFold loop
-# .........................
+# ..........................
 #
 # We can split the data in train and test set repetitively in a `KFold`
 # strategy:
@@ -202,10 +257,10 @@ cv_score = cross_val_score(svc, fmri_masked, conditions)
 print(cv_score)
 
 ###########################################################################
-# Note that we can speed things up to use all the CPUs of our computer
-# with the n_jobs parameter.
-
-###########################################################################
+# .. note::
+# 	We can speed things up to use all the CPUs of our computer with the
+# 	n_jobs parameter.
+# 
 # The best way to do cross-validation is to respect the structure of
 # the experiment, for instance by leaving out full sessions of
 # acquisition.
@@ -220,7 +275,11 @@ session_label = behavioral['chunks'][condition_mask]
 cv_score = cross_val_score(svc, fmri_masked, conditions, cv=cv)
 print(cv_score)
 
-# To leave a session out, pass it to the groups parameter of cross_val_score.
+###########################################################################
+# The fMRI data is acquired by sessions, and the noise is autocorrelated
+# in a given session. Hence, it is better to predict across sessions when
+# doing cross-validation. To leave a session out, pass it to the groups
+# parameter of cross_val_score.
 from sklearn.model_selection import LeaveOneGroupOut
 cv = LeaveOneGroupOut()
 cv_score = cross_val_score(svc,
@@ -230,7 +289,6 @@ cv_score = cross_val_score(svc,
                            groups=session_label,
                            )
 print(cv_score)
-
 
 ###########################################################################
 # Inspecting the model weights
@@ -246,7 +304,7 @@ coef_ = svc.coef_
 print(coef_)
 
 ###########################################################################
-# It's a numpy array
+# It's a numpy array with only one coefficient per voxel:
 print(coef_.shape)
 
 ###########################################################################

@@ -281,11 +281,6 @@ trim_doctests_flags = True
 
 _python_doc_base = 'http://docs.python.org/3.6'
 
-# Scraper, copied from https://github.com/mne-tools/mne-python/
-from nilearn.reporting import _ReportScraper
-report_scraper = _ReportScraper()
-scrapers = ('matplotlib', report_scraper)
-
 # Example configuration for intersphinx: refer to the Python standard library.
 intersphinx_mapping = {
     'python': (_python_doc_base, None),
@@ -307,7 +302,6 @@ sphinx_gallery_conf = {
     'backreferences_dir': os.path.join('modules', 'generated'),
     'reference_url': {'nilearn': None},
     'junit': '../test-results/sphinx-gallery/junit.xml',
-    'image_scrapers': scrapers,
     }
 
 # Get rid of spurious warnings due to some interaction between
@@ -332,4 +326,3 @@ def touch_example_backreferences(app, what, name, obj, options, lines):
 def setup(app):
     app.add_javascript('copybutton.js')
     app.connect('autodoc-process-docstring', touch_example_backreferences)
-    report_scraper.app = app
