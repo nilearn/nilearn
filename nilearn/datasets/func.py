@@ -2156,8 +2156,6 @@ def fetch_surf_tva_localizer(data_dir=None, verbose=1, resume=True):
 
     # Preliminary checks and declarations
     dataset_name = 'intertva_localizer_surface'
-    #data_dir = _get_dataset_dir(dataset_name, data_dir=data_dir,
-    #                            verbose=verbose)
     intertva_dir = _get_dataset_dir(dataset_name, data_dir=data_dir)
     dataset_dir = _get_dataset_dir('InterTVA_sub-41_surfdata', data_dir=intertva_dir)
     url = 'https://osf.io/aekp7/download'
@@ -2167,8 +2165,6 @@ def fetch_surf_tva_localizer(data_dir=None, verbose=1, resume=True):
 
     # First, get the metadata, i.e the labels to be used for the searchlight decoding
     label_path = 'labels_voicelocalizer_voice_vs_nonvoice.tsv'
-    #label_file = (label_path, url + 'InterTVA_sub-41_surfdata/{}'.format(label_path),
-    #              {'move': label_path})
     label_file = (label_path, url , {'uncompress': True})
 
     label_localpath = _fetch_files(dataset_dir, [label_file], resume=resume,verbose=verbose)[0]
@@ -2187,7 +2183,6 @@ def fetch_surf_tva_localizer(data_dir=None, verbose=1, resume=True):
         gifti_file_list.append(gifti_file)
 
     giftis = _fetch_files(dataset_dir, gifti_file_list, resume=resume, verbose=verbose)
-    #giftis = []
 
     return Bunch(func_left=giftis,
                  mask=mask,

@@ -688,7 +688,7 @@ def test_fetch_surf_tva_localizer():
 
     n_files = 144
 
-    assert_equal(len(data), 3)
+    assert_equal(len(data), 4)
     assert_true(isinstance(data.phenotypic, np.ndarray))
     assert_equal(data.phenotypic.shape, (n_files,))
     assert_not_equal(data.description, '')
