@@ -18,7 +18,7 @@ print('Datasets are stored in: %r' % datasets.get_data_dirs())
 ###############################################################################
 # Let's now retrieve a motor contrast from a Neurovault repository
 motor_images = datasets.fetch_neurovault_motor_task()
-print(motor_images.images)
+motor_images.images
 
 ###############################################################################
 # motor_images is a list of filenames. We need to take the first one
@@ -46,7 +46,7 @@ plotting.plot_stat_map(tmap_filename, threshold=3)
 # We can download resting-state networks from the Smith 2009 study on
 # correspondance between rest and task
 rsn = datasets.fetch_atlas_smith_2009()['rsn10']
-print(rsn)
+rsn
 
 ###############################################################################
 # It is a 4D nifti file. We load it into the memory to print its
@@ -79,6 +79,26 @@ for img in image.iter_img(rsn):
     # img is now an in-memory 3D img
     plotting.plot_stat_map(img, threshold=3, display_mode="z", cut_coords=1,
                            colorbar=False)
+
+
+###############################################################################
+# Looping through selected volumes in a 4D file
+# ---------------------------------------------
+#
+# If we want to plot selected volumes in this 4D file, we can use index_img
+# with the `slice` constructor to select the desired volumes. 
+# 
+# Afterwards, we'll use iter_img to loop through them following the same 
+# formula as before.
+selected_volumes = image.index_img(rsn, slice(3, 5))
+
+###############################################################################
+# If you're new to Python, one thing to note is that the slice constructor
+# uses 0-based indexing. You can confirm this by matching these slices
+# to the previous plot above.
+
+for img in image.iter_img(selected_volumes):
+    plotting.plot_stat_map(img)
 
 
 ###############################################################################
