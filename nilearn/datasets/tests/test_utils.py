@@ -13,6 +13,7 @@ import tarfile
 import gzip
 from tempfile import mkdtemp, mkstemp
 
+import pytest
 from nose import with_setup
 
 from nilearn import datasets
@@ -24,6 +25,28 @@ datadir = os.path.join(currdir, 'data')
 tmpdir = None
 url_request = None
 file_mock = None
+
+
+@pytest.fixture
+def temp_dir_path(tmp_path):
+    """ Fixture to create a temporary directory path for tests.
+
+    Cleans up after the tests:
+        deletes locally scoped objects from memory;
+        removes the tree and its files.
+
+    Yields
+    ------
+
+    temp_path: string
+        Temporary directory path.
+    """
+    temp_path = str(tmp_path)
+    yield temp_path
+    local_objects = locals()
+    for local_object_ in local_objects:
+        del local_object_
+    shutil.rmtree(temp_path)
 
 
 def setup_tmpdata():
