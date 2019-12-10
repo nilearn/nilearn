@@ -1,9 +1,7 @@
 import numpy as np
 import nibabel
 
-from nose.tools import assert_true
-from nilearn._utils.testing import (assert_less_equal, assert_raises_regex,
-                                    write_tmp_imgs)
+from nilearn._utils.testing import write_tmp_imgs
 from nilearn.decomposition.dict_learning import DictLearning
 from nilearn.decomposition.tests.test_canica import _make_canica_test_data
 from nilearn.image import iter_img, get_data
@@ -67,7 +65,7 @@ def test_component_sign():
     data, mask_img, components, rng = _make_canica_test_data(n_subjects=2,
                                                              noisy=True)
     for mp in components:
-        assert_less_equal(-mp.min(), mp.max())
+        assert -mp.min() <= mp.max()
 
     dict_learning = DictLearning(n_components=4, random_state=rng,
                                  mask=mask_img,
@@ -75,7 +73,7 @@ def test_component_sign():
     dict_learning.fit(data)
     for mp in iter_img(dict_learning.components_img_):
         mp = get_data(mp)
-        assert_less_equal(np.sum(mp[mp <= 0]), np.sum(mp[mp > 0]))
+        assert np.sum(mp[mp <= 0]) <= np.sum(mp[mp > 0])
 
 
 def test_masker_attributes_with_fit():
@@ -84,23 +82,24 @@ def test_masker_attributes_with_fit():
     # Passing mask_img
     dict_learning = DictLearning(n_components=3, mask=mask_img, random_state=0)
     dict_learning.fit(data)
-    assert_true(dict_learning.mask_img_ == mask_img)
-    assert_true(dict_learning.mask_img_ == dict_learning.masker_.mask_img_)
+    assert dict_learning.mask_img_ == mask_img
+    assert dict_learning.mask_img_ == dict_learning.masker_.mask_img_
     # Passing masker
     masker = NiftiMasker(mask_img=mask_img)
     dict_learning = DictLearning(n_components=3, mask=masker, random_state=0)
     dict_learning.fit(data)
-    assert_true(dict_learning.mask_img_ == dict_learning.masker_.mask_img_)
+    assert dict_learning.mask_img_ == dict_learning.masker_.mask_img_
     dict_learning = DictLearning(mask=mask_img, n_components=3)
-    assert_raises_regex(ValueError,
-                        "Object has no components_ attribute. "
-                        "This is probably because fit has not been called",
-                        dict_learning.transform, data)
+    np.testing.assert_raises_regex(ValueError,
+                                   "Object has no components_ attribute. "
+                                   "This is probably because "
+                                   "fit has not been called",
+                                   dict_learning.transform, data)
     # Test if raises an error when empty list of provided.
-    assert_raises_regex(ValueError,
-                        'Need one or more Niimg-like objects as input, '
-                        'an empty list was given.',
-                        dict_learning.fit, [])
+    np.testing.assert_raises_regex(ValueError,
+                                   'Need one or more Niimg-like objects '
+                                   'as input, an empty list was given.',
+                                   dict_learning.fit, [])
     # Test passing masker arguments to estimator
     dict_learning = DictLearning(n_components=3,
                                  target_affine=np.eye(4),
@@ -115,9 +114,9 @@ def test_components_img():
     dict_learning = DictLearning(n_components=n_components, mask=mask_img)
     dict_learning.fit(data)
     components_img = dict_learning.components_img_
-    assert_true(isinstance(components_img, nibabel.Nifti1Image))
+    assert isinstance(components_img, nibabel.Nifti1Image)
     check_shape = data[0].shape + (n_components,)
-    assert_true(components_img.shape, check_shape)
+    assert components_img.shape, check_shape
 
 
 def test_with_globbing_patterns_with_single_subject():
@@ -129,10 +128,10 @@ def test_with_globbing_patterns_with_single_subject():
         input_image = _tmp_dir() + img
         dictlearn.fit(input_image)
         components_img = dictlearn.components_img_
-        assert_true(isinstance(components_img, nibabel.Nifti1Image))
+        assert isinstance(components_img, nibabel.Nifti1Image)
         # n_components = 3
         check_shape = data[0].shape[:3] + (3,)
-        assert_true(components_img.shape, check_shape)
+        assert components_img.shape, check_shape
 
 
 def test_with_globbing_patterns_with_multi_subjects():
@@ -145,7 +144,7 @@ def test_with_globbing_patterns_with_multi_subjects():
         input_image = _tmp_dir() + img
         dictlearn.fit(input_image)
         components_img = dictlearn.components_img_
-        assert_true(isinstance(components_img, nibabel.Nifti1Image))
+        assert isinstance(components_img, nibabel.Nifti1Image)
         # n_components = 3
         check_shape = data[0].shape[:3] + (3,)
-        assert_true(components_img.shape, check_shape)
+        assert components_img.shape, check_shape

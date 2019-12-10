@@ -6,10 +6,11 @@ import warnings
 import itertools
 
 from distutils.version import LooseVersion
-from nose import SkipTest
-from numpy.testing import (assert_array_equal, assert_array_almost_equal,
-                           assert_equal)
-from nose.tools import assert_true, assert_raises
+
+import pytest
+
+from numpy.testing import assert_array_equal, assert_array_almost_equal
+
 from nilearn._utils.testing import assert_raises_regex, assert_warns
 
 import numpy as np
@@ -84,15 +85,15 @@ def test_load_surf_data_gii_gz():
     # surface data
     fsaverage = datasets.fetch_surf_fsaverage().sulc_left
     gii = _load_surf_files_gifti_gzip(fsaverage)
-    assert_true(isinstance(gii, gifti.GiftiImage))
+    assert isinstance(gii, gifti.GiftiImage)
 
     data = load_surf_data(fsaverage)
-    assert_true(isinstance(data, np.ndarray))
+    assert isinstance(data, np.ndarray)
 
     # surface mesh
     fsaverage = datasets.fetch_surf_fsaverage().pial_left
     gii = _load_surf_files_gifti_gzip(fsaverage)
-    assert_true(isinstance(gii, gifti.GiftiImage))
+    assert isinstance(gii, gifti.GiftiImage)
 
 
 def test_load_surf_data_file_freesurfer():
@@ -119,7 +120,7 @@ def test_load_surf_data_file_freesurfer():
     label = load_surf_data(os.path.join(datadir, 'test.label'))
     assert_array_equal(label[:5], label_start)
     assert_array_equal(label[-5:], label_end)
-    assert_equal(label.shape, (10, ))
+    assert label.shape == (10, )
     del label, label_start, label_end
 
     annot_start = np.array([24, 29, 28, 27, 24, 31, 11, 25, 0, 12])
@@ -127,7 +128,7 @@ def test_load_surf_data_file_freesurfer():
     annot = load_surf_data(os.path.join(datadir, 'test.annot'))
     assert_array_equal(annot[:10], annot_start)
     assert_array_equal(annot[-10:], annot_end)
-    assert_equal(annot.shape, (10242, ))
+    assert annot.shape == (10242, )
     del annot, annot_start, annot_end
 
 
@@ -147,7 +148,7 @@ def test_load_surf_data_file_error():
 def test_load_surf_mesh_list():
     # test if correct list is returned
     mesh = generate_surf()
-    assert_equal(len(load_surf_mesh(mesh)), 2)
+    assert len(load_surf_mesh(mesh)) == 2
     assert_array_equal(load_surf_mesh(mesh)[0], mesh[0])
     assert_array_equal(load_surf_mesh(mesh)[1], mesh[1])
     # test if incorrect list, array or dict raises error
@@ -184,8 +185,8 @@ def test_load_surf_mesh_file_gii_gz():
 
     fsaverage = datasets.fetch_surf_fsaverage().pial_left
     coords, faces = load_surf_mesh(fsaverage)
-    assert_true(isinstance(coords, np.ndarray))
-    assert_true(isinstance(faces, np.ndarray))
+    assert isinstance(coords, np.ndarray)
+    assert isinstance(faces, np.ndarray)
 
 
 def test_load_surf_mesh_file_gii():
@@ -196,7 +197,7 @@ def test_load_surf_mesh_file_gii():
     # older versions
 
     if not LooseVersion(nb.__version__) >= LooseVersion('2.1.0'):
-        raise SkipTest
+        raise pytest.skip('Nibabel version too old to handle intent codes')
 
     mesh = generate_surf()
 
@@ -233,15 +234,11 @@ def test_load_surf_mesh_file_gii():
 
 
 def test_load_surf_mesh_file_freesurfer():
-    # Older nibabel versions does not support 'write_geometry'
-    if LooseVersion(nb.__version__) <= LooseVersion('1.2.0'):
-        raise SkipTest
-
     mesh = generate_surf()
     for suff in ['.pial', '.inflated', '.white', '.orig', 'sphere']:
         filename_fs_mesh = tempfile.mktemp(suffix=suff)
         nb.freesurfer.write_geometry(filename_fs_mesh, mesh[0], mesh[1])
-        assert_equal(len(load_surf_mesh(filename_fs_mesh)), 2)
+        assert len(load_surf_mesh(filename_fs_mesh)) == 2
         assert_array_almost_equal(load_surf_mesh(filename_fs_mesh)[0],
                                   mesh[0])
         assert_array_almost_equal(load_surf_mesh(filename_fs_mesh)[1],
@@ -250,9 +247,6 @@ def test_load_surf_mesh_file_freesurfer():
 
 
 def test_load_surf_mesh_file_error():
-    if LooseVersion(nb.__version__) <= LooseVersion('1.2.0'):
-        raise SkipTest
-
     # test if files with unexpected suffixes raise errors
     mesh = generate_surf()
     wrong_suff = ['.vtk', '.obj', '.mnc', '.txt']
@@ -279,7 +273,7 @@ def test_load_surf_mesh_file_glob():
                         load_surf_mesh,
                         os.path.join(os.path.dirname(fname1),
                                      "*.unlikelysuffix"))
-    assert_equal(len(load_surf_mesh(fname1)), 2)
+    assert len(load_surf_mesh(fname1)) == 2
     assert_array_almost_equal(load_surf_mesh(fname1)[0], mesh[0])
     assert_array_almost_equal(load_surf_mesh(fname1)[1], mesh[1])
 
@@ -383,7 +377,7 @@ def test_load_uniform_ball_cloud():
         with warnings.catch_warnings(record=True) as w:
             points = surface._load_uniform_ball_cloud(n_points=n_points)
             assert_array_equal(points.shape, (n_points, 3))
-            assert_equal(len(w), 0)
+            assert len(w) == 0
     assert_warns(surface.EfficiencyWarning,
                  surface._load_uniform_ball_cloud, n_points=3)
     for n_points in [3, 7]:
@@ -419,7 +413,7 @@ def test_sample_locations():
         true_locations = np.asarray([vertex + offsets for vertex in mesh[0]])
         assert_array_equal(locations.shape, true_locations.shape)
         assert_array_almost_equal(true_locations, locations)
-    assert_raises(ValueError, surface._sample_locations,
+    pytest.raises(ValueError, surface._sample_locations,
                   mesh, affine, 1., kind='bad_kind')
 
 
@@ -429,11 +423,11 @@ def test_masked_indices():
     locations = np.mgrid[:5, :3, :8].ravel().reshape((3, -1))
     masked = surface._masked_indices(locations.T, mask.shape, mask)
     # These elements are masked by the mask
-    assert_true((masked[::2] == 1).all())
+    assert (masked[::2] == 1).all()
     # The last element of locations is one row beyond first image dimension
-    assert_true((masked[-24:] == 1).all())
+    assert (masked[-24:] == 1).all()
     # 4 * 3 * 8 / 2 elements should remain unmasked
-    assert_true((1 - masked).sum() == 48)
+    assert (1 - masked).sum() == 48
 
 
 def test_projection_matrix():
@@ -442,7 +436,7 @@ def test_projection_matrix():
     proj = surface._projection_matrix(
         mesh, np.eye(4), img.shape, radius=2., n_points=10)
     # proj matrix has shape (n_vertices, img_size)
-    assert_equal(proj.shape, (5 * 7, 5 * 7 * 13))
+    assert proj.shape == (5 * 7, 5 * 7 * 13)
     # proj.dot(img) should give the values of img at the vertices' locations
     values = proj.dot(img.ravel()).reshape((5, 7))
     assert_array_almost_equal(values, img[:, :, 0])
@@ -459,7 +453,7 @@ def test_projection_matrix():
     assert_array_almost_equal(proj.sum(axis=1)[:7], np.zeros(7))
     assert_array_almost_equal(proj.sum(axis=1)[7:], np.ones(proj.shape[0] - 7))
     # mask and img should have the same shape
-    assert_raises(ValueError, surface._projection_matrix,
+    pytest.raises(ValueError, surface._projection_matrix,
                   mesh, np.eye(4), img.shape, mask=np.ones((3, 3, 2)))
 
 
@@ -495,7 +489,7 @@ def test_sampling():
                                    kind=kind, radius=0., mask=mask)
             assert_array_almost_equal(projection.ravel()[7:],
                                       img[1:, :, 0].ravel())
-            assert_true(np.isnan(projection.ravel()[:7]).all())
+            assert np.isnan(projection.ravel()[:7]).all()
 
 
 def test_vol_to_surf():
@@ -515,7 +509,7 @@ def _check_vol_to_surf_results(img, mesh):
         proj_1 = vol_to_surf(
             img, mesh, kind=kind, interpolation=interpolation,
             mask_img=mask_img)
-        assert_true(proj_1.ndim == 1)
+        assert proj_1.ndim == 1
         img_rot = image.resample_img(
             img, target_affine=rotation(np.pi / 3., np.pi / 4.))
         proj_2 = vol_to_surf(
@@ -524,7 +518,7 @@ def _check_vol_to_surf_results(img, mesh):
         # The projection values for the rotated image should be close
         # to the projection for the original image
         diff = np.abs(proj_1 - proj_2) / np.abs(proj_1)
-        assert_true(np.mean(diff[diff < np.inf]) < .03)
+        assert np.mean(diff[diff < np.inf]) < .03
         img_4d = image.concat_imgs([img, img])
         proj_4d = vol_to_surf(
             img_4d, mesh, kind=kind, interpolation=interpolation,
@@ -542,4 +536,4 @@ def test_check_mesh_and_data():
     assert (m[1] == mesh[1]).all()
     assert (d == data).all()
     data = mesh[0][::2, 0]
-    assert_raises(ValueError, surface.check_mesh_and_data, mesh, data)
+    pytest.raises(ValueError, surface.check_mesh_and_data, mesh, data)
