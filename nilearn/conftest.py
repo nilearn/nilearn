@@ -1,3 +1,5 @@
+import shutil
+
 from distutils.version import LooseVersion
 
 import numpy as np
@@ -28,3 +30,25 @@ def pytest_collection_modifyitems(items):
         for item in items:
             if isinstance(item, DoctestItem):
                 item.add_marker(skip_marker)
+
+
+@pytest.fixture
+def temp_dir_path(tmp_path):
+    """ Fixture to create a temporary directory path for tests.
+
+    Cleans up after the tests:
+        deletes locally scoped objects from memory;
+        removes the tree and its files.
+
+    Yields
+    ------
+
+    temp_path: string
+        Temporary directory path.
+    """
+    temp_path = str(tmp_path)
+    yield temp_path
+    local_objects = locals()
+    for local_object_ in local_objects:
+        del local_object_
+    shutil.rmtree(temp_path)
