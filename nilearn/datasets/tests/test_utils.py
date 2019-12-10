@@ -14,7 +14,6 @@ import gzip
 from tempfile import mkdtemp, mkstemp
 
 from nose import with_setup
-from nose.tools import assert_true, assert_false, assert_equal
 
 from nilearn import datasets
 from nilearn._utils.testing import (mock_request, wrap_chunk_read_,
@@ -80,21 +79,21 @@ def test_get_dataset_dir():
 
     expected_base_dir = os.path.expanduser('~/nilearn_data')
     data_dir = datasets.utils._get_dataset_dir('test', verbose=0)
-    assert_equal(data_dir, os.path.join(expected_base_dir, 'test'))
+    assert data_dir == os.path.join(expected_base_dir, 'test')
     assert os.path.exists(data_dir)
     shutil.rmtree(data_dir)
 
     expected_base_dir = os.path.join(tmpdir, 'test_nilearn_data')
     os.environ['NILEARN_DATA'] = expected_base_dir
     data_dir = datasets.utils._get_dataset_dir('test', verbose=0)
-    assert_equal(data_dir, os.path.join(expected_base_dir, 'test'))
+    assert data_dir == os.path.join(expected_base_dir, 'test')
     assert os.path.exists(data_dir)
     shutil.rmtree(data_dir)
 
     expected_base_dir = os.path.join(tmpdir, 'nilearn_shared_data')
     os.environ['NILEARN_SHARED_DATA'] = expected_base_dir
     data_dir = datasets.utils._get_dataset_dir('test', verbose=0)
-    assert_equal(data_dir, os.path.join(expected_base_dir, 'test'))
+    assert data_dir == os.path.join(expected_base_dir, 'test')
     assert os.path.exists(data_dir)
     shutil.rmtree(data_dir)
 
@@ -102,7 +101,7 @@ def test_get_dataset_dir():
     expected_dataset_dir = os.path.join(expected_base_dir, 'test')
     data_dir = datasets.utils._get_dataset_dir(
         'test', default_paths=[expected_dataset_dir], verbose=0)
-    assert_equal(data_dir, os.path.join(expected_base_dir, 'test'))
+    assert data_dir == os.path.join(expected_base_dir, 'test')
     assert os.path.exists(data_dir)
     shutil.rmtree(data_dir)
 
@@ -116,7 +115,7 @@ def test_get_dataset_dir():
                                                default_paths=[no_write],
                                                verbose=0)
     # Non writeable dir is returned because dataset may be in there.
-    assert_equal(data_dir, no_write)
+    assert data_dir == no_write
     assert os.path.exists(data_dir)
     os.chmod(no_write, 0o600)
     shutil.rmtree(data_dir)
@@ -138,7 +137,7 @@ def test_md5_sum_file():
     out, f = mkstemp()
     os.write(out, b'abcfeg')
     os.close(out)
-    assert_equal(datasets.utils._md5_sum_file(f),
+    assert (datasets.utils._md5_sum_file(f) ==
                  '18f32295c556b2a1a3a8e68fe1ad40f7')
     os.remove(f)
 
@@ -150,10 +149,10 @@ def test_read_md5_sum_file():
              b'70886dcabe7bf5c5a1c24ca24e4cbd94  test/some_image.nii')
     os.close(out)
     h = datasets.utils._read_md5_sum_file(f)
-    assert_true('/tmp/test' in h)
-    assert_false('/etc/test' in h)
-    assert_equal(h['test/some_image.nii'], '70886dcabe7bf5c5a1c24ca24e4cbd94')
-    assert_equal(h['/tmp/test'], '20861c8c3fe177da19a7e9539a5dbac')
+    assert '/tmp/test' in h
+    assert not '/etc/test' in h
+    assert h['test/some_image.nii'] == '70886dcabe7bf5c5a1c24ca24e4cbd94'
+    assert h['/tmp/test'] == '20861c8c3fe177da19a7e9539a5dbac'
     os.remove(f)
 
 
@@ -186,13 +185,13 @@ def test_tree():
     # assert_equal(tree_[1]['dir2'][0], 'file21')
     # assert_equal(tree_[2], 'file1')
     # assert_equal(tree_[3], 'file2')
-    assert_equal(tree_[0][1][0][1][0], os.path.join(dir11, 'file111'))
-    assert_equal(len(tree_[0][1][1][1]), 0)
-    assert_equal(tree_[0][1][2], os.path.join(dir1, 'file11'))
-    assert_equal(tree_[0][1][3], os.path.join(dir1, 'file12'))
-    assert_equal(tree_[1][1][0], os.path.join(dir2, 'file21'))
-    assert_equal(tree_[2], os.path.join(parent, 'file1'))
-    assert_equal(tree_[3], os.path.join(parent, 'file2'))
+    assert tree_[0][1][0][1][0] == os.path.join(dir11, 'file111')
+    assert len(tree_[0][1][1][1]) == 0
+    assert tree_[0][1][2] == os.path.join(dir1, 'file11')
+    assert tree_[0][1][3] == os.path.join(dir1, 'file12')
+    assert tree_[1][1][0] == os.path.join(dir2, 'file21')
+    assert tree_[2] == os.path.join(parent, 'file1')
+    assert tree_[3] == os.path.join(parent, 'file2')
 
     # Clean
     shutil.rmtree(parent)
@@ -219,21 +218,21 @@ def test_movetree():
 
     datasets.utils.movetree(dir1, dir2)
 
-    assert_false(os.path.exists(dir11))
-    assert_false(os.path.exists(dir12))
-    assert_false(os.path.exists(os.path.join(dir1, 'file11')))
-    assert_false(os.path.exists(os.path.join(dir1, 'file12')))
-    assert_false(os.path.exists(os.path.join(dir11, 'file111')))
-    assert_false(os.path.exists(os.path.join(dir12, 'file121')))
+    assert not os.path.exists(dir11)
+    assert not os.path.exists(dir12)
+    assert not os.path.exists(os.path.join(dir1, 'file11'))
+    assert not os.path.exists(os.path.join(dir1, 'file12'))
+    assert not os.path.exists(os.path.join(dir11, 'file111'))
+    assert not os.path.exists(os.path.join(dir12, 'file121'))
     dir11 = os.path.join(dir2, 'dir11')
     dir12 = os.path.join(dir2, 'dir12')
 
-    assert_true(os.path.exists(dir11))
-    assert_true(os.path.exists(dir12))
-    assert_true(os.path.exists(os.path.join(dir2, 'file11')))
-    assert_true(os.path.exists(os.path.join(dir2, 'file12')))
-    assert_true(os.path.exists(os.path.join(dir11, 'file111')))
-    assert_true(os.path.exists(os.path.join(dir12, 'file121')))
+    assert os.path.exists(dir11)
+    assert os.path.exists(dir12)
+    assert os.path.exists(os.path.join(dir2, 'file11'))
+    assert os.path.exists(os.path.join(dir2, 'file12'))
+    assert os.path.exists(os.path.join(dir11, 'file111'))
+    assert os.path.exists(os.path.join(dir12, 'file121'))
 
 
 def test_filter_columns():
@@ -246,10 +245,10 @@ def test_filter_columns():
                         dtype=[('INT', int), ('STR', 'S1')])
 
     f = datasets.utils._filter_columns(values, {'INT': (23, 46)})
-    assert_equal(np.sum(f), 24)
+    assert np.sum(f) == 24
 
     f = datasets.utils._filter_columns(values, {'INT': [0, 9, (12, 24)]})
-    assert_equal(np.sum(f), 15)
+    assert np.sum(f) == 15
 
     value1 = value1 % 2
     values = np.asarray(list(zip(value1, value2)),
@@ -257,20 +256,20 @@ def test_filter_columns():
 
     # No filter
     f = datasets.utils._filter_columns(values, [])
-    assert_equal(np.sum(f), 500)
+    assert np.sum(f) == 500
 
     f = datasets.utils._filter_columns(values, {'STR': b'b'})
-    assert_equal(np.sum(f), 167)
+    assert np.sum(f) == 167
 
     f = datasets.utils._filter_columns(values, {'STR': u'b'})
-    assert_equal(np.sum(f), 167)
+    assert np.sum(f) == 167
 
     f = datasets.utils._filter_columns(values, {'INT': 1, 'STR': b'b'})
-    assert_equal(np.sum(f), 84)
+    assert np.sum(f) == 84
 
     f = datasets.utils._filter_columns(values, {'INT': 1, 'STR': b'b'},
                                        combination='or')
-    assert_equal(np.sum(f), 333)
+    assert np.sum(f) == 333
 
 
 def test_uncompress():
@@ -322,10 +321,10 @@ def test_fetch_file_overwrite():
     # overwrite non-exiting file.
     fil = datasets.utils._fetch_file(url='http://foo/', data_dir=tmpdir,
                                      verbose=0, overwrite=True)
-    assert_equal(len(mock_url_request.urls), 1)
-    assert_true(os.path.exists(fil))
+    assert len(mock_url_request.urls) == 1
+    assert os.path.exists(fil)
     with open(fil, 'r') as fp:
-        assert_equal(fp.read(), '')
+        assert fp.read() == ''
 
     # Modify content
     with open(fil, 'w') as fp:
@@ -334,19 +333,19 @@ def test_fetch_file_overwrite():
     # Don't overwrite existing file.
     fil = datasets.utils._fetch_file(url='http://foo/', data_dir=tmpdir,
                                      verbose=0, overwrite=False)
-    assert_equal(len(mock_url_request.urls), 1)
-    assert_true(os.path.exists(fil))
+    assert len(mock_url_request.urls) == 1
+    assert os.path.exists(fil)
     with open(fil, 'r') as fp:
-        assert_equal(fp.read(), 'some content')
+        assert fp.read() == 'some content'
 
     # Overwrite existing file.
     # Overwrite existing file.
     fil = datasets.utils._fetch_file(url='http://foo/', data_dir=tmpdir,
                                      verbose=0, overwrite=True)
-    assert_equal(len(mock_url_request.urls), 1)
-    assert_true(os.path.exists(fil))
+    assert len(mock_url_request.urls) == 1
+    assert os.path.exists(fil)
     with open(fil, 'r') as fp:
-        assert_equal(fp.read(), '')
+        assert fp.read() == ''
 
 
 @with_setup(setup_mock, teardown_mock)
@@ -356,10 +355,10 @@ def test_fetch_files_overwrite():
     files = ('1.txt', 'http://foo/1.txt')
     fil = datasets.utils._fetch_files(data_dir=tmpdir, verbose=0,
                                       files=[files + (dict(overwrite=True),)])
-    assert_equal(len(mock_url_request.urls), 1)
-    assert_true(os.path.exists(fil[0]))
+    assert len(mock_url_request.urls) == 1
+    assert os.path.exists(fil[0])
     with open(fil[0], 'r') as fp:
-        assert_equal(fp.read(), '')
+        assert fp.read() == ''
 
     # Modify content
     with open(fil[0], 'w') as fp:
@@ -368,15 +367,15 @@ def test_fetch_files_overwrite():
     # Don't overwrite existing file.
     fil = datasets.utils._fetch_files(data_dir=tmpdir, verbose=0,
                                       files=[files + (dict(overwrite=False),)])
-    assert_equal(len(mock_url_request.urls), 1)
-    assert_true(os.path.exists(fil[0]))
+    assert len(mock_url_request.urls) == 1
+    assert os.path.exists(fil[0])
     with open(fil[0], 'r') as fp:
-        assert_equal(fp.read(), 'some content')
+        assert fp.read() == 'some content'
 
     # Overwrite existing file.
     fil = datasets.utils._fetch_files(data_dir=tmpdir, verbose=0,
                                       files=[files + (dict(overwrite=True),)])
-    assert_equal(len(mock_url_request.urls), 1)
-    assert_true(os.path.exists(fil[0]))
+    assert len(mock_url_request.urls) == 1
+    assert os.path.exists(fil[0])
     with open(fil[0], 'r') as fp:
-        assert_equal(fp.read(), '')
+        assert fp.read() == ''

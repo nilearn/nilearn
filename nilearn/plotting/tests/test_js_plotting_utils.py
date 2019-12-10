@@ -223,7 +223,7 @@ def check_html(html, check_selects=True, plot_div_id='surface-plot'):
         # If present, replace Windows line-end '\r\n' with Unix's '\n'
         saved = saved.replace('\r\n', '\n')
         standalone = html.get_standalone().replace('\r\n', '\n')
-        assert_equal(saved, standalone)
+        assert saved == standalone
     finally:
         os.remove(tmpfile)
     assert "INSERT" not in html.html
