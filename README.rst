@@ -4,10 +4,6 @@
    :target: https://travis-ci.org/nilearn/nilearn
    :alt: Travis Build Status
 
-.. image:: https://ci.appveyor.com/api/projects/status/qynxxpx0hge4h0rn/branch/master?svg=true
-   :target: https://ci.appveyor.com/api/projects/status/qynxxpx0hge4h0rn/branch/master?svg=true
-   :alt: AppVeyor Build Status
-
 .. image:: https://codecov.io/gh/nilearn/nilearn/branch/master/graph/badge.svg
    :target: https://codecov.io/gh/nilearn/nilearn
 
