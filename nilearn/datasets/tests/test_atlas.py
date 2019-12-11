@@ -25,12 +25,11 @@ from nilearn.datasets import utils, atlas
 from nilearn.image import get_data
 
 
-def setup_mock():
-    return tst.setup_mock(utils, atlas)
-
-
-def teardown_mock():
-    return tst.teardown_mock(utils, atlas)
+@pytest.fixture()
+def mock_request():
+    tst.setup_mock(utils, atlas)
+    yield mock_request
+    tst.teardown_mock(utils, atlas)
 
 
 @with_setup(tst.setup_tmpdata, tst.teardown_tmpdata)
@@ -256,9 +255,8 @@ def test_fail_fetch_atlas_harvard_oxford():
     assert ho.labels[6] == "Right R3"
 
 
-@with_setup(setup_mock, teardown_mock)
 @with_setup(tst.setup_tmpdata, tst.teardown_tmpdata)
-def test_fetch_atlas_craddock_2012():
+def test_fetch_atlas_craddock_2012(mock_request):
     bunch = atlas.fetch_atlas_craddock_2012(data_dir=tst.tmpdir,
                                             verbose=0)
 
@@ -278,9 +276,8 @@ def test_fetch_atlas_craddock_2012():
     assert bunch.description != ''
 
 
-@with_setup(setup_mock, teardown_mock)
 @with_setup(tst.setup_tmpdata, tst.teardown_tmpdata)
-def test_fetch_atlas_smith_2009():
+def test_fetch_atlas_smith_2009(mock_request):
     bunch = atlas.fetch_atlas_smith_2009(data_dir=tst.tmpdir, verbose=0)
 
     keys = ("rsn20", "rsn10", "rsn70",
@@ -324,9 +321,8 @@ def test_fetch_coords_seitzman_2018():
 
 
 
-@with_setup(setup_mock, teardown_mock)
 @with_setup(tst.setup_tmpdata, tst.teardown_tmpdata)
-def test_fetch_atlas_destrieux_2009():
+def test_fetch_atlas_destrieux_2009(mock_request):
     datadir = os.path.join(tst.tmpdir, 'destrieux_2009')
     os.mkdir(datadir)
     dummy = open(os.path.join(
@@ -352,9 +348,8 @@ def test_fetch_atlas_destrieux_2009():
         tst.tmpdir, 'destrieux_2009', 'destrieux2009_rois.nii.gz')
 
 
-@with_setup(setup_mock, teardown_mock)
 @with_setup(tst.setup_tmpdata, tst.teardown_tmpdata)
-def test_fetch_atlas_msdl():
+def test_fetch_atlas_msdl(mock_request):
     datadir = os.path.join(tst.tmpdir, 'msdl_atlas')
     os.mkdir(datadir)
     os.mkdir(os.path.join(datadir, 'MSDL_rois'))
@@ -378,9 +373,8 @@ def test_fetch_atlas_msdl():
     assert dataset.description != ''
 
 
-@with_setup(setup_mock, teardown_mock)
 @with_setup(tst.setup_tmpdata, tst.teardown_tmpdata)
-def test_fetch_atlas_yeo_2011():
+def test_fetch_atlas_yeo_2011(mock_request):
     dataset = atlas.fetch_atlas_yeo_2011(data_dir=tst.tmpdir, verbose=0)
     assert isinstance(dataset.anat, _basestring)
     assert isinstance(dataset.colors_17, _basestring)
@@ -393,9 +387,8 @@ def test_fetch_atlas_yeo_2011():
     assert dataset.description != ''
 
 
-@with_setup(setup_mock, teardown_mock)
 @with_setup(tst.setup_tmpdata, tst.teardown_tmpdata)
-def test_fetch_atlas_aal():
+def test_fetch_atlas_aal(mock_request):
     ho_dir = os.path.join(tst.tmpdir, 'aal_SPM12', 'aal', 'atlas')
     os.makedirs(ho_dir)
     with open(os.path.join(ho_dir, 'AAL.xml'), 'w') as xml_file:
@@ -415,9 +408,8 @@ def test_fetch_atlas_aal():
     assert dataset.description != ''
 
 
-@with_setup(setup_mock, teardown_mock)
 @with_setup(tst.setup_tmpdata, tst.teardown_tmpdata)
-def test_fetch_atlas_basc_multiscale_2015():
+def test_fetch_atlas_basc_multiscale_2015(mock_request):
     # default version='sym'
     data_sym = atlas.fetch_atlas_basc_multiscale_2015(data_dir=tst.tmpdir,
                                                       verbose=0)
@@ -467,9 +459,8 @@ def test_fetch_coords_dosenbach_2010():
     assert np.any(bunch.networks != np.sort(bunch.networks))
 
 
-@with_setup(setup_mock, teardown_mock)
 @with_setup(tst.setup_tmpdata, tst.teardown_tmpdata)
-def test_fetch_atlas_allen_2011():
+def test_fetch_atlas_allen_2011(mock_request):
     bunch = atlas.fetch_atlas_allen_2011(data_dir=tst.tmpdir, verbose=0)
     keys = ("maps",
             "rsn28",
@@ -487,9 +478,8 @@ def test_fetch_atlas_allen_2011():
     assert bunch.description != ''
 
 
-@with_setup(setup_mock, teardown_mock)
 @with_setup(tst.setup_tmpdata, tst.teardown_tmpdata)
-def test_fetch_atlas_surf_destrieux(data_dir=tst.tmpdir, verbose=0):
+def test_fetch_atlas_surf_destrieux(mock_request, data_dir=tst.tmpdir, verbose=0):
     data_dir = os.path.join(tst.tmpdir, 'destrieux_surface')
     os.mkdir(data_dir)
     # Create mock annots
@@ -529,9 +519,8 @@ def _mock_talairach_fetch_files(data_dir, *args, **kwargs):
     return [file_name]
 
 
-@with_setup(setup_mock, teardown_mock)
 @with_setup(tst.setup_tmpdata, tst.teardown_tmpdata)
-def test_fetch_atlas_talairach(data_dir=tst.tmpdir):
+def test_fetch_atlas_talairach(mock_request, data_dir=tst.tmpdir):
     atlas._fetch_files = _mock_talairach_fetch_files
     level_values = np.ones((81, 3)) * [0, 1, 2]
     talairach = atlas.fetch_atlas_talairach('hemisphere', data_dir=tst.tmpdir)

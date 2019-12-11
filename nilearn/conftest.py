@@ -5,6 +5,8 @@ import pytest
 
 from _pytest.doctest import DoctestItem
 
+from nilearn.datasets.tests import test_utils as tst
+
 try:
     import matplotlib
 except ImportError:

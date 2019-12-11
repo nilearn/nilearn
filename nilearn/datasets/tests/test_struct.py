@@ -8,6 +8,7 @@ import os
 import shutil
 import nibabel
 import numpy as np
+import pytest
 
 from nose import with_setup
 
@@ -19,12 +20,11 @@ from nilearn._utils.testing import assert_raises_regex
 from nilearn._utils.compat import _basestring
 
 
-def setup_mock():
-    return tst.setup_mock(utils, struct)
-
-
-def teardown_mock():
-    return tst.teardown_mock(utils, struct)
+@pytest.fixture()
+def mock_request():
+    tst.setup_mock(utils, struct)
+    yield mock_request
+    tst.teardown_mock(utils, struct)
 
 
 @with_setup(tst.setup_tmpdata, tst.teardown_tmpdata)
@@ -88,9 +88,8 @@ def test_get_dataset_dir():
                         'test', test_file, verbose=0)
 
 
-@with_setup(setup_mock, teardown_mock)
 @with_setup(tst.setup_tmpdata, tst.teardown_tmpdata)
-def test_fetch_icbm152_2009():
+def test_fetch_icbm152_2009(mock_request):
     dataset = struct.fetch_icbm152_2009(data_dir=tst.tmpdir, verbose=0)
     assert isinstance(dataset.csf, _basestring)
     assert isinstance(dataset.eye_mask, _basestring)
@@ -106,9 +105,8 @@ def test_fetch_icbm152_2009():
     assert dataset.description != ''
 
 
-@with_setup(setup_mock, teardown_mock)
 @with_setup(tst.setup_tmpdata, tst.teardown_tmpdata)
-def test_fetch_oasis_vbm():
+def test_fetch_oasis_vbm(mock_request):
     local_url = "file://" + tst.datadir
     ids = np.asarray(['OAS1_%4d' % i for i in range(457)])
     ids = ids.view(dtype=[('ID', 'S9')])
@@ -151,9 +149,8 @@ def test_load_mni152_brain_mask():
     assert brain_mask.shape == (91, 109, 91)
 
 
-@with_setup(setup_mock, teardown_mock)
 @with_setup(tst.setup_tmpdata, tst.teardown_tmpdata)
-def test_fetch_icbm152_brain_gm_mask():
+def test_fetch_icbm152_brain_gm_mask(mock_request):
     dataset = struct.fetch_icbm152_2009(data_dir=tst.tmpdir, verbose=0)
     struct.load_mni152_template().to_filename(dataset.gm)
     grey_matter_img = struct.fetch_icbm152_brain_gm_mask(data_dir=tst.tmpdir,
@@ -161,9 +158,8 @@ def test_fetch_icbm152_brain_gm_mask():
     assert isinstance(grey_matter_img, nibabel.Nifti1Image)
 
 
-@with_setup(setup_mock, teardown_mock)
 @with_setup(tst.setup_tmpdata, tst.teardown_tmpdata)
-def test_fetch_surf_fsaverage():
+def test_fetch_surf_fsaverage(mock_request):
     # for mesh in ['fsaverage5', 'fsaverage']:
     for mesh in ['fsaverage']:
 
