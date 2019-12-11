@@ -646,7 +646,6 @@ def test_fetch_development_fmri(temp_dir_path):
     assert(all([x == 'child' for x in data.phenotypic['Child_Adult']]))
 
 
-@with_setup(tst.setup_tmpdata, tst.teardown_tmpdata)
 def test_fetch_development_fmri_invalid_n_subjects():
     max_subjects = 155
     n_subjects = func._set_invalid_n_subjects_to_max(n_subjects=None,
@@ -659,7 +658,6 @@ def test_fetch_development_fmri_invalid_n_subjects():
                                             age_group='adult')
 
 
-@with_setup(tst.setup_tmpdata, tst.teardown_tmpdata)
 def test_fetch_development_fmri_exception():
     with pytest.raises(ValueError, match='Wrong value for age_group'):
         func._filter_func_regressors_by_participants(participants='junk',
