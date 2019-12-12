@@ -1,6 +1,7 @@
 """Parcellation tools such as KMeans or Ward for fMRI images
 """
 
+import warnings
 import numpy as np
 
 from sklearn.base import clone
@@ -366,6 +367,14 @@ class Parcellations(MultiPCA):
             self.connectivity_ = connectivity
         # Avoid 0 label
         labels = labels + 1
+        unique_labels = np.unique(labels)
+
+        # Check that appropriate number of labels were created
+        if len(unique_labels) != self.n_parcels:
+            n_parcels_warning = ('The number of generated labels does not '
+                                 'match the requested number of parcels.')
+            warnings.warn(message=n_parcels_warning, category=UserWarning,
+                          stacklevel=3)
         self.labels_img_ = self.masker_.inverse_transform(labels)
 
         return self

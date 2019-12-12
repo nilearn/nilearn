@@ -11,17 +11,13 @@ import warnings
 import gc
 
 import numpy as np
-from numpy.testing import assert_warns  # noqa: F401
+import pytest
+
+from numpy.testing import assert_raises_regex, assert_warns  # noqa: F401
+from numpy.testing import assert_raises_regex, assert_warns  # noqa: F401
 
 from .compat import _basestring, _urllib
 from ..datasets.utils import _fetch_files
-
-
-try:
-    from nose.tools import assert_raises_regex
-except ImportError:
-    # For Py 2.7
-    from nose.tools import assert_raises_regexp as assert_raises_regex
 
 
 # we use memory_profiler library for memory consumption checks
@@ -46,8 +42,7 @@ except ImportError:
     def with_memory_profiler(func):
         """A decorator to skip tests requiring memory_profiler."""
         def dummy_func():
-            import nose
-            raise nose.SkipTest('Test requires memory_profiler.')
+            pytest.skip('Test requires memory_profiler.')
         return dummy_func
 
     memory_usage = memory_used = None
@@ -252,7 +247,7 @@ class FetchFilesMock (object):
 
 
 
-def is_nose_running():
+def are_tests_running():
     """Returns whether we are running the nose test loader
     """
     if 'nose' not in sys.modules:
@@ -272,30 +267,13 @@ def is_nose_running():
     return False
 
 
-def skip_if_running_nose(msg=''):
+def skip_if_running_tests(msg=''):
     """ Raise a SkipTest if we appear to be running the nose test loader.
 
     Parameters
     ----------
     msg: string, optional
-        The message issued when SkipTest is raised
+        The message issued when a test is skipped
     """
-    if is_nose_running():
-        import nose
-        raise nose.SkipTest(msg)
-
-
-# Backport: On some nose versions, assert_less_equal is not present
-try:
-    from nose.tools import assert_less_equal
-except ImportError:
-    def assert_less_equal(a, b):
-        if a > b:
-            raise AssertionError("%f is not less or equal than %f" % (a, b))
-
-try:
-    from nose.tools import assert_less
-except ImportError:
-    def assert_less(a, b):
-        if a >= b:
-            raise AssertionError("%f is not less than %f" % (a, b))
+    if are_tests_running():
+        pytest.skip(msg)

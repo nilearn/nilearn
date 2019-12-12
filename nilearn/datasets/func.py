@@ -9,7 +9,7 @@ import numpy as np
 import numbers
 
 import nibabel
-from sklearn.utils import Bunch, deprecated
+from sklearn.utils import Bunch
 
 from .utils import (_get_dataset_dir, _fetch_files, _get_dataset_descr,
                     _read_md5_sum_file, _tree, _filter_columns, _fetch_file)
@@ -20,10 +20,11 @@ from .._utils.exceptions import VisibleDeprecationWarning
 from nilearn.image import get_data
 
 
-@deprecated("fetch_haxby_simple will be removed in future releases. "
-            "Use 'fetch_haxby' instead.")
 def fetch_haxby_simple(data_dir=None, url=None, resume=True, verbose=1):
     """Download and load a simple example haxby dataset.
+
+    NOTE: This function is deprecated and will be removed in
+    0.7.0 release. Use `fetch_haxby` instead.
 
     Parameters
     ----------
@@ -59,6 +60,11 @@ def fetch_haxby_simple(data_dir=None, url=None, resume=True, verbose=1):
     See `additional information
     <http://www.sciencemag.org/content/293/5539/2425>`_
     """
+    warnings.warn("fetch_haxby_simple has been deprecated and will "
+                  "be removed in the 0.7.x release. "
+                  "Use 'fetch_haxby' instead",
+                  VisibleDeprecationWarning, stacklevel=2)
+
     # URL of the dataset. It is optional because a test uses it to test dataset
     # downloading
     if url is None:

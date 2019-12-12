@@ -2,12 +2,9 @@
 
 import tempfile
 
-from distutils.version import LooseVersion
-from nose import SkipTest
 from nilearn._utils.testing import assert_raises_regex
 
 import numpy as np
-import matplotlib
 import matplotlib.pyplot as plt
 
 from nilearn.plotting.surf_plotting import (plot_surf, plot_surf_stat_map,

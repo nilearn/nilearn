@@ -1,4 +1,3 @@
-from nose.tools import assert_true, assert_equal
 import nibabel
 import numpy as np
 
@@ -42,21 +41,21 @@ class OwningClass(BaseEstimator):
 def test_check_embedded_nifti_masker():
     owner = OwningClass()
     masker = check_embedded_nifti_masker(owner)
-    assert_true(type(masker) is MultiNiftiMasker)
+    assert type(masker) is MultiNiftiMasker
 
     for mask, multi_subject in (
             (MultiNiftiMasker(), True), (NiftiMasker(), False)):
         owner = OwningClass(mask=mask)
         masker = check_embedded_nifti_masker(owner,
                                              multi_subject=multi_subject)
-        assert_equal(type(masker), type(mask))
+        assert type(masker) == type(mask)
         for param_key in masker.get_params():
             if param_key not in ['memory', 'memory_level', 'n_jobs',
                                  'verbose']:
-                assert_equal(getattr(masker, param_key),
+                assert (getattr(masker, param_key) ==
                              getattr(mask, param_key))
             else:
-                assert_equal(getattr(masker, param_key),
+                assert (getattr(masker, param_key) ==
                              getattr(owner, param_key))
 
     # Check use of mask as mask_img
@@ -65,7 +64,7 @@ def test_check_embedded_nifti_masker():
     mask = nibabel.Nifti1Image(np.ones(shape[:3], dtype=np.int8), affine)
     owner = OwningClass(mask=mask)
     masker = check_embedded_nifti_masker(owner)
-    assert_true(masker.mask_img is mask)
+    assert masker.mask_img is mask
 
     # Check attribute forwarding
     data = np.zeros((9, 9, 9))
@@ -75,7 +74,7 @@ def test_check_embedded_nifti_masker():
     mask.fit([[imgs]])
     owner = OwningClass(mask=mask)
     masker = check_embedded_nifti_masker(owner)
-    assert_true(masker.mask_img is mask.mask_img_)
+    assert masker.mask_img is mask.mask_img_
 
     # Check conflict warning
     mask = NiftiMasker(mask_strategy='epi')

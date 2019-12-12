@@ -175,16 +175,18 @@ def _smooth_array(arr, affine, fwhm=None, ensure_finite=True, copy=True):
         are also accepted (only these coefficients are used).
         If fwhm='fast', the affine is not used and can be None
 
-    fwhm: scalar, numpy.ndarray, 'fast' or None
+    fwhm: scalar, numpy.ndarray/tuple/list, 'fast' or None
         Smoothing strength, as a full-width at half maximum, in millimeters.
-        If a scalar is given, width is identical on all three directions.
-        A numpy.ndarray must have 3 elements, giving the FWHM along each axis.
+        If a nonzero scalar is given, width is identical in all 3 directions.
+        A numpy.ndarray/list/tuple must have 3 elements,
+        giving the FWHM along each axis.
+        If any of the elements is zero or None,
+        smoothing is not performed along that axis.
         If fwhm == 'fast', a fast smoothing will be performed with
         a filter [0.2, 1, 0.2] in each direction and a normalisation
         to preserve the local average value.
         If fwhm is None, no filtering is performed (useful when just removal
         of non-finite values is needed).
-
 
     ensure_finite: bool
         if True, replace every non-finite values (like NaNs) by zero before
@@ -205,38 +207,34 @@ def _smooth_array(arr, affine, fwhm=None, ensure_finite=True, copy=True):
     """
     # Here, we have to investigate use cases of fwhm. Particularly, if fwhm=0.
     # See issue #1537
-    if fwhm == 0.:
+    if isinstance(fwhm, (int, float)) and (fwhm == 0.0):
         warnings.warn("The parameter 'fwhm' for smoothing is specified "
-                      "as {0}. Converting to None (no smoothing option)"
+                      "as {0}. Setting it to None "
+                      "(no smoothing will be performed)"
                       .format(fwhm))
         fwhm = None
-
     if arr.dtype.kind == 'i':
         if arr.dtype == np.int64:
             arr = arr.astype(np.float64)
         else:
-            # We don't need crazy precision
-            arr = arr.astype(np.float32)
+            arr = arr.astype(np.float32)  # We don't need crazy precision.
     if copy:
         arr = arr.copy()
-
     if ensure_finite:
         # SPM tends to put NaNs in the data outside the brain
         arr[np.logical_not(np.isfinite(arr))] = 0
-
-    if fwhm == 'fast':
+    if isinstance(fwhm, str) and (fwhm == 'fast'):
         arr = _fast_smooth_array(arr)
     elif fwhm is not None:
-        # Keep only the scale part.
-        affine = affine[:3, :3]
-
-        # Convert from a FWHM to a sigma:
-        fwhm_over_sigma_ratio = np.sqrt(8 * np.log(2))
+        fwhm = np.asarray(fwhm)
+        fwhm = np.where(fwhm == None, 0.0, fwhm)  # noqa: E711
+        affine = affine[:3, :3]  # Keep only the scale part.
+        fwhm_over_sigma_ratio = np.sqrt(8 * np.log(2))  # FWHM to sigma.
         vox_size = np.sqrt(np.sum(affine ** 2, axis=0))
         sigma = fwhm / (fwhm_over_sigma_ratio * vox_size)
         for n, s in enumerate(sigma):
-            ndimage.gaussian_filter1d(arr, s, output=arr, axis=n)
-
+            if s > 0.0:
+                ndimage.gaussian_filter1d(arr, s, output=arr, axis=n)
     return arr
 
 
@@ -629,6 +627,17 @@ def index_img(imgs, index):
      >>> single_mni_image = index_img(joint_mni_image, 1)
      >>> print(single_mni_image.shape)
      (91, 109, 91)
+
+    We can also select multiple frames using the `slice` constructor::
+
+     >>> five_mni_images = concat_imgs([datasets.load_mni152_template()] * 5)
+     >>> print(five_mni_images.shape)
+     (91, 109, 91, 5)
+    
+     >>> first_three_images = index_img(five_mni_images,
+     ...                                slice(0, 3))
+     >>> print(first_three_images.shape)
+     (91, 109, 91, 3)
     """
     imgs = check_niimg_4d(imgs)
     # duck-type for pandas arrays, and select the 'values' attr
@@ -706,18 +715,23 @@ def new_img_like(ref_niimg, data, affine=None, copy_header=False):
     header = None
     if copy_header:
         header = copy.deepcopy(ref_niimg.header)
-        if 'scl_slope' in header:
-            header['scl_slope'] = 0.
-        if 'scl_inter' in header:
-            header['scl_inter'] = 0.
-        # 'glmax' is removed for Nifti2Image. Modify only if 'glmax' is
-        # available in header. See issue #1611
-        if 'glmax' in header:
-            header['glmax'] = 0.
-        if 'cal_max' in header:
-            header['cal_max'] = np.max(data) if data.size > 0 else 0.
-        if 'cal_min' in header:
-            header['cal_min'] = np.min(data) if data.size > 0 else 0.
+        try:
+            'something' in header
+        except TypeError:
+            pass
+        else:
+            if 'scl_slope' in header:
+                header['scl_slope'] = 0.
+            if 'scl_inter' in header:
+                header['scl_inter'] = 0.
+            # 'glmax' is removed for Nifti2Image. Modify only if 'glmax' is
+            # available in header. See issue #1611
+            if 'glmax' in header:
+                header['glmax'] = 0.
+            if 'cal_max' in header:
+                header['cal_max'] = np.max(data) if data.size > 0 else 0.
+            if 'cal_min' in header:
+                header['cal_min'] = np.min(data) if data.size > 0 else 0.
     klass = ref_niimg.__class__
     if klass is nibabel.Nifti1Pair:
         # Nifti1Pair is an internal class, without a to_filename,

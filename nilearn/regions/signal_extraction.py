@@ -18,7 +18,7 @@ from ..image import new_img_like
 
 # FIXME: naming scheme is not really satisfying. Any better idea appreciated.
 def img_to_signals_labels(imgs, labels_img, mask_img=None,
-                          background_label=0, order="F"):
+                          background_label=0, order="F", strategy='mean'):
     """Extract region signals from image.
 
     This function is applicable to regions defined by labels.
@@ -48,6 +48,11 @@ def img_to_signals_labels(imgs, labels_img, mask_img=None,
     order: str
         ordering of output array ("C" or "F"). Defaults to "F".
 
+    strategy: str
+        The name of a valid function to reduce the region with.
+        Must be one of: sum, mean, median, mininum, maximum, variance,
+        standard_deviation
+
     Returns
     -------
     signals: numpy.ndarray
@@ -64,7 +69,7 @@ def img_to_signals_labels(imgs, labels_img, mask_img=None,
     --------
     nilearn.regions.signals_to_img_labels
     nilearn.regions.img_to_signals_maps
-    nilearn.input_data.NiftiLabelsMasker : Signal extraction on labels images 
+    nilearn.input_data.NiftiLabelsMasker : Signal extraction on labels images
         e.g. clusters
     """
 
@@ -75,6 +80,16 @@ def img_to_signals_labels(imgs, labels_img, mask_img=None,
     imgs = _utils.check_niimg_4d(imgs)
     target_affine = imgs.affine
     target_shape = imgs.shape[:3]
+
+    available_reduction_strategies = {'mean', 'median', 'sum',
+                                      'minimum', 'maximum',
+                                      'standard_deviation', 'variance'}
+    if strategy not in available_reduction_strategies:
+        raise ValueError(str.format(
+            "Invalid strategy '{}'. Valid strategies are {}.",
+            strategy,
+            available_reduction_strategies
+        ))
 
     # Check shapes and affines.
     if labels_img.shape != target_shape:
@@ -101,12 +116,15 @@ def img_to_signals_labels(imgs, labels_img, mask_img=None,
         labels_data[np.logical_not(mask_data)] = background_label
 
     data = _safe_get_data(imgs)
+    target_datatype = np.float32 if data.dtype == np.float32 else np.float64
+    # Nilearn issue: 2135, PR: 2195 for why this is necessary.
     signals = np.ndarray((data.shape[-1], len(labels)), order=order,
-                         dtype=data.dtype)
+                         dtype=target_datatype)
+    reduction_function = getattr(ndimage.measurements, strategy)
     for n, img in enumerate(np.rollaxis(data, -1)):
-        signals[n] = np.asarray(ndimage.measurements.mean(img,
-                                                          labels=labels_data,
-                                                          index=labels))
+        signals[n] = np.asarray(reduction_function(img,
+                                                   labels=labels_data,
+                                                   index=labels))
     # Set to zero signals for missing labels. Workaround for Scipy behaviour
     missing_labels = set(labels) - set(np.unique(labels_data))
     labels_index = dict([(l, n) for n, l in enumerate(labels)])

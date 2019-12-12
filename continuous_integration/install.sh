@@ -57,7 +57,7 @@ echo_requirements_string() {
 
 create_new_travisci_env() {
     REQUIREMENTS=$(echo_requirements_string)
-    pip install ${REQUIREMENTS}
+    pip install $PIP_FLAGS ${REQUIREMENTS}
     pip install pytest pytest-cov
 
     if [[ "$INSTALL_MKL" == "true" ]]; then
@@ -97,5 +97,5 @@ fi
 # numpy not installed when skipping the tests so we do not want to run
 # setup.py install
 if [[ "$SKIP_TESTS" != "true" ]]; then
-    python setup.py install
+    pip install $PIP_FLAGS .
 fi
