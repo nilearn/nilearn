@@ -686,11 +686,10 @@ def test_fetch_surf_tva_localizer():
 
     n_files = 144
 
-    assert_equal(len(data), 4)
-    assert_true(isinstance(data.phenotypic, np.ndarray))
-    assert_equal(data.phenotypic.shape, (n_files,))
-    assert_not_equal(data.description, '')
-    assert_equal(len(data.func_left), n_files)
+    assert len(data) == 4
+    assert isinstance(data.phenotypic, np.ndarray)
+    assert data.phenotypic.shape == (n_files,)
+    assert data.description != ''
+    assert len(data.func_left) == n_files
     for i in range(n_files):
-        assert_equal(os.path.exists(data.func_left[i]),True)
-
+        assert os.path.exists(data.func_left[i]) == True
