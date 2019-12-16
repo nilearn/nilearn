@@ -1,3 +1,12 @@
+0.6.1
+=====
+
+ENHANCEMENTS
+------------
+
+- html pages use the user-provided plot title, if any, as their title
+
+
 0.6.0
 =====
 

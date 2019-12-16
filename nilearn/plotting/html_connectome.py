@@ -81,7 +81,9 @@ def _make_connectome_html(connectome_info, embed_js=True):
     as_json = json.dumps(plot_info)
     as_html = get_html_template(
         'connectome_plot_template.html').safe_substitute(
-            {'INSERT_CONNECTOME_JSON_HERE': as_json})
+            {'INSERT_CONNECTOME_JSON_HERE': as_json,
+             'INSERT_PAGE_TITLE_HERE': (
+                 connectome_info["title"] or "Connectome plot")})
     as_html = add_js_lib(as_html, embed_js=embed_js)
     return ConnectomeView(as_html)
 
