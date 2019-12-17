@@ -21,15 +21,8 @@ from nilearn._utils.testing import (mock_request, wrap_chunk_read_,
 
 currdir = os.path.dirname(os.path.abspath(__file__))
 datadir = os.path.join(currdir, 'data')
-tmpdir = None
 url_request = None
 file_mock = None
-
-
-def setup_tmpdata():
-    # create temporary dir
-    global tmpdir
-    tmpdir = mkdtemp()
 
 
 def setup_mock(utils_mod=datasets.utils, dataset_mod=datasets.utils):
@@ -63,15 +56,7 @@ def teardown_mock(utils_mod=datasets.utils, dataset_mod=datasets.utils):
     dataset_mod._fetch_files = original_fetch_files
 
 
-def teardown_tmpdata():
-    # remove temporary dir
-    global tmpdir
-    if tmpdir is not None:
-        shutil.rmtree(tmpdir)
-
-
-@with_setup(setup_tmpdata, teardown_tmpdata)
-def test_get_dataset_dir():
+def test_get_dataset_dir(tmp_path):
     # testing folder creation under different environments, enforcing
     # a custom clean install
     os.environ.pop('NILEARN_DATA', None)
@@ -83,21 +68,21 @@ def test_get_dataset_dir():
     assert os.path.exists(data_dir)
     shutil.rmtree(data_dir)
 
-    expected_base_dir = os.path.join(tmpdir, 'test_nilearn_data')
+    expected_base_dir = str(tmp_path / 'test_nilearn_data')
     os.environ['NILEARN_DATA'] = expected_base_dir
     data_dir = datasets.utils._get_dataset_dir('test', verbose=0)
     assert data_dir == os.path.join(expected_base_dir, 'test')
     assert os.path.exists(data_dir)
     shutil.rmtree(data_dir)
 
-    expected_base_dir = os.path.join(tmpdir, 'nilearn_shared_data')
+    expected_base_dir = str(tmp_path / 'nilearn_shared_data')
     os.environ['NILEARN_SHARED_DATA'] = expected_base_dir
     data_dir = datasets.utils._get_dataset_dir('test', verbose=0)
     assert data_dir == os.path.join(expected_base_dir, 'test')
     assert os.path.exists(data_dir)
     shutil.rmtree(data_dir)
 
-    expected_base_dir = os.path.join(tmpdir, 'env_data')
+    expected_base_dir = str(tmp_path / 'env_data')
     expected_dataset_dir = os.path.join(expected_base_dir, 'test')
     data_dir = datasets.utils._get_dataset_dir(
         'test', default_paths=[expected_dataset_dir], verbose=0)
@@ -105,11 +90,11 @@ def test_get_dataset_dir():
     assert os.path.exists(data_dir)
     shutil.rmtree(data_dir)
 
-    no_write = os.path.join(tmpdir, 'no_write')
+    no_write = str(tmp_path / 'no_write')
     os.makedirs(no_write)
     os.chmod(no_write, 0o400)
 
-    expected_base_dir = os.path.join(tmpdir, 'nilearn_shared_data')
+    expected_base_dir = str(tmp_path / 'nilearn_shared_data')
     os.environ['NILEARN_SHARED_DATA'] = expected_base_dir
     data_dir = datasets.utils._get_dataset_dir('test',
                                                default_paths=[no_write],
@@ -121,7 +106,7 @@ def test_get_dataset_dir():
     shutil.rmtree(data_dir)
 
     # Verify exception for a path which exists and is a file
-    test_file = os.path.join(tmpdir, 'some_file')
+    test_file = str(tmp_path / 'some_file')
     with open(test_file, 'w') as out:
         out.write('abcfeg')
 
@@ -316,10 +301,9 @@ def test_uncompress():
 
 
 @with_setup(setup_mock, teardown_mock)
-@with_setup(setup_tmpdata, teardown_tmpdata)
-def test_fetch_file_overwrite():
+def test_fetch_file_overwrite(tmp_path):
     # overwrite non-exiting file.
-    fil = datasets.utils._fetch_file(url='http://foo/', data_dir=tmpdir,
+    fil = datasets.utils._fetch_file(url='http://foo/', data_dir=str(tmp_path),
                                      verbose=0, overwrite=True)
     assert len(mock_url_request.urls) == 1
     assert os.path.exists(fil)
@@ -331,7 +315,7 @@ def test_fetch_file_overwrite():
         fp.write('some content')
 
     # Don't overwrite existing file.
-    fil = datasets.utils._fetch_file(url='http://foo/', data_dir=tmpdir,
+    fil = datasets.utils._fetch_file(url='http://foo/', data_dir=str(tmp_path),
                                      verbose=0, overwrite=False)
     assert len(mock_url_request.urls) == 1
     assert os.path.exists(fil)
@@ -340,7 +324,7 @@ def test_fetch_file_overwrite():
 
     # Overwrite existing file.
     # Overwrite existing file.
-    fil = datasets.utils._fetch_file(url='http://foo/', data_dir=tmpdir,
+    fil = datasets.utils._fetch_file(url='http://foo/', data_dir=str(tmp_path),
                                      verbose=0, overwrite=True)
     assert len(mock_url_request.urls) == 1
     assert os.path.exists(fil)
@@ -349,11 +333,10 @@ def test_fetch_file_overwrite():
 
 
 @with_setup(setup_mock, teardown_mock)
-@with_setup(setup_tmpdata, teardown_tmpdata)
-def test_fetch_files_overwrite():
+def test_fetch_files_overwrite(tmp_path):
     # overwrite non-exiting file.
     files = ('1.txt', 'http://foo/1.txt')
-    fil = datasets.utils._fetch_files(data_dir=tmpdir, verbose=0,
+    fil = datasets.utils._fetch_files(data_dir=str(tmp_path), verbose=0,
                                       files=[files + (dict(overwrite=True),)])
     assert len(mock_url_request.urls) == 1
     assert os.path.exists(fil[0])
@@ -365,7 +348,7 @@ def test_fetch_files_overwrite():
         fp.write('some content')
 
     # Don't overwrite existing file.
-    fil = datasets.utils._fetch_files(data_dir=tmpdir, verbose=0,
+    fil = datasets.utils._fetch_files(data_dir=str(tmp_path), verbose=0,
                                       files=[files + (dict(overwrite=False),)])
     assert len(mock_url_request.urls) == 1
     assert os.path.exists(fil[0])
@@ -373,7 +356,7 @@ def test_fetch_files_overwrite():
         assert fp.read() == 'some content'
 
     # Overwrite existing file.
-    fil = datasets.utils._fetch_files(data_dir=tmpdir, verbose=0,
+    fil = datasets.utils._fetch_files(data_dir=str(tmp_path), verbose=0,
                                       files=[files + (dict(overwrite=True),)])
     assert len(mock_url_request.urls) == 1
     assert os.path.exists(fil[0])
