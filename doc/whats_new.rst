@@ -6,6 +6,10 @@ ENHANCEMENTS
 
 - html pages use the user-provided plot title, if any, as their title
 
+FIXES
+-----
+
+- :class:`nilearn.input_data.NiftiLabelsMasker` no longer ignores its `mask_img`
 
 0.6.0
 =====
