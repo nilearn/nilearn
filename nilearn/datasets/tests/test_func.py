@@ -104,7 +104,7 @@ def test_fetch_nyu_rest(temp_dir_path):
 
 @with_setup(setup_mock, teardown_mock)
 def test_fetch_adhd(temp_dir_path):
-    local_url = "file://" + os.path.join(temp_dir_path, 'data')
+    local_url = "file://" + str(tmp_path / 'data')
 
     sub1 = [3902469, 7774305, 3699991]
     sub2 = [2014113, 4275075, 1019436,
@@ -340,7 +340,7 @@ def test_fetch_mixed_gambles(temp_dir_path):
         mgambles = func.fetch_mixed_gambles(n_subjects=n_subjects,
                                             data_dir=temp_dir_path, url=local_url,
                                             verbose=0, return_raw_data=True)
-        datasetdir = os.path.join(temp_dir_path, "jimura_poldrack_2012_zmaps")
+        datasetdir = str(tmp_path / "jimura_poldrack_2012_zmaps")
         assert mgambles["zmaps"][0] == os.path.join(datasetdir, "zmaps",
                                                         "sub001_zmaps.nii.gz")
         assert len(mgambles["zmaps"]) == n_subjects
@@ -370,15 +370,15 @@ def test_check_parameters_megatrawls_datasets():
                             matrices=invalid_output_name)
 
 
-def test_fetch_megatrawls_netmats(temp_dir_path):
+def test_fetch_megatrawls_netmats(tmp_path):
     # smoke test to see that files are fetched and read properly
     # since we are loading data present in it
-    files_dir = os.path.join(temp_dir_path, 'Megatrawls', '3T_Q1-Q6related468_MSMsulc_d100_ts3')
+    files_dir = str(tmp_path / 'Megatrawls', '3T_Q1-Q6related468_MSMsulc_d100_ts3')
     os.makedirs(files_dir)
     with open(os.path.join(files_dir, 'Znet2.txt'), 'w') as net_file:
         net_file.write("1")
 
-    files_dir2 = os.path.join(temp_dir_path, 'Megatrawls', '3T_Q1-Q6related468_MSMsulc_d300_ts2')
+    files_dir2 = str(tmp_path / 'Megatrawls' / '3T_Q1-Q6related468_MSMsulc_d300_ts2')
     os.makedirs(files_dir2)
     with open(os.path.join(files_dir2, 'Znet1.txt'), 'w') as net_file2:
         net_file2.write("1")
@@ -411,7 +411,7 @@ def test_fetch_megatrawls_netmats(temp_dir_path):
 
 
 @with_setup(setup_mock, teardown_mock)
-def test_fetch_cobre(temp_dir_path):
+def test_fetch_cobre(tmp_path):
     ids_n = [40000, 40001, 40002, 40003, 40004, 40005, 40006, 40007, 40008,
              40009, 40010, 40011, 40012, 40013, 40014, 40015, 40016, 40017,
              40018, 40019, 40020, 40021, 40022, 40023, 40024, 40025, 40026,
@@ -453,7 +453,7 @@ def test_fetch_cobre(temp_dir_path):
                               ('FD Scrubbed', '<f8')])
 
     # Create a dummy 'files'
-    cobre_dir = os.path.join(temp_dir_path, 'cobre')
+    cobre_dir = str(tmp_path / 'cobre')
     os.mkdir(cobre_dir)
 
     # Create the tsv
@@ -577,7 +577,7 @@ def _mock_participants_data(n_ids=5):
 
 
 @with_setup(setup_mock, teardown_mock)
-def test_fetch_development_fmri_participants(temp_dir_path):
+def test_fetch_development_fmri_participants(tmp_path):
     csv = _mock_participants_data()
     tst.mock_fetch_files.add_csv('participants.tsv', csv)
     local_url = 'file://' + os.path.join(tst.datadir)
@@ -590,7 +590,7 @@ def test_fetch_development_fmri_participants(temp_dir_path):
 
 
 @with_setup(setup_mock, teardown_mock)
-def test_fetch_development_fmri_functional(temp_dir_path):
+def test_fetch_development_fmri_functional(tmp_path):
     csv = _mock_participants_data(n_ids=8)
     local_url = 'file://' + os.path.join(tst.datadir)
     funcs, confounds = func._fetch_development_fmri_functional(csv,
@@ -602,7 +602,7 @@ def test_fetch_development_fmri_functional(temp_dir_path):
     assert len(confounds) == 8
 
 
-def test_fetch_development_fmri(temp_dir_path):
+def test_fetch_development_fmri(tmp_path):
     data = func.fetch_development_fmri(n_subjects=2,
                                        data_dir=temp_dir_path, verbose=1)
     assert len(data.func) == 2

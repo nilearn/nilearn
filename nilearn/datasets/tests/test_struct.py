@@ -6,6 +6,8 @@ Test the datasets module
 
 import os
 import shutil
+import sys
+
 import nibabel
 import numpy as np
 
@@ -27,7 +29,7 @@ def teardown_mock():
     return tst.teardown_mock(utils, struct)
 
 
-def test_get_dataset_dir(temp_dir_path):
+def test_get_dataset_dir(tmp_path):
     # testing folder creation under different environments, enforcing
     # a custom clean install
     os.environ.pop('NILEARN_DATA', None)
@@ -39,21 +41,21 @@ def test_get_dataset_dir(temp_dir_path):
     assert os.path.exists(data_dir)
     shutil.rmtree(data_dir)
 
-    expected_base_dir = os.path.join(temp_dir_path, 'test_nilearn_data')
+    expected_base_dir = str(tmp_path / 'test_nilearn_data')
     os.environ['NILEARN_DATA'] = expected_base_dir
     data_dir = utils._get_dataset_dir('test', verbose=0)
     assert data_dir == os.path.join(expected_base_dir, 'test')
     assert os.path.exists(data_dir)
     shutil.rmtree(data_dir)
 
-    expected_base_dir = os.path.join(temp_dir_path, 'nilearn_shared_data')
+    expected_base_dir = str(tmp_path / 'nilearn_shared_data')
     os.environ['NILEARN_SHARED_DATA'] = expected_base_dir
     data_dir = utils._get_dataset_dir('test', verbose=0)
     assert data_dir == os.path.join(expected_base_dir, 'test')
     assert os.path.exists(data_dir)
     shutil.rmtree(data_dir)
 
-    expected_base_dir = os.path.join(temp_dir_path, 'env_data')
+    expected_base_dir = str(tmp_path / 'env_data')
     expected_dataset_dir = os.path.join(expected_base_dir, 'test')
     data_dir = utils._get_dataset_dir(
         'test', default_paths=[expected_dataset_dir], verbose=0)
@@ -61,11 +63,11 @@ def test_get_dataset_dir(temp_dir_path):
     assert os.path.exists(data_dir)
     shutil.rmtree(data_dir)
 
-    no_write = os.path.join(temp_dir_path, 'no_write')
+    no_write = str(tmp_path / 'no_write')
     os.makedirs(no_write)
     os.chmod(no_write, 0o400)
 
-    expected_base_dir = os.path.join(temp_dir_path, 'nilearn_shared_data')
+    expected_base_dir = str(tmp_path / 'nilearn_shared_data')
     os.environ['NILEARN_SHARED_DATA'] = expected_base_dir
     data_dir = utils._get_dataset_dir('test',
                                       default_paths=[no_write],
@@ -77,7 +79,7 @@ def test_get_dataset_dir(temp_dir_path):
     shutil.rmtree(data_dir)
 
     # Verify exception for a path which exists and is a file
-    test_file = os.path.join(temp_dir_path, 'some_file')
+    test_file = str(tmp_path / 'some_file')
     with open(test_file, 'w') as out:
         out.write('abcfeg')
     assert_raises_regex(OSError,
@@ -88,8 +90,8 @@ def test_get_dataset_dir(temp_dir_path):
 
 
 @with_setup(setup_mock, teardown_mock)
-def test_fetch_icbm152_2009(temp_dir_path):
-    dataset = struct.fetch_icbm152_2009(data_dir=temp_dir_path, verbose=0)
+def test_fetch_icbm152_2009(tmp_path):
+    dataset = struct.fetch_icbm152_2009(data_dir=str(tmp_path), verbose=0)
     assert isinstance(dataset.csf, _basestring)
     assert isinstance(dataset.eye_mask, _basestring)
     assert isinstance(dataset.face_mask, _basestring)
@@ -105,14 +107,14 @@ def test_fetch_icbm152_2009(temp_dir_path):
 
 
 @with_setup(setup_mock, teardown_mock)
-def test_fetch_oasis_vbm(temp_dir_path):
+def test_fetch_oasis_vbm(tmp_path):
     local_url = "file://" + tst.datadir
     ids = np.asarray(['OAS1_%4d' % i for i in range(457)])
     ids = ids.view(dtype=[('ID', 'S9')])
     tst.mock_fetch_files.add_csv('oasis_cross-sectional.csv', ids)
 
     # Disabled: cannot be tested without actually fetching covariates CSV file
-    dataset = struct.fetch_oasis_vbm(data_dir=temp_dir_path, url=local_url,
+    dataset = struct.fetch_oasis_vbm(data_dir=str(tmp_path), url=local_url,
                                      verbose=0)
     assert len(dataset.gray_matter_maps) == 403
     assert len(dataset.white_matter_maps) == 403
@@ -122,7 +124,7 @@ def test_fetch_oasis_vbm(temp_dir_path):
     assert isinstance(dataset.data_usage_agreement, _basestring)
     assert len(tst.mock_url_request.urls) == 3
 
-    dataset = struct.fetch_oasis_vbm(data_dir=temp_dir_path, url=local_url,
+    dataset = struct.fetch_oasis_vbm(data_dir=str(tmp_path), url=local_url,
                                      dartel_version=False, verbose=0)
     assert len(dataset.gray_matter_maps) == 415
     assert len(dataset.white_matter_maps) == 415
@@ -149,21 +151,21 @@ def test_load_mni152_brain_mask():
 
 
 @with_setup(setup_mock, teardown_mock)
-def test_fetch_icbm152_brain_gm_mask(temp_dir_path):
-    dataset = struct.fetch_icbm152_2009(data_dir=temp_dir_path, verbose=0)
+def test_fetch_icbm152_brain_gm_mask(tmp_path):
+    dataset = struct.fetch_icbm152_2009(data_dir=str(tmp_path), verbose=0)
     struct.load_mni152_template().to_filename(dataset.gm)
-    grey_matter_img = struct.fetch_icbm152_brain_gm_mask(data_dir=temp_dir_path,
+    grey_matter_img = struct.fetch_icbm152_brain_gm_mask(data_dir=str(tmp_path),
                                                          verbose=0)
     assert isinstance(grey_matter_img, nibabel.Nifti1Image)
 
 
 @with_setup(setup_mock, teardown_mock)
-def test_fetch_surf_fsaverage(temp_dir_path):
+def test_fetch_surf_fsaverage(tmp_path):
     # for mesh in ['fsaverage5', 'fsaverage']:
     for mesh in ['fsaverage']:
 
         dataset = struct.fetch_surf_fsaverage(
-            mesh, data_dir=temp_dir_path)
+            mesh, data_dir=str(tmp_path))
 
         keys = {'pial_left', 'pial_right', 'infl_left', 'infl_right',
                 'sulc_left', 'sulc_right'}
@@ -172,11 +174,11 @@ def test_fetch_surf_fsaverage(temp_dir_path):
         assert dataset.description != ''
 
 
-def test_fetch_surf_fsaverage5_sphere(temp_dir_path):
+def test_fetch_surf_fsaverage5_sphere(tmp_path):
     for mesh in ['fsaverage5_sphere']:
 
         dataset = struct.fetch_surf_fsaverage(
-            mesh, data_dir=temp_dir_path)
+            mesh, data_dir=str(tmp_path))
 
         keys = {'sphere_left', 'sphere_right'}
 
