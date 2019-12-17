@@ -34,15 +34,18 @@ def pytest_collection_modifyitems(items):
 
 @pytest.fixture
 def temp_dir_path(tmp_path):
-    """ Fixture to create a temporary directory path for tests.
+    """ Pytest fixture to create a temporary directory path for tests.
+    Requires Pytest >= 3.9
 
     Cleans up after the tests:
         deletes locally scoped objects from memory;
         removes the tree and its files.
 
+    Usage: def test_some_function(temp_dir_path):
+                temp_filepath = os.path.join(temp_dir_path, 'some_file')
+
     Yields
     ------
-
     temp_path: string
         Temporary directory path.
     """
