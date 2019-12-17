@@ -2148,10 +2148,10 @@ def fetch_surf_tva_localizer(data_dir=None, verbose=1, resume=True):
     -------
     data: sklearn.datasets.base.Bunch
         Dictionary-like object, the interest attributes are :
-         - 'func_left': Paths to Gifti files containing resting state
-                        time series left hemisphere
-         - 'phenotypic': array containing tuple with subject ID, age,
-                         dominant hand and sex for each subject.
+         - 'func_left': paths to Gifti files containing single-trial beta maps that have
+                        been estimated using a GLM and projected onto the cortical surface
+                        time series left hemisphere.
+         - 'phenotypic': array containing the labels corresponding to each trial.
          - 'description': data description of the release and references.
 
     References
@@ -2169,26 +2169,26 @@ def fetch_surf_tva_localizer(data_dir=None, verbose=1, resume=True):
     # Dataset description
     fdescr = _get_dataset_descr(dataset_name)
 
-    # First, get the metadata, i.e the labels to be used for the searchlight decoding
     label_path = 'labels_voicelocalizer_voice_vs_nonvoice.tsv'
     label_file = (label_path, url , {'uncompress': True})
 
     label_localpath = _fetch_files(dataset_dir, [label_file], resume=resume,verbose=verbose)[0]
     labels = np.genfromtxt(label_localpath, dtype='str', skip_header=1)[:,0]
 
-    # Secondly, get the mask of a region of interest for this task
+    # get the binary mask of a region that includes the superior temporal gyrus and super temporal sulcus
+    # (for instance to speed up computation of the example)
     mask_path = 'fsaverage5.lh.stg_sts.gii'
     mask_file = (mask_path, url, {'uncompress': True})
     mask = _fetch_files(dataset_dir, [mask_file], resume=resume, verbose=verbose)[0]
 
     # Finally, get the data itself, i.e the 144 single-trial beta maps projected on the surface
-    gifti_file_list = []
+    gifti_infos = []
     for current_trial in range(144):
         gifti_path = 'fsaverage5.lh.beta_{:04d}.gii'.format(current_trial+1)
-        gifti_file = (gifti_path, url, {'uncompress': True})
-        gifti_file_list.append(gifti_file)
+        gifti_info_ = (gifti_path, url, {'uncompress': True})
+        gifti_infos.append(gifti_info_)
 
-    giftis = _fetch_files(dataset_dir, gifti_file_list, resume=resume, verbose=verbose)
+    giftis = _fetch_files(dataset_dir, gifti_infos, resume=resume, verbose=verbose)
 
     return Bunch(func_left=giftis,
                  mask=mask,

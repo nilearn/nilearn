@@ -681,7 +681,6 @@ def test_fetch_development_fmri_exception():
                                                      age_group='junk for test')
 
 def test_fetch_surf_tva_localizer():
-    # get the data
     data = func.fetch_surf_tva_localizer()
 
     n_files = 144

@@ -3,7 +3,7 @@ InterTVA localizer surface
 
 Notes
 -----
-A subset of the InterTVA data set, dedicated to run the example of the cortex-based surfacic searchlight of nilearn.
+A subset of the InterTVA data set, dedicated to run the example of the surface-based searchlight of nilearn.
 The InterTVA data set aims at studying the inter-individual differences observed in people's
 ability at performing voice perception and voice identification tasks. Here, you get a set of pre-processed maps from a
 single subject recorded during a voice localizer paradigm. The subjects passively listened to 144 sounds, half vocal,
