@@ -338,7 +338,8 @@ def test_fetch_mixed_gambles(tmp_path):
                                          "jimura_poldrack_2012_zmaps.zip")
     for n_subjects in [1, 5, 16]:
         mgambles = func.fetch_mixed_gambles(n_subjects=n_subjects,
-                                            data_dir=str(tmp_path), url=local_url,
+                                            data_dir=str(tmp_path),
+                                            url=local_url,
                                             verbose=0, return_raw_data=True)
         datasetdir = str(tmp_path / "jimura_poldrack_2012_zmaps")
         assert mgambles["zmaps"][0] == os.path.join(datasetdir, "zmaps",
@@ -373,17 +374,20 @@ def test_check_parameters_megatrawls_datasets():
 def test_fetch_megatrawls_netmats(tmp_path):
     # smoke test to see that files are fetched and read properly
     # since we are loading data present in it
-    files_dir = str(tmp_path / 'Megatrawls' / '3T_Q1-Q6related468_MSMsulc_d100_ts3')
+    files_dir = str(tmp_path / 'Megatrawls'
+                    / '3T_Q1-Q6related468_MSMsulc_d100_ts3')
     os.makedirs(files_dir)
     with open(os.path.join(files_dir, 'Znet2.txt'), 'w') as net_file:
         net_file.write("1")
 
-    files_dir2 = str(tmp_path / 'Megatrawls' / '3T_Q1-Q6related468_MSMsulc_d300_ts2')
+    files_dir2 = str(tmp_path / 'Megatrawls'
+                     / '3T_Q1-Q6related468_MSMsulc_d300_ts2')
     os.makedirs(files_dir2)
     with open(os.path.join(files_dir2, 'Znet1.txt'), 'w') as net_file2:
         net_file2.write("1")
 
-    megatrawl_netmats_data = func.fetch_megatrawls_netmats(data_dir=str(tmp_path))
+    megatrawl_netmats_data = func.fetch_megatrawls_netmats(
+        data_dir=str(tmp_path))
 
     # expected number of returns in output name should be equal
     assert len(megatrawl_netmats_data) == 5
@@ -545,7 +549,8 @@ def test_fetch_surf_nki_enhanced(tmp_path, verbose=0):
 
     local_url = 'file://' + os.path.join(tst.datadir)
 
-    nki_data = func.fetch_surf_nki_enhanced(data_dir=str(tmp_path), url=local_url)
+    nki_data = func.fetch_surf_nki_enhanced(data_dir=str(tmp_path),
+                                            url=local_url)
 
     assert nki_data.description != ''
     assert len(nki_data.func_left) == 10
@@ -582,9 +587,8 @@ def test_fetch_development_fmri_participants(tmp_path):
     tst.mock_fetch_files.add_csv('participants.tsv', csv)
     local_url = 'file://' + os.path.join(tst.datadir)
 
-    participants = func._fetch_development_fmri_participants(data_dir=str(tmp_path),
-                                                             url=local_url,
-                                                             verbose=1)
+    participants = func._fetch_development_fmri_participants(
+        data_dir=str(tmp_path), url=local_url, verbose=1)
     assert isinstance(participants, np.ndarray)
     assert participants.shape == (5,)
 
@@ -593,11 +597,8 @@ def test_fetch_development_fmri_participants(tmp_path):
 def test_fetch_development_fmri_functional(tmp_path):
     csv = _mock_participants_data(n_ids=8)
     local_url = 'file://' + os.path.join(tst.datadir)
-    funcs, confounds = func._fetch_development_fmri_functional(csv,
-                                                               data_dir=str(tmp_path),
-                                                               url=local_url,
-                                                               resume=True,
-                                                               verbose=1)
+    funcs, confounds = func._fetch_development_fmri_functional(
+        csv, data_dir=str(tmp_path), url=local_url, resume=True, verbose=1)
     assert len(funcs) == 8
     assert len(confounds) == 8
 

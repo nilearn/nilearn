@@ -422,15 +422,15 @@ def test_fetch_atlas_basc_multiscale_2015(tmp_path):
     basenames_sym = ['template_cambridge_basc_multiscale_sym_' +
                      key + '.nii.gz' for key in keys]
     for key, basename_sym in zip(keys, basenames_sym):
-        assert data_sym[key] == str(tmp_path / dataset_name /
-                                             name_sym / basename_sym)
+        assert data_sym[key] == str(tmp_path / dataset_name / name_sym
+                                    / basename_sym)
 
     name_asym = 'template_cambridge_basc_multiscale_nii_asym'
     basenames_asym = ['template_cambridge_basc_multiscale_asym_' +
                       key + '.nii.gz' for key in keys]
     for key, basename_asym in zip(keys, basenames_asym):
-        assert data_asym[key] == str(tmp_path / dataset_name /
-                                              name_asym / basename_asym)
+        assert data_asym[key] == str(tmp_path / dataset_name / name_asym
+                                     / basename_asym)
 
     assert len(data_sym) == 10
     assert_raises_regex(ValueError,
@@ -468,8 +468,8 @@ def test_fetch_atlas_allen_2011(tmp_path):
 
     assert len(tst.mock_url_request.urls) == 1
     for key, fn in zip(keys, filenames):
-        assert bunch[key] == str(tmp_path / 'allen_rsn_2011' /
-                                              'allen_rsn_2011' / fn)
+        assert bunch[key] == str(tmp_path / 'allen_rsn_2011'
+                                 / 'allen_rsn_2011' / fn)
 
     assert bunch.description != ''
 
@@ -519,7 +519,8 @@ def _mock_talairach_fetch_files(data_dir, *args, **kwargs):
 def test_fetch_atlas_talairach(tmp_path):
     atlas._fetch_files = _mock_talairach_fetch_files
     level_values = np.ones((81, 3)) * [0, 1, 2]
-    talairach = atlas.fetch_atlas_talairach('hemisphere', data_dir=str(tmp_path))
+    talairach = atlas.fetch_atlas_talairach('hemisphere',
+                                            data_dir=str(tmp_path))
     assert_array_equal(get_data(talairach.maps).ravel(),
                        level_values.T.ravel())
     assert_array_equal(talairach.labels, ['Background', 'b', 'a'])

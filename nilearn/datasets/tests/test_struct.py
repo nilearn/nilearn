@@ -6,7 +6,6 @@ Test the datasets module
 
 import os
 import shutil
-import sys
 
 import nibabel
 import numpy as np
@@ -154,8 +153,8 @@ def test_load_mni152_brain_mask():
 def test_fetch_icbm152_brain_gm_mask(tmp_path):
     dataset = struct.fetch_icbm152_2009(data_dir=str(tmp_path), verbose=0)
     struct.load_mni152_template().to_filename(dataset.gm)
-    grey_matter_img = struct.fetch_icbm152_brain_gm_mask(data_dir=str(tmp_path),
-                                                         verbose=0)
+    grey_matter_img = struct.fetch_icbm152_brain_gm_mask(
+        data_dir=str(tmp_path), verbose=0)
     assert isinstance(grey_matter_img, nibabel.Nifti1Image)
 
 
