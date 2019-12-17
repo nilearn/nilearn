@@ -60,11 +60,11 @@ def test_view_connectome():
     check_html(html, False, 'connectome-plot')
     html = html_connectome.view_connectome(adj, coord, '85.3%',
                                            title="SOME_TITLE")
-    check_html(html, False, 'connectome-plot')
+    check_html(html, False, 'connectome-plot', title="SOME_TITLE")
     assert "SOME_TITLE" in html.html
     html = html_connectome.view_connectome(adj, coord, '85.3%',
                                            linewidth=8.5, node_size=4.2)
-    check_html(html, False, 'connectome-plot')
+    check_html(html, False, 'connectome-plot', title="Connectome plot")
     html = html_connectome.view_connectome(
         adj, coord, '85.3%', linewidth=8.5, node_size=np.arange(len(coord)))
     check_html(html, False, 'connectome-plot')
