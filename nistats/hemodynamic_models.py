@@ -494,10 +494,8 @@ def compute_regressor(exp_condition, hrf_model, frame_times, con_id='cond',
     # fir_delays should be integers
     if fir_delays is not None:
         fir_delays = [int(x) for x in fir_delays]
-
-    # oversampling should be an integer
     oversampling = int(oversampling)
-        
+
     # this is the average tr in this session, not necessarily the true tr
     tr = float(frame_times.max()) / (np.size(frame_times) - 1)
 

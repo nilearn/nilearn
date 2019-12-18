@@ -13,6 +13,7 @@ from scipy.stats import norm
 
 from nistats.thresholding import (fdr_threshold,
                                   map_threshold,
+                                  cluster_level_inference,
                                   )
 from nistats.utils import get_data
 
@@ -103,4 +104,53 @@ def test_map_threshold():
     # test 8 wrong procedure
     assert_raises(ValueError, map_threshold, None, None, alpha=0.05,
               height_control='plop')
+    
+
+def test_all_resolution_inference():
+    shape = (9, 10, 11)
+    p = np.prod(shape)
+    data = norm.isf(np.linspace(1. / p, 1. - 1. / p, p)).reshape(shape)
+    alpha = .001
+    data[2:4, 5:7, 6:8] = 5.
+    stat_img = nib.Nifti1Image(data, np.eye(4))
+    mask_img = nib.Nifti1Image(np.ones(shape), np.eye(4))
+
+    # test 1: standard case
+    th_map = cluster_level_inference(stat_img, threshold=3, alpha=.05)
+    vals = th_map.get_data()
+    assert_equal(np.sum(vals > 0), 8)
+
+    # test 2: high threshold
+    th_map = cluster_level_inference(stat_img, threshold=6, alpha=.05)
+    vals = th_map.get_data()
+    assert_equal(np.sum(vals > 0), 0)
+
+    # test 3: list of thresholds
+    th_map = cluster_level_inference(stat_img, threshold=[3, 6], alpha=.05)
+    vals = th_map.get_data()
+    assert_equal(np.sum(vals > 0), 8)
+
+    # test 4: one single voxel
+    data[3, 6, 7] = 10
+    stat_img_ = nib.Nifti1Image(data, np.eye(4))
+    th_map = cluster_level_inference(stat_img_, threshold=7, alpha=.05)
+    vals = th_map.get_data()
+    assert_equal(np.sum(vals > 0), 1)
+
+    # test 5: aberrant alpha
+    assert_raises(
+        ValueError, cluster_level_inference, stat_img, threshold=3, alpha=2)
+    assert_raises(
+        ValueError, cluster_level_inference, stat_img, threshold=3, alpha=-1)
+
+    # test 6 with mask_img
+    th_map = cluster_level_inference(stat_img, mask_img=mask_img,
+                                     threshold=3, alpha=.05)
+    vals = th_map.get_data()
+    assert_equal(np.sum(vals > 0), 8)
+
+    # test 7 verbose mode
+    th_map = cluster_level_inference(stat_img, threshold=3, alpha=.05,
+                                     verbose=True)
+    
     
