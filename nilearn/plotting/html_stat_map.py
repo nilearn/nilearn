@@ -296,6 +296,8 @@ def _json_view_to_html(json_view):
     width, height = _json_view_size(json_view['params'])
 
     # Populate all missing keys with html-ready data
+    json_view["INSERT_PAGE_TITLE_HERE"] = json_view[
+        "params"]["title"] or "Slice viewer"
     json_view['params'] = json.dumps(json_view['params'])
     js_dir = os.path.join(os.path.dirname(__file__), 'data', 'js')
     with open(os.path.join(js_dir, 'jquery.min.js')) as f:

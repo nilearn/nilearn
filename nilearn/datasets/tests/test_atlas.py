@@ -32,8 +32,7 @@ def mock_request():
     tst.teardown_mock(utils, atlas)
 
 
-@with_setup(tst.setup_tmpdata, tst.teardown_tmpdata)
-def test_get_dataset_dir():
+def test_get_dataset_dir(tmp_path):
     # testing folder creation under different environments, enforcing
     # a custom clean install
     os.environ.pop('NILEARN_DATA', None)
@@ -45,21 +44,21 @@ def test_get_dataset_dir():
     assert os.path.exists(data_dir)
     shutil.rmtree(data_dir)
 
-    expected_base_dir = os.path.join(tst.tmpdir, 'test_nilearn_data')
+    expected_base_dir = str(tmp_path / 'test_nilearn_data')
     os.environ['NILEARN_DATA'] = expected_base_dir
     data_dir = utils._get_dataset_dir('test', verbose=0)
     assert data_dir == os.path.join(expected_base_dir, 'test')
     assert os.path.exists(data_dir)
     shutil.rmtree(data_dir)
 
-    expected_base_dir = os.path.join(tst.tmpdir, 'nilearn_shared_data')
+    expected_base_dir = str(tmp_path / 'nilearn_shared_data')
     os.environ['NILEARN_SHARED_DATA'] = expected_base_dir
     data_dir = utils._get_dataset_dir('test', verbose=0)
     assert data_dir == os.path.join(expected_base_dir, 'test')
     assert os.path.exists(data_dir)
     shutil.rmtree(data_dir)
 
-    expected_base_dir = os.path.join(tst.tmpdir, 'env_data')
+    expected_base_dir = str(tmp_path / 'env_data')
     expected_dataset_dir = os.path.join(expected_base_dir, 'test')
     data_dir = utils._get_dataset_dir(
         'test', default_paths=[expected_dataset_dir], verbose=0)
@@ -67,11 +66,11 @@ def test_get_dataset_dir():
     assert os.path.exists(data_dir)
     shutil.rmtree(data_dir)
 
-    no_write = os.path.join(tst.tmpdir, 'no_write')
+    no_write = str(tmp_path / 'no_write')
     os.makedirs(no_write)
     os.chmod(no_write, 0o400)
 
-    expected_base_dir = os.path.join(tst.tmpdir, 'nilearn_shared_data')
+    expected_base_dir = str(tmp_path / 'nilearn_shared_data')
     os.environ['NILEARN_SHARED_DATA'] = expected_base_dir
     data_dir = utils._get_dataset_dir('test',
                                       default_paths=[no_write],
@@ -84,7 +83,7 @@ def test_get_dataset_dir():
     shutil.rmtree(data_dir)
 
     # Verify exception for a path which exists and is a file
-    test_file = os.path.join(tst.tmpdir, 'some_file')
+    test_file = str(tmp_path / 'some_file')
     with open(test_file, 'w') as out:
         out.write('abcfeg')
     assert_raises_regex(OSError,
@@ -94,8 +93,7 @@ def test_get_dataset_dir():
                         'test', test_file, verbose=0)
 
 
-@with_setup(tst.setup_tmpdata, tst.teardown_tmpdata)
-def test_downloader():
+def test_downloader(tmp_path):
 
     # Sandboxing test
     # ===============
@@ -115,7 +113,7 @@ def test_downloader():
 
     local_url = "file:" + _urllib.request.pathname2url(
         os.path.join(tst.datadir, "craddock_2011_parcellations.tar.gz"))
-    datasetdir = os.path.join(tst.tmpdir, 'craddock_2012')
+    datasetdir = str(tmp_path / 'craddock_2012')
     os.makedirs(datasetdir)
 
     # Create a dummy file. If sandboxing is successful, it won't be overwritten
@@ -132,7 +130,7 @@ def test_downloader():
     ]
 
     pytest.raises(IOError, utils._fetch_files,
-                  os.path.join(tst.tmpdir, 'craddock_2012'), files,
+                  str(tmp_path / 'craddock_2012'), files,
                   verbose=0)
     dummy = open(os.path.join(datasetdir, 'random_all.nii.gz'), 'r')
     stuff = dummy.read(5)
@@ -145,15 +143,14 @@ def test_downloader():
     # Now, we use the regular downloading feature. This will override the dummy
     # file created before.
 
-    atlas.fetch_atlas_craddock_2012(data_dir=tst.tmpdir, url=local_url)
+    atlas.fetch_atlas_craddock_2012(data_dir=str(tmp_path), url=local_url)
     dummy = open(os.path.join(datasetdir, 'random_all.nii.gz'), 'r')
     stuff = dummy.read()
     dummy.close()
     assert stuff == ''
 
 
-@with_setup(tst.setup_tmpdata, tst.teardown_tmpdata)
-def test_fail_fetch_atlas_harvard_oxford():
+def test_fail_fetch_atlas_harvard_oxford(tmp_path):
     # specify non-existing atlas item
     assert_raises_regex(ValueError, 'Invalid atlas name',
                         atlas.fetch_atlas_harvard_oxford,
@@ -162,8 +159,7 @@ def test_fail_fetch_atlas_harvard_oxford():
     # specify existing atlas item
     target_atlas = 'cort-maxprob-thr0-1mm'
     target_atlas_fname = 'HarvardOxford-' + target_atlas + '.nii.gz'
-
-    ho_dir = os.path.join(tst.tmpdir, 'fsl', 'data', 'atlases')
+    ho_dir = str(tmp_path / 'fsl' / 'data' / 'atlases')
     os.makedirs(ho_dir)
     nifti_dir = os.path.join(ho_dir, 'HarvardOxford')
     os.makedirs(nifti_dir)
@@ -199,7 +195,7 @@ def test_fail_fetch_atlas_harvard_oxford():
     # have maps as string and n_labels=4 with background. Since, we relay on xml
     # file to retrieve labels.
     ho_wo_symm = atlas.fetch_atlas_harvard_oxford(target_atlas,
-                                                  data_dir=tst.tmpdir)
+                                                  data_dir=str(tmp_path))
     assert isinstance(ho_wo_symm.maps, _basestring)
     assert isinstance(ho_wo_symm.labels, list)
     assert ho_wo_symm.labels[0] == "Background"
@@ -240,7 +236,7 @@ def test_fail_fetch_atlas_harvard_oxford():
     nibabel.Nifti1Image(atlas_data, np.eye(4) * 3).to_filename(
         nifti_target_split)
     ho = atlas.fetch_atlas_harvard_oxford(target_atlas,
-                                          data_dir=tst.tmpdir,
+                                          data_dir=str(tmp_path),
                                           symmetric_split=True)
 
     assert isinstance(ho.maps, nibabel.Nifti1Image)
@@ -255,9 +251,8 @@ def test_fail_fetch_atlas_harvard_oxford():
     assert ho.labels[6] == "Right R3"
 
 
-@with_setup(tst.setup_tmpdata, tst.teardown_tmpdata)
-def test_fetch_atlas_craddock_2012(mock_request):
-    bunch = atlas.fetch_atlas_craddock_2012(data_dir=tst.tmpdir,
+def test_fetch_atlas_craddock_2012(tmp_path, mock_request):
+    bunch = atlas.fetch_atlas_craddock_2012(data_dir=str(tmp_path),
                                             verbose=0)
 
     keys = ("scorr_mean", "tcorr_mean",
@@ -272,13 +267,12 @@ def test_fetch_atlas_craddock_2012(mock_request):
     ]
     assert len(tst.mock_url_request.urls) == 1
     for key, fn in zip(keys, filenames):
-        assert bunch[key] == os.path.join(tst.tmpdir, 'craddock_2012', fn)
+        assert bunch[key] == str(tmp_path / 'craddock_2012' / fn)
     assert bunch.description != ''
 
 
-@with_setup(tst.setup_tmpdata, tst.teardown_tmpdata)
-def test_fetch_atlas_smith_2009(mock_request):
-    bunch = atlas.fetch_atlas_smith_2009(data_dir=tst.tmpdir, verbose=0)
+def test_fetch_atlas_smith_2009(tmp_path, mock_request):
+    bunch = atlas.fetch_atlas_smith_2009(data_dir=str(tmp_path), verbose=0)
 
     keys = ("rsn20", "rsn10", "rsn70",
             "bm20", "bm10", "bm70")
@@ -293,7 +287,7 @@ def test_fetch_atlas_smith_2009(mock_request):
 
     assert len(tst.mock_url_request.urls) == 6
     for key, fn in zip(keys, filenames):
-        assert bunch[key] == os.path.join(tst.tmpdir, 'smith_2009', fn)
+        assert bunch[key] == str(tmp_path / 'smith_2009' / fn)
     assert bunch.description != ''
 
 
@@ -320,37 +314,34 @@ def test_fetch_coords_seitzman_2018():
     assert np.any(bunch.networks != np.sort(bunch.networks))
 
 
-
-@with_setup(tst.setup_tmpdata, tst.teardown_tmpdata)
-def test_fetch_atlas_destrieux_2009(mock_request):
-    datadir = os.path.join(tst.tmpdir, 'destrieux_2009')
+def test_fetch_atlas_destrieux_2009(tmp_path, mock_request):
+    datadir = str(tmp_path / 'destrieux_2009')
     os.mkdir(datadir)
     dummy = open(os.path.join(
         datadir, 'destrieux2009_rois_labels_lateralized.csv'), 'w')
     dummy.write("name,index")
     dummy.close()
-    bunch = atlas.fetch_atlas_destrieux_2009(data_dir=tst.tmpdir,
+    bunch = atlas.fetch_atlas_destrieux_2009(data_dir=str(tmp_path),
                                              verbose=0)
 
     assert len(tst.mock_url_request.urls) == 1
-    assert bunch['maps'] == os.path.join(
-        tst.tmpdir, 'destrieux_2009', 'destrieux2009_rois_lateralized.nii.gz')
+    assert bunch['maps'] == str(tmp_path / 'destrieux_2009'
+                                / 'destrieux2009_rois_lateralized.nii.gz')
 
     dummy = open(os.path.join(
         datadir, 'destrieux2009_rois_labels.csv'), 'w')
     dummy.write("name,index")
     dummy.close()
     bunch = atlas.fetch_atlas_destrieux_2009(
-        lateralized=False, data_dir=tst.tmpdir, verbose=0)
+        lateralized=False, data_dir=str(tmp_path), verbose=0)
 
     assert len(tst.mock_url_request.urls) == 1
     assert bunch['maps'] == os.path.join(
-        tst.tmpdir, 'destrieux_2009', 'destrieux2009_rois.nii.gz')
+        datadir, 'destrieux2009_rois.nii.gz')
 
 
-@with_setup(tst.setup_tmpdata, tst.teardown_tmpdata)
-def test_fetch_atlas_msdl(mock_request):
-    datadir = os.path.join(tst.tmpdir, 'msdl_atlas')
+def test_fetch_atlas_msdl(tmp_path, mock_request):
+    datadir = str(tmp_path / 'msdl_atlas')
     os.mkdir(datadir)
     os.mkdir(os.path.join(datadir, 'MSDL_rois'))
     data_dir = os.path.join(datadir, 'MSDL_rois', 'msdl_rois_labels.csv')
@@ -364,7 +355,7 @@ def test_fetch_atlas_msdl(mock_request):
         csv_file.write(header.encode())
         np.savetxt(csv_file, csv, delimiter=',', fmt='%s')
 
-    dataset = atlas.fetch_atlas_msdl(data_dir=tst.tmpdir, verbose=0)
+    dataset = atlas.fetch_atlas_msdl(data_dir=str(tmp_path), verbose=0)
     assert isinstance(dataset.labels, list)
     assert isinstance(dataset.region_coords, list)
     assert isinstance(dataset.networks, list)
@@ -373,9 +364,8 @@ def test_fetch_atlas_msdl(mock_request):
     assert dataset.description != ''
 
 
-@with_setup(tst.setup_tmpdata, tst.teardown_tmpdata)
-def test_fetch_atlas_yeo_2011(mock_request):
-    dataset = atlas.fetch_atlas_yeo_2011(data_dir=tst.tmpdir, verbose=0)
+def test_fetch_atlas_yeo_2011(tmp_path, mock_request):
+    dataset = atlas.fetch_atlas_yeo_2011(data_dir=str(tmp_path), verbose=0)
     assert isinstance(dataset.anat, _basestring)
     assert isinstance(dataset.colors_17, _basestring)
     assert isinstance(dataset.colors_7, _basestring)
@@ -387,15 +377,14 @@ def test_fetch_atlas_yeo_2011(mock_request):
     assert dataset.description != ''
 
 
-@with_setup(tst.setup_tmpdata, tst.teardown_tmpdata)
-def test_fetch_atlas_aal(mock_request):
-    ho_dir = os.path.join(tst.tmpdir, 'aal_SPM12', 'aal', 'atlas')
+def test_fetch_atlas_aal(tmp_path, mock_request):
+    ho_dir = str(tmp_path / 'aal_SPM12' / 'aal' / 'atlas')
     os.makedirs(ho_dir)
     with open(os.path.join(ho_dir, 'AAL.xml'), 'w') as xml_file:
         xml_file.write("<?xml version='1.0' encoding='us-ascii'?> "
                        "<metadata>"
                        "</metadata>")
-    dataset = atlas.fetch_atlas_aal(data_dir=tst.tmpdir, verbose=0)
+    dataset = atlas.fetch_atlas_aal(data_dir=str(tmp_path), verbose=0)
     assert isinstance(dataset.maps, _basestring)
     assert isinstance(dataset.labels, list)
     assert isinstance(dataset.indices, list)
@@ -403,20 +392,19 @@ def test_fetch_atlas_aal(mock_request):
 
     assert_raises_regex(ValueError, 'The version of AAL requested "FLS33"',
                         atlas.fetch_atlas_aal, version="FLS33",
-                        data_dir=tst.tmpdir, verbose=0)
+                        data_dir=str(tmp_path), verbose=0)
 
     assert dataset.description != ''
 
 
-@with_setup(tst.setup_tmpdata, tst.teardown_tmpdata)
-def test_fetch_atlas_basc_multiscale_2015(mock_request):
-    # default version='sym'
-    data_sym = atlas.fetch_atlas_basc_multiscale_2015(data_dir=tst.tmpdir,
+def test_fetch_atlas_basc_multiscale_2015(tmp_path, mock_request):
+    # default version='sym',
+    data_sym = atlas.fetch_atlas_basc_multiscale_2015(data_dir=str(tmp_path),
                                                       verbose=0)
     # version='asym'
     data_asym = atlas.fetch_atlas_basc_multiscale_2015(version='asym',
                                                        verbose=0,
-                                                       data_dir=tst.tmpdir)
+                                                       data_dir=str(tmp_path))
 
     keys = ['scale007', 'scale012', 'scale020', 'scale036', 'scale064',
             'scale122', 'scale197', 'scale325', 'scale444']
@@ -426,21 +414,21 @@ def test_fetch_atlas_basc_multiscale_2015(mock_request):
     basenames_sym = ['template_cambridge_basc_multiscale_sym_' +
                      key + '.nii.gz' for key in keys]
     for key, basename_sym in zip(keys, basenames_sym):
-        assert data_sym[key] == os.path.join(tst.tmpdir, dataset_name,
-                                                 name_sym, basename_sym)
+        assert data_sym[key] == str(tmp_path / dataset_name / name_sym
+                                    / basename_sym)
 
     name_asym = 'template_cambridge_basc_multiscale_nii_asym'
     basenames_asym = ['template_cambridge_basc_multiscale_asym_' +
                       key + '.nii.gz' for key in keys]
     for key, basename_asym in zip(keys, basenames_asym):
-        assert data_asym[key] == os.path.join(tst.tmpdir, dataset_name,
-                                                  name_asym, basename_asym)
+        assert data_asym[key] == str(tmp_path / dataset_name / name_asym
+                                     / basename_asym)
 
     assert len(data_sym) == 10
     assert_raises_regex(ValueError,
                         'The version of Brain parcellations requested "aym"',
                         atlas.fetch_atlas_basc_multiscale_2015, version="aym",
-                        data_dir=tst.tmpdir, verbose=0)
+                        data_dir=str(tmp_path), verbose=0)
 
     assert len(tst.mock_url_request.urls) == 2
     assert data_sym.description != ''
@@ -459,9 +447,8 @@ def test_fetch_coords_dosenbach_2010():
     assert np.any(bunch.networks != np.sort(bunch.networks))
 
 
-@with_setup(tst.setup_tmpdata, tst.teardown_tmpdata)
-def test_fetch_atlas_allen_2011(mock_request):
-    bunch = atlas.fetch_atlas_allen_2011(data_dir=tst.tmpdir, verbose=0)
+def test_fetch_atlas_allen_2011(tmp_path, mock_request):
+    bunch = atlas.fetch_atlas_allen_2011(data_dir=str(tmp_path), verbose=0)
     keys = ("maps",
             "rsn28",
             "comps")
@@ -472,15 +459,14 @@ def test_fetch_atlas_allen_2011(mock_request):
 
     assert len(tst.mock_url_request.urls) == 1
     for key, fn in zip(keys, filenames):
-        assert bunch[key] == os.path.join(tst.tmpdir, 'allen_rsn_2011',
-                                              'allen_rsn_2011', fn)
+        assert bunch[key] == str(tmp_path / 'allen_rsn_2011'
+                                 / 'allen_rsn_2011' / fn)
 
     assert bunch.description != ''
 
 
-@with_setup(tst.setup_tmpdata, tst.teardown_tmpdata)
-def test_fetch_atlas_surf_destrieux(mock_request, data_dir=tst.tmpdir, verbose=0):
-    data_dir = os.path.join(tst.tmpdir, 'destrieux_surface')
+def test_fetch_atlas_surf_destrieux(tmp_path, mock_request, verbose=0):
+    data_dir = str(tmp_path / 'destrieux_surface')
     os.mkdir(data_dir)
     # Create mock annots
     for hemi in ('left', 'right'):
@@ -490,7 +476,7 @@ def test_fetch_atlas_surf_destrieux(mock_request, data_dir=tst.tmpdir, verbose=0
                 np.arange(4), np.zeros((4, 5)), 5 * ['a'],
                 )
 
-    bunch = atlas.fetch_atlas_surf_destrieux(data_dir=tst.tmpdir, verbose=0)
+    bunch = atlas.fetch_atlas_surf_destrieux(data_dir=str(tmp_path), verbose=0)
     # Our mock annots have 4 labels
     assert len(bunch.labels) == 4
     assert bunch.map_left.shape == (4, )
@@ -519,22 +505,22 @@ def _mock_talairach_fetch_files(data_dir, *args, **kwargs):
     return [file_name]
 
 
-@with_setup(tst.setup_tmpdata, tst.teardown_tmpdata)
-def test_fetch_atlas_talairach(mock_request, data_dir=tst.tmpdir):
+def test_fetch_atlas_talairach(tmp_path, mock_request):
     atlas._fetch_files = _mock_talairach_fetch_files
     level_values = np.ones((81, 3)) * [0, 1, 2]
-    talairach = atlas.fetch_atlas_talairach('hemisphere', data_dir=tst.tmpdir)
+    talairach = atlas.fetch_atlas_talairach('hemisphere',
+                                            data_dir=str(tmp_path))
     assert_array_equal(get_data(talairach.maps).ravel(),
                        level_values.T.ravel())
     assert_array_equal(talairach.labels, ['Background', 'b', 'a'])
-    talairach = atlas.fetch_atlas_talairach('ba', data_dir=tst.tmpdir)
+    talairach = atlas.fetch_atlas_talairach('ba', data_dir=str(tmp_path))
     assert_array_equal(get_data(talairach.maps).ravel(),
                        level_values.ravel())
     pytest.raises(ValueError, atlas.fetch_atlas_talairach, 'bad_level')
 
-@with_setup(tst.setup_tmpdata, tst.teardown_tmpdata)
-def test_fetch_atlas_pauli_2017():
-    data_dir = os.path.join(tst.tmpdir, 'pauli_2017')
+
+def test_fetch_atlas_pauli_2017(tmp_path):
+    data_dir = str(tmp_path / 'pauli_2017')
 
     data = atlas.fetch_atlas_pauli_2017('det', data_dir)
     assert len(data.labels) == 16
@@ -548,8 +534,8 @@ def test_fetch_atlas_pauli_2017():
     with pytest.raises(NotImplementedError):
         atlas.fetch_atlas_pauli_2017('junk for testing', data_dir)
 
-@with_setup(tst.setup_tmpdata, tst.teardown_tmpdata)
-def test_fetch_atlas_schaefer_2018():
+
+def test_fetch_atlas_schaefer_2018(tmp_path):
     valid_n_rois = list(range(100, 1100, 100))
     valid_yeo_networks = [7, 17]
     valid_resolution_mm = [1, 2]
@@ -564,7 +550,7 @@ def test_fetch_atlas_schaefer_2018():
         data = atlas.fetch_atlas_schaefer_2018(n_rois=n_rois,
                                                yeo_networks=yeo_networks,
                                                resolution_mm=resolution_mm,
-                                               data_dir=tst.tmpdir,
+                                               data_dir=str(tmp_path),
                                                verbose=0)
         assert data.description != ''
         assert isinstance(data.maps, _basestring)

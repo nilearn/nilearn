@@ -92,10 +92,12 @@ def test_fill_html_template():
     info = html_surface.one_mesh_info(
         surf_map, fsaverage['pial_right'], '90%', black_bg=True,
         bg_map=fsaverage['sulc_right'])
+    info["title"] = None
     html = html_surface._fill_html_template(info, embed_js=False)
     check_html(html)
     assert "jquery.min.js" in html.html
     info = html_surface.full_brain_info(img)
+    info["title"] = None
     html = html_surface._fill_html_template(info)
     check_html(html)
     assert "* plotly.js (gl3d - minified) v1." in html.html
@@ -107,11 +109,11 @@ def test_view_surf():
     surf_map = mesh[0][:, 0]
     html = html_surface.view_surf(fsaverage['pial_right'], surf_map,
                                   fsaverage['sulc_right'], '90%')
-    check_html(html)
+    check_html(html, title="Surface plot")
     html = html_surface.view_surf(fsaverage['pial_right'], surf_map,
                                   fsaverage['sulc_right'], .3,
                                   title="SOME_TITLE")
-    check_html(html)
+    check_html(html, title="SOME_TITLE")
     assert "SOME_TITLE" in html.html
     html = html_surface.view_surf(fsaverage['pial_right'])
     check_html(html)

@@ -14,7 +14,6 @@ import numpy as np
 import pytest
 
 from numpy.testing import assert_raises_regex, assert_warns  # noqa: F401
-from numpy.testing import assert_raises_regex, assert_warns  # noqa: F401
 
 from .compat import _basestring, _urllib
 from ..datasets.utils import _fetch_files

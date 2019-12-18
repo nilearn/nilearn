@@ -8,7 +8,7 @@ joblib
 pandas
 matplotlib
 nibabel
-pytest
+pytest>=3.9
 pytest-cov
 numpy
 cython

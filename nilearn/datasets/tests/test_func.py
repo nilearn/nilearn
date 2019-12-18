@@ -31,10 +31,9 @@ def mock_request():
     tst.teardown_mock(utils, func)
 
 
-@with_setup(tst.setup_tmpdata, tst.teardown_tmpdata)
-def test_fetch_haxby(mock_request):
+def test_fetch_haxby(tmp_path, mock_request):
     for i in range(1, 6):
-        haxby = func.fetch_haxby(data_dir=tst.tmpdir, subjects=[i],
+        haxby = func.fetch_haxby(data_dir=str(tmp_path), subjects=[i],
                                  verbose=0)
         # subject_data + (md5 + mask if first subj)
         assert len(tst.mock_url_request.urls) == 1 + 2 * (i == 1)
@@ -52,7 +51,7 @@ def test_fetch_haxby(mock_request):
 
     # subjects with list
     subjects = [1, 2, 6]
-    haxby = func.fetch_haxby(data_dir=tst.tmpdir, subjects=subjects,
+    haxby = func.fetch_haxby(data_dir=str(tmp_path), subjects=subjects,
                              verbose=0)
     assert len(haxby.func) == len(subjects)
     assert len(haxby.mask_house_little) == len(subjects)
@@ -71,14 +70,13 @@ def test_fetch_haxby(mock_request):
         assert_raises_regex(ValueError,
                             message.format(sub_id),
                             func.fetch_haxby,
-                            data_dir=tst.tmpdir,
+                            data_dir=str(tmp_path),
                             subjects=[sub_id])
 
 
-@with_setup(tst.setup_tmpdata, tst.teardown_tmpdata)
-def test_fetch_nyu_rest(mock_request):
+def test_fetch_nyu_rest(tmp_path, mock_request):
     # First session, all subjects
-    nyu = func.fetch_nyu_rest(data_dir=tst.tmpdir, verbose=0)
+    nyu = func.fetch_nyu_rest(data_dir=str(tmp_path), verbose=0)
     assert len(tst.mock_url_request.urls) == 2
     assert len(nyu.func) == 25
     assert len(nyu.anat_anon) == 25
@@ -87,7 +85,7 @@ def test_fetch_nyu_rest(mock_request):
 
     # All sessions, 12 subjects
     tst.mock_url_request.reset()
-    nyu = func.fetch_nyu_rest(data_dir=tst.tmpdir, sessions=[1, 2, 3],
+    nyu = func.fetch_nyu_rest(data_dir=str(tmp_path), sessions=[1, 2, 3],
                               n_subjects=12, verbose=0)
     # Session 1 has already been downloaded
     assert len(tst.mock_url_request.urls) == 2
@@ -101,9 +99,8 @@ def test_fetch_nyu_rest(mock_request):
     assert nyu.description != ''
 
 
-@with_setup(tst.setup_tmpdata, tst.teardown_tmpdata)
-def test_fetch_adhd(mock_request):
-    local_url = "file://" + tst.datadir
+def test_fetch_adhd(tmp_path, mock_request):
+    local_url = "file://" + str(tmp_path / 'data')
 
     sub1 = [3902469, 7774305, 3699991]
     sub2 = [2014113, 4275075, 1019436,
@@ -124,7 +121,7 @@ def test_fetch_adhd(mock_request):
         'ADHD200_40subs_motion_parameters_and_phenotypics.csv',
         subs)
 
-    adhd = func.fetch_adhd(data_dir=tst.tmpdir, url=local_url,
+    adhd = func.fetch_adhd(data_dir=str(tmp_path), url=local_url,
                            n_subjects=12, verbose=0)
     assert len(adhd.func) == 12
     assert len(adhd.confounds) == 12
@@ -132,9 +129,8 @@ def test_fetch_adhd(mock_request):
     assert adhd.description != ''
 
 
-@with_setup(tst.setup_tmpdata, tst.teardown_tmpdata)
-def test_miyawaki2008(mock_request):
-    dataset = func.fetch_miyawaki2008(data_dir=tst.tmpdir, verbose=0)
+def test_miyawaki2008(tmp_path, mock_request):
+    dataset = func.fetch_miyawaki2008(data_dir=str(tmp_path), verbose=0)
     assert len(dataset.func) == 32
     assert len(dataset.label) == 32
     assert isinstance(dataset.mask, _basestring)
@@ -195,14 +191,13 @@ def teardown_localizer():
     np.recfromcsv = original_np_recfromcsv
 
 
-@with_setup(tst.setup_tmpdata, tst.teardown_tmpdata)
 @with_setup(setup_localizer, teardown_localizer)
-def test_fetch_localizer_contrasts(mock_request):
+def test_fetch_localizer_contrasts(tmp_path, mock_request):
     # 2 subjects
     dataset = func.fetch_localizer_contrasts(
         ['checkerboard'],
         n_subjects=2,
-        data_dir=tst.tmpdir,
+        data_dir=str(tmp_path),
         verbose=1)
     assert not hasattr(dataset, 'anats')
     assert not hasattr(dataset, 'tmaps')
@@ -216,7 +211,7 @@ def test_fetch_localizer_contrasts(mock_request):
     dataset = func.fetch_localizer_contrasts(
         ['checkerboard', 'horizontal checkerboard'],
         n_subjects=2,
-        data_dir=tst.tmpdir,
+        data_dir=str(tmp_path),
         verbose=1)
     assert isinstance(dataset.ext_vars, np.recarray)
     assert isinstance(dataset.cmaps[0], _basestring)
@@ -227,7 +222,7 @@ def test_fetch_localizer_contrasts(mock_request):
     dataset = func.fetch_localizer_contrasts(
         ['checkerboard'],
         n_subjects=1,
-        data_dir=tst.tmpdir,
+        data_dir=str(tmp_path),
         get_anats=True,
         get_masks=True,
         get_tmaps=True,
@@ -248,7 +243,7 @@ def test_fetch_localizer_contrasts(mock_request):
     dataset2 = func.fetch_localizer_contrasts(
         ['checkerboard'],
         n_subjects=[2, 3, 5],
-        data_dir=tst.tmpdir,
+        data_dir=str(tmp_path),
         verbose=1)
     assert dataset2.ext_vars.size == 3
     assert len(dataset2.cmaps) == 3
@@ -256,13 +251,12 @@ def test_fetch_localizer_contrasts(mock_request):
                  [b'S02', b'S03', b'S05'])
 
 
-@with_setup(tst.setup_tmpdata, tst.teardown_tmpdata)
 @with_setup(setup_localizer, teardown_localizer)
-def test_fetch_localizer_calculation_task(mock_request):
+def test_fetch_localizer_calculation_task(tmp_path, mock_request):
     # 2 subjects
     dataset = func.fetch_localizer_calculation_task(
         n_subjects=2,
-        data_dir=tst.tmpdir,
+        data_dir=str(tmp_path),
         verbose=1)
     assert isinstance(dataset.ext_vars, np.recarray)
     assert isinstance(dataset.cmaps[0], _basestring)
@@ -271,14 +265,13 @@ def test_fetch_localizer_calculation_task(mock_request):
     assert dataset.description != ''
 
 
-@with_setup(tst.setup_tmpdata, tst.teardown_tmpdata)
 @with_setup(setup_localizer, teardown_localizer)
-def test_fetch_localizer_button_task(mock_request):
+def test_fetch_localizer_button_task(tmp_path, mock_request):
     local_url = "file://" + tst.datadir
 
     # Disabled: cannot be tested without actually fetching covariates CSV file
     # Only one subject
-    dataset = func.fetch_localizer_button_task(data_dir=tst.tmpdir,
+    dataset = func.fetch_localizer_button_task(data_dir=str(tmp_path),
                                                url=local_url,
                                                verbose=1)
 
@@ -294,8 +287,7 @@ def test_fetch_localizer_button_task(mock_request):
     assert dataset.description != ''
 
 
-@with_setup(tst.setup_tmpdata, tst.teardown_tmpdata)
-def test_fetch_abide_pcp(mock_request):
+def test_fetch_abide_pcp(tmp_path, mock_request):
     local_url = "file://" + tst.datadir
     ids = [('50%03d' % i).encode() for i in range(800)]
     filenames = ['no_filename'] * 800
@@ -306,13 +298,13 @@ def test_fetch_abide_pcp(mock_request):
     tst.mock_fetch_files.add_csv('Phenotypic_V1_0b_preprocessed1.csv', pheno)
 
     # All subjects
-    dataset = func.fetch_abide_pcp(data_dir=tst.tmpdir, url=local_url,
+    dataset = func.fetch_abide_pcp(data_dir=str(tmp_path), url=local_url,
                                    quality_checked=False, verbose=0)
     assert len(dataset.func_preproc) == 400
     assert dataset.description != ''
 
     # Smoke test using only a string, rather than a list of strings
-    dataset = func.fetch_abide_pcp(data_dir=tst.tmpdir, url=local_url,
+    dataset = func.fetch_abide_pcp(data_dir=str(tmp_path), url=local_url,
                                    quality_checked=False, verbose=0,
                                    derivatives='func_preproc')
 
@@ -331,15 +323,15 @@ def test__load_mixed_gambles():
         assert len(zmaps) == len(gain)
 
 
-@with_setup(tst.setup_tmpdata, tst.teardown_tmpdata)
-def test_fetch_mixed_gambles(mock_request):
+def test_fetch_mixed_gambles(tmp_path, mock_request):
     local_url = "file://" + os.path.join(tst.datadir,
                                          "jimura_poldrack_2012_zmaps.zip")
     for n_subjects in [1, 5, 16]:
         mgambles = func.fetch_mixed_gambles(n_subjects=n_subjects,
-                                            data_dir=tst.tmpdir, url=local_url,
+                                            data_dir=str(tmp_path),
+                                            url=local_url,
                                             verbose=0, return_raw_data=True)
-        datasetdir = os.path.join(tst.tmpdir, "jimura_poldrack_2012_zmaps")
+        datasetdir = str(tmp_path / "jimura_poldrack_2012_zmaps")
         assert mgambles["zmaps"][0] == os.path.join(datasetdir, "zmaps",
                                                         "sub001_zmaps.nii.gz")
         assert len(mgambles["zmaps"]) == n_subjects
@@ -369,21 +361,23 @@ def test_check_parameters_megatrawls_datasets():
                             matrices=invalid_output_name)
 
 
-@with_setup(tst.setup_tmpdata, tst.teardown_tmpdata)
-def test_fetch_megatrawls_netmats():
+def test_fetch_megatrawls_netmats(tmp_path):
     # smoke test to see that files are fetched and read properly
     # since we are loading data present in it
-    files_dir = os.path.join(tst.tmpdir, 'Megatrawls', '3T_Q1-Q6related468_MSMsulc_d100_ts3')
+    files_dir = str(tmp_path / 'Megatrawls'
+                    / '3T_Q1-Q6related468_MSMsulc_d100_ts3')
     os.makedirs(files_dir)
     with open(os.path.join(files_dir, 'Znet2.txt'), 'w') as net_file:
         net_file.write("1")
 
-    files_dir2 = os.path.join(tst.tmpdir, 'Megatrawls', '3T_Q1-Q6related468_MSMsulc_d300_ts2')
+    files_dir2 = str(tmp_path / 'Megatrawls'
+                     / '3T_Q1-Q6related468_MSMsulc_d300_ts2')
     os.makedirs(files_dir2)
     with open(os.path.join(files_dir2, 'Znet1.txt'), 'w') as net_file2:
         net_file2.write("1")
 
-    megatrawl_netmats_data = func.fetch_megatrawls_netmats(data_dir=tst.tmpdir)
+    megatrawl_netmats_data = func.fetch_megatrawls_netmats(
+        data_dir=str(tmp_path))
 
     # expected number of returns in output name should be equal
     assert len(megatrawl_netmats_data) == 5
@@ -401,7 +395,7 @@ def test_fetch_megatrawls_netmats():
 
     # check if input provided for dimensions, timeseries, matrices to be same
     # to user settings
-    netmats_data = func.fetch_megatrawls_netmats(data_dir=tst.tmpdir,
+    netmats_data = func.fetch_megatrawls_netmats(data_dir=str(tmp_path),
                                                  dimensionality=300,
                                                  timeseries='multiple_spatial_regression',
                                                  matrices='full_correlation')
@@ -410,8 +404,7 @@ def test_fetch_megatrawls_netmats():
     assert netmats_data.matrices == 'full_correlation'
 
 
-@with_setup(tst.setup_tmpdata, tst.teardown_tmpdata)
-def test_fetch_cobre(mock_request):
+def test_fetch_cobre(tmp_path, mock_request):
     ids_n = [40000, 40001, 40002, 40003, 40004, 40005, 40006, 40007, 40008,
              40009, 40010, 40011, 40012, 40013, 40014, 40015, 40016, 40017,
              40018, 40019, 40020, 40021, 40022, 40023, 40024, 40025, 40026,
@@ -453,7 +446,7 @@ def test_fetch_cobre(mock_request):
                               ('FD Scrubbed', '<f8')])
 
     # Create a dummy 'files'
-    cobre_dir = os.path.join(tst.tmpdir, 'cobre')
+    cobre_dir = str(tmp_path / 'cobre')
     os.mkdir(cobre_dir)
 
     # Create the tsv
@@ -495,7 +488,7 @@ def test_fetch_cobre(mock_request):
     local_url = "file://" + dummy
 
     # All subjects
-    cobre_data = func.fetch_cobre(n_subjects=None, data_dir=tst.tmpdir,
+    cobre_data = func.fetch_cobre(n_subjects=None, data_dir=str(tmp_path),
                                   url=local_url)
 
     phenotypic_names = ['func', 'confounds', 'phenotypic', 'description',
@@ -517,19 +510,18 @@ def test_fetch_cobre(mock_request):
 
     # Fetch only 30 subjects
     data_30_subjects = func.fetch_cobre(n_subjects=30, url=local_url,
-                                        data_dir=tst.tmpdir)
+                                        data_dir=str(tmp_path))
     assert len(data_30_subjects.func) == 30
     assert len(data_30_subjects.confounds) == 30
 
     # Test more than maximum subjects
     test_150_subjects = func.fetch_cobre(n_subjects=150, url=local_url,
-                                         data_dir=tst.tmpdir)
+                                         data_dir=str(tmp_path))
     assert len(test_150_subjects.func) == 146
     os.remove(dummy)
 
 
-@with_setup(tst.setup_tmpdata, tst.teardown_tmpdata)
-def test_fetch_surf_nki_enhanced(mock_request, data_dir=tst.tmpdir, verbose=0):
+def test_fetch_surf_nki_enhanced(tmp_path, mock_request, verbose=0):
 
     ids = np.asarray(['A00028185', 'A00035827', 'A00037511', 'A00039431',
                       'A00033747', 'A00035840', 'A00038998', 'A00035072',
@@ -545,7 +537,8 @@ def test_fetch_surf_nki_enhanced(mock_request, data_dir=tst.tmpdir, verbose=0):
 
     local_url = 'file://' + os.path.join(tst.datadir)
 
-    nki_data = func.fetch_surf_nki_enhanced(data_dir=tst.tmpdir, url=local_url)
+    nki_data = func.fetch_surf_nki_enhanced(data_dir=str(tmp_path),
+                                            url=local_url)
 
     assert nki_data.description != ''
     assert len(nki_data.func_left) == 10
@@ -576,36 +569,29 @@ def _mock_participants_data(n_ids=5):
     return csv
 
 
-@with_setup(tst.setup_tmpdata, tst.teardown_tmpdata)
-def test_fetch_development_fmri_participants(mock_request):
+def test_fetch_development_fmri_participants(tmp_path, mock_request):
     csv = _mock_participants_data()
     tst.mock_fetch_files.add_csv('participants.tsv', csv)
     local_url = 'file://' + os.path.join(tst.datadir)
 
-    participants = func._fetch_development_fmri_participants(data_dir=tst.tmpdir,
-                                                             url=local_url,
-                                                             verbose=1)
+    participants = func._fetch_development_fmri_participants(
+        data_dir=str(tmp_path), url=local_url, verbose=1)
     assert isinstance(participants, np.ndarray)
     assert participants.shape == (5,)
 
 
-@with_setup(tst.setup_tmpdata, tst.teardown_tmpdata)
-def test_fetch_development_fmri_functional(mock_request):
+def test_fetch_development_fmri_functional(tmp_path, mock_request):
     csv = _mock_participants_data(n_ids=8)
     local_url = 'file://' + os.path.join(tst.datadir)
-    funcs, confounds = func._fetch_development_fmri_functional(csv,
-                                                               data_dir=tst.tmpdir,
-                                                               url=local_url,
-                                                               resume=True,
-                                                               verbose=1)
+    funcs, confounds = func._fetch_development_fmri_functional(
+        csv, data_dir=str(tmp_path), url=local_url, resume=True, verbose=1)
     assert len(funcs) == 8
     assert len(confounds) == 8
 
 
-@with_setup(tst.setup_tmpdata, tst.teardown_tmpdata)
-def test_fetch_development_fmri():
+def test_fetch_development_fmri(tmp_path):
     data = func.fetch_development_fmri(n_subjects=2,
-                                       data_dir=tst.tmpdir, verbose=1)
+                                       data_dir=str(tmp_path), verbose=1)
     assert len(data.func) == 2
     assert len(data.confounds) == 2
     assert isinstance(data.phenotypic, np.ndarray)
@@ -647,7 +633,6 @@ def test_fetch_development_fmri():
     assert(all([x == 'child' for x in data.phenotypic['Child_Adult']]))
 
 
-@with_setup(tst.setup_tmpdata, tst.teardown_tmpdata)
 def test_fetch_development_fmri_invalid_n_subjects():
     max_subjects = 155
     n_subjects = func._set_invalid_n_subjects_to_max(n_subjects=None,
@@ -660,7 +645,6 @@ def test_fetch_development_fmri_invalid_n_subjects():
                                             age_group='adult')
 
 
-@with_setup(tst.setup_tmpdata, tst.teardown_tmpdata)
 def test_fetch_development_fmri_exception():
     with pytest.raises(ValueError, match='Wrong value for age_group'):
         func._filter_func_regressors_by_participants(participants='junk',
