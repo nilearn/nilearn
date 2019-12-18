@@ -5,14 +5,10 @@ import pytest
 
 from _pytest.doctest import DoctestItem
 
-from nilearn.datasets.tests import test_utils as tst
-
 try:
-    import matplotlib
+    import matplotlib  # noqa: F401
 except ImportError:
     collect_ignore = ['plotting']
-else:
-    matplotlib  # Prevents flake8 erring due to unused entities.
 
 
 def pytest_collection_modifyitems(items):

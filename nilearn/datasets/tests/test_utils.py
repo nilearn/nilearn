@@ -13,8 +13,6 @@ import tarfile
 import gzip
 from tempfile import mkdtemp, mkstemp
 
-from nose import with_setup
-
 from nilearn import datasets
 from nilearn._utils.testing import (mock_request, wrap_chunk_read_,
                                     FetchFilesMock, assert_raises_regex)
@@ -300,8 +298,7 @@ def test_uncompress():
             shutil.rmtree(dtemp)
 
 
-@with_setup(setup_mock, teardown_mock)
-def test_fetch_file_overwrite(tmp_path):
+def test_fetch_file_overwrite(tmp_path, mock_request):
     # overwrite non-exiting file.
     fil = datasets.utils._fetch_file(url='http://foo/', data_dir=str(tmp_path),
                                      verbose=0, overwrite=True)
@@ -332,8 +329,7 @@ def test_fetch_file_overwrite(tmp_path):
         assert fp.read() == ''
 
 
-@with_setup(setup_mock, teardown_mock)
-def test_fetch_files_overwrite(tmp_path):
+def test_fetch_files_overwrite(tmp_path, mock_request):
     # overwrite non-exiting file.
     files = ('1.txt', 'http://foo/1.txt')
     fil = datasets.utils._fetch_files(data_dir=str(tmp_path), verbose=0,
