@@ -34,7 +34,7 @@ print(tested_var)
 ##############################################################################
 # Quality check / Remove subjects with bad tested variate
 import numpy as np
-mask_quality_check = np.where(tested_var != b'None')[0]
+mask_quality_check = np.where(tested_var != b'n/a')[0]
 n_samples = mask_quality_check.size
 contrast_map_filenames = [localizer_dataset.cmaps[i]
                           for i in mask_quality_check]
