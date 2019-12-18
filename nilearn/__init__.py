@@ -74,8 +74,8 @@ import numpy as np
 if LooseVersion(np.__version__) >= LooseVersion("1.14"):
     # See issue #1600 in nilearn for reason to add try and except
     try:
-        from ._utils.testing import is_nose_running
-        if is_nose_running():
+        from ._utils.testing import are_tests_running
+        if are_tests_running():
             np.set_printoptions(legacy='1.13')
     except ImportError:
         pass

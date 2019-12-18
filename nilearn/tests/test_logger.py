@@ -1,10 +1,10 @@
 """ Test the logger module
 
-This test file is in nilearn/tests because nosetests ignores modules whose
-name starts with an underscore.
+This test file is in nilearn/tests because Nosetest,
+which we historically used,
+ignores modules whose name starts with an underscore.
 """
 import contextlib
-from nose.tools import assert_equal
 
 from sklearn.base import BaseEstimator
 from nilearn._utils.logger import log
@@ -32,7 +32,7 @@ def run():
 
 def other_run():
     # Test too large values for stack_level
-    # stack_level should exceed nosetests stack levels as well
+    # stack_level should exceed testrunner's stack levels as well
     log("function other_run()", stack_level=100)
 
 
@@ -63,13 +63,13 @@ def test_log():
     with capture_output() as out:
         t = Run3()
         t.run3()
-    assert_equal(out[0], "[Run3.run3] method Test3\n[run] function run()\n")
+    assert out[0] == "[Run3.run3] method Test3\n[run] function run()\n"
 
     # Stack containing two matching objects
     with capture_output() as out:
         t = Run2()
         t.run2()
-    assert_equal(out[0],
+    assert (out[0] ==
                  "[Run2.run2] method Test2\n"
                  "[Run2.run2] method Test\n"
                  "[Run2.run2] function run()\n")
@@ -78,20 +78,20 @@ def test_log():
     with capture_output() as out:
         t = Run()
         t.run()
-    assert_equal(out[0],
+    assert (out[0] ==
                  "[Run.run] method Test\n[Run.run] function run()\n")
 
     # Stack containing no object
     with capture_output() as out:
         run()
-    assert_equal(out[0], "[run] function run()\n")
+    assert out[0] == "[run] function run()\n"
 
     # Test stack_level too large
     with capture_output() as out:
         other_run()
-    assert_equal(out[0], "[<top_level>] function other_run()\n")
+    assert out[0] == "[<top_level>] function other_run()\n"
 
-# Will be executed by nosetests upon importing
+# Will be executed by testrunner upon importing
 with capture_output() as out:
     log("message from no function")
-assert_equal(out[0], "[<module>] message from no function\n")
+assert out[0] == "[<module>] message from no function\n"
