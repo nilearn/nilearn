@@ -343,22 +343,25 @@ def test_check_parameters_megatrawls_datasets():
     message = "Invalid {0} input is provided: {1}."
 
     for invalid_input_dim in [1, 5, 30]:
-        assert_raises_regex(ValueError,
-                            message.format('dimensionality', invalid_input_dim),
-                            func.fetch_megatrawls_netmats,
-                            dimensionality=invalid_input_dim)
+        with pytest.raises(
+                ValueError,
+                match=message.format('dimensionality', invalid_input_dim)
+                ):
+            func.fetch_megatrawls_netmats(dimensionality=invalid_input_dim)
 
     for invalid_input_timeserie in ['asdf', 'time', 'st2']:
-        assert_raises_regex(ValueError,
-                            message.format('timeseries', invalid_input_timeserie),
-                            func.fetch_megatrawls_netmats,
-                            timeseries=invalid_input_timeserie)
+        with pytest.raises(
+                ValueError,
+                match=message.format('timeseries', invalid_input_timeserie)
+                ):
+            func.fetch_megatrawls_netmats(timeseries=invalid_input_timeserie)
 
     for invalid_output_name in ['net1', 'net2']:
-        assert_raises_regex(ValueError,
-                            message.format('matrices', invalid_output_name),
-                            func.fetch_megatrawls_netmats,
-                            matrices=invalid_output_name)
+        with pytest.raises(
+                ValueError,
+                match=message.format('matrices', invalid_output_name)
+                ):
+            func.fetch_megatrawls_netmats(matrices=invalid_output_name)
 
 
 def test_fetch_megatrawls_netmats(tmp_path):
