@@ -24,16 +24,14 @@ from nilearn._utils.testing import assert_raises_regex
 from nilearn._utils.compat import _basestring
 
 
-def setup_mock():
-    return tst.setup_mock(utils, func)
+@pytest.fixture()
+def request_mock():
+    tst.setup_mock(utils, func)
+    yield
+    tst.teardown_mock(utils, func)
 
 
-def teardown_mock():
-    return tst.teardown_mock(utils, func)
-
-
-@with_setup(setup_mock, teardown_mock)
-def test_fetch_haxby(tmp_path):
+def test_fetch_haxby(tmp_path, request_mock):
     for i in range(1, 6):
         haxby = func.fetch_haxby(data_dir=str(tmp_path), subjects=[i],
                                  verbose=0)
@@ -76,8 +74,7 @@ def test_fetch_haxby(tmp_path):
                             subjects=[sub_id])
 
 
-@with_setup(setup_mock, teardown_mock)
-def test_fetch_nyu_rest(tmp_path):
+def test_fetch_nyu_rest(tmp_path, request_mock):
     # First session, all subjects
     nyu = func.fetch_nyu_rest(data_dir=str(tmp_path), verbose=0)
     assert len(tst.mock_url_request.urls) == 2
@@ -102,8 +99,7 @@ def test_fetch_nyu_rest(tmp_path):
     assert nyu.description != ''
 
 
-@with_setup(setup_mock, teardown_mock)
-def test_fetch_adhd(tmp_path):
+def test_fetch_adhd(tmp_path, request_mock):
     local_url = "file://" + str(tmp_path / 'data')
 
     sub1 = [3902469, 7774305, 3699991]
@@ -133,8 +129,7 @@ def test_fetch_adhd(tmp_path):
     assert adhd.description != ''
 
 
-@with_setup(setup_mock, teardown_mock)
-def test_miyawaki2008(tmp_path):
+def test_miyawaki2008(tmp_path, request_mock):
     dataset = func.fetch_miyawaki2008(data_dir=str(tmp_path), verbose=0)
     assert len(dataset.func) == 32
     assert len(dataset.label) == 32
@@ -196,9 +191,8 @@ def teardown_localizer():
     np.recfromcsv = original_np_recfromcsv
 
 
-@with_setup(setup_mock, teardown_mock)
 @with_setup(setup_localizer, teardown_localizer)
-def test_fetch_localizer_contrasts(tmp_path):
+def test_fetch_localizer_contrasts(tmp_path, request_mock):
     # 2 subjects
     dataset = func.fetch_localizer_contrasts(
         ['checkerboard'],
@@ -257,9 +251,8 @@ def test_fetch_localizer_contrasts(tmp_path):
                  [b'S02', b'S03', b'S05'])
 
 
-@with_setup(setup_mock, teardown_mock)
 @with_setup(setup_localizer, teardown_localizer)
-def test_fetch_localizer_calculation_task(tmp_path):
+def test_fetch_localizer_calculation_task(tmp_path, request_mock):
     # 2 subjects
     dataset = func.fetch_localizer_calculation_task(
         n_subjects=2,
@@ -272,9 +265,8 @@ def test_fetch_localizer_calculation_task(tmp_path):
     assert dataset.description != ''
 
 
-@with_setup(setup_mock, teardown_mock)
 @with_setup(setup_localizer, teardown_localizer)
-def test_fetch_localizer_button_task(tmp_path):
+def test_fetch_localizer_button_task(tmp_path, request_mock):
     local_url = "file://" + tst.datadir
 
     # Disabled: cannot be tested without actually fetching covariates CSV file
@@ -295,8 +287,7 @@ def test_fetch_localizer_button_task(tmp_path):
     assert dataset.description != ''
 
 
-@with_setup(setup_mock, teardown_mock)
-def test_fetch_abide_pcp(tmp_path):
+def test_fetch_abide_pcp(tmp_path, request_mock):
     local_url = "file://" + tst.datadir
     ids = [('50%03d' % i).encode() for i in range(800)]
     filenames = ['no_filename'] * 800
@@ -332,8 +323,7 @@ def test__load_mixed_gambles():
         assert len(zmaps) == len(gain)
 
 
-@with_setup(setup_mock, teardown_mock)
-def test_fetch_mixed_gambles(tmp_path):
+def test_fetch_mixed_gambles(tmp_path, request_mock):
     local_url = "file://" + os.path.join(tst.datadir,
                                          "jimura_poldrack_2012_zmaps.zip")
     for n_subjects in [1, 5, 16]:
@@ -414,8 +404,7 @@ def test_fetch_megatrawls_netmats(tmp_path):
     assert netmats_data.matrices == 'full_correlation'
 
 
-@with_setup(setup_mock, teardown_mock)
-def test_fetch_cobre(tmp_path):
+def test_fetch_cobre(tmp_path, request_mock):
     ids_n = [40000, 40001, 40002, 40003, 40004, 40005, 40006, 40007, 40008,
              40009, 40010, 40011, 40012, 40013, 40014, 40015, 40016, 40017,
              40018, 40019, 40020, 40021, 40022, 40023, 40024, 40025, 40026,
@@ -532,8 +521,7 @@ def test_fetch_cobre(tmp_path):
     os.remove(dummy)
 
 
-@with_setup(setup_mock, teardown_mock)
-def test_fetch_surf_nki_enhanced(tmp_path, verbose=0):
+def test_fetch_surf_nki_enhanced(tmp_path, request_mock, verbose=0):
 
     ids = np.asarray(['A00028185', 'A00035827', 'A00037511', 'A00039431',
                       'A00033747', 'A00035840', 'A00038998', 'A00035072',
@@ -581,8 +569,7 @@ def _mock_participants_data(n_ids=5):
     return csv
 
 
-@with_setup(setup_mock, teardown_mock)
-def test_fetch_development_fmri_participants(tmp_path):
+def test_fetch_development_fmri_participants(tmp_path, request_mock):
     csv = _mock_participants_data()
     tst.mock_fetch_files.add_csv('participants.tsv', csv)
     local_url = 'file://' + os.path.join(tst.datadir)
@@ -593,8 +580,7 @@ def test_fetch_development_fmri_participants(tmp_path):
     assert participants.shape == (5,)
 
 
-@with_setup(setup_mock, teardown_mock)
-def test_fetch_development_fmri_functional(tmp_path):
+def test_fetch_development_fmri_functional(tmp_path, request_mock):
     csv = _mock_participants_data(n_ids=8)
     local_url = 'file://' + os.path.join(tst.datadir)
     funcs, confounds = func._fetch_development_fmri_functional(
