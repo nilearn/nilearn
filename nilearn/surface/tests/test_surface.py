@@ -7,17 +7,13 @@ import itertools
 
 from distutils.version import LooseVersion
 
+import nibabel as nb
+import numpy as np
 import pytest
 
 from numpy.testing import assert_array_equal, assert_array_almost_equal
-
-from nilearn._utils.testing import assert_raises_regex, assert_warns
-
-import numpy as np
 from scipy.spatial import Delaunay
 
-
-import nibabel as nb
 from nibabel import gifti
 
 from nilearn import datasets
@@ -62,9 +58,10 @@ def test_load_surf_data_file_nii_gii():
     filename_gii_empty = tempfile.mktemp(suffix='.gii')
     gii_empty = gifti.GiftiImage()
     gifti.write(gii_empty, filename_gii_empty)
-    assert_raises_regex(ValueError,
-                        'must contain at least one data array',
-                        load_surf_data, filename_gii_empty)
+    with pytest.raises(ValueError,
+                       match='must contain at least one data array'
+                       ):
+        load_surf_data(filename_gii_empty)
     os.remove(filename_gii_empty)
 
     # test loading of fake data from nifti file
@@ -139,9 +136,10 @@ def test_load_surf_data_file_error():
     for suff in wrong_suff:
         filename_wrong = tempfile.mktemp(suffix=suff)
         np.savetxt(filename_wrong, data)
-        assert_raises_regex(ValueError,
-                            'input type is not recognized',
-                            load_surf_data, filename_wrong)
+        with pytest.raises(ValueError,
+                           match='input type is not recognized'
+                           ):
+            load_surf_data(filename_wrong)
         os.remove(filename_wrong)
 
 
@@ -152,16 +150,16 @@ def test_load_surf_mesh_list():
     assert_array_equal(load_surf_mesh(mesh)[0], mesh[0])
     assert_array_equal(load_surf_mesh(mesh)[1], mesh[1])
     # test if incorrect list, array or dict raises error
-    assert_raises_regex(ValueError, 'it must have two elements',
-                        load_surf_mesh, [])
-    assert_raises_regex(ValueError, 'it must have two elements',
-                        load_surf_mesh, [mesh[0]])
-    assert_raises_regex(ValueError, 'it must have two elements',
-                        load_surf_mesh, [mesh[0], mesh[1], mesh[1]])
-    assert_raises_regex(ValueError, 'input type is not recognized',
-                        load_surf_mesh, mesh[0])
-    assert_raises_regex(ValueError, 'input type is not recognized',
-                        load_surf_mesh, dict())
+    with pytest.raises(ValueError, match='it must have two elements'):
+        load_surf_mesh([])
+    with pytest.raises(ValueError, match='it must have two elements'):
+        load_surf_mesh([mesh[0]])
+    with pytest.raises(ValueError, match='it must have two elements'):
+        load_surf_mesh([mesh[0], mesh[1], mesh[1]])
+    with pytest.raises(ValueError, match='input type is not recognized'):
+        load_surf_mesh(mesh[0])
+    with pytest.raises(ValueError, match='input type is not recognized'):
+        load_surf_mesh(dict())
     del mesh
 
 
@@ -221,15 +219,15 @@ def test_load_surf_mesh_file_gii():
     filename_gii_mesh_no_point = tempfile.mktemp(suffix='.gii')
     gifti.write(gifti.GiftiImage(darrays=[face_array, face_array]),
                 filename_gii_mesh_no_point)
-    assert_raises_regex(ValueError, 'NIFTI_INTENT_POINTSET',
-                        load_surf_mesh, filename_gii_mesh_no_point)
+    with pytest.raises(ValueError, match='NIFTI_INTENT_POINTSET'):
+        load_surf_mesh(filename_gii_mesh_no_point)
     os.remove(filename_gii_mesh_no_point)
 
     filename_gii_mesh_no_face = tempfile.mktemp(suffix='.gii')
     gifti.write(gifti.GiftiImage(darrays=[coord_array, coord_array]),
                 filename_gii_mesh_no_face)
-    assert_raises_regex(ValueError, 'NIFTI_INTENT_TRIANGLE',
-                        load_surf_mesh, filename_gii_mesh_no_face)
+    with pytest.raises(ValueError, match='NIFTI_INTENT_TRIANGLE'):
+        load_surf_mesh(filename_gii_mesh_no_face)
     os.remove(filename_gii_mesh_no_face)
 
 
@@ -253,9 +251,10 @@ def test_load_surf_mesh_file_error():
     for suff in wrong_suff:
         filename_wrong = tempfile.mktemp(suffix=suff)
         nb.freesurfer.write_geometry(filename_wrong, mesh[0], mesh[1])
-        assert_raises_regex(ValueError,
-                            'input type is not recognized',
-                            load_surf_mesh, filename_wrong)
+        with pytest.raises(ValueError,
+                            match='input type is not recognized'
+                           ):
+            load_surf_mesh(filename_wrong)
         os.remove(filename_wrong)
 
 
@@ -266,13 +265,12 @@ def test_load_surf_mesh_file_glob():
     fname2 = tempfile.mktemp(suffix='.pial')
     nb.freesurfer.write_geometry(fname2, mesh[0], mesh[1])
 
-    assert_raises_regex(ValueError, 'More than one file matching path',
-                        load_surf_mesh,
-                        os.path.join(os.path.dirname(fname1), "*.pial"))
-    assert_raises_regex(ValueError, 'No files matching path',
-                        load_surf_mesh,
-                        os.path.join(os.path.dirname(fname1),
-                                     "*.unlikelysuffix"))
+    with pytest.raises(ValueError, match='More than one file matching path'):
+        load_surf_mesh(os.path.join(os.path.dirname(fname1), "*.pial"))
+    with pytest.raises(ValueError, match='No files matching path'):
+        load_surf_mesh(os.path.join(os.path.dirname(fname1),
+                                    "*.unlikelysuffix")
+                       )
     assert len(load_surf_mesh(fname1)) == 2
     assert_array_almost_equal(load_surf_mesh(fname1)[0], mesh[0])
     assert_array_almost_equal(load_surf_mesh(fname1)[1], mesh[1])
@@ -298,8 +296,10 @@ def test_load_surf_data_file_glob():
         gii = gifti.GiftiImage(darrays=[darray])
         gifti.write(gii, fnames[f])
 
-    assert_array_equal(load_surf_data(os.path.join(os.path.dirname(fnames[0]),
-                                                   "glob*.gii")), data2D)
+    assert_array_equal(load_surf_data(
+        os.path.join(os.path.dirname(fnames[0]), "glob*.gii")),
+        data2D
+    )
 
     # make one more gii file that has more than one dimension
     fnames.append(tempfile.mktemp(prefix='glob_3_', suffix='.gii'))
@@ -335,10 +335,10 @@ def test_load_surf_data_file_glob():
     gii = gifti.GiftiImage(darrays=[darray])
     gifti.write(gii, fnames[-1])
 
-    assert_raises_regex(ValueError,
-                        'files must contain data with the same shape',
-                        load_surf_data,
-                        os.path.join(os.path.dirname(fnames[0]), "*.gii"))
+    with pytest.raises(ValueError,
+                       match='files must contain data with the same shape'
+                       ):
+        load_surf_data(os.path.join(os.path.dirname(fnames[0]), "*.gii"))
     for f in fnames:
         os.remove(f)
 
@@ -378,8 +378,8 @@ def test_load_uniform_ball_cloud():
             points = surface._load_uniform_ball_cloud(n_points=n_points)
             assert_array_equal(points.shape, (n_points, 3))
             assert len(w) == 0
-    assert_warns(surface.EfficiencyWarning,
-                 surface._load_uniform_ball_cloud, n_points=3)
+    with pytest.warns(surface.EfficiencyWarning):
+        surface._load_uniform_ball_cloud(n_points=3)
     for n_points in [3, 7]:
         computed = surface._uniform_ball_cloud(n_points)
         loaded = surface._load_uniform_ball_cloud(n_points)
