@@ -19,7 +19,6 @@ from nose import with_setup
 from . import test_utils as tst
 
 from nilearn.datasets import utils, func
-from nilearn._utils.testing import assert_raises_regex
 
 from nilearn._utils.compat import _basestring
 
@@ -67,11 +66,8 @@ def test_fetch_haxby(tmp_path, request_mock):
     message = "You provided invalid subject id {0} in a list"
 
     for sub_id in subjects:
-        assert_raises_regex(ValueError,
-                            message.format(sub_id),
-                            func.fetch_haxby,
-                            data_dir=str(tmp_path),
-                            subjects=[sub_id])
+        with pytest.raises(ValueError, match=message.format(sub_id)):
+            func.fetch_haxby(data_dir=str(tmp_path), subjects=[sub_id])
 
 
 def test_fetch_nyu_rest(tmp_path, request_mock):
