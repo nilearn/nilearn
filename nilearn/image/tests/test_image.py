@@ -12,7 +12,6 @@ import numpy as np
 import pytest
 
 from numpy.testing import assert_array_equal, assert_allclose
-from nilearn._utils.testing import assert_raises_regex, assert_warns
 from nilearn._utils.exceptions import DimensionError
 
 from nilearn import signal
@@ -156,7 +155,8 @@ def test__smooth_array():
 
     # Check corner case when fwhm=0. See #1537
     # Test whether function _smooth_array raises a warning when fwhm=0.
-    assert_warns(UserWarning, image._smooth_array, data, affine, fwhm=0.)
+    with pytest.warns(UserWarning):
+        image._smooth_array(data, affine, fwhm=0.)
 
     # Test output equal when fwhm=None and fwhm=0
     out_fwhm_none = image._smooth_array(data, affine, fwhm=None)
@@ -193,7 +193,8 @@ def test_smooth_img():
 
     # Check corner case situations when fwhm=0, See issue #1537
     # Test whether function smooth_img raises a warning when fwhm=0.
-    assert_warns(UserWarning, image.smooth_img, img1, fwhm=0.)
+    with pytest.warns(UserWarning):
+        image.smooth_img(img1, fwhm=0.)
 
     # Test output equal when fwhm=None and fwhm=0
     out_fwhm_none = image.smooth_img(img1, fwhm=None)
@@ -358,11 +359,11 @@ def test_concat_imgs():
 
 def test_index_img():
     img_3d = nibabel.Nifti1Image(np.ones((3, 4, 5)), np.eye(4))
-    testing.assert_raises_regex(TypeError,
-                                "Input data has incompatible dimensionality: "
-                                "Expected dimension is 4D and you provided "
-                                "a 3D image.",
-                                image.index_img, img_3d, 0)
+    expected_error_msg = ("Input data has incompatible dimensionality: "
+                          "Expected dimension is 4D and you provided "
+                          "a 3D image.")
+    with pytest.raises(TypeError, match=expected_error_msg):
+        image.index_img(img_3d, 0)
 
     affine = np.array([[1., 2., 3., 4.],
                        [5., 6., 7., 8.],
@@ -384,10 +385,11 @@ def test_index_img():
     for i in [fourth_dim_size, - fourth_dim_size - 1,
               [0, fourth_dim_size],
               np.repeat(True, fourth_dim_size + 1)]:
-        testing.assert_raises_regex(
-            IndexError,
-            'out of bounds|invalid index|out of range|boolean index',
-            image.index_img, img_4d, i)
+        with pytest.raises(
+                IndexError,
+                match='out of bounds|invalid index|out of range|boolean index'
+                ):
+            image.index_img(img_4d, i)
 
 
 def test_pd_index_img():
@@ -416,11 +418,11 @@ def test_pd_index_img():
 
 def test_iter_img():
     img_3d = nibabel.Nifti1Image(np.ones((3, 4, 5)), np.eye(4))
-    testing.assert_raises_regex(TypeError,
-                                "Input data has incompatible dimensionality: "
-                                "Expected dimension is 4D and you provided "
-                                "a 3D image.",
-                                image.iter_img, img_3d)
+    expected_error_msg = ("Input data has incompatible dimensionality: "
+                          "Expected dimension is 4D and you provided "
+                          "a 3D image.")
+    with pytest.raises(TypeError, match=expected_error_msg):
+        image.iter_img(img_3d)
 
     affine = np.array([[1., 2., 3., 4.],
                        [5., 6., 7., 8.],
@@ -506,17 +508,16 @@ def test_validity_threshold_value_in_threshold_img():
     maps, _ = data_gen.generate_maps(shape, n_regions=2)
 
     # testing to raise same error when threshold=None case
-    testing.assert_raises_regex(ValueError,
-                                "The input parameter 'threshold' is empty. ",
-                                threshold_img, maps, threshold=None)
+    with pytest.raises(ValueError, match="The input parameter 'threshold' is empty. "):
+        threshold_img(maps, threshold=None)
 
     invalid_threshold_values = ['90t%', 's%', 't', '0.1']
     name = 'threshold'
     for thr in invalid_threshold_values:
-        testing.assert_raises_regex(ValueError,
-                                    '{0}.+should be a number followed by '
-                                    'the percent sign'.format(name),
-                                    threshold_img, maps, threshold=thr)
+        with pytest.raises(ValueError,
+                           match='{0}.+should be a number followed by '
+                                 'the percent sign'.format(name)):
+            threshold_img(maps, threshold=thr)
 
 
 def test_threshold_img():
@@ -575,19 +576,17 @@ def test_math_img_exceptions():
 
     formula = "np.mean(img1, axis=-1) - np.mean(img2, axis=-1)"
     # Images with different shapes should raise a ValueError exception.
-    assert_raises_regex(ValueError,
-                        "Input images cannot be compared",
-                        math_img, formula, img1=img1, img2=img2)
+    with pytest.raises(ValueError, match="Input images cannot be compared"):
+        math_img(formula, img1=img1, img2=img2)
 
     # Images with different affines should raise a ValueError exception.
-    assert_raises_regex(ValueError,
-                        "Input images cannot be compared",
-                        math_img, formula, img1=img1, img2=img4)
+    with pytest.raises(ValueError, match="Input images cannot be compared"):
+        math_img(formula, img1=img1, img2=img4)
 
     bad_formula = "np.toto(img1, axis=-1) - np.mean(img3, axis=-1)"
-    assert_raises_regex(AttributeError,
-                        "Input formula couldn't be processed",
-                        math_img, bad_formula, img1=img1, img3=img3)
+    with pytest.raises(AttributeError,
+                       match="Input formula couldn't be processed"):
+        math_img(bad_formula, img1=img1, img3=img3)
 
 
 def test_math_img():
