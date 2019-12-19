@@ -15,7 +15,6 @@ import gzip
 import pytest
 from sklearn.utils import check_random_state
 
-from nose import with_setup
 from . import test_utils as tst
 
 from nilearn.datasets import utils, func
@@ -25,120 +24,17 @@ from nilearn._utils.compat import _basestring
 
 
 @pytest.fixture()
-def request_mock():
+def request_mocker():
     tst.setup_mock(utils, func)
     yield
     tst.teardown_mock(utils, func)
 
 
-def test_fetch_haxby(tmp_path, request_mock):
-    for i in range(1, 6):
-        haxby = func.fetch_haxby(data_dir=str(tmp_path), subjects=[i],
-                                 verbose=0)
-        # subject_data + (md5 + mask if first subj)
-        assert len(tst.mock_url_request.urls) == 1 + 2 * (i == 1)
-        assert len(haxby.func) == 1
-        assert len(haxby.anat) == 1
-        assert len(haxby.session_target) == 1
-        assert haxby.mask is not None
-        assert len(haxby.mask_vt) == 1
-        assert len(haxby.mask_face) == 1
-        assert len(haxby.mask_house) == 1
-        assert len(haxby.mask_face_little) == 1
-        assert len(haxby.mask_house_little) == 1
-        tst.mock_url_request.reset()
-        assert haxby.description != ''
-
-    # subjects with list
-    subjects = [1, 2, 6]
-    haxby = func.fetch_haxby(data_dir=str(tmp_path), subjects=subjects,
-                             verbose=0)
-    assert len(haxby.func) == len(subjects)
-    assert len(haxby.mask_house_little) == len(subjects)
-    assert len(haxby.anat) == len(subjects)
-    assert haxby.anat[2] is None
-    assert isinstance(haxby.mask, _basestring)
-    assert len(haxby.mask_face) == len(subjects)
-    assert len(haxby.session_target) == len(subjects)
-    assert len(haxby.mask_vt) == len(subjects)
-    assert len(haxby.mask_face_little) == len(subjects)
-
-    subjects = ['a', 8]
-    message = "You provided invalid subject id {0} in a list"
-
-    for sub_id in subjects:
-        assert_raises_regex(ValueError,
-                            message.format(sub_id),
-                            func.fetch_haxby,
-                            data_dir=str(tmp_path),
-                            subjects=[sub_id])
-
-
-def test_fetch_nyu_rest(tmp_path, request_mock):
-    # First session, all subjects
-    nyu = func.fetch_nyu_rest(data_dir=str(tmp_path), verbose=0)
-    assert len(tst.mock_url_request.urls) == 2
-    assert len(nyu.func) == 25
-    assert len(nyu.anat_anon) == 25
-    assert len(nyu.anat_skull) == 25
-    assert np.all(np.asarray(nyu.session) == 1)
-
-    # All sessions, 12 subjects
-    tst.mock_url_request.reset()
-    nyu = func.fetch_nyu_rest(data_dir=str(tmp_path), sessions=[1, 2, 3],
-                              n_subjects=12, verbose=0)
-    # Session 1 has already been downloaded
-    assert len(tst.mock_url_request.urls) == 2
-    assert len(nyu.func) == 36
-    assert len(nyu.anat_anon) == 36
-    assert len(nyu.anat_skull) == 36
-    s = np.asarray(nyu.session)
-    assert np.all(s[:12] == 1)
-    assert np.all(s[12:24] == 2)
-    assert np.all(s[24:] == 3)
-    assert nyu.description != ''
-
-
-def test_fetch_adhd(tmp_path, request_mock):
-    local_url = "file://" + str(tmp_path / 'data')
-
-    sub1 = [3902469, 7774305, 3699991]
-    sub2 = [2014113, 4275075, 1019436,
-            3154996, 3884955, 27034,
-            4134561, 27018, 6115230,
-            27037, 8409791, 27011]
-    sub3 = [3007585, 8697774, 9750701,
-            10064, 21019, 10042,
-            10128, 2497695, 4164316,
-            1552181, 4046678, 23012]
-    sub4 = [1679142, 1206380, 23008,
-            4016887, 1418396, 2950754,
-            3994098, 3520880, 1517058,
-            9744150, 1562298, 3205761, 3624598]
-    subs = np.array(sub1 + sub2 + sub3 + sub4, dtype='i8')
-    subs = subs.view(dtype=[('Subject', 'i8')])
-    tst.mock_fetch_files.add_csv(
-        'ADHD200_40subs_motion_parameters_and_phenotypics.csv',
-        subs)
-
-    adhd = func.fetch_adhd(data_dir=str(tmp_path), url=local_url,
-                           n_subjects=12, verbose=0)
-    assert len(adhd.func) == 12
-    assert len(adhd.confounds) == 12
-    assert len(tst.mock_url_request.urls) == 13  # Subjects + phenotypic
-    assert adhd.description != ''
-
-
-def test_miyawaki2008(tmp_path, request_mock):
-    dataset = func.fetch_miyawaki2008(data_dir=str(tmp_path), verbose=0)
-    assert len(dataset.func) == 32
-    assert len(dataset.label) == 32
-    assert isinstance(dataset.mask, _basestring)
-    assert len(dataset.mask_roi) == 38
-    assert isinstance(dataset.background, _basestring)
-    assert len(tst.mock_url_request.urls) == 1
-    assert dataset.description != ''
-
+@pytest.fixture()
+def localizer_mocker():
+    setup_localizer()
+    yield
+    teardown_localizer()
 
 with open(os.path.join(tst.datadir, 'localizer_index.json')) as of:
     localizer_template = json.load(of)
@@ -191,8 +87,116 @@ def teardown_localizer():
     np.recfromcsv = original_np_recfromcsv
 
 
-@with_setup(setup_localizer, teardown_localizer)
-def test_fetch_localizer_contrasts(tmp_path, request_mock):
+def test_fetch_haxby(tmp_path, request_mocker):
+    for i in range(1, 6):
+        haxby = func.fetch_haxby(data_dir=str(tmp_path), subjects=[i],
+                                 verbose=0)
+        # subject_data + (md5 + mask if first subj)
+        assert len(tst.mock_url_request.urls) == 1 + 2 * (i == 1)
+        assert len(haxby.func) == 1
+        assert len(haxby.anat) == 1
+        assert len(haxby.session_target) == 1
+        assert haxby.mask is not None
+        assert len(haxby.mask_vt) == 1
+        assert len(haxby.mask_face) == 1
+        assert len(haxby.mask_house) == 1
+        assert len(haxby.mask_face_little) == 1
+        assert len(haxby.mask_house_little) == 1
+        tst.mock_url_request.reset()
+        assert haxby.description != ''
+
+    # subjects with list
+    subjects = [1, 2, 6]
+    haxby = func.fetch_haxby(data_dir=str(tmp_path), subjects=subjects,
+                             verbose=0)
+    assert len(haxby.func) == len(subjects)
+    assert len(haxby.mask_house_little) == len(subjects)
+    assert len(haxby.anat) == len(subjects)
+    assert haxby.anat[2] is None
+    assert isinstance(haxby.mask, _basestring)
+    assert len(haxby.mask_face) == len(subjects)
+    assert len(haxby.session_target) == len(subjects)
+    assert len(haxby.mask_vt) == len(subjects)
+    assert len(haxby.mask_face_little) == len(subjects)
+
+    subjects = ['a', 8]
+    message = "You provided invalid subject id {0} in a list"
+
+    for sub_id in subjects:
+        assert_raises_regex(ValueError,
+                            message.format(sub_id),
+                            func.fetch_haxby,
+                            data_dir=str(tmp_path),
+                            subjects=[sub_id])
+
+
+def test_fetch_nyu_rest(tmp_path, request_mocker):
+    # First session, all subjects
+    nyu = func.fetch_nyu_rest(data_dir=str(tmp_path), verbose=0)
+    assert len(tst.mock_url_request.urls) == 2
+    assert len(nyu.func) == 25
+    assert len(nyu.anat_anon) == 25
+    assert len(nyu.anat_skull) == 25
+    assert np.all(np.asarray(nyu.session) == 1)
+
+    # All sessions, 12 subjects
+    tst.mock_url_request.reset()
+    nyu = func.fetch_nyu_rest(data_dir=str(tmp_path), sessions=[1, 2, 3],
+                              n_subjects=12, verbose=0)
+    # Session 1 has already been downloaded
+    assert len(tst.mock_url_request.urls) == 2
+    assert len(nyu.func) == 36
+    assert len(nyu.anat_anon) == 36
+    assert len(nyu.anat_skull) == 36
+    s = np.asarray(nyu.session)
+    assert np.all(s[:12] == 1)
+    assert np.all(s[12:24] == 2)
+    assert np.all(s[24:] == 3)
+    assert nyu.description != ''
+
+
+def test_fetch_adhd(tmp_path, request_mocker):
+    local_url = "file://" + str(tmp_path / 'data')
+
+    sub1 = [3902469, 7774305, 3699991]
+    sub2 = [2014113, 4275075, 1019436,
+            3154996, 3884955, 27034,
+            4134561, 27018, 6115230,
+            27037, 8409791, 27011]
+    sub3 = [3007585, 8697774, 9750701,
+            10064, 21019, 10042,
+            10128, 2497695, 4164316,
+            1552181, 4046678, 23012]
+    sub4 = [1679142, 1206380, 23008,
+            4016887, 1418396, 2950754,
+            3994098, 3520880, 1517058,
+            9744150, 1562298, 3205761, 3624598]
+    subs = np.array(sub1 + sub2 + sub3 + sub4, dtype='i8')
+    subs = subs.view(dtype=[('Subject', 'i8')])
+    tst.mock_fetch_files.add_csv(
+        'ADHD200_40subs_motion_parameters_and_phenotypics.csv',
+        subs)
+
+    adhd = func.fetch_adhd(data_dir=str(tmp_path), url=local_url,
+                           n_subjects=12, verbose=0)
+    assert len(adhd.func) == 12
+    assert len(adhd.confounds) == 12
+    assert len(tst.mock_url_request.urls) == 13  # Subjects + phenotypic
+    assert adhd.description != ''
+
+
+def test_miyawaki2008(tmp_path, request_mocker):
+    dataset = func.fetch_miyawaki2008(data_dir=str(tmp_path), verbose=0)
+    assert len(dataset.func) == 32
+    assert len(dataset.label) == 32
+    assert isinstance(dataset.mask, _basestring)
+    assert len(dataset.mask_roi) == 38
+    assert isinstance(dataset.background, _basestring)
+    assert len(tst.mock_url_request.urls) == 1
+    assert dataset.description != ''
+
+
+def test_fetch_localizer_contrasts(tmp_path, request_mocker, localizer_mocker):
     # 2 subjects
     dataset = func.fetch_localizer_contrasts(
         ['checkerboard'],
@@ -251,8 +255,7 @@ def test_fetch_localizer_contrasts(tmp_path, request_mock):
                  [b'S02', b'S03', b'S05'])
 
 
-@with_setup(setup_localizer, teardown_localizer)
-def test_fetch_localizer_calculation_task(tmp_path, request_mock):
+def test_fetch_localizer_calculation_task(tmp_path, request_mocker, localizer_mocker):
     # 2 subjects
     dataset = func.fetch_localizer_calculation_task(
         n_subjects=2,
@@ -265,8 +268,7 @@ def test_fetch_localizer_calculation_task(tmp_path, request_mock):
     assert dataset.description != ''
 
 
-@with_setup(setup_localizer, teardown_localizer)
-def test_fetch_localizer_button_task(tmp_path, request_mock):
+def test_fetch_localizer_button_task(tmp_path, request_mocker, localizer_mocker):
     local_url = "file://" + tst.datadir
 
     # Disabled: cannot be tested without actually fetching covariates CSV file
@@ -287,7 +289,7 @@ def test_fetch_localizer_button_task(tmp_path, request_mock):
     assert dataset.description != ''
 
 
-def test_fetch_abide_pcp(tmp_path, request_mock):
+def test_fetch_abide_pcp(tmp_path, request_mocker):
     local_url = "file://" + tst.datadir
     ids = [('50%03d' % i).encode() for i in range(800)]
     filenames = ['no_filename'] * 800
@@ -323,7 +325,7 @@ def test__load_mixed_gambles():
         assert len(zmaps) == len(gain)
 
 
-def test_fetch_mixed_gambles(tmp_path, request_mock):
+def test_fetch_mixed_gambles(tmp_path, request_mocker):
     local_url = "file://" + os.path.join(tst.datadir,
                                          "jimura_poldrack_2012_zmaps.zip")
     for n_subjects in [1, 5, 16]:
@@ -404,7 +406,7 @@ def test_fetch_megatrawls_netmats(tmp_path):
     assert netmats_data.matrices == 'full_correlation'
 
 
-def test_fetch_cobre(tmp_path, request_mock):
+def test_fetch_cobre(tmp_path, request_mocker):
     ids_n = [40000, 40001, 40002, 40003, 40004, 40005, 40006, 40007, 40008,
              40009, 40010, 40011, 40012, 40013, 40014, 40015, 40016, 40017,
              40018, 40019, 40020, 40021, 40022, 40023, 40024, 40025, 40026,
@@ -521,7 +523,7 @@ def test_fetch_cobre(tmp_path, request_mock):
     os.remove(dummy)
 
 
-def test_fetch_surf_nki_enhanced(tmp_path, request_mock, verbose=0):
+def test_fetch_surf_nki_enhanced(tmp_path, request_mocker, verbose=0):
 
     ids = np.asarray(['A00028185', 'A00035827', 'A00037511', 'A00039431',
                       'A00033747', 'A00035840', 'A00038998', 'A00035072',
@@ -569,7 +571,7 @@ def _mock_participants_data(n_ids=5):
     return csv
 
 
-def test_fetch_development_fmri_participants(tmp_path, request_mock):
+def test_fetch_development_fmri_participants(tmp_path, request_mocker):
     csv = _mock_participants_data()
     tst.mock_fetch_files.add_csv('participants.tsv', csv)
     local_url = 'file://' + os.path.join(tst.datadir)
@@ -580,7 +582,7 @@ def test_fetch_development_fmri_participants(tmp_path, request_mock):
     assert participants.shape == (5,)
 
 
-def test_fetch_development_fmri_functional(tmp_path, request_mock):
+def test_fetch_development_fmri_functional(tmp_path, request_mocker):
     csv = _mock_participants_data(n_ids=8)
     local_url = 'file://' + os.path.join(tst.datadir)
     funcs, confounds = func._fetch_development_fmri_functional(

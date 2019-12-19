@@ -11,8 +11,6 @@ import nibabel
 import numpy as np
 import pytest
 
-from nose import with_setup
-
 from . import test_utils as tst
 
 from nilearn.datasets import utils, struct
@@ -22,7 +20,7 @@ from nilearn._utils.compat import _basestring
 
 
 @pytest.fixture()
-def request_mock():
+def request_mocker():
     tst.setup_mock(utils, struct)
     yield
     tst.teardown_mock(utils, struct)
@@ -88,7 +86,7 @@ def test_get_dataset_dir(tmp_path):
                         'test', test_file, verbose=0)
 
 
-def test_fetch_icbm152_2009(tmp_path, request_mock):
+def test_fetch_icbm152_2009(tmp_path, request_mocker):
     dataset = struct.fetch_icbm152_2009(data_dir=str(tmp_path), verbose=0)
     assert isinstance(dataset.csf, _basestring)
     assert isinstance(dataset.eye_mask, _basestring)
@@ -104,7 +102,7 @@ def test_fetch_icbm152_2009(tmp_path, request_mock):
     assert dataset.description != ''
 
 
-def test_fetch_oasis_vbm(tmp_path, request_mock):
+def test_fetch_oasis_vbm(tmp_path, request_mocker):
     local_url = "file://" + tst.datadir
     ids = np.asarray(['OAS1_%4d' % i for i in range(457)])
     ids = ids.view(dtype=[('ID', 'S9')])
@@ -147,7 +145,7 @@ def test_load_mni152_brain_mask():
     assert brain_mask.shape == (91, 109, 91)
 
 
-def test_fetch_icbm152_brain_gm_mask(tmp_path, request_mock):
+def test_fetch_icbm152_brain_gm_mask(tmp_path, request_mocker):
     dataset = struct.fetch_icbm152_2009(data_dir=str(tmp_path), verbose=0)
     struct.load_mni152_template().to_filename(dataset.gm)
     grey_matter_img = struct.fetch_icbm152_brain_gm_mask(
@@ -155,7 +153,7 @@ def test_fetch_icbm152_brain_gm_mask(tmp_path, request_mock):
     assert isinstance(grey_matter_img, nibabel.Nifti1Image)
 
 
-def test_fetch_surf_fsaverage(tmp_path, request_mock):
+def test_fetch_surf_fsaverage(tmp_path, request_mocker):
     # for mesh in ['fsaverage5', 'fsaverage']:
     for mesh in ['fsaverage']:
 
