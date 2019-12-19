@@ -10,7 +10,6 @@ from sklearn.utils import check_random_state
 from sklearn.covariance import EmpiricalCovariance, LedoitWolf
 
 from nilearn._utils.extmath import is_spd
-from nilearn._utils.testing import assert_raises_regex
 from nilearn.tests.test_signal import generate_signals
 from nilearn.connectome.connectivity_matrices import (
     _check_square, _check_spd, _map_eigenvalues, _form_symmetric,
@@ -365,14 +364,14 @@ def test_sym_matrix_to_vec():
 def test_vec_to_sym_matrix():
     # Check error if unsuitable size
     vec = np.ones(31)
-    assert_raises_regex(ValueError, 'Vector of unsuitable shape',
-                        vec_to_sym_matrix, vec)
+    with pytest.raises(ValueError, match='Vector of unsuitable shape'):
+        vec_to_sym_matrix(vec)
 
     # Check error if given diagonal shape incompatible with vec
     vec = np.ones(3)
     diagonal = np.zeros(4)
-    assert_raises_regex(ValueError, 'incompatible with vector',
-                        vec_to_sym_matrix, vec, diagonal)
+    with pytest.raises(ValueError, match='incompatible with vector'):
+        vec_to_sym_matrix(vec, diagonal)
 
     # Check output value is correct
     vec = np.ones(6, )
@@ -518,10 +517,8 @@ def test_connectivity_measure_outputs():
                                   sym_matrix_to_vec(connectivities))
 
     # Check not fitted error
-    assert_raises_regex(
-        ValueError, 'has not been fitted. ',
-        ConnectivityMeasure().inverse_transform,
-        vectorized_connectivities)
+    with pytest.raises(ValueError, match='has not been fitted. '):
+        ConnectivityMeasure().inverse_transform(vectorized_connectivities)
 
     # Check inverse transformation
     kinds.remove('tangent')
@@ -560,10 +557,8 @@ def test_connectivity_measure_outputs():
         inverse_transformed = conn_measure.inverse_transform(
             vectorized_connectivities, diagonal=diagonal)
         assert_array_almost_equal(inverse_transformed, connectivities)
-        assert_raises_regex(ValueError,
-                            'can not reconstruct connectivity matrices',
-                            conn_measure.inverse_transform,
-                            vectorized_connectivities)
+        with pytest.raises(ValueError, match='can not reconstruct connectivity matrices'):
+            conn_measure.inverse_transform(vectorized_connectivities)
 
     # for 'tangent' kind, covariance matrices are reconstructed
     # without vectorization
@@ -591,7 +586,5 @@ def test_connectivity_measure_outputs():
     inverse_transformed = tangent_measure.inverse_transform(
         vectorized_displacements, diagonal=diagonal)
     assert_array_almost_equal(inverse_transformed, covariances)
-    assert_raises_regex(ValueError,
-                        'can not reconstruct connectivity matrices',
-                        tangent_measure.inverse_transform,
-                        vectorized_displacements)
+    with pytest.raises(ValueError, match='can not reconstruct connectivity matrices'):
+        tangent_measure.inverse_transform(vectorized_displacements)
