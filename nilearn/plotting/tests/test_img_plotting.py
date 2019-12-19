@@ -14,7 +14,6 @@ import pytest
 
 from scipy import sparse
 
-from nilearn._utils.testing import assert_raises_regex
 from nilearn.image.resampling import coord_transform
 from nilearn.image import get_data
 from nilearn.datasets import load_mni152_template
@@ -483,11 +482,8 @@ def test_plot_connectome_exceptions():
     # adjacency_matrix is not symmetric
     non_symmetric_adjacency_matrix = np.array([[1., 2],
                                                [0.4, 1.]])
-    assert_raises_regex(ValueError,
-                        'should be symmetric',
-                        plot_connectome,
-                        non_symmetric_adjacency_matrix, node_coords,
-                        **kwargs)
+    with pytest.raises(ValueError, match='should be symmetric'):
+        plot_connectome(non_symmetric_adjacency_matrix, node_coords, **kwargs)
 
     adjacency_matrix = np.array([[1., 2.],
                                  [2., 1.]])
@@ -495,59 +491,57 @@ def test_plot_connectome_exceptions():
     masked_adjacency_matrix = np.ma.masked_array(
         adjacency_matrix, [[False, True], [False, False]])
 
-    assert_raises_regex(ValueError,
-                        'non symmetric mask',
-                        plot_connectome,
-                        masked_adjacency_matrix, node_coords,
-                        **kwargs)
+    with pytest.raises(ValueError, match='non symmetric mask'):
+        plot_connectome(masked_adjacency_matrix, node_coords, **kwargs)
 
     # edges threshold is neither a number nor a string
-    assert_raises_regex(TypeError,
-                        'should be either a number or a string',
-                        plot_connectome,
-                        adjacency_matrix, node_coords,
+    with pytest.raises(TypeError, match='should be either a number or a string'):
+        plot_connectome(adjacency_matrix, node_coords,
                         edge_threshold=object(),
                         **kwargs)
 
     # wrong shapes for node_coords or adjacency_matrix
-    assert_raises_regex(ValueError,
-                        r'supposed to have shape \(n, n\).+\(1L?, 2L?\)',
-                        plot_connectome, adjacency_matrix[:1, :],
+    with pytest.raises(
+            ValueError,
+            match=r'supposed to have shape \(n, n\).+\(1L?, 2L?\)'
+            ):
+        plot_connectome(adjacency_matrix[:1, :],
                         node_coords,
                         **kwargs)
 
-    assert_raises_regex(ValueError, r'shape \(2L?, 3L?\).+\(2L?,\)',
-                        plot_connectome, adjacency_matrix, node_coords[:, 2],
-                        **kwargs)
+    with pytest.raises(ValueError, match=r'shape \(2L?, 3L?\).+\(2L?,\)'):
+        plot_connectome(adjacency_matrix, node_coords[:, 2], **kwargs)
 
     wrong_adjacency_matrix = np.zeros((3, 3))
-    assert_raises_regex(ValueError,
-                        r'Shape mismatch.+\(3L?, 3L?\).+\(2L?, 3L?\)',
-                        plot_connectome,
-                        wrong_adjacency_matrix, node_coords, **kwargs)
+    with pytest.raises(ValueError,
+                       match=r'Shape mismatch.+\(3L?, 3L?\).+\(2L?, 3L?\)'
+                       ):
+        plot_connectome(wrong_adjacency_matrix, node_coords, **kwargs)
 
     # a few not correctly formatted strings for 'edge_threshold'
     wrong_edge_thresholds = ['0.1', '10', '10.2.3%', 'asdf%']
     for wrong_edge_threshold in wrong_edge_thresholds:
-        assert_raises_regex(ValueError,
-                            'should be a number followed by the percent sign',
-                            plot_connectome,
-                            adjacency_matrix, node_coords,
+        with pytest.raises(
+                ValueError,
+                match='should be a number followed by the percent sign'
+                ):
+            plot_connectome(adjacency_matrix, node_coords,
                             edge_threshold=wrong_edge_threshold, **kwargs)
 
     # specifying node sizes via node_kwargs
-    assert_raises_regex(ValueError,
-                        "Please use 'node_size' and not 'node_kwargs'",
-                        plot_connectome,
-                        adjacency_matrix, node_coords,
+    with pytest.raises(ValueError,
+                       match="Please use 'node_size' and not 'node_kwargs'"
+                       ):
+        plot_connectome(adjacency_matrix, node_coords,
                         node_kwargs={'s': 50},
                         **kwargs)
 
     # specifying node colors via node_kwargs
-    assert_raises_regex(ValueError,
-                        "Please use 'node_color' and not 'node_kwargs'",
-                        plot_connectome,
-                        adjacency_matrix, node_coords,
+    with pytest.raises(
+            ValueError,
+            match="Please use 'node_color' and not 'node_kwargs'"
+            ):
+        plot_connectome(adjacency_matrix, node_coords,
                         node_kwargs={'c': 'blue'},
                         **kwargs)
 
@@ -631,11 +625,12 @@ def test_plot_connectome_strength_exceptions():
     # adjacency_matrix is not symmetric
     non_symmetric_adjacency_matrix = np.array([[1., 2],
                                                [0.4, 1.]])
-    assert_raises_regex(ValueError,
-                        'should be symmetric',
-                        plot_connectome_strength,
-                        non_symmetric_adjacency_matrix, node_coords,
-                        **kwargs)
+    with pytest.raises(ValueError,
+                       match='should be symmetric'
+                       ):
+        plot_connectome_strength(non_symmetric_adjacency_matrix,
+                                 node_coords,
+                                 **kwargs)
 
     adjacency_matrix = np.array([[1., 2.],
                                  [2., 1.]])
@@ -643,30 +638,29 @@ def test_plot_connectome_strength_exceptions():
     masked_adjacency_matrix = np.ma.masked_array(
         adjacency_matrix, [[False, True], [False, False]])
 
-    assert_raises_regex(ValueError,
-                        'non symmetric mask',
-                        plot_connectome_strength,
-                        masked_adjacency_matrix, node_coords,
-                        **kwargs)
+    with pytest.raises(ValueError, match='non symmetric mask'):
+        plot_connectome_strength(masked_adjacency_matrix,
+                                 node_coords,
+                                 **kwargs)
 
     # wrong shapes for node_coords or adjacency_matrix
-    assert_raises_regex(ValueError,
-                        r'supposed to have shape \(n, n\).+\(1L?, 2L?\)',
-                        plot_connectome_strength, adjacency_matrix[:1, :],
-                        node_coords,
-                        **kwargs)
+    with pytest.raises(ValueError,
+                       match=r'supposed to have shape \(n, n\).+\(1L?, 2L?\)'
+                       ):
+        plot_connectome_strength(adjacency_matrix[:1, :],
+                                 node_coords,
+                                 **kwargs)
 
-    assert_raises_regex(ValueError, r'shape \(2L?, 3L?\).+\(2L?,\)',
-                        plot_connectome_strength, adjacency_matrix,
-                        node_coords[:, 2], **kwargs)
+    with pytest.raises(ValueError, match=r'shape \(2L?, 3L?\).+\(2L?,\)'):
+        plot_connectome_strength(adjacency_matrix,
+                                 node_coords[:, 2], **kwargs)
 
     wrong_adjacency_matrix = np.zeros((3, 3))
-    assert_raises_regex(ValueError,
-                        r'Shape mismatch.+\(3L?, 3L?\).+\(2L?, 3L?\)',
-                        plot_connectome_strength,
-                        wrong_adjacency_matrix, node_coords, **kwargs)
-
-
+    with pytest.raises(ValueError,
+                       match=r'Shape mismatch.+\(3L?, 3L?\).+\(2L?, 3L?\)'
+                       ):
+        plot_connectome_strength(wrong_adjacency_matrix, node_coords,
+                                 **kwargs)
 
 
 def test_singleton_ax_dim():
@@ -707,11 +701,13 @@ def test_get_colorbar_and_data_ranges_with_vmin():
                      [0., np.nan, -.2],
                      [1.5, 2.5, 3.]])
 
-    assert_raises_regex(ValueError,
-                        'does not accept a "vmin" argument',
-                        _get_colorbar_and_data_ranges,
-                        data, vmax=None,
-                        symmetric_cbar=True, kwargs={'vmin': 1.})
+    with pytest.raises(ValueError,
+                       match='does not accept a "vmin" argument'
+                       ):
+        _get_colorbar_and_data_ranges(data, vmax=None,
+                                      symmetric_cbar=True,
+                                      kwargs={'vmin': 1.}
+                                      )
 
 
 def test_get_colorbar_and_data_ranges_pos_neg():
@@ -983,38 +979,39 @@ def test_get_colorbar_and_data_ranges_masked_array():
 
 def test_invalid_in_display_mode_cut_coords_all_plots():
     img = _generate_img()
-
     for plot_func in [plot_img, plot_anat, plot_roi, plot_epi,
                       plot_stat_map, plot_prob_atlas, plot_glass_brain]:
-        assert_raises_regex(ValueError,
-                            "The input given for display_mode='ortho' needs to "
-                            "be a list of 3d world coordinates.",
-                            plot_func,
-                            img, display_mode='ortho', cut_coords=2)
+        with pytest.raises(ValueError,
+                           match="The input given for display_mode='ortho' "
+                                 "needs to "
+                                 "be a list of 3d world coordinates."
+                           ):
+            plot_func(img, display_mode='ortho', cut_coords=2)
 
 
 def test_invalid_in_display_mode_tiled_cut_coords_single_all_plots():
     img = _generate_img()
 
     for plot_func in [plot_img, plot_anat, plot_roi, plot_epi,
-                      plot_stat_map,plot_prob_atlas]:
-        assert_raises_regex(ValueError,
-                            "The input given for display_mode='tiled' needs to "
-                            "be a list of 3d world coordinates.",
-                            plot_func,
-                            img, display_mode='tiled', cut_coords=2)
+                      plot_stat_map, plot_prob_atlas]:
+        with pytest.raises(ValueError,
+                           match="The input given for display_mode='tiled' "
+                                 "needs to "
+                                 "be a list of 3d world coordinates."
+                           ):
+            plot_func(img, display_mode='tiled', cut_coords=2)
 
 
 def test_invalid_in_display_mode_tiled_cut_coords_all_plots():
     img = _generate_img()
 
     for plot_func in [plot_img, plot_anat, plot_roi, plot_epi,
-                      plot_stat_map,plot_prob_atlas]:
-        assert_raises_regex(ValueError,
-                            "The number cut_coords passed does not "
-                            "match the display_mode",
-                            plot_func,
-                            img, display_mode='tiled', cut_coords=(2,2))
+                      plot_stat_map, plot_prob_atlas]:
+        with pytest.raises(ValueError,
+                           match="The number cut_coords passed does not "
+                                 "match the display_mode"
+                           ):
+            plot_func(img, display_mode='tiled', cut_coords=(2, 2))
 
 
 def test_outlier_cut_coords():
@@ -1029,8 +1026,7 @@ def test_outlier_cut_coords():
 
     # Color a cube around a corner area:
     x, y, z = 20, 22, 60
-    x_map, y_map, z_map = coord_transform(x, y, z,
-                                          np.linalg.inv(affine))
+    x_map, y_map, z_map = coord_transform(x, y, z, np.linalg.inv(affine))
 
     data[int(x_map) - 1:int(x_map) + 1,
          int(y_map) - 1:int(y_map) + 1,
@@ -1038,8 +1034,8 @@ def test_outlier_cut_coords():
     img = nibabel.Nifti1Image(data, affine)
     cuts = find_cut_slices(img, n_cuts=20, direction='z')
 
-    p = plot_stat_map(img, display_mode='z', cut_coords=cuts[-4:],
-                      bg_img=bg_img)
+    plot_stat_map(img, display_mode='z', cut_coords=cuts[-4:],
+                  bg_img=bg_img)
 
 
 def test_plot_stat_map_with_nans():
