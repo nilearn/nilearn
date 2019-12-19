@@ -36,6 +36,7 @@ def localizer_mocker():
     yield
     teardown_localizer()
 
+
 with open(os.path.join(tst.datadir, 'localizer_index.json')) as of:
     localizer_template = json.load(of)
 LOCALIZER_INDEX = {}
@@ -255,7 +256,8 @@ def test_fetch_localizer_contrasts(tmp_path, request_mocker, localizer_mocker):
                  [b'S02', b'S03', b'S05'])
 
 
-def test_fetch_localizer_calculation_task(tmp_path, request_mocker, localizer_mocker):
+def test_fetch_localizer_calculation_task(tmp_path, request_mocker,
+                                          localizer_mocker):
     # 2 subjects
     dataset = func.fetch_localizer_calculation_task(
         n_subjects=2,
@@ -268,7 +270,8 @@ def test_fetch_localizer_calculation_task(tmp_path, request_mocker, localizer_mo
     assert dataset.description != ''
 
 
-def test_fetch_localizer_button_task(tmp_path, request_mocker, localizer_mocker):
+def test_fetch_localizer_button_task(tmp_path, request_mocker,
+                                     localizer_mocker):
     local_url = "file://" + tst.datadir
 
     # Disabled: cannot be tested without actually fetching covariates CSV file
