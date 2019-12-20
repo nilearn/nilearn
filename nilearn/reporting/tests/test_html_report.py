@@ -2,7 +2,6 @@ import pytest
 import numpy as np
 from nibabel import Nifti1Image
 from nilearn import input_data
-from numpy.testing import assert_warns
 
 
 # Note: html output by nilearn view_* functions
@@ -85,7 +84,7 @@ def _generate_empty_report():
 
 
 def test_empty_report():
-    assert_warns(UserWarning, _generate_empty_report)
+    pytest.warns(UserWarning, _generate_empty_report)
 
 
 def test_overlaid_report():

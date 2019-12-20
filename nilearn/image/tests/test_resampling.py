@@ -479,9 +479,9 @@ def test_resampling_nan():
 
         # check 3x3 transformation matrix
         target_affine = np.eye(3)[axis_permutation]
-        resampled_img = testing.assert_warns(
-            RuntimeWarning, resample_img, source_img,
-            target_affine=target_affine)
+        with pytest.warns(RuntimeWarning):
+            resampled_img = resample_img(source_img,
+                                         target_affine=target_affine)
 
         resampled_data = get_data(resampled_img)
         if full_data.ndim == 4:
@@ -507,9 +507,9 @@ def test_resampling_nan():
     data = 10 * np.ones((10, 10, 10))
     data[4:6, 4:6, 4:6] = np.nan
     source_img = Nifti1Image(data, 2 * np.eye(4))
-    resampled_img = testing.assert_warns(
-        RuntimeWarning, resample_img, source_img,
-        target_affine=np.eye(4))
+    with pytest.warns(RuntimeWarning):
+        resampled_img = resample_img(source_img,
+                                     target_affine=np.eye(4))
 
     resampled_data = get_data(resampled_img)
     np.testing.assert_allclose(10, resampled_data[np.isfinite(resampled_data)])
