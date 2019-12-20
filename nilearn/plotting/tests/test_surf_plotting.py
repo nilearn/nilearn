@@ -2,12 +2,11 @@
 
 import tempfile
 
-import pytest
-
-from nilearn._utils.testing import assert_raises_regex
 
 import numpy as np
-import matplotlib.pyplot as plt
+import pytest
+
+from matplotlib import pyplot as plt
 
 from nilearn.plotting.surf_plotting import (plot_surf, plot_surf_stat_map,
                                             plot_surf_roi)
