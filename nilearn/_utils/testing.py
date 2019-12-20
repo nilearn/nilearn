@@ -245,7 +245,6 @@ class FetchFilesMock (object):
         return filenames
 
 
-
 def are_tests_running():
     """Returns whether we are running the nose test loader
     """
@@ -267,7 +266,7 @@ def are_tests_running():
 
 
 def skip_if_running_tests(msg=''):
-    """ Raise a SkipTest if we appear to be running the nose test loader.
+    """ Raise a SkipTest if we appear to be running the pytest test loader.
 
     Parameters
     ----------

@@ -10,7 +10,7 @@ import sys
 # Make sure that we don't get DISPLAY problems when running without X on
 # unices
 def _set_mpl_backend():
-    # We are doing local imports here to avoid poluting our namespace
+    # We are doing local imports here to avoid polluting our namespace
     try:
         import matplotlib
     except ImportError:
