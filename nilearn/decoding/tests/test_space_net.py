@@ -9,7 +9,7 @@ from sklearn.linear_model import Lasso
 from sklearn.utils import check_random_state
 from sklearn.linear_model import LogisticRegression
 from sklearn.metrics import accuracy_score
-from nilearn._utils.testing import assert_raises_regex, assert_warns
+
 from nilearn.decoding.space_net import (
     _EarlyStoppingCallback, _space_net_alpha_grid, path_scores, BaseSpaceNet,
     _crop_mask, _univariate_feature_screening, SpaceNetClassifier,
@@ -110,11 +110,12 @@ def test_params_correctly_propagated_in_constructors():
 
 def test_screening_space_net():
     for verbose in [0, 2]:
-        screening_percentile = assert_warns(UserWarning,
-                                            _adjust_screening_percentile, 10,
-                                            mask, verbose)
-    screening_percentile = assert_warns(UserWarning,
-                                        _adjust_screening_percentile, 10, mask)
+        with pytest.warns(UserWarning):
+            screening_percentile = _adjust_screening_percentile(10,
+                                                                mask,
+                                                                verbose)
+    with pytest.warns(UserWarning):
+        screening_percentile = _adjust_screening_percentile(10, mask)
     # We gave here a very small mask, judging by standards of brain size
     # thus the screening_percentile_ corrected for brain size should
     # be 100%
@@ -324,9 +325,10 @@ def test_string_params_case():
 
 
 def test_crop_mask_empty_mask():
-    assert_raises_regex(ValueError, "Empty mask:.", _crop_mask, np.array([]))
-    assert_raises_regex(ValueError, "Empty mask:", _crop_mask,
-                        np.zeros((2, 2, 2)))
+    with pytest.raises(ValueError, match="Empty mask:."):
+        _crop_mask(np.array([]))
+    with pytest.raises(ValueError, match="Empty mask:"):
+        _crop_mask(np.zeros((2, 2, 2)))
 
 
 def test_space_net_no_crash_not_fitted():
@@ -335,9 +337,11 @@ def test_space_net_no_crash_not_fitted():
     X, y = iris.data, iris.target
     X, mask = to_niimgs(X, [2, 2, 2])
     for model in [SpaceNetRegressor, SpaceNetClassifier]:
-        assert_raises_regex(RuntimeError,
-                            "This %s instance is not fitted yet" % (
-                                model.__name__), model().predict, X)
+        with pytest.raises(RuntimeError,
+                           match="This {} instance is not fitted yet".format(
+                               model.__name__)
+                           ):
+            model().predict(X)
         model(mask=mask, alphas=1.).fit(X, y).predict(X)
 
 
@@ -377,6 +381,6 @@ def test_targets_in_y_space_net_regressor():
 
     imgs, mask = to_niimgs(X, (2, 2, 2))
     regressor = SpaceNetRegressor(mask=mask)
-    assert_raises_regex(ValueError,
-                        "The given input y must have atleast 2 targets",
-                        regressor.fit, imgs, y)
+    with pytest.raises(ValueError,
+                        match="The given input y must have atleast 2 targets"):
+        regressor.fit(imgs, y)
