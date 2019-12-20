@@ -341,22 +341,19 @@ def test_check_parameters_megatrawls_datasets():
     for invalid_input_dim in [1, 5, 30]:
         with pytest.raises(
                 ValueError,
-                match=message.format('dimensionality', invalid_input_dim)
-                ):
+                match=message.format('dimensionality', invalid_input_dim)):
             func.fetch_megatrawls_netmats(dimensionality=invalid_input_dim)
 
     for invalid_input_timeserie in ['asdf', 'time', 'st2']:
         with pytest.raises(
                 ValueError,
-                match=message.format('timeseries', invalid_input_timeserie)
-                ):
+                match=message.format('timeseries', invalid_input_timeserie)):
             func.fetch_megatrawls_netmats(timeseries=invalid_input_timeserie)
 
     for invalid_output_name in ['net1', 'net2']:
         with pytest.raises(
                 ValueError,
-                match=message.format('matrices', invalid_output_name)
-                ):
+                match=message.format('matrices', invalid_output_name)):
             func.fetch_megatrawls_netmats(matrices=invalid_output_name)
 
 

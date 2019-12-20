@@ -495,7 +495,8 @@ def test_plot_connectome_exceptions():
         plot_connectome(masked_adjacency_matrix, node_coords, **kwargs)
 
     # edges threshold is neither a number nor a string
-    with pytest.raises(TypeError, match='should be either a number or a string'):
+    with pytest.raises(TypeError,
+                       match='should be either a number or a string'):
         plot_connectome(adjacency_matrix, node_coords,
                         edge_threshold=object(),
                         **kwargs)
@@ -503,8 +504,7 @@ def test_plot_connectome_exceptions():
     # wrong shapes for node_coords or adjacency_matrix
     with pytest.raises(
             ValueError,
-            match=r'supposed to have shape \(n, n\).+\(1L?, 2L?\)'
-            ):
+            match=r'supposed to have shape \(n, n\).+\(1L?, 2L?\)'):
         plot_connectome(adjacency_matrix[:1, :],
                         node_coords,
                         **kwargs)
@@ -523,8 +523,7 @@ def test_plot_connectome_exceptions():
     for wrong_edge_threshold in wrong_edge_thresholds:
         with pytest.raises(
                 ValueError,
-                match='should be a number followed by the percent sign'
-                ):
+                match='should be a number followed by the percent sign'):
             plot_connectome(adjacency_matrix, node_coords,
                             edge_threshold=wrong_edge_threshold, **kwargs)
 
@@ -539,8 +538,7 @@ def test_plot_connectome_exceptions():
     # specifying node colors via node_kwargs
     with pytest.raises(
             ValueError,
-            match="Please use 'node_color' and not 'node_kwargs'"
-            ):
+            match="Please use 'node_color' and not 'node_kwargs'"):
         plot_connectome(adjacency_matrix, node_coords,
                         node_kwargs={'c': 'blue'},
                         **kwargs)

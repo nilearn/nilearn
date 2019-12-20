@@ -252,7 +252,7 @@ def test_load_surf_mesh_file_error():
         filename_wrong = tempfile.mktemp(suffix=suff)
         nb.freesurfer.write_geometry(filename_wrong, mesh[0], mesh[1])
         with pytest.raises(ValueError,
-                            match='input type is not recognized'
+                           match='input type is not recognized'
                            ):
             load_surf_mesh(filename_wrong)
         os.remove(filename_wrong)

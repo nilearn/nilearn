@@ -557,7 +557,8 @@ def test_connectivity_measure_outputs():
         inverse_transformed = conn_measure.inverse_transform(
             vectorized_connectivities, diagonal=diagonal)
         assert_array_almost_equal(inverse_transformed, connectivities)
-        with pytest.raises(ValueError, match='can not reconstruct connectivity matrices'):
+        with pytest.raises(ValueError,
+                           match='can not reconstruct connectivity matrices'):
             conn_measure.inverse_transform(vectorized_connectivities)
 
     # for 'tangent' kind, covariance matrices are reconstructed
@@ -586,5 +587,6 @@ def test_connectivity_measure_outputs():
     inverse_transformed = tangent_measure.inverse_transform(
         vectorized_displacements, diagonal=diagonal)
     assert_array_almost_equal(inverse_transformed, covariances)
-    with pytest.raises(ValueError, match='can not reconstruct connectivity matrices'):
+    with pytest.raises(ValueError,
+                       match='can not reconstruct connectivity matrices'):
         tangent_measure.inverse_transform(vectorized_displacements)

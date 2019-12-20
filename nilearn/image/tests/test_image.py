@@ -387,8 +387,8 @@ def test_index_img():
               np.repeat(True, fourth_dim_size + 1)]:
         with pytest.raises(
                 IndexError,
-                match='out of bounds|invalid index|out of range|boolean index'
-                ):
+                match='out of bounds|invalid index|out of range|'
+                      'boolean index'):
             image.index_img(img_4d, i)
 
 
@@ -508,7 +508,8 @@ def test_validity_threshold_value_in_threshold_img():
     maps, _ = data_gen.generate_maps(shape, n_regions=2)
 
     # testing to raise same error when threshold=None case
-    with pytest.raises(ValueError, match="The input parameter 'threshold' is empty. "):
+    with pytest.raises(ValueError,
+                       match="The input parameter 'threshold' is empty. "):
         threshold_img(maps, threshold=None)
 
     invalid_threshold_values = ['90t%', 's%', 't', '0.1']

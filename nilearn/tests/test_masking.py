@@ -454,8 +454,8 @@ def test_error_shape(random_state=42, shape=(3, 5, 7, 11)):
 def test_nifti_masker_empty_mask_warning():
     X = Nifti1Image(np.ones((2, 2, 2, 5)), np.eye(4))
     with pytest.raises(
-        ValueError,
-        match="The mask is invalid as it is empty: it masks all data"):
+            ValueError,
+            match="The mask is invalid as it is empty: it masks all data"):
         NiftiMasker(mask_strategy="epi").fit_transform(X)
 
 

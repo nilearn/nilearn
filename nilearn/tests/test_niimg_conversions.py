@@ -73,25 +73,25 @@ def test_check_same_fov():
                                       raise_error=True)
 
     with pytest.raises(ValueError,
-                        match='[ac] and [ac] do not have the same affine'
+                       match='[ac] and [ac] do not have the same affine'
                        ):
         niimg_conversions._check_same_fov(
             a=shape_a_affine_a, b=shape_a_affine_a_2,
             c=shape_a_affine_b, raise_error=True
         )
     with pytest.raises(ValueError,
-                        match='[ab] and [ab] do not have the same shape'
+                       match='[ab] and [ab] do not have the same shape'
                        ):
         niimg_conversions._check_same_fov(
             a=shape_a_affine_a, b=shape_b_affine_a, raise_error=True)
     with pytest.raises(ValueError,
-                        match='[ab] and [ab] do not have the same affine'
+                       match='[ab] and [ab] do not have the same affine'
                        ):
         niimg_conversions._check_same_fov(
             a=shape_b_affine_b, b=shape_a_affine_a, raise_error=True)
 
     with pytest.raises(ValueError,
-                        match='[ab] and [ab] do not have the same shape'
+                       match='[ab] and [ab] do not have the same shape'
                        ):
         niimg_conversions._check_same_fov(
             a=shape_b_affine_b, b=shape_a_affine_a, raise_error=True)
@@ -108,10 +108,11 @@ def test_check_niimg_3d():
 
     # Test dimensionality error
     img = Nifti1Image(np.zeros((10, 10, 10)), np.eye(4))
-    with pytest.raises(TypeError, match=
-                        "Input data has incompatible dimensionality: "
-                        "Expected dimension is 3D and you provided a list "
-                        "of 3D images \(4D\)."):
+    with pytest.raises(
+            TypeError,
+            match="Input data has incompatible dimensionality: "
+                  "Expected dimension is 3D and you provided a list "
+                  "of 3D images \(4D\)."):
         _utils.check_niimg_3d([img, img])
 
     # Check that a filename does not raise an error
@@ -171,10 +172,10 @@ def test_check_niimg_4d():
         assert_array_equal(img_1.affine, img_2.affine)
 
     # This should raise an error: a 3D img is given and we want a 4D
-    with pytest.raises(DimensionError, match=
-                        "Input data has incompatible dimensionality: "
-                        "Expected dimension is 4D and you provided a "
-                        "3D image."):
+    with pytest.raises(DimensionError,
+                       match="Input data has incompatible dimensionality: "
+                             "Expected dimension is 4D and you provided a "
+                             "3D image."):
         _utils.check_niimg_4d(img_3d)
 
     # Test a Niimg-like object that does not hold a shape attribute
@@ -184,7 +185,8 @@ def test_check_niimg_4d():
     a = nibabel.Nifti1Image(np.zeros((10, 10, 10)), np.eye(4))
     b = np.zeros((10, 10, 10))
     c = _utils.check_niimg_4d([a, b], return_iterator=True)
-    with pytest.raises(TypeError, match='Error encountered while loading image #1'):
+    with pytest.raises(TypeError,
+                       match='Error encountered while loading image #1'):
         list(c)
 
     b = nibabel.Nifti1Image(np.zeros((10, 20, 10)), np.eye(4))
@@ -246,8 +248,7 @@ def test_check_niimg_wildcards():
     # Non matching wildcard raises a ValueError exception
     with pytest.raises(
             ValueError,
-            match=wildcards_msg % re.escape(nofile_path_wildcards)
-            ):
+            match=wildcards_msg % re.escape(nofile_path_wildcards)):
         _utils.check_niimg(nofile_path_wildcards)
 
     # First create some testing data
@@ -469,8 +470,9 @@ def test_concat_niimgs():
             os.removedirs(tempdir)
 
     img5d = Nifti1Image(np.ones((2, 2, 2, 2, 2)), affine)
-    with pytest.raises(TypeError, match='Concatenated images must be 3D or 4D. '
-                        'You gave a list of 5D images'):
+    with pytest.raises(TypeError,
+                       match='Concatenated images must be 3D or 4D. '
+                             'You gave a list of 5D images'):
         _utils.concat_niimgs([img5d, img5d])
 
 

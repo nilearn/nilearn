@@ -425,9 +425,9 @@ def test_fetch_atlas_basc_multiscale_2015(tmp_path, request_mock):
                                      / basename_asym)
 
     assert len(data_sym) == 10
-    with pytest.raises(ValueError,
-                       match='The version of Brain parcellations requested "aym"'
-                       ):
+    with pytest.raises(
+            ValueError,
+            match='The version of Brain parcellations requested "aym"'):
         atlas.fetch_atlas_basc_multiscale_2015(version="aym",
                                                data_dir=str(tmp_path),
                                                verbose=0)
