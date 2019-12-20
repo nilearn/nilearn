@@ -19,8 +19,7 @@ from nilearn.masking import (compute_epi_mask, compute_multi_epi_mask,
                              compute_multi_gray_matter_mask,
                              unmask, _unmask_3d, _unmask_4d, intersect_masks,
                              MaskWarning, _extrapolate_out_mask, _unmask_from_to_3d_array)
-from nilearn._utils.testing import (write_tmp_imgs, assert_raises_regex)
-from nilearn._utils.testing import assert_warns
+from nilearn._utils.testing import write_tmp_imgs
 from nilearn._utils.exceptions import DimensionError
 from nilearn.input_data import NiftiMasker
 
@@ -110,8 +109,8 @@ def test_compute_gray_matter_mask():
     np.testing.assert_array_equal(mask1, get_data(mask))
 
     # Check that we get a useful warning for empty masks
-    assert_warns(masking.MaskWarning,
-                 compute_gray_matter_mask, image, threshold=1)
+    with pytest.warns(masking.MaskWarning):
+        compute_gray_matter_mask(image, threshold=1)
 
     # Check that masks obtained from same FOV are the same
     img1 = Nifti1Image(np.full((9, 9, 9), np.random.rand()), np.eye(4))
@@ -163,8 +162,8 @@ def test_apply_mask():
 
     # veriy that 4D masks are rejected
     mask_img_4d = Nifti1Image(np.ones((40, 40, 40, 2)), np.eye(4))
-    assert_raises_regex(DimensionError, _TEST_DIM_ERROR_MSG % "4D",
-                        masking.apply_mask, data_img, mask_img_4d)
+    with pytest.raises(DimensionError, match=_TEST_DIM_ERROR_MSG % "4D"):
+        masking.apply_mask(data_img, mask_img_4d)
 
     # Check that 3D data is accepted
     data_3d = Nifti1Image(np.arange(27).reshape((3, 3, 3)), np.eye(4))
@@ -176,9 +175,9 @@ def test_apply_mask():
     assert sorted(data_3d.tolist()) == [3., 4., 12.]
 
     # Check data shape and affine
-    assert_raises_regex(DimensionError, _TEST_DIM_ERROR_MSG % "2D",
-                        masking.apply_mask, data_img,
-                        Nifti1Image(mask[20, ...], affine))
+    with pytest.raises(DimensionError, match=_TEST_DIM_ERROR_MSG % "2D"):
+        masking.apply_mask(data_img,
+                           Nifti1Image(mask[20, ...], affine))
     pytest.raises(ValueError, masking.apply_mask,
                   data_img, Nifti1Image(mask, affine / 2.))
     # Check that full masking raises error
@@ -250,15 +249,15 @@ def test_unmask():
     pytest.raises(TypeError, unmask, [vec_2D], mask_img)
 
     # Error test: mask type
-    assert_raises_regex(TypeError, 'mask must be a boolean array',
-                        _unmask_3d, vec_1D, mask.astype(np.int))
-    assert_raises_regex(TypeError, 'mask must be a boolean array',
-                        _unmask_4d, vec_2D, mask.astype(np.float64))
+    with pytest.raises(TypeError, match='mask must be a boolean array'):
+        _unmask_3d(vec_1D, mask.astype(np.int))
+    with pytest.raises(TypeError, match='mask must be a boolean array'):
+        _unmask_4d(vec_2D, mask.astype(np.float64))
 
     # Transposed vector
     transposed_vector = np.ones((np.sum(mask), 1), dtype=np.bool)
-    assert_raises_regex(TypeError, 'X must be of shape',
-                        unmask, transposed_vector, mask_img)
+    with pytest.raises(TypeError, match='X must be of shape'):
+        unmask(transposed_vector, mask_img)
 
 
 def test_intersect_masks_filename():
@@ -454,10 +453,10 @@ def test_error_shape(random_state=42, shape=(3, 5, 7, 11)):
 
 def test_nifti_masker_empty_mask_warning():
     X = Nifti1Image(np.ones((2, 2, 2, 5)), np.eye(4))
-    assert_raises_regex(
-        ValueError,
-        "The mask is invalid as it is empty: it masks all data",
-        NiftiMasker(mask_strategy="epi").fit_transform, X)
+    with pytest.raises(
+            ValueError,
+            match="The mask is invalid as it is empty: it masks all data"):
+        NiftiMasker(mask_strategy="epi").fit_transform(X)
 
 
 def test_unmask_list(random_state=42):

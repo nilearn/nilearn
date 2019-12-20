@@ -13,8 +13,6 @@ import gc
 import numpy as np
 import pytest
 
-from numpy.testing import assert_raises_regex, assert_warns  # noqa: F401
-
 from .compat import _basestring, _urllib
 from ..datasets.utils import _fetch_files
 
@@ -245,7 +243,6 @@ class FetchFilesMock (object):
         return filenames
 
 
-
 def are_tests_running():
     """Returns whether we are running the nose test loader
     """
@@ -267,7 +264,7 @@ def are_tests_running():
 
 
 def skip_if_running_tests(msg=''):
-    """ Raise a SkipTest if we appear to be running the nose test loader.
+    """ Raise a SkipTest if we appear to be running the pytest test loader.
 
     Parameters
     ----------

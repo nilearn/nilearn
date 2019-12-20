@@ -10,7 +10,7 @@ import pytest
 
 from nilearn.input_data import NiftiLabelsMasker
 from nilearn.regions import signal_extraction
-from nilearn._utils.testing import write_tmp_imgs, assert_raises_regex
+from nilearn._utils.testing import write_tmp_imgs
 from nilearn._utils.data_gen import generate_timeseries, generate_regions_ts
 from nilearn._utils.data_gen import generate_labeled_regions, generate_maps
 from nilearn._utils.data_gen import generate_fake_fmri
@@ -115,9 +115,8 @@ def test_signals_extraction_with_labels():
     assert np.all(data.std(axis=-1) > 0)
 
     # verify that 4D label images are refused
-    assert_raises_regex(DimensionError, _TEST_DIM_ERROR_MSG,
-                        signal_extraction.img_to_signals_labels,
-                        data_img, labels_4d_img)
+    with pytest.raises(DimensionError, match=_TEST_DIM_ERROR_MSG):
+        signal_extraction.img_to_signals_labels(data_img, labels_4d_img)
 
     # There must be non-zero data (safety net)
     assert abs(data).max() > 1e-9
@@ -141,17 +140,20 @@ def test_signals_extraction_with_labels():
         assert labels_r == list(range(1, 9))
 
     # Same thing, with mask.
-    assert_raises_regex(DimensionError, _TEST_DIM_ERROR_MSG,
-                        signal_extraction.img_to_signals_labels, data_img,
-                        labels_img, mask_img=mask_4d_img)
-    assert_raises_regex(DimensionError, _TEST_DIM_ERROR_MSG,
-                        signal_extraction.signals_to_img_labels, data_img,
-                        labels_img, mask_img=mask_4d_img)
-
+    with pytest.raises(DimensionError, match=_TEST_DIM_ERROR_MSG):
+        signal_extraction.img_to_signals_labels(data_img, labels_img,
+                                                mask_img=mask_4d_img
+                                                )
+    with pytest.raises(DimensionError, match=_TEST_DIM_ERROR_MSG):
+        signal_extraction.signals_to_img_labels(data_img, labels_img,
+                                                mask_img=mask_4d_img
+                                                )
     data_img = signal_extraction.signals_to_img_labels(signals, labels_img,
                                                        mask_img=mask_img)
-    pytest.raises(TypeError, signal_extraction.signals_to_img_labels,
-                  data_img, labels_4d_img, mask_img=mask_img)
+    with pytest.raises(TypeError):
+        signal_extraction.signals_to_img_labels(data_img, labels_4d_img,
+                                                mask_img=mask_img
+                                                )
     assert data_img.shape == (shape + (n_instants,))
 
     data = get_data(data_img)
@@ -230,9 +232,9 @@ def test_signal_extraction_with_maps():
     img = nibabel.Nifti1Image(data, np.eye(4))
 
     # verify that 4d masks are refused
-    assert_raises_regex(TypeError, _TEST_DIM_ERROR_MSG,
-                        signal_extraction.img_to_signals_maps, img, maps_img,
-                        mask_img=mask_4d_img)
+    with pytest.raises(TypeError, match=_TEST_DIM_ERROR_MSG):
+        signal_extraction.img_to_signals_maps(img, maps_img,
+                                              mask_img=mask_4d_img)
 
     # Get signals
     signals_r, labels = signal_extraction.img_to_signals_maps(

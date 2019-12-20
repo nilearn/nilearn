@@ -6,12 +6,11 @@ import tempfile
 
 import numpy as np
 import matplotlib
+import pytest
 
 from nilearn.plotting import js_plotting_utils
 from nilearn import surface
 from nilearn.datasets import fetch_surf_fsaverage
-
-from numpy.testing import assert_warns, assert_equal
 
 try:
     from lxml import etree
@@ -180,8 +179,9 @@ def test_colorscale_asymmetric_cmap_vmax():
 def test_colorscale_asymmetric_cmap_negative_values():
     cmap = 'jet'
     values = np.linspace(-15, 4)
-    assert_warns(UserWarning, js_plotting_utils.colorscale, cmap,
-                 values, symmetric_cmap=False)
+    with pytest.warns(UserWarning):
+        js_plotting_utils.colorscale(cmap,
+                                     values, symmetric_cmap=False)
 
     colors = js_plotting_utils.colorscale(cmap, values, vmax=7,
                                           symmetric_cmap=False)

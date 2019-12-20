@@ -1,11 +1,11 @@
 import numpy as np
 import nibabel
+import pytest
 
 from nilearn.plotting.find_cuts import (find_xyz_cut_coords, find_cut_slices,
                                         _transform_cut_coords,
                                         find_parcellation_cut_coords,
                                         find_probabilistic_atlas_cut_coords)
-from nilearn._utils.testing import assert_raises_regex, assert_warns
 from nilearn.masking import compute_epi_mask
 
 
@@ -65,7 +65,8 @@ def test_find_cut_coords():
     img = nibabel.Nifti1Image(data, affine)
     cut_coords = find_xyz_cut_coords(img)
     assert cut_coords == [0.0, 0.0, 0.0]
-    cut_coords = assert_warns(UserWarning, find_xyz_cut_coords, img)
+    with pytest.warns(UserWarning):
+        cut_coords = find_xyz_cut_coords(img)
 
 
 def test_find_cut_slices():
@@ -134,10 +135,8 @@ def test_validity_of_ncuts_error_in_find_cut_slices():
         message = ("Image has %d slices in direction %s. Therefore, the number "
                    "of cuts must be between 1 and %d. You provided n_cuts=%s " % (
                        data.shape[0], direction, data.shape[0], n_cuts))
-        assert_raises_regex(ValueError,
-                            message,
-                            find_cut_slices,
-                            img, n_cuts=n_cuts)
+        with pytest.raises(ValueError, match=message):
+            find_cut_slices(img, n_cuts=n_cuts)
 
 
 def test_passing_of_ncuts_in_find_cut_slices():
@@ -180,8 +179,8 @@ def test_tranform_cut_coords():
 def test_find_cuts_empty_mask_no_crash():
     img = nibabel.Nifti1Image(np.ones((2, 2, 2)), np.eye(4))
     mask_img = compute_epi_mask(img)
-    cut_coords = assert_warns(UserWarning, find_xyz_cut_coords, img,
-                              mask_img=mask_img)
+    with pytest.warns(UserWarning):
+        cut_coords = find_xyz_cut_coords(img, mask_img=mask_img)
     np.testing.assert_array_equal(cut_coords, [.5, .5, .5])
 
 
@@ -245,8 +244,8 @@ def test_find_parcellation_cut_coords():
     # test raises an error with wrong label_hemisphere name with 'lft'
     error_msg = ("Invalid label_hemisphere name:lft. Should be one of "
                  "these 'left' or 'right'.")
-    assert_raises_regex(ValueError, error_msg, find_parcellation_cut_coords,
-                        labels_img=img, label_hemisphere='lft')
+    with pytest.raises(ValueError, match=error_msg):
+        find_parcellation_cut_coords(labels_img=img, label_hemisphere='lft')
 
 
 def test_find_probabilistic_atlas_cut_coords():
