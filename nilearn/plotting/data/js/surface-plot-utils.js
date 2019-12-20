@@ -10,7 +10,7 @@ function decodeBase64(encoded, dtype) {
         "int32": Int32Array
     }[dtype];
 
-    let raw = atob(encoded)
+    let raw = atob(encoded);
     let buffer = new ArrayBuffer(raw.length);
     let asIntArray = new Uint8Array(buffer);
     for (let i = 0; i !== raw.length; i++) {

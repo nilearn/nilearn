@@ -5,7 +5,7 @@ import tempfile
 import webbrowser
 from nilearn import reporting
 
-from numpy.testing import assert_warns, assert_no_warnings
+from numpy.testing import assert_no_warnings
 
 # Note: html output by nilearn view_* functions
 # should validate as html5 using https://validator.w3.org/nu/ with no
@@ -62,7 +62,7 @@ def _open_one_view():
 def test_open_view_warning():
     # opening many views (without deleting the SurfaceView objects)
     # should raise a warning about memory usage
-    assert_warns(UserWarning, _open_views)
+    pytest.warns(UserWarning, _open_views)
     assert_no_warnings(_open_one_view)
     reporting.set_max_img_views_before_warning(15)
     assert_no_warnings(_open_views)
@@ -71,4 +71,4 @@ def test_open_view_warning():
     reporting.set_max_img_views_before_warning(None)
     assert_no_warnings(_open_views)
     reporting.set_max_img_views_before_warning(6)
-    assert_warns(UserWarning, _open_views)
+    pytest.warns(UserWarning, _open_views)

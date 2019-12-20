@@ -17,7 +17,7 @@ import pytest
 
 from nilearn import datasets
 from nilearn._utils.testing import (mock_request, wrap_chunk_read_,
-                                    FetchFilesMock, assert_raises_regex)
+                                    FetchFilesMock)
 
 currdir = os.path.dirname(os.path.abspath(__file__))
 datadir = os.path.join(currdir, 'data')
@@ -117,11 +117,11 @@ def test_get_dataset_dir(tmp_path):
     with open(test_file, 'w') as out:
         out.write('abcfeg')
 
-    assert_raises_regex(OSError,
-                        'Nilearn tried to store the dataset in the following '
-                        'directories, but',
-                        datasets.utils._get_dataset_dir,
-                        'test', test_file, verbose=0)
+    with pytest.raises(
+            OSError,
+            match='Nilearn tried to store the dataset in the following '
+                  'directories, but'):
+        datasets.utils._get_dataset_dir('test', test_file, verbose=0)
 
 
 def test_md5_sum_file():

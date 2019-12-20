@@ -7,11 +7,12 @@ import shutil
 import tempfile
 from pathlib import Path
 
+import pytest
+
 from nilearn._utils.compat import Memory
 
 import nilearn
 from nilearn._utils import cache_mixin, CacheMixin
-from nilearn._utils.testing import assert_raises_regex
 
 
 def _get_subdirs(top_dir):
@@ -139,9 +140,10 @@ def test_cache_mixin_without_expand_user():
     try:
         assert not os.path.exists(expand_cache_dir)
         nilearn.EXPAND_PATH_WILDCARDS = False
-        assert_raises_regex(ValueError,
-                            "Given cache path parent directory doesn't",
-                            mixin_mock.run)
+        with pytest.raises(
+                ValueError,
+                match="Given cache path parent directory doesn't"):
+            mixin_mock.run()
         assert not os.path.exists(expand_cache_dir)
         nilearn.EXPAND_PATH_WILDCARDS = True
     finally:
@@ -159,9 +161,10 @@ def test_cache_mixin_wrong_dirs():
         mixin_mock = CacheMixinTest(cache_dir)
 
         try:
-            assert_raises_regex(ValueError,
-                                "Given cache path parent directory doesn't",
-                                mixin_mock.run)
+            with pytest.raises(
+                    ValueError,
+                    match="Given cache path parent directory doesn't"):
+                mixin_mock.run()
             assert not os.path.exists(expand_cache_dir)
         finally:
             if os.path.exists(expand_cache_dir):

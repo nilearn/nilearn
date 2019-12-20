@@ -15,7 +15,6 @@ import pytest
 
 from numpy.testing import assert_array_equal
 
-from nilearn._utils.testing import assert_raises_regex
 from . import test_utils as tst
 
 from nilearn._utils.compat import _basestring, _urllib
@@ -85,11 +84,10 @@ def test_get_dataset_dir(tmp_path):
     test_file = str(tmp_path / 'some_file')
     with open(test_file, 'w') as out:
         out.write('abcfeg')
-    assert_raises_regex(OSError,
-                        'Nilearn tried to store the dataset '
-                        'in the following directories, but',
-                        utils._get_dataset_dir,
-                        'test', test_file, verbose=0)
+    with pytest.raises(OSError, match=('Nilearn tried to store the dataset '
+                                       'in the following directories, but')
+                       ):
+        utils._get_dataset_dir('test', test_file, verbose=0)
 
 
 def test_downloader(tmp_path):
@@ -151,9 +149,8 @@ def test_downloader(tmp_path):
 
 def test_fail_fetch_atlas_harvard_oxford(tmp_path):
     # specify non-existing atlas item
-    assert_raises_regex(ValueError, 'Invalid atlas name',
-                        atlas.fetch_atlas_harvard_oxford,
-                        'not_inside')
+    with pytest.raises(ValueError, match='Invalid atlas name'):
+        atlas.fetch_atlas_harvard_oxford('not_inside')
 
     # specify existing atlas item
     target_atlas = 'cort-maxprob-thr0-1mm'
@@ -389,9 +386,12 @@ def test_fetch_atlas_aal(tmp_path, request_mocker):
     assert isinstance(dataset.indices, list)
     assert len(tst.mock_url_request.urls) == 1
 
-    assert_raises_regex(ValueError, 'The version of AAL requested "FLS33"',
-                        atlas.fetch_atlas_aal, version="FLS33",
-                        data_dir=str(tmp_path), verbose=0)
+    with pytest.raises(ValueError,
+                       match='The version of AAL requested "FLS33"'
+                       ):
+        atlas.fetch_atlas_aal(version="FLS33",
+                              data_dir=str(tmp_path),
+                              verbose=0)
 
     assert dataset.description != ''
 
@@ -424,10 +424,12 @@ def test_fetch_atlas_basc_multiscale_2015(tmp_path, request_mocker):
                                      / basename_asym)
 
     assert len(data_sym) == 10
-    assert_raises_regex(ValueError,
-                        'The version of Brain parcellations requested "aym"',
-                        atlas.fetch_atlas_basc_multiscale_2015, version="aym",
-                        data_dir=str(tmp_path), verbose=0)
+    with pytest.raises(
+            ValueError,
+            match='The version of Brain parcellations requested "aym"'):
+        atlas.fetch_atlas_basc_multiscale_2015(version="aym",
+                                               data_dir=str(tmp_path),
+                                               verbose=0)
 
     assert len(tst.mock_url_request.urls) == 2
     assert data_sym.description != ''

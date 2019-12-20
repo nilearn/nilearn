@@ -11,12 +11,10 @@ import nibabel
 import numpy as np
 import pytest
 
-from . import test_utils as tst
-
-from nilearn.datasets import utils, struct
-from nilearn._utils.testing import assert_raises_regex
-
 from nilearn._utils.compat import _basestring
+from nilearn.datasets import utils, struct
+
+from . import test_utils as tst
 
 
 @pytest.fixture()
@@ -79,11 +77,10 @@ def test_get_dataset_dir(tmp_path):
     test_file = str(tmp_path / 'some_file')
     with open(test_file, 'w') as out:
         out.write('abcfeg')
-    assert_raises_regex(OSError,
-                        'Nilearn tried to store the dataset '
-                        'in the following directories, but',
-                        utils._get_dataset_dir,
-                        'test', test_file, verbose=0)
+    with pytest.raises(OSError,
+                       match='Nilearn tried to store the dataset '
+                             'in the following directories, but'):
+        utils._get_dataset_dir('test', test_file, verbose=0)
 
 
 def test_fetch_icbm152_2009(tmp_path, request_mocker):

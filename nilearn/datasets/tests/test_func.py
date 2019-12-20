@@ -18,7 +18,6 @@ from sklearn.utils import check_random_state
 from . import test_utils as tst
 
 from nilearn.datasets import utils, func
-from nilearn._utils.testing import assert_raises_regex
 
 from nilearn._utils.compat import _basestring
 
@@ -124,11 +123,8 @@ def test_fetch_haxby(tmp_path, request_mocker):
     message = "You provided invalid subject id {0} in a list"
 
     for sub_id in subjects:
-        assert_raises_regex(ValueError,
-                            message.format(sub_id),
-                            func.fetch_haxby,
-                            data_dir=str(tmp_path),
-                            subjects=[sub_id])
+        with pytest.raises(ValueError, match=message.format(sub_id)):
+            func.fetch_haxby(data_dir=str(tmp_path), subjects=[sub_id])
 
 
 def test_fetch_nyu_rest(tmp_path, request_mocker):
@@ -348,22 +344,22 @@ def test_check_parameters_megatrawls_datasets():
     message = "Invalid {0} input is provided: {1}."
 
     for invalid_input_dim in [1, 5, 30]:
-        assert_raises_regex(ValueError,
-                            message.format('dimensionality', invalid_input_dim),
-                            func.fetch_megatrawls_netmats,
-                            dimensionality=invalid_input_dim)
+        with pytest.raises(
+                ValueError,
+                match=message.format('dimensionality', invalid_input_dim)):
+            func.fetch_megatrawls_netmats(dimensionality=invalid_input_dim)
 
     for invalid_input_timeserie in ['asdf', 'time', 'st2']:
-        assert_raises_regex(ValueError,
-                            message.format('timeseries', invalid_input_timeserie),
-                            func.fetch_megatrawls_netmats,
-                            timeseries=invalid_input_timeserie)
+        with pytest.raises(
+                ValueError,
+                match=message.format('timeseries', invalid_input_timeserie)):
+            func.fetch_megatrawls_netmats(timeseries=invalid_input_timeserie)
 
     for invalid_output_name in ['net1', 'net2']:
-        assert_raises_regex(ValueError,
-                            message.format('matrices', invalid_output_name),
-                            func.fetch_megatrawls_netmats,
-                            matrices=invalid_output_name)
+        with pytest.raises(
+                ValueError,
+                match=message.format('matrices', invalid_output_name)):
+            func.fetch_megatrawls_netmats(matrices=invalid_output_name)
 
 
 def test_fetch_megatrawls_netmats(tmp_path):
