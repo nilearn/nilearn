@@ -2,6 +2,7 @@
 
 import numpy as np
 import nibabel
+import pytest
 from scipy import ndimage
 
 from nilearn.regions import (connected_regions, RegionExtractor,
@@ -9,7 +10,6 @@ from nilearn.regions import (connected_regions, RegionExtractor,
 from nilearn.regions.region_extractor import (_threshold_maps_ratio,
                                               _remove_small_regions)
 
-from nilearn._utils.testing import assert_raises_regex
 from nilearn._utils.data_gen import generate_maps, generate_labeled_regions
 from nilearn._utils.exceptions import DimensionError
 from nilearn.image import get_data
@@ -28,13 +28,15 @@ def test_invalid_thresholds_in_threshold_maps_ratio():
     maps, _ = generate_maps((10, 11, 12), n_regions=2)
 
     for invalid_threshold in ['80%', 'auto', -1.0]:
-        assert_raises_regex(ValueError,
-                            "threshold given as ratio to the number of voxels must "
-                            "be Real number and should be positive and between 0 and "
-                            "total number of maps i.e. n_maps={0}. "
-                            "You provided {1}".format(maps.shape[-1], invalid_threshold),
-                            _threshold_maps_ratio,
-                            maps, threshold=invalid_threshold)
+        with pytest.raises(
+                ValueError,
+                match="threshold given as ratio to the number of voxels must "
+                      "be Real number and should be positive "
+                      "and between 0 and total number of maps "
+                      "i.e. n_maps={0}. "
+                      "You provided {1}".format(maps.shape[-1],
+                                                invalid_threshold)):
+            _threshold_maps_ratio(maps, threshold=invalid_threshold)
 
 
 def test_nans_threshold_maps_ratio():
@@ -78,10 +80,8 @@ def test_invalids_extract_types_in_connected_regions():
     # are given to extract_type in connected_regions function
     message = ("'extract_type' should be {0}")
     for invalid_extract_type in ['connect_region', 'local_regios']:
-        assert_raises_regex(ValueError,
-                            message.format(valid_names),
-                            connected_regions,
-                            maps, extract_type=invalid_extract_type)
+        with pytest.raises(ValueError, match=message.format(valid_names)):
+            connected_regions(maps, extract_type=invalid_extract_type)
 
 
 def test_connected_regions():
@@ -139,23 +139,23 @@ def test_invalid_threshold_strategies():
 
     extract_strategy_check = RegionExtractor(maps, thresholding_strategy='n_')
     valid_strategies = ['ratio_n_voxels', 'img_value', 'percentile']
-    assert_raises_regex(ValueError,
-                        "'thresholding_strategy' should be either of "
-                        "these".format(valid_strategies),
-                        extract_strategy_check.fit)
+    with pytest.raises(ValueError,
+                       match="'thresholding_strategy' should be either of "
+                             "these".format(valid_strategies)):
+        extract_strategy_check.fit()
 
 
 def test_threshold_as_none_and_string_cases():
     maps, _ = generate_maps((6, 8, 10), n_regions=1)
 
     extract_thr_none_check = RegionExtractor(maps, threshold=None)
-    assert_raises_regex(ValueError,
-                        "The given input to threshold is not valid.",
-                        extract_thr_none_check.fit)
+    with pytest.raises(ValueError,
+                       match="The given input to threshold is not valid."):
+        extract_thr_none_check.fit()
     extract_thr_string_check = RegionExtractor(maps, threshold='30%')
-    assert_raises_regex(ValueError,
-                        "The given input to threshold is not valid.",
-                        extract_thr_string_check.fit)
+    with pytest.raises(ValueError,
+                       match="The given input to threshold is not valid."):
+        extract_thr_string_check.fit()
 
 
 def test_region_extractor_fit_and_transform():
@@ -231,14 +231,14 @@ def test_error_messages_connected_label_regions():
     n_regions = 2
     labels_img = generate_labeled_regions(shape, affine=affine,
                                           n_regions=n_regions)
-    assert_raises_regex(ValueError,
-                        "Expected 'min_size' to be specified as integer.",
-                        connected_label_regions,
-                        labels_img=labels_img, min_size='a')
-    assert_raises_regex(ValueError,
-                        "'connect_diag' must be specified as True or False.",
-                        connected_label_regions,
-                        labels_img=labels_img, connect_diag=None)
+    with pytest.raises(
+            ValueError,
+            match="Expected 'min_size' to be specified as integer."):
+        connected_label_regions(labels_img=labels_img, min_size='a')
+    with pytest.raises(
+            ValueError,
+            match="'connect_diag' must be specified as True or False."):
+        connected_label_regions(labels_img=labels_img, connect_diag=None)
 
 
 def test_remove_small_regions():
