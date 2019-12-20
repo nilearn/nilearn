@@ -11,8 +11,6 @@ import pytest
 
 from sklearn.base import BaseEstimator
 
-from nilearn._utils.testing import assert_raises_regex, assert_warns
-
 from nilearn._utils.extmath import fast_abs_percentile
 from nilearn._utils.param_validation import (MNI152_BRAIN_VOLUME,
                                              _get_mask_volume,
@@ -31,18 +29,17 @@ def test_check_threshold():
     # few not correctly formatted strings for 'threshold'
     wrong_thresholds = ['0.1', '10', '10.2.3%', 'asdf%']
     for wrong_threshold in wrong_thresholds:
-        assert_raises_regex(ValueError,
-                            '{0}.+should be a number followed by '
-                            'the percent sign'.format(name),
-                            check_threshold,
-                            wrong_threshold, matrix,
+        with pytest.raises(ValueError,
+                           match='{0}.+should be a number followed by '
+                                 'the percent sign'.format(name)):
+            check_threshold(wrong_threshold, matrix,
                             'fast_abs_percentile', name)
 
     threshold = object()
-    assert_raises_regex(TypeError,
-                        '{0}.+should be either a number '
-                        'or a string'.format(name),
-                        check_threshold, threshold, matrix,
+    with pytest.raises(TypeError,
+                       match='{0}.+should be either a number '
+                             'or a string'.format(name)):
+        check_threshold(threshold, matrix,
                         'fast_abs_percentile', name)
 
     # Test threshold as int, threshold=2 should return as it is
@@ -50,8 +47,9 @@ def test_check_threshold():
     assert check_threshold(2, matrix, percentile_func=fast_abs_percentile) == 2
 
     # check whether raises a warning if given threshold is higher than expected
-    assert_warns(UserWarning, check_threshold, 3., matrix,
-                 percentile_func=fast_abs_percentile)
+    with pytest.warns(UserWarning):
+        check_threshold(3., matrix,
+                        percentile_func=fast_abs_percentile)
 
     # test with numpy scalar as argument
     threshold = 2.
@@ -64,8 +62,8 @@ def test_check_threshold():
     # Test for threshold provided as a percentile of the data (str ending with a
     # %)
     assert 1. < check_threshold("50%", matrix,
-                                     percentile_func=fast_abs_percentile,
-                                     name=name) <= 2.
+                                percentile_func=fast_abs_percentile,
+                                name=name) <= 2.
 
 
 def test_get_mask_volume():
