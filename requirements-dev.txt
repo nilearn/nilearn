@@ -1,4 +1,3 @@
-nose
 pytest>=3.9
 pytest-cov
 coverage
