@@ -344,8 +344,8 @@ def test_connected_label_regions():
 
     assert len(provided_labels) < len(unique_labels)
 
-    np.testing.assert_raises(ValueError, connected_label_regions,
-                             labels_img, labels=provided_labels)
+    with pytest.raises(ValueError):
+        connected_label_regions(labels_img, labels=provided_labels)
 
     # Test if unknown/negative integers are provided as labels in labels_img,
     # we raise an error and test the same whether error is raised.
@@ -363,8 +363,8 @@ def test_connected_label_regions():
     labels_data[h0:, h1:, h2:] = np.inf
 
     neg_labels_img = nibabel.Nifti1Image(labels_data, affine)
-    np.testing.assert_raises(ValueError, connected_label_regions,
-                             labels_img=neg_labels_img)
+    with pytest.raises(ValueError):
+        connected_label_regions(labels_img=neg_labels_img)
 
     # If labels_img provided is 4D Nifti image, then test whether error is
     # raised or not. Since this function accepts only 3D image.
@@ -374,8 +374,8 @@ def test_connected_label_regions():
     labels_4d_data[..., 0] = labels_data
     labels_4d_data[..., 1] = labels_data
     labels_img_4d = nibabel.Nifti1Image(labels_4d_data, np.eye(4))
-    np.testing.assert_raises(DimensionError, connected_label_regions,
-                             labels_img=labels_img_4d)
+    with pytest.raises(DimensionError):
+        connected_label_regions(labels_img=labels_img_4d)
 
     # Test if labels (or names to regions) given is a string without a list.
     # Then, we expect it to be split to regions extracted and returned as list.
