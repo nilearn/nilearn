@@ -9,7 +9,8 @@ from nilearn.regions.parcellations import (Parcellations,
                                            _check_parameters_transform)
 
 
-METHODS = ['kmeans', 'ward', 'complete', 'average', 'rena']
+METHODS = ['kmeans', 'ward', 'complete', 'average', 'rena',
+           'hierarchical_kmeans']
 
 
 @pytest.fixture
@@ -135,6 +136,11 @@ def test_parcellations_transform_multi_nifti_images(method,
     assert signals[2].shape == (test_image_2.shape[3], n_parcel)
     assert len(signals) == len(fmri_imgs)
 
+    parcellator = Parcellations(method='hierarchical_kmeans', n_parcels=5,
+                                mask=mask_img)
+    parcellator.fit(fmri_imgs)
+
+
 
 def test_check_parameters_transform(test_image_2):
     rng = np.random.RandomState(42)
@@ -163,6 +169,7 @@ def test_check_parameters_transform(test_image_2):
     # Test the error when length of images and confounds are not same
     msg = ("Number of confounds given does not match with the "
            "given number of images")
+
     not_match_confounds_list = [confounds] * 2
     with pytest.raises(ValueError, match=msg):
         _check_parameters_transform(fmri_imgs, not_match_confounds_list)
