@@ -16,7 +16,9 @@ def _remove_empty_labels(labels):
 
 def _hierarchical_k_means(X, n_clusters, init="k-means++", batch_size=1000,
                           n_init=10, max_no_improvement=10, verbose=0, random_state=0):
-    """ Use a recursive k-means to cluster X
+    """ Use a recursive k-means to cluster X. First clustering in sqrt(n_clusters)
+    parcels, and Kmeans a second time on each parcel. s
+
     Parameters
     ----------
     X: nd array (n_samples, n_features)
@@ -53,6 +55,7 @@ def _hierarchical_k_means(X, n_clusters, init="k-means++", batch_size=1000,
         Determines random number generation for centroid initialization and
         random reassignment. Use an int to make the randomness deterministic.
         See :term:`Glossary <random_state>`.
+
     Returns
     -------
     labels : list of ints (len n_features)

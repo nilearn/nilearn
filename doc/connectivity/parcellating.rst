@@ -60,9 +60,7 @@ Applying clustering
       spatial smoothing, that will be better balanced than with Kmeans.
 
     All these algorithms are showcased in a full code example :
-    :ref:`here<sphx_glr_auto_examples_03_connectivity_plot_data_driven_parcellations.py>`.
-
-    Below, we focus on explaining the principle of Ward.
+    :ref:`here<sphx_glr_auto_examples_03_connectivity_plot_data_driven_parcellations.py>`. Below, we focus on explaining the principle of Ward.
 
 |
 
