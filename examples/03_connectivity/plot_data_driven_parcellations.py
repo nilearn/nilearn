@@ -192,7 +192,7 @@ display = plotting.plot_roi(kmeans_labels_img, mean_func_img,
 # the following code:
 kmeans_labels_img.to_filename('kmeans_parcellation.nii.gz')
 
-###########################################################################
+#########################################################################
 # Brain parcellations with Hierarchical KMeans Clustering
 # -------------------------------------------------------
 #
@@ -244,10 +244,10 @@ hkmeans_labels_img.to_filename('hkmeans_parcellation.nii.gz')
 # First count how many voxels have each label (except 0 which is the background).
 
 kmeans_labels, kmeans_counts = np.unique(
-    kmeans_labels_img.get_data(), return_counts=True)
+    get_data(kmeans_labels_img), return_counts=True)
 
 _, hkmeans_counts = np.unique(
-    hkmeans_labels_img.get_data(), return_counts=True)
+    get_data(hkmeans_labels_img), return_counts=True)
 
 voxel_ratio = np.round(np.sum(kmeans_counts[1:]) / 50)
 
