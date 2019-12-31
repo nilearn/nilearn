@@ -1,7 +1,8 @@
 import numpy as np
 from nilearn._utils.data_gen import generate_fake_fmri
-from nilearn.regions.hierarchical_kmeans_clustering import _hierarchical_k_means
+from nilearn.regions.hierarchical_kmeans_clustering import _hierarchical_k_means, HierarchicalKMeans
 from sklearn.utils.testing import assert_array_almost_equal
+from nilearn.input_data import NiftiMasker
 
 
 def test_hierarchical_k_means():
@@ -19,45 +20,14 @@ def test_hierarchical_k_means_clustering():
     data = data_img.get_data()
     mask = mask_img.get_data()
 
-    X = np.empty((data.shape[3], int(mask.sum())))
-    for i in range(data.shape[3]):
-        X[i, :] = np.copy(data[:, :, :, i])[mask_img.get_data() != 0]
-
-    n_voxels = mask_img.get_data().sum()
-
-    hkmeans = HierarchicalKMeans(n_clusters=10)
-
-    from nilearn.input_data import NiftiMasker
     masker = NiftiMasker(mask_img=mask_img).fit()
-    b = masker.transform(data_img)
-    b.shape
-    X.shape
-    hkmeans.fit(X.T)
+    X = masker.transform(data_img).T
 
-    unique_labels = np.unique(hkmeans.labels_)
-    X.shape[1]
-    mean_cluster = []
-    for label in unique_labels:
-        mean_cluster.append(np.mean(X.T[:, hkmeans.labels_ == label], axis=1))
-
-    X_red = np.array(mean_cluster).T
-
-    hkmeans.fit(b)
-    hkmeans.labels_
+    hkmeans = HierarchicalKMeans(n_clusters=8)
     X_red = hkmeans.fit_transform(X)
-
-    unique_labels = np.unique(hkmeans.labels_)
-    mean_cluster = []
-    for label in unique_labels:
-        mean_cluster.append(np.mean(X.T[:, hkmeans.labels_ == label], axis=1))
-    np.shape(mean_cluster)
-
     X_compress = hkmeans.inverse_transform(X_red)
 
-    assert_equal(10, hkmeans.n_clusters_)
-    assert_equal(X.shape, X_compress.shape)
-
+    assert_array_almost_equal(X.shape, X_compress.shape)
     hkmeans = HierarchicalKMeans(n_clusters=-2)
-    assert_raises(ValueError, hkmeans.fit(), X)
 
-    del n_voxels, X_red, X_compress
+    del X_red, X_compress

@@ -152,7 +152,7 @@ class HierarchicalKMeans(BaseEstimator, ClusterMixin, TransformerMixin):
 
         Parameters
         ----------
-        X: ndarray, shape = [n_samples, n_features]
+        X: ndarray, shape = [n_features, n_samples]
             Training data.
         y: Ignored
 
@@ -187,12 +187,12 @@ class HierarchicalKMeans(BaseEstimator, ClusterMixin, TransformerMixin):
 
         Parameters
         ----------
-        X: ndarray, shape = [n_samples, n_features]
+        X: ndarray, shape = [n_features, n_samples]
             Data to transform with the fitted clustering.
 
         Returns
         -------
-        X_red: ndarray, shape = [n_samples, n_clusters]
+        X_red: ndarray, shape = [n_clusters, n_samples]
             Data reduced with agglomerated signal for each cluster
         """
 
@@ -201,9 +201,9 @@ class HierarchicalKMeans(BaseEstimator, ClusterMixin, TransformerMixin):
 
         mean_cluster = []
         for label in unique_labels:
-            mean_cluster.append(np.mean(X[:, self.labels_ == label], axis=1))
+            mean_cluster.append(np.mean(X[self.labels_ == label], axis=0))
 
-        X_red = np.array(mean_cluster).T
+        X_red = np.array(mean_cluster)
 
         if self.scaling:
             X_red = X_red * np.sqrt(self.sizes_)
@@ -216,12 +216,12 @@ class HierarchicalKMeans(BaseEstimator, ClusterMixin, TransformerMixin):
 
         Parameters
         ----------
-        X_red: ndarray , shape = [n_samples, n_clusters]
+        X_red: ndarray , shape = [n_clusters, n_samples]
             Data reduced with agglomerated signal for each cluster
 
         Returns
         -------
-        X_inv: ndarray, shape = [n_samples, n_features]
+        X_inv: ndarray, shape = [n_features, n_samples]
             Data reduced expanded to the original feature space
         """
 
@@ -231,6 +231,6 @@ class HierarchicalKMeans(BaseEstimator, ClusterMixin, TransformerMixin):
 
         if self.scaling:
             X_red = X_red / np.sqrt(self.sizes_)
-        X_inv = X_red[..., inverse]
+        X_inv = X_red[inverse, ...]
 
         return X_inv
