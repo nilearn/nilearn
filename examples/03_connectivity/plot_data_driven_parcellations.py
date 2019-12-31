@@ -2,7 +2,7 @@
 Clustering methods to learn a brain parcellation from fMRI
 ==========================================================
 
-We use spatially-constrained Ward-clustering, KMeans, and Recursive Neighbor
+We use spatially-constrained Ward-clustering, KMeans, Hierarchical KMeans and Recursive Neighbor
 Agglomeration (ReNA) to create a set of parcels.
 
 In a high dimensional regime, these methods can be interesting
@@ -11,7 +11,8 @@ in the fMRI images by mean signals on the parcellation, which can
 subsequently be used for statistical analysis or machine learning.
 
 Also, these methods can be used to learn functional connectomes
-and subsequently for classification tasks.
+and subsequently for classification tasks or to analyze data at a local
+level.
 
 References
 ----------
@@ -183,13 +184,104 @@ print("KMeans clusters: %.2fs" % (time.time() - start))
 # Grab parcellations of brain image stored in attribute `labels_img_`
 kmeans_labels_img = kmeans.labels_img_
 
-plotting.plot_roi(kmeans_labels_img, mean_func_img,
-                  title="KMeans parcellation",
-                  display_mode='xz')
+display = plotting.plot_roi(kmeans_labels_img, mean_func_img,
+                            title="KMeans parcellation",
+                            display_mode='xz')
 
 # kmeans_labels_img is a Nifti1Image object, it can be saved to file with
 # the following code:
 kmeans_labels_img.to_filename('kmeans_parcellation.nii.gz')
+
+#########################################################################
+# Brain parcellations with Hierarchical KMeans Clustering
+# ------------------------------------------
+#
+# As the number of images from which we try to cluster grows, voxels display more
+# and more specific activity patterns causing KMeans clusters to be very unbalanced
+# with a few big clusters and many voxels left almost alone. Hierarchical Kmeans
+# algorithm is tailored to enfore more balanced clusteings.
+#
+# To do this, Hierarchical Kmeans does a first Kmeans clustering in square root
+# of n parcels. In a second step it clusters voxels inside each of these parcels
+# in m pieces with m adapted to the size of the cluster and  in order to have
+# in the end n clusters as balanced as possible.
+#
+# This object uses method='hierarchical_kmeans' for Hierarchical KMeans clustering
+# and 10mm smoothing and standardization to compare with the previous method.
+start = time.time()
+hkmeans = Parcellations(method='hierarchical_kmeans', n_parcels=50,
+                        standardize=True, smoothing_fwhm=10,
+                        memory='nilearn_cache', memory_level=1,
+                        verbose=1)
+# Call fit on functional dataset: single subject (less samples)
+hkmeans.fit(dataset.func)
+
+###########################################################################
+# Visualize: Brain parcellations (Hierarchical KMeans)
+# .......................................
+#
+# Grab parcellations of brain image stored in attribute `labels_img_`
+hkmeans_labels_img = hkmeans.labels_img_
+
+plotting.plot_roi(hkmeans_labels_img, mean_func_img,
+                  title="Hierarchical KMeans parcellation",
+                  display_mode='xz', cut_coords=display.cut_coords)
+
+# kmeans_labels_img is a Nifti1Image object, it can be saved to file with
+# the following code:
+hkmeans_labels_img.to_filename('hkmeans_parcellation.nii.gz')
+
+###########################################################################
+# Compare Hierarchical Kmeans clusters with those from Kmeans
+# ...........................................................
+# To compare those, we'll first count how many voxels is contained in each of
+# the 50 clusters for both algorithm and compare those sizes distribution.
+# Hierarchical KMeans should give clusters closer to average (600 here) than KMeans
+
+# First count how many voxels have each label (except 0 which is the background)
+
+kmeans_labels, kmeans_counts = np.unique(
+    kmeans_labels_img.get_data(), return_counts=True)
+print(kmeans_labels)
+print(kmeans_counts)
+
+_, hkmeans_counts = np.unique(
+    hkmeans_labels_img.get_data(), return_counts=True)
+
+voxel_ratio = np.round(np.sum(kmeans_counts[1:]) / 50)
+
+# If all voxels not in background were balanced between clusters ...
+
+print("... each cluster should contain {} voxels".format(voxel_ratio))
+
+# Now you can just skip the plotting code, the important part is the figure
+
+import matplotlib.pyplot as plt
+from matplotlib import patches, ticker
+
+bins = np.concatenate([np.linspace(0, 500, 11), np.linspace(
+    600, 2000, 15), np.linspace(3000, 10000, 8)])
+fig, axes = plt.subplots(nrows=2, sharex=True, gridspec_kw={
+                         'height_ratios': [4, 1]})
+plt.semilogx()
+axes[0].hist(kmeans_counts[1:], bins, color="blue")
+axes[1].hist(hkmeans_counts[1:], bins, color="green")
+axes[0].set_ylim(0, 16)
+axes[1].set_ylim(4, 0)
+axes[1].xaxis.set_major_formatter(ticker.ScalarFormatter())
+axes[1].yaxis.set_label_coords(-.08, 2)
+fig.subplots_adjust(hspace=0)
+plt.xlabel("Number of voxels (log)", fontsize=12)
+plt.ylabel("Number of clusters", fontsize=12)
+handles = [patches.Rectangle((0, 0), 1, 1, color=c, ec="k")
+           for c in ["blue", "green"]]
+labels = ["Kmeans", "Hierarchical Kmeans"]
+fig.legend(handles, labels, loc=(.5, .8))
+
+# As we can see, half of the 50 KMeans clusters contain less than 100 voxels
+# whereas three contain several thousands voxels (almost 10000 for the biggest).
+# On the opposite Hierarchical KMeans give clusters that are better balanced.
+
 
 ##################################################################
 # Brain parcellations with ReNA Clustering
