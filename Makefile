@@ -4,7 +4,7 @@
 
 PYTHON ?= python
 CYTHON ?= cython
-NOSETESTS ?= nosetests
+TESTRUNNER ?= nosetests
 CTAGS ?= ctags
 
 all: clean test doc-plot pdf
@@ -29,16 +29,13 @@ inplace:
 	$(PYTHON) setup.py build_ext -i
 
 test-code:
-	$(NOSETESTS) -s nistats
+	python -m pytest --pyargs nistats --cov=nistats
 test-doc:
-	$(NOSETESTS) -s --with-doctest --doctest-tests --doctest-extension=rst \
-	--doctest-extension=inc --doctest-fixtures=_fixture doc/ \
-	
+	pytest --doctest-glob='*.rst' `find doc/ -name '*.rst'`
 
 test-coverage:
 	rm -rf coverage .coverage
-	$(NOSETESTS) -s --with-coverage --cover-html --cover-html-dir=coverage \
-	--cover-package=nistats nistats
+ 	pytest --pyargs nistats --showlocals --cov=nistats --cov-report=html:coverage
 
 test: test-code test-doc
 

@@ -5,3 +5,5 @@ scipy
 scikit-learn
 pandas
 matplotlib
+pytest
+pytest-cov

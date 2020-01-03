@@ -122,18 +122,18 @@ def test_pos_recipr():
     X = np.array([2, 1, -1, 0], dtype=np.int8)
     eX = np.array([0.5, 1, 0, 0])
     Y = positive_reciprocal(X)
-    yield assert_array_almost_equal, Y, eX
-    yield assert_equal, Y.dtype.type, np.float64
+    assert_array_almost_equal, Y, eX
+    assert_equal, Y.dtype.type, np.float64
     X2 = X.reshape((2, 2))
     Y2 = positive_reciprocal(X2)
-    yield assert_array_almost_equal, Y2, eX.reshape((2, 2))
+    assert_array_almost_equal, Y2, eX.reshape((2, 2))
     # check that lists have arrived
     XL = [0, 1, -1]
-    yield assert_array_almost_equal, positive_reciprocal(XL), [0, 1, 0]
+    assert_array_almost_equal, positive_reciprocal(XL), [0, 1, 0]
     # scalars
-    yield assert_equal, positive_reciprocal(-1), 0
-    yield assert_equal, positive_reciprocal(0), 0
-    yield assert_equal, positive_reciprocal(2), 0.5
+    assert_equal, positive_reciprocal(-1), 0
+    assert_equal, positive_reciprocal(0), 0
+    assert_equal, positive_reciprocal(2), 0.5
 
 
 def test_img_table_checks():
