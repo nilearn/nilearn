@@ -302,6 +302,16 @@ sphinx_gallery_conf = {
     'backreferences_dir': os.path.join('modules', 'generated'),
     'reference_url': {'nilearn': None},
     'junit': '../test-results/sphinx-gallery/junit.xml',
+    'examples_dirs': ['../examples'],
+    'gallery_dirs': ['auto_examples'],
+    'binder': {
+        'org': 'nilearn',
+        'repo': 'binder-examples',
+        'binderhub_url': 'https://mybinder.org',
+        'branch': 'master',
+        'dependencies': './binder/requirements.txt',
+        'use_jupyter_lab': True
+        }
     }
 
 # Get rid of spurious warnings due to some interaction between

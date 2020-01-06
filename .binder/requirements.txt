@@ -1,0 +1,6 @@
+matplotlib
+pandas
+sphinx-gallery
+scikit-learn
+nibabel
+nilearn
