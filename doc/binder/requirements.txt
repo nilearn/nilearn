@@ -1,5 +1,4 @@
-# A binder requirement file is required by sphinx-gallery. We don't really need
-# one since the binder requirement files live in the
-# nilearn/binder-examples repo and not in the nilearn.github.io repo
-# that comes from the nilearn doc build. This file can be removed if
-# 'dependencies' is made an optional key for binder in sphinx-gallery.
+-r ../../requirements-build-docs.txt
+nilearn==0.6.0  # Need to update on each PyPi release
+jupytext
+pytest

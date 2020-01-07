@@ -37,8 +37,8 @@ commands:
             date +%U > week_num
       - restore_cache:
           key: v1-packages+datasets-{{ checksum "week_num" }}-{{ checksum ".circleci/packages-cache-timestamp" }}
-      - restore_cache:
-          key: v1-docs-{{ .Branch }}-{{ checksum "today" }}-{{ checksum ".circleci/docs-cache-timestamp" }}
+      # - restore_cache:
+      #     key: v1-docs-{{ .Branch }}-{{ checksum "today" }}-{{ checksum ".circleci/docs-cache-timestamp" }}
 
   cache_aware_conda_setup:
     description: "Downloads & installs conda if not restord by cache"
