@@ -306,7 +306,7 @@ sphinx_gallery_conf = {
     'gallery_dirs': ['auto_examples'],
     'binder': {
         'org': 'nilearn',
-        'repo': 'binder-examples',
+        'repo': 'nilearn',
         'binderhub_url': 'https://mybinder.org',
         'branch': 'master',
         'dependencies': './binder/requirements.txt',
