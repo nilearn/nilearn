@@ -9,15 +9,13 @@ import numpy as np
 import pandas as pd
 import warnings
 
+import pytest
+
 from nibabel import (load,
                      Nifti1Image,
                      )
 from nibabel.tmpdirs import InTemporaryDirectory
 from nilearn.image import concat_imgs
-from nose.tools import (assert_true,
-                        assert_equal,
-                        assert_raises,
-                        )
 from numpy.testing import (assert_almost_equal,
                            assert_array_equal,
                            )
@@ -45,14 +43,15 @@ def test_high_level_glm_with_paths():
         # Ordinary Least Squares case
         model = SecondLevelModel(mask_img=mask)
         # asking for contrast before model fit gives error
-        assert_raises(ValueError, model.compute_contrast, [])
+        with pytest.raises(ValueError):
+            model.compute_contrast([])
         # fit model
         Y = [func_img] * 4
         X = pd.DataFrame([[1]] * 4, columns=['intercept'])
         model = model.fit(Y, design_matrix=X)
         c1 = np.eye(len(model.design_matrix_.columns))[0]
         z_image = model.compute_contrast(c1, output_type='z_score')
-        assert_true(isinstance(z_image, Nifti1Image))
+        assert isinstance(z_image, Nifti1Image)
         assert_array_equal(z_image.affine, load(mask).affine)
         # Delete objects attached to files to avoid WindowsError when deleting
         # temporary directory (in Windows)
@@ -74,11 +73,11 @@ def test_high_level_non_parametric_inference_with_paths():
                                                      mask=mask, n_perm=n_perm)
         neg_log_pvals = get_data(neg_log_pvals_img)
 
-        assert_true(isinstance(neg_log_pvals_img, Nifti1Image))
+        assert isinstance(neg_log_pvals_img, Nifti1Image)
         assert_array_equal(neg_log_pvals_img.affine, load(mask).affine)
 
-        assert_true(np.all(neg_log_pvals <= - np.log10(1.0 / (n_perm + 1))))
-        assert_true(np.all(0 <= neg_log_pvals))
+        assert np.all(neg_log_pvals <= - np.log10(1.0 / (n_perm + 1)))
+        assert np.all(0 <= neg_log_pvals)
         # Delete objects attached to files to avoid WindowsError when deleting
         # temporary directory
         del X, Y, FUNCFILE, func_img, neg_log_pvals_img
@@ -137,21 +136,28 @@ def test_fmri_inputs():
 
         # test wrong input errors
         # test first level model requirements
-        assert_raises(ValueError, SecondLevelModel().fit, flm)
-        assert_raises(ValueError, SecondLevelModel().fit, [flm])
+        with pytest.raises(ValueError):
+            SecondLevelModel().fit(flm)
+        with pytest.raises(ValueError):
+            SecondLevelModel().fit([flm])
         # test dataframe requirements
-        assert_raises(ValueError, SecondLevelModel().fit,
-                      niidf['subject_label'])
+        with pytest.raises(ValueError):
+            SecondLevelModel().fit(niidf['subject_label'])
         # test niimgs requirements
-        assert_raises(ValueError, SecondLevelModel().fit, niimgs)
-        assert_raises(ValueError, SecondLevelModel().fit, niimgs + [[]],
-                      confounds)
+        with pytest.raises(ValueError):
+            SecondLevelModel().fit(niimgs)
+        with pytest.raises(ValueError):
+            SecondLevelModel().fit(niimgs + [[]],
+                                   confounds)
         # test first_level_conditions, confounds, and design
-        assert_raises(ValueError, SecondLevelModel().fit, flms, ['', []])
-        assert_raises(ValueError, SecondLevelModel().fit, flms, [])
-        assert_raises(ValueError, SecondLevelModel().fit, flms,
-                      confounds['conf1'])
-        assert_raises(ValueError, SecondLevelModel().fit, flms, None, [])
+        with pytest.raises(ValueError):
+            SecondLevelModel().fit(flms, ['', []])
+        with pytest.raises(ValueError):
+            SecondLevelModel().fit(flms, [])
+        with pytest.raises(ValueError):
+            SecondLevelModel().fit(flms, confounds['conf1'])
+        with pytest.raises(ValueError):
+            SecondLevelModel().fit(flms, None, [])
 
 
 def test_fmri_inputs_for_non_parametric_inference():
@@ -189,28 +195,34 @@ def test_fmri_inputs_for_non_parametric_inference():
 
         # test missing second-level contrast
         # niimgs as input
-        assert_raises(ValueError, non_parametric_inference, niimgs, None, sdes)
-        assert_raises(ValueError, non_parametric_inference, niimgs, confounds,
-                      sdes)
+        with pytest.raises(ValueError):
+            non_parametric_inference(niimgs, None, sdes)
+        with pytest.raises(ValueError):
+            non_parametric_inference(niimgs, confounds, sdes)
         # 4d niimg as input
-        assert_raises(ValueError, non_parametric_inference, niimg_4d, None,
-                      sdes)
+        with pytest.raises(ValueError):
+            non_parametric_inference(niimg_4d, None, sdes)
 
         # test wrong input errors
         # test first level model
-        assert_raises(ValueError, non_parametric_inference, flm)
+        with pytest.raises(ValueError):
+            non_parametric_inference(flm)
         # test list of less than two niimgs
-        assert_raises(ValueError, non_parametric_inference, [FUNCFILE])
+        with pytest.raises(ValueError):
+            non_parametric_inference([FUNCFILE])
         # test dataframe
-        assert_raises(ValueError, non_parametric_inference, niidf)
+        with pytest.raises(ValueError):
+            non_parametric_inference(niidf)
         # test niimgs requirements
-        assert_raises(ValueError, non_parametric_inference, niimgs)
-        assert_raises(ValueError, non_parametric_inference, niimgs + [[]],
-                      confounds)
-        assert_raises(ValueError, non_parametric_inference, [FUNCFILE])
+        with pytest.raises(ValueError):
+            non_parametric_inference(niimgs)
+        with pytest.raises(ValueError):
+            non_parametric_inference(niimgs + [[]], confounds)
+        with pytest.raises(ValueError):
+            non_parametric_inference([FUNCFILE])
         # test other objects
-        assert_raises(ValueError, non_parametric_inference,
-                      'random string object')
+        with pytest.raises(ValueError):
+            non_parametric_inference('random string object')
         del X, FUNCFILE, func_img
 
 
@@ -243,7 +255,7 @@ def test_second_level_model_glm_computation():
         labels2, results2 = run_glm(
             model.masker_.transform(Y), X.values, 'ols')
         assert_almost_equal(labels1, labels2, decimal=1)
-        assert_equal(len(results1), len(results2))
+        assert len(results1) == len(results2)
         # Delete objects attached to files to avoid WindowsError when deleting
         # temporary directory (in Windows)
         del func_img, FUNCFILE, model, X, Y
@@ -262,7 +274,7 @@ def test_non_parametric_inference_permutation_computation():
         neg_log_pvals_img = non_parametric_inference(Y, design_matrix=X,
                                                      mask=mask, n_perm=100)
 
-        assert_equal(get_data(neg_log_pvals_img).shape, shapes[0][:3])
+        assert get_data(neg_log_pvals_img).shape == shapes[0][:3]
         del func_img, FUNCFILE, neg_log_pvals_img, X, Y
 
 
@@ -275,7 +287,8 @@ def test_second_level_model_contrast_computation():
         # Ordinary Least Squares case
         model = SecondLevelModel(mask_img=mask)
         # asking for contrast before model fit gives error
-        assert_raises(ValueError, model.compute_contrast, 'intercept')
+        with pytest.raises(ValueError):
+            model.compute_contrast('intercept')
         # fit model
         Y = [func_img] * 4
         X = pd.DataFrame([[1]] * 4, columns=['intercept'])
@@ -309,17 +322,23 @@ def test_second_level_model_contrast_computation():
         # or simply pass nothing
         model.compute_contrast()
         # passing null contrast should give back a value error
-        assert_raises(ValueError, model.compute_contrast, cnull)
+        with pytest.raises(ValueError):
+            model.compute_contrast(cnull)
         # passing wrong parameters
-        assert_raises(ValueError, model.compute_contrast, [])
-        assert_raises(ValueError, model.compute_contrast, c1, None, '')
-        assert_raises(ValueError, model.compute_contrast, c1, None, [])
-        assert_raises(ValueError, model.compute_contrast, c1, None, None, '')
+        with pytest.raises(ValueError):
+            model.compute_contrast([])
+        with pytest.raises(ValueError):
+            model.compute_contrast(c1, None, '')
+        with pytest.raises(ValueError):
+            model.compute_contrast(c1, None, [])
+        with pytest.raises(ValueError):
+            model.compute_contrast(c1, None, None, '')
         # check that passing no explicit contrast when the design
         # matrix has more than one columns raises an error
         X = pd.DataFrame(np.random.rand(4, 2), columns=['r1', 'r2'])
         model = model.fit(Y, design_matrix=X)
-        assert_raises(ValueError, model.compute_contrast, None)
+        with pytest.raises(ValueError):
+            model.compute_contrast(None)
         # Delete objects attached to files to avoid WindowsError when deleting
         # temporary directory (in Windows)
         del func_img, FUNCFILE, model, X, Y
@@ -332,8 +351,8 @@ def test_non_parametric_inference_contrast_computation():
         FUNCFILE = FUNCFILE[0]
         func_img = load(FUNCFILE)
         # asking for contrast before model fit gives error
-        assert_raises(ValueError, non_parametric_inference, None, None, None,
-                      'intercept', mask)
+        with pytest.raises(ValueError):
+            non_parametric_inference(None, None, None, 'intercept', mask)
         # fit model
         Y = [func_img] * 4
         X = pd.DataFrame([[1]] * 4, columns=['intercept'])
@@ -354,15 +373,16 @@ def test_non_parametric_inference_contrast_computation():
                                      mask=mask, n_perm=100)
 
         # passing null contrast should give back a value error
-        assert_raises(ValueError, non_parametric_inference, Y, X, cnull,
-                      'intercept', mask)
+        with pytest.raises(ValueError):
+            non_parametric_inference(Y, X, cnull, 'intercept', mask)
         # passing wrong parameters
-        assert_raises(ValueError, non_parametric_inference, Y, X, [],
-                      'intercept', mask)
+        with pytest.raises(ValueError):
+            non_parametric_inference(Y, X, [], 'intercept', mask)
         # check that passing no explicit contrast when the design
         # matrix has more than one columns raises an error
         X = pd.DataFrame(np.random.rand(4, 2), columns=['r1', 'r2'])
-        assert_raises(ValueError, non_parametric_inference, Y, X, None)
+        with pytest.raises(ValueError):
+            non_parametric_inference(Y, X, None)
         del func_img, FUNCFILE, neg_log_pvals_img, X, Y
 
 
@@ -407,11 +427,11 @@ def test_param_mask_deprecation_SecondLevelModel():
     assert slm2.mask_img == mask_filepath
     assert slm3.mask_img == mask_filepath
 
-    with assert_raises(AttributeError):
+    with pytest.raises(AttributeError):
         slm1.mask == mask_filepath
-    with assert_raises(AttributeError):
+    with pytest.raises(AttributeError):
         slm2.mask == mask_filepath
-    with assert_raises(AttributeError):
+    with pytest.raises(AttributeError):
         slm3.mask == mask_filepath
 
     raised_param_deprecation_warnings = [

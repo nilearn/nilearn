@@ -3,15 +3,10 @@ import os
 
 import numpy as np
 import pandas as pd
+
 from nibabel.tmpdirs import TemporaryDirectory
 from nilearn._utils.compat import _basestring
-from nilearn.datasets import func, utils
-from nilearn.datasets.tests import test_utils as tst
 from nilearn.datasets.utils import _get_dataset_dir
-from nose import with_setup
-from nose.tools import (assert_equal,
-                        assert_true,
-                        )
 
 from nistats import datasets
 from nistats.datasets import fetch_openneuro_dataset_index, \
@@ -21,26 +16,16 @@ currdir = os.path.dirname(os.path.abspath(__file__))
 datadir = os.path.join(currdir, 'data')
 
 
-def setup_mock():
-    return tst.setup_mock(utils, func)
-
-
-def teardown_mock():
-    return tst.teardown_mock(utils, func)
-
-
-@with_setup(setup_mock, teardown_mock)
-@with_setup(tst.setup_tmpdata, tst.teardown_tmpdata)
-def test_fetch_bids_langloc_dataset():
-    data_dir = os.path.join(tst.tmpdir, 'bids_langloc_example')
+def test_fetch_bids_langloc_dataset(request_mocker, tmp_path):
+    data_dir = str(tmp_path / 'bids_langloc_example')
     os.mkdir(data_dir)
     main_folder = os.path.join(data_dir, 'bids_langloc_dataset')
     os.mkdir(main_folder)
 
-    datadir, dl_files = datasets.fetch_bids_langloc_dataset(tst.tmpdir)
+    datadir, dl_files = datasets.fetch_bids_langloc_dataset(str(tmp_path))
 
-    assert_true(isinstance(datadir, _basestring))
-    assert_true(isinstance(dl_files, list))
+    assert isinstance(datadir, _basestring)
+    assert isinstance(dl_files, list)
 
 
 def test_select_from_index():
@@ -60,35 +45,35 @@ def test_select_from_index():
 
     # Only 1 subject and not subject specific files get downloaded
     new_urls = datasets.select_from_index(urls, n_subjects=1)
-    assert_true(len(new_urls) == 6)
-    assert_true(data_prefix + '/sub-yyy.html' not in new_urls)
+    assert len(new_urls) == 6
+    assert data_prefix + '/sub-yyy.html' not in new_urls
 
     # 2 subjects and not subject specific files get downloaded
     new_urls = datasets.select_from_index(urls, n_subjects=2)
-    assert_true(len(new_urls) == 9)
-    assert_true(data_prefix + '/sub-yyy.html' in new_urls)
+    assert len(new_urls) == 9
+    assert data_prefix + '/sub-yyy.html' in new_urls
     # ALL subjects and not subject specific files get downloaded
     new_urls = datasets.select_from_index(urls, n_subjects=None)
-    assert_true(len(new_urls) == 9)
+    assert len(new_urls) == 9
 
     # test inclusive filters. Only files with task-rest
     new_urls = datasets.select_from_index(
         urls, inclusion_filters=['*task-rest*'])
-    assert_true(len(new_urls) == 2)
-    assert_true(data_prefix + '/stuff.html' not in new_urls)
+    assert len(new_urls) == 2
+    assert data_prefix + '/stuff.html' not in new_urls
 
     # test exclusive filters. only files without ses-01
     new_urls = datasets.select_from_index(
         urls, exclusion_filters=['*ses-01*'])
-    assert_true(len(new_urls) == 6)
-    assert_true(data_prefix + '/stuff.html' in new_urls)
+    assert len(new_urls) == 6
+    assert data_prefix + '/stuff.html' in new_urls
 
     # test filter combination. only files with task-rest and without ses-01
     new_urls = datasets.select_from_index(
         urls, inclusion_filters=['*task-rest*'],
         exclusion_filters=['*ses-01*'])
-    assert_true(len(new_urls) == 1)
-    assert_true(data_prefix + '/sub-xxx/ses-02_task-rest.txt' in new_urls)
+    assert len(new_urls) == 1
+    assert data_prefix + '/sub-xxx/ses-02_task-rest.txt' in new_urls
 
 
 def test_fetch_openneuro_dataset_index():
@@ -115,13 +100,11 @@ def test_fetch_openneuro_dataset_index():
         assert urls == mock_json_content
 
 
-@with_setup(setup_mock, teardown_mock)
-@with_setup(tst.setup_tmpdata, tst.teardown_tmpdata)
-def test_fetch_openneuro_dataset():
+def test_fetch_openneuro_dataset(request_mocker, tmp_path):
     dataset_version = 'ds000030_R1.0.4'
     data_prefix = '{}/{}/uncompressed'.format(
         dataset_version.split('_')[0], dataset_version)
-    data_dir = _get_dataset_dir(data_prefix, data_dir=tst.tmpdir,
+    data_dir = _get_dataset_dir(data_prefix, data_dir=str(tmp_path),
                                 verbose=1)
     url_file = os.path.join(data_dir, 'urls.json')
     # Prepare url files for subject and filter tests
@@ -138,16 +121,16 @@ def test_fetch_openneuro_dataset():
 
     # Only 1 subject and not subject specific files get downloaded
     datadir, dl_files = datasets.fetch_openneuro_dataset(
-        urls, tst.tmpdir, dataset_version)
-    assert_true(isinstance(datadir, _basestring))
-    assert_true(isinstance(dl_files, list))
-    assert_true(len(dl_files) == 9)
+        urls, str(tmp_path), dataset_version)
+    assert isinstance(datadir, _basestring)
+    assert isinstance(dl_files, list)
+    assert len(dl_files) == 9
 
 
 def test_fetch_localizer():
     dataset = datasets.fetch_localizer_first_level()
-    assert_true(isinstance(dataset['events'], _basestring))
-    assert_true(isinstance(dataset.epi_img, _basestring))
+    assert isinstance(dataset['events'], _basestring)
+    assert isinstance(dataset.epi_img, _basestring)
     
 
 def _mock_original_spm_auditory_events_file():
@@ -174,10 +157,8 @@ def _mock_bids_compliant_spm_auditory_events_file():
     return actual_events_data_string, events_filepath
 
 
-@with_setup(setup_mock, teardown_mock)
-@with_setup(tst.setup_tmpdata, tst.teardown_tmpdata)
-def test_fetch_language_localizer_demo_dataset():
-    data_dir = tst.tmpdir
+def test_fetch_language_localizer_demo_dataset(request_mocker, tmp_path):
+    data_dir = str(tmp_path)
     expected_data_dir, expected_files= _mock_language_localizer_demo_dataset(
             data_dir)
     actual_data_dir, actual_subdirs = fetch_language_localizer_demo_dataset(
@@ -240,26 +221,24 @@ def test_make_spm_auditory_events_file():
     actual_events_data_string = replace_win_line_ends(actual_events_data_string)
     expected_events_data_string = replace_win_line_ends(expected_events_data_string)
     
-    assert_equal(actual_events_data_string, expected_events_data_string)
+    assert actual_events_data_string == expected_events_data_string
 
 
-@with_setup(setup_mock, teardown_mock)
-@with_setup(tst.setup_tmpdata, tst.teardown_tmpdata)
-def test_fetch_spm_auditory():
+def test_fetch_spm_auditory(request_mocker, tmp_path):
     import nibabel as nib
     import shutil
     saf = ["fM00223/fM00223_%03i.img" % index for index in range(4, 100)]
     saf_ = ["fM00223/fM00223_%03i.hdr" % index for index in range(4, 100)]
 
-    data_dir = os.path.join(tst.tmpdir, 'spm_auditory')
+    data_dir = str(tmp_path / 'spm_auditory')
     os.mkdir(data_dir)
     subject_dir = os.path.join(data_dir, 'sub001')
     os.mkdir(subject_dir)
     os.mkdir(os.path.join(subject_dir, 'fM00223'))
     os.mkdir(os.path.join(subject_dir, 'sM00223'))
 
-    path_img = os.path.join(tst.tmpdir, 'tmp.img')
-    path_hdr = os.path.join(tst.tmpdir, 'tmp.hdr')
+    path_img = str(tmp_path / 'tmp.img')
+    path_hdr = str(tmp_path / 'tmp.hdr')
     nib.save(nib.Nifti1Image(np.zeros((2, 3, 4)), np.eye(4)), path_img)
     shutil.copy(path_img, os.path.join(subject_dir, "sM00223/sM00223_002.img"))
     shutil.copy(path_hdr, os.path.join(subject_dir, "sM00223/sM00223_002.hdr"))
@@ -268,16 +247,14 @@ def test_fetch_spm_auditory():
     for file_ in saf_:
         shutil.copy(path_hdr, os.path.join(subject_dir, file_))
 
-    dataset = datasets.fetch_spm_auditory(data_dir=tst.tmpdir)
-    assert_true(isinstance(dataset.anat, _basestring))
-    assert_true(isinstance(dataset.func[0], _basestring))
-    assert_equal(len(dataset.func), 96)
+    dataset = datasets.fetch_spm_auditory(data_dir=str(tmp_path))
+    assert isinstance(dataset.anat, _basestring)
+    assert isinstance(dataset.func[0], _basestring)
+    assert len(dataset.func) == 96
 
 
-@with_setup(setup_mock, teardown_mock)
-@with_setup(tst.setup_tmpdata, tst.teardown_tmpdata)
-def test_fetch_spm_multimodal():
-    data_dir = os.path.join(tst.tmpdir, 'spm_multimodal_fmri')
+def test_fetch_spm_multimodal(request_mocker, tmp_path):
+    data_dir = str(tmp_path / 'spm_multimodal_fmri')
     os.mkdir(data_dir)
     subject_dir = os.path.join(data_dir, 'sub001')
     os.mkdir(subject_dir)
@@ -293,23 +270,21 @@ def test_fetch_spm_multimodal():
             open(os.path.join(dir_, 'fMETHODS-000%i-%i-01.img' %
                               (session + 5, i)), 'a').close()
 
-    dataset = datasets.fetch_spm_multimodal_fmri(data_dir=tst.tmpdir)
-    assert_true(isinstance(dataset.anat, _basestring))
-    assert_true(isinstance(dataset.func1[0], _basestring))
-    assert_equal(len(dataset.func1), 390)
-    assert_true(isinstance(dataset.func2[0], _basestring))
-    assert_equal(len(dataset.func2), 390)
-    assert_equal(dataset.slice_order, 'descending')
-    assert_true(dataset.trials_ses1, _basestring)
-    assert_true(dataset.trials_ses2, _basestring)
+    dataset = datasets.fetch_spm_multimodal_fmri(data_dir=str(tmp_path))
+    assert isinstance(dataset.anat, _basestring)
+    assert isinstance(dataset.func1[0], _basestring)
+    assert len(dataset.func1) == 390
+    assert isinstance(dataset.func2[0], _basestring)
+    assert len(dataset.func2) == 390
+    assert dataset.slice_order == 'descending'
+    assert isinstance(dataset.trials_ses1, _basestring)
+    assert isinstance(dataset.trials_ses2, _basestring)
 
 
-@with_setup(setup_mock, teardown_mock)
-@with_setup(tst.setup_tmpdata, tst.teardown_tmpdata)
-def test_fiac():
+def test_fiac(request_mocker, tmp_path):
     # Create dummy 'files'
-    fiac_dir = os.path.join(tst.tmpdir, 'fiac_nistats', 'nipy-data-0.2',
-                            'data', 'fiac')
+    fiac_dir = str(tmp_path / 'fiac_nistats' / 'nipy-data-0.2' /
+                            'data' / 'fiac')
     fiac0_dir = os.path.join(fiac_dir, 'fiac0')
     os.makedirs(fiac0_dir)
     for session in [1, 2]:
@@ -321,9 +296,9 @@ def test_fiac():
     mask = os.path.join(fiac0_dir, 'mask.nii.gz')
     open(mask, 'a').close()
 
-    dataset = datasets.fetch_fiac_first_level(data_dir=tst.tmpdir)
-    assert_true(isinstance(dataset.func1, _basestring))
-    assert_true(isinstance(dataset.func2, _basestring))
-    assert_true(isinstance(dataset.design_matrix1, _basestring))
-    assert_true(isinstance(dataset.design_matrix2, _basestring))
-    assert_true(isinstance(dataset.mask, _basestring))
+    dataset = datasets.fetch_fiac_first_level(data_dir=str(tmp_path))
+    assert isinstance(dataset.func1, _basestring)
+    assert isinstance(dataset.func2, _basestring)
+    assert isinstance(dataset.design_matrix1, _basestring)
+    assert isinstance(dataset.design_matrix2, _basestring)
+    assert isinstance(dataset.mask, _basestring)

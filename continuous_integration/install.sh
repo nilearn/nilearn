@@ -22,7 +22,7 @@ create_new_venv() {
     deactivate
     virtualenv --system-site-packages testvenv
     source testvenv/bin/activate
-    pip install nose pytest pytest-cov
+    pip install nose pytest==3.9.1 pytest-cov
 }
 
 print_conda_requirements() {
@@ -33,7 +33,7 @@ print_conda_requirements() {
     # if yes which version to install. For example:
     #   - for numpy, NUMPY_VERSION is used
     #   - for scikit-learn, SCIKIT_LEARN_VERSION is used
-    TO_INSTALL_ALWAYS="pip nose pytest pytest-cov libgfortran=3.0=0 nomkl"
+    TO_INSTALL_ALWAYS="pip nose libgfortran=3.0=0 nomkl"
     REQUIREMENTS="$TO_INSTALL_ALWAYS"
     TO_INSTALL_MAYBE="python numpy scipy matplotlib scikit-learn pandas"
     for PACKAGE in $TO_INSTALL_MAYBE; do
@@ -111,7 +111,6 @@ elif [[ "$DISTRIB" == "conda" ]]; then
         pip install boto3
     fi
     pip install nilearn
-
 
 else
     echo "Unrecognized distribution ($DISTRIB); cannot setup travis environment."

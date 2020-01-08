@@ -1,10 +1,10 @@
 import sys
 import warnings
 
-from nose.tools import assert_true
-
 
 # import time warnings don't interfere with warning's tests
+import pytest
+
 with warnings.catch_warnings(record=True):
     from nistats import _py34_deprecation_warning
     from nistats import _py2_deprecation_warning
@@ -12,42 +12,22 @@ with warnings.catch_warnings(record=True):
 
 
 def test_py2_deprecation_warning():
-    with warnings.catch_warnings(record=True) as raised_warnings:
-            _py2_deprecation_warning()
-    assert_true(raised_warnings[0].category is DeprecationWarning)
-    assert_true(
-            str(raised_warnings[0].message).startswith(
-                    'Python2 support is deprecated')
-            )
+    with pytest.warns(DeprecationWarning, match='Python2 support is deprecated'):
+        _py2_deprecation_warning()
 
 
 def test_py34_deprecation_warning():
-    with warnings.catch_warnings(record=True) as raised_warnings:
+    with pytest.warns(DeprecationWarning, match='Python 3.4 support is deprecated'):
         _py34_deprecation_warning()
-    assert_true(raised_warnings[0].category is DeprecationWarning)
-    assert_true(
-            str(raised_warnings[0].message).startswith(
-            'Python 3.4 support is deprecated')
-            )
 
 
 def test_python_deprecation_warnings():
-    with warnings.catch_warnings(record=True) as raised_warnings:
-        _python_deprecation_warnings()
     if sys.version_info.major == 2:
-        assert_true(raised_warnings[0].category is DeprecationWarning)
-        assert_true(
-                str(raised_warnings[0].message).startswith(
-                        'Python2 support is deprecated')
-                )
+        with pytest.warns(DeprecationWarning, match='Python2 support is deprecated'):
+            _python_deprecation_warnings()
     elif sys.version_info.major == 3 and sys.version_info.minor == 4:
-        assert_true(raised_warnings[0].category is DeprecationWarning)
-        assert_true(
-                str(raised_warnings[0].message).startswith(
-                        'Python 3.4 support is deprecated')
-                )
-    else:
-        assert_true(len(raised_warnings) == 0)
+        with pytest.warns(DeprecationWarning, match='Python 3.4 support is deprecated'):
+            _python_deprecation_warnings()
 
 
 def test_warnings_filter_scope():

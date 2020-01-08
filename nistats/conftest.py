@@ -2,7 +2,10 @@ from distutils.version import LooseVersion
 
 import numpy as np
 import pytest
+
 from _pytest.doctest import DoctestItem
+from nilearn.datasets import func, utils
+from nilearn.datasets.tests import test_utils as tst
 
 try:
     import matplotlib
@@ -30,3 +33,10 @@ def pytest_collection_modifyitems(items):
         for item in items:
             if isinstance(item, DoctestItem):
                 item.add_marker(skip_marker)
+
+
+@pytest.fixture()
+def request_mocker():
+    tst.setup_mock(utils, func)
+    yield
+    tst.teardown_mock(utils, func)

@@ -29,7 +29,8 @@ matrix:
     - env: DISTRIB="conda" PYTHON_VERSION="2.7"
            NUMPY_VERSION="1.11.2" SCIPY_VERSION="0.19"
            SCIKIT_LEARN_VERSION="0.18" MATPLOTLIB_VERSION="1.5.1"
-           NIBABEL_VERSION="2.0.2" PANDAS_VERSION="*" COVERAGE="true"
+           NIBABEL_VERSION="2.0.2" PANDAS_VERSION="*"
+           COVERAGE="true"
     # Python 3.4 with intermediary versions
     - env: DISTRIB="conda" PYTHON_VERSION="3.4"
            NUMPY_VERSION="1.11.0" SCIPY_VERSION="0.17"
@@ -47,6 +48,7 @@ matrix:
            PANDAS_VERSION="*" BOTO3=true
 install:
     - source continuous_integration/install.sh
+    - pip install pytest>3.9 pytest-cov
 
 before_script:
     - make clean

@@ -10,8 +10,6 @@ import os
 import numpy as np
 import pandas as pd
 
-from nose.tools import assert_true
-
 
 def basic_paradigm():
     conditions = ['c0', 'c0', 'c0', 'c1', 'c1', 'c1', 'c2', 'c2', 'c2']
@@ -76,4 +74,4 @@ def test_read_events():
                      basic_paradigm()):
         csvfile = write_events(events, tmpdir)
         read_paradigm = pd.read_table(csvfile)
-        assert_true((read_paradigm['onset'] == events['onset']).all())
+        assert (read_paradigm['onset'] == events['onset']).all()

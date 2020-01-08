@@ -1,10 +1,7 @@
 import pandas as pd
+import pytest
 
 from nibabel.tmpdirs import InTemporaryDirectory
-from nose.tools import (assert_raises,
-                        assert_true,
-                        )
-
 from nistats.utils import _check_events_file_uses_tab_separators
 
 
@@ -34,11 +31,11 @@ def _create_test_file(temp_csv, test_data, delimiter):
 
 def _run_test_for_invalid_separator(filepath, delimiter_name):
     if delimiter_name not in ('tab', 'comma'):
-        with assert_raises(ValueError):
+        with pytest.raises(ValueError):
             _check_events_file_uses_tab_separators(events_files=filepath)
     else:
         result = _check_events_file_uses_tab_separators(events_files=filepath)
-        assert_true(result is None)
+        assert result is None
 
 
 def test_for_invalid_separator():
@@ -59,7 +56,7 @@ def test_with_2D_dataframe():
     events_pandas_dataframe = pd.DataFrame(data_for_pandas_dataframe)
     result = _check_events_file_uses_tab_separators(
             events_files=events_pandas_dataframe)
-    assert_true(result is None)
+    assert result is None
 
 
 def test_with_1D_dataframe():
@@ -68,19 +65,19 @@ def test_with_1D_dataframe():
         events_pandas_dataframe = pd.DataFrame(dataframe_)
         result = _check_events_file_uses_tab_separators(
                 events_files=events_pandas_dataframe)
-        assert_true(result is None)
+        assert result is None
 
 def test_for_invalid_filepath():
     filepath = 'junk_file_path.csv'
     result = _check_events_file_uses_tab_separators(events_files=filepath)
-    assert_true(result is None)
+    assert result is None
 
 
 def test_for_pandas_dataframe():
     events_pandas_dataframe = pd.DataFrame([['a', 'b', 'c'], [0, 1, 2]])
     result = _check_events_file_uses_tab_separators(
             events_files=events_pandas_dataframe)
-    assert_true(result is None)
+    assert result is None
     
 
 def test_binary_opening_an_image():
@@ -91,7 +88,7 @@ def test_binary_opening_an_image():
         temp_img_file = 'temp_img.gif'
         with open(temp_img_file, 'wb') as temp_img_obj:
             temp_img_obj.write(img_data)
-        with assert_raises(ValueError):
+        with pytest.raises(ValueError):
             _check_events_file_uses_tab_separators(
                     events_files=temp_img_file)
 
@@ -102,7 +99,7 @@ def test_binary_bytearray_of_ints_data():
         temp_bin_file = 'temp_bin.bin'
         with open(temp_bin_file, 'wb') as temp_bin_obj:
             temp_bin_obj.write(temp_data_bytearray_from_ints)
-        with assert_raises(ValueError):
+        with pytest.raises(ValueError):
             _check_events_file_uses_tab_separators(
                     events_files=temp_bin_file)
 

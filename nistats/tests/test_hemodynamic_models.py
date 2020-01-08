@@ -1,11 +1,11 @@
 import warnings
 
 import numpy as np
+import pytest
 
 from numpy.testing import (assert_almost_equal,
                            assert_array_equal,
                            assert_equal,
-                           assert_warns,
                            )
 
 from nistats.hemodynamic_models import (_hrf_kernel,
@@ -28,7 +28,7 @@ def test_spm_hrf():
     """
     h = spm_hrf(2.0)
     assert_almost_equal(h.sum(), 1)
-    assert_equal(len(h), 800)
+    assert len(h) == 800
 
 
 def test_spm_hrf_derivative():
@@ -36,10 +36,10 @@ def test_spm_hrf_derivative():
     """
     h = spm_time_derivative(2.0)
     assert_almost_equal(h.sum(), 0)
-    assert_equal(len(h), 800)
+    assert len(h) == 800
     h = spm_dispersion_derivative(2.0)
     assert_almost_equal(h.sum(), 0)
-    assert_equal(len(h), 800)
+    assert len(h) == 800
 
 
 def test_glover_hrf():
@@ -47,10 +47,10 @@ def test_glover_hrf():
     """
     h = glover_hrf(2.0)
     assert_almost_equal(h.sum(), 1)
-    assert_equal(len(h), 800)
+    assert len(h) == 800
     h = glover_dispersion_derivative(2.0)
     assert_almost_equal(h.sum(), 0)
-    assert_equal(len(h), 800)
+    assert len(h) == 800
 
 
 
@@ -59,7 +59,7 @@ def test_glover_time_derivative():
     """
     h = glover_time_derivative(2.0)
     assert_almost_equal(h.sum(), 0)
-    assert_equal(len(h), 800)
+    assert len(h) == 800
 
 
 def test_resample_regressor():
@@ -103,17 +103,17 @@ def test_sample_condition_1():
     condition = ([1, 20, 36.5], [0, 0, 0], [1, 1, 1])
     frame_times = np.linspace(0, 49, 50)
     reg, rf = _sample_condition(condition, frame_times, oversampling=1,
-                               min_onset=0)
-    assert_equal(reg.sum(), 3)
-    assert_equal(reg[1], 1)
-    assert_equal(reg[20], 1)
-    assert_equal(reg[37], 1)
+                                min_onset=0)
+    assert reg.sum() == 3
+    assert reg[1] == 1
+    assert reg[20] == 1
+    assert reg[37] == 1
 
     reg, rf = _sample_condition(condition, frame_times, oversampling=1)
-    assert_equal(reg.sum(), 3)
-    assert_equal(reg[25], 1)
-    assert_equal(reg[44], 1)
-    assert_equal(reg[61], 1)
+    assert reg.sum() == 3
+    assert reg[25] == 1
+    assert reg[44] == 1
+    assert reg[61] == 1
 
 
 def test_sample_condition_2():
@@ -122,11 +122,11 @@ def test_sample_condition_2():
     condition = ([0, 20, 36.5], [2, 2, 2], [1, 1, 1])
     frame_times = np.linspace(0, 49, 50)
     reg, rf = _sample_condition(condition, frame_times, oversampling=1,
-                               min_onset=- 10)
-    assert_equal(reg.sum(), 6)
-    assert_equal(reg[10], 1)
-    assert_equal(reg[48], 1)
-    assert_equal(reg[31], 1)
+                                min_onset=- 10)
+    assert reg.sum() == 6
+    assert reg[10] == 1
+    assert reg[48] == 1
+    assert reg[31] == 1
 
 
 def test_sample_condition_3():
@@ -135,15 +135,15 @@ def test_sample_condition_3():
     condition = ([1, 20, 36.5], [2, 2, 2], [1, 1, 1])
     frame_times = np.linspace(0, 49, 50)
     reg, rf = _sample_condition(condition, frame_times, oversampling=10,
-                               min_onset=0)
+                                min_onset=0)
     assert_almost_equal(reg.sum(), 60.)
-    assert_equal(reg[10], 1)
-    assert_equal(reg[380], 1)
-    assert_equal(reg[210], 1)
-    assert_equal(np.sum(reg > 0), 60)
+    assert reg[10] == 1
+    assert reg[380] == 1
+    assert reg[210] == 1
+    assert np.sum(reg > 0) == 60
     # check robustness to non-int oversampling
     reg_, rf_ = _sample_condition(condition, frame_times, oversampling=10.,
-                                min_onset=0)
+                                  min_onset=0)
     assert_almost_equal(reg, reg_)
 
 def test_sample_condition_4():
@@ -152,10 +152,10 @@ def test_sample_condition_4():
     condition = ([1, 20, 36.5], [2, 2, 2], [1., -1., 5.])
     frame_times = np.linspace(0, 49, 50)
     reg, rf = _sample_condition(condition, frame_times, oversampling=1)
-    assert_equal(reg.sum(), 10)
-    assert_equal(reg[25], 1.)
-    assert_equal(reg[44], -1.)
-    assert_equal(reg[61], 5.)
+    assert reg.sum() == 10
+    assert reg[25] == 1.
+    assert reg[44] == -1.
+    assert reg[61] == 5.
 
 
 def test_sample_condition_5():
@@ -164,26 +164,22 @@ def test_sample_condition_5():
     condition = ([-10, 0, 36.5], [2, 2, 2], [1., -1., 5.])
     frame_times = np.linspace(0, 49, 50)
     reg, rf = _sample_condition(condition, frame_times, oversampling=1)
-    assert_equal(reg.sum(), 10)
-    assert_equal(reg[14], 1.)
-    assert_equal(reg[24], -1.)
-    assert_equal(reg[61], 5.)
+    assert reg.sum() == 10
+    assert reg[14] == 1.
+    assert reg[24] == -1.
+    assert reg[61] == 5.
 
 
 def test_names():
     """ Test the regressor naming function
     """
     name = 'con'
-    assert_equal(_regressor_names(name, 'spm'), ['con'])
-    assert_equal(_regressor_names(name, 'spm + derivative'),
-                 ['con', 'con_derivative'])
-    assert_equal(_regressor_names(name, 'spm + derivative + dispersion'),
-        ['con', 'con_derivative', 'con_dispersion'])
-    assert_equal(_regressor_names(name, 'glover'), ['con'])
-    assert_equal(_regressor_names(name, 'glover + derivative'),
-        ['con', 'con_derivative'])
-    assert_equal(_regressor_names(name, 'glover + derivative + dispersion'),
-        ['con', 'con_derivative', 'con_dispersion'])
+    assert _regressor_names(name, 'spm') == ['con']
+    assert _regressor_names(name, 'spm + derivative') == ['con', 'con_derivative']
+    assert _regressor_names(name, 'spm + derivative + dispersion') == ['con', 'con_derivative', 'con_dispersion']
+    assert _regressor_names(name, 'glover') == ['con']
+    assert _regressor_names(name, 'glover + derivative') == ['con', 'con_derivative']
+    assert _regressor_names(name, 'glover + derivative + dispersion') == ['con', 'con_derivative', 'con_dispersion']
 
 
 def test_hkernel():
@@ -192,27 +188,27 @@ def test_hkernel():
     tr = 2.0
     h = _hrf_kernel('spm', tr)
     assert_almost_equal(h[0], spm_hrf(tr))
-    assert_equal(len(h), 1)
+    assert len(h) == 1
     h = _hrf_kernel('spm + derivative', tr)
     assert_almost_equal(h[1], spm_time_derivative(tr))
-    assert_equal(len(h), 2)
+    assert len(h) == 2
     h = _hrf_kernel('spm + derivative + dispersion', tr)
     assert_almost_equal(h[2], spm_dispersion_derivative(tr))
-    assert_equal(len(h), 3)
+    assert len(h) == 3
     h = _hrf_kernel('glover', tr)
     assert_almost_equal(h[0], glover_hrf(tr))
-    assert_equal(len(h), 1)
+    assert len(h) == 1
     h = _hrf_kernel('glover + derivative', tr)
     assert_almost_equal(h[1], glover_time_derivative(tr))
     assert_almost_equal(h[0], glover_hrf(tr))
-    assert_equal(len(h), 2)
+    assert len(h) == 2
     h = _hrf_kernel('fir', tr, fir_delays=np.arange(4))
-    assert_equal(len(h), 4)
+    assert len(h) == 4
     for dh in h:
         assert_almost_equal(dh.sum(), 1.)
     # 
     h = _hrf_kernel(None, tr)
-    assert_equal(len(h), 1)
+    assert len(h) == 1
     assert_almost_equal(h[0], np.hstack((1, np.zeros(49))))
 
 
@@ -224,7 +220,7 @@ def test_make_regressor_1():
     hrf_model = 'spm'
     reg, reg_names = compute_regressor(condition, hrf_model, frame_times)
     assert_almost_equal(reg.sum(), 6, 1)
-    assert_equal(reg_names[0], 'cond')
+    assert reg_names[0] == 'cond'
 
 
 
@@ -236,7 +232,7 @@ def test_make_regressor_2():
     hrf_model = 'spm'
     reg, reg_names = compute_regressor(condition, hrf_model, frame_times)
     assert_almost_equal(reg.sum() * 50, 3, 1)
-    assert_equal(reg_names[0], 'cond')
+    assert reg_names[0] == 'cond'
 
 
 def test_make_regressor_3():
@@ -248,7 +244,7 @@ def test_make_regressor_3():
     reg, reg_names = compute_regressor(condition, hrf_model, frame_times,
                                        fir_delays=np.arange(4))
     assert_array_equal(np.sum(reg, 0), np.array([3, 3, 3, 3]))
-    assert_equal(len(reg_names), 4)
+    assert len(reg_names) == 4
     reg_, reg_names_ = compute_regressor(condition, hrf_model, frame_times,
                                          fir_delays=np.arange(4),
                                          oversampling=50.)
@@ -256,17 +252,18 @@ def test_make_regressor_3():
 
 
 def test_design_warnings():
-    """ test that warnings are correctly raised upon weird design specification
+    """
+    test that warnings are correctly raised upon weird design specification
     """
     condition = ([-25, 20, 36.5], [0, 0, 0], [1, 1, 1])
     frame_times = np.linspace(0, 69, 70)
     hrf_model = 'spm'
     with warnings.catch_warnings(record=True):
         warnings.simplefilter("always")
-        assert_warns(UserWarning, compute_regressor, condition, hrf_model,
-                     frame_times)
+        with pytest.warns(UserWarning):
+            compute_regressor(condition, hrf_model, frame_times)
     condition = ([-25, -25, 36.5], [0, 0, 0], [1, 1, 1])
     with warnings.catch_warnings(record=True):
         warnings.simplefilter("always")
-        assert_warns(UserWarning, compute_regressor, condition, hrf_model,
-                     frame_times)
+        with pytest.warns(UserWarning):
+            compute_regressor(condition, hrf_model, frame_times)

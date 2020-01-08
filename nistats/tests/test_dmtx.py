@@ -11,9 +11,10 @@ from os import path as osp
 
 import numpy as np
 import pandas as pd
+import pytest
 
 from nibabel.tmpdirs import InTemporaryDirectory
-from nilearn._utils.testing import assert_raises_regex
+from numpy.testing import assert_almost_equal, assert_array_equal
 
 from nistats.design_matrix import (_convolve_regressors,
                                    _cosine_drift,
@@ -21,10 +22,6 @@ from nistats.design_matrix import (_convolve_regressors,
                                    make_first_level_design_matrix,
                                    make_second_level_design_matrix,
                                    )
-
-
-from nose.tools import assert_true, assert_equal, assert_raises
-from numpy.testing import assert_almost_equal, assert_array_equal
 
 
 # load the spm file to test cosine basis
@@ -107,7 +104,7 @@ def test_design_matrix0():
     frame_times = np.linspace(0, 127 * tr, 128)
     _, X, names = check_design_matrix(make_first_level_design_matrix(
         frame_times, drift_model='polynomial', drift_order=3))
-    assert_equal(len(names), 4)
+    assert len(names) == 4
     x = np.linspace(- 0.5, .5, 128)
     assert_almost_equal(X[:, 0], x)
 
@@ -122,15 +119,17 @@ def test_design_matrix0c():
                 drift_order=3, add_regs=ax))
     assert_almost_equal(X[:, 0], ax[:, 0])
     ax = np.random.randn(127, 4)
-    assert_raises_regex(
-        AssertionError,
-        "Incorrect specification of additional regressors:.",
-        make_first_level_design_matrix, frame_times, add_regs=ax)
+    with pytest.raises(
+            AssertionError,
+            match="Incorrect specification of additional regressors:."):
+        make_first_level_design_matrix(frame_times, add_regs=ax)
     ax = np.random.randn(128, 4)
-    assert_raises_regex(
-        ValueError,
-        "Incorrect number of additional regressor names.",
-        make_first_level_design_matrix, frame_times, add_regs=ax, add_reg_names='')
+    with pytest.raises(
+            ValueError,
+            match="Incorrect number of additional regressor names."):
+        make_first_level_design_matrix(frame_times,
+                                       add_regs=ax,
+                                       add_reg_names='')
 
 
 def test_design_matrix0d():
@@ -140,8 +139,8 @@ def test_design_matrix0d():
     ax = np.random.randn(128, 4)
     _, X, names = check_design_matrix(make_first_level_design_matrix(
             frame_times, drift_model='polynomial', drift_order=3, add_regs=ax))
-    assert_equal(len(names), 8)
-    assert_equal(X.shape[1], 8)
+    assert len(names) == 8
+    assert X.shape[1] == 8
 
 
 def test_design_matrix10():
@@ -154,7 +153,7 @@ def test_design_matrix10():
                          drift_model='polynomial', drift_order=3,
                          fir_delays=range(1, 5))
     onset = events.onset[events.trial_type == 'c0'].astype(np.int)
-    assert_true(np.all((X[onset + 1, 0] == 1)))
+    assert np.all((X[onset + 1, 0] == 1))
 
     
 def test_convolve_regressors():
@@ -167,7 +166,7 @@ def test_convolve_regressors():
     # names not passed -> default names
     frame_times = np.arange(100)
     f, names = _convolve_regressors(events, 'glover', frame_times)
-    assert_equal(names, ['c0', 'c1'])
+    assert names == ['c0', 'c1']
 
 
 def test_design_matrix1():
@@ -178,10 +177,10 @@ def test_design_matrix1():
     hrf_model = 'glover'
     X, names = design_matrix_light(frame_times, events, hrf_model=hrf_model,
                                    drift_model='polynomial', drift_order=3)
-    assert_equal(len(names), 7)
-    assert_equal(X.shape, (128, 7))
-    assert_true((X[:, - 1] == 1).all())
-    assert_true((np.isnan(X) == 0).all())
+    assert len(names) == 7
+    assert X.shape == (128, 7)
+    assert (X[:, - 1] == 1).all()
+    assert (np.isnan(X) == 0).all()
 
 
 def test_design_matrix2():
@@ -192,7 +191,7 @@ def test_design_matrix2():
     hrf_model = 'glover'
     X, names = design_matrix_light(frame_times, events, hrf_model=hrf_model,
                                    drift_model='cosine', high_pass=1./63)
-    assert_equal(len(names), 8)
+    assert len(names) == 8
 
 
 def test_design_matrix3():
@@ -203,7 +202,7 @@ def test_design_matrix3():
     hrf_model = 'glover'
     X, names = design_matrix_light(frame_times, events, hrf_model=hrf_model,
                         drift_model=None)
-    assert_equal(len(names), 4)
+    assert len(names) == 4
 
 
 def test_design_matrix4():
@@ -214,7 +213,7 @@ def test_design_matrix4():
     hrf_model = 'glover + derivative'
     X, names = design_matrix_light(frame_times, events, hrf_model=hrf_model,
                          drift_model='polynomial', drift_order=3)
-    assert_equal(len(names), 10)
+    assert len(names) == 10
 
 
 def test_design_matrix5():
@@ -225,7 +224,7 @@ def test_design_matrix5():
     hrf_model = 'glover'
     X, names = design_matrix_light(frame_times, events, hrf_model=hrf_model,
                          drift_model='polynomial', drift_order=3)
-    assert_equal(len(names), 7)
+    assert len(names) == 7
 
 
 def test_design_matrix6():
@@ -236,7 +235,7 @@ def test_design_matrix6():
     hrf_model = 'glover + derivative'
     X, names = design_matrix_light(frame_times, events, hrf_model=hrf_model,
                          drift_model='polynomial', drift_order=3)
-    assert_equal(len(names), 10)
+    assert len(names) == 10
 
 
 def test_design_matrix7():
@@ -253,7 +252,7 @@ def test_design_matrix7():
     hrf_model = 'glover'
     X, names = design_matrix_light(frame_times, events, hrf_model=hrf_model,
                           drift_model='polynomial', drift_order=3)
-    assert_equal(len(names), 7)
+    assert len(names) == 7
 
 
 def test_design_matrix8():
@@ -264,7 +263,7 @@ def test_design_matrix8():
     hrf_model = 'FIR'
     X, names = design_matrix_light(frame_times, events, hrf_model=hrf_model,
                          drift_model='polynomial', drift_order=3)
-    assert_equal(len(names), 7)
+    assert len(names) == 7
 
 
 def test_design_matrix9():
@@ -276,7 +275,7 @@ def test_design_matrix9():
     X, names = design_matrix_light(frame_times, events, hrf_model=hrf_model,
                             drift_model='polynomial', drift_order=3,
                             fir_delays=range(1, 5))
-    assert_equal(len(names), 16)
+    assert len(names) == 16
 
 
 def test_design_matrix11():
@@ -289,7 +288,7 @@ def test_design_matrix11():
                          drift_model='polynomial', drift_order=3,
                          fir_delays=range(1, 5))
     onset = events.onset[events.trial_type == 'c0'].astype(np.int)
-    assert_true(np.all(X[onset + 3, 2] == 1))
+    assert np.all(X[onset + 3, 2] == 1)
 
 
 def test_design_matrix12():
@@ -302,7 +301,7 @@ def test_design_matrix12():
                          drift_model='polynomial', drift_order=3,
                          fir_delays=range(1, 5))
     onset = events.onset[events.trial_type == 'c2'].astype(np.int)
-    assert_true(np.all(X[onset + 4, 11] == 1))
+    assert np.all(X[onset + 4, 11] == 1)
 
 
 def test_design_matrix13():
@@ -315,7 +314,7 @@ def test_design_matrix13():
                           drift_model='polynomial', drift_order=3,
                           fir_delays=range(1, 5))
     onset = events.onset[events.trial_type == 'c0'].astype(np.int)
-    assert_true(np.all(X[onset + 1, 0] == 1))
+    assert np.all(X[onset + 1, 0] == 1)
 
 
 def test_design_matrix14():
@@ -329,7 +328,7 @@ def test_design_matrix14():
                          drift_model='polynomial', drift_order=3,
                          fir_delays=range(1, 5))
     onset = events.onset[events.trial_type == 'c0'].astype(np.int)
-    assert_true(np.all(X[onset + 1, 0] > .5))
+    assert np.all(X[onset + 1, 0] > .5)
 
 
 def test_design_matrix15():
@@ -341,8 +340,8 @@ def test_design_matrix15():
     ax = np.random.randn(128, 4)
     X, names = design_matrix_light(frame_times, events, hrf_model=hrf_model,
                          drift_model='polynomial', drift_order=3, add_regs=ax)
-    assert_equal(len(names), 11)
-    assert_equal(X.shape[1], 11)
+    assert len(names) == 11
+    assert X.shape[1] == 11
 
 
 def test_design_matrix16():
@@ -366,7 +365,7 @@ def test_design_matrix17():
     X, names = design_matrix_light(frame_times, events, hrf_model=hrf_model,
                          drift_model='polynomial', drift_order=3)
     ct = events.onset[events.trial_type == 'c0'].astype(np.int) + 1
-    assert_true((X[ct, 0] > 0).all())
+    assert (X[ct, 0] > 0).all()
 
 
 def test_design_matrix18():
@@ -378,7 +377,7 @@ def test_design_matrix18():
     X, names = design_matrix_light(frame_times, events, hrf_model=hrf_model,
                          drift_model='polynomial', drift_order=3)
     ct = events.onset[events.trial_type == 'c0'].astype(np.int) + 3
-    assert_true((X[ct, 0] > 0).all())
+    assert (X[ct, 0] > 0).all()
 
 
 def test_design_matrix19():
@@ -402,7 +401,7 @@ def test_design_matrix20():
         frame_times, events, hrf_model='glover', drift_model='cosine')
 
     # check that the drifts are not constant
-    assert_true(np.any(np.diff(X[:, -2]) != 0))
+    assert np.any(np.diff(X[:, -2]) != 0)
 
 
 def test_design_matrix21():
@@ -412,9 +411,11 @@ def test_design_matrix21():
     events = basic_paradigm()
     hrf_model = 'glover'
     ax = np.random.randn(128, 4)
-    assert_raises(ValueError, design_matrix_light, frame_times, events,
-                  hrf_model=hrf_model, drift_model='polynomial', drift_order=3,
-                  add_regs=ax, add_reg_names=['aha'] * ax.shape[1])
+    with pytest.raises(ValueError):
+        design_matrix_light(frame_times, events,
+                            hrf_model=hrf_model, drift_model='polynomial',
+                            drift_order=3, add_regs=ax,
+                            add_reg_names=['aha'] * ax.shape[1])
 
 
 def test_fir_block():
@@ -426,11 +427,11 @@ def test_fir_block():
         frame_times, bp, hrf_model='fir', drift_model=None,
         fir_delays=range(0, 4))
     idx = bp['onset'][bp['trial_type'] == 1].astype(np.int)
-    assert_equal(X.shape, (128, 13))
-    assert_true((X[idx, 4] == 1).all())
-    assert_true((X[idx + 1, 5] == 1).all())
-    assert_true((X[idx + 2, 6] == 1).all())
-    assert_true((X[idx + 3, 7] == 1).all())
+    assert X.shape == (128, 13)
+    assert (X[idx, 4] == 1).all()
+    assert (X[idx + 1, 5] == 1).all()
+    assert (X[idx + 2, 6] == 1).all()
+    assert (X[idx + 3, 7] == 1).all()
 
 def test_oversampling():
     events = basic_paradigm()
@@ -445,8 +446,8 @@ def test_oversampling():
     # oversampling = 50 by default so X2 = X1, X3 \neq X1, X3 close to X2
     assert_almost_equal(X1.values, X2.values)
     assert_almost_equal(X2.values, X3.values, 0)
-    assert_true(np.linalg.norm(X2.values - X3.values)
-                / np.linalg.norm(X2.values) > 1.e-4)
+    assert (np.linalg.norm(X2.values - X3.values)
+            / np.linalg.norm(X2.values) > 1.e-4)
 
     # fir model, oversampling is forced to 1
     X4 = make_first_level_design_matrix(
@@ -483,7 +484,7 @@ def test_csv_io():
     _, matrix, names = check_design_matrix(DM)
     _, matrix_, names_ = check_design_matrix(DM2)
     assert_almost_equal(matrix, matrix_)
-    assert_equal(names, names_)
+    assert names == names_
 
 
 def test_spm_1():
@@ -499,8 +500,8 @@ def test_spm_1():
     X1 = make_first_level_design_matrix(frame_times, events, drift_model=None)
     _, matrix, _ = check_design_matrix(X1)
     spm_design_matrix = DESIGN_MATRIX['arr_0']
-    assert_true(((spm_design_matrix - matrix) ** 2).sum() /
-                (spm_design_matrix ** 2).sum() < .1)
+    assert (((spm_design_matrix - matrix) ** 2).sum() /
+            (spm_design_matrix ** 2).sum() < .1)
 
 
 def test_spm_2():
@@ -516,8 +517,8 @@ def test_spm_2():
     X1 = make_first_level_design_matrix(frame_times, events, drift_model=None)
     spm_design_matrix = DESIGN_MATRIX['arr_1']
     _, matrix, _ = check_design_matrix(X1)
-    assert_true(((spm_design_matrix - matrix) ** 2).sum() /
-                (spm_design_matrix ** 2).sum() < .1)
+    assert (((spm_design_matrix - matrix) ** 2).sum() /
+            (spm_design_matrix ** 2).sum() < .1)
 
 
 def _first_level_dataframe():
@@ -538,5 +539,5 @@ def test_create_second_level_design():
     design = make_second_level_design_matrix(subjects_label, regressors)
     expected_design = np.array([[0.75, 1], [0.1, 1]])
     assert_array_equal(design, expected_design)
-    assert_true(len(design.columns) == 2)
-    assert_true(len(design) == 2)
+    assert len(design.columns) == 2
+    assert len(design) == 2

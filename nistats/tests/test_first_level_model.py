@@ -9,14 +9,11 @@ import warnings
 
 import numpy as np
 import pandas as pd
+import pytest
 
 from nibabel import (load,
                      Nifti1Image,
                      )
-from nose.tools import (assert_equal,
-                        assert_raises,
-                        assert_true,
-                        )
 from numpy.testing import (assert_almost_equal,
                            assert_array_equal,
                            )
@@ -48,13 +45,13 @@ def test_high_level_glm_one_session():
 
     single_session_model = FirstLevelModel(mask_img=None).fit(
         fmri_data[0], design_matrices=design_matrices[0])
-    assert_true(isinstance(single_session_model.masker_.mask_img_,
-                           Nifti1Image))
+    assert isinstance(single_session_model.masker_.mask_img_,
+                           Nifti1Image)
 
     single_session_model = FirstLevelModel(mask_img=mask).fit(
         fmri_data[0], design_matrices=design_matrices[0])
     z1 = single_session_model.compute_contrast(np.eye(rk)[:1])
-    assert_true(isinstance(z1, Nifti1Image))
+    assert isinstance(z1, Nifti1Image)
 
 
 def test_explicit_fixed_effects():
@@ -106,8 +103,8 @@ def test_explicit_fixed_effects():
         
         # ensure that using unbalanced effects size and variance images
         # raises an error
-        assert_raises(ValueError, compute_fixed_effects, contrasts * 2, variance,
-                      mask)
+        with pytest.raises(ValueError):
+            compute_fixed_effects(contrasts * 2, variance, mask)
         del mask, multi_session_model
 
         
@@ -120,8 +117,8 @@ def test_high_level_glm_with_data():
             fmri_data, design_matrices=design_matrices)
         n_voxels = get_data(multi_session_model.masker_.mask_img_).sum()
         z_image = multi_session_model.compute_contrast(np.eye(rk)[1])
-        assert_equal(np.sum(get_data(z_image) != 0), n_voxels)
-        assert_true(get_data(z_image).std() < 3.)
+        assert np.sum(get_data(z_image) != 0) == n_voxels
+        assert get_data(z_image).std() < 3.
         # with mask
         multi_session_model = FirstLevelModel(mask_img=mask).fit(
             fmri_data, design_matrices=design_matrices)
@@ -136,10 +133,9 @@ def test_high_level_glm_with_data():
         variance_image = multi_session_model.compute_contrast(
             np.eye(rk)[:2], output_type='effect_variance')
         assert_array_equal(get_data(z_image) == 0., get_data(load(mask)) == 0.)
-        assert_true(
-            (get_data(variance_image)[get_data(load(mask)) > 0] > .001).all())
+        assert (get_data(variance_image)[get_data(load(mask)) > 0] > .001).all()
         all_images = multi_session_model.compute_contrast(
-                np.eye(rk)[:2], output_type='all')
+            np.eye(rk)[:2], output_type='all')
         assert_array_equal(get_data(all_images['z_score']), get_data(z_image))
         assert_array_equal(get_data(all_images['p_value']), get_data(p_value))
         assert_array_equal(get_data(all_images['stat']), get_data(stat_image))
@@ -173,7 +169,7 @@ def test_high_level_glm_with_paths():
             fmri_files, design_matrices=design_files)
         z_image = multi_session_model.compute_contrast(np.eye(rk)[1])
         assert_array_equal(z_image.affine, load(mask_file).affine)
-        assert_true(get_data(z_image).std() < 3.)
+        assert get_data(z_image).std() < 3.
         # Delete objects attached to files to avoid WindowsError when deleting
         # temporary directory (in Windows)
         del z_image, fmri_files, multi_session_model
@@ -205,21 +201,23 @@ def test_run_glm():
     # Ordinary Least Squares case
     labels, results = run_glm(Y, X, 'ols')
     assert_array_equal(labels, np.zeros(n))
-    assert_equal(list(results.keys()), [0.0])
-    assert_equal(results[0.0].theta.shape, (q, n))
+    assert list(results.keys()) == [0.0]
+    assert results[0.0].theta.shape == (q, n)
     assert_almost_equal(results[0.0].theta.mean(), 0, 1)
     assert_almost_equal(results[0.0].theta.var(), 1. / p, 1)
 
     # ar(1) case
     labels, results = run_glm(Y, X, 'ar1')
-    assert_equal(len(labels), n)
-    assert_true(len(results.keys()) > 1)
+    assert len(labels) == n
+    assert len(results.keys()) > 1
     tmp = sum([val.theta.shape[1] for val in results.values()])
-    assert_equal(tmp, n)
+    assert tmp == n
 
     # non-existant case
-    assert_raises(ValueError, run_glm, Y, X, 'ar2')
-    assert_raises(ValueError, run_glm, Y, X.T)
+    with pytest.raises(ValueError):
+        run_glm(Y, X, 'ar2')
+    with pytest.raises(ValueError):
+        run_glm(Y, X.T)
 
 
 def test_scaling():
@@ -231,7 +229,7 @@ def test_scaling():
     Y_, mean_ = mean_scaling(Y)
     assert_almost_equal(Y_.mean(0), 0, 5)
     assert_almost_equal(mean_, mean, 0)
-    assert_true(Y.std() > 1)
+    assert Y.std() > 1
 
 
 def test_fmri_inputs():
@@ -254,24 +252,24 @@ def test_fmri_inputs():
                 FirstLevelModel(mask_img=mask).fit([fi], design_matrices=[d])
                 FirstLevelModel(mask_img=mask).fit([fi, fi], design_matrices=[d, d])
                 FirstLevelModel(mask_img=None).fit((fi, fi), design_matrices=(d, d))
-                assert_raises(
-                    ValueError, FirstLevelModel(mask_img=None).fit, [fi, fi], d)
-                assert_raises(
-                    ValueError, FirstLevelModel(mask_img=None).fit, fi, [d, d])
+                with pytest.raises(ValueError):
+                    FirstLevelModel(mask_img=None).fit([fi, fi], d)
+                with pytest.raises(ValueError):
+                    FirstLevelModel(mask_img=None).fit(fi, [d, d])
                 # At least paradigms or design have to be given
-                assert_raises(
-                    ValueError, FirstLevelModel(mask_img=None).fit, fi)
+                with pytest.raises(ValueError):
+                    FirstLevelModel(mask_img=None).fit(fi)
                 # If paradigms are given then both tr and slice time ref were
                 # required
-                assert_raises(
-                    ValueError, FirstLevelModel(mask_img=None).fit, fi, d)
-                assert_raises(
-                    ValueError, FirstLevelModel(mask_img=None, t_r=1.0).fit, fi, d)
-                assert_raises(
-                    ValueError, FirstLevelModel(mask_img=None, slice_time_ref=0.).fit, fi, d)
+                with pytest.raises(ValueError):
+                    FirstLevelModel(mask_img=None).fit(fi, d)
+                with pytest.raises(ValueError):
+                    FirstLevelModel(mask_img=None, t_r=1.0).fit(fi, d)
+                with pytest.raises(ValueError):
+                    FirstLevelModel(mask_img=None, slice_time_ref=0.).fit(fi, d)
             # confounds rows do not match n_scans
-            assert_raises(
-                ValueError, FirstLevelModel(mask_img=None).fit, fi, d, conf)
+            with pytest.raises(ValueError):
+                FirstLevelModel(mask_img=None).fit(fi, d, conf)
         # Delete objects attached to files to avoid WindowsError when deleting
         # temporary directory (in Windows)
         del fi, func_img, mask, d, des, FUNCFILE, _
@@ -376,7 +374,8 @@ def test_first_level_model_contrast_computation():
                                 minimize_memory=False)
         c1, c2, cnull = np.eye(7)[0], np.eye(7)[1], np.zeros(7)
         # asking for contrast before model fit gives error
-        assert_raises(ValueError, model.compute_contrast, c1)
+        with pytest.raises(ValueError):
+            model.compute_contrast(c1)
         # fit model
         model = model.fit([func_img, func_img], [events, events])
         # smoke test for different contrasts in fixed effects
@@ -398,13 +397,19 @@ def test_first_level_model_contrast_computation():
         # smoke test for one null contrast in group
         model.compute_contrast([c2, cnull])
         # only passing null contrasts should give back a value error
-        assert_raises(ValueError, model.compute_contrast, cnull)
-        assert_raises(ValueError, model.compute_contrast, [cnull, cnull])
+        with pytest.raises(ValueError):
+            model.compute_contrast(cnull)
+        with pytest.raises(ValueError):
+            model.compute_contrast([cnull, cnull])
         # passing wrong parameters
-        assert_raises(ValueError, model.compute_contrast, [])
-        assert_raises(ValueError, model.compute_contrast, [c1, []])
-        assert_raises(ValueError, model.compute_contrast, c1, '', '')
-        assert_raises(ValueError, model.compute_contrast, c1, '', [])
+        with pytest.raises(ValueError):
+            model.compute_contrast([])
+        with pytest.raises(ValueError):
+            model.compute_contrast([c1, []])
+        with pytest.raises(ValueError):
+            model.compute_contrast(c1, '', '')
+        with pytest.raises(ValueError):
+            model.compute_contrast(c1, '', [])
         # Delete objects attached to files to avoid WindowsError when deleting
         # temporary directory (in Windows)
         del func_img, FUNCFILE, model
@@ -416,50 +421,58 @@ def test_first_level_models_from_bids():
                                              tasks=['localizer', 'main'],
                                              n_runs=[1, 3])
         # test arguments are provided correctly
-        assert_raises(TypeError, first_level_models_from_bids, 2, 'main', 'MNI')
-        assert_raises(ValueError, first_level_models_from_bids, 'lolo', 'main', 'MNI')
-        assert_raises(TypeError, first_level_models_from_bids, bids_path, 2, 'MNI')
-        assert_raises(TypeError, first_level_models_from_bids,
-                      bids_path, 'main', 'MNI', model_init=[])
+        with pytest.raises(TypeError):
+            first_level_models_from_bids(2, 'main', 'MNI')
+        with pytest.raises(ValueError):
+            first_level_models_from_bids('lolo', 'main', 'MNI')
+        with pytest.raises(TypeError):
+            first_level_models_from_bids(bids_path, 2, 'MNI')
+        with pytest.raises(TypeError):
+            first_level_models_from_bids(bids_path, 'main', 'MNI',
+                                         model_init=[])
         # test output is as expected
         models, m_imgs, m_events, m_confounds = first_level_models_from_bids(
             bids_path, 'main', 'MNI', [('desc', 'preproc')])
-        assert_true(len(models) == len(m_imgs))
-        assert_true(len(models) == len(m_events))
-        assert_true(len(models) == len(m_confounds))
+        assert len(models) == len(m_imgs)
+        assert len(models) == len(m_events)
+        assert len(models) == len(m_confounds)
         # test repeated run tag error when run tag is in filenames
         # can arise when desc or space is present and not specified
-        assert_raises(ValueError, first_level_models_from_bids,
-                      bids_path, 'main', 'T1w')  # desc not specified
+        with pytest.raises(ValueError):
+            first_level_models_from_bids(
+                bids_path, 'main', 'T1w')  # desc not specified
         # test more than one ses file error when run tag is not in filenames
         # can arise when desc or space is present and not specified
-        assert_raises(ValueError, first_level_models_from_bids,
-                      bids_path, 'localizer', 'T1w')  # desc not specified
+        with pytest.raises(ValueError):
+            first_level_models_from_bids(
+                bids_path, 'localizer', 'T1w')  # desc not specified
         # test issues with confound files. There should be only one confound
         # file per img. An one per image or None. Case when one is missing
         confound_files = get_bids_files(os.path.join(bids_path, 'derivatives'),
                                         file_tag='desc-confounds_regressors')
         os.remove(confound_files[-1])
-        assert_raises(ValueError, first_level_models_from_bids,
-                      bids_path, 'main', 'MNI')
+        with pytest.raises(ValueError):
+            first_level_models_from_bids(
+                bids_path, 'main', 'MNI')
         # test issues with event files
         events_files = get_bids_files(bids_path, file_tag='events')
         os.remove(events_files[0])
         # one file missing
-        assert_raises(ValueError, first_level_models_from_bids,
-                      bids_path, 'main', 'MNI')
+        with pytest.raises(ValueError):
+            first_level_models_from_bids(bids_path, 'main', 'MNI')
         for f in events_files[1:]:
             os.remove(f)
         # all files missing
-        assert_raises(ValueError, first_level_models_from_bids,
-                      bids_path, 'main', 'MNI')
+        with pytest.raises(ValueError):
+            first_level_models_from_bids(bids_path, 'main', 'MNI')
 
         # In case different desc and spaces exist and are not selected we
         # fail and ask for more specific information
         shutil.rmtree(os.path.join(bids_path, 'derivatives'))
         # issue if no derivatives folder is present
-        assert_raises(ValueError, first_level_models_from_bids,
-                      bids_path, 'main', 'MNI')
+        with pytest.raises(ValueError):
+            first_level_models_from_bids(
+                bids_path, 'main', 'MNI')
 
         # check runs are not repeated when ses field is not used
         shutil.rmtree(bids_path)
@@ -468,8 +481,9 @@ def test_first_level_models_from_bids():
                                              n_runs=[1, 3], no_session=True)
         # test repeated run tag error when run tag is in filenames and not ses
         # can arise when desc or space is present and not specified
-        assert_raises(ValueError, first_level_models_from_bids,
-                      bids_path, 'main', 'T1w')  # desc not specified
+        with pytest.raises(ValueError):
+            first_level_models_from_bids(
+                bids_path, 'main', 'T1w')  # desc not specified
 
 
 def test_first_level_models_with_no_signal_scaling():
@@ -488,12 +502,12 @@ def test_first_level_models_with_no_signal_scaling():
 
     first_level_model.fit(fmri_data, design_matrices=design_matrices)
     # trivial test of signal_scaling value
-    assert_true(first_level_model.signal_scaling is False)
+    assert first_level_model.signal_scaling is False
     # assert that our design matrix has one constant
-    assert_true(first_level_model.design_matrices_[0].equals(
-        pd.DataFrame([1.0, 1.0], columns=['a'])))
+    assert first_level_model.design_matrices_[0].equals(
+        pd.DataFrame([1.0, 1.0], columns=['a']))
     # assert that we only have one theta as there is only on voxel in our image
-    assert_true(first_level_model.results_[0][0].theta.shape == (1, 1))
+    assert first_level_model.results_[0][0].theta.shape == (1, 1)
     # assert that the theta is equal to the one voxel value
     assert_almost_equal(first_level_model.results_[0][0].theta[0, 0], 6.0, 2)
 
@@ -528,11 +542,11 @@ def test_param_mask_deprecation_FirstLevelModel():
     assert flm2.mask_img == mask_filepath
     assert flm3.mask_img == mask_filepath
 
-    with assert_raises(AttributeError):
+    with pytest.raises(AttributeError):
         flm1.mask == mask_filepath
-    with assert_raises(AttributeError):
+    with pytest.raises(AttributeError):
         flm2.mask == mask_filepath
-    with assert_raises(AttributeError):
+    with pytest.raises(AttributeError):
         flm3.mask == mask_filepath
 
     assert len(raised_warnings) == 2
