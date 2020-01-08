@@ -19,6 +19,9 @@ from . import test_utils as tst
 
 @pytest.fixture()
 def request_mocker():
+    """ Mocks URL calls for structural dataset fetchers during testing.
+    Tests the fetcher code without actually downloading he files.
+    """
     tst.setup_mock(utils, struct)
     yield
     tst.teardown_mock(utils, struct)

@@ -25,6 +25,9 @@ from nilearn.image import get_data
 
 @pytest.fixture()
 def request_mocker():
+    """ Mocks URL calls for atlas fetchers during testing.
+    Tests the fetcher code without actually downloading he files.
+    """
     tst.setup_mock(utils, atlas)
     yield
     tst.teardown_mock(utils, atlas)

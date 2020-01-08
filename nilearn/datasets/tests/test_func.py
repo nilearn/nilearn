@@ -24,6 +24,9 @@ from nilearn._utils.compat import _basestring
 
 @pytest.fixture()
 def request_mocker():
+    """ Mocks URL calls for functional dataset fetchers during testing.
+    Tests the fetcher code without actually downloading he files.
+    """
     tst.setup_mock(utils, func)
     yield
     tst.teardown_mock(utils, func)
@@ -31,6 +34,8 @@ def request_mocker():
 
 @pytest.fixture()
 def localizer_mocker():
+    """ Mocks the index for localizer dataset.
+    """
     setup_localizer()
     yield
     teardown_localizer()

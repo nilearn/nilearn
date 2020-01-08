@@ -27,6 +27,9 @@ file_mock = None
 
 @pytest.fixture()
 def request_mocker():
+    """ Mocks URL calls for data fetchers during testing.
+    Tests the fetcher code without actually downloading he files.
+    """
     setup_mock()
     yield
     teardown_mock()
