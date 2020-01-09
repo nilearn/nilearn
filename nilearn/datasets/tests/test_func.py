@@ -25,7 +25,7 @@ from nilearn._utils.compat import _basestring
 @pytest.fixture()
 def request_mocker():
     """ Mocks URL calls for functional dataset fetchers during testing.
-    Tests the fetcher code without actually downloading he files.
+    Tests the fetcher code without actually downloading the files.
     """
     tst.setup_mock(utils, func)
     yield
