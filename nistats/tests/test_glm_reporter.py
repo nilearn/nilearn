@@ -4,6 +4,7 @@ import warnings
 
 import nibabel as nib
 import numpy as np
+import pytest
 from nibabel import load
 from nibabel.tmpdirs import InTemporaryDirectory
 
@@ -13,7 +14,6 @@ from nistats._utils.testing import _write_fake_fmri_data
 from nistats.design_matrix import make_first_level_design_matrix
 from nistats.first_level_model import FirstLevelModel
 from nistats.reporting import glm_reporter as glmr
-from numpy.testing import dec
 
 from nistats.second_level_model import SecondLevelModel
 
@@ -26,7 +26,8 @@ else:
     mpl  # So flake8 doesn't complain about not using import (F841)
 
 
-@dec.skipif(not_have_mpl)
+@pytest.mark.skipif(not_have_mpl,
+                    reason='Matplotlib not installed; required for this test')
 def test_flm_reporting():
     with InTemporaryDirectory():
         shapes, rk = ((7, 8, 7, 15), (7, 8, 7, 16)), 3
@@ -50,10 +51,11 @@ def test_flm_reporting():
         report_iframe = report_flm.get_iframe()
         # So flake8 doesn't complain about not using variable (F841)
         report_iframe
-        del mask, flm
+        del mask, flm, fmri_data
 
 
-@dec.skipif(not_have_mpl)
+@pytest.mark.skipif(not_have_mpl,
+                    reason='Matplotlib not installed; required for this test')
 def test_slm_reporting():
     with InTemporaryDirectory():
         shapes = ((7, 8, 9, 1),)

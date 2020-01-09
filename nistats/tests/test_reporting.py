@@ -2,11 +2,11 @@ import os
 
 import nibabel as nib
 import numpy as np
+import pytest
 
 from nibabel.tmpdirs import InTemporaryDirectory
 # Set backend to avoid DISPLAY problems
 from nilearn.plotting import _set_mpl_backend
-from numpy.testing import dec
 
 from nistats.design_matrix import make_first_level_design_matrix
 from nistats.reporting import (get_clusters_table,
@@ -27,7 +27,8 @@ else:
     have_mpl = True
 
 
-@dec.skipif(not have_mpl)
+@pytest.mark.skipif(not have_mpl,
+                    reason='Matplotlib not installed; required for this test')
 def test_show_design_matrix():
     # test that the show code indeed (formally) runs
     frame_times = np.linspace(0, 127 * 1., 128)
@@ -42,7 +43,9 @@ def test_show_design_matrix():
         plot_design_matrix(dmtx, output_file='dmtx.pdf')
         assert os.path.exists('dmtx.pdf')
 
-@dec.skipif(not have_mpl)
+
+@pytest.mark.skipif(not have_mpl,
+                    reason='Matplotlib not installed; required for this test')
 def test_show_contrast_matrix():
     # test that the show code indeed (formally) runs
     frame_times = np.linspace(0, 127 * 1., 128)
