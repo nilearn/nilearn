@@ -5,6 +5,7 @@ Thanks to scikit image.
 """
 
 import numpy as np
+import pytest
 
 from nilearn._utils.segmentation import _random_walker
 
@@ -39,21 +40,23 @@ def test_bad_inputs():
     # Too few dimensions
     img = np.ones(10)
     labels = np.arange(10)
-    np.testing.assert_raises(ValueError, _random_walker, img, labels)
+    with pytest.raises(ValueError):
+        _random_walker(img, labels)
 
     # Too many dimensions
     np.random.seed(42)
     img = np.random.normal(size=(3, 3, 3, 3, 3))
     labels = np.arange(3 ** 5).reshape(img.shape)
-    np.testing.assert_raises(ValueError, _random_walker, img, labels)
+    with pytest.raises(ValueError):
+        _random_walker(img, labels)
 
     # Spacing incorrect length
     img = np.random.normal(size=(10, 10))
     labels = np.zeros((10, 10))
     labels[2, 4] = 2
     labels[6, 8] = 5
-    np.testing.assert_raises(ValueError,
-                             _random_walker, img, labels, spacing=(1,))
+    with pytest.raises(ValueError):
+        _random_walker(img, labels, spacing=(1,))
 
 
 def test_reorder_labels():

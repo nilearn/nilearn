@@ -1,7 +1,7 @@
 import json
 
 import numpy as np
-from numpy.testing import assert_raises
+import pytest
 
 from nilearn import datasets, surface, image
 from nilearn.plotting import html_surface
@@ -34,11 +34,13 @@ def test_get_vertexcolor():
 def test_check_mesh():
     mesh = html_surface._check_mesh('fsaverage5')
     assert mesh is html_surface._check_mesh(mesh)
-    assert_raises(ValueError, html_surface._check_mesh, 'fsaverage3')
+    with pytest.raises(ValueError):
+        html_surface._check_mesh('fsaverage3')
     mesh.pop('pial_left')
-    assert_raises(ValueError, html_surface._check_mesh, mesh)
-    assert_raises(TypeError, html_surface._check_mesh,
-                  surface.load_surf_mesh(mesh['pial_right']))
+    with pytest.raises(ValueError):
+        html_surface._check_mesh(mesh)
+    with pytest.raises(TypeError):
+        html_surface._check_mesh(surface.load_surf_mesh(mesh['pial_right']))
 
 
 def test_one_mesh_info():
@@ -125,9 +127,11 @@ def test_view_surf():
                                   fsaverage['sulc_right'],
                                   threshold=None, cmap='Greys')
     check_html(html)
-    assert_raises(ValueError, html_surface.view_surf, mesh, mesh[0][::2, 0])
-    assert_raises(ValueError, html_surface.view_surf, mesh, mesh[0][:, 0],
-                  bg_map=mesh[0][::2, 0])
+    with pytest.raises(ValueError):
+        html_surface.view_surf(mesh, mesh[0][::2, 0])
+    with pytest.raises(ValueError):
+        html_surface.view_surf(mesh, mesh[0][:, 0],
+                               bg_map=mesh[0][::2, 0])
 
 
 def test_view_img_on_surf():
@@ -145,7 +149,8 @@ def test_view_img_on_surf():
     check_html(html)
     html = html_surface.view_img_on_surf(img, surf_mesh='fsaverage')
     check_html(html)
-    assert_raises(DimensionError, html_surface.view_img_on_surf, [img, img])
+    with pytest.raises(DimensionError):
+        html_surface.view_img_on_surf([img, img])
     img_4d = image.new_img_like(img, get_data(img)[:, :, :, np.newaxis])
     assert len(img_4d.shape) == 4
     html = html_surface.view_img_on_surf(img, threshold='92.3%')

@@ -2,7 +2,7 @@ import warnings
 from io import BytesIO
 
 import numpy as np
-from numpy.testing import assert_raises
+import pytest
 
 from nibabel import Nifti1Image
 
@@ -285,8 +285,8 @@ def test_get_cut_slices():
     assert (cut_slices == [4, 4, 4]).all()
 
     # Check that using a single number for cut_coords raises an error
-    assert_raises(ValueError, html_stat_map._get_cut_slices,
-                  img, cut_coords=4, threshold=None)
+    with pytest.raises(ValueError):
+        html_stat_map._get_cut_slices(img, cut_coords=4, threshold=None)
 
     # Check that it is possible to manually specify coordinates
     cut_slices = html_stat_map._get_cut_slices(img, cut_coords=[2, 2, 2],
