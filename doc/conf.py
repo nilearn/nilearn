@@ -308,7 +308,7 @@ sphinx_gallery_conf = {
         'org': 'nilearn',
         'repo': 'nilearn',
         'binderhub_url': 'https://mybinder.org',
-        'branch': 'master',
+        'branch': '0.6.0',  # NOTE: Change at PyPi releases !
         'dependencies': './binder/requirements.txt',
         'use_jupyter_lab': True
         }
