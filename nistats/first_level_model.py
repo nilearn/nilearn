@@ -18,6 +18,7 @@ from warnings import warn
 import numpy as np
 import pandas as pd
 from nibabel import Nifti1Image
+from nibabel.onetime import setattr_on_read
 
 from sklearn.base import (BaseEstimator,
                           clone,
@@ -36,6 +37,7 @@ from .design_matrix import make_first_level_design_matrix
 from .regression import (ARModel,
                          OLSModel,
                          SimpleRegressionResults,
+                         RegressionResults
                          )
 from .utils import (_basestring,
                     _check_run_tables,
@@ -117,14 +119,14 @@ def run_glm(Y, X, noise_model='ar1', bins=100, n_jobs=1, verbose=0):
     acceptable_noise_models = ['ar1', 'ols']
     if noise_model not in acceptable_noise_models:
         raise ValueError(
-            "Acceptable noise models are {0}. You provided 'noise_model={1}'".\
-                format(acceptable_noise_models, noise_model))
+            "Acceptable noise models are {0}. You provided 'noise_model={1}'".
+            format(acceptable_noise_models, noise_model))
 
     if Y.shape[0] != X.shape[0]:
         raise ValueError(
             'The number of rows of Y should match the number of rows of X.'
-            ' You provided X with shape {0} and Y with shape {1}'.\
-                format(X.shape, Y.shape))
+            ' You provided X with shape {0} and Y with shape {1}'.
+            format(X.shape, Y.shape))
 
     # Create the model
     ols_result = OLSModel(X).fit(Y)
@@ -309,6 +311,7 @@ class FirstLevelModel(BaseEstimator, TransformerMixin, CacheMixin):
         else:
             raise ValueError('signal_scaling must be "False", "0", "1"'
                              ' or "(0, 1)"')
+
         self.noise_model = noise_model
         self.verbose = verbose
         self.n_jobs = n_jobs
@@ -582,6 +585,96 @@ class FirstLevelModel(BaseEstimator, TransformerMixin, CacheMixin):
             outputs[output_type_] = output
 
         return outputs if output_type == 'all' else output
+
+    def _get_voxelwise_model_attribute(self, attribute, result_as_time_series):
+        """Transform RegressionResults instances within a dictionary
+        (whose keys represent the autoregressive coefficient under the 'ar1'
+        noise model or only 0.0 under 'ols' noise_model and values are the
+        RegressionResults instances) into input nifti space.
+
+        Parameters
+        ----------
+        attribute : str
+            an attribute of a RegressionResults instance.
+            possible values include: resid, norm_resid, predicted,
+            SSE, r_square, MSE.
+        result_as_time_series : bool
+            whether the RegressionResult attribute has a value
+            per timepoint of the input nifti image.
+
+        Returns
+        -------
+        output : list
+            a list of Nifti1Image(s)
+        """
+        # check if valid attribute is being accessed.
+        all_attributes = dict(vars(RegressionResults)).keys()
+        possible_attributes = [prop for prop in all_attributes if '__' not in prop]
+        if attribute not in possible_attributes:
+            msg = "attribute must be one of: {attr}".format(attr=possible_attributes)
+            raise ValueError(msg)
+
+        if self.minimize_memory:
+            raise ValueError('To access voxelwise attributes like R-squared, residuals, '
+                    'and predictions, the `FirstLevelModel`-object needs to store '
+                    'there attributes. To do so, set `minimize_memory` to `False` '
+                    'when initializing the `FirstLevelModel`-object.')
+
+        if self.labels_ is None or self.results_ is None:
+            raise ValueError('The model has not been fit yet')
+
+        output = []
+
+        for design_matrix, labels, results in zip(self.design_matrices_, self.labels_, self.results_):        
+
+            if result_as_time_series:
+                voxelwise_attribute = np.zeros((design_matrix.shape[0], len(labels)))
+            else:
+                voxelwise_attribute = np.zeros((1, len(labels)))
+
+            for label_ in results:
+                label_mask = labels == label_
+                voxelwise_attribute[:, label_mask] = getattr(results[label_], attribute)
+
+            output.append(self.masker_.inverse_transform(voxelwise_attribute))
+
+            return output
+
+    @setattr_on_read
+    def residuals(self):
+        """Transform voxelwise residuals to the same shape
+        as the input Nifti1Image(s)
+
+        Returns
+        -------
+        output : list
+            a list of Nifti1Image(s)
+        """
+        return self._get_voxelwise_model_attribute('resid', result_as_time_series=True)
+
+    @setattr_on_read
+    def predicted(self):
+        """Transform voxelwise predicted values to the same shape
+        as the input Nifti1Image(s)
+
+        Returns
+        -------
+        output : list
+            a list of Nifti1Image(s)
+        """
+        return self._get_voxelwise_model_attribute('predicted', result_as_time_series=True)
+
+    @setattr_on_read
+    def r_square(self):
+        """Transform voxelwise r-squared values to the same shape
+        as the input Nifti1Image(s)
+
+        Returns
+        -------
+        output : list
+            a list of Nifti1Image(s)
+        """
+        return self._get_voxelwise_model_attribute('r_square', result_as_time_series=False)
 
 
 @replace_parameters({'mask': 'mask_img'}, end_version='next')

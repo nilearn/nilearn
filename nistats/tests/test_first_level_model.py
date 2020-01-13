@@ -15,7 +15,9 @@ from nibabel import (load,
                      Nifti1Image,
                      )
 from numpy.testing import (assert_almost_equal,
+                           assert_array_almost_equal,
                            assert_array_equal,
+                           assert_array_less,
                            )
 from nibabel.tmpdirs import InTemporaryDirectory
 
@@ -591,3 +593,45 @@ def test_param_mask_deprecation_first_level_models_from_bids():
     for param_warning_ in raised_param_deprecation_warnings:
         assert str(param_warning_.message) == deprecation_msg
         assert param_warning_.category is DeprecationWarning
+
+
+def test_first_level_model_residuals():
+    shapes, rk = [(10, 10, 10, 100)], 3
+    mask, fmri_data, design_matrices = _generate_fake_fmri_data(shapes, rk)
+
+    for i in range(len(design_matrices)):
+        design_matrices[i].iloc[:, 0] = 1
+
+    model = FirstLevelModel(mask=mask, minimize_memory=False,
+                            noise_model='ols')
+    model.fit(fmri_data, design_matrices=design_matrices)
+
+    resid = model.residuals[0]
+    mean_resids = model.masker_.transform(resid).mean(0)
+    assert_array_almost_equal(mean_resids, 0)
+
+
+def test_first_level_model_predictions_r_square():
+    shapes, rk = [(10, 10, 10, 25)], 3
+    mask, fmri_data, design_matrices = _generate_fake_fmri_data(shapes, rk)
+
+    for i in range(len(design_matrices)):
+        design_matrices[i].iloc[:, 0] = 1
+
+    model = FirstLevelModel(mask=mask,
+                            signal_scaling=False,
+                            minimize_memory=False,
+                            noise_model='ols')
+    model.fit(fmri_data, design_matrices=design_matrices)
+
+    pred = model.predicted[0]
+    data = fmri_data[0]
+    r_square_3d = model.r_square[0]
+
+    y_predicted = model.masker_.transform(pred)
+    y_measured = model.masker_.transform(data)
+
+    assert_almost_equal(np.mean(y_predicted - y_measured), 0)
+
+    r_square_2d = model.masker_.transform(r_square_3d)
+    assert_array_less(0., r_square_2d)

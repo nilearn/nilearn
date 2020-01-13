@@ -9,6 +9,9 @@
 New
 ---
 
+* :func:`nistats.first_level_model.FirstLevelModel` now has the attributes: ``residuals``, ``predicted``, and ``r_square``
+  which returns a Niimg-like object in the same shape as the input Niimg-like object.
+  Additionally, there is an example showcasing the use of the attributes.
 * Use :func:`nistats.reporting.make_glm_report` to easily generate HTML reports from fitted first and second level models and contrasts.
 * New dataset fetcher, :func:`nistats.datasets.fetch_language_localizer_demo_dataset` , BIDS 1.2 compatible.
 * New example showcasing the use of a GLM to get beta maps for decoding experiments (aka beta-regression).

@@ -276,6 +276,7 @@ class RegressionResults(LikelihoodModelResults):
                                         dispersion, nuisance)
         self.wY = wY
         self.wresid = wresid
+        self.wdesign = model.wdesign
 
     @setattr_on_read
     def resid(self):
@@ -310,7 +311,7 @@ class RegressionResults(LikelihoodModelResults):
         """
         beta = self.theta
         # the LikelihoodModelResults has parameters named 'theta'
-        X = self.model.design
+        X = self.wdesign
         return np.dot(X, beta)
 
     @setattr_on_read
@@ -318,6 +319,13 @@ class RegressionResults(LikelihoodModelResults):
         """Error sum of squares. If not from an OLS model this is "pseudo"-SSE.
         """
         return (self.wresid ** 2).sum(0)
+
+    @setattr_on_read
+    def r_square(self):
+        """Proportion of explained variance.
+        If not from an OLS model this is "pseudo"-R2.
+        """
+        return np.var(self.predicted, 0) / np.var(self.wY, 0)
 
     @setattr_on_read
     def MSE(self):
