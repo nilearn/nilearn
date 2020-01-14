@@ -15,4 +15,3 @@ nibabel
 scikit-learn
 joblib
 matplotlib
-jupytext

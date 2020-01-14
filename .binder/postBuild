@@ -6,12 +6,3 @@ set -e
 # inside a git checkout of the nilearn/nilearn repo. This script is
 # generating notebooks from the nilearn python examples.
 # Adapted from scikit-learn.
-
-if [[ ! -f /.dockerenv ]]; then
-    echo "This script was written for repo2docker and is supposed to run inside a docker container."
-    echo "Exiting because this script can delete data if run outside of a docker container."
-    exit 1
-fi
-
-# Back up content we need from the nilearn repo
-cd examples
