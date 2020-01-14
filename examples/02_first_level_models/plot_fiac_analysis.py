@@ -163,6 +163,6 @@ report = make_glm_report(fmri_glm,
 #########################################################################
 # We have several ways to access the report:
 
-report  # This report can be viewed in a notebook
+# report  # This report can be viewed in a notebook
 # report.save_as_html('report.html')
 # report.open_in_browser()
