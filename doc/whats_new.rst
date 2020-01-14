@@ -6,6 +6,7 @@ New
 
 * New example showcasing the use of a GLM to get beta maps for decoding experiments (aka beta-regression).
 * Addition of all-resolution inference, ie statistically grounded of true positive in given clusters, in :func:`nistats.thresholding.map_threshold`
+* :func:`nistats.thresholding.map_threshold` can now perform two-sided tests and does so by default.
 
 Changes
 -------
@@ -13,6 +14,7 @@ Changes
 * `run_img` variable deleted after masking in FirstLevelModel to reduce memory use.
 * :func:`nistats.reporting.make_glm_report` now uses the computed mask if there is no
   user-specified one.
+* Default value of `alpha` in :func:`nistats.reporting.make_glm_report` is `0.001`.
 
 Fixes
 -----

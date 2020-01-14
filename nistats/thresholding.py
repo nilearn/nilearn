@@ -112,13 +112,13 @@ def cluster_level_inference(stat_img, mask_img=None,
     ----------
     stat_img : Niimg-like object or None, optional
        statistical image (presumably in z scale)
-  
+
     mask_img : Niimg-like object, optional,
         mask image
 
     threshold: list of floats, optional
        cluster-forming threshold in z-scale.
-  
+
     alpha: float or list, optional
         level of control on the true positive rate, aka true dsicovery
         proportion
@@ -148,7 +148,7 @@ def cluster_level_inference(stat_img, mask_img=None,
         masker = NiftiMasker(mask_img=mask_img).fit()
     stats = np.ravel(masker.transform(stat_img))
     hommel_value = _compute_hommel_value(stats, alpha, verbose=verbose)
-    
+
     # embed it back to 3D grid
     stat_map = get_data(masker.inverse_transform(stats))
 
@@ -172,7 +172,7 @@ def cluster_level_inference(stat_img, mask_img=None,
 
 
 def map_threshold(stat_img=None, mask_img=None, alpha=.001, threshold=3.,
-                  height_control='fpr', cluster_threshold=0):
+                  height_control='fpr', cluster_threshold=0, two_sided=True):
     """ Compute the required threshold level and return the thresholded map
 
     Parameters
@@ -199,10 +199,16 @@ def map_threshold(stat_img=None, mask_img=None, alpha=.001, threshold=3.,
         false positive control meaning of cluster forming
         threshold: 'fpr'|'fdr'|'bonferroni'\|None
 
-    cluster_threshold : float, optional
+    cluster_threshold: float, optional
         cluster size threshold. In the returned thresholded map,
         sets of connected voxels (`clusters`) with size smaller
         than this number will be removed.
+
+    two_sided: Bool, optional,
+        Whether the thresholding should yield both positive and negative
+        part of the maps.
+        In that case, alpha is corrected by a factor of 2.
+        Defaults to True.
 
     Returns
     -------
@@ -223,10 +229,13 @@ def map_threshold(stat_img=None, mask_img=None, alpha=.001, threshold=3.,
         raise ValueError(
             "height control should be one of {0}", height_control_methods)
 
+    # if two-sided, correct alpha by a factor of 2
+    alpha_ = alpha / 2 if two_sided else alpha
+
     # if height_control is 'fpr' or None, we don't need to look at the data
     # to compute the threshold
     if height_control == 'fpr':
-        threshold = norm.isf(alpha)
+        threshold = norm.isf(alpha_)
 
     # In this case, and if stat_img is None, we return
     if stat_img is None:
@@ -236,7 +245,7 @@ def map_threshold(stat_img=None, mask_img=None, alpha=.001, threshold=3.,
             raise ValueError(
                 'Map_threshold requires stat_img not to be None'
                 'when the height_control procedure is "bonferroni" or "fdr"')
-    
+
     if mask_img is None:
         masker = NiftiMasker(mask_strategy='background').fit(stat_img)
     else:
@@ -244,17 +253,25 @@ def map_threshold(stat_img=None, mask_img=None, alpha=.001, threshold=3.,
     stats = np.ravel(masker.transform(stat_img))
     n_voxels = np.size(stats)
 
+    # Thresholding
+    if two_sided:
+        # replace stats by their absolute value after storing the sign
+        sign = np.sign(stats)
+        stats = np.abs(stats)
+
     if height_control == 'fdr':
-        threshold = fdr_threshold(stats, alpha)
+        threshold = fdr_threshold(stats, alpha_)
     elif height_control == 'bonferroni':
-        threshold = norm.isf(alpha / n_voxels)
+        threshold = norm.isf(alpha_ / n_voxels)
     stats *= (stats > threshold)
+    if two_sided:
+        stats *= sign
 
     # embed it back to 3D grid
     stat_map = get_data(masker.inverse_transform(stats))
 
     # Extract connected components above threshold
-    label_map, n_labels = label(stat_map > threshold)
+    label_map, n_labels = label(np.abs(stat_map) > threshold)
     labels = label_map[get_data(masker.mask_img_) > 0]
 
     for label_ in range(1, n_labels + 1):

@@ -53,7 +53,7 @@ def make_glm_report(model,
                     title=None,
                     bg_img=MNI152TEMPLATE,
                     threshold=3.09,
-                    alpha=0.01,
+                    alpha=0.001,
                     cluster_threshold=0,
                     height_control='fpr',
                     min_distance=8.,
@@ -114,7 +114,7 @@ def make_glm_report(model,
         t-scale or z-scale value). Used only if height_control is None.
 
     alpha: float
-        Default is 0.01
+        Default is 0.001
         Number controlling the thresholding (either a p-value or q-value).
         Its actual meaning depends on the height_control parameter.
         This function translates alpha to a z-scale threshold.
@@ -777,7 +777,7 @@ def _clustering_params_to_dataframe(threshold,
         threshold: 'fpr' (default) or 'fdr' or 'bonferroni' or None
 
     alpha: float
-        Default is 0.01
+        Default is 0.001
         Number controlling the thresholding (either a p-value or q-value).
         Its actual meaning depends on the height_control parameter.
         This function translates alpha to a z-scale threshold.
