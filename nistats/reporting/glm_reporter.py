@@ -202,7 +202,8 @@ def make_glm_report(model,
                                                    )
     statistical_maps = make_stat_maps(model, contrasts)
     html_design_matrices = _dmtx_to_svg_url(design_matrices)
-    mask_plot_html_code = _mask_to_svg(mask_img=model.mask_img,
+    mask_img = model.mask_img or model.masker_.mask_img_
+    mask_plot_html_code = _mask_to_svg(mask_img=mask_img,
                                        bg_img=bg_img,
                                        )
     all_components = _make_stat_maps_contrast_clusters(
