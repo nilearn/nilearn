@@ -1,6 +1,30 @@
 0.1.0b2
 =======
 
+New
+---
+
+* New example showcasing the use of a GLM to get beta maps for decoding experiments (aka beta-regression).
+* Addition of all-resolution inference, ie statistically grounded of true positive in given clusters, in :func:`nistats.thresholding.map_threshold`
+
+Changes
+-------
+
+* `run_img` variable deleted after masking in FirstLevelModel to reduce memory use.
+* :func:`nistats.reporting.make_glm_report` now uses the computed mask if there is no
+  user-specified one.
+
+Fixes
+-----
+
+* Explicit method for fixed effects to support image-based summary
+  statistics approach.
+* FIR delays are now integers.
+
+
+0.1.0b1
+=======
+
 .. warning::
 
  | period_cut (in seconds) has been replaced by high_pass (in Hz) in FirstLevelModel & design matrices.
@@ -14,14 +38,11 @@ New
   Additionally, there is an example showcasing the use of the attributes.
 * Use :func:`nistats.reporting.make_glm_report` to easily generate HTML reports from fitted first and second level models and contrasts.
 * New dataset fetcher, :func:`nistats.datasets.fetch_language_localizer_demo_dataset` , BIDS 1.2 compatible.
-* New example showcasing the use of a GLM to get beta maps for decoding experiments (aka beta-regression).
-* Addition of all-resolution inference, ie statistically grounded of true positive in given clusters, in :func:`nistats.thresholding.map_threshold`
 
 Changes
 -------
 
 * Nistats now uses BIDS v1.2 & BIDS Derivatives terminology.
-* `run_img` variable deleted after masking in FirstLevelModel to reduce memory use.
 
 Fixes
 -----
@@ -30,14 +51,11 @@ Fixes
 * fixed effect contrasts now average effect sizes across runs rather than
   summing them.
 * :func:`nistats.first_level_model.first_level_models_from_bids` uses correct BIDS v1.2 conventions.
-* Explicit method for fixed effects to support image-based summary
-  statistics approach.
-* FIR delays are now integers.
 
 Contributors
 ------------
 
-The following people contributed to this release (in alphabetical order)
+The following people contributed to this release (in alphabetical order)::
 
 	Ana Luisa Pinho
 	Anthony Gifuni
@@ -52,7 +70,7 @@ The following people contributed to this release (in alphabetical order)
 	Takis Panagopoulos
 	Tuan Binh Nguyen
 
-0.0.1b
+0.0.1b0
 =======
 
 Changelog
