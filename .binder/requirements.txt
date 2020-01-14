@@ -1,8 +1,0 @@
-nibabel
-matplotlib
-pandas
-scikit-learn
-sphinx-gallery
-# Need to update the nilearn version on each PyPi release
-nilearn==0.6.0
-jupytext

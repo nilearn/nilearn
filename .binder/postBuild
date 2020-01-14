@@ -1,8 +1,0 @@
-#!/bin/bash
-
-set -e
-
-# This script is called in a binder context. When this script is called, we are
-# inside a git checkout of the nilearn/nilearn repo. This script is
-# generating notebooks from the nilearn python examples.
-# Adapted from scikit-learn.
