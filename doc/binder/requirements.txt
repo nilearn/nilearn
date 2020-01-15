@@ -1,8 +1,4 @@
-nibabel
-matplotlib
-pandas
-scikit-learn
-sphinx-gallery
-# Need to update the nilearn version on each PyPi release
-nilearn==0.6.0
+-r ../../requirements-build-docs.txt
+nilearn==0.6.0  # Need to update on each PyPi release
 jupytext
+pytest

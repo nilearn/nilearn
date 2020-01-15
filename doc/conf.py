@@ -315,6 +315,31 @@ sphinx_gallery_conf = {
         }
     }
 
+# Patch sphinx_gallery.binder.gen_binder_rst so as to point to .py file
+# in repository. With thanks to Dominik Stańczak @StanczakDominik
+# https://stanczakdominik.github.io/posts/simple-binder-usage-with-sphinx-gallery-through-jupytext/
+import sphinx_gallery.binder
+def patched_gen_binder_rst(fpath, binder_conf, gallery_conf):
+    """Generate the RST + link for the Binder badge.
+    """
+    binder_conf = sphinx_gallery.binder.check_binder_conf(binder_conf)
+    binder_url = sphinx_gallery.binder.gen_binder_url(fpath, binder_conf, gallery_conf)
+
+    # I added the line below:
+    binder_url = binder_url.replace(gallery_conf['gallery_dirs'] + os.path.sep, "").replace("ipynb", "py")
+
+    rst = (
+            "\n"
+            "  .. container:: binder-badge\n\n"
+            "    .. image:: https://mybinder.org/badge_logo.svg\n"
+            "      :target: {}\n"
+            "      :width: 150 px\n").format(binder_url)
+    return rst
+
+# And then we finish our monkeypatching misdeed by redirecting
+# sphinx-gallery to use our function:
+sphinx_gallery.binder.gen_binder_rst = patched_gen_binder_rst
+
 # Get rid of spurious warnings due to some interaction between
 # autosummary and numpydoc. See
 # https://github.com/phn/pytpm/issues/3#issuecomment-12133978 for more
