@@ -41,7 +41,6 @@ FUNCFILE = os.path.join(BASEDIR, 'functional.nii.gz')
 
 
 def test_high_level_glm_one_session():
-    # New API
     shapes, rk = [(7, 8, 9, 15)], 3
     mask, fmri_data, design_matrices = _generate_fake_fmri_data(shapes, rk)
 
@@ -111,7 +110,6 @@ def test_explicit_fixed_effects():
 
         
 def test_high_level_glm_with_data():
-    # New API
     with InTemporaryDirectory():
         shapes, rk = ((7, 8, 7, 15), (7, 8, 7, 16)), 3
         mask, fmri_data, design_matrices = _write_fake_fmri_data(shapes, rk)
@@ -163,7 +161,6 @@ def test_high_level_glm_with_data():
 
 
 def test_high_level_glm_with_paths():
-    # New API
     shapes, rk = ((7, 8, 7, 15), (7, 8, 7, 14)), 3
     with InTemporaryDirectory():
         mask_file, fmri_files, design_files = _write_fake_fmri_data(shapes, rk)
@@ -179,7 +176,6 @@ def test_high_level_glm_with_paths():
 
 def test_high_level_glm_null_contrasts():
     # test that contrast computation is resilient to 0 values.
-    # new API
     shapes, rk = ((7, 8, 7, 15), (7, 8, 7, 19)), 3
     mask, fmri_data, design_matrices = _generate_fake_fmri_data(shapes, rk)
 
@@ -195,8 +191,33 @@ def test_high_level_glm_null_contrasts():
     np.testing.assert_almost_equal(get_data(z1), get_data(z2))
 
 
+def test_high_level_glm_different_design_matrices():
+    # test that one can estimate a contrast when design matrices are different
+    shapes, rk = ((7, 8, 7, 15), (7, 8, 7, 19)), 3
+    mask, fmri_data, design_matrices = _generate_fake_fmri_data(shapes, rk)
+    
+    # add a column to the second design matrix
+    design_matrices[1]['new'] = np.ones((19, 1))
+
+    # Fit a glm with two sessions and design matrices
+    multi_session_model = FirstLevelModel(mask_img=mask).fit(
+        fmri_data, design_matrices=design_matrices)
+    z_joint = multi_session_model.compute_contrast(
+        [np.eye(rk)[:1], np.eye(rk + 1)[:1]], output_type='effect_size')
+    assert z_joint.shape == (7, 8, 7)
+
+    # compare the estimated effects to seprarately-fitted models
+    model1 = FirstLevelModel(mask_img=mask).fit(
+        fmri_data[0], design_matrices=design_matrices[0])
+    z1 = model1.compute_contrast(np.eye(rk)[:1], output_type='effect_size')
+    model2 = FirstLevelModel(mask_img=mask).fit(
+        fmri_data[1], design_matrices=design_matrices[1])
+    z2 = model2.compute_contrast(np.eye(rk + 1)[:1], output_type='effect_size')
+    assert_almost_equal(z1.get_data() + z2.get_data(),
+                        2 * z_joint.get_data())
+
+
 def test_run_glm():
-    # New API
     n, p, q = 100, 80, 10
     X, Y = np.random.randn(p, q), np.random.randn(p, n)
 

@@ -1,5 +1,6 @@
 import json
 import os
+import string
 
 import numpy as np
 import pandas as pd
@@ -28,8 +29,9 @@ def _generate_fake_fmri_data(shapes, rk=3, affine=np.eye(4)):
         data = np.random.randn(*shape)
         data[1:-1, 1:-1, 1:-1] += 100
         fmri_data.append(Nifti1Image(data, affine))
+        columns = np.random.choice(list(string.ascii_lowercase), size=rk)
         design_matrices.append(pd.DataFrame(np.random.randn(shape[3], rk),
-                                            columns=['a', 'b', 'c']))
+                                            columns=columns))
     mask = Nifti1Image((np.random.rand(*shape[:3]) > .5).astype(np.int8),
                        affine)
     return mask, fmri_data, design_matrices

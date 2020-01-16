@@ -552,8 +552,9 @@ class FirstLevelModel(BaseEstimator, TransformerMixin, CacheMixin):
                              ' (array or str)')
 
         # Translate formulas to vectors
-        design_columns = self.design_matrices_[0].columns.tolist()
-        for cidx, con in enumerate(con_vals):
+        for cidx, (con, design_mat) in enumerate(
+                zip(con_vals, self.design_matrices_)):
+            design_columns = design_mat.columns.tolist()
             if isinstance(con, _basestring):
                 con_vals[cidx] = expression_to_contrast_vector(
                     con, design_columns)
