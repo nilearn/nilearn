@@ -920,7 +920,7 @@ def fetch_localizer_contrasts(contrasts, n_subjects=None, get_tmaps=False,
 
     # Build data URLs that will be fetched
     files = {}
-    root_url = "https://osf.io/download/{0}"
+    root_url = "https://files.de-1.osf.io/v1/resources/vhtf6/providers/osfstorage/{0}"
     if isinstance(n_subjects, numbers.Number):
         subject_mask = np.arange(1, n_subjects + 1)
         subject_id_max = "S%02d" % n_subjects
