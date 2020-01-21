@@ -308,12 +308,11 @@ sphinx_gallery_conf = {
         'org': 'nilearn',
         'repo': 'nilearn',
         'binderhub_url': 'https://mybinder.org',
-        'branch': '0.6.0',  # NOTE: Change at PyPi releases !
-        'dependencies': ['./binder/requirements.txt'],
-        'filepath_prefix': 'examples',
-        'use_jupyter_lab': True
-        }
+        'branch': 'doc/binder',
+        'dependencies': ['../binder/requirements.txt'],
+        'notebooks_dir': 'examples'
     }
+}
 
 # Patch sphinx_gallery.binder.gen_binder_rst so as to point to .py file
 # in repository. With thanks to Dominik Stańczak @StanczakDominik
@@ -325,18 +324,20 @@ def patched_gen_binder_rst(fpath, binder_conf, gallery_conf):
     """Generate the RST + link for the Binder badge.
     """
     binder_conf = sphinx_gallery.binder.check_binder_conf(binder_conf)
-    binder_url = sphinx_gallery.binder.gen_binder_url(fpath, binder_conf, gallery_conf)
+    binder_url = sphinx_gallery.binder.gen_binder_url(fpath, binder_conf,
+                                                      gallery_conf)
 
     # this will fail if gallery_dirs is a list:
-    binder_url = binder_url.replace(gallery_conf['gallery_dirs'] + os.path.sep, "").replace("ipynb", "py")
+    binder_url = binder_url.replace(gallery_conf['gallery_dirs'] + os.path.sep,
+                                    "").replace("ipynb", "py")
 
-    rst = (
-            "\n"
-            "  .. container:: binder-badge\n\n"
-            "    .. image:: https://mybinder.org/badge_logo.svg\n"
-            "      :target: {}\n"
-            "      :width: 150 px\n").format(binder_url)
+    rst = ("\n"
+           "  .. container:: binder-badge\n\n"
+           "    .. image:: https://mybinder.org/badge_logo.svg\n"
+           "      :target: {}\n"
+           "      :width: 150 px\n").format(binder_url)
     return rst
+
 
 # And then we finish our monkeypatching misdeed by redirecting
 # sphinx-gallery to use our function:
@@ -347,6 +348,7 @@ sphinx_gallery.binder.gen_binder_rst = patched_gen_binder_rst
 # https://github.com/phn/pytpm/issues/3#issuecomment-12133978 for more
 # details
 numpydoc_show_class_members = False
+
 
 def touch_example_backreferences(app, what, name, obj, options, lines):
     # generate empty examples files, so that we don't get
