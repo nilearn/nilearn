@@ -13,7 +13,6 @@ import numpy as np
 import nibabel
 import pytest
 
-from nose import with_setup
 from numpy.testing import assert_array_equal
 
 from . import test_utils as tst
@@ -25,7 +24,10 @@ from nilearn.image import get_data
 
 
 @pytest.fixture()
-def request_mock():
+def request_mocker():
+    """ Mocks URL calls for atlas fetchers during testing.
+    Tests the fetcher code without actually downloading the files.
+    """
     tst.setup_mock(utils, atlas)
     yield
     tst.teardown_mock(utils, atlas)
@@ -248,7 +250,7 @@ def test_fail_fetch_atlas_harvard_oxford(tmp_path):
     assert ho.labels[6] == "Right R3"
 
 
-def test_fetch_atlas_craddock_2012(tmp_path, request_mock):
+def test_fetch_atlas_craddock_2012(tmp_path, request_mocker):
     bunch = atlas.fetch_atlas_craddock_2012(data_dir=str(tmp_path),
                                             verbose=0)
 
@@ -268,7 +270,7 @@ def test_fetch_atlas_craddock_2012(tmp_path, request_mock):
     assert bunch.description != ''
 
 
-def test_fetch_atlas_smith_2009(tmp_path, request_mock):
+def test_fetch_atlas_smith_2009(tmp_path, request_mocker):
     bunch = atlas.fetch_atlas_smith_2009(data_dir=str(tmp_path), verbose=0)
 
     keys = ("rsn20", "rsn10", "rsn70",
@@ -311,7 +313,7 @@ def test_fetch_coords_seitzman_2018():
     assert np.any(bunch.networks != np.sort(bunch.networks))
 
 
-def test_fetch_atlas_destrieux_2009(tmp_path, request_mock):
+def test_fetch_atlas_destrieux_2009(tmp_path, request_mocker):
     datadir = str(tmp_path / 'destrieux_2009')
     os.mkdir(datadir)
     dummy = open(os.path.join(
@@ -337,7 +339,7 @@ def test_fetch_atlas_destrieux_2009(tmp_path, request_mock):
         datadir, 'destrieux2009_rois.nii.gz')
 
 
-def test_fetch_atlas_msdl(tmp_path, request_mock):
+def test_fetch_atlas_msdl(tmp_path, request_mocker):
     datadir = str(tmp_path / 'msdl_atlas')
     os.mkdir(datadir)
     os.mkdir(os.path.join(datadir, 'MSDL_rois'))
@@ -361,7 +363,7 @@ def test_fetch_atlas_msdl(tmp_path, request_mock):
     assert dataset.description != ''
 
 
-def test_fetch_atlas_yeo_2011(tmp_path, request_mock):
+def test_fetch_atlas_yeo_2011(tmp_path, request_mocker):
     dataset = atlas.fetch_atlas_yeo_2011(data_dir=str(tmp_path), verbose=0)
     assert isinstance(dataset.anat, _basestring)
     assert isinstance(dataset.colors_17, _basestring)
@@ -374,7 +376,7 @@ def test_fetch_atlas_yeo_2011(tmp_path, request_mock):
     assert dataset.description != ''
 
 
-def test_fetch_atlas_aal(tmp_path, request_mock):
+def test_fetch_atlas_aal(tmp_path, request_mocker):
     ho_dir = str(tmp_path / 'aal_SPM12' / 'aal' / 'atlas')
     os.makedirs(ho_dir)
     with open(os.path.join(ho_dir, 'AAL.xml'), 'w') as xml_file:
@@ -397,7 +399,7 @@ def test_fetch_atlas_aal(tmp_path, request_mock):
     assert dataset.description != ''
 
 
-def test_fetch_atlas_basc_multiscale_2015(tmp_path, request_mock):
+def test_fetch_atlas_basc_multiscale_2015(tmp_path, request_mocker):
     # default version='sym',
     data_sym = atlas.fetch_atlas_basc_multiscale_2015(data_dir=str(tmp_path),
                                                       verbose=0)
@@ -449,7 +451,7 @@ def test_fetch_coords_dosenbach_2010():
     assert np.any(bunch.networks != np.sort(bunch.networks))
 
 
-def test_fetch_atlas_allen_2011(tmp_path, request_mock):
+def test_fetch_atlas_allen_2011(tmp_path, request_mocker):
     bunch = atlas.fetch_atlas_allen_2011(data_dir=str(tmp_path), verbose=0)
     keys = ("maps",
             "rsn28",
@@ -467,7 +469,7 @@ def test_fetch_atlas_allen_2011(tmp_path, request_mock):
     assert bunch.description != ''
 
 
-def test_fetch_atlas_surf_destrieux(tmp_path, request_mock, verbose=0):
+def test_fetch_atlas_surf_destrieux(tmp_path, request_mocker, verbose=0):
     data_dir = str(tmp_path / 'destrieux_surface')
     os.mkdir(data_dir)
     # Create mock annots
@@ -507,7 +509,7 @@ def _mock_talairach_fetch_files(data_dir, *args, **kwargs):
     return [file_name]
 
 
-def test_fetch_atlas_talairach(tmp_path, request_mock):
+def test_fetch_atlas_talairach(tmp_path, request_mocker):
     atlas._fetch_files = _mock_talairach_fetch_files
     level_values = np.ones((81, 3)) * [0, 1, 2]
     talairach = atlas.fetch_atlas_talairach('hemisphere',

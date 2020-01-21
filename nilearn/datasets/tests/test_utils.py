@@ -26,7 +26,10 @@ file_mock = None
 
 
 @pytest.fixture()
-def request_mock():
+def request_mocker():
+    """ Mocks URL calls for data fetchers during testing.
+    Tests the fetcher code without actually downloading the files.
+    """
     setup_mock()
     yield
     teardown_mock()
@@ -307,7 +310,7 @@ def test_uncompress():
             shutil.rmtree(dtemp)
 
 
-def test_fetch_file_overwrite(tmp_path, request_mock):
+def test_fetch_file_overwrite(tmp_path, request_mocker):
     # overwrite non-exiting file.
     fil = datasets.utils._fetch_file(url='http://foo/', data_dir=str(tmp_path),
                                      verbose=0, overwrite=True)
@@ -338,7 +341,7 @@ def test_fetch_file_overwrite(tmp_path, request_mock):
         assert fp.read() == ''
 
 
-def test_fetch_files_overwrite(tmp_path, request_mock):
+def test_fetch_files_overwrite(tmp_path, request_mocker):
     # overwrite non-exiting file.
     files = ('1.txt', 'http://foo/1.txt')
     fil = datasets.utils._fetch_files(data_dir=str(tmp_path), verbose=0,
