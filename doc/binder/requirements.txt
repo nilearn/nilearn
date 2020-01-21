@@ -1,4 +1,3 @@
 -r ../../requirements-build-docs.txt
-nilearn==0.6.0  # Need to update on each PyPi release
 jupytext
-pytest
+.
