@@ -4,10 +4,6 @@
    :target: https://travis-ci.org/nilearn/nilearn
    :alt: Travis Build Status
 
-.. image:: https://ci.appveyor.com/api/projects/status/qynxxpx0hge4h0rn/branch/master?svg=true
-   :target: https://ci.appveyor.com/api/projects/status/qynxxpx0hge4h0rn/branch/master?svg=true
-   :alt: AppVeyor Build Status
-
 .. image:: https://codecov.io/gh/nilearn/nilearn/branch/master/graph/badge.svg
    :target: https://codecov.io/gh/nilearn/nilearn
 
@@ -52,7 +48,7 @@ The required dependencies to use the software are:
 If you are using nilearn plotting functionalities or running the
 examples, matplotlib >= 1.5.1 is required.
 
-If you want to run the tests, you need nose >= 1.2.1 and coverage >= 3.6.
+If you want to run the tests, you need pytest >= 3.9 and pytest-cov for coverage reporting.
 
 
 Install

@@ -3,14 +3,13 @@ import warnings
 from math import sqrt, exp, log, cosh, sinh
 
 import numpy as np
+import pytest
 from scipy import linalg
 from numpy.testing import assert_array_almost_equal, assert_array_equal
-from nose.tools import assert_raises, assert_equal, assert_true
 from sklearn.utils import check_random_state
 from sklearn.covariance import EmpiricalCovariance, LedoitWolf
 
 from nilearn._utils.extmath import is_spd
-from nilearn._utils.testing import assert_raises_regex
 from nilearn.tests.test_signal import generate_signals
 from nilearn.connectome.connectivity_matrices import (
     _check_square, _check_spd, _map_eigenvalues, _form_symmetric,
@@ -74,15 +73,15 @@ def grad_geometric_mean(mats, init=None, max_iter=10, tol=1e-7):
 
 def test_check_square():
     non_square = np.ones((2, 3))
-    assert_raises(ValueError, _check_square, non_square)
+    pytest.raises(ValueError, _check_square, non_square)
 
 
 def test_check_spd():
     non_sym = np.array([[0, 1], [0, 0]])
-    assert_raises(ValueError, _check_spd, non_sym)
+    pytest.raises(ValueError, _check_spd, non_sym)
 
     non_spd = np.ones((3, 3))
-    assert_raises(ValueError, _check_spd, non_spd)
+    pytest.raises(ValueError, _check_spd, non_spd)
 
 
 def test_map_eigenvalues():
@@ -253,7 +252,7 @@ def test_geometric_mean_properties():
     gmean = _geometric_mean(spds)
 
     # Generic
-    assert_true(isinstance(spds, list))
+    assert isinstance(spds, list)
     for spd, input_spd in zip(spds, input_spds):
         assert_array_equal(spd, input_spd)
     assert(is_spd(gmean, decimal=7))
@@ -279,7 +278,7 @@ def test_geometric_mean_properties():
     # Gradient norm is decreasing
     grad_norm = grad_geometric_mean(spds, tol=1e-20)
     difference = np.diff(grad_norm)
-    assert_true(np.amax(difference) <= 0.)
+    assert np.amax(difference) <= 0.
 
     # Check warning if gradient norm in the last step is less than
     # tolerance
@@ -288,10 +287,10 @@ def test_geometric_mean_properties():
     with warnings.catch_warnings(record=True) as w:
         warnings.simplefilter("always")
         gmean = _geometric_mean(spds, max_iter=max_iter, tol=tol)
-        assert_equal(len(w), 1)
+        assert len(w) == 1
     grad_norm = grad_geometric_mean(spds, max_iter=max_iter, tol=tol)
-    assert_equal(len(grad_norm), max_iter)
-    assert_true(grad_norm[-1] > tol)
+    assert len(grad_norm) == max_iter
+    assert grad_norm[-1] > tol
 
     # Evaluate convergence. A warning is printed if tolerance is not reached
     for p in [.5, 1.]:  # proportion of badly conditionned matrices
@@ -314,15 +313,15 @@ def test_geometric_mean_errors():
 
     # Non square input matrix
     mat1 = np.ones((n_features, n_features + 1))
-    assert_raises(ValueError, _geometric_mean, [mat1])
+    pytest.raises(ValueError, _geometric_mean, [mat1])
 
     # Input matrices of different shapes
     mat1 = np.eye(n_features)
     mat2 = np.ones((n_features + 1, n_features + 1))
-    assert_raises(ValueError, _geometric_mean, [mat1, mat2])
+    pytest.raises(ValueError, _geometric_mean, [mat1, mat2])
 
     # Non spd input matrix
-    assert_raises(ValueError, _geometric_mean, [mat2])
+    pytest.raises(ValueError, _geometric_mean, [mat2])
 
 
 def test_sym_matrix_to_vec():
@@ -365,14 +364,14 @@ def test_sym_matrix_to_vec():
 def test_vec_to_sym_matrix():
     # Check error if unsuitable size
     vec = np.ones(31)
-    assert_raises_regex(ValueError, 'Vector of unsuitable shape',
-                        vec_to_sym_matrix, vec)
+    with pytest.raises(ValueError, match='Vector of unsuitable shape'):
+        vec_to_sym_matrix(vec)
 
     # Check error if given diagonal shape incompatible with vec
     vec = np.ones(3)
     diagonal = np.zeros(4)
-    assert_raises_regex(ValueError, 'incompatible with vector',
-                        vec_to_sym_matrix, vec, diagonal)
+    with pytest.raises(ValueError, match='incompatible with vector'):
+        vec_to_sym_matrix(vec, diagonal)
 
     # Check output value is correct
     vec = np.ones(6, )
@@ -405,21 +404,21 @@ def test_prec_to_partial():
 def test_connectivity_measure_errors():
     # Raising error for input subjects not iterable
     conn_measure = ConnectivityMeasure()
-    assert_raises(ValueError, conn_measure.fit, 1.)
+    pytest.raises(ValueError, conn_measure.fit, 1.)
 
     # Raising error for input subjects not 2D numpy.ndarrays
-    assert_raises(ValueError, conn_measure.fit, [np.ones((100, 40)),
+    pytest.raises(ValueError, conn_measure.fit, [np.ones((100, 40)),
                                                  np.ones((10,))])
 
     # Raising error for input subjects with different number of features
-    assert_raises(ValueError, conn_measure.fit,
+    pytest.raises(ValueError, conn_measure.fit,
                   [np.ones((100, 40)), np.ones((100, 41))])
 
 
     # Raising an error for fit_transform with a single subject and
     # kind=tangent
     conn_measure = ConnectivityMeasure(kind='tangent')
-    assert_raises(ValueError, conn_measure.fit_transform,
+    pytest.raises(ValueError, conn_measure.fit_transform,
                   [np.ones((100, 40)), ])
 
 
@@ -454,8 +453,8 @@ def test_connectivity_measure_outputs():
             connectivities = conn_measure.fit_transform(signals)
 
             # Generic
-            assert_true(isinstance(connectivities, np.ndarray))
-            assert_equal(len(connectivities), len(covs))
+            assert isinstance(connectivities, np.ndarray)
+            assert len(connectivities) == len(covs)
 
             for k, cov_new in enumerate(connectivities):
                 assert_array_equal(input_covs[k], covs[k])
@@ -495,7 +494,7 @@ def test_connectivity_measure_outputs():
     for kind in kinds:
         conn_measure = ConnectivityMeasure(kind=kind)
         conn_measure.fit_transform(signals)
-        assert_equal((conn_measure.mean_).shape, (n_features, n_features))
+        assert (conn_measure.mean_).shape == (n_features, n_features)
         if kind != 'tangent':
             assert_array_almost_equal(
                 conn_measure.mean_,
@@ -518,10 +517,8 @@ def test_connectivity_measure_outputs():
                                   sym_matrix_to_vec(connectivities))
 
     # Check not fitted error
-    assert_raises_regex(
-        ValueError, 'has not been fitted. ',
-        ConnectivityMeasure().inverse_transform,
-        vectorized_connectivities)
+    with pytest.raises(ValueError, match='has not been fitted. '):
+        ConnectivityMeasure().inverse_transform(vectorized_connectivities)
 
     # Check inverse transformation
     kinds.remove('tangent')
@@ -560,10 +557,9 @@ def test_connectivity_measure_outputs():
         inverse_transformed = conn_measure.inverse_transform(
             vectorized_connectivities, diagonal=diagonal)
         assert_array_almost_equal(inverse_transformed, connectivities)
-        assert_raises_regex(ValueError,
-                            'can not reconstruct connectivity matrices',
-                            conn_measure.inverse_transform,
-                            vectorized_connectivities)
+        with pytest.raises(ValueError,
+                           match='can not reconstruct connectivity matrices'):
+            conn_measure.inverse_transform(vectorized_connectivities)
 
     # for 'tangent' kind, covariance matrices are reconstructed
     # without vectorization
@@ -591,7 +587,6 @@ def test_connectivity_measure_outputs():
     inverse_transformed = tangent_measure.inverse_transform(
         vectorized_displacements, diagonal=diagonal)
     assert_array_almost_equal(inverse_transformed, covariances)
-    assert_raises_regex(ValueError,
-                        'can not reconstruct connectivity matrices',
-                        tangent_measure.inverse_transform,
-                        vectorized_displacements)
+    with pytest.raises(ValueError,
+                       match='can not reconstruct connectivity matrices'):
+        tangent_measure.inverse_transform(vectorized_displacements)

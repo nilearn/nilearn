@@ -121,7 +121,8 @@ def full_brain_info(volume_img, mesh='fsaverage5', threshold=None,
 def _fill_html_template(info, embed_js=True):
     as_json = json.dumps(info)
     as_html = get_html_template('surface_plot_template.html').safe_substitute(
-        {'INSERT_STAT_MAP_JSON_HERE': as_json})
+        {'INSERT_STAT_MAP_JSON_HERE': as_json,
+         'INSERT_PAGE_TITLE_HERE': info["title"] or "Surface plot"})
     as_html = add_js_lib(as_html, embed_js=embed_js)
     return SurfaceView(as_html)
 

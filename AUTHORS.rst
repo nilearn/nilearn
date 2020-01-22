@@ -29,9 +29,9 @@ The nilearn core developers are:
 * Gael Varoquaux https://github.com/GaelVaroquaux
 * Jerome Dockes https://github.com/jeromedockes
 * Julia Huntenburg https://github.com/juhuntenburg
-* KamalakerDadi https://github.com/KamalakerDadi
+* Kamalaker Dadi https://github.com/KamalakerDadi
 * Kshitij Chawla https://github.com/kchawla-pi
-* Medhi Rahim https://github.com/mrahim
+* Mehdi Rahim https://github.com/mrahim
 * Salma Bougacha https://github.com/salma1601
 
 Funding
