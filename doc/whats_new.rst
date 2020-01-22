@@ -6,6 +6,19 @@ ENHANCEMENTS
 
 - html pages use the user-provided plot title, if any, as their title
 
+Fixes
+-----
+
+- Fetchers for developmental_fmri and localizer datasets resolve URLs correctly.
+
+Contributors
+------------
+
+The following people contributed to this release::
+
+     Elizabeth DuPre
+     Jerome Dockes
+     Kshitij Chawla (kchawla-pi)
 
 0.6.0
 =====
