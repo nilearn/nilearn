@@ -1,3 +1,21 @@
+0.6.1
+=====
+
+**Released January 2020**
+
+Fix
+---
+
+- Fetchers for localizer and developmental_fmri datasets now redirect the URL request correctly.
+
+Contributor
+-----------
+
+The following people contributed to this release::
+
+	Elizabeth Dupre
+	Kshitij Chawla (kchawla-pi)
+
 0.6.0
 =====
 
