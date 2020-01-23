@@ -4,6 +4,7 @@ import nibabel
 import pytest
 
 from nilearn.input_data.nifti_labels_masker import NiftiLabelsMasker
+from nilearn.input_data.multi_nifti_labels_masker import MultiNiftiLabelsMasker
 from nilearn._utils import testing, as_ndarray, data_gen
 from nilearn._utils.exceptions import DimensionError
 from nilearn.image import get_data
@@ -49,7 +50,7 @@ def test_multi_nifti_labels_masker():
         masker.fit()
 
     # check exception when transform() called without prior fit()
-    masker11 = NiftiLabelsMasker(labels11_img, resampling_target=None)
+    masker11 = MultiNiftiLabelsMasker(labels11_img, resampling_target='data')
     with pytest.raises(ValueError, match='has not been fitted. '):
         masker11.transform(fmri11_img)
 

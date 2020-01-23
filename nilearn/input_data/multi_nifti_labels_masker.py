@@ -153,3 +153,67 @@ class MultiNiftiLabelsMasker(NiftiLabelsMasker, CacheMixin):
         if resampling_target not in ("labels", "data", None):
             raise ValueError("invalid value for 'resampling_target' "
                              "parameter: " + str(resampling_target))
+
+    def transform_imgs(self, imgs_list, confounds=None, n_jobs=1):
+        """Extract signals from a list of 4D niimgs.
+
+        Parameters
+        ----------
+        imgs_list: list of 4D Niimg-like objects
+            See http://nilearn.github.io/manipulating_images/input_output.html
+            Images to process. Each element of the list is a 4D image.
+
+        confounds: CSV file or array-like, optional
+            This parameter is passed to signal.clean. Please see the related
+            documentation for details.
+            shape: list of (number of scans, number of confounds)
+
+        Returns
+        -------
+        region_signals: list of 2D numpy.ndarray
+            List of signals for each label per subject.
+            shape: list of (number of scans, number of labels)
+        """
+        # We handle the resampling of labels separately because the affine of
+        # the labels image should not impact the extraction of the signal.
+
+        if not hasattr(self, 'mask_img_'):
+            raise ValueError('It seems that %s has not been fitted. '
+                             'You must call fit() before calling transform().'
+                             % self.__class__.__name__)
+
+        if confounds is None:
+            confounds = itertools.repeat(None, len(imgs_list))
+
+        func = self._cache(self.transform_single_imgs,
+                           ignore=['verbose', 'memory', 'memory_level',
+                                   'copy'])
+        data = Parallel(n_jobs=n_jobs)(delayed(func)
+                                       (imgs=imgs, confounds=cfs)
+                                       for imgs, cfs in izip(imgs_list, confounds))
+        return data
+
+    def transform(self, imgs, confounds=None):
+        """ Apply mask, spatial and temporal preprocessing
+
+        Parameters
+        ----------
+        imgs: list of Niimg-like objects
+            See http://nilearn.github.io/manipulating_images/input_output.html
+            Data to be preprocessed
+
+        confounds: CSV file path or 2D matrix
+            This parameter is passed to signal.clean. Please see the
+            corresponding documentation for details.
+
+        Returns
+        -------
+        data: {list of numpy arrays}
+            preprocessed images
+        """
+
+        self._check_fitted()
+        if not hasattr(imgs, '__iter__') \
+                or isinstance(imgs, _basestring):
+            return self.transform_single_imgs(imgs)
+        return self.transform_imgs(imgs, confounds, n_jobs=self.n_jobs)
