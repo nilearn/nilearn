@@ -143,17 +143,14 @@ class MultiNiftiLabelsMasker(NiftiLabelsMasker, CacheMixin):
                                           'standard_deviation', 'variance'}
 
         if strategy not in available_reduction_strategies:
-            raise ValueError(str.format(
-                "Invalid strategy '{}'. Valid strategies are {}.",
-                strategy,
-                available_reduction_strategies
-            ))
+            raise ValueError("Invalid strategy '{}'. Valid strategies are {}.".format
+                             (strategy, available_reduction_strategies))
 
         self.strategy = strategy
 
         if resampling_target not in ("labels", "data", None):
             raise ValueError("invalid value for 'resampling_target' "
-                             "parameter: " + str(resampling_target))
+                             "parameter: {}".format(resampling_target))
 
     def transform_imgs(self, imgs_list, confounds=None, n_jobs=1):
         """Extract signals from a list of 4D niimgs.
@@ -179,9 +176,9 @@ class MultiNiftiLabelsMasker(NiftiLabelsMasker, CacheMixin):
         # the labels image should not impact the extraction of the signal.
 
         if not hasattr(self, 'mask_img_'):
-            raise ValueError('It seems that %s has not been fitted. '
-                             'You must call fit() before calling transform().'
-                             % self.__class__.__name__)
+            raise ValueError('It seems that {} has not been fitted. '
+                             'You must call fit() before calling transform().'.format
+                             (self.__class__.__name__))
 
         if confounds is None:
             confounds = itertools.repeat(None, len(imgs_list))
@@ -214,7 +211,7 @@ class MultiNiftiLabelsMasker(NiftiLabelsMasker, CacheMixin):
         """
 
         self._check_fitted()
-        if not hasattr(imgs, '__iter__') \
-                or isinstance(imgs, _basestring):
+        if (not hasattr(imgs, '__iter__')
+                or isinstance(imgs, _basestring)):
             return self.transform_single_imgs(imgs)
         return self.transform_imgs(imgs, confounds, n_jobs=self.n_jobs)

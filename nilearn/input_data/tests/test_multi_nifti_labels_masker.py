@@ -3,11 +3,11 @@ import numpy as np
 import nibabel
 import pytest
 
-from nilearn.input_data.nifti_labels_masker import NiftiLabelsMasker
-from nilearn.input_data.multi_nifti_labels_masker import MultiNiftiLabelsMasker
 from nilearn._utils import testing, as_ndarray, data_gen
 from nilearn._utils.exceptions import DimensionError
 from nilearn.image import get_data
+from nilearn.input_data.multi_nifti_labels_masker import MultiNiftiLabelsMasker
+from nilearn.input_data.nifti_labels_masker import NiftiLabelsMasker
 
 
 def generate_random_img(shape, length=1, affine=np.eye(4),
