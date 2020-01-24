@@ -1,6 +1,18 @@
 0.1.0b2
 =======
 
+.. warning::
+
+	| The phrases `resid` and `w` in method and attribute names
+	| have been changed to `residuals` and `whitened_` respectively.
+
+	| This will be a breaking change in the stable release of Nistats,
+	| due to be shipped with Nilearn 0.7.0 as `nilearn.stats`.
+
+	| To minimize compatibility problems, please change the names
+	| according to the info in the "Changes" section.
+
+
 New
 ---
 
@@ -10,6 +22,17 @@ New
 
 Changes
 -------
+
+* The following parameters, methods, and attributes have been renamed.
+  Classes affected: `OLSModel`, `RegressionResults`, `LikelihoodModelResults`.
+
+	* resid -> residuals
+	* df_resid -> df_residuals
+	* norm_resid -> normalized_residuals
+	* wresid -> whitened_residuals
+	* wdesign -> whitened_design
+	* wX -> whitened_X
+	* wY -> whitened_y
 
 * `run_img` variable deleted after masking in FirstLevelModel to reduce memory use.
 * :func:`nistats.reporting.make_glm_report` now uses the computed mask if there is no
