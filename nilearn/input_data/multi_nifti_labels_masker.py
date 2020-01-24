@@ -96,7 +96,8 @@ class MultiNiftiLabelsMasker(NiftiLabelsMasker, CacheMixin):
     verbose: integer, optional
         Indicate the level of verbosity. By default, nothing is printed
 
-    strategy: str
+    strategy: {'sum', 'mean', 'median', 'mininum', 'maximum', 'variance',
+        'standard_deviation'}, default is 'mean'
         The name of a valid function to reduce the region with.
         Must be one of: sum, mean, median, mininum, maximum, variance,
         standard_deviation
