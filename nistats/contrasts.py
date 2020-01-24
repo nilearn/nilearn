@@ -90,7 +90,7 @@ def compute_contrast(labels, regression_result, con_val, contrast_type=None):
             effect_[:, label_mask] = wcbeta
             var_[label_mask] = rss
 
-    dof_ = regression_result[label_].df_resid
+    dof_ = regression_result[label_].df_residuals
     return Contrast(effect=effect_, variance=var_, dim=dim, dof=dof_,
                     contrast_type=contrast_type)
 

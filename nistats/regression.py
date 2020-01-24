@@ -18,6 +18,8 @@ General reference for regression models:
 
 __docformat__ = 'restructuredtext en'
 
+import warnings
+
 import numpy as np
 
 from nibabel.onetime import setattr_on_read
@@ -25,6 +27,7 @@ from numpy.linalg import matrix_rank
 import scipy.linalg as spl
 
 from .model import LikelihoodModelResults
+from nistats._utils.helpers import replace_parameters
 from .utils import positive_reciprocal
 
 
@@ -47,8 +50,8 @@ class OLSModel(object):
     design : ndarray
         This is the design, or X, matrix.
 
-    wdesign : ndarray
-        This is the whitened design matrix.  `design` == `wdesign` by default
+    whitened_design : ndarray
+        This is the whitened design matrix.  `design` == `whitened_design` by default
         for the OLSModel, though models that inherit from the OLSModel will
         whiten the design.
 
@@ -58,7 +61,7 @@ class OLSModel(object):
     normalized_cov_beta : ndarray
         ``np.dot(calc_beta, calc_beta.T)``
 
-    df_resid : scalar
+    df_residuals : scalar
         Degrees of freedom of the residuals.  Number of observations less the
         rank of the design.
 
@@ -82,15 +85,31 @@ class OLSModel(object):
         # PLEASE don't assume we have a constant...
         # TODO: handle case for noconstant regression
         self.design = design
-        self.wdesign = self.whiten(self.design)
-        self.calc_beta = spl.pinv(self.wdesign)
+        self.whitened_design = self.whiten(self.design)
+        self.calc_beta = spl.pinv(self.whitened_design)
         self.normalized_cov_beta = np.dot(self.calc_beta,
                                           np.transpose(self.calc_beta))
-        self.df_total = self.wdesign.shape[0]
+        self.df_total = self.whitened_design.shape[0]
 
         eps = np.abs(self.design).sum() * np.finfo(np.float).eps
         self.df_model = matrix_rank(self.design, eps)
-        self.df_resid = self.df_total - self.df_model
+        self.df_residuals = self.df_total - self.df_model
+
+    @setattr_on_read
+    def df_resid(self):
+        warnings.warn("'df_resid' from OLSModel"
+                      "has been deprecated and will be removed. "
+                      "Please use 'df_residuals'.",
+                      FutureWarning)
+        return self.df_residuals
+
+    @setattr_on_read
+    def wdesign(self):
+        warnings.warn("'wdesign' from OLSModel"
+                      "has been deprecated and will be removed. "
+                      "Please use 'whitened_design'.",
+                      FutureWarning)
+        return self.whitened_design
 
     def logL(self, beta, Y, nuisance=None):
         r''' Returns the value of the loglikelihood function at beta.
@@ -145,7 +164,7 @@ class OLSModel(object):
         .. [1] W. Green.  "Econometric Analysis," 5th ed., Pearson, 2003.
         '''
         # This is overwriting an abstract method of LikelihoodModel
-        X = self.wdesign
+        X = self.whitened_design
         wY = self.whiten(Y)
         r = wY - np.dot(X, beta)
         n = self.df_total
@@ -167,7 +186,7 @@ class OLSModel(object):
 
         Returns
         -------
-        wX : array
+        whitened_X : array
             This matrix is the matrix whose pseudoinverse is ultimately
             used in estimating the coefficients. For OLSModel, it is
             does nothing. For WLSmodel, ARmodel, it pre-applies
@@ -195,9 +214,9 @@ class OLSModel(object):
         # squares models assume covariance is diagonal, i.e. heteroscedastic).
         wY = self.whiten(Y)
         beta = np.dot(self.calc_beta, wY)
-        wresid = wY - np.dot(self.wdesign, beta)
-        dispersion = np.sum(wresid ** 2, 0) / (self.wdesign.shape[0] -
-                                               self.wdesign.shape[1])
+        wresid = wY - np.dot(self.whitened_design, beta)
+        dispersion = np.sum(wresid ** 2, 0) / (self.whitened_design.shape[0] -
+                                               self.whitened_design.shape[1])
         lfit = RegressionResults(beta, Y, self,
                                  wY, wresid, dispersion=dispersion,
                                  cov=self.normalized_cov_beta)
@@ -248,14 +267,14 @@ class ARModel(OLSModel):
 
         Returns
         -------
-        wX : ndarray
+        whitened_X : ndarray
             X whitened with order self.order AR
         """
         X = np.asarray(X, np.float64)
-        _X = X.copy()
+        whitened_X = X.copy()
         for i in range(self.order):
-            _X[(i + 1):] = _X[(i + 1):] - self.rho[i] * X[0: - (i + 1)]
-        return _X
+            whitened_X[(i + 1):] = whitened_X[(i + 1):] - self.rho[i] * X[0: - (i + 1)]
+        return whitened_X
 
 
 class RegressionResults(LikelihoodModelResults):
@@ -264,8 +283,8 @@ class RegressionResults(LikelihoodModelResults):
 
     It handles the output of contrasts, estimates of covariance, etc.
     """
-
-    def __init__(self, theta, Y, model, wY, wresid, cov=None, dispersion=1.,
+    @replace_parameters({'wresid': 'whitened_residuals', 'wY': 'whitened_Y'}, lib_name='Nistats')
+    def __init__(self, theta, Y, model, whitened_Y, whitened_residuals, cov=None, dispersion=1.,
                  nuisance=None):
         """See LikelihoodModelResults constructor.
 
@@ -274,12 +293,48 @@ class RegressionResults(LikelihoodModelResults):
         """
         LikelihoodModelResults.__init__(self, theta, Y, model, cov,
                                         dispersion, nuisance)
-        self.wY = wY
-        self.wresid = wresid
-        self.wdesign = model.wdesign
+        self.whitened_Y = whitened_Y
+        self.whitened_residuals = whitened_residuals
+        self.whitened_design = model.whitened_design
+
+    @setattr_on_read
+    def wdesign(self):
+        warnings.warn("'wdesign' from RegressionResults"
+                      "has been deprecated and will be removed. "
+                      "Please use 'whitened_design'.",
+                      FutureWarning)
+        return self.whitened_design
+
+
+    @setattr_on_read
+    def wY(self):
+        warnings.warn("'wY' from RegressionResults "
+                      "has been deprecated and will be removed. "
+                      "Please use 'whitened_Y' instead.",
+                      FutureWarning,
+                      )
+        return self.whitened_Y
+
+    @setattr_on_read
+    def wresid(self):
+        warnings.warn("'wresid' from RegressionResults "
+                      "has been deprecated and will be removed. "
+                      "Please use 'whitened_residuals' instead.",
+                      FutureWarning,
+                      )
+        return self.whitened_residuals
 
     @setattr_on_read
     def resid(self):
+        warnings.warn("'resid' from RegressionResults "
+                      "has been deprecated and will be removed. "
+                      "Please use 'residuals' instead.",
+                      FutureWarning,
+                      )
+        return self.residuals
+
+    @setattr_on_read
+    def residuals(self):
         """
         Residuals from the fit.
         """
@@ -287,6 +342,15 @@ class RegressionResults(LikelihoodModelResults):
 
     @setattr_on_read
     def norm_resid(self):
+        warnings.warn("'norm_resid' from RegressionResults "
+                      "has been deprecated and will be removed. "
+                      "Please use 'normalized_residuals' instead.",
+                      FutureWarning,
+                      )
+        return self.normalized_residuals
+
+    @setattr_on_read
+    def normalized_residuals(self):
         """
         Residuals, normalized to have unit length.
 
@@ -303,7 +367,7 @@ class RegressionResults(LikelihoodModelResults):
         See: Montgomery and Peck 3.2.1 p. 68
              Davidson and MacKinnon 15.2 p 662
         """
-        return self.resid * positive_reciprocal(np.sqrt(self.dispersion))
+        return self.residuals * positive_reciprocal(np.sqrt(self.dispersion))
 
     @setattr_on_read
     def predicted(self):
@@ -311,26 +375,26 @@ class RegressionResults(LikelihoodModelResults):
         """
         beta = self.theta
         # the LikelihoodModelResults has parameters named 'theta'
-        X = self.wdesign
+        X = self.whitened_design
         return np.dot(X, beta)
 
     @setattr_on_read
     def SSE(self):
         """Error sum of squares. If not from an OLS model this is "pseudo"-SSE.
         """
-        return (self.wresid ** 2).sum(0)
+        return (self.whitened_residuals ** 2).sum(0)
 
     @setattr_on_read
     def r_square(self):
         """Proportion of explained variance.
         If not from an OLS model this is "pseudo"-R2.
         """
-        return np.var(self.predicted, 0) / np.var(self.wY, 0)
+        return np.var(self.predicted, 0) / np.var(self.whitened_Y, 0)
 
     @setattr_on_read
     def MSE(self):
         """ Mean square (error) """
-        return self.SSE / self.df_resid
+        return self.SSE / self.df_residuals
 
 
 class SimpleRegressionResults(LikelihoodModelResults):
@@ -353,7 +417,7 @@ class SimpleRegressionResults(LikelihoodModelResults):
         self.df_total = results.Y.shape[0]
         self.df_model = results.model.df_model
         # put this as a parameter of LikelihoodModel
-        self.df_resid = self.df_total - self.df_model
+        self.df_residuals = self.df_total - self.df_model
 
     def logL(self, Y):
         """
@@ -362,12 +426,36 @@ class SimpleRegressionResults(LikelihoodModelResults):
         raise ValueError('can not use this method for simple results')
 
     def resid(self, Y):
+        warnings.warn("'resid()' from SimpleRegressionResults"
+                      " has been deprecated and will be removed. "
+                      "Please use 'residuals()'.",
+                      FutureWarning,
+                      )
+        return self.residuals(Y)
+
+    def residuals(self, Y):
         """
         Residuals from the fit.
         """
         return Y - self.predicted
 
+    @setattr_on_read
+    def df_resid(self):
+        warnings.warn("The attribute 'df_resid' from OLSModel"
+                      "has been deprecated and will be removed. "
+                      "Please use 'df_residuals'.",
+                      FutureWarning)
+        return self.df_residuals
+
     def norm_resid(self, Y):
+        warnings.warn("'SimpleRegressionResults.norm_resid' method "
+                      "has been deprecated and will be removed. "
+                      "Please use 'normalized_residuals'.",
+                      FutureWarning,
+                      )
+        return self.normalized_residuals(Y)
+
+    def normalized_residuals(self, Y):
         """
         Residuals, normalized to have unit length.
 
@@ -384,7 +472,7 @@ class SimpleRegressionResults(LikelihoodModelResults):
         See: Montgomery and Peck 3.2.1 p. 68
              Davidson and MacKinnon 15.2 p 662
         """
-        return self.resid(Y) * positive_reciprocal(np.sqrt(self.dispersion))
+        return self.residuals(Y) * positive_reciprocal(np.sqrt(self.dispersion))
 
     def predicted(self):
         """ Return linear predictor values from a design matrix.

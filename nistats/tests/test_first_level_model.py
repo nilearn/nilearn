@@ -627,9 +627,9 @@ def test_first_level_model_residuals():
                             noise_model='ols')
     model.fit(fmri_data, design_matrices=design_matrices)
 
-    resid = model.residuals[0]
-    mean_resids = model.masker_.transform(resid).mean(0)
-    assert_array_almost_equal(mean_resids, 0)
+    residuals = model.residuals[0]
+    mean_residuals = model.masker_.transform(residuals).mean(0)
+    assert_array_almost_equal(mean_residuals, 0)
 
 
 def test_first_level_model_predictions_r_square():

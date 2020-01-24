@@ -133,8 +133,8 @@ def run_glm(Y, X, noise_model='ar1', bins=100, n_jobs=1, verbose=0):
 
     if noise_model == 'ar1':
         # compute and discretize the AR1 coefs
-        ar1 = ((ols_result.resid[1:] * ols_result.resid[:-1]).sum(axis=0) /
-               (ols_result.resid ** 2).sum(axis=0))
+        ar1 = ((ols_result.residuals[1:] * ols_result.residuals[:-1]).sum(axis=0) /
+               (ols_result.residuals ** 2).sum(axis=0))
         del ols_result
         ar1 = (ar1 * bins).astype(np.int) * 1. / bins
         # Fit the AR model acccording to current AR(1) estimates

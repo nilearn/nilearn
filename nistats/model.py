@@ -3,6 +3,7 @@ This module implement classes to handle statistical tests on likelihood models
 
 Author: Bertrand Thirion, 2011--2015
 """
+import warnings
 
 import numpy as np
 
@@ -72,8 +73,16 @@ class LikelihoodModelResults(object):
         self.df_total = Y.shape[0]
         self.df_model = model.df_model
         # put this as a parameter of LikelihoodModel
-        self.df_resid = self.df_total - self.df_model
-        
+        self.df_residuals = self.df_total - self.df_model
+
+    @setattr_on_read
+    def df_resid(self):
+        warnings.warn("'df_resid' from LikelihoodModelResults "
+                      "has been deprecated and will be removed. "
+                      "Please use 'df_residuals'.",
+                      FutureWarning)
+        return self.df_residuals
+
     @setattr_on_read
     def logL(self):
         """
@@ -200,7 +209,7 @@ class LikelihoodModelResults(object):
         if 't' in store:
             st_t = np.squeeze(effect * positive_reciprocal(sd))
         return TContrastResults(effect=st_effect, t=st_t, sd=st_sd,
-                                df_den=self.df_resid)
+                                df_den=self.df_residuals)
 
     def Fcontrast(self, matrix, dispersion=None, invcov=None):
         """ Compute an Fcontrast for a contrast matrix `matrix`.
@@ -262,7 +271,7 @@ class LikelihoodModelResults(object):
         return FContrastResults(
             effect=ctheta, covariance=self.vcov(
                 matrix=matrix, dispersion=dispersion[np.newaxis]),
-            F=F, df_den=self.df_resid, df_num=invcov.shape[0])
+            F=F, df_den=self.df_residuals, df_num=invcov.shape[0])
 
     def conf_int(self, alpha=.05, cols=None, dispersion=None):
         ''' The confidence interval of the specified theta estimates.
@@ -306,18 +315,18 @@ class LikelihoodModelResults(object):
 
         '''
         if cols is None:
-            lower = self.theta - inv_t_cdf(1 - alpha / 2, self.df_resid) *\
+            lower = self.theta - inv_t_cdf(1 - alpha / 2, self.df_residuals) * \
                     np.sqrt(np.diag(self.vcov(dispersion=dispersion)))
-            upper = self.theta + inv_t_cdf(1 - alpha / 2, self.df_resid) *\
+            upper = self.theta + inv_t_cdf(1 - alpha / 2, self.df_residuals) * \
                     np.sqrt(np.diag(self.vcov(dispersion=dispersion)))
         else:
             lower, upper = [], []
             for i in cols:
                 lower.append(
-                    self.theta[i] - inv_t_cdf(1 - alpha / 2, self.df_resid) *
+                    self.theta[i] - inv_t_cdf(1 - alpha / 2, self.df_residuals) *
                     np.sqrt(self.vcov(column=i, dispersion=dispersion)))
                 upper.append(
-                    self.theta[i] + inv_t_cdf(1 - alpha / 2, self.df_resid) *
+                    self.theta[i] + inv_t_cdf(1 - alpha / 2, self.df_residuals) *
                     np.sqrt(self.vcov(column=i, dispersion=dispersion)))
         return np.asarray(list(zip(lower, upper)))
 
