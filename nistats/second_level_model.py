@@ -46,8 +46,10 @@ def _check_second_level_input(second_level_input, design_matrix,
         if flm_object and isinstance(second_level_input[0], FirstLevelModel):
             models_input = enumerate(second_level_input)
             for model_idx, first_level_model in models_input:
-                if (first_level_model.labels_ is None or
-                        first_level_model.results_ is None):
+                if (
+                    first_level_model.labels_ is None or
+                    first_level_model.results_ is None
+                ):
                     raise ValueError(
                         'Model %s at index %i has not been fit yet'
                         '' % (first_level_model.subject_label, model_idx))
@@ -139,8 +141,7 @@ def _check_first_level_contrast(second_level_input, first_level_contrast):
 
 def _check_output_type(output_type, valid_types):
     if output_type not in valid_types:
-            raise ValueError('output_type must be one of {}'
-                             .format(valid_types))
+        raise ValueError('output_type must be one of {}'.format(valid_types))
 
 
 def _check_design_matrix(design_matrix):
@@ -207,6 +208,7 @@ def _infer_effect_maps(second_level_input, contrast_def):
         # If a Dataframe was given, we expect contrast_def to be in map_name
         def _is_contrast_def(x):
             return x['map_name'] == contrast_def
+
         is_con = second_level_input.apply(_is_contrast_def, axis=1)
         effect_maps = second_level_input[is_con]['effects_map_path'].tolist()
 
@@ -270,6 +272,7 @@ class SecondLevelModel(BaseEstimator, TransformerMixin, CacheMixin):
         on memory consumption. True by default.
 
     """
+
     @replace_parameters({'mask': 'mask_img'}, end_version='next')
     def __init__(self, mask_img=None, smoothing_fwhm=None,
                  memory=Memory(None), memory_level=1, verbose=0,
@@ -410,9 +413,9 @@ class SecondLevelModel(BaseEstimator, TransformerMixin, CacheMixin):
 
         return self
 
-    def compute_contrast(
-            self, second_level_contrast=None, first_level_contrast=None,
-            second_level_stat_type=None, output_type='z_score'):
+    def compute_contrast(self, second_level_contrast=None,
+                         first_level_contrast=None,
+                         second_level_stat_type=None, output_type='z_score'):
         """Generate different outputs corresponding to
         the contrasts provided e.g. z_map, t_map, effects and variance.
 
@@ -517,11 +520,12 @@ class SecondLevelModel(BaseEstimator, TransformerMixin, CacheMixin):
         return outputs if output_type == 'all' else output
 
 
-def non_parametric_inference(
-        second_level_input, confounds=None, design_matrix=None,
-        second_level_contrast=None, mask=None, smoothing_fwhm=None,
-        model_intercept=True, n_perm=10000, two_sided_test=False,
-        random_state=None, n_jobs=1, verbose=0):
+def non_parametric_inference(second_level_input, confounds=None,
+                             design_matrix=None, second_level_contrast=None,
+                             mask=None, smoothing_fwhm=None,
+                             model_intercept=True, n_perm=10000,
+                             two_sided_test=False, random_state=None,
+                             n_jobs=1, verbose=0):
     """Generate p-values corresponding to the contrasts provided
     based on permutation testing. This fuction reuses the 'permuted_ols'
     function Nilearn.
@@ -661,7 +665,8 @@ def non_parametric_inference(
     neg_log_pvals_permuted_ols, _, _ = permuted_ols(
         tested_var, target_vars, model_intercept=model_intercept,
         n_perm=n_perm, two_sided_test=two_sided_test,
-        random_state=random_state, n_jobs=n_jobs, verbose=max(0, verbose - 1))
+        random_state=random_state, n_jobs=n_jobs,
+        verbose=max(0, verbose - 1))
     neg_log_corrected_pvals_img = masker.inverse_transform(
         np.ravel(neg_log_pvals_permuted_ols))
 

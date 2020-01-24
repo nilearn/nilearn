@@ -27,4 +27,5 @@ __all__ = [compare_niimgs,
            make_glm_report,
            plot_contrast_matrix,
            plot_design_matrix,
+           _ReportScraper,
            ]

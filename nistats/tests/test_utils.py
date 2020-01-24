@@ -3,7 +3,7 @@ import json
 import os
 
 try:
-    import boto3
+    import boto3  # noqa:F401
 except ImportError:
     BOTO_INSTALLED = False
 else:
@@ -218,7 +218,8 @@ def test_get_design_from_fslmat(tmp_path):
     assert design_matrix.shape == matrix.shape
 
 
-@pytest.mark.skipif(not BOTO_INSTALLED, reason='Boto3  missing; necessary for this test')
+@pytest.mark.skipif(not BOTO_INSTALLED,
+                    reason='Boto3  missing; necessary for this test')
 def test_make_fresh_openneuro_dataset_urls_index(tmp_path, request_mocker):
     dataset_version = 'ds000030_R1.0.4'
     data_prefix = '{}/{}/uncompressed'.format(

@@ -7,27 +7,27 @@ from nistats.utils import _check_events_file_uses_tab_separators
 
 def make_data_for_test_runs():
     data_for_temp_datafile = [
-        ['csf', 'constant', 'linearTrend', 'wm'],
-        [13343.032102491035, 1.0, 0.0, 9486.199545677482],
-        [13329.224068063204, 1.0, 1.0, 9497.003324892803],
-        [13291.755627241291, 1.0, 2.0, 9484.012965365506],
-        ]
-    
+            ['csf', 'constant', 'linearTrend', 'wm'],
+            [13343.032102491035, 1.0, 0.0, 9486.199545677482],
+            [13329.224068063204, 1.0, 1.0, 9497.003324892803],
+            [13291.755627241291, 1.0, 2.0, 9484.012965365506],
+    ]
+
     delimiters = {
-        'tab': '\t',
-        'comma': ',',
-        'space': ' ',
-        'semicolon': ';',
-        'hyphen': '-',
-        }
-    
+            'tab': '\t',
+            'comma': ',',
+            'space': ' ',
+            'semicolon': ';',
+            'hyphen': '-',
+    }
+
     return data_for_temp_datafile, delimiters
 
 
 def _create_test_file(temp_csv, test_data, delimiter):
     test_data = pd.DataFrame(test_data)
     test_data.to_csv(temp_csv, sep=delimiter)
-    
+
 
 def _run_test_for_invalid_separator(filepath, delimiter_name):
     if delimiter_name not in ('tab', 'comma'):
@@ -44,10 +44,10 @@ def test_for_invalid_separator():
         with InTemporaryDirectory():
             temp_tsv_file = 'tempfile.{} separated values'.format(
                     delimiter_name)
-            _create_test_file(temp_csv=temp_tsv_file ,
+            _create_test_file(temp_csv=temp_tsv_file,
                               test_data=data_for_temp_datafile,
                               delimiter=delimiter_char)
-            _run_test_for_invalid_separator(filepath=temp_tsv_file ,
+            _run_test_for_invalid_separator(filepath=temp_tsv_file,
                                             delimiter_name=delimiter_name)
 
 
@@ -67,6 +67,7 @@ def test_with_1D_dataframe():
                 events_files=events_pandas_dataframe)
         assert result is None
 
+
 def test_for_invalid_filepath():
     filepath = 'junk_file_path.csv'
     result = _check_events_file_uses_tab_separators(events_files=filepath)
@@ -78,7 +79,7 @@ def test_for_pandas_dataframe():
     result = _check_events_file_uses_tab_separators(
             events_files=events_pandas_dataframe)
     assert result is None
-    
+
 
 def test_binary_opening_an_image():
     img_data = bytearray(
@@ -111,20 +112,18 @@ if __name__ == '__main__':
         pprint(['Running', test_func.__name__])
         test_func()
         pprint('... complete')
-    
-    
+
     def run_test_suite():
         tests = [
-            test_for_invalid_filepath,
-            test_with_2D_dataframe,
-            test_with_1D_dataframe,
-            test_for_invalid_filepath,
-            test_for_pandas_dataframe,
-            test_binary_opening_an_image,
-            test_binary_bytearray_of_ints_data,
-            ]
+                test_for_invalid_filepath,
+                test_with_2D_dataframe,
+                test_with_1D_dataframe,
+                test_for_invalid_filepath,
+                test_for_pandas_dataframe,
+                test_binary_opening_an_image,
+                test_binary_bytearray_of_ints_data,
+        ]
         for test_ in tests:
             _run_tests_print_test_messages(test_func=test_)
-
 
     run_test_suite()

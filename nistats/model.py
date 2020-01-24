@@ -16,15 +16,18 @@ from .utils import positive_reciprocal
 # Inverse t cumulative distribution
 inv_t_cdf = t_distribution.ppf
 
+
 class LikelihoodModelResults(object):
-    ''' Class to contain results from likelihood models '''
+    """ Class to contain results from likelihood models """
 
-    # This is the class in which things like AIC, BIC, llf can be implemented as
-    # methods, not computed in, say, the fit method of OLSModel
+    ''' This is the class in which things like AIC, BIC, llf
+    can be implemented as methods, not computed in, say,
+     the fit method of OLSModel
+    '''
 
-    def __init__(self, theta, Y, model, cov=None, dispersion=1., nuisance=None,
-                 rank=None):
-        ''' Set up results structure
+    def __init__(self, theta, Y, model, cov=None, dispersion=1.,
+                 nuisance=None, rank=None):
+        """ Set up results structure
 
         Parameters
         ----------
@@ -58,7 +61,7 @@ class LikelihoodModelResults(object):
 
         For (some subset of models) `dispersion` will typically be the mean
         square error from the estimated model (sigma^2)
-        '''
+        """
         self.theta = theta
         self.Y = Y
         self.model = model
@@ -140,7 +143,7 @@ class LikelihoodModelResults(object):
         or a matrix.
         """
         if self.cov is None:
-            raise ValueError('need covariance of parameters for computing' +\
+            raise ValueError('need covariance of parameters for computing'
                              '(unnormalized) covariances')
 
         if dispersion is None:
@@ -175,8 +178,8 @@ class LikelihoodModelResults(object):
             contrast matrix
 
         store : sequence, optional
-            components of t to store in results output object.  Defaults to all
-            components ('t', 'effect', 'sd').
+            components of t to store in results output object.
+            Defaults to all components ('t', 'effect', 'sd').
 
         dispersion : None or float, optional
 
@@ -221,12 +224,13 @@ class LikelihoodModelResults(object):
             M pX pX' M'
 
         is assumed invertible. Here, :math:`pX` is the generalized inverse of
-        the design matrix of the model. There can be problems in non-OLS models
-        where the rank of the covariance of the noise is not full.
+        the design matrix of the model.
+        There can be problems in non-OLS models where
+        the rank of the covariance of the noise is not full.
 
-        See the contrast module to see how to specify contrasts.  In particular,
-        the matrices from these contrasts will always be non-singular in the
-        sense above.
+        See the contrast module to see how to specify contrasts.
+        In particular, the matrices from these contrasts will always be
+        non-singular in the sense above.
 
         Parameters
         ----------
@@ -254,9 +258,10 @@ class LikelihoodModelResults(object):
         if matrix.ndim == 1:
             matrix = matrix[None]
         if matrix.shape[1] != self.theta.shape[0]:
-            raise ValueError("F contrasts should have shape[1] P=%d, "
-                             "but this has shape[1] %d" % (self.theta.shape[0],
-                                                           matrix.shape[1]))
+            raise ValueError(
+                "F contrasts should have shape[1] P=%d, "
+                "but this has shape[1] %d" % (self.theta.shape[0],
+                                              matrix.shape[1]))
         ctheta = np.dot(matrix, self.theta)
         if matrix.ndim == 1:
             matrix = matrix.reshape((1, matrix.shape[0]))
@@ -265,8 +270,9 @@ class LikelihoodModelResults(object):
         q = matrix.shape[0]
         if invcov is None:
             invcov = inv(self.vcov(matrix=matrix, dispersion=1.0))
-        F = np.add.reduce(np.dot(invcov, ctheta) * ctheta, 0) * \
-            positive_reciprocal((q * dispersion))
+        F = (np.add.reduce(np.dot(invcov, ctheta) * ctheta, 0)
+             * positive_reciprocal((q * dispersion))
+             )
         F = np.squeeze(F)
         return FContrastResults(
             effect=ctheta, covariance=self.vcov(
@@ -286,8 +292,8 @@ class LikelihoodModelResults(object):
             `cols` specifies which confidence intervals to return
 
         dispersion : None or scalar
-            scale factor for the variance / covariance (see class docstring and
-            ``vcov`` method docstring)
+            scale factor for the variance / covariance
+            (see class docstring and ``vcov`` method docstring)
 
         Returns
         -------
@@ -307,34 +313,43 @@ class LikelihoodModelResults(object):
 
         Notes
         -----
-        
+
         Confidence intervals are two-tailed.
-        
+
         tails : string, optional
             Possible values: 'two' | 'upper' | 'lower'
 
         '''
         if cols is None:
-            lower = self.theta - inv_t_cdf(1 - alpha / 2, self.df_residuals) * \
-                    np.sqrt(np.diag(self.vcov(dispersion=dispersion)))
-            upper = self.theta + inv_t_cdf(1 - alpha / 2, self.df_residuals) * \
-                    np.sqrt(np.diag(self.vcov(dispersion=dispersion)))
+            lower = (self.theta
+                     - inv_t_cdf(1 - alpha / 2, self.df_residuals)
+                     * np.sqrt(np.diag(self.vcov(dispersion=dispersion)))
+                     )
+            upper = (self.theta
+                     + inv_t_cdf(1 - alpha / 2, self.df_residuals)
+                     * np.sqrt(np.diag(self.vcov(dispersion=dispersion)))
+                     )
         else:
             lower, upper = [], []
             for i in cols:
                 lower.append(
-                    self.theta[i] - inv_t_cdf(1 - alpha / 2, self.df_residuals) *
-                    np.sqrt(self.vcov(column=i, dispersion=dispersion)))
+                    self.theta[i]
+                    - inv_t_cdf(1 - alpha / 2, self.df_residuals)
+                    * np.sqrt(self.vcov(column=i, dispersion=dispersion))
+                )
                 upper.append(
-                    self.theta[i] + inv_t_cdf(1 - alpha / 2, self.df_residuals) *
-                    np.sqrt(self.vcov(column=i, dispersion=dispersion)))
+                    self.theta[i]
+                    + inv_t_cdf(1 - alpha / 2, self.df_residuals)
+                    * np.sqrt(self.vcov(column=i, dispersion=dispersion))
+                )
         return np.asarray(list(zip(lower, upper)))
 
 
 class TContrastResults(object):
     """ Results from a t contrast of coefficients in a parametric model.
 
-    The class does nothing, it is a container for the results from T contrasts,
+    The class does nothing.
+    It is a container for the results from T contrasts,
     and returns the T-statistics when np.asarray is called.
     """
 
@@ -357,7 +372,8 @@ class TContrastResults(object):
 class FContrastResults(object):
     """ Results from an F contrast of coefficients in a parametric model.
 
-    The class does nothing, it is a container for the results from F contrasts,
+    The class does nothing.
+    It is a container for the results from F contrasts,
     and returns the F-statistics when np.asarray is called.
     """
 
@@ -369,9 +385,10 @@ class FContrastResults(object):
         self.F = F
         self.df_den = df_den
         self.df_num = df_num
+
     def __array__(self):
         return np.asarray(self.F)
 
     def __str__(self):
         return '<F contrast: F=%s, df_den=%d, df_num=%d>' % \
-            (repr(self.F), self.df_den, self.df_num)
+               (repr(self.F), self.df_den, self.df_num)

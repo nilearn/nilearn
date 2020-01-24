@@ -37,8 +37,8 @@ class OLSModel(object):
     Parameters
     ----------
     design : array-like
-        This is your design matrix.  Data are assumed to be column ordered with
-        observations in rows.
+        This is your design matrix.  Data are assumed to be column ordered
+        with observations in rows.
 
     Methods
     -------
@@ -51,9 +51,9 @@ class OLSModel(object):
         This is the design, or X, matrix.
 
     whitened_design : ndarray
-        This is the whitened design matrix.  `design` == `whitened_design` by default
-        for the OLSModel, though models that inherit from the OLSModel will
-        whiten the design.
+        This is the whitened design matrix.
+        `design` == `whitened_design` by default for the OLSModel,
+        though models that inherit from the OLSModel will whiten the design.
 
     calc_beta : ndarray
         This is the Moore-Penrose pseudoinverse of the whitened design matrix.
@@ -127,9 +127,10 @@ class OLSModel(object):
             The dependent variable
 
         nuisance : dict, optional
-            A dict with key 'sigma', which is an optional estimate of sigma. If
-            None, defaults to its maximum likelihood estimate (with beta fixed)
-            as ``sum((Y - X*beta)**2) / n``, where n=Y.shape[0], X=self.design.
+            A dict with key 'sigma', which is an optional estimate of sigma.
+            If None, defaults to its maximum likelihood estimate
+            (with beta fixed) as
+            ``sum((Y - X*beta)**2) / n``, where n=Y.shape[0], X=self.design.
 
         Returns
         -------
@@ -145,12 +146,13 @@ class OLSModel(object):
             \ell(\beta,\sigma,Y)=
             -\frac{n}{2}\log(2\pi\sigma^2) - \|Y-X\beta\|^2/(2\sigma^2)
 
-        The parameter :math:`\sigma` above is what is sometimes referred to as a
-        nuisance parameter. That is, the likelihood is considered as a function
-        of :math:`\beta`, but to evaluate it, a value of :math:`\sigma` is
-        needed.
+        The parameter :math:`\sigma` above is what is sometimes referred to
+        as a nuisance parameter. That is, the likelihood is considered as a
+        function of :math:`\beta`, but to evaluate it, a value of
+        :math:`\sigma` is needed.
 
-        If :math:`\sigma` is not provided, then its maximum likelihood estimate:
+        If :math:`\sigma` is not provided,
+        then its maximum likelihood estimate:
 
         .. math::
 
@@ -245,7 +247,7 @@ class ARModel(OLSModel):
             ndarray, gives initial estimate of rho. Be careful as ``ARModel(X,
             1) != ARModel(X, 1.0)``.
         """
-        if type(rho) is type(1):
+        if isinstance(rho, int):
             self.order = rho
             self.rho = np.zeros(self.order, np.float64)
         else:
@@ -273,7 +275,10 @@ class ARModel(OLSModel):
         X = np.asarray(X, np.float64)
         whitened_X = X.copy()
         for i in range(self.order):
-            whitened_X[(i + 1):] = whitened_X[(i + 1):] - self.rho[i] * X[0: - (i + 1)]
+            whitened_X[(i + 1):] = (whitened_X[(i + 1):]
+                                    - self.rho[i]
+                                    * X[0: - (i + 1)]
+                                    )
         return whitened_X
 
 
@@ -283,9 +288,12 @@ class RegressionResults(LikelihoodModelResults):
 
     It handles the output of contrasts, estimates of covariance, etc.
     """
-    @replace_parameters({'wresid': 'whitened_residuals', 'wY': 'whitened_Y'}, lib_name='Nistats')
-    def __init__(self, theta, Y, model, whitened_Y, whitened_residuals, cov=None, dispersion=1.,
-                 nuisance=None):
+    @replace_parameters(
+        {'wresid': 'whitened_residuals', 'wY': 'whitened_Y'},
+        lib_name='Nistats'
+    )
+    def __init__(self, theta, Y, model, whitened_Y, whitened_residuals,
+                 cov=None, dispersion=1., nuisance=None):
         """See LikelihoodModelResults constructor.
 
         The only difference is that the whitened Y and residual values
@@ -304,7 +312,6 @@ class RegressionResults(LikelihoodModelResults):
                       "Please use 'whitened_design'.",
                       FutureWarning)
         return self.whitened_design
-
 
     @setattr_on_read
     def wY(self):
@@ -403,6 +410,7 @@ class SimpleRegressionResults(LikelihoodModelResults):
 
     Its intended to save memory when details of the model are unnecessary.
     """
+
     def __init__(self, results):
         """See LikelihoodModelResults constructor.
 
@@ -472,7 +480,9 @@ class SimpleRegressionResults(LikelihoodModelResults):
         See: Montgomery and Peck 3.2.1 p. 68
              Davidson and MacKinnon 15.2 p 662
         """
-        return self.residuals(Y) * positive_reciprocal(np.sqrt(self.dispersion))
+        return (self.residuals(Y)
+                * positive_reciprocal(np.sqrt(self.dispersion))
+                )
 
     def predicted(self):
         """ Return linear predictor values from a design matrix.

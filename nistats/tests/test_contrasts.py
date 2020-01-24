@@ -85,7 +85,10 @@ def test_fixed_effect_contrast_nonzero_effect():
     for i in range(X.shape[1]):
         contrast = np.zeros(X.shape[1])
         contrast[i] = 1.
-        fixed_effect = _compute_fixed_effect_contrast([labels], [results], [contrast])
+        fixed_effect = _compute_fixed_effect_contrast([labels],
+                                                      [results],
+                                                      [contrast],
+                                                      )
         assert_almost_equal(fixed_effect.effect_size(), coef.ravel()[i])
         fixed_effect = _compute_fixed_effect_contrast(
             [labels] * 3, [results] * 3, [contrast] * 3)

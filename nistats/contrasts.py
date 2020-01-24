@@ -95,7 +95,8 @@ def compute_contrast(labels, regression_result, con_val, contrast_type=None):
                     contrast_type=contrast_type)
 
 
-def _compute_fixed_effect_contrast(labels, results, con_vals, contrast_type=None):
+def _compute_fixed_effect_contrast(labels, results, con_vals,
+                                   contrast_type=None):
     """Computes the summary contrast assuming fixed effects.
 
     Adds the same contrast applied to all labels and results lists.
@@ -160,7 +161,7 @@ class Contrast(object):
             self.dim = effect.shape[0]
         else:
             self.dim = dim
-        if self.dim > 1 and contrast_type is 't':
+        if self.dim > 1 and contrast_type == 't':
             print('Automatically converted multi-dimensional t to F contrast')
             contrast_type = 'F'
         self.contrast_type = contrast_type
@@ -303,7 +304,7 @@ def compute_fixed_effects(contrast_imgs, variance_imgs, mask=None,
     mask: Nifti1Image or NiftiMasker instance or None, optional,
               mask image. If None, it is recomputed from contrast_imgs
     precision_weighted: Bool, optional,
-              Whether the fixed effects estimates should be weighted by inverse
+              Whether fixed effects estimates should be weighted by inverse
               variance or not. Defaults to False.
 
     Returns
@@ -317,8 +318,10 @@ def compute_fixed_effects(contrast_imgs, variance_imgs, mask=None,
     """
     if len(contrast_imgs) != len(variance_imgs):
         raise ValueError(
-            'The number of contrast images (%d) differs from the number of '
-            'variance images (%d). ' % (len(contrast_imgs), len(variance_imgs)))
+            'The number of contrast images (%d) '
+            'differs from the number of variance images (%d). '
+            % (len(contrast_imgs), len(variance_imgs))
+        )
 
     if isinstance(mask, NiftiMasker):
         masker = mask.fit()
@@ -330,8 +333,9 @@ def compute_fixed_effects(contrast_imgs, variance_imgs, mask=None,
     variances = masker.transform(variance_imgs)
     contrasts = masker.transform(contrast_imgs)
 
-    fixed_fx_contrast, fixed_fx_variance, fixed_fx_t = _compute_fixed_effects_params(
-        contrasts, variances, precision_weighted)
+    (fixed_fx_contrast,
+     fixed_fx_variance, fixed_fx_t) = _compute_fixed_effects_params(
+            contrasts, variances, precision_weighted)
 
     fixed_fx_contrast_img = masker.inverse_transform(fixed_fx_contrast)
     fixed_fx_variance_img = masker.inverse_transform(fixed_fx_variance)

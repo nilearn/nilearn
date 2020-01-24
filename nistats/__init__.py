@@ -41,10 +41,12 @@ def _py2_deprecation_warning():
                   stacklevel=3,
                   )
 
+
 def _py34_deprecation_warning():
     py34_warning = ('Python 3.4 support is deprecated and will be removed in '
-                   'a future release. Consider switching to Python 3.6 or 3.7.'
-                   )
+                    'a future release. '
+                    'Consider switching to Python 3.6 or 3.7.'
+                    )
     warnings.filterwarnings('once', message=py34_warning)
     warnings.warn(message=py34_warning,
                   category=DeprecationWarning,

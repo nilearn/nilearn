@@ -19,9 +19,14 @@ py3 = sys.version_info[0] >= 3
 
 
 def get_data(img):
-    # copy-pasted from https://github.com/nipy/nibabel/blob/de44a105c1267b07ef9e28f6c35b31f851d5a005/nibabel/dataobj_images.py#L204
-    # get_data is removed from nibabel because:
-    # see https://github.com/nipy/nibabel/wiki/BIAP8
+    """
+    copy-pasted from
+    https://github.com/nipy/nibabel/blob/
+    de44a105c1267b07ef9e28f6c35b31f851d5a005/nibabel/dataobj_images.py#L204
+
+    get_data is removed from nibabel because:
+    see https://github.com/nipy/nibabel/wiki/BIAP8
+    """
     if img._data_cache is not None:
         return img._data_cache
     data = np.asanyarray(img._dataobj)
@@ -33,8 +38,8 @@ def _check_list_length_match(list_1, list_2, var_name_1, var_name_2):
     """Check length match of two given lists to raise error if necessary"""
     if len(list_1) != len(list_2):
         raise ValueError(
-            'len(%s) %d does not match len(%s) %d'
-            % (str(var_name_1), len(list_1), str(var_name_2), len(list_2)))
+                'len(%s) %d does not match len(%s) %d'
+                % (str(var_name_1), len(list_1), str(var_name_2), len(list_2)))
 
 
 def _read_events_table(table):
@@ -54,12 +59,12 @@ def _read_events_table(table):
     try:
         # kept for historical reasons, a lot of tests use csv with index column
         loaded = pd.read_csv(table, index_col=0)
-    except:
+    except:  # noqa: E722
         raise ValueError('table path %s could not be loaded' % table)
     if loaded.empty:
         try:
             loaded = pd.read_csv(table, sep='\t')
-        except:
+        except:  # noqa: E722
             raise ValueError('table path %s could not be loaded' % table)
     return loaded
 
@@ -124,13 +129,13 @@ def _check_events_file_uses_tab_separators(events_files):
             Handling them here will beak the calling code,
             and refactoring that is not straighforward.
             '''
-        except TypeError as type_err:  # events is Pandas dataframe.
+        except TypeError:  # events is Pandas dataframe.
             pass
-        except UnicodeDecodeError as unicode_err:  # py3:if binary file
+        except UnicodeDecodeError:  # py3:if binary file
             raise ValueError('The file does not seem to be '
                              'a valid unicode text file.'
                              )
-        except IOError as io_err:  # if invalid filepath.
+        except IOError:  # if invalid filepath.
             pass
         else:
             try:
@@ -143,7 +148,7 @@ def _check_events_file_uses_tab_separators(events_files):
                         'are not separated by tabs; '
                         'please enforce BIDS conventions',
                         events_file_
-                        )
+                )
 
 
 def _check_run_tables(run_imgs, tables_, tables_name):
@@ -193,10 +198,10 @@ def multiple_fast_inverse(a):
     a1, n = a[0], a.shape[0]
     getrf, getri = get_lapack_funcs(('getrf', 'getri'), (a1,))
     getrf, getri, getri_lwork = get_lapack_funcs(
-        ('getrf', 'getri', 'getri_lwork'), (a1,))
+            ('getrf', 'getri', 'getri_lwork'), (a1,))
     for i in range(n):
         if (getrf.module_name[:7] == 'clapack' and
-            getri.module_name[:7] != 'clapack'):
+                getri.module_name[:7] != 'clapack'):
             # ATLAS 3.2.1 has getrf but not getri.
             lu, piv, info = getrf(np.transpose(a[i]), rowmajor=0,
                                   overwrite_a=True)

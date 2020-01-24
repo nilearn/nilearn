@@ -9,8 +9,9 @@ import warnings
 
 import numpy as np
 from scipy import stats
-import nilearn.plotting  # overrides headless server backend, preempts
-                         # MatPlotLib import error when it's not installed.
+# overrides headless server backend,
+# preempts MatPlotLib import error when it's not installed.
+import nilearn.plotting  # noqa:F401
 import matplotlib.pyplot as plt
 
 
@@ -32,7 +33,7 @@ def compare_niimgs(ref_imgs, src_imgs, masker, plot_hist=True, log=True,
 
     masker: NiftiMasker object
         Mask to be used on data.
-    
+
     plot_hist: Boolean, optional (default True)
         If True then histograms of each img in ref_imgs will be plotted
         along-side the histogram of the corresponding image in src_imgs
@@ -69,10 +70,10 @@ def compare_niimgs(ref_imgs, src_imgs, masker, plot_hist=True, log=True,
         if ref_data.shape != src_data.shape:
             warnings.warn("Images are not shape-compatible")
             return
-        
+
         corr = stats.pearsonr(ref_data, src_data)[0]
         corrs.append(corr)
-        
+
         if plot_hist:
             ax1.scatter(
                     ref_data, src_data, label="Pearsonr: %.2f" % corr, c="g",
@@ -83,18 +84,18 @@ def compare_niimgs(ref_imgs, src_imgs, masker, plot_hist=True, log=True,
             ax1.set_xlabel(ref_label)
             ax1.set_ylabel(src_label)
             ax1.legend(loc="best")
-            
+
             ax2.hist(ref_data, alpha=.6, bins=128, log=log, label=ref_label)
             ax2.hist(src_data, alpha=.6, bins=128, log=log, label=src_label)
             ax2.set_title("Histogram of imgs values")
             ax2.grid("on")
             ax2.legend(loc="best")
-            
+
             if output_dir is not None:
                 if not os.path.exists(output_dir):
                     os.makedirs(output_dir)
                 plt.savefig(os.path.join(output_dir, "%04i.png" % i))
-        
+
         plt.tight_layout()
-    
+
     return corrs

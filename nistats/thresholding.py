@@ -76,14 +76,14 @@ def _true_positive_fraction(z_vals, hommel_value, alpha):
 
 def fdr_threshold(z_vals, alpha):
     """ return the Benjamini-Hochberg FDR threshold for the input z_vals
-    
+
     Parameters
     ----------
     z_vals: array,
             a set of z-variates from which the FDR is computed
     alpha: float,
            desired FDR control
-    
+
     Returns
     -------
     threshold: float,
@@ -104,7 +104,7 @@ def fdr_threshold(z_vals, alpha):
 
 
 def cluster_level_inference(stat_img, mask_img=None,
-                            threshold=3.,alpha=.05, verbose=False):
+                            threshold=3., alpha=.05, verbose=False):
     """ Report the proportion of active voxels for all clusters
     defined by the input threshold.
 
@@ -163,7 +163,8 @@ def cluster_level_inference(stat_img, mask_img=None,
         for label_ in range(1, n_labels + 1):
             # get the z-vals in the cluster
             cluster_vals = stats[labels == label_]
-            proportion = _true_positive_fraction(cluster_vals, hommel_value, alpha)
+            proportion = _true_positive_fraction(cluster_vals, hommel_value,
+                                                 alpha)
             proportion_true_discoveries[labels == label_] = proportion
 
     proportion_true_discoveries_img = masker.inverse_transform(
@@ -197,7 +198,7 @@ def map_threshold(stat_img=None, mask_img=None, alpha=.001, threshold=3.,
 
     height_control: string, or None optional
         false positive control meaning of cluster forming
-        threshold: 'fpr'|'fdr'|'bonferroni'\|None
+        threshold: None|'fpr'|'fdr'|'bonferroni'
 
     cluster_threshold: float, optional
         cluster size threshold. In the returned thresholded map,
@@ -242,9 +243,9 @@ def map_threshold(stat_img=None, mask_img=None, alpha=.001, threshold=3.,
         if height_control in ['fpr', None]:
             return None, threshold
         else:
-            raise ValueError(
-                'Map_threshold requires stat_img not to be None'
-                'when the height_control procedure is "bonferroni" or "fdr"')
+            raise ValueError('Map_threshold requires stat_img not to be None'
+                             'when the height_control procedure '
+                             'is "bonferroni" or "fdr"')
 
     if mask_img is None:
         masker = NiftiMasker(mask_strategy='background').fit(stat_img)

@@ -58,7 +58,8 @@ def check_events(events):
     trial_type = np.array(events['trial_type'])
     modulation = np.ones(n_events)
     if 'trial_type' not in events.keys():
-        warnings.warn("'trial_type' column not found in the given events data.")
+        warnings.warn("'trial_type' column not found "
+                      "in the given events data.")
         trial_type = np.repeat('dummy', n_events)
     if 'modulation' in events.keys():
         warnings.warn("'modulation' column found in the given events data.")

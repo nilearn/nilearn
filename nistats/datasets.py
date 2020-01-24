@@ -67,7 +67,9 @@ def fetch_language_localizer_demo_dataset(data_dir=None, verbose=1):
                  path, dirs, files in os.walk(data_dir) for f in files]
     return data_dir, sorted(file_list)
 
-# should be deprecated, even deleted, when the examples are adapted to use fetch_langloc_dataset
+
+# should be deprecated, even deleted,
+# when the examples are adapted to use fetch_langloc_dataset
 def fetch_bids_langloc_dataset(data_dir=None, verbose=1):
     """Download language localizer example bids dataset.
 
@@ -88,7 +90,7 @@ def fetch_bids_langloc_dataset(data_dir=None, verbose=1):
     downloaded_files: list of string
         Absolute paths of downloaded files on disk
     """
-    url = 'https://files.osf.io/v1/resources/9q7dv/providers/osfstorage/5888d9a76c613b01fc6acc4e'
+    url = 'https://files.osf.io/v1/resources/9q7dv/providers/osfstorage/5888d9a76c613b01fc6acc4e'  # noqa: E501
     dataset_name = 'bids_langloc_example'
     main_folder = 'bids_langloc_dataset'
     data_dir = _get_dataset_dir(dataset_name, data_dir=data_dir,
@@ -218,15 +220,22 @@ def select_from_index(urls, inclusion_filters=[], exclusion_filters=[],
 
 
 def patch_openneuro_dataset(file_list):
-    """Add symlinks for files not named according to latest BIDS conventions."""
+    """Add symlinks for files not named according to latest BIDS conventions.
+    """
     rep = {'_T1w_brainmask': '_desc-brain_mask',
            '_T1w_preproc': '_desc-preproc_T1w',
-           '_T1w_space-MNI152NLin2009cAsym_brainmask': '_space-MNI152NLin2009cAsym_desc-brain_mask',
-           '_T1w_space-MNI152NLin2009cAsym_class-': '_space-MNI152NLin2009cAsym_label-',
-           '_T1w_space-MNI152NLin2009cAsym_preproc': '_space-MNI152NLin2009cAsym_desc-preproc_T1w',
+           '_T1w_space-MNI152NLin2009cAsym_brainmask':
+               '_space-MNI152NLin2009cAsym_desc-brain_mask',
+           '_T1w_space-MNI152NLin2009cAsym_class-':
+               '_space-MNI152NLin2009cAsym_label-',
+           '_T1w_space-MNI152NLin2009cAsym_preproc':
+               '_space-MNI152NLin2009cAsym_desc-preproc_T1w',
            '_bold_confounds': '_desc-confounds_regressors',
-           '_bold_space-MNI152NLin2009cAsym_brainmask':'_space-MNI152NLin2009cAsym_desc-brain_mask',
-           '_bold_space-MNI152NLin2009cAsym_preproc':'_space-MNI152NLin2009cAsym_desc-preproc_bold'}
+           '_bold_space-MNI152NLin2009cAsym_brainmask':
+               '_space-MNI152NLin2009cAsym_desc-brain_mask',
+           '_bold_space-MNI152NLin2009cAsym_preproc':
+               '_space-MNI152NLin2009cAsym_desc-preproc_bold'
+           }
     # Create a symlink if a file with the modified filename does not exist
     for old in rep:
         for name in file_list:
@@ -273,7 +282,8 @@ def fetch_openneuro_dataset(
     # if urls are not specified we download the complete dataset index
     if urls is None:
         _, urls = fetch_openneuro_dataset_index(
-            data_dir=data_dir, dataset_version=dataset_version, verbose=verbose)
+            data_dir=data_dir, dataset_version=dataset_version,
+            verbose=verbose)
 
     # The files_spec needed for _fetch_files
     files_spec = []
@@ -302,7 +312,7 @@ def fetch_openneuro_dataset(
         if not success:
             raise Exception('multiple failures downloading %s' % file_spec[1])
     patch_openneuro_dataset(downloaded)
-    
+
     return data_dir, sorted(downloaded)
 
 
@@ -328,7 +338,7 @@ def fetch_localizer_first_level(data_dir=None, verbose=1):
     options = ('epi_img', 'events')
     dir_ = 'localizer_first_level'
     filenames = [(os.path.join(dir_, name), url, opts)
-                  for name in [epi_img, events]]
+                 for name in [epi_img, events]]
 
     dataset_name = 'localizer_first_level'
     data_dir = _get_dataset_dir(dataset_name, data_dir=data_dir,
@@ -347,7 +357,7 @@ def _download_spm_auditory_data(data_dir, subject_dir, subject_id):
     _fetch_file(url, subject_dir)
     try:
         _uncompress_file(archive_path)
-    except:
+    except:  # noqa:E722
         print('Archive corrupted, trying to download it again.')
         return fetch_spm_auditory(data_dir=data_dir, data_name='',
                                   subject_id=subject_id)
@@ -381,7 +391,8 @@ def _prepare_downloaded_spm_auditory_data(subject_dir):
     _subject_data = {}
     _subject_data['func'] = sorted(
             [subject_data[x] for x in subject_data.keys()
-             if re.match('^fM00223_0\d\d\.img$', os.path.basename(x))])
+             if re.match('^fM00223_0\d\d\.img$',  # noqa:W605
+                         os.path.basename(x))])
 
     # volumes for this dataset of shape (64, 64, 64, 1); let's fix this
     for x in _subject_data['func']:
@@ -392,7 +403,7 @@ def _prepare_downloaded_spm_auditory_data(subject_dir):
             nib.save(vol, x)
 
     _subject_data['anat'] = [subject_data[x] for x in subject_data.keys()
-                             if re.match('^sM00223_002\.img$',
+                             if re.match('^sM00223_002\.img$',  # noqa:W605
                                          os.path.basename(x))][0]
 
     # ... same thing for anat
@@ -446,9 +457,9 @@ def _make_events_file_spm_auditory_data(events_filepath):
     duration = epoch_duration * np.ones(n_blocks)
     onset = np.linspace(0, (n_blocks - 1) * epoch_duration, n_blocks)
     events = pd.DataFrame(
-            {'onset': onset, 'duration': duration, 'trial_type': conditions})
+        {'onset': onset, 'duration': duration, 'trial_type': conditions})
     events.to_csv(events_filepath, sep='\t', index=False,
-                       columns=['onset', 'duration', 'trial_type'])
+                  columns=['onset', 'duration', 'trial_type'])
 
 
 def fetch_spm_auditory(data_dir=None, data_name='spm_auditory',
@@ -485,7 +496,7 @@ def fetch_spm_auditory(data_dir=None, data_name='spm_auditory',
         spm_auditory_data['events']
     except KeyError:
         events_filepath = _make_path_events_file_spm_auditory_data(
-                                                            spm_auditory_data)
+            spm_auditory_data)
         if not os.path.isfile(events_filepath):
             _make_events_file_spm_auditory_data(events_filepath)
         spm_auditory_data['events'] = events_filepath
@@ -494,13 +505,13 @@ def fetch_spm_auditory(data_dir=None, data_name='spm_auditory',
 
 def _get_func_data_spm_multimodal(subject_dir, session, _subject_data):
     session_func = sorted(glob.glob(
-            os.path.join(
-                    subject_dir,
-                    ('fMRI/Session%i/fMETHODS-000%i-*-01.img' % (
-                        session, session + 4)
-                     )
-                    )
-            ))
+        os.path.join(
+            subject_dir,
+            ('fMRI/Session%i/fMETHODS-000%i-*-01.img' % (
+                session, session + 4)
+             )
+        )
+    ))
     if len(session_func) < 390:
         print('Missing %i functional scans for session %i.' % (
             390 - len(session_func), session))
@@ -512,8 +523,8 @@ def _get_func_data_spm_multimodal(subject_dir, session, _subject_data):
 
 def _get_session_trials_spm_multimodal(subject_dir, session, _subject_data):
     sess_trials = os.path.join(
-            subject_dir,
-            'fMRI/trials_ses%i.mat' % (session))
+        subject_dir,
+        'fMRI/trials_ses%i.mat' % (session))
     if not os.path.isfile(sess_trials):
         print('Missing session file: %s' % sess_trials)
         return None
@@ -538,25 +549,33 @@ def _glob_spm_multimodal_fmri_data(subject_dir):
 
     for session in range(1, 3):
         # glob func data for session
-        _subject_data = _get_func_data_spm_multimodal(subject_dir, session, _subject_data)
+        _subject_data = _get_func_data_spm_multimodal(subject_dir,
+                                                      session,
+                                                      _subject_data)
         if not _subject_data:
             return None
         # glob trials .mat file
-        _subject_data = _get_session_trials_spm_multimodal(subject_dir, session, _subject_data)
+        _subject_data = _get_session_trials_spm_multimodal(subject_dir,
+                                                           session,
+                                                           _subject_data)
         if not _subject_data:
             return None
         try:
-            events = _make_events_file_spm_multimodal_fmri(_subject_data, session)
+            events = _make_events_file_spm_multimodal_fmri(_subject_data,
+                                                           session)
         except MatReadError as mat_err:
-            warnings.warn('{}. An events.tsv file cannot be generated'.format(str(mat_err)))
+            warnings.warn(
+                '{}. An events.tsv file '
+                'cannot be generated'.format(str(mat_err)))
         else:
-            events_filepath = _make_events_filepath_spm_multimodal_fmri(_subject_data, session)
+            events_filepath = _make_events_filepath_spm_multimodal_fmri(
+                _subject_data, session)
             events.to_csv(events_filepath, sep='\t', index=False)
             _subject_data['events{}'.format(session)] = events_filepath
 
-
     # glob for anat data
-    _subject_data = _get_anatomical_data_spm_multimodal(subject_dir, _subject_data)
+    _subject_data = _get_anatomical_data_spm_multimodal(subject_dir,
+                                                        _subject_data)
     if not _subject_data:
         return None
 
@@ -568,19 +587,18 @@ def _download_data_spm_multimodal(data_dir, subject_dir, subject_id):
     urls = [
         # fmri
         ('http://www.fil.ion.ucl.ac.uk/spm/download/data/mmfaces/'
-        'multimodal_fmri.zip'),
-
+         'multimodal_fmri.zip'),
         # structural
         ('http://www.fil.ion.ucl.ac.uk/spm/download/data/mmfaces/'
          'multimodal_smri.zip')
-        ]
+    ]
 
     for url in urls:
         archive_path = os.path.join(subject_dir, os.path.basename(url))
         _fetch_file(url, subject_dir)
         try:
             _uncompress_file(archive_path)
-        except:
+        except:  # noqa:E722
             print('Archive corrupted, trying to download it again.')
             return fetch_spm_multimodal_fmri(data_dir=data_dir,
                                              data_name='',
@@ -609,7 +627,7 @@ def _make_events_file_spm_multimodal_fmri(_subject_data, session):
                   ['scrambled'] * len(scrambled_onsets))
     duration = np.ones_like(onsets)
     events = pd.DataFrame({'trial_type': conditions, 'onset': onsets,
-                             'duration': duration})
+                           'duration': duration})
     return events
 
 
@@ -663,6 +681,7 @@ def fetch_fiac_first_level(data_dir=None, verbose=1):
     """
     data_dir = _get_dataset_dir('fiac_nistats', data_dir=data_dir,
                                 verbose=verbose)
+
     def _glob_fiac_data():
         """glob data from subject_dir."""
         _subject_data = {}
@@ -677,7 +696,8 @@ def fetch_fiac_first_level(data_dir=None, verbose=1):
             _subject_data['func%i' % session] = session_func
 
             # glob design matrix .npz file
-            sess_dmtx = os.path.join(subject_dir, 'run%i_design.npz' % session)
+            sess_dmtx = os.path.join(subject_dir,
+                                     'run%i_design.npz' % session)
             if not os.path.isfile(sess_dmtx):
                 print('Missing session file: %s' % sess_dmtx)
                 return None
@@ -706,7 +726,7 @@ def fetch_fiac_first_level(data_dir=None, verbose=1):
     _fetch_file(url, data_dir)
     try:
         _uncompress_file(archive_path)
-    except:
+    except:  # noqa:E722
         print('Archive corrupted, trying to download it again.')
         return fetch_fiac_first_level(data_dir=data_dir)
 

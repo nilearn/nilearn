@@ -23,10 +23,11 @@ def _local_max(data, affine, min_distance):
     ----------
     data : array_like
         3D array of with masked values for cluster.
-    
+
     affine: np.ndarray
-        Square matrix specifying the position of the image array data in a reference space.
-    
+        Square matrix specifying the position of the image array data
+        in a reference space.
+
     min_distance : `int`
         Minimum distance between local maxima in ``data``, in terms of mm.
 
@@ -42,8 +43,8 @@ def _local_max(data, affine, min_distance):
     xyz, ijk, vals = _sort_subpeaks(ijk, vals, affine)
     ijk, vals = _pare_subpeaks(xyz, ijk, vals, min_distance)
     return ijk, vals
-    
-    
+
+
 def _identify_subpeaks(data):
     # Initial identification of subpeaks with minimal minimum distance
     data_max = ndimage.filters.maximum_filter(data, 3)
@@ -59,8 +60,8 @@ def _identify_subpeaks(data):
     vals = np.apply_along_axis(arr=ijk, axis=1, func1d=_get_val,
                                input_arr=data)
     return ijk, vals
-    
-    
+
+
 def _sort_subpeaks(ijk, vals, affine):
     # Sort subpeaks in cluster in descending order of stat value
     order = (-vals).argsort()
@@ -68,8 +69,8 @@ def _sort_subpeaks(ijk, vals, affine):
     ijk = ijk[order, :]
     xyz = nib.affines.apply_affine(affine, ijk)  # Convert to xyz in mm
     return xyz, ijk, vals
-    
-    
+
+
 def _pare_subpeaks(xyz, ijk, vals, min_distance):
     # Reduce list of subpeaks based on distance
     keep_idx = np.ones(xyz.shape[0]).astype(bool)
@@ -114,7 +115,8 @@ def get_clusters_table(stat_img, stat_threshold, cluster_threshold=None,
     df : `pandas.DataFrame`
         Table with peaks and subpeaks from thresholded `stat_img`. For binary
         clusters (clusters with >1 voxel containing only one value), the table
-        reports the center of mass of the cluster, rather than any peaks/subpeaks.
+        reports the center of mass of the cluster,
+        rather than any peaks/subpeaks.
     """
     cols = ['Cluster ID', 'X', 'Y', 'Z', 'Peak Stat', 'Cluster Size (mm3)']
     stat_map = get_data(stat_img)
@@ -123,17 +125,17 @@ def get_clusters_table(stat_img, stat_threshold, cluster_threshold=None,
     conn_mat[1, :, 1] = 1
     conn_mat[:, 1, 1] = 1
     voxel_size = np.prod(stat_img.header.get_zooms())
-    
+
     # Binarize using CDT
     binarized = stat_map > stat_threshold
     binarized = binarized.astype(int)
-    
+
     # If the stat threshold is too high simply return an empty dataframe
     if np.sum(binarized) == 0:
         warnings.warn('Attention: No clusters with stat higher than %f' %
                       stat_threshold)
         return pd.DataFrame(columns=cols)
-    
+
     # Extract connected components above cluster size threshold
     label_map = ndimage.measurements.label(binarized, conn_mat)[0]
     clust_ids = sorted(list(np.unique(label_map)[1:]))
@@ -142,7 +144,7 @@ def get_clusters_table(stat_img, stat_threshold, cluster_threshold=None,
                 label_map == c_val) < cluster_threshold:
             stat_map[label_map == c_val] = 0
             binarized[label_map == c_val] = 0
-    
+
     # If the cluster threshold is too high simply return an empty dataframe
     # this checks for stats higher than threshold after small clusters
     # were removed from stat_map
@@ -150,7 +152,7 @@ def get_clusters_table(stat_img, stat_threshold, cluster_threshold=None,
         warnings.warn('Attention: No clusters with more than %d voxels' %
                       cluster_threshold)
         return pd.DataFrame(columns=cols)
-    
+
     # Now re-label and create table
     label_map = ndimage.measurements.label(binarized, conn_mat)[0]
     clust_ids = sorted(list(np.unique(label_map)[1:]))
@@ -158,14 +160,14 @@ def get_clusters_table(stat_img, stat_threshold, cluster_threshold=None,
             [np.max(stat_map * (label_map == c)) for c in clust_ids])
     clust_ids = [clust_ids[c] for c in
                  (-peak_vals).argsort()]  # Sort by descending max value
-    
+
     rows = []
     for c_id, c_val in enumerate(clust_ids):
         cluster_mask = label_map == c_val
         masked_data = stat_map * cluster_mask
-        
+
         cluster_size_mm = int(np.sum(cluster_mask) * voxel_size)
-        
+
         # Get peaks, subpeaks and associated statistics
         subpeak_ijk, subpeak_vals = _local_max(masked_data, stat_img.affine,
                                                min_distance=min_distance)
@@ -174,7 +176,7 @@ def get_clusters_table(stat_img, stat_threshold, cluster_threshold=None,
                                                  subpeak_ijk[:, 2],
                                                  stat_img.affine)).tolist()
         subpeak_xyz = np.array(subpeak_xyz).T
-        
+
         # Only report peak and, at most, top 3 subpeaks.
         n_subpeaks = np.min((len(subpeak_vals), 4))
         for subpeak in range(n_subpeaks):
@@ -183,7 +185,7 @@ def get_clusters_table(stat_img, stat_threshold, cluster_threshold=None,
                        subpeak_xyz[subpeak, 1], subpeak_xyz[subpeak, 2],
                        subpeak_vals[subpeak], cluster_size_mm]
             else:
-                # Subpeak naming convention is cluster num + letter (1a, 1b, etc.)
+                # Subpeak naming convention is cluster num+letter: 1a, 1b, etc
                 sp_id = '{0}{1}'.format(c_id + 1, ascii_lowercase[subpeak - 1])
                 row = [sp_id, subpeak_xyz[subpeak, 0], subpeak_xyz[subpeak, 1],
                        subpeak_xyz[subpeak, 2], subpeak_vals[subpeak], '']

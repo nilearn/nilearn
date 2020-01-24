@@ -32,7 +32,8 @@ from sklearn.externals.joblib import (Parallel,
                                       delayed,
                                       )
 
-from .contrasts import _compute_fixed_effect_contrast, expression_to_contrast_vector
+from .contrasts import (_compute_fixed_effect_contrast,
+                        expression_to_contrast_vector)
 from .design_matrix import make_first_level_design_matrix
 from .regression import (ARModel,
                          OLSModel,
@@ -119,22 +120,27 @@ def run_glm(Y, X, noise_model='ar1', bins=100, n_jobs=1, verbose=0):
     acceptable_noise_models = ['ar1', 'ols']
     if noise_model not in acceptable_noise_models:
         raise ValueError(
-            "Acceptable noise models are {0}. You provided 'noise_model={1}'".
-            format(acceptable_noise_models, noise_model))
-
+            "Acceptable noise models are {0}. You provided "
+            "'noise_model={1}'".format(acceptable_noise_models,
+                                       noise_model)
+        )
     if Y.shape[0] != X.shape[0]:
-        raise ValueError(
-            'The number of rows of Y should match the number of rows of X.'
-            ' You provided X with shape {0} and Y with shape {1}'.
-            format(X.shape, Y.shape))
+        raise ValueError('The number of rows of Y '
+                         'should match the number of rows of X.'
+                         ' You provided X with shape {0} '
+                         'and Y with shape {1}'.
+                         format(X.shape, Y.shape))
 
     # Create the model
     ols_result = OLSModel(X).fit(Y)
 
     if noise_model == 'ar1':
         # compute and discretize the AR1 coefs
-        ar1 = ((ols_result.residuals[1:] * ols_result.residuals[:-1]).sum(axis=0) /
-               (ols_result.residuals ** 2).sum(axis=0))
+        ar1 = (
+            (ols_result.residuals[1:]
+             * ols_result.residuals[:-1]).sum(axis=0)
+            / (ols_result.residuals ** 2).sum(axis=0)
+        )
         del ols_result
         ar1 = (ar1 * bins).astype(np.int) * 1. / bins
         # Fit the AR model acccording to current AR(1) estimates
@@ -143,7 +149,8 @@ def run_glm(Y, X, noise_model='ar1', bins=100, n_jobs=1, verbose=0):
         # Parallelize by creating a job per ARModel
         vals = np.unique(ar1)
         ar_result = Parallel(n_jobs=n_jobs, verbose=verbose)(
-            delayed(_ar_model_fit)(X, val, Y[:, labels == val]) for val in vals)
+            delayed(_ar_model_fit)(X, val, Y[:, labels == val])
+            for val in vals)
         for val, result in zip(vals, ar_result):
             results[val] = result
         del vals
@@ -157,7 +164,8 @@ def run_glm(Y, X, noise_model='ar1', bins=100, n_jobs=1, verbose=0):
 
 
 class FirstLevelModel(BaseEstimator, TransformerMixin, CacheMixin):
-    """ Implementation of the General Linear Model for single session fMRI data
+    """ Implementation of the General Linear Model
+    for single session fMRI data.
 
     Parameters
     ----------
@@ -176,7 +184,8 @@ class FirstLevelModel(BaseEstimator, TransformerMixin, CacheMixin):
     hrf_model : {'spm', 'spm + derivative', 'spm + derivative + dispersion',
         'glover', 'glover + derivative', 'glover + derivative + dispersion',
         'fir', None}
-        String that specifies the hemodynamic response function. Defaults to 'glover'.
+        String that specifies the hemodynamic response function.
+        Defaults to 'glover'.
 
     drift_model : string, optional
         This parameter specifies the desired drift model for the design
@@ -206,20 +215,21 @@ class FirstLevelModel(BaseEstimator, TransformerMixin, CacheMixin):
         parameters. If False is given then the data will not be masked.
 
     target_affine : 3x3 or 4x4 matrix, optional
-        This parameter is passed to nilearn.image.resample_img. Please see the
-        related documentation for details.
+        This parameter is passed to nilearn.image.resample_img.
+        Please see the related documentation for details.
 
     target_shape : 3-tuple of integers, optional
-        This parameter is passed to nilearn.image.resample_img. Please see the
-        related documentation for details.
+        This parameter is passed to nilearn.image.resample_img.
+        Please see the related documentation for details.
 
     smoothing_fwhm : float, optional
-        If smoothing_fwhm is not None, it gives the size in millimeters of the
-        spatial smoothing to apply to the signal.
+        If smoothing_fwhm is not None, it gives the size in millimeters of
+        the spatial smoothing to apply to the signal.
 
     memory : string, optional
         Path to the directory used to cache the masking process and the glm
-        fit. By default, no caching is done. Creates instance of joblib.Memory.
+        fit. By default, no caching is done.
+        Creates instance of joblib.Memory.
 
     memory_level : integer, optional
         Rough estimator of the amount of memory used by caching. Higher value
@@ -230,11 +240,13 @@ class FirstLevelModel(BaseEstimator, TransformerMixin, CacheMixin):
         their variance is put to 1 in the time dimension.
 
     signal_scaling : False, int or (int, int), optional,
-        If not False, fMRI signals are scaled to the mean value of scaling_axis
-        given, which can be 0, 1 or (0, 1). 0 refers to mean scaling each voxel
-        with respect to time, 1 refers to mean scaling each time point with
-        respect to all voxels and (0, 1) refers to scaling with respect to
-        voxels and time, which is known as grand mean scaling.
+        If not False, fMRI signals are
+        scaled to the mean value of scaling_axis given,
+        which can be 0, 1 or (0, 1).
+        0 refers to mean scaling each voxel with respect to time,
+        1 refers to mean scaling each time point with respect to all voxels &
+        (0, 1) refers to scaling with respect to voxels and time,
+        which is known as grand mean scaling.
         Incompatible with standardize (standardize=False is enforced when
         signal_scaling is not False).
 
@@ -274,13 +286,14 @@ class FirstLevelModel(BaseEstimator, TransformerMixin, CacheMixin):
 
 
     """
+
     @replace_parameters({'mask': 'mask_img'}, end_version='next')
     def __init__(self, t_r=None, slice_time_ref=0., hrf_model='glover',
                  drift_model='cosine', high_pass=.01, drift_order=1,
-                 fir_delays=[0], min_onset=-24, mask_img=None, target_affine=None,
-                 target_shape=None, smoothing_fwhm=None, memory=Memory(None),
-                 memory_level=1, standardize=False, signal_scaling=0,
-                 noise_model='ar1', verbose=0, n_jobs=1,
+                 fir_delays=[0], min_onset=-24, mask_img=None,
+                 target_affine=None, target_shape=None, smoothing_fwhm=None,
+                 memory=Memory(None), memory_level=1, standardize=False,
+                 signal_scaling=0, noise_model='ar1', verbose=0, n_jobs=1,
                  minimize_memory=True, subject_label=None):
         # design matrix parameters
         self.t_r = t_r
@@ -333,7 +346,7 @@ class FirstLevelModel(BaseEstimator, TransformerMixin, CacheMixin):
         Parameters
         ----------
         run_imgs: Niimg-like object or list of Niimg-like objects,
-            See http://nilearn.github.io/manipulating_images/input_output.html#inputing-data-file-names-or-image-objects
+            See http://nilearn.github.io/manipulating_images/input_output.html#inputing-data-file-names-or-image-objects  # noqa:E501
             Data on which the GLM will be fitted. If this is a list,
             the affine is considered the same for all.
 
@@ -361,8 +374,7 @@ class FirstLevelModel(BaseEstimator, TransformerMixin, CacheMixin):
         # Check arguments
         # Check imgs type
         if events is not None:
-            _check_events_file_uses_tab_separators(
-                events_files=events)
+            _check_events_file_uses_tab_separators(events_files=events)
         if not isinstance(run_imgs, (list, tuple)):
             run_imgs = [run_imgs]
         if design_matrices is None:
@@ -388,14 +400,17 @@ class FirstLevelModel(BaseEstimator, TransformerMixin, CacheMixin):
             self.mask_img = Nifti1Image(np.ones(ref_img.shape[:3]),
                                         ref_img.affine)
         if not isinstance(self.mask_img, NiftiMasker):
-            self.masker_ = NiftiMasker(
-                mask_img=self.mask_img, smoothing_fwhm=self.smoothing_fwhm,
-                target_affine=self.target_affine,
-                standardize=self.standardize, mask_strategy='epi',
-                t_r=self.t_r, memory=self.memory,
-                verbose=max(0, self.verbose - 2),
-                target_shape=self.target_shape,
-                memory_level=self.memory_level)
+            self.masker_ = NiftiMasker(mask_img=self.mask_img,
+                                       smoothing_fwhm=self.smoothing_fwhm,
+                                       target_affine=self.target_affine,
+                                       standardize=self.standardize,
+                                       mask_strategy='epi',
+                                       t_r=self.t_r,
+                                       memory=self.memory,
+                                       verbose=max(0, self.verbose - 2),
+                                       target_shape=self.target_shape,
+                                       memory_level=self.memory_level
+                                       )
             self.masker_.fit(run_imgs[0])
         else:
             if self.mask_img.mask_img_ is None and self.masker_ is None:
@@ -452,11 +467,17 @@ class FirstLevelModel(BaseEstimator, TransformerMixin, CacheMixin):
                 start_time = self.slice_time_ref * self.t_r
                 end_time = (n_scans - 1 + self.slice_time_ref) * self.t_r
                 frame_times = np.linspace(start_time, end_time, n_scans)
-                design = make_first_level_design_matrix(frame_times, events[run_idx],
-                                                        self.hrf_model, self.drift_model,
-                                                        self.high_pass, self.drift_order,
-                                                        self.fir_delays, confounds_matrix,
-                                                        confounds_names, self.min_onset)
+                design = make_first_level_design_matrix(frame_times,
+                                                        events[run_idx],
+                                                        self.hrf_model,
+                                                        self.drift_model,
+                                                        self.high_pass,
+                                                        self.drift_order,
+                                                        self.fir_delays,
+                                                        confounds_matrix,
+                                                        confounds_names,
+                                                        self.min_onset
+                                                        )
             else:
                 design = design_matrices[run_idx]
             self.design_matrices_.append(design)
@@ -471,7 +492,8 @@ class FirstLevelModel(BaseEstimator, TransformerMixin, CacheMixin):
 
             if self.verbose > 1:
                 t_masking = time.time() - t_masking
-                sys.stderr.write('Masker took %d seconds       \n' % t_masking)
+                sys.stderr.write('Masker took %d seconds       \n'
+                                 % t_masking)
 
             if self.signal_scaling:
                 Y, _ = mean_scaling(Y, self.scaling_axis)
@@ -523,8 +545,8 @@ class FirstLevelModel(BaseEstimator, TransformerMixin, CacheMixin):
             desired for all runs. The string can be a formula compatible with
             `pandas.DataFrame.eval`. Basically one can use the name of the
             conditions as they appear in the design matrix of the fitted model
-            combined with operators +- and combined with numbers with operators
-            +-`*`/.
+            combined with operators +- and combined with numbers
+            with operators +-`*`/.
 
         stat_type : {'t', 'F'}, optional
             type of the contrast
@@ -552,8 +574,9 @@ class FirstLevelModel(BaseEstimator, TransformerMixin, CacheMixin):
                              ' (array or str)')
 
         # Translate formulas to vectors
-        for cidx, (con, design_mat) in enumerate(
-                zip(con_vals, self.design_matrices_)):
+        for cidx, (con, design_mat) in enumerate(zip(con_vals,
+                                                     self.design_matrices_)
+                                                 ):
             design_columns = design_mat.columns.tolist()
             if isinstance(con, _basestring):
                 con_vals[cidx] = expression_to_contrast_vector(
@@ -564,17 +587,16 @@ class FirstLevelModel(BaseEstimator, TransformerMixin, CacheMixin):
             warn('One contrast given, assuming it for all %d runs' % n_runs)
             con_vals = con_vals * n_runs
 
-        # 'all' is assumed to be the final entry; if adding more, place before 'all'
         valid_types = ['z_score', 'stat', 'p_value', 'effect_size',
-                       'effect_variance', 'all']
+                       'effect_variance']
+        valid_types.append('all')  # ensuring 'all' is the final entry.
         if output_type not in valid_types:
-            raise ValueError('output_type must be one of {}'.format(valid_types))
-
+            raise ValueError(
+                'output_type must be one of {}'.format(valid_types))
         contrast = _compute_fixed_effect_contrast(self.labels_, self.results_,
                                                   con_vals, stat_type)
-
-        output_types = valid_types[:-1] if output_type == 'all' else [output_type]
-
+        output_types = (valid_types[:-1]
+                        if output_type == 'all' else [output_type])
         outputs = {}
         for output_type_ in output_types:
             estimate_ = getattr(contrast, output_type_)()
@@ -587,7 +609,8 @@ class FirstLevelModel(BaseEstimator, TransformerMixin, CacheMixin):
 
         return outputs if output_type == 'all' else output
 
-    def _get_voxelwise_model_attribute(self, attribute, result_as_time_series):
+    def _get_voxelwise_model_attribute(self, attribute,
+                                       result_as_time_series):
         """Transform RegressionResults instances within a dictionary
         (whose keys represent the autoregressive coefficient under the 'ar1'
         noise model or only 0.0 under 'ols' noise_model and values are the
@@ -610,32 +633,45 @@ class FirstLevelModel(BaseEstimator, TransformerMixin, CacheMixin):
         """
         # check if valid attribute is being accessed.
         all_attributes = dict(vars(RegressionResults)).keys()
-        possible_attributes = [prop for prop in all_attributes if '__' not in prop]
+        possible_attributes = [prop
+                               for prop in all_attributes
+                               if '__' not in prop
+                               ]
         if attribute not in possible_attributes:
-            msg = "attribute must be one of: {attr}".format(attr=possible_attributes)
+            msg = ("attribute must be one of: "
+                   "{attr}".format(attr=possible_attributes)
+                   )
             raise ValueError(msg)
 
         if self.minimize_memory:
-            raise ValueError('To access voxelwise attributes like R-squared, residuals, '
-                    'and predictions, the `FirstLevelModel`-object needs to store '
-                    'there attributes. To do so, set `minimize_memory` to `False` '
-                    'when initializing the `FirstLevelModel`-object.')
+            raise ValueError(
+                'To access voxelwise attributes like '
+                'R-squared, residuals, and predictions, '
+                'the `FirstLevelModel`-object needs to store '
+                'there attributes. '
+                'To do so, set `minimize_memory` to `False` '
+                'when initializing the `FirstLevelModel`-object.')
 
         if self.labels_ is None or self.results_ is None:
             raise ValueError('The model has not been fit yet')
 
         output = []
 
-        for design_matrix, labels, results in zip(self.design_matrices_, self.labels_, self.results_):        
-
+        for design_matrix, labels, results in zip(self.design_matrices_,
+                                                  self.labels_,
+                                                  self.results_
+                                                  ):
             if result_as_time_series:
-                voxelwise_attribute = np.zeros((design_matrix.shape[0], len(labels)))
+                voxelwise_attribute = np.zeros((design_matrix.shape[0],
+                                                len(labels))
+                                               )
             else:
                 voxelwise_attribute = np.zeros((1, len(labels)))
 
             for label_ in results:
                 label_mask = labels == label_
-                voxelwise_attribute[:, label_mask] = getattr(results[label_], attribute)
+                voxelwise_attribute[:, label_mask] = getattr(results[label_],
+                                                             attribute)
 
             output.append(self.masker_.inverse_transform(voxelwise_attribute))
 
@@ -651,7 +687,8 @@ class FirstLevelModel(BaseEstimator, TransformerMixin, CacheMixin):
         output : list
             a list of Nifti1Image(s)
         """
-        return self._get_voxelwise_model_attribute('resid', result_as_time_series=True)
+        return self._get_voxelwise_model_attribute('resid',
+                                                   result_as_time_series=True)
 
     @setattr_on_read
     def predicted(self):
@@ -663,7 +700,8 @@ class FirstLevelModel(BaseEstimator, TransformerMixin, CacheMixin):
         output : list
             a list of Nifti1Image(s)
         """
-        return self._get_voxelwise_model_attribute('predicted', result_as_time_series=True)
+        return self._get_voxelwise_model_attribute('predicted',
+                                                   result_as_time_series=True)
 
     @setattr_on_read
     def r_square(self):
@@ -675,18 +713,24 @@ class FirstLevelModel(BaseEstimator, TransformerMixin, CacheMixin):
         output : list
             a list of Nifti1Image(s)
         """
-        return self._get_voxelwise_model_attribute('r_square', result_as_time_series=False)
+        return self._get_voxelwise_model_attribute('r_square',
+                                                   result_as_time_series=False
+                                                   )
 
 
 @replace_parameters({'mask': 'mask_img'}, end_version='next')
-def first_level_models_from_bids(
-        dataset_path, task_label, space_label=None, img_filters=None,
-        t_r=None, slice_time_ref=0., hrf_model='glover', drift_model='cosine',
-        high_pass=.01, drift_order=1, fir_delays=[0], min_onset=-24,
-        mask_img=None, target_affine=None, target_shape=None, smoothing_fwhm=None,
-        memory=Memory(None), memory_level=1, standardize=False,
-        signal_scaling=0, noise_model='ar1', verbose=0, n_jobs=1,
-        minimize_memory=True, derivatives_folder='derivatives'):
+def first_level_models_from_bids(dataset_path, task_label, space_label=None,
+                                 img_filters=None, t_r=None, slice_time_ref=0.,
+                                 hrf_model='glover', drift_model='cosine',
+                                 high_pass=.01, drift_order=1, fir_delays=[0],
+                                 min_onset=-24, mask_img=None,
+                                 target_affine=None, target_shape=None,
+                                 smoothing_fwhm=None, memory=Memory(None),
+                                 memory_level=1, standardize=False,
+                                 signal_scaling=0, noise_model='ar1',
+                                 verbose=0, n_jobs=1,
+                                 minimize_memory=True,
+                                 derivatives_folder='derivatives'):
     """Create FirstLevelModel objects and fit arguments from a BIDS dataset.
 
     It t_r is not specified this function will attempt to load it from a
@@ -740,8 +784,9 @@ def first_level_models_from_bids(
     # check arguments
     img_filters = img_filters if img_filters else []
     if not isinstance(dataset_path, str):
-        raise TypeError('dataset_path must be a string, instead %s was given' %
-                        type(task_label))
+        raise TypeError(
+            'dataset_path must be a string, instead %s was given' %
+            type(task_label))
     if not os.path.exists(dataset_path):
         raise ValueError('given path do not exist: %s' % dataset_path)
     if not isinstance(task_label, str):
@@ -754,14 +799,17 @@ def first_level_models_from_bids(
         raise TypeError('img_filters must be a list, instead %s was given' %
                         type(img_filters))
     for img_filter in img_filters:
-        if (not isinstance(img_filter[0], str) or
-                not isinstance(img_filter[1], str)):
+        if (not isinstance(img_filter[0], str)
+                or not isinstance(img_filter[1], str)):
             raise TypeError('filters in img filters must be (str, str), '
                             'instead %s was given' % type(img_filter))
-        if img_filter[0] not in ['acq', 'ce', 'dir', 'rec', 'run', 'echo', 'desc', 'res', 'den']:
-            raise ValueError("field %s is not a possible filter. Only "
-                             "'acq', 'ce', 'dir', 'rec', 'run', 'echo', 'desc', 'res', 'den' "
-                             "are allowed." % img_filter[0])
+        if img_filter[0] not in ['acq', 'ce', 'dir', 'rec', 'run',
+                                 'echo', 'desc', 'res', 'den',
+                                 ]:
+            raise ValueError(
+                "field %s is not a possible filter. Only "
+                "'acq', 'ce', 'dir', 'rec', 'run', 'echo', "
+                "'desc', 'res', 'den' are allowed." % img_filter[0])
 
     # check derivatives folder is present
     derivatives_path = os.path.join(dataset_path, derivatives_folder)
@@ -790,10 +838,10 @@ def first_level_models_from_bids(
                                        file_tag='bold', file_type='json',
                                        filters=filters)
         if not img_specs:
-            warn('No bold.json found in derivatives folder or'
-                 ' in dataset folder. t_r can not be inferred and will need to'
-                 ' be set manually in the list of models, otherwise their fit '
-                 'will throw an exception')
+            warn('No bold.json found in derivatives folder or '
+                 'in dataset folder. t_r can not be inferred and will need to'
+                 ' be set manually in the list of models, otherwise their fit'
+                 ' will throw an exception')
         else:
             specs = json.load(open(img_specs[0], 'r'))
             if 'RepetitionTime' in specs:
@@ -829,19 +877,21 @@ def first_level_models_from_bids(
             t_r=t_r, slice_time_ref=slice_time_ref, hrf_model=hrf_model,
             drift_model=drift_model, high_pass=high_pass,
             drift_order=drift_order, fir_delays=fir_delays,
-            min_onset=min_onset, mask_img=mask_img, target_affine=target_affine,
-            target_shape=target_shape, smoothing_fwhm=smoothing_fwhm,
-            memory=memory, memory_level=memory_level, standardize=standardize,
+            min_onset=min_onset, mask_img=mask_img,
+            target_affine=target_affine, target_shape=target_shape,
+            smoothing_fwhm=smoothing_fwhm, memory=memory,
+            memory_level=memory_level, standardize=standardize,
             signal_scaling=signal_scaling, noise_model=noise_model,
-            verbose=verbose, n_jobs=n_jobs, minimize_memory=minimize_memory,
-            subject_label=sub_label)
+            verbose=verbose, n_jobs=n_jobs,
+            minimize_memory=minimize_memory, subject_label=sub_label)
         models.append(model)
 
         # Get preprocessed imgs
         if space_label is None:
             filters = [('task', task_label)] + img_filters
         else:
-            filters = [('task', task_label), ('space', space_label)] + img_filters
+            filters = [('task', task_label),
+                       ('space', space_label)] + img_filters
         imgs = get_bids_files(derivatives_path, modality_folder='func',
                               file_tag='bold', file_type='nii*',
                               sub_label=sub_label, filters=filters)
@@ -853,25 +903,29 @@ def first_level_models_from_bids(
         if len(imgs) > 1:
             for img in imgs:
                 img_dict = parse_bids_filename(img)
-                if ('_ses-' in img_dict['file_basename'] and
-                        '_run-' in img_dict['file_basename']):
+                if (
+                    '_ses-' in img_dict['file_basename']
+                    and '_run-' in img_dict['file_basename']
+                ):
                     if (img_dict['ses'], img_dict['run']) in run_check_list:
                         raise ValueError(
-                            'More than one nifti image found for the same run '
-                            '%s and session %s. Please verify that the '
+                            'More than one nifti image found '
+                            'for the same run %s and session %s. '
+                            'Please verify that the '
                             'desc_label and space_label labels '
                             'corresponding to the BIDS spec '
                             'were correctly specified.' %
                             (img_dict['run'], img_dict['ses']))
                     else:
                         run_check_list.append((img_dict['ses'],
-                                              img_dict['run']))
+                                               img_dict['run']))
 
                 elif '_ses-' in img_dict['file_basename']:
                     if img_dict['ses'] in run_check_list:
                         raise ValueError(
-                            'More than one nifti image found for the same ses '
-                            '%s, while no additional run specification present'
+                            'More than one nifti image '
+                            'found for the same ses %s, while '
+                            'no additional run specification present'
                             '. Please verify that the desc_label and '
                             'space_label labels '
                             'corresponding to the BIDS spec '
@@ -883,8 +937,9 @@ def first_level_models_from_bids(
                 elif '_run-' in img_dict['file_basename']:
                     if img_dict['run'] in run_check_list:
                         raise ValueError(
-                            'More than one nifti image found for the same run '
-                            '%s. Please verify that the desc_label and '
+                            'More than one nifti image '
+                            'found for the same run %s. '
+                            'Please verify that the desc_label and '
                             'space_label labels '
                             'corresponding to the BIDS spec '
                             'were correctly specified.' %
@@ -918,8 +973,9 @@ def first_level_models_from_bids(
         # Get confounds. If not found it will be assumed there are none.
         # If there are confounds, they are assumed to be present for all runs.
         confounds = get_bids_files(derivatives_path, modality_folder='func',
-                                   file_tag='desc-confounds_regressors', file_type='tsv',
-                                   sub_label=sub_label, filters=filters)
+                                   file_tag='desc-confounds_regressors',
+                                   file_type='tsv', sub_label=sub_label,
+                                   filters=filters)
 
         if confounds:
             if len(confounds) != len(imgs):

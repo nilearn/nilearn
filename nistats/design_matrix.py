@@ -11,7 +11,7 @@ Design matrices contain three different types of regressors:
 1. Task-related regressors, that result from the convolution
    of the experimental paradigm regressors with hemodynamic models
    A hemodynamic model is one of:
-   
+
          - 'spm' : linear filter used in the SPM software
          - 'glover' : linear filter estimated by G.Glover
          - 'spm + derivative', 'glover + derivative': the same linear models,
@@ -40,11 +40,11 @@ from warnings import warn
 
 import numpy as np
 import pandas as pd
-from scipy import linalg
 
 from .experimental_paradigm import check_events
 from .hemodynamic_models import compute_regressor, _orthogonalize
 from .utils import full_rank, _basestring
+
 
 ######################################################################
 # Ancillary functions
@@ -111,7 +111,7 @@ def _cosine_drift(high_pass, frame_times):
 
     for k in range(1, order + 1):
         cosine_drift[:, k - 1] = normalizer * np.cos(
-            (np.pi / n_frames) * (n_times + .5) * k)
+                (np.pi / n_frames) * (n_times + .5) * k)
 
     cosine_drift[:, -1] = 1.
     return cosine_drift
@@ -243,8 +243,8 @@ def _convolve_regressors(events, hrf_model, frame_times, fir_delays=[0],
 
 
 def make_first_level_design_matrix(
-    frame_times, events=None, hrf_model='glover',
-    drift_model='cosine', high_pass=.01, drift_order=1, fir_delays=[0],
+        frame_times, events=None, hrf_model='glover',
+        drift_model='cosine', high_pass=.01, drift_order=1, fir_delays=[0],
         add_regs=None, add_reg_names=None, min_onset=-24, oversampling=50):
     """Generate a design matrix from the input parameters
 
@@ -267,7 +267,7 @@ def make_first_level_design_matrix(
             'modulation': column to specify the amplitude of each
                           events. If missing the default is set to
                           ones(n_events).
-        
+
         An experimental paradigm is valid if it has an 'onset' key
         and a 'duration' key.
         If these keys are missing an error will be raised.
@@ -334,7 +334,7 @@ def make_first_level_design_matrix(
         raise ValueError(
             'Incorrect number of additional regressor names was provided'
             '(%d provided, %d expected' % (len(add_reg_names),
-            n_add_regs))
+                                           n_add_regs))
 
     # computation of the matrix
     names = []
@@ -455,7 +455,7 @@ def make_second_level_design_matrix(subjects_label, confounds=None):
                 design_matrix.loc[ridx, conf_name] = confounds_value
 
     # check design matrix is not singular
-    epsilon = sys.float_info.epsilon
+    sys.float_info.epsilon
     if np.linalg.cond(design_matrix.values) > design_matrix.size:
         warn('Attention: Design matrix is singular. Aberrant estimates '
              'are expected.')

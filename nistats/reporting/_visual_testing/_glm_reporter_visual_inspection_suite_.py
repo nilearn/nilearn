@@ -30,6 +30,7 @@ try:
 except OSError:
     pass
 
+
 def report_flm_adhd_dmn():  # pragma: no cover
     t_r = 2.
     slice_time_ref = 0.
@@ -48,11 +49,11 @@ def report_flm_adhd_dmn():  # pragma: no cover
                                                    add_reg_names=["pcc_seed"])
     dmn_contrast = np.array([1] + [0] * (design_matrix.shape[1] - 1))
     contrasts = {'seed_based_glm': dmn_contrast}
-    
+
     first_level_model = FirstLevelModel(t_r=t_r, slice_time_ref=slice_time_ref)
     first_level_model = first_level_model.fit(run_imgs=adhd_dataset.func[0],
                                               design_matrices=design_matrix)
-    
+
     report = make_glm_report(first_level_model,
                              contrasts=contrasts,
                              title='ADHD DMN Report',
@@ -67,11 +68,12 @@ def report_flm_adhd_dmn():  # pragma: no cover
     report.save_as_html(output_filepath)
     report.get_iframe()
 
+
 ###########################################################################
 
 def _fetch_bids_data():  # pragma: no cover
     _, urls = nistats_datasets.fetch_openneuro_dataset_index()
-    
+
     exclusion_patterns = ['*group*', '*phenotype*', '*mriqc*',
                           '*parameter_plots*', '*physio_plots*',
                           '*space-fsaverage*', '*space-T1w*',
@@ -79,7 +81,7 @@ def _fetch_bids_data():  # pragma: no cover
                           '*task-rest*', '*task-scap*', '*task-task*']
     urls = nistats_datasets.select_from_index(
             urls, exclusion_filters=exclusion_patterns, n_subjects=1)
-    
+
     data_dir, _ = nistats_datasets.fetch_openneuro_dataset(urls=urls)
     return data_dir
 
@@ -92,22 +94,24 @@ def _make_flm(data_dir):  # pragma: no cover
         first_level_models_from_bids(
                 data_dir, task_label, space_label, smoothing_fwhm=5.0,
                 derivatives_folder=derivatives_folder)
-    
-    model, imgs, events, confounds = (
-        models[0], models_run_imgs[0], models_events[0], models_confounds[0])
+
+    model, imgs, _, _ = (
+            models[0], models_run_imgs[0], models_events[0],
+            models_confounds[0])
     subject = 'sub-' + model.subject_label
     design_matrix = _make_design_matrix_for_bids_feature(data_dir, subject)
     model.fit(imgs, design_matrices=[design_matrix])
     return model, subject
 
 
-def _make_design_matrix_for_bids_feature(data_dir, subject):  # pragma: no cover
+def _make_design_matrix_for_bids_feature(data_dir,
+                                         subject):  # pragma: no cover
     fsl_design_matrix_path = os.path.join(
             data_dir, 'derivatives', 'task', subject, 'stopsignal.feat',
             'design.mat')
     design_matrix = get_design_from_fslmat(
             fsl_design_matrix_path, column_names=None)
-    
+
     design_columns = ['cond_%02d' % i for i in
                       range(len(design_matrix.columns))]
     design_columns[0] = 'Go'
@@ -130,6 +134,7 @@ def report_flm_bids_features():  # pragma: no cover
     report.save_as_html(output_filepath)
     report.get_iframe()
 
+
 ###########################################################################
 
 def _pad_vector(contrast_, n_columns):  # pragma: no cover
@@ -140,28 +145,28 @@ def _pad_vector(contrast_, n_columns):  # pragma: no cover
 def report_flm_fiac():  # pragma: no cover
     data = nistats_datasets.fetch_fiac_first_level()
     fmri_img = [data['func1'], data['func2']]
-    
+
     from nilearn.image import mean_img
     mean_img_ = mean_img(fmri_img[0])
-    
+
     design_files = [data['design_matrix1'], data['design_matrix2']]
     design_matrices = [pd.DataFrame(np.load(df)['X']) for df in design_files]
-    
+
     fmri_glm = FirstLevelModel(mask_img=data['mask'], minimize_memory=True)
     fmri_glm = fmri_glm.fit(fmri_img, design_matrices=design_matrices)
-    
+
     n_columns = design_matrices[0].shape[1]
-    
+
     contrasts = {
-        'SStSSp_minus_DStDSp': _pad_vector([1, 0, 0, -1], n_columns),
-        'DStDSp_minus_SStSSp': _pad_vector([-1, 0, 0, 1], n_columns),
-        'DSt_minus_SSt': _pad_vector([-1, -1, 1, 1], n_columns),
-        'DSp_minus_SSp': _pad_vector([-1, 1, -1, 1], n_columns),
-        'DSt_minus_SSt_for_DSp': _pad_vector([0, -1, 0, 1], n_columns),
-        'DSp_minus_SSp_for_DSt': _pad_vector([0, 0, -1, 1], n_columns),
-        'Deactivation': _pad_vector([-1, -1, -1, -1, 4], n_columns),
-        'Effects_of_interest': np.eye(n_columns)[:5]
-        }
+            'SStSSp_minus_DStDSp': _pad_vector([1, 0, 0, -1], n_columns),
+            'DStDSp_minus_SStSSp': _pad_vector([-1, 0, 0, 1], n_columns),
+            'DSt_minus_SSt': _pad_vector([-1, -1, 1, 1], n_columns),
+            'DSp_minus_SSp': _pad_vector([-1, 1, -1, 1], n_columns),
+            'DSt_minus_SSt_for_DSp': _pad_vector([0, -1, 0, 1], n_columns),
+            'DSp_minus_SSp_for_DSt': _pad_vector([0, 0, -1, 1], n_columns),
+            'Deactivation': _pad_vector([-1, -1, -1, -1, 4], n_columns),
+            'Effects_of_interest': np.eye(n_columns)[:5]
+    }
     report = make_glm_report(fmri_glm, contrasts,
                              bg_img=mean_img_,
                              height_control='fdr',
@@ -171,9 +176,11 @@ def report_flm_fiac():  # pragma: no cover
     report.save_as_html(output_filepath)
     report.get_iframe()
 
+
 ###########################################################################
 
-def _make_design_matrix_slm_oasis(oasis_dataset, n_subjects):  # pragma: no cover
+def _make_design_matrix_slm_oasis(oasis_dataset,
+                                  n_subjects):  # pragma: no cover
     age = oasis_dataset.ext_vars['age'].astype(float)
     sex = oasis_dataset.ext_vars['mf'] == b'F'
     intercept = np.ones(n_subjects)
@@ -199,11 +206,12 @@ def report_slm_oasis():  # pragma: no cover
                            design_matrix=design_matrix)
 
     contrast = [[1, 0, 0], [0, 1, 0]]
-    report = make_glm_report(model=second_level_model,
-                             contrasts=contrast,
-                             bg_img=nilearn.datasets.fetch_icbm152_2009()['t1'],
-                             height_control=None,
-                             )
+    report = make_glm_report(
+            model=second_level_model,
+            contrasts=contrast,
+            bg_img=nilearn.datasets.fetch_icbm152_2009()['t1'],
+            height_control=None,
+    )
     output_filename = 'generated_report_slm_oasis.html'
     output_filepath = os.path.join(REPORTS_DIR, output_filename)
     report.save_as_html(output_filepath)
@@ -226,7 +234,8 @@ def prefer_parallel_execution(functions_to_be_called):  # pragma: no cover
             inputs = tqdm.tqdm(functions_to_be_called)
         n_jobs = multiprocessing.cpu_count()
         print('Parallelizing execution using Joblib')
-        joblib.Parallel(n_jobs=n_jobs)(joblib.delayed(run_function)(fn) for fn in inputs)
+        joblib.Parallel(n_jobs=n_jobs)(
+                joblib.delayed(run_function)(fn) for fn in inputs)
 
 
 def run_function(fn):  # pragma: no cover
@@ -240,10 +249,10 @@ def prefer_serial_execution(functions_to_be_called):  # pragma: no cover
 
 if __name__ == '__main__':  # pragma: no cover
     functions_to_be_called = [
-        report_flm_adhd_dmn,
-        report_flm_bids_features,
-        report_flm_fiac,
-        report_slm_oasis,
-        ]
+            report_flm_adhd_dmn,
+            report_flm_bids_features,
+            report_flm_fiac,
+            report_slm_oasis,
+    ]
     prefer_parallel_execution(functions_to_be_called)
     # prefer_serial_execution(functions_to_be_called)

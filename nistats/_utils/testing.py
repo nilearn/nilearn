@@ -48,7 +48,7 @@ def _basic_paradigm():
     conditions = ['c0', 'c0', 'c0', 'c1', 'c1', 'c1', 'c2', 'c2', 'c2']
     onsets = [30, 70, 100, 10, 30, 90, 30, 40, 60]
     events = pd.DataFrame({'trial_type': conditions,
-                             'onset': onsets})
+                           'onset': onsets})
     return events
 
 
@@ -60,9 +60,9 @@ def _basic_confounds(length):
 
 
 def _create_fake_bids_dataset(base_dir='', n_sub=10, n_ses=2,
-                             tasks=['localizer', 'main'],
-                             n_runs=[1, 3], with_derivatives=True,
-                             with_confounds=True, no_session=False):
+                              tasks=['localizer', 'main'],
+                              n_runs=[1, 3], with_derivatives=True,
+                              with_confounds=True, no_session=False):
     """Creates a fake bids dataset directory with dummy files.
     Returns fake dataset directory name.
 
@@ -126,14 +126,17 @@ def _create_fake_bids_dataset(base_dir='', n_sub=10, n_ses=2,
             func_path = os.path.join(subses_dir, 'func')
             os.makedirs(func_path)
             for task, n_run in zip(tasks, n_runs):
-                for run in ['run-%02d' % label for label in range(1, n_run + 1)]:
+                run_labels = [
+                        'run-%02d' % label for label in range(1, n_run + 1)]
+                for run in run_labels:
                     fields = [subject, session, 'task-' + task]
                     if '' in fields:
                         fields.remove('')
                     file_id = '_'.join(fields)
                     if n_run > 1:
                         file_id += '_' + run
-                    bold_path = os.path.join(func_path, file_id + '_bold.nii.gz')
+                    bold_path = os.path.join(func_path,
+                                             file_id + '_bold.nii.gz')
                     _write_fake_bold_img(bold_path, [vox, vox, vox, 100])
                     events_path = os.path.join(func_path, file_id +
                                                '_events.tsv')
@@ -153,25 +156,41 @@ def _create_fake_bids_dataset(base_dir='', n_sub=10, n_ses=2,
                 func_path = os.path.join(subses_dir, 'func')
                 os.makedirs(func_path)
                 for task, n_run in zip(tasks, n_runs):
-                    for run in ['run-%02d' % label for label in range(1, n_run + 1)]:
+                    for run in ['run-%02d' % label
+                                for label in range(1, n_run + 1)
+                                ]:
                         fields = [subject, session, 'task-' + task]
                         if '' in fields:
                             fields.remove('')
                         file_id = '_'.join(fields)
                         if n_run > 1:
                             file_id += '_' + run
-                        preproc = file_id + '_space-MNI_desc-preproc_bold.nii.gz'
+                        preproc = (file_id +
+                                   '_space-MNI_desc-preproc_bold.nii.gz'
+                                   )
                         preproc_path = os.path.join(func_path, preproc)
-                        _write_fake_bold_img(preproc_path, [vox, vox, vox, 100])
-                        preproc = file_id + '_space-T1w_desc-preproc_bold.nii.gz'
+                        _write_fake_bold_img(preproc_path,
+                                             [vox, vox, vox, 100]
+                                             )
+                        preproc = (file_id +
+                                   '_space-T1w_desc-preproc_bold.nii.gz'
+                                   )
                         preproc_path = os.path.join(func_path, preproc)
-                        _write_fake_bold_img(preproc_path, [vox, vox, vox, 100])
-                        preproc = file_id + '_space-T1w_desc-fmriprep_bold.nii.gz'
+                        _write_fake_bold_img(preproc_path,
+                                             [vox, vox, vox, 100]
+                                             )
+                        preproc = (file_id +
+                                   '_space-T1w_desc-fmriprep_bold.nii.gz'
+                                   )
                         preproc_path = os.path.join(func_path, preproc)
-                        _write_fake_bold_img(preproc_path, [vox, vox, vox, 100])
+                        _write_fake_bold_img(preproc_path,
+                                             [vox, vox, vox, 100]
+                                             )
                         if with_confounds:
-                            confounds_path = os.path.join(func_path, file_id +
-                                                          '_desc-confounds_regressors.tsv')
+                            confounds_path = os.path.join(
+                                    func_path,
+                                    file_id + '_desc-confounds_regressors.tsv',
+                            )
                             _basic_confounds(100).to_csv(confounds_path,
                                                          sep='\t', index=None)
     return 'bids_dataset'

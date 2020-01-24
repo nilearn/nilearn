@@ -5,8 +5,8 @@ Test functions for models.regression
 import numpy as np
 import pytest
 
-from numpy.testing import (assert_array_almost_equal,
-                           assert_almost_equal,
+from numpy.testing import (assert_almost_equal,
+                           assert_array_almost_equal,
                            assert_array_equal,
                            )
 
@@ -90,7 +90,6 @@ def test_resid_rename_warnings_ols():
         assert_array_equal(results_ols.wdesign, results_ols.whitened_design)
     with pytest.warns(FutureWarning, match="'wdesign'"):
         assert_array_equal(model.wdesign, model.whitened_design)
-
 
 
 def test_resid_rename_warnings_ar():

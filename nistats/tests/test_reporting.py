@@ -60,7 +60,7 @@ def test_show_contrast_matrix():
         assert (ax is None)
         plot_contrast_matrix(contrast, dmtx, output_file='contrast.pdf')
         assert os.path.exists('contrast.pdf')
-        
+
 
 def test_local_max():
     shape = (9, 10, 11)

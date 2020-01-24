@@ -48,6 +48,7 @@ gives::
     F-statistic: 31.06 on 2 and 8 DF,  p-value: 0.0001694
 """
 
+
 def test_model():
     # Check basics about the model fit
     # Check we fit the mean
@@ -86,19 +87,19 @@ def test_t_output():
     assert_array_almost_equal(res.effect, exp_effect)
     assert_array_almost_equal(res.sd, exp_sd)
     res = RESULTS.Tcontrast([1, 0], store=('effect',))
-    assert res.t == None
+    assert res.t is None
     assert_array_almost_equal(res.effect, exp_effect)
-    assert res.sd == None
+    assert res.sd is None
     res = RESULTS.Tcontrast([1, 0], store=('t',))
     assert_array_almost_equal(res.t, exp_t)
-    assert res.effect == None
-    assert res.sd == None
+    assert res.effect is None
+    assert res.sd is None
     res = RESULTS.Tcontrast([1, 0], store=('sd',))
-    assert res.t == None
-    assert res.effect == None
+    assert res.t is None
+    assert res.effect is None
     assert_array_almost_equal(res.sd, exp_sd)
     res = RESULTS.Tcontrast([1, 0], store=('effect', 'sd'))
-    assert res.t == None
+    assert res.t is None
     assert_array_almost_equal(res.effect, exp_effect)
     assert_array_almost_equal(res.sd, exp_sd)
 

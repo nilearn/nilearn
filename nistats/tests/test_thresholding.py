@@ -88,13 +88,13 @@ def test_map_threshold():
         None, None, threshold=3.0, height_control=None,
         cluster_threshold=0)
     assert threshold == 3.0
-    assert th_map == None
+    assert th_map == None  # noqa:E711
 
     th_map, threshold = map_threshold(
         None, None, alpha=0.05, height_control='fpr',
         cluster_threshold=0)
     assert (threshold > 1.64)
-    assert th_map == None
+    assert th_map == None  # noqa:E711
 
     with pytest.raises(ValueError):
         map_threshold(None, None, alpha=0.05, height_control='fdr')
@@ -153,7 +153,6 @@ def test_all_resolution_inference():
     th_map = cluster_level_inference(stat_img, threshold=3, alpha=.05,
                                      verbose=True)
 
-    
     # test 9: one-sided test
     th_map, z_th = map_threshold(
         stat_img, mask_img, alpha, height_control='fpr',

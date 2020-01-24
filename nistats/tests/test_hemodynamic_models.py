@@ -5,7 +5,6 @@ import pytest
 
 from numpy.testing import (assert_almost_equal,
                            assert_array_equal,
-                           assert_equal,
                            )
 
 from nistats.hemodynamic_models import (_hrf_kernel,
@@ -51,7 +50,6 @@ def test_glover_hrf():
     h = glover_dispersion_derivative(2.0)
     assert_almost_equal(h.sum(), 0)
     assert len(h) == 800
-
 
 
 def test_glover_time_derivative():
@@ -146,6 +144,7 @@ def test_sample_condition_3():
                                   min_onset=0)
     assert_almost_equal(reg, reg_)
 
+
 def test_sample_condition_4():
     """ Test the experimental condition sampling -- negative amplitude
     """
@@ -175,11 +174,19 @@ def test_names():
     """
     name = 'con'
     assert _regressor_names(name, 'spm') == ['con']
-    assert _regressor_names(name, 'spm + derivative') == ['con', 'con_derivative']
-    assert _regressor_names(name, 'spm + derivative + dispersion') == ['con', 'con_derivative', 'con_dispersion']
+    assert _regressor_names(
+            name, 'spm + derivative') == ['con', 'con_derivative']
+    assert _regressor_names(
+            name, 'spm + derivative + dispersion') == ['con',
+                                                       'con_derivative',
+                                                       'con_dispersion']
     assert _regressor_names(name, 'glover') == ['con']
-    assert _regressor_names(name, 'glover + derivative') == ['con', 'con_derivative']
-    assert _regressor_names(name, 'glover + derivative + dispersion') == ['con', 'con_derivative', 'con_dispersion']
+    assert _regressor_names(
+            name, 'glover + derivative') == ['con', 'con_derivative']
+    assert _regressor_names(
+            name, 'glover + derivative + dispersion') == ['con',
+                                                          'con_derivative',
+                                                          'con_dispersion']
 
 
 def test_hkernel():
@@ -206,7 +213,7 @@ def test_hkernel():
     assert len(h) == 4
     for dh in h:
         assert_almost_equal(dh.sum(), 1.)
-    # 
+
     h = _hrf_kernel(None, tr)
     assert len(h) == 1
     assert_almost_equal(h[0], np.hstack((1, np.zeros(49))))
@@ -221,7 +228,6 @@ def test_make_regressor_1():
     reg, reg_names = compute_regressor(condition, hrf_model, frame_times)
     assert_almost_equal(reg.sum(), 6, 1)
     assert reg_names[0] == 'cond'
-
 
 
 def test_make_regressor_2():
