@@ -43,7 +43,6 @@ from nistats.reporting import (plot_contrast_matrix,
                                )
 from nistats.thresholding import map_threshold
 
-
 HTML_TEMPLATE_ROOT_PATH = os.path.join(os.path.dirname(__file__),
                                        'glm_reporter_templates')
 
@@ -189,10 +188,10 @@ def make_glm_report(model,
     contrasts = _coerce_to_dict(contrasts)
     contrast_plots = _plot_contrasts(contrasts, design_matrices)
     page_title, page_heading_1, page_heading_2 = _make_headings(
-            contrasts,
-            title,
-            model,
-            )
+        contrasts,
+        title,
+        model,
+    )
     with pd.option_context('display.max_colwidth', 100):
         model_attributes = _model_attributes_to_dataframe(model)
         model_attributes_html = _dataframe_to_html(model_attributes,
@@ -207,17 +206,17 @@ def make_glm_report(model,
                                        bg_img=bg_img,
                                        )
     all_components = _make_stat_maps_contrast_clusters(
-            stat_img=statistical_maps,
-            contrasts_plots=contrast_plots,
-            threshold=threshold,
-            alpha=alpha,
-            cluster_threshold=cluster_threshold,
-            height_control=height_control,
-            min_distance=min_distance,
-            bg_img=bg_img,
-            display_mode=display_mode,
-            plot_type=plot_type,
-            )
+        stat_img=statistical_maps,
+        contrasts_plots=contrast_plots,
+        threshold=threshold,
+        alpha=alpha,
+        cluster_threshold=cluster_threshold,
+        height_control=height_control,
+        min_distance=min_distance,
+        bg_img=bg_img,
+        display_mode=display_mode,
+        plot_type=plot_type,
+    )
     all_components_text = '\n'.join(all_components)
     report_values = {'page_title': escape(page_title),
                      'page_heading_1': page_heading_1,
@@ -365,10 +364,10 @@ def _plot_contrasts(contrasts, design_matrices):
             contrasts_for_subsitution = {
                 'contrast_plot': url_contrast_plot_svg,
                 'contrast_name': contrast_name,
-                }
+            }
             contrast_text_ = contrast_text_.safe_substitute(
-                    contrasts_for_subsitution
-                    )
+                contrasts_for_subsitution
+            )
             all_contrasts_plots[contrast_name] = contrast_text_
     return all_contrasts_plots
 
@@ -450,26 +449,26 @@ def _model_attributes_to_dataframe(model):
         'target_affine',
         'slice_time_ref',
         'fir_delays',
-        ]
+    ]
     attribute_units = {
         't_r': 's',
         'high_pass': 'Hz',
-        }
+    }
 
     selected_attributes.sort()
     display_attributes = OrderedDict(
-            (attr_name, getattr(model, attr_name))
-            for attr_name in selected_attributes
-            if hasattr(model, attr_name)
-            )
+        (attr_name, getattr(model, attr_name))
+        for attr_name in selected_attributes
+        if hasattr(model, attr_name)
+    )
     model_attributes = pd.DataFrame.from_dict(display_attributes,
                                               orient='index',
                                               )
     attribute_names_with_units = {
-        attribute_name_: attribute_name_+' ({})'.format(attribute_unit_)
+        attribute_name_: attribute_name_ + ' ({})'.format(attribute_unit_)
         for attribute_name_, attribute_unit_
         in attribute_units.items()
-        }
+    }
     model_attributes.rename(index=attribute_names_with_units,
                             inplace=True)
     return model_attributes
@@ -536,10 +535,10 @@ def _dmtx_to_svg_url(design_matrices):
         # prevents sphinx-gallery & jupyter from scraping & inserting plots
         plt.close()
         dmtx_text_ = dmtx_text_.safe_substitute(
-                {'design_matrix': url_design_matrix_svg,
-                 'dmtx_title': dmtx_title,
-                 }
-                )
+            {'design_matrix': url_design_matrix_svg,
+             'dmtx_title': dmtx_title,
+             }
+        )
         html_design_matrices.append(dmtx_text_)
     svg_url_design_matrices = ''.join(html_design_matrices)
     return svg_url_design_matrices
@@ -693,20 +692,20 @@ def _make_stat_maps_contrast_clusters(stat_img, contrasts_plots, threshold,
     """
     all_components = []
     components_template_path = os.path.join(
-            HTML_TEMPLATE_ROOT_PATH,
-            'stat_maps_contrast_clusters_template.html'
-            )
+        HTML_TEMPLATE_ROOT_PATH,
+        'stat_maps_contrast_clusters_template.html'
+    )
     with open(components_template_path) as html_template_obj:
         components_template_text = html_template_obj.read()
     for contrast_name, stat_map_img in stat_img.items():
         component_text_ = string.Template(components_template_text)
         thresholded_stat_map, threshold = map_threshold(
-                stat_img=stat_map_img,
-                threshold=threshold,
-                alpha=alpha,
-                cluster_threshold=cluster_threshold,
-                height_control=height_control,
-                )
+            stat_img=stat_map_img,
+            threshold=threshold,
+            alpha=alpha,
+            cluster_threshold=cluster_threshold,
+            height_control=height_control,
+        )
         table_details = _clustering_params_to_dataframe(threshold,
                                                         cluster_threshold,
                                                         min_distance,
@@ -714,12 +713,12 @@ def _make_stat_maps_contrast_clusters(stat_img, contrasts_plots, threshold,
                                                         alpha,
                                                         )
         stat_map_svg = _stat_map_to_svg(
-                stat_img=thresholded_stat_map,
-                bg_img=bg_img,
-                display_mode=display_mode,
-                plot_type=plot_type,
-                table_details=table_details,
-                )
+            stat_img=thresholded_stat_map,
+            bg_img=bg_img,
+            display_mode=display_mode,
+            plot_type=plot_type,
+            table_details=table_details,
+        )
         cluster_table = get_clusters_table(stat_map_img,
                                            stat_threshold=threshold,
                                            cluster_threshold=cluster_threshold,
@@ -732,18 +731,18 @@ def _make_stat_maps_contrast_clusters(stat_img, contrasts_plots, threshold,
                                                 classes='cluster-table',
                                                 )
         table_details_html = _dataframe_to_html(
-                table_details,
-                precision=2,
-                header=False,
-                classes='cluster-details-table',
-                )
+            table_details,
+            precision=2,
+            header=False,
+            classes='cluster-details-table',
+        )
         components_values = {
             'contrast_name': escape(contrast_name),
             'contrast_plot': contrasts_plots[contrast_name],
             'stat_map_img': stat_map_svg,
             'cluster_table_details': table_details_html,
             'cluster_table': cluster_table_html,
-            }
+        }
         component_text_ = component_text_.safe_substitute(**components_values)
         all_components.append(component_text_)
     return all_components
@@ -807,8 +806,8 @@ def _clustering_params_to_dataframe(threshold,
         table_details.update({'Height control': 'None'})
         table_details.update({'Threshold Z': threshold})
     table_details.update(
-            {'Cluster size threshold (voxels)': cluster_threshold}
-            )
+        {'Cluster size threshold (voxels)': cluster_threshold}
+    )
     table_details.update({'Minimum distance (mm)': min_distance})
     table_details = pd.DataFrame.from_dict(table_details,
                                            orient='index',
