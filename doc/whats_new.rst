@@ -1,3 +1,11 @@
+0.6.2
+======
+
+Fixes
+-----
+
+- More robust matplotlib backend selection
+
 0.6.1
 =====
 

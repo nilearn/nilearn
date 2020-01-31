@@ -25,10 +25,13 @@ def _set_mpl_backend():
         # that the version is greater that the minimum required one
         _import_module_with_version_check('matplotlib',
                                           OPTIONAL_MATPLOTLIB_MIN_VERSION)
+        current_backend = matplotlib.get_backend().lower()
         # Set the backend to a non-interactive one for unices without X
+        if 'inline' in current_backend or 'nbagg' in current_backend:
+            return
         if (os.name == 'posix' and 'DISPLAY' not in os.environ
                 and not (sys.platform == 'darwin'
-                         and matplotlib.get_backend() == 'MacOSX')
+                         and 'macosx' in current_backend)
         ):
             matplotlib.use('Agg')
 
