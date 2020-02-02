@@ -1,2 +1,2 @@
--r requirements-build-docs.txt
+-r ./requirements-build-docs.txt
 nilearn>=0.6.1

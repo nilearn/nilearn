@@ -309,7 +309,8 @@ sphinx_gallery_conf = {
         'repo': 'nilearn',
         'binderhub_url': 'https://mybinder.org',
         'branch': 'gh-pages',
-        'dependencies': ['binder/requirements.txt'],
+        'dependencies': ['../requirements-build-docs.txt',
+                         'binder/requirements.txt'],
         'notebooks_dir': 'examples'
     }
 }
