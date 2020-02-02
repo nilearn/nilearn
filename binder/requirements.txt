@@ -1,3 +1,0 @@
--r ../requirements-build-docs.txt
-jupytext
-.

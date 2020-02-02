@@ -305,43 +305,14 @@ sphinx_gallery_conf = {
     'examples_dirs': '../examples',
     'gallery_dirs': 'auto_examples',
     'binder': {
-        'org': 'nilearn',
+        'org': 'emdupre',
         'repo': 'nilearn',
         'binderhub_url': 'https://mybinder.org',
-        'branch': 'doc/binder',
-        'dependencies': ['../binder/requirements.txt'],
+        'branch': 'gh-pages',
+        'dependencies': ['binder/requirements.txt'],
         'notebooks_dir': 'examples'
     }
 }
-
-# Patch sphinx_gallery.binder.gen_binder_rst so as to point to .py file
-# in repository. With thanks to Dominik Stańczak @StanczakDominik
-# https://stanczakdominik.github.io/posts/simple-binder-usage-with-sphinx-gallery-through-jupytext/
-import sphinx_gallery.binder
-
-
-def patched_gen_binder_rst(fpath, binder_conf, gallery_conf):
-    """Generate the RST + link for the Binder badge.
-    """
-    binder_conf = sphinx_gallery.binder.check_binder_conf(binder_conf)
-    binder_url = sphinx_gallery.binder.gen_binder_url(fpath, binder_conf,
-                                                      gallery_conf)
-
-    # this will fail if gallery_dirs is a list:
-    binder_url = binder_url.replace(gallery_conf['gallery_dirs'] + os.path.sep,
-                                    "").replace("ipynb", "py")
-
-    rst = ("\n"
-           "  .. container:: binder-badge\n\n"
-           "    .. image:: https://mybinder.org/badge_logo.svg\n"
-           "      :target: {}\n"
-           "      :width: 150 px\n").format(binder_url)
-    return rst
-
-
-# And then we finish our monkeypatching misdeed by redirecting
-# sphinx-gallery to use our function:
-sphinx_gallery.binder.gen_binder_rst = patched_gen_binder_rst
 
 # Get rid of spurious warnings due to some interaction between
 # autosummary and numpydoc. See
