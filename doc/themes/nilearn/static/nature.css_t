@@ -1709,9 +1709,11 @@ div.sg-report iframe {
     width: 126%; /* More than 100% because of .8 scaling */
 }
 
-/* Medium devices (landscape tablets, 768px and up) */
-@media only screen and (min-width: 768px) {
-    div.sphx-glr-download-link-note {
-        max-width: 12em;
-    }
+/* gallery download note */
+
+div.body div.sphx-glr-download-link-note {
+    text-align: center;
+    float: none;
+    margin: 0em 0em -5em 0em;
+    max-width: none;
 }
