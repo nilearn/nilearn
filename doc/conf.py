@@ -305,10 +305,10 @@ sphinx_gallery_conf = {
     'examples_dirs': '../examples',
     'gallery_dirs': 'auto_examples',
     'binder': {
-        'org': 'emdupre',
-        'repo': 'nilearn',
+        'org': 'nilearn',
+        'repo': 'nilearn.github.io',
         'binderhub_url': 'https://mybinder.org',
-        'branch': 'gh-pages',
+        'branch': 'master',
         'dependencies': ['../requirements-build-docs.txt',
                          'binder/requirements.txt'],
         'notebooks_dir': 'examples'
