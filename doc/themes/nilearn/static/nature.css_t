@@ -1712,8 +1712,10 @@ div.sg-report iframe {
 /* gallery download note */
 
 div.body div.sphx-glr-download-link-note {
-    text-align: center;
+    text-align: left;
     float: none;
-    margin: 0em 0em -5em 0em;
-    max-width: none;
+    margin: 10px 0 -10px 0;
+    border-radius: 4px;
+    padding: 5px;
+    max-width: 100%;
 }
