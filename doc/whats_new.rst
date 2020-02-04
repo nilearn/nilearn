@@ -1,3 +1,22 @@
+0.6.2
+======
+
+ENHANCEMENTS
+------------
+
+- Generated documentation now includes Binder links to launch examples interactively
+  in the browser
+
+Contributors
+------------
+
+The following people contributed to this release::
+
+     Elizabeth DuPre
+     Zvi Baratz
+     Kshitij Chawla (kchawla-pi)
+
+
 0.6.1
 =====
 
