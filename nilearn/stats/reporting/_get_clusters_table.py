@@ -11,8 +11,9 @@ import numpy as np
 import pandas as pd
 import nibabel as nib
 from scipy import ndimage
+
+from nilearn.image import get_data
 from nilearn.image.resampling import coord_transform
-from nilearn.stats.utils import get_data
 
 
 def _local_max(data, affine, min_distance):

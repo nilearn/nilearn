@@ -17,20 +17,22 @@ from warnings import warn
 
 import numpy as np
 import pandas as pd
+
 from nibabel import Nifti1Image
 from nibabel.onetime import setattr_on_read
-
 from sklearn.base import (BaseEstimator,
                           clone,
                           TransformerMixin,
                           )
-from sklearn.externals.joblib import Memory
-from nilearn.input_data import NiftiMasker
+from sklearn.externals.joblib import (delayed,
+                                      Memory,
+                                      Parallel,
+                                      )
+
 from nilearn._utils import CacheMixin
 from nilearn._utils.niimg_conversions import check_niimg
-from sklearn.externals.joblib import (Parallel,
-                                      delayed,
-                                      )
+from nilearn.image import get_data
+from nilearn.input_data import NiftiMasker
 
 from nilearn.stats.contrasts import (_compute_fixed_effect_contrast,
                                      expression_to_contrast_vector)
@@ -44,7 +46,6 @@ from nilearn.stats.utils import (_check_run_tables,
                                  _check_events_file_uses_tab_separators,
                                  get_bids_files,
                                  parse_bids_filename,
-                                 get_data
                                  )
 
 

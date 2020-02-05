@@ -19,7 +19,7 @@ from numpy.testing import (assert_almost_equal,
                            assert_array_equal,
                            )
 
-from nilearn.image import concat_imgs
+from nilearn.image import concat_imgs, get_data
 from nilearn.stats.first_level_model import (FirstLevelModel,
                                              run_glm,
                                              )
@@ -27,7 +27,6 @@ from nilearn.stats.second_level_model import (SecondLevelModel,
                                               non_parametric_inference,
                                               )
 from nilearn.stats._utils.testing import _write_fake_fmri_data
-from nilearn.stats.utils import get_data
 
 # This directory path
 BASEDIR = os.path.dirname(os.path.abspath(__file__))

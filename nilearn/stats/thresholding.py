@@ -12,9 +12,8 @@ import numpy as np
 from scipy.ndimage import label
 from scipy.stats import norm
 
-from nilearn.image import math_img
+from nilearn.image import get_data, math_img
 from nilearn.input_data import NiftiMasker
-from nilearn.stats.utils import get_data
 
 
 def _compute_hommel_value(z_vals, alpha, verbose=False):

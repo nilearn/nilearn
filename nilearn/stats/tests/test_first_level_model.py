@@ -19,6 +19,11 @@ from numpy.testing import (assert_almost_equal,
                            )
 from nibabel.tmpdirs import InTemporaryDirectory
 
+from nilearn.image import get_data
+from nilearn.stats._utils.testing import (_create_fake_bids_dataset,
+                                          _generate_fake_fmri_data,
+                                          _write_fake_fmri_data,
+                                          )
 from nilearn.stats.design_matrix import (check_design_matrix,
                                          make_first_level_design_matrix,
                                          )
@@ -27,12 +32,9 @@ from nilearn.stats.first_level_model import (first_level_models_from_bids,
                                              mean_scaling,
                                              run_glm,
                                              )
-from nilearn.stats.utils import get_bids_files, get_data
-from nilearn.stats._utils.testing import (_create_fake_bids_dataset,
-                                          _generate_fake_fmri_data,
-                                          _write_fake_fmri_data,
-                                          )
 from nilearn.stats.contrasts import compute_fixed_effects
+from nilearn.stats.utils import get_bids_files
+
 
 BASEDIR = os.path.dirname(os.path.abspath(__file__))
 FUNCFILE = os.path.join(BASEDIR, 'functional.nii.gz')
