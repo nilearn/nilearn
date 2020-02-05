@@ -16,7 +16,7 @@ perception, recognition and priming. Cereb Cortex. 2003 Jul;13(7):793-805.
 http://www.dx.doi.org/10.1093/cercor/13.7.793
 
 This example takes a lot of time because the input are lists of 3D images
-sampled in different position (encoded by different) affine functions.
+sampled in different positions (encoded by different affine functions).
 
 """
 
@@ -24,17 +24,17 @@ print(__doc__)
 
 
 #########################################################################
-# Fetch spm multimodal_faces data
+# Fetch the SPM multimodal_faces data.
 from nistats.datasets import fetch_spm_multimodal_fmri
 subject_data = fetch_spm_multimodal_fmri()
 
 #########################################################################
-# Timing and design matrix parameter specification
+# Specfiy timing and design matrix parameters.
 tr = 2.  # repetition time, in seconds
 slice_time_ref = 0.  # we will sample the design matrix at the beggining of each acquisition
-drift_model = 'Cosine'  # We use a discrete cosin transform to model signal drifts.
+drift_model = 'Cosine'  # We use a discrete cosine transform to model signal drifts.
 high_pass = .01  # The cutoff for the drift model is 0.01 Hz.
-hrf_model = 'spm + derivative'  # The hemodunamic response finction is the SPM canonical one
+hrf_model = 'spm + derivative'  # The hemodynamic response function is the SPM canonical one.
 
 #########################################################################
 # Resample the images.
@@ -48,18 +48,18 @@ print('Resampling the second image (this takes time)...')
 fmri_img[1] = resample_img(fmri_img[1], affine, shape[:3])
 
 #########################################################################
-# Create mean image for display
+# Let's create mean image for display purposes.
 mean_image = mean_img(fmri_img)
 
 #########################################################################
-# Make design matrices
+# Make the design matrices.
 import numpy as np
 import pandas as pd
 from nistats.design_matrix import make_first_level_design_matrix
 design_matrices = []
 
 #########################################################################
-# loop over the two sessions
+# Loop over the two sessions.
 for idx, img in enumerate(fmri_img, start=1):
     # Build experimental paradigm
     n_scans = img.shape[-1]
@@ -80,7 +80,7 @@ for idx, img in enumerate(fmri_img, start=1):
 
 #########################################################################
 # We can specify basic contrasts (to get beta maps).
-# We start by specifying canonical contrast that isolate design matrix columns
+# We start by specifying canonical contrast that isolate design matrix columns.
 contrast_matrix = np.eye(design_matrix.shape[1])
 basic_contrasts = dict([(column, contrast_matrix[i])
                   for i, column in enumerate(design_matrix.columns)])
@@ -88,7 +88,7 @@ basic_contrasts = dict([(column, contrast_matrix[i])
 #########################################################################
 # We actually want more interesting contrasts. The simplest contrast
 # just makes the difference between the two main conditions.  We
-# define the two opposite versions to run one-tail t-tests.  We also
+# define the two opposite versions to run one-tailed t-tests.  We also
 # define the effects of interest contrast, a 2-dimensional contrasts
 # spanning the two conditions.
 
@@ -100,15 +100,14 @@ contrasts = {
     }
 
 #########################################################################
-# Fit the GLM -- 2 sessions.
-# Imports for GLM, the sepcify, then fit.
+# Fit the GLM for the 2 sessions by speficying a FirstLevelModel and then fitting it.
 from nistats.first_level_model import FirstLevelModel
 print('Fitting a GLM')
 fmri_glm = FirstLevelModel()
 fmri_glm = fmri_glm.fit(fmri_img, design_matrices=design_matrices)
 
 #########################################################################
-# Compute contrast-related statistical maps (in z-scale), and plot them
+# Now we can compute contrast-related statistical maps (in z-scale), and plot them.
 print('Computing contrasts')
 from nilearn import plotting
 
@@ -120,17 +119,16 @@ for contrast_id, contrast_val in contrasts.items():
         contrast_val, output_type='z_score')
     # plot the contrasts as soon as they're generated
     # the display is overlayed on the mean fMRI image
-    # a threshold of 3.0 is used. More sophisticated choices are possible.
+    # a threshold of 3.0 is used, more sophisticated choices are possible
     plotting.plot_stat_map(
         z_map, bg_img=mean_image, threshold=3.0, display_mode='z',
         cut_coords=3, black_bg=True, title=contrast_id)
+    plotting.show()
 
 #########################################################################
-# Show the resulting maps: We observe that the analysis results in
+# Based on the resulting maps we observe that the analysis results in
 # wide activity for the 'effects of interest' contrast, showing the
 # implications of large portions of the visual cortex in the
 # conditions. By contrast, the differential effect between "faces" and
-# "scambled" involves sparser, more anterior and lateral regions. It
-# displays also some responses in the frontal lobe.
-
-plotting.show()
+# "scrambled" involves sparser, more anterior and lateral regions. It
+# also displays some responses in the frontal lobe.

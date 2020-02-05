@@ -1,15 +1,15 @@
 """Example of surface-based first-level analysis
 =============================================
 
-Full step-by-step example of fitting a GLM to experimental data
+A full step-by-step example of fitting a GLM to experimental data
 sampled on the cortical surface and visualizing the results.
 
 More specifically:
 
-1. A sequence of fMRI volumes are loaded
-2. fMRI data are projected onto a reference cortical surface (the freesurfer template, fsaverage)
-3. A design matrix describing all the effects related to the data is computed
-4. A GLM is applied to the dataset (effect/covariance, then contrast estimation)
+1. A sequence of fMRI volumes is loaded.
+2. fMRI data are projected onto a reference cortical surface (the FreeSurfer template, fsaverage).
+3. A design matrix describing all the effects related to the data is computed.
+4. A GLM is applied to the dataset (effect/covariance, then contrast estimation).
 
 The result of the analysis are statistical maps that are defined on
 the brain mesh. We display them using Nilearn capabilities.
@@ -30,19 +30,19 @@ obviously less accurate than using a subject-tailored mesh.
 #########################################################################
 # Prepare data and analysis parameters
 # -------------------------------------
-# Prepare timing parameters
+# Prepare the timing parameters.
 t_r = 2.4
 slice_time_ref = 0.5
 
 #########################################################################
-# Prepare data
-# First the volume-based fMRI data.
+# Prepare the data.
+# First, the volume-based fMRI data.
 from nistats.datasets import fetch_localizer_first_level
 data = fetch_localizer_first_level()
 fmri_img = data.epi_img
 
 #########################################################################
-# Second the experimental paradigm.
+# Second, the experimental paradigm.
 events_file = data.events
 import pandas as pd
 events = pd.read_table(events_file)
@@ -52,8 +52,8 @@ events = pd.read_table(events_file)
 # -------------------------------------
 #
 # For this we need to get a mesh representing the geometry of the
-# surface.  we could use an individual mesh, but we first resort to a
-# standard mesh, the so-called fsaverage5 template from the Freesurfer
+# surface.  We could use an individual mesh, but we first resort to a
+# standard mesh, the so-called fsaverage5 template from the FreeSurfer
 # software.
 
 import nilearn
@@ -61,7 +61,7 @@ fsaverage = nilearn.datasets.fetch_surf_fsaverage()
 
 #########################################################################
 # The projection function simply takes the fMRI data and the mesh.
-# Note that those correspond spatially, are they are bothin MNI space.
+# Note that those correspond spatially, are they are both in MNI space.
 from nilearn import surface
 texture = surface.vol_to_surf(fmri_img, fsaverage.pial_right)
 
@@ -70,17 +70,17 @@ texture = surface.vol_to_surf(fmri_img, fsaverage.pial_right)
 # ----------------------------
 #
 # This involves computing the design matrix and fitting the model.
-# We start by specifying the timing of fMRI frames
+# We start by specifying the timing of fMRI frames.
 
 import numpy as np
 n_scans = texture.shape[1]
 frame_times = t_r * (np.arange(n_scans) + .5)
 
 #########################################################################
-# Create the design matrix
+# Create the design matrix.
 #
-# We specify an hrf model containing Glover model and its time derivative
-# the drift model is implicitly a cosine basis with period cutoff 128s.
+# We specify an hrf model containing the Glover model and its time derivative.
+# The drift model is implicitly a cosine basis with a period cutoff at 128s.
 from nistats.design_matrix import make_first_level_design_matrix
 design_matrix = make_first_level_design_matrix(frame_times,
                                                events=events,
@@ -89,7 +89,8 @@ design_matrix = make_first_level_design_matrix(frame_times,
 
 #########################################################################
 # Setup and fit GLM.
-# Note that the output consists in 2 variables: `labels` and `fit`
+#
+# Note that the output consists in 2 variables: `labels` and `fit`.
 # `labels` tags voxels according to noise autocorrelation.
 # `estimates` contains the parameter estimates.
 # We keep them for later contrast computation.
@@ -100,19 +101,20 @@ labels, estimates = run_glm(texture.T, design_matrix.values)
 #########################################################################
 # Estimate contrasts
 # ------------------
-# Specify the contrasts
+# Specify the contrasts.
+#
 # For practical purpose, we first generate an identity matrix whose size is
-# the number of columns of the design matrix
+# the number of columns of the design matrix.
 contrast_matrix = np.eye(design_matrix.shape[1])
 
 #########################################################################
-# first create basic contrasts
+# At first, we create basic contrasts.
 basic_contrasts = dict([(column, contrast_matrix[i])
                         for i, column in enumerate(design_matrix.columns)])
 
 #########################################################################
-# add some intermediate contrasts
-# one contrast adding all conditions with some auditory parts
+# Next, we add some intermediate contrasts and
+# one contrast adding all conditions with some auditory parts.
 basic_contrasts['audio'] = (
     basic_contrasts['audio_left_hand_button_press']
     + basic_contrasts['audio_right_hand_button_press']
@@ -135,11 +137,11 @@ basic_contrasts['sentences'] = (basic_contrasts['sentence_listening']
                                 + basic_contrasts['sentence_reading'])
 
 #########################################################################
-# Finally make a dictionary of more relevant contrasts
+# Finally, we create a dictionary of more relevant contrasts
 #
-# * 'left - right button press' probes motor activity in left versus right button presses
-# * 'audio - visual' probes the difference of activity between listening to some content or reading the same type of content (instructions, stories)
-# * 'computation - sentences' looks at the activity when performing a mental comptation task  versus simply reading sentences.
+# * 'left - right button press': probes motor activity in left versus right button presses.
+# * 'audio - visual': probes the difference of activity between listening to some content or reading the same type of content (instructions, stories).
+# * 'computation - sentences': looks at the activity when performing a mental computation task  versus simply reading sentences.
 #
 # Of course, we could define other contrasts, but we keep only 3 for simplicity.
 
@@ -157,12 +159,10 @@ contrasts = {
 }
 
 #########################################################################
-# contrast estimation
+# Let's estimate the contrasts by iterating over them.
 from nistats.contrasts import compute_contrast
 from nilearn import plotting
 
-#########################################################################
-# iterate over contrasts
 for index, (contrast_id, contrast_val) in enumerate(contrasts.items()):
     print('  Contrast % i out of %i: %s, right hemisphere' %
           (index + 1, len(contrasts), contrast_id))
@@ -183,18 +183,18 @@ for index, (contrast_id, contrast_val) in enumerate(contrasts.items()):
 # Analysing the left hemisphere
 # -----------------------------
 #
-# Note that it requires little additional code!
+# Note that re-creating the above analysis for the left hemisphere requires little additional code!
 
 #########################################################################
-# Project the fMRI data to the mesh
+# We project the fMRI data to the mesh.
 texture = surface.vol_to_surf(fmri_img, fsaverage.pial_left)
 
 #########################################################################
-# Estimate the General Linear Model
+# Then we estimate the General Linear Model.
 labels, estimates = run_glm(texture.T, design_matrix.values)
 
 #########################################################################
-# Create contrast-specific maps
+# Finally, we create contrast-specific maps and plot them.
 for index, (contrast_id, contrast_val) in enumerate(contrasts.items()):
     print('  Contrast % i out of %i: %s, left hemisphere' %
           (index + 1, len(contrasts), contrast_id))
@@ -202,7 +202,7 @@ for index, (contrast_id, contrast_val) in enumerate(contrasts.items()):
     contrast = compute_contrast(labels, estimates, contrast_val,
                                 contrast_type='t')
     z_score = contrast.z_score()
-    # Plot the result
+    # plot the result
     plotting.plot_surf_stat_map(
         fsaverage.infl_left, z_score, hemi='left',
         title=contrast_id, colorbar=True,

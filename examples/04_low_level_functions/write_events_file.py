@@ -2,7 +2,7 @@
 =============================================================================
 
 The protocol described is the so-called "archi standard" localizer
-event sequence.  See Pinel et al., BMC neuroscience 2007 for reference
+event sequence.  See Pinel et al., BMC neuroscience 2007 for reference.
 """
 
 print(__doc__)
@@ -23,7 +23,7 @@ onset = np.array([
 
 #########################################################################
 # Associated trial types: these are numbered between 0 and 9, hence
-# correspond to 10 different conditions
+# correspond to 10 different conditions.
 trial_idx = np.array(
     [7, 7, 0, 2, 9, 4, 9, 3, 5, 9, 1, 6, 8, 8, 6, 6, 8, 0, 3, 4, 5, 8, 6,
      2, 9, 1, 6, 5, 9, 1, 7, 8, 6, 6, 1, 2, 9, 0, 7, 1, 8, 2, 7, 8, 3, 6,
@@ -47,19 +47,19 @@ condition_ids = ['horizontal checkerboard',
 trial_type = np.array([condition_ids[i] for i in trial_idx])
 
 #########################################################################
-# We also define a duration (required by BIDS conventions)
+# We also define a duration (required by BIDS conventions).
 duration = np.ones_like(onset)
 
 
 #########################################################################
-# Form an event dataframe from these information
+# Form an event dataframe from these information.
 import pandas as pd
 events = pd.DataFrame({'trial_type': trial_type,
                        'onset': onset,
                        'duration': duration})
 
 #########################################################################
-# Export them to a tsv file
+# Export them to a tsv file.
 tsvfile = 'localizer_events.tsv'
 events.to_csv(tsvfile, sep='\t', index=False)
 print("Created the events file in %s " % tsvfile)

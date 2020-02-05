@@ -10,7 +10,7 @@ Here, we demonstrate the use of a FIR model with 3 lags, computing 4 contrasts f
 """
 
 #########################################################################
-# Grab localizer data
+# At first, we grab the localizer data.
 
 import pandas as pd
 from nistats import datasets
@@ -23,11 +23,11 @@ events = pd.read_table(events_file)
 
 
 #########################################################################
-# Next solution is to try finite impulse reponse (FIR) models: we just
+# Next solution is to try Finite Impulse Reponse (FIR) models: we just
 # say that the hrf is an arbitrary function that lags behind the
 # stimulus onset.  In the present case, given that the numbers of
 # conditions is high, we should use a simple FIR model.
-# 
+#
 # Concretely, we set `hrf_model` to 'fir' and `fir_delays` to [1, 2,
 # 3] (scans) corresponding to a 3-step functions on the [1 * t_r, 4 *
 # t_r] seconds interval.
@@ -106,11 +106,10 @@ for index, (contrast_id, contrast_val) in enumerate(contrasts.items()):
     plot_stat_map(
         z_map, display_mode='z', threshold=3.0, title=contrast_id, axes=ax,
         cut_coords=1)
+    plt.show()
 
 #########################################################################
 # The result is acceptable. Note that we're asking a lot of questions
 # to a small dataset, yet with a relatively large number of experimental
 # conditions.
 #
-
-plt.show()
