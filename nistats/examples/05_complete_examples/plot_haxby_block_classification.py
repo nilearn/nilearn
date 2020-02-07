@@ -7,9 +7,9 @@ We use the data from one subject of the Haxby dataset.
 
 More specifically:
 
-1. Download the Haxby dataset
-2. Extract the information to generate a glm representing the blocks of stimuli
-3. Analyze the decoding performance using a classifier
+1. Download the Haxby dataset.
+2. Extract the information to generate a glm representing the blocks of stimuli.
+3. Analyze the decoding performance using a classifier.
 
 To run this example, you must launch IPython via ``ipython
 --matplotlib`` in a terminal, or use the Jupyter notebook.
@@ -30,7 +30,7 @@ from nilearn import datasets
 haxby_dataset = datasets.fetch_haxby()
 
 # repetition has to be known
-TR = 2.5 
+TR = 2.5
 
 #############################################################################
 # Load the behavioral data
@@ -47,7 +47,7 @@ unique_sessions = behavioral['chunks'].unique()
 
 # fMRI data: a unique file for each session
 func_filename = haxby_dataset.func[0]
-    
+
 #############################################################################
 # Build a proper event structure for each session
 # -----------------------------------------------
@@ -72,7 +72,7 @@ for session in unique_sessions:
 
 ##############################################################################
 # Instantiate and run FirstLevelModel
-# -----------------------------------    
+# -----------------------------------
 from nilearn.image import index_img
 from nistats.first_level_model import FirstLevelModel
 
@@ -90,7 +90,7 @@ glm = FirstLevelModel(t_r=TR,
 
 ##############################################################################
 # Run the glm on data from each session
-# -------------------------------------    
+# -------------------------------------
 for session in unique_sessions:
     # grab the fmri data for that particular session
     fmri_session = index_img(func_filename, sessions == session)
@@ -183,4 +183,3 @@ chance_level = 1. / len(np.unique(condition_idx))
 print('Classification accuracy: {:.4f} / Chance level: {}'.format(
         classification_accuracy, chance_level))
 # Classification accuracy:  0.375 / Chance level: 0.125
-
