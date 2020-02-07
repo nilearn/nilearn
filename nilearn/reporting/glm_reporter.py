@@ -16,14 +16,9 @@ import string
 import warnings
 from collections import OrderedDict
 
-try:
-    from collections.abc import Iterable
-    from html import escape
-    from urllib.parse import quote
-except ImportError:  # Python2
-    from collections import Iterable
-    from cgi import escape
-    from urllib import quote
+from collections.abc import Iterable
+from html import escape
+from urllib.parse import quote
 
 import numpy as np
 import pandas as pd
