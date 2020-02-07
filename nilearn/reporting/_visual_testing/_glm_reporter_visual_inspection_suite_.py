@@ -20,7 +20,7 @@ from nilearn.stats.design_matrix import make_first_level_design_matrix
 from nilearn.stats.first_level_model import (FirstLevelModel,
                                        first_level_models_from_bids,
                                        )
-from nilearn.stats.reporting import make_glm_report
+from nilearn.reporting import make_glm_report
 from nilearn.stats.second_level_model import SecondLevelModel
 from nilearn.stats.utils import get_design_from_fslmat
 
