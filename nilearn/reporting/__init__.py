@@ -11,7 +11,7 @@ import warnings
 try:
     import matplotlib
 except ImportError:
-    warnings.warn("Nistats' reporting module requires matplotlib to work. "
+    warnings.warn("Nilearn's reporting module requires matplotlib to work. "
                   "Install it using:\n"
                   "pip install matplotlib"
                   )
