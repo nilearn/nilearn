@@ -37,9 +37,7 @@ def plot_design_matrix(design_matrix, rescale=True, ax=None, output_file=None):
     """
     # We import _set_mpl_backend because just the fact that we are
     # importing it sets the backend
-    from nilearn.plotting import _set_mpl_backend
-    # avoid unhappy pyflakes
-    _set_mpl_backend
+    from nilearn.plotting import _set_mpl_backend  # noqa:F401
 
     # normalize the values per column for better visualization
     _, X, names = check_design_matrix(design_matrix)

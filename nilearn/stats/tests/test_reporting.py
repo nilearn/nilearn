@@ -9,11 +9,11 @@ from nibabel.tmpdirs import InTemporaryDirectory
 from nilearn.plotting import _set_mpl_backend
 
 from nilearn.stats.design_matrix import make_first_level_design_matrix
-from nilearn.stats.reporting import (get_clusters_table,
+from nilearn.reporting import (get_clusters_table,
                                plot_contrast_matrix,
                                plot_design_matrix,
                                )
-from nilearn.stats.reporting._get_clusters_table import _local_max
+from nilearn.reporting._get_clusters_table import _local_max
 
 # Avoid making pyflakes unhappy
 _set_mpl_backend

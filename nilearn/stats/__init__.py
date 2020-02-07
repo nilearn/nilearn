@@ -26,4 +26,4 @@ reporting               --- Utilities for creating reports & plotting data
 utils                   --- Miscellaneous utilities
 """
 
-__all__ = ['datasets', 'design_matrix']
+# __all__ = ['datasets', 'design_matrix']

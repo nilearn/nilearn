@@ -14,8 +14,8 @@ import io
 import os
 import string
 import warnings
-from collections import OrderedDict
 
+from collections import OrderedDict
 from collections.abc import Iterable
 from html import escape
 from urllib.parse import quote
@@ -31,10 +31,10 @@ from nilearn.plotting import (plot_glass_brain,
 from nilearn.plotting.img_plotting import MNI152TEMPLATE
 from nilearn.plotting.js_plotting_utils import HTMLDocument
 from nilearn import stats
-from nilearn.stats.reporting import (plot_contrast_matrix,
-                                     plot_design_matrix,
-                                     get_clusters_table,
-                                     )
+from nilearn.reporting import (plot_contrast_matrix,
+                               plot_design_matrix,
+                               get_clusters_table,
+                               )
 from nilearn.stats.thresholding import map_threshold
 
 HTML_TEMPLATE_ROOT_PATH = os.path.join(os.path.dirname(__file__),
