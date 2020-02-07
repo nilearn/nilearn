@@ -470,7 +470,7 @@ def vol_to_surf(img, surf_mesh,
     You can control how many samples are drawn by setting `n_samples`.
 
     Once the sampling positions are chosen, those that fall outside of the 3d
-    image (or ouside of the mask if you provided one) are discarded. If all
+    image (or outside of the mask if you provided one) are discarded. If all
     sample positions are discarded (which can happen, for example, if the
     vertex itself is outside of the support of the image), the projection at
     this vertex will be ``numpy.nan``.
