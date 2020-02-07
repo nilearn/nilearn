@@ -1,10 +1,26 @@
 0.6.2
 ======
 
+ENHANCEMENTS
+------------
+
+- Generated documentation now includes Binder links to launch examples interactively
+  in the browser
+
 Fixes
 -----
 
 - More robust matplotlib backend selection
+
+Contributors
+------------
+
+The following people contributed to this release::
+
+     Elizabeth DuPre
+     Gael Varoquaux
+     Kshitij Chawla (kchawla-pi)
+     Zvi Baratz
 
 0.6.1
 =====
