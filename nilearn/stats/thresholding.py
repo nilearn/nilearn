@@ -225,6 +225,9 @@ def map_threshold(stat_img=None, mask_img=None, alpha=.001, threshold=3.,
     If the input image is not z-scaled (i.e. some z-transformed statistic)
     the computed threshold is not rigorous and likely meaningless
     """
+    # Prevent circular import between reporting & stats module
+    from nilearn.input_data import NiftiMasker
+
     height_control_methods = ['fpr', 'fdr', 'bonferroni',
                               'all-resolution-inference', None]
     if height_control not in height_control_methods:
