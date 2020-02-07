@@ -13,7 +13,6 @@ from scipy.ndimage import label
 from scipy.stats import norm
 
 from nilearn.image import get_data, math_img
-from nilearn.input_data import NiftiMasker
 
 
 def _compute_hommel_value(z_vals, alpha, verbose=False):
@@ -138,6 +137,9 @@ def cluster_level_inference(stat_img, mask_img=None,
     Inference for brain imaging. Neuroimage. 2018 Nov 1;181:786-796. doi:
     10.1016/j.neuroimage.2018.07.060
     """
+    # Prevent circular import between reporting & stats module
+    from nilearn.input_data import NiftiMasker
+
     if not isinstance(threshold, list):
         threshold = [threshold]
 

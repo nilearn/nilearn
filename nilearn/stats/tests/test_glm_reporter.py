@@ -13,7 +13,7 @@ import pandas as pd
 from nilearn.stats._utils.testing import _write_fake_fmri_data
 from nilearn.stats.design_matrix import make_first_level_design_matrix
 from nilearn.stats.first_level_model import FirstLevelModel
-from nilearn.stats.reporting import glm_reporter as glmr
+from nilearn.reporting import glm_reporter as glmr
 from nilearn.stats.second_level_model import SecondLevelModel
 
 

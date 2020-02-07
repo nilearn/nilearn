@@ -19,11 +19,11 @@ else:
 from ._compare_niimgs import compare_niimgs
 from ._get_clusters_table import get_clusters_table
 from ._plot_matrices import plot_contrast_matrix, plot_design_matrix
-from .glm_reporter import make_glm_report
+# from nilearn.reporting.glm_reporter import make_glm_report
 
 __all__ = [compare_niimgs,
            get_clusters_table,
-           make_glm_report,
+           # make_glm_report,
            plot_contrast_matrix,
            plot_design_matrix,
            ]

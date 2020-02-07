@@ -11,8 +11,6 @@ import numpy as np
 import scipy.stats as sps
 import pandas as pd
 
-from nilearn.input_data import NiftiMasker
-
 from nilearn.stats.utils import z_score
 
 DEF_TINY = 1e-50
@@ -316,6 +314,9 @@ def compute_fixed_effects(contrast_imgs, variance_imgs, mask=None,
     fixed_fx_t_img: Nifti1Image,
              the fixed effects t-test computed within the mask
     """
+    # Prevent circular import between reporting & stats module
+    from nilearn.input_data import NiftiMasker
+
     if len(contrast_imgs) != len(variance_imgs):
         raise ValueError(
             'The number of contrast images (%d) '
