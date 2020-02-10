@@ -156,7 +156,7 @@ def fetch_openneuro_dataset_index(data_dir=None,
     return urls_path, urls
 
 
-def select_from_index(urls, inclusion_filters=[], exclusion_filters=[],
+def select_from_index(urls, inclusion_filters=None, exclusion_filters=None,
                       n_subjects=None):
     """Select subset of urls with given filters.
 
@@ -193,6 +193,8 @@ def select_from_index(urls, inclusion_filters=[], exclusion_filters=[],
     urls: list of string
         Sorted list of filtered dataset directories
     """
+    inclusion_filters = inclusion_filters if inclusion_filters else []
+    exclusion_filters = exclusion_filters if exclusion_filters else []
     # We apply filters to the urls
     for exclusion in exclusion_filters:
         urls = [url for url in urls if not fnmatch.fnmatch(url, exclusion)]

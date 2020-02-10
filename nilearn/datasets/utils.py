@@ -452,7 +452,7 @@ def _filter_columns(array, filters, combination='and'):
 
 
 def _fetch_file(url, data_dir, resume=True, overwrite=False,
-                md5sum=None, username=None, password=None, handlers=[],
+                md5sum=None, username=None, password=None, handlers=None,
                 verbose=1):
     """Load requested file, downloading it if needed or requested.
 
@@ -497,6 +497,7 @@ def _fetch_file(url, data_dir, resume=True, overwrite=False,
     If, for any reason, the download procedure fails, all downloaded files are
     removed.
     """
+    handlers = handlers if handlers else []
     # Determine data path
     if not os.path.exists(data_dir):
         os.makedirs(data_dir)

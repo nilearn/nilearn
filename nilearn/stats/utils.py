@@ -299,7 +299,7 @@ def positive_reciprocal(X):
 
 # UTILITIES FOR THE BIDS STANDARD
 def get_bids_files(main_path, file_tag='*', file_type='*', sub_label='*',
-                   modality_folder='*', filters=[], sub_folder=True):
+                   modality_folder='*', filters=None, sub_folder=True):
     """Search for files in a BIDS dataset following given constraints.
 
     This utility function allows to filter files in the BIDS dataset by
@@ -343,7 +343,7 @@ def get_bids_files(main_path, file_tag='*', file_type='*', sub_label='*',
         If given as the empty string '', files will be searched inside the
         sub-label/ses-label directories.
 
-    filters: list of tuples (str, str), optional (default: [])
+    filters: list of tuples (str, str), optional (default: None)
         Filters are of the form (field, label). Only one filter per field
         allowed. A file that does not match a filter will be discarded.
         Filter examples would be ('ses', '01'), ('dir', 'ap') and
@@ -362,6 +362,7 @@ def get_bids_files(main_path, file_tag='*', file_type='*', sub_label='*',
         list of file paths found.
 
     """
+    filters = filters if filters else []
     if sub_folder:
         files = os.path.join(main_path, 'sub-*', 'ses-*')
         if glob.glob(files):
