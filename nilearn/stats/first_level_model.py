@@ -285,6 +285,7 @@ class FirstLevelModel(BaseEstimator, TransformerMixin, CacheMixin):
 
 
     """
+
     def __init__(self, t_r=None, slice_time_ref=0., hrf_model='glover',
                  drift_model='cosine', high_pass=.01, drift_order=1,
                  fir_delays=[0], min_onset=-24, mask_img=None,

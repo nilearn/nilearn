@@ -45,9 +45,8 @@ def _check_second_level_input(second_level_input, design_matrix,
         if flm_object and isinstance(second_level_input[0], FirstLevelModel):
             models_input = enumerate(second_level_input)
             for model_idx, first_level_model in models_input:
-                if (
-                    first_level_model.labels_ is None or
-                    first_level_model.results_ is None
+                if (first_level_model.labels_ is None
+                    or first_level_model.results_ is None
                 ):
                     raise ValueError(
                         'Model %s at index %i has not been fit yet'
@@ -183,8 +182,9 @@ def _get_contrast(second_level_contrast, design_matrix):
         if second_level_contrast in design_matrix.columns.tolist():
             contrast = second_level_contrast
         else:
-            raise ValueError('"' + second_level_contrast + '" is not a valid' +
-                             ' contrast name')
+            raise ValueError('"{}" is not a valid contrast name'.format(
+                second_level_contrast)
+            )
     else:
         # Check contrast definition
         if second_level_contrast is None:
@@ -271,6 +271,7 @@ class SecondLevelModel(BaseEstimator, TransformerMixin, CacheMixin):
         on memory consumption. True by default.
 
     """
+
     def __init__(self, mask_img=None, smoothing_fwhm=None,
                  memory=Memory(None), memory_level=1, verbose=0,
                  n_jobs=1, minimize_memory=True):

@@ -141,8 +141,10 @@ def spm_time_derivative(tr, oversampling=50, time_length=32., onset=0.):
           dhrf sampling on the provided grid
     """
     do = .1
-    dhrf = 1. / do * (spm_hrf(tr, oversampling, time_length, onset) -
-                      spm_hrf(tr, oversampling, time_length, onset + do))
+    dhrf = 1. / do * (
+        spm_hrf(tr, oversampling, time_length, onset)
+        - spm_hrf(tr, oversampling, time_length, onset + do)
+    )
     return dhrf
 
 
@@ -166,8 +168,10 @@ def glover_time_derivative(tr, oversampling=50, time_length=32., onset=0.):
           dhrf sampling on the provided grid
     """
     do = .1
-    dhrf = 1. / do * (glover_hrf(tr, oversampling, time_length, onset) -
-                      glover_hrf(tr, oversampling, time_length, onset + do))
+    dhrf = 1. / do * (
+        glover_hrf(tr, oversampling, time_length, onset)
+        - glover_hrf(tr, oversampling, time_length, onset + do)
+    )
     return dhrf
 
 

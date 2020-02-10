@@ -217,8 +217,9 @@ class OLSModel(object):
         wY = self.whiten(Y)
         beta = np.dot(self.calc_beta, wY)
         wresid = wY - np.dot(self.whitened_design, beta)
-        dispersion = np.sum(wresid ** 2, 0) / (self.whitened_design.shape[0] -
-                                               self.whitened_design.shape[1])
+        dispersion = np.sum(wresid ** 2, 0) / (
+            self.whitened_design.shape[0] - self.whitened_design.shape[1]
+        )
         lfit = RegressionResults(beta, Y, self,
                                  wY, wresid, dispersion=dispersion,
                                  cov=self.normalized_cov_beta)
@@ -288,6 +289,7 @@ class RegressionResults(LikelihoodModelResults):
 
     It handles the output of contrasts, estimates of covariance, etc.
     """
+
     @rename_parameters(
         {'wresid': 'whitened_residuals', 'wY': 'whitened_Y'},
         lib_name='Nistats'

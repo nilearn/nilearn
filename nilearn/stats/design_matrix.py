@@ -109,7 +109,7 @@ def _cosine_drift(high_pass, frame_times):
 
     for k in range(1, order + 1):
         cosine_drift[:, k - 1] = normalizer * np.cos(
-                (np.pi / n_frames) * (n_times + .5) * k)
+            (np.pi / n_frames) * (n_times + .5) * k)
 
     cosine_drift[:, -1] = 1.
     return cosine_drift
@@ -241,9 +241,9 @@ def _convolve_regressors(events, hrf_model, frame_times, fir_delays=[0],
 
 
 def make_first_level_design_matrix(
-        frame_times, events=None, hrf_model='glover',
-        drift_model='cosine', high_pass=.01, drift_order=1, fir_delays=[0],
-        add_regs=None, add_reg_names=None, min_onset=-24, oversampling=50):
+    frame_times, events=None, hrf_model='glover',
+    drift_model='cosine', high_pass=.01, drift_order=1, fir_delays=[0],
+    add_regs=None, add_reg_names=None, min_onset=-24, oversampling=50):
     """Generate a design matrix from the input parameters
 
     Parameters

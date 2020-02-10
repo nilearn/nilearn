@@ -215,9 +215,11 @@ def select_from_index(urls, inclusion_filters=None, exclusion_filters=None,
     # We get a list of subjects (for the moment the first n subjects)
     selected_subjects = set(infer_subjects(urls)[:n_subjects])
     # We exclude urls of subjects not selected
-    urls = [url for url in urls if 'sub-' not in url or
-            re.search(subject_regex, url).group(0)[:-1] in selected_subjects]
-
+    urls = [
+        url for url in urls
+        if 'sub-' not in url or re.search(subject_regex, url).group(0)[:-1]
+           in selected_subjects
+    ]
     return urls
 
 
@@ -625,8 +627,9 @@ def _make_events_file_spm_multimodal_fmri(_subject_data, session):
     scrambled_onsets = timing['onsets'][1].ravel()
     onsets = np.hstack((faces_onsets, scrambled_onsets))
     onsets *= tr  # because onsets were reporting in 'scans' units
-    conditions = (['faces'] * len(faces_onsets) +
-                  ['scrambled'] * len(scrambled_onsets))
+    conditions = (
+        ['faces'] * len(faces_onsets) + ['scrambled'] * len(scrambled_onsets)
+    )
     duration = np.ones_like(onsets)
     events = pd.DataFrame({'trial_type': conditions, 'onset': onsets,
                            'duration': duration})
