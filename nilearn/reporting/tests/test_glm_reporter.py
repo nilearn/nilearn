@@ -16,14 +16,12 @@ from nilearn.stats.first_level_model import FirstLevelModel
 from nilearn.reporting import glm_reporter as glmr
 from nilearn.stats.second_level_model import SecondLevelModel
 
-
 try:
-    import matplotlib as mpl
+    import matplotlib as mpl  # noqa: F841
 except ImportError:
     not_have_mpl = True
 else:
     not_have_mpl = False
-    mpl  # So flake8 doesn't complain about not using import (F841)
 
 
 @pytest.mark.skipif(not_have_mpl,
@@ -33,10 +31,11 @@ def test_flm_reporting():
         shapes, rk = ((7, 8, 7, 15), (7, 8, 7, 16)), 3
         mask, fmri_data, design_matrices = _write_fake_fmri_data(shapes, rk)
         flm = FirstLevelModel(mask_img=mask).fit(
-                fmri_data, design_matrices=design_matrices)
+            fmri_data, design_matrices=design_matrices)
         contrast = np.eye(3)[1]
         report_flm = glmr.make_glm_report(flm, contrast, plot_type='glass',
-                                          height_control=None, min_distance=15,
+                                          height_control=None,
+                                          min_distance=15,
                                           alpha=0.001, threshold=2.78,
                                           )
         '''
@@ -166,10 +165,11 @@ def test_make_headings_with_contrasts_title_none():
                   None,
                   model
                   )
-    expected_output = ('Report: Second Level Model for contrast_0, contrast_1',
-                       'Statistical Report for contrast_0, contrast_1',
-                       'Second Level Model',
-                       )
+    expected_output = (
+        'Report: Second Level Model for contrast_0, contrast_1',
+        'Statistical Report for contrast_0, contrast_1',
+        'Second Level Model',
+    )
     actual_output = glmr._make_headings(*test_input)
     assert actual_output == expected_output
 
@@ -222,28 +222,26 @@ def test_stat_map_to_svg_slice_z():
     with InTemporaryDirectory():
         img = _generate_img()
         table_details = pd.DataFrame.from_dict({'junk': 0}, orient='index')
-        stat_map_html_code = glmr._stat_map_to_svg(stat_img=img,
-                                                   bg_img=None,
-                                                   display_mode='ortho',
-                                                   plot_type='slice',
-                                                   table_details=table_details,
-                                                   )
-        # So flake8 doesn't complain about not using variable (F841)
-        stat_map_html_code
+        stat_map_html_code = glmr._stat_map_to_svg(  # noqa: F841
+            stat_img=img,
+            bg_img=None,
+            display_mode='ortho',
+            plot_type='slice',
+            table_details=table_details,
+        )
 
 
 def test_stat_map_to_svg_glass_z():
     with InTemporaryDirectory():
         img = _generate_img()
         table_details = pd.DataFrame.from_dict({'junk': 0}, orient='index')
-        stat_map_html_code = glmr._stat_map_to_svg(stat_img=img,
-                                                   bg_img=None,
-                                                   display_mode='z',
-                                                   plot_type='glass',
-                                                   table_details=table_details,
-                                                   )
-        # So flake8 doesn't complain about not using variable (F841)
-        stat_map_html_code
+        stat_map_html_code = glmr._stat_map_to_svg(  # noqa: F841
+            stat_img=img,
+            bg_img=None,
+            display_mode='z',
+            plot_type='glass',
+            table_details=table_details,
+        )
 
 
 def test_stat_map_to_svg_invalid_plot_type():
@@ -253,15 +251,14 @@ def test_stat_map_to_svg_invalid_plot_type():
             'Invalid plot type provided. Acceptable options are'
             "'slice' or 'glass'.")
         try:
-            stat_map_html_code = glmr._stat_map_to_svg(stat_img=img,
-                                                       bg_img=None,
-                                                       display_mode='z',
-                                                       plot_type='junk',
-                                                       table_details={'junk': 0
-                                                                      },
-                                                       )
-            # So flake8 doesn't complain about not using variable (F841)
-            stat_map_html_code
+            stat_map_html_code = glmr._stat_map_to_svg(  # noqa: F841
+                stat_img=img,
+                bg_img=None,
+                display_mode='z',
+                plot_type='junk',
+                table_details={'junk': 0
+                               },
+            )
         except ValueError as raised_exception:
             assert str(raised_exception) == str(expected_error)
 
@@ -278,8 +275,6 @@ def _make_dummy_contrasts_dmtx():
 
 def test_plot_contrasts():
     contrast, dmtx = _make_dummy_contrasts_dmtx()
-    contrast_plots = glmr._plot_contrasts(contrast,
+    contrast_plots = glmr._plot_contrasts(contrast,  # noqa: F841
                                           [dmtx],
                                           )
-    # So flake8 doesn't complain about not using variable (F841)
-    contrast_plots

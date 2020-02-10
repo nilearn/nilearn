@@ -76,8 +76,8 @@ def compare_niimgs(ref_imgs, src_imgs, masker, plot_hist=True, log=True,
 
         if plot_hist:
             ax1.scatter(
-                    ref_data, src_data, label="Pearsonr: %.2f" % corr, c="g",
-                    alpha=.6)
+                ref_data, src_data, label="Pearsonr: %.2f" % corr, c="g",
+                alpha=.6)
             x = np.linspace(*ax1.get_xlim(), num=100)
             ax1.plot(x, x, linestyle="--", c="k")
             ax1.grid("on")

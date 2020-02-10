@@ -14,7 +14,7 @@ from .html_report import (ReportMixin, HTMLReport)
 from .html_document import (HTMLDocument, set_max_img_views_before_warning)
 
 try:
-    import matplotlib
+    import matplotlib  # noqa: F401
 except ImportError:
     warnings.warn("Nilearn's reporting module requires matplotlib to work. "
                   "Install it using:\n"

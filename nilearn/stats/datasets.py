@@ -246,8 +246,8 @@ def patch_openneuro_dataset(file_list):
 
 
 def fetch_openneuro_dataset(
-        urls=None, data_dir=None, dataset_version='ds000030_R1.0.4',
-        verbose=1):
+    urls=None, data_dir=None, dataset_version='ds000030_R1.0.4',
+    verbose=1):
     """Download OpenNeuro BIDS dataset.
 
     Parameters
@@ -390,9 +390,9 @@ def _prepare_downloaded_spm_auditory_data(subject_dir):
 
     _subject_data = {}
     _subject_data['func'] = sorted(
-            [subject_data[x] for x in subject_data.keys()
-             if re.match('^fM00223_0\d\d\.img$',  # noqa:W605
-                         os.path.basename(x))])
+        [subject_data[x] for x in subject_data.keys()
+         if re.match('^fM00223_0\d\d\.img$',  # noqa:W605
+                     os.path.basename(x))])
 
     # volumes for this dataset of shape (64, 64, 64, 1); let's fix this
     for x in _subject_data['func']:

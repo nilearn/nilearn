@@ -142,7 +142,7 @@ def get_clusters_table(stat_img, stat_threshold, cluster_threshold=None,
     clust_ids = sorted(list(np.unique(label_map)[1:]))
     for c_val in clust_ids:
         if cluster_threshold is not None and np.sum(
-                label_map == c_val) < cluster_threshold:
+            label_map == c_val) < cluster_threshold:
             stat_map[label_map == c_val] = 0
             binarized[label_map == c_val] = 0
 
@@ -158,7 +158,7 @@ def get_clusters_table(stat_img, stat_threshold, cluster_threshold=None,
     label_map = ndimage.measurements.label(binarized, conn_mat)[0]
     clust_ids = sorted(list(np.unique(label_map)[1:]))
     peak_vals = np.array(
-            [np.max(stat_map * (label_map == c)) for c in clust_ids])
+        [np.max(stat_map * (label_map == c)) for c in clust_ids])
     clust_ids = [clust_ids[c] for c in
                  (-peak_vals).argsort()]  # Sort by descending max value
 

@@ -63,7 +63,7 @@ def compute_contrast(labels, regression_result, con_val, contrast_type=None):
     if contrast_type not in acceptable_contrast_types:
         raise ValueError(
             '"{0}" is not a known contrast type. Allowed types are {1}'.
-            format(contrast_type, acceptable_contrast_types))
+                format(contrast_type, acceptable_contrast_types))
 
     if contrast_type == 't':
         effect_ = np.zeros((1, labels.size))
@@ -82,7 +82,7 @@ def compute_contrast(labels, regression_result, con_val, contrast_type=None):
             reg = regression_result[label_]
             cbeta = np.atleast_2d(np.dot(con_val, reg.theta))
             invcov = np.linalg.inv(np.atleast_2d(
-                    reg.vcov(matrix=con_val, dispersion=1.0)))
+                reg.vcov(matrix=con_val, dispersion=1.0)))
             wcbeta = np.dot(sqrtm(invcov), cbeta)
             rss = reg.dispersion
             effect_[:, label_mask] = wcbeta
@@ -197,8 +197,8 @@ class Contrast(object):
 
         # Case: one-dimensional contrast ==> t or t**2
         if self.contrast_type == 'F':
-            stat = np.sum((self.effect - baseline) ** 2, 0) / self.dim /\
-                np.maximum(self.variance, self.tiny)
+            stat = np.sum((self.effect - baseline) ** 2, 0) / self.dim / \
+                   np.maximum(self.variance, self.tiny)
         elif self.contrast_type == 't':
             # avoids division by zero
             stat = (self.effect - baseline) / np.sqrt(
@@ -229,7 +229,7 @@ class Contrast(object):
             p_values = sps.t.sf(self.stat_, np.minimum(self.dof, self.dofmax))
         elif self.contrast_type == 'F':
             p_values = sps.f.sf(self.stat_, self.dim, np.minimum(
-                                self.dof, self.dofmax))
+                self.dof, self.dofmax))
         else:
             raise ValueError('Unknown statistic type')
         self.p_value_ = p_values
@@ -336,7 +336,7 @@ def compute_fixed_effects(contrast_imgs, variance_imgs, mask=None,
 
     (fixed_fx_contrast,
      fixed_fx_variance, fixed_fx_t) = _compute_fixed_effects_params(
-            contrasts, variances, precision_weighted)
+        contrasts, variances, precision_weighted)
 
     fixed_fx_contrast_img = masker.inverse_transform(fixed_fx_contrast)
     fixed_fx_variance_img = masker.inverse_transform(fixed_fx_variance)

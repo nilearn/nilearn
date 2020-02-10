@@ -127,7 +127,7 @@ def _create_fake_bids_dataset(base_dir='', n_sub=10, n_ses=2,
             os.makedirs(func_path)
             for task, n_run in zip(tasks, n_runs):
                 run_labels = [
-                        'run-%02d' % label for label in range(1, n_run + 1)]
+                    'run-%02d' % label for label in range(1, n_run + 1)]
                 for run in run_labels:
                     fields = [subject, session, 'task-' + task]
                     if '' in fields:
@@ -138,11 +138,13 @@ def _create_fake_bids_dataset(base_dir='', n_sub=10, n_ses=2,
                     bold_path = os.path.join(func_path,
                                              file_id + '_bold.nii.gz')
                     _write_fake_bold_img(bold_path, [vox, vox, vox, 100])
-                    events_path = os.path.join(func_path, file_id +
-                                               '_events.tsv')
-                    _basic_paradigm().to_csv(events_path, sep='\t', index=None)
-                    param_path = os.path.join(func_path, file_id +
-                                              '_bold.json')
+                    events_path = os.path.join(func_path,
+                                               file_id + '_events.tsv')
+                    _basic_paradigm().to_csv(events_path,
+                                             sep='\t',
+                                             index=None)
+                    param_path = os.path.join(func_path,
+                                              file_id + '_bold.json')
                     with open(param_path, 'w') as param_file:
                         json.dump({'RepetitionTime': 1.5}, param_file)
 
@@ -165,31 +167,31 @@ def _create_fake_bids_dataset(base_dir='', n_sub=10, n_ses=2,
                         file_id = '_'.join(fields)
                         if n_run > 1:
                             file_id += '_' + run
-                        preproc = (file_id +
-                                   '_space-MNI_desc-preproc_bold.nii.gz'
-                                   )
+                        preproc = (
+                            file_id + '_space-MNI_desc-preproc_bold.nii.gz'
+                        )
                         preproc_path = os.path.join(func_path, preproc)
                         _write_fake_bold_img(preproc_path,
                                              [vox, vox, vox, 100]
                                              )
-                        preproc = (file_id +
-                                   '_space-T1w_desc-preproc_bold.nii.gz'
-                                   )
+                        preproc = (
+                            file_id + '_space-T1w_desc-preproc_bold.nii.gz'
+                        )
                         preproc_path = os.path.join(func_path, preproc)
                         _write_fake_bold_img(preproc_path,
                                              [vox, vox, vox, 100]
                                              )
-                        preproc = (file_id +
-                                   '_space-T1w_desc-fmriprep_bold.nii.gz'
-                                   )
+                        preproc = (
+                            file_id + '_space-T1w_desc-fmriprep_bold.nii.gz'
+                        )
                         preproc_path = os.path.join(func_path, preproc)
                         _write_fake_bold_img(preproc_path,
                                              [vox, vox, vox, 100]
                                              )
                         if with_confounds:
                             confounds_path = os.path.join(
-                                    func_path,
-                                    file_id + '_desc-confounds_regressors.tsv',
+                                func_path,
+                                file_id + '_desc-confounds_regressors.tsv',
                             )
                             _basic_confounds(100).to_csv(confounds_path,
                                                          sep='\t', index=None)

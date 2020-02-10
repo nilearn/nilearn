@@ -43,7 +43,7 @@ def plot_design_matrix(design_matrix, rescale=True, ax=None, output_file=None):
     _, X, names = check_design_matrix(design_matrix)
     if rescale:
         X = X / np.maximum(1.e-12, np.sqrt(
-                np.sum(X ** 2, 0)))  # pylint: disable=no-member
+            np.sum(X ** 2, 0)))  # pylint: disable=no-member
     if ax is None:
         plt.figure()
         ax = plt.subplot(1, 1, 1)
@@ -104,7 +104,7 @@ def plot_contrast_matrix(contrast_def, design_matrix, colorbar=False, ax=None,
     design_column_names = design_matrix.columns.tolist()
     if isinstance(contrast_def, str):
         contrast_def = expression_to_contrast_vector(
-                contrast_def, design_column_names)
+            contrast_def, design_column_names)
     maxval = np.max(np.abs(contrast_def))
     con_matrix = np.asmatrix(contrast_def)
 

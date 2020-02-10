@@ -231,7 +231,7 @@ def make_glm_report(model,
 
 def _check_report_dims(report_size):
     """
-    Warns the user & reverts to default if report dimensions are non-numerical.
+    Warns user & reverts to default if report dimensions are non-numerical.
 
     Parameters
     ----------
@@ -249,7 +249,8 @@ def _check_report_dims(report_size):
         width = int(width)
         height = int(height)
     except ValueError:
-        warnings.warn('Report size has invalid values. Using default 1600x800')
+        warnings.warn('Report size has invalid values. '
+                      'Using default 1600x800')
         width, height = (1600, 800)
     return width, height
 
@@ -353,7 +354,8 @@ def _plot_contrasts(contrasts, design_matrices):
             contrast_plot.figure.set_figheight(2)
             contrast_plot.figure.set_tight_layout(True)
             url_contrast_plot_svg = plot_to_svg(contrast_plot)
-            # prevents sphinx-gallery & jupyter from scraping & inserting plots
+            # prevents sphinx-gallery & jupyter
+            # from scraping & inserting plots
             plt.close()
             contrasts_for_subsitution = {
                 'contrast_plot': url_contrast_plot_svg,
@@ -597,12 +599,11 @@ def _mask_to_svg(mask_img, bg_img):
         SVG Image Data URL for the mask plot.
     """
     if mask_img:
-        mask_plot = plot_roi(roi_img=mask_img,
+        mask_plot = plot_roi(roi_img=mask_img,  # noqa: F841
                              bg_img=bg_img,
                              display_mode='z',
                              cmap='Set1',
                              )
-        mask_plot  # So flake8 doesn't complain about not using variable (F841)
         mask_plot_svg = plot_to_svg(plt.gcf())
         # prevents sphinx-gallery & jupyter from scraping & inserting plots
         plt.close()
@@ -632,7 +633,7 @@ def _make_stat_maps_contrast_clusters(stat_img, contrasts_plots, threshold,
        an error is raised if stat_img is None.
 
     contrasts_plots: Dict[str, str]
-        Contains the contrast names & the HTML code of the contrast's SVG plot.
+        Contains contrast names & HTML code of the contrast's SVG plot.
 
     threshold: float
        desired threshold in z-scale.
@@ -713,11 +714,12 @@ def _make_stat_maps_contrast_clusters(stat_img, contrasts_plots, threshold,
             plot_type=plot_type,
             table_details=table_details,
         )
-        cluster_table = get_clusters_table(stat_map_img,
-                                           stat_threshold=threshold,
-                                           cluster_threshold=cluster_threshold,
-                                           min_distance=min_distance,
-                                           )
+        cluster_table = get_clusters_table(
+            stat_map_img,
+            stat_threshold=threshold,
+            cluster_threshold=cluster_threshold,
+            min_distance=min_distance,
+        )
 
         cluster_table_html = _dataframe_to_html(cluster_table,
                                                 precision=2,

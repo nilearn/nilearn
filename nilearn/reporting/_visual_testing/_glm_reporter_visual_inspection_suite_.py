@@ -18,8 +18,8 @@ from nilearn.input_data import NiftiSpheresMasker
 from nilearn.stats import datasets as nistats_datasets
 from nilearn.stats.design_matrix import make_first_level_design_matrix
 from nilearn.stats.first_level_model import (FirstLevelModel,
-                                       first_level_models_from_bids,
-                                       )
+                                             first_level_models_from_bids,
+                                             )
 from nilearn.reporting import make_glm_report
 from nilearn.stats.second_level_model import SecondLevelModel
 from nilearn.stats.utils import get_design_from_fslmat
@@ -80,7 +80,7 @@ def _fetch_bids_data():  # pragma: no cover
                           '*dwi*', '*beh*', '*task-bart*',
                           '*task-rest*', '*task-scap*', '*task-task*']
     urls = nistats_datasets.select_from_index(
-            urls, exclusion_filters=exclusion_patterns, n_subjects=1)
+        urls, exclusion_filters=exclusion_patterns, n_subjects=1)
 
     data_dir, _ = nistats_datasets.fetch_openneuro_dataset(urls=urls)
     return data_dir
@@ -92,12 +92,12 @@ def _make_flm(data_dir):  # pragma: no cover
     derivatives_folder = 'derivatives/fmriprep'
     models, models_run_imgs, models_events, models_confounds = \
         first_level_models_from_bids(
-                data_dir, task_label, space_label, smoothing_fwhm=5.0,
-                derivatives_folder=derivatives_folder)
+            data_dir, task_label, space_label, smoothing_fwhm=5.0,
+            derivatives_folder=derivatives_folder)
 
     model, imgs, _, _ = (
-            models[0], models_run_imgs[0], models_events[0],
-            models_confounds[0])
+        models[0], models_run_imgs[0], models_events[0],
+        models_confounds[0])
     subject = 'sub-' + model.subject_label
     design_matrix = _make_design_matrix_for_bids_feature(data_dir, subject)
     model.fit(imgs, design_matrices=[design_matrix])
@@ -107,10 +107,10 @@ def _make_flm(data_dir):  # pragma: no cover
 def _make_design_matrix_for_bids_feature(data_dir,
                                          subject):  # pragma: no cover
     fsl_design_matrix_path = os.path.join(
-            data_dir, 'derivatives', 'task', subject, 'stopsignal.feat',
-            'design.mat')
+        data_dir, 'derivatives', 'task', subject, 'stopsignal.feat',
+        'design.mat')
     design_matrix = get_design_from_fslmat(
-            fsl_design_matrix_path, column_names=None)
+        fsl_design_matrix_path, column_names=None)
 
     design_columns = ['cond_%02d' % i for i in
                       range(len(design_matrix.columns))]
@@ -158,14 +158,14 @@ def report_flm_fiac():  # pragma: no cover
     n_columns = design_matrices[0].shape[1]
 
     contrasts = {
-            'SStSSp_minus_DStDSp': _pad_vector([1, 0, 0, -1], n_columns),
-            'DStDSp_minus_SStSSp': _pad_vector([-1, 0, 0, 1], n_columns),
-            'DSt_minus_SSt': _pad_vector([-1, -1, 1, 1], n_columns),
-            'DSp_minus_SSp': _pad_vector([-1, 1, -1, 1], n_columns),
-            'DSt_minus_SSt_for_DSp': _pad_vector([0, -1, 0, 1], n_columns),
-            'DSp_minus_SSp_for_DSt': _pad_vector([0, 0, -1, 1], n_columns),
-            'Deactivation': _pad_vector([-1, -1, -1, -1, 4], n_columns),
-            'Effects_of_interest': np.eye(n_columns)[:5]
+        'SStSSp_minus_DStDSp': _pad_vector([1, 0, 0, -1], n_columns),
+        'DStDSp_minus_SStSSp': _pad_vector([-1, 0, 0, 1], n_columns),
+        'DSt_minus_SSt': _pad_vector([-1, -1, 1, 1], n_columns),
+        'DSp_minus_SSp': _pad_vector([-1, 1, -1, 1], n_columns),
+        'DSt_minus_SSt_for_DSp': _pad_vector([0, -1, 0, 1], n_columns),
+        'DSp_minus_SSp_for_DSt': _pad_vector([0, 0, -1, 1], n_columns),
+        'Deactivation': _pad_vector([-1, -1, -1, -1, 4], n_columns),
+        'Effects_of_interest': np.eye(n_columns)[:5]
     }
     report = make_glm_report(fmri_glm, contrasts,
                              bg_img=mean_img_,
@@ -207,10 +207,10 @@ def report_slm_oasis():  # pragma: no cover
 
     contrast = [[1, 0, 0], [0, 1, 0]]
     report = make_glm_report(
-            model=second_level_model,
-            contrasts=contrast,
-            bg_img=nilearn.datasets.fetch_icbm152_2009()['t1'],
-            height_control=None,
+        model=second_level_model,
+        contrasts=contrast,
+        bg_img=nilearn.datasets.fetch_icbm152_2009()['t1'],
+        height_control=None,
     )
     output_filename = 'generated_report_slm_oasis.html'
     output_filepath = os.path.join(REPORTS_DIR, output_filename)
@@ -235,7 +235,7 @@ def prefer_parallel_execution(functions_to_be_called):  # pragma: no cover
         n_jobs = multiprocessing.cpu_count()
         print('Parallelizing execution using Joblib')
         joblib.Parallel(n_jobs=n_jobs)(
-                joblib.delayed(run_function)(fn) for fn in inputs)
+            joblib.delayed(run_function)(fn) for fn in inputs)
 
 
 def run_function(fn):  # pragma: no cover
@@ -249,10 +249,10 @@ def prefer_serial_execution(functions_to_be_called):  # pragma: no cover
 
 if __name__ == '__main__':  # pragma: no cover
     functions_to_be_called = [
-            report_flm_adhd_dmn,
-            report_flm_bids_features,
-            report_flm_fiac,
-            report_slm_oasis,
+        report_flm_adhd_dmn,
+        report_flm_bids_features,
+        report_flm_fiac,
+        report_slm_oasis,
     ]
     prefer_parallel_execution(functions_to_be_called)
     # prefer_serial_execution(functions_to_be_called)
