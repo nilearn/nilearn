@@ -19,8 +19,8 @@ def _check_list_length_match(list_1, list_2, var_name_1, var_name_2):
     """Check length match of two given lists to raise error if necessary"""
     if len(list_1) != len(list_2):
         raise ValueError(
-                'len(%s) %d does not match len(%s) %d'
-                % (str(var_name_1), len(list_1), str(var_name_2), len(list_2)))
+            'len(%s) %d does not match len(%s) %d'
+            % (str(var_name_1), len(list_1), str(var_name_2), len(list_2)))
 
 
 def _read_events_table(table):
@@ -125,10 +125,10 @@ def _check_events_file_uses_tab_separators(events_files):
                                     )
             except csv.Error:
                 raise ValueError(
-                        'The values in the events file '
-                        'are not separated by tabs; '
-                        'please enforce BIDS conventions',
-                        events_file_
+                    'The values in the events file '
+                    'are not separated by tabs; '
+                    'please enforce BIDS conventions',
+                    events_file_
                 )
 
 
@@ -179,10 +179,11 @@ def multiple_fast_inverse(a):
     a1, n = a[0], a.shape[0]
     getrf, getri = get_lapack_funcs(('getrf', 'getri'), (a1,))
     getrf, getri, getri_lwork = get_lapack_funcs(
-            ('getrf', 'getri', 'getri_lwork'), (a1,))
+        ('getrf', 'getri', 'getri_lwork'), (a1,))
     for i in range(n):
-        if (getrf.module_name[:7] == 'clapack' and
-                getri.module_name[:7] != 'clapack'):
+        if (getrf.module_name[:7] == 'clapack'
+            and getri.module_name[:7] != 'clapack'
+        ):
             # ATLAS 3.2.1 has getrf but not getri.
             lu, piv, info = getrf(np.transpose(a[i]), rowmajor=0,
                                   overwrite_a=True)
@@ -381,8 +382,9 @@ def get_bids_files(main_path, file_tag='*', file_type='*', sub_label='*',
     if filters:
         files = [parse_bids_filename(file_) for file_ in files]
         for key, value in filters:
-            files = [file_ for file_ in files if (key in file_ and
-                                                  file_[key] == value)]
+            files = [file_ for file_ in files
+                     if (key in file_ and file_[key] == value)
+                     ]
         return [ref_file['file_path'] for ref_file in files]
 
     return files

@@ -28,10 +28,13 @@ DESIGN_MATRIX = np.load(full_path_design_matrix_file)
 
 def design_matrix_light(
     frame_times, events=None, hrf_model='glover',
-    drift_model='cosine', high_pass=.01, drift_order=1, fir_delays=[0],
-    add_regs=None, add_reg_names=None, min_onset=-24, path=None):
-    """ Idem make_first_level_design_matrix,
-    but only returns the computed matrix and associated names """
+    drift_model='cosine', high_pass=.01, drift_order=1, fir_delays=None,
+    add_regs=None, add_reg_names=None, min_onset=-24, path=None
+    ):
+    """ Same as make_first_level_design_matrix,
+    but only returns the computed matrix and associated name.
+    """
+    fir_delays = fir_delays if fir_delays else [0]
     dmtx = make_first_level_design_matrix(frame_times, events, hrf_model,
                                           drift_model, high_pass, drift_order,
                                           fir_delays,
@@ -118,12 +121,14 @@ def test_design_matrix0c():
     ax = np.random.randn(127, 4)
     with pytest.raises(
         AssertionError,
-        match="Incorrect specification of additional regressors:."):
+        match="Incorrect specification of additional regressors:."
+    ):
         make_first_level_design_matrix(frame_times, add_regs=ax)
     ax = np.random.randn(128, 4)
     with pytest.raises(
         ValueError,
-        match="Incorrect number of additional regressor names."):
+        match="Incorrect number of additional regressor names."
+    ):
         make_first_level_design_matrix(frame_times,
                                        add_regs=ax,
                                        add_reg_names='')
@@ -507,8 +512,8 @@ def test_spm_1():
     X1 = make_first_level_design_matrix(frame_times, events, drift_model=None)
     _, matrix, _ = check_design_matrix(X1)
     spm_design_matrix = DESIGN_MATRIX['arr_0']
-    assert (((spm_design_matrix - matrix) ** 2).sum() /
-            (spm_design_matrix ** 2).sum() < .1)
+    assert (((spm_design_matrix - matrix) ** 2).sum()
+            / (spm_design_matrix ** 2).sum() < .1)
 
 
 def test_spm_2():
@@ -524,8 +529,8 @@ def test_spm_2():
     X1 = make_first_level_design_matrix(frame_times, events, drift_model=None)
     spm_design_matrix = DESIGN_MATRIX['arr_1']
     _, matrix, _ = check_design_matrix(X1)
-    assert (((spm_design_matrix - matrix) ** 2).sum() /
-            (spm_design_matrix ** 2).sum() < .1)
+    assert (((spm_design_matrix - matrix) ** 2).sum()
+            / (spm_design_matrix ** 2).sum() < .1)
 
 
 def _first_level_dataframe():

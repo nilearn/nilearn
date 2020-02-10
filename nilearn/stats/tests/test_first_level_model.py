@@ -3,7 +3,6 @@ Test the first level model.
 """
 import os
 import shutil
-import warnings
 
 import numpy as np
 import pandas as pd
@@ -34,7 +33,6 @@ from nilearn.stats.first_level_model import (first_level_models_from_bids,
                                              )
 from nilearn.stats.contrasts import compute_fixed_effects
 from nilearn.stats.utils import get_bids_files
-
 
 BASEDIR = os.path.dirname(os.path.abspath(__file__))
 FUNCFILE = os.path.join(BASEDIR, 'functional.nii.gz')

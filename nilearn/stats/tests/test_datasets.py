@@ -30,7 +30,7 @@ def test_fetch_bids_langloc_dataset(request_mocker, tmp_path):
 def test_select_from_index():
     dataset_version = 'ds000030_R1.0.4'
     data_prefix = '{}/{}/uncompressed'.format(
-            dataset_version.split('_')[0], dataset_version)
+        dataset_version.split('_')[0], dataset_version)
     # Prepare url files for subject and filter tests
     urls = [data_prefix + '/stuff.html',
             data_prefix + '/sub-xxx.html',
@@ -57,20 +57,20 @@ def test_select_from_index():
 
     # test inclusive filters. Only files with task-rest
     new_urls = datasets.select_from_index(
-            urls, inclusion_filters=['*task-rest*'])
+        urls, inclusion_filters=['*task-rest*'])
     assert len(new_urls) == 2
     assert data_prefix + '/stuff.html' not in new_urls
 
     # test exclusive filters. only files without ses-01
     new_urls = datasets.select_from_index(
-            urls, exclusion_filters=['*ses-01*'])
+        urls, exclusion_filters=['*ses-01*'])
     assert len(new_urls) == 6
     assert data_prefix + '/stuff.html' in new_urls
 
     # test filter combination. only files with task-rest and without ses-01
     new_urls = datasets.select_from_index(
-            urls, inclusion_filters=['*task-rest*'],
-            exclusion_filters=['*ses-01*'])
+        urls, inclusion_filters=['*task-rest*'],
+        exclusion_filters=['*ses-01*'])
     assert len(new_urls) == 1
     assert data_prefix + '/sub-xxx/ses-02_task-rest.txt' in new_urls
 
@@ -90,9 +90,9 @@ def test_fetch_openneuro_dataset_index():
         with open(filepath, 'w') as f:
             json.dump(mock_json_content, f)
         urls_path, urls = fetch_openneuro_dataset_index(
-                data_dir=tmpdir,
-                dataset_version=dataset_version,
-                verbose=1,
+            data_dir=tmpdir,
+            dataset_version=dataset_version,
+            verbose=1,
         )
         urls_path = urls_path.replace('/', os.sep)
         assert urls_path == filepath
@@ -102,7 +102,7 @@ def test_fetch_openneuro_dataset_index():
 def test_fetch_openneuro_dataset(request_mocker, tmp_path):
     dataset_version = 'ds000030_R1.0.4'
     data_prefix = '{}/{}/uncompressed'.format(
-            dataset_version.split('_')[0], dataset_version)
+        dataset_version.split('_')[0], dataset_version)
     data_dir = _get_dataset_dir(data_prefix, data_dir=str(tmp_path),
                                 verbose=1)
     url_file = os.path.join(data_dir, 'urls.json')
@@ -120,7 +120,7 @@ def test_fetch_openneuro_dataset(request_mocker, tmp_path):
 
     # Only 1 subject and not subject specific files get downloaded
     datadir, dl_files = datasets.fetch_openneuro_dataset(
-            urls, str(tmp_path), dataset_version)
+        urls, str(tmp_path), dataset_version)
     assert isinstance(datadir, str)
     assert isinstance(dl_files, list)
     assert len(dl_files) == 9
@@ -134,15 +134,15 @@ def test_fetch_localizer():
 
 def _mock_original_spm_auditory_events_file():
     expected_events_data = {
-            'onset': [factor * 42.0 for factor in range(0, 16)],
-            'duration': [42.0] * 16,
-            'trial_type': ['rest', 'active'] * 8,
+        'onset': [factor * 42.0 for factor in range(0, 16)],
+        'duration': [42.0] * 16,
+        'trial_type': ['rest', 'active'] * 8,
     }
     expected_events_data = pd.DataFrame(expected_events_data)
     expected_events_data_string = expected_events_data.to_csv(
-            sep='\t',
-            index=0,
-            columns=['onset', 'duration', 'trial_type'],
+        sep='\t',
+        index=0,
+        columns=['onset', 'duration', 'trial_type'],
     )
     return expected_events_data_string
 
@@ -150,7 +150,7 @@ def _mock_original_spm_auditory_events_file():
 def _mock_bids_compliant_spm_auditory_events_file():
     events_filepath = os.path.join(os.getcwd(), 'tests_events.tsv')
     datasets._make_events_file_spm_auditory_data(
-            events_filepath=events_filepath)
+        events_filepath=events_filepath)
     with open(events_filepath, 'r') as actual_events_file_obj:
         actual_events_data_string = actual_events_file_obj.read()
     return actual_events_data_string, events_filepath
@@ -159,9 +159,9 @@ def _mock_bids_compliant_spm_auditory_events_file():
 def test_fetch_language_localizer_demo_dataset(request_mocker, tmp_path):
     data_dir = str(tmp_path)
     expected_data_dir, expected_files = _mock_language_localizer_demo_dataset(
-            data_dir)
+        data_dir)
     actual_data_dir, actual_subdirs = fetch_language_localizer_demo_dataset(
-            data_dir)
+        data_dir)
     assert actual_data_dir == expected_data_dir
     assert actual_subdirs == expected_files
 
@@ -212,21 +212,21 @@ def _mock_language_localizer_demo_dataset(data_dir):
 def test_make_spm_auditory_events_file():
     try:
         (
-                actual_events_data_string,
-                events_filepath,
+            actual_events_data_string,
+            events_filepath,
         ) = _mock_bids_compliant_spm_auditory_events_file()
     finally:
         os.remove(events_filepath)
     expected_events_data_string = _mock_original_spm_auditory_events_file()
 
     replace_win_line_ends = (
-            lambda text: text.replace('\r\n', '\n')
-            if text.find('\r\n') != -1 else text
+        lambda text: text.replace('\r\n', '\n')
+        if text.find('\r\n') != -1 else text
     )
     actual_events_data_string = replace_win_line_ends(
-                                                actual_events_data_string)
+        actual_events_data_string)
     expected_events_data_string = replace_win_line_ends(
-            expected_events_data_string)
+        expected_events_data_string)
 
     assert actual_events_data_string == expected_events_data_string
 
