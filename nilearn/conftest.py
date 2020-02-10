@@ -12,8 +12,7 @@ try:
     import matplotlib  # noqa: F401
 except ImportError:
     collect_ignore = ['plotting',
-                      'reporting/tests/test_glm_reporter.py',
-                      'reporting/tests/test_reporting.py',
+                      'reporting',
                       ]
 
 
