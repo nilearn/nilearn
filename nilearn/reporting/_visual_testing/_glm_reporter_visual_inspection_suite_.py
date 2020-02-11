@@ -11,11 +11,12 @@ import os
 
 import numpy as np
 import pandas as pd
+
 import nilearn
+from nilearn.datasets import func
 from nilearn.image import resample_to_img
 from nilearn.input_data import NiftiSpheresMasker
 
-from nilearn.stats import datasets as nistats_datasets
 from nilearn.stats.design_matrix import make_first_level_design_matrix
 from nilearn.stats.first_level_model import (FirstLevelModel,
                                              first_level_models_from_bids,
@@ -72,17 +73,17 @@ def report_flm_adhd_dmn():  # pragma: no cover
 ###########################################################################
 
 def _fetch_bids_data():  # pragma: no cover
-    _, urls = nistats_datasets.fetch_openneuro_dataset_index()
+    _, urls = datasets.func.fetch_openneuro_dataset_index()
 
     exclusion_patterns = ['*group*', '*phenotype*', '*mriqc*',
                           '*parameter_plots*', '*physio_plots*',
                           '*space-fsaverage*', '*space-T1w*',
                           '*dwi*', '*beh*', '*task-bart*',
                           '*task-rest*', '*task-scap*', '*task-task*']
-    urls = nistats_datasets.select_from_index(
+    urls = datasets.func.select_from_index(
         urls, exclusion_filters=exclusion_patterns, n_subjects=1)
 
-    data_dir, _ = nistats_datasets.fetch_openneuro_dataset(urls=urls)
+    data_dir, _ = datasets.func.fetch_openneuro_dataset(urls=urls)
     return data_dir
 
 
@@ -143,7 +144,7 @@ def _pad_vector(contrast_, n_columns):  # pragma: no cover
 
 
 def report_flm_fiac():  # pragma: no cover
-    data = nistats_datasets.fetch_fiac_first_level()
+    data = datasets.func.fetch_fiac_first_level()
     fmri_img = [data['func1'], data['func2']]
 
     from nilearn.image import mean_img
