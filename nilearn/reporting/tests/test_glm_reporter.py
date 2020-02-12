@@ -10,7 +10,7 @@ from nibabel.tmpdirs import InTemporaryDirectory
 
 import pandas as pd
 
-from nilearn._utils.data_gen import _write_fake_fmri_data_and_design
+from nilearn._utils.data_gen import write_fake_fmri_data_and_design
 from nilearn.stats.design_matrix import make_first_level_design_matrix
 from nilearn.stats.first_level_model import FirstLevelModel
 from nilearn.reporting import glm_reporter as glmr
@@ -29,7 +29,7 @@ else:
 def test_flm_reporting():
     with InTemporaryDirectory():
         shapes, rk = ((7, 8, 7, 15), (7, 8, 7, 16)), 3
-        mask, fmri_data, design_matrices = _write_fake_fmri_data_and_design(shapes, rk)
+        mask, fmri_data, design_matrices = write_fake_fmri_data_and_design(shapes, rk)
         flm = FirstLevelModel(mask_img=mask).fit(
             fmri_data, design_matrices=design_matrices)
         contrast = np.eye(3)[1]
@@ -58,7 +58,7 @@ def test_flm_reporting():
 def test_slm_reporting():
     with InTemporaryDirectory():
         shapes = ((7, 8, 9, 1),)
-        mask, FUNCFILE, _ = _write_fake_fmri_data_and_design(shapes)
+        mask, FUNCFILE, _ = write_fake_fmri_data_and_design(shapes)
         FUNCFILE = FUNCFILE[0]
         func_img = load(FUNCFILE)
         model = SecondLevelModel()

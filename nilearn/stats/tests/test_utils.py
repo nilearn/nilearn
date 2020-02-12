@@ -12,7 +12,7 @@ from numpy.testing import (assert_almost_equal,
                            )
 from scipy.stats import norm
 
-from nilearn._utils.data_gen import _create_fake_bids_dataset
+from nilearn._utils.data_gen import create_fake_bids_dataset
 from nilearn.stats.utils import (_check_run_tables,
                                  _check_and_load_tables,
                                  _check_list_length_match,
@@ -146,9 +146,9 @@ def test_img_table_checks():
 
 def test_get_bids_files():
     with InTemporaryDirectory():
-        bids_path = _create_fake_bids_dataset(n_sub=10, n_ses=2,
-                                              tasks=['localizer', 'main'],
-                                              n_runs=[1, 3])
+        bids_path = create_fake_bids_dataset(n_sub=10, n_ses=2,
+                                             tasks=['localizer', 'main'],
+                                             n_runs=[1, 3])
         # For each possible possible option of file selection we check
         # that we recover the appropriate amount of files, as included
         # in the fake bids dataset.
