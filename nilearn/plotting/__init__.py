@@ -26,7 +26,7 @@ def _set_mpl_backend():
         _import_module_with_version_check('matplotlib',
                                           OPTIONAL_MATPLOTLIB_MIN_VERSION)
         current_backend = matplotlib.get_backend().lower()
-        
+
         if 'inline' in current_backend or 'nbagg' in current_backend:
             return
         # Set the backend to a non-interactive one for unices without X
