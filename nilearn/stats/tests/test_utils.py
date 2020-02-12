@@ -21,8 +21,8 @@ from numpy.testing import (assert_almost_equal,
                            )
 from scipy.stats import norm
 
+from nilearn._utils.data_gen import _create_fake_bids_dataset
 from nilearn.stats._utils.datasets import make_fresh_openneuro_dataset_urls_index  # noqa: E501
-from nilearn.stats._utils.testing import _create_fake_bids_dataset
 from nilearn.stats.utils import (_check_run_tables,
                                  _check_and_load_tables,
                                  _check_list_length_match,

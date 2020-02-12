@@ -18,6 +18,7 @@ from numpy.testing import (assert_almost_equal,
                            assert_array_equal,
                            )
 
+from nilearn._utils.data_gen import _write_fake_fmri_data_and_design
 from nilearn.image import concat_imgs, get_data
 from nilearn.stats.first_level_model import (FirstLevelModel,
                                              run_glm,
@@ -25,7 +26,6 @@ from nilearn.stats.first_level_model import (FirstLevelModel,
 from nilearn.stats.second_level_model import (SecondLevelModel,
                                               non_parametric_inference,
                                               )
-from nilearn.stats._utils.testing import _write_fake_fmri_data
 
 # This directory path
 BASEDIR = os.path.dirname(os.path.abspath(__file__))
@@ -35,7 +35,7 @@ FUNCFILE = os.path.join(BASEDIR, 'functional.nii.gz')
 def test_high_level_glm_with_paths():
     with InTemporaryDirectory():
         shapes = ((7, 8, 9, 1),)
-        mask, FUNCFILE, _ = _write_fake_fmri_data(shapes)
+        mask, FUNCFILE, _ = _write_fake_fmri_data_and_design(shapes)
         FUNCFILE = FUNCFILE[0]
         func_img = load(FUNCFILE)
         # Ordinary Least Squares case
@@ -60,7 +60,7 @@ def test_high_level_non_parametric_inference_with_paths():
     with InTemporaryDirectory():
         n_perm = 100
         shapes = ((7, 8, 9, 1),)
-        mask, FUNCFILE, _ = _write_fake_fmri_data(shapes)
+        mask, FUNCFILE, _ = _write_fake_fmri_data_and_design(shapes)
         FUNCFILE = FUNCFILE[0]
         func_img = load(FUNCFILE)
         Y = [func_img] * 4
@@ -88,7 +88,7 @@ def test_fmri_inputs():
         p, q = 80, 10
         X = np.random.randn(p, q)
         shapes = ((7, 8, 9, 10),)
-        mask, FUNCFILE, _ = _write_fake_fmri_data(shapes)
+        mask, FUNCFILE, _ = _write_fake_fmri_data_and_design(shapes)
         FUNCFILE = FUNCFILE[0]
         func_img = load(FUNCFILE)
         T = func_img.shape[-1]
@@ -102,7 +102,7 @@ def test_fmri_inputs():
         flms = [flm, flm, flm]
         # prepare correct input dataframe and lists
         shapes = ((7, 8, 9, 1),)
-        _, FUNCFILE, _ = _write_fake_fmri_data(shapes)
+        _, FUNCFILE, _ = _write_fake_fmri_data_and_design(shapes)
         FUNCFILE = FUNCFILE[0]
 
         dfcols = ['subject_label', 'map_name', 'effects_map_path']
@@ -165,7 +165,7 @@ def test_fmri_inputs_for_non_parametric_inference():
         p, q = 80, 10
         X = np.random.randn(p, q)
         shapes = ((7, 8, 9, 10),)
-        mask, FUNCFILE, _ = _write_fake_fmri_data(shapes)
+        mask, FUNCFILE, _ = _write_fake_fmri_data_and_design(shapes)
         FUNCFILE = FUNCFILE[0]
         func_img = load(FUNCFILE)
         T = func_img.shape[-1]
@@ -178,7 +178,7 @@ def test_fmri_inputs_for_non_parametric_inference():
                                                       design_matrices=des)
         # prepare correct input dataframe and lists
         shapes = ((7, 8, 9, 1),)
-        _, FUNCFILE, _ = _write_fake_fmri_data(shapes)
+        _, FUNCFILE, _ = _write_fake_fmri_data_and_design(shapes)
         FUNCFILE = FUNCFILE[0]
 
         dfcols = ['subject_label', 'map_name', 'effects_map_path']
@@ -237,7 +237,7 @@ def _first_level_dataframe():
 def test_second_level_model_glm_computation():
     with InTemporaryDirectory():
         shapes = ((7, 8, 9, 1),)
-        mask, FUNCFILE, _ = _write_fake_fmri_data(shapes)
+        mask, FUNCFILE, _ = _write_fake_fmri_data_and_design(shapes)
         FUNCFILE = FUNCFILE[0]
         func_img = load(FUNCFILE)
         # Ordinary Least Squares case
@@ -262,7 +262,7 @@ def test_second_level_model_glm_computation():
 def test_non_parametric_inference_permutation_computation():
     with InTemporaryDirectory():
         shapes = ((7, 8, 9, 1),)
-        mask, FUNCFILE, _ = _write_fake_fmri_data(shapes)
+        mask, FUNCFILE, _ = _write_fake_fmri_data_and_design(shapes)
         FUNCFILE = FUNCFILE[0]
         func_img = load(FUNCFILE)
 
@@ -279,7 +279,7 @@ def test_non_parametric_inference_permutation_computation():
 def test_second_level_model_contrast_computation():
     with InTemporaryDirectory():
         shapes = ((7, 8, 9, 1),)
-        mask, FUNCFILE, _ = _write_fake_fmri_data(shapes)
+        mask, FUNCFILE, _ = _write_fake_fmri_data_and_design(shapes)
         FUNCFILE = FUNCFILE[0]
         func_img = load(FUNCFILE)
         # Ordinary Least Squares case
@@ -345,7 +345,7 @@ def test_second_level_model_contrast_computation():
 def test_non_parametric_inference_contrast_computation():
     with InTemporaryDirectory():
         shapes = ((7, 8, 9, 1),)
-        mask, FUNCFILE, _ = _write_fake_fmri_data(shapes)
+        mask, FUNCFILE, _ = _write_fake_fmri_data_and_design(shapes)
         FUNCFILE = FUNCFILE[0]
         func_img = load(FUNCFILE)
         # asking for contrast before model fit gives error
@@ -387,7 +387,7 @@ def test_non_parametric_inference_contrast_computation():
 def test_second_level_model_contrast_computation_with_memory_caching():
     with InTemporaryDirectory():
         shapes = ((7, 8, 9, 1),)
-        mask, FUNCFILE, _ = _write_fake_fmri_data(shapes)
+        mask, FUNCFILE, _ = _write_fake_fmri_data_and_design(shapes)
         FUNCFILE = FUNCFILE[0]
         func_img = load(FUNCFILE)
         # Ordinary Least Squares case
