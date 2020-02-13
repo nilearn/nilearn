@@ -60,7 +60,7 @@ design_matrix = pd.DataFrame([1] * len(second_level_input),
 
 ############################################################################
 # Model specification and fit
-from nistats.second_level_model import SecondLevelModel
+from nilearn.stats.second_level_model import SecondLevelModel
 second_level_model = SecondLevelModel(smoothing_fwhm=8.0)
 second_level_model = second_level_model.fit(second_level_input,
                                             design_matrix=design_matrix)
@@ -87,9 +87,7 @@ plotting.show()
 # Computing the (corrected) p-values with parametric test to compare with
 # non parametric test
 import numpy as np
-from nilearn.image import math_img
-from nilearn.input_data import NiftiMasker
-from nistats.utils import get_data
+from nilearn.image import get_data, math_img
 
 p_val = second_level_model.compute_contrast(output_type='p_value')
 n_voxels = np.sum(get_data(second_level_model.masker_.mask_img_))
@@ -116,7 +114,7 @@ plotting.show()
 
 ###########################################################################
 # Computing the (corrected) p-values with permutation test
-from nistats.second_level_model import non_parametric_inference
+from nilearn.stats.second_level_model import non_parametric_inference
 neg_log_pvals_permuted_ols_unmasked = \
     non_parametric_inference(second_level_input,
                              design_matrix=design_matrix,

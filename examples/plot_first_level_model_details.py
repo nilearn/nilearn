@@ -32,8 +32,8 @@ To run this example, you must launch IPython via ``ipython
 # We use a so-called localizer dataset, which consists in a 5-minutes
 # acquisition of a fast event-related dataset.
 #
-from nistats import datasets
-data = datasets.fetch_localizer_first_level()
+from nilearn.datasets import func
+data = func.fetch_localizer_first_level()
 fmri_img = data.epi_img
 
 ###############################################################################
@@ -79,14 +79,14 @@ events= pd.read_table(events_file)
 # First specify a linear model.
 # the fit() model creates the design matrix and the beta maps.
 #
-from nistats.first_level_model import FirstLevelModel
+from nilearn.stats.first_level_model import FirstLevelModel
 first_level_model = FirstLevelModel(t_r)
 first_level_model = first_level_model.fit(fmri_img, events=events)
 design_matrix = first_level_model.design_matrices_[0]
 
 #########################################################################
 # Let us take a look at the design matrix: it has 10 main columns corresponding to 10 experimental conditions, followed by 3 columns describing low-frequency signals (drifts) and a constant regressor.
-from nistats.reporting import plot_design_matrix
+from nilearn.reporting import plot_design_matrix
 plot_design_matrix(design_matrix)
 import matplotlib.pyplot as plt
 plt.show()
@@ -155,7 +155,7 @@ def make_localizer_contrasts(design_matrix):
 #
 contrasts = make_localizer_contrasts(design_matrix)
 plt.figure(figsize=(5, 9))
-from nistats.reporting import plot_contrast_matrix
+from nilearn.reporting import plot_contrast_matrix
 for i, (key, values) in enumerate(contrasts.items()):
     ax = plt.subplot(len(contrasts) + 1, 1, i + 1)
     plot_contrast_matrix(values, design_matrix=design_matrix, ax=ax)
@@ -481,6 +481,6 @@ plt.show()
 #
 # Interestingly, the model used here seems quite resilient to
 # manipulation of modeling parameters: this is reassuring. It shows
-# that Nistats defaults ('cosine' drift, cutoff=128s, 'glover' hrf,
+# that Nilearn defaults ('cosine' drift, cutoff=128s, 'glover' hrf,
 # ar(1) model) are actually reasonable.  Note that these conclusions
 # are specific to this dataset and may vary with other ones.

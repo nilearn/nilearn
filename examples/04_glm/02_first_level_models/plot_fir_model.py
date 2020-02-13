@@ -13,9 +13,9 @@ Here, we demonstrate the use of a FIR model with 3 lags, computing 4 contrasts f
 # Grab localizer data
 
 import pandas as pd
-from nistats import datasets
+from nilearn.datasets import func
 
-data = datasets.fetch_localizer_first_level()
+data = func.fetch_localizer_first_level()
 fmri_img = data.epi_img
 t_r = 2.4
 events_file = data['events']
@@ -33,8 +33,8 @@ events = pd.read_table(events_file)
 # t_r] seconds interval.
 #
 
-from nistats.first_level_model import FirstLevelModel
-from nistats.reporting import plot_design_matrix, plot_contrast_matrix
+from nilearn.stats.first_level_model import FirstLevelModel
+from nilearn.reporting import plot_design_matrix, plot_contrast_matrix
 
 first_level_model = FirstLevelModel(t_r, hrf_model='fir', fir_delays=[1, 2, 3])
 first_level_model = first_level_model.fit(fmri_img, events=events)

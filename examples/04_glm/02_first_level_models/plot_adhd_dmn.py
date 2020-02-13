@@ -18,8 +18,8 @@ import numpy as np
 from nilearn import datasets, plotting
 from nilearn.input_data import NiftiSpheresMasker
 
-from nistats.first_level_model import FirstLevelModel
-from nistats.design_matrix import make_first_level_design_matrix
+from nilearn.stats.first_level_model import FirstLevelModel
+from nilearn.stats.design_matrix import make_first_level_design_matrix
 
 #########################################################################
 # Prepare data and analysis parameters
@@ -82,7 +82,7 @@ print("Save z-map in '{0}'.".format(filename))
 # This is easy to do if you have a fitted model and the list of contrasts,
 # which we do here.
 
-from nistats.reporting import make_glm_report
+from nilearn.reporting import make_glm_report
 
 report = make_glm_report(first_level_model,
                          contrasts=contrasts,

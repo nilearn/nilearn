@@ -25,7 +25,7 @@ To run this example, you must launch IPython via ``ipython
 
 .. contents:: **Contents**
     :local:
-    :depth: 1
+    :depth: 1`
 """
 ##############################################################################
 # Fetch openneuro BIDS dataset
@@ -33,10 +33,10 @@ To run this example, you must launch IPython via ``ipython
 # We download one subject from the stopsignal task in the ds000030 V4 BIDS
 # dataset available in openneuro.
 # This dataset contains the necessary information to run a statistical analysis
-# using Nistats. The dataset also contains statistical results from a previous
-# FSL analysis that we can employ for comparison with the Nistats estimation.
-from nistats.datasets import (fetch_openneuro_dataset_index,
-                              fetch_openneuro_dataset, select_from_index)
+# using Nilearn. The dataset also contains statistical results from a previous
+# FSL analysis that we can employ for comparison with the Nilearn estimation.
+from nilearn.datasets.func import (fetch_openneuro_dataset_index,
+                                   fetch_openneuro_dataset, select_from_index)
 
 _, urls = fetch_openneuro_dataset_index()
 
@@ -62,7 +62,7 @@ data_dir, _ = fetch_openneuro_dataset(urls=urls)
 # the task_label and the space_label as specified in the file names.
 # We also have to provide the folder with the desired derivatives, that in this
 # case were produced by the fmriprep BIDS app.
-from nistats.first_level_model import first_level_models_from_bids
+from nilearn.stats.first_level_model import first_level_models_from_bids
 task_label = 'stopsignal'
 space_label = 'MNI152NLin2009cAsym'
 derivatives_folder = 'derivatives/fmriprep'
@@ -78,7 +78,7 @@ model, imgs, events, confounds = (
 subject = 'sub-' + model.subject_label
 
 import os
-from nistats.utils import get_design_from_fslmat
+from nilearn.stats.utils import get_design_from_fslmat
 fsl_design_matrix_path = os.path.join(
     data_dir, 'derivatives', 'task', subject, 'stopsignal.feat', 'design.mat')
 design_matrix = get_design_from_fslmat(
@@ -105,7 +105,7 @@ model.fit(imgs, design_matrices=[design_matrix])
 z_map = model.compute_contrast('StopSuccess - Go')
 
 #############################################################################
-# We show agreement between the Nistats estimation and the FSL estimation
+# We show agreement between the Nilearn estimation and the FSL estimation
 # available in the dataset
 import nibabel as nib
 fsl_z_map = nib.load(
@@ -116,23 +116,23 @@ from nilearn import plotting
 import matplotlib.pyplot as plt
 from scipy.stats import norm
 plotting.plot_glass_brain(z_map, colorbar=True, threshold=norm.isf(0.001),
-                          title='Nistats Z map of "StopSuccess - Go" (unc p<0.001)',
+                          title='Nilearn Z map of "StopSuccess - Go" (unc p<0.001)',
                           plot_abs=False, display_mode='ortho')
 plotting.plot_glass_brain(fsl_z_map, colorbar=True, threshold=norm.isf(0.001),
                           title='FSL Z map of "StopSuccess - Go" (unc p<0.001)',
                           plot_abs=False, display_mode='ortho')
 plt.show()
 
-from nistats.reporting import compare_niimgs
+from nilearn.reporting import compare_niimgs
 compare_niimgs([z_map], [fsl_z_map], model.masker_,
-               ref_label='Nistats', src_label='FSL')
+               ref_label='Nilearn', src_label='FSL')
 plt.show()
 
 #############################################################################
 # Simple statistical report of thresholded contrast
 # -----------------------------------------------------
 # We display the contrast plot and table with cluster information
-from nistats.reporting import plot_contrast_matrix
+from nilearn.reporting import plot_contrast_matrix
 plot_contrast_matrix('StopSuccess - Go', design_matrix)
 plotting.plot_glass_brain(z_map, colorbar=True, threshold=norm.isf(0.001),
                           plot_abs=False, display_mode='z',
@@ -141,7 +141,7 @@ plt.show()
 
 ###############################################################################
 # We can get a latex table from a Pandas Dataframe for display and publication
-from nistats.reporting import get_clusters_table
+from nilearn.reporting import get_clusters_table
 print(get_clusters_table(z_map, norm.isf(0.001), 10).to_latex())
 
 #########################################################################
@@ -150,7 +150,7 @@ print(get_clusters_table(z_map, norm.isf(0.001), 10).to_latex())
 # Using the computed FirstLevelModel and contrast information,
 # we can quickly create a summary report.
 
-from nistats.reporting import make_glm_report
+from nilearn.reporting import make_glm_report
 
 report = make_glm_report(model=model,
                          contrasts='StopSuccess - Go',

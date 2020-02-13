@@ -41,8 +41,8 @@ if not path.exists(write_dir):
 # 
 # Note that there are two sessions
 
-from nistats import datasets
-data = datasets.fetch_fiac_first_level()
+from nilearn.datasets import func
+data = func.fetch_fiac_first_level()
 fmri_img = [data['func1'], data['func2']]
 
 #########################################################################
@@ -62,7 +62,7 @@ design_matrices = [pd.DataFrame(np.load(df)['X']) for df in design_files]
 # ----------------------------------
 # GLM specification. Note that the mask was provided in the dataset. So we use it.
 
-from nistats.first_level_model import FirstLevelModel
+from nilearn.stats.first_level_model import FirstLevelModel
 fmri_glm = FirstLevelModel(mask_img=data['mask'], minimize_memory=True)
 
 #########################################################################
@@ -153,7 +153,7 @@ plotting.show()
 # -------------------
 # Since we have already computed the FirstLevelModel and
 # and have the contrast, we can quickly create a summary report.
-from nistats.reporting import make_glm_report
+from nilearn.reporting import make_glm_report
 
 report = make_glm_report(fmri_glm,
                          contrasts,

@@ -40,7 +40,7 @@ hrf_models = [None, 'glover + derivative', 'glover + derivative + dispersion']
 #########################################################################
 # sample the hrf
 # --------------
-from nistats import hemodynamic_models
+from nilearn.stats import hemodynamic_models
 import matplotlib.pyplot as plt
 
 fig = plt.figure(figsize=(9, 4))

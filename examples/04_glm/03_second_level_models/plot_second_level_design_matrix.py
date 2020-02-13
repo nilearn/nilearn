@@ -36,12 +36,12 @@ extra_info_subjects = pd.DataFrame({'subject_label': subjects_label,
 #########################################################################
 # Create a second level design matrix
 # -----------------------------------
-from nistats.design_matrix import make_second_level_design_matrix
+from nilearn.stats.design_matrix import make_second_level_design_matrix
 design_matrix = make_second_level_design_matrix(subjects_label, extra_info_subjects)
 
 #########################################################################
 # plot the results
-from nistats.reporting import plot_design_matrix
+from nilearn.reporting import plot_design_matrix
 ax = plot_design_matrix(design_matrix)
 ax.set_title('Second level design matrix', fontsize=12)
 ax.set_ylabel('maps')

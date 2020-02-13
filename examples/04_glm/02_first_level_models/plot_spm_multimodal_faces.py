@@ -25,7 +25,7 @@ print(__doc__)
 
 #########################################################################
 # Fetch spm multimodal_faces data
-from nistats.datasets import fetch_spm_multimodal_fmri
+from nilearn.datasets.func import fetch_spm_multimodal_fmri
 subject_data = fetch_spm_multimodal_fmri()
 
 #########################################################################
@@ -55,7 +55,7 @@ mean_image = mean_img(fmri_img)
 # Make design matrices
 import numpy as np
 import pandas as pd
-from nistats.design_matrix import make_first_level_design_matrix
+from nilearn.stats.design_matrix import make_first_level_design_matrix
 design_matrices = []
 
 #########################################################################
@@ -102,7 +102,7 @@ contrasts = {
 #########################################################################
 # Fit the GLM -- 2 sessions.
 # Imports for GLM, the sepcify, then fit.
-from nistats.first_level_model import FirstLevelModel
+from nilearn.stats.first_level_model import FirstLevelModel
 print('Fitting a GLM')
 fmri_glm = FirstLevelModel()
 fmri_glm = fmri_glm.fit(fmri_img, design_matrices=design_matrices)

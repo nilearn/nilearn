@@ -50,7 +50,7 @@ events = pd.DataFrame({'trial_type': conditions, 'onset': onsets,
 #########################################################################
 # We sample the events into a design matrix, also including additional regressors
 hrf_model = 'glover'
-from nistats.design_matrix import make_first_level_design_matrix
+from nilearn.stats.design_matrix import make_first_level_design_matrix
 X1 = make_first_level_design_matrix(
     frame_times, events, drift_model='polynomial', drift_order=3,
     add_regs=motion, add_reg_names=add_reg_names, hrf_model=hrf_model)
@@ -78,7 +78,7 @@ X3 = make_first_level_design_matrix(frame_times, events, hrf_model='fir',
 
 #########################################################################
 # Here the three designs side by side
-from nistats.reporting import plot_design_matrix
+from nilearn.reporting import plot_design_matrix
 fig, (ax1, ax2, ax3) = plt.subplots(figsize=(10, 6), nrows=1, ncols=3)
 plot_design_matrix(X1, ax=ax1)
 ax1.set_title('Event-related design matrix', fontsize=12)

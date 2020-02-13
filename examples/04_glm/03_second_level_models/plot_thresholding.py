@@ -33,7 +33,7 @@ design_matrix = pd.DataFrame([1] * n_samples, columns=['intercept'])
 
 #########################################################################
 # Specify and estimate the model
-from nistats.second_level_model import SecondLevelModel
+from nilearn.stats.second_level_model import SecondLevelModel
 second_level_model = SecondLevelModel().fit(
     cmap_filenames, design_matrix=design_matrix)
 
@@ -45,7 +45,7 @@ z_map = second_level_model.compute_contrast(output_type='z_score')
 #########################################################################
 # Threshold the resulting map:
 # false positive rate < .001, cluster size > 10 voxels
-from nistats.thresholding import map_threshold
+from nilearn.stats.thresholding import map_threshold
 thresholded_map1, threshold1 = map_threshold(
     z_map, alpha=.001, height_control='fpr', cluster_threshold=10)
 

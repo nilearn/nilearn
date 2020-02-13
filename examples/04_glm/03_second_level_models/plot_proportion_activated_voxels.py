@@ -26,7 +26,6 @@ data = fetch_localizer_contrasts(["left vs right button press"], n_subjects,
                                  get_tmaps=True)
 
 from nilearn import plotting
-import matplotlib.pyplot as plt
 
 ############################################################################
 # Estimate second level model
@@ -40,7 +39,7 @@ design_matrix = pd.DataFrame([1] * len(second_level_input),
 
 ############################################################################
 # Model specification and fit
-from nistats.second_level_model import SecondLevelModel
+from nilearn.stats.second_level_model import SecondLevelModel
 second_level_model = SecondLevelModel(smoothing_fwhm=8.0)
 second_level_model = second_level_model.fit(second_level_input,
                                             design_matrix=design_matrix)
@@ -56,7 +55,7 @@ from scipy.stats import norm
 p_val = 0.001
 p001_uncorrected = norm.isf(p_val)
 
-from nistats.thresholding import cluster_level_inference
+from nilearn.stats.thresholding import cluster_level_inference
 proportion_true_discoveries_img = cluster_level_inference(z_map, threshold=[3, 4, 5], alpha=.05)
 
 plotting.plot_stat_map(

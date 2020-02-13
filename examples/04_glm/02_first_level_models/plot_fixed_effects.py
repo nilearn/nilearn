@@ -27,8 +27,8 @@ after GLM fitting on two sessions.
 # 
 # Inspecting 'data', we note that there are two sessions
 
-from nistats import datasets
-data = datasets.fetch_fiac_first_level()
+from nilearn.datasets import func
+data = func.fetch_fiac_first_level()
 fmri_img = [data['func1'], data['func2']]
 
 #########################################################################
@@ -48,7 +48,7 @@ design_matrices = [pd.DataFrame(np.load(df)['X']) for df in design_files]
 # ----------------------------------
 # GLM specification. Note that the mask was provided in the dataset. So we use it.
 
-from nistats.first_level_model import FirstLevelModel
+from nilearn.stats.first_level_model import FirstLevelModel
 fmri_glm = FirstLevelModel(mask_img=data['mask'], smoothing_fwhm=5,
                            minimize_memory=True)
 
@@ -85,7 +85,7 @@ plotting.plot_stat_map(
 
 #########################################################################
 # Fixed effects statistics
-from nistats.contrasts import compute_fixed_effects
+from nilearn.stats.contrasts import compute_fixed_effects
 
 contrast_imgs = [summary_statistics_session1['effect_size'],
                  summary_statistics_session2['effect_size']]

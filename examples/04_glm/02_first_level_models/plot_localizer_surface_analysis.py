@@ -37,7 +37,7 @@ slice_time_ref = 0.5
 #########################################################################
 # Prepare data
 # First the volume-based fMRI data.
-from nistats.datasets import fetch_localizer_first_level
+from nilearn.datasets.func import fetch_localizer_first_level
 data = fetch_localizer_first_level()
 fmri_img = data.epi_img
 
@@ -81,7 +81,7 @@ frame_times = t_r * (np.arange(n_scans) + .5)
 #
 # We specify an hrf model containing Glover model and its time derivative
 # the drift model is implicitly a cosine basis with period cutoff 128s.
-from nistats.design_matrix import make_first_level_design_matrix
+from nilearn.stats.design_matrix import make_first_level_design_matrix
 design_matrix = make_first_level_design_matrix(frame_times,
                                                events=events,
                                                hrf_model='glover + derivative'
@@ -94,7 +94,7 @@ design_matrix = make_first_level_design_matrix(frame_times,
 # `estimates` contains the parameter estimates.
 # We keep them for later contrast computation.
 
-from nistats.first_level_model import run_glm
+from nilearn.stats.first_level_model import run_glm
 labels, estimates = run_glm(texture.T, design_matrix.values)
 
 #########################################################################
@@ -158,7 +158,7 @@ contrasts = {
 
 #########################################################################
 # contrast estimation
-from nistats.contrasts import compute_contrast
+from nilearn.stats.contrasts import compute_contrast
 from nilearn import plotting
 
 #########################################################################

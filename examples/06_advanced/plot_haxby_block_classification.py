@@ -74,7 +74,7 @@ for session in unique_sessions:
 # Instantiate and run FirstLevelModel
 # -----------------------------------    
 from nilearn.image import index_img
-from nistats.first_level_model import FirstLevelModel
+from nilearn.stats.first_level_model import FirstLevelModel
 
 # we are going to generate a list of z-maps together with their session and condition index
 z_maps = []
@@ -111,7 +111,7 @@ for session in unique_sessions:
 # Since we have already computed the FirstLevelModel
 # and have the contrast, we can quickly create a summary report.
 from nilearn.image import mean_img
-from nistats.reporting import make_glm_report
+from nilearn.reporting import make_glm_report
 
 mean_img_ = mean_img(func_filename)
 report = make_glm_report(glm,

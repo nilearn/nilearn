@@ -43,7 +43,7 @@ To run this example, you must launch IPython via ``ipython
 #           These should abide to the Brain Imaging Data Structure (BIDS) 
 #           organization.
 
-from nistats.datasets import fetch_spm_auditory
+from nilearn.datasets.func import fetch_spm_auditory
 subject_data = fetch_spm_auditory()
 print(subject_data.func)  # print the list of names of functional images
 
@@ -80,7 +80,7 @@ print(events)
 #
 # It is now time to create and estimate a ``FirstLevelModel`` object, that will generate the *design matrix* using the  information provided by the ``events`` object.
 
-from nistats.first_level_model import FirstLevelModel
+from nilearn.stats.first_level_model import FirstLevelModel
 
 ###############################################################################
 # Parameters of the first-level model
@@ -110,7 +110,7 @@ design_matrix = fmri_glm.design_matrices_[0]
 ###############################################################################
 # Formally, we have taken the first design matrix, because the model is
 # implictily meant to for multiple runs.
-from nistats.reporting import plot_design_matrix
+from nilearn.reporting import plot_design_matrix
 plot_design_matrix(design_matrix)
 import matplotlib.pyplot as plt
 plt.show()
@@ -169,7 +169,7 @@ active_minus_rest = conditions['active'] - conditions['rest']
 # Let's look at it: plot the coefficients of the contrast, indexed by
 # the names of the columns of the design matrix.
 
-from nistats.reporting import plot_contrast_matrix
+from nilearn.reporting import plot_contrast_matrix
 plot_contrast_matrix(active_minus_rest, design_matrix=design_matrix)
 
 ###############################################################################
@@ -212,7 +212,7 @@ plt.show()
 # alpha) at a certain level, e.g. 0.001: this means that there is 0.1% chance
 # of declaring an inactive voxel, active.
 
-from nistats.thresholding import map_threshold
+from nilearn.stats.thresholding import map_threshold
 _, threshold = map_threshold(z_map, alpha=.001, height_control='fpr')
 print('Uncorrected p<0.001 threshold: %.3f' % threshold)
 plot_stat_map(z_map, bg_img=mean_img, threshold=threshold,
@@ -271,7 +271,7 @@ eff_map.to_filename(join(outdir, 'active_vs_rest_eff_map.nii.gz'))
 ###############################################################################
 # Report the found positions in a table
 
-from nistats.reporting import get_clusters_table
+from nilearn.reporting import get_clusters_table
 table = get_clusters_table(z_map, stat_threshold=threshold,
                            cluster_threshold=20)
 print(table)

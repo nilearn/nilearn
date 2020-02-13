@@ -53,7 +53,7 @@ design_matrix = pd.DataFrame(
 
 ###########################################################################
 # Fit of the second-level model
-from nistats.second_level_model import SecondLevelModel
+from nilearn.stats.second_level_model import SecondLevelModel
 model = SecondLevelModel(smoothing_fwhm=5.0)
 model.fit(contrast_map_filenames, design_matrix=design_matrix)
 
@@ -64,7 +64,7 @@ z_map = model.compute_contrast('fluency', output_type='z_score')
 
 ###########################################################################
 # We compute the fdr-corrected p = 0.05 threshold for these data
-from nistats.thresholding import map_threshold
+from nilearn.stats.thresholding import map_threshold
 _, threshold = map_threshold(z_map, alpha=.05, height_control='fdr')
 
 ###########################################################################
@@ -81,8 +81,7 @@ plotting.show()
 # Computing the (corrected) p-values with parametric test to compare with
 # non parametric test
 from nilearn.image import math_img
-from nilearn.input_data import NiftiMasker
-from nistats.utils import get_data
+from nilearn.stats.utils import get_data
 
 p_val = model.compute_contrast('fluency', output_type='p_value')
 n_voxels = np.sum(get_data(model.masker_.mask_img_))
@@ -108,7 +107,7 @@ plotting.show()
 
 ##############################################################################
 # Computing the (corrected) negative log p-values with permutation test
-from nistats.second_level_model import non_parametric_inference
+from nilearn.stats.second_level_model import non_parametric_inference
 neg_log_pvals_permuted_ols_unmasked = \
     non_parametric_inference(contrast_map_filenames,
                              design_matrix=design_matrix,

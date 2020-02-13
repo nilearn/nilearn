@@ -72,7 +72,7 @@ design_matrix = pd.DataFrame(np.vstack((age, sex, intercept)).T,
 
 #############################################################################
 # Plot the design matrix
-from nistats.reporting import plot_design_matrix
+from nilearn.reporting import plot_design_matrix
 
 ax = plot_design_matrix(design_matrix)
 ax.set_title('Second level design matrix', fontsize=12)
@@ -82,7 +82,7 @@ ax.set_ylabel('maps')
 # Specify and fit the second-level model when loading the data, we
 # smooth a little bit to improve statistical behavior
 
-from nistats.second_level_model import SecondLevelModel
+from nilearn.stats.second_level_model import SecondLevelModel
 second_level_model = SecondLevelModel(smoothing_fwhm=2.0, mask_img=mask_img)
 second_level_model.fit(gray_matter_map_filenames,
                        design_matrix=design_matrix)
@@ -96,7 +96,7 @@ z_map = second_level_model.compute_contrast(second_level_contrast=[1, 0, 0],
 ###########################################################################
 # We threshold the second level contrast at uncorrected p < 0.001 and plot it.
 # First compute the threshold.
-from nistats.thresholding import map_threshold
+from nilearn.stats.thresholding import map_threshold
 _, threshold = map_threshold(
     z_map, alpha=.05, height_control='fdr')
 print('The FDR=.05-corrected threshold is: %.3g' % threshold)
@@ -134,7 +134,7 @@ plotting.plot_stat_map(
 # This is easy to do if you have a fitted model and the list of contrasts,
 # which we do here.
 
-from nistats.reporting import make_glm_report
+from nilearn.reporting import make_glm_report
 
 icbm152_2009 = datasets.fetch_icbm152_2009()
 report = make_glm_report(model=second_level_model,

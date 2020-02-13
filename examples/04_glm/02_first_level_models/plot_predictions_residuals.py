@@ -11,7 +11,7 @@ Also, the predicted time series can be extracted, which is useful to assess the 
 #########################################################################
 # Import modules
 # --------------
-from nistats.datasets import fetch_spm_auditory
+from nilearn.datasets.func import fetch_spm_auditory
 from nilearn import image
 from nilearn import masking
 import pandas as pd
@@ -40,7 +40,7 @@ events = pd.read_table(subject_data['events'])
 # stores the residuals.
 # `signal_scaling` is set to False, so we keep the same scaling as the
 # original data in `fmri_img`.
-from nistats.first_level_model import FirstLevelModel
+from nilearn.stats.first_level_model import FirstLevelModel
 
 fmri_glm = FirstLevelModel(t_r=7,
                            drift_model='cosine',
@@ -63,7 +63,7 @@ plotting.plot_stat_map(z_map, bg_img=mean_img, threshold=3.1)
 #########################################################################
 # Extract the largest clusters
 # ----------------------------
-from nistats.reporting import get_clusters_table
+from nilearn.reporting import get_clusters_table
 from nilearn import input_data
 
 table = get_clusters_table(z_map, stat_threshold=3.1,

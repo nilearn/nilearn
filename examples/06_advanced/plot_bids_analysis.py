@@ -28,11 +28,11 @@ To run this example, you must launch IPython via ``ipython
 # --------------------------
 # We download an simplified BIDS dataset made available for illustrative
 # purposes. It contains only the necessary
-# information to run a statistical analysis using Nistats. The raw data
+# information to run a statistical analysis using Nilearn. The raw data
 # subject folders only contain bold.json and events.tsv files, while the
 # derivatives folder with preprocessed files contain preproc.nii and
 # confounds.tsv files.
-from nistats.datasets import fetch_language_localizer_demo_dataset
+from nilearn.datasets.func import fetch_language_localizer_demo_dataset
 data_dir, _ = fetch_language_localizer_demo_dataset()
 
 ##############################################################################
@@ -48,7 +48,7 @@ print(data_dir)
 # since in this case a confounds.tsv file is available in the BIDS dataset.
 # To get the first level models we only have to specify the dataset directory
 # and the task_label as specified in the file names.
-from nistats.first_level_model import first_level_models_from_bids
+from nilearn.stats.first_level_model import first_level_models_from_bids
 task_label = 'languagelocalizer'
 models, models_run_imgs, models_events, models_confounds = \
     first_level_models_from_bids(
@@ -117,7 +117,7 @@ plotting.show()
 # to the SecondLevelModel object for estimation. We can do this because
 # all subjects share a similar design matrix (same variables reflected in
 # column names)
-from nistats.second_level_model import SecondLevelModel
+from nilearn.stats.second_level_model import SecondLevelModel
 second_level_input = models
 
 #########################################################################

@@ -63,12 +63,12 @@ design_matrix = pd.DataFrame(
 
 ############################################################################
 # plot the design_matrix
-from nistats.reporting import plot_design_matrix
+from nilearn.reporting import plot_design_matrix
 plot_design_matrix(design_matrix)
 
 ############################################################################
 # formally specify the analysis model and fit it
-from nistats.second_level_model import SecondLevelModel
+from nilearn.stats.second_level_model import SecondLevelModel
 second_level_model = SecondLevelModel().fit(
     second_level_input, design_matrix=design_matrix)
 
