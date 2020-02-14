@@ -89,6 +89,7 @@ uses.
    fetch_localizer_contrasts
    fetch_localizer_calculation_task
    fetch_miyawaki2008
+   fetch_nyu_rest
    fetch_surf_nki_enhanced
    fetch_surf_fsaverage
    fetch_atlas_surf_destrieux

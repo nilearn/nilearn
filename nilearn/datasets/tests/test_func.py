@@ -132,6 +132,31 @@ def test_fetch_haxby(tmp_path, request_mocker):
             func.fetch_haxby(data_dir=str(tmp_path), subjects=[sub_id])
 
 
+def test_fetch_nyu_rest(tmp_path, request_mocker):
+    # First session, all subjects
+    nyu = func.fetch_nyu_rest(data_dir=str(tmp_path), verbose=0)
+    assert len(tst.mock_url_request.urls) == 2
+    assert len(nyu.func) == 25
+    assert len(nyu.anat_anon) == 25
+    assert len(nyu.anat_skull) == 25
+    assert np.all(np.asarray(nyu.session) == 1)
+
+    # All sessions, 12 subjects
+    tst.mock_url_request.reset()
+    nyu = func.fetch_nyu_rest(data_dir=str(tmp_path), sessions=[1, 2, 3],
+                              n_subjects=12, verbose=0)
+    # Session 1 has already been downloaded
+    assert len(tst.mock_url_request.urls) == 2
+    assert len(nyu.func) == 36
+    assert len(nyu.anat_anon) == 36
+    assert len(nyu.anat_skull) == 36
+    s = np.asarray(nyu.session)
+    assert np.all(s[:12] == 1)
+    assert np.all(s[12:24] == 2)
+    assert np.all(s[24:] == 3)
+    assert nyu.description != ''
+
+
 def test_fetch_adhd(tmp_path, request_mocker):
     local_url = "file://" + str(tmp_path / 'data')
 
