@@ -20,12 +20,9 @@ from sklearn.utils import check_random_state
 from . import test_utils as tst
 
 from nilearn.datasets import utils, func
-from nilearn.datasets.func import SPM_AUDITORY_DATA_FILES
 
 from nilearn._utils.compat import _basestring
 from ..utils import _get_dataset_dir
-
-SPM_AUDITORY_DATA_FILES.append("sM00223/sM00223_002.img")
 
 
 @pytest.fixture()
