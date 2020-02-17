@@ -83,7 +83,7 @@ session_idx = []
 
 # Instantiate the glm
 glm = FirstLevelModel(t_r=TR,
-                      mask=haxby_dataset.mask,
+                      mask_img=haxby_dataset.mask,
                       high_pass=.008,
                       smoothing_fwhm=4,
                       memory='nilearn_cache')
