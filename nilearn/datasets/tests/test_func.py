@@ -44,31 +44,31 @@ def localizer_mocker():
     teardown_localizer()
 
 
+with open(os.path.join(tst.datadir, 'localizer_index.json')) as of:
+    localizer_template = json.load(of)
+LOCALIZER_INDEX = {}
+for idx in range(1, 95):
+    idx = str(idx).zfill(2)
+    sid = 'S{0}'.format(idx)
+    LOCALIZER_INDEX.update(dict(
+        (key.format(sid), uuid.uuid4().hex)
+        for key in localizer_template))
+LOCALIZER_INDEX['/localizer/phenotype/behavioural.tsv'] = uuid.uuid4().hex
+LOCALIZER_PARTICIPANTS = np.recfromcsv(
+    os.path.join(tst.datadir, 'localizer_participants.tsv'), delimiter='\t')
+LOCALIZER_BEHAVIOURAL = np.recfromcsv(
+    os.path.join(tst.datadir, 'localizer_behavioural.tsv'), delimiter='\t')
+
+
 def mock_localizer_index(*args, **kwargs):
-    with open(os.path.join(tst.datadir, 'localizer_index.json')) as of:
-        localizer_template = json.load(of)
-    localizer_index = {}
-    for idx in range(1, 95):
-        idx = str(idx).zfill(2)
-        sid = 'S{0}'.format(idx)
-        localizer_index.update(dict(
-            (key.format(sid), uuid.uuid4().hex)
-            for key in localizer_template))
-    localizer_index['/localizer/phenotype/behavioural.tsv'] = uuid.uuid4().hex
-    return localizer_index
+    return LOCALIZER_INDEX
 
 
 def mock_np_recfromcsv(*args, **kwargs):
-    localizer_participants = np.recfromcsv(
-        os.path.join(tst.datadir, 'localizer_participants.tsv'),
-        delimiter='\t')
-    localizer_behavioural = np.recfromcsv(
-        os.path.join(tst.datadir, 'localizer_behavioural.tsv'),
-        delimiter='\t')
     if args[0].endswith('participants.tsv'):
-        return localizer_participants
+        return LOCALIZER_PARTICIPANTS
     elif args[0].endswith('behavioural.tsv'):
-        return localizer_behavioural
+        return LOCALIZER_BEHAVIOURAL
     else:
         raise ValueError('Unexpected args!')
 
