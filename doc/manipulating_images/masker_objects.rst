@@ -100,7 +100,7 @@ possible, there is no need to save your data to a file to pass it to a
 slice and create a :ref:`Niimg <niimg>` in memory:
 
 
-.. literalinclude:: ../../examples/04_manipulating_images/plot_mask_computation.py
+.. literalinclude:: ../../examples/05_manipulating_images/plot_mask_computation.py
     :start-after: Load movie watching based brain development fmri dataset
     :end-before: # To display the background
 
@@ -117,9 +117,9 @@ engineering using masker objects.
 .. note::
 
     The full example described in this section can be found here:
-    :doc:`plot_mask_computation.py <../auto_examples/04_manipulating_images/plot_mask_computation>`.
+    :doc:`plot_mask_computation.py <../auto_examples/05_manipulating_images/plot_mask_computation>`.
     It is also related to this example:
-    :doc:`plot_nifti_simple.py <../auto_examples/04_manipulating_images/plot_nifti_simple>`.
+    :doc:`plot_nifti_simple.py <../auto_examples/05_manipulating_images/plot_nifti_simple>`.
 
 
 Visualizing the computed mask
@@ -136,12 +136,12 @@ mask computation parameters.
 The mask can be retrieved and visualized from the `mask_img_` attribute
 of the masker:
 
-.. literalinclude:: ../../examples/04_manipulating_images/plot_mask_computation.py
+.. literalinclude:: ../../examples/05_manipulating_images/plot_mask_computation.py
     :start-after: # A NiftiMasker with the default strategy
     :end-before: # Plot the generated mask using the .generate_report method
 
-.. figure:: ../auto_examples/04_manipulating_images/images/sphx_glr_plot_mask_computation_002.png
-    :target: ../auto_examples/04_manipulating_images/plot_mask_computation.html
+.. figure:: ../auto_examples/05_manipulating_images/images/sphx_glr_plot_mask_computation_002.png
+    :target: ../auto_examples/05_manipulating_images/plot_mask_computation.html
     :align: center
     :scale: 40
 
@@ -150,12 +150,12 @@ method of the masker. The generated report can be viewed in a Jupyter notebook,
 opened in a new browser tab using `report.open_in_browser()`,
 or saved as a portable HTML file `report.save_as_html(output_filepath)`.
 
-.. literalinclude:: ../../examples/04_manipulating_images/plot_mask_computation.py
+.. literalinclude:: ../../examples/05_manipulating_images/plot_mask_computation.py
     :start-after: # We need to specify an 'epi' mask_strategy, as this is raw EPI data
     :end-before: # Generate mask with strong opening
 
 .. figure:: /images/niftimasker_report.png
-    :target: ../auto_examples/04_manipulating_images/plot_mask_computation.html
+    :target: ../auto_examples/05_manipulating_images/plot_mask_computation.html
     :scale: 50%
 
 Different masking strategies
@@ -174,10 +174,10 @@ The underlying function is :func:`nilearn.masking.compute_epi_mask`
 called using the `mask_args` argument of the :class:`NiftiMasker`.
 Controling these arguments set the fine aspects of the mask. See the
 functions documentation, or :doc:`the NiftiMasker example
-<../auto_examples/04_manipulating_images/plot_mask_computation>`.
+<../auto_examples/05_manipulating_images/plot_mask_computation>`.
 
 .. figure:: /images/niftimasker_report_params.png
-    :target: ../auto_examples/04_manipulating_images/plot_mask_computation.html
+    :target: ../auto_examples/05_manipulating_images/plot_mask_computation.html
     :scale: 50%
 
 .. _masker_preprocessing_steps:
@@ -329,9 +329,9 @@ an excerpt of :ref:`the example performing Anova-SVM on the Haxby data
 
 .. topic:: **Examples to better understand the NiftiMasker**
 
-   * :ref:`sphx_glr_auto_examples_04_manipulating_images_plot_nifti_simple.py`
+   * :ref:`sphx_glr_auto_examples_05_manipulating_images_plot_nifti_simple.py`
 
-   * :ref:`sphx_glr_auto_examples_04_manipulating_images_plot_mask_computation.py`
+   * :ref:`sphx_glr_auto_examples_05_manipulating_images_plot_mask_computation.py`
 
 |
 

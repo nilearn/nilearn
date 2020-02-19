@@ -370,6 +370,28 @@ uses.
    clean
    high_variance_confounds
 
+.. _stats_ref:
+
+
+:mod:`nilearn.stats`: Using GLMs to analyze data
+==================================================
+
+.. automodule:: nilearn.stats
+   :members:
+   :inherited-members:
+
+.. No relevant user manual section yet.
+
+**Functions**:
+
+.. currentmodule:: nilearn.stats
+
+.. autosummary::
+   :toctree: generated/
+   :template: function.rst
+
+   compute_contrast
+   compute_fixed_effects
 
 :mod:`nilearn.surface`: Manipulating surface data
 ===================================================

@@ -11,7 +11,7 @@ Nistats is a Python module for fast and easy functional MRI statistical
 analysis.
 
 Submodules
----------
+----------
 datasets                --- Utilities to download NeuroImaging datasets
 hemodynamic_models      --- Hemodyanmic response function specification
 design_matrix           --- Design matrix creation for fMRI analysis
@@ -26,4 +26,15 @@ reporting               --- Utilities for creating reports & plotting data
 utils                   --- Miscellaneous utilities
 """
 
-# __all__ = ['datasets', 'design_matrix']
+# __all__ = ['contrasts', 'design_matrix', 'experimental_paradigm',
+#            'first_level_model', 'hemodynamic_models', 'model',
+#            'regression', 'second_level_model', 'thresholding', 'utils',
+#            ]
+
+from nilearn.stats.contrasts import (
+    compute_contrast,
+    compute_fixed_effects,
+)
+
+__all__ = ['compute_contrast',
+           'compute_fixed_effects']
