@@ -3,7 +3,7 @@
 import numpy as np
 import pytest
 
-from numpy.testing import assert_array_almost_equal, assert_raises_regex
+from numpy.testing import assert_array_almost_equal
 import nibabel
 
 from nilearn._utils.testing import write_tmp_imgs
@@ -161,15 +161,16 @@ def test_masker_attributes_with_fit():
     canica.fit(data)
     assert canica.mask_img_ == canica.masker_.mask_img_
     canica = CanICA(mask=mask_img, n_components=3)
-    assert_raises_regex(ValueError,
-                        "Object has no components_ attribute. "
-                        "This is probably because fit has not been called",
-                        canica.transform, data)
+    with pytest.raises(
+            ValueError,
+            match="Object has no components_ attribute. "
+                  "This is probably because fit has not been called"):
+        canica.transform(data)
     # Test if raises an error when empty list of provided.
-    assert_raises_regex(ValueError,
-                        'Need one or more Niimg-like objects as input, '
-                        'an empty list was given.',
-                        canica.fit, [])
+    with pytest.raises(ValueError,
+                       match='Need one or more Niimg-like objects as input, '
+                             'an empty list was given.'):
+        canica.fit([])
     # Test passing masker arguments to estimator
     canica = CanICA(n_components=3,
                     target_affine=np.eye(4),

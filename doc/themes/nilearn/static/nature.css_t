@@ -1708,3 +1708,14 @@ div.sg-report iframe {
     margin-bottom: 0pt;
     width: 126%; /* More than 100% because of .8 scaling */
 }
+
+/* gallery download note */
+
+div.body div.sphx-glr-download-link-note {
+    text-align: left;
+    float: none;
+    margin: 10px 0 -10px 0;
+    border-radius: 4px;
+    padding: 5px;
+    max-width: 100%;
+}

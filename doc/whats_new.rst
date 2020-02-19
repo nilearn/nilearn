@@ -1,3 +1,27 @@
+0.6.2
+======
+
+ENHANCEMENTS
+------------
+
+- Generated documentation now includes Binder links to launch examples interactively
+  in the browser
+
+Fixes
+-----
+
+- More robust matplotlib backend selection
+
+Contributors
+------------
+
+The following people contributed to this release::
+
+     Elizabeth DuPre
+     Gael Varoquaux
+     Kshitij Chawla (kchawla-pi)
+     Zvi Baratz
+
 0.6.1
 =====
 
@@ -6,6 +30,19 @@ ENHANCEMENTS
 
 - html pages use the user-provided plot title, if any, as their title
 
+Fixes
+-----
+
+- Fetchers for developmental_fmri and localizer datasets resolve URLs correctly.
+
+Contributors
+------------
+
+The following people contributed to this release::
+
+     Elizabeth DuPre
+     Jerome Dockes
+     Kshitij Chawla (kchawla-pi)
 
 0.6.0
 =====

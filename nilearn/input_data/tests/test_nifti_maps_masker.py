@@ -10,8 +10,6 @@ import numpy as np
 import nibabel
 import pytest
 
-from numpy.testing import assert_raises_regex
-
 from nilearn.input_data.nifti_maps_masker import NiftiMapsMasker
 from nilearn._utils import testing, as_ndarray, data_gen
 from nilearn._utils.exceptions import DimensionError
@@ -59,9 +57,8 @@ def test_nifti_maps_masker():
     masker11 = NiftiMapsMasker(labels11_img, mask_img=mask11_img,
                                resampling_target=None)
 
-    testing.assert_raises_regex(
-        ValueError, 'has not been fitted. ',
-        masker11.transform, fmri11_img)
+    with pytest.raises(ValueError, match='has not been fitted. '):
+        masker11.transform(fmri11_img)
     signals11 = masker11.fit().transform(fmri11_img)
     assert signals11.shape == (length, n_regions)
 
@@ -97,9 +94,8 @@ def test_nifti_maps_masker():
     signals11 = masker11.fit_transform(fmri11_img)
     assert signals11.shape == (length, n_regions)
 
-    testing.assert_raises_regex(
-        ValueError, 'has not been fitted. ',
-        NiftiMapsMasker(labels11_img).inverse_transform, signals11)
+    with pytest.raises(ValueError, match='has not been fitted. '):
+        NiftiMapsMasker(labels11_img).inverse_transform(signals11)
 
     # Call inverse transform (smoke test)
     fmri11_img_r = masker11.inverse_transform(signals11)
@@ -176,11 +172,11 @@ def test_nifti_maps_masker_2():
 
     # verify that 4D mask arguments are refused
     masker = NiftiMapsMasker(maps33_img, mask_img=mask_img_4d)
-    testing.assert_raises_regex(DimensionError,
-                                "Input data has incompatible dimensionality: "
-                                "Expected dimension is 3D and you provided "
-                                "a 4D image.",
-                                masker.fit)
+    with pytest.raises(DimensionError,
+                       match="Input data has incompatible dimensionality: "
+                             "Expected dimension is 3D and you provided "
+                             "a 4D image."):
+        masker.fit()
 
     # Test error checking
     pytest.raises(ValueError, NiftiMapsMasker, maps33_img,
@@ -303,8 +299,8 @@ def test_nifti_maps_masker_overlap():
     non_overlapping_masker.fit_transform(fmri_img)
     non_overlapping_masker = NiftiMapsMasker(overlapping_maps_img,
                                              allow_overlap=False)
-    assert_raises_regex(ValueError, 'Overlap detected',
-                        non_overlapping_masker.fit_transform, fmri_img)
+    with pytest.raises(ValueError, match='Overlap detected'):
+        non_overlapping_masker.fit_transform(fmri_img)
 
 
 def test_standardization():

@@ -13,9 +13,6 @@ import gc
 import numpy as np
 import pytest
 
-from numpy.testing import assert_raises_regex, assert_warns  # noqa: F401
-from numpy.testing import assert_raises_regex, assert_warns  # noqa: F401
-
 from .compat import _basestring, _urllib
 from ..datasets.utils import _fetch_files
 
@@ -246,29 +243,14 @@ class FetchFilesMock (object):
         return filenames
 
 
-
 def are_tests_running():
-    """Returns whether we are running the nose test loader
+    """Returns whether we are running the pytest test loader
     """
-    if 'nose' not in sys.modules:
-        return
-    try:
-        import nose
-    except ImportError:
-        return False
-    # Now check that we have the loader in the call stask
-    stack = inspect.stack()
-    loader_file_name = nose.loader.__file__
-    if loader_file_name.endswith('.pyc'):
-        loader_file_name = loader_file_name[:-1]
-    for _, file_name, _, _, _, _ in stack:
-        if file_name == loader_file_name:
-            return True
-    return False
+    return 'PYTEST_CURRENT_TEST' in os.environ
 
 
 def skip_if_running_tests(msg=''):
-    """ Raise a SkipTest if we appear to be running the nose test loader.
+    """ Raise a SkipTest if we appear to be running the pytest test loader.
 
     Parameters
     ----------

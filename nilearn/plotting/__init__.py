@@ -10,7 +10,7 @@ import sys
 # Make sure that we don't get DISPLAY problems when running without X on
 # unices
 def _set_mpl_backend():
-    # We are doing local imports here to avoid poluting our namespace
+    # We are doing local imports here to avoid polluting our namespace
     try:
         import matplotlib
     except ImportError:
@@ -25,10 +25,14 @@ def _set_mpl_backend():
         # that the version is greater that the minimum required one
         _import_module_with_version_check('matplotlib',
                                           OPTIONAL_MATPLOTLIB_MIN_VERSION)
+        current_backend = matplotlib.get_backend().lower()
+
+        if 'inline' in current_backend or 'nbagg' in current_backend:
+            return
         # Set the backend to a non-interactive one for unices without X
         if (os.name == 'posix' and 'DISPLAY' not in os.environ
                 and not (sys.platform == 'darwin'
-                         and matplotlib.get_backend() == 'MacOSX')
+                         and 'macosx' in current_backend)
         ):
             matplotlib.use('Agg')
 

@@ -4,20 +4,17 @@ Test the multi_nifti_masker module
 # Author: Gael Varoquaux
 # License: simplified BSD
 import shutil
-from distutils.version import LooseVersion
 from tempfile import mkdtemp
 
-import nibabel
 import numpy as np
 import pytest
-import sklearn
 from nibabel import Nifti1Image
 
 from numpy.testing import assert_array_equal
 from nilearn._utils.compat import Memory
 
 from nilearn._utils.exceptions import DimensionError
-from nilearn._utils.testing import assert_raises_regex, write_tmp_imgs
+from nilearn._utils.testing import write_tmp_imgs
 from nilearn.input_data.multi_nifti_masker import MultiNiftiMasker
 from nilearn.image import get_data
 
@@ -51,9 +48,8 @@ def test_auto_mask():
 
     # check exception when transform() called without prior fit()
     masker2 = MultiNiftiMasker(mask_img=img)
-    assert_raises_regex(
-        ValueError,
-        'has not been fitted. ', masker2.transform, img2)
+    with pytest.raises(ValueError, match='has not been fitted. '):
+        masker2.transform(img2)
 
 
 def test_nan():
@@ -109,11 +105,11 @@ def test_3d_images():
     mask_img_4d = Nifti1Image(np.ones((2, 2, 2, 2), dtype=np.int8),
                               affine=np.diag((4, 4, 4, 1)))
     masker2 = MultiNiftiMasker(mask_img=mask_img_4d)
-    assert_raises_regex(DimensionError,
-                        "Input data has incompatible dimensionality: "
-                        "Expected dimension is 3D and you provided "
-                        "a 4D image.",
-                        masker2.fit)
+    with pytest.raises(DimensionError,
+                       match="Input data has incompatible dimensionality: "
+                             "Expected dimension is 3D and you provided "
+                             "a 4D image."):
+        masker2.fit()
 
 
 def test_joblib_cache():

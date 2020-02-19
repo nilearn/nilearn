@@ -1,8 +1,10 @@
 import nibabel
 import numpy as np
+import pytest
+
 from numpy.testing import assert_array_equal
+
 from nilearn.input_data import NiftiSpheresMasker
-from nilearn._utils.testing import assert_raises_regex
 from nilearn.image import get_data
 
 
@@ -71,7 +73,8 @@ def test_anisotropic_sphere_extraction():
 
 def test_errors():
     masker = NiftiSpheresMasker(([1, 2]), radius=.2)
-    assert_raises_regex(ValueError, 'Seeds must be a list .+', masker.fit)
+    with pytest.raises(ValueError, match='Seeds must be a list .+'):
+        masker.fit()
 
 
 def test_nifti_spheres_masker_overlap():
@@ -96,8 +99,8 @@ def test_nifti_spheres_masker_overlap():
     noverlapping_masker.fit_transform(fmri_img)
     noverlapping_masker = NiftiSpheresMasker(seeds, radius=2,
                                              allow_overlap=False)
-    assert_raises_regex(ValueError, 'Overlap detected',
-                        noverlapping_masker.fit_transform, fmri_img)
+    with pytest.raises(ValueError, match='Overlap detected'):
+        noverlapping_masker.fit_transform(fmri_img)
 
 
 def test_small_radius():
@@ -121,9 +124,8 @@ def test_small_radius():
 
     masker = NiftiSpheresMasker([seed], radius=0.1,
                                 mask_img=nibabel.Nifti1Image(mask, affine))
-    assert_raises_regex(ValueError, 'Sphere around seed #0 is empty',
-                        masker.fit_transform,
-                        nibabel.Nifti1Image(data, affine))
+    with pytest.raises(ValueError, match='Sphere around seed #0 is empty'):
+        masker.fit_transform(nibabel.Nifti1Image(data, affine))
 
     masker = NiftiSpheresMasker([seed], radius=1.6,
                                 mask_img=nibabel.Nifti1Image(mask, affine))

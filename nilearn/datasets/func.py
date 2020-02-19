@@ -920,7 +920,10 @@ def fetch_localizer_contrasts(contrasts, n_subjects=None, get_tmaps=False,
 
     # Build data URLs that will be fetched
     files = {}
-    root_url = "https://osf.io/download/{0}"
+    # Download from the relevant OSF project, using hashes generated
+    # from the OSF API. Note the trailing slash. For more info, see:
+    # https://gist.github.com/emdupre/3cb4d564511d495ea6bf89c6a577da74
+    root_url = "https://osf.io/download/{0}/"
     if isinstance(n_subjects, numbers.Number):
         subject_mask = np.arange(1, n_subjects + 1)
         subject_id_max = "S%02d" % n_subjects
@@ -1957,7 +1960,10 @@ def _fetch_development_fmri_functional(participants, data_dir, url, resume,
                                 verbose=verbose)
 
     if url is None:
-        url = 'https://osf.io/download/{}'
+        # Download from the relevant OSF project, using hashes generated
+        # from the OSF API. Note the trailing slash. For more info, see:
+        # https://gist.github.com/emdupre/3cb4d564511d495ea6bf89c6a577da74
+        url = 'https://osf.io/download/{}/'
 
     confounds = '{}_task-pixar_desc-confounds_regressors.tsv'
     func = '{0}_task-pixar_space-MNI152NLin2009cAsym_desc-preproc_bold.nii.gz'
