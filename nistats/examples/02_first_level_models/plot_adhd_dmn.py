@@ -2,15 +2,15 @@
 Default Mode Network extraction of AHDH dataset
 ===============================================
 
-Full step-by-step example of fitting a GLM to a seed extract on the
-Posterior Cingulate Cortex data and saving the results.
+This example shows a full step-by-step workflow of fitting a GLM to data extracted from a seed on the
+Posterior Cingulate Cortex and saving the results.
 
 More specifically:
 
-1. A sequence of fMRI volumes are loaded
-2. A design matrix with the Posterior Cingulate Cortex seed is defined
-3. A GLM is applied to the dataset (effect/covariance, then contrast estimation)
-4. The Default Mode Network is displayed
+1. A sequence of fMRI volumes are loaded.
+2. A design matrix with the Posterior Cingulate Cortex seed is defined.
+3. A GLM is applied to the dataset (effect/covariance, then contrast estimation).
+4. The Default Mode Network is displayed.
 
 """
 import numpy as np
@@ -24,7 +24,7 @@ from nistats.design_matrix import make_first_level_design_matrix
 #########################################################################
 # Prepare data and analysis parameters
 # -------------------------------------
-# Prepare data
+# Prepare the data.
 adhd_dataset = datasets.fetch_adhd(n_subjects=1)
 
 # Prepare timing
@@ -38,7 +38,7 @@ pcc_coords = (0, -53, 26)
 #########################################################################
 # Estimate contrasts
 # ------------------
-# Specify the contrasts
+# Specify the contrasts.
 seed_masker = NiftiSpheresMasker([pcc_coords], radius=10, detrend=True,
                                  standardize=True, low_pass=0.1,
                                  high_pass=0.01, t_r=2.,
@@ -55,13 +55,13 @@ contrasts = {'seed_based_glm': dmn_contrast}
 #########################################################################
 # Perform first level analysis
 # ----------------------------
-# Setup and fit GLM
+# Setup and fit GLM.
 first_level_model = FirstLevelModel(t_r=t_r, slice_time_ref=slice_time_ref)
 first_level_model = first_level_model.fit(run_imgs=adhd_dataset.func[0],
                                           design_matrices=design_matrix)
 
 #########################################################################
-# contrast estimation
+# Estimate the contrast.
 print('Contrast seed_based_glm computed.')
 z_map = first_level_model.compute_contrast(contrasts['seed_based_glm'],
                                            output_type='z_score')

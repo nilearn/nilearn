@@ -15,24 +15,24 @@ is included in the model.
 #         Jerome-Alexis Chevalier, 2019
 
 ##############################################################################
-# Load Localizer contrast
+# At first, we need to load the Localizer contrasts.
 from nilearn import datasets
 n_samples = 94
 localizer_dataset = datasets.fetch_localizer_contrasts(
     ['left button press (auditory cue)'], n_subjects=n_samples)
 
 ##############################################################################
-# print basic information on the dataset
+# Let's print basic information on the dataset.
 print('First contrast nifti image (3D) is located at: %s' %
       localizer_dataset.cmaps[0])
 
 ##############################################################################
-# Load the behavioral variable
+# we also need to load the behavioral variable.
 tested_var = localizer_dataset.ext_vars['pseudo']
 print(tested_var)
 
 ##############################################################################
-# Quality check / Remove subjects with bad tested variate
+# It is worth to do a auality check and remove subjects with missing values.
 import numpy as np
 mask_quality_check = np.where(tested_var != b'n/a')[0]
 n_samples = mask_quality_check.size

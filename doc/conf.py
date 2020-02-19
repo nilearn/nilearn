@@ -302,13 +302,25 @@ sphinx_gallery_conf = {
     'backreferences_dir': os.path.join('modules', 'generated'),
     'reference_url': {'nilearn': None},
     'junit': '../test-results/sphinx-gallery/junit.xml',
+    'examples_dirs': '../examples',
+    'gallery_dirs': 'auto_examples',
+    'binder': {
+        'org': 'nilearn',
+        'repo': 'nilearn.github.io',
+        'binderhub_url': 'https://mybinder.org',
+        'branch': 'master',
+        'dependencies': ['../requirements-build-docs.txt',
+                         'binder/requirements.txt'],
+        'notebooks_dir': 'examples'
     }
+}
 
 # Get rid of spurious warnings due to some interaction between
 # autosummary and numpydoc. See
 # https://github.com/phn/pytpm/issues/3#issuecomment-12133978 for more
 # details
 numpydoc_show_class_members = False
+
 
 def touch_example_backreferences(app, what, name, obj, options, lines):
     # generate empty examples files, so that we don't get
