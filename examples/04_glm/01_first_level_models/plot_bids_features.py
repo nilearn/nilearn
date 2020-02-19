@@ -6,17 +6,17 @@ First level analysis of a complete BIDS dataset from openneuro
 Full step-by-step example of fitting a GLM to perform a first level analysis
 in an openneuro BIDS dataset. We demonstrate how BIDS derivatives can be
 exploited to perform a simple one subject analysis with minimal code.
-Details about the BIDS standard are available at http://bids.neuroimaging.io/
+Details about the BIDS standard are available at http://bids.neuroimaging.io/.
 We also demonstrate how to download individual groups of files from the
 Openneuro s3 bucket.
 
 More specifically:
 
-1. Download an fMRI BIDS dataset with derivatives from openneuro
-2. Extract automatically from the BIDS dataset first level model objects
-3. Demonstrate Quality assurance of Nistat estimation against available FSL
-   estimation in the openneuro dataset
-4. Display contrast plot and uncorrected first level statistics table report
+1. Download an fMRI BIDS dataset with derivatives from openneuro.
+2. Extract first level model objects automatically from the BIDS dataset.
+3. Demonstrate Quality assurance of Nistats estimation against available FSL.
+   estimation in the openneuro dataset.
+4. Display contrast plot and uncorrected first level statistics table report.
 
 
 
@@ -51,12 +51,12 @@ urls = select_from_index(
 data_dir, _ = fetch_openneuro_dataset(urls=urls)
 
 ##############################################################################
-# Obtain automatically FirstLevelModel objects and fit arguments
+# Obtain FirstLevelModel objects automatically and fit arguments
 # ---------------------------------------------------------------
-# From the dataset directory we obtain automatically FirstLevelModel objects
-# with their subject_id filled from the BIDS dataset. Moreover we obtain
-# for each model the list of run imgs and their respective events and
-# confounder regressors. Confounders are inferred from the confounds.tsv files
+# From the dataset directory we automatically obtain FirstLevelModel objects
+# with their subject_id filled from the BIDS dataset. Moreover we obtain,
+# for each model, the list of run images and their respective events and
+# confound regressors. Those are inferred from the confounds.tsv files
 # available in the BIDS dataset.
 # To get the first level models we have to specify the dataset directory,
 # the task_label and the space_label as specified in the file names.
@@ -72,7 +72,7 @@ models, models_run_imgs, models_events, models_confounds = \
         derivatives_folder=derivatives_folder)
 
 #############################################################################
-# Take model and model arguments of the subject and process events
+# Access the model and model arguments of the subject and process events.
 model, imgs, events, confounds = (
     models[0], models_run_imgs[0], models_events[0], models_confounds[0])
 subject = 'sub-' + model.subject_label
@@ -86,7 +86,7 @@ design_matrix = get_design_from_fslmat(
 
 #############################################################################
 # We identify the columns of the Go and StopSuccess conditions of the
-# design matrix inferred from the fsl file, to use them later for contrast
+# design matrix inferred from the FSL file, to use them later for contrast
 # definition.
 design_columns = ['cond_%02d' % i for i in range(len(design_matrix.columns))]
 design_columns[0] = 'Go'
@@ -105,8 +105,8 @@ model.fit(imgs, design_matrices=[design_matrix])
 z_map = model.compute_contrast('StopSuccess - Go')
 
 #############################################################################
-# We show agreement between the Nilearn estimation and the FSL estimation
-# available in the dataset
+# We show the agreement between the Nilearn estimation and the FSL estimation
+# available in the dataset.
 import nibabel as nib
 fsl_z_map = nib.load(
     os.path.join(data_dir, 'derivatives', 'task', subject, 'stopsignal.feat',
@@ -140,7 +140,7 @@ plotting.plot_glass_brain(z_map, colorbar=True, threshold=norm.isf(0.001),
 plt.show()
 
 ###############################################################################
-# We can get a latex table from a Pandas Dataframe for display and publication
+# We can get a latex table from a Pandas Dataframe for display and publication purposes
 from nilearn.reporting import get_clusters_table
 print(get_clusters_table(z_map, norm.isf(0.001), 10).to_latex())
 

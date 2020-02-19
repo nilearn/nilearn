@@ -9,11 +9,11 @@ and visualizing the results.
 More specifically:
 
 1. A sequence of subject fMRI button press contrasts is downloaded.
-2. a mask of the useful brain volume is computed
-3. A one-sample t-test is applied to the brain maps
+2. A mask of the useful brain volume is computed.
+3. A one-sample t-test is applied to the brain maps.
 
 We focus on a given contrast of the localizer dataset: the motor response to
-left versus right button press. Both at the ndividual and group level, this is
+left versus right button press. Both at the individual and group level, this is
 expected to elicit activity in the motor cortex (positive in the right
 hemisphere, negative in the left hemisphere).
 
@@ -23,7 +23,7 @@ hemisphere, negative in the left hemisphere).
 # Fetch dataset
 # --------------
 # We download a list of left vs right button press contrasts from a
-# localizer dataset. Note that we fetc individual t-maps that represent the
+# localizer dataset. Note that we fetch individual t-maps that represent the
 # Bold activity estimate divided by the uncertainty about this estimate.
 from nilearn.datasets import fetch_localizer_contrasts
 n_subjects = 16
@@ -35,7 +35,7 @@ data = fetch_localizer_contrasts(["left vs right button press"], n_subjects,
 # ----------------------
 # We plot a grid with all the subjects t-maps thresholded at t = 2 for
 # simple visualization purposes. The button press effect is visible among
-# all subjects
+# all subjects.
 from nilearn import plotting
 import matplotlib.pyplot as plt
 subjects = [subject_data[0] for subject_data in data['ext_vars']]
@@ -59,7 +59,7 @@ design_matrix = pd.DataFrame([1] * len(second_level_input),
                              columns=['intercept'])
 
 ############################################################################
-# Model specification and fit
+# Model specification and fit.
 from nilearn.stats.second_level_model import SecondLevelModel
 second_level_model = SecondLevelModel(smoothing_fwhm=8.0)
 second_level_model = second_level_model.fit(second_level_input,
@@ -71,21 +71,21 @@ second_level_model = second_level_model.fit(second_level_input,
 z_map = second_level_model.compute_contrast(output_type='z_score')
 
 ###########################################################################
-# We threshold the second level contrast at uncorrected p < 0.001 and plot
+# We threshold the second level contrast at uncorrected p < 0.001 and plot it.
 from scipy.stats import norm
 p_val = 0.001
 p001_unc = norm.isf(p_val)
 display = plotting.plot_glass_brain(
     z_map, threshold=p001_unc, colorbar=True, display_mode='z', plot_abs=False,
     title='group left-right button press (unc p<0.001)')
-
-###########################################################################
-# As expected, we find the motor cortex
 plotting.show()
 
+###########################################################################
+# As expected, we find the motor cortex.
+
 ##########################################################################
-# Computing the (corrected) p-values with parametric test to compare with
-# non parametric test
+# Next, we compute the (corrected) p-values with a parametric test to compare them with the results
+# from a nonparametric test.
 import numpy as np
 from nilearn.image import get_data, math_img
 
@@ -97,7 +97,7 @@ neg_log_pval = math_img("-np.log10(np.minimum(1, img * {}))"
                         img=p_val)
 
 ###########################################################################
-# Let us plot the (corrected) negative log p-values for the parametric test
+# Let us plot the (corrected) negative log p-values for the parametric test.
 cut_coords = [0]
 # Since we are plotting negative log p-values and using a threshold equal to 1,
 # it corresponds to corrected p-values lower than 10%, meaning that there
@@ -113,7 +113,7 @@ display = plotting.plot_glass_brain(
 plotting.show()
 
 ###########################################################################
-# Computing the (corrected) p-values with permutation test
+# Now, we compute the (corrected) p-values with a permutation test.
 from nilearn.stats.second_level_model import non_parametric_inference
 neg_log_pvals_permuted_ols_unmasked = \
     non_parametric_inference(second_level_input,
@@ -123,7 +123,7 @@ neg_log_pvals_permuted_ols_unmasked = \
                              smoothing_fwhm=8.0, n_jobs=1)
 
 ###########################################################################
-# Let us plot the (corrected) negative log  p-values
+# Let us plot the (corrected) negative log p-values for the nonparametric test.
 title = ('Group left-right button press: \n'
          'permutation test (FWER < 10%)')
 display = plotting.plot_glass_brain(
@@ -132,7 +132,7 @@ display = plotting.plot_glass_brain(
     threshold=threshold, title=title)
 plotting.show()
 
-# The neg-log p-values obtained with non parametric testing are capped at 3
+# The neg-log p-values obtained with nonparametric testing are capped at 3
 # since the number of permutations is 1e3.
-# The non parametric test yields many more discoveries
-# and is then more powerful than the usual parametric procedure.
+# The nonparametric test yields many more discoveries
+# and is more powerful than the usual parametric procedure.

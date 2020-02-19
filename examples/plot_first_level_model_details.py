@@ -40,25 +40,25 @@ fmri_img = data.epi_img
 # Define the paradigm that will be used. Here, we just need to get the provided file.
 #
 # This task, described in Pinel et al., BMC neuroscience 2007 probes
-# basic functions, such as button with the left or right hand, viewing
+# basic functions, such as button presses with the left or right hand, viewing
 # horizontal and vertical checkerboards, reading and listening to
 # short sentences, and mental computations (subractions).
 #
-#  Visual stimuli were displayed in four 250-ms epochs, separated by
-#  100ms intervals (i.e., 1.3s in total). Auditory stimuli were drawn
-#  from a recorded male voice (i.e., a total of 1.6s for motor
-#  instructions, 1.2-1.7s for sentences, and 1.2-1.3s for
-#  subtraction). The auditory or visual stimuli were shown to the
-#  participants for passive viewing or button response in
-#  event-related paradigms.  Post-scan questions verified that the
-#  experimental tasks were understood and followed correctly.
-# 
+# Visual stimuli were displayed in four 250-ms epochs, separated by
+# 100ms intervals (i.e., 1.3s in total). Auditory stimuli were drawn
+# from a recorded male voice (i.e., a total of 1.6s for motor
+# instructions, 1.2-1.7s for sentences, and 1.2-1.3s for
+# subtractions). The auditory or visual stimuli were shown to the
+# participants for passive listening or viewing or responses via button presses in
+# event-related paradigms.  Post-scan questions verified that the
+# experimental tasks were understood and followed correctly.
+#
 # This task comprises 10 conditions:
 #
-# * audio_left_hand_button_press: Left-hand three-times button press, indicated by visual instruction
-# * audio_right_hand_button_press: Right-hand three-times button press, indicated by visual instruction
-# * visual_left_hand_button_press: Left-hand three-times button press, indicated by auditory instruction
-# * visual_right_hand_button_press:  Right-hand three-times button press, indicated by auditory instruction
+# * audio_left_hand_button_press: Left-hand three-times button press, indicated by auditory instruction
+# * audio_right_hand_button_press: Right-hand three-times button press, indicated by auditory instruction
+# * visual_left_hand_button_press: Left-hand three-times button press, indicated by visual instruction
+# * visual_right_hand_button_press:  Right-hand three-times button press, indicated by visual instruction
 # * horizontal_checkerboard: Visualization of flashing horizontal checkerboards
 # * vertical_checkerboard: Visualization of flashing vertical checkerboards
 # * sentence_listening: Listen to narrative sentences
@@ -76,8 +76,8 @@ events= pd.read_table(events_file)
 # Running a basic model
 # ---------------------
 #
-# First specify a linear model.
-# the fit() model creates the design matrix and the beta maps.
+# First we specify a linear model.
+# The .fit() functionality of FirstLevelModel function creates the design matrix and the beta maps.
 #
 from nilearn.stats.first_level_model import FirstLevelModel
 first_level_model = FirstLevelModel(t_r)
@@ -93,7 +93,7 @@ plt.show()
 
 #########################################################################
 # Specification of the contrasts.
-# 
+#
 # For this, let's create a function that, given the design matrix,
 # generates the corresponding contrasts.  This will be useful to
 # repeat contrast specification when we change the design matrix.
@@ -102,7 +102,7 @@ import numpy as np
 def make_localizer_contrasts(design_matrix):
     """ returns a dictionary of four contrasts, given the design matrix"""
 
-    # first generate canonical contrasts 
+    # first generate canonical contrasts
     contrast_matrix = np.eye(design_matrix.shape[1])
     contrasts = dict([(column, contrast_matrix[i])
                       for i, column in enumerate(design_matrix.columns)])
@@ -112,7 +112,7 @@ def make_localizer_contrasts(design_matrix):
         + contrasts['audio_right_hand_button_press']
         + contrasts['audio_computation']
         + contrasts['sentence_listening'])
-    
+
     # one contrast adding all conditions involving instructions reading
     contrasts['visual'] = (
         contrasts['visual_left_hand_button_press']
@@ -127,7 +127,7 @@ def make_localizer_contrasts(design_matrix):
     # one contrast adding all conditions involving sentences
     contrasts['sentences'] = (contrasts['sentence_listening']
                                     + contrasts['sentence_reading'])
-    
+
     # Short dictionary of more relevant contrasts
     contrasts = {
         'left - right button press': (
@@ -146,12 +146,12 @@ def make_localizer_contrasts(design_matrix):
     return contrasts
 
 #########################################################################
-# So let's look at these computed contrasts
+# So let's look at these computed contrasts:
 #
-# * 'left - right button press' probes motor activity in left versus right button presses
+# * 'left - right button press': probes motor activity in left versus right button presses
 # * 'horizontal-vertical': probes the differential activity in viewing a horizontal vs vertical checkerboard
-# * 'audio - visual' probes the difference of activity between listening to some content or reading the same type of content (instructions, stories)
-# * 'computation - sentences' looks at the activity when performing a mental comptation task  versus simply reading sentences.
+# * 'audio - visual': probes the difference of activity between listening to some content or reading the same type of content (instructions, stories)
+# * 'computation - sentences': looks at the activity when performing a mental comptation task  versus simply reading sentences.
 #
 contrasts = make_localizer_contrasts(design_matrix)
 plt.figure(figsize=(5, 9))
@@ -163,7 +163,7 @@ for i, (key, values) in enumerate(contrasts.items()):
 plt.show()
 
 #########################################################################
-# Contrast estimation and plotting
+# Contrast estimation and plotting.
 #
 # Since this script will be repeated several times, for the sake of readability,
 # we encapsulate it in a function that we call when needed.
@@ -171,7 +171,7 @@ plt.show()
 from nilearn import plotting
 
 def plot_contrast(first_level_model):
-    """ Given a first model, specify, enstimate and plot the main contrasts"""
+    """ Given a first model, specify, estimate and plot the main contrasts"""
     design_matrix = first_level_model.design_matrices_[0]
     # Call the contrast specification within the function
     contrasts = make_localizer_contrasts(design_matrix)
@@ -194,7 +194,7 @@ plt.show()
 #########################################################################
 # Changing the drift model
 # ------------------------
-# 
+#
 # The drift model is a set of slow oscillating functions
 # (Discrete Cosine transform) with a cut-off frequency. To remove
 # spurious low-frequency effects related to heart rate, breathing and
@@ -204,7 +204,7 @@ plt.show()
 # change this value. The cutoff period (1/high_pass) should be set as the
 # longest period between two trials of the same condition multiplied by 2.
 # For instance, if the longest period is 32s, the high_pass frequency shall be
-# 1/64 Hz ~ 0.016 Hz.
+# 1/64 Hz ~ 0.016 Hz. Note that the design matrix has more columns to model drifts in the data.
 
 first_level_model = FirstLevelModel(t_r, high_pass=.016)
 first_level_model = first_level_model.fit(fmri_img, events=events)
@@ -218,12 +218,10 @@ plot_contrast(first_level_model)
 plt.show()
 
 #########################################################################
-# Note that the design matrix has more columns to model drifts in the data.
-#
 # We notice however that this model performs rather poorly.
 #
 # Another solution is to remove these drift terms. Maybe they're simply useless.
-# this is done by setting drift_model to None.
+# This is done by setting drift_model to None.
 
 first_level_model = FirstLevelModel(t_r, drift_model=None)
 first_level_model = first_level_model.fit(fmri_img, events=events)
@@ -233,12 +231,13 @@ plot_contrast(first_level_model)
 plt.show()
 
 #########################################################################
-# Is it better than the original ? No !
+# Is it better than the original? No!
 #
 # Note that the design matrix has changed with no drift columns.
 # the event columns, on the other hand, haven't changed.
-# Another alternative to get a drift model is to specify a set of polynomials
-# Let's take a basis of 5 polynomials
+#
+# Another alternative to get a drift model is to specify a set of polynomials.
+# Let's take a basis of 5 polynomials.
 
 first_level_model = FirstLevelModel(t_r, drift_model='polynomial',
                                     drift_order=5)
@@ -260,8 +259,8 @@ plt.show()
 #
 # The first thing that we can do is to change the default model (the
 # so-called Glover hrf) for the so-called canonical model of SPM
-# --which has slightly weaker undershoot component.
- 
+# --which has a slightly weaker undershoot component.
+
 first_level_model = FirstLevelModel(t_r, hrf_model='spm')
 first_level_model = first_level_model.fit(fmri_img, events=events)
 design_matrix = first_level_model.design_matrices_[0]
@@ -276,10 +275,10 @@ plt.show()
 # canonical hrf, but also its time derivative. Note that in that case,
 # we still perform the contrasts and obtain statistical significance
 # for the main effect ---not the time derivative. This means that the
-# inclusion of time derivative in the design matrix has the sole
+# inclusion of a time derivative in the design matrix has the sole
 # effect of discounting timing misspecification from the error term,
-# which vould decrease the estimated variance and enhance the
-# statistical significance of the effect. Is it the case ?
+# which would decrease the estimated variance and enhance the
+# statistical significance of the effect. Is that the case?
 
 first_level_model = FirstLevelModel(t_r, hrf_model='spm + derivative')
 first_level_model = first_level_model.fit(fmri_img, events=events)
@@ -291,9 +290,9 @@ plt.show()
 #########################################################################
 # Not a huge effect, but rather positive overall. We could keep that one.
 #
-# Bzw, a benefit of this approach is that we can test which voxels are
-# well explined by the derivative term, hinting at misfit regions, a
-# possibly valuable information This is implemented by an F test on
+# By the way, a benefit of this approach is that we can test which voxels are
+# well explained by the derivative term, hinting at misfit regions, a
+# possibly valuable information. This is implemented by an F-test on
 # the time derivative regressors.
 
 contrast_val = np.eye(design_matrix.shape[1])[1:21:2]
@@ -308,7 +307,7 @@ plt.show()
 
 #########################################################################
 # Well, there seems to be something here. Maybe we could adjust the
-# timing, by increasing the slice_time_ref parameter: 0 to 0.5 now the
+# timing, by increasing the slice_time_ref parameter from 0 to 0.5. Now the
 # reference for model sampling is not the beginning of the volume
 # acquisition, but the middle of it.
 first_level_model = FirstLevelModel(t_r, hrf_model='spm + derivative',
@@ -321,13 +320,13 @@ plotting.plot_stat_map(
     title='effect of time derivatives after model shift')
 plt.show()
 #########################################################################
-# The time derivatives regressors capture less signal: it's better so.
+# The time derivatives regressors capture less signal: it's better like that.
 
 #########################################################################
 # We can also consider adding the so-called dispersion derivative to
 # capture some mis-specification in the shape of the hrf.
 #
-# This is done by specifying `hrf_model='spm + derivative + dispersion'`
+# This is done by specifying `hrf_model='spm + derivative + dispersion'`.
 #
 first_level_model = FirstLevelModel(t_r,slice_time_ref=0.5,
                                     hrf_model='spm + derivative + dispersion')
@@ -342,13 +341,13 @@ plt.show()
 # can drop that one.
 
 #########################################################################
-# The noise model ar(1) or ols ?
-# ------------------------------
+# The noise model: ar(1) or ols ?
+# -------------------------------
 #
 # So far,we have implicitly used a lag-1 autoregressive model ---aka
 # ar(1)--- for the temporal structure of the noise. An alternative
-# choice is to use an ordinaly least squares model (ols) that assumes
-# no temporal structure (time-independent noise)
+# choice is to use an ordinary least squares model (ols) that assumes
+# no temporal structure (time-independent noise).
 
 first_level_model = FirstLevelModel(t_r, slice_time_ref=0.5,
                                     hrf_model='spm + derivative',
@@ -368,7 +367,7 @@ plt.show()
 # ------------------
 #
 # A problematic feature of fMRI is the presence of uncontrolled
-# confounds in the data, sue to scanner instabilities (spikes) or
+# confounds in the data, due to scanner instabilities (spikes) or
 # physiological phenomena, such as motion, heart and
 # respiration-related blood oxygenation fluctuations.  Side
 # measurements are sometimes acquired to characterize these
@@ -394,11 +393,11 @@ plot_contrast(first_level_model)
 plt.show()
 
 #########################################################################
-#  Note the five additional columns in the design matrix
+#  Note the five additional columns in the design matrix.
 #
-# The effect on activation maps is complex: auditory/visual effects
+# The effect on the activation maps is complex: auditory/visual effects
 # are killed, probably because they were somewhat colinear to the
-# confounds. On the other hand, some of the maps become cleaner (H-V,
+# confounds. On the other hand, some of the maps become cleaner (horizontal-vertical,
 # computation) after this addition.
 
 
@@ -409,7 +408,7 @@ plt.show()
 # Smoothing is a regularization of the model. It has two benefits:
 # decrease the noise level in images, and reduce the discrepancy
 # between individuals. The drawback is that it biases the shape and
-# position of activation.  We simply illustrate here the statistical
+# position of activation. Here, we simply illustrate the statistical
 # gains.  We use a mild smoothing of 5mm full-width at half maximum
 # (fwhm).
 
@@ -422,8 +421,8 @@ plot_contrast(first_level_model)
 plt.show()
 
 #########################################################################
-#  The design is unchanged but the maps are smoother and more contrasted
-# 
+#  The design is unchanged but the maps are smoother and more contrasted.
+#
 
 #########################################################################
 #  Masking
@@ -433,19 +432,19 @@ plt.show()
 # model is run: it is useless to run it outside of the brain.
 #
 # The approach taken by FirstLeveModel is to estimate it from the fMRI
-# data themselves when no mask is explicitly provided.  Since the data
+# data itself when no mask is explicitly provided.  Since the data
 # have been resampled into MNI space, we can use instead a mask of the
 # grey matter in MNI space. The benefit is that it makes voxel-level
-# comparisons easier across subjects and datasets, and removed
+# comparisons easier across subjects and datasets, and removes
 # non-grey matter regions, in which no BOLD signal is expected.  The
-# downside is that the mask may not fit very well these particular
+# downside is that the mask may not fit very well this particular
 # data.
 
 data_mask = first_level_model.masker_.mask_img_
 from nilearn.datasets import fetch_icbm152_brain_gm_mask
 icbm_mask = fetch_icbm152_brain_gm_mask()
 
-from nilearn.plotting import plot_roi 
+from nilearn.plotting import plot_roi
 plt.figure(figsize=(16, 4))
 ax = plt.subplot(121)
 plot_roi(icbm_mask, title='ICBM mask', axes=ax)
@@ -454,15 +453,15 @@ plot_roi(data_mask, title='Data-driven mask', axes=ax)
 plt.show()
 
 #########################################################################
-# For the sake of time saving, we reample icbm_mask to our data
+# For the sake of time saving, we resample icbm_mask to our data.
 # For this we call the resample_to_img routine of Nilearn.
-# We use interpolation = 'nearest' to keep the mask a binary image
+# We use interpolation = 'nearest' to keep the mask as a binary image.
 from nilearn.image import resample_to_img
 resampled_icbm_mask = resample_to_img(icbm_mask, data_mask,
                                       interpolation='nearest')
 
 #########################################################################
-#  Impact on the first-level model
+#  Impact on the first-level model.
 first_level_model = FirstLevelModel(
     t_r, hrf_model='spm + derivative', smoothing_fwhm=5, slice_time_ref=0.5,
     mask_img=resampled_icbm_mask).fit(

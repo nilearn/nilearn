@@ -38,22 +38,22 @@ gray_matter_map_filenames = oasis_dataset.gray_matter_maps
 age = oasis_dataset.ext_vars['age'].astype(float)
 
 ###############################################################################
-# Sex is encoded as 'M' or 'F'. make it a binary variable
+# Sex is encoded as 'M' or 'F'. Hence, we make it a binary variable.
 sex = oasis_dataset.ext_vars['mf'] == b'F'
 
 ###############################################################################
-# Print basic information on the dataset
+# Print basic information on the dataset.
 print('First gray-matter anatomy image (3D) is located at: %s' %
       oasis_dataset.gray_matter_maps[0])  # 3D data
 print('First white-matter anatomy image (3D) is located at: %s' %
       oasis_dataset.white_matter_maps[0])  # 3D data
 
 ###############################################################################
-# Get a mask image: A mask of the  cortex of the ICBM template
+# Get a mask image: A mask of the  cortex of the ICBM template.
 gm_mask = datasets.fetch_icbm152_brain_gm_mask()
 
 ###############################################################################
-# Resample the images, since this mask has a different resolution
+# Resample the images, since this mask has a different resolution.
 from nilearn.image import resample_to_img
 mask_img = resample_to_img(
     gm_mask, gray_matter_map_filenames[0], interpolation='nearest')
@@ -62,7 +62,7 @@ mask_img = resample_to_img(
 # Analyse data
 # ------------
 #
-# First create an adequate design matrix with three columns: 'age',
+# First, we create an adequate design matrix with three columns: 'age',
 # 'sex', 'intercept'.
 import pandas as pd
 import numpy as np
@@ -71,7 +71,7 @@ design_matrix = pd.DataFrame(np.vstack((age, sex, intercept)).T,
                              columns=['age', 'sex', 'intercept'])
 
 #############################################################################
-# Plot the design matrix
+# Let's plot the design matrix.
 from nilearn.reporting import plot_design_matrix
 
 ax = plot_design_matrix(design_matrix)
@@ -79,8 +79,8 @@ ax.set_title('Second level design matrix', fontsize=12)
 ax.set_ylabel('maps')
 
 ##########################################################################
-# Specify and fit the second-level model when loading the data, we
-# smooth a little bit to improve statistical behavior
+# Next, we specify and fit the second-level model when loading the data and also
+# smooth a little bit to improve statistical behavior.
 
 from nilearn.stats.second_level_model import SecondLevelModel
 second_level_model = SecondLevelModel(smoothing_fwhm=2.0, mask_img=mask_img)
@@ -88,22 +88,19 @@ second_level_model.fit(gray_matter_map_filenames,
                        design_matrix=design_matrix)
 
 ##########################################################################
-# Estimate the contrast is very simple. We can just provide the column
+# Estimating the contrast is very simple. We can just provide the column
 # name of the design matrix.
 z_map = second_level_model.compute_contrast(second_level_contrast=[1, 0, 0],
                                             output_type='z_score')
 
 ###########################################################################
 # We threshold the second level contrast at uncorrected p < 0.001 and plot it.
-# First compute the threshold.
+from nilearn import plotting
 from nilearn.stats.thresholding import map_threshold
 _, threshold = map_threshold(
     z_map, alpha=.05, height_control='fdr')
 print('The FDR=.05-corrected threshold is: %.3g' % threshold)
 
-###########################################################################
-# Then plot it
-from nilearn import plotting
 display = plotting.plot_stat_map(
     z_map, threshold=threshold, colorbar=True, display_mode='z',
     cut_coords=[-4, 26],
@@ -111,8 +108,8 @@ display = plotting.plot_stat_map(
 plotting.show()
 
 ###########################################################################
-# Can also study the effect of sex: compute the stat, compute the
-# threshold, plot the map
+# We can also study the effect of sex by computing the contrast, thresholding it
+# and plot the resulting map.
 
 z_map = second_level_model.compute_contrast(second_level_contrast='sex',
                                             output_type='z_score')

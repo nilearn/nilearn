@@ -11,7 +11,7 @@ group which develops the SPM software.
 
 According to SPM documentation, 96 scans were acquired (repetition time TR=7s) in one session. The paradigm consisted of alternating periods of stimulation and rest, lasting 42s each (that is, for 6 scans). The sesssion started with a rest block.
 Auditory stimulation consisted of bi-syllabic words presented binaurally at a
-rate of 60 per minute. The functional data starts at scan number 4, that is the 
+rate of 60 per minute. The functional data starts at scan number 4, that is the
 image file ``fM00223_004``.
 
 The whole brain BOLD/EPI images were acquired on a  2T Siemens
@@ -40,7 +40,7 @@ To run this example, you must launch IPython via ``ipython
 # .. note:: In this tutorial, we load the data using a data downloading
 #           function. To input your own data, you will need to provide
 #           a list of paths to your own files in the ``subject_data`` variable.
-#           These should abide to the Brain Imaging Data Structure (BIDS) 
+#           These should abide to the Brain Imaging Data Structure (BIDS)
 #           organization.
 
 from nilearn.datasets.func import fetch_spm_auditory
@@ -148,7 +148,7 @@ plt.show()
 # potentially weight them-- to study the associated statistics. So in
 # a nutshell, a contrast is a weighted combination of the estimated
 # effects.  Here we can define canonical contrasts that just consider
-# the two condition in isolation ---let's call them "conditions"---
+# the two effects in isolation ---let's call them "conditions"---
 # then a contrast that makes the difference between these conditions.
 
 from numpy import array
@@ -182,9 +182,9 @@ eff_map = fmri_glm.compute_contrast(active_minus_rest,
 
 ###############################################################################
 # In order to get statistical significance, we form a t-statistic, and
-# directly convert is into z-scale. The z-scale means that the values
+# directly convert it into z-scale. The z-scale means that the values
 # are scaled to match a standard Gaussian distribution (mean=0,
-# variance=1), across voxels, if there were now effects in the data.
+# variance=1), across voxels, if there were no effects in the data.
 
 z_map = fmri_glm.compute_contrast(active_minus_rest,
                                   output_type='z_score')
@@ -196,7 +196,7 @@ z_map = fmri_glm.compute_contrast(active_minus_rest,
 # functional image of the series (could be the anatomical image of the
 # subject).  We use arbitrarily a threshold of 3.0 in z-scale. We'll
 # see later how to use corrected thresholds. We will show 3
-# axial views, with display_mode='z' and cut_coords=3
+# axial views, with display_mode='z' and cut_coords=3.
 
 plot_stat_map(z_map, bg_img=mean_img, threshold=3.0,
               display_mode='z', cut_coords=3, black_bg=True,
@@ -225,7 +225,7 @@ plt.show()
 # while they're not active --- tens to hundreds of voxels. A more
 # conservative solution is to control the family wise error rate,
 # i.e. the probability of making only one false detection, say at
-# 5%. For that we use the so-called Bonferroni correction
+# 5%. For that we use the so-called Bonferroni correction.
 
 _, threshold = map_threshold(z_map, alpha=.05, height_control='bonferroni')
 print('Bonferroni-corrected, p<0.05 threshold: %.3f' % threshold)
@@ -237,8 +237,8 @@ plt.show()
 ###############################################################################
 # This is quite conservative indeed!  A popular alternative is to
 # control the expected proportion of
-# false discoveries among detections. This is called the false
-# discovery rate
+# false discoveries among detections. This is called the False
+# discovery rate.
 
 _, threshold = map_threshold(z_map, alpha=.05, height_control='fdr')
 print('False Discovery rate = 0.05 threshold: %.3f' % threshold)
@@ -264,12 +264,12 @@ plt.show()
 
 
 ###############################################################################
-# We can save the effect and zscore maps to the disk
+# We can save the effect and zscore maps to the disk.
 z_map.to_filename(join(outdir, 'active_vs_rest_z_map.nii.gz'))
 eff_map.to_filename(join(outdir, 'active_vs_rest_eff_map.nii.gz'))
 
 ###############################################################################
-# Report the found positions in a table
+# We can furthermore extract and report the found positions in a table.
 
 from nilearn.reporting import get_clusters_table
 table = get_clusters_table(z_map, stat_threshold=threshold,
@@ -277,32 +277,33 @@ table = get_clusters_table(z_map, stat_threshold=threshold,
 print(table)
 
 ###############################################################################
-# the table can be saved for future use
+# This table can be saved for future use.
 
 table.to_csv(join(outdir, 'table.csv'))
 
 ###############################################################################
-# Performing an F-test
+# Performing an F-test.
 #
 # "active vs rest" is a typical t test: condition versus
 # baseline. Another popular type of test is an F test in which one
 # seeks whether a certain combination of conditions (possibly two-,
 # three- or higher-dimensional) explains a significant proportion of
 # the signal.  Here one might for instance test which voxels are well
-# explained by combination of the active and rest condition.
-import numpy as np
-effects_of_interest = np.vstack((conditions['active'], conditions['rest']))
-plot_contrast_matrix(effects_of_interest, design_matrix)
-plt.show()
+# explained by the combination of the active and rest condition.
 
 ###############################################################################
 # Specify the contrast and compute the corresponding map. Actually, the
 # contrast specification is done exactly the same way as for t-
 # contrasts.
 
+import numpy as np
+effects_of_interest = np.vstack((conditions['active'], conditions['rest']))
+plot_contrast_matrix(effects_of_interest, design_matrix)
+plt.show()
+
+
 z_map = fmri_glm.compute_contrast(effects_of_interest,
                                   output_type='z_score')
-plt.show()
 
 ###############################################################################
 # Note that the statistic has been converted to a z-variable, which

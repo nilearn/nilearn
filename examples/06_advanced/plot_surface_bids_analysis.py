@@ -9,11 +9,10 @@ More specifically:
 
 1. Download an fMRI BIDS dataset with two language conditions to contrast.
 2. Project the data to a standard mesh, fsaverage5, aka the Freesurfer template mesh downsampled to about 10k nodes per hemisphere.
-3. Run the first level model objects
-4. Fit a second level model on the fitted first level models. 
+3. Run the first level model objects.
+4. Fit a second level model on the fitted first level models.
 
-Notice that in this case the preprocessed bold images were already
-   normalized to the same MNI space.
+Notice that in this case the preprocessed bold images were already normalized to the same MNI space.
 
 To run this example, you must launch IPython via ``ipython
 --matplotlib`` in a terminal, or use the Jupyter notebook.
@@ -27,24 +26,24 @@ To run this example, you must launch IPython via ``ipython
 ##############################################################################
 # Fetch example BIDS dataset
 # --------------------------
-# We download an simplified BIDS dataset made available for illustrative
+# We download a simplified BIDS dataset made available for illustrative
 # purposes. It contains only the necessary
 # information to run a statistical analysis using Nilearn. The raw data
 # subject folders only contain bold.json and events.tsv files, while the
-# derivatives folder with preprocessed files contain preproc.nii and
+# derivatives folder includes the preprocessed files preproc.nii and the
 # confounds.tsv files.
 from nilearn.datasets.func import fetch_language_localizer_demo_dataset
 data_dir, _ = fetch_language_localizer_demo_dataset()
 
 ##############################################################################
-# Here is the location of the dataset on disk
+# Here is the location of the dataset on disk.
 print(data_dir)
 
 ##############################################################################
 # Obtain automatically FirstLevelModel objects and fit arguments
 # --------------------------------------------------------------
-# From the dataset directory we obtain automatically FirstLevelModel objects
-# with their subject_id filled from the BIDS dataset. Moreover we obtain
+# From the dataset directory we automatically obtain the FirstLevelModel objects
+# with their subject_id filled from the BIDS dataset. Moreover, we obtain
 # for each model a dictionary with run_imgs, events and confounder regressors
 # since in this case a confounds.tsv file is available in the BIDS dataset.
 # To get the first level models we only have to specify the dataset directory
@@ -57,8 +56,8 @@ _, models_run_imgs, models_events, models_confounds = \
         img_filters=[('desc', 'preproc')])
 
 #############################################################################
-# We also need to get the TR information. For that we use a json file
-# of the dataset
+# We also need to get the TR information. For that we use the json sidecar file
+# of the dataset's functional images.
 import os
 json_file = os.path.join(data_dir, 'derivatives', 'sub-01', 'func',
                          'sub-01_task-languagelocalizer_desc-preproc_bold.json')
@@ -67,13 +66,13 @@ with open(json_file, 'r') as f:
     t_r = json.load(f)['RepetitionTime']
 
 #############################################################################
-# Project fMRI data to the surface: First get fsaverage5
+# Project fMRI data to the surface: First get fsaverage5.
 from nilearn.datasets import fetch_surf_fsaverage
 fsaverage = fetch_surf_fsaverage(mesh='fsaverage5')
 
 #########################################################################
 # The projection function simply takes the fMRI data and the mesh.
-# Note that those correspond spatially, are they are bothin MNI space.
+# Note that those correspond spatially, as they are both in MNI space.
 import numpy as np
 from nilearn import surface
 from nilearn.stats.design_matrix import make_first_level_design_matrix
@@ -92,13 +91,13 @@ for (fmri_img, confound, events) in zip(
 
     # Create the design matrix
     #
-    # We specify an hrf model containing Glover model and its time derivative
-    # the drift model is implicitly a cosine basis with period cutoff 128s.
+    # We specify an hrf model containing Glover model and its time derivative.
+    # The drift model is implicitly a cosine basis with period cutoff 128s.
     design_matrix = make_first_level_design_matrix(
         frame_times, events=events[0], hrf_model='glover + derivative',
         add_regs=confound[0])
 
-    # contrast_specification
+    # Contrast specification
     contrast_values = (design_matrix.columns == 'language') * 1.0 -\
                       (design_matrix.columns == 'string')
 
@@ -110,11 +109,11 @@ for (fmri_img, confound, events) in zip(
     labels, estimates = run_glm(texture.T, design_matrix.values)
     contrast = compute_contrast(labels, estimates, contrast_values,
                                 contrast_type='t')
-    # we present the Z-transform of the t map
+    # We present the Z-transform of the t map.
     z_score = contrast.z_score()
     z_scores_right.append(z_score)
 
-    # Do the left hemipshere exactly in the same way
+    # Do the left hemipshere exactly in the same way.
     texture = surface.vol_to_surf(fmri_img, fsaverage.pial_left)
     labels, estimates = run_glm(texture.T, design_matrix.values)
     contrast = compute_contrast(labels, estimates, contrast_values,
@@ -124,7 +123,7 @@ for (fmri_img, confound, events) in zip(
 ############################################################################
 # Individual activation maps have been accumulated in the z_score_left
 # and az_scores_right lists respectively. We can now use them in a
-# group study (one -sample study)
+# group study (one-sample study).
 
 ############################################################################
 # Group study
@@ -132,26 +131,25 @@ for (fmri_img, confound, events) in zip(
 #
 # Prepare figure for concurrent plot of individual maps
 # compute population-level maps for left and right hemisphere
-# we directetly do that on the values arrays 
+# We directly do that on the value arrays.
 from scipy.stats import ttest_1samp, norm
 t_left, pval_left = ttest_1samp(np.array(z_scores_left), 0)
 t_right, pval_right = ttest_1samp(np.array(z_scores_right), 0)
 
 ############################################################################
-# What we have so far are p-values: we convert them to z-values for plotting
+# What we have so far are p-values: we convert them to z-values for plotting.
 z_val_left = norm.isf(pval_left)
 z_val_right = norm.isf(pval_right)
 
 ############################################################################
-# Plot the resulting maps.
-# Left hemipshere
+# Plot the resulting maps, at first on the left hemipshere.
 from nilearn import plotting
 plotting.plot_surf_stat_map(
     fsaverage.infl_left, z_val_left, hemi='left',
     title="language-string, left hemisphere", colorbar=True,
     threshold=3., bg_map=fsaverage.sulc_left)
 ############################################################################
-# Right hemisphere
+# Next, on the right hemisphere.
 plotting.plot_surf_stat_map(
     fsaverage.infl_right, z_val_left, hemi='right',
     title="language-string, right hemisphere", colorbar=True,
