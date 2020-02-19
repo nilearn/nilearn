@@ -35,6 +35,13 @@ from nilearn.stats.contrasts import (
     compute_contrast,
     compute_fixed_effects,
 )
+from nilearn.stats.design_matrix import (
+    make_first_level_design_matrix,
+    make_second_level_design_matrix,
+)
 
 __all__ = ['compute_contrast',
-           'compute_fixed_effects']
+           'compute_fixed_effects',
+           'make_first_level_design_matrix',
+           'make_second_level_design_matrix',
+           ]

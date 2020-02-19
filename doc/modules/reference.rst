@@ -377,8 +377,8 @@ uses.
 ==================================================
 
 .. automodule:: nilearn.stats
-   :members:
-   :inherited-members:
+   :no-members:
+   :no-inherited-members:
 
 .. No relevant user manual section yet.
 
@@ -392,6 +392,8 @@ uses.
 
    compute_contrast
    compute_fixed_effects
+   make_first_level_design_matrix
+   make_second_level_design_matrix
 
 :mod:`nilearn.surface`: Manipulating surface data
 ===================================================
