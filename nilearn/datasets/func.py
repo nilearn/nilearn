@@ -250,6 +250,9 @@ def fetch_nyu_rest(n_subjects=None, sessions=[1], data_dir=None, resume=True,
                    verbose=1):
     """Download and loads the NYU resting-state test-retest dataset.
 
+    NOTE: This function is deprecated and will be removed in a future 
+    release, due to lack of preprocessing.
+
     Parameters
     ----------
     n_subjects: int, optional
