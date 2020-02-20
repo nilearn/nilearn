@@ -18,7 +18,7 @@ from sklearn.base import RegressorMixin
 from sklearn.linear_model import LogisticRegression
 from sklearn.linear_model.base import LinearModel
 from sklearn.linear_model.ridge import RidgeCV, RidgeClassifierCV, _BaseRidgeCV
-from sklearn.model_selection import ParameterGrid, check_cv
+from sklearn.model_selection import ParameterGrid, check_cv, LeaveOneGroupOut
 from sklearn.preprocessing import LabelBinarizer
 from sklearn.svm import SVR, LinearSVC
 from sklearn.svm.bounds import l1_min_c
@@ -410,12 +410,22 @@ class _BaseDecoder(LinearModel, RegressorMixin, CacheMixin):
 
         # Setup scorer
         scorer = check_scoring(self.estimator, self.scoring)
-
-        # Setup cross-validation object
-        if cv == int or cv is None and groups is not None:
-            self.cv_ = list(
-                check_cv(self.cv, y=y,
-                         classifier=self.is_classification).split(X, y, groups=groups))
+        
+        # Setup cross-validation object. Default object is StratifiedKFold when
+        # groups parameter is None. If groups is specified but self.cv is not
+        # set to custom CV splitter, default object is LeaveOneGroupOut.
+        if groups is None:
+            cv_object = check_cv(
+                self.cv, y=y, classifier=self.is_classification)
+        else:
+            warnings.warn(
+                'groups parameter is specified but '
+                'cv parameter is not set to custom CV splitter. '
+                'Using default object LeaveOneGroupOut().'
+            )
+            cv_object = LeaveOneGroupOut()
+            
+        self.cv_ = list(cv_object.split(X, y, groups=groups))
 
         # Define the number problems to solve. In case of classification this
         # number corresponds to the number of binary problems to solve

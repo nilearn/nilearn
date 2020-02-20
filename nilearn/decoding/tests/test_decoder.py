@@ -285,3 +285,24 @@ def test_decoder_apply_mask():
     assert model.masker_.high_pass == high_pass
     assert model.masker_.low_pass == low_pass
     assert model.masker_.smoothing_fwhm == smoothing_fwhm
+
+    
+def test_decoder_split_cv():
+    X, y = make_classification(n_samples=200, n_features=125, scale=3.0,
+                               n_informative=5, n_classes=4, random_state=42)
+    X, mask = to_niimgs(X, [5, 5, 5])
+    groups = rand.binomial(2, 0.3, size=len(y))
+    model = Decoder(mask=NiftiMasker())
+
+    # Check whether decoder raised warning when groups is set to specific
+    # value but CV Splitter is not set
+    expected_warning = (
+        'groups parameter is specified but '
+        'cv parameter is not set to custom CV splitter. '
+        'Using default object LeaveOneGroupOut().'
+    )
+    
+    with warnings.catch_warnings(record=True) as raised_warnings:
+        model.fit(X, y, groups=groups)
+    warning_messages = [str(warning.message) for warning in raised_warnings]
+    assert expected_warning in warning_messages
