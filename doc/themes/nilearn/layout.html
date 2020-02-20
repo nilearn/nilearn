@@ -47,33 +47,33 @@
 function updateTopMenuPosition(height, width) {
     if($(window).scrollTop() > height && $(window).outerWidth() > 1024) {
         //begin to scroll
-        $('.related-wrapper').css("z-index", 1000)
-        $('.related-wrapper').css("position", "sticky")
-        $('.related-wrapper').css("top", 0)
+        $('.related-wrapper').css("z-index", 1000);
+        $('.related-wrapper').css("position", "sticky");
+        $('.related-wrapper').css("top", 0);
         $('.related-wrapper').css("width", width)
     } else {
         //lock it back into place
-        $('.related-wrapper').css("position", "relative")
+        $('.related-wrapper').css("position", "relative");
         $('.related-wrapper').css("top", 0)
     }
 }
 
 $(function() {
-    var banner_height = $('#logo-banner').outerHeight()
-    var banner_width = $('#logo-banner').outerWidth()
-    var width = $('.related-wrapper').css("height", $('.related').outerHeight())
+    var banner_height = $('#logo-banner').outerHeight();
+    var banner_width = $('#logo-banner').outerWidth();
+    var width = $('.related-wrapper').css("height", $('.related').outerHeight());
 
-    updateTopMenuPosition(banner_height, width)
+    updateTopMenuPosition(banner_height, width);
 
     $(window).scroll(function(event) {
         updateTopMenuPosition(banner_height, width)
     });
 
     $(window).resize(function(event) {
-        var banner_width = $('#logo-banner').outerWidth()
-        var menu_height = $('.related').outerHeight()
-        $('.related').css("width", banner_width)
-        $('.related-wrapper').css("height", menu_height)
+        var banner_width = $('#logo-banner').outerWidth();
+        var menu_height = $('.related').outerHeight();
+        $('.related').css("width", banner_width);
+        $('.related-wrapper').css("height", menu_height);
         updateTopMenuPosition(banner_height, width)
     })
 });
@@ -121,62 +121,62 @@ $(function() {
 {% else %}
 <script type="text/javascript">
 function updateSideBarPosition(top, offset, sections) {
-    var pos = $(window).scrollTop()
+    var pos = $(window).scrollTop();
     // Lock the table of content to a fixed position once we scroll enough
-    var topShift = 2 * offset
+    var topShift = 2 * offset;
     if(pos > top + topShift + 1) {
         // begin to scroll with sticky menu bar
-        var topShift = -topShift + 1
+        var topShift = -topShift + 1;
         if ($(window).outerWidth() < 1024) {
             // compensate top menu that disappears
             topShift -= offset + 1
         }
-        $('.sphinxsidebarwrapper').css("position", "fixed")
+        $('.sphinxsidebarwrapper').css("position", "fixed");
         $('.sphinxsidebarwrapper').css("top", topShift)
     }
     else {
         //lock it back into place
-        $('.sphinxsidebarwrapper').css("position", "relative")
+        $('.sphinxsidebarwrapper').css("position", "relative");
         $('.sphinxsidebarwrapper').css("top",0)
     }
 
     // Highlight the current section
-    i = 0
-    current_section = 0
-    $('a.internal').removeClass('active')
+    i = 0;
+    current_section = 0;
+    $('a.internal').removeClass('active');
     for(i in sections) {
         if(sections[i] > pos) {
             break
-        };
+        }
         if($('a.internal[href$="' + i + '"]').is(':visible')){
             current_section = i
-        };
+        }
     }
-    $('a.internal[href$="' + current_section + '"]').addClass('active')
+    $('a.internal[href$="' + current_section + '"]').addClass('active');
     $('a.internal[href$="' + current_section + '"]').parent().addClass('active')
 }
 
 $(function () {
     // Lock the table of content to a fixed position once we scroll enough
-    var tocOffset = $('.related-wrapper').outerHeight()
-    var marginTop = parseFloat($('.sphinxsidebarwrapper').css('margin-top').replace(/auto/, 0))
-    var top = $('.sphinxsidebarwrapper').offset().top - marginTop
-    sections = {}
-    url = document.URL.replace(/#.*$/, "")
+    var tocOffset = $('.related-wrapper').outerHeight();
+    var marginTop = parseFloat($('.sphinxsidebarwrapper').css('margin-top').replace(/auto/, 0));
+    var top = $('.sphinxsidebarwrapper').offset().top - marginTop;
+    sections = {};
+    url = document.URL.replace(/#.*$/, "");
 
     // Grab positions of our sections
     $('.headerlink').each(function(){
         sections[this.href.replace(url, '')] = $(this).offset().top - 50
     });
 
-    updateSideBarPosition(top, tocOffset, sections)
+    updateSideBarPosition(top, tocOffset, sections);
 
     $(window).scroll(function(event) {
         updateSideBarPosition(top, tocOffset, sections)
     });
 
     $(window).resize(function(event) {
-        tocOffset = $('.related-wrapper').outerHeight()
+        tocOffset = $('.related-wrapper').outerHeight();
         updateSideBarPosition(top, tocOffset, sections)
     });
 });
@@ -261,6 +261,10 @@ $(function () {
 
 <h4> News </h4>
   <ul>
+      <li><p><strong>January 2020</strong>: Nilearn 0.6.1 released
+      </p></li>
+      <li><p><strong>December 2019</strong>: Nilearn 0.6.0 released
+      </p></li>
       <li><p> <strong>April 17th 2019</strong>: Nilearn 0.5.2 released
       </p></li>
       <li><p> <strong>April 12th 2019</strong>: Nilearn 0.5.1 released

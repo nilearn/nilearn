@@ -1,5 +1,4 @@
-nose
-pytest
+pytest>=3.9
 pytest-cov
 coverage
 scipy
@@ -8,7 +7,5 @@ joblib
 pandas
 matplotlib
 nibabel
-pytest
-pytest-cov
 numpy
 cython

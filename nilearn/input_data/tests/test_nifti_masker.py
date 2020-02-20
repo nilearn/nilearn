@@ -13,15 +13,15 @@ from tempfile import mkdtemp
 
 import nibabel
 import numpy as np
+import pytest
+
 from nibabel import Nifti1Image
-from nose.tools import assert_true, assert_false, assert_raises
-from numpy.testing import assert_array_equal, assert_equal
+from numpy.testing import assert_array_equal
 
 from nilearn._utils import testing
 from nilearn._utils import data_gen
 from nilearn._utils.class_inspect import get_params
 from nilearn._utils.exceptions import DimensionError
-from nilearn._utils.testing import assert_raises_regex
 from nilearn.image import index_img
 from nilearn.input_data.nifti_masker import NiftiMasker, filter_and_mask
 from nilearn.image import get_data
@@ -43,9 +43,8 @@ def test_auto_mask():
 
     # check exception when transform() called without prior fit()
     masker2 = NiftiMasker(mask_img=img)
-    testing.assert_raises_regex(
-        ValueError,
-        'has not been fitted. ', masker2.transform, img)
+    with pytest.raises(ValueError, match='has not been fitted. '):
+        masker2.transform(img)
 
 
 def test_detrend():
@@ -58,7 +57,7 @@ def test_detrend():
     masker = NiftiMasker(mask_img=mask_img, detrend=True)
     # Smoke test the fit
     X = masker.fit_transform(img)
-    assert_true(np.any(X != 0))
+    assert np.any(X != 0)
 
 
 def test_resample():
@@ -71,7 +70,7 @@ def test_resample():
     masker = NiftiMasker(mask_img=mask_img, target_affine=2 * np.eye(3))
     # Smoke test the fit
     X = masker.fit_transform(img)
-    assert_true(np.any(X != 0))
+    assert np.any(X != 0)
 
 
 def test_with_files():
@@ -99,13 +98,13 @@ def test_nan():
     masker = NiftiMasker(mask_args=dict(opening=0))
     masker.fit(img)
     mask = get_data(masker.mask_img_)
-    assert_true(mask[1:-1, 1:-1, 1:-1].all())
-    assert_false(mask[0].any())
-    assert_false(mask[:, 0].any())
-    assert_false(mask[:, :, 0].any())
-    assert_false(mask[-1].any())
-    assert_false(mask[:, -1].any())
-    assert_false(mask[:, :, -1].any())
+    assert mask[1:-1, 1:-1, 1:-1].all()
+    assert not mask[0].any()
+    assert not mask[:, 0].any()
+    assert not mask[:, :, 0].any()
+    assert not mask[-1].any()
+    assert not mask[:, -1].any()
+    assert not mask[:, :, -1].any()
 
 
 def test_matrix_orientation():
@@ -140,7 +139,7 @@ def test_mask_3d():
     with testing.write_tmp_imgs(data_img, create_files=True)\
             as filename:
         masker = NiftiMasker(mask_img=filename)
-        assert_raises(TypeError, masker.fit)
+        pytest.raises(TypeError, masker.fit)
 
 
 def test_mask_4d():
@@ -209,12 +208,12 @@ def test_5d():
 
     masker = NiftiMasker(mask_img=mask_img)
     masker.fit()
-    testing.assert_raises_regex(
-        DimensionError,
-        "Input data has incompatible dimensionality: "
-        "Expected dimension is 4D and you provided "
-        "a list of 4D images \(5D\).",
-        masker.transform, data_5d)
+    with pytest.raises(
+            DimensionError,
+            match="Input data has incompatible dimensionality: "
+                  "Expected dimension is 4D and you provided "
+                  "a list of 4D images \(5D\)."):
+        masker.transform(data_5d)
 
 
 def test_sessions():
@@ -230,7 +229,7 @@ def test_sessions():
     data[20, 20, 20] = 1
     data_img = Nifti1Image(data, np.eye(4))
     masker = NiftiMasker(sessions=np.ones(3, dtype=np.int))
-    assert_raises(ValueError, masker.fit_transform, data_img)
+    pytest.raises(ValueError, masker.fit_transform, data_img)
 
 
 def test_joblib_cache():
@@ -244,7 +243,7 @@ def test_joblib_cache():
         masker.fit()
         mask_hash = hash(masker.mask_img_)
         get_data(masker.mask_img_)
-        assert_true(mask_hash == hash(masker.mask_img_))
+        assert mask_hash == hash(masker.mask_img_)
 
         # Test a tricky issue with memmapped joblib.memory that makes
         # imgs return by inverse_transform impossible to save
@@ -266,9 +265,10 @@ def test_joblib_cache():
 def test_mask_init_errors():
     # Errors that are caught in init
     mask = NiftiMasker(mask_strategy='oops')
-    testing.assert_raises_regex(
-        ValueError, "Unknown value of mask_strategy 'oops'",
-        mask.fit)
+    with pytest.raises(
+            ValueError,
+            match="Unknown value of mask_strategy 'oops'"):
+        mask.fit()
 
 
 def test_compute_epi_mask():
@@ -310,8 +310,8 @@ def test_compute_epi_mask():
     masker4.fit(mean_image2)
     mask4 = masker4.mask_img_
 
-    assert_false(np.allclose(get_data(mask1),
-                             get_data(mask4)[3:12, 3:12]))
+    assert not np.allclose(get_data(mask1),
+                             get_data(mask4)[3:12, 3:12])
 
 
 def test_compute_gray_matter_mask():
@@ -349,12 +349,12 @@ def test_filter_and_mask_error():
     masker = NiftiMasker()
     params = get_params(NiftiMasker, masker)
 
-    assert_raises_regex(DimensionError,
-                        "Input data has incompatible dimensionality: "
-                        "Expected dimension is 3D and you provided "
-                        "a 4D image.",
-                        filter_and_mask,
-                        data_img, mask_img, params)
+    with pytest.raises(
+            DimensionError,
+            match="Input data has incompatible dimensionality: "
+                  "Expected dimension is 3D and you provided "
+                  "a 4D image."):
+        filter_and_mask(data_img, mask_img, params)
 
 
 def test_filter_and_mask():
@@ -369,7 +369,7 @@ def test_filter_and_mask():
 
     # Test return_affine = False
     data = filter_and_mask(data_img, mask_img, params)
-    assert_equal(data.shape, (5, 24000))
+    assert data.shape == (5, 24000)
 
 
 def test_dtype():

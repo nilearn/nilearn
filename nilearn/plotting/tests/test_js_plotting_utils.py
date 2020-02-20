@@ -6,12 +6,11 @@ import tempfile
 
 import numpy as np
 import matplotlib
+import pytest
 
 from nilearn.plotting import js_plotting_utils
 from nilearn import surface
 from nilearn.datasets import fetch_surf_fsaverage
-
-from numpy.testing import assert_warns, assert_equal
 
 try:
     from lxml import etree
@@ -180,8 +179,9 @@ def test_colorscale_asymmetric_cmap_vmax():
 def test_colorscale_asymmetric_cmap_negative_values():
     cmap = 'jet'
     values = np.linspace(-15, 4)
-    assert_warns(UserWarning, js_plotting_utils.colorscale, cmap,
-                 values, symmetric_cmap=False)
+    with pytest.warns(UserWarning):
+        js_plotting_utils.colorscale(cmap,
+                                     values, symmetric_cmap=False)
 
     colors = js_plotting_utils.colorscale(cmap, values, vmax=7,
                                           symmetric_cmap=False)
@@ -213,7 +213,8 @@ def test_mesh_to_plotly():
             js_plotting_utils.decode(plotly[key], '<i4'), triangles[:, i])
 
 
-def check_html(html, check_selects=True, plot_div_id='surface-plot'):
+def check_html(html, check_selects=True, plot_div_id='surface-plot',
+               title=None):
     fd, tmpfile = tempfile.mkstemp()
     try:
         os.close(fd)
@@ -223,7 +224,7 @@ def check_html(html, check_selects=True, plot_div_id='surface-plot'):
         # If present, replace Windows line-end '\r\n' with Unix's '\n'
         saved = saved.replace('\r\n', '\n')
         standalone = html.get_standalone().replace('\r\n', '\n')
-        assert_equal(saved, standalone)
+        assert saved == standalone
     finally:
         os.remove(tmpfile)
     assert "INSERT" not in html.html
@@ -237,6 +238,8 @@ def check_html(html, check_selects=True, plot_div_id='surface-plot'):
     assert (html.width, html.height) == (3, 17)
     assert 'width="3" height="17"' in html.get_iframe()
     assert 'width="33" height="37"' in html.get_iframe(33, 37)
+    if title is not None:
+        assert "<title>{}</title>".format(title) in str(html)
     if not LXML_INSTALLED:
         return
     root = etree.HTML(html.html.encode('utf-8'),

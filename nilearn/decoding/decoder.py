@@ -131,7 +131,7 @@ def _check_estimator(estimator):
     return estimator
 
 
-def _parallel_fit(estimator, X, y, train, test, param_grid, is_classification, 
+def _parallel_fit(estimator, X, y, train, test, param_grid, is_classification,
                   scorer, mask_img, class_index, screening_percentile=100):
     """Find the best estimator for a fold within a job.
     This function tries several parameters for the estimator for the train and
@@ -410,8 +410,12 @@ class _BaseDecoder(LinearModel, RegressorMixin, CacheMixin):
 
         # Setup scorer
         scorer = check_scoring(self.estimator, self.scoring)
-        self.cv_ = list(check_cv(self.cv, y=y,
-            classifier=self.is_classification).split(X, y, groups=groups))
+
+        # Setup cross-validation object
+        if cv == int or cv is None and groups is not None:
+            self.cv_ = list(
+                check_cv(self.cv, y=y,
+                         classifier=self.is_classification).split(X, y, groups=groups))
 
         # Define the number problems to solve. In case of classification this
         # number corresponds to the number of binary problems to solve

@@ -10,13 +10,13 @@ import sys
 # Make sure that we don't get DISPLAY problems when running without X on
 # unices
 def _set_mpl_backend():
-    # We are doing local imports here to avoid poluting our namespace
+    # We are doing local imports here to avoid polluting our namespace
     try:
         import matplotlib
     except ImportError:
-        from .._utils.testing import skip_if_running_nose
+        from .._utils.testing import skip_if_running_tests
         # No need to fail when running tests
-        skip_if_running_nose('matplotlib not installed')
+        skip_if_running_tests('matplotlib not installed')
         raise
     else:
         from ..version import (_import_module_with_version_check,

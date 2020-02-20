@@ -23,9 +23,7 @@ be given by a call to fit_transform).
 #####################################################################
 # Load movie watching dataset
 from nilearn import datasets
-# Here we use only single subject to get faster-running code. For better
-# results, simply increase this number
-# XXX: must get the code to run for more than 1 subject
+# Here we use only single subject to get faster-running code.
 dataset = datasets.fetch_development_fmri(n_subjects=1)
 func_filename = dataset.func[0]
 
@@ -44,10 +42,6 @@ from nilearn.input_data import NiftiMasker
 masker = NiftiMasker(smoothing_fwhm=8, memory='nilearn_cache', memory_level=1,
                      mask_strategy='epi', standardize=True)
 data_masked = masker.fit_transform(func_filename)
-
-# Concatenate all the subjects
-# fmri_data = np.concatenate(data_masked, axis=1)
-fmri_data = data_masked
 
 
 #####################################################################
