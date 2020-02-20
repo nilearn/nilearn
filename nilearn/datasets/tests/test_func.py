@@ -134,7 +134,8 @@ def test_fetch_haxby(tmp_path, request_mocker):
 
 def test_fetch_nyu_rest(tmp_path, request_mocker):
     # First session, all subjects
-    nyu = func.fetch_nyu_rest(data_dir=str(tmp_path), verbose=0)
+    with pytest.warns(np.VisibleDeprecationWarning):
+        nyu = func.fetch_nyu_rest(data_dir=str(tmp_path), verbose=0)
     assert len(tst.mock_url_request.urls) == 2
     assert len(nyu.func) == 25
     assert len(nyu.anat_anon) == 25
@@ -143,8 +144,10 @@ def test_fetch_nyu_rest(tmp_path, request_mocker):
 
     # All sessions, 12 subjects
     tst.mock_url_request.reset()
-    nyu = func.fetch_nyu_rest(data_dir=str(tmp_path), sessions=[1, 2, 3],
-                              n_subjects=12, verbose=0)
+    with pytest.warns(np.VisibleDeprecationWarning):
+        nyu = func.fetch_nyu_rest(data_dir=str(tmp_path), 
+                                  sessions=[1, 2, 3],
+                                  n_subjects=12, verbose=0)
     # Session 1 has already been downloaded
     assert len(tst.mock_url_request.urls) == 2
     assert len(nyu.func) == 36
