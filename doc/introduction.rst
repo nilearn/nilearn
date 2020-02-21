@@ -275,7 +275,7 @@ To loop over each individual volume of a 4D image, use :func:`image.iter_img`::
       * To perform a for loop in Python, you can use the "range" function
 
       * The solution can be found :ref:`here
-        <sphx_glr_auto_examples_05_manipulating_images_plot_smooth_mean_image.py>`
+        <sphx_glr_auto_examples_06_manipulating_images_plot_smooth_mean_image.py>`
 
 |
 

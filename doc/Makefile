@@ -46,8 +46,8 @@ sym_links:
 	-cd ../examples/02_decoding/ && ln -sf ../nilearn_cache
 	-cd ../examples/03_connectivity/ && ln -sf ../nilearn_cache
 	-cd ../examples/04_glm/ && ln -sf ../nilearn_cache
-	-cd ../examples/05_manipulating_images/ && ln -sf ../nilearn_cache
-	-cd ../examples/06_advanced/ && ln -sf ../nilearn_cache
+	-cd ../examples/06_manipulating_images/ && ln -sf ../nilearn_cache
+	-cd ../examples/07_advanced/ && ln -sf ../nilearn_cache
 
 force_html: force html
 
