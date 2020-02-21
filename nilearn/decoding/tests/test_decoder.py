@@ -306,9 +306,6 @@ def test_decoder_split_cv():
         'cv parameter is not set to custom CV splitter. '
         'Using default object LeaveOneGroupOut().'
     )
-    
-    with warnings.catch_warnings(record=True) as raised_warnings:
+    with pytest.warns(UserWarning, match=expected_warning):
         model = Decoder(mask=NiftiMasker())
         model.fit(X, y, groups=groups)
-    warning_messages = [str(warning.message) for warning in raised_warnings]
-    assert expected_warning in warning_messages
