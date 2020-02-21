@@ -81,7 +81,7 @@ plotting.show()
 # Computing the (corrected) p-values with parametric test to compare with
 # non parametric test
 from nilearn.image import math_img
-from nilearn.stats.utils import get_data
+from nilearn.image import get_data
 
 p_val = model.compute_contrast('fluency', output_type='p_value')
 n_voxels = np.sum(get_data(model.masker_.mask_img_))
