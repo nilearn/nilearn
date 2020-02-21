@@ -2156,7 +2156,7 @@ def fetch_surf_tva_localizer(data_dir=None, verbose=1, resume=True):
         Dictionary-like object, the interest attributes are :
          - 'func_left': paths to Gifti files containing single-trial beta maps that have
                         been estimated using a GLM and projected onto the cortical surface
-                        time series left hemisphere.
+                       and projected onto the left hemisphere cortical surface.
          - 'phenotypic': array containing the labels corresponding to each trial.
          - 'description': data description of the release and references.
 
