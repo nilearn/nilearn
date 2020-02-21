@@ -292,8 +292,13 @@ def test_decoder_split_cv():
                                n_informative=5, n_classes=4, random_state=42)
     X, mask = to_niimgs(X, [5, 5, 5])
     groups = rand.binomial(2, 0.3, size=len(y))
-    model = Decoder(mask=NiftiMasker())
 
+
+    # Check whether ValueError is raised when cv is not set correctly
+    for cv in ['abc', LinearSVC()]:
+        model = Decoder(mask=NiftiMasker(), cv=cv)
+        pytest.raises(ValueError, model.fit, X, y)
+    
     # Check whether decoder raised warning when groups is set to specific
     # value but CV Splitter is not set
     expected_warning = (
@@ -303,6 +308,7 @@ def test_decoder_split_cv():
     )
     
     with warnings.catch_warnings(record=True) as raised_warnings:
+        model = Decoder(mask=NiftiMasker())
         model.fit(X, y, groups=groups)
     warning_messages = [str(warning.message) for warning in raised_warnings]
     assert expected_warning in warning_messages

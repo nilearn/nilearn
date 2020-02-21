@@ -411,19 +411,20 @@ class _BaseDecoder(LinearModel, RegressorMixin, CacheMixin):
         # Setup scorer
         scorer = check_scoring(self.estimator, self.scoring)
         
-        # Setup cross-validation object. Default object is StratifiedKFold when
-        # groups parameter is None. If groups is specified but self.cv is not
-        # set to custom CV splitter, default object is LeaveOneGroupOut.
-        if groups is None:
-            cv_object = check_cv(
-                self.cv, y=y, classifier=self.is_classification)
-        else:
+        # Setup cross-validation object. Default is StratifiedKFold when groups
+        # is None. If groups is specified but self.cv is not set to custom CV
+        # splitter, default is LeaveOneGroupOut. If self.cv is manually set to a
+        # CV splitter object do check_cv regardless of groups parameter.
+        cv = self.cv
+        if (isinstance(cv, int) or cv is None) and groups is not None:
             warnings.warn(
                 'groups parameter is specified but '
                 'cv parameter is not set to custom CV splitter. '
                 'Using default object LeaveOneGroupOut().'
             )
             cv_object = LeaveOneGroupOut()
+        else:
+            cv_object = check_cv(cv, y=y, classifier=self.is_classification)
             
         self.cv_ = list(cv_object.split(X, y, groups=groups))
 
