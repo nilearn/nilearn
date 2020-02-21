@@ -183,7 +183,7 @@ print(conditions.shape)
 
 ###########################################################################
 # Decoding with Support Vector Machine 
-# ---------------------
+# --------------------------------------
 #
 # As a decoder, we use a Support Vector Classification, with a linear kernel. We
 # first create it using by using :class:`nilearn.decoding.Decoder`.
