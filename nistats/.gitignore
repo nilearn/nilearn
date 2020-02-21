@@ -13,7 +13,7 @@ doc/.nojekyll
 doc/building_blocks/generated/
 doc/_build/
 doc/auto_examples/
-doc/modules/generated/
+../doc/glm/modules/generated/
 doc/datasets/generated/
 doc/generated/
 pip-log.txt

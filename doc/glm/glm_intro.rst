@@ -1,25 +1,12 @@
-=====================================
-Introduction: Nistats in a nutshell
-=====================================
+.. _glm_intro:
+
+=======================================================
+An introduction to fMRI statistical analysis using GLMs
+=======================================================
 
 .. contents:: **Contents**
     :local:
     :depth: 1
-
-
-What is Nistats?
-================
-
-.. topic:: **What is Nistats?**
-
-   Nistats is a Python module to perform voxel-wise analyses of functional magnetic resonance images (fMRI) using linear models. It provides functions to create design matrices, at the subject and group levels, to estimate them from images series and to compute statistical maps (contrasts). It allows to perform the same statistical analyses as `SPM`_ or `FSL`_ (but it does not provide tools for preprocessing stages (realignment, spatial normalization, etc.); for this, see `NiPype`_.
-
-.. _SPM: https://www.fil.ion.ucl.ac.uk/spm/
-
-.. _FSL: https://www.fmrib.ox.ac.uk/fsl
-
-.. _NiPype: https://nipype.readthedocs.io/en/latest/
-
 
 
 A primer on BOLD-fMRI data analysis
@@ -44,14 +31,14 @@ fMRI data modelling
 One way to analyze times series consists in comparing them to a *model* built from our knowledge of the events that occurred during the functional session. Events can correspond to actions of the participant (e.g. button presses), presentations of sensory stimui (e.g. sound, images), or hypothesized internal processes (e.g. memorization of a stimulus), ...
 
 
-.. figure:: images/stimulation-time-diagram.png
+.. figure:: ../images/stimulation-time-diagram.png
 
 
 One expects that a brain region involved in the processing of a certain type of event (e.g. the auditory cortex for sounds), would show a time course of activation that correlates with the time-diagram of these events. If the fMRI signal directly showed neural activity and did not contain any noise, we could just look at it in various voxels and detect those that conform to the time-diagrams.
 
 Yet, we know, from previous measurements, that the BOLD signal does not follow the exact time course of stimulus processing and the underlying neural activity. The BOLD response reflects changes in blood flow and concentrations in oxy-deoxy haemoglobin, all together forming a `haemodynamic response`_ which is sluggish and long-lasting, as can be seen on the following figure showing the response to an impulsive event (for example, an auditory click played to the participants).
 
-.. figure:: images/spm_iHRF.png
+.. figure:: ../images/spm_iHRF.png
 
 From the knowledge of the impulse haemodynamic response, we can build a predicted time course from the time-diagram of a type of event (The operation is known as  `convolution`_. Simply stated, how the shape of one function's plot would affect the shape of another function's plot. **Remark:** it assumes linearity of the BOLD response, an assumption that may be wrong in some scenarios). It is this predicted time course, also known as a *predictor*, that is compared to the actual fMRI signal. If the correlation between the predictor and the signal is higher than expected by chance, the voxel is said to exhibit a significant response to the event type.
 
@@ -60,14 +47,14 @@ From the knowledge of the impulse haemodynamic response, we can build a predicte
 .. _convolution: https://en.wikipedia.org/wiki/Convolution
 
 
-.. figure:: images/time-course-and-model-fit-in-a-voxel.png
+.. figure:: ../images/time-course-and-model-fit-in-a-voxel.png
 
 Correlations are computed separately at each voxel and a correlation map can be produced displaying  the values of correlations (real numbers between -1 and +1) at each voxel. Generally, however, the maps presented in the papers report the significance of the correlations at each voxel, in forms of T, Z or p values for the null hypothesis test of no correlation (see below). For example, the following figure displays a Z-map showing voxels responding to auditory events. Large (positive or negative) Z values are unlikely to be due to chance alone. The map is tresholded so that only voxels with a p-value less than 1/1000 are coloured. 
 
 .. note::
     In this approach, hypothesis tests are conducted in parallel at many voxels, increasing the liklelihood of False Positives. This is known as the Problem of `Multiple Comparisons`_. Some common strategies for dealing with this are discussed later in this page. This issue can also be addressed in Nistats by using random permutations tests.
 
-.. figure:: images/example-spmZ_map.png
+.. figure:: ../images/example-spmZ_map.png
 
 
 In most fMRI experiments, several predictors are needed to fully describe the  events occuring during the session -- for example, the experimenter may want to distinguish brain activities linked to the perception of auditory stimuli or to button presses. To find the effect specific to each predictor, a multiple  `linear regression`_ approach is typically used: all predictors are entered as columns in a *design-matrix* and the software finds the linear combination of these columns that best fits the signal.  The weights assigned to each predictor by this linear combination are estimates of the contribution of this predictor to the response in the voxel. One can plot this using effect size maps or, maps showing their statistical significance (how unlikely they are under the null hypothesis of no effect).
@@ -98,7 +85,7 @@ However, if we assume that the noise is Gaussian, and that the model is correctl
 
 With this we can do statistical inference: Given a pre-defined error rate :math:`\alpha`, we compare the observed `t` to the :math:`(1-\alpha)` quantile of the Student distribution with `dof` degrees of freedom. If t is greater than this number, we can reject the null hypothesis with a *p-value* :math:`\alpha`, meaning: if there were no effect, the probability of oberving an effect as large as `t` would be less than `\alpha`.
 
-.. figure:: images/student.png
+.. figure:: ../images/student.png
 
 .. note:: A frequent misconception consists in interpreting :math:`1-\alpha` as the probability that there is indeed an effect: this is not true ! Here we rely on a frequentist approach, that does not support Bayesian interpretation. See e.g. https://en.wikipedia.org/wiki/Frequentist_inference
           
@@ -119,17 +106,3 @@ A second possibility is to choose a threshold so that the proportion of true dis
           
 
 Note also that supra-threshold sets of voxels are often gathered into connected components (aka *clusters*), so that only large connected components are retained and isolated supra-threshold are discarded. The rationale is that isolated voxels are unlikely to represent extended brain areas, hence are most likely some noise: discarding them most often improves the quality and the reliability of the results.
-
-
-Tutorials
-=========
-
-    For tutorials, please check out the `Examples <auto_examples/index.html>`_ gallery, especially those  of the Tutorial section.
-
-.. _installation:
-
-Installing Nistats
-==================
-
-.. raw:: html
-   :file: install_doc_component.html

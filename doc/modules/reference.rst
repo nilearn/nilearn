@@ -375,25 +375,263 @@ uses.
 
 :mod:`nilearn.stats`: Using GLMs to analyze data
 ==================================================
+.. contents:: **List of modules**
+   :local:
 
-.. automodule:: nilearn.stats
+.. _hemodynamic_models_ref:
+
+:mod:`nilearn.stats.hemodynamic_models`: Hemodynamic Models
+=============================================================
+
+.. automodule:: nilearn.stats.hemodynamic_models
    :no-members:
    :no-inherited-members:
 
-.. No relevant user manual section yet.
+**Functions**:
+
+.. currentmodule:: nilearn.stats.hemodynamic_models
+
+.. autosummary::
+   :toctree: generated/
+   :template: function.rst
+
+   spm_hrf
+   glover_hrf
+   spm_time_derivative
+   glover_time_derivative
+   spm_dispersion_derivative
+   glover_dispersion_derivative
+   compute_regressor
+
+.. _design_matrix_ref:
+
+:mod:`nilearn.stats.design_matrix`: Design Matrix Creation
+===========================================================
+
+.. automodule:: nilearn.stats.design_matrix
+   :no-members:
+   :no-inherited-members:
 
 **Functions**:
 
-.. currentmodule:: nilearn.stats
+.. currentmodule:: nilearn.stats.design_matrix
+
+.. autosummary::
+   :toctree: generated/
+   :template: function.rst
+
+   make_first_level_design_matrix
+   check_design_matrix
+   make_second_level_design_matrix
+
+.. _experimental_paradigm_ref:
+
+:mod:`nilearn.stats.experimental_paradigm`: Experimental Paradigm
+=================================================================
+
+.. automodule:: nilearn.stats.experimental_paradigm
+   :no-members:
+   :no-inherited-members:
+
+**Functions**:
+
+.. currentmodule:: nilearn.stats.experimental_paradigm
+
+.. autosummary::
+   :toctree: generated/
+   :template: function.rst
+
+   check_events
+
+.. _model_ref:
+
+:mod:`nilearn.stats.model`: Statistical models
+====================================================
+
+.. automodule:: nilearn.stats.model
+   :no-members:
+   :no-inherited-members:
+
+**Classes**:
+
+.. currentmodule:: nilearn.stats.model
+
+.. autosummary::
+   :toctree: generated/
+   :template: class.rst
+
+   LikelihoodModelResults
+   TContrastResults
+   FContrastResults
+
+.. _regression_ref:
+
+:mod:`nilearn.stats.regression`: Regression Models
+====================================================
+
+.. automodule:: nilearn.stats.regression
+   :no-members:
+   :no-inherited-members:
+
+**Classes**:
+
+.. currentmodule:: nilearn.stats.regression
+
+.. autosummary::
+   :toctree: generated/
+   :template: class.rst
+
+   OLSModel
+   ARModel
+   RegressionResults
+   SimpleRegressionResults
+
+.. _first_level_models_ref:
+
+:mod:`nilearn.stats.first_level_model`: First Level Model
+=========================================================
+
+.. automodule:: nilearn.stats.first_level_model
+   :no-members:
+   :no-inherited-members:
+
+**Classes**:
+
+.. currentmodule:: nilearn.stats.first_level_model
+
+.. autosummary::
+   :toctree: generated/
+   :template: class.rst
+
+   FirstLevelModel
+
+**Functions**:
+
+.. currentmodule:: nilearn.stats.first_level_model
+
+.. autosummary::
+   :toctree: generated/
+   :template: function.rst
+
+   mean_scaling
+   run_glm
+   first_level_models_from_bids
+
+.. _second_level_model_ref:
+
+:mod:`nilearn.stats.second_level_model`: Second Level Model
+===========================================================
+
+.. automodule:: nilearn.stats.second_level_model
+   :no-members:
+   :no-inherited-members:
+
+**Classes**:
+
+.. currentmodule:: nilearn.stats.second_level_model
+
+.. autosummary::
+   :toctree: generated/
+   :template: class.rst
+
+   SecondLevelModel
+
+.. _contrasts_ref:
+
+:mod:`nilearn.stats.contrasts`: Contrasts
+====================================================
+
+.. automodule:: nilearn.stats.contrasts
+   :no-members:
+   :no-inherited-members:
+
+**Classes**:
+
+.. currentmodule:: nilearn.stats.contrasts
+
+.. autosummary::
+   :toctree: generated/
+   :template: class.rst
+
+   Contrast
+
+**Functions**:
+
+.. currentmodule:: nilearn.stats.contrasts
 
 .. autosummary::
    :toctree: generated/
    :template: function.rst
 
    compute_contrast
-   compute_fixed_effects
-   make_first_level_design_matrix
-   make_second_level_design_matrix
+
+.. _thresholding_ref:
+
+:mod:`nilearn.stats.thresholding`: Thresholding Maps
+====================================================
+
+.. automodule:: nilearn.stats.thresholding
+   :no-members:
+   :no-inherited-members:
+
+**Functions**:
+
+.. currentmodule:: nilearn.stats.thresholding
+
+.. autosummary::
+   :toctree: generated/
+   :template: function.rst
+
+   fdr_threshold
+   map_threshold
+
+.. _reporting_ref:
+
+:mod:`nilearn.reporting`: Report plotting functions
+====================================================
+
+.. automodule:: nilearn.reporting
+   :no-members:
+   :no-inherited-members:
+
+**Functions**:
+
+.. currentmodule:: nilearn.reporting
+
+.. autosummary::
+   :toctree: generated/
+   :template: function.rst
+
+   compare_niimgs
+   plot_design_matrix
+   plot_contrast_matrix
+   get_clusters_table
+   make_glm_report
+
+.. _utils_ref:
+
+:mod:`nilearn.stats.utils`: Utility functions
+====================================================
+
+.. automodule:: nilearn.stats.utils
+   :no-members:
+   :no-inherited-members:
+
+**Functions**:
+
+.. currentmodule:: nilearn.stats.utils
+
+.. autosummary::
+   :toctree: generated/
+   :template: function.rst
+
+   z_score
+   multiple_fast_inverse
+   multiple_mahalanobis
+   full_rank
+   positive_reciprocal
+   get_bids_files
+   parse_bids_filename
 
 :mod:`nilearn.surface`: Manipulating surface data
 ===================================================

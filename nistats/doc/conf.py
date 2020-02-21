@@ -282,7 +282,7 @@ extlinks = {
 
 sphinx_gallery_conf = {
     'doc_module'        : 'nistats',
-    'backreferences_dir': os.path.join('modules', 'generated'),
+    'backreferences_dir': os.path.join('../../doc/glm/modules', 'generated'),
     'reference_url'     : {
         'nistats': None,
         },
