@@ -25,7 +25,7 @@ To run this example, you must launch IPython via ``ipython
 
 .. contents:: **Contents**
     :local:
-    :depth: 1`
+    :depth: 1
 """
 ##############################################################################
 # Fetch openneuro BIDS dataset
