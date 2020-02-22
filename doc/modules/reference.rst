@@ -370,14 +370,6 @@ uses.
    clean
    high_variance_confounds
 
-.. _stats_ref:
-
-
-:mod:`nilearn.stats`: Using GLMs to analyze data
-==================================================
-.. contents:: **List of modules**
-   :local:
-
 .. _hemodynamic_models_ref:
 
 :mod:`nilearn.stats.hemodynamic_models`: Hemodynamic Models
