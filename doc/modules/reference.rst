@@ -372,12 +372,22 @@ uses.
 
 .. _hemodynamic_models_ref:
 
-:mod:`nilearn.stats.hemodynamic_models`: Hemodynamic Models
-=============================================================
+:mod:`nilearn.stats`: Stats & GLMs
+==================================
 
-.. automodule:: nilearn.stats.hemodynamic_models
+.. automodule:: nilearn.stats
    :no-members:
    :no-inherited-members:
+
+.. No relevant user manual section yet.
+
+.. currentmodule:: nilearn.stats.hemodynamic_models
+
+.. autosummary::
+   :toctree: generated/
+
+:mod:`nilearn.stats.hemodynamic_models`: Hemodynamic Models
+-----------------------------------------------------------
 
 **Functions**:
 
@@ -398,11 +408,7 @@ uses.
 .. _design_matrix_ref:
 
 :mod:`nilearn.stats.design_matrix`: Design Matrix Creation
-===========================================================
-
-.. automodule:: nilearn.stats.design_matrix
-   :no-members:
-   :no-inherited-members:
+----------------------------------------------------------
 
 **Functions**:
 
@@ -419,11 +425,7 @@ uses.
 .. _experimental_paradigm_ref:
 
 :mod:`nilearn.stats.experimental_paradigm`: Experimental Paradigm
-=================================================================
-
-.. automodule:: nilearn.stats.experimental_paradigm
-   :no-members:
-   :no-inherited-members:
+-----------------------------------------------------------------
 
 **Functions**:
 
@@ -438,11 +440,7 @@ uses.
 .. _model_ref:
 
 :mod:`nilearn.stats.model`: Statistical models
-====================================================
-
-.. automodule:: nilearn.stats.model
-   :no-members:
-   :no-inherited-members:
+----------------------------------------------
 
 **Classes**:
 
@@ -459,11 +457,7 @@ uses.
 .. _regression_ref:
 
 :mod:`nilearn.stats.regression`: Regression Models
-====================================================
-
-.. automodule:: nilearn.stats.regression
-   :no-members:
-   :no-inherited-members:
+--------------------------------------------------
 
 **Classes**:
 
@@ -481,11 +475,7 @@ uses.
 .. _first_level_models_ref:
 
 :mod:`nilearn.stats.first_level_model`: First Level Model
-=========================================================
-
-.. automodule:: nilearn.stats.first_level_model
-   :no-members:
-   :no-inherited-members:
+---------------------------------------------------------
 
 **Classes**:
 
@@ -512,11 +502,7 @@ uses.
 .. _second_level_model_ref:
 
 :mod:`nilearn.stats.second_level_model`: Second Level Model
-===========================================================
-
-.. automodule:: nilearn.stats.second_level_model
-   :no-members:
-   :no-inherited-members:
+-----------------------------------------------------------
 
 **Classes**:
 
@@ -531,11 +517,7 @@ uses.
 .. _contrasts_ref:
 
 :mod:`nilearn.stats.contrasts`: Contrasts
-====================================================
-
-.. automodule:: nilearn.stats.contrasts
-   :no-members:
-   :no-inherited-members:
+-----------------------------------------
 
 **Classes**:
 
@@ -560,11 +542,7 @@ uses.
 .. _thresholding_ref:
 
 :mod:`nilearn.stats.thresholding`: Thresholding Maps
-====================================================
-
-.. automodule:: nilearn.stats.thresholding
-   :no-members:
-   :no-inherited-members:
+----------------------------------------------------
 
 **Functions**:
 
