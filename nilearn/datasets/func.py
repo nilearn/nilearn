@@ -250,7 +250,7 @@ def fetch_nyu_rest(n_subjects=None, sessions=[1], data_dir=None, resume=True,
                    verbose=1):
     """Download and loads the NYU resting-state test-retest dataset.
 
-    NOTE: This function is deprecated and will be removed in a future 
+    NOTE: This function is deprecated and will be removed in the 0.8.x
     release, due to lack of preprocessing.
 
     Parameters
@@ -329,7 +329,7 @@ def fetch_nyu_rest(n_subjects=None, sessions=[1], data_dir=None, resume=True,
 
     """
     warnings.warn("fetch_nyu_rest has been deprecated and will "
-                  "be removed in a future release.",
+                  "be removed in the 0.8.x release.",
                   VisibleDeprecationWarning, stacklevel=2)
 
     fa1 = 'http://www.nitrc.org/frs/download.php/1071/NYU_TRT_session1a.tar.gz'
