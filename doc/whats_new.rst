@@ -11,6 +11,7 @@ Fixes
 -----
 
 - More robust matplotlib backend selection
+- Typo in example fixed
 
 Changes
 -------
@@ -23,7 +24,9 @@ Contributors
 The following people contributed to this release::
 
      Elizabeth DuPre
+     Franz Liem
      Gael Varoquaux
+     Jon Haitz Legarreta Gorroño
      Joshua Teves
      Kshitij Chawla (kchawla-pi)
      Zvi Baratz
