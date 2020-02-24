@@ -370,7 +370,6 @@ uses.
    clean
    high_variance_confounds
 
-.. _hemodynamic_models_ref:
 
 :mod:`nilearn.stats`: Stats & GLMs
 ==================================
@@ -381,10 +380,7 @@ uses.
 
 .. No relevant user manual section yet.
 
-.. currentmodule:: nilearn.stats.hemodynamic_models
-
-.. autosummary::
-   :toctree: generated/
+.. _hemodynamic_models_ref:
 
 :mod:`nilearn.stats.hemodynamic_models`: Hemodynamic Models
 -----------------------------------------------------------
