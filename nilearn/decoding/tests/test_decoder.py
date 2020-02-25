@@ -106,7 +106,7 @@ def test_check_estimator():
     unsupported_estimators = ['ridgo', 'svb']
     expected_warning = ('Use a custom estimator at your own risk '
                         'of the process not working as intended.')
-
+    
     with warnings.catch_warnings(record=True) as raised_warnings:
         for estimator in supported_estimators:
             _check_estimator(_BaseDecoder(estimator=estimator).estimator)
@@ -179,11 +179,12 @@ def test_decoder_binary_classification():
         assert accuracy_score(y, y_pred) > 0.95
 
     # check cross-validation scheme and fit attribute with groups enabled
+    rand_local = np.random.RandomState(42)
     for cv in [KFold(n_splits=5), LeaveOneGroupOut()]:
         model = Decoder(estimator='svc', mask=mask,
                         standardize=True, cv=cv)
         if isinstance(cv, LeaveOneGroupOut):
-            groups = rand.binomial(2, 0.3, size=len(y))
+            groups = rand_local.binomial(2, 0.3, size=len(y))
         else:
             groups = None
         model.fit(X, y, groups=groups)
@@ -209,11 +210,12 @@ def test_decoder_multiclass_classification():
         assert accuracy_score(y, y_pred) > 0.95
 
     # check cross-validation scheme and fit attribute with groups enabled
+    rand_local = np.random.RandomState(42)
     for cv in [KFold(n_splits=5), LeaveOneGroupOut()]:
         model = Decoder(estimator='svc', mask=mask,
                         standardize=True, cv=cv)
         if isinstance(cv, LeaveOneGroupOut):
-            groups = rand.binomial(2, 0.3, size=len(y))
+            groups = rand_local.binomial(2, 0.3, size=len(y))
         else:
             groups = None
         model.fit(X, y, groups=groups)
@@ -260,8 +262,8 @@ def test_decoder_apply_mask():
     # test whether if _apply mask output has the same shape as original matrix
     assert X_masked.shape == X_init.shape
 
-    # test whethere model.masker_ have some desire attributes manually set 
-    # after calling _apply_mask; by default these parameters are set to None
+    # test whether model.masker_ have some desire attributes manually set after
+    # calling _apply_mask; by default these parameters are set to None
     target_affine = 2 * np.eye(4)
     target_shape = (1, 1, 1)
     t_r = 1
@@ -291,8 +293,8 @@ def test_decoder_split_cv():
     X, y = make_classification(n_samples=200, n_features=125, scale=3.0,
                                n_informative=5, n_classes=4, random_state=42)
     X, mask = to_niimgs(X, [5, 5, 5])
-    groups = rand.binomial(2, 0.3, size=len(y))
-
+    rand_local = np.random.RandomState(42)
+    groups = rand_local.binomial(2, 0.3, size=len(y))
 
     # Check whether ValueError is raised when cv is not set correctly
     for cv in ['abc', LinearSVC()]:

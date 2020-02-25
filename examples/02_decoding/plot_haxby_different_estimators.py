@@ -120,7 +120,7 @@ for i, (color, classifier_name) in enumerate(zip(['b', 'm', 'k', 'r', 'g'],
              height=height, color=color)
     tick_position = tick_position + height
 
-plt.xlabel('Classification accurancy (AUC score)')
+plt.xlabel('Classification accuracy (AUC score)')
 plt.ylabel('Visual stimuli category')
 plt.xlim(xmin=0.5)
 plt.legend(loc='lower left', ncol=1)

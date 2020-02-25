@@ -59,10 +59,11 @@ plotting.view_img(mean_img(fmri_filename), threshold=None)
 # Feature extraction: from fMRI volumes to a data matrix
 # .......................................................
 #
-# These are some really lovely images, but for machine learning we need 
-# matrices to work with the actual data. To transform our Nifti images into
-# matrices, we will use the :class:`nilearn.input_data.NiftiMasker` to 
-# extract the fMRI data on a mask and convert it to data series.
+# These are some really lovely images, but for machine learning we need matrices
+# to work with the actual data. Fortunately, the
+# :class:`nilearn.decoding.Decoder` object we will use later on can
+# automatically transform Nifti images into matrices. All we have to do for now
+# is defining a mask filename.
 #
 # A mask of the Ventral Temporal (VT) cortex coming from the
 # Haxby study is available:
@@ -72,63 +73,6 @@ mask_filename = haxby_dataset.mask_vt[0]
 # background
 plotting.plot_roi(mask_filename, bg_img=haxby_dataset.anat[0],
                   cmap='Paired')
-
-###########################################################################
-# Now we use the NiftiMasker.
-#
-# We first create a masker, and ask it to normalize the data to improve the
-# decoding. The masker will extract a 2D array ready for machine learning
-# with nilearn:
-from nilearn.input_data import NiftiMasker
-masker = NiftiMasker(mask_img=mask_filename, standardize=True)
-fmri_masked = masker.fit_transform(fmri_filename)
-
-###########################################################################
-# .. seealso::
-# 	You can ask the NiftiMasker to derive a mask given the data. In
-# 	this case, it is interesting to have a look at a report to see the
-# 	computed mask by using `masker.generate_report`.
-masker.generate_report()
-
-###########################################################################
-# The variable "fmri_masked" is a numpy array:
-print(fmri_masked)
-
-###########################################################################
-# Its shape corresponds to the number of time-points times the number of
-# voxels in the mask
-print(fmri_masked.shape)
-
-###########################################################################
-# One way to think about what just happened is to look at it visually:
-#
-# .. image:: /images/masking.jpg
-#
-# Essentially, we can think about overlaying a 3D grid on an image. Then,
-# our mask tells us which cubes or "voxels" (like 3D pixels) to sample from.
-# Since our Nifti images are 4D files, we can't overlay a single grid --
-# instead, we use a series of 3D grids (one for each volume in the 4D file),
-# so we can get a measurement for each voxel at each timepoint. These are
-# reflected in the shape of the matrix ! You can check this by checking the
-# number of non-negative voxels in our binary brain mask.
-#
-# .. seealso::
-# 	There are many other strategies in Nilearn :ref:`for masking data and for
-# 	generating masks <computing_and_applying_mask>`
-# 	I'd encourage you to spend some time exploring the documentation for these.
-# 	We can also `display this time series :ref:`sphx_glr_auto_examples_03_connectivity_plot_sphere_based_connectome.py` to get an intuition of how the
-# 	whole brain signal is changing over time.
-#
-# We'll display the first three voxels by sub-selecting values from the
-# matrix. You can also find more information on how to slice arrays `here
-# <https://docs.scipy.org/doc/numpy-1.13.0/reference/arrays.indexing.html#basic-slicing-and-indexing>`_.
-import matplotlib.pyplot as plt
-plt.plot(fmri_masked[5:150, :3])
-
-plt.title('Voxel Time Series')
-plt.xlabel('Scan number')
-plt.ylabel('Normalized signal')
-plt.tight_layout()
 
 ###########################################################################
 # Load the behavioral labels
@@ -150,22 +94,19 @@ print(behavioral)
 # experimental condition: the type of object that was presented to the 
 # subject. This is what we are going to try to predict.
 conditions = behavioral['labels']
-conditions
+print(conditions)
 
 ###########################################################################
 # Restrict the analysis to cats and faces
 # ........................................
 #
 # As we can see from the targets above, the experiment contains many
-# conditions. As a consequence the data is quite big:
-print(fmri_masked.shape)
-
-###########################################################################
-# Not all of this data has an interest to us for decoding, so we will keep
-# only fmri signals corresponding to faces or cats. We create a mask of
-# the samples belonging to the condition; this mask is then applied to the
-# fmri data to restrict the classification to the face vs cat discrimination.
-# As a consequence, the input data is much small (i.e. fmri signal is shorter):
+# conditions. As a consequence, the data is quite big. Not all of this data has
+# an interest to us for decoding, so we will keep only fmri signals
+# corresponding to faces or cats. We create a mask of the samples belonging to
+# the condition; this mask is then applied to the fmri data to restrict the
+# classification to the face vs cat discrimination. The input data will become
+# much smaller (i.e. fmri signal is shorter):
 condition_mask = conditions.isin(['face', 'cat'])
 
 ###########################################################################
@@ -203,11 +144,11 @@ prediction = decoder.predict(fmri_niimgs)
 print(prediction)
 
 ###########################################################################
-# Let's measure the error rate:
+# Let's measure the prediction accuracy:
 print((prediction == conditions).sum() / float(len(conditions)))
 
 ###########################################################################
-# This error rate is meaningless. Why?
+# This prediction accuracy score is meaningless. Why?
 
 ###########################################################################
 # Measuring prediction scores using cross-validation
@@ -222,9 +163,8 @@ print((prediction == conditions).sum() / float(len(conditions)))
 # Let's leave out the 30 last data points during training, and test the
 # prediction on these 30 last points:
 import numpy as np
-n_samples = len(conditions)
-fmri_niimgs_train = index_img(fmri_niimgs, np.arange(0, n_samples - 30))
-fmri_niimgs_test = index_img(fmri_niimgs, np.arange(n_samples - 30, n_samples))
+fmri_niimgs_train = index_img(fmri_niimgs, slice(0, -30))
+fmri_niimgs_test = index_img(fmri_niimgs, slice(-30, None))
 conditions_train = conditions[:-30]
 conditions_test = conditions[-30:]
 
@@ -257,7 +197,7 @@ for train, test in cv.split(conditions):
     decoder = Decoder(estimator='svc', mask=mask_filename, standardize=True)
     decoder.fit(index_img(fmri_niimgs, train), conditions[train])
     prediction = decoder.predict(index_img(fmri_niimgs, test))
-    print("CV Fold {:01d} | Prediction Accuracy: {:.3f}".format(fold, 
+    print("CV Fold {:01d} | Prediction Accuracy: {:.3f}".format(fold,
         (prediction == conditions[test]).sum() / float(len(conditions[test]))))
 
 ###########################################################################
