@@ -1,6 +1,6 @@
 """High-level decoding object that exposes standard classification and
 regression strategies such as SVM, LogisticRegression and Ridge, with optional
-feature selection, integrated hyper-parameter selection and aggregation strategy 
+feature selection, integrated hyper-parameter selection and aggregation strategy
 in which the best models within a cross validation loop are averaged.
 """
 # Authors: Yannick Schwartz
@@ -100,7 +100,7 @@ def _check_param_grid(estimator, X, y, param_grid=None):
         else:
             raise ValueError(
                 "Invalid estimator. The supported estimators are: {}".format(
-                             list(SUPPORTED_ESTIMATORS.keys()))
+                    list(SUPPORTED_ESTIMATORS.keys()))
             )
         # define sensible default for different types of estimators
         if hasattr(estimator, 'penalty') and (estimator.penalty == 'l1'):
@@ -197,7 +197,7 @@ class _BaseDecoder(LinearModel, RegressorMixin, CacheMixin):
         The estimator to choose among: 'svc', 'svc_l2', 'svc_l1', 'logistic',
         'logistic_l1', 'logistic_l2', 'ridge', 'ridge_classifier',
         'ridge_regressor', and 'svr'. Note that the 'svc' and 'svc_l2';
-        'logistic' and 'logistic_l2'; 'ridge' and 'ridge_regressor' 
+        'logistic' and 'logistic_l2'; 'ridge' and 'ridge_regressor'
         correspond to the same estimator. Default 'svc'.
 
     mask: filename, Nifti1Image, NiftiMasker, or MultiNiftiMasker, optional
@@ -208,7 +208,7 @@ class _BaseDecoder(LinearModel, RegressorMixin, CacheMixin):
         MultiNiftiMasker to check for default parameters. Default None
 
     cv: cross-validation generator or int, optional. Default 10
-        A cross-validation generator. 
+        A cross-validation generator.
         See: https://scikit-learn.org/stable/modules/cross_validation.html
 
     param_grid: dict of str to sequence, or sequence of such. Default None
@@ -274,8 +274,8 @@ class _BaseDecoder(LinearModel, RegressorMixin, CacheMixin):
         images present a clear homogeneous background, and 'epi' if they
         are raw EPI images. Depending on this value, the mask will be
         computed from masking.compute_background_mask or
-        masking.compute_epi_mask. 
-        
+        masking.compute_epi_mask.
+
         This parameter will be ignored if a mask image is provided.
 
     memory: instance of joblib.Memory or str
@@ -345,7 +345,7 @@ class _BaseDecoder(LinearModel, RegressorMixin, CacheMixin):
         groups: None
             Group labels for the samples used while splitting the dataset into
             train/test set. Default None.
-            
+
             Note that this parameter must be specified in some scikit-learn
             cross-validation generators to calculate the number of splits, e.g.
             sklearn.model_selection.LeaveOneGroupOut or
@@ -410,7 +410,7 @@ class _BaseDecoder(LinearModel, RegressorMixin, CacheMixin):
 
         # Setup scorer
         scorer = check_scoring(self.estimator, self.scoring)
-        
+
         # Setup cross-validation object. Default is StratifiedKFold when groups
         # is None. If groups is specified but self.cv is not set to custom CV
         # splitter, default is LeaveOneGroupOut. If self.cv is manually set to a
@@ -425,7 +425,7 @@ class _BaseDecoder(LinearModel, RegressorMixin, CacheMixin):
             cv_object = LeaveOneGroupOut()
         else:
             cv_object = check_cv(cv, y=y, classifier=self.is_classification)
-            
+
         self.cv_ = list(cv_object.split(X, y, groups=groups))
 
         # Define the number problems to solve. In case of classification this
@@ -447,14 +447,14 @@ class _BaseDecoder(LinearModel, RegressorMixin, CacheMixin):
 
         parallel_fit_outputs = parallel(
             delayed(self._cache(_parallel_fit))(
-                    self.estimator, X, y[:, c], train, test,
-                    self.param_grid, self.is_classification, scorer,
-                    self.mask_img_, c, self.screening_percentile_) 
-                    for c, (train, test) in itertools.product(
-                        range(n_problems), self.cv_))
+                self.estimator, X, y[:, c], train, test,
+                self.param_grid, self.is_classification, scorer,
+                self.mask_img_, c, self.screening_percentile_)
+            for c, (train, test) in itertools.product(
+                range(n_problems), self.cv_))
 
         coefs, intercepts = self._fetch_parallel_fit_outputs(
-                                    parallel_fit_outputs, y, n_problems)
+            parallel_fit_outputs, y, n_problems)
 
         # Build the final model (the aggregated one)
         self.coef_ = np.vstack([np.mean(coefs[class_index], axis=0)
@@ -492,7 +492,7 @@ class _BaseDecoder(LinearModel, RegressorMixin, CacheMixin):
         if X.shape[1] != n_features:
             raise ValueError(
                 "X has {} features per sample; expecting {}".format(
-                              (X.shape[1], n_features)))
+                    (X.shape[1], n_features)))
 
         scores = safe_sparse_dot(X, self.coef_.T,
                                  dense_output=True) + self.intercept_
@@ -546,7 +546,7 @@ class _BaseDecoder(LinearModel, RegressorMixin, CacheMixin):
         parallel_fit_outputs : list of tuples, each tuple contains results of
             one _parallel_fit for each cv fold (and each classification in the
             case of multiclass classification).
-        
+
         y : ndarray, shape = (n_samples, )
             Vector of responses.
 

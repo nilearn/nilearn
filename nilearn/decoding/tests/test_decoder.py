@@ -106,13 +106,13 @@ def test_check_estimator():
     unsupported_estimators = ['ridgo', 'svb']
     expected_warning = ('Use a custom estimator at your own risk '
                         'of the process not working as intended.')
-    
+
     with warnings.catch_warnings(record=True) as raised_warnings:
         for estimator in supported_estimators:
             _check_estimator(_BaseDecoder(estimator=estimator).estimator)
     warning_messages = [str(warning.message) for warning in raised_warnings]
     assert expected_warning not in warning_messages
-    
+
     for estimator in unsupported_estimators:
         pytest.raises(ValueError, _check_estimator,
                       _BaseDecoder(estimator=estimator).estimator)
@@ -142,7 +142,7 @@ def test_parallel_fit():
         outputs.append(list(_parallel_fit(estimator=estimator, X=X, y=y,
                                           train=train, test=test,
                                           param_grid=param_grid,
-                                          is_classification=False, 
+                                          is_classification=False,
                                           scorer=scorer,
                                           mask_img=None, class_index=1,
                                           screening_percentile=None)))
@@ -280,7 +280,7 @@ def test_decoder_apply_mask():
     )
 
     model._apply_mask(X)
-    
+
     assert np.any(model.masker_.target_affine == target_affine)
     assert model.masker_.target_shape == target_shape
     assert model.masker_.t_r == t_r
@@ -288,7 +288,7 @@ def test_decoder_apply_mask():
     assert model.masker_.low_pass == low_pass
     assert model.masker_.smoothing_fwhm == smoothing_fwhm
 
-    
+
 def test_decoder_split_cv():
     X, y = make_classification(n_samples=200, n_features=125, scale=3.0,
                                n_informative=5, n_classes=4, random_state=42)
@@ -300,7 +300,7 @@ def test_decoder_split_cv():
     for cv in ['abc', LinearSVC()]:
         model = Decoder(mask=NiftiMasker(), cv=cv)
         pytest.raises(ValueError, model.fit, X, y)
-    
+
     # Check whether decoder raised warning when groups is set to specific
     # value but CV Splitter is not set
     expected_warning = (
