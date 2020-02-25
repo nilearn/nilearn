@@ -11,6 +11,12 @@ Fixes
 -----
 
 - More robust matplotlib backend selection
+- Typo in example fixed
+
+Changes
+-------
+
+- Atlas func:`nilearn.datasets.func.fetch_nyu_rest` has been deprecated and wil be removed in Nilearn 0.8.0 .
 
 Contributors
 ------------
@@ -18,7 +24,10 @@ Contributors
 The following people contributed to this release::
 
      Elizabeth DuPre
+     Franz Liem
      Gael Varoquaux
+     Jon Haitz Legarreta Gorroño
+     Joshua Teves
      Kshitij Chawla (kchawla-pi)
      Zvi Baratz
 
