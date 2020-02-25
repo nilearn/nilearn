@@ -271,7 +271,7 @@ def test_decoder_apply_mask():
     low_pass = 2
     smoothing_fwhm = 0.5
     model = Decoder(
-        target_affine=target_affine, 
+        target_affine=target_affine,
         target_shape=target_shape,
         t_r=t_r,
         high_pass=high_pass,
