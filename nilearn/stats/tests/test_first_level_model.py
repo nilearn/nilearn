@@ -22,16 +22,16 @@ from nilearn._utils.data_gen import (write_fake_fmri_data_and_design,
                                      generate_fake_fmri_data_and_design,
                                      create_fake_bids_dataset)
 from nilearn.image import get_data
-from nilearn.stats.design_matrix import (check_design_matrix,
-                                         make_first_level_design_matrix,
-                                         )
+from nilearn.stats.first_level_model.design_matrix import (check_design_matrix,
+                                                   make_first_level_design_matrix,
+                                                   )
 from nilearn.stats.first_level_model import (first_level_models_from_bids,
                                              FirstLevelModel,
                                              mean_scaling,
                                              run_glm,
                                              )
 from nilearn.stats.contrasts import compute_fixed_effects
-from nilearn.stats.utils import get_bids_files
+from nilearn._utils.stats import get_bids_files
 
 BASEDIR = os.path.dirname(os.path.abspath(__file__))
 FUNCFILE = os.path.join(BASEDIR, 'functional.nii.gz')

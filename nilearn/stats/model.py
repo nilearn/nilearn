@@ -11,7 +11,7 @@ from nibabel.onetime import setattr_on_read
 from scipy.linalg import inv
 from scipy.stats import t as t_distribution
 
-from nilearn.stats.utils import positive_reciprocal
+from nilearn._utils.stats import positive_reciprocal
 
 # Inverse t cumulative distribution
 inv_t_cdf = t_distribution.ppf

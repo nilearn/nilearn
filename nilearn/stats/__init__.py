@@ -1,22 +1,42 @@
 """
 Analysing fMRI data using GLMs.
 """
-# __all__ = ['contrasts', 'design_matrix', 'experimental_paradigm',
-#            'first_level_model', 'hemodynamic_models', 'model',
-#            'regression', 'second_level_model', 'thresholding', 'utils',
-#            ]
+from .contrasts import (
+    compute_contrast,
+    compute_fixed_effects,
+    Contrast,
+    expression_to_contrast_vector,
+)
+from .model import (
+    LikelihoodModelResults,
+    TContrastResults,
+    FContrastResults,
+)
+from .regression import (
+    OLSModel,
+    ARModel,
+    RegressionResults,
+    SimpleRegressionResults,
+)
+from .thresholding import (
+    fdr_threshold,
+    cluster_level_inference,
+    map_threshold,
+)
 
-# from nilearn.stats.contrasts import (
-#     compute_contrast,
-#     compute_fixed_effects,
-# )
-# from nilearn.stats.design_matrix import (
-#     make_first_level_design_matrix,
-#     make_second_level_design_matrix,
-# )
-#
-# __all__ = ['compute_contrast',
-#            'compute_fixed_effects',
-#            'make_first_level_design_matrix',
-#            'make_second_level_design_matrix',
-#            ]
+__all__ = [
+    'compute_contrast',
+    'compute_fixed_effects',
+    'Contrast',
+    'expression_to_contrast_vector',
+    'LikelihoodModelResults',
+    'TContrastResults',
+    'FContrastResults',
+    'OLSModel',
+    'ARModel',
+    'RegressionResults',
+    'SimpleRegressionResults',
+    'fdr_threshold',
+    'cluster_level_inference',
+    'map_threshold',
+]

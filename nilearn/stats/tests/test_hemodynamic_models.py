@@ -7,19 +7,19 @@ from numpy.testing import (assert_almost_equal,
                            assert_array_equal,
                            )
 
-from nilearn.stats.hemodynamic_models import (_hrf_kernel,
-                                              _orthogonalize,
-                                              _regressor_names,
-                                              _resample_regressor,
-                                              _sample_condition,
-                                              compute_regressor,
-                                              spm_dispersion_derivative,
-                                              spm_hrf,
-                                              spm_time_derivative,
-                                              glover_dispersion_derivative,
-                                              glover_hrf,
-                                              glover_time_derivative,
-                                              )
+from nilearn.stats.first_level_model.hemodynamic_models import (_hrf_kernel,
+                                                        _orthogonalize,
+                                                        _regressor_names,
+                                                        _resample_regressor,
+                                                        _sample_condition,
+                                                        compute_regressor,
+                                                        spm_dispersion_derivative,
+                                                        spm_hrf,
+                                                        spm_time_derivative,
+                                                        glover_dispersion_derivative,
+                                                        glover_hrf,
+                                                        glover_time_derivative,
+                                                        )
 
 
 def test_spm_hrf():

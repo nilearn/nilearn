@@ -11,7 +11,7 @@ from nibabel.tmpdirs import InTemporaryDirectory
 import pandas as pd
 
 from nilearn._utils.data_gen import write_fake_fmri_data_and_design
-from nilearn.stats.design_matrix import make_first_level_design_matrix
+from nilearn.stats.first_level_model.design_matrix import make_first_level_design_matrix
 from nilearn.stats.first_level_model import FirstLevelModel
 from nilearn.reporting import glm_reporter as glmr
 from nilearn.stats.second_level_model import SecondLevelModel

@@ -31,22 +31,21 @@ from sklearn.externals.joblib import (delayed,
 
 from nilearn._utils import CacheMixin
 from nilearn._utils.niimg_conversions import check_niimg
+from nilearn._utils.stats import (_check_run_tables,
+                                  _check_events_file_uses_tab_separators,
+                                  get_bids_files,
+                                  parse_bids_filename,
+                                  )
 from nilearn.image import get_data
-from nilearn.input_data import NiftiMasker
 
 from nilearn.stats.contrasts import (_compute_fixed_effect_contrast,
                                      expression_to_contrast_vector)
-from nilearn.stats.design_matrix import make_first_level_design_matrix
+from nilearn.stats.first_level_model.design_matrix import make_first_level_design_matrix
 from nilearn.stats.regression import (ARModel,
                                       OLSModel,
                                       SimpleRegressionResults,
                                       RegressionResults
                                       )
-from nilearn.stats.utils import (_check_run_tables,
-                                 _check_events_file_uses_tab_separators,
-                                 get_bids_files,
-                                 parse_bids_filename,
-                                 )
 
 
 def mean_scaling(Y, axis=0):
@@ -369,6 +368,9 @@ class FirstLevelModel(BaseEstimator, TransformerMixin, CacheMixin):
             takes precedence over events and confounds.
 
         """
+        # Local import to prevent circular imports
+        from nilearn.input_data import NiftiMasker  # noqa
+
         # Check arguments
         # Check imgs type
         if events is not None:
