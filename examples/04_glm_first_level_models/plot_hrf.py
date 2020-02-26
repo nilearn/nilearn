@@ -40,13 +40,13 @@ hrf_models = [None, 'glover + derivative', 'glover + derivative + dispersion']
 #########################################################################
 # Sample the hrf
 # --------------
-from nilearn.stats import hemodynamic_models
+from nilearn.stats.first_level_model import compute_regressor
 import matplotlib.pyplot as plt
 
 fig = plt.figure(figsize=(9, 4))
 for i, hrf_model in enumerate(hrf_models):
     # obtain the signal of interest by convolution
-    signal, name = hemodynamic_models.compute_regressor(
+    signal, name = compute_regressor(
         exp_condition, hrf_model, frame_times, con_id='main',
         oversampling=16)
 
