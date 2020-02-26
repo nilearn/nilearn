@@ -420,12 +420,6 @@ div.body p.sphx-glr-script-out {
     margin: -.9ex 0ex;
 }
 
-div.body div.sphx-glr-download-link-note {
-    max-width: 8em;
-    float: right;
-    margin-right: -1em;
-}
-
 div.bodywrapper {
     margin: 0 246px 0 auto;
     /*border-right: 1px solid #EEE;*/
@@ -1155,6 +1149,7 @@ span.example-links {
   display: block;
 }
 
+
 div#logo-banner {
     background-color: white;
     padding: 10px 10px 15px 15px;
@@ -1713,9 +1708,28 @@ div.sg-report iframe {
 
 div.body div.sphx-glr-download-link-note {
     text-align: left;
-    float: none;
-    margin: 10px 0 -10px 0;
+    float: left;
     border-radius: 4px;
-    padding: 5px;
+    color: #006801;
+    background-color: #dff0d8;
+    border: 0.2em solid rgba(79, 173, 117, 0.35);
+    padding: 4px;
     max-width: 100%;
+    width: 43ex;
 }
+
+@media (min-width: 1420px) {
+  div.body div.sphx-glr-download-link-note {
+    float: none;
+    position: absolute;
+    left: 5px;
+    width: 15ex;
+  }
+}
+
+@media (min-width: 1550px) {
+    div.body div.sphx-glr-download-link-note {
+	width: 20ex;
+    }
+}
+
