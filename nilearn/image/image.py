@@ -6,7 +6,7 @@ See also nilearn.signal.
 # Authors: Philippe Gervais, Alexandre Abraham
 # License: simplified BSD
 
-import collections
+import collections.abc
 import warnings
 
 import numpy as np
@@ -518,7 +518,7 @@ def mean_img(imgs, target_affine=None, target_shape=None,
 
     """
     if (isinstance(imgs, _basestring) or
-            not isinstance(imgs, collections.Iterable)):
+            not isinstance(imgs, collections.abc.Iterable)):
         imgs = [imgs, ]
 
     imgs_iter = iter(imgs)
@@ -633,7 +633,7 @@ def index_img(imgs, index):
      >>> five_mni_images = concat_imgs([datasets.load_mni152_template()] * 5)
      >>> print(five_mni_images.shape)
      (91, 109, 91, 5)
-    
+
      >>> first_three_images = index_img(five_mni_images,
      ...                                slice(0, 3))
      >>> print(first_three_images.shape)
