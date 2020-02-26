@@ -43,7 +43,8 @@ print('First subject functional nifti images (4D) are at: %s' %
 # Visualizing the fmri volume
 # ............................
 #
-# One way to visualize a fmri volume is using :func:`nilearn.plotting.plot_epi`.
+# One way to visualize a fmri volume is
+# using :func:`nilearn.plotting.plot_epi`.
 # We will visualize the previously fetched fmri data from Haxby dataset.
 #
 # Because fmri data is 4D (it consists of many 3D EPI images), we cannot 
@@ -59,11 +60,11 @@ plotting.view_img(mean_img(fmri_filename), threshold=None)
 # Feature extraction: from fMRI volumes to a data matrix
 # .......................................................
 #
-# These are some really lovely images, but for machine learning we need matrices
-# to work with the actual data. Fortunately, the
+# These are some really lovely images, but for machine learning
+# we need matrices to work with the actual data. Fortunately, the
 # :class:`nilearn.decoding.Decoder` object we will use later on can
-# automatically transform Nifti images into matrices. All we have to do for now
-# is defining a mask filename.
+# automatically transform Nifti images into matrices.
+# All we have to do for now is define a mask filename.
 #
 # A mask of the Ventral Temporal (VT) cortex coming from the
 # Haxby study is available:
@@ -101,8 +102,8 @@ print(conditions)
 # ........................................
 #
 # As we can see from the targets above, the experiment contains many
-# conditions. As a consequence, the data is quite big. Not all of this data has
-# an interest to us for decoding, so we will keep only fmri signals
+# conditions. As a consequence, the data is quite big. Not all of this data
+# has an interest to us for decoding, so we will keep only fmri signals
 # corresponding to faces or cats. We create a mask of the samples belonging to
 # the condition; this mask is then applied to the fmri data to restrict the
 # classification to the face vs cat discrimination.
@@ -124,11 +125,11 @@ conditions = conditions.values
 print(conditions.shape)
 
 ###########################################################################
-# Decoding with Support Vector Machine 
-# --------------------------------------
+# Decoding with Support Vector Machine
+# ------------------------------------
 #
-# As a decoder, we use a Support Vector Classification, with a linear kernel. We
-# first create it using by using :class:`nilearn.decoding.Decoder`.
+# As a decoder, we use a Support Vector Classification, with a linear kernel.
+# We first create it using by using :class:`nilearn.decoding.Decoder`.
 from nilearn.decoding import Decoder
 decoder = Decoder(estimator='svc', mask=mask_filename, standardize=True)
 
@@ -197,8 +198,11 @@ for train, test in cv.split(conditions):
     decoder = Decoder(estimator='svc', mask=mask_filename, standardize=True)
     decoder.fit(index_img(fmri_niimgs, train), conditions[train])
     prediction = decoder.predict(index_img(fmri_niimgs, test))
-    print("CV Fold {:01d} | Prediction Accuracy: {:.3f}".format(fold,
-        (prediction == conditions[test]).sum() / float(len(conditions[test]))))
+    print(
+        "CV Fold {:01d} | Prediction Accuracy: {:.3f}".format(
+            fold,
+            (prediction == conditions[test]).sum() / float(len(conditions[
+                                                                   test]))))
 
 ###########################################################################
 # Cross-validation with the decoder
@@ -206,7 +210,8 @@ for train, test in cv.split(conditions):
 #
 # The decoder implements a cross-validation loop by default, it also returns
 # an array of shape (cross-validation parameters, n_folds)..
-decoder = Decoder(estimator='svc', mask=mask_filename, standardize=True, cv=cv)
+decoder = Decoder(estimator='svc', mask=mask_filename, standardize=True,
+                  cv=cv)
 decoder.fit(fmri_niimgs, conditions)
 
 print(decoder.cv_scores_['face'])
@@ -237,7 +242,8 @@ session_label = behavioral['chunks'][condition_mask]
 from sklearn.model_selection import LeaveOneGroupOut
 cv = LeaveOneGroupOut()
 
-decoder = Decoder(estimator='svc', mask=mask_filename, standardize=True, cv=cv)
+decoder = Decoder(estimator='svc', mask=mask_filename, standardize=True,
+                  cv=cv)
 decoder.fit(fmri_niimgs, conditions, groups=session_label)
 
 print(decoder.cv_scores_)

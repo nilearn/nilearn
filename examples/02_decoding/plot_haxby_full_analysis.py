@@ -63,7 +63,7 @@ from sklearn.model_selection import LeaveOneGroupOut, cross_val_score
 cv = LeaveOneGroupOut()
 
 ##############################################################
-# We use :class:`sklearn.dummy.DummyClassifier` as a baseline. 
+# We use :class:`sklearn.dummy.DummyClassifier` as a baseline.
 from sklearn.dummy import DummyClassifier
 dummy_classifier = DummyClassifier()
 
@@ -84,8 +84,8 @@ for mask_name in mask_names:
     for category in categories:
         print("Processing %s %s" % (mask_name, category))
         classification_target = (stimuli[task_mask] == category)
-        # Specify the classifier to the decoder object. With the decoder we can
-        # input the masker directly.
+        # Specify the classifier to the decoder object.
+        # With the decoder we can input the masker directly.
         # We are using the svc_l1 here because it is intra subject.
         decoder = Decoder(estimator='svc_l1', cv=cv,
                           mask=masker, scoring='roc_auc')

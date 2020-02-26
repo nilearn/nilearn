@@ -33,7 +33,6 @@ except ImportError:
     # for scikit-learn 0.18 and 0.19
     from sklearn.metrics.scorer import check_scoring
 
-
 # Regression
 ridge = RidgeCV()
 svr = SVR(kernel='linear')
@@ -133,8 +132,7 @@ def test_parallel_fit():
     outputs = []
     estimator = svr
     svr_params = [[1e-1, 1e0, 1e1], [1e-1, 1e0, 5e0, 1e1]]
-    # define a scorer
-    scorer = check_scoring(estimator, 'r2')
+    scorer = check_scoring(estimator, 'r2')  #  define a scorer
 
     for params in svr_params:
         param_grid = {}

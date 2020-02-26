@@ -54,8 +54,8 @@ y_test = target[condition_mask_test]
 # ---------------------------------
 #
 # Note that for this classification task both classes contain the same number
-# of samples (the problem is balanced). Then, we can use accuracy to measure the
-# performance of the decoder. This is done by defining accuracy as the
+# of samples (the problem is balanced). Then, we can use accuracy to measure
+# the performance of the decoder. This is done by defining accuracy as the
 # `scoring`.
 from nilearn.decoding import Decoder
 decoder = Decoder(estimator='svc', mask_strategy='background',

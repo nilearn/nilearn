@@ -112,8 +112,10 @@ height = 0.1
 
 for i, (color, classifier_name) in enumerate(zip(['b', 'm', 'k', 'r', 'g'],
                                                  classifiers)):
-    score_means = [np.mean(classifiers_data[classifier_name]['score'][category])
-                   for category in all_categories]
+    score_means = [
+        np.mean(classifiers_data[classifier_name]['score'][category])
+        for category in all_categories
+    ]
 
     plt.barh(tick_position, score_means,
              label=classifier_name.replace('_', ' '),
@@ -124,13 +126,14 @@ plt.xlabel('Classification accuracy (AUC score)')
 plt.ylabel('Visual stimuli category')
 plt.xlim(xmin=0.5)
 plt.legend(loc='lower left', ncol=1)
-plt.title('Category-specific classification accuracy for different classifiers')
+plt.title(
+    'Category-specific classification accuracy for different classifiers')
 plt.tight_layout()
 
 # We can see that for a fixed penalty the results are similar between the svc
 # and the logistic regression. The main difference relies on the penalty
-# ($\ell_1$ and $\ell_2$). The sparse penalty works better because we are in an
-# intra-subject setting.
+# ($\ell_1$ and $\ell_2$). The sparse penalty works better because we are in
+# an intra-subject setting.
 
 ###############################################################################
 # Visualizing the face vs house map

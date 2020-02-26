@@ -1,7 +1,8 @@
 """High-level decoding object that exposes standard classification and
 regression strategies such as SVM, LogisticRegression and Ridge, with optional
-feature selection, integrated hyper-parameter selection and aggregation strategy
-in which the best models within a cross validation loop are averaged.
+feature selection, integrated hyper-parameter selection
+and aggregation strategy in which the best models
+within a cross validation loop are averaged.
 """
 # Authors: Yannick Schwartz
 #          Andres Hoyos-Idrobo
@@ -125,7 +126,7 @@ def _check_estimator(estimator):
     else:
         raise ValueError(
             "Invalid estimator. Known estimators are: {}".format(
-                            list(SUPPORTED_ESTIMATORS.keys()))
+                list(SUPPORTED_ESTIMATORS.keys()))
         )
 
     return estimator
@@ -374,8 +375,8 @@ class _BaseDecoder(LinearModel, RegressorMixin, CacheMixin):
 
         `coef_img_`: dict of Nifti1Image
             Dictionary containing `coef_` with class names as keys,
-            and `coef_` transformed in Nifti1Images as values. In the case
-            of a regression, it contains a single Nifti1Image at the key 'beta'.
+            and `coef_` transformed in Nifti1Images as values. In the case of
+            a regression, it contains a single Nifti1Image at the key 'beta'.
 
         `intercept_`: narray, shape (nclasses,)
             Intercept (a.k.a. bias) added to the decision function.
@@ -392,8 +393,8 @@ class _BaseDecoder(LinearModel, RegressorMixin, CacheMixin):
 
         `std_coef_img_`: dict of Nifti1Image
             Dictionary containing `std_coef_` with class names as keys,
-            and `coef_` transformed in Nifti1Image as values. In the case
-            of a regression, it contains a single Nifti1Image at the key 'beta'.
+            and `coef_` transformed in Nifti1Image as values. In the case of
+            a regression, it contains a single Nifti1Image at the key 'beta'.
 
         `cv_params_`: dict of lists
             Best point in the parameter grid for each tested fold
@@ -413,8 +414,8 @@ class _BaseDecoder(LinearModel, RegressorMixin, CacheMixin):
 
         # Setup cross-validation object. Default is StratifiedKFold when groups
         # is None. If groups is specified but self.cv is not set to custom CV
-        # splitter, default is LeaveOneGroupOut. If self.cv is manually set to a
-        # CV splitter object do check_cv regardless of groups parameter.
+        # splitter, default is LeaveOneGroupOut. If self.cv is manually set to
+        # a CV splitter object do check_cv regardless of groups parameter.
         cv = self.cv
         if (isinstance(cv, int) or cv is None) and groups is not None:
             warnings.warn(
@@ -726,9 +727,10 @@ class Decoder(_BaseDecoder):
             screening_percentile=screening_percentile, scoring=scoring,
             smoothing_fwhm=smoothing_fwhm, standardize=standardize,
             target_affine=target_affine, target_shape=target_shape,
-            mask_strategy=mask_strategy, low_pass=low_pass, high_pass=high_pass,
-            t_r=t_r, memory=memory, is_classification=True,
-            memory_level=memory_level, verbose=verbose, n_jobs=n_jobs)
+            mask_strategy=mask_strategy, low_pass=low_pass,
+            high_pass=high_pass, t_r=t_r, memory=memory,
+            is_classification=True, memory_level=memory_level,
+            verbose=verbose, n_jobs=n_jobs)
 
     def _binarize_y(self, y):
         """Helper function invoked just before fitting a classifier."""
@@ -869,5 +871,6 @@ class DecoderRegressor(_BaseDecoder):
             smoothing_fwhm=smoothing_fwhm, standardize=standardize,
             target_affine=target_affine, target_shape=target_shape,
             low_pass=low_pass, high_pass=high_pass, t_r=t_r,
-            mask_strategy=mask_strategy, memory=memory, is_classification=False,
-            memory_level=memory_level, verbose=verbose, n_jobs=n_jobs)
+            mask_strategy=mask_strategy, memory=memory,
+            is_classification=False, memory_level=memory_level,
+            verbose=verbose, n_jobs=n_jobs)

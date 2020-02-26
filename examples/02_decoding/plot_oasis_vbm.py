@@ -156,7 +156,7 @@ plt.xlabel("subject")
 plt.legend(loc="best")
 
 ###############################################################################
-# Inference with massively univariate model 
+# Inference with massively univariate model
 # -----------------------------------------
 print("Massively univariate model")
 
