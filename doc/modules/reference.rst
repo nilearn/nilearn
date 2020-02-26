@@ -523,29 +523,3 @@ uses.
    load_surf_data
    load_surf_mesh
    vol_to_surf
-
-.. _utils_ref:
-
-
-:mod:`nilearn._utils`: Utility functions
-====================================================
-
-.. automodule:: nilearn._utils
-   :no-members:
-   :no-inherited-members:
-
-**Functions**:
-
-.. currentmodule:: nilearn._utils
-
-.. autosummary::
-   :toctree: generated/
-   :template: function.rst
-
-   z_score
-   multiple_fast_inverse
-   multiple_mahalanobis
-   full_rank
-   positive_reciprocal
-   get_bids_files
-   parse_bids_filename
