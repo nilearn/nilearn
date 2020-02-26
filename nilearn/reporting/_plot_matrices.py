@@ -7,7 +7,7 @@ Author: Martin Perez-Guevara, Elvis Dohmatob, 2017
 import numpy as np
 import matplotlib.pyplot as plt
 
-from nilearn.stats.design_matrix import check_design_matrix
+from nilearn.stats.first_level_model import check_design_matrix
 from nilearn.stats.contrasts import expression_to_contrast_vector
 
 
@@ -37,7 +37,6 @@ def plot_design_matrix(design_matrix, rescale=True, ax=None, output_file=None):
     """
     # We import _set_mpl_backend because just the fact that we are
     # importing it sets the backend
-    from nilearn.plotting import _set_mpl_backend  # noqa:F401
 
     # normalize the values per column for better visualization
     _, X, names = check_design_matrix(design_matrix)

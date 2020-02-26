@@ -8,7 +8,7 @@ from nibabel.tmpdirs import InTemporaryDirectory
 # Set backend to avoid DISPLAY problems
 from nilearn.plotting import _set_mpl_backend
 
-from nilearn.stats.design_matrix import make_first_level_design_matrix
+from nilearn.stats.first_level_model.design_matrix import make_first_level_design_matrix
 from nilearn.reporting import (get_clusters_table,
                                plot_contrast_matrix,
                                plot_design_matrix,

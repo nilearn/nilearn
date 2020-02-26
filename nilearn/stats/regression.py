@@ -28,7 +28,7 @@ import scipy.linalg as spl
 
 from nilearn._utils.helpers import rename_parameters
 from nilearn.stats.model import LikelihoodModelResults
-from nilearn.stats.utils import positive_reciprocal
+from nilearn._utils.stats import positive_reciprocal
 
 
 class OLSModel(object):

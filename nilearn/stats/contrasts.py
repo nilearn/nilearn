@@ -11,7 +11,7 @@ import numpy as np
 import scipy.stats as sps
 import pandas as pd
 
-from nilearn.stats.utils import z_score
+from nilearn._utils.stats import z_score
 
 DEF_TINY = 1e-50
 DEF_DOFMAX = 1e10

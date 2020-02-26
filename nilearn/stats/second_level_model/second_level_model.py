@@ -28,7 +28,7 @@ from nilearn.stats.first_level_model import (FirstLevelModel,
                                              run_glm)
 from nilearn.stats.contrasts import (compute_contrast,
                                      expression_to_contrast_vector)
-from nilearn.stats.design_matrix import make_second_level_design_matrix
+from nilearn.stats.first_level_model.design_matrix import make_second_level_design_matrix
 from nilearn.stats.regression import SimpleRegressionResults
 
 

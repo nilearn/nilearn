@@ -39,9 +39,9 @@ from warnings import warn
 import numpy as np
 import pandas as pd
 
-from nilearn.stats.experimental_paradigm import check_events
-from nilearn.stats.hemodynamic_models import compute_regressor, _orthogonalize
-from nilearn.stats.utils import full_rank
+from nilearn.stats.first_level_model.experimental_paradigm import check_events
+from nilearn.stats.first_level_model.hemodynamic_models import compute_regressor, _orthogonalize
+from nilearn._utils.stats import full_rank
 
 
 ######################################################################

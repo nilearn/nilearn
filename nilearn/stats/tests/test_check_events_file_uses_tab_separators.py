@@ -2,7 +2,7 @@ import pandas as pd
 import pytest
 
 from nibabel.tmpdirs import InTemporaryDirectory
-from nilearn.stats.utils import _check_events_file_uses_tab_separators
+from nilearn._utils.stats import _check_events_file_uses_tab_separators
 
 
 def make_data_for_test_runs():

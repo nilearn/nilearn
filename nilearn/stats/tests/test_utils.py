@@ -13,18 +13,18 @@ from numpy.testing import (assert_almost_equal,
 from scipy.stats import norm
 
 from nilearn._utils.data_gen import create_fake_bids_dataset
-from nilearn.stats.utils import (_check_run_tables,
-                                 _check_and_load_tables,
-                                 _check_list_length_match,
-                                 full_rank,
-                                 get_bids_files,
-                                 get_design_from_fslmat,
-                                 multiple_fast_inverse,
-                                 multiple_mahalanobis,
-                                 parse_bids_filename,
-                                 positive_reciprocal,
-                                 z_score,
-                                 )
+from nilearn._utils.stats import (_check_run_tables,
+                          _check_and_load_tables,
+                          _check_list_length_match,
+                          full_rank,
+                          get_bids_files,
+                          get_design_from_fslmat,
+                          multiple_fast_inverse,
+                          multiple_mahalanobis,
+                          parse_bids_filename,
+                          positive_reciprocal,
+                          z_score,
+                          )
 
 
 def test_full_rank():
