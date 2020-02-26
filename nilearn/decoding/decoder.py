@@ -352,7 +352,8 @@ class _BaseDecoder(LinearModel, RegressorMixin, CacheMixin):
             sklearn.model_selection.LeaveOneGroupOut or
             sklearn.model_selection.LeavePGroupsOut.
 
-            For more details see https://scikit-learn.org/stable/modules/cross_validation.html#cross-validation-iterators-for-grouped-data
+            For more details see
+            https://scikit-learn.org/stable/modules/cross_validation.html#cross-validation-iterators-for-grouped-data
 
         Attributes
         ----------
@@ -478,7 +479,8 @@ class _BaseDecoder(LinearModel, RegressorMixin, CacheMixin):
         Parameters
         ----------
         X: list of Niimg-like objects
-            See <http://nilearn.github.io/manipulating_images/input_output.html>
+            See
+            <http://nilearn.github.io/manipulating_images/input_output.html>
             Data on prediction is to be made. If this is a list,
             the affine is considered the same for all.
 

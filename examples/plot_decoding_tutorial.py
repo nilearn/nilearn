@@ -201,8 +201,8 @@ for train, test in cv.split(conditions):
     print(
         "CV Fold {:01d} | Prediction Accuracy: {:.3f}".format(
             fold,
-            (prediction == conditions[test]).sum() / float(len(conditions[
-                                                                   test]))))
+            (prediction == conditions[test]).sum() / float(len(
+                conditions[test]))))
 
 ###########################################################################
 # Cross-validation with the decoder
