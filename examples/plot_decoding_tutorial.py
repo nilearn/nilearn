@@ -163,7 +163,6 @@ print((prediction == conditions).sum() / float(len(conditions)))
 #
 # Let's leave out the 30 last data points during training, and test the
 # prediction on these 30 last points:
-import numpy as np
 fmri_niimgs_train = index_img(fmri_niimgs, slice(0, -30))
 fmri_niimgs_test = index_img(fmri_niimgs, slice(-30, None))
 conditions_train = conditions[:-30]
