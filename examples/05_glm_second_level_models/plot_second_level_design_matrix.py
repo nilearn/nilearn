@@ -37,7 +37,7 @@ extra_info_subjects = pd.DataFrame({'subject_label': subjects_label,
 # Create a second level design matrix
 # -----------------------------------
 # With that information we can create the second level design matrix.
-from nilearn.stats.design_matrix import make_second_level_design_matrix
+from nilearn.stats.second_level_design_matrix import make_second_level_design_matrix
 design_matrix = make_second_level_design_matrix(subjects_label, extra_info_subjects)
 
 #########################################################################

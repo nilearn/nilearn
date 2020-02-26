@@ -45,7 +45,7 @@ z_map = second_level_model.compute_contrast(output_type='z_score')
 #########################################################################
 # Threshold the resulting map:
 # false positive rate < .001, cluster size > 10 voxels.
-from nilearn.stats.thresholding import map_threshold
+from nilearn.stats import map_threshold
 thresholded_map1, threshold1 = map_threshold(
     z_map, alpha=.001, height_control='fpr', cluster_threshold=10)
 

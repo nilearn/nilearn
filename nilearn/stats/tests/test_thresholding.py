@@ -9,7 +9,7 @@ from numpy.testing import (assert_almost_equal,
                            )
 from scipy.stats import norm
 
-from nilearn.stats.thresholding import (fdr_threshold,
+from nilearn.stats import (fdr_threshold,
                                         map_threshold,
                                         cluster_level_inference,
                                         )

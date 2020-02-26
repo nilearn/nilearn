@@ -55,7 +55,7 @@ mean_image = mean_img(fmri_img)
 # Make the design matrices.
 import numpy as np
 import pandas as pd
-from nilearn.stats.design_matrix import make_first_level_design_matrix
+from nilearn.stats.first_level_model import make_first_level_design_matrix
 design_matrices = []
 
 #########################################################################

@@ -49,7 +49,7 @@ events = pd.DataFrame({'trial_type': conditions, 'onset': onsets,
 #########################################################################
 # We sample the events into a design matrix, also including additional regressors.
 hrf_model = 'glover'
-from nilearn.stats.design_matrix import make_first_level_design_matrix
+from nilearn.stats.first_level_model import make_first_level_design_matrix
 X1 = make_first_level_design_matrix(
     frame_times, events, drift_model='polynomial', drift_order=3,
     add_regs=motion, add_reg_names=add_reg_names, hrf_model=hrf_model)

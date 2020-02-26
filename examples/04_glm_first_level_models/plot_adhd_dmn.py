@@ -19,7 +19,7 @@ from nilearn import datasets, plotting
 from nilearn.input_data import NiftiSpheresMasker
 
 from nilearn.stats.first_level_model import FirstLevelModel
-from nilearn.stats.design_matrix import make_first_level_design_matrix
+from nilearn.stats.first_level_model import make_first_level_design_matrix
 
 #########################################################################
 # Prepare data and analysis parameters

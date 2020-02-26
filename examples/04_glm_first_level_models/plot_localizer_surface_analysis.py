@@ -81,7 +81,7 @@ frame_times = t_r * (np.arange(n_scans) + .5)
 #
 # We specify an hrf model containing the Glover model and its time derivative
 # The drift model is implicitly a cosine basis with a period cutoff at 128s.
-from nilearn.stats.design_matrix import make_first_level_design_matrix
+from nilearn.stats.first_level_model import make_first_level_design_matrix
 design_matrix = make_first_level_design_matrix(frame_times,
                                                events=events,
                                                hrf_model='glover + derivative'

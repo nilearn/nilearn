@@ -75,7 +75,7 @@ fsaverage = fetch_surf_fsaverage(mesh='fsaverage5')
 # Note that those correspond spatially, as they are both in MNI space.
 import numpy as np
 from nilearn import surface
-from nilearn.stats.design_matrix import make_first_level_design_matrix
+from nilearn.stats.first_level_model import make_first_level_design_matrix
 from nilearn.stats.first_level_model import run_glm
 from nilearn.stats.contrasts import compute_contrast
 

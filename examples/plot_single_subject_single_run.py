@@ -212,7 +212,7 @@ plt.show()
 # alpha) at a certain level, e.g. 0.001: this means that there is 0.1% chance
 # of declaring an inactive voxel, active.
 
-from nilearn.stats.thresholding import map_threshold
+from nilearn.stats import map_threshold
 _, threshold = map_threshold(z_map, alpha=.001, height_control='fpr')
 print('Uncorrected p<0.001 threshold: %.3f' % threshold)
 plot_stat_map(z_map, bg_img=mean_img, threshold=threshold,

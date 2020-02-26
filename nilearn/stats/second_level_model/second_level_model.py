@@ -29,7 +29,7 @@ from nilearn.stats.first_level_model import (FirstLevelModel,
 from nilearn.stats.contrasts import (compute_contrast,
                                      expression_to_contrast_vector)
 from nilearn.stats.first_level_model.design_matrix import make_second_level_design_matrix
-from nilearn.stats.regression import SimpleRegressionResults
+from nilearn.stats import SimpleRegressionResults
 
 
 def _check_second_level_input(second_level_input, design_matrix,

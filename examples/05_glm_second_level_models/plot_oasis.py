@@ -96,7 +96,7 @@ z_map = second_level_model.compute_contrast(second_level_contrast=[1, 0, 0],
 ###########################################################################
 # We threshold the second level contrast at uncorrected p < 0.001 and plot it.
 from nilearn import plotting
-from nilearn.stats.thresholding import map_threshold
+from nilearn.stats import map_threshold
 _, threshold = map_threshold(
     z_map, alpha=.05, height_control='fdr')
 print('The FDR=.05-corrected threshold is: %.3g' % threshold)

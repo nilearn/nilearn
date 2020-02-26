@@ -55,7 +55,7 @@ from scipy.stats import norm
 p_val = 0.001
 p001_uncorrected = norm.isf(p_val)
 
-from nilearn.stats.thresholding import cluster_level_inference
+from nilearn.stats import cluster_level_inference
 proportion_true_discoveries_img = cluster_level_inference(z_map, threshold=[3, 4, 5], alpha=.05)
 
 plotting.plot_stat_map(
