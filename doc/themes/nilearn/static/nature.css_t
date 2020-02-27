@@ -1707,8 +1707,8 @@ div.sg-report iframe {
 /* gallery download note */
 
 div.body div.sphx-glr-download-link-note {
-    text-align: left;
     float: left;
+    text-align: left;
     border-radius: 4px;
     color: #006801;
     background-color: #dff0d8;
@@ -1718,12 +1718,22 @@ div.body div.sphx-glr-download-link-note {
     width: 43ex;
 }
 
+@media (min-width: 1200px) {
+  div.body div.sphx-glr-download-link-note {
+    /* Flush to the left: 50% of viewport width 
+     * minus half of the bodywrapper width,
+     * minus the half width of the sphinxsidebar */
+    float: none;
+    margin-left: calc(32em - 50vw + 123px);
+    margin-bottom: -10ex;
+}
+
 @media (min-width: 1420px) {
   div.body div.sphx-glr-download-link-note {
-    float: none;
     position: absolute;
     left: 5px;
     width: 15ex;
+    margin-left: 0px;
   }
 }
 
