@@ -314,6 +314,9 @@ div.related ul {
     border-bottom: 2px solid #727272;
     margin: 0;
     padding-left: 10px;
+    white-space: nowrap;
+    overflow-y: hidden;
+    overflow-x: hidden;
 }
 
 div.related ul li {
@@ -333,7 +336,7 @@ div.related ul li#navbar-ecosystem {
     margin-right: 0.5em;
 }
 
-@media (max-width: 800px) {
+@media (max-width: 1000px) {
     div.related ul li#navbar-ecosystem {
 	display: none;
     }
