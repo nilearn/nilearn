@@ -1,9 +1,6 @@
 """
 Analysing fMRI data using GLMs.
 """
-from nilearn.stats import (first_level_model,
-                           second_level_model,
-                           )
 from nilearn.stats.contrasts import (
     compute_contrast,
     compute_fixed_effects,
@@ -32,8 +29,6 @@ __all__ = [
     'compute_fixed_effects',
     'Contrast',
     'expression_to_contrast_vector',
-    'first_level_model',
-    'second_level_model',
     'LikelihoodModelResults',
     'TContrastResults',
     'FContrastResults',

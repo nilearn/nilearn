@@ -415,12 +415,6 @@ uses.
     cluster_level_inference
     map_threshold
 
-.. _first_level_model_ref:
-
-
-:mod:`nilearn.stats.first_level_model`: First Level Model
----------------------------------------------------------
-
 **Classes**:
 
 .. currentmodule:: nilearn.stats.first_level_model
@@ -452,11 +446,6 @@ uses.
     spm_hrf
     spm_time_derivative
 
-.. _second_level_model_ref:
-
-
-:mod:`nilearn.stats.second_level_model`: Second Level Model
------------------------------------------------------------
 
 **Classes**:
 
