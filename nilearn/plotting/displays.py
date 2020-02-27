@@ -5,7 +5,7 @@ The main purpose of these classes is to have auto adjust of axes size to
 the data with different layout of cuts.
 """
 
-import collections
+import collections.abc
 import numbers
 from distutils.version import LooseVersion
 
@@ -608,7 +608,7 @@ class BaseSlicer(object):
             axes = [0., 0., 1., 1.]
             if leave_space:
                 axes = [0.3, 0, .7, 1.]
-        if isinstance(axes, collections.Sequence):
+        if isinstance(axes, collections.abc.Sequence):
             axes = figure.add_axes(axes)
         # People forget to turn their axis off, or to set the zorder, and
         # then they cannot see their slicer
@@ -1576,7 +1576,7 @@ class BaseStackedSlicer(BaseSlicer):
             lower, upper = bounds['xyz'.index(cls._direction)]
             cut_coords = np.linspace(lower, upper, cut_coords).tolist()
         else:
-            if (not isinstance(cut_coords, collections.Sequence) and
+            if (not isinstance(cut_coords, collections.abc.Sequence) and
                     isinstance(cut_coords, numbers.Number)):
                 cut_coords = find_cut_slices(img,
                                              direction=cls._direction,

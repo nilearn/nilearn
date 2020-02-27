@@ -6,7 +6,7 @@ Neuroimaging file input and output.
 
 import copy
 import gc
-import collections
+import collections.abc
 
 import numpy as np
 import nibabel
@@ -165,7 +165,7 @@ def _repr_niimgs(niimgs):
     """
     if isinstance(niimgs, _basestring):
         return niimgs
-    if isinstance(niimgs, collections.Iterable):
+    if isinstance(niimgs, collections.abc.Iterable):
         return '[%s]' % ', '.join(_repr_niimgs(niimg) for niimg in niimgs)
     # Nibabel objects have a 'get_filename'
     try:
