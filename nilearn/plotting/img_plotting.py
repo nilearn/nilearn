@@ -33,7 +33,6 @@ from ..image import new_img_like
 from .._utils.extmath import fast_abs_percentile
 from .._utils.param_validation import check_threshold
 from .._utils.ndimage import get_border_data
-from .._utils.exceptions import VisibleDeprecationWarning
 from ..datasets import load_mni152_template
 from ..image import iter_img
 from .displays import get_slicer, get_projector
