@@ -413,7 +413,7 @@ uses.
     cluster_level_inference
     map_threshold
 
-.. _first_level_models_ref:
+.. _first_level_model_ref:
 
 
 :mod:`nilearn.stats.first_level_model`: First Level Model
