@@ -4,7 +4,7 @@ Downloading NeuroImaging datasets: utility functions
 import os
 import numpy as np
 import base64
-import collections
+import collections.abc
 import contextlib
 import fnmatch
 import hashlib
@@ -397,7 +397,7 @@ def _filter_column(array, col, criteria):
     if (not isinstance(criteria, _basestring) and
         not isinstance(criteria, bytes) and
         not isinstance(criteria, tuple) and
-            isinstance(criteria, collections.Iterable)):
+            isinstance(criteria, collections.abc.Iterable)):
         filter = np.zeros(array.shape[0], dtype=np.bool)
         for criterion in criteria:
             filter = np.logical_or(filter,
