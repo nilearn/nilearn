@@ -476,7 +476,6 @@ uses.
 
     make_second_level_design_matrix
     non_parametric_inference
-    SecondLevelModel
 
 .. _reporting_ref:
 
