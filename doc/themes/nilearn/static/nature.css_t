@@ -1730,6 +1730,10 @@ div.body div.sphx-glr-download-link-note {
 @media (min-width: 1550px) {
     div.body div.sphx-glr-download-link-note {
 	width: 20ex;
+	/* 47% of viewport width minus half of the bodywrapper width,
+	 * minus the half width of the sphinxsidebar, minus the width of this
+	 * div */
+	margin-left: calc(47vw - 31em - 123px - 20ex);
     }
 }
 
