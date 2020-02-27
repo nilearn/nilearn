@@ -1,5 +1,5 @@
 import json
-import collections
+import collections.abc
 
 import numpy as np
 import matplotlib as mpl
@@ -66,7 +66,7 @@ def one_mesh_info(surf_map, surf_mesh, threshold=None, cmap=cm.cold_hot,
 def _check_mesh(mesh):
     if isinstance(mesh, str):
         return datasets.fetch_surf_fsaverage(mesh)
-    if not isinstance(mesh, collections.Mapping):
+    if not isinstance(mesh, collections.abc.Mapping):
         raise TypeError("The mesh should be a str or a dictionary, "
                         "you provided: {}.".format(type(mesh).__name__))
     missing = {'pial_left', 'pial_right', 'sulc_left', 'sulc_right',

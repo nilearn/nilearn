@@ -123,6 +123,8 @@ uses.
    :toctree: generated/
    :template: class.rst
 
+   Decoder 
+   DecoderRegressor
    SpaceNetClassifier
    SpaceNetRegressor
    SearchLight

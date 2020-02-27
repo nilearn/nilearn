@@ -181,16 +181,10 @@ the other, although the prediction scores are fairly similar. In other
 terms, a well-performing estimator in terms of prediction error gives us
 little guarantee on the brain maps.
 
-.. image:: ../auto_examples/02_decoding/images/sphx_glr_plot_haxby_different_estimators_007.png
-   :target: ../auto_examples/02_decoding/plot_haxby_different_estimators.html
-   :scale: 70
-.. image:: ../auto_examples/02_decoding/images/sphx_glr_plot_haxby_different_estimators_008.png
+.. image:: ../auto_examples/02_decoding/images/sphx_glr_plot_haxby_different_estimators_006.png
    :target: ../auto_examples/02_decoding/plot_haxby_different_estimators.html
    :scale: 70
 .. image:: ../auto_examples/02_decoding/images/sphx_glr_plot_haxby_different_estimators_005.png
-   :target: ../auto_examples/02_decoding/plot_haxby_different_estimators.html
-   :scale: 70
-.. image:: ../auto_examples/02_decoding/images/sphx_glr_plot_haxby_different_estimators_006.png
    :target: ../auto_examples/02_decoding/plot_haxby_different_estimators.html
    :scale: 70
 .. image:: ../auto_examples/02_decoding/images/sphx_glr_plot_haxby_different_estimators_004.png
@@ -200,12 +194,6 @@ little guarantee on the brain maps.
    :target: ../auto_examples/02_decoding/plot_haxby_different_estimators.html
    :scale: 70
 .. image:: ../auto_examples/02_decoding/images/sphx_glr_plot_haxby_different_estimators_003.png
-   :target: ../auto_examples/02_decoding/plot_haxby_different_estimators.html
-   :scale: 70
-.. image:: ../auto_examples/02_decoding/images/sphx_glr_plot_haxby_different_estimators_009.png
-   :target: ../auto_examples/02_decoding/plot_haxby_different_estimators.html
-   :scale: 70
-.. image:: ../auto_examples/02_decoding/images/sphx_glr_plot_haxby_different_estimators_010.png
    :target: ../auto_examples/02_decoding/plot_haxby_different_estimators.html
    :scale: 70
 
