@@ -1,24 +1,27 @@
 """
 Analysing fMRI data using GLMs.
 """
-from .contrasts import (
+from nilearn.stats import (first_level_model,
+                           second_level_model,
+                           )
+from nilearn.stats.contrasts import (
     compute_contrast,
     compute_fixed_effects,
     Contrast,
     expression_to_contrast_vector,
 )
-from .model import (
+from nilearn.stats.model import (
     LikelihoodModelResults,
     TContrastResults,
     FContrastResults,
 )
-from .regression import (
+from nilearn.stats.regression import (
     OLSModel,
     ARModel,
     RegressionResults,
     SimpleRegressionResults,
 )
-from .thresholding import (
+from nilearn.stats.thresholding import (
     fdr_threshold,
     cluster_level_inference,
     map_threshold,
@@ -29,6 +32,8 @@ __all__ = [
     'compute_fixed_effects',
     'Contrast',
     'expression_to_contrast_vector',
+    'first_level_model',
+    'second_level_model',
     'LikelihoodModelResults',
     'TContrastResults',
     'FContrastResults',
