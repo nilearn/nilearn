@@ -245,7 +245,7 @@ def fetch_nyu_rest(n_subjects=None, sessions=[1], data_dir=None, resume=True,
     """
     warnings.warn("fetch_nyu_rest has been deprecated and will "
                   "be removed in the 0.8.x release.",
-                  VisibleDeprecationWarning, stacklevel=2)
+                  np.VisibleDeprecationWarning, stacklevel=2)
 
     fa1 = 'http://www.nitrc.org/frs/download.php/1071/NYU_TRT_session1a.tar.gz'
     fb1 = 'http://www.nitrc.org/frs/download.php/1072/NYU_TRT_session1b.tar.gz'
