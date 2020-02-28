@@ -98,8 +98,8 @@ commands:
           command: |
             source activate testenv
             pip install -e .
-            changed_examples=`git diff --name-only master | grep -e examples/ | grep -e /**/*.py`
-            changed_sources=`git diff --name-only master | grep -v examples/ | grep -e /**/*.py`
+            export changed_examples=`git diff --name-only master | grep -e examples/ | grep -e /**/*.py` >> $BASH_ENV
+            export changed_sources=`git diff --name-only master | grep -v examples/ | grep -e /**/*.py` >> $BASH_ENV
 
             make html-noplot
             for changed_example_ in $changed_examples
@@ -162,11 +162,7 @@ jobs:
       - restore_from_cache
       - cache_aware_conda_setup
       - install_dependencies
-      - run: source activate testenv
-      - run: pip install -e .
-      - run: export changed_examples=`git diff --name-only master | grep -e examples/ | grep -e /**/*.py` >> $BASH_ENV
-      - run: export changed_sources=`git diff --name-only master | grep -v examples/ | grep -e /**/*.py` >> $BASH_ENV
-      - run: make html-noplot
+      - build_docs
       - store_results
       - save_to_cache
 
