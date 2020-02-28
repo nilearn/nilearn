@@ -373,7 +373,7 @@ uses.
    clean
    high_variance_confounds
 
-.. _stats_ref::
+.. _stats_ref:
 
 
 :mod:`nilearn.stats`: Stats & GLMs
