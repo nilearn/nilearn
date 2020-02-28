@@ -164,8 +164,8 @@ jobs:
       - install_dependencies
       - run: source activate testenv
       - run: pip install -e .
-      - run: changed_examples=`git diff --name-only master | grep -e examples/ | grep -e /**/*.py`
-      - run: changed_sources=`git diff --name-only master | grep -v examples/ | grep -e /**/*.py`
+      - run: export changed_examples=`git diff --name-only master | grep -e examples/ | grep -e /**/*.py` >> $BASH_ENV
+      - run: export changed_sources=`git diff --name-only master | grep -v examples/ | grep -e /**/*.py` >> $BASH_ENV
       - run: make html-noplot
       - store_results
       - save_to_cache
