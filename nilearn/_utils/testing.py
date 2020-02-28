@@ -3,7 +3,6 @@
 # License: simplified BSD
 import contextlib
 import functools
-import inspect
 import os
 import sys
 import tempfile
