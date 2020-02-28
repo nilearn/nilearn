@@ -21,85 +21,12 @@ from sklearn.utils import Bunch
 from .utils import (_get_dataset_dir, _fetch_files, _get_dataset_descr,
                     _read_md5_sum_file, _tree, _filter_columns, _fetch_file, _uncompress_file)
 from .._utils import check_niimg
-from .._utils.compat import BytesIO, _basestring, _urllib
+from .._utils.compat import BytesIO, _basestring
 from .._utils.numpy_conversions import csv_to_array
-from .._utils.exceptions import VisibleDeprecationWarning
 from nilearn.image import get_data
 
 
-def fetch_haxby_simple(data_dir=None, url=None, resume=True, verbose=1):
-    """Download and load a simple example haxby dataset.
-
-    NOTE: This function is deprecated and will be removed in
-    0.7.0 release. Use `fetch_haxby` instead.
-
-    Parameters
-    ----------
-    data_dir: string, optional
-        Path of the data directory. Used to force data storage in a specified
-        location. Default: None
-
-    Returns
-    -------
-    data: sklearn.datasets.base.Bunch
-        Dictionary-like object, interest attributes are:
-        'func': list of string.  Path to nifti file with bold data.
-        'session_target': list of string. Path to text file containing session and
-        target data.
-        'mask': string. Path to nifti mask file.
-        'session': list of string. Path to text file containing labels
-        (can be used for LeaveOneGroupOut cross validation for example).
-
-    References
-    ----------
-    `Haxby, J., Gobbini, M., Furey, M., Ishai, A., Schouten, J.,
-    and Pietrini, P. (2001). Distributed and overlapping representations of
-    faces and objects in ventral temporal cortex. Science 293, 2425-2430.`
-
-    Notes
-    -----
-    PyMVPA provides a tutorial using this dataset :
-    http://www.pymvpa.org/tutorial.html
-
-    More informations about its structure :
-    http://dev.pymvpa.org/datadb/haxby2001.html
-
-    See `additional information
-    <http://www.sciencemag.org/content/293/5539/2425>`_
-    """
-    warnings.warn("fetch_haxby_simple has been deprecated and will "
-                  "be removed in the 0.7.x release. "
-                  "Use 'fetch_haxby' instead",
-                  VisibleDeprecationWarning, stacklevel=2)
-
-    # URL of the dataset. It is optional because a test uses it to test dataset
-    # downloading
-    if url is None:
-        url = 'http://www.pymvpa.org/files/pymvpa_exampledata.tar.bz2'
-
-    opts = {'uncompress': True}
-    files = [
-            (os.path.join('pymvpa-exampledata', 'attributes.txt'), url, opts),
-            (os.path.join('pymvpa-exampledata', 'bold.nii.gz'), url, opts),
-            (os.path.join('pymvpa-exampledata', 'mask.nii.gz'), url, opts),
-            (os.path.join('pymvpa-exampledata', 'attributes_literal.txt'),
-             url, opts),
-    ]
-
-    dataset_name = 'haxby2001_simple'
-    data_dir = _get_dataset_dir(dataset_name, data_dir=data_dir,
-                                verbose=verbose)
-    files = _fetch_files(data_dir, files, resume=resume, verbose=verbose)
-
-    # There is a common file for the two versions of Haxby
-    fdescr = _get_dataset_descr('haxby2001')
-
-    # List of length 1 are used because haxby_simple is single-subject
-    return Bunch(func=[files[1]], session_target=[files[0]], mask=files[2],
-                 conditions_target=[files[3]], description=fdescr)
-
-
-def fetch_haxby(data_dir=None, n_subjects=None, subjects=(2,),
+def fetch_haxby(data_dir=None, subjects=(2,),
                 fetch_stimuli=False, url=None, resume=True, verbose=1):
     """Download and loads complete haxby dataset
 
@@ -108,12 +35,6 @@ def fetch_haxby(data_dir=None, n_subjects=None, subjects=(2,),
     data_dir: string, optional
         Path of the data directory. Used to force data storage in a specified
         location. Default: None
-
-    n_subjects: int, optional
-        Number of subjects, from 1 to 6.
-
-        NOTE: n_subjects is deprecated from 0.2.6 and will be removed in next
-        release. Use `subjects` instead.
 
     subjects : list or int, optional
         Either a list of subjects or the number of subjects to load, from 1 to
@@ -161,12 +82,6 @@ def fetch_haxby(data_dir=None, n_subjects=None, subjects=(2,),
     Run 8 in subject 5 does not contain any task labels.
     The anatomical image for subject 6 is unavailable.
     """
-    if n_subjects is not None:
-        warn_str = ("The parameter 'n_subjects' is deprecated from 0.2.6 and "
-                    "will be removed in nilearn next release. Use parameter "
-                    "'subjects' instead.")
-        warnings.warn(warn_str, VisibleDeprecationWarning, stacklevel=2)
-        subjects = n_subjects
 
     if isinstance(subjects, numbers.Number) and subjects > 6:
         subjects = 6
@@ -337,7 +252,7 @@ def fetch_nyu_rest(n_subjects=None, sessions=[1], data_dir=None, resume=True,
     """
     warnings.warn("fetch_nyu_rest has been deprecated and will "
                   "be removed in the 0.8.x release.",
-                  VisibleDeprecationWarning, stacklevel=2)
+                  np.VisibleDeprecationWarning, stacklevel=2)
 
     fa1 = 'http://www.nitrc.org/frs/download.php/1071/NYU_TRT_session1a.tar.gz'
     fb1 = 'http://www.nitrc.org/frs/download.php/1072/NYU_TRT_session1b.tar.gz'
