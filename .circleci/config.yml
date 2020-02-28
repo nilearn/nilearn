@@ -98,7 +98,23 @@ commands:
           command: |
             source activate testenv
             pip install -e .
-            set -o pipefail && cd doc && make html-strict 2>&1 | tee log.txt
+            # set -o pipefail && cd doc && make html-strict 2>&1 | tee log.txt
+            set -o pipefail
+            cd doc
+            changed_examples=`git diff --name-only master | grep -e examples/ | grep -e /**/*.py`
+            changed_sources=`git diff --name-only master | grep -v examples/ | grep -e /**/*.py`
+
+            make html-noplot
+            for changed_example_ in $changed_examples
+            do
+              python -m sphinx -W -D sphinx_gallery_conf.filename_pattern=$changed_example_ -b html -d _build/doctrees . _build/html
+            done
+
+            for changed_source_ in $changed_sources
+            do
+              python -m sphinx -W -D sphinx_gallery_conf.filename_pattern=$changed_source_ -b html -d _build/doctrees . _build/html
+            done
+
           no_output_timeout: 7h
 
   store_results:
