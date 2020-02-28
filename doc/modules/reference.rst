@@ -418,8 +418,8 @@ uses.
     map_threshold
 
 
-`nilearn.stats.first_level_model`: First Level Model
-----------------------------------------------------
+:mod:`nilearn.stats.first_level_model`: First Level Model
+----------------------------------------------------------
 
 
 **Classes**:
@@ -453,8 +453,8 @@ uses.
     spm_hrf
     spm_time_derivative
 
-`nilearn.stats.second_level_model`: Second  Level Model
--------------------------------------------------------
+:mod:`nilearn.stats.second_level_model`: Second  Level Model
+------------------------------------------------------------
 
 **Classes**:
 
