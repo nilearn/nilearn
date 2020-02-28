@@ -98,6 +98,7 @@ commands:
           command: |
             source activate testenv
             pip install -e .
+            cd doc
             export changed_examples=`git diff --name-only master | grep -e examples/ | grep -e /**/*.py` >> $BASH_ENV
             export changed_sources=`git diff --name-only master | grep -v examples/ | grep -e /**/*.py` >> $BASH_ENV
 
