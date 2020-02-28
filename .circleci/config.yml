@@ -162,7 +162,11 @@ jobs:
       - restore_from_cache
       - cache_aware_conda_setup
       - install_dependencies
-      - build_docs
+      - run: source activate testenv
+      - run: pip install -e .
+      - run: changed_examples=`git diff --name-only master | grep -e examples/ | grep -e /**/*.py`
+      - run: changed_sources=`git diff --name-only master | grep -v examples/ | grep -e /**/*.py`
+      - run: make html-noplot
       - store_results
       - save_to_cache
 
