@@ -2,7 +2,8 @@
 Decoding with ANOVA + SVM: face vs house in the Haxby dataset
 ===============================================================
 
-This example does a simple but efficient decoding on the Haxby dataset:
+This example does a simple <JUNK TET FOR TESTING TO BE REMOVED LATER>
+but efficient decoding on the Haxby dataset:
 using a feature selection, followed by an SVM.
 
 """

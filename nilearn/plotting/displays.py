@@ -1050,7 +1050,7 @@ class BaseSlicer(object):
 
 class OrthoSlicer(BaseSlicer):
     """ A class to create 3 linked axes for plotting orthogonal
-    cuts of 3D maps.
+    cuts of 3D maps. <JUNK TEXT FOR TESTING TO BE REMOVED LATER>
 
     Attributes
     ----------
