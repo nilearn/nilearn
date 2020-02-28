@@ -39,4 +39,6 @@ __all__ = [
     'fdr_threshold',
     'cluster_level_inference',
     'map_threshold',
+    'first_level_model',
+    'second_level_model',
 ]

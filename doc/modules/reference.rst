@@ -373,6 +373,8 @@ uses.
    clean
    high_variance_confounds
 
+.. _stats_ref::
+
 
 :mod:`nilearn.stats`: Stats & GLMs
 ==================================
@@ -415,6 +417,11 @@ uses.
     cluster_level_inference
     map_threshold
 
+
+`nilearn.stats.first_level_model`: First Level Model
+----------------------------------------------------
+
+
 **Classes**:
 
 .. currentmodule:: nilearn.stats.first_level_model
@@ -446,6 +453,8 @@ uses.
     spm_hrf
     spm_time_derivative
 
+`nilearn.stats.second_level_model`: Second  Level Model
+-------------------------------------------------------
 
 **Classes**:
 
