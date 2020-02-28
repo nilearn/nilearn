@@ -98,8 +98,6 @@ commands:
           command: |
             source activate testenv
             pip install -e .
-            # set -o pipefail && cd doc && make html-strict 2>&1 | tee log.txt
-            cd doc
             changed_examples=`git diff --name-only master | grep -e examples/ | grep -e /**/*.py`
             changed_sources=`git diff --name-only master | grep -v examples/ | grep -e /**/*.py`
 
