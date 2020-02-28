@@ -233,9 +233,9 @@ for fold in range(n_folds):
     print(
         "CV Fold {:01d} | Prediction Accuracy: {:.3f}".format(
             fold + 1, kfold_scores[fold]))
-avg_accuracy = sum(kfold_scores) * 100 / n_folds 
+avg_accuracy = sum(kfold_scores) * 100 / n_folds
 print("Decoder average cross-validation accuracy : %f%%" % avg_accuracy)
-    
+
 # The decoder also gives the best performing parameters per fold.
 print(decoder.cv_params_['face'])
 
