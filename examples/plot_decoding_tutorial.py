@@ -50,8 +50,8 @@ print('First subject functional nifti images (4D) are at: %s' %
 # using :func:`nilearn.plotting.plot_epi`.
 # We will visualize the previously fetched fmri data from Haxby dataset.
 #
-# Because fmri data is 4D (it consists of many 3D EPI images), we cannot
-# plot it directly using :func:`nilearn.plotting.plot_epi` (which accepts
+# Because fmri data are 4D (they consist of many 3D EPI images), we cannot
+# plot them directly using :func:`nilearn.plotting.plot_epi` (which accepts
 # just 3D input). Here we are using :func:`nilearn.image.mean_img` to
 # extract a single 3D EPI image from the fmri data.
 #
@@ -131,8 +131,8 @@ print(conditions.shape)
 # Decoding with Support Vector Machine
 # ------------------------------------
 #
-# As a decoder, we use Support Vector Classifier with a linear kernel.
-# We first create it using by using :class:`nilearn.decoding.Decoder`.
+# As a decoder, we use a Support Vector Classifier with a linear kernel. We
+# first create it using by using :class:`nilearn.decoding.Decoder`.
 from nilearn.decoding import Decoder
 decoder = Decoder(estimator='svc', mask=mask_filename, standardize=True)
 
@@ -193,7 +193,7 @@ print("Prediction Accuracy: {:.3f}".format(
 # ..........................
 #
 # We can manually split the data in train and test set repetitively in a
-# `KFold` strategy by importing object from scikit-learn:
+# `KFold` strategy by importing scikit-learn's object:
 from sklearn.model_selection import KFold
 cv = KFold(n_splits=5)
 
@@ -236,6 +236,11 @@ for fold in range(n_folds):
 avg_accuracy = sum(kfold_scores) * 100 / n_folds
 print("Decoder average cross-validation accuracy : %f%%" % avg_accuracy)
 
+###########################################################################
+# Cross-validation pipeline can also be implemented manually. More details can
+# be found on `scikit-learn website
+# <https://scikit-learn.org/stable/modules/generated/sklearn.model_selection.cross_val_score.html>`_.
+#
 # The decoder also gives the best performing parameters per fold.
 print(decoder.cv_params_['face'])
 
@@ -299,13 +304,10 @@ decoder.coef_img_['face'].to_filename('haxby_svc_weights.nii.gz')
 # .........................
 #
 # We can plot the weights, using the subject's anatomical as a background
-from nilearn.plotting import plot_stat_map, show
-plot_stat_map(
+plotting.view_img(
     decoder.coef_img_['face'], bg_img=haxby_dataset.anat[0],
-    title="SVM weights", display_mode="yz", dim=-1
+    title="SVM weights", dim=-1
 )
-
-show()
 
 ###########################################################################
 # Further reading
