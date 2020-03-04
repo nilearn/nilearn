@@ -17,10 +17,15 @@ NEW
   These two objects also leverage the `NiftiMaskers` to provide a direct
   interface with the Nifti files on disk.
 
+
 Fixes
 -----
 
 - :class:`nilearn.input_data.NiftiLabelsMasker` no longer ignores its `mask_img`
+
+- :class:`nilearn.connectome.ConnectivityMeasure` can now remove
+  confounds in its transform step.
+
 
 0.6.2
 ======
