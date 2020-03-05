@@ -151,7 +151,7 @@ def _parallel_fit(estimator, X, y, train, test, param_grid, is_classification,
     # for fREM Classifier and Regressor : start by doing a quick ReNA clustering
     # to reduce the number of feature by agglomerating similar ones
 
-    if do_clustering and (clustering_percentile < & 100):
+    if do_clustering and (clustering_percentile < 100):
         n_clusters = int(X_train.shape[1] * clustering_percentile / 100.)
         clustering = ReNA(mask_img, n_clusters=n_clusters, n_iter=20,
                           threshold=1e-7, scaling=False)
