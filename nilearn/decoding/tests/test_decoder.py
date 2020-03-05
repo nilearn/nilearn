@@ -22,6 +22,7 @@ from sklearn.svm import SVR, LinearSVC
 from sklearn.preprocessing import StandardScaler
 
 from nilearn.decoding.decoder import (_BaseDecoder, Decoder, DecoderRegressor,
+                                      fREMRegressor, fREMClassifier,
                                       _check_estimator, _check_param_grid,
                                       _parallel_fit)
 from nilearn.decoding.tests.test_same_api import to_niimgs
@@ -88,7 +89,7 @@ def test_check_inputs_length():
     # Remove ten samples from y
     y = y[:-10]
 
-    for model in [DecoderRegressor, Decoder]:
+    for model in [DecoderRegressor, Decoder, fREMRegressor, fREMClassifier]:
         pytest.raises(ValueError, model(mask=mask,
                                         screening_percentile=100.).fit, X_, y)
 
@@ -176,6 +177,15 @@ def test_decoder_binary_classification():
         y_pred = model.predict(X)
         assert accuracy_score(y, y_pred) > 0.95
 
+    screening_percentile = 90
+    for clustering_percentile in [100, 80]:
+        model = fREMClassifier(estimator='logistic_l2', mask=mask,
+                               clustering_percentile=clustering_percentile,
+                               screening_percentile=screening_percentile, cv=5)
+        model.fit(X, y)
+        y_pred = model.predict(X)
+        assert accuracy_score(y, y_pred) > 0.9
+
     # check cross-validation scheme and fit attribute with groups enabled
     rand_local = np.random.RandomState(42)
     for cv in [KFold(n_splits=5), LeaveOneGroupOut()]:
@@ -206,6 +216,18 @@ def test_decoder_multiclass_classification():
         model.fit(X, y)
         y_pred = model.predict(X)
         assert accuracy_score(y, y_pred) > 0.95
+
+    # check fREM with clustering or not
+    screening_percentile = 90
+    for clustering_percentile in [100, 80]:
+        for estimator in ['svc_l2', 'svc_l1']:
+            screening_percentile = 90
+            model = fREMClassifier(estimator=estimator, mask=mask,
+                                   clustering_percentile=clustering_percentile,
+                                   screening_percentile=screening_percentile, cv=5)
+            model.fit(X, y)
+            y_pred = model.predict(X)
+            assert accuracy_score(y, y_pred) > 0.9
 
     # check cross-validation scheme and fit attribute with groups enabled
     rand_local = np.random.RandomState(42)
@@ -243,6 +265,14 @@ def test_decoder_regression():
         for screening_percentile in [100, 20]:
             model = DecoderRegressor(estimator=regressor_, mask=mask,
                                      screening_percentile=screening_percentile)
+            model.fit(X, y)
+            y_pred = model.predict(X)
+            assert r2_score(y, y_pred) > 0.95
+        for clustering_percentile in [100, 80]:
+            screening_percentile = 90
+            model = fREMRegressor(estimator=regressor_, mask=mask,
+                                  clustering_percentile=clustering_percentile,
+                                  screening_percentile=screening_percentile, cv=10)
             model.fit(X, y)
             y_pred = model.predict(X)
             assert r2_score(y, y_pred) > 0.95
