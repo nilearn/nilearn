@@ -1,12 +1,15 @@
 """High-level decoding object that exposes standard classification and
 regression strategies such as SVM, LogisticRegression and Ridge, with optional
-feature selection, integrated hyper-parameter selection
-and aggregation strategy in which the best models
-within a cross validation loop are averaged.
+feature selection, integrated hyper-parameter selection and aggregation strategy
+in which the best models within a cross validation loop are averaged.
+
+Also exposes a high-level method fREM which uses clustering and model
+ensembling to achieve state of the art performance
 """
 # Authors: Yannick Schwartz
 #          Andres Hoyos-Idrobo
 #          Binh Nguyen <tuan-binh.nguyen@inria.fr>
+#          Thomas Bazeille
 #
 # License: simplified BSD
 
@@ -19,25 +22,25 @@ from sklearn.base import RegressorMixin
 from sklearn.linear_model import LogisticRegression
 from sklearn.linear_model.base import LinearModel
 from sklearn.linear_model.ridge import RidgeCV, RidgeClassifierCV, _BaseRidgeCV
-from sklearn.model_selection import ParameterGrid, check_cv, LeaveOneGroupOut
+from sklearn.model_selection import ParameterGrid, check_cv, LeaveOneGroupOut, StratifiedShuffleSplit, ShuffleSplit
 from sklearn.preprocessing import LabelBinarizer
 from sklearn.svm import SVR, LinearSVC
 from sklearn.svm.bounds import l1_min_c
 from sklearn.utils.extmath import safe_sparse_dot
 from sklearn.utils.validation import check_is_fitted, check_X_y
 from nilearn._utils.compat import Parallel, delayed
-
+from nilearn.regions.rena_clustering import ReNA
 try:
     from sklearn.metrics import check_scoring
 except ImportError:
     # for scikit-learn 0.18 and 0.19
     from sklearn.metrics.scorer import check_scoring
 
-from .._utils import CacheMixin
-from .._utils.cache_mixin import _check_memory
-from .._utils.param_validation import (_adjust_screening_percentile,
-                                       check_feature_screening)
-from ..input_data.masker_validation import check_embedded_nifti_masker
+from nilearn._utils import CacheMixin
+from nilearn._utils.cache_mixin import _check_memory
+from nilearn._utils.param_validation import (_adjust_screening_percentile,
+                                             check_feature_screening)
+from nilearn.input_data.masker_validation import check_embedded_nifti_masker
 
 SUPPORTED_ESTIMATORS = dict(
     svc_l1=LinearSVC(penalty='l1', dual=False, max_iter=1e4),
@@ -133,24 +136,36 @@ def _check_estimator(estimator):
 
 
 def _parallel_fit(estimator, X, y, train, test, param_grid, is_classification,
-                  scorer, mask_img, class_index, screening_percentile=100):
+                  scorer, mask_img, class_index, screening_percentile=100,
+                  do_clustering=False, clustering_percentile=100):
     """Find the best estimator for a fold within a job.
     This function tries several parameters for the estimator for the train and
     test fold provided and save the ones that performs best. These models are
     used afterwards to build the averaged model.
-
+    This tries may be performed after one step of clustering (ReNA) and one
+    step of feature screening.
     """
-    n_features = X.shape[1]
-    # Checking if the size of the mask image allows us to perform feature
-    # screening
-    selector = check_feature_screening(screening_percentile, mask_img,
-                                       is_classification)
-    do_screening = (n_features > 100) and selector is not None
-
     X_train, y_train = X[train], y[train]
     X_test, y_test = X[test], y[test]
 
-    if (selector is not None) and do_screening:
+    # for fREM Classifier and Regressor : start by doing a quick ReNA clustering
+    # to reduce the number of feature by agglomerating similar ones
+
+    if do_clustering and (clustering_percentile < & 100):
+        n_clusters = int(X_train.shape[1] * clustering_percentile / 100.)
+        clustering = ReNA(mask_img, n_clusters=n_clusters, n_iter=20,
+                          threshold=1e-7, scaling=False)
+        X_train = clustering.fit_transform(X_train)
+        X_test = clustering.transform(X_test)
+
+    # Check if the size of the mask image and the number of features allow
+    # to perform feature screening.
+
+    selector = check_feature_screening(screening_percentile, mask_img,
+                                       is_classification)
+    do_screening = (X_train.shape[1] > 100) and selector is not None
+
+    if do_screening:
         X_train = selector.fit_transform(X_train, y_train)
         X_test = selector.transform(X_test)
 
@@ -175,8 +190,11 @@ def _parallel_fit(estimator, X, y, train, test, param_grid, is_classification,
             best_intercept = estimator.intercept_
             best_param = param
 
-    if (selector is not None) and do_screening:
+    if do_screening:
         best_coef = selector.inverse_transform(best_coef)
+
+    if do_clustering and (clustering_percentile < 100):
+        best_coef = clustering.inverse_transform(best_coef)
 
     return class_index, best_coef, best_intercept, best_param, best_score
 
@@ -222,6 +240,14 @@ class _BaseDecoder(LinearModel, RegressorMixin, CacheMixin):
         useful to avoid exploring parameter combinations that make no sense
         or have no effect. See scikit-learn documentation for more information,
         for example: https://scikit-learn.org/stable/modules/grid_search.html
+
+    do_clustering: boolean. Default False
+        Whether to do a ReNA clustering as first step of fit to agglomerate similar
+        features together and reduce their overall number.
+
+    clustering_percentile: int, float, optional, in the [0, 100] Default: 10.
+        Percentile of features to keep if clustering is performed.
+        ReNA is typically efficient at reducingthe number of features by 10.
 
     screening_percentile: int, float, optional, in the closed interval [0, 100]
         Perform a univariate feature selection based on the Anova F-value for
@@ -297,12 +323,15 @@ class _BaseDecoder(LinearModel, RegressorMixin, CacheMixin):
 
     See Also
     ------------
-    nilearn.decoding.DecoderRegressor: Regression strategies for Neuroimaging,
     nilearn.decoding.Decoder: Classification strategies for Neuroimaging,
+    nilearn.decoding.DecoderRegressor: Regression strategies for Neuroimaging,
+    nilearn.decoding.fREMClassifier: State of the art classification pipeline for Neuroimaging
+    nilearn.decoding.fREMRegressor: State of the art regression pipeline for Neuroimaging
     nilearn.decoding.SpaceNetClassifier: Graph-Net and TV-L1 priors/penalties
     """
 
     def __init__(self, estimator='svc', mask=None, cv=10, param_grid=None,
+                 do_clustering=False, clustering_percentile=100,
                  screening_percentile=20, scoring=None, smoothing_fwhm=None,
                  standardize=True, target_affine=None, target_shape=None,
                  low_pass=None, high_pass=None, t_r=None,
@@ -315,6 +344,8 @@ class _BaseDecoder(LinearModel, RegressorMixin, CacheMixin):
         self.screening_percentile = screening_percentile
         self.scoring = scoring
         self.is_classification = is_classification
+        self.do_clustering = do_clustering
+        self.clustering_percentile = clustering_percentile
         self.smoothing_fwhm = smoothing_fwhm
         self.standardize = standardize
         self.target_affine = target_affine
@@ -445,13 +476,23 @@ class _BaseDecoder(LinearModel, RegressorMixin, CacheMixin):
         self.screening_percentile_ = _adjust_screening_percentile(
             self.screening_percentile, self.mask_img_, verbose=self.verbose)
 
+        if self.do_clustering:
+            n_final_features = X.shape[1] * self.screening_percentile_ * \
+                self.clustering_percentile / 10000
+            if n_final_features < 50:
+                warnings.warn("After clustering and screening, the decoding model will " +
+                              "be trained only on {} features. ".format(n_final_features) +
+                              "You should consider raising clustering_percentile or " +
+                              "screening_percentile parameters", UserWarning)
+
         parallel = Parallel(n_jobs=self.n_jobs, verbose=2 * self.verbose)
 
         parallel_fit_outputs = parallel(
             delayed(self._cache(_parallel_fit))(
                 self.estimator, X, y[:, c], train, test,
                 self.param_grid, self.is_classification, scorer,
-                self.mask_img_, c, self.screening_percentile_)
+                self.mask_img_, c, self.screening_percentile_,
+                self.do_clustering, self.clustering_percentile)
             for c, (train, test) in itertools.product(
                 range(n_problems), self.cv_))
 
@@ -462,9 +503,9 @@ class _BaseDecoder(LinearModel, RegressorMixin, CacheMixin):
         self.coef_ = np.vstack([np.mean(coefs[class_index], axis=0)
                                 for class_index in self.classes_])
         self.std_coef_ = np.vstack([np.std(coefs[class_index], axis=0)
-                                   for class_index in self.classes_])
-        self.intercept_ = np.hstack([np.mean(intercepts[class_index], axis=0)
                                     for class_index in self.classes_])
+        self.intercept_ = np.hstack([np.mean(intercepts[class_index], axis=0)
+                                     for class_index in self.classes_])
 
         self.coef_img_, self.std_coef_img_ = self._output_image(
             self.classes_, self.coef_, self.std_coef_)
@@ -603,6 +644,17 @@ class _BaseDecoder(LinearModel, RegressorMixin, CacheMixin):
 
         return coef_img, std_coef_img
 
+    def _binarize_y(self, y):
+        """Helper function invoked just before fitting a classifier."""
+        y = np.array(y)
+
+        # encode target classes as -1 and 1
+        self._enc = LabelBinarizer(pos_label=1, neg_label=-1)
+        y = self._enc.fit_transform(y)
+        self.classes_ = self._enc.classes_
+        self.n_classes_ = len(self.classes_)
+        return y
+
 
 class Decoder(_BaseDecoder):
     """A wrapper for popular classification strategies in neuroimaging.
@@ -715,6 +767,7 @@ class Decoder(_BaseDecoder):
     See Also
     ------------
     nilearn.decoding.DecoderRegressor: regression strategies for Neuro-imaging,
+    nilearn.decoding.fREMClassifier: State of the art classification pipeline for Neuroimaging
     nilearn.decoding.SpaceNetClassifier: Graph-Net and TV-L1 priors/penalties
     """
 
@@ -733,17 +786,6 @@ class Decoder(_BaseDecoder):
             high_pass=high_pass, t_r=t_r, memory=memory,
             is_classification=True, memory_level=memory_level,
             verbose=verbose, n_jobs=n_jobs)
-
-    def _binarize_y(self, y):
-        """Helper function invoked just before fitting a classifier."""
-        y = np.array(y)
-
-        # encode target classes as -1 and 1
-        self._enc = LabelBinarizer(pos_label=1, neg_label=-1)
-        y = self._enc.fit_transform(y)
-        self.classes_ = self._enc.classes_
-        self.n_classes_ = len(self.classes_)
-        return y
 
 
 class DecoderRegressor(_BaseDecoder):
@@ -856,6 +898,7 @@ class DecoderRegressor(_BaseDecoder):
     See Also
     ------------
     nilearn.decoding.Decoder: classification strategies for Neuroimaging,
+    nilearn.decoding.fREMRegressor: State of the art regression pipeline for Neuroimaging
     nilearn.decoding.SpaceNetClassifier: Graph-Net and TV-L1 priors/penalties
     """
 
@@ -876,3 +919,301 @@ class DecoderRegressor(_BaseDecoder):
             mask_strategy=mask_strategy, memory=memory,
             is_classification=False, memory_level=memory_level,
             verbose=verbose, n_jobs=n_jobs)
+
+
+class fREMRegressor(_BaseDecoder):
+    """ State of the art decoding scheme applied to usual regression estimators.
+
+    fREM uses an implicit spatial regularization through fast clustering and
+    aggregates a high number of estimators trained on various splits of the
+    training set, thus returning a very robust decoder at a lower computational
+    cost than other spatially regularized methods.[1]_.
+
+    Parameters
+    -----------
+    estimator: str, optional
+        The estimator to choose among: 'ridge', 'ridge_regressor', and 'svr'.
+        Note that the 'ridge' and 'ridge_regressor' correspond to the same
+        estimator. Default 'svr'.
+
+    mask: filename, Nifti1Image, NiftiMasker, or MultiNiftiMasker, optional
+        Mask to be used on data. If an instance of masker is passed,
+        then its mask and parameters will be used. If no mask is given, mask
+        will be computed automatically from provided images by an inbuilt
+        masker with default parameters. Refer to NiftiMasker or
+        MultiNiftiMasker to check for default parameters. Default None
+
+    cv : int or cross-validation generator, optional (default 30)
+        If int, number of shuffled splits returned, which is usually
+        the right way to train many different classifiers. A good trade-off between
+        stability of the aggregated model and computation time is 50 splits.
+        Can also be a cross-validation generator.
+
+    param_grid: dict of str to sequence, or sequence of such. Default None
+        The parameter grid to explore, as a dictionary mapping estimator
+        parameters to sequences of allowed values.
+
+        None or an empty dict signifies default parameters.
+
+        A sequence of dicts signifies a sequence of grids to search, and is
+        useful to avoid exploring parameter combinations that make no sense
+        or have no effect. See scikit-learn documentation for more information,
+        for example: https://scikit-learn.org/stable/modules/grid_search.html
+
+    clustering_percentile: int, float, optional, in the closed interval [0, 100]
+        Used to perform a fast ReNA clustering on input data as a first step
+        of fit. It agglomerates similar features together to reduce their number
+        by this percentile. ReNA is typically efficient at reducing the number
+        of features by 10. Default: 10.
+
+    screening_percentile: int, float, optional, in the closed interval [0, 100]
+        Perform a univariate feature selection based on the Anova F-value for
+        the input data. A float according to a percentile of the highest
+        scores. Default: 20.
+
+    scoring: str, callable or None, optional. Default: 'r2'
+        The scoring strategy to use. See the scikit-learn documentation at
+        https://scikit-learn.org/stable/modules/model_evaluation.html#the-scoring-parameter-defining-model-evaluation-rules
+        If callable, takes as arguments the fitted estimator, the
+        test data (X_test) and the test target (y_test) if y is
+        not None.
+        e.g. scorer(estimator, X_test, y_test)
+
+        For regression, valid entries are: 'r2', 'neg_mean_absolute_error',
+        or 'neg_mean_squared_error'. Default: 'r2'.
+
+    smoothing_fwhm: float, optional. Default: None
+        If smoothing_fwhm is not None, it gives the size in millimeters of the
+        spatial smoothing to apply to the signal.
+
+    standardize: bool, optional. Default: True
+        If standardize is True, the time-series are centered and normed:
+        their variance is put to 1 in the time dimension.
+
+    target_affine: 3x3 or 4x4 matrix, optional. Default: None
+        This parameter is passed to image.resample_img. Please see the
+        related documentation for details.
+
+    target_shape: 3-tuple of int, optional. Default: None
+        This parameter is passed to image.resample_img. Please see the
+        related documentation for details.
+
+    low_pass: None or float, optional
+        This parameter is passed to signal.clean. Please see the related
+        documentation for details
+
+    high_pass: None or float, optional
+        This parameter is passed to signal.clean. Please see the related
+        documentation for details
+
+    t_r: float, optional. Default: None
+        This parameter is passed to signal.clean. Please see the related
+        documentation for details.
+
+    mask_strategy: {'background' or 'epi'}, optional. Default: 'background'
+        The strategy used to compute the mask: use 'background' if your
+        images present a clear homogeneous background, and 'epi' if they
+        are raw EPI images. Depending on this value, the mask will be
+        computed from masking.compute_background_mask or
+        masking.compute_epi_mask.
+
+        This parameter will be ignored if a mask image is provided.
+
+    memory: instance of joblib.Memory or str
+        Used to cache the masking process.
+        By default, no caching is done. If a str is given, it is the
+        path to the caching directory.
+
+    memory_level: int, optional. Default: 0
+        Rough estimator of the amount of memory used by caching. Higher value
+        means more memory for caching.
+
+    n_jobs: int, optional. Default: 1.
+        The number of CPUs to use to do the computation. -1 means
+        'all CPUs'.
+
+    verbose: int, optional. Default: 0.
+        Verbosity level.
+
+    References
+    ----------
+    .. [1] A. Hoyos-Idrobo, G. Varoquaux, J. Kahn and B. Thirion, "FReM –
+        scalable and stable decoding with fast regularized ensemble of models"
+        in NeuroImage, Elsevier, 2017  pp.1-16, 11 October 2017.
+        https://hal.archives-ouvertes.fr/hal-01615015/
+
+    See Also
+    ------------
+    nilearn.decoding.DecoderRegressor: Regression strategies for Neuroimaging,
+    nilearn.decoding.fREMClassifier: State of the art classification pipeline for Neuroimaging
+    """
+
+    def __init__(self, estimator='svr', mask=None, cv=30, param_grid=None,
+                 clustering_percentile=10, screening_percentile=20, scoring='r2',
+                 smoothing_fwhm=None, standardize=True, target_affine=None,
+                 target_shape=None, mask_strategy='background',
+                 low_pass=None, high_pass=None, t_r=None, memory=None,
+                 memory_level=0, n_jobs=1, verbose=0):
+        self.classes_ = ['beta']
+
+        if isinstance(cv, int):
+            cv = ShuffleSplit(cv)
+
+        super().__init__(
+            estimator=estimator, mask=mask, cv=cv, param_grid=param_grid,
+            do_clustering=True, clustering_percentile=10,
+            screening_percentile=screening_percentile, scoring=scoring,
+            smoothing_fwhm=smoothing_fwhm, standardize=standardize,
+            target_affine=target_affine, target_shape=target_shape,
+            low_pass=low_pass, high_pass=high_pass, t_r=t_r,
+            mask_strategy=mask_strategy, memory=memory, is_classification=False,
+            memory_level=memory_level, verbose=verbose, n_jobs=n_jobs)
+
+
+class fREMClassifier(_BaseDecoder):
+    """ State of the art decoding scheme applied to usual classifiers.
+
+    fREM uses an implicit spatial regularization through fast clustering and
+    aggregates a high number of estimators trained on various splits of the
+    training set, thus returning a very robust decoder at a lower computational
+    cost than other spatially regularized methods.[1]_.
+
+    Parameters
+    -----------
+    estimator: str, optional
+        The estimator to choose among: 'svc', 'svc_l2', 'svc_l1', 'logistic',
+        'logistic_l1', 'logistic_l2' and 'ridge_classifier'. Note that
+        'svc' and 'svc_l2'; 'logistic' and 'logistic_l2' correspond to the same
+        estimator. Default 'svc'.
+
+    mask: filename, Nifti1Image, NiftiMasker, or MultiNiftiMasker, optional
+        Mask to be used on data. If an instance of masker is passed,
+        then its mask and parameters will be used. If no mask is given, mask
+        will be computed automatically from provided images by an inbuilt
+        masker with default parameters. Refer to NiftiMasker or
+        MultiNiftiMasker to check for default parameters. Default None
+
+    cv : int or cross-validation generator, optional (default 30)
+        If int, number of stratified shuffled splits returned, which is usually
+        the right way to train many different classifiers. A good trade-off between
+        stability of the aggregated model and computation time is 50 splits.
+        Can also be a cross-validation generator.
+
+    param_grid: dict of str to sequence, or sequence of such. Default None
+        The parameter grid to explore, as a dictionary mapping estimator
+        parameters to sequences of allowed values.
+
+        None or an empty dict signifies default parameters.
+
+        A sequence of dicts signifies a sequence of grids to search, and is
+        useful to avoid exploring parameter combinations that make no sense
+        or have no effect. See scikit-learn documentation for more information,
+        for example: https://scikit-learn.org/stable/modules/grid_search.html
+
+    clustering_percentile: int, float, optional, in the closed interval [0, 100]
+        Used to perform a fast ReNA clustering on input data as a first step
+        of fit. It agglomerates similar features together to reduce their number
+        by this percentile. ReNA is typically efficient at reducing the number
+        of features by 10. Default: 10.
+
+    screening_percentile: int, float, optional, in the closed interval [0, 100]
+        Perform an univariate feature selection based on the Anova F-value for
+        the input data. A float according to a percentile of the highest
+        scores. Default: 20.
+
+    scoring: str, callable or None, optional. Default: 'roc_auc'
+        The scoring strategy to use. See the scikit-learn documentation at
+        https://scikit-learn.org/stable/modules/model_evaluation.html#the-scoring-parameter-defining-model-evaluation-rules
+        If callable, takes as arguments the fitted estimator, the
+        test data (X_test) and the test target (y_test) if y is
+        not None.
+        e.g. scorer(estimator, X_test, y_test)
+
+        For classification, valid entries are: 'accuracy', 'f1', 'precision',
+        'recall' or 'roc_auc'. Default: 'roc_auc'.
+
+    smoothing_fwhm: float, optional. Default: None
+        If smoothing_fwhm is not None, it gives the size in millimeters of the
+        spatial smoothing to apply to the signal.
+
+    standardize: bool, optional. Default: True
+        If standardize is True, the time-series are centered and normed:
+        their variance is put to 1 in the time dimension.
+
+    target_affine: 3x3 or 4x4 matrix, optional. Default: None
+        This parameter is passed to image.resample_img. Please see the
+        related documentation for details.
+
+    target_shape: 3-tuple of int, optional. Default: None
+        This parameter is passed to image.resample_img. Please see the
+        related documentation for details.
+
+    low_pass: None or float, optional
+        This parameter is passed to signal.clean. Please see the related
+        documentation for details
+
+    high_pass: None or float, optional
+        This parameter is passed to signal.clean. Please see the related
+        documentation for details
+
+    t_r: float, optional. Default: None
+        This parameter is passed to signal.clean. Please see the related
+        documentation for details.
+
+    mask_strategy: {'background' or 'epi'}, optional. Default: 'background'
+        The strategy used to compute the mask: use 'background' if your
+        images present a clear homogeneous background, and 'epi' if they
+        are raw EPI images. Depending on this value, the mask will be
+        computed from masking.compute_background_mask or
+        masking.compute_epi_mask.
+
+        This parameter will be ignored if a mask image is provided.
+
+    memory: instance of joblib.Memory or str
+        Used to cache the masking process.
+        By default, no caching is done. If a str is given, it is the
+        path to the caching directory.
+
+    memory_level: int, optional. Default: 0
+        Rough estimator of the amount of memory used by caching. Higher value
+        means more memory for caching.
+
+    n_jobs: int, optional. Default: 1.
+        The number of CPUs to use to do the computation. -1 means
+        'all CPUs'.
+
+    verbose: int, optional. Default: 0.
+        Verbosity level.
+
+    References
+    ----------
+    .. [1] A. Hoyos-Idrobo, G. Varoquaux, J. Kahn and B. Thirion, "FReM –
+        scalable and stable decoding with fast regularized ensemble of models"
+        in NeuroImage, Elsevier, 2017  pp.1-16, 11 October 2017.
+        https://hal.archives-ouvertes.fr/hal-01615015/
+
+    See Also
+    ------------
+    nilearn.decoding.Decoder: Classification strategies for Neuroimaging,
+    nilearn.decoding.fREMRegressor: State of the art regression pipeline for Neuroimaging
+
+    """
+
+    def __init__(self, estimator='svc', mask=None, cv=30,
+                 param_grid=None, clustering_percentile=10,
+                 screening_percentile=20, scoring='roc_auc',
+                 smoothing_fwhm=None, standardize=True, target_affine=None,
+                 target_shape=None, mask_strategy='background',
+                 low_pass=None, high_pass=None, t_r=None, memory=None,
+                 memory_level=0, n_jobs=1, verbose=0):
+        if isinstance(cv, int):
+            cv = StratifiedShuffleSplit(cv)
+
+        super().__init__(
+            estimator=estimator, mask=mask, cv=cv, param_grid=param_grid,
+            do_clustering=True, clustering_percentile=clustering_percentile,
+            screening_percentile=screening_percentile, scoring=scoring,
+            smoothing_fwhm=smoothing_fwhm, standardize=standardize,
+            target_affine=target_affine, target_shape=target_shape,
+            mask_strategy=mask_strategy, memory=memory, is_classification=True,
+            memory_level=memory_level, verbose=verbose, n_jobs=n_jobs)
