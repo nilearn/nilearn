@@ -364,7 +364,7 @@ We can visualize the weights of the decoder:
 - finally we plot the SVC's weights after masking the zero values
 
 
-.. figure:: ../auto_examples/images/sphx_glr_plot_decoding_tutorial_001.png
+.. figure:: ../auto_examples/images/sphx_glr_plot_haxby_anova_svm_001.png
    :target: ../auto_examples/plot_decoding_tutorial.html
    :scale: 65
 

@@ -221,7 +221,7 @@ discriminating weight.
     show()
 
 
-.. figure:: ../auto_examples/images/sphx_glr_plot_decoding_tutorial_001.png
+.. figure:: ../auto_examples/images/sphx_glr_plot_haxby_anova_svm_001.png
     :target: ../auto_examples/plot_decoding_tutorial.html
     :align: center
     :scale: 50%
