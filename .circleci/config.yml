@@ -90,8 +90,19 @@ commands:
             lxml mkl sphinx numpydoc pillow pandas -yq
             conda install -n testenv nibabel sphinx-gallery junit-xml -c conda-forge -yq
 
-  build_docs:
+  build_docs_full:
     description: "Installs Nilearn & builds documentation using Sphinx's make html-strict"
+    steps:
+      - run:
+          name: Building full documentation
+          command: |
+            source activate testenv
+            pip install -e .
+            set -o pipefail && cd doc && make html-strict 2>&1 | tee log.txt
+          no_output_timeout: 7h
+
+  build_docs_noplot:
+    description: "Installs Nilearn & builds documentation & referecnes without plotting the examples, using Sphinx's make html-noplot"
     steps:
       - run:
           name: Building documentation
@@ -99,20 +110,24 @@ commands:
             source activate testenv
             pip install -e .
             cd doc
-            export changed_examples=`git diff --name-only master | grep -e examples/ | grep -e /**/*.py` >> $BASH_ENV
-            export changed_sources=`git diff --name-only master | grep -v examples/ | grep -e /**/*.py` >> $BASH_ENV
-
             make html-noplot
+          no_output_timeout: 7h
+
+  build_docs_changed_examples:
+    description: "Installs Nilearn & builds changed examples only"
+    steps:
+      - run:
+          name: Building documentation for changed examples
+          command: |
+            source activate testenv
+            pip install -e .
+            cd doc
+            export changed_examples=`git diff --name-only master | grep -e examples/ | grep -e /**/*.py` >> $BASH_ENV
+
             for changed_example_ in $changed_examples
             do
               python -m sphinx -W -D sphinx_gallery_conf.filename_pattern=$changed_example_ -b html -d _build/doctrees . _build/html
             done
-
-            for changed_source_ in $changed_sources
-            do
-              python -m sphinx -W -D sphinx_gallery_conf.filename_pattern=$changed_source_ -b html -d _build/doctrees . _build/html
-            done
-
           no_output_timeout: 7h
 
   store_results:
@@ -163,7 +178,8 @@ jobs:
       - restore_from_cache
       - cache_aware_conda_setup
       - install_dependencies
-      - build_docs
+      - build_docs_noplot
+      - build_docs_changed_examples
       - store_results
       - save_to_cache
 
@@ -183,7 +199,7 @@ jobs:
       - preinstall
       - cache_ignorant_conda_setup
       - install_dependencies
-      - build_docs
+      - build_docs_full
       - store_results
 
 
