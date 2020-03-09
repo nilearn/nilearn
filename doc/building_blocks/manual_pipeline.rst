@@ -121,6 +121,11 @@ We use masking to convert 4D data (i.e. 3D volume over time) into 2D data
 Applying a mask
 ................
 
+.. figure:: ../auto_examples/images/sphx_glr_plot_decoding_tutorial_001.png
+    :target: ../auto_examples/plot_decoding_tutorial.html
+    :align: right
+    :scale: 30%
+
 If your dataset provides a mask, the :class:`NiftiMasker` can apply it
 automatically. All you have to do is to pass your mask as a parameter when
 creating your masker. Here we use the mask of the ventral stream,
@@ -214,6 +219,13 @@ discriminating weight.
                   title="SVM weights", display_mode="yx")
 
     show()
+
+
+.. figure:: ../auto_examples/images/sphx_glr_plot_decoding_tutorial_001.png
+    :target: ../auto_examples/plot_decoding_tutorial.html
+    :align: center
+    :scale: 50%
+
 
 Going further
 =============
