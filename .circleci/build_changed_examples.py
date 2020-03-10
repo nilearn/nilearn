@@ -13,6 +13,7 @@ git_diff_examples_shell = subprocess.Popen(shlex.split(git_diff_examples_cmd),
                                            )
 output, errors = git_diff_examples_shell.communicate()
 changed_examples = output.decode(encoding='utf8').split('\n')[:-1]
+print(os.getcwd())
 pprint(changed_examples)
 
 # venv_activate_shell = subprocess.Popen(shlex.split("conda activate nilearn-py37-latest"), shell=True)
