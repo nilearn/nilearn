@@ -128,12 +128,13 @@ commands:
           command: |
             source activate testenv
             cd doc
-            export changed_examples=`git diff master --name-only ../examples/**/*.py` >> $BASH_ENV
-            echo $changed_examples
-            for changed_example_ in $changed_examples
-            do
-              python -m sphinx -W -D sphinx_gallery_conf.filename_pattern=$changed_example_ -b html -d _build/doctrees . _build/html
-            done
+            python ../.circleci/build_changed_examples.py
+            # export changed_examples=`git diff master --name-only ../examples/**/*.py` >> $BASH_ENV
+            # echo $changed_examples
+            # for changed_example_ in $changed_examples
+            # do
+            #  python -m sphinx -W -D sphinx_gallery_conf.filename_pattern=$changed_example_ -b html -d _build/doctrees . _build/html
+            # done
           no_output_timeout: 7h
 
   store_results:
@@ -186,7 +187,6 @@ jobs:
       - install_dependencies
       - install_repo
       - build_docs_noplot
-      - run: git diff master --name-only ../examples/**/*.py
       - build_docs_changed_examples
       - store_results
       - save_to_cache
