@@ -186,6 +186,7 @@ jobs:
       - install_dependencies
       - install_repo
       - build_docs_noplot
+      - run: git diff master --name-only ../examples/**/*.py
       - build_docs_changed_examples
       - store_results
       - save_to_cache
