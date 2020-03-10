@@ -94,6 +94,7 @@ commands:
     description: "Installs the local Nilearn source code."
     steps:
       - run:
+          name: Install repo as package
           command: |
             source activate testenv
             pip install -e .
@@ -127,8 +128,8 @@ commands:
           command: |
             source activate testenv
             cd doc
-            export changed_examples=`git diff --name-only master | grep -e examples/ | grep -e /**/*.py` >> $BASH_ENV
-
+            export changed_examples=`git diff master --name-only ../examples/**/*.py` >> $BASH_ENV
+            echo $changed_examples
             for changed_example_ in $changed_examples
             do
               python -m sphinx -W -D sphinx_gallery_conf.filename_pattern=$changed_example_ -b html -d _build/doctrees . _build/html
