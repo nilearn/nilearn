@@ -37,11 +37,11 @@ commands:
             date +%U > week_num
       - restore_cache:
           key: v1-packages+datasets-{{ checksum "week_num" }}-{{ checksum ".circleci/packages-cache-timestamp" }}
-      - restore_cache:
-          key: v1-docs-{{ .Branch }}-{{ checksum "today" }}-{{ checksum ".circleci/docs-cache-timestamp" }}
+      # - restore_cache:
+      #    key: v1-docs-{{ .Branch }}-{{ checksum "today" }}-{{ checksum ".circleci/docs-cache-timestamp" }}
 
   cache_aware_conda_setup:
-    description: "Downloads & installs conda if not restord by cache"
+    description: "Downloads & installs conda if not restored by cache"
     steps:
       - run:
           name: Download & install conda if absent
@@ -98,7 +98,7 @@ commands:
           command: |
             source activate testenv
             pip install -e .
-            set -o pipefail && cd doc && make html-noplot 2>&1 | tee log.txt
+            set -o pipefail && cd doc && make html-strict 2>&1 | tee log.txt
           no_output_timeout: 7h
 
   store_results:
