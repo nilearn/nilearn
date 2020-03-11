@@ -39,7 +39,7 @@ The required dependencies to use the software are:
 
 * Python >= 3.5,
 * setuptools
-* Numpy >= 1.11
+* Numpy >= 1.12
 * SciPy >= 0.19
 * Scikit-learn >= 0.19
 * Joblib >= 0.11
