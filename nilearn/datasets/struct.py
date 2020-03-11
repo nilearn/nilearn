@@ -5,14 +5,13 @@ import warnings
 import os
 import numpy as np
 from scipy import ndimage
-from sklearn.datasets.base import Bunch
+from sklearn.utils import Bunch
 
 from .utils import (_get_dataset_dir, _fetch_files,
                     _get_dataset_descr, _uncompress_file)
 
 from .._utils import check_niimg, niimg
-from .._utils.exceptions import VisibleDeprecationWarning
-from ..image import new_img_like
+from ..image import new_img_like, get_data
 
 _package_directory = os.path.dirname(os.path.abspath(__file__))
 # Useful for the very simple examples
@@ -151,7 +150,7 @@ def load_mni152_brain_mask():
     """
     # Load MNI template
     target_img = load_mni152_template()
-    mask_voxels = (target_img.get_data() > 0).astype(int)
+    mask_voxels = (get_data(target_img) > 0).astype(int)
     mask_img = new_img_like(target_img, mask_voxels)
     return mask_img
 
@@ -532,7 +531,7 @@ def fetch_surf_fsaverage5(data_dir=None, url=None, resume=True, verbose=1):
     warnings.warn("fetch_surf_fsaverage5 has been deprecated and will "
                   "be removed in a future release. "
                   "Use fetch_surf_fsaverage(mesh='fsaverage5')",
-                  VisibleDeprecationWarning, stacklevel=2)
+                  np.VisibleDeprecationWarning, stacklevel=2)
     return fetch_surf_fsaverage(mesh='fsaverage5', data_dir=data_dir)
 
 

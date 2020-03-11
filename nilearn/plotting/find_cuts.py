@@ -19,6 +19,7 @@ from .._utils.extmath import fast_abs_percentile
 from .._utils.numpy_conversions import as_ndarray
 from .._utils import check_niimg_3d, check_niimg_4d
 from .._utils.niimg import _safe_get_data
+from nilearn.image import get_data
 
 ################################################################################
 # Functions for automatic choice of cuts coordinates
@@ -390,7 +391,7 @@ def find_parcellation_cut_coords(labels_img, background_label=0, return_label_na
                          "of these 'left' or 'right'.".format(label_hemisphere))
     # Grab data and affine
     labels_img = reorder_img(check_niimg_3d(labels_img))
-    labels_data = labels_img.get_data()
+    labels_data = get_data(labels_img)
     labels_affine = labels_img.affine
 
     # Grab number of unique values in 3d image
@@ -406,8 +407,8 @@ def find_parcellation_cut_coords(labels_img, background_label=0, return_label_na
 
         # Grab hemispheres separately
         x, y, z = coord_transform(0, 0, 0, np.linalg.inv(labels_affine))
-        left_hemi = labels_img.get_data().copy() == cur_label
-        right_hemi = labels_img.get_data().copy() == cur_label
+        left_hemi = get_data(labels_img).copy() == cur_label
+        right_hemi = get_data(labels_img).copy() == cur_label
         left_hemi[int(x):] = 0
         right_hemi[:int(x)] = 0
 

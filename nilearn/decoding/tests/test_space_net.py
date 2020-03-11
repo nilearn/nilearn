@@ -1,16 +1,15 @@
 import itertools
 from functools import partial
-from nose import SkipTest
-from nose.tools import (assert_equal, assert_true, assert_false,
-                        assert_raises)
+
 import numpy as np
+import pytest
 from scipy import linalg
 from sklearn.datasets import load_iris
 from sklearn.linear_model import Lasso
 from sklearn.utils import check_random_state
 from sklearn.linear_model import LogisticRegression
 from sklearn.metrics import accuracy_score
-from nilearn._utils.testing import assert_raises_regex, assert_warns
+
 from nilearn.decoding.space_net import (
     _EarlyStoppingCallback, _space_net_alpha_grid, path_scores, BaseSpaceNet,
     _crop_mask, _univariate_feature_screening, SpaceNetClassifier,
@@ -18,6 +17,7 @@ from nilearn.decoding.space_net import (
 from nilearn._utils.param_validation import _adjust_screening_percentile
 from nilearn.decoding.space_net_solvers import (_graph_net_logistic,
                                                 _graph_net_squared_loss)
+from nilearn.image import get_data
 
 mni152_brain_mask = (
     "/usr/share/fsl/data/standard/MNI152_T1_1mm_brain_mask.nii.gz")
@@ -64,7 +64,7 @@ def test_space_net_alpha_grid_same_as_sk():
             X, y, n_alphas=5), X.shape[0] * _alpha_grid(X, y, n_alphas=5,
                                                         fit_intercept=False))
     except ImportError:
-        raise SkipTest
+        raise pytest.skip()
 
 
 def test_early_stopping_callback_object(n_samples=10, n_features=30):
@@ -84,7 +84,7 @@ def test_early_stopping_callback_object(n_samples=10, n_features=30):
             w[k - 1] = 1 - w[k - 1]
 
         escb(dict(w=w, counter=counter))
-        assert_equal(len(escb.test_scores), counter + 1)
+        assert len(escb.test_scores) == counter + 1
 
         # restart
         if counter > 20:
@@ -101,52 +101,53 @@ def test_params_correctly_propagated_in_constructors():
             mask="dummy", n_alphas=n_alphas, n_jobs=n_jobs, l1_ratios=l1_ratio,
             cv=cv, screening_percentile=perc, penalty=penalty,
             is_classif=is_classif)
-        assert_equal(cvobj.n_alphas, n_alphas)
-        assert_equal(cvobj.l1_ratios, l1_ratio)
-        assert_equal(cvobj.n_jobs, n_jobs)
-        assert_equal(cvobj.cv, cv)
-        assert_equal(cvobj.screening_percentile, perc)
+        assert cvobj.n_alphas == n_alphas
+        assert cvobj.l1_ratios == l1_ratio
+        assert cvobj.n_jobs == n_jobs
+        assert cvobj.cv == cv
+        assert cvobj.screening_percentile == perc
 
 
 def test_screening_space_net():
     for verbose in [0, 2]:
-        screening_percentile = assert_warns(UserWarning,
-                                            _adjust_screening_percentile, 10,
-                                            mask, verbose)
-    screening_percentile = assert_warns(UserWarning,
-                                        _adjust_screening_percentile, 10, mask)
+        with pytest.warns(UserWarning):
+            screening_percentile = _adjust_screening_percentile(10,
+                                                                mask,
+                                                                verbose)
+    with pytest.warns(UserWarning):
+        screening_percentile = _adjust_screening_percentile(10, mask)
     # We gave here a very small mask, judging by standards of brain size
     # thus the screening_percentile_ corrected for brain size should
     # be 100%
-    assert_equal(screening_percentile, 100)
+    assert screening_percentile == 100
 
 
 def test_logistic_path_scores():
     iris = load_iris()
     X, y = iris.data, iris.target
     _, mask = to_niimgs(X, [2, 2, 2])
-    mask = mask.get_data().astype(np.bool)
+    mask = get_data(mask).astype(np.bool)
     alphas = [1., .1, .01]
     test_scores, best_w = logistic_path_scores(
         _graph_net_logistic, X, y, mask, alphas, .5,
         np.arange(len(X)), np.arange(len(X)), {})[:2]
     test_scores = test_scores[0]
-    assert_equal(len(test_scores), len(alphas))
-    assert_equal(X.shape[1] + 1, len(best_w))
+    assert len(test_scores) == len(alphas)
+    assert X.shape[1] + 1 == len(best_w)
 
 
 def test_squared_loss_path_scores():
     iris = load_iris()
     X, y = iris.data, iris.target
     _, mask = to_niimgs(X, [2, 2, 2])
-    mask = mask.get_data().astype(np.bool)
+    mask = get_data(mask).astype(np.bool)
     alphas = [1., .1, .01]
     test_scores, best_w = squared_loss_path_scores(
         _graph_net_squared_loss, X, y, mask, alphas, .5,
         np.arange(len(X)), np.arange(len(X)), {})[:2]
     test_scores = test_scores[0]
-    assert_equal(len(test_scores), len(alphas))
-    assert_equal(X.shape[1] + 1, len(best_w))
+    assert len(test_scores) == len(alphas)
+    assert X.shape[1] + 1 == len(best_w)
 
 
 def test_tv_regression_simple():
@@ -160,7 +161,7 @@ def test_tv_regression_simple():
     X += rng.randn(n, p)
     y = np.dot(X, W_init.ravel())
     X, mask = to_niimgs(X, dim)
-    print("%s %s" % (X.shape, mask.get_data().sum()))
+    print("%s %s" % (X.shape, get_data(mask).sum()))
     alphas = [.1, 1.]
 
     for l1_ratio in [1.]:
@@ -199,7 +200,7 @@ def test_graph_net_classifier_score():
                              standardize=False, verbose=0,
                              screening_percentile=100.).fit(X_, y)
     accuracy = gnc.score(X_, y)
-    assert_equal(accuracy, accuracy_score(y, gnc.predict(X_)))
+    assert accuracy == accuracy_score(y, gnc.predict(X_))
 
 
 def test_log_reg_vs_graph_net_two_classes_iris(C=.01, tol=1e-10,
@@ -253,8 +254,8 @@ def test_params_correctly_propagated_in_constructors_biz():
         cvobj = BaseSpaceNet(
             mask="dummy", penalty=penalty, is_classif=is_classif, alphas=alpha,
             l1_ratios=l1_ratio)
-        assert_equal(cvobj.alphas, alpha)
-        assert_equal(cvobj.l1_ratios, l1_ratio)
+        assert cvobj.alphas == alpha
+        assert cvobj.l1_ratios == l1_ratio
 
 
 def test_crop_mask():
@@ -263,16 +264,16 @@ def test_crop_mask():
     box = mask[:2, :3, :4]
     box[rng.rand(*box.shape) < 3.] = 1  # mask covers 30% of brain
     idx = np.where(mask)
-    assert_true(idx[1].max() < 3)
+    assert idx[1].max() < 3
     tight_mask = _crop_mask(mask)
-    assert_equal(mask.sum(), tight_mask.sum())
-    assert_true(np.prod(tight_mask.shape) <= np.prod(box.shape))
+    assert mask.sum() == tight_mask.sum()
+    assert np.prod(tight_mask.shape) <= np.prod(box.shape)
 
 
 def test_univariate_feature_screening(dim=(11, 12, 13), n_samples=10):
     rng = np.random.RandomState(42)
     mask = rng.rand(*dim) > 100. / np.prod(dim)
-    assert_true(mask.sum() >= 100.)
+    assert mask.sum() >= 100.
     mask[dim[0] // 2, dim[1] // 3:, -dim[2] // 2:] = 1  # put spatial structure
     n_features = mask.sum()
     X = rng.randn(n_samples, n_features)
@@ -283,9 +284,9 @@ def test_univariate_feature_screening(dim=(11, 12, 13), n_samples=10):
         X_, mask_, support_ = _univariate_feature_screening(
             X, y, mask, is_classif, 20.)
         n_features_ = support_.sum()
-        assert_equal(X_.shape[1], n_features_)
-        assert_equal(mask_.sum(), n_features_)
-        assert_true(n_features_ <= n_features)
+        assert X_.shape[1] == n_features_
+        assert mask_.sum() == n_features_
+        assert n_features_ <= n_features
 
 
 def test_space_net_classifier_subclass():
@@ -294,8 +295,8 @@ def test_space_net_classifier_subclass():
         cvobj = SpaceNetClassifier(
             mask="dummy", penalty=penalty, alphas=alpha, l1_ratios=l1_ratio,
             verbose=verbose)
-        assert_equal(cvobj.alphas, alpha)
-        assert_equal(cvobj.l1_ratios, l1_ratio)
+        assert cvobj.alphas == alpha
+        assert cvobj.l1_ratios == l1_ratio
 
 
 def test_space_net_regressor_subclass():
@@ -304,8 +305,8 @@ def test_space_net_regressor_subclass():
         cvobj = SpaceNetRegressor(
             mask="dummy", penalty=penalty, alphas=alpha, l1_ratios=l1_ratio,
             verbose=verbose)
-        assert_equal(cvobj.alphas, alpha)
-        assert_equal(cvobj.l1_ratios, l1_ratio)
+        assert cvobj.alphas == alpha
+        assert cvobj.l1_ratios == l1_ratio
 
 
 def test_space_net_alpha_grid_pure_spatial():
@@ -313,20 +314,21 @@ def test_space_net_alpha_grid_pure_spatial():
     X = rng.randn(10, 100)
     y = np.arange(X.shape[0])
     for is_classif in [True, False]:
-        assert_false(np.any(np.isnan(_space_net_alpha_grid(
-            X, y, l1_ratio=0., logistic=is_classif))))
+        assert not np.any(np.isnan(_space_net_alpha_grid(
+            X, y, l1_ratio=0., logistic=is_classif)))
 
 
 def test_string_params_case():
     # penalty
-    assert_raises(ValueError, BaseSpaceNet, penalty='TV-L1')
-    assert_raises(ValueError, BaseSpaceNet, penalty='Graph-Net')
+    pytest.raises(ValueError, BaseSpaceNet, penalty='TV-L1')
+    pytest.raises(ValueError, BaseSpaceNet, penalty='Graph-Net')
 
 
 def test_crop_mask_empty_mask():
-    assert_raises_regex(ValueError, "Empty mask:.", _crop_mask, np.array([]))
-    assert_raises_regex(ValueError, "Empty mask:", _crop_mask,
-                        np.zeros((2, 2, 2)))
+    with pytest.raises(ValueError, match="Empty mask:."):
+        _crop_mask(np.array([]))
+    with pytest.raises(ValueError, match="Empty mask:"):
+        _crop_mask(np.zeros((2, 2, 2)))
 
 
 def test_space_net_no_crash_not_fitted():
@@ -335,9 +337,11 @@ def test_space_net_no_crash_not_fitted():
     X, y = iris.data, iris.target
     X, mask = to_niimgs(X, [2, 2, 2])
     for model in [SpaceNetRegressor, SpaceNetClassifier]:
-        assert_raises_regex(RuntimeError,
-                            "This %s instance is not fitted yet" % (
-                                model.__name__), model().predict, X)
+        with pytest.raises(RuntimeError,
+                           match="This {} instance is not fitted yet".format(
+                               model.__name__)
+                           ):
+            model().predict(X)
         model(mask=mask, alphas=1.).fit(X, y).predict(X)
 
 
@@ -362,7 +366,7 @@ def test_checking_inputs_length():
 
     for model in [SpaceNetRegressor, SpaceNetClassifier]:
 
-        assert_raises(ValueError, model(mask=mask,
+        pytest.raises(ValueError, model(mask=mask,
                                         alphas=1. / .01 / X.shape[0],
                                         l1_ratios=1., tol=1e-10,
                                         screening_percentile=100.).fit, X_, y)
@@ -377,6 +381,6 @@ def test_targets_in_y_space_net_regressor():
 
     imgs, mask = to_niimgs(X, (2, 2, 2))
     regressor = SpaceNetRegressor(mask=mask)
-    assert_raises_regex(ValueError,
-                        "The given input y must have atleast 2 targets",
-                        regressor.fit, imgs, y)
+    with pytest.raises(ValueError,
+                       match="The given input y must have atleast 2 targets"):
+        regressor.fit(imgs, y)

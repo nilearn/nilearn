@@ -5,7 +5,7 @@ The main purpose of these classes is to have auto adjust of axes size to
 the data with different layout of cuts.
 """
 
-import collections
+import collections.abc
 import numbers
 from distutils.version import LooseVersion
 
@@ -29,6 +29,7 @@ from .. import _utils
 from ..image import new_img_like
 from ..image.resampling import (get_bounds, reorder_img, coord_transform,
                                 get_mask_bounds)
+from nilearn.image import get_data
 
 
 ###############################################################################
@@ -369,6 +370,13 @@ class GlassBrainAxes(BaseAxes):
         else:
             maximum_intensity_data = np.abs(data_selection).max(axis=max_axis)
 
+        # This work around can be removed bumping matplotlib > 2.1.0. See #1815
+        # in nilearn for the invention of this work around
+
+        if self.direction == 'l' and data_selection.min() is np.ma.masked and \
+                not (self.ax.get_xlim()[0] > self.ax.get_xlim()[1]):
+            self.ax.invert_xaxis()
+
         return np.rot90(maximum_intensity_data)
 
     def draw_position(self, size, bg_color, **kwargs):
@@ -396,7 +404,7 @@ class GlassBrainAxes(BaseAxes):
                 if self.direction == 'r' and xc >= 0:
                     relevant_coords.append(cidx)
                 elif self.direction == 'l' and xc <= 0:
-                        relevant_coords.append(cidx)
+                    relevant_coords.append(cidx)
             xdata = xdata[relevant_coords]
             ydata = ydata[relevant_coords]
             # if marker_color is string for example 'red' or 'blue', then
@@ -407,6 +415,9 @@ class GlassBrainAxes(BaseAxes):
             if not isinstance(marker_color, _utils.compat._basestring) and \
                     len(marker_color) != 1:
                 marker_color = marker_color[relevant_coords]
+
+            if not isinstance(marker_size, numbers.Number):
+                marker_size = np.asarray(marker_size)[relevant_coords]
 
         defaults = {'marker': 'o',
                     'zorder': 1000}
@@ -597,7 +608,7 @@ class BaseSlicer(object):
             axes = [0., 0., 1., 1.]
             if leave_space:
                 axes = [0.3, 0, .7, 1.]
-        if isinstance(axes, collections.Sequence):
+        if isinstance(axes, collections.abc.Sequence):
             axes = figure.add_axes(axes)
         # People forget to turn their axis off, or to set the zorder, and
         # then they cannot see their slicer
@@ -789,12 +800,13 @@ class BaseSlicer(object):
         ims = []
         to_iterate_over = zip(self.axes.values(), data_2d_list)
         for display_ax, data_2d in to_iterate_over:
-            if data_2d is not None:
+            if data_2d is not None and data_2d.min() is not np.ma.masked:
                 # If data_2d is completely masked, then there is nothing to
-                # plot. Hence, continued to loop over. This problem came up
-                # with matplotlib 2.1.0. See issue #9280 in matplotlib.
-                if data_2d.min() is np.ma.masked:
-                    continue
+                # plot. Hence, no point to do imshow(). Moreover, we see
+                # problem came up with matplotlib 2.1.0 (issue #9280) when
+                # data is completely masked or with numpy < 1.14
+                # (issue #4595). This work aroung can be removed when bumping
+                # matplotlib version above 2.1.0
                 im = display_ax.draw_2d(data_2d, data_bounds, bounding_box,
                                         type=type, **kwargs)
                 ims.append(im)
@@ -881,7 +893,7 @@ class BaseSlicer(object):
             The color used to display the edge map
         """
         img = reorder_img(img, resample='continuous')
-        data = img.get_data()
+        data = get_data(img)
         affine = img.affine
         single_color_cmap = colors.ListedColormap([color])
         data_bounds = get_bounds(data.shape, img.affine)
@@ -1564,7 +1576,7 @@ class BaseStackedSlicer(BaseSlicer):
             lower, upper = bounds['xyz'.index(cls._direction)]
             cut_coords = np.linspace(lower, upper, cut_coords).tolist()
         else:
-            if (not isinstance(cut_coords, collections.Sequence) and
+            if (not isinstance(cut_coords, collections.abc.Sequence) and
                     isinstance(cut_coords, numbers.Number)):
                 cut_coords = find_cut_slices(img,
                                              direction=cls._direction,
@@ -1837,7 +1849,7 @@ class OrthoProjector(OrthoSlicer):
                               vmin=edge_vmin, vmax=edge_vmax,
                               **edge_kwargs)
             # To obtain the brain left view, we simply invert the x axis
-            if ax.direction == 'l':
+            if ax.direction == 'l' and not (ax.ax.get_xlim()[0] > ax.ax.get_xlim()[1]):
                 ax.ax.invert_xaxis()
 
         if colorbar:

@@ -1,8 +1,9 @@
 """
 Test the niimg_conversions
 
-This test file is in nilearn/tests because nosetests seems to ignore modules
-whose name starts with an underscore
+This test file is in nilearn/tests because Nosetest,
+which we historically used,
+ignores modules whose name starts with an underscore.
 """
 # Author: Gael Varoquaux, Alexandre Abraham
 # License: simplified BSD
@@ -11,9 +12,8 @@ import os
 import re
 import tempfile
 
-from nose.tools import assert_equal, assert_true
-
 import numpy as np
+import pytest
 from numpy.testing import assert_array_equal, assert_array_almost_equal
 
 import nibabel
@@ -23,10 +23,10 @@ import nilearn as ni
 from nilearn import _utils, image
 from nilearn._utils.exceptions import DimensionError
 from nilearn._utils import testing, niimg_conversions
-from nilearn._utils.testing import assert_raises_regex
 from nilearn._utils.testing import with_memory_profiler
 from nilearn._utils.testing import assert_memory_less_than
 from nilearn._utils.niimg_conversions import _iter_check_niimg
+from nilearn.image import get_data
 
 
 class PhonyNiimage(nibabel.spatialimages.SpatialImage):
@@ -44,6 +44,14 @@ class PhonyNiimage(nibabel.spatialimages.SpatialImage):
     @property
     def shape(self):
         return self.data.shape
+
+    @property
+    def _data_cache(self):
+        return self.data
+
+    @property
+    def _dataobj(self):
+        return self.data
 
 
 def test_check_same_fov():
@@ -64,47 +72,48 @@ def test_check_same_fov():
                                       b=shape_a_affine_a_2,
                                       raise_error=True)
 
-    assert_raises_regex(ValueError,
-                        '[ac] and [ac] do not have the same affine',
-                        niimg_conversions._check_same_fov,
-                        a=shape_a_affine_a, b=shape_a_affine_a_2,
-                        c=shape_a_affine_b, raise_error=True)
+    with pytest.raises(ValueError,
+                       match='[ac] and [ac] do not have the same affine'
+                       ):
+        niimg_conversions._check_same_fov(
+            a=shape_a_affine_a, b=shape_a_affine_a_2,
+            c=shape_a_affine_b, raise_error=True
+        )
+    with pytest.raises(ValueError,
+                       match='[ab] and [ab] do not have the same shape'
+                       ):
+        niimg_conversions._check_same_fov(
+            a=shape_a_affine_a, b=shape_b_affine_a, raise_error=True)
+    with pytest.raises(ValueError,
+                       match='[ab] and [ab] do not have the same affine'
+                       ):
+        niimg_conversions._check_same_fov(
+            a=shape_b_affine_b, b=shape_a_affine_a, raise_error=True)
 
-    assert_raises_regex(ValueError,
-                        '[ab] and [ab] do not have the same shape',
-                        niimg_conversions._check_same_fov,
-                        a=shape_a_affine_a, b=shape_b_affine_a,
-                        raise_error=True)
-
-    assert_raises_regex(ValueError,
-                        '[ab] and [ab] do not have the same affine',
-                        niimg_conversions._check_same_fov,
-                        a=shape_b_affine_b, b=shape_a_affine_a,
-                        raise_error=True)
-
-    assert_raises_regex(ValueError,
-                        '[ab] and [ab] do not have the same shape',
-                        niimg_conversions._check_same_fov,
-                        a=shape_b_affine_b, b=shape_a_affine_a,
-                        raise_error=True)
+    with pytest.raises(ValueError,
+                       match='[ab] and [ab] do not have the same shape'
+                       ):
+        niimg_conversions._check_same_fov(
+            a=shape_b_affine_b, b=shape_a_affine_a, raise_error=True)
 
 
 def test_check_niimg_3d():
     # check error for non-forced but necessary resampling
-    assert_raises_regex(TypeError, 'nibabel format',
-                        _utils.check_niimg, 0)
+    with pytest.raises(TypeError, match='nibabel format'):
+        _utils.check_niimg(0)
 
     # check error for non-forced but necessary resampling
-    assert_raises_regex(TypeError, 'empty object',
-                        _utils.check_niimg, [])
+    with pytest.raises(TypeError, match='empty object'):
+        _utils.check_niimg([])
 
     # Test dimensionality error
     img = Nifti1Image(np.zeros((10, 10, 10)), np.eye(4))
-    assert_raises_regex(TypeError,
-                        "Input data has incompatible dimensionality: "
-                        "Expected dimension is 3D and you provided a list "
-                        "of 3D images \(4D\).",
-                        _utils.check_niimg_3d, [img, img])
+    with pytest.raises(
+            TypeError,
+            match="Input data has incompatible dimensionality: "
+                  "Expected dimension is 3D and you provided a list "
+                  "of 3D images \(4D\)."):
+        _utils.check_niimg_3d([img, img])
 
     # Check that a filename does not raise an error
     data = np.zeros((40, 40, 40, 1))
@@ -116,41 +125,41 @@ def test_check_niimg_3d():
 
     # check data dtype equal with dtype='auto'
     img_check = _utils.check_niimg_3d(img, dtype='auto')
-    assert_equal(img.get_data().dtype.kind, img_check.get_data().dtype.kind)
+    assert get_data(img).dtype.kind == get_data(img_check).dtype.kind
 
 
 def test_check_niimg_4d():
-    assert_raises_regex(TypeError, 'nibabel format',
-                        _utils.check_niimg_4d, 0)
+    with pytest.raises(TypeError, match='nibabel format'):
+        _utils.check_niimg_4d(0)
 
-    assert_raises_regex(TypeError, 'empty object',
-                        _utils.check_niimg_4d, [])
+    with pytest.raises(TypeError, match='empty object'):
+        _utils.check_niimg_4d([])
 
     affine = np.eye(4)
     img_3d = Nifti1Image(np.ones((10, 10, 10)), affine)
 
     # Tests with return_iterator=False
     img_4d_1 = _utils.check_niimg_4d([img_3d, img_3d])
-    assert_true(img_4d_1.get_data().shape == (10, 10, 10, 2))
+    assert get_data(img_4d_1).shape == (10, 10, 10, 2)
     assert_array_equal(img_4d_1.affine, affine)
 
     img_4d_2 = _utils.check_niimg_4d(img_4d_1)
-    assert_array_equal(img_4d_2.get_data(), img_4d_2.get_data())
+    assert_array_equal(get_data(img_4d_2), get_data(img_4d_2))
     assert_array_equal(img_4d_2.affine, img_4d_2.affine)
 
     # Tests with return_iterator=True
     img_3d_iterator = _utils.check_niimg_4d([img_3d, img_3d],
                                             return_iterator=True)
     img_3d_iterator_length = sum(1 for _ in img_3d_iterator)
-    assert_true(img_3d_iterator_length == 2)
+    assert img_3d_iterator_length == 2
 
     img_3d_iterator_1 = _utils.check_niimg_4d([img_3d, img_3d],
                                               return_iterator=True)
     img_3d_iterator_2 = _utils.check_niimg_4d(img_3d_iterator_1,
                                               return_iterator=True)
     for img_1, img_2 in zip(img_3d_iterator_1, img_3d_iterator_2):
-        assert_true(img_1.get_data().shape == (10, 10, 10))
-        assert_array_equal(img_1.get_data(), img_2.get_data())
+        assert get_data(img_1).shape == (10, 10, 10)
+        assert_array_equal(get_data(img_1), get_data(img_2))
         assert_array_equal(img_1.affine, img_2.affine)
 
     img_3d_iterator_1 = _utils.check_niimg_4d([img_3d, img_3d],
@@ -158,16 +167,16 @@ def test_check_niimg_4d():
     img_3d_iterator_2 = _utils.check_niimg_4d(img_4d_1,
                                               return_iterator=True)
     for img_1, img_2 in zip(img_3d_iterator_1, img_3d_iterator_2):
-        assert_true(img_1.get_data().shape == (10, 10, 10))
-        assert_array_equal(img_1.get_data(), img_2.get_data())
+        assert get_data(img_1).shape == (10, 10, 10)
+        assert_array_equal(get_data(img_1), get_data(img_2))
         assert_array_equal(img_1.affine, img_2.affine)
 
     # This should raise an error: a 3D img is given and we want a 4D
-    assert_raises_regex(DimensionError,
-                        "Input data has incompatible dimensionality: "
-                        "Expected dimension is 4D and you provided a "
-                        "3D image.",
-                        _utils.check_niimg_4d, img_3d)
+    with pytest.raises(DimensionError,
+                       match="Input data has incompatible dimensionality: "
+                             "Expected dimension is 4D and you provided a "
+                             "3D image."):
+        _utils.check_niimg_4d(img_3d)
 
     # Test a Niimg-like object that does not hold a shape attribute
     phony_img = PhonyNiimage()
@@ -176,15 +185,16 @@ def test_check_niimg_4d():
     a = nibabel.Nifti1Image(np.zeros((10, 10, 10)), np.eye(4))
     b = np.zeros((10, 10, 10))
     c = _utils.check_niimg_4d([a, b], return_iterator=True)
-    assert_raises_regex(TypeError, 'Error encountered while loading image #1',
-                        list, c)
+    with pytest.raises(TypeError,
+                       match='Error encountered while loading image #1'):
+        list(c)
 
     b = nibabel.Nifti1Image(np.zeros((10, 20, 10)), np.eye(4))
     c = _utils.check_niimg_4d([a, b], return_iterator=True)
-    assert_raises_regex(
-        ValueError,
-        'Field of view of image #1 is different from reference FOV',
-        list, c)
+    with pytest.raises(
+            ValueError,
+            match='Field of view of image #1 is different from reference FOV'):
+        list(c)
 
 
 def test_check_niimg():
@@ -194,26 +204,28 @@ def test_check_niimg():
     img_3_3d = [[[img_3d, img_3d]]]
     img_2_4d = [[img_4d, img_4d]]
 
-    assert_raises_regex(
-        DimensionError,
-        "Input data has incompatible dimensionality: "
-        "Expected dimension is 2D and you provided "
-        "a list of list of list of 3D images \(6D\)",
-        _utils.check_niimg, img_3_3d, ensure_ndim=2)
+    with pytest.raises(DimensionError,
+                       match="Input data has incompatible dimensionality: "
+                             "Expected dimension is 2D and you provided "
+                             "a list of list of list of 3D images \(6D\)"
+                       ):
+        _utils.check_niimg(img_3_3d, ensure_ndim=2)
 
-    assert_raises_regex(
-        DimensionError,
-        "Input data has incompatible dimensionality: "
-        "Expected dimension is 4D and you provided "
-        "a list of list of 4D images \(6D\)",
-        _utils.check_niimg, img_2_4d, ensure_ndim=4)
+    with pytest.raises(DimensionError,
+                       match="Input data has incompatible dimensionality: "
+                             "Expected dimension is 4D and you provided "
+                             "a list of list of 4D images \(6D\)"
+                       ):
+        _utils.check_niimg(img_2_4d, ensure_ndim=4)
 
     # check data dtype equal with dtype='auto'
     img_3d_check = _utils.check_niimg(img_3d, dtype='auto')
-    assert_equal(img_3d.get_data().dtype.kind, img_3d_check.get_data().dtype.kind)
+    assert (
+        get_data(img_3d).dtype.kind == get_data(img_3d_check).dtype.kind)
 
     img_4d_check = _utils.check_niimg(img_4d, dtype='auto')
-    assert_equal(img_4d.get_data().dtype.kind, img_4d_check.get_data().dtype.kind)
+    assert (
+        get_data(img_4d).dtype.kind == get_data(img_4d_check).dtype.kind)
 
 
 def test_check_niimg_wildcards():
@@ -228,15 +240,16 @@ def test_check_niimg_wildcards():
 
     file_not_found_msg = "File not found: '%s'"
 
-    assert_equal(ni.EXPAND_PATH_WILDCARDS, True)
+    assert ni.EXPAND_PATH_WILDCARDS == True
     # Check bad filename
     # Non existing file (with no magic) raise a ValueError exception
-    assert_raises_regex(ValueError, file_not_found_msg % nofile_path,
-                        _utils.check_niimg, nofile_path)
+    with pytest.raises(ValueError, match=file_not_found_msg % nofile_path):
+        _utils.check_niimg(nofile_path)
     # Non matching wildcard raises a ValueError exception
-    assert_raises_regex(ValueError,
-                        wildcards_msg % re.escape(nofile_path_wildcards),
-                        _utils.check_niimg, nofile_path_wildcards)
+    with pytest.raises(
+            ValueError,
+            match=wildcards_msg % re.escape(nofile_path_wildcards)):
+        _utils.check_niimg(nofile_path_wildcards)
 
     # First create some testing data
     data_3d = np.zeros((40, 40, 40))
@@ -250,24 +263,24 @@ def test_check_niimg_wildcards():
     #######
     # Testing with an existing filename
     with testing.write_tmp_imgs(img_3d, create_files=True) as filename:
-        assert_array_equal(_utils.check_niimg(filename).get_data(),
-                           img_3d.get_data())
+        assert_array_equal(get_data(_utils.check_niimg(filename)),
+                           get_data(img_3d))
     # No globbing behavior
     with testing.write_tmp_imgs(img_3d, create_files=True) as filename:
-        assert_array_equal(_utils.check_niimg(filename,
-                                              wildcards=False).get_data(),
-                           img_3d.get_data())
+        assert_array_equal(
+            get_data(_utils.check_niimg(filename, wildcards=False)),
+            get_data(img_3d))
 
     #######
     # Testing with an existing filename
     with testing.write_tmp_imgs(img_4d, create_files=True) as filename:
-        assert_array_equal(_utils.check_niimg(filename).get_data(),
-                           img_4d.get_data())
+        assert_array_equal(get_data(_utils.check_niimg(filename)),
+                           get_data(img_4d))
     # No globbing behavior
     with testing.write_tmp_imgs(img_4d, create_files=True) as filename:
-        assert_array_equal(_utils.check_niimg(filename,
-                                              wildcards=False).get_data(),
-                           img_4d.get_data())
+        assert_array_equal(get_data(_utils.check_niimg(filename,
+                                                       wildcards=False)),
+                           get_data(img_4d))
 
     #######
     # Testing with a glob matching exactly one filename
@@ -277,18 +290,17 @@ def test_check_niimg_wildcards():
                                 create_files=True,
                                 use_wildcards=True) as globs:
         glob_input = tmp_dir + globs
-        assert_array_equal(_utils.check_niimg(glob_input).get_data()[..., 0],
-                           img_3d.get_data())
+        assert_array_equal(get_data(_utils.check_niimg(glob_input))[..., 0],
+                           get_data(img_3d))
     # Disabled globbing behavior should raise an ValueError exception
     with testing.write_tmp_imgs(img_3d,
                                 create_files=True,
                                 use_wildcards=True) as globs:
         glob_input = tmp_dir + globs
-        assert_raises_regex(ValueError,
-                            file_not_found_msg % re.escape(glob_input),
-                            _utils.check_niimg,
-                            glob_input,
-                            wildcards=False)
+        with pytest.raises(ValueError,
+                           match=file_not_found_msg % re.escape(glob_input)
+                           ):
+            _utils.check_niimg(glob_input, wildcards=False)
 
     #######
     # Testing with a glob matching multiple filenames
@@ -296,8 +308,8 @@ def test_check_niimg_wildcards():
     with testing.write_tmp_imgs(img_3d, img_3d,
                                 create_files=True,
                                 use_wildcards=True) as globs:
-        assert_array_equal(_utils.check_niimg(glob_input).get_data(),
-                           img_4d.get_data())
+        assert_array_equal(get_data(_utils.check_niimg(glob_input)),
+                           get_data(img_4d))
 
     #######
     # Test when global variable is set to False => no globbing allowed
@@ -306,24 +318,22 @@ def test_check_niimg_wildcards():
     # Non existing filename (/tmp/nofile) could match an existing one through
     # globbing but global wildcards variable overrides this feature => raises
     # a ValueError
-    assert_raises_regex(ValueError,
-                        file_not_found_msg % nofile_path,
-                        _utils.check_niimg, nofile_path)
+    with pytest.raises(ValueError, match=file_not_found_msg % nofile_path):
+        _utils.check_niimg(nofile_path)
 
     # Verify wildcards function parameter has no effect
-    assert_raises_regex(ValueError,
-                        file_not_found_msg % nofile_path,
-                        _utils.check_niimg, nofile_path, wildcards=False)
+    with pytest.raises(ValueError, match=file_not_found_msg % nofile_path):
+        _utils.check_niimg(nofile_path, wildcards=False)
 
     # Testing with an exact filename matching (3d case)
     with testing.write_tmp_imgs(img_3d, create_files=True) as filename:
-        assert_array_equal(_utils.check_niimg(filename).get_data(),
-                           img_3d.get_data())
+        assert_array_equal(get_data(_utils.check_niimg(filename)),
+                           get_data(img_3d))
 
     # Testing with an exact filename matching (4d case)
     with testing.write_tmp_imgs(img_4d, create_files=True) as filename:
-        assert_array_equal(_utils.check_niimg(filename).get_data(),
-                           img_4d.get_data())
+        assert_array_equal(get_data(_utils.check_niimg(filename)),
+                           get_data(img_4d))
 
     # Reverting to default behavior
     ni.EXPAND_PATH_WILDCARDS = True
@@ -336,14 +346,12 @@ def test_iter_check_niimgs():
     img_2_4d = [[img_4d, img_4d]]
 
     for empty in ((), [], (i for i in ()), [i for i in ()]):
-        assert_raises_regex(ValueError,
-                            "Input niimgs list is empty.",
-                            list, _iter_check_niimg(empty))
+        with pytest.raises(ValueError, match="Input niimgs list is empty."):
+            list(_iter_check_niimg(empty))
 
     nofile_path = "/tmp/nofile"
-    assert_raises_regex(ValueError,
-                        no_file_matching % nofile_path,
-                        list, _iter_check_niimg(nofile_path))
+    with pytest.raises(ValueError, match=no_file_matching % nofile_path):
+        list(_iter_check_niimg(nofile_path))
 
     # Create a test file
     filename = tempfile.mktemp(prefix="nilearn_test",
@@ -351,16 +359,16 @@ def test_iter_check_niimgs():
                                dir=None)
     img_4d.to_filename(filename)
     niimgs = list(_iter_check_niimg([filename]))
-    assert_array_equal(niimgs[0].get_data(),
-                       _utils.check_niimg(img_4d).get_data())
+    assert_array_equal(get_data(niimgs[0]),
+                       get_data(_utils.check_niimg(img_4d)))
     del img_4d
     del niimgs
     os.remove(filename)
 
     # Regular case
     niimgs = list(_iter_check_niimg(img_2_4d))
-    assert_array_equal(niimgs[0].get_data(),
-                       _utils.check_niimg(img_2_4d).get_data())
+    assert_array_equal(get_data(niimgs[0]),
+                       get_data(_utils.check_niimg(img_2_4d)))
 
 
 def _check_memory(list_img_3d):
@@ -382,21 +390,21 @@ def test_iter_check_niimgs_memory():
 
 def test_repr_niimgs():
     # Test with file path
-    assert_equal(_utils._repr_niimgs("test"), "test")
-    assert_equal(_utils._repr_niimgs(["test", "retest"]), "[test, retest]")
+    assert _utils._repr_niimgs("test") == "test"
+    assert _utils._repr_niimgs(["test", "retest"]) == "[test, retest]"
     # Create phony Niimg with filename
     affine = np.eye(4)
     shape = (10, 10, 10)
     img1 = Nifti1Image(np.ones(shape), affine)
-    assert_equal(
-        _utils._repr_niimgs(img1).replace("10L","10"),
+    assert (
+        _utils._repr_niimgs(img1).replace("10L","10") ==
         ("%s(\nshape=%s,\naffine=%s\n)" %
             (img1.__class__.__name__,
              repr(shape), repr(affine))))
     _, tmpimg1 = tempfile.mkstemp(suffix='.nii')
     nibabel.save(img1, tmpimg1)
-    assert_equal(
-        _utils._repr_niimgs(img1),
+    assert (
+        _utils._repr_niimgs(img1) ==
         ("%s('%s')" % (img1.__class__.__name__, img1.get_filename())))
 
 
@@ -425,24 +433,23 @@ def test_concat_niimgs():
     _dimension_error_msg = ("Input data has incompatible dimensionality: "
                             "Expected dimension is 4D and you provided "
                             "a list of 4D images \(5D\)")
-    assert_raises_regex(DimensionError, _dimension_error_msg,
-                        _utils.concat_niimgs, [img4d], ensure_ndim=4)
+    with pytest.raises(DimensionError, match=_dimension_error_msg):
+        _utils.concat_niimgs([img4d], ensure_ndim=4)
 
     # check basic concatenation with equal shape/affine
     concatenated = _utils.concat_niimgs((img1, img3, img1))
 
-    assert_raises_regex(DimensionError, _dimension_error_msg,
-                        _utils.concat_niimgs, [img1, img4d])
+    with pytest.raises(DimensionError, match=_dimension_error_msg):
+        _utils.concat_niimgs([img1, img4d])
 
     # smoke-test auto_resample
     concatenated = _utils.concat_niimgs((img1, img1b, img1c),
                                         auto_resample=True)
-    assert_true(concatenated.shape == img1.shape + (3, ))
+    assert concatenated.shape == img1.shape + (3, )
 
     # check error for non-forced but necessary resampling
-    assert_raises_regex(ValueError, 'Field of view of image',
-                        _utils.concat_niimgs, [img1, img2],
-                        auto_resample=False)
+    with pytest.raises(ValueError, match='Field of view of image'):
+        _utils.concat_niimgs([img1, img2], auto_resample=False)
 
     # test list of 4D niimgs as input
     tempdir = tempfile.mkdtemp()
@@ -453,9 +460,9 @@ def test_concat_niimgs():
         nibabel.save(img3, tmpimg2)
         concatenated = _utils.concat_niimgs(os.path.join(tempdir, '*'))
         assert_array_equal(
-            concatenated.get_data()[..., 0], img1.get_data())
+            get_data(concatenated)[..., 0], get_data(img1))
         assert_array_equal(
-            concatenated.get_data()[..., 1], img3.get_data())
+            get_data(concatenated)[..., 1], get_data(img3))
     finally:
         _remove_if_exists(tmpimg1)
         _remove_if_exists(tmpimg2)
@@ -463,9 +470,10 @@ def test_concat_niimgs():
             os.removedirs(tempdir)
 
     img5d = Nifti1Image(np.ones((2, 2, 2, 2, 2)), affine)
-    assert_raises_regex(TypeError, 'Concatenated images must be 3D or 4D. '
-                        'You gave a list of 5D images', _utils.concat_niimgs,
-                        [img5d, img5d])
+    with pytest.raises(TypeError,
+                       match='Concatenated images must be 3D or 4D. '
+                             'You gave a list of 5D images'):
+        _utils.concat_niimgs([img5d, img5d])
 
 
 def test_concat_niimg_dtype():
@@ -474,9 +482,9 @@ def test_concat_niimg_dtype():
         np.zeros(shape + [n_scans]).astype(np.int16), np.eye(4))
             for n_scans in [1, 5]]
     nimg = _utils.concat_niimgs(vols)
-    assert_equal(nimg.get_data().dtype, np.float32)
+    assert get_data(nimg).dtype == np.float32
     nimg = _utils.concat_niimgs(vols, dtype=None)
-    assert_equal(nimg.get_data().dtype, np.int16)
+    assert get_data(nimg).dtype == np.int16
 
 
 def nifti_generator(buffer):
@@ -490,18 +498,18 @@ def test_iterator_generator():
     l = [Nifti1Image(np.random.random((10, 10, 10)), np.eye(4))
          for i in range(10)]
     cc = _utils.concat_niimgs(l)
-    assert_equal(cc.shape[-1], 10)
-    assert_array_almost_equal(cc.get_data()[..., 0], l[0].get_data())
+    assert cc.shape[-1] == 10
+    assert_array_almost_equal(get_data(cc)[..., 0], get_data(l[0]))
 
     # Same with iteration
     i = image.iter_img(l)
     cc = _utils.concat_niimgs(i)
-    assert_equal(cc.shape[-1], 10)
-    assert_array_almost_equal(cc.get_data()[..., 0], l[0].get_data())
+    assert cc.shape[-1] == 10
+    assert_array_almost_equal(get_data(cc)[..., 0], get_data(l[0]))
 
     # Now, a generator
     b = []
     g = nifti_generator(b)
     cc = _utils.concat_niimgs(g)
-    assert_equal(cc.shape[-1], 10)
-    assert_equal(len(b), 10)
+    assert cc.shape[-1] == 10
+    assert len(b) == 10

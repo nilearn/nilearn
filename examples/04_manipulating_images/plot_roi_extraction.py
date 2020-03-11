@@ -115,10 +115,11 @@ plot_epi(mean_img, title='Smoothed mean EPI', cut_coords=cut_coords)
 # setting, machine-learning algorithms can perform poorly due to the so-called
 # curse of dimensionality. However, simple means from the realms of classical
 # statistics can help reducing the number of voxels.
+from nilearn.image import get_data
 
-fmri_data = fmri_img.get_data()
+fmri_data = get_data(fmri_img)
 # number of voxels being x*y*z, samples in 4th dimension
-print(fmri_data.shape)
+fmri_data.shape
 
 ##############################################################################
 # **Selecting features using T-test**: The Student's t-test
@@ -211,7 +212,7 @@ mask_vt_filename = haxby_dataset.mask_vt[0]
 # numbers to boolean type
 from nilearn.image import load_img
 
-vt = load_img(mask_vt_filename).get_data().astype(bool)
+vt = get_data(load_img(mask_vt_filename)).astype(bool)
 
 # We can then use a logical "and" operation - numpy.logical_and - to keep only
 # voxels that have been selected in both masks. In neuroimaging jargon, this
