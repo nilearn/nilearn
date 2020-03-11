@@ -10,10 +10,8 @@ constitutes output maps
 from __future__ import division
 
 import warnings
-from distutils.version import LooseVersion
 
 import numpy as np
-import sklearn
 from sklearn.decomposition import dict_learning_online
 from nilearn._utils.compat import Memory
 from sklearn.linear_model import Ridge

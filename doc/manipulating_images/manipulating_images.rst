@@ -140,6 +140,8 @@ Accessing individual volumes in 4D images
 
    * :ref:`sphx_glr_auto_examples_01_plotting_plot_overlay.py`
 
+.. _computing_and_applying_mask:
+
 Computing and applying spatial masks
 =====================================
 

@@ -1,9 +1,7 @@
 import numpy as np
 from scipy import linalg
-from nose.tools import assert_true
 import nibabel
-from numpy.testing import assert_equal, assert_array_almost_equal
-from nilearn._utils.testing import assert_raises_regex
+from numpy.testing import assert_array_almost_equal
 from nilearn.input_data import MultiNiftiMasker
 from nilearn.decomposition.base import BaseDecomposition, mask_and_reduce
 from nilearn.decomposition.base import fast_svd
@@ -22,14 +20,14 @@ def test_fast_svd():
         U = rng.normal(size=(n_samples, k))
         V = rng.normal(size=(k, n_features))
         X = np.dot(U, V)
-        assert_equal(X.shape, (n_samples, n_features))
+        assert X.shape == (n_samples, n_features)
 
         # compute the singular values of X using the slow exact method
         U_, s_, V_ = linalg.svd(X, full_matrices=False)
 
         Ur, Sr, Vr = fast_svd(X, k, random_state=0)
-        assert_equal(Vr.shape, (k, n_features))
-        assert_equal(Ur.shape, (n_samples, k))
+        assert Vr.shape == (k, n_features)
+        assert Ur.shape == (n_samples, k)
 
         # check the singular vectors too (while not checking the sign)
         assert_array_almost_equal(
@@ -55,28 +53,28 @@ def test_mask_reducer():
 
     # Test fit on multiple image
     data = mask_and_reduce(masker, imgs)
-    assert_equal(data.shape, (8 * 5, 6 * 8 * 10))
+    assert data.shape == (8 * 5, 6 * 8 * 10)
 
     data = mask_and_reduce(masker, imgs, n_components=3)
-    assert_equal(data.shape, (8 * 3, 6 * 8 * 10))
+    assert data.shape == (8 * 3, 6 * 8 * 10)
 
     data = mask_and_reduce(masker, imgs, reduction_ratio=0.4)
-    assert_equal(data.shape, (8 * 2, 6 * 8 * 10))
+    assert data.shape == (8 * 2, 6 * 8 * 10)
 
     # Test on single image
     data_single = mask_and_reduce(masker, imgs[0], n_components=3)
-    assert_true(data_single.shape == (3, 6 * 8 * 10))
+    assert data_single.shape == (3, 6 * 8 * 10)
 
     # Test n_jobs > 1
     data = mask_and_reduce(masker, imgs[0], n_components=3,
                            n_jobs=2, random_state=0)
-    assert_equal(data.shape, (3, 6 * 8 * 10))
+    assert data.shape == (3, 6 * 8 * 10)
     assert_array_almost_equal(data_single, data)
 
     # Test that reduced data is orthogonal
     data = mask_and_reduce(masker, imgs[0], n_components=3,
                            random_state=0)
-    assert_true(data.shape == (3, 6 * 8 * 10))
+    assert data.shape == (3, 6 * 8 * 10)
     cov = data.dot(data.T)
     cov_diag = np.zeros((3, 3))
     for i in range(3):

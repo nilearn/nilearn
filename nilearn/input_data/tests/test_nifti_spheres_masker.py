@@ -1,9 +1,11 @@
 import nibabel
 import numpy as np
+import pytest
+
 from numpy.testing import assert_array_equal
+
 from nilearn.input_data import NiftiSpheresMasker
-from nilearn._utils.testing import assert_raises_regex
-from nose.tools import assert_false
+from nilearn.image import get_data
 
 
 def test_seed_extraction():
@@ -38,7 +40,7 @@ def test_sphere_extraction():
     masker.fit()
     s = masker.transform(img)
     assert_array_equal(s[:, 0],
-                       np.mean(data[np.logical_and(mask, mask_img.get_data())],
+                       np.mean(data[np.logical_and(mask, get_data(mask_img))],
                                axis=0))
 
 
@@ -71,7 +73,8 @@ def test_anisotropic_sphere_extraction():
 
 def test_errors():
     masker = NiftiSpheresMasker(([1, 2]), radius=.2)
-    assert_raises_regex(ValueError, 'Seeds must be a list .+', masker.fit)
+    with pytest.raises(ValueError, match='Seeds must be a list .+'):
+        masker.fit()
 
 
 def test_nifti_spheres_masker_overlap():
@@ -96,8 +99,8 @@ def test_nifti_spheres_masker_overlap():
     noverlapping_masker.fit_transform(fmri_img)
     noverlapping_masker = NiftiSpheresMasker(seeds, radius=2,
                                              allow_overlap=False)
-    assert_raises_regex(ValueError, 'Overlap detected',
-                        noverlapping_masker.fit_transform, fmri_img)
+    with pytest.raises(ValueError, match='Overlap detected'):
+        noverlapping_masker.fit_transform(fmri_img)
 
 
 def test_small_radius():
@@ -121,9 +124,8 @@ def test_small_radius():
 
     masker = NiftiSpheresMasker([seed], radius=0.1,
                                 mask_img=nibabel.Nifti1Image(mask, affine))
-    assert_raises_regex(ValueError, 'Sphere around seed #0 is empty',
-                        masker.fit_transform,
-                        nibabel.Nifti1Image(data, affine))
+    with pytest.raises(ValueError, match='Sphere around seed #0 is empty'):
+        masker.fit_transform(nibabel.Nifti1Image(data, affine))
 
     masker = NiftiSpheresMasker([seed], radius=1.6,
                                 mask_img=nibabel.Nifti1Image(mask, affine))
@@ -146,13 +148,13 @@ def test_is_nifti_spheres_masker_give_nans():
 
     # Interaction of seed with nans
     masker = NiftiSpheresMasker(seeds=seed, radius=2.)
-    assert_false(np.isnan(np.sum(masker.fit_transform(img))))
+    assert not np.isnan(np.sum(masker.fit_transform(img)))
 
     mask = np.ones((9, 9, 9))
     mask_img = nibabel.Nifti1Image(mask, affine)
     # When mask_img is provided, the seed interacts within the brain, so no nan
     masker = NiftiSpheresMasker(seeds=seed, radius=2., mask_img=mask_img)
-    assert_false(np.isnan(np.sum(masker.fit_transform(img))))
+    assert not np.isnan(np.sum(masker.fit_transform(img)))
 
 
 def test_standardization():

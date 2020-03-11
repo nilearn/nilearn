@@ -1,18 +1,21 @@
 import sys
+import pkg_resources
 
-DEPENDENCIES = ['numpy', 'scipy', 'sklearn', 'joblib', 'matplotlib', 'nibabel']
+DEPENDENCIES = ['numpy', 'scipy', 'scikit-learn', 'joblib', 'matplotlib',
+                'nibabel']
 
 
 def print_package_version(package_name, indent='  '):
     try:
-        package = __import__(package_name)
-        version = getattr(package, '__version__', None)
-        package_file = getattr(package, '__file__', )
-        provenance_info = '{0} from {1}'.format(version, package_file)
-    except ImportError:
+        dist = pkg_resources.get_distribution(package_name)
+    except pkg_resources.DistributionNotFound:
         provenance_info = 'not installed'
+    else:
+        provenance_info = '{0} installed in {1}'.format(dist.version,
+                                                        dist.location)
 
     print('{0}{1}: {2}'.format(indent, package_name, provenance_info))
+
 
 if __name__ == '__main__':
     print('=' * 120)

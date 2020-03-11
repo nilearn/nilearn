@@ -1,5 +1,4 @@
 import itertools
-from nose.tools import assert_true
 import numpy as np
 from nilearn.decoding.proximal_operators import _prox_l1, _prox_tvl1
 
@@ -15,7 +14,7 @@ def test_prox_l1_nonexpansiveness(n_features=10):
     # for all a and b (this is strong non-expansiveness
     for (a, b), (pa, pb), (sa, sb) in zip(*[itertools.product(z[0], z[0])
                                             for z in [x, p, s]]):
-        assert_true((sa - sb) ** 2 <= (a - b) ** 2 - (pa - pb) ** 2)
+        assert (sa - sb) ** 2 <= (a - b) ** 2 - (pa - pb) ** 2
 
 
 def test_prox_tvl1_approximates_prox_l1_for_lasso(size=15, random_state=42,

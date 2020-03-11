@@ -2,10 +2,10 @@ import functools
 import warnings
 
 
-def replace_parameters(replacement_params,
-                       end_version='future',
-                       lib_name='Nilearn',
-                       ):
+def rename_parameters(replacement_params,
+                      end_version='future',
+                      lib_name='Nilearn',
+                      ):
     """
     Decorator to deprecate & replace specificied parameters
     in the decorated functions and methods
@@ -74,8 +74,7 @@ def _warn_deprecated_params(replacement_params, end_version, lib_name, kwargs):
                                                             replacement_param,
                                                             )
         )
-        warnings.filterwarnings('always', message=param_deprecation_msg)
-        warnings.warn(category=DeprecationWarning,
+        warnings.warn(category=FutureWarning,
                       message=param_deprecation_msg,
                       stacklevel=3)
 

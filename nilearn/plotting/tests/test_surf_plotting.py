@@ -2,13 +2,11 @@
 
 import tempfile
 
-from distutils.version import LooseVersion
-from nose import SkipTest
-from nilearn._utils.testing import assert_raises_regex
 
 import numpy as np
-import matplotlib
-import matplotlib.pyplot as plt
+import pytest
+
+from matplotlib import pyplot as plt
 
 from nilearn.plotting.surf_plotting import (plot_surf, plot_surf_stat_map,
                                             plot_surf_roi)
@@ -45,26 +43,27 @@ def test_plot_surf_error():
     rng = np.random.RandomState(0)
 
     # Wrong inputs for view or hemi
-    assert_raises_regex(ValueError, 'view must be one of',
-                        plot_surf, mesh, view='middle')
-    assert_raises_regex(ValueError, 'hemi must be one of',
-                        plot_surf, mesh, hemi='lft')
+    with pytest.raises(ValueError, match='view must be one of'):
+        plot_surf(mesh, view='middle')
+    with pytest.raises(ValueError, match='hemi must be one of'):
+        plot_surf(mesh, hemi='lft')
 
     # Wrong size of background image
-    assert_raises_regex(ValueError,
-                        'bg_map does not have the same number of vertices',
-                        plot_surf, mesh,
-                        bg_map=rng.randn(mesh[0].shape[0] - 1, ))
+    with pytest.raises(
+            ValueError,
+            match='bg_map does not have the same number of vertices'):
+        plot_surf(mesh, bg_map=rng.randn(mesh[0].shape[0] - 1, ))
 
     # Wrong size of surface data
-    assert_raises_regex(ValueError,
-                        'surf_map does not have the same number of vertices',
-                        plot_surf, mesh,
-                        surf_map=rng.randn(mesh[0].shape[0] + 1, ))
+    with pytest.raises(
+            ValueError,
+            match='surf_map does not have the same number of vertices'):
+        plot_surf(mesh, surf_map=rng.randn(mesh[0].shape[0] + 1, ))
 
-    assert_raises_regex(ValueError,
-                        'surf_map can only have one dimension', plot_surf,
-                        mesh, surf_map=rng.randn(mesh[0].shape[0], 2))
+    with pytest.raises(
+            ValueError,
+            match='surf_map can only have one dimension'):
+        plot_surf(mesh, surf_map=rng.randn(mesh[0].shape[0], 2))
 
 
 def test_plot_surf_stat_map():
@@ -135,20 +134,21 @@ def test_plot_surf_stat_map_error():
     data = 10 * rng.randn(mesh[0].shape[0], )
 
     # Try to input vmin
-    assert_raises_regex(ValueError,
-                        'this function does not accept a "vmin" argument',
-                        plot_surf_stat_map, mesh, stat_map=data, vmin=0)
+    with pytest.raises(
+            ValueError,
+            match='this function does not accept a "vmin" argument'):
+        plot_surf_stat_map(mesh, stat_map=data, vmin=0)
 
     # Wrong size of stat map data
-    assert_raises_regex(ValueError,
-                        'surf_map does not have the same number of vertices',
-                        plot_surf_stat_map, mesh,
-                        stat_map=np.hstack((data, data)))
+    with pytest.raises(
+            ValueError,
+            match='surf_map does not have the same number of vertices'):
+        plot_surf_stat_map(mesh, stat_map=np.hstack((data, data)))
 
-    assert_raises_regex(ValueError,
-                        'surf_map can only have one dimension',
-                        plot_surf_stat_map, mesh,
-                        stat_map=np.vstack((data, data)).T)
+    with pytest.raises(
+            ValueError,
+            match='surf_map can only have one dimension'):
+        plot_surf_stat_map(mesh, stat_map=np.vstack((data, data)).T)
 
 
 def test_plot_surf_roi():
@@ -196,7 +196,7 @@ def test_plot_surf_roi_error():
     roi_idx = rng.randint(0, mesh[0].shape[0], size=5)
 
     # Wrong input
-    assert_raises_regex(ValueError,
-                        'roi_map does not have the same number of vertices',
-                        plot_surf_roi, mesh,
-                        roi_map=roi_idx)
+    with pytest.raises(
+            ValueError,
+            match='roi_map does not have the same number of vertices'):
+        plot_surf_roi(mesh, roi_map=roi_idx)

@@ -1,5 +1,4 @@
 from nilearn.decoding.space_net import BaseSpaceNet
-from nose.tools import assert_true
 import traceback
 
 
@@ -25,6 +24,5 @@ def test_get_params():
                     else:
                         raise
 
-                assert_true(param in params,
-                            msg="%s doesn't have parameter '%s'." % (
-                                m, param))
+                assert param in params, "%s doesn't have parameter '%s'." % (
+                                m, param)

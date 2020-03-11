@@ -14,8 +14,9 @@ that have been defined via a standard GLM-based analysis.
 """
 
 ##########################################################################
-# First we load and prepare the data
+# Load and prepare the data
 # -----------------------------------
+
 # Fetch data using nilearn dataset fetcher
 from nilearn import datasets
 # by default we fetch 2nd subject data for analysis
@@ -44,21 +45,27 @@ categories = stimuli[task_mask].unique()
 # extract tags indicating to which acquisition run a tag belongs
 session_labels = labels["chunks"][task_mask]
 
+# apply the task_mask to  fMRI data (func_filename)
+from nilearn.image import index_img
+task_data = index_img(func_filename, task_mask)
 
 ##########################################################################
-# Then we use scikit-learn for decoding on the different masks
-# -------------------------------------------------------------
-# The classifier: a support vector classifier
-from sklearn.svm import SVC
-classifier = SVC(C=1., kernel="linear")
-
-# A classifier to set the chance level
-from sklearn.dummy import DummyClassifier
-dummy_classifier = DummyClassifier()
+# Decoding on the different masks
+# --------------------------------
+#
+# The classifier used here is a support vector classifier (svc). We use
+# class:`nilearn.decoding.Decoder` and specify the classifier.
+import numpy as np
+from nilearn.decoding import Decoder
 
 # Make a data splitting object for cross validation
 from sklearn.model_selection import LeaveOneGroupOut, cross_val_score
 cv = LeaveOneGroupOut()
+
+##############################################################
+# We use :class:`sklearn.dummy.DummyClassifier` as a baseline.
+from sklearn.dummy import DummyClassifier
+dummy_classifier = DummyClassifier()
 
 mask_names = ['mask_vt', 'mask_face', 'mask_house']
 
@@ -66,27 +73,27 @@ mask_scores = {}
 mask_chance_scores = {}
 
 for mask_name in mask_names:
-    print("Working on mask %s" % mask_name)
+    print("Working on %s" % mask_name)
     # For decoding, standardizing is often very important
     mask_filename = haxby_dataset[mask_name][0]
     masker = NiftiMasker(mask_img=mask_filename, standardize=True)
-    masked_timecourses = masker.fit_transform(
-        func_filename)[task_mask]
-
+    masked_timecourses = masker.fit_transform(func_filename)[task_mask]
     mask_scores[mask_name] = {}
     mask_chance_scores[mask_name] = {}
 
     for category in categories:
         print("Processing %s %s" % (mask_name, category))
         classification_target = (stimuli[task_mask] == category)
-        mask_scores[mask_name][category] = cross_val_score(
-            classifier,
-            masked_timecourses,
-            classification_target,
-            cv=cv,
-            groups=session_labels,
-            scoring="roc_auc",
-        )
+        # Specify the classifier to the decoder object.
+        # With the decoder we can input the masker directly.
+        # We are using the svc_l1 here because it is intra subject.
+        decoder = Decoder(estimator='svc_l1', cv=cv,
+                          mask=masker, scoring='roc_auc')
+        decoder.fit(task_data, classification_target, groups=session_labels)
+        mask_scores[mask_name][category] = decoder.cv_scores_[1]
+        print("Scores: %1.2f +- %1.2f" % (
+              np.mean(mask_scores[mask_name][category]),
+              np.std(mask_scores[mask_name][category])))
 
         mask_chance_scores[mask_name][category] = cross_val_score(
             dummy_classifier,
@@ -97,15 +104,10 @@ for mask_name in mask_names:
             scoring="roc_auc",
         )
 
-        print("Scores: %1.2f +- %1.2f" % (
-            mask_scores[mask_name][category].mean(),
-            mask_scores[mask_name][category].std()))
-
 
 ##########################################################################
 # We make a simple bar plot to summarize the results
 # ---------------------------------------------------
-import numpy as np
 import matplotlib.pyplot as plt
 from nilearn.plotting import show
 
@@ -115,12 +117,12 @@ tick_position = np.arange(len(categories))
 plt.xticks(tick_position, categories, rotation=45)
 
 for color, mask_name in zip('rgb', mask_names):
-    score_means = [mask_scores[mask_name][category].mean()
+    score_means = [np.mean(mask_scores[mask_name][category])
                    for category in categories]
     plt.bar(tick_position, score_means, label=mask_name,
             width=.25, color=color)
 
-    score_chance = [mask_chance_scores[mask_name][category].mean()
+    score_chance = [np.mean(mask_chance_scores[mask_name][category])
                     for category in categories]
     plt.bar(tick_position, score_chance,
             width=.25, edgecolor='k', facecolor='none')

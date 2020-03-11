@@ -27,7 +27,7 @@ except ImportError:
     from collections import Container
 
 import numpy as np
-from sklearn.datasets.base import Bunch
+from sklearn.utils import Bunch
 from sklearn.feature_extraction import DictVectorizer
 
 from .._utils.compat import _basestring
@@ -1651,19 +1651,25 @@ def _update_image(image_info, download_params):
     """
     if not download_params['write_ok']:
         return image_info
-    collection = _fetch_collection_for_image(
-        image_info, download_params)
-    image_info, collection = _download_image_terms(
-        image_info, collection, download_params)
-    metadata_file_path = os.path.join(
-        os.path.dirname(image_info['absolute_path']),
-        'image_{0}_metadata.json'.format(image_info['id']))
-    _write_metadata(image_info, metadata_file_path)
+    try:
+        collection = _fetch_collection_for_image(
+            image_info, download_params)
+        image_info, collection = _download_image_terms(
+            image_info, collection, download_params)
+        metadata_file_path = os.path.join(
+            os.path.dirname(image_info['absolute_path']),
+            'image_{0}_metadata.json'.format(image_info['id']))
+        _write_metadata(image_info, metadata_file_path)
+    except OSError:
+        warnings.warn(
+            "could not update metadata for image {}, "
+            "most likely because you do not have write "
+            "permissions to its metadata file".format(image_info["id"]))
     return image_info
 
 
 def _update(image_info, collection, download_params):
-    """Update local metadata for an image and its collection."""
+    "Update local metadata for an image and its collection."""
     image_info = _update_image(image_info, download_params)
     return image_info, collection
 
@@ -2074,13 +2080,12 @@ def basic_image_terms():
     true:
 
         - It is not in MNI space.
-        - Its metadata field "is_valid" is cleared.
         - It is thresholded.
         - Its map type is one of "ROI/mask", "anatomical", or "parcellation".
         - Its image type is "atlas"
 
     """
-    return {'not_mni': False, 'is_valid': True, 'is_thresholded': False,
+    return {'not_mni': False, 'is_thresholded': False,
             'map_type': NotIn('ROI/mask', 'anatomical', 'parcellation'),
             'image_type': NotEqual('atlas')}
 

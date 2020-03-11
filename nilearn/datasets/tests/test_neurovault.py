@@ -19,9 +19,7 @@ from collections import namedtuple
 from functools import wraps
 
 import numpy as np
-from nose import SkipTest
-from nose.tools import (assert_true, assert_false, assert_equal, assert_raises)
-from sklearn.utils.testing import assert_warns
+import pytest
 
 from nilearn.datasets import neurovault
 
@@ -62,7 +60,7 @@ def test_remove_none_strings():
             'e': 0,
             'f': 'a',
             'g': 'Name'}
-    assert_equal(neurovault._remove_none_strings(info),
+    assert (neurovault._remove_none_strings(info) ==
                  {'a': None,
                   'b': None,
                   'c': None,
@@ -76,12 +74,12 @@ def test_append_filters_to_query():
     query = neurovault._append_filters_to_query(
         neurovault._NEUROVAULT_COLLECTIONS_URL,
         {'DOI': 17})
-    assert_equal(
-        query, 'http://neurovault.org/api/collections/?DOI=17')
+    assert (
+        query == 'http://neurovault.org/api/collections/?DOI=17')
     query = neurovault._append_filters_to_query(
         neurovault._NEUROVAULT_COLLECTIONS_URL,
         {'id': 40})
-    assert_equal(query, 'http://neurovault.org/api/collections/40')
+    assert query == 'http://neurovault.org/api/collections/40'
 
 
 def ignore_connection_errors(func):
@@ -96,7 +94,7 @@ def ignore_connection_errors(func):
         try:
             func(*args, **kwargs)
         except neurovault.URLError:
-            raise SkipTest('connection problem')
+            raise pytest.skip(msg='connection problem')
 
     return test_wrap
 
@@ -107,9 +105,9 @@ _FakeResponse = namedtuple('_FakeResponse', ('headers'))
 @ignore_connection_errors
 def test_get_encoding():
     response = _FakeResponse({'Content-Type': 'text/json; charset=utf-8'})
-    assert_equal(neurovault._get_encoding(response), 'utf-8')
+    assert neurovault._get_encoding(response) == 'utf-8'
     response.headers.pop('Content-Type')
-    assert_raises(ValueError, neurovault._get_encoding, response)
+    pytest.raises(ValueError, neurovault._get_encoding, response)
     request = neurovault.Request('http://www.google.com')
     opener = neurovault.build_opener()
     try:
@@ -127,26 +125,26 @@ def test_get_batch():
     batch = neurovault._get_batch(neurovault._NEUROVAULT_COLLECTIONS_URL)
     assert('results' in batch)
     assert('count' in batch)
-    assert_raises(neurovault.URLError, neurovault._get_batch, 'http://')
+    pytest.raises(neurovault.URLError, neurovault._get_batch, 'http://')
     with _TestTemporaryDirectory() as temp_dir:
         with open(os.path.join(temp_dir, 'test_nv.txt'), 'w'):
             pass
-        assert_raises(ValueError, neurovault._get_batch, 'file://{0}'.format(
+        pytest.raises(ValueError, neurovault._get_batch, 'file://{0}'.format(
             os.path.join(temp_dir, 'test_nv.txt')))
     no_results_url = ('https://eutils.ncbi.nlm.nih.gov/entrez/eutils/'
                       'esearch.fcgi?db=pmc&retmode=json&term=fmri')
-    assert_raises(ValueError, neurovault._get_batch, no_results_url)
+    pytest.raises(ValueError, neurovault._get_batch, no_results_url)
 
 
 @ignore_connection_errors
 def test_scroll_server_results():
     result = list(neurovault._scroll_server_results(
         neurovault._NEUROVAULT_COLLECTIONS_URL, max_results=6, batch_size=3))
-    assert_equal(len(result), 6)
+    assert len(result) == 6
     result = list(neurovault._scroll_server_results(
         neurovault._NEUROVAULT_COLLECTIONS_URL, max_results=3,
         local_filter=lambda r: False))
-    assert_equal(len(result), 0)
+    assert len(result) == 0
     no_results = neurovault._scroll_server_results(
         'http://BAD_URL', max_results=3,
         local_filter=lambda r: True)
@@ -155,185 +153,185 @@ def test_scroll_server_results():
 
 def test_is_null():
     is_null = neurovault.IsNull()
-    assert_true(is_null != 'a')
-    assert_false(is_null != '')
-    assert_true('a' != is_null)
-    assert_false('' != is_null)
-    assert_false(is_null == 'a')
-    assert_true(is_null == '')
-    assert_false('a' == is_null)
-    assert_true('' == is_null)
-    assert_equal(str(is_null), 'IsNull()')
+    assert is_null != 'a'
+    assert not is_null != ''
+    assert 'a' != is_null
+    assert not '' != is_null
+    assert not is_null == 'a'
+    assert is_null == ''
+    assert not 'a' == is_null
+    assert '' == is_null
+    assert str(is_null) == 'IsNull()'
 
 
 def test_not_null():
     not_null = neurovault.NotNull()
-    assert_true(not_null == 'a')
-    assert_false(not_null == '')
-    assert_true('a' == not_null)
-    assert_false('' == not_null)
-    assert_false(not_null != 'a')
-    assert_true(not_null != '')
-    assert_false('a' != not_null)
-    assert_true('' != not_null)
-    assert_equal(str(not_null), 'NotNull()')
+    assert not_null == 'a'
+    assert not not_null == ''
+    assert 'a' == not_null
+    assert not '' == not_null
+    assert not not_null != 'a'
+    assert not_null != ''
+    assert not 'a' != not_null
+    assert '' != not_null
+    assert str(not_null) == 'NotNull()'
 
 
 def test_not_equal():
     not_equal = neurovault.NotEqual('a')
-    assert_true(not_equal == 'b')
-    assert_true(not_equal == 1)
-    assert_false(not_equal == 'a')
-    assert_true('b' == not_equal)
-    assert_true(1 == not_equal)
-    assert_false('a' == not_equal)
-    assert_false(not_equal != 'b')
-    assert_false(not_equal != 1)
-    assert_true(not_equal != 'a')
-    assert_false('b' != not_equal)
-    assert_false(1 != not_equal)
-    assert_true('a' != not_equal)
-    assert_equal(str(not_equal), "NotEqual('a')")
+    assert not_equal == 'b'
+    assert not_equal == 1
+    assert not not_equal == 'a'
+    assert 'b' == not_equal
+    assert 1 == not_equal
+    assert not 'a' == not_equal
+    assert not not_equal != 'b'
+    assert not not_equal != 1
+    assert not_equal != 'a'
+    assert not 'b' != not_equal
+    assert not 1 != not_equal
+    assert 'a' != not_equal
+    assert str(not_equal) == "NotEqual('a')"
 
 
 def test_order_comp():
     geq = neurovault.GreaterOrEqual('2016-07-12T11:29:12.263046Z')
-    assert_true('2016-08-12T11:29:12.263046Z' == geq)
-    assert_true('2016-06-12T11:29:12.263046Z' != geq)
-    assert_equal(str(geq), "GreaterOrEqual('2016-07-12T11:29:12.263046Z')")
+    assert '2016-08-12T11:29:12.263046Z' == geq
+    assert '2016-06-12T11:29:12.263046Z' != geq
+    assert str(geq) == "GreaterOrEqual('2016-07-12T11:29:12.263046Z')"
     gt = neurovault.GreaterThan('abc')
-    assert_false(gt == 'abc')
-    assert_true(gt == 'abd')
-    assert_equal(str(gt), "GreaterThan('abc')")
+    assert not gt == 'abc'
+    assert gt == 'abd'
+    assert str(gt) == "GreaterThan('abc')"
     lt = neurovault.LessThan(7)
-    assert_false(7 == lt)
-    assert_false(5 != lt)
-    assert_false(lt == 'a')
-    assert_equal(str(lt), 'LessThan(7)')
+    assert not 7 == lt
+    assert not 5 != lt
+    assert not lt == 'a'
+    assert str(lt) == 'LessThan(7)'
     leq = neurovault.LessOrEqual(4.5)
-    assert_true(4.4 == leq)
-    assert_false(4.6 == leq)
-    assert_equal(str(leq), 'LessOrEqual(4.5)')
+    assert 4.4 == leq
+    assert not 4.6 == leq
+    assert str(leq) == 'LessOrEqual(4.5)'
 
 
 def test_is_in():
     is_in = neurovault.IsIn(0, 1)
-    assert_true(is_in == 0)
-    assert_false(is_in == 2)
-    assert_true(0 == is_in)
-    assert_false(2 == is_in)
-    assert_false(is_in != 0)
-    assert_true(is_in != 2)
-    assert_false(0 != is_in)
-    assert_true(2 != is_in)
-    assert_equal(str(is_in), 'IsIn(0, 1)')
+    assert is_in == 0
+    assert not is_in == 2
+    assert 0 == is_in
+    assert not 2 == is_in
+    assert not is_in != 0
+    assert is_in != 2
+    assert not 0 != is_in
+    assert 2 != is_in
+    assert str(is_in) == 'IsIn(0, 1)'
     countable = neurovault.IsIn(*range(11))
-    assert_true(7 == countable)
-    assert_false(countable == 12)
+    assert 7 == countable
+    assert not countable == 12
 
 
 def test_not_in():
     not_in = neurovault.NotIn(0, 1)
-    assert_true(not_in != 0)
-    assert_false(not_in != 2)
-    assert_true(0 != not_in)
-    assert_false(2 != not_in)
-    assert_false(not_in == 0)
-    assert_true(not_in == 2)
-    assert_false(0 == not_in)
-    assert_true(2 == not_in)
-    assert_equal(str(not_in), 'NotIn(0, 1)')
+    assert not_in != 0
+    assert not not_in != 2
+    assert 0 != not_in
+    assert not 2 != not_in
+    assert not not_in == 0
+    assert not_in == 2
+    assert not 0 == not_in
+    assert 2 == not_in
+    assert str(not_in) == 'NotIn(0, 1)'
 
 
 def test_contains():
     contains = neurovault.Contains('a', 0)
-    assert_false(contains == 10)
-    assert_true(contains == ['b', 1, 'a', 0])
-    assert_true(['b', 1, 'a', 0] == contains)
-    assert_true(contains != ['b', 1, 0])
-    assert_true(['b', 1, 'a'] != contains)
-    assert_false(contains != ['b', 1, 'a', 0])
-    assert_false(['b', 1, 'a', 0] != contains)
-    assert_false(contains == ['b', 1, 0])
-    assert_false(['b', 1, 'a'] == contains)
-    assert_equal(str(contains), "Contains('a', 0)")
+    assert not contains == 10
+    assert contains == ['b', 1, 'a', 0]
+    assert ['b', 1, 'a', 0] == contains
+    assert contains != ['b', 1, 0]
+    assert ['b', 1, 'a'] != contains
+    assert not contains != ['b', 1, 'a', 0]
+    assert not ['b', 1, 'a', 0] != contains
+    assert not contains == ['b', 1, 0]
+    assert not ['b', 1, 'a'] == contains
+    assert str(contains) == "Contains('a', 0)"
     contains = neurovault.Contains('house', 'face')
-    assert_true('face vs house' == contains)
-    assert_false('smiling face vs frowning face' == contains)
+    assert 'face vs house' == contains
+    assert not 'smiling face vs frowning face' == contains
 
 
 def test_not_contains():
     not_contains = neurovault.NotContains('ab')
-    assert_true(None != not_contains)
-    assert_true(not_contains == 'a_b')
-    assert_true('bcd' == not_contains)
-    assert_true(not_contains != '_abcd')
-    assert_true('_abcd' != not_contains)
-    assert_false(not_contains != 'a_b')
-    assert_false('bcd' != not_contains)
-    assert_false(not_contains == '_abcd')
-    assert_false('_abcd' == not_contains)
-    assert_equal(str(not_contains), "NotContains('ab',)")
+    assert None != not_contains
+    assert not_contains == 'a_b'
+    assert 'bcd' == not_contains
+    assert not_contains != '_abcd'
+    assert '_abcd' != not_contains
+    assert not not_contains != 'a_b'
+    assert not 'bcd' != not_contains
+    assert not not_contains == '_abcd'
+    assert not '_abcd' == not_contains
+    assert str(not_contains) == "NotContains('ab',)"
 
 
 def test_pattern():
     # Python std lib doc poker hand example
     pattern_0 = neurovault.Pattern(r'[0-9akqj]{5}$')
-    assert_equal(str(pattern_0), "Pattern(pattern='[0-9akqj]{5}$', flags=0)")
+    assert str(pattern_0) == "Pattern(pattern='[0-9akqj]{5}$', flags=0)"
     pattern_1 = neurovault.Pattern(r'[0-9akqj]{5}$', re.I)
-    assert_true(pattern_0 == 'ak05q')
-    assert_false(pattern_0 == 'Ak05q')
-    assert_false(pattern_0 == 'ak05e')
-    assert_true(pattern_1 == 'ak05q')
-    assert_true(pattern_1 == 'Ak05q')
-    assert_false(pattern_1 == 'ak05e')
-    assert_false(pattern_0 != 'ak05q')
-    assert_true(pattern_0 != 'Ak05q')
-    assert_true(pattern_0 != 'ak05e')
-    assert_false(pattern_1 != 'ak05q')
-    assert_false(pattern_1 != 'Ak05q')
-    assert_true(pattern_1 != 'ak05e')
+    assert pattern_0 == 'ak05q'
+    assert not pattern_0 == 'Ak05q'
+    assert not pattern_0 == 'ak05e'
+    assert pattern_1 == 'ak05q'
+    assert pattern_1 == 'Ak05q'
+    assert not pattern_1 == 'ak05e'
+    assert not pattern_0 != 'ak05q'
+    assert pattern_0 != 'Ak05q'
+    assert pattern_0 != 'ak05e'
+    assert not pattern_1 != 'ak05q'
+    assert not pattern_1 != 'Ak05q'
+    assert pattern_1 != 'ak05e'
 
-    assert_true('ak05q' == pattern_0)
-    assert_false('Ak05q' == pattern_0)
-    assert_false('ak05e' == pattern_0)
-    assert_true('ak05q' == pattern_1)
-    assert_true('Ak05q' == pattern_1)
-    assert_false('ak05e' == pattern_1)
-    assert_false('ak05q' != pattern_0)
-    assert_true('Ak05q' != pattern_0)
-    assert_true('ak05e' != pattern_0)
-    assert_false('ak05q' != pattern_1)
-    assert_false('Ak05q' != pattern_1)
-    assert_true('ak05e' != pattern_1)
+    assert 'ak05q' == pattern_0
+    assert not 'Ak05q' == pattern_0
+    assert not 'ak05e' == pattern_0
+    assert 'ak05q' == pattern_1
+    assert 'Ak05q' == pattern_1
+    assert not 'ak05e' == pattern_1
+    assert not 'ak05q' != pattern_0
+    assert 'Ak05q' != pattern_0
+    assert 'ak05e' != pattern_0
+    assert not 'ak05q' != pattern_1
+    assert not 'Ak05q' != pattern_1
+    assert 'ak05e' != pattern_1
 
 
 def test_result_filter():
     filter_0 = neurovault.ResultFilter(query_terms={'a': 0},
                                        callable_filter=lambda d: len(d) < 5,
                                        b=1)
-    assert_equal(np.unicode(filter_0), u'ResultFilter')
-    assert_equal(filter_0['a'], 0)
-    assert_true(filter_0({'a': 0, 'b': 1, 'c': 2}))
-    assert_false(filter_0({'a': 0, 'b': 1, 'c': 2, 'd': 3, 'e': 4}))
-    assert_false(filter_0({'b': 1, 'c': 2, 'd': 3}))
-    assert_false(filter_0({'a': 1, 'b': 1, 'c': 2}))
+    assert np.unicode(filter_0) == u'ResultFilter'
+    assert filter_0['a'] == 0
+    assert filter_0({'a': 0, 'b': 1, 'c': 2})
+    assert not filter_0({'a': 0, 'b': 1, 'c': 2, 'd': 3, 'e': 4})
+    assert not filter_0({'b': 1, 'c': 2, 'd': 3})
+    assert not filter_0({'a': 1, 'b': 1, 'c': 2})
 
     filter_1 = neurovault.ResultFilter(query_terms={'c': 2})
     filter_1['d'] = neurovault.NotNull()
-    assert_true(filter_1({'c': 2, 'd': 1}))
-    assert_false(filter_1({'c': 2, 'd': 0}))
+    assert filter_1({'c': 2, 'd': 1})
+    assert not filter_1({'c': 2, 'd': 0})
     filter_1['d'] = neurovault.IsIn(0, 1)
-    assert_true(filter_1({'c': 2, 'd': 1}))
-    assert_false(filter_1({'c': 2, 'd': 2}))
+    assert filter_1({'c': 2, 'd': 1})
+    assert not filter_1({'c': 2, 'd': 2})
     del filter_1['d']
-    assert_true(filter_1({'c': 2, 'd': 2}))
+    assert filter_1({'c': 2, 'd': 2})
     filter_1['d'] = neurovault.NotIn(0, 1)
-    assert_false(filter_1({'c': 2, 'd': 1}))
-    assert_true(filter_1({'c': 2, 'd': 3}))
+    assert not filter_1({'c': 2, 'd': 1})
+    assert filter_1({'c': 2, 'd': 3})
     filter_1.add_filter(lambda d: len(d) > 2)
-    assert_false(filter_1({'c': 2, 'd': 3}))
-    assert_true(filter_1({'c': 2, 'd': 3, 'e': 4}))
+    assert not filter_1({'c': 2, 'd': 3})
+    assert filter_1({'c': 2, 'd': 3, 'e': 4})
 
 
 def test_result_filter_combinations():
@@ -341,36 +339,36 @@ def test_result_filter_combinations():
     filter_1 = neurovault.ResultFilter(c=2, d=3)
 
     filter_0_and_1 = filter_0.AND(filter_1)
-    assert_true(filter_0_and_1({'a': 0, 'b': 1, 'c': 2, 'd': 3}))
-    assert_false(filter_0_and_1({'a': 0, 'b': 1, 'c': 2, 'd': None}))
-    assert_false(filter_0_and_1({'a': None, 'b': 1, 'c': 2, 'd': 3}))
+    assert filter_0_and_1({'a': 0, 'b': 1, 'c': 2, 'd': 3})
+    assert not filter_0_and_1({'a': 0, 'b': 1, 'c': 2, 'd': None})
+    assert not filter_0_and_1({'a': None, 'b': 1, 'c': 2, 'd': 3})
 
     filter_0_or_1 = filter_0.OR(filter_1)
-    assert_true(filter_0_or_1({'a': 0, 'b': 1, 'c': 2, 'd': 3}))
-    assert_true(filter_0_or_1({'a': 0, 'b': 1, 'c': 2, 'd': None}))
-    assert_true(filter_0_or_1({'a': None, 'b': 1, 'c': 2, 'd': 3}))
-    assert_false(filter_0_or_1({'a': None, 'b': 1, 'c': 2, 'd': None}))
+    assert filter_0_or_1({'a': 0, 'b': 1, 'c': 2, 'd': 3})
+    assert filter_0_or_1({'a': 0, 'b': 1, 'c': 2, 'd': None})
+    assert filter_0_or_1({'a': None, 'b': 1, 'c': 2, 'd': 3})
+    assert not filter_0_or_1({'a': None, 'b': 1, 'c': 2, 'd': None})
 
     filter_0_xor_1 = filter_0.XOR(filter_1)
-    assert_false(filter_0_xor_1({'a': 0, 'b': 1, 'c': 2, 'd': 3}))
-    assert_true(filter_0_xor_1({'a': 0, 'b': 1, 'c': 2, 'd': None}))
-    assert_true(filter_0_xor_1({'a': None, 'b': 1, 'c': 2, 'd': 3}))
-    assert_false(filter_0_xor_1({'a': None, 'b': 1, 'c': 2, 'd': None}))
+    assert not filter_0_xor_1({'a': 0, 'b': 1, 'c': 2, 'd': 3})
+    assert filter_0_xor_1({'a': 0, 'b': 1, 'c': 2, 'd': None})
+    assert filter_0_xor_1({'a': None, 'b': 1, 'c': 2, 'd': 3})
+    assert not filter_0_xor_1({'a': None, 'b': 1, 'c': 2, 'd': None})
 
     not_filter_0 = filter_0.NOT()
-    assert_true(not_filter_0({}))
-    assert_false(not_filter_0({'a': 0, 'b': 1}))
+    assert not_filter_0({})
+    assert not not_filter_0({'a': 0, 'b': 1})
 
     filter_2 = neurovault.ResultFilter(
         {'a': neurovault.NotNull()}).AND(lambda d: len(d) < 2)
-    assert_true(filter_2({'a': 'a'}))
-    assert_false(filter_2({'a': ''}))
-    assert_false(filter_2({'a': 'a', 'b': 0}))
+    assert filter_2({'a': 'a'})
+    assert not filter_2({'a': ''})
+    assert not filter_2({'a': 'a', 'b': 0})
 
     filt = neurovault.ResultFilter(
         a=0).AND(neurovault.ResultFilter(b=1).OR(neurovault.ResultFilter(b=2)))
-    assert_true(filt({'a': 0, 'b': 1}))
-    assert_false(filt({'a': 0, 'b': 0}))
+    assert filt({'a': 0, 'b': 1})
+    assert not filt({'a': 0, 'b': 0})
 
 
 def _fail(*args, **kwargs):
@@ -396,9 +394,9 @@ def test_simple_download():
         downloaded_file = neurovault._simple_download(
             'http://neurovault.org/media/images/35/Fig3B_zstat1.nii.gz',
             os.path.join(temp_dir, 'image_35.nii.gz'), temp_dir)
-        assert_true(os.path.isfile(downloaded_file))
+        assert os.path.isfile(downloaded_file)
         with _FailingDownloads():
-            assert_raises(neurovault.URLError,
+            pytest.raises(neurovault.URLError,
                           neurovault._simple_download, 'http://',
                           os.path.join(temp_dir, 'bad.nii.gz'), temp_dir)
 
@@ -420,10 +418,12 @@ def test_neurosynth_words_vectorized():
             with open(file_name, 'wb') as words_file:
                 words_file.write(json.dumps(words_dict).encode('utf-8'))
         freq, voc = neurovault.neurosynth_words_vectorized(words_files)
-        assert_equal(freq.shape, (n_im, n_im))
+        assert freq.shape == (n_im, n_im)
         assert((freq.sum(axis=0) == np.ones(n_im)).all())
-        assert_warns(UserWarning, neurovault.neurosynth_words_vectorized,
-                     (os.path.join(temp_dir, 'no_words_here.json'),))
+        with pytest.warns(UserWarning):
+            neurovault.neurosynth_words_vectorized(
+                (os.path.join(temp_dir, 'no_words_here.json'),)
+            )
 
 
 def test_write_read_metadata():
@@ -434,10 +434,10 @@ def test_write_read_metadata():
             metadata, os.path.join(temp_dir, 'metadata.json'))
         with open(os.path.join(temp_dir, 'metadata.json'), 'rb') as meta_file:
             written_metadata = json.loads(meta_file.read().decode('utf-8'))
-        assert_true('relative_path' in written_metadata)
-        assert_false('absolute_path' in written_metadata)
+        assert 'relative_path' in written_metadata
+        assert not 'absolute_path' in written_metadata
         read_metadata = neurovault._add_absolute_paths('tmp', written_metadata)
-        assert_equal(read_metadata['absolute_path'],
+        assert (read_metadata['absolute_path'] ==
                      os.path.join('tmp', 'collection_1'))
 
 
@@ -447,16 +447,16 @@ def test_add_absolute_paths():
                 'dir_0', 'neurovault', 'collection_1')}
     meta = neurovault._add_absolute_paths(os.path.join('dir_1', 'neurovault'),
                                           meta, force=False)
-    assert_equal(meta['col_absolute_path'],
+    assert (meta['col_absolute_path'] ==
                  os.path.join('dir_0', 'neurovault', 'collection_1'))
     meta = neurovault._add_absolute_paths(os.path.join('dir_1', 'neurovault'),
                                           meta, force=True)
-    assert_equal(meta['col_absolute_path'],
+    assert (meta['col_absolute_path'] ==
                  os.path.join('dir_1', 'neurovault', 'collection_1'))
     meta = {'id': 0}
     meta_transformed = neurovault._add_absolute_paths(
         os.path.join('dir_1', 'neurovault'), meta, force=True)
-    assert_equal(meta, meta_transformed)
+    assert meta == meta_transformed
 
 
 def test_json_add_collection_dir():
@@ -467,8 +467,8 @@ def test_json_add_collection_dir():
         with open(coll_file_name, 'wb') as coll_file:
             coll_file.write(json.dumps({'id': 1}).encode('utf-8'))
         loaded = neurovault._json_add_collection_dir(coll_file_name)
-        assert_equal(loaded['absolute_path'], coll_dir)
-        assert_equal(loaded['relative_path'], 'collection_1')
+        assert loaded['absolute_path'] == coll_dir
+        assert loaded['relative_path'] == 'collection_1'
 
 
 def test_json_add_im_files_paths():
@@ -479,9 +479,9 @@ def test_json_add_im_files_paths():
         with open(im_file_name, 'wb') as im_file:
             im_file.write(json.dumps({'id': 1}).encode('utf-8'))
         loaded = neurovault._json_add_im_files_paths(im_file_name)
-        assert_equal(loaded['relative_path'],
+        assert (loaded['relative_path'] ==
                      os.path.join('collection_1', 'image_1.nii.gz'))
-        assert_true(loaded.get('neurosynth_words_relative_path') is None)
+        assert loaded.get('neurosynth_words_relative_path') is None
 
 
 def test_split_terms():
@@ -489,27 +489,29 @@ def test_split_terms():
         {'DOI': neurovault.NotNull(),
          'name': 'my_name', 'unknown_term': 'something'},
         neurovault._COL_FILTERS_AVAILABLE_ON_SERVER)
-    assert_equal(terms,
+    assert (terms ==
                  {'DOI': neurovault.NotNull(), 'unknown_term': 'something'})
-    assert_equal(server_terms, {'name': 'my_name'})
+    assert server_terms == {'name': 'my_name'}
 
 
 def test_move_unknown_terms_to_local_filter():
     terms, new_filter = neurovault._move_unknown_terms_to_local_filter(
         {'a': 0, 'b': 1}, neurovault.ResultFilter(), ('a',))
-    assert_equal(terms, {'a': 0})
-    assert_false(new_filter({'b': 0}))
-    assert_true(new_filter({'b': 1}))
+    assert terms == {'a': 0}
+    assert not new_filter({'b': 0})
+    assert new_filter({'b': 1})
 
 
 def test_move_col_id():
     im_terms, col_terms = neurovault._move_col_id(
         {'collection_id': 1, 'not_mni': False}, {})
-    assert_equal(im_terms, {'not_mni': False})
-    assert_equal(col_terms, {'id': 1})
+    assert im_terms == {'not_mni': False}
+    assert col_terms == {'id': 1}
 
-    assert_warns(UserWarning, neurovault._move_col_id,
-                 {'collection_id': 1, 'not_mni': False}, {'id': 2})
+    with pytest.warns(UserWarning):
+        neurovault._move_col_id(
+            {'collection_id': 1, 'not_mni': False}, {'id': 2}
+        )
 
 
 def test_download_image_terms():
@@ -524,7 +526,7 @@ def test_download_image_terms():
             neurovault._download_image_terms(
                 image_info, collection, download_params)
             download_params['allow_neurosynth_failure'] = False
-            assert_raises(RuntimeError,
+            pytest.raises(RuntimeError,
                           neurovault._download_image_terms,
                           image_info, collection, download_params)
             with open(os.path.join(
@@ -545,28 +547,30 @@ def test_fetch_neurovault():
         # check that nothing is downloaded in offline mode
         data = neurovault.fetch_neurovault(
             mode='offline', data_dir=temp_dir)
-        assert_equal(len(data.images), 0)
+        assert len(data.images) == 0
         # try to download an image
         data = neurovault.fetch_neurovault(
             max_images=1, fetch_neurosynth_words=True,
             mode='overwrite', data_dir=temp_dir)
         # specifying a filter while leaving the default term
         # filters in place should raise a warning.
-        assert_warns(UserWarning, neurovault.fetch_neurovault,
-                     image_filter=lambda x: True, max_images=1,
-                     mode='offline')
+        with pytest.warns(UserWarning):
+            neurovault.fetch_neurovault(
+                image_filter=lambda x: True, max_images=1,
+                mode='offline'
+            )
         # if neurovault was available one image matching
         # default filters should have been downloaded
         if data.images:
-            assert_equal(len(data.images), 1)
+            assert len(data.images) == 1
             meta = data.images_meta[0]
-            assert_false(meta['not_mni'])
-            assert_true(meta['is_valid'])
-            assert_false(meta['not_mni'])
-            assert_false(meta['is_thresholded'])
-            assert_false(meta['map_type'] in [
-                'ROI/mask', 'anatomical', 'parcellation'])
-            assert_false(meta['image_type'] == 'atlas')
+            assert not meta['not_mni']
+            assert meta['is_valid']
+            assert not meta['not_mni']
+            assert not meta['is_thresholded']
+            assert not meta['map_type'] in [
+                'ROI/mask', 'anatomical', 'parcellation']
+            assert not meta['image_type'] == 'atlas'
 
         # using a data directory we can't write into should raise a
         # warning unless mode is 'offline'
@@ -575,29 +579,29 @@ def test_fetch_neurovault():
                  stat.S_IREAD | stat.S_IEXEC)
         if os.access(os.path.join(temp_dir, 'neurovault'), os.W_OK):
             return
-        assert_warns(UserWarning, neurovault.fetch_neurovault,
-                     data_dir=temp_dir)
+        with pytest.warns(UserWarning):
+            neurovault.fetch_neurovault(data_dir=temp_dir)
 
 
 def test_fetch_neurovault_ids():
     # test using explicit id list instead of filters, and downloading
     # an image which has no collection dir or metadata yet.
     with _TestTemporaryDirectory() as data_dir:
-        assert_raises(ValueError, neurovault.fetch_neurovault_ids, mode='bad')
+        pytest.raises(ValueError, neurovault.fetch_neurovault_ids, mode='bad')
         data = neurovault.fetch_neurovault_ids(
             image_ids=[111], collection_ids=[307], data_dir=data_dir)
         if len(data.images) == 2:
-            assert_equal([img['id'] for img in data['images_meta']],
+            assert ([img['id'] for img in data['images_meta']] ==
                          [1750, 111])
-            assert_equal(os.path.dirname(data['images'][0]),
+            assert (os.path.dirname(data['images'][0]) ==
                          data['collections_meta'][0]['absolute_path'])
             # check image can be loaded again from disk
             data = neurovault.fetch_neurovault_ids(
                 image_ids=[111], data_dir=data_dir, mode='offline')
-            assert_equal(len(data.images), 1)
+            assert len(data.images) == 1
             # check that download_new mode forces overwrite
             modified_meta = data['images_meta'][0]
-            assert_equal(modified_meta['figure'], '3A')
+            assert modified_meta['figure'] == '3A'
             modified_meta['figure'] = '3B'
             # mess it up on disk
             meta_path = os.path.join(
@@ -611,10 +615,10 @@ def test_fetch_neurovault_ids():
             data = neurovault.fetch_neurovault_ids(
                 image_ids=[111], data_dir=data_dir, mode='offline')
             # should not have changed
-            assert_equal(data['images_meta'][0]['figure'], '3B')
+            assert data['images_meta'][0]['figure'] == '3B'
             data = neurovault.fetch_neurovault_ids(
                 image_ids=[111], data_dir=data_dir, mode='overwrite')
             data = neurovault.fetch_neurovault_ids(
                 image_ids=[111], data_dir=data_dir, mode='offline')
             # should be back to the original version
-            assert_equal(data['images_meta'][0]['figure'], '3A')
+            assert data['images_meta'][0]['figure'] == '3A'

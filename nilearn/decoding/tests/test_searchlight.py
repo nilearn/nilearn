@@ -6,7 +6,6 @@ Test the searchlight module
 
 import numpy as np
 import nibabel
-from nose.tools import assert_equal
 from nilearn.decoding import searchlight
 
 
@@ -38,8 +37,8 @@ def test_searchlight():
                                  radius=0.5, n_jobs=n_jobs,
                                  scoring='accuracy', cv=cv)
     sl.fit(data_img, cond)
-    assert_equal(np.where(sl.scores_ == 1)[0].size, 1)
-    assert_equal(sl.scores_[2, 2, 2], 1.)
+    assert np.where(sl.scores_ == 1)[0].size == 1
+    assert sl.scores_[2, 2, 2] == 1.
 
     # The voxel selected in process_mask_img is too far from the signal
     process_mask = np.zeros((5, 5, 5), np.bool)
@@ -50,27 +49,27 @@ def test_searchlight():
                                  radius=0.5, n_jobs=n_jobs,
                                  scoring='accuracy', cv=cv)
     sl.fit(data_img, cond)
-    assert_equal(np.where(sl.scores_ == 1)[0].size, 0)
+    assert np.where(sl.scores_ == 1)[0].size == 0
 
     # Medium radius : little ball selected
     sl = searchlight.SearchLight(mask_img, process_mask_img=mask_img, radius=1,
                                  n_jobs=n_jobs, scoring='accuracy', cv=cv)
     sl.fit(data_img, cond)
-    assert_equal(np.where(sl.scores_ == 1)[0].size, 7)
-    assert_equal(sl.scores_[2, 2, 2], 1.)
-    assert_equal(sl.scores_[1, 2, 2], 1.)
-    assert_equal(sl.scores_[2, 1, 2], 1.)
-    assert_equal(sl.scores_[2, 2, 1], 1.)
-    assert_equal(sl.scores_[3, 2, 2], 1.)
-    assert_equal(sl.scores_[2, 3, 2], 1.)
-    assert_equal(sl.scores_[2, 2, 3], 1.)
+    assert np.where(sl.scores_ == 1)[0].size == 7
+    assert sl.scores_[2, 2, 2] == 1.
+    assert sl.scores_[1, 2, 2] == 1.
+    assert sl.scores_[2, 1, 2] == 1.
+    assert sl.scores_[2, 2, 1] == 1.
+    assert sl.scores_[3, 2, 2] == 1.
+    assert sl.scores_[2, 3, 2] == 1.
+    assert sl.scores_[2, 2, 3] == 1.
 
     # Big radius : big ball selected
     sl = searchlight.SearchLight(mask_img, process_mask_img=mask_img, radius=2,
                                  n_jobs=n_jobs, scoring='accuracy', cv=cv)
     sl.fit(data_img, cond)
-    assert_equal(np.where(sl.scores_ == 1)[0].size, 33)
-    assert_equal(sl.scores_[2, 2, 2], 1.)
+    assert np.where(sl.scores_ == 1)[0].size == 33
+    assert sl.scores_[2, 2, 2] == 1.
 
     # group cross validation
     try:
@@ -86,15 +85,15 @@ def test_searchlight():
     sl = searchlight.SearchLight(mask_img, process_mask_img=mask_img, radius=1,
                                  n_jobs=n_jobs, scoring='accuracy', cv=gcv)
     sl.fit(data_img, cond, groups)
-    assert_equal(np.where(sl.scores_ == 1)[0].size, 7)
-    assert_equal(sl.scores_[2, 2, 2], 1.)
+    assert np.where(sl.scores_ == 1)[0].size == 7
+    assert sl.scores_[2, 2, 2] == 1.
 
     # adding superfluous group variable
     sl = searchlight.SearchLight(mask_img, process_mask_img=mask_img, radius=1,
                                  n_jobs=n_jobs, scoring='accuracy', cv=cv)
     sl.fit(data_img, cond, groups)
-    assert_equal(np.where(sl.scores_ == 1)[0].size, 7)
-    assert_equal(sl.scores_[2, 2, 2], 1.)
+    assert np.where(sl.scores_ == 1)[0].size == 7
+    assert sl.scores_[2, 2, 2] == 1.
 
     # Check whether searchlight works on list of 3D images
     rand = np.random.RandomState(0)

@@ -6,7 +6,7 @@ graphical models.
 # License: simplified BSD
 
 import warnings
-import collections
+import collections.abc
 import operator
 import itertools
 
@@ -949,7 +949,7 @@ class GroupSparseCovarianceCV(BaseEstimator, CacheMixin):
         path = list()  # List of (alpha, scores, covs)
         n_alphas = self.alphas
 
-        if isinstance(n_alphas, collections.Sequence):
+        if isinstance(n_alphas, collections.abc.Sequence):
             alphas = list(self.alphas)
             n_alphas = len(alphas)
             n_refinements = 1

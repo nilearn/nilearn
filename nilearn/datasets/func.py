@@ -9,84 +9,17 @@ import numpy as np
 import numbers
 
 import nibabel
-from sklearn.datasets.base import Bunch
-from sklearn.utils import deprecated
+from sklearn.utils import Bunch
 
 from .utils import (_get_dataset_dir, _fetch_files, _get_dataset_descr,
-                    _read_md5_sum_file, _tree, _filter_columns)
+                    _read_md5_sum_file, _tree, _filter_columns, _fetch_file)
 from .._utils import check_niimg
-from .._utils.compat import BytesIO, _basestring, _urllib
+from .._utils.compat import BytesIO, _basestring
 from .._utils.numpy_conversions import csv_to_array
-from .._utils.exceptions import VisibleDeprecationWarning
+from nilearn.image import get_data
 
 
-@deprecated("fetch_haxby_simple will be removed in future releases. "
-            "Use 'fetch_haxby' instead.")
-def fetch_haxby_simple(data_dir=None, url=None, resume=True, verbose=1):
-    """Download and load a simple example haxby dataset.
-
-    Parameters
-    ----------
-    data_dir: string, optional
-        Path of the data directory. Used to force data storage in a specified
-        location. Default: None
-
-    Returns
-    -------
-    data: sklearn.datasets.base.Bunch
-        Dictionary-like object, interest attributes are:
-        'func': list of string.  Path to nifti file with bold data.
-        'session_target': list of string. Path to text file containing session and
-        target data.
-        'mask': string. Path to nifti mask file.
-        'session': list of string. Path to text file containing labels
-        (can be used for LeaveOneGroupOut cross validation for example).
-
-    References
-    ----------
-    `Haxby, J., Gobbini, M., Furey, M., Ishai, A., Schouten, J.,
-    and Pietrini, P. (2001). Distributed and overlapping representations of
-    faces and objects in ventral temporal cortex. Science 293, 2425-2430.`
-
-    Notes
-    -----
-    PyMVPA provides a tutorial using this dataset :
-    http://www.pymvpa.org/tutorial.html
-
-    More informations about its structure :
-    http://dev.pymvpa.org/datadb/haxby2001.html
-
-    See `additional information
-    <http://www.sciencemag.org/content/293/5539/2425>`_
-    """
-    # URL of the dataset. It is optional because a test uses it to test dataset
-    # downloading
-    if url is None:
-        url = 'http://www.pymvpa.org/files/pymvpa_exampledata.tar.bz2'
-
-    opts = {'uncompress': True}
-    files = [
-            (os.path.join('pymvpa-exampledata', 'attributes.txt'), url, opts),
-            (os.path.join('pymvpa-exampledata', 'bold.nii.gz'), url, opts),
-            (os.path.join('pymvpa-exampledata', 'mask.nii.gz'), url, opts),
-            (os.path.join('pymvpa-exampledata', 'attributes_literal.txt'),
-             url, opts),
-    ]
-
-    dataset_name = 'haxby2001_simple'
-    data_dir = _get_dataset_dir(dataset_name, data_dir=data_dir,
-                                verbose=verbose)
-    files = _fetch_files(data_dir, files, resume=resume, verbose=verbose)
-
-    # There is a common file for the two versions of Haxby
-    fdescr = _get_dataset_descr('haxby2001')
-
-    # List of length 1 are used because haxby_simple is single-subject
-    return Bunch(func=[files[1]], session_target=[files[0]], mask=files[2],
-                 conditions_target=[files[3]], description=fdescr)
-
-
-def fetch_haxby(data_dir=None, n_subjects=None, subjects=(2,),
+def fetch_haxby(data_dir=None, subjects=(2,),
                 fetch_stimuli=False, url=None, resume=True, verbose=1):
     """Download and loads complete haxby dataset
 
@@ -95,12 +28,6 @@ def fetch_haxby(data_dir=None, n_subjects=None, subjects=(2,),
     data_dir: string, optional
         Path of the data directory. Used to force data storage in a specified
         location. Default: None
-
-    n_subjects: int, optional
-        Number of subjects, from 1 to 6.
-
-        NOTE: n_subjects is deprecated from 0.2.6 and will be removed in next
-        release. Use `subjects` instead.
 
     subjects : list or int, optional
         Either a list of subjects or the number of subjects to load, from 1 to
@@ -148,12 +75,6 @@ def fetch_haxby(data_dir=None, n_subjects=None, subjects=(2,),
     Run 8 in subject 5 does not contain any task labels.
     The anatomical image for subject 6 is unavailable.
     """
-    if n_subjects is not None:
-        warn_str = ("The parameter 'n_subjects' is deprecated from 0.2.6 and "
-                    "will be removed in nilearn next release. Use parameter "
-                    "'subjects' instead.")
-        warnings.warn(warn_str, VisibleDeprecationWarning, stacklevel=2)
-        subjects = n_subjects
 
     if isinstance(subjects, numbers.Number) and subjects > 6:
         subjects = 6
@@ -244,6 +165,9 @@ def fetch_nyu_rest(n_subjects=None, sessions=[1], data_dir=None, resume=True,
                    verbose=1):
     """Download and loads the NYU resting-state test-retest dataset.
 
+    NOTE: This function is deprecated and will be removed in the 0.8.x
+    release, due to lack of preprocessing.
+
     Parameters
     ----------
     n_subjects: int, optional
@@ -319,6 +243,10 @@ def fetch_nyu_rest(n_subjects=None, sessions=[1], data_dir=None, resume=True,
           F.X. Castellanos, M.P. Milham
 
     """
+    warnings.warn("fetch_nyu_rest has been deprecated and will "
+                  "be removed in the 0.8.x release.",
+                  np.VisibleDeprecationWarning, stacklevel=2)
+
     fa1 = 'http://www.nitrc.org/frs/download.php/1071/NYU_TRT_session1a.tar.gz'
     fb1 = 'http://www.nitrc.org/frs/download.php/1072/NYU_TRT_session1b.tar.gz'
     fa2 = 'http://www.nitrc.org/frs/download.php/1073/NYU_TRT_session2a.tar.gz'
@@ -824,7 +752,7 @@ def fetch_localizer_contrasts(contrasts, n_subjects=None, get_tmaps=False,
     if n_subjects is None:
         n_subjects = 94  # 94 subjects available
     if (isinstance(n_subjects, numbers.Number) and
-                    ((n_subjects > 94) or (n_subjects < 1))):
+            ((n_subjects > 94) or (n_subjects < 1))):
         warnings.warn("Wrong value for \'n_subjects\' (%d). The maximum "
                       "value will be used instead (\'n_subjects=94\')")
         n_subjects = 94  # 94 subjects available
@@ -886,6 +814,7 @@ def fetch_localizer_contrasts(contrasts, n_subjects=None, get_tmaps=False,
         "button press vs calculation and sentence listening/reading":
             "auditory&visual motor vs cognitive processing"}
     allowed_contrasts = list(contrast_name_wrapper.values())
+
     # convert contrast names
     contrasts_wrapped = []
     # get a unique ID for each contrast. It is used to give a unique name to
@@ -893,21 +822,30 @@ def fetch_localizer_contrasts(contrasts, n_subjects=None, get_tmaps=False,
     contrasts_indices = []
     for contrast in contrasts:
         if contrast in allowed_contrasts:
-            contrasts_wrapped.append(contrast)
+            contrasts_wrapped.append(contrast.title().replace(" ", ""))
             contrasts_indices.append(allowed_contrasts.index(contrast))
         elif contrast in contrast_name_wrapper:
             name = contrast_name_wrapper[contrast]
-            contrasts_wrapped.append(name)
+            contrasts_wrapped.append(name.title().replace(" ", ""))
             contrasts_indices.append(allowed_contrasts.index(name))
         else:
             raise ValueError("Contrast \'%s\' is not available" % contrast)
 
-    # It is better to perform several small requests than a big one because:
-    # - Brainomics server has no cache (can lead to timeout while the archive
-    #   is generated on the remote server)
-    # - Local (cached) version of the files can be checked for each contrast
-    opts = {'uncompress': True}
+    # Get the dataset OSF index
+    dataset_name = "brainomics_localizer"
+    index_url = "https://osf.io/hwbm2/download"
+    data_dir = _get_dataset_dir(dataset_name, data_dir=data_dir,
+                                verbose=verbose)
+    index_file = _fetch_file(index_url, data_dir, verbose=verbose)
+    with open(index_file, "rt") as of:
+        index = json.load(of)
 
+    # Build data URLs that will be fetched
+    files = {}
+    # Download from the relevant OSF project, using hashes generated
+    # from the OSF API. Note the trailing slash. For more info, see:
+    # https://gist.github.com/emdupre/3cb4d564511d495ea6bf89c6a577da74
+    root_url = "https://osf.io/download/{0}/"
     if isinstance(n_subjects, numbers.Number):
         subject_mask = np.arange(1, n_subjects + 1)
         subject_id_max = "S%02d" % n_subjects
@@ -916,26 +854,18 @@ def fetch_localizer_contrasts(contrasts, n_subjects=None, get_tmaps=False,
         subject_id_max = "S%02d" % np.max(n_subjects)
         n_subjects = len(n_subjects)
     subject_ids = ["S%02d" % s for s in subject_mask]
-    data_types = ["c map"]
+    data_types = ["cmaps"]
     if get_tmaps:
-        data_types.append("t map")
-    rql_types = str.join(", ", ["\"%s\"" % x for x in data_types])
-    root_url = "http://brainomics.cea.fr/localizer/"
-
-    base_query = ("Any X,XT,XL,XI,XF,XD WHERE X is Scan, X type XT, "
-                  "X concerns S, "
-                  "X label XL, X identifier XI, "
-                  "X format XF, X description XD, "
-                  'S identifier <= "%s", ' % (subject_id_max, ) +
-                  'X type IN(%(types)s), X label "%(label)s"')
-
-    urls = ["%sbrainomics_data_%d.zip?rql=%s&vid=data-zip"
-            % (root_url, i,
-               _urllib.parse.quote(base_query % {"types": rql_types,
-                                          "label": c},
-                            safe=',()'))
-            for c, i in zip(contrasts_wrapped, contrasts_indices)]
+        data_types.append("tmaps")
     filenames = []
+
+    def _is_valid_path(path, index, verbose):
+        if path not in index:
+            if verbose > 0:
+                print("Skiping path '{0}'...".format(path))
+            return False
+        return True
+
     for subject_id in subject_ids:
         for data_type in data_types:
             for contrast_id, contrast in enumerate(contrasts_wrapped):
@@ -943,80 +873,87 @@ def fetch_localizer_contrasts(contrasts, n_subjects=None, get_tmaps=False,
                     str.join('_', [data_type, contrast]), ' ', '_')
                 file_path = os.path.join(
                     "brainomics_data", subject_id, "%s.nii.gz" % name_aux)
-                file_tarball_url = urls[contrast_id]
-                filenames.append((file_path, file_tarball_url, opts))
+                path = "/".join([
+                    "/localizer", "derivatives", "spm_1st_level",
+                    "sub-%s" % subject_id,
+                    "sub-%s_task-localizer_acq-%s_%s.nii.gz" % (
+                        subject_id, contrast, data_type)])
+                if _is_valid_path(path, index, verbose=verbose):
+                    file_url = root_url.format(index[path][1:])
+                    opts = {"move": file_path}
+                    filenames.append((file_path, file_url, opts))
+                    files.setdefault(data_type, []).append(file_path)
+
     # Fetch masks if asked by user
     if get_masks:
-        urls.append("%sbrainomics_data_masks.zip?rql=%s&vid=data-zip"
-                    % (root_url,
-                       _urllib.parse.quote(base_query % {"types": '"boolean mask"',
-                                                  "label": "mask"},
-                                    safe=',()')))
         for subject_id in subject_ids:
             file_path = os.path.join(
                 "brainomics_data", subject_id, "boolean_mask_mask.nii.gz")
-            file_tarball_url = urls[-1]
-            filenames.append((file_path, file_tarball_url, opts))
+            path = "/".join([
+                "/localizer", "derivatives", "spm_1st_level",
+                "sub-%s" % subject_id, "sub-%s_mask.nii.gz" % subject_id])
+            if _is_valid_path(path, index, verbose=verbose):
+                file_url = root_url.format(index[path][1:])
+                opts = {"move": file_path}
+                filenames.append((file_path, file_url, opts))
+                files.setdefault("masks", []).append(file_path)
+
     # Fetch anats if asked by user
     if get_anats:
-        urls.append("%sbrainomics_data_anats.zip?rql=%s&vid=data-zip"
-                    % (root_url,
-                       _urllib.parse.quote(base_query % {"types": '"normalized T1"',
-                                                  "label": "anatomy"},
-                                    safe=',()')))
         for subject_id in subject_ids:
             file_path = os.path.join(
                 "brainomics_data", subject_id,
                 "normalized_T1_anat_defaced.nii.gz")
-            file_tarball_url = urls[-1]
-            filenames.append((file_path, file_tarball_url, opts))
-    # Fetch subject characteristics (separated in two files)
-    if url is None:
-        url_csv = ("%sdataset/cubicwebexport.csv?rql=%s&vid=csvexport"
-                   % (root_url, _urllib.parse.quote("Any X WHERE X is Subject")))
-        url_csv2 = ("%sdataset/cubicwebexport2.csv?rql=%s&vid=csvexport"
-                    % (root_url,
-                       _urllib.parse.quote("Any X,XI,XD WHERE X is QuestionnaireRun, "
-                                    "X identifier XI, X datetime "
-                                    "XD", safe=',')
-                       ))
-    else:
-        url_csv = "%s/cubicwebexport.csv" % url
-        url_csv2 = "%s/cubicwebexport2.csv" % url
-    filenames += [("cubicwebexport.csv", url_csv, {}),
-                  ("cubicwebexport2.csv", url_csv2, {})]
+            path = "/".join([
+                "/localizer", "derivatives", "spm_preprocessing",
+                "sub-%s" % subject_id, "sub-%s_T1w.nii.gz" % subject_id])
+            if _is_valid_path(path, index, verbose=verbose):
+                file_url = root_url.format(index[path][1:])
+                opts = {"move": file_path}
+                filenames.append((file_path, file_url, opts))
+                files.setdefault("anats", []).append(file_path)
+
+    # Fetch subject characteristics
+    participants_file = os.path.join("brainomics_data", "participants.tsv")
+    path = "/localizer/participants.tsv"
+    if _is_valid_path(path, index, verbose=verbose):
+        file_url = root_url.format(index[path][1:])
+        opts = {"move": participants_file}
+        filenames.append((participants_file, file_url, opts))
+
+    # Fetch behavioural
+    behavioural_file = os.path.join(
+        "brainomics_data", "phenotype", "behavioural.tsv")
+    path = "/localizer/phenotype/behavioural.tsv"
+    if _is_valid_path(path, index, verbose=verbose):
+        file_url = root_url.format(index[path][1:])
+        opts = {"move": behavioural_file}
+        filenames.append((behavioural_file, file_url, opts))
 
     # Actual data fetching
-    dataset_name = 'brainomics_localizer'
-    data_dir = _get_dataset_dir(dataset_name, data_dir=data_dir,
-                                verbose=verbose)
     fdescr = _get_dataset_descr(dataset_name)
-    files = _fetch_files(data_dir, filenames, verbose=verbose)
-    anats = None
-    masks = None
-    tmaps = None
-    # combine data from both covariates files into one single recarray
+    _fetch_files(data_dir, filenames, verbose=verbose)
+    for key, value in files.items():
+        files[key] = [os.path.join(data_dir, val) for val in value]
+
+    # Load covariates file
     from numpy.lib.recfunctions import join_by
-    ext_vars_file2 = files[-1]
-    csv_data2 = np.recfromcsv(ext_vars_file2, delimiter=';')
-    files = files[:-1]
-    ext_vars_file = files[-1]
-    csv_data = np.recfromcsv(ext_vars_file, delimiter=';')
-    files = files[:-1]
-    # join_by sorts the output along the key
-    csv_data = join_by('subject_id', csv_data, csv_data2,
-                       usemask=False, asrecarray=True)[subject_mask - 1]
-    if get_anats:
-        anats = files[-n_subjects:]
-        files = files[:-n_subjects]
-    if get_masks:
-        masks = files[-n_subjects:]
-        files = files[:-n_subjects]
-    if get_tmaps:
-        tmaps = files[1::2]
-        files = files[::2]
-    return Bunch(cmaps=files, tmaps=tmaps, masks=masks, anats=anats,
-                 ext_vars=csv_data, description=fdescr)
+    participants_file = os.path.join(data_dir, participants_file)
+    csv_data = np.recfromcsv(participants_file, delimiter='\t')
+    behavioural_file = os.path.join(data_dir, behavioural_file)
+    csv_data2 = np.recfromcsv(behavioural_file, delimiter='\t')
+    csv_data = join_by(
+        "participant_id", csv_data, csv_data2, usemask=False, asrecarray=True)
+    subject_names = csv_data["participant_id"].tolist()
+    subjects_indices = []
+    for name in subject_ids:
+        name = name.encode("utf8")
+        if name not in subject_names:
+            continue
+        subjects_indices.append(subject_names.index(name))
+    csv_data = csv_data[subjects_indices]
+
+    return Bunch(ext_vars=csv_data, description=fdescr, **files)
 
 
 def fetch_localizer_calculation_task(n_subjects=1, data_dir=None, url=None,
@@ -1064,20 +1001,20 @@ def fetch_localizer_calculation_task(n_subjects=1, data_dir=None, url=None,
                                      get_tmaps=False, get_masks=False,
                                      get_anats=False, data_dir=data_dir,
                                      url=url, resume=True, verbose=verbose)
-    data.pop('tmaps')
-    data.pop('masks')
-    data.pop('anats')
     return data
 
 
-def fetch_localizer_button_task(data_dir=None, url=None, verbose=1):
+def fetch_localizer_button_task(data_dir=None, url=None,
+                                verbose=1):
     """Fetch left vs right button press contrast maps from the localizer.
-
-    This function ships only 2nd subject (S02) specific tmap and
-    its normalized T1 image.
 
     Parameters
     ----------
+    n_subjects: int, optional
+        The number of subjects to load. If None is given,
+        this function ships only 2nd subject (S02) specific tmap and
+        its normalized T1 image.
+
     data_dir: string, optional
         Path of the data directory. Used to force data storage in a specified
         location.
@@ -1093,6 +1030,7 @@ def fetch_localizer_button_task(data_dir=None, url=None, verbose=1):
     -------
     data: Bunch
         Dictionary-like object, the interest attributes are :
+        'cmaps': string list, giving paths to nifti contrast maps
         'tmap': string, giving paths to nifti contrast maps
         'anat': string, giving paths to normalized anatomical image
 
@@ -1109,30 +1047,15 @@ def fetch_localizer_button_task(data_dir=None, url=None, verbose=1):
     nilearn.datasets.fetch_localizer_contrasts
 
     """
-    # The URL can be retrieved from the nilearn account on OSF (Open
-    # Science Framework). Uploaded files specific to S02 from
-    # fetch_localizer_contrasts ['left vs right button press']
-    if url is None:
-        url = 'https://osf.io/dx9jn/download'
-
-    tmap = "t_map_left_auditory_&_visual_click_vs_right_auditory&visual_click.nii.gz"
-    anat = "normalized_T1_anat_defaced.nii.gz"
-
-    opts = {'uncompress': True}
-
-    options = ('tmap', 'anat')
-    filenames = [(os.path.join('localizer_button_task', name), url, opts)
-                 for name in (tmap, anat)]
-
-    dataset_name = 'brainomics'
-    data_dir = _get_dataset_dir(dataset_name, data_dir=data_dir,
-                                verbose=verbose)
-    files = _fetch_files(data_dir, filenames, verbose=verbose)
-
-    fdescr = _get_dataset_descr('brainomics_localizer')
-
-    params = dict([('description', fdescr)] + list(zip(options, files)))
-    return Bunch(**params)
+    data = fetch_localizer_contrasts(["left vs right button press"],
+                                     n_subjects=[2],
+                                     get_tmaps=True, get_masks=False,
+                                     get_anats=True, data_dir=data_dir,
+                                     url=url, resume=True, verbose=verbose)
+    # Additional keys for backward compatibility
+    data['tmap'] = data['tmaps'][0]
+    data['anat'] = data['anats'][0]
+    return data
 
 
 def fetch_abide_pcp(data_dir=None, n_subjects=None, pipeline='cpac',
@@ -1325,7 +1248,7 @@ def _load_mixed_gambles(zmap_imgs):
     mask = []
     for zmap_img in zmap_imgs:
         # load subject data
-        this_X = zmap_img.get_data()
+        this_X = get_data(zmap_img)
         affine = zmap_img.affine
         finite_mask = np.all(np.isfinite(this_X), axis=-1)
         this_mask = np.logical_and(np.all(this_X != 0, axis=-1),
@@ -1917,7 +1840,8 @@ def _fetch_development_fmri_participants(data_dir, url, verbose):
     return participants
 
 
-def _fetch_development_fmri_functional(participants, data_dir, url, verbose):
+def _fetch_development_fmri_functional(participants, data_dir, url, resume,
+                                       verbose):
     """Helper function to fetch_development_fmri.
 
     This function helps in downloading functional MRI data in Nifti
@@ -1939,6 +1863,9 @@ def _fetch_development_fmri_functional(participants, data_dir, url, verbose):
         Override download URL. Used for test only (or if you setup a mirror of
         the data). Default: None
 
+    resume: bool, optional (default True)
+        Whether to resume download of a partly-downloaded file.
+
     verbose: int
         Defines the level of verbosity of the output.
 
@@ -1955,7 +1882,10 @@ def _fetch_development_fmri_functional(participants, data_dir, url, verbose):
                                 verbose=verbose)
 
     if url is None:
-        url = 'https://osf.io/download/{}'
+        # Download from the relevant OSF project, using hashes generated
+        # from the OSF API. Note the trailing slash. For more info, see:
+        # https://gist.github.com/emdupre/3cb4d564511d495ea6bf89c6a577da74
+        url = 'https://osf.io/download/{}/'
 
     confounds = '{}_task-pixar_desc-confounds_regressors.tsv'
     func = '{0}_task-pixar_space-MNI152NLin2009cAsym_desc-preproc_bold.nii.gz'
@@ -1988,13 +1918,15 @@ def _fetch_development_fmri_functional(participants, data_dir, url, verbose):
         func_url = url.format(this_osf_id['key_b'][0])
         func_file = [(func.format(participant_id, participant_id), func_url,
                       {'move': func.format(participant_id)})]
-        path_to_func = _fetch_files(data_dir, func_file, verbose=verbose)[0]
+        path_to_func = _fetch_files(data_dir, func_file, resume=resume,
+                                    verbose=verbose)[0]
         funcs.append(path_to_func)
     return funcs, regressors
 
 
 def fetch_development_fmri(n_subjects=None, reduce_confounds=True,
-                           data_dir=None, resume=True, verbose=1):
+                           data_dir=None, resume=True, verbose=1,
+                           age_group='both'):
     """Fetch movie watching based brain development dataset (fMRI)
 
     The data is downsampled to 4mm resolution for convenience. The origin of
@@ -2026,6 +1958,12 @@ def fetch_development_fmri(n_subjects=None, reduce_confounds=True,
     verbose: int, optional (default 1)
         Defines the level of verbosity of the output.
 
+    age_group: str, optional (default 'both')
+        Which age group to fetch
+        - 'adults' = fetch adults only (n=33, ages 18-39)
+        - 'child' = fetch children only (n=122, ages 3-12)
+        - 'both' = fetch full sample (n=155)
+
     Returns
     -------
     data: Bunch
@@ -2050,6 +1988,10 @@ def fetch_development_fmri(n_subjects=None, reduce_confounds=True,
     Science Framework (OSF). Located here: https://osf.io/5hju4/files/
 
     Preprocessing details: https://osf.io/wjtyq/
+
+    Note that if n_subjects > 2, and age_group is 'both',
+    fetcher will return a ratio of children and adults representative
+    of the total sample.
 
     References
     ----------
@@ -2077,52 +2019,104 @@ def fetch_development_fmri(n_subjects=None, reduce_confounds=True,
                                                         url=None,
                                                         verbose=verbose)
 
-    max_subjects = len(participants)
+    adult_count, child_count = _filter_func_regressors_by_participants(
+            participants, age_group)  # noqa: E126
+    max_subjects = adult_count + child_count
+
+    n_subjects = _set_invalid_n_subjects_to_max(n_subjects,
+                                                max_subjects,
+                                                age_group)
+
+    # To keep the proportion of children versus adults
+    percent_total = float(n_subjects) / max_subjects
+    n_child = np.round(percent_total * child_count).astype(int)
+    n_adult = np.round(percent_total * adult_count).astype(int)
+
+    # We want to return adults by default (i.e., `age_group=both`) or
+    # if explicitly requested.
+    if (age_group != 'child') and (n_subjects == 1):
+        n_adult, n_child = 1, 0
+
+    if (age_group == 'both') and (n_subjects == 2):
+        n_adult, n_child = 1, 1
+
+    participants = _filter_csv_by_n_subjects(participants, n_adult, n_child)
+
+    funcs, regressors = _fetch_development_fmri_functional(participants,
+                                                           data_dir=data_dir,
+                                                           url=None,
+                                                           resume=resume,
+                                                           verbose=verbose)
+
+    if reduce_confounds:
+        regressors = _reduce_confounds(regressors, keep_confounds)
+    return Bunch(func=funcs, confounds=regressors, phenotypic=participants,
+                 description=fdescr)
+
+
+def _filter_func_regressors_by_participants(participants, age_group):
+    """ Filter functional and regressors based on participants
+    """
+    valid_age_groups = ('both', 'child', 'adult')
+    if age_group not in valid_age_groups:
+        raise ValueError("Wrong value for age_group={0}. "
+                         "Valid arguments are: {1}".format(age_group,
+                                                           valid_age_groups)
+                         )
+
+    child_adult = participants['Child_Adult'].tolist()
+
+    if age_group != 'adult':
+        child_count = child_adult.count('child')
+    else:
+        child_count = 0
+
+    if age_group != 'child':
+        adult_count = child_adult.count('adult')
+    else:
+        adult_count = 0
+    return adult_count, child_count
+
+
+def _filter_csv_by_n_subjects(participants, n_adult, n_child):
+    """Restrict the csv files to the adequate number of subjects
+    """
+    child_ids = participants[participants['Child_Adult'] ==
+                             'child']['participant_id'][:n_child]
+    adult_ids = participants[participants['Child_Adult'] ==
+                             'adult']['participant_id'][:n_adult]
+    ids = np.hstack([adult_ids, child_ids])
+    participants = participants[np.in1d(participants['participant_id'], ids)]
+    participants = participants[np.argsort(participants, order='Child_Adult')]
+    return participants
+
+
+def _set_invalid_n_subjects_to_max(n_subjects, max_subjects, age_group):
+    """ If n_subjects is invalid, sets it to max.
+    """
     if n_subjects is None:
         n_subjects = max_subjects
 
     if (isinstance(n_subjects, numbers.Number) and
             ((n_subjects > max_subjects) or (n_subjects < 1))):
         warnings.warn("Wrong value for n_subjects={0}. The maximum "
-                      "value will be used instead n_subjects={1}"
-                      .format(n_subjects, max_subjects))
+                      "value (for age_group={1}) will be used instead: "
+                      "n_subjects={2}"
+                      .format(n_subjects, age_group, max_subjects))
         n_subjects = max_subjects
+    return n_subjects
 
-    # Download functional and regressors based on participants
-    child_count = participants['Child_Adult'].tolist().count('child')
-    adult_count = participants['Child_Adult'].tolist().count('adult')
 
-    # To keep the proportion of children versus adults
-    n_child = np.round(float(n_subjects) / max_subjects * child_count).astype(int)
-    n_adult = np.round(float(n_subjects) / max_subjects * adult_count).astype(int)
-
-    # First, restrict the csv files to the adequate number of subjects
-    child_ids = participants[participants['Child_Adult'] ==
-                             'child']['participant_id'][:n_child]
-    adult_ids = participants[participants['Child_Adult'] ==
-                             'adult']['participant_id'][:n_adult]
-    ids = np.hstack([child_ids, adult_ids])
-    participants = participants[np.in1d(participants['participant_id'],
-                                        ids)]
-
-    funcs, regressors = _fetch_development_fmri_functional(participants,
-                                                           data_dir=data_dir,
-                                                           url=None,
-                                                           verbose=verbose)
-
-    if reduce_confounds:
-        reduced_regressors = []
-        for in_file in regressors:
-            out_file = in_file.replace('desc-confounds',
-                                       'desc-reducedConfounds')
-            if not os.path.isfile(out_file):
-                confounds = np.recfromcsv(in_file, delimiter='\t')
-                selected_confounds = confounds[keep_confounds]
-                header = '\t'.join(selected_confounds.dtype.names)
-                np.savetxt(out_file, np.array(selected_confounds.tolist()),
-                           header=header, delimiter='\t', comments='')
-            reduced_regressors.append(out_file)
-        regressors = reduced_regressors
-
-    return Bunch(func=funcs, confounds=regressors, phenotypic=participants,
-                 description=fdescr)
+def _reduce_confounds(regressors, keep_confounds):
+    reduced_regressors = []
+    for in_file in regressors:
+        out_file = in_file.replace('desc-confounds',
+                                   'desc-reducedConfounds')
+        if not os.path.isfile(out_file):
+            confounds = np.recfromcsv(in_file, delimiter='\t')
+            selected_confounds = confounds[keep_confounds]
+            header = '\t'.join(selected_confounds.dtype.names)
+            np.savetxt(out_file, np.array(selected_confounds.tolist()),
+                       header=header, delimiter='\t', comments='')
+        reduced_regressors.append(out_file)
+    return reduced_regressors
