@@ -939,8 +939,8 @@ class BaseSlicer(object):
                 marker_coords, direction, return_direction=True)
             xdata, ydata = marker_coords_2d.T
 	        # Allow markers only in their respective hemisphere when appropriate
-	        marker_color_ = marker_color
-	        if direction in ('lr'):
+            marker_color_ = marker_color
+            if direction in ('lr'):
 	            if not isinstance(marker_color, str) and \
 	                    not isinstance(marker_color, np.ndarray):
 	                marker_color_ = np.asarray(marker_color)
