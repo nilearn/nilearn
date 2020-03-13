@@ -7,10 +7,10 @@ decoding task.
 """
 
 #############################################################################
-# We start by loading the data and applying simple transformations to it
-# -----------------------------------------------------------------------
+# Loading the data
+# -----------------
 
-# Fetch data using nilearn dataset fetcher
+# We start by loading data using nilearn dataset fetcher
 from nilearn import datasets
 from nilearn.image import get_data
 # by default 2nd subject data will be fetched
@@ -27,8 +27,12 @@ import numpy as np
 import pandas as pd
 labels = pd.read_csv(haxby_dataset.session_target[0], sep=" ")
 stimuli = labels['labels']
-# identify resting state labels in order to be able to remove them
-task_mask = (stimuli != 'rest')
+
+# identify resting state (baseline) labels in order to be able to remove them
+resting_state = (stimuli == 'rest')
+
+# extract the indices of the images corresponding to some condition or task
+task_mask = np.logical_not(resting_state)
 
 # find names of remaining active labels
 categories = stimuli[task_mask].unique()
@@ -36,169 +40,123 @@ categories = stimuli[task_mask].unique()
 # extract tags indicating to which acquisition run a tag belongs
 session_labels = labels['chunks'][task_mask]
 
-# Load the fMRI data
-from nilearn.input_data import NiftiMasker
 
+# Load the fMRI data
 # For decoding, standardizing is often very important
 mask_filename = haxby_dataset.mask_vt[0]
-masker = NiftiMasker(mask_img=mask_filename, standardize=True)
 func_filename = haxby_dataset.func[0]
-masked_timecourses = masker.fit_transform(
-    func_filename)[task_mask]
 
+
+# Because the data is in one single large 4D image, we need to use
+# index_img to do the split easily.
+from nilearn.image import index_img
+fmri_niimgs = index_img(func_filename, task_mask)
+classification_target = stimuli[task_mask]
 
 #############################################################################
+# Training the decoder
+# ---------------------
+
 # Then we define the various classifiers that we use
-# ---------------------------------------------------
-# A support vector classifier
-from sklearn.svm import SVC
-svm = SVC(C=1., kernel="linear")
+classifiers = ['svc_l2', 'svc_l1', 'logistic_l1',
+               'logistic_l2', 'ridge_classifier']
 
-# The logistic regression
-from sklearn.linear_model import (LogisticRegression,
-                                  RidgeClassifier,
-                                  RidgeClassifierCV,
-                                  )
-logistic = LogisticRegression(C=1., penalty="l1", solver='liblinear')
-logistic_50 = LogisticRegression(C=50., penalty="l1", solver='liblinear')
-logistic_l2 = LogisticRegression(C=1., penalty="l2", solver='liblinear')
-
-# Cross-validated versions of these classifiers
-from sklearn.model_selection import GridSearchCV
-# GridSearchCV is slow, but note that it takes an 'n_jobs' parameter that
-# can significantly speed up the fitting process on computers with
-# multiple cores
-svm_cv = GridSearchCV(SVC(C=1., kernel="linear"),
-                      param_grid={'C': [.1, 1., 10., 100.]},
-                      scoring='f1', n_jobs=1, cv=3, iid=False)
-
-logistic_cv = GridSearchCV(
-        LogisticRegression(C=1., penalty="l1", solver='liblinear'),
-        param_grid={'C': [.1, 1., 10., 100.]},
-        scoring='f1', cv=3, iid=False,
-        )
-logistic_l2_cv = GridSearchCV(
-        LogisticRegression(C=1., penalty="l2", solver='liblinear'),
-        param_grid={
-            'C': [.1, 1., 10., 100.]
-            },
-        scoring='f1', cv=3, iid=False,
-        )
-
-# The ridge classifier has a specific 'CV' object that can set it's
-# parameters faster than using a GridSearchCV
-ridge = RidgeClassifier()
-ridge_cv = RidgeClassifierCV()
-
-# A dictionary, to hold all our classifiers
-classifiers = {'SVC': svm,
-               'SVC cv': svm_cv,
-               'log l1': logistic,
-               'log l1 50': logistic_50,
-               'log l1 cv': logistic_cv,
-               'log l2': logistic_l2,
-               'log l2 cv': logistic_l2_cv,
-               'ridge': ridge,
-               'ridge cv': ridge_cv
-               }
-
-#############################################################################
-# Here we compute prediction scores
-# ----------------------------------
-# Run time for all these classifiers
-
-# Make a data splitting object for cross validation
-from sklearn.model_selection import LeaveOneGroupOut, cross_val_score
-cv = LeaveOneGroupOut()
-
+# Here we compute prediction scores and run time for all these
+# classifiers
 import time
+from nilearn.decoding import Decoder
+from sklearn.model_selection import LeaveOneGroupOut
 
-classifiers_scores = {}
+cv = LeaveOneGroupOut()
+classifiers_data = {}
 
-for classifier_name, classifier in sorted(classifiers.items()):
-    classifiers_scores[classifier_name] = {}
+for classifier_name in sorted(classifiers):
+    classifiers_data[classifier_name] = {}
     print(70 * '_')
 
+    # The decoder has as default score the `roc_auc`
+    decoder = Decoder(estimator=classifier_name, mask=mask_filename,
+                      standardize=True, cv=cv)
+    t0 = time.time()
+    decoder.fit(fmri_niimgs, classification_target, groups=session_labels)
+
+    classifiers_data[classifier_name] = {}
+    classifiers_data[classifier_name]['score'] = decoder.cv_scores_
+    classifiers_data[classifier_name]['map'] = decoder.coef_img_['house']
+
+    print("%10s: %.2fs" % (classifier_name, time.time() - t0))
     for category in categories:
-        classification_target = stimuli[task_mask].isin([category])
-        t0 = time.time()
-        classifiers_scores[classifier_name][category] = cross_val_score(
-            classifier,
-            masked_timecourses,
-            classification_target,
-            cv=cv,
-            groups=session_labels,
-            scoring="f1",
+        print("    %14s vs all -- AUC: %1.2f +- %1.2f" % (
+            category,
+            np.mean(classifiers_data[classifier_name]['score'][category]),
+            np.std(classifiers_data[classifier_name]['score'][category]))
         )
 
-        print(
-            "%10s: %14s -- scores: %1.2f +- %1.2f, time %.2fs" %
-            (
-                classifier_name,
-                category,
-                classifiers_scores[classifier_name][category].mean(),
-                classifiers_scores[classifier_name][category].std(),
-                time.time() - t0,
-            ),
-        )
+    # Adding the average performance per estimator
+    scores = classifiers_data[classifier_name]['score']
+    scores['AVERAGE'] = np.mean(list(scores.values()), axis=0)
+    classifiers_data[classifier_name]['score'] = scores
 
 ###############################################################################
+# Visualization
+# --------------
+
 # Then we make a rudimentary diagram
 import matplotlib.pyplot as plt
-plt.figure()
+plt.figure(figsize=(6, 6))
 
-tick_position = np.arange(len(categories))
-plt.xticks(tick_position, categories, rotation=45)
+all_categories = np.sort(np.hstack([categories, 'AVERAGE']))
+tick_position = np.arange(len(all_categories))
+plt.yticks(tick_position + 0.25, all_categories)
+height = 0.1
 
-for color, classifier_name in zip(
-        ['b', 'c', 'm', 'g', 'y', 'k', '.5', 'r', '#ffaaaa'],
-        sorted(classifiers)):
-    score_means = [classifiers_scores[classifier_name][category].mean()
-                   for category in categories]
-    plt.bar(tick_position, score_means, label=classifier_name,
-            width=.11, color=color)
-    tick_position = tick_position + .09
+for i, (color, classifier_name) in enumerate(zip(['b', 'm', 'k', 'r', 'g'],
+                                                 classifiers)):
+    score_means = [
+        np.mean(classifiers_data[classifier_name]['score'][category])
+        for category in all_categories
+    ]
 
-plt.ylabel('Classification accurancy (f1 score)')
-plt.xlabel('Visual stimuli category')
-plt.ylim(ymin=0)
-plt.legend(loc='lower center', ncol=3)
+    plt.barh(tick_position, score_means,
+             label=classifier_name.replace('_', ' '),
+             height=height, color=color)
+    tick_position = tick_position + height
+
+plt.xlabel('Classification accuracy (AUC score)')
+plt.ylabel('Visual stimuli category')
+plt.xlim(xmin=0.5)
+plt.legend(loc='lower left', ncol=1)
 plt.title(
     'Category-specific classification accuracy for different classifiers')
 plt.tight_layout()
 
-###############################################################################
-# Finally, w plot the face vs house map for the different classifiers
+# We can see that for a fixed penalty the results are similar between the svc
+# and the logistic regression. The main difference relies on the penalty
+# ($\ell_1$ and $\ell_2$). The sparse penalty works better because we are in
+# an intra-subject setting.
 
+###############################################################################
+# Visualizing the face vs house map
+# ---------------------------------
+
+# Finally, we plot the face vs house map for the different classifiers
 # Use the average EPI as a background
-from nilearn import image
-mean_epi_img = image.mean_img(func_filename)
+from nilearn.image import mean_img
+mean_epi_img = mean_img(func_filename)
 
 # Restrict the decoding to face vs house
-condition_mask = stimuli.isin(['face', 'house'])
-masked_timecourses = masked_timecourses[
-    condition_mask[task_mask]]
-stimuli = (stimuli[condition_mask] == 'face')
-# Transform the stimuli to binary values
-stimuli.astype(np.int)
+condition_mask = np.logical_or(stimuli == b'face', stimuli == b'house')
+stimuli = stimuli[condition_mask]
+fmri_niimgs_condition = index_img(func_filename, condition_mask)
 
 from nilearn.plotting import plot_stat_map, show
 
-for classifier_name, classifier in sorted(classifiers.items()):
-    classifier.fit(masked_timecourses, stimuli)
-
-    if hasattr(classifier, 'coef_'):
-        weights = classifier.coef_[0]
-    elif hasattr(classifier, 'best_estimator_'):
-        weights = classifier.best_estimator_.coef_[0]
-    else:
-        continue
-    weight_img = masker.inverse_transform(weights)
-    weight_map = get_data(weight_img)
-    threshold = np.max(np.abs(weight_map)) * 1e-3
-    plot_stat_map(weight_img, bg_img=mean_epi_img,
-                  display_mode='z', cut_coords=[-15],
-                  threshold=threshold,
-                  title='%s: face vs house' % classifier_name)
+for classifier_name in sorted(classifiers):
+    coef_img = classifiers_data[classifier_name]['map']
+    threshold = np.max(np.abs(get_data(coef_img))) * 1e-3
+    plot_stat_map(
+        coef_img, bg_img=mean_epi_img, display_mode='z', cut_coords=[-15],
+        threshold=threshold,
+        title='%s: face vs house' % classifier_name.replace('_', ' '))
 
 show()

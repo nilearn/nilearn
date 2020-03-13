@@ -9,7 +9,7 @@ Only matplotlib is required.
 # License: BSD
 
 # Standard library imports
-import collections
+import collections.abc
 import functools
 import numbers
 import warnings
@@ -33,7 +33,6 @@ from ..image import new_img_like
 from .._utils.extmath import fast_abs_percentile
 from .._utils.param_validation import check_threshold
 from .._utils.ndimage import get_border_data
-from .._utils.exceptions import VisibleDeprecationWarning
 from ..datasets import load_mni152_template
 from ..image import iter_img
 from .displays import get_slicer, get_projector
@@ -887,7 +886,7 @@ def plot_prob_atlas(maps_img, bg_img=MNI152TEMPLATE, view_type='auto',
             correction_factor = .5
         threshold = "%f%%" % (100 * (1 - .2 * correction_factor / n_maps))
 
-    if (isinstance(threshold, collections.Iterable) and
+    if (isinstance(threshold, collections.abc.Iterable) and
             not isinstance(threshold, _basestring)):
         threshold = [thr for thr in threshold]
         if len(threshold) != n_maps:

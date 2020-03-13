@@ -1,4 +1,4 @@
-.. -*- mode: rst -*-
+	.. -*- mode: rst -*-
 
 .. image:: https://travis-ci.org/nilearn/nilearn.svg?branch=master
    :target: https://travis-ci.org/nilearn/nilearn
@@ -67,4 +67,4 @@ Development
 ===========
 
 Detailed instructions on how to contribute are available at
-http://nilearn.github.io/contributing.html
+http://nilearn.github.io/development.html

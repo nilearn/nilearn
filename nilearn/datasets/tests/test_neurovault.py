@@ -21,8 +21,6 @@ from functools import wraps
 import numpy as np
 import pytest
 
-from nilearn._utils.testing import assert_warns
-
 from nilearn.datasets import neurovault
 
 
@@ -422,8 +420,10 @@ def test_neurosynth_words_vectorized():
         freq, voc = neurovault.neurosynth_words_vectorized(words_files)
         assert freq.shape == (n_im, n_im)
         assert((freq.sum(axis=0) == np.ones(n_im)).all())
-        assert_warns(UserWarning, neurovault.neurosynth_words_vectorized,
-                     (os.path.join(temp_dir, 'no_words_here.json'),))
+        with pytest.warns(UserWarning):
+            neurovault.neurosynth_words_vectorized(
+                (os.path.join(temp_dir, 'no_words_here.json'),)
+            )
 
 
 def test_write_read_metadata():
@@ -508,8 +508,10 @@ def test_move_col_id():
     assert im_terms == {'not_mni': False}
     assert col_terms == {'id': 1}
 
-    assert_warns(UserWarning, neurovault._move_col_id,
-                 {'collection_id': 1, 'not_mni': False}, {'id': 2})
+    with pytest.warns(UserWarning):
+        neurovault._move_col_id(
+            {'collection_id': 1, 'not_mni': False}, {'id': 2}
+        )
 
 
 def test_download_image_terms():
@@ -552,9 +554,11 @@ def test_fetch_neurovault():
             mode='overwrite', data_dir=temp_dir)
         # specifying a filter while leaving the default term
         # filters in place should raise a warning.
-        assert_warns(UserWarning, neurovault.fetch_neurovault,
-                     image_filter=lambda x: True, max_images=1,
-                     mode='offline')
+        with pytest.warns(UserWarning):
+            neurovault.fetch_neurovault(
+                image_filter=lambda x: True, max_images=1,
+                mode='offline'
+            )
         # if neurovault was available one image matching
         # default filters should have been downloaded
         if data.images:
@@ -575,8 +579,8 @@ def test_fetch_neurovault():
                  stat.S_IREAD | stat.S_IEXEC)
         if os.access(os.path.join(temp_dir, 'neurovault'), os.W_OK):
             return
-        assert_warns(UserWarning, neurovault.fetch_neurovault,
-                     data_dir=temp_dir)
+        with pytest.warns(UserWarning):
+            neurovault.fetch_neurovault(data_dir=temp_dir)
 
 
 def test_fetch_neurovault_ids():

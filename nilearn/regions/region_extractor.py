@@ -3,7 +3,7 @@ Better brain parcellations for Region of Interest analysis
 """
 
 import numbers
-import collections
+import collections.abc
 import numpy as np
 
 from scipy import ndimage
@@ -501,7 +501,7 @@ def connected_label_regions(labels_img, min_size=None, connect_diag=True,
         unique_labels.remove(0)
 
     if labels is not None:
-        if (not isinstance(labels, collections.Iterable) or
+        if (not isinstance(labels, collections.abc.Iterable) or
                 isinstance(labels, _basestring)):
             labels = [labels, ]
         if len(unique_labels) != len(labels):

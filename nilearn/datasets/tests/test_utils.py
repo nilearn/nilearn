@@ -13,16 +13,26 @@ import tarfile
 import gzip
 from tempfile import mkdtemp, mkstemp
 
-from nose import with_setup
+import pytest
 
 from nilearn import datasets
 from nilearn._utils.testing import (mock_request, wrap_chunk_read_,
-                                    FetchFilesMock, assert_raises_regex)
+                                    FetchFilesMock)
 
 currdir = os.path.dirname(os.path.abspath(__file__))
 datadir = os.path.join(currdir, 'data')
 url_request = None
 file_mock = None
+
+
+@pytest.fixture()
+def request_mocker():
+    """ Mocks URL calls for data fetchers during testing.
+    Tests the fetcher code without actually downloading the files.
+    """
+    setup_mock()
+    yield
+    teardown_mock()
 
 
 def setup_mock(utils_mod=datasets.utils, dataset_mod=datasets.utils):
@@ -110,11 +120,11 @@ def test_get_dataset_dir(tmp_path):
     with open(test_file, 'w') as out:
         out.write('abcfeg')
 
-    assert_raises_regex(OSError,
-                        'Nilearn tried to store the dataset in the following '
-                        'directories, but',
-                        datasets.utils._get_dataset_dir,
-                        'test', test_file, verbose=0)
+    with pytest.raises(
+            OSError,
+            match='Nilearn tried to store the dataset in the following '
+                  'directories, but'):
+        datasets.utils._get_dataset_dir('test', test_file, verbose=0)
 
 
 def test_md5_sum_file():
@@ -300,8 +310,7 @@ def test_uncompress():
             shutil.rmtree(dtemp)
 
 
-@with_setup(setup_mock, teardown_mock)
-def test_fetch_file_overwrite(tmp_path):
+def test_fetch_file_overwrite(tmp_path, request_mocker):
     # overwrite non-exiting file.
     fil = datasets.utils._fetch_file(url='http://foo/', data_dir=str(tmp_path),
                                      verbose=0, overwrite=True)
@@ -332,8 +341,7 @@ def test_fetch_file_overwrite(tmp_path):
         assert fp.read() == ''
 
 
-@with_setup(setup_mock, teardown_mock)
-def test_fetch_files_overwrite(tmp_path):
+def test_fetch_files_overwrite(tmp_path, request_mocker):
     # overwrite non-exiting file.
     files = ('1.txt', 'http://foo/1.txt')
     fil = datasets.utils._fetch_files(data_dir=str(tmp_path), verbose=0,

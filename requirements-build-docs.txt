@@ -1,10 +1,8 @@
 numpy
-pandas
 cython
 scipy
 flake8
 lxml
-nose
 mkl
 sphinx
 sphinx-gallery

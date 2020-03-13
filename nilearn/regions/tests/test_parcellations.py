@@ -7,7 +7,6 @@ import pytest
 
 from nilearn.regions.parcellations import (Parcellations,
                                            _check_parameters_transform)
-from nilearn._utils.testing import assert_raises_regex
 
 
 def test_errors_raised_in_check_parameters_fit():
@@ -19,15 +18,16 @@ def test_errors_raised_in_check_parameters_fit():
     img = nibabel.Nifti1Image(data, affine=np.eye(4))
 
     method_raise1 = Parcellations(method=None)
-    assert_raises_regex(ValueError,
-                        "Parcellation method is specified as None. ",
-                        method_raise1.fit, img)
+    with pytest.raises(ValueError,
+                       match="Parcellation method is specified as None. "):
+        method_raise1.fit(img)
 
     for invalid_method in ['kmens', 'avg', 'complte']:
         method_raise2 = Parcellations(method=invalid_method)
         msg = ("The method you have selected is not implemented "
                "'{0}'".format(invalid_method))
-        assert_raises_regex(ValueError, msg, method_raise2.fit, img)
+        with pytest.raises(ValueError, match=msg):
+            method_raise2.fit(img)
 
 
 def test_parcellations_fit_on_single_nifti_image():
@@ -193,8 +193,8 @@ def test_check_parameters_transform():
     msg = ("Number of confounds given does not match with the "
            "given number of images")
     not_match_confounds_list = [confounds, confounds]
-    assert_raises_regex(ValueError, msg, _check_parameters_transform,
-                        fmri_imgs, not_match_confounds_list)
+    with pytest.raises(ValueError, match=msg):
+        _check_parameters_transform(fmri_imgs, not_match_confounds_list)
 
 
 def test_parcellations_transform_with_multi_confounds_multi_images():

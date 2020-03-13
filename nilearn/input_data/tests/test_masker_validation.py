@@ -1,10 +1,10 @@
 import nibabel
 import numpy as np
+import pytest
 
 from sklearn.base import BaseEstimator
 from nilearn._utils.compat import Memory
 
-from nilearn._utils.testing import assert_warns
 from nilearn.input_data.masker_validation import check_embedded_nifti_masker
 from nilearn.input_data import MultiNiftiMasker, NiftiMasker
 
@@ -79,4 +79,5 @@ def test_check_embedded_nifti_masker():
     # Check conflict warning
     mask = NiftiMasker(mask_strategy='epi')
     owner = OwningClass(mask=mask)
-    assert_warns(UserWarning, check_embedded_nifti_masker, owner)
+    with pytest.warns(UserWarning):
+        check_embedded_nifti_masker(owner)

@@ -11,7 +11,7 @@ from numpy.testing import assert_almost_equal
 
 from nilearn.decomposition.multi_pca import MultiPCA
 from nilearn.input_data import MultiNiftiMasker, NiftiMasker
-from nilearn._utils.testing import assert_raises_regex, write_tmp_imgs
+from nilearn._utils.testing import write_tmp_imgs
 
 
 def _tmp_dir():
@@ -81,15 +81,15 @@ def test_multi_pca():
     pytest.raises(TypeError, multi_pca.fit)
 
     multi_pca = MultiPCA(mask=mask_img, n_components=3)
-    assert_raises_regex(ValueError,
-                        "Object has no components_ attribute. "
-                        "This is probably because fit has not been called",
-                        multi_pca.transform, data)
+    with pytest.raises(ValueError,
+                       match="Object has no components_ attribute. This is "
+                             "probably because fit has not been called"):
+        multi_pca.transform(data)
     # Test if raises an error when empty list of provided.
-    assert_raises_regex(ValueError,
-                        'Need one or more Niimg-like objects as input, '
-                        'an empty list was given.',
-                        multi_pca.fit, [])
+    with pytest.raises(ValueError,
+                       match='Need one or more Niimg-like objects as input, '
+                             'an empty list was given.'):
+        multi_pca.fit([])
     # Test passing masker arguments to estimator
     multi_pca = MultiPCA(target_affine=affine,
                          target_shape=shape[:3],
