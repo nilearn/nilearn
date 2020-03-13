@@ -217,9 +217,3 @@ def test_coef_shape():
             model = cls(
                 mask=mask, max_iter=3, penalty=penalty, alphas=1.).fit(X, y)
             assert model.coef_.ndim == 2
-
-
-@pytest.mark.skip(reason='Not a test')
-def test_w_shapes():
-    """Test that solvers handle w of same shape (during callbacks, etc.)."""
-    pass
