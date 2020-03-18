@@ -125,7 +125,7 @@ jobs:
 
 - job: 'test_installing_on_windows'
   pool:
-    vmImage: 'vs2017-win2016'
+    vmImage: 'windows-2019'
   strategy:
     matrix:
       Python36:
