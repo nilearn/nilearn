@@ -380,7 +380,7 @@ uses.
 ==================================
 
 .. automodule:: nilearn.stats
-   :members:
+   :no-members:
    :no-inherited-members:
 
 .. No relevant user manual section yet.
