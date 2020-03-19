@@ -11,7 +11,7 @@ jobs:
 
 - job: 'run_tests_on_windows'
   pool:
-    vmImage: 'windows-2019'
+    vmImage: 'vs2017-win2016'
   strategy:
     matrix:
       Python35:
@@ -87,7 +87,7 @@ jobs:
 
 - job: 'test_installing_on_macos'
   pool:
-    vmImage: 'macOS-10.15'
+    vmImage: 'macOS-latest'
   strategy:
     matrix:
       Python36:
@@ -125,7 +125,7 @@ jobs:
 
 - job: 'test_installing_on_windows'
   pool:
-    vmImage: 'windows-2019'
+    vmImage: 'vs2017-win2016'
   strategy:
     matrix:
       Python36:
