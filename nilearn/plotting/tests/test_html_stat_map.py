@@ -11,7 +11,6 @@ from nilearn.plotting import html_stat_map
 from nilearn.image import new_img_like
 from nilearn.image import get_data
 from ..js_plotting_utils import colorscale
-from ..._utils.compat import str
 
 
 def _check_html(html_view, title=None):

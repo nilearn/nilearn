@@ -395,7 +395,7 @@ class GlassBrainAxes(BaseAxes):
 
         # Allow markers only in their respective hemisphere when appropriate
         if self.direction in 'lr':
-            if not isinstance(marker_color, _utils.compat.str) and \
+            if not isinstance(marker_color, str) and \
                     not isinstance(marker_color, np.ndarray):
                 marker_color = np.asarray(marker_color)
             relevant_coords = []
@@ -412,7 +412,7 @@ class GlassBrainAxes(BaseAxes):
             # making any selection in 'l' or 'r' color.
             # More likely that user wants to display all nodes to be in
             # same color.
-            if not isinstance(marker_color, _utils.compat.str) and \
+            if not isinstance(marker_color, str) and \
                     len(marker_color) != 1:
                 marker_color = marker_color[relevant_coords]
 
