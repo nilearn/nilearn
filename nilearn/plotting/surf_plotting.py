@@ -13,7 +13,6 @@ from matplotlib.cm import ScalarMappable, get_cmap
 from matplotlib.colors import Normalize, LinearSegmentedColormap
 
 from ..surface import load_surf_data, load_surf_mesh
-from .._utils.compat import str
 from .img_plotting import _get_colorbar_and_data_ranges, _crop_colorbar
 
 

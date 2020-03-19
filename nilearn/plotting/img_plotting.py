@@ -22,7 +22,6 @@ from scipy import sparse
 from nibabel.spatialimages import SpatialImage
 
 from .._utils.numpy_conversions import as_ndarray
-from .._utils.compat import str
 from .._utils.niimg import _safe_get_data
 
 import matplotlib
