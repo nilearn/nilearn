@@ -12,7 +12,7 @@ import gc
 import numpy as np
 import pytest
 
-from .compat import str, _urllib
+from .compat import _urllib
 from ..datasets.utils import _fetch_files
 
 

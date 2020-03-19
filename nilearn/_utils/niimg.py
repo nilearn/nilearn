@@ -11,8 +11,6 @@ import collections.abc
 import numpy as np
 import nibabel
 
-from .compat import str
-
 
 def _get_data(img):
     # copy-pasted from https://github.com/nipy/nibabel/blob/de44a105c1267b07ef9e28f6c35b31f851d5a005/nibabel/dataobj_images.py#L204

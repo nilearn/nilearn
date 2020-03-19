@@ -3,7 +3,7 @@ Path finding utilities
 """
 import glob
 import os.path
-from .compat import str
+
 
 def _resolve_globbing(path):
     if isinstance(path, str):
