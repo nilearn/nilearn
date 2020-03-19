@@ -22,7 +22,7 @@ from scipy import sparse
 from nibabel.spatialimages import SpatialImage
 
 from .._utils.numpy_conversions import as_ndarray
-from .._utils.compat import _basestring
+from .._utils.compat import str
 from .._utils.niimg import _safe_get_data
 
 import matplotlib
@@ -887,7 +887,7 @@ def plot_prob_atlas(maps_img, bg_img=MNI152TEMPLATE, view_type='auto',
         threshold = "%f%%" % (100 * (1 - .2 * correction_factor / n_maps))
 
     if (isinstance(threshold, collections.abc.Iterable) and
-            not isinstance(threshold, _basestring)):
+            not isinstance(threshold, str)):
         threshold = [thr for thr in threshold]
         if len(threshold) != n_maps:
             raise TypeError('The list of values to threshold '

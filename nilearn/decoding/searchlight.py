@@ -24,7 +24,7 @@ from sklearn.exceptions import ConvergenceWarning
 from .. import masking
 from ..image.resampling import coord_transform
 from ..input_data.nifti_spheres_masker import _apply_mask_and_get_affinity
-from .._utils.compat import _basestring
+from .._utils.compat import str
 from .._utils import check_niimg_4d
 from sklearn.model_selection import cross_val_score
 
@@ -307,7 +307,7 @@ class SearchLight(BaseEstimator):
             mask_img=self.mask_img)
 
         estimator = self.estimator
-        if isinstance(estimator, _basestring):
+        if isinstance(estimator, str):
             estimator = ESTIMATOR_CATALOG[estimator]()
 
         scores = search_light(X, y, estimator, A, groups,

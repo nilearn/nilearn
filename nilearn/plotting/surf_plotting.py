@@ -13,7 +13,7 @@ from matplotlib.cm import ScalarMappable, get_cmap
 from matplotlib.colors import Normalize, LinearSegmentedColormap
 
 from ..surface import load_surf_data, load_surf_mesh
-from .._utils.compat import _basestring
+from .._utils.compat import str
 from .img_plotting import _get_colorbar_and_data_ranges, _crop_colorbar
 
 
@@ -174,7 +174,7 @@ def plot_surf(surf_mesh, surf_map=None, bg_map=None,
         cmap = plt.cm.get_cmap(plt.rcParamsDefault['image.cmap'])
     else:
         # if cmap is given as string, translate to matplotlib cmap
-        if isinstance(cmap, _basestring):
+        if isinstance(cmap, str):
             cmap = plt.cm.get_cmap(cmap)
 
     # initiate figure and 3d axes
