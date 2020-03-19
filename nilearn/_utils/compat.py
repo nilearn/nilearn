@@ -69,10 +69,10 @@ else:
         return m.hexdigest()
 
 
-if sklearn.__version__ < '0.21':
-    from sklearn.externals import joblib
-else:
-    import joblib
+# if sklearn.__version__ < '0.21':
+#     from sklearn.externals import joblib
+# else:
+import joblib
 
 Memory = joblib.Memory
 Parallel = joblib.Parallel
