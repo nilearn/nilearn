@@ -87,7 +87,7 @@ jobs:
 
 - job: 'test_installing_on_macos'
   pool:
-    vmImage: 'macOS-10.15'
+    vmImage: 'macOS-latest'
   strategy:
     matrix:
       Python36:
