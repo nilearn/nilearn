@@ -23,6 +23,7 @@ from nilearn.datasets import utils, func
 
 from ..utils import _get_dataset_dir
 
+
 @pytest.fixture()
 def request_mocker():
     """ Mocks URL calls for functional dataset fetchers during testing.
