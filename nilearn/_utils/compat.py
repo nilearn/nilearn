@@ -5,17 +5,6 @@ import hashlib
 import sklearn
 
 
-import pickle
-import io
-from base64 import encodebytes
-
-_encodebytes = encodebytes
-_basestring = str
-cPickle = pickle
-StringIO = io.StringIO
-BytesIO = io.BytesIO
-
-
 def md5_hash(string):
     m = hashlib.md5()
     m.update(string.encode('utf-8'))

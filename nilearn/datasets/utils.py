@@ -8,6 +8,7 @@ import collections.abc
 import contextlib
 import fnmatch
 import hashlib
+import pickle
 import shutil
 import time
 import sys
@@ -16,7 +17,7 @@ import urllib
 import warnings
 import zipfile
 
-from .._utils.compat import cPickle, md5_hash
+from .._utils.compat import md5_hash
 
 
 def _format_time(t):
@@ -691,7 +692,7 @@ def _fetch_files(data_dir, files, resume=True, mock=False, verbose=1):
     #   file is found, or a file is missing, this working directory will be
     #   deleted.
     files = list(files)
-    files_pickle = cPickle.dumps([(file_, url) for file_, url, _ in files])
+    files_pickle = pickle.dumps([(file_, url) for file_, url, _ in files])
     files_md5 = hashlib.md5(files_pickle).hexdigest()
     temp_dir = os.path.join(data_dir, files_md5)
 
