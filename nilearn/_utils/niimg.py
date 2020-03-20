@@ -11,8 +11,6 @@ import collections.abc
 import numpy as np
 import nibabel
 
-from .compat import _basestring
-
 
 def _get_data(img):
     # copy-pasted from https://github.com/nipy/nibabel/blob/de44a105c1267b07ef9e28f6c35b31f851d5a005/nibabel/dataobj_images.py#L204
@@ -116,7 +114,7 @@ def load_niimg(niimg, dtype=None):
     """
     from ..image import new_img_like  # avoid circular imports
 
-    if isinstance(niimg, _basestring):
+    if isinstance(niimg, str):
         # data is a filename, we load it
         niimg = nibabel.load(niimg)
     elif not isinstance(niimg, nibabel.spatialimages.SpatialImage):
@@ -163,7 +161,7 @@ def copy_img(img):
 def _repr_niimgs(niimgs):
     """ Pretty printing of niimg or niimgs.
     """
-    if isinstance(niimgs, _basestring):
+    if isinstance(niimgs, str):
         return niimgs
     if isinstance(niimgs, collections.abc.Iterable):
         return '[%s]' % ', '.join(_repr_niimgs(niimg) for niimg in niimgs)
