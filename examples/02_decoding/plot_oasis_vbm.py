@@ -182,7 +182,7 @@ display = plot_stat_map(signed_neg_log_pvals_unmasked, bg_img=bg_filename,
                         threshold=threshold, cmap=plt.cm.RdBu_r,
                         display_mode='z', cut_coords=[z_slice],
                         figure=fig)
-title = ('Negative $\log_{10}$ p-values'
+title = ('Negative $\\log_{10}$ p-values'
          '\n(Non-parametric + max-type correction)')
 display.title(title, y=1.2)
 
