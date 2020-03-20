@@ -7,7 +7,7 @@ Transformer used to apply basic transformations on MRI data.
 import warnings
 from copy import copy as copy_object
 
-from nilearn._utils.compat import Memory
+from joblib import Memory
 
 from .base_masker import BaseMasker, filter_and_extract
 from .. import _utils

@@ -13,9 +13,9 @@ import itertools
 import numpy as np
 import scipy.linalg
 
+from joblib import Memory, delayed, Parallel
 from sklearn.base import BaseEstimator
 from sklearn.covariance import empirical_covariance
-from nilearn._utils.compat import Memory, delayed, Parallel
 from sklearn.model_selection import check_cv
 from sklearn.utils.extmath import fast_logdet
 
