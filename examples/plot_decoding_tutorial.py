@@ -217,8 +217,8 @@ for train, test in cv.split(conditions):
 #
 # The decoder also implements a cross-validation loop by default and returns
 # an array of shape (cross-validation parameters, `n_folds`). We can use
-# accuracy score to measure its performance. This is done by defining
-# `accuracy` as the `scoring` parameter.
+# accuracy score to measure its performance by defining `accuracy` as the
+# `scoring` parameter.
 n_folds = 5
 decoder = Decoder(
     estimator='svc', mask=mask_filename,
@@ -227,21 +227,12 @@ decoder = Decoder(
 )
 decoder.fit(fmri_niimgs, conditions)
 
-kfold_scores = decoder.cv_scores_['face']
-
-for fold in range(n_folds):
-    print(
-        "CV Fold {:01d} | Prediction Accuracy: {:.3f}".format(
-            fold + 1, kfold_scores[fold]))
-avg_accuracy = sum(kfold_scores) * 100 / n_folds
-print("Decoder average cross-validation accuracy : %f%%" % avg_accuracy)
-
 ###########################################################################
 # Cross-validation pipeline can also be implemented manually. More details can
 # be found on `scikit-learn website
 # <https://scikit-learn.org/stable/modules/generated/sklearn.model_selection.cross_val_score.html>`_.
 #
-# The decoder also gives the best performing parameters per fold.
+# Then we can check the best performing parameters per fold.
 print(decoder.cv_params_['face'])
 
 ###########################################################################

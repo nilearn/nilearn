@@ -362,7 +362,16 @@ We can visualize the weights of the decoder:
   of the SVC's weights.
 - we then create a figure and plot as a background the first EPI image
 - finally we plot the SVC's weights after masking the zero values
-- Full code for the above can be found on :ref:`sphx_glr_auto_examples_plot_decoding_tutorial.py`
+
+
+.. figure:: ../auto_examples/02_decoding/images/sphx_glr_plot_haxby_anova_svm_001.png
+   :target: ../auto_examples/plot_decoding_tutorial.html
+   :scale: 65
+
+.. note::
+
+   Full code for the above can be found on
+   :ref:`sphx_glr_auto_examples_plot_decoding_tutorial.py`
 
 
 .. seealso::
