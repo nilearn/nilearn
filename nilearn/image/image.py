@@ -226,8 +226,7 @@ def _smooth_array(arr, affine, fwhm=None, ensure_finite=True, copy=True):
     if isinstance(fwhm, str) and (fwhm == 'fast'):
         arr = _fast_smooth_array(arr)
     elif fwhm is not None:
-        fwhm = np.asarray(fwhm)
-        fwhm = np.where(fwhm == None, 0.0, fwhm)  # noqa: E711
+        fwhm = np.asarray([0. if elem is None else elem for elem in fwhm])
         affine = affine[:3, :3]  # Keep only the scale part.
         fwhm_over_sigma_ratio = np.sqrt(8 * np.log(2))  # FWHM to sigma.
         vox_size = np.sqrt(np.sum(affine ** 2, axis=0))
