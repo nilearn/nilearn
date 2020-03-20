@@ -15,7 +15,6 @@ from .. import image
 from .. import masking
 from .._utils import CacheMixin
 from .._utils.class_inspect import get_params
-from .._utils.compat import izip
 from .._utils.niimg_conversions import _iter_check_niimg
 from .nifti_masker import NiftiMasker, filter_and_mask
 from nilearn.image import get_data
@@ -299,7 +298,7 @@ class MultiNiftiMasker(NiftiMasker, CacheMixin):
                           copy=copy,
                           dtype=self.dtype
                           )
-            for imgs, cfs in izip(niimg_iter, confounds))
+            for imgs, cfs in zip(niimg_iter, confounds))
         return data
 
     def transform(self, imgs, confounds=None):

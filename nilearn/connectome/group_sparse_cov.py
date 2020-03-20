@@ -22,7 +22,6 @@ from sklearn.utils.extmath import fast_logdet
 from .._utils import CacheMixin
 from .._utils import logger
 from .._utils.extmath import is_spd
-from .._utils.compat import izip
 
 
 def compute_alpha_max(emp_covs, n_samples):
@@ -963,7 +962,7 @@ class GroupSparseCovarianceCV(BaseEstimator, CacheMixin):
         covs_init = itertools.repeat(None)
 
         # Copying the cv generators to use them n_refinements times.
-        cv_ = izip(*cv)
+        cv_ = zip(*cv)
 
         for i, (this_cv) in enumerate(itertools.tee(cv_, n_refinements)):
             # Compute the cross-validated loss on the current grid

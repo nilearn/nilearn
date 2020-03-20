@@ -16,7 +16,6 @@ cPickle = pickle
 StringIO = io.StringIO
 BytesIO = io.BytesIO
 _urllib = urllib
-izip = zip
 
 
 def md5_hash(string):

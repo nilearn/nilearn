@@ -15,7 +15,6 @@ from nilearn._utils.compat import Memory
 from .cache_mixin import cache
 from .niimg import _safe_get_data, load_niimg
 from .path_finding import _resolve_globbing
-from .compat import izip
 
 from .exceptions import DimensionError
 from .niimg import _get_data
@@ -454,7 +453,7 @@ def concat_niimgs(niimgs, dtype=np.float32, ensure_ndim=None,
     data = np.ndarray(target_shape + (sum(lengths), ),
                       order="F", dtype=dtype)
     cur_4d_index = 0
-    for index, (size, niimg) in enumerate(izip(lengths, _iter_check_niimg(
+    for index, (size, niimg) in enumerate(zip(lengths, _iter_check_niimg(
             iterator, atleast_4d=True, target_fov=target_fov,
             memory=memory, memory_level=memory_level))):
 
