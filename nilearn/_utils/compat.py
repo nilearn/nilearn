@@ -7,7 +7,6 @@ import sklearn
 
 import pickle
 import io
-import urllib
 from base64 import encodebytes
 
 _encodebytes = encodebytes
@@ -15,7 +14,6 @@ _basestring = str
 cPickle = pickle
 StringIO = io.StringIO
 BytesIO = io.BytesIO
-_urllib = urllib
 
 
 def md5_hash(string):
