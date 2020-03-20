@@ -15,7 +15,6 @@ from sklearn.utils import Bunch
 
 from .utils import _get_dataset_dir, _fetch_files, _get_dataset_descr
 from .._utils import check_niimg
-from .._utils.compat import _basestring
 from ..image import new_img_like, get_data
 
 _TALAIRACH_LEVELS = ['hemisphere', 'lobe', 'gyrus', 'tissue', 'ba']
@@ -471,7 +470,7 @@ def fetch_atlas_smith_2009(data_dir=None, mirror='origin', url=None,
             'bm70.nii.gz'
     ]
 
-    if isinstance(url, _basestring):
+    if isinstance(url, str):
         url = [url] * len(files)
 
     files = [(f, u + f, {}) for f, u in zip(files, url)]

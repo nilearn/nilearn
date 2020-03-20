@@ -21,7 +21,7 @@ from sklearn.utils import Bunch
 from .utils import (_get_dataset_dir, _fetch_files, _get_dataset_descr,
                     _read_md5_sum_file, _tree, _filter_columns, _fetch_file, _uncompress_file)
 from .._utils import check_niimg
-from .._utils.compat import BytesIO, _basestring
+from .._utils.compat import BytesIO
 from .._utils.numpy_conversions import csv_to_array
 from nilearn.image import get_data
 
@@ -753,7 +753,7 @@ def fetch_localizer_contrasts(contrasts, n_subjects=None, get_tmaps=False,
     nilearn.datasets.fetch_localizer_button_task
 
     """
-    if isinstance(contrasts, _basestring):
+    if isinstance(contrasts, str):
         raise ValueError('Contrasts should be a list of strings, but '
                          'a single string was given: "%s"' % contrasts)
     if n_subjects is None:
@@ -1150,7 +1150,7 @@ def fetch_abide_pcp(data_dir=None, n_subjects=None, pipeline='cpac',
     """
     # People keep getting it wrong and submiting a string instead of a
     # list of strings. We'll make their life easy
-    if isinstance(derivatives, _basestring):
+    if isinstance(derivatives, str):
         derivatives = [derivatives, ]
 
     # Parameter check
