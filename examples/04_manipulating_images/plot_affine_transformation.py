@@ -5,7 +5,7 @@ Visualization of affine resamplings
 This example shows how an affine resampling works.
 
 A Nifti image contains, along with its 3D or 4D data content, a 4x4 matrix
-encoding and affine transformation that maps the data array into millimeter
+encoding an affine transformation that maps the data array into millimeter
 space. If (i, j, k) encodes an integer position (voxel) with the data array,
 then adding 1 as a fourth entry, (i, j, k, 1), and multiplying by the affine
 matrix yields (x, y, z, 1), a 4-vector containing the millimeter position of

@@ -11,7 +11,6 @@ from .utils import (_get_dataset_dir, _fetch_files,
                     _get_dataset_descr, _uncompress_file)
 
 from .._utils import check_niimg, niimg
-from .._utils.exceptions import VisibleDeprecationWarning
 from ..image import new_img_like, get_data
 
 _package_directory = os.path.dirname(os.path.abspath(__file__))
@@ -532,7 +531,7 @@ def fetch_surf_fsaverage5(data_dir=None, url=None, resume=True, verbose=1):
     warnings.warn("fetch_surf_fsaverage5 has been deprecated and will "
                   "be removed in a future release. "
                   "Use fetch_surf_fsaverage(mesh='fsaverage5')",
-                  VisibleDeprecationWarning, stacklevel=2)
+                  np.VisibleDeprecationWarning, stacklevel=2)
     return fetch_surf_fsaverage(mesh='fsaverage5', data_dir=data_dir)
 
 

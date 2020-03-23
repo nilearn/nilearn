@@ -14,7 +14,6 @@ import numpy as np
 from scipy import stats, linalg, signal as sp_signal
 from sklearn.utils import gen_even_slices, as_float_array
 
-from ._utils.compat import _basestring
 from ._utils.numpy_conversions import csv_to_array, as_ndarray
 
 NP_VERSION = distutils.version.LooseVersion(np.version.short_version).version
@@ -475,7 +474,7 @@ def clean(signals, sessions=None, detrend=True, standardize='zscore',
                         "high_pass='{0}'".format(high_pass))
 
     if not isinstance(confounds,
-                      (list, tuple, _basestring, np.ndarray, type(None))):
+                      (list, tuple, str, np.ndarray, type(None))):
         raise TypeError("confounds keyword has an unhandled type: %s"
                         % confounds.__class__)
 
@@ -500,7 +499,7 @@ def clean(signals, sessions=None, detrend=True, standardize='zscore',
 
         all_confounds = []
         for confound in confounds:
-            if isinstance(confound, _basestring):
+            if isinstance(confound, str):
                 filename = confound
                 confound = csv_to_array(filename)
                 if np.isnan(confound.flat[0]):

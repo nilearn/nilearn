@@ -3,7 +3,6 @@
 # License: simplified BSD
 import contextlib
 import functools
-import inspect
 import os
 import sys
 import tempfile
@@ -13,7 +12,7 @@ import gc
 import numpy as np
 import pytest
 
-from .compat import _basestring, _urllib
+from .compat import _urllib
 from ..datasets.utils import _fetch_files
 
 
@@ -192,7 +191,7 @@ class mock_request(object):
 def wrap_chunk_read_(_chunk_read_):
     def mock_chunk_read_(response, local_file, initial_size=0, chunk_size=8192,
                          report_hook=None, verbose=0):
-        if not isinstance(response, _basestring):
+        if not isinstance(response, str):
             return _chunk_read_(response, local_file,
                                 initial_size=initial_size,
                                 chunk_size=chunk_size,

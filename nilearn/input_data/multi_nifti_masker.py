@@ -4,7 +4,7 @@ Transformer used to apply basic transformations on multi subject MRI data.
 # Author: Gael Varoquaux, Alexandre Abraham
 # License: simplified BSD
 
-import collections
+import collections.abc
 import itertools
 import warnings
 
@@ -15,7 +15,7 @@ from .. import image
 from .. import masking
 from .._utils import CacheMixin
 from .._utils.class_inspect import get_params
-from .._utils.compat import _basestring, izip
+from .._utils.compat import izip
 from .._utils.niimg_conversions import _iter_check_niimg
 from .nifti_masker import NiftiMasker, filter_and_mask
 from nilearn.image import get_data
@@ -176,8 +176,8 @@ class MultiNiftiMasker(NiftiMasker, CacheMixin):
         if self.mask_img is None:
             if self.verbose > 0:
                 print("[%s.fit] Computing mask" % self.__class__.__name__)
-            if not isinstance(imgs, collections.Iterable) \
-                    or isinstance(imgs, _basestring):
+            if not isinstance(imgs, collections.abc.Iterable) \
+                    or isinstance(imgs, str):
                 raise ValueError("[%s.fit] For multiple processing, you should"
                                  " provide a list of data "
                                  "(e.g. Nifti1Image objects or filenames)."
@@ -322,6 +322,6 @@ class MultiNiftiMasker(NiftiMasker, CacheMixin):
         """
         self._check_fitted()
         if not hasattr(imgs, '__iter__') \
-                or isinstance(imgs, _basestring):
+                or isinstance(imgs, str):
             return self.transform_single_imgs(imgs)
         return self.transform_imgs(imgs, confounds, n_jobs=self.n_jobs)

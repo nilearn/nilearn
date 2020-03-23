@@ -4,7 +4,7 @@ Downloading NeuroImaging datasets: utility functions
 import os
 import numpy as np
 import base64
-import collections
+import collections.abc
 import contextlib
 import fnmatch
 import hashlib
@@ -15,7 +15,7 @@ import tarfile
 import warnings
 import zipfile
 
-from .._utils.compat import _basestring, cPickle, _urllib, md5_hash
+from .._utils.compat import cPickle, _urllib, md5_hash
 
 
 def _format_time(t):
@@ -394,10 +394,10 @@ def _filter_column(array, col, criteria):
     except:
         raise KeyError('Filtering criterion %s does not exist' % col)
 
-    if (not isinstance(criteria, _basestring) and
+    if (not isinstance(criteria, str) and
         not isinstance(criteria, bytes) and
         not isinstance(criteria, tuple) and
-            isinstance(criteria, collections.Iterable)):
+            isinstance(criteria, collections.abc.Iterable)):
         filter = np.zeros(array.shape[0], dtype=np.bool)
         for criterion in criteria:
             filter = np.logical_or(filter,
@@ -415,7 +415,7 @@ def _filter_column(array, col, criteria):
         return np.logical_and(filter, array[col] >= criteria[0])
 
     # Handle strings with different encodings
-    if isinstance(criteria, (_basestring, bytes)):
+    if isinstance(criteria, (str, bytes)):
         criteria = np.array(criteria).astype(array[col].dtype)
 
     return array[col] == criteria
