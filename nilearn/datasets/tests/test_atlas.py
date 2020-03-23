@@ -17,7 +17,7 @@ from numpy.testing import assert_array_equal
 
 from . import test_utils as tst
 
-from nilearn._utils.compat import _basestring, _urllib
+from nilearn._utils.compat import _urllib
 
 from nilearn.datasets import utils, atlas
 from nilearn.image import get_data
@@ -195,7 +195,7 @@ def test_fail_fetch_atlas_harvard_oxford(tmp_path):
     # file to retrieve labels.
     ho_wo_symm = atlas.fetch_atlas_harvard_oxford(target_atlas,
                                                   data_dir=str(tmp_path))
-    assert isinstance(ho_wo_symm.maps, _basestring)
+    assert isinstance(ho_wo_symm.maps, str)
     assert isinstance(ho_wo_symm.labels, list)
     assert ho_wo_symm.labels[0] == "Background"
     assert ho_wo_symm.labels[1] == "R1"
@@ -358,20 +358,20 @@ def test_fetch_atlas_msdl(tmp_path, request_mocker):
     assert isinstance(dataset.labels, list)
     assert isinstance(dataset.region_coords, list)
     assert isinstance(dataset.networks, list)
-    assert isinstance(dataset.maps, _basestring)
+    assert isinstance(dataset.maps, str)
     assert len(tst.mock_url_request.urls) == 1
     assert dataset.description != ''
 
 
 def test_fetch_atlas_yeo_2011(tmp_path, request_mocker):
     dataset = atlas.fetch_atlas_yeo_2011(data_dir=str(tmp_path), verbose=0)
-    assert isinstance(dataset.anat, _basestring)
-    assert isinstance(dataset.colors_17, _basestring)
-    assert isinstance(dataset.colors_7, _basestring)
-    assert isinstance(dataset.thick_17, _basestring)
-    assert isinstance(dataset.thick_7, _basestring)
-    assert isinstance(dataset.thin_17, _basestring)
-    assert isinstance(dataset.thin_7, _basestring)
+    assert isinstance(dataset.anat, str)
+    assert isinstance(dataset.colors_17, str)
+    assert isinstance(dataset.colors_7, str)
+    assert isinstance(dataset.thick_17, str)
+    assert isinstance(dataset.thick_7, str)
+    assert isinstance(dataset.thin_17, str)
+    assert isinstance(dataset.thin_7, str)
     assert len(tst.mock_url_request.urls) == 1
     assert dataset.description != ''
 
@@ -384,7 +384,7 @@ def test_fetch_atlas_aal(tmp_path, request_mocker):
                        "<metadata>"
                        "</metadata>")
     dataset = atlas.fetch_atlas_aal(data_dir=str(tmp_path), verbose=0)
-    assert isinstance(dataset.maps, _basestring)
+    assert isinstance(dataset.maps, str)
     assert isinstance(dataset.labels, list)
     assert isinstance(dataset.indices, list)
     assert len(tst.mock_url_request.urls) == 1
@@ -557,7 +557,7 @@ def test_fetch_atlas_schaefer_2018(tmp_path):
                                                data_dir=str(tmp_path),
                                                verbose=0)
         assert data.description != ''
-        assert isinstance(data.maps, _basestring)
+        assert isinstance(data.maps, str)
         assert isinstance(data.labels, np.ndarray)
         assert len(data.labels) == n_rois
         assert data.labels[0].astype(str).startswith("{}Networks".

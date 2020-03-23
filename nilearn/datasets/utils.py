@@ -15,7 +15,7 @@ import tarfile
 import warnings
 import zipfile
 
-from .._utils.compat import _basestring, cPickle, _urllib, md5_hash
+from .._utils.compat import cPickle, _urllib, md5_hash
 
 
 def _format_time(t):
@@ -394,7 +394,7 @@ def _filter_column(array, col, criteria):
     except:
         raise KeyError('Filtering criterion %s does not exist' % col)
 
-    if (not isinstance(criteria, _basestring) and
+    if (not isinstance(criteria, str) and
         not isinstance(criteria, bytes) and
         not isinstance(criteria, tuple) and
             isinstance(criteria, collections.abc.Iterable)):
@@ -415,7 +415,7 @@ def _filter_column(array, col, criteria):
         return np.logical_and(filter, array[col] >= criteria[0])
 
     # Handle strings with different encodings
-    if isinstance(criteria, (_basestring, bytes)):
+    if isinstance(criteria, (str, bytes)):
         criteria = np.array(criteria).astype(array[col].dtype)
 
     return array[col] == criteria

@@ -22,7 +22,6 @@ from . import test_utils as tst
 from nilearn.datasets import utils, func
 from nilearn.datasets.func import SPM_AUDITORY_DATA_FILES
 
-from nilearn._utils.compat import _basestring
 from ..utils import _get_dataset_dir
 
 SPM_AUDITORY_DATA_FILES.append("sM00223/sM00223_002.img")
@@ -124,7 +123,7 @@ def test_fetch_haxby(tmp_path, request_mocker):
     assert len(haxby.mask_house_little) == len(subjects)
     assert len(haxby.anat) == len(subjects)
     assert haxby.anat[2] is None
-    assert isinstance(haxby.mask, _basestring)
+    assert isinstance(haxby.mask, str)
     assert len(haxby.mask_face) == len(subjects)
     assert len(haxby.session_target) == len(subjects)
     assert len(haxby.mask_vt) == len(subjects)
@@ -202,9 +201,9 @@ def test_miyawaki2008(tmp_path, request_mocker):
     dataset = func.fetch_miyawaki2008(data_dir=str(tmp_path), verbose=0)
     assert len(dataset.func) == 32
     assert len(dataset.label) == 32
-    assert isinstance(dataset.mask, _basestring)
+    assert isinstance(dataset.mask, str)
     assert len(dataset.mask_roi) == 38
-    assert isinstance(dataset.background, _basestring)
+    assert isinstance(dataset.background, str)
     assert len(tst.mock_url_request.urls) == 1
     assert dataset.description != ''
 
@@ -219,7 +218,7 @@ def test_fetch_localizer_contrasts(tmp_path, request_mocker, localizer_mocker):
     assert not hasattr(dataset, 'anats')
     assert not hasattr(dataset, 'tmaps')
     assert not hasattr(dataset, 'masks')
-    assert isinstance(dataset.cmaps[0], _basestring)
+    assert isinstance(dataset.cmaps[0], str)
     assert isinstance(dataset.ext_vars, np.recarray)
     assert len(dataset.cmaps) == 2
     assert dataset.ext_vars.size == 2
@@ -231,7 +230,7 @@ def test_fetch_localizer_contrasts(tmp_path, request_mocker, localizer_mocker):
         data_dir=str(tmp_path),
         verbose=1)
     assert isinstance(dataset.ext_vars, np.recarray)
-    assert isinstance(dataset.cmaps[0], _basestring)
+    assert isinstance(dataset.cmaps[0], str)
     assert len(dataset.cmaps) == 2 * 2  # two contrasts are fetched
     assert dataset.ext_vars.size == 2
 
@@ -245,10 +244,10 @@ def test_fetch_localizer_contrasts(tmp_path, request_mocker, localizer_mocker):
         get_tmaps=True,
         verbose=1)
     assert isinstance(dataset.ext_vars, np.recarray)
-    assert isinstance(dataset.anats[0], _basestring)
-    assert isinstance(dataset.cmaps[0], _basestring)
-    assert isinstance(dataset.masks[0], _basestring)
-    assert isinstance(dataset.tmaps[0], _basestring)
+    assert isinstance(dataset.anats[0], str)
+    assert isinstance(dataset.cmaps[0], str)
+    assert isinstance(dataset.masks[0], str)
+    assert isinstance(dataset.tmaps[0], str)
     assert dataset.ext_vars.size == 1
     assert len(dataset.anats) == 1
     assert len(dataset.cmaps) == 1
@@ -276,7 +275,7 @@ def test_fetch_localizer_calculation_task(tmp_path, request_mocker,
         data_dir=str(tmp_path),
         verbose=1)
     assert isinstance(dataset.ext_vars, np.recarray)
-    assert isinstance(dataset.cmaps[0], _basestring)
+    assert isinstance(dataset.cmaps[0], str)
     assert dataset.ext_vars.size == 2
     assert len(dataset.cmaps) == 2
     assert dataset.description != ''
@@ -521,7 +520,7 @@ def test_fetch_cobre(tmp_path, request_mocker):
     assert isinstance(cobre_data.func, list)
     # test confounds files in a list
     assert isinstance(cobre_data.confounds, list)
-    assert isinstance(cobre_data.func[0], _basestring)
+    assert isinstance(cobre_data.func[0], str)
     # returned phenotypic data will be an array
     assert isinstance(cobre_data.phenotypic, np.recarray)
 
