@@ -133,10 +133,10 @@ commands:
             git fetch upstream
             export changed_examples=`git diff --name-only upstream/master ../examples/**/*.py` >> $BASH_ENV
             echo $changed_examples
-            # for changed_example_ in $changed_examples
-            # do
-            #  python -m sphinx -W -D sphinx_gallery_conf.filename_pattern=$changed_example_ -b html -d _build/doctrees . _build/html
-            # done
+            for changed_example_ in $changed_examples
+            do
+             python -m sphinx -W -D sphinx_gallery_conf.filename_pattern=$changed_example_ -b html -d _build/doctrees . _build/html
+            done
           no_output_timeout: 7h
 
   store_results:
