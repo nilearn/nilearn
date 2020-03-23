@@ -57,7 +57,7 @@ extensions = ['sphinx.ext.autodoc',
 
 autosummary_generate = True
 
-autodoc_default_flags = ['members', 'inherited-members']
+autodoc_default_option = ['members', 'inherited-members']
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['templates']
@@ -279,17 +279,17 @@ latex_show_urls = 'footnote'
 
 trim_doctests_flags = True
 
-_python_doc_base = 'http://docs.python.org/3.6'
+_python_doc_base = 'https://docs.python.org/3.6'
 
 # Example configuration for intersphinx: refer to the Python standard library.
 intersphinx_mapping = {
     'python': (_python_doc_base, None),
-    'numpy': ('http://docs.scipy.org/doc/numpy', None),
-    'scipy': ('http://docs.scipy.org/doc/scipy/reference', None),
-    'matplotlib': ('http://matplotlib.org/', None),
-    'sklearn': ('http://scikit-learn.org/stable/', None),
-    'nibabel': ('http://nipy.org/nibabel', None),
-    'pandas': ('http://pandas.pydata.org', None),
+    'numpy': ('https://docs.scipy.org/doc/numpy', None),
+    'scipy': ('https://docs.scipy.org/doc/scipy/reference', None),
+    'matplotlib': ('https://matplotlib.org/', None),
+    'sklearn': ('https://scikit-learn.org/stable/', None),
+    'nibabel': ('https://nipy.org/nibabel', None),
+    'pandas': ('https://pandas.pydata.org', None),
 }
 
 extlinks = {
