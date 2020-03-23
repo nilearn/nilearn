@@ -128,9 +128,11 @@ commands:
           command: |
             source activate testenv
             cd doc
-            python ../.circleci/build_changed_examples.py
-            # export changed_examples=`git diff master --name-only ../examples/**/*.py` >> $BASH_ENV
-            # echo $changed_examples
+            # python ../.circleci/build_changed_examples.py
+            git remote add upstream https://github.com/nilearn/nilearn
+            git fetch upstream
+            export changed_examples=`git diff --name-only upstream/master ../examples/**/*.py` >> $BASH_ENV
+            echo $changed_examples
             # for changed_example_ in $changed_examples
             # do
             #  python -m sphinx -W -D sphinx_gallery_conf.filename_pattern=$changed_example_ -b html -d _build/doctrees . _build/html
