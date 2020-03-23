@@ -11,4 +11,4 @@ jobs:
         with:
           repo-token: ${{ secrets.GITHUB_TOKEN }}
           artifact-path: 0/doc/index.html
-          circleci-jobs: build_docs
+          circleci-jobs: quick-build,full-build
