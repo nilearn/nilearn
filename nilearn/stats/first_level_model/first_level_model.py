@@ -42,10 +42,10 @@ from nilearn.stats.contrasts import (_compute_fixed_effect_contrast,
                                      expression_to_contrast_vector)
 from nilearn.stats.first_level_model.design_matrix import make_first_level_design_matrix
 from nilearn.stats import (ARModel,
-                                      OLSModel,
-                                      SimpleRegressionResults,
-                                      RegressionResults
-                                      )
+                           OLSModel,
+                           SimpleRegressionResults,
+                           RegressionResults
+                           )
 
 
 def mean_scaling(Y, axis=0):
@@ -56,6 +56,8 @@ def mean_scaling(Y, axis=0):
     ----------
     Y : array of shape (n_time_points, n_voxels)
        The input data.
+
+    axis : Axis along which the scaling mean should be calculated. Default 0.
 
     Returns
     -------

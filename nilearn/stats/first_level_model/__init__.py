@@ -21,6 +21,7 @@ from nilearn.stats.first_level_model.hemodynamic_models import (
 
 __all__ = [
     'check_design_matrix',
+    'check_events',
     'compute_regressor',
     'first_level_models_from_bids',
     'FirstLevelModel',
