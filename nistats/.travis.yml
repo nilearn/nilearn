@@ -1,0 +1,71 @@
+dist: trusty
+sudo: required
+
+language: python
+python: "2.7"
+
+virtualenv:
+  system_site_packages: true
+
+env:
+  global:
+    - TEST_RUN_FOLDER="/tmp" # folder where the tests are run from
+
+matrix:
+  # Do not wait for the allowed_failures entry to finish before
+  # setting the status
+  fast_finish: true
+  allow_failures:
+    # allow_failures seems to be keyed on the python version
+    - python: 2.7
+  include:
+    # Ubuntu 14.04 version without matplotlib
+    - env: DISTRIB="conda" PYTHON_VERSION="2.7"
+           NUMPY_VERSION="1.11.0" SCIPY_VERSION="0.17"
+           SCIKIT_LEARN_VERSION="0.18.0"
+           PANDAS_VERSION="0.18.0"
+    # Trying to get as close to the minimum required versions while
+    # still having the package version available through conda
+    - env: DISTRIB="conda" PYTHON_VERSION="2.7"
+           NUMPY_VERSION="1.11.2" SCIPY_VERSION="0.19"
+           SCIKIT_LEARN_VERSION="0.18" MATPLOTLIB_VERSION="1.5.1"
+           NIBABEL_VERSION="2.0.2" PANDAS_VERSION="*"
+           COVERAGE="true"
+    # Python 3.4 with intermediary versions
+    - env: DISTRIB="conda" PYTHON_VERSION="3.4"
+           NUMPY_VERSION="1.11.0" SCIPY_VERSION="0.17"
+           SCIKIT_LEARN_VERSION="0.18" MATPLOTLIB_VERSION="1.5.1"
+           PANDAS_VERSION="0.18.0"
+    # Python 3.5 with latest versions.
+    - env: DISTRIB="conda" PYTHON_VERSION="3.5"
+           NUMPY_VERSION="*" SCIPY_VERSION="*"
+           SCIKIT_LEARN_VERSION="*" MATPLOTLIB_VERSION="*" COVERAGE="true"
+           PANDAS_VERSION="*"
+    # Most recent versions (Python 3)
+    - env: DISTRIB="conda" PYTHON_VERSION="*"
+           NUMPY_VERSION="*" SCIPY_VERSION="*"
+           SCIKIT_LEARN_VERSION="*" MATPLOTLIB_VERSION="*" COVERAGE="true"
+           PANDAS_VERSION="*" BOTO3=true
+install:
+    - source continuous_integration/install.sh
+    - pip install pytest>3.9 pytest-cov
+
+before_script:
+    - make clean
+
+script:
+    - python continuous_integration/show-python-packages-versions.py
+    # Copy setup.cfg to TEST_RUN_FOLDER where we are going to run the tests from
+    # Mainly for nose config settings
+    - cp setup.cfg "$TEST_RUN_FOLDER"
+    # We want to back out of the current working directory to make
+    # sure we are using nistats installed in site-packages rather
+    # than the one from the current working directory
+    # Parentheses (run in a subshell) are used to leave
+    # the current directory unchanged
+    - (cd "$TEST_RUN_FOLDER" && make -f $OLDPWD/Makefile test-code)
+
+after_success:
+    # codecov need to be run from the git checkout
+    # so we need to copy the coverage results from TEST_RUN_FOLDER
+    - if [[ "$COVERAGE" == "true" ]]; then cp "$TEST_RUN_FOLDER/.coverage" .; codecov || echo "failed"; fi
