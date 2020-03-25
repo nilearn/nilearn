@@ -1,9 +1,0 @@
-nose
-coverage
-nilearn
-scipy
-scikit-learn
-pandas
-matplotlib
-pytest>3.9
-pytest-cov
