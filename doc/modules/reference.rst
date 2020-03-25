@@ -424,7 +424,7 @@ uses.
 
 **Classes**:
 
-.. currentmodule:: nilearn.stats.first_level_model
+.. currentmodule:: stats.first_level_model
 
 .. autosummary::
    :toctree: generated/
@@ -434,7 +434,7 @@ uses.
 
 **Functions**:
 
-.. currentmodule:: nilearn.stats.first_level_model
+.. currentmodule:: stats.first_level_model
 
 .. autosummary::
    :toctree: generated/
@@ -458,7 +458,7 @@ uses.
 
 **Classes**:
 
-.. currentmodule:: nilearn.stats.second_level_model
+.. currentmodule:: stats.second_level_model
 
 .. autosummary::
    :toctree: generated/
@@ -468,7 +468,7 @@ uses.
 
 **Functions**:
 
-.. currentmodule:: nilearn.stats.second_level_model
+.. currentmodule:: stats.second_level_model
 
 .. autosummary::
    :toctree: generated/
