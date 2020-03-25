@@ -5,31 +5,19 @@ Test the datasets module
 # License: simplified BSD
 
 import contextlib
-import gzip
 import os
 import shutil
-import tarfile
+import numpy as np
 import zipfile
-
+import tarfile
+import gzip
 from tempfile import mkdtemp, mkstemp
 
-try:
-    import boto3  # noqa:F401
-
-except ImportError:
-    BOTO_INSTALLED = False
-else:
-    BOTO_INSTALLED = True
-
-import numpy as np
 import pytest
 
 from nilearn import datasets
 from nilearn._utils.testing import (mock_request, wrap_chunk_read_,
                                     FetchFilesMock)
-from nilearn.datasets.utils import (_get_dataset_dir,
-                                    make_fresh_openneuro_dataset_urls_index)
-
 
 currdir = os.path.dirname(os.path.abspath(__file__))
 datadir = os.path.join(currdir, 'data')
@@ -382,35 +370,3 @@ def test_fetch_files_overwrite(tmp_path, request_mocker):
     assert os.path.exists(fil[0])
     with open(fil[0], 'r') as fp:
         assert fp.read() == ''
-
-
-@pytest.mark.skipif(not BOTO_INSTALLED,
-                    reason='Boto3  missing; necessary for this test')
-def test_make_fresh_openneuro_dataset_urls_index(tmp_path, request_mocker):
-    dataset_version = 'ds000030_R1.0.4'
-    data_prefix = '{}/{}/uncompressed'.format(
-        dataset_version.split('_')[0], dataset_version)
-    data_dir = _get_dataset_dir(data_prefix, data_dir=str(tmp_path),
-                                verbose=1)
-    url_file = os.path.join(data_dir,
-                            'nistats_fetcher_openneuro_dataset_urls.json',
-                            )
-    # Prepare url files for subject and filter tests
-    file_list = [data_prefix + '/stuff.html',
-                 data_prefix + '/sub-xxx.html',
-                 data_prefix + '/sub-yyy.html',
-                 data_prefix + '/sub-xxx/ses-01_task-rest.txt',
-                 data_prefix + '/sub-xxx/ses-01_task-other.txt',
-                 data_prefix + '/sub-xxx/ses-02_task-rest.txt',
-                 data_prefix + '/sub-xxx/ses-02_task-other.txt',
-                 data_prefix + '/sub-yyy/ses-01.txt',
-                 data_prefix + '/sub-yyy/ses-02.txt']
-    with open(url_file, 'w') as f:
-        json.dump(file_list, f)
-
-    # Only 1 subject and not subject specific files get downloaded
-    datadir, dl_files = make_fresh_openneuro_dataset_urls_index(
-        str(tmp_path), dataset_version)
-    assert isinstance(datadir, str)
-    assert isinstance(dl_files, list)
-    assert len(dl_files) == len(file_list)
