@@ -41,11 +41,11 @@ from nilearn.image import get_data
 from nilearn.stats.contrasts import (_compute_fixed_effect_contrast,
                                      expression_to_contrast_vector)
 from nilearn.stats.first_level_model.design_matrix import make_first_level_design_matrix
-from nilearn.stats import (ARModel,
-                           OLSModel,
-                           SimpleRegressionResults,
-                           RegressionResults
-                           )
+from nilearn.stats.regression import (ARModel,
+                                      OLSModel,
+                                      SimpleRegressionResults,
+                                      RegressionResults,
+                                      )
 
 
 def mean_scaling(Y, axis=0):

@@ -35,7 +35,8 @@ from nilearn.reporting import (plot_contrast_matrix,
                                plot_design_matrix,
                                get_clusters_table,
                                )
-from nilearn.stats import map_threshold
+from nilearn.stats.thresholding import map_threshold
+
 
 HTML_TEMPLATE_ROOT_PATH = os.path.join(os.path.dirname(__file__),
                                        'glm_reporter_templates')

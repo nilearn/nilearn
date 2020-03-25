@@ -24,7 +24,12 @@ from nilearn.stats.thresholding import (
     map_threshold,
 )
 
+from nilearn.stats.first_level_model import first_level_model
+from nilearn.stats.second_level_model import second_level_model
+
 __all__ = [
+    'first_level_model',
+    'second_level_model',
     'compute_contrast',
     'compute_fixed_effects',
     'Contrast',

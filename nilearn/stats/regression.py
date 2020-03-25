@@ -27,7 +27,7 @@ from numpy.linalg import matrix_rank
 import scipy.linalg as spl
 
 from nilearn._utils.helpers import rename_parameters
-from nilearn.stats import LikelihoodModelResults
+from nilearn.stats.model import LikelihoodModelResults
 from nilearn._utils.stats import positive_reciprocal
 
 

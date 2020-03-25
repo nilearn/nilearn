@@ -38,6 +38,8 @@ clean:
 	-rm -rf generated/*
 	-rm -rf modules/generated/*
 	-rm -rf ../examples/**/nilearn_cache
+	-rm -rf ../**/nilearn_cache
+
 
 sym_links:
 	# Make sym-links to share the cache across various example
