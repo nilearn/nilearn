@@ -1,0 +1,271 @@
+{#
+    nistats/layout.html
+    ~~~~~~~~~~~~~~~~~
+
+    Layout for nistats
+    (http://webylimonada.org)
+
+
+    :author: Jaques Grobler
+    :license: BSD
+#}
+{% extends "sphinxdoc/layout.html" %}
+
+{%- block doctype -%}
+<!DOCTYPE html>
+{%- endblock %}
+
+{% set title = 'Nistats: Functional MRI in Python' %}
+
+{% block rootrellink %}
+<li><a href="{{pathto('index')}}">Nistats Home</a> |&nbsp;</li>
+<li><a href="{{pathto('user_guide')}}">User Guide</a> |&nbsp;</li>
+<li><a href="{{pathto('auto_examples/index')}}">Examples</a> |&nbsp;</li>
+<li><a href="{{pathto('modules/reference')}}">Reference</a> |&nbsp;</li>
+<li id="navbar-about"><a href="{{pathto('authors')}}">About</a>|&nbsp;</li>
+<li id="navbar-ecosystem"><a href="http://www.nipy.org/">Nipy ecosystem</a></li>
+{% endblock %}
+
+
+{% block extrahead %}
+<meta content="True" name="HandheldFriendly">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0">
+<meta name="keywords" content="nistats, neuroimaging, python, neuroscience, statistics">
+
+{%- if (pagename == 'index') %}
+<script type="text/javascript" src="_static/jquery.jcarousel.min.js"></script>
+<script type="text/javascript">
+(function($) {
+    $(function() {
+	$('.jcarousel').jcarousel();
+        $('.jcarousel-control-prev')
+            .on('active.jcarouselcontrol', function() {
+                $(this).removeClass('inactive');
+            })
+            .on('inactive.jcarouselcontrol', function() {
+                $(this).addClass('inactive');
+            })
+            .jcarouselControl({
+                target: '-=1'
+            });
+
+        $('.jcarousel-control-next')
+            .on('active.jcarouselcontrol', function() {
+                $(this).removeClass('inactive');
+            })
+            .on('inactive.jcarouselcontrol', function() {
+                $(this).addClass('inactive');
+            })
+            .jcarouselControl({
+                target: '+=1'
+            });
+
+        $('.jcarousel-pagination')
+            .on('active.jcarouselpagination', 'a', function() {
+                $(this).addClass('active');
+            })
+            .on('inactive.jcarouselpagination', 'a', function() {
+                $(this).removeClass('active');
+            })
+            .jcarouselPagination();
+    });
+})(jQuery);
+</script>
+{% else %}
+<script type="text/javascript">
+$(function () {
+    // Lock the table of content to a fixed position once we scroll enough
+    var top = 105 + $('.sphinxsidebarwrapper').offset().top - parseFloat($('.sphinxsidebarwrapper').css('margin-top').replace(/auto/, 0)),
+        sections = {},
+        i        = 0,
+	url	 = document.URL.replace(/#.*$/, ""),
+	current_section = 0;
+
+    // Grab positions of our sections
+    $('.headerlink').each(function(){
+        sections[this.href.replace(url, '')] = $(this).offset().top - 50;
+    });
+
+    $(window).scroll(function(event) {
+	var pos   = $(window).scrollTop();
+	// Lock the table of content to a fixed position once we scroll enough
+	if(pos > top){
+	    //begin to scroll
+	    $('.sphinxsidebarwrapper').css("position", "fixed");
+	    $('.sphinxsidebarwrapper').css("top", -105);
+	}
+	else{
+	    //lock it back into place
+	    $('.sphinxsidebarwrapper').css("position", "relative");
+	    $('.sphinxsidebarwrapper').css("top",0);
+	}
+
+	// Highlight the current section
+	$('a.internal').removeClass('active');
+        for(i in sections){
+            if(sections[i] > pos){
+		break;
+            };
+	    if($('a.internal[href$="' + i + '"]').is(':visible')){
+		current_section = i;
+	    };
+        }
+	$('a.internal[href$="' + current_section + '"]').addClass('active');
+    });
+
+});
+</script>
+{% endif %}
+
+<script type="text/javascript">
+
+        var _gaq = _gaq || [];
+        _gaq.push(['_setAccount', 'UA-41920728-1']);
+        _gaq.push(['_trackPageview']);
+
+        (function() {
+            var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+            ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+            var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+        })();
+    </script>
+{% endblock %}
+
+{% block header %}
+<div id="logo-banner">
+  <div class="logo">
+    <a href="{{pathto('index') }}">
+      <img src="{{ pathto('_static/' + logo, 1) }}" alt="Nistats logo"  border="0" />
+    </a>
+  </div>
+  <!-- A tag cloud to make it easy for people to find what they are
+                         looking for -->
+ <div class="tags">
+  <ul>
+    <li>
+      <big><a href="{{pathto('auto_examples/04_low_level_functions/plot_hrf')}}">HRF</a></big>
+    </li>
+    <li>
+      <small><a href="{{pathto('auto_examples/04_low_level_functions/plot_design_matrix')}}">Design Matrix</a></small>
+    </li>
+    <li>
+      <small><a href="{{pathto('auto_examples/02_first_level_models/plot_localizer_analysis')}}">First Level</a></small>
+    </li>
+    <li>
+      <big><a href="{{pathto('auto_examples/03_second_level_models/plot_thresholding')}}">Second Level</a></big>
+    </li>
+    <li>
+      <big><a href="{{pathto('auto_examples/01_tutorials/plot_bids_analysis')}}">BIDS datasets</a></big>
+    </li>
+  </ul>
+ </div>
+
+  <div class="banner">
+    <h1>Nistats:</h1>
+    <h2>Functional MRI Neuro-Imaging in Python</h2>
+  </div>
+  <div class="search_form">
+    <div id="cse" style="width: 100%;"></div>
+    <script src="http://www.google.com/jsapi" type="text/javascript"></script>
+    <script type="text/javascript">
+      google.load('search', '1', {language : 'en'});
+      google.setOnLoadCallback(function() {
+      var customSearchControl = new google.search.CustomSearchControl('014136483057745874622:r-npolb1uki');
+      customSearchControl.setResultSetSize(google.search.Search.FILTERED_CSE_RESULTSET);
+      var options = new google.search.DrawOptions();
+      options.setAutoComplete(true);
+      customSearchControl.draw('cse', options);
+      }, true);
+    </script>
+  </div>
+</div>
+
+
+{% endblock %}
+
+{# This block gets put at the top of the sidebar #}
+{% block sidebarlogo %}
+
+
+{%- if (pagename == 'index') %}
+
+<h4> News </h4>
+  <ul>
+      <li><p> <strong>October 2019</strong>: Nistats 0.0.1b1 released</p></li>
+      <li><p> <strong>October 2018</strong>: Nistats 0.0.1b0 released</p></li>
+      <li><p> <strong>November 2017</strong>: Nistats 0.0.1a released</p></li>
+  </ul>
+  <ul>
+      <li><p> <strong>Ongoing development</strong>:
+          <a href="whats_new.html"</a>What's new</em>.
+      </p></li>
+  </ul>
+
+<h4> Software </h4>
+  <ul class="simple">
+    <li>
+      <div id="download-container">
+	<a href="{{pathto('introduction')}}#installation" class="btn btn-primary">Installation</a>
+      </div>
+    </li>
+  </ul>
+<h4> Development </h4>
+  <ul class="simple">
+    <li><p><a class="reference external"
+	href="https://github.com/nistats/nistats">Nistats on GitHub</a></p></li>
+    <li><p>All material Free Software: <strong>BSD license</strong> (3 clause).</p></li>
+    <li><p><a href="{{pathto('authors')}}">Authors</a></p></li>
+    <li><p><a href="{{pathto('contributing')}}">Contributing</a></p></li>
+  </ul>
+{% endif %}
+
+
+<h4> Giving credit </h4>
+  <ul class="simple">
+    <li><p>Please consider <a href="{{pathto('authors')}}#citing">citing the
+                    papers</a>.</p></li>
+  </ul>
+{% endblock %}
+
+{# I had to copy the whole search block just to change the rendered text,
+   so it doesn't mention modules or classes #}
+{%- block sidebarsearch %}
+{%- if pagename != "search" %}
+
+<div class="navbar">
+</div> <!-- end navbar -->
+
+<script type="text/javascript">$('#searchbox-ml').show(0);</script>
+<script type="text/javascript">$('#searchbox-site').show(0);</script>
+{%- endif %}
+
+{# The sidebarsearch block is the last one available in the default sidebar()
+   macro, so the only way to add something to the bottom of the sidebar is to
+   put it here, at the end of the sidebarsearch block (before it closes).
+   #}
+
+{%- endblock %}
+
+{%- block footer %}
+    <div class="footer">
+        {%- if show_copyright %}
+          {%- if hasdoc('copyright') %}
+            {% trans path=pathto('copyright'), copyright=copyright|e %}&copy; {{ copyright }}.{% endtrans %}
+          {%- else %}
+            {% trans copyright=copyright|e %}&copy; {{ copyright }}.{% endtrans %}
+          {%- endif %}
+        {%- endif %}
+        {%- if last_updated %}
+          {% trans last_updated=last_updated|e %}Last updated on {{ last_updated }}.{% endtrans %}
+        {%- endif %}
+        {%- if show_sphinx %}
+          {% trans sphinx_version=sphinx_version|e %}Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> {{ sphinx_version }}{% endtrans %}.
+        {%- endif %}
+        {%- if has_source and sourcename %}
+        <span style="padding-left: 5ex;">
+          <a href="{{ pathto('_sources/' + sourcename, true)|e }}"
+        	 rel="nofollow">{{ _('Show this page source') }}</a>
+        </span>
+        {%- endif %}
+    </div>
+{%- endblock %}
