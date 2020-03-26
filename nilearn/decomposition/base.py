@@ -88,7 +88,7 @@ def mask_and_reduce(masker, imgs,
                     reduction_ratio='auto',
                     n_components=None, random_state=None,
                     memory_level=0,
-                    memory=Memory(cachedir=None),
+                    memory=Memory(location=None),
                     n_jobs=1):
     """Mask and reduce provided 4D images with given masker.
 
@@ -326,7 +326,7 @@ class BaseDecomposition(BaseEstimator, CacheMixin, TransformerMixin):
                  low_pass=None, high_pass=None, t_r=None,
                  target_affine=None, target_shape=None,
                  mask_strategy='epi', mask_args=None,
-                 memory=Memory(cachedir=None), memory_level=0,
+                 memory=Memory(location=None), memory_level=0,
                  n_jobs=1,
                  verbose=0):
         self.n_components = n_components
