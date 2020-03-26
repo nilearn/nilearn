@@ -424,6 +424,7 @@ uses.
 
 **Classes**:
 
+.. currentmodule:: first_level_model
 
 .. autosummary::
    :toctree: generated/
@@ -433,6 +434,7 @@ uses.
 
 **Functions**:
 
+.. currentmodule:: first_level_model
 
 .. autosummary::
    :toctree: generated/
@@ -456,6 +458,7 @@ uses.
 
 **Classes**:
 
+.. currentmodule:: second_level_model
 
 .. autosummary::
    :toctree: generated/
@@ -465,6 +468,7 @@ uses.
 
 **Functions**:
 
+.. currentmodule:: second_level_model
 
 .. autosummary::
    :toctree: generated/
