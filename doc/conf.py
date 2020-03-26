@@ -338,3 +338,9 @@ def touch_example_backreferences(app, what, name, obj, options, lines):
 def setup(app):
     app.add_javascript('copybutton.js')
     app.connect('autodoc-process-docstring', touch_example_backreferences)
+
+
+sys.path.insert(0, os.path.abspath('../nilearn'))
+sys.path.insert(0, os.path.abspath('../nilearn/stats'))
+sys.path.insert(0, os.path.abspath('../nilearn/stats/first_level_model'))
+sys.path.insert(0, os.path.abspath('../nilearn/stats/second_level_model'))
