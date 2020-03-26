@@ -21,7 +21,6 @@ from sklearn.externals.joblib import Memory
 
 from nilearn._utils import CacheMixin
 from nilearn._utils.niimg_conversions import check_niimg
-from nilearn.input_data import NiftiMasker
 from nilearn.image import mean_img
 from nilearn.mass_univariate import permuted_ols
 from nilearn.stats.first_level_model import (FirstLevelModel,
@@ -334,6 +333,9 @@ class SecondLevelModel(BaseEstimator, TransformerMixin, CacheMixin):
             list of Niimgs matches the order of the rows in the design matrix.
 
         """
+        # Prevent circular imports between reporting & stats module
+        from nilearn.input_data import NiftiMasker  # noqa
+
         # check second_level_input
         _check_second_level_input(second_level_input, design_matrix,
                                   confounds=confounds)
@@ -611,6 +613,9 @@ def non_parametric_inference(second_level_input, confounds=None,
         The image which contains negative logarithm of the
         corrected p-values
     """
+    # Prevent circular imports between reporting & stats module
+    from nilearn.input_data import NiftiMasker  # noqa
+
     _check_second_level_input(second_level_input, design_matrix,
                               flm_object=False, df_object=False)
     _check_confounds(confounds)
