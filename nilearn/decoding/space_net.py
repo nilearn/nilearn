@@ -32,7 +32,6 @@ from .._utils.param_validation import _adjust_screening_percentile
 from sklearn.utils import check_X_y
 from sklearn.model_selection import check_cv
 from sklearn.linear_model.base import _preprocess_data as center_data
-from .._utils.compat import _basestring
 from .._utils.cache_mixin import CacheMixin
 from nilearn.masking import _unmask_from_to_3d_array
 from .space_net_solvers import (tvl1_solver, _graph_net_logistic,
@@ -746,7 +745,7 @@ class BaseSpaceNet(LinearModel, RegressorMixin, CacheMixin):
         """
         # misc
         self.check_params()
-        if self.memory is None or isinstance(self.memory, _basestring):
+        if self.memory is None or isinstance(self.memory, str):
             self.memory_ = Memory(self.memory,
                                   verbose=max(0, self.verbose - 1))
         else:

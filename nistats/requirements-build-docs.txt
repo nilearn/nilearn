@@ -1,0 +1,17 @@
+numpy
+pandas
+cython
+scipy
+flake8
+lxml
+nose
+mkl
+sphinx
+coverage
+pillow
+pandas
+nose-timer
+nibabel
+nilearn
+scikit-learn
+matplotlib

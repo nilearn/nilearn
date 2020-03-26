@@ -19,7 +19,6 @@ MEMORY_CLASSES = (Memory, )
 
 import nilearn
 
-from .compat import _basestring
 
 __CACHE_CHECKED = dict()
 
@@ -42,7 +41,7 @@ def _check_memory(memory, verbose=0):
     """
     if memory is None:
         memory = Memory(location=None, verbose=verbose)
-    if isinstance(memory, _basestring):
+    if isinstance(memory, str):
         cache_dir = memory
         if nilearn.EXPAND_PATH_WILDCARDS:
             cache_dir = os.path.expanduser(cache_dir)
@@ -217,7 +216,7 @@ def cache(func, memory, func_memory_level=None, memory_level=None,
 
     if memory is not None and (func_memory_level is None or
                                memory_level >= func_memory_level):
-        if isinstance(memory, _basestring):
+        if isinstance(memory, str):
             memory = Memory(location=memory, verbose=verbose)
         if not isinstance(memory, MEMORY_CLASSES):
             raise TypeError("'memory' argument must be a string or a "

@@ -11,7 +11,6 @@ from nilearn._utils.compat import Memory, delayed, Parallel
 from .rena_clustering import ReNA
 from ..decomposition.multi_pca import MultiPCA
 from ..input_data import NiftiLabelsMasker
-from .._utils.compat import _basestring
 from .._utils.niimg import _safe_get_data
 from .._utils.niimg_conversions import _iter_check_niimg
 
@@ -60,7 +59,7 @@ def _check_parameters_transform(imgs, confounds):
     as a list.
     """
     if not isinstance(imgs, (list, tuple)) or \
-            isinstance(imgs, _basestring):
+            isinstance(imgs, str):
         imgs = [imgs, ]
         single_subject = True
     elif isinstance(imgs, (list, tuple)) and len(imgs) == 1:
@@ -73,7 +72,7 @@ def _check_parameters_transform(imgs, confounds):
 
     if confounds is not None:
         if not isinstance(confounds, (list, tuple)) or \
-                isinstance(confounds, _basestring):
+                isinstance(confounds, str):
             confounds = [confounds, ]
 
     if len(confounds) != len(imgs):

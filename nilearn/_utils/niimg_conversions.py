@@ -15,7 +15,7 @@ from nilearn._utils.compat import Memory
 from .cache_mixin import cache
 from .niimg import _safe_get_data, load_niimg
 from .path_finding import _resolve_globbing
-from .compat import _basestring, izip
+from .compat import izip
 
 from .exceptions import DimensionError
 from .niimg import _get_data
@@ -155,7 +155,7 @@ def _iter_check_niimg(niimgs, ensure_ndim=None, atleast_4d=False,
             raise
         except TypeError as exc:
             img_name = ''
-            if isinstance(niimg, _basestring):
+            if isinstance(niimg, str):
                 img_name = " (%s) " % niimg
 
             exc.args = (('Error encountered while loading image #%d%s'
@@ -227,7 +227,7 @@ def check_niimg(niimg, ensure_ndim=None, atleast_4d=False, dtype=None,
     """
     from ..image import new_img_like  # avoid circular imports
 
-    if isinstance(niimg, _basestring):
+    if isinstance(niimg, str):
         if wildcards and ni.EXPAND_PATH_WILDCARDS:
             # Ascending sorting + expand user path
             filenames = sorted(glob.glob(os.path.expanduser(niimg)))
@@ -253,7 +253,7 @@ def check_niimg(niimg, ensure_ndim=None, atleast_4d=False, dtype=None,
             raise ValueError("File not found: '%s'" % niimg)
 
     # in case of an iterable
-    if hasattr(niimg, "__iter__") and not isinstance(niimg, _basestring):
+    if hasattr(niimg, "__iter__") and not isinstance(niimg, str):
         if return_iterator:
             return _iter_check_niimg(niimg, ensure_ndim=ensure_ndim,
                                      dtype=dtype)
@@ -459,7 +459,7 @@ def concat_niimgs(niimgs, dtype=np.float32, ensure_ndim=None,
             memory=memory, memory_level=memory_level))):
 
         if verbose > 0:
-            if isinstance(niimg, _basestring):
+            if isinstance(niimg, str):
                 nii_str = "image " + niimg
             else:
                 nii_str = "image #" + str(index)
