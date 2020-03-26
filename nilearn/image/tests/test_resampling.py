@@ -329,8 +329,8 @@ def test_raises_upon_3x3_affine_and_no_shape():
                       affine=np.eye(4))
     exception = ValueError
     message = ("Given target shape without anchor "
-               "vector: Affine shape should be \(4, 4\) and "
-               "not \(3, 3\)")
+               "vector: Affine shape should be \\(4, 4\\) and "
+               "not \\(3, 3\\)")
     with pytest.raises(exception, match=message):
         resample_img(img, target_affine=np.eye(3) * 2,
                      target_shape=(10, 10, 10)
