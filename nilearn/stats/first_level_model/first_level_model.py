@@ -18,16 +18,16 @@ from warnings import warn
 import numpy as np
 import pandas as pd
 
+from joblib import (delayed,
+                    Memory,
+                    Parallel,
+                    )
 from nibabel import Nifti1Image
 from nibabel.onetime import setattr_on_read
 from sklearn.base import (BaseEstimator,
                           clone,
                           TransformerMixin,
                           )
-from sklearn.externals.joblib import (delayed,
-                                      Memory,
-                                      Parallel,
-                                      )
 
 from nilearn._utils import CacheMixin
 from nilearn._utils.niimg_conversions import check_niimg

@@ -33,7 +33,7 @@ class _ExtractionFunctor(object):
 
 
 def filter_and_mask(imgs, mask_img_, parameters,
-                    memory_level=0, memory=Memory(cachedir=None),
+                    memory_level=0, memory=Memory(location=None),
                     verbose=0,
                     confounds=None,
                     copy=True,
@@ -189,7 +189,7 @@ class NiftiMasker(BaseMasker, CacheMixin, ReportMixin):
                  target_affine=None, target_shape=None,
                  mask_strategy='background',
                  mask_args=None, sample_mask=None, dtype=None,
-                 memory_level=1, memory=Memory(cachedir=None),
+                 memory_level=1, memory=Memory(location=None),
                  verbose=0, reports=True,
                  ):
         # Mask is provided or computed
