@@ -130,7 +130,7 @@ class MultiNiftiMasker(NiftiMasker, CacheMixin):
                  standardize=False, detrend=False, low_pass=None,
                  high_pass=None, t_r=None, target_affine=None,
                  target_shape=None, mask_strategy='background',
-                 mask_args=None, dtype=None, memory=Memory(cachedir=None),
+                 mask_args=None, dtype=None, memory=Memory(location=None),
                  memory_level=0, n_jobs=1, verbose=0):
         # Mask is provided or computed
         self.mask_img = mask_img

@@ -212,7 +212,7 @@ def test_5d():
             DimensionError,
             match="Input data has incompatible dimensionality: "
                   "Expected dimension is 4D and you provided "
-                  "a list of 4D images \(5D\)."):
+                  "a list of 4D images \\(5D\\)."):
         masker.transform(data_5d)
 
 
@@ -249,7 +249,7 @@ def test_joblib_cache():
         # imgs return by inverse_transform impossible to save
         cachedir = mkdtemp()
         try:
-            masker.memory = Memory(cachedir=cachedir, mmap_mode='r',
+            masker.memory = Memory(location=cachedir, mmap_mode='r',
                                    verbose=0)
             X = masker.transform(mask_img)
             # inverse_transform a first time, so that the result is cached

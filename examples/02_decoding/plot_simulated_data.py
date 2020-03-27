@@ -13,7 +13,7 @@ model with a random design matrix **X**:
 
 .. math::
 
-   \mathbf{y} = \mathbf{X} \mathbf{w} + \mathbf{e}
+   \\mathbf{y} = \\mathbf{X} \\mathbf{w} + \\mathbf{e}
 
 * **w**: the weights of the linear model correspond to the predictive
   brain regions. Here, in the simulations, they form a 3D image with 5, four

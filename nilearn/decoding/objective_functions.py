@@ -43,7 +43,7 @@ def _logistic_loss_lipschitz_constant(X):
     """Compute the Lipschitz constant (upper bound) for the gradient of the
     logistic sum:
 
-         w -> \sum_i log(1+exp(-y_i*(x_i*w + v)))
+         w -> \\sum_i log(1+exp(-y_i*(x_i*w + v)))
 
     """
     # N.B: we handle intercept!

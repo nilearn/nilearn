@@ -219,7 +219,7 @@ class NiftiSpheresMasker(BaseMasker, CacheMixin):
     def __init__(self, seeds, radius=None, mask_img=None, allow_overlap=False,
                  smoothing_fwhm=None, standardize=False, detrend=False,
                  low_pass=None, high_pass=None, t_r=None, dtype=None,
-                 memory=Memory(cachedir=None, verbose=0), memory_level=1,
+                 memory=Memory(location=None, verbose=0), memory_level=1,
                  verbose=0):
         self.seeds = seeds
         self.mask_img = mask_img

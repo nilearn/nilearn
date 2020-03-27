@@ -140,7 +140,7 @@ def test_shelving():
     cachedir = mkdtemp()
     try:
         masker_shelved = MultiNiftiMasker(mask_img=mask_img,
-                                          memory=Memory(cachedir=cachedir,
+                                          memory=Memory(location=cachedir,
                                                         mmap_mode='r',
                                                         verbose=0))
         masker_shelved._shelving = True
