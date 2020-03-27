@@ -376,8 +376,8 @@ uses.
 .. _stats_ref:
 
 
-:mod:`nilearn.stats`: Stats & GLMs
-==================================
+:mod:`nilearn.stats`: Generalized Linear Models
+================================================
 
 .. automodule:: nilearn.stats
    :no-members:
@@ -418,8 +418,8 @@ uses.
     map_threshold
 
 
-`nilearn.stats.first_level_model`: First Level Model
-----------------------------------------------------------
+nilearn.stats.first_level_model
+-------------------------------
 
 
 **Classes**:
@@ -453,8 +453,8 @@ uses.
     spm_hrf
     spm_time_derivative
 
-`nilearn.stats.second_level_model`: Second  Level Model
-------------------------------------------------------------
+nilearn.stats.second_level_model
+--------------------------------
 
 **Classes**:
 
