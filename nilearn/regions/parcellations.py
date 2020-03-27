@@ -255,7 +255,7 @@ class Parcellations(MultiPCA):
                  target_affine=None, target_shape=None,
                  mask_strategy='epi', mask_args=None,
                  scaling=False, n_iter=10,
-                 memory=Memory(cachedir=None),
+                 memory=Memory(location=None),
                  memory_level=0, n_jobs=1, verbose=1):
 
         self.method = method
