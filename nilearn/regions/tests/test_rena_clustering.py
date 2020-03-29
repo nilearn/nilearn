@@ -2,9 +2,9 @@ import numpy as np
 import pytest
 
 try:
-    from nilearn._utils.compat import Memory
+    from joblib import Memory
 except ImportError:
-    from nilearn._utils.compat import Memory
+    from joblib import Memory
 from nilearn._utils.data_gen import generate_fake_fmri
 from nilearn.regions.rena_clustering import ReNA
 from nilearn.input_data import NiftiMasker

@@ -11,7 +11,7 @@ import pytest
 from nibabel import Nifti1Image
 
 from numpy.testing import assert_array_equal
-from nilearn._utils.compat import Memory
+from joblib import Memory
 
 from nilearn._utils.exceptions import DimensionError
 from nilearn._utils.testing import write_tmp_imgs
@@ -113,7 +113,7 @@ def test_3d_images():
 
 
 def test_joblib_cache():
-    from nilearn._utils.compat import hash
+    from joblib import hash
     # Dummy mask
     mask = np.zeros((40, 40, 40))
     mask[20, 20, 20] = 1
@@ -140,7 +140,7 @@ def test_shelving():
     cachedir = mkdtemp()
     try:
         masker_shelved = MultiNiftiMasker(mask_img=mask_img,
-                                          memory=Memory(cachedir=cachedir,
+                                          memory=Memory(location=cachedir,
                                                         mmap_mode='r',
                                                         verbose=0))
         masker_shelved._shelving = True

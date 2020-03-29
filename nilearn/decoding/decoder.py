@@ -17,6 +17,7 @@ import itertools
 import warnings
 
 import numpy as np
+from joblib import Parallel, delayed
 from sklearn import clone
 from sklearn.base import RegressorMixin
 from sklearn.linear_model import LogisticRegression
@@ -28,8 +29,7 @@ from sklearn.svm import SVR, LinearSVC
 from sklearn.svm.bounds import l1_min_c
 from sklearn.utils.extmath import safe_sparse_dot
 from sklearn.utils.validation import check_is_fitted, check_X_y
-from nilearn._utils.compat import Parallel, delayed
-from nilearn.regions.rena_clustering import ReNA
+
 try:
     from sklearn.metrics import check_scoring
 except ImportError:
@@ -41,6 +41,8 @@ from nilearn._utils.cache_mixin import _check_memory
 from nilearn._utils.param_validation import (_adjust_screening_percentile,
                                              check_feature_screening)
 from nilearn.input_data.masker_validation import check_embedded_nifti_masker
+from nilearn.regions.rena_clustering import ReNA
+
 
 SUPPORTED_ESTIMATORS = dict(
     svc_l1=LinearSVC(penalty='l1', dual=False, max_iter=1e4),

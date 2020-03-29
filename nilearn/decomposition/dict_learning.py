@@ -13,7 +13,7 @@ import warnings
 
 import numpy as np
 from sklearn.decomposition import dict_learning_online
-from nilearn._utils.compat import Memory
+from joblib import Memory
 from sklearn.linear_model import Ridge
 
 from .base import BaseDecomposition
@@ -183,7 +183,7 @@ class DictLearning(BaseDecomposition):
                  smoothing_fwhm=4, standardize=True, detrend=True,
                  low_pass=None, high_pass=None, t_r=None, target_affine=None,
                  target_shape=None, mask_strategy='epi', mask_args=None,
-                 n_jobs=1, verbose=0, memory=Memory(cachedir=None),
+                 n_jobs=1, verbose=0, memory=Memory(location=None),
                  memory_level=0):
         BaseDecomposition.__init__(self, n_components=n_components,
                                    random_state=random_state, mask=mask,

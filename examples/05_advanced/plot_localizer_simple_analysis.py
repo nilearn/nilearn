@@ -69,7 +69,7 @@ display = plot_stat_map(neg_log_pvals_anova_unmasked,
 masked_pvals = np.ma.masked_less(get_data(neg_log_pvals_anova_unmasked),
                                  threshold)
 
-title = ('Negative $\log_{10}$ p-values'
+title = ('Negative $\\log_{10}$ p-values'
          '\n(Parametric + Bonferroni correction)'
          '\n%d detections' % (~masked_pvals.mask).sum())
 

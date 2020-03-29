@@ -95,7 +95,7 @@ display = plot_stat_map(neg_log_pvals_anova_unmasked,
                         figure=fig, vmax=vmax, black_bg=True)
 
 n_detections = (get_data(neg_log_pvals_anova_unmasked) > threshold).sum()
-title = ('Negative $\log_{10}$ p-values'
+title = ('Negative $\\log_{10}$ p-values'
          '\n(Parametric + Bonferroni correction)'
          '\n%d detections') % n_detections
 
@@ -111,7 +111,7 @@ display = plot_stat_map(neg_log_pvals_permuted_ols_unmasked,
 
 n_detections = (get_data(neg_log_pvals_permuted_ols_unmasked)
                 > threshold).sum()
-title = ('Negative $\log_{10}$ p-values'
+title = ('Negative $\\log_{10}$ p-values'
          '\n(Non-parametric + max-type correction)'
          '\n%d detections') % n_detections
 
