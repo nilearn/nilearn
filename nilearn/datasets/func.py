@@ -12,6 +12,8 @@ import nibabel as nib
 import numpy as np
 import numbers
 
+from io import BytesIO
+
 import nibabel
 import pandas as pd
 from scipy.io import loadmat
@@ -21,7 +23,6 @@ from sklearn.utils import Bunch
 from .utils import (_get_dataset_dir, _fetch_files, _get_dataset_descr,
                     _read_md5_sum_file, _tree, _filter_columns, _fetch_file, _uncompress_file)
 from .._utils import check_niimg
-from .._utils.compat import BytesIO
 from .._utils.numpy_conversions import csv_to_array
 from nilearn.image import get_data
 

@@ -13,7 +13,7 @@ import warnings
 
 import numpy as np
 from sklearn.decomposition import dict_learning_online
-from nilearn._utils.compat import Memory
+from joblib import Memory
 from sklearn.linear_model import Ridge
 
 from .base import BaseDecomposition

@@ -5,10 +5,10 @@ Massively Univariate Linear Model estimated with OLS and permutation test.
 #         Virgile Fritsch, <virgile.fritsch@inria.fr>, jan. 2014
 import warnings
 
+import joblib
 import numpy as np
 from scipy import linalg
 from sklearn.utils import check_random_state
-from nilearn._utils.compat import joblib
 
 
 def normalize_matrix_on_axis(m, axis=0):

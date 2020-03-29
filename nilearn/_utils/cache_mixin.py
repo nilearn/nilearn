@@ -13,7 +13,7 @@ from distutils.version import LooseVersion
 import nibabel
 import sklearn
 
-from nilearn._utils.compat import Memory
+from joblib import Memory
 
 MEMORY_CLASSES = (Memory, )
 

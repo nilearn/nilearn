@@ -9,7 +9,7 @@ from pathlib import Path
 
 import pytest
 
-from nilearn._utils.compat import Memory
+from joblib import Memory
 
 import nilearn
 from nilearn._utils import cache_mixin, CacheMixin
