@@ -449,7 +449,7 @@ def permuted_ols(tested_vars, target_vars, confounding_vars=None,
             targetvars_resid_covars.T, covars_orthonormalized,
             n_perm_chunk=n_perm_chunk, intercept_test=intercept_test,
             two_sided_test=two_sided_test,
-            random_state=rng.random_integers(np.iinfo(np.int32).max - 1))
+            random_state=rng.randint(1, np.iinfo(np.int32).max - 1))
         for n_perm_chunk in n_perm_chunks)
     # reduce results
     scores_as_ranks_parts, h0_fmax_parts = zip(*ret)
