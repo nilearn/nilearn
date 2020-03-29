@@ -44,7 +44,7 @@ from nilearn.stats.first_level_model.design_matrix import make_first_level_desig
 from nilearn.stats.regression import (ARModel,
                                       OLSModel,
                                       SimpleRegressionResults,
-                                      RegressionResults
+                                      RegressionResults,
                                       )
 
 
@@ -56,6 +56,8 @@ def mean_scaling(Y, axis=0):
     ----------
     Y : array of shape (n_time_points, n_voxels)
        The input data.
+
+    axis : Axis along which the scaling mean should be calculated. Default 0.
 
     Returns
     -------

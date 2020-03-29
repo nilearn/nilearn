@@ -10,7 +10,7 @@ from numpy.testing import (assert_almost_equal,
                            assert_array_equal,
                            )
 
-from nilearn.stats.regression import OLSModel, ARModel
+from nilearn.stats import OLSModel, ARModel
 
 
 RNG = np.random.RandomState(20110902)

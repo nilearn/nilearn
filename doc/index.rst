@@ -13,7 +13,7 @@
     classification, decoding, or connectivity analysis.
 
 
-.. Here we are building the carrousel
+.. Here we are building the carousel
 
 .. |glass_brain| image:: auto_examples/01_plotting/images/sphx_glr_plot_demo_glass_brain_002.png
    :target: auto_examples/01_plotting/plot_demo_glass_brain.html
