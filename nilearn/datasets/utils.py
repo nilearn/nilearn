@@ -17,7 +17,11 @@ import urllib
 import warnings
 import zipfile
 
-from .._utils.compat import md5_hash
+
+def md5_hash(string):
+    m = hashlib.md5()
+    m.update(string.encode('utf-8'))
+    return m.hexdigest()
 
 
 def _format_time(t):
