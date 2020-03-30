@@ -136,8 +136,8 @@ def _check_estimator(estimator):
 
 
 def _parallel_fit(estimator, X, y, train, test, param_grid, is_classification,
-                  scorer, mask_img, class_index, screening_percentile=100,
-                  do_clustering=False, clustering_percentile=100):
+                  scorer, mask_img, class_index, screening_percentile,
+                  do_clustering, clustering_percentile):
     """Find the best estimator for a fold within a job.
     This function tries several parameters for the estimator for the train and
     test fold provided and save the ones that performs best. These models are
@@ -1061,7 +1061,7 @@ class fREMRegressor(_BaseDecoder):
 
         super().__init__(
             estimator=estimator, mask=mask, cv=cv, param_grid=param_grid,
-            do_clustering=True, clustering_percentile=10,
+            do_clustering=True, clustering_percentile=clustering_percentile,
             screening_percentile=screening_percentile, scoring=scoring,
             smoothing_fwhm=smoothing_fwhm, standardize=standardize,
             target_affine=target_affine, target_shape=target_shape,
