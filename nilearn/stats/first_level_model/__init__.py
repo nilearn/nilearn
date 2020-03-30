@@ -1,15 +1,15 @@
-from .design_matrix import (
+from nilearn.stats.first_level_model.design_matrix import (
     check_design_matrix,
     make_first_level_design_matrix,
 )
-from .experimental_paradigm import check_events
-from .first_level_model import (
+from nilearn.stats.first_level_model.experimental_paradigm import check_events
+from nilearn.stats.first_level_model.first_level_model import (
     first_level_models_from_bids,
     FirstLevelModel,
     mean_scaling,
     run_glm,
 )
-from .hemodynamic_models import (
+from nilearn.stats.first_level_model.hemodynamic_models import (
     compute_regressor,
     glover_dispersion_derivative,
     glover_hrf,
@@ -21,6 +21,7 @@ from .hemodynamic_models import (
 
 __all__ = [
     'check_design_matrix',
+    'check_events',
     'compute_regressor',
     'first_level_models_from_bids',
     'FirstLevelModel',

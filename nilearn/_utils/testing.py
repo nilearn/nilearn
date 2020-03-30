@@ -6,13 +6,13 @@ import functools
 import os
 import sys
 import tempfile
+import urllib
 import warnings
 import gc
 
 import numpy as np
 import pytest
 
-from .compat import _urllib
 from ..datasets.utils import _fetch_files
 
 # we use memory_profiler library for memory consumption checks
@@ -209,7 +209,7 @@ def wrap_chunk_read_(_chunk_read_):
 def mock_chunk_read_raise_error_(response, local_file, initial_size=0,
                                  chunk_size=8192, report_hook=None,
                                  verbose=0):
-    raise _urllib.errors.HTTPError("url", 418, "I'm a teapot", None, None)
+    raise urllib.errors.HTTPError("url", 418, "I'm a teapot", None, None)
 
 
 class FetchFilesMock(object):

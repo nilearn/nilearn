@@ -12,12 +12,12 @@ import numpy as np
 
 import nibabel
 import pytest
+import urllib
 
 from numpy.testing import assert_array_equal
 
 from . import test_utils as tst
 
-from nilearn._utils.compat import _urllib
 
 from nilearn.datasets import utils, atlas
 from nilearn.image import get_data
@@ -111,7 +111,7 @@ def test_downloader(tmp_path):
     #     archive
     #   - if sandboxing works, the file must be untouched.
 
-    local_url = "file:" + _urllib.request.pathname2url(
+    local_url = "file:" + urllib.request.pathname2url(
         os.path.join(tst.datadir, "craddock_2011_parcellations.tar.gz"))
     datasetdir = str(tmp_path / 'craddock_2012')
     os.makedirs(datasetdir)

@@ -13,7 +13,7 @@ from nilearn._utils.logger import log
 @contextlib.contextmanager
 def capture_output():
     import sys
-    from nilearn._utils.compat import StringIO
+    from io import StringIO
     oldout, olderr = sys.stdout, sys.stderr
     try:
         out = [StringIO(), StringIO()]

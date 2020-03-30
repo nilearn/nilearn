@@ -226,7 +226,7 @@ def map_threshold(stat_img=None, mask_img=None, alpha=.001, threshold=3.,
     the computed threshold is not rigorous and likely meaningless
     """
     # Prevent circular import between reporting & stats module
-    from nilearn.input_data import NiftiMasker
+    from nilearn.input_data import NiftiMasker  # noqa
 
     height_control_methods = ['fpr', 'fdr', 'bonferroni',
                               'all-resolution-inference', None]

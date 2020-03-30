@@ -8,14 +8,20 @@ import collections.abc
 import contextlib
 import fnmatch
 import hashlib
+import pickle
 import shutil
 import time
 import sys
 import tarfile
+import urllib
 import warnings
 import zipfile
 
-from .._utils.compat import cPickle, _urllib, md5_hash
+
+def md5_hash(string):
+    m = hashlib.md5()
+    m.update(string.encode('utf-8'))
+    return m.hexdigest()
 
 
 def _format_time(t):
@@ -111,7 +117,7 @@ def _chunk_read_(response, local_file, chunk_size=8192, report_hook=None,
 
     Parameters
     ----------
-    response: _urllib.response.addinfourl
+    response: urllib.response.addinfourl
         Response to the download request in order to get file size
 
     local_file: file
@@ -503,7 +509,7 @@ def _fetch_file(url, data_dir, resume=True, overwrite=False,
         os.makedirs(data_dir)
 
     # Determine filename using URL
-    parse = _urllib.parse.urlparse(url)
+    parse = urllib.parse.urlparse(url)
     file_name = os.path.basename(parse.path)
     if file_name == '':
         file_name = md5_hash(parse.path)
@@ -525,8 +531,8 @@ def _fetch_file(url, data_dir, resume=True, overwrite=False,
 
     try:
         # Download data
-        url_opener = _urllib.request.build_opener(*handlers)
-        request = _urllib.request.Request(url)
+        url_opener = urllib.request.build_opener(*handlers)
+        request = urllib.request.Request(url)
         request.add_header('Connection', 'Keep-Alive')
         if username is not None and password is not None:
             if not url.startswith('https'):
@@ -580,7 +586,7 @@ def _fetch_file(url, data_dir, resume=True, overwrite=False,
             # Complete the reporting hook
             sys.stderr.write(' ...done. ({0:.0f} seconds, {1:.0f} min)\n'
                              .format(dt, dt // 60))
-    except (_urllib.error.HTTPError, _urllib.error.URLError):
+    except (urllib.error.HTTPError, urllib.error.URLError):
         sys.stderr.write("Error while fetching file %s; dataset "
                          "fetching aborted." % (file_name))
         raise
@@ -691,7 +697,7 @@ def _fetch_files(data_dir, files, resume=True, mock=False, verbose=1):
     #   file is found, or a file is missing, this working directory will be
     #   deleted.
     files = list(files)
-    files_pickle = cPickle.dumps([(file_, url) for file_, url, _ in files])
+    files_pickle = pickle.dumps([(file_, url) for file_, url, _ in files])
     files_md5 = hashlib.md5(files_pickle).hexdigest()
     temp_dir = os.path.join(data_dir, files_md5)
 

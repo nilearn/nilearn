@@ -205,8 +205,8 @@ every voxel so that the F-statistics are comparable. This correction
 strategy is applied in nilearn
 :func:`nilearn.mass_univariate.permuted_ols` function.
 
-.. figure:: ../auto_examples/05_advanced/images/sphx_glr_plot_haxby_mass_univariate_001.png
-   :target: ../auto_examples/05_advanced/plot_haxby_mass_univariate.html
+.. figure:: ../auto_examples/07_advanced/images/sphx_glr_plot_haxby_mass_univariate_001.png
+   :target: ../auto_examples/07_advanced/plot_haxby_mass_univariate.html
    :align: center
    :scale: 60
 

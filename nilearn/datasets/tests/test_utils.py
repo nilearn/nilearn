@@ -51,8 +51,8 @@ def setup_mock(utils_mod=datasets.utils, dataset_mod=datasets.utils):
     global original_url_request
     global mock_url_request
     mock_url_request = mock_request()
-    original_url_request = utils_mod._urllib.request
-    utils_mod._urllib.request = mock_url_request
+    original_url_request = utils_mod.urllib.request
+    utils_mod.urllib.request = mock_url_request
 
     global original_chunk_read
     global mock_chunk_read
@@ -69,7 +69,7 @@ def setup_mock(utils_mod=datasets.utils, dataset_mod=datasets.utils):
 
 def teardown_mock(utils_mod=datasets.utils, dataset_mod=datasets.utils):
     global original_url_request
-    utils_mod._urllib.request = original_url_request
+    utils_mod.urllib.request = original_url_request
 
     global original_chunk_read
     utils_mod.chunk_read_ = original_chunk_read

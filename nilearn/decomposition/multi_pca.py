@@ -3,7 +3,7 @@ PCA dimension reduction on multiple subjects.
 This is a good initialization method for ICA.
 """
 import numpy as np
-from nilearn._utils.compat import Memory
+from joblib import Memory
 from sklearn.utils.extmath import randomized_svd
 
 from .base import BaseDecomposition

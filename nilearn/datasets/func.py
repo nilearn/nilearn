@@ -12,6 +12,8 @@ import nibabel as nib
 import numpy as np
 import numbers
 
+from io import BytesIO
+
 import nibabel
 import pandas as pd
 from scipy.io import loadmat
@@ -21,7 +23,6 @@ from sklearn.utils import Bunch
 from .utils import (_get_dataset_dir, _fetch_files, _get_dataset_descr,
                     _read_md5_sum_file, _tree, _filter_columns, _fetch_file, _uncompress_file)
 from .._utils import check_niimg
-from .._utils.compat import BytesIO
 from .._utils.numpy_conversions import csv_to_array
 from nilearn.image import get_data
 
@@ -2131,9 +2132,6 @@ def _reduce_confounds(regressors, keep_confounds):
 
 # datasets originally belonging to nistats follow
 
-SPM_AUDITORY_DATA_FILES = ["fM00223/fM00223_%03i.img" % index
-                           for index in range(4, 100)]
-
 
 def fetch_language_localizer_demo_dataset(data_dir=None, verbose=1):
     """Download language localizer demo dataset.
@@ -2488,7 +2486,11 @@ def _prepare_downloaded_spm_auditory_data(subject_dir):
 
     """
     subject_data = {}
-    for file_name in SPM_AUDITORY_DATA_FILES:
+    spm_auditory_data_files = ["fM00223/fM00223_%03i.img" % index
+                               for index in range(4, 100)]
+    spm_auditory_data_files.append("sM00223/sM00223_002.img")
+
+    for file_name in spm_auditory_data_files:
         file_path = os.path.join(subject_dir, file_name)
         if os.path.exists(file_path):
             subject_data[file_name] = file_path
