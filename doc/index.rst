@@ -97,6 +97,7 @@
 .. toctree::
    :hidden:
 
+   nistats_migration.rst
    authors.rst
    user_guide.rst
    auto_examples/index.rst
