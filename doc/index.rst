@@ -5,7 +5,7 @@
 
 .. container:: index-paragraph
 
-    Nilearn is a Python module to enable **powerful and controlled statistical analysis of brain volumes**.
+    Nilearn is a Python module to enable **friendly, efficient, and versatile statistical analysis of brain volumes**.
 
     It supports GLM based analysis and leverages the `scikit-learn <http://scikit-learn.org>`__ Python toolbox
     for multivariate statistics with applications such as predictive modelling,
