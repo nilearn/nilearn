@@ -1,3 +1,60 @@
+0.7.0a
+======
+
+.. warning::
+
+  Minimum required version of Joblib is now 0.12.
+
+
+NEW
+---
+
+- New decoder object
+  :class:`nilearn.decoding.Decoder` (for classification) and
+  :class:`nilearn.decoding.DecoderRegressor` (for regression) implement a model
+  selection scheme that averages the best models within a cross validation loop.
+  The resulting average model is the one used as a classifier or a regressor.
+  These two objects also leverage the `NiftiMaskers` to provide a direct
+  interface with the Nifti files on disk.
+
+Fixes
+-----
+
+- :class:`nilearn.input_data.NiftiLabelsMasker` no longer ignores its `mask_img`
+
+0.6.2
+======
+
+ENHANCEMENTS
+------------
+
+- Generated documentation now includes Binder links to launch examples interactively
+  in the browser
+
+Fixes
+-----
+
+- More robust matplotlib backend selection
+- Typo in example fixed
+
+Changes
+-------
+
+- Atlas `nilearn.datasets.func.fetch_nyu_rest` has been deprecated and wil be removed in Nilearn 0.8.0 .
+
+Contributors
+------------
+
+The following people contributed to this release::
+
+     Elizabeth DuPre
+     Franz Liem
+     Gael Varoquaux
+     Jon Haitz Legarreta Gorroño
+     Joshua Teves
+     Kshitij Chawla (kchawla-pi)
+     Zvi Baratz
+
 0.6.1
 =====
 
@@ -6,10 +63,19 @@ ENHANCEMENTS
 
 - html pages use the user-provided plot title, if any, as their title
 
-FIXES
+Fixes
 -----
 
-- :class:`nilearn.input_data.NiftiLabelsMasker` no longer ignores its `mask_img`
+- Fetchers for developmental_fmri and localizer datasets resolve URLs correctly.
+
+Contributors
+------------
+
+The following people contributed to this release::
+
+     Elizabeth DuPre
+     Jerome Dockes
+     Kshitij Chawla (kchawla-pi)
 
 0.6.0
 =====
@@ -102,8 +168,6 @@ FIXES
 **Lots of other fixes in documentation and examples.** More detailed change list follows:
 
 0.6.0rc
-=======
-
 NEW
 ---
 .. warning::
@@ -169,6 +233,7 @@ The following people contributed to this release (in alphabetical order)::
 =======
 
 **Released November 2019**
+
 
 .. warning::
 
@@ -255,7 +320,7 @@ NEW
   when using the `mask_strategy="template"` option for brains in MNI space.
 - New brain development fMRI dataset fetcher
   :func:`nilearn.datasets.fetch_development_fmri` can be used to download
-  movie-watching data in children and adults. A light-weight dataset
+  movie-watching data in children and adults; a light-weight dataset 
   implemented for teaching and usage in the examples.
 - New example in `examples/05_advanced/plot_age_group_prediction_cross_val.py`
   to compare methods for classifying subjects into age groups based on
@@ -273,12 +338,15 @@ NEW
 
 - The Localizer dataset now follows the BIDS organization.
 
-
 Changes
 -------
 
 - All the connectivity examples are changed from ADHD to brain development
   fmri dataset.
+- Examples plot_decoding_tutorial, plot_haxby_decoder, 
+  plot_haxby_different_estimators, plot_haxby_full_analysis, plot_oasis_vbm now 
+  use :class:`nilearn.decoding.Decoder` and :class:`nilearn.decoding.DecoderRegressor`
+  instead of sklearn SVC and SVR.
 
 - :func:`nilearn.plotting.view_img_on_surf`, :func:`nilearn.plotting.view_surf`
   and :func:`nilearn.plotting.view_connectome` now allow disabling the colorbar,

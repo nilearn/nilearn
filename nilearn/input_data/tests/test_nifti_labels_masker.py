@@ -50,16 +50,16 @@ def test_nifti_labels_masker():
 
     # verify that 4D mask arguments are refused
     masker = NiftiLabelsMasker(labels11_img, mask_img=mask_img_4d)
-    testing.assert_raises_regex(DimensionError,
-                                "Input data has incompatible dimensionality: "
-                                "Expected dimension is 3D and you provided "
-                                "a 4D image.",
-                                masker.fit)
+    with pytest.raises(DimensionError,
+                       match="Input data has incompatible dimensionality: "
+                             "Expected dimension is 3D and you provided "
+                             "a 4D image."):
+        masker.fit()
 
     # check exception when transform() called without prior fit()
     masker11 = NiftiLabelsMasker(labels11_img, resampling_target=None)
-    testing.assert_raises_regex(
-        ValueError, 'has not been fitted. ', masker11.transform, fmri11_img)
+    with pytest.raises(ValueError, match='has not been fitted. '):
+        masker11.transform(fmri11_img)
 
     # No exception raised here
     signals11 = masker11.fit().transform(fmri11_img)
@@ -100,9 +100,8 @@ def test_nifti_labels_masker():
     signals11 = masker11.fit_transform(fmri11_img)
     assert signals11.shape == (length, n_regions)
 
-    testing.assert_raises_regex(
-        ValueError, 'has not been fitted. ',
-        NiftiLabelsMasker(labels11_img).inverse_transform, signals11)
+    with pytest.raises(ValueError, match='has not been fitted. '):
+        NiftiLabelsMasker(labels11_img).inverse_transform(signals11)
 
     # Call inverse transform (smoke test)
     fmri11_img_r = masker11.inverse_transform(signals11)

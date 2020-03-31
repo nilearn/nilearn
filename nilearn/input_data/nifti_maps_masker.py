@@ -3,7 +3,7 @@ Transformer for computing ROI signals.
 """
 
 import numpy as np
-from nilearn._utils.compat import Memory
+from joblib import Memory
 
 from .. import _utils
 from .._utils import logger, CacheMixin
@@ -126,7 +126,7 @@ class NiftiMapsMasker(BaseMasker, CacheMixin):
                  allow_overlap=True, smoothing_fwhm=None, standardize=False,
                  detrend=False, low_pass=None, high_pass=None, t_r=None,
                  dtype=None, resampling_target="data",
-                 memory=Memory(cachedir=None, verbose=0), memory_level=0,
+                 memory=Memory(location=None, verbose=0), memory_level=0,
                  verbose=0):
         self.maps_img = maps_img
         self.mask_img = mask_img

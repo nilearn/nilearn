@@ -20,10 +20,15 @@ data. We use only 100 subjects from the OASIS dataset to limit the memory
 usage.
 
 Note that for an actual predictive modeling study of aging, the study
-should be ran on the full set of subjects. Also, parameters such as the
-smoothing applied to the data and the number of features selected by the
-Anova step should be set by nested cross-validation, as they impact
-significantly the prediction score.
+should be ran on the full set of subjects. Also, all parameters should be set
+by cross-validation. This includes the smoothing applied to the data and the
+number of features selected by the ANOVA step. Indeed, even these
+data-preparation parameter impact significantly the prediction score.
+
+
+Also, parameters such as the smoothing should be applied to the data and the
+number of features selected by the ANOVA step should be set by nested
+cross-validation, as they impact significantly the prediction score.
 
 Brain mapping with mass univariate
 -----------------------------------
@@ -39,6 +44,7 @@ ____
 # Authors: Elvis Dhomatob, <elvis.dohmatob@inria.fr>, Apr. 2014
 #          Virgile Fritsch, <virgile.fritsch@inria.fr>, Apr 2014
 #          Gael Varoquaux, Apr 2014
+#          Andres Hoyos-Idrobo, Apr 2017
 import numpy as np
 import matplotlib.pyplot as plt
 from nilearn import datasets
@@ -54,6 +60,11 @@ oasis_dataset = datasets.fetch_oasis_vbm(n_subjects=n_subjects)
 gray_matter_map_filenames = oasis_dataset.gray_matter_maps
 age = oasis_dataset.ext_vars['age'].astype(float)
 
+# Split data into training set and test set
+from sklearn.model_selection import train_test_split
+gm_imgs_train, gm_imgs_test, age_train, age_test = train_test_split(
+    gray_matter_map_filenames, age, train_size=.6, random_state=0)
+
 # print basic information on the dataset
 print('First gray-matter anatomy image (3D) is located at: %s' %
       oasis_dataset.gray_matter_maps[0])  # 3D data
@@ -67,84 +78,93 @@ nifti_masker = NiftiMasker(
     standardize=False,
     smoothing_fwhm=2,
     memory='nilearn_cache')  # cache options
-gm_maps_masked = nifti_masker.fit_transform(gray_matter_map_filenames)
-n_samples, n_features = gm_maps_masked.shape
-print("%d samples, %d features" % (n_subjects, n_features))
+gm_maps_masked = nifti_masker.fit_transform(gm_imgs_train)
+
+# The features with too low between-subject variance are removed using
+# :class:`sklearn.feature_selection.VarianceThreshold`.
+from sklearn.feature_selection import VarianceThreshold
+variance_threshold = VarianceThreshold(threshold=.01)
+gm_maps_thresholded = variance_threshold.fit_transform(gm_maps_masked)
+gm_maps_masked = variance_threshold.inverse_transform(gm_maps_thresholded)
+
+# Then we convert the data back to the mask image in order to use it for
+# decoding process
+mask = nifti_masker.inverse_transform(variance_threshold.get_support())
 
 ############################################################################
-# Prediction pipeline with ANOVA and SVR
-# ---------------------------------------
-print("ANOVA + SVR")
-# Define the prediction function to be used.
-# Here we use a Support Vector Classification, with a linear kernel
-from sklearn.svm import SVR
-svr = SVR(kernel='linear')
+# Prediction pipeline with ANOVA and SVR using
+# :class:`nilearn.decoding.DecoderRegressor` Object
 
-# Dimension reduction
-from sklearn.feature_selection import VarianceThreshold, SelectKBest, \
-        f_regression
+# In nilearn we can benefit from the built-in DecoderRegressor object to
+# do ANOVA with SVR instead of manually defining the whole pipeline.
+# This estimator also uses Cross Validation to select best models and ensemble
+# them. Furthermore, you can pass n_jobs=<some_high_value> to the
+# DecoderRegressor class to take advantage of a multi-core system.
+# To save time (because these are anat images with many voxels), we include
+# only the 1-percent voxels most correlated with the age variable to fit. We
+# also want to set mask hyperparameter to be the mask we just obtained above.
 
-# Remove features with too low between-subject variance
-variance_threshold = VarianceThreshold(threshold=.01)
+from nilearn.decoding import DecoderRegressor
+decoder = DecoderRegressor(estimator='svr', mask=mask,
+                           scoring='neg_mean_absolute_error',
+                           screening_percentile=1,
+                           n_jobs=1)
+# Fit and predict with the decoder
+decoder.fit(gm_imgs_train, age_train)
 
-# Here we use a classical univariate feature selection based on F-test,
-# namely Anova.
-feature_selection = SelectKBest(f_regression, k=2000)
+# Sort test data for better visualization (trend, etc.)
+perm = np.argsort(age_test)[::-1]
+age_test = age_test[perm]
+gm_imgs_test = np.array(gm_imgs_test)[perm]
+age_pred = decoder.predict(gm_imgs_test)
 
-# We have our predictor (SVR), our feature selection (SelectKBest), and now,
-# we can plug them together in a *pipeline* that performs the two operations
-# successively:
-from sklearn.pipeline import Pipeline
-anova_svr = Pipeline([
-            ('variance_threshold', variance_threshold),
-            ('anova', feature_selection),
-            ('svr', svr)])
+prediction_score = -np.mean(decoder.cv_scores_['beta'])
 
-### Fit and predict
-anova_svr.fit(gm_maps_masked, age)
-age_pred = anova_svr.predict(gm_maps_masked)
+print("=== DECODER ===")
+print("explained variance for the cross-validation: %f" % prediction_score)
+print("")
 
-#############################################################################
+###############################################################################
 # Visualization
 # --------------
-# Look at the SVR's discriminating weights
-coef = svr.coef_
-# reverse feature selection
-coef = feature_selection.inverse_transform(coef)
-# reverse variance threshold
-coef = variance_threshold.inverse_transform(coef)
-# reverse masking
-weight_img = nifti_masker.inverse_transform(coef)
+weight_img = decoder.coef_img_['beta']
 
 # Create the figure
 from nilearn.plotting import plot_stat_map, show
 bg_filename = gray_matter_map_filenames[0]
 z_slice = 0
-
-
-fig = plt.figure(figsize=(5.5, 7.5), facecolor='k')
-# Hard setting vmax to highlight weights more
 display = plot_stat_map(weight_img, bg_img=bg_filename,
-                        display_mode='z', cut_coords=[z_slice],
-                        figure=fig, vmax=1)
-display.title('SVM weights', y=1.2)
+                        display_mode='z', cut_coords=[z_slice])
+display.title("SVM weights")
+show()
 
-# Measure accuracy with cross validation
-from sklearn.model_selection import cross_val_score
-cv_scores = cross_val_score(anova_svr, gm_maps_masked, age)
+###############################################################################
+# Visualize the quality of predictions
+# -------------------------------------
+plt.figure(figsize=(6, 4.5))
+plt.suptitle("Decoder: Mean Absolute Error %.2f years" % prediction_score)
+linewidth = 3
+plt.plot(age_test, label="True age", linewidth=linewidth)
+plt.plot(age_pred, '--', c="g", label="Predicted age", linewidth=linewidth)
+plt.ylabel("age")
+plt.xlabel("subject")
+plt.legend(loc="best")
+plt.figure(figsize=(6, 4.5))
+plt.plot(age_test - age_pred, label="True age - predicted age",
+         linewidth=linewidth)
+plt.xlabel("subject")
+plt.legend(loc="best")
 
-# Return the corresponding mean prediction accuracy
-prediction_accuracy = np.mean(cv_scores)
-print("=== ANOVA ===")
-print("Prediction accuracy: %f" % prediction_accuracy)
-print("")
-
-### Inference with massively univariate model #################################
+###############################################################################
+# Inference with massively univariate model
+# -----------------------------------------
 print("Massively univariate model")
+
+gm_maps_masked = NiftiMasker().fit_transform(gray_matter_map_filenames)
+data = variance_threshold.fit_transform(gm_maps_masked)
 
 # Statistical inference
 from nilearn.mass_univariate import permuted_ols
-data = variance_threshold.fit_transform(gm_maps_masked)
 neg_log_pvals, t_scores_original_data, _ = permuted_ols(
     age, data,  # + intercept as a covariate by default
     n_perm=2000,  # 1,000 in the interest of time; 10000 would be better
@@ -162,7 +182,7 @@ display = plot_stat_map(signed_neg_log_pvals_unmasked, bg_img=bg_filename,
                         threshold=threshold, cmap=plt.cm.RdBu_r,
                         display_mode='z', cut_coords=[z_slice],
                         figure=fig)
-title = ('Negative $\log_{10}$ p-values'
+title = ('Negative $\\log_{10}$ p-values'
          '\n(Non-parametric + max-type correction)')
 display.title(title, y=1.2)
 

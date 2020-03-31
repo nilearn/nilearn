@@ -16,13 +16,12 @@ import numpy as np
 import pytest
 
 from nibabel import Nifti1Image
-from numpy.testing import assert_array_equal, assert_equal
+from numpy.testing import assert_array_equal
 
 from nilearn._utils import testing
 from nilearn._utils import data_gen
 from nilearn._utils.class_inspect import get_params
 from nilearn._utils.exceptions import DimensionError
-from nilearn._utils.testing import assert_raises_regex
 from nilearn.image import index_img
 from nilearn.input_data.nifti_masker import NiftiMasker, filter_and_mask
 from nilearn.image import get_data
@@ -44,9 +43,8 @@ def test_auto_mask():
 
     # check exception when transform() called without prior fit()
     masker2 = NiftiMasker(mask_img=img)
-    testing.assert_raises_regex(
-        ValueError,
-        'has not been fitted. ', masker2.transform, img)
+    with pytest.raises(ValueError, match='has not been fitted. '):
+        masker2.transform(img)
 
 
 def test_detrend():
@@ -210,12 +208,12 @@ def test_5d():
 
     masker = NiftiMasker(mask_img=mask_img)
     masker.fit()
-    testing.assert_raises_regex(
-        DimensionError,
-        "Input data has incompatible dimensionality: "
-        "Expected dimension is 4D and you provided "
-        "a list of 4D images \(5D\).",
-        masker.transform, data_5d)
+    with pytest.raises(
+            DimensionError,
+            match="Input data has incompatible dimensionality: "
+                  "Expected dimension is 4D and you provided "
+                  "a list of 4D images \\(5D\\)."):
+        masker.transform(data_5d)
 
 
 def test_sessions():
@@ -235,7 +233,7 @@ def test_sessions():
 
 
 def test_joblib_cache():
-    from nilearn._utils.compat import hash, Memory
+    from joblib import hash, Memory
     mask = np.zeros((40, 40, 40))
     mask[20, 20, 20] = 1
     mask_img = Nifti1Image(mask, np.eye(4))
@@ -251,7 +249,7 @@ def test_joblib_cache():
         # imgs return by inverse_transform impossible to save
         cachedir = mkdtemp()
         try:
-            masker.memory = Memory(cachedir=cachedir, mmap_mode='r',
+            masker.memory = Memory(location=cachedir, mmap_mode='r',
                                    verbose=0)
             X = masker.transform(mask_img)
             # inverse_transform a first time, so that the result is cached
@@ -267,9 +265,10 @@ def test_joblib_cache():
 def test_mask_init_errors():
     # Errors that are caught in init
     mask = NiftiMasker(mask_strategy='oops')
-    testing.assert_raises_regex(
-        ValueError, "Unknown value of mask_strategy 'oops'",
-        mask.fit)
+    with pytest.raises(
+            ValueError,
+            match="Unknown value of mask_strategy 'oops'"):
+        mask.fit()
 
 
 def test_compute_epi_mask():
@@ -350,12 +349,12 @@ def test_filter_and_mask_error():
     masker = NiftiMasker()
     params = get_params(NiftiMasker, masker)
 
-    assert_raises_regex(DimensionError,
-                        "Input data has incompatible dimensionality: "
-                        "Expected dimension is 3D and you provided "
-                        "a 4D image.",
-                        filter_and_mask,
-                        data_img, mask_img, params)
+    with pytest.raises(
+            DimensionError,
+            match="Input data has incompatible dimensionality: "
+                  "Expected dimension is 3D and you provided "
+                  "a 4D image."):
+        filter_and_mask(data_img, mask_img, params)
 
 
 def test_filter_and_mask():

@@ -1,14 +1,14 @@
 import os
 import numpy as np
 
+import joblib
 import nibabel as nb
+import pytest
 from nibabel import Nifti1Image
 from nibabel.tmpdirs import InTemporaryDirectory
-from nilearn._utils.compat import joblib
 
 from nilearn.image import new_img_like
 from nilearn._utils import niimg
-from nilearn._utils.testing import assert_raises_regex
 from nilearn.image import get_data
 
 
@@ -16,8 +16,8 @@ currdir = os.path.dirname(os.path.abspath(__file__))
 
 
 def test_copy_img():
-    assert_raises_regex(ValueError, "Input value is not an image",
-                        niimg.copy_img, 3)
+    with pytest.raises(ValueError, match="Input value is not an image"):
+        niimg.copy_img(3)
 
 
 def test_copy_img_side_effect():

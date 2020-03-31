@@ -13,7 +13,7 @@
     classification, decoding, or connectivity analysis.
 
 
-.. Here we are building the carrousel
+.. Here we are building the carousel
 
 .. |glass_brain| image:: auto_examples/01_plotting/images/sphx_glr_plot_demo_glass_brain_002.png
    :target: auto_examples/01_plotting/plot_demo_glass_brain.html
@@ -24,7 +24,7 @@
 .. |surface_plot| image:: auto_examples/01_plotting/images/sphx_glr_plot_3d_map_to_surface_projection_001.png
      :target: auto_examples/01_plotting/plot_3d_map_to_surface_projection.html
 
-.. |haxby_weights| image:: auto_examples/images/sphx_glr_plot_decoding_tutorial_002.png
+.. |haxby_weights| image:: auto_examples/02_decoding/images/sphx_glr_plot_haxby_anova_svm_001.png
    :target: auto_examples/plot_decoding_tutorial.html
 
 .. |oasis_weights| image:: auto_examples/02_decoding/images/sphx_glr_plot_oasis_vbm_002.png

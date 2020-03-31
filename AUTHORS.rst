@@ -8,7 +8,7 @@ originated from
 the `INRIA Parietal Project Team <https://team.inria.fr/parietal/>`_
 and the `scikit-learn <http://scikit-learn.org/>`_ but grew much further.
 
-An up-to-date list of contributors can be seen in on `gitub
+An up-to-date list of contributors can be seen in on `GitHub
 <https://github.com/nilearn/nilearn/graphs/contributors>`_
 
 Additional credit goes to M. Hanke and Y. Halchenko for data and packaging.
@@ -29,9 +29,9 @@ The nilearn core developers are:
 * Gael Varoquaux https://github.com/GaelVaroquaux
 * Jerome Dockes https://github.com/jeromedockes
 * Julia Huntenburg https://github.com/juhuntenburg
-* KamalakerDadi https://github.com/KamalakerDadi
+* Kamalaker Dadi https://github.com/KamalakerDadi
 * Kshitij Chawla https://github.com/kchawla-pi
-* Medhi Rahim https://github.com/mrahim
+* Mehdi Rahim https://github.com/mrahim
 * Salma Bougacha https://github.com/salma1601
 
 Funding
