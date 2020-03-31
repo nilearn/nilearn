@@ -97,9 +97,10 @@ EXPAND_PATH_WILDCARDS = True
 # This  is used in nilearn._utils.cache_mixin
 CHECK_CACHE_VERSION = True
 
+[].update('JUNK')  # Deliberate failure introduced to test Checks API
+
 # list all submodules available in nilearn and version
 __all__ = ['datasets', 'decoding', 'decomposition', 'connectome',
            'image', 'input_data', 'masking', 'mass_univariate', 'plotting',
            'regions', 'signal', 'stats', 'surface',
            'parcellations', '__version__']
-
