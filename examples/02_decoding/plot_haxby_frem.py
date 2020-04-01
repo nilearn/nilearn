@@ -1,12 +1,16 @@
 """
-Decoding with SpaceNet: face vs house object recognition
+Decoding with fREM: face vs house object recognition
 =========================================================
 
-Here is a simple example of decoding with a SpaceNet prior (i.e Graph-Net,
-TV-l1, etc.), reproducing the Haxby 2001 study on a face vs house
-discrimination task.
+Here is a simple example of decoding with fast ensembling of regularized models (fREM)
+reproducing the Haxby 2001 study on a face vs house discrimination task.
 
-See also the SpaceNet documentation: :ref:`space_net`.
+fREM uses an implicit spatial regularization through fast clustering and
+aggregates a high number of estimators trained on various splits of the
+training set, thus returning a very robust decoder at a lower computational
+cost than other spatially regularized methods.[1]_.
+
+To have more details, see the fREM documentation: :ref:`frem`.
 """
 
 ##############################################################################
@@ -42,53 +46,32 @@ from nilearn.image import mean_img
 background_img = mean_img(func_filenames)
 
 ##############################################################################
-# Fit SpaceNet with a Graph-Net penalty
+# Fit fREM
 # --------------------------------------
-from nilearn.decoding import SpaceNetClassifier
+from nilearn.decoding import fREMClassifier
 
+decoder = fREMClassifier('svc', clustering_percentile=10,
+                         screening_percentile=10, cv=10)
 # Fit model on train data and predict on test data
-decoder = SpaceNetClassifier(memory="nilearn_cache", penalty='graph-net')
 decoder.fit(X_train, y_train)
 y_pred = decoder.predict(X_test)
 accuracy = (y_pred == y_test).mean() * 100.
-print("Graph-net classification accuracy : %g%%" % accuracy)
+print("fREM classification accuracy : %g%%" % accuracy)
 
 #############################################################################
-# Visualization of Graph-net weights
+# Visualization of fREM weights
 # ------------------------------------
 from nilearn.plotting import plot_stat_map, show
-coef_img = decoder.coef_img_
-plot_stat_map(coef_img, background_img,
-              title="graph-net: accuracy %g%%" % accuracy,
+%matplotlib inline
+plot_stat_map(decoder.coef_img_["face"], background_img,
+              title="fREM: accuracy %g%%, 'face coefs'" % accuracy,
               cut_coords=(-52, -5), display_mode="yz")
-
-# Save the coefficients to a nifti file
-coef_img.to_filename('haxby_graph-net_weights.nii')
-
-
-##############################################################################
-# Now Fit SpaceNet with a TV-l1 penalty
-# --------------------------------------
-decoder = SpaceNetClassifier(memory="nilearn_cache", penalty='tv-l1')
-decoder.fit(X_train, y_train)
-y_pred = decoder.predict(X_test)
-accuracy = (y_pred == y_test).mean() * 100.
-print("TV-l1 classification accuracy : %g%%" % accuracy)
+coef_img.to_filename('haxby_fREM_weights.nii')
 
 #############################################################################
-# Visualization of TV-L1 weights
-# -------------------------------
-coef_img = decoder.coef_img_
-plot_stat_map(coef_img, background_img,
-              title="tv-l1: accuracy %g%%" % accuracy,
-              cut_coords=(-52, -5), display_mode="yz")
-
-# Save the coefficients to a nifti file
-coef_img.to_filename('haxby_tv-l1_weights.nii')
-show()
-
-
-###################################
-# We can see that the TV-l1 penalty is 3 times slower to converge and
-# gives the same prediction accuracy. However, it yields much
-# cleaner coefficient maps
+# fREM ensembling procedure yields an important improvement of decoding accuracy (+20%)
+# on this simple example compared to fitting only one model per fold and the
+# clustering mechanism keeps its computational cost reasonable
+# even on heavier examples. Here we ensembled several instances of l2-SVC,
+# a versatile classifier but fREMClassifier also works with ridge or logistic.
+# a fREMRegressor is also available to solve regression problems.
