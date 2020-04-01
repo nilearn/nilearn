@@ -8,97 +8,79 @@
     >>> session = np.ones_like(target)
     >>> n_samples = len(target)
 
-.. _fREM:
+.. _frem:
 
-==========================================================
-fREM: decoding with spatial structure for better maps
-==========================================================
+================================================================
+fREM: fast ensembling of regularized models for robust decoding
+================================================================
 
-The SpaceNet decoder
+The fREM decoder
 =====================
 
-SpaceNet implements spatial penalties which improve brain decoding power as well as decoder maps:
+fREM uses an implicit spatial regularization through fast clustering and
+aggregates a high number of estimators trained on various splits of the
+training set, thus returning a very robust decoder at a lower computational
+cost than other spatially regularized methods.
 
-* penalty="tvl1": priors inspired from TV (Total Variation) `[Michel et
-  al. 2011] <https://hal.inria.fr/inria-00563468/document>`_, TV-L1
-  `[Baldassarre et al. 2012]
-  <http://www0.cs.ucl.ac.uk/staff/M.Pontil/reading/neurosparse_prni.pdf>`_,
-  `[Gramfort et al. 2013] <https://hal.inria.fr/hal-00839984>`_ (option: ),
+Its performance compared to usual classifiers was studied on several datasets
+in this article: `[Hoyos-Idrobo et al. 2017] <https:https://hal.archives-ouvertes.fr/hal-01615015>`_)
 
-* penalty="graph-net": GraphNet prior `[Grosenick et al. 2013]
-  <https://www.ncbi.nlm.nih.gov/pubmed/23298747>`_)
+fREM pipeline averages the coefficients of many models, each trained on a
+different split of the training data. For each split:
 
-fREM is a pipeline in several steps:
+  * aggregate similar voxels together to reduce the number of features (and the
+    computational complexity of the decoding problem). ReNA algorithm is used at this
+    step, usually to reduce by a 10 factor the number of voxels.
 
-* aggregate similar voxels together to reduce the number of features
+  * optional : apply feature selection, an univariate statistical test on clusters
+    to keep only the ones most informative to predict variable of interest and
+    further lower the problem complexity.
 
-* optionnaly apply feature screening as in Decoder
+  * find the best hyper-parameter and memorize the coefficients of this model
 
-* fit models on several splits of the train data, and cross validate the best
-  hyperparameter for each split.
+Then this ensemble model is used for prediction, usually yielding better and
+more stable predictions than a unique model at no extra-cost. Also, the
+resulting coefficient maps obtained tend to be more structured.
 
-* average these model predictions
+This pipeline is available through two objects :
+* fREMRegressor to predict continuous values (such as age, gain / loss...)
+* fREMClassifier to predict categories
 
-
-Ensembling acts as a regularization of model and makes predictions
-more stable and accurate.
-
-
-These regularize classification and regression
-problems in brain imaging. The results are brain maps which are both
-sparse (i.e regression coefficients are zero everywhere, except at
-predictive voxels) and structured (blobby). The superiority of TV-L1
-over methods without structured priors like the Lasso, SVM, ANOVA,
-Ridge, etc. for yielding more interpretable maps and improved
-prediction scores is now well established `[Baldassarre et al. 2012]
-<http://www0.cs.ucl.ac.uk/staff/M.Pontil/reading/neurosparse_prni.pdf>`_,
-`[Gramfort et al. 2013] <https://hal.inria.fr/hal-00839984>`_,
-`[Grosenick et al. 2013] <https://www.ncbi.nlm.nih.gov/pubmed/23298747>`_.
-
-
-Note that TV-L1 prior leads to a difficult optimization problem, and so
-can be slow to run. Under the hood, a few heuristics are used to make
-things a bit faster. These include:
-
-- Feature preprocessing, where an F-test is used to eliminate
-  non-predictive voxels, thus reducing the size of the brain mask in
-  a principled way.
-- Continuation is used along the regularization path, where the
-  solution of the optimization problem for a given value of the
-  regularization parameter `alpha` is used as initialization
-  for the next regularization (smaller) value on the regularization
-  grid.
-
-**Implementation:** See `[Dohmatob et al. 2015 (PRNI)]
-<https://hal.inria.fr/hal-01147731>`_ and  `[Dohmatob
-et al. 2014 (PRNI)] <https://hal.inria.fr/hal-00991743>`_ for
-technical details regarding the implementation of SpaceNet.
+As the Decoder and DecoderRegressor, these object can ensemble different type of
+models through the parameter 'estimator' : SVM (l2 or l1), Logistic, Ridge
 
 Empirical comparisons
 =====================
 
+Decoding performance increase on Haxby dataset
+----------------------------------------------
 
-Comparison on mixed gambles study
-----------------------------------
+.. figure:: ../auto_examples/02_decoding/images/sphx_glr_plot_haxby_frem_001.png
+
+In this example we showcase the use of fREM and the performance increase that
+it brings on this problem.
+
+.. topic:: **Code**
+
+    The complete script can be found
+    :ref:`here <sphx_glr_auto_examples_02_decoding_plot_haxby_frem.py>`.
+
+Comparison to SpaceNet on mixed gambles study
+----------------------------------------------
 
 .. figure:: ../auto_examples/02_decoding/images/sphx_glr_plot_mixed_gambles_space_net_001.png
    :align: right
-   :scale: 60
+   :scale: 40
 
 .. figure:: ../auto_examples/02_decoding/images/sphx_glr_plot_mixed_gambles_space_net_002.png
-   :scale: 60
+   :align: center
+   :scale: 40
+
+.. figure:: ../auto_examples/02_decoding/images/sphx_glr_plot_mixed_gambles_space_net_003.png
+   :align: left
+   :scale: 40
 
 .. topic:: **Code**
 
     The complete script can be found
     :ref:`here <sphx_glr_auto_examples_02_decoding_plot_mixed_gambles_space_net.py>`.
-
-
-.. seealso::
-
-     * :ref:`Age prediction on OASIS dataset with SpaceNet <sphx_glr_auto_examples_02_decoding_plot_oasis_vbm_space_net.py>`.
-
-     * The `scikit-learn documentation <http://scikit-learn.org>`_
-       has very detailed explanations on a large variety of estimators and
-       machine learning techniques. To become better at decoding, you need
-       to study it.
