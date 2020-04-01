@@ -36,7 +36,7 @@ Fixes
 Changes
 -------
 
-- Atlas `nilearn.datasets.func.fetch_nyu_rest` has been deprecated and wil be removed in Nilearn 0.8.0 .
+- Atlas `nilearn.datasets.fetch_nyu_rest` has been deprecated and wil be removed in Nilearn 0.8.0 .
 
 Contributors
 ------------

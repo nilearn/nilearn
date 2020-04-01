@@ -105,6 +105,16 @@ uses.
    get_data_dirs
    load_mni152_template
    load_mni152_brain_mask
+   fetch_language_localizer_demo_dataset
+   fetch_bids_langloc_dataset
+   fetch_openneuro_dataset_index
+   select_from_index
+   patch_openneuro_dataset
+   fetch_openneuro_dataset
+   fetch_localizer_first_level
+   fetch_spm_auditory
+   fetch_spm_multimodal_fmri
+   fetch_fiac_first_level
 
 .. _decoding_ref:
 

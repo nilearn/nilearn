@@ -43,7 +43,7 @@ To run this example, you must launch IPython via ``ipython
 #           These should abide to the Brain Imaging Data Structure (BIDS)
 #           organization.
 
-from nilearn.datasets.func import fetch_spm_auditory
+from nilearn.datasets import fetch_spm_auditory
 subject_data = fetch_spm_auditory()
 print(subject_data.func)  # print the list of names of functional images
 

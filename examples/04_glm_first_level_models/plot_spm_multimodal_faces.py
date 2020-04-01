@@ -25,7 +25,7 @@ print(__doc__)
 
 #########################################################################
 # Fetch the SPM multimodal_faces data.
-from nilearn.datasets.func import fetch_spm_multimodal_fmri
+from nilearn.datasets import fetch_spm_multimodal_fmri
 subject_data = fetch_spm_multimodal_fmri()
 
 #########################################################################
