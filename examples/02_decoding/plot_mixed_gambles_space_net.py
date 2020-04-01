@@ -27,30 +27,58 @@ mask_filename = data.mask_img
 # Here we're using the regressor object given that the task is to predict a
 # continuous variable, the gain of the gamble.
 from nilearn.decoding import SpaceNetRegressor
-decoder = SpaceNetRegressor(mask=mask_filename, penalty="tv-l1",
-                            eps=1e-1,  # prefer large alphas
-                            memory="nilearn_cache")
+import time
 
-decoder.fit(zmap_filenames, behavioral_target)
+start_time = time.time()
+tv_l1 = SpaceNetRegressor(mask=mask_filename, penalty="tv-l1",
+                          eps=1e-1,  # prefer large alphas
+                          memory="nilearn_cache")
+
+tv_l1.fit(zmap_filenames, behavioral_target)
+print("Space Net with TV-L1 penalty was fitted in {} seconds".format(int(time.time() - start_time)))
 
 # Visualize TV-L1 weights
 # ------------------------
 from nilearn.plotting import plot_stat_map, show
-plot_stat_map(decoder.coef_img_, title="tv-l1", display_mode="yz",
+plot_stat_map(tv_l1.coef_img_, title="tv-l1", display_mode="yz",
               cut_coords=[20, -2])
-
 
 ##########################################################################
 # Fit Graph-Net
 # --------------
-decoder = SpaceNetRegressor(mask=mask_filename, penalty="graph-net",
-                            eps=1e-1,  # prefer large alphas
-                            memory="nilearn_cache")
-decoder.fit(zmap_filenames, behavioral_target)
+start_time = time.time()
+graph_net = SpaceNetRegressor(mask=mask_filename, penalty="graph-net",
+                              eps=1e-1,  # prefer large alphas
+                              memory="nilearn_cache")
+graph_net.fit(zmap_filenames, behavioral_target)
+print("Space Net with graph-net penalty was fitted in {} seconds".format(int(time.time() - start_time)))
 
 # Visualize Graph-Net weights
 # ----------------------------
-plot_stat_map(decoder.coef_img_, title="graph-net", display_mode="yz",
+plot_stat_map(graph_net.coef_img_, title="graph-net", display_mode="yz",
               cut_coords=[20, -2])
 
-show()
+##########################################################################
+# Fit fREM
+# ----------
+# We compare both of these models to a pipeline ensembling many models
+from nilearn.decoding import fREMRegressor
+start_time = time.time()
+fREM = fREMRegressor('svr', clustering_percentile=10,
+                     screening_percentile=20, cv=10)
+
+fREM.fit(zmap_filenames, behavioral_target)
+print("fREM was fitted in {} seconds".format(int(time.time() - start_time)))
+
+# Visualize fREM weights
+# ----------------------------
+plot_stat_map(fREM.coef_img_['beta'], title="fREM", display_mode="yz",
+              cut_coords=[20, -2], threshold=.2)
+
+##########################################################################
+# We can see that Space Net model, yields a sparse coefficient map with
+# both penalties, more structured (and thus interpretable) with TV-L1.
+#
+# The coefficient maps learnt by fREM is not sparse (it has been
+# thresholded for display) but is structured as well. Importantly, fREM is
+# faster than TV-L1 Space Net (7 times here).
