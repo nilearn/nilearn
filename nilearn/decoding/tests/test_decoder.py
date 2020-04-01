@@ -15,7 +15,7 @@ import numpy as np
 
 from sklearn.datasets import load_iris, make_classification, make_regression
 from sklearn.ensemble import RandomForestClassifier
-from sklearn.linear_model import LogisticRegression, RidgeCV, RidgeClassifierCV
+from sklearn.linear_model import LogisticRegression, Ridge, RidgeClassifier
 from sklearn.metrics import accuracy_score, r2_score
 from sklearn.model_selection import KFold, LeaveOneGroupOut
 from sklearn.svm import SVR, LinearSVC
@@ -34,21 +34,21 @@ except ImportError:
     from sklearn.metrics.scorer import check_scoring
 
 # Regression
-ridge = RidgeCV()
+ridge = Ridge()
 svr = SVR(kernel='linear')
 # Classification
 svc = LinearSVC()
 logistic_l1 = LogisticRegression(penalty='l1')
 logistic_l2 = LogisticRegression(penalty='l2')
-ridge_classifier = RidgeClassifierCV()
+ridge_classifier = RidgeClassifier()
 random_forest = RandomForestClassifier()
 
-regressors = {'ridge': (ridge, []),
+regressors = {'ridge': (ridge, ['alpha']),
               'svr': (svr, 'C')}
 classifiers = {'svc': (svc, 'C'),
                'logistic_l1': (logistic_l1, 'C'),
                'logistic_l2': (logistic_l2, 'C'),
-               'ridge_classifier': (ridge_classifier, [])}
+               'ridge_classifier': (ridge_classifier, ['alpha'])}
 # Create a test dataset
 rand = np.random.RandomState(0)
 X = rand.rand(100, 10)

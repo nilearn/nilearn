@@ -18,7 +18,7 @@ from sklearn import clone
 from sklearn.base import RegressorMixin
 from sklearn.linear_model import LogisticRegression
 from sklearn.linear_model.base import LinearModel
-from sklearn.linear_model.ridge import RidgeCV, RidgeClassifierCV, _BaseRidgeCV
+from sklearn.linear_model.ridge import Ridge, RidgeClassifier, _BaseRidge
 from sklearn.model_selection import ParameterGrid, check_cv, LeaveOneGroupOut
 from sklearn.preprocessing import LabelBinarizer
 from sklearn.svm import SVR, LinearSVC
@@ -46,9 +46,9 @@ SUPPORTED_ESTIMATORS = dict(
     logistic_l1=LogisticRegression(penalty='l1', solver='liblinear'),
     logistic_l2=LogisticRegression(penalty='l2', solver='liblinear'),
     logistic=LogisticRegression(penalty='l2', solver='liblinear'),
-    ridge_classifier=RidgeClassifierCV(),
-    ridge_regressor=RidgeCV(),
-    ridge=RidgeCV(),
+    ridge_classifier=RidgeClassifier(),
+    ridge_regressor=Ridge(),
+    ridge=Ridge(),
     svr=SVR(kernel='linear', max_iter=1e4),
 )
 
@@ -96,7 +96,7 @@ def _check_param_grid(estimator, X, y, param_grid=None):
         # define loss function
         if isinstance(estimator, LogisticRegression):
             loss = 'log'
-        elif isinstance(estimator, (LinearSVC, _BaseRidgeCV, SVR)):
+        elif isinstance(estimator, (LinearSVC, _BaseRidge, SVR)):
             loss = 'squared_hinge'
         else:
             raise ValueError(
@@ -109,10 +109,11 @@ def _check_param_grid(estimator, X, y, param_grid=None):
         else:
             min_c = 0.5
 
-        if not isinstance(estimator, _BaseRidgeCV):
-            param_grid['C'] = np.array([2, 20, 200]) * min_c
+        if isinstance(estimator, _BaseRidge):
+            param_grid['alpha'] = np.array([0.1, 1.0, 10.0])
         else:
-            param_grid = {}
+            param_grid['C'] = np.array([2, 20, 200]) * min_c
+
 
     return param_grid
 
@@ -176,6 +177,10 @@ def _parallel_fit(estimator, X, y, train, test, param_grid, is_classification,
             best_param = param
 
     if (selector is not None) and do_screening:
+        # if reshape best_coef to 2D array to conform with inverse_transform
+        if len(best_coef.shape) == 1:
+            best_coef = best_coef.reshape(1, -1)
+
         best_coef = selector.inverse_transform(best_coef)
 
     return class_index, best_coef, best_intercept, best_param, best_score
