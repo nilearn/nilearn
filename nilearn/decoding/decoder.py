@@ -247,7 +247,7 @@ class _BaseDecoder(LinearModel, RegressorMixin, CacheMixin):
 
     clustering_percentile: int, float, optional, in the [0, 100] Default: 10.
         Percentile of features to keep if clustering is performed.
-        ReNA is typically efficient at reducingthe number of features by 10.
+        ReNA is typically efficient at reducing the number of features by 10.
 
     screening_percentile: int, float, optional, in the closed interval [0, 100]
         Perform a univariate feature selection based on the Anova F-value for
