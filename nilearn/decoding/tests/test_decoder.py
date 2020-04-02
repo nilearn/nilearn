@@ -144,7 +144,7 @@ def test_parallel_fit():
                                           is_classification=False,
                                           scorer=scorer,
                                           mask_img=None, class_index=1,
-                                          screening_percentile=None)))
+                                          screening_percentile=None, do_clustering=False, clustering_percentile=100)))
     # check that every element of the output tuple is the same for both tries
     for a, b in zip(outputs[0], outputs[1]):
         if isinstance(a, np.ndarray):
@@ -178,7 +178,7 @@ def test_decoder_binary_classification():
         assert accuracy_score(y, y_pred) > 0.95
 
     screening_percentile = 90
-    for clustering_percentile in [100, 80]:
+    for clustering_percentile in [100, 99]:
         model = fREMClassifier(estimator='logistic_l2', mask=mask,
                                clustering_percentile=clustering_percentile,
                                screening_percentile=screening_percentile, cv=5)
@@ -219,7 +219,7 @@ def test_decoder_multiclass_classification():
 
     # check fREM with clustering or not
     screening_percentile = 90
-    for clustering_percentile in [100, 80]:
+    for clustering_percentile in [100, 99]:
         for estimator in ['svc_l2', 'svc_l1']:
             screening_percentile = 90
             model = fREMClassifier(estimator=estimator, mask=mask,
@@ -268,7 +268,7 @@ def test_decoder_regression():
             model.fit(X, y)
             y_pred = model.predict(X)
             assert r2_score(y, y_pred) > 0.95
-        for clustering_percentile in [100, 80]:
+        for clustering_percentile in [100, 99]:
             screening_percentile = 90
             model = fREMRegressor(estimator=regressor_, mask=mask,
                                   clustering_percentile=clustering_percentile,
