@@ -8,14 +8,13 @@ import collections.abc
 import itertools
 import warnings
 
-from nilearn._utils.compat import Memory, Parallel, delayed
+from joblib import Memory, Parallel, delayed
 
 from .. import _utils
 from .. import image
 from .. import masking
 from .._utils import CacheMixin
 from .._utils.class_inspect import get_params
-from .._utils.compat import _basestring, izip
 from .._utils.niimg_conversions import _iter_check_niimg
 from .nifti_masker import NiftiMasker, filter_and_mask
 from nilearn.image import get_data
@@ -131,7 +130,7 @@ class MultiNiftiMasker(NiftiMasker, CacheMixin):
                  standardize=False, detrend=False, low_pass=None,
                  high_pass=None, t_r=None, target_affine=None,
                  target_shape=None, mask_strategy='background',
-                 mask_args=None, dtype=None, memory=Memory(cachedir=None),
+                 mask_args=None, dtype=None, memory=Memory(location=None),
                  memory_level=0, n_jobs=1, verbose=0):
         # Mask is provided or computed
         self.mask_img = mask_img
@@ -177,7 +176,7 @@ class MultiNiftiMasker(NiftiMasker, CacheMixin):
             if self.verbose > 0:
                 print("[%s.fit] Computing mask" % self.__class__.__name__)
             if not isinstance(imgs, collections.abc.Iterable) \
-                    or isinstance(imgs, _basestring):
+                    or isinstance(imgs, str):
                 raise ValueError("[%s.fit] For multiple processing, you should"
                                  " provide a list of data "
                                  "(e.g. Nifti1Image objects or filenames)."
@@ -299,7 +298,7 @@ class MultiNiftiMasker(NiftiMasker, CacheMixin):
                           copy=copy,
                           dtype=self.dtype
                           )
-            for imgs, cfs in izip(niimg_iter, confounds))
+            for imgs, cfs in zip(niimg_iter, confounds))
         return data
 
     def transform(self, imgs, confounds=None):
@@ -322,6 +321,6 @@ class MultiNiftiMasker(NiftiMasker, CacheMixin):
         """
         self._check_fitted()
         if not hasattr(imgs, '__iter__') \
-                or isinstance(imgs, _basestring):
+                or isinstance(imgs, str):
             return self.transform_single_imgs(imgs)
         return self.transform_imgs(imgs, confounds, n_jobs=self.n_jobs)

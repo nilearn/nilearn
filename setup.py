@@ -104,7 +104,10 @@ if __name__ == "__main__":
                         'nilearn.surface.tests.data': ['*.annot', '*.label'],
                         'nilearn.datasets.tests.data': ['*.*'],
                         'nilearn.datasets.description': ['*.rst'],
-                        'nilearn.reporting.data.html': ['*.html']},
+                        'nilearn.reporting.data.html': ['*.html'],
+                        'nilearn.stats.tests': ['*.nii.gz', '*.npz'],
+                        'nilearn.reporting.glm_reporter_templates': ['*.html'],
+                        },
           install_requires=list_required_packages(),
           python_requires='>=3.5',
           )

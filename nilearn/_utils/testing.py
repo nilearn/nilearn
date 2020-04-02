@@ -6,26 +6,28 @@ import functools
 import os
 import sys
 import tempfile
+import urllib
 import warnings
 import gc
 
 import numpy as np
 import pytest
 
-from .compat import _basestring, _urllib
 from ..datasets.utils import _fetch_files
-
 
 # we use memory_profiler library for memory consumption checks
 try:
     from memory_profiler import memory_usage
 
+
     def with_memory_profiler(func):
         """A decorator to skip tests requiring memory_profiler."""
         return func
 
+
     def memory_used(func, *args, **kwargs):
         """Compute memory usage when executing func."""
+
         def func_3_times(*args, **kwargs):
             for _ in range(3):
                 func(*args, **kwargs)
@@ -37,9 +39,12 @@ try:
 except ImportError:
     def with_memory_profiler(func):
         """A decorator to skip tests requiring memory_profiler."""
+
         def dummy_func():
             pytest.skip('Test requires memory_profiler.')
+
         return dummy_func
+
 
     memory_usage = memory_used = None
 
@@ -191,22 +196,23 @@ class mock_request(object):
 def wrap_chunk_read_(_chunk_read_):
     def mock_chunk_read_(response, local_file, initial_size=0, chunk_size=8192,
                          report_hook=None, verbose=0):
-        if not isinstance(response, _basestring):
+        if not isinstance(response, str):
             return _chunk_read_(response, local_file,
                                 initial_size=initial_size,
                                 chunk_size=chunk_size,
                                 report_hook=report_hook, verbose=verbose)
         return response
+
     return mock_chunk_read_
 
 
 def mock_chunk_read_raise_error_(response, local_file, initial_size=0,
                                  chunk_size=8192, report_hook=None,
                                  verbose=0):
-    raise _urllib.errors.HTTPError("url", 418, "I'm a teapot", None, None)
+    raise urllib.errors.HTTPError("url", 418, "I'm a teapot", None, None)
 
 
-class FetchFilesMock (object):
+class FetchFilesMock(object):
     _mock_fetch_files = functools.partial(_fetch_files, mock=True)
 
     def __init__(self):

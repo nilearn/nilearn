@@ -28,8 +28,12 @@ from sklearn.svm import SVR, LinearSVC
 from sklearn.svm.bounds import l1_min_c
 from sklearn.utils.extmath import safe_sparse_dot
 from sklearn.utils.validation import check_is_fitted, check_X_y
-from nilearn._utils.compat import Parallel, delayed
+<< << << < HEAD
+from joblib import Parallel, delayed
 from nilearn.regions.rena_clustering import ReNA
+== == == =
+
+>>>>>> > master
 try:
     from sklearn.metrics import check_scoring
 except ImportError:

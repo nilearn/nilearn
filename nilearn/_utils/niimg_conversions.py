@@ -10,12 +10,12 @@ import glob
 import nilearn as ni
 import numpy as np
 import itertools
-from nilearn._utils.compat import Memory
+
+from joblib import Memory
 
 from .cache_mixin import cache
 from .niimg import _safe_get_data, load_niimg
 from .path_finding import _resolve_globbing
-from .compat import _basestring, izip
 
 from .exceptions import DimensionError
 from .niimg import _get_data
@@ -79,7 +79,7 @@ def _index_img(img, index):
 
 def _iter_check_niimg(niimgs, ensure_ndim=None, atleast_4d=False,
                       target_fov=None, dtype=None,
-                      memory=Memory(cachedir=None),
+                      memory=Memory(location=None),
                       memory_level=0, verbose=0):
     """Iterate over a list of niimgs and do sanity checks and resampling
 
@@ -155,7 +155,7 @@ def _iter_check_niimg(niimgs, ensure_ndim=None, atleast_4d=False,
             raise
         except TypeError as exc:
             img_name = ''
-            if isinstance(niimg, _basestring):
+            if isinstance(niimg, str):
                 img_name = " (%s) " % niimg
 
             exc.args = (('Error encountered while loading image #%d%s'
@@ -227,7 +227,7 @@ def check_niimg(niimg, ensure_ndim=None, atleast_4d=False, dtype=None,
     """
     from ..image import new_img_like  # avoid circular imports
 
-    if isinstance(niimg, _basestring):
+    if isinstance(niimg, str):
         if wildcards and ni.EXPAND_PATH_WILDCARDS:
             # Ascending sorting + expand user path
             filenames = sorted(glob.glob(os.path.expanduser(niimg)))
@@ -253,7 +253,7 @@ def check_niimg(niimg, ensure_ndim=None, atleast_4d=False, dtype=None,
             raise ValueError("File not found: '%s'" % niimg)
 
     # in case of an iterable
-    if hasattr(niimg, "__iter__") and not isinstance(niimg, _basestring):
+    if hasattr(niimg, "__iter__") and not isinstance(niimg, str):
         if return_iterator:
             return _iter_check_niimg(niimg, ensure_ndim=ensure_ndim,
                                      dtype=dtype)
@@ -357,7 +357,7 @@ def check_niimg_4d(niimg, return_iterator=False, dtype=None):
 
 
 def concat_niimgs(niimgs, dtype=np.float32, ensure_ndim=None,
-                  memory=Memory(cachedir=None), memory_level=0,
+                  memory=Memory(location=None), memory_level=0,
                   auto_resample=False, verbose=0):
     """Concatenate a list of 3D/4D niimgs of varying lengths.
 
@@ -454,12 +454,12 @@ def concat_niimgs(niimgs, dtype=np.float32, ensure_ndim=None,
     data = np.ndarray(target_shape + (sum(lengths), ),
                       order="F", dtype=dtype)
     cur_4d_index = 0
-    for index, (size, niimg) in enumerate(izip(lengths, _iter_check_niimg(
+    for index, (size, niimg) in enumerate(zip(lengths, _iter_check_niimg(
             iterator, atleast_4d=True, target_fov=target_fov,
             memory=memory, memory_level=memory_level))):
 
         if verbose > 0:
-            if isinstance(niimg, _basestring):
+            if isinstance(niimg, str):
                 nii_str = "image " + niimg
             else:
                 nii_str = "image #" + str(index)

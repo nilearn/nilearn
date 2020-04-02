@@ -113,6 +113,7 @@ def test_plot_surf_stat_map():
     # symmetric_cbar
     fig = plot_surf_stat_map(
         mesh, stat_map=data, colorbar=True, symmetric_cbar=True)
+    fig.canvas.draw()
     assert len(fig.axes) == 2
     yticklabels = fig.axes[1].get_yticklabels()
     first, last = yticklabels[0].get_text(), yticklabels[-1].get_text()
@@ -120,6 +121,7 @@ def test_plot_surf_stat_map():
     # no symmetric_cbar
     fig = plot_surf_stat_map(
         mesh, stat_map=data, colorbar=True, symmetric_cbar=False)
+    fig.canvas.draw()
     assert len(fig.axes) == 2
     yticklabels = fig.axes[1].get_yticklabels()
     first, last = yticklabels[0].get_text(), yticklabels[-1].get_text()
@@ -165,6 +167,7 @@ def test_plot_surf_roi():
     # change vmin, vmax
     img = plot_surf_roi(mesh, roi_map=roi_map,
 						vmin=1.2, vmax=8.9, colorbar=True)
+    img.canvas.draw()
     cbar = img.axes[-1]
     cbar_vmin = float(cbar.get_yticklabels()[0].get_text())
     cbar_vmax = float(cbar.get_yticklabels()[-1].get_text())

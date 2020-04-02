@@ -112,7 +112,7 @@ def test_check_niimg_3d():
             TypeError,
             match="Input data has incompatible dimensionality: "
                   "Expected dimension is 3D and you provided a list "
-                  "of 3D images \(4D\)."):
+                  "of 3D images \\(4D\\)."):
         _utils.check_niimg_3d([img, img])
 
     # Check that a filename does not raise an error
@@ -207,14 +207,14 @@ def test_check_niimg():
     with pytest.raises(DimensionError,
                        match="Input data has incompatible dimensionality: "
                              "Expected dimension is 2D and you provided "
-                             "a list of list of list of 3D images \(6D\)"
+                             "a list of list of list of 3D images \\(6D\\)"
                        ):
         _utils.check_niimg(img_3_3d, ensure_ndim=2)
 
     with pytest.raises(DimensionError,
                        match="Input data has incompatible dimensionality: "
                              "Expected dimension is 4D and you provided "
-                             "a list of list of 4D images \(6D\)"
+                             "a list of list of 4D images \\(6D\\)"
                        ):
         _utils.check_niimg(img_2_4d, ensure_ndim=4)
 
@@ -432,7 +432,7 @@ def test_concat_niimgs():
     # properly
     _dimension_error_msg = ("Input data has incompatible dimensionality: "
                             "Expected dimension is 4D and you provided "
-                            "a list of 4D images \(5D\)")
+                            "a list of 4D images \\(5D\\)")
     with pytest.raises(DimensionError, match=_dimension_error_msg):
         _utils.concat_niimgs([img4d], ensure_ndim=4)
 

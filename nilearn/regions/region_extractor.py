@@ -9,7 +9,7 @@ import numpy as np
 from scipy import ndimage
 from scipy.stats import scoreatpercentile
 
-from nilearn._utils.compat import Memory
+from joblib import Memory
 
 from .. import masking
 from ..input_data import NiftiMapsMasker
@@ -18,7 +18,6 @@ from ..image import new_img_like, resample_img
 from ..image.image import _smooth_array, threshold_img
 from .._utils.niimg_conversions import concat_niimgs, _check_same_fov
 from .._utils.niimg import _safe_get_data
-from .._utils.compat import _basestring
 from .._utils.ndimage import _peak_local_max
 from .._utils.segmentation import _random_walker
 
@@ -367,7 +366,7 @@ class RegionExtractor(NiftiMapsMasker):
                  extractor='local_regions', smoothing_fwhm=6,
                  standardize=False, detrend=False,
                  low_pass=None, high_pass=None, t_r=None,
-                 memory=Memory(cachedir=None), memory_level=0, verbose=0):
+                 memory=Memory(location=None), memory_level=0, verbose=0):
         super(RegionExtractor, self).__init__(
             maps_img=maps_img, mask_img=mask_img,
             smoothing_fwhm=smoothing_fwhm,
@@ -392,7 +391,7 @@ class RegionExtractor(NiftiMapsMasker):
                        "either of these {0}").format(list_of_strategies)
             raise ValueError(message)
 
-        if self.threshold is None or isinstance(self.threshold, _basestring):
+        if self.threshold is None or isinstance(self.threshold, str):
             raise ValueError("The given input to threshold is not valid. "
                              "Please submit a valid number specific to either of "
                              "the strategy in {0}".format(list_of_strategies))
@@ -502,7 +501,7 @@ def connected_label_regions(labels_img, min_size=None, connect_diag=True,
 
     if labels is not None:
         if (not isinstance(labels, collections.abc.Iterable) or
-                isinstance(labels, _basestring)):
+                isinstance(labels, str)):
             labels = [labels, ]
         if len(unique_labels) != len(labels):
             raise ValueError("The number of labels: {0} provided as input "

@@ -1,6 +1,11 @@
 0.7.0a
 ======
 
+.. warning::
+
+  Minimum required version of Joblib is now 0.12.
+
+
 NEW
 ---
 

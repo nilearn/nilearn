@@ -9,7 +9,7 @@ from pathlib import Path
 
 import pytest
 
-from nilearn._utils.compat import Memory
+from joblib import Memory
 
 import nilearn
 from nilearn._utils import cache_mixin, CacheMixin
@@ -27,21 +27,21 @@ def f(x):
 
 
 def test_check_memory():
-    # Test if _check_memory returns a memory object with the cachedir equal to
+    # Test if _check_memory returns a memory object with the location equal to
     # input path
     with tempfile.TemporaryDirectory() as temp_dir:
 
-        mem_none = Memory(cachedir=None)
-        mem_temp = Memory(cachedir=temp_dir)
+        mem_none = Memory(location=None)
+        mem_temp = Memory(location=temp_dir)
 
         for mem in [None, mem_none]:
             memory = cache_mixin._check_memory(mem, verbose=False)
             assert memory, Memory
-            assert memory.cachedir == mem_none.cachedir
+            assert memory.location == mem_none.location
 
         for mem in [temp_dir, mem_temp]:
             memory = cache_mixin._check_memory(mem, verbose=False)
-            assert memory.cachedir == mem_temp.cachedir
+            assert memory.location == mem_temp.location
             assert memory, Memory
 
 
@@ -49,7 +49,7 @@ def test__safe_cache_dir_creation():
     # Test the _safe_cache function that is supposed to flush the
     # cache if the nibabel version changes
     with tempfile.TemporaryDirectory() as temp_dir:
-        mem = Memory(cachedir=temp_dir)
+        mem = Memory(location=temp_dir)
         version_file = os.path.join(temp_dir, 'joblib', 'module_versions.json')
         assert not os.path.exists(version_file)
         # First test that a version file get created
@@ -65,7 +65,7 @@ def test__safe_cache_flush():
     # Test the _safe_cache function that is supposed to flush the
     # cache if the nibabel version changes
     with tempfile.TemporaryDirectory() as temp_dir:
-        mem = Memory(cachedir=temp_dir)
+        mem = Memory(location=temp_dir)
         version_file = os.path.join(temp_dir, 'joblib', 'module_versions.json')
         # Create an mock version_file with old module versions
         with open(version_file, 'w') as f:
@@ -94,10 +94,10 @@ def test_cache_memory_level():
     with tempfile.TemporaryDirectory() as temp_dir:
         joblib_dir = Path(
             temp_dir, 'joblib', 'nilearn', 'tests', 'test_cache_mixin', 'f')
-        mem = Memory(cachedir=temp_dir, verbose=0)
+        mem = Memory(location=temp_dir, verbose=0)
         cache_mixin.cache(f, mem, func_memory_level=2, memory_level=1)(2)
         assert len(_get_subdirs(joblib_dir)) == 0
-        cache_mixin.cache(f, Memory(cachedir=None))(2)
+        cache_mixin.cache(f, Memory(location=None))(2)
         assert len(_get_subdirs(joblib_dir)) == 0
         cache_mixin.cache(f, mem, func_memory_level=2, memory_level=3)(2)
         assert len(_get_subdirs(joblib_dir)) == 1
@@ -175,7 +175,7 @@ def test_cache_shelving():
     with tempfile.TemporaryDirectory() as temp_dir:
         joblib_dir = Path(
             temp_dir, 'joblib', 'nilearn', 'tests', 'test_cache_mixin', 'f')
-        mem = Memory(cachedir=temp_dir, verbose=0)
+        mem = Memory(location=temp_dir, verbose=0)
         res = cache_mixin.cache(f, mem, shelve=True)(2)
         assert res.get() == 2
         assert len(_get_subdirs(joblib_dir)) == 1

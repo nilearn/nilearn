@@ -30,7 +30,6 @@ import numpy as np
 from sklearn.utils import Bunch
 from sklearn.feature_extraction import DictVectorizer
 
-from .._utils.compat import _basestring
 from .utils import _fetch_file, _get_dataset_dir, _get_dataset_descr
 
 
@@ -654,7 +653,7 @@ class Pattern(_SpecialValue):
         self.flags_ = flags
 
     def __eq__(self, other):
-        if not isinstance(other, _basestring) or re.match(
+        if not isinstance(other, str) or re.match(
                 self.pattern_, other, self.flags_) is None:
             return False
         return True
@@ -1295,7 +1294,7 @@ def _remove_none_strings(metadata):
     """
     metadata = metadata.copy()
     for key, value in metadata.items():
-        if (isinstance(value, _basestring) and
+        if (isinstance(value, str) and
                 re.match(r'($|n/?a$|none|null)', value, re.IGNORECASE)):
             metadata[key] = None
     return metadata
@@ -2049,7 +2048,7 @@ def _split_terms(terms, available_on_server):
     terms_ = dict(terms)
     server_terms = dict([(k, terms_.pop(k)) for k in
                          available_on_server if k in terms_ and
-                         (isinstance(terms_[k], _basestring) or
+                         (isinstance(terms_[k], str) or
                           isinstance(terms_[k], int))])
     return terms_, server_terms
 
