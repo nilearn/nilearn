@@ -32,7 +32,7 @@ To run this example, you must launch IPython via ``ipython
 # subject folders only contain bold.json and events.tsv files, while the
 # derivatives folder includes the preprocessed files preproc.nii and the
 # confounds.tsv files.
-from nilearn.datasets.func import fetch_language_localizer_demo_dataset
+from nilearn.datasets import fetch_language_localizer_demo_dataset
 data_dir, _ = fetch_language_localizer_demo_dataset()
 
 ##############################################################################
