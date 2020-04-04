@@ -17,13 +17,13 @@ Hemodynamic Models
 ==================
 Imports from
 `nilearn.stats.hemodynamic_models <https://nistats.github.io/modules/reference.html#module-nistats.hemodynamic_models>`_
-are in :mod:`nilearn.stats.first_level_model`
+are in `nilearn.stats.first_level_model`
 
 Design matrix
 =============
 Most imports from
 `nistats.design_matrix <https://nistats.github.io/modules/reference.html#module-nistats.design_matrix>`_
-are in :mod:`nilearn.stats.first_level_model`
+are in `nilearn.stats.first_level_model`
 `nistats.design_matrix.make_second_level_design_matrix <https://nistats.github.io/modules/generated/nistats.design_matrix.make_second_level_design_matrix.html#nistats.design_matrix.make_second_level_design_matrix>`_
 is in :func:`nilearn.stats.second_level_model.make_second_level_design_matrix`
 
@@ -51,13 +51,13 @@ First Level Model
 =================
 Imports from
 `nistats.first_level_model <https://nistats.github.io/modules/reference.html#module-nistats.first_level_model>`_
-are in :mod:`nilearn.stats.first_level_model`
+are in `nilearn.stats.first_level_model`
 
 Second Level Model
 ==================
 Imports from
 `nistats.second_level_model <https://nistats.github.io/modules/reference.html#module-nistats.second_level_model>`_
-are in :mod:`nilearn.stats.second_level_model`
+are in `nilearn.stats.second_level_model`
 
 Contrasts
 =========
