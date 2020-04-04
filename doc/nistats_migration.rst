@@ -9,53 +9,76 @@ A quick guide to changing your Nistats imports to work in Nilearn
 
 Datasets
 ========
-
-Imports from :ref:`nistats.datasets` are in :mod:`nilearn.datasets`
+Imports from
+`nistats.datasets <https://nistats.github.io/modules/reference.html#module-nistats.datasets>`_
+are in :mod:`nilearn.datasets`
 
 Hemodynamic Models
 ==================
-Imports from :ref:`nilearn.stats.hemodynamic_models` are in :mod:`nilearn.stats.first_level_model`
+Imports from
+`nilearn.stats.hemodynamic_models <https://nistats.github.io/modules/reference.html#module-nistats.hemodynamic_models>`_
+are in :mod:`nilearn.stats.first_level_model`
 
 Design matrix
 =============
-Most imports from :ref:`nistats.design_matrix` are in :mod:`nilearn.stats.first_level_model`
-:ref:`nistats.design_matrix.make_second_level_design_matrix` is in :func:`nilearn.stats.second_level_model.make_second_level_design_matrix`
+Most imports from
+`nistats.design_matrix <https://nistats.github.io/modules/reference.html#module-nistats.design_matrix>`_
+are in :mod:`nilearn.stats.first_level_model`
+`nistats.design_matrix.make_second_level_design_matrix <https://nistats.github.io/modules/generated/nistats.design_matrix.make_second_level_design_matrix.html#nistats.design_matrix.make_second_level_design_matrix>`_
+is in :func:`nilearn.stats.second_level_model.make_second_level_design_matrix`
 
 Experimental Paradigm
 =====================
-Imports from :ref:`nistats.experimental_paradigm` are in :mod:`nilearn.stats.first_level_model`
+Imports from
+`nistats.experimental_paradigm <https://nistats.github.io/modules/reference.html#module-nistats.experimental_paradigm>`_ are in :mod:`nilearn.stats.first_level_model`
 
 
 Statistical Models
 ==================
-Imports from :ref:`nistats.model` are now in :mod:`nilearn.stats`
+Imports from
+`nistats.model <https://nistats.github.io/modules/reference.html#module-nistats.model>`_
+are now in :mod:`nilearn.stats`
 
 
 Regression Models
 =================
-Imports from :ref:`nistats.regression` are in :mod:`nilearn.stats`
+Imports from
+`nistats.regression <https://nistats.github.io/modules/reference.html#module-nistats.regression>`_
+are in :mod:`nilearn.stats`
 
 
 First Level Model
 =================
-Imports from :ref:`nistats.first_level_model` are in :mod:`nilearn.stats.first_level_model`
+Imports from
+`nistats.first_level_model <https://nistats.github.io/modules/reference.html#module-nistats.first_level_model>`_
+are in :mod:`nilearn.stats.first_level_model`
 
 Second Level Model
 ==================
-Imports from :ref:`nistats.second_level_model` are in :mod:`nilearn.stats.second_level_model`
+Imports from
+`nistats.second_level_model <https://nistats.github.io/modules/reference.html#module-nistats.second_level_model>`_
+are in :mod:`nilearn.stats.second_level_model`
 
 Contrasts
 =========
-imports from :ref:`nistats.contrasts` are in :mod:`nilearn.stats`
+imports from
+`nistats.contrasts <https://nistats.github.io/modules/reference.html#module-nistats.contrasts>`_
+are in :mod:`nilearn.stats`
 
 Thresholding Maps
 =================
-Imports from :ref:`nistats.thresholding` are in :mod:`nilearn.stats`
+Imports from
+`nistats.thresholding <https://nistats.github.io/modules/reference.html#module-nistats.thresholding>`_
+are in :mod:`nilearn.stats`
 
 Report plotting functions
 ==========================
-Imports from :ref:`nistats.reporting` are in :mod:`nilearn.reporting`
+Imports from
+`nistats.reporting <https://nistats.github.io/modules/reference.html#module-nistats.reporting>`_
+are in :mod:`nilearn.reporting`
 
 Utility functions
 =================
-Imports from :ref:`nistats.utils` are in :mod:`nilearn._utils`
+Imports from
+`nistats.utils <https://nistats.github.io/modules/reference.html#module-nistats.utils>`_
+are in :mod:`nilearn._utils`
