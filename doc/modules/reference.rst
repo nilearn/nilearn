@@ -428,12 +428,9 @@ uses.
     map_threshold
 
 
-:mod:`nilearn.stats.first_level_model`
---------------------------------------
+nilearn.stats.first_level_model
+-------------------------------
 
-.. automodule:: nilearn.stats
-   :no-members:
-   :no-inherited-members:
 
 **Classes**:
 
@@ -466,12 +463,8 @@ uses.
     spm_hrf
     spm_time_derivative
 
-:mod:`nilearn.stats.second_level_model`
----------------------------------------
-
-.. automodule:: nilearn.stats
-   :no-members:
-   :no-inherited-members:
+nilearn.stats.second_level_model
+--------------------------------
 
 **Classes**:
 
