@@ -431,7 +431,7 @@ uses.
 :mod:`nilearn.stats.first_level_model`
 --------------------------------------
 
-.. automodule:: nilearn.stats
+.. automodule:: nilearn.stats.first_level_model
    :no-members:
    :no-inherited-members:
 
@@ -469,7 +469,7 @@ uses.
 :mod:`nilearn.stats.second_level_model`
 ---------------------------------------
 
-.. automodule:: nilearn.stats
+.. automodule:: nilearn.stats.second_level_model
    :no-members:
    :no-inherited-members:
 
