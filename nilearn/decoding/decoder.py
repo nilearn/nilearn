@@ -487,7 +487,11 @@ class _BaseDecoder(LinearModel, RegressorMixin, CacheMixin):
                 warnings.warn("After clustering and screening, the decoding model will " +
                               "be trained only on {} features. ".format(n_final_features) +
                               "You should consider raising clustering_percentile or " +
-                              "screening_percentile parameters", UserWarning)
+                warnings.warn(
+                    "After clustering and screening, the decoding model will "
+                    "be trained only on {} features. ".format(n_final_features) +
+                    "You should consider raising clustering_percentile or "
+                    "screening_percentile parameters", UserWarning)
 
         parallel = Parallel(n_jobs=self.n_jobs, verbose=2 * self.verbose)
 
