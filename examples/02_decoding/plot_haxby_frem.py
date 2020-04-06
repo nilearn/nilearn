@@ -2,8 +2,8 @@
 Decoding with fREM: face vs house object recognition
 =========================================================
 
-Here is a simple example of decoding with fast ensembling of regularized models (fREM)
-reproducing the Haxby 2001 study on a face vs house discrimination task.
+This example uses fast ensembling of regularized models (fREM) to decode
+a face vs house discrimination task from Haxby 2001 study.
 
 fREM uses an implicit spatial regularization through fast clustering and
 aggregates a high number of estimators trained on various splits of the
@@ -67,9 +67,9 @@ plot_stat_map(decoder.coef_img_["face"], background_img,
               cut_coords=(-52, -5), display_mode="yz")
 
 #############################################################################
-# fREM ensembling procedure yields an important improvement of decoding accuracy (+20%)
-# on this simple example compared to fitting only one model per fold and the
-# clustering mechanism keeps its computational cost reasonable
+# fREM ensembling procedure yields an important improvement of decoding
+# accuracy (+20%) on this simple example compared to fitting only one model per
+# fold and the clustering mechanism keeps its computational cost reasonable
 # even on heavier examples. Here we ensembled several instances of l2-SVC,
 #  but fREMClassifier also works with ridge or logistic.
 # a fREMRegressor is also available to solve regression problems.
