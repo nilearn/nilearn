@@ -73,5 +73,5 @@ coef_img.to_filename('haxby_fREM_weights.nii')
 # on this simple example compared to fitting only one model per fold and the
 # clustering mechanism keeps its computational cost reasonable
 # even on heavier examples. Here we ensembled several instances of l2-SVC,
-# a versatile classifier but fREMClassifier also works with ridge or logistic.
+#  but fREMClassifier also works with ridge or logistic.
 # a fREMRegressor is also available to solve regression problems.
