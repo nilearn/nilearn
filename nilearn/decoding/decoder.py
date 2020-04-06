@@ -3,7 +3,7 @@ regression strategies such as SVM, LogisticRegression and Ridge, with optional
 feature selection, integrated hyper-parameter selection and aggregation strategy
 in which the best models within a cross validation loop are averaged.
 
-Also exposes a high-level method fREM which uses clustering and model
+Also exposes a high-level method fREM that uses clustering and model
 ensembling to achieve state of the art performance
 """
 # Authors: Yannick Schwartz
