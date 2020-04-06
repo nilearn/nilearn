@@ -144,7 +144,15 @@ def test_parallel_fit():
                                           is_classification=False,
                                           scorer=scorer,
                                           mask_img=None, class_index=1,
-                                          screening_percentile=None, do_clustering=False, clustering_percentile=100)))
+        outputs.append(list(_parallel_fit(estimator=estimator, X=X, y=y,
+                                          train=train, test=test,
+                                          param_grid=param_grid,
+                                          is_classification=False,
+                                          scorer=scorer, mask_img=None,
+                                          class_index=1,
+                                          screening_percentile=None,
+                                          do_clustering=False,
+                                          clustering_percentile=100)))
     # check that every element of the output tuple is the same for both tries
     for a, b in zip(outputs[0], outputs[1]):
         if isinstance(a, np.ndarray):
