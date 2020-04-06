@@ -76,7 +76,7 @@ plot_stat_map(fREM.coef_img_['beta'], title="fREM", display_mode="yz",
               cut_coords=[20, -2], threshold=.2)
 
 ##########################################################################
-# We can see that Space Net model, yields a sparse coefficient map with
+# We can see that Space Net model yields a sparse coefficients map with
 # both penalties, more structured (and thus interpretable) with TV-L1.
 #
 # The coefficient maps learnt by fREM is not sparse (it has been
