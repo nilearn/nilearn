@@ -45,7 +45,6 @@ print("fREM was fitted in {} seconds".format(int(time.time() - start_time)))
 plot_stat_map(fREM.coef_img_['beta'], title="fREM", display_mode="yz",
               cut_coords=[20, -2], threshold=.2)
 
-<< << << < HEAD
 #############################################################################
 # We can observe that the coefficients map learnt by fREM is structured,
 # due to the spatial regularity imposed by working on clusters and model
