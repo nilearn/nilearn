@@ -1,13 +1,3 @@
-.. for doctests to run, we need to define variables that are define in
-   the literal includes
-    >>> import numpy as np
-    >>> from sklearn import datasets
-    >>> iris = datasets.load_iris()
-    >>> fmri_masked  = iris.data
-    >>> target = iris.target
-    >>> session = np.ones_like(target)
-    >>> n_samples = len(target)
-
 .. _frem:
 
 ================================================================

@@ -1,7 +1,7 @@
 """High-level decoding object that exposes standard classification and
 regression strategies such as SVM, LogisticRegression and Ridge, with optional
-feature selection, integrated hyper-parameter selection and aggregation strategy
-in which the best models within a cross validation loop are averaged.
+feature selection, integrated hyper-parameter selection and aggregation
+strategy in which the best models within a cross validation loop are averaged.
 
 Also exposes a high-level method fREM which uses clustering and model
 ensembling to achieve state of the art performance
@@ -141,13 +141,14 @@ def _check_estimator(estimator):
 
 def _parallel_fit(estimator, X, y, train, test, param_grid, is_classification,
                   scorer, mask_img, class_index, screening_percentile,
-                  do_clustering, clustering_percentile):
+                  clustering_percentile):
     """Find the best estimator for a fold within a job.
     This function tries several parameters for the estimator for the train and
-    test fold provided and save the ones that performs best. These models are
-    used afterwards to build the averaged model.
-    This tries may be performed after one step of clustering (ReNA) and one
-    step of feature screening.
+    test fold provided and save the one that performs best.
+
+    Fit may be performed after some preprocessing step :
+    * clustering with ReNA if clustering_percentile < 100
+    * feature screening if screening_percentile < 100
     """
     X_train, y_train = X[train], y[train]
     X_test, y_test = X[test], y[test]
@@ -155,7 +156,7 @@ def _parallel_fit(estimator, X, y, train, test, param_grid, is_classification,
     # for fREM Classifier and Regressor : start by doing a quick ReNA clustering
     # to reduce the number of feature by agglomerating similar ones
 
-    if do_clustering and (clustering_percentile < 100):
+    if clustering_percentile < 100:
         n_clusters = int(X_train.shape[1] * clustering_percentile / 100.)
         clustering = ReNA(mask_img, n_clusters=n_clusters, n_iter=20,
                           threshold=1e-7, scaling=False)
@@ -197,7 +198,7 @@ def _parallel_fit(estimator, X, y, train, test, param_grid, is_classification,
     if do_screening:
         best_coef = selector.inverse_transform(best_coef)
 
-    if do_clustering and (clustering_percentile < 100):
+    if clustering_percentile < 100:
         best_coef = clustering.inverse_transform(best_coef)
 
     return class_index, best_coef, best_intercept, best_param, best_score
@@ -245,13 +246,11 @@ class _BaseDecoder(LinearModel, RegressorMixin, CacheMixin):
         or have no effect. See scikit-learn documentation for more information,
         for example: https://scikit-learn.org/stable/modules/grid_search.html
 
-    do_clustering: boolean. Default False
-        Whether to do a ReNA clustering as first step of fit to agglomerate similar
-        features together and reduce their overall number.
-
     clustering_percentile: int, float, optional, in the [0, 100] Default: 10.
-        Percentile of features to keep if clustering is performed.
-        ReNA is typically efficient at reducing the number of features by 10.
+        Percentile of features to keep after clustering. If it is lower
+        than 100, a ReNA clustering is performed as a first step of fit
+        to agglomerate similar features together. ReNA is typically efficient
+        for clustering_percentile equal to 10.
 
     screening_percentile: int, float, optional, in the closed interval [0, 100]
         Perform a univariate feature selection based on the Anova F-value for
@@ -335,9 +334,9 @@ class _BaseDecoder(LinearModel, RegressorMixin, CacheMixin):
     """
 
     def __init__(self, estimator='svc', mask=None, cv=10, param_grid=None,
-                 do_clustering=False, clustering_percentile=100,
-                 screening_percentile=20, scoring=None, smoothing_fwhm=None,
-                 standardize=True, target_affine=None, target_shape=None,
+                 clustering_percentile=100, screening_percentile=20,
+                 scoring=None, smoothing_fwhm=None, standardize=True,
+                 target_affine=None, target_shape=None,
                  low_pass=None, high_pass=None, t_r=None,
                  mask_strategy='background', is_classification=True,
                  memory=None, memory_level=0, n_jobs=1, verbose=0):
@@ -348,7 +347,6 @@ class _BaseDecoder(LinearModel, RegressorMixin, CacheMixin):
         self.screening_percentile = screening_percentile
         self.scoring = scoring
         self.is_classification = is_classification
-        self.do_clustering = do_clustering
         self.clustering_percentile = clustering_percentile
         self.smoothing_fwhm = smoothing_fwhm
         self.standardize = standardize
@@ -480,27 +478,22 @@ class _BaseDecoder(LinearModel, RegressorMixin, CacheMixin):
         self.screening_percentile_ = _adjust_screening_percentile(
             self.screening_percentile, self.mask_img_, verbose=self.verbose)
 
-        if self.do_clustering:
-            n_final_features = X.shape[1] * self.screening_percentile_ * \
-                self.clustering_percentile / 10000
-            if n_final_features < 50:
-                warnings.warn("After clustering and screening, the decoding model will " +
-                              "be trained only on {} features. ".format(n_final_features) +
-                              "You should consider raising clustering_percentile or " +
-                warnings.warn(
-                    "After clustering and screening, the decoding model will "
-                    "be trained only on {} features. ".format(n_final_features) +
-                    "You should consider raising clustering_percentile or "
-                    "screening_percentile parameters", UserWarning)
+        n_final_features = X.shape[1] * self.screening_percentile_ * \
+            self.clustering_percentile / 10000
+        if n_final_features < 50:
+            warnings.warn(
+                "After clustering and screening, the decoding model will "
+                "be trained only on {} features. ".format(n_final_features) +
+                "You should consider raising clustering_percentile or "
+                "screening_percentile parameters", UserWarning)
 
         parallel = Parallel(n_jobs=self.n_jobs, verbose=2 * self.verbose)
 
         parallel_fit_outputs = parallel(
             delayed(self._cache(_parallel_fit))(
-                self.estimator, X, y[:, c], train, test,
-                self.param_grid, self.is_classification, scorer,
-                self.mask_img_, c, self.screening_percentile_,
-                self.do_clustering, self.clustering_percentile)
+                self.estimator, X, y[:, c], train, test, self.param_grid,
+                self.is_classification, scorer, self.mask_img_,
+                c, self.screening_percentile_, self.clustering_percentile)
             for c, (train, test) in itertools.product(
                 range(n_problems), self.cv_))
 
@@ -971,8 +964,8 @@ class fREMRegressor(_BaseDecoder):
     clustering_percentile: int, float, optional, in the closed interval [0, 100]
         Used to perform a fast ReNA clustering on input data as a first step
         of fit. It agglomerates similar features together to reduce their number
-        by this percentile. ReNA is typically efficient at reducing the number
-        of features by 10. Default: 10.
+        by this percentile. ReNA is typically efficient for cluster_percentile
+        equal to 10. Default: 10.
 
     screening_percentile: int, float, optional, in the closed interval [0, 100]
         Perform a univariate feature selection based on the Anova F-value for
@@ -1069,7 +1062,7 @@ class fREMRegressor(_BaseDecoder):
 
         super().__init__(
             estimator=estimator, mask=mask, cv=cv, param_grid=param_grid,
-            do_clustering=True, clustering_percentile=clustering_percentile,
+            clustering_percentile=clustering_percentile,
             screening_percentile=screening_percentile, scoring=scoring,
             smoothing_fwhm=smoothing_fwhm, standardize=standardize,
             target_affine=target_affine, target_shape=target_shape,
@@ -1121,8 +1114,8 @@ class fREMClassifier(_BaseDecoder):
     clustering_percentile: int, float, optional, in the closed interval [0, 100]
         Used to perform a fast ReNA clustering on input data as a first step
         of fit. It agglomerates similar features together to reduce their number
-        by this percentile. ReNA is typically efficient at reducing the number
-        of features by 10. Default: 10.
+        by this percentile. ReNA is typically efficient for cluster_percentile
+        equal to 10. Default: 10.
 
     screening_percentile: int, float, optional, in the closed interval [0, 100]
         Perform an univariate feature selection based on the Anova F-value for
@@ -1219,7 +1212,7 @@ class fREMClassifier(_BaseDecoder):
 
         super().__init__(
             estimator=estimator, mask=mask, cv=cv, param_grid=param_grid,
-            do_clustering=True, clustering_percentile=clustering_percentile,
+            clustering_percentile=clustering_percentile,
             screening_percentile=screening_percentile, scoring=scoring,
             smoothing_fwhm=smoothing_fwhm, standardize=standardize,
             target_affine=target_affine, target_shape=target_shape,

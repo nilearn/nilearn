@@ -62,11 +62,9 @@ print("fREM classification accuracy : %g%%" % accuracy)
 # Visualization of fREM weights
 # ------------------------------------
 from nilearn.plotting import plot_stat_map, show
-%matplotlib inline
 plot_stat_map(decoder.coef_img_["face"], background_img,
               title="fREM: accuracy %g%%, 'face coefs'" % accuracy,
               cut_coords=(-52, -5), display_mode="yz")
-coef_img.to_filename('haxby_fREM_weights.nii')
 
 #############################################################################
 # fREM ensembling procedure yields an important improvement of decoding accuracy (+20%)

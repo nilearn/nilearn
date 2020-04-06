@@ -134,7 +134,6 @@ def test_parallel_fit():
     estimator = svr
     svr_params = [[1e-1, 1e0, 1e1], [1e-1, 1e0, 5e0, 1e1]]
     scorer = check_scoring(estimator, 'r2')  #  define a scorer
-
     for params in svr_params:
         param_grid = {}
         param_grid['C'] = np.array(params)
@@ -142,16 +141,9 @@ def test_parallel_fit():
                                           train=train, test=test,
                                           param_grid=param_grid,
                                           is_classification=False,
-                                          scorer=scorer,
-                                          mask_img=None, class_index=1,
-        outputs.append(list(_parallel_fit(estimator=estimator, X=X, y=y,
-                                          train=train, test=test,
-                                          param_grid=param_grid,
-                                          is_classification=False,
                                           scorer=scorer, mask_img=None,
                                           class_index=1,
                                           screening_percentile=None,
-                                          do_clustering=False,
                                           clustering_percentile=100)))
     # check that every element of the output tuple is the same for both tries
     for a, b in zip(outputs[0], outputs[1]):
