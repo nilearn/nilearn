@@ -1,16 +1,24 @@
 """
-SpaceNet on Jimura et al "mixed gambles" dataset.
+fREM on Jimura et al "mixed gambles" dataset.
 ==================================================
 
-The segmenting power of SpaceNet is quite visible here.
+In this example, we use fast ensembling of regularized models (fREM) to
+solve a regression problem, predicting the gain level corresponding to each
+beta maps regressed from mixed gambles experiment.
 
-See also the SpaceNet documentation: :ref:`space_net`.
+fREM uses an implicit spatial regularization through fast clustering and
+aggregates a high number of estimators trained on various splits of the
+training set, thus returning a very robust decoder at a lower computational
+cost than other spatially regularized methods.[1]_.
+
+To have more details, see the fREM documentation: :ref:`frem`.
 """
-# author: DOHMATOB Elvis Dopgima,
-#         GRAMFORT Alexandre
+# authors: DOHMATOB Elvis Dopgima,
+#          GRAMFORT Alexandre
+#          BAZEILLE Thomas
 
 
-##########################################################################
+#############################################################################
 # Load the data from the Jimura mixed-gamble experiment
 # ------------------------------------------------------
 from nilearn.datasets import fetch_mixed_gambles
@@ -20,45 +28,7 @@ zmap_filenames = data.zmaps
 behavioral_target = data.gain
 mask_filename = data.mask_img
 
-
-##########################################################################
-# Fit TV-L1
-# ----------
-# Here we're using the regressor object given that the task is to predict a
-# continuous variable, the gain of the gamble.
-from nilearn.decoding import SpaceNetRegressor
-import time
-
-start_time = time.time()
-tv_l1 = SpaceNetRegressor(mask=mask_filename, penalty="tv-l1",
-                          eps=1e-1,  # prefer large alphas
-                          memory="nilearn_cache")
-
-tv_l1.fit(zmap_filenames, behavioral_target)
-print("Space Net with TV-L1 penalty was fitted in {} seconds".format(int(time.time() - start_time)))
-
-# Visualize TV-L1 weights
-# ------------------------
-from nilearn.plotting import plot_stat_map, show
-plot_stat_map(tv_l1.coef_img_, title="tv-l1", display_mode="yz",
-              cut_coords=[20, -2])
-
-##########################################################################
-# Fit Graph-Net
-# --------------
-start_time = time.time()
-graph_net = SpaceNetRegressor(mask=mask_filename, penalty="graph-net",
-                              eps=1e-1,  # prefer large alphas
-                              memory="nilearn_cache")
-graph_net.fit(zmap_filenames, behavioral_target)
-print("Space Net with graph-net penalty was fitted in {} seconds".format(int(time.time() - start_time)))
-
-# Visualize Graph-Net weights
-# ----------------------------
-plot_stat_map(graph_net.coef_img_, title="graph-net", display_mode="yz",
-              cut_coords=[20, -2])
-
-##########################################################################
+#############################################################################
 # Fit fREM
 # ----------
 # We compare both of these models to a pipeline ensembling many models
@@ -75,10 +45,33 @@ print("fREM was fitted in {} seconds".format(int(time.time() - start_time)))
 plot_stat_map(fREM.coef_img_['beta'], title="fREM", display_mode="yz",
               cut_coords=[20, -2], threshold=.2)
 
-##########################################################################
-# We can see that Space Net model, yields a sparse coefficient map with
-# both penalties, more structured (and thus interpretable) with TV-L1.
+#############################################################################
+# We can observe that the coefficient map learnt by fFREM is structured,
+# due to the spatial regularity imposed by working on clusters and model
+# ensembling. Although these maps have been thresholded for display,
+# they are not sparse (i.e. almost all voxels have non-zero coefficients).
 #
-# The coefficient maps learnt by fREM is not sparse (it has been
-# thresholded for display) but is structured as well. Importantly, fREM is
-# faster than TV-L1 Space Net (7 times here).
+# See also this `other example<sphx_glr_auto_examples_02_decoding_plot_haxby_frem.py>`
+# using fREM, and related :ref:`section of user guide <frem>`.
+#
+#
+# :ref:`SpaceNet<space_net>` is another method available in Nilearn to decode
+# with spatially sparse models. Depending on the penalty that is used,
+# it yields either very structured maps (TV-L1) or unstructured maps
+# (graph_net). Because of their heavy computational costs, these methods are
+# not demonstrated on this example but you can try them easily if you have a
+# few minutes. Example code is included below.
+
+#############################################################################
+# Example use of TV-L1 SpaceNet
+# -----------------------------
+# Here we're using the regressor object given that the task is to predict a
+# continuous variable, the gain of the gamble.
+from nilearn.decoding import SpaceNetRegressor
+
+tv_l1 = SpaceNetRegressor(mask=mask_filename, penalty="tv-l1",
+                          eps=1e-1,  # prefer large alphas
+                          memory="nilearn_cache")
+# tv_l1.fit(zmap_filenames, behavioral_target)
+# plot_stat_map(tv_l1.coef_img_, title="TV-L1", display_mode="yz",
+#               cut_coords=[20, -2])
