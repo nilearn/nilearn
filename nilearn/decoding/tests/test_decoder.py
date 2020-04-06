@@ -339,3 +339,13 @@ def test_decoder_split_cv():
     with pytest.warns(UserWarning, match=expected_warning):
         model = Decoder(mask=NiftiMasker())
         model.fit(X, y, groups=groups)
+
+    # Check that warning is raised when n_features is lower than 50 after
+    # screening and clustering for fREM or Decoder
+    with pytest.warns(UserWarning, match=".*screening_percentile parameters"):
+        model = Decoder(screening_percentile=1, mask=NiftiMasker())
+        model.fit(X, y)
+    with pytest.warns(UserWarning, match=".*screening_percentile parameters"):
+        model = fREMClassifier(clustering_percentile=10,
+                               screening_percentile=10, mask=NiftiMasker(), cv=1)
+        model.fit(X, y)
