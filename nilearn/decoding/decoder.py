@@ -23,7 +23,9 @@ from sklearn.base import RegressorMixin
 from sklearn.linear_model import LogisticRegression
 from sklearn.linear_model.base import LinearModel
 from sklearn.linear_model.ridge import RidgeCV, RidgeClassifierCV, _BaseRidgeCV
-from sklearn.model_selection import ParameterGrid, check_cv, LeaveOneGroupOut, StratifiedShuffleSplit, ShuffleSplit
+from sklearn.model_selection import (LeaveOneGroupOut, ParameterGrid,
+                                     ShuffleSplit, StratifiedShuffleSplit,
+                                     check_cv)
 from sklearn.preprocessing import LabelBinarizer
 from sklearn.svm import SVR, LinearSVC
 from sklearn.svm.bounds import l1_min_c
