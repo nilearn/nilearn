@@ -40,6 +40,8 @@ fREM.fit(zmap_filenames, behavioral_target)
 
 # Visualize fREM weights
 # ----------------------------
+
+from nilearn.plotting import plot_stat_map
 plot_stat_map(fREM.coef_img_['beta'], title="fREM", display_mode="yz",
               cut_coords=[20, -2], threshold=.2)
 
