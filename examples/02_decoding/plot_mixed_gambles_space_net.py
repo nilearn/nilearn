@@ -33,8 +33,7 @@ mask_filename = data.mask_img
 # ----------
 # We compare both of these models to a pipeline ensembling many models
 from nilearn.decoding import fREMRegressor
-fREM = fREMRegressor('svr', clustering_percentile=10,
-                     screening_percentile=20, cv=10)
+fREM = fREMRegressor('svr', cv=10)
 
 fREM.fit(zmap_filenames, behavioral_target)
 
