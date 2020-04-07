@@ -38,8 +38,9 @@ from nilearn.image import index_img
 func_filenames = data_files.func[0]
 X_train = index_img(func_filenames, condition_mask_train)
 X_test = index_img(func_filenames, condition_mask_test)
-y_train = conditions[condition_mask_train]
-y_test = conditions[condition_mask_test]
+y_train = conditions[condition_mask_train].values
+y_test = conditions[condition_mask_test].values
+
 
 # Compute the mean epi to be used for the background of the plotting
 from nilearn.image import mean_img
@@ -49,9 +50,8 @@ background_img = mean_img(func_filenames)
 # Fit fREM
 # --------------------------------------
 from nilearn.decoding import fREMClassifier
-
-decoder = fREMClassifier('svc', clustering_percentile=10,
-                         screening_percentile=10, cv=10)
+from nilearn.decoding import Decoder
+decoder = fREMClassifier(cv=10)
 # Fit model on train data and predict on test data
 decoder.fit(X_train, y_train)
 y_pred = decoder.predict(X_test)
@@ -71,5 +71,5 @@ plot_stat_map(decoder.coef_img_["face"], background_img,
 # accuracy (+20%) on this simple example compared to fitting only one model per
 # fold and the clustering mechanism keeps its computational cost reasonable
 # even on heavier examples. Here we ensembled several instances of l2-SVC,
-#  but fREMClassifier also works with ridge or logistic.
-# a fREMRegressor is also available to solve regression problems.
+# but fREMClassifier also works with ridge or logistic.
+# fREMRegressor object is also available to solve regression problems.
