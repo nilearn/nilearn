@@ -51,6 +51,8 @@ background_img = mean_img(func_filenames)
 # --------------------------------------
 from nilearn.decoding import fREMClassifier
 from nilearn.decoding import Decoder
+dec = Decoder(screening_percentile=20)
+dec.fit(X_train, y_train)
 decoder = fREMClassifier(cv=10)
 # Fit model on train data and predict on test data
 decoder.fit(X_train, y_train)

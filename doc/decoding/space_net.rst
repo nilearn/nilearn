@@ -1,13 +1,3 @@
-.. for doctests to run, we need to define variables that are define in
-   the literal includes
-    >>> import numpy as np
-    >>> from sklearn import datasets
-    >>> iris = datasets.load_iris()
-    >>> fmri_masked  = iris.data
-    >>> target = iris.target
-    >>> session = np.ones_like(target)
-    >>> n_samples = len(target)
-
 .. _space_net:
 
 ==========================================================
@@ -58,46 +48,19 @@ things a bit faster. These include:
 et al. 2014 (PRNI)] <https://hal.inria.fr/hal-00991743>`_ for
 technical details regarding the implementation of SpaceNet.
 
-Empirical comparisons
-=====================
+Related example
+=================
 
+:ref:`Age prediction on OASIS dataset with SpaceNet <sphx_glr_auto_examples_02_decoding_plot_oasis_vbm_space_net.py>`.
 
-Comparison on mixed gambles study
-----------------------------------
+.. note::
 
-.. figure:: ../auto_examples/02_decoding/images/sphx_glr_plot_mixed_gambles_space_net_001.png
-   :align: right
-   :scale: 60
-
-.. figure:: ../auto_examples/02_decoding/images/sphx_glr_plot_mixed_gambles_space_net_002.png
-   :scale: 60
-
-.. topic:: **Code**
-
-    The complete script can be found
-    :ref:`here <sphx_glr_auto_examples_02_decoding_plot_mixed_gambles_space_net.py>`.
-
-
-Comparison on Haxby study
---------------------------
-
-.. figure:: ../auto_examples/02_decoding/images/sphx_glr_plot_haxby_space_net_001.png
-   :align: right
-   :scale: 60
-
-.. figure:: ../auto_examples/02_decoding/images/sphx_glr_plot_haxby_space_net_002.png
-   :scale: 60
-
-.. topic:: **Code**
-
-    The complete script can be found
-    :ref:`here <sphx_glr_auto_examples_02_decoding_plot_haxby_space_net.py>`.
+    Empirical comparisons using this method have been removed from this
+    documentation in version 0.7. to keep its computational cost low. You can
+    easily try it by replacing of fREM in a :ref:`mixed gambles study <sphx_glr_auto_examples_02_decoding_plot_mixed_gambles_frem.py>`. and
+    on :ref:`Haxby study <sphx_glr_auto_examples_02_decoding_plot_haxby_frem.py>`.
 
 .. seealso::
 
-     * :ref:`Age prediction on OASIS dataset with SpaceNet <sphx_glr_auto_examples_02_decoding_plot_oasis_vbm_space_net.py>`.
-
-     * The `scikit-learn documentation <http://scikit-learn.org>`_
-       has very detailed explanations on a large variety of estimators and
-       machine learning techniques. To become better at decoding, you need
-       to study it.
+    :ref:`fREM <frem>`, a pipeline ensembling many models that yields very
+    good decoding performance at a lower computational cost.

@@ -478,13 +478,13 @@ class _BaseDecoder(LinearModel, RegressorMixin, CacheMixin):
         self.screening_percentile_ = _adjust_screening_percentile(
             self.screening_percentile, self.mask_img_, verbose=self.verbose)
 
-        n_final_features = X.shape[1] * self.screening_percentile_ * \
-            self.clustering_percentile / 10000
+        n_final_features = int(X.shape[1] * self.screening_percentile_ *
+                               self.clustering_percentile / 10000)
         if n_final_features < 50:
             warnings.warn(
                 "After clustering and screening, the decoding model will "
                 "be trained only on {} features. ".format(n_final_features) +
-                "You should consider raising clustering_percentile or "
+                "Consider raising clustering_percentile or "
                 "screening_percentile parameters", UserWarning)
 
         parallel = Parallel(n_jobs=self.n_jobs, verbose=2 * self.verbose)

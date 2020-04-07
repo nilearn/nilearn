@@ -55,22 +55,26 @@ it brings on this problem.
     The complete script can be found
     :ref:`here <sphx_glr_auto_examples_02_decoding_plot_haxby_frem.py>`.
 
-Comparison to SpaceNet on mixed gambles study
-----------------------------------------------
+Spatial regularization of decoding maps on mixed gambles study
+---------------------------------------------------------------
 
-.. figure:: ../auto_examples/02_decoding/images/sphx_glr_plot_mixed_gambles_space_net_001.png
+.. figure:: ../auto_examples/02_decoding/images/sphx_glr_plot_mixed_gambles_frem_001.png
    :align: right
    :scale: 40
 
-.. figure:: ../auto_examples/02_decoding/images/sphx_glr_plot_mixed_gambles_space_net_002.png
-   :align: center
-   :scale: 40
-
-.. figure:: ../auto_examples/02_decoding/images/sphx_glr_plot_mixed_gambles_space_net_003.png
-   :align: left
-   :scale: 40
 
 .. topic:: **Code**
 
     The complete script can be found
-    :ref:`here <sphx_glr_auto_examples_02_decoding_plot_mixed_gambles_space_net.py>`.
+    :ref:`here <sphx_glr_auto_examples_02_decoding_plot_mixed_gambles_frem.py>`.
+
+.. seealso::
+
+    * The `scikit-learn documentation <http://scikit-learn.org>`_
+      has very detailed explanations on a large variety of estimators and
+      machine learning techniques. To become better at decoding, you need
+      to study it.
+
+    * :ref:`SpaceNet <space_net>`, a method promoting sparsity that can also
+      give good brain decoding power and improved decoder maps when sparsity
+      is important.
