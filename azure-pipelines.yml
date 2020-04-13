@@ -37,8 +37,8 @@ jobs:
       python -m pytest --pyargs nilearn --cov-report=xml --cov=nilearn --cov-append --junitxml=test-results.xml
     displayName: 'test'
 
-  - script: |
-      codecov -f coverage.xml --token=$(CODECOV_TOKEN)
+  - bash: |
+      bash <(curl -s https://codecov.io/bash)
     displayName: 'codecov'
   - task: PublishTestResults@2
     inputs:
