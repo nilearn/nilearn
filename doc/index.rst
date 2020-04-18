@@ -5,10 +5,9 @@
 
 .. container:: index-paragraph
 
-    Nilearn is a Python module for **fast and easy statistical learning on
-    NeuroImaging** data.
-
-    It leverages the `scikit-learn <http://scikit-learn.org>`__ Python toolbox
+    Nilearn enables **approachable & versatile analyses** of brain volumes, by way of standard statistics & statistical learning, with **instructive documentation & friendly community**.
+    
+    It supports general linear model (GLM) based analysis and leverages the `scikit-learn <http://scikit-learn.org>`__ Python toolbox
     for multivariate statistics with applications such as predictive modelling,
     classification, decoding, or connectivity analysis.
 
