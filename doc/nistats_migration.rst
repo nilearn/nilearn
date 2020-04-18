@@ -81,4 +81,4 @@ Utility functions
 =================
 Imports from
 `nistats.utils <https://nistats.github.io/modules/reference.html#module-nistats.utils>`_
-are in :mod:`nilearn._utils`
+are in `nilearn._utils` and are usually meant for developer's use.

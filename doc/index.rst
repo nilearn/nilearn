@@ -12,6 +12,10 @@
     for multivariate statistics with applications such as predictive modelling,
     classification, decoding, or connectivity analysis.
 
+    Nilearn now includes the functionality of Nistats.
+    Here's a guide to replacing Nistats imports to work in Nilearn.
+
+    nistats_migration.rst
 
 .. Here we are building the carousel
 
@@ -97,7 +101,6 @@
 .. toctree::
    :hidden:
 
-   nistats_migration.rst
    authors.rst
    user_guide.rst
    auto_examples/index.rst
