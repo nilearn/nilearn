@@ -37,7 +37,7 @@ slice_time_ref = 0.5
 #########################################################################
 # Prepare the data.
 # First, the volume-based fMRI data.
-from nilearn.datasets.func import fetch_localizer_first_level
+from nilearn.datasets import fetch_localizer_first_level
 data = fetch_localizer_first_level()
 fmri_img = data.epi_img
 

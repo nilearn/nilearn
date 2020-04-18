@@ -11,7 +11,7 @@ Also, the predicted time series can be extracted, which is useful to assess the 
 #########################################################################
 # Import modules
 # --------------
-from nilearn.datasets.func import fetch_spm_auditory
+from nilearn.datasets import fetch_spm_auditory
 from nilearn import image
 from nilearn import masking
 import pandas as pd
