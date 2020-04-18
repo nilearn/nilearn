@@ -12,7 +12,7 @@
     for multivariate statistics with applications such as predictive modelling,
     classification, decoding, or connectivity analysis.
 
-    Nilearn now includes the functionality of :ref:`Nistats <https://nistats.github.io>`.
+    Nilearn now includes the functionality of `Nistats <https://nistats.github.io>`_.
     :ref:`Here's a guide to replacing Nistats imports to work in Nilearn. <nistats_migration>`
 
 
