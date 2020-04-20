@@ -1114,7 +1114,7 @@ class fREMClassifier(_BaseDecoder):
     clustering_percentile: int, float, optional, in the closed interval [0, 100]
         Used to perform a fast ReNA clustering on input data as a first step
         of fit. It agglomerates similar features together to reduce their number
-        by this percentile. ReNA is typically efficient for cluster_percentile
+        down to this percentile. ReNA is typically efficient for cluster_percentile
         equal to 10. Default: 10.
 
     screening_percentile: int, float, optional, in the closed interval [0, 100]
