@@ -24,6 +24,7 @@ Design matrix
 Most imports from
 `nistats.design_matrix <https://nistats.github.io/modules/reference.html#module-nistats.design_matrix>`_
 are in :mod:`nilearn.stats.first_level_model`
+
 `nistats.design_matrix.make_second_level_design_matrix <https://nistats.github.io/modules/generated/nistats.design_matrix.make_second_level_design_matrix.html#nistats.design_matrix.make_second_level_design_matrix>`_
 is in :func:`nilearn.stats.second_level_model.make_second_level_design_matrix`
 
