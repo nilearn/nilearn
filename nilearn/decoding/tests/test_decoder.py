@@ -217,14 +217,15 @@ def test_decoder_multiclass_classification():
         y_pred = model.predict(X)
         assert accuracy_score(y, y_pred) > 0.95
 
-    # check fREM with clustering or not
+    # check fREM with clustering or not
     screening_percentile = 90
     for clustering_percentile in [100, 99]:
         for estimator in ['svc_l2', 'svc_l1']:
             screening_percentile = 90
             model = fREMClassifier(estimator=estimator, mask=mask,
                                    clustering_percentile=clustering_percentile,
-                                   screening_percentile=screening_percentile, cv=5)
+                                   screening_percentile=screening_percentile,
+                                   cv=5)
             model.fit(X, y)
             y_pred = model.predict(X)
             assert accuracy_score(y, y_pred) > 0.9
@@ -272,7 +273,8 @@ def test_decoder_regression():
             screening_percentile = 90
             model = fREMRegressor(estimator=regressor_, mask=mask,
                                   clustering_percentile=clustering_percentile,
-                                  screening_percentile=screening_percentile, cv=10)
+                                  screening_percentile=screening_percentile,
+                                  cv=10)
             model.fit(X, y)
             y_pred = model.predict(X)
             assert r2_score(y, y_pred) > 0.95
@@ -344,5 +346,6 @@ def test_decoder_split_cv():
     # screening and clustering for fREM
     with pytest.warns(UserWarning, match=".*screening_percentile parameters"):
         model = fREMClassifier(clustering_percentile=10,
-                               screening_percentile=10, mask=NiftiMasker(), cv=1)
+                               screening_percentile=10, mask=NiftiMasker(),
+                               cv=1)
         model.fit(X, y)

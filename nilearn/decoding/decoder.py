@@ -153,8 +153,8 @@ def _parallel_fit(estimator, X, y, train, test, param_grid, is_classification,
     X_train, y_train = X[train], y[train]
     X_test, y_test = X[test], y[test]
 
-    # for fREM Classifier and Regressor : start by doing a quick ReNA clustering
-    # to reduce the number of feature by agglomerating similar ones
+    # for fREM Classifier and Regressor : start by doing a quick ReNA
+    # clustering to reduce the number of feature by agglomerating similar ones
 
     if clustering_percentile < 100:
         n_clusters = int(X_train.shape[1] * clustering_percentile / 100.)
@@ -328,8 +328,10 @@ class _BaseDecoder(LinearModel, RegressorMixin, CacheMixin):
     ------------
     nilearn.decoding.Decoder: Classification strategies for Neuroimaging,
     nilearn.decoding.DecoderRegressor: Regression strategies for Neuroimaging,
-    nilearn.decoding.fREMClassifier: State of the art classification pipeline for Neuroimaging
-    nilearn.decoding.fREMRegressor: State of the art regression pipeline for Neuroimaging
+    nilearn.decoding.fREMClassifier: State of the art classification pipeline
+        for Neuroimaging
+    nilearn.decoding.fREMRegressor: State of the art regression pipeline
+        for Neuroimaging
     nilearn.decoding.SpaceNetClassifier: Graph-Net and TV-L1 priors/penalties
     """
 
@@ -478,14 +480,14 @@ class _BaseDecoder(LinearModel, RegressorMixin, CacheMixin):
         self.screening_percentile_ = _adjust_screening_percentile(
             self.screening_percentile, self.mask_img_, verbose=self.verbose)
 
-        n_final_features = int(X.shape[1] * self.screening_percentile_ *
-                               self.clustering_percentile / 10000)
+        n_final_features = int(X.shape[1] * self.screening_percentile_
+                               * self.clustering_percentile / 10000)
         if n_final_features < 50:
             warnings.warn(
                 "After clustering and screening, the decoding model will "
-                "be trained only on {} features. ".format(n_final_features) +
-                "Consider raising clustering_percentile or "
-                "screening_percentile parameters", UserWarning)
+                "be trained only on {} features. ".format(n_final_features)
+                + "Consider raising clustering_percentile or "
+                + "screening_percentile parameters", UserWarning)
 
         parallel = Parallel(n_jobs=self.n_jobs, verbose=2 * self.verbose)
 
@@ -768,7 +770,8 @@ class Decoder(_BaseDecoder):
     See Also
     ------------
     nilearn.decoding.DecoderRegressor: regression strategies for Neuro-imaging,
-    nilearn.decoding.fREMClassifier: State of the art classification pipeline for Neuroimaging
+    nilearn.decoding.fREMClassifier: State of the art classification pipeline
+        for Neuroimaging
     nilearn.decoding.SpaceNetClassifier: Graph-Net and TV-L1 priors/penalties
     """
 
@@ -899,7 +902,8 @@ class DecoderRegressor(_BaseDecoder):
     See Also
     ------------
     nilearn.decoding.Decoder: classification strategies for Neuroimaging,
-    nilearn.decoding.fREMRegressor: State of the art regression pipeline for Neuroimaging
+    nilearn.decoding.fREMRegressor: State of the art regression pipeline
+        for Neuroimaging
     nilearn.decoding.SpaceNetClassifier: Graph-Net and TV-L1 priors/penalties
     """
 
@@ -945,8 +949,8 @@ class fREMRegressor(_BaseDecoder):
         MultiNiftiMasker to check for default parameters. Default None
 
     cv : int or cross-validation generator, optional (default 30)
-        If int, number of shuffled splits returned, which is usually
-        the right way to train many different classifiers. A good trade-off between
+        If int, number of shuffled splits returned, which is usually the right
+        way to train many different classifiers. A good trade-off between
         stability of the aggregated model and computation time is 50 splits.
         Can also be a cross-validation generator.
 
@@ -961,13 +965,13 @@ class fREMRegressor(_BaseDecoder):
         or have no effect. See scikit-learn documentation for more information,
         for example: https://scikit-learn.org/stable/modules/grid_search.html
 
-    clustering_percentile: int, float, optional, in the closed interval [0, 100]
-        Used to perform a fast ReNA clustering on input data as a first step
-        of fit. It agglomerates similar features together to reduce their number
+    clustering_percentile: int, float, optional, in closed interval [0, 100]
+        Used to perform a fast ReNA clustering on input data as a first step of
+        fit. It agglomerates similar features together to reduce their number
         by this percentile. ReNA is typically efficient for cluster_percentile
         equal to 10. Default: 10.
 
-    screening_percentile: int, float, optional, in the closed interval [0, 100]
+    screening_percentile: int, float, optional, in closed interval [0, 100]
         Perform a univariate feature selection based on the Anova F-value for
         the input data. A float according to a percentile of the highest
         scores. Default: 20.
@@ -1046,14 +1050,16 @@ class fREMRegressor(_BaseDecoder):
     See Also
     ------------
     nilearn.decoding.DecoderRegressor: Regression strategies for Neuroimaging,
-    nilearn.decoding.fREMClassifier: State of the art classification pipeline for Neuroimaging
+    nilearn.decoding.fREMClassifier: State of the art classification pipeline
+        for Neuroimaging
     """
 
     def __init__(self, estimator='svr', mask=None, cv=30, param_grid=None,
-                 clustering_percentile=10, screening_percentile=20, scoring='r2',
-                 smoothing_fwhm=None, standardize=True, target_affine=None,
-                 target_shape=None, mask_strategy='background',
-                 low_pass=None, high_pass=None, t_r=None, memory=None,
+                 clustering_percentile=10, screening_percentile=20,
+                 scoring='r2', smoothing_fwhm=None, standardize=True,
+                 target_affine=None, target_shape=None,
+                 mask_strategy='background', low_pass=None, high_pass=None,
+                 t_r=None, memory=None,
                  memory_level=0, n_jobs=1, verbose=0):
         self.classes_ = ['beta']
 
@@ -1067,8 +1073,9 @@ class fREMRegressor(_BaseDecoder):
             smoothing_fwhm=smoothing_fwhm, standardize=standardize,
             target_affine=target_affine, target_shape=target_shape,
             low_pass=low_pass, high_pass=high_pass, t_r=t_r,
-            mask_strategy=mask_strategy, memory=memory, is_classification=False,
-            memory_level=memory_level, verbose=verbose, n_jobs=n_jobs)
+            mask_strategy=mask_strategy, memory=memory,
+            is_classification=False, memory_level=memory_level,
+            verbose=verbose, n_jobs=n_jobs)
 
 
 class fREMClassifier(_BaseDecoder):
@@ -1096,9 +1103,9 @@ class fREMClassifier(_BaseDecoder):
 
     cv : int or cross-validation generator, optional (default 30)
         If int, number of stratified shuffled splits returned, which is usually
-        the right way to train many different classifiers. A good trade-off between
-        stability of the aggregated model and computation time is 50 splits.
-        Can also be a cross-validation generator.
+        the right way to train many different classifiers. A good trade-off
+        between stability of the aggregated model and computation time is
+        50 splits. Can also be a cross-validation generator.
 
     param_grid: dict of str to sequence, or sequence of such. Default None
         The parameter grid to explore, as a dictionary mapping estimator
@@ -1111,13 +1118,13 @@ class fREMClassifier(_BaseDecoder):
         or have no effect. See scikit-learn documentation for more information,
         for example: https://scikit-learn.org/stable/modules/grid_search.html
 
-    clustering_percentile: int, float, optional, in the closed interval [0, 100]
-        Used to perform a fast ReNA clustering on input data as a first step
-        of fit. It agglomerates similar features together to reduce their number
-        down to this percentile. ReNA is typically efficient for cluster_percentile
-        equal to 10. Default: 10.
+    clustering_percentile: int, float, optional, in closed interval [0, 100]
+        Used to perform a fast ReNA clustering on input data as a first step of
+        fit. It agglomerates similar features together to reduce their number
+        down to this percentile. ReNA is typically efficient for
+        cluster_percentile equal to 10. Default: 10.
 
-    screening_percentile: int, float, optional, in the closed interval [0, 100]
+    screening_percentile: int, float, optional, in closed interval [0, 100]
         Perform an univariate feature selection based on the Anova F-value for
         the input data. A float according to a percentile of the highest
         scores. Default: 20.
@@ -1196,7 +1203,8 @@ class fREMClassifier(_BaseDecoder):
     See Also
     ------------
     nilearn.decoding.Decoder: Classification strategies for Neuroimaging,
-    nilearn.decoding.fREMRegressor: State of the art regression pipeline for Neuroimaging
+    nilearn.decoding.fREMRegressor: State of the art regression pipeline
+        for Neuroimaging
 
     """
 
