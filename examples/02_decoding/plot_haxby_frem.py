@@ -63,15 +63,15 @@ print("fREM classification accuracy : %g%%" % accuracy)
 #############################################################################
 # Visualization of fREM weights
 # ------------------------------------
-from nilearn.plotting import plot_stat_map, show
-plot_stat_map(decoder.coef_img_["face"], background_img,
-              title="fREM: accuracy %g%%, 'face coefs'" % accuracy,
-              cut_coords=(-52, -5), display_mode="yz")
-
+from nilearn import plotting
+plotting.plot_stat_map(decoder.coef_img_["face"], background_img,
+                       title="fREM: accuracy %g%%, 'face coefs'" % accuracy,
+                       cut_coords=(-52, -5), display_mode="yz")
+plotting.show()
 #############################################################################
 # fREM ensembling procedure yields an important improvement of decoding
 # accuracy (+20%) on this simple example compared to fitting only one model per
 # fold and the clustering mechanism keeps its computational cost reasonable
-# even on heavier examples. Here we ensembled several instances of l2-SVC,
+# even on heavier examples. Here we ensembled several instances of l2-SVC,
 # but fREMClassifier also works with ridge or logistic.
 # fREMRegressor object is also available to solve regression problems.
