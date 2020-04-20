@@ -289,7 +289,7 @@ intersphinx_mapping = {
     'matplotlib': ('https://matplotlib.org/', None),
     'sklearn': ('https://scikit-learn.org/stable/', None),
     'nibabel': ('https://nipy.org/nibabel', None),
-    'pandas': ('https://pandas.pydata.org', None),
+    'pandas': ('https://pandas.pydata.org/pandas-docs/stable/', None),
 }
 
 extlinks = {

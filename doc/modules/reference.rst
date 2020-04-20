@@ -105,6 +105,16 @@ uses.
    get_data_dirs
    load_mni152_template
    load_mni152_brain_mask
+   fetch_language_localizer_demo_dataset
+   fetch_bids_langloc_dataset
+   fetch_openneuro_dataset_index
+   select_from_index
+   patch_openneuro_dataset
+   fetch_openneuro_dataset
+   fetch_localizer_first_level
+   fetch_spm_auditory
+   fetch_spm_multimodal_fmri
+   fetch_fiac_first_level
 
 .. _decoding_ref:
 
@@ -420,9 +430,12 @@ uses.
     map_threshold
 
 
-nilearn.stats.first_level_model
--------------------------------
+:mod:`nilearn.stats.first_level_model`
+--------------------------------------
 
+.. automodule:: nilearn.stats.first_level_model
+   :no-members:
+   :no-inherited-members:
 
 **Classes**:
 
@@ -455,8 +468,12 @@ nilearn.stats.first_level_model
     spm_hrf
     spm_time_derivative
 
-nilearn.stats.second_level_model
---------------------------------
+:mod:`nilearn.stats.second_level_model`
+---------------------------------------
+
+.. automodule:: nilearn.stats.second_level_model
+   :no-members:
+   :no-inherited-members:
 
 **Classes**:
 
