@@ -16,7 +16,7 @@ are in :mod:`nilearn.datasets`
 Hemodynamic Models
 ==================
 Imports from
-`nilearn.stats.hemodynamic_models <https://nistats.github.io/modules/reference.html#module-nistats.hemodynamic_models>`_
+`nistats.hemodynamic_models <https://nistats.github.io/modules/reference.html#module-nistats.hemodynamic_models>`_
 are in :mod:`nilearn.stats.first_level_model`
 
 Design matrix
