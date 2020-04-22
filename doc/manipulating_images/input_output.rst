@@ -272,3 +272,35 @@ presented to the subject::
 |
 
 .. _nibabel: http://nipy.sourceforge.net/nibabel/
+
+.. _nisurf:
+
+Nisurf-like objects
+-------------------
+
+Some Nilearn functions can take as input arguments what we call "Nisurf-like
+objects":
+
+**Nisurf-data:** A Nisurf-data object can be one of the following:
+
+  * A string with a file path to a 1D surface file
+    (valid formats are .gii, .mgz, .nii, .nii.gz,
+    or Freesurfer specific files such as
+    .thickness, .curv, .sulc, .annot, .label)
+  * A 1D Numpy array with a value for each of vertex of the surface.
+
+**Nisurf-data-2D** Simmilarly, some functions require 2D Nisurf-data-like
+input, which we call Nisurfs-data or Nisurf-data-2D. Accepted input arguments are:
+
+  * A string with a file path to a 2D surface file
+  * List of paths to a 1D surface file
+  * A 2D Numpy array with shape (vertex values, data points)
+  * List of 1D Numpy arrays
+
+**Nisurf-mesh** A Nisurf-mesh can be one of the following:
+
+  * A string with a file path to a surface mesh geometry file
+    (valid formats are .gii or Freesurfer
+    specific files such as .orig, .pial, .sphere, .white, .inflated)
+  * A list of two Numpy arrays, the first containing the x-y-z coordinates,
+    the second containing the indices (into coords) of the mesh faces.
