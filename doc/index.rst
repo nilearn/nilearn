@@ -35,8 +35,8 @@
 .. |canica| image:: auto_examples/03_connectivity/images/sphx_glr_plot_compare_decomposition_011.png
    :target: auto_examples/03_connectivity/plot_compare_decomposition.html
 
-.. |tvl1_haxby| image:: auto_examples/02_decoding/images/sphx_glr_plot_haxby_space_net_002.png
-   :target: auto_examples/02_decoding/plot_haxby_space_net.html
+.. |tvl1_haxby| image:: auto_examples/02_decoding/images/sphx_glr_plot_haxby_frem_001.png
+   :target: auto_examples/02_decoding/plot_haxby_frem.html
 
 .. |searchlight| image:: auto_examples/02_decoding/images/sphx_glr_plot_haxby_searchlight_001.png
    :target: auto_examples/02_decoding/plot_haxby_searchlight.html
