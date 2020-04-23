@@ -25,7 +25,7 @@ mask_filename = data.mask_img
 
 #############################################################################
 # Fit fREM
-# ----------
+# ---------
 # We compare both of these models to a pipeline ensembling many models
 from nilearn.decoding import fREMRegressor
 fREM = fREMRegressor('svr', cv=10)
@@ -49,13 +49,14 @@ plot_stat_map(fREM.coef_img_['beta'], title="fREM", display_mode="yz",
 #
 #############################################################################
 # Example use of TV-L1 SpaceNet
-# -----------------------------
+# ------------------------------
 # :ref:`SpaceNet<space_net>` is another method available in Nilearn to decode
 # with spatially sparse models. Depending on the penalty that is used,
 # it yields either very structured maps (TV-L1) or unstructured maps
 # (graph_net). Because of their heavy computational costs, these methods are
 # not demonstrated on this example but you can try them easily if you have a
 # few minutes. Example code is included below.
+#
 
 from nilearn.decoding import SpaceNetRegressor
 
