@@ -13,7 +13,7 @@ SpaceNet implements spatial penalties which improve brain decoding power as well
   al. 2011] <https://hal.inria.fr/inria-00563468/document>`_, TV-L1
   `[Baldassarre et al. 2012]
   <http://www0.cs.ucl.ac.uk/staff/M.Pontil/reading/neurosparse_prni.pdf>`_,
-  `[Gramfort et al. 2013] <https://hal.inria.fr/hal-00839984>`_ (option: ),
+  `[Gramfort et al. 2013] <https://hal.inria.fr/hal-00839984>`_,
 
 * penalty="graph-net": GraphNet prior `[Grosenick et al. 2013]
   <https://www.ncbi.nlm.nih.gov/pubmed/23298747>`_)
@@ -53,12 +53,13 @@ Related example
 
 :ref:`Age prediction on OASIS dataset with SpaceNet <sphx_glr_auto_examples_02_decoding_plot_oasis_vbm_space_net.py>`.
 
+.. figure:: ../auto_examples/02_decoding/images/sphx_glr_plot_oasis_vbm_space_net_002.png
+
 .. note::
 
-    Empirical comparisons using this method have been removed from this
-    documentation in version 0.7. to keep its computational cost low. You can
-    easily try it by replacing of fREM in a :ref:`mixed gambles study <sphx_glr_auto_examples_02_decoding_plot_mixed_gambles_frem.py>`. and
-    on :ref:`Haxby study <sphx_glr_auto_examples_02_decoding_plot_haxby_frem.py>`.
+    Empirical comparisons using this method have been removed from
+    documentation in version 0.7 to keep its computational cost low. You can
+    easily try SpaceNet instead of fREM in :ref:`mixed gambles study <sphx_glr_auto_examples_02_decoding_plot_mixed_gambles_frem.py>` or :ref:`Haxby study <sphx_glr_auto_examples_02_decoding_plot_haxby_frem.py>`.
 
 .. seealso::
 

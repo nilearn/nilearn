@@ -3,14 +3,13 @@ Decoding with fREM: face vs house object recognition
 =========================================================
 
 This example uses fast ensembling of regularized models (fREM) to decode
-a face vs house discrimination task from Haxby 2001 study.
+a face vs house discrimination task from Haxby 2001 study. fREM uses an
+implicit spatial regularization through fast clustering and aggregates a
+high number of estimators trained on various splits of the training set,
+thus returning a very robust decoder at a lower computational cost than
+other spatially regularized methods.
 
-fREM uses an implicit spatial regularization through fast clustering and
-aggregates a high number of estimators trained on various splits of the
-training set, thus returning a very robust decoder at a lower computational
-cost than other spatially regularized methods.[1]_.
-
-To have more details, see the fREM documentation: :ref:`frem`.
+To have more details, see: :ref:`frem`.
 """
 
 ##############################################################################
@@ -50,9 +49,6 @@ background_img = mean_img(func_filenames)
 # Fit fREM
 # --------------------------------------
 from nilearn.decoding import fREMClassifier
-from nilearn.decoding import Decoder
-dec = Decoder(screening_percentile=20)
-dec.fit(X_train, y_train)
 decoder = fREMClassifier(cv=10)
 # Fit model on train data and predict on test data
 decoder.fit(X_train, y_train)
@@ -70,7 +66,7 @@ plotting.plot_stat_map(decoder.coef_img_["face"], background_img,
 plotting.show()
 #############################################################################
 # fREM ensembling procedure yields an important improvement of decoding
-# accuracy (+20%) on this simple example compared to fitting only one model per
+# accuracy on this simple example compared to fitting only one model per
 # fold and the clustering mechanism keeps its computational cost reasonable
 # even on heavier examples. Here we ensembled several instances of l2-SVC,
 # but fREMClassifier also works with ridge or logistic.

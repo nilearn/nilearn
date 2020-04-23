@@ -4,19 +4,14 @@ fREM on Jimura et al "mixed gambles" dataset.
 
 In this example, we use fast ensembling of regularized models (fREM) to
 solve a regression problem, predicting the gain level corresponding to each
-beta maps regressed from mixed gambles experiment.
+beta maps regressed from mixed gambles experiment. fREM uses an implicit
+spatial regularization through fast clustering and aggregates a high number
+of  estimators trained on various splits of the training set, thus returning
+a very robust decoder at a lower computational cost than other spatially
+regularized methods.
 
-fREM uses an implicit spatial regularization through fast clustering and
-aggregates a high number of estimators trained on various splits of the
-training set, thus returning a very robust decoder at a lower computational
-cost than other spatially regularized methods.[1]_.
-
-To have more details, see the fREM documentation: :ref:`frem`.
+To have more details, see: :ref:`frem`.
 """
-# authors: DOHMATOB Elvis Dopgima,
-#          GRAMFORT Alexandre
-#          BAZEILLE Thomas
-
 
 #############################################################################
 # Load the data from the Jimura mixed-gamble experiment
@@ -49,10 +44,12 @@ plot_stat_map(fREM.coef_img_['beta'], title="fREM", display_mode="yz",
 # due to the spatial regularity imposed by working on clusters and model
 # ensembling. Although these maps have been thresholded for display,
 # they are not sparse (i.e. almost all voxels have non-zero coefficients).
-# See also this `other example<sphx_glr_auto_examples_02_decoding_plot_haxby_frem.py>`
+# See also this :ref:`other example <sphx_glr_auto_examples_02_decoding_plot_haxby_frem.py>`
 # using fREM, and related :ref:`section of user guide <frem>`.
 #
-#
+#############################################################################
+# Example use of TV-L1 SpaceNet
+# -----------------------------
 # :ref:`SpaceNet<space_net>` is another method available in Nilearn to decode
 # with spatially sparse models. Depending on the penalty that is used,
 # it yields either very structured maps (TV-L1) or unstructured maps
@@ -60,12 +57,10 @@ plot_stat_map(fREM.coef_img_['beta'], title="fREM", display_mode="yz",
 # not demonstrated on this example but you can try them easily if you have a
 # few minutes. Example code is included below.
 
-#############################################################################
-# Example use of TV-L1 SpaceNet
-# -----------------------------
-# Here we're using the regressor object given that the task is to predict a
-# continuous variable, the gain of the gamble.
 from nilearn.decoding import SpaceNetRegressor
+
+# We use the regressor object since the task is to predict a continuous
+# variable (gain of the gamble).
 
 tv_l1 = SpaceNetRegressor(mask=mask_filename, penalty="tv-l1",
                           eps=1e-1,  # prefer large alphas
