@@ -15,7 +15,7 @@ To have more details, see: :ref:`frem`.
 
 #############################################################################
 # Load the data from the Jimura mixed-gamble experiment
-# -------------------------------------------------------
+# ---------------------------------------------------------------------------
 from nilearn.datasets import fetch_mixed_gambles
 data = fetch_mixed_gambles(n_subjects=16)
 
@@ -25,15 +25,16 @@ mask_filename = data.mask_img
 
 #############################################################################
 # Fit fREM
-# ----------
+# ---------------------------------------------------------------------------
 # We compare both of these models to a pipeline ensembling many models
+#
 from nilearn.decoding import fREMRegressor
 fREM = fREMRegressor('svr', cv=10)
 
 fREM.fit(zmap_filenames, behavioral_target)
 
 # Visualize fREM weights
-# ----------------------------
+# ---------------------------------------------------------------------------
 
 from nilearn.plotting import plot_stat_map
 plot_stat_map(fREM.coef_img_['beta'], title="fREM", display_mode="yz",
@@ -49,7 +50,7 @@ plot_stat_map(fREM.coef_img_['beta'], title="fREM", display_mode="yz",
 #
 #############################################################################
 # Example use of TV-L1 SpaceNet
-# -------------------------------
+# ---------------------------------------------------------------------------
 # :ref:`SpaceNet<space_net>` is another method available in Nilearn to decode
 # with spatially sparse models. Depending on the penalty that is used,
 # it yields either very structured maps (TV-L1) or unstructured maps
