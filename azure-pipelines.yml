@@ -38,7 +38,7 @@ jobs:
     displayName: 'test'
 
   - script: |
-      bash <(curl -s https://codecov.io/bash) -v
+      curl -s https://codecov.io/bash | bash
     displayName: 'codecov'
     env:
       CODECOV_TOKEN: $(CODECOV_TOKEN)
