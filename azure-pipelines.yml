@@ -38,7 +38,7 @@ jobs:
     displayName: 'test'
 
   - script: |
-      codecov -v -f coverage.xml -t %CODECOV_TOKEN%
+      codecov -f coverage.xml -t %CODECOV_TOKEN%
     displayName: 'codecov'
     env:
       CODECOV_TOKEN: $(CODECOV_TOKEN)
