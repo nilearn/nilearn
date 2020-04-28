@@ -40,6 +40,8 @@ jobs:
   - script: |
       bash <(curl -s https://codecov.io/bash) -v
     displayName: 'codecov'
+    env:
+      CODECOV_TOKEN: $(CODECOV_TOKEN)
 
   - task: PublishTestResults@2
     inputs:
