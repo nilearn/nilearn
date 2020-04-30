@@ -6,7 +6,7 @@ from pathlib import Path
 
 from nilearn.plotting import cm
 from nilearn.externals import tempita
-from brainsprite import viewer_substitute
+from nilearn.externals.brainsprite import viewer_substitute
 
 
 def view_img(stat_map_img, bg_img='MNI152',

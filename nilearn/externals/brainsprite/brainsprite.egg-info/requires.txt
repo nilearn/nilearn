@@ -1,0 +1,5 @@
+numpy
+matplotlib
+sklearn
+nilearn
+tempita
