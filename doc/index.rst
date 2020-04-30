@@ -5,12 +5,14 @@
 
 .. container:: index-paragraph
 
-    Nilearn is a Python module for **fast and easy statistical learning on
-    NeuroImaging** data.
-
-    It leverages the `scikit-learn <http://scikit-learn.org>`__ Python toolbox
+    Nilearn enables **approachable and versatile analyses of brain volumes**. It provides statistical and machine-learning tools, with **instructive documentation & friendly community**.
+    
+    It supports general linear model (GLM) based analysis and leverages the `scikit-learn <http://scikit-learn.org>`__ Python toolbox
     for multivariate statistics with applications such as predictive modelling,
     classification, decoding, or connectivity analysis.
+
+    Nilearn now includes the functionality of `Nistats <https://nistats.github.io>`_.
+    :ref:`Here's a guide to replacing Nistats imports to work in Nilearn. <nistats_migration>`
 
 
 .. Here we are building the carousel
@@ -97,6 +99,7 @@
 .. toctree::
    :hidden:
 
+   nistats_migration.rst
    authors.rst
    user_guide.rst
    auto_examples/index.rst
