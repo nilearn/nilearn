@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+<body>
+  <!-- This is the div that will host the html brainsprite code -->
+  <div id="div_viewer">
+    <!-- Note the curly brackets are here to tell tempita to update this element. -->
+    {{ html }}
+  </div>
+
+  <!-- Import jquery and brainsprite javascript libraries -->
+  <script src="https://code.jquery.com/jquery-3.5.0.min.js"></script>
+  <script>
+    // We'll inject brainsprite.js here, to make the html self-contained.
+    {{ bsprite }}
+  </script>
+
+  <!-- That's where the js brainsprite code will live -->
+  <script>
+  // On load: build all figures
+  $( window ).on('load',function() {
+    // Create brain slices
+    var brain = brainsprite(
+      // that's where all the brainsprite parameters will be injected.
+      {{ js }}
+    );
+  });
+  </script>
+</body>
+</html>

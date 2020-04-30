@@ -9,23 +9,25 @@ from nilearn.externals import tempita
 from nilearn.externals.brainsprite import viewer_substitute
 
 
-def view_img(stat_map_img, bg_img='MNI152',
-             cut_coords=None,
-             colorbar=True,
-             title=None,
-             threshold=1e-6,
-             annotate=True,
-             draw_cross=True,
-             black_bg='auto',
-             cmap=cm.cold_hot,
-             symmetric_cmap=True,
-             dim='auto',
-             vmax=None,
-             vmin=None,
-             resampling_interpolation='continuous',
-             opacity=1,
-             **kwargs
-             ):
+def view_img(
+    stat_map_img,
+    bg_img="MNI152",
+    cut_coords=None,
+    colorbar=True,
+    title=None,
+    threshold=1e-6,
+    annotate=True,
+    draw_cross=True,
+    black_bg="auto",
+    cmap=cm.cold_hot,
+    symmetric_cmap=True,
+    dim="auto",
+    vmax=None,
+    vmin=None,
+    resampling_interpolation="continuous",
+    opacity=1,
+    **kwargs
+):
     """
     Interactive html viewer of a statistical map, with optional background
 
@@ -126,7 +128,7 @@ def view_img(stat_map_img, bg_img='MNI152',
 
     # Initialize namespace for substitution
     namespace = {}
-    namespace["title"] = title
+    namespace["title"] = title or "Slice viewer"
 
     js_dir = os.path.join(os.path.dirname(__file__), "data", "js")
     with open(os.path.join(js_dir, "jquery.min.js")) as f:
@@ -149,6 +151,7 @@ def view_img(stat_map_img, bg_img='MNI152',
         resampling_interpolation=resampling_interpolation,
         opacity=opacity,
         base64=True,
+        value=False,
     )
 
     # build sprites and meta-data
@@ -156,5 +159,9 @@ def view_img(stat_map_img, bg_img='MNI152',
 
     # Populate template
     return bsprite.transform(
-        tpl, javascript="js", html="html", library="library", namespace=namespace
+        tpl,
+        javascript="javascript",
+        html="html",
+        library="library",
+        namespace=namespace,
     )

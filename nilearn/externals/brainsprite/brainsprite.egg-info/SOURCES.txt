@@ -1,8 +1,0 @@
-__init__.py
-brainsprite.py
-setup.py
-brainsprite.egg-info/PKG-INFO
-brainsprite.egg-info/SOURCES.txt
-brainsprite.egg-info/dependency_links.txt
-brainsprite.egg-info/requires.txt
-brainsprite.egg-info/top_level.txt
