@@ -282,7 +282,7 @@ def make_first_level_design_matrix(
         Specifies the desired drift model,
 
     high_pass : float, optional
-        high-pass frequency in case of a cosine model (in Hz).
+        High-pass frequency in case of a cosine model (in Hz).
 
     drift_order : int, optional
         Order of the drift model (in case it is polynomial).
