@@ -281,9 +281,8 @@ def make_first_level_design_matrix(
     drift_model : {'polynomial', 'cosine', None}, optional
         Specifies the desired drift model,
 
-    period_cut : float, optional
-        Cut period of the high-pass filter in seconds.
-        Used only if drift_model is 'cosine'.
+    high_pass : float, optional
+        High-pass frequency in case of a cosine model (in Hz).
 
     drift_order : int, optional
         Order of the drift model (in case it is polynomial).
