@@ -133,8 +133,10 @@ uses.
    :toctree: generated/
    :template: class.rst
 
-   Decoder 
+   Decoder
    DecoderRegressor
+   fREMClassifier
+   fREMRegressor 
    SpaceNetClassifier
    SpaceNetRegressor
    SearchLight
