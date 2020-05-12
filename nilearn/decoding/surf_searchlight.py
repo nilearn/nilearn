@@ -8,13 +8,9 @@ neighborhood of each location of a domain.
 #           Alexandre Gramfort (alexandre.gramfort@inria.fr)
 #           Philippe Gervais (philippe.gervais@inria.fr)
 #           Sylvain Takerkart (Sylvain.Takerkart@univ-amu.fr
+#           Jean-Remi King (jeanremi.king@gmail.com)
 #
 # License: simplified BSD
-
-import time
-import sys
-import warnings
-from distutils.version import LooseVersion
 
 import numpy as np
 
@@ -27,7 +23,9 @@ from .searchlight import search_light
 
 ESTIMATOR_CATALOG = dict(svc=svm.LinearSVC, svr=svm.SVR)
 
-def _apply_surfmask_and_get_affinity(mesh_coords, giimgs_data, radius, surfmask=None):
+
+def _apply_surfmask_and_get_affinity(mesh_coords, giimgs_data, radius,
+                                     surfmask=None):
     """Utility function used for searchlight decoding. Computes the affinity matrix
     and get the data matrix ready.
 
@@ -65,7 +63,7 @@ def _apply_surfmask_and_get_affinity(mesh_coords, giimgs_data, radius, surfmask=
 
     # Restrict the affinity matrix to the mask, if one was given
     if surfmask is not None:
-        A = A[surfmask != 0,:]
+        A = A[surfmask != 0, :]
 
     # Get the data ready to go into the SurfSearchLight.fit function
     X = giimgs_data.T
@@ -73,9 +71,6 @@ def _apply_surfmask_and_get_affinity(mesh_coords, giimgs_data, radius, surfmask=
     return X, A
 
 
-##############################################################################
-### Class for surface searchlight ############################################
-##############################################################################
 class SurfSearchLight(BaseEstimator):
     """Implements surface searchlight decoding.
 
@@ -131,9 +126,8 @@ class SurfSearchLight(BaseEstimator):
     vol. 103, no. 10, pages 3863-3868, March 2006
     """
 
-    def __init__(self, orig_mesh, surfmask_tex, process_surfmask_tex=None, radius=2.,
-                 estimator='svc',
-                 n_jobs=1, scoring=None, cv=None,
+    def __init__(self, orig_mesh, surfmask_tex=None, process_surfmask_tex=None,
+                 radius=2., estimator='svc', n_jobs=1, scoring=None, cv=None,
                  verbose=0):
         self.orig_mesh = orig_mesh
         self.surfmask_tex = surfmask_tex
@@ -171,9 +165,9 @@ class SurfSearchLight(BaseEstimator):
         """
 
         mesh_coords = self.orig_mesh[0]
-        X, A = _apply_surfmask_and_get_affinity(mesh_coords, giimgs_data,
-                                                self.radius,
-                                                surfmask = self.process_surfmask_tex)
+        X, A = _apply_surfmask_and_get_affinity(
+            mesh_coords, giimgs_data, self.radius,
+            surfmask=self.process_surfmask_tex)
 
         estimator = self.estimator
         if isinstance(estimator, _basestring):
@@ -185,8 +179,10 @@ class SurfSearchLight(BaseEstimator):
                               self.scoring, self.cv, self.n_jobs,
                               self.verbose)
 
-        scores_fullbrain = np.zeros(self.process_surfmask_tex.shape)
-        scores_fullbrain[self.process_surfmask_tex!=0] = scores
-        self.scores_ = scores_fullbrain
+        if self.process_surfmask_tex is not None:
+            scores_full = np.zeros_like(self.process_surfmask_tex)
+            scores_full[self.process_surfmask_tex != 0] = scores
+            scores = scores_full
+        self.scores_ = scores
 
         return self
