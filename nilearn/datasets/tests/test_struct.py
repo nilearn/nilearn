@@ -166,7 +166,7 @@ def test_fetch_surf_fsaverage(tmp_path, request_mocker):
         assert dataset.description != ''
 
 
-def test_fetch_surf_fsaverage5_sphere(tmp_path):
+def test_fetch_surf_fsaverage5_sphere(tmp_path, request_mocker):
     for mesh in ['fsaverage5_sphere']:
 
         dataset = struct.fetch_surf_fsaverage(
