@@ -61,7 +61,7 @@ estimator = make_pipeline(StandardScaler(),
 
 # Define the searchlight "estimator"
 searchlight = decoding.SurfSearchLight(mesh_data, radius=3, verbose=1,
-                                       estimator=estimator, n_jobs=-1, cv=cv)
+                                       estimator=estimator, n_jobs=1, cv=cv)
 
 # Run the searchlight decoding
 # this can take time, depending mostly on the size of the mesh, the number
