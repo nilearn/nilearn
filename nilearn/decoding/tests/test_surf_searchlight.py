@@ -135,7 +135,7 @@ def test_surf_searchlight():
     y = np.arange(frames, dtype=int) >= (frames // 2)
 
     # Run searchlight decoding
-    scores = searchlight.fit(X, y)
+    searchlight.fit(X, y)
 
     # Create a toy mesh and dataset to test masking capability
     mesh = _create_toy_mesh()
