@@ -17,7 +17,6 @@ import numpy as np
 from sklearn import svm, neighbors
 from sklearn.base import BaseEstimator
 
-from .._utils.compat import _basestring
 from .searchlight import search_light
 
 
@@ -76,10 +75,11 @@ class SurfSearchLight(BaseEstimator):
 
     Parameters
     -----------
-    mask_img : niimg
-        boolean image giving location of voxels containing usable signals.
 
-    process_mask_img : niimg, optional
+    orig_mesh : tuple, shape(2)
+        The surface mesh, as defined by 3d coordinates and vertices.
+
+    process_surfmask_tex : niimg, optional
         boolean image giving voxels on which searchlight should be
         computed.
 
@@ -126,11 +126,10 @@ class SurfSearchLight(BaseEstimator):
     vol. 103, no. 10, pages 3863-3868, March 2006
     """
 
-    def __init__(self, orig_mesh, surfmask_tex=None, process_surfmask_tex=None,
+    def __init__(self, orig_mesh, process_surfmask_tex=None,
                  radius=2., estimator='svc', n_jobs=1, scoring=None, cv=None,
                  verbose=0):
         self.orig_mesh = orig_mesh
-        self.surfmask_tex = surfmask_tex
         self.process_surfmask_tex = process_surfmask_tex
         self.radius = radius
         self.estimator = estimator
@@ -170,7 +169,7 @@ class SurfSearchLight(BaseEstimator):
             surfmask=self.process_surfmask_tex)
 
         estimator = self.estimator
-        if isinstance(estimator, _basestring):
+        if isinstance(estimator, str):
             estimator = ESTIMATOR_CATALOG[estimator]()
 
         # scores is an 1D array of CV scores with length equals to the number

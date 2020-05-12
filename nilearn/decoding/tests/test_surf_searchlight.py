@@ -122,7 +122,6 @@ def test_surf_searchlight():
     # Create searchlight object
     print(mesh[0].shape)
     searchlight = SurfSearchLight(mesh,
-                                  surfmask_data,
                                   process_surfmask_tex=surfmask_data,
                                   cv=4)
 
@@ -166,7 +165,6 @@ def test_surf_searchlight():
 
     # Create searchlight object
     searchlight = SurfSearchLight(mesh,
-                                  surfmask_data,
                                   process_surfmask_tex=surfmask_data,
                                   cv=4)
 
