@@ -326,6 +326,8 @@ def _uncompress_file(file_, delete_archive=True, verbose=1):
     if verbose > 0:
         sys.stderr.write('Extracting data from %s...' % file_)
     data_dir = os.path.dirname(file_)
+    with open(file_, "rb") as f:
+        content = f.read()[:10000]
     # We first try to see if it is a zip file
     try:
         filename, ext = os.path.splitext(file_)
@@ -365,8 +367,6 @@ def _uncompress_file(file_, delete_archive=True, verbose=1):
                 os.remove(file_)
             processed = True
         if not processed:
-            with open(file_) as f:
-                content = f.read()
             raise IOError(
                     "[Uncompress] unknown archive file format: %s\n%s" % (file_, content))
 
