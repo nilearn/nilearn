@@ -365,8 +365,10 @@ def _uncompress_file(file_, delete_archive=True, verbose=1):
                 os.remove(file_)
             processed = True
         if not processed:
+            with open(file_) as f:
+                content = f.read()
             raise IOError(
-                    "[Uncompress] unknown archive file format: %s" % file_)
+                    "[Uncompress] unknown archive file format: %s\n%s" % (file_, content))
 
         if verbose > 0:
             sys.stderr.write('.. done.\n')
