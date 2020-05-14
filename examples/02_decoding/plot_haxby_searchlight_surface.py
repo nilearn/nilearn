@@ -50,7 +50,6 @@ radius = 3.
 X = surface.vol_to_surf(fmri_img, pial_mesh, radius=radius).T
 
 # Define the adjacency of the surface vertices
-radius = 3.
 infl_mesh = fsaverage['infl_' + hemi]
 coords, _ = surface.load_surf_mesh(infl_mesh)
 nn = neighbors.NearestNeighbors(radius=radius)

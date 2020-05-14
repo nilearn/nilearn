@@ -306,9 +306,6 @@ class SearchLight(BaseEstimator):
             process_mask_coords, imgs, self.radius, True,
             mask_img=self.mask_img)
 
-        print("Shape of seeds (surfmask_coords), X and A matrices: ",
-              process_mask_coords.shape, X.shape, A.shape)
-
         estimator = self.estimator
         if isinstance(estimator, str):
             estimator = ESTIMATOR_CATALOG[estimator]()

@@ -76,8 +76,8 @@ import nilearn.decoding
 # The radius is the one of the Searchlight sphere that will scan the volume
 searchlight = nilearn.decoding.SearchLight(
     mask_img,
-    process_mask_img=mask_img,
-    radius=3, n_jobs=n_jobs,
+    process_mask_img=process_mask_img,
+    radius=5.6, n_jobs=n_jobs,
     verbose=1, cv=cv)
 searchlight.fit(fmri_img, y)
 
