@@ -36,44 +36,52 @@ y, session = y[condition_mask], session[condition_mask]
 # Surface bold response
 # ----------------------
 from nilearn import datasets, surface
+from sklearn import neighbors
 
 # Fetch a coarse surface for speed
 fsaverage = datasets.fetch_surf_fsaverage(mesh='fsaverage5')
-mesh_data = surface.load_surf_mesh(fsaverage.pial_left)
 
-X = surface.vol_to_surf(fmri_img, fsaverage.pial_left)
+hemi = 'left'
+pial_mesh = fsaverage['pial_' + hemi]
+
+
+# Average voxels around 3 mm of the surface
+radius = 3.
+X = surface.vol_to_surf(fmri_img, pial_mesh, radius=radius).T
+
+# Define the adjacency of the surface vertices
+radius = 3.
+infl_mesh = fsaverage['infl_' + hemi]
+coords, _ = surface.load_surf_mesh(infl_mesh)
+nn = neighbors.NearestNeighbors(radius=radius)
+A = nn.fit(coords).radius_neighbors_graph(coords).tolil()
 
 #########################################################################
 # Searchlight computation
 # -----------------------
-from nilearn import decoding
 from sklearn.model_selection import KFold
 from sklearn.pipeline import make_pipeline
 from sklearn.preprocessing import StandardScaler
 from sklearn.linear_model import RidgeClassifier
-
-# Define cross-validation scheme
-cv = KFold(n_splits=3, shuffle=False)
+from nilearn.decoding.searchlight import search_light
 
 # Simple linear estimator preceeded by a normalization step
 estimator = make_pipeline(StandardScaler(),
                           RidgeClassifier(alpha=10.))
 
-# Define the searchlight "estimator"
-searchlight = decoding.SurfSearchLight(mesh_data, radius=3, verbose=1,
-                                       estimator=estimator, n_jobs=1, cv=cv)
+# Define cross-validation scheme
+cv = KFold(n_splits=3, shuffle=False)
 
-# Run the searchlight decoding
-# this can take time, depending mostly on the size of the mesh, the number
-# of cross-validation splits and the radius
-searchlight.fit(X, y)
+# Cross-validated search light
+scores = search_light(X, y, estimator, A, cv=cv, n_jobs=1)
 
 #########################################################################
 # Visualization
 # -------------
 from nilearn import plotting
-plotting.plot_surf_stat_map(fsaverage.infl_left, searchlight.scores_,
-                            hemi='right', colorbar=True, threshold=0.6,
-                            bg_map=fsaverage.sulc_right,
+chance = .5
+plotting.plot_surf_stat_map(infl_mesh, scores - chance,
+                            view='medial', colorbar=True, threshold=0.1,
+                            bg_map=fsaverage['sulc_' + hemi],
                             title='Accuracy map, left hemisphere')
 plotting.show()
