@@ -38,15 +38,13 @@ y, session = y[condition_mask], session[condition_mask]
 from nilearn import datasets, surface
 from sklearn import neighbors
 
-# Fetch a coarse surface for speed
+# Fetch a coarse surface of the left hemisphere only for speed
 fsaverage = datasets.fetch_surf_fsaverage(mesh='fsaverage5')
-
 hemi = 'left'
-pial_mesh = fsaverage['pial_' + hemi]
-
 
 # Average voxels around 3 mm of the surface
 radius = 3.
+pial_mesh = fsaverage['pial_' + hemi]
 X = surface.vol_to_surf(fmri_img, pial_mesh, radius=radius).T
 
 # Define the adjacency of the surface vertices
