@@ -952,6 +952,7 @@ class fREMRegressor(_BaseDecoder):
         If int, number of shuffled splits returned, which is usually the right
         way to train many different classifiers. A good trade-off between
         stability of the aggregated model and computation time is 50 splits.
+        Shuffled splits are seeded by default for reproducibility.
         Can also be a cross-validation generator.
 
     param_grid: dict of str to sequence, or sequence of such. Default None
@@ -1064,7 +1065,7 @@ class fREMRegressor(_BaseDecoder):
         self.classes_ = ['beta']
 
         if isinstance(cv, int):
-            cv = ShuffleSplit(cv)
+            cv = ShuffleSplit(cv, random_state=0)
 
         super().__init__(
             estimator=estimator, mask=mask, cv=cv, param_grid=param_grid,
@@ -1105,7 +1106,8 @@ class fREMClassifier(_BaseDecoder):
         If int, number of stratified shuffled splits returned, which is usually
         the right way to train many different classifiers. A good trade-off
         between stability of the aggregated model and computation time is
-        50 splits. Can also be a cross-validation generator.
+        50 splits. Shuffled splits are seeded by default for reproducibility.
+        Can also be a cross-validation generator.
 
     param_grid: dict of str to sequence, or sequence of such. Default None
         The parameter grid to explore, as a dictionary mapping estimator
@@ -1216,7 +1218,7 @@ class fREMClassifier(_BaseDecoder):
                  low_pass=None, high_pass=None, t_r=None, memory=None,
                  memory_level=0, n_jobs=1, verbose=0):
         if isinstance(cv, int):
-            cv = StratifiedShuffleSplit(cv)
+            cv = StratifiedShuffleSplit(cv, random_state=0)
 
         super().__init__(
             estimator=estimator, mask=mask, cv=cv, param_grid=param_grid,
