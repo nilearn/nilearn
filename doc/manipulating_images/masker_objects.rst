@@ -188,6 +188,7 @@ Common data preparation steps: smoothing, filtering, resampling
 :class:`NiftiMasker` comes with many parameters that enable data
 preparation::
 
+   >>> import sklearn; sklearn.set_config(print_changed_only=False)
    >>> from nilearn import input_data
    >>> masker = input_data.NiftiMasker()
    >>> masker # doctest: +ELLIPSIS +NORMALIZE_WHITESPACE

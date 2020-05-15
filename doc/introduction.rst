@@ -403,6 +403,7 @@ estimator object, for instance an SVC (`support vector classifier
 <http://scikit-learn.org/stable/modules/svm.html>`_).
 It is first created with the relevant parameters::
 
+    >>> import sklearn; sklearn.set_config(print_changed_only=False)
     >>> from sklearn.svm import SVC
     >>> svc = SVC(kernel='linear', C=1.)
 
