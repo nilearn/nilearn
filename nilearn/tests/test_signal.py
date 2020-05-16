@@ -554,6 +554,13 @@ def test_high_variance_confounds():
         np.min(np.abs(np.dstack([outG - outGt, outG + outGt])), axis=2),
         np.zeros(outG.shape))
 
+    # Control robustness to NaNs
+    seriesG[:, 0] = 0
+    out1 = nisignal.high_variance_confounds(seriesG, n_confounds=n_confounds)
+    seriesG[:, 0] = np.nan
+    out2 = nisignal.high_variance_confounds(seriesG, n_confounds=n_confounds)
+    np.testing.assert_almost_equal(out1, out2, decimal=13)
+
 
 def test_clean_psc():
     rng = np.random.RandomState(0)

@@ -11,7 +11,7 @@ import distutils.version
 import warnings
 
 import numpy as np
-from scipy import stats, linalg, signal as sp_signal
+from scipy import linalg, signal as sp_signal
 from sklearn.utils import gen_even_slices, as_float_array
 
 from ._utils.numpy_conversions import csv_to_array, as_ndarray
@@ -356,8 +356,7 @@ def high_variance_confounds(series, n_confounds=5, percentile=2.,
 
     # Compute variance without mean removal.
     var = _mean_of_squares(series)
-
-    var_thr = stats.scoreatpercentile(var, 100. - percentile)
+    var_thr = np.nanpercentile(var, 100. - percentile)
     series = series[:, var > var_thr]  # extract columns (i.e. features)
     # Return the singular vectors with largest singular values
     # We solve the symmetric eigenvalue problem here, increasing stability
