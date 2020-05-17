@@ -781,7 +781,7 @@ def test_fetch_openneuro_dataset(request_mocker, tmp_path):
     assert len(dl_files) == 9
 
 
-def test_fetch_localizer():
+def test_fetch_localizer(request_mocker):
     dataset = func.fetch_localizer_first_level()
     assert isinstance(dataset['events'], str)
     assert isinstance(dataset.epi_img, str)

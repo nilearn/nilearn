@@ -36,7 +36,9 @@ commands:
             date +%F > today
             date +%U > week_num
       - restore_cache:
-          key: v1-packages+datasets-{{ checksum "week_num" }}-{{ checksum ".circleci/packages-cache-timestamp" }}
+          keys:
+            - v1-packages+datasets-{{ checksum "week_num" }}-{{ checksum ".circleci/packages-cache-timestamp" }}
+            - v1-packages+datasets-
       - restore_cache:
          key: v1-docs-{{ .Branch }}-{{ checksum "today" }}-{{ checksum ".circleci/docs-cache-timestamp" }}
 
