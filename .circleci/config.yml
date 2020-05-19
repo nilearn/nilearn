@@ -148,7 +148,6 @@ jobs:
     steps:
       - checkout
       - preinstall
-      - restore_from_cache
       - cache_aware_conda_setup
       - install_dependencies
       - build_docs
