@@ -13,12 +13,9 @@
 nilearn
 =======
 
-Nilearn is a Python module for fast and easy statistical learning on
-NeuroImaging data.
+Nilearn enables approachable and versatile analyses of brain volumes. It provides statistical and machine-learning tools, with instructive documentation & friendly community.
 
-It leverages the `scikit-learn <http://scikit-learn.org>`_ Python toolbox for multivariate
-statistics with applications such as predictive modelling,
-classification, decoding, or connectivity analysis.
+It supports general linear model (GLM) based analysis and leverages the `scikit-learn <http://scikit-learn.org>`_ Python toolbox for multivariate statistics with applications such as predictive modelling, classification, decoding, or connectivity analysis.
 
 This work is made available by a community of people, amongst which
 the INRIA Parietal Project Team and the scikit-learn folks, in particular
