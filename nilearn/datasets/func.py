@@ -2132,46 +2132,6 @@ def _reduce_confounds(regressors, keep_confounds):
 
 # datasets originally belonging to nistats follow
 
-
-def fetch_language_localizer_demo_dataset(data_dir=None, verbose=1):
-    """Download language localizer demo dataset.
-
-    Parameters
-    ----------
-    data_dir: string, optional
-        Path to store the downloaded dataset. if None employ nilearn
-        datasets default download directory.
-
-    verbose: int, optional
-        verbosity level (0 means no message).
-
-    Returns
-    -------
-    data_dir: string
-        Path to downloaded dataset
-
-    downloaded_files: list of string
-        Absolute paths of downloaded files on disk
-    """
-    url = 'https://osf.io/nh987/download'
-    main_folder = 'fMRI-language-localizer-demo-dataset'
-
-    data_dir = _get_dataset_dir(main_folder, data_dir=data_dir,
-                                verbose=verbose)
-    # The files_spec needed for _fetch_files
-    files_spec = [(main_folder + '.zip', url, {'move': main_folder + '.zip'})]
-    # Only download if directory is empty
-    # Directory will have been created by the call to _get_dataset_dir above
-    if not os.listdir(data_dir):
-        downloaded_files = _fetch_files(data_dir, files_spec, resume=True,
-                                        verbose=verbose)
-        _uncompress_file(downloaded_files[0])
-
-    file_list = [os.path.join(path, f) for
-                 path, dirs, files in os.walk(data_dir) for f in files]
-    return data_dir, sorted(file_list)
-
-
 def fetch_bids_langloc_dataset(data_dir=None, verbose=1):
     """Download language localizer example bids dataset.
 

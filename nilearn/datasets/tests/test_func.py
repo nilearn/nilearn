@@ -811,59 +811,6 @@ def _mock_bids_compliant_spm_auditory_events_file():
     return actual_events_data_string, events_filepath
 
 
-def test_fetch_language_localizer_demo_dataset(request_mocker, tmp_path):
-    data_dir = str(tmp_path)
-    expected_data_dir, expected_files = _mock_language_localizer_demo_dataset(
-        data_dir)
-    actual_data_dir, actual_subdirs = func.fetch_language_localizer_demo_dataset(
-        data_dir)
-    assert actual_data_dir == expected_data_dir
-    assert actual_subdirs == expected_files
-
-
-def _mock_language_localizer_demo_dataset(data_dir):
-    events_file_paths = []
-    derivatives_file_paths = []
-    dataset_name = 'fMRI-language-localizer-demo-dataset'
-    filename_prefix = '_task-languagelocalizer_'
-    for name_suffix in range(1, 10):
-        subject_dir = 'sub-0{}'.format(name_suffix)
-        subdir_path = os.path.join(data_dir,
-                                   dataset_name,
-                                   subject_dir,
-                                   'func',
-                                   )
-        os.makedirs(subdir_path)
-        file_name = '{}{}events.tsv'.format(subject_dir, filename_prefix)
-        file_path = os.path.join(subdir_path, file_name)
-        events_file_paths.append(file_path)
-        with open(file_path, 'w') as f:
-            pass
-        subdir_path = os.path.join(data_dir,
-                                   dataset_name,
-                                   'derivatives',
-                                   subject_dir,
-                                   'func',
-                                   )
-        os.makedirs(subdir_path)
-        filename_suffixes = ['desc-preproc_bold.json',
-                             'desc-preproc_bold.nii.gz',
-                             'desc-confounds_regressors.tsv',
-                             ]
-        for filename_suffix_ in filename_suffixes:
-            file_name = '{}{}'.format(filename_prefix, filename_suffix_)
-            file_path = os.path.join(subdir_path, file_name)
-            derivatives_file_paths.append(file_path)
-            with open(file_path, 'w') as f:
-                f
-    expected_data_dir = os.path.join(data_dir, dataset_name)
-    expected_files = []
-    expected_files.extend(events_file_paths)
-    expected_files.extend(derivatives_file_paths)
-    expected_files.sort()
-    return expected_data_dir, expected_files
-
-
 def test_make_spm_auditory_events_file():
     try:
         (
