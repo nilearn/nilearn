@@ -5,9 +5,11 @@ CanICA
 # Author: Alexandre Abraham, Gael Varoquaux,
 # License: BSD 3 clause
 
+import warnings as _warnings 
+import numpy as np
+
 from operator import itemgetter
 
-import numpy as np
 from scipy.stats import scoreatpercentile
 from sklearn.decomposition import fastica
 from joblib import Memory, delayed, Parallel
@@ -214,10 +216,16 @@ class CanICA(MultiPCA):
                              str(self.threshold))
         if ratio is not None:
             abs_ica_maps = np.abs(ica_maps)
-            threshold = scoreatpercentile(
-                abs_ica_maps,
-                np.maximum(0, 100. - (100. / len(ica_maps)) * ratio))
-            ica_maps[abs_ica_maps < threshold] = 0.
+            percentile = 100. - (100. / len(ica_maps)) * ratio
+            if percentile <= 0:
+                _warnings.warn("Critical threshold (= %s percentile). "
+                              "No threshold will be applied. "
+                              "Threshold should be decreased or "
+                              "number of components should be adjusted." %
+                              str(percentile), UserWarning)
+            else:
+                threshold = scoreatpercentile(abs_ica_maps, percentile)
+                ica_maps[abs_ica_maps < threshold] = 0.
         # We make sure that we keep the dtype of components
         self.components_ = ica_maps.astype(self.components_.dtype)
 
