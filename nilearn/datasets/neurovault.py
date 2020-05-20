@@ -1452,16 +1452,7 @@ def _download_image_nii_file(image_info, collection, download_params):
     image_absolute_path = os.path.join(
         collection['absolute_path'], image_file_name)
 
-    # Testing whether we need to resample or not
-    # The following behavior is intended :
-    # If resampling is needed,
-    # - check whether the resampled images are already on disk
-    #       - if yes, return them
-    #       - if not, check whether the non-resampled image is on disk
-    #           - if yes : use this image and resample it , keep the non resampled version
-    #           - if not : download the image as a tempfile, resample it, remove the tempfile
-
-
+   
     if download_params['resample']:
 
         resampled_image_file_name = 'image_{0}_resampled.nii.gz'.format(image_id)
@@ -1470,42 +1461,29 @@ def _download_image_nii_file(image_info, collection, download_params):
         resampled_image_relative_path = os.path.join(
             collection['relative_path'], resampled_image_file_name)
 
-        if os.path.isfile(resampled_image_absolute_path):
-            image_info['absolute_path'] = resampled_image_absolute_path
-            image_info['relative_path'] = resampled_image_relative_path
-        elif os.path.isfile(image_absolute_path):
-            # Resample
-            print('Resampling...')
-            im_resampled = resample_img(img = image_absolute_path, target_affine=STD_AFFINE)
-            im_resampled.to_filename(resampled_image_absolute_path)
+        # Generate a temporary file name
+        struuid = str(uuid.uuid1())
 
-            image_info['absolute_path'] = resampled_image_absolute_path
-            image_info['relative_path'] = resampled_image_relative_path
+        tmp_file = 'tmp_{0}.nii.gz'.format(struuid)
 
-        else:
+        tmp_path = os.path.join(
+            collection['absolute_path'], tmp_file)
 
-            # Generate a temporary file name
-            struuid = str(uuid.uuid1())
+        _simple_download(
+            image_url, tmp_path,
+            download_params['temp_dir'], verbose=download_params['verbose'])
 
-            tmp_file = 'tmp_{0}.nii.gz'.format(struuid)
+        # Resample here
+        print('Resampling...')
+        im_resampled = resample_img(img=tmp_path, target_affine=STD_AFFINE)
+        im_resampled.to_filename(resampled_image_absolute_path)
 
-            tmp_path = os.path.join(
-                collection['absolute_path'], tmp_file)
-
-            _simple_download(
-                image_url, tmp_path,
-                download_params['temp_dir'], verbose=download_params['verbose'])
-
-            # Resample here
-            print('Resampling...')
-            im_resampled = resample_img(img=tmp_path, target_affine=STD_AFFINE)
-            im_resampled.to_filename(resampled_image_absolute_path)
-
-            # Remove temporary file
-            os.remove(tmp_path)
-
-            image_info['absolute_path'] = resampled_image_absolute_path
-            image_info['relative_path'] = resampled_image_relative_path
+        # Remove temporary file
+        os.remove(tmp_path)
+        image_info['absolute_path'] = image_absolute_path
+        image_info['relative_path'] = image_relative_path
+        image_info['resampled_absolute_path'] = resampled_image_absolute_path
+        image_info['resampled_relative_path'] = resampled_image_relative_path
 
     else:
 
@@ -1514,6 +1492,8 @@ def _download_image_nii_file(image_info, collection, download_params):
             download_params['temp_dir'], verbose=download_params['verbose'])
         image_info['absolute_path'] = image_absolute_path
         image_info['relative_path'] = image_relative_path
+        image_info['resampled_absolute_path'] = None
+        image_info['resampled_relative_path'] = None
     return image_info, collection
 
 
@@ -1712,9 +1692,11 @@ def _scroll_local(download_params):
                        if download_params['local_image_filter'](img))
         for image in good_images:
             image, collection = _update(image, collection, download_params)
-            download_params['visited_images'].add(image['id'])
-            download_params['visited_collections'].add(collection['id'])
-            yield image, collection
+            if not download_params['resample']:
+                
+                download_params['visited_images'].add(image['id'])
+                download_params['visited_collections'].add(collection['id'])
+                yield image, collection
 
 
 def _scroll_collection(collection, download_params):
