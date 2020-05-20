@@ -49,7 +49,6 @@ if term_weights is None:
     vocabulary = np.asarray(["Neurosynth is down", ":("])
 
 # Clean and report term scores
-print(term_weights)
 term_weights[term_weights < 0] = 0
 total_scores = np.mean(term_weights, axis=0)
 
