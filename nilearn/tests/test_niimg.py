@@ -1,11 +1,11 @@
 import os
 import numpy as np
 
+import joblib
 import nibabel as nb
 import pytest
 from nibabel import Nifti1Image
 from nibabel.tmpdirs import InTemporaryDirectory
-from nilearn._utils.compat import joblib
 
 from nilearn.image import new_img_like
 from nilearn._utils import niimg

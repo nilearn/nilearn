@@ -15,7 +15,6 @@ from scipy import ndimage, linalg
 
 from .image import crop_img
 from .. import _utils
-from .._utils.compat import _basestring
 from .._utils.niimg import _get_data
 
 ###############################################################################
@@ -416,7 +415,7 @@ def resample_img(img, target_affine=None, target_shape=None,
                    "or 'nearest' but it was set to '{0}'").format(interpolation)
         raise ValueError(message)
 
-    if isinstance(img, _basestring):
+    if isinstance(img, str):
         # Avoid a useless copy
         input_img_is_string = True
     else:

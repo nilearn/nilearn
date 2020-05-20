@@ -12,14 +12,16 @@ import json
 import nibabel
 import gzip
 
+import pandas as pd
 import pytest
+from nibabel.tmpdirs import TemporaryDirectory
 from sklearn.utils import check_random_state
 
 from . import test_utils as tst
 
 from nilearn.datasets import utils, func
 
-from nilearn._utils.compat import _basestring
+from ..utils import _get_dataset_dir
 
 
 @pytest.fixture()
@@ -118,7 +120,7 @@ def test_fetch_haxby(tmp_path, request_mocker):
     assert len(haxby.mask_house_little) == len(subjects)
     assert len(haxby.anat) == len(subjects)
     assert haxby.anat[2] is None
-    assert isinstance(haxby.mask, _basestring)
+    assert isinstance(haxby.mask, str)
     assert len(haxby.mask_face) == len(subjects)
     assert len(haxby.session_target) == len(subjects)
     assert len(haxby.mask_vt) == len(subjects)
@@ -134,7 +136,9 @@ def test_fetch_haxby(tmp_path, request_mocker):
 
 def test_fetch_nyu_rest(tmp_path, request_mocker):
     # First session, all subjects
-    nyu = func.fetch_nyu_rest(data_dir=str(tmp_path), verbose=0)
+    with pytest.warns(np.VisibleDeprecationWarning,
+                      match='fetch_nyu_rest has been deprecated'):
+        nyu = func.fetch_nyu_rest(data_dir=str(tmp_path), verbose=0)
     assert len(tst.mock_url_request.urls) == 2
     assert len(nyu.func) == 25
     assert len(nyu.anat_anon) == 25
@@ -143,8 +147,11 @@ def test_fetch_nyu_rest(tmp_path, request_mocker):
 
     # All sessions, 12 subjects
     tst.mock_url_request.reset()
-    nyu = func.fetch_nyu_rest(data_dir=str(tmp_path), sessions=[1, 2, 3],
-                              n_subjects=12, verbose=0)
+    with pytest.warns(np.VisibleDeprecationWarning,
+                      match='fetch_nyu_rest has been deprecated'):
+        nyu = func.fetch_nyu_rest(data_dir=str(tmp_path), 
+                                  sessions=[1, 2, 3],
+                                  n_subjects=12, verbose=0)
     # Session 1 has already been downloaded
     assert len(tst.mock_url_request.urls) == 2
     assert len(nyu.func) == 36
@@ -191,9 +198,9 @@ def test_miyawaki2008(tmp_path, request_mocker):
     dataset = func.fetch_miyawaki2008(data_dir=str(tmp_path), verbose=0)
     assert len(dataset.func) == 32
     assert len(dataset.label) == 32
-    assert isinstance(dataset.mask, _basestring)
+    assert isinstance(dataset.mask, str)
     assert len(dataset.mask_roi) == 38
-    assert isinstance(dataset.background, _basestring)
+    assert isinstance(dataset.background, str)
     assert len(tst.mock_url_request.urls) == 1
     assert dataset.description != ''
 
@@ -208,7 +215,7 @@ def test_fetch_localizer_contrasts(tmp_path, request_mocker, localizer_mocker):
     assert not hasattr(dataset, 'anats')
     assert not hasattr(dataset, 'tmaps')
     assert not hasattr(dataset, 'masks')
-    assert isinstance(dataset.cmaps[0], _basestring)
+    assert isinstance(dataset.cmaps[0], str)
     assert isinstance(dataset.ext_vars, np.recarray)
     assert len(dataset.cmaps) == 2
     assert dataset.ext_vars.size == 2
@@ -220,7 +227,7 @@ def test_fetch_localizer_contrasts(tmp_path, request_mocker, localizer_mocker):
         data_dir=str(tmp_path),
         verbose=1)
     assert isinstance(dataset.ext_vars, np.recarray)
-    assert isinstance(dataset.cmaps[0], _basestring)
+    assert isinstance(dataset.cmaps[0], str)
     assert len(dataset.cmaps) == 2 * 2  # two contrasts are fetched
     assert dataset.ext_vars.size == 2
 
@@ -234,10 +241,10 @@ def test_fetch_localizer_contrasts(tmp_path, request_mocker, localizer_mocker):
         get_tmaps=True,
         verbose=1)
     assert isinstance(dataset.ext_vars, np.recarray)
-    assert isinstance(dataset.anats[0], _basestring)
-    assert isinstance(dataset.cmaps[0], _basestring)
-    assert isinstance(dataset.masks[0], _basestring)
-    assert isinstance(dataset.tmaps[0], _basestring)
+    assert isinstance(dataset.anats[0], str)
+    assert isinstance(dataset.cmaps[0], str)
+    assert isinstance(dataset.masks[0], str)
+    assert isinstance(dataset.tmaps[0], str)
     assert dataset.ext_vars.size == 1
     assert len(dataset.anats) == 1
     assert len(dataset.cmaps) == 1
@@ -265,7 +272,7 @@ def test_fetch_localizer_calculation_task(tmp_path, request_mocker,
         data_dir=str(tmp_path),
         verbose=1)
     assert isinstance(dataset.ext_vars, np.recarray)
-    assert isinstance(dataset.cmaps[0], _basestring)
+    assert isinstance(dataset.cmaps[0], str)
     assert dataset.ext_vars.size == 2
     assert len(dataset.cmaps) == 2
     assert dataset.description != ''
@@ -510,7 +517,7 @@ def test_fetch_cobre(tmp_path, request_mocker):
     assert isinstance(cobre_data.func, list)
     # test confounds files in a list
     assert isinstance(cobre_data.confounds, list)
-    assert isinstance(cobre_data.func[0], _basestring)
+    assert isinstance(cobre_data.func[0], str)
     # returned phenotypic data will be an array
     assert isinstance(cobre_data.phenotypic, np.recarray)
 
@@ -655,3 +662,307 @@ def test_fetch_development_fmri_exception():
     with pytest.raises(ValueError, match='Wrong value for age_group'):
         func._filter_func_regressors_by_participants(participants='junk',
                                                      age_group='junk for test')
+
+
+# datasets tests originally belonging to nistats follow
+
+currdir = os.path.dirname(os.path.abspath(__file__))
+datadir = os.path.join(currdir, 'data')
+
+
+def test_fetch_bids_langloc_dataset(request_mocker, tmp_path):
+    data_dir = str(tmp_path / 'bids_langloc_example')
+    os.mkdir(data_dir)
+    main_folder = os.path.join(data_dir, 'bids_langloc_dataset')
+    os.mkdir(main_folder)
+
+    datadir, dl_files = func.fetch_bids_langloc_dataset(str(tmp_path))
+
+    assert isinstance(datadir, str)
+    assert isinstance(dl_files, list)
+
+
+def test_select_from_index():
+    dataset_version = 'ds000030_R1.0.4'
+    data_prefix = '{}/{}/uncompressed'.format(
+        dataset_version.split('_')[0], dataset_version)
+    # Prepare url files for subject and filter tests
+    urls = [data_prefix + '/stuff.html',
+            data_prefix + '/sub-xxx.html',
+            data_prefix + '/sub-yyy.html',
+            data_prefix + '/sub-xxx/ses-01_task-rest.txt',
+            data_prefix + '/sub-xxx/ses-01_task-other.txt',
+            data_prefix + '/sub-xxx/ses-02_task-rest.txt',
+            data_prefix + '/sub-xxx/ses-02_task-other.txt',
+            data_prefix + '/sub-yyy/ses-01.txt',
+            data_prefix + '/sub-yyy/ses-02.txt']
+
+    # Only 1 subject and not subject specific files get downloaded
+    new_urls = func.select_from_index(urls, n_subjects=1)
+    assert len(new_urls) == 6
+    assert data_prefix + '/sub-yyy.html' not in new_urls
+
+    # 2 subjects and not subject specific files get downloaded
+    new_urls = func.select_from_index(urls, n_subjects=2)
+    assert len(new_urls) == 9
+    assert data_prefix + '/sub-yyy.html' in new_urls
+    # ALL subjects and not subject specific files get downloaded
+    new_urls = func.select_from_index(urls, n_subjects=None)
+    assert len(new_urls) == 9
+
+    # test inclusive filters. Only files with task-rest
+    new_urls = func.select_from_index(
+        urls, inclusion_filters=['*task-rest*'])
+    assert len(new_urls) == 2
+    assert data_prefix + '/stuff.html' not in new_urls
+
+    # test exclusive filters. only files without ses-01
+    new_urls = func.select_from_index(
+        urls, exclusion_filters=['*ses-01*'])
+    assert len(new_urls) == 6
+    assert data_prefix + '/stuff.html' in new_urls
+
+    # test filter combination. only files with task-rest and without ses-01
+    new_urls = func.select_from_index(
+        urls, inclusion_filters=['*task-rest*'],
+        exclusion_filters=['*ses-01*'])
+    assert len(new_urls) == 1
+    assert data_prefix + '/sub-xxx/ses-02_task-rest.txt' in new_urls
+
+
+def test_fetch_openneuro_dataset_index():
+    with TemporaryDirectory() as tmpdir:
+        dataset_version = 'ds000030_R1.0.4'
+        subdir_names = ['ds000030', 'ds000030_R1.0.4', 'uncompressed']
+        tmp_list = []
+        for subdir in subdir_names:
+            tmp_list.append(subdir)
+            subdirpath = os.path.join(tmpdir, *tmp_list)
+            os.mkdir(subdirpath)
+
+        filepath = os.path.join(subdirpath, 'urls.json')
+        mock_json_content = ['junk1', 'junk2']
+        with open(filepath, 'w') as f:
+            json.dump(mock_json_content, f)
+        urls_path, urls = func.fetch_openneuro_dataset_index(
+            data_dir=tmpdir,
+            dataset_version=dataset_version,
+            verbose=1,
+        )
+        urls_path = urls_path.replace('/', os.sep)
+        assert urls_path == filepath
+        assert urls == mock_json_content
+
+
+def test_fetch_openneuro_dataset(request_mocker, tmp_path):
+    dataset_version = 'ds000030_R1.0.4'
+    data_prefix = '{}/{}/uncompressed'.format(
+        dataset_version.split('_')[0], dataset_version)
+    data_dir = _get_dataset_dir(data_prefix, data_dir=str(tmp_path),
+                                verbose=1)
+    url_file = os.path.join(data_dir, 'urls.json')
+    # Prepare url files for subject and filter tests
+    urls = [data_prefix + '/stuff.html',
+            data_prefix + '/sub-xxx.html',
+            data_prefix + '/sub-yyy.html',
+            data_prefix + '/sub-xxx/ses-01_task-rest.txt',
+            data_prefix + '/sub-xxx/ses-01_task-other.txt',
+            data_prefix + '/sub-xxx/ses-02_task-rest.txt',
+            data_prefix + '/sub-xxx/ses-02_task-other.txt',
+            data_prefix + '/sub-yyy/ses-01.txt',
+            data_prefix + '/sub-yyy/ses-02.txt']
+    json.dump(urls, open(url_file, 'w'))
+
+    # Only 1 subject and not subject specific files get downloaded
+    datadir, dl_files = func.fetch_openneuro_dataset(
+        urls, str(tmp_path), dataset_version)
+    assert isinstance(datadir, str)
+    assert isinstance(dl_files, list)
+    assert len(dl_files) == 9
+
+
+def test_fetch_localizer(request_mocker):
+    dataset = func.fetch_localizer_first_level()
+    assert isinstance(dataset['events'], str)
+    assert isinstance(dataset.epi_img, str)
+
+
+def _mock_original_spm_auditory_events_file():
+    expected_events_data = {
+        'onset': [factor * 42.0 for factor in range(0, 16)],
+        'duration': [42.0] * 16,
+        'trial_type': ['rest', 'active'] * 8,
+    }
+    expected_events_data = pd.DataFrame(expected_events_data)
+    expected_events_data_string = expected_events_data.to_csv(
+        sep='\t',
+        index=0,
+        columns=['onset', 'duration', 'trial_type'],
+    )
+    return expected_events_data_string
+
+
+def _mock_bids_compliant_spm_auditory_events_file():
+    events_filepath = os.path.join(os.getcwd(), 'tests_events.tsv')
+    func._make_events_file_spm_auditory_data(
+        events_filepath=events_filepath)
+    with open(events_filepath, 'r') as actual_events_file_obj:
+        actual_events_data_string = actual_events_file_obj.read()
+    return actual_events_data_string, events_filepath
+
+
+def test_fetch_language_localizer_demo_dataset(request_mocker, tmp_path):
+    data_dir = str(tmp_path)
+    expected_data_dir, expected_files = _mock_language_localizer_demo_dataset(
+        data_dir)
+    actual_data_dir, actual_subdirs = func.fetch_language_localizer_demo_dataset(
+        data_dir)
+    assert actual_data_dir == expected_data_dir
+    assert actual_subdirs == expected_files
+
+
+def _mock_language_localizer_demo_dataset(data_dir):
+    events_file_paths = []
+    derivatives_file_paths = []
+    dataset_name = 'fMRI-language-localizer-demo-dataset'
+    filename_prefix = '_task-languagelocalizer_'
+    for name_suffix in range(1, 10):
+        subject_dir = 'sub-0{}'.format(name_suffix)
+        subdir_path = os.path.join(data_dir,
+                                   dataset_name,
+                                   subject_dir,
+                                   'func',
+                                   )
+        os.makedirs(subdir_path)
+        file_name = '{}{}events.tsv'.format(subject_dir, filename_prefix)
+        file_path = os.path.join(subdir_path, file_name)
+        events_file_paths.append(file_path)
+        with open(file_path, 'w') as f:
+            pass
+        subdir_path = os.path.join(data_dir,
+                                   dataset_name,
+                                   'derivatives',
+                                   subject_dir,
+                                   'func',
+                                   )
+        os.makedirs(subdir_path)
+        filename_suffixes = ['desc-preproc_bold.json',
+                             'desc-preproc_bold.nii.gz',
+                             'desc-confounds_regressors.tsv',
+                             ]
+        for filename_suffix_ in filename_suffixes:
+            file_name = '{}{}'.format(filename_prefix, filename_suffix_)
+            file_path = os.path.join(subdir_path, file_name)
+            derivatives_file_paths.append(file_path)
+            with open(file_path, 'w') as f:
+                f
+    expected_data_dir = os.path.join(data_dir, dataset_name)
+    expected_files = []
+    expected_files.extend(events_file_paths)
+    expected_files.extend(derivatives_file_paths)
+    expected_files.sort()
+    return expected_data_dir, expected_files
+
+
+def test_make_spm_auditory_events_file():
+    try:
+        (
+            actual_events_data_string,
+            events_filepath,
+        ) = _mock_bids_compliant_spm_auditory_events_file()
+    finally:
+        os.remove(events_filepath)
+    expected_events_data_string = _mock_original_spm_auditory_events_file()
+
+    replace_win_line_ends = (
+        lambda text: text.replace('\r\n', '\n')
+        if text.find('\r\n') != -1 else text
+    )
+    actual_events_data_string = replace_win_line_ends(
+        actual_events_data_string)
+    expected_events_data_string = replace_win_line_ends(
+        expected_events_data_string)
+
+    assert actual_events_data_string == expected_events_data_string
+
+
+def test_fetch_spm_auditory(request_mocker, tmp_path):
+    import nibabel as nib
+    import shutil
+    saf = ["fM00223/fM00223_%03i.img" % index for index in range(4, 100)]
+    saf_ = ["fM00223/fM00223_%03i.hdr" % index for index in range(4, 100)]
+
+    data_dir = str(tmp_path / 'spm_auditory')
+    os.mkdir(data_dir)
+    subject_dir = os.path.join(data_dir, 'sub001')
+    os.mkdir(subject_dir)
+    os.mkdir(os.path.join(subject_dir, 'fM00223'))
+    os.mkdir(os.path.join(subject_dir, 'sM00223'))
+
+    path_img = str(tmp_path / 'tmp.img')
+    path_hdr = str(tmp_path / 'tmp.hdr')
+    nib.save(nib.Nifti1Image(np.zeros((2, 3, 4)), np.eye(4)), path_img)
+    shutil.copy(path_img, os.path.join(subject_dir,
+                                       "sM00223/sM00223_002.img"))
+    shutil.copy(path_hdr, os.path.join(subject_dir,
+                                       "sM00223/sM00223_002.hdr"))
+    for file_ in saf:
+        shutil.copy(path_img, os.path.join(subject_dir, file_))
+    for file_ in saf_:
+        shutil.copy(path_hdr, os.path.join(subject_dir, file_))
+
+    dataset = func.fetch_spm_auditory(data_dir=str(tmp_path))
+    assert isinstance(dataset.anat, str)
+    assert isinstance(dataset.func[0], str)
+    assert len(dataset.func) == 96
+
+
+def test_fetch_spm_multimodal(request_mocker, tmp_path):
+    data_dir = str(tmp_path / 'spm_multimodal_fmri')
+    os.mkdir(data_dir)
+    subject_dir = os.path.join(data_dir, 'sub001')
+    os.mkdir(subject_dir)
+    os.mkdir(os.path.join(subject_dir, 'fMRI'))
+    os.mkdir(os.path.join(subject_dir, 'sMRI'))
+    open(os.path.join(subject_dir, 'sMRI', 'smri.img'), 'a').close()
+    for session in [0, 1]:
+        open(os.path.join(subject_dir, 'fMRI',
+                          'trials_ses%i.mat' % (session + 1)), 'a').close()
+        dir_ = os.path.join(subject_dir, 'fMRI', 'Session%d' % (session + 1))
+        os.mkdir(dir_)
+        for i in range(390):
+            open(os.path.join(dir_, 'fMETHODS-000%i-%i-01.img' %
+                              (session + 5, i)), 'a').close()
+
+    dataset = func.fetch_spm_multimodal_fmri(data_dir=str(tmp_path))
+    assert isinstance(dataset.anat, str)
+    assert isinstance(dataset.func1[0], str)
+    assert len(dataset.func1) == 390
+    assert isinstance(dataset.func2[0], str)
+    assert len(dataset.func2) == 390
+    assert dataset.slice_order == 'descending'
+    assert isinstance(dataset.trials_ses1, str)
+    assert isinstance(dataset.trials_ses2, str)
+
+
+def test_fiac(request_mocker, tmp_path):
+    # Create dummy 'files'
+    fiac_dir = str(tmp_path / 'fiac_nilearn_stats' / 'nipy-data-0.2' /
+                   'data' / 'fiac')
+    fiac0_dir = os.path.join(fiac_dir, 'fiac0')
+    os.makedirs(fiac0_dir)
+    for session in [1, 2]:
+        # glob func data for session session + 1
+        session_func = os.path.join(fiac0_dir, 'run%i.nii.gz' % session)
+        open(session_func, 'a').close()
+        sess_dmtx = os.path.join(fiac0_dir, 'run%i_design.npz' % session)
+        open(sess_dmtx, 'a').close()
+    mask = os.path.join(fiac0_dir, 'mask.nii.gz')
+    open(mask, 'a').close()
+
+    dataset = func.fetch_fiac_first_level(data_dir=str(tmp_path))
+    assert isinstance(dataset.func1, str)
+    assert isinstance(dataset.func2, str)
+    assert isinstance(dataset.design_matrix1, str)
+    assert isinstance(dataset.design_matrix2, str)
+    assert isinstance(dataset.mask, str)

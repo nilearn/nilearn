@@ -194,11 +194,11 @@ clear the ``vectorize_words`` parameter to save computation time):
 Examples using Neurovault
 -------------------------
 
-    - :ref:`sphx_glr_auto_examples_05_advanced_plot_ica_neurovault.py`
+    - :ref:`sphx_glr_auto_examples_07_advanced_plot_ica_neurovault.py`
           Download images from Neurovault and extract some networks
           using ICA.
 
-    - :ref:`sphx_glr_auto_examples_05_advanced_plot_neurovault_meta_analysis.py`
+    - :ref:`sphx_glr_auto_examples_07_advanced_plot_neurovault_meta_analysis.py`
         Meta-analysis of "Stop minus go" studies available on
         Neurovault.
 

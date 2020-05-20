@@ -11,7 +11,6 @@ import nibabel
 import numpy as np
 import pytest
 
-from nilearn._utils.compat import _basestring
 from nilearn.datasets import utils, struct
 
 from . import test_utils as tst
@@ -88,16 +87,16 @@ def test_get_dataset_dir(tmp_path):
 
 def test_fetch_icbm152_2009(tmp_path, request_mocker):
     dataset = struct.fetch_icbm152_2009(data_dir=str(tmp_path), verbose=0)
-    assert isinstance(dataset.csf, _basestring)
-    assert isinstance(dataset.eye_mask, _basestring)
-    assert isinstance(dataset.face_mask, _basestring)
-    assert isinstance(dataset.gm, _basestring)
-    assert isinstance(dataset.mask, _basestring)
-    assert isinstance(dataset.pd, _basestring)
-    assert isinstance(dataset.t1, _basestring)
-    assert isinstance(dataset.t2, _basestring)
-    assert isinstance(dataset.t2_relax, _basestring)
-    assert isinstance(dataset.wm, _basestring)
+    assert isinstance(dataset.csf, str)
+    assert isinstance(dataset.eye_mask, str)
+    assert isinstance(dataset.face_mask, str)
+    assert isinstance(dataset.gm, str)
+    assert isinstance(dataset.mask, str)
+    assert isinstance(dataset.pd, str)
+    assert isinstance(dataset.t1, str)
+    assert isinstance(dataset.t2, str)
+    assert isinstance(dataset.t2_relax, str)
+    assert isinstance(dataset.wm, str)
     assert len(tst.mock_url_request.urls) == 1
     assert dataset.description != ''
 
@@ -113,20 +112,20 @@ def test_fetch_oasis_vbm(tmp_path, request_mocker):
                                      verbose=0)
     assert len(dataset.gray_matter_maps) == 403
     assert len(dataset.white_matter_maps) == 403
-    assert isinstance(dataset.gray_matter_maps[0], _basestring)
-    assert isinstance(dataset.white_matter_maps[0], _basestring)
+    assert isinstance(dataset.gray_matter_maps[0], str)
+    assert isinstance(dataset.white_matter_maps[0], str)
     assert isinstance(dataset.ext_vars, np.recarray)
-    assert isinstance(dataset.data_usage_agreement, _basestring)
+    assert isinstance(dataset.data_usage_agreement, str)
     assert len(tst.mock_url_request.urls) == 3
 
     dataset = struct.fetch_oasis_vbm(data_dir=str(tmp_path), url=local_url,
                                      dartel_version=False, verbose=0)
     assert len(dataset.gray_matter_maps) == 415
     assert len(dataset.white_matter_maps) == 415
-    assert isinstance(dataset.gray_matter_maps[0], _basestring)
-    assert isinstance(dataset.white_matter_maps[0], _basestring)
+    assert isinstance(dataset.gray_matter_maps[0], str)
+    assert isinstance(dataset.white_matter_maps[0], str)
     assert isinstance(dataset.ext_vars, np.recarray)
-    assert isinstance(dataset.data_usage_agreement, _basestring)
+    assert isinstance(dataset.data_usage_agreement, str)
     assert len(tst.mock_url_request.urls) == 4
     assert dataset.description != ''
 
@@ -167,7 +166,7 @@ def test_fetch_surf_fsaverage(tmp_path, request_mocker):
         assert dataset.description != ''
 
 
-def test_fetch_surf_fsaverage5_sphere(tmp_path):
+def test_fetch_surf_fsaverage5_sphere(tmp_path, request_mocker):
     for mesh in ['fsaverage5_sphere']:
 
         dataset = struct.fetch_surf_fsaverage(

@@ -4,7 +4,7 @@ Transformer for computing ROI signals.
 
 import numpy as np
 
-from nilearn._utils.compat import Memory
+from joblib import Memory
 
 from .. import _utils
 from .._utils import logger, CacheMixin, _compose_err_msg
@@ -19,17 +19,20 @@ class _ExtractionFunctor(object):
 
     func_name = 'nifti_labels_masker_extractor'
 
-    def __init__(self, _resampled_labels_img_, background_label, strategy):
+    def __init__(self, _resampled_labels_img_, background_label, strategy,
+                 mask_img):
         self._resampled_labels_img_ = _resampled_labels_img_
         self.background_label = background_label
         self.strategy = strategy
+        self.mask_img = mask_img
 
     def __call__(self, imgs):
         from ..regions import signal_extraction
 
         return signal_extraction.img_to_signals_labels(
             imgs, self._resampled_labels_img_,
-            background_label=self.background_label, strategy=self.strategy)
+            background_label=self.background_label, strategy=self.strategy,
+            mask_img=self.mask_img)
 
 
 class NiftiLabelsMasker(BaseMasker, CacheMixin):
@@ -123,7 +126,7 @@ class NiftiLabelsMasker(BaseMasker, CacheMixin):
                  smoothing_fwhm=None, standardize=False, detrend=False,
                  low_pass=None, high_pass=None, t_r=None, dtype=None,
                  resampling_target="data",
-                 memory=Memory(cachedir=None, verbose=0), memory_level=1,
+                 memory=Memory(location=None, verbose=0), memory_level=1,
                  verbose=0, strategy="mean"):
         self.labels_img = labels_img
         self.background_label = background_label
@@ -257,6 +260,8 @@ class NiftiLabelsMasker(BaseMasker, CacheMixin):
 
         if not hasattr(self, '_resampled_labels_img_'):
             self._resampled_labels_img_ = self.labels_img_
+        if not hasattr(self, '_resampled_mask_img'):
+            self._resampled_mask_img = self.mask_img_
         if self.resampling_target == "data":
             imgs_ = _utils.check_niimg_4d(imgs)
             if not _check_same_fov(imgs_, self._resampled_labels_img_):
@@ -265,6 +270,15 @@ class NiftiLabelsMasker(BaseMasker, CacheMixin):
                 self._resampled_labels_img_ = self._cache(
                     image.resample_img, func_memory_level=2)(
                         self.labels_img_, interpolation="nearest",
+                        target_shape=imgs_.shape[:3],
+                        target_affine=imgs_.affine)
+            if self.mask_img is not None and not _check_same_fov(
+                    imgs_, self._resampled_mask_img):
+                if self.verbose > 0:
+                    print("Resampling mask")
+                self._resampled_mask_img = self._cache(
+                    image.resample_img, func_memory_level=2)(
+                        self.mask_img_, interpolation="nearest",
                         target_shape=imgs_.shape[:3],
                         target_affine=imgs_.affine)
             # Remove imgs_ from memory before loading the same image
@@ -287,7 +301,8 @@ class NiftiLabelsMasker(BaseMasker, CacheMixin):
                 ignore=['verbose', 'memory', 'memory_level'])(
             # Images
             imgs, _ExtractionFunctor(self._resampled_labels_img_,
-                                     self.background_label, self.strategy),
+                                     self.background_label, self.strategy,
+                                     self._resampled_mask_img),
             # Pre-processing
             params,
             confounds=confounds,

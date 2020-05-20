@@ -8,7 +8,7 @@ originated from
 the `INRIA Parietal Project Team <https://team.inria.fr/parietal/>`_
 and the `scikit-learn <http://scikit-learn.org/>`_ but grew much further.
 
-An up-to-date list of contributors can be seen in on `gitub
+An up-to-date list of contributors can be seen in on `GitHub
 <https://github.com/nilearn/nilearn/graphs/contributors>`_
 
 Additional credit goes to M. Hanke and Y. Halchenko for data and packaging.

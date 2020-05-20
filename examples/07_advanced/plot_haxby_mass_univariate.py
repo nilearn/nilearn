@@ -139,7 +139,7 @@ display = plot_stat_map(neg_log_pvals_bonferroni_unmasked, mean_fmri_img,
 
 neg_log_pvals_bonferroni_data = get_data(neg_log_pvals_bonferroni_unmasked)
 n_detections = (neg_log_pvals_bonferroni_data > threshold).sum()
-title = ('Negative $\log_{10}$ p-values'
+title = ('Negative $\\log_{10}$ p-values'
          '\n(Parametric two-sided F-test'
          '\n+ Bonferroni correction)'
          '\n%d detections') % n_detections
@@ -153,7 +153,7 @@ display = plot_stat_map(signed_neg_log_pvals_unmasked, mean_fmri_img,
                         vmax=vmax)
 
 n_detections = (np.abs(signed_neg_log_pvals) > threshold).sum()
-title = ('Negative $\log_{10}$ p-values'
+title = ('Negative $\\log_{10}$ p-values'
          '\n(Non-parametric two-sided test'
          '\n+ max-type correction)'
          '\n%d detections') % n_detections
