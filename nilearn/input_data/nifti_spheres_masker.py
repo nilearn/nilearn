@@ -91,18 +91,8 @@ def _apply_mask_get_rows(seeds, affine, target_shape, radius, allow_overlap,
     seeds = list(seeds)
 
     # Compute world coordinates of all in-mask voxels.
+    mask_coords = list(np.ndindex(*target_shape))
 
-    if mask_img is not None:
-        mask_img = check_niimg_3d(mask_img)
-        mask_img = image.resample_img(mask_img, target_affine=affine,
-                                      target_shape=target_shape,
-                                      interpolation='nearest')
-        mask, _ = masking._load_mask_img(mask_img)
-        mask_coords = list(zip(*np.where(mask != 0)))
-    else:
-        mask_coords = list(np.ndindex(*target_shape))
-
-    # For each seed, get coordinates of nearest voxel
     nearests = []
     for sx, sy, sz in seeds:
         nearest = np.round(coord_transform(sx, sy, sz, np.linalg.inv(affine)))
@@ -244,7 +234,7 @@ class _InversionFunctor(object):
             self.target_affine = mask.affine
             self.target_shape = mask.shape
         else:
-            self.target_affine = np.array([[  -3.,   -0.,   -0.,   90.],
+            self.target_affine = np.array([[  3.,   -0.,   -0.,   -90.],
                                            [  -0.,    3.,   -0., -126.],
                                            [   0.,    0.,    3.,  -72.],
                                            [   0.,    0.,    0.,    1.]])
@@ -254,7 +244,6 @@ class _InversionFunctor(object):
         n_seeds = len(self.seeds_)
 
         spheres = np.empty((np.prod(self.target_shape), n_seeds), dtype=self.dtype)
-        print(spheres.shape)
 
         for i, sphere in enumerate(_iter_regions_from_spheres(
                 self.seeds_, self.target_affine, self.target_shape, self.radius,
@@ -500,9 +489,8 @@ class NiftiSpheresMasker(BaseMasker, CacheMixin):
                                         self.allow_overlap, np.int)
 
         inverse_map = invFunc(region_signals)
-        inverse_map_tmp = inverse_map.copy()
         inverse_map = nibabel.Nifti1Image(inverse_map,
                                           affine=invFunc.target_affine)
 
         return signal_extraction.signals_to_img_maps(
-            region_signals, inverse_map, mask_img=self.mask_img), inverse_map_tmp
+            region_signals, inverse_map, mask_img=self.mask_img)
