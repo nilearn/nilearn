@@ -10,13 +10,6 @@ from nilearn.input_data.multi_nifti_labels_masker import MultiNiftiLabelsMasker
 from nilearn.input_data.nifti_labels_masker import NiftiLabelsMasker
 
 
-def generate_random_img(shape, length=1, affine=np.eye(4),
-                        rand_gen=np.random.RandomState(0)):
-    data = rand_gen.randn(*(shape + (length,)))
-    return nibabel.Nifti1Image(data, affine), nibabel.Nifti1Image(
-        as_ndarray(data[..., 0] > 0.2, dtype=np.int8), affine)
-
-
 def test_multi_nifti_labels_masker():
     # Check working of shape/affine checks
     shape1 = (13, 11, 12)
@@ -28,12 +21,12 @@ def test_multi_nifti_labels_masker():
     n_regions = 9
     length = 3
 
-    fmri11_img, mask11_img = generate_random_img(shape1, affine=affine1,
-                                                 length=length)
-    fmri12_img, mask12_img = generate_random_img(shape1, affine=affine2,
-                                                 length=length)
-    fmri21_img, mask21_img = generate_random_img(shape2, affine=affine1,
-                                                 length=length)
+    fmri11_img, mask11_img = data_gen.generate_fake_fmri(shape=shape1, affine=affine1,
+                                                         length=length)
+    fmri12_img, mask12_img = data_gen.generate_fake_fmri(shape=shape1, affine=affine2,
+                                                         length=length)
+    fmri21_img, mask21_img = data_gen.generate_fake_fmri(shape=shape2, affine=affine1,
+                                                         length=length)
 
     labels11_img = data_gen.generate_labeled_regions(shape1, affine=affine1,
                                                      n_regions=n_regions)
