@@ -25,12 +25,12 @@ from .._utils.param_validation import check_threshold
 
 
 def get_data(img):
-    """Get image data as :class:`numpy.ndarray`.
+    """Get the image data as a :class:`numpy.ndarray`.
 
     Parameters
     ----------
     img : Niimg-like object or iterable of Niimg-like objects
-        See http://nilearn.github.io/manipulating_images/input_output.html
+        See http://nilearn.github.io/manipulating_images/input_output.html.
 
     Returns
     -------
@@ -52,13 +52,13 @@ def high_variance_confounds(imgs, n_confounds=5, percentile=2.,
         Parameters
         ----------
         imgs : Niimg-like object
-            See http://nilearn.github.io/manipulating_images/input_output.html
             4D image.
+            See http://nilearn.github.io/manipulating_images/input_output.html.
 
         mask_img : Niimg-like object
-            See http://nilearn.github.io/manipulating_images/input_output.html
-            If provided, confounds are extracted from voxels inside the mask.
             If not provided, all voxels are used.
+            If provided, confounds are extracted from voxels inside the mask.
+            See http://nilearn.github.io/manipulating_images/input_output.html.
 
         n_confounds : :obj:`int`
             Number of confounds to return.
@@ -318,8 +318,13 @@ def _crop_img_to(img, slices, copy=True):
     Returns
     -------
     Niimg-like object
-        Cropped version of the input image (see
-        http://nilearn.github.io/manipulating_images/input_output.html).
+        Cropped version of the input image.
+
+    offset: :obj:`list` (optional)
+        List of tuples representing the number of voxels removed (before, after)
+        the cropped volumes, i.e.:
+        *[(x1_pre, x1_post), (x2_pre, x2_post), ..., (xN_pre, xN_post)]*
+
     """
 
     img = check_niimg(img)
@@ -503,7 +508,7 @@ def mean_img(imgs, target_affine=None, target_shape=None,
 
     imgs : Niimg-like object or iterable of Niimg-like objects
         Images to be averaged over time (see
-        http://nilearn.github.io/manipulating_images/input_output.html)
+        http://nilearn.github.io/manipulating_images/input_output.html).
 
     target_affine : :class:`numpy.ndarray`, optional
         If specified, the image is resampled corresponding to this new affine.
@@ -1060,7 +1065,7 @@ def load_img(img, wildcards=True, dtype=None):
         on it. The '~' symbol is expanded to the user home folder.
         If it is an object, check if affine attribute is present, raise
         `TypeError` otherwise.
-        See http://nilearn.github.io/manipulating_images/input_output.html
+        See http://nilearn.github.io/manipulating_images/input_output.html.
 
     wildcards : :obj:`bool`, optional
         Use `img` as a regular expression to get a list of matching input
@@ -1094,7 +1099,7 @@ def largest_connected_component_img(imgs):
     ----------
     imgs : Niimg-like object or iterable of Niimg-like objects (3D)
         Image(s) to extract the largest connected component from.
-        See http://nilearn.github.io/manipulating_images/input_output.html
+        See http://nilearn.github.io/manipulating_images/input_output.html.
 
     Returns
     -------

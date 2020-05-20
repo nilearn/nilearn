@@ -1,6 +1,6 @@
-=================
-Nilearn Reference
-=================
+===============================================
+ Reference Documentation: All Nilearn Functions
+===============================================
 
 This is the class and function reference of nilearn. Please refer to
 the :ref:`user guide <user_guide>` for more information and usage examples.
