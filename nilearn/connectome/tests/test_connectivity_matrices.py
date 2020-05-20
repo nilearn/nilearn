@@ -639,4 +639,4 @@ def test_confounds_connectome_measure():
                         "'confounds' are provided but vectorize=False.",
                         conn_measure.fit_transform,
                         signals, None, confounds[0:10])
->>>>>>> TST: confounds for connectivity measure
+
