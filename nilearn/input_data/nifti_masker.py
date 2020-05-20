@@ -134,7 +134,7 @@ class NiftiMasker(BaseMasker, CacheMixin, ReportMixin):
         brain mask for your data's field of view.
         Depending on this value, the mask will be computed from
         masking.compute_background_mask, masking.compute_epi_mask or
-        masking.compute_gray_matter_mask. Default is 'background'.
+        masking.compute_brain_mask. Default is 'background'.
 
     mask_args : dict, optional
         If mask is None, these are additional parameters passed to
@@ -317,7 +317,7 @@ class NiftiMasker(BaseMasker, CacheMixin, ReportMixin):
             elif self.mask_strategy == 'epi':
                 compute_mask = masking.compute_epi_mask
             elif self.mask_strategy == 'template':
-                compute_mask = masking.compute_gray_matter_mask
+                compute_mask = masking.compute_brain_mask
             else:
                 raise ValueError("Unknown value of mask_strategy '%s'. "
                                  "Acceptable values are 'background', "

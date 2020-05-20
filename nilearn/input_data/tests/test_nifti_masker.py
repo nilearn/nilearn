@@ -17,6 +17,7 @@ import pytest
 
 from nibabel import Nifti1Image
 from numpy.testing import assert_array_equal
+from sklearn.utils import deprecated
 
 from nilearn._utils import testing
 from nilearn._utils import data_gen
@@ -314,7 +315,16 @@ def test_compute_epi_mask():
                              get_data(mask4)[3:12, 3:12])
 
 
+@deprecated("Function 'test_compute_gray_matter_mask' has been renamed to "
+            "'test_compute_brain_mask' and "
+            "'compute_gray_matter_mask' will be removed in release 0.9.")
 def test_compute_gray_matter_mask():
+    # Check masker for template masking strategy
+
+    return test_compute_brain_mask()
+
+
+def test_compute_brain_mask():
     # Check masker for template masking strategy
 
     img = np.random.rand(9, 9, 5)

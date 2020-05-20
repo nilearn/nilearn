@@ -15,7 +15,7 @@ from nibabel import Nifti1Image
 from nilearn import masking
 from nilearn.image import get_data
 from nilearn.masking import (compute_epi_mask, compute_multi_epi_mask,
-                             compute_background_mask, compute_gray_matter_mask,
+                             compute_background_mask, compute_brain_mask,
                              compute_multi_gray_matter_mask,
                              unmask, _unmask_3d, _unmask_4d, intersect_masks,
                              MaskWarning, _extrapolate_out_mask, _unmask_from_to_3d_array)
@@ -99,10 +99,10 @@ def test_compute_background_mask():
     assert isinstance(w[0].message, masking.MaskWarning)
 
 
-def test_compute_gray_matter_mask():
+def test_compute_brain_mask():
     image = Nifti1Image(np.ones((9, 9, 9)), np.eye(4))
 
-    mask = compute_gray_matter_mask(image, threshold=-1)
+    mask = compute_brain_mask(image, threshold=-1)
     mask1 = np.zeros((9, 9, 9))
     mask1[2:-2, 2:-2, 2:-2] = 1
 
@@ -110,14 +110,14 @@ def test_compute_gray_matter_mask():
 
     # Check that we get a useful warning for empty masks
     with pytest.warns(masking.MaskWarning):
-        compute_gray_matter_mask(image, threshold=1)
+        compute_brain_mask(image, threshold=1)
 
     # Check that masks obtained from same FOV are the same
     img1 = Nifti1Image(np.full((9, 9, 9), np.random.rand()), np.eye(4))
     img2 = Nifti1Image(np.full((9, 9, 9), np.random.rand()), np.eye(4))
 
-    mask_img1 = compute_gray_matter_mask(img1)
-    mask_img2 = compute_gray_matter_mask(img2)
+    mask_img1 = compute_brain_mask(img1)
+    mask_img2 = compute_brain_mask(img2)
     np.testing.assert_array_equal(get_data(mask_img1),
                                   get_data(mask_img2))
 

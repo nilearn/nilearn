@@ -21,9 +21,9 @@ Fixes
 -----
 
 - :class:`nilearn.input_data.NiftiLabelsMasker` no longer ignores its `mask_img`
-- :class:`nilearn.masking.compute_gray_matter_mask` has been renamed to
+- :func:`nilearn.masking.compute_gray_matter_mask` has been renamed to
   `nilearn.masking.compute_brain_mask`. Some corrections were also made in the
-  corresponding documentation.
+  corresponding docstring.
 
 
 0.6.2
