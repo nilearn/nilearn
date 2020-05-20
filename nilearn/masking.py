@@ -566,12 +566,13 @@ def compute_gray_matter_mask(target_img, threshold=.5,
     mask: nibabel.Nifti1Image
         The brain mask (3D image)
     """
-    return compute_whole_brain_mask(target_img, threshold=.5, connected=True,
-                                    opening=2, memory=None, verbose=0)
+    return compute_brain_mask(target_img=target_img, threshold=threshold,
+                              connected=connected, opening=opening,
+                              memory=memory, verbose=verbose)
 
 
-def compute_whole_brain_mask(target_img, threshold=.5, connected=True,
-                             opening=2, memory=None, verbose=0):
+def compute_brain_mask(target_img, threshold=.5, connected=True,
+                       opening=2, memory=None, verbose=0):
     """Compute the whole-brain mask. This mask is calculated through the
     resampling of the MNI152 template mask onto the target image.
 
