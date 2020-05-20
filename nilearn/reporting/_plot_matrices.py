@@ -62,6 +62,87 @@ def plot_design_matrix(design_matrix, rescale=True, ax=None, output_file=None):
     return ax
 
 
+def plot_event(model_event, cmap=None, output_file=None, **fig_kwargs):
+    """Creates plot for contrast definition.
+
+    Parameters
+    ----------
+    model_event : DataFrame or list of DataFrame
+        the list of Dataframe obtained by ```first_level_models_from_bids```
+        or the Dataframe obtained by reading a BIDS *_event.tsv
+
+    cmap : str or matplotlib.cmap
+        the colormap used to label different events
+
+    output_file: string or None, optional,
+        The name of an image file to export the plot to. Valid extensions
+        are .png, .pdf, .svg. If output_file is not None, the plot
+        is saved to a file, and the display is closed.
+
+    **fig_kwargs : extra keyword arguments, optional
+        Extra arguments passed to matplotlib.pyplot.subplots
+
+    Returns
+    -------
+    Plot Figure object
+
+    """
+    import matplotlib.patches as mpatches
+    import pandas as pd
+
+    if isinstance(model_event, pd.DataFrame):
+        model_event = [model_event]
+   
+    n_runs = len(model_event)
+    figure, axes = plt.subplots(n_runs, 1, **fig_kwargs)
+
+    # input validation
+    if cmap is None:
+        cmap = plt.cm.tab20
+    elif isinstance(cmap, str):
+        cmap = plt.get_cmap(cmap)
+    else:
+        cmap = cmap
+
+    for idx_run, event_df in enumerate(model_event):
+        if n_runs == 1:
+            ax = axes
+        else:
+            ax = axes[idx_run]
+        
+        event_labels = np.unique(event_df['trial_type'])
+        cmap_dictionary = {label:idx for idx, label in enumerate(event_labels)}
+
+        if len(event_labels) > cmap.N:
+            plt.close()
+            raise ValueError("The number of event types is greater than "+ \
+                " colors in colormap (%d > %d). Use a different colormap." \
+                % (len(event_labels), cmap.N))
+
+        ax.set_title("Run n. %0d" % (idx_run + 1))
+        for _, event in event_df.iterrows():
+            event_onset = event['onset']
+            event_end = event['onset'] + event['duration']
+            color = cmap.colors[cmap_dictionary[event['trial_type']]]               
+            ax.axvspan(event_onset, event_end, facecolor=color)
+        ax.set_xlabel("Time (sec.)")
+
+        handles = []
+        for label, idx in cmap_dictionary.items():
+            patch = mpatches.Patch(color=cmap.colors[idx], label=label)
+            handles.append(patch)
+
+        _ = ax.legend(handles=handles)
+
+    plt.tight_layout()
+    if output_file is not None:
+        plt.savefig(output_file)
+        plt.close()
+        ax = None
+
+    return figure
+
+
 def plot_contrast_matrix(contrast_def, design_matrix, colorbar=False, ax=None,
                          output_file=None):
     """Creates plot for contrast definition.
