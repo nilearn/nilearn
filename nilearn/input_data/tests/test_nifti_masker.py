@@ -317,7 +317,7 @@ def test_compute_epi_mask():
 
 @deprecated("Function 'test_compute_gray_matter_mask' has been renamed to "
             "'test_compute_brain_mask' and "
-            "'compute_gray_matter_mask' will be removed in release 0.9.")
+            "'test_compute_gray_matter_mask' will be removed in release 0.9.")
 def test_compute_gray_matter_mask():
     # Check masker for template masking strategy
 
