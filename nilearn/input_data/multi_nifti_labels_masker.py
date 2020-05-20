@@ -179,6 +179,14 @@ class MultiNiftiLabelsMasker(NiftiLabelsMasker, CacheMixin):
                              'You must call fit() before calling transform().'.format
                              (self.__class__.__name__))
 
+
+
+        niimg_iter = _iter_check_niimg(imgs_list, ensure_ndim=None,
+                                       atleast_4d=False,
+                                       memory=self.memory,
+                                       memory_level=self.memory_level,
+                                       verbose=self.verbose)
+
         if confounds is None:
             confounds = itertools.repeat(None, len(imgs_list))
 
@@ -187,7 +195,7 @@ class MultiNiftiLabelsMasker(NiftiLabelsMasker, CacheMixin):
                                    'copy'])
         data = Parallel(n_jobs=n_jobs)(delayed(func)
                                        (imgs=imgs, confounds=cfs)
-                                       for imgs, cfs in zip(imgs_list, confounds))
+                                       for imgs, cfs in zip(niimg_iter, confounds))
         return data
 
     def transform(self, imgs, confounds=None):
