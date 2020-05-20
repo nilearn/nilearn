@@ -248,7 +248,8 @@ def smooth_img(imgs, fwhm):
     ----------
     imgs : Niimg-like object or iterable of Niimg-like objects
         Image(s) to smooth (see
-        http://nilearn.github.io/manipulating_images/input_output.html).
+        http://nilearn.github.io/manipulating_images/input_output.html
+        for a detailed description of the valid input types).
 
 
     fwhm : scalar, :class:`numpy.ndarray`, 'fast' or None
@@ -268,7 +269,7 @@ def smooth_img(imgs, fwhm):
 
     Returns
     -------
-    :class:`~nibabel.nifti1.Nifti1Image` or list of
+    :class:`nibabel.nifti1.Nifti1Image` or list of
         Filtered input image. If `imgs` is an iterable, then `filtered_img` is a
         list.
     """
@@ -318,6 +319,7 @@ def _crop_img_to(img, slices, copy=True):
     Returns
     -------
     Niimg-like object
+<<<<<<< HEAD
         Cropped version of the input image.
 
     offset: :obj:`list` (optional)
@@ -325,6 +327,11 @@ def _crop_img_to(img, slices, copy=True):
         the cropped volumes, i.e.:
         *[(x1_pre, x1_post), (x2_pre, x2_post), ..., (xN_pre, xN_post)]*
 
+=======
+        Cropped version of the input image (see
+        http://nilearn.github.io/manipulating_images/input_output.html
+        for a detailed description of the valid input types).
+>>>>>>> 27f4e4b3cc47d3b0a94fca81aa92901ada1ce3aa
     """
 
     img = check_niimg(img)
@@ -360,7 +367,8 @@ def crop_img(img, rtol=1e-8, copy=True, pad=True, return_offset=False):
     ----------
     img : Niimg-like object
         Image to be cropped (see
-        http://nilearn.github.io/manipulating_images/input_output.html).
+        http://nilearn.github.io/manipulating_images/input_output.html
+        for a detailed description of the valid input types).
 
     rtol : :obj:`float`
         relative tolerance (with respect to maximal absolute value of the
@@ -498,7 +506,7 @@ def _compute_mean(imgs, target_affine=None,
 
 def mean_img(imgs, target_affine=None, target_shape=None,
              verbose=0, n_jobs=1):
-    """Compute the mean of the images over time.
+    """Compute the mean of the images over time or the 4th dimension.
 
     Note that if list of 4D images are given, the mean of each 4D image is
     computed separately, and the resulting mean is computed after.
@@ -508,7 +516,12 @@ def mean_img(imgs, target_affine=None, target_shape=None,
 
     imgs : Niimg-like object or iterable of Niimg-like objects
         Images to be averaged over time (see
+<<<<<<< HEAD
         http://nilearn.github.io/manipulating_images/input_output.html).
+=======
+        http://nilearn.github.io/manipulating_images/input_output.html
+        for a detailed description of the valid input types).
+>>>>>>> 27f4e4b3cc47d3b0a94fca81aa92901ada1ce3aa
 
     target_affine : :class:`numpy.ndarray`, optional
         If specified, the image is resampled corresponding to this new affine.
@@ -578,7 +591,8 @@ def swap_img_hemispheres(img):
     ----------
     img : Niimg-like object
         Images to swap (see
-        http://nilearn.github.io/manipulating_images/input_output.html).
+        http://nilearn.github.io/manipulating_images/input_output.html
+        for a detailed description of the valid input types).
 
     Returns
     -------
@@ -949,19 +963,20 @@ def clean_img(imgs, sessions=None, detrend=True, standardize=True,
     ----------
     imgs: Niimg-like object
         4D image. The signals in the last dimension are filtered (see
-        http://nilearn.github.io/manipulating_images/input_output.html).
+        http://nilearn.github.io/manipulating_images/input_output.html
+        for a detailed description of the valid input types).
 
-    sessions: :class:`numpy.ndarray`, optional
+    sessions : :class:`numpy.ndarray`, optional
         Add a session level to the cleaning process. Each session will be
         cleaned independently. Must be a 1D array of n_samples elements.
 
-    detrend: :obj:`bool`
+    detrend : :obj:`bool`
         If detrending should be applied on timeseries (before confound removal).
 
-    standardize: :obj:`bool`
+    standardize : :obj:`bool`
         If True, returned signals are set to unit variance.
 
-    confounds: :class:`numpy.ndarray`, :obj:`str` or :obj:`list` of
+    confounds : :class:`numpy.ndarray`, :obj:`str` or :obj:`list` of
         Confounds timeseries. Shape must be
         (instant number, confound number), or just (instant number,)
         The number of time instants in signals and confounds must be
@@ -971,17 +986,17 @@ def clean_img(imgs, sessions=None, detrend=True, standardize=True,
         If a list is provided, all confounds are removed from the input
         signal, as if all were in the same array.
 
-    low_pass: :obj:`float`
+    low_pass : :obj:`float`
         Low cutoff frequencies, in Hertz.
 
-    high_pass: :obj:`float`
+    high_pass : :obj:`float`
         High cutoff frequencies, in Hertz.
 
-    t_r: :obj:`float`, optional
+    t_r : :obj:`float`, optional
         Repetition time, in second (sampling period). Set to None if not
         specified. Mandatory if used together with `low_pass` or `high_pass`.
 
-    ensure_finite: :obj:`bool`, optional
+    ensure_finite : :obj:`bool`, optional
         If True, the non-finite values (NaNs and infs) found in the images
         will be replaced by zeros.
 
