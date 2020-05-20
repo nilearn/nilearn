@@ -5,7 +5,7 @@ CanICA
 # Author: Alexandre Abraham, Gael Varoquaux,
 # License: BSD 3 clause
 
-import warnings as _warnings 
+import warnings as _warnings
 import numpy as np
 
 from operator import itemgetter
@@ -218,11 +218,13 @@ class CanICA(MultiPCA):
             abs_ica_maps = np.abs(ica_maps)
             percentile = 100. - (100. / len(ica_maps)) * ratio
             if percentile <= 0:
-                _warnings.warn("Critical threshold (= %s percentile). "
-                              "No threshold will be applied. "
-                              "Threshold should be decreased or "
-                              "number of components should be adjusted." %
-                              str(percentile), UserWarning)
+                _warnings.warn("Nilearn's decomposition module "
+                               "obtained a critical threshold "
+                               "(= %s percentile).\n"
+                               "No threshold will be applied. "
+                               "Threshold should be decreased or "
+                               "number of components should be adjusted." %
+                               str(percentile), UserWarning, stacklevel=4)
             else:
                 threshold = scoreatpercentile(abs_ica_maps, percentile)
                 ica_maps[abs_ica_maps < threshold] = 0.
@@ -234,7 +236,8 @@ class CanICA(MultiPCA):
             if component.max() < -component.min():
                 component *= -1
         if hasattr(self, "masker_"):
-            self.components_img_ = self.masker_.inverse_transform(self.components_)
+            self.components_img_ = self.masker_.inverse_transform(
+                self.components_)
 
     # Overriding MultiPCA._raw_fit overrides MultiPCA.fit behavior
     def _raw_fit(self, data):

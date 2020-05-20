@@ -147,18 +147,20 @@ def test_threshold_bound():
     # is higher than number of components
     pytest.raises(ValueError, CanICA, n_components=4, threshold=5.)
 
+
 def test_percentile_range():
     # Smoke test to test warning in case ignored thresholds
-    rng = np.random.RandomState(0)                                           
-    edge_case = rng.randint(low = 1, high = 10) 
+    rng = np.random.RandomState(0)
+    edge_case = rng.randint(low=1, high=10)
     data, *_ = _make_canica_test_data()
-    
+
     # stess thresholding via edge case
     canica = CanICA(n_components=edge_case, threshold=float(edge_case))
     with warnings.catch_warnings(record=True) as warning:
         canica.fit(data)
         assert len(warning) == 1  # ensure single warning
-        assert "Critical threshold" in str(warning[-1].message)
+        assert "critical threshold" in str(warning[-1].message)
+
 
 def test_masker_attributes_with_fit():
     # Test base module at sub-class
