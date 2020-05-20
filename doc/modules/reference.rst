@@ -1,5 +1,5 @@
 ===============================================
- Reference Documentation: All Nilearn Functions
+ Reference documentation: all nilearn functions
 ===============================================
 
 This is the class and function reference of nilearn. Please refer to

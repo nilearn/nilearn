@@ -319,7 +319,6 @@ def _crop_img_to(img, slices, copy=True):
     Returns
     -------
     Niimg-like object
-<<<<<<< HEAD
         Cropped version of the input image.
 
     offset: :obj:`list` (optional)
@@ -327,11 +326,6 @@ def _crop_img_to(img, slices, copy=True):
         the cropped volumes, i.e.:
         *[(x1_pre, x1_post), (x2_pre, x2_post), ..., (xN_pre, xN_post)]*
 
-=======
-        Cropped version of the input image (see
-        http://nilearn.github.io/manipulating_images/input_output.html
-        for a detailed description of the valid input types).
->>>>>>> 27f4e4b3cc47d3b0a94fca81aa92901ada1ce3aa
     """
 
     img = check_niimg(img)
@@ -516,12 +510,8 @@ def mean_img(imgs, target_affine=None, target_shape=None,
 
     imgs : Niimg-like object or iterable of Niimg-like objects
         Images to be averaged over time (see
-<<<<<<< HEAD
-        http://nilearn.github.io/manipulating_images/input_output.html).
-=======
         http://nilearn.github.io/manipulating_images/input_output.html
         for a detailed description of the valid input types).
->>>>>>> 27f4e4b3cc47d3b0a94fca81aa92901ada1ce3aa
 
     target_affine : :class:`numpy.ndarray`, optional
         If specified, the image is resampled corresponding to this new affine.
