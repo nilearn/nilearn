@@ -35,7 +35,7 @@ def compute_contrast(labels, regression_result, con_val, contrast_type=None):
     labels : array of shape (n_voxels,),
         A map of values on voxels used to identify the corresponding model
 
-    results : dict,
+    regression_result : dict,
         With keys corresponding to the different labels
         values are RegressionResults instances corresponding to the voxels.
 
