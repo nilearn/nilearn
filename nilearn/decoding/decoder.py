@@ -22,7 +22,7 @@ from sklearn import clone
 from sklearn.base import RegressorMixin
 from sklearn.linear_model import LogisticRegression
 from sklearn.linear_model.base import LinearModel
-from sklearn.linear_model.ridge import RidgeCV, RidgeClassifierCV, _BaseRidgeCV
+from sklearn.linear_model.ridge import RidgeClassifierCV, RidgeCV, _BaseRidgeCV
 from sklearn.model_selection import (LeaveOneGroupOut, ParameterGrid,
                                      ShuffleSplit, StratifiedShuffleSplit,
                                      check_cv)
@@ -32,18 +32,18 @@ from sklearn.svm.bounds import l1_min_c
 from sklearn.utils.extmath import safe_sparse_dot
 from sklearn.utils.validation import check_is_fitted, check_X_y
 
-try:
-    from sklearn.metrics import check_scoring
-except ImportError:
-    # for scikit-learn 0.18 and 0.19
-    from sklearn.metrics.scorer import check_scoring
-
 from nilearn._utils import CacheMixin
 from nilearn._utils.cache_mixin import _check_memory
 from nilearn._utils.param_validation import (_adjust_screening_percentile,
                                              check_feature_screening)
 from nilearn.input_data.masker_validation import check_embedded_nifti_masker
 from nilearn.regions.rena_clustering import ReNA
+
+try:
+    from sklearn.metrics import check_scoring
+except ImportError:
+    # for scikit-learn 0.18 and 0.19
+    from sklearn.metrics.scorer import check_scoring
 
 
 SUPPORTED_ESTIMATORS = dict(
@@ -140,7 +140,7 @@ def _check_estimator(estimator):
 
 
 def _parallel_fit(estimator, X, y, train, test, param_grid, is_classification,
-                  scorer, mask_img, class_index, screening_percentile,
+                  selector, scorer, mask_img, class_index,
                   clustering_percentile):
     """Find the best estimator for a fold within a job.
     This function tries several parameters for the estimator for the train and
@@ -163,11 +163,6 @@ def _parallel_fit(estimator, X, y, train, test, param_grid, is_classification,
         X_train = clustering.fit_transform(X_train)
         X_test = clustering.transform(X_test)
 
-    # Check if the size of the mask image and the number of features allow
-    # to perform feature screening.
-
-    selector = check_feature_screening(screening_percentile, mask_img,
-                                       is_classification)
     do_screening = (X_train.shape[1] > 100) and selector is not None
 
     if do_screening:
@@ -191,7 +186,7 @@ def _parallel_fit(estimator, X, y, train, test, param_grid, is_classification,
         # Store best parameters and estimator coefficients
         if (best_score is None) or (score >= best_score):
             best_score = score
-            best_coef = estimator.coef_
+            best_coef = estimator.coef_.reshape(1, -1)
             best_intercept = estimator.intercept_
             best_param = param
 
@@ -253,8 +248,10 @@ class _BaseDecoder(LinearModel, RegressorMixin, CacheMixin):
         for clustering_percentile equal to 10.
 
     screening_percentile: int, float, optional, in the closed interval [0, 100]
-        Perform a univariate feature selection based on the Anova F-value for
-        the input data. A float according to a percentile of the highest
+        The percentage of brain volume that will be kept with respect to a full
+        MNI template. In particular, if it is lower than 100, a univariate
+        feature selection based on the Anova F-value for the input data will be
+        perfomed. A float according to a percentile of the highest
         scores. Default: 20.
 
     scoring: str, callable or None, optional. Default None
@@ -333,6 +330,7 @@ class _BaseDecoder(LinearModel, RegressorMixin, CacheMixin):
     nilearn.decoding.fREMRegressor: State of the art regression pipeline
         for Neuroimaging
     nilearn.decoding.SpaceNetClassifier: Graph-Net and TV-L1 priors/penalties
+
     """
 
     def __init__(self, estimator='svc', mask=None, cv=10, param_grid=None,
@@ -476,11 +474,16 @@ class _BaseDecoder(LinearModel, RegressorMixin, CacheMixin):
         else:
             n_problems = 1
 
+        # Check if the size of the mask image and the number of features allow
+        # to perform feature screening.
+        selector = check_feature_screening(self.screening_percentile,
+                                           self.mask_img_,
+                                           self.is_classification)
         # Return a suitable screening percentile according to the mask image
-        self.screening_percentile_ = _adjust_screening_percentile(
-            self.screening_percentile, self.mask_img_, verbose=self.verbose)
+        if hasattr(selector, 'percentile'):
+            self.screening_percentile = selector.percentile
 
-        n_final_features = int(X.shape[1] * self.screening_percentile_
+        n_final_features = int(X.shape[1] * self.screening_percentile
                                * self.clustering_percentile / 10000)
         if n_final_features < 50:
             warnings.warn(
@@ -493,9 +496,12 @@ class _BaseDecoder(LinearModel, RegressorMixin, CacheMixin):
 
         parallel_fit_outputs = parallel(
             delayed(self._cache(_parallel_fit))(
-                self.estimator, X, y[:, c], train, test, self.param_grid,
-                self.is_classification, scorer, self.mask_img_,
-                c, self.screening_percentile_, self.clustering_percentile)
+                estimator=self.estimator,
+                X=X, y=y[:, c], train=train, test=test,
+                param_grid=self.param_grid,
+                is_classification=self.is_classification, selector=selector,
+                scorer=scorer, mask_img=self.mask_img_, class_index=c,
+                clustering_percentile=self.clustering_percentile)
             for c, (train, test) in itertools.product(
                 range(n_problems), self.cv_))
 
@@ -699,8 +705,10 @@ class Decoder(_BaseDecoder):
         for example: https://scikit-learn.org/stable/modules/grid_search.html
 
     screening_percentile: int, float, optional, in the closed interval [0, 100]
-        Perform an univariate feature selection based on the Anova F-value for
-        the input data. A float according to a percentile of the highest
+        The percentage of brain volume that will be kept with respect to a full
+        MNI template. In particular, if it is lower than 100, a univariate
+        feature selection based on the Anova F-value for the input data will be
+        perfomed. A float according to a percentile of the highest
         scores. Default: 20.
 
     scoring: str, callable or None, optional. Default: 'roc_auc'
@@ -831,8 +839,10 @@ class DecoderRegressor(_BaseDecoder):
         for example: https://scikit-learn.org/stable/modules/grid_search.html
 
     screening_percentile: int, float, optional, in the closed interval [0, 100]
-        Perform a univariate feature selection based on the Anova F-value for
-        the input data. A float according to a percentile of the highest
+        The percentage of brain volume that will be kept with respect to a full
+        MNI template. In particular, if it is lower than 100, a univariate
+        feature selection based on the Anova F-value for the input data will be
+        perfomed. A float according to a percentile of the highest
         scores. Default: 20.
 
     scoring: str, callable or None, optional. Default: 'r2'
@@ -973,8 +983,10 @@ class fREMRegressor(_BaseDecoder):
         equal to 10. Default: 10.
 
     screening_percentile: int, float, optional, in closed interval [0, 100]
-        Perform a univariate feature selection based on the Anova F-value for
-        the input data. A float according to a percentile of the highest
+        The percentage of brain volume that will be kept with respect to a full
+        MNI template. In particular, if it is lower than 100, a univariate
+        feature selection based on the Anova F-value for the input data will be
+        perfomed. A float according to a percentile of the highest
         scores. Default: 20.
 
     scoring: str, callable or None, optional. Default: 'r2'
@@ -1127,8 +1139,10 @@ class fREMClassifier(_BaseDecoder):
         cluster_percentile equal to 10. Default: 10.
 
     screening_percentile: int, float, optional, in closed interval [0, 100]
-        Perform an univariate feature selection based on the Anova F-value for
-        the input data. A float according to a percentile of the highest
+        The percentage of brain volume that will be kept with respect to a full
+        MNI template. In particular, if it is lower than 100, a univariate
+        feature selection based on the Anova F-value for the input data will be
+        perfomed. A float according to a percentile of the highest
         scores. Default: 20.
 
     scoring: str, callable or None, optional. Default: 'roc_auc'

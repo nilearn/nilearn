@@ -10,21 +10,21 @@ Test the decoder module
 
 import warnings
 
-import pytest
 import numpy as np
-
+import pytest
 from sklearn.datasets import load_iris, make_classification, make_regression
 from sklearn.ensemble import RandomForestClassifier
-from sklearn.linear_model import LogisticRegression, RidgeCV, RidgeClassifierCV
+from sklearn.linear_model import LogisticRegression, RidgeClassifierCV, RidgeCV
 from sklearn.metrics import accuracy_score, r2_score
 from sklearn.model_selection import KFold, LeaveOneGroupOut
-from sklearn.svm import SVR, LinearSVC
 from sklearn.preprocessing import StandardScaler
+from sklearn.svm import SVR, LinearSVC
 
-from nilearn.decoding.decoder import (_BaseDecoder, Decoder, DecoderRegressor,
-                                      fREMRegressor, fREMClassifier,
+from nilearn._utils.param_validation import check_feature_screening
+from nilearn.decoding.decoder import (Decoder, DecoderRegressor, _BaseDecoder,
                                       _check_estimator, _check_param_grid,
-                                      _parallel_fit)
+                                      _parallel_fit, fREMClassifier,
+                                      fREMRegressor)
 from nilearn.decoding.tests.test_same_api import to_niimgs
 from nilearn.input_data import NiftiMasker
 
@@ -134,6 +134,9 @@ def test_parallel_fit():
     estimator = svr
     svr_params = [[1e-1, 1e0, 1e1], [1e-1, 1e0, 5e0, 1e1]]
     scorer = check_scoring(estimator, 'r2')  #  define a scorer
+    # Define a screening selector
+    selector = check_feature_screening(screening_percentile=None,
+                                       mask_img=None, is_classification=False)
     for params in svr_params:
         param_grid = {}
         param_grid['C'] = np.array(params)
@@ -143,7 +146,7 @@ def test_parallel_fit():
                                           is_classification=False,
                                           scorer=scorer, mask_img=None,
                                           class_index=1,
-                                          screening_percentile=None,
+                                          selector=selector,
                                           clustering_percentile=100)))
     # check that every element of the output tuple is the same for both tries
     for a, b in zip(outputs[0], outputs[1]):
@@ -260,7 +263,7 @@ def test_decoder_regression():
     X, y = make_regression(n_samples=200, n_features=125,
                            n_informative=5, noise=0.2, random_state=42)
     X = StandardScaler().fit_transform(X)
-    y = (y - y.mean()) / y.std()
+    # y = (y - y.mean()) / y.std()
     X, mask = to_niimgs(X, [5, 5, 5])
     for regressor_ in regressors:
         for screening_percentile in [100, 20]:
