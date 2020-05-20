@@ -16,7 +16,7 @@ Additional credit goes to M. Hanke and Y. Halchenko for data and packaging.
 .. _core_devs:
 
 Core developers
-.................
+...............
 
 The nilearn core developers are:
 
@@ -35,10 +35,10 @@ The nilearn core developers are:
 * Salma Bougacha https://github.com/salma1601
 
 Funding
-........
+.......
 
 Alexandre Abraham, Gael Varoquaux, Kamalakar Reddy Daddy, Loïc Estève,
-Mehdi Rahim, Philippe Gervais where payed by the `NiConnect
+Mehdi Rahim, Philippe Gervais were paid by the `NiConnect
 <https://team.inria.fr/parietal/18-2/spatial_patterns/niconnect>`_
 project, funded by the French `Investissement d'Avenir
 <http://www.gouvernement.fr/investissements-d-avenir-cgi>`_.
@@ -49,7 +49,7 @@ NiLearn is also supported by `DigiCosme <https://digicosme.lri.fr>`_
 .. _citing:
 
 Citing nilearn
-------------------------
+--------------
 
 There is no paper published yet about nilearn. We are waiting for the
 package to mature a bit. However, the patterns underlying the package
@@ -61,13 +61,14 @@ We suggest that you read and cite the paper. Thank you.
 
 
 Citing scikit-learn
-------------------------
+-------------------
 
-A huge amount of work goes in the scikit-learn. Researchers that invest
-their time in developing and maintaining the package deserve recognition
-with citations. In addition, the Parietal team needs the citations to the
-paper in order to justify paying a software engineer on the project. To
-guarantee the future of the toolkit, if you use it, please cite it.
+A huge amount of work goes into scikit-learn, upon which nilearn relies heavily.
+Researchers who invest their time in developing and maintaining the package
+deserve recognition with citations.
+In addition, the Parietal team needs citations to the paper in order to
+justify paying a software engineer on the project.
+To guarantee the future of the toolkit, if you use it, please cite it.
 
 See the scikit-learn documentation on `how to cite
 <http://scikit-learn.org/stable/about.html#citing-scikit-learn>`_.
