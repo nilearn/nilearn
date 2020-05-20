@@ -18,7 +18,7 @@ import pandas as pd
 import pytest
 
 from nilearn.datasets import neurovault
-
+from nilearn.image import load_img
 
 def _get_neurovault_data(random_seed=0):
     """Make fake images and collections to mock neurovault in the unit tests.
@@ -732,3 +732,65 @@ def test_fetch_neurovault_ids(tmp_path):
         image_ids=[img_ids[0]], data_dir=data_dir, mode='offline')
     # should be back to the original version
     assert data['images_meta'][0]['some_key'] == 'some_value'
+
+
+def test_resampling(tmp_path):
+    ### Tests all the usecases with resampling
+    ### First test case : a collection hasn't been downloaded yet, user asks for resampled version
+
+    data = neurovault.fetch_neurovault_ids(collection_ids=[4666], data_dir=str(tmp_path), resample=True)
+
+    # Check the expected size of the dataset
+    assert (len(data['images_meta'])) == 3
+
+    # Check that the resampled version is here
+    assert np.all([os.path.isfile(im_meta['resampled_absolute_path']) for im_meta in data['images_meta']])
+
+    # Load images that are fetched and check the affines
+    affines = [load_img(cur_im).affine for cur_im in data['images']]
+    assert np.all([np.all(affine == neurovault.STD_AFFINE) for affine in affines])
+
+    # Check that the original version is NOT here
+    assert not np.any([os.path.isfile(im_meta['absolute_path']) for im_meta in data['images_meta']])
+
+    # Ask to download the non-resampled version. This should trigger download
+    # (TODO - How can we test systematically that download does happen ?  )
+    data_orig = neurovault.fetch_neurovault_ids(collection_ids=[4666], data_dir=str(tmp_path), resample=False)
+
+    # Check that the original version is now here
+    assert np.all([os.path.isfile(im_meta['absolute_path']) for im_meta in data_orig['images_meta']])
+
+    # Check that the affines of the original version do not correspond to the resampled one
+    affines_orig = [load_img(cur_im).affine for cur_im in data_orig['images']]
+    assert not np.any([np.all(affine == neurovault.STD_AFFINE) for affine in affines_orig])
+
+    ### Second test case : a collection has been downloaded in the original version, user asks for resampled version
+
+    data_orig = neurovault.fetch_neurovault_ids(collection_ids=[4666], data_dir=str(tmp_path), resample=False)
+
+    # Check that the original version is here
+    assert np.all([os.path.isfile(im_meta['absolute_path']) for im_meta in data_orig['images_meta']])
+
+    # Check that the resampled version is NOT here
+    assert not np.any(
+        [os.path.isfile(im_meta['resampled_absolute_path']) for im_meta in data_orig['images_meta']])
+
+    # Asks for the resampled version. This should only resample, not download.
+    # (TODO - How can we test systematically that download does not happen ?  )
+    print("Asking for resampled version - Check here that download doesn't happen")
+    data = neurovault.fetch_neurovault_ids(collection_ids=[4666], data_dir=str(tmp_path), resample=True)
+
+    # Check that the resampled version is here
+    assert np.all([os.path.isfile(im_meta['resampled_absolute_path']) for im_meta in data['images_meta']])
+
+    # And the original version should still be here as well
+    assert np.all([os.path.isfile(im_meta['absolute_path']) for im_meta in data['images_meta']])
+
+    # Load resampled images and check the affines
+
+    affines = [load_img(cur_im).affine for cur_im in data['images']]
+    assert np.all([np.all(affine == neurovault.STD_AFFINE) for affine in affines])
+
+    # Check that the affines of the original version do not correspond to the resampled one
+    affines_orig = [load_img(cur_im).affine for cur_im in data_orig['images']]
+    assert not np.any([np.all(affine == neurovault.STD_AFFINE) for affine in affines_orig])
