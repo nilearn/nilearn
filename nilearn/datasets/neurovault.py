@@ -1514,15 +1514,18 @@ def _download_image_nii_file(image_info, collection, download_params):
     image_absolute_path = os.path.join(
         collection['absolute_path'], image_file_name)
 
-   
+    resampled_image_file_name = 'image_{0}_resampled.nii.gz'.format(image_id)
+    resampled_image_absolute_path = os.path.join(
+        collection['absolute_path'], resampled_image_file_name)
+    resampled_image_relative_path = os.path.join(
+        collection['relative_path'], resampled_image_file_name)
+
+    image_info['absolute_path'] = image_absolute_path
+    image_info['relative_path'] = image_relative_path
+    image_info['resampled_absolute_path'] = resampled_image_absolute_path
+    image_info['resampled_relative_path'] = resampled_image_relative_path
+
     if download_params['resample']:
-
-        resampled_image_file_name = 'image_{0}_resampled.nii.gz'.format(image_id)
-        resampled_image_absolute_path = os.path.join(
-            collection['absolute_path'], resampled_image_file_name)
-        resampled_image_relative_path = os.path.join(
-            collection['relative_path'], resampled_image_file_name)
-
         # Generate a temporary file name
         struuid = str(uuid.uuid1())
 
@@ -1542,20 +1545,10 @@ def _download_image_nii_file(image_info, collection, download_params):
 
         # Remove temporary file
         os.remove(tmp_path)
-        image_info['absolute_path'] = image_absolute_path
-        image_info['relative_path'] = image_relative_path
-        image_info['resampled_absolute_path'] = resampled_image_absolute_path
-        image_info['resampled_relative_path'] = resampled_image_relative_path
-
     else:
-
         _simple_download(
             image_url, image_absolute_path,
             download_params['temp_dir'], verbose=download_params['verbose'])
-        image_info['absolute_path'] = image_absolute_path
-        image_info['relative_path'] = image_relative_path
-        image_info['resampled_absolute_path'] = None
-        image_info['resampled_relative_path'] = None
     return image_info, collection
 
 
@@ -1756,10 +1749,22 @@ def _scroll_local(download_params):
         for image in good_images:
             image, collection = _update(image, collection, download_params)
             if not download_params['resample']:
-                
-                download_params['visited_images'].add(image['id'])
-                download_params['visited_collections'].add(collection['id'])
-                yield image, collection
+                if os.path.isfile(image['absolute_path']):
+
+                    download_params['visited_images'].add(image['id'])
+                    download_params['visited_collections'].add(collection['id'])
+                    yield image, collection
+                else:
+                    pass
+            else:
+                if os.path.isfile(image['resampled_absolute_path']):
+                    download_params['visited_images'].add(image['id'])
+                    download_params['visited_collections'].add(collection['id'])
+                    yield image, collection
+                else:
+                    im_resampled = resample_img(img=image['absolute_path'], target_affine=STD_AFFINE)
+                    im_resampled.to_filename(image['resampled_absolute_path'])
+                    yield image, collection
 
 
 def _scroll_collection(collection, download_params):
