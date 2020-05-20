@@ -6,14 +6,13 @@ import collections
 import itertools
 import warnings
 
-from nilearn._utils.compat import Memory, Parallel, delayed
+from joblib import Memory, Parallel, delayed
 
 from .. import _utils
 from .. import image
 from .. import masking
 from .._utils import CacheMixin
 from .._utils.class_inspect import get_params
-from .._utils.compat import _basestring, izip
 from .._utils.niimg_conversions import _iter_check_niimg
 from .nifti_labels_masker import NiftiLabelsMasker
 from nilearn.image import get_data
@@ -188,7 +187,7 @@ class MultiNiftiLabelsMasker(NiftiLabelsMasker, CacheMixin):
                                    'copy'])
         data = Parallel(n_jobs=n_jobs)(delayed(func)
                                        (imgs=imgs, confounds=cfs)
-                                       for imgs, cfs in izip(imgs_list, confounds))
+                                       for imgs, cfs in zip(imgs_list, confounds))
         return data
 
     def transform(self, imgs, confounds=None):
@@ -212,6 +211,6 @@ class MultiNiftiLabelsMasker(NiftiLabelsMasker, CacheMixin):
 
         self._check_fitted()
         if (not hasattr(imgs, '__iter__')
-                or isinstance(imgs, _basestring)):
+                or isinstance(imgs, str)):
             return self.transform_single_imgs(imgs)
         return self.transform_imgs(imgs, confounds, n_jobs=self.n_jobs)
