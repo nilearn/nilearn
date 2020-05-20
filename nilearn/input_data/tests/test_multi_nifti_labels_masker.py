@@ -54,8 +54,9 @@ def test_multi_nifti_labels_masker():
     assert signals11.shape == (length, n_regions)
 
     # Should work with 4D + 1D input too
-    signals_list = masker11.transform([fmri01_img, fmri11_img])
-    assert len(signals_list) == 2
+    signals_input = [fmri01_img, fmri11_img]
+    signals_list = masker11.transform(signals_input)
+    assert len(signals_list) == len(signals_input)
     for signals in signals_list:
         assert signals.shape == (length, n_regions)
 
