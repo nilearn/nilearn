@@ -252,6 +252,7 @@ class _InversionFunctor(object):
                 self.seeds_, self.target_affine, self.target_shape, self.radius,
                 self.allow_overlap, mask_img=self.mask_img)):
             spheres[sphere, i] = 1
+
         # Compute overlap scaling for mean signal:
         if self.allow_overlap:
             spheres_sum = spheres.sum(1)
@@ -469,8 +470,8 @@ class NiftiSpheresMasker(BaseMasker, CacheMixin):
         Parameters
         ----------
         region_signals: 2D numpy.ndarray
-            Signal for each sphere.
-            shape: (number of scans, number of spheres)
+            Signal for each region.
+            shape: (number of scans, number of regions)
 
         Returns
         -------
