@@ -78,8 +78,8 @@ Why is machine learning relevant to NeuroImaging? A few examples!
 
     Data-driven exploration of brain images. This includes the extraction of
     the major brain networks from resting-state data ("resting-state networks")
-    as well as the discovery of connectionally coherent functional modules
-    ("connectivity-based parcellation").
+    or movie-watching data as well as the discovery of connectionally coherent
+    functional modules ("connectivity-based parcellation").
     For example,
     :ref:`extracting_rsn` or :ref:`parcellating_brain` with clustering.
 
@@ -260,14 +260,14 @@ To loop over each individual volume of a 4D image, use :func:`image.iter_img`::
    :class: green
 
    Want to sharpen your skills with nilearn?
-   Compute the mean EPI for first subject of the ADHD
-   dataset downloaded with :func:`nilearn.datasets.fetch_adhd` and
+   Compute the mean EPI for first subject of the brain development
+   dataset downloaded with :func:`nilearn.datasets.fetch_development_fmri` and
    smooth it with an FWHM varying from 0mm to 20mm in increments of 5mm
 
    **Hints:**
 
       * Inspect the '.keys()' of the object returned by
-        :func:`nilearn.datasets.fetch_adhd`
+        :func:`nilearn.datasets.fetch_development_fmri`
 
       * Look at the "reference" section of the documentation: there is a
         function to compute the mean of a 4D image
@@ -275,7 +275,7 @@ To loop over each individual volume of a 4D image, use :func:`image.iter_img`::
       * To perform a for loop in Python, you can use the "range" function
 
       * The solution can be found :ref:`here
-        <sphx_glr_auto_examples_04_manipulating_images_plot_smooth_mean_image.py>`
+        <sphx_glr_auto_examples_06_manipulating_images_plot_smooth_mean_image.py>`
 
 |
 
@@ -403,6 +403,7 @@ estimator object, for instance an SVC (`support vector classifier
 <http://scikit-learn.org/stable/modules/svm.html>`_).
 It is first created with the relevant parameters::
 
+    >>> import sklearn; sklearn.set_config(print_changed_only=False)
     >>> from sklearn.svm import SVC
     >>> svc = SVC(kernel='linear', C=1.)
 

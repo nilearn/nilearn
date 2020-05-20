@@ -8,7 +8,7 @@ This chapter discusses how nilearn can be used to do simple operations on
 brain images.
 
 
-.. contents:: **Chapters contents**
+.. contents:: **Chapter contents**
     :local:
     :depth: 1
 
@@ -55,13 +55,13 @@ image.
 
 .. topic:: **Example**
 
-    * :ref:`sphx_glr_auto_examples_04_manipulating_images_plot_resample_to_template.py`
+    * :ref:`sphx_glr_auto_examples_06_manipulating_images_plot_resample_to_template.py`
 
-.. image:: ../auto_examples/04_manipulating_images/images/sphx_glr_plot_resample_to_template_001.png
-    :target: ../auto_examples/04_manipulating_images/plot_resample_to_template.html
+.. image:: ../auto_examples/06_manipulating_images/images/sphx_glr_plot_resample_to_template_001.png
+    :target: ../auto_examples/06_manipulating_images/plot_resample_to_template.html
     :width: 45%
-.. image:: ../auto_examples/04_manipulating_images/images/sphx_glr_plot_resample_to_template_002.png
-    :target: ../auto_examples/04_manipulating_images/plot_resample_to_template.html
+.. image:: ../auto_examples/06_manipulating_images/images/sphx_glr_plot_resample_to_template_002.png
+    :target: ../auto_examples/06_manipulating_images/plot_resample_to_template.html
     :width: 45%
 
 This can be useful to display two images as overlays in some
@@ -86,14 +86,14 @@ can be performed by specifying a 3x3 matrix instead of the 4x4 affine.
 In this case, nilearn computes automatically the translation part
 of the transformation matrix (i.e., affine).
 
-.. image:: ../auto_examples/04_manipulating_images/images/sphx_glr_plot_affine_transformation_002.png
-    :target: ../auto_examples/04_manipulating_images/plot_affine_transformation.html
+.. image:: ../auto_examples/06_manipulating_images/images/sphx_glr_plot_affine_transformation_002.png
+    :target: ../auto_examples/06_manipulating_images/plot_affine_transformation.html
     :width: 30%
-.. image:: ../auto_examples/04_manipulating_images/images/sphx_glr_plot_affine_transformation_004.png
-    :target: ../auto_examples/04_manipulating_images/plot_affine_transformation.html
+.. image:: ../auto_examples/06_manipulating_images/images/sphx_glr_plot_affine_transformation_004.png
+    :target: ../auto_examples/06_manipulating_images/plot_affine_transformation.html
     :width: 30%
-.. image:: ../auto_examples/04_manipulating_images/images/sphx_glr_plot_affine_transformation_003.png
-    :target: ../auto_examples/04_manipulating_images/plot_affine_transformation.html
+.. image:: ../auto_examples/06_manipulating_images/images/sphx_glr_plot_affine_transformation_003.png
+    :target: ../auto_examples/06_manipulating_images/plot_affine_transformation.html
     :width: 30%
 
 
@@ -107,7 +107,7 @@ of the transformation matrix (i.e., affine).
 
 .. seealso::
 
-  :ref:`An example illustrating affine transforms on data and bounding boxes <sphx_glr_auto_examples_04_manipulating_images_plot_affine_transformation.py>`
+  :ref:`An example illustrating affine transforms on data and bounding boxes <sphx_glr_auto_examples_06_manipulating_images_plot_affine_transformation.py>`
 
 Accessing individual volumes in 4D images
 ===========================================
@@ -139,6 +139,8 @@ Accessing individual volumes in 4D images
    * :ref:`sphx_glr_auto_examples_plot_3d_and_4d_niimg.py`
 
    * :ref:`sphx_glr_auto_examples_01_plotting_plot_overlay.py`
+
+.. _computing_and_applying_mask:
 
 Computing and applying spatial masks
 =====================================
@@ -198,7 +200,7 @@ brain. It is thus convenient to apply a brain mask in order to convert the
     :width: 100%
 
 Note that in an analysis pipeline, this operation is best done using the
-:ref:`masker objects <masker_objects>`. For completness, we give code to
+:ref:`masker objects <masker_objects>`. For completeness, we give the code to
 do it manually below:
 
 .. literalinclude:: ../../examples/01_plotting/plot_visualization.py
@@ -219,8 +221,8 @@ statistical test. This requires a chain of image
 operations on the input data. Here is a possible recipe for computing an
 ROI mask:
 
- * **Smoothing**: Before a statistical test, it is often use to smooth a bit
-   the image using :func:`nilearn.image.smooth_img`, typically fwhm=6 for
+ * **Smoothing**: Before a statistical test, it is often useful to smooth the image a bit
+   using :func:`nilearn.image.smooth_img`, typically fwhm=6 for
    fMRI.
 
  * **Selecting voxels**: Given the smoothed data, we can select voxels
@@ -266,9 +268,9 @@ ROI mask:
 .. topic:: **Code**
 
     A complete script of above steps with full description can be found :ref:`here
-    <sphx_glr_auto_examples_04_manipulating_images_plot_roi_extraction.py>`.
+    <sphx_glr_auto_examples_06_manipulating_images_plot_roi_extraction.py>`.
 
 .. seealso::
 
      * :ref:`Automatic region extraction on 4D atlas images
-       <sphx_glr_auto_examples_04_manipulating_images_plot_extract_rois_smith_atlas.py>`.
+       <sphx_glr_auto_examples_06_manipulating_images_plot_extract_rois_smith_atlas.py>`.

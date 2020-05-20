@@ -35,23 +35,37 @@ signal                  --- Set of preprocessing functions for time series
 import gzip
 import sys
 import warnings
+import os
 
 from distutils.version import LooseVersion
 
 from .version import _check_module_dependencies, __version__
 
+# Workaround issue discovered in intel-openmp 2019.5:
+# https://github.com/ContinuumIO/anaconda-issues/issues/11294
+#
+# see also https://github.com/scikit-learn/scikit-learn/pull/15020
+os.environ.setdefault("KMP_INIT_AT_FORK", "FALSE")
 
-def _py2_deprecation_warning():
-    warnings.simplefilter('once')
-    py2_warning = ('Python2 support is deprecated and will be removed in '
-                   'a future release. Consider switching to Python3.')
-    if sys.version_info.major == 2:
-        warnings.warn(message=py2_warning,
-                      category=DeprecationWarning,
-                      stacklevel=3,
-                      )
+
+def _py35_deprecation_warning():
+    py35_warning = ('Python 3.5 support is deprecated and will be removed in '
+                    'a future release. Consider switching to Python 3.6 or 3.7'
+                    )
+    warnings.filterwarnings('once', message=py35_warning)
+    warnings.warn(message=py35_warning,
+                  category=FutureWarning,
+                  stacklevel=3,
+                  )
+
+
+def _python_deprecation_warnings():
+    if sys.version_info.major == 3 and sys.version_info.minor == 5:
+        _py35_deprecation_warning()
+
 
 _check_module_dependencies()
+_python_deprecation_warnings()
 
 # Temporary work around to address formatting issues in doc tests
 # with NumPy 1.14. NumPy had made more consistent str/repr formatting
@@ -60,8 +74,8 @@ import numpy as np
 if LooseVersion(np.__version__) >= LooseVersion("1.14"):
     # See issue #1600 in nilearn for reason to add try and except
     try:
-        from ._utils.testing import is_nose_running
-        if is_nose_running():
+        from ._utils.testing import are_tests_running
+        if are_tests_running():
             np.set_printoptions(legacy='1.13')
     except ImportError:
         pass
@@ -86,7 +100,6 @@ CHECK_CACHE_VERSION = True
 # list all submodules available in nilearn and version
 __all__ = ['datasets', 'decoding', 'decomposition', 'connectome',
            'image', 'input_data', 'masking', 'mass_univariate', 'plotting',
-           'region', 'signal', 'surface', 'parcellations', '__version__']
+           'regions', 'signal', 'stats', 'surface',
+           'parcellations', '__version__']
 
-
-_py2_deprecation_warning()

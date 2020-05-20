@@ -1,11 +1,9 @@
-================================================
-Reference documentation: all nilearn functions
-================================================
+===============================================
+ Reference documentation: all nilearn functions
+===============================================
 
 This is the class and function reference of nilearn. Please refer to
-the :ref:`full user guide <user_guide>` for further details, as the class and
-function raw specifications may not be enough to give full guidelines on their
-uses.
+the :ref:`user guide <user_guide>` for more information and usage examples.
 
 .. contents:: **List of modules**
    :local:
@@ -71,6 +69,7 @@ uses.
    fetch_atlas_harvard_oxford
    fetch_atlas_msdl
    fetch_coords_power_2011
+   fetch_coords_seitzman_2018
    fetch_atlas_smith_2009
    fetch_atlas_yeo_2011
    fetch_atlas_aal
@@ -80,6 +79,7 @@ uses.
    fetch_coords_dosenbach_2010
    fetch_abide_pcp
    fetch_adhd
+   fetch_development_fmri
    fetch_haxby
    fetch_icbm152_2009
    fetch_icbm152_brain_gm_mask
@@ -92,6 +92,7 @@ uses.
    fetch_surf_fsaverage
    fetch_atlas_surf_destrieux
    fetch_atlas_talairach
+   fetch_atlas_schaefer_2018
    fetch_oasis_vbm
    fetch_megatrawls_netmats
    fetch_cobre
@@ -102,6 +103,16 @@ uses.
    get_data_dirs
    load_mni152_template
    load_mni152_brain_mask
+   fetch_language_localizer_demo_dataset
+   fetch_bids_langloc_dataset
+   fetch_openneuro_dataset_index
+   select_from_index
+   patch_openneuro_dataset
+   fetch_openneuro_dataset
+   fetch_localizer_first_level
+   fetch_spm_auditory
+   fetch_spm_multimodal_fmri
+   fetch_fiac_first_level
 
 .. _decoding_ref:
 
@@ -120,6 +131,10 @@ uses.
    :toctree: generated/
    :template: class.rst
 
+   Decoder
+   DecoderRegressor
+   fREMClassifier
+   fREMRegressor
    SpaceNetClassifier
    SpaceNetRegressor
    SearchLight
@@ -166,6 +181,7 @@ uses.
    coord_transform
    copy_img
    crop_img
+   get_data
    high_variance_confounds
    index_img
    iter_img
@@ -267,6 +283,7 @@ uses.
 
    RegionExtractor
    Parcellations
+   ReNA
 
 
 :mod:`nilearn.mass_univariate`: Mass-univariate analysis
@@ -320,6 +337,7 @@ uses.
    plot_stat_map
    plot_glass_brain
    plot_connectome
+   plot_connectome_strength
    plot_prob_atlas
    plot_surf
    plot_surf_roi
@@ -344,6 +362,7 @@ uses.
 
 .. _signal_ref:
 
+
 :mod:`nilearn.signal`: Preprocessing Time Series
 ================================================
 
@@ -363,6 +382,141 @@ uses.
 
    clean
    high_variance_confounds
+
+.. _stats_ref:
+
+
+:mod:`nilearn.stats`: Generalized Linear Models
+================================================
+
+.. automodule:: nilearn.stats
+   :no-members:
+   :no-inherited-members:
+
+.. No relevant user manual section yet.
+
+**Classes**:
+
+.. currentmodule:: nilearn.stats
+
+.. autosummary::
+   :toctree: generated/
+   :template: class.rst
+
+    Contrast
+    FContrastResults
+    TContrastResults
+    ARModel
+    OLSModel
+    LikelihoodModelResults
+    RegressionResults
+    SimpleRegressionResults
+
+**Functions**:
+
+.. currentmodule:: nilearn.stats
+
+.. autosummary::
+   :toctree: generated/
+   :template: function.rst
+
+    compute_contrast
+    compute_fixed_effects
+    expression_to_contrast_vector
+    fdr_threshold
+    cluster_level_inference
+    map_threshold
+
+
+:mod:`nilearn.stats.first_level_model`
+--------------------------------------
+
+.. automodule:: nilearn.stats.first_level_model
+   :no-members:
+   :no-inherited-members:
+
+**Classes**:
+
+.. currentmodule:: nilearn.stats.first_level_model
+
+.. autosummary::
+   :toctree: generated/
+   :template: class.rst
+
+   FirstLevelModel
+
+**Functions**:
+
+.. currentmodule:: nilearn.stats.first_level_model
+
+.. autosummary::
+   :toctree: generated/
+   :template: function.rst
+
+    check_design_matrix
+    compute_regressor
+    first_level_models_from_bids
+    glover_dispersion_derivative
+    glover_hrf
+    glover_time_derivative
+    make_first_level_design_matrix
+    mean_scaling
+    run_glm
+    spm_dispersion_derivative
+    spm_hrf
+    spm_time_derivative
+
+:mod:`nilearn.stats.second_level_model`
+---------------------------------------
+
+.. automodule:: nilearn.stats.second_level_model
+   :no-members:
+   :no-inherited-members:
+
+**Classes**:
+
+.. currentmodule:: nilearn.stats.second_level_model
+
+.. autosummary::
+   :toctree: generated/
+   :template: class.rst
+
+   SecondLevelModel
+
+**Functions**:
+
+.. currentmodule:: nilearn.stats.second_level_model
+
+.. autosummary::
+   :toctree: generated/
+   :template: function.rst
+
+    make_second_level_design_matrix
+    non_parametric_inference
+
+.. _reporting_ref:
+
+
+:mod:`nilearn.reporting`: Report plotting functions
+====================================================
+
+.. automodule:: nilearn.reporting
+   :no-members:
+   :no-inherited-members:
+
+**Functions**:
+
+.. currentmodule:: nilearn.reporting
+
+.. autosummary::
+   :toctree: generated/
+   :template: function.rst
+
+   compare_niimgs
+   plot_design_matrix
+   plot_contrast_matrix
+   get_clusters_table
+   make_glm_report
 
 
 :mod:`nilearn.surface`: Manipulating surface data

@@ -41,8 +41,12 @@ different heuristics to find cutting coordinates.
      :target: ../auto_examples/01_plotting/plot_demo_glass_brain_extensive.html
      :scale: 50
 
-.. |plot_connectome| image:: ../auto_examples/03_connectivity/images/sphx_glr_plot_adhd_spheres_003.png
-     :target: ../auto_examples/03_connectivity/plot_adhd_spheres.html
+.. |plot_connectome| image:: ../auto_examples/03_connectivity/images/sphx_glr_plot_sphere_based_connectome_003.png
+     :target: ../auto_examples/03_connectivity/plot_sphere_based_connectome.html
+     :scale: 50
+
+.. |plot_strength| image:: ../auto_examples/03_connectivity/images/sphx_glr_plot_sphere_based_connectome_004.png
+     :target: ../auto_examples/03_connectivity/plot_sphere_based_connectome.html
      :scale: 50
 
 .. |plot_anat| image:: ../auto_examples/01_plotting/images/sphx_glr_plot_demo_plotting_003.png
@@ -96,6 +100,15 @@ different heuristics to find cutting coordinates.
 |plot_connectome|    :func:`plot_connectome`
                      |hack|
                      Plotting a connectome
+
+                     Functions for automatic extraction of coords based on
+                     brain parcellations useful for :func:`plot_connectome`
+                     are demonstrated in
+                     **Example:** :ref:`sphx_glr_auto_examples_03_connectivity_plot_atlas_comparison.py`
+
+|plot_strength|     :func:`plot_connectome_strength`
+                     |hack|
+                     Plotting a connectome strength
 
                      Functions for automatic extraction of coords based on
                      brain parcellations useful for :func:`plot_connectome`
@@ -166,6 +179,10 @@ Different display modes
      :target: ../auto_examples/01_plotting/plot_demo_more_plotting.html
      :scale: 50
 
+.. |plot_tiled| image:: ../auto_examples/01_plotting/images/sphx_glr_plot_demo_more_plotting_009.png
+     :target: ../auto_examples/01_plotting/plot_demo_more_plotting.html
+     :scale: 50
+
 .. |plot_lzr| image:: ../auto_examples/01_plotting/images/sphx_glr_plot_demo_glass_brain_extensive_006.png
      :target: ../auto_examples/01_plotting/plot_demo_glass_brain_extensive.html
      :scale: 50
@@ -216,6 +233,11 @@ Different display modes
                    Cutting in the y and z direction, with cuts manually
                    positionned
 
+|plot_tiled|       `display_mode='tiled', cut_coords=[36, -27, 60]`
+                   |hack|
+                   Tiled slicer: 3 cuts along the x, y, z directions,
+                   arranged in a 2x2 grid
+
 |plot_lzr|         `Glass brain display_mode='lzr'`
                    |hack|
                    Glass brain and Connectome provide additional display modes
@@ -260,19 +282,19 @@ plot, and has methods to add overlays, contours or edge maps::
 
         display = plotting.plot_epi(...)
 
-.. |plot_edges| image:: ../auto_examples/01_plotting/images/sphx_glr_plot_demo_more_plotting_009.png
+.. |plot_edges| image:: ../auto_examples/01_plotting/images/sphx_glr_plot_demo_more_plotting_010.png
      :target: ../auto_examples/01_plotting/plot_demo_more_plotting.html
      :scale: 50
 
-.. |plot_contours| image:: ../auto_examples/01_plotting/images/sphx_glr_plot_demo_more_plotting_010.png
+.. |plot_contours| image:: ../auto_examples/01_plotting/images/sphx_glr_plot_demo_more_plotting_011.png
      :target: ../auto_examples/01_plotting/plot_demo_more_plotting.html
      :scale: 50
 
-.. |plot_fill| image:: ../auto_examples/01_plotting/images/sphx_glr_plot_demo_more_plotting_011.png
+.. |plot_fill| image:: ../auto_examples/01_plotting/images/sphx_glr_plot_demo_more_plotting_012.png
      :target: ../auto_examples/01_plotting/plot_demo_more_plotting.html
      :scale: 50
 
-.. |plot_markers| image:: ../auto_examples/01_plotting/images/sphx_glr_plot_demo_more_plotting_012.png
+.. |plot_markers| image:: ../auto_examples/01_plotting/images/sphx_glr_plot_demo_more_plotting_013.png
      :target: ../auto_examples/01_plotting/plot_demo_more_plotting.html
      :scale: 50
 
@@ -280,7 +302,7 @@ plot, and has methods to add overlays, contours or edge maps::
      :target: ../auto_examples/01_plotting/plot_overlay.html
      :scale: 50
 
-.. |plot_scalebar| image:: ../auto_examples/01_plotting/images/sphx_glr_plot_demo_more_plotting_013.png
+.. |plot_scalebar| image:: ../auto_examples/01_plotting/images/sphx_glr_plot_demo_more_plotting_014.png
      :target: ../auto_examples/01_plotting/plot_demo_more_plotting.html
      :scale: 50
 
@@ -471,7 +493,7 @@ Or you can save it to an html file::
 
 :func:`view_connectome`: 3D plot of a connectome::
 
-      >>> view = plotting.view_connectome(correlation_matrix, coords, threshold='90%')    # doctest: +SKIP
+      >>> view = plotting.view_connectome(correlation_matrix, coords, edge_threshold='90%')    # doctest: +SKIP
       >>> view.open_in_browser() # doctest: +SKIP
 
 

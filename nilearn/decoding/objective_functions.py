@@ -43,7 +43,7 @@ def _logistic_loss_lipschitz_constant(X):
     """Compute the Lipschitz constant (upper bound) for the gradient of the
     logistic sum:
 
-         w -> \sum_i log(1+exp(-y_i*(x_i*w + v)))
+         w -> \\sum_i log(1+exp(-y_i*(x_i*w + v)))
 
     """
     # N.B: we handle intercept!
@@ -216,31 +216,6 @@ def _gradient_id(img, l1_ratio=.5):
     gradient[-1] = l1_ratio * img
 
     return gradient
-
-
-def _unmask(w, mask):
-    """Unmask an image into whole brain, with off-mask voxels set to 0.
-
-    Parameters
-    ----------
-    w : ndarray, shape (n_features,)
-      The image to be unmasked.
-
-    mask : ndarray, shape (nx, ny, nz)
-      The mask used in the unmasking operation. It is required that
-      mask.sum() == n_features.
-
-    Returns
-    -------
-    out : 3d of same shape as `mask`.
-        The unmasked version of `w`
-    """
-
-    if mask.sum() != len(w):
-        raise ValueError("Expecting mask.sum() == len(w).")
-    out = np.zeros(mask.shape, dtype=w.dtype)
-    out[mask] = w
-    return out
 
 
 def _sigmoid(t, copy=True):

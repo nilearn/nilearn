@@ -2,18 +2,17 @@
 
 import numpy as np
 import nibabel
+import pytest
 from scipy import ndimage
-
-from nose.tools import assert_equal, assert_true, assert_not_equal
 
 from nilearn.regions import (connected_regions, RegionExtractor,
                              connected_label_regions)
 from nilearn.regions.region_extractor import (_threshold_maps_ratio,
                                               _remove_small_regions)
 
-from nilearn._utils.testing import assert_raises_regex
 from nilearn._utils.data_gen import generate_maps, generate_labeled_regions
 from nilearn._utils.exceptions import DimensionError
+from nilearn.image import get_data
 
 
 def _make_random_data(shape):
@@ -21,7 +20,7 @@ def _make_random_data(shape):
     rng = np.random.RandomState(0)
     data_rng = rng.normal(size=shape)
     img = nibabel.Nifti1Image(data_rng, affine)
-    data = img.get_data()
+    data = get_data(img)
     return img, data
 
 
@@ -29,18 +28,20 @@ def test_invalid_thresholds_in_threshold_maps_ratio():
     maps, _ = generate_maps((10, 11, 12), n_regions=2)
 
     for invalid_threshold in ['80%', 'auto', -1.0]:
-        assert_raises_regex(ValueError,
-                            "threshold given as ratio to the number of voxels must "
-                            "be Real number and should be positive and between 0 and "
-                            "total number of maps i.e. n_maps={0}. "
-                            "You provided {1}".format(maps.shape[-1], invalid_threshold),
-                            _threshold_maps_ratio,
-                            maps, threshold=invalid_threshold)
+        with pytest.raises(
+                ValueError,
+                match="threshold given as ratio to the number of voxels must "
+                      "be Real number and should be positive "
+                      "and between 0 and total number of maps "
+                      "i.e. n_maps={0}. "
+                      "You provided {1}".format(maps.shape[-1],
+                                                invalid_threshold)):
+            _threshold_maps_ratio(maps, threshold=invalid_threshold)
 
 
 def test_nans_threshold_maps_ratio():
     maps, _ = generate_maps((10, 10, 10), n_regions=2)
-    data = maps.get_data()
+    data = get_data(maps)
     data[:, :, 0] = np.nan
 
     maps_img = nibabel.Nifti1Image(data, np.eye(4))
@@ -51,18 +52,24 @@ def test_threshold_maps_ratio():
     # smoke test for function _threshold_maps_ratio with randomly
     # generated maps
 
+    maps, _ = generate_maps((6, 8, 10), n_regions=3)
+
+    # test that there is no side effect
+    get_data(maps)[:3] = 100
+    maps_data = get_data(maps).copy()
+    thr_maps = _threshold_maps_ratio(maps, threshold=1.0)
+    np.testing.assert_array_equal(get_data(maps), maps_data)
+
     # make sure that n_regions (4th dimension) are kept same even
     # in thresholded image
-    maps, _ = generate_maps((6, 8, 10), n_regions=3)
-    thr_maps = _threshold_maps_ratio(maps, threshold=1.0)
-    assert_true(thr_maps.shape[-1] == maps.shape[-1])
+    assert thr_maps.shape[-1] == maps.shape[-1]
 
     # check that the size should be same for 3D image
     # before and after thresholding
     img = np.zeros((30, 30, 30)) + 0.1 * np.random.randn(30, 30, 30)
     img = nibabel.Nifti1Image(img, affine=np.eye(4))
     thr_maps_3d = _threshold_maps_ratio(img, threshold=0.5)
-    assert_true(img.shape == thr_maps_3d.shape)
+    assert img.shape == thr_maps_3d.shape
 
 
 def test_invalids_extract_types_in_connected_regions():
@@ -73,10 +80,8 @@ def test_invalids_extract_types_in_connected_regions():
     # are given to extract_type in connected_regions function
     message = ("'extract_type' should be {0}")
     for invalid_extract_type in ['connect_region', 'local_regios']:
-        assert_raises_regex(ValueError,
-                            message.format(valid_names),
-                            connected_regions,
-                            maps, extract_type=invalid_extract_type)
+        with pytest.raises(ValueError, match=message.format(valid_names)):
+            connected_regions(maps, extract_type=invalid_extract_type)
 
 
 def test_connected_regions():
@@ -93,17 +98,23 @@ def test_connected_regions():
     for extract_type in ['connected_components', 'local_regions']:
         connected_extraction_img, index = connected_regions(maps, min_region_size=10,
                                                             extract_type=extract_type)
-        assert_true(connected_extraction_img.shape[-1] >= n_regions)
-        assert_true(index, np.ndarray)
+        assert connected_extraction_img.shape[-1] >= n_regions
+        assert index, np.ndarray
         # For 3D images regions extracted should be more than equal to one
         connected_extraction_3d_img, _ = connected_regions(map_img, min_region_size=10,
                                                            extract_type=extract_type)
-        assert_true(connected_extraction_3d_img.shape[-1] >= 1)
+        assert connected_extraction_3d_img.shape[-1] >= 1
 
     # Test input mask_img
+    mask = get_data(mask_img)
+    mask[1, 1, 1] = 0
     extraction_with_mask_img, index = connected_regions(maps,
                                                         mask_img=mask_img)
-    assert_true(extraction_with_mask_img.shape[-1] >= 1)
+    assert extraction_with_mask_img.shape[-1] >= 1
+
+    extraction_without_mask_img, index = connected_regions(maps)
+    assert np.all(get_data(extraction_with_mask_img)[mask == 0] == 0.)
+    assert not np.all(get_data(extraction_without_mask_img)[mask == 0] == 0.)
 
     # mask_img with different shape
     mask = np.zeros(shape=(10, 11, 12), dtype=np.int)
@@ -115,8 +126,12 @@ def test_connected_regions():
     mask_img = nibabel.Nifti1Image(mask, affine=affine)
     extraction_not_same_fov_mask, _ = connected_regions(maps,
                                                         mask_img=mask_img)
-    assert_equal(maps.shape[:3], extraction_not_same_fov_mask.shape[:3])
-    assert_not_equal(mask_img.shape, extraction_not_same_fov_mask.shape[:3])
+    assert maps.shape[:3] == extraction_not_same_fov_mask.shape[:3]
+    assert mask_img.shape != extraction_not_same_fov_mask.shape[:3]
+
+    extraction_not_same_fov, _ = connected_regions(maps)
+    assert (np.sum(get_data(extraction_not_same_fov) == 0) >
+                   np.sum(get_data(extraction_not_same_fov_mask) == 0))
 
 
 def test_invalid_threshold_strategies():
@@ -124,23 +139,23 @@ def test_invalid_threshold_strategies():
 
     extract_strategy_check = RegionExtractor(maps, thresholding_strategy='n_')
     valid_strategies = ['ratio_n_voxels', 'img_value', 'percentile']
-    assert_raises_regex(ValueError,
-                        "'thresholding_strategy' should be either of "
-                        "these".format(valid_strategies),
-                        extract_strategy_check.fit)
+    with pytest.raises(ValueError,
+                       match="'thresholding_strategy' should be either of "
+                             "these".format(valid_strategies)):
+        extract_strategy_check.fit()
 
 
 def test_threshold_as_none_and_string_cases():
     maps, _ = generate_maps((6, 8, 10), n_regions=1)
 
     extract_thr_none_check = RegionExtractor(maps, threshold=None)
-    assert_raises_regex(ValueError,
-                        "The given input to threshold is not valid.",
-                        extract_thr_none_check.fit)
+    with pytest.raises(ValueError,
+                       match="The given input to threshold is not valid."):
+        extract_thr_none_check.fit()
     extract_thr_string_check = RegionExtractor(maps, threshold='30%')
-    assert_raises_regex(ValueError,
-                        "The given input to threshold is not valid.",
-                        extract_thr_string_check.fit)
+    with pytest.raises(ValueError,
+                       match="The given input to threshold is not valid."):
+        extract_thr_string_check.fit()
 
 
 def test_region_extractor_fit_and_transform():
@@ -148,21 +163,33 @@ def test_region_extractor_fit_and_transform():
     n_subjects = 5
     maps, mask_img = generate_maps((40, 40, 40), n_regions=n_regions)
 
+    # Test maps are zero in the mask
+    mask_data = get_data(mask_img)
+    mask_data[1, 1, 1] = 0
+    extractor_without_mask = RegionExtractor(maps)
+    extractor_without_mask.fit()
+    extractor_with_mask = RegionExtractor(maps, mask_img=mask_img)
+    extractor_with_mask.fit()
+    assert not np.all(
+        get_data(extractor_without_mask.regions_img_)[mask_data == 0] == 0.)
+    assert np.all(
+        get_data(extractor_with_mask.regions_img_)[mask_data == 0] == 0.)
+
     # smoke test to RegionExtractor with thresholding_strategy='ratio_n_voxels'
     extract_ratio = RegionExtractor(maps, threshold=0.2,
                                     thresholding_strategy='ratio_n_voxels')
     extract_ratio.fit()
-    assert_not_equal(extract_ratio.regions_img_, '')
-    assert_true(extract_ratio.regions_img_.shape[-1] >= 9)
+    assert extract_ratio.regions_img_ != ''
+    assert extract_ratio.regions_img_.shape[-1] >= 9
 
     # smoke test with threshold=string and strategy=percentile
     extractor = RegionExtractor(maps, threshold=30,
                                 thresholding_strategy='percentile',
                                 mask_img=mask_img)
     extractor.fit()
-    assert_true(extractor.index_, np.ndarray)
-    assert_not_equal(extractor.regions_img_, '')
-    assert_true(extractor.regions_img_.shape[-1] >= 9)
+    assert extractor.index_, np.ndarray
+    assert extractor.regions_img_ != ''
+    assert extractor.regions_img_.shape[-1] >= 9
 
     n_regions_extracted = extractor.regions_img_.shape[-1]
     shape = (91, 109, 91, 7)
@@ -171,7 +198,7 @@ def test_region_extractor_fit_and_transform():
         img, data = _make_random_data(shape)
         # smoke test NiftiMapsMasker transform inherited in Region Extractor
         signal = extractor.transform(img)
-        assert_equal(expected_signal_shape, signal.shape)
+        assert expected_signal_shape == signal.shape
 
     # smoke test with high resolution image
     maps, mask_img = generate_maps((20, 20, 20), n_regions=n_regions,
@@ -182,8 +209,8 @@ def test_region_extractor_fit_and_transform():
                                     smoothing_fwhm=.6,
                                     min_region_size=.4)
     extract_ratio.fit()
-    assert_not_equal(extract_ratio.regions_img_, '')
-    assert_true(extract_ratio.regions_img_.shape[-1] >= 9)
+    assert extract_ratio.regions_img_ != ''
+    assert extract_ratio.regions_img_.shape[-1] >= 9
 
     # smoke test with zeros on the diagonal of the affine
     affine = np.eye(4)
@@ -194,8 +221,8 @@ def test_region_extractor_fit_and_transform():
     extract_ratio = RegionExtractor(maps, threshold=0.2,
                                     thresholding_strategy='ratio_n_voxels')
     extract_ratio.fit()
-    assert_not_equal(extract_ratio.regions_img_, '')
-    assert_true(extract_ratio.regions_img_.shape[-1] >= 9)
+    assert extract_ratio.regions_img_ != ''
+    assert extract_ratio.regions_img_.shape[-1] >= 9
 
 
 def test_error_messages_connected_label_regions():
@@ -204,14 +231,14 @@ def test_error_messages_connected_label_regions():
     n_regions = 2
     labels_img = generate_labeled_regions(shape, affine=affine,
                                           n_regions=n_regions)
-    assert_raises_regex(ValueError,
-                        "Expected 'min_size' to be specified as integer.",
-                        connected_label_regions,
-                        labels_img=labels_img, min_size='a')
-    assert_raises_regex(ValueError,
-                        "'connect_diag' must be specified as True or False.",
-                        connected_label_regions,
-                        labels_img=labels_img, connect_diag=None)
+    with pytest.raises(
+            ValueError,
+            match="Expected 'min_size' to be specified as integer."):
+        connected_label_regions(labels_img=labels_img, min_size='a')
+    with pytest.raises(
+            ValueError,
+            match="'connect_diag' must be specified as True or False."):
+        connected_label_regions(labels_img=labels_img, connect_diag=None)
 
 
 def test_remove_small_regions():
@@ -236,7 +263,7 @@ def test_remove_small_regions():
     removed_data = _remove_small_regions(label_map, index, affine, min_size)
     sum_removed_data = np.sum(removed_data)
 
-    assert_true(sum_removed_data < sum_label_data)
+    assert sum_removed_data < sum_label_data
 
 
 def test_connected_label_regions():
@@ -245,36 +272,36 @@ def test_connected_label_regions():
     n_regions = 9
     labels_img = generate_labeled_regions(shape, affine=affine,
                                           n_regions=n_regions)
-    labels_data = labels_img.get_data()
+    labels_data = get_data(labels_img)
     n_labels_wo_reg_ext = len(np.unique(labels_data))
 
     # region extraction without specifying min_size
     extracted_regions_on_labels_img = connected_label_regions(labels_img)
-    extracted_regions_labels_data = extracted_regions_on_labels_img.get_data()
+    extracted_regions_labels_data = get_data(extracted_regions_on_labels_img)
     n_labels_wo_min = len(np.unique(extracted_regions_labels_data))
 
-    assert_true(n_labels_wo_reg_ext < n_labels_wo_min)
+    assert n_labels_wo_reg_ext < n_labels_wo_min
 
     # with specifying min_size
     extracted_regions_with_min = connected_label_regions(labels_img,
                                                          min_size=100)
-    extracted_regions_with_min_data = extracted_regions_with_min.get_data()
+    extracted_regions_with_min_data = get_data(extracted_regions_with_min)
     n_labels_with_min = len(np.unique(extracted_regions_with_min_data))
 
-    assert_true(n_labels_wo_min > n_labels_with_min)
+    assert n_labels_wo_min > n_labels_with_min
 
     # Test connect_diag=False
     ext_reg_without_connect_diag = connected_label_regions(labels_img,
                                                            connect_diag=False)
-    data_wo_connect_diag = ext_reg_without_connect_diag.get_data()
+    data_wo_connect_diag = get_data(ext_reg_without_connect_diag)
     n_labels_wo_connect_diag = len(np.unique(data_wo_connect_diag))
-    assert_true(n_labels_wo_connect_diag > n_labels_wo_reg_ext)
+    assert n_labels_wo_connect_diag > n_labels_wo_reg_ext
 
     # If min_size is large and if all the regions are removed then empty image
     # will be returned
     extract_reg_min_size_large = connected_label_regions(labels_img,
                                                          min_size=500)
-    assert_true(np.unique(extract_reg_min_size_large.get_data()) == 0)
+    assert np.unique(get_data(extract_reg_min_size_large)) == 0
 
     # Test the names of the brain regions given in labels.
     # Test labels for 9 regions in n_regions
@@ -293,32 +320,32 @@ def test_connected_label_regions():
     # is less then newly generated labels can be more.
 
     # We test here whether labels returned are empty or not.
-    assert_not_equal(new_labels, '')
-    assert_true(len(new_labels) <= len(labels))
+    assert new_labels != ''
+    assert len(new_labels) <= len(labels)
 
     # labels given in numpy array
     labels = np.asarray(labels)
     extracted_reg2, new_labels2 = connected_label_regions(labels_img,
                                                           labels=labels)
-    assert_not_equal(new_labels, '')
+    assert new_labels != ''
     # By default min_size is less, so newly generated labels can be more.
-    assert_true(len(new_labels2) >= len(labels))
+    assert len(new_labels2) >= len(labels)
 
     # If number of labels provided are wrong (which means less than number of
     # unique labels in labels_img), then we raise an error
 
     # Test whether error raises
-    unique_labels = set(np.unique(np.asarray(labels_img.get_data())))
+    unique_labels = set(np.unique(np.asarray(get_data(labels_img))))
     unique_labels.remove(0)
 
     # labels given are less than n_regions=9
     provided_labels = ['region_a', 'region_c', 'region_f',
                        'region_g', 'region_h', 'region_i']
 
-    assert_true(len(provided_labels) < len(unique_labels))
+    assert len(provided_labels) < len(unique_labels)
 
-    np.testing.assert_raises(ValueError, connected_label_regions,
-                             labels_img, labels=provided_labels)
+    with pytest.raises(ValueError):
+        connected_label_regions(labels_img, labels=provided_labels)
 
     # Test if unknown/negative integers are provided as labels in labels_img,
     # we raise an error and test the same whether error is raised.
@@ -336,8 +363,8 @@ def test_connected_label_regions():
     labels_data[h0:, h1:, h2:] = np.inf
 
     neg_labels_img = nibabel.Nifti1Image(labels_data, affine)
-    np.testing.assert_raises(ValueError, connected_label_regions,
-                             labels_img=neg_labels_img)
+    with pytest.raises(ValueError):
+        connected_label_regions(labels_img=neg_labels_img)
 
     # If labels_img provided is 4D Nifti image, then test whether error is
     # raised or not. Since this function accepts only 3D image.
@@ -347,8 +374,8 @@ def test_connected_label_regions():
     labels_4d_data[..., 0] = labels_data
     labels_4d_data[..., 1] = labels_data
     labels_img_4d = nibabel.Nifti1Image(labels_4d_data, np.eye(4))
-    np.testing.assert_raises(DimensionError, connected_label_regions,
-                             labels_img=labels_img_4d)
+    with pytest.raises(DimensionError):
+        connected_label_regions(labels_img=labels_img_4d)
 
     # Test if labels (or names to regions) given is a string without a list.
     # Then, we expect it to be split to regions extracted and returned as list.
@@ -357,7 +384,7 @@ def test_connected_label_regions():
                                                  n_regions=1)
     extract_regions, new_labels = connected_label_regions(labels_img_in_str,
                                                           labels=labels_in_str)
-    assert_true(isinstance(new_labels, list))
+    assert isinstance(new_labels, list)
 
     # If user has provided combination of labels, then function passes without
     # breaking and new labels are returned based upon given labels and should
@@ -366,4 +393,4 @@ def test_connected_label_regions():
                        'region_d', '4', 'region_e']
     ext_reg, new_labels = connected_label_regions(labels_img,
                                                   labels=combined_labels)
-    assert_true(len(new_labels) >= len(combined_labels))
+    assert len(new_labels) >= len(combined_labels)

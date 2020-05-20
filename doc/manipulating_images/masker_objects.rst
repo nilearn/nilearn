@@ -92,16 +92,16 @@ Custom data loading: loading only the first 100 time points
 ------------------------------------------------------------
 
 Suppose we want to restrict a dataset to the first 100 frames. Below, we load
-a resting-state dataset with :func:`fetch_adhd()
-<nilearn.datasets.fetch_adhd>`, restrict it to 100 frames and
+a movie-watching dataset with :func:`fetch_development_fmri()
+<nilearn.datasets.fetch_development_fmri>`, restrict it to 100 frames and
 build a new niimg object that we can give to the masker. Although
 possible, there is no need to save your data to a file to pass it to a
 :class:`NiftiMasker`. Simply use :func:`nilearn.image.index_img` to apply a
 slice and create a :ref:`Niimg <niimg>` in memory:
 
 
-.. literalinclude:: ../../examples/04_manipulating_images/plot_mask_computation.py
-    :start-after: Load ADHD resting-state dataset
+.. literalinclude:: ../../examples/06_manipulating_images/plot_mask_computation.py
+    :start-after: Load movie watching based brain development fmri dataset
     :end-before: # To display the background
 
 Controlling how the mask is computed from the data
@@ -117,9 +117,9 @@ engineering using masker objects.
 .. note::
 
     The full example described in this section can be found here:
-    :doc:`plot_mask_computation.py <../auto_examples/04_manipulating_images/plot_mask_computation>`.
+    :doc:`plot_mask_computation.py <../auto_examples/06_manipulating_images/plot_mask_computation>`.
     It is also related to this example:
-    :doc:`plot_nifti_simple.py <../auto_examples/04_manipulating_images/plot_nifti_simple>`.
+    :doc:`plot_nifti_simple.py <../auto_examples/06_manipulating_images/plot_nifti_simple>`.
 
 
 Visualizing the computed mask
@@ -136,13 +136,26 @@ mask computation parameters.
 The mask can be retrieved and visualized from the `mask_img_` attribute
 of the masker:
 
-.. literalinclude:: ../../examples/04_manipulating_images/plot_mask_computation.py
+.. literalinclude:: ../../examples/06_manipulating_images/plot_mask_computation.py
+    :start-after: # A NiftiMasker with the default strategy
+    :end-before: # Plot the generated mask using the .generate_report method
+
+.. figure:: ../auto_examples/06_manipulating_images/images/sphx_glr_plot_mask_computation_002.png
+    :target: ../auto_examples/06_manipulating_images/plot_mask_computation.html
+    :align: center
+    :scale: 40
+
+Alternatively, the mask can be visualized using the `generate_report`
+method of the masker. The generated report can be viewed in a Jupyter notebook,
+opened in a new browser tab using `report.open_in_browser()`,
+or saved as a portable HTML file `report.save_as_html(output_filepath)`.
+
+.. literalinclude:: ../../examples/06_manipulating_images/plot_mask_computation.py
     :start-after: # We need to specify an 'epi' mask_strategy, as this is raw EPI data
     :end-before: # Generate mask with strong opening
 
-
-.. figure:: ../auto_examples/04_manipulating_images/images/sphx_glr_plot_mask_computation_004.png
-    :target: ../auto_examples/04_manipulating_images/plot_mask_computation.html
+.. figure:: /images/niftimasker_report.png
+    :target: ../auto_examples/06_manipulating_images/plot_mask_computation.html
     :scale: 50%
 
 Different masking strategies
@@ -161,10 +174,10 @@ The underlying function is :func:`nilearn.masking.compute_epi_mask`
 called using the `mask_args` argument of the :class:`NiftiMasker`.
 Controling these arguments set the fine aspects of the mask. See the
 functions documentation, or :doc:`the NiftiMasker example
-<../auto_examples/04_manipulating_images/plot_mask_computation>`.
+<../auto_examples/06_manipulating_images/plot_mask_computation>`.
 
-.. figure:: ../auto_examples/04_manipulating_images/images/sphx_glr_plot_mask_computation_005.png
-    :target: ../auto_examples/04_manipulating_images/plot_mask_computation.html
+.. figure:: /images/niftimasker_report_params.png
+    :target: ../auto_examples/06_manipulating_images/plot_mask_computation.html
     :scale: 50%
 
 .. _masker_preprocessing_steps:
@@ -175,14 +188,16 @@ Common data preparation steps: smoothing, filtering, resampling
 :class:`NiftiMasker` comes with many parameters that enable data
 preparation::
 
+   >>> import sklearn; sklearn.set_config(print_changed_only=False)
    >>> from nilearn import input_data
    >>> masker = input_data.NiftiMasker()
-   >>> masker # doctest: +ELLIPSIS
+   >>> masker # doctest: +ELLIPSIS +NORMALIZE_WHITESPACE
    NiftiMasker(detrend=False, dtype=None, high_pass=None, low_pass=None,
          mask_args=None, mask_img=None, mask_strategy='background',
-         memory=Memory(...), memory_level=1, sample_mask=None,
-         sessions=None, smoothing_fwhm=None, standardize=False, t_r=None,
-         target_affine=None, target_shape=None, verbose=0)
+         memory=Memory(...), memory_level=1, reports=True,
+         sample_mask=None, sessions=None, smoothing_fwhm=None,
+         standardize=False, t_r=None, target_affine=None, target_shape=None,
+         verbose=0)
 
 .. note::
 
@@ -234,7 +249,7 @@ Temporal Filtering and confound removal
 properties, before conversion to voxel signals.
 
 - **Standardization**. Parameter ``standardize``: Signals can be
-  standardized (scaled to unit variance). 
+  standardized (scaled to unit variance).
 
 - **Frequency filtering**. Low-pass and high-pass filters can be used to
   remove artifacts. Parameters: ``high_pass`` and ``low_pass``, specified
@@ -242,7 +257,7 @@ properties, before conversion to voxel signals.
   the ``t_r`` parameter: ``loss_pass=.5, t_r=2.1``).
 
 - **Confound removal**. Two ways of removing confounds are provided: simple
-  detrending or using prespecified confounds, such as behavioral or movement 
+  detrending or using prespecified confounds, such as behavioral or movement
   information.
 
   * Linear trends can be removed by activating the `detrend` parameter.
@@ -251,7 +266,7 @@ properties, before conversion to voxel signals.
     signal of interest (e.g., the neural correlates of cognitive tasks).
     It is not activated by default in :class:`NiftiMasker` but is recommended
     in almost all scenarios.
-    
+
   * More complex confounds, measured during the acquision, can be removed
     by passing them to :meth:`NiftiMasker.transform`. If the dataset
     provides a confounds file, just pass its path to the masker.
@@ -315,9 +330,9 @@ an excerpt of :ref:`the example performing Anova-SVM on the Haxby data
 
 .. topic:: **Examples to better understand the NiftiMasker**
 
-   * :ref:`sphx_glr_auto_examples_04_manipulating_images_plot_nifti_simple.py`
+   * :ref:`sphx_glr_auto_examples_06_manipulating_images_plot_nifti_simple.py`
 
-   * :ref:`sphx_glr_auto_examples_04_manipulating_images_plot_mask_computation.py`
+   * :ref:`sphx_glr_auto_examples_06_manipulating_images_plot_mask_computation.py`
 
 |
 
@@ -425,4 +440,4 @@ seed position is used.
 
 .. topic:: **Examples**
 
-  * :ref:`sphx_glr_auto_examples_03_connectivity_plot_adhd_spheres.py`
+  * :ref:`sphx_glr_auto_examples_03_connectivity_plot_sphere_based_connectome.py`

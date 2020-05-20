@@ -1,6 +1,7 @@
 """
 Utilities to check for valid parameters
 """
+
 import numpy as np
 import warnings
 import numbers
@@ -8,7 +9,7 @@ import numbers
 from sklearn.feature_selection import (SelectPercentile, f_regression,
                                        f_classif)
 
-from .compat import _basestring
+from .niimg import _get_data
 
 
 # Volume of a standard (MNI152) brain mask in mm^3
@@ -45,7 +46,7 @@ def check_threshold(threshold, data, percentile_func, name='threshold'):
         returns the score of the percentile on the data or
         returns threshold as it is if given threshold is not a string percentile.
     """
-    if isinstance(threshold, _basestring):
+    if isinstance(threshold, str):
         message = ('If "{0}" is given as string it '
                    'should be a number followed by the percent '
                    'sign, e.g. "25.3%"').format(name)
@@ -88,7 +89,7 @@ def _get_mask_volume(mask_img):
     """
     affine = mask_img.affine
     prod_vox_dims = 1. * np.abs(np.linalg.det(affine[:3, :3]))
-    return prod_vox_dims * mask_img.get_data().astype(np.bool).sum()
+    return prod_vox_dims * _get_data(mask_img).astype(np.bool).sum()
 
 
 def _adjust_screening_percentile(screening_percentile, mask_img,
