@@ -612,31 +612,20 @@ def test_confounds_connectome_measure():
     # length
     cleaned_vectors = correlation_measure.fit_transform(signals,
                                                         confounds=confounds[0:10])
-    assert_true(abs(np.dot(confounds[0:10].T,
-                           cleaned_vectors).max()) < 1000 * np.finfo(np.float).eps)
-    assert_true(isinstance(cleaned_vectors, np.ndarray))
+    zero_matrix = np.zeros((confounds.shape[1], cleaned_vectors.shape[1]))
+    assert_array_almost_equal(
+        np.dot(confounds[0:10].T, cleaned_vectors), zero_matrix)
+    assert(isinstance(cleaned_vectors, np.ndarray))
 
     # Raising error for input confounds are not iterable
     conn_measure = ConnectivityMeasure(vectorize=True)
-    assert_raises_regex(ValueError,
-                        "'confounds' input argument must be an iterable.",
-                        conn_measure._check_input,
-                        signals, confounds=1.)
-
-    assert_raises_regex(ValueError,
-                        "'confounds' input argument must be an iterable.",
-                        conn_measure._fit_transform,
-                        X=signals, do_fit=True, do_transform=True,
-                        confounds=1.)
-
-    assert_raises_regex(ValueError,
-                        "'confounds' input argument must be an iterable.",
-                        conn_measure.fit_transform,
-                        signals, None, 1.)
+    pytest.raises(ValueError, conn_measure._check_input, signals, confounds=1.)
+    pytest.raises(ValueError, conn_measure._fit_transform,
+                  X=signals, do_fit=True, do_transform=True,
+                  confounds=1.)
+    pytest.raises(ValueError, conn_measure.fit_transform, signals, None, 1.)
     # Raising error for input confounds are given but not vectorize=True
     conn_measure = ConnectivityMeasure(vectorize=False)
-    assert_raises_regex(ValueError,
-                        "'confounds' are provided but vectorize=False.",
-                        conn_measure.fit_transform,
-                        signals, None, confounds[0:10])
+    pytest.raises(ValueError, conn_measure.fit_transform,
+                  signals, None, confounds[0:10])
 
