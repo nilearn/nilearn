@@ -39,13 +39,17 @@ from nilearn import plotting
 print("Fetching Neurovault images; "
       "if you haven't downloaded any Neurovault data before "
       "this will take several minutes.")
-nv_data = fetch_neurovault(max_images=80, fetch_neurosynth_words=True)
+nv_data = fetch_neurovault(max_images=30, fetch_neurosynth_words=True)
 
 images = nv_data['images']
 term_weights = nv_data['word_frequencies']
 vocabulary = nv_data['vocabulary']
+if term_weights is None:
+    term_weights = np.ones((len(images), 2))
+    vocabulary = np.asarray(["Neurosynth is down", ":("])
 
 # Clean and report term scores
+print(term_weights)
 term_weights[term_weights < 0] = 0
 total_scores = np.mean(term_weights, axis=0)
 
@@ -103,7 +107,7 @@ print("Running ICA; may take time...")
 # We use a very small number of components as we have downloaded only 80
 # images. For better results, increase the number of images downloaded
 # and the number of components
-n_components = 16
+n_components = 8
 fast_ica = FastICA(n_components=n_components, random_state=0)
 ica_maps = fast_ica.fit_transform(X.T).T
 
