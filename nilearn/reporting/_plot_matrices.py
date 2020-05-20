@@ -63,7 +63,7 @@ def plot_design_matrix(design_matrix, rescale=True, ax=None, output_file=None):
 
 
 def plot_event(model_event, cmap=None, output_file=None, **fig_kwargs):
-    """Creates plot for contrast definition.
+    """Creates plot for event visualization.
 
     Parameters
     ----------
