@@ -1,8 +1,7 @@
-from nose.tools import assert_true
 import numpy as np
 import scipy as sp
 from numpy.testing import assert_almost_equal
-from sklearn.utils import extmath
+from scipy import linalg
 from sklearn.utils import check_random_state
 from nilearn.decoding.objective_functions import _gradient, _div
 from nilearn.decoding.space_net_solvers import (
@@ -167,14 +166,13 @@ def test__squared_loss_derivative_lipschitz_constant():
     for _ in range(20):
         x_1 = rng.rand(*w.shape) * rng.randint(1000)
         x_2 = rng.rand(*w.shape) * rng.randint(1000)
-        gradient_difference = extmath.norm(
+        gradient_difference = linalg.norm(
             _squared_loss_and_spatial_grad_derivative(X, y, x_1, mask,
                                                       grad_weight)
             - _squared_loss_and_spatial_grad_derivative(X, y, x_2, mask,
                                                         grad_weight))
-        point_difference = extmath.norm(x_1 - x_2)
-        assert_true(
-            gradient_difference <= lipschitz_constant * point_difference)
+        point_difference = linalg.norm(x_1 - x_2)
+        assert gradient_difference <= lipschitz_constant * point_difference
 
 
 def test_logistic_derivative_lipschitz_constant():
@@ -186,14 +184,13 @@ def test_logistic_derivative_lipschitz_constant():
     for _ in range(20):
         x_1 = rng.rand((w.shape[0] + 1)) * rng.randint(1000)
         x_2 = rng.rand((w.shape[0] + 1)) * rng.randint(1000)
-        gradient_difference = extmath.norm(
+        gradient_difference = linalg.norm(
             _logistic_data_loss_and_spatial_grad_derivative(
                 X, y, x_1, mask, grad_weight)
             - _logistic_data_loss_and_spatial_grad_derivative(
                 X, y, x_2, mask, grad_weight))
-        point_difference = extmath.norm(x_1 - x_2)
-        assert_true(
-            gradient_difference <= lipschitz_constant * point_difference)
+        point_difference = linalg.norm(x_1 - x_2)
+        assert gradient_difference <= lipschitz_constant * point_difference
 
 
 def test_max_alpha__squared_loss():
@@ -224,12 +221,12 @@ def test_tikhonov_regularization_vs_graph_net():
         screening_percentile=100., standardize=False)
     graph_net.fit(X_, y.copy())
     coef_ = graph_net.coef_[0]
-    graph_net_perf = 0.5 / y.size * extmath.norm(
+    graph_net_perf = 0.5 / y.size * linalg.norm(
         np.dot(X, coef_) - y) ** 2\
-        + 0.5 * extmath.norm(np.dot(G, coef_)) ** 2
-    optimal_model_perf = 0.5 / y.size * extmath.norm(
+        + 0.5 * linalg.norm(np.dot(G, coef_)) ** 2
+    optimal_model_perf = 0.5 / y.size * linalg.norm(
         np.dot(X, optimal_model) - y) ** 2\
-        + 0.5 * extmath.norm(np.dot(G, optimal_model)) ** 2
+        + 0.5 * linalg.norm(np.dot(G, optimal_model)) ** 2
     assert_almost_equal(graph_net_perf, optimal_model_perf, decimal=1)
 
 

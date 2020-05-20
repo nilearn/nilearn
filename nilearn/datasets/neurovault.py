@@ -27,10 +27,9 @@ except ImportError:
     from collections import Container
 
 import numpy as np
-from sklearn.datasets.base import Bunch
+from sklearn.utils import Bunch
 from sklearn.feature_extraction import DictVectorizer
 
-from .._utils.compat import _basestring
 from .utils import _fetch_file, _get_dataset_dir, _get_dataset_descr
 from ..image import resample_img
 import uuid
@@ -660,7 +659,7 @@ class Pattern(_SpecialValue):
         self.flags_ = flags
 
     def __eq__(self, other):
-        if not isinstance(other, _basestring) or re.match(
+        if not isinstance(other, str) or re.match(
                 self.pattern_, other, self.flags_) is None:
             return False
         return True
@@ -1301,7 +1300,7 @@ def _remove_none_strings(metadata):
     """
     metadata = metadata.copy()
     for key, value in metadata.items():
-        if (isinstance(value, _basestring) and
+        if (isinstance(value, str) and
                 re.match(r'($|n/?a$|none|null)', value, re.IGNORECASE)):
             metadata[key] = None
     return metadata
@@ -1715,19 +1714,25 @@ def _update_image(image_info, download_params):
     """
     if not download_params['write_ok']:
         return image_info
-    collection = _fetch_collection_for_image(
-        image_info, download_params)
-    image_info, collection = _download_image_terms(
-        image_info, collection, download_params)
-    metadata_file_path = os.path.join(
-        os.path.dirname(image_info['absolute_path']),
-        'image_{0}_metadata.json'.format(image_info['id']))
-    _write_metadata(image_info, metadata_file_path)
+    try:
+        collection = _fetch_collection_for_image(
+            image_info, download_params)
+        image_info, collection = _download_image_terms(
+            image_info, collection, download_params)
+        metadata_file_path = os.path.join(
+            os.path.dirname(image_info['absolute_path']),
+            'image_{0}_metadata.json'.format(image_info['id']))
+        _write_metadata(image_info, metadata_file_path)
+    except OSError:
+        warnings.warn(
+            "could not update metadata for image {}, "
+            "most likely because you do not have write "
+            "permissions to its metadata file".format(image_info["id"]))
     return image_info
 
 
 def _update(image_info, collection, download_params):
-    """Update local metadata for an image and its collection."""
+    "Update local metadata for an image and its collection."""
     image_info = _update_image(image_info, download_params)
     return image_info, collection
 
@@ -2107,7 +2112,7 @@ def _split_terms(terms, available_on_server):
     terms_ = dict(terms)
     server_terms = dict([(k, terms_.pop(k)) for k in
                          available_on_server if k in terms_ and
-                         (isinstance(terms_[k], _basestring) or
+                         (isinstance(terms_[k], str) or
                           isinstance(terms_[k], int))])
     return terms_, server_terms
 
@@ -2138,13 +2143,12 @@ def basic_image_terms():
     true:
 
         - It is not in MNI space.
-        - Its metadata field "is_valid" is cleared.
         - It is thresholded.
         - Its map type is one of "ROI/mask", "anatomical", or "parcellation".
         - Its image type is "atlas"
 
     """
-    return {'not_mni': False, 'is_valid': True, 'is_thresholded': False,
+    return {'not_mni': False, 'is_thresholded': False,
             'map_type': NotIn('ROI/mask', 'anatomical', 'parcellation'),
             'image_type': NotEqual('atlas')}
 
@@ -2701,8 +2705,6 @@ def fetch_neurovault_motor_task(data_dir=None, verbose=1):
     Notes
     ------
 
-    This function is only a caller for the fetch_localizer_contrasts in order
-    to simplify examples reading and understanding.
     The 'left vs right button press' contrast is used:
     https://neurovault.org/images/10426/
 
@@ -2745,8 +2747,6 @@ def fetch_neurovault_auditory_computation_task(data_dir=None, verbose=1):
     Notes
     ------
 
-    This function is only a caller for the fetch_localizer_contrasts in order
-    to simplify examples reading and understanding.
     The 'auditory_calculation_vs_baseline' contrast is used:
     https://neurovault.org/images/32980/
 

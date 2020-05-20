@@ -22,9 +22,9 @@ from nibabel import freesurfer as fs
 
 from ..image import load_img
 from ..image import resampling
-from .._utils.compat import _basestring
 from .._utils.path_finding import _resolve_globbing
 from .. import _utils
+from nilearn.image import get_data
 
 
 def _uniform_ball_cloud(n_points=20, dim=3, n_monte_carlo=50000):
@@ -236,7 +236,7 @@ def _masked_indices(sample_locations, img_shape, mask=None):
     for dim, size in enumerate(img_shape):
         kept = np.logical_and(kept, sample_locations[:, dim] < size)
     if mask is not None:
-        indices = np.asarray(np.round(sample_locations[kept]), dtype=int)
+        indices = np.asarray(np.floor(sample_locations[kept]), dtype=int)
         kept[kept] = mask[
             indices[:, 0], indices[:, 1], indices[:, 2]] != 0
     return ~kept
@@ -469,7 +469,7 @@ def vol_to_surf(img, surf_mesh,
     You can control how many samples are drawn by setting `n_samples`.
 
     Once the sampling positions are chosen, those that fall outside of the 3d
-    image (or ouside of the mask if you provided one) are discarded. If all
+    image (or outside of the mask if you provided one) are discarded. If all
     sample positions are discarded (which can happen, for example, if the
     vertex itself is outside of the support of the image), the projection at
     this vertex will be ``numpy.nan``.
@@ -499,13 +499,13 @@ def vol_to_surf(img, surf_mesh,
     img = load_img(img)
     if mask_img is not None:
         mask_img = _utils.check_niimg(mask_img)
-        mask = resampling.resample_to_img(
-            mask_img, img, interpolation='nearest', copy=False).get_data()
+        mask = get_data(resampling.resample_to_img(
+            mask_img, img, interpolation='nearest', copy=False))
     else:
         mask = None
     original_dimension = len(img.shape)
     img = _utils.check_niimg(img, atleast_4d=True)
-    frames = np.rollaxis(img.get_data(), -1)
+    frames = np.rollaxis(get_data(img), -1)
     mesh = load_surf_mesh(surf_mesh)
     sampling = sampling_schemes[interpolation]
     texture = sampling(
@@ -573,7 +573,7 @@ def load_surf_data(surf_data):
         An array containing surface data
     """
     # if the input is a filename, load it
-    if isinstance(surf_data, _basestring):
+    if isinstance(surf_data, str):
 
         # resolve globbing
         file_list = _resolve_globbing(surf_data)
@@ -583,7 +583,7 @@ def load_surf_data(surf_data):
             surf_data = file_list[f]
             if (surf_data.endswith('nii') or surf_data.endswith('nii.gz') or
                     surf_data.endswith('mgz')):
-                data_part = np.squeeze(nibabel.load(surf_data).get_data())
+                data_part = np.squeeze(get_data(nibabel.load(surf_data)))
             elif (surf_data.endswith('curv') or surf_data.endswith('sulc') or
                     surf_data.endswith('thickness')):
                 data_part = fs.io.read_morph_data(surf_data)
@@ -697,7 +697,7 @@ def load_surf_mesh(surf_mesh):
         the second containing the indices (into coords) of the mesh faces.
     """
     # if input is a filename, try to load it
-    if isinstance(surf_mesh, _basestring):
+    if isinstance(surf_mesh, str):
         # resolve globbing
         file_list = _resolve_globbing(surf_mesh)
         if len(file_list) == 1:

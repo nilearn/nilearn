@@ -2,26 +2,21 @@ import os
 import re
 import base64
 import webbrowser
-import time
 import tempfile
 
 import numpy as np
 import matplotlib
-from numpy.testing import assert_warns, assert_no_warnings
-try:
-    from lxml import etree
-    LXML_INSTALLED = True
-except ImportError:
-    LXML_INSTALLED = False
+import pytest
 
 from nilearn.plotting import js_plotting_utils
 from nilearn import surface
 from nilearn.datasets import fetch_surf_fsaverage
 
-
-# Note: html output by nilearn view_* functions
-# should validate as html5 using https://validator.w3.org/nu/ with no
-# warnings
+try:
+    from lxml import etree
+    LXML_INSTALLED = True
+except ImportError:
+    LXML_INSTALLED = False
 
 
 def _normalize_ws(text):
@@ -41,11 +36,7 @@ def test_add_js_lib():
     assert _normalize_ws("""/*! jQuery v3.3.1 | (c) JS Foundation and other
                             contributors | jquery.org/license */""") in inline
     assert _normalize_ws("""**
-                            * plotly.js (gl3d - minified) v1.38.3
-                            * Copyright 2012-2018, Plotly, Inc.
-                            * All rights reserved.
-                            * Licensed under the MIT license
-                            */ """) in inline
+                            * plotly.js (gl3d - minified)""") in inline
     assert "decodeBase64" in inline
 
 
@@ -70,6 +61,7 @@ def test_colorscale_no_threshold():
     assert colors['cmap'].N == 256
     assert (colors['norm'].vmax, colors['norm'].vmin) == (13, -13)
     assert colors['abs_threshold'] is None
+    colors = js_plotting_utils.colorscale(cmap, values > 0, .5)
 
 
 def test_colorscale_threshold_0():
@@ -187,8 +179,9 @@ def test_colorscale_asymmetric_cmap_vmax():
 def test_colorscale_asymmetric_cmap_negative_values():
     cmap = 'jet'
     values = np.linspace(-15, 4)
-    assert_warns(UserWarning, js_plotting_utils.colorscale, cmap,
-                 values, symmetric_cmap=False)
+    with pytest.warns(UserWarning):
+        js_plotting_utils.colorscale(cmap,
+                                     values, symmetric_cmap=False)
 
     colors = js_plotting_utils.colorscale(cmap, values, vmax=7,
                                           symmetric_cmap=False)
@@ -220,14 +213,18 @@ def test_mesh_to_plotly():
             js_plotting_utils.decode(plotly[key], '<i4'), triangles[:, i])
 
 
-def check_html(html, check_selects=True, plot_div_id='surface-plot'):
+def check_html(html, check_selects=True, plot_div_id='surface-plot',
+               title=None):
     fd, tmpfile = tempfile.mkstemp()
     try:
         os.close(fd)
         html.save_as_html(tmpfile)
         with open(tmpfile) as f:
             saved = f.read()
-        assert saved == html.get_standalone()
+        # If present, replace Windows line-end '\r\n' with Unix's '\n'
+        saved = saved.replace('\r\n', '\n')
+        standalone = html.get_standalone().replace('\r\n', '\n')
+        assert saved == standalone
     finally:
         os.remove(tmpfile)
     assert "INSERT" not in html.html
@@ -241,6 +238,8 @@ def check_html(html, check_selects=True, plot_div_id='surface-plot'):
     assert (html.width, html.height) == (3, 17)
     assert 'width="3" height="17"' in html.get_iframe()
     assert 'width="33" height="37"' in html.get_iframe(33, 37)
+    if title is not None:
+        assert "<title>{}</title>".format(title) in str(html)
     if not LXML_INSTALLED:
         return
     root = etree.HTML(html.html.encode('utf-8'),
@@ -291,44 +290,6 @@ def _check_open_in_browser(html):
             pass
 
 
-def test_temp_file_removing():
-    html = js_plotting_utils.HTMLDocument('hello')
-    wb_open = webbrowser.open
-    webbrowser.open = _open_mock
-    try:
-        html.open_in_browser(temp_file_lifetime=.5)
-        assert os.path.isfile(html._temp_file)
-        time.sleep(1.5)
-        assert not os.path.isfile(html._temp_file)
-        html.open_in_browser(temp_file_lifetime=None)
-        assert os.path.isfile(html._temp_file)
-        time.sleep(1.5)
-        assert os.path.isfile(html._temp_file)
-    finally:
-        webbrowser.open = wb_open
-        try:
-            os.remove(html._temp_file)
-        except Exception:
-            pass
-
-
-def _open_views():
-    return [js_plotting_utils.HTMLDocument('') for i in range(12)]
-
-
-def _open_one_view():
-    for i in range(12):
-        v = js_plotting_utils.HTMLDocument('')
-    return v
-
-
-def test_open_view_warning():
-    # opening many views (without deleting the SurfaceView objects)
-    # should raise a warning about memory usage
-    assert_warns(UserWarning, _open_views)
-    assert_no_warnings(_open_one_view)
-
-
 def test_to_color_strings():
     colors = [[0, 0, 1], [1, 0, 0], [.5, .5, .5]]
     as_str = js_plotting_utils.to_color_strings(colors)
@@ -356,3 +317,8 @@ def test_to_color_strings():
     colors = ['#0000ffff', '#ff0000ab', '#7f7f7f00']
     as_str = js_plotting_utils.to_color_strings(colors)
     assert as_str == ['#0000ff', '#ff0000', '#7f7f7f']
+
+
+def test_import_html_document_from_js_plotting():
+    from nilearn.plotting.js_plotting_utils import (
+        HTMLDocument, set_max_img_views_before_warning)  #noqa

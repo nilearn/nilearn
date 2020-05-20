@@ -9,19 +9,20 @@ Only matplotlib is required.
 # License: BSD
 
 # Standard library imports
-import collections
+import collections.abc
 import functools
 import numbers
 import warnings
+from distutils.version import LooseVersion
 
 # Standard scientific libraries imports (more specific imports are
 # delayed, so that the part module can be used without them).
 import numpy as np
 from scipy import ndimage
+from scipy import sparse
 from nibabel.spatialimages import SpatialImage
 
 from .._utils.numpy_conversions import as_ndarray
-from .._utils.compat import _basestring
 from .._utils.niimg import _safe_get_data
 
 import matplotlib
@@ -32,11 +33,11 @@ from ..image import new_img_like
 from .._utils.extmath import fast_abs_percentile
 from .._utils.param_validation import check_threshold
 from .._utils.ndimage import get_border_data
-from .._utils.exceptions import VisibleDeprecationWarning
 from ..datasets import load_mni152_template
 from ..image import iter_img
 from .displays import get_slicer, get_projector
 from . import cm
+from nilearn.image import get_data
 
 
 def show():
@@ -220,19 +221,32 @@ def _crop_colorbar(cbar, cbar_vmin, cbar_vmax):
         cbar_vmin = cbar_tick_locs.min()
     new_tick_locs = np.linspace(cbar_vmin, cbar_vmax,
                                 len(cbar_tick_locs))
-    cbar.ax.set_ylim(cbar.norm(cbar_vmin), cbar.norm(cbar_vmax))
-    outline = cbar.outline.get_xy()
-    outline[:2, 1] += cbar.norm(cbar_vmin)
-    outline[2:6, 1] -= (1. - cbar.norm(cbar_vmax))
-    outline[6:, 1] += cbar.norm(cbar_vmin)
-    cbar.outline.set_xy(outline)
+
+    # matplotlib >= 3.2.0 no longer normalizes axes between 0 and 1
+    # See https://matplotlib.org/3.2.1/api/prev_api_changes/api_changes_3.2.0.html
+    if LooseVersion(matplotlib.__version__) >= LooseVersion("3.2.0"):
+        cbar.ax.set_ylim(cbar_vmin, cbar_vmax)
+        X, _ = cbar._mesh()
+        new_X = np.array([X[0], X[-1]])
+        new_Y = np.array([[cbar_vmin, cbar_vmin], [cbar_vmax, cbar_vmax]])
+        xy = cbar._outline(new_X, new_Y)
+        cbar.outline.set_xy(xy)
+    else:
+        cbar.ax.set_ylim(cbar.norm(cbar_vmin), cbar.norm(cbar_vmax))
+        outline = cbar.outline.get_xy()
+        outline[:2, 1] += cbar.norm(cbar_vmin)
+        outline[2:6, 1] -= (1. - cbar.norm(cbar_vmax))
+        outline[6:, 1] += cbar.norm(cbar_vmin)
+        cbar.outline.set_xy(outline)
+
     cbar.set_ticks(new_tick_locs, update_ticks=True)
 
 
 def plot_img(img, cut_coords=None, output_file=None, display_mode='ortho',
              figure=None, axes=None, title=None, threshold=None,
              annotate=True, draw_cross=True, black_bg=False, colorbar=False,
-             resampling_interpolation='continuous', **kwargs):
+             resampling_interpolation='continuous',
+             bg_img=None, vmin=None, vmax=None, **kwargs):
     """ Plot cuts of a given image (by default Frontal, Axial, and Lateral)
 
         Parameters
@@ -290,6 +304,14 @@ def plot_img(img, cut_coords=None, output_file=None, display_mode='ortho',
             space. Can be "continuous" (default) to use 3rd-order spline
             interpolation, or "nearest" to use nearest-neighbor mapping.
             "nearest" is faster but can be noisier in some cases.
+        bg_img : Niimg-like object, optional
+            See http://nilearn.github.io/manipulating_images/input_output.html
+            The background image that the ROI/mask will be plotted on top of.
+            If nothing is specified, no background image is plotted.
+        vmin : float, optional
+            lower bound of the colormap. If `None`, the min of the image is used.
+        vmax : float, optional
+            upper bound of the colormap. If `None`, the max of the image is used.
         kwargs: extra keyword arguments, optional
             Extra keyword arguments passed to matplotlib.pyplot.imshow
     """  # noqa: E501
@@ -300,7 +322,8 @@ def plot_img(img, cut_coords=None, output_file=None, display_mode='ortho',
         threshold=threshold, annotate=annotate,
         draw_cross=draw_cross,
         resampling_interpolation=resampling_interpolation,
-        black_bg=black_bg, colorbar=colorbar, **kwargs)
+        black_bg=black_bg, colorbar=colorbar,
+        bg_img=bg_img, vmin=vmin, vmax=vmax, **kwargs)
 
     return display
 
@@ -328,7 +351,7 @@ class _MNI152Template(SpatialImage):
     def load(self):
         if self.data is None:
             anat_img = load_mni152_template()
-            data = anat_img.get_data()
+            data = get_data(anat_img)
             data = data.astype(np.float)
             anat_mask = ndimage.morphology.binary_fill_holes(data > 0)
             data = np.ma.masked_array(data, np.logical_not(anat_mask))
@@ -336,6 +359,16 @@ class _MNI152Template(SpatialImage):
             self.data = data
             self.vmax = data.max()
             self._shape = anat_img.shape
+
+    @property
+    def _data_cache(self):
+        self.load()
+        return self.data
+
+    @property
+    def _dataobj(self):
+        self.load()
+        return self.data
 
     def get_data(self):
         self.load()
@@ -865,8 +898,8 @@ def plot_prob_atlas(maps_img, bg_img=MNI152TEMPLATE, view_type='auto',
             correction_factor = .5
         threshold = "%f%%" % (100 * (1 - .2 * correction_factor / n_maps))
 
-    if (isinstance(threshold, collections.Iterable) and
-            not isinstance(threshold, _basestring)):
+    if (isinstance(threshold, collections.abc.Iterable) and
+            not isinstance(threshold, str)):
         threshold = [thr for thr in threshold]
         if len(threshold) != n_maps:
             raise TypeError('The list of values to threshold '
@@ -877,7 +910,7 @@ def plot_prob_atlas(maps_img, bg_img=MNI152TEMPLATE, view_type='auto',
     filled = view_type.startswith('filled')
     for (map_img, color, thr) in zip(iter_img(maps_img), color_list,
                                      threshold):
-        data = map_img.get_data()
+        data = get_data(map_img)
         # To threshold or choose the level of the contours
         thr = check_threshold(thr, data,
                               percentile_func=fast_abs_percentile,
@@ -941,7 +974,7 @@ def plot_stat_map(stat_map_img, bg_img=MNI152TEMPLATE, cut_coords=None,
             See http://nilearn.github.io/manipulating_images/input_output.html
             The background image that the ROI/mask will be plotted on top of.
             If nothing is specified, the MNI152 template will be used.
-            To turn off background image, just pass "bg_img=False".
+            To turn off background image, just pass "bg_img=None".
         cut_coords : None, a tuple of floats, or an integer
             The MNI coordinates of the point where the cut is performed
             If display_mode is 'ortho' or 'tiled',
@@ -1069,6 +1102,8 @@ def plot_glass_brain(stat_map_img,
         The plotted image should be in MNI space for this function to work
         properly.
 
+        Only glass brain can be plotted by switching stat_map_img to None.
+
         Parameters
         ----------
         stat_map_img : Niimg-like object
@@ -1174,6 +1209,9 @@ def plot_glass_brain(stat_map_img,
         display_factory=display_factory, vmin=vmin, vmax=vmax,
         cbar_vmin=cbar_vmin, cbar_vmax=cbar_vmax, brain_color=brain_color,
         resampling_interpolation=resampling_interpolation, **kwargs)
+
+    if stat_map_img is None and 'l' in display.axes:
+        display.axes['l'].ax.invert_xaxis()
 
     return display
 
@@ -1283,6 +1321,141 @@ def plot_connectome(adjacency_matrix, node_coords,
                       edge_threshold=edge_threshold,
                       edge_kwargs=edge_kwargs, node_kwargs=node_kwargs,
                       colorbar=colorbar)
+
+    if output_file is not None:
+        display.savefig(output_file)
+        display.close()
+        display = None
+
+    return display
+
+
+def plot_connectome_strength(adjacency_matrix, node_coords, node_size="auto",
+                             cmap=None, output_file=None, display_mode="ortho",
+                             figure=None, axes=None, title=None):
+    """Plot connectome strength on top of the brain glass schematics.
+
+    The strength of a connection is define as the sum of absolute values of
+    the edges arriving to a node.
+
+    Parameters
+    ----------
+    adjacency_matrix : numpy array of shape (n, n)
+        represents the link strengths of the graph. Assumed to be
+        a symmetric matrix.
+    node_coords : numpy array_like of shape (n, 3)
+        3d coordinates of the graph nodes in world space.
+    node_size : 'auto' or scalar
+        size(s) of the nodes in points^2. By default the size of the node is
+        inversely propertionnal to the number of nodes.
+    cmap : str or colormap
+        colormap used to represent the strength of a node.
+    output_file : string, or None, optional
+        The name of an image file to export the plot to. Valid extensions
+        are .png, .pdf, .svg. If output_file is not None, the plot
+        is saved to a file, and the display is closed.
+    display_mode : string, optional. Default is 'ortho'.
+        Choose the direction of the cuts: 'x' - sagittal, 'y' - coronal,
+        'z' - axial, 'l' - sagittal left hemisphere only,
+        'r' - sagittal right hemisphere only, 'ortho' - three cuts are
+        performed in orthogonal directions. Possible values are: 'ortho',
+        'x', 'y', 'z', 'xz', 'yx', 'yz', 'l', 'r', 'lr', 'lzr', 'lyr',
+        'lzry', 'lyrz'.
+    figure : integer or matplotlib figure, optional
+        Matplotlib figure used or its number. If None is given, a
+        new figure is created.
+    axes : matplotlib axes or 4 tuple of float: (xmin, ymin, width, height), \
+optional
+        The axes, or the coordinates, in matplotlib figure space,
+        of the axes used to display the plot. If None, the complete
+        figure is used.
+    title : string, optional
+        The title displayed on the figure.
+
+    Notes
+    -----
+    The plotted image should in MNI space for this function to work properly.
+    """
+
+    # input validation
+    if cmap is None:
+        cmap = plt.cm.viridis_r
+    elif isinstance(cmap, str):
+        cmap = plt.get_cmap(cmap)
+    else:
+        cmap = cmap
+
+    node_size = (1 / len(node_coords) * 1e4
+                 if node_size == 'auto' else node_size)
+
+    node_coords = np.asarray(node_coords)
+
+    if sparse.issparse(adjacency_matrix):
+        adjacency_matrix = adjacency_matrix.toarray()
+
+    adjacency_matrix = np.nan_to_num(adjacency_matrix)
+
+    adjacency_matrix_shape = adjacency_matrix.shape
+    if (len(adjacency_matrix_shape) != 2 or  # noqa: W504
+            adjacency_matrix_shape[0] != adjacency_matrix_shape[1]):
+        raise ValueError(
+            "'adjacency_matrix' is supposed to have shape (n, n)."
+            ' Its shape was {0}'.format(adjacency_matrix_shape))
+
+    node_coords_shape = node_coords.shape
+    if len(node_coords_shape) != 2 or node_coords_shape[1] != 3:
+        message = (
+            "Invalid shape for 'node_coords'. You passed an "
+            "'adjacency_matrix' of shape {0} therefore "
+            "'node_coords' should be a array with shape ({0[0]}, 3) "
+            "while its shape was {1}").format(adjacency_matrix_shape,
+                                              node_coords_shape)
+
+        raise ValueError(message)
+
+    if node_coords_shape[0] != adjacency_matrix_shape[0]:
+        raise ValueError(
+            "Shape mismatch between 'adjacency_matrix' "
+            "and 'node_coords'"
+            "'adjacency_matrix' shape is {0}, 'node_coords' shape is {1}"
+            .format(adjacency_matrix_shape, node_coords_shape))
+
+    if not np.allclose(adjacency_matrix, adjacency_matrix.T, rtol=1e-3):
+        raise ValueError("'adjacency_matrix' should be symmetric")
+
+    # For a masked array, masked values are replaced with zeros
+    if hasattr(adjacency_matrix, 'mask'):
+        if not (adjacency_matrix.mask == adjacency_matrix.mask.T).all():
+            raise ValueError(
+                "'adjacency_matrix' was masked with a non symmetric mask")
+        adjacency_matrix = adjacency_matrix.filled(0)
+
+    # plotting
+    region_strength = np.sum(np.abs(adjacency_matrix), axis=0)
+    region_strength /= np.sum(region_strength)
+
+    region_idx_sorted = np.argsort(region_strength)[::-1]
+    strength_sorted = region_strength[region_idx_sorted]
+    coords_sorted = node_coords[region_idx_sorted]
+
+    display = plot_glass_brain(
+        None, display_mode=display_mode, figure=figure, axes=axes, title=title
+    )
+
+    for coord, region in zip(coords_sorted, strength_sorted):
+        color = list(
+            cmap((region - strength_sorted.min()) / strength_sorted.max())
+        )
+        # reduce alpha for the least strong regions
+        color[-1] = (
+            (region - strength_sorted.min()) *  # noqa: W504
+            (1 / (strength_sorted.max() - strength_sorted.min()))
+        )
+        # make color to be a 2D array
+        color = [color]
+        display.add_markers(
+            [coord], marker_color=color, marker_size=node_size
+        )
 
     if output_file is not None:
         display.savefig(output_file)

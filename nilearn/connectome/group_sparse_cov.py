@@ -6,23 +6,22 @@ graphical models.
 # License: simplified BSD
 
 import warnings
-import collections
+import collections.abc
 import operator
 import itertools
 
 import numpy as np
 import scipy.linalg
 
+from joblib import Memory, delayed, Parallel
 from sklearn.base import BaseEstimator
 from sklearn.covariance import empirical_covariance
-from sklearn.externals.joblib import Memory, delayed, Parallel
 from sklearn.model_selection import check_cv
 from sklearn.utils.extmath import fast_logdet
 
 from .._utils import CacheMixin
 from .._utils import logger
 from .._utils.extmath import is_spd
-from .._utils.compat import izip
 
 
 def compute_alpha_max(emp_covs, n_samples):
@@ -501,7 +500,7 @@ class GroupSparseCovariance(BaseEstimator, CacheMixin):
     """
 
     def __init__(self, alpha=0.1, tol=1e-3, max_iter=10, verbose=0,
-                 memory=Memory(cachedir=None), memory_level=0):
+                 memory=Memory(location=None), memory_level=0):
         self.alpha = alpha
         self.tol = tol
         self.max_iter = max_iter
@@ -891,7 +890,7 @@ class GroupSparseCovarianceCV(BaseEstimator, CacheMixin):
     See also
     --------
     GroupSparseCovariance,
-    sklearn.covariance.GraphLassoCV
+    sklearn.covariance.GraphicalLassoCV
 
     Notes
     -----
@@ -949,7 +948,7 @@ class GroupSparseCovarianceCV(BaseEstimator, CacheMixin):
         path = list()  # List of (alpha, scores, covs)
         n_alphas = self.alphas
 
-        if isinstance(n_alphas, collections.Sequence):
+        if isinstance(n_alphas, collections.abc.Sequence):
             alphas = list(self.alphas)
             n_alphas = len(alphas)
             n_refinements = 1
@@ -963,7 +962,7 @@ class GroupSparseCovarianceCV(BaseEstimator, CacheMixin):
         covs_init = itertools.repeat(None)
 
         # Copying the cv generators to use them n_refinements times.
-        cv_ = izip(*cv)
+        cv_ = zip(*cv)
 
         for i, (this_cv) in enumerate(itertools.tee(cv_, n_refinements)):
             # Compute the cross-validated loss on the current grid

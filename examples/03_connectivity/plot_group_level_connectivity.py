@@ -1,35 +1,17 @@
 """
-Functional connectivity matrices for group analysis of connectomes
-==================================================================
+Classification of age groups using functional connectivity
+==========================================================
 
 This example compares different kinds of functional connectivity between
-regions of interest : correlation, partial correlation, as well as a kind
-called **tangent**.
+regions of interest : correlation, partial correlation, and tangent space
+embedding.
 
 The resulting connectivity coefficients can be used to
-discriminate children from adults. In general, the **tangent kind**
+discriminate children from adults. In general, the tangent space embedding
 **outperforms** the standard correlations: see `Dadi et al 2019
 <https://www.sciencedirect.com/science/article/pii/S1053811919301594>`_
 for a careful study.
 """
-# Matrix plotting from Nilearn: nilearn.plotting.plot_matrix
-import numpy as np
-import matplotlib.pylab as plt
-
-
-def plot_matrices(matrices, matrix_kind):
-    n_matrices = len(matrices)
-    fig = plt.figure(figsize=(n_matrices * 4, 4))
-    for n_subject, matrix in enumerate(matrices):
-        plt.subplot(1, n_matrices, n_subject + 1)
-        matrix = matrix.copy()  # avoid side effects
-        # Set diagonal to zero, for better visualization
-        np.fill_diagonal(matrix, 0)
-        vmax = np.max(np.abs(matrix))
-        title = '{0}, subject {1}'.format(matrix_kind, n_subject)
-        plotting.plot_matrix(matrix, vmin=-vmax, vmax=vmax, cmap='RdBu_r',
-                             title=title, figure=fig, colorbar=False)
-
 
 ###############################################################################
 # Load brain development fMRI dataset and MSDL atlas
@@ -37,7 +19,7 @@ def plot_matrices(matrices, matrix_kind):
 # We study only 30 subjects from the dataset, to save computation time.
 from nilearn import datasets
 
-rest_data = datasets.fetch_development_fmri(n_subjects=30)
+development_dataset = datasets.fetch_development_fmri(n_subjects=30)
 
 ###############################################################################
 # We use probabilistic regions of interest (ROIs) from the MSDL atlas.
@@ -57,7 +39,7 @@ from nilearn import input_data
 
 masker = input_data.NiftiMapsMasker(
     msdl_data.maps, resampling_target="data", t_r=2, detrend=True,
-    low_pass=.1, high_pass=.01, memory='nilearn_cache', memory_level=1)
+    low_pass=.1, high_pass=.01, memory='nilearn_cache', memory_level=1).fit()
 
 ###############################################################################
 # Then we compute region signals and extract useful phenotypic informations.
@@ -65,13 +47,13 @@ children = []
 pooled_subjects = []
 groups = []  # child or adult
 for func_file, confound_file, phenotypic in zip(
-        rest_data.func, rest_data.confounds, rest_data.phenotypic):
-    time_series = masker.fit_transform(func_file, confounds=confound_file)
+        development_dataset.func,
+        development_dataset.confounds,
+        development_dataset.phenotypic):
+    time_series = masker.transform(func_file, confounds=confound_file)
     pooled_subjects.append(time_series)
-    is_child = phenotypic['Child_Adult'] == 'child'
-    if is_child:
+    if phenotypic['Child_Adult'] == 'child':
         children.append(time_series)
-
     groups.append(phenotypic['Child_Adult'])
 
 print('Data has {0} children.'.format(len(children)))
@@ -101,10 +83,14 @@ mean_correlation_matrix = correlation_measure.mean_
 print('Mean correlation has shape {0}.'.format(mean_correlation_matrix.shape))
 
 ###############################################################################
-# We display the connectome matrices of the first 4 children
+# We display the connectome matrices of the first 3 children
 from nilearn import plotting
+from matplotlib import pyplot as plt
 
-plot_matrices(correlation_matrices[:4], 'correlation')
+_, axes = plt.subplots(1, 3, figsize=(15, 5))
+for i, (matrix, ax) in enumerate(zip(correlation_matrices, axes)):
+    plotting.plot_matrix(matrix, tri='lower', colorbar=False, axes=ax,
+                         title='correlation, child {}'.format(i))
 ###############################################################################
 # The blocks structure that reflect functional networks are visible.
 
@@ -119,19 +105,17 @@ plotting.plot_connectome(mean_correlation_matrix, msdl_coords,
 # We can also study **direct connections**, revealed by partial correlation
 # coefficients. We just change the `ConnectivityMeasure` kind
 partial_correlation_measure = ConnectivityMeasure(kind='partial correlation')
-
-###############################################################################
-# and repeat the previous operation.
 partial_correlation_matrices = partial_correlation_measure.fit_transform(
     children)
 
 ###############################################################################
-# Most of direct connections are weaker than full connections,
-plot_matrices(partial_correlation_matrices[:4], 'partial')
+# Most of direct connections are weaker than full connections.
 
+_, axes = plt.subplots(1, 3, figsize=(15, 5))
+for i, (matrix, ax) in enumerate(zip(partial_correlation_matrices, axes)):
+    plotting.plot_matrix(matrix, tri='lower', colorbar=False, axes=ax,
+                         title='partial correlation, child {}'.format(i))
 ###############################################################################
-# Compared to a connectome computed on correlations, the connectome graph
-# with partial correlations is more sparse:
 plotting.plot_connectome(
     partial_correlation_measure.mean_, msdl_coords,
     title='mean partial correlation over all children')
@@ -140,8 +124,8 @@ plotting.plot_connectome(
 # Extract subjects variabilities around a group connectivity
 # ----------------------------------------------------------
 # We can use **both** correlations and partial correlations to capture
-# reproducible connectivity patterns at the group-level and build a **robust**
-# **group connectivity matrix**. This is done by the **tangent** kind.
+# reproducible connectivity patterns at the group-level.
+# This is done by the tangent space embedding.
 tangent_measure = ConnectivityMeasure(kind='tangent')
 
 ###############################################################################
@@ -154,84 +138,80 @@ tangent_matrices = tangent_measure.fit_transform(children)
 # `tangent_matrices` model individual connectivities as
 # **perturbations** of the group connectivity matrix `tangent_measure.mean_`.
 # Keep in mind that these subjects-to-group variability matrices do not
-# straight reflect individual brain connections. For instance negative
+# directly reflect individual brain connections. For instance negative
 # coefficients can not be interpreted as anticorrelated regions.
-plot_matrices(tangent_matrices[:4], 'tangent variability')
+_, axes = plt.subplots(1, 3, figsize=(15, 5))
+for i, (matrix, ax) in enumerate(zip(tangent_matrices, axes)):
+    plotting.plot_matrix(matrix, tri='lower', colorbar=False, axes=ax,
+                         title='tangent offset, child {}'.format(i))
+
 
 ###############################################################################
-# The average tangent matrix cannot be interpreted, as the average
-# variation is expected to be zero
+# The average tangent matrix cannot be interpreted, as individual matrices
+# represent deviations from the mean, which is set to 0.
 
 ###############################################################################
 # What kind of connectivity is most powerful for classification?
 # --------------------------------------------------------------
-# *ConnectivityMeasure* can output the estimated subjects coefficients
-# as a 1D arrays through the parameter *vectorize*.
-connectivity_biomarkers = {}
-kinds = ['correlation', 'partial correlation', 'tangent']
-for kind in kinds:
-    conn_measure = ConnectivityMeasure(kind=kind, vectorize=True)
-    connectivity_biomarkers[kind] = conn_measure.fit_transform(pooled_subjects)
-
-# For each kind, all individual coefficients are stacked in a unique 2D matrix.
-print('{0} correlation biomarkers for each subject.'.format(
-    connectivity_biomarkers['correlation'].shape[1]))
-
-###############################################################################
-# Note that we use the **pooled groups**. This is crucial for **tangent** kind,
-# to get the displacements from a **unique** `mean_` of all subjects.
-
-###############################################################################
-# We stratify the dataset into homogeneous classes according to phenotypic
-# and scan site. We then split the subjects into 3 folds with the same
-# proportion of each class as in the whole cohort
-from sklearn.model_selection import StratifiedKFold
-
-_, classes = np.unique(groups, return_inverse=True)
-cv = StratifiedKFold(n_splits=3)
-###############################################################################
-# and use the connectivity coefficients to classify children vs adults.
-
-# Note that in cv.split(X, y),
-# providing y is sufficient to generate the splits and
-# hence np.zeros(n_samples) may be used as a placeholder for X
-# instead of actual training data.
+# We will use connectivity matrices as features to distinguish children from
+# adults. We use cross-validation and measure classification accuracy to
+# compare the different kinds of connectivity matrices.
+# We use random splits of the subjects into training/testing sets.
+# StratifiedShuffleSplit allows preserving the proportion of children in the
+# test set.
 from sklearn.svm import LinearSVC
-from sklearn.model_selection import cross_val_score
+from sklearn.model_selection import StratifiedShuffleSplit
+from sklearn.metrics import accuracy_score
+import numpy as np
 
-mean_scores = []
+kinds = ['correlation', 'partial correlation', 'tangent']
+_, classes = np.unique(groups, return_inverse=True)
+cv = StratifiedShuffleSplit(n_splits=15, random_state=0, test_size=5)
+pooled_subjects = np.asarray(pooled_subjects)
+
+scores = {}
 for kind in kinds:
-    svc = LinearSVC(random_state=0)
-    cv_scores = cross_val_score(svc,
-                                connectivity_biomarkers[kind],
-                                y=classes,
-                                cv=cv,
-                                groups=groups,
-                                scoring='accuracy',
-                                )
-    mean_scores.append(cv_scores.mean())
+    scores[kind] = []
+    for train, test in cv.split(pooled_subjects, classes):
+        # *ConnectivityMeasure* can output the estimated subjects coefficients
+        # as a 1D arrays through the parameter *vectorize*.
+        connectivity = ConnectivityMeasure(kind=kind, vectorize=True)
+        # build vectorized connectomes for subjects in the train set
+        connectomes = connectivity.fit_transform(pooled_subjects[train])
+        # fit the classifier
+        classifier = LinearSVC().fit(connectomes, classes[train])
+        # make predictions for the left-out test subjects
+        predictions = classifier.predict(
+            connectivity.transform(pooled_subjects[test]))
+        # store the accuracy for this cross-validation fold
+        scores[kind].append(accuracy_score(classes[test], predictions))
 
-###############################################################################
-# Finally, we can display the classification scores.
 
-###############################################################################
-# Finally, we can display the classification scores.
-from nilearn.plotting import show
+######################################################################
+# display the results
+
+mean_scores = [np.mean(scores[kind]) for kind in kinds]
+scores_std = [np.std(scores[kind]) for kind in kinds]
 
 plt.figure(figsize=(6, 4))
 positions = np.arange(len(kinds)) * .1 + .1
-plt.barh(positions, mean_scores, align='center', height=.05)
-yticks = [kind.replace(' ', '\n') for kind in kinds]
+plt.barh(positions, mean_scores, align='center', height=.05, xerr=scores_std)
+yticks = [k.replace(' ', '\n') for k in kinds]
 plt.yticks(positions, yticks)
-plt.xlabel('Classification accuracy')
-plt.grid(True)
+plt.gca().grid(True)
+plt.gca().set_axisbelow(True)
+plt.gca().axvline(.8, color='red', linestyle='--')
+plt.xlabel('Classification accuracy\n(red line = chance level)')
 plt.tight_layout()
 
+
 ###############################################################################
-# While the comparison is not fully conclusive on this small dataset,
+# This is a small example to showcase nilearn features. In practice such
+# comparisons need to be performed on much larger cohorts and several
+# datasets.
 # `Dadi et al 2019
 # <https://www.sciencedirect.com/science/article/pii/S1053811919301594>`_
 # Showed that across many cohorts and clinical questions, the tangent
 # kind should be preferred.
 
-show()
+plotting.show()

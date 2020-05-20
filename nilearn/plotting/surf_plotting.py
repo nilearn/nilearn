@@ -13,7 +13,6 @@ from matplotlib.cm import ScalarMappable, get_cmap
 from matplotlib.colors import Normalize, LinearSegmentedColormap
 
 from ..surface import load_surf_data, load_surf_mesh
-from .._utils.compat import _basestring
 from .img_plotting import _get_colorbar_and_data_ranges, _crop_colorbar
 
 
@@ -174,7 +173,7 @@ def plot_surf(surf_mesh, surf_map=None, bg_map=None,
         cmap = plt.cm.get_cmap(plt.rcParamsDefault['image.cmap'])
     else:
         # if cmap is given as string, translate to matplotlib cmap
-        if isinstance(cmap, _basestring):
+        if isinstance(cmap, str):
             cmap = plt.cm.get_cmap(cmap)
 
     # initiate figure and 3d axes
@@ -188,7 +187,6 @@ def plot_surf(surf_mesh, surf_map=None, bg_map=None,
             figure = axes.get_figure()
         axes.set_xlim(*limits)
         axes.set_ylim(*limits)
-    axes.set_aspect(.74)
     axes.view_init(elev=elev, azim=azim)
     axes.set_axis_off()
 
@@ -515,7 +513,10 @@ def plot_surf_roi(surf_mesh, roi_map, bg_map=None,
     # messages in case of wrong inputs
 
     roi = load_surf_data(roi_map)
-    vmin, vmax = np.min(roi), 1 + np.max(roi)
+    if vmin is None:
+        vmin = np.min(roi)
+    if vmax is None:
+        vmax = 1 + np.max(roi)
 
     mesh = load_surf_mesh(surf_mesh)
 

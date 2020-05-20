@@ -23,7 +23,7 @@ Opening an issue
 Nilearn uses issues for tracking bugs, requesting potential features, and
 holding project discussions.
 
-Labels can be assigned a variety of issues, such as:
+Core developers can assign labels on issues, such as:
 
 - |Discussion| These issues discuss ongoing discussions on the project where community feedback is requested.
 - |Enhancement| These issues discuss potential enhancements or additions to the project.
@@ -68,3 +68,31 @@ Coding guidelines
 Nilearn follows the coding conventions used by scikit-learn. `Please read them
 <http://scikit-learn.org/stable/developers/contributing.html#coding-guidelines>`_
 before you start implementing your changes.
+
+Contributing to the documentation
+-------------------------------------------------
+
+To build our documentation, we are using `sphinx <https://www.sphinx-doc.org/en/master/usage/quickstart.html>`_ for the main documentation and `sphinx-gallery <https://sphinx-gallery.github.io/stable/index.html>`_ for the example tutorials.
+If you want to make changes to the example tutorials, please do the following :
+
+1. First, ensure that you have installed sphinx and sphinx-gallery. You can install the requirements using ``nilearn/requirements-build-docs.txt``.
+2. Fork the Nilearn repository and clone your fork.
+3. Then go to ``nilearn/examples``
+4. Make your changes using `reStructuredText files <https://www.sphinx-doc.org/en/2.0/usage/restructuredtext/basics.html>`_
+5. You can now go to `nilearn/doc` and build the examples locally::
+
+      make html-strict
+
+   or, if you do not have make install (for instance under Windows)::
+
+      python3 -m sphinx -b html -d _build/doctrees . _build/html
+
+6. Visually review the output in ``nilearn/doc/_build/html/auto_examples/``. If all looks well and there were no errors, commit and push the changes.
+7. You can now open a Pull Request from Nilearn's Pull Request page.
+
+For more details about the Fork Clone Push worksflow, read here <https://guides.github.com/activities/forking/>_
+
+
+TIPS : To reduce building time, we suggest you to use the ``filename_pattern`` to build just one specific file::
+
+      python3 -m sphinx -D sphinx_gallery_conf.filename_pattern=plot_decoding_tutorial.py -b html -d _build/doctrees . _build/html

@@ -6,7 +6,6 @@ N-dimensional image manipulation
 
 import numpy as np
 from scipy import ndimage
-from .._utils.compat import _basestring
 ###############################################################################
 # Operating on connected components
 ###############################################################################
@@ -39,8 +38,8 @@ def largest_connected_component(volume):
     is done inplace to avoid big-endian issues with scipy ndimage module.
 
     """
-    if hasattr(volume, "get_data") \
-       or isinstance(volume, _basestring):
+    if (hasattr(volume, "get_data") or hasattr(
+            volume, "get_fdata") or isinstance(volume, str)):
         raise ValueError('Please enter a valid numpy array. For images use\
                          largest_connected_component_img')
     # Get the new byteorder to handle issues like "Big-endian buffer not

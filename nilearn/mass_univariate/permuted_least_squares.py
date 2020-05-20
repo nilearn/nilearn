@@ -5,10 +5,10 @@ Massively Univariate Linear Model estimated with OLS and permutation test.
 #         Virgile Fritsch, <virgile.fritsch@inria.fr>, jan. 2014
 import warnings
 
+import joblib
 import numpy as np
 from scipy import linalg
 from sklearn.utils import check_random_state
-import sklearn.externals.joblib as joblib
 
 
 def normalize_matrix_on_axis(m, axis=0):
@@ -34,11 +34,11 @@ def normalize_matrix_on_axis(m, axis=0):
     ...     normalize_matrix_on_axis)
     >>> X = np.array([[0, 4], [1, 0]])
     >>> normalize_matrix_on_axis(X)
-    array([[ 0.,  1.],
-           [ 1.,  0.]])
+    array([[0., 1.],
+           [1., 0.]])
     >>> normalize_matrix_on_axis(X, axis=1)
-    array([[ 0.,  1.],
-           [ 1.,  0.]])
+    array([[0., 1.],
+           [1., 0.]])
 
     """
     if m.ndim > 2:
@@ -449,7 +449,7 @@ def permuted_ols(tested_vars, target_vars, confounding_vars=None,
             targetvars_resid_covars.T, covars_orthonormalized,
             n_perm_chunk=n_perm_chunk, intercept_test=intercept_test,
             two_sided_test=two_sided_test,
-            random_state=rng.random_integers(np.iinfo(np.int32).max - 1))
+            random_state=rng.randint(1, np.iinfo(np.int32).max - 1))
         for n_perm_chunk in n_perm_chunks)
     # reduce results
     scores_as_ranks_parts, h0_fmax_parts = zip(*ret)

@@ -4,7 +4,8 @@ Extract signals on spheres and plot a connectome
 
 This example shows how to extract signals from spherical regions.
 We show how to build spheres around user-defined coordinates, as well as
-centered on coordinates from Power-264 atlas [1] and Dosenbach-160 [2].
+centered on coordinates from the Power-264 atlas [1], and the Dosenbach-160
+atlas [2].
 
 **References**
 
@@ -18,8 +19,8 @@ We estimate connectomes using two different methods: **sparse inverse
 covariance** and **partial_correlation**, to recover the functional brain
 **networks structure**.
 
-We'll start by extracting signals from Default Mode Network regions and computing a
-connectome from them.
+We'll start by extracting signals from Default Mode Network regions and
+computing a connectome from them.
 
 """
 
@@ -31,7 +32,7 @@ connectome from them.
 # connectivity dataset.
 
 from nilearn import datasets
-dataset = datasets.fetch_development_fmri(n_subjects=1)
+dataset = datasets.fetch_development_fmri(n_subjects=20)
 
 # print basic information on the dataset
 print('First subject functional nifti image (4D) is at: %s' %
@@ -43,32 +44,32 @@ print('First subject functional nifti image (4D) is at: %s' %
 # ------------------------------------
 dmn_coords = [(0, -52, 18), (-46, -68, 32), (46, -68, 32), (1, 50, -5)]
 labels = [
-          'Posterior Cingulate Cortex',
-          'Left Temporoparietal junction',
-          'Right Temporoparietal junction',
-          'Medial prefrontal cortex',
-         ]
+    'Posterior Cingulate Cortex',
+    'Left Temporoparietal junction',
+    'Right Temporoparietal junction',
+    'Medial prefrontal cortex',
+    ]
 
 ##########################################################################
 # Extracts signal from sphere around DMN seeds
 # ----------------------------------------------
 #
-# We can compute the mean signal within **spheres** of a fixed radius 
+# We can compute the mean signal within **spheres** of a fixed radius
 # around a sequence of (x, y, z) coordinates with the object
 # :class:`nilearn.input_data.NiftiSpheresMasker`.
-# The resulting signal is then prepared by the masker object: Detrended, 
-# band-pass filtered and **standardized to 1 variance**. 
+# The resulting signal is then prepared by the masker object: Detrended,
+# band-pass filtered and **standardized to 1 variance**.
 
 from nilearn import input_data
 
 masker = input_data.NiftiSpheresMasker(
     dmn_coords, radius=8,
     detrend=True, standardize=True,
-    low_pass=0.1, high_pass=0.01, t_r=2.5,
+    low_pass=0.1, high_pass=0.01, t_r=2,
     memory='nilearn_cache', memory_level=1, verbose=2)
 
-# Additionally, we pass confound information so ensure our extracted 
-# signal is cleaned from counfounds.
+# Additionally, we pass confound information to ensure our extracted
+# signal is cleaned from confounds.
 
 func_filename = dataset.func[0]
 confounds_filename = dataset.confounds[0]
@@ -108,7 +109,8 @@ partial_correlation_matrix = connectivity_measure.fit_transform(
 # Display connectome
 # -------------------
 #
-# We display the graph of connections with `:func: nilearn.plotting.plot_connectome`.
+# We display the graph of connections with
+# `:func: nilearn.plotting.plot_connectome`.
 
 from nilearn import plotting
 
@@ -137,15 +139,14 @@ plotting.show()
 
 view = plotting.view_connectome(partial_correlation_matrix, dmn_coords)
 
-# uncomment this to open the plot in a web browser:
-# view.open_in_browser()
-
-
-##############################################################################
 # In a Jupyter notebook, if ``view`` is the output of a cell, it will
 # be displayed below the cell
-
 view
+
+##############################################################################
+
+# uncomment this to open the plot in a web browser:
+# view.open_in_browser()
 
 
 ##########################################################################
@@ -167,7 +168,8 @@ print('Power atlas comes with {0}.'.format(power.keys()))
 #
 #
 #     You can retrieve the coordinates for any atlas, including atlases
-#     not included in nilearn, using :func:`nilearn.plotting.find_parcellation_cut_coords`.
+#     not included in nilearn, using
+#     :func:`nilearn.plotting.find_parcellation_cut_coords`.
 
 
 ###############################################################################
@@ -186,7 +188,7 @@ print('Stacked power coordinates in array of shape {0}.'.format(coords.shape))
 # and define spheres masker, with small enough radius to avoid regions overlap.
 
 spheres_masker = input_data.NiftiSpheresMasker(
-    seeds=coords, smoothing_fwhm=4, radius=5.,
+    seeds=coords, smoothing_fwhm=6, radius=5.,
     detrend=True, standardize=True, low_pass=0.1, high_pass=0.01, t_r=2)
 
 timeseries = spheres_masker.fit_transform(func_filename,
@@ -205,13 +207,17 @@ print('time series has {0} samples'.format(timeseries.shape[0]))
 ###############################################################################
 # in which situation the graphical lasso **sparse inverse covariance**
 # estimator captures well the covariance **structure**.
-from sklearn.covariance import GraphLassoCV
+try:
+    from sklearn.covariance import GraphicalLassoCV
+except ImportError:
+    # for Scitkit-Learn < v0.20.0
+    from sklearn.covariance import GraphLassoCV as GraphicalLassoCV
 
-covariance_estimator = GraphLassoCV(cv=3, verbose=1)
+covariance_estimator = GraphicalLassoCV(cv=3, verbose=1)
 
 
 ###############################################################################
-# We just fit our regions signals into the `GraphLassoCV` object
+# We just fit our regions signals into the `GraphicalLassoCV` object
 covariance_estimator.fit(timeseries)
 
 
@@ -222,8 +228,8 @@ print('Covariance matrix has shape {0}.'.format(matrix.shape))
 
 
 ###############################################################################
-# Plot matrix and graph
-# ---------------------
+# Plot matrix, graph, and strength
+# --------------------------------
 #
 # We use `:func: nilearn.plotting.plot_matrix` to visualize our correlation matrix
 # and display the graph of connections with `nilearn.plotting.plot_connectome`.
@@ -238,12 +244,40 @@ plotting.plot_connectome(matrix, coords, title='Power correlation graph',
 
 
 ###############################################################################
-# .. note:: 
-# 
-#     Note the 1. on the matrix diagonal: These are the signals variances, set to
-#     1. by the `spheres_masker`. Hence the covariance of the signal is a
+# .. note::
+#
+#     Note the 1. on the matrix diagonal: These are the signals variances, set
+#     to 1. by the `spheres_masker`. Hence the covariance of the signal is a
 #     correlation matrix.
 
+
+###############################################################################
+# Sometimes, the information in the correlation matrix is overwhelming and
+# aggregating edge strength from the graph would help. Use the function
+# `nilearn.plotting.plot_connectome_strength` to visualize this information.
+
+plotting.plot_connectome_strength(
+    matrix, coords, title='Connectome strength for Power atlas'
+)
+
+###############################################################################
+# From the correlation matrix, we observe that there is a positive and negative
+# structure. We could make two different plots by plotting these strengths
+# separately.
+
+from matplotlib.pyplot import cm
+
+# plot the positive part of of the matrix
+plotting.plot_connectome_strength(
+    np.clip(matrix, 0, matrix.max()), coords, cmap=cm.YlOrRd,
+    title='Strength of the positive edges of the Power correlation matrix'
+)
+
+# plot the negative part of of the matrix
+plotting.plot_connectome_strength(
+    np.clip(matrix, matrix.min(), 0), coords, cmap=cm.PuBu,
+    title='Strength of the negative edges of the Power correlation matrix'
+)
 
 ###############################################################################
 # Connectome extracted from Dosenbach's atlas
@@ -259,13 +293,13 @@ coords = np.vstack((
 )).T
 
 spheres_masker = input_data.NiftiSpheresMasker(
-    seeds=coords, smoothing_fwhm=4, radius=4.5,
+    seeds=coords, smoothing_fwhm=6, radius=4.5,
     detrend=True, standardize=True, low_pass=0.1, high_pass=0.01, t_r=2)
 
 timeseries = spheres_masker.fit_transform(func_filename,
                                           confounds=confounds_filename)
 
-covariance_estimator = GraphLassoCV()
+covariance_estimator = GraphicalLassoCV()
 covariance_estimator.fit(timeseries)
 matrix = covariance_estimator.covariance_
 
@@ -274,6 +308,17 @@ plotting.plot_matrix(matrix, vmin=-1., vmax=1., colorbar=True,
 
 plotting.plot_connectome(matrix, coords, title='Dosenbach correlation graph',
                          edge_threshold="99.7%", node_size=20, colorbar=True)
+plotting.plot_connectome_strength(
+    matrix, coords, title='Connectome strength for Power atlas'
+)
+plotting.plot_connectome_strength(
+    np.clip(matrix, 0, matrix.max()), coords, cmap=cm.YlOrRd,
+    title='Strength of the positive edges of the Power correlation matrix'
+)
+plotting.plot_connectome_strength(
+    np.clip(matrix, matrix.min(), 0), coords, cmap=cm.PuBu,
+    title='Strength of the negative edges of the Power correlation matrix'
+)
 
 
 ###############################################################################
@@ -285,9 +330,6 @@ plotting.show()
 ###############################################################################
 # .. seealso::
 #
-#     :ref:`sphx_glr_auto_examples_03_connectivity_plot_atlas_comparison.py`
+#    * :ref:`sphx_glr_auto_examples_03_connectivity_plot_atlas_comparison.py`
 #
-# .. seealso::
-#
-#     :ref:`sphx_glr_auto_examples_03_connectivity_plot_multi_subject_connectome.py`
-
+#    * :ref:`sphx_glr_auto_examples_03_connectivity_plot_multi_subject_connectome.py`

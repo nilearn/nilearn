@@ -2,23 +2,25 @@ import warnings
 from io import BytesIO
 
 import numpy as np
-from numpy.testing import assert_raises
+import pytest
 
 from nibabel import Nifti1Image
 
 from nilearn import datasets, image
 from nilearn.plotting import html_stat_map
 from nilearn.image import new_img_like
+from nilearn.image import get_data
 from ..js_plotting_utils import colorscale
-from ..._utils.compat import _basestring
 
 
-def _check_html(html_view):
+def _check_html(html_view, title=None):
     """ Check the presence of some expected code in the html viewer
     """
     assert isinstance(html_view, html_stat_map.StatMapView)
     assert "var brain =" in str(html_view)
     assert "overlayImg" in str(html_view)
+    if title is not None:
+        assert "<title>{}</title>".format(title) in str(html_view)
 
 
 def _simulate_img(affine=np.eye(4)):
@@ -109,13 +111,14 @@ def test_save_sprite():
     # Save the sprite using BytesIO
     sprite_io = BytesIO()
     html_stat_map._save_sprite(data, sprite_io, vmin=0, vmax=1,
-                               mask=mask, format='raw')
+                               mask=mask, format='png')
 
     # Load the sprite back in base64
     sprite_base64 = html_stat_map._bytesIO_to_base64(sprite_io)
 
     # Check the sprite is correct
-    assert sprite_base64 == '////AP////8='
+    assert sprite_base64.startswith('iVBORw0KG')
+    assert sprite_base64.endswith('ABJRU5ErkJggg==')
 
 
 def test_save_cmap():
@@ -124,13 +127,14 @@ def test_save_cmap():
 
     # Save the cmap using BytesIO
     cmap_io = BytesIO()
-    html_stat_map._save_cm(cmap_io, 'cold_hot', format='raw', n_colors=2)
+    html_stat_map._save_cm(cmap_io, 'cold_hot', format='png', n_colors=2)
 
     # Load the colormap back in base64
     cmap_base64 = html_stat_map._bytesIO_to_base64(cmap_io)
 
     # Check the colormap is correct
-    assert cmap_base64 == '//////////8='
+    assert cmap_base64.startswith('iVBORw0KG')
+    assert cmap_base64.endswith('ElFTkSuQmCC')
 
 
 def test_mask_stat_map():
@@ -141,12 +145,12 @@ def test_mask_stat_map():
     # Try not to threshold anything
     mask_img, img, data_t, thre = html_stat_map._mask_stat_map(img,
                                                                threshold=None)
-    assert np.max(mask_img.get_data()) == 0
+    assert np.max(get_data(mask_img)) == 0
 
     # Now threshold at zero
     mask_img, img, data_t, thre = html_stat_map._mask_stat_map(img,
                                                                threshold=0)
-    assert np.min((data == 0) == mask_img.get_data())
+    assert np.min((data == 0) == get_data(mask_img))
 
 
 def test_load_bg_img():
@@ -248,9 +252,9 @@ def test_json_view_data():
         cmap='cold_hot', colorbar=True)
 
     # Check the presence of critical fields
-    assert isinstance(json_view['bg_base64'], _basestring)
-    assert isinstance(json_view['stat_map_base64'], _basestring)
-    assert isinstance(json_view['cm_base64'], _basestring)
+    assert isinstance(json_view['bg_base64'], str)
+    assert isinstance(json_view['stat_map_base64'], str)
+    assert isinstance(json_view['cm_base64'], str)
 
     return json_view, data
 
@@ -280,8 +284,8 @@ def test_get_cut_slices():
     assert (cut_slices == [4, 4, 4]).all()
 
     # Check that using a single number for cut_coords raises an error
-    assert_raises(ValueError, html_stat_map._get_cut_slices,
-                  img, cut_coords=4, threshold=None)
+    with pytest.raises(ValueError):
+        html_stat_map._get_cut_slices(img, cut_coords=4, threshold=None)
 
     # Check that it is possible to manually specify coordinates
     cut_slices = html_stat_map._get_cut_slices(img, cut_coords=[2, 2, 2],
@@ -302,9 +306,10 @@ def test_view_img():
         # Create a fake functional image by resample the template
         img = image.resample_img(mni, target_affine=3 * np.eye(3))
         html_view = html_stat_map.view_img(img)
-        _check_html(html_view)
-        html_view = html_stat_map.view_img(img, threshold='95%')
-        _check_html(html_view)
+        _check_html(html_view, title="Slice viewer")
+        html_view = html_stat_map.view_img(img, threshold='95%',
+                                           title="SOME_TITLE")
+        _check_html(html_view, title="SOME_TITLE")
         html_view = html_stat_map.view_img(img, bg_img=mni)
         _check_html(html_view)
         html_view = html_stat_map.view_img(img, bg_img=None)
@@ -312,7 +317,7 @@ def test_view_img():
         html_view = html_stat_map.view_img(img, threshold=2., vmax=4.)
         _check_html(html_view)
         html_view = html_stat_map.view_img(img, symmetric_cmap=False)
-        img_4d = image.new_img_like(img, img.get_data()[:, :, :, np.newaxis])
+        img_4d = image.new_img_like(img, get_data(img)[:, :, :, np.newaxis])
         assert len(img_4d.shape) == 4
         html_view = html_stat_map.view_img(img_4d, threshold=2., vmax=4.)
         _check_html(html_view)

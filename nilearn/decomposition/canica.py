@@ -10,7 +10,7 @@ from operator import itemgetter
 import numpy as np
 from scipy.stats import scoreatpercentile
 from sklearn.decomposition import fastica
-from sklearn.externals.joblib import Memory, delayed, Parallel
+from joblib import Memory, delayed, Parallel
 from sklearn.utils import check_random_state
 
 from .multi_pca import MultiPCA
@@ -157,7 +157,7 @@ class CanICA(MultiPCA):
                  low_pass=None, high_pass=None, t_r=None,
                  target_affine=None, target_shape=None,
                  mask_strategy='epi', mask_args=None,
-                 memory=Memory(cachedir=None), memory_level=0,
+                 memory=Memory(location=None), memory_level=0,
                  n_jobs=1, verbose=0
                  ):
 
