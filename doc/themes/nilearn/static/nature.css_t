@@ -1037,6 +1037,13 @@ table.field-list tr td.field-body p.first {
 table.field-list tr td.field-body p {
     margin-top: 0.5em;
 }
+
+/* Fix spacelessness between parameter name and description */
+dl.field-list span.classifier {
+    margin-left: 1ex;
+}
+
+
 /* ------- tag cloud on the front page -------------------- */
 
 div.tags {
@@ -1723,7 +1730,7 @@ div.body div.sphx-glr-download-link-note {
 
 @media (min-width: 1200px) {
   div.body div.sphx-glr-download-link-note {
-    /* Flush to the left: 50% of viewport width 
+    /* Flush to the left: 50% of viewport width
      * minus half of the bodywrapper width,
      * minus the half width of the sphinxsidebar */
     float: none;
