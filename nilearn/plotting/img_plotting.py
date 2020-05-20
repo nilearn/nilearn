@@ -22,7 +22,7 @@ from scipy import ndimage
 from scipy import sparse
 from nibabel.spatialimages import SpatialImage
 
-from nilearn.input_data import NiftiMasker
+from ..input_data import NiftiMasker
 from ..signal import clean
 from .._utils.numpy_conversions import as_ndarray
 from .._utils.niimg import _safe_get_data
@@ -31,15 +31,13 @@ import matplotlib
 import matplotlib.pyplot as plt
 
 from .. import _utils
-from ..image import new_img_like
 from .._utils.extmath import fast_abs_percentile
 from .._utils.param_validation import check_threshold
 from .._utils.ndimage import get_border_data
 from ..datasets import load_mni152_template
-from ..image import iter_img
+from ..image import new_img_like, iter_img, get_data
 from .displays import get_slicer, get_projector
 from . import cm
-from nilearn.image import get_data
 
 
 def show():
@@ -1469,33 +1467,47 @@ optional
 
 def plot_carpet(img, mask_img=None, detrend=True, output_file=None,
                 figure=None, axes=None, title=None):
-    """Plot an image representation of voxel intensities across time also know
-        as the "carpet plot" or "Power plot". See Jonathan Power Neuroimage
-        2017 Jul 1; 154:150-158.
+    """Plot an image representation of voxel intensities across time.
 
-        Parameters
-        ----------
-        img : Niimg-like object
-            See http://nilearn.github.io/manipulating_images/input_output.html
-            4D input image
-        mask_img : Niimg-like object, optional
-            See http://nilearn.github.io/manipulating_images/input_output.html
-            Limit plotted voxels to those inside the provided mask. If not
-            specified a new mask will be derived from data.
-        detrend : boolean, optional
-            Detrend and standardize the data prior to plotting.
-        output_file : string, or None, optional
-            The name of an image file to export the plot to. Valid extensions
-            are .png, .pdf, .svg. If output_file is not None, the plot
-            is saved to a file, and the display is closed.
-        figure : matplotlib figure, optional
-            Matplotlib figure used. If None is given, a
-            new figure is created.
-        axes : matplotlib axes, optional
-            The axes used to display the plot. If None, the complete
-            figure is used.
-        title : string, optional
-            The title displayed on the figure.
+    This figure is also known as the "carpet plot" or "Power plot".
+
+    Parameters
+    ----------
+    img : Niimg-like object
+        See http://nilearn.github.io/manipulating_images/input_output.html
+        4D input image
+    mask_img : Niimg-like object, optional
+        See http://nilearn.github.io/manipulating_images/input_output.html
+        Limit plotted voxels to those inside the provided mask. If not
+        specified a new mask will be derived from data.
+    detrend : bool, optional
+        Detrend the data prior to plotting. Default is True.
+    output_file : str, or None, optional
+        The name of an image file to export the plot to. Valid extensions
+        are .png, .pdf, .svg. If output_file is not None, the plot
+        is saved to a file, and the display is closed.
+    figure : matplotlib figure, optional
+        Matplotlib figure used. If None is given, a new figure is created.
+    axes : matplotlib axes, optional
+        The axes used to display the plot. If None, the complete
+        figure is used.
+    title : str, optional
+        The title displayed on the figure.
+
+    Returns
+    -------
+    figure : matplotlib figure
+        Figure object with carpet plot.
+
+    Notes
+    -----
+    This figure was originally developed in [1]_.
+
+    References
+    ----------
+    .. [1] Power, J. D. (2017). A simple but useful way to assess fMRI scan
+    qualities. Neuroimage, 154, 150-158. doi:
+    https://doi.org/10.1016/j.neuroimage.2016.08.009
     """
     img_nii = _utils.check_niimg_4d(img, dtype='auto')
     img_data = _safe_get_data(img_nii, ensure_finite=True)
