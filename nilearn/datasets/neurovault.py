@@ -1701,6 +1701,8 @@ def _scroll_local(download_params):
                 else:
                     im_resampled = resample_img(img=image['absolute_path'], target_affine=STD_AFFINE)
                     im_resampled.to_filename(image['resampled_absolute_path'])
+                    download_params['visited_images'].add(image['id'])
+                    download_params['visited_collections'].add(collection['id'])
                     yield image, collection
 
 
