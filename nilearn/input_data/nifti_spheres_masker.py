@@ -230,12 +230,13 @@ class _InversionFunctor(object):
         self.mask_img = mask_img
         self.allow_overlap = allow_overlap
         self.dtype = dtype
-        
+        # Mask is only used to get affine and shape
         if self.mask_img is not None:
             mask = check_niimg_3d(self.mask_img)
             self.target_affine = mask.affine
             self.target_shape = mask.shape
         else:
+            # If no mask is provided use the MNI affine and shape
             self.target_affine = np.array([[  3.,   -0.,   -0.,   -90.],
                                            [  -0.,    3.,   -0., -126.],
                                            [   0.,    0.,    3.,  -72.],
@@ -460,8 +461,7 @@ class NiftiSpheresMasker(BaseMasker, CacheMixin):
         return signals
 
     def inverse_transform(self, region_signals):
-        # TODO Adjust Documentation, decide on labels or maps masker
-        """Compute voxel signals from region signals
+        """Compute voxel signals from spheres signals
 
         Any mask given at initialization is taken into account.
 
@@ -474,7 +474,7 @@ class NiftiSpheresMasker(BaseMasker, CacheMixin):
         Returns
         -------
         voxel_signals: nibabel.Nifti1Image
-            Signal for each voxel. shape: that of maps.
+            Signal for each voxel. shape: (mask_img, number of scans).
         """
         from ..regions import signal_extraction
 
@@ -489,10 +489,10 @@ class NiftiSpheresMasker(BaseMasker, CacheMixin):
         else:
             invFunc = _InversionFunctor(self.seeds_, self.radius, self.mask_img,
                                         self.allow_overlap, np.int)
-
+        # Create the inverted map with scaling in case of overlaps
         inverse_map = invFunc(region_signals)
         inverse_map = nibabel.Nifti1Image(inverse_map,
                                           affine=invFunc.target_affine)
-
+        # Use the maps masker, to map signal to voxels and to apply mask
         return signal_extraction.signals_to_img_maps(
             region_signals, inverse_map, mask_img=self.mask_img)
