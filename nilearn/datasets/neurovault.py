@@ -2293,7 +2293,11 @@ def _result_list_to_bunch(result_list, download_params):
         images_meta, collections_meta = zip(*result_list)
         images_meta = list(images_meta)
         collections_meta = list(collections_meta)
-    images = [im_meta.get('absolute_path') for im_meta in images_meta]
+    
+    if download_params['resample']:
+        images = [im_meta.get('resampled_absolute_path') for im_meta in images_meta]
+    else:
+        images = [im_meta.get('absolute_path') for im_meta in images_meta]
     result = Bunch(images=images, images_meta=images_meta,
                    collections_meta=collections_meta,
                    description=_get_dataset_descr('neurovault'))
