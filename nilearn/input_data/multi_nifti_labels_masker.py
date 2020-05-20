@@ -29,7 +29,8 @@ class MultiNiftiLabelsMasker(NiftiLabelsMasker, CacheMixin):
     labels_img: Niimg-like object
         See http://nilearn.github.io/manipulating_images/input_output.html
         Region definitions, as one image of labels.
-        background_label: number, optional
+
+    background_label: number, optional
         Label used in labels_img to represent background.
 
     mask_img: Niimg-like object, optional
@@ -179,8 +180,6 @@ class MultiNiftiLabelsMasker(NiftiLabelsMasker, CacheMixin):
                              'You must call fit() before calling transform().'.format
                              (self.__class__.__name__))
 
-
-
         niimg_iter = _iter_check_niimg(imgs_list, ensure_ndim=None,
                                        atleast_4d=False,
                                        memory=self.memory,
@@ -193,10 +192,10 @@ class MultiNiftiLabelsMasker(NiftiLabelsMasker, CacheMixin):
         func = self._cache(self.transform_single_imgs,
                            ignore=['verbose', 'memory', 'memory_level',
                                    'copy'])
-        data = Parallel(n_jobs=n_jobs)(delayed(func)
-                                       (imgs=imgs, confounds=cfs)
-                                       for imgs, cfs in zip(niimg_iter, confounds))
-        return data
+        region_signals = Parallel(n_jobs=n_jobs)(delayed(func)
+                                                 (imgs=imgs, confounds=cfs)
+                                                 for imgs, cfs in zip(niimg_iter, confounds))
+        return region_signals
 
     def transform(self, imgs, confounds=None):
         """ Apply mask, spatial and temporal preprocessing
