@@ -38,8 +38,11 @@ jobs:
     displayName: 'test'
 
   - script: |
-      codecov -f coverage.xml --token=$(CODECOV_TOKEN)
+      codecov -f coverage.xml -t %CODECOV_TOKEN%
     displayName: 'codecov'
+    env:
+      CODECOV_TOKEN: $(CODECOV_TOKEN)
+
   - task: PublishTestResults@2
     inputs:
       testResultsFiles: '**/test-results.xml'
@@ -87,7 +90,7 @@ jobs:
 
 - job: 'test_installing_on_macos'
   pool:
-    vmImage: 'macOS-10.13'
+    vmImage: 'macOS-latest'
   strategy:
     matrix:
       Python36:

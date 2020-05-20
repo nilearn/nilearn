@@ -22,7 +22,6 @@ from nibabel import freesurfer as fs
 
 from ..image import load_img
 from ..image import resampling
-from .._utils.compat import _basestring
 from .._utils.path_finding import _resolve_globbing
 from .. import _utils
 from nilearn.image import get_data
@@ -470,7 +469,7 @@ def vol_to_surf(img, surf_mesh,
     You can control how many samples are drawn by setting `n_samples`.
 
     Once the sampling positions are chosen, those that fall outside of the 3d
-    image (or ouside of the mask if you provided one) are discarded. If all
+    image (or outside of the mask if you provided one) are discarded. If all
     sample positions are discarded (which can happen, for example, if the
     vertex itself is outside of the support of the image), the projection at
     this vertex will be ``numpy.nan``.
@@ -574,7 +573,7 @@ def load_surf_data(surf_data):
         An array containing surface data
     """
     # if the input is a filename, load it
-    if isinstance(surf_data, _basestring):
+    if isinstance(surf_data, str):
 
         # resolve globbing
         file_list = _resolve_globbing(surf_data)
@@ -698,7 +697,7 @@ def load_surf_mesh(surf_mesh):
         the second containing the indices (into coords) of the mesh faces.
     """
     # if input is a filename, try to load it
-    if isinstance(surf_mesh, _basestring):
+    if isinstance(surf_mesh, str):
         # resolve globbing
         file_list = _resolve_globbing(surf_mesh)
         if len(file_list) == 1:

@@ -74,8 +74,8 @@ import numpy as np
 if LooseVersion(np.__version__) >= LooseVersion("1.14"):
     # See issue #1600 in nilearn for reason to add try and except
     try:
-        from ._utils.testing import is_nose_running
-        if is_nose_running():
+        from ._utils.testing import are_tests_running
+        if are_tests_running():
             np.set_printoptions(legacy='1.13')
     except ImportError:
         pass
@@ -100,5 +100,6 @@ CHECK_CACHE_VERSION = True
 # list all submodules available in nilearn and version
 __all__ = ['datasets', 'decoding', 'decomposition', 'connectome',
            'image', 'input_data', 'masking', 'mass_univariate', 'plotting',
-           'region', 'signal', 'surface', 'parcellations', '__version__']
+           'regions', 'signal', 'stats', 'surface',
+           'parcellations', '__version__']
 

@@ -37,6 +37,9 @@ clean:
 	-rm -rf auto_examples/
 	-rm -rf generated/*
 	-rm -rf modules/generated/*
+	-rm -rf ../examples/**/nilearn_cache
+	-rm -rf ../**/nilearn_cache
+
 
 sym_links:
 	# Make sym-links to share the cache across various example
@@ -45,8 +48,9 @@ sym_links:
 	-cd ../examples/01_plotting/ && ln -sf ../nilearn_cache
 	-cd ../examples/02_decoding/ && ln -sf ../nilearn_cache
 	-cd ../examples/03_connectivity/ && ln -sf ../nilearn_cache
-	-cd ../examples/04_manipulating_images/ && ln -sf ../nilearn_cache
-	-cd ../examples/05_advanced/ && ln -sf ../nilearn_cache
+	-cd ../examples/04_glm/ && ln -sf ../nilearn_cache
+	-cd ../examples/06_manipulating_images/ && ln -sf ../nilearn_cache
+	-cd ../examples/07_advanced/ && ln -sf ../nilearn_cache
 
 force_html: force html
 

@@ -7,7 +7,7 @@ Transformer used to apply basic transformations on MRI data.
 import warnings
 from copy import copy as copy_object
 
-from nilearn._utils.compat import Memory
+from joblib import Memory
 
 from .base_masker import BaseMasker, filter_and_extract
 from .. import _utils
@@ -33,7 +33,7 @@ class _ExtractionFunctor(object):
 
 
 def filter_and_mask(imgs, mask_img_, parameters,
-                    memory_level=0, memory=Memory(cachedir=None),
+                    memory_level=0, memory=Memory(location=None),
                     verbose=0,
                     confounds=None,
                     copy=True,
@@ -79,7 +79,10 @@ class NiftiMasker(BaseMasker, CacheMixin, ReportMixin):
         See http://nilearn.github.io/manipulating_images/input_output.html
         Mask for the data. If not given, a mask is computed in the fit step.
         Optional parameters (mask_args and mask_strategy) can be set to
-        fine tune the mask extraction.
+        fine tune the mask extraction. If the mask and the images have different
+        resolutions, the images are resampled to the mask resolution. If target_shape
+        and/or target_affine are provided, the mask is resampled first. 
+        After this, the images are resampled to the resampled mask. 
 
     sessions : numpy array, optional
         Add a session level to the preprocessing. Each session will be
@@ -186,7 +189,7 @@ class NiftiMasker(BaseMasker, CacheMixin, ReportMixin):
                  target_affine=None, target_shape=None,
                  mask_strategy='background',
                  mask_args=None, sample_mask=None, dtype=None,
-                 memory_level=1, memory=Memory(cachedir=None),
+                 memory_level=1, memory=Memory(location=None),
                  verbose=0, reports=True,
                  ):
         # Mask is provided or computed

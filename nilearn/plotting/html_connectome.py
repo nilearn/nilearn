@@ -3,7 +3,7 @@ import json
 import numpy as np
 from scipy import sparse
 
-from nilearn._utils import replace_parameters
+from nilearn._utils import rename_parameters
 from .. import datasets
 from . import cm
 
@@ -81,28 +81,13 @@ def _make_connectome_html(connectome_info, embed_js=True):
     as_json = json.dumps(plot_info)
     as_html = get_html_template(
         'connectome_plot_template.html').safe_substitute(
-            {'INSERT_CONNECTOME_JSON_HERE': as_json})
+            {'INSERT_CONNECTOME_JSON_HERE': as_json,
+             'INSERT_PAGE_TITLE_HERE': (
+                 connectome_info["title"] or "Connectome plot")})
     as_html = add_js_lib(as_html, embed_js=embed_js)
     return ConnectomeView(as_html)
 
 
-def _replacement_params_view_connectome():
-    """ Returns a dict containing deprecated & replacement parameters
-        as key-value pair for view_connectome().
-        Avoids cluttering the global namespace.
-    """
-    return {
-        'coords': 'node_coords',
-        'threshold': 'edge_threshold',
-        'cmap': 'edge_cmap',
-        'marker_size': 'node_size',
-    }
-
-
-@replace_parameters(replacement_params=_replacement_params_view_connectome(),
-                    end_version='0.6.0',
-                    lib_name='Nilearn'
-                    )
 def view_connectome(adjacency_matrix, node_coords, edge_threshold=None,
                     edge_cmap=cm.bwr, symmetric_cmap=True,
                     linewidth=6., node_size=3., colorbar=True,
@@ -189,20 +174,6 @@ def view_connectome(adjacency_matrix, node_coords, edge_threshold=None,
     return _make_connectome_html(connectome_info)
 
 
-def _replacement_params_view_markers():
-    """ Returns a dict containing deprecated & replacement parameters
-        as key-value pair for view_markers().
-        Avoids cluttering the global namespace.
-    """
-    return {'coords': 'marker_coords',
-            'colors': 'marker_color',
-            }
-
-
-@replace_parameters(replacement_params=_replacement_params_view_markers(),
-                    end_version='0.6.0',
-                    lib_name='Nilearn',
-                    )
 def view_markers(marker_coords, marker_color=None, marker_size=5.,
                  title=None, title_fontsize=25):
     """

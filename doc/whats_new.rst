@@ -1,23 +1,239 @@
-0.6.0b1
-=======
+0.7.0a
+======
+
+.. warning::
+
+  Minimum required version of Joblib is now 0.12.
+
 
 NEW
 ---
+
+- New decoder object
+  :class:`nilearn.decoding.Decoder` (for classification) and
+  :class:`nilearn.decoding.DecoderRegressor` (for regression) implement a model
+  selection scheme that averages the best models within a cross validation loop.
+  The resulting average model is the one used as a classifier or a regressor.
+  These two objects also leverage the `NiftiMaskers` to provide a direct
+  interface with the Nifti files on disk.
+
+Fixes
+-----
+
+- :class:`nilearn.input_data.NiftiLabelsMasker` no longer ignores its `mask_img`
+
+0.6.2
+======
+
+ENHANCEMENTS
+------------
+
+- Generated documentation now includes Binder links to launch examples interactively
+  in the browser
+
+Fixes
+-----
+
+- More robust matplotlib backend selection
+- Typo in example fixed
+
+Changes
+-------
+
+- Atlas `nilearn.datasets.fetch_nyu_rest` has been deprecated and wil be removed in Nilearn 0.8.0 .
+
+Contributors
+------------
+
+The following people contributed to this release::
+
+     Elizabeth DuPre
+     Franz Liem
+     Gael Varoquaux
+     Jon Haitz Legarreta Gorroño
+     Joshua Teves
+     Kshitij Chawla (kchawla-pi)
+     Zvi Baratz
+
+0.6.1
+=====
+
+ENHANCEMENTS
+------------
+
+- html pages use the user-provided plot title, if any, as their title
+
+Fixes
+-----
+
+- Fetchers for developmental_fmri and localizer datasets resolve URLs correctly.
+
+Contributors
+------------
+
+The following people contributed to this release::
+
+     Elizabeth DuPre
+     Jerome Dockes
+     Kshitij Chawla (kchawla-pi)
+
+0.6.0
+=====
+
+**Released December 2019**
+
+HIGHLIGHTS
+----------
+
+.. warning::
+
+ | **Python2 and 3.4 are no longer supported. We recommend upgrading to Python 3.6 minimum.**
+ |
+ | **Support for Python3.5 wil be removed in the 0.7.x release.**
+ | Users with a Python3.5 environment will be warned at their first Nilearn import.
+ |
+ | **joblib is now a dependency**
+ |
+ | **Minimum supported versions of packages have been bumped up.**
+ | - Matplotlib -- v2.0
+ | - Scikit-learn -- v0.19
+ | - Scipy -- v0.19
+
+NEW
+---
+
+- A new method for :class:`nilearn.input_data.NiftiMasker` instances
+  for generating reports viewable in a web browser, Jupyter Notebook, or VSCode.
+
+- A new function :func:`nilearn.image.get_data` to replace the deprecated
+  nibabel method `Nifti1Image.get_data`. Now use `nilearn.image.get_data(img)`
+  rather than `img.get_data()`. This is because Nibabel is removing the
+  `get_data` method. You may also consider using the Nibabel
+  `Nifti1Image.get_fdata`, which returns the data cast to floating-point.
+  See https://github.com/nipy/nibabel/wiki/BIAP8 .
+  As a benefit, the `get_data` function works on niimg-like objects such as
+  filenames (see http://nilearn.github.io/manipulating_images/input_output.html ).
+
+- Parcellation method ReNA: Fast agglomerative clustering based on recursive
+  nearest neighbor grouping.
+  Yields very fast & accurate models, without creation of giant
+  clusters.
+  :class:`nilearn.regions.ReNA`
+- Plot connectome strength
+  Use :func:`nilearn.plotting.plot_connectome_strength` to plot the strength of a
+  connectome on a glass brain.  Strength is absolute sum of the edges at a node.
+- Optimization to image resampling
+- New brain development fMRI dataset fetcher
+  :func:`nilearn.datasets.fetch_development_fmri` can be used to download
+  movie-watching data in children and adults. A light-weight dataset
+  implemented for teaching and usage in the examples. All the connectivity examples
+  are changed from ADHD to brain development fmri dataset.
+
+ENHANCEMENTS
+------------
+
+- :func:`nilearn.plotting.view_img_on_surf`, :func:`nilearn.plotting.view_surf`
+  and :func:`nilearn.plotting.view_connectome` can display a title, and allow
+  disabling the colorbar, and setting its height and the fontsize of its ticklabels.
+
+- Rework of the standardize-options of :func:`nilearn.signal.clean` and the various Maskers
+  in `nilearn.input_data`. You can now set `standardize` to `zscore` or `psc`. `psc` stands
+  for `Percent Signal Change`, which can be a meaningful metric for BOLD.
+
+- Class :class:`nilearn.input_data.NiftiLabelsMasker` now accepts an optional
+  `strategy` parameter which allows it to change the function used to reduce
+  values within each labelled ROI. Available functions include mean, median,
+  minimum, maximum, standard_deviation and variance.
+  This change is also introduced in :func:`nilearn.regions.img_to_signals_labels`.
+
+- :func:`nilearn.plotting.view_surf` now accepts surface data provided as a file
+  path.
+
+CHANGES
+-------
+
+- :func:`nilearn.plotting.plot_img` now has explicit keyword arguments `bg_img`,
+  `vmin` and `vmax` to control the background image and the bounds of the
+  colormap. These arguments were already accepted in `kwargs` but not documented
+  before.
+
+FIXES
+-----
+
+- :class:`nilearn.input_data.NiftiLabelsMasker` no longer truncates region means to their integral part
+  when input images are of integer type.
+- The arg `version='det'` in :func:`nilearn.datasets.fetch_atlas_pauli_2017` now  works as expected.
+- `pip install nilearn` now installs the necessary dependencies.
+
+**Lots of other fixes in documentation and examples.** More detailed change list follows:
+
+0.6.0rc
+NEW
+---
+.. warning::
+
+  - :func:`nilearn.plotting.view_connectome` no longer accepts old parameter names.
+    Instead of `coords`, `threshold`, `cmap`, and `marker_size`,
+    use `node_coords`, `edge_threshold`, `edge_cmap`, `node_size` respectively.
+
+  - :func:`nilearn.plotting.view_markers` no longer accepts old parameter names.
+    Instead of `coord` and `color`, use `marker_coords` and `marker_color` respectively.
+
 
 - **Support for Python3.5 wil be removed in the 0.7.x release.**
   Users with a Python3.5 environment will be warned
   at their first Nilearn import.
 
+Changes
+-------
+
+- Add a warning to :class:`nilearn.regions.Parcellations`
+  if the generated number of parcels does not match the requested number
+  of parcels.
+- Class :class:`nilearn.input_data.NiftiLabelsMasker` now accepts an optional
+  `strategy` parameter which allows it to change the function used to reduce
+  values within each labelled ROI. Available functions include mean, median,
+  minimum, maximum, standard_deviation and variance.
+  This change is also introduced in :func:`nilearn.regions.img_to_signals_labels`.
+
 Fixes
 -----
 
+- :class:`nilearn.input_data.NiftiLabelsMasker` no longer truncates region means to their integral part
+  when input images are of integer type.
 - :func: `nilearn.image.smooth_image` no longer fails if `fwhm` is a `numpy.ndarray`.
 - `pip install nilearn` now installs the necessary dependencies.
+- :func:`nilearn.image.new_img_like` no longer attempts to copy non-iterable headers. (PR #2212)
+- Nilearn no longer raises ImportError for nose when Matplotlib is not installed.
+- The arg `version='det'` in :func:`nilearn.datasets.fetch_atlas_pauli_2017` now  works as expected.
+- :func:`nilearn.input_data.NiftiLabelsMasker.inverse_transform` now works without the need to call
+  transform first.
+
+Contributors
+------------
+
+The following people contributed to this release (in alphabetical order)::
+
+    Chris Markiewicz
+    Dan Gale
+    Daniel Gomez
+    Derek Pisner
+    Elizabeth DuPre
+    Eric Larson
+    Gael Varoquaux
+    Jerome Dockes
+    JohannesWiesner
+    Kshitij Chawla (kchawla-pi)
+    Paula Sanz-Leon
+    ltetrel
+    ryanhammonds
+
 
 0.6.0b0
 =======
 
 **Released November 2019**
+
 
 .. warning::
 
@@ -62,10 +278,10 @@ Contributors
 
 The following people contributed to this release (in alphabetical order)::
 
-	Jake Vogel
-	Jerome Dockes
-	Kshitij Chawla (kchawla-pi)
-	Roberto Guidotti
+    Jake Vogel
+    Jerome Dockes
+    Kshitij Chawla (kchawla-pi)
+    Roberto Guidotti
 
 0.6.0a0
 =======
@@ -104,7 +320,7 @@ NEW
   when using the `mask_strategy="template"` option for brains in MNI space.
 - New brain development fMRI dataset fetcher
   :func:`nilearn.datasets.fetch_development_fmri` can be used to download
-  movie-watching data in children and adults. A light-weight dataset
+  movie-watching data in children and adults; a light-weight dataset 
   implemented for teaching and usage in the examples.
 - New example in `examples/05_advanced/plot_age_group_prediction_cross_val.py`
   to compare methods for classifying subjects into age groups based on
@@ -122,12 +338,15 @@ NEW
 
 - The Localizer dataset now follows the BIDS organization.
 
-
 Changes
 -------
 
 - All the connectivity examples are changed from ADHD to brain development
   fmri dataset.
+- Examples plot_decoding_tutorial, plot_haxby_decoder, 
+  plot_haxby_different_estimators, plot_haxby_full_analysis, plot_oasis_vbm now 
+  use :class:`nilearn.decoding.Decoder` and :class:`nilearn.decoding.DecoderRegressor`
+  instead of sklearn SVC and SVR.
 
 - :func:`nilearn.plotting.view_img_on_surf`, :func:`nilearn.plotting.view_surf`
   and :func:`nilearn.plotting.view_connectome` now allow disabling the colorbar,
@@ -1553,4 +1772,3 @@ Contributors (from ``git shortlog -ns 0.1``)::
      1  Matthias Ekman
      1  Michael Waskom
      1  Vincent Michel
-

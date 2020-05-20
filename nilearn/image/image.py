@@ -6,7 +6,7 @@ See also nilearn.signal.
 # Authors: Philippe Gervais, Alexandre Abraham
 # License: simplified BSD
 
-import collections
+import collections.abc
 import warnings
 
 import numpy as np
@@ -14,14 +14,13 @@ from scipy import ndimage
 from scipy.stats import scoreatpercentile
 import copy
 import nibabel
-from nilearn._utils.compat import Parallel, delayed
+from joblib import Parallel, delayed
 
 from .. import signal
 from .._utils import (check_niimg_4d, check_niimg_3d, check_niimg, as_ndarray,
                       _repr_niimgs)
 from .._utils.niimg_conversions import _index_img, _check_same_fov
 from .._utils.niimg import _safe_get_data, _get_data
-from .._utils.compat import _basestring
 from .._utils.param_validation import check_threshold
 
 
@@ -226,8 +225,8 @@ def _smooth_array(arr, affine, fwhm=None, ensure_finite=True, copy=True):
     if isinstance(fwhm, str) and (fwhm == 'fast'):
         arr = _fast_smooth_array(arr)
     elif fwhm is not None:
-        fwhm = np.asarray(fwhm)
-        fwhm = np.where(fwhm == None, 0.0, fwhm)  # noqa: E711
+        fwhm = np.asarray([fwhm]).ravel()
+        fwhm = np.asarray([0. if elem is None else elem for elem in fwhm])
         affine = affine[:3, :3]  # Keep only the scale part.
         fwhm_over_sigma_ratio = np.sqrt(8 * np.log(2))  # FWHM to sigma.
         vox_size = np.sqrt(np.sum(affine ** 2, axis=0))
@@ -273,7 +272,7 @@ def smooth_img(imgs, fwhm):
     # Use hasattr() instead of isinstance to workaround a Python 2.6/2.7 bug
     # See http://bugs.python.org/issue7624
     if hasattr(imgs, "__iter__") \
-       and not isinstance(imgs, _basestring):
+       and not isinstance(imgs, str):
         single_img = False
     else:
         single_img = True
@@ -517,8 +516,8 @@ def mean_img(imgs, target_affine=None, target_shape=None,
     nilearn.image.math_img : For more general operations on images
 
     """
-    if (isinstance(imgs, _basestring) or
-            not isinstance(imgs, collections.Iterable)):
+    if (isinstance(imgs, str) or
+            not isinstance(imgs, collections.abc.Iterable)):
         imgs = [imgs, ]
 
     imgs_iter = iter(imgs)
@@ -627,6 +626,17 @@ def index_img(imgs, index):
      >>> single_mni_image = index_img(joint_mni_image, 1)
      >>> print(single_mni_image.shape)
      (91, 109, 91)
+
+    We can also select multiple frames using the `slice` constructor::
+
+     >>> five_mni_images = concat_imgs([datasets.load_mni152_template()] * 5)
+     >>> print(five_mni_images.shape)
+     (91, 109, 91, 5)
+
+     >>> first_three_images = index_img(five_mni_images,
+     ...                                slice(0, 3))
+     >>> print(first_three_images.shape)
+     (91, 109, 91, 3)
     """
     imgs = check_niimg_4d(imgs)
     # duck-type for pandas arrays, and select the 'values' attr
@@ -680,7 +690,7 @@ def new_img_like(ref_niimg, data, affine=None, copy_header=False):
     """
     # Hand-written loading code to avoid too much memory consumption
     orig_ref_niimg = ref_niimg
-    if (not isinstance(ref_niimg, _basestring)
+    if (not isinstance(ref_niimg, str)
             and not hasattr(ref_niimg, 'get_data')
             and not hasattr(ref_niimg, 'get_fdata')
             and hasattr(ref_niimg, '__iter__')):
@@ -688,7 +698,7 @@ def new_img_like(ref_niimg, data, affine=None, copy_header=False):
     if not ((hasattr(ref_niimg, 'get_data')
              or hasattr(ref_niimg, 'get_fdata'))
               and hasattr(ref_niimg, 'affine')):
-        if isinstance(ref_niimg, _basestring):
+        if isinstance(ref_niimg, str):
             ref_niimg = nibabel.load(ref_niimg)
         else:
             raise TypeError(('The reference image should be a niimg, %r '
@@ -704,18 +714,23 @@ def new_img_like(ref_niimg, data, affine=None, copy_header=False):
     header = None
     if copy_header:
         header = copy.deepcopy(ref_niimg.header)
-        if 'scl_slope' in header:
-            header['scl_slope'] = 0.
-        if 'scl_inter' in header:
-            header['scl_inter'] = 0.
-        # 'glmax' is removed for Nifti2Image. Modify only if 'glmax' is
-        # available in header. See issue #1611
-        if 'glmax' in header:
-            header['glmax'] = 0.
-        if 'cal_max' in header:
-            header['cal_max'] = np.max(data) if data.size > 0 else 0.
-        if 'cal_min' in header:
-            header['cal_min'] = np.min(data) if data.size > 0 else 0.
+        try:
+            'something' in header
+        except TypeError:
+            pass
+        else:
+            if 'scl_slope' in header:
+                header['scl_slope'] = 0.
+            if 'scl_inter' in header:
+                header['scl_inter'] = 0.
+            # 'glmax' is removed for Nifti2Image. Modify only if 'glmax' is
+            # available in header. See issue #1611
+            if 'glmax' in header:
+                header['glmax'] = 0.
+            if 'cal_max' in header:
+                header['cal_max'] = np.max(data) if data.size > 0 else 0.
+            if 'cal_min' in header:
+                header['cal_min'] = np.min(data) if data.size > 0 else 0.
     klass = ref_niimg.__class__
     if klass is nibabel.Nifti1Pair:
         # Nifti1Pair is an internal class, without a to_filename,
@@ -1073,7 +1088,7 @@ def largest_connected_component_img(imgs):
     """
     from .._utils.ndimage import largest_connected_component
 
-    if hasattr(imgs, "__iter__") and not isinstance(imgs, _basestring):
+    if hasattr(imgs, "__iter__") and not isinstance(imgs, str):
         single_img = False
     else:
         single_img = True

@@ -10,10 +10,10 @@ import matplotlib
 import matplotlib.pyplot as plt
 import nibabel
 import numpy as np
-from nose.tools import assert_raises, assert_true, assert_equal
+import pytest
+
 from scipy import sparse
 
-from nilearn._utils.testing import assert_raises_regex
 from nilearn.image.resampling import coord_transform
 from nilearn.image import get_data
 from nilearn.datasets import load_mni152_template
@@ -67,7 +67,7 @@ def test_demo_plot_roi():
 
     with tempfile.NamedTemporaryFile(suffix='.png') as fp:
         out = demo_plot_roi(output_file=fp)
-    assert_true(out is None)
+    assert out is None
 
 
 def test_plot_anat():
@@ -187,7 +187,7 @@ def test_plot_stat_map_threshold_for_affine_with_rotation():
     ax = list(display.axes.values())[0].ax
     plotted_array = ax.images[0].get_array()
     # Given the high threshold the array should be partly masked
-    assert_true(plotted_array.mask.any())
+    assert plotted_array.mask.any()
 
     # Save execution time and memory
     plt.close()
@@ -210,10 +210,10 @@ def test_plot_stat_map_threshold_for_uint8():
     ax = list(display.axes.values())[0].ax
     plotted_array = ax.images[0].get_array()
     # Make sure that there is one value masked
-    assert_equal(plotted_array.mask.sum(), 1)
+    assert plotted_array.mask.sum() == 1
     # Make sure that the value masked is in the corner. Note that the
     # axis orientation seem to be flipped, hence (0, 0) -> (-1, 0)
-    assert_true(plotted_array.mask[-1, 0])
+    assert plotted_array.mask[-1, 0]
 
     # Save execution time and memory
     plt.close()
@@ -236,10 +236,10 @@ def test_plot_glass_brain_threshold_for_uint8():
     ax = list(display.axes.values())[0].ax
     plotted_array = ax.images[0].get_array()
     # Make sure that there is one value masked
-    assert_equal(plotted_array.mask.sum(), 1)
+    assert plotted_array.mask.sum() == 1
     # Make sure that the value masked is in the corner. Note that the
     # axis orientation seem to be flipped, hence (0, 0) -> (-1, 0)
-    assert_true(plotted_array.mask[-1, 0])
+    assert plotted_array.mask[-1, 0]
 
     # Save execution time and memory
     plt.close()
@@ -256,7 +256,7 @@ def test_save_plot():
             display = plot_stat_map(img, output_file=filename, **kwargs)
         finally:
             os.remove(filename)
-        assert_true(display is None)
+        assert display is None
 
         display = plot_stat_map(img, **kwargs)
         filename = tempfile.mktemp(suffix='.png')
@@ -327,7 +327,7 @@ def test_plot_empty_slice():
 def test_plot_img_invalid():
     # Check that we get a meaningful error message when we give a wrong
     # display_mode argument
-    assert_raises(Exception, plot_anat, display_mode='zzz')
+    pytest.raises(Exception, plot_anat, display_mode='zzz')
 
 
 def test_plot_img_with_auto_cut_coords():
@@ -368,14 +368,14 @@ def test_plot_noncurrent_axes():
     fh2 = plt.figure()
     ax1 = fh1.add_subplot(1, 1, 1)
 
-    assert_equal(plt.gcf(), fh2, "fh2  was the last plot created.")
+    assert plt.gcf() == fh2, "fh2  was the last plot created."
 
     # Since we gave ax1, the figure should be plotted in fh1.
     # Before #451, it was plotted in fh2.
     slicer = plot_glass_brain(maps_img, axes=ax1, title='test')
     for ax_name, niax in slicer.axes.items():
         ax_fh = niax.ax.get_figure()
-        assert_equal(ax_fh, fh1, 'New axis %s should be in fh1.' % ax_name)
+        assert ax_fh == fh1, 'New axis %s should be in fh1.' % ax_name
 
     # Save execution time and memory
     plt.close()
@@ -408,8 +408,8 @@ def test_plot_connectome():
     filename = tempfile.mktemp(suffix='.png')
     try:
         display = plot_connectome(*args, output_file=filename, **kwargs)
-        assert_true(display is None)
-        assert_true(os.path.isfile(filename) and
+        assert display is None
+        assert (os.path.isfile(filename) and
                     os.path.getsize(filename) > 0)
     finally:
         os.remove(filename)
@@ -482,11 +482,8 @@ def test_plot_connectome_exceptions():
     # adjacency_matrix is not symmetric
     non_symmetric_adjacency_matrix = np.array([[1., 2],
                                                [0.4, 1.]])
-    assert_raises_regex(ValueError,
-                        'should be symmetric',
-                        plot_connectome,
-                        non_symmetric_adjacency_matrix, node_coords,
-                        **kwargs)
+    with pytest.raises(ValueError, match='should be symmetric'):
+        plot_connectome(non_symmetric_adjacency_matrix, node_coords, **kwargs)
 
     adjacency_matrix = np.array([[1., 2.],
                                  [2., 1.]])
@@ -494,59 +491,55 @@ def test_plot_connectome_exceptions():
     masked_adjacency_matrix = np.ma.masked_array(
         adjacency_matrix, [[False, True], [False, False]])
 
-    assert_raises_regex(ValueError,
-                        'non symmetric mask',
-                        plot_connectome,
-                        masked_adjacency_matrix, node_coords,
-                        **kwargs)
+    with pytest.raises(ValueError, match='non symmetric mask'):
+        plot_connectome(masked_adjacency_matrix, node_coords, **kwargs)
 
     # edges threshold is neither a number nor a string
-    assert_raises_regex(TypeError,
-                        'should be either a number or a string',
-                        plot_connectome,
-                        adjacency_matrix, node_coords,
+    with pytest.raises(TypeError,
+                       match='should be either a number or a string'):
+        plot_connectome(adjacency_matrix, node_coords,
                         edge_threshold=object(),
                         **kwargs)
 
     # wrong shapes for node_coords or adjacency_matrix
-    assert_raises_regex(ValueError,
-                        r'supposed to have shape \(n, n\).+\(1L?, 2L?\)',
-                        plot_connectome, adjacency_matrix[:1, :],
+    with pytest.raises(
+            ValueError,
+            match=r'supposed to have shape \(n, n\).+\(1L?, 2L?\)'):
+        plot_connectome(adjacency_matrix[:1, :],
                         node_coords,
                         **kwargs)
 
-    assert_raises_regex(ValueError, r'shape \(2L?, 3L?\).+\(2L?,\)',
-                        plot_connectome, adjacency_matrix, node_coords[:, 2],
-                        **kwargs)
+    with pytest.raises(ValueError, match=r'shape \(2L?, 3L?\).+\(2L?,\)'):
+        plot_connectome(adjacency_matrix, node_coords[:, 2], **kwargs)
 
     wrong_adjacency_matrix = np.zeros((3, 3))
-    assert_raises_regex(ValueError,
-                        r'Shape mismatch.+\(3L?, 3L?\).+\(2L?, 3L?\)',
-                        plot_connectome,
-                        wrong_adjacency_matrix, node_coords, **kwargs)
+    with pytest.raises(ValueError,
+                       match=r'Shape mismatch.+\(3L?, 3L?\).+\(2L?, 3L?\)'
+                       ):
+        plot_connectome(wrong_adjacency_matrix, node_coords, **kwargs)
 
     # a few not correctly formatted strings for 'edge_threshold'
     wrong_edge_thresholds = ['0.1', '10', '10.2.3%', 'asdf%']
     for wrong_edge_threshold in wrong_edge_thresholds:
-        assert_raises_regex(ValueError,
-                            'should be a number followed by the percent sign',
-                            plot_connectome,
-                            adjacency_matrix, node_coords,
+        with pytest.raises(
+                ValueError,
+                match='should be a number followed by the percent sign'):
+            plot_connectome(adjacency_matrix, node_coords,
                             edge_threshold=wrong_edge_threshold, **kwargs)
 
     # specifying node sizes via node_kwargs
-    assert_raises_regex(ValueError,
-                        "Please use 'node_size' and not 'node_kwargs'",
-                        plot_connectome,
-                        adjacency_matrix, node_coords,
+    with pytest.raises(ValueError,
+                       match="Please use 'node_size' and not 'node_kwargs'"
+                       ):
+        plot_connectome(adjacency_matrix, node_coords,
                         node_kwargs={'s': 50},
                         **kwargs)
 
     # specifying node colors via node_kwargs
-    assert_raises_regex(ValueError,
-                        "Please use 'node_color' and not 'node_kwargs'",
-                        plot_connectome,
-                        adjacency_matrix, node_coords,
+    with pytest.raises(
+            ValueError,
+            match="Please use 'node_color' and not 'node_kwargs'"):
+        plot_connectome(adjacency_matrix, node_coords,
                         node_kwargs={'c': 'blue'},
                         **kwargs)
 
@@ -578,8 +571,8 @@ def test_connectome_strength():
         display = plot_connectome_strength(
             *args, output_file=filename, **kwargs
         )
-        assert_true(display is None)
-        assert_true(os.path.isfile(filename) and  # noqa: W504
+        assert display is None
+        assert (os.path.isfile(filename) and  # noqa: W504
                     os.path.getsize(filename) > 0)
     finally:
         os.remove(filename)
@@ -630,11 +623,12 @@ def test_plot_connectome_strength_exceptions():
     # adjacency_matrix is not symmetric
     non_symmetric_adjacency_matrix = np.array([[1., 2],
                                                [0.4, 1.]])
-    assert_raises_regex(ValueError,
-                        'should be symmetric',
-                        plot_connectome_strength,
-                        non_symmetric_adjacency_matrix, node_coords,
-                        **kwargs)
+    with pytest.raises(ValueError,
+                       match='should be symmetric'
+                       ):
+        plot_connectome_strength(non_symmetric_adjacency_matrix,
+                                 node_coords,
+                                 **kwargs)
 
     adjacency_matrix = np.array([[1., 2.],
                                  [2., 1.]])
@@ -642,30 +636,29 @@ def test_plot_connectome_strength_exceptions():
     masked_adjacency_matrix = np.ma.masked_array(
         adjacency_matrix, [[False, True], [False, False]])
 
-    assert_raises_regex(ValueError,
-                        'non symmetric mask',
-                        plot_connectome_strength,
-                        masked_adjacency_matrix, node_coords,
-                        **kwargs)
+    with pytest.raises(ValueError, match='non symmetric mask'):
+        plot_connectome_strength(masked_adjacency_matrix,
+                                 node_coords,
+                                 **kwargs)
 
     # wrong shapes for node_coords or adjacency_matrix
-    assert_raises_regex(ValueError,
-                        r'supposed to have shape \(n, n\).+\(1L?, 2L?\)',
-                        plot_connectome_strength, adjacency_matrix[:1, :],
-                        node_coords,
-                        **kwargs)
+    with pytest.raises(ValueError,
+                       match=r'supposed to have shape \(n, n\).+\(1L?, 2L?\)'
+                       ):
+        plot_connectome_strength(adjacency_matrix[:1, :],
+                                 node_coords,
+                                 **kwargs)
 
-    assert_raises_regex(ValueError, r'shape \(2L?, 3L?\).+\(2L?,\)',
-                        plot_connectome_strength, adjacency_matrix,
-                        node_coords[:, 2], **kwargs)
+    with pytest.raises(ValueError, match=r'shape \(2L?, 3L?\).+\(2L?,\)'):
+        plot_connectome_strength(adjacency_matrix,
+                                 node_coords[:, 2], **kwargs)
 
     wrong_adjacency_matrix = np.zeros((3, 3))
-    assert_raises_regex(ValueError,
-                        r'Shape mismatch.+\(3L?, 3L?\).+\(2L?, 3L?\)',
-                        plot_connectome_strength,
-                        wrong_adjacency_matrix, node_coords, **kwargs)
-
-
+    with pytest.raises(ValueError,
+                       match=r'Shape mismatch.+\(3L?, 3L?\).+\(2L?, 3L?\)'
+                       ):
+        plot_connectome_strength(wrong_adjacency_matrix, node_coords,
+                                 **kwargs)
 
 
 def test_singleton_ax_dim():
@@ -706,11 +699,13 @@ def test_get_colorbar_and_data_ranges_with_vmin():
                      [0., np.nan, -.2],
                      [1.5, 2.5, 3.]])
 
-    assert_raises_regex(ValueError,
-                        'does not accept a "vmin" argument',
-                        _get_colorbar_and_data_ranges,
-                        data, vmax=None,
-                        symmetric_cbar=True, kwargs={'vmin': 1.})
+    with pytest.raises(ValueError,
+                       match='does not accept a "vmin" argument'
+                       ):
+        _get_colorbar_and_data_ranges(data, vmax=None,
+                                      symmetric_cbar=True,
+                                      kwargs={'vmin': 1.}
+                                      )
 
 
 def test_get_colorbar_and_data_ranges_pos_neg():
@@ -728,57 +723,57 @@ def test_get_colorbar_and_data_ranges_pos_neg():
         data, vmax=None,
         symmetric_cbar=True,
         kwargs=kwargs)
-    assert_equal(vmin, -np.nanmax(data))
-    assert_equal(vmax, np.nanmax(data))
-    assert_equal(cbar_vmin, None)
-    assert_equal(cbar_vmax, None)
+    assert vmin == -np.nanmax(data)
+    assert vmax == np.nanmax(data)
+    assert cbar_vmin == None
+    assert cbar_vmax == None
     # same case if vmax has been set
     cbar_vmin, cbar_vmax, vmin, vmax = _get_colorbar_and_data_ranges(
         data, vmax=2,
         symmetric_cbar=True,
         kwargs=kwargs)
-    assert_equal(vmin, -2)
-    assert_equal(vmax, 2)
-    assert_equal(cbar_vmin, None)
-    assert_equal(cbar_vmax, None)
+    assert vmin == -2
+    assert vmax == 2
+    assert cbar_vmin == None
+    assert cbar_vmax == None
 
     # symmetric_cbar is set to False
     cbar_vmin, cbar_vmax, vmin, vmax = _get_colorbar_and_data_ranges(
         data, vmax=None,
         symmetric_cbar=False,
         kwargs=kwargs)
-    assert_equal(vmin, -np.nanmax(data))
-    assert_equal(vmax, np.nanmax(data))
-    assert_equal(cbar_vmin, np.nanmin(data))
-    assert_equal(cbar_vmax, np.nanmax(data))
+    assert vmin == -np.nanmax(data)
+    assert vmax == np.nanmax(data)
+    assert cbar_vmin == np.nanmin(data)
+    assert cbar_vmax == np.nanmax(data)
     # same case if vmax has been set
     cbar_vmin, cbar_vmax, vmin, vmax = _get_colorbar_and_data_ranges(
         data, vmax=2,
         symmetric_cbar=False,
         kwargs=kwargs)
-    assert_equal(vmin, -2)
-    assert_equal(vmax, 2)
-    assert_equal(cbar_vmin, np.nanmin(data))
-    assert_equal(cbar_vmax, np.nanmax(data))
+    assert vmin == -2
+    assert vmax == 2
+    assert cbar_vmin == np.nanmin(data)
+    assert cbar_vmax == np.nanmax(data)
 
     # symmetric_cbar is set to 'auto', same behaviours as True for this case
     cbar_vmin, cbar_vmax, vmin, vmax = _get_colorbar_and_data_ranges(
         data, vmax=None,
         symmetric_cbar='auto',
         kwargs=kwargs)
-    assert_equal(vmin, -np.nanmax(data))
-    assert_equal(vmax, np.nanmax(data))
-    assert_equal(cbar_vmin, None)
-    assert_equal(cbar_vmax, None)
+    assert vmin == -np.nanmax(data)
+    assert vmax == np.nanmax(data)
+    assert cbar_vmin == None
+    assert cbar_vmax == None
     # same case if vmax has been set
     cbar_vmin, cbar_vmax, vmin, vmax = _get_colorbar_and_data_ranges(
         data, vmax=2,
         symmetric_cbar='auto',
         kwargs=kwargs)
-    assert_equal(vmin, -2)
-    assert_equal(vmax, 2)
-    assert_equal(cbar_vmin, None)
-    assert_equal(cbar_vmax, None)
+    assert vmin == -2
+    assert vmax == 2
+    assert cbar_vmin == None
+    assert cbar_vmax == None
 
 
 def test_get_colorbar_and_data_ranges_pos():
@@ -792,57 +787,57 @@ def test_get_colorbar_and_data_ranges_pos():
         data_pos, vmax=None,
         symmetric_cbar=True,
         kwargs={})
-    assert_equal(vmin, -np.nanmax(data_pos))
-    assert_equal(vmax, np.nanmax(data_pos))
-    assert_equal(cbar_vmin, None)
-    assert_equal(cbar_vmax, None)
+    assert vmin == -np.nanmax(data_pos)
+    assert vmax == np.nanmax(data_pos)
+    assert cbar_vmin == None
+    assert cbar_vmax == None
     # same case if vmax has been set
     cbar_vmin, cbar_vmax, vmin, vmax = _get_colorbar_and_data_ranges(
         data_pos, vmax=2,
         symmetric_cbar=True,
         kwargs={})
-    assert_equal(vmin, -2)
-    assert_equal(vmax, 2)
-    assert_equal(cbar_vmin, None)
-    assert_equal(cbar_vmax, None)
+    assert vmin == -2
+    assert vmax == 2
+    assert cbar_vmin == None
+    assert cbar_vmax == None
 
     # symmetric_cbar is set to False
     cbar_vmin, cbar_vmax, vmin, vmax = _get_colorbar_and_data_ranges(
         data_pos, vmax=None,
         symmetric_cbar=False,
         kwargs={})
-    assert_equal(vmin, -np.nanmax(data_pos))
-    assert_equal(vmax, np.nanmax(data_pos))
-    assert_equal(cbar_vmin, 0)
-    assert_equal(cbar_vmax, None)
+    assert vmin == -np.nanmax(data_pos)
+    assert vmax == np.nanmax(data_pos)
+    assert cbar_vmin == 0
+    assert cbar_vmax == None
     # same case if vmax has been set
     cbar_vmin, cbar_vmax, vmin, vmax = _get_colorbar_and_data_ranges(
         data_pos, vmax=2,
         symmetric_cbar=False,
         kwargs={})
-    assert_equal(vmin, -2)
-    assert_equal(vmax, 2)
-    assert_equal(cbar_vmin, 0)
-    assert_equal(cbar_vmax, None)
+    assert vmin == -2
+    assert vmax == 2
+    assert cbar_vmin == 0
+    assert cbar_vmax == None
 
     # symmetric_cbar is set to 'auto', same behaviour as false in this case
     cbar_vmin, cbar_vmax, vmin, vmax = _get_colorbar_and_data_ranges(
         data_pos, vmax=None,
         symmetric_cbar='auto',
         kwargs={})
-    assert_equal(vmin, -np.nanmax(data_pos))
-    assert_equal(vmax, np.nanmax(data_pos))
-    assert_equal(cbar_vmin, 0)
-    assert_equal(cbar_vmax, None)
+    assert vmin == -np.nanmax(data_pos)
+    assert vmax == np.nanmax(data_pos)
+    assert cbar_vmin == 0
+    assert cbar_vmax == None
     # same case if vmax has been set
     cbar_vmin, cbar_vmax, vmin, vmax = _get_colorbar_and_data_ranges(
         data_pos, vmax=2,
         symmetric_cbar='auto',
         kwargs={})
-    assert_equal(vmin, -2)
-    assert_equal(vmax, 2)
-    assert_equal(cbar_vmin, 0)
-    assert_equal(cbar_vmax, None)
+    assert vmin == -2
+    assert vmax == 2
+    assert cbar_vmin == 0
+    assert cbar_vmax == None
 
 
 def test_get_colorbar_and_data_ranges_neg():
@@ -856,57 +851,57 @@ def test_get_colorbar_and_data_ranges_neg():
         data_neg, vmax=None,
         symmetric_cbar=True,
         kwargs={})
-    assert_equal(vmin, np.nanmin(data_neg))
-    assert_equal(vmax, -np.nanmin(data_neg))
-    assert_equal(cbar_vmin, None)
-    assert_equal(cbar_vmax, None)
+    assert vmin == np.nanmin(data_neg)
+    assert vmax == -np.nanmin(data_neg)
+    assert cbar_vmin == None
+    assert cbar_vmax == None
     # same case if vmax has been set
     cbar_vmin, cbar_vmax, vmin, vmax = _get_colorbar_and_data_ranges(
         data_neg, vmax=2,
         symmetric_cbar=True,
         kwargs={})
-    assert_equal(vmin, -2)
-    assert_equal(vmax, 2)
-    assert_equal(cbar_vmin, None)
-    assert_equal(cbar_vmax, None)
+    assert vmin == -2
+    assert vmax == 2
+    assert cbar_vmin == None
+    assert cbar_vmax == None
 
     # symmetric_cbar is set to False
     cbar_vmin, cbar_vmax, vmin, vmax = _get_colorbar_and_data_ranges(
         data_neg, vmax=None,
         symmetric_cbar=False,
         kwargs={})
-    assert_equal(vmin, np.nanmin(data_neg))
-    assert_equal(vmax, -np.nanmin(data_neg))
-    assert_equal(cbar_vmin, None)
-    assert_equal(cbar_vmax, 0)
+    assert vmin == np.nanmin(data_neg)
+    assert vmax == -np.nanmin(data_neg)
+    assert cbar_vmin == None
+    assert cbar_vmax == 0
     # same case if vmax has been set
     cbar_vmin, cbar_vmax, vmin, vmax = _get_colorbar_and_data_ranges(
         data_neg, vmax=2,
         symmetric_cbar=False,
         kwargs={})
-    assert_equal(vmin, -2)
-    assert_equal(vmax, 2)
-    assert_equal(cbar_vmin, None)
-    assert_equal(cbar_vmax, 0)
+    assert vmin == -2
+    assert vmax == 2
+    assert cbar_vmin == None
+    assert cbar_vmax == 0
 
     # symmetric_cbar is set to 'auto', same behaviour as False in this case
     cbar_vmin, cbar_vmax, vmin, vmax = _get_colorbar_and_data_ranges(
         data_neg, vmax=None,
         symmetric_cbar='auto',
         kwargs={})
-    assert_equal(vmin, np.nanmin(data_neg))
-    assert_equal(vmax, -np.nanmin(data_neg))
-    assert_equal(cbar_vmin, None)
-    assert_equal(cbar_vmax, 0)
+    assert vmin == np.nanmin(data_neg)
+    assert vmax == -np.nanmin(data_neg)
+    assert cbar_vmin == None
+    assert cbar_vmax == 0
     # same case if vmax has been set
     cbar_vmin, cbar_vmax, vmin, vmax = _get_colorbar_and_data_ranges(
         data_neg, vmax=2,
         symmetric_cbar='auto',
         kwargs={})
-    assert_equal(vmin, -2)
-    assert_equal(vmax, 2)
-    assert_equal(cbar_vmin, None)
-    assert_equal(cbar_vmax, 0)
+    assert vmin == -2
+    assert vmax == 2
+    assert cbar_vmin == None
+    assert cbar_vmax == 0
 
 
 def test_get_colorbar_and_data_ranges_masked_array():
@@ -927,93 +922,94 @@ def test_get_colorbar_and_data_ranges_masked_array():
         masked_data, vmax=None,
         symmetric_cbar=True,
         kwargs=kwargs)
-    assert_equal(vmin, -np.nanmax(filled_data))
-    assert_equal(vmax, np.nanmax(filled_data))
-    assert_equal(cbar_vmin, None)
-    assert_equal(cbar_vmax, None)
+    assert vmin == -np.nanmax(filled_data)
+    assert vmax == np.nanmax(filled_data)
+    assert cbar_vmin == None
+    assert cbar_vmax == None
     # same case if vmax has been set
     cbar_vmin, cbar_vmax, vmin, vmax = _get_colorbar_and_data_ranges(
         masked_data, vmax=2,
         symmetric_cbar=True,
         kwargs=kwargs)
-    assert_equal(vmin, -2)
-    assert_equal(vmax, 2)
-    assert_equal(cbar_vmin, None)
-    assert_equal(cbar_vmax, None)
+    assert vmin == -2
+    assert vmax == 2
+    assert cbar_vmin == None
+    assert cbar_vmax == None
 
     # symmetric_cbar is set to False
     cbar_vmin, cbar_vmax, vmin, vmax = _get_colorbar_and_data_ranges(
         masked_data, vmax=None,
         symmetric_cbar=False,
         kwargs=kwargs)
-    assert_equal(vmin, -np.nanmax(filled_data))
-    assert_equal(vmax, np.nanmax(filled_data))
-    assert_equal(cbar_vmin, np.nanmin(filled_data))
-    assert_equal(cbar_vmax, np.nanmax(filled_data))
+    assert vmin == -np.nanmax(filled_data)
+    assert vmax == np.nanmax(filled_data)
+    assert cbar_vmin == np.nanmin(filled_data)
+    assert cbar_vmax == np.nanmax(filled_data)
     # same case if vmax has been set
     cbar_vmin, cbar_vmax, vmin, vmax = _get_colorbar_and_data_ranges(
         masked_data, vmax=2,
         symmetric_cbar=False,
         kwargs=kwargs)
-    assert_equal(vmin, -2)
-    assert_equal(vmax, 2)
-    assert_equal(cbar_vmin, np.nanmin(filled_data))
-    assert_equal(cbar_vmax, np.nanmax(filled_data))
+    assert vmin == -2
+    assert vmax == 2
+    assert cbar_vmin == np.nanmin(filled_data)
+    assert cbar_vmax == np.nanmax(filled_data)
 
     # symmetric_cbar is set to 'auto', same behaviours as True for this case
     cbar_vmin, cbar_vmax, vmin, vmax = _get_colorbar_and_data_ranges(
         masked_data, vmax=None,
         symmetric_cbar='auto',
         kwargs=kwargs)
-    assert_equal(vmin, -np.nanmax(filled_data))
-    assert_equal(vmax, np.nanmax(filled_data))
-    assert_equal(cbar_vmin, None)
-    assert_equal(cbar_vmax, None)
+    assert vmin == -np.nanmax(filled_data)
+    assert vmax == np.nanmax(filled_data)
+    assert cbar_vmin == None
+    assert cbar_vmax == None
     # same case if vmax has been set
     cbar_vmin, cbar_vmax, vmin, vmax = _get_colorbar_and_data_ranges(
         masked_data, vmax=2,
         symmetric_cbar='auto',
         kwargs=kwargs)
-    assert_equal(vmin, -2)
-    assert_equal(vmax, 2)
-    assert_equal(cbar_vmin, None)
-    assert_equal(cbar_vmax, None)
+    assert vmin == -2
+    assert vmax == 2
+    assert cbar_vmin == None
+    assert cbar_vmax == None
 
 
 def test_invalid_in_display_mode_cut_coords_all_plots():
     img = _generate_img()
-
     for plot_func in [plot_img, plot_anat, plot_roi, plot_epi,
                       plot_stat_map, plot_prob_atlas, plot_glass_brain]:
-        assert_raises_regex(ValueError,
-                            "The input given for display_mode='ortho' needs to "
-                            "be a list of 3d world coordinates.",
-                            plot_func,
-                            img, display_mode='ortho', cut_coords=2)
+        with pytest.raises(ValueError,
+                           match="The input given for display_mode='ortho' "
+                                 "needs to "
+                                 "be a list of 3d world coordinates."
+                           ):
+            plot_func(img, display_mode='ortho', cut_coords=2)
 
 
 def test_invalid_in_display_mode_tiled_cut_coords_single_all_plots():
     img = _generate_img()
 
     for plot_func in [plot_img, plot_anat, plot_roi, plot_epi,
-                      plot_stat_map,plot_prob_atlas]:
-        assert_raises_regex(ValueError,
-                            "The input given for display_mode='tiled' needs to "
-                            "be a list of 3d world coordinates.",
-                            plot_func,
-                            img, display_mode='tiled', cut_coords=2)
+                      plot_stat_map, plot_prob_atlas]:
+        with pytest.raises(ValueError,
+                           match="The input given for display_mode='tiled' "
+                                 "needs to "
+                                 "be a list of 3d world coordinates."
+                           ):
+            plot_func(img, display_mode='tiled', cut_coords=2)
 
 
 def test_invalid_in_display_mode_tiled_cut_coords_all_plots():
     img = _generate_img()
 
     for plot_func in [plot_img, plot_anat, plot_roi, plot_epi,
-                      plot_stat_map,plot_prob_atlas]:
-        assert_raises_regex(ValueError,
-                            "The number cut_coords passed does not "
-                            "match the display_mode",
-                            plot_func,
-                            img, display_mode='tiled', cut_coords=(2,2))
+                      plot_stat_map, plot_prob_atlas]:
+        with pytest.raises(ValueError,
+                           match="The number cut_coords passed does not "
+                                 "match the display_mode"
+                           ):
+            plot_func(img, display_mode='tiled', cut_coords=(2, 2))
 
 
 def test_outlier_cut_coords():
@@ -1028,8 +1024,7 @@ def test_outlier_cut_coords():
 
     # Color a cube around a corner area:
     x, y, z = 20, 22, 60
-    x_map, y_map, z_map = coord_transform(x, y, z,
-                                          np.linalg.inv(affine))
+    x_map, y_map, z_map = coord_transform(x, y, z, np.linalg.inv(affine))
 
     data[int(x_map) - 1:int(x_map) + 1,
          int(y_map) - 1:int(y_map) + 1,
@@ -1037,8 +1032,8 @@ def test_outlier_cut_coords():
     img = nibabel.Nifti1Image(data, affine)
     cuts = find_cut_slices(img, n_cuts=20, direction='z')
 
-    p = plot_stat_map(img, display_mode='z', cut_coords=cuts[-4:],
-                      bg_img=bg_img)
+    plot_stat_map(img, display_mode='z', cut_coords=cuts[-4:],
+                  bg_img=bg_img)
 
 
 def test_plot_stat_map_with_nans():
@@ -1094,7 +1089,7 @@ def test_plotting_functions_with_nans_in_bg_img():
 def test_plotting_functions_with_dim_invalid_input():
     # Test whether error raises with bad error to input
     img = _generate_img()
-    assert_raises(ValueError, plot_stat_map, img, dim='-10')
+    pytest.raises(ValueError, plot_stat_map, img, dim='-10')
 
 
 def test_add_markers_using_plot_glass_brain():

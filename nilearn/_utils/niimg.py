@@ -6,12 +6,10 @@ Neuroimaging file input and output.
 
 import copy
 import gc
-import collections
+import collections.abc
 
 import numpy as np
 import nibabel
-
-from .compat import _basestring
 
 
 def _get_data(img):
@@ -116,7 +114,7 @@ def load_niimg(niimg, dtype=None):
     """
     from ..image import new_img_like  # avoid circular imports
 
-    if isinstance(niimg, _basestring):
+    if isinstance(niimg, str):
         # data is a filename, we load it
         niimg = nibabel.load(niimg)
     elif not isinstance(niimg, nibabel.spatialimages.SpatialImage):
@@ -163,9 +161,9 @@ def copy_img(img):
 def _repr_niimgs(niimgs):
     """ Pretty printing of niimg or niimgs.
     """
-    if isinstance(niimgs, _basestring):
+    if isinstance(niimgs, str):
         return niimgs
-    if isinstance(niimgs, collections.Iterable):
+    if isinstance(niimgs, collections.abc.Iterable):
         return '[%s]' % ', '.join(_repr_niimgs(niimg) for niimg in niimgs)
     # Nibabel objects have a 'get_filename'
     try:

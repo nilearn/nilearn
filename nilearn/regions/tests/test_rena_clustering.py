@@ -1,9 +1,10 @@
 import numpy as np
-from nose.tools import assert_equal, assert_not_equal, assert_raises
+import pytest
+
 try:
-    from nilearn._utils.compat import Memory
+    from joblib import Memory
 except ImportError:
-    from nilearn._utils.compat import Memory
+    from joblib import Memory
 from nilearn._utils.data_gen import generate_fake_fmri
 from nilearn.regions.rena_clustering import ReNA
 from nilearn.input_data import NiftiMasker
@@ -28,12 +29,12 @@ def test_rena_clustering():
     X_red = rena.fit_transform(X)
     X_compress = rena.inverse_transform(X_red)
 
-    assert_equal(10, rena.n_clusters_)
-    assert_equal(X.shape, X_compress.shape)
+    assert 10 == rena.n_clusters_
+    assert X.shape == X_compress.shape
 
     memory = Memory(cachedir=None)
     rena = ReNA(mask_img, n_clusters=-2, memory=memory)
-    assert_raises(ValueError, rena.fit, X)
+    pytest.raises(ValueError, rena.fit, X)
 
     rena = ReNA(mask_img, n_clusters=10, scaling=True)
     X_red = rena.fit_transform(X)
@@ -41,11 +42,11 @@ def test_rena_clustering():
 
     for n_iter in [-2, 0]:
         rena = ReNA(mask_img, n_iter=n_iter, memory=memory)
-        assert_raises(ValueError, rena.fit, X)
+        pytest.raises(ValueError, rena.fit, X)
 
     for n_clusters in [1, 2, 4, 8]:
         rena = ReNA(mask_img, n_clusters=n_clusters, n_iter=1,
                     memory=memory).fit(X)
-        assert_not_equal(n_clusters, rena.n_clusters_)
+        assert n_clusters != rena.n_clusters_
 
     del n_voxels, X_red, X_compress

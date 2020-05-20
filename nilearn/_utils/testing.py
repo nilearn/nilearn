@@ -3,37 +3,31 @@
 # License: simplified BSD
 import contextlib
 import functools
-import inspect
 import os
 import sys
 import tempfile
+import urllib
 import warnings
 import gc
 
 import numpy as np
-from numpy.testing import assert_warns  # noqa: F401
+import pytest
 
-from .compat import _basestring, _urllib
 from ..datasets.utils import _fetch_files
-
-
-try:
-    from nose.tools import assert_raises_regex
-except ImportError:
-    # For Py 2.7
-    from nose.tools import assert_raises_regexp as assert_raises_regex
-
 
 # we use memory_profiler library for memory consumption checks
 try:
     from memory_profiler import memory_usage
 
+
     def with_memory_profiler(func):
         """A decorator to skip tests requiring memory_profiler."""
         return func
 
+
     def memory_used(func, *args, **kwargs):
         """Compute memory usage when executing func."""
+
         def func_3_times(*args, **kwargs):
             for _ in range(3):
                 func(*args, **kwargs)
@@ -45,10 +39,12 @@ try:
 except ImportError:
     def with_memory_profiler(func):
         """A decorator to skip tests requiring memory_profiler."""
+
         def dummy_func():
-            import nose
-            raise nose.SkipTest('Test requires memory_profiler.')
+            pytest.skip('Test requires memory_profiler.')
+
         return dummy_func
+
 
     memory_usage = memory_used = None
 
@@ -200,22 +196,23 @@ class mock_request(object):
 def wrap_chunk_read_(_chunk_read_):
     def mock_chunk_read_(response, local_file, initial_size=0, chunk_size=8192,
                          report_hook=None, verbose=0):
-        if not isinstance(response, _basestring):
+        if not isinstance(response, str):
             return _chunk_read_(response, local_file,
                                 initial_size=initial_size,
                                 chunk_size=chunk_size,
                                 report_hook=report_hook, verbose=verbose)
         return response
+
     return mock_chunk_read_
 
 
 def mock_chunk_read_raise_error_(response, local_file, initial_size=0,
                                  chunk_size=8192, report_hook=None,
                                  verbose=0):
-    raise _urllib.errors.HTTPError("url", 418, "I'm a teapot", None, None)
+    raise urllib.errors.HTTPError("url", 418, "I'm a teapot", None, None)
 
 
-class FetchFilesMock (object):
+class FetchFilesMock(object):
     _mock_fetch_files = functools.partial(_fetch_files, mock=True)
 
     def __init__(self):
@@ -251,51 +248,19 @@ class FetchFilesMock (object):
         return filenames
 
 
-
-def is_nose_running():
-    """Returns whether we are running the nose test loader
+def are_tests_running():
+    """Returns whether we are running the pytest test loader
     """
-    if 'nose' not in sys.modules:
-        return
-    try:
-        import nose
-    except ImportError:
-        return False
-    # Now check that we have the loader in the call stask
-    stack = inspect.stack()
-    loader_file_name = nose.loader.__file__
-    if loader_file_name.endswith('.pyc'):
-        loader_file_name = loader_file_name[:-1]
-    for _, file_name, _, _, _, _ in stack:
-        if file_name == loader_file_name:
-            return True
-    return False
+    return 'PYTEST_CURRENT_TEST' in os.environ
 
 
-def skip_if_running_nose(msg=''):
-    """ Raise a SkipTest if we appear to be running the nose test loader.
+def skip_if_running_tests(msg=''):
+    """ Raise a SkipTest if we appear to be running the pytest test loader.
 
     Parameters
     ----------
     msg: string, optional
-        The message issued when SkipTest is raised
+        The message issued when a test is skipped
     """
-    if is_nose_running():
-        import nose
-        raise nose.SkipTest(msg)
-
-
-# Backport: On some nose versions, assert_less_equal is not present
-try:
-    from nose.tools import assert_less_equal
-except ImportError:
-    def assert_less_equal(a, b):
-        if a > b:
-            raise AssertionError("%f is not less or equal than %f" % (a, b))
-
-try:
-    from nose.tools import assert_less
-except ImportError:
-    def assert_less(a, b):
-        if a >= b:
-            raise AssertionError("%f is not less than %f" % (a, b))
+    if are_tests_running():
+        pytest.skip(msg)
