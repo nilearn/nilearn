@@ -90,7 +90,8 @@ def _apply_mask_get_rows(seeds, affine, target_shape, radius, allow_overlap,
                                  mask_img=None):
     seeds = list(seeds)
 
-    # Compute world coordinates of all in-mask voxels.
+    # Compute world coordinates of all voxels. The mask will be applied at 
+    # inversion time
     mask_coords = list(np.ndindex(*target_shape))
 
     nearests = []
@@ -125,9 +126,12 @@ def _apply_mask_get_rows(seeds, affine, target_shape, radius, allow_overlap,
             # seed is not in the mask
             pass
 
-    if not allow_overlap:
-        if np.any(A.sum(axis=0) >= 2):
+    if np.any(A.sum(axis=0) >= 2):
+        if not allow_overlap:
             raise ValueError('Overlap detected between spheres')
+        else:
+            warnings.warn('Overlap detected between spheres, the signal in'
+                          ' shared voxels will be averaged. ')
 
     return A
 
@@ -187,9 +191,7 @@ def _iter_regions_from_spheres(seeds, affine, target_shape, radius, allow_overla
                                         allow_overlap,
                                         mask_img=mask_img)
 
-
-    for i, row in enumerate(A.rows):
-
+    for row in A.rows:
         if len(row) == 0:
             raise ValueError('Sphere around seed #%i is empty' % i)
         yield row
