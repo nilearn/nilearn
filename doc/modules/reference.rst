@@ -1,11 +1,9 @@
-================================================
-Reference documentation: all nilearn functions
-================================================
+=================
+Nilearn Reference
+=================
 
 This is the class and function reference of nilearn. Please refer to
-the :ref:`full user guide <user_guide>` for further details, as the class and
-function raw specifications may not be enough to give full guidelines on their
-uses.
+the :ref:`user guide <user_guide>` for more information and usage examples.
 
 .. contents:: **List of modules**
    :local:
@@ -136,7 +134,7 @@ uses.
    Decoder
    DecoderRegressor
    fREMClassifier
-   fREMRegressor 
+   fREMRegressor
    SpaceNetClassifier
    SpaceNetRegressor
    SearchLight
