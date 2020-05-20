@@ -1,5 +1,5 @@
 """
-Mathematical operations working on Niimg-like objects like -a (3+n)-D block of
+Mathematical operations working on Niimg-like objects like a (3+)D block of
 data, and an affine.
 """
 from .resampling import resample_img, resample_to_img, reorder_img, \
