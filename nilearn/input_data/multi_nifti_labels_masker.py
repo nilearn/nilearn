@@ -37,7 +37,7 @@ class MultiNiftiLabelsMasker(NiftiLabelsMasker, CacheMixin):
         Mask to apply to regions before extracting signals.
 
     smoothing_fwhm: float, optional
-        If smoothing_fwhm is not None, it gives the full-width half maximum in
+        If smoothing_fwhm is not None, it gives the full-width-at-half-maximum in
         millimeters of the spatial smoothing to apply to the signal.
 
     standardize: {'zscore', 'psc', True, False}, default is 'zscore'
