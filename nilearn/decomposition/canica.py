@@ -216,7 +216,7 @@ class CanICA(MultiPCA):
             abs_ica_maps = np.abs(ica_maps)
             threshold = scoreatpercentile(
                 abs_ica_maps,
-                100. - (100. / len(ica_maps)) * ratio)
+                np.maximum(0, 100. - (100. / len(ica_maps)) * ratio))
             ica_maps[abs_ica_maps < threshold] = 0.
         # We make sure that we keep the dtype of components
         self.components_ = ica_maps.astype(self.components_.dtype)

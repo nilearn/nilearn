@@ -146,6 +146,14 @@ def test_threshold_bound():
     # is higher than number of components
     pytest.raises(ValueError, CanICA, n_components=4, threshold=5.)
 
+def test_percentile_range():
+    # Smoke test to ensure a valid percentile for determining
+    # the threshold
+    data, mask_img, components, rng = _make_canica_test_data()
+
+    # use large number of components to stress threshold
+    CanICA(n_components=30, random_state=rng, mask=mask_img)
+
 
 def test_masker_attributes_with_fit():
     # Test base module at sub-class
