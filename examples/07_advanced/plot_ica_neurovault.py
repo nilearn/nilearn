@@ -47,7 +47,7 @@ vocabulary = nv_data['vocabulary']
 if term_weights is None:
     term_weights = np.ones((len(images), 2))
     vocabulary = np.asarray(
-        ["Neurosynth is down :(", "these terms are placeholders"])
+        ["Neurosynth is down", "Please try again later"])
 
 # Clean and report term scores
 term_weights[term_weights < 0] = 0
