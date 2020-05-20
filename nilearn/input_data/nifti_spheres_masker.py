@@ -238,26 +238,36 @@ class _InversionFunctor(object):
         self.mask_img = mask_img
         self.allow_overlap = allow_overlap
         self.dtype = dtype
-        self.target_affine = np.array([[  -3.,   -0.,   -0.,   90.],
-                                       [  -0.,    3.,   -0., -126.],
-                                       [   0.,    0.,    3.,  -72.],
-                                       [   0.,    0.,    0.,    1.]])
-        self.target_shape = [61, 73, 61]
-
-    def __call__(self, signals):
-        n_seeds = len(self.seeds_)
-
+        
         if self.mask_img is not None:
             mask = check_niimg_3d(self.mask_img)
             self.target_affine = mask.affine
             self.target_shape = mask.shape
+        else:
+            self.target_affine = np.array([[  -3.,   -0.,   -0.,   90.],
+                                           [  -0.,    3.,   -0., -126.],
+                                           [   0.,    0.,    3.,  -72.],
+                                           [   0.,    0.,    0.,    1.]])
+            self.target_shape = [61, 73, 61]
 
-        spheres = np.empty((np.prod(self.target_shape), n_seeds), dtype=np.int)
+    def __call__(self, signals):
+        n_seeds = len(self.seeds_)
+
+        spheres = np.empty((np.prod(self.target_shape), n_seeds), dtype=self.dtype)
+        print(spheres.shape)
 
         for i, sphere in enumerate(_iter_regions_from_spheres(
                 self.seeds_, self.target_affine, self.target_shape, self.radius,
                 self.allow_overlap, mask_img=self.mask_img)):
             spheres[sphere, i] = 1
+        
+        # Compute overlap scaling for mean signal:
+        if self.allow_overlap:
+            spheres_sum = spheres.sum(1)
+            spheres_scale = 1 / spheres_sum[spheres_sum > 1, np.newaxis]
+            spheres[spheres_sum > 1, :] = (spheres[spheres_sum > 1, :] * 
+                                           spheres_scale)
+
         return spheres.reshape([*self.target_shape, n_seeds])
 
 
@@ -481,13 +491,18 @@ class NiftiSpheresMasker(BaseMasker, CacheMixin):
 
         logger.log("computing image from signals", verbose=self.verbose)
 
-        invFunc = _InversionFunctor(self.seeds_, self.radius, self.mask_img,
-                                    self.allow_overlap, np.int)
+        # Allow_overlap uses float for spheres, to allow scaling
+        if self.allow_overlap:
+            invFunc = _InversionFunctor(self.seeds_, self.radius, self.mask_img,
+                                        self.allow_overlap, np.float)
+        else:
+            invFunc = _InversionFunctor(self.seeds_, self.radius, self.mask_img,
+                                        self.allow_overlap, np.int)
 
         inverse_map = invFunc(region_signals)
-
+        inverse_map_tmp = inverse_map.copy()
         inverse_map = nibabel.Nifti1Image(inverse_map,
                                           affine=invFunc.target_affine)
 
         return signal_extraction.signals_to_img_maps(
-            region_signals, inverse_map, mask_img=self.mask_img)
+            region_signals, inverse_map, mask_img=self.mask_img), inverse_map_tmp
