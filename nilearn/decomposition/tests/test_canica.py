@@ -152,8 +152,8 @@ def test_percentile_range():
     data, mask_img, components, rng = _make_canica_test_data()
 
     # use large number of components to stress threshold
-    CanICA(n_components=30, random_state=rng, mask=mask_img)
-
+    canica = CanICA(n_components=11, threshold=11.)
+    canica.fit(data)
 
 def test_masker_attributes_with_fit():
     # Test base module at sub-class
