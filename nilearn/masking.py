@@ -10,6 +10,7 @@ import numpy as np
 from scipy import ndimage
 from joblib import Parallel, delayed
 
+from sklearn.utils import deprecated
 from . import _utils
 from .image import new_img_like
 from ._utils.cache_mixin import cache
@@ -519,6 +520,9 @@ def compute_multi_background_mask(data_imgs, border_size=2, upper_cutoff=0.85,
     return mask
 
 
+@deprecated("Function 'compute_gray_matter_mask' has been renamed to "
+            "'compute_whole_brain_matter_mask' and "
+            "'compute_gray_matter_mask' will be removed in future releases.")
 def compute_gray_matter_mask(target_img, threshold=.5,
                              connected=True, opening=2, memory=None,
                              verbose=0):
@@ -561,6 +565,51 @@ def compute_gray_matter_mask(target_img, threshold=.5,
     -------
     mask: nibabel.Nifti1Image
         The brain mask (3D image)
+    """
+    return compute_whole_brain_mask(target_img, threshold=.5, connected=True,
+                                    opening=2, memory=None, verbose=0)
+
+
+def compute_whole_brain_mask(target_img, threshold=.5, connected=True,
+                             opening=2, memory=None, verbose=0):
+    """Compute the whole-brain mask. This mask is calculated through the
+    resampling of the MNI152 template mask onto the target image.
+
+    Parameters
+    ----------
+    target_img: Niimg-like object
+        See http://nilearn.github.io/manipulating_images/input_output.html
+        Images used to compute the mask. 3D and 4D images are accepted.
+        Only the shape and affine of target_img will be used here.
+
+    threshold: float, optional
+        The value under which the MNI template is cut off.
+        Default value is 0.5
+
+    connected: bool, optional
+        if connected is True, only the largest connected component is kept.
+        Default is True
+
+    opening: bool or int, optional
+        if opening is True, a morphological opening is performed, to keep
+        only large structures.
+        If opening is an integer `n`, it is performed via `n` erosions.
+        After estimation of the largest connected constituent, 2`n` closing
+        operations are performed followed by `n` erosions. This corresponds
+        to 1 opening operation of order `n` followed by a closing operator
+        of order `n`.
+
+    memory: instance of joblib.Memory or str
+        Used to cache the function call.
+
+    verbose: int, optional
+        Controls the amount of verbosity: higher numbers give
+        more messages
+
+    Returns
+    -------
+    mask: nibabel.Nifti1Image
+        The whole-brain mask (3D image)
     """
     if verbose > 0:
         print("Template mask computation")
