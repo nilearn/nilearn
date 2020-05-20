@@ -9,5 +9,5 @@ from nilearn.decoding.decoder import (Decoder, DecoderRegressor,
                                       fREMClassifier, fREMRegressor)
 
 
-__all__ = ['SearchLight', 'SpaceNetClassifier', 'SpaceNetRegressor', 'Decoder',
-           'DecoderRegressor', 'fREMClassifier', 'fREMRegressor']
+__all__ = ['SearchLight', 'SurfSearchLight', 'SpaceNetClassifier', 'SpaceNetRegressor',
+           'Decoder', 'DecoderRegressor', 'fREMClassifier', 'fREMRegressor']
