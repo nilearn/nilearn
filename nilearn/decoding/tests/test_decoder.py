@@ -260,13 +260,13 @@ def test_decoder_classification_string_label():
 
 
 def test_decoder_regression():
-    X, y = make_regression(n_samples=200, n_features=125,
-                           n_informative=5, noise=0.2, random_state=42)
+    dim = 15
+    X, y = make_regression(n_samples=200, n_features=dim**3,
+                           n_informative=dim, noise=0.2, random_state=42)
     X = StandardScaler().fit_transform(X)
-    # y = (y - y.mean()) / y.std()
-    X, mask = to_niimgs(X, [5, 5, 5])
+    X, mask = to_niimgs(X, [dim, dim, dim])
     for regressor_ in regressors:
-        for screening_percentile in [100, 20]:
+        for screening_percentile in [100, 20, 1]:
             model = DecoderRegressor(estimator=regressor_, mask=mask,
                                      screening_percentile=screening_percentile)
             model.fit(X, y)
