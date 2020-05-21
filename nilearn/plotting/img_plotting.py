@@ -1510,26 +1510,21 @@ def plot_carpet(img, mask_img=None, detrend=True, output_file=None,
     qualities. Neuroimage, 154, 150-158. doi:
     https://doi.org/10.1016/j.neuroimage.2016.08.009
     """
-    from nilearn.input_data import NiftiMasker
-    img_nii = _utils.check_niimg_4d(img, dtype='auto')
-    img_data = _safe_get_data(img_nii, ensure_finite=True)
+    img = _utils.check_niimg_4d(img, dtype='auto')
 
     # Define TR and number of frames
-    tr = img_nii.header.get_zooms()[-1]
-    ntsteps = img_nii.shape[-1]
+    tr = img.header.get_zooms()[-1]
+    ntsteps = img.shape[-1]
 
     if not mask_img:
-        nifti_masker = NiftiMasker(mask_strategy='epi', standardize=False)
-        nifti_masker.fit(img_nii)
-        mask_data = nifti_masker.mask_img_.get_data().astype(bool)
+        mask_img = compute_epi_mask(img)
     else:
-        mask_nii = _utils.check_niimg_3d(mask_img, dtype='auto')
-        mask_data = _safe_get_data(mask_nii, ensure_finite=True)
+        mask_img = _utils.check_niimg_3d(mask_img, dtype='auto')
 
-    data = img_data[mask_data > 0].reshape(-1, ntsteps)
+    data = apply_mask(img, mask_img)
     # Detrend and standardize data
     if detrend:
-        data = clean(data.T, t_r=tr, detrend=True, standardize='zscore').T
+        data = clean(data, t_r=tr, detrend=True, standardize='zscore')
 
     if not figure:
         if not axes:
@@ -1543,15 +1538,12 @@ def plot_carpet(img, mask_img=None, detrend=True, output_file=None,
         assert axes.figure is figure, ("The axes passed are not "
                                        "in the figure")
 
-    # Avoid segmentation faults for long acquisitions by decimating the input
-    # data
-    long_cutoff = 800
-    if data.shape[1] > long_cutoff:
-        data = data[:, ::2]
-    else:
-        data = data[:, :]
+    # Avoid segmentation faults for long acquisitions by decimating the data
+    LONG_CUTOFF = 800
+    if ntsteps > LONG_CUTOFF:
+        data = data[::2, :]
 
-    axes.imshow(data, interpolation='nearest',
+    axes.imshow(data.T, interpolation='nearest',
                 aspect='auto', cmap='gray', vmin=-2, vmax=2)
 
     axes.grid(False)
@@ -1560,8 +1552,8 @@ def plot_carpet(img, mask_img=None, detrend=True, output_file=None,
 
     # Set 10 frame markers in X axis
     interval = max(
-        (int(data.shape[-1] + 1) // 10, int(data.shape[-1] + 1) // 5, 1))
-    xticks = list(range(0, data.shape[-1])[::interval])
+        (int(data.shape[0] + 1) // 10, int(data.shape[0] + 1) // 5, 1))
+    xticks = list(range(0, data.shape[0])[::interval])
     axes.set_xticks(xticks)
 
     axes.set_xlabel('time (s)')
@@ -1569,20 +1561,20 @@ def plot_carpet(img, mask_img=None, detrend=True, output_file=None,
     if title:
         axes.set_title(title)
     labels = tr * (np.array(xticks))
-    if data.shape[1] > long_cutoff:
+    if ntsteps > LONG_CUTOFF:
         labels *= 2
     axes.set_xticklabels(['%.02f' % t for t in labels.tolist()])
 
     # Remove and redefine spines
-    for side in ["top", "right"]:
+    for side in ['top', 'right']:
         # Toggle the spine objects
         axes.spines[side].set_color('none')
         axes.spines[side].set_visible(False)
 
     axes.yaxis.set_ticks_position('left')
     axes.xaxis.set_ticks_position('bottom')
-    axes.spines["bottom"].set_position(('outward', 20))
-    axes.spines["left"].set_position(('outward', 20))
+    axes.spines['bottom'].set_position(('outward', 20))
+    axes.spines['left'].set_position(('outward', 20))
 
     if output_file is not None:
         figure.savefig(output_file)
