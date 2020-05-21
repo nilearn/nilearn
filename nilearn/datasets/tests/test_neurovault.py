@@ -645,7 +645,7 @@ def test_resampling():
 
         # Ask to download the non-resampled version. This should trigger download
         # (TODO - How can we test systematically that download does happen ?  )
-        data_orig = neurovault.fetch_neurovault_ids(collection_ids=[4666], data_dir=data_dir,resample=False)
+        data_orig = neurovault.fetch_neurovault_ids(collection_ids=[4666], data_dir=data_dir, resample=False)
 
         # Check that the original version is now here
         assert np.all([os.path.isfile(im_meta['absolute_path']) for im_meta in data_orig['images_meta']])
