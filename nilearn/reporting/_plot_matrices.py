@@ -71,7 +71,7 @@ def plot_event(model_event, cmap=None, output_file=None, **fig_kwargs):
         the list of Dataframe obtained by ```first_level_models_from_bids```
         or the Dataframe obtained by reading a BIDS *_event.tsv
 
-    cmap : str or matplotlib.cmap
+    cmap : str or matplotlib.cmap, optional
         the colormap used to label different events
 
     output_file: string or None, optional,
@@ -138,7 +138,7 @@ def plot_event(model_event, cmap=None, output_file=None, **fig_kwargs):
     if output_file is not None:
         plt.savefig(output_file)
         plt.close()
-        ax = None
+        figure = None
 
     return figure
 
