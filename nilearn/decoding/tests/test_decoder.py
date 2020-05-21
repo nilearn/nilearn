@@ -12,14 +12,6 @@ import warnings
 
 import numpy as np
 import pytest
-from sklearn.datasets import load_iris, make_classification, make_regression
-from sklearn.ensemble import RandomForestClassifier
-from sklearn.linear_model import LogisticRegression, RidgeClassifierCV, RidgeCV
-from sklearn.metrics import accuracy_score, r2_score
-from sklearn.model_selection import KFold, LeaveOneGroupOut
-from sklearn.preprocessing import StandardScaler
-from sklearn.svm import SVR, LinearSVC
-
 from nilearn._utils.param_validation import check_feature_screening
 from nilearn.decoding.decoder import (Decoder, DecoderRegressor, _BaseDecoder,
                                       _check_estimator, _check_param_grid,
@@ -27,6 +19,13 @@ from nilearn.decoding.decoder import (Decoder, DecoderRegressor, _BaseDecoder,
                                       fREMRegressor)
 from nilearn.decoding.tests.test_same_api import to_niimgs
 from nilearn.input_data import NiftiMasker
+from sklearn.datasets import load_iris, make_classification, make_regression
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.linear_model import LogisticRegression, RidgeClassifierCV, RidgeCV
+from sklearn.metrics import accuracy_score, r2_score
+from sklearn.model_selection import KFold, LeaveOneGroupOut
+from sklearn.preprocessing import StandardScaler
+from sklearn.svm import SVR, LinearSVC
 
 try:
     from sklearn.metrics import check_scoring
@@ -180,11 +179,10 @@ def test_decoder_binary_classification():
         y_pred = model.predict(X)
         assert accuracy_score(y, y_pred) > 0.95
 
-    screening_percentile = 90
     for clustering_percentile in [100, 99]:
         model = fREMClassifier(estimator='logistic_l2', mask=mask,
                                clustering_percentile=clustering_percentile,
-                               screening_percentile=screening_percentile, cv=5)
+                               screening_percentile=90, cv=5)
         model.fit(X, y)
         y_pred = model.predict(X)
         assert accuracy_score(y, y_pred) > 0.9
@@ -221,13 +219,11 @@ def test_decoder_multiclass_classification():
         assert accuracy_score(y, y_pred) > 0.95
 
     # check fREM with clustering or not
-    screening_percentile = 90
     for clustering_percentile in [100, 99]:
         for estimator in ['svc_l2', 'svc_l1']:
-            screening_percentile = 90
             model = fREMClassifier(estimator=estimator, mask=mask,
                                    clustering_percentile=clustering_percentile,
-                                   screening_percentile=screening_percentile,
+                                   screening_percentile=90,
                                    cv=5)
             model.fit(X, y)
             y_pred = model.predict(X)
@@ -260,33 +256,38 @@ def test_decoder_classification_string_label():
 
 
 def test_decoder_regression():
-    dim = 20
-    X, y = make_regression(n_samples=200, n_features=dim**3,
-                           n_informative=dim, noise=1.0, random_state=42)
+    dim = 30
+    X, y = make_regression(n_samples=100, n_features=dim**3, n_informative=dim,
+                           noise=1.5, bias=1.0, random_state=42)
     X = StandardScaler().fit_transform(X)
     X, mask = to_niimgs(X, [dim, dim, dim])
-    for regressor_ in regressors:
+    for reg in regressors:
         for screening_percentile in [100, 20, 1]:
-            model = DecoderRegressor(estimator=regressor_, mask=mask,
+            model = DecoderRegressor(estimator=reg, mask=mask,
                                      screening_percentile=screening_percentile)
             model.fit(X, y)
             y_pred = model.predict(X)
             assert r2_score(y, y_pred) > 0.95
-        for clustering_percentile in [100, 99]:
-            screening_percentile = 90
-            model = fREMRegressor(estimator=regressor_, mask=mask,
-                                  clustering_percentile=clustering_percentile,
-                                  screening_percentile=screening_percentile,
-                                  cv=10)
-            model.fit(X, y)
-            y_pred = model.predict(X)
-            assert r2_score(y, y_pred) > 0.95
+
+    dim = 5
+    X, y = make_regression(n_samples=100, n_features=dim**3, n_informative=dim,
+                           noise=1.5, bias=1.0, random_state=42)
+    X = StandardScaler().fit_transform(X)
+    X, mask = to_niimgs(X, [dim, dim, dim])
+
+    for clustering_percentile in [100, 99]:
+        model = fREMRegressor(estimator=reg, mask=mask,
+                              clustering_percentile=clustering_percentile,
+                              screening_percentile=90,
+                              cv=10)
+        model.fit(X, y)
+        y_pred = model.predict(X)
+        assert r2_score(y, y_pred) > 0.95
 
 
 def test_decoder_apply_mask():
-    X_init, y = make_classification(
-        n_samples=200, n_features=125, scale=3.0,
-        n_informative=5, n_classes=4, random_state=42)
+    X_init, y = make_classification(n_samples=200, n_features=125, scale=3.0,
+                                    n_informative=5, n_classes=4, random_state=42)
     X, _ = to_niimgs(X_init, [5, 5, 5])
     model = Decoder(mask=NiftiMasker())
 
