@@ -1,21 +1,14 @@
 # Tests for functions in surf_plotting.py
-
-import tempfile
-
-
 import numpy as np
 import nibabel
-import matplotlib
 import matplotlib.pyplot as plt
 import pytest
+import tempfile
 
-from matplotlib import pyplot as plt
 from nilearn.plotting.img_plotting import MNI152TEMPLATE
 from nilearn.plotting.surf_plotting import (plot_surf, plot_surf_stat_map,
                                             plot_surf_roi, plot_img_on_surf)
-from nilearn.surface.tests.test_surface import _generate_surf
 from nilearn.datasets import fetch_surf_fsaverage5
-                                            plot_surf_roi)
 from nilearn.surface.testing_utils import generate_surf
 
 
@@ -171,8 +164,8 @@ def test_plot_surf_roi():
     plot_surf_roi(mesh, roi_map=roi_map)
     plot_surf_roi(mesh, roi_map=roi_map, colorbar=True)
     # change vmin, vmax
-    img = plot_surf_roi(mesh, roi_map=roi_map,
-						vmin=1.2, vmax=8.9, colorbar=True)
+    img = plot_surf_roi(mesh, roi_map=roi_map, vmin=1.2,
+                        vmax=8.9, colorbar=True)
     img.canvas.draw()
     cbar = img.axes[-1]
     cbar_vmin = float(cbar.get_yticklabels()[0].get_text())
@@ -206,7 +199,8 @@ def test_plot_surf_roi_error():
     with pytest.raises(
             ValueError,
             match='roi_map does not have the same number of vertices'):
-            plot_surf_roi(mesh, roi_map=roi_idx)
+        plot_surf_roi(mesh, roi_map=roi_idx)
+
 
 def _generate_img():
     mni_affine = MNI152TEMPLATE.get_affine()
