@@ -178,3 +178,83 @@ def test_standardization():
     np.testing.assert_almost_equal(s.ravel(), data[1, 1, 1] /
                                    data[1, 1, 1].mean() * 100 - 100,
                                    )
+
+
+def test_nifti_spheres_masker_inverse_transform():
+    # Applying the sphere_extraction example from above backwards
+    data = np.random.random((3, 3, 3, 5))
+    img = nibabel.Nifti1Image(data, np.eye(4))
+    masker = NiftiSpheresMasker([(1, 1, 1)], radius=1)
+    # Test the fit
+    masker.fit()
+    # Transform data
+    s = masker.transform(img)
+
+    inverse_map =  masker.inverse_transform(s)
+    # Testing whether mask is applied to inverse transform, and has same length as 
+    # the masked data and data is preserved
+    assert_array_equal(get_data(inverse_map)[get_data(inverse_map) != 0], s[:, 0])
+    # No masking is applied - check dimensions with regard to mni template
+    assert_array_equal(inverse_map.shape[:3], [61, 73, 61])
+
+    # Now with a mask
+    mask_img = np.zeros((3, 3, 3))
+    mask_img[1, :, :] = 1
+    mask_img = nibabel.Nifti1Image(mask_img, np.eye(4))
+    masker = NiftiSpheresMasker([(1, 1, 1)], radius=1, mask_img=mask_img)
+    masker.fit()
+    s = masker.transform(img)
+    # Create an array mask
+    array_mask = np.logical_and(mask, get_data(mask_img))
+
+    inverse_map = masker.inverse_transform(s)
+
+    # Testing whether mask is applied to inverse transform
+    assert_array_equal(np.mean(get_data(inverse_map), axis=-1) != 0,
+                    array_mask)
+    # Test whether values are preserved
+    assert_array_equal(get_data(inverse_map)[array_mask].mean(0), s[:, 0])
+
+    # Test whether the mask's shape is applied
+    assert_array_equal(inverse_map.shape[:3], mask_img.shape)
+
+
+def test_nifti_spheres_masker_inverse_overlap():
+    # Test overlapping data in inverse_transform
+    affine = np.eye(4)
+    shape = (5, 5, 5)
+
+    data = np.random.random(shape + (5,))
+    fmri_img = nibabel.Nifti1Image(data, affine)
+
+    # Apply mask image - to not blow things up to MNI space
+    mask_img = image.new_img_like(fmri_img, np.ones(shape))
+    seeds = [(0, 0, 0), (2, 2, 2)]
+    # Inverse data 
+    inv_data = np.random.random(len(seeds))
+
+    overlapping_masker = NiftiSpheresMasker(seeds, radius=1,
+                                            allow_overlap=True,
+                                        mask_img=mask_img).fit()
+    overlapping_masker.inverse_transform(inv_data)
+
+    overlapping_masker = NiftiSpheresMasker(seeds, radius=2,
+                                            allow_overlap=True,
+                                        mask_img=mask_img).fit()
+
+    overlap = overlapping_masker.inverse_transform(inv_data)
+
+    # Test whether overlapping data is averaged
+    assert np.isclose(get_data(overlap)[1,1,1], np.mean(inv_data))
+
+    noverlapping_masker = NiftiSpheresMasker(seeds, radius=1,
+                                            allow_overlap=False,
+                                        mask_img=mask_img).fit()
+
+    noverlapping_masker.inverse_transform(inv_data)
+    noverlapping_masker = NiftiSpheresMasker(seeds, radius=2,
+                                            allow_overlap=False,
+                                            mask_img=mask_img).fit()
+
+    with pytest.raises(ValueError, match='Overlap detected'):
+        noverlapping_masker.inverse_transform(inv_data)
