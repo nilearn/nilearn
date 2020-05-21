@@ -638,7 +638,7 @@ def test_resampling():
 
         # Load images that are fetched and check the affines
         affines = [load_img(cur_im).affine for cur_im in data['images']]
-        assert np.all([np.all(affine==neurovault.STD_AFFINE) for affine in affines])
+        assert np.all([np.all(affine == neurovault.STD_AFFINE) for affine in affines])
 
         # Check that the original version is NOT here
         assert not np.any([os.path.isfile(im_meta['absolute_path']) for im_meta in data['images_meta']])
