@@ -521,7 +521,7 @@ def compute_multi_background_mask(data_imgs, border_size=2, upper_cutoff=0.85,
 
 
 @deprecated("Function 'compute_gray_matter_mask' has been renamed to "
-            "'compute_brain_matter_mask' and "
+            "'compute_brain_mask' and "
             "'compute_gray_matter_mask' will be removed in release 0.9.")
 def compute_gray_matter_mask(target_img, threshold=.5,
                              connected=True, opening=2, memory=None,

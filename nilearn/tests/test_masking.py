@@ -7,7 +7,6 @@ import numpy as np
 import pytest
 
 from numpy.testing import assert_array_equal
-import pytest
 
 from sklearn.utils import check_random_state
 from nibabel import Nifti1Image
