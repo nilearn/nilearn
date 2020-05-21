@@ -14,8 +14,11 @@ import time
 import sys
 import tarfile
 import urllib
+import socket
 import warnings
 import zipfile
+
+socket.setdefaulttimeout(8)
 
 
 def md5_hash(string):
