@@ -260,9 +260,9 @@ def test_decoder_classification_string_label():
 
 
 def test_decoder_regression():
-    dim = 15
+    dim = 20
     X, y = make_regression(n_samples=200, n_features=dim**3,
-                           n_informative=dim, noise=0.2, random_state=42)
+                           n_informative=dim, noise=1.0, random_state=42)
     X = StandardScaler().fit_transform(X)
     X, mask = to_niimgs(X, [dim, dim, dim])
     for regressor_ in regressors:
