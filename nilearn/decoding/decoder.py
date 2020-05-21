@@ -482,6 +482,8 @@ class _BaseDecoder(LinearModel, RegressorMixin, CacheMixin):
         # Return a suitable screening percentile according to the mask image
         if hasattr(selector, 'percentile'):
             self.screening_percentile_ = selector.percentile
+        elif self.screening_percentile is None:
+            self.screening_percentile_ = 100.0
         else:
             self.screening_percentile_ = self.screening_percentile
 

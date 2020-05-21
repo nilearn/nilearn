@@ -173,7 +173,7 @@ def test_decoder_binary_classification():
     assert accuracy_score(y, y_pred) > 0.95
 
     # check different screening_percentile value
-    for screening_percentile in [100, 20]:
+    for screening_percentile in [100, 20, None]:
         model = Decoder(mask=mask, screening_percentile=screening_percentile)
         model.fit(X, y)
         y_pred = model.predict(X)
@@ -212,7 +212,7 @@ def test_decoder_multiclass_classification():
     assert accuracy_score(y, y_pred) > 0.95
 
     # check different screening_percentile value
-    for screening_percentile in [100, 20]:
+    for screening_percentile in [100, 20, None]:
         model = Decoder(mask=mask, screening_percentile=screening_percentile)
         model.fit(X, y)
         y_pred = model.predict(X)
@@ -262,7 +262,7 @@ def test_decoder_regression():
     X = StandardScaler().fit_transform(X)
     X, mask = to_niimgs(X, [dim, dim, dim])
     for reg in regressors:
-        for screening_percentile in [100, 20, 1]:
+        for screening_percentile in [100, 20, 1, None]:
             model = DecoderRegressor(estimator=reg, mask=mask,
                                      screening_percentile=screening_percentile)
             model.fit(X, y)
