@@ -500,9 +500,8 @@ def _fetch_surf_fsaverage(data_dir=None):
 
 
 def fetch_surf_fsaverage5(data_dir=None, url=None, resume=True, verbose=1):
-    """ Deprecated since version 0.4.3
-
-    Use fetch_surf_fsaverage instead.
+    """  NOTE: This function is deprecated and will be removed in
+    0.7.0 release. Use `fetch_surf_fsaverage` instead.
 
     Parameters
     ----------
@@ -529,7 +528,7 @@ def fetch_surf_fsaverage5(data_dir=None, url=None, resume=True, verbose=1):
 
     """
     warnings.warn("fetch_surf_fsaverage5 has been deprecated and will "
-                  "be removed in a future release. "
+                  "be removed in 0.7.0 release. "
                   "Use fetch_surf_fsaverage(mesh='fsaverage5')",
                   np.VisibleDeprecationWarning, stacklevel=2)
     return fetch_surf_fsaverage(mesh='fsaverage5', data_dir=data_dir)
