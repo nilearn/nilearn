@@ -2361,7 +2361,7 @@ def fetch_neurovault(
         Default=True.
 
     resample : bool, optional (default=False)
-        Resamples downloaded images to a 4x4x4 grid before saving them, to save disk space.
+        Resamples downloaded images to a 3x3x3 grid before saving them, to save disk space.
 
     verbose : int, optional
         An integer in [0, 1, 2, 3] to control the verbosity level.
@@ -2544,7 +2544,7 @@ def fetch_neurovault_ids(
         Whether to collect words from Neurosynth. Default=False.
 
     resample : bool, optional (default=False)
-        Resamples downloaded images to a 4x4x4 grid before saving them, to save disk space.
+        Resamples downloaded images to a 3x3x3 grid before saving them, to save disk space.
 
     vectorize_words : bool, optional
         If neurosynth words are downloaded, create a matrix of word
