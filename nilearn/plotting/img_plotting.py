@@ -1469,34 +1469,36 @@ def plot_carpet(img, mask_img=None, detrend=True, output_file=None,
                 figure=None, axes=None, title=None):
     """Plot an image representation of voxel intensities across time.
 
-    This figure is also known as the "carpet plot" or "Power plot".
+    This figure is also known as a "grayplot" or "Power plot".
 
     Parameters
     ----------
     img : Niimg-like object
-        See http://nilearn.github.io/manipulating_images/input_output.html
-        4D input image
-    mask_img : Niimg-like object, optional
-        See http://nilearn.github.io/manipulating_images/input_output.html
-        Limit plotted voxels to those inside the provided mask. If not
-        specified a new mask will be derived from data.
-    detrend : bool, optional
+        4D image.
+        See http://nilearn.github.io/manipulating_images/input_output.html.
+    mask_img : Niimg-like object or None, optional
+        Limit plotted voxels to those inside the provided mask (default is
+        None). If not specified a new mask will be derived from data.
+        See http://nilearn.github.io/manipulating_images/input_output.html.
+    detrend : :obj:`bool`, optional
         Detrend the data prior to plotting. Default is True.
-    output_file : str, or None, optional
-        The name of an image file to export the plot to. Valid extensions
-        are .png, .pdf, .svg. If output_file is not None, the plot
-        is saved to a file, and the display is closed.
-    figure : matplotlib figure, optional
-        Matplotlib figure used. If None is given, a new figure is created.
-    axes : matplotlib axes, optional
-        The axes used to display the plot. If None, the complete
-        figure is used.
-    title : str, optional
-        The title displayed on the figure.
+    output_file : :obj:`str` or None, optional
+        The name of an image file to which to export the plot (default is
+        None). Valid extensions are .png, .pdf, .svg.
+        If `output_file` is not None, the plot is saved to a file, and the
+        display is closed.
+    figure : :class:`matplotlib.figure.Figure` or None, optional
+        Matplotlib figure used (default is None).
+        If None is given, a new figure is created.
+    axes : :class:`matplotlib.axes._subplots.AxesSubplot` or None, optional
+        The axes used to display the plot (default is None).
+        If None, the complete figure is used.
+    title : :obj:`str` or None, optional
+        The title displayed on the figure (default is None).
 
     Returns
     -------
-    figure : matplotlib figure
+    figure : :class:`matplotlib.figure.Figure`
         Figure object with carpet plot.
 
     Notes
