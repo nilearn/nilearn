@@ -50,10 +50,10 @@ classifiers = {'svc': (svc, 'C'),
                'logistic_l2': (logistic_l2, 'C'),
                'ridge_classifier': (ridge_classifier, [])}
 # Create a test dataset
-rand = np.random.RandomState(0)
-X = rand.rand(100, 10)
+rng = np.random.RandomState(0)
+X = rng.rand(100, 10)
 # Create different targets
-y_regression = rand.rand(100)
+y_regression = rng.rand(100)
 y_classification = np.hstack([[-1] * 50, [1] * 50])
 y_classification_str = np.hstack([['face'] * 50, ['house'] * 50])
 y_multiclass = np.hstack([[0] * 35, [1] * 30, [2] * 35])
