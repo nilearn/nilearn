@@ -53,6 +53,16 @@ def _generate_img_4d():
     pytest.img_4d = img_4d
 
 
+@pytest.fixture(autouse=True)
+def _generate_img_4d_long():
+    """A random 4D image for testing figures for multivolume data.
+    """
+    rng = np.random.RandomState(42)
+    data = rng.rand(7, 7, 3, 997)
+    img_4d = nibabel.Nifti1Image(data, mni_affine)
+    pytest.img_4d_long = img_4d
+
+
 def demo_plot_roi(**kwargs):
     """ Demo plotting an ROI
     """
@@ -272,22 +282,34 @@ def test_plot_glass_brain_threshold_for_uint8():
 def test_plot_carpet():
     """Check contents of plot_carpet figure against data in image.
     """
-    img = pytest.img_4d
-    mask_data = np.ones(img.shape[:-1], int)
-    mask_img = nibabel.Nifti1Image(mask_data, img.affine)
-    display = plot_carpet(img, mask_img, detrend=False)
+    img_4d = pytest.img_4d
+    mask_data = np.ones(img_4d.shape[:-1], int)
+    mask_img = nibabel.Nifti1Image(mask_data, img_4d.affine)
+    display = plot_carpet(img_4d, mask_img, detrend=False, title='TEST')
     # Next two lines retrieve the numpy array from the plot
     ax = display.axes[0]
     plotted_array = ax.images[0].get_array()
+    assert plotted_array.shape == (np.prod(img_4d.shape[:-1]), img_4d.shape[-1])
     # Make sure that the values in the figure match the values in the image
     np.testing.assert_almost_equal(
         plotted_array.sum(),
-        img.get_fdata().sum(),
+        img_4d.get_fdata().sum(),
         decimal=3
     )
-
     # Save execution time and memory
-    plt.close()
+    plt.close(display)
+
+    img_4d_long = pytest.img_4d_long
+    fig, ax = plt.subplots()
+    display = plot_carpet(img_4d_long, mask_img, detrend=True, title='TEST',
+                          figure=fig, axes=ax)
+    # Next two lines retrieve the numpy array from the plot
+    ax = display.axes[0]
+    plotted_array = ax.images[0].get_array()
+    # Check size
+    n_items = (np.prod(img_4d_long.shape[:-1]) * np.ceil(img_4d_long.shape[-1] / 2))
+    assert plotted_array.size == n_items
+    plt.close(fig)
 
 
 def test_save_plot():
