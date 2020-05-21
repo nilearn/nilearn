@@ -1,0 +1,9 @@
+[run]
+branch = True
+parallel = True
+omit =
+    */nilearn/externals/*
+    */nilearn/tests/*
+    */nilearn/*/tests/*
+    */nilearn/conftest.py
+    */nilearn/version.py

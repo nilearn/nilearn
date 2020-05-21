@@ -11,8 +11,6 @@ TV-L1, Graph-Net, etc.)
 #         THIRION Bertrand
 # License: simplified BSD
 
-from distutils.version import LooseVersion
-import sklearn
 import warnings
 import numbers
 import time
@@ -26,7 +24,7 @@ from sklearn.utils import check_array
 from sklearn.linear_model.base import LinearModel
 from sklearn.feature_selection import (SelectPercentile, f_regression,
                                        f_classif)
-from sklearn.externals.joblib import Memory, Parallel, delayed
+from joblib import Memory, Parallel, delayed
 from sklearn.preprocessing import LabelBinarizer
 from sklearn.metrics import accuracy_score
 from ..input_data.masker_validation import check_embedded_nifti_masker
@@ -34,11 +32,11 @@ from .._utils.param_validation import _adjust_screening_percentile
 from sklearn.utils import check_X_y
 from sklearn.model_selection import check_cv
 from sklearn.linear_model.base import _preprocess_data as center_data
-from .._utils.compat import _basestring
 from .._utils.cache_mixin import CacheMixin
-from .objective_functions import _unmask
+from nilearn.masking import _unmask_from_to_3d_array
 from .space_net_solvers import (tvl1_solver, _graph_net_logistic,
                                 _graph_net_squared_loss)
+from nilearn.image import get_data
 
 
 def _crop_mask(mask):
@@ -105,9 +103,9 @@ def _univariate_feature_screening(
         sX = np.empty(X.shape)
         for sample in range(sX.shape[0]):
             sX[sample] = ndimage.gaussian_filter(
-                _unmask(X[sample].copy(),  # avoid modifying X
-                        mask), (smoothing_fwhm, smoothing_fwhm,
-                                smoothing_fwhm))[mask]
+                _unmask_from_to_3d_array(X[sample].copy(),  # avoid modifying X
+                                         mask), (smoothing_fwhm, smoothing_fwhm,
+                                                 smoothing_fwhm))[mask]
     else:
         sX = X
 
@@ -381,6 +379,9 @@ def path_scores(solver, X, y, mask, alphas, l1_ratios, train, test,
             if best_alpha is None:
                 best_alpha = alphas_[0]
             init = None
+            path_solver_params = solver_params.copy()
+            # Use a lighter tol during the path
+            path_solver_params['tol'] = 2 * path_solver_params.get('tol', 1e-4)
             for alpha in alphas_:
                 # setup callback mechanism for early stopping
                 early_stopper = _EarlyStoppingCallback(
@@ -389,7 +390,7 @@ def path_scores(solver, X, y, mask, alphas, l1_ratios, train, test,
                 w, _, init = solver(
                     X_train, y_train, alpha, l1_ratio, mask=mask, init=init,
                     callback=early_stopper, verbose=max(verbose - 1, 0.),
-                    **solver_params)
+                    **path_solver_params)
 
                 # We use 2 scores for model selection: the second one is to
                 # disambiguate between regions of equivalent Spearman
@@ -532,7 +533,7 @@ class BaseSpaceNet(LinearModel, RegressorMixin, CacheMixin):
     fit_intercept : bool, optional (default True)
         Fit or not an intercept.
 
-    max_iter : int (default 1000)
+    max_iter : int (default 200)
         Defines the iterations for the solver.
 
     tol : float, optional (default 5e-4)
@@ -640,7 +641,7 @@ class BaseSpaceNet(LinearModel, RegressorMixin, CacheMixin):
     def __init__(self, penalty="graph-net", is_classif=False, loss=None,
                  l1_ratios=.5, alphas=None, n_alphas=10, mask=None,
                  target_affine=None, target_shape=None, low_pass=None,
-                 high_pass=None, t_r=None, max_iter=1000, tol=5e-4,
+                 high_pass=None, t_r=None, max_iter=200, tol=5e-4,
                  memory=None, memory_level=1, standardize=True, verbose=1,
                  mask_args=None,
                  n_jobs=1, eps=1e-3, cv=8, fit_intercept=True,
@@ -744,7 +745,7 @@ class BaseSpaceNet(LinearModel, RegressorMixin, CacheMixin):
         """
         # misc
         self.check_params()
-        if self.memory is None or isinstance(self.memory, _basestring):
+        if self.memory is None or isinstance(self.memory, str):
             self.memory_ = Memory(self.memory,
                                   verbose=max(0, self.verbose - 1))
         else:
@@ -769,7 +770,7 @@ class BaseSpaceNet(LinearModel, RegressorMixin, CacheMixin):
         self.Xstd_ = X.std(axis=0)
         self.Xstd_[self.Xstd_ < 1e-8] = 1
         self.mask_img_ = self.masker_.mask_img_
-        self.mask_ = self.mask_img_.get_data().astype(np.bool)
+        self.mask_ = get_data(self.mask_img_).astype(np.bool)
         n_samples, _ = X.shape
         y = np.array(y).copy()
         l1_ratios = self.l1_ratios
@@ -839,12 +840,13 @@ class BaseSpaceNet(LinearModel, RegressorMixin, CacheMixin):
              y_train_mean, (cls, fold)) in Parallel(
             n_jobs=self.n_jobs, verbose=2 * self.verbose)(
                 delayed(self._cache(path_scores, func_memory_level=2))(
-                solver, X, y[:, cls] if n_problems > 1 else y, self.mask_,
-                alphas, l1_ratios, self.cv_[fold][0], self.cv_[fold][1],
-                solver_params, n_alphas=self.n_alphas, eps=self.eps,
-                is_classif=self.loss == "logistic", key=(cls, fold),
-                debias=self.debias, verbose=self.verbose,
-                screening_percentile=self.screening_percentile_,
+                    solver, X, y[:, cls] if n_problems > 1 else y,
+                    self.mask_, alphas, l1_ratios, self.cv_[fold][0],
+                    self.cv_[fold][1], solver_params, n_alphas=self.n_alphas,
+                    eps=self.eps, is_classif=self.loss == "logistic",
+                    key=(cls, fold), debias=self.debias,
+                    verbose=self.verbose,
+                    screening_percentile=self.screening_percentile_,
                 ) for cls in range(n_problems) for fold in range(n_folds)):
             self.best_model_params_.append((best_alpha, best_l1_ratio))
             self.alpha_grids_.append(alphas)
@@ -1026,7 +1028,7 @@ class SpaceNetClassifier(BaseSpaceNet):
     fit_intercept : bool, optional (default True)
         Fit or not an intercept.
 
-    max_iter : int (default 1000)
+    max_iter : int (default 200)
         Defines the iterations for the solver.
 
     tol : float
@@ -1131,7 +1133,7 @@ class SpaceNetClassifier(BaseSpaceNet):
     def __init__(self, penalty="graph-net", loss="logistic",
                  l1_ratios=.5, alphas=None, n_alphas=10, mask=None,
                  target_affine=None, target_shape=None, low_pass=None,
-                 high_pass=None, t_r=None, max_iter=1000, tol=1e-4,
+                 high_pass=None, t_r=None, max_iter=200, tol=1e-4,
                  memory=Memory(None), memory_level=1, standardize=True,
                  verbose=1, n_jobs=1, eps=1e-3,
                  cv=8, fit_intercept=True, screening_percentile=20.,
@@ -1253,7 +1255,7 @@ class SpaceNetRegressor(BaseSpaceNet):
     fit_intercept : bool, optional (default True)
         Fit or not an intercept.
 
-    max_iter : int (default 1000)
+    max_iter : int (default 200)
         Defines the iterations for the solver.
 
     tol : float
@@ -1345,7 +1347,7 @@ class SpaceNetRegressor(BaseSpaceNet):
     def __init__(self, penalty="graph-net", l1_ratios=.5, alphas=None,
                  n_alphas=10, mask=None, target_affine=None,
                  target_shape=None, low_pass=None, high_pass=None, t_r=None,
-                 max_iter=1000, tol=1e-4, memory=Memory(None), memory_level=1,
+                 max_iter=200, tol=1e-4, memory=Memory(None), memory_level=1,
                  standardize=True, verbose=1, n_jobs=1, eps=1e-3, cv=8,
                  fit_intercept=True, screening_percentile=20., debias=False):
         super(SpaceNetRegressor, self).__init__(

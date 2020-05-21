@@ -30,6 +30,20 @@ def is_installing():
     return install_commands.intersection(set(sys.argv))
 
 
+def list_required_packages():
+    required_packages = []
+    required_packages_orig = ['%s>=%s' % (mod, meta['min_version'])
+                              for mod, meta
+                              in _VERSION_GLOBALS['REQUIRED_MODULE_METADATA']
+                              ]
+    for package in required_packages_orig:
+        if package.startswith('sklearn'):
+            package = package.replace('sklearn', 'scikit-learn')
+        required_packages.append(package)
+    required_packages.append('sklearn')
+    return required_packages
+
+
 # Make sources available using relative paths from this file's directory.
 os.chdir(os.path.dirname(os.path.abspath(__file__)))
 
@@ -50,11 +64,6 @@ if __name__ == "__main__":
     if is_installing():
         module_check_fn = _VERSION_GLOBALS['_check_module_dependencies']
         module_check_fn(is_nilearn_installing=True)
-
-    install_requires = \
-        ['%s>=%s' % (mod, meta['min_version'])
-            for mod, meta in _VERSION_GLOBALS['REQUIRED_MODULE_METADATA']
-            if not meta['required_at_installation']]
 
     setup(name=DISTNAME,
           maintainer=MAINTAINER,
@@ -78,15 +87,13 @@ if __name__ == "__main__":
               'Operating System :: POSIX',
               'Operating System :: Unix',
               'Operating System :: MacOS',
-              'Programming Language :: Python :: 2',
-              'Programming Language :: Python :: 2.7',
-              'Programming Language :: Python :: 3.4',
               'Programming Language :: Python :: 3.5',
               'Programming Language :: Python :: 3.6',
               'Programming Language :: Python :: 3.7',
           ],
           packages=find_packages(),
-          package_data={'nilearn.datasets.data': ['*.nii.gz', '*.csv'],
+          package_data={'nilearn.datasets.data': ['*.nii.gz', '*.csv', '*.txt'
+                                                  ],
                         'nilearn.datasets.data.fsaverage5': ['*.gz'],
                         'nilearn.surface.data': ['*.csv'],
                         'nilearn.plotting.data.js': ['*.js'],
@@ -96,5 +103,11 @@ if __name__ == "__main__":
                         'nilearn.image.tests.data': ['*.mgz'],
                         'nilearn.surface.tests.data': ['*.annot', '*.label'],
                         'nilearn.datasets.tests.data': ['*.*'],
-                        'nilearn.datasets.description': ['*.rst']},
-          install_requires=install_requires,)
+                        'nilearn.datasets.description': ['*.rst'],
+                        'nilearn.reporting.data.html': ['*.html'],
+                        'nilearn.stats.tests': ['*.nii.gz', '*.npz'],
+                        'nilearn.reporting.glm_reporter_templates': ['*.html'],
+                        },
+          install_requires=list_required_packages(),
+          python_requires='>=3.5',
+          )

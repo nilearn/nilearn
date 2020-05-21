@@ -6,11 +6,9 @@ Predicting age from gray-matter concentration maps from OASIS
 dataset. Note that age is a continuous variable, we use the regressor
 here, and not the classification object.
 
-See also the SpaceNet documentation: :ref:`space_net`.
+See also the documentation: :ref:`space_net`.
 
 """
-# Authors: DOHMATOB Elvis
-#          FRITSCH Virgile
 
 ###########################################################################
 # Load the Oasis VBM dataset
@@ -40,16 +38,15 @@ gm_imgs_test = gm_imgs_test[perm]
 ###########################################################################
 # Fit the SpaceNet and predict with it
 # -------------------------------------
-from nilearn.decoding import SpaceNetRegressor
-
 # To save time (because these are anat images with many voxels), we include
 # only the 5-percent voxels most correlated with the age variable to fit.
 # Also, we set memory_level=2 so that more of the intermediate computations
-# are cached. Also, you may pass and n_jobs=<some_high_value> to the
+# are cached. We used a graph-net penalty here but more beautiful results can
+# be obtained using the TV-l1 penalty, at the expense of longer runtimes.
+# Also, you may pass and n_jobs=<some_high_value> to the
 # SpaceNetRegressor class, to take advantage of a multi-core system.
 #
-# Also, here we use a graph-net penalty but more beautiful results can be
-# obtained using the TV-l1 penalty, at the expense of longer runtimes.
+from nilearn.decoding import SpaceNetRegressor
 decoder = SpaceNetRegressor(memory="nilearn_cache", penalty="graph-net",
                             screening_percentile=5., memory_level=2)
 decoder.fit(gm_imgs_train, age_train)  # fit
@@ -60,6 +57,8 @@ print('Mean square error (MSE) on the predicted age: %.2f' % mse)
 
 
 ###########################################################################
+# Visualize the decoding maps and quality of predictions
+# -------------------------------------------------------
 # Visualize the resulting maps
 from nilearn.plotting import plot_stat_map, show
 # weights map
@@ -67,10 +66,7 @@ background_img = gm_imgs[0]
 plot_stat_map(coef_img, background_img, title="graph-net weights",
               display_mode="z", cut_coords=1)
 
-
-###########################################################################
-# Visualize the quality of predictions
-# -------------------------------------
+# Plot the prediction errors.
 import matplotlib.pyplot as plt
 plt.figure()
 plt.suptitle("graph-net: Mean Absolute Error %.2f years" % mse)

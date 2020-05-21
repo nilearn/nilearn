@@ -6,17 +6,14 @@ import warnings
 import itertools
 
 from distutils.version import LooseVersion
-from nose import SkipTest
-from numpy.testing import (assert_array_equal, assert_array_almost_equal,
-                           assert_equal)
-from nose.tools import assert_true, assert_raises
-from nilearn._utils.testing import assert_raises_regex, assert_warns
-
-import numpy as np
-from scipy.spatial import Delaunay
-import sklearn
 
 import nibabel as nb
+import numpy as np
+import pytest
+
+from numpy.testing import assert_array_equal, assert_array_almost_equal
+from scipy.spatial import Delaunay
+
 from nibabel import gifti
 
 from nilearn import datasets
@@ -27,16 +24,11 @@ from nilearn.surface import surface
 from nilearn.surface import load_surf_data, load_surf_mesh, vol_to_surf
 from nilearn.surface.surface import (_gifti_img_to_mesh,
                                      _load_surf_files_gifti_gzip)
+from nilearn.surface.testing_utils import (generate_surf, flat_mesh,
+                                           z_const_img)
 
 currdir = os.path.dirname(os.path.abspath(__file__))
 datadir = os.path.join(currdir, 'data')
-
-
-def _generate_surf():
-    rng = np.random.RandomState(42)
-    coords = rng.rand(20, 3)
-    faces = rng.randint(coords.shape[0], size=(30, 3))
-    return [coords, faces]
 
 
 def test_load_surf_data_array():
@@ -66,9 +58,10 @@ def test_load_surf_data_file_nii_gii():
     filename_gii_empty = tempfile.mktemp(suffix='.gii')
     gii_empty = gifti.GiftiImage()
     gifti.write(gii_empty, filename_gii_empty)
-    assert_raises_regex(ValueError,
-                        'must contain at least one data array',
-                        load_surf_data, filename_gii_empty)
+    with pytest.raises(ValueError,
+                       match='must contain at least one data array'
+                       ):
+        load_surf_data(filename_gii_empty)
     os.remove(filename_gii_empty)
 
     # test loading of fake data from nifti file
@@ -89,15 +82,15 @@ def test_load_surf_data_gii_gz():
     # surface data
     fsaverage = datasets.fetch_surf_fsaverage().sulc_left
     gii = _load_surf_files_gifti_gzip(fsaverage)
-    assert_true(isinstance(gii, gifti.GiftiImage))
+    assert isinstance(gii, gifti.GiftiImage)
 
     data = load_surf_data(fsaverage)
-    assert_true(isinstance(data, np.ndarray))
+    assert isinstance(data, np.ndarray)
 
     # surface mesh
     fsaverage = datasets.fetch_surf_fsaverage().pial_left
     gii = _load_surf_files_gifti_gzip(fsaverage)
-    assert_true(isinstance(gii, gifti.GiftiImage))
+    assert isinstance(gii, gifti.GiftiImage)
 
 
 def test_load_surf_data_file_freesurfer():
@@ -124,7 +117,7 @@ def test_load_surf_data_file_freesurfer():
     label = load_surf_data(os.path.join(datadir, 'test.label'))
     assert_array_equal(label[:5], label_start)
     assert_array_equal(label[-5:], label_end)
-    assert_equal(label.shape, (10, ))
+    assert label.shape == (10, )
     del label, label_start, label_end
 
     annot_start = np.array([24, 29, 28, 27, 24, 31, 11, 25, 0, 12])
@@ -132,7 +125,7 @@ def test_load_surf_data_file_freesurfer():
     annot = load_surf_data(os.path.join(datadir, 'test.annot'))
     assert_array_equal(annot[:10], annot_start)
     assert_array_equal(annot[-10:], annot_end)
-    assert_equal(annot.shape, (10242, ))
+    assert annot.shape == (10242, )
     del annot, annot_start, annot_end
 
 
@@ -143,34 +136,35 @@ def test_load_surf_data_file_error():
     for suff in wrong_suff:
         filename_wrong = tempfile.mktemp(suffix=suff)
         np.savetxt(filename_wrong, data)
-        assert_raises_regex(ValueError,
-                            'input type is not recognized',
-                            load_surf_data, filename_wrong)
+        with pytest.raises(ValueError,
+                           match='input type is not recognized'
+                           ):
+            load_surf_data(filename_wrong)
         os.remove(filename_wrong)
 
 
 def test_load_surf_mesh_list():
     # test if correct list is returned
-    mesh = _generate_surf()
-    assert_equal(len(load_surf_mesh(mesh)), 2)
+    mesh = generate_surf()
+    assert len(load_surf_mesh(mesh)) == 2
     assert_array_equal(load_surf_mesh(mesh)[0], mesh[0])
     assert_array_equal(load_surf_mesh(mesh)[1], mesh[1])
     # test if incorrect list, array or dict raises error
-    assert_raises_regex(ValueError, 'it must have two elements',
-                        load_surf_mesh, [])
-    assert_raises_regex(ValueError, 'it must have two elements',
-                        load_surf_mesh, [mesh[0]])
-    assert_raises_regex(ValueError, 'it must have two elements',
-                        load_surf_mesh, [mesh[0], mesh[1], mesh[1]])
-    assert_raises_regex(ValueError, 'input type is not recognized',
-                        load_surf_mesh, mesh[0])
-    assert_raises_regex(ValueError, 'input type is not recognized',
-                        load_surf_mesh, dict())
+    with pytest.raises(ValueError, match='it must have two elements'):
+        load_surf_mesh([])
+    with pytest.raises(ValueError, match='it must have two elements'):
+        load_surf_mesh([mesh[0]])
+    with pytest.raises(ValueError, match='it must have two elements'):
+        load_surf_mesh([mesh[0], mesh[1], mesh[1]])
+    with pytest.raises(ValueError, match='input type is not recognized'):
+        load_surf_mesh(mesh[0])
+    with pytest.raises(ValueError, match='input type is not recognized'):
+        load_surf_mesh(dict())
     del mesh
 
 
 def test_gifti_img_to_mesh():
-    mesh = _generate_surf()
+    mesh = generate_surf()
 
     coord_array = gifti.GiftiDataArray(data=mesh[0])
     coord_array.intent = nb.nifti1.intent_codes['NIFTI_INTENT_POINTSET']
@@ -189,8 +183,8 @@ def test_load_surf_mesh_file_gii_gz():
 
     fsaverage = datasets.fetch_surf_fsaverage().pial_left
     coords, faces = load_surf_mesh(fsaverage)
-    assert_true(isinstance(coords, np.ndarray))
-    assert_true(isinstance(faces, np.ndarray))
+    assert isinstance(coords, np.ndarray)
+    assert isinstance(faces, np.ndarray)
 
 
 def test_load_surf_mesh_file_gii():
@@ -201,9 +195,9 @@ def test_load_surf_mesh_file_gii():
     # older versions
 
     if not LooseVersion(nb.__version__) >= LooseVersion('2.1.0'):
-        raise SkipTest
+        raise pytest.skip('Nibabel version too old to handle intent codes')
 
-    mesh = _generate_surf()
+    mesh = generate_surf()
 
     # test if correct gii is loaded into correct list
     filename_gii_mesh = tempfile.mktemp(suffix='.gii')
@@ -225,28 +219,24 @@ def test_load_surf_mesh_file_gii():
     filename_gii_mesh_no_point = tempfile.mktemp(suffix='.gii')
     gifti.write(gifti.GiftiImage(darrays=[face_array, face_array]),
                 filename_gii_mesh_no_point)
-    assert_raises_regex(ValueError, 'NIFTI_INTENT_POINTSET',
-                        load_surf_mesh, filename_gii_mesh_no_point)
+    with pytest.raises(ValueError, match='NIFTI_INTENT_POINTSET'):
+        load_surf_mesh(filename_gii_mesh_no_point)
     os.remove(filename_gii_mesh_no_point)
 
     filename_gii_mesh_no_face = tempfile.mktemp(suffix='.gii')
     gifti.write(gifti.GiftiImage(darrays=[coord_array, coord_array]),
                 filename_gii_mesh_no_face)
-    assert_raises_regex(ValueError, 'NIFTI_INTENT_TRIANGLE',
-                        load_surf_mesh, filename_gii_mesh_no_face)
+    with pytest.raises(ValueError, match='NIFTI_INTENT_TRIANGLE'):
+        load_surf_mesh(filename_gii_mesh_no_face)
     os.remove(filename_gii_mesh_no_face)
 
 
 def test_load_surf_mesh_file_freesurfer():
-    # Older nibabel versions does not support 'write_geometry'
-    if LooseVersion(nb.__version__) <= LooseVersion('1.2.0'):
-        raise SkipTest
-
-    mesh = _generate_surf()
+    mesh = generate_surf()
     for suff in ['.pial', '.inflated', '.white', '.orig', 'sphere']:
         filename_fs_mesh = tempfile.mktemp(suffix=suff)
         nb.freesurfer.write_geometry(filename_fs_mesh, mesh[0], mesh[1])
-        assert_equal(len(load_surf_mesh(filename_fs_mesh)), 2)
+        assert len(load_surf_mesh(filename_fs_mesh)) == 2
         assert_array_almost_equal(load_surf_mesh(filename_fs_mesh)[0],
                                   mesh[0])
         assert_array_almost_equal(load_surf_mesh(filename_fs_mesh)[1],
@@ -255,19 +245,102 @@ def test_load_surf_mesh_file_freesurfer():
 
 
 def test_load_surf_mesh_file_error():
-    if LooseVersion(nb.__version__) <= LooseVersion('1.2.0'):
-        raise SkipTest
-
     # test if files with unexpected suffixes raise errors
-    mesh = _generate_surf()
+    mesh = generate_surf()
     wrong_suff = ['.vtk', '.obj', '.mnc', '.txt']
     for suff in wrong_suff:
         filename_wrong = tempfile.mktemp(suffix=suff)
         nb.freesurfer.write_geometry(filename_wrong, mesh[0], mesh[1])
-        assert_raises_regex(ValueError,
-                            'input type is not recognized',
-                            load_surf_data, filename_wrong)
+        with pytest.raises(ValueError,
+                           match='input type is not recognized'
+                           ):
+            load_surf_mesh(filename_wrong)
         os.remove(filename_wrong)
+
+
+def test_load_surf_mesh_file_glob():
+    mesh = generate_surf()
+    fname1 = tempfile.mktemp(suffix='.pial')
+    nb.freesurfer.write_geometry(fname1, mesh[0], mesh[1])
+    fname2 = tempfile.mktemp(suffix='.pial')
+    nb.freesurfer.write_geometry(fname2, mesh[0], mesh[1])
+
+    with pytest.raises(ValueError, match='More than one file matching path'):
+        load_surf_mesh(os.path.join(os.path.dirname(fname1), "*.pial"))
+    with pytest.raises(ValueError, match='No files matching path'):
+        load_surf_mesh(os.path.join(os.path.dirname(fname1),
+                                    "*.unlikelysuffix")
+                       )
+    assert len(load_surf_mesh(fname1)) == 2
+    assert_array_almost_equal(load_surf_mesh(fname1)[0], mesh[0])
+    assert_array_almost_equal(load_surf_mesh(fname1)[1], mesh[1])
+
+    os.remove(fname1)
+    os.remove(fname2)
+
+
+def test_load_surf_data_file_glob():
+
+    data2D = np.ones((20, 3))
+    fnames = []
+    for f in range(3):
+        fnames.append(tempfile.mktemp(prefix='glob_%s_' % f, suffix='.gii'))
+        data2D[:, f] *= f
+        if LooseVersion(nb.__version__) > LooseVersion('2.0.2'):
+            darray = gifti.GiftiDataArray(data=data2D[:, f])
+        else:
+            # Avoid a bug in nibabel 1.2.0 where GiftiDataArray were not
+            # initialized properly:
+            darray = gifti.GiftiDataArray.from_array(data2D[:, f],
+                                                     intent='t test')
+        gii = gifti.GiftiImage(darrays=[darray])
+        gifti.write(gii, fnames[f])
+
+    assert_array_equal(load_surf_data(
+        os.path.join(os.path.dirname(fnames[0]), "glob*.gii")),
+        data2D
+    )
+
+    # make one more gii file that has more than one dimension
+    fnames.append(tempfile.mktemp(prefix='glob_3_', suffix='.gii'))
+    if LooseVersion(nb.__version__) > LooseVersion('2.0.2'):
+        darray1 = gifti.GiftiDataArray(data=np.ones((20, )))
+        darray2 = gifti.GiftiDataArray(data=np.ones((20, )))
+        darray3 = gifti.GiftiDataArray(data=np.ones((20, )))
+    else:
+        # Avoid a bug in nibabel 1.2.0 where GiftiDataArray were not
+        # initialized properly:
+        darray1 = gifti.GiftiDataArray.from_array(np.ones((20, )),
+                                                  intent='t test')
+        darray2 = gifti.GiftiDataArray.from_array(np.ones((20, )),
+                                                  intent='t test')
+        darray3 = gifti.GiftiDataArray.from_array(np.ones((20, )),
+                                                  intent='t test')
+    gii = gifti.GiftiImage(darrays=[darray1, darray2, darray3])
+    gifti.write(gii, fnames[-1])
+
+    data2D = np.concatenate((data2D, np.ones((20, 3))), axis=1)
+    assert_array_equal(load_surf_data(os.path.join(os.path.dirname(fnames[0]),
+                                                   "glob*.gii")), data2D)
+
+    # make one more gii file that has a different shape in axis=0
+    fnames.append(tempfile.mktemp(prefix='glob_4_', suffix='.gii'))
+    if LooseVersion(nb.__version__) > LooseVersion('2.0.2'):
+        darray = gifti.GiftiDataArray(data=np.ones((15, 1)))
+    else:
+        # Avoid a bug in nibabel 1.2.0 where GiftiDataArray were not
+        # initialized properly:
+        darray = gifti.GiftiDataArray.from_array(np.ones((15, 1)),
+                                                 intent='t test')
+    gii = gifti.GiftiImage(darrays=[darray])
+    gifti.write(gii, fnames[-1])
+
+    with pytest.raises(ValueError,
+                       match='files must contain data with the same shape'
+                       ):
+        load_surf_data(os.path.join(os.path.dirname(fnames[0]), "*.gii"))
+    for f in fnames:
+        os.remove(f)
 
 
 def _flat_mesh(x_s, y_s, z=0):
@@ -287,7 +360,7 @@ def _z_const_img(x_s, y_s, z_s):
 
 def test_vertex_outer_normals():
     # compute normals for a flat horizontal mesh, they should all be (0, 0, 1)
-    mesh = _flat_mesh(5, 7)
+    mesh = flat_mesh(5, 7)
     computed_normals = surface._vertex_outer_normals(mesh)
     true_normals = np.zeros((len(mesh[0]), 3))
     true_normals[:, 2] = 1
@@ -295,23 +368,30 @@ def test_vertex_outer_normals():
 
 
 def test_load_uniform_ball_cloud():
+    # Note: computed and shipped point clouds may differ since KMeans results
+    # change after
+    # https://github.com/scikit-learn/scikit-learn/pull/9288
+    # but the exact position of the points does not matter as long as they are
+    # well spread inside the unit ball
     for n_points in [10, 20, 40, 80, 160]:
         with warnings.catch_warnings(record=True) as w:
             points = surface._load_uniform_ball_cloud(n_points=n_points)
             assert_array_equal(points.shape, (n_points, 3))
-            assert_equal(len(w), 0)
-    assert_warns(surface.EfficiencyWarning,
-                 surface._load_uniform_ball_cloud, n_points=3)
-    for n_points in [3, 10, 20]:
+            assert len(w) == 0
+    with pytest.warns(surface.EfficiencyWarning):
+        surface._load_uniform_ball_cloud(n_points=3)
+    for n_points in [3, 7]:
         computed = surface._uniform_ball_cloud(n_points)
         loaded = surface._load_uniform_ball_cloud(n_points)
         assert_array_almost_equal(computed, loaded)
+        assert (np.std(computed, axis=0) > .1).all()
+        assert (np.linalg.norm(computed, axis=1) <= 1).all()
 
 
 def test_sample_locations():
     # check positions of samples on toy example, with an affine != identity
     # flat horizontal mesh
-    mesh = _flat_mesh(5, 7)
+    mesh = flat_mesh(5, 7)
     affine = np.diagflat([10, 20, 30, 1])
     inv_affine = np.linalg.inv(affine)
     # transform vertices to world space
@@ -333,7 +413,7 @@ def test_sample_locations():
         true_locations = np.asarray([vertex + offsets for vertex in mesh[0]])
         assert_array_equal(locations.shape, true_locations.shape)
         assert_array_almost_equal(true_locations, locations)
-    assert_raises(ValueError, surface._sample_locations,
+    pytest.raises(ValueError, surface._sample_locations,
                   mesh, affine, 1., kind='bad_kind')
 
 
@@ -343,24 +423,24 @@ def test_masked_indices():
     locations = np.mgrid[:5, :3, :8].ravel().reshape((3, -1))
     masked = surface._masked_indices(locations.T, mask.shape, mask)
     # These elements are masked by the mask
-    assert_true((masked[::2] == 1).all())
+    assert (masked[::2] == 1).all()
     # The last element of locations is one row beyond first image dimension
-    assert_true((masked[-24:] == 1).all())
+    assert (masked[-24:] == 1).all()
     # 4 * 3 * 8 / 2 elements should remain unmasked
-    assert_true((1 - masked).sum() == 48)
+    assert (1 - masked).sum() == 48
 
 
 def test_projection_matrix():
-    mesh = _flat_mesh(5, 7, 4)
-    img = _z_const_img(5, 7, 13)
+    mesh = flat_mesh(5, 7, 4)
+    img = z_const_img(5, 7, 13)
     proj = surface._projection_matrix(
         mesh, np.eye(4), img.shape, radius=2., n_points=10)
     # proj matrix has shape (n_vertices, img_size)
-    assert_equal(proj.shape, (5 * 7, 5 * 7 * 13))
+    assert proj.shape == (5 * 7, 5 * 7 * 13)
     # proj.dot(img) should give the values of img at the vertices' locations
     values = proj.dot(img.ravel()).reshape((5, 7))
     assert_array_almost_equal(values, img[:, :, 0])
-    mesh = _flat_mesh(5, 7)
+    mesh = flat_mesh(5, 7)
     proj = surface._projection_matrix(
         mesh, np.eye(4), (5, 7, 1), radius=.1, n_points=10)
     assert_array_almost_equal(proj.toarray(), np.eye(proj.shape[0]))
@@ -373,7 +453,7 @@ def test_projection_matrix():
     assert_array_almost_equal(proj.sum(axis=1)[:7], np.zeros(7))
     assert_array_almost_equal(proj.sum(axis=1)[7:], np.ones(proj.shape[0] - 7))
     # mask and img should have the same shape
-    assert_raises(ValueError, surface._projection_matrix,
+    pytest.raises(ValueError, surface._projection_matrix,
                   mesh, np.eye(4), img.shape, mask=np.ones((3, 3, 2)))
 
 
@@ -394,8 +474,8 @@ def test_sampling_affine():
 
 
 def test_sampling():
-    mesh = _flat_mesh(5, 7, 4)
-    img = _z_const_img(5, 7, 13)
+    mesh = flat_mesh(5, 7, 4)
+    img = z_const_img(5, 7, 13)
     mask = np.ones(img.shape, dtype=int)
     mask[0] = 0
     projectors = [surface._nearest_voxel_sampling,
@@ -409,16 +489,16 @@ def test_sampling():
                                    kind=kind, radius=0., mask=mask)
             assert_array_almost_equal(projection.ravel()[7:],
                                       img[1:, :, 0].ravel())
-            assert_true(np.isnan(projection.ravel()[:7]).all())
+            assert np.isnan(projection.ravel()[:7]).all()
 
 
 def test_vol_to_surf():
     # test 3d niimg to cortical surface projection and invariance to a change
     # of affine
     mni = datasets.load_mni152_template()
-    mesh = _generate_surf()
+    mesh = generate_surf()
     _check_vol_to_surf_results(mni, mesh)
-    fsaverage = datasets.fetch_surf_fsaverage5().pial_left
+    fsaverage = datasets.fetch_surf_fsaverage().pial_left
     _check_vol_to_surf_results(mni, fsaverage)
 
 
@@ -429,7 +509,7 @@ def _check_vol_to_surf_results(img, mesh):
         proj_1 = vol_to_surf(
             img, mesh, kind=kind, interpolation=interpolation,
             mask_img=mask_img)
-        assert_true(proj_1.ndim == 1)
+        assert proj_1.ndim == 1
         img_rot = image.resample_img(
             img, target_affine=rotation(np.pi / 3., np.pi / 4.))
         proj_2 = vol_to_surf(
@@ -438,7 +518,7 @@ def _check_vol_to_surf_results(img, mesh):
         # The projection values for the rotated image should be close
         # to the projection for the original image
         diff = np.abs(proj_1 - proj_2) / np.abs(proj_1)
-        assert_true(np.mean(diff[diff < np.inf]) < .03)
+        assert np.mean(diff[diff < np.inf]) < .03
         img_4d = image.concat_imgs([img, img])
         proj_4d = vol_to_surf(
             img_4d, mesh, kind=kind, interpolation=interpolation,
@@ -459,11 +539,11 @@ def test_check_mesh():
 
 
 def test_check_mesh_and_data():
-    mesh = _generate_surf()
+    mesh = generate_surf()
     data = mesh[0][:, 0]
     m, d = surface.check_mesh_and_data(mesh, data)
     assert (m[0] == mesh[0]).all()
     assert (m[1] == mesh[1]).all()
     assert (d == data).all()
     data = mesh[0][::2, 0]
-    assert_raises(ValueError, surface.check_mesh_and_data, mesh, data)
+    pytest.raises(ValueError, surface.check_mesh_and_data, mesh, data)

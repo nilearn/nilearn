@@ -5,15 +5,17 @@
 
 .. container:: index-paragraph
 
-    Nilearn is a Python module for **fast and easy statistical learning on
-    NeuroImaging** data.
-
-    It leverages the `scikit-learn <http://scikit-learn.org>`__ Python toolbox
+    Nilearn enables **approachable and versatile analyses of brain volumes**. It provides statistical and machine-learning tools, with **instructive documentation & friendly community**.
+    
+    It supports general linear model (GLM) based analysis and leverages the `scikit-learn <http://scikit-learn.org>`__ Python toolbox
     for multivariate statistics with applications such as predictive modelling,
     classification, decoding, or connectivity analysis.
 
+    Nilearn now includes the functionality of `Nistats <https://nistats.github.io>`_.
+    :ref:`Here's a guide to replacing Nistats imports to work in Nilearn. <nistats_migration>`
 
-.. Here we are building the carrousel
+
+.. Here we are building the carousel
 
 .. |glass_brain| image:: auto_examples/01_plotting/images/sphx_glr_plot_demo_glass_brain_002.png
    :target: auto_examples/01_plotting/plot_demo_glass_brain.html
@@ -24,20 +26,20 @@
 .. |surface_plot| image:: auto_examples/01_plotting/images/sphx_glr_plot_3d_map_to_surface_projection_001.png
      :target: auto_examples/01_plotting/plot_3d_map_to_surface_projection.html
 
-.. |haxby_weights| image:: auto_examples/images/sphx_glr_plot_decoding_tutorial_002.png
+.. |haxby_weights| image:: auto_examples/02_decoding/images/sphx_glr_plot_haxby_anova_svm_001.png
    :target: auto_examples/plot_decoding_tutorial.html
 
 .. |oasis_weights| image:: auto_examples/02_decoding/images/sphx_glr_plot_oasis_vbm_002.png
    :target: auto_examples/02_decoding/plot_oasis_vbm.html
 
-.. |rest_parcellations| image:: auto_examples/03_connectivity/images/sphx_glr_plot_rest_parcellations_001.png
-   :target: auto_examples/03_connectivity/plot_rest_parcellations.html
+.. |rest_parcellations| image:: auto_examples/03_connectivity/images/sphx_glr_plot_data_driven_parcellations_001.png
+   :target: auto_examples/03_connectivity/plot_data_driven_parcellations.html
 
-.. |canica| image:: auto_examples/03_connectivity/images/sphx_glr_plot_canica_resting_state_011.png
-   :target: auto_examples/03_connectivity/plot_canica_resting_state.html
+.. |canica| image:: auto_examples/03_connectivity/images/sphx_glr_plot_compare_decomposition_011.png
+   :target: auto_examples/03_connectivity/plot_compare_decomposition.html
 
-.. |tvl1_haxby| image:: auto_examples/02_decoding/images/sphx_glr_plot_haxby_space_net_002.png
-   :target: auto_examples/02_decoding/plot_haxby_space_net.html
+.. |tvl1_haxby| image:: auto_examples/02_decoding/images/sphx_glr_plot_haxby_frem_001.png
+   :target: auto_examples/02_decoding/plot_haxby_frem.html
 
 .. |searchlight| image:: auto_examples/02_decoding/images/sphx_glr_plot_haxby_searchlight_001.png
    :target: auto_examples/02_decoding/plot_haxby_searchlight.html
@@ -97,10 +99,11 @@
 .. toctree::
    :hidden:
 
+   nistats_migration.rst
    authors.rst
    user_guide.rst
    auto_examples/index.rst
    whats_new.rst
-   contributing.rst
+   development.rst
 
 Nilearn is part of the `NiPy ecosystem <http://nipy.org>`_.

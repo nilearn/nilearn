@@ -4,13 +4,13 @@ Test module for functions related cost functions (including penalties).
 """
 
 import numpy as np
+import pytest
 from scipy.optimize import check_grad
 from sklearn.utils import check_random_state
 from nilearn.decoding.objective_functions import (
     _gradient_id, _logistic, _div_id,
-    _logistic_loss_grad, _unmask)
+    _logistic_loss_grad)
 from nilearn.decoding.space_net import BaseSpaceNet
-from nose.tools import raises
 
 
 def test_grad_div_adjoint_arbitrary_ndim(size=5, max_ndim=5):
@@ -79,18 +79,6 @@ def test_grad_div_adjoint_arbitrary_ndim_():
         test_grad_div_adjoint_arbitrary_ndim(size=size)
 
 
-@raises(ValueError)
 def test_baseestimator_invalid_l1_ratio():
-    BaseSpaceNet(l1_ratios=2.)
-
-
-def test_unmask(size=5):
-    rng = check_random_state(42)
-    for ndim in range(1, 4):
-        shape = [size] * ndim
-        mask = np.zeros(shape).astype(np.bool)
-        mask[rng.rand(*shape) > .8] = 1
-        support = rng.randn(mask.sum())
-        full = _unmask(support, mask)
-        np.testing.assert_array_equal(full.shape, shape)
-        np.testing.assert_array_equal(full[mask], support)
+    with pytest.raises(ValueError):
+        BaseSpaceNet(l1_ratios=2.)

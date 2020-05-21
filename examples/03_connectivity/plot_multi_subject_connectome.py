@@ -38,11 +38,11 @@ def plot_matrices(cov, prec, title, labels):
 # ------------------
 from nilearn import datasets
 msdl_atlas_dataset = datasets.fetch_atlas_msdl()
-adhd_dataset = datasets.fetch_adhd(n_subjects=n_subjects)
+rest_dataset = datasets.fetch_development_fmri(n_subjects=n_subjects)
 
 # print basic information on the dataset
 print('First subject functional nifti image (4D) is at: %s' %
-      adhd_dataset.func[0])  # 4D data
+      rest_dataset.func[0])  # 4D data
 
 
 ##############################################################################
@@ -52,18 +52,18 @@ from nilearn import image
 from nilearn import input_data
 
 # A "memory" to avoid recomputation
-from sklearn.externals.joblib import Memory
+from joblib import Memory
 mem = Memory('nilearn_cache')
 
 masker = input_data.NiftiMapsMasker(
     msdl_atlas_dataset.maps, resampling_target="maps", detrend=True,
-    low_pass=None, high_pass=0.01, t_r=2.5, standardize=True,
+    low_pass=None, high_pass=0.01, t_r=2, standardize=True,
     memory='nilearn_cache', memory_level=1, verbose=2)
 masker.fit()
 
 subject_time_series = []
-func_filenames = adhd_dataset.func
-confound_filenames = adhd_dataset.confounds
+func_filenames = rest_dataset.func
+confound_filenames = rest_dataset.confounds
 for func_filename, confound_filename in zip(func_filenames,
                                             confound_filenames):
     print("Processing file %s" % func_filename)
@@ -84,8 +84,13 @@ from nilearn.connectome import GroupSparseCovarianceCV
 gsc = GroupSparseCovarianceCV(verbose=2)
 gsc.fit(subject_time_series)
 
-from sklearn import covariance
-gl = covariance.GraphLassoCV(verbose=2)
+try:
+    from sklearn.covariance import GraphicalLassoCV
+except ImportError:
+    # for Scitkit-Learn < v0.20.0
+    from sklearn.covariance import GraphLassoCV as GraphicalLassoCV
+
+gl = GraphicalLassoCV(verbose=2)
 gl.fit(np.concatenate(subject_time_series))
 
 
@@ -102,10 +107,10 @@ plotting.plot_connectome(gl.covariance_,
                          display_mode="lzr")
 plotting.plot_connectome(-gl.precision_, atlas_region_coords,
                          edge_threshold='90%',
-                         title="Sparse inverse covariance (GraphLasso)",
+                         title="Sparse inverse covariance (GraphicalLasso)",
                          display_mode="lzr",
                          edge_vmax=.5, edge_vmin=-.5)
-plot_matrices(gl.covariance_, gl.precision_, "GraphLasso", labels)
+plot_matrices(gl.covariance_, gl.precision_, "GraphicalLasso", labels)
 
 title = "GroupSparseCovariance"
 plotting.plot_connectome(-gsc.precisions_[..., 0],

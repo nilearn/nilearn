@@ -1,5 +1,8 @@
+import warnings
+
 import numpy as np
 
+from nilearn.plotting import cm
 from nilearn.plotting.js_plotting_utils import decode
 from nilearn.plotting import html_connectome
 
@@ -44,16 +47,26 @@ def test_get_connectome():
     assert {'_con_x', '_con_y', '_con_z', '_con_w', 'colorscale'
             }.issubset(connectome.keys())
     assert (connectome['cmin'], connectome['cmax']) == (-2.5, 2.5)
+    adj[adj == 0] = np.nan
+    connectome = html_connectome._get_connectome(adj, coord)
+    con_x = decode(connectome['_con_x'], '<f4')
+    assert (con_x == expected_x).all()
+    assert (connectome['cmin'], connectome['cmax']) == (-2.5, 2.5)
 
 
 def test_view_connectome():
     adj, coord = _make_connectome()
     html = html_connectome.view_connectome(adj, coord)
     check_html(html, False, 'connectome-plot')
-    html = html_connectome.view_connectome(adj, coord, '85.3%')
-    check_html(html, False, 'connectome-plot')
     html = html_connectome.view_connectome(adj, coord, '85.3%',
-                                           linewidth=8.5, marker_size=4.2)
+                                           title="SOME_TITLE")
+    check_html(html, False, 'connectome-plot', title="SOME_TITLE")
+    assert "SOME_TITLE" in html.html
+    html = html_connectome.view_connectome(adj, coord, '85.3%',
+                                           linewidth=8.5, node_size=4.2)
+    check_html(html, False, 'connectome-plot', title="Connectome plot")
+    html = html_connectome.view_connectome(
+        adj, coord, '85.3%', linewidth=8.5, node_size=np.arange(len(coord)))
     check_html(html, False, 'connectome-plot')
 
 
@@ -77,3 +90,10 @@ def test_view_markers():
     check_html(html, False, 'connectome-plot')
     html = html_connectome.view_markers(coords, marker_size=15)
     check_html(html, False, 'connectome-plot')
+    html = html_connectome.view_markers(
+        coords, marker_size=np.arange(len(coords)))
+    check_html(html, False, 'connectome-plot')
+    html = html_connectome.view_markers(
+        coords, marker_size=list(range(len(coords))))
+    check_html(html, False, 'connectome-plot')
+

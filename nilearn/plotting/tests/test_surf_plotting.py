@@ -2,23 +2,25 @@
 
 import tempfile
 
-from distutils.version import LooseVersion
-from nose import SkipTest
-from nilearn._utils.testing import assert_raises_regex
 
 import numpy as np
 import nibabel
 import matplotlib
 import matplotlib.pyplot as plt
+import pytest
 
+from matplotlib import pyplot as plt
 from nilearn.plotting.img_plotting import MNI152TEMPLATE
 from nilearn.plotting.surf_plotting import (plot_surf, plot_surf_stat_map,
                                             plot_surf_roi, plot_img_on_surf)
 from nilearn.surface.tests.test_surface import _generate_surf
 from nilearn.datasets import fetch_surf_fsaverage5
+                                            plot_surf_roi)
+from nilearn.surface.testing_utils import generate_surf
+
 
 def test_plot_surf():
-    mesh = _generate_surf()
+    mesh = generate_surf()
     rng = np.random.RandomState(0)
     bg = rng.randn(mesh[0].shape[0], )
 
@@ -43,34 +45,35 @@ def test_plot_surf():
 
 
 def test_plot_surf_error():
-    mesh = _generate_surf()
+    mesh = generate_surf()
     rng = np.random.RandomState(0)
 
     # Wrong inputs for view or hemi
-    assert_raises_regex(ValueError, 'view must be one of',
-                        plot_surf, mesh, view='middle')
-    assert_raises_regex(ValueError, 'hemi must be one of',
-                        plot_surf, mesh, hemi='lft')
+    with pytest.raises(ValueError, match='view must be one of'):
+        plot_surf(mesh, view='middle')
+    with pytest.raises(ValueError, match='hemi must be one of'):
+        plot_surf(mesh, hemi='lft')
 
     # Wrong size of background image
-    assert_raises_regex(ValueError,
-                        'bg_map does not have the same number of vertices',
-                        plot_surf, mesh,
-                        bg_map=rng.randn(mesh[0].shape[0] - 1, ))
+    with pytest.raises(
+            ValueError,
+            match='bg_map does not have the same number of vertices'):
+        plot_surf(mesh, bg_map=rng.randn(mesh[0].shape[0] - 1, ))
 
     # Wrong size of surface data
-    assert_raises_regex(ValueError,
-                        'surf_map does not have the same number of vertices',
-                        plot_surf, mesh,
-                        surf_map=rng.randn(mesh[0].shape[0] + 1, ))
+    with pytest.raises(
+            ValueError,
+            match='surf_map does not have the same number of vertices'):
+        plot_surf(mesh, surf_map=rng.randn(mesh[0].shape[0] + 1, ))
 
-    assert_raises_regex(ValueError,
-                        'surf_map can only have one dimension', plot_surf,
-                        mesh, surf_map=rng.randn(mesh[0].shape[0], 2))
+    with pytest.raises(
+            ValueError,
+            match='surf_map can only have one dimension'):
+        plot_surf(mesh, surf_map=rng.randn(mesh[0].shape[0], 2))
 
 
 def test_plot_surf_stat_map():
-    mesh = _generate_surf()
+    mesh = generate_surf()
     rng = np.random.RandomState(0)
     bg = rng.randn(mesh[0].shape[0], )
     data = 10 * rng.randn(mesh[0].shape[0], )
@@ -116,6 +119,7 @@ def test_plot_surf_stat_map():
     # symmetric_cbar
     fig = plot_surf_stat_map(
         mesh, stat_map=data, colorbar=True, symmetric_cbar=True)
+    fig.canvas.draw()
     assert len(fig.axes) == 2
     yticklabels = fig.axes[1].get_yticklabels()
     first, last = yticklabels[0].get_text(), yticklabels[-1].get_text()
@@ -123,6 +127,7 @@ def test_plot_surf_stat_map():
     # no symmetric_cbar
     fig = plot_surf_stat_map(
         mesh, stat_map=data, colorbar=True, symmetric_cbar=False)
+    fig.canvas.draw()
     assert len(fig.axes) == 2
     yticklabels = fig.axes[1].get_yticklabels()
     first, last = yticklabels[0].get_text(), yticklabels[-1].get_text()
@@ -132,55 +137,62 @@ def test_plot_surf_stat_map():
 
 
 def test_plot_surf_stat_map_error():
-    mesh = _generate_surf()
+    mesh = generate_surf()
     rng = np.random.RandomState(0)
     data = 10 * rng.randn(mesh[0].shape[0], )
 
     # Try to input vmin
-    assert_raises_regex(ValueError,
-                        'this function does not accept a "vmin" argument',
-                        plot_surf_stat_map, mesh, stat_map=data, vmin=0)
+    with pytest.raises(
+            ValueError,
+            match='this function does not accept a "vmin" argument'):
+        plot_surf_stat_map(mesh, stat_map=data, vmin=0)
 
     # Wrong size of stat map data
-    assert_raises_regex(ValueError,
-                        'surf_map does not have the same number of vertices',
-                        plot_surf_stat_map, mesh,
-                        stat_map=np.hstack((data, data)))
+    with pytest.raises(
+            ValueError,
+            match='surf_map does not have the same number of vertices'):
+        plot_surf_stat_map(mesh, stat_map=np.hstack((data, data)))
 
-    assert_raises_regex(ValueError,
-                        'surf_map can only have one dimension',
-                        plot_surf_stat_map, mesh,
-                        stat_map=np.vstack((data, data)).T)
+    with pytest.raises(
+            ValueError,
+            match='surf_map can only have one dimension'):
+        plot_surf_stat_map(mesh, stat_map=np.vstack((data, data)).T)
 
 
 def test_plot_surf_roi():
-    mesh = _generate_surf()
+    mesh = generate_surf()
     rng = np.random.RandomState(0)
-    roi1 = rng.randint(0, mesh[0].shape[0], size=5)
-    roi2 = rng.randint(0, mesh[0].shape[0], size=10)
+    roi_idx = rng.randint(0, mesh[0].shape[0], size=10)
+    roi_map = np.zeros(mesh[0].shape[0])
+    roi_map[roi_idx] = 1
     parcellation = rng.rand(mesh[0].shape[0])
 
     # plot roi
-    plot_surf_roi(mesh, roi_map=roi1)
-    plot_surf_roi(mesh, roi_map=roi1, colorbar=True)
+    plot_surf_roi(mesh, roi_map=roi_map)
+    plot_surf_roi(mesh, roi_map=roi_map, colorbar=True)
+    # change vmin, vmax
+    img = plot_surf_roi(mesh, roi_map=roi_map,
+						vmin=1.2, vmax=8.9, colorbar=True)
+    img.canvas.draw()
+    cbar = img.axes[-1]
+    cbar_vmin = float(cbar.get_yticklabels()[0].get_text())
+    cbar_vmax = float(cbar.get_yticklabels()[-1].get_text())
+    assert cbar_vmin == 1.2
+    assert cbar_vmax == 8.9
 
     # plot parcellation
     plot_surf_roi(mesh, roi_map=parcellation)
     plot_surf_roi(mesh, roi_map=parcellation, colorbar=True)
 
-    # plot roi list
-    plot_surf_roi(mesh, roi_map=[roi1, roi2])
-    plot_surf_roi(mesh, roi_map=[roi1, roi2], colorbar=True)
-
     # plot to axes
-    plot_surf_roi(mesh, roi_map=roi1, ax=None, figure=plt.gcf())
+    plot_surf_roi(mesh, roi_map=roi_map, ax=None, figure=plt.gcf())
 
     # plot to axes
     with tempfile.NamedTemporaryFile() as tmp_file:
-        plot_surf_roi(mesh, roi_map=roi1, ax=plt.gca(), figure=None,
+        plot_surf_roi(mesh, roi_map=roi_map, ax=plt.gca(), figure=None,
                       output_file=tmp_file.name)
     with tempfile.NamedTemporaryFile() as tmp_file:
-        plot_surf_roi(mesh, roi_map=roi1, ax=plt.gca(), figure=None,
+        plot_surf_roi(mesh, roi_map=roi_map, ax=plt.gca(), figure=None,
                       output_file=tmp_file.name, colorbar=True)
 
     # Save execution time and memory
@@ -188,17 +200,13 @@ def test_plot_surf_roi():
 
 
 def test_plot_surf_roi_error():
-    mesh = _generate_surf()
+    mesh = generate_surf()
     rng = np.random.RandomState(0)
-    roi1 = rng.randint(0, mesh[0].shape[0], size=5)
-    roi2 = rng.randint(0, mesh[0].shape[0], size=10)
-
-    # Wrong input
-    assert_raises_regex(ValueError,
-                        'Invalid input for roi_map',
-                        plot_surf_roi, mesh,
-                        roi_map={'roi1': roi1, 'roi2': roi2})
-
+    roi_idx = rng.randint(0, mesh[0].shape[0], size=5)
+    with pytest.raises(
+            ValueError,
+            match='roi_map does not have the same number of vertices'):
+            plot_surf_roi(mesh, roi_map=roi_idx)
 
 def _generate_img():
     mni_affine = MNI152TEMPLATE.get_affine()
@@ -249,6 +257,4 @@ def test_plot_img_on_surf_surf_mesh():
     surf_mesh = fetch_surf_fsaverage5()
     plot_img_on_surf(nii, hemisphere='right+left', display_mode='lateral',
                      surf_mesh=surf_mesh)
-
-
 

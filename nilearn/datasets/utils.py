@@ -4,18 +4,27 @@ Downloading NeuroImaging datasets: utility functions
 import os
 import numpy as np
 import base64
-import collections
+import collections.abc
 import contextlib
 import fnmatch
 import hashlib
+import pickle
 import shutil
 import time
 import sys
 import tarfile
+import urllib
+import socket
 import warnings
 import zipfile
 
-from .._utils.compat import _basestring, cPickle, _urllib, md5_hash
+socket.setdefaulttimeout(8)
+
+
+def md5_hash(string):
+    m = hashlib.md5()
+    m.update(string.encode('utf-8'))
+    return m.hexdigest()
 
 
 def _format_time(t):
@@ -111,7 +120,7 @@ def _chunk_read_(response, local_file, chunk_size=8192, report_hook=None,
 
     Parameters
     ----------
-    response: _urllib.response.addinfourl
+    response: urllib.response.addinfourl
         Response to the download request in order to get file size
 
     local_file: file
@@ -336,9 +345,13 @@ def _uncompress_file(file_, delete_archive=True, verbose=1):
             processed = True
         elif ext == '.gz' or header.startswith(b'\x1f\x8b'):
             import gzip
-            gz = gzip.open(file_)
             if ext == '.tgz':
                 filename = filename + '.tar'
+            elif ext == '':
+                # For gzip file, we rely on the assumption that there is an extenstion
+                shutil.move(file_, file_ + '.gz')
+                file_ = file_ + '.gz'
+            gz = gzip.open(file_)
             out = open(filename, 'wb')
             shutil.copyfileobj(gz, out, 8192)
             gz.close()
@@ -390,10 +403,10 @@ def _filter_column(array, col, criteria):
     except:
         raise KeyError('Filtering criterion %s does not exist' % col)
 
-    if (not isinstance(criteria, _basestring) and
+    if (not isinstance(criteria, str) and
         not isinstance(criteria, bytes) and
         not isinstance(criteria, tuple) and
-            isinstance(criteria, collections.Iterable)):
+            isinstance(criteria, collections.abc.Iterable)):
         filter = np.zeros(array.shape[0], dtype=np.bool)
         for criterion in criteria:
             filter = np.logical_or(filter,
@@ -411,7 +424,7 @@ def _filter_column(array, col, criteria):
         return np.logical_and(filter, array[col] >= criteria[0])
 
     # Handle strings with different encodings
-    if isinstance(criteria, (_basestring, bytes)):
+    if isinstance(criteria, (str, bytes)):
         criteria = np.array(criteria).astype(array[col].dtype)
 
     return array[col] == criteria
@@ -448,7 +461,7 @@ def _filter_columns(array, filters, combination='and'):
 
 
 def _fetch_file(url, data_dir, resume=True, overwrite=False,
-                md5sum=None, username=None, password=None, handlers=[],
+                md5sum=None, username=None, password=None, handlers=None,
                 verbose=1):
     """Load requested file, downloading it if needed or requested.
 
@@ -493,12 +506,13 @@ def _fetch_file(url, data_dir, resume=True, overwrite=False,
     If, for any reason, the download procedure fails, all downloaded files are
     removed.
     """
+    handlers = handlers if handlers else []
     # Determine data path
     if not os.path.exists(data_dir):
         os.makedirs(data_dir)
 
     # Determine filename using URL
-    parse = _urllib.parse.urlparse(url)
+    parse = urllib.parse.urlparse(url)
     file_name = os.path.basename(parse.path)
     if file_name == '':
         file_name = md5_hash(parse.path)
@@ -520,8 +534,8 @@ def _fetch_file(url, data_dir, resume=True, overwrite=False,
 
     try:
         # Download data
-        url_opener = _urllib.request.build_opener(*handlers)
-        request = _urllib.request.Request(url)
+        url_opener = urllib.request.build_opener(*handlers)
+        request = urllib.request.Request(url)
         request.add_header('Connection', 'Keep-Alive')
         if username is not None and password is not None:
             if not url.startswith('https'):
@@ -575,7 +589,7 @@ def _fetch_file(url, data_dir, resume=True, overwrite=False,
             # Complete the reporting hook
             sys.stderr.write(' ...done. ({0:.0f} seconds, {1:.0f} min)\n'
                              .format(dt, dt // 60))
-    except (_urllib.error.HTTPError, _urllib.error.URLError):
+    except (urllib.error.HTTPError, urllib.error.URLError):
         sys.stderr.write("Error while fetching file %s; dataset "
                          "fetching aborted." % (file_name))
         raise
@@ -686,7 +700,7 @@ def _fetch_files(data_dir, files, resume=True, mock=False, verbose=1):
     #   file is found, or a file is missing, this working directory will be
     #   deleted.
     files = list(files)
-    files_pickle = cPickle.dumps([(file_, url) for file_, url, _ in files])
+    files_pickle = pickle.dumps([(file_, url) for file_, url, _ in files])
     files_md5 = hashlib.md5(files_pickle).hexdigest()
     temp_dir = os.path.join(data_dir, files_md5)
 
@@ -808,3 +822,101 @@ def _tree(path, pattern=None, dictionary=False):
     if len(files) > 0:
         dirs['.'] = files
     return dirs
+
+
+def make_fresh_openneuro_dataset_urls_index(
+        data_dir=None,
+        dataset_version='ds000030_R1.0.4',
+        verbose=1,
+        ):
+    """ ONLY intended for Nilearn developers, not general users.
+    Creates a fresh, updated OpenNeuro BIDS dataset index from AWS,
+    ready for upload to osf.io .
+
+    Crawls the server where OpenNeuro dataset is stored
+    and makes a JSON file `nistats_fetcher_openneuro_dataset_urls.json'
+    containing a fresh list of dataset file URLs.
+
+    Note: Needs Python package `Boto3`.
+
+    Do NOT rename this file.
+
+    This file can now be uploaded to Quick-Files section
+    of the Nilearn account on osf.io .
+
+    Then this file can be downloaded by
+    :func:`datasets.fetch_openneuro_dataset_index`
+
+    Run this function and upload the new file if the URL index downloaded by
+    :func:`datasets.fetch_openneuro_dataset_index` becomes outdated.
+
+    This approach is faster than crawling the servers anew every time
+    the OpenNeuro dataset is downloaded,
+    and circumvents `boto3` as a dependency for everyday use.
+
+    Parameters
+    ----------
+    data_dir: string, optional
+        Path to store the downloaded dataset.
+        If None downloads to user's Desktop
+
+    dataset_version: string, optional
+        dataset version name. Assumes it is of the form [name]_[version].
+
+    verbose: int, optional
+        verbosity level (0 means no message).
+
+    Returns
+    -------
+    urls_path: string
+        Path to downloaded dataset index
+
+    urls: list of string
+        Sorted list of dataset directories
+    """
+    import boto3
+    from botocore.handlers import disable_signing
+    if not data_dir:
+        data_dir = os.path.expanduser('~/Desktop')
+    data_prefix = '{}/{}/uncompressed'.format(
+        dataset_version.split('_')[0], dataset_version)
+
+    data_dir = _get_dataset_dir(data_prefix, data_dir=data_dir,
+                                verbose=verbose)
+
+    # First we download the url list from the uncompressed dataset version
+    urls_path = os.path.join(data_dir,
+                             'nistats_fetcher_openneuro_dataset_urls.json',
+                             )
+    urls = []
+    if os.path.exists(urls_path):
+        with open(urls_path, 'r') as json_file:
+            urls = json.load(json_file)
+        existing_index_msg = ("There is an existing url index at `{}`. "
+                              "Aborting download of fresh index."
+                              .format(urls_path)
+                              )
+        print(existing_index_msg)
+    else:
+        resource = boto3.resource('s3')
+        resource.meta.client.meta.events.register('choose-signer.s3.*',
+                                                  disable_signing)
+        bucket = resource.Bucket('openneuro')
+
+        for obj in bucket.objects.filter(Prefix=data_prefix):
+            # get url of files (keys of directories end with '/')
+            if obj.key[-1] != '/':
+                url = '{}/{}/{}'.format(bucket.meta.client.meta.endpoint_url,
+                                        bucket.name,
+                                        obj.key,
+                                        )
+                urls.append(url)
+        urls = sorted(urls)
+
+        with open(urls_path, 'w') as json_file:
+            json.dump(urls, json_file)
+        print("Saved updated url index to {}.\nUpload it with the same name "
+              "to the quick-files section of osf.io using the Nilearn account "
+              "to update the file without breaking the fetcher download link."
+              .format(urls_path))
+    return urls_path, urls
