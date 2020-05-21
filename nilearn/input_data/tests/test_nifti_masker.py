@@ -17,7 +17,6 @@ import pytest
 
 from nibabel import Nifti1Image
 from numpy.testing import assert_array_equal
-from sklearn.utils import deprecated
 
 from nilearn._utils import testing
 from nilearn._utils import data_gen
