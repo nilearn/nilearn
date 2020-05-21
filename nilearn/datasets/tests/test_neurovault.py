@@ -674,7 +674,7 @@ def test_resampling():
         # Check that the resampled version is here
         assert np.all([os.path.isfile(im_meta['resampled_absolute_path']) for im_meta in data['images_meta']])
 
-        #And the original version should still be here as well
+        # And the original version should still be here as well
         assert np.all([os.path.isfile(im_meta['absolute_path']) for im_meta in data['images_meta']])
 
         # Load resampled images and check the affines
