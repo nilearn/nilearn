@@ -1038,12 +1038,6 @@ table.field-list tr td.field-body p {
     margin-top: 0.5em;
 }
 
-/* Fix spacelessness between parameter name and description */
-dl.field-list span.classifier {
-    margin-left: 1ex;
-}
-
-
 /* ------- tag cloud on the front page -------------------- */
 
 div.tags {
@@ -1125,6 +1119,51 @@ table.docutils tr {
 
 table.docutils td {
     border-color: #ddd;
+}
+
+/* ------- formatting of the docstrings ------------------- */
+
+/* Space between parameter name and description */
+dl.field-list span.classifier {
+    margin-left: 1ex;
+}
+
+dl.function td.field-body ul.first, dl.class td.field-body ul.first {
+    margin: 3ex 0 3ex -6ex;
+    list-style: none;
+    text-indent: -4ex;
+}
+
+dl.function td.field-body ul.first > li, dl.class td.field-body ul.first > li {
+    margin-bottom: 1.5ex;
+}
+
+dl.function tr:nth-child(2n+1), dl.class tr:nth-child(2n+1) {
+    background-color: #FFF;
+    border-width: 0;
+}
+
+dl.function tr:nth-child(2n), dl.class tr:nth-child(2n) {
+    background-color: #F6FDFF;
+    border-width: 0;
+}
+
+dl.function .rubric, dl.class .rubric {
+    margin-top: 4ex;
+    border: solid #AAA;
+    border-width: 0 0 1px 0;
+}
+
+dl.method {
+    margin-top: 6ex;
+}
+
+dl.attribute {
+    margin-top: 2ex;
+}
+
+dl.method code, dl.attribute code {
+    font-weight: 600;
 }
 
 /* ------- tighter layout in pre -------------------------- */
