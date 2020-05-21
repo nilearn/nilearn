@@ -2421,7 +2421,7 @@ def fetch_neurovault(
         vocabulary list. See ``sklearn.CountVectorizer`` for more info.
 
     resample : bool, optional (default=False)
-        Resamples downloaded images to a 4x4x4 grid before saving them, to save disk space.
+        Resamples downloaded images to a 3x3x3 grid before saving them, to save disk space.
 
     verbose : int, optional (default=3)
         an integer in [0, 1, 2, 3] to control the verbosity level.
@@ -2601,7 +2601,7 @@ def fetch_neurovault_ids(
         whether to collect words from Neurosynth.
 
     resample : bool, optional (default=False)
-        Resamples downloaded images to a 4x4x4 grid before saving them, to save disk space.
+        Resamples downloaded images to a 3x3x3 grid before saving them, to save disk space.
 
     vectorize_words : bool, optional (default=True)
         If neurosynth words are downloaded, create a matrix of word
