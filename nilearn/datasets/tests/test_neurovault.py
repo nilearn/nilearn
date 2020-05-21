@@ -19,6 +19,7 @@ import pytest
 
 from nilearn.datasets import neurovault
 from nilearn.image import load_img
+import datetime
 
 def _get_neurovault_data(random_seed=0):
     """Make fake images and collections to mock neurovault in the unit tests.
