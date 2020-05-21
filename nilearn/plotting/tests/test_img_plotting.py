@@ -60,7 +60,10 @@ def _generate_img_4d_long():
     rng = np.random.RandomState(42)
     data = rng.rand(7, 7, 3, 997)
     img_4d = nibabel.Nifti1Image(data, mni_affine)
+    mask = np.ones((7, 7, 3), int)
+    img_4d_mask = nibabel.Nifti1Image(mask, mni_affine)
     pytest.img_4d_long = img_4d
+    pytest.img_4d_mask = img_4d_mask
 
 
 def demo_plot_roi(**kwargs):
@@ -126,6 +129,7 @@ def test_plot_anat():
 def test_plot_functions():
     img_3d = pytest.img_3d
     img_4d = pytest.img_4d
+    img_4d_mask = pytest.img_4d_mask
 
     # smoke-test for 3D plotting functions with default arguments
     for plot_func in [plot_anat, plot_img, plot_stat_map, plot_epi,
@@ -139,9 +143,8 @@ def test_plot_functions():
     # smoke-test for 4D plotting functions with default arguments
     for plot_func in [plot_carpet]:
         filename = tempfile.mktemp(suffix='.png')
-        plot_func(img_4d, output_file=filename)
         try:
-            plot_func(img_4d, output_file=filename)
+            plot_func(img_4d, mask_img=img_4d_mask, output_file=filename)
         finally:
             os.remove(filename)
 
@@ -283,8 +286,8 @@ def test_plot_carpet():
     """Check contents of plot_carpet figure against data in image.
     """
     img_4d = pytest.img_4d
-    mask_data = np.ones(img_4d.shape[:-1], int)
-    mask_img = nibabel.Nifti1Image(mask_data, img_4d.affine)
+    img_4d_long = pytest.img_4d_long
+    mask_img = pytest.img_4d_mask
     display = plot_carpet(img_4d, mask_img, detrend=False, title='TEST')
     # Next two lines retrieve the numpy array from the plot
     ax = display.axes[0]
@@ -299,7 +302,6 @@ def test_plot_carpet():
     # Save execution time and memory
     plt.close(display)
 
-    img_4d_long = pytest.img_4d_long
     fig, ax = plt.subplots()
     display = plot_carpet(img_4d_long, mask_img, detrend=True, title='TEST',
                           figure=fig, axes=ax)
@@ -309,7 +311,7 @@ def test_plot_carpet():
     # Check size
     n_items = (np.prod(img_4d_long.shape[:-1]) * np.ceil(img_4d_long.shape[-1] / 2))
     assert plotted_array.size == n_items
-    plt.close(fig)
+    plt.close(display)
 
 
 def test_save_plot():
