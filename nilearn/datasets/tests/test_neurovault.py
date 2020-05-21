@@ -23,6 +23,7 @@ import pytest
 
 from nilearn.datasets import neurovault
 from nilearn.image import load_img
+import datetime
 
 def _same_stat(path_1, path_2):
     path_1 = os.path.abspath(os.path.expanduser(path_1))
@@ -644,12 +645,22 @@ def test_resampling():
         assert not np.any([os.path.isfile(im_meta['absolute_path']) for im_meta in data['images_meta']])
 
         # Ask to download the non-resampled version. This should trigger download
-        # (TODO - How can we test systematically that download does happen ?  )
+        
+        # Get the time of the last access to the resampled data
+        access_time_resampled = (os.path.getatime(data['images_meta'][0]['resampled_absolute_path']))
+
+        # Download original data
         data_orig = neurovault.fetch_neurovault_ids(collection_ids=[4666], data_dir=data_dir, resample=False)
+        
+        # Get the time of the last access to one of the original files (which should be download time)
+        access_time = (os.path.getatime(data_orig['images_meta'][0]['absolute_path']))
 
-        # Check that the original version is now here
+        # Check that the last access to the original data is after the access to the resampled data 
+        assert (access_time - access_time_resampled > 0)
+
+        # Check that the original version is now here (previous test should have failed anyway if not)
         assert np.all([os.path.isfile(im_meta['absolute_path']) for im_meta in data_orig['images_meta']])
-
+        
         # Check that the affines of the original version do not correspond to the resampled one
         affines_orig = [load_img(cur_im).affine for cur_im in data_orig['images']]
         assert not np.any([np.all(affine == neurovault.STD_AFFINE) for affine in affines_orig])
@@ -667,9 +678,18 @@ def test_resampling():
         assert not np.any([os.path.isfile(im_meta['resampled_absolute_path']) for im_meta in data_orig['images_meta']])
 
         # Asks for the resampled version. This should only resample, not download. 
-        # (TODO - How can we test systematically that download does not happen ?  )
-        print("Asking for resampled version - Check here that download doesn't happen") 
+        
+        # Get the time of the last modification to the original data
+        modif_time_original = (os.path.getmtime(data_orig['images_meta'][0]['absolute_path']))
+
+        # Ask for resampled data, which should only trigger resample
         data = neurovault.fetch_neurovault_ids(collection_ids=[4666], data_dir=data_dir, resample=True)
+
+        # Get the time of the last modification to the original data, after fetch
+        modif_time_original_after = (os.path.getmtime(data['images_meta'][0]['absolute_path']))
+
+        # The time difference should be 0
+        assert (np.isclose(modif_time_original,modif_time_original_after))
 
         # Check that the resampled version is here
         assert np.all([os.path.isfile(im_meta['resampled_absolute_path']) for im_meta in data['images_meta']])
