@@ -42,16 +42,20 @@ from sklearn import neighbors
 fsaverage = datasets.fetch_surf_fsaverage(mesh='fsaverage5')
 hemi = 'left'
 
-# Average voxels around 3 mm of the surface
-radius = 3.
+# Average voxels 5 mm close to the 3d pial surface
+radius = 5.
 pial_mesh = fsaverage['pial_' + hemi]
 X = surface.vol_to_surf(fmri_img, pial_mesh, radius=radius).T
 
-# Define the adjacency of the surface vertices
+# To define the BOLD responses to be included within each searchlight "sphere"
+# we define an adjacency matrix based on the inflated surface vertices such
+# that nearby surfaces are concatenated within the same searchlight.
+
 infl_mesh = fsaverage['infl_' + hemi]
 coords, _ = surface.load_surf_mesh(infl_mesh)
+radius = 3.
 nn = neighbors.NearestNeighbors(radius=radius)
-A = nn.fit(coords).radius_neighbors_graph(coords).tolil()
+adjacency = nn.fit(coords).radius_neighbors_graph(coords).tolil()
 
 #########################################################################
 # Searchlight computation
@@ -70,7 +74,7 @@ estimator = make_pipeline(StandardScaler(),
 cv = KFold(n_splits=3, shuffle=False)
 
 # Cross-validated search light
-scores = search_light(X, y, estimator, A, cv=cv, n_jobs=1)
+scores = search_light(X, y, estimator, adjacency, cv=cv, n_jobs=1)
 
 #########################################################################
 # Visualization
