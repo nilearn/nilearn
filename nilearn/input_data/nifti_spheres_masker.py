@@ -95,7 +95,11 @@ def _get_spheres_rows(seeds, target_affine, target_shape, radius, allow_overlap)
     ----------
     seeds_: List of triplets of coordinates in native space
         Seed definitions. List of coordinates of the seeds in the same space
-        as target_affine (either of mask or if mask is None MNI space).
+        as target_affine.
+    target_affine: np.ndarray
+        Affine for the spheres.
+    target_shape: np.array or list
+        Target shape into which the spheres will be projected. 
     radius: float
         Indicates, in millimeters, the radius for the sphere around the seed.
     mask_img: Niimg-like object
@@ -106,8 +110,8 @@ def _get_spheres_rows(seeds, target_affine, target_shape, radius, allow_overlap)
 
     Returns
     -------
-    spheres_map: Niimg-like object
-        A map of each of the sphere's locations. Scaled at places of overlap.
+    spheres_map: list of lists 
+        The spheres' location (flattened array), one list for each sphere.
     '''
     seeds = list(seeds)
 
@@ -134,7 +138,7 @@ def _get_spheres_rows(seeds, target_affine, target_shape, radius, allow_overlap)
             raise ValueError('Overlap detected between spheres')
         else:
             warnings.warn('Overlap detected between spheres, the signal in'
-                          ' shared voxels will be averaged. ')
+                          ' shared voxels will be averaged.')
 
     return adjacency
 
@@ -220,7 +224,8 @@ class _ExtractionFunctor(object):
 
 
 def _spheres_inversion(seeds_, radius, mask_img, allow_overlap):
-    '''Utility function to create a maps img
+    '''Utility function to create a maps Niimg, containing a map with a sphere
+    of the given radius for each seed_ location.
 
     Parameters
     ----------
@@ -246,8 +251,8 @@ def _spheres_inversion(seeds_, radius, mask_img, allow_overlap):
         target_affine = mask.affine
         target_shape = mask.shape
     else:
-        raise ValueError('Please provide a mask_img during fit to provide a'
-                            ' reference for the inverse_transform')
+        raise ValueError('Please provide mask_img at initialization to'
+                            ' provide a reference for the inverse_transform')
 
     n_seeds = len(seeds_)
     # np.empty creates unexpected behavior!
@@ -472,19 +477,19 @@ class NiftiSpheresMasker(BaseMasker, CacheMixin):
     def inverse_transform(self, region_signals):
         """Compute voxel signals from spheres signals
 
-        Any mask given at initialization is taken into account. If mask_img is
-        None, the spheres are automatically projected into MNI space. 
+        Any mask given at initialization is taken into account. Gives an error
+        if mask_img==None
 
         Parameters
         ----------
         region_signals: 2D numpy.ndarray
             Signal for each region.
-            shape: (number of scans, number of regions)
+            shape: (number of scans, number of spheres)
 
         Returns
         -------
         voxel_signals: nibabel.Nifti1Image
-            Signal for each voxel. 
+            Signal for each sphere. 
             shape: (mask_img, number of scans).
         """
         from ..regions import signal_extraction

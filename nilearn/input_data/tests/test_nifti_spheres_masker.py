@@ -188,7 +188,7 @@ def test_nifti_spheres_masker_inverse_transform():
     # Test the fit
     masker.fit()
     # Transform data
-    with pytest.raises(ValueError, match='Please provide a mask_img'):
+    with pytest.raises(ValueError, match='Please provide mask_img'):
         masker.inverse_transform(data[0, 0, 0, :])
 
     # Mask describes the extend of the masker's sphere
