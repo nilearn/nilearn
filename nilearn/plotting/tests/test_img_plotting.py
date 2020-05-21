@@ -31,7 +31,7 @@ mni_affine = np.array([[-2.,    0.,    0.,   90.],
                        [0.,    0.,    0.,    1.]])
 
 
-@pytest.fixture()
+@pytest.fixture(autouse=True)
 def _generate_img_3d():
     """A random 3D image for testing figures.
     """
@@ -43,7 +43,7 @@ def _generate_img_3d():
     pytest.img_3d = img_3d
 
 
-@pytest.fixture()
+@pytest.fixture(autouse=True)
 def _generate_img_4d():
     """A random 4D image for testing figures for multivolume data.
     """
@@ -129,6 +129,7 @@ def test_plot_functions():
     # smoke-test for 4D plotting functions with default arguments
     for plot_func in [plot_carpet]:
         filename = tempfile.mktemp(suffix='.png')
+        plot_func(img_4d, output_file=filename)
         try:
             plot_func(img_4d, output_file=filename)
         finally:
@@ -273,13 +274,13 @@ def test_plot_carpet():
     """
     img = pytest.img_4d
     mask_data = np.ones(img.shape[:-1], int)
-    mask_img = nibabel.Nifti1Image(mask_data, affine)
+    mask_img = nibabel.Nifti1Image(mask_data, img.affine)
     display = plot_carpet(img, mask_img, detrend=False)
     # Next two lines retrieve the numpy array from the plot
     ax = display.axes[0]
     plotted_array = ax.images[0].get_array()
     # Make sure that the values in the figure match the values in the image
-    assert np.testing.assert_almost_equal(
+    np.testing.assert_almost_equal(
         plotted_array.sum(),
         img.get_fdata().sum(),
         decimal=3

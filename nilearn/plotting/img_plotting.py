@@ -1529,7 +1529,7 @@ def plot_carpet(img, mask_img=None, detrend=True, output_file=None,
     data = img_data[mask_data > 0].reshape(-1, ntsteps)
     # Detrend and standardize data
     if detrend:
-        data = clean(data.T, t_r=tr, detrend=True, standardize='z').T
+        data = clean(data.T, t_r=tr, detrend=True, standardize='zscore').T
 
     if not figure:
         if not axes:
@@ -1586,7 +1586,7 @@ def plot_carpet(img, mask_img=None, detrend=True, output_file=None,
 
     if output_file is not None:
         figure.savefig(output_file)
-        figure.close()
+        plt.close(figure)
         figure = None
 
     return figure
