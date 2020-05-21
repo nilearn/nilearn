@@ -669,7 +669,7 @@ def test_resampling():
         # Asks for the resampled version. This should only resample, not download. 
         # (TODO - How can we test systematically that download does not happen ?  )
         print("Asking for resampled version - Check here that download doesn't happen") 
-        data = neurovault.fetch_neurovault_ids(collection_ids=[4666], data_dir=data_dir,resample=True)
+        data = neurovault.fetch_neurovault_ids(collection_ids=[4666], data_dir=data_dir, resample=True)
 
         # Check that the resampled version is here
         assert np.all([os.path.isfile(im_meta['resampled_absolute_path']) for im_meta in data['images_meta']])
