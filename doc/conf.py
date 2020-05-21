@@ -51,7 +51,7 @@ extensions = ['sphinx.ext.autodoc',
                   if sphinx.version_info[:2] >= (1, 4)
                   else 'sphinx.ext.pngmath'),
               'sphinx.ext.intersphinx',
-              'numpydoc.numpydoc',
+              'sphinx.ext.napoleon',
               'sphinx_gallery.gen_gallery',
               ]
 
@@ -323,11 +323,6 @@ sphinx_gallery_conf = {
     }
 }
 
-# Get rid of spurious warnings due to some interaction between
-# autosummary and numpydoc. See
-# https://github.com/phn/pytpm/issues/3#issuecomment-12133978 for more
-# details
-numpydoc_show_class_members = False
 
 
 def touch_example_backreferences(app, what, name, obj, options, lines):
