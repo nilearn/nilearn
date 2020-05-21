@@ -22,7 +22,6 @@ from scipy import ndimage
 from scipy import sparse
 from nibabel.spatialimages import SpatialImage
 
-from ..input_data import NiftiMasker
 from ..signal import clean
 from .._utils.numpy_conversions import as_ndarray
 from .._utils.niimg import _safe_get_data
@@ -1511,6 +1510,7 @@ def plot_carpet(img, mask_img=None, detrend=True, output_file=None,
     qualities. Neuroimage, 154, 150-158. doi:
     https://doi.org/10.1016/j.neuroimage.2016.08.009
     """
+    from nilearn.input_data import NiftiMasker
     img_nii = _utils.check_niimg_4d(img, dtype='auto')
     img_data = _safe_get_data(img_nii, ensure_finite=True)
 
