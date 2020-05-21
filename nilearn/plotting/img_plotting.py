@@ -1481,10 +1481,10 @@ def plot_carpet(img, mask_img=None, detrend=True, output_file=None,
         None). If not specified a new mask will be derived from data.
         See http://nilearn.github.io/manipulating_images/input_output.html.
     detrend : :obj:`bool`, optional
-        Detrend the data prior to plotting. Default is True.
+        Detrend the data prior to plotting (default is `True`).
     output_file : :obj:`str` or None, optional
         The name of an image file to which to export the plot (default is
-        None). Valid extensions are .png, .pdf, .svg.
+        None). Valid extensions are .png, .pdf, and .svg.
         If `output_file` is not None, the plot is saved to a file, and the
         display is closed.
     figure : :class:`matplotlib.figure.Figure` or None, optional
