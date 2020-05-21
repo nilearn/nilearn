@@ -18,7 +18,7 @@ import nibabel
 import pandas as pd
 from scipy.io import loadmat
 from scipy.io.matlab.miobase import MatReadError
-from sklearn.utils import Bunch
+from sklearn.utils import Bunch, deprecated
 
 from .utils import (_get_dataset_dir, _fetch_files, _get_dataset_descr,
                     _read_md5_sum_file, _tree, _filter_columns, _fetch_file, _uncompress_file)
@@ -1490,6 +1490,10 @@ def fetch_megatrawls_netmats(dimensionality=100, timeseries='eigen_regression',
         description=description)
 
 
+@deprecated("'fetch_cobre' has been deprecated and will be removed "
+            "in release 0.9 . "
+            "Please consider using a different datasets or downloading it "
+            "with a different tool than nilearn.")
 def fetch_cobre(n_subjects=10, data_dir=None, url=None, verbose=1):
     """Fetch COBRE datasets preprocessed using NIAK 0.17 under CentOS
     version 6.3 with Octave version 4.0.2 and the Minc toolkit version 0.3.18.
