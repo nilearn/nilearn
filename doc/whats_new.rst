@@ -29,7 +29,7 @@ Fixes
 Changes
 -------
 
-- :function:`nilearn.datasets.fetch_cobre` has been deprecated and will be
+- :func:`nilearn.datasets.fetch_cobre` has been deprecated and will be
   removed in release 0.9 .
 
 0.6.2
