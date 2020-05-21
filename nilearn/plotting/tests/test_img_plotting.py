@@ -31,12 +31,26 @@ mni_affine = np.array([[-2.,    0.,    0.,   90.],
                        [0.,    0.,    0.,    1.]])
 
 
-def _generate_img():
+@pytest.fixture()
+def _generate_img_3d():
+    """A random 3D image for testing figures.
+    """
     data_positive = np.zeros((7, 7, 3))
     rng = np.random.RandomState(42)
     data_rng = rng.rand(7, 7, 3)
     data_positive[1:-1, 2:-1, 1:] = data_rng[1:-1, 2:-1, 1:]
-    return nibabel.Nifti1Image(data_positive, mni_affine)
+    img_3d = nibabel.Nifti1Image(data_positive, mni_affine)
+    pytest.img_3d = img_3d
+
+
+@pytest.fixture()
+def _generate_img_4d():
+    """A random 4D image for testing figures for multivolume data.
+    """
+    rng = np.random.RandomState(42)
+    data = rng.rand(7, 7, 3, 10)
+    img_4d = nibabel.Nifti1Image(data, mni_affine)
+    pytest.img_4d = img_4d
 
 
 def demo_plot_roi(**kwargs):
@@ -71,7 +85,7 @@ def test_demo_plot_roi():
 
 
 def test_plot_anat():
-    img = _generate_img()
+    img = pytest.img_3d
 
     # Test saving with empty plot
     z_slicer = plot_anat(anat_img=False, display_mode='z')
@@ -100,14 +114,23 @@ def test_plot_anat():
 
 
 def test_plot_functions():
-    img = _generate_img()
+    img_3d = pytest.img_3d
+    img_4d = pytest.img_4d
 
-    # smoke-test for each plotting function with default arguments
+    # smoke-test for 3D plotting functions with default arguments
     for plot_func in [plot_anat, plot_img, plot_stat_map, plot_epi,
-                      plot_glass_brain, plot_carpet]:
+                      plot_glass_brain]:
         filename = tempfile.mktemp(suffix='.png')
         try:
-            plot_func(img, output_file=filename)
+            plot_func(img_3d, output_file=filename)
+        finally:
+            os.remove(filename)
+
+    # smoke-test for 4D plotting functions with default arguments
+    for plot_func in [plot_carpet]:
+        filename = tempfile.mktemp(suffix='.png')
+        try:
+            plot_func(img_4d, output_file=filename)
         finally:
             os.remove(filename)
 
@@ -115,7 +138,7 @@ def test_plot_functions():
     ax = plt.subplot(111, rasterized=True)
     filename = tempfile.mktemp(suffix='.png')
     try:
-        plot_stat_map(img, symmetric_cbar=True,
+        plot_stat_map(img_3d, symmetric_cbar=True,
                       output_file=filename,
                       axes=ax, vmax=np.nan)
     finally:
@@ -124,7 +147,7 @@ def test_plot_functions():
 
 
 def test_plot_glass_brain():
-    img = _generate_img()
+    img = pytest.img_3d
 
     # test plot_glass_brain with colorbar
     plot_glass_brain(img, colorbar=True, resampling_interpolation='nearest')
@@ -142,7 +165,7 @@ def test_plot_glass_brain():
 
 
 def test_plot_stat_map():
-    img = _generate_img()
+    img = pytest.img_3d
 
     plot_stat_map(img, cut_coords=(80, -120, -60))
 
@@ -248,17 +271,15 @@ def test_plot_glass_brain_threshold_for_uint8():
 def test_plot_carpet():
     """Check contents of plot_carpet figure against data in image.
     """
-    data = np.random.random((10, 10, 10, 20))
-    affine = np.eye(4)
-    img = nibabel.Nifti1Image(data, affine)
-    mask_data = np.ones((10, 10, 10), int)
+    img = pytest.img_4d
+    mask_data = np.ones(img.shape[:-1], int)
     mask_img = nibabel.Nifti1Image(mask_data, affine)
     display = plot_carpet(img, mask_img, detrend=False)
     # Next two lines retrieve the numpy array from the plot
     ax = display.axes[0]
     plotted_array = ax.images[0].get_array()
     # Make sure that the values in the figure match the values in the image
-    assert p.testing.assert_almost_equal(
+    assert np.testing.assert_almost_equal(
         plotted_array.sum(),
         img.get_fdata().sum(),
         decimal=3
@@ -269,7 +290,7 @@ def test_plot_carpet():
 
 
 def test_save_plot():
-    img = _generate_img()
+    img = pytest.img_3d
 
     kwargs_list = [{}, {'display_mode': 'x', 'cut_coords': 3}]
 
@@ -293,7 +314,7 @@ def test_save_plot():
 
 
 def test_display_methods():
-    img = _generate_img()
+    img = pytest.img_3d
 
     display = plot_img(img)
     display.add_overlay(img, threshold=0)
@@ -303,7 +324,7 @@ def test_display_methods():
 
 
 def test_plot_with_axes_or_figure():
-    img = _generate_img()
+    img = pytest.img_3d
     figure = plt.figure()
     plot_img(img, figure=figure)
 
@@ -316,7 +337,7 @@ def test_plot_with_axes_or_figure():
 
 def test_plot_stat_map_colorbar_variations():
     # This is only a smoke test
-    img_positive = _generate_img()
+    img_positive = pytest.img_3d
     data_positive = get_data(img_positive)
     rng = np.random.RandomState(42)
     data_negative = -data_positive
@@ -367,7 +388,7 @@ def test_plot_img_with_auto_cut_coords():
 
 
 def test_plot_img_with_resampling():
-    data = get_data(_generate_img())
+    data = get_data(pytest.img_3d)
     affine = np.array([[1., -1.,  0.,  0.],
                        [1.,  1.,  0.,  0.],
                        [0.,  0.,  1.,  0.],
@@ -999,7 +1020,7 @@ def test_get_colorbar_and_data_ranges_masked_array():
 
 
 def test_invalid_in_display_mode_cut_coords_all_plots():
-    img = _generate_img()
+    img = pytest.img_3d
     for plot_func in [plot_img, plot_anat, plot_roi, plot_epi,
                       plot_stat_map, plot_prob_atlas, plot_glass_brain]:
         with pytest.raises(ValueError,
@@ -1011,7 +1032,7 @@ def test_invalid_in_display_mode_cut_coords_all_plots():
 
 
 def test_invalid_in_display_mode_tiled_cut_coords_single_all_plots():
-    img = _generate_img()
+    img = pytest.img_3d
 
     for plot_func in [plot_img, plot_anat, plot_roi, plot_epi,
                       plot_stat_map, plot_prob_atlas]:
@@ -1024,7 +1045,7 @@ def test_invalid_in_display_mode_tiled_cut_coords_single_all_plots():
 
 
 def test_invalid_in_display_mode_tiled_cut_coords_all_plots():
-    img = _generate_img()
+    img = pytest.img_3d
 
     for plot_func in [plot_img, plot_anat, plot_roi, plot_epi,
                       plot_stat_map, plot_prob_atlas]:
@@ -1060,7 +1081,7 @@ def test_outlier_cut_coords():
 
 
 def test_plot_stat_map_with_nans():
-    img = _generate_img()
+    img = pytest.img_3d
     data = get_data(img)
 
     data[6, 5, 1] = np.nan
@@ -1089,7 +1110,7 @@ def test_plotting_functions_with_cmaps():
 
 
 def test_plotting_functions_with_nans_in_bg_img():
-    bg_img = _generate_img()
+    bg_img = pytest.img_3d
     bg_data = get_data(bg_img)
 
     bg_data[6, 5, 1] = np.nan
@@ -1101,9 +1122,9 @@ def test_plotting_functions_with_nans_in_bg_img():
     plot_anat(bg_img)
     # test with plot_roi passing background image which contains nans values
     # in it
-    roi_img = _generate_img()
+    roi_img = pytest.img_3d
     plot_roi(roi_img=roi_img, bg_img=bg_img)
-    stat_map_img = _generate_img()
+    stat_map_img = pytest.img_3d
     plot_stat_map(stat_map_img=stat_map_img, bg_img=bg_img)
 
     plt.close()
@@ -1111,7 +1132,7 @@ def test_plotting_functions_with_nans_in_bg_img():
 
 def test_plotting_functions_with_dim_invalid_input():
     # Test whether error raises with bad error to input
-    img = _generate_img()
+    img = pytest.img_3d
     pytest.raises(ValueError, plot_stat_map, img, dim='-10')
 
 
@@ -1123,7 +1144,7 @@ def test_add_markers_using_plot_glass_brain():
 
 
 def test_plotting_functions_with_display_mode_tiled():
-    img = _generate_img()
+    img = pytest.img_3d
     plot_stat_map(img, display_mode='tiled')
     plot_anat(display_mode='tiled')
     plot_img(img, display_mode='tiled')
@@ -1131,7 +1152,7 @@ def test_plotting_functions_with_display_mode_tiled():
 
 
 def test_display_methods_with_display_mode_tiled():
-    img = _generate_img()
+    img = pytest.img_3d
     display = plot_img(img, display_mode='tiled')
     display.add_overlay(img, threshold=0)
     display.add_edges(img, color='c')
@@ -1140,7 +1161,7 @@ def test_display_methods_with_display_mode_tiled():
 
 
 def test_plot_glass_brain_colorbar_having_nans():
-    img = _generate_img()
+    img = pytest.img_3d
     data = get_data(img)
 
     data[6, 5, 2] = np.inf
