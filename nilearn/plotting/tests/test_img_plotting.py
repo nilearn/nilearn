@@ -22,7 +22,7 @@ from nilearn.plotting.img_plotting import (MNI152TEMPLATE, plot_anat, plot_img,
                                            plot_roi, plot_stat_map, plot_epi,
                                            plot_glass_brain, plot_connectome,
                                            plot_connectome_strength,
-                                           plot_prob_atlas,
+                                           plot_prob_atlas, plot_carpet,
                                            _get_colorbar_and_data_ranges)
 
 mni_affine = np.array([[-2.,    0.,    0.,   90.],
@@ -104,7 +104,7 @@ def test_plot_functions():
 
     # smoke-test for each plotting function with default arguments
     for plot_func in [plot_anat, plot_img, plot_stat_map, plot_epi,
-                      plot_glass_brain]:
+                      plot_glass_brain, plot_carpet]:
         filename = tempfile.mktemp(suffix='.png')
         try:
             plot_func(img, output_file=filename)
@@ -240,6 +240,25 @@ def test_plot_glass_brain_threshold_for_uint8():
     # Make sure that the value masked is in the corner. Note that the
     # axis orientation seem to be flipped, hence (0, 0) -> (-1, 0)
     assert plotted_array.mask[-1, 0]
+
+    # Save execution time and memory
+    plt.close()
+
+
+def test_plot_carpet():
+    """Check contents of plot_carpet figure against data in image.
+    """
+    data = np.random.random((10, 10, 10, 20))
+    affine = np.eye(4)
+    img = nibabel.Nifti1Image(data, affine)
+    mask_data = np.ones((10, 10, 10), int)
+    mask_img = nibabel.Nifti1Image(mask_data, affine)
+    display = plot_carpet(img, mask_img, detrend=False)
+    # Next two lines retrieve the numpy array from the plot
+    ax = display.axes[0]
+    plotted_array = ax.images[0].get_array()
+    # Make sure that the values in the figure match the values in the image
+    assert abs(plotted_array.sum() - data.sum()) < 1e-3
 
     # Save execution time and memory
     plt.close()
