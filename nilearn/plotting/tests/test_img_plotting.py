@@ -258,7 +258,11 @@ def test_plot_carpet():
     ax = display.axes[0]
     plotted_array = ax.images[0].get_array()
     # Make sure that the values in the figure match the values in the image
-    assert abs(plotted_array.sum() - data.sum()) < 1e-3
+    assert p.testing.assert_almost_equal(
+        plotted_array.sum(),
+        img.get_fdata().sum(),
+        decimal=3
+    )
 
     # Save execution time and memory
     plt.close()
