@@ -5,6 +5,7 @@ import distutils.version
 import warnings
 import numpy as np
 import pytest
+import sklearn
 
 from numpy.testing import assert_array_equal
 
@@ -122,10 +123,14 @@ def test_compute_brain_mask():
 
 
 def test_deprecation_warning_compute_gray_matter_mask():
-    with pytest.warns(FutureWarning,
-                      match="renamed to 'compute_brain_mask'"):
-        img = Nifti1Image(np.ones((9, 9, 9)), np.eye(4))
-        masking.compute_gray_matter_mask(img)
+    img = Nifti1Image(np.ones((9, 9, 9)), np.eye(4))
+    if distutils.version.LooseVersion(sklearn.__version__) < '0.22':
+        with pytest.deprecated_call():
+            masking.compute_gray_matter_mask(img)
+    else:
+        with pytest.warns(FutureWarning,
+                          match="renamed to 'compute_brain_mask'"):
+            masking.compute_gray_matter_mask(img)
 
 
 def test_apply_mask():
