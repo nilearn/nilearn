@@ -5,7 +5,7 @@ import pytest
 from numpy.testing import assert_array_equal
 
 from nilearn.input_data import NiftiSpheresMasker
-from nilearn.image import get_data
+from nilearn.image import get_data, new_img_like
 
 
 def test_seed_extraction():
@@ -189,8 +189,13 @@ def test_nifti_spheres_masker_inverse_transform():
     masker.fit()
     # Transform data
     s = masker.transform(img)
+    # Mask describes the extend of the masker's sphere
+    mask = np.zeros((3, 3, 3), dtype=np.bool)
+    mask[:, 1, 1] = True
+    mask[1, :, 1] = True
+    mask[1, 1, :] = True
 
-    inverse_map =  masker.inverse_transform(s)
+    inverse_map = masker.inverse_transform(s)
     # Testing whether mask is applied to inverse transform, and has same length as 
     # the masked data and data is preserved
     assert_array_equal(get_data(inverse_map)[get_data(inverse_map) != 0], s[:, 0])
@@ -228,7 +233,7 @@ def test_nifti_spheres_masker_inverse_overlap():
     fmri_img = nibabel.Nifti1Image(data, affine)
 
     # Apply mask image - to not blow things up to MNI space
-    mask_img = image.new_img_like(fmri_img, np.ones(shape))
+    mask_img = new_img_like(fmri_img, np.ones(shape))
     seeds = [(0, 0, 0), (2, 2, 2)]
     # Inverse data 
     inv_data = np.random.random(len(seeds))
