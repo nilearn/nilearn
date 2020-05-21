@@ -315,6 +315,30 @@ def test_compute_epi_mask():
                              get_data(mask4)[3:12, 3:12])
 
 
+def test_compute_brain_mask():
+    # Check masker for template masking strategy
+
+    img = np.random.rand(9, 9, 5)
+    img = Nifti1Image(img, np.eye(4))
+
+    masker = NiftiMasker(mask_strategy='template')
+
+    masker.fit(img)
+    mask1 = masker.mask_img_
+
+    masker2 = NiftiMasker(mask_strategy='template',
+                          mask_args=dict(threshold=0.))
+
+    masker2.fit(img)
+    mask2 = masker2.mask_img_
+
+    mask_ref = np.zeros((9, 9, 5))
+    mask_ref[2:7, 2:7, 2] = 1
+
+    np.testing.assert_array_equal(get_data(mask1), mask_ref)
+    np.testing.assert_array_equal(get_data(mask2), mask_ref)
+
+
 def test_filter_and_mask_error():
     data = np.zeros([20, 30, 40, 5])
     mask = np.zeros([20, 30, 40, 2])
