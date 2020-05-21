@@ -41,7 +41,7 @@ Loading and preparing the data
 The Haxby 2001 experiment
 -------------------------
 
-In the Haxby experiment, 
+In the Haxby experiment,
 subjects were presented visual stimuli from different categories. We are
 going to predict which category the subject is seeing from the fMRI
 activity recorded in masks of the ventral stream. Significant prediction
@@ -86,7 +86,7 @@ _____
    of events.
 
    The standard approach to decoding consists in fitting a first-level
-   GLM to retrieve one response map (a beta map) per trial. This is
+   GLM to retrieve one response map (a beta map) per trial as shown in  :ref:`sphx_glr_auto_examples_02_decoding_plot_haxby_glm_decoding.py`. This is
    sometimes known as "beta-series regressions" (see Mumford et al,
    *Deconvolving bold activation in event-related designs for multivoxel
    pattern classification analyses*, NeuroImage 2012). These maps can
@@ -97,6 +97,8 @@ _____
    However, **it is strongly recomended that you fit a first level to
    include an HRF model and isolate the responses from various
    confounds**.
+
+   See an example
 
 
 Loading the data into nilearn
@@ -113,9 +115,9 @@ Loading the data into nilearn
 
 * **Retrieving the data**: In the tutorial, we load the data using nilearn
   data downloading function, :func:`nilearn.datasets.fetch_haxby`.
-  However, all this function does is to download the data and return 
+  However, all this function does is to download the data and return
   paths to the files downloaded on the disk. To input your own data to
-  nilearn, you can pass in the path to your own files 
+  nilearn, you can pass in the path to your own files
   (:ref:`more on data input <loading_data>`).
 
 * **Loading the behavioral labels**: Behavioral information is often stored
