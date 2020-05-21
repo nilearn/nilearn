@@ -186,7 +186,7 @@ def _parallel_fit(estimator, X, y, train, test, param_grid, is_classification,
         # Store best parameters and estimator coefficients
         if (best_score is None) or (score >= best_score):
             best_score = score
-            best_coef = estimator.coef_.reshape(1, -1)
+            best_coef = np.reshape(estimator.coef_, (1, -1))
             best_intercept = estimator.intercept_
             best_param = param
 
@@ -481,9 +481,11 @@ class _BaseDecoder(LinearModel, RegressorMixin, CacheMixin):
                                            self.is_classification)
         # Return a suitable screening percentile according to the mask image
         if hasattr(selector, 'percentile'):
-            self.screening_percentile = selector.percentile
+            self.screening_percentile_ = selector.percentile
+        else:
+            self.screening_percentile_ = self.screening_percentile
 
-        n_final_features = int(X.shape[1] * self.screening_percentile
+        n_final_features = int(X.shape[1] * self.screening_percentile_
                                * self.clustering_percentile / 10000)
         if n_final_features < 50:
             warnings.warn(
