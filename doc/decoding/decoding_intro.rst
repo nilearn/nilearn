@@ -140,18 +140,17 @@ Loading the data into nilearn
     >>> conditions = conditions.values  # doctest: +SKIP
 
 .. seealso::
-   * :ref:`masking`
-  To better control this process of spatial masking and add additional signal
-  processing steps (smoothing, filtering, standardizing...), we could
-  explicitely define a masker :  :class:`nilearn.input_data.NiftiMasker`.
-  This object extracts voxels belonging to a given spatial mask and convert
-  their signal to a 2D data matrix with a shape (n_timepoints, n_voxels)
-  (see :ref:`mask_4d_2_3d` for a discussion on using
+  * :ref:`masking`
+    To better control this process of spatial masking and add additional signal
+    processing steps (smoothing, filtering, standardizing...), we could
+    explicitely define a masker :  :class:`nilearn.input_data.NiftiMasker`.
+    This object extracts voxels belonging to a given spatial mask and convert
+    their signal to a 2D data matrix with a shape (n_timepoints, n_voxels)
+    (see :ref:`mask_4d_2_3d` for a discussion on using
 
 .. note::
-
-   Seemingly minor data preparation can matter a lot on the final score,
-   for instance standardizing the data.
+  Seemingly minor data preparation can matter a lot on the final score,
+  for instance standardizing the data.
 
 
 Performing a simple decoding analysis
@@ -192,19 +191,20 @@ linear kernel. This is a simple yet performant choice that works in a wide
 variety of problems.
 
 .. seealso::
-
-   the `scikit-learn documentation on SVMs
-   <http://scikit-learn.org/stable/modules/svm.html>`_
+  the `scikit-learn documentation on SVMs
+  <http://scikit-learn.org/stable/modules/svm.html>`_
 
 
 Decoding made easy
 -------------------
 
+
 Nilearn makes it easy to train a model with a principled pipeline using the
-`Decoder` object. Using the mask we defined before and an SVC estimator as
-we already introduced, we can create a pipeline in two lines. The additional
-`standardize`=True argument adds a normalization of images signal to a
-0 mean and 1 variance which will improve performance of most estimators.
+:class:`nilearn.decoding.Decoder` object. Using the mask we defined before
+and an SVC estimator as we already introduced, we can create a pipeline in
+two lines. The additional `standardize`=True argument adds a normalization
+of images signal to a 0 mean and 1 variance which will improve performance
+of most estimators.
 
     >>> from nilearn.decoding import Decoder # doctest: +SKIP
     >>> decoder = Decoder(estimator='svc', mask=mask_filename) # doctest: +SKIP
@@ -243,9 +243,9 @@ use 4 folds to `fit` your estimator, and 1 to `predict` and measure the errors
 made by your estimators. You repeat this for every combination of folds, and get
 5 prediction "scores", one for each fold.
 
-During the `fit`, `Decoder` object implicitely used a cross-validation:
-Stratified K-fold by default. You can easily inspect the prediction "score"
-it got in each fold.
+During the `fit`, :class:`nilearn.decoding.Decoder` object implicitely used a
+cross-validation: Stratified K-fold by default. You can easily inspect
+the prediction "score" it got in each fold.
 
     >>> print(decoder.cv_scores_) # doctest: +SKIP
 
@@ -283,9 +283,8 @@ groups=`session_labels` will use one session as test set.
     >>> decoder.fit(fmri_niimgs, conditions, groups=session_label) # doctest: +SKIP
 
 .. note::
-
-   Full code example can be found at :
-   :ref:`sphx_glr_auto_examples_plot_decoding_tutorial.py`
+  Full code example can be found at :
+  :ref:`sphx_glr_auto_examples_plot_decoding_tutorial.py`
 
 
 Choice of the prediction accuracy measure
@@ -306,9 +305,8 @@ Receiver Operating Characteristic), can be used through the `scoring` argument.
                           standardize=True, scoring='roc_auc') # doctest: +SKIP
 
 .. seealso::
-
-   the `list of scoring options
-   <http://scikit-learn.org/stable/modules/model_evaluation.html#common-cases-predefined-values>`_
+  the `list of scoring options
+  <http://scikit-learn.org/stable/modules/model_evaluation.html#common-cases-predefined-values>`_
 
 .. topic:: **Putting it all together**
 
@@ -339,7 +337,7 @@ Receiver Operating Characteristic), can be used through the `scoring` argument.
 Visualizing the decoder's weights
 ---------------------------------
 
-When it's fitted, the `Decoder` object retains the coefficients of best models for
+When it's fitted, the :class:`nilearn.decoding.Decoder` object retains the coefficients of best models for
 each class in decoder.coef_. To plot the map of weights that are discriminative
 from "face" against other classes you can directly access it through :
 
@@ -351,14 +349,12 @@ from "face" against other classes you can directly access it through :
    :scale: 65
 
 .. note::
-
-   Full code for the above can be found on
-   :ref:`sphx_glr_auto_examples_plot_decoding_tutorial.py`
+  Full code for the above can be found on
+  :ref:`sphx_glr_auto_examples_plot_decoding_tutorial.py`
 
 
 .. seealso::
-
-   * :ref:`plotting`
+  * :ref:`plotting`
 
 
 Decoding without a mask: feature screening
@@ -377,8 +373,8 @@ task through a simple F-score based feature selection (a.k.a.
 `Anova <https://en.wikipedia.org/wiki/Analysis_of_variance#The_F-test>`_)
 
 You can directly choose to keep only a certain percentage of voxels in the
-`Decoder` object through the `screening_percentile` argument. To keep the 10%
-most correlated voxels, just create a Decoder including it :
+:class:`nilearn.decoding.Decoder` object through the `screening_percentile`
+argument. To keep the 10% most correlated voxels, just create us this parameter :
 
 .. literalinclude:: ../../examples/02_decoding/plot_haxby_anova_svm.py
     :start-after: # Build the decoder
@@ -388,7 +384,7 @@ most correlated voxels, just create a Decoder including it :
 Visualizing the results
 -----------------------
 
-To visualize the results, Decoder handles two main steps for you :
+To visualize the results, :class:`nilearn.decoding.Decoder` handles two main steps for you :
 
 - first get the support vectors of the SVC and inverse the feature
   selection mechanism
@@ -404,8 +400,7 @@ To visualize the results, Decoder handles two main steps for you :
    :scale: 65
 
 .. seealso::
-
-   * :ref:`plotting`
+  * :ref:`plotting`
 
 
 .. topic:: **Final script**
@@ -415,6 +410,6 @@ To visualize the results, Decoder handles two main steps for you :
 
 
 .. seealso::
-   * :ref:`frem`
-   * :ref:`space_net`
-   * :ref:`searchlight`
+  * :ref:`frem`
+  * :ref:`space_net`
+  * :ref:`searchlight`
