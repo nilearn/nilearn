@@ -1480,7 +1480,7 @@ def plot_carpet(img, mask_img=None, detrend=True, output_file=None,
         None). If not specified a new mask will be derived from data.
         See http://nilearn.github.io/manipulating_images/input_output.html.
     detrend : :obj:`bool`, optional
-        Detrend the data prior to plotting (default is `True`).
+        Detrend and z-score the data prior to plotting (default is `True`).
     output_file : :obj:`str` or None, optional
         The name of an image file to which to export the plot (default is
         None). Valid extensions are .png, .pdf, and .svg.
@@ -1527,9 +1527,9 @@ def plot_carpet(img, mask_img=None, detrend=True, output_file=None,
         mask_data = _safe_get_data(mask_nii, ensure_finite=True)
 
     data = img_data[mask_data > 0].reshape(-1, ntsteps)
-    # Detrend data
+    # Detrend and standardize data
     if detrend:
-        data = clean(data.T, t_r=tr).T
+        data = clean(data.T, t_r=tr, detrend=True, standardize='z').T
 
     if not figure:
         if not axes:
