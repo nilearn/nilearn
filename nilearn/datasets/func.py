@@ -2153,7 +2153,9 @@ def fetch_language_localizer_demo_dataset(data_dir=None, verbose=1):
     downloaded_files: list of string
         Absolute paths of downloaded files on disk
     """
-    url = 'https://osf.io/nh987/download'
+    url = 'https://osf.io/3dj2a/download'
+    # When it starts working again change back to:
+    # url = 'https://osf.io/nh987/download'
     main_folder = 'fMRI-language-localizer-demo-dataset'
 
     data_dir = _get_dataset_dir(main_folder, data_dir=data_dir,
