@@ -685,11 +685,3 @@ def test_resampling():
         # Check that the affines of the original version do not correspond to the resampled one
         affines_orig = [load_img(cur_im).affine for cur_im in data_orig['images']]
         assert not np.any([np.all(affine == neurovault.STD_AFFINE) for affine in affines_orig])
-
-
-
-
-
-
-
-        
