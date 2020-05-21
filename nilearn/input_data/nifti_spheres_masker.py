@@ -86,8 +86,8 @@ def _apply_mask_and_get_affinity(seeds, niimg, radius, allow_overlap,
     return X, A
 
 
-def _apply_mask_get_rows(seeds, affine, target_shape, radius, allow_overlap,
-                                 mask_img=None):
+def _get_spheres_rows(seeds, affine, target_shape, radius, allow_overlap):
+
     seeds = list(seeds)
 
     # Compute world coordinates of all voxels. The mask will be applied at 
@@ -166,30 +166,28 @@ def _iter_signals_from_spheres(seeds, niimg, radius, allow_overlap,
         yield X[:, row]
 
 
-def _iter_regions_from_spheres(seeds, affine, target_shape, radius, allow_overlap,
-                               mask_img=None):
-    """Utility function to iterate over spheres.
+def _iter_regions_from_spheres(seeds, target_affine, target_shape, radius, 
+                               allow_overlap):
+    """Utility function to iterate over spheres. Used in NiftiSpheresMasker()
+    .inverse_transform()
+
     Parameters
     ----------
     seeds: List of triplets of coordinates in native space
         Seed definitions. List of coordinates of the seeds in the same space
-        as the images (typically MNI or TAL).
-    imgs: 3D/4D Niimg-like object
-        See http://nilearn.github.io/manipulating_images/input_output.html
-        Images to process. It must boil down to a 4D image with scans
-        number as last dimension.
+        as target_affine (either of mask or if mask is None MNI space).
+    target_affine: Affine in which the regions/spheres should be projected to
+    target_shape: The shape of the output image.
     radius: float
         Indicates, in millimeters, the radius for the sphere around the seed.
     allow_overlap: boolean
         If False, an error is raised if the maps overlaps (ie at least two
         maps have a non-zero value for the same voxel).
-    mask_img: Niimg-like object, optional
-        See http://nilearn.github.io/manipulating_images/input_output.html
-        Mask to apply to regions before extracting signals.
+    mask_img: Niimg-like object, optional,
+        Input is ignored, staying for consistency with other functions.
     """
-    A = _apply_mask_get_rows(seeds, affine, target_shape, radius,
-                                        allow_overlap,
-                                        mask_img=mask_img)
+    A = _get_spheres_rows(seeds, target_affine, target_shape, radius,
+                          allow_overlap)
 
     for row in A.rows:
         if len(row) == 0:
@@ -220,41 +218,26 @@ class _ExtractionFunctor(object):
         return signals, None
 
 
-class _InversionFunctor(object):
-
-    func_name = 'nifti_spheres_masker_inversion'
-
-    def __init__(self, seeds_, radius, mask_img, allow_overlap, dtype):
-        self.seeds_ = seeds_
-        self.radius = radius
-        self.mask_img = mask_img
-        self.allow_overlap = allow_overlap
-        self.dtype = dtype
+def _spheres_inversion(seeds_, radius, mask_img, allow_overlap):
         # Mask is only used to get affine and shape
-        if self.mask_img is not None:
-            mask = check_niimg_3d(self.mask_img)
-            self.target_affine = mask.affine
-            self.target_shape = mask.shape
+        if mask_img is not None:
+            mask = check_niimg_3d(mask_img)
+            target_affine = mask.affine
+            target_shape = mask.shape
         else:
-            # If no mask is provided use the MNI affine and shape
-            self.target_affine = np.array([[  3.,   -0.,   -0.,   -90.],
-                                           [  -0.,    3.,   -0., -126.],
-                                           [   0.,    0.,    3.,  -72.],
-                                           [   0.,    0.,    0.,    1.]])
-            self.target_shape = [61, 73, 61]
+            raise ValueError('Please provide a mask_img during fit to provide a'
+                               ' reference for the inverse_transform')
 
-    def __call__(self, signals):
-        n_seeds = len(self.seeds_)
+        n_seeds = len(seeds_)
         # np.empty creates unexpected behavior!
-        spheres = np.zeros((np.prod(self.target_shape), n_seeds), dtype=self.dtype)
+        spheres = np.zeros((np.prod(target_shape), n_seeds))
 
         for i, sphere in enumerate(_iter_regions_from_spheres(
-                self.seeds_, self.target_affine, self.target_shape, self.radius,
-                self.allow_overlap, mask_img=self.mask_img)):
+            seeds_, target_affine, target_shape, radius, allow_overlap)):
             spheres[sphere, i] = 1
 
         # Compute overlap scaling for mean signal:
-        if self.allow_overlap:
+        if allow_overlap:
             spheres_sum = spheres.sum(1)
             # signals_to_img_maps uses dot product to create mask over regions,
             # inverse scaling to create average not sum
@@ -262,7 +245,8 @@ class _InversionFunctor(object):
             spheres[spheres_sum > 1, :] = (spheres[spheres_sum > 1, :] * 
                                            spheres_scale)
 
-        return spheres.reshape([*self.target_shape, n_seeds])
+        return nibabel.Nifti1Image(spheres.reshape([*target_shape, n_seeds]),
+                                   affine=target_affine)
 
 
 class NiftiSpheresMasker(BaseMasker, CacheMixin):
@@ -465,7 +449,8 @@ class NiftiSpheresMasker(BaseMasker, CacheMixin):
     def inverse_transform(self, region_signals):
         """Compute voxel signals from spheres signals
 
-        Any mask given at initialization is taken into account.
+        Any mask given at initialization is taken into account. If mask_img is
+        None, the spheres are automatically projected into MNI space. 
 
         Parameters
         ----------
@@ -476,7 +461,8 @@ class NiftiSpheresMasker(BaseMasker, CacheMixin):
         Returns
         -------
         voxel_signals: nibabel.Nifti1Image
-            Signal for each voxel. shape: (mask_img, number of scans).
+            Signal for each voxel. 
+            shape: (mask_img, number of scans).
         """
         from ..regions import signal_extraction
 
@@ -485,16 +471,9 @@ class NiftiSpheresMasker(BaseMasker, CacheMixin):
         logger.log("computing image from signals", verbose=self.verbose)
 
         # Allow_overlap uses float for spheres, to allow scaling
-        if self.allow_overlap:
-            invFunc = _InversionFunctor(self.seeds_, self.radius, self.mask_img,
-                                        self.allow_overlap, np.float)
-        else:
-            invFunc = _InversionFunctor(self.seeds_, self.radius, self.mask_img,
-                                        self.allow_overlap, np.int)
-        # Create the inverted map with scaling in case of overlaps
-        inverse_map = invFunc(region_signals)
-        inverse_map = nibabel.Nifti1Image(inverse_map,
-                                          affine=invFunc.target_affine)
+        inverse_map = _spheres_inversion(self.seeds_, self.radius,
+                                         self.mask_img, self.allow_overlap)
+
         # Use the maps masker, to map signal to voxels and to apply mask
         return signal_extraction.signals_to_img_maps(
             region_signals, inverse_map, mask_img=self.mask_img)

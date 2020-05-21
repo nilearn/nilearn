@@ -2,7 +2,7 @@ import nibabel
 import numpy as np
 import pytest
 
-from numpy.testing import assert_array_equal
+from numpy.testing import assert_array_equal, assert_array_almost_equal
 
 from nilearn.input_data import NiftiSpheresMasker
 from nilearn.image import get_data, new_img_like
@@ -188,19 +188,14 @@ def test_nifti_spheres_masker_inverse_transform():
     # Test the fit
     masker.fit()
     # Transform data
-    s = masker.transform(img)
+    with pytest.raises(ValueError, match='Please provide a mask_img'):
+        masker.inverse_transform(data[0, 0, 0, :])
+
     # Mask describes the extend of the masker's sphere
     mask = np.zeros((3, 3, 3), dtype=np.bool)
     mask[:, 1, 1] = True
     mask[1, :, 1] = True
     mask[1, 1, :] = True
-
-    inverse_map = masker.inverse_transform(s)
-    # Testing whether mask is applied to inverse transform, and has same length as 
-    # the masked data and data is preserved
-    assert_array_equal(get_data(inverse_map)[get_data(inverse_map) != 0], s[:, 0])
-    # No masking is applied - check dimensions with regard to mni template
-    assert_array_equal(inverse_map.shape[:3], [61, 73, 61])
 
     # Now with a mask
     mask_img = np.zeros((3, 3, 3))
@@ -232,7 +227,7 @@ def test_nifti_spheres_masker_inverse_overlap():
     data = np.random.random(shape + (5,))
     fmri_img = nibabel.Nifti1Image(data, affine)
 
-    # Apply mask image - to not blow things up to MNI space
+    # Apply mask image - to allow inversion
     mask_img = new_img_like(fmri_img, np.ones(shape))
     seeds = [(0, 0, 0), (2, 2, 2)]
     # Inverse data 
@@ -250,7 +245,7 @@ def test_nifti_spheres_masker_inverse_overlap():
     overlap = overlapping_masker.inverse_transform(inv_data)
 
     # Test whether overlapping data is averaged
-    assert np.isclose(get_data(overlap)[1,1,1], np.mean(inv_data))
+    assert_array_almost_equal(get_data(overlap)[1, 1, 1], np.mean(inv_data))
 
     noverlapping_masker = NiftiSpheresMasker(seeds, radius=1,
                                             allow_overlap=False,
