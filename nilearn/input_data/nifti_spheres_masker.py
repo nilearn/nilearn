@@ -245,8 +245,8 @@ class _InversionFunctor(object):
 
     def __call__(self, signals):
         n_seeds = len(self.seeds_)
-
-        spheres = np.empty((np.prod(self.target_shape), n_seeds), dtype=self.dtype)
+        # np.empty creates unexpected behavior!
+        spheres = np.zeros((np.prod(self.target_shape), n_seeds), dtype=self.dtype)
 
         for i, sphere in enumerate(_iter_regions_from_spheres(
                 self.seeds_, self.target_affine, self.target_shape, self.radius,
