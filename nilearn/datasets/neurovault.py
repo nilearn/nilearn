@@ -2338,7 +2338,7 @@ def _fetch_neurovault_implementation(
         collection_terms=collection_terms,
         collection_filter=collection_filter, image_terms=image_terms,
         image_filter=image_filter, wanted_collection_ids=collection_ids,
-        wanted_image_ids=image_ids, max_images=max_images, resample=resample,verbose=verbose,
+        wanted_image_ids=image_ids, max_images=max_images, resample=resample, verbose=verbose,
         fetch_neurosynth_words=fetch_neurosynth_words,
         vectorize_words=vectorize_words)
     download_params = _prepare_download_params(download_params)
