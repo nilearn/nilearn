@@ -35,6 +35,7 @@ from .._utils.param_validation import check_threshold
 from .._utils.ndimage import get_border_data
 from ..datasets import load_mni152_template
 from ..image import new_img_like, iter_img, get_data
+from ..masking import compute_epi_mask, apply_mask
 from .displays import get_slicer, get_projector
 from . import cm
 
