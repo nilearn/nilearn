@@ -51,7 +51,7 @@ extensions = ['sphinx.ext.autodoc',
                   if sphinx.version_info[:2] >= (1, 4)
                   else 'sphinx.ext.pngmath'),
               'sphinx.ext.intersphinx',
-              'sphinx.ext.napoleon',
+              'numpydoc',
               'sphinx_gallery.gen_gallery',
               ]
 
@@ -312,6 +312,8 @@ sphinx_gallery_conf = {
     'junit': '../test-results/sphinx-gallery/junit.xml',
     'examples_dirs': '../examples',
     'gallery_dirs': 'auto_examples',
+    # Ignore the function signature leftover by joblib
+    'ignore_pattern': 'func_code\.py',
     'binder': {
         'org': 'nilearn',
         'repo': 'nilearn.github.io',
