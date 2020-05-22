@@ -63,7 +63,7 @@ def plot_design_matrix(design_matrix, rescale=True, ax=None, output_file=None):
 
 
 def plot_event(model_event, cmap=None, output_file=None, **fig_kwargs):
-    """Creates plot for contrast definition.
+    """Creates plot for event visualization.
 
     Parameters
     ----------
@@ -73,7 +73,7 @@ def plot_event(model_event, cmap=None, output_file=None, **fig_kwargs):
         The `pandas.DataFrame` can also be obtained from 
         :func:`~nilearn.stats.first_level_model.first_level_models_from_bids`.
 
-    cmap : str or matplotlib.cmap
+    cmap : str or matplotlib.cmap, optional
         the colormap used to label different events
 
     output_file : string or None, optional,
@@ -147,7 +147,7 @@ def plot_event(model_event, cmap=None, output_file=None, **fig_kwargs):
     if output_file is not None:
         plt.savefig(output_file)
         plt.close()
-        ax = None
+        figure = None
 
     return figure
 
