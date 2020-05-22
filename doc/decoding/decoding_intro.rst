@@ -408,7 +408,6 @@ To visualize the results, :class:`nilearn.decoding.Decoder` handles two main ste
     The complete script to do an SVM-Anova analysis can be found as
     :ref:`an example <sphx_glr_auto_examples_02_decoding_plot_haxby_anova_svm.py>`.
 
-
 .. seealso::
   * :ref:`frem`
   * :ref:`space_net`
