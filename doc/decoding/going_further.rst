@@ -39,7 +39,8 @@ Loading the data into nilearn
     >>> haxby_dataset = datasets.fetch_haxby()  # doctest: +SKIP
 
 
-* **Masking fMRI data**: To perform the analysis some voxels only, we use spatial mask provided with the dataset.
+* **Masking fMRI data**: To perform the analysis some voxels only, we use
+spatial mask provided with the dataset.
 
     >>> mask_filename = haxby_dataset.mask_vt[0]  # doctest: +SKIP
 
@@ -48,9 +49,8 @@ Loading the data into nilearn
     >>> import pandas as pd  # doctest: +SKIP
     >>> behavioral = pd.read_csv(haxby_dataset.session_target[0], delimiter=' ')  # doctest: +SKIP
 
-* **Sample mask**: Masking some of the time points
-  may be useful to
-  restrict to a specific pair of conditions (*eg* cats versus faces).
+* **Sample mask**: Masking some of the time points may be useful to restrict
+to a specific pair of conditions (*eg* cats versus faces).
 
     >>> conditions = behavioral['labels']  # doctest: +SKIP
     >>> condition_mask = conditions.isin(['face', 'cat'])  # doctest: +SKIP
