@@ -154,11 +154,9 @@ def make_localizer_contrasts(design_matrix):
 # * 'computation - sentences': looks at the activity when performing a mental comptation task  versus simply reading sentences.
 #
 contrasts = make_localizer_contrasts(design_matrix)
-plt.figure(figsize=(5, 9))
 from nilearn.reporting import plot_contrast_matrix
 for i, (key, values) in enumerate(contrasts.items()):
-    ax = plt.subplot(len(contrasts) + 1, 1, i + 1)
-    plot_contrast_matrix(values, design_matrix=design_matrix, ax=ax)
+    plot_contrast_matrix(values, design_matrix=design_matrix)
 
 plt.show()
 

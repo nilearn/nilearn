@@ -301,7 +301,6 @@ effects_of_interest = np.vstack((conditions['active'], conditions['rest']))
 plot_contrast_matrix(effects_of_interest, design_matrix)
 plt.show()
 
-
 z_map = fmri_glm.compute_contrast(effects_of_interest,
                                   output_type='z_score')
 
