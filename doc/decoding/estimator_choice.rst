@@ -21,6 +21,10 @@ introduction to decoding with nilearn <decoding_intro>`.
 Predictions: regression, classification and multi-class
 =======================================================
 
+As seen in the previous section, high-level objects in Nilearn help you decode
+easily your dataset using a **mask** and/or **feature selection**. You can tune
+the **cross-validation** and **scoring** schemes of your model. Those objects
+come in two kinds, depending on your usecase : Regression or Classification.
 
 Regression
 ----------
@@ -28,6 +32,8 @@ Regression
 A regression problem is a learning task in which the variable to predict
 --that we often call **y** -- is a continuous value, such as an age.
 Encoding models [1]_ typically call for regressions.
+:class:`nilearn.decoding.DecoderRegressor` implement easy and efficient
+regression pipelines.
 
 .. [1]
 
@@ -36,7 +42,9 @@ Encoding models [1]_ typically call for regressions.
 
 .. seealso::
 
-   * :ref:`space_net`
+   * :class:`nilearn.decoding.fREMRegressor`, a pipeline described in the
+    :ref:`userguide <frem>`, which yields very good regression performance for
+    neuroimaging at a reasonable computational cost.
 
 Classification: two classes or multi-class
 ------------------------------------------
@@ -48,6 +56,9 @@ Often classification is performed between two classes, but it may well be
 applied to multiple classes, in which case it is known as a multi-class
 problem. It is important to keep in mind that the larger the number of
 classes, the harder the prediction problem.
+
+:class:`nilearn.decoding.Decoder` implement easy and efficient
+classification pipelines.
 
 Some estimators support multi-class prediction out of the box, but many
 work by dividing the multi-class problem in a set of two class problems.
@@ -74,8 +85,8 @@ whereas the latter is linear with the number of classes.
 .. seealso::
 
     * `Multi-class prediction in scikit-learn's documentation <http://scikit-learn.org/stable/modules/multiclass.html>`_
-    * :ref:`space_net`
-
+    * :class:`nilearn.decoding.fREMClassifier`, a pipeline described in the
+     :ref:`userguide <frem>`, yielding state-of-the art decoding performance.
 
 **Confusion matrix** `The confusion matrix
 <http://en.wikipedia.org/wiki/Confusion_matrix>`_,
@@ -229,7 +240,7 @@ models is then used to make predictions.
      to study it.
 
    * :ref:`fREM <frem>`, a pipeline bagging many models that yields very
-     good decoding performance at a lower computational cost.
+     good decoding performance at a reasonable computational cost.
 
    * :ref:`SpaceNet <space_net>`, a method promoting sparsity that can also
      give good brain decoding power and improved decoder maps when sparsity
