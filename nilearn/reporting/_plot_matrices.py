@@ -6,6 +6,8 @@ Author: Martin Perez-Guevara, Elvis Dohmatob, 2017
 
 import numpy as np
 import matplotlib.pyplot as plt
+import matplotlib.patches as mpatches
+import pandas as pd
 
 from nilearn.stats.first_level_model import check_design_matrix
 from nilearn.stats.contrasts import expression_to_contrast_vector
@@ -89,8 +91,6 @@ def plot_event(model_event, cmap=None, output_file=None, **fig_kwargs):
     Plot Figure object
 
     """
-    import matplotlib.patches as mpatches
-    import pandas as pd
 
     if isinstance(model_event, pd.DataFrame):
         model_event = [model_event]
@@ -137,8 +137,8 @@ def plot_event(model_event, cmap=None, output_file=None, **fig_kwargs):
 
     _ = ax.legend(handles=handles)
 
-    ax.set_ylabel("Runs")
     ax.set_xlabel("Time (sec.)")
+    ax.set_ylabel("Runs")
     ax.set_ylim(0, n_runs)
     ax.set_yticks(np.arange(n_runs) + .5)
     ax.set_yticklabels(np.arange(n_runs) + 1)
