@@ -52,6 +52,7 @@ func_filename = haxby_dataset.func[0]
 # Build a proper event structure for each session
 # -----------------------------------------------
 import numpy as np
+from nilearn.reporting import plot_event
 
 events = {}
 # events will take  the form of a dictionary of Dataframes, one per session
@@ -70,6 +71,7 @@ for session in unique_sessions:
     # remove the rest condition and insert into the dictionary
     events[session] = events_[events_.trial_type != 'rest']
 
+plot_event(list(events.values()), figsize=(12, 6))
 ##############################################################################
 # Instantiate and run FirstLevelModel
 # -----------------------------------

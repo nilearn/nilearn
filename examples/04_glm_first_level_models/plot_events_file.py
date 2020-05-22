@@ -1,5 +1,5 @@
-"""Example of a events.tsv file generation: the neurospin/localizer events.
-=============================================================================
+"""Generation and plot of a events.tsv file generation: the neurospin/localizer events.
+=======================================================================================
 
 The protocol described is the so-called "archi standard" localizer
 event sequence.  See Pinel et al., BMC neuroscience 2007 for reference.
@@ -22,25 +22,21 @@ onset = np.array([
     284.4, 288., 291., 293.4, 296.7])
 
 #########################################################################
-# Associated trial types: these are numbered between 0 and 9, hence
-# correspond to 10 different conditions.
+# Associated trial types: these are numbered between 0 and 5, hence
+# correspond to 6 different conditions.
 trial_idx = np.array(
-    [7, 7, 0, 2, 9, 4, 9, 3, 5, 9, 1, 6, 8, 8, 6, 6, 8, 0, 3, 4, 5, 8, 6,
-     2, 9, 1, 6, 5, 9, 1, 7, 8, 6, 6, 1, 2, 9, 0, 7, 1, 8, 2, 7, 8, 3, 6,
-     0, 0, 6, 8, 7, 7, 1, 1, 1, 5, 5, 0, 7, 0, 4, 2, 7, 9, 8, 0, 6, 3, 3,
-     7, 1, 0, 0, 4, 1, 9, 8, 4, 9, 9])
+    [3, 3, 0, 2, 5, 3, 5, 2, 3, 5, 1, 2, 4, 4, 2, 2, 4, 0, 2, 3, 3, 4, 2,
+     2, 5, 1, 2, 3, 5, 1, 3, 4, 2, 2, 1, 2, 5, 0, 3, 1, 4, 2, 3, 4, 2, 2,
+     0, 0, 2, 4, 3, 3, 1, 1, 1, 3, 3, 0, 3, 0, 3, 2, 3, 5, 4, 0, 2, 2, 2,
+     3, 1, 0, 0, 3, 1, 5, 4, 3, 5, 5])
 
 #########################################################################
 # We may want to map these indices to explicit condition names.
 # For that, we define a list of 10 strings.
 condition_ids = ['horizontal checkerboard',
                  'vertical checkerboard',
-                 'right button press, auditory instructions',
-                 'left button press, auditory instructions',
-                 'right button press, visual instructions',
-                 'left button press, visual instructions',
-                 'mental computation, auditory instructions',
-                 'mental computation, visual instructions',
+                 'auditory instructions',
+                 'visual instructions',
                  'visual sentence',
                  'auditory sentence']
 
@@ -63,3 +59,11 @@ events = pd.DataFrame({'trial_type': trial_type,
 tsvfile = 'localizer_events.tsv'
 events.to_csv(tsvfile, sep='\t', index=False)
 print("Created the events file in %s " % tsvfile)
+
+
+#########################################################################
+# Plot the event dataframe.
+import matplotlib.pyplot as plt
+from nilearn.reporting import plot_event
+plot_event(events, figsize=(12, 4))
+plt.show()
