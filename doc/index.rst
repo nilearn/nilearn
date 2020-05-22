@@ -5,7 +5,9 @@
 
 .. container:: index-paragraph
 
-    Nilearn enables **approachable and versatile analyses of brain volumes**. It provides statistical and machine-learning tools, with **instructive documentation & friendly community**.
+    Nilearn enables **approachable and versatile analyses of brain
+    volumes**. It provides statistical and machine-learning tools, with
+    **instructive documentation & open community**.
     
     It supports general linear model (GLM) based analysis and leverages the `scikit-learn <http://scikit-learn.org>`__ Python toolbox
     for multivariate statistics with applications such as predictive modelling,
