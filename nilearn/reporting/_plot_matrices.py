@@ -25,7 +25,7 @@ def plot_design_matrix(design_matrix, rescale=True, ax=None, output_file=None):
     ax : axis handle, optional
         Handle to axis onto which we will draw design matrix.
 
-    output_file: string or None, optional,
+    output_file : string or None, optional,
         The name of an image file to export the plot to. Valid extensions
         are .png, .pdf, .svg. If output_file is not None, the plot
         is saved to a file, and the display is closed.
@@ -67,14 +67,16 @@ def plot_event(model_event, cmap=None, output_file=None, **fig_kwargs):
 
     Parameters
     ----------
-    model_event : DataFrame or list of DataFrame
-        the list of Dataframe obtained by ```first_level_models_from_bids```
-        or the Dataframe obtained by reading a BIDS *_event.tsv
+    model_event : pandas DataFrame or list of pandas DataFrame
+        the `pandas.DataFrame` must have three columns
+        ``event_type`` with event name, ``onset`` and ``duration``.
+        The `pandas.DataFrame` can also be obtained from 
+        :func:`~nilearn.stats.first_level_model.first_level_models_from_bids`.
 
     cmap : str or matplotlib.cmap
         the colormap used to label different events
 
-    output_file: string or None, optional,
+    output_file : string or None, optional,
         The name of an image file to export the plot to. Valid extensions
         are .png, .pdf, .svg. If output_file is not None, the plot
         is saved to a file, and the display is closed.
@@ -94,7 +96,7 @@ def plot_event(model_event, cmap=None, output_file=None, **fig_kwargs):
         model_event = [model_event]
    
     n_runs = len(model_event)
-    figure, axes = plt.subplots(n_runs, 1, **fig_kwargs)
+    figure, ax = plt.subplots(1, 1, **fig_kwargs)
 
     # input validation
     if cmap is None:
@@ -104,36 +106,43 @@ def plot_event(model_event, cmap=None, output_file=None, **fig_kwargs):
     else:
         cmap = cmap
 
+    event_labels = pd.concat(e['trial_type'] for e in model_event)
+    event_labels = np.unique(event_labels)
+
+    cmap_dictionary = {label:idx for idx, label in enumerate(event_labels)}
+
+    if len(event_labels) > cmap.N:
+        plt.close()
+        raise ValueError("The number of event types is greater than "+ \
+            " colors in colormap (%d > %d). Use a different colormap." \
+            % (len(event_labels), cmap.N))
+
     for idx_run, event_df in enumerate(model_event):
-        if n_runs == 1:
-            ax = axes
-        else:
-            ax = axes[idx_run]
         
-        event_labels = np.unique(event_df['trial_type'])
-        cmap_dictionary = {label:idx for idx, label in enumerate(event_labels)}
-
-        if len(event_labels) > cmap.N:
-            plt.close()
-            raise ValueError("The number of event types is greater than "+ \
-                " colors in colormap (%d > %d). Use a different colormap." \
-                % (len(event_labels), cmap.N))
-
-        ax.set_title("Run n. %0d" % (idx_run + 1))
         for _, event in event_df.iterrows():
             event_onset = event['onset']
             event_end = event['onset'] + event['duration']
-            color = cmap.colors[cmap_dictionary[event['trial_type']]]               
-            ax.axvspan(event_onset, event_end, facecolor=color)
-        ax.set_xlabel("Time (sec.)")
+            color = cmap.colors[cmap_dictionary[event['trial_type']]]
+         
+            ax.axvspan(event_onset, 
+                       event_end, 
+                       ymin=(idx_run + .25) / n_runs, 
+                       ymax=(idx_run + .75) / n_runs, 
+                       facecolor=color)
 
-        handles = []
-        for label, idx in cmap_dictionary.items():
-            patch = mpatches.Patch(color=cmap.colors[idx], label=label)
-            handles.append(patch)
+    handles = []
+    for label, idx in cmap_dictionary.items():
+        patch = mpatches.Patch(color=cmap.colors[idx], label=label)
+        handles.append(patch)
 
-        _ = ax.legend(handles=handles)
+    _ = ax.legend(handles=handles)
 
+    ax.set_ylabel("Runs")
+    ax.set_xlabel("Time (sec.)")
+    ax.set_ylim(0, n_runs)
+    ax.set_yticks(np.arange(n_runs) + .5)
+    ax.set_yticklabels(np.arange(n_runs) + 1)
+    
     plt.tight_layout()
     if output_file is not None:
         plt.savefig(output_file)
@@ -161,15 +170,15 @@ def plot_contrast_matrix(contrast_def, design_matrix, colorbar=False, ax=None,
         combined with operators +- and combined with numbers with operators
         +-`*`/.
 
-    design_matrix: pandas DataFrame
+    design_matrix : pandas DataFrame
 
-    colorbar: Boolean, optional (default False)
+    colorbar : Boolean, optional (default False)
         Include a colorbar in the contrast matrix plot.
 
-    ax: matplotlib Axes object, optional (default None)
+    ax : matplotlib Axes object, optional (default None)
         Directory where plotted figures will be stored.
 
-    output_file: string or None, optional,
+    output_file : string or None, optional,
         The name of an image file to export the plot to. Valid extensions
         are .png, .pdf, .svg. If output_file is not None, the plot
         is saved to a file, and the display is closed.
