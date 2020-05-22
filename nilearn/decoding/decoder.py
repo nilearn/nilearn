@@ -1059,10 +1059,10 @@ class fREMRegressor(_BaseDecoder):
 
     References
     ----------
-    .. [1] A. Hoyos-Idrobo, G. Varoquaux, J. Kahn and B. Thirion, "FReM –
-        scalable and stable decoding with fast regularized ensemble of models"
-        in NeuroImage, Elsevier, 2017  pp.1-16, 11 October 2017.
-        https://hal.archives-ouvertes.fr/hal-01615015/
+    * A. Hoyos-Idrobo, G. Varoquaux, J. Kahn and B. Thirion, "FReM –
+      scalable and stable decoding with fast regularized ensemble of models"
+      in NeuroImage, Elsevier, 2017  pp.1-16, 11 October 2017.
+      https://hal.archives-ouvertes.fr/hal-01615015/
 
     See Also
     ------------
@@ -1215,10 +1215,10 @@ class fREMClassifier(_BaseDecoder):
 
     References
     ----------
-    .. [1] A. Hoyos-Idrobo, G. Varoquaux, J. Kahn and B. Thirion, "FReM –
-        scalable and stable decoding with fast regularized ensemble of models"
-        in NeuroImage, Elsevier, 2017  pp.1-16, 11 October 2017.
-        https://hal.archives-ouvertes.fr/hal-01615015/
+    * A. Hoyos-Idrobo, G. Varoquaux, J. Kahn and B. Thirion, "FReM –
+      scalable and stable decoding with fast regularized ensemble of models"
+      in NeuroImage, Elsevier, 2017  pp.1-16, 11 October 2017.
+      https://hal.archives-ouvertes.fr/hal-01615015/
 
     See Also
     ------------

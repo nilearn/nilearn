@@ -149,7 +149,7 @@ class NiftiMasker(BaseMasker, CacheMixin, ReportMixin):
         This is useful to perform data subselection as part of a scikit-learn
         pipeline.
 
-    `dtype: {dtype, "auto"}
+    dtype : {dtype, "auto"}
         Data type toward which the data should be converted. If "auto", the
         data will be converted to int32 if dtype is discrete and float32 if it
         is continuous.
