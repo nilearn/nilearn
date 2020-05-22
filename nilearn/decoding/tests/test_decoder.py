@@ -287,7 +287,8 @@ def test_decoder_regression():
 
 def test_decoder_apply_mask():
     X_init, y = make_classification(n_samples=200, n_features=125, scale=3.0,
-                                    n_informative=5, n_classes=4, random_state=42)
+                                    n_informative=5, n_classes=4,
+                                    random_state=42)
     X, _ = to_niimgs(X_init, [5, 5, 5])
     model = Decoder(mask=NiftiMasker())
 
