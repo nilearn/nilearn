@@ -1463,3 +1463,130 @@ optional
         display = None
 
     return display
+
+
+def plot_markers(node_values, node_coords, node_size='auto', 
+                 node_cmap=plt.cm.viridis_r, node_vmin=None, node_vmax=None, 
+                 node_threshold=None, output_file=None, display_mode="ortho", 
+                 figure=None, axes=None, title=None, annotate=True, 
+                 black_bg=False, node_kwargs=None, colorbar=True):
+    """Plot network nodes (markers) on top of the brain glass schematics.
+
+    Nodes are color coded according to provided nodal measure. Nodal measure 
+    usually represents some notion of node importance.  
+
+    Parameters
+    ----------
+    node_values : array_like of length n
+        Vector containing nodal importance measure. Each node will be colored 
+        acording to corresponding node value.
+    node_coords : numpy array_like of shape (n, 3)
+        3d coordinates of the graph nodes in world space.
+    node_size : 'auto' or scalar
+        Size(s) of the nodes in points^2. By default the size of the node is
+        inversely propertionnal to the number of nodes.
+    node_cmap : str or colormap
+        Colormap used to represent the node measure.
+    node_vmin : float, optional
+        Lower bound of the colormap. If `None`, the min of the node_values is 
+        used.
+    node_vmax : float, optional
+        Upper bound of the colormap. If `None`, the min of the node_values is 
+        used.
+    node_threshold : float
+        If provided only the nodes with a value greater than node_threshold 
+        will be shown.
+    output_file : string, or None, optional
+        The name of an image file to export the plot to. Valid extensions
+        are .png, .pdf, .svg. If output_file is not None, the plot
+        is saved to a file, and the display is closed. 
+    display_mode : string, optional. Default is 'ortho'.
+        Choose the direction of the cuts: 'x' - sagittal, 'y' - coronal,
+        'z' - axial, 'l' - sagittal left hemisphere only,
+        'r' - sagittal right hemisphere only, 'ortho' - three cuts are
+        performed in orthogonal directions. Possible values are: 'ortho',
+        'x', 'y', 'z', 'xz', 'yx', 'yz', 'l', 'r', 'lr', 'lzr', 'lyr',
+        'lzry', 'lyrz'.
+    figure : integer or matplotlib figure, optional
+        Matplotlib figure used or its number. If None is given, a
+        new figure is created.
+    axes : matplotlib axes or 4 tuple of float: (xmin, ymin, width, height), optional
+        The axes, or the coordinates, in matplotlib figure space,
+        of the axes used to display the plot. If None, the complete
+        figure is used.
+    title : string, optional
+        The title displayed on the figure.
+    annotate : boolean, optional
+        If annotate is True, positions and left/right annotation
+        are added to the plot.
+    black_bg : boolean, optional
+        If True, the background of the image is set to be black. If
+        you wish to save figures with a black background, you
+        will need to pass "facecolor='k', edgecolor='k'"
+        to matplotlib.pyplot.savefig.
+    node_kwargs : dict
+        will be passed as kwargs to the plt.scatter call that plots all
+        the nodes in one go
+    colorbar : boolean, optional
+        If True, display a colorbar on the right of the plots.
+    """
+    
+    # Validate node_values
+    node_values = np.array(node_values).flatten()
+    if node_values.shape != (node_coords.shape[0], ): 
+        msg = ("Length of 'node_values' should match length of 'node_coords': "
+               "{0} != {1}").format(len(node_values), len(node_coords))        
+        raise ValueError(msg) 
+
+    display = plot_glass_brain(None, display_mode=display_mode,
+                               figure=figure, axes=axes, title=title,
+                               annotate=annotate, black_bg=black_bg)
+
+    node_size = (min(1e4 / len(node_coords), 100) if node_size == 'auto' 
+                 else node_size)
+
+    # Filter out nodes with node values below threshold
+    if node_threshold is not None:
+        if node_threshold > np.max(node_values):
+            msg = ("Provided 'node_threshold' value: {0} should not exceed "
+                   "highest node value: {1}").format(node_threshold, 
+                                                     np.max(node_values)) 
+            raise ValueError(msg)
+
+        retained_nodes = node_values > node_threshold
+        node_values = node_values[retained_nodes]
+        node_coords = node_coords[retained_nodes]  
+        if isinstance(node_size, collections.abc.Iterable):
+            node_size = [size for ok_retain, size in 
+                         zip(retained_nodes, node_size) if ok_retain]
+
+    # Calculate node colors based on value
+    node_kwargs = {} if node_kwargs is None else node_kwargs
+    node_vmin = np.min(node_values) if node_vmin is None else node_vmin
+    node_vmax = np.max(node_values) if node_vmax is None else node_vmax
+    if node_vmin == node_vmax:
+        node_vmin, node_vmax = 0.9 * node_vmin, 1.1 * node_vmax
+    norm = matplotlib.colors.Normalize(vmin=node_vmin, vmax=node_vmax)
+    node_cmap = (plt.get_cmap(node_cmap) if isinstance(node_cmap, str) 
+                 else node_cmap)
+    node_color = [node_cmap(norm(node_value)) for node_value in node_values]
+    
+    display.add_markers(
+        marker_coords=node_coords,
+        marker_color=node_color,
+        marker_size=node_size,
+        **node_kwargs
+    )
+
+    if colorbar:
+        display._colorbar = True
+        display._show_colorbar(cmap=node_cmap, norm=norm)
+
+    if output_file is not None:
+        display.savefig(output_file)
+        display.close()
+        display = None
+
+    return display
+
+
