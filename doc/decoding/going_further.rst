@@ -13,13 +13,13 @@
 
 .. _going_further:
 
-================================
-Going further with scikit-learn
-================================
+==========================================================================
+Running scikit-learn low-level functions for more control on the analysis
+==========================================================================
 
-This section gives pointers to design your own decoding pipelines with scikit-learn.
-
-As in ref:decoding_intro: the examples show visual category stimuli decoding using Haxby
+This section gives pointers to design your own decoding pipelines with
+scikit-learn. This builds on the :ref:`didactic introduction to decoding <decoding_intro>`.
+Here also perform decoding of the visual category of a stimuli on Haxby
 2001 dataset.
 
 .. contents:: **Contents**
@@ -120,11 +120,11 @@ scoring='roc_auc'
 
 .. seealso::
 
-  * If you need more than only the scores from cross-validation (the prediction
-    or the models for each fold) or if you want to learn more on various
+  * If you need more than only than cross-validation scores (i.e the predictions
+    or models for each fold) or if you want to learn more on various
     cross-validation schemes, see:
     <https://scikit-learn.org/stable/modules/cross_validation.html>`_
-  * the `list of scoring options
+  * `how to evaluate a model using scikit-learn
     <http://scikit-learn.org/stable/modules/model_evaluation.html#common-cases-predefined-values>`_
 
 

@@ -33,8 +33,8 @@ The Haxby 2001 experiment
 -------------------------
 
 In the Haxby experiment, subjects were presented visual stimuli from
-different categories. We are going to predict which category the subject
-is seeing from the fMRI activity recorded in masks of the ventral stream.
+different categories. We are going to predict which category the subject is
+seeing from the fMRI activity recorded in regions of the ventral visual system.
 Significant prediction shows that the signal in the region contains
 information on the corresponding category.
 
@@ -87,7 +87,7 @@ _____
    associated to trial.
 
    For simplicity, we will work on the raw time-series of the data.
-   However, **it is strongly recommended that you fit a first level to
+   However, **it is strongly recommended that you fit a first-level model to
    include an hemodynamic response function (HRF) model and isolate the
    responses from various confounds**.
 
@@ -115,7 +115,7 @@ Loading the data into nilearn
     >>> haxby_dataset = datasets.fetch_haxby()  # doctest: +SKIP
 
 
-* **Masking fMRI data**: To perform the analysis some voxels only, we will
+* **Masking fMRI data**: To perform the analysis on some voxels only, we will
   provide a spatial mask of voxels to keep, which is provided with the dataset
   (here `mask_vt` a mask of the ventral temporal cortex that comes with data).
 
@@ -143,8 +143,8 @@ Loading the data into nilearn
   * :ref:`masking`
     To better control this process of spatial masking and add additional signal
     processing steps (smoothing, filtering, standardizing...), we could
-    explicitely define a masker :  :class:`nilearn.input_data.NiftiMasker`.
-    This object extracts voxels belonging to a given spatial mask and convert
+    explicitly define a masker :  :class:`nilearn.input_data.NiftiMasker`.
+    This object extracts voxels belonging to a given spatial mask and converts
     their signal to a 2D data matrix with a shape (n_timepoints, n_voxels)
     (see :ref:`mask_4d_2_3d` for a discussion on using
 
@@ -183,7 +183,7 @@ these steps : a `fit` function and a `predict` function.
 A first estimator
 -----------------
 
-To perform decoding, we need a model that will be able to learn some relations
+To perform decoding, we need a model that can learn some relations
 between **X** (the imaging data) and **y** the condition label. As a default,
 Nilearn uses `Support Vector Classifier
 <http://scikit-learn.org/stable/modules/svm.html>`_ (or SVC) with a
@@ -203,8 +203,8 @@ Nilearn makes it easy to train a model with a principled pipeline using the
 :class:`nilearn.decoding.Decoder` object. Using the mask we defined before
 and an SVC estimator as we already introduced, we can create a pipeline in
 two lines. The additional `standardize`=True argument adds a normalization
-of images signal to a 0 mean and 1 variance which will improve performance
-of most estimators.
+of images signal to a zero mean and unit variance, which will improve
+performance of most estimators.
 
     >>> from nilearn.decoding import Decoder # doctest: +SKIP
     >>> decoder = Decoder(estimator='svc', mask=mask_filename) # doctest: +SKIP
@@ -214,14 +214,14 @@ Then we can fit it on the images and the conditions we chose before.
     >>> decoder.fit(fmri_niimgs, conditions) # doctest: +SKIP
 
 This decoder can now be used to predict conditions for new images !
-Be careful though, as we warned you, predicting images that were used to
+Be careful though, as we warned you, predicting on images that were used to
 `fit` your model should never be done.
 
 
 Measuring prediction performance
 --------------------------------
 
-One of the most common interest of decoding is to measure how well we can learn
+One of the most common interests of decoding is to measure how well we can learn
 to predict various targets from our images to have a sense of which information
 is really contained in a given region of the brain. To do this, we need ways to
 measure the errors we make when we do prediction.
@@ -256,7 +256,7 @@ Choosing a good cross-validation strategy
 There are many cross-validation strategies possible, including K-Fold or
 leave-one-out. When choosing a strategy, keep in mind that the test set should
 be as little correlated as possible with the train set and have enough samples
-to enable a good measure the prediction error (10 to 20% of the data as a
+to enable a good measure the prediction error (at least 10-20% of the data as a
 rule of thumb).
 
 As a general advice :
@@ -291,7 +291,7 @@ Choice of the prediction accuracy measure
 .........................................
 
 Once you have a prediction about new data and its real label (the "ground truth")
-there are different ways to measure a "score" that summarize its performance.
+there are different ways to measure a "score" that summarizes its performance.
 
 The default metric used for measuring errors is the accuracy score, i.e.
 the number of total errors. It is not always a sensible metric,
@@ -337,9 +337,10 @@ Receiver Operating Characteristic), can be used through the `scoring` argument.
 Visualizing the decoder's weights
 ---------------------------------
 
-When it's fitted, the :class:`nilearn.decoding.Decoder` object retains the coefficients of best models for
-each class in decoder.coef_. To plot the map of weights that are discriminative
-from "face" against other classes you can directly access it through :
+During `fit` step, the :class:`nilearn.decoding.Decoder` object retains the
+coefficients of best models for each class in decoder.coef_. To plot the
+weight maps that are discriminative from "face" against other classes you
+can directly access it through :
 
     >>> decoder.coef_img_['face'] # doctest: +SKIP
 
