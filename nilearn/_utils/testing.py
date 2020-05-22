@@ -9,9 +9,11 @@ import tempfile
 import urllib
 import warnings
 import gc
+import distutils
 
 import numpy as np
 import pytest
+import sklearn
 
 from ..datasets.utils import _fetch_files
 
@@ -47,6 +49,19 @@ except ImportError:
 
 
     memory_usage = memory_used = None
+
+
+def check_deprecation(func, match=None):
+    @functools.wraps(func)
+    def wrapped(*args, **kwargs):
+        if distutils.version.LooseVersion(sklearn.__version__) < '0.22':
+            with pytest.deprecated_call():
+                result = func(*args, **kwargs)
+        else:
+            with pytest.warns(FutureWarning, match=match):
+                result = func(*args, **kwargs)
+        return result
+    return wrapped
 
 
 def assert_memory_less_than(memory_limit, tolerance,

@@ -314,7 +314,7 @@ def test_compute_epi_mask():
                              get_data(mask4)[3:12, 3:12])
 
 
-def test_compute_gray_matter_mask():
+def test_compute_brain_mask():
     # Check masker for template masking strategy
 
     img = np.random.rand(9, 9, 5)

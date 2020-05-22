@@ -243,7 +243,7 @@ the :ref:`user guide <user_guide>` for more information and usage examples.
 
    compute_epi_mask
    compute_multi_epi_mask
-   compute_gray_matter_mask
+   compute_brain_mask
    compute_multi_gray_matter_mask
    compute_background_mask
    compute_multi_background_mask

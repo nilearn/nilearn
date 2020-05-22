@@ -21,6 +21,16 @@ Fixes
 -----
 
 - :class:`nilearn.input_data.NiftiLabelsMasker` no longer ignores its `mask_img`
+- :func:`nilearn.masking.compute_brain_mask` has been replaced by
+  `:func: nilearn.masking.compute_gray_matter_mask`. Features remained the same but
+  some corrections regarding its description were made in the docstring.
+
+
+Changes
+-------
+
+- :func:`nilearn.datasets.fetch_cobre` has been deprecated and will be
+  removed in release 0.9 .
 
 0.6.2
 ======
