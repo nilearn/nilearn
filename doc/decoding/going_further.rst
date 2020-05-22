@@ -145,6 +145,18 @@ permutation testing on the labels, with
     >>> from sklearn.model_selection import permutation_test_score
     >>> null_cv_scores = permutation_test_score(svc, fmri_masked, conditions, cv=cv)  # doctest: +SKIP
 
+.. topic:: **Decoding on simulated data**
+
+   Simple simulations may be useful to understand the behavior of a given
+   decoder on data. In particular, simulations enable us to set the true
+   weight maps and compare them to the ones retrieved by decoders. A full
+   example running simulations and discussing them can be found in
+   :ref:`sphx_glr_auto_examples_02_decoding_plot_simulated_data.py`
+   Simulated data cannot easily mimic all properties of brain data. An
+   important aspect, however, is its spatial structure, that we create in
+   the simulations.
+
+
 Decoding without a mask: Anova-SVM in scikit-lean
 ==================================================
 
@@ -168,6 +180,30 @@ based feature selection (a.k.a. `Anova <https://en.wikipedia.org/wiki/Analysis_o
     >>> coef = feature_selection.inverse_transform(coef) # doctest: +SKIP
     >>> weight_img = masker.inverse_transform(coef) # doctest: +SKIP
     >>> plot_stat_map(weight_img, title='Anova+SVC weights') # doctest: +SKIP
+
+Setting estimator parameters
+============================
+
+Most estimators have parameters that can be set to optimize their
+performance. Importantly, this must be done via **nested**
+cross-validation.
+
+Indeed, there is noise in the cross-validation score, and when we vary
+the parameter, the curve showing the score as a function of the parameter
+will have bumps and peaks due to this noise. These will not generalize to
+new data and chances are that the corresponding choice of parameter will
+not perform as well on new data.
+
+With scikit-learn nested cross-validation is done via
+:class:`sklearn.model_selection.GridSearchCV`. It is unfortunately time
+consuming, but the ``n_jobs`` argument can spread the load on multiple
+CPUs.
+
+.. seealso::
+
+  * `The scikit-learn documentation on choosing estimators and their parameters
+    selection <https://scikit-learn.org/stable/tutorial/statistical_inference/model_selection.html>`_
+
 
 Going further with scikit-learn
 ===============================
