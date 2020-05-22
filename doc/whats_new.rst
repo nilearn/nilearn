@@ -26,6 +26,12 @@ Fixes
   some corrections regarding its description were made in the docstring.
 
 
+Changes
+-------
+
+- :func:`nilearn.datasets.fetch_cobre` has been deprecated and will be
+  removed in release 0.9 .
+
 0.6.2
 ======
 
