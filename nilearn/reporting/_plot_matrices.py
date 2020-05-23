@@ -106,27 +106,29 @@ def plot_contrast_matrix(contrast_def, design_matrix, colorbar=False, ax=None,
             contrast_def, design_column_names)
     maxval = np.max(np.abs(contrast_def))
     con_matrix = np.asmatrix(contrast_def)
-
+    max_len = np.max([len(name) for name in design_column_names])
+    
     if ax is None:
-        plt.figure(figsize=(8, 4))
+        plt.figure(figsize=(.5 * len(design_column_names),
+                            1 + .5 * con_matrix.shape[0] + .05 * max_len))
         ax = plt.gca()
 
     mat = ax.matshow(con_matrix, aspect='equal',
-                     extent=[0, con_matrix.shape[1], 0, con_matrix.shape[0]],
                      cmap='gray', vmin=-maxval, vmax=maxval)
 
     ax.set_label('conditions')
     ax.set_ylabel('')
     ax.set_yticklabels(['' for x in ax.get_yticklabels()])
 
-    # Shift ticks to be at 0.5, 1.5, etc
     ax.xaxis.set(ticks=np.arange(len(design_column_names)))
     ax.set_xticklabels(design_column_names, rotation=60, ha='left')
-
+    
     if colorbar:
         plt.colorbar(mat, fraction=0.025, pad=0.04)
 
     plt.tight_layout()
+    plt.subplots_adjust(top=np.min([.3 + .05 * con_matrix.shape[0], .6]))
+
     if output_file is not None:
         plt.savefig(output_file)
         plt.close()
