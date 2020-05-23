@@ -1,5 +1,5 @@
 """
-Decoding of a dataset after glm fit for signal extraction
+Decoding of a dataset after GLM fit for signal extraction
 =========================================================
 
 Full step-by-step example of fitting a GLM to perform a decoding experiment.
@@ -118,14 +118,15 @@ report = make_glm_report(glm,
                          contrasts=conditions,
                          bg_img=mean_img_,
                          )
+report  # This report can be viewed in a notebook
 
 #############################################################################
 # In a jupyter notebook, the report will be automatically inserted, as above.
 # We have several other ways to access the report:
 
-# report  # This report can be viewed in a notebook
 # report.save_as_html('report.html')
 # report.open_in_browser()
+
 
 #############################################################################
 # Transform the maps to an array of values
