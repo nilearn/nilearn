@@ -106,7 +106,7 @@ def plot_contrast_matrix(contrast_def, design_matrix, colorbar=False, ax=None,
             contrast_def, design_column_names)
     maxval = np.max(np.abs(contrast_def))
     con_matrix = np.asmatrix(contrast_def)
-    max_len = np.max([len(name) for name in design_column_names])
+    max_len = np.max([len(str(name)) for name in design_column_names])
     
     if ax is None:
         plt.figure(figsize=(.5 * len(design_column_names),
