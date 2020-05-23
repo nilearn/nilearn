@@ -1201,13 +1201,12 @@ def plot_glass_brain(stat_map_img,
         return functools.partial(get_projector(display_mode),
                                  alpha=alpha, plot_abs=plot_abs)
 
-    brain_color = (0. if black_bg else 1.,) * 3
     display = _plot_img_with_bg(
         img=stat_map_img, output_file=output_file, display_mode=display_mode,
         figure=figure, axes=axes, title=title, annotate=annotate,
         black_bg=black_bg, threshold=threshold, cmap=cmap, colorbar=colorbar,
         display_factory=display_factory, vmin=vmin, vmax=vmax,
-        cbar_vmin=cbar_vmin, cbar_vmax=cbar_vmax, brain_color=brain_color,
+        cbar_vmin=cbar_vmin, cbar_vmax=cbar_vmax,
         resampling_interpolation=resampling_interpolation, **kwargs)
 
     if stat_map_img is None and 'l' in display.axes:
