@@ -257,9 +257,13 @@ class CutAxes(BaseAxes):
                              self.direction)
         return cut
 
-    def draw_position(self, size, bg_color, **kwargs):
+    def draw_position(self, size, bg_color, decimal=False, **kwargs):
+        if decimal:
+            text = '%s=%.{}f'.format(decimal)
+        else:
+            text = '%s=%i'
         ax = self.ax
-        ax.text(0, 0, '%s=%i' % (self.direction, self.coord),
+        ax.text(0, 0, text % (self.direction, self.coord),
                 transform=ax.transAxes,
                 horizontalalignment='left',
                 verticalalignment='bottom',
@@ -999,6 +1003,13 @@ class BaseSlicer(object):
             else:
                 kwargs['color'] = 'k'
 
+        # use decimal for annotate position
+        if 'decimal' in kwargs.keys():
+            decimal = kwargs['decimal']
+            del kwargs['decimal']
+        else:
+            decimal = False
+
         bg_color = ('k' if self._black_bg else 'w')
 
         if left_right:
@@ -1009,6 +1020,7 @@ class BaseSlicer(object):
         if positions:
             for display_axis in self.axes.values():
                 display_axis.draw_position(size=size, bg_color=bg_color,
+                                           decimal=decimal,
                                            **kwargs)
 
         if scalebar:

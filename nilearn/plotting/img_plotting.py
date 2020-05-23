@@ -132,6 +132,12 @@ def _plot_img_with_bg(img, bg_img=None, cut_coords=None,
         display_factory: function
             takes a display_mode argument and return a display class
     """
+    if 'decimal' in kwargs.keys():
+        decimal = kwargs['decimal']
+        del kwargs['decimal']
+    else:
+        decimal = False
+
     show_nan_msg = False
     if vmax is not None and np.isnan(vmax):
         vmax = None
@@ -175,7 +181,7 @@ def _plot_img_with_bg(img, bg_img=None, cut_coords=None,
         figure=figure, axes=axes,
         black_bg=black_bg,
         colorbar=colorbar,
-        brain_color=brain_color,
+        brain_color=brain_color
         )
 
     if bg_img is not None:
@@ -191,7 +197,7 @@ def _plot_img_with_bg(img, bg_img=None, cut_coords=None,
                             **kwargs)
 
     if annotate:
-        display.annotate()
+        display.annotate(decimal=decimal)
     if draw_cross:
         display.draw_cross()
     if title is not None and not title == '':

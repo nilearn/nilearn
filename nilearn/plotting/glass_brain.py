@@ -84,7 +84,7 @@ def _get_mpl_patches(json_content, transform=None,
     return mpl_patches
 
 
-def _get_json_and_transform(direction):
+def _get_json_and_transform(direction, dirname = None):
     """Returns the json filename and and an affine transform, which has
     been tweaked by hand to fit the MNI template
     """
@@ -101,8 +101,9 @@ def _get_json_and_transform(direction):
         'l': [0.38, 0, 0, 0.38, -108, -70],
         'r': [0.38, 0, 0, 0.38, -108, -70]}
 
-    dirname = os.path.dirname(os.path.abspath(__file__))
-    dirname = os.path.join(dirname, 'glass_brain_files')
+    if dirname is None:
+        dirname = os.path.dirname(os.path.abspath(__file__))
+        dirname = os.path.join(dirname, 'glass_brain_files')
     direction_to_filename = dict([
         (_direction, os.path.join(
             dirname,
@@ -164,6 +165,12 @@ def plot_brain_schematics(ax, direction, **kwargs):
            Useful for the caller to be able to set axes limits
 
     """
+    if 'dirname' in kwargs.keys():
+        dirname = kwargs['dirname']
+        del kwargs['dirname']
+    else:
+        dirname = False
+
     if LooseVersion(matplotlib.__version__) >= LooseVersion("2.0"):
         get_axis_bg_color = ax.get_facecolor()
     else:
@@ -172,7 +179,7 @@ def plot_brain_schematics(ax, direction, **kwargs):
     black_bg = colors.colorConverter.to_rgba(get_axis_bg_color) \
                     == colors.colorConverter.to_rgba('k')
 
-    json_filename, transform = _get_json_and_transform(direction)
+    json_filename, transform = _get_json_and_transform(direction, dirname)
     with open(json_filename) as json_file:
         json_content = json.loads(json_file.read())
 
