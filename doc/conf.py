@@ -63,7 +63,8 @@ autodoc_default_options = {
     'inherited-members' : True,
     'undoc-members': True,
     'member-order': 'bysource',
-    'special-members': '__init__',
+    # We cannot have __init__: it causes duplicated entries
+    #'special-members': '__init__',
 }
 
 # Add any paths that contain templates here, relative to this directory.
