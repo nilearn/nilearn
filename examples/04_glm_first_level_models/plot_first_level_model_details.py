@@ -2,7 +2,7 @@
 ====================================================
 
 In this tutorial, we study how first-level models are parametrized
-for fMRI data analysis and clarify thee impact of these parameters on the
+for fMRI data analysis and clarify the impact of these parameters on the
 results of the analysis.
 
 We use an exploratory approach, in which we incrementally include some
