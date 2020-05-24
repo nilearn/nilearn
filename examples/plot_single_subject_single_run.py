@@ -1,11 +1,23 @@
 """
-Analysis of a single session, single subject fMRI dataset
-=========================================================
+Intro to GLM Analysis: a single-session, single-subject fMRI dataset
+=====================================================================
 
-In this tutorial, we compare the fMRI signal during periods of auditory
-stimulation versus periods of rest, using a General Linear Model (GLM).
+In this tutorial, we use a General Linear Model (GLM) to compare the fMRI
+signal during periods of auditory stimulation versus periods of rest.
 
-The dataset comes from an experiment conducted at the FIL by Geriant Rees
+.. contents:: **Contents**
+    :local:
+    :depth: 1
+
+The analyse described here is performed in the native space, directly on the
+original EPI scans without any spatial or temporal preprocessing.
+(More sensitive results would likely be obtained on the corrected,
+spatially normalized and smoothed images).
+
+The data
+---------
+
+The dataset comes from an experiment conducted at the FIL by Geraint Rees
 under the direction of Karl Friston. It is provided by FIL methods
 group which develops the SPM software.
 
@@ -18,18 +30,9 @@ The whole brain BOLD/EPI images were acquired on a  2T Siemens
 MAGNETOM Vision system. Each scan consisted of 64 contiguous
 slices (64x64x64 3mm x 3mm x 3mm voxels). Acquisition of one scan took 6.05s, with the scan to scan repeat time (TR) set arbitrarily to 7s.
 
-The analyse described here is performed in the native space, directly on the
-original EPI scans without any spatial or temporal preprocessing.
-(More sensitive results would likely be obtained on the corrected,
-spatially normalized and smoothed images).
-
 
 To run this example, you must launch IPython via ``ipython
 --matplotlib`` in a terminal, or use ``jupyter-notebook``.
-
-.. contents:: **Contents**
-    :local:
-    :depth: 1
 
 """
 
@@ -45,11 +48,11 @@ To run this example, you must launch IPython via ``ipython
 
 from nilearn.datasets import fetch_spm_auditory
 subject_data = fetch_spm_auditory()
-print(subject_data.func)  # print the list of names of functional images
+subject_data.func  # print the list of names of functional images
 
 ###############################################################################
 # We can display the first functional image and the subject's anatomy:
-from nilearn.plotting import plot_stat_map, plot_anat, plot_img, show
+from nilearn.plotting import plot_stat_map, plot_anat, plot_img
 plot_img(subject_data.func[0])
 plot_anat(subject_data.anat)
 
@@ -72,7 +75,7 @@ mean_img = mean_img(fmri_img)
 # provided in the dataset.
 import pandas as pd
 events = pd.read_table(subject_data['events'])
-print(events)
+events
 
 ###############################################################################
 # Performing the GLM analysis
@@ -190,7 +193,8 @@ z_map = fmri_glm.compute_contrast(active_minus_rest,
                                   output_type='z_score')
 
 ###############################################################################
-# Plot thresholded z scores map.
+# Plot thresholded z scores map
+# ------------------------------
 #
 # We display it on top of the average
 # functional image of the series (could be the anatomical image of the
@@ -274,7 +278,7 @@ eff_map.to_filename(join(outdir, 'active_vs_rest_eff_map.nii.gz'))
 from nilearn.reporting import get_clusters_table
 table = get_clusters_table(z_map, stat_threshold=threshold,
                            cluster_threshold=20)
-print(table)
+table
 
 ###############################################################################
 # This table can be saved for future use.
@@ -282,7 +286,8 @@ print(table)
 table.to_csv(join(outdir, 'table.csv'))
 
 ###############################################################################
-# Performing an F-test.
+# Performing an F-test
+# ---------------------
 #
 # "active vs rest" is a typical t test: condition versus
 # baseline. Another popular type of test is an F test in which one
