@@ -58,7 +58,6 @@ extensions = ['sphinx.ext.autodoc',
 autosummary_generate = True
 
 autodoc_default_options = {
-    'imported-members': True,
     'members': True,
     'inherited-members' : True,
     'undoc-members': True,
