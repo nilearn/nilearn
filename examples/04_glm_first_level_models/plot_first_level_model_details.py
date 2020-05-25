@@ -1,16 +1,16 @@
-"""Studying first-level-model details in a trials-and-error fashion
-===================================================================
+"""Understanding parameters of the first-level model
+====================================================
 
-In this tutorial, we study the parametrization of the first-level
-model used for fMRI data analysis and clarify their impact on the
+In this tutorial, we study how first-level models are parametrized
+for fMRI data analysis and clarify the impact of these parameters on the
 results of the analysis.
 
 We use an exploratory approach, in which we incrementally include some
-new features in the analysis and look at the outcome, i.e. the
+new features in the analysis and inspect the outcome, i.e. the
 resulting brain maps.
 
 Readers without prior experience in fMRI data analysis should first
-run the `Analysis of a single session, single subject fMRI dataset`_
+run the :ref:`sphx_glr_auto_examples_plot_single_subject_single_run.py`
 tutorial to get a bit more
 familiar with the base concepts, and only then run this tutorial example.
 
@@ -20,8 +20,6 @@ To run this example, you must launch IPython via ``ipython
 .. contents:: **Contents**
     :local:
     :depth: 1
-
-.. _Analysis of a single session, single subject fMRI dataset: plot_single_subject_single_run.html
 
 """
 
@@ -70,7 +68,8 @@ fmri_img = data.epi_img
 t_r = 2.4
 events_file = data['events']
 import pandas as pd
-events= pd.read_table(events_file)
+events = pd.read_table(events_file)
+events
 
 ###############################################################################
 # Running a basic model
@@ -146,7 +145,7 @@ def make_localizer_contrasts(design_matrix):
     return contrasts
 
 #########################################################################
-# So let's look at these computed contrasts:
+# Let's look at these computed contrasts:
 #
 # * 'left - right button press': probes motor activity in left versus right button presses
 # * 'horizontal-vertical': probes the differential activity in viewing a horizontal vs vertical checkerboard
@@ -154,19 +153,19 @@ def make_localizer_contrasts(design_matrix):
 # * 'computation - sentences': looks at the activity when performing a mental comptation task  versus simply reading sentences.
 #
 contrasts = make_localizer_contrasts(design_matrix)
-plt.figure(figsize=(5, 9))
 from nilearn.reporting import plot_contrast_matrix
-for i, (key, values) in enumerate(contrasts.items()):
-    ax = plt.subplot(len(contrasts) + 1, 1, i + 1)
-    plot_contrast_matrix(values, design_matrix=design_matrix, ax=ax)
+for key, values in contrasts.items():
+    plot_contrast_matrix(values, design_matrix=design_matrix)
+    plt.suptitle(key)
 
 plt.show()
 
 #########################################################################
-# Contrast estimation and plotting.
+# A first contrast estimation and plotting
+# ----------------------------------------
 #
-# Since this script will be repeated several times, for the sake of readability,
-# we encapsulate it in a function that we call when needed.
+# As this script will be repeated several times, we encapsulate model
+# fitting and plotting in a function that we call when needed.
 #
 from nilearn import plotting
 
@@ -182,8 +181,8 @@ def plot_contrast(first_level_model):
         z_map = first_level_model.compute_contrast(
             contrast_val, output_type='z_score')
         plotting.plot_stat_map(
-            z_map, display_mode='z', threshold=3.0, title=contrast_id, axes=ax,
-            cut_coords=1)
+            z_map, display_mode='z', threshold=3.0, title=contrast_id,
+            axes=ax, cut_coords=1)
 
 #########################################################################
 # Let's run the model and look at the outcome.
@@ -204,7 +203,8 @@ plt.show()
 # change this value. The cutoff period (1/high_pass) should be set as the
 # longest period between two trials of the same condition multiplied by 2.
 # For instance, if the longest period is 32s, the high_pass frequency shall be
-# 1/64 Hz ~ 0.016 Hz. Note that the design matrix has more columns to model drifts in the data.
+# 1/64 Hz ~ 0.016 Hz. Note that the design matrix has more columns to model
+# drifts in the data.
 
 first_level_model = FirstLevelModel(t_r, high_pass=.016)
 first_level_model = first_level_model.fit(fmri_img, events=events)
@@ -248,7 +248,7 @@ plot_contrast(first_level_model)
 plt.show()
 
 #########################################################################
-# Is it good ? No better, no worse. Let's turn to another parameter.
+# Is it good? No better, no worse. Let's turn to another parameter.
 
 #########################################################################
 # Changing the hemodynamic response model
@@ -270,7 +270,12 @@ plt.show()
 
 #########################################################################
 # No strong --positive or negative-- effect.
+
+#########################################################################
+# Adding a time derivative to the design
+# ......................................
 #
+# There seems to be something here. Maybe we could adjust the
 # We could try to go one step further: using not only the so-called
 # canonical hrf, but also its time derivative. Note that in that case,
 # we still perform the contrasts and obtain statistical significance
@@ -290,14 +295,13 @@ plt.show()
 #########################################################################
 # Not a huge effect, but rather positive overall. We could keep that one.
 #
-# By the way, a benefit of this approach is that we can test which voxels are
+# Note that a benefit of this approach is that we can test which voxels are
 # well explained by the derivative term, hinting at misfit regions, a
 # possibly valuable information. This is implemented by an F-test on
 # the time derivative regressors.
 
 contrast_val = np.eye(design_matrix.shape[1])[1:21:2]
 plot_contrast_matrix(contrast_val, design_matrix)
-plt.show()
 
 z_map = first_level_model.compute_contrast(
     contrast_val, output_type='z_score')
@@ -306,7 +310,7 @@ plotting.plot_stat_map(
 plt.show()
 
 #########################################################################
-# Well, there seems to be something here. Maybe we could adjust the
+# There seems to be something here. Maybe we could adjust the
 # timing, by increasing the slice_time_ref parameter from 0 to 0.5. Now the
 # reference for model sampling is not the beginning of the volume
 # acquisition, but the middle of it.
@@ -328,7 +332,7 @@ plt.show()
 #
 # This is done by specifying `hrf_model='spm + derivative + dispersion'`.
 #
-first_level_model = FirstLevelModel(t_r,slice_time_ref=0.5,
+first_level_model = FirstLevelModel(t_r, slice_time_ref=0.5,
                                     hrf_model='spm + derivative + dispersion')
 first_level_model = first_level_model.fit(fmri_img, events=events)
 design_matrix = first_level_model.design_matrices_[0]
@@ -402,8 +406,8 @@ plt.show()
 
 
 #########################################################################
-#  Smoothing
-# ----------
+# Smoothing
+# ---------
 #
 # Smoothing is a regularization of the model. It has two benefits:
 # decrease the noise level in images, and reduce the discrepancy
@@ -421,12 +425,12 @@ plot_contrast(first_level_model)
 plt.show()
 
 #########################################################################
-#  The design is unchanged but the maps are smoother and more contrasted.
+# The design is unchanged but the maps are smoother and more contrasted.
 #
 
 #########################################################################
-#  Masking
-# --------
+# Masking
+# -------
 #
 # Masking consists in selecting the region of the image on which the
 # model is run: it is useless to run it outside of the brain.
