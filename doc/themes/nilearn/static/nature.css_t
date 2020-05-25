@@ -1148,6 +1148,10 @@ dl.function tr:nth-child(2n), dl.class tr:nth-child(2n) {
     border-width: 0;
 }
 
+dl.function table.docutils td, dl.class table.docutils td {
+    border-width: 1px 0 1px 0;
+}
+
 dl.function .rubric, dl.class .rubric {
     margin-top: 4ex;
     border: solid #AAA;
@@ -1165,6 +1169,7 @@ dl.attribute {
 dl.method code, dl.attribute code {
     font-weight: 600;
 }
+
 
 /* ------- tighter layout in pre -------------------------- */
 pre {
