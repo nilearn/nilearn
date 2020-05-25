@@ -46,7 +46,13 @@ def plot_design_matrix(design_matrix, rescale=True, ax=None, output_file=None):
         X = X / np.maximum(1.e-12, np.sqrt(
             np.sum(X ** 2, 0)))  # pylint: disable=no-member
     if ax is None:
-        plt.figure()
+        max_len = np.max([len(str(name)) for name in names])
+        fig_height = 1 + .1 * X.shape[0] + .04 * max_len
+        if fig_height < 3:
+            fig_height = 3
+        elif fig_height > 10:
+            fig_height = 10
+        plt.figure(figsize=(1 + .23 * len(names), fig_height))
         ax = plt.subplot(1, 1, 1)
 
     ax.imshow(X, interpolation='nearest', aspect='auto')
@@ -54,7 +60,10 @@ def plot_design_matrix(design_matrix, rescale=True, ax=None, output_file=None):
     ax.set_ylabel('scan number')
 
     ax.set_xticks(range(len(names)))
-    ax.set_xticklabels(names, rotation=60, ha='right')
+    ax.set_xticklabels(names, rotation=60, ha='left')
+    # Set ticks above, to have a display more similar to the display of a
+    # corresponding dataframe
+    ax.xaxis.tick_top()
 
     plt.tight_layout()
     if output_file is not None:
@@ -196,27 +205,29 @@ def plot_contrast_matrix(contrast_def, design_matrix, colorbar=False, ax=None,
             contrast_def, design_column_names)
     maxval = np.max(np.abs(contrast_def))
     con_matrix = np.asmatrix(contrast_def)
-
+    max_len = np.max([len(str(name)) for name in design_column_names])
+    
     if ax is None:
-        plt.figure(figsize=(8, 4))
+        plt.figure(figsize=(.4 * len(design_column_names),
+                            1 + .5 * con_matrix.shape[0] + .04 * max_len))
         ax = plt.gca()
 
     mat = ax.matshow(con_matrix, aspect='equal',
-                     extent=[0, con_matrix.shape[1], 0, con_matrix.shape[0]],
                      cmap='gray', vmin=-maxval, vmax=maxval)
 
     ax.set_label('conditions')
     ax.set_ylabel('')
-    ax.set_yticklabels(['' for x in ax.get_yticklabels()])
+    ax.set_yticks(())
 
-    # Shift ticks to be at 0.5, 1.5, etc
     ax.xaxis.set(ticks=np.arange(len(design_column_names)))
-    ax.set_xticklabels(design_column_names, rotation=60, ha='left')
-
+    ax.set_xticklabels(design_column_names, rotation=50, ha='left')
+    
     if colorbar:
         plt.colorbar(mat, fraction=0.025, pad=0.04)
 
     plt.tight_layout()
+    plt.subplots_adjust(top=np.min([.3 + .05 * con_matrix.shape[0], .55]))
+
     if output_file is not None:
         plt.savefig(output_file)
         plt.close()
