@@ -1515,7 +1515,7 @@ def plot_carpet(img, mask_img=None, detrend=True, output_file=None,
 
     # Define TR and number of frames
     tr = img.header.get_zooms()[-1]
-    ntsteps = img.shape[-1]
+    n_tsteps = img.shape[-1]
 
     if mask_img is None:
         mask_img = compute_epi_mask(img)
@@ -1541,8 +1541,10 @@ def plot_carpet(img, mask_img=None, detrend=True, output_file=None,
 
     # Avoid segmentation faults for long acquisitions by decimating the data
     LONG_CUTOFF = 800
-    if ntsteps > LONG_CUTOFF:
-        data = data[::2, :]
+    # Get smallest power of 2 greater than the number of volumes divided by the
+    # cutoff, to determine how much to decimate (downsample) the data.
+    n_decimations = int(np.ceil(np.log2(np.ceil(n_tsteps / LONG_CUTOFF))))
+    data = data[::2 ** n_decimations, :]
 
     axes.imshow(data.T, interpolation='nearest',
                 aspect='auto', cmap='gray', vmin=-2, vmax=2)
@@ -1562,8 +1564,7 @@ def plot_carpet(img, mask_img=None, detrend=True, output_file=None,
     if title:
         axes.set_title(title)
     labels = tr * (np.array(xticks))
-    if ntsteps > LONG_CUTOFF:
-        labels *= 2
+    labels *= (2 ** n_decimations)
     axes.set_xticklabels(['%.02f' % t for t in labels.tolist()])
 
     # Remove and redefine spines
