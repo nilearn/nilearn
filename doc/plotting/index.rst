@@ -123,7 +123,7 @@ different heuristics to find cutting coordinates.
                      |hack|
                      Plotting 4D probabilistic atlas maps
 
-|plot_prob_atlas|    :func:`plot_carpet`
+|plot_carpet|    :func:`plot_carpet`
                      |hack|
                      Plotting voxel intensities across time.
 

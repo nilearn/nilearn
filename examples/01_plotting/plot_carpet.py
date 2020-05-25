@@ -5,7 +5,7 @@ Visualizing global patterns with a carpet plot
 A common quality control step for functional MRI data is to visualize the data
 over time in a carpet plot (also known as a Power plot or a grayplot).
 
-The :py:func:`nilearn.plotting.plot_carpet()` function generates a carpet plot
+The :func:`nilearn.plotting.plot_carpet()` function generates a carpet plot
 from a 4D functional image.
 """
 
