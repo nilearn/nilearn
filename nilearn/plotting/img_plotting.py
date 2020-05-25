@@ -1508,8 +1508,8 @@ def plot_carpet(img, mask_img=None, detrend=True, output_file=None,
     References
     ----------
     .. [1] Power, J. D. (2017). A simple but useful way to assess fMRI scan
-    qualities. Neuroimage, 154, 150-158. doi:
-    https://doi.org/10.1016/j.neuroimage.2016.08.009
+            qualities. Neuroimage, 154, 150-158. doi:
+            https://doi.org/10.1016/j.neuroimage.2016.08.009
     """
     img = _utils.check_niimg_4d(img, dtype='auto')
 
@@ -1517,7 +1517,7 @@ def plot_carpet(img, mask_img=None, detrend=True, output_file=None,
     tr = img.header.get_zooms()[-1]
     ntsteps = img.shape[-1]
 
-    if not mask_img:
+    if mask_img is None:
         mask_img = compute_epi_mask(img)
     else:
         mask_img = _utils.check_niimg_3d(mask_img, dtype='auto')
@@ -1527,13 +1527,13 @@ def plot_carpet(img, mask_img=None, detrend=True, output_file=None,
     if detrend:
         data = clean(data, t_r=tr, detrend=True, standardize='zscore')
 
-    if not figure:
+    if figure is None:
         if not axes:
             figure = plt.figure()
         else:
             figure = axes.figure
 
-    if not axes:
+    if axes is None:
         axes = figure.add_subplot(1, 1, 1)
     else:
         assert axes.figure is figure, ("The axes passed are not "
