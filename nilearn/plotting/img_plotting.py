@@ -1466,7 +1466,7 @@ optional
 
 
 def plot_carpet(img, mask_img=None, detrend=True, output_file=None,
-                figure=None, axes=None, title=None):
+                figure=None, axes=None, vmin=None, vmax=None, title=None):
     """Plot an image representation of voxel intensities across time.
 
     This figure is also known as a "grayplot" or "Power plot".
@@ -1505,6 +1505,9 @@ def plot_carpet(img, mask_img=None, detrend=True, output_file=None,
     -----
     This figure was originally developed in [1]_.
 
+    In cases of long acquisitions (>800 volumes), the data will be downsampled
+    to have fewer than 800 volumes before being plotted.
+
     References
     ----------
     .. [1] Power, J. D. (2017). A simple but useful way to assess fMRI scan
@@ -1529,7 +1532,8 @@ def plot_carpet(img, mask_img=None, detrend=True, output_file=None,
 
     if figure is None:
         if not axes:
-            figure = plt.figure()
+            figsize = (10, 5)
+            figure = plt.figure(figsize=figsize)
         else:
             figure = axes.figure
 
@@ -1547,7 +1551,9 @@ def plot_carpet(img, mask_img=None, detrend=True, output_file=None,
     data = data[::2 ** n_decimations, :]
 
     axes.imshow(data.T, interpolation='nearest',
-                aspect='auto', cmap='gray', vmin=-2, vmax=2)
+                aspect='auto', cmap='gray',
+                vmin=vmin or -2,
+                vmax=vmax or 2)
 
     axes.grid(False)
     axes.set_yticks([])
