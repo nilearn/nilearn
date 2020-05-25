@@ -1490,7 +1490,7 @@ def plot_carpet(img, mask_img=None, detrend=True, output_file=None,
     figure : :class:`matplotlib.figure.Figure` or None, optional
         Matplotlib figure used (default is None).
         If None is given, a new figure is created.
-    axes : :class:`matplotlib.axes._subplots.AxesSubplot` or None, optional
+    axes : matplotlib axes or None, optional
         The axes used to display the plot (default is None).
         If None, the complete figure is used.
     title : :obj:`str` or None, optional
