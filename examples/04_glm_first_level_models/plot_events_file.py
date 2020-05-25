@@ -1,5 +1,5 @@
 """Generation and plot of an events file : the neurospin/localizer events.
-=======================================================================================
+==========================================================================
 
 The protocol described is the simplified version of the so-called 
 "archi standard" localizer event sequence.  
