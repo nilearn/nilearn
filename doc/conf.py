@@ -66,6 +66,11 @@ autodoc_default_options = {
     #'special-members': '__init__',
 }
 
+# Get rid of spurious warnings due to some interaction between
+# autosummary and numpydoc. See
+# https://github.com/phn/pytpm/issues/3#issuecomment-12133978 for more
+# details
+numpydoc_show_class_members = False
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['templates']
 
