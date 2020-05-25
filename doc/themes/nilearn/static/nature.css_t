@@ -1158,6 +1158,24 @@ dl.function .rubric, dl.class .rubric {
     border-width: 0 0 1px 0;
 }
 
+/* Matching our dostrings to the very recent numpydoc evolutions */
+dl.function dt.field-odd, dl.class dt.field-odd {
+    font-weight: bold;
+}
+
+dl.class dt.field-odd {
+    font-weight: bold;
+}
+dl.class dl.method dl.field-list dt.field-even {
+    font-weight: bold;
+}
+dl.class dl.method dl.field-list dl.simple dt {
+    font-weight: bold;
+}
+dl.class dl.method dl.field-list dl.simple dt span.classifier {
+    font-weight: normal;
+}
+
 dl.method {
     margin-top: 6ex;
 }
