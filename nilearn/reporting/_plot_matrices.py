@@ -115,7 +115,7 @@ def plot_event(model_event, cmap=None, output_file=None, **fig_kwargs):
     else:
         cmap = cmap
 
-    event_labels = pd.concat(e['trial_type'] for e in model_event)
+    event_labels = pd.concat(event['trial_type'] for event in model_event)
     event_labels = np.unique(event_labels)
 
     cmap_dictionary = {label:idx for idx, label in enumerate(event_labels)}
@@ -144,7 +144,7 @@ def plot_event(model_event, cmap=None, output_file=None, **fig_kwargs):
         patch = mpatches.Patch(color=cmap.colors[idx], label=label)
         handles.append(patch)
 
-    _ = ax.legend(handles=handles)
+    _ = ax.legend(handles=handles, ncol=4)
 
     ax.set_xlabel("Time (sec.)")
     ax.set_ylabel("Runs")

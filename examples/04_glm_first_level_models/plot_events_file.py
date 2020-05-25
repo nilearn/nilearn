@@ -1,8 +1,9 @@
-"""Generation and plot of a events.tsv file generation: the neurospin/localizer events.
+"""Generation and plot of an events file : the neurospin/localizer events.
 =======================================================================================
 
-The protocol described is the so-called "archi standard" localizer
-event sequence.  See Pinel et al., BMC neuroscience 2007 for reference.
+The protocol described is the simplified version of the so-called 
+"archi standard" localizer event sequence.  
+See Pinel et al., BMC neuroscience 2007 for reference.
 """
 
 print(__doc__)
