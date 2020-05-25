@@ -1575,7 +1575,7 @@ New features
    - The new module :mod:`nilearn.connectome` now has class
      :class:`nilearn.connectome.ConnectivityMeasure` can be useful for
      computing functional connectivity matrices.
-   - The function :func:`nilearn.connectome.sym_to_vec` in same module
+   - The function nilearn.connectome.sym_to_vec in same module
      :mod:`nilearn.connectome` is also implemented as a helper function to
      :class:`nilearn.connectome.ConnectivityMeasure`.
    - The class :class:`nilearn.decomposition.DictLearning` in
