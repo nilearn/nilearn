@@ -1543,6 +1543,11 @@ def plot_carpet(img, mask_img=None, detrend=True, output_file=None,
         assert axes.figure is figure, ("The axes passed are not "
                                        "in the figure")
 
+    # Determine vmin and vmax based on the full data
+    std = np.mean(data.std(axis=0))
+    default_vmin = data.mean() - (2 * std)
+    default_vmax = data.mean() + (2 * std)
+
     # Avoid segmentation faults for long acquisitions by decimating the data
     LONG_CUTOFF = 800
     # Get smallest power of 2 greater than the number of volumes divided by the
@@ -1552,8 +1557,8 @@ def plot_carpet(img, mask_img=None, detrend=True, output_file=None,
 
     axes.imshow(data.T, interpolation='nearest',
                 aspect='auto', cmap='gray',
-                vmin=vmin or -2,
-                vmax=vmax or 2)
+                vmin=vmin or default_vmin,
+                vmax=vmax or default_vmax)
 
     axes.grid(False)
     axes.set_yticks([])
