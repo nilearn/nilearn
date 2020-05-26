@@ -1,14 +1,12 @@
 """
-Plotting ccontours of a region of interest on a surface
- =============================================
- 
- This example showcases how to display contours of regions of interest to a surface using :func:`nilearn.plotting.plot_surf_contours` and how to overlay them on top a statistical surface map from :func:`nilearn.plotting.plot_surf_stat_map`.
- 
-"""
+Plotting contours of a region of interest on a surface
+======================================================
+This example showcases how to display contours of regions of interest to a surface using :func:`nilearn.plotting.plot_surf_contours` and how to overlay them on top a statistical surface map from :func:`nilearn.plotting.plot_surf_stat_map`.
 
+"""
 ##############################################################################
 # Get a statistical map and cortical mesh
-# ---------------------
+# ---------------------------------------
 
 from nilearn import datasets
 
@@ -23,7 +21,7 @@ texture = surface.vol_to_surf(stat_img, fsaverage.pial_right)
 
 ##############################################################################
 # Use an atlas and choose regions to outline
-# ---------------
+# ------------------------------------------
 
 import numpy as np
 
@@ -42,7 +40,7 @@ labels = list(regions_dict.values())
 
 ##############################################################################
 # Display contours on a surface
-# ---------------
+# -----------------------------
 
 from nilearn import plotting
 
@@ -55,7 +53,7 @@ plotting.show()
 
 ##############################################################################
 # Display outlines of the regions of interest on top of a statistical map
-# ---------------
+# -----------------------------------------------------------------------
 
 figure = plotting.plot_surf_stat_map(fsaverage.infl_right, texture, hemi='right',
                                      title='Surface right hemisphere', colorbar=True,
