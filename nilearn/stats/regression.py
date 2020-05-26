@@ -163,7 +163,7 @@ class OLSModel(object):
 
         References
         ----------
-        .. [1] W. Green.  "Econometric Analysis," 5th ed., Pearson, 2003.
+        * W. Green.  "Econometric Analysis," 5th ed., Pearson, 2003.
         '''
         # This is overwriting an abstract method of LikelihoodModel
         X = self.whitened_design

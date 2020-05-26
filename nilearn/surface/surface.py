@@ -103,9 +103,9 @@ def _ball_sample_locations(mesh, affine, ball_radius=3., n_points=20):
     Parameters
     ----------
     mesh : pair of np arrays.
-        mesh[0] contains the 3d coordinates of the vertices
+        `mesh[0]` contains the 3d coordinates of the vertices
         (shape n_vertices, 3)
-        mesh[1] contains, for each triangle, the indices into mesh[0] of its
+        `mesh[1]` contains, for each triangle, the indices into `mesh[0]` of its
         vertices (shape n_triangles, 3)
 
     affine : array of shape (4, 4)
@@ -155,9 +155,9 @@ def _line_sample_locations(
     Parameters
     ----------
     mesh : pair of numpy.ndarray.
-        mesh[0] contains the 3d coordinates of the vertices
+        `mesh[0]` contains the 3d coordinates of the vertices
         (shape n_vertices, 3)
-        mesh[1] contains, for each triangle, the indices into mesh[0] of its
+        `mesh[1]` contains, for each triangle, the indices into `mesh[0]` of its
         vertices (shape n_triangles, 3)
 
     affine : numpy.ndarray of shape (4, 4)
