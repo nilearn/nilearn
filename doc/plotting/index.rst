@@ -65,7 +65,7 @@ different heuristics to find cutting coordinates.
      :target: ../auto_examples/01_plotting/plot_prob_atlas.html
      :scale: 50
 
-.. |plot_carpet| image:: ../auto_examples/01_plotting/images/sphx_glr_plot_prob_carpet_001.png
+.. |plot_carpet| image:: ../auto_examples/01_plotting/images/sphx_glr_plot_carpet_001.png
      :target: ../auto_examples/01_plotting/plot_carpet.html
      :scale: 50
 
