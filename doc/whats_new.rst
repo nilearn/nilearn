@@ -17,7 +17,7 @@ NEW
   These two objects also leverage the `NiftiMaskers` to provide a direct
   interface with the Nifti files on disk.
 - New plotting function
-  `nilearn.plotting.plot_carpet` generates a "carpet plot" (also known
+  :func:`nilearn.plotting.plot_carpet` generates a "carpet plot" (also known
   as a "Power plot" or a "grayplot"), for visualizing global patterns in
   4D functional data over time.
 
@@ -25,8 +25,8 @@ Fixes
 -----
 
 - :class:`nilearn.input_data.NiftiLabelsMasker` no longer ignores its `mask_img`
-- :func:`nilearn.masking.compute_brain_mask` has been replaced by
-  `:func: nilearn.masking.compute_gray_matter_mask`. Features remained the same but
+- :func:`nilearn.masking.compute_brain_mask` has replaced
+  `nilearn.masking.compute_gray_matter_mask`. Features remained the same but
   some corrections regarding its description were made in the docstring.
 
 
