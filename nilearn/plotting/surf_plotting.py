@@ -308,15 +308,18 @@ def plot_surf(surf_mesh, surf_map=None, bg_map=None,
 
 
 def _get_faces_on_edge(faces, parc_idx):
-    '''Internal function for identifying which faces lie on the outer edge of the parcellation defined by the indices in parc_idx.
-    IN:
-    faces      -   numpy ndarray of shape (n, 3), containing indices of the mesh faces
-    parc_idx   -   indices of the vertices belonging to the region that is to be plotted
-    OUT:
-    boolean array indicating which faces lie on the outer edge
+    '''
+    Internal function for identifying which faces lie on the outer
+    edge of the parcellation defined by the indices in parc_idx.
+
+    Parameters
+    ----------
+    faces: numpy.ndarray of shape (n, 3), containing indices of the mesh faces
+    parc_idx: numpy.ndarray,
+    indices of the vertices belonging to the region that is to be plotted
     '''
     # count how many vertices belong to the given parcellation in each face
-    verts_per_face = np.array([np.isin(face, parc_idx) for face in faces]).sum(axis=1)
+    verts_per_face = np.isin(faces, parc_idx).sum(axis=1)
 
     # test if parcellation forms regions
     if np.all(verts_per_face < 2):
@@ -324,8 +327,7 @@ def _get_faces_on_edge(faces, parc_idx):
 
     vertices_on_edge = np.intersect1d(np.unique(faces[verts_per_face == 2]),
                                       parc_idx)
-    faces_outside_edge = np.sum(
-        [np.isin(face, vertices_on_edge) for face in faces], axis=1)
+    faces_outside_edge = np.isin(faces, vertices_on_edge).sum(axis=1)
 
     return np.logical_and(faces_outside_edge > 0, verts_per_face < 3)
 
@@ -333,7 +335,8 @@ def _get_faces_on_edge(faces, parc_idx):
 def plot_surf_contours(surf_mesh, roi_map, axes=None, figure=None, levels=None,
                        labels=None, colors=None, legend=False, cmap='tab20',
                        title=None, output_file=None, **kwargs):
-    """ Plotting contours of regions of interest on a surface, possibly overlaying a statistical map.
+    """
+    Plotting contours of ROIs on a surface, optionally over a statistical map.
 
     Parameters
     ----------
@@ -357,18 +360,20 @@ def plot_surf_contours(surf_mesh, roi_map, axes=None, figure=None, levels=None,
         The axes instance to plot to. The projection must be '3d' (e.g.,
         `figure, axes = plt.subplots(subplot_kw={'projection': '3d'})`,
         where axes should be passed.).
-        If None, axes instance from figure is used if available,else a new axes is created.
+        If None, uses axes from figure if available, else creates new axes.
 
     figure: instance of matplotlib figure, None, optional
-        The figure instance to plot to. If None, parent figure of axes is used if available, else a new figure is created.
+        The figure instance to plot to.
+        If None, uses figure of axes if available, else creates a new figure.
 
     levels: list of integers, or None, optional
-        A list of indices of the regions that are to be outlined. Every index needs to correspond to one index in roi_map.
+        A list of indices of the regions that are to be outlined.
+        Every index needs to correspond to one index in roi_map.
         If None, all regions in roi_map are used.
 
     labels: list of strings or None, or None, optional
         A list of labels for the individual regions of interest.
-        To skip showing the label for a region provide None as corresponding list entry.
+        Provide None as list entry to skip showing the label of that region.
         If None no labels are used.
 
     colors: list of matplotlib color names or RGBA values, or None.
@@ -379,7 +384,7 @@ def plot_surf_contours(surf_mesh, roi_map, axes=None, figure=None, levels=None,
     cmap: matplotlib colormap, str or colormap object, default is None
         To use for plotting of the contours. Either a string
         which is a name of a matplotlib colormap, or a matplotlib
-        colormap object. 
+        colormap object.
 
     title : str, optional
         Figure title.
