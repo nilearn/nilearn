@@ -8,7 +8,6 @@ Author: Bertrand Thirion, 2015 -- 2019
 import warnings
 
 import numpy as np
-
 from scipy.ndimage import label
 from scipy.stats import norm
 
@@ -173,8 +172,9 @@ def cluster_level_inference(stat_img, mask_img=None,
     return proportion_true_discoveries_img
 
 
-def map_threshold(stat_img=None, mask_img=None, alpha=.001, threshold=3.,
-                  height_control='fpr', cluster_threshold=0, two_sided=True):
+def threshold_stats_img(stat_img=None, mask_img=None, alpha=.001, threshold=3.,
+                        height_control='fpr', cluster_threshold=0,
+                        two_sided=True):
     """ Compute the required threshold level and return the thresholded map
 
     Parameters

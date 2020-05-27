@@ -64,8 +64,8 @@ z_map = model.compute_contrast('fluency', output_type='z_score')
 
 ###########################################################################
 # We compute the fdr-corrected p = 0.05 threshold for these data
-from nilearn.stats import map_threshold
-_, threshold = map_threshold(z_map, alpha=.05, height_control='fdr')
+from nilearn.stats import threshold_stats_img
+_, threshold = threshold_stats_img(z_map, alpha=.05, height_control='fdr')
 
 ###########################################################################
 # Let us plot the second level contrast at the computed thresholds

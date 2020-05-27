@@ -21,7 +21,7 @@ from nilearn.stats.regression import (
 from nilearn.stats.thresholding import (
     fdr_threshold,
     cluster_level_inference,
-    map_threshold,
+    threshold_stats_img,
 )
 
 from nilearn.stats import first_level_model
@@ -43,7 +43,7 @@ __all__ = [
     'SimpleRegressionResults',
     'fdr_threshold',
     'cluster_level_inference',
-    'map_threshold',
+    'threshold_stats_img',
     'first_level_model',
     'second_level_model',
 ]

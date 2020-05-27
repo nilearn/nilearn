@@ -35,7 +35,7 @@ from nilearn.reporting import (plot_contrast_matrix,
                                plot_design_matrix,
                                get_clusters_table,
                                )
-from nilearn.stats.thresholding import map_threshold
+from nilearn.stats.thresholding import threshold_stats_img
 
 
 HTML_TEMPLATE_ROOT_PATH = os.path.join(os.path.dirname(__file__),
@@ -694,7 +694,7 @@ def _make_stat_maps_contrast_clusters(stat_img, contrasts_plots, threshold,
         components_template_text = html_template_obj.read()
     for contrast_name, stat_map_img in stat_img.items():
         component_text_ = string.Template(components_template_text)
-        thresholded_stat_map, threshold = map_threshold(
+        thresholded_stat_map, threshold = threshold_stats_img(
             stat_img=stat_map_img,
             threshold=threshold,
             alpha=alpha,

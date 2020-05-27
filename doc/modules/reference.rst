@@ -425,7 +425,7 @@ the :ref:`user guide <user_guide>` for more information and usage examples.
     expression_to_contrast_vector
     fdr_threshold
     cluster_level_inference
-    map_threshold
+    threshold_stats_img
 
 
 :mod:`nilearn.stats.first_level_model`

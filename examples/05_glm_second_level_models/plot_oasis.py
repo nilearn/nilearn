@@ -79,8 +79,8 @@ ax.set_title('Second level design matrix', fontsize=12)
 ax.set_ylabel('maps')
 
 ##########################################################################
-# Next, we specify and fit the second-level model when loading the data and also
-# smooth a little bit to improve statistical behavior.
+# Next, we specify and fit the second-level model when loading the data and
+# also smooth a little bit to improve statistical behavior.
 
 from nilearn.stats.second_level_model import SecondLevelModel
 second_level_model = SecondLevelModel(smoothing_fwhm=2.0, mask_img=mask_img)
@@ -96,8 +96,8 @@ z_map = second_level_model.compute_contrast(second_level_contrast=[1, 0, 0],
 ###########################################################################
 # We threshold the second level contrast at uncorrected p < 0.001 and plot it.
 from nilearn import plotting
-from nilearn.stats import map_threshold
-_, threshold = map_threshold(
+from nilearn.stats import threshold_stats_img
+_, threshold = threshold_stats_img(
     z_map, alpha=.05, height_control='fdr')
 print('The FDR=.05-corrected threshold is: %.3g' % threshold)
 
@@ -108,12 +108,12 @@ display = plotting.plot_stat_map(
 plotting.show()
 
 ###########################################################################
-# We can also study the effect of sex by computing the contrast, thresholding it
-# and plot the resulting map.
+# We can also study the effect of sex by computing the contrast, thresholding
+# it and plot the resulting map.
 
 z_map = second_level_model.compute_contrast(second_level_contrast='sex',
                                             output_type='z_score')
-_, threshold = map_threshold(
+_, threshold = threshold_stats_img(
     z_map, alpha=.05, height_control='fdr')
 plotting.plot_stat_map(
     z_map, threshold=threshold, colorbar=True,

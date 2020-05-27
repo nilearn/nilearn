@@ -3,17 +3,12 @@
 import nibabel as nib
 import numpy as np
 import pytest
-
-from numpy.testing import (assert_almost_equal,
-                           assert_equal,
-                           )
+from numpy.testing import assert_almost_equal, assert_equal
 from scipy.stats import norm
 
-from nilearn.stats import (fdr_threshold,
-                                        map_threshold,
-                                        cluster_level_inference,
-                                        )
 from nilearn.image import get_data
+from nilearn.stats import (cluster_level_inference, fdr_threshold,
+                           threshold_stats_img)
 
 
 def test_fdr():
@@ -30,7 +25,7 @@ def test_fdr():
         fdr_threshold(x, 1.5)
 
 
-def test_map_threshold():
+def test_threshold_stats_img():
     shape = (9, 10, 11)
     p = np.prod(shape)
     data = norm.isf(np.linspace(1. / p, 1. - 1. / p, p)).reshape(shape)
@@ -40,21 +35,21 @@ def test_map_threshold():
     mask_img = nib.Nifti1Image(np.ones(shape), np.eye(4))
 
     # test 1
-    th_map, _ = map_threshold(
+    th_map, _ = threshold_stats_img(
         stat_img, mask_img, alpha, height_control='fpr',
         cluster_threshold=0)
     vals = get_data(th_map)
     assert np.sum(vals > 0) == 8
 
     # test 2: excessive cluster forming threshold
-    th_map, _ = map_threshold(
+    th_map, _ = threshold_stats_img(
         stat_img, mask_img, threshold=100, height_control=None,
         cluster_threshold=0)
     vals = get_data(th_map)
     assert np.sum(vals > 0) == 0
 
     # test 3: excessive size threshold
-    th_map, z_th = map_threshold(
+    th_map, z_th = threshold_stats_img(
         stat_img, mask_img, alpha, height_control='fpr',
         cluster_threshold=10)
     vals = get_data(th_map)
@@ -63,47 +58,48 @@ def test_map_threshold():
 
     # test 4: fdr threshold + bonferroni
     for control in ['fdr', 'bonferroni']:
-        th_map, _ = map_threshold(
+        th_map, _ = threshold_stats_img(
             stat_img, mask_img, alpha=.05, height_control=control,
             cluster_threshold=5)
         vals = get_data(th_map)
         assert np.sum(vals > 0) == 8
 
     # test 5: direct threshold
-    th_map, _ = map_threshold(
+    th_map, _ = threshold_stats_img(
         stat_img, mask_img, threshold=4.0, height_control=None,
         cluster_threshold=0)
     vals = get_data(th_map)
     assert np.sum(vals > 0) == 8
 
     # test 6: without mask
-    th_map, _ = map_threshold(
+    th_map, _ = threshold_stats_img(
         stat_img, None, threshold=4.0, height_control=None,
         cluster_threshold=0)
     vals = get_data(th_map)
     assert np.sum(vals > 0) == 8
 
     # test 7 without a map
-    th_map, threshold = map_threshold(
+    th_map, threshold = threshold_stats_img(
         None, None, threshold=3.0, height_control=None,
         cluster_threshold=0)
     assert threshold == 3.0
     assert th_map == None  # noqa:E711
 
-    th_map, threshold = map_threshold(
+    th_map, threshold = threshold_stats_img(
         None, None, alpha=0.05, height_control='fpr',
         cluster_threshold=0)
     assert (threshold > 1.64)
     assert th_map == None  # noqa:E711
 
     with pytest.raises(ValueError):
-        map_threshold(None, None, alpha=0.05, height_control='fdr')
+        threshold_stats_img(None, None, alpha=0.05, height_control='fdr')
     with pytest.raises(ValueError):
-        map_threshold(None, None, alpha=0.05, height_control='bonferroni')
+        threshold_stats_img(None, None, alpha=0.05,
+                            height_control='bonferroni')
 
     # test 8 wrong procedure
     with pytest.raises(ValueError):
-        map_threshold(None, None, alpha=0.05, height_control='plop')
+        threshold_stats_img(None, None, alpha=0.05, height_control='plop')
 
 
 def test_all_resolution_inference():
@@ -154,7 +150,7 @@ def test_all_resolution_inference():
                                      verbose=True)
 
     # test 9: one-sided test
-    th_map, z_th = map_threshold(
+    th_map, z_th = threshold_stats_img(
         stat_img, mask_img, alpha, height_control='fpr',
         cluster_threshold=10, two_sided=False)
     assert_equal(z_th, norm.isf(.001))
@@ -163,13 +159,13 @@ def test_all_resolution_inference():
     data[0:2, 0:2, 6:8] = -5.
     stat_img = nib.Nifti1Image(data, np.eye(4))
     for control in ['fdr', 'bonferroni']:
-        th_map, _ = map_threshold(
+        th_map, _ = threshold_stats_img(
             stat_img, mask_img, alpha=.05, height_control=control,
             cluster_threshold=5)
         vals = get_data(th_map)
         assert_equal(np.sum(vals > 0), 8)
         assert_equal(np.sum(vals < 0), 8)
-        th_map, _ = map_threshold(
+        th_map, _ = threshold_stats_img(
             stat_img, mask_img, alpha=.05, height_control=control,
             cluster_threshold=5, two_sided=False)
         vals = get_data(th_map)
