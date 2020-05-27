@@ -181,7 +181,7 @@ def _plot_img_with_bg(img, bg_img=None, cut_coords=None,
         figure=figure, axes=axes,
         black_bg=black_bg,
         colorbar=colorbar,
-        brain_color=brain_color
+        brain_color=brain_color,
         )
 
     if bg_img is not None:
