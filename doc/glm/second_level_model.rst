@@ -16,7 +16,7 @@ Second level models
 Design matrix for one-sample, two-sample or generic model
 =====================================================
 
-True positives in results
+True positives in voxel clusters
 =====================================================
 
 Thresholding statistical maps
