@@ -106,13 +106,13 @@ different heuristics to find cutting coordinates.
                      are demonstrated in
                      **Example:** :ref:`sphx_glr_auto_examples_03_connectivity_plot_atlas_comparison.py`
 
-|plot_strength|     :func:`plot_connectome_strength`
+|plot_markers|       :func:`plot_markers`
                      |hack|
-                     Plotting a connectome strength
+                     Plotting network nodes (markers)
 
-                     Functions for automatic extraction of coords based on
-                     brain parcellations useful for :func:`plot_connectome`
-                     are demonstrated in
+                     Function for automatic plotting of network nodes (markers) 
+                     and color coding them according to provided nodal measure
+                     (i.e. connection strength) as demonstrated in
                      **Example:** :ref:`sphx_glr_auto_examples_03_connectivity_plot_atlas_comparison.py`
 
 |plot_prob_atlas|    :func:`plot_prob_atlas`
