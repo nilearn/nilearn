@@ -1176,7 +1176,7 @@ def test_plot_markers_exceptions():
         plot_markers([1, 2, 3], node_coords, **kwargs)
 
     # node_values incorrect shape
-    adjacency_matrix = np.random.randint((4, 4))
+    adjacency_matrix = np.random.random((4, 4))
     with pytest.raises(ValueError, match="Dimension mismatch"):
         plot_markers(adjacency_matrix, node_coords, **kwargs)
 
