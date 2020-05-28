@@ -6,11 +6,11 @@ First level models
 
 .. topic:: **Page summary**
 
-First level models are, in essence, linear regression models run at the level of a single
-session or single subject. The model is applied on a voxel-wise basis, either on the whole
-brain or within a region of interest. The timecourse of each voxel is regressed against a
-predicted BOLD response created by convolving the haemodynamic response function (HRF) with
-a set of predictors defined within the design matrix.
+  First level models are, in essence, linear regression models run at the level of a single
+  session or single subject. The model is applied on a voxel-wise basis, either on the whole
+  brain or within a region of interest. The timecourse of each voxel is regressed against a
+  predicted BOLD response created by convolving the haemodynamic response function (HRF) with
+  a set of predictors defined within the design matrix.
 
 
 .. contents:: **Contents**
@@ -28,8 +28,8 @@ uncertainty in timing information. In addition, an FIR (finite impulse response,
 of the HRF is also available.
 
 In order to visualize the predicted regressor prior to plugging it into the linear model, use
-the function :func:`nilearn.stats.first_level_model.compute_regressor`, or explore the
-:ref:`HRF plotting example <sphx_glr_auto_examples_04_glm_plot_hrf_py>`.
+the function :func:`nilearn.stats.first_level_model.compute_regressor`, or explore the HRF plotting
+example: :ref:`sphx_glr_auto_examples_04_glm_first_level_models_plot_hrf.py`.
 
 
 Design matrix: event-based and time series-based
@@ -124,9 +124,9 @@ The :class:`nilearn.stats.first_level_model.FirstLevelModel` class provides the 
 to fit the linear model to the fMRI data. The :func:`nilearn.stats.first_level_model.FirstLevelModel.fit()` function
 takes the fMRI data and design matrix as input and fits the GLM. Like other Nilearn
 functions, :func:`nilearn.stats.first_level_model.FirstLevelModel.fit()` accepts file names as input, but can also
-work with :ref:`NiftiImage <https://nipy.org/nibabel/nibabel_images.html>` objects.
-More information about input formats is available
-:ref:`here <http://nilearn.github.io/manipulating_images/input_output.html#inputing-data-file-names-or-image-objects>`::
+work with NiftiImage `https://nipy.org/nibabel/nibabel_images.html` objects.
+More information about input formats is available here:
+`http://nilearn.github.io/manipulating_images/input_output.html#inputing-data-file-names-or-image-objects`
 
   from nilearn.stats.first_level_model import FirstLevelModel
   fmri_glm = FirstLevelModel()
@@ -175,9 +175,8 @@ And compute the contrasts as follows::
 
 
 For full examples on fitting a first level model, look at the following examples::
-
-  :ref:`sphx-glr-auto-examples-04-glm-first-level-models-plot-spm-multimodal-faces-py`
-  :ref:`sphx-glr-auto-examples-04-glm-first-level-models-plot-fiac-analysis-py`
+`sphx-glr-auto-examples-04-glm-first-level-models-plot-spm-multimodal-faces.py`
+`sphx-glr-auto-examples-04-glm-first-level-models-plot-fiac-analysis.py`
 
 
 

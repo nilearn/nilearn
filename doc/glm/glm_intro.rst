@@ -33,16 +33,18 @@ of positive real number representing the MRI signal, sampled at the TR.
 
 .. _voxels: https://en.wikipedia.org/wiki/Voxel
 
-.. note:: Before fMRI images can be used to do meaningful comparisons, they must be processed to ensure that the
-voxels that are being compared represent the same brain regions, irrespective of the variability in size and shape
-of the brain and its microarchitecture across different subjects in the experiment. The process is called spatial
-registration or spatial normalization. During this procedure, the voxels of all the brain images are 'registered'
-to correspond to the same region of the brain. Usually, the images (their voxels) are registered to a standard
-'template' brain image (its voxels). One often used standard template is the MNI152 template from the Montreal
-Neurological Institute. Once this is done, the coordinates of a voxel are in the same space as the template and
-can be used to estimate its brain location using brain atlases based on that same template. As previously mentioned,
-the nilearn package does not perform spatial preprocessing; it only does statistical analyses on the voxel time
-series.
+.. note::
+
+  Before fMRI images can be used to do meaningful comparisons, they must be processed to ensure that the
+  voxels that are being compared represent the same brain regions, irrespective of the variability in size and shape
+  of the brain and its microarchitecture across different subjects in the experiment. The process is called spatial
+  registration or spatial normalization. During this procedure, the voxels of all the brain images are 'registered'
+  to correspond to the same region of the brain. Usually, the images (their voxels) are registered to a standard
+  'template' brain image (its voxels). One often used standard template is the MNI152 template from the Montreal
+  Neurological Institute. Once this is done, the coordinates of a voxel are in the same space as the template and
+  can be used to estimate its brain location using brain atlases based on that same template. As previously mentioned,
+  the nilearn package does not perform spatial preprocessing; it only does statistical analyses on the voxel time
+  series.
 
 fMRI data modelling
 -------------------
