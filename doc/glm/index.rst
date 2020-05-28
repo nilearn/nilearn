@@ -13,7 +13,7 @@ correction and thresholding, and allows for the generation of html reports that 
 analyses performed and present thresholded results.
 
 
-.. _BIDS: https://bids.neuroimaging.io/
+
 .. include:: ../includes/big_toc_css.rst
 
 
