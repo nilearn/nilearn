@@ -443,7 +443,7 @@ class SecondLevelModel(BaseEstimator, TransformerMixin, CacheMixin):
             the design matrix of the fitted model combined with operators +-
             and combined with numbers with operators +-`*`/. The default (None)
             is accepted if the design matrix has a single column, in which case
-            the only possible contrast array([1]) is applied; when the design
+            the only possible contrast array((1)) is applied; when the design
             matrix has multiple columns, an error is raised.
 
         first_level_contrast: str or array of shape (n_col) with respect to
@@ -579,7 +579,7 @@ def non_parametric_inference(second_level_input, confounds=None,
     second_level_contrast: str or array of shape (n_col), optional
         Where ``n_col`` is the number of columns of the design matrix.
         The default (None) is accepted if the design matrix has a single
-        column, in which case the only possible contrast array([1]) is
+        column, in which case the only possible contrast array((1)) is
         applied; when the design matrix has multiple columns, an error is
         raised.
 

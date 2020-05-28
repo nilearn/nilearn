@@ -122,7 +122,7 @@ commands:
     description: "Caches the downloaded packages & buit docs."
     steps:
       - save_cache:
-          key: v1-packages+datasets-{{ checksum "week_num" }}
+          key: v1-packages+datasets-{{ checksum "week_num" }}-{{ checksum ".circleci/packages-cache-timestamp" }}
           paths:
             - ../nilearn_data
             - ../miniconda3

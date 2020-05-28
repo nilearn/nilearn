@@ -259,15 +259,15 @@ def fetch_oasis_vbm(n_subjects=None, dartel_version=True, data_dir=None,
 
     References
     ----------
-    [1] http://www.oasis-brains.org/
+    * http://www.oasis-brains.org/
 
-    [2] Open Access Series of Imaging Studies (OASIS): Cross-sectional MRI
-        Data in Young, Middle Aged, Nondemented, and Demented Older Adults.
-        Marcus, D. S and al., 2007, Journal of Cognitive Neuroscience.
+    * Open Access Series of Imaging Studies (OASIS): Cross-sectional MRI
+      Data in Young, Middle Aged, Nondemented, and Demented Older Adults.
+      Marcus, D. S and al., 2007, Journal of Cognitive Neuroscience.
 
     Notes
     -----
-    In the DARTEL version, original Oasis data [1] have been preprocessed
+    In the DARTEL version, original Oasis data have been preprocessed
     with the following steps:
 
       1. Dimension swapping (technically required for subsequent steps)

@@ -616,10 +616,10 @@ def fetch_localizer_contrasts(contrasts, n_subjects=None, get_tmaps=False,
     (see http://brainomics.cea.fr/localizer/)
 
     You may cite Papadopoulos Orfanos, Dimitri, *et al.* when using this
-    dataset [1].
+    dataset.
 
     Scientific results obtained using this dataset are described in
-    Pinel *et al.*, 2007 [2].
+    Pinel *et al.*, 2007.
 
     Parameters
     ----------
@@ -739,14 +739,14 @@ def fetch_localizer_contrasts(contrasts, n_subjects=None, get_tmaps=False,
 
     References
     ----------
-    [1] Papadopoulos Orfanos, Dimitri, et al.
-    "The Brainomics/Localizer database."
-    NeuroImage 144.B (2017): 309.
+    * Papadopoulos Orfanos, Dimitri, et al.
+      "The Brainomics/Localizer database."
+      NeuroImage 144.B (2017): 309.
 
-    [2] Pinel, Philippe, et al.
-    "Fast reproducible identification and large-scale databasing of
-    individual functional cognitive networks."
-    BMC Neuroscience 8.1 (2007): 91.
+    * Pinel, Philippe, et al.
+      "Fast reproducible identification and large-scale databasing of
+      individual functional cognitive networks."
+      BMC Neuroscience 8.1 (2007): 91.
 
     See Also
     ---------
@@ -1338,9 +1338,9 @@ def fetch_mixed_gambles(n_subjects=1, data_dir=None, url=None, resume=True,
 
     References
     ----------
-    [1] K. Jimura and R. Poldrack, "Analyses of regional-average activation
-        and multivoxel pattern information tell complementary stories",
-        Neuropsychologia, vol. 50, page 544, 2012
+    * K. Jimura and R. Poldrack, "Analyses of regional-average activation
+      and multivoxel pattern information tell complementary stories",
+      Neuropsychologia, vol. 50, page 544, 2012
     """
     if n_subjects > 16:
         warnings.warn('Warning: there are only 16 subjects!')
@@ -1372,9 +1372,7 @@ def fetch_megatrawls_netmats(dimensionality=100, timeseries='eigen_regression',
     This data can be used to predict relationships between imaging data and
     non-imaging behavioural measures such as age, sex, education, etc.
     The network matrices are estimated from functional connectivity
-    datasets of 461 subjects. Full technical details in [1] [2].
-
-    .. versionadded:: 0.2.2
+    datasets of 461 subjects. Full technical details in references.
 
     Parameters
     ----------
@@ -1427,23 +1425,23 @@ def fetch_megatrawls_netmats(dimensionality=100, timeseries='eigen_regression',
 
     References
     ----------
-    [1] Stephen Smith et al, HCP beta-release of the Functional Connectivity
-        MegaTrawl.
-        April 2015 "HCP500-MegaTrawl" release.
-        https://db.humanconnectome.org/megatrawl/
+    * Stephen Smith et al, HCP beta-release of the Functional Connectivity
+      MegaTrawl.
+      April 2015 "HCP500-MegaTrawl" release.
+      https://db.humanconnectome.org/megatrawl/
 
-    [2] Smith, S.M. et al. Nat. Neurosci. 18, 1565-1567 (2015).
+    * Smith, S.M. et al. Nat. Neurosci. 18, 1565-1567 (2015).
 
-    [3] N.Filippini, et al. Distinct patterns of brain activity in young
-        carriers of the APOE-e4 allele.
-        Proc Natl Acad Sci USA (PNAS), 106::7209-7214, 2009.
+    * N.Filippini, et al. Distinct patterns of brain activity in young
+      carriers of the APOE-e4 allele.
+      Proc Natl Acad Sci USA (PNAS), 106::7209-7214, 2009.
 
-    [4] S.Smith, et al. Methods for network modelling from high quality rfMRI data.
-        Meeting of the Organization for Human Brain Mapping. 2014
+    * S.Smith, et al. Methods for network modelling from high quality rfMRI data.
+      Meeting of the Organization for Human Brain Mapping. 2014
 
-    [5] J.X. O'Reilly et al. Distinct and overlapping functional zones in the
-        cerebellum defined by resting state functional connectivity.
-        Cerebral Cortex, 2009.
+    * J.X. O'Reilly et al. Distinct and overlapping functional zones in the
+      cerebellum defined by resting state functional connectivity.
+      Cerebral Cortex, 2009.
 
     Note: See description for terms & conditions on data usage.
 
