@@ -22,7 +22,7 @@ from nilearn.plotting.img_plotting import (MNI152TEMPLATE, plot_anat, plot_img,
                                            plot_roi, plot_stat_map, plot_epi,
                                            plot_glass_brain, plot_connectome,
                                            plot_connectome_strength,
-                                           plot_prob_atlas,
+                                           plot_prob_atlas, plot_markers,
                                            _get_colorbar_and_data_ranges)
 
 mni_affine = np.array([[-2.,    0.,    0.,   90.],
@@ -1142,3 +1142,106 @@ def test_plot_glass_brain_with_completely_masked_img():
     plot_glass_brain(img, display_mode='lzry')
     plot_glass_brain(img, display_mode='lr')
     plt.close()
+
+def test_plot_markers():
+    # Minimal usage
+    node_values = [1, 2, 3, 4]
+    node_coords = np.array([[39 ,   6, -32],
+                            [29 ,  40,   1],
+                            [-20, -74,  35],
+                            [-29, -59, -37]])
+    args = node_values, node_coords
+    plot_markers(*args)
+    plt.close()
+
+    # Speed-up subsequent tests
+    kwargs = {'display_mode': 'x'}
+
+    # node_values is an array
+    plot_markers(np.array(node_values), node_coords, **kwargs)
+    plt.close()
+    plot_markers(np.array(node_values)[:, np.newaxis], node_coords, **kwargs)
+    plt.close()
+    plot_markers(np.array(node_values)[np.newaxis, :], node_coords, **kwargs)
+    plt.close()
+
+    # all node_values are equal
+    plot_markers((1, 1, 1, 1), node_coords, **kwargs)
+    plt.close()
+
+    # node_coords not an array but a list of tuples
+    plot_markers(node_values, [tuple(coord) for coord in node_coords], **kwargs)
+    plt.close()
+
+    # Saving to file
+    filename = tempfile.mktemp(suffix='.png')
+    try:
+        display = plot_markers(*args, output_file=filename, **kwargs)
+        assert display is None
+        assert (os.path.isfile(filename) and  # noqa: W504
+                    os.path.getsize(filename) > 0)
+    finally:
+        os.remove(filename)
+        plt.close()
+
+    # Different options for node_size
+    plot_markers(*args, node_size=10, **kwargs)
+    plt.close()
+    plot_markers(*args, node_size=[10, 20, 30, 40], **kwargs)
+    plt.close()
+    plot_markers(*args, node_size=np.array([10, 20, 30, 40]), **kwargs)
+    plt.close()
+
+    # Different options for cmap related arguments
+    plot_markers(*args, node_cmap='RdBu', node_vmin=0, **kwargs)
+    plt.close()
+    plot_markers(*args, node_cmap=matplotlib.cm.get_cmap('jet'),
+                 node_vmax=5, **kwargs)
+    plt.close()
+    plot_markers(*args, node_vmin=2, node_vmax=3, **kwargs)
+    plt.close()
+
+    # Node threshold support
+    plot_markers(*args, node_threshold=-100, **kwargs)
+    plt.close()
+    plot_markers(*args, node_threshold=2.5, **kwargs)
+    plt.close()
+
+    # node_kwargs working and does not interfere with alpha
+    node_kwargs = dict(marker='s')
+    plot_markers(*args, alpha=.1, node_kwargs=node_kwargs, **kwargs)
+    plt.close()
+
+def test_plot_markers_exceptions():
+    node_coords = np.array([[39 ,   6, -32],
+                            [29 ,  40,   1],
+                            [-20, -74,  35],
+                            [-29, -59, -37]])
+
+    # # Used to speed-up tests because the glass brain is always plotted
+    kwargs = {'display_mode': 'x'}
+
+    # node_values lenght mismatch with node_coords
+    with pytest.raises(ValueError, match="Dimension mismatch"):
+        plot_markers([1, 2, 3, 4, 5], node_coords, **kwargs)
+    with pytest.raises(ValueError, match="Dimension mismatch"):
+        plot_markers([1, 2, 3], node_coords, **kwargs)
+
+    # node_values incorrect shape
+    adjacency_matrix = np.random.randint((4, 4))
+    with pytest.raises(ValueError, match="Dimension mismatch"):
+        plot_markers(adjacency_matrix, node_coords, **kwargs)
+
+    # node_values is wrong type
+    with pytest.raises(TypeError):
+        plot_markers(['1', '2', '3', '4'], node_coords, **kwargs)
+
+    # incorrect vmin anord vmax bounds for node cmap
+    with pytest.raises(ValueError):
+        plot_markers([1, 2, 2, 4], node_coords, node_vmin=5, **kwargs)
+    with pytest.raises(ValueError):
+        plot_markers([1, 2, 2, 4], node_coords, node_vmax=0, **kwargs)
+
+    # node_threshold higher than max node_value
+    with pytest.raises(ValueError, match="Provided 'node_threshold' value"):
+        plot_markers([1, 2, 2, 4], node_coords, node_threshold=5, **kwargs)

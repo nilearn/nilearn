@@ -1467,9 +1467,10 @@ optional
 
 def plot_markers(node_values, node_coords, node_size='auto', 
                  node_cmap=plt.cm.viridis_r, node_vmin=None, node_vmax=None, 
-                 node_threshold=None, output_file=None, display_mode="ortho", 
-                 figure=None, axes=None, title=None, annotate=True, 
-                 black_bg=False, node_kwargs=None, colorbar=True):
+                 node_threshold=None, alpha=0.7, output_file=None, 
+                 display_mode="ortho", figure=None, axes=None, title=None, 
+                 annotate=True, black_bg=False, node_kwargs=None, 
+                 colorbar=True):
     """Plot network nodes (markers) on top of the brain glass schematics.
 
     Nodes are color coded according to provided nodal measure. Nodal measure 
@@ -1482,7 +1483,7 @@ def plot_markers(node_values, node_coords, node_size='auto',
         acording to corresponding node value.
     node_coords : numpy array_like of shape (n, 3)
         3d coordinates of the graph nodes in world space.
-    node_size : 'auto' or scalar
+    node_size : 'auto' or scalar or array-like
         Size(s) of the nodes in points^2. By default the size of the node is
         inversely propertionnal to the number of nodes.
     node_cmap : str or colormap
@@ -1496,6 +1497,8 @@ def plot_markers(node_values, node_coords, node_size='auto',
     node_threshold : float
         If provided only the nodes with a value greater than node_threshold 
         will be shown.
+    alpha : float between 0 and 1. Default is 0.7
+        Alpha transparency for markers
     output_file : string, or None, optional
         The name of an image file to export the plot to. Valid extensions
         are .png, .pdf, .svg. If output_file is not None, the plot
@@ -1530,20 +1533,24 @@ def plot_markers(node_values, node_coords, node_size='auto',
     colorbar : boolean, optional
         If True, display a colorbar on the right of the plots.
     """
-    
+    node_values = np.squeeze(np.array(node_values))
+    node_coords = np.array(node_coords)
+
     # Validate node_values
-    node_values = np.array(node_values).flatten()
     if node_values.shape != (node_coords.shape[0], ): 
-        msg = ("Length of 'node_values' should match length of 'node_coords': "
-               "{0} != {1}").format(len(node_values), len(node_coords))        
+        msg = ("Dimension mismatch: 'node_values' should be vector of length "
+               "{0}, but current shape is {1} instead of {2}").format(
+                   len(node_coords),
+                   node_values.shape, 
+                   (node_coords.shape[0], ))        
         raise ValueError(msg) 
 
     display = plot_glass_brain(None, display_mode=display_mode,
                                figure=figure, axes=axes, title=title,
                                annotate=annotate, black_bg=black_bg)
 
-    node_size = (min(1e4 / len(node_coords), 100) if node_size == 'auto' 
-                 else node_size)
+    if isinstance(node_size, str) and node_size == 'auto':
+        node_size = min(1e4 / len(node_coords), 100)  
 
     # Filter out nodes with node values below threshold
     if node_threshold is not None:
@@ -1561,7 +1568,6 @@ def plot_markers(node_values, node_coords, node_size='auto',
                          zip(retained_nodes, node_size) if ok_retain]
 
     # Calculate node colors based on value
-    node_kwargs = {} if node_kwargs is None else node_kwargs
     node_vmin = np.min(node_values) if node_vmin is None else node_vmin
     node_vmax = np.max(node_values) if node_vmax is None else node_vmax
     if node_vmin == node_vmax:
@@ -1570,7 +1576,11 @@ def plot_markers(node_values, node_coords, node_size='auto',
     node_cmap = (plt.get_cmap(node_cmap) if isinstance(node_cmap, str) 
                  else node_cmap)
     node_color = [node_cmap(norm(node_value)) for node_value in node_values]
-    
+
+    # Prepare additional parameters for plt.scatter
+    node_kwargs = {} if node_kwargs is None else node_kwargs
+    node_kwargs.update([('alpha', alpha)])
+
     display.add_markers(
         marker_coords=node_coords,
         marker_color=node_color,
