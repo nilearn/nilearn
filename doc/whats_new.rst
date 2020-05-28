@@ -16,6 +16,8 @@ NEW
   The resulting average model is the one used as a classifier or a regressor.
   These two objects also leverage the `NiftiMaskers` to provide a direct
   interface with the Nifti files on disk.
+- a `annotation` method for :class:`nilearn.plotting.display.BaseSlicer` implements
+  `decimals` option to enable annotation of slice coordinate position with float.
 
 Fixes
 -----
