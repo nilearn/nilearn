@@ -88,7 +88,7 @@ def _apply_mask_and_get_affinity(seeds, niimg, radius, allow_overlap,
 
 def _get_spheres_rows(seeds, target_affine, target_shape, radius, allow_overlap):
     '''Utility function to get only the rows which are occupied by sphere at
-    given seed locations and the provided radius. Rows are in affine and 
+    given seed locations and the provided radius. Rows are in target_affine and 
     target_shape space.
 
     Parameters
@@ -96,14 +96,12 @@ def _get_spheres_rows(seeds, target_affine, target_shape, radius, allow_overlap)
     seeds_: List of triplets of coordinates in native space
         Seed definitions. List of coordinates of the seeds in the same space
         as target_affine.
-    target_affine: np.ndarray
+    target_affine: np.ndarray of shape (4,4)
         Affine for the spheres.
     target_shape: np.array or list
         Target shape into which the spheres will be projected. 
     radius: float
         Indicates, in millimeters, the radius for the sphere around the seed.
-    mask_img: Niimg-like object
-        brain mask, is used as reference to back-project spheres to brain-space
     allow_overlap: boolean
         If False, an error is raised if the maps overlaps (ie at least two
         maps have a non-zero value for the same voxel).
@@ -173,8 +171,7 @@ def _iter_signals_from_spheres(seeds, niimg, radius, allow_overlap,
         yield X[:, row]
 
 
-def _iter_regions_from_spheres(seeds, target_affine, target_shape, radius, 
-                               allow_overlap):
+def _iter_regions_from_spheres(seeds, radius, allow_overlap, mask_img):
     """Utility function to iterate over spheres. Used in NiftiSpheresMasker()
     .inverse_transform()
 
@@ -183,15 +180,15 @@ def _iter_regions_from_spheres(seeds, target_affine, target_shape, radius,
     seeds: List of triplets of coordinates in native space
         Seed definitions. List of coordinates of the seeds in the same space
         as target_affine (either of mask or if mask is None MNI space).
-    target_affine: Affine in which the regions/spheres should be projected to
-    target_shape: The shape of the output image.
     radius: float
         Indicates, in millimeters, the radius for the sphere around the seed.
     allow_overlap: boolean
         If False, an error is raised if the maps overlaps (ie at least two
         maps have a non-zero value for the same voxel).
+    mask_img: Niimg-like object,
+        Mask as a reference space to project the spheres back into brain space.
     """
-    adjacency = _get_spheres_rows(seeds, target_affine, target_shape, radius,
+    adjacency = _get_spheres_rows(seeds, mask_img.affine, mask_img.shape, radius,
                           allow_overlap)
 
     for row in adjacency.rows:
@@ -245,34 +242,32 @@ def _spheres_inversion(seeds_, radius, mask_img, allow_overlap):
     spheres_map: Niimg-like object
         A map of each of the sphere's locations. Scaled at places of overlap.
     '''
-    # Mask is only used to get affine and shape
+    # Mask is necessary for affine and shape
     if mask_img is not None:
         mask = check_niimg_3d(mask_img)
-        target_affine = mask.affine
-        target_shape = mask.shape
     else:
         raise ValueError('Please provide mask_img at initialization to'
                             ' provide a reference for the inverse_transform')
 
     n_seeds = len(seeds_)
     # np.empty creates unexpected behavior!
-    spheres = np.zeros((np.prod(target_shape), n_seeds))
+    spheres = np.zeros((np.prod(mask.shape), n_seeds))
 
-    for i, sphere in enumerate(_iter_regions_from_spheres(
-        seeds_, target_affine, target_shape, radius, allow_overlap)):
+    for i, sphere in enumerate(_iter_regions_from_spheres(seeds_, radius, 
+                               allow_overlap, mask_img)):
         spheres[sphere, i] = 1
 
     # Compute overlap scaling for mean signal:
     if allow_overlap:
         spheres_sum = spheres.sum(1)
         # signals_to_img_maps uses dot product to create mask over regions,
-        # inverse scaling to create average not sum
+        # inverse scaling to create average not sum for overlapping spheres
         spheres_scale = 1 / spheres_sum[spheres_sum > 1, np.newaxis]
         spheres[spheres_sum > 1, :] = (spheres[spheres_sum > 1, :] * 
                                         spheres_scale)
     
     spheres_map = image.new_img_like(mask_img, 
-                                spheres.reshape([*target_shape, n_seeds]))
+                                spheres.reshape([*mask.shape, n_seeds]))
     
     return spheres_map
 
@@ -477,7 +472,7 @@ class NiftiSpheresMasker(BaseMasker, CacheMixin):
     def inverse_transform(self, region_signals):
         """Compute voxel signals from spheres signals
 
-        Any mask given at initialization is taken into account. Gives an error
+        Any mask given at initialization is taken into account. Throws an error
         if mask_img==None
 
         Parameters
