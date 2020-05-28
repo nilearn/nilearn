@@ -257,9 +257,9 @@ class CutAxes(BaseAxes):
                              self.direction)
         return cut
 
-    def draw_position(self, size, bg_color, decimal=False, **kwargs):
-        if decimal:
-            text = '%s=%.{}f'.format(decimal)
+    def draw_position(self, size, bg_color, decimals=False, **kwargs):
+        if decimals:
+            text = '%s=%.{}f'.format(decimals)
         else:
             text = '%s=%i'
         ax = self.ax
@@ -958,7 +958,7 @@ class BaseSlicer(object):
 
     def annotate(self, left_right=True, positions=True, scalebar=False,
                  size=12, scale_size=5.0, scale_units='cm', scale_loc=4,
-                 **kwargs):
+                 decimals=False, **kwargs):
         """ Add annotations to the plot.
 
         Parameters
@@ -992,6 +992,9 @@ class BaseSlicer(object):
                     'lower center' : 8,
                     'upper center' : 9,
                     'center'       : 10
+        decimals: integer, optional
+            Number of decimal places on slice position annotation. If False (default),
+            the slice position is integer without decimal point.
         kwargs:
             Extra keyword arguments are passed to matplotlib's text
             function.
@@ -1003,13 +1006,6 @@ class BaseSlicer(object):
             else:
                 kwargs['color'] = 'k'
 
-        # use decimal for annotate position
-        if 'decimal' in kwargs.keys():
-            decimal = kwargs['decimal']
-            del kwargs['decimal']
-        else:
-            decimal = False
-
         bg_color = ('k' if self._black_bg else 'w')
 
         if left_right:
@@ -1020,7 +1016,7 @@ class BaseSlicer(object):
         if positions:
             for display_axis in self.axes.values():
                 display_axis.draw_position(size=size, bg_color=bg_color,
-                                           decimal=decimal,
+                                           decimals=decimals,
                                            **kwargs)
 
         if scalebar:
