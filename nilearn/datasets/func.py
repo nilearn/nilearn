@@ -2794,7 +2794,7 @@ def fetch_fiac_first_level(data_dir=None, verbose=1):
     data_dir: string
         directory where data should be downloaded and unpacked.
     """
-    data_dir = _get_dataset_dir('fiac_nilearn_stats', data_dir=data_dir,
+    data_dir = _get_dataset_dir('fiac_nilearn.glm', data_dir=data_dir,
                                 verbose=verbose)
 
     def _glob_fiac_data():

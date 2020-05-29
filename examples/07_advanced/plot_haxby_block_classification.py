@@ -74,7 +74,7 @@ for session in unique_sessions:
 # Instantiate and run FirstLevelModel
 # -----------------------------------
 from nilearn.image import index_img
-from nilearn.stats.first_level_model import FirstLevelModel
+from nilearn.glm.first_level import FirstLevelModel
 
 # we are going to generate a list of z-maps together with their session and condition index
 z_maps = []

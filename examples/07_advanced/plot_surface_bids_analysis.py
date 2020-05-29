@@ -48,10 +48,10 @@ print(data_dir)
 # since in this case a confounds.tsv file is available in the BIDS dataset.
 # To get the first level models we only have to specify the dataset directory
 # and the task_label as specified in the file names.
-from nilearn.stats.first_level_model import first_level_models_from_bids
+from nilearn.glm.first_level import first_level_from_bids
 task_label = 'languagelocalizer'
 _, models_run_imgs, models_events, models_confounds = \
-    first_level_models_from_bids(
+    first_level_from_bids(
         data_dir, task_label,
         img_filters=[('desc', 'preproc')])
 
@@ -75,9 +75,9 @@ fsaverage = fetch_surf_fsaverage(mesh='fsaverage5')
 # Note that those correspond spatially, as they are both in MNI space.
 import numpy as np
 from nilearn import surface
-from nilearn.stats.first_level_model import make_first_level_design_matrix
-from nilearn.stats.first_level_model import run_glm
-from nilearn.stats.contrasts import compute_contrast
+from nilearn.glm.first_level import make_first_level_design_matrix
+from nilearn.glm.first_level import run_glm
+from nilearn.glm.contrasts import compute_contrast
 
 #########################################################################
 # Empty lists in which we are going to store activation values.
