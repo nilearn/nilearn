@@ -33,6 +33,7 @@ Fixes
 Changes
 -------
 
+- `nilearn.datasets.fetch_surf_fsaverage5` has been removed.
 - :func:`nilearn.datasets.fetch_cobre` has been deprecated and will be
   removed in release 0.9 .
 
