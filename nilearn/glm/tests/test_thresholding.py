@@ -8,7 +8,7 @@ from scipy.stats import norm
 
 from nilearn.image import get_data
 from nilearn.glm import (cluster_level_inference, fdr_threshold,
-                           threshold_stats_img)
+                         threshold_stats_img)
 
 
 def test_fdr():
