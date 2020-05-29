@@ -342,6 +342,7 @@ the :ref:`user guide <user_guide>` for more information and usage examples.
    plot_surf
    plot_surf_roi
    plot_surf_stat_map
+   plot_img_on_surf
    view_surf
    view_img_on_surf
    view_connectome
