@@ -20,6 +20,10 @@ NEW
   :func:`nilearn.plotting.plot_carpet` generates a "carpet plot" (also known
   as a "Power plot" or a "grayplot"), for visualizing global patterns in
   4D functional data over time.
+- New plotting function
+  :func:`nilearn.plotting.plot_markers` shows network nodes (markers) on a glass 
+  brain template and color code them according to provided nodal measure (i.e. 
+  connection strength). This function replaced :func:`plot_connectome_strenght`.
 
 Fixes
 -----

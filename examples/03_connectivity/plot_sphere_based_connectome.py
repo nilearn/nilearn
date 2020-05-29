@@ -344,7 +344,7 @@ plotting.plot_markers(
 
 # clip connectivity matrix to preserve positive and negative edges
 positive_edges = np.clip(matrix, 0, matrix.max())
-negative_edges = np.clip(matrix, 0, matrix.min())
+negative_edges = np.clip(matrix, matrix.min(), 0)
 
 # calculate strength for positive and edges
 node_strength_positive = np.sum(np.abs(positive_edges), axis=0) 
