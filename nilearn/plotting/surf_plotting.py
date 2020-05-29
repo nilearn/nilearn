@@ -427,7 +427,7 @@ def _check_display_mode(display_mode):
     """Checks whether the display_mode string passed to plot_img_on_surf
     is meaningful.
 
-    display_mode: str
+    display_mode: :obj:`str`
         Any combination of 'lateral', 'medial', 'dorsal', 'ventral',
         'anterior', 'posterior', united by a '+'. Ex.: 'dorsal+lateral'
     """
@@ -450,8 +450,8 @@ def _check_display_mode(display_mode):
 def _check_hemisphere(hemisphere):
     """Checks whether the hemisphere in plot_img_on_surf is correct.
 
-    display_mode: str
-        Any combination of 'left', 'right'
+    hemisphere: :obj:`str`
+        Any combination of 'left' and 'right'
     """
     desired_hemispheres = hemisphere.split('+')
     wrong_hemisphere = set(desired_hemispheres).difference({'left', 'right'})

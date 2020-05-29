@@ -10,6 +10,7 @@ from nilearn.plotting.surf_plotting import (plot_surf, plot_surf_stat_map,
                                             plot_surf_roi, plot_img_on_surf)
 from nilearn.datasets import fetch_surf_fsaverage5
 from nilearn.surface.testing_utils import generate_surf
+from pathlib import Path
 
 
 def test_plot_surf():
@@ -252,3 +253,76 @@ def test_plot_img_on_surf_surf_mesh():
     plot_img_on_surf(nii, hemisphere='right+left', display_mode='lateral',
                      surf_mesh=surf_mesh)
 
+
+def test_plot_img_on_surf_with_invalid_display_mode():
+    kwargs = {"hemisphere": "right", "inflate": True}
+    nii = _generate_img()
+    with pytest.raises(ValueError):
+        plot_img_on_surf(nii, display_mode='latral', **kwargs)
+    with pytest.raises(ValueError):
+        plot_img_on_surf(nii, display_mode='dorsal-posterior', **kwargs)
+    with pytest.raises(ValueError):
+        plot_img_on_surf(nii, display_mode='foo+bar', **kwargs)
+
+
+def test_plot_img_on_surf_with_invalid_hemisphere():
+    nii = _generate_img()
+    with pytest.raises(ValueError):
+        plot_img_on_surf(nii, display_mode='lateral', inflate=True, hemisphere="lft")
+    with pytest.raises(ValueError):
+        plot_img_on_surf(nii, display_mode='medial', inflate=True, hemisphere="left/right")
+    with pytest.raises(ValueError):
+        plot_img_on_surf(
+            nii,
+            display_mode='anterior+posterior',
+            inflate=True,
+            hemisphere="left+right+middle"
+        )
+
+
+def test_plot_img_on_surf_with_figure_kwarg():
+    nii = _generate_img()
+    with pytest.raises(ValueError):
+        plot_img_on_surf(
+            nii,
+            display_mode="anterior",
+            hemisphere="right",
+            figure=True,
+        )
+
+
+def test_plot_img_on_surf_with_axes_kwarg():
+    nii = _generate_img()
+    with pytest.raises(ValueError):
+        plot_img_on_surf(
+            nii,
+            display_mode="anterior",
+            hemisphere="right",
+            inflat=True,
+            axes="something",
+        )
+
+
+def test_plot_img_on_surf_title():
+    nii = _generate_img()
+    title = "Title"
+    fig, axes = plot_img_on_surf(
+        nii, hemisphere='right', display_mode='lateral'
+    )
+    assert fig._suptitle is None, "Created title without title kwarg."
+    fig, axes = plot_img_on_surf(
+        nii, hemisphere='right', display_mode='lateral', title=title
+    )
+    assert fig._suptitle is not None, "Title not created."
+    assert fig._suptitle.get_text() == title, "Title text not assigned."
+
+
+def test_plot_img_on_surf_output_file():
+    nii = _generate_img()
+    fname = Path('check.png')
+    return_value = plot_img_on_surf(
+        nii, hemisphere='right', display_mode='lateral', output_file=fname
+    )
+    assert return_value is None, "Returned figure and axes on file output."
+    assert fname.is_file(), "Saved image file could not be found."
+    fname.unlink()
