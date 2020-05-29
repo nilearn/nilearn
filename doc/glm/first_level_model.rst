@@ -183,7 +183,37 @@ For full examples on fitting a first level model, look at the following examples
 Extracting predicted time series and residuals
 =====================================================
 
+One way to assess the quality of the fit is to compare the observed and predicted time series of voxels.
+Nilearn makes the predicted time series easily accessible via a parameter called
+`predicted` that is part of the :class:`nilearn.stats.first_level_model.FirstLevelModel`. This parameter
+is populated the when FistLevelModel is initialized with the `minimize_memory` flag set to `False`.::
+
+  observed_timeseries = masker.fit_transform(fmri_img)
+  predicted_timeseries = masker.fit_transform(fmri_glm.predicted[0])
+
+Here, masker is an object of :class:`nilearn.input_data.NiftiSpheresMasker`. In the figure below,
+predicted (red) and observed (not red) timecourses of 6 voxels are shown.
+
+  .. image:: ../auto_examples/04_glm_first_level_models/images/sphx_glr_plot_predictions_residuals_002.png
+     :target: ../auto_examples/04_glm_first_level_models/plot_predictions_residuals.html#sphx-glr-auto-examples-04-glm-first-level-models-plot-predictions-residuals-py
+     :scale: 60
+
+In addition to the predicted timecourses, this flag also yields the residuals of the GLM.
+The residuals are useful to calculate the F and R-squared statistic. For more information
+refer to `https://5756-1235740-gh.circle-artifacts.com/0/doc/_build/html/auto_examples/04_glm_first_level_models/plot_predictions_residuals.html#sphx-glr-auto-examples-04-glm-first-level-models-plot-predictions-residuals-py`
+
 
 
 Surface-based analysis
 =====================================================
+
+fMRI analyses are also performed on the cortical surface instead of a volumetric brain.
+Nilearn provides functions to map subject brains on to a cortical mesh, either a standard
+surface as provided by Freesurfer, for e.g., or a user-defined one. Freesurfer meshes can
+be accessed using :func:`nilearn.datasets.fetch_surf_fsaverage`, while the function
+:func:`nilearn.surface.vol_to_surf` does the projection from volumetric to surface space.
+Surface plotting functions like :func:`nilearn.plotting.plot_surf` and
+:func:`nilearn.plotting.plot_surf_stat_map` allow for easy visualization of surface-based
+data.
+
+For a complete example refer to `https://5756-1235740-gh.circle-artifacts.com/0/doc/_build/html/auto_examples/04_glm_first_level_models/plot_localizer_surface_analysis.html`
