@@ -2,19 +2,16 @@
 Functions for surface visualization.
 Only matplotlib is required.
 """
-import numpy as np
-
 import matplotlib.pyplot as plt
-
-from mpl_toolkits.mplot3d import Axes3D
+import numpy as np
 
 from matplotlib.colorbar import make_axes
 from matplotlib.cm import ScalarMappable, get_cmap
 from matplotlib.colors import Normalize, LinearSegmentedColormap
-
-from ..surface import load_surf_data, load_surf_mesh, vol_to_surf, check_mesh
-from .._utils import check_niimg_3d
-from .img_plotting import _get_colorbar_and_data_ranges, _crop_colorbar
+from mpl_toolkits.mplot3d import Axes3D
+from nilearn.surface import load_surf_data, load_surf_mesh, vol_to_surf, check_mesh
+from nilearn._utils import check_niimg_3d
+from nilearn.plotting.img_plotting import _get_colorbar_and_data_ranges, _crop_colorbar
 
 
 def plot_surf(surf_mesh, surf_map=None, bg_map=None,
