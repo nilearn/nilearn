@@ -137,8 +137,11 @@ def test_annotations():
                          scale_size=2.5,
                          scale_units='cm',
                          scale_loc=3)
+
+
+def test_position_annotation_with_decimals():
     # Test of decimals position annotation with precision of 2
-    orthoslicer.cut_coords = (0, 0, 0)
+    orthoslicer = OrthoSlicer(cut_coords=(0, 0, 0))
     orthoslicer.annotate(positions=True, decimals=2)
     orthoslicer.close()
 
