@@ -44,7 +44,8 @@ of positive real number representing the MRI signal, sampled at the TR.
   Neurological Institute. Once this is done, the coordinates of a voxel are in the same space as the template and
   can be used to estimate its brain location using brain atlases based on that same template. As previously mentioned,
   the nilearn package does not perform spatial preprocessing; it only does statistical analyses on the voxel time
-  series.
+  series. For preprocessing functions, users are referred to Nipype `https://nipype.readthedocs.io/en/latest/#` or
+  fMRIPrep `https://fmriprep.readthedocs.io/en/stable/`.
 
 fMRI data modelling
 -------------------
@@ -92,6 +93,7 @@ so that only voxels with a p-value less than 1/1000 are coloured.
 
 
 .. note::
+
     In this approach, hypothesis tests are conducted in parallel at many voxels, increasing the liklelihood of False
     Positives. This is known as the Problem of `Multiple Comparisons`_. Some common strategies for dealing with this
     are discussed later in this page. This issue can be addressed in nilearn using permutations tests.
@@ -134,7 +136,7 @@ by `t`. Next, based on `t`, we want to decide whether the true effect was indeed
 
 `t` would not necessarily be 0 if the true effect were zero: by chance, noise in the data may be partly explained by the
 contrast of interest. However, if we assume that the noise is Gaussian and that the model is correctly specified, then we
-know that `t` should follow a Student distribution with `dof` degrees of freedom, where q is the number of free parameters
+know that `t` should follow a Student distribution with `dof` degrees of freedom, where `dof` is the number of free parameters
 in the model: in practice, the number of observations (i.e. the number of time points), `n_scans` minus the number of effects
 modelled (i.e. the number of columns `n_columns`) of the design matrix:
 
@@ -147,15 +149,20 @@ observing an effect as large as `t` would be less than :math:`\alpha`.
 
 .. figure:: ../images/student.png
 
-.. note:: A frequent misconception consists in interpreting `1- :math:\alpha` as the probability that there is indeed an
-effect: this is not true! Here we rely on a frequentist approach, that does not support Bayesian interpretation.
-See e.g. https://en.wikipedia.org/wiki/Frequentist_inference
+.. note::
 
-.. note:: It is cumbersome to work with Student distributions, since these always require to specify the degrees of freedom.
-To avoid this, we can transform `t` to another variable `z` such that comparing `t` to the Student distribution with `dof`
-degrees of freedom is equivalent to comparing `z` to a standard normal distribution. We call this the z-transform of `t`.
-We call the :math:`(1-\alpha)` quantile of the normal distribution the *threshold*, since we use this value to declare
-voxels active or not.
+  A frequent misconception consists in interpreting :math:`1- \alpha` as the probability that there is indeed an effect:
+  this is not true! Here we rely on a frequentist approach, that does not support Bayesian interpretation. See e.g.
+  https://en.wikipedia.org/wiki/Frequentist_inference
+
+
+.. note::
+
+  It is cumbersome to work with Student distributions, since these always require to specify the degrees of freedom.
+  To avoid this, we can transform `t` to another variable `z` such that comparing `t` to the Student distribution with
+  `dof` degrees of freedom is equivalent to comparing `z` to a standard normal distribution. We call this the z-transform
+  of `t`. We call the :math:`(1-\alpha)` quantile of the normal distribution the *threshold*, since we use this value to
+  declare voxels active or not.
 
 Multiple Comparisons
 --------------------
@@ -163,7 +170,7 @@ Multiple Comparisons
 A well-known issue that arises here is that of multiple comparisons:
  when a statistical tests is repeated a large number times, say one for each voxel, i.e. `n_voxels` times, then one can
  expect that, in the absence of any effect, the number of detections -- false detections since there is no effect --
- will be roughly :math:`n_voxels*\alpha`. If :math:`\alpha=.001` and :math:`n=10^5`, the number of false detections
+ will be roughly :math:`n\_voxels*\alpha`. If :math:`\alpha=.001` and :math:`n=10^5`, the number of false detections
  will be about 100. The danger is that one may no longer trust the detections, i.e. values of `z` larger than the
  :math:`(1-\alpha)`-quantile of the standard normal distribution.
 
@@ -180,8 +187,10 @@ proportionate `1-q` of the discoveries made. The number `q` is the expected prop
 as the *false discovery rate*. Controlling the false discovery rate is a reasonable compromise in practice. The thresholding
 that yields this level of control is typically obtained using the so-called Benjamini-Hochberg procedure.
 
-.. note:: Note that `q` (as well as `\alpha`) are *arbitrary*. It is recommended to not rely on low values, otherwise the
-inference is meaningless. Ideally one should use :math:`\alpha=\frac{0.05}{n\_voxels}`, or `q=0.05`.
+.. note::
+
+  Note that `q` (as well as `\alpha`) are *arbitrary*. It is recommended to not rely on low values, otherwise the inference
+  is meaningless. Ideally one should use :math:`\alpha=\frac{0.05}{n\_voxels}`, or `q=0.05`.
 
 
 Note also that supra-threshold sets of voxels are often gathered into connected components (aka *clusters*), so that only

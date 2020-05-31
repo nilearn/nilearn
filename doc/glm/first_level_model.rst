@@ -1,8 +1,8 @@
 .. _first_level_model:
 
-=======================================================
+==================
 First level models
-=======================================================
+==================
 
 .. topic:: **Page summary**
 
@@ -19,7 +19,7 @@ First level models
 
 
 HRF models
-=====================================================
+==========
 
 Nilearn offers a few different HRF models including the commonly used double-gamma SPM model
 ('spm') and the model shape proposed by G. Glover ('glover'), both allowing the option of adding
@@ -33,10 +33,10 @@ example: :ref:`sphx_glr_auto_examples_04_glm_first_level_models_plot_hrf.py`.
 
 
 Design matrix: event-based and time series-based
-=====================================================
+================================================
 
 Event-based
------------------------------------------------------
+-----------
 
 To create an event-based design matrix, information about the trial type, onset time and
 duration of the events in the experiment are necessary. This can be provided by the user, or
@@ -92,7 +92,7 @@ to visualize the design matrix::
 
 
 Time series-based
------------------------------------------------------
+-----------------
 
 The time series of a seed region can also be used as the predictor for a first level
 model. This would be used to identify brain areas co-activating with the seed
@@ -118,15 +118,15 @@ argument used above for motion parameters::
 
 
 Fitting a first level model
-=====================================================
+===========================
 
 The :class:`nilearn.stats.first_level_model.FirstLevelModel` class provides the tools
 to fit the linear model to the fMRI data. The :func:`nilearn.stats.first_level_model.FirstLevelModel.fit()` function
 takes the fMRI data and design matrix as input and fits the GLM. Like other Nilearn
 functions, :func:`nilearn.stats.first_level_model.FirstLevelModel.fit()` accepts file names as input, but can also
-work with NiftiImage `https://nipy.org/nibabel/nibabel_images.html` objects.
+work with NiftiImage objects ref:`https://nipy.org/nibabel/nibabel_images.html`.
 More information about input formats is available here:
-`http://nilearn.github.io/manipulating_images/input_output.html#inputing-data-file-names-or-image-objects`
+ref:`http://nilearn.github.io/manipulating_images/input_output.html#inputing-data-file-names-or-image-objects` ::
 
   from nilearn.stats.first_level_model import FirstLevelModel
   fmri_glm = FirstLevelModel()
@@ -134,7 +134,7 @@ More information about input formats is available here:
 
 
 Computing contrasts
------------------------------------------------------
+-------------------
 
 To get more interesting results out of the GLM model, contrasts can be computed
 between regressors of interest. The :func:`nilearn.stats.first_level_model.FirstLevelModel.compute_contrast` can be
@@ -174,19 +174,21 @@ And compute the contrasts as follows::
      :scale: 60
 
 
-For full examples on fitting a first level model, look at the following examples::
-`sphx-glr-auto-examples-04-glm-first-level-models-plot-spm-multimodal-faces.py`
-`sphx-glr-auto-examples-04-glm-first-level-models-plot-fiac-analysis.py`
+For full examples on fitting a first level model, look at the following examples:
+
+ref:`sphx-glr-auto-examples-04-glm-first-level-models-plot-spm-multimodal-faces.py`
+
+ref:`sphx-glr-auto-examples-04-glm-first-level-models-plot-fiac-analysis.py`
 
 
 
 Extracting predicted time series and residuals
-=====================================================
+==============================================
 
 One way to assess the quality of the fit is to compare the observed and predicted time series of voxels.
 Nilearn makes the predicted time series easily accessible via a parameter called
 `predicted` that is part of the :class:`nilearn.stats.first_level_model.FirstLevelModel`. This parameter
-is populated the when FistLevelModel is initialized with the `minimize_memory` flag set to `False`.::
+is populated the when FistLevelModel is initialized with the `minimize_memory` flag set to `False`. ::
 
   observed_timeseries = masker.fit_transform(fmri_img)
   predicted_timeseries = masker.fit_transform(fmri_glm.predicted[0])
@@ -200,12 +202,12 @@ predicted (red) and observed (not red) timecourses of 6 voxels are shown.
 
 In addition to the predicted timecourses, this flag also yields the residuals of the GLM.
 The residuals are useful to calculate the F and R-squared statistic. For more information
-refer to `https://5756-1235740-gh.circle-artifacts.com/0/doc/_build/html/auto_examples/04_glm_first_level_models/plot_predictions_residuals.html#sphx-glr-auto-examples-04-glm-first-level-models-plot-predictions-residuals-py`
+refer to ref:`../auto_examples/04_glm_first_level_models/plot_predictions_residuals.html#sphx-glr-auto-examples-04-glm-first-level-models-plot-predictions-residuals-py`
 
 
 
 Surface-based analysis
-=====================================================
+======================
 
 fMRI analyses are also performed on the cortical surface instead of a volumetric brain.
 Nilearn provides functions to map subject brains on to a cortical mesh, either a standard
@@ -216,4 +218,4 @@ Surface plotting functions like :func:`nilearn.plotting.plot_surf` and
 :func:`nilearn.plotting.plot_surf_stat_map` allow for easy visualization of surface-based
 data.
 
-For a complete example refer to `https://5756-1235740-gh.circle-artifacts.com/0/doc/_build/html/auto_examples/04_glm_first_level_models/plot_localizer_surface_analysis.html`
+For a complete example refer to ref:`../auto_examples/04_glm_first_level_models/plot_localizer_surface_analysis.html`
