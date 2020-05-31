@@ -260,10 +260,12 @@ class CutAxes(BaseAxes):
     def draw_position(self, size, bg_color, decimals=False, **kwargs):
         if decimals:
             text = '%s=%.{}f'.format(decimals)
+            coord = float(self.coord)
         else:
             text = '%s=%i'
+            coord = self.coord
         ax = self.ax
-        ax.text(0, 0, text % (self.direction, self.coord),
+        ax.text(0, 0, text % (self.direction, coord),
                 transform=ax.transAxes,
                 horizontalalignment='left',
                 verticalalignment='bottom',
