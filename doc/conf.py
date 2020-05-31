@@ -51,14 +51,26 @@ extensions = ['sphinx.ext.autodoc',
                   if sphinx.version_info[:2] >= (1, 4)
                   else 'sphinx.ext.pngmath'),
               'sphinx.ext.intersphinx',
-              'numpydoc.numpydoc',
+              'numpydoc',
               'sphinx_gallery.gen_gallery',
               ]
 
 autosummary_generate = True
 
-autodoc_default_option = ['members', 'inherited-members']
+autodoc_default_options = {
+    'imported-members': True,
+    'inherited-members' : True,
+    'undoc-members': True,
+    'member-order': 'bysource',
+    # We cannot have __init__: it causes duplicated entries
+    #'special-members': '__init__',
+}
 
+# Get rid of spurious warnings due to some interaction between
+# autosummary and numpydoc. See
+# https://github.com/phn/pytpm/issues/3#issuecomment-12133978 for more
+# details
+numpydoc_show_class_members = False
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['templates']
 
@@ -305,6 +317,8 @@ sphinx_gallery_conf = {
     'junit': '../test-results/sphinx-gallery/junit.xml',
     'examples_dirs': '../examples',
     'gallery_dirs': 'auto_examples',
+    # Ignore the function signature leftover by joblib
+    'ignore_pattern': 'func_code\.py',
     'binder': {
         'org': 'nilearn',
         'repo': 'nilearn.github.io',
@@ -316,11 +330,6 @@ sphinx_gallery_conf = {
     }
 }
 
-# Get rid of spurious warnings due to some interaction between
-# autosummary and numpydoc. See
-# https://github.com/phn/pytpm/issues/3#issuecomment-12133978 for more
-# details
-numpydoc_show_class_members = False
 
 
 def touch_example_backreferences(app, what, name, obj, options, lines):

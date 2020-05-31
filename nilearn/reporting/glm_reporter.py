@@ -87,8 +87,10 @@ def make_glm_report(model,
             Each contrast name must be a string.
             Each contrast coefficient must be a list or numpy array of ints.
 
-        Contrasts are passed to ``contrast_def`` for FirstLevelModel [1]_
-        & second_level_contrast for SecondLevelModel [2]_ .
+        Contrasts are passed to ``contrast_def`` for FirstLevelModel
+        (:func:`nilearn.stats.first_level_model.FirstLevelModel.compute_contrast`)
+        & second_level_contrast for SecondLevelModel
+        (:func:`nilearn.stats.second_level_model.SecondLevelModel.compute_contrast`)
 
     title: String, optional
         If string, represents the web page's title and primary heading,
@@ -152,11 +154,6 @@ def make_glm_report(model,
     -------
     report_text: HTMLDocument Object
         Contains the HTML code for the GLM Report.
-
-    References
-    ----------
-    .. [1] :func:`nilearn.stats.first_level_model.FirstLevelModel.compute_contrast`
-    .. [2] :func:`nilearn.stats.second_level_model.SecondLevelModel.compute_contrast`
 
     """
     '''
@@ -481,8 +478,10 @@ def make_stat_maps(model, contrasts):
 
     contrasts: Dict[str, ndarray or str]
         Dict of contrasts for a first or second level model.
-        Corresponds to the contrast_def for the FirstLevelModel [1]_
-        & second_level_contrast for a SecondLevelModel [2]_ .
+        Corresponds to the contrast_def for the FirstLevelModel
+        (nilearn.stats.first_level_model.FirstLevelModel.compute_contrast)
+        & second_level_contrast for a SecondLevelModel
+        (nilearn.stats.second_level_model.SecondLevelModel.compute_contrast)
 
     Returns
     -------
@@ -491,8 +490,8 @@ def make_stat_maps(model, contrasts):
 
     See Also
     --------
-    .. [1] nilearn.stats.first_level_model.FirstLevelModel.compute_contrast
-    .. [2] nilearn.stats.second_level_model.SecondLevelModel.compute_contrast
+    nilearn.stats.first_level_model.FirstLevelModel.compute_contrast
+    nilearn.stats.second_level_model.SecondLevelModel.compute_contrast
     """
     statistical_maps = {contrast_id: model.compute_contrast(contrast_val)
                         for contrast_id, contrast_val in contrasts.items()

@@ -899,7 +899,7 @@ class BaseSpaceNet(LinearModel, RegressorMixin, CacheMixin):
         -------
         array, shape=(n_samples,) if n_classes == 2 else (n_samples, n_classes)
             Confidence scores per (sample, class) combination. In the binary
-            case, confidence score for self.classes_[1] where >0 means this
+            case, confidence score for `self.classes_[1]` where >0 means this
             class would be predicted.
         """
         # handle regression (least-squared loss)

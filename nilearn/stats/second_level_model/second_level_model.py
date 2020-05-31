@@ -242,6 +242,14 @@ class SecondLevelModel(BaseEstimator, TransformerMixin, CacheMixin):
         parameters. Automatic mask computation assumes first level imgs have
         already been masked.
 
+    target_affine : 3x3 or 4x4 matrix, optional
+        This parameter is passed to :func:`nilearn.image.resample_img`.
+        Please see the related documentation for details.
+
+    target_shape : 3-tuple of integers, optional
+        This parameter is passed to :func:`nilearn.image.resample_img`.
+        Please see the related documentation for details.
+
     smoothing_fwhm: float, optional
         If smoothing_fwhm is not None, it gives the size in millimeters of the
         spatial smoothing to apply to the signal.
@@ -271,10 +279,13 @@ class SecondLevelModel(BaseEstimator, TransformerMixin, CacheMixin):
 
     """
 
-    def __init__(self, mask_img=None, smoothing_fwhm=None,
+    def __init__(self, mask_img=None, target_affine=None, target_shape=None,
+                 smoothing_fwhm=None,
                  memory=Memory(None), memory_level=1, verbose=0,
                  n_jobs=1, minimize_memory=True):
         self.mask_img = mask_img
+        self.target_affine = target_affine
+        self.target_shape = target_shape
         self.smoothing_fwhm = smoothing_fwhm
         if isinstance(memory, str):
             self.memory = Memory(memory)
@@ -392,8 +403,12 @@ class SecondLevelModel(BaseEstimator, TransformerMixin, CacheMixin):
         # Learn the mask. Assume the first level imgs have been masked.
         if not isinstance(self.mask_img, NiftiMasker):
             self.masker_ = NiftiMasker(
-                mask_img=self.mask_img, smoothing_fwhm=self.smoothing_fwhm,
-                memory=self.memory, verbose=max(0, self.verbose - 1),
+                mask_img=self.mask_img,
+                target_affine=self.target_affine,
+                target_shape=self.target_shape,
+                smoothing_fwhm=self.smoothing_fwhm,
+                memory=self.memory,
+                verbose=max(0, self.verbose - 1),
                 memory_level=self.memory_level)
         else:
             self.masker_ = clone(self.mask_img)
@@ -428,7 +443,7 @@ class SecondLevelModel(BaseEstimator, TransformerMixin, CacheMixin):
             the design matrix of the fitted model combined with operators +-
             and combined with numbers with operators +-`*`/. The default (None)
             is accepted if the design matrix has a single column, in which case
-            the only possible contrast array([1]) is applied; when the design
+            the only possible contrast array((1)) is applied; when the design
             matrix has multiple columns, an error is raised.
 
         first_level_contrast: str or array of shape (n_col) with respect to
@@ -564,7 +579,7 @@ def non_parametric_inference(second_level_input, confounds=None,
     second_level_contrast: str or array of shape (n_col), optional
         Where ``n_col`` is the number of columns of the design matrix.
         The default (None) is accepted if the design matrix has a single
-        column, in which case the only possible contrast array([1]) is
+        column, in which case the only possible contrast array((1)) is
         applied; when the design matrix has multiple columns, an error is
         raised.
 

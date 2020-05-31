@@ -880,9 +880,12 @@ class BaseSlicer(object):
 
         self._colorbar_ax.yaxis.tick_left()
         tick_color = 'w' if self._black_bg else 'k'
+        outline_color = 'w' if self._black_bg else 'k'
+
         for tick in self._colorbar_ax.yaxis.get_ticklabels():
             tick.set_color(tick_color)
         self._colorbar_ax.yaxis.set_tick_params(width=0)
+        self._cbar.outline.set_edgecolor(outline_color)
 
     def add_edges(self, img, color='r'):
         """ Plot the edges of a 3D map in all the views.
