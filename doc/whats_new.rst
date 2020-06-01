@@ -20,8 +20,8 @@ NEW
   :func:`nilearn.plotting.plot_carpet` generates a "carpet plot" (also known
   as a "Power plot" or a "grayplot"), for visualizing global patterns in
   4D functional data over time.
-- a `annotation` method for :class:`nilearn.plotting.displays.BaseSlicer` implements
-  `decimals` option to enable annotation of slice coordinate position with float.
+- The position annotation on the plot methods now implements the `decimals` option
+  to enable annotation of a slice coordinate position with the float.
 
 Fixes
 -----
