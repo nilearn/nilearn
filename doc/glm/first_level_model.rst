@@ -29,7 +29,7 @@ of the HRF is also available.
 
 In order to visualize the predicted regressor prior to plugging it into the linear model, use
 the function :func:`nilearn.stats.first_level_model.compute_regressor`, or explore the HRF plotting
-example: :ref:`sphx_glr_auto_examples_04_glm_first_level_models_plot_hrf.py`.
+example: :ref:`sphx_glr_auto_examples_04_glm_first_level_models_plot_hrf.py`
 
 
 Design matrix: event-based and time series-based
@@ -84,9 +84,8 @@ to visualize the design matrix::
   from nilearn.reporting import plot_design_matrix
   plot_design_matrix(design_matrices)
 
-  .. image:: ../auto_examples/04_glm_first_level_models/images/sphx_glr_plot_design_matrix_001.png
-     :target: ../auto_examples/04_glm_first_level_models/plot_design_matrix.html
-     :scale: 60
+.. image:: ../auto_examples/04_glm_first_level_models/images/sphx_glr_plot_design_matrix_001.png
+   :target: ../auto_examples/04_glm_first_level_models/plot_design_matrix.html#sphx-glr-auto-examples-04-glm-first-level-models-plot-design-matrix-py
 
 .. note:: Additional predictors, like subject motion, can be specified using the add_reg parameter. Look at the function definition for available arguments.
 
@@ -198,7 +197,6 @@ predicted (red) and observed (not red) timecourses of 6 voxels are shown.
 
   .. image:: ../auto_examples/04_glm_first_level_models/images/sphx_glr_plot_predictions_residuals_002.png
      :target: ../auto_examples/04_glm_first_level_models/plot_predictions_residuals.html#sphx-glr-auto-examples-04-glm-first-level-models-plot-predictions-residuals-py
-     :scale: 60
 
 In addition to the predicted timecourses, this flag also yields the residuals of the GLM.
 The residuals are useful to calculate the F and R-squared statistic. For more information
