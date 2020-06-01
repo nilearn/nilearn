@@ -61,6 +61,14 @@ You can check out the latest sources with the command::
 or if you have write privileges::
 
     git clone git@github.com:nilearn/nilearn.git
+    
+Installing the latest code
+---------------------------
+
+In order to ensure that any code changes are reflected in your installation, navigate to your cloned Nilearn base directory and install using the following command::
+
+    pip install -e .
+
 
 Coding guidelines
 ------------------

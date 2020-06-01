@@ -65,6 +65,10 @@ different heuristics to find cutting coordinates.
      :target: ../auto_examples/01_plotting/plot_prob_atlas.html
      :scale: 50
 
+.. |plot_carpet| image:: ../auto_examples/01_plotting/images/sphx_glr_plot_carpet_001.png
+     :target: ../auto_examples/01_plotting/plot_carpet.html
+     :scale: 50
+
 .. A temporary hack to avoid a sphinx bug
 .. |hack| raw:: html
 
@@ -118,6 +122,10 @@ different heuristics to find cutting coordinates.
 |plot_prob_atlas|    :func:`plot_prob_atlas`
                      |hack|
                      Plotting 4D probabilistic atlas maps
+
+|plot_carpet|        :func:`plot_carpet`
+                     |hack|
+                     Plotting voxel intensities across time.
 
 **plot_img**         :func:`plot_img`
                      |hack|

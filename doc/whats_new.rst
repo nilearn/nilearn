@@ -20,14 +20,28 @@ NEW
   :func:`nilearn.plotting.plot_carpet` generates a "carpet plot" (also known
   as a "Power plot" or a "grayplot"), for visualizing global patterns in
   4D functional data over time.
+<<<<<<< HEAD
 - New plotting function
   :func:`nilearn.plotting.plot_img_on_surf` generates multiple views of
   :func:`nilearn.plotting.plot_surf_stat_map` in a single figure.
+=======
+>>>>>>> master
 
 Fixes
 -----
 
 - :class:`nilearn.input_data.NiftiLabelsMasker` no longer ignores its `mask_img`
+- :func:`nilearn.masking.compute_brain_mask` has replaced
+  `nilearn.masking.compute_gray_matter_mask`. Features remained the same but
+  some corrections regarding its description were made in the docstring.
+
+
+Changes
+-------
+
+- `nilearn.datasets.fetch_surf_fsaverage5` has been removed.
+- :func:`nilearn.datasets.fetch_cobre` has been deprecated and will be
+  removed in release 0.9 .
 
 0.6.2
 ======
@@ -1572,7 +1586,7 @@ New features
    - The new module :mod:`nilearn.connectome` now has class
      :class:`nilearn.connectome.ConnectivityMeasure` can be useful for
      computing functional connectivity matrices.
-   - The function :func:`nilearn.connectome.sym_to_vec` in same module
+   - The function nilearn.connectome.sym_to_vec in same module
      :mod:`nilearn.connectome` is also implemented as a helper function to
      :class:`nilearn.connectome.ConnectivityMeasure`.
    - The class :class:`nilearn.decomposition.DictLearning` in

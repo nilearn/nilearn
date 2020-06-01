@@ -42,7 +42,7 @@ _set_mpl_backend()
 from . import cm
 from .img_plotting import plot_img, plot_anat, plot_epi, \
     plot_roi, plot_stat_map, plot_glass_brain, plot_connectome, \
-    plot_connectome_strength, plot_prob_atlas, show
+    plot_connectome_strength, plot_prob_atlas, plot_carpet, show
 from .find_cuts import find_xyz_cut_coords, find_cut_slices, \
     find_parcellation_cut_coords, find_probabilistic_atlas_cut_coords
 from .matrix_plotting import plot_matrix

@@ -51,6 +51,17 @@ def test_high_level_glm_with_paths():
         z_image = model.compute_contrast(c1, output_type='z_score')
         assert isinstance(z_image, Nifti1Image)
         assert_array_equal(z_image.affine, load(mask).affine)
+
+        # try with target_shape
+        target_shape = (10, 10, 10)
+        target_affine = np.eye(4)
+        target_affine[0, 3] = 1
+        model = SecondLevelModel(mask_img=mask, target_shape=target_shape,
+                                 target_affine=target_affine)
+        z_image = model.fit(Y, design_matrix=X).compute_contrast(c1)
+        assert_array_equal(z_image.shape, target_shape)
+        assert_array_equal(z_image.affine, target_affine)
+        
         # Delete objects attached to files to avoid WindowsError when deleting
         # temporary directory (in Windows)
         del Y, FUNCFILE, func_img, model

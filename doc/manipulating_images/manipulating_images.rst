@@ -149,7 +149,7 @@ Relevant functions:
 
 * compute a mask from EPI images: :func:`nilearn.masking.compute_epi_mask`
 * compute a grey-matter mask using the MNI template:
-  :func:`nilearn.masking.compute_gray_matter_mask`.
+  :func:`nilearn.masking.compute_brain_mask`.
 * compute a mask from images with a flat background:
   :func:`nilearn.masking.compute_background_mask`
 * compute for multiple sessions/subjects:
@@ -170,8 +170,8 @@ can be computed from the data:
   the brain stands out of a constant background. This is typically the
   case when working on statistic maps output after a brain extraction
 - :func:`nilearn.masking.compute_epi_mask` for EPI images
-- :func:`nilearn.masking.compute_gray_matter_mask` to compute a
-  gray-matter mask using the MNI template.
+- :func:`nilearn.masking.compute_brain_mask` to compute a
+  whole-brain mask using the MNI template.
 
 
 .. literalinclude:: ../../examples/01_plotting/plot_visualization.py

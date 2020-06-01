@@ -20,6 +20,7 @@ from sklearn.utils import check_random_state
 from . import test_utils as tst
 
 from nilearn.datasets import utils, func
+from nilearn._utils.testing import check_deprecation
 
 from ..utils import _get_dataset_dir
 
@@ -501,8 +502,9 @@ def test_fetch_cobre(tmp_path, request_mocker):
     local_url = "file://" + dummy
 
     # All subjects
-    cobre_data = func.fetch_cobre(n_subjects=None, data_dir=str(tmp_path),
-                                  url=local_url)
+    cobre_data = check_deprecation(
+        func.fetch_cobre, "'fetch_cobre' has been deprecated")(
+            n_subjects=None, data_dir=str(tmp_path), url=local_url)
 
     phenotypic_names = ['func', 'confounds', 'phenotypic', 'description',
                         'desc_con', 'desc_phenotypic']

@@ -92,7 +92,7 @@ class NiftiMasker(BaseMasker, CacheMixin, ReportMixin):
         If smoothing_fwhm is not None, it gives the full-width half maximum in
         millimeters of the spatial smoothing to apply to the signal.
 
-    standardize: {'zscore', 'psc', True, False}, default is 'zscore'
+    standardize : {'zscore', 'psc', True, False}, default is 'zscore'
         Strategy to standardize the signal.
         'zscore': the signal is z-scored. Timeseries are shifted
         to zero mean and scaled to unit variance.
@@ -106,11 +106,11 @@ class NiftiMasker(BaseMasker, CacheMixin, ReportMixin):
         This parameter is passed to signal.clean. Please see the related
         documentation for details: :func:`nilearn.signal.clean`.
 
-    low_pass: None or float, optional
+    low_pass : None or float, optional
         This parameter is passed to signal.clean. Please see the related
         documentation for details: :func:`nilearn.signal.clean`.
 
-    high_pass: None or float, optional
+    high_pass : None or float, optional
         This parameter is passed to signal.clean. Please see the related
         documentation for details: :func:`nilearn.signal.clean`.
 
@@ -126,7 +126,7 @@ class NiftiMasker(BaseMasker, CacheMixin, ReportMixin):
         This parameter is passed to image.resample_img. Please see the
         related documentation for details.
 
-    mask_strategy: {'background', 'epi' or 'template'}, optional
+    mask_strategy : {'background', 'epi' or 'template'}, optional
         The strategy used to compute the mask: use 'background' if your
         images present a clear homogeneous background, 'epi' if they
         are raw EPI images, or you could use 'template' which will
@@ -134,7 +134,7 @@ class NiftiMasker(BaseMasker, CacheMixin, ReportMixin):
         brain mask for your data's field of view.
         Depending on this value, the mask will be computed from
         masking.compute_background_mask, masking.compute_epi_mask or
-        masking.compute_gray_matter_mask. Default is 'background'.
+        masking.compute_brain_mask. Default is 'background'.
 
     mask_args : dict, optional
         If mask is None, these are additional parameters passed to
@@ -149,7 +149,7 @@ class NiftiMasker(BaseMasker, CacheMixin, ReportMixin):
         This is useful to perform data subselection as part of a scikit-learn
         pipeline.
 
-    `dtype: {dtype, "auto"}
+    dtype : {dtype, "auto"}
         Data type toward which the data should be converted. If "auto", the
         data will be converted to int32 if dtype is discrete and float32 if it
         is continuous.
@@ -317,7 +317,7 @@ class NiftiMasker(BaseMasker, CacheMixin, ReportMixin):
             elif self.mask_strategy == 'epi':
                 compute_mask = masking.compute_epi_mask
             elif self.mask_strategy == 'template':
-                compute_mask = masking.compute_gray_matter_mask
+                compute_mask = masking.compute_brain_mask
             else:
                 raise ValueError("Unknown value of mask_strategy '%s'. "
                                  "Acceptable values are 'background', "
