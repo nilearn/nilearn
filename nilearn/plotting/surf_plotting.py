@@ -551,42 +551,40 @@ def plot_img_on_surf(stat_map, surf_mesh=None, mask_img=None,
 
     display_mode : :obj:`str`, optional (default='lateral+medial')
         A string containing all views to display, separated by '+'.
-        Available views: {'lateral', 'medial',
-                           'dorsal', 'ventral',
-                           'anterior', 'posterior'}
+        Available views: {'lateral', 'medial', 'dorsal', 'ventral',
+        'anterior', 'posterior'}.
         The montage will contain as many rows as views specified by
         display mode. Order is preserved, and left and right hemispheres
         are shown on the left and right sides of the figure.
 
     output_file : :obj:`str`, optional (default=None)
         The name of an image file to export plot to. Valid extensions
-        are .png, .pdf, .svg. If output_file is not None, the plot
-        is saved to a file, and the display is closed.
-        Plot_img_to_surf then returns None.
+        are: *.png*, *.pdf*, *.svg*. If output_file is not :obj:`None`, the plot
+        is saved to a file, and the display is closed. Return value is :obj:`None`
 
     title : :obj:`str`, optional (default=None)
         Place a title on the upper center of the figure.
 
     colorbar : :obj:`bool`, optional (default=True)
-        If True, a symmetric colorbar of the statistical map is displayed.
+        If *True*, a symmetric colorbar of the statistical map is displayed.
 
     vmax : :obj:`float`, optional (default=None)
-        upper bound for plotting of stat_map values.
+        Upper bound for plotting of stat_map values.
 
     threshold : :obj:`float`, optional (default=None)
-        If None is given, the image is not thresholded.
+        If :obj:`None` is given, the image is not thresholded.
         If a number is given, it is used to threshold the image,
         values below the threshold (in absolute value) are plotted
         as transparent.
 
     symmetric_cbar : :obj:`bool` or 'auto', optional, default 'auto'
-         Specifies whether the colorbar should range from -vmax to vmax
-         or from vmin to vmax. Setting to 'auto' will select the latter
-         if the range of the whole image is either positive or negative.
-         Note: The colormap will always range from -vmax to vmax.
+        Specifies whether the colorbar should range from -vmax to vmax
+        or from vmin to vmax. Setting to 'auto' will select the latter
+        if the range of the whole image is either positive or negative.
+        Note: The colormap will always range from -vmax to vmax.
 
     cmap : :obj:`str`, optional (default='cold_hot')
-        the name of a matplotlib or nilearn colormap.
+        The name of a matplotlib or nilearn colormap.
 
     kwargs : keyword arguments passed to plot_surf_stat_map
 

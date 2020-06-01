@@ -20,12 +20,9 @@ NEW
   :func:`nilearn.plotting.plot_carpet` generates a "carpet plot" (also known
   as a "Power plot" or a "grayplot"), for visualizing global patterns in
   4D functional data over time.
-<<<<<<< HEAD
 - New plotting function
   :func:`nilearn.plotting.plot_img_on_surf` generates multiple views of
   :func:`nilearn.plotting.plot_surf_stat_map` in a single figure.
-=======
->>>>>>> master
 
 Fixes
 -----
