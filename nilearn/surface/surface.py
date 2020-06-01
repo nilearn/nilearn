@@ -30,6 +30,9 @@ from nilearn._utils.path_finding import _resolve_globbing
 from nilearn import _utils
 from nilearn.image import get_data
 
+# Create a namedtuple object for meshes
+Mesh = namedtuple("mesh", ["coordinates", "faces"])
+
 
 def _uniform_ball_cloud(n_points=20, dim=3, n_monte_carlo=50000):
     """Get points uniformly spaced in the unit ball."""
@@ -478,10 +481,8 @@ def vol_to_surf(img, surf_mesh,
     surf_mesh : str or numpy.ndarray
         Either a file containing surface mesh geometry (valid formats
         are .gii or Freesurfer specific files such as .orig, .pial,
-        .sphere, .white, .inflated) or a list of two Numpy arrays,
-        the first containing the x-y-z coordinates of the mesh
-        vertices, the second containing the indices (into coords)
-        of the mesh faces.
+        .sphere, .white, .inflated) or two Numpy arrays organized in a list,
+        tuple or a namedtuple with the fields "coordinates" and "faces".
 
     radius : float, optional
         The size (in mm) of the neighbourhood from which samples are drawn
@@ -826,8 +827,6 @@ def load_surf_mesh(surf_mesh):
         numpy.ndarray
 
     """
-    # Create a named tuple
-    Mesh = namedtuple("mesh", ["coordinates", "faces"])
 
     # if input is a filename, try to load it
     if isinstance(surf_mesh, str):
