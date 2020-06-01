@@ -224,7 +224,7 @@ def plot_surf(surf_mesh, surf_map=None, bg_map=None,
 
     if surf_map is not None:
         surf_map_data = load_surf_data(surf_map)
-        if len(surf_map_data.shape) is not 1:
+        if len(surf_map_data.shape) != 1:
             raise ValueError('surf_map can only have one dimension but has'
                              '%i dimensions' % len(surf_map_data.shape))
         if surf_map_data.shape[0] != coords.shape[0]:
@@ -270,10 +270,8 @@ def plot_surf(surf_mesh, surf_map=None, bg_map=None,
             if threshold is not None:
                 cmaplist = [our_cmap(i) for i in range(our_cmap.N)]
                 # set colors to grey for absolute values < threshold
-                istart = int(norm(-threshold, clip=True) *
-                             (our_cmap.N - 1))
-                istop = int(norm(threshold, clip=True) *
-                            (our_cmap.N - 1))
+                istart = int(norm(-threshold, clip=True) * (our_cmap.N - 1))
+                istop = int(norm(threshold, clip=True) * (our_cmap.N - 1))
                 for i in range(istart, istop):
                     cmaplist[i] = (0.5, 0.5, 0.5, 1.)
                 our_cmap = LinearSegmentedColormap.from_list(
@@ -771,7 +769,7 @@ def plot_surf_roi(surf_mesh, roi_map, bg_map=None,
 
     mesh = load_surf_mesh(surf_mesh)
 
-    if len(roi.shape) is not 1:
+    if len(roi.shape) != 1:
         raise ValueError('roi_map can only have one dimension but has '
                          '%i dimensions' % len(roi.shape))
     if roi.shape[0] != mesh[0].shape[0]:

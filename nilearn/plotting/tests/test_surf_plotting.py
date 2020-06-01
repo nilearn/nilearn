@@ -8,7 +8,7 @@ import tempfile
 from nilearn.plotting.img_plotting import MNI152TEMPLATE
 from nilearn.plotting.surf_plotting import (plot_surf, plot_surf_stat_map,
                                             plot_surf_roi, plot_img_on_surf)
-from nilearn.datasets import fetch_surf_fsaverage5
+from nilearn.datasets import fetch_surf_fsaverage
 from nilearn.surface.testing_utils import generate_surf
 from pathlib import Path
 
@@ -249,7 +249,7 @@ def test_plot_img_on_surf_surf_mesh():
                      surf_mesh='fsaverage')
     plot_img_on_surf(nii, hemisphere='right+left', display_mode='lateral',
                      surf_mesh='fsaverage5')
-    surf_mesh = fetch_surf_fsaverage5()
+    surf_mesh = fetch_surf_fsaverage()
     plot_img_on_surf(nii, hemisphere='right+left', display_mode='lateral',
                      surf_mesh=surf_mesh)
 
@@ -270,7 +270,9 @@ def test_plot_img_on_surf_with_invalid_hemisphere():
     with pytest.raises(ValueError):
         plot_img_on_surf(nii, display_mode='lateral', inflate=True, hemisphere="lft")
     with pytest.raises(ValueError):
-        plot_img_on_surf(nii, display_mode='medial', inflate=True, hemisphere="left/right")
+        plot_img_on_surf(
+            nii, display_mode='medial', inflate=True, hemisphere="left/right"
+        )
     with pytest.raises(ValueError):
         plot_img_on_surf(
             nii,
