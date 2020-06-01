@@ -534,13 +534,10 @@ def plot_img_on_surf(stat_map, surf_mesh=None, mask_img=None,
         If str, either one of the two:
         'fsaverage5': the low-resolution fsaverage5 mesh (10242 nodes)
         'fsaverage': the high-resolution fsaverage mesh (163842 nodes)
-        If dictionary, a dictionary with keys:
-                               ['infl_left', 'infl_right',
-                                'pial_left', 'pial_right',
-                                'sulc_left', 'sulc_right'],
-       where values are surface mesh geometries as accepted
-       by plot_surf_stat_map.
-       If None, plot_img_on_surf will use Freesurfer's 'fsaverage5'.
+        If dictionary, a dictionary with keys: ['infl_left', 'infl_right',
+        'pial_left', 'pial_right', 'sulc_left', 'sulc_right'], where
+        values are surface mesh geometries as accepted by plot_surf_stat_map.
+        If None, plot_img_on_surf will use Freesurfer's 'fsaverage5'.
 
     mask_img : Niimg-like object or None, optional (default=None)
         The mask is passed to vol_to_surf.
