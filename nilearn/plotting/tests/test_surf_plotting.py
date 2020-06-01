@@ -268,7 +268,9 @@ def test_plot_img_on_surf_with_invalid_display_mode():
 def test_plot_img_on_surf_with_invalid_hemisphere():
     nii = _generate_img()
     with pytest.raises(ValueError):
-        plot_img_on_surf(nii, display_mode='lateral', inflate=True, hemisphere="lft")
+        plot_img_on_surf(
+            nii, display_mode='lateral', inflate=True, hemisphere="lft"
+        )
     with pytest.raises(ValueError):
         plot_img_on_surf(
             nii, display_mode='medial', inflate=True, hemisphere="left/right"

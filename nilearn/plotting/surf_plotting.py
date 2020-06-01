@@ -9,9 +9,13 @@ from matplotlib.colorbar import make_axes
 from matplotlib.cm import ScalarMappable, get_cmap
 from matplotlib.colors import Normalize, LinearSegmentedColormap
 from mpl_toolkits.mplot3d import Axes3D
-from nilearn.surface import load_surf_data, load_surf_mesh, vol_to_surf, check_mesh
+from nilearn.surface import (load_surf_data,
+                             load_surf_mesh,
+                             vol_to_surf,
+                             check_mesh)
 from nilearn._utils import check_niimg_3d
-from nilearn.plotting.img_plotting import _get_colorbar_and_data_ranges, _crop_colorbar
+from nilearn.plotting.img_plotting import (_get_colorbar_and_data_ranges,
+                                           _crop_colorbar)
 
 
 def plot_surf(surf_mesh, surf_map=None, bg_map=None,
@@ -528,7 +532,8 @@ def plot_img_on_surf(stat_map, surf_mesh=None, mask_img=None,
     stat_map : :obj:`str` or 3D Niimg-like object
         See http://nilearn.github.io/manipulating_images/input_output.html
 
-    surf_mesh : :obj:`str`, :obj:`dict`, or :obj:`None`, optional (default=None)
+    surf_mesh : :obj:`str`, :obj:`dict`, or :obj:`None`, optional
+                (default=None)
         If str, either one of the two:
         'fsaverage5': the low-resolution fsaverage5 mesh (10242 nodes)
         'fsaverage': the high-resolution fsaverage mesh (163842 nodes)
@@ -557,8 +562,9 @@ def plot_img_on_surf(stat_map, surf_mesh=None, mask_img=None,
 
     output_file : :obj:`str`, optional (default=None)
         The name of an image file to export plot to. Valid extensions
-        are: *.png*, *.pdf*, *.svg*. If output_file is not :obj:`None`, the plot
-        is saved to a file, and the display is closed. Return value is :obj:`None`
+        are: *.png*, *.pdf*, *.svg*. If output_file is not :obj:`None`,
+        the plot is saved to a file, and the display is closed. Return
+        value is :obj:`None`.
 
     title : :obj:`str`, optional (default=None)
         Place a title on the upper center of the figure.
