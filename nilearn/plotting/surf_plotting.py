@@ -314,9 +314,10 @@ def _get_faces_on_edge(faces, parc_idx):
 
     Parameters
     ----------
-    faces: numpy.ndarray of shape (n, 3), containing indices of the mesh faces
-    parc_idx: numpy.ndarray,
-    indices of the vertices belonging to the region that is to be plotted
+    faces: numpy.ndarray of shape (n, 3), indices of the mesh faces
+
+    parc_idx: numpy.ndarray, indices of the vertices
+        of the region to be plotted
     '''
     # count how many vertices belong to the given parcellation in each face
     verts_per_face = np.isin(faces, parc_idx).sum(axis=1)
@@ -348,7 +349,7 @@ def plot_surf_contours(surf_mesh, roi_map, axes=None, figure=None, levels=None,
         of the mesh vertices, the second containing the indices
         (into coords) of the mesh faces.
 
-    roi_map : str or numpy.ndarray or list of numpy.ndarray
+    roi_map: str or numpy.ndarray or list of numpy.ndarray
         ROI map to be displayed on the surface mesh, can be a file
         (valid formats are .gii, .mgz, .nii, .nii.gz, or Freesurfer specific
         files such as .annot or .label), or
