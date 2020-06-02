@@ -1,41 +1,52 @@
+# General
+*~
+*#
+.#*
+*.nt.bz2
 *.pyc
 *.so
-*~
-.#*
-*.swp
 *.swo
-.DS_Store
-build
-#*
-*#
-
-nilearn.egg-info/
-env/
-dist/
-doc/.nojekyll
-doc/building_blocks/generated/
-nilearn_cache
-nilearn_data
-doc/_build/
-doc/auto_examples/
-doc/modules/generated/
-doc/datasets/generated/
-doc/generated/
-pip-log.txt
-.coverage
-coverage
-nosetests_coverage/
-.ropeproject/
-tags
-
-*.zip
-*.nt.bz2
+*.swp
 *.tar.gz
 *.tgz
+*.zip
+.DS_Store
 
-.idea/
-venv/
+# Distribution files
+build
+dist/
 
+# Documentation files
+doc/.nojekyll
+doc/_build/
+doc/auto_examples/
+doc/building_blocks/generated/
+doc/datasets/generated/
+doc/generated/
+doc/modules/generated/
 doc/themes/nilearn/static/jquery.js
-examples/results/
+
+# Coverage files
+coverage
+.coverage
+nosetests_coverage/
+.ropeproject/
+
+# Virtual environment
+venv/
+env/
+
+# IDE
+.idea/
+.vscode/
+
+# Examples artifacrs
 examples/**/*.pdf
+examples/results/
+
+# Other
+nilearn.egg-info/
+nilearn_cache
+nilearn_data
+pip-log.txt
+tags
