@@ -29,9 +29,12 @@ def temp_nilearn_data_dir(tmp_path_factory, monkeypatch):
     home_dir = tmp_path_factory.mktemp("temp_nilearn_home")
     monkeypatch.setenv("HOME", str(home_dir))
     monkeypatch.setenv("USERPROFILE", str(home_dir))
-    monkeypatch.setenv("NILEARN_DATA", str(home_dir / "nilearn_data"))
+    data_dir = home_dir / "nilearn_data"
+    data_dir.mkdir()
+    monkeypatch.setenv("NILEARN_DATA", str(data_dir))
+    shared_data_dir = home_dir / "nilearn_shared_data"
     monkeypatch.setenv(
-        "NILEARN_SHARED_DATA", str(home_dir / "nilearn_shared_data"))
+        "NILEARN_SHARED_DATA", str(shared_data_dir))
 
 
 @pytest.fixture(autouse=True)
