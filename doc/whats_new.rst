@@ -21,6 +21,7 @@ NEW
   as a "Power plot" or a "grayplot"), for visualizing global patterns in
   4D functional data over time.
 
+
 Fixes
 -----
 
@@ -36,6 +37,10 @@ Changes
 - `nilearn.datasets.fetch_surf_fsaverage5` has been removed.
 - :func:`nilearn.datasets.fetch_cobre` has been deprecated and will be
   removed in release 0.9 .
+
+- :class:`nilearn.connectome.ConnectivityMeasure` can now remove
+  confounds in its transform step.
+
 
 0.6.2
 ======
