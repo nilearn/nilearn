@@ -24,7 +24,7 @@ NEW
   :func:`nilearn.plotting.plot_markers` shows network nodes (markers) on a glass 
   brain template and color code them according to provided nodal measure (i.e. 
   connection strength). This function will replace 
-  :func:`plot_connectome_strength`.
+  :func:`nilearn.plotting.plot_connectome_strength`.
 
 Fixes
 -----
