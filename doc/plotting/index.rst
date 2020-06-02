@@ -110,14 +110,7 @@ different heuristics to find cutting coordinates.
                      are demonstrated in
                      **Example:** :ref:`sphx_glr_auto_examples_03_connectivity_plot_atlas_comparison.py`
 
-|plot_strength|     :func:`plot_connectome_strength`
-                     |hack|
-                     Plotting a connectome strength
-
-                     Functions for automatic plotting of connectome strength on 
-                     top of the brain glass schematics.
-
-|plot_nodes|        :func:`plot_markers`
+|plot_nodes|         :func:`plot_markers`
                      |hack|
                      Plotting network nodes (markers)
 
