@@ -45,7 +45,7 @@ different heuristics to find cutting coordinates.
      :target: ../auto_examples/03_connectivity/plot_sphere_based_connectome.html
      :scale: 50
 
-.. |plot_markers| image:: ../auto_examples/03_connectivity/images/sphx_glr_plot_sphere_based_connectome_007.png
+.. |plot_nodes| image:: ../auto_examples/03_connectivity/images/sphx_glr_plot_sphere_based_connectome_007.png
      :target: ../auto_examples/03_connectivity/plot_sphere_based_connectome.html
      :scale: 50
 
@@ -117,7 +117,7 @@ different heuristics to find cutting coordinates.
                      Functions for automatic plotting of connectome strength on 
                      top of the brain glass schematics.
 
-|plot_markers|       :func:`plot_markers`
+|plot_nodes|        :func:`plot_markers`
                      |hack|
                      Plotting network nodes (markers)
 
