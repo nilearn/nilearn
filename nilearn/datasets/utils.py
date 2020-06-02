@@ -3,7 +3,6 @@ Downloading NeuroImaging datasets: utility functions
 """
 import os
 import numpy as np
-import base64
 import collections.abc
 import contextlib
 import fnmatch
@@ -14,11 +13,13 @@ import time
 import sys
 import tarfile
 import urllib
-import socket
 import warnings
 import zipfile
 
-socket.setdefaulttimeout(8)
+import requests
+
+
+_REQUESTS_TIMEOUT = (2, 600)
 
 
 def md5_hash(string):
@@ -149,7 +150,7 @@ def _chunk_read_(response, local_file, chunk_size=8192, report_hook=None,
     """
     try:
         if total_size is None:
-            total_size = response.info().get('Content-Length').strip()
+            total_size = response.headers.get('Content-Length').strip()
         total_size = int(total_size) + initial_size
     except Exception as e:
         if verbose > 2:
@@ -160,8 +161,7 @@ def _chunk_read_(response, local_file, chunk_size=8192, report_hook=None,
     bytes_so_far = initial_size
 
     t0 = time_last_display = time.time()
-    while True:
-        chunk = response.read(chunk_size)
+    for chunk in response.iter_content(chunk_size):
         bytes_so_far += len(chunk)
         time_last_read = time.time()
         if (report_hook and
@@ -462,7 +462,7 @@ def _filter_columns(array, filters, combination='and'):
 
 def _fetch_file(url, data_dir, resume=True, overwrite=False,
                 md5sum=None, username=None, password=None, handlers=None,
-                verbose=1):
+                verbose=1, session=None):
     """Load requested file, downloading it if needed or requested.
 
     Parameters
@@ -532,23 +532,18 @@ def _fetch_file(url, data_dir, resume=True, overwrite=False,
     local_file = None
     initial_size = 0
 
+    if session is None:
+        session = requests.Session()
     try:
         # Download data
-        url_opener = urllib.request.build_opener(*handlers)
-        request = urllib.request.Request(url)
-        request.add_header('Connection', 'Keep-Alive')
+        headers = {}
+        auth = None
         if username is not None and password is not None:
             if not url.startswith('https'):
                 raise ValueError(
                     'Authentication was requested on a non  secured URL (%s).'
                     'Request has been blocked for security reasons.' % url)
-            # Note: HTTPBasicAuthHandler is not fitted here because it relies
-            # on the fact that the server will return a 401 error with proper
-            # www-authentication header, which is not the case of most
-            # servers.
-            encoded_auth = base64.b64encode(
-                (username + ':' + password).encode())
-            request.add_header(b'Authorization', b'Basic ' + encoded_auth)
+            auth = (username, password)
         if verbose > 0:
             displayed_url = url.split('?')[0] if verbose == 1 else url
             print('Downloading data from %s ...' % displayed_url)
@@ -556,29 +551,36 @@ def _fetch_file(url, data_dir, resume=True, overwrite=False,
             # Download has been interrupted, we try to resume it.
             local_file_size = os.path.getsize(temp_full_name)
             # If the file exists, then only download the remainder
-            request.add_header("Range", "bytes=%s-" % (local_file_size))
+            headers["Range"] = "bytes={}-".format(local_file_size)
             try:
-                data = url_opener.open(request)
-                content_range = data.info().get('Content-Range')
+                req = requests.Request(
+                    method="GET", url=url, headers=headers, auth=auth)
+                prepped = session.prepare_request(req)
+                resp = session.send(
+                    prepped, stream=True, timeout=_REQUESTS_TIMEOUT)
+                resp.raise_for_status()
+                content_range = resp.headers.get('Content-Range')
                 if (content_range is None or not content_range.startswith(
-                        'bytes %s-' % local_file_size)):
+                        'bytes {}-'.format(local_file_size))):
                     raise IOError('Server does not support resuming')
             except Exception:
-                # A wide number of errors can be raised here. HTTPError,
-                # URLError... I prefer to catch them all and rerun without
-                # resuming.
                 if verbose > 0:
                     print('Resuming failed, try to download the whole file.')
                 return _fetch_file(
                     url, data_dir, resume=False, overwrite=overwrite,
                     md5sum=md5sum, username=username, password=password,
-                    handlers=handlers, verbose=verbose)
+                    handlers=handlers, verbose=verbose, session=session)
             local_file = open(temp_full_name, "ab")
             initial_size = local_file_size
         else:
-            data = url_opener.open(request)
+            req = requests.Request(
+                method="GET", url=url, headers=headers, auth=auth)
+            prepped = session.prepare_request(req)
+            resp = session.send(
+                prepped, stream=True, timeout=_REQUESTS_TIMEOUT)
+            resp.raise_for_status()
             local_file = open(temp_full_name, "wb")
-        _chunk_read_(data, local_file, report_hook=(verbose > 0),
+        _chunk_read_(resp, local_file, report_hook=(verbose > 0),
                      initial_size=initial_size, verbose=verbose)
         # temp file must be closed prior to the move
         if not local_file.closed:
@@ -589,7 +591,7 @@ def _fetch_file(url, data_dir, resume=True, overwrite=False,
             # Complete the reporting hook
             sys.stderr.write(' ...done. ({0:.0f} seconds, {1:.0f} min)\n'
                              .format(dt, dt // 60))
-    except (urllib.error.HTTPError, urllib.error.URLError):
+    except (requests.RequestException):
         sys.stderr.write("Error while fetching file %s; dataset "
                          "fetching aborted." % (file_name))
         raise
@@ -651,7 +653,7 @@ def movetree(src, dst):
         raise Exception(errors)
 
 
-def _fetch_files(data_dir, files, resume=True, mock=False, verbose=1):
+def _fetch_files(data_dir, files, resume=True, verbose=1):
     """Load requested dataset, downloading it if needed or requested.
 
     This function retrieves files from the hard drive or download them from
@@ -680,10 +682,6 @@ def _fetch_files(data_dir, files, resume=True, mock=False, verbose=1):
 
     resume: bool, optional
         If true, try resuming download if possible
-
-    mock: boolean, optional
-        If true, create empty files if the file cannot be downloaded. Test use
-        only.
 
     verbose: int, optional
         verbosity level (0 means no message).
@@ -755,25 +753,17 @@ def _fetch_files(data_dir, files, resume=True, mock=False, verbose=1):
                 dl_file = move
             if 'uncompress' in opts:
                 try:
-                    if not mock or os.path.getsize(dl_file) != 0:
-                        _uncompress_file(dl_file, verbose=verbose)
-                    else:
-                        os.remove(dl_file)
+                    _uncompress_file(dl_file, verbose=verbose)
                 except Exception as e:
                     abort = str(e)
 
         if (abort is None and not os.path.exists(target_file) and not
                 os.path.exists(temp_target_file)):
-            if not mock:
-                warnings.warn('An error occured while fetching %s' % file_)
-                abort = ("Dataset has been downloaded but requested file was "
-                         "not provided:\nURL: %s\n"
-                         "Target file: %s\nDownloaded: %s" %
-                         (url, target_file, dl_file))
-            else:
-                if not os.path.exists(os.path.dirname(temp_target_file)):
-                    os.makedirs(os.path.dirname(temp_target_file))
-                open(temp_target_file, 'w').close()
+            warnings.warn('An error occured while fetching %s' % file_)
+            abort = ("Dataset has been downloaded but requested file was "
+                        "not provided:\nURL: %s\n"
+                        "Target file: %s\nDownloaded: %s" %
+                        (url, target_file, dl_file))
         if abort is not None:
             if os.path.exists(temp_dir):
                 shutil.rmtree(temp_dir)

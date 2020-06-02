@@ -25,57 +25,12 @@ import numpy as np
 import pytest
 
 from nilearn import datasets
-from nilearn._utils.testing import (mock_request, wrap_chunk_read_,
-                                    FetchFilesMock)
 from nilearn.datasets.utils import (_get_dataset_dir,
                                     make_fresh_openneuro_dataset_urls_index)
 
 
 currdir = os.path.dirname(os.path.abspath(__file__))
 datadir = os.path.join(currdir, 'data')
-url_request = None
-file_mock = None
-
-
-@pytest.fixture()
-def request_mocker():
-    """ Mocks URL calls for data fetchers during testing.
-    Tests the fetcher code without actually downloading the files.
-    """
-    setup_mock()
-    yield
-    teardown_mock()
-
-
-def setup_mock(utils_mod=datasets.utils, dataset_mod=datasets.utils):
-    global original_url_request
-    global mock_url_request
-    mock_url_request = mock_request()
-    original_url_request = utils_mod.urllib.request
-    utils_mod.urllib.request = mock_url_request
-
-    global original_chunk_read
-    global mock_chunk_read
-    mock_chunk_read = wrap_chunk_read_(utils_mod._chunk_read_)
-    original_chunk_read = utils_mod._chunk_read_
-    utils_mod._chunk_read_ = mock_chunk_read
-
-    global original_fetch_files
-    global mock_fetch_files
-    mock_fetch_files = FetchFilesMock()
-    original_fetch_files = dataset_mod._fetch_files
-    dataset_mod._fetch_files = mock_fetch_files
-
-
-def teardown_mock(utils_mod=datasets.utils, dataset_mod=datasets.utils):
-    global original_url_request
-    utils_mod.urllib.request = original_url_request
-
-    global original_chunk_read
-    utils_mod.chunk_read_ = original_chunk_read
-
-    global original_fetch_files
-    dataset_mod._fetch_files = original_fetch_files
 
 
 def test_get_dataset_dir(tmp_path):
@@ -326,7 +281,7 @@ def test_fetch_file_overwrite(tmp_path, request_mocker):
     # overwrite non-exiting file.
     fil = datasets.utils._fetch_file(url='http://foo/', data_dir=str(tmp_path),
                                      verbose=0, overwrite=True)
-    assert len(mock_url_request.urls) == 1
+    assert request_mocker.url_count == 1
     assert os.path.exists(fil)
     with open(fil, 'r') as fp:
         assert fp.read() == ''
@@ -338,7 +293,8 @@ def test_fetch_file_overwrite(tmp_path, request_mocker):
     # Don't overwrite existing file.
     fil = datasets.utils._fetch_file(url='http://foo/', data_dir=str(tmp_path),
                                      verbose=0, overwrite=False)
-    assert len(mock_url_request.urls) == 1
+
+    assert request_mocker.url_count == 1
     assert os.path.exists(fil)
     with open(fil, 'r') as fp:
         assert fp.read() == 'some content'
@@ -347,7 +303,7 @@ def test_fetch_file_overwrite(tmp_path, request_mocker):
     # Overwrite existing file.
     fil = datasets.utils._fetch_file(url='http://foo/', data_dir=str(tmp_path),
                                      verbose=0, overwrite=True)
-    assert len(mock_url_request.urls) == 1
+    assert request_mocker.url_count == 2
     assert os.path.exists(fil)
     with open(fil, 'r') as fp:
         assert fp.read() == ''
@@ -358,7 +314,7 @@ def test_fetch_files_overwrite(tmp_path, request_mocker):
     files = ('1.txt', 'http://foo/1.txt')
     fil = datasets.utils._fetch_files(data_dir=str(tmp_path), verbose=0,
                                       files=[files + (dict(overwrite=True),)])
-    assert len(mock_url_request.urls) == 1
+    assert request_mocker.url_count == 1
     assert os.path.exists(fil[0])
     with open(fil[0], 'r') as fp:
         assert fp.read() == ''
@@ -370,7 +326,7 @@ def test_fetch_files_overwrite(tmp_path, request_mocker):
     # Don't overwrite existing file.
     fil = datasets.utils._fetch_files(data_dir=str(tmp_path), verbose=0,
                                       files=[files + (dict(overwrite=False),)])
-    assert len(mock_url_request.urls) == 1
+    assert request_mocker.url_count == 1
     assert os.path.exists(fil[0])
     with open(fil[0], 'r') as fp:
         assert fp.read() == 'some content'
@@ -378,7 +334,7 @@ def test_fetch_files_overwrite(tmp_path, request_mocker):
     # Overwrite existing file.
     fil = datasets.utils._fetch_files(data_dir=str(tmp_path), verbose=0,
                                       files=[files + (dict(overwrite=True),)])
-    assert len(mock_url_request.urls) == 1
+    assert request_mocker.url_count == 2
     assert os.path.exists(fil[0])
     with open(fil[0], 'r') as fp:
         assert fp.read() == ''
