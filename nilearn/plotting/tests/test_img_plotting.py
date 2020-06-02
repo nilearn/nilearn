@@ -1313,3 +1313,12 @@ def test_plot_markers_exceptions():
     # node_threshold higher than max node_value
     with pytest.raises(ValueError, match="Provided 'node_threshold' value"):
         plot_markers([1, 2, 2, 4], node_coords, node_threshold=5, **kwargs)
+
+def test_plot_connectome_deprecation_warning():
+    with pytest.deprecated_call():
+        adjacency_matrix = np.array([[1, -2, 0.3, 0.],
+                                     [-2, 1, 0, 0],
+                                     [0.3, 0, 1, 0],
+                                     [0, 0, 0, 1]])
+        node_coords = np.arange(3 * 4).reshape(4, 3)
+        plot_connectome_strength(adjacency_matrix, node_coords)

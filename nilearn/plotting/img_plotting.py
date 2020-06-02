@@ -1333,6 +1333,7 @@ def plot_connectome_strength(adjacency_matrix, node_coords, node_size="auto",
                              cmap=None, output_file=None, display_mode="ortho",
                              figure=None, axes=None, title=None):
     """Plot connectome strength on top of the brain glass schematics.
+    
     The strength of a connection is define as the sum of absolute values of
     the edges arriving to a node.
     Parameters
@@ -1372,6 +1373,9 @@ optional
     -----
     The plotted image should in MNI space for this function to work properly.
     """
+    dep_msg = ("Function plot_connectome_strenght is deprecated and will be "
+               "removed in future releases. Use plot_markers function instead.")
+    warnings.warn(dep_msg, DeprecationWarning)
 
     # input validation
     if cmap is None:

@@ -59,5 +59,5 @@ __all__ = ['cm', 'plot_img', 'plot_anat', 'plot_epi',
            'view_img', 'view_connectome', 'view_markers',
            'find_parcellation_cut_coords', 'find_probabilistic_atlas_cut_coords',
            'plot_surf', 'plot_surf_stat_map', 'plot_surf_roi', 
-           'plot_connectome_strength', 'plot_markers', 'plot_carpet'
+           'plot_connectome_strength', 'plot_carpet'
            ]

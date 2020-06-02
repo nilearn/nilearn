@@ -45,7 +45,7 @@ different heuristics to find cutting coordinates.
      :target: ../auto_examples/03_connectivity/plot_sphere_based_connectome.html
      :scale: 50
 
-.. |plot_strength| image:: ../auto_examples/03_connectivity/images/sphx_glr_plot_sphere_based_connectome_004.png
+.. |plot_markers| image:: ../auto_examples/03_connectivity/images/sphx_glr_plot_sphere_based_connectome_007.png
      :target: ../auto_examples/03_connectivity/plot_sphere_based_connectome.html
      :scale: 50
 
@@ -109,6 +109,13 @@ different heuristics to find cutting coordinates.
                      brain parcellations useful for :func:`plot_connectome`
                      are demonstrated in
                      **Example:** :ref:`sphx_glr_auto_examples_03_connectivity_plot_atlas_comparison.py`
+
+|plot_strength|     :func:`plot_connectome_strength`
+                     |hack|
+                     Plotting a connectome strength
+
+                     Functions for automatic plotting of connectome strength on 
+                     top of the brain glass schematics.
 
 |plot_markers|       :func:`plot_markers`
                      |hack|
