@@ -323,9 +323,9 @@ def test_plot_img_on_surf_title():
 
 def test_plot_img_on_surf_output_file():
     nii = _generate_img()
-    fname = Path('check.png')
+    fname = Path('check.png').absolute()
     return_value = plot_img_on_surf(
-        nii, hemisphere='right', display_mode='lateral', output_file=fname
+        nii, hemisphere='right', display_mode='lateral', output_file=str(fname)
     )
     assert return_value is None, "Returned figure and axes on file output."
     assert fname.is_file(), "Saved image file could not be found."
