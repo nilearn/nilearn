@@ -1375,8 +1375,8 @@ optional
     -----
     The plotted image should in MNI space for this function to work properly.
     """
-    dep_msg = ("Function plot_connectome_strenght is deprecated and will be "
-               "removed in future releases. Use plot_markers function instead.")
+    dep_msg = ("This function is deprecated and will be "
+               "removed in the 0.9.0 release. Use plot_markers instead.")
     warnings.warn(dep_msg, DeprecationWarning)
 
     # input validation
