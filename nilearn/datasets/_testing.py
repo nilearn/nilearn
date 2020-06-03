@@ -248,7 +248,7 @@ class Sender:
         return Response(b"", request.url)
 
     def match(self, key, url):
-        if isinstance(key, re.Pattern):
+        if isinstance(key, type(re.compile(r".*"))):
             return key.match(url)
         elif isinstance(key, str) and fnmatch.fnmatch(url, key):
             return url
@@ -274,7 +274,7 @@ class Sender:
             with response.open("rb") as f:
                 return Response(f.read(), request.url)
         elif isinstance(response, str):
-            if isinstance(match, re.Match):
+            if isinstance(match, type(re.match(r".*", ""))):
                 response = match.expand(response)
             response = response.encode("utf-8")
             return Response(response, request.url)
@@ -336,9 +336,9 @@ def _add_to_archive(path, content):
         content.to_filename(str(path))
     elif isinstance(content, Path):
         if content.is_file():
-            shutil.copy(str(content), path)
+            shutil.copy(str(content), str(path))
         elif content.is_dir():
-            shutil.copytree(str(content), path)
+            shutil.copytree(str(content), str(path))
         else:
             raise FileNotFoundError(
                 "Not found or not a regular file "
@@ -398,7 +398,7 @@ def dict_to_archive(data, archive_format="gztar"):
         for path, content in data.items():
             _add_to_archive(tmp_dir / path, content)
         archive_path = shutil.make_archive(
-            str(root_tmp_dir / "archive"), archive_format, tmp_dir
+            str(root_tmp_dir / "archive"), archive_format, str(tmp_dir)
         )
         with open(archive_path, "rb") as f:
             return f.read()

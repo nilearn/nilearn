@@ -9,6 +9,7 @@ import uuid
 from pathlib import Path
 import re
 import gzip
+from collections import OrderedDict
 
 import numpy as np
 import json
@@ -287,10 +288,11 @@ def test_fetch_localizer_button_task(tmp_path, request_mocker,
 
 
 def test_fetch_abide_pcp(tmp_path, request_mocker):
-    ids = [('50%03d' % i).encode() for i in range(800)]
+    ids = list(range(800))
     filenames = ['no_filename'] * 800
     filenames[::2] = ['filename'] * 400
-    pheno = pd.DataFrame({"subject_id": ids, "FILE_ID": filenames})
+    pheno = pd.DataFrame({"subject_id": ids, "FILE_ID": filenames},
+                         columns=["subject_id", "FILE_ID"])
     request_mocker.url_mapping["*rocessed1.csv"] = pheno.to_csv(index=False)
 
     # All subjects
@@ -449,12 +451,21 @@ def _cobre_data(ids):
     frames_ok = np.ones(len(ids), dtype='<f8')
     fd = np.ones(len(ids), dtype='<f8')
     fd_scrubbed = np.ones(len(ids), dtype='<f8')
-
     csv = pd.DataFrame(
-        {"ID": ids, "Current Age": current_age, "Gender": gender,
-         "Handedness": handedness, "Subject Type": subject_type,
-         "Diagnosis": diagnosis, "Frames OK": frames_ok, "FD": fd,
-         "FD Scrubbed": fd_scrubbed})
+        OrderedDict(
+            [
+                ("ID", ids),
+                ("Current Age", current_age),
+                ("Gender", gender),
+                ("Handedness", handedness),
+                ("Subject Type", subject_type),
+                ("Diagnosis", diagnosis),
+                ("Frames OK", frames_ok),
+                ("FD", fd),
+                ("FD Scrubbed", fd_scrubbed),
+            ]
+        )
+    )
     return gzip.compress(csv.to_csv(index=False, sep="\t").encode("utf-8"))
 
 
@@ -506,7 +517,8 @@ def test_fetch_surf_nki_enhanced(tmp_path, request_mocker, verbose=0):
     hand = np.asarray(len(ids) * ['x'], dtype='U1')
     sex = np.asarray(len(ids) * ['x'], dtype='U1')
     pheno_data = pd.DataFrame(
-        {"id": ids, "age": age, "hand": hand, "sex": sex})
+        OrderedDict([("id", ids), ("age", age), ("hand", hand), ("sex", sex)])
+    )
     request_mocker.url_mapping[
         "*pheno_nki_nilearn.csv"] = pheno_data.to_csv(index=False)
     nki_data = func.fetch_surf_nki_enhanced(data_dir=str(tmp_path))
@@ -530,10 +542,11 @@ def _mock_participants_data(n_ids=5):
     child_adult = [["child", "adult"][i % 2] for i in range(n_ids)]
     gender = len(ids) * ['m']
     handedness = len(ids) * ['r']
-    participants = pd.DataFrame(
-        {"participant_id": ids, "Age": age, "AgeGroup": age_group,
-         "Child_Adult": child_adult, "Gender": gender,
-         "Handedness": handedness})
+    participants = pd.DataFrame(OrderedDict([
+        ("participant_id", ids), ("Age", age), ("AgeGroup", age_group),
+        ("Child_Adult", child_adult), ("Gender", gender),
+        ("Handedness", handedness)
+    ]))
     return participants
 
 

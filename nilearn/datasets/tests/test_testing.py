@@ -38,8 +38,8 @@ def test_loading_from_archive_contents(tmp_path):
     file_path = tmp_path / "archive.zip"
     with file_path.open("wb") as f:
         f.write(resp.content)
-    with zipfile.ZipFile(file_path) as zipf:
-        with zipf.open(str(Path("data", "labels.csv"))) as f:
+    with zipfile.ZipFile(str(file_path)) as zipf:
+        with zipf.open("data/labels.csv") as f:
             assert f.read() == b""
         assert sorted(map(Path, zipf.namelist())) == expected_contents
     for url_end in ["_default_format", "_tar_gz"]:
@@ -47,7 +47,7 @@ def test_loading_from_archive_contents(tmp_path):
         file_path = tmp_path / "archive.tar.gz"
         with file_path.open("wb") as f:
             f.write(resp.content)
-        with tarfile.open(file_path) as tarf:
+        with tarfile.open(str(file_path)) as tarf:
             assert (
                 sorted(map(Path, tarf.getnames()))
                 == [Path(".")] + expected_contents
@@ -139,7 +139,7 @@ def test_sender_response(request_mocker):
 
 
 def test_sender_path(request_mocker, tmp_path):
-    file_path = tmp_path / "readme.txt"
+    file_path = Path(str(tmp_path / "readme.txt"))
     with file_path.open("w") as f:
         f.write("hello")
     request_mocker.url_mapping["*path"] = str(file_path)
@@ -157,6 +157,7 @@ def test_sender_bad_input(request_mocker):
 
 
 def test_dict_to_archive(tmp_path):
+    tmp_path = Path(str(tmp_path))
     subdir = tmp_path / "tmp"
     subdir.mkdir()
     (subdir / "labels.csv").touch()
@@ -174,28 +175,28 @@ def test_dict_to_archive(tmp_path):
     extract_dir = tmp_path / "extract"
     extract_dir.mkdir()
     archive_path = tmp_path / "archive"
-    with open(archive_path, "wb") as f:
+    with archive_path.open("wb") as f:
         f.write(targz)
-    with tarfile.open(archive_path) as tarf:
-        tarf.extractall(extract_dir)
+    with tarfile.open(str(archive_path)) as tarf:
+        tarf.extractall(str(extract_dir))
     img = image.load_img(str(extract_dir / "data" / "img.nii.gz"))
     assert img.shape == (10, 11, 12, 17)
     with (extract_dir / "a" / "b" / "c").open("rb") as f:
         assert int.from_bytes(f.read(), byteorder="big", signed=False) == 100
-    with (extract_dir / "empty_data" / "labels.csv").open() as f:
+    with open(str(extract_dir / "empty_data" / "labels.csv")) as f:
         assert f.read() == ""
     zip_archive = _testing.dict_to_archive(
         {"readme.txt": "hello", "archive": targz}, "zip"
     )
     with archive_path.open("wb") as f:
         f.write(zip_archive)
-    with zipfile.ZipFile(archive_path) as zipf:
+    with zipfile.ZipFile(str(archive_path)) as zipf:
         with zipf.open("archive", "r") as f:
             assert f.read() == targz
     from_list = _testing.list_to_archive(archive_spec.keys())
     with archive_path.open("wb") as f:
         f.write(from_list)
-    with tarfile.open(archive_path) as tarf:
+    with tarfile.open(str(archive_path)) as tarf:
         assert sorted(map(Path, tarf.getnames())) == sorted(
             list(map(Path, archive_spec.keys()))
             + [Path("."), Path("a"), Path("a", "b"), Path("data")]
