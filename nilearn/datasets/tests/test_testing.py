@@ -1,5 +1,4 @@
 from pathlib import Path
-import os
 import zipfile
 import tarfile
 import re
@@ -38,25 +37,28 @@ def test_loading_from_archive_contents(tmp_path):
     file_path = tmp_path / "archive.zip"
     with file_path.open("wb") as f:
         f.write(resp.content)
+    zip_extract_dir = tmp_path / "extract_zip"
+    zip_extract_dir.mkdir()
     with zipfile.ZipFile(str(file_path)) as zipf:
-        with zipf.open("data/labels.csv") as f:
-            assert f.read() == b""
         assert sorted(map(Path, zipf.namelist())) == expected_contents
+        zipf.extractall(str(zip_extract_dir))
+    with open(str(zip_extract_dir / "data" / "labels.csv"), "rb") as f:
+        assert f.read() == b""
     for url_end in ["_default_format", "_tar_gz"]:
         resp = requests.get("https://example.org/example{}".format(url_end))
         file_path = tmp_path / "archive.tar.gz"
         with file_path.open("wb") as f:
             f.write(resp.content)
+        tar_extract_dir = tmp_path / "extract_tar{}".format(url_end)
+        tar_extract_dir.mkdir()
         with tarfile.open(str(file_path)) as tarf:
             assert (
                 sorted(map(Path, tarf.getnames()))
                 == [Path(".")] + expected_contents
             )
-            # Path.__str__ would strip the leading "./"
-            with tarf.extractfile(
-                os.path.join(".", "data", "labels.csv")
-            ) as f:
-                assert f.read() == b""
+            tarf.extractall(str(tar_extract_dir))
+        with open(str(tar_extract_dir / "data" / "labels.csv"), "rb") as f:
+            assert f.read() == b""
 
 
 def test_sender_regex(request_mocker):
