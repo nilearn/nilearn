@@ -761,9 +761,9 @@ def _fetch_files(data_dir, files, resume=True, verbose=1):
                 os.path.exists(temp_target_file)):
             warnings.warn('An error occured while fetching %s' % file_)
             abort = ("Dataset has been downloaded but requested file was "
-                        "not provided:\nURL: %s\n"
-                        "Target file: %s\nDownloaded: %s" %
-                        (url, target_file, dl_file))
+                     "not provided:\nURL: %s\n"
+                     "Target file: %s\nDownloaded: %s" %
+                     (url, target_file, dl_file))
         if abort is not None:
             if os.path.exists(temp_dir):
                 shutil.rmtree(temp_dir)

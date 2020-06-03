@@ -7,7 +7,6 @@ Test the datasets module
 import os
 import shutil
 from pathlib import Path
-import re
 
 import nibabel
 import numpy as np
@@ -101,9 +100,9 @@ def _make_oasis_data(dartel=True):
         {"ID": list(map("OAS1_{:04}".format, range(n_subjects)))}
     ).to_csv(index=False, sep="\t")
     data = {"oasis_cross-sectional.csv": ids, "data_usage_agreement.txt": ""}
-    path_pattern = str(
-        Path("OAS1_{subj:04}_MR1",
-             "{prefix}{kind}OAS1_{subj:04}_MR1_mpr_anon_fslswapdim_bet.nii.gz"))
+    path_pattern = str(Path(
+        "OAS1_{subj:04}_MR1",
+        "{prefix}{kind}OAS1_{subj:04}_MR1_mpr_anon_fslswapdim_bet.nii.gz"))
     for i in range(457):
         for kind in [1, 2]:
             data[path_pattern.format(subj=i, kind=kind, prefix=prefix)] = ""

@@ -326,7 +326,7 @@ def _archive_from_contents_file(file_path):
     file_path = Path(file_path)
     fmt, pattern, n_skip = _get_format_and_pattern(file_path)
     with file_path.open() as f:
-        contents = [l.strip().replace("/", os.sep) for l in f]
+        contents = [p.strip().replace("/", os.sep) for p in f]
     return list_to_archive(list(filter(bool, contents))[n_skip:], fmt)
 
 

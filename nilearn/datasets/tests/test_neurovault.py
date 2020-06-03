@@ -561,8 +561,8 @@ def test_download_image_terms(request_mocker):
                       neurovault._download_image_terms,
                       image_info, collection, download_params)
         with open(os.path.join(
-            collection['absolute_path'],
-            'neurosynth_words_for_image_a.json'), 'w'):
+                collection['absolute_path'],
+                'neurosynth_words_for_image_a.json'), 'w'):
             pass
         neurovault._download_image_terms(
             image_info, collection, download_params)

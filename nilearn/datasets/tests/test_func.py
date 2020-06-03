@@ -749,15 +749,16 @@ def test_fetch_openneuro_dataset(request_mocker, tmp_path):
     url_file = os.path.join(data_dir, 'urls.json')
     # Prepare url files for subject and filter tests
     urls = [
-        "https://example.com/" + data_prefix + '/stuff.html',
-        "https://example.com/" + data_prefix + '/sub-xxx.html',
-        "https://example.com/" + data_prefix + '/sub-yyy.html',
-        "https://example.com/" + data_prefix + '/sub-xxx/ses-01_task-rest.txt',
-        "https://example.com/" + data_prefix + '/sub-xxx/ses-01_task-other.txt',
-        "https://example.com/" + data_prefix + '/sub-xxx/ses-02_task-rest.txt',
-        "https://example.com/" + data_prefix + '/sub-xxx/ses-02_task-other.txt',
-        "https://example.com/" + data_prefix + '/sub-yyy/ses-01.txt',
-        "https://example.com/" + data_prefix + '/sub-yyy/ses-02.txt']
+        "https://example.com/{}/stuff.html" + data_prefix + '',
+        "https://example.com/{}/sub-xxx.html",
+        "https://example.com/{}/sub-yyy.html",
+        "https://example.com/{}/sub-xxx/ses-01_task-rest.txt",
+        "https://example.com/{}/sub-xxx/ses-01_task-other.txt",
+        "https://example.com/{}/sub-xxx/ses-02_task-rest.txt",
+        "https://example.com/{}/sub-xxx/ses-02_task-other.txt",
+        "https://example.com/{}/sub-yyy/ses-01.txt",
+        "https://example.com/{}/sub-yyy/ses-02.txt"]
+    urls = [url.format(data_prefix) for url in urls]
     json.dump(urls, open(url_file, 'w'))
 
     # Only 1 subject and not subject specific files get downloaded
