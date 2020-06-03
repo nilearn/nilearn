@@ -35,20 +35,18 @@ def test_loading_from_archive_contents(tmp_path):
     )
     resp = requests.get("https://example.org/example_zip")
     file_path = tmp_path / "archive.zip"
-    with file_path.open("wb") as f:
-        f.write(resp.content)
+    file_path.write_bytes(resp.content)
     zip_extract_dir = tmp_path / "extract_zip"
     zip_extract_dir.mkdir()
     with zipfile.ZipFile(str(file_path)) as zipf:
         assert sorted(map(Path, zipf.namelist())) == expected_contents
         zipf.extractall(str(zip_extract_dir))
-    with open(str(zip_extract_dir / "data" / "labels.csv"), "rb") as f:
-        assert f.read() == b""
+    labels_file = zip_extract_dir / "data" / "labels.csv"
+    assert labels_file.read_bytes() == b""
     for url_end in ["_default_format", "_tar_gz"]:
         resp = requests.get("https://example.org/example{}".format(url_end))
         file_path = tmp_path / "archive.tar.gz"
-        with file_path.open("wb") as f:
-            f.write(resp.content)
+        file_path.write_bytes(resp.content)
         tar_extract_dir = tmp_path / "extract_tar{}".format(url_end)
         tar_extract_dir.mkdir()
         with tarfile.open(str(file_path)) as tarf:
@@ -57,8 +55,8 @@ def test_loading_from_archive_contents(tmp_path):
                 == [Path(".")] + expected_contents
             )
             tarf.extractall(str(tar_extract_dir))
-        with open(str(tar_extract_dir / "data" / "labels.csv"), "rb") as f:
-            assert f.read() == b""
+        labels_file = tar_extract_dir / "data" / "labels.csv"
+        assert labels_file.read_bytes() == b""
 
 
 def test_sender_regex(request_mocker):
@@ -114,8 +112,7 @@ def test_sender_img(request_mocker, tmp_path):
     request_mocker.url_mapping["*"] = generate_fake_fmri()[0]
     resp = requests.get("ftp:example.org/download")
     file_path = tmp_path / "img.nii.gz"
-    with file_path.open("wb") as f:
-        f.write(resp.content)
+    file_path.write_bytes(resp.content)
     img = image.load_img(str(file_path))
     assert img.shape == (10, 11, 12, 17)
 
@@ -141,7 +138,7 @@ def test_sender_response(request_mocker):
 
 
 def test_sender_path(request_mocker, tmp_path):
-    file_path = Path(str(tmp_path / "readme.txt"))
+    file_path = tmp_path / "readme.txt"
     with file_path.open("w") as f:
         f.write("hello")
     request_mocker.url_mapping["*path"] = str(file_path)
@@ -159,7 +156,6 @@ def test_sender_bad_input(request_mocker):
 
 
 def test_dict_to_archive(tmp_path):
-    tmp_path = Path(str(tmp_path))
     subdir = tmp_path / "tmp"
     subdir.mkdir()
     (subdir / "labels.csv").touch()

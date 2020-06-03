@@ -196,7 +196,8 @@ class Sender:
       b"ERROR" if the status code is in [400, 600[ and b"OK" otherwise
     - an `Exception`: it is raised
     - a `pathlib.Path`: the contents of the response are the contents of that
-      file.
+      file. (can also be anything that has a `read_bytes` attribute,
+      e.g a `pathlib2.Path`)
     - an object with a `to_filename` method, eg a Nifti1Image: it is serialized
       to .nii.gz to produce the response content.
 
@@ -270,9 +271,8 @@ class Sender:
                 return Response(b"OK", request.url, status_code=response)
         elif hasattr(response, "to_filename"):
             return Response(serialize_niimg(response), request.url)
-        elif isinstance(response, Path):
-            with response.open("rb") as f:
-                return Response(f.read(), request.url)
+        elif hasattr(response, "read_bytes"):
+            return Response(response.read_bytes(), request.url)
         elif isinstance(response, str):
             if isinstance(match, type(re.match(r".*", ""))):
                 response = match.expand(response)
@@ -334,7 +334,7 @@ def _add_to_archive(path, content):
     path.parent.mkdir(exist_ok=True, parents=True)
     if hasattr(content, "to_filename"):
         content.to_filename(str(path))
-    elif isinstance(content, Path):
+    elif hasattr(content, "is_dir") and hasattr(content, "is_file"):
         if content.is_file():
             shutil.copy(str(content), str(path))
         elif content.is_dir():
@@ -367,7 +367,8 @@ def dict_to_archive(data, archive_format="gztar"):
           - an object with a `to_filename` method (e.g. a Nifti1Image): it is
             serialized to .nii.gz
           - a `pathlib.Path`: the contents are copied inside the archive (can
-            point to a file or a directory)
+            point to a file or a directory). (can also be anything that has
+            `is_file` and `is_directory` attributes, e.g. a `pathlib2.Path`)
           - a `str` or `bytes`: the contents of the file
           - anything else is pickled.
 
