@@ -865,6 +865,7 @@ def make_fresh_openneuro_dataset_urls_index(
         Sorted list of dataset directories
     """
     import boto3
+    import json
     from botocore.handlers import disable_signing
     if not data_dir:
         data_dir = os.path.expanduser('~/Desktop')
