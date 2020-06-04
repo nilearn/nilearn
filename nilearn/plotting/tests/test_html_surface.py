@@ -8,6 +8,7 @@ from nilearn.plotting import html_surface
 from nilearn.plotting.js_plotting_utils import decode
 from nilearn.datasets import fetch_surf_fsaverage
 from nilearn._utils.exceptions import DimensionError
+from nilearn._utils import data_gen
 from nilearn.image import get_data
 
 from .test_js_plotting_utils import check_colors, check_html
@@ -41,15 +42,16 @@ def test_check_mesh():
         html_surface._check_mesh(mesh)
     with pytest.raises(TypeError):
         html_surface._check_mesh(surface.load_surf_mesh(mesh['pial_right']))
+    mesh = data_gen.generate_full_brain_surfaces()
+    assert mesh is html_surface._check_mesh(mesh)
 
 
 def test_one_mesh_info():
-    fsaverage = fetch_surf_fsaverage()
-    mesh = surface.load_surf_mesh(fsaverage['pial_right'])
-    surf_map = mesh[0][:, 0]
+    mesh, surf_map, regions = data_gen.generate_brain_mesh()
+    mesh = surface.load_surf_mesh(mesh)
     info = html_surface.one_mesh_info(
-        surf_map, fsaverage['pial_right'], '90%', black_bg=True,
-        bg_map=fsaverage['sulc_right'])
+        surf_map, mesh, '90%', black_bg=True,
+        bg_map=surf_map)
     assert {'_x', '_y', '_z', '_i', '_j', '_k'}.issubset(
         info['inflated_left'].keys())
     assert len(decode(
@@ -65,9 +67,9 @@ def test_one_mesh_info():
 
 
 def test_full_brain_info():
-    fsaverage = fetch_surf_fsaverage()
+    surfaces = data_gen.generate_full_brain_surfaces()
     img = _get_img()
-    info = html_surface.full_brain_info(img)
+    info = html_surface.full_brain_info(img, surfaces)
     check_colors(info['colorscale'])
     assert {'pial_left', 'pial_right',
             'inflated_left', 'inflated_right',
@@ -78,7 +80,7 @@ def test_full_brain_info():
     assert type(info['cmax']) == float
     json.dumps(info)
     for hemi in ['left', 'right']:
-        mesh = surface.load_surf_mesh(fsaverage['pial_{}'.format(hemi)])
+        mesh = surface.load_surf_mesh(surfaces['pial_{}'.format(hemi)])
         assert len(info['vertexcolor_{}'.format(hemi)]) == len(mesh[0])
         assert len(decode(
             info['inflated_{}'.format(hemi)]['_z'], '<f4')) == len(mesh[0])
@@ -136,10 +138,10 @@ def test_view_surf():
 
 def test_view_img_on_surf():
     img = _get_img()
-    fsaverage = dict(fetch_surf_fsaverage())
+    surfaces = data_gen.generate_full_brain_surfaces()
     html = html_surface.view_img_on_surf(img, threshold='92.3%')
     check_html(html)
-    html = html_surface.view_img_on_surf(img, threshold=0, surf_mesh=fsaverage)
+    html = html_surface.view_img_on_surf(img, threshold=0, surf_mesh=surfaces)
     check_html(html)
     html = html_surface.view_img_on_surf(img, threshold=.4, title="SOME_TITLE")
     assert "SOME_TITLE" in html.html
@@ -147,7 +149,7 @@ def test_view_img_on_surf():
     html = html_surface.view_img_on_surf(
         img, threshold=.4, cmap='hot', black_bg=True)
     check_html(html)
-    html = html_surface.view_img_on_surf(img, surf_mesh='fsaverage')
+    html = html_surface.view_img_on_surf(img, surf_mesh='fsaverage5')
     check_html(html)
     with pytest.raises(DimensionError):
         html_surface.view_img_on_surf([img, img])

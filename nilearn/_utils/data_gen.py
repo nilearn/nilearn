@@ -8,6 +8,8 @@ import string
 import numpy as np
 import pandas as pd
 import scipy.signal
+from scipy.spatial import Delaunay
+from scipy import ndimage, interpolate
 
 from sklearn.utils import check_random_state
 import scipy.linalg
@@ -17,6 +19,110 @@ from nibabel import Nifti1Image
 
 from .. import masking
 from . import logger
+from nilearn import datasets, image, input_data
+
+
+def _mesh_brain_slice(img_slice, grid, angles, line, y, dilation, hemisphere):
+    interpolator = interpolate.RegularGridInterpolator(
+        grid, img_slice, bounds_error=False, method="nearest", fill_value=None,
+    )
+    center = ndimage.center_of_mass(img_slice)
+    points = center + line[:, None, None] * np.asarray(
+        [np.cos(angles), np.sin(angles)]).T
+    nonzero = np.where(img_slice[:, int(center[1])])[0]
+    if hemisphere == "right":
+        points[:, :, 0] = np.minimum(points[:, :, 0], center[0])
+        center = (.9 * center[0] + .1 * nonzero.min(), center[1])
+    if hemisphere == "left":
+        points[:, :, 0] = np.maximum(points[:, :, 0], center[0])
+        center = (.9 * center[0] + .1 * nonzero.max(), center[1])
+    values = interpolator(points)
+    idx = np.where(values.T, np.arange(len(line)), 0).max(axis=1)
+    last = np.rollaxis(points, 1)[np.arange(len(angles)), idx]
+    offset = dilation * (last - center)
+    radii = np.linalg.norm(offset, axis=1)
+    position = np.empty((len(offset), 4))
+    position[:, [0, 2]] = center + offset
+    position[:, 1] = y
+    position[:, 3] = 1
+    return position, center, radii
+
+
+def _make_triangles(n_y, n_x, hemisphere):
+    u, v = np.mgrid[:n_y, :n_x]
+    triangles = Delaunay(np.asarray([u.ravel(), v.ravel()]).T).simplices
+    n_nodes = n_x * (n_y - 2) + 2
+    triangles -= (n_x - 1)
+    triangles = np.maximum(triangles, 0)
+    triangles = triangles[~((triangles == 0).sum(axis=1) == 2)]
+    triangles = np.minimum(triangles, n_nodes - 1)
+    triangles = triangles[~((triangles == (n_nodes - 1)).sum(axis=1) == 2)]
+    regions = (4 * ((4 * v) // n_x) + (4 * u) // n_y)
+    if hemisphere == "right":
+        right_idx = np.any(regions < 8, axis=0)
+        left = regions[:, ~right_idx]
+        left = np.hstack([left, left[:, -1][:, None]])
+        regions[:, right_idx] = left[:, ::-1][:, :right_idx.sum()]
+    if hemisphere == "left":
+        regions[:, (n_x + n_x % 2) // 2:] = regions[:, :n_x // 2][:, ::-1]
+    regions = regions.ravel()
+    regions = regions[n_x - 1: n_x * (n_y - 1) + 1]
+    return triangles, regions
+
+
+def generate_brain_mesh(grid_size="medium", hemisphere="full", dilation=1.):
+    n_x, n_y = {"small": (11, 9), "medium": (30, 20), "large": (80, 40)
+                }.get(grid_size, grid_size)
+    mni = datasets.load_mni152_brain_mask()
+    data = image.get_data(mni)
+    nonzero = np.where(data)
+    ymin, ymax = nonzero[1].min(), nonzero[1].max()
+    amin, amax = 2. * -np.pi / 4, 6. * np.pi / 4
+    angles = np.linspace(amin, amax, n_x)
+    line = np.linspace(0, 100, 300)
+    grid = [np.arange(s) for s in (mni.shape[0], mni.shape[2])]
+    nodes, radii = [], []
+    center_start = None
+    for y in np.linspace(ymin + 1, ymax - 1, n_y - 2):
+        new_nodes, center, new_radii = _mesh_brain_slice(
+            data[:, int(y), :], grid, angles, line, y, dilation, hemisphere
+        )
+        nodes.append(new_nodes)
+        radii.append(new_radii)
+        if center_start is None:
+            center_start = center
+    radii = np.concatenate([[0]] + radii + [[0]])
+    start = [center_start[0], ymin - .5, center_start[1], 1]
+    end = [center[0], ymax + .5, center[1], 1]
+    nodes = np.vstack([start] + nodes + [end])
+    coords = mni.affine.dot(nodes.T)[:3].T
+    triangles, regions = _make_triangles(n_y, n_x, hemisphere)
+    return (coords, triangles), np.asarray(radii) * 2, regions
+
+
+def generate_full_brain_surfaces(grid_size="small"):
+    data = {}
+    for hemi in ["left", "right"]:
+        mesh, radii, regions = generate_brain_mesh(grid_size, hemi)
+        data["pial_{}".format(hemi)] = mesh
+        data["infl_{}".format(hemi)] = mesh
+        data["sulc_{}".format(hemi)] = radii
+        data["labels_{}".format(hemi)] = regions
+        mesh, radii, regions = generate_brain_mesh(grid_size, hemi, .7)
+        data["wm_{}".format(hemi)] = mesh
+    return data
+
+
+def generate_mni_space_img(n_scans=1, res=30, random_state=0):
+    rng = check_random_state(random_state)
+    mni = datasets.load_mni152_brain_mask()
+    target_affine = np.eye(3) * res
+    mask_img = image.resample_img(
+        mni, target_affine=target_affine, interpolation="nearest")
+    masker = input_data.NiftiMasker(mask_img).fit()
+    n_voxels = image.get_data(mask_img).sum()
+    data = rng.randn(n_scans, n_voxels)
+    return masker.inverse_transform(data), mask_img
 
 
 def generate_timeseries(n_instants, n_features,
