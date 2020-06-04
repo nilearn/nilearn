@@ -425,7 +425,11 @@ def test_sample_locations_between_surfaces():
     inner = rng.randn(10, 3)
     locations = surface._sample_locations_between_surfaces(
         (outer, None), np.eye(4), (inner, None), n_points=7)
-    expected = [np.linspace(inner[i], outer[i], 7) for i in range(10)]
+    # can be simplified when we drop support for np 1.15
+    # (broadcasting linspace)
+    expected = np.asarray(
+        [np.linspace(a, b, 7) for (a, b) in zip(inner.ravel(), outer.ravel())])
+    expected = np.rollaxis(expected.reshape((*outer.shape, 7)), 2, 1)
     assert np.allclose(locations, expected)
 
 
