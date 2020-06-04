@@ -452,6 +452,9 @@ def vol_to_surf(img, surf_mesh,
 
     kind : {'line', 'ball'}
         The strategy used to sample image intensities around each vertex.
+        If `inner_mesh` is provided this parameter is ignored and values are
+        sampled along a line
+
         - 'line' (the default):
             samples are regularly spaced along the normal to the mesh, over the
             interval [- `radius`, + `radius`].
@@ -459,8 +462,6 @@ def vol_to_surf(img, surf_mesh,
         - 'ball':
             samples are regularly spaced inside a ball centered at the mesh
             vertex.
-        If `inner_mesh` is provided this parameter is ignored and values are
-        sampled along a line
 
     n_samples : int or None, optional (default=None)
         How many samples are drawn around each vertex and averaged. If
