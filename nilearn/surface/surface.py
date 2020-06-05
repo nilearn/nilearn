@@ -94,7 +94,7 @@ def _vertex_outer_normals(mesh):
     return sklearn.preprocessing.normalize(normals)
 
 
-def _sample_locations_between_surfaces(mesh, affine, inner_mesh, n_points=10):
+def _sample_locations_between_surfaces(mesh, inner_mesh, affine, n_points=10):
     outer_vertices, _ = mesh
     inner_vertices, _ = inner_mesh
     # when we drop support for np 1.5 replace the next 2 lines with
@@ -215,7 +215,7 @@ def _sample_locations(mesh, affine, radius, kind='line', n_points=None,
     loc_kwargs = ({} if n_points is None else {'n_points': n_points})
     if inner_mesh is not None:
         return _sample_locations_between_surfaces(
-            mesh, affine, inner_mesh, **loc_kwargs)
+            mesh, inner_mesh, affine, **loc_kwargs)
     projectors = {
         'line': _line_sample_locations,
         'ball': _ball_sample_locations,

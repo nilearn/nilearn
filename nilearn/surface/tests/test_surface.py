@@ -424,7 +424,7 @@ def test_sample_locations_between_surfaces():
     outer = rng.randn(10, 3)
     inner = rng.randn(10, 3)
     locations = surface._sample_locations_between_surfaces(
-        (outer, None), np.eye(4), (inner, None), n_points=7)
+        (outer, None), (inner, None), np.eye(4), n_points=7)
     # can be simplified when we drop support for np 1.15
     # (broadcasting linspace)
     expected = np.asarray(

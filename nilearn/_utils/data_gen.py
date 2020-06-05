@@ -70,7 +70,7 @@ def _make_triangles(n_y, n_x, hemisphere):
     return triangles, regions
 
 
-def generate_brain_mesh(grid_size="medium", hemisphere="full", dilation=1.):
+def generate_brain_mesh(grid_size="small", hemisphere="full", dilation=1.):
     n_x, n_y = {"small": (11, 9), "medium": (30, 20), "large": (80, 40)
                 }.get(grid_size, grid_size)
     mni = datasets.load_mni152_brain_mask()
