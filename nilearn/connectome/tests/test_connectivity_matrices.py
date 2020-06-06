@@ -590,3 +590,42 @@ def test_connectivity_measure_outputs():
     with pytest.raises(ValueError,
                        match='can not reconstruct connectivity matrices'):
         tangent_measure.inverse_transform(vectorized_displacements)
+
+
+def test_confounds_connectome_measure():
+    n_subjects = 10
+    n_features = 49
+
+    # Generate signals and compute covariances and apply confounds while
+    # computing covariances
+    signals = []
+    for k in range(n_subjects):
+        n_samples = 200 + k
+        signal, _, confounds = generate_signals(n_features=n_features,
+                                                n_confounds=5,
+                                                length=n_samples,
+                                                same_variance=False)
+        signals.append(signal)
+    correlation_measure = ConnectivityMeasure(kind='correlation',
+                                              vectorize=True)
+    # Clean confounds on 10 subjects with confounds filtered to 10 subjects in
+    # length
+    cleaned_vectors = correlation_measure.fit_transform(signals,
+                                                        confounds=confounds[0:10])
+    zero_matrix = np.zeros((confounds.shape[1], cleaned_vectors.shape[1]))
+    assert_array_almost_equal(
+        np.dot(confounds[0:10].T, cleaned_vectors), zero_matrix)
+    assert(isinstance(cleaned_vectors, np.ndarray))
+
+    # Raising error for input confounds are not iterable
+    conn_measure = ConnectivityMeasure(vectorize=True)
+    pytest.raises(ValueError, conn_measure._check_input, signals, confounds=1.)
+    pytest.raises(ValueError, conn_measure._fit_transform,
+                  X=signals, do_fit=True, do_transform=True,
+                  confounds=1.)
+    pytest.raises(ValueError, conn_measure.fit_transform, signals, None, 1.)
+    # Raising error for input confounds are given but not vectorize=True
+    conn_measure = ConnectivityMeasure(vectorize=False)
+    pytest.raises(ValueError, conn_measure.fit_transform,
+                  signals, None, confounds[0:10])
+

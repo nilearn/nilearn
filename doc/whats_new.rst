@@ -24,6 +24,7 @@ NEW
   :func:`nilearn.plotting.plot_img_on_surf` generates multiple views of
   :func:`nilearn.plotting.plot_surf_stat_map` in a single figure.
 
+
 Fixes
 -----
 
@@ -39,6 +40,10 @@ Changes
 - `nilearn.datasets.fetch_surf_fsaverage5` has been removed.
 - :func:`nilearn.datasets.fetch_cobre` has been deprecated and will be
   removed in release 0.9 .
+
+- :class:`nilearn.connectome.ConnectivityMeasure` can now remove
+  confounds in its transform step.
+
 
 0.6.2
 ======
