@@ -269,7 +269,8 @@ plotting.plot_markers(
 
 ###############################################################################
 # From the correlation matrix, we observe that there is a positive and negative
-# structure. We could make two different plots presenting strength of each node.
+# structure. We could make two different plots, one for the positive and one for
+# the negative structure.
 
 from matplotlib.pyplot import cm
 
