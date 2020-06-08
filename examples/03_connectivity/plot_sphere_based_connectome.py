@@ -256,7 +256,7 @@ plotting.plot_connectome(matrix, coords, title='Power correlation graph',
 # aggregating edge strength from the graph would help. Use the function
 # `nilearn.plotting.plot_markers` to visualize this information.
 
-# calculate average strength for each node 
+# calculate normalized, absolute strength for each node 
 node_strength = np.sum(np.abs(matrix), axis=0) 
 node_strength /= np.max(node_strength)
 

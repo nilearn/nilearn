@@ -40,6 +40,8 @@ Changes
 
 - :func:`nilearn.datasets.fetch_cobre` has been deprecated and will be
   removed in release 0.9 .
+- :func:`nilearn.plotting.plot_connectome_strength` has been deprecated and will
+  be removed in release 0.9 .
 
 0.6.2
 ======

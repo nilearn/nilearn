@@ -1374,6 +1374,9 @@ optional
     Notes
     -----
     The plotted image should in MNI space for this function to work properly.
+
+    This function is deprecated and will be removed in the 0.9.0 release. Use 
+    plot_markers instead.
     """
     dep_msg = ("This function is deprecated and will be "
                "removed in the 0.9.0 release. Use plot_markers instead.")
@@ -1573,7 +1576,8 @@ def plot_markers(node_values, node_coords, node_size='auto',
     node_vmin = np.min(node_values) if node_vmin is None else node_vmin
     node_vmax = np.max(node_values) if node_vmax is None else node_vmax
     if node_vmin == node_vmax:
-        node_vmin, node_vmax = 0.9 * node_vmin, 1.1 * node_vmax
+        node_vmin = 0.9 * node_vmin
+        node_vmax = 1.1 * node_vmax
     norm = matplotlib.colors.Normalize(vmin=node_vmin, vmax=node_vmax)
     node_cmap = (plt.get_cmap(node_cmap) if isinstance(node_cmap, str) 
                  else node_cmap)
