@@ -1487,7 +1487,7 @@ def plot_markers(node_values, node_coords, node_size='auto',
         3d coordinates of the graph nodes in world space.
     node_size : 'auto' or scalar or array-like
         Size(s) of the nodes in points^2. By default the size of the node is
-        inversely propertionnal to the number of nodes.
+        inversely proportional to the number of nodes.
     node_cmap : str or colormap
         Colormap used to represent the node measure.
     node_vmin : float, optional
