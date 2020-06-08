@@ -121,6 +121,13 @@ commands:
   save_to_cache:
     description: "Caches the downloaded packages & buit docs."
     steps:
+      - run:
+          name: Delete part of cache to make it smaller
+          command: |
+            rm -rf ../nilearn_data/neurovault
+            rm -rf ../nilearn_data/brainomics_localizer
+            rm -rf ../nilearn_data/ABIDE_pcp
+            rm -rf ../nilearn_data/development_fmri
       - save_cache:
           key: v1-packages+datasets-{{ checksum "week_num" }}-{{ checksum ".circleci/packages-cache-timestamp" }}
           paths:
