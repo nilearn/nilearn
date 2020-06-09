@@ -76,8 +76,8 @@ plotting.plot_surf_stat_map(big_fsaverage.infl_right,
 # -------------------------------------------------
 #
 # *plot_img_on_surf* takes a statistical map and projects it onto a surface.
-# It supports multiple choices of orientations, and can plot either both or any
-# one hemisphere. If no *surf_mesh* is given, *plot_img_on_surf* projects the
+# It supports multiple choices of orientations, and can plot either one or both
+# hemispheres. If no *surf_mesh* is given, *plot_img_on_surf* projects the
 # images onto `FreeSurfer <https://surfer.nmr.mgh.harvard.edu/>`_\'s
 # fsaverage5.
 
