@@ -11,12 +11,15 @@ from matplotlib.colors import Normalize, LinearSegmentedColormap
 from mpl_toolkits.mplot3d import Axes3D
 from nilearn.plotting.img_plotting import (_get_colorbar_and_data_ranges,
                                            _crop_colorbar)
-from nilearn.plotting.orientation import get_orientation
 from nilearn.surface import (load_surf_data,
                              load_surf_mesh,
                              vol_to_surf,
                              check_mesh)
 from nilearn._utils import check_niimg_3d
+
+
+VALID_VIEWS = "anterior", "posterior", "medial", "lateral", "dorsal", "ventral"
+VALID_HEMISPHERES = "left", "right"
 
 
 def plot_surf(surf_mesh, surf_map=None, bg_map=None,
@@ -423,17 +426,29 @@ def plot_surf_stat_map(surf_mesh, stat_map, bg_map=None,
     return display
 
 
-def _check_hemisphere(hemisphere):
+def _check_hemispheres(hemispheres):
     """Checks whether the hemisphere in plot_img_on_surf is correct.
 
-    hemisphere: :obj:`str`
+    hemisphere: :obj:`list`
         Any combination of 'left' and 'right'
     """
-    desired_hemispheres = hemisphere.split('+')
-    wrong_hemisphere = set(desired_hemispheres).difference({'left', 'right'})
-    if wrong_hemisphere:
-        raise ValueError('hemisphere only accepts left and right.')
-    return desired_hemispheres
+    if not isinstance(hemispheres, list):
+        hemispheres = [hemispheres]
+    invalid_hemi = any([hemi not in VALID_HEMISPHERES for hemi in hemispheres])
+    if invalid_hemi:
+        supported = f"Supported hemispheres:\n{VALID_HEMISPHERES}"
+        raise ValueError(f"Invalid hemispheres definition!\n{supported}")
+    return hemispheres
+
+
+def _check_views(views) -> list:
+    if not isinstance(views, list):
+        views = [views]
+    invalid_view = any([view not in VALID_VIEWS for view in views])
+    if invalid_view:
+        supported = f"Supported views:\t{VALID_VIEWS}"
+        raise ValueError(f"Invalid view definition!\n{supported}")
+    return views
 
 
 def _colorbar_from_array(array, vmax,
@@ -491,15 +506,15 @@ def _colorbar_from_array(array, vmax,
 
 
 def plot_img_on_surf(stat_map, surf_mesh=None, mask_img=None,
-                     hemisphere='left+right',
+                     hemispheres=['left', 'right'],
                      inflate=False,
-                     orientation=['lateral', 'medial'],
+                     views=['lateral', 'medial'],
                      output_file=None, title=None, colorbar=True,
                      vmax=None, threshold=None, symmetric_cbar='auto',
                      cmap='cold_hot', aspect_ratio=2.75, **kwargs):
     """Convenience function to plot multiple views of plot_surf_stat_map
     in a single figure. It projects stat_map into meshes and plots views of
-    left and right hemispheres. The display_mode argument defines the views
+    left and right hemispheres. The *views* argument defines the views
     that are shown. This function returns the fig, axes elements from
     matplotlib unless kwargs sets and output_file, in which case nothing
     is returned.
@@ -526,11 +541,14 @@ def plot_img_on_surf(stat_map, surf_mesh=None, mask_img=None,
         If True, display images in inflated brain.
         If False, display images in pial surface.
 
-    orientation : :obj:`list`, optional (default=['lateral', 'medial'])
+    views : :obj:`list`, optional (default=['lateral', 'medial'])
         A list containing all views to display.
         The montage will contain as many rows as views specified by
         display mode. Order is preserved, and left and right hemispheres
         are shown on the left and right sides of the figure.
+
+    hemispheres : :obj:`list`, optional (default=['left', 'right'])
+        Hemispheres to display
 
     output_file : :obj:`str`, optional (default=None)
         The name of an image file to export plot to. Valid extensions
@@ -583,16 +601,14 @@ def plot_img_on_surf(stat_map, surf_mesh=None, mask_img=None,
         surf_mesh = 'fsaverage5'
 
     stat_map = check_niimg_3d(stat_map, dtype='auto')
-    modes = get_orientation(orientation)
-    hemis = _check_hemisphere(hemisphere)
+    modes = _check_views(views)
+    hemis = _check_hemispheres(hemispheres)
     surf_mesh = check_mesh(surf_mesh)
 
-    mesh_prefix = "infl_" if inflate else "pial_"
+    mesh_prefix = "infl" if inflate else "pial"
     surf = {
-        'left':
-        surf_mesh['infl_left'] if inflate else surf_mesh['pial_left'],
-        'right':
-        surf_mesh['infl_right'] if inflate else surf_mesh['pial_right']
+        'left': surf_mesh[f'{mesh_prefix}_left'],
+        'right': surf_mesh[f'{mesh_prefix}_right'],
     }
 
     texture = {
@@ -616,9 +632,8 @@ def plot_img_on_surf(stat_map, surf_mesh=None, mask_img=None,
     for index_mode, mode in enumerate(modes):
         for index_hemi, hemi in enumerate(hemis):
             bg_map = surf_mesh['sulc_%s' % hemi]
-            view = mode.name.lower()
             plot_surf_stat_map(surf[hemi], texture[hemi],
-                               view=view, hemi=hemi,
+                               view=mode, hemi=hemi,
                                bg_map=bg_map,
                                axes=axes[index_mode, index_hemi],
                                colorbar=False,  # Colorbar created externally.
