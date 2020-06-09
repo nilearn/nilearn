@@ -82,7 +82,7 @@ plotting.plot_surf_stat_map(big_fsaverage.infl_right,
 # fsaverage5.
 
 plotting.plot_img_on_surf(stat_img,
-                          display_mode='lateral+medial',
+                          orientation=['lateral', 'medial'],
                           hemisphere='left+right',
                           colorbar=True)
 plotting.show()
