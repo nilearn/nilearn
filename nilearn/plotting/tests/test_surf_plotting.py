@@ -213,72 +213,77 @@ def _generate_img():
     return nii
 
 
-def test_plot_img_on_surf_hemispheres_and_display_modes():
+def test_plot_img_on_surf_hemispheres_and_orientations():
     nii = _generate_img()
-    # Check that all combinations of 1D or 2D hemis and display_modes work.
-    plot_img_on_surf(nii, hemisphere='right', display_mode='lateral')
-    plot_img_on_surf(nii, hemisphere='left+right', display_mode='lateral')
-    plot_img_on_surf(nii, hemisphere='right', display_mode='medial+lateral')
-    plot_img_on_surf(nii, hemisphere='left+right',
-                     display_mode='dorsal+medial')
+    # Check that all combinations of 1D or 2D hemis and orientations work.
+    plot_img_on_surf(nii, hemisphere='right', orientation='lateral')
+    plot_img_on_surf(nii, hemisphere='left+right', orientation='lateral')
+    plot_img_on_surf(nii,
+                     hemisphere='right',
+                     orientation=['medial', 'lateral'])
+    plot_img_on_surf(nii,
+                     hemisphere='left+right',
+                     orientation=['dorsal', 'medial'])
 
 
 def test_plot_img_on_surf_colorbar():
     nii = _generate_img()
-    plot_img_on_surf(nii, hemisphere='right', display_mode='lateral',
+    plot_img_on_surf(nii, hemisphere='right', orientation='lateral',
                      colorbar=True, vmax=5, threshold=3)
-    plot_img_on_surf(nii, hemisphere='right', display_mode='lateral',
+    plot_img_on_surf(nii, hemisphere='right', orientation='lateral',
                      colorbar=False)
-    plot_img_on_surf(nii, hemisphere='right', display_mode='lateral',
+    plot_img_on_surf(nii, hemisphere='right', orientation='lateral',
                      colorbar=False, cmap='roy_big_bl')
-    plot_img_on_surf(nii, hemisphere='right', display_mode='lateral',
+    plot_img_on_surf(nii, hemisphere='right', orientation='lateral',
                      colorbar=True, cmap='roy_big_bl', vmax=2)
 
 
 def test_plot_img_on_surf_inflate():
     nii = _generate_img()
-    plot_img_on_surf(nii, hemisphere='right', display_mode='lateral',
+    plot_img_on_surf(nii, hemisphere='right', orientation='lateral',
                      inflate=True)
 
 
 def test_plot_img_on_surf_surf_mesh():
     nii = _generate_img()
-    plot_img_on_surf(nii, hemisphere='right+left', display_mode='lateral',
+    plot_img_on_surf(nii, hemisphere='right+left', orientation='lateral',
                      surf_mesh=None)
-    plot_img_on_surf(nii, hemisphere='right+left', display_mode='lateral',
+    plot_img_on_surf(nii, hemisphere='right+left', orientation='lateral',
                      surf_mesh='fsaverage')
-    plot_img_on_surf(nii, hemisphere='right+left', display_mode='lateral',
+    plot_img_on_surf(nii, hemisphere='right+left', orientation='lateral',
                      surf_mesh='fsaverage5')
     surf_mesh = fetch_surf_fsaverage()
-    plot_img_on_surf(nii, hemisphere='right+left', display_mode='lateral',
+    plot_img_on_surf(nii, hemisphere='right+left', orientation='lateral',
                      surf_mesh=surf_mesh)
 
 
-def test_plot_img_on_surf_with_invalid_display_mode():
+def test_plot_img_on_surf_with_invalid_orientation():
     kwargs = {"hemisphere": "right", "inflate": True}
     nii = _generate_img()
-    with pytest.raises(ValueError):
-        plot_img_on_surf(nii, display_mode='latral', **kwargs)
-    with pytest.raises(ValueError):
-        plot_img_on_surf(nii, display_mode='dorsal-posterior', **kwargs)
-    with pytest.raises(ValueError):
-        plot_img_on_surf(nii, display_mode='foo+bar', **kwargs)
+    with pytest.raises(KeyError):
+        plot_img_on_surf(nii, orientation='latral', **kwargs)
+    with pytest.raises(KeyError):
+        plot_img_on_surf(nii, orientation=['dorsal', 'post'], **kwargs)
+    with pytest.raises(TypeError):
+        plot_img_on_surf(nii, orientation=0, **kwargs)
+    with pytest.raises(TypeError):
+        plot_img_on_surf(nii, orientation=['medial', {'a': 'a'}], **kwargs)
 
 
 def test_plot_img_on_surf_with_invalid_hemisphere():
     nii = _generate_img()
     with pytest.raises(ValueError):
         plot_img_on_surf(
-            nii, display_mode='lateral', inflate=True, hemisphere="lft"
+            nii, orientation='lateral', inflate=True, hemisphere="lft"
         )
     with pytest.raises(ValueError):
         plot_img_on_surf(
-            nii, display_mode='medial', inflate=True, hemisphere="left/right"
+            nii, orientation='medial', inflate=True, hemisphere="left/right"
         )
     with pytest.raises(ValueError):
         plot_img_on_surf(
             nii,
-            display_mode='anterior+posterior',
+            orientation=['anterior', 'posterior'],
             inflate=True,
             hemisphere="left+right+middle"
         )
@@ -289,7 +294,7 @@ def test_plot_img_on_surf_with_figure_kwarg():
     with pytest.raises(ValueError):
         plot_img_on_surf(
             nii,
-            display_mode="anterior",
+            orientation="anterior",
             hemisphere="right",
             figure=True,
         )
@@ -300,7 +305,7 @@ def test_plot_img_on_surf_with_axes_kwarg():
     with pytest.raises(ValueError):
         plot_img_on_surf(
             nii,
-            display_mode="anterior",
+            orientation="anterior",
             hemisphere="right",
             inflat=True,
             axes="something",
@@ -311,11 +316,11 @@ def test_plot_img_on_surf_title():
     nii = _generate_img()
     title = "Title"
     fig, axes = plot_img_on_surf(
-        nii, hemisphere='right', display_mode='lateral'
+        nii, hemisphere='right', orientation='lateral'
     )
     assert fig._suptitle is None, "Created title without title kwarg."
     fig, axes = plot_img_on_surf(
-        nii, hemisphere='right', display_mode='lateral', title=title
+        nii, hemisphere='right', orientation='lateral', title=title
     )
     assert fig._suptitle is not None, "Title not created."
     assert fig._suptitle.get_text() == title, "Title text not assigned."
@@ -325,7 +330,7 @@ def test_plot_img_on_surf_output_file():
     nii = _generate_img()
     fname = Path('check.png').absolute()
     return_value = plot_img_on_surf(
-        nii, hemisphere='right', display_mode='lateral', output_file=str(fname)
+        nii, hemisphere='right', orientation='lateral', output_file=str(fname)
     )
     assert return_value is None, "Returned figure and axes on file output."
     assert fname.is_file(), "Saved image file could not be found."

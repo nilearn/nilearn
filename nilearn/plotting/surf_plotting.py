@@ -9,13 +9,14 @@ from matplotlib.colorbar import make_axes
 from matplotlib.cm import ScalarMappable, get_cmap
 from matplotlib.colors import Normalize, LinearSegmentedColormap
 from mpl_toolkits.mplot3d import Axes3D
+from nilearn.plotting.img_plotting import (_get_colorbar_and_data_ranges,
+                                           _crop_colorbar)
+from nilearn.plotting.orientation import get_orientation
 from nilearn.surface import (load_surf_data,
                              load_surf_mesh,
                              vol_to_surf,
                              check_mesh)
 from nilearn._utils import check_niimg_3d
-from nilearn.plotting.img_plotting import (_get_colorbar_and_data_ranges,
-                                           _crop_colorbar)
 
 
 def plot_surf(surf_mesh, surf_map=None, bg_map=None,
@@ -422,30 +423,6 @@ def plot_surf_stat_map(surf_mesh, stat_map, bg_map=None,
     return display
 
 
-def _check_display_mode(display_mode):
-    """Checks whether the display_mode string passed to plot_img_on_surf
-    is meaningful.
-
-    display_mode: :obj:`str`
-        Any combination of 'lateral', 'medial', 'dorsal', 'ventral',
-        'anterior', 'posterior', united by a '+'. Ex.: 'dorsal+lateral'
-    """
-
-    available_modes = {'lateral', 'medial',
-                       'dorsal', 'ventral',
-                       'anterior', 'posterior'}
-
-    desired_modes = display_mode.split('+')
-
-    wrong_modes = set(desired_modes).difference(available_modes)
-    if wrong_modes:
-        msg = 'display_mode given: {}, available modes: {}'
-        msg = msg.format(wrong_modes, available_modes)
-        raise ValueError(msg)
-
-    return desired_modes
-
-
 def _check_hemisphere(hemisphere):
     """Checks whether the hemisphere in plot_img_on_surf is correct.
 
@@ -515,7 +492,8 @@ def _colorbar_from_array(array, vmax,
 
 def plot_img_on_surf(stat_map, surf_mesh=None, mask_img=None,
                      hemisphere='left+right',
-                     inflate=False, display_mode='lateral+medial',
+                     inflate=False,
+                     orientation=['lateral', 'medial'],
                      output_file=None, title=None, colorbar=True,
                      vmax=None, threshold=None, symmetric_cbar='auto',
                      cmap='cold_hot', aspect_ratio=2.75, **kwargs):
@@ -548,10 +526,8 @@ def plot_img_on_surf(stat_map, surf_mesh=None, mask_img=None,
         If True, display images in inflated brain.
         If False, display images in pial surface.
 
-    display_mode : :obj:`str`, optional (default='lateral+medial')
-        A string containing all views to display, separated by '+'.
-        Available views: {'lateral', 'medial', 'dorsal', 'ventral',
-        'anterior', 'posterior'}.
+    orientation : :obj:`list`, optional (default=['lateral', 'medial'])
+        A list containing all views to display.
         The montage will contain as many rows as views specified by
         display mode. Order is preserved, and left and right hemispheres
         are shown on the left and right sides of the figure.
@@ -607,10 +583,11 @@ def plot_img_on_surf(stat_map, surf_mesh=None, mask_img=None,
         surf_mesh = 'fsaverage5'
 
     stat_map = check_niimg_3d(stat_map, dtype='auto')
-    modes = _check_display_mode(display_mode)
+    modes = get_orientation(orientation)
     hemis = _check_hemisphere(hemisphere)
     surf_mesh = check_mesh(surf_mesh)
 
+    mesh_prefix = "infl_" if inflate else "pial_"
     surf = {
         'left':
         surf_mesh['infl_left'] if inflate else surf_mesh['pial_left'],
@@ -639,8 +616,9 @@ def plot_img_on_surf(stat_map, surf_mesh=None, mask_img=None,
     for index_mode, mode in enumerate(modes):
         for index_hemi, hemi in enumerate(hemis):
             bg_map = surf_mesh['sulc_%s' % hemi]
+            view = mode.name.lower()
             plot_surf_stat_map(surf[hemi], texture[hemi],
-                               view=mode, hemi=hemi,
+                               view=view, hemi=hemi,
                                bg_map=bg_map,
                                axes=axes[index_mode, index_hemi],
                                colorbar=False,  # Colorbar created externally.
