@@ -456,9 +456,6 @@ def _check_hemisphere(hemisphere):
     wrong_hemisphere = set(desired_hemispheres).difference({'left', 'right'})
     if wrong_hemisphere:
         raise ValueError('hemisphere only accepts left and right.')
-    if len(desired_hemispheres) > 2:
-        raise ValueError('Currently only supports plotting 2 hemispheres.')
-
     return desired_hemispheres
 
 
