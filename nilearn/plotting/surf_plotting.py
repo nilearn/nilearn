@@ -226,9 +226,9 @@ def plot_surf(surf_mesh, surf_map=None, bg_map=None,
 
     if surf_map is not None:
         surf_map_data = load_surf_data(surf_map)
-        if len(surf_map_data.shape) is not 1:
+        if surf_map_data.ndim != 1:
             raise ValueError('surf_map can only have one dimension but has'
-                             '%i dimensions' % len(surf_map_data.shape))
+                             '%i dimensions' % surf_map_data.ndim)
         if surf_map_data.shape[0] != coords.shape[0]:
             raise ValueError('The surf_map does not have the same number '
                              'of vertices as the mesh.')
@@ -520,9 +520,9 @@ def plot_surf_roi(surf_mesh, roi_map, bg_map=None,
 
     mesh = load_surf_mesh(surf_mesh)
 
-    if len(roi.shape) is not 1:
+    if roi.ndim != 1:
         raise ValueError('roi_map can only have one dimension but has '
-                         '%i dimensions' % len(roi.shape))
+                         '%i dimensions' % roi.ndim)
     if roi.shape[0] != mesh[0].shape[0]:
         raise ValueError('roi_map does not have the same number of vertices '
                          'as the mesh. If you have a list of indices for the '
