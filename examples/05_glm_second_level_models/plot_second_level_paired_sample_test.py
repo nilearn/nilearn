@@ -1,6 +1,6 @@
 """
 Second-level fMRI model: a paired-sample test
-==========================================
+=============================================
 
 Full step-by-step example of fitting a GLM to perform a second level analysis
 in experimental data and visualizing the results.
