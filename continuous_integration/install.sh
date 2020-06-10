@@ -57,8 +57,8 @@ echo_requirements_string() {
 
 create_new_travisci_env() {
     REQUIREMENTS=$(echo_requirements_string)
-    pip install $PIP_FLAGS ${REQUIREMENTS}
-    pip install pytest pytest-cov
+    pip install --upgrade $PIP_FLAGS ${REQUIREMENTS}
+    pip install --upgrade pytest pytest-cov
 
     if [[ "$INSTALL_MKL" == "true" ]]; then
         # Make sure that MKL is used
