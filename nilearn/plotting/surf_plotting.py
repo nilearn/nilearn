@@ -607,8 +607,8 @@ def plot_img_on_surf(stat_map, surf_mesh=None, mask_img=None,
 
     mesh_prefix = "infl" if inflate else "pial"
     surf = {
-        'left': surf_mesh[f'{mesh_prefix}_left'],
-        'right': surf_mesh[f'{mesh_prefix}_right'],
+        'left': surf_mesh[mesh_prefix + '_left'],
+        'right': surf_mesh[mesh_prefix + '_right'],
     }
 
     texture = {
