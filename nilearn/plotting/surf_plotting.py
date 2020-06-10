@@ -436,7 +436,7 @@ def _check_hemispheres(hemispheres):
         hemispheres = [hemispheres]
     invalid_hemi = any([hemi not in VALID_HEMISPHERES for hemi in hemispheres])
     if invalid_hemi:
-        supported = "Supported hemispheres:\n" + VALID_HEMISPHERES
+        supported = "Supported hemispheres:\n" + str(VALID_HEMISPHERES)
         raise ValueError("Invalid hemispheres definition!\n" + supported)
     return hemispheres
 
@@ -446,7 +446,7 @@ def _check_views(views) -> list:
         views = [views]
     invalid_view = any([view not in VALID_VIEWS for view in views])
     if invalid_view:
-        supported = "Supported views:\n" + VALID_VIEWS
+        supported = "Supported views:\n" + str(VALID_VIEWS)
         raise ValueError("Invalid view definition!\n" + supported)
     return views
 
