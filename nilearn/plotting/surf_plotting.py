@@ -429,7 +429,7 @@ def plot_surf_stat_map(surf_mesh, stat_map, bg_map=None,
 def _check_hemispheres(hemispheres):
     """Checks whether the hemisphere in plot_img_on_surf is correct.
 
-    hemisphere: :obj:`list`
+    hemisphere: list
         Any combination of 'left' and 'right'
     """
     if not isinstance(hemispheres, list):
@@ -519,14 +519,14 @@ def plot_img_on_surf(stat_map, surf_mesh=None, mask_img=None,
     matplotlib unless kwargs sets and output_file, in which case nothing
     is returned.
 
-    stat_map : :obj:`str` or 3D Niimg-like object
+    stat_map : str or 3D Niimg-like object
         See http://nilearn.github.io/manipulating_images/input_output.html
 
-    surf_mesh : :obj:`str`, :obj:`dict`, or :obj:`None`, default is :obj:`None`
-        If :obj:`str`, either one of the two:
+    surf_mesh : str, dict, or None, default is None
+        If str, either one of the two:
         'fsaverage5': the low-resolution fsaverage5 mesh (10242 nodes)
         'fsaverage': the high-resolution fsaverage mesh (163842 nodes)
-        If :obj:`dict`, a dictionary with keys: ['infl_left', 'infl_right',
+        If dict, a dictionary with keys: ['infl_left', 'infl_right',
         'pial_left', 'pial_right', 'sulc_left', 'sulc_right'], where
         values are surface mesh geometries as accepted by plot_surf_stat_map.
         If None, plot_img_on_surf will use Freesurfer's 'fsaverage5'.
@@ -537,47 +537,47 @@ def plot_img_on_surf(stat_map, surf_mesh=None, mask_img=None,
         during projection of the volume to the surface.
         If ``None``, don't apply any mask.
 
-    inflate : :obj:`bool`, optional (default=False)
+    inflate : bool, optional (default=False)
         If True, display images in inflated brain.
         If False, display images in pial surface.
 
-    views : :obj:`list`, optional (default=['lateral', 'medial'])
+    views : list, optional (default=['lateral', 'medial'])
         A list containing all views to display.
         The montage will contain as many rows as views specified by
         display mode. Order is preserved, and left and right hemispheres
         are shown on the left and right sides of the figure.
 
-    hemispheres : :obj:`list`, optional (default=['left', 'right'])
+    hemispheres : list, optional (default=['left', 'right'])
         Hemispheres to display
 
-    output_file : :obj:`str`, optional (default=None)
+    output_file : str, optional (default=None)
         The name of an image file to export plot to. Valid extensions
-        are: *.png*, *.pdf*, *.svg*. If output_file is not :obj:`None`,
+        are: *.png*, *.pdf*, *.svg*. If output_file is not None,
         the plot is saved to a file, and the display is closed. Return
-        value is :obj:`None`.
+        value is None.
 
-    title : :obj:`str`, optional (default=None)
+    title : str, optional (default=None)
         Place a title on the upper center of the figure.
 
-    colorbar : :obj:`bool`, optional (default=True)
+    colorbar : bool, optional (default=True)
         If *True*, a symmetric colorbar of the statistical map is displayed.
 
-    vmax : :obj:`float`, optional (default=None)
+    vmax : float, optional (default=None)
         Upper bound for plotting of stat_map values.
 
-    threshold : :obj:`float`, optional (default=None)
-        If :obj:`None` is given, the image is not thresholded.
+    threshold : float, optional (default=None)
+        If None is given, the image is not thresholded.
         If a number is given, it is used to threshold the image,
         values below the threshold (in absolute value) are plotted
         as transparent.
 
-    symmetric_cbar : :obj:`bool` or 'auto', optional, default 'auto'
+    symmetric_cbar : bool or 'auto', optional, default 'auto'
         Specifies whether the colorbar should range from -vmax to vmax
         or from vmin to vmax. Setting to 'auto' will select the latter
         if the range of the whole image is either positive or negative.
         Note: The colormap will always range from -vmax to vmax.
 
-    cmap : :obj:`str`, optional (default='cold_hot')
+    cmap : str, optional (default='cold_hot')
         The name of a matplotlib or nilearn colormap.
 
     kwargs : keyword arguments passed to plot_surf_stat_map

@@ -22,11 +22,11 @@ import nibabel
 from nibabel import gifti
 from nibabel import freesurfer as fs
 
-from .. import datasets
-from ..image import load_img
-from ..image import resampling
-from .._utils.path_finding import _resolve_globbing
-from .. import _utils
+from nilearn import datasets
+from nilearn.image import load_img
+from nilearn.image import resampling
+from nilearn._utils.path_finding import _resolve_globbing
+from nilearn import _utils
 from nilearn.image import get_data
 
 
