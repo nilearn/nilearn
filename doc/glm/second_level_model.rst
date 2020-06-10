@@ -16,11 +16,11 @@ Second level models
 Design matrix
 =============
 
-As with first level models, a design matrix needs to be defined before fitting a second level model. Some common second level models are one-sample and two-sample t-tests. A quick look into setting up design matrices for these models is provided here.
+As with first level models, a design matrix needs to be defined before fitting a second level model. Some common second level models are one-sample (unpaired or paired) and two-sample t-tests. A quick look into setting up design matrices for these models is provided here.
 
 
-One-sample testing
-------------------
+One-sample testing: unpaired
+----------------------------
 
 In one-sample testing, activity associated with a predictor variable is tested against some form of baseline activity. Therefore, predictors must be defined in order to set up a one-sample t-test. For example, consider the first level contrast of left-vs-right button press, which can be downloaded using :func:`nilearn.datasets.fetch_localizer_contrasts`::
 
@@ -36,10 +36,10 @@ A first level model has been fit to this data and the contrasts maps for left-vs
   design_matrix = pd.DataFrame([1] * len(second_level_input), columns=['intercept'])
 
 
-Two-sample testing
-------------------
+One-sample testing: paired
+--------------------------
 
-In two-sample testing, the activity attributed to two predictors is contrasted against each other, and so, two predictors need to be defined to fit the model. Consider the dataset that has activation corresponding to the presentation of horizonal and vertical checkerboards. This dataset can also be downloaded using :func:`nilearn.datasets.fetch_localizer_contrasts`::
+In the paired t-tests, activity from 2 sets of observations **from the same sample** are compared against the baseline activity. Therefore, two predictor variables need to be defined for this test. Consider the dataset that has activation corresponding to the presentation of horizontal and vertical checkerboards. This dataset can also be downloaded using :func:`nilearn.datasets.fetch_localizer_contrasts`::
 
   from nilearn.datasets import fetch_localizer_contrasts
   n_subject = 16
@@ -61,7 +61,7 @@ Set up the design matrix::
 
 As with first level models, the design matrix can be visualized using :func:`nilearn.reporting.plot_design_matrix()`
 
-.. image:: ../auto_examples/05_glm_second_level_models/images/sphx_glr_plot_second_level_two_sample_test_001.png
+.. image:: ../auto_examples/05_glm_second_level_models/images/sphx_glr_plot_second_level_paired_sample_test_001.png
    :target: ../auto_examples/05_glm_second_level_models/plot_second_level_two_sample_test.html
 
 
@@ -96,7 +96,7 @@ As discussed in the :ref:`Multiple comparisons` section, the issue of multiple c
 
 Refer to the example :ref:`sphx_glr_auto_examples_05_glm_second_level_models_plot_thresholding.py` for a guide to applying FPR, FDR and FWER corrections. These corrections are applied using the :func:`nilearn.stats.map_threshold` function.
 
-Within an activated cluster, not all voxels reprepsent true activation. To estimate true positives within a cluster, Nilearn provides the :func:`nilearn.stats.cluster_level_inference` function. An example with usage information is available here: :ref:`sphx_glr_auto_examples_05_glm_second_level_models_plot_proportion_activated_voxels.py`
+Within an activated cluster, not all voxels represent true activation. To estimate true positives within a cluster, Nilearn provides the :func:`nilearn.stats.cluster_level_inference` function. An example with usage information is available here: :ref:`sphx_glr_auto_examples_05_glm_second_level_models_plot_proportion_activated_voxels.py`
 
 
 Voxel based morphometry

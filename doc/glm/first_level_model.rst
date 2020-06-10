@@ -50,8 +50,6 @@ If the events details are provided by the user, then details about the experimen
   onsets = [30., 70., 100., 10., 30., 90., 30., 40., 60.]
   events = pd.DataFrame({'trial_type': conditions, 'onset': onsets, 'duration': duration})
 
-To view the events file, the function plot_event can be used. More information available soon.
-
 In addition, some scan attributes also need to be specified::
 
     import numpy as np
