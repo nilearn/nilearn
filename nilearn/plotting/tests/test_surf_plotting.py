@@ -9,7 +9,7 @@ import pytest
 from matplotlib import pyplot as plt
 
 from nilearn.plotting.surf_plotting import (plot_surf, plot_surf_stat_map,
-                                            plot_surf_roi)
+                                            plot_surf_roi, plot_surf_contours)
 from nilearn.surface.testing_utils import generate_surf
 
 
@@ -203,3 +203,57 @@ def test_plot_surf_roi_error():
             ValueError,
             match='roi_map does not have the same number of vertices'):
         plot_surf_roi(mesh, roi_map=roi_idx)
+
+def test_plot_surf_contours():
+    mesh = generate_surf()
+    # we need a valid parcellation for testing
+    parcellation = np.zeros((mesh[0].shape[0],))
+    parcellation[mesh[1][3]] = 1
+    parcellation[mesh[1][5]] = 2
+    plot_surf_contours(mesh, parcellation)
+    plot_surf_contours(mesh, parcellation, levels=[1, 2])
+    plot_surf_contours(mesh, parcellation, levels=[1, 2], cmap='gist_ncar')
+    plot_surf_contours(mesh, parcellation, levels=[1, 2],
+                       colors=['r', 'g'])
+    plot_surf_contours(mesh, parcellation, levels=[1, 2], colors=['r', 'g'],
+                       labels=['1', '2'])
+    fig = plot_surf_contours(mesh, parcellation, levels=[1, 2], colors=['r', 'g'],
+                       labels=['1', '2'], legend=True)
+    assert fig.legends is not None
+    plot_surf_contours(mesh, parcellation, levels=[1, 2],
+                       colors=[[0, 0, 0, 1], [1, 1, 1, 1]])
+    fig, axes = plt.subplots(1, 1, subplot_kw={'projection': '3d'})
+    plot_surf_contours(mesh, parcellation, axes=axes)
+    plot_surf_contours(mesh, parcellation, figure=fig)
+    fig = plot_surf(mesh)
+    plot_surf_contours(mesh, parcellation, figure=fig)
+    plot_surf_contours(mesh, parcellation, title='title')
+    with tempfile.NamedTemporaryFile() as tmp_file:
+        plot_surf_contours(mesh, parcellation, output_file=tmp_file.name)
+    plt.close()
+
+def test_plot_surf_contours_error():
+    mesh = generate_surf()
+    # we need an invalid parcellation for testing
+    rng = np.random.RandomState(0)
+    invalid_parcellation = rng.rand(mesh[0].shape[0])
+    parcellation = np.zeros((mesh[0].shape[0],))
+    parcellation[mesh[1][3]] = 1
+    parcellation[mesh[1][5]] = 2
+    with pytest.raises(
+            ValueError,
+            match='Vertices in parcellation do not form region.'):
+        plot_surf_contours(mesh, invalid_parcellation)
+    fig, axes = plt.subplots(1, 1)
+    with pytest.raises(
+            ValueError,
+            match='Axes must be 3D.'):
+        plot_surf_contours(mesh, parcellation, axes=axes)
+    with pytest.raises(
+            ValueError,
+            match='All elements of colors need to be either a matplotlib color string or RGBA values.'):
+        plot_surf_contours(mesh, parcellation, levels=[1, 2], colors=[[1, 2], 3])
+    with pytest.raises(
+            ValueError,
+            match='Levels, labels, and colors argument need to be either the same length or None.'):
+        plot_surf_contours(mesh, parcellation, levels=[1, 2], colors=['r'], labels=['1', '2'])

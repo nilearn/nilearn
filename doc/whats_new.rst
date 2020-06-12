@@ -20,6 +20,14 @@ NEW
   :func:`nilearn.plotting.plot_carpet` generates a "carpet plot" (also known
   as a "Power plot" or a "grayplot"), for visualizing global patterns in
   4D functional data over time.
+- New plotting function
+  :func:`nilearn.plotting.plot_markers` shows network nodes (markers) on a glass
+  brain template and color code them according to provided nodal measure (i.e.
+  connection strength). This function will replace
+  :func:`nilearn.plotting.plot_connectome_strength`.
+- New plotting function
+  :func:`nilearn.plotting.plot_surf_contours` plots the contours of regions of
+  interest on the surface, optionally overlayed on top of a statistical map.
 
 
 Fixes
@@ -37,6 +45,8 @@ Changes
 - `nilearn.datasets.fetch_surf_fsaverage5` has been removed.
 - :func:`nilearn.datasets.fetch_cobre` has been deprecated and will be
   removed in release 0.9 .
+- :func:`nilearn.plotting.plot_connectome_strength` has been deprecated and will
+  be removed in release 0.9 .
 
 - :class:`nilearn.connectome.ConnectivityMeasure` can now remove
   confounds in its transform step.

@@ -391,7 +391,7 @@ def get_bids_files(main_path, file_tag='*', file_type='*', sub_label='*',
 
 
 def parse_bids_filename(img_path):
-    """Returns dictionary with parsed information from file path
+    r"""Return dictionary with parsed information from file path.
 
     Parameters
     ----------
