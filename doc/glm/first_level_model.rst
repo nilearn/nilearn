@@ -109,7 +109,7 @@ The :class:`nilearn.stats.first_level_model.FirstLevelModel` class provides the 
 Computing contrasts
 -------------------
 
-To get more interesting results out of the GLM model, contrasts can be computed between regressors of interest. The :func:`nilearn.stats.first_level_model.FirstLevelModel.compute_contrast` can be used for that. First, the contrasts of interest must be defined. In the spm_multimodal_fmri dataset referenced above, subjects are presented with normal and scrambled faces. The basic contrasts that can be constructed are::
+To get more interesting results out of the GLM model, contrasts can be computed between regressors of interest. The :func:`nilearn.stats.first_level_model.FirstLevelModel.compute_contrast` function can be used for that. First, the contrasts of interest must be defined. In the spm_multimodal_fmri dataset referenced above, subjects are presented with normal and scrambled faces. The basic contrasts that can be constructed are::
 
   contrast_matrix = np.eye(design_matrix.shape[1])
   basic_contrasts = dict([(column, contrast_matrix[i])
@@ -129,6 +129,12 @@ And compute the contrasts as follows::
   for contrast_id, contrast_val in contrasts.items():
     z_map = fmri_glm.compute_contrast(
         contrast_val, output_type='z_score')
+
+
+.. note:: The compute_contrast function also works with symbolic arguments if the contrast involves conditions defined in the design matrix. E.g. the 'faces-scrambled' contrast can also be computed using the command `compute_contrast('faces-scrambled')`. See :func:`nilearn.stats.first_level_model.FirstLevelModel.compute_contrast` for more information.
+
+
+
 
 .. image:: ../auto_examples/04_glm_first_level_models/images/sphx_glr_plot_spm_multimodal_faces_001.png
      :target: ../auto_examples/04_glm_first_level_models/plot_spm_multimodal_faces.html
