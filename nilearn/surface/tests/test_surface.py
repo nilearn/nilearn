@@ -3,7 +3,6 @@
 import os
 import tempfile
 import warnings
-import itertools
 
 from distutils.version import LooseVersion
 
@@ -405,7 +404,7 @@ def test_sample_locations():
     ball_offsets = np.asarray(
         resampling.coord_transform(*ball_offsets.T, affine=inv_affine)).T
     line_offsets = np.zeros((10, 3))
-    line_offsets[:, 2] = np.linspace(-1, 1, 10)
+    line_offsets[:, 2] = np.linspace(1, -1, 10)
     line_offsets = np.asarray(
         resampling.coord_transform(*line_offsets.T, affine=inv_affine)).T
     # check we get the same locations
@@ -428,7 +427,7 @@ def test_sample_locations_between_surfaces():
     # can be simplified when we drop support for np 1.15
     # (broadcasting linspace)
     expected = np.asarray(
-        [np.linspace(a, b, 7) for (a, b) in zip(inner.ravel(), outer.ravel())])
+        [np.linspace(b, a, 7) for (a, b) in zip(inner.ravel(), outer.ravel())])
     expected = np.rollaxis(expected.reshape((*outer.shape, 7)), 2, 1)
     assert np.allclose(locations, expected)
 

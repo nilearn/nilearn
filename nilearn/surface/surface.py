@@ -94,14 +94,18 @@ def _vertex_outer_normals(mesh):
     return sklearn.preprocessing.normalize(normals)
 
 
-def _sample_locations_between_surfaces(mesh, inner_mesh, affine, n_points=10):
+def _sample_locations_between_surfaces(
+        mesh, inner_mesh, affine, n_points=10, depth=None):
     outer_vertices, _ = mesh
     inner_vertices, _ = inner_mesh
     # when we drop support for np 1.5 replace the next 2 lines with
     # sample_locations = np.linspace(inner_vertices, outer_vertices, n_points)
-    steps = np.linspace(0, 1, n_points)[:, None, None]
-    sample_locations = inner_vertices + steps * (
-        outer_vertices - inner_vertices)
+    if depth is None:
+        steps = np.linspace(0, 1, n_points)[:, None, None]
+    else:
+        steps = depth
+    sample_locations = outer_vertices + steps * (
+        inner_vertices - outer_vertices)
     sample_locations = np.rollaxis(sample_locations, 1)
     sample_locations_voxel_space = np.asarray(
         resampling.coord_transform(
@@ -110,7 +114,8 @@ def _sample_locations_between_surfaces(mesh, inner_mesh, affine, n_points=10):
     return sample_locations_voxel_space
 
 
-def _ball_sample_locations(mesh, affine, ball_radius=3., n_points=20):
+def _ball_sample_locations(
+        mesh, affine, ball_radius=3., n_points=20, depth=None):
     """Locations to draw samples from to project volume data onto a mesh.
 
     For each mesh vertex, the locations of `n_points` points evenly spread in a
@@ -144,6 +149,9 @@ def _ball_sample_locations(mesh, affine, ball_radius=3., n_points=20):
         z in voxel space.
 
     """
+    if depth is not None:
+        raise ValueError("The 'ball' sampling strategy does not support "
+                         "the 'depth' parameter")
     vertices, faces = mesh
     offsets_world_space = _load_uniform_ball_cloud(
         n_points=n_points) * ball_radius
@@ -161,7 +169,7 @@ def _ball_sample_locations(mesh, affine, ball_radius=3., n_points=20):
 
 
 def _line_sample_locations(
-        mesh, affine, segment_half_width=3., n_points=10):
+        mesh, affine, segment_half_width=3., n_points=10, depth=None):
     """Locations to draw samples from to project volume data onto a mesh.
 
     For each mesh vertex, the locations of `n_points` points evenly spread in a
@@ -187,6 +195,9 @@ def _line_sample_locations(
     n_points : int, optional (default=10)
         number of samples to draw for each vertex.
 
+    depth : list of floats or None
+        cortical depth. overrides n_points
+
     Returns
     -------
     numpy array, shape (n_vertices, n_points, 3)
@@ -198,7 +209,11 @@ def _line_sample_locations(
     """
     vertices, faces = mesh
     normals = _vertex_outer_normals(mesh)
-    offsets = np.linspace(-segment_half_width, segment_half_width, n_points)
+    if depth is None:
+        offsets = np.linspace(
+            segment_half_width, -segment_half_width, n_points)
+    else:
+        offsets = - segment_half_width * depth
     sample_locations = vertices[
         np.newaxis, :, :] + normals * offsets[:, np.newaxis, np.newaxis]
     sample_locations = np.rollaxis(sample_locations, 1)
@@ -210,12 +225,12 @@ def _line_sample_locations(
 
 
 def _sample_locations(mesh, affine, radius, kind='line', n_points=None,
-                      inner_mesh=None):
+                      inner_mesh=None, depth=None):
     """Get either ball or line sample locations."""
     loc_kwargs = ({} if n_points is None else {'n_points': n_points})
     if inner_mesh is not None:
         return _sample_locations_between_surfaces(
-            mesh, inner_mesh, affine, **loc_kwargs)
+            mesh, inner_mesh, affine, depth=depth, **loc_kwargs)
     projectors = {
         'line': _line_sample_locations,
         'ball': _ball_sample_locations,
@@ -226,7 +241,8 @@ def _sample_locations(mesh, affine, radius, kind='line', n_points=None,
     projector = projectors[kind]
     # let the projector choose the default for n_points
     # (for example a ball probably needs more than a line)
-    sample_locations = projector(mesh, affine, radius, **loc_kwargs)
+    sample_locations = projector(
+        mesh, affine, radius, depth=depth, **loc_kwargs)
     return sample_locations
 
 
@@ -262,7 +278,7 @@ def _masked_indices(sample_locations, img_shape, mask=None):
 
 
 def _projection_matrix(mesh, affine, img_shape, kind='line', radius=3.,
-                       n_points=None, mask=None, inner_mesh=None):
+                       n_points=None, mask=None, inner_mesh=None, depth=None):
     """Get a sparse matrix that projects volume data onto a mesh.
 
     Parameters
@@ -336,7 +352,7 @@ def _projection_matrix(mesh, affine, img_shape, kind='line', radius=3.,
     mesh = load_surf_mesh(mesh)
     sample_locations = _sample_locations(
         mesh, affine, kind=kind, radius=radius, n_points=n_points,
-        inner_mesh=inner_mesh)
+        inner_mesh=inner_mesh, depth=depth)
     sample_locations = np.asarray(np.round(sample_locations), dtype=int)
     n_vertices, n_points, img_dim = sample_locations.shape
     masked = _masked_indices(np.vstack(sample_locations), img_shape, mask=mask)
@@ -356,7 +372,8 @@ def _projection_matrix(mesh, affine, img_shape, kind='line', radius=3.,
 
 
 def _nearest_voxel_sampling(images, mesh, affine, kind='ball', radius=3.,
-                            n_points=None, mask=None, inner_mesh=None):
+                            n_points=None, mask=None, inner_mesh=None,
+                            depth=None):
     """In each image, measure the intensity at each node of the mesh.
 
     Image intensity at each sample point is that of the nearest voxel.
@@ -367,7 +384,7 @@ def _nearest_voxel_sampling(images, mesh, affine, kind='ball', radius=3.,
     """
     proj = _projection_matrix(
         mesh, affine, images[0].shape, kind=kind, radius=radius,
-        n_points=n_points, mask=mask, inner_mesh=inner_mesh)
+        n_points=n_points, mask=mask, inner_mesh=inner_mesh, depth=depth)
     data = np.asarray(images).reshape(len(images), -1).T
     texture = proj.dot(data)
     # if all samples around a mesh vertex are outside the image,
@@ -378,7 +395,8 @@ def _nearest_voxel_sampling(images, mesh, affine, kind='ball', radius=3.,
 
 
 def _interpolation_sampling(images, mesh, affine, kind='ball', radius=3,
-                            n_points=None, mask=None, inner_mesh=None):
+                            n_points=None, mask=None, inner_mesh=None,
+                            depth=None):
     """In each image, measure the intensity at each node of the mesh.
 
     Image intensity at each sample point is computed with trilinear
@@ -390,7 +408,7 @@ def _interpolation_sampling(images, mesh, affine, kind='ball', radius=3,
     """
     sample_locations = _sample_locations(
         mesh, affine, kind=kind, radius=radius, n_points=n_points,
-        inner_mesh=inner_mesh)
+        inner_mesh=inner_mesh, depth=depth)
     n_vertices, n_points, img_dim = sample_locations.shape
     grid = [np.arange(size) for size in images[0].shape]
     interp_locations = np.vstack(sample_locations)
@@ -415,7 +433,7 @@ def _interpolation_sampling(images, mesh, affine, kind='ball', radius=3,
 
 def vol_to_surf(img, surf_mesh,
                 radius=3., interpolation='linear', kind='line',
-                n_samples=None, mask_img=None, inner_mesh=None):
+                n_samples=None, mask_img=None, inner_mesh=None, depth=None):
     """Extract surface data from a Nifti image.
 
     .. versionadded:: 0.4.0
@@ -484,6 +502,10 @@ def vol_to_surf(img, surf_mesh,
         across the gray matter thickness from node i in `inner_mesh`. Image
         values for index i are then sampled along the line joining these two
         points.
+
+    depth : list of floats or None, optional (default=None)
+        The cortical depth of samples. If provided, n_samples and radius are
+        ignored.
 
     Returns
     -------
@@ -558,7 +580,7 @@ def vol_to_surf(img, surf_mesh,
     sampling = sampling_schemes[interpolation]
     texture = sampling(
         frames, mesh, img.affine, radius=radius, kind=kind,
-        n_points=n_samples, mask=mask, inner_mesh=inner_mesh)
+        n_points=n_samples, mask=mask, inner_mesh=inner_mesh, depth=depth)
     if original_dimension == 3:
         texture = texture[0]
     return texture.T
