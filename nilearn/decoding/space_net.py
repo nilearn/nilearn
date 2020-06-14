@@ -943,7 +943,7 @@ class BaseSpaceNet(LinearRegression, CacheMixin):
 
         # handle regression (least-squared loss)
         if not self.is_classif:
-            return LinearModel.predict(self, X)
+            return LinearRegression.predict(self, X)
 
         # prediction proper
         scores = self.decision_function(X)
