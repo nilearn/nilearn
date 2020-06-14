@@ -19,23 +19,20 @@ import warnings
 import numpy as np
 from joblib import Parallel, delayed
 from sklearn import clone
-from sklearn.base import RegressorMixin
 from sklearn.linear_model import LogisticRegression
-from sklearn.linear_model.base import LinearModel
-from sklearn.linear_model.ridge import RidgeClassifierCV, RidgeCV, _BaseRidgeCV
+from sklearn.linear_model import LinearRegression
+from sklearn.linear_model import RidgeClassifierCV, RidgeCV
 from sklearn.model_selection import (LeaveOneGroupOut, ParameterGrid,
                                      ShuffleSplit, StratifiedShuffleSplit,
                                      check_cv)
 from sklearn.preprocessing import LabelBinarizer
-from sklearn.svm import SVR, LinearSVC
-from sklearn.svm.bounds import l1_min_c
+from sklearn.svm import SVR, LinearSVC, l1_min_c
 from sklearn.utils.extmath import safe_sparse_dot
 from sklearn.utils.validation import check_is_fitted, check_X_y
 
 from nilearn._utils import CacheMixin
 from nilearn._utils.cache_mixin import _check_memory
-from nilearn._utils.param_validation import (_adjust_screening_percentile,
-                                             check_feature_screening)
+from nilearn._utils.param_validation import check_feature_screening
 from nilearn.input_data.masker_validation import check_embedded_nifti_masker
 from nilearn.regions.rena_clustering import ReNA
 
@@ -103,7 +100,8 @@ def _check_param_grid(estimator, X, y, param_grid=None):
         # define loss function
         if isinstance(estimator, LogisticRegression):
             loss = 'log'
-        elif isinstance(estimator, (LinearSVC, _BaseRidgeCV, SVR)):
+        elif isinstance(estimator,
+                        (LinearSVC, RidgeCV, RidgeClassifierCV, SVR)):
             loss = 'squared_hinge'
         else:
             raise ValueError(
@@ -116,7 +114,7 @@ def _check_param_grid(estimator, X, y, param_grid=None):
         else:
             min_c = 0.5
 
-        if not isinstance(estimator, _BaseRidgeCV):
+        if not isinstance(estimator, (RidgeCV, RidgeClassifierCV)):
             param_grid['C'] = np.array([2, 20, 200]) * min_c
         else:
             param_grid = {}
@@ -199,7 +197,7 @@ def _parallel_fit(estimator, X, y, train, test, param_grid, is_classification,
     return class_index, best_coef, best_intercept, best_param, best_score
 
 
-class _BaseDecoder(LinearModel, RegressorMixin, CacheMixin):
+class _BaseDecoder(LinearRegression, CacheMixin):
     """A wrapper for popular classification/regression strategies in
     neuroimaging.
 
