@@ -47,8 +47,8 @@ design_matrices = [pd.DataFrame(np.load(df)['X']) for df in design_files]
 #########################################################################
 # GLM estimation
 # ----------------------------------
-# GLM specification. Note that the mask was provided in the dataset. So we use
-# it.
+# GLM specification. Note that the mask was provided in the dataset.
+# So we use it.
 
 from nilearn.glm.first_level import FirstLevelModel
 fmri_glm = FirstLevelModel(mask_img=data['mask'], smoothing_fwhm=5,

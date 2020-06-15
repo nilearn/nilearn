@@ -8,9 +8,11 @@ even on fast event-related fMRI datasets.
 Here, we demonstrate the use of a FIR model with 3 lags, computing 4 contrasts
 from a single subject dataset from the "Neurospin Localizer". It is a fast
 event related design: During 5 minutes, 80 events of the following types are
-presented : ['calculaudio', 'calculvideo'', 'clicDvideo', 'clicGaudio',
-'clicGvideo', 'damier_H', 'damier_V', 'phraseaudio', 'phrasevideo']
-
+presented : ['audio_computation', 'audio_left_hand_button_press',
+'audio_right_hand_button_press', 'horizontal_checkerboard',
+'sentence_listening', 'sentence_reading', 'vertical_checkerboard',
+'visual_computation', 'visual_left_hand_button_press',
+'visual_right_hand_button_press']
 """
 
 #########################################################################

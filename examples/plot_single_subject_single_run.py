@@ -22,7 +22,7 @@ group which develops the SPM software.
 
 According to SPM documentation, 96 scans were acquired (repetition time TR=7s)
 in one session. The paradigm consisted of alternating periods of stimulation
-and rest, lasting 42s each (that is, for 6 scans). The sesssion started with a
+and rest, lasting 42s each (that is, for 6 scans). The session started with a
 rest block.  Auditory stimulation consisted of bi-syllabic words presented
 binaurally at a rate of 60 per minute. The functional data starts at scan
 number 4, that is the image file ``fM00223_004``.

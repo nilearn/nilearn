@@ -278,14 +278,14 @@ plt.show()
 # Adding a time derivative to the design
 # ......................................
 #
-# There seems to be something here. Maybe we could adjust the We could try to
-# go one step further: using not only the so-called canonical hrf, but also its
-# time derivative. Note that in that case, we still perform the contrasts and
-# obtain statistical significance for the main effect ---not the time
-# derivative. This means that the inclusion of a time derivative in the design
-# matrix has the sole effect of discounting timing misspecification from the
-# error term, which would decrease the estimated variance and enhance the
-# statistical significance of the effect. Is that the case?
+# There seems to be something here. Maybe we could try to go one step further:
+# using not only the so-called canonical hrf, but also its time derivative.
+# Note that in that case, we still perform the contrasts and obtain statistical
+# significance for the main effect --- not the time derivative. This means that
+# the inclusion of a time derivative in the design matrix has the sole effect
+# of discounting timing misspecification from the error term, which would
+# decrease the estimated variance and enhance the statistical significance of
+# the effect. Is that the case?
 
 first_level_model = FirstLevelModel(t_r, hrf_model='spm + derivative')
 first_level_model = first_level_model.fit(fmri_img, events=events)
