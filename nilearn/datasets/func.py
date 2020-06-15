@@ -2505,7 +2505,7 @@ def _prepare_downloaded_spm_auditory_data(subject_dir):
     _subject_data = {}
     _subject_data['func'] = sorted(
         [subject_data[x] for x in subject_data.keys()
-         if re.match('^fM00223_0\d\d\.img$',  # noqa:W605
+         if re.match(r'^fM00223_0\d\d\.img$',
                      os.path.basename(x))])
 
     # volumes for this dataset of shape (64, 64, 64, 1); let's fix this
@@ -2517,7 +2517,7 @@ def _prepare_downloaded_spm_auditory_data(subject_dir):
             nib.save(vol, x)
 
     _subject_data['anat'] = [subject_data[x] for x in subject_data.keys()
-                             if re.match('^sM00223_002\.img$',  # noqa:W605
+                             if re.match(r'^sM00223_002\.img$',
                                          os.path.basename(x))][0]
 
     # ... same thing for anat

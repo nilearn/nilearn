@@ -499,41 +499,6 @@ def _fetch_surf_fsaverage(data_dir=None):
     return Bunch(**result)
 
 
-def fetch_surf_fsaverage5(data_dir=None, url=None, resume=True, verbose=1):
-    """  NOTE: This function is deprecated and will be removed in
-    0.7.0 release. Use `fetch_surf_fsaverage` instead.
-
-    Parameters
-    ----------
-    data_dir: str, optional (default=None)
-        Path of the data directory. Used to force data storage in a specified
-        location.
-
-    Returns
-    -------
-    data: sklearn.datasets.base.Bunch
-        Dictionary-like object, the interest attributes are :
-         - 'pial_left': Gifti file, left hemisphere pial surface mesh
-         - 'pial_right': Gifti file, right hemisphere pial surface mesh
-         - 'infl_left': Gifti file, left hemisphere inflated pial surface mesh
-         - 'infl_right': Gifti file, right hemisphere inflated pial
-                         surface mesh
-         - 'sulc_left': Gifti file, left hemisphere sulcal depth data
-         - 'sulc_right': Gifti file, right hemisphere sulcal depth data
-
-    References
-    ----------
-    Fischl et al, (1999). High-resolution intersubject averaging and a
-    coordinate system for the cortical surface. Hum Brain Mapp 8, 272-284.
-
-    """
-    warnings.warn("fetch_surf_fsaverage5 has been deprecated and will "
-                  "be removed in 0.7.0 release. "
-                  "Use fetch_surf_fsaverage(mesh='fsaverage5')",
-                  np.VisibleDeprecationWarning, stacklevel=2)
-    return fetch_surf_fsaverage(mesh='fsaverage5', data_dir=data_dir)
-
-
 def _fetch_surf_fsaverage5(data_dir=None, url=None, resume=True, verbose=1):
     """Helper function to ship fsaverage5 surfaces and sulcal information
     with Nilearn.
