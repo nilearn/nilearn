@@ -113,7 +113,7 @@ def generate_full_brain_surfaces(grid_size="small"):
     return data
 
 
-def generate_mni_space_img(n_scans=1, res=30, random_state=0):
+def generate_mni_space_img(n_scans=1, res=30, random_state=0, mask_dilation=2):
     rng = check_random_state(random_state)
     mni = datasets.load_mni152_brain_mask()
     target_affine = np.eye(3) * res
@@ -122,6 +122,10 @@ def generate_mni_space_img(n_scans=1, res=30, random_state=0):
     masker = input_data.NiftiMasker(mask_img).fit()
     n_voxels = image.get_data(mask_img).sum()
     data = rng.randn(n_scans, n_voxels)
+    if mask_dilation is not None and mask_dilation > 0:
+        mask_img = image.new_img_like(
+            mask_img, ndimage.binary_dilation(
+                image.get_data(mask_img), iterations=mask_dilation))
     return masker.inverse_transform(data), mask_img
 
 

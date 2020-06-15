@@ -471,15 +471,24 @@ def test_depth_ball_sampling():
 
 @pytest.mark.parametrize("kind", ["line", "ball"])
 @pytest.mark.parametrize("n_scans", [1, 20])
-def test_vol_to_surf(kind, n_scans):
+@pytest.mark.parametrize("use_mask", [True, False])
+def test_vol_to_surf(kind, n_scans, use_mask):
     img, mask_img = data_gen.generate_mni_space_img(n_scans)
+    if not use_mask:
+        mask_img = None
+    if n_scans == 1:
+        img = image.new_img_like(img, image.get_data(img).squeeze())
     mesh, radii, _ = data_gen.generate_brain_mesh()
     inner_mesh, inner_radii, _ = data_gen.generate_brain_mesh(dilation=.7)
     center_mesh = np.mean([mesh[0], inner_mesh[0]], axis=0), mesh[1]
-    proj = surface.vol_to_surf(img, mesh, inner_mesh=inner_mesh)
-    other_proj = surface.vol_to_surf(img, center_mesh, kind=kind)
+    proj = surface.vol_to_surf(
+        img, mesh, inner_mesh=inner_mesh, mask_img=mask_img)
+    other_proj = surface.vol_to_surf(
+        img, center_mesh, kind=kind, mask_img=mask_img)
     correlation = pearsonr(proj.ravel(), other_proj.ravel())[0]
     assert correlation > .99
+    with pytest.raises(ValueError, match=".*interpolation.*"):
+        surface.vol_to_surf(img, mesh, interpolation="bad")
 
 
 def test_masked_indices():
