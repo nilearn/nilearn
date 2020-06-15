@@ -103,7 +103,7 @@ def _sample_locations_between_surfaces(
     if depth is None:
         steps = np.linspace(0, 1, n_points)[:, None, None]
     else:
-        steps = np.asarray(depth)
+        steps = np.asarray(depth)[:, None, None]
     sample_locations = outer_vertices + steps * (
         inner_vertices - outer_vertices)
     sample_locations = np.rollaxis(sample_locations, 1)
@@ -139,6 +139,10 @@ def _ball_sample_locations(
 
     n_points : int, optional (default=20)
         number of samples to draw for each vertex.
+
+    depth : None
+        raises a ValueError if not None because incompatible with this sampling
+        strategy.
 
     Returns
     -------
@@ -195,8 +199,9 @@ def _line_sample_locations(
     n_points : int, optional (default=10)
         number of samples to draw for each vertex.
 
-    depth : list of floats or None
-        cortical depth. overrides n_points
+    depth : sequence of floats or None
+        cortical depth, expressed as a fraction of segment_half_width.
+        overrides n_points
 
     Returns
     -------
@@ -332,6 +337,10 @@ def _projection_matrix(mesh, affine, img_shape, kind='line', radius=3.,
         both meshes must correspond: node i in `mesh` is just across the gray
         matter thickness from node i in `inner_mesh`. Image values for index i
         are then sampled along the line joining these two points.
+
+    depth : sequence of floats or None
+        cortical depth, expressed as a fraction of segment_half_width.
+        overrides n_points. Should be None if kind is 'ball'
 
     Returns
     -------
@@ -503,9 +512,20 @@ def vol_to_surf(img, surf_mesh,
         values for index i are then sampled along the line joining these two
         points.
 
-    depth : list of floats or None, optional (default=None)
-        The cortical depth of samples. If provided, n_samples and radius are
-        ignored.
+    depth : sequence of floats or None, optional (default=None)
+        The cortical depth of samples. If provided, n_samples is ignored.
+        When `inner_mesh` is provided, each element of `depth` is a fraction of
+        the distance from `mesh` to `inner_mesh`: 0 is exactly on the outer
+        surface, .5 is halfway, 1. is exactly on the inner surface. `depth`
+        entries can be negative or greater than 1.
+        When `inner_mesh` is not provided and `kind` is "line", each element of
+        `depth` is a fraction of `radius` along the inwards normal at each mesh
+        node. For example if `radius==1` and `depth==[-.5, 0.]`, for each node
+        values will be sampled .5 mm outside of the surface and exactly at the
+        node position.
+        This parameter is not supported for the "ball" strategy so passing
+        `depth` when `inner_mesh` is not provided and `kind=="ball"` results in
+        a `ValueError`.
 
     Returns
     -------
@@ -529,12 +549,15 @@ def vol_to_surf(img, surf_mesh,
         - 'line' starts by drawing the normal to the mesh passing through this
             vertex. It then selects a segment of this normal, centered at the
             vertex, of length 2 * `radius`. Image intensities are measured at
-            points regularly spaced on this normal segment.
+            points regularly spaced on this normal segment, or at positions
+            determined by `depth`.
         - Finally, if `inner_mesh` is provided, positions for index i are
           spread along the line segment joining the nodes at index i in
-          `surf_mesh` and `inner_mesh`
+          `surf_mesh` and `inner_mesh`, either evenly or at positions specified
+          by `depth`.
 
-    You can control how many samples are drawn by setting `n_samples`.
+    You can control how many samples are drawn by setting `n_samples`, or their
+    position by setting `depth`.
 
     Once the sampling positions are chosen, those that fall outside of the 3d
     image (or outside of the mask if you provided one) are discarded. If all

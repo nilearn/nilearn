@@ -439,18 +439,34 @@ def test_sample_locations_depth(depth, n_points):
     assert np.allclose(locations, expected)
 
 
-def test_sample_locations_between_surfaces():
-    rng = np.random.RandomState(0)
-    outer = rng.randn(10, 3)
-    inner = rng.randn(10, 3)
+@pytest.mark.parametrize(
+    "depth,n_points",
+    [(None, 1), (None, 7), ([0.], 8), ([-1.], 8),
+     ([1.], 8), ([-1., 0., .5], 8)])
+def test_sample_locations_between_surfaces(depth, n_points):
+    inner = flat_mesh(5, 7)
+    outer = inner[0] + [0., 0., 1.], inner[1]
     locations = surface._sample_locations_between_surfaces(
-        (outer, None), (inner, None), np.eye(4), n_points=7)
-    # can be simplified when we drop support for np 1.15
-    # (broadcasting linspace)
-    expected = np.asarray(
-        [np.linspace(b, a, 7) for (a, b) in zip(inner.ravel(), outer.ravel())])
-    expected = np.rollaxis(expected.reshape((*outer.shape, 7)), 2, 1)
+        outer, inner, np.eye(4), n_points=n_points, depth=depth)
+    if depth is None:
+        # can be simplified when we drop support for np 1.15
+        # (broadcasting linspace)
+        expected = np.asarray(
+            [np.linspace(b, a, n_points)
+             for (a, b) in zip(inner[0].ravel(), outer[0].ravel())])
+        expected = np.rollaxis(
+            expected.reshape((*outer[0].shape, n_points)), 2, 1)
+    else:
+        offsets = ([[0., 0., - z] for z in depth])
+        expected = np.asarray([vertex + offsets for vertex in outer[0]])
     assert np.allclose(locations, expected)
+
+
+def test_depth_ball_sampling():
+    img, *_ = data_gen.generate_mni_space_img()
+    mesh, *_ = data_gen.generate_brain_mesh()
+    with pytest.raises(ValueError, match=".*does not support.*"):
+        surface.vol_to_surf(img, mesh, kind="ball", depth=[.5])
 
 
 @pytest.mark.parametrize("kind", ["line", "ball"])
