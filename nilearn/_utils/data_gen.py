@@ -109,7 +109,7 @@ def generate_full_brain_surfaces(grid_size="small"):
         data["sulc_{}".format(hemi)] = radii
         data["labels_{}".format(hemi)] = regions
         mesh, radii, regions = generate_brain_mesh(grid_size, hemi, .7)
-        data["wm_{}".format(hemi)] = mesh
+        data["white_{}".format(hemi)] = mesh
     return data
 
 

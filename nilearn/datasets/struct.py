@@ -3,6 +3,8 @@ Downloading NeuroImaging datasets: structural datasets
 """
 import warnings
 import os
+from pathlib import Path
+
 import numpy as np
 from scipy import ndimage
 from sklearn.utils import Bunch
@@ -508,39 +510,15 @@ def _fetch_surf_fsaverage5(data_dir=None, url=None, resume=True, verbose=1):
 
     Shipping is done with Nilearn based on issue #1705.
     """
+    data = {"description": _get_dataset_descr("fsaverage5")}
+    data_dir = Path(FSAVERAGE5_PATH)
+    for hemi in ["left", "right"]:
+        for part in ["white", "sulc", "pial", "infl"]:
+            data["{}_{}".format(part, hemi)] = str(
+                data_dir / "{}.{}.gii.gz".format(
+                    {"infl": "pial_inflated"}.get(part, part), hemi))
+    return Bunch(**data)
 
-    dataset_name = 'fsaverage5'
-
-    # Dataset description
-    fdescr = _get_dataset_descr(dataset_name)
-
-    # Download fsaverage surfaces and sulcal information
-    surface_file = '%s.%s.gii.gz'
-    surface_path = os.path.join(FSAVERAGE5_PATH, surface_file)
-
-    pials = []
-    infls = []
-    sulcs = []
-    for hemi in ['left', 'right']:
-        # pial
-        pial_path = surface_path % ('pial', hemi)
-        pials.append(pial_path)
-
-        # pial_inflated
-        pial_infl_path = surface_path % ('pial_inflated', hemi)
-        infls.append(pial_infl_path)
-
-        # sulcal
-        sulc = surface_path % ('sulc', hemi)
-        sulcs.append(sulc)
-
-    return Bunch(pial_left=pials[0],
-                 pial_right=pials[1],
-                 infl_left=infls[0],
-                 infl_right=infls[1],
-                 sulc_left=sulcs[0],
-                 sulc_right=sulcs[1],
-                 description=fdescr)
 
 def _fetch_surf_fsaverage5_sphere(data_dir=None):
     """Helper function to ship fsaverage5 spherical meshes.

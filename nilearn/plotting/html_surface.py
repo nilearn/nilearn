@@ -94,7 +94,7 @@ def full_brain_info(volume_img, mesh='fsaverage5', threshold=None,
     mesh = _check_mesh(mesh)
     surface_maps = {
         h: surface.vol_to_surf(volume_img, mesh['pial_{}'.format(h)],
-                               inner_mesh=mesh.get('wm_{}'.format(h), None),
+                               inner_mesh=mesh.get('white_{}'.format(h), None),
                                **vol_to_surf_kwargs)
         for h in ['left', 'right']
     }
