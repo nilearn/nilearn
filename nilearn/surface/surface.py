@@ -103,7 +103,7 @@ def _sample_locations_between_surfaces(
     if depth is None:
         steps = np.linspace(0, 1, n_points)[:, None, None]
     else:
-        steps = depth
+        steps = np.asarray(depth)
     sample_locations = outer_vertices + steps * (
         inner_vertices - outer_vertices)
     sample_locations = np.rollaxis(sample_locations, 1)
@@ -213,7 +213,7 @@ def _line_sample_locations(
         offsets = np.linspace(
             segment_half_width, -segment_half_width, n_points)
     else:
-        offsets = - segment_half_width * depth
+        offsets = - segment_half_width * np.asarray(depth)
     sample_locations = vertices[
         np.newaxis, :, :] + normals * offsets[:, np.newaxis, np.newaxis]
     sample_locations = np.rollaxis(sample_locations, 1)

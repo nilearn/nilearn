@@ -345,6 +345,7 @@ def test_load_surf_data_file_glob():
 
 
 def _flat_mesh(x_s, y_s, z=0):
+    # outer normals point upwards ie [0, 0, 1]
     x, y = np.mgrid[:x_s, :y_s]
     x, y = x.ravel(), y.ravel()
     z = np.ones(len(x)) * z
@@ -352,6 +353,14 @@ def _flat_mesh(x_s, y_s, z=0):
     triangulation = Delaunay(vertices[:, :2]).simplices
     mesh = [vertices, triangulation]
     return mesh
+
+
+@pytest.mark.parametrize("xy", [(10, 7), (5, 5), (3, 2)])
+def test_flat_mesh(xy):
+    points, triangles = _flat_mesh(xy[0], xy[1])
+    a, b, c = points[triangles[0]]
+    n = np.cross(b - a, c - a)
+    assert np.allclose(n, [0., 0., 1.])
 
 
 def _z_const_img(x_s, y_s, z_s):
@@ -416,6 +425,18 @@ def test_sample_locations():
         assert_array_almost_equal(true_locations, locations)
     pytest.raises(ValueError, surface._sample_locations,
                   mesh, affine, 1., kind='bad_kind')
+
+
+@pytest.mark.parametrize("depth", [(0.,), (-1.,), (1.,), (-1., 0., .5)])
+@pytest.mark.parametrize("n_points", [None, 10])
+def test_sample_locations_depth(depth, n_points):
+    mesh = flat_mesh(5, 7)
+    radius = 8.
+    locations = surface._sample_locations(
+        mesh, np.eye(4), radius, n_points=n_points, depth=depth)
+    offsets = np.asarray([[0., 0., - z * radius] for z in depth])
+    expected = np.asarray([vertex + offsets for vertex in mesh[0]])
+    assert np.allclose(locations, expected)
 
 
 def test_sample_locations_between_surfaces():
