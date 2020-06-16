@@ -115,21 +115,21 @@ def _get_spheres_rows(seeds, target_affine, target_shape, radius, allow_overlap)
 
     # Compute world coordinates of all voxels. The mask will be applied at 
     # the last step.
-    mask_coords = list(np.ndindex(*target_shape))
+    brain_coords = list(np.ndindex(*target_shape))
 
-    mask_coords = np.asarray(list(zip(*mask_coords)))
-    mask_coords = coord_transform(mask_coords[0], mask_coords[1],
-                                  mask_coords[2], target_affine)
-    mask_coords = np.asarray(mask_coords).T
+    brain_coords = np.asarray(list(zip(*brain_coords)))
+    brain_coords = coord_transform(brain_coords[0], brain_coords[1],
+                                  brain_coords[2], target_affine)
+    brain_coords = np.asarray(brain_coords).T
 
     clf = neighbors.NearestNeighbors(radius=radius)
-    adjacency = clf.fit(mask_coords).radius_neighbors_graph(seeds)
+    adjacency = clf.fit(brain_coords).radius_neighbors_graph(seeds)
     adjacency = adjacency.tolil()
 
     # Include the voxel containing the seed itself
-    mask_coords = mask_coords.astype(int).tolist()
+    brain_coords = brain_coords.astype(int).tolist()
     for i, seed in enumerate(seeds):
-        adjacency[i, mask_coords.index(seed)] = True
+        adjacency[i, brain_coords.index(seed)] = True
 
     if np.any(adjacency.sum(axis=0) >= 2):
         if not allow_overlap:
