@@ -258,3 +258,35 @@ def test_nifti_spheres_masker_inverse_overlap():
 
     with pytest.raises(ValueError, match='Overlap detected'):
         noverlapping_masker.inverse_transform(inv_data)
+
+
+def test_small_radius_inverse():
+    affine = np.eye(4)
+    shape = (3, 3, 3)
+
+    data = np.random.random(shape)
+    mask = np.zeros(shape)
+    mask[1, 1, 1] = 1
+    mask[2, 2, 2] = 1
+    affine = np.eye(4) * 1.2
+    seed = (1.4, 1.4, 1.4)
+
+    masker = NiftiSpheresMasker([seed], radius=0.6,
+                                mask_img=nibabel.Nifti1Image(mask, affine))
+    spheres_data = masker.fit_transform(nibabel.Nifti1Image(data, affine))
+    masker.inverse_transform(spheres_data)
+    # Test if masking is taken into account
+    mask[1, 1, 1] = 0
+    mask[1, 1, 0] = 1
+
+    masker = NiftiSpheresMasker([seed], radius=0.1,
+                                mask_img=nibabel.Nifti1Image(mask, affine))
+    masker.fit(nibabel.Nifti1Image(data, affine))
+
+    with pytest.raises(ValueError, match='Sphere around seed #0 is empty'):
+        masker.inverse_transform(spheres_data)    
+
+    masker = NiftiSpheresMasker([seed], radius=1.6,
+                                mask_img=nibabel.Nifti1Image(mask, affine))
+    masker.fit(nibabel.Nifti1Image(data, affine))
+    masker.inverse_transform(spheres_data)

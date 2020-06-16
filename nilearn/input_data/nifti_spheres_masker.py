@@ -86,7 +86,7 @@ def _apply_mask_and_get_affinity(seeds, niimg, radius, allow_overlap,
     return X, A
 
 
-def _get_spheres_rows(seeds, target_affine, target_shape, radius, allow_overlap):
+def _get_spheres_rows(seeds, radius, allow_overlap, mask_img):
     '''Utility function to get only the rows which are occupied by sphere at
     given seed locations and the provided radius. Rows are in target_affine and 
     target_shape space.
@@ -113,13 +113,21 @@ def _get_spheres_rows(seeds, target_affine, target_shape, radius, allow_overlap)
     '''
     seeds = list(seeds)
 
-    # Compute world coordinates of all voxels. The mask will be applied at 
-    # the last step.
-    brain_coords = list(np.ndindex(*target_shape))
+    # Compute world coordinates of the mask and of all coordinates
+    mask = _safe_get_data(mask_img)
+    
+    mask_coords = list(zip(*np.where(mask == 0)))
+    mask_coords = np.asarray(list(zip(*mask_coords)))
+    if not np.all(mask == 1):
+        mask_coords = coord_transform(mask_coords[0], mask_coords[1],
+                                    mask_coords[2], mask_img.affine)
+    mask_coords = np.asarray(mask_coords).astype(int).T
 
+    # Calculate brain coordinates
+    brain_coords = list(np.ndindex(*mask_img.shape))
     brain_coords = np.asarray(list(zip(*brain_coords)))
     brain_coords = coord_transform(brain_coords[0], brain_coords[1],
-                                  brain_coords[2], target_affine)
+                                  brain_coords[2], mask_img.affine)
     brain_coords = np.asarray(brain_coords).T
 
     clf = neighbors.NearestNeighbors(radius=radius)
@@ -128,9 +136,18 @@ def _get_spheres_rows(seeds, target_affine, target_shape, radius, allow_overlap)
 
     # Include the voxel containing the seed itself
     brain_coords = brain_coords.astype(int).tolist()
-    for i, seed in enumerate(seeds):
-        adjacency[i, brain_coords.index(seed)] = True
+    # Get the mask indices (in terms of brain coords)
+    mask_idx = [brain_coords.index(i) for i in mask_coords.tolist()]
 
+    for i, seed in enumerate(seeds):
+        try:
+            adjacency[i, brain_coords.index(seed)] = True
+        except ValueError:
+            # seed is not in the mask
+            pass
+        # Removing mask voxels
+        adjacency[i, mask_idx] = False
+    
     if np.any(adjacency.sum(axis=0) >= 2):
         if not allow_overlap:
             raise ValueError('Overlap detected between spheres')
@@ -188,10 +205,9 @@ def _iter_regions_from_spheres(seeds, radius, allow_overlap, mask_img):
     mask_img: Niimg-like object,
         Mask as a reference space to project the spheres back into brain space.
     """
-    adjacency = _get_spheres_rows(seeds, mask_img.affine, mask_img.shape, radius,
-                          allow_overlap)
+    adjacency = _get_spheres_rows(seeds, radius, allow_overlap, mask_img)
 
-    for row in adjacency.rows:
+    for i, row in enumerate(adjacency.rows):
         if len(row) == 0:
             raise ValueError('Sphere around seed #%i is empty' % i)
         yield row
