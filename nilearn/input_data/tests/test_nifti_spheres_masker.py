@@ -271,7 +271,7 @@ def test_small_radius_inverse():
     affine = np.eye(4) * 1.2
     seed = (1.4, 1.4, 1.4)
 
-    masker = NiftiSpheresMasker([seed], radius=0.6,
+    masker = NiftiSpheresMasker([seed], radius=0.1,
                                 mask_img=nibabel.Nifti1Image(mask, affine))
     spheres_data = masker.fit_transform(nibabel.Nifti1Image(data, affine))
     masker.inverse_transform(spheres_data)

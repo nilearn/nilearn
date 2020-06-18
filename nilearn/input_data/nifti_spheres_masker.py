@@ -115,17 +115,32 @@ def _get_spheres_rows(seeds, radius, allow_overlap, mask_img):
 
     # Compute world coordinates of the mask and of all coordinates
     mask = _safe_get_data(mask_img)
-    
-    mask_coords = list(zip(*np.where(mask == 0)))
-    mask_coords = np.asarray(list(zip(*mask_coords)))
-    if not np.all(mask == 1):
-        mask_coords = coord_transform(mask_coords[0], mask_coords[1],
-                                    mask_coords[2], mask_img.affine)
-    mask_coords = np.asarray(mask_coords).astype(int).T
 
     # Calculate brain coordinates
     brain_coords = list(np.ndindex(*mask_img.shape))
+
+    # Get the closest voxels for each seed
+    nearests = []
+    for sx, sy, sz in seeds:
+        nearest = np.round(coord_transform(sx, sy, sz, 
+                           np.linalg.inv(mask_img.affine)))
+        nearest = nearest.astype(int)
+        nearest = (nearest[0], nearest[1], nearest[2])
+        try:
+            nearests.append(brain_coords.index(nearest))
+        except ValueError:
+            nearests.append(None)
+
     brain_coords = np.asarray(list(zip(*brain_coords)))
+    # Calculate mask
+    mask_coords = list(zip(*np.where(mask == 1)))
+    mask_coords = np.asarray(mask_coords).astype(int).T
+    mask_idx = np.vstack([np.in1d(brain_coords[0, :], mask_coords[0, :]),
+                          np.in1d(brain_coords[1, :], mask_coords[1, :]),
+                          np.in1d(brain_coords[2, :], mask_coords[2, :])]
+                        ).all(0)
+
+    # Further process brain coordinates.
     brain_coords = coord_transform(brain_coords[0], brain_coords[1],
                                   brain_coords[2], mask_img.affine)
     brain_coords = np.asarray(brain_coords).T
@@ -136,17 +151,18 @@ def _get_spheres_rows(seeds, radius, allow_overlap, mask_img):
 
     # Include the voxel containing the seed itself
     brain_coords = brain_coords.astype(int).tolist()
-    # Get the mask indices (in terms of brain coords)
-    mask_idx = [brain_coords.index(i) for i in mask_coords.tolist()]
 
-    for i, seed in enumerate(seeds):
+    for i, (seed, near) in enumerate(zip(seeds, nearests)):
+        if near is not None:
+            adjacency[i, near] = True
+
         try:
-            adjacency[i, brain_coords.index(seed)] = True
+            adjacency[i, brain_coords.index(np.array(seed))] = True
         except ValueError:
             # seed is not in the mask
             pass
         # Removing mask voxels
-        adjacency[i, mask_idx] = False
+        adjacency[i, mask_idx==False] = False
     
     if np.any(adjacency.sum(axis=0) >= 2):
         if not allow_overlap:
