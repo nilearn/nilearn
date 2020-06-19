@@ -96,15 +96,13 @@ def _get_spheres_rows(seeds, radius, allow_overlap, mask_img):
     seeds_: List of triplets of coordinates in native space
         Seed definitions. List of coordinates of the seeds in the same space
         as target_affine.
-    target_affine: np.ndarray of shape (4,4)
-        Affine for the spheres.
-    target_shape: np.array or list
-        Target shape into which the spheres will be projected. 
     radius: float
         Indicates, in millimeters, the radius for the sphere around the seed.
     allow_overlap: boolean
         If False, an error is raised if the maps overlaps (ie at least two
         maps have a non-zero value for the same voxel).
+    mask_img: Niimg-like object,
+        Mask as a reference space to project the spheres back into brain space.
 
     Returns
     -------
@@ -113,17 +111,17 @@ def _get_spheres_rows(seeds, radius, allow_overlap, mask_img):
     '''
     seeds = list(seeds)
 
-    # Compute world coordinates of the mask and of all coordinates
-    mask = _safe_get_data(mask_img)
+    # Load masking data
+    mask, affine = masking._load_mask_img(mask_img)
 
-    # Calculate brain coordinates
-    brain_coords = list(np.ndindex(*mask_img.shape))
+    # Get coordinate for alle voxels inside of mask
+    brain_coords = list(np.ndindex(*mask.shape))
 
     # Get the closest voxels for each seed
     nearests = []
     for sx, sy, sz in seeds:
         nearest = np.round(coord_transform(sx, sy, sz, 
-                           np.linalg.inv(mask_img.affine)))
+                           np.linalg.inv(affine)))
         nearest = nearest.astype(int)
         nearest = (nearest[0], nearest[1], nearest[2])
         try:
@@ -132,7 +130,7 @@ def _get_spheres_rows(seeds, radius, allow_overlap, mask_img):
             nearests.append(None)
 
     brain_coords = np.asarray(list(zip(*brain_coords)))
-    # Calculate mask
+    # Calculate mask and the corresponding index in flattended array.
     mask_coords = list(zip(*np.where(mask == 1)))
     mask_coords = np.asarray(mask_coords).astype(int).T
     mask_idx = np.vstack([np.in1d(brain_coords[0, :], mask_coords[0, :]),
@@ -140,11 +138,11 @@ def _get_spheres_rows(seeds, radius, allow_overlap, mask_img):
                           np.in1d(brain_coords[2, :], mask_coords[2, :])]
                         ).all(0)
 
-    # Further process brain coordinates.
+    # Bring brain_coords into the masks space.
     brain_coords = coord_transform(brain_coords[0], brain_coords[1],
-                                  brain_coords[2], mask_img.affine)
+                                  brain_coords[2], affine)
     brain_coords = np.asarray(brain_coords).T
-
+    # Calculate the adjacent coordinates in radius.
     clf = neighbors.NearestNeighbors(radius=radius)
     adjacency = clf.fit(brain_coords).radius_neighbors_graph(seeds)
     adjacency = adjacency.tolil()
@@ -152,17 +150,19 @@ def _get_spheres_rows(seeds, radius, allow_overlap, mask_img):
     # Include the voxel containing the seed itself
     brain_coords = brain_coords.astype(int).tolist()
 
-    for i, (seed, near) in enumerate(zip(seeds, nearests)):
-        if near is not None:
-            adjacency[i, near] = True
-
+    for i, (seed, nearest) in enumerate(zip(seeds, nearests)):
+        # Include closest voxel
+        if nearest is not None:
+            adjacency[i, nearest] = True
         try:
+            # Include seed itself
             adjacency[i, brain_coords.index(np.array(seed))] = True
         except ValueError:
             # seed is not in the mask
             pass
-        # Removing mask voxels
-        adjacency[i, mask_idx==False] = False
+
+    # Removing voxels not inside of the mask.
+    adjacency[:, mask_idx==False] = False
     
     if np.any(adjacency.sum(axis=0) >= 2):
         if not allow_overlap:
@@ -264,7 +264,8 @@ def _spheres_inversion(seeds_, radius, mask_img, allow_overlap):
     radius: float
         Indicates, in millimeters, the radius for the sphere around the seed.
     mask_img: Niimg-like object
-        brain mask, is used as reference to back-project spheres to brain-space
+        NiftiSpheresMasker mask_img, is necessary as reference to back-project 
+        spheres to brain-space.
     allow_overlap: boolean
         If False, an error is raised if the maps overlaps (ie at least two
         maps have a non-zero value for the same voxel).
@@ -282,11 +283,11 @@ def _spheres_inversion(seeds_, radius, mask_img, allow_overlap):
                             ' provide a reference for the inverse_transform')
 
     n_seeds = len(seeds_)
-    # np.empty creates unexpected behavior!
+
     spheres = np.zeros((np.prod(mask.shape), n_seeds))
 
     for i, sphere in enumerate(_iter_regions_from_spheres(seeds_, radius, 
-                               allow_overlap, mask_img)):
+                               allow_overlap, mask)):
         spheres[sphere, i] = 1
 
     # Compute overlap scaling for mean signal:
