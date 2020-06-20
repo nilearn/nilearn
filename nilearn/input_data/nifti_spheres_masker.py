@@ -24,6 +24,37 @@ from .base_masker import filter_and_extract, BaseMasker
 def _apply_mask_and_get_affinity(seeds, niimg, radius, allow_overlap,
                                  mask_img=None):
 
+    '''Utility function to get only the rows which are occupied by sphere at
+    given seed locations and the provided radius. Rows are in target_affine and 
+    target_shape space.
+    Parameters
+    ----------
+    seeds: List of triplets of coordinates in native space
+        Seed definitions. List of coordinates of the seeds in the same space
+        as target_affine.
+    niimg: 3D/4D Niimg-like object
+        See http://nilearn.github.io/manipulating_images/input_output.html
+        Images to process. It must boil down to a 4D image with scans
+        number as last dimension.
+    radius: float
+        Indicates, in millimeters, the radius for the sphere around the seed.
+    allow_overlap: boolean
+        If False, a ValueError is raised if VOIs overlap
+    mask_img: Niimg-like object,
+        Mask to apply to regions before extracting signals. If niimg is None,
+        mask_img is used as a reference space in which the spheres 'indices are 
+        placed.
+
+    Returns
+    -------
+    X: 2D numpy.ndarray
+        Signal for each brain voxel in the (masked) niimgs.
+        shape: (number of scans, number of voxels)
+    A: scipy.sparse.lil_matrix
+        Contains the boolean indices for each sphere.
+        shape: (number of seeds, number of voxels)
+    '''
+
     seeds = list(seeds)
 
     # Compute world coordinates of all in-mask voxels.
@@ -85,7 +116,7 @@ def _apply_mask_and_get_affinity(seeds, niimg, radius, allow_overlap,
         except ValueError:
             # seed is not in the mask
             pass
-
+    
     if not allow_overlap:
         if np.any(A.sum(axis=0) >= 2):
             raise ValueError('Overlap detected between spheres')
