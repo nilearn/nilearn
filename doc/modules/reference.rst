@@ -388,10 +388,10 @@ the :ref:`user guide <user_guide>` for more information and usage examples.
 .. _stats_ref:
 
 
-:mod:`nilearn.stats`: Generalized Linear Models
+:mod:`nilearn.glm`: Generalized Linear Models
 ================================================
 
-.. automodule:: nilearn.stats
+.. automodule:: nilearn.glm
    :no-members:
    :no-inherited-members:
 
@@ -399,7 +399,7 @@ the :ref:`user guide <user_guide>` for more information and usage examples.
 
 **Classes**:
 
-.. currentmodule:: nilearn.stats
+.. currentmodule:: nilearn.glm
 
 .. autosummary::
    :toctree: generated/
@@ -416,7 +416,7 @@ the :ref:`user guide <user_guide>` for more information and usage examples.
 
 **Functions**:
 
-.. currentmodule:: nilearn.stats
+.. currentmodule:: nilearn.glm
 
 .. autosummary::
    :toctree: generated/
@@ -427,19 +427,19 @@ the :ref:`user guide <user_guide>` for more information and usage examples.
     expression_to_contrast_vector
     fdr_threshold
     cluster_level_inference
-    map_threshold
+    threshold_stats_img
 
 
-:mod:`nilearn.stats.first_level_model`
+:mod:`nilearn.glm.first_level`
 --------------------------------------
 
-.. automodule:: nilearn.stats.first_level_model
+.. automodule:: nilearn.glm.first_level
    :no-members:
    :no-inherited-members:
 
 **Classes**:
 
-.. currentmodule:: nilearn.stats.first_level_model
+.. currentmodule:: nilearn.glm.first_level
 
 .. autosummary::
    :toctree: generated/
@@ -449,7 +449,7 @@ the :ref:`user guide <user_guide>` for more information and usage examples.
 
 **Functions**:
 
-.. currentmodule:: nilearn.stats.first_level_model
+.. currentmodule:: nilearn.glm.first_level
 
 .. autosummary::
    :toctree: generated/
@@ -457,7 +457,7 @@ the :ref:`user guide <user_guide>` for more information and usage examples.
 
     check_design_matrix
     compute_regressor
-    first_level_models_from_bids
+    first_level_from_bids
     glover_dispersion_derivative
     glover_hrf
     glover_time_derivative
@@ -468,16 +468,16 @@ the :ref:`user guide <user_guide>` for more information and usage examples.
     spm_hrf
     spm_time_derivative
 
-:mod:`nilearn.stats.second_level_model`
+:mod:`nilearn.glm.second_level`
 ---------------------------------------
 
-.. automodule:: nilearn.stats.second_level_model
+.. automodule:: nilearn.glm.second_level
    :no-members:
    :no-inherited-members:
 
 **Classes**:
 
-.. currentmodule:: nilearn.stats.second_level_model
+.. currentmodule:: nilearn.glm.second_level
 
 .. autosummary::
    :toctree: generated/
@@ -487,7 +487,7 @@ the :ref:`user guide <user_guide>` for more information and usage examples.
 
 **Functions**:
 
-.. currentmodule:: nilearn.stats.second_level_model
+.. currentmodule:: nilearn.glm.second_level
 
 .. autosummary::
    :toctree: generated/

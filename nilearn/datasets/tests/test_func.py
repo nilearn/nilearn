@@ -949,7 +949,7 @@ def test_fetch_spm_multimodal(request_mocker, tmp_path):
 
 def test_fiac(request_mocker, tmp_path):
     # Create dummy 'files'
-    fiac_dir = str(tmp_path / 'fiac_nilearn_stats' / 'nipy-data-0.2' /
+    fiac_dir = str(tmp_path / 'fiac_nilearn.glm' / 'nipy-data-0.2' /
                    'data' / 'fiac')
     fiac0_dir = os.path.join(fiac_dir, 'fiac0')
     os.makedirs(fiac0_dir)

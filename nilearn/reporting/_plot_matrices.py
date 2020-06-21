@@ -7,8 +7,8 @@ Author: Martin Perez-Guevara, Elvis Dohmatob, 2017
 import numpy as np
 import matplotlib.pyplot as plt
 
-from nilearn.stats.first_level_model import check_design_matrix
-from nilearn.stats.contrasts import expression_to_contrast_vector
+from nilearn.glm.first_level import check_design_matrix
+from nilearn.glm.contrasts import expression_to_contrast_vector
 
 
 def plot_design_matrix(design_matrix, rescale=True, ax=None, output_file=None):
