@@ -10,7 +10,9 @@ from mpl_toolkits.mplot3d import Axes3D
 
 from matplotlib.colorbar import make_axes
 from matplotlib.cm import ScalarMappable, get_cmap
-from matplotlib.colors import Normalize, LinearSegmentedColormap
+from matplotlib.colors import Normalize, LinearSegmentedColormap, to_rgba
+from matplotlib.patches import Patch
+from mpl_toolkits.mplot3d.art3d import Poly3DCollection
 
 from ..surface import load_surf_data, load_surf_mesh
 from .img_plotting import _get_colorbar_and_data_ranges, _crop_colorbar
@@ -226,9 +228,9 @@ def plot_surf(surf_mesh, surf_map=None, bg_map=None,
 
     if surf_map is not None:
         surf_map_data = load_surf_data(surf_map)
-        if len(surf_map_data.shape) is not 1:
+        if surf_map_data.ndim != 1:
             raise ValueError('surf_map can only have one dimension but has'
-                             '%i dimensions' % len(surf_map_data.shape))
+                             '%i dimensions' % surf_map_data.ndim)
         if surf_map_data.shape[0] != coords.shape[0]:
             raise ValueError('The surf_map does not have the same number '
                              'of vertices as the mesh.')
@@ -297,6 +299,159 @@ def plot_surf(surf_mesh, surf_map=None, bg_map=None,
     if title is not None:
         axes.set_title(title, position=(.5, .95))
 
+    # save figure if output file is given
+    if output_file is not None:
+        figure.savefig(output_file)
+        plt.close(figure)
+    else:
+        return figure
+
+
+def _get_faces_on_edge(faces, parc_idx):
+    '''
+    Internal function for identifying which faces lie on the outer
+    edge of the parcellation defined by the indices in parc_idx.
+
+    Parameters
+    ----------
+    faces: numpy.ndarray of shape (n, 3), indices of the mesh faces
+
+    parc_idx: numpy.ndarray, indices of the vertices
+        of the region to be plotted
+    '''
+    # count how many vertices belong to the given parcellation in each face
+    verts_per_face = np.isin(faces, parc_idx).sum(axis=1)
+
+    # test if parcellation forms regions
+    if np.all(verts_per_face < 2):
+        raise ValueError('Vertices in parcellation do not form region.')
+
+    vertices_on_edge = np.intersect1d(np.unique(faces[verts_per_face == 2]),
+                                      parc_idx)
+    faces_outside_edge = np.isin(faces, vertices_on_edge).sum(axis=1)
+
+    return np.logical_and(faces_outside_edge > 0, verts_per_face < 3)
+
+
+def plot_surf_contours(surf_mesh, roi_map, axes=None, figure=None, levels=None,
+                       labels=None, colors=None, legend=False, cmap='tab20',
+                       title=None, output_file=None, **kwargs):
+    """
+    Plotting contours of ROIs on a surface, optionally over a statistical map.
+
+    Parameters
+    ----------
+    surf_mesh: str or list of two numpy.ndarray
+        Surface mesh geometry, can be a file (valid formats are
+        .gii or Freesurfer specific files such as .orig, .pial,
+        .sphere, .white, .inflated) or
+        a list of two Numpy arrays, the first containing the x-y-z coordinates
+        of the mesh vertices, the second containing the indices
+        (into coords) of the mesh faces.
+
+    roi_map: str or numpy.ndarray or list of numpy.ndarray
+        ROI map to be displayed on the surface mesh, can be a file
+        (valid formats are .gii, .mgz, .nii, .nii.gz, or Freesurfer specific
+        files such as .annot or .label), or
+        a Numpy array with a value for each vertex of the surf_mesh.
+        The value at each vertex one inside the ROI and zero inside ROI, or an
+        integer giving the label number for atlases.
+
+    axes: instance of matplotlib axes, None, optional
+        The axes instance to plot to. The projection must be '3d' (e.g.,
+        `figure, axes = plt.subplots(subplot_kw={'projection': '3d'})`,
+        where axes should be passed.).
+        If None, uses axes from figure if available, else creates new axes.
+
+    figure: instance of matplotlib figure, None, optional
+        The figure instance to plot to.
+        If None, uses figure of axes if available, else creates a new figure.
+
+    levels: list of integers, or None, optional
+        A list of indices of the regions that are to be outlined.
+        Every index needs to correspond to one index in roi_map.
+        If None, all regions in roi_map are used.
+
+    labels: list of strings or None, or None, optional
+        A list of labels for the individual regions of interest.
+        Provide None as list entry to skip showing the label of that region.
+        If None no labels are used.
+
+    colors: list of matplotlib color names or RGBA values, or None.
+
+    legend: boolean,  optional
+        Whether to plot a legend of region's labels.
+
+    cmap: matplotlib colormap, str or colormap object, default is None
+        To use for plotting of the contours. Either a string
+        which is a name of a matplotlib colormap, or a matplotlib
+        colormap object.
+
+    title : str, optional
+        Figure title.
+
+    output_file: str, or None, optional
+        The name of an image file to export plot to. Valid extensions
+        are .png, .pdf, .svg. If output_file is not None, the plot
+        is saved to a file, and the display is closed.
+
+    See Also
+    --------
+    nilearn.datasets.fetch_surf_fsaverage : For surface data object to be
+        used as background map for this plotting function.
+
+    nilearn.plotting.plot_surf_stat_map : for plotting statistical maps on
+        brain surfaces.
+    """
+    if figure is None and axes is None:
+        figure = plot_surf(surf_mesh, **kwargs)
+        axes = figure.axes[0]
+    if figure is None:
+        figure = axes.get_figure()
+    if axes is None:
+        axes = figure.axes[0]
+    if axes.name != '3d':
+        raise ValueError('Axes must be 3D.')
+    # test if axes contains Poly3DCollection, if not initialize surface
+    if not axes.collections or not isinstance(axes.collections[0],
+                                              Poly3DCollection):
+        _ = plot_surf(surf_mesh, axes=axes, **kwargs)
+
+    coords, faces = load_surf_mesh(surf_mesh)
+    roi = load_surf_data(roi_map)
+    if levels is None:
+        levels = np.unique(roi_map)
+    if colors is None:
+        n_levels = len(levels)
+        vmax = n_levels
+        cmap = get_cmap(cmap)
+        norm = Normalize(vmin=0, vmax=vmax)
+        colors = [cmap(norm(color_i)) for color_i in range(vmax)]
+    else:
+        try:
+            colors = [to_rgba(color, alpha=1.) for color in colors]
+        except ValueError:
+            raise ValueError('All elements of colors need to be either a'
+                             ' matplotlib color string or RGBA values.')
+
+    if labels is None:
+        labels = [None] * len(levels)
+    if not (len(labels) == len(levels) and len(colors) == len(labels)):
+        raise ValueError('Levels, labels, and colors '
+                         'argument need to be either the same length or None.')
+
+    patch_list = []
+    for level, color, label in zip(levels, colors, labels):
+        roi_indices = np.where(roi == level)[0]
+        faces_outside = _get_faces_on_edge(faces, roi_indices)
+        axes.collections[0]._facecolors3d[faces_outside] = color
+        if label and legend:
+            patch_list.append(Patch(color=color, label=label))
+    # plot legend only if indicated and labels provided
+    if legend and np.any([lbl is not None for lbl in labels]):
+        figure.legend(handles=patch_list)
+    if title:
+        figure.suptitle(title)
     # save figure if output file is given
     if output_file is not None:
         figure.savefig(output_file)
@@ -520,9 +675,9 @@ def plot_surf_roi(surf_mesh, roi_map, bg_map=None,
 
     mesh = load_surf_mesh(surf_mesh)
 
-    if len(roi.shape) is not 1:
+    if roi.ndim != 1:
         raise ValueError('roi_map can only have one dimension but has '
-                         '%i dimensions' % len(roi.shape))
+                         '%i dimensions' % roi.ndim)
     if roi.shape[0] != mesh[0].shape[0]:
         raise ValueError('roi_map does not have the same number of vertices '
                          'as the mesh. If you have a list of indices for the '

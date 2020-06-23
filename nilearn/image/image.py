@@ -7,20 +7,20 @@ See also nilearn.signal.
 # License: simplified BSD
 
 import collections.abc
+import copy
 import warnings
 
+import nibabel
 import numpy as np
+from joblib import Parallel, delayed
 from scipy import ndimage
 from scipy.stats import scoreatpercentile
-import copy
-import nibabel
-from joblib import Parallel, delayed
 
 from .. import signal
-from .._utils import (check_niimg_4d, check_niimg_3d, check_niimg, as_ndarray,
-                      _repr_niimgs)
-from .._utils.niimg_conversions import _index_img, _check_same_fov
-from .._utils.niimg import _safe_get_data, _get_data
+from .._utils import (_repr_niimgs, as_ndarray, check_niimg, check_niimg_3d,
+                      check_niimg_4d)
+from .._utils.niimg import _get_data, _safe_get_data
+from .._utils.niimg_conversions import _check_same_fov, _index_img
 from .._utils.param_validation import check_threshold
 
 
@@ -734,7 +734,7 @@ def new_img_like(ref_niimg, data, affine=None, copy_header=False):
             ref_niimg = nibabel.load(ref_niimg)
         else:
             raise TypeError(('The reference image should be a niimg, %r '
-                            'was passed') % orig_ref_niimg)
+                             'was passed') % orig_ref_niimg)
 
     if affine is None:
         affine = ref_niimg.affine
@@ -806,6 +806,11 @@ def threshold_img(img, threshold, mask_img=None, copy=True):
     -------
     :class:`~nibabel.nifti1.Nifti1Image`
         Thresholded image of the given input image.
+
+    See also
+    --------
+    nilearn.glm.threshold_stats_img
+
     """
     from . import resampling
     from .. import masking

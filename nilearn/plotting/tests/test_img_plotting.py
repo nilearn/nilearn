@@ -22,7 +22,8 @@ from nilearn.plotting.img_plotting import (MNI152TEMPLATE, plot_anat, plot_img,
                                            plot_roi, plot_stat_map, plot_epi,
                                            plot_glass_brain, plot_connectome,
                                            plot_connectome_strength,
-                                           plot_prob_atlas, plot_carpet,
+                                           plot_markers, plot_prob_atlas, 
+                                           plot_carpet,
                                            _get_colorbar_and_data_ranges)
 
 mni_affine = np.array([[-2.,    0.,    0.,   90.],
@@ -609,123 +610,6 @@ def test_plot_connectome_exceptions():
                         **kwargs)
 
 
-def test_connectome_strength():
-    # symmetric up to 1e-3 relative tolerance
-    adjacency_matrix = np.array([[1., -2., 0.3, 0.],
-                                 [-2.002, 1, 0., 0.],
-                                 [0.3, 0., 1., 0.],
-                                 [0., 0., 0., 1.]])
-    node_coords = np.arange(3 * 4).reshape(4, 3)
-
-    args = adjacency_matrix, node_coords
-    kwargs = dict()
-    plot_connectome_strength(*args, **kwargs)
-    plt.close()
-
-    # used to speed-up tests for the net plots
-    kwargs['display_mode'] = 'x'
-
-    # node_coords not an array but a list of tuples
-    plot_connectome_strength(adjacency_matrix,
-                             [tuple(each) for each in node_coords],
-                             **kwargs)
-
-    # saving to file
-    filename = tempfile.mktemp(suffix='.png')
-    try:
-        display = plot_connectome_strength(
-            *args, output_file=filename, **kwargs
-        )
-        assert display is None
-        assert (os.path.isfile(filename) and  # noqa: W504
-                    os.path.getsize(filename) > 0)
-    finally:
-        os.remove(filename)
-    plt.close()
-
-    # passing node args
-    plot_connectome_strength(*args, node_size=10, cmap='RdBu')
-    plt.close()
-    plot_connectome_strength(*args, node_size=10, cmap=plt.cm.RdBu)
-    plt.close()
-
-    # masked array support
-    masked_adjacency_matrix = np.ma.masked_array(
-        adjacency_matrix, np.abs(adjacency_matrix) < 0.5
-    )
-    plot_connectome_strength(
-        masked_adjacency_matrix, node_coords, **kwargs
-    )
-    plt.close()
-
-    # sparse matrix support
-    sparse_adjacency_matrix = sparse.coo_matrix(adjacency_matrix)
-    plot_connectome_strength(
-        sparse_adjacency_matrix, node_coords, **kwargs
-    )
-    plt.close()
-
-    # NaN matrix support
-    nan_adjacency_matrix = np.array([[1., np.nan, 0.],
-                                     [np.nan, 1., 2.],
-                                     [np.nan, 2., 1.]])
-    nan_node_coords = np.arange(3 * 3).reshape(3, 3)
-    plot_connectome_strength(nan_adjacency_matrix, nan_node_coords, **kwargs)
-    plt.close()
-
-    # smoke-test with hemispheric sagital cuts
-    plot_connectome_strength(*args, display_mode='lzry')
-    plt.close()
-
-
-def test_plot_connectome_strength_exceptions():
-    node_coords = np.arange(2 * 3).reshape((2, 3))
-
-    # Used to speed-up tests because the glass brain is always plotted
-    # before any error occurs
-    kwargs = {'display_mode': 'x'}
-
-    # adjacency_matrix is not symmetric
-    non_symmetric_adjacency_matrix = np.array([[1., 2],
-                                               [0.4, 1.]])
-    with pytest.raises(ValueError,
-                       match='should be symmetric'
-                       ):
-        plot_connectome_strength(non_symmetric_adjacency_matrix,
-                                 node_coords,
-                                 **kwargs)
-
-    adjacency_matrix = np.array([[1., 2.],
-                                 [2., 1.]])
-    # adjacency_matrix mask is not symmetric
-    masked_adjacency_matrix = np.ma.masked_array(
-        adjacency_matrix, [[False, True], [False, False]])
-
-    with pytest.raises(ValueError, match='non symmetric mask'):
-        plot_connectome_strength(masked_adjacency_matrix,
-                                 node_coords,
-                                 **kwargs)
-
-    # wrong shapes for node_coords or adjacency_matrix
-    with pytest.raises(ValueError,
-                       match=r'supposed to have shape \(n, n\).+\(1L?, 2L?\)'
-                       ):
-        plot_connectome_strength(adjacency_matrix[:1, :],
-                                 node_coords,
-                                 **kwargs)
-
-    with pytest.raises(ValueError, match=r'shape \(2L?, 3L?\).+\(2L?,\)'):
-        plot_connectome_strength(adjacency_matrix,
-                                 node_coords[:, 2], **kwargs)
-
-    wrong_adjacency_matrix = np.zeros((3, 3))
-    with pytest.raises(ValueError,
-                       match=r'Shape mismatch.+\(3L?, 3L?\).+\(2L?, 3L?\)'
-                       ):
-        plot_connectome_strength(wrong_adjacency_matrix, node_coords,
-                                 **kwargs)
-
-
 def test_singleton_ax_dim():
     for axis, direction in enumerate("xyz"):
         shape = [5, 6, 7]
@@ -1207,3 +1091,234 @@ def test_plot_glass_brain_with_completely_masked_img():
     plot_glass_brain(img, display_mode='lzry')
     plot_glass_brain(img, display_mode='lr')
     plt.close()
+
+
+def test_connectome_strength():
+    # symmetric up to 1e-3 relative tolerance
+    adjacency_matrix = np.array([[1., -2., 0.3, 0.],
+                                 [-2.002, 1, 0., 0.],
+                                 [0.3, 0., 1., 0.],
+                                 [0., 0., 0., 1.]])
+    node_coords = np.arange(3 * 4).reshape(4, 3)
+
+    args = adjacency_matrix, node_coords
+    kwargs = dict()
+    plot_connectome_strength(*args, **kwargs)
+    plt.close()
+
+    # used to speed-up tests for the net plots
+    kwargs['display_mode'] = 'x'
+
+    # node_coords not an array but a list of tuples
+    plot_connectome_strength(adjacency_matrix,
+                             [tuple(each) for each in node_coords],
+                             **kwargs)
+
+    # saving to file
+    filename = tempfile.mktemp(suffix='.png')
+    try:
+        display = plot_connectome_strength(
+            *args, output_file=filename, **kwargs
+        )
+        assert display is None
+        assert (os.path.isfile(filename) and  # noqa: W504
+                    os.path.getsize(filename) > 0)
+    finally:
+        os.remove(filename)
+    plt.close()
+
+    # passing node args
+    plot_connectome_strength(*args, node_size=10, cmap='RdBu')
+    plt.close()
+    plot_connectome_strength(*args, node_size=10, cmap=plt.cm.RdBu)
+    plt.close()
+
+    # masked array support
+    masked_adjacency_matrix = np.ma.masked_array(
+        adjacency_matrix, np.abs(adjacency_matrix) < 0.5
+    )
+    plot_connectome_strength(
+        masked_adjacency_matrix, node_coords, **kwargs
+    )
+    plt.close()
+
+    # sparse matrix support
+    sparse_adjacency_matrix = sparse.coo_matrix(adjacency_matrix)
+    plot_connectome_strength(
+        sparse_adjacency_matrix, node_coords, **kwargs
+    )
+    plt.close()
+
+    # NaN matrix support
+    nan_adjacency_matrix = np.array([[1., np.nan, 0.],
+                                     [np.nan, 1., 2.],
+                                     [np.nan, 2., 1.]])
+    nan_node_coords = np.arange(3 * 3).reshape(3, 3)
+    plot_connectome_strength(nan_adjacency_matrix, nan_node_coords, **kwargs)
+    plt.close()
+
+    # smoke-test with hemispheric sagital cuts
+    plot_connectome_strength(*args, display_mode='lzry')
+    plt.close()
+
+
+def test_plot_connectome_strength_exceptions():
+    node_coords = np.arange(2 * 3).reshape((2, 3))
+
+    # Used to speed-up tests because the glass brain is always plotted
+    # before any error occurs
+    kwargs = {'display_mode': 'x'}
+
+    # adjacency_matrix is not symmetric
+    non_symmetric_adjacency_matrix = np.array([[1., 2],
+                                               [0.4, 1.]])
+    with pytest.raises(ValueError,
+                       match='should be symmetric'
+                       ):
+        plot_connectome_strength(non_symmetric_adjacency_matrix,
+                                 node_coords,
+                                 **kwargs)
+
+    adjacency_matrix = np.array([[1., 2.],
+                                 [2., 1.]])
+    # adjacency_matrix mask is not symmetric
+    masked_adjacency_matrix = np.ma.masked_array(
+        adjacency_matrix, [[False, True], [False, False]])
+
+    with pytest.raises(ValueError, match='non symmetric mask'):
+        plot_connectome_strength(masked_adjacency_matrix,
+                                 node_coords,
+                                 **kwargs)
+
+    # wrong shapes for node_coords or adjacency_matrix
+    with pytest.raises(ValueError,
+                       match=r'supposed to have shape \(n, n\).+\(1L?, 2L?\)'
+                       ):
+        plot_connectome_strength(adjacency_matrix[:1, :],
+                                 node_coords,
+                                 **kwargs)
+
+    with pytest.raises(ValueError, match=r'shape \(2L?, 3L?\).+\(2L?,\)'):
+        plot_connectome_strength(adjacency_matrix,
+                                 node_coords[:, 2], **kwargs)
+
+    wrong_adjacency_matrix = np.zeros((3, 3))
+    with pytest.raises(ValueError,
+                       match=r'Shape mismatch.+\(3L?, 3L?\).+\(2L?, 3L?\)'
+                       ):
+        plot_connectome_strength(wrong_adjacency_matrix, node_coords,
+                                 **kwargs)
+
+
+def test_plot_markers():
+    # Minimal usage
+    node_values = [1, 2, 3, 4]
+    node_coords = np.array([[39 ,   6, -32],
+                            [29 ,  40,   1],
+                            [-20, -74,  35],
+                            [-29, -59, -37]])
+    args = node_values, node_coords
+    plot_markers(*args)
+    plt.close()
+
+    # Speed-up subsequent tests
+    kwargs = {'display_mode': 'x'}
+
+    # node_values is an array
+    plot_markers(np.array(node_values), node_coords, **kwargs)
+    plt.close()
+    plot_markers(np.array(node_values)[:, np.newaxis], node_coords, **kwargs)
+    plt.close()
+    plot_markers(np.array(node_values)[np.newaxis, :], node_coords, **kwargs)
+    plt.close()
+
+    # all node_values are equal
+    plot_markers((1, 1, 1, 1), node_coords, **kwargs)
+    plt.close()
+
+    # node_coords not an array but a list of tuples
+    plot_markers(node_values, [tuple(coord) for coord in node_coords], **kwargs)
+    plt.close()
+
+    # Saving to file
+    filename = tempfile.mktemp(suffix='.png')
+    try:
+        display = plot_markers(*args, output_file=filename, **kwargs)
+        assert display is None
+        assert (os.path.isfile(filename) and  # noqa: W504
+                    os.path.getsize(filename) > 0)
+    finally:
+        os.remove(filename)
+        plt.close()
+
+    # Different options for node_size
+    plot_markers(*args, node_size=10, **kwargs)
+    plt.close()
+    plot_markers(*args, node_size=[10, 20, 30, 40], **kwargs)
+    plt.close()
+    plot_markers(*args, node_size=np.array([10, 20, 30, 40]), **kwargs)
+    plt.close()
+
+    # Different options for cmap related arguments
+    plot_markers(*args, node_cmap='RdBu', node_vmin=0, **kwargs)
+    plt.close()
+    plot_markers(*args, node_cmap=matplotlib.cm.get_cmap('jet'),
+                 node_vmax=5, **kwargs)
+    plt.close()
+    plot_markers(*args, node_vmin=2, node_vmax=3, **kwargs)
+    plt.close()
+
+    # Node threshold support
+    plot_markers(*args, node_threshold=-100, **kwargs)
+    plt.close()
+    plot_markers(*args, node_threshold=2.5, **kwargs)
+    plt.close()
+
+    # node_kwargs working and does not interfere with alpha
+    node_kwargs = dict(marker='s')
+    plot_markers(*args, alpha=.1, node_kwargs=node_kwargs, **kwargs)
+    plt.close()
+
+
+def test_plot_markers_exceptions():
+    node_coords = np.array([[39 ,   6, -32],
+                            [29 ,  40,   1],
+                            [-20, -74,  35],
+                            [-29, -59, -37]])
+
+    # # Used to speed-up tests because the glass brain is always plotted
+    kwargs = {'display_mode': 'x'}
+
+    # node_values lenght mismatch with node_coords
+    with pytest.raises(ValueError, match="Dimension mismatch"):
+        plot_markers([1, 2, 3, 4, 5], node_coords, **kwargs)
+    with pytest.raises(ValueError, match="Dimension mismatch"):
+        plot_markers([1, 2, 3], node_coords, **kwargs)
+
+    # node_values incorrect shape
+    adjacency_matrix = np.random.random((4, 4))
+    with pytest.raises(ValueError, match="Dimension mismatch"):
+        plot_markers(adjacency_matrix, node_coords, **kwargs)
+
+    # node_values is wrong type
+    with pytest.raises(TypeError):
+        plot_markers(['1', '2', '3', '4'], node_coords, **kwargs)
+
+    # incorrect vmin anord vmax bounds for node cmap
+    with pytest.raises(ValueError):
+        plot_markers([1, 2, 2, 4], node_coords, node_vmin=5, **kwargs)
+    with pytest.raises(ValueError):
+        plot_markers([1, 2, 2, 4], node_coords, node_vmax=0, **kwargs)
+
+    # node_threshold higher than max node_value
+    with pytest.raises(ValueError, match="Provided 'node_threshold' value"):
+        plot_markers([1, 2, 2, 4], node_coords, node_threshold=5, **kwargs)
+
+def test_plot_connectome_strength_deprecation_warning():
+    with pytest.deprecated_call():
+        adjacency_matrix = np.array([[1, -2, 0.3, 0.],
+                                     [-2, 1, 0, 0],
+                                     [0.3, 0, 1, 0],
+                                     [0, 0, 0, 1]])
+        node_coords = np.arange(3 * 4).reshape(4, 3)
+        plot_connectome_strength(adjacency_matrix, node_coords)

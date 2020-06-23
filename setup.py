@@ -109,7 +109,7 @@ if __name__ == "__main__":
               ['*'],
               'nilearn.datasets.description': ['*.rst'],
               'nilearn.reporting.data.html': ['*.html'],
-              'nilearn.stats.tests': ['*.nii.gz', '*.npz'],
+              'nilearn.glm.tests': ['*.nii.gz', '*.npz'],
               'nilearn.reporting.glm_reporter_templates': ['*.html'],
           },
           install_requires=list_required_packages(),
