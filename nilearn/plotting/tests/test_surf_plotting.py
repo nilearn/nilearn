@@ -10,7 +10,6 @@ from nilearn.plotting.surf_plotting import (plot_surf, plot_surf_stat_map,
                                             plot_surf_roi, plot_img_on_surf)
 from nilearn.datasets import fetch_surf_fsaverage
 from nilearn.surface.testing_utils import generate_surf
-from pathlib import Path
 
 
 def test_plot_surf():
@@ -248,8 +247,6 @@ def test_plot_img_on_surf_surf_mesh():
     nii = _generate_img()
     plot_img_on_surf(nii, hemispheres=['right', 'left'], views=['lateral'])
     plot_img_on_surf(nii, hemispheres=['right', 'left'], views=['lateral'],
-                     surf_mesh='fsaverage')
-    plot_img_on_surf(nii, hemispheres=['right', 'left'], views=['lateral'],
                      surf_mesh='fsaverage5')
     surf_mesh = fetch_surf_fsaverage()
     plot_img_on_surf(nii, hemispheres=['right', 'left'], views=['lateral'],
@@ -325,17 +322,12 @@ def test_plot_img_on_surf_title():
     assert fig._suptitle.get_text() == title, "Title text not assigned."
 
 
-def test_plot_img_on_surf_output_file():
+def test_plot_img_on_surf_output_file(tmp_path):
     nii = _generate_img()
-    fname = Path('check.png').absolute()
-    return_value = plot_img_on_surf(
-        nii, hemispheres=['right'], views=['lateral'], output_file=str(fname)
-    )
-    try:
-        assert return_value is None, "Returned figure and axes on file output."
-        assert fname.is_file(), "Saved image file could not be found."
-    except AssertionError:
-        fname.unlink()
-        raise
-    else:
-        fname.unlink()
+    fname = tmp_path / 'tmp.png'
+    return_value = plot_img_on_surf(nii,
+                                    hemispheres=['right'],
+                                    views=['lateral'],
+                                    output_file=str(fname))
+    assert return_value is None, "Returned figure and axes on file output."
+    assert fname.is_file(), "Saved image file could not be found."
