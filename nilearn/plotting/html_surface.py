@@ -92,7 +92,7 @@ def full_brain_info(volume_img, mesh='fsaverage5', threshold=None,
 
     """
     info = {}
-    mesh = surface.check_mesh(mesh)
+    mesh = surface.surface._check_mesh(mesh)
     surface_maps = {
         h: surface.vol_to_surf(volume_img, mesh['pial_{}'.format(h)],
                                **vol_to_surf_kwargs)

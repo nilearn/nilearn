@@ -529,15 +529,15 @@ def _check_vol_to_surf_results(img, mesh):
 
 
 def test_check_mesh():
-    mesh = surface.check_mesh('fsaverage5')
-    assert mesh is surface.check_mesh(mesh)
+    mesh = surface._check_mesh('fsaverage5')
+    assert mesh is surface._check_mesh(mesh)
     with pytest.raises(ValueError):
-        surface.check_mesh('fsaverage3')
+        surface._check_mesh('fsaverage3')
     mesh.pop('pial_left')
     with pytest.raises(ValueError):
-        surface.check_mesh(mesh)
+        surface._check_mesh(mesh)
     with pytest.raises(TypeError):
-        surface.check_mesh(surface.load_surf_mesh(mesh['pial_right']))
+        surface._check_mesh(surface.load_surf_mesh(mesh['pial_right']))
 
 
 def test_check_mesh_and_data():

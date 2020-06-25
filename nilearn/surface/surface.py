@@ -754,7 +754,7 @@ def load_surf_mesh(surf_mesh):
     return [coords, faces]
 
 
-def check_mesh(mesh):
+def _check_mesh(mesh):
     """Check that mesh data is either a str, or a dict with sufficient
     entries.
 
