@@ -16,6 +16,10 @@ NEW
   The resulting average model is the one used as a classifier or a regressor.
   These two objects also leverage the `NiftiMaskers` to provide a direct
   interface with the Nifti files on disk.
+- Plot events file
+  Use :func:`nilearn.reporting.plot_event` to visualize events file.
+  The function accepts the BIDS events file read using `pandas` 
+  utilities.
 - New plotting function
   :func:`nilearn.plotting.plot_carpet` generates a "carpet plot" (also known
   as a "Power plot" or a "grayplot"), for visualizing global patterns in
