@@ -427,13 +427,12 @@ def plot_surf_stat_map(surf_mesh, stat_map, bg_map=None,
 
 
 def _check_hemispheres(hemispheres):
-    """Checks whether the hemisphere in plot_img_on_surf is correct.
+    """Checks whether the hemispheres passed to in plot_img_on_surf are
+    correct.
 
-    hemisphere: list
-        Any combination of 'left' and 'right'
+    hemispheres : list
+        Any combination of 'left' and 'right'.
     """
-    if not isinstance(hemispheres, list):
-        hemispheres = [hemispheres]
     invalid_hemi = any([hemi not in VALID_HEMISPHERES for hemi in hemispheres])
     if invalid_hemi:
         supported = "Supported hemispheres:\n" + str(VALID_HEMISPHERES)
@@ -442,8 +441,13 @@ def _check_hemispheres(hemispheres):
 
 
 def _check_views(views) -> list:
-    if not isinstance(views, list):
-        views = [views]
+    """Checks whether the views passed to in plot_img_on_surf are
+    correct.
+
+    views : list
+        Any combination of "anterior", "posterior", "medial", "lateral",
+        "dorsal", "ventral".
+    """
     invalid_view = any([view not in VALID_VIEWS for view in views])
     if invalid_view:
         supported = "Supported views:\n" + str(VALID_VIEWS)
