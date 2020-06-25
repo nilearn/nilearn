@@ -1479,9 +1479,9 @@ def plot_carpet(img, mask_img=None, detrend=True, output_file=None,
         Limit plotted voxels to those inside the provided mask (default is
         None). If not specified a new mask will be derived from data.
         See http://nilearn.github.io/manipulating_images/input_output.html.
-    detrend : bool, optional
+    detrend : :obj:`bool`, optional
         Detrend and z-score the data prior to plotting (default is `True`).
-    output_file : str or None, optional
+    output_file : :obj:`str` or None, optional
         The name of an image file to which to export the plot (default is
         None). Valid extensions are .png, .pdf, and .svg.
         If `output_file` is not None, the plot is saved to a file, and the
@@ -1492,7 +1492,7 @@ def plot_carpet(img, mask_img=None, detrend=True, output_file=None,
     axes : matplotlib axes or None, optional
         The axes used to display the plot (default is None).
         If None, the complete figure is used.
-    title : str or None, optional
+    title : :obj:`str` or None, optional
         The title displayed on the figure (default is None).
 
     Returns
