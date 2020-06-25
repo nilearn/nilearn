@@ -455,34 +455,35 @@ def _check_views(views) -> list:
     return views
 
 
-def _colorbar_from_array(array, vmax,
-                         threshold, symmetric_cbar,
-                         kwargs,
+def _colorbar_from_array(array, vmax, threshold, kwargs,
+                         symmetric_cbar='auto',
                          cmap='cold_hot'):
-    """ Generate a custom colorbar for an array.
+    """Generate a custom colorbar for an array.
 
     Internal function used by plot_img_on_surf
 
-    array: Any 3D array
+    array : np.ndarray
+        Any 3D array.
 
-    vmax : float, optional (default=None)
+    vmax : float
         upper bound for plotting of stat_map values.
 
-    threshold : float, optional (default=None)
+    threshold : float
         If None is given, the colorbar is not thresholded.
         If a number is given, it is used to threshold the colorbar.
         Absolute values lower than threshold are shown in gray.
 
-    symmetric_cbar : bool or 'auto', optional, default 'auto'
-         Specifies whether the colorbar should range from -vmax to vmax
-         or from vmin to vmax. Setting to 'auto' will select the latter
-         if the range of the whole image is either positive or negative.
-         Note: The colormap will always range from -vmax to vmax.
+    symmetric_cbar : bool or 'auto', optional (default='auto')
+        Specifies whether the colorbar should range from -vmax to vmax
+        or from vmin to vmax. Setting to 'auto' will select the latter
+        if the range of the whole image is either positive or negative.
+        Note: The colormap will always range from -vmax to vmax.
 
-    kwargs: extra arguments passed to _get_colorbar_and_data_ranges
+    kwargs : dict
+        Extra arguments passed to _get_colorbar_and_data_ranges.
 
-    cmap: str, optional (default='cold_hot')
-        the name of a matplotlib or nilearn colormap.
+    cmap : str, optional (default='cold_hot')
+        The name of a matplotlib or nilearn colormap.
     """
 
     cbar_vmin, cbar_vmax, vmin, vmax = _get_colorbar_and_data_ranges(
@@ -514,7 +515,7 @@ def plot_img_on_surf(stat_map, surf_mesh='fsaverage5', mask_img=None,
                      inflate=False,
                      views=['lateral', 'medial'],
                      output_file=None, title=None, colorbar=True,
-                     vmax=None, threshold=None, symmetric_cbar='auto',
+                     vmax=None, threshold=None,
                      cmap='cold_hot', aspect_ratio=1.4, **kwargs):
     """Convenience function to plot multiple views of plot_surf_stat_map
     in a single figure. It projects stat_map into meshes and plots views of
@@ -574,16 +575,11 @@ def plot_img_on_surf(stat_map, surf_mesh='fsaverage5', mask_img=None,
         values below the threshold (in absolute value) are plotted
         as transparent.
 
-    symmetric_cbar : bool or 'auto', optional, default 'auto'
-        Specifies whether the colorbar should range from -vmax to vmax
-        or from vmin to vmax. Setting to 'auto' will select the latter
-        if the range of the whole image is either positive or negative.
-        Note: The colormap will always range from -vmax to vmax.
-
     cmap : str, optional (default='cold_hot')
         The name of a matplotlib or nilearn colormap.
 
-    kwargs : keyword arguments passed to plot_surf_stat_map
+    kwargs : dict
+        keyword arguments passed to plot_surf_stat_map.
 
     See Also
     --------
@@ -639,7 +635,6 @@ def plot_img_on_surf(stat_map, surf_mesh='fsaverage5', mask_img=None,
                                colorbar=False,  # Colorbar created externally.
                                vmax=vmax,
                                threshold=threshold,
-                               symmetric_cbar=symmetric_cbar,
                                cmap=cmap,
                                **kwargs)
 
@@ -649,9 +644,8 @@ def plot_img_on_surf(stat_map, surf_mesh='fsaverage5', mask_img=None,
         ax.dist = 6
 
     if colorbar:
-        sm = _colorbar_from_array(stat_map.get_data(),
-                                  vmax, threshold, symmetric_cbar, kwargs,
-                                  get_cmap(cmap))
+        sm = _colorbar_from_array(stat_map.get_data(), vmax, threshold, kwargs,
+                                  cmap=get_cmap(cmap))
 
         cbar_ax = fig.add_subplot(32, 1, 32)
         fig.colorbar(sm, cax=cbar_ax, orientation='horizontal')
