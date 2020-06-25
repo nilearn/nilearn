@@ -515,7 +515,7 @@ def plot_img_on_surf(stat_map, surf_mesh='fsaverage5', mask_img=None,
                      views=['lateral', 'medial'],
                      output_file=None, title=None, colorbar=True,
                      vmax=None, threshold=None, symmetric_cbar='auto',
-                     cmap='cold_hot', aspect_ratio=2.75, **kwargs):
+                     cmap='cold_hot', aspect_ratio=1.4, **kwargs):
     """Convenience function to plot multiple views of plot_surf_stat_map
     in a single figure. It projects stat_map into meshes and plots views of
     left and right hemispheres. The *views* argument defines the views
@@ -618,7 +618,7 @@ def plot_img_on_surf(stat_map, surf_mesh='fsaverage5', mask_img=None,
                              mask_img=mask_img)
     }
 
-    figsize = plt.figaspect(len(modes) / aspect_ratio)
+    figsize = plt.figaspect(len(modes) / (aspect_ratio * len(hemispheres)))
     fig, axes = plt.subplots(nrows=len(modes),
                              ncols=len(hemis),
                              figsize=figsize,
