@@ -331,6 +331,11 @@ def test_plot_img_on_surf_output_file():
     return_value = plot_img_on_surf(
         nii, hemispheres=['right'], views=['lateral'], output_file=str(fname)
     )
-    assert return_value is None, "Returned figure and axes on file output."
-    assert fname.is_file(), "Saved image file could not be found."
-    fname.unlink()
+    try:
+        assert return_value is None, "Returned figure and axes on file output."
+        assert fname.is_file(), "Saved image file could not be found."
+    except AssertionError:
+        fname.unlink()
+        raise
+    else:
+        fname.unlink()
