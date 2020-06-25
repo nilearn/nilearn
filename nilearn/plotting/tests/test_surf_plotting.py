@@ -246,8 +246,7 @@ def test_plot_img_on_surf_inflate():
 
 def test_plot_img_on_surf_surf_mesh():
     nii = _generate_img()
-    plot_img_on_surf(nii, hemispheres=['right', 'left'], views=['lateral'],
-                     surf_mesh=None)
+    plot_img_on_surf(nii, hemispheres=['right', 'left'], views=['lateral'])
     plot_img_on_surf(nii, hemispheres=['right', 'left'], views=['lateral'],
                      surf_mesh='fsaverage')
     plot_img_on_surf(nii, hemispheres=['right', 'left'], views=['lateral'],

@@ -509,7 +509,7 @@ def _colorbar_from_array(array, vmax,
     return sm
 
 
-def plot_img_on_surf(stat_map, surf_mesh=None, mask_img=None,
+def plot_img_on_surf(stat_map, surf_mesh='fsaverage5', mask_img=None,
                      hemispheres=['left', 'right'],
                      inflate=False,
                      views=['lateral', 'medial'],
@@ -526,14 +526,13 @@ def plot_img_on_surf(stat_map, surf_mesh=None, mask_img=None,
     stat_map : str or 3D Niimg-like object
         See http://nilearn.github.io/manipulating_images/input_output.html
 
-    surf_mesh : str, dict, or None, default is None
+    surf_mesh : str, dict, or None, default is 'fsaverage5'
         If str, either one of the two:
         'fsaverage5': the low-resolution fsaverage5 mesh (10242 nodes)
         'fsaverage': the high-resolution fsaverage mesh (163842 nodes)
         If dict, a dictionary with keys: ['infl_left', 'infl_right',
         'pial_left', 'pial_right', 'sulc_left', 'sulc_right'], where
         values are surface mesh geometries as accepted by plot_surf_stat_map.
-        If None, plot_img_on_surf will use Freesurfer's 'fsaverage5'.
 
     mask_img : Niimg-like object or None, optional (default=None)
         The mask is passed to vol_to_surf.
@@ -600,9 +599,6 @@ def plot_img_on_surf(stat_map, surf_mesh=None, mask_img=None,
         if arg in kwargs:
             raise ValueError(('plot_img_on_surf does not'
                               ' accept %s as an argument' % arg))
-
-    if surf_mesh is None:
-        surf_mesh = 'fsaverage5'
 
     stat_map = check_niimg_3d(stat_map, dtype='auto')
     modes = _check_views(views)
