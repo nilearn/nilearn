@@ -456,7 +456,6 @@ def _check_views(views) -> list:
 
 
 def _colorbar_from_array(array, vmax, threshold, kwargs,
-                         symmetric_cbar='auto',
                          cmap='cold_hot'):
     """Generate a custom colorbar for an array.
 
@@ -473,12 +472,6 @@ def _colorbar_from_array(array, vmax, threshold, kwargs,
         If a number is given, it is used to threshold the colorbar.
         Absolute values lower than threshold are shown in gray.
 
-    symmetric_cbar : bool or 'auto', optional (default='auto')
-        Specifies whether the colorbar should range from -vmax to vmax
-        or from vmin to vmax. Setting to 'auto' will select the latter
-        if the range of the whole image is either positive or negative.
-        Note: The colormap will always range from -vmax to vmax.
-
     kwargs : dict
         Extra arguments passed to _get_colorbar_and_data_ranges.
 
@@ -487,8 +480,8 @@ def _colorbar_from_array(array, vmax, threshold, kwargs,
     """
 
     cbar_vmin, cbar_vmax, vmin, vmax = _get_colorbar_and_data_ranges(
-        array, vmax, symmetric_cbar, kwargs)
-
+        array, vmax, True, kwargs
+    )
     norm = Normalize(vmin=vmin, vmax=vmax)
     cmaplist = [cmap(i) for i in range(cmap.N)]
 
