@@ -287,7 +287,8 @@ def test_clean_detrending():
     y_clean = nisignal.clean(y, ensure_finite=True)
     assert np.any(np.isfinite(y_clean)), True
     # clean should not modify inputs
-    assert np.array_equal(y_orig, y)
+    # using assert_almost_equal instead of array_equal due to NaNs
+    np.testing.assert_almost_equal(y_orig, y, decimal=13)
 
     # test boolean is not given to signal.clean
     pytest.raises(TypeError, nisignal.clean, x, low_pass=False)
