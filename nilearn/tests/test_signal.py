@@ -348,6 +348,25 @@ def test_clean_frequencies():
     assert np.array_equal(sx_orig, sx)
 
 
+def test_clean_sessions():
+    n_samples = 21
+    n_features = 501  # Must be higher than 500
+    signals, _, _ = generate_signals(n_features=n_features,
+                                     length=n_samples)
+    trends = generate_trends(n_features=n_features,
+                             length=n_samples)
+    x = signals + trends
+    x_orig = x.copy()
+    # Create session info
+    sessions = np.ones(n_samples)
+    sessions[0:n_samples // 2] = 0
+    x_detrended = nisignal.clean(x, standardize=False, detrend=True,
+                                 low_pass=None, high_pass=None,
+                                 sessions=sessions)
+    # clean should not modify inputs
+    assert np.array_equal(x_orig, x)
+
+
 def test_clean_confounds():
     signals, noises, confounds = generate_signals(n_features=41,
                                                   n_confounds=5, length=45)
