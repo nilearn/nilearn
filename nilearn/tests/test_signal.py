@@ -275,14 +275,19 @@ def test_clean_detrending():
     trends = generate_trends(n_features=n_features,
                              length=n_samples)
     x = signals + trends
+    x_orig = x.copy()
 
     # if NANs, data out should be False with ensure_finite=True
     y = signals + trends
     y[20, 150] = np.nan
     y[5, 500] = np.nan
     y[15, 14] = np.inf
-    y = nisignal.clean(y, ensure_finite=True)
-    assert np.any(np.isfinite(y)), True
+    y_orig = y.copy()
+
+    y_clean = nisignal.clean(y, ensure_finite=True)
+    assert np.any(np.isfinite(y_clean)), True
+    # clean should not modify inputs
+    assert np.array_equal(y_orig, y)
 
     # test boolean is not given to signal.clean
     pytest.raises(TypeError, nisignal.clean, x, low_pass=False)
@@ -292,11 +297,15 @@ def test_clean_detrending():
     x_detrended = nisignal.clean(x, standardize=False, detrend=True,
                                  low_pass=None, high_pass=None)
     np.testing.assert_almost_equal(x_detrended, signals, decimal=13)
+    # clean should not modify inputs
+    assert np.array_equal(x_orig, x)
 
     # This should do nothing
     x_undetrended = nisignal.clean(x, standardize=False, detrend=False,
                                    low_pass=None, high_pass=None)
     assert not abs(x_undetrended - signals).max() < 0.06
+    # clean should not modify inputs
+    assert np.array_equal(x_orig, x)
 
 
 def test_clean_t_r():
@@ -376,7 +385,8 @@ def test_clean_confounds():
     cleaned_signals = nisignal.clean(noises, confounds=confounds,
                                      detrend=True, standardize=False)
     assert abs(cleaned_signals).max() < 100. * eps
-    np.testing.assert_almost_equal(noises, noises1, decimal=12)
+    # clean should not modify inputs
+    assert np.array_equal(noises, noises1)
 
     # With signal: output must be orthogonal to confounds
     cleaned_signals = nisignal.clean(signals + noises, confounds=confounds,
