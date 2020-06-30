@@ -191,4 +191,4 @@ def check_feature_screening(screening_percentile, mask_img,
         screening_percentile_ = _adjust_screening_percentile(
             screening_percentile, mask_img, verbose=verbose)
 
-        return SelectPercentile(f_test, int(screening_percentile_))
+        return SelectPercentile(f_test, percentile=int(screening_percentile_))

@@ -30,12 +30,12 @@ from nilearn.plotting import (plot_glass_brain,
                               )
 from nilearn.plotting.img_plotting import MNI152TEMPLATE
 from nilearn.plotting.js_plotting_utils import HTMLDocument
-from nilearn import stats
+from nilearn import glm
 from nilearn.reporting import (plot_contrast_matrix,
                                plot_design_matrix,
                                get_clusters_table,
                                )
-from nilearn.stats.thresholding import map_threshold
+from nilearn.glm.thresholding import threshold_stats_img
 
 
 HTML_TEMPLATE_ROOT_PATH = os.path.join(os.path.dirname(__file__),
@@ -88,9 +88,9 @@ def make_glm_report(model,
             Each contrast coefficient must be a list or numpy array of ints.
 
         Contrasts are passed to ``contrast_def`` for FirstLevelModel
-        (:func:`nilearn.stats.first_level_model.FirstLevelModel.compute_contrast`)
+        (:func:`nilearn.glm.first_level.FirstLevelModel.compute_contrast`)
         & second_level_contrast for SecondLevelModel
-        (:func:`nilearn.stats.second_level_model.SecondLevelModel.compute_contrast`)
+        (:func:`nilearn.glm.second_level.SecondLevelModel.compute_contrast`)
 
     title: String, optional
         If string, represents the web page's title and primary heading,
@@ -398,9 +398,9 @@ def _make_headings(contrasts, title, model):
     (HTML page title, heading, sub-heading): Tuple[str, str, str]
         If title is user-supplied, then subheading is empty string.
     """
-    if type(model) == stats.first_level_model.FirstLevelModel:
+    if type(model) == glm.first_level.FirstLevelModel:
         model_type = 'First Level Model'
-    elif type(model) == stats.second_level_model.SecondLevelModel:
+    elif type(model) == glm.second_level.SecondLevelModel:
         model_type = 'Second Level Model'
 
     if title:
@@ -479,9 +479,9 @@ def make_stat_maps(model, contrasts):
     contrasts: Dict[str, ndarray or str]
         Dict of contrasts for a first or second level model.
         Corresponds to the contrast_def for the FirstLevelModel
-        (nilearn.stats.first_level_model.FirstLevelModel.compute_contrast)
+        (nilearn.glm.first_level.FirstLevelModel.compute_contrast)
         & second_level_contrast for a SecondLevelModel
-        (nilearn.stats.second_level_model.SecondLevelModel.compute_contrast)
+        (nilearn.glm.second_level.SecondLevelModel.compute_contrast)
 
     Returns
     -------
@@ -490,8 +490,8 @@ def make_stat_maps(model, contrasts):
 
     See Also
     --------
-    nilearn.stats.first_level_model.FirstLevelModel.compute_contrast
-    nilearn.stats.second_level_model.SecondLevelModel.compute_contrast
+    nilearn.glm.first_level.FirstLevelModel.compute_contrast
+    nilearn.glm.second_level.SecondLevelModel.compute_contrast
     """
     statistical_maps = {contrast_id: model.compute_contrast(contrast_val)
                         for contrast_id, contrast_val in contrasts.items()
@@ -694,7 +694,7 @@ def _make_stat_maps_contrast_clusters(stat_img, contrasts_plots, threshold,
         components_template_text = html_template_obj.read()
     for contrast_name, stat_map_img in stat_img.items():
         component_text_ = string.Template(components_template_text)
-        thresholded_stat_map, threshold = map_threshold(
+        thresholded_stat_map, threshold = threshold_stats_img(
             stat_img=stat_map_img,
             threshold=threshold,
             alpha=alpha,
