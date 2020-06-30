@@ -25,7 +25,9 @@ NEW
   as a "Power plot" or a "grayplot"), for visualizing global patterns in
   4D functional data over time.
 - New plotting function
-  :func:`nilearn.plotting.plot_markers` shows network nodes (markers) on a glass
+  :func:`nilearn.plotting.plot_img_on_surf` generates multiple views of
+  :func:`nilearn.plotting.plot_surf_stat_map` in a single figure.
+- :func:`nilearn.plotting.plot_markers` shows network nodes (markers) on a glass
   brain template and color code them according to provided nodal measure (i.e.
   connection strength). This function will replace
   :func:`nilearn.plotting.plot_connectome_strength`.
@@ -354,7 +356,7 @@ NEW
   when using the `mask_strategy="template"` option for brains in MNI space.
 - New brain development fMRI dataset fetcher
   :func:`nilearn.datasets.fetch_development_fmri` can be used to download
-  movie-watching data in children and adults; a light-weight dataset 
+  movie-watching data in children and adults; a light-weight dataset
   implemented for teaching and usage in the examples.
 - New example in `examples/05_advanced/plot_age_group_prediction_cross_val.py`
   to compare methods for classifying subjects into age groups based on
@@ -377,8 +379,8 @@ Changes
 
 - All the connectivity examples are changed from ADHD to brain development
   fmri dataset.
-- Examples plot_decoding_tutorial, plot_haxby_decoder, 
-  plot_haxby_different_estimators, plot_haxby_full_analysis, plot_oasis_vbm now 
+- Examples plot_decoding_tutorial, plot_haxby_decoder,
+  plot_haxby_different_estimators, plot_haxby_full_analysis, plot_oasis_vbm now
   use :class:`nilearn.decoding.Decoder` and :class:`nilearn.decoding.DecoderRegressor`
   instead of sklearn SVC and SVR.
 

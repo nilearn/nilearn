@@ -40,7 +40,9 @@ def test_check_mesh():
     with pytest.raises(ValueError):
         html_surface._check_mesh(mesh)
     with pytest.raises(TypeError):
-        html_surface._check_mesh(surface.load_surf_mesh(mesh['pial_right']))
+        html_surface._check_mesh(
+            surface.load_surf_mesh(mesh['pial_right'])
+        )
 
 
 def test_one_mesh_info():
