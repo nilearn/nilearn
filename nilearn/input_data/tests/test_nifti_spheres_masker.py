@@ -124,7 +124,7 @@ def test_small_radius():
 
     masker = NiftiSpheresMasker([seed], radius=0.1,
                                 mask_img=nibabel.Nifti1Image(mask, affine))
-    with pytest.raises(ValueError, match='Sphere around seed #0 is empty'):
+    with pytest.raises(ValueError, match='These spheres are empty'):
         masker.fit_transform(nibabel.Nifti1Image(data, affine))
 
     masker = NiftiSpheresMasker([seed], radius=1.6,
@@ -283,7 +283,7 @@ def test_small_radius_inverse():
                                 mask_img=nibabel.Nifti1Image(mask, affine))
     masker.fit(nibabel.Nifti1Image(data, affine))
 
-    with pytest.raises(ValueError, match='Sphere around seed #0 is empty'):
+    with pytest.raises(ValueError, match='These spheres are empty'):
         masker.inverse_transform(spheres_data)
 
     masker = NiftiSpheresMasker([seed], radius=1.6,
