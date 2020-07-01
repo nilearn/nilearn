@@ -211,7 +211,7 @@ def test_nifti_spheres_masker_inverse_transform():
 
     # Testing whether mask is applied to inverse transform
     assert_array_equal(np.mean(get_data(inverse_map), axis=-1) != 0,
-                    array_mask)
+                       array_mask)
     # Test whether values are preserved
     assert_array_equal(get_data(inverse_map)[array_mask].mean(0), s[:, 0])
 
@@ -230,17 +230,17 @@ def test_nifti_spheres_masker_inverse_overlap():
     # Apply mask image - to allow inversion
     mask_img = new_img_like(fmri_img, np.ones(shape))
     seeds = [(0, 0, 0), (2, 2, 2)]
-    # Inverse data 
+    # Inverse data
     inv_data = np.random.random(len(seeds))
 
     overlapping_masker = NiftiSpheresMasker(seeds, radius=1,
                                             allow_overlap=True,
-                                        mask_img=mask_img).fit()
+                                            mask_img=mask_img).fit()
     overlapping_masker.inverse_transform(inv_data)
 
     overlapping_masker = NiftiSpheresMasker(seeds, radius=2,
                                             allow_overlap=True,
-                                        mask_img=mask_img).fit()
+                                            mask_img=mask_img).fit()
 
     overlap = overlapping_masker.inverse_transform(inv_data)
 
@@ -248,13 +248,13 @@ def test_nifti_spheres_masker_inverse_overlap():
     assert_array_almost_equal(get_data(overlap)[1, 1, 1], np.mean(inv_data))
 
     noverlapping_masker = NiftiSpheresMasker(seeds, radius=1,
-                                            allow_overlap=False,
-                                        mask_img=mask_img).fit()
+                                             allow_overlap=False,
+                                             mask_img=mask_img).fit()
 
     noverlapping_masker.inverse_transform(inv_data)
     noverlapping_masker = NiftiSpheresMasker(seeds, radius=2,
-                                            allow_overlap=False,
-                                            mask_img=mask_img).fit()
+                                             allow_overlap=False,
+                                             mask_img=mask_img).fit()
 
     with pytest.raises(ValueError, match='Overlap detected'):
         noverlapping_masker.inverse_transform(inv_data)
@@ -284,7 +284,7 @@ def test_small_radius_inverse():
     masker.fit(nibabel.Nifti1Image(data, affine))
 
     with pytest.raises(ValueError, match='Sphere around seed #0 is empty'):
-        masker.inverse_transform(spheres_data)    
+        masker.inverse_transform(spheres_data)
 
     masker = NiftiSpheresMasker([seed], radius=1.6,
                                 mask_img=nibabel.Nifti1Image(mask, affine))
