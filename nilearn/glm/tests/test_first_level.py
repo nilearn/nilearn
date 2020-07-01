@@ -218,7 +218,7 @@ def test_high_level_glm_different_design_matrices():
 
 def test_run_glm():
     n, p, q = 100, 80, 10
-    X, Y = np.random.randn(p, q), np.random.randn(p, n)
+    X, Y = np.random.RandomState(0).randn(p, q), np.random.randn(p, n)
 
     # Ordinary Least Squares case
     labels, results = run_glm(Y, X, 'ols')
@@ -235,11 +235,42 @@ def test_run_glm():
     tmp = sum([val.theta.shape[1] for val in results.values()])
     assert tmp == n
 
+    labels, results = run_glm(Y, X, 'ar3')
+    assert len(labels) == n
+    assert len(results.keys()) > 1
+    tmp = sum([val.theta.shape[1] for val in results.values()])
+    assert tmp == n
+
     # non-existant case
     with pytest.raises(ValueError):
-        run_glm(Y, X, 'ar2')
+        run_glm(Y, X, 'ars2')
     with pytest.raises(ValueError):
         run_glm(Y, X.T)
+
+    n, p, q = 1, 1000, 3
+    for ar1 in [-0.2, -0.5, -0.7]:
+        X = np.random.RandomState(2).randn(p, q)
+        Y = np.random.RandomState(2).randn(p, n)
+        for idx in range(1, len(Y)):
+            Y[idx] += ar1 * Y[idx - 1]
+        labels, results = run_glm(Y, X, 'ar1')
+        assert len(labels) == n
+        for lab in results.keys():
+            assert_almost_equal(lab, ar1, decimal=1)
+
+    n, p, q = 1, 1000, 3
+    for ar1 in [-0.2, -0.5]:
+        for ar2 in [-0.3, -0.4]:
+            X = np.random.RandomState(2).randn(p, q)
+            Y = np.random.RandomState(2).randn(p, n)
+            for idx in range(0, len(Y)):
+                Y[idx] += (ar1 * Y[idx - 1]) + (ar2 * Y[idx - 2])
+            labels, results = run_glm(Y, X, 'ar2')
+            assert len(labels) == n
+            for lab in results.keys():
+                ar_est = lab.split("_")
+                assert_almost_equal(float(ar_est[0]), ar1, decimal=1)
+                assert_almost_equal(float(ar_est[1]), ar2, decimal=1)
 
 
 def test_scaling():

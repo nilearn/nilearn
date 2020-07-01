@@ -11,6 +11,7 @@ Author: Bertrand Thirion, Martin Perez-Guevara, 2016
 import glob
 import json
 import os
+import re
 import sys
 import time
 from warnings import warn
@@ -71,6 +72,26 @@ def _ar_model_fit(X, val, Y):
     return ARModel(X, val).fit(Y)
 
 
+def _yule_walker(X, order):
+    """Compute Yule-Walker (adapted from MNE and statsmodels).
+    Operates in-place.
+    """
+    from scipy import linalg
+    assert X.ndim == 2
+    assert order > 0, "AR order must be positive"
+    assert isinstance(order, int), "AR order must be an integer"
+    denom = X.shape[-1] - np.arange(order + 1)
+    r = np.zeros(order + 1, np.float64)
+    X = X.ravel()
+    X -= X.mean()
+    r[0] += np.dot(X, X)
+    for k in range(1, order + 1):
+        r[k] += np.dot(X[0:-k], X[k:])
+    r /= denom * len(X)
+    rho = linalg.solve(linalg.toeplitz(r[:-1]), r[1:])
+    return rho
+
+
 def run_glm(Y, X, noise_model='ar1', bins=100, n_jobs=1, verbose=0):
     """ GLM fit for an fMRI data matrix
 
@@ -87,6 +108,8 @@ def run_glm(Y, X, noise_model='ar1', bins=100, n_jobs=1, verbose=0):
 
     bins : int, optional
         Maximum number of discrete bins for the AR(1) coef histogram.
+        If higher order AR models are selected this specifies the maximum
+        number of bins per AR coefficient.
 
     n_jobs : int, optional
         The number of CPUs to use to do the computation. -1 means
@@ -105,8 +128,8 @@ def run_glm(Y, X, noise_model='ar1', bins=100, n_jobs=1, verbose=0):
         values are RegressionResults instances corresponding to the voxels.
 
     """
-    acceptable_noise_models = ['ar1', 'ols']
-    if noise_model not in acceptable_noise_models:
+    acceptable_noise_models = ['ols']
+    if (('ar' not in noise_model) and (noise_model is not 'ols')):
         raise ValueError(
             "Acceptable noise models are {0}. You provided "
             "'noise_model={1}'".format(acceptable_noise_models,
@@ -122,25 +145,38 @@ def run_glm(Y, X, noise_model='ar1', bins=100, n_jobs=1, verbose=0):
     # Create the model
     ols_result = OLSModel(X).fit(Y)
 
-    if noise_model == 'ar1':
+    if 'ar' in noise_model:
+        ar_order = int(re.split('ar', noise_model)[1])
         # compute and discretize the AR1 coefs
-        ar1 = (
-            (ols_result.residuals[1:]
-             * ols_result.residuals[:-1]).sum(axis=0)
-            / (ols_result.residuals ** 2).sum(axis=0)
-        )
+        ar_coef_ = [_yule_walker(ols_result.residuals[:, res].reshape(-1, 1).T,
+                                 ar_order)
+                    for res in range(ols_result.residuals.shape[1])]
+        if len(ar_coef_[0]) == 1:
+            ar_coef_ = np.asarray(ar_coef_).ravel()
         del ols_result
-        ar1 = (ar1 * bins).astype(np.int) * 1. / bins
-        # Fit the AR model acccording to current AR(1) estimates
+        for idx in range(len(ar_coef_)):
+            ar_coef_[idx] = (ar_coef_[idx] * bins).astype(np.int) * 1. / bins
+        # Fit the AR model acccording to current AR(N) estimates
         results = {}
-        labels = ar1
+        labels = ar_coef_
+
         # Parallelize by creating a job per ARModel
-        vals = np.unique(ar1)
+        if type(ar_coef_[0]) is np.float64:
+            vals = np.unique(ar_coef_)
+        else:
+            vals = ar_coef_
         ar_result = Parallel(n_jobs=n_jobs, verbose=verbose)(
-            delayed(_ar_model_fit)(X, val, Y[:, labels == val])
+            delayed(_ar_model_fit)(X, val, Y[:, [np.all(lab == val)
+                                                 for lab in labels]])
             for val in vals)
-        for val, result in zip(vals, ar_result):
-            results[val] = result
+
+        if type(ar_coef_[0]) is np.float64:
+            for val, result in zip(vals, ar_result):
+                results[val] = result
+        else:
+            labels = ['_'.join([str(v) for v in val]) for val in vals]
+            for val, result in zip(vals, ar_result):
+                results['_'.join([str(v) for v in val])] = result
         del vals
         del ar_result
 
