@@ -6,7 +6,7 @@ import re
 import fnmatch
 import os
 import json
-from unittest.mock import Mock
+from unittest.mock import MagicMock
 from collections import OrderedDict
 
 from requests.exceptions import HTTPError
@@ -47,10 +47,10 @@ def request_mocker(monkeypatch):
     request.send is patched with a Sender object, whose responses can be
     configured -- see the docstring for Sender.
 
-    urllib's open is simply patched with a Mock. As nilearn dataset fetchers
-    use requests, we do not expect this to actually be used; it is only patched
-    to make sure network mocking is worked around by using urllib directly
-    instead of requests.
+    urllib's open is simply patched with a MagicMock. As nilearn dataset
+    fetchers use requests, we do not expect this to actually be used; it is
+    only patched to make sure network mocking is worked around by using urllib
+    directly instead of requests.
 
     This fixture uses 'autouse' and is imported in conftest.py to make sure it
     is used by every test, even those that do not explicitly ask for it.
@@ -58,7 +58,7 @@ def request_mocker(monkeypatch):
     """
     sender = Sender()
     monkeypatch.setattr("requests.sessions.Session.send", sender)
-    monkeypatch.setattr("urllib.request.OpenerDirector.open", Mock())
+    monkeypatch.setattr("urllib.request.OpenerDirector.open", MagicMock())
     return sender
 
 

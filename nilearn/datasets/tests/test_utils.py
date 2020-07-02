@@ -10,6 +10,7 @@ import os
 import shutil
 import tarfile
 import zipfile
+import urllib
 
 from tempfile import mkdtemp, mkstemp
 
@@ -23,10 +24,12 @@ else:
 
 import numpy as np
 import pytest
+import requests
 
 from nilearn import datasets
 from nilearn.datasets.utils import (_get_dataset_dir,
                                     make_fresh_openneuro_dataset_urls_index)
+from nilearn.datasets import utils
 
 
 currdir = os.path.dirname(os.path.abspath(__file__))
@@ -371,3 +374,16 @@ def test_make_fresh_openneuro_dataset_urls_index(tmp_path, request_mocker):
     assert isinstance(datadir, str)
     assert isinstance(dl_files, list)
     assert len(dl_files) == len(file_list)
+
+
+def test_naive_ftp_adapter():
+    sender = utils._NaiveFTPAdapter()
+    resp = sender.send(
+        requests.Request("GET", "ftp://example.com").prepare())
+    resp.close()
+    resp.raw.close.assert_called()
+    urllib.request.OpenerDirector.open.side_effect = urllib.error.URLError(
+        "timeout")
+    with pytest.raises(requests.RequestException, match="timeout"):
+        resp = sender.send(
+            requests.Request("GET", "ftp://example.com").prepare())
