@@ -5,7 +5,9 @@ import pytest
 
 from _pytest.doctest import DoctestItem
 
-from nilearn.datasets._testing import request_mocker, temp_nilearn_data_dir
+# we need to import these fixtures even if not used in this module
+from nilearn.datasets._testing import request_mocker  # noqa: F401
+from nilearn.datasets._testing import temp_nilearn_data_dir  # noqa: F401
 
 try:
     import matplotlib  # noqa: F401
