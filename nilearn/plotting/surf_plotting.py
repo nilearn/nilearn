@@ -2,20 +2,27 @@
 Functions for surface visualization.
 Only matplotlib is required.
 """
-import numpy as np
-
 import matplotlib.pyplot as plt
-
-from mpl_toolkits.mplot3d import Axes3D
+import numpy as np
 
 from matplotlib.colorbar import make_axes
 from matplotlib.cm import ScalarMappable, get_cmap
-from matplotlib.colors import Normalize, LinearSegmentedColormap, to_rgba
+from matplotlib.colors import Normalize, LinearSegmentedColormap
+from mpl_toolkits.mplot3d import Axes3D
+from nilearn.plotting.img_plotting import (_get_colorbar_and_data_ranges,
+                                           _crop_colorbar)
+from nilearn.surface import (load_surf_data,
+                             load_surf_mesh,
+                             vol_to_surf)
+from nilearn.surface.surface import _check_mesh
+from nilearn._utils import check_niimg_3d
+
+from matplotlib.colors import to_rgba
 from matplotlib.patches import Patch
 from mpl_toolkits.mplot3d.art3d import Poly3DCollection
 
-from ..surface import load_surf_data, load_surf_mesh
-from .img_plotting import _get_colorbar_and_data_ranges, _crop_colorbar
+VALID_VIEWS = "anterior", "posterior", "medial", "lateral", "dorsal", "ventral"
+VALID_HEMISPHERES = "left", "right"
 
 
 def plot_surf(surf_mesh, surf_map=None, bg_map=None,
@@ -274,10 +281,8 @@ def plot_surf(surf_mesh, surf_map=None, bg_map=None,
             if threshold is not None:
                 cmaplist = [our_cmap(i) for i in range(our_cmap.N)]
                 # set colors to grey for absolute values < threshold
-                istart = int(norm(-threshold, clip=True) *
-                             (our_cmap.N - 1))
-                istop = int(norm(threshold, clip=True) *
-                            (our_cmap.N - 1))
+                istart = int(norm(-threshold, clip=True) * (our_cmap.N - 1))
+                istop = int(norm(threshold, clip=True) * (our_cmap.N - 1))
                 for i in range(istart, istop):
                     cmaplist[i] = (0.5, 0.5, 0.5, 1.)
                 our_cmap = LinearSegmentedColormap.from_list(
@@ -575,6 +580,235 @@ def plot_surf_stat_map(surf_mesh, stat_map, bg_map=None,
         figure=figure, cbar_vmin=cbar_vmin, cbar_vmax=cbar_vmax, **kwargs)
 
     return display
+
+
+def _check_hemispheres(hemispheres):
+    """Checks whether the hemispheres passed to in plot_img_on_surf are
+    correct.
+
+    hemispheres : list
+        Any combination of 'left' and 'right'.
+    """
+    invalid_hemi = any([hemi not in VALID_HEMISPHERES for hemi in hemispheres])
+    if invalid_hemi:
+        supported = "Supported hemispheres:\n" + str(VALID_HEMISPHERES)
+        raise ValueError("Invalid hemispheres definition!\n" + supported)
+    return hemispheres
+
+
+def _check_views(views) -> list:
+    """Checks whether the views passed to in plot_img_on_surf are
+    correct.
+
+    views : list
+        Any combination of "anterior", "posterior", "medial", "lateral",
+        "dorsal", "ventral".
+    """
+    invalid_view = any([view not in VALID_VIEWS for view in views])
+    if invalid_view:
+        supported = "Supported views:\n" + str(VALID_VIEWS)
+        raise ValueError("Invalid view definition!\n" + supported)
+    return views
+
+
+def _colorbar_from_array(array, vmax, threshold, kwargs,
+                         cmap='cold_hot'):
+    """Generate a custom colorbar for an array.
+
+    Internal function used by plot_img_on_surf
+
+    array : np.ndarray
+        Any 3D array.
+
+    vmax : float
+        upper bound for plotting of stat_map values.
+
+    threshold : float
+        If None is given, the colorbar is not thresholded.
+        If a number is given, it is used to threshold the colorbar.
+        Absolute values lower than threshold are shown in gray.
+
+    kwargs : dict
+        Extra arguments passed to _get_colorbar_and_data_ranges.
+
+    cmap : str, optional (default='cold_hot')
+        The name of a matplotlib or nilearn colormap.
+    """
+
+    cbar_vmin, cbar_vmax, vmin, vmax = _get_colorbar_and_data_ranges(
+        array, vmax, True, kwargs
+    )
+    norm = Normalize(vmin=vmin, vmax=vmax)
+    cmaplist = [cmap(i) for i in range(cmap.N)]
+
+    if threshold is None:
+        threshold = 0.
+
+    # set colors to grey for absolute values < threshold
+    istart = int(norm(-threshold, clip=True) * (cmap.N - 1))
+    istop = int(norm(threshold, clip=True) * (cmap.N - 1))
+    for i in range(istart, istop):
+        cmaplist[i] = (0.5, 0.5, 0.5, 1.)
+    our_cmap = LinearSegmentedColormap.from_list('Custom cmap',
+                                                 cmaplist, cmap.N)
+    sm = plt.cm.ScalarMappable(cmap=our_cmap,
+                               norm=plt.Normalize(vmin=vmin, vmax=vmax))
+    # fake up the array of the scalar mappable.
+    sm._A = []
+
+    return sm
+
+
+def plot_img_on_surf(stat_map, surf_mesh='fsaverage5', mask_img=None,
+                     hemispheres=['left', 'right'],
+                     inflate=False,
+                     views=['lateral', 'medial'],
+                     output_file=None, title=None, colorbar=True,
+                     vmax=None, threshold=None,
+                     cmap='cold_hot', aspect_ratio=1.4, **kwargs):
+    """Convenience function to plot multiple views of plot_surf_stat_map
+    in a single figure. It projects stat_map into meshes and plots views of
+    left and right hemispheres. The *views* argument defines the views
+    that are shown. This function returns the fig, axes elements from
+    matplotlib unless kwargs sets and output_file, in which case nothing
+    is returned.
+
+    stat_map : str or 3D Niimg-like object
+        See http://nilearn.github.io/manipulating_images/input_output.html
+
+    surf_mesh : str, dict, or None, default is 'fsaverage5'
+        If str, either one of the two:
+        'fsaverage5': the low-resolution fsaverage5 mesh (10242 nodes)
+        'fsaverage': the high-resolution fsaverage mesh (163842 nodes)
+        If dict, a dictionary with keys: ['infl_left', 'infl_right',
+        'pial_left', 'pial_right', 'sulc_left', 'sulc_right'], where
+        values are surface mesh geometries as accepted by plot_surf_stat_map.
+
+    mask_img : Niimg-like object or None, optional (default=None)
+        The mask is passed to vol_to_surf.
+        Samples falling out of this mask or out of the image are ignored
+        during projection of the volume to the surface.
+        If ``None``, don't apply any mask.
+
+    inflate : bool, optional (default=False)
+        If True, display images in inflated brain.
+        If False, display images in pial surface.
+
+    views : list, optional (default=['lateral', 'medial'])
+        A list containing all views to display.
+        The montage will contain as many rows as views specified by
+        display mode. Order is preserved, and left and right hemispheres
+        are shown on the left and right sides of the figure.
+
+    hemispheres : list, optional (default=['left', 'right'])
+        Hemispheres to display
+
+    output_file : str, optional (default=None)
+        The name of an image file to export plot to. Valid extensions
+        are: *.png*, *.pdf*, *.svg*. If output_file is not None,
+        the plot is saved to a file, and the display is closed. Return
+        value is None.
+
+    title : str, optional (default=None)
+        Place a title on the upper center of the figure.
+
+    colorbar : bool, optional (default=True)
+        If *True*, a symmetric colorbar of the statistical map is displayed.
+
+    vmax : float, optional (default=None)
+        Upper bound for plotting of stat_map values.
+
+    threshold : float, optional (default=None)
+        If None is given, the image is not thresholded.
+        If a number is given, it is used to threshold the image,
+        values below the threshold (in absolute value) are plotted
+        as transparent.
+
+    cmap : str, optional (default='cold_hot')
+        The name of a matplotlib or nilearn colormap.
+
+    kwargs : dict
+        keyword arguments passed to plot_surf_stat_map.
+
+    See Also
+    --------
+    nilearn.datasets.fetch_surf_fsaverage : For surface data object to be
+        used as the default background map for this plotting function.
+
+    nilearn.surface.vol_to_surf : For info on the generation of surfaces.
+
+    nilearn.plotting.plot_surf_stat_map : For info on kwargs options
+        accepted by plot_img_on_surf.
+    """
+    for arg in ('figure', 'axes'):
+        if arg in kwargs:
+            raise ValueError(('plot_img_on_surf does not'
+                              ' accept %s as an argument' % arg))
+
+    stat_map = check_niimg_3d(stat_map, dtype='auto')
+    modes = _check_views(views)
+    hemis = _check_hemispheres(hemispheres)
+    surf_mesh = _check_mesh(surf_mesh)
+
+    mesh_prefix = "infl" if inflate else "pial"
+    surf = {
+        'left': surf_mesh[mesh_prefix + '_left'],
+        'right': surf_mesh[mesh_prefix + '_right'],
+    }
+
+    texture = {
+        'left': vol_to_surf(stat_map, surf_mesh['pial_left'],
+                            mask_img=mask_img),
+        'right': vol_to_surf(stat_map, surf_mesh['pial_right'],
+                             mask_img=mask_img)
+    }
+
+    figsize = plt.figaspect(len(modes) / (aspect_ratio * len(hemispheres)))
+    fig, axes = plt.subplots(nrows=len(modes),
+                             ncols=len(hemis),
+                             figsize=figsize,
+                             subplot_kw={'projection': '3d'})
+
+    axes = np.atleast_2d(axes)
+
+    if len(hemis) == 1:
+        axes = axes.T
+
+    for index_mode, mode in enumerate(modes):
+        for index_hemi, hemi in enumerate(hemis):
+            bg_map = surf_mesh['sulc_%s' % hemi]
+            plot_surf_stat_map(surf[hemi], texture[hemi],
+                               view=mode, hemi=hemi,
+                               bg_map=bg_map,
+                               axes=axes[index_mode, index_hemi],
+                               colorbar=False,  # Colorbar created externally.
+                               vmax=vmax,
+                               threshold=threshold,
+                               cmap=cmap,
+                               **kwargs)
+
+    for ax in axes.flatten():
+        # We increase this value to better position the camera of the
+        # 3D projection plot. The default value makes meshes look too small.
+        ax.dist = 6
+
+    if colorbar:
+        sm = _colorbar_from_array(stat_map.get_data(), vmax, threshold, kwargs,
+                                  cmap=get_cmap(cmap))
+
+        cbar_ax = fig.add_subplot(32, 1, 32)
+        fig.colorbar(sm, cax=cbar_ax, orientation='horizontal')
+
+    fig.subplots_adjust(wspace=-0.02, hspace=0.0)
+
+    if title is not None:
+        fig.suptitle(title)
+
+    if output_file is not None:
+        fig.savefig(output_file)
+        plt.close(fig)
+    else:
+        return fig, axes
 
 
 def plot_surf_roi(surf_mesh, roi_map, bg_map=None,

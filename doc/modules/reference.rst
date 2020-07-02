@@ -344,6 +344,7 @@ the :ref:`user guide <user_guide>` for more information and usage examples.
    plot_surf_roi
    plot_surf_contours
    plot_surf_stat_map
+   plot_img_on_surf
    view_surf
    view_img_on_surf
    view_connectome
@@ -516,6 +517,7 @@ the :ref:`user guide <user_guide>` for more information and usage examples.
 
    compare_niimgs
    plot_design_matrix
+   plot_event
    plot_contrast_matrix
    get_clusters_table
    make_glm_report

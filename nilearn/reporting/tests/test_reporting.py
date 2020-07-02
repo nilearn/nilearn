@@ -2,6 +2,7 @@ import os
 
 import nibabel as nib
 import numpy as np
+import pandas as pd
 import pytest
 
 from nibabel.tmpdirs import InTemporaryDirectory
@@ -11,6 +12,7 @@ from nilearn.plotting import _set_mpl_backend
 from nilearn.glm.first_level.design_matrix import make_first_level_design_matrix
 from nilearn.reporting import (get_clusters_table,
                                plot_contrast_matrix,
+                               plot_event,
                                plot_design_matrix,
                                )
 from nilearn.reporting._get_clusters_table import _local_max
@@ -43,6 +45,46 @@ def test_show_design_matrix():
         plot_design_matrix(dmtx, output_file='dmtx.pdf')
         assert os.path.exists('dmtx.pdf')
 
+
+@pytest.mark.skipif(not have_mpl,
+                    reason='Matplotlib not installed; required for this test')
+def test_show_event_plot():
+    # test that the show code indeed (formally) runs
+    onset = np.linspace(0, 19., 20)
+    duration = np.full(20, 0.5)
+    trial_idx = np.arange(20)
+    # This makes 11 events in order to test cmap error
+    trial_idx[11:] -= 10
+    condition_ids = ['a', 'b', 'c', 'd', 'e', 'f',
+                     'g', 'h', 'i', 'j', 'k']
+
+    trial_type = np.array([condition_ids[i] for i in trial_idx])
+
+    model_event = pd.DataFrame({
+        'onset': onset,
+        'duration': duration,
+        'trial_type': trial_type
+    })
+    # Test Dataframe
+    fig = plot_event(model_event)
+    assert (fig is not None)
+
+    # Test List
+    fig = plot_event([model_event, model_event])
+    assert (fig is not None)
+    
+    # Test error
+    with pytest.raises(ValueError):
+        fig = plot_event(model_event, cmap='tab10')
+
+    # Test save
+    with InTemporaryDirectory():
+        fig = plot_event(model_event, output_file='event.png')
+        assert os.path.exists('event.png')
+        assert (fig is None)
+        plot_event(model_event, output_file='event.pdf')
+        assert os.path.exists('event.pdf')
+    
 
 @pytest.mark.skipif(not have_mpl,
                     reason='Matplotlib not installed; required for this test')
