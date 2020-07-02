@@ -19,7 +19,7 @@ import zipfile
 import requests
 
 
-_REQUESTS_TIMEOUT = (2, 600)
+_REQUESTS_TIMEOUT = (3.1, 27)
 
 
 def md5_hash(string):
@@ -460,6 +460,25 @@ def _filter_columns(array, filters, combination='and'):
     return mask
 
 
+class _NaiveFTPAdapter(requests.adapters.BaseAdapter):
+    def send(self, request, timeout=None, **kwargs):
+        try:
+            timeout, _ = timeout
+        except Exception:
+            pass
+        try:
+            data = urllib.request.urlopen(request.url, timeout=timeout)
+        except Exception as e:
+            raise requests.RequestException(e.reason)
+        data.release_conn = data.close
+        resp = requests.Response()
+        resp.url = data.geturl()
+        resp.status_code = data.getcode() or 200
+        resp.raw = data
+        resp.headers = dict(data.info().items())
+        return resp
+
+
 def _fetch_file(url, data_dir, resume=True, overwrite=False,
                 md5sum=None, username=None, password=None, handlers=None,
                 verbose=1, session=None):
@@ -534,6 +553,7 @@ def _fetch_file(url, data_dir, resume=True, overwrite=False,
 
     if session is None:
         session = requests.Session()
+        session.mount("ftp:", _NaiveFTPAdapter())
     try:
         # Download data
         headers = {}
