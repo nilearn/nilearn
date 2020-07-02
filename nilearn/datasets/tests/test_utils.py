@@ -381,7 +381,7 @@ def test_naive_ftp_adapter():
     resp = sender.send(
         requests.Request("GET", "ftp://example.com").prepare())
     resp.close()
-    resp.raw.close.assert_called()
+    resp.raw.close.assert_called_with()
     urllib.request.OpenerDirector.open.side_effect = urllib.error.URLError(
         "timeout")
     with pytest.raises(requests.RequestException, match="timeout"):
