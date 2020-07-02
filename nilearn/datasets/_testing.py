@@ -77,6 +77,12 @@ class Response:
         self.status_code = status_code
         self.headers = {"Content-Length": len(self.content)}
 
+    def __enter__(self):
+        return self
+
+    def __exit__(self, *args):
+        pass
+
     def iter_content(self, chunk_size=8):
         for i in range(0, len(self.content), chunk_size):
             yield self.content[i: i + chunk_size]

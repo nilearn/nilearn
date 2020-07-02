@@ -21,11 +21,11 @@ def test_request_mocking_autoused_requests():
 
 def test_request_mocking_autoused_urllib():
     resp = request.urlopen("https://example.com")
-    assert resp.__class__.__name__ == "Mock"
+    assert resp.__class__.__name__ == "MagicMock"
     req = request.Request("https://example.com")
     opener = request.build_opener()
     resp = opener.open(req)
-    assert resp.__class__.__name__ == "Mock"
+    assert resp.__class__.__name__ == "MagicMock"
 
 
 def test_temp_nilearn_home_autoused():

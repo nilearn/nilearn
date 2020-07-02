@@ -351,11 +351,9 @@ def _uncompress_file(file_, delete_archive=True, verbose=1):
                 # For gzip file, we rely on the assumption that there is an extenstion
                 shutil.move(file_, file_ + '.gz')
                 file_ = file_ + '.gz'
-            gz = gzip.open(file_)
-            out = open(filename, 'wb')
-            shutil.copyfileobj(gz, out, 8192)
-            gz.close()
-            out.close()
+            with gzip.open(file_) as gz:
+                with open(filename, 'wb') as out:
+                    shutil.copyfileobj(gz, out, 8192)
             # If file is .tar.gz, this will be handle in the next case
             if delete_archive:
                 os.remove(file_)
@@ -576,13 +574,18 @@ def _fetch_file(url, data_dir, resume=True, overwrite=False,
                 req = requests.Request(
                     method="GET", url=url, headers=headers, auth=auth)
                 prepped = session.prepare_request(req)
-                resp = session.send(
-                    prepped, stream=True, timeout=_REQUESTS_TIMEOUT)
-                resp.raise_for_status()
-                content_range = resp.headers.get('Content-Range')
-                if (content_range is None or not content_range.startswith(
-                        'bytes {}-'.format(local_file_size))):
-                    raise IOError('Server does not support resuming')
+                with session.send(prepped, stream=True,
+                                  timeout=_REQUESTS_TIMEOUT) as resp:
+                    resp.raise_for_status()
+                    content_range = resp.headers.get('Content-Range')
+                    if (content_range is None or not content_range.startswith(
+                            'bytes {}-'.format(local_file_size))):
+                        raise IOError('Server does not support resuming')
+                    initial_size = local_file_size
+                    with open(local_file, "ab") as fh:
+                        _chunk_read_(
+                            resp, fh, report_hook=(verbose > 0),
+                            initial_size=initial_size, verbose=verbose)
             except Exception:
                 if verbose > 0:
                     print('Resuming failed, try to download the whole file.')
@@ -590,21 +593,16 @@ def _fetch_file(url, data_dir, resume=True, overwrite=False,
                     url, data_dir, resume=False, overwrite=overwrite,
                     md5sum=md5sum, username=username, password=password,
                     handlers=handlers, verbose=verbose, session=session)
-            local_file = open(temp_full_name, "ab")
-            initial_size = local_file_size
         else:
             req = requests.Request(
                 method="GET", url=url, headers=headers, auth=auth)
             prepped = session.prepare_request(req)
-            resp = session.send(
-                prepped, stream=True, timeout=_REQUESTS_TIMEOUT)
-            resp.raise_for_status()
-            local_file = open(temp_full_name, "wb")
-        _chunk_read_(resp, local_file, report_hook=(verbose > 0),
-                     initial_size=initial_size, verbose=verbose)
-        # temp file must be closed prior to the move
-        if not local_file.closed:
-            local_file.close()
+            with session.send(
+                    prepped, stream=True, timeout=_REQUESTS_TIMEOUT) as resp:
+                resp.raise_for_status()
+                with open(temp_full_name, "wb") as fh:
+                    _chunk_read_(resp, fh, report_hook=(verbose > 0),
+                                 initial_size=initial_size, verbose=verbose)
         shutil.move(temp_full_name, full_name)
         dt = time.time() - t0
         if verbose > 0:
@@ -615,10 +613,6 @@ def _fetch_file(url, data_dir, resume=True, overwrite=False,
         sys.stderr.write("Error while fetching file %s; dataset "
                          "fetching aborted." % (file_name))
         raise
-    finally:
-        if local_file is not None:
-            if not local_file.closed:
-                local_file.close()
     if md5sum is not None:
         if (_md5_sum_file(full_name) != md5sum):
             raise ValueError("File %s checksum verification has failed."
