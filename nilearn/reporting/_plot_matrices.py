@@ -81,8 +81,8 @@ def plot_event(model_event, cmap=None, output_file=None, **fig_kwargs):
     model_event : pandas DataFrame or list of pandas DataFrame
         the `pandas.DataFrame` must have three columns
         ``event_type`` with event name, ``onset`` and ``duration``.
-        The `pandas.DataFrame` can also be obtained from 
-        :func:`~nilearn.stats.first_level_model.first_level_models_from_bids`.
+        The `pandas.DataFrame` can also be obtained from
+        :func:`nilearn.glm.first_level.first_level_from_bids`.
 
     cmap : str or matplotlib.cmap, optional
         the colormap used to label different events
