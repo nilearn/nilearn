@@ -8,6 +8,7 @@ import numpy as np
 import warnings
 from sklearn import neighbors
 from joblib import Memory
+from scipy import sparse
 
 from ..image.resampling import coord_transform
 from .._utils.niimg_conversions import _safe_get_data
@@ -58,7 +59,7 @@ def _apply_mask_and_get_affinity(seeds, niimg, radius, allow_overlap,
     if niimg is None:
         mask, affine = masking._load_mask_img(mask_img)
         # Get coordinate for alle voxels inside of mask
-        mask_coords = list(np.ndindex(*mask.shape))
+        mask_coords = np.asarray(np.nonzero(mask)).T.tolist()
         X = None
 
     elif mask_img is not None:
@@ -109,10 +110,15 @@ def _apply_mask_and_get_affinity(seeds, niimg, radius, allow_overlap,
     mask_coords = mask_coords.astype(int).tolist()
     for i, seed in enumerate(seeds):
         try:
-            A[i, mask_coords.index(seed)] = True
+            A[i, mask_coords.index(list(map(int, seed)))] = True
         except ValueError:
             # seed is not in the mask
             pass
+
+    sphere_sizes = np.asarray(A.tocsr().sum(axis=1)).ravel()
+    empty_spheres, *_ = np.nonzero(sphere_sizes == 0)
+    if len(empty_spheres) != 0:
+        raise ValueError("These spheres are empty: {}".format(empty_spheres))
 
     if not allow_overlap:
         if np.any(A.sum(axis=0) >= 2):
@@ -146,8 +152,6 @@ def _iter_signals_from_spheres(seeds, niimg, radius, allow_overlap,
                                         allow_overlap,
                                         mask_img=mask_img)
     for i, row in enumerate(A.rows):
-        if len(row) == 0:
-            raise ValueError('Sphere around seed #%i is empty' % i)
         yield X[:, row]
 
 
@@ -171,9 +175,7 @@ def _iter_regions_from_spheres(seeds, radius, allow_overlap, mask_img):
     _, adjacency = _apply_mask_and_get_affinity(seeds, None, radius,
                                                 allow_overlap,
                                                 mask_img=mask_img)
-
-    for row in adjacency.rows:
-        yield row
+    yield from adjacency.rows
 
 
 class _ExtractionFunctor(object):
@@ -197,65 +199,6 @@ class _ExtractionFunctor(object):
                 mask_img=self.mask_img)):
             signals[:, i] = np.mean(sphere, axis=1)
         return signals, None
-
-
-def _spheres_inversion(seeds_, radius, mask_img, allow_overlap):
-    '''Utility function to create a maps Niimg, containing a map with a sphere
-    of the given radius for each seed_ location.
-
-    Parameters
-    ----------
-    seeds_: List of triplets of coordinates in native space
-        Seed definitions. List of coordinates of the seeds in the same space
-        as target_affine (either of mask or if mask is None MNI space).
-    radius: float
-        Indicates, in millimeters, the radius for the sphere around the seed.
-    mask_img: Niimg-like object
-        NiftiSpheresMasker mask_img, is necessary as reference to back-project
-        spheres to brain-space.
-    allow_overlap: boolean
-        If False, an error is raised if the maps overlaps (ie at least two
-        maps have a non-zero value for the same voxel).
-
-    Returns
-    -------
-    spheres_map: Niimg-like object
-        A map of each of the sphere's locations. Scaled at places of overlap.
-    '''
-    # Mask is necessary for affine and shape
-    if mask_img is not None:
-        mask = check_niimg_3d(mask_img)
-    else:
-        raise ValueError('Please provide mask_img at initialization to'
-                         ' provide a reference for the inverse_transform')
-
-    flat_mask, _ = masking._load_mask_img(mask_img)
-    flat_mask = flat_mask.reshape(-1)
-
-    n_seeds = len(seeds_)
-    spheres = np.zeros((n_seeds, np.prod(mask.shape)))
-
-    # Populate spheres and apply mask
-    for i, sphere in enumerate(_iter_regions_from_spheres(seeds_, radius,
-                               allow_overlap, mask)):
-        spheres[i, sphere] = 1
-        spheres[i, flat_mask == 0] = 0
-        if spheres[i, :].sum() == 0:
-            raise ValueError('Sphere around seed #%i is empty' % i)
-
-    # Compute overlap scaling for mean signal:
-    if allow_overlap:
-        spheres_sum = spheres.sum(0)
-        # signals_to_img_maps uses dot product to create mask over regions,
-        # inverse scaling to create average not sum for overlapping spheres
-        spheres_scale = 1 / spheres_sum[np.newaxis, spheres_sum > 1]
-        spheres[:, spheres_sum > 1] = (spheres[:, spheres_sum > 1]
-                                       * spheres_scale)
-
-    spheres_map = image.new_img_like(mask_img,
-                                     spheres.T.reshape([*mask.shape, n_seeds]))
-
-    return spheres_map
 
 
 class NiftiSpheresMasker(BaseMasker, CacheMixin):
@@ -473,16 +416,23 @@ class NiftiSpheresMasker(BaseMasker, CacheMixin):
             Signal for each sphere.
             shape: (mask_img, number of scans).
         """
-        from ..regions import signal_extraction
-
         self._check_fitted()
 
         logger.log("computing image from signals", verbose=self.verbose)
 
-        # Allow_overlap uses float for spheres, to allow scaling
-        inverse_map = _spheres_inversion(self.seeds_, self.radius,
-                                         self.mask_img, self.allow_overlap)
+        if self.mask_img is not None:
+            mask = check_niimg_3d(self.mask_img)
+        else:
+            raise ValueError('Please provide mask_img at initialization to'
+                             ' provide a reference for the inverse_transform')
+        _, adjacency = _apply_mask_and_get_affinity(
+            self.seeds_, None, self.radius, self.allow_overlap, mask_img=mask)
+        adjacency = adjacency.tocsr()
+        # Compute overlap scaling for mean signal:
+        if self.allow_overlap:
+            n_adjacent_spheres = np.asarray(adjacency.sum(axis=0)).ravel()
+            scale = 1 / np.maximum(1, n_adjacent_spheres)
+            adjacency = adjacency.dot(sparse.diags(scale))
 
-        # Use the maps masker, to map signal to voxels and to apply mask
-        return signal_extraction.signals_to_img_maps(
-            region_signals, inverse_map, mask_img=self.mask_img)
+        img = adjacency.T.dot(region_signals.T).T
+        return masking.unmask(img, self.mask_img)
