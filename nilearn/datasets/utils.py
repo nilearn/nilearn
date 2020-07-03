@@ -476,9 +476,12 @@ class _NaiveFTPAdapter(requests.adapters.BaseAdapter):
         resp.headers = dict(data.info().items())
         return resp
 
+    def close(self):
+        pass
+
 
 def _fetch_file(url, data_dir, resume=True, overwrite=False,
-                md5sum=None, username=None, password=None, handlers=None,
+                md5sum=None, username=None, password=None,
                 verbose=1, session=None):
     """Load requested file, downloading it if needed or requested.
 
@@ -506,12 +509,11 @@ def _fetch_file(url, data_dir, resume=True, overwrite=False,
     password: string, optional
         Password used for basic HTTP authentication
 
-    handlers: list of BaseHandler, optional
-        urllib handlers passed to urllib.request.build_opener. Used by
-        advanced users to customize request handling.
-
     verbose: int, optional
         verbosity level (0 means no message).
+
+    session:
+        requests Session to use to send requests
 
     Returns
     -------
@@ -523,7 +525,13 @@ def _fetch_file(url, data_dir, resume=True, overwrite=False,
     If, for any reason, the download procedure fails, all downloaded files are
     removed.
     """
-    handlers = handlers if handlers else []
+    if session is None:
+        with requests.Session() as session:
+            session.mount("ftp:", _NaiveFTPAdapter())
+            return _fetch_file(
+                url, data_dir, resume=resume, overwrite=overwrite,
+                md5sum=md5sum, username=username, password=password,
+                verbose=verbose, session=session)
     # Determine data path
     if not os.path.exists(data_dir):
         os.makedirs(data_dir)
@@ -549,9 +557,6 @@ def _fetch_file(url, data_dir, resume=True, overwrite=False,
     local_file = None
     initial_size = 0
 
-    if session is None:
-        session = requests.Session()
-        session.mount("ftp:", _NaiveFTPAdapter())
     try:
         # Download data
         headers = {}
@@ -592,7 +597,7 @@ def _fetch_file(url, data_dir, resume=True, overwrite=False,
                 return _fetch_file(
                     url, data_dir, resume=False, overwrite=overwrite,
                     md5sum=md5sum, username=username, password=password,
-                    handlers=handlers, verbose=verbose, session=session)
+                    verbose=verbose, session=session)
         else:
             req = requests.Request(
                 method="GET", url=url, headers=headers, auth=auth)
@@ -667,7 +672,7 @@ def movetree(src, dst):
         raise Exception(errors)
 
 
-def _fetch_files(data_dir, files, resume=True, verbose=1):
+def _fetch_files(data_dir, files, resume=True, verbose=1, session=None):
     """Load requested dataset, downloading it if needed or requested.
 
     This function retrieves files from the hard drive or download them from
@@ -700,11 +705,19 @@ def _fetch_files(data_dir, files, resume=True, verbose=1):
     verbose: int, optional
         verbosity level (0 means no message).
 
+    session:
+        requests Session to use to send requests
     Returns
     -------
     files: list of string
         Absolute paths of downloaded files on disk
     """
+    if session is None:
+        with requests.Session() as session:
+            session.mount("ftp:", _NaiveFTPAdapter())
+            return _fetch_files(
+                data_dir, files, resume=resume,
+                verbose=verbose, session=session)
     # There are two working directories here:
     # - data_dir is the destination directory of the dataset
     # - temp_dir is a temporary directory dedicated to this fetching call. All
@@ -755,7 +768,6 @@ def _fetch_files(data_dir, files, resume=True, verbose=1):
                                   verbose=verbose, md5sum=md5sum,
                                   username=opts.get('username', None),
                                   password=opts.get('password', None),
-                                  handlers=opts.get('handlers', []),
                                   overwrite=overwrite)
             if 'move' in opts:
                 # XXX: here, move is supposed to be a dir, it can be a name
