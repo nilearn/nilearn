@@ -13,16 +13,14 @@ import numpy as np
 import pandas as pd
 
 import nilearn
+from nilearn._utils.glm import get_design_from_fslmat
+from nilearn.glm.first_level import FirstLevelModel, first_level_from_bids
+from nilearn.glm.first_level.design_matrix import \
+    make_first_level_design_matrix
+from nilearn.glm.second_level import SecondLevelModel
 from nilearn.image import resample_to_img
 from nilearn.input_data import NiftiSpheresMasker
-
-from nilearn.stats.first_level_model.design_matrix import make_first_level_design_matrix
-from nilearn.stats.first_level_model import (FirstLevelModel,
-                                             first_level_models_from_bids,
-                                             )
 from nilearn.reporting import make_glm_report
-from nilearn.stats.second_level_model import SecondLevelModel
-from nilearn._utils.stats import get_design_from_fslmat
 
 REPORTS_DIR = 'generated_glm_reports'
 try:
@@ -91,7 +89,7 @@ def _make_flm(data_dir):  # pragma: no cover
     space_label = 'MNI152NLin2009cAsym'
     derivatives_folder = 'derivatives/fmriprep'
     models, models_run_imgs, models_events, models_confounds = \
-        first_level_models_from_bids(
+        first_level_from_bids(
             data_dir, task_label, space_label, smoothing_fwhm=5.0,
             derivatives_folder=derivatives_folder)
 

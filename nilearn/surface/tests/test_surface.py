@@ -583,6 +583,18 @@ def test_sampling_between_surfaces(projection):
         projection.ravel(), img[:, :, 1:4].mean(axis=-1).ravel())
 
 
+def test_check_mesh():
+    mesh = surface._check_mesh('fsaverage5')
+    assert mesh is surface._check_mesh(mesh)
+    with pytest.raises(ValueError):
+        surface._check_mesh('fsaverage3')
+    mesh.pop('pial_left')
+    with pytest.raises(ValueError):
+        surface._check_mesh(mesh)
+    with pytest.raises(TypeError):
+        surface._check_mesh(surface.load_surf_mesh(mesh['pial_right']))
+
+
 def test_check_mesh_and_data():
     mesh = generate_surf()
     data = mesh[0][:, 0]

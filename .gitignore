@@ -37,3 +37,6 @@ tags
 venv/
 
 doc/themes/nilearn/static/jquery.js
+.vscode/
+examples/results/
+examples/**/*.pdf
