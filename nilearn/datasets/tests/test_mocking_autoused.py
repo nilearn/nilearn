@@ -7,16 +7,16 @@ from urllib import request
 
 def test_request_mocking_autoused_requests():
     assert requests.sessions.Session.send.__class__.__name__ == "Sender"
-    assert requests.sessions.Session.send._is_mock
+    assert requests.sessions.Session.send.is_mock
     resp = requests.get("https://example.com")
-    assert resp._is_mock
+    assert resp.is_mock
     resp = requests.post("https://example.com", data={"key": "value"})
-    assert resp._is_mock
+    assert resp.is_mock
     session = requests.Session()
     req = requests.Request("GET", "https://example.com")
     prepped = session.prepare_request(req)
     resp = session.send(prepped)
-    assert resp._is_mock
+    assert resp.is_mock
 
 
 def test_request_mocking_autoused_urllib():
@@ -46,6 +46,6 @@ def test_temp_nilearn_home_autoused():
 def check_doctest_fixture():
     """
     >>> import requests
-    >>> assert requests.get('https://example.com')._is_mock
+    >>> assert requests.get('https://example.com').is_mock
     """
     pass

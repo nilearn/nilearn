@@ -48,9 +48,9 @@ def request_mocker(monkeypatch):
     configured -- see the docstring for Sender.
 
     urllib's open is simply patched with a MagicMock. As nilearn dataset
-    fetchers use requests, we do not expect this to actually be used; it is
-    only patched to make sure network mocking is worked around by using urllib
-    directly instead of requests.
+    fetchers use requests, most tests won't use this; it is patched to make
+    sure network mocking is not worked around by using urllib directly instead
+    of requests, and for testing the FTP adapter.
 
     This fixture uses 'autouse' and is imported in conftest.py to make sure it
     is used by every test, even those that do not explicitly ask for it.
@@ -69,7 +69,7 @@ class Response:
     interface; only the parts used by nilearn functions.
 
     """
-    _is_mock = True
+    is_mock = True
 
     def __init__(self, content, url, status_code=200):
         self.content = content
@@ -103,7 +103,7 @@ class Response:
 
 class Request:
     """A mock request class."""
-    _is_mock = True
+    is_mock = True
 
     def __init__(self, url):
         self.url = url
@@ -121,7 +121,7 @@ class Sender:
 
     When a Sender receives a request, it tries to match it against the keys in
     url_mapping, and then against urls found in
-    /nilearn/datasets/tests/data/archive_contents/ (details below). If a key
+    nilearn/datasets/tests/data/archive_contents/ (details below). If a key
     matches, the corresponding value is used to compute the response. If no key
     matches, an response with empty content is returned.
 
@@ -153,7 +153,7 @@ class Sender:
     ignored)
     The first line of a file in archive_contents is a glob pattern stating to
     which urls it applies. If it matches, the subsequent lines are paths that
-    should exist inside the archive. The files created in the archive are
+    will exist inside the archive. The files created in the archive are
     empty. For example, if a file looks like:
       https://example.org/subj_*.tar.gz
       README.txt
@@ -187,8 +187,7 @@ class Sender:
     - a callable: it is called as value(match, request), where request is the
       input `Request` object, and match is the url if the key was a string and
       the `re.Match` resulting from matching the key if it was a `re.Pattern`.
-      The result of this call is then processed as if it was the original
-      value.
+      The result of this call is then processed as described below.
     - an instance of the Response class: it used without modification.
     - a `bytes`: result is a Response with status 200 and these bytes as
       content.
@@ -217,7 +216,7 @@ class Sender:
     `visited_urls`, and the number of sent requests in `url_count`
 
     """
-    _is_mock = True
+    is_mock = True
 
     def __init__(self):
         self.url_mapping = OrderedDict()
@@ -236,13 +235,10 @@ class Sender:
         if isinstance(request, str):
             request = Request(request)
         self.sent_requests.append(request)
-        self.visited_urls.append(request.url)
-        response = None
         for key, value in list(self.url_mapping.items())[::-1]:
             match = self.match(key, request.url)
             if match is not None:
-                response = self.get_response(value, match, request)
-                return response
+                return self.get_response(value, match, request)
         for key, file_path in self._archive_contents_index.items():
             match = self.match(key, request.url)
             if match is not None:
@@ -264,8 +260,8 @@ class Sender:
 
     def get_response(self, response, match, request):
         if hasattr(response, "__call__"):
-            return self.get_response(
-                response(match, request), match, request)
+            response = response(match, request)
+
         if isinstance(response, Response):
             return response
         elif isinstance(response, Exception):
@@ -300,7 +296,7 @@ def serialize_niimg(img, gzipped=True):
     """
     with tempfile.TemporaryDirectory() as tmp_dir:
         tmp_dir = Path(tmp_dir)
-        file_path = tmp_dir / "img.nii{}".format(["", ".gz"][gzipped])
+        file_path = tmp_dir / "img.nii{}".format(".gz" if gzipped else "")
         img.to_filename(str(file_path))
         with file_path.open("rb") as f:
             return f.read()
