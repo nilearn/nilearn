@@ -19,7 +19,7 @@ import zipfile
 import requests
 
 
-_REQUESTS_TIMEOUT = (3.1, 27)
+_REQUESTS_TIMEOUT = (15.1, 61)
 
 
 def md5_hash(string):
