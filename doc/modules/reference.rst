@@ -1,11 +1,9 @@
-================================================
-Reference documentation: all nilearn functions
-================================================
+===============================================
+ Reference documentation: all nilearn functions
+===============================================
 
 This is the class and function reference of nilearn. Please refer to
-the :ref:`full user guide <user_guide>` for further details, as the class and
-function raw specifications may not be enough to give full guidelines on their
-uses.
+the :ref:`user guide <user_guide>` for more information and usage examples.
 
 .. contents:: **List of modules**
    :local:
@@ -40,7 +38,6 @@ uses.
    :toctree: generated/
    :template: function.rst
 
-   sym_to_vec
    sym_matrix_to_vec
    vec_to_sym_matrix
    group_sparse_covariance
@@ -136,14 +133,14 @@ uses.
    Decoder
    DecoderRegressor
    fREMClassifier
-   fREMRegressor 
+   fREMRegressor
    SpaceNetClassifier
    SpaceNetRegressor
    SearchLight
 
 .. _decomposition_ref:
 
-:mod:`nilearn.decomposition`: Multivariate decompositions
+:mod:`nilearn.decomposition`: Multivariate Decompositions
 =========================================================
 
 .. automodule:: nilearn.decomposition
@@ -163,7 +160,7 @@ uses.
 
 .. _image_ref:
 
-:mod:`nilearn.image`: Image processing and resampling utilities
+:mod:`nilearn.image`: Image Processing and Resampling Utilities
 ===============================================================
 
 .. automodule:: nilearn.image
@@ -201,7 +198,7 @@ uses.
 
 .. _io_ref:
 
-:mod:`nilearn.input_data`: Loading and Processing files easily
+:mod:`nilearn.input_data`: Loading and Processing Files Easily
 ==============================================================
 
 .. automodule:: nilearn.input_data
@@ -245,7 +242,7 @@ uses.
 
    compute_epi_mask
    compute_multi_epi_mask
-   compute_gray_matter_mask
+   compute_brain_mask
    compute_multi_gray_matter_mask
    compute_background_mask
    compute_multi_background_mask
@@ -253,7 +250,7 @@ uses.
    apply_mask
    unmask
 
-:mod:`nilearn.regions`: Operating on regions
+:mod:`nilearn.regions`: Operating on Regions
 ============================================
 
 .. automodule:: nilearn.regions
@@ -288,7 +285,7 @@ uses.
    ReNA
 
 
-:mod:`nilearn.mass_univariate`: Mass-univariate analysis
+:mod:`nilearn.mass_univariate`: Mass-Univariate Analysis
 =========================================================
 
 .. automodule:: nilearn.mass_univariate
@@ -310,7 +307,7 @@ uses.
 .. _plotting_ref:
 
 
-:mod:`nilearn.plotting`: Plotting brain data
+:mod:`nilearn.plotting`: Plotting Brain Data
 ================================================
 
 .. automodule:: nilearn.plotting
@@ -340,10 +337,14 @@ uses.
    plot_glass_brain
    plot_connectome
    plot_connectome_strength
+   plot_markers
    plot_prob_atlas
+   plot_carpet
    plot_surf
    plot_surf_roi
+   plot_surf_contours
    plot_surf_stat_map
+   plot_img_on_surf
    view_surf
    view_img_on_surf
    view_connectome
@@ -388,10 +389,10 @@ uses.
 .. _stats_ref:
 
 
-:mod:`nilearn.stats`: Generalized Linear Models
+:mod:`nilearn.glm`: Generalized Linear Models
 ================================================
 
-.. automodule:: nilearn.stats
+.. automodule:: nilearn.glm
    :no-members:
    :no-inherited-members:
 
@@ -399,7 +400,7 @@ uses.
 
 **Classes**:
 
-.. currentmodule:: nilearn.stats
+.. currentmodule:: nilearn.glm
 
 .. autosummary::
    :toctree: generated/
@@ -416,7 +417,7 @@ uses.
 
 **Functions**:
 
-.. currentmodule:: nilearn.stats
+.. currentmodule:: nilearn.glm
 
 .. autosummary::
    :toctree: generated/
@@ -427,19 +428,19 @@ uses.
     expression_to_contrast_vector
     fdr_threshold
     cluster_level_inference
-    map_threshold
+    threshold_stats_img
 
 
-:mod:`nilearn.stats.first_level_model`
+:mod:`nilearn.glm.first_level`
 --------------------------------------
 
-.. automodule:: nilearn.stats.first_level_model
+.. automodule:: nilearn.glm.first_level
    :no-members:
    :no-inherited-members:
 
 **Classes**:
 
-.. currentmodule:: nilearn.stats.first_level_model
+.. currentmodule:: nilearn.glm.first_level
 
 .. autosummary::
    :toctree: generated/
@@ -449,7 +450,7 @@ uses.
 
 **Functions**:
 
-.. currentmodule:: nilearn.stats.first_level_model
+.. currentmodule:: nilearn.glm.first_level
 
 .. autosummary::
    :toctree: generated/
@@ -457,7 +458,7 @@ uses.
 
     check_design_matrix
     compute_regressor
-    first_level_models_from_bids
+    first_level_from_bids
     glover_dispersion_derivative
     glover_hrf
     glover_time_derivative
@@ -468,16 +469,16 @@ uses.
     spm_hrf
     spm_time_derivative
 
-:mod:`nilearn.stats.second_level_model`
+:mod:`nilearn.glm.second_level`
 ---------------------------------------
 
-.. automodule:: nilearn.stats.second_level_model
+.. automodule:: nilearn.glm.second_level
    :no-members:
    :no-inherited-members:
 
 **Classes**:
 
-.. currentmodule:: nilearn.stats.second_level_model
+.. currentmodule:: nilearn.glm.second_level
 
 .. autosummary::
    :toctree: generated/
@@ -487,7 +488,7 @@ uses.
 
 **Functions**:
 
-.. currentmodule:: nilearn.stats.second_level_model
+.. currentmodule:: nilearn.glm.second_level
 
 .. autosummary::
    :toctree: generated/
@@ -499,7 +500,7 @@ uses.
 .. _reporting_ref:
 
 
-:mod:`nilearn.reporting`: Report plotting functions
+:mod:`nilearn.reporting`: Report Plotting Functions
 ====================================================
 
 .. automodule:: nilearn.reporting
@@ -516,12 +517,13 @@ uses.
 
    compare_niimgs
    plot_design_matrix
+   plot_event
    plot_contrast_matrix
    get_clusters_table
    make_glm_report
 
 
-:mod:`nilearn.surface`: Manipulating surface data
+:mod:`nilearn.surface`: Manipulating Surface Data
 ===================================================
 
 .. automodule:: nilearn.surface

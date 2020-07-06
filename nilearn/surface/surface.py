@@ -3,8 +3,10 @@ Functions for surface manipulation.
 """
 import os
 import warnings
+import collections
 import gzip
 from distutils.version import LooseVersion
+
 
 import numpy as np
 from scipy import sparse, interpolate
@@ -20,10 +22,11 @@ import nibabel
 from nibabel import gifti
 from nibabel import freesurfer as fs
 
-from ..image import load_img
-from ..image import resampling
-from .._utils.path_finding import _resolve_globbing
-from .. import _utils
+from nilearn import datasets
+from nilearn.image import load_img
+from nilearn.image import resampling
+from nilearn._utils.path_finding import _resolve_globbing
+from nilearn import _utils
 from nilearn.image import get_data
 
 
@@ -103,9 +106,9 @@ def _ball_sample_locations(mesh, affine, ball_radius=3., n_points=20):
     Parameters
     ----------
     mesh : pair of np arrays.
-        mesh[0] contains the 3d coordinates of the vertices
+        `mesh[0]` contains the 3d coordinates of the vertices
         (shape n_vertices, 3)
-        mesh[1] contains, for each triangle, the indices into mesh[0] of its
+        `mesh[1]` contains, for each triangle, the indices into `mesh[0]` of its
         vertices (shape n_triangles, 3)
 
     affine : array of shape (4, 4)
@@ -155,9 +158,9 @@ def _line_sample_locations(
     Parameters
     ----------
     mesh : pair of numpy.ndarray.
-        mesh[0] contains the 3d coordinates of the vertices
+        `mesh[0]` contains the 3d coordinates of the vertices
         (shape n_vertices, 3)
-        mesh[1] contains, for each triangle, the indices into mesh[0] of its
+        `mesh[1]` contains, for each triangle, the indices into `mesh[0]` of its
         vertices (shape n_triangles, 3)
 
     affine : numpy.ndarray of shape (4, 4)
@@ -749,6 +752,27 @@ def load_surf_mesh(surf_mesh):
                          '[vertex coordinates, face indices]')
 
     return [coords, faces]
+
+
+def _check_mesh(mesh):
+    """Check that mesh data is either a str, or a dict with sufficient
+    entries.
+
+    Used by plotting.surf_plotting.plot_img_on_surf and
+    plotting.html_surface.full_brain_info
+    """
+    if isinstance(mesh, str):
+        return datasets.fetch_surf_fsaverage(mesh)
+    if not isinstance(mesh, collections.Mapping):
+        raise TypeError("The mesh should be a str or a dictionary, "
+                        "you provided: {}.".format(type(mesh).__name__))
+    missing = {'pial_left', 'pial_right', 'sulc_left', 'sulc_right',
+               'infl_left', 'infl_right'}.difference(mesh.keys())
+    if missing:
+        raise ValueError(
+            "{} {} missing from the provided mesh dictionary".format(
+                missing, ('are' if len(missing) > 1 else 'is')))
+    return mesh
 
 
 def check_mesh_and_data(mesh, data):

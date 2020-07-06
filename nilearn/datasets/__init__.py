@@ -5,8 +5,7 @@ Helper functions to download NeuroImaging datasets
 from .struct import (fetch_icbm152_2009, load_mni152_template,
                      load_mni152_brain_mask, fetch_oasis_vbm,
                      fetch_icbm152_brain_gm_mask,
-                     MNI152_FILE_PATH, fetch_surf_fsaverage5,
-                     fetch_surf_fsaverage)
+                     MNI152_FILE_PATH, fetch_surf_fsaverage)
 from .func import (fetch_haxby, fetch_nyu_rest,
                    fetch_adhd, fetch_miyawaki2008,
                    fetch_localizer_contrasts, fetch_abide_pcp,
@@ -62,7 +61,7 @@ __all__ = ['MNI152_FILE_PATH', 'fetch_icbm152_2009', 'load_mni152_template',
            'fetch_atlas_yeo_2011', 'fetch_mixed_gambles', 'fetch_atlas_aal',
            'fetch_megatrawls_netmats', 'fetch_cobre',
            'fetch_surf_nki_enhanced', 'fetch_development_fmri',
-           'fetch_surf_fsaverage5', 'fetch_surf_fsaverage',
+           'fetch_surf_fsaverage',
            'fetch_atlas_basc_multiscale_2015', 'fetch_coords_dosenbach_2010',
            'fetch_neurovault', 'fetch_neurovault_ids',
            'fetch_neurovault_motor_task',

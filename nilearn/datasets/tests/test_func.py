@@ -20,6 +20,7 @@ from sklearn.utils import check_random_state
 from . import test_utils as tst
 
 from nilearn.datasets import utils, func
+from nilearn._utils.testing import check_deprecation
 
 from ..utils import _get_dataset_dir
 
@@ -501,8 +502,9 @@ def test_fetch_cobre(tmp_path, request_mocker):
     local_url = "file://" + dummy
 
     # All subjects
-    cobre_data = func.fetch_cobre(n_subjects=None, data_dir=str(tmp_path),
-                                  url=local_url)
+    cobre_data = check_deprecation(
+        func.fetch_cobre, "'fetch_cobre' has been deprecated")(
+            n_subjects=None, data_dir=str(tmp_path), url=local_url)
 
     phenotypic_names = ['func', 'confounds', 'phenotypic', 'description',
                         'desc_con', 'desc_phenotypic']
@@ -947,7 +949,7 @@ def test_fetch_spm_multimodal(request_mocker, tmp_path):
 
 def test_fiac(request_mocker, tmp_path):
     # Create dummy 'files'
-    fiac_dir = str(tmp_path / 'fiac_nilearn_stats' / 'nipy-data-0.2' /
+    fiac_dir = str(tmp_path / 'fiac_nilearn.glm' / 'nipy-data-0.2' /
                    'data' / 'fiac')
     fiac0_dir = os.path.join(fiac_dir, 'fiac0')
     os.makedirs(fiac0_dir)
