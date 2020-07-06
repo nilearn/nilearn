@@ -26,6 +26,7 @@ def _apply_mask_and_get_affinity(seeds, niimg, radius, allow_overlap,
     '''Utility function to get only the rows which are occupied by sphere at
     given seed locations and the provided radius. Rows are in target_affine and
     target_shape space.
+
     Parameters
     ----------
     seeds: List of triplets of coordinates in native space
@@ -72,7 +73,7 @@ def _apply_mask_and_get_affinity(seeds, niimg, radius, allow_overlap,
         mask_coords = list(zip(*np.where(mask != 0)))
 
         X = masking._apply_mask_fmri(niimg, mask_img)
-    else:
+    elif niimg is not None:
         affine = niimg.affine
         if np.isnan(np.sum(_safe_get_data(niimg))):
             warnings.warn('The imgs you have fed into fit_transform() contains'
@@ -81,6 +82,8 @@ def _apply_mask_and_get_affinity(seeds, niimg, radius, allow_overlap,
         else:
             X = _safe_get_data(niimg).reshape([-1, niimg.shape[3]]).T
         mask_coords = list(np.ndindex(niimg.shape[:3]))
+    else:
+        raise ValueError("Either a niimg or a mask_img must be provided.")
 
     # For each seed, get coordinates of nearest voxel
     nearests = []
@@ -116,7 +119,7 @@ def _apply_mask_and_get_affinity(seeds, niimg, radius, allow_overlap,
             pass
 
     sphere_sizes = np.asarray(A.tocsr().sum(axis=1)).ravel()
-    empty_spheres, *_ = np.nonzero(sphere_sizes == 0)
+    empty_spheres = np.nonzero(sphere_sizes == 0)[0]
     if len(empty_spheres) != 0:
         raise ValueError("These spheres are empty: {}".format(empty_spheres))
 
@@ -153,29 +156,6 @@ def _iter_signals_from_spheres(seeds, niimg, radius, allow_overlap,
                                         mask_img=mask_img)
     for i, row in enumerate(A.rows):
         yield X[:, row]
-
-
-def _iter_regions_from_spheres(seeds, radius, allow_overlap, mask_img):
-    """Utility function to iterate over spheres. Used in NiftiSpheresMasker()
-    .inverse_transform()
-
-    Parameters
-    ----------
-    seeds: List of triplets of coordinates in native space
-        Seed definitions. List of coordinates of the seeds in the same space
-        as target_affine (either of mask or if mask is None MNI space).
-    radius: float
-        Indicates, in millimeters, the radius for the sphere around the seed.
-    allow_overlap: boolean
-        If False, an error is raised if the maps overlaps (ie at least two
-        maps have a non-zero value for the same voxel).
-    mask_img: Niimg-like object,
-        Mask as a reference space to project the spheres back into brain space.
-    """
-    _, adjacency = _apply_mask_and_get_affinity(seeds, None, radius,
-                                                allow_overlap,
-                                                mask_img=mask_img)
-    yield from adjacency.rows
 
 
 class _ExtractionFunctor(object):
@@ -424,7 +404,7 @@ class NiftiSpheresMasker(BaseMasker, CacheMixin):
             mask = check_niimg_3d(self.mask_img)
         else:
             raise ValueError('Please provide mask_img at initialization to'
-                             ' provide a reference for the inverse_transform')
+                             ' provide a reference for the inverse_transform.')
         _, adjacency = _apply_mask_and_get_affinity(
             self.seeds_, None, self.radius, self.allow_overlap, mask_img=mask)
         adjacency = adjacency.tocsr()
