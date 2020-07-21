@@ -1,3 +1,32 @@
+"""Utilities for testing the dataset fetchers
+
+Unit tests should not depend on an internet connection nor on external
+resources such as the servers from which we download datasets. Otherwise, tests
+can fail spuriously when a web service is unavailable, and tests are slow
+because downloading data takes a lot of time.
+
+Therefore in the tests, we fake the downloads: the function from the requests
+library that would normally download a file is replaced ("patched") by a
+"mock", a function that mimicks its interface but doesn't download anything and
+returns fake data instead.
+
+As we only patch functions from urllib and requests, nilearn code is unaware of
+the mocking and can be tested as usual, as long as we provide fake responses
+that look similar to those we would obtain from dataset providers if we
+actually sent requests over the network.
+
+This module provides the utilities for setting up this mocking: patching the
+relevant requests and urllib functions, and creating the fake responses. The
+function from the requests library that nilearn uses to send requests is
+patched (replaced) by a `Sender` object defined in this module. The
+corresponding docstring details how individual tests can configure what fake
+responses it should return for specific URLs.
+
+To make sure tests don't rely on previously existing data and don't write
+outside of temporary directories, this module also adds fixtures to patch the
+home directory and other default nilearn data directories.
+
+"""
 import shutil
 import tempfile
 from pathlib import Path

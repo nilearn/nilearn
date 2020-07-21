@@ -513,7 +513,7 @@ def _fetch_file(url, data_dir, resume=True, overwrite=False,
         verbosity level (0 means no message).
 
     session:
-        requests Session to use to send requests
+        `requests.Session` to use to send requests
 
     Returns
     -------
@@ -706,7 +706,7 @@ def _fetch_files(data_dir, files, resume=True, verbose=1, session=None):
         verbosity level (0 means no message).
 
     session:
-        requests Session to use to send requests
+        `requests.Session` to use to send requests
     Returns
     -------
     files: list of string

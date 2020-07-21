@@ -21,6 +21,18 @@ from nilearn.datasets import neurovault
 
 
 def _get_neurovault_data(random_seed=0):
+    """Make fake images and collections to mock neurovault in the unit tests.
+
+    Returns two pandas DataFrames: collections and images. Each row contains
+    some metadata (e.g. "map_type", "is_thresholded" for images, or
+    "number_of_images" for collections) for a single (fake) image or
+    collection.
+
+    These two dataframes are like a fake neurovault database and the
+    `_neurovault` function, used to simulate responses from the neurovault
+    API, uses this data.
+
+    """
     if getattr(_get_neurovault_data, "data", None) is not None:
         return _get_neurovault_data.data
     rng = np.random.RandomState(random_seed)
@@ -63,6 +75,13 @@ def _get_neurovault_data(random_seed=0):
 
 
 def _parse_query(query):
+    """extract key-value pairs from a url query string
+
+    for example
+    "collection=23&someoption&format=json"
+      -> {"collection": "23", "someoption": None, "format": "json"}
+
+    """
     parts = [p.split("=") for p in query.split("&")]
     result = {}
     for p in parts:
@@ -74,8 +93,20 @@ def _parse_query(query):
 
 
 def _neurovault_collections(parts, query):
+    """Mocks the Neurovault API behind the `/api/collections/` path.
+
+    parts: the parts of the URL path after "collections"
+     ie [], ["<somecollectionid>"], or ["<somecollectionid>", "images"]
+
+    query: the parsed query string, e.g. {"offset": "15", "limit": "5"}
+
+    returns a dictionary of API results
+
+    See the neurovault API docs for details: https://neurovault.org/api-docs
+
+    """
     if parts:
-        return _neurovault_one_collection(parts, query)
+        return _neurovault_one_collection(parts)
     collections, _ = _get_neurovault_data()
     offset, limit = int(query.get("offset", 0)), int(query.get("limit", 2))
     batch = collections.iloc[
@@ -83,7 +114,18 @@ def _neurovault_collections(parts, query):
     return {"count": len(collections), "results": batch}
 
 
-def _neurovault_one_collection(parts, query):
+def _neurovault_one_collection(parts):
+    """
+    Mocks Neurovault API behind the `/api/collections/<somecollectionid>` path.
+
+    parts: parts of the URL path after "collections",
+      ie ["<somecollectionid>"] or ["<somecollectionid>", "images"]
+
+    returns a dictionary of API results
+
+    See the neurovault API docs for details: https://neurovault.org/api-docs
+
+    """
     col_id = int(parts[0])
     collections, images = _get_neurovault_data()
     if col_id not in collections.index:
@@ -98,16 +140,35 @@ def _neurovault_one_collection(parts, query):
 
 
 def _neurovault_images(parts, query):
+    """Mocks the Neurovault API behind the `/api/images/` path.
+
+    parts: parts of the URL path after "images",
+      ie [] or ["<someimageid>"]
+
+    query: the parsed query string, e.g. {"offset": "15", "limit": "5"}
+
+    returns a dictionary of API results
+
+    See the neurovault API docs for details: https://neurovault.org/api-docs
+
+    """
     if parts:
-        return _neurovault_one_image(parts, query)
+        return _neurovault_one_image(parts[0])
     _, images = _get_neurovault_data()
     offset, limit = int(query.get("offset", 0)), int(query.get("limit", 2))
     batch = images.iloc[offset: offset + limit].to_dict(orient="records")
     return {"count": len(images), "results": batch}
 
 
-def _neurovault_one_image(parts, query):
-    img_id = int(parts[0])
+def _neurovault_one_image(img_id):
+    """Mocks the Neurovault API behind the `/api/images/<someimageid>` path.
+
+    returns a dictionary of API results
+
+    See the neurovault API docs for details: https://neurovault.org/api-docs
+
+    """
+    img_id = int(img_id)
     _, images = _get_neurovault_data()
     if img_id not in images.index:
         return {"detail": "Not found."}
@@ -115,10 +176,12 @@ def _neurovault_one_image(parts, query):
 
 
 def _neurovault_file(parts, query):
+    """Mocks the Neurovault API behind the `/api/media/` path."""
     return ""
 
 
 class _NumpyJsonEncoder(json.JSONEncoder):
+    """A json encoder that can handle numpy objects"""
     def default(self, obj):
         if hasattr(obj, "tolist"):
             return obj.tolist()
@@ -126,6 +189,15 @@ class _NumpyJsonEncoder(json.JSONEncoder):
 
 
 def _neurovault(match, request):
+    """Mock response content from the Neurovault API.
+
+    The fake data used to generate responses is provided by
+    `_get_neurovault_data`.
+
+    See the neurovault API docs for details on the queries and corresponding
+    responses: https://neurovault.org/api-docs
+
+    """
     handlers = {"collections": _neurovault_collections,
                 "images": _neurovault_images,
                 "media": _neurovault_file}
