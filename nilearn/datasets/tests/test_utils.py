@@ -11,6 +11,7 @@ import shutil
 import tarfile
 import zipfile
 import urllib
+import json
 
 from tempfile import mkdtemp, mkstemp
 
@@ -346,7 +347,6 @@ def test_fetch_files_overwrite(tmp_path, request_mocker):
 @pytest.mark.skipif(not BOTO_INSTALLED,
                     reason='Boto3  missing; necessary for this test')
 def test_make_fresh_openneuro_dataset_urls_index(tmp_path, request_mocker):
-    import json
     dataset_version = 'ds000030_R1.0.4'
     data_prefix = '{}/{}/uncompressed'.format(
         dataset_version.split('_')[0], dataset_version)
