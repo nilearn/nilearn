@@ -42,6 +42,8 @@ from requests.exceptions import HTTPError
 
 import pytest
 
+from nilearn._utils.testing import serialize_niimg
+
 
 @pytest.fixture(autouse=True)
 def temp_nilearn_data_dir(tmp_path_factory, monkeypatch):
@@ -315,20 +317,6 @@ class Sender:
             raise TypeError(
                 "Don't know how to make a Response from: {}".format(response)
             )
-
-
-def serialize_niimg(img, gzipped=True):
-    """Serialize a Nifti1Image to nifti.
-
-    Serialize to .nii.gz if gzipped, else to .nii Returns a `bytes` object.
-
-    """
-    with tempfile.TemporaryDirectory() as tmp_dir:
-        tmp_dir = Path(tmp_dir)
-        file_path = tmp_dir / "img.nii{}".format(".gz" if gzipped else "")
-        img.to_filename(str(file_path))
-        with file_path.open("rb") as f:
-            return f.read()
 
 
 def _get_format_and_pattern(file_path):

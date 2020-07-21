@@ -9,6 +9,7 @@ import tempfile
 import warnings
 import gc
 import distutils
+from pathlib import Path
 
 import pytest
 import sklearn
@@ -92,6 +93,20 @@ def assert_memory_less_than(memory_limit, tolerance,
                          "limit was {1:.2f} MiB. Try to bench with larger "
                          "objects (at least 100MiB in memory).".
                          format(mem_used, memory_limit))
+
+
+def serialize_niimg(img, gzipped=True):
+    """Serialize a Nifti1Image to nifti.
+
+    Serialize to .nii.gz if gzipped, else to .nii Returns a `bytes` object.
+
+    """
+    with tempfile.TemporaryDirectory() as tmp_dir:
+        tmp_dir = Path(tmp_dir)
+        file_path = tmp_dir / "img.nii{}".format(".gz" if gzipped else "")
+        img.to_filename(str(file_path))
+        with file_path.open("rb") as f:
+            return f.read()
 
 
 @contextlib.contextmanager

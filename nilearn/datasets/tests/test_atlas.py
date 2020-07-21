@@ -21,7 +21,8 @@ from numpy.testing import assert_array_equal
 
 from nilearn.datasets import utils, atlas
 from nilearn.image import get_data
-from nilearn.datasets._testing import dict_to_archive, serialize_niimg
+from nilearn._utils.testing import serialize_niimg
+from nilearn.datasets._testing import dict_to_archive
 from nilearn._utils import data_gen
 
 
