@@ -109,7 +109,6 @@ def test_save_sprite():
     data = np.random.RandomState(0).uniform(size=140).reshape(7, 5, 4)
     mask = np.zeros((7, 5, 4), dtype=int)
     mask[1:-1, 1:-1, 1:-1] = 1
-    # data *= mask
     # Save the sprite using BytesIO
     sprite_io = BytesIO()
     html_stat_map._save_sprite(data, sprite_io, vmin=0, vmax=1,
