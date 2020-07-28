@@ -66,6 +66,8 @@ ENHANCEMENTS
 
 - Generated documentation now includes Binder links to launch examples interactively
   in the browser
+- :class:`nilearn.input_data.NiftiSpheresMasker` now has an inverse transform,
+  projecting spheres to the corresponding mask_img.
 
 Fixes
 -----
@@ -90,6 +92,7 @@ The following people contributed to this release::
      Joshua Teves
      Kshitij Chawla (kchawla-pi)
      Zvi Baratz
+     Simon R. Steinkamp
 
 0.6.1
 =====
