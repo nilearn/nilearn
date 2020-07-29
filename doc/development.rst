@@ -92,6 +92,50 @@ this feature. Once agreed on the feature, send us a pull request.
 There are specific guidelines about how to write code for the project.
 They can be found in the contributors guide, below.
 
+Special case: How to contribute a dataset fetcher
+.................................................
+
+The ``nilearn.datasets`` package provides functions to download some
+neuroimaging datasets, such as ``fetch_haxby`` or
+``fetch_atlas_harvard_oxford``. The goal is not to provide a comprehensive
+collection of downloaders for the most widely used datasets, and this would be
+outside the scope of this project. Rather, this package downloads data that is
+required to showcase nilearn features in the example gallery.
+
+Downloading data takes time and large datasets slow down the build of the
+example gallery. Moreover, downloads can fail for reasons we do not control,
+such as a web service that is temporarily unavailable. This is frustrating for
+users and a major issue for continuous integration (new code cannot be merged
+unless the examples run successfully on the CI infrastructure). Finally,
+datasets or the APIs that provide them sometimes change, in which case the
+downloader needs to be adapted.
+
+As for any contributed feature, before starting working on a new downloader,
+we recommend opening an issue to discuss whether it is necessary or if existing
+downloaders could be used instead.
+
+
+To add a new fetcher, ``nilearn.datasets.utils`` provides some helper functions,
+such as ``get_dataset_dir`` to find a directory where the dataset is or will be
+stored according to the user's configuration, or ``_fetch_files`` to load files
+from the disk or download them if they are missing.
+
+The new fetcher, as any other function, also needs to be tested (in the relevant
+submodule of ``nilearn.datasets.tests``). When the tests run, the fetcher does
+not have access to the network and will not actually download files. This is to
+avoid spurious failures due to unavailable network or servers, and to avoid
+slowing down the tests with long downloads.
+The functions from the standard library and the ``requests`` library that
+nilearn uses to download files are mocked: they are replaced with dummy
+functions that return fake data.
+
+Exactly what fake data is returned can be configured through the object
+returned by the ``request_mocker`` pytest fixture, defined in
+``nilearn.datasets._testing``. The docstrings of this module and the ``Sender``
+class it contains provide information on how to write a test using this fixture.
+Existing tests can also serve as examples.
+
+
 Special case: How to contribute an atlas
 .............................................
 

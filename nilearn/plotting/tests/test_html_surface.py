@@ -121,9 +121,9 @@ def test_view_surf():
     assert "SOME_TITLE" in html.html
     html = html_surface.view_surf(fsaverage['pial_right'])
     check_html(html)
-    destrieux = datasets.fetch_atlas_surf_destrieux()['map_left']
+    atlas = np.random.RandomState(0).randint(0, 10, size=len(mesh[0]))
     html = html_surface.view_surf(
-        fsaverage['pial_left'], destrieux, symmetric_cmap=False)
+        fsaverage['pial_left'], atlas, symmetric_cmap=False)
     check_html(html)
     html = html_surface.view_surf(fsaverage['pial_right'],
                                   fsaverage['sulc_right'],
@@ -148,8 +148,6 @@ def test_view_img_on_surf():
     check_html(html)
     html = html_surface.view_img_on_surf(
         img, threshold=.4, cmap='hot', black_bg=True)
-    check_html(html)
-    html = html_surface.view_img_on_surf(img, surf_mesh='fsaverage')
     check_html(html)
     with pytest.raises(DimensionError):
         html_surface.view_img_on_surf([img, img])
