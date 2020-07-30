@@ -963,7 +963,7 @@ class BaseSlicer(object):
 
     def annotate(self, left_right=True, positions=True, scalebar=False,
                  size=12, scale_size=5.0, scale_units='cm', scale_loc=4,
-                 decimals=False, **kwargs):
+                 decimals=0, **kwargs):
         """ Add annotations to the plot.
 
         Parameters
