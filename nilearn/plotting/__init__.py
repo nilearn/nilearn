@@ -42,21 +42,24 @@ _set_mpl_backend()
 from . import cm
 from .img_plotting import plot_img, plot_anat, plot_epi, \
     plot_roi, plot_stat_map, plot_glass_brain, plot_connectome, \
-    plot_connectome_strength, plot_prob_atlas, plot_carpet, show
+    plot_connectome_strength, plot_markers, plot_prob_atlas, plot_carpet, show
 from .find_cuts import find_xyz_cut_coords, find_cut_slices, \
     find_parcellation_cut_coords, find_probabilistic_atlas_cut_coords
 from .matrix_plotting import plot_matrix
 from .html_surface import view_surf, view_img_on_surf
 from .html_stat_map import view_img
 from .html_connectome import view_connectome, view_markers
-from .surf_plotting import plot_surf, plot_surf_stat_map, plot_surf_roi
+from .surf_plotting import (plot_surf, plot_surf_stat_map, plot_surf_roi,
+                            plot_img_on_surf, plot_surf_contours)
 
 __all__ = ['cm', 'plot_img', 'plot_anat', 'plot_epi',
            'plot_roi', 'plot_stat_map', 'plot_glass_brain',
-           'plot_connectome_strength', 'plot_connectome', 'plot_prob_atlas',
+           'plot_markers', 'plot_connectome', 'plot_prob_atlas',
            'find_xyz_cut_coords', 'find_cut_slices',
            'show', 'plot_matrix', 'view_surf', 'view_img_on_surf',
            'view_img', 'view_connectome', 'view_markers',
-           'find_parcellation_cut_coords', 'find_probabilistic_atlas_cut_coords',
-           'plot_surf', 'plot_surf_stat_map', 'plot_surf_roi', 'plot_carpet'
-           ]
+           'find_parcellation_cut_coords',
+           'find_probabilistic_atlas_cut_coords',
+           'plot_surf', 'plot_surf_stat_map', 'plot_surf_roi',
+           'plot_img_on_surf', 'plot_connectome_strength', 'plot_carpet',
+           'plot_surf_contours']
