@@ -117,6 +117,7 @@ def _plot_img_with_bg(img, bg_img=None, cut_coords=None,
                       display_factory=get_slicer,
                       cbar_vmin=None, cbar_vmax=None,
                       brain_color=(0.5, 0.5, 0.5),
+                      decimals=False,
                       **kwargs):
     """ Internal function, please refer to the docstring of plot_img for
         parameters not listed below.
@@ -191,7 +192,7 @@ def _plot_img_with_bg(img, bg_img=None, cut_coords=None,
                             **kwargs)
 
     if annotate:
-        display.annotate()
+        display.annotate(decimals=decimals)
     if draw_cross:
         display.draw_cross()
     if title is not None and not title == '':
@@ -289,6 +290,9 @@ def plot_img(img, cut_coords=None, output_file=None, display_mode='ortho',
         annotate: boolean, optional
             If annotate is True, positions and left/right annotation
             are added to the plot.
+        decimals: integer, optional
+            Number of decimal places on slice position annotation. If False (default),
+            the slice position is integer without decimal point.
         draw_cross: boolean, optional
             If draw_cross is True, a cross is drawn on the plot to
             indicate the cut plosition.

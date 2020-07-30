@@ -33,7 +33,9 @@ NEW
   :func:`nilearn.plotting.plot_connectome_strength`.
 - New plotting function
   :func:`nilearn.plotting.plot_surf_contours` plots the contours of regions of
-  interest on the surface, optionally overlayed on top of a statistical map.
+  interest on the surface, optionally overlayed on top of a statistical map.  
+- The position annotation on the plot methods now implements the `decimals` option
+  to enable annotation of a slice coordinate position with the float.
 
 
 Fixes
@@ -41,14 +43,13 @@ Fixes
 
 - :class:`nilearn.input_data.NiftiLabelsMasker` no longer ignores its `mask_img`
 - :func:`nilearn.masking.compute_brain_mask` has replaced
-  `nilearn.masking.compute_gray_matter_mask`. Features remained the same but
+  nilearn.masking.compute_gray_matter_mask. Features remained the same but
   some corrections regarding its description were made in the docstring.
 
 
 Changes
 -------
 
-- `nilearn.datasets.fetch_surf_fsaverage5` has been removed.
 - :func:`nilearn.datasets.fetch_cobre` has been deprecated and will be
   removed in release 0.9 .
 - :func:`nilearn.plotting.plot_connectome_strength` has been deprecated and will
