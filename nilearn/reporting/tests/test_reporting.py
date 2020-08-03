@@ -15,6 +15,7 @@ from nilearn.reporting import (get_clusters_table,
                                plot_event,
                                plot_design_matrix,
                                )
+from nilearn.image import get_data
 from nilearn.reporting._get_clusters_table import _local_max
 
 # Avoid making pyflakes unhappy
@@ -147,21 +148,21 @@ def test_get_clusters_table_not_modifying_stat_image():
     data[0:3, 0:3, 0:3] = 6.
 
     stat_img = nib.Nifti1Image(data, np.eye(4))
-    data_orig = image.get_data(stat_img).copy()
+    data_orig = get_data(stat_img).copy()
 
     # test one cluster should be removed 
     clusters_table = get_clusters_table(stat_img, 4, cluster_threshold=10)
-    assert np.allclose(data_orig, image.get_data(stat_img))
+    assert np.allclose(data_orig, get_data(stat_img))
     assert len(clusters_table) == 1
 
     # test no clusters should be removed
     stat_img = nib.Nifti1Image(data, np.eye(4))
     clusters_table = get_clusters_table(stat_img, 4, cluster_threshold=7)
-    assert np.allclose(data_orig, image.get_data(stat_img))
+    assert np.allclose(data_orig, get_data(stat_img))
     assert len(clusters_table) == 2
 
     # test cluster threshold is None
     stat_img = nib.Nifti1Image(data, np.eye(4))
     clusters_table = get_clusters_table(stat_img, 4, cluster_threshold=None)
-    assert np.allclose(data_orig, image.get_data(stat_img))
+    assert np.allclose(data_orig, get_data(stat_img))
     assert len(clusters_table) == 2
