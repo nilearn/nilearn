@@ -35,6 +35,7 @@ from .._utils.param_validation import check_threshold
 from .._utils.ndimage import get_border_data
 from ..datasets import load_mni152_template
 from ..image import new_img_like, iter_img, get_data
+from nilearn.image.resampling import reorder_img
 from ..masking import compute_epi_mask, apply_mask
 from .displays import get_slicer, get_projector
 from . import cm
@@ -355,6 +356,7 @@ class _MNI152Template(SpatialImage):
     def load(self):
         if self.data is None:
             anat_img = load_mni152_template()
+            anat_img = reorder_img(anat_img)
             data = get_data(anat_img)
             data = data.astype(np.float)
             anat_mask = ndimage.morphology.binary_fill_holes(data > 0)
