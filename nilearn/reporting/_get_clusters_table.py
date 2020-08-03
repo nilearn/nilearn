@@ -120,7 +120,14 @@ def get_clusters_table(stat_img, stat_threshold, cluster_threshold=None,
         rather than any peaks/subpeaks.
     """
     cols = ['Cluster ID', 'X', 'Y', 'Z', 'Peak Stat', 'Cluster Size (mm3)']
-    stat_map = get_data(stat_img)
+    
+    # If cluster threshold is used, there is chance that stat_map will be 
+    # modified, therefore copy is needed
+    if cluster_threshold is None:
+        stat_map = get_data(stat_img)
+    else:
+        stat_map = get_data(stat_img).copy()
+        
     conn_mat = np.zeros((3, 3, 3), int)  # 6-connectivity, aka NN1 or "faces"
     conn_mat[1, 1, :] = 1
     conn_mat[1, :, 1] = 1
