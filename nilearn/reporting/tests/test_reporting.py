@@ -141,6 +141,7 @@ def test_get_clusters_table():
     cluster_table = get_clusters_table(stat_img, 4, 9)
     assert len(cluster_table) == 0
 
+
 def test_get_clusters_table_not_modifying_stat_image():
     shape = (9, 10, 11)
     data = np.zeros(shape)
@@ -150,7 +151,7 @@ def test_get_clusters_table_not_modifying_stat_image():
     stat_img = nib.Nifti1Image(data, np.eye(4))
     data_orig = get_data(stat_img).copy()
 
-    # test one cluster should be removed 
+    # test one cluster should be removed
     clusters_table = get_clusters_table(stat_img, 4, cluster_threshold=10)
     assert np.allclose(data_orig, get_data(stat_img))
     assert len(clusters_table) == 1
