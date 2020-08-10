@@ -14,7 +14,7 @@ import pytest
 
 from scipy import sparse
 
-from nilearn.image.resampling import coord_transform
+from nilearn.image.resampling import coord_transform, reorder_img
 from nilearn.image import get_data
 from nilearn.datasets import load_mni152_template
 from nilearn.plotting.find_cuts import find_cut_slices
@@ -61,6 +61,14 @@ def testdata_4d():
         'img_mask': img_mask,
     }
     return data
+
+
+def test_mni152template_is_reordered():
+    """See issue #2550"""
+    reordered_mni = reorder_img(load_mni152_template())
+    assert np.allclose(get_data(reordered_mni), get_data(MNI152TEMPLATE))
+    assert np.allclose(reordered_mni.affine, MNI152TEMPLATE.affine)
+    assert np.allclose(reordered_mni.shape, MNI152TEMPLATE.shape)
 
 
 def demo_plot_roi(**kwargs):
