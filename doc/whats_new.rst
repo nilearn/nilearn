@@ -38,6 +38,7 @@ NEW
   to enable annotation of a slice coordinate position with the float.
 
 
+
 Fixes
 -----
 
@@ -45,6 +46,8 @@ Fixes
 - :func:`nilearn.masking.compute_brain_mask` has replaced
   nilearn.masking.compute_gray_matter_mask. Features remained the same but
   some corrections regarding its description were made in the docstring.
+- the default background (MNI template) in plotting functions now has the
+  correct orientation; before left and right were inverted.
 - :func:`nilearn.glm.first_level.hemodynamic_models` can deal with regressors
   having multiple events which share onsets or offsets.
   Previously, such cases could lead to an erroneous baseline shift.
