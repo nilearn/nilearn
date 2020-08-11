@@ -98,12 +98,15 @@ def test_t_score_with_covars_and_normalized_design_nocovar(random_state=0):
 
     ### Normalized data
     n_samples = 50
+
     # generate data
     var1 = np.ones((n_samples, 1)) / np.sqrt(n_samples)
     var2 = rng.randn(n_samples, 1)
     var2 = var2 / np.sqrt(np.sum(var2 ** 2, 0))  # normalize
+
     # compute t-scores with nilearn routine
     t_val_own = _t_score_with_covars_and_normalized_design(var1, var2)
+
     # compute t-scores with linalg or statsmodels
     t_val_alt = get_tvalue_with_alternative_library(var1, var2)
     assert_array_almost_equal(t_val_own, t_val_alt)
@@ -117,6 +120,7 @@ def test_t_score_with_covars_and_normalized_design_withcovar(random_state=0):
 
     ### Normalized data
     n_samples = 50
+
     # generate data
     var1 = np.ones((n_samples, 1)) / np.sqrt(n_samples)  # normalized
     var2 = rng.randn(n_samples, 1)
@@ -124,8 +128,10 @@ def test_t_score_with_covars_and_normalized_design_withcovar(random_state=0):
     covars = np.eye(n_samples, 3)  # covars is orthogonal
     covars[3] = -1  # covars is orthogonal to var1
     covars = orthonormalize_matrix(covars)
+
     # nilearn t-score
     own_score = _t_score_with_covars_and_normalized_design(var1, var2, covars)
+
     # compute t-scores with linalg or statmodels
     ref_score = get_tvalue_with_alternative_library(var1, var2, covars)
     assert_array_almost_equal(own_score, ref_score)
@@ -134,13 +140,16 @@ def test_t_score_with_covars_and_normalized_design_withcovar(random_state=0):
 ### General tests for permuted_ols function ###################################
 def test_permuted_ols_check_h0_noeffect_labelswap(random_state=0):
     rng = check_random_state(random_state)
+
     # design parameters
     n_samples = 100
+
     # create dummy design with no effect
     target_var = rng.randn(n_samples, 1)
     tested_var = np.arange(n_samples, dtype='f8').reshape((-1, 1))
     tested_var_not_centered = tested_var.copy()
     tested_var -= tested_var.mean(0)  # centered
+
     # permuted OLS
     # We check that h0 is close to the theoretical distribution, which is
     # known for this simple design (= t(n_samples - dof)).
@@ -200,10 +209,12 @@ def test_permuted_ols_check_h0_noeffect_labelswap(random_state=0):
         (len(perm_ranges), -1))
     all_mse_intercept2 = np.array(all_mse_intercept2).reshape(
         (len(perm_ranges), -1))
+
     # check that a difference between distributions is not rejected by KS test
     assert_array_less(0.01, all_kstest_pvals)
     assert_array_less(0.01, all_kstest_pvals_intercept)
     assert_array_less(0.01, all_kstest_pvals_intercept2)
+
     # consistency of the algorithm: the more permutations, the less the MSE
     assert_array_less(np.diff(all_mse.mean(1)), 0)
     assert_array_less(np.diff(all_mse_intercept.mean(1)), 0)
@@ -212,16 +223,20 @@ def test_permuted_ols_check_h0_noeffect_labelswap(random_state=0):
 
 def test_permuted_ols_check_h0_noeffect_signswap(random_state=0):
     rng = check_random_state(random_state)
+
     # design parameters
     n_samples = 100
+
     # create dummy design with no effect
     target_var = rng.randn(n_samples, 1)
     tested_var = np.ones((n_samples, 1))
+
     # permuted OLS
     # We check that h0 is close to the theoretical distribution, which is
     # known for this simple design (= t(n_samples - dof)).
     perm_ranges = [10, 100, 1000]  # test various number of permutations
     all_kstest_pvals = []
+
     # we compute the Mean Squared Error between cumulative Density Function
     # as a proof of consistency of the permutation algorithm
     all_mse = []
@@ -240,8 +255,10 @@ def test_permuted_ols_check_h0_noeffect_signswap(random_state=0):
     all_kstest_pvals = np.array(all_kstest_pvals).reshape(
         (len(perm_ranges), -1))
     all_mse = np.array(all_mse).reshape((len(perm_ranges), -1))
+
     # check that a difference between distributions is not rejected by KS test
     assert_array_less(0.01 / (len(perm_ranges) * 10.), all_kstest_pvals)
+
     # consistency of the algorithm: the more permutations, the less the MSE
     assert_array_less(np.diff(all_mse.mean(1)), 0)
 
@@ -249,13 +266,19 @@ def test_permuted_ols_check_h0_noeffect_signswap(random_state=0):
 ### Tests for labels swapping permutation scheme ##############################
 def test_permuted_ols_nocovar(random_state=0):
     rng = check_random_state(random_state)
+
     # design parameters
     n_samples = 50
+    n_descriptors = 1
+    n_regressors = 1
+
     # create design
-    target_var = rng.randn(n_samples, 1)
-    tested_var = rng.randn(n_samples, 1)
+    target_var = rng.randn(n_samples, n_descriptors)
+    tested_var = rng.randn(n_samples, n_regressors)
+
     # compute t-scores with linalg or statsmodels
     ref_score = get_tvalue_with_alternative_library(tested_var, target_var)
+
     # permuted OLS
     _, own_score, _ = permuted_ols(
         tested_var, target_var, model_intercept=False,
@@ -275,6 +298,7 @@ def test_permuted_ols_nocovar(random_state=0):
         n_perm=0, random_state=random_state)
     target_var -= target_var.mean(0)
     tested_var -= tested_var.mean(0)
+
     # compute t-scores with linalg or statsmodels
     ref_score_intercept = get_tvalue_with_alternative_library(
         tested_var, target_var, np.ones((n_samples, 1)))
@@ -287,31 +311,43 @@ def test_permuted_ols_withcovar(random_state=0):
 
     """
     rng = check_random_state(random_state)
+
     # design parameters
     n_samples = 50
+    n_descriptors = 1
+    n_regressors = 1
+    n_covars = 2
+
     # create design
-    target_var = rng.randn(n_samples, 1)
-    tested_var = rng.randn(n_samples, 1)
-    confounding_vars = rng.randn(n_samples, 2)
+    target_var = rng.randn(n_samples, n_descriptors)
+    tested_var = rng.randn(n_samples, n_regressors)
+    confounding_vars = rng.randn(n_samples, n_covars)
+
     # compute t-scores with linalg or statsmodels
     ref_score = get_tvalue_with_alternative_library(tested_var, target_var,
                                                     confounding_vars)
+    assert ref_score.shape == (n_regressors, n_descriptors)
+
     # permuted OLS
     _, own_score, _ = permuted_ols(
         tested_var, target_var, confounding_vars, model_intercept=False,
         n_perm=0, random_state=random_state)
+    assert own_score.shape == (n_regressors, n_descriptors)
     assert_array_almost_equal(ref_score, own_score, decimal=6)
 
     ### Adds intercept
     # permuted OLS
-    _, own_scores_intercept, _ = permuted_ols(
+    _, own_score_intercept, _ = permuted_ols(
         tested_var, target_var, confounding_vars, model_intercept=True,
         n_perm=0, random_state=random_state)
+    assert own_score_intercept.shape == (n_regressors, n_descriptors)
+
     # compute t-scores with linalg or statsmodels
     confounding_vars = np.hstack((confounding_vars, np.ones((n_samples, 1))))
     alt_score_intercept = get_tvalue_with_alternative_library(
         tested_var, target_var, confounding_vars)
-    assert_array_almost_equal(alt_score_intercept, own_scores_intercept,
+    assert alt_score_intercept.shape == (n_regressors, n_descriptors)
+    assert_array_almost_equal(alt_score_intercept, own_score_intercept,
                               decimal=6)
 
 
@@ -322,15 +358,19 @@ def test_permuted_ols_nocovar_multivariate(random_state=0):
 
     """
     rng = check_random_state(random_state)
+
     # design parameters
     n_samples = 50
-    n_targets = 10
+    n_descriptors = 10
     n_regressors = 2
+
     # create design
-    target_vars = rng.randn(n_samples, n_targets)
+    target_vars = rng.randn(n_samples, n_descriptors)
     tested_var = rng.randn(n_samples, n_regressors)
+
     # compute t-scores with linalg or statsmodels
     ref_scores = get_tvalue_with_alternative_library(tested_var, target_vars)
+
     # permuted OLS
     _, own_scores, _ = permuted_ols(
         tested_var, target_vars, model_intercept=False,
@@ -344,9 +384,11 @@ def test_permuted_ols_nocovar_multivariate(random_state=0):
         n_perm=0, random_state=random_state)
     target_vars -= target_vars.mean(0)
     tested_var -= tested_var.mean(0)
+
     # compute t-scores with linalg or statsmodels
     ref_scores_intercept = get_tvalue_with_alternative_library(
-            tested_var, target_vars, np.ones((n_samples, 1)))
+        tested_var, target_vars, np.ones((n_samples, 1))
+    )
     assert_array_almost_equal(ref_scores_intercept, own_scores_intercept,
                               decimal=6)
 
@@ -358,21 +400,28 @@ def test_permuted_ols_withcovar_multivariate(random_state=0):
 
     """
     rng = check_random_state(random_state)
+
     # design parameters
     n_samples = 50
-    n_targets = 10
+    n_descriptors = 10
+    n_regressors = 1
     n_covars = 2
+
     # create design
-    target_vars = rng.randn(n_samples, n_targets)
-    tested_var = rng.randn(n_samples, 1)
+    target_vars = rng.randn(n_samples, n_descriptors)
+    tested_var = rng.randn(n_samples, n_regressors)
     confounding_vars = rng.randn(n_samples, n_covars)
+
     # compute t-scores with linalg or statmodels
     ref_scores = get_tvalue_with_alternative_library(tested_var, target_vars,
                                                      confounding_vars)
+    assert ref_scores.shape == (n_regressors, n_descriptors)
+
     # permuted OLS
     _, own_scores, _ = permuted_ols(
         tested_var, target_vars, confounding_vars, model_intercept=False,
         n_perm=0, random_state=random_state)
+    assert own_scores.shape == (n_regressors, n_descriptors)
     assert_almost_equal(ref_scores, own_scores, decimal=6)
 
     ### Adds intercept
@@ -380,10 +429,13 @@ def test_permuted_ols_withcovar_multivariate(random_state=0):
     _, own_scores_intercept, _ = permuted_ols(
         tested_var, target_vars, confounding_vars, model_intercept=True,
         n_perm=0, random_state=random_state)
+    assert own_scores_intercept.shape == (n_regressors, n_descriptors)
+
     # compute t-scores with linalg or statmodels
     confounding_vars = np.hstack((confounding_vars, np.ones((n_samples, 1))))
     ref_scores_intercept = get_tvalue_with_alternative_library(
         tested_var, target_vars, confounding_vars)
+    assert ref_scores_intercept.shape == (n_regressors, n_descriptors)
     assert_array_almost_equal(ref_scores_intercept,
                               own_scores_intercept, decimal=6)
 
@@ -391,93 +443,133 @@ def test_permuted_ols_withcovar_multivariate(random_state=0):
 ### Tests for sign swapping permutation scheme ##############################
 def test_permuted_ols_intercept_nocovar(random_state=0):
     rng = check_random_state(random_state)
+
     # design parameters
     n_samples = 50
+    n_descriptors = 10
+    n_regressors = 1
+
     # create design
-    target_var = rng.randn(n_samples, 1)
-    tested_var = np.ones((n_samples, 1))
+    tested_var = np.ones((n_samples, n_regressors))
+    target_var = rng.randn(n_samples, n_descriptors)
+
     # compute t-scores with linalg or statmodels
     t_val_ref = get_tvalue_with_alternative_library(tested_var, target_var)
+    assert t_val_ref.shape == (n_regressors, n_descriptors)
+
     # permuted OLS
     neg_log_pvals, orig_scores, _ = permuted_ols(
         tested_var, target_var, confounding_vars=None, n_perm=10,
         random_state=random_state)
+    assert neg_log_pvals.shape == (n_regressors, n_descriptors)
+    assert orig_scores.shape == (n_regressors, n_descriptors)
     assert_array_less(neg_log_pvals, 1.)  # ensure sign swap is correctly done
+    assert_array_almost_equal(t_val_ref, orig_scores, decimal=6)
+
     # same thing but with model_intercept=True to check it has no effect
     _, orig_scores_addintercept, _ = permuted_ols(
-        tested_var, target_var, confounding_vars=None, model_intercept=True,
+        tested_var, target_var, confounding_vars=None, model_intercept=False,
         n_perm=0, random_state=random_state)
-    assert_array_almost_equal(t_val_ref, orig_scores, decimal=6)
-    assert_array_almost_equal(orig_scores, orig_scores_addintercept, decimal=6)
+    assert orig_scores_addintercept.shape == (n_regressors, n_descriptors)
+    assert_array_almost_equal(t_val_ref, orig_scores_addintercept, decimal=6)
 
 
 def test_permuted_ols_intercept_statsmodels_withcovar(random_state=0):
     rng = check_random_state(random_state)
+
     # design parameters
     n_samples = 50
+    n_descriptors = 10
+    n_regressors = 1
+    n_covars = 2
+
     # create design
-    target_var = rng.randn(n_samples, 1)
-    tested_var = np.ones((n_samples, 1))
-    confounding_vars = rng.randn(n_samples, 2)
+    tested_var = np.ones((n_samples, n_regressors))
+    target_var = rng.randn(n_samples, n_descriptors)
+    confounding_vars = rng.randn(n_samples, n_covars)
+
     # compute t-scores with linalg or statmodels
     ref_scores = get_tvalue_with_alternative_library(tested_var, target_var,
                                                      confounding_vars)
+    assert ref_scores.shape == (n_regressors, n_descriptors)
+
     # permuted OLS
     _, own_scores, _ = permuted_ols(
         tested_var, target_var, confounding_vars, n_perm=0,
         random_state=random_state)
+    assert own_scores.shape == (n_regressors, n_descriptors)
+    assert_array_almost_equal(ref_scores, own_scores, decimal=6)
+
     # same thing but with model_intercept=True to check it has no effect
     _, own_scores_intercept, _ = permuted_ols(
         tested_var, target_var, confounding_vars, model_intercept=True,
         n_perm=0, random_state=random_state)
-    assert_array_almost_equal(ref_scores, own_scores, decimal=6)
+    assert own_scores_intercept.shape == (n_regressors, n_descriptors)
     assert_array_almost_equal(ref_scores, own_scores_intercept, decimal=6)
 
 
 def test_permuted_ols_intercept_nocovar_multivariate(random_state=0):
     rng = check_random_state(random_state)
+
     # design parameters
     n_samples = 50
-    n_targets = 10
+    n_descriptors = 10
+    n_regressors = 1
+
     # create design
-    target_vars = rng.randn(n_samples, n_targets)
-    tested_vars = np.ones((n_samples, 1))
+    target_vars = rng.randn(n_samples, n_descriptors)
+    tested_vars = np.ones((n_samples, n_regressors))
+
     # compute t-scores with nilearn routine
     ref_scores = get_tvalue_with_alternative_library(tested_vars, target_vars)
+    assert ref_scores.shape == (n_regressors, n_descriptors)
+
     # permuted OLS
     _, own_scores, _ = permuted_ols(
         tested_vars, target_vars, confounding_vars=None, n_perm=0,
         random_state=random_state)
+    assert own_scores.shape == (n_regressors, n_descriptors)
+    assert_array_almost_equal(ref_scores, own_scores, decimal=6)
+
     # same thing but with model_intercept=True to check it has no effect
     _, own_scores_intercept, _ = permuted_ols(
         tested_vars, target_vars, confounding_vars=None, model_intercept=True,
         n_perm=0, random_state=random_state)
-    assert_array_almost_equal(ref_scores, own_scores, decimal=6)
-    assert_array_almost_equal(own_scores, own_scores_intercept, decimal=6)
+    assert own_scores_intercept.shape == (n_regressors, n_descriptors)
+    assert_array_almost_equal(ref_scores, own_scores_intercept, decimal=6)
 
 
 def test_permuted_ols_intercept_withcovar_multivariate(random_state=0):
     rng = check_random_state(random_state)
+
     # design parameters
     n_samples = 50
-    n_targets = 10
+    n_descriptors = 10
+    n_regressors = 1
     n_covars = 2
+
     # create design
-    target_vars = rng.randn(n_samples, n_targets)
-    tested_var = np.ones((n_samples, 1))
+    target_vars = rng.randn(n_samples, n_descriptors)
+    tested_var = np.ones((n_samples, n_regressors))
     confounding_vars = rng.randn(n_samples, n_covars)
+
     # compute t-scores with linalg or statsmodels
     ref_scores = get_tvalue_with_alternative_library(tested_var, target_vars,
                                                      confounding_vars)
+    assert ref_scores.shape == (n_regressors, n_descriptors)
+
     # permuted OLS
     _, own_scores, _ = permuted_ols(
         tested_var, target_vars, confounding_vars, n_perm=0,
         random_state=random_state)
+    assert own_scores.shape == (n_regressors, n_descriptors)
+    assert_almost_equal(ref_scores, own_scores, decimal=6)
+
     # same thing but with model_intercept=True to check it has no effect
     _, own_scores_intercept, _ = permuted_ols(
         tested_var, target_vars, confounding_vars, model_intercept=True,
         n_perm=0, random_state=random_state)
-    assert_almost_equal(ref_scores, own_scores, decimal=6)
+    assert own_scores_intercept.shape == (n_regressors, n_descriptors)
     assert_array_almost_equal(own_scores, own_scores_intercept, decimal=6)
 
 
@@ -486,20 +578,28 @@ def test_sided_test(random_state=0):
     """Check that a positive effect is always better recovered with one-sided.
     """
     rng = check_random_state(random_state)
+
     # design parameters
     n_samples = 50
+    n_descriptors = 100
+    n_regressors = 1
+
     # create design
-    target_var = rng.randn(n_samples, 100)
-    tested_var = rng.randn(n_samples, 1)
+    target_var = rng.randn(n_samples, n_descriptors)
+    tested_var = rng.randn(n_samples, n_regressors)
+
     # permuted OLS
     # one-sided
     neg_log_pvals_onesided, _, _ = permuted_ols(
         tested_var, target_var, model_intercept=False,
         two_sided_test=False, n_perm=100, random_state=random_state)
+    assert neg_log_pvals_onesided.shape == (n_regressors, n_descriptors)
+
     # two-sided
     neg_log_pvals_twosided, _, _ = permuted_ols(
         tested_var, target_var, model_intercept=False,
         two_sided_test=True, n_perm=100, random_state=random_state)
+    assert neg_log_pvals_twosided.shape == (n_regressors, n_descriptors)
 
     positive_effect_location = neg_log_pvals_onesided > 1
     assert_equal(
@@ -514,18 +614,20 @@ def test_sided_test2(random_state=0):
     # create design
     target_var1 = np.arange(0, 10).reshape((-1, 1))  # positive effect
     target_var = np.hstack((target_var1, - target_var1))
-
     tested_var = np.arange(0, 20, 2)
+
     # permuted OLS
     # one-sided
     neg_log_pvals_onesided, _, _ = permuted_ols(
         tested_var, target_var, model_intercept=False,
         two_sided_test=False, n_perm=100, random_state=random_state)
+
     # one-sided (other side)
     neg_log_pvals_onesided2, _, _ = permuted_ols(
         tested_var, -target_var, model_intercept=False,
         two_sided_test=False, n_perm=100, random_state=random_state)
-    # two-sdided
+
+    # two-sided
     neg_log_pvals_twosided, _, _ = permuted_ols(
         tested_var, target_var, model_intercept=False,
         two_sided_test=True, n_perm=100, random_state=random_state)
