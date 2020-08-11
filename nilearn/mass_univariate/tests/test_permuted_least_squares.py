@@ -27,7 +27,7 @@ def get_tvalue_with_alternative_library(tested_vars, target_vars, covars=None):
       Tested variates, the associated coefficient of which are to be tested
       independently with a t-test, resulting in as many t-values.
 
-    target_vars: array-like, shape=(n_samples, n_targets)
+    target_vars: array-like, shape=(n_samples, n_descriptors)
       Target variates, to be approximated with a linear combination of
       the tested variates and the confounding variates.
 
@@ -36,12 +36,12 @@ def get_tvalue_with_alternative_library(tested_vars, target_vars, covars=None):
 
     Returns
     -------
-    t-values: np.ndarray, shape=(n_regressors, n_targets)
+    t-values: np.ndarray, shape=(n_regressors, n_descriptors)
 
     """
     ### set up design
     n_samples, n_regressors = tested_vars.shape
-    n_targets = target_vars.shape[1]
+    n_descriptors = target_vars.shape[1]
     if covars is not None:
         n_covars = covars.shape[1]
         design_matrix = np.hstack((tested_vars, covars))
@@ -55,8 +55,8 @@ def get_tvalue_with_alternative_library(tested_vars, target_vars, covars=None):
     ### t-values computation
     try:  # try with statsmodels if available (more concise)
         from statsmodels.regression.linear_model import OLS
-        t_values = np.empty((n_targets, n_regressors))
-        for i in range(n_targets):
+        t_values = np.empty((n_descriptors, n_regressors))
+        for i in range(n_descriptors):
             current_target = target_vars[:, i].reshape((-1, 1))
             for j in range(n_regressors):
                 current_tested_mask = mask_covars.copy()
@@ -67,7 +67,7 @@ def get_tvalue_with_alternative_library(tested_vars, target_vars, covars=None):
     except:  # use linalg if statsmodels is not available
         from numpy import linalg
         lost_dof = n_covars + 1  # fit all tested variates independently
-        t_values = np.empty((n_targets, n_regressors))
+        t_values = np.empty((n_descriptors, n_regressors))
         for i in range(n_regressors):
             current_tested_mask = mask_covars.copy()
             current_tested_mask[i] = True
@@ -77,7 +77,7 @@ def get_tvalue_with_alternative_library(tested_vars, target_vars, covars=None):
             t_val_denom_aux = np.diag(
                 np.dot(test_matrix, np.dot(normalized_cov, test_matrix.T)))
             t_val_denom_aux = t_val_denom_aux.reshape((-1, 1))
-            for j in range(n_targets):
+            for j in range(n_descriptors):
                 current_target = target_vars[:, j].reshape((-1, 1))
                 res_lstsq = linalg.lstsq(current_design_matrix, current_target)
                 residuals = (current_target
@@ -87,6 +87,8 @@ def get_tvalue_with_alternative_library(tested_vars, target_vars, covars=None):
                     np.sum(residuals ** 2, 0) / float(n_samples - lost_dof)
                     * t_val_denom_aux)
                 t_values[j, i] = np.ravel(t_val_num / t_val_denom)
+    t_values = t_values.T
+    assert t_values.shape == (n_regressors, n_descriptors)
     return t_values
 
 
