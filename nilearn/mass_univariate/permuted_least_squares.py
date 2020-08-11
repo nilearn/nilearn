@@ -441,7 +441,7 @@ def permuted_ols(tested_vars, target_vars, confounding_vars=None,
         if two_sided_test:
             scores_original_data = (scores_original_data
                                     * sign_scores_original_data)
-        return np.asarray([]), scores_original_data,  np.asarray([])
+        return np.asarray([]), scores_original_data.T, np.asarray([])
     # actual permutations, seeded from a random integer between 0 and maximum
     # value represented by np.int32 (to have a large entropy).
     ret = joblib.Parallel(n_jobs=n_jobs, verbose=verbose)(
