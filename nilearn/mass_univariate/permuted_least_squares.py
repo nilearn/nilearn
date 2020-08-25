@@ -220,7 +220,7 @@ def _permuted_ols_on_chunk(scores_original_data, tested_vars, target_vars,
                                                        confounding_vars))
         if two_sided_test:
             perm_scores = np.fabs(perm_scores)
-        h0_fmax_part[i] = np.amax(perm_scores, 0)
+        h0_fmax_part[i] = np.nanmax(perm_scores, axis=0)
         # find the rank of the original scores in h0_part
         # (when n_descriptors or n_perm are large, it can be quite long to
         #  find the rank of the original scores into the whole H0 distribution.
