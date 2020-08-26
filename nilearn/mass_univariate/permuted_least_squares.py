@@ -353,6 +353,11 @@ def permuted_ols(tested_vars, target_vars, confounding_vars=None,
                             "s" if target_vars.ndim > 1 else ""))
     target_vars = np.asfortranarray(target_vars)  # efficient for chunking
     n_descriptors = target_vars.shape[1]
+    if np.any(np.all(target_vars == 0, axis=0)):
+        warnings.warn("Some samples in 'target_vars' have zeros across all "
+                      "descriptors. "
+                      "These samples will be ignored during null distribution "
+                      "generation.")
 
     # check explanatory variates dimensions
     if tested_vars.ndim == 1:
