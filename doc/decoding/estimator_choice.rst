@@ -84,9 +84,9 @@ whereas the latter is linear with the number of classes.
 
 .. seealso::
 
-    * `Multi-class prediction in scikit-learn's documentation <http://scikit-learn.org/stable/modules/multiclass.html>`_
-    * :class:`nilearn.decoding.fREMClassifier`, a pipeline described in the
-     :ref:`userguide <frem>`, yielding state-of-the art decoding performance.
+  * `Multi-class prediction in scikit-learn's documentation <http://scikit-learn.org/stable/modules multiclass.html>`_
+  * :class:`nilearn.decoding.fREMClassifier`, a pipeline described in the
+    :ref:`userguide <frem>`, yielding state-of-the art decoding performance.
 
 **Confusion matrix** `The confusion matrix
 <http://en.wikipedia.org/wiki/Confusion_matrix>`_,
@@ -117,23 +117,20 @@ to model the relations between your images and the target to predict.
 For classification, :class:`nilearn.decoding.Decoder` let you choose them
 through the `estimator` parameter:
 
-'svc' (same as 'svc_l2') : the `support vector classifier <https://scikit-learn.org/stable/modules/svm.html>`_
-'svc_l1' : SVC using L1 penalization that yields a sparse solution : only a
+* 'svc' (same as 'svc_l2') : the `support vector classifier <https://scikit-learn.org/stable/modules/svm.html>`_
+* 'svc_l1' : SVC using L1 penalization that yields a sparse solution : only a
 subset of feature weights is different from zero and contribute to prediction.
-'logistic' (or 'logistic_l2') : the `logistic regression <https://scikit-learn.org/stable/modules/linear_model.html#logistic-regression>`_ with l2 penalty
-'logistic_l1' :  the logistic regression with l1 penalty (**sparse model**)
-'ridge_classifier' a `Ridge Regression variant
+* 'logistic' (or 'logistic_l2') : the `logistic regression <https://scikit-learn.org/stable/modules/linear_model.html#logistic-regression>`_ with l2 penalty
+* 'logistic_l1' :  the logistic regression with l1 penalty (**sparse model**)
+* 'ridge_classifier' a `Ridge Regression variant
 <https://scikit-learn.org/stable/modules/linear_model.html#ridge-regression-and-classification>`_
 
-    >>> decoder = Decoder(estimator='logistic_l1') # doctest: +SKIP
 
 In :class:`nilearn.decoding.DecoderRegressor` you can use some of these objects
 counterparts for regression :
 
-'svr'
-'ridge_regressor' (same as 'ridge')
-
-    >>> decoder = DecoderRegressor(estimator='ridge') # doctest: +SKIP
+* 'svr'
+* 'ridge_regressor' (same as 'ridge')
 
 .. note::
    * **There is no free lunch**: no estimator will work uniformely better
@@ -193,10 +190,10 @@ If you want to try more specific sets of parameters relevant to the model
 your using, you can pass a dictionary to `param_grid` argument. It must contain
 values for the suitable argument name. For example SVC has a parameter `C`.
 By default, the values tried for `C` are [1,10,100].
-If you want to try 50 instead of 100, you can do it with :
 
-    >>> custom_param_grid= {'C':[1,5,10]}
-    >>> decoder = Decoder(estimator='svc', param_grid=custom_param_grid)
+.. note::
+  Full code example on parameter setting can be found at :
+  :ref:`sphx_glr_auto_examples_02_decoding_plot_haxby_grid_search.py`
 
 Be careful about the **overfitting**. Giving a grid containing too many parameter
 close to each other will be computationnaly costly to fit and may result in
@@ -215,8 +212,6 @@ due to this noise.
   * `The scikit-learn documentation on parameter selection
     <http://scikit-learn.org/stable/modules/grid_search.html>`_
 
-  * The example :ref:`sphx_glr_auto_examples_02_decoding_plot_haxby_grid_search.py`
-
 Bagging several models
 ============================
 
@@ -233,15 +228,14 @@ the best model coefficients are retained. The average of all those linear
 models is then used to make predictions.
 
 .. seealso::
+  * The `scikit-learn documentation <http://scikit-learn.org>`_
+    has very detailed explanations on a large variety of estimators and
+    machine learning techniques. To become better at decoding, you need
+    to study it.
 
-   * The `scikit-learn documentation <http://scikit-learn.org>`_
-     has very detailed explanations on a large variety of estimators and
-     machine learning techniques. To become better at decoding, you need
-     to study it.
+  * :ref:`fREM <frem>`, a pipeline bagging many models that yields very
+    good decoding performance at a reasonable computational cost.
 
-   * :ref:`fREM <frem>`, a pipeline bagging many models that yields very
-     good decoding performance at a reasonable computational cost.
-
-   * :ref:`SpaceNet <space_net>`, a method promoting sparsity that can also
-     give good brain decoding power and improved decoder maps when sparsity
-     is important.
+  * :ref:`SpaceNet <space_net>`, a method promoting sparsity that can also
+    give good brain decoding power and improved decoder maps when sparsity
+    is important.
