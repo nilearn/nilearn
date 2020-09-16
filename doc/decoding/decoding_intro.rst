@@ -73,7 +73,7 @@ _____
    The Haxby experiment is unusual because the experimental paradigm is
    made of many blocks of continuous stimulation. Most cognitive
    experiments have a more complex temporal structure with rich sequences
-   of events.
+   of events
    (:ref:`more on data input <loading_data>`).
 
    The standard approach to decoding consists in fitting a first-level
@@ -89,7 +89,7 @@ _____
    For simplicity, we will work on the raw time-series of the data.
    However, **it is strongly recommended that you fit a first-level model to
    include an hemodynamic response function (HRF) model and isolate the
-   responses from various confounds**.
+   responses from various confounds** as demonstrated in :ref:`a more advanced example <sphx_glr_auto_examples_02_decoding_plot_haxby_glm_decoding.py>`.
 
 
 Loading the data into nilearn
@@ -165,11 +165,11 @@ interest to you. Or in other words to predict a condition label **y** given a
 set **X** of imaging data.
 
 This is always done in at least two steps:
-  - first a `fit` during which we "learn" the parameters of the model that make
-  good predictions. This is done on some "training data" or "training set".
-  - then a `predict` step where the "fitted" model is used to make prediction
-  on new data. Here, we just have to give the new set of images (as the target
-  should be unknown). These are called "test data" or "test set".
+* first a `fit` during which we "learn" the parameters of the model that make
+good predictions. This is done on some "training data" or "training set".
+* then a `predict` step where the "fitted" model is used to make prediction
+on new data. Here, we just have to give the new set of images (as the target
+should be unknown). These are called "test data" or "test set".
 
 All objects used to make prediction in Nilearn will at least have functions for
 these steps : a `fit` function and a `predict` function.
@@ -264,7 +264,7 @@ As a general advice :
   out to have an independent test.
 * To train a decoder across different subject data, leaving some subjects data
   out is often a good option.
-* In any case leaving only one image as test set(leave-one-out) is often
+* In any case leaving only one image as test set (leave-one-out) is often
   the worst option (see Varoquaux et al, *Assessing and tuning brain decoders:
   cross-validation, caveats, and guidelines*, Neuroimage 2017).
 
@@ -299,7 +299,8 @@ especially in the case of very imbalanced classes, as in such situations
 choosing the dominant class can achieve a low number of errors.
 
 Other metrics, such as the AUC (Area Under the Curve, for the ROC: the
-Receiver Operating Characteristic), can be used through the `scoring` argument.
+Receiver Operating Characteristic), can be used through the `scoring` argument
+of :class:`nilearn.decoding.Decoder`.
 
     >>> decoder = Decoder(estimator='svc', mask=mask_filename,
                           standardize=True, scoring='roc_auc') # doctest: +SKIP

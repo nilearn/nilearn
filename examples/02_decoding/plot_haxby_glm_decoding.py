@@ -1,5 +1,5 @@
 """
-Decoding of a dataset after glm fit for signal extraction
+Decoding of a dataset after GLM fit for signal extraction
 =========================================================
 
 Full step-by-step example of fitting a GLM to perform a decoding experiment.
@@ -24,6 +24,17 @@ To run this example, you must launch IPython via ``ipython
 # ----------------------------
 # We download the Haxby dataset
 # This is a study of visual object category representation
+from sklearn.model_selection import cross_val_score, LeaveOneGroupOut
+from sklearn.pipeline import Pipeline
+from sklearn.feature_selection import SelectPercentile, f_classif
+from sklearn.svm import SVC
+from nilearn.input_data import NiftiMasker
+from nilearn.reporting import make_glm_report
+from nilearn.image import mean_img
+from nilearn.stats.first_level_model import FirstLevelModel
+from nilearn.image import index_img
+import numpy as np
+import pandas as pd
 from nilearn import datasets
 
 # By default 2nd subject will be fetched
@@ -35,7 +46,6 @@ TR = 2.5
 #############################################################################
 # Load the behavioral data
 # -------------------------
-import pandas as pd
 
 # Load target information as string and give a numerical identifier to each
 behavioral = pd.read_csv(haxby_dataset.session_target[0], sep=' ')
@@ -51,7 +61,6 @@ func_filename = haxby_dataset.func[0]
 #############################################################################
 # Build a proper event structure for each session
 # -----------------------------------------------
-import numpy as np
 
 events = {}
 # events will take  the form of a dictionary of Dataframes, one per session
@@ -73,8 +82,6 @@ for session in unique_sessions:
 ##############################################################################
 # Instantiate and run FirstLevelModel
 # -----------------------------------
-from nilearn.image import index_img
-from nilearn.stats.first_level_model import FirstLevelModel
 
 # we are going to generate a list of z-maps together with their session and condition index
 z_maps = []
@@ -110,8 +117,6 @@ for session in unique_sessions:
 # -------------------
 # Since we have already computed the FirstLevelModel
 # and have the contrast, we can quickly create a summary report.
-from nilearn.image import mean_img
-from nilearn.reporting import make_glm_report
 
 mean_img_ = mean_img(func_filename)
 report = make_glm_report(glm,
@@ -119,18 +124,18 @@ report = make_glm_report(glm,
                          bg_img=mean_img_,
                          )
 
+report  # This report can be viewed in a notebook
+
 #############################################################################
 # In a jupyter notebook, the report will be automatically inserted, as above.
 # We have several other ways to access the report:
 
-# report  # This report can be viewed in a notebook
 # report.save_as_html('report.html')
 # report.open_in_browser()
 
 #############################################################################
 # Transform the maps to an array of values
 # ----------------------------------------
-from nilearn.input_data import NiftiMasker
 
 # no need to standardize or smooth the data
 masker = NiftiMasker(mask_img=haxby_dataset.mask, memory='nilearn_cache',
@@ -142,7 +147,6 @@ X = masker.fit_transform(z_maps)
 # ------------------
 # Define the prediction function to be used.
 # Here we use a Support Vector Classification, with a linear kernel
-from sklearn.svm import SVC
 
 svc = SVC(kernel='linear')
 
@@ -151,21 +155,18 @@ svc = SVC(kernel='linear')
 # namely Anova. When doing full-brain analysis, it is better to use
 # SelectPercentile, keeping 5% of voxels
 # (because it is independent of the resolution of the data).
-from sklearn.feature_selection import SelectPercentile, f_classif
 
 feature_selection = SelectPercentile(f_classif, percentile=5)
 
 # We have our classifier (SVC), our feature selection (SelectPercentile),and now,
 # we can plug them together in a *pipeline** that performs the two operations
 # successively:
-from sklearn.pipeline import Pipeline
 
 anova_svc = Pipeline([('anova', feature_selection), ('svc', svc)])
 
 #############################################################################
 # Obtain prediction scores via cross validation
 # -----------------------------------------------
-from sklearn.model_selection import cross_val_score, LeaveOneGroupOut
 
 # Define the cross-validation scheme used for validation.
 # Here we use a LeaveOneGroupOut cross-validation on the session group
@@ -173,7 +174,8 @@ from sklearn.model_selection import cross_val_score, LeaveOneGroupOut
 cv = LeaveOneGroupOut()
 
 # Compute the prediction accuracy for the different folds (i.e. session)
-cv_scores = cross_val_score(anova_svc, X, condition_idx, cv=cv, groups=session_idx)
+cv_scores = cross_val_score(
+    anova_svc, X, condition_idx, cv=cv, groups=session_idx)
 
 # Return the corresponding mean prediction accuracy
 classification_accuracy = cv_scores.mean()
@@ -181,5 +183,5 @@ chance_level = 1. / len(np.unique(condition_idx))
 
 # Print the results
 print('Classification accuracy: {:.4f} / Chance level: {}'.format(
-        classification_accuracy, chance_level))
+    classification_accuracy, chance_level))
 # Classification accuracy:  0.375 / Chance level: 0.125
