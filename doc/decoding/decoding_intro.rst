@@ -111,33 +111,18 @@ Loading the data into nilearn
   nilearn, you can pass in the path to your own files
   (:ref:`more on data input <loading_data>`).
 
-    >>> from nilearn import datasets  # doctest: +SKIP
-    >>> haxby_dataset = datasets.fetch_haxby()  # doctest: +SKIP
-
 
 * **Masking fMRI data**: To perform the analysis on some voxels only, we will
   provide a spatial mask of voxels to keep, which is provided with the dataset
   (here `mask_vt` a mask of the ventral temporal cortex that comes with data).
 
-    >>> mask_filename = haxby_dataset.mask_vt[0]  # doctest: +SKIP
-
 * **Loading the behavioral labels**: Behavioral information is often stored
   in a text file such as a CSV, and must be load with
   **numpy.recfromcsv** or `pandas <http://pandas.pydata.org/>`_
 
-    >>> import pandas as pd  # doctest: +SKIP
-    >>> behavioral = pd.read_csv(haxby_dataset.session_target[0], delimiter=' ')  # doctest: +SKIP
-
 * **Sample mask**: Masking some of the time points
   may be useful to
   restrict to a specific pair of conditions (*eg* cats versus faces).
-
-    >>> conditions = behavioral['labels']  # doctest: +SKIP
-    >>> condition_mask = conditions.isin(['face', 'cat'])  # doctest: +SKIP
-    >>> fmri_niimgs = index_img(fmri_filename, condition_mask)  # doctest: +SKIP
-    >>> conditions = conditions[condition_mask]  # doctest: +SKIP
-    >>> # Convert to numpy array
-    >>> conditions = conditions.values  # doctest: +SKIP
 
 .. seealso::
   * :ref:`masking`
@@ -275,13 +260,6 @@ object from scikit-learn to our `Decoder`. Fitting it with the information of
 groups=`session_labels` will use one session as test set.
 
 
-    >>> session_label = behavioral['chunks'][condition_mask] # doctest: +SKIP
-    >>> from sklearn.model_selection import LeaveOneGroupOut # doctest: +SKIP
-    >>> cv = LeaveOneGroupOut() # doctest: +SKIP
-    >>> decoder = Decoder(estimator='svc', mask=mask_filename,
-                      standardize=True,cv=cv) # doctest: +SKIP
-    >>> decoder.fit(fmri_niimgs, conditions, groups=session_label) # doctest: +SKIP
-
 .. note::
   Full code example can be found at :
   :ref:`sphx_glr_auto_examples_plot_decoding_tutorial.py`
@@ -301,9 +279,6 @@ choosing the dominant class can achieve a low number of errors.
 Other metrics, such as the AUC (Area Under the Curve, for the ROC: the
 Receiver Operating Characteristic), can be used through the `scoring` argument
 of :class:`nilearn.decoding.Decoder`.
-
-    >>> decoder = Decoder(estimator='svc', mask=mask_filename,
-                          standardize=True, scoring='roc_auc') # doctest: +SKIP
 
 .. seealso::
   the `list of scoring options
@@ -339,11 +314,7 @@ Visualizing the decoder's weights
 ---------------------------------
 
 During `fit` step, the :class:`nilearn.decoding.Decoder` object retains the
-coefficients of best models for each class in decoder.coef_. To plot the
-weight maps that are discriminative from "face" against other classes you
-can directly access it through :
-
-    >>> decoder.coef_img_['face'] # doctest: +SKIP
+coefficients of best models for each class in `decoder.coef_img_`.
 
 
 .. figure:: ../auto_examples/02_decoding/images/sphx_glr_plot_haxby_anova_svm_001.png
@@ -359,7 +330,7 @@ can directly access it through :
   * :ref:`plotting`
 
 
-Decoding without a mask: feature screening
+Decoding without a mask: Anova-SVM
 ==================================
 
 
@@ -379,8 +350,8 @@ You can directly choose to keep only a certain percentage of voxels in the
 argument. To keep the 10% most correlated voxels, just create us this parameter :
 
 .. literalinclude:: ../../examples/02_decoding/plot_haxby_anova_svm.py
-    :start-after: # Build the decoder
-    :end-before: # Visualize the results
+   :start-after: # Build the decoder
+   :end-before: # Visualize the results
 
 
 Visualizing the results
@@ -388,14 +359,13 @@ Visualizing the results
 
 To visualize the results, :class:`nilearn.decoding.Decoder` handles two main steps for you :
 
-- first get the support vectors of the SVC and inverse the feature
-  selection mechanism
-- then, inverse the masking process to link weights to their spatial
+* first get the support vectors of the SVC and inverse the feature selection mechanism
+* then, inverse the masking process to link weights to their spatial
   position and plot
 
 .. literalinclude:: ../../examples/02_decoding/plot_haxby_anova_svm.py
-    :start-after: # Visualize the results
-    :end-before: # Saving the results as a Nifti file may also be important
+   :start-after: # Visualize the results
+   :end-before: # Saving the results as a Nifti file may also be important
 
 .. figure:: ../auto_examples/02_decoding/images/sphx_glr_plot_haxby_anova_svm_001.png
    :target: ../auto_examples/02_decoding/plot_haxby_anova_svm.html
