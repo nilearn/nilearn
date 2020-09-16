@@ -97,6 +97,8 @@ def generate_maps(shape, n_regions, overlap=0, border=1,
     -------
     maps: nibabel.Nifti1Image
         4D array, containing maps.
+    mask_img: nibabel.Nifti1Image
+        3D, The mask outside of which maps are 0
     """
 
     mask = np.zeros(shape, dtype=np.int8)

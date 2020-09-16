@@ -28,6 +28,7 @@ else:
     from nilearn.reporting._compare_niimgs import compare_niimgs
     from nilearn.reporting._get_clusters_table import get_clusters_table
     from nilearn.reporting._plot_matrices import plot_contrast_matrix
+    from nilearn.reporting._plot_matrices import plot_event
     from nilearn.reporting._plot_matrices import plot_design_matrix
     from nilearn.reporting.glm_reporter import make_glm_report
 
@@ -38,5 +39,6 @@ __all__ = ['ReportMixin', 'HTMLDocument', 'HTMLReport',
            'get_clusters_table',
            'make_glm_report',
            'plot_contrast_matrix',
+           'plot_event',
            'plot_design_matrix',
            ]

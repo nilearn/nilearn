@@ -5,11 +5,12 @@ import numpy as np
 import matplotlib as mpl
 from matplotlib import cm as mpl_cm
 
-from .._utils.niimg_conversions import check_niimg_3d
-from .. import datasets, surface
+from nilearn._utils.niimg_conversions import check_niimg_3d
+from nilearn import surface
+from nilearn import datasets
 from nilearn.reporting import HTMLDocument
-from . import cm
-from .js_plotting_utils import (
+from nilearn.plotting import cm
+from nilearn.plotting.js_plotting_utils import (
     colorscale, mesh_to_plotly, get_html_template, add_js_lib,
     to_color_strings)
 
@@ -91,7 +92,7 @@ def full_brain_info(volume_img, mesh='fsaverage5', threshold=None,
 
     """
     info = {}
-    mesh = _check_mesh(mesh)
+    mesh = surface.surface._check_mesh(mesh)
     surface_maps = {
         h: surface.vol_to_surf(volume_img, mesh['pial_{}'.format(h)],
                                **vol_to_surf_kwargs)

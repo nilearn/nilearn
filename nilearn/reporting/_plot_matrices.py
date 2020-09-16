@@ -6,9 +6,11 @@ Author: Martin Perez-Guevara, Elvis Dohmatob, 2017
 
 import numpy as np
 import matplotlib.pyplot as plt
+import matplotlib.patches as mpatches
+import pandas as pd
 
-from nilearn.stats.first_level_model import check_design_matrix
-from nilearn.stats.contrasts import expression_to_contrast_vector
+from nilearn.glm.first_level import check_design_matrix
+from nilearn.glm.contrasts import expression_to_contrast_vector
 
 
 def plot_design_matrix(design_matrix, rescale=True, ax=None, output_file=None):
@@ -25,7 +27,7 @@ def plot_design_matrix(design_matrix, rescale=True, ax=None, output_file=None):
     ax : axis handle, optional
         Handle to axis onto which we will draw design matrix.
 
-    output_file: string or None, optional,
+    output_file : string or None, optional,
         The name of an image file to export the plot to. Valid extensions
         are .png, .pdf, .svg. If output_file is not None, the plot
         is saved to a file, and the display is closed.
@@ -44,7 +46,13 @@ def plot_design_matrix(design_matrix, rescale=True, ax=None, output_file=None):
         X = X / np.maximum(1.e-12, np.sqrt(
             np.sum(X ** 2, 0)))  # pylint: disable=no-member
     if ax is None:
-        plt.figure()
+        max_len = np.max([len(str(name)) for name in names])
+        fig_height = 1 + .1 * X.shape[0] + .04 * max_len
+        if fig_height < 3:
+            fig_height = 3
+        elif fig_height > 10:
+            fig_height = 10
+        plt.figure(figsize=(1 + .23 * len(names), fig_height))
         ax = plt.subplot(1, 1, 1)
 
     ax.imshow(X, interpolation='nearest', aspect='auto')
@@ -52,7 +60,10 @@ def plot_design_matrix(design_matrix, rescale=True, ax=None, output_file=None):
     ax.set_ylabel('scan number')
 
     ax.set_xticks(range(len(names)))
-    ax.set_xticklabels(names, rotation=60, ha='right')
+    ax.set_xticklabels(names, rotation=60, ha='left')
+    # Set ticks above, to have a display more similar to the display of a
+    # corresponding dataframe
+    ax.xaxis.tick_top()
 
     plt.tight_layout()
     if output_file is not None:
@@ -60,6 +71,94 @@ def plot_design_matrix(design_matrix, rescale=True, ax=None, output_file=None):
         plt.close()
         ax = None
     return ax
+
+
+def plot_event(model_event, cmap=None, output_file=None, **fig_kwargs):
+    """Creates plot for event visualization.
+
+    Parameters
+    ----------
+    model_event : pandas DataFrame or list of pandas DataFrame
+        the `pandas.DataFrame` must have three columns
+        ``event_type`` with event name, ``onset`` and ``duration``.
+        The `pandas.DataFrame` can also be obtained from
+        :func:`nilearn.glm.first_level.first_level_from_bids`.
+
+    cmap : str or matplotlib.cmap, optional
+        the colormap used to label different events
+
+    output_file : string or None, optional,
+        The name of an image file to export the plot to. Valid extensions
+        are .png, .pdf, .svg. If output_file is not None, the plot
+        is saved to a file, and the display is closed.
+
+    **fig_kwargs : extra keyword arguments, optional
+        Extra arguments passed to matplotlib.pyplot.subplots
+
+    Returns
+    -------
+    Plot Figure object
+
+    """
+
+    if isinstance(model_event, pd.DataFrame):
+        model_event = [model_event]
+   
+    n_runs = len(model_event)
+    figure, ax = plt.subplots(1, 1, **fig_kwargs)
+
+    # input validation
+    if cmap is None:
+        cmap = plt.cm.tab20
+    elif isinstance(cmap, str):
+        cmap = plt.get_cmap(cmap)
+    else:
+        cmap = cmap
+
+    event_labels = pd.concat(event['trial_type'] for event in model_event)
+    event_labels = np.unique(event_labels)
+
+    cmap_dictionary = {label:idx for idx, label in enumerate(event_labels)}
+
+    if len(event_labels) > cmap.N:
+        plt.close()
+        raise ValueError("The number of event types is greater than "+ \
+            " colors in colormap (%d > %d). Use a different colormap." \
+            % (len(event_labels), cmap.N))
+
+    for idx_run, event_df in enumerate(model_event):
+        
+        for _, event in event_df.iterrows():
+            event_onset = event['onset']
+            event_end = event['onset'] + event['duration']
+            color = cmap.colors[cmap_dictionary[event['trial_type']]]
+         
+            ax.axvspan(event_onset, 
+                       event_end, 
+                       ymin=(idx_run + .25) / n_runs, 
+                       ymax=(idx_run + .75) / n_runs, 
+                       facecolor=color)
+
+    handles = []
+    for label, idx in cmap_dictionary.items():
+        patch = mpatches.Patch(color=cmap.colors[idx], label=label)
+        handles.append(patch)
+
+    _ = ax.legend(handles=handles, ncol=4)
+
+    ax.set_xlabel("Time (sec.)")
+    ax.set_ylabel("Runs")
+    ax.set_ylim(0, n_runs)
+    ax.set_yticks(np.arange(n_runs) + .5)
+    ax.set_yticklabels(np.arange(n_runs) + 1)
+    
+    plt.tight_layout()
+    if output_file is not None:
+        plt.savefig(output_file)
+        plt.close()
+        figure = None
+
+    return figure
 
 
 def plot_contrast_matrix(contrast_def, design_matrix, colorbar=False, ax=None,
@@ -80,15 +179,15 @@ def plot_contrast_matrix(contrast_def, design_matrix, colorbar=False, ax=None,
         combined with operators +- and combined with numbers with operators
         +-`*`/.
 
-    design_matrix: pandas DataFrame
+    design_matrix : pandas DataFrame
 
-    colorbar: Boolean, optional (default False)
+    colorbar : Boolean, optional (default False)
         Include a colorbar in the contrast matrix plot.
 
-    ax: matplotlib Axes object, optional (default None)
+    ax : matplotlib Axes object, optional (default None)
         Directory where plotted figures will be stored.
 
-    output_file: string or None, optional,
+    output_file : string or None, optional,
         The name of an image file to export the plot to. Valid extensions
         are .png, .pdf, .svg. If output_file is not None, the plot
         is saved to a file, and the display is closed.
@@ -106,27 +205,29 @@ def plot_contrast_matrix(contrast_def, design_matrix, colorbar=False, ax=None,
             contrast_def, design_column_names)
     maxval = np.max(np.abs(contrast_def))
     con_matrix = np.asmatrix(contrast_def)
-
+    max_len = np.max([len(str(name)) for name in design_column_names])
+    
     if ax is None:
-        plt.figure(figsize=(8, 4))
+        plt.figure(figsize=(.4 * len(design_column_names),
+                            1 + .5 * con_matrix.shape[0] + .04 * max_len))
         ax = plt.gca()
 
     mat = ax.matshow(con_matrix, aspect='equal',
-                     extent=[0, con_matrix.shape[1], 0, con_matrix.shape[0]],
                      cmap='gray', vmin=-maxval, vmax=maxval)
 
     ax.set_label('conditions')
     ax.set_ylabel('')
-    ax.set_yticklabels(['' for x in ax.get_yticklabels()])
+    ax.set_yticks(())
 
-    # Shift ticks to be at 0.5, 1.5, etc
     ax.xaxis.set(ticks=np.arange(len(design_column_names)))
-    ax.set_xticklabels(design_column_names, rotation=60, ha='left')
-
+    ax.set_xticklabels(design_column_names, rotation=50, ha='left')
+    
     if colorbar:
         plt.colorbar(mat, fraction=0.025, pad=0.04)
 
     plt.tight_layout()
+    plt.subplots_adjust(top=np.min([.3 + .05 * con_matrix.shape[0], .55]))
+
     if output_file is not None:
         plt.savefig(output_file)
         plt.close()

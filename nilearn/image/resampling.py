@@ -669,18 +669,18 @@ def reorder_img(img, resample=None):
     If it is impossible to get xyz ordering by permuting the axes, a
     'ValueError' is raised.
 
-        Parameters
-        -----------
-        img: Niimg-like object
-            See http://nilearn.github.io/manipulating_images/input_output.html
-            Image to reorder.
+    Parameters
+    -----------
+    img: Niimg-like object
+        See http://nilearn.github.io/manipulating_images/input_output.html
+        Image to reorder.
 
-        resample: None or string in {'continuous', 'linear', 'nearest'}, optional
-            If resample is None (default), no resampling is performed, the
-            axes are only permuted.
-            Otherwise resampling is performed and 'resample' will
-            be passed as the 'interpolation' argument into
-            resample_img.
+    resample: None or string in {'continuous', 'linear', 'nearest'}, optional
+        If resample is None (default), no resampling is performed, the
+        axes are only permuted.
+        Otherwise resampling is performed and 'resample' will
+        be passed as the 'interpolation' argument into
+        resample_img.
 
     """
     from .image import new_img_like

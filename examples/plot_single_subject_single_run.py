@@ -1,35 +1,40 @@
-"""
-Analysis of a single session, single subject fMRI dataset
-=========================================================
+"""Intro to GLM Analysis: a single-session, single-subject fMRI dataset
+=====================================================================
 
-In this tutorial, we compare the fMRI signal during periods of auditory
-stimulation versus periods of rest, using a General Linear Model (GLM).
+In this tutorial, we use a General Linear Model (GLM) to compare the fMRI
+signal during periods of auditory stimulation versus periods of rest.
 
-The dataset comes from an experiment conducted at the FIL by Geriant Rees
-under the direction of Karl Friston. It is provided by FIL methods
-group which develops the SPM software.
-
-According to SPM documentation, 96 scans were acquired (repetition time TR=7s) in one session. The paradigm consisted of alternating periods of stimulation and rest, lasting 42s each (that is, for 6 scans). The sesssion started with a rest block.
-Auditory stimulation consisted of bi-syllabic words presented binaurally at a
-rate of 60 per minute. The functional data starts at scan number 4, that is the
-image file ``fM00223_004``.
-
-The whole brain BOLD/EPI images were acquired on a  2T Siemens
-MAGNETOM Vision system. Each scan consisted of 64 contiguous
-slices (64x64x64 3mm x 3mm x 3mm voxels). Acquisition of one scan took 6.05s, with the scan to scan repeat time (TR) set arbitrarily to 7s.
+.. contents:: **Contents**
+    :local:
+    :depth: 1
 
 The analyse described here is performed in the native space, directly on the
 original EPI scans without any spatial or temporal preprocessing.
 (More sensitive results would likely be obtained on the corrected,
 spatially normalized and smoothed images).
 
+The data
+---------
+
+The dataset comes from an experiment conducted at the FIL by Geraint Rees
+under the direction of Karl Friston. It is provided by FIL methods
+group which develops the SPM software.
+
+According to SPM documentation, 96 scans were acquired (repetition time TR=7s)
+in one session. The paradigm consisted of alternating periods of stimulation
+and rest, lasting 42s each (that is, for 6 scans). The session started with a
+rest block.  Auditory stimulation consisted of bi-syllabic words presented
+binaurally at a rate of 60 per minute. The functional data starts at scan
+number 4, that is the image file ``fM00223_004``.
+
+The whole brain BOLD/EPI images were acquired on a 2T Siemens MAGNETOM Vision
+system. Each scan consisted of 64 contiguous slices (64x64x64 3mm x 3mm x 3mm
+voxels). Acquisition of one scan took 6.05s, with the scan to scan repeat time
+(TR) set arbitrarily to 7s.
+
 
 To run this example, you must launch IPython via ``ipython
 --matplotlib`` in a terminal, or use ``jupyter-notebook``.
-
-.. contents:: **Contents**
-    :local:
-    :depth: 1
 
 """
 
@@ -45,11 +50,11 @@ To run this example, you must launch IPython via ``ipython
 
 from nilearn.datasets import fetch_spm_auditory
 subject_data = fetch_spm_auditory()
-print(subject_data.func)  # print the list of names of functional images
+subject_data.func  # print the list of names of functional images
 
 ###############################################################################
 # We can display the first functional image and the subject's anatomy:
-from nilearn.plotting import plot_stat_map, plot_anat, plot_img, show
+from nilearn.plotting import plot_stat_map, plot_anat, plot_img
 plot_img(subject_data.func[0])
 plot_anat(subject_data.anat)
 
@@ -72,7 +77,7 @@ mean_img = mean_img(fmri_img)
 # provided in the dataset.
 import pandas as pd
 events = pd.read_table(subject_data['events'])
-print(events)
+events
 
 ###############################################################################
 # Performing the GLM analysis
@@ -80,7 +85,7 @@ print(events)
 #
 # It is now time to create and estimate a ``FirstLevelModel`` object, that will generate the *design matrix* using the  information provided by the ``events`` object.
 
-from nilearn.stats.first_level_model import FirstLevelModel
+from nilearn.glm.first_level import FirstLevelModel
 
 ###############################################################################
 # Parameters of the first-level model
@@ -190,7 +195,8 @@ z_map = fmri_glm.compute_contrast(active_minus_rest,
                                   output_type='z_score')
 
 ###############################################################################
-# Plot thresholded z scores map.
+# Plot thresholded z scores map
+# ------------------------------
 #
 # We display it on top of the average
 # functional image of the series (could be the anatomical image of the
@@ -212,8 +218,8 @@ plt.show()
 # alpha) at a certain level, e.g. 0.001: this means that there is 0.1% chance
 # of declaring an inactive voxel, active.
 
-from nilearn.stats import map_threshold
-_, threshold = map_threshold(z_map, alpha=.001, height_control='fpr')
+from nilearn.glm import threshold_stats_img
+_, threshold = threshold_stats_img(z_map, alpha=.001, height_control='fpr')
 print('Uncorrected p<0.001 threshold: %.3f' % threshold)
 plot_stat_map(z_map, bg_img=mean_img, threshold=threshold,
               display_mode='z', cut_coords=3, black_bg=True,
@@ -227,7 +233,8 @@ plt.show()
 # i.e. the probability of making only one false detection, say at
 # 5%. For that we use the so-called Bonferroni correction.
 
-_, threshold = map_threshold(z_map, alpha=.05, height_control='bonferroni')
+_, threshold = threshold_stats_img(
+    z_map, alpha=.05, height_control='bonferroni')
 print('Bonferroni-corrected, p<0.05 threshold: %.3f' % threshold)
 plot_stat_map(z_map, bg_img=mean_img, threshold=threshold,
               display_mode='z', cut_coords=3, black_bg=True,
@@ -240,7 +247,7 @@ plt.show()
 # false discoveries among detections. This is called the False
 # discovery rate.
 
-_, threshold = map_threshold(z_map, alpha=.05, height_control='fdr')
+_, threshold = threshold_stats_img(z_map, alpha=.05, height_control='fdr')
 print('False Discovery rate = 0.05 threshold: %.3f' % threshold)
 plot_stat_map(z_map, bg_img=mean_img, threshold=threshold,
               display_mode='z', cut_coords=3, black_bg=True,
@@ -254,7 +261,7 @@ plt.show()
 # cluster_threshold argument. Here clusters smaller than 10 voxels
 # will be discarded.
 
-clean_map, threshold = map_threshold(
+clean_map, threshold = threshold_stats_img(
     z_map, alpha=.05, height_control='fdr', cluster_threshold=10)
 plot_stat_map(clean_map, bg_img=mean_img, threshold=threshold,
               display_mode='z', cut_coords=3, black_bg=True,
@@ -274,7 +281,7 @@ eff_map.to_filename(join(outdir, 'active_vs_rest_eff_map.nii.gz'))
 from nilearn.reporting import get_clusters_table
 table = get_clusters_table(z_map, stat_threshold=threshold,
                            cluster_threshold=20)
-print(table)
+table
 
 ###############################################################################
 # This table can be saved for future use.
@@ -282,7 +289,8 @@ print(table)
 table.to_csv(join(outdir, 'table.csv'))
 
 ###############################################################################
-# Performing an F-test.
+# Performing an F-test
+# ---------------------
 #
 # "active vs rest" is a typical t test: condition versus
 # baseline. Another popular type of test is an F test in which one
@@ -301,7 +309,6 @@ effects_of_interest = np.vstack((conditions['active'], conditions['rest']))
 plot_contrast_matrix(effects_of_interest, design_matrix)
 plt.show()
 
-
 z_map = fmri_glm.compute_contrast(effects_of_interest,
                                   output_type='z_score')
 
@@ -309,7 +316,7 @@ z_map = fmri_glm.compute_contrast(effects_of_interest,
 # Note that the statistic has been converted to a z-variable, which
 # makes it easier to represent it.
 
-clean_map, threshold = map_threshold(
+clean_map, threshold = threshold_stats_img(
     z_map, alpha=.05, height_control='fdr', cluster_threshold=10)
 plot_stat_map(clean_map, bg_img=mean_img, threshold=threshold,
               display_mode='z', cut_coords=3, black_bg=True,

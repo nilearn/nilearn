@@ -32,7 +32,7 @@ computing a connectome from them.
 # connectivity dataset.
 
 from nilearn import datasets
-dataset = datasets.fetch_development_fmri(n_subjects=20)
+dataset = datasets.fetch_development_fmri(n_subjects=10)
 
 # print basic information on the dataset
 print('First subject functional nifti image (4D) is at: %s' %
@@ -254,29 +254,52 @@ plotting.plot_connectome(matrix, coords, title='Power correlation graph',
 ###############################################################################
 # Sometimes, the information in the correlation matrix is overwhelming and
 # aggregating edge strength from the graph would help. Use the function
-# `nilearn.plotting.plot_connectome_strength` to visualize this information.
+# `nilearn.plotting.plot_markers` to visualize this information.
 
-plotting.plot_connectome_strength(
-    matrix, coords, title='Connectome strength for Power atlas'
+# calculate normalized, absolute strength for each node 
+node_strength = np.sum(np.abs(matrix), axis=0) 
+node_strength /= np.max(node_strength)
+
+plotting.plot_markers(
+    node_strength,
+    coords,
+    title='Node strength for absolute value of edges for Power atlas',
 )
+
 
 ###############################################################################
 # From the correlation matrix, we observe that there is a positive and negative
-# structure. We could make two different plots by plotting these strengths
-# separately.
+# structure. We could make two different plots, one for the positive and one for
+# the negative structure.
 
 from matplotlib.pyplot import cm
 
-# plot the positive part of of the matrix
-plotting.plot_connectome_strength(
-    np.clip(matrix, 0, matrix.max()), coords, cmap=cm.YlOrRd,
-    title='Strength of the positive edges of the Power correlation matrix'
+# clip connectivity matrix to preserve positive and negative edges
+positive_edges = np.clip(matrix, 0, matrix.max())
+negative_edges = np.clip(matrix, matrix.min(), 0)
+
+# calculate strength for positive edges
+node_strength_positive = np.sum(np.abs(positive_edges), axis=0) 
+node_strength_positive /= np.max(node_strength_positive)
+
+# calculate strength for negative edges
+node_strength_negative = np.sum(np.abs(negative_edges), axis=0) 
+node_strength_negative /= np.max(node_strength_negative)
+
+# plot nodes' strength for positive edges
+plotting.plot_markers(
+    node_strength_positive,
+    coords,
+    title='Node strength for the positive edges for Power atlas',
+    node_cmap=cm.YlOrRd
 )
 
-# plot the negative part of of the matrix
-plotting.plot_connectome_strength(
-    np.clip(matrix, matrix.min(), 0), coords, cmap=cm.PuBu,
-    title='Strength of the negative edges of the Power correlation matrix'
+# plot nodes' strength for negative edges
+plotting.plot_markers(
+    node_strength_negative,
+    coords,
+    title='Node strength for the negative edges for Power atlas',
+    node_cmap=cm.PuBu
 )
 
 ###############################################################################
@@ -308,18 +331,43 @@ plotting.plot_matrix(matrix, vmin=-1., vmax=1., colorbar=True,
 
 plotting.plot_connectome(matrix, coords, title='Dosenbach correlation graph',
                          edge_threshold="99.7%", node_size=20, colorbar=True)
-plotting.plot_connectome_strength(
-    matrix, coords, title='Connectome strength for Power atlas'
-)
-plotting.plot_connectome_strength(
-    np.clip(matrix, 0, matrix.max()), coords, cmap=cm.YlOrRd,
-    title='Strength of the positive edges of the Power correlation matrix'
-)
-plotting.plot_connectome_strength(
-    np.clip(matrix, matrix.min(), 0), coords, cmap=cm.PuBu,
-    title='Strength of the negative edges of the Power correlation matrix'
+
+
+# calculate average strength for each node 
+node_strength = np.sum(np.abs(matrix), axis=0) 
+node_strength /= np.max(node_strength)
+
+plotting.plot_markers(
+    node_strength,
+    coords,
+    title='Node strength for absolute value of edges for Dosenbach atlas',
 )
 
+# clip connectivity matrix to preserve positive and negative edges
+positive_edges = np.clip(matrix, 0, matrix.max())
+negative_edges = np.clip(matrix, matrix.min(), 0)
+
+# calculate strength for positive and edges
+node_strength_positive = np.sum(np.abs(positive_edges), axis=0) 
+node_strength_positive /= np.max(node_strength_positive)
+node_strength_negative = np.sum(np.abs(negative_edges), axis=0) 
+node_strength_negative /= np.max(node_strength_negative)
+
+# plot nodes' strength for positive edges
+plotting.plot_markers(
+    node_strength_positive,
+    coords,
+    title='Node strength for the positive edges for Dosenbach atlas',
+    node_cmap=cm.YlOrRd
+)
+
+# plot nodes' strength for negative edges
+plotting.plot_markers(
+    node_strength_negative,
+    coords,
+    title='Node strength for the negative edges for Dosenbach atlas',
+    node_cmap=cm.PuBu
+)
 
 ###############################################################################
 # We can easily identify the Dosenbach's networks from the matrix blocks.

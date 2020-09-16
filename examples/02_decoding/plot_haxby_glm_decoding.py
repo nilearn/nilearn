@@ -61,6 +61,11 @@ func_filename = haxby_dataset.func[0]
 #############################################################################
 # Build a proper event structure for each session
 # -----------------------------------------------
+<<<<<<< HEAD:examples/02_decoding/plot_haxby_glm_decoding.py
+=======
+import numpy as np
+from nilearn.reporting import plot_event
+>>>>>>> master:examples/07_advanced/plot_haxby_block_classification.py
 
 events = {}
 # events will take  the form of a dictionary of Dataframes, one per session
@@ -79,9 +84,15 @@ for session in unique_sessions:
     # remove the rest condition and insert into the dictionary
     events[session] = events_[events_.trial_type != 'rest']
 
+plot_event(list(events.values()), figsize=(12, 6))
 ##############################################################################
 # Instantiate and run FirstLevelModel
 # -----------------------------------
+<<<<<<< HEAD:examples/02_decoding/plot_haxby_glm_decoding.py
+=======
+from nilearn.image import index_img
+from nilearn.glm.first_level import FirstLevelModel
+>>>>>>> master:examples/07_advanced/plot_haxby_block_classification.py
 
 # we are going to generate a list of z-maps together with their session and condition index
 z_maps = []

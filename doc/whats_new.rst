@@ -16,11 +16,52 @@ NEW
   The resulting average model is the one used as a classifier or a regressor.
   These two objects also leverage the `NiftiMaskers` to provide a direct
   interface with the Nifti files on disk.
+- Plot events file
+  Use :func:`nilearn.reporting.plot_event` to visualize events file.
+  The function accepts the BIDS events file read using `pandas`
+  utilities.
+- New plotting function
+  :func:`nilearn.plotting.plot_carpet` generates a "carpet plot" (also known
+  as a "Power plot" or a "grayplot"), for visualizing global patterns in
+  4D functional data over time.
+- New plotting function
+  :func:`nilearn.plotting.plot_img_on_surf` generates multiple views of
+  :func:`nilearn.plotting.plot_surf_stat_map` in a single figure.
+- :func:`nilearn.plotting.plot_markers` shows network nodes (markers) on a glass
+  brain template and color code them according to provided nodal measure (i.e.
+  connection strength). This function will replace
+  :func:`nilearn.plotting.plot_connectome_strength`.
+- New plotting function
+  :func:`nilearn.plotting.plot_surf_contours` plots the contours of regions of
+  interest on the surface, optionally overlayed on top of a statistical map.
+- The position annotation on the plot methods now implements the `decimals` option
+  to enable annotation of a slice coordinate position with the float.
+
 
 Fixes
 -----
 
 - :class:`nilearn.input_data.NiftiLabelsMasker` no longer ignores its `mask_img`
+- :func:`nilearn.masking.compute_brain_mask` has replaced
+  nilearn.masking.compute_gray_matter_mask. Features remained the same but
+  some corrections regarding its description were made in the docstring.
+- the default background (MNI template) in plotting functions now has the
+  correct orientation; before left and right were inverted.
+- :func:`nilearn.mass_univariate.permuted_ols` no longer returns transposed
+  t-statistic arrays when no permutations are performed.
+
+
+Changes
+-------
+
+- :func:`nilearn.datasets.fetch_cobre` has been deprecated and will be
+  removed in release 0.9 .
+- :func:`nilearn.plotting.plot_connectome_strength` has been deprecated and will
+  be removed in release 0.9 .
+
+- :class:`nilearn.connectome.ConnectivityMeasure` can now remove
+  confounds in its transform step.
+
 
 0.6.2
 ======
@@ -30,6 +71,8 @@ ENHANCEMENTS
 
 - Generated documentation now includes Binder links to launch examples interactively
   in the browser
+- :class:`nilearn.input_data.NiftiSpheresMasker` now has an inverse transform,
+  projecting spheres to the corresponding mask_img.
 
 Fixes
 -----
@@ -54,6 +97,7 @@ The following people contributed to this release::
      Joshua Teves
      Kshitij Chawla (kchawla-pi)
      Zvi Baratz
+     Simon R. Steinkamp
 
 0.6.1
 =====
@@ -320,7 +364,7 @@ NEW
   when using the `mask_strategy="template"` option for brains in MNI space.
 - New brain development fMRI dataset fetcher
   :func:`nilearn.datasets.fetch_development_fmri` can be used to download
-  movie-watching data in children and adults; a light-weight dataset 
+  movie-watching data in children and adults; a light-weight dataset
   implemented for teaching and usage in the examples.
 - New example in `examples/05_advanced/plot_age_group_prediction_cross_val.py`
   to compare methods for classifying subjects into age groups based on
@@ -343,8 +387,8 @@ Changes
 
 - All the connectivity examples are changed from ADHD to brain development
   fmri dataset.
-- Examples plot_decoding_tutorial, plot_haxby_decoder, 
-  plot_haxby_different_estimators, plot_haxby_full_analysis, plot_oasis_vbm now 
+- Examples plot_decoding_tutorial, plot_haxby_decoder,
+  plot_haxby_different_estimators, plot_haxby_full_analysis, plot_oasis_vbm now
   use :class:`nilearn.decoding.Decoder` and :class:`nilearn.decoding.DecoderRegressor`
   instead of sklearn SVC and SVR.
 
@@ -1565,7 +1609,7 @@ New features
    - The new module :mod:`nilearn.connectome` now has class
      :class:`nilearn.connectome.ConnectivityMeasure` can be useful for
      computing functional connectivity matrices.
-   - The function :func:`nilearn.connectome.sym_to_vec` in same module
+   - The function nilearn.connectome.sym_to_vec in same module
      :mod:`nilearn.connectome` is also implemented as a helper function to
      :class:`nilearn.connectome.ConnectivityMeasure`.
    - The class :class:`nilearn.decomposition.DictLearning` in
