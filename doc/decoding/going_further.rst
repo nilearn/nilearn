@@ -1,16 +1,3 @@
-.. for doctests to run, we need to define variables that are define in
-   the literal includes
-    >>> import numpy as np
-    >>> from sklearn import datasets
-    >>> iris = datasets.load_iris()
-    >>> fmri_masked  = iris.data
-    >>> target = iris.target
-    >>> session = np.ones_like(target)
-    >>> n_samples = len(target)
-
-.. Remove doctest: +SKIP at LDA while dropping support for sklearn older than
-    versions 0.17
-
 .. _going_further:
 
 ==========================================================================
@@ -71,7 +58,6 @@ Performing decoding with scikit-learn
 Using scikit-learn estimators
 --------------------------------
 
-
 You can easily import estimators from the `scikit-learn <http://scikit-learn.org>`
 machine-learning library. Those available in the `Decoder` object and others
 all have the `fit` and `predict` functions. For example for `Support Vector Classifier
@@ -96,8 +82,8 @@ data to 2D arrays (shape (n_timepoints, n_voxels)) that estimators can work on.
 
     >>> masker = NiftiMasker(mask_img=mask_filename, sessions=session_label,
                            smoothing_fwhm=4, standardize=True,
-                           memory="nilearn_cache", memory_level=1)
-    >>> fmri_masked = masker.fit_transform(fmri_niimgs)
+                           memory="nilearn_cache", memory_level=1) # doctest: +SKIP
+    >>> fmri_masked = masker.fit_transform(fmri_niimgs) # doctest: +SKIP
 
 Then use a specific function :func:`sklearn.model_selection.cross_val_score`
 that computes for you the score for the different folds of cross-validation::
