@@ -11,7 +11,8 @@ import pandas as pd
 import pytest
 
 from nibabel.tmpdirs import InTemporaryDirectory
-from numpy.testing import assert_almost_equal, assert_array_equal
+from numpy.testing import (
+    assert_almost_equal, assert_array_equal, assert_array_almost_equal)
 
 from nilearn.glm.first_level.design_matrix import (_convolve_regressors,
                                                    _cosine_drift,
@@ -155,7 +156,7 @@ def test_design_matrix10():
                                    drift_model='polynomial', drift_order=3,
                                    fir_delays=range(1, 5))
     onset = events.onset[events.trial_type == 'c0'].astype(np.int)
-    assert np.all((X[onset + 1, 0] == 1))
+    assert_array_almost_equal(X[onset + 1, 0], np.ones(3))
 
 
 def test_convolve_regressors():
@@ -293,7 +294,7 @@ def test_design_matrix11():
                                    drift_model='polynomial', drift_order=3,
                                    fir_delays=range(1, 5))
     onset = events.onset[events.trial_type == 'c0'].astype(np.int)
-    assert np.all(X[onset + 3, 2] == 1)
+    assert_array_almost_equal(X[onset + 3, 2], np.ones(3))
 
 
 def test_design_matrix12():
@@ -306,7 +307,7 @@ def test_design_matrix12():
                                    drift_model='polynomial', drift_order=3,
                                    fir_delays=range(1, 5))
     onset = events.onset[events.trial_type == 'c2'].astype(np.int)
-    assert np.all(X[onset + 4, 11] == 1)
+    assert_array_almost_equal(X[onset + 4, 11], np.ones(3))
 
 
 def test_design_matrix13():
@@ -319,7 +320,7 @@ def test_design_matrix13():
                                    drift_model='polynomial', drift_order=3,
                                    fir_delays=range(1, 5))
     onset = events.onset[events.trial_type == 'c0'].astype(np.int)
-    assert np.all(X[onset + 1, 0] == 1)
+    assert_array_almost_equal(X[onset + 1, 0], np.ones(3))
 
 
 def test_design_matrix14():
