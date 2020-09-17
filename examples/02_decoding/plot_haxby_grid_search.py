@@ -1,7 +1,7 @@
 """
 Setting a parameter by cross-validation
 =======================================================
-
+TODO: edit this
 Here we set the number of features selected in an Anova-SVC approach to
 maximize the cross-validation score.
 
@@ -15,7 +15,7 @@ might not maximize the score on left-out data.
 Thus using data to maximize a cross-validation score computed on that
 same data is likely to optimistic and lead to an overfit.
 
-The proper appraoch is known as a "nested cross-validation". It consists
+The proper approach is known as a "nested cross-validation". It consists
 in doing cross-validation loops to set the model parameters inside the
 cross-validation loop used to judge the prediction performance: the
 parameters are set separately on each fold, never using the data used to
@@ -37,98 +37,99 @@ a separator.
 # Load the Haxby dataset
 # -----------------------
 from nilearn import datasets
-import numpy as np
-import pandas as pd
 # by default 2nd subject data will be fetched on which we run our analysis
 haxby_dataset = datasets.fetch_haxby()
+fmri_filename = haxby_dataset.func[0]
+mask_filename = haxby_dataset.mask
 
 # print basic information on the dataset
 print('Mask nifti image (3D) is located at: %s' % haxby_dataset.mask)
 print('Functional nifti image (4D) are located at: %s' % haxby_dataset.func[0])
 
 # Load the behavioral data
+import pandas as pd
 labels = pd.read_csv(haxby_dataset.session_target[0], sep=" ")
 y = labels['labels']
-session = labels['chunks']
+
 
 # Keep only data corresponding to shoes or bottles
+from nilearn.image import index_img
 condition_mask = y.isin(['shoe', 'bottle'])
+
+fmri_niimgs = index_img(fmri_filename, condition_mask)
 y = y[condition_mask]
+session = labels['chunks'][condition_mask]
 
 ###########################################################################
-# Prepare the data with the NiftiMasker
-from nilearn.input_data import NiftiMasker
-
-mask_filename = haxby_dataset.mask
-# For decoding, standardizing is often very important
-nifti_masker = NiftiMasker(mask_img=mask_filename, sessions=session,
-                           smoothing_fwhm=4, standardize=True,
-                           memory="nilearn_cache", memory_level=1)
-func_filename = haxby_dataset.func[0]
-X = nifti_masker.fit_transform(func_filename)
-# Restrict to non rest data
-X = X[condition_mask]
-session = session[condition_mask]
-
-###########################################################################
-# Build the decoder that we will use
-# -----------------------------------
-# Define the prediction function to be used.
-# Here we use a Support Vector Classification, with a linear kernel
-from sklearn.svm import SVC
-svc = SVC(kernel='linear')
-
-
-# Define the dimension reduction to be used.
-# Here we use a classical univariate feature selection based on F-test,
-# namely Anova. We set the number of features to be selected to 500
-from sklearn.feature_selection import SelectKBest, f_classif
-feature_selection = SelectKBest(f_classif, k=500)
-
-# We have our classifier (SVC), our feature selection (SelectKBest), and now,
-# we can plug them together in a *pipeline* that performs the two operations
-# successively:
-from sklearn.pipeline import Pipeline
-anova_svc = Pipeline([('anova', feature_selection), ('svc', svc)])
+# ANOVA pipeline with :class:`nilearn.decoding.Decoder` object
+# ------------------------------------------------------------
+#
+# Nilearn Decoder object aims to provide smooth user experience by acting
+# as a pipeline of several tasks: preprocessing with NiftiMasker, decoding
+# with different types of estimators (in this example is Support Vector
+# Machine with a linear kernel) on nested cross-validation, selecting
+# relevant features with ANOVA -- a classical univariate feature selection
+# based on F-test.
+from nilearn.decoding import Decoder
+# Here screening_percentile is set to 1.25 percent, meaning around 500
+# features will be selected with ANOVA.
+decoder = Decoder(estimator='svc', mask=mask_filename, smoothing_fwhm=4,
+                  standardize=True, screening_percentile=1.25)
 
 ###########################################################################
-# Compute prediction scores using cross-validation
+# Fit the Decoder and predict the reponses
 # -------------------------------------------------
-anova_svc.fit(X, y)
-y_pred = anova_svc.predict(X)
+decoder.fit(fmri_niimgs, y)
+y_pred = decoder.predict(fmri_niimgs)
 
-from sklearn.model_selection import cross_val_score
-
-k_range = [10, 15, 30, 50, 150, 300, 500, 1000, 1500, 3000, 5000]
+###########################################################################
+# Compute prediction scores with different values of screening percentile
+# -----------------------------------------------------------------------
+import numpy as np
+sp_range = [1.25, 2.5, 3.75, 7.5, 12.5, 25.0]
 cv_scores = []
-scores_validation = []
+val_scores = []
 
-for k in k_range:
-    feature_selection.k = k
-    cv_scores.append(np.mean(
-        cross_val_score(anova_svc, X[session < 10], y[session < 10], cv=3)))
-    print("CV score: %.4f" % cv_scores[-1])
+for sp in sp_range:
+    decoder = Decoder(estimator='svc', mask=mask_filename,
+                      smoothing_fwhm=4, cv=3, standardize=True,
+                      screening_percentile=sp)
+    decoder.fit(index_img(fmri_niimgs, session < 10),
+                y[session < 10])
+    cv_scores.append(np.mean(decoder.cv_scores_['bottle']))
+    print("Sreening Percentile: %.3f" % sp)
+    print("Mean CV score: %.4f" % cv_scores[-1])
 
-    anova_svc.fit(X[session < 10], y[session < 10])
-    y_pred = anova_svc.predict(X[session == 10])
-    scores_validation.append(np.mean(y_pred == y[session == 10]))
-    print("score validation: %.4f" % scores_validation[-1])
+    y_pred = decoder.predict(index_img(fmri_niimgs, session == 10))
+    val_scores.append(np.mean(y_pred == y[session == 10]))
+    print("Validation score: %.4f" % val_scores[-1])
 
 ###########################################################################
 # Nested cross-validation
-# -------------------------
-from sklearn.model_selection import GridSearchCV
-# We are going to tune the parameter 'k' of the step called 'anova' in
-# the pipeline. Thus we need to address it as 'anova__k'.
+# -----------------------
+# We are going to tune the parameter 'screening_percentile' in the
+# pipeline.
+from sklearn.model_selection import KFold
+cv = KFold(n_splits=3)
+nested_cv_scores = []
 
-# Note that GridSearchCV takes an n_jobs argument that can make it go
-# much faster
-grid = GridSearchCV(anova_svc, param_grid={'anova__k': k_range}, verbose=1,
-                    cv=3)
-nested_cv_scores = cross_val_score(grid, X, y, cv=3)
+for train, test in cv.split(session):
+    y_train = np.array(y)[train]
+    y_test = np.array(y)[test]
+    val_scores = []
+    
+    for sp in sp_range:
+        decoder = Decoder(estimator='svc', mask=mask_filename,
+                          smoothing_fwhm=4, cv=3, standardize=True,
+                          screening_percentile=sp)
+        decoder.fit(index_img(fmri_niimgs, train), y_train)
+        y_pred = decoder.predict(index_img(fmri_niimgs, test))
+        val_scores.append(np.mean(y_pred == y_test))
+
+    nested_cv_scores.append(np.max(val_scores))
 
 print("Nested CV score: %.4f" % np.mean(nested_cv_scores))
-
+    
 ###########################################################################
 # Plot the prediction scores using matplotlib
 # ---------------------------------------------
@@ -137,10 +138,10 @@ from nilearn.plotting import show
 
 plt.figure(figsize=(6, 4))
 plt.plot(cv_scores, label='Cross validation scores')
-plt.plot(scores_validation, label='Left-out validation data scores')
-plt.xticks(np.arange(len(k_range)), k_range)
+plt.plot(val_scores, label='Left-out validation data scores')
+plt.xticks(np.arange(len(sp_range)), sp_range)
 plt.axis('tight')
-plt.xlabel('k')
+plt.xlabel('ANOVA screening percentile')
 
 plt.axhline(np.mean(nested_cv_scores),
             label='Nested cross-validation',

@@ -385,28 +385,18 @@ Decoding without a mask: Anova-SVM
 Dimension reduction with feature selection
 ------------------------------------------
 
-If we do not start from a mask of the relevant regions, there is a very
-large number of voxels and not all are useful for
-face vs cat prediction. We thus add a `feature selection
-<http://scikit-learn.org/stable/modules/feature_selection.html>`_
-procedure. The idea is to select the `k` voxels most correlated to the
-task.
-
-For this, we need to import the :mod:`sklearn.feature_selection` module and use
-:func:`sklearn.feature_selection.f_classif`, a simple F-score
-based feature selection (a.k.a.
-`Anova <https://en.wikipedia.org/wiki/Analysis_of_variance#The_F-test>`_),
-that we will put before the SVC in a `pipeline`
-(:class:`sklearn.pipeline.Pipeline`):
+If we do not start from a mask of the relevant regions, there is a very large
+number of voxels and not all are useful for face vs cat prediction. We thus add
+a feature selection procedure. The idea is to select the `k` voxels most
+correlated to the task. For this purpose, Nilearn has the built in
+:class:`nilearn.decoding.Decoder` serve as a complete pipeline.
 
 .. literalinclude:: ../../examples/02_decoding/plot_haxby_anova_svm.py
-    :start-after: # Build the decoder
+    :start-after: # based on F-test.
     :end-before: # Visualize the results
 
-
-
-We can use our ``anova_svc`` object exactly as we were using our ``svc``
-object previously.
+We can use our ``decoder`` object exactly as we were using our ``svc`` object
+previously.
 
 Visualizing the results
 -----------------------
