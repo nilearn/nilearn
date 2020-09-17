@@ -45,6 +45,10 @@ different heuristics to find cutting coordinates.
      :target: ../auto_examples/03_connectivity/plot_sphere_based_connectome.html
      :scale: 50
 
+.. |plot_nodes| image:: ../auto_examples/03_connectivity/images/sphx_glr_plot_sphere_based_connectome_007.png
+     :target: ../auto_examples/03_connectivity/plot_sphere_based_connectome.html
+     :scale: 50
+
 .. |plot_anat| image:: ../auto_examples/01_plotting/images/sphx_glr_plot_demo_plotting_003.png
      :target: ../auto_examples/01_plotting/plot_demo_plotting.html
      :scale: 50
@@ -59,6 +63,10 @@ different heuristics to find cutting coordinates.
 
 .. |plot_prob_atlas| image:: ../auto_examples/01_plotting/images/sphx_glr_plot_prob_atlas_003.png
      :target: ../auto_examples/01_plotting/plot_prob_atlas.html
+     :scale: 50
+
+.. |plot_carpet| image:: ../auto_examples/01_plotting/images/sphx_glr_plot_carpet_001.png
+     :target: ../auto_examples/01_plotting/plot_carpet.html
      :scale: 50
 
 .. A temporary hack to avoid a sphinx bug
@@ -102,9 +110,22 @@ different heuristics to find cutting coordinates.
                      are demonstrated in
                      **Example:** :ref:`sphx_glr_auto_examples_03_connectivity_plot_atlas_comparison.py`
 
+|plot_nodes|         :func:`plot_markers`
+                     |hack|
+                     Plotting network nodes (markers)
+
+                     Function for automatic plotting of network nodes (markers) 
+                     and color coding them according to provided nodal measure
+                     (i.e. connection strength) as demonstrated in
+                     **Example:** :ref:`sphx_glr_auto_examples_03_connectivity_plot_atlas_comparison.py`
+
 |plot_prob_atlas|    :func:`plot_prob_atlas`
                      |hack|
                      Plotting 4D probabilistic atlas maps
+
+|plot_carpet|        :func:`plot_carpet`
+                     |hack|
+                     Plotting voxel intensities across time.
 
 **plot_img**         :func:`plot_img`
                      |hack|
@@ -480,7 +501,7 @@ Or you can save it to an html file::
 
 :func:`view_connectome`: 3D plot of a connectome::
 
-      >>> view = plotting.view_connectome(correlation_matrix, coords, threshold='90%')    # doctest: +SKIP
+      >>> view = plotting.view_connectome(correlation_matrix, coords, edge_threshold='90%')    # doctest: +SKIP
       >>> view.open_in_browser() # doctest: +SKIP
 
 

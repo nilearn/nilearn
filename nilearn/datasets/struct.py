@@ -5,14 +5,13 @@ import warnings
 import os
 import numpy as np
 from scipy import ndimage
-from sklearn.datasets.base import Bunch
+from sklearn.utils import Bunch
 
 from .utils import (_get_dataset_dir, _fetch_files,
                     _get_dataset_descr, _uncompress_file)
 
 from .._utils import check_niimg, niimg
-from .._utils.exceptions import VisibleDeprecationWarning
-from ..image import new_img_like
+from ..image import new_img_like, get_data
 
 _package_directory = os.path.dirname(os.path.abspath(__file__))
 # Useful for the very simple examples
@@ -151,7 +150,7 @@ def load_mni152_brain_mask():
     """
     # Load MNI template
     target_img = load_mni152_template()
-    mask_voxels = (target_img.get_data() > 0).astype(int)
+    mask_voxels = (get_data(target_img) > 0).astype(int)
     mask_img = new_img_like(target_img, mask_voxels)
     return mask_img
 
@@ -260,15 +259,15 @@ def fetch_oasis_vbm(n_subjects=None, dartel_version=True, data_dir=None,
 
     References
     ----------
-    [1] http://www.oasis-brains.org/
+    * http://www.oasis-brains.org/
 
-    [2] Open Access Series of Imaging Studies (OASIS): Cross-sectional MRI
-        Data in Young, Middle Aged, Nondemented, and Demented Older Adults.
-        Marcus, D. S and al., 2007, Journal of Cognitive Neuroscience.
+    * Open Access Series of Imaging Studies (OASIS): Cross-sectional MRI
+      Data in Young, Middle Aged, Nondemented, and Demented Older Adults.
+      Marcus, D. S and al., 2007, Journal of Cognitive Neuroscience.
 
     Notes
     -----
-    In the DARTEL version, original Oasis data [1] have been preprocessed
+    In the DARTEL version, original Oasis data have been preprocessed
     with the following steps:
 
       1. Dimension swapping (technically required for subsequent steps)
@@ -498,42 +497,6 @@ def _fetch_surf_fsaverage(data_dir=None):
 
     result['description'] = str(_get_dataset_descr('fsaverage'))
     return Bunch(**result)
-
-
-def fetch_surf_fsaverage5(data_dir=None, url=None, resume=True, verbose=1):
-    """ Deprecated since version 0.4.3
-
-    Use fetch_surf_fsaverage instead.
-
-    Parameters
-    ----------
-    data_dir: str, optional (default=None)
-        Path of the data directory. Used to force data storage in a specified
-        location.
-
-    Returns
-    -------
-    data: sklearn.datasets.base.Bunch
-        Dictionary-like object, the interest attributes are :
-         - 'pial_left': Gifti file, left hemisphere pial surface mesh
-         - 'pial_right': Gifti file, right hemisphere pial surface mesh
-         - 'infl_left': Gifti file, left hemisphere inflated pial surface mesh
-         - 'infl_right': Gifti file, right hemisphere inflated pial
-                         surface mesh
-         - 'sulc_left': Gifti file, left hemisphere sulcal depth data
-         - 'sulc_right': Gifti file, right hemisphere sulcal depth data
-
-    References
-    ----------
-    Fischl et al, (1999). High-resolution intersubject averaging and a
-    coordinate system for the cortical surface. Hum Brain Mapp 8, 272-284.
-
-    """
-    warnings.warn("fetch_surf_fsaverage5 has been deprecated and will "
-                  "be removed in a future release. "
-                  "Use fetch_surf_fsaverage(mesh='fsaverage5')",
-                  VisibleDeprecationWarning, stacklevel=2)
-    return fetch_surf_fsaverage(mesh='fsaverage5', data_dir=data_dir)
 
 
 def _fetch_surf_fsaverage5(data_dir=None, url=None, resume=True, verbose=1):

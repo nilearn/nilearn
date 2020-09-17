@@ -7,7 +7,7 @@ from datetime import datetime as dt
 
 
 def update_cache_timestamp(timestamp_filename):
-    """ Updates the contents of the manual-cache-timestamp file
+    """ Updates the contents of the docs-cache-timestamp file
     with current timestamp.
 
     Returns
@@ -22,5 +22,5 @@ def update_cache_timestamp(timestamp_filename):
 
 
 if __name__ == '__main__':
-    update_cache_timestamp('manual-cache-timestamp')
-    update_cache_timestamp('auto-cache-timestamp')
+    update_cache_timestamp('docs-cache-timestamp')
+    update_cache_timestamp('packages-cache-timestamp')

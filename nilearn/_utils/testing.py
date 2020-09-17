@@ -3,37 +3,30 @@
 # License: simplified BSD
 import contextlib
 import functools
-import inspect
 import os
 import sys
 import tempfile
 import warnings
 import gc
+import distutils
+from pathlib import Path
 
-import numpy as np
-from sklearn.utils.testing import assert_warns
-
-from .compat import _basestring, _urllib
-from ..datasets.utils import _fetch_files
-
-
-try:
-    from nose.tools import assert_raises_regex
-except ImportError:
-    # For Py 2.7
-    from nose.tools import assert_raises_regexp as assert_raises_regex
-
+import pytest
+import sklearn
 
 # we use memory_profiler library for memory consumption checks
 try:
     from memory_profiler import memory_usage
 
+
     def with_memory_profiler(func):
         """A decorator to skip tests requiring memory_profiler."""
         return func
 
+
     def memory_used(func, *args, **kwargs):
         """Compute memory usage when executing func."""
+
         def func_3_times(*args, **kwargs):
             for _ in range(3):
                 func(*args, **kwargs)
@@ -45,12 +38,27 @@ try:
 except ImportError:
     def with_memory_profiler(func):
         """A decorator to skip tests requiring memory_profiler."""
+
         def dummy_func():
-            import nose
-            raise nose.SkipTest('Test requires memory_profiler.')
+            pytest.skip('Test requires memory_profiler.')
+
         return dummy_func
 
+
     memory_usage = memory_used = None
+
+
+def check_deprecation(func, match=None):
+    @functools.wraps(func)
+    def wrapped(*args, **kwargs):
+        if distutils.version.LooseVersion(sklearn.__version__) < '0.22':
+            with pytest.deprecated_call():
+                result = func(*args, **kwargs)
+        else:
+            with pytest.warns(FutureWarning, match=match):
+                result = func(*args, **kwargs)
+        return result
+    return wrapped
 
 
 def assert_memory_less_than(memory_limit, tolerance,
@@ -87,20 +95,18 @@ def assert_memory_less_than(memory_limit, tolerance,
                          format(mem_used, memory_limit))
 
 
-class MockRequest(object):
-    def __init__(self, url):
-        self.url = url
+def serialize_niimg(img, gzipped=True):
+    """Serialize a Nifti1Image to nifti.
 
-    def add_header(*args):
-        pass
+    Serialize to .nii.gz if gzipped, else to .nii Returns a `bytes` object.
 
-
-class MockOpener(object):
-    def __init__(self):
-        pass
-
-    def open(self, request):
-        return request.url
+    """
+    with tempfile.TemporaryDirectory() as tmp_dir:
+        tmp_dir = Path(tmp_dir)
+        file_path = tmp_dir / "img.nii{}".format(".gz" if gzipped else "")
+        img.to_filename(str(file_path))
+        with file_path.open("rb") as f:
+            return f.read()
 
 
 @contextlib.contextmanager
@@ -177,125 +183,19 @@ def write_tmp_imgs(*imgs, **kwargs):
             yield imgs
 
 
-class mock_request(object):
-    def __init__(self):
-        """Object that mocks the urllib (future) module to store downloaded filenames.
-
-        `urls` is the list of the files whose download has been
-        requested.
-        """
-        self.urls = set()
-
-    def reset(self):
-        self.urls = set()
-
-    def Request(self, url):
-        self.urls.add(url)
-        return MockRequest(url)
-
-    def build_opener(self, *args, **kwargs):
-        return MockOpener()
-
-
-def wrap_chunk_read_(_chunk_read_):
-    def mock_chunk_read_(response, local_file, initial_size=0, chunk_size=8192,
-                         report_hook=None, verbose=0):
-        if not isinstance(response, _basestring):
-            return _chunk_read_(response, local_file,
-                                initial_size=initial_size,
-                                chunk_size=chunk_size,
-                                report_hook=report_hook, verbose=verbose)
-        return response
-    return mock_chunk_read_
-
-
-def mock_chunk_read_raise_error_(response, local_file, initial_size=0,
-                                 chunk_size=8192, report_hook=None,
-                                 verbose=0):
-    raise _urllib.errors.HTTPError("url", 418, "I'm a teapot", None, None)
-
-
-class FetchFilesMock (object):
-    _mock_fetch_files = functools.partial(_fetch_files, mock=True)
-
-    def __init__(self):
-        """Create a mock that can fill a CSV file if needed
-        """
-        self.csv_files = {}
-
-    def add_csv(self, filename, content):
-        self.csv_files[filename] = content
-
-    def __call__(self, *args, **kwargs):
-        """Load requested dataset, downloading it if needed or requested.
-
-        For test purpose, instead of actually fetching the dataset, this
-        function creates empty files and return their paths.
-        """
-        filenames = self._mock_fetch_files(*args, **kwargs)
-        # Fill CSV files with given content if needed
-        for fname in filenames:
-            basename = os.path.basename(fname)
-            if basename in self.csv_files:
-                array = self.csv_files[basename]
-
-                # np.savetxt does not have a header argument for numpy 1.6
-                # np.savetxt(fname, array, delimiter=',', fmt="%s",
-                #            header=','.join(array.dtype.names))
-                # We need to add the header ourselves
-                with open(fname, 'wb') as f:
-                    header = '# {0}\n'.format(','.join(array.dtype.names))
-                    f.write(header.encode())
-                    np.savetxt(f, array, delimiter=',', fmt='%s')
-
-        return filenames
-
-
-
-def is_nose_running():
-    """Returns whether we are running the nose test loader
+def are_tests_running():
+    """Returns whether we are running the pytest test loader
     """
-    if 'nose' not in sys.modules:
-        return
-    try:
-        import nose
-    except ImportError:
-        return False
-    # Now check that we have the loader in the call stask
-    stack = inspect.stack()
-    loader_file_name = nose.loader.__file__
-    if loader_file_name.endswith('.pyc'):
-        loader_file_name = loader_file_name[:-1]
-    for _, file_name, _, _, _, _ in stack:
-        if file_name == loader_file_name:
-            return True
-    return False
+    return 'PYTEST_CURRENT_TEST' in os.environ
 
 
-def skip_if_running_nose(msg=''):
-    """ Raise a SkipTest if we appear to be running the nose test loader.
+def skip_if_running_tests(msg=''):
+    """ Raise a SkipTest if we appear to be running the pytest test loader.
 
     Parameters
     ----------
     msg: string, optional
-        The message issued when SkipTest is raised
+        The message issued when a test is skipped
     """
-    if is_nose_running():
-        import nose
-        raise nose.SkipTest(msg)
-
-
-# Backport: On some nose versions, assert_less_equal is not present
-try:
-    from nose.tools import assert_less_equal
-except ImportError:
-    def assert_less_equal(a, b):
-        if a > b:
-            raise AssertionError("%f is not less or equal than %f" % (a, b))
-
-try:
-    from nose.tools import assert_less
-except ImportError:
-    def assert_less(a, b):
-        if a >= b:
-            raise AssertionError("%f is not less than %f" % (a, b))
+    if are_tests_running():
+        pytest.skip(msg)

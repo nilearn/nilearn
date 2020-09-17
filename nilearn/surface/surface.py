@@ -3,8 +3,10 @@ Functions for surface manipulation.
 """
 import os
 import warnings
+import collections
 import gzip
 from distutils.version import LooseVersion
+
 
 import numpy as np
 from scipy import sparse, interpolate
@@ -20,11 +22,12 @@ import nibabel
 from nibabel import gifti
 from nibabel import freesurfer as fs
 
-from ..image import load_img
-from ..image import resampling
-from .._utils.compat import _basestring
-from .._utils.path_finding import _resolve_globbing
-from .. import _utils
+from nilearn import datasets
+from nilearn.image import load_img
+from nilearn.image import resampling
+from nilearn._utils.path_finding import _resolve_globbing
+from nilearn import _utils
+from nilearn.image import get_data
 
 
 def _uniform_ball_cloud(n_points=20, dim=3, n_monte_carlo=50000):
@@ -103,9 +106,9 @@ def _ball_sample_locations(mesh, affine, ball_radius=3., n_points=20):
     Parameters
     ----------
     mesh : pair of np arrays.
-        mesh[0] contains the 3d coordinates of the vertices
+        `mesh[0]` contains the 3d coordinates of the vertices
         (shape n_vertices, 3)
-        mesh[1] contains, for each triangle, the indices into mesh[0] of its
+        `mesh[1]` contains, for each triangle, the indices into `mesh[0]` of its
         vertices (shape n_triangles, 3)
 
     affine : array of shape (4, 4)
@@ -155,9 +158,9 @@ def _line_sample_locations(
     Parameters
     ----------
     mesh : pair of numpy.ndarray.
-        mesh[0] contains the 3d coordinates of the vertices
+        `mesh[0]` contains the 3d coordinates of the vertices
         (shape n_vertices, 3)
-        mesh[1] contains, for each triangle, the indices into mesh[0] of its
+        `mesh[1]` contains, for each triangle, the indices into `mesh[0]` of its
         vertices (shape n_triangles, 3)
 
     affine : numpy.ndarray of shape (4, 4)
@@ -469,7 +472,7 @@ def vol_to_surf(img, surf_mesh,
     You can control how many samples are drawn by setting `n_samples`.
 
     Once the sampling positions are chosen, those that fall outside of the 3d
-    image (or ouside of the mask if you provided one) are discarded. If all
+    image (or outside of the mask if you provided one) are discarded. If all
     sample positions are discarded (which can happen, for example, if the
     vertex itself is outside of the support of the image), the projection at
     this vertex will be ``numpy.nan``.
@@ -499,13 +502,13 @@ def vol_to_surf(img, surf_mesh,
     img = load_img(img)
     if mask_img is not None:
         mask_img = _utils.check_niimg(mask_img)
-        mask = resampling.resample_to_img(
-            mask_img, img, interpolation='nearest', copy=False).get_data()
+        mask = get_data(resampling.resample_to_img(
+            mask_img, img, interpolation='nearest', copy=False))
     else:
         mask = None
     original_dimension = len(img.shape)
     img = _utils.check_niimg(img, atleast_4d=True)
-    frames = np.rollaxis(img.get_data(), -1)
+    frames = np.rollaxis(get_data(img), -1)
     mesh = load_surf_mesh(surf_mesh)
     sampling = sampling_schemes[interpolation]
     texture = sampling(
@@ -573,7 +576,7 @@ def load_surf_data(surf_data):
         An array containing surface data
     """
     # if the input is a filename, load it
-    if isinstance(surf_data, _basestring):
+    if isinstance(surf_data, str):
 
         # resolve globbing
         file_list = _resolve_globbing(surf_data)
@@ -583,7 +586,7 @@ def load_surf_data(surf_data):
             surf_data = file_list[f]
             if (surf_data.endswith('nii') or surf_data.endswith('nii.gz') or
                     surf_data.endswith('mgz')):
-                data_part = np.squeeze(nibabel.load(surf_data).get_data())
+                data_part = np.squeeze(get_data(nibabel.load(surf_data)))
             elif (surf_data.endswith('curv') or surf_data.endswith('sulc') or
                     surf_data.endswith('thickness')):
                 data_part = fs.io.read_morph_data(surf_data)
@@ -697,7 +700,7 @@ def load_surf_mesh(surf_mesh):
         the second containing the indices (into coords) of the mesh faces.
     """
     # if input is a filename, try to load it
-    if isinstance(surf_mesh, _basestring):
+    if isinstance(surf_mesh, str):
         # resolve globbing
         file_list = _resolve_globbing(surf_mesh)
         if len(file_list) == 1:
@@ -749,6 +752,27 @@ def load_surf_mesh(surf_mesh):
                          '[vertex coordinates, face indices]')
 
     return [coords, faces]
+
+
+def _check_mesh(mesh):
+    """Check that mesh data is either a str, or a dict with sufficient
+    entries.
+
+    Used by plotting.surf_plotting.plot_img_on_surf and
+    plotting.html_surface.full_brain_info
+    """
+    if isinstance(mesh, str):
+        return datasets.fetch_surf_fsaverage(mesh)
+    if not isinstance(mesh, collections.Mapping):
+        raise TypeError("The mesh should be a str or a dictionary, "
+                        "you provided: {}.".format(type(mesh).__name__))
+    missing = {'pial_left', 'pial_right', 'sulc_left', 'sulc_right',
+               'infl_left', 'infl_right'}.difference(mesh.keys())
+    if missing:
+        raise ValueError(
+            "{} {} missing from the provided mesh dictionary".format(
+                missing, ('are' if len(missing) > 1 else 'is')))
+    return mesh
 
 
 def check_mesh_and_data(mesh, data):

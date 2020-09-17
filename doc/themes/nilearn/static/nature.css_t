@@ -314,6 +314,9 @@ div.related ul {
     border-bottom: 2px solid #727272;
     margin: 0;
     padding-left: 10px;
+    white-space: nowrap;
+    overflow-y: hidden;
+    overflow-x: hidden;
 }
 
 div.related ul li {
@@ -333,7 +336,7 @@ div.related ul li#navbar-ecosystem {
     margin-right: 0.5em;
 }
 
-@media (max-width: 800px) {
+@media (max-width: 1000px) {
     div.related ul li#navbar-ecosystem {
 	display: none;
     }
@@ -418,12 +421,6 @@ div.body p.caption {
 
 div.body p.sphx-glr-script-out {
     margin: -.9ex 0ex;
-}
-
-div.body div.sphx-glr-download-link-note {
-    max-width: 8em;
-    float: right;
-    margin-right: -1em;
 }
 
 div.bodywrapper {
@@ -1040,6 +1037,7 @@ table.field-list tr td.field-body p.first {
 table.field-list tr td.field-body p {
     margin-top: 0.5em;
 }
+
 /* ------- tag cloud on the front page -------------------- */
 
 div.tags {
@@ -1123,6 +1121,74 @@ table.docutils td {
     border-color: #ddd;
 }
 
+/* ------- formatting of the docstrings ------------------- */
+
+/* Space between parameter name and description */
+dl.field-list span.classifier {
+    margin-left: 1ex;
+}
+
+dl.function td.field-body ul.first, dl.class td.field-body ul.first {
+    margin: 3ex 0 3ex -6ex;
+    list-style: none;
+    text-indent: -4ex;
+}
+
+dl.function td.field-body ul.first > li, dl.class td.field-body ul.first > li {
+    margin-bottom: 1.5ex;
+}
+
+dl.function tr:nth-child(2n+1), dl.class tr:nth-child(2n+1) {
+    background-color: #FFF;
+    border-width: 0;
+}
+
+dl.function tr:nth-child(2n), dl.class tr:nth-child(2n) {
+    background-color: #F6FDFF;
+    border-width: 0;
+}
+
+dl.function table.docutils td, dl.class table.docutils td {
+    border-width: 1px 0 1px 0;
+}
+
+dl.function .rubric, dl.class .rubric {
+    margin-top: 4ex;
+    border: solid #AAA;
+    border-width: 0 0 1px 0;
+}
+
+/* Matching our dostrings to the very recent numpydoc evolutions */
+dl.function dt.field-odd, dl.class dt.field-odd {
+    font-weight: bold;
+}
+
+dl.class dt.field-odd {
+    font-weight: bold;
+}
+dl.class dl.method dl.field-list dt.field-even {
+    font-weight: bold;
+}
+dl.class dl.method dl.field-list dl.simple dt {
+    font-weight: bold;
+}
+dl.class dl.method dl.field-list dl.simple dt span.classifier {
+    font-weight: normal;
+}
+
+dl.method {
+    margin-top: 6ex;
+}
+
+dl.attribute {
+    margin-top: 2ex;
+}
+
+dl.method code, dl.attribute code {
+    font-weight: 600;
+}
+
+
 /* ------- tighter layout in pre -------------------------- */
 pre {
     padding: 5px 10px 5px 10px;
@@ -1154,6 +1220,7 @@ span.example-links {
   padding-right: 15px;
   display: block;
 }
+
 
 div#logo-banner {
     background-color: white;
@@ -1708,3 +1775,47 @@ div.sg-report iframe {
     margin-bottom: 0pt;
     width: 126%; /* More than 100% because of .8 scaling */
 }
+
+/* gallery download note */
+
+div.body div.sphx-glr-download-link-note {
+    float: left;
+    text-align: left;
+    border-radius: 4px;
+    color: #006801;
+    background-color: #dff0d8;
+    border: 0.2em solid rgba(79, 173, 117, 0.35);
+    padding: 4px;
+    max-width: 100%;
+    width: 43ex;
+}
+
+@media (min-width: 1200px) {
+  div.body div.sphx-glr-download-link-note {
+    /* Flush to the left: 50% of viewport width
+     * minus half of the bodywrapper width,
+     * minus the half width of the sphinxsidebar */
+    float: none;
+    margin-left: calc(32em - 50vw + 123px);
+    margin-bottom: -10ex;
+}
+
+@media (min-width: 1420px) {
+  div.body div.sphx-glr-download-link-note {
+    position: absolute;
+    left: 5px;
+    width: 15ex;
+    margin-left: 0px;
+  }
+}
+
+@media (min-width: 1550px) {
+    div.body div.sphx-glr-download-link-note {
+	width: 20ex;
+	/* 47% of viewport width minus half of the bodywrapper width,
+	 * minus the half width of the sphinxsidebar, minus the width of this
+	 * div */
+	margin-left: calc(47vw - 31em - 123px - 20ex);
+    }
+}
+

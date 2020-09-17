@@ -1,0 +1,4 @@
+https://example.org/example_default_format
+README.txt
+data/img.nii.gz
+data/labels.csv

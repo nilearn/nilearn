@@ -5,7 +5,7 @@ The main purpose of these classes is to have auto adjust of axes size to
 the data with different layout of cuts.
 """
 
-import collections
+import collections.abc
 import numbers
 from distutils.version import LooseVersion
 
@@ -29,6 +29,7 @@ from .. import _utils
 from ..image import new_img_like
 from ..image.resampling import (get_bounds, reorder_img, coord_transform,
                                 get_mask_bounds)
+from nilearn.image import get_data
 
 
 ###############################################################################
@@ -256,9 +257,15 @@ class CutAxes(BaseAxes):
                              self.direction)
         return cut
 
-    def draw_position(self, size, bg_color, **kwargs):
+    def draw_position(self, size, bg_color, decimals=False, **kwargs):
+        if decimals:
+            text = '%s=%.{}f'.format(decimals)
+            coord = float(self.coord)
+        else:
+            text = '%s=%i'
+            coord = self.coord
         ax = self.ax
-        ax.text(0, 0, '%s=%i' % (self.direction, self.coord),
+        ax.text(0, 0, text % (self.direction, coord),
                 transform=ax.transAxes,
                 horizontalalignment='left',
                 verticalalignment='bottom',
@@ -394,7 +401,7 @@ class GlassBrainAxes(BaseAxes):
 
         # Allow markers only in their respective hemisphere when appropriate
         if self.direction in 'lr':
-            if not isinstance(marker_color, _utils.compat._basestring) and \
+            if not isinstance(marker_color, str) and \
                     not isinstance(marker_color, np.ndarray):
                 marker_color = np.asarray(marker_color)
             relevant_coords = []
@@ -403,7 +410,7 @@ class GlassBrainAxes(BaseAxes):
                 if self.direction == 'r' and xc >= 0:
                     relevant_coords.append(cidx)
                 elif self.direction == 'l' and xc <= 0:
-                        relevant_coords.append(cidx)
+                    relevant_coords.append(cidx)
             xdata = xdata[relevant_coords]
             ydata = ydata[relevant_coords]
             # if marker_color is string for example 'red' or 'blue', then
@@ -411,9 +418,12 @@ class GlassBrainAxes(BaseAxes):
             # making any selection in 'l' or 'r' color.
             # More likely that user wants to display all nodes to be in
             # same color.
-            if not isinstance(marker_color, _utils.compat._basestring) and \
+            if not isinstance(marker_color, str) and \
                     len(marker_color) != 1:
                 marker_color = marker_color[relevant_coords]
+
+            if not isinstance(marker_size, numbers.Number):
+                marker_size = np.asarray(marker_size)[relevant_coords]
 
         defaults = {'marker': 'o',
                     'zorder': 1000}
@@ -604,7 +614,7 @@ class BaseSlicer(object):
             axes = [0., 0., 1., 1.]
             if leave_space:
                 axes = [0.3, 0, .7, 1.]
-        if isinstance(axes, collections.Sequence):
+        if isinstance(axes, collections.abc.Sequence):
             axes = figure.add_axes(axes)
         # People forget to turn their axis off, or to set the zorder, and
         # then they cannot see their slicer
@@ -872,9 +882,12 @@ class BaseSlicer(object):
 
         self._colorbar_ax.yaxis.tick_left()
         tick_color = 'w' if self._black_bg else 'k'
+        outline_color = 'w' if self._black_bg else 'k'
+
         for tick in self._colorbar_ax.yaxis.get_ticklabels():
             tick.set_color(tick_color)
         self._colorbar_ax.yaxis.set_tick_params(width=0)
+        self._cbar.outline.set_edgecolor(outline_color)
 
     def add_edges(self, img, color='r'):
         """ Plot the edges of a 3D map in all the views.
@@ -889,7 +902,7 @@ class BaseSlicer(object):
             The color used to display the edge map
         """
         img = reorder_img(img, resample='continuous')
-        data = img.get_data()
+        data = get_data(img)
         affine = img.affine
         single_color_cmap = colors.ListedColormap([color])
         data_bounds = get_bounds(data.shape, img.affine)
@@ -950,7 +963,7 @@ class BaseSlicer(object):
 
     def annotate(self, left_right=True, positions=True, scalebar=False,
                  size=12, scale_size=5.0, scale_units='cm', scale_loc=4,
-                 **kwargs):
+                 decimals=0, **kwargs):
         """ Add annotations to the plot.
 
         Parameters
@@ -984,6 +997,9 @@ class BaseSlicer(object):
                     'lower center' : 8,
                     'upper center' : 9,
                     'center'       : 10
+        decimals: integer, optional
+            Number of decimal places on slice position annotation. If False (default),
+            the slice position is integer without decimal point.
         kwargs:
             Extra keyword arguments are passed to matplotlib's text
             function.
@@ -1005,6 +1021,7 @@ class BaseSlicer(object):
         if positions:
             for display_axis in self.axes.values():
                 display_axis.draw_position(size=size, bg_color=bg_color,
+                                           decimals=decimals,
                                            **kwargs)
 
         if scalebar:
@@ -1572,7 +1589,7 @@ class BaseStackedSlicer(BaseSlicer):
             lower, upper = bounds['xyz'.index(cls._direction)]
             cut_coords = np.linspace(lower, upper, cut_coords).tolist()
         else:
-            if (not isinstance(cut_coords, collections.Sequence) and
+            if (not isinstance(cut_coords, collections.abc.Sequence) and
                     isinstance(cut_coords, numbers.Number)):
                 cut_coords = find_cut_slices(img,
                                              direction=cls._direction,

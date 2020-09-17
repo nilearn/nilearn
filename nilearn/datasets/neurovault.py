@@ -13,24 +13,15 @@ import re
 import json
 from glob import glob
 from tempfile import mkdtemp
-try:
-    # python3
-    from urllib.parse import urljoin, urlencode
-    from urllib.request import build_opener, Request
-    from urllib.error import URLError
-    from collections.abc import Container
-except ImportError:
-    # python2
-    from urlparse import urljoin
-    from urllib import urlencode
-    from urllib2 import build_opener, Request, URLError
-    from collections import Container
 
+import requests
+from urllib.parse import urljoin, urlencode
+
+from collections.abc import Container
 import numpy as np
-from sklearn.datasets.base import Bunch
+from sklearn.utils import Bunch
 from sklearn.feature_extraction import DictVectorizer
 
-from .._utils.compat import _basestring
 from .utils import _fetch_file, _get_dataset_dir, _get_dataset_descr
 
 
@@ -59,6 +50,12 @@ _DEBUG = 3
 _INFO = 2
 _WARNING = 1
 _ERROR = 0
+
+
+def _requests_session():
+    if getattr(_requests_session, "session", None) is None:
+        _requests_session.session = requests.Session()
+    return _requests_session.session
 
 
 # Helpers for filtering images and collections.
@@ -654,7 +651,7 @@ class Pattern(_SpecialValue):
         self.flags_ = flags
 
     def __eq__(self, other):
-        if not isinstance(other, _basestring) or re.match(
+        if not isinstance(other, str) or re.match(
                 self.pattern_, other, self.flags_) is None:
             return False
         return True
@@ -926,40 +923,6 @@ def _append_filters_to_query(query, filters):
     return new_query
 
 
-def _get_encoding(resp):
-    """Get the encoding of an HTTP response.
-
-    Parameters
-    ----------
-    resp : http.client.HTTPResponse
-        Response whose encoding we want to find out.
-
-    Returns
-    -------
-    str
-        str representing the encoding, e.g. 'utf-8'.
-
-    Raises
-    ------
-    ValueError
-        If the response does not specify an encoding.
-
-    """
-    try:
-        charset = resp.headers.get_content_charset()
-        if charset is not None:
-            return charset
-    except AttributeError:
-        pass
-    content_type = resp.headers.get('Content-Type', '')
-    match = re.search(r'charset=\b(.+)\b', content_type)
-    if match is None:
-        raise ValueError(
-            'HTTP response encoding not found; headers: {0}'.format(
-                resp.headers))
-    return match.group(1)
-
-
 def _get_batch(query, prefix_msg='', timeout=10., verbose=3):
     """Given an URL, get the HTTP response and transform it to python dict.
 
@@ -987,41 +950,28 @@ def _get_batch(query, prefix_msg='', timeout=10., verbose=3):
 
     Raises
     ------
-    urllib.error.URLError
+    requests.RequestException
         If there was a problem opening the URL.
 
     ValueError
-        If the response could not be decoded, or did not contain
-        either 'id' (single result), or 'results' and 'count' (actual
-        batch).
-
-    Notes
-    -----
-    urllib.error.HTTPError is a subclass of URLError.
+        If the response could not be decoded, was not json, or did not contain
+        either 'id' (single result), or 'results' and 'count' (actual batch).
 
     """
-    request = Request(query)
-    request.add_header('Connection', 'Keep-Alive')
-    opener = build_opener()
+    session = _requests_session()
+    req = requests.Request(
+        method="GET", url=query, headers={"Connection": "Keep-Alive"})
+    prepped = session.prepare_request(req)
     _print_if('{0}getting new batch: {1}'.format(
         prefix_msg, query), _DEBUG, verbose)
     try:
-        resp = opener.open(request, timeout=timeout)
-
+        resp = session.send(prepped, timeout=timeout)
+        resp.raise_for_status()
+        batch = resp.json()
     except Exception:
-        _print_if('Could not download batch from {0}'.format(query),
+        _print_if('Could not get batch from {0}'.format(query),
                   _ERROR, verbose, with_traceback=True)
         raise
-    try:
-        encoding = _get_encoding(resp)
-        content = resp.read()
-        batch = json.loads(content.decode(encoding))
-    except(URLError, ValueError):
-        _print_if('Could not decypher batch from {0}'.format(query),
-                  _ERROR, verbose, with_traceback=True)
-        raise
-    finally:
-        resp.close()
     if 'id' in batch:
         batch = {'count': 1, 'results': [batch]}
     for key in ['results', 'count']:
@@ -1165,39 +1115,21 @@ def _simple_download(url, target_file, temp_dir, verbose=3):
 
     Raises
     ------
-    URLError, ValueError
+    RequestException, ValueError
         If an error occurred when downloading the file.
 
     See Also
     --------
     nilearn.datasets._utils._fetch_file
 
-
-    Notes
-    -----
-    It can happen that an HTTP error that occurs inside
-    ``_fetch_file`` gets transformed into an ``AttributeError`` when
-    we try to set the ``reason`` attribute of the exception raised;
-    here we replace it with an ``URLError``.
-
     """
     _print_if('Downloading file: {0}'.format(url), _DEBUG, verbose)
     try:
         downloaded = _fetch_file(url, temp_dir, resume=False,
                                  overwrite=True, verbose=0)
-    except Exception as e:
+    except Exception:
         _print_if('Problem downloading file from {0}'.format(url),
                   _ERROR, verbose)
-
-        # reason is a property of urlib.error.HTTPError objects,
-        # but these objects don't have a setter for it, so
-        # an HTTPError raised in _fetch_file might be transformed
-        # into an AttributeError when we try to set its reason attribute
-        if (isinstance(e, AttributeError) and
-                e.args[0] == "can't set attribute"):
-            raise URLError(
-                'HTTPError raised in nilearn.datasets._fetch_file: {0}'.format(
-                    traceback.format_exc()))
         raise
     shutil.move(downloaded, target_file)
     _print_if(
@@ -1295,7 +1227,7 @@ def _remove_none_strings(metadata):
     """
     metadata = metadata.copy()
     for key, value in metadata.items():
-        if (isinstance(value, _basestring) and
+        if (isinstance(value, str) and
                 re.match(r'($|n/?a$|none|null)', value, re.IGNORECASE)):
             metadata[key] = None
     return metadata
@@ -1576,7 +1508,7 @@ def _download_image_terms(image_info, collection, download_params):
                          download_params['temp_dir'],
                          verbose=download_params['verbose'])
         assert _check_has_words(image_info['ns_words_absolute_path'])
-    except(URLError, ValueError, AssertionError):
+    except Exception:
         message = 'Could not fetch words for image {0}'.format(
             image_info['id'])
         if not download_params.get('allow_neurosynth_failure', True):
@@ -1651,19 +1583,25 @@ def _update_image(image_info, download_params):
     """
     if not download_params['write_ok']:
         return image_info
-    collection = _fetch_collection_for_image(
-        image_info, download_params)
-    image_info, collection = _download_image_terms(
-        image_info, collection, download_params)
-    metadata_file_path = os.path.join(
-        os.path.dirname(image_info['absolute_path']),
-        'image_{0}_metadata.json'.format(image_info['id']))
-    _write_metadata(image_info, metadata_file_path)
+    try:
+        collection = _fetch_collection_for_image(
+            image_info, download_params)
+        image_info, collection = _download_image_terms(
+            image_info, collection, download_params)
+        metadata_file_path = os.path.join(
+            os.path.dirname(image_info['absolute_path']),
+            'image_{0}_metadata.json'.format(image_info['id']))
+        _write_metadata(image_info, metadata_file_path)
+    except OSError:
+        warnings.warn(
+            "could not update metadata for image {}, "
+            "most likely because you do not have write "
+            "permissions to its metadata file".format(image_info["id"]))
     return image_info
 
 
 def _update(image_info, collection, download_params):
-    """Update local metadata for an image and its collection."""
+    "Update local metadata for an image and its collection."""
     image_info = _update_image(image_info, download_params)
     return image_info, collection
 
@@ -1944,7 +1882,7 @@ def _scroll_explicit(download_params):
     """
 
     download_params['wanted_collection_ids'] = set(
-        download_params['wanted_collection_ids'] or []).difference(
+        download_params['wanted_collection_ids']).difference(
             download_params['visited_collections'])
     for image, collection in _scroll_collection_ids(download_params):
         if image is not None:
@@ -1952,7 +1890,7 @@ def _scroll_explicit(download_params):
         yield image, collection
 
     download_params['wanted_image_ids'] = set(
-        download_params['wanted_image_ids'] or []).difference(
+        download_params['wanted_image_ids']).difference(
             download_params['visited_images'])
 
     for image, collection in _scroll_image_ids(download_params):
@@ -2043,7 +1981,7 @@ def _split_terms(terms, available_on_server):
     terms_ = dict(terms)
     server_terms = dict([(k, terms_.pop(k)) for k in
                          available_on_server if k in terms_ and
-                         (isinstance(terms_[k], _basestring) or
+                         (isinstance(terms_[k], str) or
                           isinstance(terms_[k], int))])
     return terms_, server_terms
 
@@ -2074,13 +2012,12 @@ def basic_image_terms():
     true:
 
         - It is not in MNI space.
-        - Its metadata field "is_valid" is cleared.
         - It is thresholded.
         - Its map type is one of "ROI/mask", "anatomical", or "parcellation".
         - Its image type is "atlas"
 
     """
-    return {'not_mni': False, 'is_valid': True, 'is_thresholded': False,
+    return {'not_mni': False, 'is_thresholded': False,
             'map_type': NotIn('ROI/mask', 'anatomical', 'parcellation'),
             'image_type': NotEqual('atlas')}
 
@@ -2432,17 +2369,17 @@ def fetch_neurovault(
     References
     ----------
 
-    .. [1] Gorgolewski KJ, Varoquaux G, Rivera G, Schwartz Y, Ghosh SS,
-       Maumet C, Sochat VV, Nichols TE, Poldrack RA, Poline J-B,
-       Yarkoni T and Margulies DS (2015) NeuroVault.org: a web-based
-       repository for collecting and sharing unthresholded
-       statistical maps of the human brain. Front. Neuroinform. 9:8.
-       doi: 10.3389/fninf.2015.00008
+    * Gorgolewski KJ, Varoquaux G, Rivera G, Schwartz Y, Ghosh SS,
+      Maumet C, Sochat VV, Nichols TE, Poldrack RA, Poline J-B,
+      Yarkoni T and Margulies DS (2015) NeuroVault.org: a web-based
+      repository for collecting and sharing unthresholded
+      statistical maps of the human brain. Front. Neuroinform. 9:8.
+      doi: 10.3389/fninf.2015.00008
 
-    .. [2] Yarkoni, Tal, Russell A. Poldrack, Thomas E. Nichols, David
-       C. Van Essen, and Tor D. Wager. "Large-scale automated synthesis
-       of human functional neuroimaging data." Nature methods 8, no. 8
-       (2011): 665-670.
+    * Yarkoni, Tal, Russell A. Poldrack, Thomas E. Nichols, David
+      C. Van Essen, and Tor D. Wager. "Large-scale automated synthesis
+      of human functional neuroimaging data." Nature methods 8, no. 8
+      (2011): 665-670.
 
     Examples
     --------
@@ -2582,17 +2519,17 @@ def fetch_neurovault_ids(
     References
     ----------
 
-    .. [1] Gorgolewski KJ, Varoquaux G, Rivera G, Schwartz Y, Ghosh SS,
-       Maumet C, Sochat VV, Nichols TE, Poldrack RA, Poline J-B,
-       Yarkoni T and Margulies DS (2015) NeuroVault.org: a web-based
-       repository for collecting and sharing unthresholded
-       statistical maps of the human brain. Front. Neuroinform. 9:8.
-       doi: 10.3389/fninf.2015.00008
+    * Gorgolewski KJ, Varoquaux G, Rivera G, Schwartz Y, Ghosh SS,
+      Maumet C, Sochat VV, Nichols TE, Poldrack RA, Poline J-B,
+      Yarkoni T and Margulies DS (2015) NeuroVault.org: a web-based
+      repository for collecting and sharing unthresholded
+      statistical maps of the human brain. Front. Neuroinform. 9:8.
+      doi: 10.3389/fninf.2015.00008
 
-    .. [2] Yarkoni, Tal, Russell A. Poldrack, Thomas E. Nichols, David
-       C. Van Essen, and Tor D. Wager. "Large-scale automated synthesis
-       of human functional neuroimaging data." Nature methods 8, no. 8
-       (2011): 665-670.
+    * Yarkoni, Tal, Russell A. Poldrack, Thomas E. Nichols, David
+      C. Van Essen, and Tor D. Wager. "Large-scale automated synthesis
+      of human functional neuroimaging data." Nature methods 8, no. 8
+      (2011): 665-670.
 
     """
     return _fetch_neurovault_implementation(

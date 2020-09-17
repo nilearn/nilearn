@@ -14,14 +14,13 @@ from scipy import linalg
 import sklearn
 import nilearn
 from sklearn.base import BaseEstimator, TransformerMixin
-from nilearn._utils.compat import Memory, Parallel, delayed
+from joblib import Memory, Parallel, delayed
 from sklearn.linear_model import LinearRegression
 from sklearn.utils import check_random_state
 from sklearn.utils.extmath import randomized_svd, svd_flip
 from .._utils.cache_mixin import CacheMixin, cache
 from .._utils.niimg import _safe_get_data
 from .._utils.niimg_conversions import _resolve_globbing
-from .._utils.compat import _basestring
 from ..input_data import NiftiMapsMasker
 from ..input_data.masker_validation import check_embedded_nifti_masker
 
@@ -89,7 +88,7 @@ def mask_and_reduce(masker, imgs,
                     reduction_ratio='auto',
                     n_components=None, random_state=None,
                     memory_level=0,
-                    memory=Memory(cachedir=None),
+                    memory=Memory(location=None),
                     n_jobs=1):
     """Mask and reduce provided 4D images with given masker.
 
@@ -287,7 +286,7 @@ class BaseDecomposition(BaseEstimator, CacheMixin, TransformerMixin):
         brain mask for your data's field of view.
         Depending on this value, the mask will be computed from
         masking.compute_background_mask, masking.compute_epi_mask or
-        masking.compute_gray_matter_mask. Default is 'epi'.
+        masking.compute_brain_mask. Default is 'epi'.
 
     mask_args: dict, optional
         If mask is None, these are additional parameters passed to
@@ -327,7 +326,7 @@ class BaseDecomposition(BaseEstimator, CacheMixin, TransformerMixin):
                  low_pass=None, high_pass=None, t_r=None,
                  target_affine=None, target_shape=None,
                  mask_strategy='epi', mask_args=None,
-                 memory=Memory(cachedir=None), memory_level=0,
+                 memory=Memory(location=None), memory_level=0,
                  n_jobs=1,
                  verbose=0):
         self.n_components = n_components
@@ -373,11 +372,11 @@ class BaseDecomposition(BaseEstimator, CacheMixin, TransformerMixin):
         """
         # Base fit for decomposition estimators : compute the embedded masker
 
-        if isinstance(imgs, _basestring):
+        if isinstance(imgs, str):
             if nilearn.EXPAND_PATH_WILDCARDS and glob.has_magic(imgs):
                 imgs = _resolve_globbing(imgs)
 
-        if isinstance(imgs, _basestring) or not hasattr(imgs, '__iter__'):
+        if isinstance(imgs, str) or not hasattr(imgs, '__iter__'):
             # these classes are meant for list of 4D images
             # (multi-subject), we want it to work also on a single
             # subject, so we hack it.

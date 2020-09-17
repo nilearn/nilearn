@@ -3,7 +3,7 @@ Transformer for computing ROI signals.
 """
 
 import numpy as np
-from nilearn._utils.compat import Memory
+from joblib import Memory
 
 from .. import _utils
 from .._utils import logger, CacheMixin
@@ -11,6 +11,7 @@ from .._utils.class_inspect import get_params
 from .._utils.niimg_conversions import _check_same_fov
 from .. import image
 from .base_masker import filter_and_extract, BaseMasker
+from nilearn.image import get_data
 
 
 class _ExtractionFunctor(object):
@@ -125,7 +126,7 @@ class NiftiMapsMasker(BaseMasker, CacheMixin):
                  allow_overlap=True, smoothing_fwhm=None, standardize=False,
                  detrend=False, low_pass=None, high_pass=None, t_r=None,
                  dtype=None, resampling_target="data",
-                 memory=Memory(cachedir=None, verbose=0), memory_level=0,
+                 memory=Memory(location=None, verbose=0), memory_level=0,
                  verbose=0):
         self.maps_img = maps_img
         self.mask_img = mask_img
@@ -291,7 +292,7 @@ class NiftiMapsMasker(BaseMasker, CacheMixin):
             # Check if there is an overlap.
 
             # If float, we set low values to 0
-            data = self._resampled_maps_img_.get_data()
+            data = get_data(self._resampled_maps_img_)
             dtype = data.dtype
             if dtype.kind == 'f':
                 data[data < np.finfo(dtype).eps] = 0.

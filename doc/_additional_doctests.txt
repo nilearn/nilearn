@@ -1,0 +1,2 @@
+>>> import requests
+>>> assert requests.get('https://example.com').is_mock

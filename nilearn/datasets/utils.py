@@ -3,19 +3,30 @@ Downloading NeuroImaging datasets: utility functions
 """
 import os
 import numpy as np
-import base64
-import collections
+import collections.abc
 import contextlib
 import fnmatch
 import hashlib
+import pickle
 import shutil
 import time
 import sys
 import tarfile
+import urllib
 import warnings
 import zipfile
+import json
 
-from .._utils.compat import _basestring, cPickle, _urllib, md5_hash
+import requests
+
+
+_REQUESTS_TIMEOUT = (15.1, 61)
+
+
+def md5_hash(string):
+    m = hashlib.md5()
+    m.update(string.encode('utf-8'))
+    return m.hexdigest()
 
 
 def _format_time(t):
@@ -111,7 +122,7 @@ def _chunk_read_(response, local_file, chunk_size=8192, report_hook=None,
 
     Parameters
     ----------
-    response: _urllib.response.addinfourl
+    response: urllib.response.addinfourl
         Response to the download request in order to get file size
 
     local_file: file
@@ -140,7 +151,7 @@ def _chunk_read_(response, local_file, chunk_size=8192, report_hook=None,
     """
     try:
         if total_size is None:
-            total_size = response.info().get('Content-Length').strip()
+            total_size = response.headers.get('Content-Length').strip()
         total_size = int(total_size) + initial_size
     except Exception as e:
         if verbose > 2:
@@ -151,8 +162,7 @@ def _chunk_read_(response, local_file, chunk_size=8192, report_hook=None,
     bytes_so_far = initial_size
 
     t0 = time_last_display = time.time()
-    while True:
-        chunk = response.read(chunk_size)
+    for chunk in response.iter_content(chunk_size):
         bytes_so_far += len(chunk)
         time_last_read = time.time()
         if (report_hook and
@@ -342,11 +352,9 @@ def _uncompress_file(file_, delete_archive=True, verbose=1):
                 # For gzip file, we rely on the assumption that there is an extenstion
                 shutil.move(file_, file_ + '.gz')
                 file_ = file_ + '.gz'
-            gz = gzip.open(file_)
-            out = open(filename, 'wb')
-            shutil.copyfileobj(gz, out, 8192)
-            gz.close()
-            out.close()
+            with gzip.open(file_) as gz:
+                with open(filename, 'wb') as out:
+                    shutil.copyfileobj(gz, out, 8192)
             # If file is .tar.gz, this will be handle in the next case
             if delete_archive:
                 os.remove(file_)
@@ -394,10 +402,10 @@ def _filter_column(array, col, criteria):
     except:
         raise KeyError('Filtering criterion %s does not exist' % col)
 
-    if (not isinstance(criteria, _basestring) and
+    if (not isinstance(criteria, str) and
         not isinstance(criteria, bytes) and
         not isinstance(criteria, tuple) and
-            isinstance(criteria, collections.Iterable)):
+            isinstance(criteria, collections.abc.Iterable)):
         filter = np.zeros(array.shape[0], dtype=np.bool)
         for criterion in criteria:
             filter = np.logical_or(filter,
@@ -415,7 +423,7 @@ def _filter_column(array, col, criteria):
         return np.logical_and(filter, array[col] >= criteria[0])
 
     # Handle strings with different encodings
-    if isinstance(criteria, (_basestring, bytes)):
+    if isinstance(criteria, (str, bytes)):
         criteria = np.array(criteria).astype(array[col].dtype)
 
     return array[col] == criteria
@@ -451,9 +459,31 @@ def _filter_columns(array, filters, combination='and'):
     return mask
 
 
+class _NaiveFTPAdapter(requests.adapters.BaseAdapter):
+    def send(self, request, timeout=None, **kwargs):
+        try:
+            timeout, _ = timeout
+        except Exception:
+            pass
+        try:
+            data = urllib.request.urlopen(request.url, timeout=timeout)
+        except Exception as e:
+            raise requests.RequestException(e.reason)
+        data.release_conn = data.close
+        resp = requests.Response()
+        resp.url = data.geturl()
+        resp.status_code = data.getcode() or 200
+        resp.raw = data
+        resp.headers = dict(data.info().items())
+        return resp
+
+    def close(self):
+        pass
+
+
 def _fetch_file(url, data_dir, resume=True, overwrite=False,
-                md5sum=None, username=None, password=None, handlers=[],
-                verbose=1):
+                md5sum=None, username=None, password=None,
+                verbose=1, session=None):
     """Load requested file, downloading it if needed or requested.
 
     Parameters
@@ -480,12 +510,11 @@ def _fetch_file(url, data_dir, resume=True, overwrite=False,
     password: string, optional
         Password used for basic HTTP authentication
 
-    handlers: list of BaseHandler, optional
-        urllib handlers passed to urllib.request.build_opener. Used by
-        advanced users to customize request handling.
-
     verbose: int, optional
         verbosity level (0 means no message).
+
+    session:
+        `requests.Session` to use to send requests
 
     Returns
     -------
@@ -497,12 +526,19 @@ def _fetch_file(url, data_dir, resume=True, overwrite=False,
     If, for any reason, the download procedure fails, all downloaded files are
     removed.
     """
+    if session is None:
+        with requests.Session() as session:
+            session.mount("ftp:", _NaiveFTPAdapter())
+            return _fetch_file(
+                url, data_dir, resume=resume, overwrite=overwrite,
+                md5sum=md5sum, username=username, password=password,
+                verbose=verbose, session=session)
     # Determine data path
     if not os.path.exists(data_dir):
         os.makedirs(data_dir)
 
     # Determine filename using URL
-    parse = _urllib.parse.urlparse(url)
+    parse = urllib.parse.urlparse(url)
     file_name = os.path.basename(parse.path)
     if file_name == '':
         file_name = md5_hash(parse.path)
@@ -524,21 +560,14 @@ def _fetch_file(url, data_dir, resume=True, overwrite=False,
 
     try:
         # Download data
-        url_opener = _urllib.request.build_opener(*handlers)
-        request = _urllib.request.Request(url)
-        request.add_header('Connection', 'Keep-Alive')
+        headers = {}
+        auth = None
         if username is not None and password is not None:
             if not url.startswith('https'):
                 raise ValueError(
                     'Authentication was requested on a non  secured URL (%s).'
                     'Request has been blocked for security reasons.' % url)
-            # Note: HTTPBasicAuthHandler is not fitted here because it relies
-            # on the fact that the server will return a 401 error with proper
-            # www-authentication header, which is not the case of most
-            # servers.
-            encoded_auth = base64.b64encode(
-                (username + ':' + password).encode())
-            request.add_header(b'Authorization', b'Basic ' + encoded_auth)
+            auth = (username, password)
         if verbose > 0:
             displayed_url = url.split('?')[0] if verbose == 1 else url
             print('Downloading data from %s ...' % displayed_url)
@@ -546,47 +575,50 @@ def _fetch_file(url, data_dir, resume=True, overwrite=False,
             # Download has been interrupted, we try to resume it.
             local_file_size = os.path.getsize(temp_full_name)
             # If the file exists, then only download the remainder
-            request.add_header("Range", "bytes=%s-" % (local_file_size))
+            headers["Range"] = "bytes={}-".format(local_file_size)
             try:
-                data = url_opener.open(request)
-                content_range = data.info().get('Content-Range')
-                if (content_range is None or not content_range.startswith(
-                        'bytes %s-' % local_file_size)):
-                    raise IOError('Server does not support resuming')
+                req = requests.Request(
+                    method="GET", url=url, headers=headers, auth=auth)
+                prepped = session.prepare_request(req)
+                with session.send(prepped, stream=True,
+                                  timeout=_REQUESTS_TIMEOUT) as resp:
+                    resp.raise_for_status()
+                    content_range = resp.headers.get('Content-Range')
+                    if (content_range is None or not content_range.startswith(
+                            'bytes {}-'.format(local_file_size))):
+                        raise IOError('Server does not support resuming')
+                    initial_size = local_file_size
+                    with open(local_file, "ab") as fh:
+                        _chunk_read_(
+                            resp, fh, report_hook=(verbose > 0),
+                            initial_size=initial_size, verbose=verbose)
             except Exception:
-                # A wide number of errors can be raised here. HTTPError,
-                # URLError... I prefer to catch them all and rerun without
-                # resuming.
                 if verbose > 0:
                     print('Resuming failed, try to download the whole file.')
                 return _fetch_file(
                     url, data_dir, resume=False, overwrite=overwrite,
                     md5sum=md5sum, username=username, password=password,
-                    handlers=handlers, verbose=verbose)
-            local_file = open(temp_full_name, "ab")
-            initial_size = local_file_size
+                    verbose=verbose, session=session)
         else:
-            data = url_opener.open(request)
-            local_file = open(temp_full_name, "wb")
-        _chunk_read_(data, local_file, report_hook=(verbose > 0),
-                     initial_size=initial_size, verbose=verbose)
-        # temp file must be closed prior to the move
-        if not local_file.closed:
-            local_file.close()
+            req = requests.Request(
+                method="GET", url=url, headers=headers, auth=auth)
+            prepped = session.prepare_request(req)
+            with session.send(
+                    prepped, stream=True, timeout=_REQUESTS_TIMEOUT) as resp:
+                resp.raise_for_status()
+                with open(temp_full_name, "wb") as fh:
+                    _chunk_read_(resp, fh, report_hook=(verbose > 0),
+                                 initial_size=initial_size, verbose=verbose)
         shutil.move(temp_full_name, full_name)
         dt = time.time() - t0
         if verbose > 0:
             # Complete the reporting hook
             sys.stderr.write(' ...done. ({0:.0f} seconds, {1:.0f} min)\n'
                              .format(dt, dt // 60))
-    except (_urllib.error.HTTPError, _urllib.error.URLError):
+    except (requests.RequestException):
         sys.stderr.write("Error while fetching file %s; dataset "
                          "fetching aborted." % (file_name))
         raise
-    finally:
-        if local_file is not None:
-            if not local_file.closed:
-                local_file.close()
     if md5sum is not None:
         if (_md5_sum_file(full_name) != md5sum):
             raise ValueError("File %s checksum verification has failed."
@@ -641,7 +673,7 @@ def movetree(src, dst):
         raise Exception(errors)
 
 
-def _fetch_files(data_dir, files, resume=True, mock=False, verbose=1):
+def _fetch_files(data_dir, files, resume=True, verbose=1, session=None):
     """Load requested dataset, downloading it if needed or requested.
 
     This function retrieves files from the hard drive or download them from
@@ -671,18 +703,22 @@ def _fetch_files(data_dir, files, resume=True, mock=False, verbose=1):
     resume: bool, optional
         If true, try resuming download if possible
 
-    mock: boolean, optional
-        If true, create empty files if the file cannot be downloaded. Test use
-        only.
-
     verbose: int, optional
         verbosity level (0 means no message).
 
+    session:
+        `requests.Session` to use to send requests
     Returns
     -------
     files: list of string
         Absolute paths of downloaded files on disk
     """
+    if session is None:
+        with requests.Session() as session:
+            session.mount("ftp:", _NaiveFTPAdapter())
+            return _fetch_files(
+                data_dir, files, resume=resume,
+                verbose=verbose, session=session)
     # There are two working directories here:
     # - data_dir is the destination directory of the dataset
     # - temp_dir is a temporary directory dedicated to this fetching call. All
@@ -690,7 +726,7 @@ def _fetch_files(data_dir, files, resume=True, mock=False, verbose=1):
     #   file is found, or a file is missing, this working directory will be
     #   deleted.
     files = list(files)
-    files_pickle = cPickle.dumps([(file_, url) for file_, url, _ in files])
+    files_pickle = pickle.dumps([(file_, url) for file_, url, _ in files])
     files_md5 = hashlib.md5(files_pickle).hexdigest()
     temp_dir = os.path.join(data_dir, files_md5)
 
@@ -733,7 +769,6 @@ def _fetch_files(data_dir, files, resume=True, mock=False, verbose=1):
                                   verbose=verbose, md5sum=md5sum,
                                   username=opts.get('username', None),
                                   password=opts.get('password', None),
-                                  handlers=opts.get('handlers', []),
                                   overwrite=overwrite)
             if 'move' in opts:
                 # XXX: here, move is supposed to be a dir, it can be a name
@@ -745,25 +780,17 @@ def _fetch_files(data_dir, files, resume=True, mock=False, verbose=1):
                 dl_file = move
             if 'uncompress' in opts:
                 try:
-                    if not mock or os.path.getsize(dl_file) != 0:
-                        _uncompress_file(dl_file, verbose=verbose)
-                    else:
-                        os.remove(dl_file)
+                    _uncompress_file(dl_file, verbose=verbose)
                 except Exception as e:
                     abort = str(e)
 
         if (abort is None and not os.path.exists(target_file) and not
                 os.path.exists(temp_target_file)):
-            if not mock:
-                warnings.warn('An error occured while fetching %s' % file_)
-                abort = ("Dataset has been downloaded but requested file was "
-                         "not provided:\nURL: %s\n"
-                         "Target file: %s\nDownloaded: %s" %
-                         (url, target_file, dl_file))
-            else:
-                if not os.path.exists(os.path.dirname(temp_target_file)):
-                    os.makedirs(os.path.dirname(temp_target_file))
-                open(temp_target_file, 'w').close()
+            warnings.warn('An error occured while fetching %s' % file_)
+            abort = ("Dataset has been downloaded but requested file was "
+                     "not provided:\nURL: %s\n"
+                     "Target file: %s\nDownloaded: %s" %
+                     (url, target_file, dl_file))
         if abort is not None:
             if os.path.exists(temp_dir):
                 shutil.rmtree(temp_dir)
@@ -812,3 +839,101 @@ def _tree(path, pattern=None, dictionary=False):
     if len(files) > 0:
         dirs['.'] = files
     return dirs
+
+
+def make_fresh_openneuro_dataset_urls_index(
+        data_dir=None,
+        dataset_version='ds000030_R1.0.4',
+        verbose=1,
+        ):
+    """ ONLY intended for Nilearn developers, not general users.
+    Creates a fresh, updated OpenNeuro BIDS dataset index from AWS,
+    ready for upload to osf.io .
+
+    Crawls the server where OpenNeuro dataset is stored
+    and makes a JSON file `nistats_fetcher_openneuro_dataset_urls.json'
+    containing a fresh list of dataset file URLs.
+
+    Note: Needs Python package `Boto3`.
+
+    Do NOT rename this file.
+
+    This file can now be uploaded to Quick-Files section
+    of the Nilearn account on osf.io .
+
+    Then this file can be downloaded by
+    :func:`datasets.fetch_openneuro_dataset_index`
+
+    Run this function and upload the new file if the URL index downloaded by
+    :func:`datasets.fetch_openneuro_dataset_index` becomes outdated.
+
+    This approach is faster than crawling the servers anew every time
+    the OpenNeuro dataset is downloaded,
+    and circumvents `boto3` as a dependency for everyday use.
+
+    Parameters
+    ----------
+    data_dir: string, optional
+        Path to store the downloaded dataset.
+        If None downloads to user's Desktop
+
+    dataset_version: string, optional
+        dataset version name. Assumes it is of the form [name]_[version].
+
+    verbose: int, optional
+        verbosity level (0 means no message).
+
+    Returns
+    -------
+    urls_path: string
+        Path to downloaded dataset index
+
+    urls: list of string
+        Sorted list of dataset directories
+    """
+    import boto3
+    from botocore.handlers import disable_signing
+    if not data_dir:
+        data_dir = os.path.expanduser('~/Desktop')
+    data_prefix = '{}/{}/uncompressed'.format(
+        dataset_version.split('_')[0], dataset_version)
+
+    data_dir = _get_dataset_dir(data_prefix, data_dir=data_dir,
+                                verbose=verbose)
+
+    # First we download the url list from the uncompressed dataset version
+    urls_path = os.path.join(data_dir,
+                             'nistats_fetcher_openneuro_dataset_urls.json',
+                             )
+    urls = []
+    if os.path.exists(urls_path):
+        with open(urls_path, 'r') as json_file:
+            urls = json.load(json_file)
+        existing_index_msg = ("There is an existing url index at `{}`. "
+                              "Aborting download of fresh index."
+                              .format(urls_path)
+                              )
+        print(existing_index_msg)
+    else:
+        resource = boto3.resource('s3')
+        resource.meta.client.meta.events.register('choose-signer.s3.*',
+                                                  disable_signing)
+        bucket = resource.Bucket('openneuro')
+
+        for obj in bucket.objects.filter(Prefix=data_prefix):
+            # get url of files (keys of directories end with '/')
+            if obj.key[-1] != '/':
+                url = '{}/{}/{}'.format(bucket.meta.client.meta.endpoint_url,
+                                        bucket.name,
+                                        obj.key,
+                                        )
+                urls.append(url)
+        urls = sorted(urls)
+
+        with open(urls_path, 'w') as json_file:
+            json.dump(urls, json_file)
+        print("Saved updated url index to {}.\nUpload it with the same name "
+              "to the quick-files section of osf.io using the Nilearn account "
+              "to update the file without breaking the fetcher download link."
+              .format(urls_path))
+    return urls_path, urls

@@ -1,17 +1,15 @@
 # Tests for functions in surf_plotting.py
-
+import numpy as np
+import nibabel
+import matplotlib.pyplot as plt
+import pytest
 import tempfile
 
-from distutils.version import LooseVersion
-from nose import SkipTest
-from nilearn._utils.testing import assert_raises_regex
-
-import numpy as np
-import matplotlib
-import matplotlib.pyplot as plt
-
+from nilearn.plotting.img_plotting import MNI152TEMPLATE
 from nilearn.plotting.surf_plotting import (plot_surf, plot_surf_stat_map,
-                                            plot_surf_roi)
+                                            plot_surf_roi, plot_img_on_surf,
+                                            plot_surf_contours)
+from nilearn.datasets import fetch_surf_fsaverage
 from nilearn.surface.testing_utils import generate_surf
 
 
@@ -45,26 +43,27 @@ def test_plot_surf_error():
     rng = np.random.RandomState(0)
 
     # Wrong inputs for view or hemi
-    assert_raises_regex(ValueError, 'view must be one of',
-                        plot_surf, mesh, view='middle')
-    assert_raises_regex(ValueError, 'hemi must be one of',
-                        plot_surf, mesh, hemi='lft')
+    with pytest.raises(ValueError, match='view must be one of'):
+        plot_surf(mesh, view='middle')
+    with pytest.raises(ValueError, match='hemi must be one of'):
+        plot_surf(mesh, hemi='lft')
 
     # Wrong size of background image
-    assert_raises_regex(ValueError,
-                        'bg_map does not have the same number of vertices',
-                        plot_surf, mesh,
-                        bg_map=rng.randn(mesh[0].shape[0] - 1, ))
+    with pytest.raises(
+            ValueError,
+            match='bg_map does not have the same number of vertices'):
+        plot_surf(mesh, bg_map=rng.randn(mesh[0].shape[0] - 1, ))
 
     # Wrong size of surface data
-    assert_raises_regex(ValueError,
-                        'surf_map does not have the same number of vertices',
-                        plot_surf, mesh,
-                        surf_map=rng.randn(mesh[0].shape[0] + 1, ))
+    with pytest.raises(
+            ValueError,
+            match='surf_map does not have the same number of vertices'):
+        plot_surf(mesh, surf_map=rng.randn(mesh[0].shape[0] + 1, ))
 
-    assert_raises_regex(ValueError,
-                        'surf_map can only have one dimension', plot_surf,
-                        mesh, surf_map=rng.randn(mesh[0].shape[0], 2))
+    with pytest.raises(
+            ValueError,
+            match='surf_map can only have one dimension'):
+        plot_surf(mesh, surf_map=rng.randn(mesh[0].shape[0], 2))
 
 
 def test_plot_surf_stat_map():
@@ -114,6 +113,7 @@ def test_plot_surf_stat_map():
     # symmetric_cbar
     fig = plot_surf_stat_map(
         mesh, stat_map=data, colorbar=True, symmetric_cbar=True)
+    fig.canvas.draw()
     assert len(fig.axes) == 2
     yticklabels = fig.axes[1].get_yticklabels()
     first, last = yticklabels[0].get_text(), yticklabels[-1].get_text()
@@ -121,6 +121,7 @@ def test_plot_surf_stat_map():
     # no symmetric_cbar
     fig = plot_surf_stat_map(
         mesh, stat_map=data, colorbar=True, symmetric_cbar=False)
+    fig.canvas.draw()
     assert len(fig.axes) == 2
     yticklabels = fig.axes[1].get_yticklabels()
     first, last = yticklabels[0].get_text(), yticklabels[-1].get_text()
@@ -135,20 +136,21 @@ def test_plot_surf_stat_map_error():
     data = 10 * rng.randn(mesh[0].shape[0], )
 
     # Try to input vmin
-    assert_raises_regex(ValueError,
-                        'this function does not accept a "vmin" argument',
-                        plot_surf_stat_map, mesh, stat_map=data, vmin=0)
+    with pytest.raises(
+            ValueError,
+            match='this function does not accept a "vmin" argument'):
+        plot_surf_stat_map(mesh, stat_map=data, vmin=0)
 
     # Wrong size of stat map data
-    assert_raises_regex(ValueError,
-                        'surf_map does not have the same number of vertices',
-                        plot_surf_stat_map, mesh,
-                        stat_map=np.hstack((data, data)))
+    with pytest.raises(
+            ValueError,
+            match='surf_map does not have the same number of vertices'):
+        plot_surf_stat_map(mesh, stat_map=np.hstack((data, data)))
 
-    assert_raises_regex(ValueError,
-                        'surf_map can only have one dimension',
-                        plot_surf_stat_map, mesh,
-                        stat_map=np.vstack((data, data)).T)
+    with pytest.raises(
+            ValueError,
+            match='surf_map can only have one dimension'):
+        plot_surf_stat_map(mesh, stat_map=np.vstack((data, data)).T)
 
 
 def test_plot_surf_roi():
@@ -163,8 +165,9 @@ def test_plot_surf_roi():
     plot_surf_roi(mesh, roi_map=roi_map)
     plot_surf_roi(mesh, roi_map=roi_map, colorbar=True)
     # change vmin, vmax
-    img = plot_surf_roi(mesh, roi_map=roi_map,
-						vmin=1.2, vmax=8.9, colorbar=True)
+    img = plot_surf_roi(mesh, roi_map=roi_map, vmin=1.2,
+                        vmax=8.9, colorbar=True)
+    img.canvas.draw()
     cbar = img.axes[-1]
     cbar_vmin = float(cbar.get_yticklabels()[0].get_text())
     cbar_vmax = float(cbar.get_yticklabels()[-1].get_text())
@@ -194,9 +197,194 @@ def test_plot_surf_roi_error():
     mesh = generate_surf()
     rng = np.random.RandomState(0)
     roi_idx = rng.randint(0, mesh[0].shape[0], size=5)
+    with pytest.raises(
+            ValueError,
+            match='roi_map does not have the same number of vertices'):
+        plot_surf_roi(mesh, roi_map=roi_idx)
 
-    # Wrong input
-    assert_raises_regex(ValueError,
-                        'roi_map does not have the same number of vertices',
-                        plot_surf_roi, mesh,
-                        roi_map=roi_idx)
+
+def _generate_img():
+    mni_affine = MNI152TEMPLATE.get_affine()
+    data_positive = np.zeros((7, 7, 3))
+    rng = np.random.RandomState(42)
+    data_rng = rng.rand(7, 7, 3)
+    data_positive[1:-1, 2:-1, 1:] = data_rng[1:-1, 2:-1, 1:]
+    nii = nibabel.Nifti1Image(data_positive, mni_affine)
+    return nii
+
+
+def test_plot_img_on_surf_hemispheres_and_orientations():
+    nii = _generate_img()
+    # Check that all combinations of 1D or 2D hemis and orientations work.
+    plot_img_on_surf(nii, hemispheres=['right'], views=['lateral'])
+    plot_img_on_surf(nii, hemispheres=['left', 'right'], views=['lateral'])
+    plot_img_on_surf(nii,
+                     hemispheres=['right'],
+                     views=['medial', 'lateral'])
+    plot_img_on_surf(nii,
+                     hemispheres=['left', 'right'],
+                     views=['dorsal', 'medial'])
+
+
+def test_plot_img_on_surf_colorbar():
+    nii = _generate_img()
+    plot_img_on_surf(nii, hemispheres=['right'], views=['lateral'],
+                     colorbar=True, vmax=5, threshold=3)
+    plot_img_on_surf(nii, hemispheres=['right'], views=['lateral'],
+                     colorbar=False)
+    plot_img_on_surf(nii, hemispheres=['right'], views=['lateral'],
+                     colorbar=False, cmap='roy_big_bl')
+    plot_img_on_surf(nii, hemispheres=['right'], views=['lateral'],
+                     colorbar=True, cmap='roy_big_bl', vmax=2)
+
+
+def test_plot_img_on_surf_inflate():
+    nii = _generate_img()
+    plot_img_on_surf(nii, hemispheres=['right'], views=['lateral'],
+                     inflate=True)
+
+
+def test_plot_img_on_surf_surf_mesh():
+    nii = _generate_img()
+    plot_img_on_surf(nii, hemispheres=['right', 'left'], views=['lateral'])
+    plot_img_on_surf(nii, hemispheres=['right', 'left'], views=['lateral'],
+                     surf_mesh='fsaverage5')
+    surf_mesh = fetch_surf_fsaverage()
+    plot_img_on_surf(nii, hemispheres=['right', 'left'], views=['lateral'],
+                     surf_mesh=surf_mesh)
+
+
+def test_plot_img_on_surf_with_invalid_orientation():
+    kwargs = {"hemisphere": ["right"], "inflate": True}
+    nii = _generate_img()
+    with pytest.raises(ValueError):
+        plot_img_on_surf(nii, views=['latral'], **kwargs)
+    with pytest.raises(ValueError):
+        plot_img_on_surf(nii, views=['dorsal', 'post'], **kwargs)
+    with pytest.raises(TypeError):
+        plot_img_on_surf(nii, views=0, **kwargs)
+    with pytest.raises(ValueError):
+        plot_img_on_surf(nii, views=['medial', {'a': 'a'}], **kwargs)
+
+
+def test_plot_img_on_surf_with_invalid_hemisphere():
+    nii = _generate_img()
+    with pytest.raises(ValueError):
+        plot_img_on_surf(
+            nii, views=['lateral'], inflate=True, hemispheres=["lft]"]
+        )
+    with pytest.raises(ValueError):
+        plot_img_on_surf(
+            nii, views=['medial'], inflate=True, hemispheres=['lef']
+        )
+    with pytest.raises(ValueError):
+        plot_img_on_surf(
+            nii,
+            views=['anterior', 'posterior'],
+            inflate=True,
+            hemispheres=['left', 'right', 'middle']
+        )
+
+
+def test_plot_img_on_surf_with_figure_kwarg():
+    nii = _generate_img()
+    with pytest.raises(ValueError):
+        plot_img_on_surf(
+            nii,
+            views=["anterior"],
+            hemispheres=["right"],
+            figure=True,
+        )
+
+
+def test_plot_img_on_surf_with_axes_kwarg():
+    nii = _generate_img()
+    with pytest.raises(ValueError):
+        plot_img_on_surf(
+            nii,
+            views=["anterior"],
+            hemispheres=["right"],
+            inflat=True,
+            axes="something",
+        )
+
+
+def test_plot_img_on_surf_title():
+    nii = _generate_img()
+    title = "Title"
+    fig, axes = plot_img_on_surf(
+        nii, hemispheres=['right'], views=['lateral']
+    )
+    assert fig._suptitle is None, "Created title without title kwarg."
+    fig, axes = plot_img_on_surf(
+        nii, hemispheres=['right'], views=['lateral'], title=title
+    )
+    assert fig._suptitle is not None, "Title not created."
+    assert fig._suptitle.get_text() == title, "Title text not assigned."
+
+
+def test_plot_img_on_surf_output_file(tmp_path):
+    nii = _generate_img()
+    fname = tmp_path / 'tmp.png'
+    return_value = plot_img_on_surf(nii,
+                                    hemispheres=['right'],
+                                    views=['lateral'],
+                                    output_file=str(fname))
+    assert return_value is None, "Returned figure and axes on file output."
+    assert fname.is_file(), "Saved image file could not be found."
+
+
+def test_plot_surf_contours():
+    mesh = generate_surf()
+    # we need a valid parcellation for testing
+    parcellation = np.zeros((mesh[0].shape[0],))
+    parcellation[mesh[1][3]] = 1
+    parcellation[mesh[1][5]] = 2
+    plot_surf_contours(mesh, parcellation)
+    plot_surf_contours(mesh, parcellation, levels=[1, 2])
+    plot_surf_contours(mesh, parcellation, levels=[1, 2], cmap='gist_ncar')
+    plot_surf_contours(mesh, parcellation, levels=[1, 2],
+                       colors=['r', 'g'])
+    plot_surf_contours(mesh, parcellation, levels=[1, 2], colors=['r', 'g'],
+                       labels=['1', '2'])
+    fig = plot_surf_contours(mesh, parcellation, levels=[1, 2], colors=['r', 'g'],
+                             labels=['1', '2'], legend=True)
+    assert fig.legends is not None
+    plot_surf_contours(mesh, parcellation, levels=[1, 2],
+                       colors=[[0, 0, 0, 1], [1, 1, 1, 1]])
+    fig, axes = plt.subplots(1, 1, subplot_kw={'projection': '3d'})
+    plot_surf_contours(mesh, parcellation, axes=axes)
+    plot_surf_contours(mesh, parcellation, figure=fig)
+    fig = plot_surf(mesh)
+    plot_surf_contours(mesh, parcellation, figure=fig)
+    plot_surf_contours(mesh, parcellation, title='title')
+    with tempfile.NamedTemporaryFile() as tmp_file:
+        plot_surf_contours(mesh, parcellation, output_file=tmp_file.name)
+    plt.close()
+
+
+def test_plot_surf_contours_error():
+    mesh = generate_surf()
+    # we need an invalid parcellation for testing
+    rng = np.random.RandomState(0)
+    invalid_parcellation = rng.rand(mesh[0].shape[0])
+    parcellation = np.zeros((mesh[0].shape[0],))
+    parcellation[mesh[1][3]] = 1
+    parcellation[mesh[1][5]] = 2
+    with pytest.raises(
+            ValueError,
+            match='Vertices in parcellation do not form region.'):
+        plot_surf_contours(mesh, invalid_parcellation)
+    fig, axes = plt.subplots(1, 1)
+    with pytest.raises(
+            ValueError,
+            match='Axes must be 3D.'):
+        plot_surf_contours(mesh, parcellation, axes=axes)
+    with pytest.raises(
+            ValueError,
+            match='All elements of colors need to be either a matplotlib color string or RGBA values.'):
+        plot_surf_contours(mesh, parcellation, levels=[1, 2], colors=[[1, 2], 3])
+    with pytest.raises(
+            ValueError,
+            match='Levels, labels, and colors argument need to be either the same length or None.'):
+        plot_surf_contours(mesh, parcellation, levels=[1, 2], colors=['r'], labels=['1', '2'])

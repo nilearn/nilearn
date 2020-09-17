@@ -5,12 +5,14 @@ CanICA
 # Author: Alexandre Abraham, Gael Varoquaux,
 # License: BSD 3 clause
 
+import warnings as _warnings
+import numpy as np
+
 from operator import itemgetter
 
-import numpy as np
 from scipy.stats import scoreatpercentile
 from sklearn.decomposition import fastica
-from nilearn._utils.compat import Memory, delayed, Parallel
+from joblib import Memory, delayed, Parallel
 from sklearn.utils import check_random_state
 
 from .multi_pca import MultiPCA
@@ -89,7 +91,7 @@ class CanICA(MultiPCA):
         brain mask for your data's field of view.
         Depending on this value, the mask will be computed from
         masking.compute_background_mask, masking.compute_epi_mask or
-        masking.compute_gray_matter_mask. Default is 'epi'.
+        masking.compute_brain_mask. Default is 'epi'.
 
     mask_args: dict, optional
         If mask is None, these are additional parameters passed to
@@ -157,7 +159,7 @@ class CanICA(MultiPCA):
                  low_pass=None, high_pass=None, t_r=None,
                  target_affine=None, target_shape=None,
                  mask_strategy='epi', mask_args=None,
-                 memory=Memory(cachedir=None), memory_level=0,
+                 memory=Memory(location=None), memory_level=0,
                  n_jobs=1, verbose=0
                  ):
 
@@ -214,10 +216,18 @@ class CanICA(MultiPCA):
                              str(self.threshold))
         if ratio is not None:
             abs_ica_maps = np.abs(ica_maps)
-            threshold = scoreatpercentile(
-                abs_ica_maps,
-                100. - (100. / len(ica_maps)) * ratio)
-            ica_maps[abs_ica_maps < threshold] = 0.
+            percentile = 100. - (100. / len(ica_maps)) * ratio
+            if percentile <= 0:
+                _warnings.warn("Nilearn's decomposition module "
+                               "obtained a critical threshold "
+                               "(= %s percentile).\n"
+                               "No threshold will be applied. "
+                               "Threshold should be decreased or "
+                               "number of components should be adjusted." %
+                               str(percentile), UserWarning, stacklevel=4)
+            else:
+                threshold = scoreatpercentile(abs_ica_maps, percentile)
+                ica_maps[abs_ica_maps < threshold] = 0.
         # We make sure that we keep the dtype of components
         self.components_ = ica_maps.astype(self.components_.dtype)
 
@@ -226,7 +236,8 @@ class CanICA(MultiPCA):
             if component.max() < -component.min():
                 component *= -1
         if hasattr(self, "masker_"):
-            self.components_img_ = self.masker_.inverse_transform(self.components_)
+            self.components_img_ = self.masker_.inverse_transform(
+                self.components_)
 
     # Overriding MultiPCA._raw_fit overrides MultiPCA.fit behavior
     def _raw_fit(self, data):

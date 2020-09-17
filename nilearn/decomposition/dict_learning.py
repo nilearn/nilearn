@@ -10,12 +10,10 @@ constitutes output maps
 from __future__ import division
 
 import warnings
-from distutils.version import LooseVersion
 
 import numpy as np
-import sklearn
 from sklearn.decomposition import dict_learning_online
-from nilearn._utils.compat import Memory
+from joblib import Memory
 from sklearn.linear_model import Ridge
 
 from .base import BaseDecomposition
@@ -123,7 +121,7 @@ class DictLearning(BaseDecomposition):
         brain mask for your data's field of view.
         Depending on this value, the mask will be computed from
         masking.compute_background_mask, masking.compute_epi_mask or
-        masking.compute_gray_matter_mask. Default is 'epi'.
+        masking.compute_brain_mask. Default is 'epi'.
 
     mask_args: dict, optional
         If mask is None, these are additional parameters passed to
@@ -185,7 +183,7 @@ class DictLearning(BaseDecomposition):
                  smoothing_fwhm=4, standardize=True, detrend=True,
                  low_pass=None, high_pass=None, t_r=None, target_affine=None,
                  target_shape=None, mask_strategy='epi', mask_args=None,
-                 n_jobs=1, verbose=0, memory=Memory(cachedir=None),
+                 n_jobs=1, verbose=0, memory=Memory(location=None),
                  memory_level=0):
         BaseDecomposition.__init__(self, n_components=n_components,
                                    random_state=random_state, mask=mask,

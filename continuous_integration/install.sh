@@ -22,18 +22,18 @@ create_new_venv() {
     deactivate
     virtualenv --system-site-packages testvenv
     source testvenv/bin/activate
-    pip install nose pytest
+    pip install pytest
 }
 
 echo_requirements_string() {
     # Echo a requirement string for example
-    # "pip nose python='2.7.3 scikit-learn=*". It has a hardcoded
+    # "pip pytest python='2.7.3 scikit-learn=*". It has a hardcoded
     # list of possible packages to install and looks at _VERSION
     # environment variables to know whether to install a given package and
     # if yes which version to install. For example:
     #   - for numpy, NUMPY_VERSION is used
     #   - for scikit-learn, SCIKIT_LEARN_VERSION is used
-    TO_INSTALL_ALWAYS="pip nose pytest"
+    TO_INSTALL_ALWAYS="pip pytest"
     REQUIREMENTS="$TO_INSTALL_ALWAYS"
     TO_INSTALL_MAYBE="numpy scipy matplotlib scikit-learn pandas flake8 lxml joblib"
     for PACKAGE in $TO_INSTALL_MAYBE; do
@@ -57,8 +57,8 @@ echo_requirements_string() {
 
 create_new_travisci_env() {
     REQUIREMENTS=$(echo_requirements_string)
-    pip install ${REQUIREMENTS}
-    pip install pytest pytest-cov
+    pip install --upgrade $PIP_FLAGS ${REQUIREMENTS}
+    pip install --upgrade pytest pytest-cov
 
     if [[ "$INSTALL_MKL" == "true" ]]; then
         # Make sure that MKL is used
@@ -68,13 +68,11 @@ create_new_travisci_env() {
 
 if [[ "$DISTRIB" == "neurodebian" ]]; then
     create_new_venv
-    pip install nose-timer
     bash <(wget -q -O- http://neuro.debian.net/_files/neurodebian-travis.sh)
-    sudo apt-get install -qq python-scipy python-nose python-nibabel python-sklearn python-joblib
+    sudo apt-get install -qq python-scipy python-pytest python-nibabel python-sklearn python-joblib
 
 elif [[ "$DISTRIB" == "travisci" ]]; then
     create_new_travisci_env
-    pip install nose-timer
     # Note: nibabel is in setup.py install_requires so nibabel will
     # always be installed eventually. Defining NIBABEL_VERSION is only
     # useful if you happen to want a specific nibabel version rather
@@ -97,5 +95,5 @@ fi
 # numpy not installed when skipping the tests so we do not want to run
 # setup.py install
 if [[ "$SKIP_TESTS" != "true" ]]; then
-    python setup.py install
+    pip install $PIP_FLAGS .
 fi

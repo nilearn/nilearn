@@ -1,15 +1,16 @@
 import json
-import collections
+import collections.abc
 
 import numpy as np
 import matplotlib as mpl
 from matplotlib import cm as mpl_cm
 
-from .._utils.niimg_conversions import check_niimg_3d
-from .. import datasets, surface
+from nilearn._utils.niimg_conversions import check_niimg_3d
+from nilearn import surface
+from nilearn import datasets
 from nilearn.reporting import HTMLDocument
-from . import cm
-from .js_plotting_utils import (
+from nilearn.plotting import cm
+from nilearn.plotting.js_plotting_utils import (
     colorscale, mesh_to_plotly, get_html_template, add_js_lib,
     to_color_strings)
 
@@ -66,7 +67,7 @@ def one_mesh_info(surf_map, surf_mesh, threshold=None, cmap=cm.cold_hot,
 def _check_mesh(mesh):
     if isinstance(mesh, str):
         return datasets.fetch_surf_fsaverage(mesh)
-    if not isinstance(mesh, collections.Mapping):
+    if not isinstance(mesh, collections.abc.Mapping):
         raise TypeError("The mesh should be a str or a dictionary, "
                         "you provided: {}.".format(type(mesh).__name__))
     missing = {'pial_left', 'pial_right', 'sulc_left', 'sulc_right',
@@ -91,7 +92,7 @@ def full_brain_info(volume_img, mesh='fsaverage5', threshold=None,
 
     """
     info = {}
-    mesh = _check_mesh(mesh)
+    mesh = surface.surface._check_mesh(mesh)
     surface_maps = {
         h: surface.vol_to_surf(volume_img, mesh['pial_{}'.format(h)],
                                **vol_to_surf_kwargs)
@@ -121,7 +122,8 @@ def full_brain_info(volume_img, mesh='fsaverage5', threshold=None,
 def _fill_html_template(info, embed_js=True):
     as_json = json.dumps(info)
     as_html = get_html_template('surface_plot_template.html').safe_substitute(
-        {'INSERT_STAT_MAP_JSON_HERE': as_json})
+        {'INSERT_STAT_MAP_JSON_HERE': as_json,
+         'INSERT_PAGE_TITLE_HERE': info["title"] or "Surface plot"})
     as_html = add_js_lib(as_html, embed_js=embed_js)
     return SurfaceView(as_html)
 

@@ -21,9 +21,9 @@ from nilearn import datasets
 
 localizer_dataset = datasets.fetch_localizer_button_task()
 # Contrast map of motor task
-localizer_tmap_filename = localizer_dataset.tmaps[0]
+localizer_tmap_filename = localizer_dataset.tmap
 # Subject specific anatomical image
-localizer_anat_filename = localizer_dataset.anats[0]
+localizer_anat_filename = localizer_dataset.anat
 ###########################################################################
 # Plotting with enhancement of background image with dim=-.5
 # --------------------------------------------------------------------------

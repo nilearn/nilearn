@@ -18,25 +18,28 @@ import sys
 from functools import partial
 import numpy as np
 from scipy import stats, ndimage
-from sklearn.base import RegressorMixin
 from sklearn.utils.extmath import safe_sparse_dot
 from sklearn.utils import check_array
-from sklearn.linear_model.base import LinearModel
+from sklearn.linear_model import LinearRegression
 from sklearn.feature_selection import (SelectPercentile, f_regression,
                                        f_classif)
-from nilearn._utils.compat import Memory, Parallel, delayed
+from joblib import Memory, Parallel, delayed
 from sklearn.preprocessing import LabelBinarizer
 from sklearn.metrics import accuracy_score
 from ..input_data.masker_validation import check_embedded_nifti_masker
 from .._utils.param_validation import _adjust_screening_percentile
 from sklearn.utils import check_X_y
 from sklearn.model_selection import check_cv
-from sklearn.linear_model.base import _preprocess_data as center_data
-from .._utils.compat import _basestring
+try:
+    from sklearn.linear_model._base import _preprocess_data as center_data
+except ImportError:
+    # Sklearn < 0.23
+    from sklearn.linear_model.base import _preprocess_data as center_data
 from .._utils.cache_mixin import CacheMixin
 from nilearn.masking import _unmask_from_to_3d_array
 from .space_net_solvers import (tvl1_solver, _graph_net_logistic,
                                 _graph_net_squared_loss)
+from nilearn.image import get_data
 
 
 def _crop_mask(mask):
@@ -448,7 +451,7 @@ def path_scores(solver, X, y, mask, alphas, l1_ratios, train, test,
             y_train_mean, key)
 
 
-class BaseSpaceNet(LinearModel, RegressorMixin, CacheMixin):
+class BaseSpaceNet(LinearRegression, CacheMixin):
     """
     Regression and classification learners with sparsity and spatial priors
 
@@ -745,7 +748,7 @@ class BaseSpaceNet(LinearModel, RegressorMixin, CacheMixin):
         """
         # misc
         self.check_params()
-        if self.memory is None or isinstance(self.memory, _basestring):
+        if self.memory is None or isinstance(self.memory, str):
             self.memory_ = Memory(self.memory,
                                   verbose=max(0, self.verbose - 1))
         else:
@@ -770,7 +773,7 @@ class BaseSpaceNet(LinearModel, RegressorMixin, CacheMixin):
         self.Xstd_ = X.std(axis=0)
         self.Xstd_[self.Xstd_ < 1e-8] = 1
         self.mask_img_ = self.masker_.mask_img_
-        self.mask_ = self.mask_img_.get_data().astype(np.bool)
+        self.mask_ = get_data(self.mask_img_).astype(np.bool)
         n_samples, _ = X.shape
         y = np.array(y).copy()
         l1_ratios = self.l1_ratios
@@ -899,12 +902,13 @@ class BaseSpaceNet(LinearModel, RegressorMixin, CacheMixin):
         -------
         array, shape=(n_samples,) if n_classes == 2 else (n_samples, n_classes)
             Confidence scores per (sample, class) combination. In the binary
-            case, confidence score for self.classes_[1] where >0 means this
+            case, confidence score for `self.classes_[1]` where >0 means this
             class would be predicted.
         """
         # handle regression (least-squared loss)
         if not self.is_classif:
-            return LinearModel.decision_function(self, X)
+            raise ValueError(
+                'There is no decision_function in classification')
 
         X = check_array(X)
         n_features = self.coef_.shape[1]
@@ -939,7 +943,7 @@ class BaseSpaceNet(LinearModel, RegressorMixin, CacheMixin):
 
         # handle regression (least-squared loss)
         if not self.is_classif:
-            return LinearModel.predict(self, X)
+            return LinearRegression.predict(self, X)
 
         # prediction proper
         scores = self.decision_function(X)

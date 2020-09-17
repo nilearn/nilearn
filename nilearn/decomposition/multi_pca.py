@@ -3,7 +3,7 @@ PCA dimension reduction on multiple subjects.
 This is a good initialization method for ICA.
 """
 import numpy as np
-from nilearn._utils.compat import Memory
+from joblib import Memory
 from sklearn.utils.extmath import randomized_svd
 
 from .base import BaseDecomposition
@@ -47,7 +47,7 @@ class MultiPCA(BaseDecomposition):
         brain mask for your data's field of view.
         Depending on this value, the mask will be computed from
         masking.compute_background_mask, masking.compute_epi_mask or
-        masking.compute_gray_matter_mask. Default is 'epi'.
+        masking.compute_brain_mask. Default is 'epi'.
 
     mask_args: dict, optional
         If mask is None, these are additional parameters passed to
@@ -138,7 +138,7 @@ class MultiPCA(BaseDecomposition):
                  low_pass=None, high_pass=None, t_r=None,
                  target_affine=None, target_shape=None,
                  mask_strategy='epi', mask_args=None,
-                 memory=Memory(cachedir=None), memory_level=0,
+                 memory=Memory(location=None), memory_level=0,
                  n_jobs=1,
                  verbose=0
                  ):
