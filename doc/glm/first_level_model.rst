@@ -49,7 +49,7 @@ Refer to the examples below for usage under the different scenarios:
   * Uing nilearn fetcher functions: :ref:`sphx_glr_auto_examples_04_glm_first_level_plot_spm_multimodal_faces.py`
 
 Once the events are defined, the design matrix is created using the
-:func:`nilearn.glm.first_level_model.make_first_level_design_matrix` function.
+:func:`nilearn.glm.first_level_model.make_first_level_design_matrix` function::
 
   from nilearn.glm.first_level_model import make_first_level_design_matrix
   design_matrices = make_first_level_design_matrix(frame_times, events,
