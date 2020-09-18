@@ -464,7 +464,7 @@ def test_sample_locations_between_surfaces(depth, n_points):
 
 def test_depth_ball_sampling():
     img, *_ = data_gen.generate_mni_space_img()
-    mesh, *_ = data_gen.generate_brain_mesh()
+    mesh = surface.load_surf_mesh(datasets.fetch_surf_fsaverage()["pial_left"])
     with pytest.raises(ValueError, match=".*does not support.*"):
         surface.vol_to_surf(img, mesh, kind="ball", depth=[.5])
 
@@ -478,8 +478,9 @@ def test_vol_to_surf(kind, n_scans, use_mask):
         mask_img = None
     if n_scans == 1:
         img = image.new_img_like(img, image.get_data(img).squeeze())
-    mesh, radii, _ = data_gen.generate_brain_mesh()
-    inner_mesh, inner_radii, _ = data_gen.generate_brain_mesh(dilation=.7)
+    fsaverage = datasets.fetch_surf_fsaverage()
+    mesh = surface.load_surf_mesh(fsaverage["pial_left"])
+    inner_mesh = surface.load_surf_mesh(fsaverage["white_left"])
     center_mesh = np.mean([mesh[0], inner_mesh[0]], axis=0), mesh[1]
     proj = surface.vol_to_surf(
         img, mesh, inner_mesh=inner_mesh, mask_img=mask_img)
