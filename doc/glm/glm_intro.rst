@@ -1,8 +1,8 @@
 .. _glm_intro:
 
-=======================================================
-An introduction to fMRI statistical analysis using GLMs
-=======================================================
+====================================================
+An introduction to GLMs in fMRI statistical analysis
+====================================================
 
 .. contents:: **Contents**
     :local:

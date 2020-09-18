@@ -32,38 +32,22 @@ Design matrix: event-based and time series-based
 Event-based
 -----------
 
-To create an event-based design matrix, information about the trial type, onset time and duration of the events in the experiment are necessary. This can be provided by the user, or be part of the dataset if using a BIDS-compatible dataset or one of the nilearn dataset fetcher functions like :func:`nilearn.datasets.fetch_spm_multimodal_fmri`, :func:`nilearn.datasets.fetch_language_localizer_demo_dataset`, etc. Using a nilearn fetcher function, e.g. :func:`nilearn.datasets.fetch_spm_multimodal_fmri`, first download the data (for one subject)::
+To create an event-based design matrix, information about the trial type, onset time and duration of the events in the experiment are necessary. This can be provided by the user, or be part of the dataset if using a BIDS-compatible dataset or one of the nilearn dataset fetcher functions like :func:`nilearn.datasets.fetch_spm_multimodal_fmri`, :func:`nilearn.datasets.fetch_language_localizer_demo_dataset`, etc.
 
-  from nilearn.datasets import fetch_spm_multimodal_fmri
-  subject_data = fetch_spm_multimodal_fmri()
+Refer to the examples below for usage under the different scenarios:
+  * User-defined: :ref:`sphx_glr_auto_examples_04_glm_first_level_models_plot_design_matrix.py`
+  * Using an OpenNEURO dataset: :ref:`sphx_glr_auto_examples_04_glm_first_level_models_plot_bids_features.py`
+  * Uing nilearn fetcher functions: :ref:`sphx_glr_auto_examples_04_glm_first_level_models_plot_spm_multimodal_faces.py`
 
-Here, each subject has 2 sessions of data; events for the first session can be accessed using::
-
-  import pandas as pd
-  events = pd.read_table(subject_data['events{}'.format(1)])
-
-If the events details are provided by the user, then details about the experiment should be provided. This information can be stored in a DataFrame and used instead of the events file::
-
-  import pandas as pd
-  conditions = ['c0', 'c0', 'c0', 'c1', 'c1', 'c1', 'c3', 'c3', 'c3']
-  duration = [1., 1., 1., 1., 1., 1., 1., 1., 1.]
-  onsets = [30., 70., 100., 10., 30., 90., 30., 40., 60.]
-  events = pd.DataFrame({'trial_type': conditions, 'onset': onsets, 'duration': duration})
-
-In addition, some scan attributes also need to be specified::
-
-    import numpy as np
-    tr = 1.0  # repetition time is 1 second
-    n_scans = 128  # the acquisition comprises 128 scans
-    frame_times = np.arange(n_scans) * tr  # here are the corresponding frame times
-
-In either case, the design matrix is created using the :func:`nilearn.stats.first_level_model.make_first_level_design_matrix` function::
+Once the events are defined, the design matrix is created using the :func:`nilearn.stats.first_level_model.make_first_level_design_matrix` function.
 
   from nilearn.stats.first_level_model import make_first_level_design_matrix
   design_matrices = make_first_level_design_matrix(frame_times, events,
                             drift_model='polynomial', drift_order=3)
 
-A handy function called :func:`nilearn.reporting.plot_design_matrix()` can be used to visualize the design matrix::
+.. note:: Additional predictors, like subject motion, can be specified using the add_reg parameter. Look at the function definition for available arguments.
+
+A handy function called :func:`nilearn.reporting.plot_design_matrix()` can be used to visualize the design matrix. This is generally a good practice to follow before proceeding with the analysis::
 
   from nilearn.reporting import plot_design_matrix
   plot_design_matrix(design_matrices)
@@ -71,29 +55,17 @@ A handy function called :func:`nilearn.reporting.plot_design_matrix()` can be us
 .. image:: ../auto_examples/04_glm_first_level_models/images/sphx_glr_plot_design_matrix_001.png
    :target: ../auto_examples/04_glm_first_level_models/plot_design_matrix.html#sphx-glr-auto-examples-04-glm-first-level-models-plot-design-matrix-py
 
-.. note:: Additional predictors, like subject motion, can be specified using the add_reg parameter. Look at the function definition for available arguments.
-
 
 Time series-based
 -----------------
 
-The time series of a seed region can also be used as the predictor for a first level model. This would be used to identify brain areas co-activating with the seed region. The time series is extracted using :class:`nilearn.input_data.NiftiSpheresMasker`. For instance, if the seed region is the posterior cingulate cortex::
+The time series of a seed region can also be used as the predictor for a first level model. This approach would help identify brain areas co-activating with the seed region. The time series is extracted using :class:`nilearn.input_data.NiftiSpheresMasker`. For instance, if the seed region is the posterior cingulate cortex with coordinate [pcc_coords]::
 
   from nilearn.input_data import NiftiSpheresMasker
-  seed_masker = NiftiSpheresMasker([pcc_coords], radius=10, detrend=True,
-                                 standardize=True, low_pass=0.1,
-                                 high_pass=0.01, t_r=2.,
-                                 memory='nilearn_cache',
-                                 memory_level=1, verbose=0)
+  seed_masker = NiftiSpheresMasker([pcc_coords], radius=10)
   seed_time_series = seed_masker.fit_transform(adhd_dataset.func[0])
 
-The seed_time_series is then passed into the design matrix using the same add_reg argument used above for motion parameters::
-
-  from nilearn.stats.first_level_model import make_first_level_design_matrix
-  design_matrices = make_first_level_design_matrix(frametimes,
-                                               add_regs=seed_time_series,
-                                               add_reg_names=["pcc_seed"])
-
+The seed_time_series is then passed into the design matrix using the add_reg argument mentioned in the note above. :ref:`sphx_glr_auto_examples_04_glm_first_level_models_plot_adhd_dmn.py` contains code for this approach.
 
 
 Fitting a first level model
@@ -109,13 +81,13 @@ The :class:`nilearn.stats.first_level_model.FirstLevelModel` class provides the 
 Computing contrasts
 -------------------
 
-To get more interesting results out of the GLM model, contrasts can be computed between regressors of interest. The :func:`nilearn.stats.first_level_model.FirstLevelModel.compute_contrast` function can be used for that. First, the contrasts of interest must be defined. In the spm_multimodal_fmri dataset referenced above, subjects are presented with normal and scrambled faces. The basic contrasts that can be constructed are::
+To get more interesting results out of the GLM model, contrasts can be computed between regressors of interest. The :func:`nilearn.stats.first_level_model.FirstLevelModel.compute_contrast` function can be used for that. First, the contrasts of interest must be defined. In the spm_multimodal_fmri dataset referenced above, subjects are presented with 'normal' and 'scrambled' faces. The basic contrasts that can be constructed are the main effects of 'normal faces' and 'scrambled faces'::
 
   contrast_matrix = np.eye(design_matrix.shape[1])
   basic_contrasts = dict([(column, contrast_matrix[i])
                 for i, column in enumerate(design_matrix.columns)])
 
-Using basic_contrasts, we can construct more interesting contrasts::
+Once the basic_contrasts have been set up, we can construct more interesting contrasts like 'normal faces - scrambled faces'::
 
   contrasts = {
     'faces-scrambled': basic_contrasts['faces'] - basic_contrasts['scrambled'],
@@ -124,17 +96,11 @@ Using basic_contrasts, we can construct more interesting contrasts::
                                       basic_contrasts['scrambled']))
   }
 
-And compute the contrasts as follows::
+.. note:: The compute_contrast function can work with symbolic arguments if the contrast involves conditions defined in the design matrix. E.g. the 'faces-scrambled' contrast can also be computed using the command `compute_contrast('faces-scrambled')`. See :func:`nilearn.stats.first_level_model.FirstLevelModel.compute_contrast` for more information.
 
-  for contrast_id, contrast_val in contrasts.items():
-    z_map = fmri_glm.compute_contrast(
-        contrast_val, output_type='z_score')
+And finally we can compute the contrasts using the compute_contrast function. Refer to :ref:`sphx_glr_auto_examples_04_glm_first_level_models_plot_spm_multimodal_faces.py` for the full example.
 
-
-.. note:: The compute_contrast function also works with symbolic arguments if the contrast involves conditions defined in the design matrix. E.g. the 'faces-scrambled' contrast can also be computed using the command `compute_contrast('faces-scrambled')`. See :func:`nilearn.stats.first_level_model.FirstLevelModel.compute_contrast` for more information.
-
-
-
+The activation maps from these 3 contrasts is presented below:
 
 .. image:: ../auto_examples/04_glm_first_level_models/images/sphx_glr_plot_spm_multimodal_faces_001.png
      :target: ../auto_examples/04_glm_first_level_models/plot_spm_multimodal_faces.html
@@ -149,8 +115,7 @@ And compute the contrasts as follows::
      :scale: 60
 
 
-For full examples on fitting a first level model, look at the following examples: :ref:`sphx_glr_auto_examples_04_glm_first_level_models_plot_spm_multimodal_faces.py` and :ref:`sphx_glr_auto_examples_04_glm_first_level_models_plot_fiac_analysis.py`
-
+Additional example: :ref:`sphx_glr_auto_examples_04_glm_first_level_models_plot_fiac_analysis.py`
 
 
 Extracting predicted time series and residuals
