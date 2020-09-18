@@ -7,30 +7,23 @@ Test the datasets module
 import os
 import shutil
 import itertools
+from pathlib import Path
+import re
 
 import numpy as np
+import pandas as pd
 
 import nibabel
 import pytest
-import urllib
 
 from numpy.testing import assert_array_equal
-
-from . import test_utils as tst
 
 
 from nilearn.datasets import utils, atlas
 from nilearn.image import get_data
-
-
-@pytest.fixture()
-def request_mocker():
-    """ Mocks URL calls for atlas fetchers during testing.
-    Tests the fetcher code without actually downloading the files.
-    """
-    tst.setup_mock(utils, atlas)
-    yield
-    tst.teardown_mock(utils, atlas)
+from nilearn._utils.testing import serialize_niimg
+from nilearn.datasets._testing import dict_to_archive
+from nilearn._utils import data_gen
 
 
 def test_get_dataset_dir(tmp_path):
@@ -93,7 +86,7 @@ def test_get_dataset_dir(tmp_path):
         utils._get_dataset_dir('test', test_file, verbose=0)
 
 
-def test_downloader(tmp_path):
+def test_downloader(tmp_path, request_mocker):
 
     # Sandboxing test
     # ===============
@@ -111,30 +104,31 @@ def test_downloader(tmp_path):
     #     archive
     #   - if sandboxing works, the file must be untouched.
 
-    local_url = "file:" + urllib.request.pathname2url(
-        os.path.join(tst.datadir, "craddock_2011_parcellations.tar.gz"))
-    datasetdir = str(tmp_path / 'craddock_2012')
-    os.makedirs(datasetdir)
+    local_archive = Path(
+        __file__).parent / "data" / "craddock_2011_parcellations.tar.gz"
+    url = "http://example.com/craddock_atlas"
+    request_mocker.url_mapping["*craddock*"] = local_archive
+    datasetdir = tmp_path / 'craddock_2012'
+    datasetdir.mkdir()
 
     # Create a dummy file. If sandboxing is successful, it won't be overwritten
-    dummy = open(os.path.join(datasetdir, 'random_all.nii.gz'), 'w')
-    dummy.write('stuff')
-    dummy.close()
+    dummy_file = datasetdir / "random_all.nii.gz"
+    with dummy_file.open("w") as f:
+        f.write('stuff')
 
     opts = {'uncompress': True}
     files = [
-        ('random_all.nii.gz', local_url, opts),
+        ('random_all.nii.gz', url, opts),
         # The following file does not exists. It will cause an abortion of
         # the fetching procedure
-        ('bald.nii.gz', local_url, opts)
+        ('bald.nii.gz', url, opts)
     ]
 
     pytest.raises(IOError, utils._fetch_files,
                   str(tmp_path / 'craddock_2012'), files,
                   verbose=0)
-    dummy = open(os.path.join(datasetdir, 'random_all.nii.gz'), 'r')
-    stuff = dummy.read(5)
-    dummy.close()
+    with dummy_file.open("r") as f:
+        stuff = f.read(5)
     assert stuff == 'stuff'
 
     # Downloading test
@@ -143,14 +137,13 @@ def test_downloader(tmp_path):
     # Now, we use the regular downloading feature. This will override the dummy
     # file created before.
 
-    atlas.fetch_atlas_craddock_2012(data_dir=str(tmp_path), url=local_url)
-    dummy = open(os.path.join(datasetdir, 'random_all.nii.gz'), 'r')
-    stuff = dummy.read()
-    dummy.close()
+    atlas.fetch_atlas_craddock_2012(data_dir=str(tmp_path))
+    with dummy_file.open() as f:
+        stuff = f.read()
     assert stuff == ''
 
 
-def test_fail_fetch_atlas_harvard_oxford(tmp_path):
+def test_fail_fetch_atlas_harvard_oxford(tmp_path, request_mocker):
     # specify non-existing atlas item
     with pytest.raises(ValueError, match='Invalid atlas name'):
         atlas.fetch_atlas_harvard_oxford('not_inside')
@@ -251,6 +244,9 @@ def test_fail_fetch_atlas_harvard_oxford(tmp_path):
 
 
 def test_fetch_atlas_craddock_2012(tmp_path, request_mocker):
+    local_archive = Path(
+        __file__).parent / "data" / "craddock_2011_parcellations.tar.gz"
+    request_mocker.url_mapping["*craddock*"] = local_archive
     bunch = atlas.fetch_atlas_craddock_2012(data_dir=str(tmp_path),
                                             verbose=0)
 
@@ -264,7 +260,7 @@ def test_fetch_atlas_craddock_2012(tmp_path, request_mocker):
         "tcorr05_2level_all.nii.gz",
         "random_all.nii.gz",
     ]
-    assert len(tst.mock_url_request.urls) == 1
+    assert request_mocker.url_count == 1
     for key, fn in zip(keys, filenames):
         assert bunch[key] == str(tmp_path / 'craddock_2012' / fn)
     assert bunch.description != ''
@@ -284,19 +280,19 @@ def test_fetch_atlas_smith_2009(tmp_path, request_mocker):
         "bm70.nii.gz",
     ]
 
-    assert len(tst.mock_url_request.urls) == 6
+    assert request_mocker.url_count == 6
     for key, fn in zip(keys, filenames):
         assert bunch[key] == str(tmp_path / 'smith_2009' / fn)
     assert bunch.description != ''
 
 
-def test_fetch_coords_power_2011():
+def test_fetch_coords_power_2011(request_mocker):
     bunch = atlas.fetch_coords_power_2011()
     assert len(bunch.rois) == 264
     assert bunch.description != ''
 
 
-def test_fetch_coords_seitzman_2018():
+def test_fetch_coords_seitzman_2018(request_mocker):
     bunch = atlas.fetch_coords_seitzman_2018()
     assert len(bunch.rois) == 300
     assert len(bunch.radius) == 300
@@ -313,53 +309,50 @@ def test_fetch_coords_seitzman_2018():
     assert np.any(bunch.networks != np.sort(bunch.networks))
 
 
+def _destrieux_data():
+    data = {"destrieux2009.rst": "readme"}
+    for lat in ["_lateralized", ""]:
+        lat_data = {
+            "destrieux2009_rois_labels{}.csv".format(lat): "name,index",
+            "destrieux2009_rois{}.nii.gz".format(lat): "",
+        }
+        data.update(lat_data)
+    return dict_to_archive(data)
+
+
 def test_fetch_atlas_destrieux_2009(tmp_path, request_mocker):
-    datadir = str(tmp_path / 'destrieux_2009')
-    os.mkdir(datadir)
-    dummy = open(os.path.join(
-        datadir, 'destrieux2009_rois_labels_lateralized.csv'), 'w')
-    dummy.write("name,index")
-    dummy.close()
+    request_mocker.url_mapping["*destrieux2009.tgz"] = _destrieux_data()
     bunch = atlas.fetch_atlas_destrieux_2009(data_dir=str(tmp_path),
                                              verbose=0)
 
-    assert len(tst.mock_url_request.urls) == 1
+    assert request_mocker.url_count == 1
     assert bunch['maps'] == str(tmp_path / 'destrieux_2009'
                                 / 'destrieux2009_rois_lateralized.nii.gz')
 
-    dummy = open(os.path.join(
-        datadir, 'destrieux2009_rois_labels.csv'), 'w')
-    dummy.write("name,index")
-    dummy.close()
     bunch = atlas.fetch_atlas_destrieux_2009(
         lateralized=False, data_dir=str(tmp_path), verbose=0)
 
-    assert len(tst.mock_url_request.urls) == 1
-    assert bunch['maps'] == os.path.join(
-        datadir, 'destrieux2009_rois.nii.gz')
+    assert request_mocker.url_count == 1
+    assert bunch['maps'] == str(tmp_path / 'destrieux_2009'
+                                / 'destrieux2009_rois.nii.gz')
 
 
 def test_fetch_atlas_msdl(tmp_path, request_mocker):
-    datadir = str(tmp_path / 'msdl_atlas')
-    os.mkdir(datadir)
-    os.mkdir(os.path.join(datadir, 'MSDL_rois'))
-    data_dir = os.path.join(datadir, 'MSDL_rois', 'msdl_rois_labels.csv')
-    csv = np.rec.array([(1.5, 1.5, 1.5, 'Aud', 'Aud'),
-                        (1.2, 1.3, 1.4, 'DMN', 'DMN')],
-                       dtype=[('x', '<f8'), ('y', '<f8'),
-                              ('z', '<f8'), ('name', 'S12'),
-                              ('net_name', 'S19')])
-    with open(data_dir, 'wb') as csv_file:
-        header = '{0}\n'.format(','.join(csv.dtype.names))
-        csv_file.write(header.encode())
-        np.savetxt(csv_file, csv, delimiter=',', fmt='%s')
-
+    labels = pd.DataFrame(
+        {"x": [1.5, 1.2], "y": [1.5, 1.3],
+         "z": [1.5, 1.4], "name": ["Aud", "DMN"], "net_name": ["Aud", "DMN"]})
+    root = Path("MSDL_rois")
+    archive = {root / "msdl_rois_labels.csv": labels.to_csv(index=False),
+               root / "msdl_rois.nii": "",
+               root / "README.txt": ""}
+    request_mocker.url_mapping["*MSDL_rois.zip"] = dict_to_archive(
+        archive, "zip")
     dataset = atlas.fetch_atlas_msdl(data_dir=str(tmp_path), verbose=0)
     assert isinstance(dataset.labels, list)
     assert isinstance(dataset.region_coords, list)
     assert isinstance(dataset.networks, list)
     assert isinstance(dataset.maps, str)
-    assert len(tst.mock_url_request.urls) == 1
+    assert request_mocker.url_count == 1
     assert dataset.description != ''
 
 
@@ -372,22 +365,23 @@ def test_fetch_atlas_yeo_2011(tmp_path, request_mocker):
     assert isinstance(dataset.thick_7, str)
     assert isinstance(dataset.thin_17, str)
     assert isinstance(dataset.thin_7, str)
-    assert len(tst.mock_url_request.urls) == 1
+    assert request_mocker.url_count == 1
     assert dataset.description != ''
 
 
 def test_fetch_atlas_aal(tmp_path, request_mocker):
-    ho_dir = str(tmp_path / 'aal_SPM12' / 'aal' / 'atlas')
-    os.makedirs(ho_dir)
-    with open(os.path.join(ho_dir, 'AAL.xml'), 'w') as xml_file:
-        xml_file.write("<?xml version='1.0' encoding='us-ascii'?> "
-                       "<metadata>"
-                       "</metadata>")
+    metadata = (b"<?xml version='1.0' encoding='us-ascii'?>"
+                b"<metadata></metadata>")
+    archive_root = Path("aal", "atlas")
+    aal_data = dict_to_archive(
+        {archive_root / "AAL.xml": metadata, archive_root / "AAL.nii": ""})
+
+    request_mocker.url_mapping["*AAL_files*"] = aal_data
     dataset = atlas.fetch_atlas_aal(data_dir=str(tmp_path), verbose=0)
     assert isinstance(dataset.maps, str)
     assert isinstance(dataset.labels, list)
     assert isinstance(dataset.indices, list)
-    assert len(tst.mock_url_request.urls) == 1
+    assert request_mocker.url_count == 1
 
     with pytest.raises(ValueError,
                        match='The version of AAL requested "FLS33"'
@@ -434,12 +428,12 @@ def test_fetch_atlas_basc_multiscale_2015(tmp_path, request_mocker):
                                                data_dir=str(tmp_path),
                                                verbose=0)
 
-    assert len(tst.mock_url_request.urls) == 2
+    assert request_mocker.url_count == 2
     assert data_sym.description != ''
     assert data_asym.description != ''
 
 
-def test_fetch_coords_dosenbach_2010():
+def test_fetch_coords_dosenbach_2010(request_mocker):
     bunch = atlas.fetch_coords_dosenbach_2010()
     assert len(bunch.rois) == 160
     assert len(bunch.labels) == 160
@@ -461,7 +455,7 @@ def test_fetch_atlas_allen_2011(tmp_path, request_mocker):
                  "RSN_HC_unthresholded_tmaps.nii.gz",
                  "rest_hcp_agg__component_ica_.nii.gz"]
 
-    assert len(tst.mock_url_request.urls) == 1
+    assert request_mocker.url_count == 1
     for key, fn in zip(keys, filenames):
         assert bunch[key] == str(tmp_path / 'allen_rsn_2011'
                                  / 'allen_rsn_2011' / fn)
@@ -499,18 +493,11 @@ def _get_small_fake_talairach():
     img = nibabel.Nifti1Image(
         np.arange(243).reshape((3, 9, 9)),
         np.eye(4), nibabel.Nifti1Header(extensions=extensions))
-    return img, all_labels
-
-
-def _mock_talairach_fetch_files(data_dir, *args, **kwargs):
-    img, all_labels = _get_small_fake_talairach()
-    file_name = os.path.join(data_dir, 'talairach.nii')
-    img.to_filename(file_name)
-    return [file_name]
+    return serialize_niimg(img, gzipped=False)
 
 
 def test_fetch_atlas_talairach(tmp_path, request_mocker):
-    atlas._fetch_files = _mock_talairach_fetch_files
+    request_mocker.url_mapping["*talairach.nii"] = _get_small_fake_talairach()
     level_values = np.ones((81, 3)) * [0, 1, 2]
     talairach = atlas.fetch_atlas_talairach('hemisphere',
                                             data_dir=str(tmp_path))
@@ -523,7 +510,15 @@ def test_fetch_atlas_talairach(tmp_path, request_mocker):
     pytest.raises(ValueError, atlas.fetch_atlas_talairach, 'bad_level')
 
 
-def test_fetch_atlas_pauli_2017(tmp_path):
+def test_fetch_atlas_pauli_2017(tmp_path, request_mocker):
+    labels = pd.DataFrame(
+        {"label": list(map("label_{}".format, range(16)))}).to_csv(
+            sep="\t", header=False)
+    det_atlas = data_gen.generate_labeled_regions((7, 6, 5), 16)
+    prob_atlas, _ = data_gen.generate_maps((7, 6, 5), 16)
+    request_mocker.url_mapping["*osf.io/6qrcb/*"] = labels
+    request_mocker.url_mapping["*osf.io/5mqfx/*"] = det_atlas
+    request_mocker.url_mapping["*osf.io/w8zq2/*"] = prob_atlas
     data_dir = str(tmp_path / 'pauli_2017')
 
     data = atlas.fetch_atlas_pauli_2017('det', data_dir)
@@ -539,7 +534,31 @@ def test_fetch_atlas_pauli_2017(tmp_path):
         atlas.fetch_atlas_pauli_2017('junk for testing', data_dir)
 
 
-def test_fetch_atlas_schaefer_2018(tmp_path):
+def _schaefer_labels(match, request):
+    info = match.groupdict()
+    label_names = ["{}Networks".format(info["network"])] * int(info["n_rois"])
+    labels = pd.DataFrame({"label": label_names})
+    return labels.to_csv(sep="\t", header=False).encode("utf-8")
+
+
+def _schaefer_img(match, request):
+    info = match.groupdict()
+    shape = (15, 14, 13)
+    affine = np.eye(4) * float(info["res"])
+    affine[3, 3] = 1.
+    img = data_gen.generate_labeled_regions(
+        shape, int(info["n_rois"]), affine=affine)
+    return serialize_niimg(img)
+
+
+def test_fetch_atlas_schaefer_2018(tmp_path, request_mocker):
+    labels_pattern = re.compile(
+        r".*2018_(?P<n_rois>\d+)Parcels_(?P<network>\d+)Networks_order.txt")
+    img_pattern = re.compile(
+        r".*_(?P<n_rois>\d+)Parcels_(?P<network>\d+)"
+        r"Networks_order_FSLMNI152_(?P<res>\d)mm.nii.gz")
+    request_mocker.url_mapping[labels_pattern] = _schaefer_labels
+    request_mocker.url_mapping[img_pattern] = _schaefer_img
     valid_n_rois = list(range(100, 1100, 100))
     valid_yeo_networks = [7, 17]
     valid_resolution_mm = [1, 2]

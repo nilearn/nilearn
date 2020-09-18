@@ -1,7 +1,9 @@
 import warnings
 from io import BytesIO
+import base64
 
 import numpy as np
+from matplotlib import pyplot as plt
 import pytest
 
 from nibabel import Nifti1Image
@@ -104,10 +106,9 @@ def test_save_sprite():
     """
 
     # Generate a simulated volume with a square inside
-    data = np.zeros([2, 1, 1])
-    data[0, 0, 0] = 1
-    mask = data > 0
-
+    data = np.random.RandomState(0).uniform(size=140).reshape(7, 5, 4)
+    mask = np.zeros((7, 5, 4), dtype=int)
+    mask[1:-1, 1:-1, 1:-1] = 1
     # Save the sprite using BytesIO
     sprite_io = BytesIO()
     html_stat_map._save_sprite(data, sprite_io, vmin=0, vmax=1,
@@ -116,25 +117,35 @@ def test_save_sprite():
     # Load the sprite back in base64
     sprite_base64 = html_stat_map._bytesIO_to_base64(sprite_io)
 
-    # Check the sprite is correct
-    assert sprite_base64.startswith('iVBORw0KG')
-    assert sprite_base64.endswith('ABJRU5ErkJggg==')
+    decoded_io = BytesIO()
+    decoded_io.write(base64.b64decode(sprite_base64))
+    decoded_io.seek(0)
+    img = plt.imread(decoded_io, format="png")
+    correct_img = np.ma.array(html_stat_map._data_to_sprite(data),
+                              mask=html_stat_map._data_to_sprite(mask))
+    correct_img = plt.Normalize(0, 1)(correct_img)
+    cmapped = plt.get_cmap("Greys")(correct_img)
+    assert np.allclose(img, cmapped, atol=.1)
 
 
-def test_save_cmap():
+@pytest.mark.parametrize("cmap", ["tab10", "cold_hot"])
+@pytest.mark.parametrize("n_colors", [7, 20])
+def test_save_cmap(cmap, n_colors):
     """This test covers _save_cmap as well as _bytesIO_to_base64
     """
-
     # Save the cmap using BytesIO
     cmap_io = BytesIO()
-    html_stat_map._save_cm(cmap_io, 'cold_hot', format='png', n_colors=2)
+    html_stat_map._save_cm(cmap_io, cmap, format='png', n_colors=n_colors)
 
     # Load the colormap back in base64
     cmap_base64 = html_stat_map._bytesIO_to_base64(cmap_io)
 
-    # Check the colormap is correct
-    assert cmap_base64.startswith('iVBORw0KG')
-    assert cmap_base64.endswith('ElFTkSuQmCC')
+    decoded_io = BytesIO()
+    decoded_io.write(base64.b64decode(cmap_base64))
+    decoded_io.seek(0)
+    img = plt.imread(decoded_io, format="png")
+    expected = plt.get_cmap(cmap)(np.linspace(0, 1, n_colors))
+    assert np.allclose(img, expected, atol=.1)
 
 
 def test_mask_stat_map():

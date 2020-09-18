@@ -52,6 +52,10 @@ REQUIRED_MODULE_METADATA = (
         'min_version': '0.18.0',
         'required_at_installation': True,
         'install_info': _NILEARN_INSTALL_MSG}),
+    ("requests", {
+        "min_version": "2",
+        "required_at_installation": False
+    })
 )
 
 OPTIONAL_MATPLOTLIB_MIN_VERSION = '2.0'
