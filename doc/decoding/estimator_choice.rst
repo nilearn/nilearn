@@ -145,7 +145,7 @@ counterparts for regression :
    * What is done to the data  **before** applying the estimator is
      often  **more important** than the choice of estimator. Typically,
      standardizing the data is important, smoothing can often be useful,
-     and confounding effects, such as session effect, must be removed.
+     and nuisance effects, such as session effect, must be removed.
    * Many more estimators are available in scikit-learn (see the
      `scikit-learn documentation on supervised learning
      <http://scikit-learn.org/stable/supervised_learning.html>`_). To learn to
@@ -195,11 +195,11 @@ By default, the values tried for `C` are [1,10,100].
   Full code example on parameter setting can be found at :
   :ref:`sphx_glr_auto_examples_02_decoding_plot_haxby_grid_search.py`
 
-Be careful about the **overfitting**. Giving a grid containing too many parameter
+Be careful about **overfitting**. Giving a grid containing too many parameter
 close to each other will be computationnaly costly to fit and may result in
-choosing a parameter that work best on your training set, but does not give
+choosing a parameter that works best on your training set, but does not give
 as good performances on your data. You can see below an example in which the
-curve showing the score as a function of the parameter have bumps and peaks
+curve showing the score as a function of the parameter has bumps and peaks
 due to this noise.
 
 .. figure:: ../auto_examples/02_decoding/images/sphx_glr_plot_haxby_grid_search_001.png
