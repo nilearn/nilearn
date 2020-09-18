@@ -23,7 +23,7 @@ HRF models
 
 Nilearn offers a few different HRF models including the commonly used double-gamma SPM model ('spm') and the model shape proposed by G. Glover ('glover'), both allowing the option of adding time and dispersion derivatives. The addition of these derivatives allows to better model any uncertainty in timing information. In addition, an FIR (finite impulse response, 'fir') model of the HRF is also available.
 
-In order to visualize the predicted regressor prior to plugging it into the linear model, use the function :func:`nilearn.stats.first_level_model.compute_regressor`, or explore the HRF plotting example: :ref:`sphx_glr_auto_examples_04_glm_first_level_models_plot_hrf.py`
+In order to visualize the predicted regressor prior to plugging it into the linear model, use the function :func:`nilearn.glm.first_level_model.compute_regressor`, or explore the HRF plotting example: :ref:`sphx_glr_auto_examples_04_glm_first_level_models_plot_hrf.py`
 
 
 Design matrix: event-based and time series-based
@@ -39,9 +39,9 @@ Refer to the examples below for usage under the different scenarios:
   * Using an OpenNEURO dataset: :ref:`sphx_glr_auto_examples_04_glm_first_level_models_plot_bids_features.py`
   * Uing nilearn fetcher functions: :ref:`sphx_glr_auto_examples_04_glm_first_level_models_plot_spm_multimodal_faces.py`
 
-Once the events are defined, the design matrix is created using the :func:`nilearn.stats.first_level_model.make_first_level_design_matrix` function.
+Once the events are defined, the design matrix is created using the :func:`nilearn.glm.first_level_model.make_first_level_design_matrix` function.
 
-  from nilearn.stats.first_level_model import make_first_level_design_matrix
+  from nilearn.glm.first_level_model import make_first_level_design_matrix
   design_matrices = make_first_level_design_matrix(frame_times, events,
                             drift_model='polynomial', drift_order=3)
 
@@ -71,9 +71,9 @@ The seed_time_series is then passed into the design matrix using the add_reg arg
 Fitting a first level model
 ===========================
 
-The :class:`nilearn.stats.first_level_model.FirstLevelModel` class provides the tools to fit the linear model to the fMRI data. The :func:`nilearn.stats.first_level_model.FirstLevelModel.fit()` function takes the fMRI data and design matrix as input and fits the GLM. Like other Nilearn functions, :func:`nilearn.stats.first_level_model.FirstLevelModel.fit()` accepts file names as input, but can also work with `NiftiImage objects <https://nipy.org/nibabel/nibabel_images.html>`_. More information about input formats is available `here <http://nilearn.github.io/manipulating_images/input_output.html#inputing-data-file-names-or-image-objects>`_ ::
+The :class:`nilearn.glm.first_level_model.FirstLevelModel` class provides the tools to fit the linear model to the fMRI data. The :func:`nilearn.glm.first_level_model.FirstLevelModel.fit()` function takes the fMRI data and design matrix as input and fits the GLM. Like other Nilearn functions, :func:`nilearn.glm.first_level_model.FirstLevelModel.fit()` accepts file names as input, but can also work with `NiftiImage objects <https://nipy.org/nibabel/nibabel_images.html>`_. More information about input formats is available `here <http://nilearn.github.io/manipulating_images/input_output.html#inputing-data-file-names-or-image-objects>`_ ::
 
-  from nilearn.stats.first_level_model import FirstLevelModel
+  from nilearn.glm.first_level_model import FirstLevelModel
   fmri_glm = FirstLevelModel()
   fmri_glm = fmri_glm.fit(subject_data, design_matrices=design_matrices)
 
@@ -81,7 +81,7 @@ The :class:`nilearn.stats.first_level_model.FirstLevelModel` class provides the 
 Computing contrasts
 -------------------
 
-To get more interesting results out of the GLM model, contrasts can be computed between regressors of interest. The :func:`nilearn.stats.first_level_model.FirstLevelModel.compute_contrast` function can be used for that. First, the contrasts of interest must be defined. In the spm_multimodal_fmri dataset referenced above, subjects are presented with 'normal' and 'scrambled' faces. The basic contrasts that can be constructed are the main effects of 'normal faces' and 'scrambled faces'::
+To get more interesting results out of the GLM model, contrasts can be computed between regressors of interest. The :func:`nilearn.glm.first_level_model.FirstLevelModel.compute_contrast` function can be used for that. First, the contrasts of interest must be defined. In the spm_multimodal_fmri dataset referenced above, subjects are presented with 'normal' and 'scrambled' faces. The basic contrasts that can be constructed are the main effects of 'normal faces' and 'scrambled faces'::
 
   contrast_matrix = np.eye(design_matrix.shape[1])
   basic_contrasts = dict([(column, contrast_matrix[i])
@@ -96,7 +96,7 @@ Once the basic_contrasts have been set up, we can construct more interesting con
                                       basic_contrasts['scrambled']))
   }
 
-.. note:: The compute_contrast function can work with symbolic arguments if the contrast involves conditions defined in the design matrix. E.g. the 'faces-scrambled' contrast can also be computed using the command `compute_contrast('faces-scrambled')`. See :func:`nilearn.stats.first_level_model.FirstLevelModel.compute_contrast` for more information.
+.. note:: The compute_contrast function can work with symbolic arguments if the contrast involves conditions defined in the design matrix. E.g. the 'faces-scrambled' contrast can also be computed using the command `compute_contrast('faces-scrambled')`. See :func:`nilearn.glm.first_level_model.FirstLevelModel.compute_contrast` for more information.
 
 And finally we can compute the contrasts using the compute_contrast function. Refer to :ref:`sphx_glr_auto_examples_04_glm_first_level_models_plot_spm_multimodal_faces.py` for the full example.
 
@@ -121,7 +121,7 @@ Additional example: :ref:`sphx_glr_auto_examples_04_glm_first_level_models_plot_
 Extracting predicted time series and residuals
 ==============================================
 
-One way to assess the quality of the fit is to compare the observed and predicted time series of voxels. Nilearn makes the predicted time series easily accessible via a parameter called `predicted` that is part of the :class:`nilearn.stats.first_level_model.FirstLevelModel`. This parameter is populated the when FistLevelModel is initialized with the `minimize_memory` flag set to `False`. ::
+One way to assess the quality of the fit is to compare the observed and predicted time series of voxels. Nilearn makes the predicted time series easily accessible via a parameter called `predicted` that is part of the :class:`nilearn.glm.first_level_model.FirstLevelModel`. This parameter is populated the when FistLevelModel is initialized with the `minimize_memory` flag set to `False`. ::
 
   observed_timeseries = masker.fit_transform(fmri_img)
   predicted_timeseries = masker.fit_transform(fmri_glm.predicted[0])
