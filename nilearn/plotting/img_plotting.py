@@ -35,6 +35,7 @@ from .._utils.param_validation import check_threshold
 from .._utils.ndimage import get_border_data
 from ..datasets import load_mni152_template
 from ..image import new_img_like, iter_img, get_data
+from nilearn.image.resampling import reorder_img
 from ..masking import compute_epi_mask, apply_mask
 from .displays import get_slicer, get_projector
 from . import cm
@@ -117,6 +118,7 @@ def _plot_img_with_bg(img, bg_img=None, cut_coords=None,
                       display_factory=get_slicer,
                       cbar_vmin=None, cbar_vmax=None,
                       brain_color=(0.5, 0.5, 0.5),
+                      decimals=False,
                       **kwargs):
     """ Internal function, please refer to the docstring of plot_img for
         parameters not listed below.
@@ -191,7 +193,7 @@ def _plot_img_with_bg(img, bg_img=None, cut_coords=None,
                             **kwargs)
 
     if annotate:
-        display.annotate()
+        display.annotate(decimals=decimals)
     if draw_cross:
         display.draw_cross()
     if title is not None and not title == '':
@@ -289,6 +291,9 @@ def plot_img(img, cut_coords=None, output_file=None, display_mode='ortho',
         annotate: boolean, optional
             If annotate is True, positions and left/right annotation
             are added to the plot.
+        decimals: integer, optional
+            Number of decimal places on slice position annotation. If False (default),
+            the slice position is integer without decimal point.
         draw_cross: boolean, optional
             If draw_cross is True, a cross is drawn on the plot to
             indicate the cut plosition.
@@ -351,6 +356,7 @@ class _MNI152Template(SpatialImage):
     def load(self):
         if self.data is None:
             anat_img = load_mni152_template()
+            anat_img = reorder_img(anat_img)
             data = get_data(anat_img)
             data = data.astype(np.float)
             anat_mask = ndimage.morphology.binary_fill_holes(data > 0)

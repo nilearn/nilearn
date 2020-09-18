@@ -48,10 +48,10 @@ print(data_dir)
 # since in this case a confounds.tsv file is available in the BIDS dataset.
 # To get the first level models we only have to specify the dataset directory
 # and the task_label as specified in the file names.
-from nilearn.stats.first_level_model import first_level_models_from_bids
+from nilearn.glm.first_level import first_level_from_bids
 task_label = 'languagelocalizer'
 models, models_run_imgs, models_events, models_confounds = \
-    first_level_models_from_bids(
+    first_level_from_bids(
         data_dir, task_label,
         img_filters=[('desc', 'preproc')])
 
@@ -117,7 +117,7 @@ plotting.show()
 # to the SecondLevelModel object for estimation. We can do this because
 # all subjects share a similar design matrix (same variables reflected in
 # column names).
-from nilearn.stats.second_level_model import SecondLevelModel
+from nilearn.glm.second_level import SecondLevelModel
 second_level_input = models
 
 #########################################################################

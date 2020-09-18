@@ -482,13 +482,13 @@ def clean(signals, sessions=None, detrend=True, standardize='zscore',
                          "but you provided ensure_finite={0}"
                          .format(ensure_finite))
 
+    signals = signals.copy()
     if not isinstance(signals, np.ndarray):
         signals = as_ndarray(signals)
 
     if ensure_finite:
         mask = np.logical_not(np.isfinite(signals))
         if mask.any():
-            signals = signals.copy()
             signals[mask] = 0
 
     # Read confounds

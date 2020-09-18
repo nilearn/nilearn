@@ -1,5 +1,4 @@
-"""
-Intro to GLM Analysis: a single-session, single-subject fMRI dataset
+"""Intro to GLM Analysis: a single-session, single-subject fMRI dataset
 =====================================================================
 
 In this tutorial, we use a General Linear Model (GLM) to compare the fMRI
@@ -21,14 +20,17 @@ The dataset comes from an experiment conducted at the FIL by Geraint Rees
 under the direction of Karl Friston. It is provided by FIL methods
 group which develops the SPM software.
 
-According to SPM documentation, 96 scans were acquired (repetition time TR=7s) in one session. The paradigm consisted of alternating periods of stimulation and rest, lasting 42s each (that is, for 6 scans). The sesssion started with a rest block.
-Auditory stimulation consisted of bi-syllabic words presented binaurally at a
-rate of 60 per minute. The functional data starts at scan number 4, that is the
-image file ``fM00223_004``.
+According to SPM documentation, 96 scans were acquired (repetition time TR=7s)
+in one session. The paradigm consisted of alternating periods of stimulation
+and rest, lasting 42s each (that is, for 6 scans). The session started with a
+rest block.  Auditory stimulation consisted of bi-syllabic words presented
+binaurally at a rate of 60 per minute. The functional data starts at scan
+number 4, that is the image file ``fM00223_004``.
 
-The whole brain BOLD/EPI images were acquired on a  2T Siemens
-MAGNETOM Vision system. Each scan consisted of 64 contiguous
-slices (64x64x64 3mm x 3mm x 3mm voxels). Acquisition of one scan took 6.05s, with the scan to scan repeat time (TR) set arbitrarily to 7s.
+The whole brain BOLD/EPI images were acquired on a 2T Siemens MAGNETOM Vision
+system. Each scan consisted of 64 contiguous slices (64x64x64 3mm x 3mm x 3mm
+voxels). Acquisition of one scan took 6.05s, with the scan to scan repeat time
+(TR) set arbitrarily to 7s.
 
 
 To run this example, you must launch IPython via ``ipython
@@ -83,7 +85,7 @@ events
 #
 # It is now time to create and estimate a ``FirstLevelModel`` object, that will generate the *design matrix* using the  information provided by the ``events`` object.
 
-from nilearn.stats.first_level_model import FirstLevelModel
+from nilearn.glm.first_level import FirstLevelModel
 
 ###############################################################################
 # Parameters of the first-level model
@@ -216,8 +218,8 @@ plt.show()
 # alpha) at a certain level, e.g. 0.001: this means that there is 0.1% chance
 # of declaring an inactive voxel, active.
 
-from nilearn.stats import map_threshold
-_, threshold = map_threshold(z_map, alpha=.001, height_control='fpr')
+from nilearn.glm import threshold_stats_img
+_, threshold = threshold_stats_img(z_map, alpha=.001, height_control='fpr')
 print('Uncorrected p<0.001 threshold: %.3f' % threshold)
 plot_stat_map(z_map, bg_img=mean_img, threshold=threshold,
               display_mode='z', cut_coords=3, black_bg=True,
@@ -231,7 +233,8 @@ plt.show()
 # i.e. the probability of making only one false detection, say at
 # 5%. For that we use the so-called Bonferroni correction.
 
-_, threshold = map_threshold(z_map, alpha=.05, height_control='bonferroni')
+_, threshold = threshold_stats_img(
+    z_map, alpha=.05, height_control='bonferroni')
 print('Bonferroni-corrected, p<0.05 threshold: %.3f' % threshold)
 plot_stat_map(z_map, bg_img=mean_img, threshold=threshold,
               display_mode='z', cut_coords=3, black_bg=True,
@@ -244,7 +247,7 @@ plt.show()
 # false discoveries among detections. This is called the False
 # discovery rate.
 
-_, threshold = map_threshold(z_map, alpha=.05, height_control='fdr')
+_, threshold = threshold_stats_img(z_map, alpha=.05, height_control='fdr')
 print('False Discovery rate = 0.05 threshold: %.3f' % threshold)
 plot_stat_map(z_map, bg_img=mean_img, threshold=threshold,
               display_mode='z', cut_coords=3, black_bg=True,
@@ -258,7 +261,7 @@ plt.show()
 # cluster_threshold argument. Here clusters smaller than 10 voxels
 # will be discarded.
 
-clean_map, threshold = map_threshold(
+clean_map, threshold = threshold_stats_img(
     z_map, alpha=.05, height_control='fdr', cluster_threshold=10)
 plot_stat_map(clean_map, bg_img=mean_img, threshold=threshold,
               display_mode='z', cut_coords=3, black_bg=True,
@@ -313,7 +316,7 @@ z_map = fmri_glm.compute_contrast(effects_of_interest,
 # Note that the statistic has been converted to a z-variable, which
 # makes it easier to represent it.
 
-clean_map, threshold = map_threshold(
+clean_map, threshold = threshold_stats_img(
     z_map, alpha=.05, height_control='fdr', cluster_threshold=10)
 plot_stat_map(clean_map, bg_img=mean_img, threshold=threshold,
               display_mode='z', cut_coords=3, black_bg=True,

@@ -6,9 +6,11 @@ Author: Martin Perez-Guevara, Elvis Dohmatob, 2017
 
 import numpy as np
 import matplotlib.pyplot as plt
+import matplotlib.patches as mpatches
+import pandas as pd
 
-from nilearn.stats.first_level_model import check_design_matrix
-from nilearn.stats.contrasts import expression_to_contrast_vector
+from nilearn.glm.first_level import check_design_matrix
+from nilearn.glm.contrasts import expression_to_contrast_vector
 
 
 def plot_design_matrix(design_matrix, rescale=True, ax=None, output_file=None):
@@ -25,7 +27,7 @@ def plot_design_matrix(design_matrix, rescale=True, ax=None, output_file=None):
     ax : axis handle, optional
         Handle to axis onto which we will draw design matrix.
 
-    output_file: string or None, optional,
+    output_file : string or None, optional,
         The name of an image file to export the plot to. Valid extensions
         are .png, .pdf, .svg. If output_file is not None, the plot
         is saved to a file, and the display is closed.
@@ -71,6 +73,94 @@ def plot_design_matrix(design_matrix, rescale=True, ax=None, output_file=None):
     return ax
 
 
+def plot_event(model_event, cmap=None, output_file=None, **fig_kwargs):
+    """Creates plot for event visualization.
+
+    Parameters
+    ----------
+    model_event : pandas DataFrame or list of pandas DataFrame
+        the `pandas.DataFrame` must have three columns
+        ``event_type`` with event name, ``onset`` and ``duration``.
+        The `pandas.DataFrame` can also be obtained from
+        :func:`nilearn.glm.first_level.first_level_from_bids`.
+
+    cmap : str or matplotlib.cmap, optional
+        the colormap used to label different events
+
+    output_file : string or None, optional,
+        The name of an image file to export the plot to. Valid extensions
+        are .png, .pdf, .svg. If output_file is not None, the plot
+        is saved to a file, and the display is closed.
+
+    **fig_kwargs : extra keyword arguments, optional
+        Extra arguments passed to matplotlib.pyplot.subplots
+
+    Returns
+    -------
+    Plot Figure object
+
+    """
+
+    if isinstance(model_event, pd.DataFrame):
+        model_event = [model_event]
+   
+    n_runs = len(model_event)
+    figure, ax = plt.subplots(1, 1, **fig_kwargs)
+
+    # input validation
+    if cmap is None:
+        cmap = plt.cm.tab20
+    elif isinstance(cmap, str):
+        cmap = plt.get_cmap(cmap)
+    else:
+        cmap = cmap
+
+    event_labels = pd.concat(event['trial_type'] for event in model_event)
+    event_labels = np.unique(event_labels)
+
+    cmap_dictionary = {label:idx for idx, label in enumerate(event_labels)}
+
+    if len(event_labels) > cmap.N:
+        plt.close()
+        raise ValueError("The number of event types is greater than "+ \
+            " colors in colormap (%d > %d). Use a different colormap." \
+            % (len(event_labels), cmap.N))
+
+    for idx_run, event_df in enumerate(model_event):
+        
+        for _, event in event_df.iterrows():
+            event_onset = event['onset']
+            event_end = event['onset'] + event['duration']
+            color = cmap.colors[cmap_dictionary[event['trial_type']]]
+         
+            ax.axvspan(event_onset, 
+                       event_end, 
+                       ymin=(idx_run + .25) / n_runs, 
+                       ymax=(idx_run + .75) / n_runs, 
+                       facecolor=color)
+
+    handles = []
+    for label, idx in cmap_dictionary.items():
+        patch = mpatches.Patch(color=cmap.colors[idx], label=label)
+        handles.append(patch)
+
+    _ = ax.legend(handles=handles, ncol=4)
+
+    ax.set_xlabel("Time (sec.)")
+    ax.set_ylabel("Runs")
+    ax.set_ylim(0, n_runs)
+    ax.set_yticks(np.arange(n_runs) + .5)
+    ax.set_yticklabels(np.arange(n_runs) + 1)
+    
+    plt.tight_layout()
+    if output_file is not None:
+        plt.savefig(output_file)
+        plt.close()
+        figure = None
+
+    return figure
+
+
 def plot_contrast_matrix(contrast_def, design_matrix, colorbar=False, ax=None,
                          output_file=None):
     """Creates plot for contrast definition.
@@ -89,15 +179,15 @@ def plot_contrast_matrix(contrast_def, design_matrix, colorbar=False, ax=None,
         combined with operators +- and combined with numbers with operators
         +-`*`/.
 
-    design_matrix: pandas DataFrame
+    design_matrix : pandas DataFrame
 
-    colorbar: Boolean, optional (default False)
+    colorbar : Boolean, optional (default False)
         Include a colorbar in the contrast matrix plot.
 
-    ax: matplotlib Axes object, optional (default None)
+    ax : matplotlib Axes object, optional (default None)
         Directory where plotted figures will be stored.
 
-    output_file: string or None, optional,
+    output_file : string or None, optional,
         The name of an image file to export the plot to. Valid extensions
         are .png, .pdf, .svg. If output_file is not None, the plot
         is saved to a file, and the display is closed.
