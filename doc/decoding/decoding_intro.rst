@@ -20,6 +20,11 @@ phenotype or diagnostic status from VBM (Voxel Based Morphometry) maps
 <sphx_glr_auto_examples_02_decoding_plot_oasis_vbm.py>`), or from FA maps
 to capture diffusion mapping.
 
+.. note::
+  This documentation only aims at explaining the necessary concepts and common
+  pitfalls of decoding analysis. For an introduction on the code to use please
+  refer to : :ref:`sphx_glr_auto_examples_plot_decoding_tutorial.py`
+
 
 .. contents:: **Contents**
     :local:
@@ -183,7 +188,6 @@ variety of problems.
 Decoding made easy
 -------------------
 
-
 Nilearn makes it easy to train a model with a principled pipeline using the
 :class:`nilearn.decoding.Decoder` object. Using the mask we defined before
 and an SVC estimator as we already introduced, we can create a pipeline in
@@ -258,7 +262,6 @@ To improve our first pipeline for the Haxby example, we can leave one entire
 session out. To do this, we can pass a `LeaveOneGroupOut` cross-validation
 object from scikit-learn to our `Decoder`. Fitting it with the information of
 groups=`session_labels` will use one session as test set.
-
 
 .. note::
   Full code example can be found at :
