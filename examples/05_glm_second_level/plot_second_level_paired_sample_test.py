@@ -68,7 +68,7 @@ plot_design_matrix(design_matrix)
 
 ############################################################################
 # We formally specify the analysis model and fit it.
-from nilearn.stats.second_level_model import SecondLevelModel
+from nilearn.glm.second_level_model import SecondLevelModel
 second_level_model = SecondLevelModel().fit(
     second_level_input, design_matrix=design_matrix)
 
