@@ -21,13 +21,13 @@ Fitting a second level model
 
 As with first level models, a design matrix needs to be defined before fitting a second level model.
 Again, similar to first level models, Nilearn provides a function
-:func:`nilearn.glm.second_level_model.make_second_level_design_matrix` for this purpose. Once
+:func:`nilearn.glm.second_level.make_second_level_design_matrix` for this purpose. Once
 the design matrix has been setup, it can be visualized using the same function as before,
 :func:`nilearn.reporting.plot_design_matrix`.
 
 To fit the second level model, the tools to use are within the class
-:class:`nilearn.glm.second_level_model.SecondLevelModel`. Specifically, the function that
-fits the model is :func:`nilearn.glm.second_level_model.SecondLevelModel.fit`.
+:class:`nilearn.glm.second_level.SecondLevelModel`. Specifically, the function that
+fits the model is :func:`nilearn.glm.second_level.SecondLevelModel.fit`.
 
 Some examples to get you going with second level models are provided below::
   * General design matrix setup: :ref:`sphx_glr_auto_examples_05_glm_second_level_plot_second_level_design_matrix.py`
@@ -55,17 +55,17 @@ important to address with statistical analysis of fMRI data. Nilearn provides pa
 to address this issue.
 
 Refer to the example :ref:`sphx_glr_auto_examples_05_glm_second_level_plot_thresholding.py` for a guide
-to applying FPR, FDR and FWER corrections. These corrections are applied using the :func:`nilearn.glm.map_threshold` function.
+to applying FPR, FDR and FWER corrections. These corrections are applied using the :func:`nilearn.glm.threshold_stats_img` function.
 
 Within an activated cluster, not all voxels represent true activation. To estimate true positives within a cluster,
 Nilearn provides the :func:`nilearn.glm.cluster_level_inference` function. An example with usage information is available
-here: :ref:`sphx_glr_auto_examples_05_glm_second_level_plot_proportion_activated_voxels.py`
+here: :ref:`sphx_glr_auto_examples_05_glm_second_level_plot_proportion_activated_voxels.py`.
 
 
 Voxel based morphometry
 =======================
 
-The :class:`nilearn.glm.second_level_model.SecondLevelModel` and its associated functions can also be used
+The :class:`nilearn.glm.second_level.SecondLevelModel` and its associated functions can also be used
 to perform voxel based morphometry. An example using the `OASIS <http://www.oasis-brains.org/>`_ dataset to
-identify the relationship between aging, sex and gray matter density is available
-ref:here <auto_examples/05_glm_second_level_models/plot_oasis.html#sphx-glr-auto-examples-05-glm-second-level-models-plot-oasis-py>.
+identify the relationship between aging, sex and gray matter density is available here
+:ref:`sphx_glr_auto_examples_05_glm_second_level_plot_oasis.py`.

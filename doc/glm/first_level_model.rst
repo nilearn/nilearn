@@ -27,7 +27,7 @@ dispersion derivatives. The addition of these derivatives allows to better model
 timing information. In addition, an FIR (finite impulse response, 'fir') model of the HRF is also available.
 
 In order to visualize the predicted regressor prior to plugging it into the linear model, use the
-function :func:`nilearn.glm.first_level_model.compute_regressor`, or explore the HRF plotting
+function :func:`nilearn.glm.first_level.compute_regressor`, or explore the HRF plotting
 example :ref:`sphx_glr_auto_examples_04_glm_first_level_plot_hrf.py`.
 
 
@@ -49,14 +49,13 @@ Refer to the examples below for usage under the different scenarios:
   * Uing nilearn fetcher functions: :ref:`sphx_glr_auto_examples_04_glm_first_level_plot_spm_multimodal_faces.py`
 
 Once the events are defined, the design matrix is created using the
-:func:`nilearn.glm.first_level_model.make_first_level_design_matrix` function::
+:func:`nilearn.glm.first_level.make_first_level_design_matrix` function::
 
-  from nilearn.glm.first_level_model import make_first_level_design_matrix
+  from nilearn.glm.first_level import make_first_level_design_matrix
   design_matrices = make_first_level_design_matrix(frame_times, events,
                             drift_model='polynomial', drift_order=3)
 
-.. note:: Additional predictors, like subject motion, can be specified using the add_reg parameter.
-Look at the function definition for available arguments.
+.. note:: Additional predictors, like subject motion, can be specified using the add_reg parameter. Look at the function definition for available arguments.
 
 A handy function called :func:`nilearn.reporting.plot_design_matrix()` can be used to visualize the design matrix.
 This is generally a good practice to follow before proceeding with the analysis::
@@ -64,8 +63,8 @@ This is generally a good practice to follow before proceeding with the analysis:
   from nilearn.reporting import plot_design_matrix
   plot_design_matrix(design_matrices)
 
-.. image:: ../auto_examples/04_glm_first_level_models/images/sphx_glr_plot_design_matrix_001.png
-   :target: ../auto_examples/04_glm_first_level_models/plot_design_matrix.html#sphx-glr-auto-examples-04-glm-first-level-models-plot-design-matrix-py
+.. image:: ../auto_examples/04_glm_first_level/images/sphx_glr_plot_design_matrix_001.png
+   :target: ../auto_examples/04_glm_first_level/plot_design_matrix.html#sphx-glr-auto-examples-04-glm-first-level-models-plot-design-matrix-py
 
 
 Time series-based
@@ -87,14 +86,14 @@ above. Code for this approach is in :ref:`sphx_glr_auto_examples_04_glm_first_le
 Fitting a first level model
 ===========================
 
-The :class:`nilearn.glm.first_level_model.FirstLevelModel` class provides the tools to fit the linear model to
-the fMRI data. The :func:`nilearn.glm.first_level_model.FirstLevelModel.fit()` function takes the fMRI data
+The :class:`nilearn.glm.first_level.FirstLevelModel` class provides the tools to fit the linear model to
+the fMRI data. The :func:`nilearn.glm.first_level.FirstLevelModel.fit()` function takes the fMRI data
 and design matrix as input and fits the GLM. Like other Nilearn functions,
-:func:`nilearn.glm.first_level_model.FirstLevelModel.fit()` accepts file names as input, but can also
+:func:`nilearn.glm.first_level.FirstLevelModel.fit()` accepts file names as input, but can also
 work with `NiftiImage objects <https://nipy.org/nibabel/nibabel_images.html>`_. More information about
 input formats is available `here <http://nilearn.github.io/manipulating_images/input_output.html#inputing-data-file-names-or-image-objects>`_ ::
 
-  from nilearn.glm.first_level_model import FirstLevelModel
+  from nilearn.glm.first_level import FirstLevelModel
   fmri_glm = FirstLevelModel()
   fmri_glm = fmri_glm.fit(subject_data, design_matrices=design_matrices)
 
@@ -103,7 +102,7 @@ Computing contrasts
 -------------------
 
 To get more interesting results out of the GLM model, contrasts can be computed between regressors of interest.
-The :func:`nilearn.glm.first_level_model.FirstLevelModel.compute_contrast` function can be used for that. First,
+The :func:`nilearn.glm.first_level.FirstLevelModel.compute_contrast` function can be used for that. First,
 the contrasts of interest must be defined. In the spm_multimodal_fmri dataset referenced above, subjects are
 presented with 'normal' and 'scrambled' faces. The basic contrasts that can be constructed are the main effects
 of 'normal faces' and 'scrambled faces'::
@@ -121,26 +120,23 @@ Once the basic_contrasts have been set up, we can construct more interesting con
                                       basic_contrasts['scrambled']))
   }
 
-.. note:: The compute_contrast function can work with symbolic arguments if the contrast involves conditions
-defined in the design matrix. E.g. the 'faces-scrambled' contrast can also be computed using the command
-'compute_contrast('faces-scrambled')'.
-See :func:`nilearn.glm.first_level_model.FirstLevelModel.compute_contrast` for more information.
+.. note:: The compute_contrast function can work with symbolic arguments if the contrast involves conditions defined in the design matrix. E.g. the 'faces-scrambled' contrast can also be computed using the command 'compute_contrast('faces-scrambled')'. See :func:`nilearn.glm.first_level.FirstLevelModel.compute_contrast` for more information.
 
 And finally we can compute the contrasts using the compute_contrast function.
 Refer to :ref:`sphx_glr_auto_examples_04_glm_first_level_plot_spm_multimodal_faces.py` for the full example.
 
 The activation maps from these 3 contrasts is presented below:
 
-.. image:: ../auto_examples/04_glm_first_level_models/images/sphx_glr_plot_spm_multimodal_faces_001.png
-     :target: ../auto_examples/04_glm_first_level_models/plot_spm_multimodal_faces.html
+.. image:: ../auto_examples/04_glm_first_level/images/sphx_glr_plot_spm_multimodal_faces_001.png
+     :target: ../auto_examples/04_glm_first_level/plot_spm_multimodal_faces.html
      :scale: 60
 
-.. image:: ../auto_examples/04_glm_first_level_models/images/sphx_glr_plot_spm_multimodal_faces_002.png
-    :target: ../auto_examples/04_glm_first_level_models/plot_spm_multimodal_faces.html
+.. image:: ../auto_examples/04_glm_first_level/images/sphx_glr_plot_spm_multimodal_faces_002.png
+    :target: ../auto_examples/04_glm_first_level/plot_spm_multimodal_faces.html
     :scale: 60
 
-.. image:: ../auto_examples/04_glm_first_level_models/images/sphx_glr_plot_spm_multimodal_faces_003.png
-     :target: ../auto_examples/04_glm_first_level_models/plot_spm_multimodal_faces.html
+.. image:: ../auto_examples/04_glm_first_level/images/sphx_glr_plot_spm_multimodal_faces_003.png
+     :target: ../auto_examples/04_glm_first_level/plot_spm_multimodal_faces.html
      :scale: 60
 
 
@@ -152,7 +148,7 @@ Extracting predicted time series and residuals
 
 One way to assess the quality of the fit is to compare the observed and predicted time series of voxels.
 Nilearn makes the predicted time series easily accessible via a parameter called `predicted` that is part
-of the :class:`nilearn.glm.first_level_model.FirstLevelModel`. This parameter is populated the when
+of the :class:`nilearn.glm.first_level.FirstLevelModel`. This parameter is populated the when
 FistLevelModel is initialized with the `minimize_memory` flag set to `False`. ::
 
   observed_timeseries = masker.fit_transform(fmri_img)
@@ -161,8 +157,8 @@ FistLevelModel is initialized with the `minimize_memory` flag set to `False`. ::
 Here, masker is an object of :class:`nilearn.input_data.NiftiSpheresMasker`. In the figure below,
 predicted (red) and observed (not red) timecourses of 6 voxels are shown.
 
-  .. image:: ../auto_examples/04_glm_first_level_models/images/sphx_glr_plot_predictions_residuals_002.png
-     :target: ../auto_examples/04_glm_first_level_models/plot_predictions_residuals.html
+  .. image:: ../auto_examples/04_glm_first_level/images/sphx_glr_plot_predictions_residuals_002.png
+     :target: ../auto_examples/04_glm_first_level/plot_predictions_residuals.html
 
 In addition to the predicted timecourses, this flag also yields the residuals of the GLM. The residuals are
 useful to calculate the F and R-squared statistic. For more information refer to
