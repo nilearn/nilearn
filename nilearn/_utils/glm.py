@@ -145,7 +145,11 @@ def z_score(pvalue):
     """ Return the z-score corresponding to a given p-value.
     """
     pvalue = np.minimum(np.maximum(pvalue, 1.e-300), 1. - 1.e-16)
-    return norm.isf(pvalue)
+    if np.any(pvalue > .5):
+        zscore = - norm.isf(1 - pvalue)
+    else:
+        zscore = norm.isf(pvalue)
+    return zscore
 
 
 def multiple_fast_inverse(a):
