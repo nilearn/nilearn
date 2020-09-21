@@ -76,7 +76,7 @@ for session in unique_sessions:
 # We generate a list of z-maps together with their session and condition index
 
 z_maps = []
-conditions = []
+conditions_label = []
 session_label = []
 
 # Instantiate the glm
@@ -90,7 +90,7 @@ glm = FirstLevelModel(t_r=TR,
 ##############################################################################
 # Run the glm on data from each session
 # -------------------------------------
-
+events[session].trial_type.unique()
 from nilearn.image import index_img
 for session in unique_sessions:
     # grab the fmri data for that particular session
@@ -103,7 +103,7 @@ for session in unique_sessions:
     conditions = events[session].trial_type.unique()
     for condition_ in conditions:
         z_maps.append(glm.compute_contrast(condition_))
-        conditions.append(condition_)
+        conditions_label.append(condition_)
         session_label.append(session)
 
 #########################################################################
@@ -153,7 +153,7 @@ from nilearn.decoding import Decoder
 from sklearn.model_selection import LeaveOneGroupOut
 decoder = Decoder(estimator='svc', mask=haxby_dataset.mask, standardize=False,
                   screening_percentile=5, cv=LeaveOneGroupOut())
-decoder.fit(z_maps, conditions, groups=session_label)
+decoder.fit(z_maps, conditions_label, groups=session_label)
 
 # Return the corresponding mean prediction accuracy compared to chance
 
