@@ -117,14 +117,15 @@ cv_scores = cross_val_score(svc, fmri_masked, conditions, cv=cv,
 # ...................................
 from sklearn.dummy import DummyClassifier
 null_cv_scores = cross_val_score(
-    DummyClassifier(), fmri_masked, conditions, cv=cv)
+    DummyClassifier(), fmri_masked, conditions, cv=cv, groups=session_label)
 print("Dummy accuracy: {:.3f}".format(null_cv_scores))
 
 ###########################################################################
 # Permutation test
 # ...................................
 from sklearn.model_selection import permutation_test_score
-null_cv_scores = permutation_test_score(svc, fmri_masked, conditions, cv=cv)
+null_cv_scores = permutation_test_score(
+    svc, fmri_masked, conditions, cv=cv, groups=session_label)
 print("Permutation test score: {:.3f}".format(null_cv_scores))
 
 
@@ -179,7 +180,7 @@ anova_lda = Pipeline([('anova', feature_selection), ('LDA', lda)])
 # Recompute the cross-validation score:
 import numpy as np
 cv_scores = cross_val_score(anova_lda, fmri_masked,
-                            conditions, cv=cv, verbose=1)
+                            conditions, cv=cv, verbose=1, groups=session_label)
 classification_accuracy = np.mean(cv_scores)
 n_conditions = len(set(conditions))  # number of target classes
 print("Classification accuracy: %.4f / Chance Level: %.4f" %
