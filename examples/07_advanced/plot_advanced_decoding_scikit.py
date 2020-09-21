@@ -40,7 +40,9 @@ fmri_filename = haxby_dataset.func[0]
 # Loading the behavioral labels
 import pandas as pd
 behavioral = pd.read_csv(haxby_dataset.session_target[0], delimiter=' ')
+behavioral
 
+###########################################################################
 # We keep only a images from a pair of conditions(cats versus faces).
 from nilearn.image import index_img
 conditions = behavioral['labels']
