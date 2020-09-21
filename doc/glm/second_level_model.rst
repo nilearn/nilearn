@@ -41,7 +41,7 @@ Thresholding statistical maps
 
 Nilearn's statistical plotting functions provide simple thresholding functionality. For instance, functions
 like :func:`nilearn.plotting.plot_stat_map` or :func:`nilearn.plotting.plot_glass_brain` have an argument
-called `threshold` that only show voxels with a value that is over the threshold provided.
+called `threshold` that, when set, will only show voxels with a value that is over the threshold provided.
 
 Thresholding examples are available here: :ref:`sphx_glr_auto_examples_05_glm_second_level_plot_second_level_one_sample_test.py`
 and :ref:`sphx_glr_auto_examples_05_glm_second_level_plot_thresholding.py`.

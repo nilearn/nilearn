@@ -105,22 +105,10 @@ To get more interesting results out of the GLM model, contrasts can be computed 
 The :func:`nilearn.glm.first_level.FirstLevelModel.compute_contrast` function can be used for that. First,
 the contrasts of interest must be defined. In the spm_multimodal_fmri dataset referenced above, subjects are
 presented with 'normal' and 'scrambled' faces. The basic contrasts that can be constructed are the main effects
-of 'normal faces' and 'scrambled faces'::
+of 'normal faces' and 'scrambled faces'. Once the basic_contrasts have been set up, we can construct more
+interesting contrasts like 'normal faces - scrambled faces'.
 
-  contrast_matrix = np.eye(design_matrix.shape[1])
-  basic_contrasts = dict([(column, contrast_matrix[i])
-                for i, column in enumerate(design_matrix.columns)])
-
-Once the basic_contrasts have been set up, we can construct more interesting contrasts like 'normal faces - scrambled faces'::
-
-  contrasts = {
-    'faces-scrambled': basic_contrasts['faces'] - basic_contrasts['scrambled'],
-    'scrambled-faces': -basic_contrasts['faces'] + basic_contrasts['scrambled'],
-    'effects_of_interest': np.vstack((basic_contrasts['faces'],
-                                      basic_contrasts['scrambled']))
-  }
-
-.. note:: The compute_contrast function can work with symbolic arguments if the contrast involves conditions defined in the design matrix. E.g. the 'faces-scrambled' contrast can also be computed using the command 'compute_contrast('faces-scrambled')'. See :func:`nilearn.glm.first_level.FirstLevelModel.compute_contrast` for more information.
+.. note:: The compute_contrast function can work with both numeric and symbolic arguments. See :func:`nilearn.glm.first_level.FirstLevelModel.compute_contrast` for more information.
 
 And finally we can compute the contrasts using the compute_contrast function.
 Refer to :ref:`sphx_glr_auto_examples_04_glm_first_level_plot_spm_multimodal_faces.py` for the full example.
@@ -148,7 +136,7 @@ Extracting predicted time series and residuals
 
 One way to assess the quality of the fit is to compare the observed and predicted time series of voxels.
 Nilearn makes the predicted time series easily accessible via a parameter called `predicted` that is part
-of the :class:`nilearn.glm.first_level.FirstLevelModel`. This parameter is populated the when
+of the :class:`nilearn.glm.first_level.FirstLevelModel`. This parameter is populated when
 FistLevelModel is initialized with the `minimize_memory` flag set to `False`. ::
 
   observed_timeseries = masker.fit_transform(fmri_img)
@@ -169,9 +157,9 @@ useful to calculate the F and R-squared statistic. For more information refer to
 Surface-based analysis
 ======================
 
-fMRI analyses are also performed on the cortical surface instead of a volumetric brain. Nilearn
-provides functions to map subject brains on to a cortical mesh, either a standard surface as provided
-by Freesurfer, for e.g., or a user-defined one. Freesurfer meshes can be accessed using
+fMRI analyses can also be performed on the cortical surface instead of a volumetric brain. Nilearn
+provides functions to map subject brains on to a cortical mesh, which can be either a standard surface as
+provided by, for e.g. Freesurfer, or a user-defined one. Freesurfer meshes can be accessed using
 :func:`nilearn.datasets.fetch_surf_fsaverage`, while the function :func:`nilearn.surface.vol_to_surf`
 does the projection from volumetric to surface space. Surface plotting functions like :func:`nilearn.plotting.plot_surf`
 and :func:`nilearn.plotting.plot_surf_stat_map` allow for easy visualization of surface-based data.
