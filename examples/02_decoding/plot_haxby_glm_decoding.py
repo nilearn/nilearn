@@ -157,7 +157,7 @@ decoder.fit(z_maps, conditions_label, groups=session_label)
 
 # Return the corresponding mean prediction accuracy compared to chance
 
-classification_accuracy = decoder.cv_scores_.mean()
+classification_accuracy = np.mean(list(decoder.cv_scores_.values()))
 chance_level = 1. / len(np.unique(conditions))
 print('Classification accuracy: {:.4f} / Chance level: {}'.format(
     classification_accuracy, chance_level))
