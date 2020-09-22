@@ -68,10 +68,12 @@ y_pred = decoder.predict(func_filename)
 #############################################################################
 # Obtain prediction scores via cross validation
 # -----------------------------------------------
-# Define the cross-validation scheme used for validation.  Here we use a
+# Define the cross-validation scheme used for validation. Here we use a
 # LeaveOneGroupOut cross-validation on the session group which corresponds to a
 # leave a session out scheme, then pass the cross-validator object to the cv
-# parameter of decoder.leave-one-session-out
+# parameter of decoder.leave-one-session-out For more details please take a
+# look at:
+# <https://nilearn.github.io/auto_examples/plot_decoding_tutorial.html#measuring-prediction-scores-using-cross-validation>
 from sklearn.model_selection import LeaveOneGroupOut
 cv = LeaveOneGroupOut()
 

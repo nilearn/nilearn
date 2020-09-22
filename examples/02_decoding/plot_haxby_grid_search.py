@@ -1,7 +1,6 @@
-"""
-Setting a parameter by cross-validation
+"""Setting a parameter by cross-validation
 =======================================================
-TODO: edit this
+
 Here we set the number of features selected in an Anova-SVC approach to
 maximize the cross-validation score.
 
@@ -21,15 +20,15 @@ cross-validation loop used to judge the prediction performance: the
 parameters are set separately on each fold, never using the data used to
 measure performance.
 
-In scikit-learn, this can be done using the GridSearchCV object, that
-will automatically select the best parameters of an estimator from a
-grid of parameter values.
+For decoding task, in nilearn, this can be done using the
+:class:`nilearn.decoding.Decoder` object, that will automatically select
+the best parameters of an estimator from a grid of parameter values.
 
-One difficulty here is that we are working with a composite estimator: a
-pipeline of feature selection followed by SVC. Thus to give the name
-of the parameter that we want to tune we need to give the name of the
-step in the pipeline, followed by the name of the parameter, with '__' as
-a separator.
+One difficulty is that the Decoder object is a composite estimator: a
+pipeline of feature selection followed by Support Vector Machine. Tuning
+the SVM's parameters is already done automatically inside the Decoder, but
+performing cross-validation for the feature selection must be done
+manually.
 
 """
 
@@ -71,26 +70,40 @@ session = labels['chunks'][condition_mask]
 # relevant features with ANOVA -- a classical univariate feature selection
 # based on F-test.
 from nilearn.decoding import Decoder
-# Here screening_percentile is set to 1.25 percent, meaning around 500
+# Here screening_percentile is set to 2 percent, meaning around 800
 # features will be selected with ANOVA.
-decoder = Decoder(estimator='svc', mask=mask_filename, smoothing_fwhm=4,
-                  standardize=True, screening_percentile=1.25)
+decoder = Decoder(estimator='svc', cv=5, mask=mask_filename,
+                  smoothing_fwhm=4, standardize=True,
+                  screening_percentile=2)
 
 ###########################################################################
 # Fit the Decoder and predict the reponses
 # -------------------------------------------------
+# As a complete pipeline by itself, decoder will perform cross-validation
+# for the estimator, in this case Support Vector Machine. We can output the
+# best parameters selected for each cross-validation fold. See
+# https://scikit-learn.org/stable/modules/cross_validation.html for an
+# excellent explanation of how cross-validation works.
+#
+# First we fit the Decoder
 decoder.fit(fmri_niimgs, y)
+for i, (param, cv_score) in enumerate(zip(decoder.cv_params_['shoe']['C'],
+                                          decoder.cv_scores_['shoe'])):
+    
+    print("Fold %d | Best SVM parameter: %.1f with score: %.3f" % (i + 1,
+          param, cv_score))
+# Output the prediction with Decoder
 y_pred = decoder.predict(fmri_niimgs)
 
 ###########################################################################
 # Compute prediction scores with different values of screening percentile
 # -----------------------------------------------------------------------
 import numpy as np
-sp_range = [1.25, 2.5, 3.75, 7.5, 12.5, 25.0]
+screening_percentile_range = [2, 4, 8, 16, 32, 64]
 cv_scores = []
 val_scores = []
 
-for sp in sp_range:
+for sp in screening_percentile_range:
     decoder = Decoder(estimator='svc', mask=mask_filename,
                       smoothing_fwhm=4, cv=3, standardize=True,
                       screening_percentile=sp)
@@ -118,7 +131,7 @@ for train, test in cv.split(session):
     y_test = np.array(y)[test]
     val_scores = []
     
-    for sp in sp_range:
+    for sp in screening_percentile_range:
         decoder = Decoder(estimator='svc', mask=mask_filename,
                           smoothing_fwhm=4, cv=3, standardize=True,
                           screening_percentile=sp)
@@ -139,7 +152,8 @@ from nilearn.plotting import show
 plt.figure(figsize=(6, 4))
 plt.plot(cv_scores, label='Cross validation scores')
 plt.plot(val_scores, label='Left-out validation data scores')
-plt.xticks(np.arange(len(sp_range)), sp_range)
+plt.xticks(np.arange(len(screening_percentile_range)),
+           screening_percentile_range)
 plt.axis('tight')
 plt.xlabel('ANOVA screening percentile')
 
