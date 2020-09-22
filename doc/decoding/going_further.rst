@@ -8,6 +8,7 @@ This section gives pointers to design your own decoding pipelines with
 scikit-learn. This builds on the :ref:`didactic introduction to decoding <decoding_intro>`.
 
 .. note::
+
   This documentation gives links and additional definitions needed to work
   correctly with scikit-learn. For a full code example, please check out: :ref:`sphx_glr_auto_examples_07_advanced_plot_advanced_decoding_scikit.py`
 
@@ -42,27 +43,33 @@ only the voxels inside the mask of interest, and transform 4D input fMRI
 data to 2D arrays (shape (n_timepoints, n_voxels)) that estimators can work on.
 
 .. note::
-  This example shows how to use masking: :ref:`sphx_glr_auto_examples_04_manipulating_images_/plot_nifti_simple.py`
+
+  This example shows how to use masking:
+    :ref:`sphx_glr_auto_examples_04_manipulating_images_/plot_nifti_simple.py`
 
 Then use a specific function :func:`sklearn.model_selection.cross_val_score`
 that computes for you the score of your model for the different folds
 of cross-validation.
 
 You can change many parameters of the cross_validation here, for example:
+
 * use a different cross-validation scheme, for example LeaveOneGroupOut()
+
 * speed up the computation by using n_jobs=-1, which will spread the
-  computation equally across all processors.
+   computation equally across all processors.
+
 * use a different scoring function, as a keyword or imported from scikit-learn
-such as `scoring='roc_auc'`
+   such as `scoring='roc_auc'`
 
 .. seealso::
 
   * If you need more than only than cross-validation scores (i.e the predictions
-    or models for each fold) or if you want to learn more on various
-    cross-validation schemes, see:
-    <https://scikit-learn.org/stable/modules/cross_validation.html>`_
+     or models for each fold) or if you want to learn more on various
+     cross-validation schemes, see:
+     <https://scikit-learn.org/stable/modules/cross_validation.html>`_
+
   * `how to evaluate a model using scikit-learn
-    <http://scikit-learn.org/stable/modules/model_evaluation.html#common-cases-predefined-values>`_
+     <http://scikit-learn.org/stable/modules/model_evaluation.html#common-cases-predefined-values>`_
 
 
 Measuring the chance level
@@ -127,12 +134,12 @@ cross-validation scheme to it. Scikit-learn usually takes care of the rest for u
 
 .. seealso::
 
-  * The corresponding full code example to practice with pipelines    :ref:`sphx_glr_auto_examples_07_advanced_plot_advanced_decoding_scikit.py`
+  * The corresponding full code example to practice with pipelines       :ref:`sphx_glr_auto_examples_07_advanced_plot_advanced_decoding_scikit.py`
 
   * The `scikit-learn documentation <http://scikit-learn.org>`_
-    with detailed explanations on a large variety of estimators and
-    machine learning techniques. To become better at decoding, you need
-    to study it.
+     with detailed explanations on a large variety of estimators and
+     machine learning techniques. To become better at decoding, you need
+     to study it.
 
 
 Setting estimator parameters
@@ -155,5 +162,5 @@ CPUs.
 
 .. seealso::
 
-  * `The scikit-learn documentation on choosing estimators and their parameters
-    selection <https://scikit-learn.org/stable/tutorial/statistical_inference/model_selection.html>`_
+  `The scikit-learn documentation on choosing estimators and their parameters
+     selection <https://scikit-learn.org/stable/tutorial/statistical_inference/model_selection.html>`_

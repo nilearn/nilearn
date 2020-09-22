@@ -118,34 +118,46 @@ For classification, :class:`nilearn.decoding.Decoder` let you choose them
 through the `estimator` parameter:
 
 * 'svc' (same as 'svc_l2') : the `support vector classifier <https://scikit-learn.org/stable/modules/svm.html>`_
+
 * 'svc_l1' : SVC using L1 penalization that yields a sparse solution : only a
-subset of feature weights is different from zero and contribute to prediction.
-* 'logistic' (or 'logistic_l2') : the `logistic regression <https://scikit-learn.org/stable/modules/linear_model.html#logistic-regression>`_ with l2 penalty
+   subset of feature weights is different from zero and contribute to prediction.
+
+* 'logistic' (or 'logistic_l2') : the `logistic regression
+   <https://scikit-learn.org/stable/modules/    linear_model.html#logistic-regression>`_ with l2 penalty
+
 * 'logistic_l1' :  the logistic regression with l1 penalty (**sparse model**)
+
 * 'ridge_classifier' a `Ridge Regression variant
-<https://scikit-learn.org/stable/modules/linear_model.html#ridge-regression-and-classification>`_
+   <https://scikit-learn.org/stable/modules/linear_model.html#ridge-regression-and-classification>`_
 
 
 In :class:`nilearn.decoding.DecoderRegressor` you can use some of these objects
 counterparts for regression :
 
 * 'svr'
+
 * 'ridge_regressor' (same as 'ridge')
 
 .. note::
+
    * **There is no free lunch**: no estimator will work uniformely better
      in every situation.
+
    * The SVC-l2 is fairly insensitive to the choice of the regularization
      parameter which makes it a good and cheap first approach to most problems
+
    * The ridge is fast to fit and cross-validate, but it will not work well on
      ill-separated classes, and, most importantly give ugly weight maps
+
    * Whenever a model uses sparsity (have l1 in its name here) the parameter
      selection (amount of sparsity used) can change result a lot and is difficult
      to tune well.
+
    * What is done to the data  **before** applying the estimator is
      often  **more important** than the choice of estimator. Typically,
      standardizing the data is important, smoothing can often be useful,
      and nuisance effects, such as session effect, must be removed.
+
    * Many more estimators are available in scikit-learn (see the
      `scikit-learn documentation on supervised learning
      <http://scikit-learn.org/stable/supervised_learning.html>`_). To learn to
@@ -209,7 +221,7 @@ due to this noise.
 
 .. seealso::
 
-  * `The scikit-learn documentation on parameter selection
+  `The scikit-learn documentation on parameter selection
     <http://scikit-learn.org/stable/modules/grid_search.html>`_
 
 Bagging several models
@@ -228,6 +240,7 @@ the best model coefficients are retained. The average of all those linear
 models is then used to make predictions.
 
 .. seealso::
+
   * The `scikit-learn documentation <http://scikit-learn.org>`_
     has very detailed explanations on a large variety of estimators and
     machine learning techniques. To become better at decoding, you need

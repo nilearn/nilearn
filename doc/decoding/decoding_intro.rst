@@ -155,11 +155,12 @@ interest to you. Or in other words to predict a condition label **y** given a
 set **X** of imaging data.
 
 This is always done in at least two steps:
+
 * first a `fit` during which we "learn" the parameters of the model that make
-good predictions. This is done on some "training data" or "training set".
+  good predictions. This is done on some "training data" or "training set".
 * then a `predict` step where the "fitted" model is used to make prediction
-on new data. Here, we just have to give the new set of images (as the target
-should be unknown). These are called "test data" or "test set".
+  on new data. Here, we just have to give the new set of images (as the target
+  should be unknown). These are called "test data" or "test set".
 
 All objects used to make prediction in Nilearn will at least have functions for
 these steps : a `fit` function and a `predict` function.
@@ -249,10 +250,13 @@ to enable a good measure the prediction error (at least 10-20% of the data as a
 rule of thumb).
 
 As a general advice :
+
 * To train a decoder on one subject data, try to leave at least one session
   out to have an independent test.
+
 * To train a decoder across different subject data, leaving some subjects data
   out is often a good option.
+
 * In any case leaving only one image as test set (leave-one-out) is often
   the worst option (see Varoquaux et al, *Assessing and tuning brain decoders:
   cross-validation, caveats, and guidelines*, Neuroimage 2017).
@@ -271,8 +275,8 @@ groups=`session_labels` will use one session as test set.
 Choice of the prediction accuracy measure
 .........................................
 
-Once you have a prediction about new data and its real label (the "ground truth")
-there are different ways to measure a "score" that summarizes its performance.
+Once you have a prediction about new data and its real label (the *ground truth*)
+there are different ways to measure a *score* that summarizes its performance.
 
 The default metric used for measuring errors is the accuracy score, i.e.
 the number of total errors. It is not always a sensible metric,
