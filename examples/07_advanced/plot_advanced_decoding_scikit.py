@@ -85,6 +85,7 @@ fmri_masked = masker.fit_transform(fmri_niimgs)
 # for you the score for the different folds of cross-validation.
 from sklearn.model_selection import cross_val_score
 cv_scores = cross_val_score(svc, fmri_masked, conditions, cv=5)
+
 # Here `cv=5` stipulates a 5-fold cross-validation
 
 ###########################################################################
@@ -103,7 +104,7 @@ from sklearn.model_selection import LeaveOneGroupOut
 cv = LeaveOneGroupOut()
 cv_scores = cross_val_score(svc, fmri_masked, conditions, cv=cv,
                             scoring='roc_auc', groups=session_label, n_jobs=-1)
-
+print("SVC accuracy: {:.3f}".format(cv_scores.mean()))
 ###########################################################################
 # Measuring the chance level
 # ------------------------------------
@@ -118,15 +119,16 @@ cv_scores = cross_val_score(svc, fmri_masked, conditions, cv=cv,
 from sklearn.dummy import DummyClassifier
 null_cv_scores = cross_val_score(
     DummyClassifier(), fmri_masked, conditions, cv=cv, groups=session_label)
-print("Dummy accuracy: {:.3f}".format(null_cv_scores))
+
+print("Dummy accuracy: {:.3f}".format(null_cv_scores.mean()))
 
 ###########################################################################
 # Permutation test
 # ...................................
 from sklearn.model_selection import permutation_test_score
 null_cv_scores = permutation_test_score(
-    svc, fmri_masked, conditions, cv=cv, groups=session_label)
-print("Permutation test score: {:.3f}".format(null_cv_scores))
+    svc, fmri_masked, conditions, cv=cv, groups=session_label)[1]
+print("Permutation test score: {:.3f}".format(null_cv_scores.mean()))
 
 
 ###########################################################################
@@ -139,25 +141,41 @@ print("Permutation test score: {:.3f}".format(null_cv_scores))
 # based feature selection (a.k.a. `Anova <https://en.wikipedia.org/wiki/Analysis_of_variance#The_F-test>`_),
 from sklearn.pipeline import Pipeline
 from sklearn.feature_selection import SelectPercentile, f_classif
-feature_selection = SelectPercentile(f_classif, percentile=5)
-anova_svc = Pipeline([('anova', feature_selection), ('svc', svc)])
+from sklearn.model_selection import cross_validate
+from sklearn.svm import LinearSVC
+feature_selection = SelectPercentile(f_classif, percentile=10)
+anova_svc = Pipeline([('anova', feature_selection), ('svc', LinearSVC())])
 # We can use our ``anova_svc`` object exactly as we were using our ``svc``
 # object previously.
-cv_scores = cross_val_score(anova_svc, fmri_masked, conditions,
-                            cv=cv, groups=session_label)
-print(cv_scores.mean())
+# As we want to investigate our model, we use sklearn `cross_validate` function
+# with `return_estimator = True` instead of cross_val_score, to save the estimator
+
+fitted_pipeline = cross_validate(anova_svc, fmri_masked, conditions,
+                                 cv=cv, groups=session_label, return_estimator=True)
+print(
+    "ANOVA+SVC test score: {:.3f}".format(fitted_pipeline["test_score"].mean()))
 
 ###########################################################################
-# Visualize the SVC's discriminating weights
+# Visualize the ANOVA + SVC's discriminating weights
 # ...........................................
-from nilearn.plotting import plot_stat_map
-coef = svc.coef_
-# We apply back the feature selection to put the coefs in the right 2D place
-coef = feature_selection.inverse_transform(coef)
-# We apply the inverse of masking to make a 4D image that we can plot
-weight_img = masker.inverse_transform(coef)
-plot_stat_map(weight_img, title='Anova+SVC weights')
 
+# retrieve the pipeline fitted on the first cross-validation fold and its SVC
+# coefficients
+first_pipeline = fitted_pipeline["estimator"][0]
+svc_coef = first_pipeline.named_steps['svc'].coef_
+print("After feature selection, the SVC is trained only on {} features".format(
+    svc_coef.shape[1]))
+
+# We invert the feature selection step to put these coefs in the right 2D place
+full_coef = first_pipeline.named_steps['anova'].inverse_transform(svc_coef)
+
+print("After inverting feature selection, we have {} features back".format(
+    full_coef.shape[1]))
+
+# We apply the inverse of masking on these to make a 4D image that we can plot
+from nilearn.plotting import plot_stat_map
+weight_img = masker.inverse_transform(full_coef)
+plot_stat_map(weight_img, title='Anova+SVC weights')
 
 ###########################################################################
 # Going further with scikit-learn
@@ -173,7 +191,7 @@ plot_stat_map(weight_img, title='Anova+SVC weights')
 # Construct the new estimator object and use it in a new pipeline after anova
 
 from sklearn.discriminant_analysis import LinearDiscriminantAnalysis
-feature_selection = SelectPercentile(f_classif, percentile=5)
+feature_selection = SelectPercentile(f_classif, percentile=10)
 lda = LinearDiscriminantAnalysis()
 anova_lda = Pipeline([('anova', feature_selection), ('LDA', lda)])
 
@@ -183,7 +201,7 @@ cv_scores = cross_val_score(anova_lda, fmri_masked,
                             conditions, cv=cv, verbose=1, groups=session_label)
 classification_accuracy = np.mean(cv_scores)
 n_conditions = len(set(conditions))  # number of target classes
-print("Classification accuracy: %.4f / Chance Level: %.4f" %
+print("ANOVA + LDA classification accuracy: %.4f / Chance Level: %.4f" %
       (classification_accuracy, 1. / n_conditions))
 
 ###########################################################################
