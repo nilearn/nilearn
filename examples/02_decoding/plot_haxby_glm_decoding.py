@@ -51,7 +51,7 @@ func_filename = haxby_dataset.func[0]
 
 #############################################################################
 # Build a proper event structure for each session
-# -----------------------------------------------
+# ------------------------------------------------
 
 events = {}
 # events will take  the form of a dictionary of Dataframes, one per session
@@ -72,7 +72,7 @@ for session in unique_sessions:
 
 ##############################################################################
 # Instantiate and run FirstLevelModel
-# -----------------------------------
+# ------------------------------------
 # We generate a list of z-maps together with their session and condition index
 
 z_maps = []
@@ -89,7 +89,7 @@ glm = FirstLevelModel(t_r=TR,
 
 ##############################################################################
 # Run the glm on data from each session
-# -------------------------------------
+# --------------------------------------
 events[session].trial_type.unique()
 from nilearn.image import index_img
 for session in unique_sessions:
@@ -108,7 +108,7 @@ for session in unique_sessions:
 
 #########################################################################
 # Generating a report
-# -------------------
+# --------------------
 # Since we have already computed the FirstLevelModel
 # and have the contrast, we can quickly create a summary report.
 
