@@ -48,6 +48,10 @@ Refer to the examples below for usage under the different scenarios:
   * Using an OpenNEURO dataset: :ref:`sphx_glr_auto_examples_04_glm_first_level_plot_bids_features.py`
   * Uing nilearn fetcher functions: :ref:`sphx_glr_auto_examples_04_glm_first_level_plot_spm_multimodal_faces.py`
 
+To ascertain that the sequence of events provided to the first level model is accurate, Nilearn provides an
+event visualization function called :func:`nilearn.reporting.plot_event()`. Usage example for this is available
+in :ref:`sphx-glr-auto-examples-07-advanced-plot-haxby-block-classification.py`.
+
 Once the events are defined, the design matrix is created using the
 :func:`nilearn.glm.first_level.make_first_level_design_matrix` function::
 
