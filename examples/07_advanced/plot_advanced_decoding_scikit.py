@@ -6,11 +6,11 @@ This tutorial opens the box of decoding pipelines to bridge integrated
 functionalities provided by the :class:`nilearn.decoding.Decoder` object
 with more advanced usecases. It reproduces basic examples functionalities with
 direct calls to scikit-learn function and gives pointers to more advanced
-objects. If some concepts seem unclear, please refer to the :ref:`documentation
-on decoding <decoding_intro>` and in particular to the
-:ref:`advanced section <going_further>`. As in many other examples,
-we perform decoding of the visual category of a stimuli on Haxby
-2001 dataset, focusing on distinguishing two categories : face and cat images.
+objects. If some concepts seem unclear, please refer to the :ref:`documentation on decoding <decoding_intro>`
+and in particular to the :ref:`advanced section <going_further>`.
+As in many other examples, we perform decoding of the visual category of a
+stimuli on Haxby 2001 dataset, focusing on distinguishing two categories :
+face and cat images.
 
     * J.V. Haxby et al. "Distributed and Overlapping Representations of Faces
       and Objects in Ventral Temporal Cortex", Science vol 293 (2001), p
@@ -68,7 +68,7 @@ svc = SVC()
 # Masking the data
 # ...................................
 # To use a scikit- learn estimator on brain images, you should first mask the
-# data using a: class: `nilearn.input_data.NiftiMasker`: to extract only the
+# data using a :class:`nilearn.input_data.NiftiMasker` to extract only the
 # voxels inside the mask of interest, and transform 4D input fMRI data to
 # 2D arrays(shape(n_timepoints, n_voxels)) that estimators can work on.
 from nilearn.input_data import NiftiMasker
@@ -81,7 +81,7 @@ fmri_masked = masker.fit_transform(fmri_niimgs)
 # Cross-validation with scikit-learn
 # ...................................
 # To train and test the model in a meaningful way we use cross-validation with
-# the function: func: `sklearn.model_selection.cross_val_score` that computes
+# the function :func:`sklearn.model_selection.cross_val_score` that computes
 # for you the score for the different folds of cross-validation.
 from sklearn.model_selection import cross_val_score
 cv_scores = cross_val_score(svc, fmri_masked, conditions, cv=5)
@@ -215,10 +215,10 @@ from sklearn.feature_selection import RFE
 svc = SVC()
 rfe = RFE(SVC(kernel='linear', C=1.), 50, step=0.25)
 
-# Create a new pipeline, composing the two classifiers `rfe` and `svc`: :
+# Create a new pipeline, composing the two classifiers `rfe` and `svc`
 
 rfe_svc = Pipeline([('rfe', rfe), ('svc', svc)])
 
-# Recompute the cross-validation score:
+# Recompute the cross-validation score
 # cv_scores = cross_val_score(rfe_svc, fmri_masked, target, cv=cv, n_jobs=-1, verbose=1)
 # But, be aware that this can take * A WHILE * ...
