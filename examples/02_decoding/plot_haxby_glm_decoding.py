@@ -34,7 +34,7 @@ haxby_dataset = datasets.fetch_haxby()
 # repetition has to be known
 TR = 2.5
 
-#############################################################################
+##############################################################################
 # Load the behavioral data
 # -------------------------
 
@@ -49,7 +49,7 @@ unique_sessions = behavioral['chunks'].unique()
 # fMRI data: a unique file for each session
 func_filename = haxby_dataset.func[0]
 
-#############################################################################
+##############################################################################
 # Build a proper event structure for each session
 # ------------------------------------------------
 
@@ -106,7 +106,7 @@ for session in unique_sessions:
         conditions_label.append(condition_)
         session_label.append(session)
 
-#########################################################################
+##############################################################################
 # Generating a report
 # --------------------
 # Since we have already computed the FirstLevelModel
@@ -122,14 +122,14 @@ report = make_glm_report(glm,
 
 report  # This report can be viewed in a notebook
 
-#############################################################################
+##############################################################################
 # In a jupyter notebook, the report will be automatically inserted, as above.
 # We have several other ways to access the report:
 
 # report.save_as_html('report.html')
 # report.open_in_browser()
 
-#############################################################################
+##############################################################################
 # Build the decoding pipeline
 # ----------------------------
 # To define the decoding pipeline we use Decoder object, we choose :
@@ -139,16 +139,17 @@ report  # This report can be viewed in a notebook
 # * the mask to use, here a ventral temporal ROI in the visual cortex
 #
 # * although it usually helps to decode better, z-maps time series don't need
-#   to be rescaled to a 0 mean, variance of 1 so we use standardize=False.
+#    to be rescaled to a 0 mean, variance of 1 so we use standardize=False.
 #
 # * we use univariate feature selection to reduce the dimension of the problem
-#   keeping only 5% of voxels which are most informative.
+#    keeping only 5% of voxels which are most informative.
 #
 # * a cross-validation scheme, here we use LeaveOneGroupOut cross-validation
-#   on the sessions which corresponds to a leave-one-session-out
+#    on the sessions which corresponds to a leave-one-session-out
 #
 # We fit directly this pipeline on the Niimgs outputs of the GLM, with
 # corresponding conditions labels and session labels (for the cross validation).
+
 from nilearn.decoding import Decoder
 from sklearn.model_selection import LeaveOneGroupOut
 decoder = Decoder(estimator='svc', mask=haxby_dataset.mask, standardize=False,
