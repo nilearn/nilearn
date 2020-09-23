@@ -73,6 +73,7 @@ for session in unique_sessions:
 ##############################################################################
 # Instantiate and run FirstLevelModel
 # ------------------------------------
+#
 # We generate a list of z-maps together with their session and condition index
 
 z_maps = []
@@ -134,18 +135,21 @@ report  # This report can be viewed in a notebook
 # ----------------------------
 # To define the decoding pipeline we use Decoder object, we choose :
 #
-# * a prediction model, here a Support Vector Classifier, with a linear kernel
+#     * a prediction model, here a Support Vector Classifier, with a linear
+#       kernel
 #
-# * the mask to use, here a ventral temporal ROI in the visual cortex
+#     * the mask to use, here a ventral temporal ROI in the visual cortex
 #
-# * although it usually helps to decode better, z-maps time series don't need
-#    to be rescaled to a 0 mean, variance of 1 so we use standardize=False.
+#     * although it usually helps to decode better, z-maps time series don't
+#       need to be rescaled to a 0 mean, variance of 1 so we use
+#       standardize=False.
 #
-# * we use univariate feature selection to reduce the dimension of the problem
-#    keeping only 5% of voxels which are most informative.
+#     * we use univariate feature selection to reduce the dimension of the
+#       problem keeping only 5% of voxels which are most informative.
 #
-# * a cross-validation scheme, here we use LeaveOneGroupOut cross-validation
-#    on the sessions which corresponds to a leave-one-session-out
+#     * a cross-validation scheme, here we use LeaveOneGroupOut
+#       cross-validation on the sessions which corresponds to a
+#       leave-one-session-out
 #
 # We fit directly this pipeline on the Niimgs outputs of the GLM, with
 # corresponding conditions labels and session labels (for the cross validation).
