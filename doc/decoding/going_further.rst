@@ -63,12 +63,12 @@ You can change many parameters of the cross_validation here, for example:
 
 .. seealso::
 
-  * If you need more than only than cross-validation scores (i.e the predictions
+   * If you need more than only than cross-validation scores (i.e the predictions
      or models for each fold) or if you want to learn more on various
      cross-validation schemes, see:
      <https://scikit-learn.org/stable/modules/cross_validation.html>`_
 
-  * `how to evaluate a model using scikit-learn
+   * `how to evaluate a model using scikit-learn
      <http://scikit-learn.org/stable/modules/model_evaluation.html#common-cases-predefined-values>`_
 
 
