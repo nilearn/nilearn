@@ -77,7 +77,7 @@ Measuring the chance level
 
 **Dummy estimators**: The simplest way to measure prediction performance
 at chance, is to use a *"dummy"* classifier,
-:class:`sklearn.dummy.DummyClassifier` (purely random)::
+:class:`sklearn.dummy.DummyClassifier`::  (purely random)
 
 **Permutation testing**: A more controlled way, but slower, is to do
 permutation testing on the labels, with
