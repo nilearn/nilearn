@@ -123,7 +123,7 @@ through the `estimator` parameter:
    subset of feature weights is different from zero and contribute to prediction.
 
 * 'logistic' (or 'logistic_l2') : the `logistic regression
-   <https://scikit-learn.org/stable/modules/    linear_model.html#logistic-regression>`_ with l2 penalty
+  <https://scikit-learn.org/stable/modules/linear_model.html#logistic-regression>`_ with l2 penalty
 
 * 'logistic_l1' :  the logistic regression with l1 penalty (**sparse model**)
 
