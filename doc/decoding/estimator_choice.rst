@@ -120,7 +120,7 @@ through the `estimator` parameter:
 * 'svc' (same as 'svc_l2') : the `support vector classifier <https://scikit-learn.org/stable/modules/svm.html>`_
 
 * 'svc_l1' : SVC using L1 penalization that yields a sparse solution : only a
-   subset of feature weights is different from zero and contribute to prediction.
+  subset of feature weights is different from zero and contribute to prediction.
 
 * 'logistic' (or 'logistic_l2') : the `logistic regression
   <https://scikit-learn.org/stable/modules/linear_model.html#logistic-regression>`_ with l2 penalty
