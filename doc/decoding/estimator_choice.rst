@@ -43,8 +43,8 @@ regression pipelines.
 .. seealso::
 
    * :class:`nilearn.decoding.fREMRegressor`, a pipeline described in the
-    :ref:`userguide <frem>`, which yields very good regression performance for
-    neuroimaging at a reasonable computational cost.
+     :ref:`userguide <frem>`, which yields very good regression performance for
+     neuroimaging at a reasonable computational cost.
 
 Classification: two classes or multi-class
 ------------------------------------------
