@@ -146,7 +146,6 @@ Loading the data into nilearn
 Performing a simple decoding analysis
 =======================================
 
-
 A few definitions
 ---------------------
 
