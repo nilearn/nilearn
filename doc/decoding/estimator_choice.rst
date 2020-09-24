@@ -128,7 +128,7 @@ through the `estimator` parameter:
 * 'logistic_l1' :  the logistic regression with l1 penalty (**sparse model**)
 
 * 'ridge_classifier' a `Ridge Regression variant
-   <https://scikit-learn.org/stable/modules/linear_model.html#ridge-regression-and-classification>`_
+  <https://scikit-learn.org/stable/modules/linear_model.html#ridge-regression-and-classification>`_
 
 
 In :class:`nilearn.decoding.DecoderRegressor` you can use some of these objects
