@@ -56,22 +56,21 @@ session_label = behavioral['chunks'][condition_mask]
 ###########################################################################
 # Performing decoding with scikit-learn
 # --------------------------------------
-
 # Importing a classifier
 # ........................
 # We can import many predictive models from scikit-learn that can be used in a
 # decoding pipelines. They are all used with the same `fit()` and `predict()`
-# functions. Let's define a `Support Vector Classifier <http://scikit-learn.org/stable/modules/svm.html>`_ (or SVC).
+# functions. Let's define a `Support Vector Classifier<http://scikit-learn.org/stable/modules/svm.html >`_(or SVC).
 from sklearn.svm import SVC
 svc = SVC()
 
 ###########################################################################
 # Masking the data
 # ...................................
-# To use a scikit-learn estimator on brain images, you should first mask the
+# To use a scikit- learn estimator on brain images, you should first mask the
 # data using a :class:`nilearn.input_data.NiftiMasker` to extract only the
 # voxels inside the mask of interest, and transform 4D input fMRI data to
-# 2D arrays(`shape = (n_timepoints, n_voxels)`) that estimators can work on.
+# 2D arrays(shape(n_timepoints, n_voxels)) that estimators can work on.
 from nilearn.input_data import NiftiMasker
 masker = NiftiMasker(mask_img=mask_filename, sessions=session_label,
                      smoothing_fwhm=4, standardize=True,
@@ -158,7 +157,7 @@ print(
 
 ###########################################################################
 # Visualize the ANOVA + SVC's discriminating weights
-# ...........................................
+# ...................................................
 
 # retrieve the pipeline fitted on the first cross-validation fold and its SVC
 # coefficients
