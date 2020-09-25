@@ -215,14 +215,14 @@ curve showing the score as a function of the parameter has bumps and peaks
 due to this noise.
 
 .. figure:: ../auto_examples/02_decoding/images/sphx_glr_plot_haxby_grid_search_001.png
-  :target: ../auto_examples/02_decoding/plot_haxby_grid_search.html
-  :align: center
-  :scale: 60
+   :target: ../auto_examples/02_decoding/plot_haxby_grid_search.html
+   :align: center
+   :scale: 60
 
 .. seealso::
 
-  `The scikit-learn documentation on parameter selection
-    <http://scikit-learn.org/stable/modules/grid_search.html>`_
+   `The scikit-learn documentation on parameter selection
+   <http://scikit-learn.org/stable/modules/grid_search.html>`_
 
 Bagging several models
 ============================
