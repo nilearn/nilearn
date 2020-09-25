@@ -182,8 +182,8 @@ variety of problems.
 
 .. seealso::
 
-   The `scikit-learn documentation on SVMs <http://scikit-learn.org/stable/modules/svm.html>`_
-
+   `The scikit-learn documentation on SVMs
+   <http://scikit-learn.org/stable/modules/svm.html>`_
 
 
 Decoding made easy
@@ -192,7 +192,7 @@ Decoding made easy
 Nilearn makes it easy to train a model with a principled pipeline using the
 :class:`nilearn.decoding.Decoder` object. Using the mask we defined before
 and an SVC estimator as we already introduced, we can create a pipeline in
-two lines. The additional `standardize`=True argument adds a normalization
+two lines. The additional `standardize=True` argument adds a normalization
 of images signal to a zero mean and unit variance, which will improve
 performance of most estimators.
 
