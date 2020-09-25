@@ -9,8 +9,8 @@ scikit-learn. This builds on the :ref:`didactic introduction to decoding <decodi
 
 .. note::
 
-  This documentation gives links and additional definitions needed to work
-  correctly with scikit-learn. For a full code example, please check out: :ref:`sphx_glr_auto_examples_07_advanced_plot_advanced_decoding_scikit.py`
+   This documentation gives links and additional definitions needed to work
+   correctly with scikit-learn. For a full code example, please check out: :ref:`sphx_glr_auto_examples_07_advanced_plot_advanced_decoding_scikit.py`
 
 
 .. contents:: **Contents**
@@ -44,8 +44,8 @@ data to 2D arrays (shape (n_timepoints, n_voxels)) that estimators can work on.
 
 .. note::
 
-  This example shows how to use masking:
-    :ref:`sphx_glr_auto_examples_04_manipulating_images_/plot_nifti_simple.py`
+   This example shows how to use masking:
+   :ref:`sphx_glr_auto_examples_04_manipulating_images_/plot_nifti_simple.py`
 
 Then use a specific function :func:`sklearn.model_selection.cross_val_score`
 that computes for you the score of your model for the different folds
