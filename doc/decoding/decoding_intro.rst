@@ -185,7 +185,6 @@ variety of problems.
    `The scikit-learn documentation on SVMs
    <http://scikit-learn.org/stable/modules/svm.html>`_
 
-
 Decoding made easy
 -------------------
 
