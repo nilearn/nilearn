@@ -20,6 +20,8 @@ NEW
   Use :func:`nilearn.reporting.plot_event` to visualize events file.
   The function accepts the BIDS events file read using `pandas`
   utilities.
+- Plotting function :func:`nilearn.plotting.plot_roi` can now plot ROIs
+  in contours with `view_type` argument.
 - New plotting function
   :func:`nilearn.plotting.plot_carpet` generates a "carpet plot" (also known
   as a "Power plot" or a "grayplot"), for visualizing global patterns in
