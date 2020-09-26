@@ -1,9 +1,9 @@
 """
-Decoding with fREM: face vs house object recognition
+Decoding with FREM: face vs house object recognition
 =========================================================
 
-This example uses fast ensembling of regularized models (fREM) to decode
-a face vs house discrimination task from Haxby 2001 study. fREM uses an
+This example uses fast ensembling of regularized models (FREM) to decode
+a face vs house discrimination task from Haxby 2001 study. FREM uses an
 implicit spatial regularization through fast clustering and aggregates a
 high number of estimators trained on various splits of the training set,
 thus returning a very robust decoder at a lower computational cost than
@@ -46,28 +46,28 @@ from nilearn.image import mean_img
 background_img = mean_img(func_filenames)
 
 ##############################################################################
-# Fit fREM
+# Fit FREM
 # --------------------------------------
-from nilearn.decoding import fREMClassifier
-decoder = fREMClassifier(cv=10)
+from nilearn.decoding import FREMClassifier
+decoder = FREMClassifier(cv=10)
 # Fit model on train data and predict on test data
 decoder.fit(X_train, y_train)
 y_pred = decoder.predict(X_test)
 accuracy = (y_pred == y_test).mean() * 100.
-print("fREM classification accuracy : %g%%" % accuracy)
+print("FREM classification accuracy : %g%%" % accuracy)
 
 #############################################################################
-# Visualization of fREM weights
+# Visualization of FREM weights
 # ------------------------------------
 from nilearn import plotting
 plotting.plot_stat_map(decoder.coef_img_["face"], background_img,
-                       title="fREM: accuracy %g%%, 'face coefs'" % accuracy,
+                       title="FREM: accuracy %g%%, 'face coefs'" % accuracy,
                        cut_coords=(-52, -5), display_mode="yz")
 plotting.show()
 #############################################################################
-# fREM ensembling procedure yields an important improvement of decoding
+# FREM ensembling procedure yields an important improvement of decoding
 # accuracy on this simple example compared to fitting only one model per
 # fold and the clustering mechanism keeps its computational cost reasonable
 # even on heavier examples. Here we ensembled several instances of l2-SVC,
-# but fREMClassifier also works with ridge or logistic.
-# fREMRegressor object is also available to solve regression problems.
+# but FREMClassifier also works with ridge or logistic.
+# FREMRegressor object is also available to solve regression problems.
