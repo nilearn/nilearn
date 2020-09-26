@@ -8,12 +8,22 @@
 
 NEW
 ---
-
+- Nilearn now includes the functionality of `Nistats <https://nistats.github.io>`_.
+  :ref:`Here's a guide to replacing Nistats imports to work in Nilearn. <nistats_migration>`
 - New decoder object
   :class:`nilearn.decoding.Decoder` (for classification) and
   :class:`nilearn.decoding.DecoderRegressor` (for regression) implement a model
   selection scheme that averages the best models within a cross validation loop.
   The resulting average model is the one used as a classifier or a regressor.
+  These two objects also leverage the `NiftiMaskers` to provide a direct
+  interface with the Nifti files on disk.
+- New FREM object
+  :class:`nilearn.decoding.FREMClassifier` (for classification) and
+  :class:`nilearn.decoding.FREMRegressor` (for regression) extend the decoder
+  object pipeline with one fast clustering step at the beginning (yielding an
+  implicit spatial regularization) and  aggregates a high number of estimators
+  trained on various splits of the training set. This returns a state-of-the-art
+  decoding pipeline at a low computational cost.
   These two objects also leverage the `NiftiMaskers` to provide a direct
   interface with the Nifti files on disk.
 - Plot events file
@@ -38,6 +48,8 @@ NEW
   interest on the surface, optionally overlayed on top of a statistical map.
 - The position annotation on the plot methods now implements the `decimals` option
   to enable annotation of a slice coordinate position with the float.
+- New example in `examples/02_decoding/plot_haxby_searchlight_surface.py`
+  to demo how to do cortical surface-based searchlight decoding with Nilearn.
 
 
 Fixes
