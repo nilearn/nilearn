@@ -8,8 +8,7 @@ import string
 import numpy as np
 import pandas as pd
 import scipy.signal
-from scipy.spatial import Delaunay
-from scipy import ndimage, interpolate
+from scipy import ndimage
 
 from sklearn.utils import check_random_state
 import scipy.linalg

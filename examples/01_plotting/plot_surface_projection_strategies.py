@@ -67,13 +67,15 @@ ball_sample_points = surface._ball_sample_locations(
 
 fig = plt.figure()
 ax = plt.subplot(projection='3d')
-ax.plot_trisurf(x, y, z, triangles=triangulation.triangles)
+ax.view_init(67, -42)
+ax.plot_trisurf(x, y, z, triangles=triangulation.triangles, alpha=.6)
 ax.plot_trisurf(*inner_mesh[0].T, triangles=triangulation.triangles)
 ax.scatter(*nested_sample_points.T, color='r')
 
 for sample_points in [line_sample_points, ball_sample_points]:
     fig = plt.figure()
     ax = plt.subplot(projection='3d')
+    ax.view_init(67, -42)
     ax.plot_trisurf(x, y, z, triangles=triangulation.triangles)
     ax.scatter(*sample_points.T, color='r')
 
@@ -87,7 +89,8 @@ nested_sample_points = surface._sample_locations_between_surfaces(
     mesh, inner_mesh, np.eye(4), depth=[-.5, 0., .8, 1.])
 fig = plt.figure()
 ax = plt.subplot(projection='3d')
-ax.plot_trisurf(x, y, z, triangles=triangulation.triangles)
+ax.view_init(67, -42)
+ax.plot_trisurf(x, y, z, triangles=triangulation.triangles, alpha=.6)
 ax.plot_trisurf(*inner_mesh[0].T, triangles=triangulation.triangles)
 ax.scatter(*nested_sample_points.T, color='r')
 
