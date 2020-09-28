@@ -4,8 +4,12 @@ import os
 import numpy as np
 import pandas as pd
 import pytest
+import nibabel as nib
+import shutil
 import scipy.linalg as spl
+
 from nibabel.tmpdirs import InTemporaryDirectory
+from numpy import array
 from numpy.testing import assert_almost_equal, assert_array_almost_equal
 from scipy.stats import norm
 
@@ -16,6 +20,9 @@ from nilearn._utils.glm import (_check_and_load_tables,
                                 get_design_from_fslmat, multiple_fast_inverse,
                                 multiple_mahalanobis, parse_bids_filename,
                                 positive_reciprocal, z_score)
+from nilearn.datasets import func
+from nilearn.glm.first_level import FirstLevelModel
+from nilearn.image import concat_imgs
 
 
 def test_full_rank():
@@ -36,6 +43,64 @@ def test_z_score():
     for p in [1.e-250, 1 - 1.e-16]:
         assert_array_almost_equal(z_score(p), norm.isf(p))
     assert_array_almost_equal(z_score(np.float32(1.e-100)), norm.isf(1.e-300))
+
+
+def test_z_score_opposite_contrast(tmp_path):
+    # put data fetching here
+    saf = ["fM00223/fM00223_%03i.img" % index for index in range(4, 100)]
+    saf_ = ["fM00223/fM00223_%03i.hdr" % index for index in range(4, 100)]
+
+    data_dir = str(tmp_path / 'spm_auditory')
+    os.mkdir(data_dir)
+    subject_dir = os.path.join(data_dir, 'sub001')
+    os.mkdir(subject_dir)
+    os.mkdir(os.path.join(subject_dir, 'fM00223'))
+    os.mkdir(os.path.join(subject_dir, 'sM00223'))
+
+    path_img = str(tmp_path / 'tmp.img')
+    path_hdr = str(tmp_path / 'tmp.hdr')
+    nib.save(nib.Nifti1Image(np.zeros((2, 3, 4)), np.eye(4)), path_img)
+    shutil.copy(path_img, os.path.join(subject_dir,
+                                       "sM00223/sM00223_002.img"))
+    shutil.copy(path_hdr, os.path.join(subject_dir,
+                                       "sM00223/sM00223_002.hdr"))
+    for file_ in saf:
+        shutil.copy(path_img, os.path.join(subject_dir, file_))
+    for file_ in saf_:
+        shutil.copy(path_hdr, os.path.join(subject_dir, file_))
+
+    subject_data = func.fetch_spm_auditory(data_dir=str(tmp_path))
+    fmri_img = concat_imgs(subject_data.func)
+    events = pd.read_csv(subject_data['events'], delimiter = '\t')
+
+    # compute z-map of opposite contrast
+    fmri_glm = FirstLevelModel(t_r=7,
+                               noise_model='ar1',
+                               standardize=False,
+                               hrf_model='spm',
+                               drift_model='cosine',
+                               high_pass=1/170,
+                               mask_img=False)
+    fmri_glm = fmri_glm.fit(fmri_img, events)
+
+    conditions = {
+        'active': np.array([1., 0., 0., 0., 0., 0., 0., 0., 0., 0.]),
+        'rest':   np.array([0., 1., 0., 0., 0., 0., 0., 0., 0., 0.]),
+    }
+
+    active_minus_rest = conditions['active'] - conditions['rest']
+    rest_minus_active = -active_minus_rest
+    z_map = fmri_glm.compute_contrast(active_minus_rest,
+                                      output_type='z_score')
+
+    z_map_opposite = fmri_glm.compute_contrast(
+        rest_minus_active, output_type='z_score')
+
+    # assertion
+    assert (z_map.get_data().ravel().min(),
+            z_map.get_data().ravel().max()) == \
+            (-z_map_opposite.get_data().ravel().max(),
+             -z_map_opposite.get_data().ravel().min())
 
 
 def test_mahalanobis():
