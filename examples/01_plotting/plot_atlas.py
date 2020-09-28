@@ -23,4 +23,10 @@ print('Atlas ROIs are located at: %s' % atlas_filename)
 from nilearn import plotting
 
 plotting.plot_roi(atlas_filename, title="Harvard Oxford atlas")
+
+###########################################################################
+# Visualizing the Harvard-Oxford atlas with contours
+# --------------------------------------------------
+plotting.plot_roi(atlas_filename, view_type='contours',
+                  title="Harvard Oxford atlas in contours")
 plotting.show()

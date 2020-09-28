@@ -1764,6 +1764,10 @@ div.sg-report {
     transform: scale(.95);
 }
 
+div.body iframe {
+    width: 100%;
+}
+
 div.sg-report iframe {
     display: block;
     border-style: none;
@@ -1818,4 +1822,3 @@ div.body div.sphx-glr-download-link-note {
 	margin-left: calc(47vw - 31em - 123px - 20ex);
     }
 }
-

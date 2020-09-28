@@ -86,6 +86,34 @@ def demo_plot_roi(**kwargs):
     return plot_roi(img, title="Broca's area", **kwargs)
 
 
+def test_plot_roi_view_types():
+    # This is only a smoke test contours rois
+    demo_plot_roi(view_type='contours')
+    # This is only a smoke test contours rois
+    demo_plot_roi(view_type='continuous')
+
+    # Test error message for invalid view_type
+    with pytest.raises(ValueError,
+                       match='Unknown view type:'
+                       ):
+        demo_plot_roi(view_type='flled')
+    plt.close()
+
+
+def test_plot_roi_contours():
+    display = plot_roi(None)
+    data = np.zeros((91, 109, 91))
+    x, y, z = -52, 10, 22
+    x_map, y_map, z_map = coord_transform(x, y, z,
+                                          np.linalg.inv(mni_affine))
+    data[int(x_map) - 5:int(x_map) + 5, int(y_map) - 3:int(y_map) + 3,
+         int(z_map) - 10:int(z_map) + 10] = 1
+    img = nibabel.Nifti1Image(data, mni_affine)
+    plot_roi(img, cmap='RdBu', alpha=0.1, view_type='contours',
+             linewidths=2.)
+    plt.close()
+
+
 def test_demo_plot_roi():
     # This is only a smoke test
     demo_plot_roi()
