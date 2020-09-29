@@ -50,7 +50,7 @@ Refer to the examples below for usage under the different scenarios:
 
 To ascertain that the sequence of events provided to the first level model is accurate, Nilearn provides an
 event visualization function called :func:`nilearn.reporting.plot_event()`. Sample usage for this is available
-in :ref:`sphx_glr_auto_examples_07_advanced_plot_haxby_block_classification.py`.
+in :ref:`sphx_glr_auto_examples_02_decoding_plot_haxby_glm_decoding.py`.
 
 Once the events are defined, the design matrix is created using the
 :func:`nilearn.glm.first_level.make_first_level_design_matrix` function::
