@@ -86,7 +86,7 @@ for sample_points in [line_sample_points, ball_sample_points]:
 # position of samples along the line
 
 nested_sample_points = surface._sample_locations_between_surfaces(
-    mesh, inner_mesh, np.eye(4), depth=[-.5, 0., .8, 1.])
+    mesh, inner_mesh, np.eye(4), depth=[-.5, 0., .8, 1.2])
 fig = plt.figure()
 ax = plt.subplot(projection='3d')
 ax.view_init(67, -42)
