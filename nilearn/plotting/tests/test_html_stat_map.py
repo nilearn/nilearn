@@ -106,7 +106,7 @@ def test_save_sprite():
     """
 
     # Generate a simulated volume with a square inside
-    data = np.random.RandomState(0).uniform(size=140).reshape(7, 5, 4)
+    data = np.random.RandomState(42).uniform(size=140).reshape(7, 5, 4)
     mask = np.zeros((7, 5, 4), dtype=int)
     mask[1:-1, 1:-1, 1:-1] = 1
     # Save the sprite using BytesIO

@@ -489,13 +489,13 @@ def test_concat_niimg_dtype():
 
 def nifti_generator(buffer):
     for i in range(10):
-        buffer.append(Nifti1Image(np.random.random((10, 10, 10)), np.eye(4)))
+        buffer.append(Nifti1Image(np.random.RandomState(42).random_sample((10, 10, 10)), np.eye(4)))
         yield buffer[-1]
 
 
 def test_iterator_generator():
     # Create a list of random images
-    l = [Nifti1Image(np.random.random((10, 10, 10)), np.eye(4))
+    l = [Nifti1Image(np.random.RandomState(42).random_sample((10, 10, 10)), np.eye(4))
          for i in range(10)]
     cc = _utils.concat_niimgs(l)
     assert cc.shape[-1] == 10

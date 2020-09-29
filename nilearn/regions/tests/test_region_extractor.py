@@ -17,7 +17,7 @@ from nilearn.image import get_data
 
 def _make_random_data(shape):
     affine = np.eye(4)
-    rng = np.random.RandomState(0)
+    rng = np.random.RandomState(42)
     data_rng = rng.normal(size=shape)
     img = nibabel.Nifti1Image(data_rng, affine)
     data = get_data(img)
@@ -52,6 +52,8 @@ def test_threshold_maps_ratio():
     # smoke test for function _threshold_maps_ratio with randomly
     # generated maps
 
+    rng = np.random.RandomState(42)
+
     maps, _ = generate_maps((6, 8, 10), n_regions=3)
 
     # test that there is no side effect
@@ -66,7 +68,7 @@ def test_threshold_maps_ratio():
 
     # check that the size should be same for 3D image
     # before and after thresholding
-    img = np.zeros((30, 30, 30)) + 0.1 * np.random.randn(30, 30, 30)
+    img = np.zeros((30, 30, 30)) + 0.1 * rng.standard_normal(size=(30, 30, 30))
     img = nibabel.Nifti1Image(img, affine=np.eye(4))
     thr_maps_3d = _threshold_maps_ratio(img, threshold=0.5)
     assert img.shape == thr_maps_3d.shape
@@ -85,11 +87,13 @@ def test_invalids_extract_types_in_connected_regions():
 
 
 def test_connected_regions():
+    rng = np.random.RandomState(42)
+
     # 4D maps
     n_regions = 4
     maps, mask_img = generate_maps((30, 30, 30), n_regions=n_regions)
     # 3D maps
-    map_img = np.zeros((30, 30, 30)) + 0.1 * np.random.randn(30, 30, 30)
+    map_img = np.zeros((30, 30, 30)) + 0.1 * rng.standard_normal(size=(30, 30, 30))
     map_img = nibabel.Nifti1Image(map_img, affine=np.eye(4))
 
     # smoke test for function connected_regions and also to check

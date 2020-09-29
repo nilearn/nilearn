@@ -19,8 +19,9 @@ from nilearn._utils.glm import (_check_and_load_tables,
 
 
 def test_full_rank():
+    rng = np.random.RandomState(42)
     n, p = 10, 5
-    X = np.random.randn(n, p)
+    X = rng.standard_normal(size=(n, p))
     X_, _ = full_rank(X)
     assert_array_almost_equal(X, X_)
     X[:, -1] = X[:, :-1].sum(1)
@@ -30,7 +31,7 @@ def test_full_rank():
 
 
 def test_z_score():
-    p = np.random.rand(10)
+    p = np.random.RandomState(42).uniform(size=10)
     assert_array_almost_equal(norm.sf(z_score(p)), p)
     # check the numerical precision
     for p in [1.e-250, 1 - 1.e-16]:
@@ -39,23 +40,25 @@ def test_z_score():
 
 
 def test_mahalanobis():
+    rng = np.random.RandomState(42)
     n = 50
-    x = np.random.rand(n) / n
-    A = np.random.rand(n, n) / n
+    x = rng.uniform(size=n) / n
+    A = rng.uniform(size=(n, n)) / n
     A = np.dot(A.transpose(), A) + np.eye(n)
     mah = np.dot(x, np.dot(spl.inv(A), x))
     assert_almost_equal(mah, multiple_mahalanobis(x, A), decimal=1)
 
 
 def test_mahalanobis2():
+    rng = np.random.RandomState(42)
     n = 50
-    x = np.random.randn(n, 3)
+    x = rng.standard_normal(size=(n, 3))
     Aa = np.zeros([n, n, 3])
     for i in range(3):
-        A = np.random.randn(120, n)
+        A = rng.standard_normal(size=(120, n))
         A = np.dot(A.T, A)
         Aa[:, :, i] = A
-    i = np.random.randint(3)
+    i = rng.randint(3)
     mah = np.dot(x[:, i], np.dot(spl.inv(Aa[:, :, i]), x[:, i]))
     f_mah = (multiple_mahalanobis(x, Aa))[i]
     assert np.allclose(mah, f_mah)
@@ -73,8 +76,9 @@ def test_mahalanobis_errors():
 
 
 def test_multiple_fast_inv():
+    rng = np.random.RandomState(42)
     shape = (10, 20, 20)
-    X = np.random.randn(shape[0], shape[1], shape[2])
+    X = rng.standard_normal(size=shape)
     X_inv_ref = np.zeros(shape)
     for i in range(shape[0]):
         X[i] = np.dot(X[i], X[i].T)

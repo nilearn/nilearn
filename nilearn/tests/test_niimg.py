@@ -60,8 +60,7 @@ def test_img_data_dtype():
     dtype_matches = []
     with InTemporaryDirectory():
         for logical_dtype in nifti1_dtypes:
-            dataobj = np.random.uniform(0, 255,
-                                        size=(2, 2, 2)).astype(logical_dtype)
+            dataobj = np.random.RandomState(42).uniform(0, 255, (2, 2, 2)).astype(logical_dtype)
             for on_disk_dtype in nifti1_dtypes:
                 img = Nifti1Image(dataobj, np.eye(4))
                 img.set_data_dtype(on_disk_dtype)

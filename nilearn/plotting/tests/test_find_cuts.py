@@ -52,7 +52,7 @@ def test_find_cut_coords():
     # pseudo-4D images as input (i.e., X, Y, Z, 1)
     # previously raised "ValueError: too many values to unpack"
     rng = np.random.RandomState(42)
-    data_3d = rng.randn(10, 10, 10)
+    data_3d = rng.standard_normal(size=(10, 10, 10))
     data_4d = data_3d[..., np.newaxis]
     affine = np.eye(4)
     img_3d = nibabel.Nifti1Image(data_3d, affine)

@@ -217,7 +217,7 @@ def test_signal_extraction_with_maps():
     n_instants = 13
 
     # Generate signals
-    rand_gen = np.random.RandomState(0)
+    rng = np.random.RandomState(42)
 
     maps_img, mask_img = generate_maps(shape, n_regions, border=1)
     maps_data = get_data(maps_img)
@@ -227,7 +227,7 @@ def test_signal_extraction_with_maps():
 
     signals = np.zeros((n_instants, maps_data.shape[-1]))
     for n in range(maps_data.shape[-1]):
-        signals[:, n] = rand_gen.randn(n_instants)
+        signals[:, n] = rng.standard_normal(size=n_instants)
         data[maps_data[..., n] > 0, :] = signals[:, n]
     img = nibabel.Nifti1Image(data, np.eye(4))
 
@@ -416,7 +416,7 @@ def test__trim_maps():
                          (np.float, np.float32, np.float64, np.int, np.uint),
                          )
 def test_img_to_signals_labels_non_float_type(target_dtype):
-    fake_fmri_data = np.random.RandomState(0).rand(10, 10, 10, 10) > 0.5
+    fake_fmri_data = np.random.RandomState(42).uniform(size=(10, 10, 10, 10)) > 0.5
     fake_affine = np.eye(4, 4).astype(np.float64)
     fake_fmri_img_orig = nibabel.Nifti1Image(
                                         fake_fmri_data.astype(np.float64),

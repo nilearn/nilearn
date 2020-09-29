@@ -80,7 +80,8 @@ def test_resample_regressor_nl():
 
 def test_orthogonalize():
     """ test that the orthogonalization is OK """
-    X = np.random.randn(100, 5)
+    rng = np.random.RandomState(42)
+    X = rng.standard_normal(size=(100, 5))
     X = _orthogonalize(X)
     K = np.dot(X.T, X)
     K -= np.diag(np.diag(K))
@@ -89,7 +90,8 @@ def test_orthogonalize():
 
 def test_orthogonalize_trivial():
     """ test that the orthogonalization is OK """
-    X = np.random.randn(100)
+    rng = np.random.RandomState(42)
+    X = rng.standard_normal(size=100)
     Y = X.copy()
     X = _orthogonalize(X)
     assert_array_equal(Y, X)

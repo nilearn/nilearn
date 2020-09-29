@@ -54,10 +54,11 @@ def basic_paradigm():
 
 
 def modulated_block_paradigm():
+    rng = np.random.RandomState(42)
     conditions = ['c0', 'c0', 'c0', 'c1', 'c1', 'c1', 'c2', 'c2', 'c2']
     onsets = [30, 70, 100, 10, 30, 90, 30, 40, 60]
-    durations = 5 + 5 * np.random.rand(len(onsets))
-    values = 1 + np.random.rand(len(onsets))
+    durations = 5 + 5 * rng.uniform(size=len(onsets))
+    values = 1 + rng.uniform(size=len(onsets))
     events = pd.DataFrame({'trial_type': conditions,
                            'onset': onsets,
                            'duration': durations,
@@ -66,10 +67,11 @@ def modulated_block_paradigm():
 
 
 def modulated_event_paradigm():
+    rng = np.random.RandomState(42)
     conditions = ['c0', 'c0', 'c0', 'c1', 'c1', 'c1', 'c2', 'c2', 'c2']
     onsets = [30, 70, 100, 10, 30, 90, 30, 40, 60]
     durations = 1 * np.ones(9)
-    values = 1 + np.random.rand(len(onsets))
+    values = 1 + rng.uniform(size=len(onsets))
     events = pd.DataFrame({'trial_type': conditions,
                            'onset': onsets,
                            'duration': durations,
@@ -111,20 +113,21 @@ def test_design_matrix0():
 
 def test_design_matrix0c():
     # test design matrix creation when regressors are provided manually
+    rng = np.random.RandomState(42)
     tr = 1.0
     frame_times = np.linspace(0, 127 * tr, 128)
-    ax = np.random.randn(128, 4)
+    ax = rng.standard_normal(size=(128, 4))
     _, X, names = check_design_matrix(make_first_level_design_matrix(
         frame_times, drift_model='polynomial',
         drift_order=3, add_regs=ax))
     assert_almost_equal(X[:, 0], ax[:, 0])
-    ax = np.random.randn(127, 4)
+    ax = rng.standard_normal(size=(127, 4))
     with pytest.raises(
         AssertionError,
         match="Incorrect specification of additional regressors:."
     ):
         make_first_level_design_matrix(frame_times, add_regs=ax)
-    ax = np.random.randn(128, 4)
+    ax = rng.standard_normal(size=(128, 4))
     with pytest.raises(
         ValueError,
         match="Incorrect number of additional regressor names."
@@ -136,9 +139,10 @@ def test_design_matrix0c():
 
 def test_design_matrix0d():
     # test design matrix creation when regressors are provided manually
+    rng = np.random.RandomState(42)
     tr = 1.0
     frame_times = np.linspace(0, 127 * tr, 128)
-    ax = np.random.randn(128, 4)
+    ax = rng.standard_normal(size=(128, 4))
     _, X, names = check_design_matrix(make_first_level_design_matrix(
         frame_times, drift_model='polynomial', drift_order=3, add_regs=ax))
     assert len(names) == 8
@@ -338,11 +342,12 @@ def test_design_matrix14():
 
 def test_design_matrix15():
     # basic test based on basic_paradigm, plus user supplied regressors
+    rng = np.random.RandomState(42)
     tr = 1.0
     frame_times = np.linspace(0, 127 * tr, 128)
     events = basic_paradigm()
     hrf_model = 'glover'
-    ax = np.random.randn(128, 4)
+    ax = rng.standard_normal(size=(128, 4))
     X, names = design_matrix_light(frame_times, events, hrf_model=hrf_model,
                                    drift_model='polynomial', drift_order=3,
                                    add_regs=ax)
@@ -352,11 +357,12 @@ def test_design_matrix15():
 
 def test_design_matrix16():
     # Check that additional regressors are put at the right place
+    rng = np.random.RandomState(42)
     tr = 1.0
     frame_times = np.linspace(0, 127 * tr, 128)
     events = basic_paradigm()
     hrf_model = 'glover'
-    ax = np.random.randn(128, 4)
+    ax = rng.standard_normal(size=(128, 4))
     X, names = design_matrix_light(frame_times, events, hrf_model=hrf_model,
                                    drift_model='polynomial', drift_order=3,
                                    add_regs=ax)
@@ -413,11 +419,12 @@ def test_design_matrix20():
 
 def test_design_matrix21():
     # basic test on repeated names of user supplied regressors
+    rng = np.random.RandomState(42)
     tr = 1.0
     frame_times = np.linspace(0, 127 * tr, 128)
     events = basic_paradigm()
     hrf_model = 'glover'
-    ax = np.random.randn(128, 4)
+    ax = rng.standard_normal(size=(128, 4))
     with pytest.raises(ValueError):
         design_matrix_light(frame_times, events,
                             hrf_model=hrf_model, drift_model='polynomial',
