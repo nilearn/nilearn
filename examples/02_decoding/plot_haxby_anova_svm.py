@@ -14,11 +14,11 @@ from nilearn import datasets
 
 # By default 2nd subject will be fetched
 haxby_dataset = datasets.fetch_haxby()
-func_filename = haxby_dataset.func[0]
+func_img = haxby_dataset.func[0]
 # print basic information on the dataset
 print('Mask nifti image (3D) is located at: %s' % haxby_dataset.mask)
 print('Functional nifti image (4D) is located at: %s' %
-      func_filename)
+      func_img)
 
 #############################################################################
 # Load the behavioral data
@@ -34,7 +34,7 @@ conditions = behavioral['labels']
 from nilearn.image import index_img
 condition_mask = behavioral['labels'].isin(['face', 'house'])
 conditions = conditions[condition_mask]
-func_filename = index_img(func_filename, condition_mask)
+func_img = index_img(func_img, condition_mask)
 
 # Confirm that we now have 2 conditions
 print(conditions.unique())
@@ -47,23 +47,23 @@ session_label = behavioral['chunks'][condition_mask]
 # ANOVA pipeline with :class:`nilearn.decoding.Decoder` object
 # ------------------------------------------------------------
 #
-# Nilearn Decoder object aims to provide smooth user experience by acting
-# as a pipeline of several tasks: preprocessing with NiftiMasker, decoding
-# with different types of estimators (in this example is Support Vector
-# Machine with a linear kernel) on nested cross-validation, selecting
-# relevant features with ANOVA -- a classical univariate feature selection
-# based on F-test.
+# Nilearn Decoder object aims to provide smooth user experience by acting as a
+# pipeline of several tasks: preprocessing with NiftiMasker, reducing dimension
+# by selecting only relevant features with ANOVA -- a classical univariate
+# feature selection based on F-test, and then decoding with different types of
+# estimators (in this example is Support Vector Machine with a linear kernel)
+# on nested cross-validation.
 from nilearn.decoding import Decoder
 # Here screening_percentile is set to 5 percent
-mask_filename = haxby_dataset.mask
-decoder = Decoder(estimator='svc', mask=mask_filename, smoothing_fwhm=4,
+mask_img = haxby_dataset.mask
+decoder = Decoder(estimator='svc', mask=mask_img, smoothing_fwhm=4,
                   standardize=True, screening_percentile=5, scoring='accuracy')
 
 #############################################################################
 # Fit the decoder and predict
 # ----------------------------
-decoder.fit(func_filename, conditions)
-y_pred = decoder.predict(func_filename)
+decoder.fit(func_img, conditions)
+y_pred = decoder.predict(func_img)
 
 #############################################################################
 # Obtain prediction scores via cross validation
@@ -77,10 +77,10 @@ y_pred = decoder.predict(func_filename)
 from sklearn.model_selection import LeaveOneGroupOut
 cv = LeaveOneGroupOut()
 
-decoder = Decoder(estimator='svc', mask=mask_filename, standardize=True,
+decoder = Decoder(estimator='svc', mask=mask_img, standardize=True,
                   screening_percentile=5, scoring='accuracy', cv=cv)
 # Compute the prediction accuracy for the different folds (i.e. session)
-decoder.fit(func_filename, conditions, groups=session_label)
+decoder.fit(func_img, conditions, groups=session_label)
 
 # Print the CV scores
 print(decoder.cv_scores_['face'])

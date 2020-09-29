@@ -38,8 +38,8 @@ manually.
 from nilearn import datasets
 # by default 2nd subject data will be fetched on which we run our analysis
 haxby_dataset = datasets.fetch_haxby()
-fmri_filename = haxby_dataset.func[0]
-mask_filename = haxby_dataset.mask
+fmri_img = haxby_dataset.func[0]
+mask_img = haxby_dataset.mask
 
 # print basic information on the dataset
 print('Mask nifti image (3D) is located at: %s' % haxby_dataset.mask)
@@ -55,7 +55,7 @@ y = labels['labels']
 from nilearn.image import index_img
 condition_mask = y.isin(['shoe', 'bottle'])
 
-fmri_niimgs = index_img(fmri_filename, condition_mask)
+fmri_niimgs = index_img(fmri_img, condition_mask)
 y = y[condition_mask]
 session = labels['chunks'][condition_mask]
 
@@ -63,16 +63,16 @@ session = labels['chunks'][condition_mask]
 # ANOVA pipeline with :class:`nilearn.decoding.Decoder` object
 # ------------------------------------------------------------
 #
-# Nilearn Decoder object aims to provide smooth user experience by acting
-# as a pipeline of several tasks: preprocessing with NiftiMasker, decoding
-# with different types of estimators (in this example is Support Vector
-# Machine with a linear kernel) on nested cross-validation, selecting
-# relevant features with ANOVA -- a classical univariate feature selection
-# based on F-test.
+# Nilearn Decoder object aims to provide smooth user experience by acting as a
+# pipeline of several tasks: preprocessing with NiftiMasker, reducing dimension
+# by selecting only relevant features with ANOVA -- a classical univariate
+# feature selection based on F-test, and then decoding with different types of
+# estimators (in this example is Support Vector Machine with a linear kernel)
+# on nested cross-validation.
 from nilearn.decoding import Decoder
 # Here screening_percentile is set to 2 percent, meaning around 800
 # features will be selected with ANOVA.
-decoder = Decoder(estimator='svc', cv=5, mask=mask_filename,
+decoder = Decoder(estimator='svc', cv=5, mask=mask_img,
                   smoothing_fwhm=4, standardize=True,
                   screening_percentile=2)
 
@@ -104,7 +104,7 @@ cv_scores = []
 val_scores = []
 
 for sp in screening_percentile_range:
-    decoder = Decoder(estimator='svc', mask=mask_filename,
+    decoder = Decoder(estimator='svc', mask=mask_img,
                       smoothing_fwhm=4, cv=3, standardize=True,
                       screening_percentile=sp)
     decoder.fit(index_img(fmri_niimgs, session < 10),
@@ -130,9 +130,9 @@ for train, test in cv.split(session):
     y_train = np.array(y)[train]
     y_test = np.array(y)[test]
     val_scores = []
-    
+
     for sp in screening_percentile_range:
-        decoder = Decoder(estimator='svc', mask=mask_filename,
+        decoder = Decoder(estimator='svc', mask=mask_img,
                           smoothing_fwhm=4, cv=3, standardize=True,
                           screening_percentile=sp)
         decoder.fit(index_img(fmri_niimgs, train), y_train)

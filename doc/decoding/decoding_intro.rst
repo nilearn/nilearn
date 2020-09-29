@@ -355,7 +355,7 @@ You can directly choose to keep only a certain percentage of voxels in the
 argument. To keep the 10% most correlated voxels, just create us this parameter :
 
 .. literalinclude:: ../../examples/02_decoding/plot_haxby_anova_svm.py
-   :start-after: # based on F-test
+   :start-after: # on nested cross-validation.
    :end-before: # Visualize the results
 
 
