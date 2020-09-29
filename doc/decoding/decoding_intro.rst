@@ -339,7 +339,6 @@ coefficients of best models for each class in `decoder.coef_img_`.
 Decoding without a mask: Anova-SVM
 ==================================
 
-
 Dimension reduction with feature selection
 ------------------------------------------
 
@@ -356,7 +355,7 @@ You can directly choose to keep only a certain percentage of voxels in the
 argument. To keep the 10% most correlated voxels, just create us this parameter :
 
 .. literalinclude:: ../../examples/02_decoding/plot_haxby_anova_svm.py
-   :start-after: # Build the decoder
+   :start-after: # on nested cross-validation.
    :end-before: # Visualize the results
 
 
