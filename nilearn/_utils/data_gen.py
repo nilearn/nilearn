@@ -8,6 +8,7 @@ import string
 import numpy as np
 import pandas as pd
 import scipy.signal
+from scipy import ndimage
 
 from sklearn.utils import check_random_state
 import scipy.linalg
@@ -17,6 +18,23 @@ from nibabel import Nifti1Image
 
 from .. import masking
 from . import logger
+from nilearn import datasets, image, input_data
+
+
+def generate_mni_space_img(n_scans=1, res=30, random_state=0, mask_dilation=2):
+    rng = check_random_state(random_state)
+    mni = datasets.load_mni152_brain_mask()
+    target_affine = np.eye(3) * res
+    mask_img = image.resample_img(
+        mni, target_affine=target_affine, interpolation="nearest")
+    masker = input_data.NiftiMasker(mask_img).fit()
+    n_voxels = image.get_data(mask_img).sum()
+    data = rng.randn(n_scans, n_voxels)
+    if mask_dilation is not None and mask_dilation > 0:
+        mask_img = image.new_img_like(
+            mask_img, ndimage.binary_dilation(
+                image.get_data(mask_img), iterations=mask_dilation))
+    return masker.inverse_transform(data), mask_img
 
 
 def generate_timeseries(n_instants, n_features,

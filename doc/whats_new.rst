@@ -63,6 +63,10 @@ Changes
 
 - :class:`nilearn.connectome.ConnectivityMeasure` can now remove
   confounds in its transform step.
+- :func:`nilearn.surface.vol_to_surf` can now sample between two nested surfaces
+  (eg white matter and pial surfaces) at specific cortical depths
+- :func:`nilearn.datasets.fetch_surf_fsaverage` now also downloads white matter
+  surfaces.
 
 
 0.6.2
