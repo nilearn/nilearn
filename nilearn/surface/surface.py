@@ -232,25 +232,35 @@ def _line_sample_locations(
     return sample_locations_voxel_space
 
 
-def _sample_locations(mesh, affine, radius, kind='line', n_points=None,
+def _choose_kind(kind, inner_mesh):
+    if kind == "depth" and inner_mesh is None:
+        raise TypeError(
+            "'inner_mesh' must be provided to use "
+            "the 'depth' sampling strategy")
+    if kind == "auto":
+        kind = "line" if inner_mesh is None else "depth"
+    return kind
+
+
+def _sample_locations(mesh, affine, radius, kind='auto', n_points=None,
                       inner_mesh=None, depth=None):
     """Get either ball or line sample locations."""
-    loc_kwargs = ({} if n_points is None else {'n_points': n_points})
-    if inner_mesh is not None:
-        return _sample_locations_between_surfaces(
-            mesh, inner_mesh, affine, depth=depth, **loc_kwargs)
+    kind = _choose_kind(kind, inner_mesh)
+    kwargs = ({} if n_points is None else {'n_points': n_points})
     projectors = {
-        'line': _line_sample_locations,
-        'ball': _ball_sample_locations,
+        'line': (_line_sample_locations, {"segment_half_width": radius}),
+        'ball': (_ball_sample_locations, {"ball_radius": radius}),
+        'depth': (_sample_locations_between_surfaces,
+                  {"inner_mesh": inner_mesh})
     }
     if kind not in projectors:
         raise ValueError(
             '"kind" must be one of {}'.format(tuple(projectors.keys())))
-    projector = projectors[kind]
+    projector, extra_kwargs = projectors[kind]
     # let the projector choose the default for n_points
     # (for example a ball probably needs more than a line)
     sample_locations = projector(
-        mesh, affine, radius, depth=depth, **loc_kwargs)
+        mesh=mesh, affine=affine, depth=depth, **kwargs, **extra_kwargs)
     return sample_locations
 
 
@@ -285,7 +295,7 @@ def _masked_indices(sample_locations, img_shape, mask=None):
     return ~kept
 
 
-def _projection_matrix(mesh, affine, img_shape, kind='line', radius=3.,
+def _projection_matrix(mesh, affine, img_shape, kind='auto', radius=3.,
                        n_points=None, mask=None, inner_mesh=None, depth=None):
     """Get a sparse matrix that projects volume data onto a mesh.
 
@@ -306,13 +316,17 @@ def _projection_matrix(mesh, affine, img_shape, kind='line', radius=3.,
     img_shape : 3-tuple of integers
         The shape of the image to be projected.
 
-    kind : {'line', 'ball'}
+    kind : {'auto', 'depth', 'line', 'ball'}
         The strategy used to sample image intensities around each vertex.
         Ignored if `inner_mesh` is not None.
 
-        - 'line' (the default):
-            samples are regularly spaced along the normal to the mesh, over the
-            interval [-radius, +radius].
+        - 'auto' (the default):
+            'depth' if `inner_mesh` is not `None`, otherwise 'line
+        - 'depth':
+            sampled at the specified cortical depths between corresponding
+            nodes of `mesh` and `inner_mesh`
+        - 'line':
+            samples are placed along the normal to the mesh.
         - 'ball':
             samples are regularly spaced inside a ball centered at the mesh
             vertex.
@@ -339,7 +353,8 @@ def _projection_matrix(mesh, affine, img_shape, kind='line', radius=3.,
         surface and `inner_mesh` a white matter surface. In this case nodes in
         both meshes must correspond: node i in `mesh` is just across the gray
         matter thickness from node i in `inner_mesh`. Image values for index i
-        are then sampled along the line joining these two points.
+        are then sampled along the line joining these two points (if `kind` is
+        'auto' or 'depth').
 
     depth : sequence of floats or None
         cortical depth, expressed as a fraction of segment_half_width.
@@ -383,7 +398,7 @@ def _projection_matrix(mesh, affine, img_shape, kind='line', radius=3.,
     return proj
 
 
-def _nearest_voxel_sampling(images, mesh, affine, kind='ball', radius=3.,
+def _nearest_voxel_sampling(images, mesh, affine, kind='auto', radius=3.,
                             n_points=None, mask=None, inner_mesh=None,
                             depth=None):
     """In each image, measure the intensity at each node of the mesh.
@@ -406,7 +421,7 @@ def _nearest_voxel_sampling(images, mesh, affine, kind='ball', radius=3.,
     return texture.T
 
 
-def _interpolation_sampling(images, mesh, affine, kind='ball', radius=3,
+def _interpolation_sampling(images, mesh, affine, kind='auto', radius=3,
                             n_points=None, mask=None, inner_mesh=None,
                             depth=None):
     """In each image, measure the intensity at each node of the mesh.
@@ -444,7 +459,7 @@ def _interpolation_sampling(images, mesh, affine, kind='ball', radius=3,
 
 
 def vol_to_surf(img, surf_mesh,
-                radius=3., interpolation='linear', kind='line',
+                radius=3., interpolation='linear', kind='auto',
                 n_samples=None, mask_img=None, inner_mesh=None, depth=None):
     """Extract surface data from a Nifti image.
 
@@ -480,15 +495,22 @@ def vol_to_surf(img, surf_mesh,
         more time. For many images, 'nearest' scales much better, up to x20
         faster.
 
-    kind : {'line', 'ball'}
+    kind : {'auto', 'depth', 'line', 'ball'}
         The strategy used to sample image intensities around each vertex.
-        If `inner_mesh` is provided this parameter is ignored and values are
-        sampled along a line
 
-        - 'line' (the default):
-            samples are regularly spaced along the normal to the mesh, over the
+        - 'auto' (the default):
+            chooses 'depth' if `inner_mesh` is provided and 'line' otherwise.
+        - 'depth':
+            `inner_mesh` must be a mesh whose nodes correspond to those in
+            `surf_mesh`. For example, `inner_mesh` could be a white matter
+            surface mesh and `surf_mesh` a pial surface mesh. Samples are
+            placed between each pair of corresponding nodes at the specified
+            cortical depths (regularly spaced by default, see `depth`
+            parameter).
+        - 'line':
+            samples are placed along the normal to the mesh, at the positions
+            specified by `depth`, or by default regularly spaced over the
             interval [- `radius`, + `radius`].
-            (sometimes called thickness sampling)
         - 'ball':
             samples are regularly spaced inside a ball centered at the mesh
             vertex.
@@ -513,7 +535,7 @@ def vol_to_surf(img, surf_mesh,
         nodes in both meshes must correspond: node i in `surf_mesh` is just
         across the gray matter thickness from node i in `inner_mesh`. Image
         values for index i are then sampled along the line joining these two
-        points.
+        points (if `kind` is 'auto' or 'depth').
 
     depth : sequence of floats or None, optional (default=None)
         The cortical depth of samples. If provided, n_samples is ignored.
@@ -527,8 +549,7 @@ def vol_to_surf(img, surf_mesh,
         values will be sampled .5 mm outside of the surface and exactly at the
         node position.
         This parameter is not supported for the "ball" strategy so passing
-        `depth` when `inner_mesh` is not provided and `kind=="ball"` results in
-        a `ValueError`.
+        `depth` when `kind=="ball"` results in a `ValueError`.
 
     Returns
     -------
@@ -546,18 +567,20 @@ def vol_to_surf(img, surf_mesh,
     averages the results.
 
     Three strategies are available to select these positions.
+
+        - with 'depth', data is sampled at various cortical depths between
+          corresponding nodes of `surface_mesh` and `inner_mesh` (which can be,
+          for example, a pial surface and a white matter surface).
         - 'ball' uses points regularly spaced in a ball centered at the mesh
-            vertex. The radius of the ball is controlled by the parameter
-            `radius`.
+          vertex. The radius of the ball is controlled by the parameter
+          `radius`.
         - 'line' starts by drawing the normal to the mesh passing through this
-            vertex. It then selects a segment of this normal, centered at the
-            vertex, of length 2 * `radius`. Image intensities are measured at
-            points regularly spaced on this normal segment, or at positions
-            determined by `depth`.
-        - Finally, if `inner_mesh` is provided, positions for index i are
-          spread along the line segment joining the nodes at index i in
-          `surf_mesh` and `inner_mesh`, either evenly or at positions specified
-          by `depth`.
+          vertex. It then selects a segment of this normal, centered at the
+          vertex, of length 2 * `radius`. Image intensities are measured at
+          points regularly spaced on this normal segment, or at positions
+          determined by `depth`.
+        - ('auto' chooses 'depth' if `inner_mesh` is provided and 'line'
+          otherwise)
 
     You can control how many samples are drawn by setting `n_samples`, or their
     position by setting `depth`.

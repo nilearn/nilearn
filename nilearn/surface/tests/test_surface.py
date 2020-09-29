@@ -483,7 +483,7 @@ def test_vol_to_surf(kind, n_scans, use_mask):
     inner_mesh = surface.load_surf_mesh(fsaverage["white_left"])
     center_mesh = np.mean([mesh[0], inner_mesh[0]], axis=0), mesh[1]
     proj = surface.vol_to_surf(
-        img, mesh, inner_mesh=inner_mesh, mask_img=mask_img)
+        img, mesh, kind="depth", inner_mesh=inner_mesh, mask_img=mask_img)
     other_proj = surface.vol_to_surf(
         img, center_mesh, kind=kind, mask_img=mask_img)
     correlation = pearsonr(proj.ravel(), other_proj.ravel())[0]
@@ -548,7 +548,7 @@ def test_sampling_affine():
     assert_array_almost_equal(texture[0], [1.1, 2., 1.])
 
 
-@pytest.mark.parametrize("kind", ["line", "ball"])
+@pytest.mark.parametrize("kind", ["auto", "line", "ball"])
 @pytest.mark.parametrize("use_inner_mesh", [True, False])
 @pytest.mark.parametrize("projection", ["linear", "nearest"])
 def test_sampling(kind, use_inner_mesh, projection):
@@ -579,9 +579,22 @@ def test_sampling_between_surfaces(projection):
     img = z_const_img(5, 7, 13).T
     projection = projector(
         [img], mesh, np.eye(4),
-        kind="line", n_points=100, inner_mesh=inner_mesh)
+        kind="auto", n_points=100, inner_mesh=inner_mesh)
     assert_array_almost_equal(
         projection.ravel(), img[:, :, 1:4].mean(axis=-1).ravel())
+
+
+def test_choose_kind():
+    kind = surface._choose_kind("abc", None)
+    assert kind == "abc"
+    kind = surface._choose_kind("abc", "mesh")
+    assert kind == "abc"
+    kind = surface._choose_kind("auto", None)
+    assert kind == "line"
+    kind = surface._choose_kind("auto", "mesh")
+    assert kind == "depth"
+    with pytest.raises(TypeError, match=".*sampling strategy"):
+        kind = surface._choose_kind("depth", None)
 
 
 def test_check_mesh():
