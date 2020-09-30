@@ -20,9 +20,9 @@ from nilearn._utils.glm import (_check_and_load_tables,
                                 get_design_from_fslmat, multiple_fast_inverse,
                                 multiple_mahalanobis, parse_bids_filename,
                                 positive_reciprocal, z_score)
-from nilearn.datasets import func
 from nilearn.glm.first_level import FirstLevelModel
-from nilearn.image import concat_imgs
+from nilearn.datasets import fetch_spm_auditory
+from nilearn.image import mean_img
 
 
 def test_full_rank():
@@ -45,43 +45,19 @@ def test_z_score():
     assert_array_almost_equal(z_score(np.float32(1.e-100)), norm.isf(1.e-300))
 
 
-def test_z_score_opposite_contrast(tmp_path):
+def test_z_score_opposite_contrast():
     # put data fetching here
-    saf = ["fM00223/fM00223_%03i.img" % index for index in range(4, 100)]
-    saf_ = ["fM00223/fM00223_%03i.hdr" % index for index in range(4, 100)]
-
-    data_dir = str(tmp_path / 'spm_auditory')
-    os.mkdir(data_dir)
-    subject_dir = os.path.join(data_dir, 'sub001')
-    os.mkdir(subject_dir)
-    os.mkdir(os.path.join(subject_dir, 'fM00223'))
-    os.mkdir(os.path.join(subject_dir, 'sM00223'))
-
-    path_img = str(tmp_path / 'tmp.img')
-    path_hdr = str(tmp_path / 'tmp.hdr')
-    nib.save(nib.Nifti1Image(np.zeros((2, 3, 4)), np.eye(4)), path_img)
-    shutil.copy(path_img, os.path.join(subject_dir,
-                                       "sM00223/sM00223_002.img"))
-    shutil.copy(path_hdr, os.path.join(subject_dir,
-                                       "sM00223/sM00223_002.hdr"))
-    for file_ in saf:
-        shutil.copy(path_img, os.path.join(subject_dir, file_))
-    for file_ in saf_:
-        shutil.copy(path_hdr, os.path.join(subject_dir, file_))
-
-    subject_data = func.fetch_spm_auditory(data_dir=str(tmp_path))
-    fmri_img = concat_imgs(subject_data.func)
-    events = pd.read_csv(subject_data['events'], delimiter = '\t')
-
+    subject_data = fetch_spm_auditory()
+    m_img = mean_img(subject_data.func)
+    events = pd.read_table(subject_data['events'])
     # compute z-map of opposite contrast
     fmri_glm = FirstLevelModel(t_r=7,
                                noise_model='ar1',
                                standardize=False,
                                hrf_model='spm',
                                drift_model='cosine',
-                               high_pass=1/170,
-                               mask_img=False)
-    fmri_glm = fmri_glm.fit(fmri_img, events)
+                               high_pass=1/170)
+    fmri_glm = fmri_glm.fit(m_img, events)
 
     conditions = {
         'active': np.array([1., 0., 0., 0., 0., 0., 0., 0., 0., 0.]),
