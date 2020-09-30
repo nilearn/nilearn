@@ -15,8 +15,8 @@ import pytest
 from nilearn._utils.param_validation import check_feature_screening
 from nilearn.decoding.decoder import (Decoder, DecoderRegressor, _BaseDecoder,
                                       _check_estimator, _check_param_grid,
-                                      _parallel_fit, fREMClassifier,
-                                      fREMRegressor)
+                                      _parallel_fit, FREMClassifier,
+                                      FREMRegressor)
 from nilearn.decoding.tests.test_same_api import to_niimgs
 from nilearn.input_data import NiftiMasker
 from sklearn.datasets import load_iris, make_classification, make_regression
@@ -88,7 +88,7 @@ def test_check_inputs_length():
     # Remove ten samples from y
     y = y[:-10]
 
-    for model in [DecoderRegressor, Decoder, fREMRegressor, fREMClassifier]:
+    for model in [DecoderRegressor, Decoder, FREMRegressor, FREMClassifier]:
         pytest.raises(ValueError, model(mask=mask,
                                         screening_percentile=100.).fit, X_, y)
 
@@ -180,7 +180,7 @@ def test_decoder_binary_classification():
         assert accuracy_score(y, y_pred) > 0.95
 
     for clustering_percentile in [100, 99]:
-        model = fREMClassifier(estimator='logistic_l2', mask=mask,
+        model = FREMClassifier(estimator='logistic_l2', mask=mask,
                                clustering_percentile=clustering_percentile,
                                screening_percentile=90, cv=5)
         model.fit(X, y)
@@ -218,10 +218,10 @@ def test_decoder_multiclass_classification():
         y_pred = model.predict(X)
         assert accuracy_score(y, y_pred) > 0.95
 
-    # check fREM with clustering or not
+    # check FREM with clustering or not
     for clustering_percentile in [100, 99]:
         for estimator in ['svc_l2', 'svc_l1']:
-            model = fREMClassifier(estimator=estimator, mask=mask,
+            model = FREMClassifier(estimator=estimator, mask=mask,
                                    clustering_percentile=clustering_percentile,
                                    screening_percentile=90,
                                    cv=5)
@@ -276,7 +276,7 @@ def test_decoder_regression():
     X, mask = to_niimgs(X, [dim, dim, dim])
 
     for clustering_percentile in [100, 99]:
-        model = fREMRegressor(estimator=reg, mask=mask,
+        model = FREMRegressor(estimator=reg, mask=mask,
                               clustering_percentile=clustering_percentile,
                               screening_percentile=90,
                               cv=10)
@@ -348,9 +348,9 @@ def test_decoder_split_cv():
         model.fit(X, y, groups=groups)
 
     # Check that warning is raised when n_features is lower than 50 after
-    # screening and clustering for fREM
+    # screening and clustering for FREM
     with pytest.warns(UserWarning, match=".*screening_percentile parameters"):
-        model = fREMClassifier(clustering_percentile=10,
+        model = FREMClassifier(clustering_percentile=10,
                                screening_percentile=10, mask=NiftiMasker(),
                                cv=1)
         model.fit(X, y)

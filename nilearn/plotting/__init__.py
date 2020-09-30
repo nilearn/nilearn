@@ -30,11 +30,11 @@ def _set_mpl_backend():
         if 'inline' in current_backend or 'nbagg' in current_backend:
             return
         # Set the backend to a non-interactive one for unices without X
-        if (os.name == 'posix' and 'DISPLAY' not in os.environ
-                and not (sys.platform == 'darwin'
-                         and 'macosx' in current_backend)
-        ):
+        # (see gh-2560)
+        if (sys.platform not in ('darwin', 'win32') and
+                'DISPLAY' not in os.environ):
             matplotlib.use('Agg')
+
 
 _set_mpl_backend()
 

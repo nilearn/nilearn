@@ -414,9 +414,9 @@ def find_parcellation_cut_coords(labels_img, background_label=0, return_label_na
 
         # Two connected component in both hemispheres
         if not np.all(left_hemi == False) or np.all(right_hemi == False):
-            if label_hemisphere is 'left':
+            if label_hemisphere == 'left':
                 cur_img = left_hemi.astype(int)
-            elif label_hemisphere is 'right':
+            elif label_hemisphere == 'right':
                 cur_img = right_hemi.astype(int)
 
         # Take the largest connected component

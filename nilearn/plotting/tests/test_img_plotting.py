@@ -14,7 +14,7 @@ import pytest
 
 from scipy import sparse
 
-from nilearn.image.resampling import coord_transform
+from nilearn.image.resampling import coord_transform, reorder_img
 from nilearn.image import get_data
 from nilearn.datasets import load_mni152_template
 from nilearn.plotting.find_cuts import find_cut_slices
@@ -63,6 +63,14 @@ def testdata_4d():
     return data
 
 
+def test_mni152template_is_reordered():
+    """See issue #2550"""
+    reordered_mni = reorder_img(load_mni152_template())
+    assert np.allclose(get_data(reordered_mni), get_data(MNI152TEMPLATE))
+    assert np.allclose(reordered_mni.affine, MNI152TEMPLATE.affine)
+    assert np.allclose(reordered_mni.shape, MNI152TEMPLATE.shape)
+
+
 def demo_plot_roi(**kwargs):
     """ Demo plotting an ROI
     """
@@ -76,6 +84,34 @@ def demo_plot_roi(**kwargs):
          int(z_map) - 10:int(z_map) + 10] = 1
     img = nibabel.Nifti1Image(data, mni_affine)
     return plot_roi(img, title="Broca's area", **kwargs)
+
+
+def test_plot_roi_view_types():
+    # This is only a smoke test contours rois
+    demo_plot_roi(view_type='contours')
+    # This is only a smoke test contours rois
+    demo_plot_roi(view_type='continuous')
+
+    # Test error message for invalid view_type
+    with pytest.raises(ValueError,
+                       match='Unknown view type:'
+                       ):
+        demo_plot_roi(view_type='flled')
+    plt.close()
+
+
+def test_plot_roi_contours():
+    display = plot_roi(None)
+    data = np.zeros((91, 109, 91))
+    x, y, z = -52, 10, 22
+    x_map, y_map, z_map = coord_transform(x, y, z,
+                                          np.linalg.inv(mni_affine))
+    data[int(x_map) - 5:int(x_map) + 5, int(y_map) - 3:int(y_map) + 3,
+         int(z_map) - 10:int(z_map) + 10] = 1
+    img = nibabel.Nifti1Image(data, mni_affine)
+    plot_roi(img, cmap='RdBu', alpha=0.1, view_type='contours',
+             linewidths=2.)
+    plt.close()
 
 
 def test_demo_plot_roi():
