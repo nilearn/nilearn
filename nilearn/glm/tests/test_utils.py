@@ -121,7 +121,7 @@ def test_img_table_checks():
     with pytest.raises(ValueError):
         _check_and_load_tables(['.csv', '.csv'], "")
     with pytest.raises(TypeError):
-        _check_and_load_tables([np.array([0]), pd.DataFrame()], "")
+        _check_and_load_tables([[], pd.DataFrame()], "") # np.array([0]), 
     with pytest.raises(ValueError):
         _check_and_load_tables(['.csv', pd.DataFrame()], "")
     # check high level wrapper keeps behavior
@@ -130,7 +130,7 @@ def test_img_table_checks():
     with pytest.raises(ValueError):
         _check_run_tables([''] * 2, ['.csv', '.csv'], "")
     with pytest.raises(TypeError):
-        _check_run_tables([''] * 2, [np.array([0]), pd.DataFrame()], "")
+        _check_run_tables([''] * 2, [[0], pd.DataFrame()], "")
     with pytest.raises(ValueError):
         _check_run_tables([''] * 2, ['.csv', pd.DataFrame()], "")
 

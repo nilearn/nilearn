@@ -344,8 +344,8 @@ class FirstLevelModel(BaseEstimator, TransformerMixin, CacheMixin):
             expected per run_img. Ignored in case designs is not None.
             If string, then a path to a csv file is expected.
 
-        confounds: pandas Dataframe or string or list of pandas DataFrames or
-                   strings
+        confounds: pandas Dataframe, numpy array or string or
+                   list of pandas DataFrames, numpy arays or strings 
 
             Each column in a DataFrame corresponds to a confound variable
             to be included in the regression model of the respective run_img.

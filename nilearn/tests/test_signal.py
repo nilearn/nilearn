@@ -15,6 +15,7 @@ import pytest
 # not possible)
 from nilearn import signal as nisignal
 from nilearn.signal import clean
+from pandas import read_csv
 import scipy.signal
 
 
@@ -445,6 +446,13 @@ def test_clean_confounds():
     nisignal.clean(signals, detrend=False, standardize=False,
                    confounds=confounds[:, 1])
 
+    # test with confounds as a pandas DataFrame
+    confounds_df = read_csv(filename2, sep='\t')
+    nisignal.clean(signals, detrend=False, standardize=False,
+                   confounds=confounds_df.values)
+    nisignal.clean(signals, detrend=False, standardize=False,
+                   confounds=confounds_df)
+    
     # Use a list containing two filenames, a 2D array and a 1D array
     nisignal.clean(signals, detrend=False, standardize=False,
                    confounds=[filename1, confounds[:, 0:2],
