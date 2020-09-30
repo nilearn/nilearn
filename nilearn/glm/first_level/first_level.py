@@ -19,7 +19,7 @@ import numpy as np
 import pandas as pd
 from joblib import Memory, Parallel, delayed
 from nibabel import Nifti1Image
-from nibabel.onetime import setattr_on_read
+from nibabel.onetime import auto_attr
 from sklearn.base import BaseEstimator, TransformerMixin, clone
 
 from nilearn._utils import CacheMixin
@@ -667,7 +667,7 @@ class FirstLevelModel(BaseEstimator, TransformerMixin, CacheMixin):
 
             return output
 
-    @setattr_on_read
+    @auto_attr
     def residuals(self):
         """Transform voxelwise residuals to the same shape
         as the input Nifti1Image(s)
@@ -680,7 +680,7 @@ class FirstLevelModel(BaseEstimator, TransformerMixin, CacheMixin):
         return self._get_voxelwise_model_attribute('resid',
                                                    result_as_time_series=True)
 
-    @setattr_on_read
+    @auto_attr
     def predicted(self):
         """Transform voxelwise predicted values to the same shape
         as the input Nifti1Image(s)
@@ -693,7 +693,7 @@ class FirstLevelModel(BaseEstimator, TransformerMixin, CacheMixin):
         return self._get_voxelwise_model_attribute('predicted',
                                                    result_as_time_series=True)
 
-    @setattr_on_read
+    @auto_attr
     def r_square(self):
         """Transform voxelwise r-squared values to the same shape
         as the input Nifti1Image(s)

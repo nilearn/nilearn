@@ -40,7 +40,6 @@ def list_required_packages():
         if package.startswith('sklearn'):
             package = package.replace('sklearn', 'scikit-learn')
         required_packages.append(package)
-    required_packages.append('sklearn')
     return required_packages
 
 

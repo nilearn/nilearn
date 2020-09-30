@@ -35,6 +35,7 @@ from .._utils.param_validation import check_threshold
 from .._utils.ndimage import get_border_data
 from ..datasets import load_mni152_template
 from ..image import new_img_like, iter_img, get_data
+from nilearn.image.resampling import reorder_img
 from ..masking import compute_epi_mask, apply_mask
 from .displays import get_slicer, get_projector
 from . import cm
@@ -355,6 +356,7 @@ class _MNI152Template(SpatialImage):
     def load(self):
         if self.data is None:
             anat_img = load_mni152_template()
+            anat_img = reorder_img(anat_img)
             data = get_data(anat_img)
             data = data.astype(np.float)
             anat_mask = ndimage.morphology.binary_fill_holes(data > 0)
@@ -640,12 +642,58 @@ def plot_epi(epi_img=None, cut_coords=None, output_file=None,
     return display
 
 
+def _plot_roi_contours(display, roi_img, cmap, alpha, linewidths):
+    """Helper function for plotting regions of interest ROIs in contours.
+
+    Parameters
+    ----------
+    display : nilearn.plotting.displays.OrthoSlicer, object
+        An object with background image on which contours are shown.
+
+    roi_img : Niimg-like object
+        See http://nilearn.github.io/manipulating_images/input_output.html
+        The ROI/mask image, it could be binary mask or an atlas or ROIs
+        with integer values.
+
+    cmap : matplotlib colormap
+        The colormap for the atlas maps
+
+    alpha : float between 0 and 1
+        Alpha sets the transparency of the color inside the filled
+        contours.
+
+    linewidths : float
+        This option can be used to set the boundary thickness of the
+        contours.
+
+    Returns
+    -------
+    display : nilearn.plotting.displays.OrthoSlicer, object
+        Contours displayed on the background image.
+    """
+    roi_img = _utils.check_niimg_3d(roi_img)
+    roi_data = roi_img.get_data()
+    labels = np.unique(roi_data)
+    cmap = plt.cm.get_cmap(cmap)
+    color_list = cmap(np.linspace(0, 1, len(labels)))
+    for idx, label in enumerate(labels):
+        if label == 0:
+            continue
+        data = (roi_data == label)
+        data = data.astype(np.int)
+        img = new_img_like(roi_img, data, affine=roi_img.affine)
+        display.add_contours(img, levels=[0.5], colors=[color_list[idx - 1]],
+                             alpha=alpha, linewidths=linewidths,
+                             linestyles='solid')
+    return display
+
+
 def plot_roi(roi_img, bg_img=MNI152TEMPLATE, cut_coords=None,
              output_file=None, display_mode='ortho', figure=None, axes=None,
              title=None, annotate=True, draw_cross=True, black_bg='auto',
              threshold=0.5, alpha=0.7, cmap=plt.cm.gist_ncar, dim='auto',
              vmin=None, vmax=None, resampling_interpolation='nearest',
-             **kwargs):
+             view_type='continuous', linewidths=2.5, **kwargs):
     """ Plot cuts of an ROI/mask image (by default 3 cuts: Frontal, Axial, and
         Lateral)
 
@@ -703,6 +751,11 @@ def plot_roi(roi_img, bg_img=MNI152TEMPLATE, cut_coords=None,
             values below the threshold (in absolute value) are plotted
             as transparent. If auto is given, the threshold is determined
             magically by analysis of the image.
+        alpha : float between 0 and 1, default=0.7
+            Alpha sets the transparency of the color inside the filled
+            contours.
+        cmap : matplotlib colormap, optional
+            The colormap for the atlas maps
         dim : float, 'auto' (by default), optional
             Dimming factor applied to background image. By default, automatic
             heuristics are applied based upon the background image intensity.
@@ -718,6 +771,15 @@ def plot_roi(roi_img, bg_img=MNI152TEMPLATE, cut_coords=None,
             space. Can be "continuous" to use 3rd-order spline interpolation,
             or "nearest" (default) to use nearest-neighbor mapping.
             "nearest" is faster but can be noisier in some cases.
+        view_type : {'continuous', 'contours'}, optional
+            By default view_type == 'continuous', rois are shown as continuous
+            colors.
+            If view_type == 'contours', maps are shown as contours. For this
+            type, label denoted as 0 is considered as background and not
+            shown.
+        linewidths : float, default=2.5
+            This option can be used to set the boundary thickness of the
+            contours. Only reflects when view_type='contours'.
 
         Notes
         -----
@@ -732,6 +794,16 @@ def plot_roi(roi_img, bg_img=MNI152TEMPLATE, cut_coords=None,
         nilearn.plotting.plot_prob_atlas : To simply plot probabilistic atlases
             (4D images)
     """  # noqa: E501
+    valid_view_types = ['continuous', 'contours']
+    if view_type not in valid_view_types:
+        raise ValueError(
+            'Unknown view type: %s. Valid view types are %s' %
+            (str(view_type), str(valid_view_types))
+        )
+    elif view_type == 'contours':
+        img = roi_img
+        roi_img = None
+
     bg_img, black_bg, bg_vmin, bg_vmax = _load_anat(bg_img, dim=dim,
                                                     black_bg=black_bg)
 
@@ -743,6 +815,11 @@ def plot_roi(roi_img, bg_img=MNI152TEMPLATE, cut_coords=None,
         threshold=threshold, bg_vmin=bg_vmin, bg_vmax=bg_vmax,
         resampling_interpolation=resampling_interpolation,
         alpha=alpha, cmap=cmap, vmin=vmin, vmax=vmax, **kwargs)
+
+    if view_type == 'contours':
+        display = _plot_roi_contours(display, img, cmap=cmap, alpha=alpha,
+                                     linewidths=linewidths)
+
     return display
 
 

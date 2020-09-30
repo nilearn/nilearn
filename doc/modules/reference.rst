@@ -132,8 +132,8 @@ the :ref:`user guide <user_guide>` for more information and usage examples.
 
    Decoder
    DecoderRegressor
-   fREMClassifier
-   fREMRegressor
+   FREMClassifier
+   FREMRegressor
    SpaceNetClassifier
    SpaceNetRegressor
    SearchLight

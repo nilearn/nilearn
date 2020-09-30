@@ -157,18 +157,16 @@ def test_fetch_icbm152_brain_gm_mask(tmp_path, request_mocker):
     assert isinstance(grey_matter_img, nibabel.Nifti1Image)
 
 
-def test_fetch_surf_fsaverage(tmp_path, request_mocker):
-    # for mesh in ['fsaverage5', 'fsaverage']:
-    for mesh in ['fsaverage']:
-
-        dataset = struct.fetch_surf_fsaverage(
-            mesh, data_dir=str(tmp_path))
-
-        keys = {'pial_left', 'pial_right', 'infl_left', 'infl_right',
-                'sulc_left', 'sulc_right'}
-
-        assert keys.issubset(set(dataset.keys()))
-        assert dataset.description != ''
+@pytest.mark.parametrize("mesh", ["fsaverage5", "fsaverage"])
+def test_fetch_surf_fsaverage(mesh, tmp_path, request_mocker):
+    keys = {'pial_left', 'pial_right', 'infl_left', 'infl_right',
+            'sulc_left', 'sulc_right', 'white_left', 'white_right'}
+    request_mocker.url_mapping["*fsaverage.tar.gz"] = list_to_archive(
+        [Path("fsaverage") / "{}.gii".format(k.replace("infl", "inflated")) for
+         k in keys])
+    dataset = struct.fetch_surf_fsaverage(mesh, data_dir=str(tmp_path))
+    assert keys.issubset(set(dataset.keys()))
+    assert dataset.description != ''
 
 
 def test_fetch_surf_fsaverage5_sphere(tmp_path, request_mocker):

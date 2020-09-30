@@ -3,7 +3,7 @@ regression strategies such as SVM, LogisticRegression and Ridge, with optional
 feature selection, integrated hyper-parameter selection and aggregation
 strategy in which the best models within a cross validation loop are averaged.
 
-Also exposes a high-level method fREM that uses clustering and model
+Also exposes a high-level method FREM that uses clustering and model
 ensembling to achieve state of the art performance
 """
 # Authors: Yannick Schwartz
@@ -151,7 +151,7 @@ def _parallel_fit(estimator, X, y, train, test, param_grid, is_classification,
     X_train, y_train = X[train], y[train]
     X_test, y_test = X[test], y[test]
 
-    # for fREM Classifier and Regressor : start by doing a quick ReNA
+    # for FREM Classifier and Regressor : start by doing a quick ReNA
     # clustering to reduce the number of feature by agglomerating similar ones
 
     if clustering_percentile < 100:
@@ -323,9 +323,9 @@ class _BaseDecoder(LinearRegression, CacheMixin):
     ------------
     nilearn.decoding.Decoder: Classification strategies for Neuroimaging,
     nilearn.decoding.DecoderRegressor: Regression strategies for Neuroimaging,
-    nilearn.decoding.fREMClassifier: State of the art classification pipeline
+    nilearn.decoding.FREMClassifier: State of the art classification pipeline
         for Neuroimaging
-    nilearn.decoding.fREMRegressor: State of the art regression pipeline
+    nilearn.decoding.FREMRegressor: State of the art regression pipeline
         for Neuroimaging
     nilearn.decoding.SpaceNetClassifier: Graph-Net and TV-L1 priors/penalties
 
@@ -780,7 +780,7 @@ class Decoder(_BaseDecoder):
     See Also
     ------------
     nilearn.decoding.DecoderRegressor: regression strategies for Neuro-imaging,
-    nilearn.decoding.fREMClassifier: State of the art classification pipeline
+    nilearn.decoding.FREMClassifier: State of the art classification pipeline
         for Neuroimaging
     nilearn.decoding.SpaceNetClassifier: Graph-Net and TV-L1 priors/penalties
     """
@@ -914,7 +914,7 @@ class DecoderRegressor(_BaseDecoder):
     See Also
     ------------
     nilearn.decoding.Decoder: classification strategies for Neuroimaging,
-    nilearn.decoding.fREMRegressor: State of the art regression pipeline
+    nilearn.decoding.FREMRegressor: State of the art regression pipeline
         for Neuroimaging
     nilearn.decoding.SpaceNetClassifier: Graph-Net and TV-L1 priors/penalties
     """
@@ -938,10 +938,10 @@ class DecoderRegressor(_BaseDecoder):
             verbose=verbose, n_jobs=n_jobs)
 
 
-class fREMRegressor(_BaseDecoder):
+class FREMRegressor(_BaseDecoder):
     """ State of the art decoding scheme applied to usual regression estimators.
 
-    fREM uses an implicit spatial regularization through fast clustering and
+    FREM uses an implicit spatial regularization through fast clustering and
     aggregates a high number of estimators trained on various splits of the
     training set, thus returning a very robust decoder at a lower computational
     cost than other spatially regularized methods.[1]_.
@@ -1065,7 +1065,7 @@ class fREMRegressor(_BaseDecoder):
     See Also
     ------------
     nilearn.decoding.DecoderRegressor: Regression strategies for Neuroimaging,
-    nilearn.decoding.fREMClassifier: State of the art classification pipeline
+    nilearn.decoding.FREMClassifier: State of the art classification pipeline
         for Neuroimaging
     """
 
@@ -1093,10 +1093,10 @@ class fREMRegressor(_BaseDecoder):
             verbose=verbose, n_jobs=n_jobs)
 
 
-class fREMClassifier(_BaseDecoder):
+class FREMClassifier(_BaseDecoder):
     """ State of the art decoding scheme applied to usual classifiers.
 
-    fREM uses an implicit spatial regularization through fast clustering and
+    FREM uses an implicit spatial regularization through fast clustering and
     aggregates a high number of estimators trained on various splits of the
     training set, thus returning a very robust decoder at a lower computational
     cost than other spatially regularized methods.[1]_.
@@ -1221,7 +1221,7 @@ class fREMClassifier(_BaseDecoder):
     See Also
     ------------
     nilearn.decoding.Decoder: Classification strategies for Neuroimaging,
-    nilearn.decoding.fREMRegressor: State of the art regression pipeline
+    nilearn.decoding.FREMRegressor: State of the art regression pipeline
         for Neuroimaging
 
     """

@@ -1,19 +1,19 @@
 .. _frem:
 
 ================================================================
-fREM: fast ensembling of regularized models for robust decoding
+FREM: fast ensembling of regularized models for robust decoding
 ================================================================
 
-fREM uses an implicit spatial regularization through fast clustering and
+FREM uses an implicit spatial regularization through fast clustering and
 aggregates a high number of estimators trained on various splits of the
 training set, thus returning a very robust decoder at a lower computational
 cost than other spatially regularized methods. Its performance compared to usual classifiers was studied on several datasets
 in this article: `Hoyos-Idrobo et al. 2017 <https:https://hal.archives-ouvertes.fr/hal-01615015>`_.
 
-fREM pipeline
+FREM pipeline
 =====================
 
-fREM pipeline averages the coefficients of many models, each trained on a
+FREM pipeline averages the coefficients of many models, each trained on a
 different split of the training data. For each split:
 
   * aggregate similar voxels together to reduce the number of features (and the
@@ -30,8 +30,8 @@ Then this ensemble model is used for prediction, usually yielding better and
 more stable predictions than a unique model at no extra-cost. Also, the
 resulting coefficient maps obtained tend to be more structured.
 
-There are two object to apply fREM in Nilearn: fREMClassifier to predict
-categories fREMRegressor to predict continuous values (age, gain / loss...).
+There are two object to apply FREM in Nilearn: FREMClassifier to predict
+categories FREMRegressor to predict continuous values (age, gain / loss...).
 They can use different type of models (l2-SVM, l1-SVM, Logistic, Ridge) through
 the parameter 'estimator'.
 
@@ -44,7 +44,7 @@ Decoding performance increase on Haxby dataset
 
 .. figure:: ../auto_examples/02_decoding/images/sphx_glr_plot_haxby_frem_001.png
 
-In this example we showcase the use of fREM and the performance increase that
+In this example we showcase the use of FREM and the performance increase that
 it brings on this problem.
 
 .. topic:: **Code**

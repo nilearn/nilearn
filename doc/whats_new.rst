@@ -8,7 +8,8 @@
 
 NEW
 ---
-
+- Nilearn now includes the functionality of `Nistats <https://nistats.github.io>`_.
+  :ref:`Here's a guide to replacing Nistats imports to work in Nilearn. <nistats_migration>`
 - New decoder object
   :class:`nilearn.decoding.Decoder` (for classification) and
   :class:`nilearn.decoding.DecoderRegressor` (for regression) implement a model
@@ -16,10 +17,21 @@ NEW
   The resulting average model is the one used as a classifier or a regressor.
   These two objects also leverage the `NiftiMaskers` to provide a direct
   interface with the Nifti files on disk.
+- New FREM object
+  :class:`nilearn.decoding.FREMClassifier` (for classification) and
+  :class:`nilearn.decoding.FREMRegressor` (for regression) extend the decoder
+  object pipeline with one fast clustering step at the beginning (yielding an
+  implicit spatial regularization) and  aggregates a high number of estimators
+  trained on various splits of the training set. This returns a state-of-the-art
+  decoding pipeline at a low computational cost.
+  These two objects also leverage the `NiftiMaskers` to provide a direct
+  interface with the Nifti files on disk.
 - Plot events file
   Use :func:`nilearn.reporting.plot_event` to visualize events file.
-  The function accepts the BIDS events file read using `pandas` 
+  The function accepts the BIDS events file read using `pandas`
   utilities.
+- Plotting function :func:`nilearn.plotting.plot_roi` can now plot ROIs
+  in contours with `view_type` argument.
 - New plotting function
   :func:`nilearn.plotting.plot_carpet` generates a "carpet plot" (also known
   as a "Power plot" or a "grayplot"), for visualizing global patterns in
@@ -33,9 +45,11 @@ NEW
   :func:`nilearn.plotting.plot_connectome_strength`.
 - New plotting function
   :func:`nilearn.plotting.plot_surf_contours` plots the contours of regions of
-  interest on the surface, optionally overlayed on top of a statistical map.  
+  interest on the surface, optionally overlayed on top of a statistical map.
 - The position annotation on the plot methods now implements the `decimals` option
   to enable annotation of a slice coordinate position with the float.
+- New example in `examples/02_decoding/plot_haxby_searchlight_surface.py`
+  to demo how to do cortical surface-based searchlight decoding with Nilearn.
 
 
 Fixes
@@ -45,6 +59,10 @@ Fixes
 - :func:`nilearn.masking.compute_brain_mask` has replaced
   nilearn.masking.compute_gray_matter_mask. Features remained the same but
   some corrections regarding its description were made in the docstring.
+- the default background (MNI template) in plotting functions now has the
+  correct orientation; before left and right were inverted.
+- :func:`nilearn.mass_univariate.permuted_ols` no longer returns transposed
+  t-statistic arrays when no permutations are performed.
 
 
 Changes
@@ -57,6 +75,10 @@ Changes
 
 - :class:`nilearn.connectome.ConnectivityMeasure` can now remove
   confounds in its transform step.
+- :func:`nilearn.surface.vol_to_surf` can now sample between two nested surfaces
+  (eg white matter and pial surfaces) at specific cortical depths
+- :func:`nilearn.datasets.fetch_surf_fsaverage` now also downloads white matter
+  surfaces.
 
 
 0.6.2
