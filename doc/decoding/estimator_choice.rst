@@ -42,7 +42,7 @@ regression pipelines.
 
 .. seealso::
 
-   * :class:`nilearn.decoding.fREMRegressor`, a pipeline described in the
+   * :class:`nilearn.decoding.FREMRegressor`, a pipeline described in the
      :ref:`userguide <frem>`, which yields very good regression performance for
      neuroimaging at a reasonable computational cost.
 
@@ -85,7 +85,7 @@ whereas the latter is linear with the number of classes.
 .. seealso::
 
   * `Multi-class prediction in scikit-learn's documentation <http://scikit-learn.org/stable/modules multiclass.html>`_
-  * :class:`nilearn.decoding.fREMClassifier`, a pipeline described in the
+  * :class:`nilearn.decoding.FREMClassifier`, a pipeline described in the
     :ref:`userguide <frem>`, yielding state-of-the art decoding performance.
 
 **Confusion matrix** `The confusion matrix
@@ -246,7 +246,7 @@ models is then used to make predictions.
     machine learning techniques. To become better at decoding, you need
     to study it.
 
-  * :ref:`fREM <frem>`, a pipeline bagging many models that yields very
+  * :ref:`FREM <frem>`, a pipeline bagging many models that yields very
     good decoding performance at a reasonable computational cost.
 
   * :ref:`SpaceNet <space_net>`, a method promoting sparsity that can also
