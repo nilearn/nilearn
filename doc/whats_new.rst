@@ -48,7 +48,7 @@ Fixes
   some corrections regarding its description were made in the docstring.
 - the default background (MNI template) in plotting functions now has the
   correct orientation; before left and right were inverted.
-- :func:`nilearn.glm.first_level.hemodynamic_models` can deal with regressors
+- first level modelling can deal with regressors
   having multiple events which share onsets or offsets.
   Previously, such cases could lead to an erroneous baseline shift.
 
