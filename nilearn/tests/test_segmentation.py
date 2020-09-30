@@ -11,7 +11,9 @@ from nilearn._utils.segmentation import _random_walker
 
 
 def test_modes_in_random_walker():
-    img = np.zeros((30, 30, 30)) + 0.1 * np.random.RandomState(42).standard_normal(size=(30, 30, 30))
+    img = np.zeros((30, 30, 30)) + 0.1 * np.random.RandomState(
+        42
+    ).standard_normal(size=(30, 30, 30))
     img[9:21, 9:21, 9:21] = 1
     img[10:20, 10:20, 10:20] = 0
     labels = np.zeros_like(img)
@@ -64,7 +66,9 @@ def test_reorder_labels():
     # by reordering them to make no gaps/differences between integers. We expect
     # labels to be of same shape even if they are reordered.
     # Issue #938, comment #14.
-    data = np.zeros((5, 5)) + 0.1 * np.random.RandomState(42).standard_normal(size=(5, 5))
+    data = np.zeros((5, 5)) + 0.1 * np.random.RandomState(42).standard_normal(
+        size=(5, 5)
+    )
     data[1:5, 1:5] = 1
 
     labels = np.zeros_like(data)

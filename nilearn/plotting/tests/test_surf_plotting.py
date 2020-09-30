@@ -56,14 +56,18 @@ def test_plot_surf_error():
 
     # Wrong size of surface data
     with pytest.raises(
-            ValueError,
-            match='surf_map does not have the same number of vertices'):
-        plot_surf(mesh, surf_map=rng.standard_normal(size=mesh[0].shape[0] + 1))
+        ValueError, match="surf_map does not have the same number of vertices"
+    ):
+        plot_surf(
+            mesh, surf_map=rng.standard_normal(size=mesh[0].shape[0] + 1)
+        )
 
     with pytest.raises(
-            ValueError,
-            match='surf_map can only have one dimension'):
-        plot_surf(mesh, surf_map=rng.standard_normal(size=(mesh[0].shape[0], 2)))
+        ValueError, match="surf_map can only have one dimension"
+    ):
+        plot_surf(
+            mesh, surf_map=rng.standard_normal(size=(mesh[0].shape[0], 2))
+        )
 
 
 def test_plot_surf_stat_map():

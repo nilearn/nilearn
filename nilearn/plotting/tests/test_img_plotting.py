@@ -53,7 +53,9 @@ def testdata_4d():
     """
     rng = np.random.RandomState(42)
     img_4d = nibabel.Nifti1Image(rng.uniform(size=(7, 7, 3, 10)), mni_affine)
-    img_4d_long = nibabel.Nifti1Image(rng.uniform(size=(7, 7, 3, 1777)), mni_affine)
+    img_4d_long = nibabel.Nifti1Image(
+        rng.uniform(size=(7, 7, 3, 1777)), mni_affine
+    )
     img_mask = nibabel.Nifti1Image(np.ones((7, 7, 3), int), mni_affine)
     data = {
         'img_4d': img_4d,
@@ -400,7 +402,9 @@ def test_plot_stat_map_colorbar_variations(testdata_3d):
     data_positive = get_data(img_positive)
     rng = np.random.RandomState(42)
     data_negative = -data_positive
-    data_heterogeneous = data_positive * rng.standard_normal(size=data_positive.shape)
+    data_heterogeneous = data_positive * rng.standard_normal(
+        size=data_positive.shape
+    )
     img_negative = nibabel.Nifti1Image(data_negative, mni_affine)
     img_heterogeneous = nibabel.Nifti1Image(data_heterogeneous, mni_affine)
 

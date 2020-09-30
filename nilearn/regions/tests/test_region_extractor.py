@@ -93,7 +93,9 @@ def test_connected_regions():
     n_regions = 4
     maps, mask_img = generate_maps((30, 30, 30), n_regions=n_regions)
     # 3D maps
-    map_img = np.zeros((30, 30, 30)) + 0.1 * rng.standard_normal(size=(30, 30, 30))
+    map_img = np.zeros((30, 30, 30)) + 0.1 * rng.standard_normal(
+        size=(30, 30, 30)
+    )
     map_img = nibabel.Nifti1Image(map_img, affine=np.eye(4))
 
     # smoke test for function connected_regions and also to check

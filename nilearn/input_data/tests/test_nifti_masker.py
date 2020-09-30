@@ -182,7 +182,10 @@ def test_4d_single_scan():
     # Test that, in list of 4d images with last dimension=1, they are
     # considered as 3d
 
-    data_5d = [np.random.random((10, 10, 10, 1)) for i in range(5)]
+    data_5d = [
+        np.random.RandomState(42).random_sample((10, 10, 10, 1))
+        for i in range(5)
+    ]
     data_4d = [d[..., 0] for d in data_5d]
     data_5d = [nibabel.Nifti1Image(d, np.eye(4)) for d in data_5d]
     data_4d = [nibabel.Nifti1Image(d, np.eye(4)) for d in data_4d]
@@ -203,7 +206,10 @@ def test_5d():
     # Test that, in list of 4d images with last dimension=1, they are
     # considered as 3d
 
-    data_5d = [np.random.random((10, 10, 10, 3)) for i in range(5)]
+    data_5d = [
+        np.random.RandomState(42).random_sample((10, 10, 10, 3))
+        for i in range(5)
+    ]
     data_5d = [nibabel.Nifti1Image(d, np.eye(4)) for d in data_5d]
 
     masker = NiftiMasker(mask_img=mask_img)
@@ -317,7 +323,7 @@ def test_compute_epi_mask():
 def test_compute_brain_mask():
     # Check masker for template masking strategy
 
-    img = np.random.rand(9, 9, 5)
+    img = np.random.RandomState(42).uniform(size=(9, 9, 5))
     img = Nifti1Image(img, np.eye(4))
 
     masker = NiftiMasker(mask_strategy='template')
@@ -394,11 +400,12 @@ def test_dtype():
 
 
 def test_standardization():
+    rng = np.random.RandomState(42)
     data_shape = (9, 9, 5)
     n_samples = 500
 
-    signals = np.random.randn(np.prod(data_shape), n_samples)
-    means = np.random.randn(np.prod(data_shape), 1) * 50 + 1000
+    signals = rng.standard_normal(size=(np.prod(data_shape), n_samples))
+    means = rng.standard_normal(size=(np.prod(data_shape), 1)) * 50 + 1000
     signals += means
     img = Nifti1Image(signals.reshape(data_shape + (n_samples,)), np.eye(4))
 

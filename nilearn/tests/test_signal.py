@@ -74,8 +74,9 @@ def generate_signals(n_features=17, n_confounds=5, length=41,
     if same_variance:
         signals[...] = rng.standard_normal(size=signals_shape)
     else:
-        signals[...] = (4. * abs(rng.standard_normal(size=signals_shape[1])) + 0.5
-                        ) * rng.standard_normal(size=signals_shape)
+        signals[...] = (
+            4.0 * abs(rng.standard_normal(size=signals_shape[1])) + 0.5
+        ) * rng.standard_normal(size=signals_shape)
 
     signals[...] = scipy.signal.detrend(signals, axis=0)
     return signals, noises, confounds
