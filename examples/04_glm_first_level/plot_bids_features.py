@@ -123,16 +123,16 @@ plotting.plot_glass_brain(fsl_z_map, colorbar=True, threshold=norm.isf(0.001),
                           plot_abs=False, display_mode='ortho')
 plt.show()
 
-from nilearn.reporting import compare_niimgs
-compare_niimgs([z_map], [fsl_z_map], model.masker_,
-               ref_label='Nilearn', src_label='FSL')
+from nilearn.plotting import plot_img_comparison
+plot_img_comparison([z_map], [fsl_z_map], model.masker_,
+                    ref_label='Nilearn', src_label='FSL')
 plt.show()
 
 #############################################################################
 # Simple statistical report of thresholded contrast
 # -----------------------------------------------------
 # We display the contrast plot and table with cluster information
-from nilearn.reporting import plot_contrast_matrix
+from nilearn.plotting import plot_contrast_matrix
 plot_contrast_matrix('StopSuccess - Go', design_matrix)
 plotting.plot_glass_brain(z_map, colorbar=True, threshold=norm.isf(0.001),
                           plot_abs=False, display_mode='z',

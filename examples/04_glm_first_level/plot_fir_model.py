@@ -40,7 +40,7 @@ events = pd.read_table(events_file)
 #
 
 from nilearn.glm.first_level import FirstLevelModel
-from nilearn.reporting import plot_design_matrix, plot_contrast_matrix
+from nilearn.plotting import plot_design_matrix, plot_contrast_matrix
 
 first_level_model = FirstLevelModel(t_r, hrf_model='fir', fir_delays=[1, 2, 3])
 first_level_model = first_level_model.fit(fmri_img, events=events)

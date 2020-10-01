@@ -40,12 +40,14 @@ _set_mpl_backend()
 
 ###############################################################################
 from . import cm
-from .img_plotting import plot_img, plot_anat, plot_epi, \
-    plot_roi, plot_stat_map, plot_glass_brain, plot_connectome, \
-    plot_connectome_strength, plot_markers, plot_prob_atlas, plot_carpet, show
+from .img_plotting import (
+    plot_img, plot_anat, plot_epi, plot_roi, plot_stat_map,
+    plot_glass_brain, plot_connectome, plot_connectome_strength,
+    plot_markers, plot_prob_atlas, plot_carpet, plot_img_comparison, show)
 from .find_cuts import find_xyz_cut_coords, find_cut_slices, \
     find_parcellation_cut_coords, find_probabilistic_atlas_cut_coords
-from .matrix_plotting import plot_matrix
+from .matrix_plotting import (plot_matrix, plot_contrast_matrix,
+                              plot_design_matrix, plot_event)
 from .html_surface import view_surf, view_img_on_surf
 from .html_stat_map import view_img
 from .html_connectome import view_connectome, view_markers
@@ -56,7 +58,10 @@ __all__ = ['cm', 'plot_img', 'plot_anat', 'plot_epi',
            'plot_roi', 'plot_stat_map', 'plot_glass_brain',
            'plot_markers', 'plot_connectome', 'plot_prob_atlas',
            'find_xyz_cut_coords', 'find_cut_slices',
-           'show', 'plot_matrix', 'view_surf', 'view_img_on_surf',
+           'plot_img_comparison',
+           'show', 'plot_matrix',
+           'plot_design_matrix', 'plot_contrast_matrix', 'plot_event',
+           'view_surf', 'view_img_on_surf',
            'view_img', 'view_connectome', 'view_markers',
            'find_parcellation_cut_coords',
            'find_probabilistic_atlas_cut_coords',

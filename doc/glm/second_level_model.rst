@@ -23,7 +23,7 @@ As with first level models, a design matrix needs to be defined before fitting a
 Again, similar to first level models, Nilearn provides a function
 :func:`nilearn.glm.second_level.make_second_level_design_matrix` for this purpose. Once
 the design matrix has been setup, it can be visualized using the same function as before,
-:func:`nilearn.reporting.plot_design_matrix`.
+:func:`nilearn.plotting.plot_design_matrix`.
 
 To fit the second level model, the tools to use are within the class
 :class:`nilearn.glm.second_level.SecondLevelModel`. Specifically, the function that

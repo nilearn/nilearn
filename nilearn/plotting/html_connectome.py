@@ -10,7 +10,7 @@ from . import cm
 from .js_plotting_utils import (add_js_lib, mesh_to_plotly,
                                 encode, colorscale, get_html_template,
                                 to_color_strings)
-from nilearn.reporting import HTMLDocument
+from nilearn.plotting.html_document import HTMLDocument
 
 
 class ConnectomeView(HTMLDocument):

@@ -16,10 +16,10 @@ import numpy as np
 import pandas as pd
 from joblib import Memory
 from nibabel import Nifti1Image
-from sklearn.base import BaseEstimator, TransformerMixin, clone
+from sklearn.base import clone
 
-from nilearn._utils import CacheMixin
 from nilearn._utils.niimg_conversions import check_niimg
+from nilearn.input_data import NiftiMasker
 from nilearn.glm.contrasts import (compute_contrast,
                                    expression_to_contrast_vector)
 from nilearn.glm.first_level import FirstLevelModel, run_glm
@@ -28,6 +28,7 @@ from nilearn.glm.first_level.design_matrix import \
 from nilearn.glm.regression import SimpleRegressionResults
 from nilearn.image import mean_img
 from nilearn.mass_univariate import permuted_ols
+from nilearn.glm._base import BaseGLM
 
 
 def _check_second_level_input(second_level_input, design_matrix,
@@ -227,7 +228,7 @@ def _infer_effect_maps(second_level_input, contrast_def):
     return effect_maps
 
 
-class SecondLevelModel(BaseEstimator, TransformerMixin, CacheMixin):
+class SecondLevelModel(BaseGLM):
     """ Implementation of the General Linear Model for multiple subject
     fMRI data
 
@@ -343,8 +344,6 @@ class SecondLevelModel(BaseEstimator, TransformerMixin, CacheMixin):
             list of Niimgs matches the order of the rows in the design matrix.
 
         """
-        # Prevent circular imports between reporting & stats module
-        from nilearn.input_data import NiftiMasker  # noqa
 
         # check second_level_input
         _check_second_level_input(second_level_input, design_matrix,
@@ -627,8 +626,6 @@ def non_parametric_inference(second_level_input, confounds=None,
         The image which contains negative logarithm of the
         corrected p-values
     """
-    # Prevent circular imports between reporting & stats module
-    from nilearn.input_data import NiftiMasker  # noqa
 
     _check_second_level_input(second_level_input, design_matrix,
                               flm_object=False, df_object=False)

@@ -64,7 +64,7 @@ design_matrix = pd.DataFrame(
 
 ############################################################################
 # plot the design_matrix.
-from nilearn.reporting import plot_design_matrix
+from nilearn.plotting import plot_design_matrix
 plot_design_matrix(design_matrix)
 
 ############################################################################
