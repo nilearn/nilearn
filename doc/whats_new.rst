@@ -50,7 +50,8 @@ NEW
   to enable annotation of a slice coordinate position with the float.
 - New example in `examples/02_decoding/plot_haxby_searchlight_surface.py`
   to demo how to do cortical surface-based searchlight decoding with Nilearn.
-
+- confounds or additional regressors for design matrix can be specified as
+  numpy arrays or pandas DataFrames interchangeably
 
 Fixes
 -----
