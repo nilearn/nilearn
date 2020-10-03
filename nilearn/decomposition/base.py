@@ -428,7 +428,7 @@ class BaseDecomposition(BaseEstimator, CacheMixin, TransformerMixin):
             See http://nilearn.github.io/manipulating_images/input_output.html
             Data to be projected
 
-        confounds: CSV file path or numpy.ndarray or pandas DaatFrame,
+        confounds: CSV file path or numpy.ndarray or pandas DataFrame,
                    optional,
             This parameter is passed to nilearn.signal.clean. Please see the
             related documentation for details

@@ -4,7 +4,7 @@ Test the parcellations tools module
 import numpy as np
 import nibabel
 import pytest
-
+import pandas as pd
 from nilearn.regions.parcellations import (Parcellations,
                                            _check_parameters_transform)
 
@@ -182,6 +182,11 @@ def test_check_parameters_transform():
     assert isinstance(confounds, (list, tuple))
     assert single_subject, True
 
+    # confounds as pandas DataFrame
+    imgs, confounds, single_subject = _check_parameters_transform(
+        fmri_img, pd.DataFrame(confounds))
+    assert isinstance(confounds, (list, tuple))
+    
     # multi images
     fmri_imgs = [fmri_img, fmri_img, fmri_img]
     confounds_list = [confounds, confounds, confounds]
