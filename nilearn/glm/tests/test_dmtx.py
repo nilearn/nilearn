@@ -12,7 +12,8 @@ import pytest
 
 from nibabel.tmpdirs import InTemporaryDirectory
 from numpy.testing import (
-    assert_almost_equal, assert_array_equal, assert_array_almost_equal)
+    assert_almost_equal, assert_array_equal, assert_array_almost_equal,
+    assert_equal)
 
 from nilearn.glm.first_level.design_matrix import (_convolve_regressors,
                                                    _cosine_drift,
@@ -133,6 +134,13 @@ def test_design_matrix0c():
         make_first_level_design_matrix(frame_times,
                                        add_regs=ax,
                                        add_reg_names='')
+    # with pandas Dataframe
+    axdf = pd.DataFrame(ax)
+    _, X1, names = check_design_matrix(make_first_level_design_matrix(
+        frame_times, drift_model='polynomial',
+        drift_order=3, add_regs=axdf))
+    assert_almost_equal(X1[:, 0], ax[:, 0])
+    assert_array_equal(names[:4],  np.arange(4))
 
 
 def test_design_matrix0d():
