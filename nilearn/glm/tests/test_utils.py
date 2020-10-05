@@ -51,6 +51,7 @@ def test_z_score_opposite_contrast():
 
     frametimes = np.linspace(0, (96 - 1) * 2, 96)
 
+    bool_res = []
     for i in [0, 20]:
         design_matrix = make_first_level_design_matrix(
             frametimes, hrf_model='spm',
@@ -69,16 +70,16 @@ def test_z_score_opposite_contrast():
         z_map_seed2_vs_seed1 = fmri_glm.compute_contrast(
             contrasts['seed2 - seed1'], output_type='z_score')
 
-        a = np.allclose([z_map_seed1_vs_seed2.get_fdata().min()],
-                    [-z_map_seed2_vs_seed1.get_fdata().max()])
+        bool_res.append(np.allclose([z_map_seed1_vs_seed2.get_fdata().min()],
+                                    [-z_map_seed2_vs_seed1.get_fdata().max()]))
         print(z_map_seed1_vs_seed2.get_fdata().min())
         print(-z_map_seed2_vs_seed1.get_fdata().max())
-        print(a)
-        b = np.allclose([z_map_seed1_vs_seed2.get_fdata().max()],
-                    [-z_map_seed2_vs_seed1.get_fdata().min()])
+        bool_res.append(np.allclose([z_map_seed1_vs_seed2.get_fdata().max()],
+                                    [-z_map_seed2_vs_seed1.get_fdata().min()]))
         print(z_map_seed1_vs_seed2.get_fdata().max())
         print(-z_map_seed2_vs_seed1.get_fdata().min())
-        print(b)
+
+    assert np.all(bool_res)
 
 
 def test_mahalanobis():
