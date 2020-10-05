@@ -184,7 +184,7 @@ def test_check_parameters_transform():
 
     # confounds as pandas DataFrame
     imgs, confounds, single_subject = _check_parameters_transform(
-        fmri_img, pd.DataFrame(confounds))
+        fmri_img, pd.DataFrame(np.array(confounds)[0]))
     assert isinstance(confounds, (list, tuple))
     
     # multi images
