@@ -4,23 +4,21 @@ import os
 import numpy as np
 import pandas as pd
 import pytest
-import nibabel as nib
-import shutil
 import scipy.linalg as spl
 
 from nibabel.tmpdirs import InTemporaryDirectory
-from numpy import array
 from numpy.testing import assert_almost_equal, assert_array_almost_equal
 from scipy.stats import norm
 
-from nilearn._utils.data_gen import create_fake_bids_dataset
+from nilearn._utils.data_gen import create_fake_bids_dataset, generate_fake_fmri
 from nilearn._utils.glm import (_check_and_load_tables,
                                 _check_list_length_match, _check_run_tables,
                                 full_rank, get_bids_files,
                                 get_design_from_fslmat, multiple_fast_inverse,
                                 multiple_mahalanobis, parse_bids_filename,
                                 positive_reciprocal, z_score)
-from nilearn.glm.first_level import FirstLevelModel
+from nilearn.input_data import NiftiMasker
+from nilearn.glm.first_level import FirstLevelModel, make_first_level_design_matrix
 from nilearn.datasets import fetch_spm_auditory
 from nilearn.image import mean_img
 
@@ -46,37 +44,41 @@ def test_z_score():
 
 
 def test_z_score_opposite_contrast():
-    # put data fetching here
-    subject_data = fetch_spm_auditory()
-    m_img = mean_img(subject_data.func)
-    events = pd.read_table(subject_data['events'])
-    # compute z-map of opposite contrast
-    fmri_glm = FirstLevelModel(t_r=7,
-                               noise_model='ar1',
-                               standardize=False,
-                               hrf_model='spm',
-                               drift_model='cosine',
-                               high_pass=1/170)
-    fmri_glm = fmri_glm.fit(m_img, events)
+    fmri, mask = generate_fake_fmri(shape=(50, 20, 50), length=96)
 
-    conditions = {
-        'active': np.array([1., 0., 0., 0., 0., 0., 0., 0., 0., 0.]),
-        'rest':   np.array([0., 1., 0., 0., 0., 0., 0., 0., 0., 0.]),
-    }
+    nifti_masker = NiftiMasker(mask_img=mask)
+    data = nifti_masker.fit_transform(fmri)
 
-    active_minus_rest = conditions['active'] - conditions['rest']
-    rest_minus_active = -active_minus_rest
-    z_map = fmri_glm.compute_contrast(active_minus_rest,
-                                      output_type='z_score')
+    frametimes = np.linspace(0, (96 - 1) * 2, 96)
 
-    z_map_opposite = fmri_glm.compute_contrast(
-        rest_minus_active, output_type='z_score')
+    for i in [0, 20]:
+        design_matrix = make_first_level_design_matrix(
+            frametimes, hrf_model='spm',
+            add_regs=np.array(data[:, i]).reshape(-1, 1))
+        c1 = np.array([1] + [0] * (design_matrix.shape[1] - 1))
+        c2 = np.array([0] + [1] + [0] * (design_matrix.shape[1] - 2))
+        contrasts = {'seed1 - seed2': c1 - c2, 'seed2 - seed1': c2 - c1}
+        fmri_glm = FirstLevelModel(t_r=2., 
+                                   noise_model='ar1', 
+                                   standardize=False, 
+                                   hrf_model='spm', 
+                                   drift_model='cosine')
+        fmri_glm.fit(fmri, design_matrices=design_matrix)
+        z_map_seed1_vs_seed2 = fmri_glm.compute_contrast(
+            contrasts['seed1 - seed2'], output_type='z_score')
+        z_map_seed2_vs_seed1 = fmri_glm.compute_contrast(
+            contrasts['seed2 - seed1'], output_type='z_score')
 
-    # assertion
-    assert (z_map.get_data().ravel().min(),
-            z_map.get_data().ravel().max()) == \
-            (-z_map_opposite.get_data().ravel().max(),
-             -z_map_opposite.get_data().ravel().min())
+        a = np.allclose([z_map_seed1_vs_seed2.get_fdata().min()],
+                    [-z_map_seed2_vs_seed1.get_fdata().max()])
+        print(z_map_seed1_vs_seed2.get_fdata().min())
+        print(-z_map_seed2_vs_seed1.get_fdata().max())
+        print(a)
+        b = np.allclose([z_map_seed1_vs_seed2.get_fdata().max()],
+                    [-z_map_seed2_vs_seed1.get_fdata().min()])
+        print(z_map_seed1_vs_seed2.get_fdata().max())
+        print(-z_map_seed2_vs_seed1.get_fdata().min())
+        print(b)
 
 
 def test_mahalanobis():
