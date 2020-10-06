@@ -1865,6 +1865,8 @@ def plot_img_comparison(ref_imgs, src_imgs, masker, plot_hist=True, log=True,
     corrs: numpy.ndarray
         Pearson correlation between the images
     """
+    # note: doesn't work with 4d images;
+    # when plot_hist is False creates two empty axes and doesn't plot anything
     corrs = []
     for i, (ref_img, src_img) in enumerate(zip(ref_imgs, src_imgs)):
         if axes is None:

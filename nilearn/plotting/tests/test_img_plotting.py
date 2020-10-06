@@ -15,7 +15,10 @@ import pytest
 from scipy import sparse
 
 from nilearn.image.resampling import coord_transform, reorder_img
+from nilearn._utils import data_gen
 from nilearn.image import get_data
+from nilearn import image
+from nilearn.input_data import NiftiMasker
 from nilearn.datasets import load_mni152_template
 from nilearn.plotting.find_cuts import find_cut_slices
 from nilearn.plotting.img_plotting import (MNI152TEMPLATE, plot_anat, plot_img,
@@ -25,6 +28,7 @@ from nilearn.plotting.img_plotting import (MNI152TEMPLATE, plot_anat, plot_img,
                                            plot_markers, plot_prob_atlas, 
                                            plot_carpet,
                                            _get_colorbar_and_data_ranges)
+from nilearn import plotting
 
 mni_affine = np.array([[-2.,    0.,    0.,   90.],
                        [0.,    2.,    0., -126.],
@@ -1358,3 +1362,37 @@ def test_plot_connectome_strength_deprecation_warning():
                                      [0, 0, 0, 1]])
         node_coords = np.arange(3 * 4).reshape(4, 3)
         plot_connectome_strength(adjacency_matrix, node_coords)
+
+
+def test_plot_img_comparison():
+    fig, axes = plt.subplots(2, 1)
+    axes = axes.ravel()
+    kwargs = {"shape": (3, 2, 4), "length": 5}
+    query_images, mask_img = data_gen.generate_fake_fmri(
+        rand_gen=np.random.RandomState(0), **kwargs)
+    # plot_img_comparison doesn't handle 4d images ATM
+    query_images = list(image.iter_img(query_images))
+    target_images, _ = data_gen.generate_fake_fmri(
+        rand_gen=np.random.RandomState(1), **kwargs)
+    target_images = list(image.iter_img(target_images))
+    target_images[0] = query_images[0]
+    masker = NiftiMasker(mask_img).fit()
+    correlations = plotting.plot_img_comparison(
+        target_images, query_images, masker, axes=axes, src_label="query")
+    assert len(correlations) == len(query_images)
+    assert correlations[0] == pytest.approx(1.)
+    ax_0, ax_1 = axes
+    # 5 scatterplots
+    assert len(ax_0.collections) == 5
+    assert len(ax_0.collections[0].get_edgecolors() == masker.transform(
+        target_images[0]).ravel().shape[0])
+    assert ax_0.get_ylabel() == "query"
+    assert ax_0.get_xlabel() == "image set 1"
+    # 5 regression lines
+    assert len(ax_0.lines) == 5
+    assert ax_0.lines[0].get_linestyle() == "--"
+    assert ax_1.get_title() == "Histogram of imgs values"
+    assert len(ax_1.patches) == 5 * 2 * 128
+    correlations_1 = plotting.plot_img_comparison(
+        target_images, query_images, masker, plot_hist=False)
+    assert np.allclose(correlations, correlations_1)
