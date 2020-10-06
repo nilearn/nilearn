@@ -129,6 +129,23 @@ for i, cur_img in enumerate(iter_img(dictlearning_components_img)):
     plot_stat_map(cur_img, display_mode="z", title="Comp %d" % i,
                   cut_coords=1, colorbar=False)
 
+###############################################################################
+# Estimate explained variance per component and plot using matplotlib
+#
+# The fitted object `dictlearning` can be used to calculate the score per component
+scores = dict_learning.score(func_filenames, per_component=False)
+
+# Plot the scores
+import numpy as np
+from matplotlib import pyplot as plt
+
+plt.figure(figsize=(6, 4))
+plt.plot(scores, label='Explained variance score per component')
+plt.axis('tight')
+plt.xlabel('Component #')
+plt.xticks(np.arange(20))
+plt.legend(loc='best', frameon=False)
+
 
 show()
 ################################################################################

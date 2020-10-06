@@ -149,3 +149,30 @@ def test_with_globbing_patterns_with_multi_subjects():
         # n_components = 3
         check_shape = data[0].shape[:3] + (3,)
         assert components_img.shape, check_shape
+
+
+def test_dictlearning_score():
+    # Multi subjects
+    imgs, mask_img, _, _ = _make_canica_test_data(n_subjects=3)
+    n_components = 10
+    dictlearn = DictLearning(n_components=10, mask=mask_img, random_state=0)
+
+    # Test error before object fit
+    with pytest.raises(
+            ValueError,
+            match="Object has no components_ attribute. "
+                  "This is probably because fit has not been called"):
+        dictlearn.score(imgs, per_component=False)
+
+    dictlearn.fit(imgs)
+
+    # One score for all components
+    scores = dictlearn.score(imgs, per_component=False)
+    assert scores <= 1
+    assert 0 <= scores
+
+    # Per component score
+    scores = dictlearn.score(imgs, per_component=True)
+    assert scores.shape, (n_components,)
+    assert np.all(scores <= 1)
+    assert np.all(0 <= scores)
