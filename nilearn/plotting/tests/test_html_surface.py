@@ -122,7 +122,7 @@ def test_view_surf():
     assert "SOME_TITLE" in html.html
     html = html_surface.view_surf(fsaverage['pial_right'])
     check_html(html)
-    atlas = np.random.RandomState(0).randint(0, 10, size=len(mesh[0]))
+    atlas = np.random.RandomState(42).randint(0, 10, size=len(mesh[0]))
     html = html_surface.view_surf(
         fsaverage['pial_left'], atlas, symmetric_cmap=False)
     check_html(html)

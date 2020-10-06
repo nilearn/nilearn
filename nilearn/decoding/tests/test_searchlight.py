@@ -80,8 +80,10 @@ def test_searchlight():
         # the groups variable should have no effect.
         gcv = cv
 
-    groups = np.random.permutation(np.arange(frames, dtype=int) >
-                                   (frames // 2))
+    groups = np.random.RandomState(42).permutation(
+        np.arange(frames, dtype=int) > (frames // 2)
+    )
+
     sl = searchlight.SearchLight(mask_img, process_mask_img=mask_img, radius=1,
                                  n_jobs=n_jobs, scoring='accuracy', cv=gcv)
     sl.fit(data_img, cond, groups)

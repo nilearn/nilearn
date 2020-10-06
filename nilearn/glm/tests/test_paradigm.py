@@ -22,10 +22,11 @@ def basic_paradigm():
 
 
 def modulated_block_paradigm():
+    rng = np.random.RandomState(42)
     conditions = ['c0', 'c0', 'c0', 'c1', 'c1', 'c1', 'c2', 'c2', 'c2']
     onsets = [30, 70, 100, 10, 30, 90, 30, 40, 60]
-    durations = 5 + 5 * np.random.rand(len(onsets))
-    values = np.random.rand(len(onsets))
+    durations = 5 + 5 * rng.uniform(size=len(onsets))
+    values = rng.uniform(size=len(onsets))
     events = pd.DataFrame({'name': conditions,
                            'onset': onsets,
                            'duration': durations,
@@ -34,10 +35,11 @@ def modulated_block_paradigm():
 
 
 def modulated_event_paradigm():
+    rng = np.random.RandomState(42)
     conditions = ['c0', 'c0', 'c0', 'c1', 'c1', 'c1', 'c2', 'c2', 'c2']
     onsets = [30, 70, 100, 10, 30, 90, 30, 40, 60]
     durations = 1 * np.ones(9)
-    values = np.random.rand(len(onsets))
+    values = rng.uniform(size=len(onsets))
     events = pd.DataFrame({'name': conditions,
                            'onset': onsets,
                            'durations': durations,

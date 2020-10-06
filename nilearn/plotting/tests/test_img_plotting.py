@@ -38,7 +38,7 @@ def testdata_3d():
     """
     data_positive = np.zeros((7, 7, 3))
     rng = np.random.RandomState(42)
-    data_rng = rng.rand(7, 7, 3)
+    data_rng = rng.uniform(size=(7, 7, 3))
     data_positive[1:-1, 2:-1, 1:] = data_rng[1:-1, 2:-1, 1:]
     img_3d = nibabel.Nifti1Image(data_positive, mni_affine)
     data = {
@@ -52,8 +52,10 @@ def testdata_4d():
     """Random 4D images for testing figures for multivolume data.
     """
     rng = np.random.RandomState(42)
-    img_4d = nibabel.Nifti1Image(rng.rand(7, 7, 3, 10), mni_affine)
-    img_4d_long = nibabel.Nifti1Image(rng.rand(7, 7, 3, 1777), mni_affine)
+    img_4d = nibabel.Nifti1Image(rng.uniform(size=(7, 7, 3, 10)), mni_affine)
+    img_4d_long = nibabel.Nifti1Image(
+        rng.uniform(size=(7, 7, 3, 1777)), mni_affine
+    )
     img_mask = nibabel.Nifti1Image(np.ones((7, 7, 3), int), mni_affine)
     data = {
         'img_4d': img_4d,
@@ -233,7 +235,7 @@ def test_plot_stat_map(testdata_3d):
     plot_stat_map(new_img, threshold=1000, colorbar=True)
 
     rng = np.random.RandomState(42)
-    data = rng.randn(91, 109, 91)
+    data = rng.standard_normal(size=(91, 109, 91))
     new_img = nibabel.Nifti1Image(data, aff)
     plot_stat_map(new_img, threshold=1000, colorbar=True)
 
@@ -244,7 +246,8 @@ def test_plot_stat_map(testdata_3d):
 def test_plot_stat_map_threshold_for_affine_with_rotation(testdata_3d):
     # threshold was not being applied when affine has a rotation
     # see https://github.com/nilearn/nilearn/issues/599 for more details
-    data = np.random.randn(10, 10, 10)
+    rng = np.random.RandomState(42)
+    data = rng.standard_normal(size=(10, 10, 10))
     # matrix with rotation
     affine = np.array([[-3., 1., 0., 1.],
                        [-1., -3., 0., -2.],
@@ -399,7 +402,9 @@ def test_plot_stat_map_colorbar_variations(testdata_3d):
     data_positive = get_data(img_positive)
     rng = np.random.RandomState(42)
     data_negative = -data_positive
-    data_heterogeneous = data_positive * rng.randn(*data_positive.shape)
+    data_heterogeneous = data_positive * rng.standard_normal(
+        size=data_positive.shape
+    )
     img_negative = nibabel.Nifti1Image(data_negative, mni_affine)
     img_heterogeneous = nibabel.Nifti1Image(data_heterogeneous, mni_affine)
 
@@ -464,8 +469,8 @@ def test_plot_img_with_resampling(testdata_3d):
 
 def test_plot_noncurrent_axes():
     """Regression test for Issue #450"""
-
-    maps_img = nibabel.Nifti1Image(np.random.random((10, 10, 10)), np.eye(4))
+    rng = np.random.RandomState(42)
+    maps_img = nibabel.Nifti1Image(rng.random_sample((10, 10, 10)), np.eye(4))
     fh1 = plt.figure()
     fh2 = plt.figure()
     ax1 = fh1.add_subplot(1, 1, 1)
@@ -658,7 +663,7 @@ def test_singleton_ax_dim():
 def test_plot_prob_atlas():
     affine = np.eye(4)
     shape = (6, 8, 10, 5)
-    rng = np.random.RandomState(0)
+    rng = np.random.RandomState(42)
     data_rng = rng.normal(size=shape)
     img = nibabel.Nifti1Image(data_rng, affine)
     # Testing the 4D plot prob atlas with contours
@@ -1332,7 +1337,7 @@ def test_plot_markers_exceptions():
         plot_markers([1, 2, 3], node_coords, **kwargs)
 
     # node_values incorrect shape
-    adjacency_matrix = np.random.random((4, 4))
+    adjacency_matrix = np.random.RandomState(42).random_sample((4, 4))
     with pytest.raises(ValueError, match="Dimension mismatch"):
         plot_markers(adjacency_matrix, node_coords, **kwargs)
 

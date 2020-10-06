@@ -12,11 +12,12 @@ from nilearn.glm import (cluster_level_inference, fdr_threshold,
 
 
 def test_fdr():
+    rng = np.random.RandomState(42)
     n = 100
     x = np.linspace(.5 / n, 1. - .5 / n, n)
     x[:10] = .0005
     x = norm.isf(x)
-    np.random.shuffle(x)
+    rng.shuffle(x)
     assert_almost_equal(fdr_threshold(x, .1), norm.isf(.0005))
     assert fdr_threshold(x, .001) == np.infty
     with pytest.raises(ValueError):

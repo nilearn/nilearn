@@ -15,8 +15,8 @@ from nilearn.surface.testing_utils import generate_surf
 
 def test_plot_surf():
     mesh = generate_surf()
-    rng = np.random.RandomState(0)
-    bg = rng.randn(mesh[0].shape[0], )
+    rng = np.random.RandomState(42)
+    bg = rng.standard_normal(size=mesh[0].shape[0])
 
     # Plot mesh only
     plot_surf(mesh)
@@ -40,7 +40,7 @@ def test_plot_surf():
 
 def test_plot_surf_error():
     mesh = generate_surf()
-    rng = np.random.RandomState(0)
+    rng = np.random.RandomState(42)
 
     # Wrong inputs for view or hemi
     with pytest.raises(ValueError, match='view must be one of'):
@@ -52,25 +52,29 @@ def test_plot_surf_error():
     with pytest.raises(
             ValueError,
             match='bg_map does not have the same number of vertices'):
-        plot_surf(mesh, bg_map=rng.randn(mesh[0].shape[0] - 1, ))
+        plot_surf(mesh, bg_map=rng.standard_normal(size=mesh[0].shape[0] - 1))
 
     # Wrong size of surface data
     with pytest.raises(
-            ValueError,
-            match='surf_map does not have the same number of vertices'):
-        plot_surf(mesh, surf_map=rng.randn(mesh[0].shape[0] + 1, ))
+        ValueError, match="surf_map does not have the same number of vertices"
+    ):
+        plot_surf(
+            mesh, surf_map=rng.standard_normal(size=mesh[0].shape[0] + 1)
+        )
 
     with pytest.raises(
-            ValueError,
-            match='surf_map can only have one dimension'):
-        plot_surf(mesh, surf_map=rng.randn(mesh[0].shape[0], 2))
+        ValueError, match="surf_map can only have one dimension"
+    ):
+        plot_surf(
+            mesh, surf_map=rng.standard_normal(size=(mesh[0].shape[0], 2))
+        )
 
 
 def test_plot_surf_stat_map():
     mesh = generate_surf()
-    rng = np.random.RandomState(0)
-    bg = rng.randn(mesh[0].shape[0], )
-    data = 10 * rng.randn(mesh[0].shape[0], )
+    rng = np.random.RandomState(42)
+    bg = rng.standard_normal(size=mesh[0].shape[0])
+    data = 10 * rng.standard_normal(size=mesh[0].shape[0])
 
     # Plot mesh with stat map
     plot_surf_stat_map(mesh, stat_map=data)
@@ -132,8 +136,8 @@ def test_plot_surf_stat_map():
 
 def test_plot_surf_stat_map_error():
     mesh = generate_surf()
-    rng = np.random.RandomState(0)
-    data = 10 * rng.randn(mesh[0].shape[0], )
+    rng = np.random.RandomState(42)
+    data = 10 * rng.standard_normal(size=mesh[0].shape[0])
 
     # Try to input vmin
     with pytest.raises(
@@ -155,11 +159,11 @@ def test_plot_surf_stat_map_error():
 
 def test_plot_surf_roi():
     mesh = generate_surf()
-    rng = np.random.RandomState(0)
+    rng = np.random.RandomState(42)
     roi_idx = rng.randint(0, mesh[0].shape[0], size=10)
     roi_map = np.zeros(mesh[0].shape[0])
     roi_map[roi_idx] = 1
-    parcellation = rng.rand(mesh[0].shape[0])
+    parcellation = rng.uniform(size=mesh[0].shape[0])
 
     # plot roi
     plot_surf_roi(mesh, roi_map=roi_map)
@@ -195,7 +199,7 @@ def test_plot_surf_roi():
 
 def test_plot_surf_roi_error():
     mesh = generate_surf()
-    rng = np.random.RandomState(0)
+    rng = np.random.RandomState(42)
     roi_idx = rng.randint(0, mesh[0].shape[0], size=5)
     with pytest.raises(
             ValueError,
@@ -207,7 +211,7 @@ def _generate_img():
     mni_affine = MNI152TEMPLATE.get_affine()
     data_positive = np.zeros((7, 7, 3))
     rng = np.random.RandomState(42)
-    data_rng = rng.rand(7, 7, 3)
+    data_rng = rng.uniform(size=(7, 7, 3))
     data_positive[1:-1, 2:-1, 1:] = data_rng[1:-1, 2:-1, 1:]
     nii = nibabel.Nifti1Image(data_positive, mni_affine)
     return nii
@@ -366,8 +370,8 @@ def test_plot_surf_contours():
 def test_plot_surf_contours_error():
     mesh = generate_surf()
     # we need an invalid parcellation for testing
-    rng = np.random.RandomState(0)
-    invalid_parcellation = rng.rand(mesh[0].shape[0])
+    rng = np.random.RandomState(42)
+    invalid_parcellation = rng.uniform(size=(mesh[0].shape[0]))
     parcellation = np.zeros((mesh[0].shape[0],))
     parcellation[mesh[1][3]] = 1
     parcellation[mesh[1][5]] = 2

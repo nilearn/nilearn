@@ -19,7 +19,7 @@ from nilearn.image import get_data, new_img_like
 
 def generate_random_img(shape, length=1, affine=np.eye(4),
                         rand_gen=np.random.RandomState(0)):
-    data = rand_gen.randn(*(shape + (length,)))
+    data = rand_gen.standard_normal(size=(shape + (length,)))
     return nibabel.Nifti1Image(data, affine), nibabel.Nifti1Image(
         as_ndarray(data[..., 0] > 0.2, dtype=np.int8), affine)
 
@@ -317,11 +317,12 @@ def test_nifti_labels_masker_resampling():
 
 
 def test_standardization():
+    rng = np.random.RandomState(42)
     data_shape = (9, 9, 5)
     n_samples = 500
 
-    signals = np.random.randn(np.prod(data_shape), n_samples)
-    means = np.random.randn(np.prod(data_shape), 1) * 50 + 1000
+    signals = rng.standard_normal(size=(np.prod(data_shape), n_samples))
+    means = rng.standard_normal(size=(np.prod(data_shape), 1)) * 50 + 1000
     signals += means
     img = nibabel.Nifti1Image(
             signals.reshape(data_shape + (n_samples,)), np.eye(4)

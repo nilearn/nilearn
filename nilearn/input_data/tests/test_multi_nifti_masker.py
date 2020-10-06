@@ -162,9 +162,11 @@ def test_shelving():
 
 
 def test_compute_multi_gray_matter_mask():
+    rng = np.random.RandomState(42)
+
     # Check mask is correctly is correctly calculated
-    imgs = [Nifti1Image(np.random.rand(9, 9, 5), np.eye(4)),
-            Nifti1Image(np.random.rand(9, 9, 5), np.eye(4))]
+    imgs = [Nifti1Image(rng.uniform(size=(9, 9, 5)), np.eye(4)),
+            Nifti1Image(rng.uniform(size=(9, 9, 5)), np.eye(4))]
 
     masker = MultiNiftiMasker(mask_strategy='template')
     masker.fit(imgs)
@@ -196,11 +198,12 @@ def test_dtype():
 
 
 def test_standardization():
+    rng = np.random.RandomState(42)
     data_shape = (9, 9, 5)
     n_samples = 500
 
-    signals = np.random.randn(2, np.prod(data_shape), n_samples)
-    means = np.random.randn(2, np.prod(data_shape), 1) * 50 + 1000
+    signals = rng.standard_normal(size=(2, np.prod(data_shape), n_samples))
+    means = rng.standard_normal(size=(2, np.prod(data_shape), 1)) * 50 + 1000
     signals += means
 
     img1 = Nifti1Image(signals[0].reshape(data_shape + (n_samples,)),
