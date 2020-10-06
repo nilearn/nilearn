@@ -27,18 +27,24 @@ else:
 
 @pytest.mark.skipif(not_have_mpl,
                     reason='Matplotlib not installed; required for this test')
-def test_flm_reporting():
+@pytest.mark.parametrize("use_method", [True, False])
+def test_flm_reporting(use_method):
     with InTemporaryDirectory():
         shapes, rk = ((7, 8, 7, 15), (7, 8, 7, 16)), 3
         mask, fmri_data, design_matrices = write_fake_fmri_data_and_design(shapes, rk)
         flm = FirstLevelModel(mask_img=mask).fit(
             fmri_data, design_matrices=design_matrices)
         contrast = np.eye(3)[1]
-        report_flm = glmr.make_glm_report(flm, contrast, plot_type='glass',
-                                          height_control=None,
-                                          min_distance=15,
-                                          alpha=0.001, threshold=2.78,
-                                          )
+        if use_method:
+            report_flm = flm.generate_report(
+                contrast, plot_type='glass', height_control=None,
+                min_distance=15, alpha=0.001, threshold=2.78)
+        else:
+            report_flm = glmr.make_glm_report(flm, contrast, plot_type='glass',
+                                              height_control=None,
+                                              min_distance=15,
+                                              alpha=0.001, threshold=2.78,
+            )
         '''
         catches & raises UnicodeEncodeError in HTMLDocument.get_iframe()
         Python2's limited unicode support causes  HTMLDocument.get_iframe() to
@@ -56,7 +62,8 @@ def test_flm_reporting():
 
 @pytest.mark.skipif(not_have_mpl,
                     reason='Matplotlib not installed; required for this test')
-def test_slm_reporting():
+@pytest.mark.parametrize("use_method", [True, False])
+def test_slm_reporting(use_method):
     with InTemporaryDirectory():
         shapes = ((7, 8, 9, 1),)
         mask, FUNCFILE, _ = write_fake_fmri_data_and_design(shapes)
@@ -67,7 +74,10 @@ def test_slm_reporting():
         X = pd.DataFrame([[1]] * 4, columns=['intercept'])
         model = model.fit(Y, design_matrix=X)
         c1 = np.eye(len(model.design_matrix_.columns))[0]
-        report_slm = glmr.make_glm_report(model, c1)
+        if use_method:
+            report_slm = glmr.make_glm_report(model, c1)
+        else:
+            report_slm = model.generate_report(c1)
         # catches & raises UnicodeEncodeError in HTMLDocument.get_iframe()
         report_iframe = report_slm.get_iframe()
         # So flake8 doesn't complain about not using variable (F841)
