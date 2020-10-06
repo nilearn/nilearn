@@ -14,6 +14,7 @@ def _check_html(html_view):
     """
     assert "Parameters" in str(html_view)
     assert "data:image/svg+xml;base64," in str(html_view)
+    assert html_view._repr_html_() == html_view.body
 
 
 def test_3d_reports():
@@ -96,6 +97,8 @@ def test_overlaid_report():
     data_img_3d = Nifti1Image(data, np.eye(4))
 
     mask = input_data.NiftiMasker(target_affine=np.eye(3) * 8)
+    html = mask.generate_report()
+    assert "Please `fit` the object" in str(html)
     mask.fit(data_img_3d)
     html = mask.generate_report()
     assert '<div class="overlay">' in str(html)
