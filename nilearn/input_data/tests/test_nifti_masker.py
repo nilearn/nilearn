@@ -182,10 +182,8 @@ def test_4d_single_scan():
     # Test that, in list of 4d images with last dimension=1, they are
     # considered as 3d
 
-    data_5d = [
-        np.random.RandomState(42).random_sample((10, 10, 10, 1))
-        for i in range(5)
-    ]
+    rng = np.random.RandomState(42)
+    data_5d = [rng.random_sample((10, 10, 10, 1)) for i in range(5)]
     data_4d = [d[..., 0] for d in data_5d]
     data_5d = [nibabel.Nifti1Image(d, np.eye(4)) for d in data_5d]
     data_4d = [nibabel.Nifti1Image(d, np.eye(4)) for d in data_4d]
@@ -206,10 +204,8 @@ def test_5d():
     # Test that, in list of 4d images with last dimension=1, they are
     # considered as 3d
 
-    data_5d = [
-        np.random.RandomState(42).random_sample((10, 10, 10, 3))
-        for i in range(5)
-    ]
+    rng = np.random.RandomState(42)
+    data_5d = [rng.random_sample((10, 10, 10, 3)) for i in range(5)]
     data_5d = [nibabel.Nifti1Image(d, np.eye(4)) for d in data_5d]
 
     masker = NiftiMasker(mask_img=mask_img)

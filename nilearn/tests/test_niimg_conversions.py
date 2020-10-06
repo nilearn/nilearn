@@ -488,21 +488,18 @@ def test_concat_niimg_dtype():
 
 
 def nifti_generator(buffer):
+    rng = np.random.RandomState(42)
     for i in range(10):
-        buffer.append(
-            Nifti1Image(
-                np.random.RandomState(42).random_sample((10, 10, 10)),
-                np.eye(4),
-            )
-        )
+        buffer.append(Nifti1Image(rng.random_sample((10, 10, 10)), np.eye(4)))
         yield buffer[-1]
 
 
 def test_iterator_generator():
     # Create a list of random images
+    rng = np.random.RandomState(42)
     list_images = [
         Nifti1Image(
-            np.random.RandomState(42).random_sample((10, 10, 10)), np.eye(4)
+            rng.random_sample((10, 10, 10)), np.eye(4)
         )
         for i in range(10)
     ]

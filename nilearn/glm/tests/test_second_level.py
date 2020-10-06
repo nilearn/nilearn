@@ -346,10 +346,8 @@ def test_second_level_contrast_computation():
             model.compute_contrast(c1, None, None, '')
         # check that passing no explicit contrast when the design
         # matrix has more than one columns raises an error
-        X = pd.DataFrame(
-            np.random.RandomState(42).uniform(size=(4, 2)),
-            columns=["r1", "r2"],
-        )
+        rng = np.random.RandomState(42)
+        X = pd.DataFrame(rng.uniform(size=(4, 2)), columns=["r1", "r2"])
         model = model.fit(Y, design_matrix=X)
         with pytest.raises(ValueError):
             model.compute_contrast(None)
@@ -394,10 +392,8 @@ def test_non_parametric_inference_contrast_computation():
             non_parametric_inference(Y, X, [], 'intercept', mask)
         # check that passing no explicit contrast when the design
         # matrix has more than one columns raises an error
-        X = pd.DataFrame(
-            np.random.RandomState(42).uniform(size=(4, 2)),
-            columns=["r1", "r2"],
-        )
+        rng = np.random.RandomState(42)
+        X = pd.DataFrame(rng.uniform(size=(4, 2)), columns=["r1", "r2"])
         with pytest.raises(ValueError):
             non_parametric_inference(Y, X, None)
         del func_img, FUNCFILE, neg_log_pvals_img, X, Y
