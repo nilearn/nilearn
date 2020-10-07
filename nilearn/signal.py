@@ -148,9 +148,7 @@ def _sum_of_squares(signals, n_batches=20):
     # Fastest for C order
     var = np.empty(signals.shape[1])
     for batch in gen_even_slices(signals.shape[1], n_batches):
-        tvar = np.copy(signals[:, batch])
-        tvar **= 2
-        var[batch] = tvar.sum(axis=0)
+        var[batch] = np.sum(signals[:, batch] ** 2, 0)
 
     return var
 

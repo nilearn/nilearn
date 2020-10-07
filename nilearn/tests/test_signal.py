@@ -274,8 +274,7 @@ def test_sum_of_squares():
                                      length=n_samples,
                                      same_variance=True)
     # Reference computation
-    var1 = np.copy(signals)
-    var1 **= 2
+    var1 = signals ** 2
     var1 = var1.sum(axis=0)
 
     var2 = nisignal._sum_of_squares(signals)
