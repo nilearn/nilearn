@@ -522,7 +522,8 @@ class BaseDecomposition(BaseEstimator, CacheMixin, TransformerMixin):
         """
         self._check_components_()
         data = mask_and_reduce(self.masker_, imgs, confounds,
-                               reduction_ratio=1.)
+                               reduction_ratio=1.,
+                               random_state=self.random_state)
         return self._raw_score(data, per_component=per_component)
 
 
@@ -556,6 +557,8 @@ def explained_variance(X, components, per_component=True):
             res = X - np.outer(projected_data[i],
                                components[i])
             res_var[i] = np.var(res)
+            # Free some memory
+            del res
         return np.maximum(0., 1. - res_var / full_var)
     else:
         lr = LinearRegression(fit_intercept=True)
