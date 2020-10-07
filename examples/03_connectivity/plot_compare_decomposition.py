@@ -133,7 +133,7 @@ for i, cur_img in enumerate(iter_img(dictlearning_components_img)):
 # Estimate explained variance per component and plot using matplotlib
 #
 # The fitted object `dictlearning` can be used to calculate the score per component
-scores = dict_learning.score(func_filenames, per_component=False)
+scores = dict_learning.score(func_filenames, per_component=True)
 
 # Plot the scores
 import numpy as np
@@ -155,4 +155,3 @@ show()
 #     created using Dictionary Learning, see :ref:`example Regions 
 #     extraction using Dictionary Learning and functional connectomes
 #     <sphx_glr_auto_examples_03_connectivity_plot_extract_regions_dictlearning_maps.py>`.
-
