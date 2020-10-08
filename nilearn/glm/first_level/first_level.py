@@ -20,9 +20,8 @@ import pandas as pd
 from joblib import Memory, Parallel, delayed
 from nibabel import Nifti1Image
 from nibabel.onetime import auto_attr
-from sklearn.base import BaseEstimator, TransformerMixin, clone
+from sklearn.base import clone
 
-from nilearn._utils import CacheMixin
 from nilearn._utils.glm import (_check_events_file_uses_tab_separators,
                                 _check_run_tables, get_bids_files,
                                 parse_bids_filename)
@@ -31,9 +30,10 @@ from nilearn.glm.contrasts import (_compute_fixed_effect_contrast,
                                    expression_to_contrast_vector)
 from nilearn.glm.first_level.design_matrix import \
     make_first_level_design_matrix
+from nilearn.image import get_data
 from nilearn.glm.regression import (ARModel, OLSModel, RegressionResults,
                                     SimpleRegressionResults)
-from nilearn.image import get_data
+from nilearn.glm._base import BaseGLM
 
 
 def mean_scaling(Y, axis=0):
@@ -151,7 +151,7 @@ def run_glm(Y, X, noise_model='ar1', bins=100, n_jobs=1, verbose=0):
     return labels, results
 
 
-class FirstLevelModel(BaseEstimator, TransformerMixin, CacheMixin):
+class FirstLevelModel(BaseGLM):
     """ Implementation of the General Linear Model
     for single session fMRI data.
 

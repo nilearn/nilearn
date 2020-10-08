@@ -27,7 +27,7 @@ NEW
   These two objects also leverage the `NiftiMaskers` to provide a direct
   interface with the Nifti files on disk.
 - Plot events file
-  Use :func:`nilearn.reporting.plot_event` to visualize events file.
+  Use :func:`nilearn.plotting.plot_event` to visualize events file.
   The function accepts the BIDS events file read using `pandas`
   utilities.
 - Plotting function :func:`nilearn.plotting.plot_roi` can now plot ROIs

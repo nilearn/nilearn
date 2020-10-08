@@ -115,7 +115,7 @@ design_matrix = fmri_glm.design_matrices_[0]
 ###############################################################################
 # Formally, we have taken the first design matrix, because the model is
 # implictily meant to for multiple runs.
-from nilearn.reporting import plot_design_matrix
+from nilearn.plotting import plot_design_matrix
 plot_design_matrix(design_matrix)
 import matplotlib.pyplot as plt
 plt.show()
@@ -174,7 +174,7 @@ active_minus_rest = conditions['active'] - conditions['rest']
 # Let's look at it: plot the coefficients of the contrast, indexed by
 # the names of the columns of the design matrix.
 
-from nilearn.reporting import plot_contrast_matrix
+from nilearn.plotting import plot_contrast_matrix
 plot_contrast_matrix(active_minus_rest, design_matrix=design_matrix)
 
 ###############################################################################

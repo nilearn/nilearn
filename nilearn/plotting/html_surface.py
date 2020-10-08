@@ -8,7 +8,7 @@ from matplotlib import cm as mpl_cm
 from nilearn._utils.niimg_conversions import check_niimg_3d
 from nilearn import surface
 from nilearn import datasets
-from nilearn.reporting import HTMLDocument
+from nilearn.plotting.html_document import HTMLDocument
 from nilearn.plotting import cm
 from nilearn.plotting.js_plotting_utils import (
     colorscale, mesh_to_plotly, get_html_template, add_js_lib,

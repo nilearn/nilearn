@@ -88,7 +88,7 @@ design_matrix = first_level_model.design_matrices_[0]
 # Let us take a look at the design matrix: it has 10 main columns corresponding
 # to 10 experimental conditions, followed by 3 columns describing low-frequency
 # signals (drifts) and a constant regressor.
-from nilearn.reporting import plot_design_matrix
+from nilearn.plotting import plot_design_matrix
 plot_design_matrix(design_matrix)
 import matplotlib.pyplot as plt
 plt.show()
@@ -156,7 +156,7 @@ def make_localizer_contrasts(design_matrix):
 # * 'computation - sentences': looks at the activity when performing a mental comptation task  versus simply reading sentences.
 #
 contrasts = make_localizer_contrasts(design_matrix)
-from nilearn.reporting import plot_contrast_matrix
+from nilearn.plotting import plot_contrast_matrix
 for key, values in contrasts.items():
     plot_contrast_matrix(values, design_matrix=design_matrix)
     plt.suptitle(key)

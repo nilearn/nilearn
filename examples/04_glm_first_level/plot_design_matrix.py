@@ -80,7 +80,7 @@ X3 = make_first_level_design_matrix(frame_times, events, hrf_model='fir',
 
 #########################################################################
 # Here are the three designs side by side.
-from nilearn.reporting import plot_design_matrix
+from nilearn.plotting import plot_design_matrix
 fig, (ax1, ax2, ax3) = plt.subplots(figsize=(10, 6), nrows=1, ncols=3)
 plot_design_matrix(X1, ax=ax1)
 ax1.set_title('Event-related design matrix', fontsize=12)

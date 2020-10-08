@@ -11,6 +11,7 @@ import numpy as np
 from scipy.ndimage import label
 from scipy.stats import norm
 
+from nilearn.input_data import NiftiMasker
 from nilearn.image import get_data, math_img
 
 
@@ -136,8 +137,6 @@ def cluster_level_inference(stat_img, mask_img=None,
     Inference for brain imaging. Neuroimage. 2018 Nov 1;181:786-796. doi:
     10.1016/j.neuroimage.2018.07.060
     """
-    # Prevent circular import between reporting & stats module
-    from nilearn.input_data import NiftiMasker
 
     if not isinstance(threshold, list):
         threshold = [threshold]
@@ -230,8 +229,6 @@ def threshold_stats_img(stat_img=None, mask_img=None, alpha=.001, threshold=3.,
     nilearn.image.threshold_img
 
     """
-    # Prevent circular import between reporting & stats module
-    from nilearn.input_data import NiftiMasker  # noqa
 
     height_control_methods = ['fpr', 'fdr', 'bonferroni',
                               'all-resolution-inference', None]

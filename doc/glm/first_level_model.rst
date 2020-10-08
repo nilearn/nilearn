@@ -49,7 +49,7 @@ Refer to the examples below for usage under the different scenarios:
   * Uing nilearn fetcher functions: :ref:`sphx_glr_auto_examples_04_glm_first_level_plot_spm_multimodal_faces.py`
 
 To ascertain that the sequence of events provided to the first level model is accurate, Nilearn provides an
-event visualization function called :func:`nilearn.reporting.plot_event()`. Sample usage for this is available
+event visualization function called :func:`nilearn.plotting.plot_event()`. Sample usage for this is available
 in :ref:`sphx_glr_auto_examples_02_decoding_plot_haxby_glm_decoding.py`.
 
 Once the events are defined, the design matrix is created using the
@@ -61,10 +61,10 @@ Once the events are defined, the design matrix is created using the
 
 .. note:: Additional predictors, like subject motion, can be specified using the add_reg parameter. Look at the function definition for available arguments.
 
-A handy function called :func:`nilearn.reporting.plot_design_matrix()` can be used to visualize the design matrix.
+A handy function called :func:`nilearn.plotting.plot_design_matrix()` can be used to visualize the design matrix.
 This is generally a good practice to follow before proceeding with the analysis::
 
-  from nilearn.reporting import plot_design_matrix
+  from nilearn.plotting import plot_design_matrix
   plot_design_matrix(design_matrices)
 
 .. image:: ../auto_examples/04_glm_first_level/images/sphx_glr_plot_design_matrix_001.png
