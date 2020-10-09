@@ -124,9 +124,8 @@ def _sum_of_squares(signals, n_batches=20):
     """Compute sum of squares for each signal.
     This function is equivalent to
 
-        var = np.copy(signals)
-        var **= 2
-        var = var.sum(axis=0)
+        signals **= 2
+        signals = signals.sum(axis=0)
 
     but uses a lot less memory.
 
