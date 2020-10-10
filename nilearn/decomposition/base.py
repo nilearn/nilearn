@@ -564,5 +564,5 @@ def explained_variance(X, components, per_component=True):
         lr = LinearRegression(fit_intercept=True)
         lr.fit(components.T, X.T)
         res = X - lr.coef_.dot(components)
-        res_var = np.var(res)
-        return np.maximum(0., 1. - res_var / full_var)
+        res_var = _sum_of_squares(res).sum()
+        return np.maximum(0., 1. - res_var / _sum_of_squares(X).sum())
