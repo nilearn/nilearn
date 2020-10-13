@@ -146,6 +146,12 @@ def z_score(pvalue):
     """
     pvalue = np.minimum(np.maximum(pvalue, 1.e-300), 1. - 1.e-16)
     return norm.isf(pvalue)
+    # z_scores_sf = norm.isf(pvalue)
+    # z_scores_cdf = norm.ppf(pvalue)
+    # z_scores = np.zeros(pvalue.size)
+    # z_scores[pvalue < 0.5] = z_scores_sf[pvalue < 0.5]
+    # z_scores[pvalue >= 0.5] = z_scores_cdf[pvalue >= 0.5]
+    # return z_scores
 
 
 def multiple_fast_inverse(a):

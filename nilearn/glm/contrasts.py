@@ -208,6 +208,7 @@ class Contrast(object):
         self.stat_ = stat.ravel()
         return self.stat_
 
+
     def p_value(self, baseline=0.0):
         """Return a parametric estimate of the p-value associated
         with the null hypothesis: (H0) 'contrast equals baseline'
@@ -227,6 +228,11 @@ class Contrast(object):
         # Valid conjunction as in Nichols et al, Neuroimage 25, 2005.
         if self.contrast_type == 't':
             p_values = sps.t.sf(self.stat_, np.minimum(self.dof, self.dofmax))
+            # pvals_sf = sps.t.sf(self.stat_, np.minimum(self.dof, self.dofmax))
+            # pvals_cdf = 1 - sps.t.cdf(self.stat_, np.minimum(self.dof, self.dofmax))
+            # p_values = np.zeros(self.stat_.size)
+            # p_values[self.stat_ >= 0] = pvals_sf[self.stat_ >= 0]
+            # p_values[self.stat_ < 0] = pvals_cdf[self.stat_ < 0]
         elif self.contrast_type == 'F':
             p_values = sps.f.sf(self.stat_, self.dim, np.minimum(
                 self.dof, self.dofmax))
