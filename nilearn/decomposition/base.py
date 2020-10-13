@@ -23,7 +23,7 @@ from .._utils.niimg import _safe_get_data
 from .._utils.niimg_conversions import _resolve_globbing
 from ..input_data import NiftiMapsMasker
 from ..input_data.masker_validation import check_embedded_nifti_masker
-from ..signal import _sum_of_squares
+from ..signal import _row_sum_of_squares
 
 
 def fast_svd(X, n_components, random_state=None):
@@ -564,5 +564,5 @@ def explained_variance(X, components, per_component=True):
         lr = LinearRegression(fit_intercept=True)
         lr.fit(components.T, X.T)
         res = X - lr.coef_.dot(components)
-        res_var = _sum_of_squares(res).sum()
-        return np.maximum(0., 1. - res_var / _sum_of_squares(X).sum())
+        res_var = _row_sum_of_squares(res).sum()
+        return np.maximum(0., 1. - res_var / _row_sum_of_squares(X).sum())

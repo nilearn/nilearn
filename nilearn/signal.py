@@ -120,7 +120,7 @@ def _mean_of_squares(signals, n_batches=20):
     return var
 
 
-def _sum_of_squares(signals, n_batches=20):
+def _row_sum_of_squares(signals, n_batches=20):
     """Compute sum of squares for each signal.
     This function is equivalent to
 
