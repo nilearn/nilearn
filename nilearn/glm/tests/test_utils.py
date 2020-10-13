@@ -19,9 +19,8 @@ from nilearn._utils.glm import (_check_and_load_tables,
                                 multiple_mahalanobis, parse_bids_filename,
                                 positive_reciprocal, z_score)
 from nilearn.input_data import NiftiMasker
-from nilearn.glm.first_level import FirstLevelModel, make_first_level_design_matrix
-from nilearn.datasets import fetch_spm_auditory
-from nilearn.image import mean_img
+from nilearn.glm.first_level import (FirstLevelModel,
+                                     make_first_level_design_matrix)
 
 
 def test_full_rank():
