@@ -483,7 +483,9 @@ def basic_confounds(length):
 def create_fake_bids_dataset(base_dir='', n_sub=10, n_ses=2,
                              tasks=['localizer', 'main'],
                              n_runs=[1, 3], with_derivatives=True,
-                             with_confounds=True, no_session=False):
+                             with_confounds=True,
+                             confounds_tag="desc-confounds_timeseries",
+                             no_session=False):
     """Creates a fake bids dataset directory with dummy files.
     Returns fake dataset directory name.
 
@@ -513,6 +515,12 @@ def create_fake_bids_dataset(base_dir='', n_sub=10, n_ses=2,
 
     with_confounds: bool, optional
         Default: True
+
+    confounds_tag: string (filename suffix), optional
+        If generating confounds, what path should they have? Defaults to
+        `desc-confounds_timeseries` as in `fmriprep` >= 20.2 but can be other
+        values (e.g. "desc-confounds_regressors" as in `fmriprep` < 20.2)
+        Default: "desc-confounds_timeseries"
 
     no_session: bool, optional
         Specifying no_sessions will only produce runs and files without the
@@ -612,7 +620,7 @@ def create_fake_bids_dataset(base_dir='', n_sub=10, n_ses=2,
                         if with_confounds:
                             confounds_path = os.path.join(
                                 func_path,
-                                file_id + '_desc-confounds_regressors.tsv',
+                                file_id + '_' + confounds_tag + '.tsv',
                             )
                             basic_confounds(100).to_csv(confounds_path,
                                                         sep='\t', index=None)

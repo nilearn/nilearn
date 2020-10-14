@@ -962,7 +962,7 @@ def first_level_from_bids(dataset_path, task_label, space_label=None,
         # Get confounds. If not found it will be assumed there are none.
         # If there are confounds, they are assumed to be present for all runs.
         confounds = get_bids_files(derivatives_path, modality_folder='func',
-                                   file_tag='desc-confounds_regressors',
+                                   file_tag='desc-confounds*',
                                    file_type='tsv', sub_label=sub_label,
                                    filters=filters)
 
