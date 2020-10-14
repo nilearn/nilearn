@@ -50,6 +50,8 @@ NEW
   to enable annotation of a slice coordinate position with the float.
 - New example in `examples/02_decoding/plot_haxby_searchlight_surface.py`
   to demo how to do cortical surface-based searchlight decoding with Nilearn.
+- The decomposition estimators will now accept argument `per_component`
+  with `score` method to explain the variance for each component.
 
 
 Fixes
@@ -63,6 +65,8 @@ Fixes
   correct orientation; before left and right were inverted.
 - :func:`nilearn.mass_univariate.permuted_ols` no longer returns transposed
   t-statistic arrays when no permutations are performed.
+- Fix decomposition estimators returning explained variance score as 0.
+  based on all components i.e., when per_component=False.
 
 
 Changes

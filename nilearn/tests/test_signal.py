@@ -267,6 +267,22 @@ def test_mean_of_squares():
     np.testing.assert_almost_equal(var1, var2)
 
 
+def test_row_sum_of_squares():
+    """Test _row_sum_of_squares."""
+    n_samples = 11
+    n_features = 501  # Higher than 500 required
+    signals, _, _ = generate_signals(n_features=n_features,
+                                     length=n_samples,
+                                     same_variance=True)
+    # Reference computation
+    var1 = signals ** 2
+    var1 = var1.sum(axis=0)
+
+    var2 = nisignal._row_sum_of_squares(signals)
+
+    np.testing.assert_almost_equal(var1, var2)
+
+
 # This test is inspired from Scipy docstring of detrend function
 def test_clean_detrending():
     n_samples = 21

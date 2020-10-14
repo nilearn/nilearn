@@ -23,6 +23,7 @@ from .._utils.niimg import _safe_get_data
 from .._utils.niimg_conversions import _resolve_globbing
 from ..input_data import NiftiMapsMasker
 from ..input_data.masker_validation import check_embedded_nifti_masker
+from ..signal import _row_sum_of_squares
 
 
 def fast_svd(X, n_components, random_state=None):
@@ -493,7 +494,7 @@ class BaseDecomposition(BaseEstimator, CacheMixin, TransformerMixin):
         return self._cache(explained_variance)(data, self.components_,
                                                per_component=per_component)
 
-    def score(self, imgs, confounds=None):
+    def score(self, imgs, confounds=None, per_component=False):
         """Score function based on explained variance on imgs.
 
         Should only be used by DecompositionEstimator derived classes
@@ -508,6 +509,10 @@ class BaseDecomposition(BaseEstimator, CacheMixin, TransformerMixin):
             This parameter is passed to nilearn.signal.clean. Please see the
             related documentation for details
 
+        per_component: bool, default False
+            Specify whether the explained variance ratio is desired for each
+            map or for the global set of components
+
         Returns
         -------
         score: float,
@@ -515,9 +520,11 @@ class BaseDecomposition(BaseEstimator, CacheMixin, TransformerMixin):
             if per_component is True. First dimension
             is squeezed if the number of subjects is one
         """
+        self._check_components_()
         data = mask_and_reduce(self.masker_, imgs, confounds,
-                               reduction_ratio=1.)
-        return self._raw_score(data, per_component=False)
+                               reduction_ratio=1.,
+                               random_state=self.random_state)
+        return self._raw_score(data, per_component=per_component)
 
 
 def explained_variance(X, components, per_component=True):
@@ -550,11 +557,12 @@ def explained_variance(X, components, per_component=True):
             res = X - np.outer(projected_data[i],
                                components[i])
             res_var[i] = np.var(res)
+            # Free some memory
+            del res
         return np.maximum(0., 1. - res_var / full_var)
     else:
         lr = LinearRegression(fit_intercept=True)
         lr.fit(components.T, X.T)
-        res_var = X - lr.coef_.dot(components)
-        res_var **= 2
-        res_var = np.sum(res_var)
-        return np.maximum(0., 1. - res_var / full_var)
+        res = X - lr.coef_.dot(components)
+        res_var = _row_sum_of_squares(res).sum()
+        return np.maximum(0., 1. - res_var / _row_sum_of_squares(X).sum())
