@@ -477,7 +477,7 @@ def test_first_level_from_bids():
         # test issues with confound files. There should be only one confound
         # file per img. An one per image or None. Case when one is missing
         confound_files = get_bids_files(os.path.join(bids_path, 'derivatives'),
-                                        file_tag='desc-confounds_regressors')
+                                        file_tag='desc-confounds_timeseries')
         os.remove(confound_files[-1])
         with pytest.raises(ValueError):
             first_level_from_bids(

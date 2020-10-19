@@ -172,7 +172,20 @@ def test_get_bids_files():
         # Get Top level folder files. Only 1 in this case, the README file.
         selection = get_bids_files(bids_path, sub_folder=False)
         assert len(selection) == 1
+        # 80 counfonds (4 runs per ses & sub), testing `fmriprep` >= 20.2 path
+        selection = get_bids_files(os.path.join(bids_path, 'derivatives'),
+                file_tag='desc-confounds_timeseries')
+        assert len(selection) == 80
 
+    with InTemporaryDirectory():
+        bids_path = create_fake_bids_dataset(n_sub=10, n_ses=2,
+                                             tasks=['localizer', 'main'],
+                                             n_runs=[1, 3],
+                                             confounds_tag="desc-confounds_regressors")
+        # 80 counfonds (4 runs per ses & sub), testing `fmriprep` >= 20.2 path
+        selection = get_bids_files(os.path.join(bids_path, 'derivatives'),
+                file_tag='desc-confounds_regressors')
+        assert len(selection) == 80
 
 def test_parse_bids_filename():
     fields = ['sub', 'ses', 'task', 'lolo']
