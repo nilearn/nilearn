@@ -13,7 +13,6 @@ from .base_masker import BaseMasker, filter_and_extract
 from .. import _utils
 from .. import image
 from .. import masking
-from nilearn.reporting import ReportMixin
 from .._utils import CacheMixin
 from .._utils.class_inspect import get_params
 from .._utils.niimg import img_data_dtype
@@ -66,7 +65,7 @@ def filter_and_mask(imgs, mask_img_, parameters,
     return data
 
 
-class NiftiMasker(BaseMasker, CacheMixin, ReportMixin):
+class NiftiMasker(BaseMasker, CacheMixin):
     """Applying a mask to extract time-series from Niimg-like objects.
 
     NiftiMasker is useful when preprocessing (detrending, standardization,
@@ -222,6 +221,10 @@ class NiftiMasker(BaseMasker, CacheMixin, ReportMixin):
                               'resampling, hover over the displayed image.')
 
         self._shelving = False
+
+    def generate_report(self):
+        from nilearn.reporting.html_report import generate_report
+        return generate_report(self)
 
     def _reporting(self):
         """

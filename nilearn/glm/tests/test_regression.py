@@ -13,9 +13,9 @@ from numpy.testing import (assert_almost_equal,
 from nilearn.glm import OLSModel, ARModel
 
 
-RNG = np.random.RandomState(20110902)
-X = RNG.standard_normal((40, 10))
-Y = RNG.standard_normal((40,))
+RNG = np.random.RandomState(42)
+X = RNG.standard_normal(size=(40, 10))
+Y = RNG.standard_normal(size=(40,))
 
 
 def test_OLS():

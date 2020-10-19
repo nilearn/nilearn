@@ -164,7 +164,7 @@ def test_parcellations_transform_multi_nifti_images():
 
 
 def test_check_parameters_transform():
-    rng = np.random.RandomState(0)
+    rng = np.random.RandomState(42)
     data = np.ones((10, 11, 12, 10))
     data[6, 7, 8] = 2
     data[9, 10, 11] = 3
@@ -172,7 +172,7 @@ def test_check_parameters_transform():
     # single image
     fmri_img = nibabel.Nifti1Image(data, affine=np.eye(4))
     # single confound
-    confounds = rng.randn(*(10, 3))
+    confounds = rng.standard_normal(size=(10, 3))
     # Tests to check whether imgs, confounds returned are
     # list or not. Pre-check in parameters to work for list
     # of multi images and multi confounds
@@ -203,7 +203,7 @@ def test_check_parameters_transform():
 
 
 def test_parcellations_transform_with_multi_confounds_multi_images():
-    rng = np.random.RandomState(0)
+    rng = np.random.RandomState(42)
     data = np.ones((10, 11, 12, 10))
     data[6, 7, 8] = 2
     data[9, 10, 11] = 3
@@ -211,7 +211,7 @@ def test_parcellations_transform_with_multi_confounds_multi_images():
     fmri_img = nibabel.Nifti1Image(data, affine=np.eye(4))
     fmri_imgs = [fmri_img, fmri_img, fmri_img]
 
-    confounds = rng.randn(*(10, 3))
+    confounds = rng.standard_normal(size=(10, 3))
     confounds_list = (confounds, confounds, confounds)
 
     for method in ['kmeans', 'ward', 'complete', 'average', 'rena']:
@@ -226,7 +226,7 @@ def test_parcellations_transform_with_multi_confounds_multi_images():
 
 
 def test_fit_transform():
-    rng = np.random.RandomState(0)
+    rng = np.random.RandomState(42)
     data = np.ones((10, 11, 12, 10))
     data[6, 7, 8] = 2
     data[9, 10, 11] = 3
@@ -234,7 +234,7 @@ def test_fit_transform():
     fmri_img = nibabel.Nifti1Image(data, affine=np.eye(4))
     fmri_imgs = [fmri_img, fmri_img, fmri_img]
 
-    confounds = rng.randn(*(10, 3))
+    confounds = rng.standard_normal(size=(10, 3))
     confounds_list = [confounds, confounds, confounds]
 
     for method in ['kmeans', 'ward', 'complete', 'average', 'rena']:

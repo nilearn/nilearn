@@ -217,8 +217,9 @@ def test_high_level_glm_different_design_matrices():
 
 
 def test_run_glm():
+    rng = np.random.RandomState(42)
     n, p, q = 100, 80, 10
-    X, Y = np.random.randn(p, q), np.random.randn(p, n)
+    X, Y = rng.standard_normal(size=(p, q)), rng.standard_normal(size=(p, n))
 
     # Ordinary Least Squares case
     labels, results = run_glm(Y, X, 'ols')
@@ -244,9 +245,10 @@ def test_run_glm():
 
 def test_scaling():
     """Test the scaling function"""
+    rng = np.random.RandomState(42)
     shape = (400, 10)
-    u = np.random.randn(*shape)
-    mean = 100 * np.random.rand(shape[1]) + 1
+    u = rng.standard_normal(size=shape)
+    mean = 100 * rng.uniform(size=shape[1]) + 1
     Y = u + mean
     Y_, mean_ = mean_scaling(Y)
     assert_almost_equal(Y_.mean(0), 0, 5)

@@ -27,7 +27,7 @@ NEW
   These two objects also leverage the `NiftiMaskers` to provide a direct
   interface with the Nifti files on disk.
 - Plot events file
-  Use :func:`nilearn.reporting.plot_event` to visualize events file.
+  Use :func:`nilearn.plotting.plot_event` to visualize events file.
   The function accepts the BIDS events file read using `pandas`
   utilities.
 - Plotting function :func:`nilearn.plotting.plot_roi` can now plot ROIs
@@ -52,6 +52,8 @@ NEW
   to demo how to do cortical surface-based searchlight decoding with Nilearn.
 - confounds or additional regressors for design matrix can be specified as
   numpy arrays or pandas DataFrames interchangeably
+- The decomposition estimators will now accept argument `per_component`
+  with `score` method to explain the variance for each component.
 
 Fixes
 -----
@@ -64,6 +66,8 @@ Fixes
   correct orientation; before left and right were inverted.
 - :func:`nilearn.mass_univariate.permuted_ols` no longer returns transposed
   t-statistic arrays when no permutations are performed.
+- Fix decomposition estimators returning explained variance score as 0.
+  based on all components i.e., when per_component=False.
 
 
 Changes

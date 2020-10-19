@@ -121,6 +121,38 @@ def _mean_of_squares(signals, n_batches=20):
     return var
 
 
+def _row_sum_of_squares(signals, n_batches=20):
+    """Compute sum of squares for each signal.
+    This function is equivalent to
+
+        signals **= 2
+        signals = signals.sum(axis=0)
+
+    but uses a lot less memory.
+
+    Parameters
+    ----------
+    signals : numpy.ndarray, shape (n_samples, n_features)
+        signal whose sum of squares must be computed.
+
+    n_batches : int, optional
+        number of batches to use in the computation. Tweaking this value
+        can lead to variation of memory usage and computation time. The higher
+        the value, the lower the memory consumption.
+
+    """
+    # No batching for small arrays
+    if signals.shape[1] < 500:
+        n_batches = 1
+
+    # Fastest for C order
+    var = np.empty(signals.shape[1])
+    for batch in gen_even_slices(signals.shape[1], n_batches):
+        var[batch] = np.sum(signals[:, batch] ** 2, 0)
+
+    return var
+
+
 def _detrend(signals, inplace=False, type="linear", n_batches=10):
     """Detrend columns of input array.
 

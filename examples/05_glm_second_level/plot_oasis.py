@@ -72,7 +72,7 @@ design_matrix = pd.DataFrame(np.vstack((age, sex, intercept)).T,
 
 #############################################################################
 # Let's plot the design matrix.
-from nilearn.reporting import plot_design_matrix
+from nilearn.plotting import plot_design_matrix
 
 ax = plot_design_matrix(design_matrix)
 ax.set_title('Second level design matrix', fontsize=12)

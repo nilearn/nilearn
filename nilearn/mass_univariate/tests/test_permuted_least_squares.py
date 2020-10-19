@@ -9,6 +9,7 @@ from sklearn.utils import check_random_state
 
 from numpy.testing import (assert_almost_equal, assert_array_almost_equal,
                            assert_array_less, assert_equal)
+import pytest
 
 from nilearn.mass_univariate import permuted_ols
 from nilearn.mass_univariate.permuted_least_squares import (
@@ -304,6 +305,37 @@ def test_permuted_ols_nocovar(random_state=0):
         tested_var, target_var, np.ones((n_samples, 1)))
     assert_array_almost_equal(ref_score_intercept, own_score_intercept,
                               decimal=6)
+
+
+def test_permuted_ols_nocovar_warning(random_state=0):
+    """
+    Ensure that a warning is raised when a given voxel has all zeros.
+    """
+    rng = check_random_state(random_state)
+
+    # design parameters
+    n_samples = 50
+    n_descriptors = 10
+    n_regressors = 1
+
+    # create design
+    target_var = rng.randn(n_samples, n_descriptors)
+    tested_var = rng.randn(n_samples, n_regressors)
+
+    # permuted OLS
+    _, own_score, _ = permuted_ols(
+        tested_var, target_var, model_intercept=False,
+        n_perm=100, random_state=random_state)
+
+    # test with ravelized tested_var
+    target_var[:, 0] = 0
+
+    with pytest.warns(UserWarning):
+        _, own_score2, _ = permuted_ols(
+            np.ravel(tested_var), target_var, model_intercept=False,
+            n_perm=100, random_state=random_state)
+
+    assert np.array_equal(own_score[1:], own_score2[1:])
 
 
 def test_permuted_ols_withcovar(random_state=0):

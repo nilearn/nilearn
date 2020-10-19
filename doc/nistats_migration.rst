@@ -76,7 +76,7 @@ Report plotting functions
 ==========================
 Imports from
 `nistats.reporting <https://nistats.github.io/modules/reference.html#module-nistats.reporting>`_
-are in :mod:`nilearn.reporting`
+are in :mod:`nilearn.reporting` or :mod:`nilearn.plotting`
 
 Utility functions
 =================

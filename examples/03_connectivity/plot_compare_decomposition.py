@@ -129,6 +129,25 @@ for i, cur_img in enumerate(iter_img(dictlearning_components_img)):
     plot_stat_map(cur_img, display_mode="z", title="Comp %d" % i,
                   cut_coords=1, colorbar=False)
 
+###############################################################################
+# Estimate explained variance per component and plot using matplotlib
+#
+# The fitted object `dict_learning` can be used to calculate the score per component
+scores = dict_learning.score(func_filenames, per_component=True)
+
+# Plot the scores
+import numpy as np
+from matplotlib import pyplot as plt
+from matplotlib.ticker import FormatStrFormatter
+
+plt.figure(figsize=(4, 4))
+positions = np.arange(len(scores))
+plt.barh(positions, scores)
+plt.ylabel('Component #', size=12)
+plt.xlabel('Explained variance', size=12)
+plt.yticks(np.arange(20))
+plt.gca().xaxis.set_major_formatter(FormatStrFormatter('%.3f'))
+plt.tight_layout()
 
 show()
 ################################################################################
@@ -138,4 +157,3 @@ show()
 #     created using Dictionary Learning, see :ref:`example Regions 
 #     extraction using Dictionary Learning and functional connectomes
 #     <sphx_glr_auto_examples_03_connectivity_plot_extract_regions_dictlearning_maps.py>`.
-
