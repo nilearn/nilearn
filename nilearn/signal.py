@@ -11,6 +11,7 @@ import distutils.version
 import warnings
 
 import numpy as np
+import pandas as pd
 from scipy import linalg, signal as sp_signal
 from sklearn.utils import gen_even_slices, as_float_array
 
@@ -442,7 +443,7 @@ def clean(signals, sessions=None, detrend=True, standardize='zscore',
         Add a session level to the cleaning process. Each session will be
         cleaned independently. Must be a 1D array of n_samples elements.
 
-    confounds: numpy.ndarray, str or list of
+    confounds: numpy.ndarray, str, DataFrame or list of
         Confounds timeseries. Shape must be
         (instant number, confound number), or just (instant number,)
         The number of time instants in signals and confounds must be
@@ -505,7 +506,8 @@ def clean(signals, sessions=None, detrend=True, standardize='zscore',
                         "high_pass='{0}'".format(high_pass))
 
     if not isinstance(confounds,
-                      (list, tuple, str, np.ndarray, type(None))):
+                      (list, tuple, str, np.ndarray, pd.DataFrame,
+                       type(None))):
         raise TypeError("confounds keyword has an unhandled type: %s"
                         % confounds.__class__)
 
@@ -530,6 +532,10 @@ def clean(signals, sessions=None, detrend=True, standardize='zscore',
 
         all_confounds = []
         for confound in confounds:
+            # cast DataFrame to array
+            if isinstance(confound, pd.DataFrame):
+                confound = confound.values
+
             if isinstance(confound, str):
                 filename = confound
                 confound = csv_to_array(filename)

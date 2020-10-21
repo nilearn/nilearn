@@ -59,6 +59,8 @@ def _check_and_load_tables(tables_, var_name):
             tables.append(loaded)
         elif isinstance(table, pd.DataFrame):
             tables.append(table)
+        elif isinstance(table, np.ndarray):
+            pass
         else:
             raise TypeError('%s can only be a pandas DataFrames or a'
                             'string. A %s was provided at idx %d' %
@@ -134,7 +136,7 @@ def _check_events_file_uses_tab_separators(events_files):
 
 def _check_run_tables(run_imgs, tables_, tables_name):
     """Check fMRI runs and corresponding tables to raise error if necessary"""
-    if isinstance(tables_, (str, pd.DataFrame)):
+    if isinstance(tables_, (str, pd.DataFrame, np.ndarray)):
         tables_ = [tables_]
     _check_list_length_match(run_imgs, tables_, 'run_imgs', tables_name)
     tables_ = _check_and_load_tables(tables_, tables_name)

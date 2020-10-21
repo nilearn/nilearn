@@ -5,6 +5,7 @@ import pytest
 
 from numpy.testing import (assert_almost_equal,
                            assert_array_equal,
+                           assert_array_almost_equal,
                            )
 
 from nilearn.glm.first_level.hemodynamic_models import (_hrf_kernel,
@@ -251,7 +252,7 @@ def test_make_regressor_3():
     hrf_model = 'fir'
     reg, reg_names = compute_regressor(condition, hrf_model, frame_times,
                                        fir_delays=np.arange(4))
-    assert_array_equal(np.sum(reg, 0), np.array([3, 3, 3, 3]))
+    assert_array_almost_equal(np.sum(reg, 0), np.array([3, 3, 3, 3]))
     assert len(reg_names) == 4
     reg_, reg_names_ = compute_regressor(condition, hrf_model, frame_times,
                                          fir_delays=np.arange(4),

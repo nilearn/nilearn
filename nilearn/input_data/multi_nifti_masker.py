@@ -242,7 +242,7 @@ class MultiNiftiMasker(NiftiMasker, CacheMixin):
 
         confounds: list of confounds, optional
             List of confounds (2D arrays or filenames pointing to CSV
-            files). Must be of same length than imgs_list.
+            files or pandas DataFrames). Must be of same length than imgs_list.
 
         copy: boolean, optional
             If True, guarantees that output array has no memory in common with
@@ -310,7 +310,7 @@ class MultiNiftiMasker(NiftiMasker, CacheMixin):
             See http://nilearn.github.io/manipulating_images/input_output.html
             Data to be preprocessed
 
-        confounds: CSV file path or 2D matrix
+        confounds: CSV file path or 2D array or pandas DataFrame
             This parameter is passed to signal.clean. Please see the
             corresponding documentation for details.
 

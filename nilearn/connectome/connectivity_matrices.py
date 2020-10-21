@@ -563,7 +563,7 @@ class ConnectivityMeasure(BaseEstimator, TransformerMixin):
             from one subject to another.
 
         confounds : np.ndarray with shape (n_samples) or \
-                    (n_samples, n_confounds), optional
+                    (n_samples, n_confounds), or pandas DataFrame, optional
             Confounds to be cleaned on the vectorized matrices. Only takes
             into effect when vetorize=True.
             This parameter is passed to signal.clean. Please see the related

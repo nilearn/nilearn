@@ -291,13 +291,15 @@ def make_first_level_design_matrix(
         In case of FIR design, yields the array of delays used in the FIR
         model (in scans).
 
-    add_regs : array of shape(n_frames, n_add_reg), optional
+    add_regs : array of shape(n_frames, n_add_reg) or pandas DataFrame, optional
         additional user-supplied regressors, e.g. data driven noise regressors
         or seed based regressors.
 
     add_reg_names : list of (n_add_reg,) strings, optional
         If None, while add_regs was provided, these will be termed
         'reg_%i', i = 0..n_add_reg - 1
+        If add_regs is a DataFrame, the corresponding column names are used
+        and add_reg_names is ignored. 
 
     min_onset : float, optional
         Minimal onset relative to frame_times[0] (in seconds)
@@ -316,13 +318,16 @@ def make_first_level_design_matrix(
     # check that additional regressor specification is correct
     n_add_regs = 0
     if add_regs is not None:
-        if add_regs.shape[0] == np.size(add_regs):
-            add_regs = np.reshape(add_regs, (np.size(add_regs), 1))
-        n_add_regs = add_regs.shape[1]
-        assert add_regs.shape[0] == np.size(frame_times), ValueError(
+        if isinstance(add_regs, pd.DataFrame):
+            add_regs_ = add_regs.values
+            add_reg_names = add_regs.columns.tolist()
+        else:
+            add_regs_ = np.atleast_2d(add_regs)
+        n_add_regs = add_regs_.shape[1]
+        assert add_regs_.shape[0] == np.size(frame_times), ValueError(
             'Incorrect specification of additional regressors: '
             'length of regressors provided: %d, number of '
-            'time-frames: %d' % (add_regs.shape[0], np.size(frame_times)))
+            'time-frames: %d' % (add_regs_.shape[0], np.size(frame_times)))
 
     # check that additional regressor names are well specified
     if add_reg_names is None:
