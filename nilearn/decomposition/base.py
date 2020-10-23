@@ -359,8 +359,7 @@ class BaseDecomposition(BaseEstimator, CacheMixin, TransformerMixin):
             Data on which the mask is calculated. If this is a list,
             the affine is considered the same for all.
 
-        confounds : list of CSV file paths or numpy.ndarrys
-                    or pandas DataFrames, optional,
+        confounds : list of CSV file paths or numpy.ndarrays or pandas DataFrames, optional,
             This parameter is passed to nilearn.signal.clean. Please see the
             related documentation for details. Should match with the list
             of imgs given.
@@ -429,8 +428,7 @@ class BaseDecomposition(BaseEstimator, CacheMixin, TransformerMixin):
             See http://nilearn.github.io/manipulating_images/input_output.html
             Data to be projected
 
-        confounds: CSV file path or numpy.ndarray or pandas DataFrame,
-                   optional,
+        confounds: CSV file path or numpy.ndarray or pandas DataFrame, optional,
             This parameter is passed to nilearn.signal.clean. Please see the
             related documentation for details
 
@@ -507,8 +505,7 @@ class BaseDecomposition(BaseEstimator, CacheMixin, TransformerMixin):
             See http://nilearn.github.io/manipulating_images/input_output.html
             Data to be scored
 
-        confounds: CSV file path or numpy.ndarray or pandas DataFrame,
-                   optional,
+        confounds: CSV file path or numpy.ndarray or pandas DataFrame, optional,
             This parameter is passed to nilearn.signal.clean. Please see the
             related documentation for details
 
