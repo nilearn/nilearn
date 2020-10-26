@@ -691,7 +691,7 @@ def _plot_roi_contours(display, roi_img, cmap, alpha, linewidths):
         if label == 0:
             continue
         data = (roi_data == label)
-        data = data.astype(np.int)
+        data = data.astype(int)
         img = new_img_like(roi_img, data, affine=roi_img.affine)
         display.add_contours(img, levels=[0.5], colors=[color_list[idx - 1]],
                              alpha=alpha, linewidths=linewidths,

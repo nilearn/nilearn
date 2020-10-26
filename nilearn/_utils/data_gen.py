@@ -128,7 +128,7 @@ def generate_maps(shape, n_regions, overlap=0, border=1,
 
 
 def generate_labeled_regions(shape, n_regions, rand_gen=None, labels=None,
-                             affine=np.eye(4), dtype=np.int):
+                             affine=np.eye(4), dtype=int):
     """Generate a 3D volume with labeled regions.
 
     Parameters
@@ -166,7 +166,7 @@ def generate_labeled_regions(shape, n_regions, rand_gen=None, labels=None,
     for n, row in zip(labels, regions):
         row[row > 0] = n
     data = np.zeros(shape, dtype=dtype)
-    data[np.ones(shape, dtype=np.bool)] = regions.sum(axis=0).T
+    data[np.ones(shape, dtype=bool)] = regions.sum(axis=0).T
     return nibabel.Nifti1Image(data, affine)
 
 
@@ -266,9 +266,9 @@ def generate_fake_fmri(shape=(10, 11, 12), length=17, kind="noise",
                 nibabel.Nifti1Image(mask, affine))
 
     block_size = 3 if block_size is None else block_size
-    flat_fmri = fmri[mask.astype(np.bool)]
+    flat_fmri = fmri[mask.astype(bool)]
     flat_fmri /= np.abs(flat_fmri).max()
-    target = np.zeros(length, dtype=np.int)
+    target = np.zeros(length, dtype=int)
     rest_max_size = (length - (n_blocks * block_size)) // n_blocks
     if rest_max_size < 0:
         raise ValueError(
@@ -298,7 +298,7 @@ def generate_fake_fmri(shape=(10, 11, 12), length=17, kind="noise",
     target = target if block_type == 'classification' \
         else target.astype(np.float)
     fmri = np.zeros(fmri.shape)
-    fmri[mask.astype(np.bool)] = flat_fmri
+    fmri[mask.astype(bool)] = flat_fmri
     return (nibabel.Nifti1Image(fmri, affine),
             nibabel.Nifti1Image(mask, affine), target)
 
