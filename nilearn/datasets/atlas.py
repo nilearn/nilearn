@@ -122,7 +122,7 @@ def fetch_atlas_destrieux_2009(lateralized=True, data_dir=None, url=None,
     of the cerebral cortex." NeuroImage 47 (2009): S151.
     """
     if url is None:
-        url = "https://www.nitrc.org/frs/download.php/11941/"
+        url = "https://www.nitrc.org/frs/download.php/11942/"
 
     url += "destrieux2009.tgz"
     opts = {'uncompress': True}
