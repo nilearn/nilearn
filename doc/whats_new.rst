@@ -68,6 +68,7 @@ Fixes
   t-statistic arrays when no permutations are performed.
 - Fix decomposition estimators returning explained variance score as 0.
   based on all components i.e., when per_component=False.
+- Fix readme file of the Destrieux 2009 atlas.
 
 
 Changes
