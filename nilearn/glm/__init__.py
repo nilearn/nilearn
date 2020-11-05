@@ -47,3 +47,8 @@ __all__ = [
     'first_level',
     'second_level',
 ]
+
+from warnings import warn
+
+warn('This module is experimental. ' +
+     'It may change in any future release of Nilearn.', UserWarning)
