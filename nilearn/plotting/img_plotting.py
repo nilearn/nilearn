@@ -228,12 +228,21 @@ def _crop_colorbar(cbar, cbar_vmin, cbar_vmax):
 
     # matplotlib >= 3.2.0 no longer normalizes axes between 0 and 1
     # See https://matplotlib.org/3.2.1/api/prev_api_changes/api_changes_3.2.0.html
+    # _outline was removed in
+    # https://github.com/matplotlib/matplotlib/commit/03a542e875eba091a027046d5ec652daa8be6863
+    # so we use the code from there
     if LooseVersion(matplotlib.__version__) >= LooseVersion("3.2.0"):
         cbar.ax.set_ylim(cbar_vmin, cbar_vmax)
         X, _ = cbar._mesh()
-        new_X = np.array([X[0], X[-1]])
-        new_Y = np.array([[cbar_vmin, cbar_vmin], [cbar_vmax, cbar_vmax]])
-        xy = cbar._outline(new_X, new_Y)
+        X = np.array([X[0], X[-1]])
+        Y = np.array([[cbar_vmin, cbar_vmin], [cbar_vmax, cbar_vmax]])
+        N = X.shape[0]
+        ii = [0, 1, N - 2, N - 1, 2 * N - 1, 2 * N - 2, N + 1, N, 0]
+        x = X.T.reshape(-1)[ii]
+        y = Y.T.reshape(-1)[ii]
+        xy = (np.column_stack([y, x])
+              if cbar.orientation == 'horizontal' else
+              np.column_stack([x, y]))
         cbar.outline.set_xy(xy)
     else:
         cbar.ax.set_ylim(cbar.norm(cbar_vmin), cbar.norm(cbar_vmax))
@@ -682,7 +691,7 @@ def _plot_roi_contours(display, roi_img, cmap, alpha, linewidths):
         if label == 0:
             continue
         data = (roi_data == label)
-        data = data.astype(np.int)
+        data = data.astype(int)
         img = new_img_like(roi_img, data, affine=roi_img.affine)
         display.add_contours(img, levels=[0.5], colors=[color_list[idx - 1]],
                              alpha=alpha, linewidths=linewidths,
@@ -1458,7 +1467,7 @@ optional
     -----
     The plotted image should in MNI space for this function to work properly.
 
-    This function is deprecated and will be removed in the 0.9.0 release. Use 
+    This function is deprecated and will be removed in the 0.9.0 release. Use
     plot_markers instead.
     """
     dep_msg = ("This function is deprecated and will be "
@@ -1553,21 +1562,21 @@ optional
     return display
 
 
-def plot_markers(node_values, node_coords, node_size='auto', 
-                 node_cmap=plt.cm.viridis_r, node_vmin=None, node_vmax=None, 
-                 node_threshold=None, alpha=0.7, output_file=None, 
-                 display_mode="ortho", figure=None, axes=None, title=None, 
-                 annotate=True, black_bg=False, node_kwargs=None, 
+def plot_markers(node_values, node_coords, node_size='auto',
+                 node_cmap=plt.cm.viridis_r, node_vmin=None, node_vmax=None,
+                 node_threshold=None, alpha=0.7, output_file=None,
+                 display_mode="ortho", figure=None, axes=None, title=None,
+                 annotate=True, black_bg=False, node_kwargs=None,
                  colorbar=True):
     """Plot network nodes (markers) on top of the brain glass schematics.
 
-    Nodes are color coded according to provided nodal measure. Nodal measure 
-    usually represents some notion of node importance.  
+    Nodes are color coded according to provided nodal measure. Nodal measure
+    usually represents some notion of node importance.
 
     Parameters
     ----------
     node_values : array_like of length n
-        Vector containing nodal importance measure. Each node will be colored 
+        Vector containing nodal importance measure. Each node will be colored
         acording to corresponding node value.
     node_coords : numpy array_like of shape (n, 3)
         3d coordinates of the graph nodes in world space.
@@ -1577,20 +1586,20 @@ def plot_markers(node_values, node_coords, node_size='auto',
     node_cmap : str or colormap
         Colormap used to represent the node measure.
     node_vmin : float, optional
-        Lower bound of the colormap. If `None`, the min of the node_values is 
+        Lower bound of the colormap. If `None`, the min of the node_values is
         used.
     node_vmax : float, optional
-        Upper bound of the colormap. If `None`, the min of the node_values is 
+        Upper bound of the colormap. If `None`, the min of the node_values is
         used.
     node_threshold : float
-        If provided only the nodes with a value greater than node_threshold 
+        If provided only the nodes with a value greater than node_threshold
         will be shown.
     alpha : float between 0 and 1. Default is 0.7
         Alpha transparency for markers
     output_file : string, or None, optional
         The name of an image file to export the plot to. Valid extensions
         are .png, .pdf, .svg. If output_file is not None, the plot
-        is saved to a file, and the display is closed. 
+        is saved to a file, and the display is closed.
     display_mode : string, optional. Default is 'ortho'.
         Choose the direction of the cuts: 'x' - sagittal, 'y' - coronal,
         'z' - axial, 'l' - sagittal left hemisphere only,
@@ -1625,34 +1634,34 @@ def plot_markers(node_values, node_coords, node_size='auto',
     node_coords = np.array(node_coords)
 
     # Validate node_values
-    if node_values.shape != (node_coords.shape[0], ): 
+    if node_values.shape != (node_coords.shape[0], ):
         msg = ("Dimension mismatch: 'node_values' should be vector of length "
                "{0}, but current shape is {1} instead of {2}").format(
                    len(node_coords),
-                   node_values.shape, 
-                   (node_coords.shape[0], ))        
-        raise ValueError(msg) 
+                   node_values.shape,
+                   (node_coords.shape[0], ))
+        raise ValueError(msg)
 
     display = plot_glass_brain(None, display_mode=display_mode,
                                figure=figure, axes=axes, title=title,
                                annotate=annotate, black_bg=black_bg)
 
     if isinstance(node_size, str) and node_size == 'auto':
-        node_size = min(1e4 / len(node_coords), 100)  
+        node_size = min(1e4 / len(node_coords), 100)
 
     # Filter out nodes with node values below threshold
     if node_threshold is not None:
         if node_threshold > np.max(node_values):
             msg = ("Provided 'node_threshold' value: {0} should not exceed "
-                   "highest node value: {1}").format(node_threshold, 
-                                                     np.max(node_values)) 
+                   "highest node value: {1}").format(node_threshold,
+                                                     np.max(node_values))
             raise ValueError(msg)
 
         retained_nodes = node_values > node_threshold
         node_values = node_values[retained_nodes]
-        node_coords = node_coords[retained_nodes]  
+        node_coords = node_coords[retained_nodes]
         if isinstance(node_size, collections.abc.Iterable):
-            node_size = [size for ok_retain, size in 
+            node_size = [size for ok_retain, size in
                          zip(retained_nodes, node_size) if ok_retain]
 
     # Calculate node colors based on value
@@ -1662,7 +1671,7 @@ def plot_markers(node_values, node_coords, node_size='auto',
         node_vmin = 0.9 * node_vmin
         node_vmax = 1.1 * node_vmax
     norm = matplotlib.colors.Normalize(vmin=node_vmin, vmax=node_vmax)
-    node_cmap = (plt.get_cmap(node_cmap) if isinstance(node_cmap, str) 
+    node_cmap = (plt.get_cmap(node_cmap) if isinstance(node_cmap, str)
                  else node_cmap)
     node_color = [node_cmap(norm(node_value)) for node_value in node_values]
 

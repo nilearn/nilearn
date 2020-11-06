@@ -15,6 +15,22 @@ except ImportError:
     collect_ignore = ['plotting',
                       'reporting',
                       ]
+    matplotlib = None
+
+
+def pytest_configure(config):
+    """Use Agg so that no figures pop up."""
+    if matplotlib is not None:
+        matplotlib.use('Agg', force=True)
+
+
+@pytest.fixture(autouse=True)
+def close_all():
+    """Close all matplotlib figures."""
+    yield
+    if matplotlib is not None:
+        import matplotlib.pyplot as plt
+        plt.close('all')  # takes < 1 us so just always do it
 
 
 def pytest_collection_modifyitems(items):
