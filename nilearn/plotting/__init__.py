@@ -4,7 +4,7 @@ Plotting code for nilearn
 # Original Authors: Chris Filo Gorgolewski, Gael Varoquaux
 import os
 import sys
-
+import warnings
 
 ###############################################################################
 # Make sure that we don't get DISPLAY problems when running without X on
@@ -46,8 +46,10 @@ from .img_plotting import (
     plot_markers, plot_prob_atlas, plot_carpet, plot_img_comparison, show)
 from .find_cuts import find_xyz_cut_coords, find_cut_slices, \
     find_parcellation_cut_coords, find_probabilistic_atlas_cut_coords
-from .matrix_plotting import (plot_matrix, plot_contrast_matrix,
-                              plot_design_matrix, plot_event)
+with warnings.catch_warnings():
+    warnings.simplefilter("ignore")
+    from .matrix_plotting import (plot_matrix, plot_contrast_matrix,
+                                  plot_design_matrix, plot_event)
 from .html_surface import view_surf, view_img_on_surf
 from .html_stat_map import view_img
 from .html_connectome import view_connectome, view_markers
