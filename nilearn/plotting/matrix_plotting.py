@@ -1,11 +1,17 @@
+"""
+Miscellaneous matrix plotting utilities.
+"""
+import warnings
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 import matplotlib.patches as mpatches
 from matplotlib.tight_layout import get_renderer
 from matplotlib.colorbar import make_axes
-from nilearn.glm.contrasts import expression_to_contrast_vector
-from nilearn.glm.first_level import check_design_matrix
+with warnings.catch_warnings():
+    warnings.simplefilter("ignore", FutureWarning)
+    from nilearn.glm.contrasts import expression_to_contrast_vector
+    from nilearn.glm.first_level import check_design_matrix
 
 
 def fit_axes(ax):
