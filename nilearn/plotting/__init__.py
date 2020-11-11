@@ -5,6 +5,7 @@ Plotting code for nilearn
 import os
 import sys
 
+
 ###############################################################################
 # Make sure that we don't get DISPLAY problems when running without X on
 # unices
