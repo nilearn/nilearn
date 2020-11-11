@@ -12,7 +12,12 @@ with warnings.catch_warnings():
     warnings.simplefilter("ignore", FutureWarning)
     from nilearn.glm.contrasts import expression_to_contrast_vector
     from nilearn.glm.first_level import check_design_matrix
-
+    # this is to avoid hiding a warning on nilearn.glm import
+    import sys
+    del sys.modules['nilearn']
+    for k in list(sys.modules.keys()):
+        if 'nilearn.glm' in k:
+            del sys.modules[k]
 
 def fit_axes(ax):
     """ Redimension the given axes to have labels fitting.

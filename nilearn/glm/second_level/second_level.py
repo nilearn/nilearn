@@ -277,6 +277,11 @@ class SecondLevelModel(BaseGLM):
         further inspection of model details. This has an important impact
         on memory consumption. True by default.
 
+    Note
+    ----
+    This class is experimental. 
+    It may change in any future release of Nilearn.
+
     """
 
     def __init__(self, mask_img=None, target_affine=None, target_shape=None,

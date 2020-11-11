@@ -136,6 +136,9 @@ def cluster_level_inference(stat_img, mask_img=None,
     Rosenblatt JD, Finos L, Weeda WD, Solari A, Goeman JJ. All-Resolutions
     Inference for brain imaging. Neuroimage. 2018 Nov 1;181:786-796. doi:
     10.1016/j.neuroimage.2018.07.060
+
+    This function is experimental. 
+    It may change in any future release of Nilearn.
     """
 
     if not isinstance(threshold, list):
@@ -224,10 +227,12 @@ def threshold_stats_img(stat_img=None, mask_img=None, alpha=.001, threshold=3.,
     If the input image is not z-scaled (i.e. some z-transformed statistic)
     the computed threshold is not rigorous and likely meaningless
 
+    This function is experimental. 
+    It may change in any future release of Nilearn.
+
     See also
     --------
     nilearn.image.threshold_img
-
     """
 
     height_control_methods = ['fpr', 'fdr', 'bonferroni',
