@@ -20,12 +20,12 @@ Core developers
 
 The nilearn core developers are:
 
-* Alexandre Gramfort agramfort
+* Alexandre Gramfort
 * Bertrand Thirion
 * Elizabeth DuPre
 * Gael Varoquaux
 * Jerome Dockes
-* Julia Huntenburg juhuntenburg
+* Julia Huntenburg
 * KamalakerDadi
 * Kshitij Chawla
 * Nicolas Gensollen
