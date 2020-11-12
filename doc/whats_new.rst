@@ -6,7 +6,7 @@
 HIGHLIGHTS
 ----------
 
-- Nilearn now includes the functionality of `Nistats <https://nistats.github.io>`_ as :module:`nilearn.glm`. This module is experimental, hence subject to change in any future release.
+- Nilearn now includes the functionality of `Nistats <https://nistats.github.io>`_ as :mod:`nilearn.glm`. This module is experimental, hence subject to change in any future release.
   :ref:`Here's a guide to replacing Nistats imports to work in Nilearn. <nistats_migration>`
 - New decoder object
   :class:`nilearn.decoding.Decoder` (for classification) and
@@ -16,19 +16,19 @@ HIGHLIGHTS
   :class:`nilearn.decoding.FREMClassifier` (for classification) and
   :class:`nilearn.decoding.FREMRegressor` (for regression) extend the decoder
   object with one fast clustering step at the beginning and  aggregates a high number of estimators trained on various splits of the training set.
-  
+
 - New plotting functions:
 
   * :func:`nilearn.plotting.plot_event` to visualize events file.
   * :func:`nilearn.plotting.plot_roi` can now plot ROIs in contours with `view_type` argument.
   * :func:`nilearn.plotting.plot_carpet` generates a "carpet plot" (also known
-  as a "Power plot" or a "grayplot")
+    as a "Power plot" or a "grayplot")
   * :func:`nilearn.plotting.plot_img_on_surf` generates multiple views of
-  :func:`nilearn.plotting.plot_surf_stat_map` in a single figure.
+    :func:`nilearn.plotting.plot_surf_stat_map` in a single figure.
   * :func:`nilearn.plotting.plot_markers` shows network nodes (markers) on a glass
-  brain template
+    brain template
   * :func:`nilearn.plotting.plot_surf_contours` plots the contours of regions of
-  interest on the surface
+    interest on the surface
 
 
 .. warning::
@@ -78,7 +78,8 @@ NEW
   interest on the surface, optionally overlayed on top of a statistical map.
 - The position annotation on the plot methods now implements the `decimals` option
   to enable annotation of a slice coordinate position with the float.
-- New example in `examples/02_decoding/plot_haxby_searchlight_surface.py`
+- New example in
+  :ref:`sphx_glr_auto_examples_02_decoding_plot_haxby_searchlight_surface.py`
   to demo how to do cortical surface-based searchlight decoding with Nilearn.
 - confounds or additional regressors for design matrix can be specified as
   numpy arrays or pandas DataFrames interchangeably
