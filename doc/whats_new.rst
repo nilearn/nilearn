@@ -6,7 +6,7 @@
 HIGHLIGHTS
 ----------
 
-- Nilearn now includes the functionality of `Nistats <https://nistats.github.io>`_ as :module:`nilearn.glm`.
+- Nilearn now includes the functionality of `Nistats <https://nistats.github.io>`_ as :module:`nilearn.glm`. This module is experimental, hence subject to change in any future release.
   :ref:`Here's a guide to replacing Nistats imports to work in Nilearn. <nistats_migration>`
 - New decoder object
   :class:`nilearn.decoding.Decoder` (for classification) and
