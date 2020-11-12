@@ -1,3 +1,5 @@
+.. _v0.7.0:
+
 0.7.0
 =====
 
@@ -29,7 +31,6 @@ HIGHLIGHTS
     brain template
   * :func:`nilearn.plotting.plot_surf_contours` plots the contours of regions of
     interest on the surface
-
 
 .. warning::
 
@@ -118,6 +119,8 @@ Changes
   surfaces.
 
 
+.. _v0.6.2:
+
 0.6.2
 ======
 
@@ -153,6 +156,9 @@ The following people contributed to this release::
      Kshitij Chawla (kchawla-pi)
      Zvi Baratz
      Simon R. Steinkamp
+
+
+.. _v0.6.1:
 
 0.6.1
 =====
