@@ -44,14 +44,11 @@ clean:
 sym_links:
 	# Make sym-links to share the cache across various example
 	# directories
-	-cd ../examples/ && mkdir -p nilearn_cache
-	-cd ../examples/01_plotting/ && ln -sf ../nilearn_cache
-	-cd ../examples/02_decoding/ && ln -sf ../nilearn_cache
-	-cd ../examples/03_connectivity/ && ln -sf ../nilearn_cache
-	-cd ../examples/04_glm_first_level/ && ln -sf ../nilearn_cache
-	-cd ../examples/05_glm_second_level/ && ln -sf ../nilearn_cache
-	-cd ../examples/06_manipulating_images/ && ln -sf ../nilearn_cache
-	-cd ../examples/07_advanced/ && ln -sf ../nilearn_cache
+	# The following find command selects all the depth-one
+	# subdirectories of ../examples/ and creates a sym-link to
+	# ../examples/nilearn_cache/
+	-find ../examples/ -type d -mindepth 1 -maxdepth 1 -not -path "../examples/nilearn_cache" -exec ln -sf ../nilearn_cache "{}/nilearn_cache" \;
+	-mkdir -p ../examples/nilearn_cache/joblib
 
 force_html: force html
 
