@@ -19,6 +19,21 @@ DEF_DOFMAX = 1e10
 
 
 def expression_to_contrast_vector(expression, design_columns):
+    """ Converts a string describing a contrast to a contrast vector
+    
+    Parameters
+    ----------
+    expression: string,
+                the expression to convert to a vector
+    design_columns: list or array of strings,
+                    the column names of the design matrix
+
+    Note
+    ----
+    This function is experimental. 
+    It may change in any future release of Nilearn.
+
+    """
     if expression in design_columns:
         contrast_vector = np.zeros(len(design_columns))
         contrast_vector[list(design_columns).index(expression)] = 1.
@@ -30,7 +45,7 @@ def expression_to_contrast_vector(expression, design_columns):
 
 def compute_contrast(labels, regression_result, con_val, contrast_type=None):
     """ Compute the specified contrast given an estimated glm
-
+    
     Parameters
     ----------
     labels : array of shape (n_voxels,),
@@ -51,6 +66,11 @@ def compute_contrast(labels, regression_result, con_val, contrast_type=None):
     -------
     con : Contrast instance,
         Yields the statistics of the contrast (effects, variance, p-values)
+
+    Note
+    ----
+    This function is experimental. 
+    It may change in any future release of Nilearn.
     """
     con_val = np.asarray(con_val)
     dim = 1
@@ -147,6 +167,12 @@ class Contrast(object):
 
         contrast_type: {'t', 'F'}
             specification of the contrast type
+
+        Note
+        ----
+        This class is experimental. 
+        It may change in any future release of Nilearn.
+
         """
         if variance.ndim != 1:
             raise ValueError('Variance array should have 1 dimension')
@@ -314,6 +340,12 @@ def compute_fixed_effects(contrast_imgs, variance_imgs, mask=None,
              the fixed effects variance computed within the mask
     fixed_fx_t_img: Nifti1Image,
              the fixed effects t-test computed within the mask
+
+    Note
+    ----
+    This function is experimental. 
+    It may change in any future release of Nilearn.
+
     """
 
     if len(contrast_imgs) != len(variance_imgs):

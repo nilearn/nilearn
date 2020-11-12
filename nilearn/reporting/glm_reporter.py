@@ -32,10 +32,13 @@ from nilearn.plotting.matrix_plotting import (
     plot_contrast_matrix,
     plot_design_matrix,
 )
-from nilearn import glm
-from nilearn.glm.thresholding import threshold_stats_img
 
-from nilearn.reporting import get_clusters_table
+with warnings.catch_warnings():
+    warnings.simplefilter("ignore", FutureWarning)
+    from nilearn import glm
+    from nilearn.glm.thresholding import threshold_stats_img
+
+from nilearn.reporting._get_clusters_table import get_clusters_table
 from nilearn.reporting.utils import figure_to_svg_quoted
 
 
