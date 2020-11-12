@@ -532,8 +532,10 @@ div.sphinxsidebar {
     padding: 0 15px 15px 0;
     min-width: 226px;
     width: 17%;
-    float: right;
     text-align: left;
+	position: absolute;
+	top: 200px;
+	right: 0px;
 }
 
 @media (max-width: 800px) {
@@ -645,7 +647,7 @@ div.footer {
     padding: 3px 8px 3px 0;
     clear: both;
     font-size: 0.8em;
-    text-align: right;
+    text-align: center;
 }
 
 div.footer a {
