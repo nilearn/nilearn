@@ -1,5 +1,35 @@
-0.7.0a
-======
+0.7.0
+=====
+
+**Released November 2020**
+
+HIGHLIGHTS
+----------
+
+- Nilearn now includes the functionality of `Nistats <https://nistats.github.io>`_.
+  :ref:`Here's a guide to replacing Nistats imports to work in Nilearn. <nistats_migration>`
+- New decoder object
+  :class:`nilearn.decoding.Decoder` (for classification) and
+  :class:`nilearn.decoding.DecoderRegressor` (for regression) implement a model
+  selection scheme that averages the best models within a cross validation loop.
+- New FREM object
+  :class:`nilearn.decoding.FREMClassifier` (for classification) and
+  :class:`nilearn.decoding.FREMRegressor` (for regression) extend the decoder
+  object with one fast clustering step at the beginning and  aggregates a high number of estimators trained on various splits of the training set.
+  
+- New plotting functions:
+
+  * :func:`nilearn.plotting.plot_event` to visualize events file.
+  * :func:`nilearn.plotting.plot_roi` can now plot ROIs in contours with `view_type` argument.
+  * :func:`nilearn.plotting.plot_carpet` generates a "carpet plot" (also known
+  as a "Power plot" or a "grayplot")
+  * :func:`nilearn.plotting.plot_img_on_surf` generates multiple views of
+  :func:`nilearn.plotting.plot_surf_stat_map` in a single figure.
+  * :func:`nilearn.plotting.plot_markers` shows network nodes (markers) on a glass
+  brain template
+  * :func:`nilearn.plotting.plot_surf_contours` plots the contours of regions of
+  interest on the surface
+
 
 .. warning::
 
