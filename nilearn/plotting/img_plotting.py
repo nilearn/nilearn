@@ -683,7 +683,7 @@ def _plot_roi_contours(display, roi_img, cmap, alpha, linewidths):
         Contours displayed on the background image.
     """
     roi_img = _utils.check_niimg_3d(roi_img)
-    roi_data = roi_img.get_data()
+    roi_data = get_data(roi_img)
     labels = np.unique(roi_data)
     cmap = plt.cm.get_cmap(cmap)
     color_list = cmap(np.linspace(0, 1, len(labels)))

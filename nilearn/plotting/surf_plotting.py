@@ -9,6 +9,7 @@ from matplotlib.colorbar import make_axes
 from matplotlib.cm import ScalarMappable, get_cmap
 from matplotlib.colors import Normalize, LinearSegmentedColormap
 from mpl_toolkits.mplot3d import Axes3D
+from nilearn import image
 from nilearn.plotting.img_plotting import (_get_colorbar_and_data_ranges,
                                            _crop_colorbar)
 from nilearn.surface import (load_surf_data,
@@ -799,7 +800,8 @@ def plot_img_on_surf(stat_map, surf_mesh='fsaverage5', mask_img=None,
         ax.dist = 6
 
     if colorbar:
-        sm = _colorbar_from_array(stat_map.get_data(), vmax, threshold, kwargs,
+        sm = _colorbar_from_array(image.get_data(stat_map),
+                                  vmax, threshold, kwargs,
                                   cmap=get_cmap(cmap))
 
         cbar_ax = fig.add_subplot(32, 1, 32)

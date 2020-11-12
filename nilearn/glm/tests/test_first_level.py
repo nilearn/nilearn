@@ -76,13 +76,13 @@ def test_explicit_fixed_effects():
         ) = compute_fixed_effects(contrasts, variance, mask)
 
         assert_almost_equal(
-            fixed_fx_contrast.get_data(),
-            fixed_fx_dic['effect_size'].get_data())
+            get_data(fixed_fx_contrast),
+            get_data(fixed_fx_dic['effect_size']))
         assert_almost_equal(
-            fixed_fx_variance.get_data(),
-            fixed_fx_dic['effect_variance'].get_data())
+            get_data(fixed_fx_variance),
+            get_data(fixed_fx_dic['effect_variance']))
         assert_almost_equal(
-            fixed_fx_stat.get_data(), fixed_fx_dic['stat'].get_data())
+            get_data(fixed_fx_stat), get_data(fixed_fx_dic['stat']))
 
         # test without mask variable
         (
@@ -91,13 +91,13 @@ def test_explicit_fixed_effects():
             fixed_fx_stat,
         ) = compute_fixed_effects(contrasts, variance)
         assert_almost_equal(
-            fixed_fx_contrast.get_data(),
-            fixed_fx_dic['effect_size'].get_data())
+            get_data(fixed_fx_contrast),
+            get_data(fixed_fx_dic['effect_size']))
         assert_almost_equal(
-            fixed_fx_variance.get_data(),
-            fixed_fx_dic['effect_variance'].get_data())
+            get_data(fixed_fx_variance),
+            get_data(fixed_fx_dic['effect_variance']))
         assert_almost_equal(
-            fixed_fx_stat.get_data(), fixed_fx_dic['stat'].get_data())
+            get_data(fixed_fx_stat), get_data(fixed_fx_dic['stat']))
 
         # ensure that using unbalanced effects size and variance images
         # raises an error
@@ -212,8 +212,8 @@ def test_high_level_glm_different_design_matrices():
         fmri_data[1], design_matrices=design_matrices[1])
     z2 = model2.compute_contrast(np.eye(rk + 1)[:1],
                                  output_type='effect_size')
-    assert_almost_equal(z1.get_data() + z2.get_data(),
-                        2 * z_joint.get_data())
+    assert_almost_equal(get_data(z1) + get_data(z2),
+                        2 * get_data(z_joint))
 
 
 def test_run_glm():
