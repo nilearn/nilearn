@@ -308,6 +308,8 @@ jobs:
           fi
       - save_data_cache
 
+jobs:
+
   deploy:
     docker:
       - image: circleci/python:3.7
@@ -354,6 +356,14 @@ workflows:
   default:
     jobs:
       - build_docs
+
+      - deploy:
+          requires:
+            - build_docs
+          filters:
+            branches:
+              only:
+                - main
 
   nightly:
     triggers:
