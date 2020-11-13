@@ -55,7 +55,31 @@ force_html: force html
 force:
 	find . -name \*.rst -exec touch {} \;
 
-html:	sym_links
+html: html_dev
+
+html-strict: html_dev-strict
+
+html-noplot: html_dev-noplot
+
+html_stable:
+	rm -rf $(BUILDDIR)/html_stable/_images
+	$(SPHINXBUILD) -b html $(ALLSPHINXOPTS) $(BUILDDIR)/html_stable
+	@echo
+	@echo "Build finished. The HTML pages are in $(BUILDDIR)/html_stable"
+
+html_stable-strict:   sym_links
+	make check
+	touch $(BUILDDIR)/html_stable/.nojekyll
+	@echo
+	@echo "Build finished. The HTML pages are in $(BUILDDIR)/html_stable"
+
+html_stable-noplot:
+	$(SPHINXBUILD) -D plot_gallery=0 -b html $(ALLSPHINXOPTS) $(BUILDDIR)/html_stable
+	touch $(BUILDDIR)/html_stable/.nojekyll
+	@echo
+	@echo "Build finished. The HTML pages are in $(BUILDDIR)/html_stable."
+
+html_dev:	sym_links
 	# These two lines make the build a bit more lengthy, and the
 	# the embedding of images more robust
 	rm -rf $(BUILDDIR)/html/_images
@@ -64,7 +88,7 @@ html:	sym_links
 	@echo
 	@echo "Build finished. The HTML pages are in $(BUILDDIR)/html."
 
-html-strict:	sym_links
+html_dev-strict:	sym_links
 	# Build html documentation using a strict mode: Warnings are
 	# considered as errors.
 	make check
@@ -78,7 +102,7 @@ html-modified-examples-only: 	sym_links
 	@echo
 	@echo "Build finished. The HTML pages are in $(BUILDDIR)/html."
 
-html-noplot:
+html_dev-noplot:
 	$(SPHINXBUILD) -D plot_gallery=0 -b html $(ALLSPHINXOPTS) $(BUILDDIR)/html
 	touch $(BUILDDIR)/html/.nojekyll
 	@echo
@@ -174,11 +198,15 @@ install:
 	# history prior to the last commit
 	git clone --no-checkout --depth 1 git@github.com:nilearn/nilearn.github.io.git _build/nilearn.github.io
 	touch _build/nilearn.github.io/.nojekyll
-	make html
+	# Build dev doc
+	make html_dev
+	# Build stable doc
+	make html_stable
 	cd _build/ && \
-	cp -r html/* nilearn.github.io && \
-	cd nilearn.github.io && \
-	git add * && \
-	git add .nojekyll && \
+	cp -r html/* nilearn.github.io/dev && \
+	cp -r html_stable/* nilearn.github.io/stable && \
+	git add nilearn.github.io/dev/* && \
+	git add nilearn.github.io/stable/* && \
+	git add nilearn.github.io/.nojekyll && \
 	git commit -a -m 'Make install' && \
 	git push
