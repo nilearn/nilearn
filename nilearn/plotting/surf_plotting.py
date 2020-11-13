@@ -574,13 +574,15 @@ def plot_surf_stat_map(surf_mesh, stat_map, bg_map=None,
     nilearn.plotting.plot_surf: For brain surface visualization.
     """
 
+    loaded_stat_map = load_surf_data(stat_map)
+
     # Call _get_colorbar_and_data_ranges to derive symmetric vmin, vmax
     # And colorbar limits depending on symmetric_cbar settings
     cbar_vmin, cbar_vmax, vmin, vmax = _get_colorbar_and_data_ranges(
-        stat_map, vmax, symmetric_cbar, kwargs)
+        loaded_stat_map, vmax, symmetric_cbar, kwargs)
 
     display = plot_surf(
-        surf_mesh, surf_map=stat_map, bg_map=bg_map, hemi=hemi, view=view,
+        surf_mesh, surf_map=loaded_stat_map, bg_map=bg_map, hemi=hemi, view=view,
         avg_method='mean', threshold=threshold, cmap=cmap, colorbar=colorbar,
         alpha=alpha, bg_on_data=bg_on_data, darkness=darkness, vmax=vmax,
         vmin=vmin, title=title, output_file=output_file, axes=axes,
