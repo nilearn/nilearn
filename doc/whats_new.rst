@@ -1,3 +1,11 @@
+0.7.X
+=====
+
+Fixes
+-----
+
+- Fix testing issues on ARM machine.
+
 .. _v0.7.0:
 
 0.7.0

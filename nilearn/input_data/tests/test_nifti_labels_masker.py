@@ -117,8 +117,9 @@ def test_nifti_labels_masker_with_nans_and_infs():
     labels_img = data_gen.generate_labeled_regions((13, 11, 12),
                                                    affine=np.eye(4),
                                                    n_regions=n_regions)
-    # nans
-    mask_data = get_data(mask_img)
+    # Introduce nans with data type float
+    # See issue: https://github.com/nilearn/nilearn/issues/2580
+    mask_data = get_data(mask_img).astype(np.float32)
     mask_data[:, :, 7] = np.nan
     mask_data[:, :, 4] = np.inf
     mask_img = nibabel.Nifti1Image(mask_data, np.eye(4))
