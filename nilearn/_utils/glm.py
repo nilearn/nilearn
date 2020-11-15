@@ -147,8 +147,8 @@ def z_score(sfvalue, cdfvalue):
     z_scores_sf = norm.isf(sfvalue)
     z_scores_cdf = norm.ppf(cdfvalue)
     z_scores = np.zeros(sfvalue.size)
-    z_scores[z_scores_sf < 0] = z_scores_sf[z_scores_sf < 0]
-    z_scores[z_scores_sf >= 0] = z_scores_cdf[z_scores_sf >= 0]
+    z_scores[z_scores_sf < 0] = z_scores_cdf[z_scores_sf < 0]
+    z_scores[z_scores_sf >= 0] = z_scores_sf[z_scores_sf >= 0]
     return z_scores
 
 
