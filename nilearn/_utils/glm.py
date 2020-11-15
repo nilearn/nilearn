@@ -141,17 +141,15 @@ def _check_run_tables(run_imgs, tables_, tables_name):
     return tables_
 
 
-def z_score(pvalue):
+def z_score(sfvalue, cdfvalue):
     """ Return the z-score corresponding to a given p-value.
     """
-    pvalue = np.minimum(np.maximum(pvalue, 1.e-300), 1. - 1.e-16)
-    return norm.isf(pvalue)
-    # z_scores_sf = norm.isf(pvalue)
-    # z_scores_cdf = norm.ppf(pvalue)
-    # z_scores = np.zeros(pvalue.size)
-    # z_scores[pvalue < 0.5] = z_scores_sf[pvalue < 0.5]
-    # z_scores[pvalue >= 0.5] = z_scores_cdf[pvalue >= 0.5]
-    # return z_scores
+    z_scores_sf = norm.isf(sfvalue)
+    z_scores_cdf = norm.ppf(cdfvalue)
+    z_scores = np.zeros(sfvalue.size)
+    z_scores[z_scores_sf < 0] = z_scores_sf[z_scores_sf < 0]
+    z_scores[z_scores_sf >= 0] = z_scores_cdf[z_scores_sf >= 0]
+    return z_scores
 
 
 def multiple_fast_inverse(a):
