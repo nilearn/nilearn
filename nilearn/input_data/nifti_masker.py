@@ -101,6 +101,16 @@ class NiftiMasker(BaseMasker, CacheMixin):
         to zero mean and scaled to unit variance.
         False : Do not standardize the data.
 
+    standardize_confounds : {'zscore', 'psc', True, False}, default is 'zscore'
+        Strategy to standardize the confounds.
+        'zscore': the signal is z-scored. Timeseries are shifted
+        to zero mean and scaled to unit variance.
+        'psc':  Timeseries are shifted to zero mean value and scaled
+        to percent signal change (as compared to original mean signal).
+        True : the signal is z-scored. Timeseries are shifted
+        to zero mean and scaled to unit variance.
+        False : Do not standardize the confounds.
+
     detrend : boolean, optional
         This parameter is passed to signal.clean. Please see the related
         documentation for details: :func:`nilearn.signal.clean`.
@@ -183,7 +193,7 @@ class NiftiMasker(BaseMasker, CacheMixin):
     """
 
     def __init__(self, mask_img=None, sessions=None, smoothing_fwhm=None,
-                 standardize=False, detrend=False,
+                 standardize=False, standardize_confounds='zscore', detrend=False,
                  low_pass=None, high_pass=None, t_r=None,
                  target_affine=None, target_shape=None,
                  mask_strategy='background',
@@ -197,6 +207,7 @@ class NiftiMasker(BaseMasker, CacheMixin):
         self.sessions = sessions
         self.smoothing_fwhm = smoothing_fwhm
         self.standardize = standardize
+        self.standardize_confounds = standardize_confounds
         self.detrend = detrend
         self.low_pass = low_pass
         self.high_pass = high_pass

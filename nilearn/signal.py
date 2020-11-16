@@ -410,7 +410,7 @@ def _ensure_float(data):
 
 
 def clean(signals, sessions=None, detrend=True, standardize='zscore',
-          confounds=None, low_pass=None,
+          confounds=None, standardize_confounds='zscore', low_pass=None,
           high_pass=None, t_r=2.5, ensure_finite=False):
     """Improve SNR on masked fMRI signals.
 
@@ -609,10 +609,10 @@ def clean(signals, sessions=None, detrend=True, standardize='zscore',
             confounds = butterworth(confounds, sampling_rate=1. / t_r,
                                     low_pass=low_pass, high_pass=high_pass)
 
-        confounds = _standardize(confounds, standardize=standardize,
+        confounds = _standardize(confounds, standardize=standardize_confounds,
                                  detrend=detrend)
 
-        if not standardize:
+        if not standardize_confounds:
             # Improve numerical stability by controlling the range of
             # confounds. We don't rely on _standardize as it removes any
             # constant contribution to confounds.
