@@ -494,6 +494,7 @@ def test_clean_confounds():
     np.testing.assert_almost_equal(nisignal.clean(np.ones((20, 2)),
                                                   standardize=False,
                                                   confounds=np.ones(20),
+                                                  standardize_confounds=False,
                                                   detrend=False,
                                                   ).mean(),
                                    np.zeros((20, 2)))
