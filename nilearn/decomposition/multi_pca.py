@@ -59,6 +59,9 @@ class MultiPCA(BaseDecomposition):
         If standardize is True, the time-series are centered and normed:
         their variance is put to 1 in the time dimension.
 
+    standardize_confounds : boolean, optional
+        If standardize_confounds is True, the confounds are z-scored.
+
     detrend : boolean, optional
         If detrend is True, the time-series will be detrended before
         components extraction.
@@ -134,8 +137,8 @@ class MultiPCA(BaseDecomposition):
                  smoothing_fwhm=None,
                  do_cca=True,
                  random_state=None,
-                 standardize=False, detrend=False,
-                 low_pass=None, high_pass=None, t_r=None,
+                 standardize=False, standardize_confounds=True,
+                 detrend=False, low_pass=None, high_pass=None, t_r=None,
                  target_affine=None, target_shape=None,
                  mask_strategy='epi', mask_args=None,
                  memory=Memory(location=None), memory_level=0,
@@ -150,6 +153,7 @@ class MultiPCA(BaseDecomposition):
                                    mask=mask,
                                    smoothing_fwhm=smoothing_fwhm,
                                    standardize=standardize,
+                                   standardize_confounds=standardize_confounds,
                                    detrend=detrend,
                                    low_pass=low_pass,
                                    high_pass=high_pass, t_r=t_r,

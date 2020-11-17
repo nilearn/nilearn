@@ -44,6 +44,9 @@ class CanICA(MultiPCA):
         If standardize is True, the time-series are centered and normed:
         their variance is put to 1 in the time dimension.
 
+    standardize_confounds: boolean, optional, default True
+        If standardize_confounds is True, the confounds are zscored.
+
     detrend : boolean, optional, default True
         If detrend is True, the time-series will be detrended before
         components extraction.
@@ -155,7 +158,7 @@ class CanICA(MultiPCA):
                  threshold='auto',
                  n_init=10,
                  random_state=None,
-                 standardize=True, detrend=True,
+                 standardize=True, standardize_confounds=True, detrend=True,
                  low_pass=None, high_pass=None, t_r=None,
                  target_affine=None, target_shape=None,
                  mask_strategy='epi', mask_args=None,
@@ -169,8 +172,8 @@ class CanICA(MultiPCA):
             random_state=random_state,
             # feature_compression=feature_compression,
             mask=mask, smoothing_fwhm=smoothing_fwhm,
-            standardize=standardize, detrend=detrend,
-            low_pass=low_pass, high_pass=high_pass, t_r=t_r,
+            standardize=standardize, standardize_confounds=standardize_confounds,
+            detrend=detrend, low_pass=low_pass, high_pass=high_pass, t_r=t_r,
             target_affine=target_affine, target_shape=target_shape,
             mask_strategy=mask_strategy, mask_args=mask_args,
             memory=memory, memory_level=memory_level,

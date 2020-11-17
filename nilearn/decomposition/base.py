@@ -255,6 +255,9 @@ class BaseDecomposition(BaseEstimator, CacheMixin, TransformerMixin):
         If standardize is True, the time-series are centered and normed:
         their mean is put to 0 and their variance to 1 in the time dimension.
 
+    standardize_confounds: boolean, optional
+        If standardize_confounds is True, the confounds are z-scored.
+
     detrend: boolean, optional
         This parameter is passed to signal.clean. Please see the related
         documentation for details
@@ -323,8 +326,8 @@ class BaseDecomposition(BaseEstimator, CacheMixin, TransformerMixin):
     def __init__(self, n_components=20,
                  random_state=None,
                  mask=None, smoothing_fwhm=None,
-                 standardize=True, detrend=True,
-                 low_pass=None, high_pass=None, t_r=None,
+                 standardize=True, standardize_confounds=True,
+                 detrend=True, low_pass=None, high_pass=None, t_r=None,
                  target_affine=None, target_shape=None,
                  mask_strategy='epi', mask_args=None,
                  memory=Memory(location=None), memory_level=0,
@@ -336,6 +339,7 @@ class BaseDecomposition(BaseEstimator, CacheMixin, TransformerMixin):
 
         self.smoothing_fwhm = smoothing_fwhm
         self.standardize = standardize
+        self.standardize_confounds = standardize_confounds
         self.detrend = detrend
         self.low_pass = low_pass
         self.high_pass = high_pass
