@@ -7,6 +7,8 @@ import numpy as np
 import pytest
 import sklearn
 
+from sklearn.preprocessing import StandardScaler
+
 from numpy.testing import assert_array_equal
 
 from nibabel import Nifti1Image
@@ -29,6 +31,80 @@ np_version = distutils.version.LooseVersion(np_version).version
 _TEST_DIM_ERROR_MSG = ("Input data has incompatible dimensionality: "
                        "Expected dimension is 3D and you provided "
                        "a %s image")
+
+def _simu_img():
+    # Random confounds
+    conf = 2 + np.random.randn(100, 6)
+    # Random 4D volume
+    vol = 100 + 10 * np.random.randn(5, 5, 2, 100)
+    img = Nifti1Image(vol, np.eye(4))
+    # Create an nifti image with the data, and corresponding mask
+    mask = Nifti1Image(np.ones([5, 5, 2]), np.eye(4))
+    return img, mask, conf
+
+def _cov_conf(tseries, conf):
+    conf_n = StandardScaler().fit_transform(conf)
+    tseries_n = StandardScaler().fit_transform(tseries)
+    cov_mat = np.dot(tseries.T, conf_n)
+    return cov_mat
+
+def _confounds_regression(standardize_signal=True, standardize_confounds=True):
+    rng = np.random.RandomState(42)
+    img, mask, conf = _simu_img()
+    masker = NiftiMasker(standardize=standardize_signal,
+                         standardize_confounds=standardize_confounds,
+                         detrend=False,
+                         mask_img=mask).fit()
+    tseries = masker.transform(img, confounds=conf)
+    if standardize_confounds:
+        conf = StandardScaler(with_std=False).fit_transform(conf)
+    cov_mat = _cov_conf(tseries, conf)
+    return np.sum(np.abs(cov_mat))
+
+def test_confounds_standardization():
+    # Tests for confounds standardization
+    # See Issue #2584
+    # Code from @pbellec
+    #
+    eps = 10e-10
+
+    # No standardization of signal but standardization of confounds
+    assert(_confounds_regression(standardize_signal=False,
+                                 standardize_confounds=True) < 10. * eps)
+
+    # Z-score signal and confounds
+    assert(_confounds_regression(standardize_signal='zscore',
+                                 standardize_confounds='zscore') < eps)
+
+    # psc signal standardization and Z-score confounds
+    assert(_confounds_regression(standardize_signal='psc',
+                                 standardize_confounds='zscore') < 10. * eps)
+
+    # No standardization
+    # In this case, the regression should fail...
+    assert(_confounds_regression(standardize_signal=False,
+                                 standardize_confounds=False) > 100)
+
+    # Z-score signal and no confounds standardization
+    # In this case, the regression should fail...
+    assert(_confounds_regression(standardize_signal='zscore',
+                                 standardize_confounds=False) > 100)
+
+    # psc signal and no confounds standardization
+    # In this case, the regression should fail...
+    assert(_confounds_regression(standardize_signal='psc',
+                                 standardize_confounds=False) > 100)
+
+    # psc signal and confounds
+    assert(_confounds_regression(standardize_signal='psc',
+                                 standardize_confounds='psc') < 10. * eps)
+
+    # No standardization of signal but psc the confounds
+    assert(_confounds_regression(standardize_signal=False,
+                                 standardize_confounds='psc') < 10. * eps)
+
+    # Z-score signal and default for the confounds
+    assert(_confounds_regression(standardize_signal=True) < 10. * eps)
 
 
 def test_compute_epi_mask():
