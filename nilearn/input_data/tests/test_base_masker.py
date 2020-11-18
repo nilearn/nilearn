@@ -38,7 +38,7 @@ def test_cropping_code_paths():
                   "t_r": None,
                   "detrend": None,
                   "standardize": 'zscore',
-                  "standardize_confounds": 'zscore',
+                  "standardize_confounds": True,
                   }
 
     # Now do the two maskings

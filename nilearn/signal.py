@@ -410,7 +410,7 @@ def _ensure_float(data):
 
 
 def clean(signals, sessions=None, detrend=True, standardize='zscore',
-          confounds=None, standardize_confounds='zscore', low_pass=None,
+          confounds=None, standardize_confounds=True, low_pass=None,
           high_pass=None, t_r=2.5, ensure_finite=False):
     """Improve SNR on masked fMRI signals.
 
@@ -470,6 +470,10 @@ def clean(signals, sessions=None, detrend=True, standardize='zscore',
         'psc':  Timeseries are shifted to zero mean value and scaled
         to percent signal change (as compared to original mean signal).
         False : Do not standardize the data.
+
+    standardize_confounds: boolean, optional, default is True
+        If standardize_confounds is True, the confounds are z-scored:
+        their mean is put to 0 and their variance to 1 in the time dimension.
 
     ensure_finite: bool
         If True, the non-finite values (NANs and infs) found in the data

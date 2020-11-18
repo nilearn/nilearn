@@ -68,43 +68,43 @@ def test_confounds_standardization():
     #
     eps = 10e-10
 
-    # No standardization of signal but standardization of confounds
+    # Signal is not standardized
+    # Explicit standardization of confounds
     assert(_confounds_regression(standardize_signal=False,
                                  standardize_confounds=True) < 10. * eps)
 
-    # Z-score signal and confounds
+    # Signal is z-scored with string arg
+    # Explicit standardization of confounds
     assert(_confounds_regression(standardize_signal='zscore',
-                                 standardize_confounds='zscore') < eps)
+                                 standardize_confounds=True) < eps)
 
-    # psc signal standardization and Z-score confounds
+    # Signal is z-scored with boolean arg
+    # Explicit standardization of confounds
+    assert(_confounds_regression(standardize_signal=True,
+                                 standardize_confounds=True) < eps)
+
+    # Signal is psc standardized
+    # Explicit standardization of confounds
     assert(_confounds_regression(standardize_signal='psc',
-                                 standardize_confounds='zscore') < 10. * eps)
+                                 standardize_confounds=True) < 10. * eps)
 
-    # No standardization
+    # Signal is not standardized
+    # Confounds are not standardized
     # In this case, the regression should fail...
     assert(_confounds_regression(standardize_signal=False,
                                  standardize_confounds=False) > 100)
 
-    # Z-score signal and no confounds standardization
+    # Signal is z-scored with string arg
+    # Confounds are not standardized
     # In this case, the regression should fail...
     assert(_confounds_regression(standardize_signal='zscore',
                                  standardize_confounds=False) > 100)
 
-    # psc signal and no confounds standardization
+    # Signal is psc standardized
+    # Confounds are not standardized
     # In this case, the regression should fail...
     assert(_confounds_regression(standardize_signal='psc',
                                  standardize_confounds=False) > 100)
-
-    # psc signal and confounds
-    assert(_confounds_regression(standardize_signal='psc',
-                                 standardize_confounds='psc') < 10. * eps)
-
-    # No standardization of signal but psc the confounds
-    assert(_confounds_regression(standardize_signal=False,
-                                 standardize_confounds='psc') < 10. * eps)
-
-    # Z-score signal and default for the confounds
-    assert(_confounds_regression(standardize_signal=True) < 10. * eps)
 
 
 def test_compute_epi_mask():

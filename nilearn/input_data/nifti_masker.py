@@ -80,8 +80,8 @@ class NiftiMasker(BaseMasker, CacheMixin):
         Optional parameters (mask_args and mask_strategy) can be set to
         fine tune the mask extraction. If the mask and the images have different
         resolutions, the images are resampled to the mask resolution. If target_shape
-        and/or target_affine are provided, the mask is resampled first. 
-        After this, the images are resampled to the resampled mask. 
+        and/or target_affine are provided, the mask is resampled first.
+        After this, the images are resampled to the resampled mask.
 
     sessions : numpy array, optional
         Add a session level to the preprocessing. Each session will be
@@ -101,15 +101,9 @@ class NiftiMasker(BaseMasker, CacheMixin):
         to zero mean and scaled to unit variance.
         False : Do not standardize the data.
 
-    standardize_confounds : {'zscore', 'psc', True, False}, default is 'zscore'
-        Strategy to standardize the confounds.
-        'zscore': the signal is z-scored. Timeseries are shifted
-        to zero mean and scaled to unit variance.
-        'psc':  Timeseries are shifted to zero mean value and scaled
-        to percent signal change (as compared to original mean signal).
-        True : the signal is z-scored. Timeseries are shifted
-        to zero mean and scaled to unit variance.
-        False : Do not standardize the confounds.
+    standardize_confounds : boolean, optional, default is True
+        If standardize_confounds is True, the confounds are z-scored:
+        their mean is put to 0 and their variance to 1 in the time dimension.
 
     detrend : boolean, optional
         This parameter is passed to signal.clean. Please see the related
@@ -193,7 +187,7 @@ class NiftiMasker(BaseMasker, CacheMixin):
     """
 
     def __init__(self, mask_img=None, sessions=None, smoothing_fwhm=None,
-                 standardize=False, standardize_confounds='zscore', detrend=False,
+                 standardize=False, standardize_confounds=True, detrend=False,
                  low_pass=None, high_pass=None, t_r=None,
                  target_affine=None, target_shape=None,
                  mask_strategy='background',

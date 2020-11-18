@@ -49,15 +49,9 @@ class MultiNiftiMasker(NiftiMasker, CacheMixin):
         to zero mean and scaled to unit variance.
         False : Do not standardize the data.
 
-    standardize_confounds: {'zscore', 'psc', True, False}, default is 'zscore'
-        Strategy to standardize the confounds.
-        'zscore': the signal is z-scored. Timeseries are shifted
-        to zero mean and scaled to unit variance.
-        'psc':  Timeseries are shifted to zero mean value and scaled
-        to percent signal change (as compared to original mean signal).
-        True : the signal is z-scored. Timeseries are shifted
-        to zero mean and scaled to unit variance.
-        False : Do not standardize the confounds.
+    standardize_confounds: boolean, optional default is True
+        If standardize_confounds is True, the confounds are z-scored:
+        their mean is put to 0 and their variance to 1 in the time dimension.
 
     detrend: boolean, optional
         This parameter is passed to signal.clean. Please see the related

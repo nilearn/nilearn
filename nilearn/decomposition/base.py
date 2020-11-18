@@ -255,8 +255,9 @@ class BaseDecomposition(BaseEstimator, CacheMixin, TransformerMixin):
         If standardize is True, the time-series are centered and normed:
         their mean is put to 0 and their variance to 1 in the time dimension.
 
-    standardize_confounds: boolean, optional
-        If standardize_confounds is True, the confounds are z-scored.
+    standardize_confounds: boolean, optional, default is True.
+        If standardize_confounds is True, the confounds are z-scored:
+        their mean is put to 0 and their variance to 1 in the time dimension.
 
     detrend: boolean, optional
         This parameter is passed to signal.clean. Please see the related
