@@ -85,15 +85,15 @@ def test_z_score_opposite_contrast():
         z_map_seed2_vs_seed1 = fmri_glm.compute_contrast(
             contrasts['seed2 - seed1'], output_type='z_score')
 
-        print(z_map_seed1_vs_seed2.get_fdata().min())
-        print(-z_map_seed2_vs_seed1.get_fdata().max())
-        npt.assert_almost_equal(z_map_seed1_vs_seed2.get_fdata().min(),
-                                -z_map_seed2_vs_seed1.get_fdata().max(),
+        print(z_map_seed1_vs_seed2.get_data().min())
+        print(-z_map_seed2_vs_seed1.get_data().max())
+        npt.assert_almost_equal(z_map_seed1_vs_seed2.get_data().min(),
+                                -z_map_seed2_vs_seed1.get_data().max(),
                                 decimal=10)
-        print(z_map_seed1_vs_seed2.get_fdata().max())
-        print(-z_map_seed2_vs_seed1.get_fdata().min())
-        npt.assert_almost_equal(z_map_seed1_vs_seed2.get_fdata().max(),
-                                -z_map_seed2_vs_seed1.get_fdata().min(),
+        print(z_map_seed1_vs_seed2.get_data().max())
+        print(-z_map_seed2_vs_seed1.get_data().min())
+        npt.assert_almost_equal(z_map_seed1_vs_seed2.get_data().max(),
+                                -z_map_seed2_vs_seed1.get_data().min(),
                                 decimal=10)
 
 
