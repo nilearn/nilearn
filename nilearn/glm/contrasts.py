@@ -192,6 +192,7 @@ class Contrast(object):
         self.contrast_type = contrast_type
         self.stat_ = None
         self.p_value_ = None
+        self.one_p_value_ = None
         self.baseline = 0
         self.tiny = tiny
         self.dofmax = dofmax
@@ -236,62 +237,63 @@ class Contrast(object):
         return self.stat_
 
 
-    # def p_value(self, baseline=0.0):
-    #     """Return a parametric estimate of the p-value associated
-    #     with the null hypothesis: (H0) 'contrast equals baseline'
+    def p_value(self, baseline=0.0):
+        """Return a parametric estimate using the survival function of the
+        p-value associated with the null hypothesis:
+        (H0) 'contrast equals baseline'
 
-    #     Parameters
-    #     ----------
-    #     baseline : float, optional
-    #         baseline value for the test statistic
+        Parameters
+        ----------
+        baseline : float, optional
+            baseline value for the test statistic
 
-    #     Returns
-    #     -------
-    #     p_values : 1-d array, shape=(n_voxels,)
-    #         p-values, one per voxel
-    #     """
-    #     if self.stat_ is None or not self.baseline == baseline:
-    #         self.stat_ = self.stat(baseline)
-    #     # Valid conjunction as in Nichols et al, Neuroimage 25, 2005.
-    #     if self.contrast_type == 't':
-    #         p_values = sps.t.sf(self.stat_, np.minimum(self.dof, self.dofmax))
-    #     elif self.contrast_type == 'F':
-    #         p_values = sps.f.sf(self.stat_, self.dim, np.minimum(
-    #             self.dof, self.dofmax))
-    #     else:
-    #         raise ValueError('Unknown statistic type')
-    #     self.p_value_ = p_values
-    #     return p_values
-
-
-    def sf_value(self, baseline=0.0):
+        Returns
+        -------
+        p_values : 1-d array, shape=(n_voxels,)
+            p-values, one per voxel
+        """
         if self.stat_ is None or not self.baseline == baseline:
             self.stat_ = self.stat(baseline)
         # Valid conjunction as in Nichols et al, Neuroimage 25, 2005.
         if self.contrast_type == 't':
-            sf_values = sps.t.sf(self.stat_, np.minimum(self.dof, self.dofmax))
+            p_values = sps.t.sf(self.stat_, np.minimum(self.dof, self.dofmax))
         elif self.contrast_type == 'F':
-            sf_values = sps.f.sf(self.stat_, self.dim,
-                                 np.minimum(self.dof, self.dofmax))
+            p_values = sps.f.sf(self.stat_, self.dim, np.minimum(
+                self.dof, self.dofmax))
         else:
             raise ValueError('Unknown statistic type')
-        self.sf_value_ = sf_values
-        return sf_values
+        self.p_value_ = p_values
+        return p_values
 
 
-    def cdf_value(self, baseline=0.0):
+    def one_p_value(self, baseline=0.0):
+        """Return a parametric estimate using
+        the cumulative distribution function of the p-value associated
+        with the null hypothesis: (H0) 'contrast equals baseline'
+
+        Parameters
+        ----------
+        baseline : float, optional
+            baseline value for the test statistic
+
+        Returns
+        -------
+        one_p_values : 1-d array, shape=(n_voxels,)
+            p-values, one per voxel
+        """
         if self.stat_ is None or not self.baseline == baseline:
             self.stat_ = self.stat(baseline)
         # Valid conjunction as in Nichols et al, Neuroimage 25, 2005.
         if self.contrast_type == 't':
-            cdf_values = sps.t.cdf(self.stat_, np.minimum(self.dof, self.dofmax))
+            one_p_values = sps.t.cdf(self.stat_,
+                                     np.minimum(self.dof, self.dofmax))
         elif self.contrast_type == 'F':
-            cdf_values = sps.f.cdf(self.stat_, self.dim,
-                                   np.minimum(self.dof, self.dofmax))
+            one_p_values = sps.f.cdf(self.stat_, self.dim,
+                                     np.minimum(self.dof, self.dofmax))
         else:
             raise ValueError('Unknown statistic type')
-        self.cdf_value_ = cdf_values
-        return cdf_values
+        self.one_p_value_ = one_p_values
+        return one_p_values
 
 
     def z_score(self, baseline=0.0):
@@ -311,9 +313,11 @@ class Contrast(object):
         """
         if self.p_value_ is None or not self.baseline == baseline:
             self.p_value_ = self.p_value(baseline)
+        if self.one_p_value_ is None or not self.baseline == baseline:
+            self.one_p_value_ = self.one_p_value(baseline)
 
         # Avoid inf values kindly supplied by scipy.
-        self.z_score_ = z_score(self.p_value_)
+        self.z_score_ = z_score(self.p_value_, self.one_p_value_)
         return self.z_score_
 
     def __add__(self, other):
