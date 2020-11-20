@@ -11,6 +11,7 @@ import distutils.version
 import warnings
 
 import numpy as np
+import pandas as pd
 from scipy import linalg, signal as sp_signal
 from sklearn.utils import gen_even_slices, as_float_array
 
@@ -116,6 +117,38 @@ def _mean_of_squares(signals, n_batches=20):
         tvar = np.copy(signals[:, batch])
         tvar **= 2
         var[batch] = tvar.mean(axis=0)
+
+    return var
+
+
+def _row_sum_of_squares(signals, n_batches=20):
+    """Compute sum of squares for each signal.
+    This function is equivalent to
+
+        signals **= 2
+        signals = signals.sum(axis=0)
+
+    but uses a lot less memory.
+
+    Parameters
+    ----------
+    signals : numpy.ndarray, shape (n_samples, n_features)
+        signal whose sum of squares must be computed.
+
+    n_batches : int, optional
+        number of batches to use in the computation. Tweaking this value
+        can lead to variation of memory usage and computation time. The higher
+        the value, the lower the memory consumption.
+
+    """
+    # No batching for small arrays
+    if signals.shape[1] < 500:
+        n_batches = 1
+
+    # Fastest for C order
+    var = np.empty(signals.shape[1])
+    for batch in gen_even_slices(signals.shape[1], n_batches):
+        var[batch] = np.sum(signals[:, batch] ** 2, 0)
 
     return var
 
@@ -410,7 +443,7 @@ def clean(signals, sessions=None, detrend=True, standardize='zscore',
         Add a session level to the cleaning process. Each session will be
         cleaned independently. Must be a 1D array of n_samples elements.
 
-    confounds: numpy.ndarray, str or list of
+    confounds: numpy.ndarray, str, DataFrame or list of
         Confounds timeseries. Shape must be
         (instant number, confound number), or just (instant number,)
         The number of time instants in signals and confounds must be
@@ -473,7 +506,8 @@ def clean(signals, sessions=None, detrend=True, standardize='zscore',
                         "high_pass='{0}'".format(high_pass))
 
     if not isinstance(confounds,
-                      (list, tuple, str, np.ndarray, type(None))):
+                      (list, tuple, str, np.ndarray, pd.DataFrame,
+                       type(None))):
         raise TypeError("confounds keyword has an unhandled type: %s"
                         % confounds.__class__)
 
@@ -498,6 +532,10 @@ def clean(signals, sessions=None, detrend=True, standardize='zscore',
 
         all_confounds = []
         for confound in confounds:
+            # cast DataFrame to array
+            if isinstance(confound, pd.DataFrame):
+                confound = confound.values
+
             if isinstance(confound, str):
                 filename = confound
                 confound = csv_to_array(filename)

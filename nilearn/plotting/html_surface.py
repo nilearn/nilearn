@@ -8,7 +8,7 @@ from matplotlib import cm as mpl_cm
 from nilearn._utils.niimg_conversions import check_niimg_3d
 from nilearn import surface
 from nilearn import datasets
-from nilearn.reporting import HTMLDocument
+from nilearn.plotting.html_document import HTMLDocument
 from nilearn.plotting import cm
 from nilearn.plotting.js_plotting_utils import (
     colorscale, mesh_to_plotly, get_html_template, add_js_lib,
@@ -95,6 +95,7 @@ def full_brain_info(volume_img, mesh='fsaverage5', threshold=None,
     mesh = surface.surface._check_mesh(mesh)
     surface_maps = {
         h: surface.vol_to_surf(volume_img, mesh['pial_{}'.format(h)],
+                               inner_mesh=mesh.get('white_{}'.format(h), None),
                                **vol_to_surf_kwargs)
         for h in ['left', 'right']
     }

@@ -1,5 +1,44 @@
-0.7.0a
-======
+0.7.X
+=====
+
+Fixes
+-----
+
+- Fix testing issues on ARM machine.
+
+.. _v0.7.0:
+
+0.7.0
+=====
+
+**Released November 2020**
+
+HIGHLIGHTS
+----------
+
+- Nilearn now includes the functionality of `Nistats <https://nistats.github.io>`_ as :mod:`nilearn.glm`. This module is experimental, hence subject to change in any future release.
+  :ref:`Here's a guide to replacing Nistats imports to work in Nilearn. <nistats_migration>`
+- New decoder object
+  :class:`nilearn.decoding.Decoder` (for classification) and
+  :class:`nilearn.decoding.DecoderRegressor` (for regression) implement a model
+  selection scheme that averages the best models within a cross validation loop.
+- New FREM object
+  :class:`nilearn.decoding.FREMClassifier` (for classification) and
+  :class:`nilearn.decoding.FREMRegressor` (for regression) extend the decoder
+  object with one fast clustering step at the beginning and  aggregates a high number of estimators trained on various splits of the training set.
+
+- New plotting functions:
+
+  * :func:`nilearn.plotting.plot_event` to visualize events file.
+  * :func:`nilearn.plotting.plot_roi` can now plot ROIs in contours with `view_type` argument.
+  * :func:`nilearn.plotting.plot_carpet` generates a "carpet plot" (also known
+    as a "Power plot" or a "grayplot")
+  * :func:`nilearn.plotting.plot_img_on_surf` generates multiple views of
+    :func:`nilearn.plotting.plot_surf_stat_map` in a single figure.
+  * :func:`nilearn.plotting.plot_markers` shows network nodes (markers) on a glass
+    brain template
+  * :func:`nilearn.plotting.plot_surf_contours` plots the contours of regions of
+    interest on the surface
 
 .. warning::
 
@@ -8,7 +47,8 @@
 
 NEW
 ---
-
+- Nilearn now includes the functionality of `Nistats <https://nistats.github.io>`_.
+  :ref:`Here's a guide to replacing Nistats imports to work in Nilearn. <nistats_migration>`
 - New decoder object
   :class:`nilearn.decoding.Decoder` (for classification) and
   :class:`nilearn.decoding.DecoderRegressor` (for regression) implement a model
@@ -16,10 +56,21 @@ NEW
   The resulting average model is the one used as a classifier or a regressor.
   These two objects also leverage the `NiftiMaskers` to provide a direct
   interface with the Nifti files on disk.
+- New FREM object
+  :class:`nilearn.decoding.FREMClassifier` (for classification) and
+  :class:`nilearn.decoding.FREMRegressor` (for regression) extend the decoder
+  object pipeline with one fast clustering step at the beginning (yielding an
+  implicit spatial regularization) and  aggregates a high number of estimators
+  trained on various splits of the training set. This returns a state-of-the-art
+  decoding pipeline at a low computational cost.
+  These two objects also leverage the `NiftiMaskers` to provide a direct
+  interface with the Nifti files on disk.
 - Plot events file
-  Use :func:`nilearn.reporting.plot_event` to visualize events file.
+  Use :func:`nilearn.plotting.plot_event` to visualize events file.
   The function accepts the BIDS events file read using `pandas`
   utilities.
+- Plotting function :func:`nilearn.plotting.plot_roi` can now plot ROIs
+  in contours with `view_type` argument.
 - New plotting function
   :func:`nilearn.plotting.plot_carpet` generates a "carpet plot" (also known
   as a "Power plot" or a "grayplot"), for visualizing global patterns in
@@ -36,7 +87,13 @@ NEW
   interest on the surface, optionally overlayed on top of a statistical map.
 - The position annotation on the plot methods now implements the `decimals` option
   to enable annotation of a slice coordinate position with the float.
-
+- New example in
+  :ref:`sphx_glr_auto_examples_02_decoding_plot_haxby_searchlight_surface.py`
+  to demo how to do cortical surface-based searchlight decoding with Nilearn.
+- confounds or additional regressors for design matrix can be specified as
+  numpy arrays or pandas DataFrames interchangeably
+- The decomposition estimators will now accept argument `per_component`
+  with `score` method to explain the variance for each component.
 
 Fixes
 -----
@@ -49,6 +106,9 @@ Fixes
   correct orientation; before left and right were inverted.
 - :func:`nilearn.mass_univariate.permuted_ols` no longer returns transposed
   t-statistic arrays when no permutations are performed.
+- Fix decomposition estimators returning explained variance score as 0.
+  based on all components i.e., when per_component=False.
+- Fix readme file of the Destrieux 2009 atlas.
 
 
 Changes
@@ -61,7 +121,13 @@ Changes
 
 - :class:`nilearn.connectome.ConnectivityMeasure` can now remove
   confounds in its transform step.
+- :func:`nilearn.surface.vol_to_surf` can now sample between two nested surfaces
+  (eg white matter and pial surfaces) at specific cortical depths
+- :func:`nilearn.datasets.fetch_surf_fsaverage` now also downloads white matter
+  surfaces.
 
+
+.. _v0.6.2:
 
 0.6.2
 ======
@@ -98,6 +164,9 @@ The following people contributed to this release::
      Kshitij Chawla (kchawla-pi)
      Zvi Baratz
      Simon R. Steinkamp
+
+
+.. _v0.6.1:
 
 0.6.1
 =====

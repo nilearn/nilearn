@@ -19,7 +19,7 @@ from nilearn.image import get_data, new_img_like
 
 def generate_random_img(shape, length=1, affine=np.eye(4),
                         rand_gen=np.random.RandomState(0)):
-    data = rand_gen.randn(*(shape + (length,)))
+    data = rand_gen.standard_normal(size=(shape + (length,)))
     return nibabel.Nifti1Image(data, affine), nibabel.Nifti1Image(
         as_ndarray(data[..., 0] > 0.2, dtype=np.int8), affine)
 
@@ -117,8 +117,9 @@ def test_nifti_labels_masker_with_nans_and_infs():
     labels_img = data_gen.generate_labeled_regions((13, 11, 12),
                                                    affine=np.eye(4),
                                                    n_regions=n_regions)
-    # nans
-    mask_data = get_data(mask_img)
+    # Introduce nans with data type float
+    # See issue: https://github.com/nilearn/nilearn/issues/2580
+    mask_data = get_data(mask_img).astype(np.float32)
     mask_data[:, :, 7] = np.nan
     mask_data[:, :, 4] = np.inf
     mask_img = nibabel.Nifti1Image(mask_data, np.eye(4))
@@ -317,11 +318,12 @@ def test_nifti_labels_masker_resampling():
 
 
 def test_standardization():
+    rng = np.random.RandomState(42)
     data_shape = (9, 9, 5)
     n_samples = 500
 
-    signals = np.random.randn(np.prod(data_shape), n_samples)
-    means = np.random.randn(np.prod(data_shape), 1) * 50 + 1000
+    signals = rng.standard_normal(size=(np.prod(data_shape), n_samples))
+    means = rng.standard_normal(size=(np.prod(data_shape), 1)) * 50 + 1000
     signals += means
     img = nibabel.Nifti1Image(
             signals.reshape(data_shape + (n_samples,)), np.eye(4)

@@ -10,7 +10,6 @@ make_glm_report(model, contrasts):
 
 """
 
-import io
 import os
 import string
 import warnings
@@ -18,24 +17,29 @@ import warnings
 from collections import OrderedDict
 from collections.abc import Iterable
 from html import escape
-from urllib.parse import quote
 
 import numpy as np
 import pandas as pd
-
 from matplotlib import pyplot as plt
+
 from nilearn.plotting import (plot_glass_brain,
                               plot_roi,
                               plot_stat_map,
                               )
 from nilearn.plotting.img_plotting import MNI152TEMPLATE
-from nilearn.plotting.js_plotting_utils import HTMLDocument
-from nilearn import glm
-from nilearn.reporting import (plot_contrast_matrix,
-                               plot_design_matrix,
-                               get_clusters_table,
-                               )
-from nilearn.glm.thresholding import threshold_stats_img
+from nilearn.plotting.html_document import HTMLDocument
+from nilearn.plotting.matrix_plotting import (
+    plot_contrast_matrix,
+    plot_design_matrix,
+)
+
+with warnings.catch_warnings():
+    warnings.simplefilter("ignore", FutureWarning)
+    from nilearn import glm
+    from nilearn.glm.thresholding import threshold_stats_img
+
+from nilearn.reporting._get_clusters_table import get_clusters_table
+from nilearn.reporting.utils import figure_to_svg_quoted
 
 
 HTML_TEMPLATE_ROOT_PATH = os.path.join(os.path.dirname(__file__),
@@ -45,7 +49,7 @@ HTML_TEMPLATE_ROOT_PATH = os.path.join(os.path.dirname(__file__),
 def make_glm_report(model,
                     contrasts,
                     title=None,
-                    bg_img=MNI152TEMPLATE,
+                    bg_img="MNI152TEMPLATE",
                     threshold=3.09,
                     alpha=0.001,
                     cluster_threshold=0,
@@ -162,6 +166,8 @@ def make_glm_report(model,
     limits number of digits shown instead of precision.
     Hence pd.option_context('display.precision', 2) has been used.
     '''
+    if bg_img == "MNI152TEMPLATE":
+        bg_img = MNI152TEMPLATE
     display_mode_selector = {'slice': 'z', 'glass': 'lzry'}
     if not display_mode:
         display_mode = display_mode_selector[plot_type]
@@ -191,7 +197,7 @@ def make_glm_report(model,
                                                    header=False,
                                                    sparsify=False,
                                                    )
-    statistical_maps = make_stat_maps(model, contrasts)
+    statistical_maps = _make_stat_maps(model, contrasts)
     html_design_matrices = _dmtx_to_svg_url(design_matrices)
     mask_img = model.mask_img or model.masker_.mask_img_
     mask_plot_html_code = _mask_to_svg(mask_img=mask_img,
@@ -287,7 +293,7 @@ def _coerce_to_dict(input_arg):
     return input_arg
 
 
-def plot_to_svg(plot):
+def _plot_to_svg(plot):
     """
     Creates an SVG image as a data URL
     from a Matplotlib Axes or Figure object.
@@ -302,17 +308,10 @@ def plot_to_svg(plot):
     url_plot_svg: String
         SVG Image Data URL
     """
-    with io.BytesIO() as buffer:
-        try:
-            plot.figure.savefig(buffer, format='svg')
-        except AttributeError:
-            plot.savefig(buffer, format='svg')
-        svg_plot = buffer.getvalue()
     try:
-        url_svg_plot = quote(svg_plot.decode('utf8'))
-    except KeyError:  # Fails on Python2.
-        url_svg_plot = quote(svg_plot)
-    return url_svg_plot
+        return figure_to_svg_quoted(plot)
+    except AttributeError:
+        return figure_to_svg_quoted(plot.figure)
 
 
 def _plot_contrasts(contrasts, design_matrices):
@@ -351,7 +350,7 @@ def _plot_contrasts(contrasts, design_matrices):
             contrast_plot.set_xlabel(contrast_name)
             contrast_plot.figure.set_figheight(2)
             contrast_plot.figure.set_tight_layout(True)
-            url_contrast_plot_svg = plot_to_svg(contrast_plot)
+            url_contrast_plot_svg = _plot_to_svg(contrast_plot)
             # prevents sphinx-gallery & jupyter
             # from scraping & inserting plots
             plt.close()
@@ -468,7 +467,7 @@ def _model_attributes_to_dataframe(model):
     return model_attributes
 
 
-def make_stat_maps(model, contrasts):
+def _make_stat_maps(model, contrasts):
     """ Given a model and contrasts, return the corresponding z-maps
 
     Parameters
@@ -527,7 +526,7 @@ def _dmtx_to_svg_url(design_matrices):
         dmtx_title = 'Session {}'.format(dmtx_count)
         plt.title(dmtx_title, y=0.987)
         dmtx_plot = _resize_plot_inches(dmtx_plot, height_change=.3)
-        url_design_matrix_svg = plot_to_svg(dmtx_plot)
+        url_design_matrix_svg = _plot_to_svg(dmtx_plot)
         # prevents sphinx-gallery & jupyter from scraping & inserting plots
         plt.close()
         dmtx_text_ = dmtx_text_.safe_substitute(
@@ -604,7 +603,7 @@ def _mask_to_svg(mask_img, bg_img):
                              display_mode='z',
                              cmap='Set1',
                              )
-        mask_plot_svg = plot_to_svg(plt.gcf())
+        mask_plot_svg = _plot_to_svg(plt.gcf())
         # prevents sphinx-gallery & jupyter from scraping & inserting plots
         plt.close()
     else:
@@ -875,7 +874,7 @@ def _stat_map_to_svg(stat_img,
     with pd.option_context('display.precision', 2):
         stat_map_plot = _add_params_to_plot(table_details, stat_map_plot)
     fig = plt.gcf()
-    stat_map_svg = plot_to_svg(fig)
+    stat_map_svg = _plot_to_svg(fig)
     # prevents sphinx-gallery & jupyter from scraping & inserting plots
     plt.close()
     return stat_map_svg

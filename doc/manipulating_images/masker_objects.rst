@@ -324,7 +324,7 @@ an excerpt of :ref:`the example performing Anova-SVM on the Haxby data
 
 .. literalinclude:: ../../examples/02_decoding/plot_haxby_anova_svm.py
     :start-after: # Look at the SVC's discriminating weights
-    :end-before: # Use the mean image as a background
+    :end-before: # Or we can plot the weights
 
 |
 

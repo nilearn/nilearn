@@ -9,6 +9,7 @@ Only matplotlib is required.
 # License: BSD
 
 # Standard library imports
+import os
 import collections.abc
 import functools
 import numbers
@@ -20,6 +21,7 @@ from distutils.version import LooseVersion
 import numpy as np
 from scipy import ndimage
 from scipy import sparse
+from scipy import stats
 from nibabel.spatialimages import SpatialImage
 
 from ..signal import clean
@@ -226,12 +228,21 @@ def _crop_colorbar(cbar, cbar_vmin, cbar_vmax):
 
     # matplotlib >= 3.2.0 no longer normalizes axes between 0 and 1
     # See https://matplotlib.org/3.2.1/api/prev_api_changes/api_changes_3.2.0.html
+    # _outline was removed in
+    # https://github.com/matplotlib/matplotlib/commit/03a542e875eba091a027046d5ec652daa8be6863
+    # so we use the code from there
     if LooseVersion(matplotlib.__version__) >= LooseVersion("3.2.0"):
         cbar.ax.set_ylim(cbar_vmin, cbar_vmax)
         X, _ = cbar._mesh()
-        new_X = np.array([X[0], X[-1]])
-        new_Y = np.array([[cbar_vmin, cbar_vmin], [cbar_vmax, cbar_vmax]])
-        xy = cbar._outline(new_X, new_Y)
+        X = np.array([X[0], X[-1]])
+        Y = np.array([[cbar_vmin, cbar_vmin], [cbar_vmax, cbar_vmax]])
+        N = X.shape[0]
+        ii = [0, 1, N - 2, N - 1, 2 * N - 1, 2 * N - 2, N + 1, N, 0]
+        x = X.T.reshape(-1)[ii]
+        y = Y.T.reshape(-1)[ii]
+        xy = (np.column_stack([y, x])
+              if cbar.orientation == 'horizontal' else
+              np.column_stack([x, y]))
         cbar.outline.set_xy(xy)
     else:
         cbar.ax.set_ylim(cbar.norm(cbar_vmin), cbar.norm(cbar_vmax))
@@ -642,12 +653,58 @@ def plot_epi(epi_img=None, cut_coords=None, output_file=None,
     return display
 
 
+def _plot_roi_contours(display, roi_img, cmap, alpha, linewidths):
+    """Helper function for plotting regions of interest ROIs in contours.
+
+    Parameters
+    ----------
+    display : nilearn.plotting.displays.OrthoSlicer, object
+        An object with background image on which contours are shown.
+
+    roi_img : Niimg-like object
+        See http://nilearn.github.io/manipulating_images/input_output.html
+        The ROI/mask image, it could be binary mask or an atlas or ROIs
+        with integer values.
+
+    cmap : matplotlib colormap
+        The colormap for the atlas maps
+
+    alpha : float between 0 and 1
+        Alpha sets the transparency of the color inside the filled
+        contours.
+
+    linewidths : float
+        This option can be used to set the boundary thickness of the
+        contours.
+
+    Returns
+    -------
+    display : nilearn.plotting.displays.OrthoSlicer, object
+        Contours displayed on the background image.
+    """
+    roi_img = _utils.check_niimg_3d(roi_img)
+    roi_data = get_data(roi_img)
+    labels = np.unique(roi_data)
+    cmap = plt.cm.get_cmap(cmap)
+    color_list = cmap(np.linspace(0, 1, len(labels)))
+    for idx, label in enumerate(labels):
+        if label == 0:
+            continue
+        data = (roi_data == label)
+        data = data.astype(int)
+        img = new_img_like(roi_img, data, affine=roi_img.affine)
+        display.add_contours(img, levels=[0.5], colors=[color_list[idx - 1]],
+                             alpha=alpha, linewidths=linewidths,
+                             linestyles='solid')
+    return display
+
+
 def plot_roi(roi_img, bg_img=MNI152TEMPLATE, cut_coords=None,
              output_file=None, display_mode='ortho', figure=None, axes=None,
              title=None, annotate=True, draw_cross=True, black_bg='auto',
              threshold=0.5, alpha=0.7, cmap=plt.cm.gist_ncar, dim='auto',
              vmin=None, vmax=None, resampling_interpolation='nearest',
-             **kwargs):
+             view_type='continuous', linewidths=2.5, **kwargs):
     """ Plot cuts of an ROI/mask image (by default 3 cuts: Frontal, Axial, and
         Lateral)
 
@@ -705,6 +762,11 @@ def plot_roi(roi_img, bg_img=MNI152TEMPLATE, cut_coords=None,
             values below the threshold (in absolute value) are plotted
             as transparent. If auto is given, the threshold is determined
             magically by analysis of the image.
+        alpha : float between 0 and 1, default=0.7
+            Alpha sets the transparency of the color inside the filled
+            contours.
+        cmap : matplotlib colormap, optional
+            The colormap for the atlas maps
         dim : float, 'auto' (by default), optional
             Dimming factor applied to background image. By default, automatic
             heuristics are applied based upon the background image intensity.
@@ -720,6 +782,15 @@ def plot_roi(roi_img, bg_img=MNI152TEMPLATE, cut_coords=None,
             space. Can be "continuous" to use 3rd-order spline interpolation,
             or "nearest" (default) to use nearest-neighbor mapping.
             "nearest" is faster but can be noisier in some cases.
+        view_type : {'continuous', 'contours'}, optional
+            By default view_type == 'continuous', rois are shown as continuous
+            colors.
+            If view_type == 'contours', maps are shown as contours. For this
+            type, label denoted as 0 is considered as background and not
+            shown.
+        linewidths : float, default=2.5
+            This option can be used to set the boundary thickness of the
+            contours. Only reflects when view_type='contours'.
 
         Notes
         -----
@@ -734,6 +805,16 @@ def plot_roi(roi_img, bg_img=MNI152TEMPLATE, cut_coords=None,
         nilearn.plotting.plot_prob_atlas : To simply plot probabilistic atlases
             (4D images)
     """  # noqa: E501
+    valid_view_types = ['continuous', 'contours']
+    if view_type not in valid_view_types:
+        raise ValueError(
+            'Unknown view type: %s. Valid view types are %s' %
+            (str(view_type), str(valid_view_types))
+        )
+    elif view_type == 'contours':
+        img = roi_img
+        roi_img = None
+
     bg_img, black_bg, bg_vmin, bg_vmax = _load_anat(bg_img, dim=dim,
                                                     black_bg=black_bg)
 
@@ -745,6 +826,11 @@ def plot_roi(roi_img, bg_img=MNI152TEMPLATE, cut_coords=None,
         threshold=threshold, bg_vmin=bg_vmin, bg_vmax=bg_vmax,
         resampling_interpolation=resampling_interpolation,
         alpha=alpha, cmap=cmap, vmin=vmin, vmax=vmax, **kwargs)
+
+    if view_type == 'contours':
+        display = _plot_roi_contours(display, img, cmap=cmap, alpha=alpha,
+                                     linewidths=linewidths)
+
     return display
 
 
@@ -1381,7 +1467,7 @@ optional
     -----
     The plotted image should in MNI space for this function to work properly.
 
-    This function is deprecated and will be removed in the 0.9.0 release. Use 
+    This function is deprecated and will be removed in the 0.9.0 release. Use
     plot_markers instead.
     """
     dep_msg = ("This function is deprecated and will be "
@@ -1476,21 +1562,21 @@ optional
     return display
 
 
-def plot_markers(node_values, node_coords, node_size='auto', 
-                 node_cmap=plt.cm.viridis_r, node_vmin=None, node_vmax=None, 
-                 node_threshold=None, alpha=0.7, output_file=None, 
-                 display_mode="ortho", figure=None, axes=None, title=None, 
-                 annotate=True, black_bg=False, node_kwargs=None, 
+def plot_markers(node_values, node_coords, node_size='auto',
+                 node_cmap=plt.cm.viridis_r, node_vmin=None, node_vmax=None,
+                 node_threshold=None, alpha=0.7, output_file=None,
+                 display_mode="ortho", figure=None, axes=None, title=None,
+                 annotate=True, black_bg=False, node_kwargs=None,
                  colorbar=True):
     """Plot network nodes (markers) on top of the brain glass schematics.
 
-    Nodes are color coded according to provided nodal measure. Nodal measure 
-    usually represents some notion of node importance.  
+    Nodes are color coded according to provided nodal measure. Nodal measure
+    usually represents some notion of node importance.
 
     Parameters
     ----------
     node_values : array_like of length n
-        Vector containing nodal importance measure. Each node will be colored 
+        Vector containing nodal importance measure. Each node will be colored
         acording to corresponding node value.
     node_coords : numpy array_like of shape (n, 3)
         3d coordinates of the graph nodes in world space.
@@ -1500,20 +1586,20 @@ def plot_markers(node_values, node_coords, node_size='auto',
     node_cmap : str or colormap
         Colormap used to represent the node measure.
     node_vmin : float, optional
-        Lower bound of the colormap. If `None`, the min of the node_values is 
+        Lower bound of the colormap. If `None`, the min of the node_values is
         used.
     node_vmax : float, optional
-        Upper bound of the colormap. If `None`, the min of the node_values is 
+        Upper bound of the colormap. If `None`, the min of the node_values is
         used.
     node_threshold : float
-        If provided only the nodes with a value greater than node_threshold 
+        If provided only the nodes with a value greater than node_threshold
         will be shown.
     alpha : float between 0 and 1. Default is 0.7
         Alpha transparency for markers
     output_file : string, or None, optional
         The name of an image file to export the plot to. Valid extensions
         are .png, .pdf, .svg. If output_file is not None, the plot
-        is saved to a file, and the display is closed. 
+        is saved to a file, and the display is closed.
     display_mode : string, optional. Default is 'ortho'.
         Choose the direction of the cuts: 'x' - sagittal, 'y' - coronal,
         'z' - axial, 'l' - sagittal left hemisphere only,
@@ -1548,34 +1634,34 @@ def plot_markers(node_values, node_coords, node_size='auto',
     node_coords = np.array(node_coords)
 
     # Validate node_values
-    if node_values.shape != (node_coords.shape[0], ): 
+    if node_values.shape != (node_coords.shape[0], ):
         msg = ("Dimension mismatch: 'node_values' should be vector of length "
                "{0}, but current shape is {1} instead of {2}").format(
                    len(node_coords),
-                   node_values.shape, 
-                   (node_coords.shape[0], ))        
-        raise ValueError(msg) 
+                   node_values.shape,
+                   (node_coords.shape[0], ))
+        raise ValueError(msg)
 
     display = plot_glass_brain(None, display_mode=display_mode,
                                figure=figure, axes=axes, title=title,
                                annotate=annotate, black_bg=black_bg)
 
     if isinstance(node_size, str) and node_size == 'auto':
-        node_size = min(1e4 / len(node_coords), 100)  
+        node_size = min(1e4 / len(node_coords), 100)
 
     # Filter out nodes with node values below threshold
     if node_threshold is not None:
         if node_threshold > np.max(node_values):
             msg = ("Provided 'node_threshold' value: {0} should not exceed "
-                   "highest node value: {1}").format(node_threshold, 
-                                                     np.max(node_values)) 
+                   "highest node value: {1}").format(node_threshold,
+                                                     np.max(node_values))
             raise ValueError(msg)
 
         retained_nodes = node_values > node_threshold
         node_values = node_values[retained_nodes]
-        node_coords = node_coords[retained_nodes]  
+        node_coords = node_coords[retained_nodes]
         if isinstance(node_size, collections.abc.Iterable):
-            node_size = [size for ok_retain, size in 
+            node_size = [size for ok_retain, size in
                          zip(retained_nodes, node_size) if ok_retain]
 
     # Calculate node colors based on value
@@ -1585,7 +1671,7 @@ def plot_markers(node_values, node_coords, node_size='auto',
         node_vmin = 0.9 * node_vmin
         node_vmax = 1.1 * node_vmax
     norm = matplotlib.colors.Normalize(vmin=node_vmin, vmax=node_vmax)
-    node_cmap = (plt.get_cmap(node_cmap) if isinstance(node_cmap, str) 
+    node_cmap = (plt.get_cmap(node_cmap) if isinstance(node_cmap, str)
                  else node_cmap)
     node_color = [node_cmap(norm(node_value)) for node_value in node_values]
 
@@ -1742,3 +1828,91 @@ def plot_carpet(img, mask_img=None, detrend=True, output_file=None,
         figure = None
 
     return figure
+
+
+def plot_img_comparison(ref_imgs, src_imgs, masker, plot_hist=True, log=True,
+                        ref_label="image set 1", src_label="image set 2",
+                        output_dir=None, axes=None):
+    """Creates plots to compare two lists of images and measure correlation.
+
+    The first plot displays linear correlation between voxel values.
+    The second plot superimposes histograms to compare values distribution.
+
+    Parameters
+    ----------
+    ref_imgs: nifti_like
+        Reference images.
+
+    src_imgs: nifti_like
+        Source images.
+
+    masker: NiftiMasker object
+        Mask to be used on data.
+
+    plot_hist: Boolean, optional (default True)
+        If True then histograms of each img in ref_imgs will be plotted
+        along-side the histogram of the corresponding image in src_imgs
+
+    log: Boolean, optional (default True)
+        Passed to plt.hist
+
+    ref_label: str
+        name of reference images
+
+    src_label: str
+        name of source images
+
+    output_dir: string, optional (default None)
+        Directory where plotted figures will be stored.
+
+    axes: list of two matplotlib Axes objects, optional (default None)
+        Can receive a list of the form [ax1, ax2] to render the plots.
+        By default new axes will be created
+
+    Returns
+    -------
+    corrs: numpy.ndarray
+        Pearson correlation between the images
+    """
+    # note: doesn't work with 4d images;
+    # when plot_hist is False creates two empty axes and doesn't plot anything
+    corrs = []
+    for i, (ref_img, src_img) in enumerate(zip(ref_imgs, src_imgs)):
+        if axes is None:
+            _, (ax1, ax2) = plt.subplots(1, 2, figsize=(12, 5))
+        else:
+            (ax1, ax2) = axes
+        ref_data = masker.transform(ref_img).ravel()
+        src_data = masker.transform(src_img).ravel()
+        if ref_data.shape != src_data.shape:
+            warnings.warn("Images are not shape-compatible")
+            return
+
+        corr = stats.pearsonr(ref_data, src_data)[0]
+        corrs.append(corr)
+
+        if plot_hist:
+            ax1.scatter(
+                ref_data, src_data, label="Pearsonr: %.2f" % corr, c="g",
+                alpha=.6)
+            x = np.linspace(*ax1.get_xlim(), num=100)
+            ax1.plot(x, x, linestyle="--", c="k")
+            ax1.grid("on")
+            ax1.set_xlabel(ref_label)
+            ax1.set_ylabel(src_label)
+            ax1.legend(loc="best")
+
+            ax2.hist(ref_data, alpha=.6, bins=128, log=log, label=ref_label)
+            ax2.hist(src_data, alpha=.6, bins=128, log=log, label=src_label)
+            ax2.set_title("Histogram of imgs values")
+            ax2.grid("on")
+            ax2.legend(loc="best")
+
+            if output_dir is not None:
+                if not os.path.exists(output_dir):
+                    os.makedirs(output_dir)
+                plt.savefig(os.path.join(output_dir, "%04i.png" % i))
+
+        plt.tight_layout()
+
+    return corrs

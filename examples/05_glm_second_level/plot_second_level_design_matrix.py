@@ -42,7 +42,7 @@ design_matrix = make_second_level_design_matrix(subjects_label,
 
 #########################################################################
 # Let's plot it.
-from nilearn.reporting import plot_design_matrix
+from nilearn.plotting import plot_design_matrix
 ax = plot_design_matrix(design_matrix)
 ax.set_title('Second level design matrix', fontsize=12)
 ax.set_ylabel('maps')

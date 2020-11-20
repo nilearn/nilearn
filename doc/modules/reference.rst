@@ -132,8 +132,8 @@ the :ref:`user guide <user_guide>` for more information and usage examples.
 
    Decoder
    DecoderRegressor
-   fREMClassifier
-   fREMRegressor
+   FREMClassifier
+   FREMRegressor
    SpaceNetClassifier
    SpaceNetRegressor
    SearchLight
@@ -345,6 +345,10 @@ the :ref:`user guide <user_guide>` for more information and usage examples.
    plot_surf_contours
    plot_surf_stat_map
    plot_img_on_surf
+   plot_img_comparison
+   plot_design_matrix
+   plot_event
+   plot_contrast_matrix
    view_surf
    view_img_on_surf
    view_connectome
@@ -500,8 +504,8 @@ the :ref:`user guide <user_guide>` for more information and usage examples.
 .. _reporting_ref:
 
 
-:mod:`nilearn.reporting`: Report Plotting Functions
-====================================================
+:mod:`nilearn.reporting`: Reporting Functions
+=============================================
 
 .. automodule:: nilearn.reporting
    :no-members:
@@ -515,10 +519,6 @@ the :ref:`user guide <user_guide>` for more information and usage examples.
    :toctree: generated/
    :template: function.rst
 
-   compare_niimgs
-   plot_design_matrix
-   plot_event
-   plot_contrast_matrix
    get_clusters_table
    make_glm_report
 

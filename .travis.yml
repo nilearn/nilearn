@@ -19,6 +19,11 @@ matrix:
       env: DISTRIB="travisci" PIP_FLAGS="--pre" COVERAGE="true"
            NUMPY_VERSION="*" SCIPY_VERSION="*" PANDAS_VERSION="*"
            SCIKIT_LEARN_VERSION="*" JOBLIB_VERSION="*" LXML_VERSION="*"
+    - python: "3.7"
+      env: DISTRIB="travisci" PYTHON_VERSION="3.7" NUMPY_VERSION="*"
+           SCIPY_VERSION="*" PANDAS_VERSION="*" SCIKIT_LEARN_VERSION="*"
+           MATPLOTLIB_VERSION="dev" COVERAGE="true" JOBLIB_VERSION="0.12"
+           LXML_VERSION="*"
   include:
     - name: "Python 3.5 minimum package versions without Matplotlib"
       python: "3.5"
@@ -55,7 +60,14 @@ matrix:
            NUMPY_VERSION="*" SCIPY_VERSION="*" PANDAS_VERSION="*"
            SCIKIT_LEARN_VERSION="*" JOBLIB_VERSION="*" LXML_VERSION="*"
 
-  # FLAKE8 linting on diff wrt common ancestor with upstream/master
+    - name: "Python 3.7 with Matplotlib-dev"
+      python: "3.7"
+      env: DISTRIB="travisci" PYTHON_VERSION="3.7" NUMPY_VERSION="*"
+           SCIPY_VERSION="*" PANDAS_VERSION="*" SCIKIT_LEARN_VERSION="*"
+           MATPLOTLIB_VERSION="dev" COVERAGE="true" JOBLIB_VERSION="0.12"
+           LXML_VERSION="*"
+
+    # FLAKE8 linting on diff wrt common ancestor with upstream/master
     # Note: the python value is only there to trigger allow_failures
     - name: Python 3.5 Flake8 no tests
       python: "3.5"

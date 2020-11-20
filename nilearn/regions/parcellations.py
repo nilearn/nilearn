@@ -93,7 +93,7 @@ def _labels_masker_extraction(img, masker, confound):
     masker: instance of NiftiLabelsMasker
         Used for extracting signals with fit_transform
 
-    confound: csv file or numpy array
+    confound: csv file, numpy ndarray or pandas DataFrame
         Confound used for signal cleaning while extraction.
         Passed to signal.clean
 
@@ -394,7 +394,7 @@ class Parcellations(MultiPCA):
             See http://nilearn.github.io/manipulating_images/input_output.html.
             Images to process.
 
-        confounds: List of CSV files or arrays-like, optional
+        confounds: List of CSV files, arrays-like or pandas DataFrame, optional
             Each file or numpy array in a list should have shape
             (number of scans, number of confounds)
             This parameter is passed to signal.clean. Please see the related
@@ -446,7 +446,7 @@ class Parcellations(MultiPCA):
             See http://nilearn.github.io/manipulating_images/input_output.html.
             Images for process for fit as well for transform to signals.
 
-        confounds: List of CSV files or arrays-like, optional
+        confounds: List of CSV files, arrays-like or pandas DataFrame, optional
             Each file or numpy array in a list should have shape
             (number of scans, number of confounds).
             This parameter is passed to signal.clean. Given confounds

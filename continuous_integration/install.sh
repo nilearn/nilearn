@@ -47,7 +47,7 @@ echo_requirements_string() {
         if [[ -n "$PACKAGE_VERSION" ]]; then
             if [[ "$PACKAGE_VERSION" == "*" ]]; then
                 REQUIREMENTS="$REQUIREMENTS $PACKAGE"
-            else
+            elif [[ "$PACKAGE_VERSION" != "dev" ]]; then
                 REQUIREMENTS="$REQUIREMENTS $PACKAGE==$PACKAGE_VERSION"
             fi
         fi
@@ -59,6 +59,11 @@ create_new_travisci_env() {
     REQUIREMENTS=$(echo_requirements_string)
     pip install --upgrade $PIP_FLAGS ${REQUIREMENTS}
     pip install --upgrade pytest pytest-cov
+
+    if [[ "$MATPLOTLIB_VERSION" == "dev" ]];then
+        # Install Matplotlib dev from source
+        pip install git+https://github.com/matplotlib/matplotlib.git
+    fi
 
     if [[ "$INSTALL_MKL" == "true" ]]; then
         # Make sure that MKL is used

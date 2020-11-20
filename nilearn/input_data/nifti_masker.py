@@ -13,7 +13,6 @@ from .base_masker import BaseMasker, filter_and_extract
 from .. import _utils
 from .. import image
 from .. import masking
-from nilearn.reporting import ReportMixin
 from .._utils import CacheMixin
 from .._utils.class_inspect import get_params
 from .._utils.niimg import img_data_dtype
@@ -66,7 +65,7 @@ def filter_and_mask(imgs, mask_img_, parameters,
     return data
 
 
-class NiftiMasker(BaseMasker, CacheMixin, ReportMixin):
+class NiftiMasker(BaseMasker, CacheMixin):
     """Applying a mask to extract time-series from Niimg-like objects.
 
     NiftiMasker is useful when preprocessing (detrending, standardization,
@@ -223,6 +222,10 @@ class NiftiMasker(BaseMasker, CacheMixin, ReportMixin):
 
         self._shelving = False
 
+    def generate_report(self):
+        from nilearn.reporting.html_report import generate_report
+        return generate_report(self)
+
     def _reporting(self):
         """
         Returns
@@ -374,7 +377,7 @@ class NiftiMasker(BaseMasker, CacheMixin, ReportMixin):
             Images to process. It must boil down to a 4D image with scans
             number as last dimension.
 
-        confounds: CSV file or array-like, optional
+        confounds: CSV file or array-like or pandas DataFrame, optional
             This parameter is passed to signal.clean. Please see the related
             documentation for details: :func:`nilearn.signal.clean`.
             shape: (number of scans, number of confounds)

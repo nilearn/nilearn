@@ -15,6 +15,7 @@ import pytest
 # not possible)
 from nilearn import signal as nisignal
 from nilearn.signal import clean
+from pandas import read_csv
 import scipy.signal
 
 
@@ -53,16 +54,16 @@ def generate_signals(n_features=17, n_confounds=5, length=41,
     confounds : numpy.ndarray, shape (length, n_confounds)
         random signals used as confounds.
     """
-    rand_gen = np.random.RandomState(0)
+    rng = np.random.RandomState(42)
 
     # Generate random confounds
     confounds_shape = (length, n_confounds)
     confounds = np.ndarray(confounds_shape, order=order)
-    confounds[...] = rand_gen.randn(*confounds_shape)
+    confounds[...] = rng.standard_normal(size=confounds_shape)
     confounds[...] = scipy.signal.detrend(confounds, axis=0)
 
     # Compute noise based on confounds, with random factors
-    factors = rand_gen.randn(n_confounds, n_features)
+    factors = rng.standard_normal(size=(n_confounds, n_features))
     noises_shape = (length, n_features)
     noises = np.ndarray(noises_shape, order=order)
     noises[...] = np.dot(confounds, factors)
@@ -72,10 +73,11 @@ def generate_signals(n_features=17, n_confounds=5, length=41,
     signals_shape = noises_shape
     signals = np.ndarray(signals_shape, order=order)
     if same_variance:
-        signals[...] = rand_gen.randn(*signals_shape)
+        signals[...] = rng.standard_normal(size=signals_shape)
     else:
-        signals[...] = (4. * abs(rand_gen.randn(signals_shape[1])) + 0.5
-                        ) * rand_gen.randn(*signals_shape)
+        signals[...] = (
+            4.0 * abs(rng.standard_normal(size=signals_shape[1])) + 0.5
+        ) * rng.standard_normal(size=signals_shape)
 
     signals[...] = scipy.signal.detrend(signals, axis=0)
     return signals, noises, confounds
@@ -94,10 +96,10 @@ def generate_trends(n_features=17, length=41):
     trends : numpy.ndarray, shape (length, n_features)
         output signals, one per column.
     """
-    rand_gen = np.random.RandomState(0)
+    rng = np.random.RandomState(42)
     trends = scipy.signal.detrend(np.linspace(0, 1.0, length), type="constant")
     trends = np.repeat(np.atleast_2d(trends).T, n_features, axis=1)
-    factors = rand_gen.randn(n_features)
+    factors = rng.standard_normal(size=n_features)
     return trends * factors
 
 
@@ -111,7 +113,7 @@ def generate_signals_plus_trends(n_features=17, n_samples=41):
 
 
 def test_butterworth():
-    rand_gen = np.random.RandomState(0)
+    rng = np.random.RandomState(42)
     n_features = 20000
     n_samples = 100
 
@@ -121,7 +123,7 @@ def test_butterworth():
 
     # Compare output for different options.
     # single timeseries
-    data = rand_gen.randn(n_samples)
+    data = rng.standard_normal(size=n_samples)
     data_original = data.copy()
     '''
     May be only on py3.5:
@@ -148,7 +150,7 @@ def test_butterworth():
     np.testing.assert_(id(out_single) != id(data))
 
     # multiple timeseries
-    data = rand_gen.randn(n_samples, n_features)
+    data = rng.standard_normal(size=(n_samples, n_features))
     data[:, 0] = data_original  # set first timeseries to previous data
     data_original = data.copy()
 
@@ -177,12 +179,12 @@ def test_butterworth():
 
 
 def test_standardize():
-    rand_gen = np.random.RandomState(0)
+    rng = np.random.RandomState(42)
     n_features = 10
     n_samples = 17
 
     # Create random signals with offsets
-    a = rand_gen.random_sample((n_samples, n_features))
+    a = rng.random_sample((n_samples, n_features))
     a += np.linspace(0, 2., n_features)
 
     # transpose array to fit _standardize input.
@@ -266,6 +268,22 @@ def test_mean_of_squares():
     np.testing.assert_almost_equal(var1, var2)
 
 
+def test_row_sum_of_squares():
+    """Test _row_sum_of_squares."""
+    n_samples = 11
+    n_features = 501  # Higher than 500 required
+    signals, _, _ = generate_signals(n_features=n_features,
+                                     length=n_samples,
+                                     same_variance=True)
+    # Reference computation
+    var1 = signals ** 2
+    var1 = var1.sum(axis=0)
+
+    var2 = nisignal._row_sum_of_squares(signals)
+
+    np.testing.assert_almost_equal(var1, var2)
+
+
 # This test is inspired from Scipy docstring of detrend function
 def test_clean_detrending():
     n_samples = 21
@@ -311,14 +329,14 @@ def test_clean_detrending():
 
 def test_clean_t_r():
     """Different TRs must produce different results after filtering"""
-    rng = np.random.RandomState(0)
+    rng = np.random.RandomState(42)
     n_samples = 34
     # n_features  Must be higher than 500
     n_features = 501
     x_orig = generate_signals_plus_trends(n_features=n_features,
                                           n_samples=n_samples)
-    random_tr_list1 = np.round(rng.rand(3) * 10, decimals=2)
-    random_tr_list2 = np.round(rng.rand(3) * 10, decimals=2)
+    random_tr_list1 = np.round(rng.uniform(size=3) * 10, decimals=2)
+    random_tr_list2 = np.round(rng.uniform(size=3) * 10, decimals=2)
     for tr1, tr2 in zip(random_tr_list1, random_tr_list2):
         low_pass_freq_list = tr1 * np.array([1.0 / 100, 1.0 / 110])
         high_pass_freq_list = tr1 * np.array([1.0 / 210, 1.0 / 190])
@@ -445,6 +463,13 @@ def test_clean_confounds():
     nisignal.clean(signals, detrend=False, standardize=False,
                    confounds=confounds[:, 1])
 
+    # test with confounds as a pandas DataFrame
+    confounds_df = read_csv(filename2, sep='\t')
+    nisignal.clean(signals, detrend=False, standardize=False,
+                   confounds=confounds_df.values)
+    nisignal.clean(signals, detrend=False, standardize=False,
+                   confounds=confounds_df)
+    
     # Use a list containing two filenames, a 2D array and a 1D array
     nisignal.clean(signals, detrend=False, standardize=False,
                    confounds=[filename1, confounds[:, 0:2],
@@ -509,7 +534,6 @@ def test_clean_finite_no_inplace_mod():
     Test for verifying that the passed in signal array is not modified.
     For PR #2125 . This test is failing on master, passing in this PR.
     """
-    rng = np.random.RandomState(0)
     n_samples = 2
     # n_features  Must be higher than 500
     n_features = 501
@@ -617,14 +641,14 @@ def test_clean_psc():
 
 
 def test_clean_zscore():
-    rng = np.random.RandomState(0)
+    rng = np.random.RandomState(42)
     n_samples = 500
     n_features = 5
 
     signals, _, _ = generate_signals(n_features=n_features,
                                      length=n_samples)
 
-    signals += rng.randn(1, n_features)
+    signals += rng.standard_normal(size=(1, n_features))
     cleaned_signals = clean(signals, standardize='zscore')
     np.testing.assert_almost_equal(cleaned_signals.mean(0), 0)
     np.testing.assert_almost_equal(cleaned_signals.std(0), 1)

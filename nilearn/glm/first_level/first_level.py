@@ -20,9 +20,8 @@ import pandas as pd
 from joblib import Memory, Parallel, delayed
 from nibabel import Nifti1Image
 from nibabel.onetime import auto_attr
-from sklearn.base import BaseEstimator, TransformerMixin, clone
+from sklearn.base import clone
 
-from nilearn._utils import CacheMixin
 from nilearn._utils.glm import (_check_events_file_uses_tab_separators,
                                 _check_run_tables, get_bids_files,
                                 parse_bids_filename)
@@ -31,9 +30,10 @@ from nilearn.glm.contrasts import (_compute_fixed_effect_contrast,
                                    expression_to_contrast_vector)
 from nilearn.glm.first_level.design_matrix import \
     make_first_level_design_matrix
+from nilearn.image import get_data
 from nilearn.glm.regression import (ARModel, OLSModel, RegressionResults,
                                     SimpleRegressionResults)
-from nilearn.image import get_data
+from nilearn.glm._base import BaseGLM
 
 
 def mean_scaling(Y, axis=0):
@@ -151,7 +151,7 @@ def run_glm(Y, X, noise_model='ar1', bins=100, n_jobs=1, verbose=0):
     return labels, results
 
 
-class FirstLevelModel(BaseEstimator, TransformerMixin, CacheMixin):
+class FirstLevelModel(BaseGLM):
     """ Implementation of the General Linear Model
     for single session fMRI data.
 
@@ -272,7 +272,10 @@ class FirstLevelModel(BaseEstimator, TransformerMixin, CacheMixin):
         if minimize_memory is True,
         RegressionResults if minimize_memory is False
 
-
+    Note
+    ----
+    This class is experimental. 
+    It may change in any future release of Nilearn.
     """
 
     def __init__(self, t_r=None, slice_time_ref=0., hrf_model='glover',
@@ -344,8 +347,8 @@ class FirstLevelModel(BaseEstimator, TransformerMixin, CacheMixin):
             expected per run_img. Ignored in case designs is not None.
             If string, then a path to a csv file is expected.
 
-        confounds: pandas Dataframe or string or list of pandas DataFrames or
-                   strings
+        confounds: pandas Dataframe, numpy array or string or
+                   list of pandas DataFrames, numpy arays or strings 
 
             Each column in a DataFrame corresponds to a confound variable
             to be included in the regression model of the respective run_img.
@@ -962,7 +965,7 @@ def first_level_from_bids(dataset_path, task_label, space_label=None,
         # Get confounds. If not found it will be assumed there are none.
         # If there are confounds, they are assumed to be present for all runs.
         confounds = get_bids_files(derivatives_path, modality_folder='func',
-                                   file_tag='desc-confounds_regressors',
+                                   file_tag='desc-confounds*',
                                    file_type='tsv', sub_label=sub_label,
                                    filters=filters)
 

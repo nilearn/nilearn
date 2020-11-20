@@ -12,11 +12,12 @@ from nilearn.glm import (cluster_level_inference, fdr_threshold,
 
 
 def test_fdr():
+    rng = np.random.RandomState(42)
     n = 100
     x = np.linspace(.5 / n, 1. - .5 / n, n)
     x[:10] = .0005
     x = norm.isf(x)
-    np.random.shuffle(x)
+    rng.shuffle(x)
     assert_almost_equal(fdr_threshold(x, .1), norm.isf(.0005))
     assert fdr_threshold(x, .001) == np.infty
     with pytest.raises(ValueError):
@@ -113,24 +114,24 @@ def test_all_resolution_inference():
 
     # test 1: standard case
     th_map = cluster_level_inference(stat_img, threshold=3, alpha=.05)
-    vals = th_map.get_data()
+    vals = get_data(th_map)
     assert np.sum(vals > 0) == 8
 
     # test 2: high threshold
     th_map = cluster_level_inference(stat_img, threshold=6, alpha=.05)
-    vals = th_map.get_data()
+    vals = get_data(th_map)
     assert np.sum(vals > 0) == 0
 
     # test 3: list of thresholds
     th_map = cluster_level_inference(stat_img, threshold=[3, 6], alpha=.05)
-    vals = th_map.get_data()
+    vals = get_data(th_map)
     assert np.sum(vals > 0) == 8
 
     # test 4: one single voxel
     data[3, 6, 7] = 10
     stat_img_ = nib.Nifti1Image(data, np.eye(4))
     th_map = cluster_level_inference(stat_img_, threshold=7, alpha=.05)
-    vals = th_map.get_data()
+    vals = get_data(th_map)
     assert np.sum(vals > 0) == 1
 
     # test 5: aberrant alpha
@@ -142,7 +143,7 @@ def test_all_resolution_inference():
     # test 6 with mask_img
     th_map = cluster_level_inference(stat_img, mask_img=mask_img,
                                      threshold=3, alpha=.05)
-    vals = th_map.get_data()
+    vals = get_data(th_map)
     assert np.sum(vals > 0) == 8
 
     # test 7 verbose mode

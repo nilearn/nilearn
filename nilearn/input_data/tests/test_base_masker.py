@@ -15,7 +15,7 @@ def test_cropping_code_paths():
     # with a smaller mask. The results must be identical
     rng = np.random.RandomState(42)
     data = np.zeros([20, 30, 40, 5])
-    data[10:15, 5:20, 10:30, :] = 1. + rng.rand(5, 15, 20, 5)
+    data[10:15, 5:20, 10:30, :] = 1. + rng.uniform(size=(5, 15, 20, 5))
 
     affine = np.eye(4)
 

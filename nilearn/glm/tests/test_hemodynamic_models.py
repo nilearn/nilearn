@@ -5,6 +5,7 @@ import pytest
 
 from numpy.testing import (assert_almost_equal,
                            assert_array_equal,
+                           assert_array_almost_equal,
                            )
 
 from nilearn.glm.first_level.hemodynamic_models import (_hrf_kernel,
@@ -80,7 +81,8 @@ def test_resample_regressor_nl():
 
 def test_orthogonalize():
     """ test that the orthogonalization is OK """
-    X = np.random.randn(100, 5)
+    rng = np.random.RandomState(42)
+    X = rng.standard_normal(size=(100, 5))
     X = _orthogonalize(X)
     K = np.dot(X.T, X)
     K -= np.diag(np.diag(K))
@@ -89,7 +91,8 @@ def test_orthogonalize():
 
 def test_orthogonalize_trivial():
     """ test that the orthogonalization is OK """
-    X = np.random.randn(100)
+    rng = np.random.RandomState(42)
+    X = rng.standard_normal(size=100)
     Y = X.copy()
     X = _orthogonalize(X)
     assert_array_equal(Y, X)
@@ -249,7 +252,7 @@ def test_make_regressor_3():
     hrf_model = 'fir'
     reg, reg_names = compute_regressor(condition, hrf_model, frame_times,
                                        fir_delays=np.arange(4))
-    assert_array_equal(np.sum(reg, 0), np.array([3, 3, 3, 3]))
+    assert_array_almost_equal(np.sum(reg, 0), np.array([3, 3, 3, 3]))
     assert len(reg_names) == 4
     reg_, reg_names_ = compute_regressor(condition, hrf_model, frame_times,
                                          fir_delays=np.arange(4),

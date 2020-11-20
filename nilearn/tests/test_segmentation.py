@@ -11,7 +11,9 @@ from nilearn._utils.segmentation import _random_walker
 
 
 def test_modes_in_random_walker():
-    img = np.zeros((30, 30, 30)) + 0.1 * np.random.randn(30, 30, 30)
+    img = np.zeros((30, 30, 30)) + 0.1 * np.random.RandomState(
+        42
+    ).standard_normal(size=(30, 30, 30))
     img[9:21, 9:21, 9:21] = 1
     img[10:20, 10:20, 10:20] = 0
     labels = np.zeros_like(img)
@@ -44,14 +46,14 @@ def test_bad_inputs():
         _random_walker(img, labels)
 
     # Too many dimensions
-    np.random.seed(42)
-    img = np.random.normal(size=(3, 3, 3, 3, 3))
+    rng = np.random.RandomState(42)
+    img = rng.normal(size=(3, 3, 3, 3, 3))
     labels = np.arange(3 ** 5).reshape(img.shape)
     with pytest.raises(ValueError):
         _random_walker(img, labels)
 
     # Spacing incorrect length
-    img = np.random.normal(size=(10, 10))
+    img = rng.normal(size=(10, 10))
     labels = np.zeros((10, 10))
     labels[2, 4] = 2
     labels[6, 8] = 5
@@ -64,7 +66,9 @@ def test_reorder_labels():
     # by reordering them to make no gaps/differences between integers. We expect
     # labels to be of same shape even if they are reordered.
     # Issue #938, comment #14.
-    data = np.zeros((5, 5)) + 0.1 * np.random.randn(5, 5)
+    data = np.zeros((5, 5)) + 0.1 * np.random.RandomState(42).standard_normal(
+        size=(5, 5)
+    )
     data[1:5, 1:5] = 1
 
     labels = np.zeros_like(data)
