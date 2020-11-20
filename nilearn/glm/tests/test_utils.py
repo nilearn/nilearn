@@ -37,11 +37,26 @@ def test_full_rank():
 
 def test_z_score():
     p = np.random.RandomState(42).uniform(size=10)
-    assert_array_almost_equal(norm.sf(z_score(p)), p)
+    one_p = p[::-1]
+    zval_sf = norm.isf(p)
+    zval_cdf = norm.ppf(one_p)
+    zval = np.zeros(p.size)
+    zval[zval_sf < 0] = zval_cdf[zval_sf < 0]
+    zval[zval_sf >= 0] = zval_sf[zval_sf >= 0]
+    assert_array_almost_equal(z_score(p, one_p), zval)
     # check the numerical precision
     for p in [1.e-250, 1 - 1.e-16]:
-        assert_array_almost_equal(z_score(p), norm.isf(p))
-    assert_array_almost_equal(z_score(np.float32(1.e-100)), norm.isf(1.e-300))
+        one_p = p
+        zval_sf = norm.isf(p)
+        zval_cdf = norm.ppf(one_p)
+        if p <= .5:
+            zval = zval_sf
+        else:
+            zval = zval_cdf
+        assert_array_almost_equal(z_score(p, one_p), zval)
+    assert_array_almost_equal(z_score(np.float32(1.e-100),
+                                      np.float32(-1.e-100)),
+                              norm.isf(1.e-300))
 
 
 def test_z_score_opposite_contrast():

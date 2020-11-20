@@ -146,11 +146,19 @@ def _check_run_tables(run_imgs, tables_, tables_name):
 def z_score(sfvalue, cdfvalue):
     """ Return the z-score corresponding to a given p-value.
     """
+    sfvalue = np.minimum(np.maximum(sfvalue, 1.e-300), 1. - 1.e-16)
+    cdfvalue = np.minimum(np.maximum(cdfvalue, 1.e-300), 1. - 1.e-16)
     z_scores_sf = norm.isf(sfvalue)
     z_scores_cdf = norm.ppf(cdfvalue)
-    z_scores = np.zeros(sfvalue.size)
-    z_scores[z_scores_sf < 0] = z_scores_cdf[z_scores_sf < 0]
-    z_scores[z_scores_sf >= 0] = z_scores_sf[z_scores_sf >= 0]
+    if isinstance(sfvalue, (np.ndarray, list)):
+        z_scores = np.zeros(len(sfvalue))
+        z_scores[z_scores_sf < 0] = z_scores_cdf[z_scores_sf < 0]
+        z_scores[z_scores_sf >= 0] = z_scores_sf[z_scores_sf >= 0]
+    elif isinstance(sfvalue, (int, float, np.float32)):
+        if sfvalue <= .5:
+            z_scores = z_scores_sf
+        else:
+            z_scores = z_scores_cdf
     return z_scores
 
 
