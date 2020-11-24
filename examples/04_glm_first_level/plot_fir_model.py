@@ -113,7 +113,7 @@ for index, (contrast_id, contrast_val) in enumerate(contrasts.items()):
     plot_stat_map(
         z_map, display_mode='z', threshold=3.0, title=contrast_id, axes=ax,
         cut_coords=1)
-    plt.show()
+plt.show()
 
 #########################################################################
 # The result is acceptable. Note that we're asking a lot of questions
