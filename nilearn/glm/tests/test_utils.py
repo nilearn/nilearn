@@ -5,6 +5,7 @@ import numpy as np
 import numpy.testing as npt
 import pandas as pd
 import pytest
+import scipy.stats as sps
 import scipy.linalg as spl
 
 from nibabel.tmpdirs import InTemporaryDirectory
@@ -36,26 +37,39 @@ def test_full_rank():
 
 
 def test_z_score():
-    p = np.random.RandomState(42).uniform(size=10)
-    one_p = p[::-1]
-    zval_sf = norm.isf(p)
-    zval_cdf = norm.ppf(one_p)
-    zval = np.zeros(p.size)
+    # check z-scores computed from t-values
+    tval = np.random.standard_t(1e10, size=10)
+    pval = sps.t.sf(tval, 1e10)
+    cdfval = sps.t.cdf(tval, 1e10)
+    zval_sf = norm.isf(pval)
+    zval_cdf = norm.ppf(cdfval)
+    zval = np.zeros(pval.size)
     zval[zval_sf < 0] = zval_cdf[zval_sf < 0]
     zval[zval_sf >= 0] = zval_sf[zval_sf >= 0]
-    assert_array_almost_equal(z_score(p, one_p), zval)
+    assert_array_almost_equal(z_score(pval, cdfval), zval)
+    # check z-scores computed from F-values
+    fval = np.random.f(1e10, 42, size=10)
+    p_val = sps.f.sf(fval, 42, 1e10)
+    cdf_val = sps.f.cdf(fval, 42, 1e10)
+    z_val_sf = norm.isf(p_val)
+    z_val_cdf = norm.ppf(cdf_val)
+    z_val = np.zeros(p_val.size)
+    z_val[z_val_sf < 0] = z_val_cdf[z_val_sf < 0]
+    z_val[z_val_sf >= 0] = z_val_sf[z_val_sf >= 0]
+    assert_array_almost_equal(z_score(p_val, cdf_val), z_val)
     # check the numerical precision
-    for p in [1.e-250, 1 - 1.e-16]:
-        one_p = p
-        zval_sf = norm.isf(p)
-        zval_cdf = norm.ppf(one_p)
+    for t in [33.75, -8.3]:
+        p = sps.t.sf(t, 1e10)
+        cdf = sps.t.cdf(t, 1e10)
+        z_sf = norm.isf(p)
+        z_cdf = norm.ppf(cdf)
         if p <= .5:
-            zval = zval_sf
+            z = z_sf
         else:
-            zval = zval_cdf
-        assert_array_almost_equal(z_score(p, one_p), zval)
+            z = z_cdf
+        assert_array_almost_equal(z_score(p, cdf), z)
     assert_array_almost_equal(z_score(np.float32(1.e-100),
-                                      np.float32(-1.e-100)),
+                                      1-np.float32(1.e-100)),
                               norm.isf(1.e-300))
 
 
