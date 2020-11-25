@@ -41,21 +41,25 @@ def test_z_score():
     tval = np.random.standard_t(1e10, size=10)
     pval = sps.t.sf(tval, 1e10)
     cdfval = sps.t.cdf(tval, 1e10)
+    pval = np.array(np.minimum(np.maximum(pval, 1.e-300), 1. - 1.e-16))
+    cdfval = np.array(np.minimum(np.maximum(cdfval, 1.e-300), 1. - 1.e-16))
     zval_sf = norm.isf(pval)
     zval_cdf = norm.ppf(cdfval)
     zval = np.zeros(pval.size)
-    zval[zval_sf < 0] = zval_cdf[zval_sf < 0]
-    zval[zval_sf >= 0] = zval_sf[zval_sf >= 0]
+    zval[np.atleast_1d(zval_sf < 0)] = zval_cdf[zval_sf < 0]
+    zval[np.atleast_1d(zval_sf >= 0)] = zval_sf[zval_sf >= 0]
     assert_array_almost_equal(z_score(pval, cdfval), zval)
     # check z-scores computed from F-values
     fval = np.random.f(1e10, 42, size=10)
     p_val = sps.f.sf(fval, 42, 1e10)
     cdf_val = sps.f.cdf(fval, 42, 1e10)
+    p_val = np.array(np.minimum(np.maximum(p_val, 1.e-300), 1. - 1.e-16))
+    cdf_val = np.array(np.minimum(np.maximum(cdf_val, 1.e-300), 1. - 1.e-16))
     z_val_sf = norm.isf(p_val)
     z_val_cdf = norm.ppf(cdf_val)
     z_val = np.zeros(p_val.size)
-    z_val[z_val_sf < 0] = z_val_cdf[z_val_sf < 0]
-    z_val[z_val_sf >= 0] = z_val_sf[z_val_sf >= 0]
+    z_val[np.atleast_1d(z_val_sf < 0)] = z_val_cdf[z_val_sf < 0]
+    z_val[np.atleast_1d(z_val_sf >= 0)] = z_val_sf[z_val_sf >= 0]
     assert_array_almost_equal(z_score(p_val, cdf_val), z_val)
     # check the numerical precision
     for t in [33.75, -8.3]:
