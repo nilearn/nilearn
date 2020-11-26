@@ -46,6 +46,12 @@ def fetch_difumo(dimension=64, resolution_mm=2, data_dir=None, resume=True, verb
         Path where data should be downloaded. By default,
         files are downloaded in home directory.
 
+    resume: bool, default is True
+        whether to resumed download of a partly-downloaded file.
+
+    verbose: int, default is 1
+        verbosity level (0 means no message).
+
     Returns
     -------
     data: sklearn.datasets.base.Bunch
