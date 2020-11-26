@@ -369,6 +369,46 @@ def test_fetch_atlas_yeo_2011(tmp_path, request_mocker):
     assert dataset.description != ''
 
 
+def test_fetch_atlas_difumo(tmp_path, request_mocker):
+    resolutions = [2, 3] # Valid resolution values
+    dimensions = [64, 128, 256, 512, 1024] # Valid dimension values
+    dimension_urls =  ['wjum7','kdfg3','vza2y','a23gw','jpdum']
+    url_mapping = {k:v for k,v in zip(dimensions, dimension_urls)}
+    url_count = 2
+
+    for dim in dimensions:
+        url_count += 1
+        url = "*osf.io/{0}/*".format(url_mapping[dim])
+        labels = pd.DataFrame(
+            {"Component":  [_ for _ in range(1,dim+1)],
+             "Difumo_names": ["" for _ in range(dim)],
+             "Yeo_networks7": ["" for _ in range(dim)],
+             "Yeo_networks17": ["" for _ in range(dim)],
+             "GM": ["" for _ in range(dim)],
+             "WM": ["" for _ in range(dim)],
+             "CSF": ["" for _ in range(dim)]}
+        )
+        root = Path("{0}".format(dim))
+        archive = {root / "labels_{0}_dictionary.csv".format(dim): labels.to_csv(index=False),
+                   root / "maps.nii.gz": "",
+                   root / "3mm" / "resampled_maps.nii.gz": ""}
+        request_mocker.url_mapping[url] = dict_to_archive(archive, "zip")
+
+        for res in resolutions:
+            dataset = atlas.fetch_difumo(data_dir=str(tmp_path),
+                                         dimension=dim,
+                                         resolution_mm=res,
+                                         verbose=0)
+            assert len(dataset.keys()) == 3
+            assert len(dataset.labels) == dim
+            assert isinstance(dataset.maps, str)
+            assert request_mocker.url_count == url_count
+            assert dataset.description != ''
+
+    with pytest.raises(ValueError):
+        atlas.fetch_difumo(data_dir=str(tmp_path), dimension=42, resolution_mm=3.14)
+
+
 def test_fetch_atlas_aal(tmp_path, request_mocker):
     metadata = (b"<?xml version='1.0' encoding='us-ascii'?>"
                 b"<metadata></metadata>")
