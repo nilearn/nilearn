@@ -36,7 +36,8 @@ from .atlas import (fetch_atlas_craddock_2012, fetch_atlas_destrieux_2009,
                     fetch_atlas_surf_destrieux,
                     fetch_atlas_talairach,
                     fetch_atlas_pauli_2017,
-                    fetch_atlas_schaefer_2018)
+                    fetch_atlas_schaefer_2018,
+                    fetch_difumo)
 
 from .utils import get_data_dirs
 from .neurovault import (fetch_neurovault,
@@ -59,6 +60,7 @@ __all__ = ['MNI152_FILE_PATH', 'fetch_icbm152_2009', 'load_mni152_template',
            'fetch_atlas_smith_2009',
            'fetch_atlas_allen_2011',
            'fetch_atlas_yeo_2011', 'fetch_mixed_gambles', 'fetch_atlas_aal',
+           'fetch_difumo',
            'fetch_megatrawls_netmats', 'fetch_cobre',
            'fetch_surf_nki_enhanced', 'fetch_development_fmri',
            'fetch_surf_fsaverage',
