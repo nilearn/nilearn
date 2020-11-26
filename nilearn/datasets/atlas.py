@@ -62,10 +62,10 @@ def fetch_difumo(dimension=64, resolution_mm=2, data_dir=None, resume=True, verb
 
     References
     ----------
-    Dadi, K., Varoquaux, G., Machlouzarides-Shalit, A., Gorgolewski, KJ.,
-    Wassermann, D., Thirion, B., Mensch, A.
-    Fine-grain atlases of functional modes for fMRI analysis,
-    Paper in preparation
+    Dadi, K., Varoquaux, G., Machlouzarides-Shalit,
+    A., Gorgolewski, KJ., Wassermann, D., Thirion, B., Mensch,
+    A. Fine-grain atlases of functional modes for fMRI analysis.
+    NeuroImage, Elsevier, 2020, pp.117126, https://hal.inria.fr/hal-02904869
     """
     dic = {64: 'wjum7',
            128: 'kdfg3',
