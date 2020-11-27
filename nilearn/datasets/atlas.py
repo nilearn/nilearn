@@ -23,6 +23,8 @@ _TALAIRACH_LEVELS = ['hemisphere', 'lobe', 'gyrus', 'tissue', 'ba']
 def fetch_difumo(dimension=64, resolution_mm=2, data_dir=None, resume=True, verbose=1):
     """Fetch DiFuMo brain atlas
 
+     Dictionaries of Functional Modes, or “DiFuMo”, can serve as atlases to extract functional signals with different dimensionalities (64, 128, 256, 512, and 1024). These modes are optimized to represent well raw BOLD timeseries, over a with range of experimental conditions.
+
     Direct download links from OSF:
 
     dic = {64: https://osf.io/wjum7/download,
@@ -58,7 +60,8 @@ def fetch_difumo(dimension=64, resolution_mm=2, data_dir=None, resume=True, verb
         Dictionary-like object, the interest attributes are :
 
         - 'maps': str, 4D path to nifti file containing regions definition.
-        - 'labels': string list containing the labels of the regions.
+        - 'labels': Numpy recarray containing the labels of the regions.
+        - 'description': str, general description of the dataset.
 
     References
     ----------
