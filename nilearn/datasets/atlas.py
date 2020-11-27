@@ -20,7 +20,7 @@ from ..image import new_img_like, get_data
 _TALAIRACH_LEVELS = ['hemisphere', 'lobe', 'gyrus', 'tissue', 'ba']
 
 
-def fetch_difumo(dimension=64, resolution_mm=2, data_dir=None, resume=True, verbose=1):
+def fetch_atlas_difumo(dimension=64, resolution_mm=2, data_dir=None, resume=True, verbose=1):
     """Fetch DiFuMo brain atlas
 
      Dictionaries of Functional Modes, or “DiFuMo”, can serve as atlases to extract functional signals with different dimensionalities (64, 128, 256, 512, and 1024). These modes are optimized to represent well raw BOLD timeseries, over a with range of experimental conditions.

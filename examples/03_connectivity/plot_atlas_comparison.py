@@ -85,8 +85,8 @@ plotting.plot_connectome(mean_correlation_matrix, coordinates,
 # -----------------------------------------------------------------
 
 dim = 64
-difumo = datasets.fetch_difumo(dimension=dim,
-                               resolution_mm=2)
+difumo = datasets.fetch_atlas_difumo(dimension=dim,
+                                     resolution_mm=2)
 
 ##########################################################################
 # Iterate over fetched atlases to extract coordinates - probabilistic
