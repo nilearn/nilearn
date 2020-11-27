@@ -372,7 +372,7 @@ def test_fetch_atlas_yeo_2011(tmp_path, request_mocker):
 def test_fetch_atlas_difumo(tmp_path, request_mocker):
     resolutions = [2, 3] # Valid resolution values
     dimensions = [64, 128, 256, 512, 1024] # Valid dimension values
-    dimension_urls =  ['wjum7','kdfg3','vza2y','a23gw','jpdum']
+    dimension_urls =  ['wjum7','n3vba','vza2y','a23gw','jpdum']
     url_mapping = {k:v for k,v in zip(dimensions, dimension_urls)}
     url_count = 2
 

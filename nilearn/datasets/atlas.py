@@ -26,7 +26,7 @@ def fetch_difumo(dimension=64, resolution_mm=2, data_dir=None, resume=True, verb
     Direct download links from OSF:
 
     dic = {64: https://osf.io/wjum7/download,
-           128: https://osf.io/kdfg3/download,
+           128: https://osf.io/n3vba/download,
            256: https://osf.io/vza2y/download,
            512: https://osf.io/a23gw/download,
            1024: https://osf.io/jpdum/download,
@@ -68,7 +68,7 @@ def fetch_difumo(dimension=64, resolution_mm=2, data_dir=None, resume=True, verb
     NeuroImage, Elsevier, 2020, pp.117126, https://hal.inria.fr/hal-02904869
     """
     dic = {64: 'wjum7',
-           128: 'kdfg3',
+           128: 'n3vba',
            256: 'vza2y',
            512: 'a23gw',
            1024: 'jpdum',
