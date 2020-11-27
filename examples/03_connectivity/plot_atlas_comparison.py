@@ -84,7 +84,9 @@ plotting.plot_connectome(mean_correlation_matrix, coordinates,
 # Load probabilistic atlases - extracting coordinates on brain maps
 # -----------------------------------------------------------------
 
-msdl = datasets.fetch_atlas_msdl()
+dim = 64
+difumo = datasets.fetch_difumo(dimension=dim,
+                               resolution_mm=2)
 
 ##########################################################################
 # Iterate over fetched atlases to extract coordinates - probabilistic
@@ -92,7 +94,7 @@ msdl = datasets.fetch_atlas_msdl()
 from nilearn.input_data import NiftiMapsMasker
 
 # create masker to extract functional data within atlas parcels
-masker = NiftiMapsMasker(maps_img=msdl['maps'], standardize=True,
+masker = NiftiMapsMasker(maps_img=difumo.maps, standardize=True,
                          memory='nilearn_cache')
 
 # extract time series from all subjects and concatenate them
@@ -108,9 +110,10 @@ correlation_matrices = connectome_measure.fit_transform(time_series)
 mean_correlation_matrix = connectome_measure.mean_
 
 # grab center coordinates for probabilistic atlas
-coordinates = plotting.find_probabilistic_atlas_cut_coords(maps_img=msdl['maps'])
+coordinates = plotting.find_probabilistic_atlas_cut_coords(maps_img=difumo.maps)
 
-# plot connectome with 80% edge strength in the connectivity
+# plot connectome with 85% edge strength in the connectivity
 plotting.plot_connectome(mean_correlation_matrix, coordinates,
-                         edge_threshold="80%", title='MSDL (probabilistic)')
+                         edge_threshold="85%",
+                         title='DiFuMo with {0} dimensions (probabilistic)'.format(dim))
 plotting.show()
