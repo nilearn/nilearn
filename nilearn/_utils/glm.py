@@ -152,9 +152,11 @@ def z_score(pvalue, one_minus_pvalue=None):
     pvalue: float or 1-d array shape=(n_pvalues,) computed using
             the survival function
 
-    cdfvalue: float or 1-d array shape=(n_cdfvalues,) computed using
-              the cumulative distribution function,
-              with n_cdfvalues = n_pvalues
+    cdfvalue: float or 1-d array shape=(n_cdfvalues,), optional;
+              it shall take the value returned by
+              /nilearn/glm/contrasts.py::one_minus_pvalue
+              which computes the p_value using the
+              cumulative distribution function, with n_cdfvalues = n_pvalues
 
     Returns
     -------
