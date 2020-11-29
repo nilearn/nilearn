@@ -315,7 +315,8 @@ class Contrast(object):
             self.one_minus_pvalue_ = self.one_minus_pvalue(baseline)
 
         # Avoid inf values kindly supplied by scipy.
-        self.z_score_ = z_score(self.p_value_, self.one_minus_pvalue_)
+        self.z_score_ = z_score(self.p_value_,
+                                one_minus_pvalue=self.one_minus_pvalue_)
         return self.z_score_
 
 
