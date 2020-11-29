@@ -143,7 +143,7 @@ def _check_run_tables(run_imgs, tables_, tables_name):
     return tables_
 
 
-def z_score(pvalue, cdfvalue):
+def z_score(pvalue, one_minus_pvalue):
     """ Return the z-score(s) corresponding to
     certain p-value(s) and cdfvalues(s) provided as inputs.
 
@@ -161,9 +161,10 @@ def z_score(pvalue, cdfvalue):
     z_scores: 1-d array shape=(n_z_scores,), with n_z_scores = n_pvalues
     """
     pvalue = np.array(np.minimum(np.maximum(pvalue, 1.e-300), 1. - 1.e-16))
-    cdfvalue = np.array(np.minimum(np.maximum(cdfvalue, 1.e-300), 1. - 1.e-16))
+    one_minus_pvalue = np.array(np.minimum(np.maximum(one_minus_pvalue,
+                                                      1.e-300), 1. - 1.e-16))
     z_scores_sf = norm.isf(pvalue)
-    z_scores_cdf = norm.ppf(cdfvalue)
+    z_scores_cdf = norm.ppf(one_minus_pvalue)
     z_scores = np.zeros(pvalue.size)
     z_scores[np.atleast_1d(z_scores_sf < 0)] = z_scores_cdf[z_scores_sf < 0]
     z_scores[np.atleast_1d(z_scores_sf >= 0)] = z_scores_sf[z_scores_sf >= 0]
