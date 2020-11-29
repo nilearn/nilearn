@@ -6,7 +6,7 @@ Functions
 ---------
 
 make_glm_report(model, contrasts):
-    Creates an HTMLDocument Object which can be viewed or saved as a report.
+    Creates an HTMLReport Object which can be viewed or saved as a report.
 
 """
 
@@ -27,7 +27,7 @@ from nilearn.plotting import (plot_glass_brain,
                               plot_stat_map,
                               )
 from nilearn.plotting.img_plotting import MNI152TEMPLATE
-from nilearn.plotting.html_document import HTMLDocument
+from nilearn.reporting.html_report import HTMLReport
 from nilearn.plotting.matrix_plotting import (
     plot_contrast_matrix,
     plot_design_matrix,
@@ -59,7 +59,7 @@ def make_glm_report(model,
                     display_mode=None,
                     report_dims=(1600, 800),
                     ):
-    """ Returns HTMLDocument object
+    """ Returns HTMLReport object
     for a report which shows all important aspects of a fitted GLM.
     The object can be opened in a browser, displayed in a notebook,
     or saved to disk as a standalone HTML file.
@@ -156,7 +156,7 @@ def make_glm_report(model,
 
     Returns
     -------
-    report_text: HTMLDocument Object
+    report_text: HTMLReport Object
         Contains the HTML code for the GLM Report.
 
     """
@@ -177,11 +177,19 @@ def make_glm_report(model,
     except AttributeError:
         design_matrices = [model.design_matrix_]
 
-    html_template_path = os.path.join(HTML_TEMPLATE_ROOT_PATH,
-                                      'report_template.html')
-    with open(html_template_path) as html_file_obj:
-        html_template_text = html_file_obj.read()
-    report_template = string.Template(html_template_text)
+    html_head_template_path = os.path.join(HTML_TEMPLATE_ROOT_PATH,
+                                          'report_head_template.html')
+
+    html_body_template_path = os.path.join(HTML_TEMPLATE_ROOT_PATH,
+                                          'report_body_template.html')
+
+    with open(html_head_template_path) as html_head_file_obj:
+        html_head_template_text = html_head_file_obj.read()
+    report_head_template = string.Template(html_head_template_text)
+
+    with open(html_body_template_path) as html_body_file_obj:
+        html_body_template_text = html_body_file_obj.read()
+    report_body_template = string.Template(html_body_template_text)
 
     contrasts = _coerce_to_dict(contrasts)
     contrast_plots = _plot_contrasts(contrasts, design_matrices)
@@ -216,18 +224,19 @@ def make_glm_report(model,
         plot_type=plot_type,
     )
     all_components_text = '\n'.join(all_components)
-    report_values = {'page_title': escape(page_title),
-                     'page_heading_1': page_heading_1,
-                     'page_heading_2': page_heading_2,
-                     'model_attributes': model_attributes_html,
-                     'all_contrasts_with_plots': ''.join(
-                         contrast_plots.values()),
-                     'design_matrices': html_design_matrices,
-                     'mask_plot': mask_plot_html_code,
-                     'component': all_components_text,
-                     }
-    report_text = report_template.safe_substitute(**report_values)
-    report_text = HTMLDocument(report_text)
+    report_values_head = {'page_title': escape(page_title),
+                          }
+    report_values_body = {'page_heading_1': page_heading_1,
+                          'page_heading_2': page_heading_2,
+                          'model_attributes': model_attributes_html,
+                          'all_contrasts_with_plots': ''.join(
+                               contrast_plots.values()),
+                          'design_matrices': html_design_matrices,
+                          'mask_plot': mask_plot_html_code,
+                          'component': all_components_text,
+                         }
+    report_text_body = report_body_template.safe_substitute(**report_values_body)
+    report_text = HTMLReport(body=report_text_body, head_tpl=report_head_template, head_values=report_values_head)
     # setting report size for better visual experience in Jupyter Notebooks.
     report_text.width, report_text.height = _check_report_dims(report_dims)
     return report_text
