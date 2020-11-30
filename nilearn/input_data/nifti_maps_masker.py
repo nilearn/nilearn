@@ -59,7 +59,7 @@ class NiftiMapsMasker(BaseMasker, CacheMixin):
         If smoothing_fwhm is not None, it gives the full-width half maximum in
         millimeters of the spatial smoothing to apply to the signal.
 
-    standardize: {'zscore', 'psc', True, False}, default is 'zscore'
+    standardize: {'zscore', 'psc', True, False}, default is False.
         Strategy to standardize the signal.
         'zscore': the signal is z-scored. Timeseries are shifted
         to zero mean and scaled to unit variance.
@@ -73,7 +73,7 @@ class NiftiMapsMasker(BaseMasker, CacheMixin):
         If standardize_confounds is True, the confounds are z-scored:
         their mean is put to 0 and their variance to 1 in the time dimension.
 
-    detrend: boolean, optional
+    detrend: boolean, optional, default is False.
         This parameter is passed to signal.clean. Please see the related
         documentation for details
 
@@ -106,7 +106,7 @@ class NiftiMapsMasker(BaseMasker, CacheMixin):
         By default, no caching is done. If a string is given, it is the
         path to the caching directory.
 
-    memory_level: int, optional
+    memory_level: int, optional, default is 0.
         Aggressiveness of memory caching. The higher the number, the higher
         the number of functions that will be cached. Zero means no caching.
 

@@ -138,7 +138,7 @@ def _iter_signals_from_spheres(seeds, niimg, radius, allow_overlap,
     seeds: List of triplets of coordinates in native space
         Seed definitions. List of coordinates of the seeds in the same space
         as the images (typically MNI or TAL).
-    imgs: 3D/4D Niimg-like object
+    niimg: 3D/4D Niimg-like object
         See http://nilearn.github.io/manipulating_images/input_output.html
         Images to process. It must boil down to a 4D image with scans
         number as last dimension.
@@ -210,7 +210,7 @@ class NiftiSpheresMasker(BaseMasker, CacheMixin):
         If smoothing_fwhm is not None, it gives the full-width half maximum in
         millimeters of the spatial smoothing to apply to the signal.
 
-    standardize: {'zscore', 'psc', True, False}, default is 'zscore'
+    standardize: {'zscore', 'psc', True, False}, default is False.
         Strategy to standardize the signal.
         'zscore': the signal is z-scored. Timeseries are shifted
         to zero mean and scaled to unit variance.
@@ -224,7 +224,7 @@ class NiftiSpheresMasker(BaseMasker, CacheMixin):
         If standardize_confounds is True, the confounds are z-scored:
         their mean is put to 0 and their variance to 1 in the time dimension.
 
-    detrend: boolean, optional
+    detrend: boolean, optional, default is False.
         This parameter is passed to signal.clean. Please see the related
         documentation for details.
 
@@ -250,7 +250,7 @@ class NiftiSpheresMasker(BaseMasker, CacheMixin):
         By default, no caching is done. If a string is given, it is the
         path to the caching directory.
 
-    memory_level: int, optional
+    memory_level: int, optional, default is 1.
         Aggressiveness of memory caching. The higher the number, the higher
         the number of functions that will be cached. Zero means no caching.
 

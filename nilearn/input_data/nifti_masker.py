@@ -37,6 +37,23 @@ def filter_and_mask(imgs, mask_img_, parameters,
                     confounds=None,
                     copy=True,
                     dtype=None):
+    """Extract representative time series using given mask.
+
+    Parameters
+    ----------
+    imgs: 3D/4D Niimg-like object
+        Images to be masked. Can be 3-dimensional or 4-dimensional.
+
+    mask_img_: TODO...
+
+    For all other parameters refer to NiftiMasker documentation.
+
+    Returns
+    -------
+    signals: 2D numpy array
+        Signals extracted using the provided mask. It is a scikit-learn
+        friendly 2D array with shape n_sample x n_features.
+    """
     imgs = _utils.check_niimg(imgs, atleast_4d=True, ensure_ndim=4)
 
     # Check whether resampling is truly necessary. If so, crop mask
@@ -91,7 +108,7 @@ class NiftiMasker(BaseMasker, CacheMixin):
         If smoothing_fwhm is not None, it gives the full-width half maximum in
         millimeters of the spatial smoothing to apply to the signal.
 
-    standardize : {'zscore', 'psc', True, False}, default is 'zscore'
+    standardize : {'zscore', 'psc', True, False}, default is False.
         Strategy to standardize the signal.
         'zscore': the signal is z-scored. Timeseries are shifted
         to zero mean and scaled to unit variance.
@@ -105,7 +122,7 @@ class NiftiMasker(BaseMasker, CacheMixin):
         If standardize_confounds is True, the confounds are z-scored:
         their mean is put to 0 and their variance to 1 in the time dimension.
 
-    detrend : boolean, optional
+    detrend : boolean, optional, default is False.
         This parameter is passed to signal.clean. Please see the related
         documentation for details: :func:`nilearn.signal.clean`.
 
@@ -162,12 +179,15 @@ class NiftiMasker(BaseMasker, CacheMixin):
         By default, no caching is done. If a string is given, it is the
         path to the caching directory.
 
-    memory_level : integer, optional
+    memory_level : integer, optional, default is 1.
         Rough estimator of the amount of memory used by caching. Higher value
         means more memory for caching.
 
     verbose : integer, optional
         Indicate the level of verbosity. By default, nothing is printed
+
+    reports: boolean, optional, default is True.
+        If set to True, data is saved in order to produce a report.
 
     Attributes
     ----------
@@ -386,6 +406,8 @@ class NiftiMasker(BaseMasker, CacheMixin):
             This parameter is passed to signal.clean. Please see the related
             documentation for details: :func:`nilearn.signal.clean`.
             shape: (number of scans, number of confounds)
+
+        copy: ???? TODO: Add description.
 
         Returns
         -------

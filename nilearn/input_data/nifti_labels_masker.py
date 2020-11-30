@@ -49,7 +49,7 @@ class NiftiLabelsMasker(BaseMasker, CacheMixin):
         See http://nilearn.github.io/manipulating_images/input_output.html
         Region definitions, as one image of labels.
 
-    background_label: number, optional
+    background_label: number, optional, default is 0.
         Label used in labels_img to represent background.
 
     mask_img: Niimg-like object, optional
@@ -60,7 +60,7 @@ class NiftiLabelsMasker(BaseMasker, CacheMixin):
         If smoothing_fwhm is not None, it gives the full-width half maximum in
         millimeters of the spatial smoothing to apply to the signal.
 
-    standardize: {'zscore', 'psc', True, False}, default is 'zscore'
+    standardize: {'zscore', 'psc', True, False}, default is False.
         Strategy to standardize the signal.
         'zscore': the signal is z-scored. Timeseries are shifted
         to zero mean and scaled to unit variance.
@@ -74,7 +74,7 @@ class NiftiLabelsMasker(BaseMasker, CacheMixin):
         If standardize_confounds is True, the confounds are z-scored:
         their mean is put to 0 and their variance to 1 in the time dimension.
 
-    detrend: boolean, optional
+    detrend: boolean, optional, default is False.
         This parameter is passed to signal.clean. Please see the related
         documentation for details
 
@@ -108,14 +108,14 @@ class NiftiLabelsMasker(BaseMasker, CacheMixin):
         By default, no caching is done. If a string is given, it is the
         path to the caching directory.
 
-    memory_level: int, optional
+    memory_level: int, optional, default is 1.
         Aggressiveness of memory caching. The higher the number, the higher
         the number of functions that will be cached. Zero means no caching.
 
     verbose: integer, optional
         Indicate the level of verbosity. By default, nothing is printed
 
-    strategy: str
+    strategy: str, default is 'mean'.
         The name of a valid function to reduce the region with.
         Must be one of: sum, mean, median, mininum, maximum, variance,
         standard_deviation

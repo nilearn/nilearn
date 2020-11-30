@@ -143,6 +143,8 @@ class BaseMasker(BaseEstimator, TransformerMixin, CacheMixin):
             documentation for details.
             shape: (number of scans, number of confounds)
 
+        copy: ????? TODO: Add description
+
         Returns
         -------
         region_signals: 2D numpy.ndarray
@@ -219,6 +221,15 @@ class BaseMasker(BaseEstimator, TransformerMixin, CacheMixin):
 
     def inverse_transform(self, X):
         """ Transform the 2D data matrix back to an image in brain space.
+
+        Parameters
+        ----------
+        X : Niimg-like object
+            See http://nilearn.github.io/manipulating_images/input_output.html
+
+        Returns
+        -------
+        img : Transformed image in brain space.
         """
         self._check_fitted()
         img = self._cache(masking.unmask)(X, self.mask_img_)
