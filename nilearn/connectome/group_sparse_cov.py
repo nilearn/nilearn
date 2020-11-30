@@ -155,14 +155,14 @@ def group_sparse_covariance(subjects, alpha, max_iter=50, tol=1e-3, verbose=0,
         number of samples, sensible values lie in the [0, 1] range(zero is
         no regularization: output is not sparse)
 
-    max_iter : int, optional
+    max_iter : int, optional, default is 50.
         maximum number of iterations.
 
-    tol : positive float or None, optional
+    tol : positive float or None, optional, default is 1e-3.
         The tolerance to declare convergence: if the duality gap goes below
         this value, optimization is stopped. If None, no check is performed.
 
-    verbose : int, optional
+    verbose : int, optional, default is 0.
         verbosity level. Zero means "no message".
 
     probe_function : callable or None
@@ -184,7 +184,7 @@ def group_sparse_covariance(subjects, alpha, max_iter=50, tol=1e-3, verbose=0,
         initial value of the precision matrices. If not provided, a diagonal
         matrix with the variances of each input signal is used.
 
-    debug : bool, optional
+    debug : bool, optional, default is False.
         if True, perform checks during computation. It can help find
         numerical problems, but increases computation time a lot.
 
@@ -451,12 +451,12 @@ class GroupSparseCovariance(BaseEstimator, CacheMixin):
 
     Parameters
     ----------
-    alpha : float
+    alpha : float, default is 0.1.
         regularization parameter. With normalized covariances matrices and
         number of samples, sensible values lie in the [0, 1] range(zero is
         no regularization: output is not sparse)
 
-    tol : positive float, optional
+    tol : positive float, optional, default is 1e-3.
         The tolerance to declare convergence: if the dual gap goes below
         this value, iterations are stopped
 
@@ -464,7 +464,7 @@ class GroupSparseCovariance(BaseEstimator, CacheMixin):
         maximum number of iterations. The default value (10) is rather
         conservative.
 
-    verbose : int, optional
+    verbose : int, optional, default is 0.
         verbosity level. Zero means "no message".
 
     memory : instance of joblib.Memory or string, optional
@@ -550,11 +550,11 @@ def empirical_covariances(subjects, assume_centered=False, standardize=False):
         signals. Sample number can vary from subject to subject, but all
         subjects must have the same number of features (i.e. of columns).
 
-    assume_centered : bool, optional
+    assume_centered : bool, optional, default is False.
         if True, assume that all input signals are centered. This slightly
         decreases computation time by avoiding useless computation.
 
-    standardize : bool, optional
+    standardize : bool, optional, default is False.
         if True, set every signal variance to one before computing their
         covariance matrix (i.e. compute a correlation matrix).
 
@@ -618,10 +618,10 @@ def group_sparse_scores(precisions, n_samples, emp_covs, alpha,
     alpha : float
         regularization parameter
 
-    duality_gap : bool, optional
+    duality_gap : bool, optional, default is False.
         if True, also returns a duality gap upper bound.
 
-    debug : bool, optional
+    debug : bool, optional, default is False.
         if True, some consistency checks are performed to help solving
         numerical problems
 
@@ -730,7 +730,7 @@ def group_sparse_covariance_path(train_subjs, alphas, test_subjs=None,
         list of signals, independent from those in train_subjs, on which to
         compute a score. If None, no score is computed.
 
-    verbose : int
+    verbose : int, default is 0.
         verbosity level
 
     tol, max_iter, debug, precisions_init :
@@ -823,45 +823,45 @@ class GroupSparseCovarianceCV(BaseEstimator, CacheMixin):
 
     Parameters
     ----------
-    alphas : integer
+    alphas : integer, default is 4.
         initial number of points in the grid of regularization parameter
         values. Each step of grid refinement adds that many points as well.
 
-    n_refinements : integer
+    n_refinements : integer, default is 4.
         number of times the initial grid should be refined.
 
     cv : integer
         number of folds in a K-fold cross-validation scheme. If None is passed,
         defaults to 3.
 
-    tol_cv : float
+    tol_cv : float, default is 1e-2.
         tolerance used to get the optimal alpha value. It has the same meaning
         as the `tol` parameter in :func:`group_sparse_covariance`.
 
-    max_iter_cv : integer
+    max_iter_cv : integer, default is 50.
         maximum number of iterations for each optimization, during the alpha-
         selection phase.
 
-    tol : float
+    tol : float, default is 1e-3.
         tolerance used during the final optimization for determining precision
         matrices value.
 
-    max_iter : integer
+    max_iter : integer, default is 100.
         maximum number of iterations in the final optimization.
 
-    verbose : integer
+    verbose : integer, default is 0.
         verbosity level. 0 means nothing is printed to the user.
 
-    n_jobs : integer
+    n_jobs : integer, default is 1.
         maximum number of cpu cores to use. The number of cores actually used
         at the same time cannot exceed the number of folds in folding strategy
         (that is, the value of cv).
 
-    debug : bool
+    debug : bool, default is False.
         if True, activates some internal checks for consistency. Only useful
         for nilearn developers, not users.
 
-    early_stopping : bool
+    early_stopping : bool, default is True.
         if True, reduce computation time by using a heuristic to reduce the
         number of iterations required to get the optimal value for alpha. Be
         aware that this can lead to slightly different values for the optimal

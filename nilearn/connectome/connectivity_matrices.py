@@ -120,10 +120,10 @@ def _geometric_mean(matrices, init=None, max_iter=10, tol=1e-7):
         Raise an error if the matrix is not symmetric positive definite of the
         same shape as the elements of matrices.
 
-    max_iter : int, optional
+    max_iter : int, optional, default is 10.
         Maximal number of iterations.
 
-    tol : positive float or None, optional
+    tol : positive float or None, optional, default is 1e-7.
         The tolerance to declare convergence: if the gradient norm goes below
         this value, the gradient descent is stopped. If None, no  check is
         performed.
@@ -397,13 +397,13 @@ class ConnectivityMeasure(BaseEstimator, TransformerMixin):
 
     kind : {"correlation", "partial correlation", "tangent",\
             "covariance", "precision"}, optional
-        The matrix kind.
+        The matrix kind. Default is 'covariance'.
 
-    vectorize : bool, optional
+    vectorize : bool, optional, default is False.
         If True, connectivity matrices are reshaped into 1D arrays and only
         their flattened lower triangular parts are returned.
 
-    discard_diagonal : bool, optional
+    discard_diagonal : bool, optional, default is False.
         If True, vectorized connectivity coefficients do not include the
         matrices diagonal elements. Used only when vectorize is set to True.
 
