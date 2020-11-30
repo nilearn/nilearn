@@ -36,7 +36,7 @@ class CanICA(MultiPCA):
         If smoothing_fwhm is not None, it gives the size in millimeters of the
         spatial smoothing to apply to the signal.
 
-    do_cca: boolean, optional
+    do_cca: boolean, optional, default True
         Indicate if a Canonical Correlation Analysis must be run after the
         PCA.
 
@@ -52,7 +52,7 @@ class CanICA(MultiPCA):
         If detrend is True, the time-series will be detrended before
         components extraction.
 
-    threshold: None, 'auto' or float
+    threshold: None, 'auto' or float, default is 'auto'
         If None, no thresholding is applied. If 'auto',
         then we apply a thresholding that will keep the n_voxels,
         more intense voxels across all the maps, n_voxels being the number
@@ -61,7 +61,7 @@ class CanICA(MultiPCA):
         have 2 x n_voxels non-zero voxels ). The float value
         must be bounded by [0. and n_components].
 
-    n_init: int, optional
+    n_init: int, optional, default is 10
         The number of times the fastICA algorithm is restarted
 
     random_state: int or RandomState
@@ -108,11 +108,11 @@ class CanICA(MultiPCA):
         By default, no caching is done. If a string is given, it is the
         path to the caching directory.
 
-    memory_level: integer, optional
+    memory_level: integer, optional, default is 0
         Rough estimator of the amount of memory used by caching. Higher value
         means more memory for caching.
 
-    n_jobs: integer, optional
+    n_jobs: integer, optional, default is 1
         The number of CPUs to use to do the computation. -1 means
         'all CPUs', -2 'all CPUs but one', and so on.
 

@@ -64,7 +64,7 @@ class DictLearning(BaseDecomposition):
         Initial estimation of dictionary maps. Would be computed from CanICA if
         not provided.
 
-    reduction_ratio: 'auto' or float between 0. and 1.
+    reduction_ratio: 'auto' or float between 0. and 1. Default is 'auto'.
         - Between 0. or 1. : controls data reduction in the temporal domain.
           1. means no reduction, < 1. calls for an SVD based reduction.
         - if set to 'auto', estimator will set the number of components per
@@ -134,7 +134,7 @@ class DictLearning(BaseDecomposition):
         By default, no caching is done. If a string is given, it is the
         path to the caching directory.
 
-    memory_level: integer, optional
+    memory_level: integer, optional, default is 0.
         Rough estimator of the amount of memory used by caching. Higher value
         means more memory for caching.
 

@@ -21,7 +21,7 @@ class MultiPCA(BaseDecomposition):
     n_components: int
         Number of components to extract. By default n_components=20.
 
-    do_cca: boolean, optional
+    do_cca: boolean, optional, default True
         Indicate if a Canonical Correlation Analysis must be run after the
         PCA.
 
@@ -55,7 +55,7 @@ class MultiPCA(BaseDecomposition):
         to fine-tune mask computation. Please see the related documentation
         for details.
 
-    standardize : boolean, optional
+    standardize : boolean, optional, default False.
         If standardize is True, the time-series are centered and normed:
         their mean is put to 0 and their variance to 1 in the time dimension.
 
@@ -63,7 +63,7 @@ class MultiPCA(BaseDecomposition):
         If standardize_confounds is True, the confounds are z-scored:
         their mean is put to 0 and their variance to 1 in the time dimension.
 
-    detrend : boolean, optional
+    detrend : boolean, optional, default False.
         If detrend is True, the time-series will be detrended before
         components extraction.
 
@@ -92,11 +92,11 @@ class MultiPCA(BaseDecomposition):
         By default, no caching is done. If a string is given, it is the
         path to the caching directory.
 
-    memory_level: integer, optional
+    memory_level: integer, optional, default is 0.
         Rough estimator of the amount of memory used by caching. Higher value
         means more memory for caching.
 
-    n_jobs: integer, optional
+    n_jobs: integer, optional, default is 1.
         The number of CPUs to use to do the computation. -1 means
         'all CPUs', -2 'all CPUs but one', and so on.
 
