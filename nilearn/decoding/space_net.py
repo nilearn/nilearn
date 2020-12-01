@@ -142,18 +142,18 @@ def _space_net_alpha_grid(X, y, eps=1e-3, n_alphas=10, l1_ratio=1.,
     y : ndarray, shape (n_samples,)
         Target / response vector.
 
-    l1_ratio : float
+    l1_ratio : float, optional, default is 1.
         The ElasticNet mixing parameter, with ``0 <= l1_ratio <= 1``.
         For ``l1_ratio = 0`` the penalty is purely a spatial prior
         (Graph-Net, TV, etc.). ``For l1_ratio = 1`` it is an L1 penalty.
         For ``0 < l1_ratio < 1``, the penalty is a combination of L1
         and a spatial prior.
 
-    eps : float, optional
+    eps : float, optional, default is 1e-3.
         Length of the path. ``eps=1e-3`` means that
         ``alpha_min / alpha_max = 1e-3``.
 
-    n_alphas : int, optional
+    n_alphas : int, optional, default is 10.
         Number of alphas along the regularization path.
 
     logistic : bool, optional (default False)
@@ -326,6 +326,27 @@ def path_scores(solver, X, y, mask, alphas, l1_ratios, train, test,
 
     solver_params: dict
        Dictionary of param-value pairs to be passed to solver.
+
+    is_classif: ??? TODO: Add description.
+
+    Xmean: ??? TODO: Add description.
+
+    key: ??? TODO: Add description.
+
+    debias : bool, optional (default False)
+        If set, then the estimated weights maps will be debiased.
+
+    screening_percentile : float in the interval [0, 100]; Optional (
+    default 20)
+        Percentile value for ANOVA univariate feature selection. A value of
+        100 means 'keep all features'. This percentile is expressed
+        w.r.t the volume of a standard (MNI152) brain, and so is corrected
+        at runtime to correspond to the volume of the user-supplied mask
+        (which is typically smaller). If '100' is given, all the features
+        are used, regardless of the number of voxels.
+
+    verbose: integer, optional, default is 1.
+        Indicate the level of verbosity.
     """
     if l1_ratios is None:
         raise ValueError("l1_ratios must be specified!")
@@ -456,7 +477,7 @@ class BaseSpaceNet(LinearRegression, CacheMixin):
     Regression and classification learners with sparsity and spatial priors
 
     `SpaceNet` implements Graph-Net and TV-L1 priors /
-    penalties. Thus, the penalty is a sum an L1 term and a spatial term. The
+    penalties. Thus, the penalty is a sum of an L1 term and a spatial term. The
     aim of such a hybrid prior is to obtain weights maps which are structured
     (due to the spatial prior) and sparse (enforced by L1 norm).
 

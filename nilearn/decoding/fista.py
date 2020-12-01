@@ -87,11 +87,14 @@ def mfista(f1_grad, f2_prox, total_energy, lipschitz_constant, w_size,
     lipschitz_constant : float
         Lipschitz constant of gradient of f1_grad.
 
+    check_lipschitz: boolean, optional, default is False.
+        If True, check Lipschitz continuity of gradient of smooth part.
+
     w_size : int
         Size of the solution. f1, f2, f1_grad, f2_prox (fixed l, tol) must
         accept a w such that w.shape = (w_size,).
 
-    tol : float
+    tol : float, default is 1e-4.
         Tolerance on the (primal) cost function.
 
     dgap_tol : float
@@ -101,6 +104,8 @@ def mfista(f1_grad, f2_prox, total_energy, lipschitz_constant, w_size,
         float, and a dict with the key "converged", that says if the method to
         compute f2_prox converged or not.
 
+    dgap_factor: ???? TODO: Add description.
+
     init : dict-like, optional (default None)
         Dictionary of initialization parameters. Possible keys are 'w',
         'stepsize', 'z', 't', 'dgap_factor', etc.
@@ -109,8 +114,11 @@ def mfista(f1_grad, f2_prox, total_energy, lipschitz_constant, w_size,
         Function called on every iteration. If it returns True, then the loop
         breaks.
 
-    max_iter : int
+    max_iter : integer, optional, default is 1000.
         Maximum number of iterations for the solver.
+
+    verbose: integer, optional, default is 2.
+        Indicate the level of verbosity.
 
     Returns
     -------
