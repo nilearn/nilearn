@@ -71,7 +71,6 @@ cv = LeaveOneGroupOut()
 classifiers_data = {}
 
 for classifier_name in sorted(classifiers):
-    classifiers_data[classifier_name] = {}
     print(70 * '_')
 
     # The decoder has as default score the `roc_auc`
@@ -82,7 +81,6 @@ for classifier_name in sorted(classifiers):
 
     classifiers_data[classifier_name] = {}
     classifiers_data[classifier_name]['score'] = decoder.cv_scores_
-    classifiers_data[classifier_name]['map'] = decoder.coef_img_['house']
 
     print("%10s: %.2fs" % (classifier_name, time.time() - t0))
     for category in categories:
@@ -130,6 +128,7 @@ plt.title(
     'Category-specific classification accuracy for different classifiers')
 plt.tight_layout()
 
+###############################################################################
 # We can see that for a fixed penalty the results are similar between the svc
 # and the logistic regression. The main difference relies on the penalty
 # ($\ell_1$ and $\ell_2$). The sparse penalty works better because we are in
@@ -138,18 +137,32 @@ plt.tight_layout()
 ###############################################################################
 # Visualizing the face vs house map
 # ---------------------------------
+#
+# Restrict the decoding to face vs house
 
+condition_mask = np.logical_or(stimuli == 'face', stimuli == 'house')
+stimuli = stimuli[condition_mask]
+assert len(stimuli) == 216
+fmri_niimgs_condition = index_img(func_filename, condition_mask)
+session_labels = labels['chunks'][condition_mask]
+categories = stimuli.unique()
+assert len(categories) == 2
+
+for classifier_name in sorted(classifiers):
+    decoder = Decoder(estimator=classifier_name, mask=mask_filename,
+                      standardize=True, cv=cv)
+    decoder.fit(fmri_niimgs_condition, stimuli, groups=session_labels)
+    classifiers_data[classifier_name] = {}
+    classifiers_data[classifier_name]['score'] = decoder.cv_scores_
+    classifiers_data[classifier_name]['map'] = decoder.coef_img_['face']
+
+###############################################################################
 # Finally, we plot the face vs house map for the different classifiers
 # Use the average EPI as a background
+
 from nilearn.image import mean_img
-mean_epi_img = mean_img(func_filename)
-
-# Restrict the decoding to face vs house
-condition_mask = np.logical_or(stimuli == b'face', stimuli == b'house')
-stimuli = stimuli[condition_mask]
-fmri_niimgs_condition = index_img(func_filename, condition_mask)
-
 from nilearn.plotting import plot_stat_map, show
+mean_epi_img = mean_img(func_filename)
 
 for classifier_name in sorted(classifiers):
     coef_img = classifiers_data[classifier_name]['map']
