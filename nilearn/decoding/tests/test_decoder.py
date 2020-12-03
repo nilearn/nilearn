@@ -199,6 +199,8 @@ def test_decoder_binary_classification():
     # Dummy output are nothing but the attributes of the dummy estimators
     assert model.dummy_output_ is not None
     assert model.cv_scores_ is not None
+    # model attribute n_outputs_ depending on target y ndim
+    assert model.n_outputs_ == 1
 
     # decoder object use other scoring metric for dummy classifier
     model = Decoder(estimator='dummy_classifier', mask=mask)
@@ -209,6 +211,12 @@ def test_decoder_binary_classification():
     model = Decoder(estimator='dummy_classifier', mask=mask, scoring='roc_auc')
     model.fit(X, y)
     assert np.mean(model.cv_scores_[0]) >= 0.5
+
+    # Raises a not implemented error with strategy constant
+    param = dict(strategy='constant')
+    dummy_classifier.set_params(**param)
+    model = Decoder(estimator=dummy_classifier, mask=mask)
+    pytest.raises(NotImplementedError, model.fit, X, y)
 
     # check different screening_percentile value
     for screening_percentile in [100, 20, None]:

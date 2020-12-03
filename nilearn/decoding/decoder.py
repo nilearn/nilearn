@@ -95,8 +95,7 @@ def _check_param_grid(estimator, X, y, param_grid=None):
         or have no effect. See scikit-learn documentation for more information.
 
         For Dummy estimators, parameter grid defaults to empty as these
-        estimators are unreal there exists no interesting parameters to grid
-        search.
+        estimators do not have hyperparameters to grid search.
 
     Returns
     -------
@@ -114,7 +113,10 @@ def _check_param_grid(estimator, X, y, param_grid=None):
             loss = 'squared_hinge'
         elif isinstance(estimator,
                         (DummyClassifier, DummyRegressor)):
-            pass
+            if estimator.strategy in ['constant', 'uniform']:
+                message = ('Dummy classification implemented only for strategies'
+                           ' "most_frequent", "prior", "stratified"')
+                raise NotImplementedError(message)
         else:
             raise ValueError(
                 "Invalid estimator. The supported estimators are: {}".format(
@@ -469,7 +471,7 @@ class _BaseDecoder(LinearRegression, CacheMixin):
         `n_outputs_` : int
             Number of outputs (column-wise)
 
-        `dummy_output_`: ndarray, shape=(n_classes, 2), shape=()
+        `dummy_output_`: ndarray, shape=(n_classes, 2) or shape=(1, 1) for regression
             Contains dummy estimator attributes after class predictions using strategies
             of DummyClassifier (class_prior_) and DummyRegressor (constant_)
             from scikit-learn. This attribute is necessary for estimating class
@@ -578,7 +580,8 @@ class _BaseDecoder(LinearRegression, CacheMixin):
             self.dummy_output_ = np.vstack([np.mean(self.dummy_output_[class_index], axis=0)
                                             for class_index in self.classes_])
             if self.is_classification and (self.n_classes_ == 2):
-                self.dummy_output_ = self.dummy_output_[0, :][np.newaxis, :]
+                if not self.n_outputs_ > 1:
+                    self.dummy_output_ = self.dummy_output_[0, :][np.newaxis, :]
 
     def decision_function(self, X):
         """Predict class labels for samples in X.
@@ -745,26 +748,22 @@ class _BaseDecoder(LinearRegression, CacheMixin):
     def _predict_dummy(self, n_samples):
         """Non-sparse scikit-learn based prediction steps for classification
            and regression"""
-        classes = self.classes_
         dummy_output = self.dummy_output_
-        if self.n_outputs_ == 1:
-            classes = [classes]
-            dummy_output = [dummy_output]
 
         if isinstance(self.estimator, DummyClassifier):
             estimator_params = self.estimator.get_params()
             strategy = estimator_params['strategy']
             if strategy in ['most_frequent', 'prior']:
-                scores = np.tile([classes[k][dummy_output[k].argmax()] for
+                scores = np.tile([dummy_output[k].argmax() for
                                   k in range(self.n_outputs_)], [n_samples, 1])
             elif strategy == 'stratified':
                 rs = check_random_state(0)
                 proba = []
                 for k in range(self.n_outputs_):
-                    out = rs.multinomial(1, dummy_output[k][0], size=n_samples)
+                    out = rs.multinomial(1, dummy_output[k], size=n_samples)
                     out = out.astype(np.float64)
                     proba.append(out)
-                scores = np.vstack([classes[k][proba[k].argmax(axis=1)] for
+                scores = np.vstack([proba[k].argmax(axis=1) for
                                     k in range(self.n_outputs_)]).T
             else:
                 message = ('Implemented only for strategies "most_frequent",'
@@ -773,9 +772,7 @@ class _BaseDecoder(LinearRegression, CacheMixin):
         elif isinstance(self.estimator, DummyRegressor):
                 scores = np.full((n_samples, self.n_outputs_), self.dummy_output_,
                                   dtype=np.array(self.dummy_output_).dtype)
-        if self.n_outputs_ == 1:
-            scores = np.ravel(scores)
-        return scores
+        return scores.ravel() if scores.shape[1] == 1 else scores
 
 
 class Decoder(_BaseDecoder):
