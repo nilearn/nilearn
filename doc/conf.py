@@ -229,6 +229,11 @@ html_show_sourcelink = False
 # base URL from which the finished HTML is served.
 #html_use_opensearch = ''
 
+# variables to pass to HTML templating engine
+build_dev_html = bool(int(os.environ.get('BUILD_DEV_HTML', False)))
+
+html_context = {'build_dev_html': build_dev_html}
+
 # If nonempty, this is the file name suffix for HTML files (e.g. ".xhtml").
 #html_file_suffix = ''
 

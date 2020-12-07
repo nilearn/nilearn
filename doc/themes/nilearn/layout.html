@@ -25,6 +25,12 @@
 <div class=related-wrapper>
     {{relbar()}}
 </div>
+{% if build_dev_html %}
+<div class="alert-danger">
+This is documentation for the <em>unstable development version</em> of Nilearn,
+the current stable version is available <a href="https://nilearn.github.io/stable/index.html">here</a>.
+</div>
+{% endif %}
 {% endblock %}
 
 {% block rootrellink %}

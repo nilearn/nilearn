@@ -65,6 +65,11 @@ div.content {
 }
 
 
+.alert-danger {
+    background-color: #e74c3c;
+    border-color: #e74c3c;
+    color: #ffffff;
+}
 
 div.topic {
     background-color: #eee;
@@ -688,7 +693,7 @@ div.sphinxsidebar ul ul li {
 
 div.sphinxsidebarwrapper {
     width: 227px;
-    padding-top: .5em;
+    padding-top: 1em;
 }
 
 div.sphinxsidebarwrapper ul li p {
