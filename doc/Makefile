@@ -91,6 +91,7 @@ html_dev:	sym_links
 html_dev-strict:	sym_links
 	# Build html documentation using a strict mode: Warnings are
 	# considered as errors.
+	BUILD_DEV_HTML=1
 	make check
 	touch $(BUILDDIR)/html/.nojekyll
 	@echo
