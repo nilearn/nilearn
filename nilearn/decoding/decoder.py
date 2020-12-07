@@ -473,7 +473,7 @@ class _BaseDecoder(LinearRegression, CacheMixin):
 
         `dummy_output_`: ndarray, shape=(n_classes, 2) or shape=(1, 1) for regression
             Contains dummy estimator attributes after class predictions using strategies
-            of DummyClassifier (class_prior_) and DummyRegressor (constant_)
+            of DummyClassifier (class_prior) and DummyRegressor (constant)
             from scikit-learn. This attribute is necessary for estimating class
             predictions after fit. Returns None if non-dummy estimators are
             provided.

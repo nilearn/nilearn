@@ -301,6 +301,25 @@ plotting.view_img(
 )
 
 ###########################################################################
+# What is the chance level accuracy?
+# ----------------------------------
+#
+# Does the model above perform better than chance?
+# To answer this question, we measure a score at random using simple strategies
+# that are implemented in the :class:`nilearn.decoding.Decoder` object. This is
+# useful to inspect the decoding performance by comparing to a score at chance.
+
+###########################################################################
+# Let's define a object with Dummy estimator replacing 'svc' for classification
+# setting. This object initializes estimator with default dummy strategy.
+dummy_decoder = Decoder(estimator='dummy_classifier', mask=mask_filename,
+                        cv=cv)
+dummy_decoder.fit(fmri_niimgs, conditions, groups=session_label)
+
+# Now, we can compare these scores by simply taking a mean over folds
+print(dummy_decoder.cv_scores_)
+
+###########################################################################
 # Further reading
 # ----------------
 #
