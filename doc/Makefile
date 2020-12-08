@@ -91,7 +91,6 @@ html_dev:	sym_links
 html_dev-strict:	sym_links
 	# Build html documentation using a strict mode: Warnings are
 	# considered as errors.
-	BUILD_DEV_HTML=1
 	make check
 	touch $(BUILDDIR)/html/.nojekyll
 	@echo
@@ -187,7 +186,7 @@ pdf: latex
 check:
 	rm -rf _build/doctrees
 	rm -rf $(BUILDDIR)/html/_images
-	$(SPHINXBUILD) -W -T -n -b html $(ALLSPHINXOPTS) $(BUILDDIR)/html
+	BUILD_DEV_HTML=1 $(SPHINXBUILD) -W -T -n -b html $(ALLSPHINXOPTS) $(BUILDDIR)/html
 
 install:
 	rm -rf _build/doctrees _build/nilearn.github.io
