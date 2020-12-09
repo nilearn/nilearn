@@ -15,6 +15,12 @@ Fixes
 
 - Fix testing issues on ARM machine.
 
+Enhancements
+------------
+
+- :class:`nilearn.decoding.Decoder` and :class:`nilearn.decoding.DecoderRegressor`
+  is now implemented with random predictions to estimate a chance level.
+
 .. _v0.7.0:
 
 0.7.0
