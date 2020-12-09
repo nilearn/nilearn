@@ -765,10 +765,6 @@ class _BaseDecoder(LinearRegression, CacheMixin):
                     proba.append(out)
                 scores = np.vstack([proba[k].argmax(axis=1) for
                                     k in range(self.n_outputs_)]).T
-            else:
-                message = ('Implemented only for strategies "most_frequent",'
-                           '"prior", "stratified"')
-                raise NotImplementedError(message)
         elif isinstance(self.estimator, DummyRegressor):
                 scores = np.full((n_samples, self.n_outputs_), self.dummy_output_,
                                   dtype=np.array(self.dummy_output_).dtype)
