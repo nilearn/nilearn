@@ -1,0 +1,102 @@
+name: 'nilearn tests on GitHub Actions'
+
+on:
+  push:
+    branches:
+      - "master"
+  pull_request:
+    branches:
+      - '*'
+
+jobs:
+  check_skip:
+    runs-on: ubuntu-latest
+    outputs:
+      skip: ${{ steps.result_step.outputs.ci-skip }}
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+      - id: result_step
+        uses: mstachniuk/ci-skip@master
+        with:
+          commit-filter: '[skip ci];[ci skip];[skip github]'
+          commit-filter-separator: ';'
+
+  min_requirements:
+    needs: check_skip
+    if: ${{ needs.check_skip.outputs.skip == 'false' }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: ["ubuntu-latest", "macos-latest", "windows-latest"]
+    name: ${{ matrix.os }} with Python 3.5 and minimal requirements
+    defaults:
+      run:
+        shell: bash
+    env:
+      CONDA_ENV: environment-min.yml
+    steps:
+      - uses: actions/checkout@v2
+      - uses: conda-incubator/setup-miniconda@v2
+        with:
+          activate-environment: test-env
+          python-version: 3.5
+          environment-file: ${{ env.CONDA_ENV }}
+          auto-activate-base: false
+          auto-update-conda: true
+        name: 'Setup conda'
+      - run: |
+          conda info
+          conda list
+          printenv | sort
+      - shell: bash -el {0}
+        run: ./tools/github_actions_install.sh
+        name: 'Install toy_pkg'
+      - shell: bash -el {0}
+        run: ./tools/github_actions_test.sh
+        name: 'Run tests'
+      - uses: codecov/codecov-action@v1
+        if: success()
+        name: 'Upload coverage to CodeCov'
+
+  latest:
+    needs: check_skip
+    if: ${{ needs.check_skip.outputs.skip == 'false' }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+        fail-fast: false
+        matrix:
+            os: ["ubuntu-latest", "macos-latest", "windows-latest"]
+            python-version: ["3.5", "3.6", "3.7", "3.8"]
+    name: ${{ matrix.os }} with Python ${{ matrix.python-version }} and latest package versions
+    defaults:
+      run:
+        shell: bash
+    env:
+      CONDA_ENV: environment.yml
+    steps:
+      - uses: actions/checkout@v2
+      - uses: conda-incubator/setup-miniconda@v2
+        with:
+          activate-environment: test-env
+          python-version: ${{ matrix.python-version }}
+          environment-file: ${{ env.CONDA_ENV }}
+          auto-activate-base: false
+          auto-update-conda: true
+        name: 'Setup conda'
+      - run: |
+          conda info
+          conda list
+          printenv | sort
+      - shell: bash -el {0}
+        run: ./tools/github_actions_install.sh
+        name: 'Install toy_pkg'
+      - shell: bash -el {0}
+        run: ./tools/github_actions_test.sh
+        name: 'Run tests'
+      - uses: codecov/codecov-action@v1
+        if: success()
+        name: 'Upload coverage to CodeCov'
+
