@@ -43,6 +43,12 @@ allen = datasets.fetch_atlas_allen_2011()
 # Pauli subcortical atlas
 subcortex = datasets.fetch_atlas_pauli_2017()
 
+# Dictionaries of Functional Modes (“DiFuMo”) atlas
+dim = 64
+res = 2
+difumo = datasets.fetch_atlas_difumo(dimension=dim,
+                                     resolution_mm=res)
+
 # Visualization
 from nilearn import plotting
 
@@ -56,6 +62,7 @@ atlas_types = {'Harvard_Oxford': harvard_oxford.maps,
                'ICBM tissues': (icbm['wm'], icbm['gm'], icbm['csf']),
                'Allen2011': allen.rsn28,
                'Pauli2017 Subcortical Atlas': subcortex.maps,
+               'DiFuMo dimension {0} resolution {1}'.format(dim, res): difumo.maps,
                }
 
 for name, atlas in sorted(atlas_types.items()):

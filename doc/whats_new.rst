@@ -1,6 +1,15 @@
 0.7.X
 =====
 
+NEW
+---
+
+- New atlas fetcher
+  :func:`nilearn.datasets.fetch_atlas_difumo` to download *Dictionaries of Functional Modes*,
+  or “DiFuMo”, that can serve as atlases to extract functional signals with different 
+  dimensionalities (64, 128, 256, 512, and 1024). These modes are optimized to represent well
+  raw BOLD timeseries, over a with range of experimental conditions.
+
 Fixes
 -----
 
