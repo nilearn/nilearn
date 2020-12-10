@@ -41,13 +41,13 @@ jobs:
         with:
           python-version: 3.5
         name: 'Setup python'
-      - shell: bash -el {0}
+      - shell: bash -l {0}
         run: ./tools/github_actions_dependencies.sh
         name: 'Install dependencies'
-      - shell: bash -el {0}
+      - shell: bash -l {0}
         run: ./tools/github_actions_install.sh
         name: 'Install nilearn'
-      - shell: bash -el {0}
+      - shell: bash -l {0}
         run: ./tools/github_actions_test.sh
         name: 'Run tests'
       - uses: codecov/codecov-action@v1
@@ -77,14 +77,16 @@ jobs:
           python-version: ${{ matrix.python-version }}
           environment-file: environment.yml
         name: 'Setup conda'
-      - run: |
-          conda info
-          conda list
-          printenv | sort
-      - shell: bash -el {0}
+      - name: Conda info
+        shell: bash -l {0}
+        run: conda info
+      - name: Conda list
+        shell: pwsh
+        run: conda list
+      - shell: bash -l {0}
         run: ./tools/github_actions_install.sh
         name: 'Install nilearn'
-      - shell: bash -el {0}
+      - shell: bash -l {0}
         run: ./tools/github_actions_test.sh
         name: 'Run tests'
       - uses: codecov/codecov-action@v1
