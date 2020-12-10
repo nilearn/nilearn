@@ -53,7 +53,7 @@ jobs:
           printenv | sort
       - shell: bash -el {0}
         run: ./tools/github_actions_install.sh
-        name: 'Install toy_pkg'
+        name: 'Install nilearn'
       - shell: bash -el {0}
         run: ./tools/github_actions_test.sh
         name: 'Run tests'
@@ -74,17 +74,15 @@ jobs:
     defaults:
       run:
         shell: bash
-    env:
-      CONDA_ENV: environment.yml
     steps:
       - uses: actions/checkout@v2
       - uses: conda-incubator/setup-miniconda@v2
         with:
           activate-environment: test-env
-          python-version: ${{ matrix.python-version }}
-          environment-file: ${{ env.CONDA_ENV }}
           auto-activate-base: false
           auto-update-conda: true
+          python-version: ${{ matrix.python-version }}
+          environment-file: environment.yml
         name: 'Setup conda'
       - run: |
           conda info
@@ -92,7 +90,7 @@ jobs:
           printenv | sort
       - shell: bash -el {0}
         run: ./tools/github_actions_install.sh
-        name: 'Install toy_pkg'
+        name: 'Install nilearn'
       - shell: bash -el {0}
         run: ./tools/github_actions_test.sh
         name: 'Run tests'
