@@ -433,7 +433,6 @@ def test_clean_confounds():
                                      detrend=True, standardize=False)
     coeffs = np.polyfit(np.arange(cleaned_signals.shape[0]),
                         cleaned_signals, 1)
-    print("max coeff = {0}".format(np.max(abs(coeffs))))
     assert (abs(coeffs) < 200. * eps).all()  # trend removed
 
     # Test no-op

@@ -26,12 +26,8 @@ jobs:
   min_requirements:
     needs: check_skip
     if: ${{ needs.check_skip.outputs.skip == 'false' }}
-    runs-on: ${{ matrix.os }}
-    strategy:
-      fail-fast: false
-      matrix:
-        os: ["ubuntu-latest", "macos-latest", "windows-latest"]
-    name: ${{ matrix.os }} with Python 3.5 and minimal requirements
+    runs-on: "ubuntu-latest"
+    name: Python 3.5 and minimal requirements
     defaults:
       run:
         shell: bash
@@ -62,7 +58,7 @@ jobs:
         fail-fast: false
         matrix:
             os: ["ubuntu-latest", "macos-latest", "windows-latest"]
-            python-version: ["3.5", "3.6", "3.7", "3.8"]
+            python-version: ["3.6", "3.7", "3.8"]
     name: ${{ matrix.os }} with Python ${{ matrix.python-version }} and latest package versions
     defaults:
       run:
