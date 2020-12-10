@@ -433,7 +433,8 @@ def test_clean_confounds():
                                      detrend=True, standardize=False)
     coeffs = np.polyfit(np.arange(cleaned_signals.shape[0]),
                         cleaned_signals, 1)
-    assert (abs(coeffs) < 150. * eps).all()  # trend removed
+    print("max coeff = {0}".format(np.max(abs(coeffs))))
+    assert (abs(coeffs) < 200. * eps).all()  # trend removed
 
     # Test no-op
     input_signals = 10 * signals
@@ -469,7 +470,7 @@ def test_clean_confounds():
                    confounds=confounds_df.values)
     nisignal.clean(signals, detrend=False, standardize=False,
                    confounds=confounds_df)
-    
+
     # Use a list containing two filenames, a 2D array and a 1D array
     nisignal.clean(signals, detrend=False, standardize=False,
                    confounds=[filename1, confounds[:, 0:2],
