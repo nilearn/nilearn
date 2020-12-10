@@ -35,22 +35,15 @@ jobs:
     defaults:
       run:
         shell: bash
-    env:
-      CONDA_ENV: environment-min.yml
     steps:
       - uses: actions/checkout@v2
-      - uses: conda-incubator/setup-miniconda@v2
+      - uses: actions/setup-python@v2
         with:
-          activate-environment: test-env
           python-version: 3.5
-          environment-file: ${{ env.CONDA_ENV }}
-          auto-activate-base: false
-          auto-update-conda: true
-        name: 'Setup conda'
-      - run: |
-          conda info
-          conda list
-          printenv | sort
+        name: 'Setup python'
+      - shell: bash -el {0}
+        run: ./tools/github_actions_dependencies.sh
+        name: 'Install dependencies'
       - shell: bash -el {0}
         run: ./tools/github_actions_install.sh
         name: 'Install nilearn'
