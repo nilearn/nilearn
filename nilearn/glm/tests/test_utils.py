@@ -11,7 +11,8 @@ from nibabel.tmpdirs import InTemporaryDirectory
 from numpy.testing import assert_almost_equal, assert_array_almost_equal
 from scipy.stats import norm
 
-from nilearn._utils.data_gen import create_fake_bids_dataset, generate_fake_fmri
+from nilearn._utils.data_gen import (create_fake_bids_dataset,
+                                     generate_fake_fmri)
 from nilearn._utils.glm import (_check_and_load_tables,
                                 _check_list_length_match, _check_run_tables,
                                 full_rank, get_bids_files,
@@ -102,7 +103,8 @@ def test_z_score():
 
 
 def test_z_score_opposite_contrast():
-    fmri, mask = generate_fake_fmri(shape=(50, 20, 50), length=96)
+    fmri, mask = generate_fake_fmri(shape=(50, 20, 50), length=96,
+                                    rand_gen=np.random.RandomState(42))
 
     nifti_masker = NiftiMasker(mask_img=mask)
     data = nifti_masker.fit_transform(fmri)
