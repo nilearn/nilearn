@@ -23,7 +23,7 @@ def _get_data(img):
     return data
 
 
-def _safe_get_data(img, ensure_finite=False):
+def _safe_get_data(img, ensure_finite=False, copy_data=False):
     """ Get the data in the image without having a side effect on the
         Nifti1Image object
 
@@ -36,15 +36,17 @@ def _safe_get_data(img, ensure_finite=False):
         If True, non-finite values such as (NaNs and infs) found in the
         image will be replaced by zeros.
 
+    copy_data: bool, default is False
+        If true, the returned data is a copy of the img data.
+
     Returns
     -------
     data: numpy array
         nilearn.image.get_data return from Nifti image.
     """
-    if hasattr(img, '_data_cache') and img._data_cache is None:
-        # By loading directly dataobj, we prevent caching if the data is
-        # memmaped. Preventing this side-effect can save memory in some cases.
+    if copy_data:
         img = copy.deepcopy(img)
+
     # typically the line below can double memory usage
     # that's why we invoke a forced call to the garbage collector
     gc.collect()
@@ -154,7 +156,7 @@ def copy_img(img):
 
     if not isinstance(img, nibabel.spatialimages.SpatialImage):
         raise ValueError("Input value is not an image")
-    return new_img_like(img, _safe_get_data(img).copy(), img.affine.copy(),
+    return new_img_like(img, _safe_get_data(img, copy_data=True), img.affine.copy(),
                         copy_header=True)
 
 
