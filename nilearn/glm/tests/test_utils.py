@@ -59,6 +59,9 @@ def test_z_score():
     zval[np.atleast_1d(zval_sf >= 0)] = zval_sf[zval_sf >= 0]
     # Test 'z_score' function in 'nilearn/glm/contrasts.py'
     assert_array_almost_equal(z_score(pval, one_minus_pvalue=cdfval), zval)
+    # Test 'z_score' function in 'nilearn/glm/contrasts.py',
+    # when one_minus_pvalue is None
+    assert_array_almost_equal(norm.sf(z_score(pval)), pval)
     # ################# Check z-scores computed from F-values #################
     # Randomly draw samples from the F distribution
     fval = np.random.f(1e10, 42, size=10)
@@ -82,6 +85,9 @@ def test_z_score():
     z_val[np.atleast_1d(z_val_sf >= 0)] = z_val_sf[z_val_sf >= 0]
     # Test 'z_score' function in 'nilearn/glm/contrasts.py'
     assert_array_almost_equal(z_score(p_val, one_minus_pvalue=cdf_val), z_val)
+    # Test 'z_score' function in 'nilearn/glm/contrasts.py',
+    # when one_minus_pvalue is None
+    assert_array_almost_equal(norm.sf(z_score(p_val)), p_val)
     # ##################### Check the numerical precision #####################
     for t in [33.75, -8.3]:
         p = sps.t.sf(t, 1e10)
