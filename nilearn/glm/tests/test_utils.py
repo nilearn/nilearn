@@ -2,7 +2,6 @@
 import os
 
 import numpy as np
-import numpy.testing as npt
 import pandas as pd
 import pytest
 import scipy.stats as sps
@@ -124,14 +123,14 @@ def test_z_score_opposite_contrast():
 
         print(z_map_seed1_vs_seed2.get_data().min())
         print(-z_map_seed2_vs_seed1.get_data().max())
-        npt.assert_almost_equal(z_map_seed1_vs_seed2.get_data().min(),
-                                -z_map_seed2_vs_seed1.get_data().max(),
-                                decimal=10)
+        assert_almost_equal(z_map_seed1_vs_seed2.get_data().min(),
+                            -z_map_seed2_vs_seed1.get_data().max(),
+                            decimal=10)
         print(z_map_seed1_vs_seed2.get_data().max())
         print(-z_map_seed2_vs_seed1.get_data().min())
-        npt.assert_almost_equal(z_map_seed1_vs_seed2.get_data().max(),
-                                -z_map_seed2_vs_seed1.get_data().min(),
-                                decimal=10)
+        assert_almost_equal(z_map_seed1_vs_seed2.get_data().max(),
+                            -z_map_seed2_vs_seed1.get_data().min(),
+                            decimal=10)
 
 
 def test_mahalanobis():

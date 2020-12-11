@@ -144,37 +144,38 @@ def _check_run_tables(run_imgs, tables_, tables_name):
 
 
 def z_score(pvalue, one_minus_pvalue=None):
-    """ Return the z-score(s) corresponding to
-    certain p-value(s) and cdfvalues(s) provided as inputs.
+    """ Return the z-score(s) corresponding to certain p-value(s) and,
+    optionally, one_minus_pvalue(s) provided as inputs.
 
     Parameters
     ----------
     pvalue: float or 1-d array shape=(n_pvalues,) computed using
             the survival function
 
-    cdfvalue: float or 1-d array shape=(n_cdfvalues,), optional;
-              it shall take the value returned by
-              /nilearn/glm/contrasts.py::one_minus_pvalue
-              which computes the p_value using the
-              cumulative distribution function, with n_cdfvalues = n_pvalues
+    one_minus_pvalue: float or
+                      1-d array shape=(n_one_minus_pvalues,), optional;
+                      it shall take the value returned by
+                      /nilearn/glm/contrasts.py::one_minus_pvalue
+                      which computes the p_value using the
+                      cumulative distribution function,
+                      with n_one_minus_pvalues = n_pvalues
 
     Returns
     -------
     z_scores: 1-d array shape=(n_z_scores,), with n_z_scores = n_pvalues
     """
-    pvalue = np.array(np.minimum(np.maximum(pvalue, 1.e-300), 1. - 1.e-16))
+    pvalue = np.clip(np.clip(pvalue, 1.e-300, None), None, 1. - 1.e-16)
 
     if one_minus_pvalue is not None:
-        one_minus_pvalue = np.array(np.minimum(np.maximum(one_minus_pvalue,
-                                                          1.e-300),
-                                               1. - 1.e-16))
+        one_minus_pvalue = np.clip(np.clip(one_minus_pvalue, 1.e-300, None),
+                                   None, 1. - 1.e-16)
         z_scores_sf = norm.isf(pvalue)
         z_scores_cdf = norm.ppf(one_minus_pvalue)
-        z_scores = np.zeros(pvalue.size)
-        z_scores[np.atleast_1d(z_scores_sf < 0)] = \
-            z_scores_cdf[z_scores_sf < 0]
-        z_scores[np.atleast_1d(z_scores_sf >= 0)] = \
-            z_scores_sf[z_scores_sf >= 0]
+        z_scores = np.empty(pvalue.size)
+        z_scores[np.atleast_1d(z_scores_sf < 0)] = z_scores_cdf[
+            z_scores_sf < 0]
+        z_scores[np.atleast_1d(z_scores_sf >= 0)] = z_scores_sf[
+            z_scores_sf >= 0]
     else:
         z_scores = norm.isf(pvalue)
     return z_scores

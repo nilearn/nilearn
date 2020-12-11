@@ -238,9 +238,9 @@ class Contrast(object):
 
 
     def p_value(self, baseline=0.0):
-        """Return a parametric estimate using the survival function of the
-        p-value associated with the null hypothesis:
-        (H0) 'contrast equals baseline'
+        """Return a parametric estimate of the p-value associated with
+        the null hypothesis (H0) where 'contrast equals baseline',
+        using the survival function
 
         Parameters
         ----------
@@ -266,9 +266,10 @@ class Contrast(object):
         return p_values
 
     def one_minus_pvalue(self, baseline=0.0):
-        """Return a parametric estimate using
-        the cumulative distribution function of the p-value associated
-        with the null hypothesis: (H0) 'contrast equals baseline'
+        """Return a parametric estimate of the 1 - p-value associated with
+        the null hypothesis (H0) where 'contrast equals baseline',
+        using the cumulative distribution function,
+        to ensure numerical stability
 
         Parameters
         ----------
