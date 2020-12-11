@@ -2,7 +2,7 @@
 name: Bug report
 about: Something not working as described? Missing/incorrect documentation? This is the place.
 title: ''
-labels: 'bug'
+labels: 'Bug'
 assignees: ''
 
 ---

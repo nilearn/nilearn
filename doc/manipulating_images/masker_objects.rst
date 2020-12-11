@@ -196,8 +196,8 @@ preparation::
          mask_args=None, mask_img=None, mask_strategy='background',
          memory=Memory(...), memory_level=1, reports=True,
          sample_mask=None, sessions=None, smoothing_fwhm=None,
-         standardize=False, t_r=None, target_affine=None, target_shape=None,
-         verbose=0)
+         standardize=False, standardize_confounds=True, t_r=None, 
+         target_affine=None, target_shape=None, verbose=0)
 
 .. note::
 
