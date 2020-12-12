@@ -110,6 +110,7 @@ NEW
 - The decomposition estimators will now accept argument `per_component`
   with `score` method to explain the variance for each component.
 
+
 Fixes
 -----
 
@@ -119,6 +120,9 @@ Fixes
   some corrections regarding its description were made in the docstring.
 - the default background (MNI template) in plotting functions now has the
   correct orientation; before left and right were inverted.
+- first level modelling can deal with regressors
+  having multiple events which share onsets or offsets.
+  Previously, such cases could lead to an erroneous baseline shift.
 - :func:`nilearn.mass_univariate.permuted_ols` no longer returns transposed
   t-statistic arrays when no permutations are performed.
 - Fix decomposition estimators returning explained variance score as 0.
