@@ -39,7 +39,7 @@ def test_full_rank():
 def test_z_score():
     # ################# Check z-scores computed from t-values #################
     # Randomly draw samples from the standard Student’s t distribution
-    tval = np.random.standard_t(1e10, size=10)
+    tval = np.random.standard_t(10, size=10)
     # Estimate the p-values using the Survival Function (SF)
     pval = sps.t.sf(tval, 1e10)
     # Estimate the p-values using the Cumulative Distribution Function (CDF)
@@ -65,7 +65,7 @@ def test_z_score():
     assert_array_almost_equal(norm.sf(z_score(pval)), pval)
     # ################# Check z-scores computed from F-values #################
     # Randomly draw samples from the F distribution
-    fval = np.random.f(1e10, 42, size=10)
+    fval = np.random.f(1, 48, size=10)
     # Estimate the p-values using the Survival Function (SF)
     p_val = sps.f.sf(fval, 42, 1e10)
     # Estimate the p-values using the Cumulative Distribution Function (CDF)
@@ -128,14 +128,9 @@ def test_z_score_opposite_contrast():
             contrasts['seed1 - seed2'], output_type='z_score')
         z_map_seed2_vs_seed1 = fmri_glm.compute_contrast(
             contrasts['seed2 - seed1'], output_type='z_score')
-
-        print(z_map_seed1_vs_seed2.get_data().min())
-        print(-z_map_seed2_vs_seed1.get_data().max())
         assert_almost_equal(z_map_seed1_vs_seed2.get_data().min(),
                             -z_map_seed2_vs_seed1.get_data().max(),
                             decimal=10)
-        print(z_map_seed1_vs_seed2.get_data().max())
-        print(-z_map_seed2_vs_seed1.get_data().min())
         assert_almost_equal(z_map_seed1_vs_seed2.get_data().max(),
                             -z_map_seed2_vs_seed1.get_data().min(),
                             decimal=10)
