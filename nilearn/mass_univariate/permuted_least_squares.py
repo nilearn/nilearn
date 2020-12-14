@@ -5,11 +5,12 @@ Massively Univariate Linear Model estimated with OLS and permutation test.
 #         Virgile Fritsch, <virgile.fritsch@inria.fr>, jan. 2014
 import warnings
 
+import sys
+import time
 import joblib
 import numpy as np
 from scipy import linalg
 from sklearn.utils import check_random_state
-
 
 def normalize_matrix_on_axis(m, axis=0):
     """ Normalize a 2D matrix on an axis.
@@ -138,10 +139,10 @@ def _t_score_with_covars_and_normalized_design(tested_vars, target_vars,
     return beta_targetvars_testedvars * np.sqrt((dof - 1.) / rss)
 
 
-def _permuted_ols_on_chunk(scores_original_data, tested_vars, target_vars,
-                           confounding_vars=None, n_perm_chunk=10000,
+def _permuted_ols_on_chunk(scores_original_data, tested_vars, target_vars, thread_id,
+                           confounding_vars=None, n_perm=10000, n_perm_chunk=10000,
                            intercept_test=True, two_sided_test=True,
-                           random_state=None):
+                           random_state=None, verbose=0):
     """Massively univariate group analysis with permuted OLS on a data chunk.
 
     To be used in a parallel computing context.
@@ -157,8 +158,15 @@ def _permuted_ols_on_chunk(scores_original_data, tested_vars, target_vars,
     target_vars : array-like, shape=(n_samples, n_targets)
       fMRI data. F-ordered for efficient computations.
 
+    thread_id : int
+        process id, used for display.
+
     confounding_vars : array-like, shape=(n_samples, n_covars)
       Clinical data (covariates).
+
+    n_perm : int,
+      Tomtal number of permutations to perform, only used for
+      display in this function.
 
     n_perm_chunk : int,
       Number of permutations to be performed.
@@ -176,6 +184,9 @@ def _permuted_ols_on_chunk(scores_original_data, tested_vars, target_vars,
     random_state : int or None,
       Seed for random number generator, to have the same permutations
       in each computing units.
+
+    verbose: int, optional, default is 0.
+      Defines the verbosity level.
 
     Returns
     -------
@@ -195,6 +206,7 @@ def _permuted_ols_on_chunk(scores_original_data, tested_vars, target_vars,
     n_descriptors = target_vars.shape[1]
 
     # run the permutations
+    t0 = time.time()
     h0_fmax_part = np.empty((n_perm_chunk, n_regressors))
     scores_as_ranks_part = np.zeros((n_regressors, n_descriptors))
     for i in range(n_perm_chunk):
@@ -228,6 +240,23 @@ def _permuted_ols_on_chunk(scores_original_data, tested_vars, target_vars,
         #  permutation computation)
         scores_as_ranks_part += (h0_fmax_part[i].reshape((-1, 1))
                                  < scores_original_data.T)
+
+        if verbose > 0:
+            step = 11 - min(verbose, 10)
+            if i % step == 0:
+                # If there is only one job, progress information is fixed
+                if n_perm == n_perm_chunk:
+                    crlf = "\r"
+                else:
+                    crlf = "\n"
+                percent = float(i) / n_perm_chunk
+                percent = round(percent * 100, 2)
+                dt = time.time() - t0
+                remaining = (100. - percent) / max(0.01, percent) * dt
+                sys.stderr.write(
+                    "Job #%d, processed %d/%d permutations "
+                    "(%0.2f%%, %i seconds remaining)%s"
+                    % (thread_id, i, n_perm_chunk, percent, remaining, crlf))
 
     return scores_as_ranks_part, h0_fmax_part.T
 
@@ -446,16 +475,18 @@ def permuted_ols(tested_vars, target_vars, confounding_vars=None,
             scores_original_data = (scores_original_data
                                     * sign_scores_original_data)
         return np.asarray([]), scores_original_data.T, np.asarray([])
+
     # actual permutations, seeded from a random integer between 0 and maximum
     # value represented by np.int32 (to have a large entropy).
     ret = joblib.Parallel(n_jobs=n_jobs, verbose=verbose)(
         joblib.delayed(_permuted_ols_on_chunk)(
             scores_original_data, testedvars_resid_covars,
-            targetvars_resid_covars.T, covars_orthonormalized,
-            n_perm_chunk=n_perm_chunk, intercept_test=intercept_test,
-            two_sided_test=two_sided_test,
-            random_state=rng.randint(1, np.iinfo(np.int32).max - 1))
-        for n_perm_chunk in n_perm_chunks)
+            targetvars_resid_covars.T, thread_id + 1, covars_orthonormalized,
+            n_perm=n_perm, n_perm_chunk=n_perm_chunk,
+            intercept_test=intercept_test, two_sided_test=two_sided_test,
+            random_state=rng.randint(1, np.iinfo(np.int32).max - 1),
+            verbose=verbose)
+        for thread_id,n_perm_chunk in enumerate(n_perm_chunks))
     # reduce results
     scores_as_ranks_parts, h0_fmax_parts = zip(*ret)
     h0_fmax = np.hstack((h0_fmax_parts))
