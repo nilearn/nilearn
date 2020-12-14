@@ -54,7 +54,8 @@ def _threshold_maps_ratio(maps_img, threshold):
     else:
         ratio = threshold
 
-    maps_data = _safe_get_data(maps, ensure_finite=True).copy()
+    # Get a copy of the data
+    maps_data = _safe_get_data(maps, ensure_finite=True, copy_data=True)
 
     abs_maps = np.abs(maps_data)
     # thresholding
@@ -182,7 +183,7 @@ def connected_regions(maps_img, min_region_size=1350,
     all_regions_imgs = []
     index_of_each_map = []
     maps_img = check_niimg(maps_img, atleast_4d=True)
-    maps = _safe_get_data(maps_img).copy()
+    maps = _safe_get_data(maps_img, copy_data=True)
     affine = maps_img.affine
     min_region_size = min_region_size / np.abs(np.linalg.det(affine[:3, :3]))
 
