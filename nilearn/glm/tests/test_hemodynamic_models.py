@@ -172,6 +172,30 @@ def test_sample_condition_5():
     assert reg[61] == 5.
 
 
+def test_sample_condition_6():
+    """ Test the experimental condition sampling -- overalapping onsets, different durations
+    """
+    condition = ([0, 0, 10], [1, 2, 1], [1., 1., 1.])
+    frame_times = np.linspace(0, 49, 50)
+    reg, rf = _sample_condition(condition, frame_times, oversampling=1)
+    assert reg.sum() == 4
+    assert reg[24] == 2.
+    assert reg[34] == 1.
+    assert reg[61] == 0.
+
+
+def test_sample_condition_7():
+    """ Test the experimental condition sampling -- different onsets, overlapping offsets
+    """
+    condition = ([0, 10, 20], [11, 1, 1], [1., 1., 1.])
+    frame_times = np.linspace(0, 49, 50)
+    reg, rf = _sample_condition(condition, frame_times, oversampling=1)
+    assert reg.sum() == 13
+    assert reg[24] == 1.
+    assert reg[34] == 2.
+    assert reg[61] == 0.
+
+
 def test_names():
     """ Test the regressor naming function
     """
