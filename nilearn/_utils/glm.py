@@ -173,7 +173,7 @@ def z_score(pvalue, one_minus_pvalue=None):
         z_scores_cdf = norm.ppf(one_minus_pvalue)
         z_scores = np.empty(pvalue.size)
         use_cdf = z_scores_sf < 0
-        use_sf = z_scores_sf >= 0
+        use_sf = np.logical_not(use_cdf)
         z_scores[np.atleast_1d(use_cdf)] = z_scores_cdf[use_cdf]
         z_scores[np.atleast_1d(use_sf)] = z_scores_sf[use_sf]
     else:
