@@ -39,7 +39,7 @@ def test_full_rank():
 def test_z_score():
     # ################# Check z-scores computed from t-values #################
     # Randomly draw samples from the standard Student’s t distribution
-    tval = np.random.standard_t(10, size=10)
+    tval = np.random.RandomState(42).standard_t(10, size=10)
     # Estimate the p-values using the Survival Function (SF)
     pval = sps.t.sf(tval, 1e10)
     # Estimate the p-values using the Cumulative Distribution Function (CDF)
@@ -65,7 +65,7 @@ def test_z_score():
     assert_array_almost_equal(norm.sf(z_score(pval)), pval)
     # ################# Check z-scores computed from F-values #################
     # Randomly draw samples from the F distribution
-    fval = np.random.f(1, 48, size=10)
+    fval = np.random.RandomState(42).f(1, 48, size=10)
     # Estimate the p-values using the Survival Function (SF)
     p_val = sps.f.sf(fval, 42, 1e10)
     # Estimate the p-values using the Cumulative Distribution Function (CDF)
