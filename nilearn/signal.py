@@ -17,8 +17,6 @@ from sklearn.utils import gen_even_slices, as_float_array
 
 from ._utils.numpy_conversions import csv_to_array, as_ndarray
 
-NP_VERSION = distutils.version.LooseVersion(np.version.short_version).version
-
 
 def _standardize(signals, detrend=False, standardize='zscore'):
     """ Center and standardize a given signal (time is along first axis)
@@ -545,10 +543,7 @@ def clean(signals, sessions=None, detrend=True, standardize='zscore',
                 confound = csv_to_array(filename)
                 if np.isnan(confound.flat[0]):
                     # There may be a header
-                    if NP_VERSION >= [1, 4, 0]:
-                        confound = csv_to_array(filename, skip_header=1)
-                    else:
-                        confound = csv_to_array(filename, skiprows=1)
+                    confound = csv_to_array(filename, skip_header=1)
                 if confound.shape[0] != signals.shape[0]:
                     raise ValueError("Confound signal has an incorrect length")
 
