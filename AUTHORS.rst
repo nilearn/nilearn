@@ -33,6 +33,21 @@ The nilearn core developers are:
 * Thomas Bazeille
 * Taylor Salo
 
+Other contributors
+..................
+
+Some other past or present contributors are:
+
+* Abraham, A.
+* Bzdok, D.
+* Cipollini., B.
+* Eickenberg, M.
+* Esteve, L.
+* Gervais, P.
+* Gorgolewski, C.F.
+* Michel, V.
+* Pedregosa, F.
+
 Funding
 .......
 
