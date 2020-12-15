@@ -202,11 +202,14 @@ install:
 	make html_dev
 	# Build stable doc
 	make html_stable
-	cd _build/ && \
-	cp -r html/* nilearn.github.io/dev && \
-	cp -r html_stable/* nilearn.github.io/stable && \
-	git add nilearn.github.io/dev/* && \
-	git add nilearn.github.io/stable/* && \
-	git add nilearn.github.io/.nojekyll && \
-	git commit -a -m 'Make install' && \
+	cd _build/nilearn.github.io/ && \
+    mkdir dev/ && \
+	cp -r ../html/* dev/ && \
+	mkdir stable/ && \
+	cp -r ../html_stable/* stable/ && \
+	git add dev/* && \
+	git add stable/* && \
+	git add .nojekyll && \
+	git commit -a -m "Make install"
 	git push
+
