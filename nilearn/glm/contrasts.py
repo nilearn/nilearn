@@ -315,7 +315,6 @@ class Contrast(object):
                                 one_minus_pvalue=self.one_minus_pvalue_)
         return self.z_score_
 
-
     def __add__(self, other):
         """Addition of selfwith others, Yields an new Contrast instance
         This should be used only on indepndent contrasts"""
