@@ -7,7 +7,6 @@ features
 # Authors: Alexandre Abraham, Gael Varoquaux, Philippe Gervais
 # License: simplified BSD
 
-import distutils.version
 import warnings
 
 import numpy as np
