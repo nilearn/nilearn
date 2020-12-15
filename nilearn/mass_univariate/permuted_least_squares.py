@@ -165,7 +165,7 @@ def _permuted_ols_on_chunk(scores_original_data, tested_vars, target_vars, threa
       Clinical data (covariates).
 
     n_perm : int,
-      Tomtal number of permutations to perform, only used for
+      Total number of permutations to perform, only used for
       display in this function.
 
     n_perm_chunk : int,
@@ -486,7 +486,7 @@ def permuted_ols(tested_vars, target_vars, confounding_vars=None,
             intercept_test=intercept_test, two_sided_test=two_sided_test,
             random_state=rng.randint(1, np.iinfo(np.int32).max - 1),
             verbose=verbose)
-        for thread_id,n_perm_chunk in enumerate(n_perm_chunks))
+        for thread_id, n_perm_chunk in enumerate(n_perm_chunks))
     # reduce results
     scores_as_ranks_parts, h0_fmax_parts = zip(*ret)
     h0_fmax = np.hstack((h0_fmax_parts))
