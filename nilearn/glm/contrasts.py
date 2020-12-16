@@ -286,11 +286,10 @@ class Contrast(object):
         if self.contrast_type == 't':
             one_minus_pvalues = sps.t.cdf(self.stat_,
                                           np.minimum(self.dof, self.dofmax))
-        elif self.contrast_type == 'F':
+        else:
+            assert self.contrast_type == 'F'
             one_minus_pvalues = sps.f.cdf(self.stat_, self.dim,
                                           np.minimum(self.dof, self.dofmax))
-        else:
-            raise ValueError('Unknown statistic type')
         self.one_minus_pvalue_ = one_minus_pvalues
         return one_minus_pvalues
 
