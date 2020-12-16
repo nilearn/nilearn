@@ -1,6 +1,7 @@
+import pytest
 import numpy as np
 
-from numpy.testing import assert_almost_equal, assert_raises
+from numpy.testing import assert_almost_equal
 from sklearn.datasets import make_regression
 from sklearn.linear_model import LinearRegression
 
@@ -174,5 +175,5 @@ def test_one_minus_pvalue():
     assert np.allclose(contrast_1.one_minus_pvalue(), 0.84, 1)
     assert np.allclose(contrast_1.stat_, 1., 1)
     contrast_2 = Contrast(effect, variance, contrast_type="bad")
-    with assert_raises(ValueError):
+    with pytest.raises(ValueError):
         contrast_2.one_minus_pvalue()
