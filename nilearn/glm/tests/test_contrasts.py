@@ -170,11 +170,9 @@ def test_low_level_fixed_effects():
 def test_one_minus_pvalue():
     effect = np.ones((1, 3))
     variance = effect[0]
-    # fails because stat() has not been called
     contrast_1 = Contrast(effect, variance, contrast_type="t")
     assert np.allclose(contrast_1.one_minus_pvalue(), 0.84, 1)
     assert np.allclose(contrast_1.stat_, 1., 1)
-    # fails with cryptic error message because bad stat type not handled
     contrast_2 = Contrast(effect, variance, contrast_type="bad")
     with assert_raises(ValueError):
         contrast_2.one_minus_pvalue()
