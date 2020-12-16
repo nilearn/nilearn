@@ -280,6 +280,8 @@ class Contrast(object):
         one_minus_pvalues : 1-d array, shape=(n_voxels,)
             one_minus_pvalues, one per voxel
         """
+        if self.stat_ is None or not self.baseline == baseline:
+            self.stat_ = self.stat(baseline)
         # Valid conjunction as in Nichols et al, Neuroimage 25, 2005.
         if self.contrast_type == 't':
             one_minus_pvalues = sps.t.cdf(self.stat_,
@@ -287,6 +289,8 @@ class Contrast(object):
         elif self.contrast_type == 'F':
             one_minus_pvalues = sps.f.cdf(self.stat_, self.dim,
                                           np.minimum(self.dof, self.dofmax))
+        else:
+            raise ValueError('Unknown statistic type')
         self.one_minus_pvalue_ = one_minus_pvalues
         return one_minus_pvalues
 
