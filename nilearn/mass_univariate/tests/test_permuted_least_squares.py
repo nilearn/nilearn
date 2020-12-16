@@ -630,7 +630,7 @@ def test_sided_test(random_state=0):
     # two-sided
     neg_log_pvals_twosided, _, _ = permuted_ols(
         tested_var, target_var, model_intercept=False,
-        two_sided_test=True, n_perm=100, random_state=random_state)
+        two_sided_test=True, n_perm=100, random_state=random_state, verbose=1)
     assert neg_log_pvals_twosided.shape == (n_regressors, n_descriptors)
 
     positive_effect_location = neg_log_pvals_onesided > 1

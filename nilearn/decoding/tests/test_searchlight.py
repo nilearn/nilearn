@@ -35,7 +35,7 @@ def test_searchlight():
     # Small radius : only one pixel is selected
     sl = searchlight.SearchLight(mask_img, process_mask_img=mask_img,
                                  radius=0.5, n_jobs=n_jobs,
-                                 scoring='accuracy', cv=cv)
+                                 scoring='accuracy', cv=cv, verbose=1)
     sl.fit(data_img, cond)
     assert np.where(sl.scores_ == 1)[0].size == 1
     assert sl.scores_[2, 2, 2] == 1.
