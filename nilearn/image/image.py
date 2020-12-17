@@ -467,7 +467,7 @@ def _pad_array(array, pad_sizes):
 def _compute_mean(imgs, target_affine=None,
                   target_shape=None, smooth=False):
     from . import resampling
-    input_repr = _repr_niimgs(imgs)
+    input_repr = _repr_niimgs(imgs, shorten=True)
 
     imgs = check_niimg(imgs)
     mean_data = _safe_get_data(imgs)
