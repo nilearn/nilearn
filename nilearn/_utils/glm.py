@@ -164,7 +164,7 @@ def z_score(pvalue, one_minus_pvalue=None):
     -------
     z_scores: 1-d array shape=(n_z_scores,), with n_z_scores = n_pvalues
     """
-    pvalue = np.clip(np.clip(pvalue, 1.e-300, None), None, 1. - 1.e-16)
+    pvalue = np.clip(pvalue, 1.e-300, 1. - 1.e-16)
     z_scores_sf = norm.isf(pvalue)
 
     if one_minus_pvalue is not None:
