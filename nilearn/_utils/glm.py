@@ -168,8 +168,7 @@ def z_score(pvalue, one_minus_pvalue=None):
     z_scores_sf = norm.isf(pvalue)
 
     if one_minus_pvalue is not None:
-        one_minus_pvalue = np.clip(np.clip(one_minus_pvalue, 1.e-300, None),
-                                   None, 1. - 1.e-16)
+        one_minus_pvalue = np.clip(one_minus_pvalue, 1.e-300, 1. - 1.e-16)
         z_scores_cdf = norm.ppf(one_minus_pvalue)
         z_scores = np.empty(pvalue.size)
         use_cdf = z_scores_sf < 0
