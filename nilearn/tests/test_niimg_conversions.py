@@ -389,23 +389,88 @@ def test_iter_check_niimgs_memory():
 
 
 def test_repr_niimgs():
-    # Test with file path
+    # Tests with file path
     assert _utils._repr_niimgs("test") == "test"
+    assert _utils._repr_niimgs("test", shorten=False) == "test"
+    # Shortening long names by default
+    assert (_utils._repr_niimgs('/this/is/a/very/long/name/for/a/nifti/file') ==
+            '/this/is/a/very/lo...')
+    # Explicit shortening of long names
+    assert (_utils._repr_niimgs('/this/is/a/very/long/name/for/a/nifti/file',
+                                shorten=True) ==
+            '/this/is/a/very/lo...')
+    # Force long display of long names
+    assert (_utils._repr_niimgs('/this/is/a/very/long/name/for/a/nifti/file',
+                                shorten=False) ==
+            '/this/is/a/very/long/name/for/a/nifti/file')
+
+    # Tests with list of file paths
     assert _utils._repr_niimgs(["test", "retest"]) == "[test, retest]"
-    # Create phony Niimg with filename
+    assert _utils._repr_niimgs(["test", "retest"], shorten=False) == "[test, retest]"
+    # Lists of long names up to length 3
+    list_of_size_3 = ['/this/is/a/very/long/name/for/a/nifti/file',
+                      '/this/is/another/very/long/name/for/a/nifti/file',
+                      '/this/is/again/another/very/long/name/for/a/nifti/file']
+    # Explicit shortening, all 3 names are displayed, but shortened
+    assert (_utils._repr_niimgs(list_of_size_3, shorten=True) ==
+            "[/this/is/a/very/lo..., /this/is/another/v..., /this/is/again/ano...]")
+    # Force display, all 3 names are displayed
+    assert (_utils._repr_niimgs(list_of_size_3, shorten=False) ==
+            ("[/this/is/a/very/long/name/for/a/nifti/file,"
+             " /this/is/another/very/long/name/for/a/nifti/file,"
+             " /this/is/again/another/very/long/name/for/a/nifti/file]"))
+    # Lists longer than 3
+    # Small names - Explicit shortening
+    assert (_utils._repr_niimgs(["test", "retest", "reretest", "rereretest"],
+                                shorten=True) ==
+            ("[test,\n"
+             "         ...\n"
+             " rereretest]"))
+    # Small names - Force full display
+    assert (_utils._repr_niimgs(["test", "retest", "reretest", "rereretest"],
+                                shorten=False) ==
+            ("[test,\n"
+             " retest,\n"
+             " reretest,\n"
+             " rereretest]"))
+    # Long names - Explicit shortening
+    list_of_size_4 = ['/this/is/a/very/long/name/for/a/nifti/file',
+                      '/this/is/another/very/long/name/for/a/nifti/file',
+                      '/this/is/again/another/very/long/name/for/a/nifti/file',
+                      '/this/is/again/another/super/very/long/name/for/a/nifti/file']
+    assert (_utils._repr_niimgs(list_of_size_4, shorten=True) ==
+            ("[/this/is/a/very/lo...,\n"
+             "         ...\n"
+             " /this/is/again/ano...]"))
+    # Long names - Force full display in pretty print style for readability
+    assert (_utils._repr_niimgs(list_of_size_4, shorten=False) ==
+            ("[/this/is/a/very/long/name/for/a/nifti/file,\n"
+             " /this/is/another/very/long/name/for/a/nifti/file,\n"
+             " /this/is/again/another/very/long/name/for/a/nifti/file,\n"
+             " /this/is/again/another/super/very/long/name/for/a/nifti/file]"))
+
+
+    # Create phony Niimg without filename
     affine = np.eye(4)
     shape = (10, 10, 10)
     img1 = Nifti1Image(np.ones(shape), affine)
-    assert (
-        _utils._repr_niimgs(img1).replace("10L","10") ==
-        ("%s(\nshape=%s,\naffine=%s\n)" %
-            (img1.__class__.__name__,
-             repr(shape), repr(affine))))
-    _, tmpimg1 = tempfile.mkstemp(suffix='.nii')
+    # Shorten has no effect in this case
+    for shorten in [True, False]:
+        assert (
+            _utils._repr_niimgs(img1, shorten=shorten).replace("10L","10") ==
+            ("%s(\nshape=%s,\naffine=%s\n)" %
+                (img1.__class__.__name__,
+                repr(shape), repr(affine))))
+
+    # Add filename long enough to qualify for shortening
+    _, tmpimg1 = tempfile.mkstemp(suffix='_long.nii')
     nibabel.save(img1, tmpimg1)
     assert (
-        _utils._repr_niimgs(img1) ==
+        _utils._repr_niimgs(img1, shorten=False) ==
         ("%s('%s')" % (img1.__class__.__name__, img1.get_filename())))
+    assert (
+        _utils._repr_niimgs(img1, shorten=True) ==
+        ("%s('%s...')" % (img1.__class__.__name__, img1.get_filename()[:18])))
 
 
 def _remove_if_exists(file):
