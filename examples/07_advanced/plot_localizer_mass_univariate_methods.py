@@ -70,6 +70,7 @@ neg_log_pvals_permuted_ols, _, _ = permuted_ols(
     tested_var, fmri_masked,
     model_intercept=True,
     n_perm=5000,  # 5,000 for the sake of time. Idealy, this should be 10,000
+    verbose=1, # display progress bar
     n_jobs=1)  # can be changed to use more CPUs
 neg_log_pvals_permuted_ols_unmasked = nifti_masker.inverse_transform(
     np.ravel(neg_log_pvals_permuted_ols))
