@@ -10,6 +10,11 @@ NEW
   dimensionalities (64, 128, 256, 512, and 1024). These modes are optimized to represent well
   raw BOLD timeseries, over a with range of experimental conditions.
 
+- :func:`nilearn.glm.Contrast.one_minus_pvalue` was added to ensure numerical 
+  stability of p-value estimation. It computes 1 - p-value using the Cumulative 
+  Distribution Function in the same way as `nilearn.glm.Contrast.p_value`
+  computes the p-value using the Survival Function.
+
 Fixes
 -----
 

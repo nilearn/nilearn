@@ -2,7 +2,7 @@
 This module is for contrast computation and operation on contrast to
 obtain fixed effect results.
 
-Author: Bertrand Thirion, Martin Perez-Guevara, 2016
+Author: Bertrand Thirion, Martin Perez-Guevara, Ana Luisa Pinho 2020
 """
 
 from warnings import warn
@@ -192,6 +192,7 @@ class Contrast(object):
         self.contrast_type = contrast_type
         self.stat_ = None
         self.p_value_ = None
+        self.one_minus_pvalue_ = None
         self.baseline = 0
         self.tiny = tiny
         self.dofmax = dofmax
@@ -236,8 +237,9 @@ class Contrast(object):
         return self.stat_
 
     def p_value(self, baseline=0.0):
-        """Return a parametric estimate of the p-value associated
-        with the null hypothesis: (H0) 'contrast equals baseline'
+        """Return a parametric estimate of the p-value associated with
+        the null hypothesis (H0): 'contrast equals baseline',
+        using the survival function
 
         Parameters
         ----------
@@ -262,6 +264,35 @@ class Contrast(object):
         self.p_value_ = p_values
         return p_values
 
+    def one_minus_pvalue(self, baseline=0.0):
+        """Return a parametric estimate of the 1 - p-value associated with
+        the null hypothesis (H0): 'contrast equals baseline',
+        using the cumulative distribution function,
+        to ensure numerical stability
+
+        Parameters
+        ----------
+        baseline : float, optional
+            baseline value for the test statistic
+
+        Returns
+        -------
+        one_minus_pvalues : 1-d array, shape=(n_voxels,)
+            one_minus_pvalues, one per voxel
+        """
+        if self.stat_ is None or not self.baseline == baseline:
+            self.stat_ = self.stat(baseline)
+        # Valid conjunction as in Nichols et al, Neuroimage 25, 2005.
+        if self.contrast_type == 't':
+            one_minus_pvalues = sps.t.cdf(self.stat_,
+                                          np.minimum(self.dof, self.dofmax))
+        else:
+            assert self.contrast_type == 'F'
+            one_minus_pvalues = sps.f.cdf(self.stat_, self.dim,
+                                          np.minimum(self.dof, self.dofmax))
+        self.one_minus_pvalue_ = one_minus_pvalues
+        return one_minus_pvalues
+
     def z_score(self, baseline=0.0):
         """Return a parametric estimation of the z-score associated
         with the null hypothesis: (H0) 'contrast equals baseline'
@@ -279,9 +310,12 @@ class Contrast(object):
         """
         if self.p_value_ is None or not self.baseline == baseline:
             self.p_value_ = self.p_value(baseline)
+        if self.one_minus_pvalue_ is None:
+            self.one_minus_pvalue_ = self.one_minus_pvalue(baseline)
 
         # Avoid inf values kindly supplied by scipy.
-        self.z_score_ = z_score(self.p_value_)
+        self.z_score_ = z_score(self.p_value_,
+                                one_minus_pvalue=self.one_minus_pvalue_)
         return self.z_score_
 
     def __add__(self, other):
