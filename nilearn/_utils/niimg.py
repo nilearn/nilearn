@@ -215,7 +215,7 @@ def _short_repr(niimg_rep, shorten=True, truncate=20):
         return niimg_rep
     if len(niimg_rep) > truncate:
         # Shorten the repr to have a useful error message
-        return niimg_rep[:(truncate-2)] + '...'
+        return niimg_rep[: (truncate - 2)] + '...'
     return niimg_rep
 
 

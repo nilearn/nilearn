@@ -392,63 +392,80 @@ def test_repr_niimgs():
     # Tests with file path
     assert _utils._repr_niimgs("test") == "test"
     assert _utils._repr_niimgs("test", shorten=False) == "test"
+
     # Shortening long names by default
-    assert (_utils._repr_niimgs('/this/is/a/very/long/name/for/a/nifti/file') ==
-            '/this/is/a/very/lo...')
+    long_name = 'this/is/a/very/long/name/for/a/nifti/file'
+    short_name = 'this/is/a/very/lon...'
+    assert _utils._repr_niimgs(long_name) == short_name
     # Explicit shortening of long names
-    assert (_utils._repr_niimgs('/this/is/a/very/long/name/for/a/nifti/file',
-                                shorten=True) ==
-            '/this/is/a/very/lo...')
+    assert _utils._repr_niimgs(long_name, shorten=True) == short_name
     # Force long display of long names
-    assert (_utils._repr_niimgs('/this/is/a/very/long/name/for/a/nifti/file',
-                                shorten=False) ==
-            '/this/is/a/very/long/name/for/a/nifti/file')
+    assert _utils._repr_niimgs(long_name, shorten=False) == long_name
 
     # Tests with list of file paths
     assert _utils._repr_niimgs(["test", "retest"]) == "[test, retest]"
     assert _utils._repr_niimgs(["test", "retest"], shorten=False) == "[test, retest]"
+
     # Lists of long names up to length 3
     list_of_size_3 = ['/this/is/a/very/long/name/for/a/nifti/file',
                       '/this/is/another/very/long/name/for/a/nifti/file',
                       '/this/is/again/another/very/long/name/for/a/nifti/file']
     # Explicit shortening, all 3 names are displayed, but shortened
+    shortened_rep_list_of_size_3 = ("[/this/is/a/very/lo...,"
+                                    " /this/is/another/v...,"
+                                    " /this/is/again/ano...]")
+
     assert (_utils._repr_niimgs(list_of_size_3, shorten=True) ==
-            "[/this/is/a/very/lo..., /this/is/another/v..., /this/is/again/ano...]")
+            shortened_rep_list_of_size_3)
+
     # Force display, all 3 names are displayed
+    long_rep_list_of_size_3 = ("[/this/is/a/very/long/name/for/a/nifti/file,"
+                               " /this/is/another/very/long/name/for/a/nifti/file,"
+                               " /this/is/again/another/very/long/name/for/a/nifti/file]")
+
     assert (_utils._repr_niimgs(list_of_size_3, shorten=False) ==
-            ("[/this/is/a/very/long/name/for/a/nifti/file,"
-             " /this/is/another/very/long/name/for/a/nifti/file,"
-             " /this/is/again/another/very/long/name/for/a/nifti/file]"))
+            long_rep_list_of_size_3)
+
     # Lists longer than 3
     # Small names - Explicit shortening
-    assert (_utils._repr_niimgs(["test", "retest", "reretest", "rereretest"],
-                                shorten=True) ==
-            ("[test,\n"
-             "         ...\n"
-             " rereretest]"))
+    long_list_small_names = ["test", "retest", "reretest", "rereretest"]
+    shortened_rep_long_list_small_names = ("[test,\n"
+                                           "         ...\n"
+                                           " rereretest]")
+
+    assert (_utils._repr_niimgs(long_list_small_names, shorten=True) ==
+            shortened_rep_long_list_small_names)
+
     # Small names - Force full display
-    assert (_utils._repr_niimgs(["test", "retest", "reretest", "rereretest"],
-                                shorten=False) ==
-            ("[test,\n"
-             " retest,\n"
-             " reretest,\n"
-             " rereretest]"))
+    long_rep_long_list_small_names = ("[test,\n"
+                                      " retest,\n"
+                                      " reretest,\n"
+                                      " rereretest]")
+
+    assert (_utils._repr_niimgs(long_list_small_names, shorten=False) ==
+            long_rep_long_list_small_names)
+
     # Long names - Explicit shortening
     list_of_size_4 = ['/this/is/a/very/long/name/for/a/nifti/file',
                       '/this/is/another/very/long/name/for/a/nifti/file',
                       '/this/is/again/another/very/long/name/for/a/nifti/file',
                       '/this/is/again/another/super/very/long/name/for/a/nifti/file']
-    assert (_utils._repr_niimgs(list_of_size_4, shorten=True) ==
-            ("[/this/is/a/very/lo...,\n"
-             "         ...\n"
-             " /this/is/again/ano...]"))
-    # Long names - Force full display in pretty print style for readability
-    assert (_utils._repr_niimgs(list_of_size_4, shorten=False) ==
-            ("[/this/is/a/very/long/name/for/a/nifti/file,\n"
-             " /this/is/another/very/long/name/for/a/nifti/file,\n"
-             " /this/is/again/another/very/long/name/for/a/nifti/file,\n"
-             " /this/is/again/another/super/very/long/name/for/a/nifti/file]"))
+    shortened_rep_long_list_long_names = ("[/this/is/a/very/lo...,\n"
+                                          "         ...\n"
+                                          " /this/is/again/ano...]")
 
+    assert (_utils._repr_niimgs(list_of_size_4, shorten=True) ==
+            shortened_rep_long_list_long_names)
+
+    # Long names - Force full display in pretty print style for readability
+
+    long_rep_long_list_long_names = ("[/this/is/a/very/long/name/for/a/nifti/file,\n"
+                                     " /this/is/another/very/long/name/for/a/nifti/file,\n"
+                                     " /this/is/again/another/very/long/name/for/a/nifti/file,\n"
+                                     " /this/is/again/another/super/very/long/name/for/a/nifti/file]")
+
+    assert (_utils._repr_niimgs(list_of_size_4, shorten=False) ==
+            long_rep_long_list_long_names)
 
     # Create phony Niimg without filename
     affine = np.eye(4)
@@ -457,7 +474,7 @@ def test_repr_niimgs():
     # Shorten has no effect in this case
     for shorten in [True, False]:
         assert (
-            _utils._repr_niimgs(img1, shorten=shorten).replace("10L","10") ==
+            _utils._repr_niimgs(img1, shorten=shorten).replace("10L", "10") ==
             ("%s(\nshape=%s,\naffine=%s\n)" %
                 (img1.__class__.__name__,
                 repr(shape), repr(affine))))
