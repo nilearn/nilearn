@@ -11,6 +11,7 @@ ignores modules whose name starts with an underscore.
 import os
 import re
 import tempfile
+from pathlib import Path
 
 import numpy as np
 import pytest
@@ -461,6 +462,35 @@ def test_repr_niimgs():
 
     assert (_utils._repr_niimgs(list_of_size_4, shorten=False) ==
             long_rep_long_list_long_names)
+
+    # Tests with pathlib
+    # Case with very long path and small filename
+    long_path = Path('/this/is/a/fake/long/path/to/file.nii')
+    short_path = '...path/to/file.nii'
+    assert _utils._repr_niimgs(long_path, shorten=True) == short_path
+    assert _utils._repr_niimgs(long_path, shorten=False) == str(long_path)
+
+    # Case with very long path but very long filename
+    long_path_long_name = Path('/this/is/a/fake/long/path/to/my_file_with_a_very_long_name.nii')
+    short_name = 'my_file_with_a_ver...'
+    assert _utils._repr_niimgs(long_path_long_name, shorten=True) == short_name
+    assert _utils._repr_niimgs(long_path_long_name, shorten=False) == str(long_path_long_name)
+
+    # Case with lists
+    list_of_paths = [Path('/this/is/a/fake/long/path/to/file.nii'),
+                     Path('/this/is/a/fake/long/path/to/another/file2.nii'),
+                     Path('/again/another/fake/long/path/to/file3.nii'),
+                     Path('/this/is/a/fake/long/path/to/a-very-long-file-name.nii')]
+
+    shortened_list_of_paths = ("[...path/to/file.nii,\n"
+                               "         ...\n"
+                               " a-very-long-file-n...]")
+
+    assert _utils._repr_niimgs(list_of_paths, shorten=True) == shortened_list_of_paths
+
+    long_list_of_paths = "[%s]" % ',\n '.join(_ for _ in [str(_) for _ in list_of_paths])
+
+    assert _utils._repr_niimgs(list_of_paths, shorten=False) == long_list_of_paths
 
     # Create phony Niimg without filename
     affine = np.eye(4)

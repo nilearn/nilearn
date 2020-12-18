@@ -10,7 +10,7 @@ import collections.abc
 
 import numpy as np
 import nibabel
-
+import pathlib
 
 def _get_data(img):
     # copy-pasted from https://github.com/nipy/nibabel/blob/de44a105c1267b07ef9e28f6c35b31f851d5a005/nibabel/dataobj_images.py#L204
@@ -180,7 +180,7 @@ def _repr_niimgs(niimgs, shorten=True):
     # Note: should be >= 3 to make sense...
     list_max_display = 3
     # Simple string case
-    if isinstance(niimgs, str):
+    if isinstance(niimgs, (str, pathlib.Path)):
         return _short_repr(niimgs, shorten=shorten)
     # Collection case
     if isinstance(niimgs, collections.abc.Iterable):
@@ -211,9 +211,29 @@ def _repr_niimgs(niimgs, shorten=True):
 def _short_repr(niimg_rep, shorten=True, truncate=20):
     """Gives a shorten version on niimg representation
     """
+    # Make sure truncate has a reasonable value
+    truncate = max(truncate, 10)
     if not shorten:
+        if isinstance(niimg_rep, pathlib.Path):
+            return str(niimg_rep)
         return niimg_rep
-    if len(niimg_rep) > truncate:
+    if isinstance(niimg_rep, pathlib.Path):
+        # If the name of the file itself is larger than
+        # truncate, then shorten the name only
+        if len(niimg_rep.name) > truncate:
+            niimg_rep = niimg_rep.name
+        # Else add some folder structure if available
+        else:
+            rep = niimg_rep.name
+            if len(niimg_rep.parts) > 1:
+                for p in niimg_rep.parts[::-1][1:]:
+                    if len(rep) + len(p) < truncate - 3:
+                        rep = "{0}/{1}".format(p, rep)
+                    else:
+                        break
+                rep = '...' + rep
+            return rep
+    if isinstance(niimg_rep, str) and len(niimg_rep) > truncate:
         # Shorten the repr to have a useful error message
         return niimg_rep[: (truncate - 2)] + '...'
     return niimg_rep
