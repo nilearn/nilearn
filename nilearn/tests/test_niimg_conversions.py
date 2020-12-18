@@ -394,8 +394,8 @@ def test_repr_niimgs():
     assert _utils._repr_niimgs("test", shorten=False) == "test"
 
     # Shortening long names by default
-    long_name = 'this/is/a/very/long/name/for/a/nifti/file'
-    short_name = 'this/is/a/very/lon...'
+    long_name = 'this-is-a-very-long-name-for-a-nifti-file.nii'
+    short_name = 'this-is-a-very-lon...'
     assert _utils._repr_niimgs(long_name) == short_name
     # Explicit shortening of long names
     assert _utils._repr_niimgs(long_name, shorten=True) == short_name
@@ -407,21 +407,21 @@ def test_repr_niimgs():
     assert _utils._repr_niimgs(["test", "retest"], shorten=False) == "[test, retest]"
 
     # Lists of long names up to length 3
-    list_of_size_3 = ['/this/is/a/very/long/name/for/a/nifti/file',
-                      '/this/is/another/very/long/name/for/a/nifti/file',
-                      '/this/is/again/another/very/long/name/for/a/nifti/file']
+    list_of_size_3 = ['this-is-a-very-long-name-for-a-nifti-file.nii',
+                      'this-is-another-very-long-name-for-a-nifti-file.nii',
+                      'this-is-again-another-very-long-name-for-a-nifti-file.nii']
     # Explicit shortening, all 3 names are displayed, but shortened
-    shortened_rep_list_of_size_3 = ("[/this/is/a/very/lo...,"
-                                    " /this/is/another/v...,"
-                                    " /this/is/again/ano...]")
+    shortened_rep_list_of_size_3 = ("[this-is-a-very-lon...,"
+                                    " this-is-another-ve...,"
+                                    " this-is-again-anot...]")
 
     assert (_utils._repr_niimgs(list_of_size_3, shorten=True) ==
             shortened_rep_list_of_size_3)
 
     # Force display, all 3 names are displayed
-    long_rep_list_of_size_3 = ("[/this/is/a/very/long/name/for/a/nifti/file,"
-                               " /this/is/another/very/long/name/for/a/nifti/file,"
-                               " /this/is/again/another/very/long/name/for/a/nifti/file]")
+    long_rep_list_of_size_3 = ("[this-is-a-very-long-name-for-a-nifti-file.nii,"
+                               " this-is-another-very-long-name-for-a-nifti-file.nii,"
+                               " this-is-again-another-very-long-name-for-a-nifti-file.nii]")
 
     assert (_utils._repr_niimgs(list_of_size_3, shorten=False) ==
             long_rep_list_of_size_3)
@@ -446,23 +446,18 @@ def test_repr_niimgs():
             long_rep_long_list_small_names)
 
     # Long names - Explicit shortening
-    list_of_size_4 = ['/this/is/a/very/long/name/for/a/nifti/file',
-                      '/this/is/another/very/long/name/for/a/nifti/file',
-                      '/this/is/again/another/very/long/name/for/a/nifti/file',
-                      '/this/is/again/another/super/very/long/name/for/a/nifti/file']
-    shortened_rep_long_list_long_names = ("[/this/is/a/very/lo...,\n"
+    list_of_size_4 = list_of_size_3 + ['this-is-again-another-super-very-long-name-for-a-nifti-file.nii']
+    shortened_rep_long_list_long_names = ("[this-is-a-very-lon...,\n"
                                           "         ...\n"
-                                          " /this/is/again/ano...]")
+                                          " this-is-again-anot...]")
 
     assert (_utils._repr_niimgs(list_of_size_4, shorten=True) ==
             shortened_rep_long_list_long_names)
 
     # Long names - Force full display in pretty print style for readability
 
-    long_rep_long_list_long_names = ("[/this/is/a/very/long/name/for/a/nifti/file,\n"
-                                     " /this/is/another/very/long/name/for/a/nifti/file,\n"
-                                     " /this/is/again/another/very/long/name/for/a/nifti/file,\n"
-                                     " /this/is/again/another/super/very/long/name/for/a/nifti/file]")
+    long_rep_long_list_long_names = (long_rep_list_of_size_3[:-1].replace(",", ",\n") +
+                                     ",\n this-is-again-another-super-very-long-name-for-a-nifti-file.nii]")
 
     assert (_utils._repr_niimgs(list_of_size_4, shorten=False) ==
             long_rep_long_list_long_names)
