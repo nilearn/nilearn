@@ -10,7 +10,8 @@ import collections.abc
 
 import numpy as np
 import nibabel
-import pathlib
+
+from pathlib import Path
 
 def _get_data(img):
     # copy-pasted from https://github.com/nipy/nibabel/blob/de44a105c1267b07ef9e28f6c35b31f851d5a005/nibabel/dataobj_images.py#L204
@@ -180,7 +181,7 @@ def _repr_niimgs(niimgs, shorten=True):
     # Note: should be >= 3 to make sense...
     list_max_display = 3
     # Simple string case
-    if isinstance(niimgs, (str, pathlib.Path)):
+    if isinstance(niimgs, (str, Path)):
         return _short_repr(niimgs, shorten=shorten)
     # Collection case
     if isinstance(niimgs, collections.abc.Iterable):
@@ -213,29 +214,24 @@ def _short_repr(niimg_rep, shorten=True, truncate=20):
     """
     # Make sure truncate has a reasonable value
     truncate = max(truncate, 10)
+    path_to_niimg = Path(niimg_rep)
     if not shorten:
-        if isinstance(niimg_rep, pathlib.Path):
-            return str(niimg_rep)
-        return niimg_rep
-    if isinstance(niimg_rep, pathlib.Path):
-        # If the name of the file itself is larger than
-        # truncate, then shorten the name only
-        if len(niimg_rep.name) > truncate:
-            niimg_rep = niimg_rep.name
-        # Else add some folder structure if available
-        else:
-            rep = niimg_rep.name
-            if len(niimg_rep.parts) > 1:
-                for p in niimg_rep.parts[::-1][1:]:
-                    if len(rep) + len(p) < truncate - 3:
-                        rep = str(pathlib.Path(p, rep))
-                    else:
-                        rep = '...' + rep
-                        break
-            return rep
-    if isinstance(niimg_rep, str) and len(niimg_rep) > truncate:
-        # Shorten the repr to have a useful error message
-        return niimg_rep[: (truncate - 2)] + '...'
+        return str(path_to_niimg)
+    # If the name of the file itself is larger than
+    # truncate, then shorten the name only
+    if len(path_to_niimg.name) > truncate:
+        return path_to_niimg.name[: (truncate - 2)] + '...'
+    # Else add some folder structure if available
+    else:
+        rep = path_to_niimg.name
+        if len(path_to_niimg.parts) > 1:
+            for p in path_to_niimg.parts[::-1][1:]:
+                if len(rep) + len(p) < truncate - 3:
+                    rep = str(Path(p, rep))
+                else:
+                    rep = '...' + rep
+                    break
+        return rep
     return niimg_rep
 
 

@@ -505,14 +505,14 @@ def test_repr_niimgs():
                 repr(shape), repr(affine))))
 
     # Add filename long enough to qualify for shortening
-    _, tmpimg1 = tempfile.mkstemp(suffix='_long.nii')
+    _, tmpimg1 = tempfile.mkstemp(suffix='_very_long.nii')
     nibabel.save(img1, tmpimg1)
     assert (
         _utils._repr_niimgs(img1, shorten=False) ==
         ("%s('%s')" % (img1.__class__.__name__, img1.get_filename())))
     assert (
         _utils._repr_niimgs(img1, shorten=True) ==
-        ("%s('%s...')" % (img1.__class__.__name__, img1.get_filename()[:18])))
+        ("%s('%s...')" % (img1.__class__.__name__, Path(img1.get_filename()).name[:18])))
 
 
 def _remove_if_exists(file):
