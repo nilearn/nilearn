@@ -228,10 +228,10 @@ def _short_repr(niimg_rep, shorten=True, truncate=20):
             if len(niimg_rep.parts) > 1:
                 for p in niimg_rep.parts[::-1][1:]:
                     if len(rep) + len(p) < truncate - 3:
-                        rep = "{0}/{1}".format(p, rep)
+                        rep = str(pathlib.Path(p, rep))
                     else:
+                        rep = '...' + rep
                         break
-                rep = '...' + rep
             return rep
     if isinstance(niimg_rep, str) and len(niimg_rep) > truncate:
         # Shorten the repr to have a useful error message
