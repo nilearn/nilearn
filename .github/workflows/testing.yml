@@ -27,10 +27,12 @@ jobs:
     needs: check_skip
     if: ${{ needs.check_skip.outputs.skip == 'false' }}
     runs-on: "ubuntu-latest"
-    name: Python 3.5 and minimal requirements
+    name: Python 3.5, minimal requirements without Matplotlib
     defaults:
       run:
         shell: bash
+    env:
+        MIN_REQUIREMENTS: true
     steps:
       - uses: actions/checkout@v2
       - uses: actions/setup-python@v2
@@ -50,6 +52,34 @@ jobs:
         if: success()
         name: 'Upload coverage to CodeCov'
 
+  dev_versions:
+    needs: check_skip
+    if: ${{ needs.check_skip.outputs.skip == 'false' }}
+    runs-on: "ubuntu-latest"
+    name: Latest python and requirements with Matplotlib-dev
+    defaults:
+      run:
+        shell: bash
+    env:
+        MATPLOTLIB_DEV: true
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-python@v2
+        with:
+          python-version: 3.9
+        name: 'Setup python'
+      - shell: bash -l {0}
+        run: ./tools/github_actions_dependencies.sh
+        name: 'Install dependencies'
+      - shell: bash -l {0}
+        run: ./tools/github_actions_install.sh
+        name: 'Install nilearn'
+      - shell: bash -l {0}
+        run: ./tools/github_actions_test.sh
+        name: 'Run tests'
+      - uses: codecov/codecov-action@v1
+        if: success()
+        name: 'Upload coverage to CodeCov'
   latest:
     needs: check_skip
     if: ${{ needs.check_skip.outputs.skip == 'false' }}
@@ -65,20 +95,13 @@ jobs:
         shell: bash
     steps:
       - uses: actions/checkout@v2
-      - uses: conda-incubator/setup-miniconda@v2
+      - uses: actions/setup-python@v2
         with:
-          activate-environment: test-env
-          auto-activate-base: false
-          auto-update-conda: true
-          python-version: ${{ matrix.python-version }}
-          environment-file: environment.yml
-        name: 'Setup conda'
-      - name: Conda info
-        shell: bash -l {0}
-        run: conda info
-      - name: Conda list
-        shell: pwsh
-        run: conda list
+            python-version: ${{ matrix.python-version }}
+        name: 'Setup python'
+      - shell: bash -l {0}
+        run: ./tools/github_actions_dependencies.sh
+        name: 'Install dependencies'
       - shell: bash -l {0}
         run: ./tools/github_actions_install.sh
         name: 'Install nilearn'
