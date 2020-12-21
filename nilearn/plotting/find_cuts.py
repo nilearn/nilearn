@@ -252,6 +252,7 @@ def find_cut_slices(img, direction='z', n_cuts=7, spacing='auto'):
         # affine and rotation.
         img = reorder_img(img, resample='nearest')
         affine = img.affine
+    # note: orig_data is a copy of img._data_cache thanks to np.abs
     orig_data = np.abs(_safe_get_data(img))
     this_shape = orig_data.shape[axis]
 

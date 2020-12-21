@@ -816,9 +816,7 @@ def threshold_img(img, threshold, mask_img=None, copy=True):
     from .. import masking
 
     img = check_niimg(img)
-    img_data = _safe_get_data(img, ensure_finite=True)
-    if copy:
-        img_data = img_data.copy()
+    img_data = _safe_get_data(img, ensure_finite=True, copy_data=copy)
     affine = img.affine
 
     if mask_img is not None:
