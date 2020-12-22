@@ -229,7 +229,7 @@ def _short_repr(niimg_rep, shorten=True, truncate=20):
                 if len(rep) + len(p) < truncate - 3:
                     rep = str(Path(p, rep))
                 else:
-                    rep = '...' + rep
+                    rep = str(Path("...", rep))
                     break
         return rep
     return niimg_rep
