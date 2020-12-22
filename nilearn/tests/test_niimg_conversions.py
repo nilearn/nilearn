@@ -466,7 +466,7 @@ def test_repr_niimgs():
     # Tests with pathlib
     # Case with very long path and small filename
     long_path = Path('/this/is/a/fake/long/path/to/file.nii')
-    short_path = Path('...path/to/file.nii')
+    short_path = Path('.../path/to/file.nii')
     assert _utils._repr_niimgs(long_path, shorten=True) == str(short_path)
     assert _utils._repr_niimgs(long_path, shorten=False) == str(long_path)
 
@@ -484,7 +484,7 @@ def test_repr_niimgs():
 
     shortened_list_of_paths = ("[...{0},\n"
                                "         ...\n"
-                               " a-very-long-file-n...]".format(str(Path("path/to/file.nii"))))
+                               " a-very-long-file-n...]".format(str(Path("/path/to/file.nii"))))
 
     assert _utils._repr_niimgs(list_of_paths, shorten=True) == shortened_list_of_paths
 
