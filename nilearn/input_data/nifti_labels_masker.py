@@ -179,12 +179,14 @@ class NiftiLabelsMasker(BaseMasker, CacheMixin):
         All parameters are unused, they are for scikit-learn compatibility.
         """
         logger.log("loading data from %s" %
-                   _utils._repr_niimgs(self.labels_img)[:200],
+                   _utils._repr_niimgs(self.labels_img,
+                                       shorten=(not self.verbose)),
                    verbose=self.verbose)
         self.labels_img_ = _utils.check_niimg_3d(self.labels_img)
         if self.mask_img is not None:
             logger.log("loading data from %s" %
-                       _utils._repr_niimgs(self.mask_img)[:200],
+                       _utils._repr_niimgs(self.mask_img,
+                                           shorten=(not self.verbose)),
                        verbose=self.verbose)
             self.mask_img_ = _utils.check_niimg_3d(self.mask_img)
         else:

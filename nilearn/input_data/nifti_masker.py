@@ -314,7 +314,7 @@ class NiftiMasker(BaseMasker, CacheMixin):
         if self.verbose > 0:
             print("[%s.fit] Loading data from %s" % (
                 self.__class__.__name__,
-                _utils._repr_niimgs(imgs)[:200]))
+                _utils._repr_niimgs(imgs, shorten=False)))
 
         # Compute the mask if not given by the user
         if self.mask_img is None:
