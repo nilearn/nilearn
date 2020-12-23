@@ -10,6 +10,7 @@ from warnings import warn
 
 import numpy as np
 import pandas as pd
+import pathlib
 
 import scipy.linalg as spl
 from scipy.stats import norm
@@ -54,6 +55,9 @@ def _check_and_load_tables(tables_, var_name):
     """Check tables can be loaded in DataFrame to raise error if necessary"""
     tables = []
     for table_idx, table in enumerate(tables_):
+        if isinstance(table, pathlib.Path):
+            # conver pathlib.Path to str
+            table = str(table)
         if isinstance(table, str):
             loaded = _read_events_table(table)
             tables.append(loaded)

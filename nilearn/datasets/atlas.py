@@ -12,6 +12,7 @@ import nibabel as nb
 import numpy as np
 from numpy.lib import recfunctions
 from sklearn.utils import Bunch
+import pathlib
 
 from .utils import _get_dataset_dir, _fetch_files, _get_dataset_descr
 from .._utils import check_niimg
@@ -581,6 +582,10 @@ def fetch_atlas_smith_2009(data_dir=None, mirror='origin', url=None,
 
     if isinstance(url, str):
         url = [url] * len(files)
+    
+    if isinstance(data_dir, pathlib.Path):
+        # conver pathlib.Path to str
+        data_dir = str(data_dir)
 
     files = [(f, u + f, {}) for f, u in zip(files, url)]
 

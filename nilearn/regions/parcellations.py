@@ -7,6 +7,7 @@ import numpy as np
 from sklearn.base import clone
 from sklearn.feature_extraction import image
 from joblib import Memory, delayed, Parallel
+import pathlib
 
 from .rena_clustering import ReNA
 from ..decomposition.multi_pca import MultiPCA
@@ -58,6 +59,9 @@ def _check_parameters_transform(imgs, confounds):
     """A helper function to check the parameters and prepare for processing
     as a list.
     """
+    if isinstance(imgs, pathlib.Path):
+        # conver pathlib.Path to str
+        imgs = str(imgs)
     if not isinstance(imgs, (list, tuple)) or \
             isinstance(imgs, str):
         imgs = [imgs, ]
@@ -66,6 +70,10 @@ def _check_parameters_transform(imgs, confounds):
         single_subject = True
     else:
         single_subject = False
+        
+    if isinstance(confounds, pathlib.Path):
+        # conver pathlib.Path to str
+        confounds = str(confounds)
 
     if confounds is None and isinstance(imgs, (list, tuple)):
         confounds = [None] * len(imgs)

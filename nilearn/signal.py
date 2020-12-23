@@ -11,6 +11,7 @@ import warnings
 
 import numpy as np
 import pandas as pd
+import pathlib
 from scipy import linalg, signal as sp_signal
 from sklearn.utils import gen_even_slices, as_float_array
 
@@ -536,7 +537,9 @@ def clean(signals, sessions=None, detrend=True, standardize='zscore',
             # cast DataFrame to array
             if isinstance(confound, pd.DataFrame):
                 confound = confound.values
-
+            if isinstance(confound, pathlib.Path):
+                # conver pathlib.Path to str
+                confound = str(confound)
             if isinstance(confound, str):
                 filename = confound
                 confound = csv_to_array(filename)

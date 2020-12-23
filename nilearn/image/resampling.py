@@ -12,6 +12,7 @@ import numbers
 import numpy as np
 import scipy
 from scipy import ndimage, linalg
+import pathlib
 
 from .image import crop_img
 from .. import _utils
@@ -415,6 +416,9 @@ def resample_img(img, target_affine=None, target_shape=None,
                    "or 'nearest' but it was set to '{0}'").format(interpolation)
         raise ValueError(message)
 
+    if isinstance(img, pathlib.Path):
+        # conver pathlib.Path to str
+        img = str(img)
     if isinstance(img, str):
         # Avoid a useless copy
         input_img_is_string = True

@@ -5,6 +5,7 @@ import os
 import warnings
 import collections
 import gzip
+import pathlib
 from distutils.version import LooseVersion
 
 
@@ -691,6 +692,9 @@ def load_surf_data(surf_data):
     data : numpy.ndarray
         An array containing surface data
     """
+    if isinstance(surf_data, pathlib.Path):
+        # conver pathlib.Path to str
+        surf_data = str(surf_data)
     # if the input is a filename, load it
     if isinstance(surf_data, str):
 
@@ -816,6 +820,9 @@ def load_surf_mesh(surf_mesh):
         the second containing the indices (into coords) of the mesh faces.
     """
     # if input is a filename, try to load it
+    if isinstance(surf_mesh, pathlib.Path):
+        # conver pathlib.Path to str
+        surf_mesh = str(surf_mesh)
     if isinstance(surf_mesh, str):
         # resolve globbing
         file_list = _resolve_globbing(surf_mesh)

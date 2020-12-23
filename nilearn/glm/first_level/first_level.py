@@ -21,6 +21,7 @@ from joblib import Memory, Parallel, delayed
 from nibabel import Nifti1Image
 from nibabel.onetime import auto_attr
 from sklearn.base import clone
+import pathlib
 
 from nilearn._utils.glm import (_check_events_file_uses_tab_separators,
                                 _check_run_tables, get_bids_files,
@@ -299,6 +300,9 @@ class FirstLevelModel(BaseGLM):
         self.target_affine = target_affine
         self.target_shape = target_shape
         self.smoothing_fwhm = smoothing_fwhm
+        if isinstance(memory, pathlib.Path):
+            # conver pathlib.Path to str
+            memory = str(memory)
         if isinstance(memory, str):
             self.memory = Memory(memory)
         else:
@@ -775,6 +779,9 @@ def first_level_from_bids(dataset_path, task_label, space_label=None,
     """
     # check arguments
     img_filters = img_filters if img_filters else []
+    if isinstance(dataset_path, pathlib.Path):
+        # conver pathlib.Path to str
+        dataset_path = str(dataset_path)
     if not isinstance(dataset_path, str):
         raise TypeError(
             'dataset_path must be a string, instead %s was given' %

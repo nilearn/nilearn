@@ -9,6 +9,7 @@ import warnings
 import os
 import shutil
 from distutils.version import LooseVersion
+import pathlib
 
 import nibabel
 import sklearn
@@ -41,6 +42,9 @@ def _check_memory(memory, verbose=0):
     """
     if memory is None:
         memory = Memory(location=None, verbose=verbose)
+    if isinstance(memory, pathlib.Path):
+        # conver pathlib.Path to str
+        memory = str(memory)
     if isinstance(memory, str):
         cache_dir = memory
         if nilearn.EXPAND_PATH_WILDCARDS:
@@ -216,6 +220,9 @@ def cache(func, memory, func_memory_level=None, memory_level=None,
 
     if memory is not None and (func_memory_level is None or
                                memory_level >= func_memory_level):
+        if isinstance(memory, pathlib.Path):
+            # conver pathlib.Path to str
+            memory = str(memory)
         if isinstance(memory, str):
             memory = Memory(location=memory, verbose=verbose)
         if not isinstance(memory, MEMORY_CLASSES):

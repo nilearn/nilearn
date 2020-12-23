@@ -8,6 +8,7 @@ import warnings
 import abc
 
 import numpy as np
+import pathlib
 
 from sklearn.base import BaseEstimator, TransformerMixin
 from joblib import Memory
@@ -56,6 +57,9 @@ def filter_and_extract(imgs, extraction_function,
 
     # If we have a string (filename), we won't need to copy, as
     # there will be no side effect
+    if isinstance(imgs, pathlib.Path):
+        # conver pathlib.Path to str
+        imgs = str(imgs)
     if isinstance(imgs, str):
         copy = False
 

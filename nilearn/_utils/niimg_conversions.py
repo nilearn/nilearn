@@ -10,6 +10,7 @@ import glob
 import nilearn as ni
 import numpy as np
 import itertools
+import pathlib
 
 from joblib import Memory
 
@@ -155,7 +156,7 @@ def _iter_check_niimg(niimgs, ensure_ndim=None, atleast_4d=False,
             raise
         except TypeError as exc:
             img_name = ''
-            if isinstance(niimg, str):
+            if isinstance(niimg, str) or isinstance(niimg, pathlib.Path):
                 img_name = " (%s) " % niimg
 
             exc.args = (('Error encountered while loading image #%d%s'
@@ -227,6 +228,9 @@ def check_niimg(niimg, ensure_ndim=None, atleast_4d=False, dtype=None,
     """
     from ..image import new_img_like  # avoid circular imports
 
+    if isinstance(niimg, pathlib.Path):
+        # conver pathlib.Path to str
+        niimg = str(niimg)
     if isinstance(niimg, str):
         if wildcards and ni.EXPAND_PATH_WILDCARDS:
             # Ascending sorting + expand user path
@@ -459,6 +463,9 @@ def concat_niimgs(niimgs, dtype=np.float32, ensure_ndim=None,
             memory=memory, memory_level=memory_level))):
 
         if verbose > 0:
+            if isinstance(niimg, pathlib.Path):
+                # conver pathlib.Path to str
+                niimg = str(niimg)
             if isinstance(niimg, str):
                 nii_str = "image " + niimg
             else:

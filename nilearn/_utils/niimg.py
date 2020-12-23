@@ -7,6 +7,7 @@ Neuroimaging file input and output.
 import copy
 import gc
 import collections.abc
+import pathlib
 
 import numpy as np
 import nibabel
@@ -117,6 +118,9 @@ def load_niimg(niimg, dtype=None):
     """
     from ..image import new_img_like  # avoid circular imports
 
+    if isinstance(niimg, pathlib.Path):
+        # conver pathlib.Path to str
+        niimg = str(niimg)
     if isinstance(niimg, str):
         # data is a filename, we load it
         niimg = nibabel.load(niimg)

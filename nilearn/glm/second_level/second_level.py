@@ -17,6 +17,7 @@ import pandas as pd
 from joblib import Memory
 from nibabel import Nifti1Image
 from sklearn.base import clone
+import pathlib
 
 from nilearn._utils.niimg_conversions import check_niimg
 from nilearn.input_data import NiftiMasker
@@ -292,6 +293,9 @@ class SecondLevelModel(BaseGLM):
         self.target_affine = target_affine
         self.target_shape = target_shape
         self.smoothing_fwhm = smoothing_fwhm
+        if isinstance(memory, pathlib.Path):
+            # conver pathlib.Path to str
+            memory = str(memory)
         if isinstance(memory, str):
             self.memory = Memory(memory)
         else:

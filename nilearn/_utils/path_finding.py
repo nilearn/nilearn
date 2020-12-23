@@ -3,9 +3,13 @@ Path finding utilities
 """
 import glob
 import os.path
+import pathlib
 
 
 def _resolve_globbing(path):
+    if isinstance(path, pathlib.Path):
+        # conver pathlib.Path to str
+        path = str(path)
     if isinstance(path, str):
         path_list = sorted(glob.glob(os.path.expanduser(path)))
         # Raise an error in case the list is empty.

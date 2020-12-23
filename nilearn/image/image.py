@@ -15,6 +15,7 @@ import numpy as np
 from joblib import Parallel, delayed
 from scipy import ndimage
 from scipy.stats import scoreatpercentile
+import pathlib
 
 from .. import signal
 from .._utils import (_repr_niimgs, as_ndarray, check_niimg, check_niimg_3d,
@@ -277,7 +278,7 @@ def smooth_img(imgs, fwhm):
     # Use hasattr() instead of isinstance to workaround a Python 2.6/2.7 bug
     # See http://bugs.python.org/issue7624
     if hasattr(imgs, "__iter__") \
-       and not isinstance(imgs, str):
+       and not isinstance(imgs, str) and not isinstance(imgs, pathlib.Path):
         single_img = False
     else:
         single_img = True
@@ -540,6 +541,9 @@ def mean_img(imgs, target_affine=None, target_shape=None,
     nilearn.image.math_img : For more general operations on images.
 
     """
+    if isinstance(imgs, pathlib.Path):
+        # conver pathlib.Path to str
+        imgs = str(imgs)
     is_str = isinstance(imgs, str)
     is_iterable = isinstance(imgs, collections.abc.Iterable)
     if is_str or not is_iterable:
@@ -716,6 +720,9 @@ def new_img_like(ref_niimg, data, affine=None, copy_header=False):
         A loaded image with the same type (and header) as the reference image.
     """
     # Hand-written loading code to avoid too much memory consumption
+    if isinstance(ref_niimg, pathlib.Path):
+        # conver pathlib.Path to str
+        ref_niimg = str(ref_niimg)
     orig_ref_niimg = ref_niimg
     is_str = isinstance(ref_niimg, str)
     has_get_data = hasattr(ref_niimg, 'get_data')
@@ -1124,7 +1131,10 @@ def largest_connected_component_img(imgs):
     scipy ndimage module.
     """
     from .._utils.ndimage import largest_connected_component
-
+            
+    if isinstance(imgs, pathlib.Path):
+        # conver pathlib.Path to str
+        imgs = str(imgs)
     if hasattr(imgs, "__iter__") and not isinstance(imgs, str):
         single_img = False
     else:
