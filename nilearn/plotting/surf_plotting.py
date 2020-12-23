@@ -30,7 +30,7 @@ def plot_surf(surf_mesh, surf_map=None, bg_map=None,
               hemi='left', view='lateral', cmap=None, colorbar=False,
               avg_method='mean', threshold=None, alpha='auto',
               bg_on_data=False, darkness=1, vmin=None, vmax=None,
-              cbar_vmin=None, cbar_vmax=None,
+              cbar_vmin=None, cbar_vmax=None, cbar_tick_format='%.2g',
               title=None, output_file=None, axes=None, figure=None, **kwargs):
     """ Plotting of surfaces with optional background and data
 
@@ -99,7 +99,15 @@ def plot_surf(surf_mesh, surf_map=None, bg_map=None,
         applied.
 
     vmin, vmax: lower / upper bound to plot surf_data values
-        If None , the values will be set to min/max of the data
+        If None, the values will be set to min/max of the data
+
+    cbar_vmin, cbar_vmax: lower / upper bounds for the colorbar, optional.
+        If None, the values will be set from the data.
+        Default values are None.
+
+    cbar_tick_format: str, optional, default is '%.2g' for scientific notation.
+        Controls how to format the tick labels of the colorbar.
+        Ex: use "%i" to display as integers.
 
     title : str, optional
         Figure title.
@@ -297,7 +305,7 @@ def plot_surf(surf_mesh, surf_map=None, bg_map=None,
             cbar = figure.colorbar(
                 proxy_mappable, cax=cax, ticks=ticks,
                 boundaries=bounds, spacing='proportional',
-                format='%.2g', orientation='vertical')
+                format=cbar_tick_format, orientation='vertical')
             _crop_colorbar(cbar, cbar_vmin, cbar_vmax)
 
         p3dcollec.set_facecolors(face_colors)
