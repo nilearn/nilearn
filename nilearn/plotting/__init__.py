@@ -4,6 +4,7 @@ Plotting code for nilearn
 # Original Authors: Chris Filo Gorgolewski, Gael Varoquaux
 import os
 import sys
+import importlib
 
 
 ###############################################################################
@@ -14,9 +15,10 @@ def _set_mpl_backend():
     try:
         import matplotlib
     except ImportError:
-        from .._utils.testing import skip_if_running_tests
-        # No need to fail when running tests
-        skip_if_running_tests('matplotlib not installed')
+        if importlib.util.find_spec("pytest") is not None:
+            from .._utils.testing import skip_if_running_tests
+            # No need to fail when running tests
+            skip_if_running_tests('matplotlib not installed')
         raise
     else:
         from ..version import (_import_module_with_version_check,
