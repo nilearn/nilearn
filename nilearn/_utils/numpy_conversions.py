@@ -150,7 +150,7 @@ def csv_to_array(csv_path, delimiters=' \t,;', **kwargs):
     array: numpy.ndarray
         An array containing the data loaded from the CSV file.
     """
-    if not isinstance(csv_path, str) or not isinstance(csv_path, pathlib.Path):
+    if not isinstance(csv_path, str) and not isinstance(csv_path, pathlib.Path):
         raise TypeError('CSV must be a file path. Got a CSV of type: %s' %
                         type(csv_path))
 
