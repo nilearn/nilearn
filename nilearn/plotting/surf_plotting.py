@@ -98,14 +98,15 @@ def plot_surf(surf_mesh, surf_map=None, bg_map=None,
         .5 indicates the background values are reduced by half before being
         applied.
 
-    vmin, vmax: lower / upper bound to plot surf_data values
+    vmin, vmax: float, float, lower / upper bound to plot surf_data values
         If None, the values will be set to min/max of the data
 
-    cbar_vmin, cbar_vmax: lower / upper bounds for the colorbar, optional.
+    cbar_vmin, cbar_vmax: float, float, lower / upper bounds for the colorbar, optional.
         If None, the values will be set from the data.
         Default values are None.
 
-    cbar_tick_format: str, optional, default is '%.2g' for scientific notation.
+    cbar_tick_format: str, optional,
+        Default is '%.2g' for scientific notation.
         Controls how to format the tick labels of the colorbar.
         Ex: use "%i" to display as integers.
 
@@ -832,8 +833,8 @@ def plot_img_on_surf(stat_map, surf_mesh='fsaverage5', mask_img=None,
 def plot_surf_roi(surf_mesh, roi_map, bg_map=None,
                   hemi='left', view='lateral', threshold=1e-14,
                   alpha='auto', vmin=None, vmax=None, cmap='gist_ncar',
-                  bg_on_data=False, darkness=1, title=None,
-                  output_file=None, axes=None, figure=None, **kwargs):
+                  cbar_tick_format="%i", bg_on_data=False, darkness=1, 
+                  title=None, output_file=None, axes=None, figure=None, **kwargs):
     """ Plotting ROI on a surface mesh with optional background
 
     .. versionadded:: 0.3
@@ -875,6 +876,11 @@ def plot_surf_roi(surf_mesh, roi_map, bg_map=None,
     cmap : matplotlib colormap str or colormap object, default 'gist_ncar'
         To use for plotting of the rois. Either a string which is a name
         of a matplotlib colormap, or a matplotlib colormap object.
+
+    cbar_tick_format: str, optional,
+        Default is '%i' for integers.
+        Controls how to format the tick labels of the colorbar.
+        Ex: use "%.2g" to display using scientific notation.
 
     alpha : float, default is 'auto'
         Alpha level of the mesh (not the stat_map). If default,
@@ -939,7 +945,8 @@ def plot_surf_roi(surf_mesh, roi_map, bg_map=None,
 
     display = plot_surf(mesh, surf_map=roi, bg_map=bg_map,
                         hemi=hemi, view=view, avg_method='median',
-                        threshold=threshold, cmap=cmap, alpha=alpha,
+                        threshold=threshold, cmap=cmap, 
+                        cbar_tick_format=cbar_tick_format, alpha=alpha,
                         bg_on_data=bg_on_data, darkness=darkness,
                         vmin=vmin, vmax=vmax, title=title,
                         output_file=output_file, axes=axes,
