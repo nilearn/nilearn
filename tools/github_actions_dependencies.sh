@@ -7,6 +7,3 @@ else
     pip install --progress-bar off --upgrade -r requirements-dev.txt
 fi
 
-if [ ! -z "$MATPLOTLIB_DEV" ]; then
-    pip install git+https://github.com/matplotlib/matplotlib.git
-fi
