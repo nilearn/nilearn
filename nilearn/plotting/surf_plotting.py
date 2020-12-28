@@ -138,6 +138,7 @@ def plot_surf(surf_mesh, surf_map=None, bg_map=None,
     nilearn.plotting.plot_surf_stat_map : for plotting statistical maps on
         brain surfaces.
     """
+    _default_figsize = [6, 4]
 
     # load mesh and derive axes limits
     mesh = load_surf_mesh(surf_mesh)
@@ -195,15 +196,20 @@ def plot_surf(surf_mesh, surf_map=None, bg_map=None,
         if isinstance(cmap, str):
             cmap = plt.cm.get_cmap(cmap)
 
+    figsize = _default_figsize
+    # Leave space for colorbar
+    if colorbar:
+        figsize[0] += .7
     # initiate figure and 3d axes
     if axes is None:
         if figure is None:
-            figure = plt.figure()
+            figure = plt.figure(figsize=figsize)
         axes = Axes3D(figure, rect=[0, 0, 1, 1],
                       xlim=limits, ylim=limits)
     else:
         if figure is None:
             figure = axes.get_figure()
+            figure.set_size_inches(*figsize)
         axes.set_xlim(*limits)
         axes.set_ylim(*limits)
     axes.view_init(elev=elev, azim=azim)
@@ -264,7 +270,7 @@ def plot_surf(surf_mesh, surf_map=None, bg_map=None,
         if vmax is None:
             vmax = np.nanmax(surf_map_faces)
 
-        # treshold if inidcated
+        # treshold if indicated
         if threshold is None:
             kept_indices = np.arange(surf_map_faces.shape[0])
         else:
