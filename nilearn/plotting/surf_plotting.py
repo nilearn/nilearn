@@ -284,10 +284,16 @@ def plot_surf(surf_mesh, surf_map=None, bg_map=None,
             our_cmap = get_cmap(cmap)
             norm = Normalize(vmin=vmin, vmax=vmax)
 
+            # Default number of ticks is 5...
             nb_ticks = 5
-            ticks = np.linspace(vmin, vmax, nb_ticks)
+            # ...unless we are dealing with integers with a small range
+            # in this case, we reduce the number of ticks
+            if cbar_tick_format == "%i" and vmax - vmin < nb_ticks:
+                ticks = np.arange(vmin, vmax + 1)
+                nb_ticks = len(ticks)
+            else:
+                ticks = np.linspace(vmin, vmax, nb_ticks)
             bounds = np.linspace(vmin, vmax, our_cmap.N)
-
             if threshold is not None:
                 cmaplist = [our_cmap(i) for i in range(our_cmap.N)]
                 # set colors to grey for absolute values < threshold
