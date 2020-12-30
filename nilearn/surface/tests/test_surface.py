@@ -20,6 +20,7 @@ from nilearn import datasets
 from nilearn import image
 from nilearn.image import resampling
 from nilearn.image.tests.test_resampling import rotation
+from nilearn.surface import Mesh
 from nilearn.surface import surface
 from nilearn.surface import load_surf_data, load_surf_mesh, vol_to_surf
 from nilearn.surface.surface import (_gifti_img_to_mesh,
@@ -143,6 +144,16 @@ def test_load_surf_data_file_error():
             load_surf_data(filename_wrong)
         os.remove(filename_wrong)
 
+
+def test_load_surf_mesh():
+    coords, faces = generate_surf()
+    mesh = Mesh(coords, faces)
+    assert_array_equal(mesh.coordinates, coords)
+    assert_array_equal(mesh.faces, faces)
+    loaded_mesh = load_surf_mesh(mesh)
+    assert isinstance(loaded_mesh, Mesh)
+    assert_array_equal(mesh.coordinates, loaded_mesh.coordinates)
+    assert_array_equal(mesh.faces, loaded_mesh.faces)
 
 def test_load_surf_mesh_list():
     # test if correct list is returned
