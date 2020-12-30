@@ -478,11 +478,12 @@ def vol_to_surf(img, surf_mesh,
     img : Niimg-like object, 3d or 4d.
         See http://nilearn.github.io/manipulating_images/input_output.html
 
-    surf_mesh : str or numpy.ndarray
+    surf_mesh : str or numpy.ndarray or Mesh
         Either a file containing surface mesh geometry (valid formats
         are .gii or Freesurfer specific files such as .orig, .pial,
         .sphere, .white, .inflated) or two Numpy arrays organized in a list,
-        tuple or a namedtuple with the fields "coordinates" and "faces".
+        tuple or a namedtuple with the fields "coordinates" and "faces", or
+        a Mesh object with "coordinates" and "faces" attributes.
 
     radius : float, optional
         The size (in mm) of the neighbourhood from which samples are drawn
@@ -814,15 +815,16 @@ def load_surf_mesh(surf_mesh):
 
     Parameters
     ----------
-    surf_mesh : str or numpy.ndarray
+    surf_mesh : str or numpy.ndarray or Mesh
         Either a file containing surface mesh geometry (valid formats
         are .gii .gii.gz or Freesurfer specific files such as .orig, .pial,
         .sphere, .white, .inflated) or two Numpy arrays organized in a list,
-        tuple or a namedtuple with the fields "coordinates" and "faces"
+        tuple or a namedtuple with the fields "coordinates" and "faces", or a
+        Mesh object with "coordinates" and "faces" attributes.
 
     Returns
     --------
-    mesh : namedtuple
+    mesh : Mesh
         With the fields "coordinates" and "faces", each containing a
         numpy.ndarray
 
@@ -877,7 +879,7 @@ def load_surf_mesh(surf_mesh):
                               'array containing  the indices (into coords) of '
                               'the mesh faces. The input was a list with '
                               '%r elements.') % len(surf_mesh))
-    elif (hasattr(surf_mesh, "faces") & hasattr(surf_mesh,"coordinates")):
+    elif (hasattr(surf_mesh, "faces") and hasattr(surf_mesh,"coordinates")):
         coords, faces = surf_mesh.coordinates, surf_mesh.faces
         mesh = Mesh(coordinates=coords, faces=faces)
 
