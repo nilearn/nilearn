@@ -85,10 +85,10 @@ def run_glm(Y, X, noise_model='ar1', bins=100, n_jobs=1, verbose=0):
     noise_model : {'ar1', 'ols'}, optional
         The temporal variance model. Defaults to 'ar1'.
 
-    bins : int, optional
+    bins : int, optional, default is 100.
         Maximum number of discrete bins for the AR(1) coef histogram.
 
-    n_jobs : int, optional
+    n_jobs : int, optional, default is 1.
         The number of CPUs to use to do the computation. -1 means
         'all CPUs'.
 
@@ -175,23 +175,23 @@ class FirstLevelModel(BaseGLM):
         String that specifies the hemodynamic response function.
         Defaults to 'glover'.
 
-    drift_model : string, optional
+    drift_model : string, optional, default is cosine.
         This parameter specifies the desired drift model for the design
         matrices. It can be 'polynomial', 'cosine' or None.
 
-    high_pass : float, optional
+    high_pass : float, optional, default is 0.01.
         This parameter specifies the cut frequency of the high-pass filter in
         Hz for the design matrices. Used only if drift_model is 'cosine'.
 
-    drift_order : int, optional
+    drift_order : int, optional, default is 1.
         This parameter specifices the order of the drift model (in case it is
         polynomial) for the design matrices.
 
-    fir_delays : array of shape(n_onsets) or list, optional
+    fir_delays : array of shape(n_onsets) or list, optional, default is [0].
         In case of FIR design, yields the array of delays used in the FIR
         model, in scans.
 
-    min_onset : float, optional
+    min_onset : float, optional, default is -24.
         This parameter specifies the minimal onset relative to the design
         (in seconds). Events that start before (slice_time_ref * t_r +
         min_onset) are not considered.
@@ -223,11 +223,11 @@ class FirstLevelModel(BaseGLM):
         Rough estimator of the amount of memory used by caching. Higher value
         means more memory for caching.
 
-    standardize : boolean, optional
+    standardize : boolean, optional, default is False.
         If standardize is True, the time-series are centered and normed:
         their variance is put to 1 in the time dimension.
 
-    signal_scaling : False, int or (int, int), optional,
+    signal_scaling : False, int or (int, int), optional, default is 0.
         If not False, fMRI signals are
         scaled to the mean value of scaling_axis given,
         which can be 0, 1 or (0, 1).
@@ -241,13 +241,13 @@ class FirstLevelModel(BaseGLM):
     noise_model : {'ar1', 'ols'}, optional
         The temporal variance model. Defaults to 'ar1'
 
-    verbose : integer, optional
+    verbose : integer, optional, default is 0.
         Indicate the level of verbosity. By default, nothing is printed.
         If 0 prints nothing. If 1 prints progress by computation of
         each run. If 2 prints timing details of masker and GLM. If 3
         prints masker computation details.
 
-    n_jobs : integer, optional
+    n_jobs : integer, optional, default is 1.
         The number of CPUs to use to do the computation. -1 means
         'all CPUs', -2 'all CPUs but one', and so on.
 
@@ -274,7 +274,7 @@ class FirstLevelModel(BaseGLM):
 
     Note
     ----
-    This class is experimental. 
+    This class is experimental.
     It may change in any future release of Nilearn.
     """
 
@@ -348,7 +348,7 @@ class FirstLevelModel(BaseGLM):
             If string, then a path to a csv file is expected.
 
         confounds: pandas Dataframe, numpy array or string or
-                   list of pandas DataFrames, numpy arays or strings 
+                   list of pandas DataFrames, numpy arays or strings
 
             Each column in a DataFrame corresponds to a confound variable
             to be included in the regression model of the respective run_img.
@@ -544,7 +544,7 @@ class FirstLevelModel(BaseGLM):
         stat_type : {'t', 'F'}, optional
             type of the contrast
 
-        output_type : str, optional
+        output_type : str, optional, default is 'z-score'.
             Type of the output map. Can be 'z_score', 'stat', 'p_value',
             'effect_size', 'effect_variance' or 'all'
 

@@ -43,7 +43,7 @@ class LikelihoodModelResults(object):
         cov : None or ndarray, optional
             covariance of thetas
 
-        dispersion : scalar, optional
+        dispersion : scalar, optional, default is 1.
             multiplicative factor in front of `cov`
 
         nuisance : None of ndarray
@@ -61,8 +61,8 @@ class LikelihoodModelResults(object):
 
         For (some subset of models) `dispersion` will typically be the mean
         square error from the estimated model (sigma^2)
-        
-        This class is experimental. 
+
+        This class is experimental.
         It may change in any future release of Nilearn.
         """
         self.theta = theta
@@ -287,7 +287,7 @@ class LikelihoodModelResults(object):
 
         Parameters
         ----------
-        alpha : float, optional
+        alpha : float, optional, default is 0.05.
             The `alpha` level for the confidence interval.
             ie., `alpha` = .05 returns a 95% confidence interval.
 

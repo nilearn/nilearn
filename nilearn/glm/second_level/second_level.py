@@ -258,7 +258,7 @@ class SecondLevelModel(BaseGLM):
         Path to the directory used to cache the masking process and the glm
         fit. By default, no caching is done. Creates instance of joblib.Memory.
 
-    memory_level: integer, optional
+    memory_level: integer, optional, default is 1.
         Rough estimator of the amount of memory used by caching. Higher value
         means more memory for caching.
 
@@ -267,7 +267,7 @@ class SecondLevelModel(BaseGLM):
         If 0 prints nothing. If 1 prints final computation time.
         If 2 prints masker computation details.
 
-    n_jobs : integer, optional
+    n_jobs : integer, optional, default is 1.
         The number of CPUs to use to do the computation. -1 means
         'all CPUs', -2 'all CPUs but one', and so on.
 
@@ -279,7 +279,7 @@ class SecondLevelModel(BaseGLM):
 
     Note
     ----
-    This class is experimental. 
+    This class is experimental.
     It may change in any future release of Nilearn.
 
     """
@@ -463,7 +463,7 @@ class SecondLevelModel(BaseGLM):
         second_level_stat_type: {'t', 'F'}, optional
             Type of the second level contrast
 
-        output_type: str, optional
+        output_type: str, optional, default is 'z-score'.
             Type of the output map. Can be 'z_score', 'stat', 'p_value',
             'effect_size', 'effect_variance' or 'all'
 
@@ -597,16 +597,16 @@ def non_parametric_inference(second_level_input, confounds=None,
         If smoothing_fwhm is not None, it gives the size in millimeters of the
         spatial smoothing to apply to the signal.
 
-    model_intercept : bool,
+    model_intercept : bool, optional, default is True.
       If True, a constant column is added to the confounding variates
       unless the tested variate is already the intercept.
 
-    n_perm : int,
+    n_perm : int, optional, default is 10000.
       Number of permutations to perform.
       Permutations are costly but the more are performed, the more precision
       one gets in the p-values estimation.
 
-    two_sided_test : boolean,
+    two_sided_test : boolean, optional, default is False.
       If True, performs an unsigned t-test. Both positive and negative
       effects are considered; the null hypothesis is that the effect is zero.
       If False, only positive effects are considered as relevant. The null
@@ -616,13 +616,13 @@ def non_parametric_inference(second_level_input, confounds=None,
       Seed for random number generator, to have the same permutations
       in each computing units.
 
-    n_jobs : int,
+    n_jobs : int, optional, default is 1.
       Number of parallel workers.
       If -1 is provided, all CPUs are used.
       A negative number indicates that all the CPUs except (abs(n_jobs) - 1)
       ones will be used.
 
-    verbose: int, optional
+    verbose: int, optional, default is 0.
         verbosity level (0 means no message).
 
     Returns

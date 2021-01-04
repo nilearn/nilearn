@@ -187,7 +187,7 @@ def _convolve_regressors(events, hrf_model, frame_times, fir_delays=[0],
     frame_times : array of shape (n_scans,)
         The targeted timing for the design matrix.
 
-    fir_delays : array-like of shape (n_onsets,), optional,
+    fir_delays : array-like of shape (n_onsets,), optional, default is [0].
         In case of FIR design, yields the array of delays
         used in the FIR model (in scans).
 
@@ -275,19 +275,19 @@ def make_first_level_design_matrix(
 
     hrf_model : {'spm', 'spm + derivative', 'spm + derivative + dispersion',
         'glover', 'glover + derivative', 'glover + derivative + dispersion',
-        'fir', None}, optional,
+        'fir', None}, optional, default is 'glover'.
         Specifies the hemodynamic response function
 
-    drift_model : {'polynomial', 'cosine', None}, optional
+    drift_model : {'polynomial', 'cosine', None}, optional, default is 'cosine'.
         Specifies the desired drift model,
 
-    high_pass : float, optional
+    high_pass : float, optional, default is 0.01.
         High-pass frequency in case of a cosine model (in Hz).
 
-    drift_order : int, optional
+    drift_order : int, optional, default is 1.
         Order of the drift model (in case it is polynomial).
 
-    fir_delays : array of shape(n_onsets) or list, optional,
+    fir_delays : array of shape(n_onsets) or list, optional, default is [0].
         In case of FIR design, yields the array of delays used in the FIR
         model (in scans).
 
@@ -299,13 +299,13 @@ def make_first_level_design_matrix(
         If None, while add_regs was provided, these will be termed
         'reg_%i', i = 0..n_add_reg - 1
         If add_regs is a DataFrame, the corresponding column names are used
-        and add_reg_names is ignored. 
+        and add_reg_names is ignored.
 
-    min_onset : float, optional
+    min_onset : float, optional, default is -24.
         Minimal onset relative to frame_times[0] (in seconds)
         events that start before frame_times[0] + min_onset are not considered.
 
-    oversampling: int, optional,
+    oversampling: int, optional, default is 50.
         Oversampling factor used in temporal convolutions.
 
     Returns

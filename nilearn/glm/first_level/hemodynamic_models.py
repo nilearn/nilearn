@@ -32,19 +32,19 @@ def _gamma_difference_hrf(tr, oversampling=50, time_length=32., onset=0.,
     onset: float
         onset time of the hrf
 
-    delay: float, optional
+    delay: float, optional, default is 6.
         delay parameter of the hrf (in s.)
 
-    undershoot: float, optional
+    undershoot: float, optional, default is 16.
         undershoot parameter of the hrf (in s.)
 
-    dispersion : float, optional
+    dispersion : float, optional, default is 1.
         dispersion parameter for the first gamma function
 
-    u_dispersion : float, optional
+    u_dispersion : float, optional, default is 1.
         dispersion parameter for the second gamma function
 
-    ratio : float, optional
+    ratio : float, optional, default is 0.167.
         ratio of the two gamma components
 
     Returns
@@ -73,13 +73,13 @@ def spm_hrf(tr, oversampling=50, time_length=32., onset=0.):
     tr : float
         scan repeat time, in seconds
 
-    oversampling : int, optional
+    oversampling : int, optional, default is 50.
         temporal oversampling factor
 
-    time_length : float, optional
+    time_length : float, optional, default is 32.
         hrf kernel length, in seconds
 
-    onset : float, optional
+    onset : float, optional, default is 0.
         hrf onset time, in seconds
 
     Returns
@@ -98,13 +98,13 @@ def glover_hrf(tr, oversampling=50, time_length=32., onset=0.):
     tr : float
         scan repeat time, in seconds
 
-    oversampling : int, optional
+    oversampling : int, optional, default is 50.
         temporal oversampling factor
 
-    time_length : float, optional
+    time_length : float, optional, default is 32.
         hrf kernel length, in seconds
 
-    onset : float, optional
+    onset : float, optional, default is 0.
         onset of the response
 
     Returns
@@ -125,13 +125,13 @@ def spm_time_derivative(tr, oversampling=50, time_length=32., onset=0.):
     tr: float
         scan repeat time, in seconds
 
-    oversampling: int, optional
+    oversampling: int, optional, default is 50.
         temporal oversampling factor, optional
 
-    time_length: float, optional
+    time_length: float, optional, default is 32.
         hrf kernel length, in seconds
 
-    onset: float, optional
+    onset: float, optional, default is 0.
         onset of the response in seconds
 
     Returns
@@ -154,11 +154,11 @@ def glover_time_derivative(tr, oversampling=50, time_length=32., onset=0.):
     ----------
     tr: float
         scan repeat time, in seconds
-    oversampling: int,
-        temporal oversampling factor, optional
-    time_length: float,
+    oversampling: int, optional, default is 50.
+        temporal oversampling factor.
+    time_length: float, optional, default is 32.
         hrf kernel length, in seconds
-    onset: float,
+    onset: float, optional, default is 0.
         onset of the response
 
     Returns
@@ -182,13 +182,13 @@ def spm_dispersion_derivative(tr, oversampling=50, time_length=32., onset=0.):
     tr: float
         scan repeat time, in seconds
 
-    oversampling: int, optional
+    oversampling: int, optional, default is 50.
         temporal oversampling factor in seconds
 
-    time_length: float, optional
+    time_length: float, optional, default is 32.
         hrf kernel length, in seconds
 
-    onset : float, optional
+    onset : float, optional, default is 0.
         onset of the response in seconds
 
     Returns
@@ -213,13 +213,13 @@ def glover_dispersion_derivative(tr, oversampling=50, time_length=32.,
     tr: float
         scan repeat time, in seconds
 
-    oversampling: int, optional
+    oversampling: int, optional, default is 50.
         temporal oversampling factor in seconds
 
-    time_length: float, optional
+    time_length: float, optional, default is 32.
         hrf kernel length, in seconds
 
-    onset : float, optional
+    onset : float, optional, default is 0.
         onset of the response in seconds
 
     Returns
@@ -250,10 +250,10 @@ def _sample_condition(exp_condition, frame_times, oversampling=50,
     frame_times : array of shape(n_scans)
         sample time points
 
-    oversampling : int, optional
+    oversampling : int, optional, default is 50.
         factor for oversampling event regressor
 
-    min_onset : float, optional
+    min_onset : float, optional, default is -24.
         minimal onset relative to frame_times[0] (in seconds)
         events that start before frame_times[0] + min_onset are not considered
 
@@ -396,7 +396,7 @@ def _hrf_kernel(hrf_model, tr, oversampling=50, fir_delays=None):
     tr : float
         the repetition time in seconds
 
-    oversampling : int, optional
+    oversampling : int, optional, default is 50.
         temporal oversampling factor to have a smooth hrf
 
     fir_delays : 1D-array-like, optional,
@@ -459,16 +459,16 @@ def compute_regressor(exp_condition, hrf_model, frame_times, con_id='cond',
     frame_times : array of shape (n_scans)
         the desired sampling times
 
-    con_id : string
-        optional identifier of the condition
+    con_id : string, optional, default is 'cond'.
+        Identifier of the condition
 
-    oversampling : int, optional
+    oversampling : int, optional, default is 50.
         oversampling factor to perform the convolution
 
     fir_delays : [int] 1D-array-like, optional
         delays (in scans) used in case of a finite impulse response model
 
-    min_onset : float, optional
+    min_onset : float, optional, default is -24.
         minimal onset relative to frame_times[0] (in seconds)
         events that start before frame_times[0] + min_onset are not considered
 

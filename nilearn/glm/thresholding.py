@@ -114,10 +114,10 @@ def cluster_level_inference(stat_img, mask_img=None,
     mask_img : Niimg-like object, optional,
         mask image
 
-    threshold: list of floats, optional
+    threshold: list of floats, optional, default is 3.0.
        cluster-forming threshold in z-scale.
 
-    alpha: float or list, optional
+    alpha: float or list, optional, default is 0.05.
         level of control on the true positive rate, aka true dsicovery
         proportion
 
@@ -137,7 +137,7 @@ def cluster_level_inference(stat_img, mask_img=None,
     Inference for brain imaging. Neuroimage. 2018 Nov 1;181:786-796. doi:
     10.1016/j.neuroimage.2018.07.060
 
-    This function is experimental. 
+    This function is experimental.
     It may change in any future release of Nilearn.
     """
 
@@ -190,20 +190,20 @@ def threshold_stats_img(stat_img=None, mask_img=None, alpha=.001, threshold=3.,
     mask_img : Niimg-like object, optional,
         mask image
 
-    alpha: float or list, optional
+    alpha: float or list, optional, default is 0.001.
         number controlling the thresholding (either a p-value or q-value).
         Its actual meaning depends on the height_control parameter.
         This function translates alpha to a z-scale threshold.
 
-    threshold: float, optional
+    threshold: float, optional, default is 3.0.
        desired threshold in z-scale.
        This is used only if height_control is None
 
-    height_control: string, or None optional
+    height_control: string, or None optional, default is 'fpr'.
         false positive control meaning of cluster forming
         threshold: None|'fpr'|'fdr'|'bonferroni'
 
-    cluster_threshold: float, optional
+    cluster_threshold: float, optional, default is 0.
         cluster size threshold. In the returned thresholded map,
         sets of connected voxels (`clusters`) with size smaller
         than this number will be removed.
@@ -227,7 +227,7 @@ def threshold_stats_img(stat_img=None, mask_img=None, alpha=.001, threshold=3.,
     If the input image is not z-scaled (i.e. some z-transformed statistic)
     the computed threshold is not rigorous and likely meaningless
 
-    This function is experimental. 
+    This function is experimental.
     It may change in any future release of Nilearn.
 
     See also
