@@ -309,30 +309,30 @@ def resample_img(img, target_affine=None, target_shape=None,
         If target_shape is specified, a target_affine of shape (4, 4)
         must also be given. (See notes)
 
-    interpolation: str, optional
+    interpolation: str, optional, default is 'continuous'.
         Can be 'continuous' (default), 'linear', or 'nearest'. Indicates the resample
         method.
 
-    copy: bool, optional
+    copy: bool, optional, default is True.
         If True, guarantees that output array has no memory in common with
         input array.
         In all cases, input images are never modified by this function.
 
-    order: "F" or "C"
+    order: "F" or "C", optional, default is 'F'.
         Data ordering in output array. This function is slightly faster with
         Fortran ordering.
 
-    clip: bool, optional
+    clip: bool, optional, default is True.
         If True (default) all resampled image values above max(img) and
         under min(img) are clipped to min(img) and max(img). Note that
         0 is added as an image value for clipping, and it is the padding
         value when extrapolating out of field of view.
         If False no clip is preformed.
 
-    fill_value: float, optional
-        Use a fill value for points outside of input volume (default 0).
+    fill_value: float, optional, default is 0.
+        Use a fill value for points outside of input volume.
 
-    force_resample: bool, optional
+    force_resample: bool, optional, default is False.
         Intended for testing, this prevents the use of a padding optimzation
 
     Returns
@@ -612,28 +612,28 @@ def resample_to_img(source_img, target_img,
         See http://nilearn.github.io/manipulating_images/input_output.html
         Reference image taken for resampling.
 
-    interpolation: str, optional
+    interpolation: str, optional, default is 'continuous'.
         Can be 'continuous' (default), 'linear', or 'nearest'. Indicates the resample
         method.
 
-    copy: bool, optional
+    copy: bool, optional, default is True.
         If True, guarantees that output array has no memory in common with
         input array.
         In all cases, input images are never modified by this function.
 
-    order: "F" or "C"
+    order: "F" or "C", optional, default is 'F'.
         Data ordering in output array. This function is slightly faster with
         Fortran ordering.
 
-    clip: bool, optional
+    clip: bool, optional, default is False.
         If False (default) no clip is preformed.
         If True all resampled image values above max(img) and under min(img) are
         clipped to min(img) and max(img)
 
-    fill_value: float, optional
-        Use a fill value for points outside of input volume (default 0).
+    fill_value: float, optional, default is 0.
+        Use a fill value for points outside of input volume.
 
-    force_resample: bool, optional
+    force_resample: bool, optional, default is False.
         Intended for testing, this prevents the use of a padding optimzation
 
     Returns
