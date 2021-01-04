@@ -20,7 +20,7 @@ def normalize_matrix_on_axis(m, axis=0):
     m : numpy 2D array,
       The matrix to normalize.
 
-    axis : integer in {0, 1}, optional
+    axis : integer in {0, 1}, optional, default is 0.
       A valid axis to normalize across.
 
     Returns
@@ -66,6 +66,9 @@ def orthonormalize_matrix(m, tol=1.e-12):
     ----------
     m : numpy array,
       The matrix to orthonormalize.
+
+    tol: float, optional, default is 1e-12.
+      Tolerance parameter for nullity.
 
     Returns
     -------
@@ -161,21 +164,21 @@ def _permuted_ols_on_chunk(scores_original_data, tested_vars, target_vars, threa
     thread_id : int
         process id, used for display.
 
-    confounding_vars : array-like, shape=(n_samples, n_covars)
+    confounding_vars : array-like, shape=(n_samples, n_covars), optional.
       Clinical data (covariates).
 
-    n_perm : int,
+    n_perm : int, optional, default is 10000.
       Total number of permutations to perform, only used for
       display in this function.
 
-    n_perm_chunk : int,
+    n_perm_chunk : int, optional, default is 10000.
       Number of permutations to be performed.
 
-    intercept_test : boolean,
+    intercept_test : boolean, optional, default is True.
       Change the permutation scheme (swap signs for intercept,
       switch labels otherwise). See reference
 
-    two_sided_test : boolean,
+    two_sided_test : boolean, optional, default is True.
       If True, performs an unsigned t-test. Both positive and negative
       effects are considered; the null hypothesis is that the effect is zero.
       If False, only positive effects are considered as relevant. The null
@@ -297,22 +300,22 @@ def permuted_ols(tested_vars, target_vars, confounding_vars=None,
       fMRI data, trying to be explained by explanatory and confounding
       variates.
 
-    confounding_vars : array-like, shape=(n_samples, n_covars)
+    confounding_vars : array-like, shape=(n_samples, n_covars), optional.
       Confounding variates (covariates), fitted but not tested.
       If None, no confounding variate is added to the model
       (except maybe a constant column according to the value of
       `model_intercept`)
 
-    model_intercept : bool,
+    model_intercept : bool, optional, default is True.
       If True, a constant column is added to the confounding variates
       unless the tested variate is already the intercept.
 
-    n_perm : int,
+    n_perm : int, optional, default is 10000.
       Number of permutations to perform.
       Permutations are costly but the more are performed, the more precision
       one gets in the p-values estimation.
 
-    two_sided_test : boolean,
+    two_sided_test : boolean, optional, default is True.
       If True, performs an unsigned t-test. Both positive and negative
       effects are considered; the null hypothesis is that the effect is zero.
       If False, only positive effects are considered as relevant. The null
@@ -322,13 +325,13 @@ def permuted_ols(tested_vars, target_vars, confounding_vars=None,
       Seed for random number generator, to have the same permutations
       in each computing units.
 
-    n_jobs : int,
+    n_jobs : int, optional, default is 1.
       Number of parallel workers.
       If 0 is provided, all CPUs are used.
       A negative number indicates that all the CPUs except (abs(n_jobs) - 1)
       ones will be used.
 
-    verbose: int, optional
+    verbose: int, optional, default is 0.
         verbosity level (0 means no message).
 
     Returns
