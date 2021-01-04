@@ -33,6 +33,8 @@ def test_plot_surf():
 
     # Plot with colorbar
     plot_surf(mesh, bg_map=bg, colorbar=True)
+    plot_surf(mesh, bg_map=bg, colorbar=True, cbar_vmin=0,
+              cbar_vmax=150, cbar_tick_format="%i")
 
     # Save execution time and memory
     plt.close()
@@ -95,6 +97,10 @@ def test_plot_surf_stat_map():
     plot_surf_stat_map(mesh, stat_map=data, bg_map=bg, colorbar=True,
                        bg_on_data=True, darkness=0.5,
                        threshold=0.3)
+
+    # Change colorbar tick format
+    plot_surf_stat_map(mesh, stat_map=data, bg_map=bg, colorbar=True,
+                       bg_on_data=True, darkness=0.5, cbar_tick_format="%.2g")
 
     # Change vmax
     plot_surf_stat_map(mesh, stat_map=data, vmax=5)
@@ -175,12 +181,21 @@ def test_plot_surf_roi():
     cbar = img.axes[-1]
     cbar_vmin = float(cbar.get_yticklabels()[0].get_text())
     cbar_vmax = float(cbar.get_yticklabels()[-1].get_text())
+    assert cbar_vmin == 1.0
+    assert cbar_vmax == 8.0
+    img2 = plot_surf_roi(mesh, roi_map=roi_map, vmin=1.2,
+                         vmax=8.9, colorbar=True, cbar_tick_format="%.2g")
+    img2.canvas.draw()
+    cbar = img2.axes[-1]
+    cbar_vmin = float(cbar.get_yticklabels()[0].get_text())
+    cbar_vmax = float(cbar.get_yticklabels()[-1].get_text())
     assert cbar_vmin == 1.2
     assert cbar_vmax == 8.9
 
     # plot parcellation
     plot_surf_roi(mesh, roi_map=parcellation)
     plot_surf_roi(mesh, roi_map=parcellation, colorbar=True)
+    plot_surf_roi(mesh, roi_map=parcellation, colorbar=True, cbar_tick_fomat="%f")
 
     # plot to axes
     plot_surf_roi(mesh, roi_map=roi_map, ax=None, figure=plt.gcf())

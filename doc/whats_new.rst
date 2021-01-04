@@ -26,6 +26,11 @@ Enhancements
 - :class:`nilearn.decoding.Decoder` and :class:`nilearn.decoding.DecoderRegressor`
   is now implemented with random predictions to estimate a chance level.
 
+- :func:`nilearn.plotting.plot_surf` and deriving functions like :func:`nilearn.plotting.plot_surf_roi`
+  now accept an optional argument `cbar_tick_format` to specify how numbers should be displayed on the
+  colorbar of surface plots. The default format is scientific notation except for :func:`nilearn.plotting.plot_surf_roi`
+  for which it is set as integers.
+
 .. _v0.7.0:
 
 0.7.0

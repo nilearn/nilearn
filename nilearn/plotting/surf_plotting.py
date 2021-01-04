@@ -30,7 +30,7 @@ def plot_surf(surf_mesh, surf_map=None, bg_map=None,
               hemi='left', view='lateral', cmap=None, colorbar=False,
               avg_method='mean', threshold=None, alpha='auto',
               bg_on_data=False, darkness=1, vmin=None, vmax=None,
-              cbar_vmin=None, cbar_vmax=None,
+              cbar_vmin=None, cbar_vmax=None, cbar_tick_format='%.2g',
               title=None, output_file=None, axes=None, figure=None, **kwargs):
     """ Plotting of surfaces with optional background and data
 
@@ -98,8 +98,17 @@ def plot_surf(surf_mesh, surf_map=None, bg_map=None,
         .5 indicates the background values are reduced by half before being
         applied.
 
-    vmin, vmax: lower / upper bound to plot surf_data values
-        If None , the values will be set to min/max of the data
+    vmin, vmax: float, float, lower / upper bound to plot surf_data values
+        If None, the values will be set to min/max of the data
+
+    cbar_vmin, cbar_vmax: float, float, lower / upper bounds for the colorbar, optional.
+        If None, the values will be set from the data.
+        Default values are None.
+
+    cbar_tick_format: str, optional,
+        Default is '%.2g' for scientific notation.
+        Controls how to format the tick labels of the colorbar.
+        Ex: use "%i" to display as integers.
 
     title : str, optional
         Figure title.
@@ -129,6 +138,7 @@ def plot_surf(surf_mesh, surf_map=None, bg_map=None,
     nilearn.plotting.plot_surf_stat_map : for plotting statistical maps on
         brain surfaces.
     """
+    _default_figsize = [6, 4]
 
     # load mesh and derive axes limits
     mesh = load_surf_mesh(surf_mesh)
@@ -186,15 +196,20 @@ def plot_surf(surf_mesh, surf_map=None, bg_map=None,
         if isinstance(cmap, str):
             cmap = plt.cm.get_cmap(cmap)
 
+    figsize = _default_figsize
+    # Leave space for colorbar
+    if colorbar:
+        figsize[0] += .7
     # initiate figure and 3d axes
     if axes is None:
         if figure is None:
-            figure = plt.figure()
+            figure = plt.figure(figsize=figsize)
         axes = Axes3D(figure, rect=[0, 0, 1, 1],
                       xlim=limits, ylim=limits)
     else:
         if figure is None:
             figure = axes.get_figure()
+            figure.set_size_inches(*figsize)
         axes.set_xlim(*limits)
         axes.set_ylim(*limits)
     axes.view_init(elev=elev, azim=azim)
@@ -255,7 +270,7 @@ def plot_surf(surf_mesh, surf_map=None, bg_map=None,
         if vmax is None:
             vmax = np.nanmax(surf_map_faces)
 
-        # treshold if inidcated
+        # treshold if indicated
         if threshold is None:
             kept_indices = np.arange(surf_map_faces.shape[0])
         else:
@@ -275,10 +290,16 @@ def plot_surf(surf_mesh, surf_map=None, bg_map=None,
             our_cmap = get_cmap(cmap)
             norm = Normalize(vmin=vmin, vmax=vmax)
 
+            # Default number of ticks is 5...
             nb_ticks = 5
-            ticks = np.linspace(vmin, vmax, nb_ticks)
+            # ...unless we are dealing with integers with a small range
+            # in this case, we reduce the number of ticks
+            if cbar_tick_format == "%i" and vmax - vmin < nb_ticks:
+                ticks = np.arange(vmin, vmax + 1)
+                nb_ticks = len(ticks)
+            else:
+                ticks = np.linspace(vmin, vmax, nb_ticks)
             bounds = np.linspace(vmin, vmax, our_cmap.N)
-
             if threshold is not None:
                 cmaplist = [our_cmap(i) for i in range(our_cmap.N)]
                 # set colors to grey for absolute values < threshold
@@ -297,7 +318,7 @@ def plot_surf(surf_mesh, surf_map=None, bg_map=None,
             cbar = figure.colorbar(
                 proxy_mappable, cax=cax, ticks=ticks,
                 boundaries=bounds, spacing='proportional',
-                format='%.2g', orientation='vertical')
+                format=cbar_tick_format, orientation='vertical')
             _crop_colorbar(cbar, cbar_vmin, cbar_vmax)
 
         p3dcollec.set_facecolors(face_colors)
@@ -824,8 +845,8 @@ def plot_img_on_surf(stat_map, surf_mesh='fsaverage5', mask_img=None,
 def plot_surf_roi(surf_mesh, roi_map, bg_map=None,
                   hemi='left', view='lateral', threshold=1e-14,
                   alpha='auto', vmin=None, vmax=None, cmap='gist_ncar',
-                  bg_on_data=False, darkness=1, title=None,
-                  output_file=None, axes=None, figure=None, **kwargs):
+                  cbar_tick_format="%i", bg_on_data=False, darkness=1, 
+                  title=None, output_file=None, axes=None, figure=None, **kwargs):
     """ Plotting ROI on a surface mesh with optional background
 
     .. versionadded:: 0.3
@@ -867,6 +888,11 @@ def plot_surf_roi(surf_mesh, roi_map, bg_map=None,
     cmap : matplotlib colormap str or colormap object, default 'gist_ncar'
         To use for plotting of the rois. Either a string which is a name
         of a matplotlib colormap, or a matplotlib colormap object.
+
+    cbar_tick_format: str, optional,
+        Default is '%i' for integers.
+        Controls how to format the tick labels of the colorbar.
+        Ex: use "%.2g" to display using scientific notation.
 
     alpha : float, default is 'auto'
         Alpha level of the mesh (not the stat_map). If default,
@@ -931,7 +957,8 @@ def plot_surf_roi(surf_mesh, roi_map, bg_map=None,
 
     display = plot_surf(mesh, surf_map=roi, bg_map=bg_map,
                         hemi=hemi, view=view, avg_method='median',
-                        threshold=threshold, cmap=cmap, alpha=alpha,
+                        threshold=threshold, cmap=cmap, 
+                        cbar_tick_format=cbar_tick_format, alpha=alpha,
                         bg_on_data=bg_on_data, darkness=darkness,
                         vmin=vmin, vmax=vmax, title=title,
                         output_file=output_file, axes=axes,
