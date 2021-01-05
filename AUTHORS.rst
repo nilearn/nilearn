@@ -38,16 +38,25 @@ Other contributors
 
 Some other past or present contributors are:
 
+* Abadie, A.
 * Abraham, A.
+* Bellec, P.
+* Bougacha, S.
 * Bzdok, D.
+* Chevalier, J.A.
 * Cipollini., B.
+* Dohmatob, E.
 * Eickenberg, M.
 * Esteve, L.
+* Fritsch, V.
 * Gervais, P.
+* Hoyos Idrobo, A.
 * Gorgolewski, C.F.
+* Kossaifi, J.
 * Michel, V.
 * Pedregosa, F.
-
+* Perez, M.
+  
 Funding
 .......
 
