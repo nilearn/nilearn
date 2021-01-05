@@ -30,8 +30,15 @@ def fetch_icbm152_2009(data_dir=None, url=None, resume=True, verbose=1):
     data_dir: string, optional
         Path of the data directory. Used to force data storage in a non-
         standard location. Default: None (meaning: default)
+
     url: string, optional
         Download URL of the dataset. Overwrite the default URL.
+
+    resume: bool, optional, default is True.
+        If True, try resuming partially downloaded data.
+
+    verbose: int, optional, default is 1.
+        verbosity level (0 means no message).
 
     Returns
     -------
@@ -169,15 +176,15 @@ def fetch_icbm152_brain_gm_mask(data_dir=None, threshold=0.2, resume=True,
         Path of the data directory. Used to force storage in a specified
         location. Defaults to None.
 
-    threshold: float, optional
+    threshold: float, optional, default is 0.2.
         The parameter which amounts to include the values in the mask image.
         The values lies above than this threshold will be included. Defaults
         to 0.2 (one fifth) of values.
 
-    resume: bool, optional
-        If True, try resuming partially downloaded data. Defaults to True.
+    resume: bool, optional, default is True.
+        If True, try resuming partially downloaded data.
 
-    verbose: int, optional
+    verbose: int, optional, default is 1.
         verbosity level (0 means no message).
 
     Returns
@@ -227,7 +234,7 @@ def fetch_oasis_vbm(n_subjects=None, dartel_version=True, data_dir=None,
         The number of subjects to load. If None is given, all the
         subjects are used.
 
-    dartel_version: boolean,
+    dartel_version: boolean, optional, default is True.
         Whether or not to use data normalized with DARTEL instead of standard
         SPM8 normalization.
 
@@ -239,10 +246,10 @@ def fetch_oasis_vbm(n_subjects=None, dartel_version=True, data_dir=None,
         Override download URL. Used for test only (or if you setup a mirror of
         the data).
 
-    resume: bool, optional
+    resume: bool, optional, default is True.
         If true, try resuming download if possible
 
-    verbose: int, optional
+    verbose: int, optional, default is 1.
         verbosity level (0 means no message).
 
     Returns

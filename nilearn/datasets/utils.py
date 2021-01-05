@@ -128,19 +128,19 @@ def _chunk_read_(response, local_file, chunk_size=8192, report_hook=None,
     local_file: file
         Hard disk file where data should be written
 
-    chunk_size: int, optional
-        Size of downloaded chunks. Default: 8192
+    chunk_size: int, optional, default is 8192.
+        Size of downloaded chunks.
 
-    report_hook: bool
+    report_hook: bool, optional.
         Whether or not to show downloading advancement. Default: None
 
-    initial_size: int, optional
+    initial_size: int, optional, default is 0.
         If resuming, indicate the initial size of the file
 
     total_size: int, optional
         Expected final size of download (None means it is unknown).
 
-    verbose: int, optional
+    verbose: int, optional, default is 1.
         verbosity level (0 means no message).
 
     Returns
@@ -247,7 +247,7 @@ def _get_dataset_dir(dataset_name, data_dir=None, default_paths=None,
         Default system paths in which the dataset may already have been
         installed by a third party software. They will be checked first.
 
-    verbose: int, optional
+    verbose: int, optional, default is 1.
         verbosity level (0 means no message).
 
     Returns
@@ -313,14 +313,13 @@ def _uncompress_file(file_, delete_archive=True, verbose=1):
 
     Parameters
     ----------
-    file: string
+    file_: string
         path of file to be uncompressed.
 
-    delete_archive: bool, optional
+    delete_archive: bool, optional, default is True.
         Wheteher or not to delete archive once it is uncompressed.
-        Default: True
 
-    verbose: int, optional
+    verbose: int, optional, default is 1.
         verbosity level (0 means no message).
 
     Notes
@@ -441,7 +440,7 @@ def _filter_columns(array, filters, combination='and'):
     filters: list of criteria
         See _filter_column
 
-    combination: string, optional
+    combination: string, optional, default is 'and'.
         String describing the combination operator. Possible values are "and"
         and "or".
     """
@@ -495,10 +494,10 @@ def _fetch_file(url, data_dir, resume=True, overwrite=False,
         Path of the data directory. Used for data storage in the specified
         location.
 
-    resume: bool, optional
+    resume: bool, optional, default is True.
         If true, try to resume partially downloaded files
 
-    overwrite: bool, optional
+    overwrite: bool, optional, default is False.
         If true and file already exists, delete it.
 
     md5sum: string, optional
@@ -510,7 +509,7 @@ def _fetch_file(url, data_dir, resume=True, overwrite=False,
     password: string, optional
         Password used for basic HTTP authentication
 
-    verbose: int, optional
+    verbose: int, optional, default is 1.
         verbosity level (0 means no message).
 
     session:
@@ -700,10 +699,10 @@ def _fetch_files(data_dir, files, resume=True, verbose=1, session=None):
             * 'md5sum' to check the md5 sum of the file
             * 'overwrite' if the file should be re-downloaded even if it exists
 
-    resume: bool, optional
+    resume: bool, optional, default is True.
         If true, try resuming download if possible
 
-    verbose: int, optional
+    verbose: int, optional, default is 1.
         verbosity level (0 means no message).
 
     session:
@@ -816,7 +815,7 @@ def _tree(path, pattern=None, dictionary=False):
     pattern: string, optional
         Pattern used to filter files (see fnmatch)
 
-    dictionary: boolean, optional
+    dictionary: boolean, optional, default is False.
         If True, the function will return a dict instead of a list
     """
     files = []
@@ -877,10 +876,10 @@ def make_fresh_openneuro_dataset_urls_index(
         Path to store the downloaded dataset.
         If None downloads to user's Desktop
 
-    dataset_version: string, optional
+    dataset_version: string, optional, default is `ds000030_R1.0.4`.
         dataset version name. Assumes it is of the form [name]_[version].
 
-    verbose: int, optional
+    verbose: int, optional, default is 1.
         verbosity level (0 means no message).
 
     Returns

@@ -937,7 +937,7 @@ def _get_batch(query, prefix_msg='', timeout=10., verbose=3):
     prefix_msg : str, optional (default='')
         Prefix for all log messages.
 
-    timeout : float
+    timeout : float, default is 10.
         Timeout in seconds.
 
     verbose : int, optional (default=3)
@@ -2451,11 +2451,11 @@ def fetch_neurovault_ids(
     collection_ids : Container, optional (default=())
         The ids of whole collections to be downloaded.
 
-    image_ids : Container, optional (default=None)
+    image_ids : Container, optional (default=())
         The ids of particular images to be downloaded. The metadata for the
         corresponding collections is also downloaded.
 
-    mode : {'download_new', 'overwrite', 'offline'}
+    mode : {'download_new', 'overwrite', 'offline'}, optional, default is `download_new`.
         When to fetch an image from the server rather than the local
         disk.
 
@@ -2549,7 +2549,7 @@ def fetch_neurovault_motor_task(data_dir=None, verbose=1):
         Path of the data directory. Used to force data storage in a specified
         location.
 
-    verbose: int, optional
+    verbose: int, optional, default is 1.
         verbosity level (0 means no message).
 
     Returns
@@ -2591,7 +2591,7 @@ def fetch_neurovault_auditory_computation_task(data_dir=None, verbose=1):
         Path of the data directory. Used to force data storage in a specified
         location.
 
-    verbose: int, optional
+    verbose: int, optional, default is 1.
         verbosity level (0 means no message).
 
     Returns

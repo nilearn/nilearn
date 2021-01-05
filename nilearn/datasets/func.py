@@ -37,14 +37,20 @@ def fetch_haxby(data_dir=None, subjects=(2,),
         Path of the data directory. Used to force data storage in a specified
         location. Default: None
 
-    subjects : list or int, optional
+    subjects : list or int, optional, default is (2,).
         Either a list of subjects or the number of subjects to load, from 1 to
         6. By default, 2nd subject will be loaded. Empty list returns no subject
         data.
 
-    fetch_stimuli: boolean, optional
+    fetch_stimuli: boolean, optional, default is False.
         Indicate if stimuli images must be downloaded. They will be presented
         as a dictionary of categories.
+
+    resume: bool, optional, default is True.
+        Whether to resume download of a partly-downloaded file.
+
+    verbose: int, optional, default is 1.
+        Verbosity level (0 means no message).
 
     Returns
     -------
@@ -182,12 +188,18 @@ def fetch_nyu_rest(n_subjects=None, sessions=[1], data_dir=None, resume=True,
         The number of subjects to load. If None is given, all the
         subjects are used.
 
-    sessions: iterable of int, optional
+    sessions: iterable of int, optional, default is [1].
         The sessions to load. Load only the first session by default.
 
     data_dir: string, optional
         Path of the data directory. Used to force data storage in a specified
         location. Default: None
+
+    resume: bool, optional, default is True.
+        Whether to resume download of a partly-downloaded file.
+
+    verbose: int, optional, default is 1.
+        Verbosity level (0 means no message).
 
     Returns
     -------
@@ -370,7 +382,7 @@ def fetch_adhd(n_subjects=30, data_dir=None, url=None, resume=True,
 
     Parameters
     ----------
-    n_subjects: int, optional
+    n_subjects: int, optional, default is 30.
         The number of subjects to load from maximum of 40 subjects.
         By default, 30 subjects will be loaded. If None is given,
         all 40 subjects will be loaded.
@@ -382,6 +394,12 @@ def fetch_adhd(n_subjects=30, data_dir=None, url=None, resume=True,
     url: string, optional
         Override download URL. Used for test only (or if you setup a mirror of
         the data). Default: None
+
+    resume: bool, optional, default is True.
+        Whether to resume download of a partly-downloaded file.
+
+    verbose: int, optional, default is 1.
+        Verbosity level (0 means no message).
 
     Returns
     -------
@@ -700,13 +718,13 @@ def fetch_localizer_contrasts(contrasts, n_subjects=None, get_tmaps=False,
         The number or list of subjects to load. If None is given,
         all 94 subjects are used.
 
-    get_tmaps: boolean
+    get_tmaps: boolean, optional, default is False.
         Whether t maps should be fetched or not.
 
-    get_masks: boolean
+    get_masks: boolean, optional, default is False.
         Whether individual masks should be fetched or not.
 
-    get_anats: boolean
+    get_anats: boolean, optional, default is False.
         Whether individual structural images should be fetched or not.
 
     data_dir: string, optional
@@ -717,10 +735,10 @@ def fetch_localizer_contrasts(contrasts, n_subjects=None, get_tmaps=False,
         Override download URL. Used for test only (or if you setup a mirror of
         the data).
 
-    resume: bool
+    resume: bool, optional, default is True.
         Whether to resume download of a partly-downloaded file.
 
-    verbose: int
+    verbose: int, optional, default is 1.
         Verbosity level (0 means no message).
 
     Returns
@@ -970,7 +988,7 @@ def fetch_localizer_calculation_task(n_subjects=1, data_dir=None, url=None,
 
     Parameters
     ----------
-    n_subjects: int, optional
+    n_subjects: int, optional, default is 1.
         The number of subjects to load. If None is given,
         all 94 subjects are used.
 
@@ -982,7 +1000,7 @@ def fetch_localizer_calculation_task(n_subjects=1, data_dir=None, url=None,
         Override download URL. Used for test only (or if you setup a mirror of
         the data).
 
-    verbose: int, optional
+    verbose: int, optional, default is 1.
         verbosity level (0 means no message).
 
     Returns
@@ -1018,7 +1036,7 @@ def fetch_localizer_button_task(data_dir=None, url=None,
 
     Parameters
     ----------
-    n_subjects: int, optional
+    n_subjects: int, optional. THIS IS NOT AN ARG OF THIS FUNCTION!!!
         The number of subjects to load. If None is given,
         this function ships only 2nd subject (S02) specific tmap and
         its normalized T1 image.
@@ -1031,7 +1049,7 @@ def fetch_localizer_button_task(data_dir=None, url=None,
         Override download URL. Used for test only (or if you setup a mirror of
         the data).
 
-    verbose: int, optional
+    verbose: int, optional, default is 1.
         verbosity level (0 means no message).
 
     Returns
@@ -1088,18 +1106,18 @@ def fetch_abide_pcp(data_dir=None, n_subjects=None, pipeline='cpac',
         all available subjects are used (this number depends on the
         preprocessing pipeline used).
 
-    pipeline: string, optional
+    pipeline: string, optional, default is 'cpac'.
         Possible pipelines are "ccs", "cpac", "dparsf" and "niak"
 
-    band_pass_filtering: boolean, optional
+    band_pass_filtering: boolean, optional, default is False.
         Due to controversies in the literature, band pass filtering is
         optional. If true, signal is band filtered between 0.01Hz and 0.1Hz.
 
-    global_signal_regression: boolean optional
+    global_signal_regression: boolean optional, default is False.
         Indicates if global signal regression should be applied on the
         signals.
 
-    derivatives: string list, optional
+    derivatives: string list, optional, default is ['func_preproc'].
         Types of downloaded files. Possible values are: alff, degree_binarize,
         degree_weighted, dual_regression, eigenvector_binarize,
         eigenvector_weighted, falff, func_mask, func_mean, func_preproc, lfcd,
@@ -1107,7 +1125,7 @@ def fetch_abide_pcp(data_dir=None, n_subjects=None, pipeline='cpac',
         rois_ho, rois_tt, and vmhc. Please refer to the PCP site for more
         details.
 
-    quality_checked: boolean, optional
+    quality_checked: boolean, optional, default is True.
         if true (default), restrict the list of the subjects to the one that
         passed quality assessment for all raters.
 
@@ -1320,9 +1338,6 @@ def fetch_mixed_gambles(n_subjects=1, data_dir=None, url=None, resume=True,
         Nifti1Image objects (where 48 is the number of trials),
         and y is an array of shape (n_subjects * 48,).
 
-    smooth: float, or list of 3 floats, optional (default 0.)
-        Size of smoothing kernel to apply to the loaded zmaps.
-
     Returns
     -------
     data: Bunch
@@ -1376,12 +1391,12 @@ def fetch_megatrawls_netmats(dimensionality=100, timeseries='eigen_regression',
 
     Parameters
     ----------
-    dimensionality: int, optional
+    dimensionality: int, optional, default is 100.
         Valid inputs are 25, 50, 100, 200, 300. By default, network matrices
         estimated using Group ICA brain parcellations of 100 components/dimensions
         will be returned.
 
-    timeseries: str, optional
+    timeseries: str, optional, default is `eigen_regression`.
         Valid inputs are 'multiple_spatial_regression' or 'eigen_regression'. By
         default 'eigen_regression', matrices estimated using first principal
         eigen component timeseries signals extracted from each subject data
@@ -1389,20 +1404,20 @@ def fetch_megatrawls_netmats(dimensionality=100, timeseries='eigen_regression',
         matrices estimated using spatial regressor based timeseries signals
         extracted from each subject data parcellations will be returned.
 
-    matrices: str, optional
+    matrices: str, optional, default is `partial_correlation`.
         Valid inputs are 'full_correlation' or 'partial_correlation'. By default,
         partial correlation matrices will be returned otherwise if selected
         full correlation matrices will be returned.
 
-    data_dir: str, default is None, optional
+    data_dir: str, optional, default is None.
         Path of the data directory. Used to force data storage in a specified
         location.
 
-    resume: bool, default is True
+    resume: bool, optional, default is True
         This parameter is required if a partially downloaded file is needed
         to be resumed to download again.
 
-    verbose: int, default is 1
+    verbose: int, optional, default is 1
         This parameter is used to set the verbosity level to print the message
         to give information about the processing.
         0 indicates no information will be given.
@@ -1521,7 +1536,7 @@ def fetch_cobre(n_subjects=10, data_dir=None, url=None, verbose=1):
 
     Parameters
     ----------
-    n_subjects: int, optional
+    n_subjects: int, optional, default is 10.
         The number of subjects to load from maximum of 146 subjects.
         By default, 10 subjects will be loaded. If n_subjects=None,
         all subjects will be loaded.
@@ -1534,7 +1549,7 @@ def fetch_cobre(n_subjects=10, data_dir=None, url=None, verbose=1):
         Override download url. Used for test only (or if you setup a
         mirror of the data). Default: None
 
-    verbose: int, optional
+    verbose: int, optional, default is 1.
        Verbosity level (0 means no message).
 
     Returns
@@ -1671,7 +1686,7 @@ def fetch_surf_nki_enhanced(n_subjects=10, data_dir=None,
 
     Parameters
     ----------
-    n_subjects: int, optional
+    n_subjects: int, optional, default is 10.
         The number of subjects to load from maximum of 102 subjects.
         By default, 10 subjects will be loaded. If None is given,
         all 102 subjects will be loaded.
@@ -1816,9 +1831,9 @@ def _fetch_development_fmri_participants(data_dir, url, verbose):
         Path of the data directory. Used to force data storage in a specified
         location. If None is given, data are stored in home directory.
 
-    url: str, optional
+    url: str
         Override download URL. Used for test only (or if you setup a mirror of
-        the data). Default: None
+        the data).
 
     verbose: int
         Defines the level of verbosity of the output.
@@ -1869,11 +1884,11 @@ def _fetch_development_fmri_functional(participants, data_dir, url, resume,
         Path of the data directory. Used to force data storage in a specified
         location. If None is given, data are stored in home directory.
 
-    url: str, optional
+    url: str
         Override download URL. Used for test only (or if you setup a mirror of
-        the data). Default: None
+        the data).
 
-    resume: bool, optional (default True)
+    resume: bool
         Whether to resume download of a partly-downloaded file.
 
     verbose: int
@@ -2144,7 +2159,7 @@ def fetch_language_localizer_demo_dataset(data_dir=None, verbose=1):
         Path to store the downloaded dataset. if None employ nilearn
         datasets default download directory.
 
-    verbose: int, optional
+    verbose: int, optional, default is 1.
         verbosity level (0 means no message).
 
     Returns
@@ -2185,7 +2200,7 @@ def fetch_bids_langloc_dataset(data_dir=None, verbose=1):
         Path to store the downloaded dataset. if None employ nilearn
         datasets default download directory.
 
-    verbose: int, optional
+    verbose: int, optional, default is 1.
         verbosity level (0 means no message).
 
     Returns
@@ -2227,10 +2242,10 @@ def fetch_openneuro_dataset_index(data_dir=None,
         Path to store the downloaded dataset. if None employ nilearn
         datasets default download directory.
 
-    dataset_version: string, optional
+    dataset_version: string, optional, default is 'ds000030_R1.0.4'.
         dataset version name. Assumes it is of the form [name]_[version].
 
-    verbose: int, optional
+    verbose: int, optional, default is 1.
         verbosity level (0 means no message).
 
     Returns
@@ -2370,10 +2385,10 @@ def fetch_openneuro_dataset(
         Path to store the downloaded dataset. if None employ nilearn
         datasets default download directory.
 
-    dataset_version: string, optional
+    dataset_version: string, optional, default is `ds000030_R1.0.4`.
         dataset version name. Assumes it is of the form [name]_[version].
 
-    verbose: int, optional
+    verbose: int, optional, default is 1.
         verbosity level (0 means no message).
 
     Returns
@@ -2433,6 +2448,9 @@ def fetch_localizer_first_level(data_dir=None, verbose=1):
     ----------
     data_dir: string
         directory where data should be downloaded and unpacked.
+
+    verbose: int, optional, default is 1.
+        verbosity level (0 means no message).
 
     Returns
     -------
@@ -2582,10 +2600,19 @@ def fetch_spm_auditory(data_dir=None, data_name='spm_auditory',
 
     Parameters
     ----------
-    data_dir: string
+    data_dir: string, optional.
         Path of the data directory. Used to force data storage in a specified
         location. If the data is already present there, then will simply
         glob it.
+
+    data_name: string, optional, default is `spm_auditory`.
+        Name of the dataset.
+
+    subject_id: string, optional, default is 'sub001'.
+        Indicates which subject to retrieve.
+
+    verbose: int, optional, default is 1.
+        verbosity level (0 means no message).
 
     Returns
     -------
@@ -2752,10 +2779,19 @@ def fetch_spm_multimodal_fmri(data_dir=None, data_name='spm_multimodal_fmri',
 
     Parameters
     ----------
-    data_dir: string
+    data_dir: string, optional.
         path of the data directory. Used to force data storage in a specified
         location. If the data is already present there, then will simply
         glob it.
+
+    data_name: string, optional, default is `spm_multimodal_fmri`.
+        Name of the dataset.
+
+    subject_id: string, optional, default is `sub001`.
+        Indicates which subject to retrieve.
+
+    verbose: int, optional, default is 1.
+        verbosity level (0 means no message).
 
     Returns
     -------
@@ -2793,6 +2829,9 @@ def fetch_fiac_first_level(data_dir=None, verbose=1):
     ----------
     data_dir: string
         directory where data should be downloaded and unpacked.
+
+    verbose: int, optional, default is 1.
+        verbosity level (0 means no message).
     """
     data_dir = _get_dataset_dir('fiac_nilearn.glm', data_dir=data_dir,
                                 verbose=verbose)
