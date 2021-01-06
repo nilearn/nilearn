@@ -60,6 +60,12 @@ def _identify_subpeaks(data):
         (n_foci, 3) array of local maxima indices for cluster.
     vals : `numpy.ndarray`
         (n_foci,) array of values from data at ijk.
+
+    Notes
+    -----
+    When a cluster's local maxima correspond to contiguous voxels with the
+    same values (as in a binary cluster), this function determines the center
+    of mass for those voxels.
     """
     # Initial identification of subpeaks with minimal minimum distance
     data_max = ndimage.filters.maximum_filter(data, 3)
