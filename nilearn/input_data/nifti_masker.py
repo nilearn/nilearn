@@ -41,18 +41,17 @@ def filter_and_mask(imgs, mask_img_, parameters,
 
     Parameters
     ----------
-    imgs: 3D/4D Niimg-like object
+    imgs : 3D/4D Niimg-like object
         Images to be masked. Can be 3-dimensional or 4-dimensional.
-
-    mask_img_: TODO...
 
     For all other parameters refer to NiftiMasker documentation.
 
     Returns
     -------
-    signals: 2D numpy array
+    signals : 2D numpy array
         Signals extracted using the provided mask. It is a scikit-learn
         friendly 2D array with shape n_sample x n_features.
+
     """
     imgs = _utils.check_niimg(imgs, atleast_4d=True, ensure_ndim=4)
 
@@ -108,7 +107,7 @@ class NiftiMasker(BaseMasker, CacheMixin):
         If smoothing_fwhm is not None, it gives the full-width half maximum in
         millimeters of the spatial smoothing to apply to the signal.
 
-    standardize : {'zscore', 'psc', True, False}, default is False.
+    standardize : {False, True, 'zscore', 'psc'}, optional
         Strategy to standardize the signal.
         'zscore': the signal is z-scored. Timeseries are shifted
         to zero mean and scaled to unit variance.
@@ -117,14 +116,17 @@ class NiftiMasker(BaseMasker, CacheMixin):
         True : the signal is z-scored. Timeseries are shifted
         to zero mean and scaled to unit variance.
         False : Do not standardize the data.
+        Default=False.
 
-    standardize_confounds : boolean, optional, default is True
+    standardize_confounds : boolean, optional
         If standardize_confounds is True, the confounds are z-scored:
         their mean is put to 0 and their variance to 1 in the time dimension.
+        Default=True.
 
-    detrend : boolean, optional, default is False.
+    detrend : boolean, optional
         This parameter is passed to signal.clean. Please see the related
         documentation for details: :func:`nilearn.signal.clean`.
+        Default=False.
 
     low_pass : None or float, optional
         This parameter is passed to signal.clean. Please see the related
@@ -154,7 +156,7 @@ class NiftiMasker(BaseMasker, CacheMixin):
         brain mask for your data's field of view.
         Depending on this value, the mask will be computed from
         masking.compute_background_mask, masking.compute_epi_mask or
-        masking.compute_brain_mask. Default is 'background'.
+        masking.compute_brain_mask. Default='background'.
 
     mask_args : dict, optional
         If mask is None, these are additional parameters passed to
@@ -162,32 +164,34 @@ class NiftiMasker(BaseMasker, CacheMixin):
         to fine-tune mask computation. Please see the related documentation
         for details.
 
-    sample_mask : Any type compatible with numpy-array indexing
+    sample_mask : Any type compatible with numpy-array indexing, optional
         Masks the niimgs along time/fourth dimension. This complements
         3D masking by the mask_img argument. This masking step is applied
         before data preprocessing at the beginning of NiftiMasker.transform.
         This is useful to perform data subselection as part of a scikit-learn
         pipeline.
 
-    dtype : {dtype, "auto"}
+    dtype : {dtype, "auto"}, optional
         Data type toward which the data should be converted. If "auto", the
         data will be converted to int32 if dtype is discrete and float32 if it
         is continuous.
 
-    memory : instance of joblib.Memory or string
+    memory : instance of joblib.Memory or string, optional
         Used to cache the masking process.
         By default, no caching is done. If a string is given, it is the
         path to the caching directory.
 
-    memory_level : integer, optional, default is 1.
+    memory_level : integer, optional
         Rough estimator of the amount of memory used by caching. Higher value
-        means more memory for caching.
+        means more memory for caching. Default=1.
 
     verbose : integer, optional
-        Indicate the level of verbosity. By default, nothing is printed
+        Indicate the level of verbosity. By default, nothing is printed.
+        Default=0.
 
-    reports: boolean, optional, default is True.
+    reports : boolean, optional
         If set to True, data is saved in order to produce a report.
+        Default=True.
 
     Attributes
     ----------
@@ -204,6 +208,7 @@ class NiftiMasker(BaseMasker, CacheMixin):
     nilearn.image.resample_img
     nilearn.masking.apply_mask
     nilearn.signal.clean
+
     """
 
     def __init__(self, mask_img=None, sessions=None, smoothing_fwhm=None,
@@ -257,6 +262,7 @@ class NiftiMasker(BaseMasker, CacheMixin):
         -------
         displays : list
             A list of all displays to be rendered.
+
         """
         try:
             from nilearn import plotting
@@ -323,10 +329,11 @@ class NiftiMasker(BaseMasker, CacheMixin):
 
         Parameters
         ----------
-        imgs: list of Niimg-like objects
+        imgs : list of Niimg-like objects
             See http://nilearn.github.io/manipulating_images/input_output.html
             Data on which the mask must be calculated. If this is a list,
             the affine is considered the same for all.
+
         """
         # y=None is for scikit-learn compatibility (unused here).
 
@@ -397,23 +404,25 @@ class NiftiMasker(BaseMasker, CacheMixin):
 
         Parameters
         ----------
-        imgs: 3D/4D Niimg-like object
+        imgs : 3D/4D Niimg-like object
             See http://nilearn.github.io/manipulating_images/input_output.html
             Images to process. It must boil down to a 4D image with scans
             number as last dimension.
 
-        confounds: CSV file or array-like or pandas DataFrame, optional
+        confounds : CSV file or array-like or pandas DataFrame, optional
             This parameter is passed to signal.clean. Please see the related
             documentation for details: :func:`nilearn.signal.clean`.
             shape: (number of scans, number of confounds)
 
-        copy: ???? TODO: Add description.
+        copy : Boolean, optional
+            Indicates whether a copy is returned or not. Default=True.
 
         Returns
         -------
-        region_signals: 2D numpy.ndarray
+        region_signals : 2D numpy.ndarray
             Signal for each voxel inside the mask.
             shape: (number of scans, number of voxels)
+
         """
 
         # Ignore the mask-computing params: they are not useful and will

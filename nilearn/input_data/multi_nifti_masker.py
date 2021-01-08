@@ -29,17 +29,17 @@ class MultiNiftiMasker(NiftiMasker, CacheMixin):
 
     Parameters
     ----------
-    mask_img: Niimg-like object
+    mask_img : Niimg-like object
         See http://nilearn.github.io/manipulating_images/input_output.html
         Mask of the data. If not given, a mask is computed in the fit step.
         Optional parameters can be set using mask_args and mask_strategy to
         fine tune the mask extraction.
 
-    smoothing_fwhm: float, optional
+    smoothing_fwhm : float, optional
         If smoothing_fwhm is not None, it gives the size in millimeters of
         the spatial smoothing to apply to the signal.
 
-    standardize: {'zscore', 'psc', True, False}, default is False.
+    standardize : {False, True, 'zscore', 'psc'}, optional
         Strategy to standardize the signal.
         'zscore': the signal is z-scored. Timeseries are shifted
         to zero mean and scaled to unit variance.
@@ -48,36 +48,38 @@ class MultiNiftiMasker(NiftiMasker, CacheMixin):
         True : the signal is z-scored. Timeseries are shifted
         to zero mean and scaled to unit variance.
         False : Do not standardize the data.
+        Default=False.
 
-    standardize_confounds: boolean, optional default is True
+    standardize_confounds : boolean, optional
         If standardize_confounds is True, the confounds are z-scored:
         their mean is put to 0 and their variance to 1 in the time dimension.
+        Default=True.
 
-    detrend: boolean, optional, default is False.
+    detrend : boolean, optional
+        This parameter is passed to signal.clean. Please see the related
+        documentation for details. Default=False.
+
+    low_pass : None or float, optional
         This parameter is passed to signal.clean. Please see the related
         documentation for details
 
-    low_pass: None or float, optional
+    high_pass : None or float, optional
         This parameter is passed to signal.clean. Please see the related
         documentation for details
 
-    high_pass: None or float, optional
+    t_r : float, optional
         This parameter is passed to signal.clean. Please see the related
         documentation for details
 
-    t_r: float, optional
-        This parameter is passed to signal.clean. Please see the related
-        documentation for details
-
-    target_affine: 3x3 or 4x4 matrix, optional
+    target_affine : 3x3 or 4x4 matrix, optional
         This parameter is passed to image.resample_img. Please see the
         related documentation for details.
 
-    target_shape: 3-tuple of integers, optional
+    target_shape : 3-tuple of integers, optional
         This parameter is passed to image.resample_img. Please see the
         related documentation for details.
 
-    mask_strategy: {'background', 'epi' or 'template'}, optional
+    mask_strategy : {'background', 'epi' or 'template'}, optional
         The strategy used to compute the mask: use 'background' if your
         images present a clear homogeneous background, 'epi' if they
         are raw EPI images, or you could use 'template' which will
@@ -93,26 +95,27 @@ class MultiNiftiMasker(NiftiMasker, CacheMixin):
         to fine-tune mask computation. Please see the related documentation
         for details.
 
-    dtype: {dtype, "auto"}
+    dtype : {dtype, "auto"}, optional
         Data type toward which the data should be converted. If "auto", the
         data will be converted to int32 if dtype is discrete and float32 if it
         is continuous.
 
-    memory: instance of joblib.Memory or string
+    memory : instance of joblib.Memory or string, optional
         Used to cache the masking process.
         By default, no caching is done. If a string is given, it is the
         path to the caching directory.
 
-    memory_level: integer, optional, default is 0.
+    memory_level : integer, optional
         Rough estimator of the amount of memory used by caching. Higher value
-        means more memory for caching.
+        means more memory for caching. Default=0.
 
-    n_jobs: integer, optional, default is 1.
+    n_jobs : integer, optional
         The number of CPUs to use to do the computation. -1 means
-        'all CPUs', -2 'all CPUs but one', and so on.
+        'all CPUs', -2 'all CPUs but one', and so on. Default=1.
 
-    verbose: integer, optional
-        Indicate the level of verbosity. By default, nothing is printed
+    verbose : integer, optional
+        Indicate the level of verbosity. By default, nothing is printed.
+        Default=0.
 
     Attributes
     ----------
@@ -128,6 +131,7 @@ class MultiNiftiMasker(NiftiMasker, CacheMixin):
     nilearn.masking.compute_epi_mask: mask computation
     nilearn.masking.apply_mask: mask application on image
     nilearn.signal.clean: confounds removal and general filtering of signals
+
     """
 
     def __init__(self, mask_img=None, smoothing_fwhm=None,
@@ -165,10 +169,11 @@ class MultiNiftiMasker(NiftiMasker, CacheMixin):
 
         Parameters
         ----------
-        imgs: list of Niimg-like objects
+        imgs : list of Niimg-like objects
             See http://nilearn.github.io/manipulating_images/input_output.html
             Data on which the mask must be calculated. If this is a list,
             the affine is considered the same for all.
+
         """
 
         # Load data (if filenames are given, load them)
@@ -241,27 +246,28 @@ class MultiNiftiMasker(NiftiMasker, CacheMixin):
         Parameters
         ----------
 
-        imgs_list: list of Niimg-like objects
+        imgs_list : list of Niimg-like objects
             See http://nilearn.github.io/manipulating_images/input_output.html
             List of imgs file to prepare. One item per subject.
 
-        confounds: list of confounds, optional
+        confounds : list of confounds, optional
             List of confounds (2D arrays or filenames pointing to CSV
             files or pandas DataFrames). Must be of same length than imgs_list.
 
-        copy: boolean, optional, default is True.
+        copy : boolean, optional
             If True, guarantees that output array has no memory in common with
-            input array.
+            input array. Default=True.
 
-        n_jobs: integer, optional, default is 1.
+        n_jobs : integer, optional
             The number of cpus to use to do the computation. -1 means
-            'all cpus'.
+            'all cpus'. Default=1.
 
         Returns
         -------
-        region_signals: list of 2D numpy.ndarray
+        region_signals : list of 2D numpy.ndarray
             List of signal for each element per subject.
             shape: list of (number of scans, number of elements)
+
         """
 
         if not hasattr(self, 'mask_img_'):
@@ -311,18 +317,19 @@ class MultiNiftiMasker(NiftiMasker, CacheMixin):
 
         Parameters
         ----------
-        imgs: list of Niimg-like objects
+        imgs : list of Niimg-like objects
             See http://nilearn.github.io/manipulating_images/input_output.html
             Data to be preprocessed
 
-        confounds: CSV file path or 2D array or pandas DataFrame
+        confounds : CSV file path or 2D array or pandas DataFrame, optional
             This parameter is passed to signal.clean. Please see the
             corresponding documentation for details.
 
         Returns
         -------
-        data: {list of numpy arrays}
+        data : {list of numpy arrays}
             preprocessed images
+
         """
         self._check_fitted()
         if not hasattr(imgs, '__iter__') \
