@@ -5,8 +5,9 @@ tools to preprocess neuro-imaging data.
 from .nifti_masker import NiftiMasker
 from .multi_nifti_masker import MultiNiftiMasker
 from .nifti_labels_masker import NiftiLabelsMasker
+from .multi_nifti_labels_masker import MultiNiftiLabelsMasker
 from .nifti_maps_masker import NiftiMapsMasker
 from .nifti_spheres_masker import NiftiSpheresMasker
 
 __all__ = ['NiftiMasker', 'MultiNiftiMasker', 'NiftiLabelsMasker',
-           'NiftiMapsMasker', 'NiftiSpheresMasker']
+           'MultiNiftiLabelsMasker', 'NiftiMapsMasker', 'NiftiSpheresMasker']

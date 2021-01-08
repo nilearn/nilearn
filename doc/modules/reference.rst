@@ -219,6 +219,7 @@ the :ref:`user guide <user_guide>` for more information and usage examples.
    NiftiMasker
    MultiNiftiMasker
    NiftiLabelsMasker
+   MultiNiftiLabelsMasker
    NiftiMapsMasker
    NiftiSpheresMasker
 

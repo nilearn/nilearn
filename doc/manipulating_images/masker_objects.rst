@@ -416,6 +416,34 @@ possible option.
 
    * :ref:`sphx_glr_auto_examples_03_connectivity_plot_probabilistic_atlas_extraction.py`
 
+Extraction of signals from regions for multiple subjects:\  :class:`MultiNiftiMasker`, :class:`MultiNiftiLabelsMasker`
+======================================================================================================================
+
+The purpose of :class:`MultiNiftiMasker` and :class:`MultiNiftiLabelsMasker` is to extend the
+capabilities of :class:`NiftiMasker` and :class:`NiftiLabelsMasker` as to facilitate
+the computation of voxel signals in multi-subjects settings. While :class:`NiftiMasker`
+and :class:`NiftiLabelsMasker` work with 3D inputs (single brain volume) or 4D inputs (sequence of 
+brain volumes in time for one subject), :class:`MultiNiftiMasker` and :class:`MultiNiftiLabelsMasker`
+expect 5D inputs (list of sequences of brain volumes).
+
+:class:`MultiNiftiMasker` Usage
+-------------------------------
+
+:class:`MultiNiftiMasker` extracts voxel signals for each subject in the areas defined by the
+masks.
+
+.. topic:: **Examples**
+
+    * :ref:`sphx_glr_auto_examples_02_decoding_plot_miyawaki_reconstruction.py`
+    * :ref:`sphx_glr_auto_examples_02_decoding_plot_miyawaki_encoding.py`
+
+:class:`MultiNiftiLabelsMasker` Usage
+-------------------------------------
+
+:class:`MultiNiftiLabelsMasker` extracts signals from regions for each subject.
+
+TODO: Add examples...
+
 Extraction of signals from seeds:\  :class:`NiftiSpheresMasker`
 ===============================================================
 
