@@ -51,6 +51,10 @@ class MultiNiftiLabelsMasker(NiftiLabelsMasker, CacheMixin):
         to zero mean and scaled to unit variance.
         False : Do not standardize the data.
 
+    standardize_confounds: boolean, optional,  default is True
+        If standardize_confounds is True, the confounds are z-scored:
+        their mean is put to 0 and their variance to 1 in the time dimension
+
     detrend: boolean, optional
         This parameter is passed to signal.clean. Please see the related
         documentation for details
@@ -109,11 +113,10 @@ class MultiNiftiLabelsMasker(NiftiLabelsMasker, CacheMixin):
     """
 
     def __init__(self, labels_img, background_label=0, mask_img=None,
-                 smoothing_fwhm=None, standardize=False, detrend=False,
-                 low_pass=None, high_pass=None, t_r=None, dtype=None,
-                 resampling_target="data",
-                 memory=Memory(cachedir=None, verbose=0), memory_level=1,
-                 n_jobs=1, verbose=0, strategy="mean"):
+                 smoothing_fwhm=None, standardize=False, standardize_confounds=True,
+                 detrend=False, low_pass=None, high_pass=None, t_r=None, dtype=None,
+                 resampling_target="data", memory=Memory(cachedir=None, verbose=0), 
+                 memory_level=1, n_jobs=1, verbose=0, strategy="mean"):
         self.labels_img = labels_img
         self.background_label = background_label
         self.mask_img = mask_img
@@ -123,6 +126,7 @@ class MultiNiftiLabelsMasker(NiftiLabelsMasker, CacheMixin):
 
         # Parameters for clean()
         self.standardize = standardize
+        self.standardize_confounds = standardize_confounds
         self.detrend = detrend
         self.low_pass = low_pass
         self.high_pass = high_pass
