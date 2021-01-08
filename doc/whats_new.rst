@@ -150,6 +150,9 @@ Changes
   the public API, and examples have been improved to show how to use these objects
   to customize figures obtained with plotting functions.
   (See PR `#3073 <https://github.com/nilearn/nilearn/pull/3073>`_).
+- Descriptions of datasets retrieved with fetchers from :mod:`nilearn.datasets` are
+  now python strings rather than `bytes`. Therefore, decoding the descriptions is no
+  longer necessary.
 
 .. _v0.8.1:
 
@@ -344,7 +347,7 @@ Enhancements
   Add argument `filter` and allow a selection of signal filtering strategies:
   * "butterwoth" (butterworth filter)
   * "cosine" (discrete cosine transformation)
-  * `False` (no filtering)
+      * `False` (no filtering)
 - Change the default strategy for Dummy Classifier from 'prior' to
   'stratified' (https://github.com/nilearn/nilearn/pull/2826/).
 - :class:`nilearn.glm.first_level.run_glm` now allows auto regressive noise
