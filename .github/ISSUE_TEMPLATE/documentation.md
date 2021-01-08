@@ -7,7 +7,6 @@ assignees: ''
 ---
 
 
-#### Proposed documentation ehancement
-*Describe your proposed enhancement in detail. If you are requesting a new
-glossary term, please include a proposed definition.*
+#### Proposed documentation enhancement
+<!--Describe your proposed enhancement in detail.-->
 
