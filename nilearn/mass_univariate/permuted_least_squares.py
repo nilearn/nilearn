@@ -20,8 +20,9 @@ def normalize_matrix_on_axis(m, axis=0):
     m : numpy 2D array,
       The matrix to normalize.
 
-    axis : integer in {0, 1}, optional, default is 0.
+    axis : integer in {0, 1}, optional
       A valid axis to normalize across.
+      Default=0.
 
     Returns
     -------
@@ -67,8 +68,8 @@ def orthonormalize_matrix(m, tol=1.e-12):
     m : numpy array,
       The matrix to orthonormalize.
 
-    tol: float, optional, default is 1e-12.
-      Tolerance parameter for nullity.
+    tol: float, optional
+      Tolerance parameter for nullity. Default=1e-12.
 
     Returns
     -------
@@ -115,7 +116,7 @@ def _t_score_with_covars_and_normalized_design(tested_vars, target_vars,
     target_vars : array-like, shape=(n_samples, n_target_vars)
       Targets variates. F-ordered is better for efficient computation.
 
-    covars_orthonormalized : array-like, shape=(n_samples, n_covars) or None
+    covars_orthonormalized : array-like, shape=(n_samples, n_covars) or None, optional
       Confounding variates.
 
     Returns
@@ -164,32 +165,34 @@ def _permuted_ols_on_chunk(scores_original_data, tested_vars, target_vars, threa
     thread_id : int
         process id, used for display.
 
-    confounding_vars : array-like, shape=(n_samples, n_covars), optional.
+    confounding_vars : array-like, shape=(n_samples, n_covars), optional
       Clinical data (covariates).
 
-    n_perm : int, optional, default is 10000.
+    n_perm : int, optional
       Total number of permutations to perform, only used for
-      display in this function.
+      display in this function. Default=10000.
 
-    n_perm_chunk : int, optional, default is 10000.
-      Number of permutations to be performed.
+    n_perm_chunk : int, optional
+      Number of permutations to be performed. Default=10000.
 
-    intercept_test : boolean, optional, default is True.
+    intercept_test : boolean, optional
       Change the permutation scheme (swap signs for intercept,
-      switch labels otherwise). See reference
+      switch labels otherwise). See [1]_.
+      Default=True.
 
-    two_sided_test : boolean, optional, default is True.
+    two_sided_test : boolean, optional
       If True, performs an unsigned t-test. Both positive and negative
       effects are considered; the null hypothesis is that the effect is zero.
       If False, only positive effects are considered as relevant. The null
       hypothesis is that the effect is zero or negative.
+      Default=True
 
-    random_state : int or None,
+    random_state : int or None, optional
       Seed for random number generator, to have the same permutations
       in each computing units.
 
-    verbose: int, optional, default is 0.
-      Defines the verbosity level.
+    verbose : int, optional
+      Defines the verbosity level. Default=0.
 
     Returns
     -------
@@ -199,7 +202,7 @@ def _permuted_ols_on_chunk(scores_original_data, tested_vars, target_vars, threa
 
     References
     ----------
-    * Fisher, R. A. (1935). The design of experiments.
+    .. [1] Fisher, R. A. (1935). The design of experiments.
 
     """
     # initialize the seed of the random generator
@@ -274,14 +277,13 @@ def permuted_ols(tested_vars, target_vars, confounding_vars=None,
     Ordinary Least Squares criterion.
     Confounding variates may be included in the model.
     Permutation testing is used to assess the significance of the relationship
-    between the tested variates and the target variates [Anderson,
-    Winkler]. A max-type procedure is used to obtain family-wise
-    corrected p-values.
+    between the tested variates and the target variates [1]_, [2]_.
+    A max-type procedure is used to obtain family-wise corrected p-values.
 
     The specific permutation scheme implemented here is the one of
-    [Freedman & Lane]. Its has been demonstrated in [Anderson] that this
+    [3]_. Its has been demonstrated in [1]_ that this
     scheme conveys more sensitivity than alternative schemes. This holds
-    for neuroimaging applications, as discussed in details in [Winkler].
+    for neuroimaging applications, as discussed in details in [2]_.
 
     Permutations are performed on parallel computing units. Each of them
     performs a fraction of permutations on the whole dataset. Thus, the max
@@ -300,39 +302,40 @@ def permuted_ols(tested_vars, target_vars, confounding_vars=None,
       fMRI data, trying to be explained by explanatory and confounding
       variates.
 
-    confounding_vars : array-like, shape=(n_samples, n_covars), optional.
+    confounding_vars : array-like, shape=(n_samples, n_covars), optional
       Confounding variates (covariates), fitted but not tested.
       If None, no confounding variate is added to the model
       (except maybe a constant column according to the value of
       `model_intercept`)
 
-    model_intercept : bool, optional, default is True.
+    model_intercept : bool, optional
       If True, a constant column is added to the confounding variates
       unless the tested variate is already the intercept.
+      Default=True
 
-    n_perm : int, optional, default is 10000.
+    n_perm : int, optional
       Number of permutations to perform.
       Permutations are costly but the more are performed, the more precision
-      one gets in the p-values estimation.
+      one gets in the p-values estimation. Default=10000.
 
-    two_sided_test : boolean, optional, default is True.
+    two_sided_test : boolean, optional
       If True, performs an unsigned t-test. Both positive and negative
       effects are considered; the null hypothesis is that the effect is zero.
       If False, only positive effects are considered as relevant. The null
-      hypothesis is that the effect is zero or negative.
+      hypothesis is that the effect is zero or negative. Default=True.
 
-    random_state : int or None,
+    random_state : int or None, optional
       Seed for random number generator, to have the same permutations
       in each computing units.
 
-    n_jobs : int, optional, default is 1.
+    n_jobs : int, optional
       Number of parallel workers.
       If 0 is provided, all CPUs are used.
       A negative number indicates that all the CPUs except (abs(n_jobs) - 1)
-      ones will be used.
+      ones will be used. Default=1.
 
-    verbose: int, optional, default is 0.
-        verbosity level (0 means no message).
+    verbose : int, optional
+        verbosity level (0 means no message). Default=0.
 
     Returns
     -------
@@ -353,15 +356,14 @@ def permuted_ols(tested_vars, target_vars, confounding_vars=None,
 
     References
     ----------
-    * Anderson, M. J. & Robinson, J. (2001).
-      Permutation tests for linear models.
-      Australian & New Zealand Journal of Statistics, 43(1), 75-88.
-    * Winkler, A. M. et al. (2014).
-      Permutation inference for the general linear model.
-      Neuroimage.
-    * Freedman, D. & Lane, D. (1983).
-      A nonstochastic interpretation of reported significance levels.
-      J. Bus. Econ. Stats., 1(4), 292-298
+    .. [1] Anderson, M. J. & Robinson, J. (2001). Permutation tests for
+       linear models. Australian & New Zealand Journal of Statistics, 43(1), 75-88.
+
+    .. [2] Winkler, A. M. et al. (2014). Permutation inference for the general
+       linear model. Neuroimage.
+
+    .. [3] Freedman, D. & Lane, D. (1983). A nonstochastic interpretation of reported
+       significance levels. J. Bus. Econ. Stats., 1(4), 292-298
 
     """
     # initialize the seed of the random generator
