@@ -36,7 +36,7 @@ def _compute_loadings(components, data):
 
 class DictLearning(BaseDecomposition):
     """Perform a map learning algorithm based on spatial component sparsity,
-    over a CanICA initialization.  This yields more stable maps than CanICA.
+    over a CanICA initialization [1]_.  This yields more stable maps than CanICA.
 
      .. versionadded:: 0.2
 
@@ -68,8 +68,7 @@ class DictLearning(BaseDecomposition):
         - Between 0. or 1. : controls data reduction in the temporal domain.
           1. means no reduction, < 1. calls for an SVD based reduction.
         - if set to 'auto', estimator will set the number of components per
-          reduced session to be n_components.
-        Default='auto'.
+          reduced session to be n_components. Default='auto'.
 
     method : {'cd', 'lars'}, optional
         Coding method used by sklearn backend. Below are the possible values.
@@ -173,12 +172,11 @@ class DictLearning(BaseDecomposition):
 
     References
     ----------
-    * Arthur Mensch, Gael Varoquaux, Bertrand Thirion,
-      Compressed online dictionary learning for fast resting-state fMRI
-      decomposition.
-      IEEE 13th International Symposium on Biomedical Imaging (ISBI), 2016.
-      pp. 1282-1285
-    
+    .. [1] Arthur Mensch, Gael Varoquaux, Bertrand Thirion,
+       Compressed online dictionary learning for fast resting-state fMRI
+       decomposition. IEEE 13th International Symposium on Biomedical
+       Imaging (ISBI), 2016. pp. 1282-1285
+
     """
 
     def __init__(self, n_components=20,
@@ -241,7 +239,7 @@ class DictLearning(BaseDecomposition):
         ----------
         data : ndarray,
             Shape (n_samples, n_features)
-        
+
         """
         if self.verbose:
             print('[DictLearning] Learning initial components')

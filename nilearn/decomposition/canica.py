@@ -19,7 +19,7 @@ from .multi_pca import MultiPCA
 
 
 class CanICA(MultiPCA):
-    """Perform Canonical Independent Component Analysis.
+    """Perform Canonical Independent Component Analysis [1]_ [2]_.
 
     Parameters
     ----------
@@ -151,11 +151,11 @@ class CanICA(MultiPCA):
 
     References
     ----------
-    * G. Varoquaux et al. "A group model for stable multi-subject ICA on
-      fMRI datasets", NeuroImage Vol 51 (2010), p. 288-299
+    .. [1] G. Varoquaux et al. "A group model for stable multi-subject ICA on
+       fMRI datasets", NeuroImage Vol 51 (2010), p. 288-299
 
-    * G. Varoquaux et al. "ICA-based sparse features recovery from fMRI
-      datasets", IEEE ISBI 2010, p. 1177
+    .. [2] G. Varoquaux et al. "ICA-based sparse features recovery from fMRI
+       datasets", IEEE ISBI 2010, p. 1177
 
     """
 

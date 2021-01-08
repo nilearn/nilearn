@@ -139,7 +139,7 @@ def mask_and_reduce(masker, imgs,
     ------
     data : ndarray or memorymap
         Concatenation of reduced data.
-    
+
     """
     if not hasattr(imgs, '__iter__'):
         imgs = [imgs]
@@ -250,7 +250,7 @@ class BaseDecomposition(BaseEstimator, CacheMixin, TransformerMixin):
 
     mask : Niimg-like object or MultiNiftiMasker instance, optional
         Mask to be used on data. If an instance of masker is passed,
-        then its mask will be used. If no mask is given, it will be computed 
+        then its mask will be used. If no mask is given, it will be computed
         automatically by a MultiNiftiMasker with default parameters.
 
     smoothing_fwhm : float, optional
@@ -437,17 +437,17 @@ class BaseDecomposition(BaseEstimator, CacheMixin, TransformerMixin):
 
         Parameters
         ----------
-        imgs: iterable of Niimg-like objects
+        imgs : iterable of Niimg-like objects
             See http://nilearn.github.io/manipulating_images/input_output.html
             Data to be projected
 
-        confounds: CSV file path or numpy.ndarray or pandas DataFrame, optional,
+        confounds : CSV file path or numpy.ndarray or pandas DataFrame, optional
             This parameter is passed to nilearn.signal.clean. Please see the
             related documentation for details
 
         Returns
         ----------
-        loadings: list of 2D ndarray,
+        loadings : list of 2D ndarray,
             For each subject, each sample, loadings for each decomposition
             components
             shape: number of subjects * (number of scans, number of regions)
@@ -532,7 +532,7 @@ class BaseDecomposition(BaseEstimator, CacheMixin, TransformerMixin):
             Holds the score for each subjects. Score is two dimensional
             if per_component is True. First dimension
             is squeezed if the number of subjects is one
-        
+
         """
         self._check_components_()
         data = mask_and_reduce(self.masker_, imgs, confounds,
@@ -561,7 +561,7 @@ def explained_variance(X, components, per_component=True):
         score : ndarray
             Holds the score for each subjects. score is two dimensional if
             per_component = True
-        
+
         """
     full_var = np.var(X)
     n_components = components.shape[0]
