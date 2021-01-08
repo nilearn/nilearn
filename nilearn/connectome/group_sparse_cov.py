@@ -33,6 +33,9 @@ def compute_alpha_max(emp_covs, n_samples):
     This function also returns the value below which the precision
     matrices are fully dense (i.e. minimal number of zero coefficients).
 
+    The formula used in this function was derived using the same method
+    as in [1]_.
+
     Parameters
     ----------
     emp_covs : array-like, shape (n_features, n_features, n_subjects)
@@ -52,13 +55,12 @@ def compute_alpha_max(emp_covs, n_samples):
         minimal value for the regularization parameter that gives a fully
         dense matrix.
 
-    See also
-    --------
-    The formula used in this function was derived using the same method as in:
+    Reference
+    ---------
+    .. [1] Duchi, John, Stephen Gould, and Daphne Koller. 'Projected Subgradient
+       Methods for Learning Sparse Gaussians'. ArXiv E-prints 1206 (1 June
+       2012): 3249.
 
-    Duchi, John, Stephen Gould, and Daphne Koller. 'Projected Subgradient
-    Methods for Learning Sparse Gaussians'. ArXiv E-prints 1206 (1 June
-    2012): 3249.
     """
     A = np.copy(emp_covs)
     n_samples = np.asarray(n_samples).copy()
@@ -85,8 +87,8 @@ def _update_submatrix(full, sub, sub_inv, p, h, v):
     and column.
 
     This computation is based on the Sherman-Woodbury-Morrison identity.
-    """
 
+    """
     n = p - 1
     v[:n + 1] = full[:n + 1, n]
     v[n + 1:] = full[n + 2:, n]
@@ -119,6 +121,7 @@ def _update_submatrix(full, sub, sub_inv, p, h, v):
 def _assert_submatrix(full, sub, n):
     """Check that "sub" is the matrix obtained by removing the p-th col and row
     in "full". Used only for debugging.
+
     """
     true_sub = np.empty_like(sub)
     true_sub[:n, :n] = full[:n, :n]
@@ -142,6 +145,8 @@ def group_sparse_covariance(subjects, alpha, max_iter=50, tol=1e-3, verbose=0,
     Running time is linear on max_iter, and number of subjects (len(subjects)),
     but cubic on number of features (subjects[0].shape[1]).
 
+    The present algorithm is based on [1]_.
+
     Parameters
     ----------
     subjects : list of numpy.ndarray
@@ -155,17 +160,18 @@ def group_sparse_covariance(subjects, alpha, max_iter=50, tol=1e-3, verbose=0,
         number of samples, sensible values lie in the [0, 1] range(zero is
         no regularization: output is not sparse)
 
-    max_iter : int, optional, default is 50.
-        maximum number of iterations.
+    max_iter : int, optional
+        maximum number of iterations. Default=50.
 
-    tol : positive float or None, optional, default is 1e-3.
+    tol : positive float or None, optional
         The tolerance to declare convergence: if the duality gap goes below
         this value, optimization is stopped. If None, no check is performed.
+        Default=1e-3.
 
-    verbose : int, optional, default is 0.
-        verbosity level. Zero means "no message".
+    verbose : int, optional
+        verbosity level. Zero means "no message". Default=0.
 
-    probe_function : callable or None
+    probe_function : callable or None, optional
         This value is called before the first iteration and after each
         iteration. If it returns True, then optimization is stopped
         prematurely.
@@ -180,13 +186,14 @@ def group_sparse_covariance(subjects, alpha, max_iter=50, tol=1e-3, verbose=0,
         - current value of precisions (ndarray).
         - previous value of precisions (ndarray). None before first iteration.
 
-    precisions_init: numpy.ndarray
+    precisions_init : numpy.ndarray, optional
         initial value of the precision matrices. If not provided, a diagonal
         matrix with the variances of each input signal is used.
 
-    debug : bool, optional, default is False.
+    debug : bool, optional
         if True, perform checks during computation. It can help find
         numerical problems, but increases computation time a lot.
+        Default=False.
 
     Returns
     -------
@@ -196,13 +203,12 @@ def group_sparse_covariance(subjects, alpha, max_iter=50, tol=1e-3, verbose=0,
     precisions : numpy.ndarray, shape (n_features, n_features, n_subjects)
         estimated precision matrices
 
-    Notes
-    -----
-    The present algorithm is based on:
+    References
+    ----------
+    .. [1] Jean Honorio and Dimitris Samaras, "Simultaneous and Group-Sparse
+       Multi-Task Learning of Gaussian Graphical Models". arXiv:1207.4255
+       (17 July 2012). http://arxiv.org/abs/1207.4255.
 
-    Jean Honorio and Dimitris Samaras.
-    "Simultaneous and Group-Sparse Multi-Task Learning of Gaussian Graphical
-    Models". arXiv:1207.4255 (17 July 2012). http://arxiv.org/abs/1207.4255.
     """
 
     emp_covs, n_samples = empirical_covariances(
@@ -221,6 +227,7 @@ def _group_sparse_covariance(emp_covs, n_samples, alpha, max_iter=10, tol=1e-3,
                              verbose=0, debug=False):
     """Internal version of group_sparse_covariance.
     See its docstring for details.
+
     """
     if tol == -1:
         tol = None
@@ -449,23 +456,27 @@ def _group_sparse_covariance(emp_covs, n_samples, alpha, max_iter=10, tol=1e-3,
 class GroupSparseCovariance(BaseEstimator, CacheMixin):
     """Covariance and precision matrix estimator.
 
+    The model used has been introduced in [1]_, and the algorithm used is
+    based on what is described in [2]_.
+
     Parameters
     ----------
-    alpha : float, default is 0.1.
+    alpha : float, optional
         regularization parameter. With normalized covariances matrices and
         number of samples, sensible values lie in the [0, 1] range(zero is
-        no regularization: output is not sparse)
+        no regularization: output is not sparse).
+        Default=0.1.
 
-    tol : positive float, optional, default is 1e-3.
+    tol : positive float, optional
         The tolerance to declare convergence: if the dual gap goes below
-        this value, iterations are stopped
+        this value, iterations are stopped. Default=1e-3.
 
     max_iter : int, optional
-        maximum number of iterations. The default value (10) is rather
-        conservative.
+        maximum number of iterations. The default value is rather
+        conservative. Default=10.
 
-    verbose : int, optional, default is 0.
-        verbosity level. Zero means "no message".
+    verbose : int, optional
+        verbosity level. Zero means "no message". Default=0.
 
     memory : instance of joblib.Memory or string, optional
         Used to cache the masking process.
@@ -474,6 +485,7 @@ class GroupSparseCovariance(BaseEstimator, CacheMixin):
 
     memory_level : int, optional
         Caching aggressiveness. Higher values mean more caching.
+        Default=0.
 
     Attributes
     ----------
@@ -483,20 +495,15 @@ class GroupSparseCovariance(BaseEstimator, CacheMixin):
     `precisions_` : numpy.ndarraye, shape (n_features, n_features, n_subjects)
         precisions matrices estimated using the group-sparse algorithm.
 
-    Notes
-    ------
+    References
+    ----------
+    .. [1] Gael Varoquaux, et al. `Brain Covariance Selection: Better Individual
+       Functional Connectivity Models Using Population Prior
+       <http://arxiv.org/abs/1008.5071>`_'.
 
-    The model used has been introduced in:
+    .. [2] Jean Honorio and Dimitris Samaras, "Simultaneous and Group-Sparse
+       Multi-Task Learning of Gaussian Graphical Models". http://arxiv.org/abs/1207.4255.
 
-    Gael Varoquaux, et al. `Brain Covariance Selection: Better Individual
-    Functional Connectivity Models Using Population Prior
-    <http://arxiv.org/abs/1008.5071>`_'.
-
-    The algorithm used is based on what is described in:
-
-    Jean Honorio and Dimitris Samaras.
-    "Simultaneous and Group-Sparse Multi-Task Learning of Gaussian Graphical
-    Models". http://arxiv.org/abs/1207.4255.
     """
 
     def __init__(self, alpha=0.1, tol=1e-3, max_iter=10, verbose=0,
@@ -524,8 +531,8 @@ class GroupSparseCovariance(BaseEstimator, CacheMixin):
         -------
         self : GroupSparseCovariance instance
             the object itself. Useful for chaining operations.
-        """
 
+        """
         logger.log("Computing covariance matrices", verbose=self.verbose)
         self.covariances_, n_samples = empirical_covariances(
             subjects, assume_centered=False)
@@ -550,13 +557,15 @@ def empirical_covariances(subjects, assume_centered=False, standardize=False):
         signals. Sample number can vary from subject to subject, but all
         subjects must have the same number of features (i.e. of columns).
 
-    assume_centered : bool, optional, default is False.
+    assume_centered : bool, optional
         if True, assume that all input signals are centered. This slightly
         decreases computation time by avoiding useless computation.
+        Default=False.
 
-    standardize : bool, optional, default is False.
+    standardize : bool, optional
         if True, set every signal variance to one before computing their
         covariance matrix (i.e. compute a correlation matrix).
+        Default=False.
 
     Returns
     -------
@@ -565,6 +574,7 @@ def empirical_covariances(subjects, assume_centered=False, standardize=False):
 
     n_samples : numpy.ndarray, shape: (subject number,)
         number of samples for each subject. dtype is np.float.
+
     """
     if not hasattr(subjects, "__iter__"):
         raise ValueError("'subjects' input argument must be an iterable. "
@@ -618,12 +628,12 @@ def group_sparse_scores(precisions, n_samples, emp_covs, alpha,
     alpha : float
         regularization parameter
 
-    duality_gap : bool, optional, default is False.
-        if True, also returns a duality gap upper bound.
+    duality_gap : bool, optional
+        if True, also returns a duality gap upper bound. Default=False.
 
-    debug : bool, optional, default is False.
+    debug : bool, optional
         if True, some consistency checks are performed to help solving
-        numerical problems
+        numerical problems. Default=False.
 
     Returns
     -------
@@ -638,8 +648,8 @@ def group_sparse_scores(precisions, n_samples, emp_covs, alpha,
     duality_gap : float
         duality gap upper bound. The returned bound is tight: it vanishes for
         the optimal precision matrices
-    """
 
+    """
     n_features, _, n_subjects = emp_covs.shape
 
     log_lik = 0
@@ -726,18 +736,18 @@ def group_sparse_covariance_path(train_subjs, alphas, test_subjs=None,
     alphas : list of float
          values of alpha to use. Best results for sorted values (decreasing)
 
-    test_subjs : list of numpy.ndarray
+    test_subjs : list of numpy.ndarray, optional
         list of signals, independent from those in train_subjs, on which to
         compute a score. If None, no score is computed.
 
-    verbose : int, default is 0.
-        verbosity level
+    verbose : int, optional
+        verbosity level. Default=0.
 
     tol, max_iter, debug, precisions_init :
         Passed to group_sparse_covariance(). See the corresponding docstring
         for details.
 
-    probe_function : callable
+    probe_function : callable, optional
         This value is called before the first iteration and after each
         iteration. If it returns True, then optimization is stopped
         prematurely.
@@ -761,6 +771,7 @@ def group_sparse_covariance_path(train_subjs, alphas, test_subjs=None,
     scores : list of float
         for each estimated precision, score obtained on the test set. Output
         only if test_subjs is not None.
+
     """
     train_covs, train_n_samples = empirical_covariances(
         train_subjs, assume_centered=False, standardize=True)
@@ -794,6 +805,7 @@ class EarlyStopProbe(object):
     Stop optimizing as soon as the score on the test set starts decreasing.
     An instance of this class is supposed to be passed in the probe_function
     argument of group_sparse_covariance().
+
     """
     def __init__(self, test_subjs, verbose=0):
         self.test_emp_covs, _ = empirical_covariances(test_subjs)
@@ -823,49 +835,51 @@ class GroupSparseCovarianceCV(BaseEstimator, CacheMixin):
 
     Parameters
     ----------
-    alphas : integer, default is 4.
+    alphas : integer, optional
         initial number of points in the grid of regularization parameter
         values. Each step of grid refinement adds that many points as well.
+        Default=4.
 
-    n_refinements : integer, default is 4.
-        number of times the initial grid should be refined.
+    n_refinements : integer, optional
+        number of times the initial grid should be refined. Default=4.
 
-    cv : integer
+    cv : integer, optional
         number of folds in a K-fold cross-validation scheme. If None is passed,
         defaults to 3.
 
-    tol_cv : float, default is 1e-2.
+    tol_cv : float, optional
         tolerance used to get the optimal alpha value. It has the same meaning
         as the `tol` parameter in :func:`group_sparse_covariance`.
+        Default=1e-2.
 
-    max_iter_cv : integer, default is 50.
+    max_iter_cv : integer, optional
         maximum number of iterations for each optimization, during the alpha-
-        selection phase.
+        selection phase. Default=50.
 
-    tol : float, default is 1e-3.
+    tol : float, optional
         tolerance used during the final optimization for determining precision
-        matrices value.
+        matrices value. Default=1e-3.
 
-    max_iter : integer, default is 100.
-        maximum number of iterations in the final optimization.
+    max_iter : integer, optional
+        maximum number of iterations in the final optimization. Default=100.
 
-    verbose : integer, default is 0.
-        verbosity level. 0 means nothing is printed to the user.
+    verbose : integer, optional
+        verbosity level. 0 means nothing is printed to the user. Default=0.
 
-    n_jobs : integer, default is 1.
+    n_jobs : integer, optional
         maximum number of cpu cores to use. The number of cores actually used
         at the same time cannot exceed the number of folds in folding strategy
-        (that is, the value of cv).
+        (that is, the value of cv). Default=1.
 
-    debug : bool, default is False.
+    debug : bool, optional
         if True, activates some internal checks for consistency. Only useful
-        for nilearn developers, not users.
+        for nilearn developers, not users. Default=False.
 
-    early_stopping : bool, default is True.
+    early_stopping : bool, optional
         if True, reduce computation time by using a heuristic to reduce the
         number of iterations required to get the optimal value for alpha. Be
         aware that this can lead to slightly different values for the optimal
-        alpha compared to early_stopping=False.
+        alpha compared to early_stopping=False. Default=True.
 
     Attributes
     ----------
@@ -898,6 +912,7 @@ class GroupSparseCovarianceCV(BaseEstimator, CacheMixin):
     iteratively refined grid: first the cross-validated scores on a grid are
     computed, then a new refined grid is centered around the maximum, and so
     on.
+
     """
     def __init__(self, alphas=4, n_refinements=4, cv=None,
                  tol_cv=1e-2, max_iter_cv=50,
@@ -928,8 +943,9 @@ class GroupSparseCovarianceCV(BaseEstimator, CacheMixin):
 
         Returns
         -------
-        self: GroupSparseCovarianceCV
+        self : GroupSparseCovarianceCV
             the object instance itself.
+
         """
         # Empirical covariances
         emp_covs, n_samples = \
