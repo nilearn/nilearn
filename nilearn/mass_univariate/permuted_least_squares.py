@@ -5,11 +5,12 @@ Massively Univariate Linear Model estimated with OLS and permutation test.
 #         Virgile Fritsch, <virgile.fritsch@inria.fr>, jan. 2014
 import warnings
 
+import sys
+import time
+import joblib
 import numpy as np
 from scipy import linalg
 from sklearn.utils import check_random_state
-from nilearn._utils.compat import joblib
-
 
 def normalize_matrix_on_axis(m, axis=0):
     """ Normalize a 2D matrix on an axis.
@@ -138,10 +139,10 @@ def _t_score_with_covars_and_normalized_design(tested_vars, target_vars,
     return beta_targetvars_testedvars * np.sqrt((dof - 1.) / rss)
 
 
-def _permuted_ols_on_chunk(scores_original_data, tested_vars, target_vars,
-                           confounding_vars=None, n_perm_chunk=10000,
+def _permuted_ols_on_chunk(scores_original_data, tested_vars, target_vars, thread_id,
+                           confounding_vars=None, n_perm=10000, n_perm_chunk=10000,
                            intercept_test=True, two_sided_test=True,
-                           random_state=None):
+                           random_state=None, verbose=0):
     """Massively univariate group analysis with permuted OLS on a data chunk.
 
     To be used in a parallel computing context.
@@ -157,15 +158,22 @@ def _permuted_ols_on_chunk(scores_original_data, tested_vars, target_vars,
     target_vars : array-like, shape=(n_samples, n_targets)
       fMRI data. F-ordered for efficient computations.
 
+    thread_id : int
+        process id, used for display.
+
     confounding_vars : array-like, shape=(n_samples, n_covars)
       Clinical data (covariates).
+
+    n_perm : int,
+      Total number of permutations to perform, only used for
+      display in this function.
 
     n_perm_chunk : int,
       Number of permutations to be performed.
 
     intercept_test : boolean,
       Change the permutation scheme (swap signs for intercept,
-      switch labels otherwise). See [1]
+      switch labels otherwise). See reference
 
     two_sided_test : boolean,
       If True, performs an unsigned t-test. Both positive and negative
@@ -177,6 +185,9 @@ def _permuted_ols_on_chunk(scores_original_data, tested_vars, target_vars,
       Seed for random number generator, to have the same permutations
       in each computing units.
 
+    verbose: int, optional, default is 0.
+      Defines the verbosity level.
+
     Returns
     -------
     h0_fmax_part : array-like, shape=(n_perm_chunk, )
@@ -185,7 +196,7 @@ def _permuted_ols_on_chunk(scores_original_data, tested_vars, target_vars,
 
     References
     ----------
-    [1] Fisher, R. A. (1935). The design of experiments.
+    * Fisher, R. A. (1935). The design of experiments.
 
     """
     # initialize the seed of the random generator
@@ -195,6 +206,7 @@ def _permuted_ols_on_chunk(scores_original_data, tested_vars, target_vars,
     n_descriptors = target_vars.shape[1]
 
     # run the permutations
+    t0 = time.time()
     h0_fmax_part = np.empty((n_perm_chunk, n_regressors))
     scores_as_ranks_part = np.zeros((n_regressors, n_descriptors))
     for i in range(n_perm_chunk):
@@ -220,7 +232,7 @@ def _permuted_ols_on_chunk(scores_original_data, tested_vars, target_vars,
                                                        confounding_vars))
         if two_sided_test:
             perm_scores = np.fabs(perm_scores)
-        h0_fmax_part[i] = np.amax(perm_scores, 0)
+        h0_fmax_part[i] = np.nanmax(perm_scores, axis=0)
         # find the rank of the original scores in h0_part
         # (when n_descriptors or n_perm are large, it can be quite long to
         #  find the rank of the original scores into the whole H0 distribution.
@@ -228,6 +240,23 @@ def _permuted_ols_on_chunk(scores_original_data, tested_vars, target_vars,
         #  permutation computation)
         scores_as_ranks_part += (h0_fmax_part[i].reshape((-1, 1))
                                  < scores_original_data.T)
+
+        if verbose > 0:
+            step = 11 - min(verbose, 10)
+            if i % step == 0:
+                # If there is only one job, progress information is fixed
+                if n_perm == n_perm_chunk:
+                    crlf = "\r"
+                else:
+                    crlf = "\n"
+                percent = float(i) / n_perm_chunk
+                percent = round(percent * 100, 2)
+                dt = time.time() - t0
+                remaining = (100. - percent) / max(0.01, percent) * dt
+                sys.stderr.write(
+                    "Job #%d, processed %d/%d permutations "
+                    "(%0.2f%%, %i seconds remaining)%s"
+                    % (thread_id, i, n_perm_chunk, percent, remaining, crlf))
 
     return scores_as_ranks_part, h0_fmax_part.T
 
@@ -242,13 +271,14 @@ def permuted_ols(tested_vars, target_vars, confounding_vars=None,
     Ordinary Least Squares criterion.
     Confounding variates may be included in the model.
     Permutation testing is used to assess the significance of the relationship
-    between the tested variates and the target variates [1, 2]. A max-type
-    procedure is used to obtain family-wise corrected p-values.
+    between the tested variates and the target variates [Anderson,
+    Winkler]. A max-type procedure is used to obtain family-wise
+    corrected p-values.
 
     The specific permutation scheme implemented here is the one of
-    Freedman & Lane [3]. Its has been demonstrated in [1] that this scheme
-    conveys more sensitivity than alternative schemes. This holds for
-    neuroimaging applications, as discussed in details in [2].
+    [Freedman & Lane]. Its has been demonstrated in [Anderson] that this
+    scheme conveys more sensitivity than alternative schemes. This holds
+    for neuroimaging applications, as discussed in details in [Winkler].
 
     Permutations are performed on parallel computing units. Each of them
     performs a fraction of permutations on the whole dataset. Thus, the max
@@ -320,15 +350,15 @@ def permuted_ols(tested_vars, target_vars, confounding_vars=None,
 
     References
     ----------
-    [1] Anderson, M. J. & Robinson, J. (2001).
-        Permutation tests for linear models.
-        Australian & New Zealand Journal of Statistics, 43(1), 75-88.
-    [2] Winkler, A. M. et al. (2014).
-        Permutation inference for the general linear model.
-        Neuroimage.
-    [3] Freedman, D. & Lane, D. (1983).
-        A nonstochastic interpretation of reported significance levels.
-        J. Bus. Econ. Stats., 1(4), 292-298
+    * Anderson, M. J. & Robinson, J. (2001).
+      Permutation tests for linear models.
+      Australian & New Zealand Journal of Statistics, 43(1), 75-88.
+    * Winkler, A. M. et al. (2014).
+      Permutation inference for the general linear model.
+      Neuroimage.
+    * Freedman, D. & Lane, D. (1983).
+      A nonstochastic interpretation of reported significance levels.
+      J. Bus. Econ. Stats., 1(4), 292-298
 
     """
     # initialize the seed of the random generator
@@ -352,6 +382,10 @@ def permuted_ols(tested_vars, target_vars, confounding_vars=None,
                             "s" if target_vars.ndim > 1 else ""))
     target_vars = np.asfortranarray(target_vars)  # efficient for chunking
     n_descriptors = target_vars.shape[1]
+    if np.any(np.all(target_vars == 0, axis=0)):
+        warnings.warn("Some descriptors in 'target_vars' have zeros across all "
+                      "samples. These descriptors will be ignored during null "
+                      "distribution generation.")
 
     # check explanatory variates dimensions
     if tested_vars.ndim == 1:
@@ -440,17 +474,19 @@ def permuted_ols(tested_vars, target_vars, confounding_vars=None,
         if two_sided_test:
             scores_original_data = (scores_original_data
                                     * sign_scores_original_data)
-        return np.asarray([]), scores_original_data,  np.asarray([])
+        return np.asarray([]), scores_original_data.T, np.asarray([])
+
     # actual permutations, seeded from a random integer between 0 and maximum
     # value represented by np.int32 (to have a large entropy).
     ret = joblib.Parallel(n_jobs=n_jobs, verbose=verbose)(
         joblib.delayed(_permuted_ols_on_chunk)(
             scores_original_data, testedvars_resid_covars,
-            targetvars_resid_covars.T, covars_orthonormalized,
-            n_perm_chunk=n_perm_chunk, intercept_test=intercept_test,
-            two_sided_test=two_sided_test,
-            random_state=rng.random_integers(np.iinfo(np.int32).max - 1))
-        for n_perm_chunk in n_perm_chunks)
+            targetvars_resid_covars.T, thread_id + 1, covars_orthonormalized,
+            n_perm=n_perm, n_perm_chunk=n_perm_chunk,
+            intercept_test=intercept_test, two_sided_test=two_sided_test,
+            random_state=rng.randint(1, np.iinfo(np.int32).max - 1),
+            verbose=verbose)
+        for thread_id, n_perm_chunk in enumerate(n_perm_chunks))
     # reduce results
     scores_as_ranks_parts, h0_fmax_parts = zip(*ret)
     h0_fmax = np.hstack((h0_fmax_parts))

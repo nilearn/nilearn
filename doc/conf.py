@@ -45,20 +45,31 @@ sys.path.insert(0, os.path.abspath('..'))
 
 # Add any Sphinx extension module names here, as strings. They can be
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom ones.
-extensions = ['sphinx.ext.autodoc',
-              'sphinx.ext.autosummary',
-              ('sphinx.ext.imgmath'  # only available for sphinx >= 1.4
-                  if sphinx.version_info[:2] >= (1, 4)
-                  else 'sphinx.ext.pngmath'),
-              'sphinx.ext.intersphinx',
-              'numpydoc.numpydoc',
+extensions = [
               'sphinx_gallery.gen_gallery',
+              'sphinx.ext.autodoc',
+              'sphinx.ext.autosummary',
+              'sphinx.ext.imgmath',
+              'sphinx.ext.intersphinx',
+              'numpydoc',
               ]
 
 autosummary_generate = True
 
-autodoc_default_flags = ['members', 'inherited-members']
+autodoc_default_options = {
+    'imported-members': True,
+    'inherited-members' : True,
+    'undoc-members': True,
+    'member-order': 'bysource',
+    # We cannot have __init__: it causes duplicated entries
+    #'special-members': '__init__',
+}
 
+# Get rid of spurious warnings due to some interaction between
+# autosummary and numpydoc. See
+# https://github.com/phn/pytpm/issues/3#issuecomment-12133978 for more
+# details
+numpydoc_show_class_members = False
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['templates']
 
@@ -79,7 +90,7 @@ master_doc = 'index'
 
 # General information about the project.
 project = u'Nilearn'
-copyright = u'The nilearn developers 2010-2015'
+copyright = u'The nilearn developers 2010-2020'
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
@@ -279,17 +290,18 @@ latex_show_urls = 'footnote'
 
 trim_doctests_flags = True
 
-_python_doc_base = 'http://docs.python.org/3.6'
+_python_doc_base = 'https://docs.python.org/3.6'
 
 # Example configuration for intersphinx: refer to the Python standard library.
 intersphinx_mapping = {
     'python': (_python_doc_base, None),
-    'numpy': ('http://docs.scipy.org/doc/numpy', None),
-    'scipy': ('http://docs.scipy.org/doc/scipy/reference', None),
-    'matplotlib': ('http://matplotlib.org/', None),
-    'sklearn': ('http://scikit-learn.org/stable/', None),
-    'nibabel': ('http://nipy.org/nibabel', None),
-    'pandas': ('http://pandas.pydata.org', None),
+    'numpy': ('https://docs.scipy.org/doc/numpy', None),
+    'scipy': ('https://docs.scipy.org/doc/scipy/reference', None),
+    'matplotlib': ('https://matplotlib.org/', None),
+    'sklearn': ('https://scikit-learn.org/stable/', None),
+    'nibabel': ('https://nipy.org/nibabel', None),
+    'pandas': ('https://pandas.pydata.org/pandas-docs/stable/', None),
+    'nistats': ('https://nistats.github.io', None),
 }
 
 extlinks = {
@@ -304,6 +316,8 @@ sphinx_gallery_conf = {
     'junit': '../test-results/sphinx-gallery/junit.xml',
     'examples_dirs': '../examples',
     'gallery_dirs': 'auto_examples',
+    # Ignore the function signature leftover by joblib
+    'ignore_pattern': 'func_code\.py',
     'binder': {
         'org': 'nilearn',
         'repo': 'nilearn.github.io',
@@ -315,11 +329,6 @@ sphinx_gallery_conf = {
     }
 }
 
-# Get rid of spurious warnings due to some interaction between
-# autosummary and numpydoc. See
-# https://github.com/phn/pytpm/issues/3#issuecomment-12133978 for more
-# details
-numpydoc_show_class_members = False
 
 
 def touch_example_backreferences(app, what, name, obj, options, lines):

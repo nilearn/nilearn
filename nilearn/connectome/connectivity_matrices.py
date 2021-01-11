@@ -195,7 +195,7 @@ def _geometric_mean(matrices, init=None, max_iter=10, tol=1e-7):
 
 
 @deprecated("Function 'sym_to_vec' has been renamed to "
-            "'sym_matrix_to_vec' and will be removed in future releases. ")
+            "'sym_matrix_to_vec' and will be removed in 0.8")
 def sym_to_vec(symmetric, discard_diagonal=False):
     """Return the flattened lower triangular part of an array.
     If diagonal is kept, diagonal elements are divided by sqrt(2) to conserve
@@ -436,7 +436,7 @@ class ConnectivityMeasure(BaseEstimator, TransformerMixin):
         self.vectorize = vectorize
         self.discard_diagonal = discard_diagonal
 
-    def _check_input(self, X):
+    def _check_input(self, X, confounds=None):
         if not hasattr(X, "__iter__"):
             raise ValueError("'subjects' input argument must be an iterable. "
                              "You provided {0}".format(X.__class__))
@@ -458,6 +458,12 @@ class ConnectivityMeasure(BaseEstimator, TransformerMixin):
                              "features.\nYou provided: "
                              "{0}".format(str(features_dims)))
 
+        if confounds is not None:
+            if not hasattr(confounds, "__iter__"):
+                raise ValueError("'confounds' input argument must be an "
+                                 "iterable. You provided {0}"
+                                 .format(confounds.__class__))
+
     def fit(self, X, y=None):
         """Fit the covariance estimator to the given time series for each
         subject.
@@ -476,10 +482,11 @@ class ConnectivityMeasure(BaseEstimator, TransformerMixin):
         self._fit_transform(X, do_fit=True)
         return self
 
-    def _fit_transform(self, X, do_transform=False, do_fit=False):
+    def _fit_transform(self, X, do_transform=False, do_fit=False,
+                       confounds=None):
         """ Internal function to avoid duplication of computation
         """
-        self._check_input(X)
+        self._check_input(X, confounds=confounds)
         if do_fit:
             self.cov_estimator_ = clone(self.cov_estimator)
 
@@ -525,13 +532,51 @@ class ConnectivityMeasure(BaseEstimator, TransformerMixin):
                                     for cov in connectivities]
 
             connectivities = np.array(connectivities)
+
+            if confounds is not None and not self.vectorize:
+                error_message = ("'confounds' are provided but "
+                                 "vectorize=False. Confounds are only "
+                                 "cleaned on vectorized matrices as "
+                                 "second level connectome regression "
+                                 "but not on symmetric matrices.")
+                raise ValueError(error_message)
+
             if self.vectorize:
                 connectivities = sym_matrix_to_vec(
                     connectivities, discard_diagonal=self.discard_diagonal)
+                if confounds is not None:
+                    connectivities = signal.clean(connectivities,
+                                                  confounds=confounds)
 
         return connectivities
 
-    def fit_transform(self, X, y=None):
+    def fit_transform(self, X, y=None, confounds=None):
+        """Fit the covariance estimator to the given time series for each
+        subject. Then apply transform to covariance matrices for the chosen
+        kind.
+
+        Parameters
+        ----------
+        X : list of n_subjects numpy.ndarray with shapes \
+            (n_samples, n_features)
+            The input subjects time series. The number of samples may differ
+            from one subject to another.
+
+        confounds : np.ndarray with shape (n_samples) or \
+                    (n_samples, n_confounds), or pandas DataFrame, optional
+            Confounds to be cleaned on the vectorized matrices. Only takes
+            into effect when vetorize=True.
+            This parameter is passed to signal.clean. Please see the related
+            documentation for details.
+
+        Returns
+        -------
+        output : numpy.ndarray, shape (n_subjects, n_features, n_features) or \
+            (n_subjects, n_features * (n_features + 1) / 2) if vectorize \
+            is set to True.
+            The transformed individual connectivities, as matrices or vectors.
+            Vectors are cleaned when vectorize=True and confounds are provided.
+        """
         if self.kind == 'tangent':
             # Check that people are applying fit_transform to a group of
             # subject
@@ -542,10 +587,11 @@ class ConnectivityMeasure(BaseEstimator, TransformerMixin):
                     "be applied to a group of subjects, as it returns "
                     "deviations to the mean. You provided %r" % X
                     )
-        return self._fit_transform(X, do_fit=True, do_transform=True)
+        return self._fit_transform(X, do_fit=True, do_transform=True,
+                                   confounds=confounds)
 
 
-    def transform(self, X):
+    def transform(self, X, confounds=None):
         """Apply transform to covariances matrices to get the connectivity
         matrices for the chosen kind.
 
@@ -556,15 +602,23 @@ class ConnectivityMeasure(BaseEstimator, TransformerMixin):
             The input subjects time series. The number of samples may differ
             from one subject to another.
 
+        confounds : numpy.ndarray with shape (n_samples) or \
+                    (n_samples, n_confounds), optional
+            Confounds to be cleaned on the vectorized matrices. Only takes
+            into effect when vetorize=True.
+            This parameter is passed to signal.clean. Please see the related
+            documentation for details.
+
         Returns
         -------
         output : numpy.ndarray, shape (n_subjects, n_features, n_features) or \
             (n_subjects, n_features * (n_features + 1) / 2) if vectorize \
             is set to True.
             The transformed individual connectivities, as matrices or vectors.
+            Vectors are cleaned when vectorize=True and confounds are provided.
         """
         self._check_fitted()
-        return self._fit_transform(X, do_transform=True)
+        return self._fit_transform(X, do_transform=True, confounds=confounds)
 
     def _check_fitted(self):
         if not hasattr(self, "cov_estimator_"):

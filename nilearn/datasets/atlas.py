@@ -15,10 +15,118 @@ from sklearn.utils import Bunch
 
 from .utils import _get_dataset_dir, _fetch_files, _get_dataset_descr
 from .._utils import check_niimg
-from .._utils.compat import _basestring
 from ..image import new_img_like, get_data
 
 _TALAIRACH_LEVELS = ['hemisphere', 'lobe', 'gyrus', 'tissue', 'ba']
+
+
+def fetch_atlas_difumo(dimension=64, resolution_mm=2, data_dir=None, resume=True, verbose=1):
+    """Fetch DiFuMo brain atlas
+
+    Dictionaries of Functional Modes, or “DiFuMo”, can serve as atlases to extract
+    functional signals with different dimensionalities (64, 128, 256, 512, and 1024).
+    These modes are optimized to represent well raw BOLD timeseries,
+    over a with range of experimental conditions.
+
+    Direct download links from OSF:
+
+    dic = {64: https://osf.io/wjum7/download,
+           128: https://osf.io/n3vba/download,
+           256: https://osf.io/vza2y/download,
+           512: https://osf.io/a23gw/download,
+           1024: https://osf.io/jpdum/download,
+           }
+
+    Parameters
+    ----------
+    dimension : int
+        Number of dimensions in the dictionary. Valid resolutions
+        available are {64, 128, 256, 512, 1024}.
+
+    resolution_mm : int
+        The resolution in mm of the atlas to fetch. Valid options
+        available are {2, 3}.
+
+    data_dir : string, optional
+        Path where data should be downloaded. By default,
+        files are downloaded in home directory.
+
+    resume: bool, default is True
+        whether to resumed download of a partly-downloaded file.
+
+    verbose: int, default is 1
+        verbosity level (0 means no message).
+
+    Returns
+    -------
+    data: sklearn.datasets.base.Bunch
+        Dictionary-like object, the interest attributes are :
+
+        - 'maps': str, 4D path to nifti file containing regions definition.
+        - 'labels': Numpy recarray containing the labels of the regions.
+        - 'description': str, general description of the dataset.
+
+    References
+    ----------
+    Dadi, K., Varoquaux, G., Machlouzarides-Shalit,
+    A., Gorgolewski, KJ., Wassermann, D., Thirion, B., Mensch,
+    A. Fine-grain atlases of functional modes for fMRI analysis.
+    NeuroImage, Elsevier, 2020, pp.117126, https://hal.inria.fr/hal-02904869
+    """
+    dic = {64: 'wjum7',
+           128: 'n3vba',
+           256: 'vza2y',
+           512: 'a23gw',
+           1024: 'jpdum',
+           }
+    valid_dimensions = [64, 128, 256, 512, 1024]
+    valid_resolution_mm = [2, 3]
+    if dimension not in valid_dimensions:
+        raise ValueError("Requested dimension={} is not available. Valid "
+                         "options: {}".format(dimension, valid_dimensions))
+    if resolution_mm not in valid_resolution_mm:
+        raise ValueError("Requested resolution_mm={} is not available. Valid "
+                         "options: {}".format(resolution_mm,
+                                              valid_resolution_mm))
+    
+    url = 'https://osf.io/{}/download'.format(dic[dimension])
+    opts = {'uncompress': True}
+
+    csv_file = os.path.join('{0}', 'labels_{0}_dictionary.csv')
+    if resolution_mm != 3:
+        nifti_file = os.path.join('{0}', 'maps.nii.gz')
+    else:
+        nifti_file = os.path.join('{0}', '3mm', 'resampled_maps.nii.gz')
+
+    files = [(csv_file.format(dimension), url, opts),
+             (nifti_file.format(dimension), url, opts)]
+
+    dataset_name = 'difumo_atlases'
+
+    data_dir = _get_dataset_dir(dataset_name=dataset_name, data_dir=data_dir,
+                                verbose=verbose)
+
+    # Download the zip file, first
+    files_ = _fetch_files(data_dir, files, verbose=verbose)
+    labels = np.recfromcsv(files_[0])
+
+    # README
+    readme_files = [('README.md', 'https://osf.io/u5xhn/download',
+                    {'move': 'README.md'})]
+    if not os.path.exists(os.path.join(data_dir, 'README.md')):
+        _fetch_files(data_dir, readme_files, verbose=verbose)
+
+    # Python resampling script
+    script_files = [('resample_dictionaries.py', 'https://osf.io/ezr37/download',
+                    {'move': 'resample_dictionaries.py'})]
+    if not os.path.exists(os.path.join(data_dir, 'resample_dictionaries.py')):
+        _fetch_files(data_dir, script_files, verbose=verbose)
+
+    fdescr = _get_dataset_descr(dataset_name)
+
+    params = dict(description=fdescr, maps=files_[1], labels=labels)
+    
+    return Bunch(**params)
 
 
 def fetch_atlas_craddock_2012(data_dir=None, url=None, resume=True, verbose=1):
@@ -123,7 +231,7 @@ def fetch_atlas_destrieux_2009(lateralized=True, data_dir=None, url=None,
     of the cerebral cortex." NeuroImage 47 (2009): S151.
     """
     if url is None:
-        url = "https://www.nitrc.org/frs/download.php/7739/"
+        url = "https://www.nitrc.org/frs/download.php/11942/"
 
     url += "destrieux2009.tgz"
     opts = {'uncompress': True}
@@ -471,7 +579,7 @@ def fetch_atlas_smith_2009(data_dir=None, mirror='origin', url=None,
             'bm70.nii.gz'
     ]
 
-    if isinstance(url, _basestring):
+    if isinstance(url, str):
         url = [url] * len(files)
 
     files = [(f, u + f, {}) for f, u in zip(files, url)]

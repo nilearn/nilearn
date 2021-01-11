@@ -231,11 +231,15 @@ def _random_walker(data, labels, beta=130, tol=1.e-3, copy=True, spacing=None):
     small images, and an iterative method for larger images.
 
     """
+    out_labels = np.copy(labels)
     if (labels != 0).all():
         warnings.warn('Random walker only segments unlabeled areas, where '
                       'labels == 0. No zero valued areas in labels were '
                       'found. Returning provided labels.')
-        out_labels = labels
+        return out_labels
+
+    if (labels == 0).all():
+        warnings.warn('Random walker received no seed label. Returning provided labels.')
         return out_labels
 
     # We take multichannel as always False since we are not strictly using
@@ -270,13 +274,31 @@ def _random_walker(data, labels, beta=130, tol=1.e-3, copy=True, spacing=None):
         labels[mask] = np.searchsorted(np.unique(labels[mask]),
                                        labels[mask]).astype(labels.dtype)
     labels = labels.astype(np.int32)
-
-    # If the array has pruned zones, be sure that no isolated pixels
-    # exist between pruned zones (they could not be determined)
+    # If the array has pruned zones, we can have two problematic situations:
+    #   - isolated zero-labeled pixels that cannot be determined because they
+    #     are not connected to any seed.
+    #   - isolated seeds, that is pixels with labels > 0 in connected components
+    #     without any zero-labeled pixel to determine. This causes errors when
+    #     computing the Laplacian of the graph.
+    # For both cases, the problematic pixels are ignored (label is set to -1).
     if np.any(labels < 0):
+        # Handle the isolated zero-labeled pixels first
         filled = ndi.binary_propagation(labels > 0, mask=labels >= 0)
         labels[np.logical_and(np.logical_not(filled), labels == 0)] = -1
         del filled
+        # Handle the isolated seeds
+        filled = ndi.binary_propagation(labels == 0, mask=labels >= 0)
+        isolated = np.logical_and(labels > 0, np.logical_not(filled))
+        labels[isolated] = -1
+        del filled
+
+    # If the operations above yield only -1 pixels
+    if (labels == -1).all():
+        warnings.warn('Random walker only segments unlabeled areas, where '
+                      'labels == 0. Data provided only contains isolated seeds '
+                      'and isolated pixels. Returning provided labels.')
+        return out_labels
+
     labels = np.atleast_3d(labels)
     if np.any(labels < 0):
         lap_sparse = _build_laplacian(data, spacing, mask=labels >= 0, beta=beta)

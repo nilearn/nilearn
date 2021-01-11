@@ -6,20 +6,20 @@ Validation and conversion utilities for numpy.
 
 import csv
 import numpy as np
-from .compat import _basestring
 
 
 def _asarray(arr, dtype=None, order=None):
     # np.asarray does not take "K" and "A" orders in version 1.3.0
     if order in ("K", "A", None):
-        if (arr.itemsize == 1 and dtype == np.bool) \
-                or (arr.dtype == np.bool and np.dtype(dtype).itemsize == 1):
+        if (arr.itemsize == 1 and dtype in (bool, np.bool_)) \
+                or (arr.dtype in (bool, np.bool_) and
+                    np.dtype(dtype).itemsize == 1):
             ret = arr.view(dtype=dtype)
         else:
             ret = np.asarray(arr, dtype=dtype)
     else:
-        if (((arr.itemsize == 1 and dtype == np.bool) or
-            (arr.dtype == np.bool and np.dtype(dtype).itemsize == 1))
+        if (((arr.itemsize == 1 and dtype in (bool, np.bool)) or
+            (arr.dtype in (bool, np.bool_) and np.dtype(dtype).itemsize == 1))
             and (order == "F" and arr.flags["F_CONTIGUOUS"]
                  or order == "C" and arr.flags["C_CONTIGUOUS"])):
             ret = arr.view(dtype=dtype)
@@ -149,7 +149,7 @@ def csv_to_array(csv_path, delimiters=' \t,;', **kwargs):
     array: numpy.ndarray
         An array containing the data loaded from the CSV file.
     """
-    if not isinstance(csv_path, _basestring):
+    if not isinstance(csv_path, str):
         raise TypeError('CSV must be a file path. Got a CSV of type: %s' %
                         type(csv_path))
 

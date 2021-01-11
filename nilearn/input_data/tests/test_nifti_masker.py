@@ -182,7 +182,8 @@ def test_4d_single_scan():
     # Test that, in list of 4d images with last dimension=1, they are
     # considered as 3d
 
-    data_5d = [np.random.random((10, 10, 10, 1)) for i in range(5)]
+    rng = np.random.RandomState(42)
+    data_5d = [rng.random_sample((10, 10, 10, 1)) for i in range(5)]
     data_4d = [d[..., 0] for d in data_5d]
     data_5d = [nibabel.Nifti1Image(d, np.eye(4)) for d in data_5d]
     data_4d = [nibabel.Nifti1Image(d, np.eye(4)) for d in data_4d]
@@ -203,7 +204,8 @@ def test_5d():
     # Test that, in list of 4d images with last dimension=1, they are
     # considered as 3d
 
-    data_5d = [np.random.random((10, 10, 10, 3)) for i in range(5)]
+    rng = np.random.RandomState(42)
+    data_5d = [rng.random_sample((10, 10, 10, 3)) for i in range(5)]
     data_5d = [nibabel.Nifti1Image(d, np.eye(4)) for d in data_5d]
 
     masker = NiftiMasker(mask_img=mask_img)
@@ -212,7 +214,7 @@ def test_5d():
             DimensionError,
             match="Input data has incompatible dimensionality: "
                   "Expected dimension is 4D and you provided "
-                  "a list of 4D images \(5D\)."):
+                  "a list of 4D images \\(5D\\)."):
         masker.transform(data_5d)
 
 
@@ -233,7 +235,7 @@ def test_sessions():
 
 
 def test_joblib_cache():
-    from nilearn._utils.compat import hash, Memory
+    from joblib import hash, Memory
     mask = np.zeros((40, 40, 40))
     mask[20, 20, 20] = 1
     mask_img = Nifti1Image(mask, np.eye(4))
@@ -249,7 +251,7 @@ def test_joblib_cache():
         # imgs return by inverse_transform impossible to save
         cachedir = mkdtemp()
         try:
-            masker.memory = Memory(cachedir=cachedir, mmap_mode='r',
+            masker.memory = Memory(location=cachedir, mmap_mode='r',
                                    verbose=0)
             X = masker.transform(mask_img)
             # inverse_transform a first time, so that the result is cached
@@ -314,10 +316,10 @@ def test_compute_epi_mask():
                              get_data(mask4)[3:12, 3:12])
 
 
-def test_compute_gray_matter_mask():
+def test_compute_brain_mask():
     # Check masker for template masking strategy
 
-    img = np.random.rand(9, 9, 5)
+    img = np.random.RandomState(42).uniform(size=(9, 9, 5))
     img = Nifti1Image(img, np.eye(4))
 
     masker = NiftiMasker(mask_strategy='template')
@@ -394,11 +396,12 @@ def test_dtype():
 
 
 def test_standardization():
+    rng = np.random.RandomState(42)
     data_shape = (9, 9, 5)
     n_samples = 500
 
-    signals = np.random.randn(np.prod(data_shape), n_samples)
-    means = np.random.randn(np.prod(data_shape), 1) * 50 + 1000
+    signals = rng.standard_normal(size=(np.prod(data_shape), n_samples))
+    means = rng.standard_normal(size=(np.prod(data_shape), 1)) * 50 + 1000
     signals += means
     img = Nifti1Image(signals.reshape(data_shape + (n_samples,)), np.eye(4))
 

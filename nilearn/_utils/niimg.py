@@ -11,8 +11,7 @@ import collections.abc
 import numpy as np
 import nibabel
 
-from .compat import _basestring
-
+from pathlib import Path
 
 def _get_data(img):
     # copy-pasted from https://github.com/nipy/nibabel/blob/de44a105c1267b07ef9e28f6c35b31f851d5a005/nibabel/dataobj_images.py#L204
@@ -25,7 +24,7 @@ def _get_data(img):
     return data
 
 
-def _safe_get_data(img, ensure_finite=False):
+def _safe_get_data(img, ensure_finite=False, copy_data=False):
     """ Get the data in the image without having a side effect on the
         Nifti1Image object
 
@@ -38,15 +37,17 @@ def _safe_get_data(img, ensure_finite=False):
         If True, non-finite values such as (NaNs and infs) found in the
         image will be replaced by zeros.
 
+    copy_data: bool, default is False
+        If true, the returned data is a copy of the img data.
+
     Returns
     -------
     data: numpy array
         nilearn.image.get_data return from Nifti image.
     """
-    if hasattr(img, '_data_cache') and img._data_cache is None:
-        # By loading directly dataobj, we prevent caching if the data is
-        # memmaped. Preventing this side-effect can save memory in some cases.
+    if copy_data:
         img = copy.deepcopy(img)
+
     # typically the line below can double memory usage
     # that's why we invoke a forced call to the garbage collector
     gc.collect()
@@ -116,13 +117,13 @@ def load_niimg(niimg, dtype=None):
     """
     from ..image import new_img_like  # avoid circular imports
 
-    if isinstance(niimg, _basestring):
+    if isinstance(niimg, str):
         # data is a filename, we load it
         niimg = nibabel.load(niimg)
     elif not isinstance(niimg, nibabel.spatialimages.SpatialImage):
         raise TypeError("Data given cannot be loaded because it is"
                         " not compatible with nibabel format:\n"
-                        + short_repr(niimg))
+                        + _repr_niimgs(niimg, shorten=True))
 
     dtype = _get_target_dtype(_get_data(niimg).dtype, dtype)
 
@@ -156,41 +157,84 @@ def copy_img(img):
 
     if not isinstance(img, nibabel.spatialimages.SpatialImage):
         raise ValueError("Input value is not an image")
-    return new_img_like(img, _safe_get_data(img).copy(), img.affine.copy(),
+    return new_img_like(img, _safe_get_data(img, copy_data=True), img.affine.copy(),
                         copy_header=True)
 
 
-def _repr_niimgs(niimgs):
+def _repr_niimgs(niimgs, shorten=True):
     """ Pretty printing of niimg or niimgs.
+
+    Parameters
+    ----------
+    niimgs: image or collection of images
+        nibabel SpatialImage to repr.
+
+    shorten: boolean, optional, default is True
+        If True, filenames with more than 20 characters will be
+        truncated, and lists of more than 3 file names will be
+        printed with only first and last element.
+
+    Returns
+    -------
+    repr: str
+        String representation of the image.
     """
-    if isinstance(niimgs, _basestring):
-        return niimgs
+    # Maximum number of elements to be displayed
+    # Note: should be >= 3 to make sense...
+    list_max_display = 3
+    # Simple string case
+    if isinstance(niimgs, (str, Path)):
+        return _short_repr(niimgs, shorten=shorten)
+    # Collection case
     if isinstance(niimgs, collections.abc.Iterable):
-        return '[%s]' % ', '.join(_repr_niimgs(niimg) for niimg in niimgs)
-    # Nibabel objects have a 'get_filename'
+        if shorten and len(niimgs) > list_max_display:
+            return '[%s]' % ',\n         ...\n '.join(_repr_niimgs(niimg, shorten=shorten) for niimg in [niimgs[0], niimgs[-1]])
+        elif len(niimgs) > list_max_display:
+            return '[%s]' % ',\n '.join(_repr_niimgs(niimg, shorten=shorten) for niimg in niimgs)
+        else:
+            return '[%s]' % ', '.join(_repr_niimgs(niimg, shorten=shorten) for niimg in niimgs)
+   # Nibabel objects have a 'get_filename'
     try:
         filename = niimgs.get_filename()
         if filename is not None:
             return "%s('%s')" % (niimgs.__class__.__name__,
-                                 filename)
+                                 _short_repr(filename,
+                                             shorten=shorten))
         else:
+            # No shortening in this case
             return "%s(\nshape=%s,\naffine=%s\n)" % \
                    (niimgs.__class__.__name__,
                     repr(niimgs.shape),
                     repr(niimgs.affine))
     except:
         pass
-    return repr(niimgs)
+    return _short_repr(repr(niimgs), shorten=shorten)
 
 
-def short_repr(niimg):
+def _short_repr(niimg_rep, shorten=True, truncate=20):
     """Gives a shorten version on niimg representation
     """
-    this_repr = _repr_niimgs(niimg)
-    if len(this_repr) > 20:
-        # Shorten the repr to have a useful error message
-        this_repr = this_repr[:18] + '...'
-    return this_repr
+    # Make sure truncate has a reasonable value
+    truncate = max(truncate, 10)
+    path_to_niimg = Path(niimg_rep)
+    if not shorten:
+        return str(path_to_niimg)
+    # If the name of the file itself is larger than
+    # truncate, then shorten the name only
+    if len(path_to_niimg.name) > truncate:
+        return path_to_niimg.name[: (truncate - 2)] + '...'
+    # Else add some folder structure if available
+    else:
+        rep = path_to_niimg.name
+        if len(path_to_niimg.parts) > 1:
+            for p in path_to_niimg.parts[::-1][1:]:
+                if len(rep) + len(p) < truncate - 3:
+                    rep = str(Path(p, rep))
+                else:
+                    rep = str(Path("...", rep))
+                    break
+        return rep
+    return niimg_rep
 
 
 def img_data_dtype(niimg):

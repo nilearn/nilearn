@@ -168,6 +168,7 @@ from nilearn.mass_univariate import permuted_ols
 neg_log_pvals, t_scores_original_data, _ = permuted_ols(
     age, data,  # + intercept as a covariate by default
     n_perm=2000,  # 1,000 in the interest of time; 10000 would be better
+    verbose=1, # display progress bar
     n_jobs=1)  # can be changed to use more CPUs
 signed_neg_log_pvals = neg_log_pvals * np.sign(t_scores_original_data)
 signed_neg_log_pvals_unmasked = nifti_masker.inverse_transform(
@@ -182,7 +183,7 @@ display = plot_stat_map(signed_neg_log_pvals_unmasked, bg_img=bg_filename,
                         threshold=threshold, cmap=plt.cm.RdBu_r,
                         display_mode='z', cut_coords=[z_slice],
                         figure=fig)
-title = ('Negative $\log_{10}$ p-values'
+title = ('Negative $\\log_{10}$ p-values'
          '\n(Non-parametric + max-type correction)')
 display.title(title, y=1.2)
 

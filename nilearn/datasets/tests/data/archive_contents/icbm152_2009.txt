@@ -1,0 +1,13 @@
+format: zip
+https://osf.io/7pj92/download
+mni_icbm152_nlin_sym_09a/mni_icbm152_csf_tal_nlin_sym_09a.nii.gz
+mni_icbm152_nlin_sym_09a/mni_icbm152_gm_tal_nlin_sym_09a.nii.gz
+mni_icbm152_nlin_sym_09a/mni_icbm152_pd_tal_nlin_sym_09a.nii.gz
+mni_icbm152_nlin_sym_09a/mni_icbm152_t1_tal_nlin_sym_09a_eye_mask.nii.gz
+mni_icbm152_nlin_sym_09a/mni_icbm152_t1_tal_nlin_sym_09a_face_mask.nii.gz
+mni_icbm152_nlin_sym_09a/mni_icbm152_t1_tal_nlin_sym_09a_mask.nii.gz
+mni_icbm152_nlin_sym_09a/mni_icbm152_t1_tal_nlin_sym_09a.nii.gz
+mni_icbm152_nlin_sym_09a/mni_icbm152_t2_relx_tal_nlin_sym_09a.nii.gz
+mni_icbm152_nlin_sym_09a/mni_icbm152_t2_tal_nlin_sym_09a.nii.gz
+mni_icbm152_nlin_sym_09a/mni_icbm152_wm_tal_nlin_sym_09a.nii.gz
+COPYING

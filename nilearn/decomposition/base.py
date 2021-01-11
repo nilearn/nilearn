@@ -14,16 +14,16 @@ from scipy import linalg
 import sklearn
 import nilearn
 from sklearn.base import BaseEstimator, TransformerMixin
-from nilearn._utils.compat import Memory, Parallel, delayed
+from joblib import Memory, Parallel, delayed
 from sklearn.linear_model import LinearRegression
 from sklearn.utils import check_random_state
 from sklearn.utils.extmath import randomized_svd, svd_flip
 from .._utils.cache_mixin import CacheMixin, cache
 from .._utils.niimg import _safe_get_data
 from .._utils.niimg_conversions import _resolve_globbing
-from .._utils.compat import _basestring
 from ..input_data import NiftiMapsMasker
 from ..input_data.masker_validation import check_embedded_nifti_masker
+from ..signal import _row_sum_of_squares
 
 
 def fast_svd(X, n_components, random_state=None):
@@ -89,7 +89,7 @@ def mask_and_reduce(masker, imgs,
                     reduction_ratio='auto',
                     n_components=None, random_state=None,
                     memory_level=0,
-                    memory=Memory(cachedir=None),
+                    memory=Memory(location=None),
                     n_jobs=1):
     """Mask and reduce provided 4D images with given masker.
 
@@ -107,7 +107,7 @@ def mask_and_reduce(masker, imgs,
         See http://nilearn.github.io/manipulating_images/input_output.html
         List of subject data to mask, reduce and stack.
 
-    confounds: CSV file path or 2D matrix, optional
+    confounds: CSV file path or numpy ndarray, or pandas DataFrame, optional
         This parameter is passed to signal.clean. Please see the
         corresponding documentation for details.
 
@@ -255,6 +255,10 @@ class BaseDecomposition(BaseEstimator, CacheMixin, TransformerMixin):
         If standardize is True, the time-series are centered and normed:
         their mean is put to 0 and their variance to 1 in the time dimension.
 
+    standardize_confounds: boolean, optional, default is True.
+        If standardize_confounds is True, the confounds are z-scored:
+        their mean is put to 0 and their variance to 1 in the time dimension.
+
     detrend: boolean, optional
         This parameter is passed to signal.clean. Please see the related
         documentation for details
@@ -287,7 +291,7 @@ class BaseDecomposition(BaseEstimator, CacheMixin, TransformerMixin):
         brain mask for your data's field of view.
         Depending on this value, the mask will be computed from
         masking.compute_background_mask, masking.compute_epi_mask or
-        masking.compute_gray_matter_mask. Default is 'epi'.
+        masking.compute_brain_mask. Default is 'epi'.
 
     mask_args: dict, optional
         If mask is None, these are additional parameters passed to
@@ -323,11 +327,11 @@ class BaseDecomposition(BaseEstimator, CacheMixin, TransformerMixin):
     def __init__(self, n_components=20,
                  random_state=None,
                  mask=None, smoothing_fwhm=None,
-                 standardize=True, detrend=True,
-                 low_pass=None, high_pass=None, t_r=None,
+                 standardize=True, standardize_confounds=True,
+                 detrend=True, low_pass=None, high_pass=None, t_r=None,
                  target_affine=None, target_shape=None,
                  mask_strategy='epi', mask_args=None,
-                 memory=Memory(cachedir=None), memory_level=0,
+                 memory=Memory(location=None), memory_level=0,
                  n_jobs=1,
                  verbose=0):
         self.n_components = n_components
@@ -336,6 +340,7 @@ class BaseDecomposition(BaseEstimator, CacheMixin, TransformerMixin):
 
         self.smoothing_fwhm = smoothing_fwhm
         self.standardize = standardize
+        self.standardize_confounds = standardize_confounds
         self.detrend = detrend
         self.low_pass = low_pass
         self.high_pass = high_pass
@@ -359,7 +364,7 @@ class BaseDecomposition(BaseEstimator, CacheMixin, TransformerMixin):
             Data on which the mask is calculated. If this is a list,
             the affine is considered the same for all.
 
-        confounds : list of CSV file paths or 2D matrices
+        confounds : list of CSV file paths or numpy.ndarrays or pandas DataFrames, optional,
             This parameter is passed to nilearn.signal.clean. Please see the
             related documentation for details. Should match with the list
             of imgs given.
@@ -373,11 +378,11 @@ class BaseDecomposition(BaseEstimator, CacheMixin, TransformerMixin):
         """
         # Base fit for decomposition estimators : compute the embedded masker
 
-        if isinstance(imgs, _basestring):
+        if isinstance(imgs, str):
             if nilearn.EXPAND_PATH_WILDCARDS and glob.has_magic(imgs):
                 imgs = _resolve_globbing(imgs)
 
-        if isinstance(imgs, _basestring) or not hasattr(imgs, '__iter__'):
+        if isinstance(imgs, str) or not hasattr(imgs, '__iter__'):
             # these classes are meant for list of 4D images
             # (multi-subject), we want it to work also on a single
             # subject, so we hack it.
@@ -428,7 +433,7 @@ class BaseDecomposition(BaseEstimator, CacheMixin, TransformerMixin):
             See http://nilearn.github.io/manipulating_images/input_output.html
             Data to be projected
 
-        confounds: CSV file path or 2D matrix
+        confounds: CSV file path or numpy.ndarray or pandas DataFrame, optional,
             This parameter is passed to nilearn.signal.clean. Please see the
             related documentation for details
 
@@ -494,7 +499,7 @@ class BaseDecomposition(BaseEstimator, CacheMixin, TransformerMixin):
         return self._cache(explained_variance)(data, self.components_,
                                                per_component=per_component)
 
-    def score(self, imgs, confounds=None):
+    def score(self, imgs, confounds=None, per_component=False):
         """Score function based on explained variance on imgs.
 
         Should only be used by DecompositionEstimator derived classes
@@ -505,9 +510,13 @@ class BaseDecomposition(BaseEstimator, CacheMixin, TransformerMixin):
             See http://nilearn.github.io/manipulating_images/input_output.html
             Data to be scored
 
-        confounds: CSV file path or 2D matrix
+        confounds: CSV file path or numpy.ndarray or pandas DataFrame, optional,
             This parameter is passed to nilearn.signal.clean. Please see the
             related documentation for details
+
+        per_component: bool, default False
+            Specify whether the explained variance ratio is desired for each
+            map or for the global set of components
 
         Returns
         -------
@@ -516,9 +525,11 @@ class BaseDecomposition(BaseEstimator, CacheMixin, TransformerMixin):
             if per_component is True. First dimension
             is squeezed if the number of subjects is one
         """
+        self._check_components_()
         data = mask_and_reduce(self.masker_, imgs, confounds,
-                               reduction_ratio=1.)
-        return self._raw_score(data, per_component=False)
+                               reduction_ratio=1.,
+                               random_state=self.random_state)
+        return self._raw_score(data, per_component=per_component)
 
 
 def explained_variance(X, components, per_component=True):
@@ -551,11 +562,12 @@ def explained_variance(X, components, per_component=True):
             res = X - np.outer(projected_data[i],
                                components[i])
             res_var[i] = np.var(res)
+            # Free some memory
+            del res
         return np.maximum(0., 1. - res_var / full_var)
     else:
         lr = LinearRegression(fit_intercept=True)
         lr.fit(components.T, X.T)
-        res_var = X - lr.coef_.dot(components)
-        res_var **= 2
-        res_var = np.sum(res_var)
-        return np.maximum(0., 1. - res_var / full_var)
+        res = X - lr.coef_.dot(components)
+        res_var = _row_sum_of_squares(res).sum()
+        return np.maximum(0., 1. - res_var / _row_sum_of_squares(X).sum())

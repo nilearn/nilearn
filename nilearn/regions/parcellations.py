@@ -6,12 +6,11 @@ import numpy as np
 
 from sklearn.base import clone
 from sklearn.feature_extraction import image
-from nilearn._utils.compat import Memory, delayed, Parallel
+from joblib import Memory, delayed, Parallel
 
 from .rena_clustering import ReNA
 from ..decomposition.multi_pca import MultiPCA
 from ..input_data import NiftiLabelsMasker
-from .._utils.compat import _basestring
 from .._utils.niimg import _safe_get_data
 from .._utils.niimg_conversions import _iter_check_niimg
 
@@ -60,7 +59,7 @@ def _check_parameters_transform(imgs, confounds):
     as a list.
     """
     if not isinstance(imgs, (list, tuple)) or \
-            isinstance(imgs, _basestring):
+            isinstance(imgs, str):
         imgs = [imgs, ]
         single_subject = True
     elif isinstance(imgs, (list, tuple)) and len(imgs) == 1:
@@ -73,7 +72,7 @@ def _check_parameters_transform(imgs, confounds):
 
     if confounds is not None:
         if not isinstance(confounds, (list, tuple)) or \
-                isinstance(confounds, _basestring):
+                isinstance(confounds, str):
             confounds = [confounds, ]
 
     if len(confounds) != len(imgs):
@@ -94,7 +93,7 @@ def _labels_masker_extraction(img, masker, confound):
     masker: instance of NiftiLabelsMasker
         Used for extracting signals with fit_transform
 
-    confound: csv file or numpy array
+    confound: csv file, numpy ndarray or pandas DataFrame
         Confound used for signal cleaning while extraction.
         Passed to signal.clean
 
@@ -188,7 +187,7 @@ class Parcellations(MultiPCA):
         brain mask for your data's field of view.
         Depending on this value, the mask will be computed from
         masking.compute_background_mask, masking.compute_epi_mask or
-        masking.compute_gray_matter_mask. Default is 'epi'.
+        masking.compute_brain_mask. Default is 'epi'.
 
     mask_args: dict, optional
         If mask is None, these are additional parameters passed to
@@ -256,7 +255,7 @@ class Parcellations(MultiPCA):
                  target_affine=None, target_shape=None,
                  mask_strategy='epi', mask_args=None,
                  scaling=False, n_iter=10,
-                 memory=Memory(cachedir=None),
+                 memory=Memory(location=None),
                  memory_level=0, n_jobs=1, verbose=1):
 
         self.method = method
@@ -395,7 +394,7 @@ class Parcellations(MultiPCA):
             See http://nilearn.github.io/manipulating_images/input_output.html.
             Images to process.
 
-        confounds: List of CSV files or arrays-like, optional
+        confounds: List of CSV files, arrays-like or pandas DataFrame, optional
             Each file or numpy array in a list should have shape
             (number of scans, number of confounds)
             This parameter is passed to signal.clean. Please see the related
@@ -447,7 +446,7 @@ class Parcellations(MultiPCA):
             See http://nilearn.github.io/manipulating_images/input_output.html.
             Images for process for fit as well for transform to signals.
 
-        confounds: List of CSV files or arrays-like, optional
+        confounds: List of CSV files, arrays-like or pandas DataFrame, optional
             Each file or numpy array in a list should have shape
             (number of scans, number of confounds).
             This parameter is passed to signal.clean. Given confounds

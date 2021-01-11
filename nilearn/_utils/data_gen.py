@@ -1,16 +1,40 @@
 """
 Data generation utilities
 """
+import json
+import os
+import string
 
 import numpy as np
+import pandas as pd
 import scipy.signal
+from scipy import ndimage
 
 from sklearn.utils import check_random_state
 import scipy.linalg
 import nibabel
 
+from nibabel import Nifti1Image
+
 from .. import masking
 from . import logger
+from nilearn import datasets, image, input_data
+
+
+def generate_mni_space_img(n_scans=1, res=30, random_state=0, mask_dilation=2):
+    rng = check_random_state(random_state)
+    mni = datasets.load_mni152_brain_mask()
+    target_affine = np.eye(3) * res
+    mask_img = image.resample_img(
+        mni, target_affine=target_affine, interpolation="nearest")
+    masker = input_data.NiftiMasker(mask_img).fit()
+    n_voxels = image.get_data(mask_img).sum()
+    data = rng.randn(n_scans, n_voxels)
+    if mask_dilation is not None and mask_dilation > 0:
+        mask_img = image.new_img_like(
+            mask_img, ndimage.binary_dilation(
+                image.get_data(mask_img), iterations=mask_dilation))
+    return masker.inverse_transform(data), mask_img
 
 
 def generate_timeseries(n_instants, n_features,
@@ -91,6 +115,8 @@ def generate_maps(shape, n_regions, overlap=0, border=1,
     -------
     maps: nibabel.Nifti1Image
         4D array, containing maps.
+    mask_img: nibabel.Nifti1Image
+        3D, The mask outside of which maps are 0
     """
 
     mask = np.zeros(shape, dtype=np.int8)
@@ -102,7 +128,7 @@ def generate_maps(shape, n_regions, overlap=0, border=1,
 
 
 def generate_labeled_regions(shape, n_regions, rand_gen=None, labels=None,
-                             affine=np.eye(4), dtype=np.int):
+                             affine=np.eye(4), dtype=int):
     """Generate a 3D volume with labeled regions.
 
     Parameters
@@ -140,7 +166,7 @@ def generate_labeled_regions(shape, n_regions, rand_gen=None, labels=None,
     for n, row in zip(labels, regions):
         row[row > 0] = n
     data = np.zeros(shape, dtype=dtype)
-    data[np.ones(shape, dtype=np.bool)] = regions.sum(axis=0).T
+    data[np.ones(shape, dtype=bool)] = regions.sum(axis=0).T
     return nibabel.Nifti1Image(data, affine)
 
 
@@ -240,9 +266,9 @@ def generate_fake_fmri(shape=(10, 11, 12), length=17, kind="noise",
                 nibabel.Nifti1Image(mask, affine))
 
     block_size = 3 if block_size is None else block_size
-    flat_fmri = fmri[mask.astype(np.bool)]
+    flat_fmri = fmri[mask.astype(bool)]
     flat_fmri /= np.abs(flat_fmri).max()
-    target = np.zeros(length, dtype=np.int)
+    target = np.zeros(length, dtype=int)
     rest_max_size = (length - (n_blocks * block_size)) // n_blocks
     if rest_max_size < 0:
         raise ValueError(
@@ -251,7 +277,7 @@ def generate_fake_fmri(shape=(10, 11, 12), length=17, kind="noise",
                 length, n_blocks, block_size))
     t_start = 0
     if rest_max_size > 0:
-        t_start = rand_gen.random_integers(0, rest_max_size, 1)[0]
+        t_start = rand_gen.randint(0, rest_max_size, 1)[0]
     for block in range(n_blocks):
         if block_type == 'classification':
             # Select a random voxel and add some signal to the background
@@ -265,16 +291,53 @@ def generate_fake_fmri(shape=(10, 11, 12), length=17, kind="noise",
                 rand_gen.random_sample(block_size) + 1) * block
         t_rest = 0
         if rest_max_size > 0:
-            t_rest = rand_gen.random_integers(0, rest_max_size, 1)[0]
+            t_rest = rand_gen.randint(0, rest_max_size, 1)[0]
         flat_fmri[voxel_idx, t_start:t_start + block_size] += trials_effect
         target[t_start:t_start + block_size] = block + 1
         t_start += t_rest + block_size
     target = target if block_type == 'classification' \
         else target.astype(np.float)
     fmri = np.zeros(fmri.shape)
-    fmri[mask.astype(np.bool)] = flat_fmri
+    fmri[mask.astype(bool)] = flat_fmri
     return (nibabel.Nifti1Image(fmri, affine),
             nibabel.Nifti1Image(mask, affine), target)
+
+
+def generate_fake_fmri_data_and_design(shapes, rk=3, affine=np.eye(4)):
+    fmri_data = []
+    design_matrices = []
+    for i, shape in enumerate(shapes):
+        data = np.random.randn(*shape)
+        data[1:-1, 1:-1, 1:-1] += 100
+        fmri_data.append(Nifti1Image(data, affine))
+        columns = np.random.choice(list(string.ascii_lowercase), size=rk)
+        design_matrices.append(pd.DataFrame(np.random.randn(shape[3], rk),
+                                            columns=columns))
+    mask = Nifti1Image((np.random.rand(*shape[:3]) > .5).astype(np.int8),
+                       affine)
+    return mask, fmri_data, design_matrices
+
+
+def write_fake_fmri_data_and_design(shapes, rk=3, affine=np.eye(4)):
+    mask_file, fmri_files, design_files = 'mask.nii', [], []
+    for i, shape in enumerate(shapes):
+        fmri_files.append('fmri_run%d.nii' % i)
+        data = np.random.randn(*shape)
+        data[1:-1, 1:-1, 1:-1] += 100
+        Nifti1Image(data, affine).to_filename(fmri_files[-1])
+        design_files.append('dmtx_%d.csv' % i)
+        pd.DataFrame(np.random.randn(shape[3], rk),
+                     columns=['', '', '']).to_csv(design_files[-1])
+    Nifti1Image((np.random.rand(*shape[:3]) > .5).astype(np.int8),
+                affine).to_filename(mask_file)
+    return mask_file, fmri_files, design_files
+
+
+def write_fake_bold_img(file_path, shape, rk=3, affine=np.eye(4)):
+    data = np.random.randn(*shape)
+    data[1:-1, 1:-1, 1:-1] += 100
+    Nifti1Image(data, affine).to_filename(file_path)
+    return file_path
 
 
 def generate_signals_from_precisions(precisions,
@@ -401,3 +464,164 @@ def generate_group_sparse_gaussian_graphs(
                                                random_state=random_state)
     return signals, precisions, topology
 
+
+def basic_paradigm():
+    conditions = ['c0', 'c0', 'c0', 'c1', 'c1', 'c1', 'c2', 'c2', 'c2']
+    onsets = [30, 70, 100, 10, 30, 90, 30, 40, 60]
+    events = pd.DataFrame({'trial_type': conditions,
+                           'onset': onsets})
+    return events
+
+
+def basic_confounds(length):
+    columns = ['RotX', 'RotY', 'RotZ', 'X', 'Y', 'Z']
+    data = np.random.rand(length, 6)
+    confounds = pd.DataFrame(data, columns=columns)
+    return confounds
+
+
+def create_fake_bids_dataset(base_dir='', n_sub=10, n_ses=2,
+                             tasks=['localizer', 'main'],
+                             n_runs=[1, 3], with_derivatives=True,
+                             with_confounds=True,
+                             confounds_tag="desc-confounds_timeseries",
+                             no_session=False):
+    """Creates a fake bids dataset directory with dummy files.
+    Returns fake dataset directory name.
+
+    Parameters
+    ----------
+    base_dir: string (Absolute path), optional
+        Absolute directory path in which to create the fake BIDS dataset dir.
+        Default: Current directory.
+
+    n_sub: int, optional
+        Number of subject to be simulated in the dataset.
+        Default: 10
+
+    n_ses: int, optional
+        Number of sessions to be simulated in the dataset.
+        Ignored if no_session=True.
+        Default: 2
+
+    n_runs: List[int], optional
+        Default: [1, 3]
+
+    with_derivatives: bool, optional
+        In the case derivatives are included, they come with two spaces and
+        descriptions. Spaces are 'MNI' and 'T1w'. Descriptions are 'preproc'
+        and 'fmriprep'. Only space 'T1w' include both descriptions.
+        Default: True
+
+    with_confounds: bool, optional
+        Default: True
+
+    confounds_tag: string (filename suffix), optional
+        If generating confounds, what path should they have? Defaults to
+        `desc-confounds_timeseries` as in `fmriprep` >= 20.2 but can be other
+        values (e.g. "desc-confounds_regressors" as in `fmriprep` < 20.2)
+        Default: "desc-confounds_timeseries"
+
+    no_session: bool, optional
+        Specifying no_sessions will only produce runs and files without the
+        optional session field. In this case n_ses will be ignored.
+        Default: False
+
+    Returns
+    -------
+    dataset directory name: string
+        'bids_dataset'
+
+    Creates
+    -------
+        Directory with dummy files
+    """
+    bids_path = os.path.join(base_dir, 'bids_dataset')
+    os.makedirs(bids_path)
+    # Create surface bids dataset
+    open(os.path.join(bids_path, 'README.txt'), 'w')
+    vox = 4
+    created_sessions = ['ses-%02d' % label for label in range(1, n_ses + 1)]
+    if no_session:
+        created_sessions = ['']
+    for subject in ['sub-%02d' % label for label in range(1, n_sub + 1)]:
+        for session in created_sessions:
+            subses_dir = os.path.join(bids_path, subject, session)
+            if session == 'ses-01' or session == '':
+                anat_path = os.path.join(subses_dir, 'anat')
+                os.makedirs(anat_path)
+                anat_file = os.path.join(anat_path, subject + '_T1w.nii.gz')
+                open(anat_file, 'w')
+            func_path = os.path.join(subses_dir, 'func')
+            os.makedirs(func_path)
+            for task, n_run in zip(tasks, n_runs):
+                run_labels = [
+                    'run-%02d' % label for label in range(1, n_run + 1)]
+                for run in run_labels:
+                    fields = [subject, session, 'task-' + task]
+                    if '' in fields:
+                        fields.remove('')
+                    file_id = '_'.join(fields)
+                    if n_run > 1:
+                        file_id += '_' + run
+                    bold_path = os.path.join(func_path,
+                                             file_id + '_bold.nii.gz')
+                    write_fake_bold_img(bold_path, [vox, vox, vox, 100])
+                    events_path = os.path.join(func_path,
+                                               file_id + '_events.tsv')
+                    basic_paradigm().to_csv(events_path,
+                                            sep='\t',
+                                            index=None)
+                    param_path = os.path.join(func_path,
+                                              file_id + '_bold.json')
+                    with open(param_path, 'w') as param_file:
+                        json.dump({'RepetitionTime': 1.5}, param_file)
+
+    # Create derivatives files
+    if with_derivatives:
+        bids_path = os.path.join(base_dir, 'bids_dataset', 'derivatives')
+        os.makedirs(bids_path)
+        for subject in ['sub-%02d' % label for label in range(1, 11)]:
+            for session in created_sessions:
+                subses_dir = os.path.join(bids_path, subject, session)
+                func_path = os.path.join(subses_dir, 'func')
+                os.makedirs(func_path)
+                for task, n_run in zip(tasks, n_runs):
+                    for run in ['run-%02d' % label
+                                for label in range(1, n_run + 1)
+                                ]:
+                        fields = [subject, session, 'task-' + task]
+                        if '' in fields:
+                            fields.remove('')
+                        file_id = '_'.join(fields)
+                        if n_run > 1:
+                            file_id += '_' + run
+                        preproc = (
+                            file_id + '_space-MNI_desc-preproc_bold.nii.gz'
+                        )
+                        preproc_path = os.path.join(func_path, preproc)
+                        write_fake_bold_img(preproc_path,
+                                            [vox, vox, vox, 100]
+                                            )
+                        preproc = (
+                            file_id + '_space-T1w_desc-preproc_bold.nii.gz'
+                        )
+                        preproc_path = os.path.join(func_path, preproc)
+                        write_fake_bold_img(preproc_path,
+                                            [vox, vox, vox, 100]
+                                            )
+                        preproc = (
+                            file_id + '_space-T1w_desc-fmriprep_bold.nii.gz'
+                        )
+                        preproc_path = os.path.join(func_path, preproc)
+                        write_fake_bold_img(preproc_path,
+                                            [vox, vox, vox, 100]
+                                            )
+                        if with_confounds:
+                            confounds_path = os.path.join(
+                                func_path,
+                                file_id + '_' + confounds_tag + '.tsv',
+                            )
+                            basic_confounds(100).to_csv(confounds_path,
+                                                        sep='\t', index=None)
+    return 'bids_dataset'

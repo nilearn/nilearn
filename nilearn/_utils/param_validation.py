@@ -9,7 +9,6 @@ import numbers
 from sklearn.feature_selection import (SelectPercentile, f_regression,
                                        f_classif)
 
-from .compat import _basestring
 from .niimg import _get_data
 
 
@@ -47,7 +46,7 @@ def check_threshold(threshold, data, percentile_func, name='threshold'):
         returns the score of the percentile on the data or
         returns threshold as it is if given threshold is not a string percentile.
     """
-    if isinstance(threshold, _basestring):
+    if isinstance(threshold, str):
         message = ('If "{0}" is given as string it '
                    'should be a number followed by the percent '
                    'sign, e.g. "25.3%"').format(name)
@@ -192,4 +191,4 @@ def check_feature_screening(screening_percentile, mask_img,
         screening_percentile_ = _adjust_screening_percentile(
             screening_percentile, mask_img, verbose=verbose)
 
-        return SelectPercentile(f_test, int(screening_percentile_))
+        return SelectPercentile(f_test, percentile=int(screening_percentile_))

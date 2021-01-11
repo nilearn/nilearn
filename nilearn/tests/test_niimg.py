@@ -1,11 +1,11 @@
 import os
 import numpy as np
 
+import joblib
 import nibabel as nb
 import pytest
 from nibabel import Nifti1Image
 from nibabel.tmpdirs import InTemporaryDirectory
-from nilearn._utils.compat import joblib
 
 from nilearn.image import new_img_like
 from nilearn._utils import niimg
@@ -59,9 +59,9 @@ def test_img_data_dtype():
         np.float32, np.float64)
     dtype_matches = []
     with InTemporaryDirectory():
+        rng = np.random.RandomState(42)
         for logical_dtype in nifti1_dtypes:
-            dataobj = np.random.uniform(0, 255,
-                                        size=(2, 2, 2)).astype(logical_dtype)
+            dataobj = rng.uniform(0, 255, (2, 2, 2)).astype(logical_dtype)
             for on_disk_dtype in nifti1_dtypes:
                 img = Nifti1Image(dataobj, np.eye(4))
                 img.set_data_dtype(on_disk_dtype)

@@ -55,13 +55,13 @@ image.
 
 .. topic:: **Example**
 
-    * :ref:`sphx_glr_auto_examples_04_manipulating_images_plot_resample_to_template.py`
+    * :ref:`sphx_glr_auto_examples_06_manipulating_images_plot_resample_to_template.py`
 
-.. image:: ../auto_examples/04_manipulating_images/images/sphx_glr_plot_resample_to_template_001.png
-    :target: ../auto_examples/04_manipulating_images/plot_resample_to_template.html
+.. image:: ../auto_examples/06_manipulating_images/images/sphx_glr_plot_resample_to_template_001.png
+    :target: ../auto_examples/06_manipulating_images/plot_resample_to_template.html
     :width: 45%
-.. image:: ../auto_examples/04_manipulating_images/images/sphx_glr_plot_resample_to_template_002.png
-    :target: ../auto_examples/04_manipulating_images/plot_resample_to_template.html
+.. image:: ../auto_examples/06_manipulating_images/images/sphx_glr_plot_resample_to_template_002.png
+    :target: ../auto_examples/06_manipulating_images/plot_resample_to_template.html
     :width: 45%
 
 This can be useful to display two images as overlays in some
@@ -86,14 +86,14 @@ can be performed by specifying a 3x3 matrix instead of the 4x4 affine.
 In this case, nilearn computes automatically the translation part
 of the transformation matrix (i.e., affine).
 
-.. image:: ../auto_examples/04_manipulating_images/images/sphx_glr_plot_affine_transformation_002.png
-    :target: ../auto_examples/04_manipulating_images/plot_affine_transformation.html
+.. image:: ../auto_examples/06_manipulating_images/images/sphx_glr_plot_affine_transformation_002.png
+    :target: ../auto_examples/06_manipulating_images/plot_affine_transformation.html
     :width: 30%
-.. image:: ../auto_examples/04_manipulating_images/images/sphx_glr_plot_affine_transformation_004.png
-    :target: ../auto_examples/04_manipulating_images/plot_affine_transformation.html
+.. image:: ../auto_examples/06_manipulating_images/images/sphx_glr_plot_affine_transformation_004.png
+    :target: ../auto_examples/06_manipulating_images/plot_affine_transformation.html
     :width: 30%
-.. image:: ../auto_examples/04_manipulating_images/images/sphx_glr_plot_affine_transformation_003.png
-    :target: ../auto_examples/04_manipulating_images/plot_affine_transformation.html
+.. image:: ../auto_examples/06_manipulating_images/images/sphx_glr_plot_affine_transformation_003.png
+    :target: ../auto_examples/06_manipulating_images/plot_affine_transformation.html
     :width: 30%
 
 
@@ -107,7 +107,7 @@ of the transformation matrix (i.e., affine).
 
 .. seealso::
 
-  :ref:`An example illustrating affine transforms on data and bounding boxes <sphx_glr_auto_examples_04_manipulating_images_plot_affine_transformation.py>`
+  :ref:`An example illustrating affine transforms on data and bounding boxes <sphx_glr_auto_examples_06_manipulating_images_plot_affine_transformation.py>`
 
 Accessing individual volumes in 4D images
 ===========================================
@@ -149,7 +149,7 @@ Relevant functions:
 
 * compute a mask from EPI images: :func:`nilearn.masking.compute_epi_mask`
 * compute a grey-matter mask using the MNI template:
-  :func:`nilearn.masking.compute_gray_matter_mask`.
+  :func:`nilearn.masking.compute_brain_mask`.
 * compute a mask from images with a flat background:
   :func:`nilearn.masking.compute_background_mask`
 * compute for multiple sessions/subjects:
@@ -170,8 +170,8 @@ can be computed from the data:
   the brain stands out of a constant background. This is typically the
   case when working on statistic maps output after a brain extraction
 - :func:`nilearn.masking.compute_epi_mask` for EPI images
-- :func:`nilearn.masking.compute_gray_matter_mask` to compute a
-  gray-matter mask using the MNI template.
+- :func:`nilearn.masking.compute_brain_mask` to compute a
+  whole-brain mask using the MNI template.
 
 
 .. literalinclude:: ../../examples/01_plotting/plot_visualization.py
@@ -268,9 +268,9 @@ ROI mask:
 .. topic:: **Code**
 
     A complete script of above steps with full description can be found :ref:`here
-    <sphx_glr_auto_examples_04_manipulating_images_plot_roi_extraction.py>`.
+    <sphx_glr_auto_examples_06_manipulating_images_plot_roi_extraction.py>`.
 
 .. seealso::
 
      * :ref:`Automatic region extraction on 4D atlas images
-       <sphx_glr_auto_examples_04_manipulating_images_plot_extract_rois_smith_atlas.py>`.
+       <sphx_glr_auto_examples_06_manipulating_images_plot_extract_rois_smith_atlas.py>`.

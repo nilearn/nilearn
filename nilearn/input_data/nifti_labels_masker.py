@@ -4,7 +4,7 @@ Transformer for computing ROI signals.
 
 import numpy as np
 
-from nilearn._utils.compat import Memory
+from joblib import Memory
 
 from .. import _utils
 from .._utils import logger, CacheMixin, _compose_err_msg
@@ -19,17 +19,20 @@ class _ExtractionFunctor(object):
 
     func_name = 'nifti_labels_masker_extractor'
 
-    def __init__(self, _resampled_labels_img_, background_label, strategy):
+    def __init__(self, _resampled_labels_img_, background_label, strategy,
+                 mask_img):
         self._resampled_labels_img_ = _resampled_labels_img_
         self.background_label = background_label
         self.strategy = strategy
+        self.mask_img = mask_img
 
     def __call__(self, imgs):
         from ..regions import signal_extraction
 
         return signal_extraction.img_to_signals_labels(
             imgs, self._resampled_labels_img_,
-            background_label=self.background_label, strategy=self.strategy)
+            background_label=self.background_label, strategy=self.strategy,
+            mask_img=self.mask_img)
 
 
 class NiftiLabelsMasker(BaseMasker, CacheMixin):
@@ -66,6 +69,10 @@ class NiftiLabelsMasker(BaseMasker, CacheMixin):
         True : the signal is z-scored. Timeseries are shifted
         to zero mean and scaled to unit variance.
         False : Do not standardize the data.
+
+    standardize_confounds: boolean, optional,  default is True
+        If standardize_confounds is True, the confounds are z-scored:
+        their mean is put to 0 and their variance to 1 in the time dimension.
 
     detrend: boolean, optional
         This parameter is passed to signal.clean. Please see the related
@@ -120,10 +127,10 @@ class NiftiLabelsMasker(BaseMasker, CacheMixin):
     # memory and memory_level are used by CacheMixin.
 
     def __init__(self, labels_img, background_label=0, mask_img=None,
-                 smoothing_fwhm=None, standardize=False, detrend=False,
-                 low_pass=None, high_pass=None, t_r=None, dtype=None,
+                 smoothing_fwhm=None, standardize=False, standardize_confounds=True,
+                 detrend=False, low_pass=None, high_pass=None, t_r=None, dtype=None,
                  resampling_target="data",
-                 memory=Memory(cachedir=None, verbose=0), memory_level=1,
+                 memory=Memory(location=None, verbose=0), memory_level=1,
                  verbose=0, strategy="mean"):
         self.labels_img = labels_img
         self.background_label = background_label
@@ -134,6 +141,7 @@ class NiftiLabelsMasker(BaseMasker, CacheMixin):
 
         # Parameters for clean()
         self.standardize = standardize
+        self.standardize_confounds = standardize_confounds
         self.detrend = detrend
         self.low_pass = low_pass
         self.high_pass = high_pass
@@ -171,12 +179,14 @@ class NiftiLabelsMasker(BaseMasker, CacheMixin):
         All parameters are unused, they are for scikit-learn compatibility.
         """
         logger.log("loading data from %s" %
-                   _utils._repr_niimgs(self.labels_img)[:200],
+                   _utils._repr_niimgs(self.labels_img,
+                                       shorten=(not self.verbose)),
                    verbose=self.verbose)
         self.labels_img_ = _utils.check_niimg_3d(self.labels_img)
         if self.mask_img is not None:
             logger.log("loading data from %s" %
-                       _utils._repr_niimgs(self.mask_img)[:200],
+                       _utils._repr_niimgs(self.mask_img,
+                                           shorten=(not self.verbose)),
                        verbose=self.verbose)
             self.mask_img_ = _utils.check_niimg_3d(self.mask_img)
         else:
@@ -241,7 +251,7 @@ class NiftiLabelsMasker(BaseMasker, CacheMixin):
             Images to process. It must boil down to a 4D image with scans
             number as last dimension.
 
-        confounds: CSV file or array-like, optional
+        confounds: CSV file or array-like or pandas DataFrame, optional
             This parameter is passed to signal.clean. Please see the related
             documentation for details.
             shape: (number of scans, number of confounds)
@@ -257,6 +267,8 @@ class NiftiLabelsMasker(BaseMasker, CacheMixin):
 
         if not hasattr(self, '_resampled_labels_img_'):
             self._resampled_labels_img_ = self.labels_img_
+        if not hasattr(self, '_resampled_mask_img'):
+            self._resampled_mask_img = self.mask_img_
         if self.resampling_target == "data":
             imgs_ = _utils.check_niimg_4d(imgs)
             if not _check_same_fov(imgs_, self._resampled_labels_img_):
@@ -265,6 +277,15 @@ class NiftiLabelsMasker(BaseMasker, CacheMixin):
                 self._resampled_labels_img_ = self._cache(
                     image.resample_img, func_memory_level=2)(
                         self.labels_img_, interpolation="nearest",
+                        target_shape=imgs_.shape[:3],
+                        target_affine=imgs_.affine)
+            if self.mask_img is not None and not _check_same_fov(
+                    imgs_, self._resampled_mask_img):
+                if self.verbose > 0:
+                    print("Resampling mask")
+                self._resampled_mask_img = self._cache(
+                    image.resample_img, func_memory_level=2)(
+                        self.mask_img_, interpolation="nearest",
                         target_shape=imgs_.shape[:3],
                         target_affine=imgs_.affine)
             # Remove imgs_ from memory before loading the same image
@@ -287,7 +308,8 @@ class NiftiLabelsMasker(BaseMasker, CacheMixin):
                 ignore=['verbose', 'memory', 'memory_level'])(
             # Images
             imgs, _ExtractionFunctor(self._resampled_labels_img_,
-                                     self.background_label, self.strategy),
+                                     self.background_label, self.strategy,
+                                     self._resampled_mask_img),
             # Pre-processing
             params,
             confounds=confounds,

@@ -5,8 +5,9 @@ import warnings
 from pathlib import Path
 from string import Template
 
-from .html_document import HTMLDocument
+from nilearn.plotting.html_document import HTMLDocument
 from nilearn.externals import tempita
+from nilearn.reporting.utils import figure_to_svg_base64
 
 
 def _embed_img(display):
@@ -23,18 +24,7 @@ def _embed_img(display):
     """
     if display is None:  # no image to display
         return None
-
-    else:  # we were passed a matplotlib display
-        io_buffer = io.BytesIO()
-        display.frame_axes.figure.savefig(io_buffer, format='svg',
-                                          facecolor='white',
-                                          edgecolor='white')
-        display.close()
-
-        io_buffer.seek(0)
-        data = base64.b64encode(io_buffer.read())
-
-        return '{}'.format(data.decode())
+    return figure_to_svg_base64(display.frame_axes.figure)
 
 
 def _str_params(params):
@@ -98,79 +88,75 @@ def _update_template(title, docstring, content, overlay,
     return HTMLReport(body=body, head_tpl=head_tpl)
 
 
-class ReportMixin:
+def _define_overlay(estimator):
     """
-    A class to provide general reporting functionality
+    Determine whether an overlay was provided and
+    update the report text as appropriate.
+
+    Parameters
+    ----------
+
+    Returns
+    -------
     """
+    displays = estimator._reporting()
 
-    def _define_overlay(self):
-        """
-        Determine whether an overlay was provided and
-        update the report text as appropriate.
+    if len(displays) == 1:  # set overlay to None
+        overlay, image = None, displays[0]
 
-        Parameters
-        ----------
+    elif len(displays) == 2:
+        overlay, image = displays[0], displays[1]
 
-        Returns
-        -------
-        """
-        displays = self._reporting()
+    return overlay, image
 
-        if len(displays) == 1:  # set overlay to None
-            overlay, image = None, displays[0]
 
-        elif len(displays) == 2:
-            overlay, image = displays[0], displays[1]
+def generate_report(estimator):
+    """
+    Generate a report for Nilearn objects.
 
-        return overlay, image
+    Reports are useful to visualize steps in a processing pipeline.
+    Example use case: visualize the overlap of a mask and reference image
+    in NiftiMasker.
 
-    def generate_report(self):
-        """
-        Generate a report for Nilearn objects.
+    Returns
+    -------
+    report : HTMLReport
+    """
+    if not hasattr(estimator, '_reporting_data'):
+        warnings.warn('This object has not been fitted yet ! '
+                      'Make sure to run `fit` before inspecting reports.')
+        report = _update_template(title='Empty Report',
+                                  docstring=('This report was not '
+                                             'generated. Please `fit` the '
+                                             'object.'),
+                                  content=_embed_img(None),
+                                  overlay=None,
+                                  parameters=dict())
 
-        Reports are useful to visualize steps in a processing pipeline.
-        Example use case: visualize the overlap of a mask and reference image
-        in NiftiMasker.
+    elif estimator._reporting_data is None:
+        warnings.warn('Report generation not enabled ! '
+                      'No visual outputs will be created.')
+        report = _update_template(title='Empty Report',
+                                  docstring=('This report was not '
+                                             'generated. Please check '
+                                             'that reporting is enabled.'),
+                                  content=_embed_img(None),
+                                  overlay=None,
+                                  parameters=dict())
 
-        Returns
-        -------
-        report : HTMLReport
-        """
-        if not hasattr(self, '_reporting_data'):
-            warnings.warn('This object has not been fitted yet ! '
-                          'Make sure to run `fit` before inspecting reports.')
-            report = _update_template(title='Empty Report',
-                                      docstring=('This report was not '
-                                                 'generated. Please `fit` the '
-                                                 'object.'),
-                                      content=_embed_img(None),
-                                      overlay=None,
-                                      parameters=dict())
-
-        elif self._reporting_data is None:
-            warnings.warn('Report generation not enabled ! '
-                          'No visual outputs will be created.')
-            report = _update_template(title='Empty Report',
-                                      docstring=('This report was not '
-                                                 'generated. Please check '
-                                                 'that reporting is enabled.'),
-                                      content=_embed_img(None),
-                                      overlay=None,
-                                      parameters=dict())
-
-        else:  # We can create a report
-            overlay, image = self._define_overlay()
-            description = self._report_description
-            parameters = _str_params(self.get_params())
-            docstring = self.__doc__
-            snippet = docstring.partition('Parameters\n    ----------\n')[0]
-            report = _update_template(title=self.__class__.__name__,
-                                      docstring=snippet,
-                                      content=_embed_img(image),
-                                      overlay=_embed_img(overlay),
-                                      parameters=parameters,
-                                      description=description)
-        return report
+    else:  # We can create a report
+        overlay, image = _define_overlay(estimator)
+        description = estimator._report_description
+        parameters = _str_params(estimator.get_params())
+        docstring = estimator.__doc__
+        snippet = docstring.partition('Parameters\n    ----------\n')[0]
+        report = _update_template(title=estimator.__class__.__name__,
+                                  docstring=snippet,
+                                  content=_embed_img(image),
+                                  overlay=_embed_img(overlay),
+                                  parameters=parameters,
+                                  description=description)
+    return report
 
 
 class HTMLReport(HTMLDocument):
@@ -179,11 +165,11 @@ class HTMLReport(HTMLDocument):
     Methods such as save_as_html(), open_in_browser()
     are inherited from HTMLDocument
     """
-    def __init__(self, head_tpl, body):
+    def __init__(self, head_tpl, body, head_values={}):
         """ The head_tpl is meant for display as a full page, eg writing on
             disk. The body is used for embedding in an existing page.
         """
-        html = head_tpl.substitute(body=body)
+        html = head_tpl.safe_substitute(body=body, **head_values)
         super(HTMLReport, self).__init__(html)
         self.head_tpl = head_tpl
         self.body = body

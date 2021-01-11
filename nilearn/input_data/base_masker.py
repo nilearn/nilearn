@@ -10,7 +10,7 @@ import abc
 import numpy as np
 
 from sklearn.base import BaseEstimator, TransformerMixin
-from nilearn._utils.compat import Memory
+from joblib import Memory
 
 from .. import masking
 from .. import image
@@ -18,12 +18,11 @@ from .. import signal
 from .. import _utils
 from .._utils.cache_mixin import CacheMixin, cache
 from .._utils.class_inspect import enclosing_scope_name
-from .._utils.compat import _basestring
 
 
 def filter_and_extract(imgs, extraction_function,
                        parameters,
-                       memory_level=0, memory=Memory(cachedir=None),
+                       memory_level=0, memory=Memory(location=None),
                        verbose=0,
                        confounds=None,
                        copy=True,
@@ -57,13 +56,13 @@ def filter_and_extract(imgs, extraction_function,
 
     # If we have a string (filename), we won't need to copy, as
     # there will be no side effect
-    if isinstance(imgs, _basestring):
+    if isinstance(imgs, str):
         copy = False
 
     if verbose > 0:
         print("[%s] Loading data from %s" % (
             class_name,
-            _utils._repr_niimgs(imgs)[:200]))
+            _utils._repr_niimgs(imgs, shorten=False)))
     imgs = _utils.check_niimg(imgs, atleast_4d=True, ensure_ndim=4,
                               dtype=dtype)
 
@@ -114,6 +113,7 @@ def filter_and_extract(imgs, extraction_function,
             region_signals,
             detrend=parameters['detrend'],
             standardize=parameters['standardize'],
+            standardize_confounds=parameters['standardize_confounds'],
             t_r=parameters['t_r'],
             low_pass=parameters['low_pass'],
             high_pass=parameters['high_pass'],

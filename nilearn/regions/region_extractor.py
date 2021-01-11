@@ -9,7 +9,7 @@ import numpy as np
 from scipy import ndimage
 from scipy.stats import scoreatpercentile
 
-from nilearn._utils.compat import Memory
+from joblib import Memory
 
 from .. import masking
 from ..input_data import NiftiMapsMasker
@@ -18,7 +18,6 @@ from ..image import new_img_like, resample_img
 from ..image.image import _smooth_array, threshold_img
 from .._utils.niimg_conversions import concat_niimgs, _check_same_fov
 from .._utils.niimg import _safe_get_data
-from .._utils.compat import _basestring
 from .._utils.ndimage import _peak_local_max
 from .._utils.segmentation import _random_walker
 
@@ -55,7 +54,8 @@ def _threshold_maps_ratio(maps_img, threshold):
     else:
         ratio = threshold
 
-    maps_data = _safe_get_data(maps, ensure_finite=True).copy()
+    # Get a copy of the data
+    maps_data = _safe_get_data(maps, ensure_finite=True, copy_data=True)
 
     abs_maps = np.abs(maps_data)
     # thresholding
@@ -183,7 +183,7 @@ def connected_regions(maps_img, min_region_size=1350,
     all_regions_imgs = []
     index_of_each_map = []
     maps_img = check_niimg(maps_img, atleast_4d=True)
-    maps = _safe_get_data(maps_img).copy()
+    maps = _safe_get_data(maps_img, copy_data=True)
     affine = maps_img.affine
     min_region_size = min_region_size / np.abs(np.linalg.det(affine[:3, :3]))
 
@@ -367,7 +367,7 @@ class RegionExtractor(NiftiMapsMasker):
                  extractor='local_regions', smoothing_fwhm=6,
                  standardize=False, detrend=False,
                  low_pass=None, high_pass=None, t_r=None,
-                 memory=Memory(cachedir=None), memory_level=0, verbose=0):
+                 memory=Memory(location=None), memory_level=0, verbose=0):
         super(RegionExtractor, self).__init__(
             maps_img=maps_img, mask_img=mask_img,
             smoothing_fwhm=smoothing_fwhm,
@@ -392,7 +392,7 @@ class RegionExtractor(NiftiMapsMasker):
                        "either of these {0}").format(list_of_strategies)
             raise ValueError(message)
 
-        if self.threshold is None or isinstance(self.threshold, _basestring):
+        if self.threshold is None or isinstance(self.threshold, str):
             raise ValueError("The given input to threshold is not valid. "
                              "Please submit a valid number specific to either of "
                              "the strategy in {0}".format(list_of_strategies))
@@ -502,7 +502,7 @@ def connected_label_regions(labels_img, min_size=None, connect_diag=True,
 
     if labels is not None:
         if (not isinstance(labels, collections.abc.Iterable) or
-                isinstance(labels, _basestring)):
+                isinstance(labels, str)):
             labels = [labels, ]
         if len(unique_labels) != len(labels):
             raise ValueError("The number of labels: {0} provided as input "

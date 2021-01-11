@@ -8,14 +8,13 @@ import collections.abc
 import itertools
 import warnings
 
-from nilearn._utils.compat import Memory, Parallel, delayed
+from joblib import Memory, Parallel, delayed
 
 from .. import _utils
 from .. import image
 from .. import masking
 from .._utils import CacheMixin
 from .._utils.class_inspect import get_params
-from .._utils.compat import _basestring, izip
 from .._utils.niimg_conversions import _iter_check_niimg
 from .nifti_masker import NiftiMasker, filter_and_mask
 from nilearn.image import get_data
@@ -50,6 +49,10 @@ class MultiNiftiMasker(NiftiMasker, CacheMixin):
         to zero mean and scaled to unit variance.
         False : Do not standardize the data.
 
+    standardize_confounds: boolean, optional default is True
+        If standardize_confounds is True, the confounds are z-scored:
+        their mean is put to 0 and their variance to 1 in the time dimension.
+
     detrend: boolean, optional
         This parameter is passed to signal.clean. Please see the related
         documentation for details
@@ -82,7 +85,7 @@ class MultiNiftiMasker(NiftiMasker, CacheMixin):
         brain mask for your data's field of view.
         Depending on this value, the mask will be computed from
         masking.compute_background_mask, masking.compute_epi_mask or
-        masking.compute_gray_matter_mask. Default is 'background'.
+        masking.compute_brain_mask. Default is 'background'.
 
     mask_args : dict, optional
         If mask is None, these are additional parameters passed to
@@ -128,16 +131,17 @@ class MultiNiftiMasker(NiftiMasker, CacheMixin):
     """
 
     def __init__(self, mask_img=None, smoothing_fwhm=None,
-                 standardize=False, detrend=False, low_pass=None,
-                 high_pass=None, t_r=None, target_affine=None,
+                 standardize=False, standardize_confounds=True, detrend=False,
+                 low_pass=None, high_pass=None, t_r=None, target_affine=None,
                  target_shape=None, mask_strategy='background',
-                 mask_args=None, dtype=None, memory=Memory(cachedir=None),
+                 mask_args=None, dtype=None, memory=Memory(location=None),
                  memory_level=0, n_jobs=1, verbose=0):
         # Mask is provided or computed
         self.mask_img = mask_img
 
         self.smoothing_fwhm = smoothing_fwhm
         self.standardize = standardize
+        self.standardize_confounds = standardize_confounds
         self.detrend = detrend
         self.low_pass = low_pass
         self.high_pass = high_pass
@@ -171,13 +175,13 @@ class MultiNiftiMasker(NiftiMasker, CacheMixin):
         if self.verbose > 0:
             print("[%s.fit] Loading data from %s" % (
                 self.__class__.__name__,
-                _utils._repr_niimgs(imgs)[:200]))
+                _utils._repr_niimgs(imgs, shorten=False)))
         # Compute the mask if not given by the user
         if self.mask_img is None:
             if self.verbose > 0:
                 print("[%s.fit] Computing mask" % self.__class__.__name__)
             if not isinstance(imgs, collections.abc.Iterable) \
-                    or isinstance(imgs, _basestring):
+                    or isinstance(imgs, str):
                 raise ValueError("[%s.fit] For multiple processing, you should"
                                  " provide a list of data "
                                  "(e.g. Nifti1Image objects or filenames)."
@@ -243,7 +247,7 @@ class MultiNiftiMasker(NiftiMasker, CacheMixin):
 
         confounds: list of confounds, optional
             List of confounds (2D arrays or filenames pointing to CSV
-            files). Must be of same length than imgs_list.
+            files or pandas DataFrames). Must be of same length than imgs_list.
 
         copy: boolean, optional
             If True, guarantees that output array has no memory in common with
@@ -299,7 +303,7 @@ class MultiNiftiMasker(NiftiMasker, CacheMixin):
                           copy=copy,
                           dtype=self.dtype
                           )
-            for imgs, cfs in izip(niimg_iter, confounds))
+            for imgs, cfs in zip(niimg_iter, confounds))
         return data
 
     def transform(self, imgs, confounds=None):
@@ -311,7 +315,7 @@ class MultiNiftiMasker(NiftiMasker, CacheMixin):
             See http://nilearn.github.io/manipulating_images/input_output.html
             Data to be preprocessed
 
-        confounds: CSV file path or 2D matrix
+        confounds: CSV file path or 2D array or pandas DataFrame
             This parameter is passed to signal.clean. Please see the
             corresponding documentation for details.
 
@@ -322,6 +326,6 @@ class MultiNiftiMasker(NiftiMasker, CacheMixin):
         """
         self._check_fitted()
         if not hasattr(imgs, '__iter__') \
-                or isinstance(imgs, _basestring):
+                or isinstance(imgs, str):
             return self.transform_single_imgs(imgs)
         return self.transform_imgs(imgs, confounds, n_jobs=self.n_jobs)

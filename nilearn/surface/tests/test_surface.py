@@ -3,7 +3,6 @@
 import os
 import tempfile
 import warnings
-import itertools
 
 from distutils.version import LooseVersion
 
@@ -13,6 +12,7 @@ import pytest
 
 from numpy.testing import assert_array_equal, assert_array_almost_equal
 from scipy.spatial import Delaunay
+from scipy.stats import pearsonr
 
 from nibabel import gifti
 
@@ -26,6 +26,7 @@ from nilearn.surface.surface import (_gifti_img_to_mesh,
                                      _load_surf_files_gifti_gzip)
 from nilearn.surface.testing_utils import (generate_surf, flat_mesh,
                                            z_const_img)
+from nilearn._utils import data_gen
 
 currdir = os.path.dirname(os.path.abspath(__file__))
 datadir = os.path.join(currdir, 'data')
@@ -344,6 +345,7 @@ def test_load_surf_data_file_glob():
 
 
 def _flat_mesh(x_s, y_s, z=0):
+    # outer normals point upwards ie [0, 0, 1]
     x, y = np.mgrid[:x_s, :y_s]
     x, y = x.ravel(), y.ravel()
     z = np.ones(len(x)) * z
@@ -351,6 +353,14 @@ def _flat_mesh(x_s, y_s, z=0):
     triangulation = Delaunay(vertices[:, :2]).simplices
     mesh = [vertices, triangulation]
     return mesh
+
+
+@pytest.mark.parametrize("xy", [(10, 7), (5, 5), (3, 2)])
+def test_flat_mesh(xy):
+    points, triangles = _flat_mesh(xy[0], xy[1])
+    a, b, c = points[triangles[0]]
+    n = np.cross(b - a, c - a)
+    assert np.allclose(n, [0., 0., 1.])
 
 
 def _z_const_img(x_s, y_s, z_s):
@@ -403,7 +413,7 @@ def test_sample_locations():
     ball_offsets = np.asarray(
         resampling.coord_transform(*ball_offsets.T, affine=inv_affine)).T
     line_offsets = np.zeros((10, 3))
-    line_offsets[:, 2] = np.linspace(-1, 1, 10)
+    line_offsets[:, 2] = np.linspace(1, -1, 10)
     line_offsets = np.asarray(
         resampling.coord_transform(*line_offsets.T, affine=inv_affine)).T
     # check we get the same locations
@@ -415,6 +425,71 @@ def test_sample_locations():
         assert_array_almost_equal(true_locations, locations)
     pytest.raises(ValueError, surface._sample_locations,
                   mesh, affine, 1., kind='bad_kind')
+
+
+@pytest.mark.parametrize("depth", [(0.,), (-1.,), (1.,), (-1., 0., .5)])
+@pytest.mark.parametrize("n_points", [None, 10])
+def test_sample_locations_depth(depth, n_points):
+    mesh = flat_mesh(5, 7)
+    radius = 8.
+    locations = surface._sample_locations(
+        mesh, np.eye(4), radius, n_points=n_points, depth=depth)
+    offsets = np.asarray([[0., 0., - z * radius] for z in depth])
+    expected = np.asarray([vertex + offsets for vertex in mesh[0]])
+    assert np.allclose(locations, expected)
+
+
+@pytest.mark.parametrize(
+    "depth,n_points",
+    [(None, 1), (None, 7), ([0.], 8), ([-1.], 8),
+     ([1.], 8), ([-1., 0., .5], 8)])
+def test_sample_locations_between_surfaces(depth, n_points):
+    inner = flat_mesh(5, 7)
+    outer = inner[0] + [0., 0., 1.], inner[1]
+    locations = surface._sample_locations_between_surfaces(
+        outer, inner, np.eye(4), n_points=n_points, depth=depth)
+    if depth is None:
+        # can be simplified when we drop support for np 1.15
+        # (broadcasting linspace)
+        expected = np.asarray(
+            [np.linspace(b, a, n_points)
+             for (a, b) in zip(inner[0].ravel(), outer[0].ravel())])
+        expected = np.rollaxis(
+            expected.reshape((*outer[0].shape, n_points)), 2, 1)
+    else:
+        offsets = ([[0., 0., - z] for z in depth])
+        expected = np.asarray([vertex + offsets for vertex in outer[0]])
+    assert np.allclose(locations, expected)
+
+
+def test_depth_ball_sampling():
+    img, *_ = data_gen.generate_mni_space_img()
+    mesh = surface.load_surf_mesh(datasets.fetch_surf_fsaverage()["pial_left"])
+    with pytest.raises(ValueError, match=".*does not support.*"):
+        surface.vol_to_surf(img, mesh, kind="ball", depth=[.5])
+
+
+@pytest.mark.parametrize("kind", ["line", "ball"])
+@pytest.mark.parametrize("n_scans", [1, 20])
+@pytest.mark.parametrize("use_mask", [True, False])
+def test_vol_to_surf(kind, n_scans, use_mask):
+    img, mask_img = data_gen.generate_mni_space_img(n_scans)
+    if not use_mask:
+        mask_img = None
+    if n_scans == 1:
+        img = image.new_img_like(img, image.get_data(img).squeeze())
+    fsaverage = datasets.fetch_surf_fsaverage()
+    mesh = surface.load_surf_mesh(fsaverage["pial_left"])
+    inner_mesh = surface.load_surf_mesh(fsaverage["white_left"])
+    center_mesh = np.mean([mesh[0], inner_mesh[0]], axis=0), mesh[1]
+    proj = surface.vol_to_surf(
+        img, mesh, kind="depth", inner_mesh=inner_mesh, mask_img=mask_img)
+    other_proj = surface.vol_to_surf(
+        img, center_mesh, kind=kind, mask_img=mask_img)
+    correlation = pearsonr(proj.ravel(), other_proj.ravel())[0]
+    assert correlation > .99
+    with pytest.raises(ValueError, match=".*interpolation.*"):
+        surface.vol_to_surf(img, mesh, interpolation="bad")
 
 
 def test_masked_indices():
@@ -473,59 +548,65 @@ def test_sampling_affine():
     assert_array_almost_equal(texture[0], [1.1, 2., 1.])
 
 
-def test_sampling():
+@pytest.mark.parametrize("kind", ["auto", "line", "ball"])
+@pytest.mark.parametrize("use_inner_mesh", [True, False])
+@pytest.mark.parametrize("projection", ["linear", "nearest"])
+def test_sampling(kind, use_inner_mesh, projection):
     mesh = flat_mesh(5, 7, 4)
     img = z_const_img(5, 7, 13)
     mask = np.ones(img.shape, dtype=int)
     mask[0] = 0
-    projectors = [surface._nearest_voxel_sampling,
-                  surface._interpolation_sampling]
-    for kind in ('line', 'ball'):
-        for projector in projectors:
-            projection = projector([img], mesh, np.eye(4),
-                                   kind=kind, radius=0.)
-            assert_array_almost_equal(projection.ravel(), img[:, :, 0].ravel())
-            projection = projector([img], mesh, np.eye(4),
-                                   kind=kind, radius=0., mask=mask)
-            assert_array_almost_equal(projection.ravel()[7:],
-                                      img[1:, :, 0].ravel())
-            assert np.isnan(projection.ravel()[:7]).all()
+    projector = {"nearest": surface._nearest_voxel_sampling,
+                 "linear": surface._interpolation_sampling}[projection]
+    inner_mesh = mesh if use_inner_mesh else None
+    projection = projector([img], mesh, np.eye(4),
+                           kind=kind, radius=0., inner_mesh=inner_mesh)
+    assert_array_almost_equal(projection.ravel(), img[:, :, 0].ravel())
+    projection = projector([img], mesh, np.eye(4),
+                           kind=kind, radius=0., mask=mask,
+                           inner_mesh=inner_mesh)
+    assert_array_almost_equal(projection.ravel()[7:],
+                              img[1:, :, 0].ravel())
+    assert np.isnan(projection.ravel()[:7]).all()
 
 
-def test_vol_to_surf():
-    # test 3d niimg to cortical surface projection and invariance to a change
-    # of affine
-    mni = datasets.load_mni152_template()
-    mesh = generate_surf()
-    _check_vol_to_surf_results(mni, mesh)
-    fsaverage = datasets.fetch_surf_fsaverage().pial_left
-    _check_vol_to_surf_results(mni, fsaverage)
+@pytest.mark.parametrize("projection", ["linear", "nearest"])
+def test_sampling_between_surfaces(projection):
+    projector = {"nearest": surface._nearest_voxel_sampling,
+                 "linear": surface._interpolation_sampling}[projection]
+    mesh = flat_mesh(13, 7, 3.)
+    inner_mesh = flat_mesh(13, 7, 1)
+    img = z_const_img(5, 7, 13).T
+    projection = projector(
+        [img], mesh, np.eye(4),
+        kind="auto", n_points=100, inner_mesh=inner_mesh)
+    assert_array_almost_equal(
+        projection.ravel(), img[:, :, 1:4].mean(axis=-1).ravel())
 
 
-def _check_vol_to_surf_results(img, mesh):
-    mni_mask = datasets.load_mni152_brain_mask()
-    for kind, interpolation, mask_img in itertools.product(
-            ['ball', 'line'], ['linear', 'nearest'], [mni_mask, None]):
-        proj_1 = vol_to_surf(
-            img, mesh, kind=kind, interpolation=interpolation,
-            mask_img=mask_img)
-        assert proj_1.ndim == 1
-        img_rot = image.resample_img(
-            img, target_affine=rotation(np.pi / 3., np.pi / 4.))
-        proj_2 = vol_to_surf(
-            img_rot, mesh, kind=kind, interpolation=interpolation,
-            mask_img=mask_img)
-        # The projection values for the rotated image should be close
-        # to the projection for the original image
-        diff = np.abs(proj_1 - proj_2) / np.abs(proj_1)
-        assert np.mean(diff[diff < np.inf]) < .03
-        img_4d = image.concat_imgs([img, img])
-        proj_4d = vol_to_surf(
-            img_4d, mesh, kind=kind, interpolation=interpolation,
-            mask_img=mask_img)
-        nodes, _ = surface.load_surf_mesh(mesh)
-        assert_array_equal(proj_4d.shape, [nodes.shape[0], 2])
-        assert_array_almost_equal(proj_4d[:, 0], proj_1, 3)
+def test_choose_kind():
+    kind = surface._choose_kind("abc", None)
+    assert kind == "abc"
+    kind = surface._choose_kind("abc", "mesh")
+    assert kind == "abc"
+    kind = surface._choose_kind("auto", None)
+    assert kind == "line"
+    kind = surface._choose_kind("auto", "mesh")
+    assert kind == "depth"
+    with pytest.raises(TypeError, match=".*sampling strategy"):
+        kind = surface._choose_kind("depth", None)
+
+
+def test_check_mesh():
+    mesh = surface._check_mesh('fsaverage5')
+    assert mesh is surface._check_mesh(mesh)
+    with pytest.raises(ValueError):
+        surface._check_mesh('fsaverage3')
+    mesh.pop('pial_left')
+    with pytest.raises(ValueError):
+        surface._check_mesh(mesh)
+    with pytest.raises(TypeError):
+        surface._check_mesh(surface.load_surf_mesh(mesh['pial_right']))
 
 
 def test_check_mesh_and_data():

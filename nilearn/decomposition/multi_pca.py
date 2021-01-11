@@ -3,7 +3,7 @@ PCA dimension reduction on multiple subjects.
 This is a good initialization method for ICA.
 """
 import numpy as np
-from nilearn._utils.compat import Memory
+from joblib import Memory
 from sklearn.utils.extmath import randomized_svd
 
 from .base import BaseDecomposition
@@ -47,7 +47,7 @@ class MultiPCA(BaseDecomposition):
         brain mask for your data's field of view.
         Depending on this value, the mask will be computed from
         masking.compute_background_mask, masking.compute_epi_mask or
-        masking.compute_gray_matter_mask. Default is 'epi'.
+        masking.compute_brain_mask. Default is 'epi'.
 
     mask_args: dict, optional
         If mask is None, these are additional parameters passed to
@@ -57,7 +57,11 @@ class MultiPCA(BaseDecomposition):
 
     standardize : boolean, optional
         If standardize is True, the time-series are centered and normed:
-        their variance is put to 1 in the time dimension.
+        their mean is put to 0 and their variance to 1 in the time dimension.
+
+    standardize_confounds : boolean, optional, default is True
+        If standardize_confounds is True, the confounds are z-scored:
+        their mean is put to 0 and their variance to 1 in the time dimension.
 
     detrend : boolean, optional
         If detrend is True, the time-series will be detrended before
@@ -134,11 +138,11 @@ class MultiPCA(BaseDecomposition):
                  smoothing_fwhm=None,
                  do_cca=True,
                  random_state=None,
-                 standardize=False, detrend=False,
-                 low_pass=None, high_pass=None, t_r=None,
+                 standardize=False, standardize_confounds=True,
+                 detrend=False, low_pass=None, high_pass=None, t_r=None,
                  target_affine=None, target_shape=None,
                  mask_strategy='epi', mask_args=None,
-                 memory=Memory(cachedir=None), memory_level=0,
+                 memory=Memory(location=None), memory_level=0,
                  n_jobs=1,
                  verbose=0
                  ):
@@ -150,6 +154,7 @@ class MultiPCA(BaseDecomposition):
                                    mask=mask,
                                    smoothing_fwhm=smoothing_fwhm,
                                    standardize=standardize,
+                                   standardize_confounds=standardize_confounds,
                                    detrend=detrend,
                                    low_pass=low_pass,
                                    high_pass=high_pass, t_r=t_r,

@@ -121,7 +121,7 @@ We use masking to convert 4D data (i.e. 3D volume over time) into 2D data
 Applying a mask
 ................
 
-.. figure:: ../auto_examples/images/sphx_glr_plot_decoding_tutorial_002.png
+.. figure:: ../auto_examples/images/sphx_glr_plot_decoding_tutorial_001.png
     :target: ../auto_examples/plot_decoding_tutorial.html
     :align: right
     :scale: 30%
@@ -220,8 +220,7 @@ discriminating weight.
 
     show()
 
-
-.. figure:: ../auto_examples/images/sphx_glr_plot_decoding_tutorial_002.png
+.. figure:: ../auto_examples/02_decoding/images/sphx_glr_plot_haxby_anova_svm_001.png
     :target: ../auto_examples/plot_decoding_tutorial.html
     :align: center
     :scale: 50%

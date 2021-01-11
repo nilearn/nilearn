@@ -5,65 +5,36 @@ Test the datasets module
 # License: simplified BSD
 
 import contextlib
+import gzip
 import os
 import shutil
-import numpy as np
-import zipfile
 import tarfile
-import gzip
+import zipfile
+import urllib
+import json
+
 from tempfile import mkdtemp, mkstemp
 
+try:
+    import boto3  # noqa:F401
+
+except ImportError:
+    BOTO_INSTALLED = False
+else:
+    BOTO_INSTALLED = True
+
+import numpy as np
 import pytest
+import requests
 
 from nilearn import datasets
-from nilearn._utils.testing import (mock_request, wrap_chunk_read_,
-                                    FetchFilesMock)
+from nilearn.datasets.utils import (_get_dataset_dir,
+                                    make_fresh_openneuro_dataset_urls_index)
+from nilearn.datasets import utils
+
 
 currdir = os.path.dirname(os.path.abspath(__file__))
 datadir = os.path.join(currdir, 'data')
-url_request = None
-file_mock = None
-
-
-@pytest.fixture()
-def request_mocker():
-    """ Mocks URL calls for data fetchers during testing.
-    Tests the fetcher code without actually downloading the files.
-    """
-    setup_mock()
-    yield
-    teardown_mock()
-
-
-def setup_mock(utils_mod=datasets.utils, dataset_mod=datasets.utils):
-    global original_url_request
-    global mock_url_request
-    mock_url_request = mock_request()
-    original_url_request = utils_mod._urllib.request
-    utils_mod._urllib.request = mock_url_request
-
-    global original_chunk_read
-    global mock_chunk_read
-    mock_chunk_read = wrap_chunk_read_(utils_mod._chunk_read_)
-    original_chunk_read = utils_mod._chunk_read_
-    utils_mod._chunk_read_ = mock_chunk_read
-
-    global original_fetch_files
-    global mock_fetch_files
-    mock_fetch_files = FetchFilesMock()
-    original_fetch_files = dataset_mod._fetch_files
-    dataset_mod._fetch_files = mock_fetch_files
-
-
-def teardown_mock(utils_mod=datasets.utils, dataset_mod=datasets.utils):
-    global original_url_request
-    utils_mod._urllib.request = original_url_request
-
-    global original_chunk_read
-    utils_mod.chunk_read_ = original_chunk_read
-
-    global original_fetch_files
-    dataset_mod._fetch_files = original_fetch_files
 
 
 def test_get_dataset_dir(tmp_path):
@@ -314,7 +285,7 @@ def test_fetch_file_overwrite(tmp_path, request_mocker):
     # overwrite non-exiting file.
     fil = datasets.utils._fetch_file(url='http://foo/', data_dir=str(tmp_path),
                                      verbose=0, overwrite=True)
-    assert len(mock_url_request.urls) == 1
+    assert request_mocker.url_count == 1
     assert os.path.exists(fil)
     with open(fil, 'r') as fp:
         assert fp.read() == ''
@@ -326,7 +297,8 @@ def test_fetch_file_overwrite(tmp_path, request_mocker):
     # Don't overwrite existing file.
     fil = datasets.utils._fetch_file(url='http://foo/', data_dir=str(tmp_path),
                                      verbose=0, overwrite=False)
-    assert len(mock_url_request.urls) == 1
+
+    assert request_mocker.url_count == 1
     assert os.path.exists(fil)
     with open(fil, 'r') as fp:
         assert fp.read() == 'some content'
@@ -335,7 +307,7 @@ def test_fetch_file_overwrite(tmp_path, request_mocker):
     # Overwrite existing file.
     fil = datasets.utils._fetch_file(url='http://foo/', data_dir=str(tmp_path),
                                      verbose=0, overwrite=True)
-    assert len(mock_url_request.urls) == 1
+    assert request_mocker.url_count == 2
     assert os.path.exists(fil)
     with open(fil, 'r') as fp:
         assert fp.read() == ''
@@ -346,7 +318,7 @@ def test_fetch_files_overwrite(tmp_path, request_mocker):
     files = ('1.txt', 'http://foo/1.txt')
     fil = datasets.utils._fetch_files(data_dir=str(tmp_path), verbose=0,
                                       files=[files + (dict(overwrite=True),)])
-    assert len(mock_url_request.urls) == 1
+    assert request_mocker.url_count == 1
     assert os.path.exists(fil[0])
     with open(fil[0], 'r') as fp:
         assert fp.read() == ''
@@ -358,7 +330,7 @@ def test_fetch_files_overwrite(tmp_path, request_mocker):
     # Don't overwrite existing file.
     fil = datasets.utils._fetch_files(data_dir=str(tmp_path), verbose=0,
                                       files=[files + (dict(overwrite=False),)])
-    assert len(mock_url_request.urls) == 1
+    assert request_mocker.url_count == 1
     assert os.path.exists(fil[0])
     with open(fil[0], 'r') as fp:
         assert fp.read() == 'some content'
@@ -366,7 +338,52 @@ def test_fetch_files_overwrite(tmp_path, request_mocker):
     # Overwrite existing file.
     fil = datasets.utils._fetch_files(data_dir=str(tmp_path), verbose=0,
                                       files=[files + (dict(overwrite=True),)])
-    assert len(mock_url_request.urls) == 1
+    assert request_mocker.url_count == 2
     assert os.path.exists(fil[0])
     with open(fil[0], 'r') as fp:
         assert fp.read() == ''
+
+
+@pytest.mark.skipif(not BOTO_INSTALLED,
+                    reason='Boto3  missing; necessary for this test')
+def test_make_fresh_openneuro_dataset_urls_index(tmp_path, request_mocker):
+    dataset_version = 'ds000030_R1.0.4'
+    data_prefix = '{}/{}/uncompressed'.format(
+        dataset_version.split('_')[0], dataset_version)
+    data_dir = _get_dataset_dir(data_prefix, data_dir=str(tmp_path),
+                                verbose=1)
+    url_file = os.path.join(data_dir,
+                            'nistats_fetcher_openneuro_dataset_urls.json',
+                            )
+    # Prepare url files for subject and filter tests
+    file_list = [data_prefix + '/stuff.html',
+                 data_prefix + '/sub-xxx.html',
+                 data_prefix + '/sub-yyy.html',
+                 data_prefix + '/sub-xxx/ses-01_task-rest.txt',
+                 data_prefix + '/sub-xxx/ses-01_task-other.txt',
+                 data_prefix + '/sub-xxx/ses-02_task-rest.txt',
+                 data_prefix + '/sub-xxx/ses-02_task-other.txt',
+                 data_prefix + '/sub-yyy/ses-01.txt',
+                 data_prefix + '/sub-yyy/ses-02.txt']
+    with open(url_file, 'w') as f:
+        json.dump(file_list, f)
+
+    # Only 1 subject and not subject specific files get downloaded
+    datadir, dl_files = make_fresh_openneuro_dataset_urls_index(
+        str(tmp_path), dataset_version)
+    assert isinstance(datadir, str)
+    assert isinstance(dl_files, list)
+    assert len(dl_files) == len(file_list)
+
+
+def test_naive_ftp_adapter():
+    sender = utils._NaiveFTPAdapter()
+    resp = sender.send(
+        requests.Request("GET", "ftp://example.com").prepare())
+    resp.close()
+    resp.raw.close.assert_called_with()
+    urllib.request.OpenerDirector.open.side_effect = urllib.error.URLError(
+        "timeout")
+    with pytest.raises(requests.RequestException, match="timeout"):
+        resp = sender.send(
+            requests.Request("GET", "ftp://example.com").prepare())

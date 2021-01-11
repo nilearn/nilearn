@@ -50,7 +50,7 @@ os.environ.setdefault("KMP_INIT_AT_FORK", "FALSE")
 
 def _py35_deprecation_warning():
     py35_warning = ('Python 3.5 support is deprecated and will be removed in '
-                    'a future release. Consider switching to Python 3.6 or 3.7'
+                    'the 0.8.0 release. Consider switching to Python 3.6 or 3.7'
                     )
     warnings.filterwarnings('once', message=py35_warning)
     warnings.warn(message=py35_warning,
@@ -100,5 +100,6 @@ CHECK_CACHE_VERSION = True
 # list all submodules available in nilearn and version
 __all__ = ['datasets', 'decoding', 'decomposition', 'connectome',
            'image', 'input_data', 'masking', 'mass_univariate', 'plotting',
-           'region', 'signal', 'surface', 'parcellations', '__version__']
+           'regions', 'signal', 'stats', 'surface',
+           'parcellations', '__version__']
 

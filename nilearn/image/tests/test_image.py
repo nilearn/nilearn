@@ -275,8 +275,8 @@ def test_crop_threshold_tolerance():
 def test_mean_img():
     rng = np.random.RandomState(42)
     data1 = np.zeros((5, 6, 7))
-    data2 = rng.rand(5, 6, 7)
-    data3 = rng.rand(5, 6, 7, 3)
+    data2 = rng.uniform(size=(5, 6, 7))
+    data3 = rng.uniform(size=(5, 6, 7, 3))
     affine = np.diag((4, 3, 2, 1))
     img1 = nibabel.Nifti1Image(data1, affine=affine)
     img2 = nibabel.Nifti1Image(data2, affine=affine)
@@ -319,7 +319,7 @@ def test_mean_img():
 def test_mean_img_resample():
     # Test resampling in mean_img with a permutation of the axes
     rng = np.random.RandomState(42)
-    data = rng.rand(5, 6, 7, 40)
+    data = rng.uniform(size=(5, 6, 7, 40))
     affine = np.diag((4, 3, 2, 1))
     img = nibabel.Nifti1Image(data, affine=affine)
     mean_img = nibabel.Nifti1Image(data.mean(axis=-1), affine=affine)
@@ -337,8 +337,10 @@ def test_mean_img_resample():
 
 
 def test_swap_img_hemispheres():
+    rng = np.random.RandomState(42)
+
     # make sure input image data is not overwritten inside function
-    data = np.random.randn(4, 5, 7)
+    data = rng.standard_normal(size=(4, 5, 7))
     data_img = nibabel.Nifti1Image(data, np.eye(4))
     image.swap_img_hemispheres(data_img)
     np.testing.assert_array_equal(get_data(data_img), data)
@@ -405,9 +407,8 @@ def test_pd_index_img():
 
     fourth_dim_size = img_4d.shape[3]
 
-    rng = np.random.RandomState(0)
-
-    arr = rng.rand(fourth_dim_size) > 0.5
+    rng = np.random.RandomState(42)
+    arr = rng.uniform(size=fourth_dim_size) > 0.5
     df = pd.DataFrame({"arr": arr})
 
     np_index_img = image.index_img(img_4d, arr)
@@ -494,8 +495,9 @@ def test_new_img_like_non_iterable_header():
     Tests that when an niimg's header is not iterable
     & it is set to be copied, an error is not raised.
     """
-    fake_fmri_data = np.random.rand(10, 10, 10, 10)
-    fake_affine = np.random.rand(4, 4)
+    rng = np.random.RandomState(42)
+    fake_fmri_data = rng.uniform(size=(10, 10, 10, 10))
+    fake_affine = rng.uniform(size=(4, 4))
     fake_spatial_image = nibabel.spatialimages.SpatialImage(fake_fmri_data,
                                                             fake_affine)
     assert new_img_like(fake_spatial_image,
@@ -607,10 +609,8 @@ def test_math_img():
 
 
 def test_clean_img():
-
-    rng = np.random.RandomState(0)
-
-    data = rng.randn(10, 10, 10, 100) + .5
+    rng = np.random.RandomState(42)
+    data = rng.standard_normal(size=(10, 10, 10, 100)) + .5
     data_flat = data.T.reshape(100, -1)
     data_img = nibabel.Nifti1Image(data, np.eye(4))
 

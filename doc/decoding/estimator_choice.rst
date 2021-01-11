@@ -1,16 +1,17 @@
 
 .. _estimator_choice:
 
-=====================================
-Choosing the right predictive model
-=====================================
+=====================================================
+Choosing the right predictive model for neuroimaging
+=====================================================
 
-This page gives a few simple considerations on the choice of an estimator.
-It is slightly oriented towards a *decoding* application, that is the
-prediction of external variables such as behavior or clinical traits from
-brain images. For a didactic introduction to decoding with nilearn, see
-the :ref:`dedicated section of the nilearn documentation
-<decoding_intro>`.
+This page gives a few simple considerations on the choice of an estimator to
+tackle your *decoding* application, that is the prediction of external
+variables such as behavior or clinical traits from brain images. It is
+focusing on practical concepts to understand which prediction pipeline
+is well suited to your problem and how to implement it easily with Nilearn.
+This builds on concepts introduced in this :ref:`didactic
+introduction to decoding with nilearn <decoding_intro>`.
 
 .. contents:: **Contents**
     :local:
@@ -20,13 +21,19 @@ the :ref:`dedicated section of the nilearn documentation
 Predictions: regression, classification and multi-class
 =======================================================
 
+As seen in the previous section, high-level objects in Nilearn help you decode
+easily your dataset using a **mask** and/or **feature selection**. You can tune
+the **cross-validation** and **scoring** schemes of your model. Those objects
+come in two kinds, depending on your usecase : Regression or Classification.
 
 Regression
 ----------
 
 A regression problem is a learning task in which the variable to predict
---that we often call ``y``-- is a continuous value, such as an age.
+--that we often call **y** -- is a continuous value, such as an age.
 Encoding models [1]_ typically call for regressions.
+:class:`nilearn.decoding.DecoderRegressor` implement easy and efficient
+regression pipelines.
 
 .. [1]
 
@@ -35,7 +42,9 @@ Encoding models [1]_ typically call for regressions.
 
 .. seealso::
 
-   * :ref:`space_net`
+   * :class:`nilearn.decoding.FREMRegressor`, a pipeline described in the
+     :ref:`userguide <frem>`, which yields very good regression performance for
+     neuroimaging at a reasonable computational cost.
 
 Classification: two classes or multi-class
 ------------------------------------------
@@ -47,6 +56,9 @@ Often classification is performed between two classes, but it may well be
 applied to multiple classes, in which case it is known as a multi-class
 problem. It is important to keep in mind that the larger the number of
 classes, the harder the prediction problem.
+
+:class:`nilearn.decoding.Decoder` implement easy and efficient
+classification pipelines.
 
 Some estimators support multi-class prediction out of the box, but many
 work by dividing the multi-class problem in a set of two class problems.
@@ -72,13 +84,13 @@ whereas the latter is linear with the number of classes.
 
 .. seealso::
 
-    * `Multi-class prediction in scikit-learn's documentation <http://scikit-learn.org/stable/modules/multiclass.html>`_
-    * :ref:`space_net`
-
+  * `Multi-class prediction in scikit-learn's documentation <http://scikit-learn.org/stable/modules multiclass.html>`_
+  * :class:`nilearn.decoding.FREMClassifier`, a pipeline described in the
+    :ref:`userguide <frem>`, yielding state-of-the art decoding performance.
 
 **Confusion matrix** `The confusion matrix
 <http://en.wikipedia.org/wiki/Confusion_matrix>`_,
-:func:`sklearn.metrics.confusion_matrix` is a useful tool to 
+:func:`sklearn.metrics.confusion_matrix` is a useful tool to
 understand the classifier's errors in a multiclass problem.
 
 .. figure:: ../auto_examples/02_decoding/images/sphx_glr_plot_haxby_multiclass_001.png
@@ -96,83 +108,65 @@ understand the classifier's errors in a multiclass problem.
    :align: left
    :scale: 40
 
-Setting estimator parameters
-============================
-
-Most estimators have parameters that can be set to optimize their
-performance. Importantly, this must be done via **nested**
-cross-validation.
-
-Indeed, there is noise in the cross-validation score, and when we vary
-the parameter, the curve showing the score as a function of the parameter
-will have bumps and peaks due to this noise. These will not generalize to
-new data and chances are that the corresponding choice of parameter will
-not perform as well on new data.
-
-.. figure:: ../auto_examples/02_decoding/images/sphx_glr_plot_haxby_grid_search_001.png
-   :target: ../auto_examples/02_decoding/plot_haxby_grid_search.html
-   :align: center
-   :scale: 60
-
-With scikit-learn nested cross-validation is done via
-:class:`sklearn.model_selection.GridSearchCV`. It is unfortunately time
-consuming, but the ``n_jobs`` argument can spread the load on multiple
-CPUs.
-
-
-.. seealso::
-
-   * `The scikit-learn documentation on parameter selection
-     <http://scikit-learn.org/stable/modules/grid_search.html>`_
-
-   * The example :ref:`sphx_glr_auto_examples_02_decoding_plot_haxby_grid_search.py`
 
 Different linear models
 =======================
 
-There is a wide variety of classifiers available in scikit-learn (see the
-`scikit-learn documentation on supervised learning
-<http://scikit-learn.org/stable/supervised_learning.html>`_).
-Here we apply a few linear models to fMRI data:
+Using Nilearn high-level objects, several estimators are easily available
+to model the relations between your images and the target to predict.
+For classification, :class:`nilearn.decoding.Decoder` let you choose them
+through the `estimator` parameter:
 
-* SVC: the support vector classifier
-* SVC cv: the support vector classifier with its parameter C set by
-  cross-validation
-* log l2: the logistic regression with l2 penalty
-* log l2 cv: the logistic regression with l2 penalty with its parameter
-  set by cross-validation
-* log l1: the logistic regression with l1 penalty: **sparse model**
-* log l1 50: the logistic regression with l1 penalty and a high sparsity
-  parameter
-* log l1 cv: the logistic regression with l1 penalty with its parameter
-  (controlling the sparsity) set by cross-validation
-* ridge: the ridge classifier
-* ridge cv: the ridge classifier with its parameter set by
-  cross-validation
+* 'svc' (same as 'svc_l2') : the `support vector classifier <https://scikit-learn.org/stable/modules/svm.html>`_
+
+* 'svc_l1' : SVC using L1 penalization that yields a sparse solution : only a
+  subset of feature weights is different from zero and contribute to prediction.
+
+* 'logistic' (or 'logistic_l2') : the `logistic regression
+  <https://scikit-learn.org/stable/modules/linear_model.html#logistic-regression>`_ with l2 penalty
+
+* 'logistic_l1' :  the logistic regression with l1 penalty (**sparse model**)
+
+* 'ridge_classifier' a `Ridge Regression variant
+  <https://scikit-learn.org/stable/modules/linear_model.html#ridge-regression-and-classification>`_
+
+
+In :class:`nilearn.decoding.DecoderRegressor` you can use some of these objects
+counterparts for regression :
+
+* 'svr'
+
+* 'ridge_regressor' (same as 'ridge')
 
 .. note::
 
-   * The SVC is fairly insensitive to the choice of the regularization
-     parameter
-   * cross-validation (CV) takes time
-   * The ridge and ridge CV are fast, but will not work well on
-     ill-separated classes, and, most importantly give ugly weight maps
-     (see below)
-   * Parameter selection is difficult with sparse models
    * **There is no free lunch**: no estimator will work uniformely better
      in every situation.
 
+   * The SVC-l2 is fairly insensitive to the choice of the regularization
+     parameter which makes it a good and cheap first approach to most problems
+
+   * The ridge is fast to fit and cross-validate, but it will not work well on
+     ill-separated classes, and, most importantly give ugly weight maps
+
+   * Whenever a model uses sparsity (have l1 in its name here) the parameter
+     selection (amount of sparsity used) can change result a lot and is difficult
+     to tune well.
+
+   * What is done to the data  **before** applying the estimator is
+     often  **more important** than the choice of estimator. Typically,
+     standardizing the data is important, smoothing can often be useful,
+     and nuisance effects, such as session effect, must be removed.
+
+   * Many more estimators are available in scikit-learn (see the
+     `scikit-learn documentation on supervised learning
+     <http://scikit-learn.org/stable/supervised_learning.html>`_). To learn to
+     do decoding with any of these, see : :ref:`going_further`
 
 .. figure:: ../auto_examples/02_decoding/images/sphx_glr_plot_haxby_different_estimators_001.png
    :target: ../auto_examples/02_decoding/plot_haxby_different_estimators.html
    :align: center
    :scale: 80
-
-
-Note that what is done to the data before applying the estimator is
-often more important than the choice of estimator. Typically,
-standardizing the data is important, smoothing can often be useful,
-and confounding effects, such as session effect, must be removed.
 
 ____
 
@@ -197,22 +191,64 @@ little guarantee on the brain maps.
    :target: ../auto_examples/02_decoding/plot_haxby_different_estimators.html
    :scale: 70
 
+Setting estimator parameters
+============================
+
+Most estimators have parameters (called "hyper-parameters") that can be set
+to optimize their performance to a given problem. By default, the Decoder
+objects in Nilearn already try several values to roughly adapt to your problem.
+
+If you want to try more specific sets of parameters relevant to the model
+your using, you can pass a dictionary to `param_grid` argument. It must contain
+values for the suitable argument name. For example SVC has a parameter `C`.
+By default, the values tried for `C` are [1,10,100].
+
+.. note::
+  Full code example on parameter setting can be found at :
+  :ref:`sphx_glr_auto_examples_02_decoding_plot_haxby_grid_search.py`
+
+Be careful about **overfitting**. Giving a grid containing too many parameter
+close to each other will be computationnaly costly to fit and may result in
+choosing a parameter that works best on your training set, but does not give
+as good performances on your data. You can see below an example in which the
+curve showing the score as a function of the parameter has bumps and peaks
+due to this noise.
+
+.. figure:: ../auto_examples/02_decoding/images/sphx_glr_plot_haxby_grid_search_001.png
+   :target: ../auto_examples/02_decoding/plot_haxby_grid_search.html
+   :align: center
+   :scale: 60
 
 .. seealso::
 
-   * :ref:`space_net`
+   `The scikit-learn documentation on parameter selection
+   <http://scikit-learn.org/stable/modules/grid_search.html>`_
 
-|
+Bagging several models
+============================
 
-.. topic:: **Decoding on simulated data**
+`Bagging <https://scikit-learn.org/stable/modules/ensemble.html#bagging-meta-estimator>`_
+is a classical machine learning method to create ensemble of models that usually
+generalize to new data better than single model. The easiest way is to average
+the prediction of several models trained on slightly different part of a
+dataset and thus should have different bias that may cancel out.
 
-   Simple simulations may be useful to understand the behavior of a given
-   decoder on data. In particular, simulations enable us to set the true
-   weight maps and compare them to the ones retrieved by decoders. A full
-   example running simulations and discussing them can be found in
-   :ref:`sphx_glr_auto_examples_02_decoding_plot_simulated_data.py`
-   Simulated data cannot easily mimic all properties of brain data. An
-   important aspect, however, is its spatial structure, that we create in
-   the simulations.
+The :class:`nilearn.decoding.Decoder` and :class:`nilearn.decoding.DecoderRegressor`
+implement a kind of bagging scheme under the hood in their `fit` method to
+yield better and more stable decoders. For each cross-validation fold,
+the best model coefficients are retained. The average of all those linear
+models is then used to make predictions.
 
+.. seealso::
 
+  * The `scikit-learn documentation <http://scikit-learn.org>`_
+    has very detailed explanations on a large variety of estimators and
+    machine learning techniques. To become better at decoding, you need
+    to study it.
+
+  * :ref:`FREM <frem>`, a pipeline bagging many models that yields very
+    good decoding performance at a reasonable computational cost.
+
+  * :ref:`SpaceNet <space_net>`, a method promoting sparsity that can also
+    give good brain decoding power and improved decoder maps when sparsity
+    is important.

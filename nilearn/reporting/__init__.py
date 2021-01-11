@@ -1,10 +1,14 @@
 """
 Reporting code for nilearn
 """
+"""
+This module implements plotting functions useful to report analysis results.
 
-from .html_report import (ReportMixin, HTMLReport)
+Author: Martin Perez-Guevara, Elvis Dohmatob, 2017
+"""
 
-from .html_document import (HTMLDocument, set_max_img_views_before_warning)
+from nilearn.reporting.html_report import HTMLReport
+from nilearn.reporting._get_clusters_table import get_clusters_table
+from nilearn.reporting.glm_reporter import make_glm_report
 
-__all__ = ['ReportMixin', 'HTMLDocument', 'HTMLReport',
-           'set_max_img_views_before_warning']
+__all__ = ['HTMLReport', 'get_clusters_table', 'make_glm_report']

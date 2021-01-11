@@ -5,12 +5,14 @@ CanICA
 # Author: Alexandre Abraham, Gael Varoquaux,
 # License: BSD 3 clause
 
+import warnings as _warnings
+import numpy as np
+
 from operator import itemgetter
 
-import numpy as np
 from scipy.stats import scoreatpercentile
 from sklearn.decomposition import fastica
-from nilearn._utils.compat import Memory, delayed, Parallel
+from joblib import Memory, delayed, Parallel
 from sklearn.utils import check_random_state
 
 from .multi_pca import MultiPCA
@@ -40,7 +42,11 @@ class CanICA(MultiPCA):
 
     standardize: boolean, optional, default True
         If standardize is True, the time-series are centered and normed:
-        their variance is put to 1 in the time dimension.
+        their mean is put to 0 and their variance to 1 in the time dimension.
+
+    standardize_confounds: boolean, optional, default True
+        If standardize_confounds is True, the confounds are zscored:
+        their mean is put to 0 and their variance to 1 in the time dimension.
 
     detrend : boolean, optional, default True
         If detrend is True, the time-series will be detrended before
@@ -89,7 +95,7 @@ class CanICA(MultiPCA):
         brain mask for your data's field of view.
         Depending on this value, the mask will be computed from
         masking.compute_background_mask, masking.compute_epi_mask or
-        masking.compute_gray_matter_mask. Default is 'epi'.
+        masking.compute_brain_mask. Default is 'epi'.
 
     mask_args: dict, optional
         If mask is None, these are additional parameters passed to
@@ -153,11 +159,11 @@ class CanICA(MultiPCA):
                  threshold='auto',
                  n_init=10,
                  random_state=None,
-                 standardize=True, detrend=True,
+                 standardize=True, standardize_confounds=True, detrend=True,
                  low_pass=None, high_pass=None, t_r=None,
                  target_affine=None, target_shape=None,
                  mask_strategy='epi', mask_args=None,
-                 memory=Memory(cachedir=None), memory_level=0,
+                 memory=Memory(location=None), memory_level=0,
                  n_jobs=1, verbose=0
                  ):
 
@@ -167,8 +173,8 @@ class CanICA(MultiPCA):
             random_state=random_state,
             # feature_compression=feature_compression,
             mask=mask, smoothing_fwhm=smoothing_fwhm,
-            standardize=standardize, detrend=detrend,
-            low_pass=low_pass, high_pass=high_pass, t_r=t_r,
+            standardize=standardize, standardize_confounds=standardize_confounds,
+            detrend=detrend, low_pass=low_pass, high_pass=high_pass, t_r=t_r,
             target_affine=target_affine, target_shape=target_shape,
             mask_strategy=mask_strategy, mask_args=mask_args,
             memory=memory, memory_level=memory_level,
@@ -214,10 +220,18 @@ class CanICA(MultiPCA):
                              str(self.threshold))
         if ratio is not None:
             abs_ica_maps = np.abs(ica_maps)
-            threshold = scoreatpercentile(
-                abs_ica_maps,
-                100. - (100. / len(ica_maps)) * ratio)
-            ica_maps[abs_ica_maps < threshold] = 0.
+            percentile = 100. - (100. / len(ica_maps)) * ratio
+            if percentile <= 0:
+                _warnings.warn("Nilearn's decomposition module "
+                               "obtained a critical threshold "
+                               "(= %s percentile).\n"
+                               "No threshold will be applied. "
+                               "Threshold should be decreased or "
+                               "number of components should be adjusted." %
+                               str(percentile), UserWarning, stacklevel=4)
+            else:
+                threshold = scoreatpercentile(abs_ica_maps, percentile)
+                ica_maps[abs_ica_maps < threshold] = 0.
         # We make sure that we keep the dtype of components
         self.components_ = ica_maps.astype(self.components_.dtype)
 
@@ -226,7 +240,8 @@ class CanICA(MultiPCA):
             if component.max() < -component.min():
                 component *= -1
         if hasattr(self, "masker_"):
-            self.components_img_ = self.masker_.inverse_transform(self.components_)
+            self.components_img_ = self.masker_.inverse_transform(
+                self.components_)
 
     # Overriding MultiPCA._raw_fit overrides MultiPCA.fit behavior
     def _raw_fit(self, data):
