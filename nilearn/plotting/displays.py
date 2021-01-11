@@ -1776,10 +1776,9 @@ class OrthoProjector(OrthoSlicer):
             edge_kwargs = {}
         if node_kwargs is None:
             node_kwargs = {}
-        if node_color == 'auto':
+        if isinstance(node_color, str) and node_color == 'auto':
             nb_nodes = len(node_coords)
             node_color = mpl_cm.Set2(np.linspace(0, 1, nb_nodes))
-
         node_coords = np.asarray(node_coords)
 
         # decompress input matrix if sparse
@@ -1814,6 +1813,13 @@ class OrthoProjector(OrthoSlicer):
                                                   node_coords_shape)
 
             raise ValueError(message)
+
+        if isinstance(node_color, (list, np.ndarray)) and len(node_color) != 1:
+            if len(node_color) != node_coords_shape[0]:
+                raise ValueError(
+                    "Mismatch between the number of nodes ({0}) "
+                    "and and the number of node colors ({1})."
+                    .format(node_coords_shape[0], len(node_color)))
 
         if node_coords_shape[0] != adjacency_matrix_shape[0]:
             raise ValueError(
