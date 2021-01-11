@@ -26,7 +26,7 @@ from . import cm, glass_brain
 from .edge_detect import _edge_map
 from .find_cuts import find_xyz_cut_coords, find_cut_slices
 from .. import _utils
-from ..image import new_img_like
+from ..image import new_img_like, load_img
 from ..image.resampling import (get_bounds, reorder_img, coord_transform,
                                 get_mask_bounds)
 from nilearn.image import get_data
@@ -804,6 +804,8 @@ class BaseSlicer(object):
                   threshold=None, **kwargs):
         if type not in ('contour', 'contourf'):
             img = reorder_img(img, resample=resampling_interpolation)
+        else:
+            img = load_img(img)
         threshold = float(threshold) if threshold is not None else None
 
         if threshold is not None:
