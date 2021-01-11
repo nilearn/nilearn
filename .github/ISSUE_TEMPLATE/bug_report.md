@@ -6,23 +6,9 @@ labels: 'Bug'
 assignees: ''
 
 ---
-<!--
-
-Hi! 
-If you have: 
- -1 Questions about how to use Nilearn or 
- -2 Need analysis suggestions & recommendations?
-
-A bunch of fMRI researchers hang out at Neurostars (http://neurostars.org/). 
-Post those questions there. 
-Add the tag `nilearn` (we get an email from Neurostars if you do).
-
-Posting them here makes life more complicated for the Nilearn developers.  
--->
 
 <!--
 
-For the Bug Report, 
 Include this information:
 -------------------------
 What version of Nilearn are you using?
