@@ -33,13 +33,13 @@ def to_matrix_vector(transform):
 
     Parameters
     ----------
-    transform: numpy.ndarray
+    transform : numpy.ndarray
         Homogeneous transform matrix. Example: a (4, 4) transform representing
         linear transformation and translation in 3 dimensions.
 
     Returns
     -------
-    matrix, vector: numpy.ndarray
+    matrix, vector : numpy.ndarray
         The matrix and vector components of the transform matrix.  For
         an (N, N) transform, matrix will be (N-1, N-1) and vector will be
         a 1D array of shape (N-1,).
@@ -47,8 +47,8 @@ def to_matrix_vector(transform):
     See Also
     --------
     from_matrix_vector
-    """
 
+    """
     ndimin = transform.shape[0] - 1
     ndimout = transform.shape[1] - 1
     matrix = transform[0:ndimin, 0:ndimout]
@@ -64,10 +64,10 @@ def from_matrix_vector(matrix, vector):
 
     Parameters
     ----------
-    matrix: numpy.ndarray
+    matrix : numpy.ndarray
         An (N, N) array representing the rotation matrix.
 
-    vector: numpy.ndarray
+    vector : numpy.ndarray
         A (1, N) array representing the translation.
 
     Returns
@@ -78,8 +78,8 @@ def from_matrix_vector(matrix, vector):
     See Also
     --------
     nilearn.resampling.to_matrix_vector
-    """
 
+    """
     nin, nout = matrix.shape
     t = np.zeros((nin + 1, nout + 1), matrix.dtype)
     t[0:nin, 0:nout] = matrix
@@ -95,22 +95,27 @@ def coord_transform(x, y, z, affine):
     Parameters
     ----------
     x : number or ndarray (any shape)
-        The x coordinates in the input space
+        The x coordinates in the input space.
+
     y : number or ndarray (same shape as x)
-        The y coordinates in the input space
+        The y coordinates in the input space.
+
     z : number or ndarray
-        The z coordinates in the input space
+        The z coordinates in the input space.
+
     affine : 2D 4x4 ndarray
-        affine that maps from input to output space.
+        Affine that maps from input to output space.
 
     Returns
     -------
     x : number or ndarray (same shape as input)
-        The x coordinates in the output space
+        The x coordinates in the output space.
+
     y : number or ndarray (same shape as input)
-        The y coordinates in the output space
+        The y coordinates in the output space.
+
     z : number or ndarray (same shape as input)
-        The z coordinates in the output space
+        The z coordinates in the output space.
 
     Warning: The x, y and z have their output space (e.g. MNI) coordinate
     ordering, not 3D numpy image ordering.
@@ -151,18 +156,19 @@ def get_bounds(shape, affine):
 
     Parameters
     ----------
-    shape: tuple
+    shape : tuple
         shape of the array. Must have 3 integer values.
 
-    affine: numpy.ndarray
+    affine : numpy.ndarray
         affine giving the linear transformation between voxel coordinates
         and world-space coordinates.
 
     Returns
     -------
-    coord: list of tuples
+    coord : list of tuples
         coord[i] is a 2-tuple giving minimal and maximal coordinates along
         i-th axis.
+
     """
     adim, bdim, cdim = shape
     adim -= 1
@@ -186,20 +192,19 @@ def get_mask_bounds(img):
 
         Parameters
         ----------
-        img: Niimg-like object
+        img : Niimg-like object
             See http://nilearn.github.io/manipulating_images/input_output.html
             The image to inspect. Zero values are considered as
             background.
 
         Returns
         --------
-        xmin, xmax, ymin, ymax, zmin, zmax: floats
+        xmin, xmax, ymin, ymax, zmin, zmax : floats
             The world-space bounds (field of view) occupied by the
             non-zero values in the image
 
         Notes
         -----
-
         The image should have only one connect component.
 
         The affine should be diagonal or diagonal-permuted, use
@@ -295,49 +300,52 @@ def resample_img(img, target_affine=None, target_shape=None,
 
     Parameters
     ----------
-    img: Niimg-like object
+    img : Niimg-like object
         See http://nilearn.github.io/manipulating_images/input_output.html
         Image(s) to resample.
 
-    target_affine: numpy.ndarray, optional
+    target_affine : numpy.ndarray, optional
         If specified, the image is resampled corresponding to this new affine.
         target_affine can be a 3x3 or a 4x4 matrix. (See notes)
 
-    target_shape: tuple or list, optional
+    target_shape : tuple or list, optional
         If specified, the image will be resized to match this new shape.
         len(target_shape) must be equal to 3.
         If target_shape is specified, a target_affine of shape (4, 4)
         must also be given. (See notes)
 
-    interpolation: str, optional, default is 'continuous'.
-        Can be 'continuous' (default), 'linear', or 'nearest'. Indicates the resample
-        method.
+    interpolation : str, optional
+        Can be 'continuous', 'linear', or 'nearest'. Indicates the resample
+        method. Default='continuous'.
 
-    copy: bool, optional, default is True.
+    copy : bool, optional
         If True, guarantees that output array has no memory in common with
         input array.
         In all cases, input images are never modified by this function.
+        Default=True.
 
-    order: "F" or "C", optional, default is 'F'.
+    order : "F" or "C", optional
         Data ordering in output array. This function is slightly faster with
-        Fortran ordering.
+        Fortran ordering. Default='F'.
 
-    clip: bool, optional, default is True.
+    clip : bool, optional
         If True (default) all resampled image values above max(img) and
         under min(img) are clipped to min(img) and max(img). Note that
         0 is added as an image value for clipping, and it is the padding
         value when extrapolating out of field of view.
         If False no clip is preformed.
+        Default=True.
 
-    fill_value: float, optional, default is 0.
-        Use a fill value for points outside of input volume.
+    fill_value : float, optional
+        Use a fill value for points outside of input volume. Default=0.
 
-    force_resample: bool, optional, default is False.
-        Intended for testing, this prevents the use of a padding optimzation
+    force_resample : bool, optional
+        Intended for testing, this prevents the use of a padding optimzation.
+        Default=False.
 
     Returns
     -------
-    resampled: nibabel.Nifti1Image
+    resampled : nibabel.Nifti1Image
         input image, resampled to have respectively target_shape and
         target_affine as shape and affine.
 
@@ -347,7 +355,6 @@ def resample_img(img, target_affine=None, target_shape=None,
 
     Notes
     -----
-
     **BoundingBoxError**
     If a 4x4 transformation matrix (target_affine) is given and all of the
     transformed data points have a negative voxel index along one of the
@@ -604,37 +611,39 @@ def resample_to_img(source_img, target_img,
 
     Parameters
     ----------
-    source_img: Niimg-like object
+    source_img : Niimg-like object
         See http://nilearn.github.io/manipulating_images/input_output.html
         Image(s) to resample.
 
-    target_img: Niimg-like object
+    target_img : Niimg-like object
         See http://nilearn.github.io/manipulating_images/input_output.html
         Reference image taken for resampling.
 
-    interpolation: str, optional, default is 'continuous'.
-        Can be 'continuous' (default), 'linear', or 'nearest'. Indicates the resample
-        method.
+    interpolation : str, optional
+        Can be 'continuous', 'linear', or 'nearest'. Indicates the resample
+        method. Default='continuous'.
 
-    copy: bool, optional, default is True.
+    copy : bool, optional
         If True, guarantees that output array has no memory in common with
         input array.
         In all cases, input images are never modified by this function.
+        Default=True.
 
-    order: "F" or "C", optional, default is 'F'.
+    order : "F" or "C", optional
         Data ordering in output array. This function is slightly faster with
-        Fortran ordering.
+        Fortran ordering. Default="F".
 
-    clip: bool, optional, default is False.
+    clip : bool, optional
         If False (default) no clip is preformed.
         If True all resampled image values above max(img) and under min(img) are
-        clipped to min(img) and max(img)
+        clipped to min(img) and max(img). Default=False.
 
-    fill_value: float, optional, default is 0.
-        Use a fill value for points outside of input volume.
+    fill_value : float, optional
+        Use a fill value for points outside of input volume. Default=0.
 
-    force_resample: bool, optional, default is False.
-        Intended for testing, this prevents the use of a padding optimzation
+    force_resample : bool, optional
+        Intended for testing, this prevents the use of a padding optimzation.
+        Default=False.
 
     Returns
     -------
@@ -645,8 +654,8 @@ def resample_to_img(source_img, target_img,
     See Also
     --------
     nilearn.image.resample_img
-    """
 
+    """
     target = _utils.check_niimg(target_img)
     target_shape = target.shape
 
@@ -671,11 +680,11 @@ def reorder_img(img, resample=None):
 
     Parameters
     -----------
-    img: Niimg-like object
+    img : Niimg-like object
         See http://nilearn.github.io/manipulating_images/input_output.html
         Image to reorder.
 
-    resample: None or string in {'continuous', 'linear', 'nearest'}, optional
+    resample : None or string in {'continuous', 'linear', 'nearest'}, optional
         If resample is None (default), no resampling is performed, the
         axes are only permuted.
         Otherwise resampling is performed and 'resample' will
