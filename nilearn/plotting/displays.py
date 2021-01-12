@@ -802,10 +802,10 @@ class BaseSlicer(object):
     def _map_show(self, img, type='imshow',
                   resampling_interpolation='continuous',
                   threshold=None, **kwargs):
-        if type not in ('contour', 'contourf'):
-            img = reorder_img(img, resample=resampling_interpolation)
+        if _utils.niimg._is_binary_niimg(img):
+            img = reorder_img(img, resample='nearest')
         else:
-            img = load_img(img)
+            img = reorder_img(img, resample=resampling_interpolation)
         threshold = float(threshold) if threshold is not None else None
 
         if threshold is not None:
