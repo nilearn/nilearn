@@ -50,17 +50,20 @@ def _true_positive_fraction(z_vals, hommel_value, alpha):
 
     Parameters
     ----------
-    z_vals: array,
-            a set of z-variates from which the FDR is computed
-    hommel_value: int,
-           the Hommel value, used in the computations
-    alpha: float,
-           desired FDR control
+    z_vals : array,
+        A set of z-variates from which the FDR is computed.
+
+    hommel_value: int
+        The Hommel value, used in the computations.
+
+    alpha : float
+        The desired FDR control.
 
     Returns
     -------
-    threshold: float,
-               Estimated true positive fraction in the set of values
+    threshold : float
+        Estimated true positive fraction in the set of values.
+
     """
     z_vals_ = - np.sort(- z_vals)
     p_vals = norm.sf(z_vals_)
@@ -73,19 +76,21 @@ def _true_positive_fraction(z_vals, hommel_value, alpha):
 
 
 def fdr_threshold(z_vals, alpha):
-    """ return the Benjamini-Hochberg FDR threshold for the input z_vals
+    """Return the Benjamini-Hochberg FDR threshold for the input z_vals
 
     Parameters
     ----------
-    z_vals: array,
-            a set of z-variates from which the FDR is computed
-    alpha: float,
-           desired FDR control
+    z_vals : array
+        A set of z-variates from which the FDR is computed.
+
+    alpha : float
+        The desired FDR control.
 
     Returns
     -------
-    threshold: float,
-               FDR-controling threshold from the Benjamini-Hochberg procedure
+    threshold : float
+        FDR-controling threshold from the Benjamini-Hochberg procedure.
+
     """
     if alpha < 0 or alpha > 1:
         raise ValueError(
@@ -106,6 +111,8 @@ def cluster_level_inference(stat_img, mask_img=None,
     """ Report the proportion of active voxels for all clusters
     defined by the input threshold.
 
+    This implements the method described in [1]_.
+
     Parameters
     ----------
     stat_img : Niimg-like object or None, optional
@@ -114,31 +121,32 @@ def cluster_level_inference(stat_img, mask_img=None,
     mask_img : Niimg-like object, optional,
         mask image
 
-    threshold: list of floats, optional, default is 3.0.
-       cluster-forming threshold in z-scale.
+    threshold : list of floats, optional
+       Cluster-forming threshold in z-scale. Default=3.0.
 
-    alpha: float or list, optional, default is 0.05.
-        level of control on the true positive rate, aka true dsicovery
-        proportion
+    alpha : float or list, optional
+        Level of control on the true positive rate, aka true dsicovery
+        proportion. Default=0.05.
 
-    verbose: bool, optional
-        verbosity mode
+    verbose : bool, optional
+        Verbosity mode. Default=False.
 
     Returns
     -------
-    proportion_true_discoveries_img: Nifti1Image,
-        the statistical map that gives the true positive
+    proportion_true_discoveries_img : Nifti1Image
+        The statistical map that gives the true positive.
 
-    Note
-    ----
-    This implements the method described in:
-
-    Rosenblatt JD, Finos L, Weeda WD, Solari A, Goeman JJ. All-Resolutions
-    Inference for brain imaging. Neuroimage. 2018 Nov 1;181:786-796. doi:
-    10.1016/j.neuroimage.2018.07.060
-
+    Notes
+    -----
     This function is experimental.
     It may change in any future release of Nilearn.
+
+    References
+    ----------
+    .. [1] Rosenblatt JD, Finos L, Weeda WD, Solari A, Goeman JJ. All-Resolutions
+       Inference for brain imaging. Neuroimage. 2018 Nov 1;181:786-796. doi:
+       10.1016/j.neuroimage.2018.07.060
+
     """
 
     if not isinstance(threshold, list):
@@ -182,45 +190,46 @@ def threshold_stats_img(stat_img=None, mask_img=None, alpha=.001, threshold=3.,
     Parameters
     ----------
     stat_img : Niimg-like object or None, optional
-       statistical image (presumably in z scale)
-       whenever height_control is 'fpr' or None,
-       stat_img=None is acceptable.
+       Statistical image (presumably in z scale) whenever height_control
+       is 'fpr' or None, stat_img=None is acceptable.
        If it is 'fdr' or 'bonferroni', an error is raised if stat_img is None.
 
     mask_img : Niimg-like object, optional,
-        mask image
+        Mask image
 
-    alpha: float or list, optional, default is 0.001.
-        number controlling the thresholding (either a p-value or q-value).
+    alpha : float or list, optional
+        Number controlling the thresholding (either a p-value or q-value).
         Its actual meaning depends on the height_control parameter.
         This function translates alpha to a z-scale threshold.
+        Default=0.001.
 
-    threshold: float, optional, default is 3.0.
-       desired threshold in z-scale.
-       This is used only if height_control is None
+    threshold : float, optional
+       Desired threshold in z-scale.
+       This is used only if height_control is None. Default=3.0.
 
-    height_control: string, or None optional, default is 'fpr'.
-        false positive control meaning of cluster forming
+    height_control : string, or None optional
+        False positive control meaning of cluster forming
         threshold: None|'fpr'|'fdr'|'bonferroni'
+        Default='fpr'.
 
-    cluster_threshold: float, optional, default is 0.
+    cluster_threshold : float, optional
         cluster size threshold. In the returned thresholded map,
         sets of connected voxels (`clusters`) with size smaller
-        than this number will be removed.
+        than this number will be removed. Default=0.
 
-    two_sided: Bool, optional,
+    two_sided : Bool, optional
         Whether the thresholding should yield both positive and negative
         part of the maps.
         In that case, alpha is corrected by a factor of 2.
-        Defaults to True.
+        Default=True.
 
     Returns
     -------
     thresholded_map : Nifti1Image,
-        the stat_map thresholded at the prescribed voxel- and cluster-level
+        The stat_map thresholded at the prescribed voxel- and cluster-level.
 
-    threshold: float,
-        the voxel-level threshold used actually
+    threshold : float
+        The voxel-level threshold used actually.
 
     Note
     ----
@@ -233,8 +242,8 @@ def threshold_stats_img(stat_img=None, mask_img=None, alpha=.001, threshold=3.,
     See also
     --------
     nilearn.image.threshold_img
-    """
 
+    """
     height_control_methods = ['fpr', 'fdr', 'bonferroni',
                               'all-resolution-inference', None]
     if height_control not in height_control_methods:

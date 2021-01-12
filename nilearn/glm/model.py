@@ -18,13 +18,13 @@ inv_t_cdf = t_distribution.ppf
 
 
 class LikelihoodModelResults(object):
-    """ Class to contain results from likelihood models """
+    """ Class to contain results from likelihood models.
 
-    ''' This is the class in which things like AIC, BIC, llf
+    This is the class in which things like AIC, BIC, llf
     can be implemented as methods, not computed in, say,
-     the fit method of OLSModel
-    '''
+    the fit method of OLSModel.
 
+    """
     def __init__(self, theta, Y, model, cov=None, dispersion=1.,
                  nuisance=None, rank=None):
         """ Set up results structure
@@ -32,25 +32,26 @@ class LikelihoodModelResults(object):
         Parameters
         ----------
         theta : ndarray
-            parameter estimates from estimated model
+            Parameter estimates from estimated model.
 
         Y : ndarray
-            data
+            Data.
 
         model : ``LikelihoodModel`` instance
-            model used to generate fit
+            Model used to generate fit.
 
         cov : None or ndarray, optional
-            covariance of thetas
+            Covariance of thetas.
 
-        dispersion : scalar, optional, default is 1.
-            multiplicative factor in front of `cov`
+        dispersion : scalar, optional
+            Multiplicative factor in front of `cov`.
+            Default=1.
 
-        nuisance : None of ndarray
-            parameter estimates needed to compute logL
+        nuisance : None of ndarray, optional
+            Parameter estimates needed to compute logL.
 
-        rank : None or scalar
-            rank of the model.  If rank is not None, it is used for df_model
+        rank : None or scalar, optional
+            Rank of the model.  If rank is not None, it is used for df_model
             instead of the usual counting of parameters.
 
         Notes
@@ -64,6 +65,7 @@ class LikelihoodModelResults(object):
 
         This class is experimental.
         It may change in any future release of Nilearn.
+
         """
         self.theta = theta
         self.Y = Y
@@ -101,8 +103,8 @@ class LikelihoodModelResults(object):
         Return the (Wald) t-statistic for a given parameter estimate.
 
         Use Tcontrast for more complicated (Wald) t-statistics.
-        """
 
+        """
         if column is None:
             column = range(self.theta.shape[0])
 
@@ -119,24 +121,24 @@ class LikelihoodModelResults(object):
 
         Parameters
         ----------
-        matrix: (dim, self.theta.shape[0]) array, optional
-            numerical contrast specification, where ``dim`` refers to the
+        matrix : (dim, self.theta.shape[0]) array, optional
+            Numerical contrast specification, where ``dim`` refers to the
             'dimension' of the contrast i.e. 1 for t contrasts, 1 or more
             for F contrasts.
 
-        column: int, optional
-            alternative way of specifying contrasts (column index)
+        column : int, optional
+            Alternative way of specifying contrasts (column index).
 
-        dispersion: float or (n_voxels,) array, optional
-            value(s) for the dispersion parameters
+        dispersion : float or (n_voxels,) array, optional
+            Value(s) for the dispersion parameters.
 
-        other: (dim, self.theta.shape[0]) array, optional
-            alternative contrast specification (?)
+        other : (dim, self.theta.shape[0]) array, optional
+            Alternative contrast specification (?).
 
         Returns
         -------
-        cov: (dim, dim) or (n_voxels, dim, dim) array
-            the estimated covariance matrix/matrices
+        cov : (dim, dim) or (n_voxels, dim, dim) array
+            The estimated covariance matrix/matrices.
 
         Returns the variance/covariance matrix of a linear contrast of the
         estimates of theta, multiplied by `dispersion` which will often be an
@@ -144,6 +146,7 @@ class LikelihoodModelResults(object):
 
         The covariance of interest is either specified as a (set of) column(s)
         or a matrix.
+
         """
         if self.cov is None:
             raise ValueError('need covariance of parameters for computing'
@@ -178,10 +181,10 @@ class LikelihoodModelResults(object):
         Parameters
         ----------
         matrix : 1D array-like
-            contrast matrix
+            Contrast matrix.
 
         store : sequence, optional
-            components of t to store in results output object.
+            Components of t to store in results output object.
             Defaults to all components ('t', 'effect', 'sd').
 
         dispersion : None or float, optional
@@ -189,6 +192,7 @@ class LikelihoodModelResults(object):
         Returns
         -------
         res : ``TContrastResults`` object
+
         """
         matrix = np.asarray(matrix)
         # 1D vectors assumed to be row vector
@@ -238,10 +242,10 @@ class LikelihoodModelResults(object):
         Parameters
         ----------
         matrix : 1D array-like
-            contrast matrix
+            Contrast matrix.
 
         dispersion : None or float, optional
-            If None, use ``self.dispersion``
+            If None, use ``self.dispersion``.
 
         invcov : None or array, optional
             Known inverse of variance covariance matrix.
@@ -254,7 +258,8 @@ class LikelihoodModelResults(object):
 
         Notes
         -----
-        For F contrasts, we now specify an effect and covariance
+        For F contrasts, we now specify an effect and covariance.
+
         """
         matrix = np.asarray(matrix)
         # 1D vectors assumed to be row vector
@@ -287,16 +292,17 @@ class LikelihoodModelResults(object):
 
         Parameters
         ----------
-        alpha : float, optional, default is 0.05.
+        alpha : float, optional
             The `alpha` level for the confidence interval.
             ie., `alpha` = .05 returns a 95% confidence interval.
+            Default=0.05.
 
         cols : tuple, optional
-            `cols` specifies which confidence intervals to return
+            `cols` specifies which confidence intervals to return.
 
-        dispersion : None or scalar
-            scale factor for the variance / covariance
-            (see class docstring and ``vcov`` method docstring)
+        dispersion : None or scalar, optional
+            Scale factor for the variance / covariance
+            (see class docstring and ``vcov`` method docstring).
 
         Returns
         -------
@@ -349,13 +355,13 @@ class LikelihoodModelResults(object):
 
 
 class TContrastResults(object):
-    """ Results from a t contrast of coefficients in a parametric model.
+    """Results from a t contrast of coefficients in a parametric model.
 
     The class does nothing.
     It is a container for the results from T contrasts,
     and returns the T-statistics when np.asarray is called.
-    """
 
+    """
     def __init__(self, t, sd, effect, df_den=None):
         if df_den is None:
             df_den = np.inf
@@ -373,13 +379,13 @@ class TContrastResults(object):
 
 
 class FContrastResults(object):
-    """ Results from an F contrast of coefficients in a parametric model.
+    """Results from an F contrast of coefficients in a parametric model.
 
     The class does nothing.
     It is a container for the results from F contrasts,
     and returns the F-statistics when np.asarray is called.
-    """
 
+    """
     def __init__(self, effect, covariance, F, df_num, df_den=None):
         if df_den is None:
             df_den = np.inf

@@ -43,7 +43,8 @@ def check_events(events):
 
     modulation : array of shape (n_events,), dtype='f'
         Per-event modulation, (in seconds)
-        defaults to ones(n_events) when no duration is provided
+        defaults to ones(n_events) when no duration is provided.
+
     """
     if 'onset' not in events.keys():
         raise ValueError('The provided events data has no onset column.')

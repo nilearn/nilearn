@@ -20,17 +20,18 @@ DEF_DOFMAX = 1e10
 
 def expression_to_contrast_vector(expression, design_columns):
     """ Converts a string describing a contrast to a contrast vector
-    
+
     Parameters
     ----------
-    expression: string,
-                the expression to convert to a vector
-    design_columns: list or array of strings,
-                    the column names of the design matrix
+    expression : string
+        The expression to convert to a vector.
+
+    design_columns : list or array of strings
+        The column names of the design matrix.
 
     Note
     ----
-    This function is experimental. 
+    This function is experimental.
     It may change in any future release of Nilearn.
 
     """
@@ -45,13 +46,13 @@ def expression_to_contrast_vector(expression, design_columns):
 
 def compute_contrast(labels, regression_result, con_val, contrast_type=None):
     """ Compute the specified contrast given an estimated glm
-    
+
     Parameters
     ----------
-    labels : array of shape (n_voxels,),
+    labels : array of shape (n_voxels,)
         A map of values on voxels used to identify the corresponding model
 
-    regression_result : dict,
+    regression_result : dict
         With keys corresponding to the different labels
         values are RegressionResults instances corresponding to the voxels.
 
@@ -69,8 +70,9 @@ def compute_contrast(labels, regression_result, con_val, contrast_type=None):
 
     Note
     ----
-    This function is experimental. 
+    This function is experimental.
     It may change in any future release of Nilearn.
+
     """
     con_val = np.asarray(con_val)
     dim = 1
@@ -119,6 +121,7 @@ def _compute_fixed_effect_contrast(labels, results, con_vals,
     """Computes the summary contrast assuming fixed effects.
 
     Adds the same contrast applied to all labels and results lists.
+
     """
     contrast = None
     n_contrasts = 0
@@ -146,31 +149,40 @@ class Contrast(object):
     The current implementation is meant to be simple,
     and could be enhanced in the future on the computational side
     (high-dimensional F constrasts may lead to memory breakage).
-    """
 
+    """
     def __init__(self, effect, variance, dim=None, dof=DEF_DOFMAX,
                  contrast_type='t', tiny=DEF_TINY, dofmax=DEF_DOFMAX):
         """
         Parameters
         ----------
         effect : array of shape (contrast_dim, n_voxels)
-            the effects related to the contrast
+            The effects related to the contrast.
 
         variance : array of shape (n_voxels)
-            the associated variance estimate
+            The associated variance estimate.
 
-        dim: int or None,
-            the dimension of the contrast
+        dim : int or None, optional
+            The dimension of the contrast.
 
-        dof : scalar
-            the degrees of freedom of the residuals
+        dof : scalar, optional
+            The degrees of freedom of the residuals.
+            Default=DEF_DOFMAX
 
-        contrast_type: {'t', 'F'}
-            specification of the contrast type
+        contrast_type : {'t', 'F'}, optional
+            Specification of the contrast type.
+            Default='t'.
+
+        tiny : ??, optional
+            ???. Default=DEF_TINY
+
+        dofmax: scalar, optional
+            The maximum degrees of freedom of the residuals.
+            Default=DEF_DOFMAX.
 
         Note
         ----
-        This class is experimental. 
+        This class is experimental.
         It may change in any future release of Nilearn.
 
         """
@@ -214,12 +226,14 @@ class Contrast(object):
         Parameters
         ----------
         baseline : float, optional
-            Baseline value for the test statistic
+            Baseline value for the test statistic.
+            Default=0.0.
 
         Returns
         -------
         stat: 1-d array, shape=(n_voxels,)
             statistical values, one per voxel
+
         """
         self.baseline = baseline
 
@@ -244,12 +258,14 @@ class Contrast(object):
         Parameters
         ----------
         baseline : float, optional
-            baseline value for the test statistic
+            Baseline value for the test statistic.
+            Default=0.0.
 
         Returns
         -------
         p_values : 1-d array, shape=(n_voxels,)
             p-values, one per voxel
+
         """
         if self.stat_ is None or not self.baseline == baseline:
             self.stat_ = self.stat(baseline)
@@ -273,12 +289,14 @@ class Contrast(object):
         Parameters
         ----------
         baseline : float, optional
-            baseline value for the test statistic
+            Baseline value for the test statistic.
+            Default=0.0.
 
         Returns
         -------
         one_minus_pvalues : 1-d array, shape=(n_voxels,)
             one_minus_pvalues, one per voxel
+
         """
         if self.stat_ is None or not self.baseline == baseline:
             self.stat_ = self.stat(baseline)
@@ -299,12 +317,13 @@ class Contrast(object):
 
         Parameters
         ----------
-        baseline: float, optional,
-                  Baseline value for the test statistic
+        baseline : float, optional,
+            Baseline value for the test statistic.
+            Default=0.0.
 
         Returns
         -------
-        z_score: 1-d array, shape=(n_voxels,)
+        z_score : 1-d array, shape=(n_voxels,)
             statistical values, one per voxel
 
         """
@@ -356,32 +375,36 @@ def compute_fixed_effects(contrast_imgs, variance_imgs, mask=None,
 
     Parameters
     ----------
-    contrast_imgs: list of Nifti1Images or strings
-              the input contrast images
-    variance_imgs: list of Nifti1Images or strings
-              the input variance images
-    mask: Nifti1Image or NiftiMasker instance or None, optional,
-              mask image. If None, it is recomputed from contrast_imgs
-    precision_weighted: Bool, optional,
-              Whether fixed effects estimates should be weighted by inverse
-              variance or not. Defaults to False.
+    contrast_imgs : list of Nifti1Images or strings
+        The input contrast images.
+
+    variance_imgs : list of Nifti1Images or strings
+        The input variance images.
+
+    mask : Nifti1Image or NiftiMasker instance or None, optional
+        Mask image. If None, it is recomputed from contrast_imgs.
+
+    precision_weighted : Bool, optional
+        Whether fixed effects estimates should be weighted by inverse
+        variance or not. Default=False.
 
     Returns
     -------
-    fixed_fx_contrast_img: Nifti1Image,
-             the fixed effects contrast computed within the mask
-    fixed_fx_variance_img: Nifti1Image,
-             the fixed effects variance computed within the mask
-    fixed_fx_t_img: Nifti1Image,
-             the fixed effects t-test computed within the mask
+    fixed_fx_contrast_img : Nifti1Image
+        The fixed effects contrast computed within the mask.
+
+    fixed_fx_variance_img : Nifti1Image
+        The fixed effects variance computed within the mask.
+
+    fixed_fx_t_img : Nifti1Image
+        The fixed effects t-test computed within the mask.
 
     Note
     ----
-    This function is experimental. 
+    This function is experimental.
     It may change in any future release of Nilearn.
 
     """
-
     if len(contrast_imgs) != len(variance_imgs):
         raise ValueError(
             'The number of contrast images (%d) '
