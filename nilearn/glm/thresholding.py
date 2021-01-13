@@ -231,8 +231,8 @@ def threshold_stats_img(stat_img=None, mask_img=None, alpha=.001, threshold=3.,
     threshold : float
         The voxel-level threshold used actually.
 
-    Note
-    ----
+    Notes
+    -----
     If the input image is not z-scaled (i.e. some z-transformed statistic)
     the computed threshold is not rigorous and likely meaningless
 

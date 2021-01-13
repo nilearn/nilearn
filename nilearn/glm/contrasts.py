@@ -29,8 +29,8 @@ def expression_to_contrast_vector(expression, design_columns):
     design_columns : list or array of strings
         The column names of the design matrix.
 
-    Note
-    ----
+    Notes
+    -----
     This function is experimental.
     It may change in any future release of Nilearn.
 
@@ -68,8 +68,8 @@ def compute_contrast(labels, regression_result, con_val, contrast_type=None):
     con : Contrast instance,
         Yields the statistics of the contrast (effects, variance, p-values)
 
-    Note
-    ----
+    Notes
+    -----
     This function is experimental.
     It may change in any future release of Nilearn.
 
@@ -180,8 +180,8 @@ class Contrast(object):
             The maximum degrees of freedom of the residuals.
             Default=DEF_DOFMAX.
 
-        Note
-        ----
+        Notes
+        -----
         This class is experimental.
         It may change in any future release of Nilearn.
 
@@ -399,8 +399,8 @@ def compute_fixed_effects(contrast_imgs, variance_imgs, mask=None,
     fixed_fx_t_img : Nifti1Image
         The fixed effects t-test computed within the mask.
 
-    Note
-    ----
+    Notes
+    -----
     This function is experimental.
     It may change in any future release of Nilearn.
 

@@ -322,7 +322,6 @@ class LikelihoodModelResults(object):
 
         Notes
         -----
-
         Confidence intervals are two-tailed.
 
         tails : string, optional

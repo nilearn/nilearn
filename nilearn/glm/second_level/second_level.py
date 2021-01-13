@@ -277,8 +277,8 @@ class SecondLevelModel(BaseGLM):
         further inspection of model details. This has an important impact
         on memory consumption. Default=True.
 
-    Note
-    ----
+    Notes
+    -----
     This class is experimental.
     It may change in any future release of Nilearn.
 

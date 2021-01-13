@@ -277,8 +277,8 @@ class FirstLevelModel(BaseGLM):
         if minimize_memory is True,
         RegressionResults if minimize_memory is False
 
-    Note
-    ----
+    Notes
+    -----
     This class is experimental.
     It may change in any future release of Nilearn.
 
@@ -341,7 +341,6 @@ class FirstLevelModel(BaseGLM):
         Parameters
         ----------
         run_imgs : Niimg-like object or list of Niimg-like objects,
-            See http://nilearn.github.io/manipulating_images/input_output.html#inputing-data-file-names-or-image-objects  # noqa:E501
             Data on which the GLM will be fitted. If this is a list,
             the affine is considered the same for all.
 

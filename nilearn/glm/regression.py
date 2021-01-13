@@ -68,8 +68,8 @@ class OLSModel(object):
     df_model : scalar
         Degrees of freedome of the model.  The rank of the design.
 
-    Note
-    ----
+    Notes
+    -----
     This class is experimental.
     It may change in any future release of Nilearn.
 
@@ -243,8 +243,8 @@ class ARModel(OLSModel):
     and sigma, a scalar nuisance parameter that
     shows up as multiplier in front of the AR(p) covariance.
 
-    Note
-    ----
+    Notes
+    -----
     This class is experimental.
     It may change in any future release of Nilearn.
 
@@ -304,8 +304,8 @@ class RegressionResults(LikelihoodModelResults):
 
     It handles the output of contrasts, estimates of covariance, etc.
 
-    Note
-    ----
+    Notes
+    -----
     This class is experimental.
     It may change in any future release of Nilearn.
 
@@ -383,6 +383,8 @@ class RegressionResults(LikelihoodModelResults):
     def normalized_residuals(self):
         """Residuals, normalized to have unit length.
 
+        See [1]_ and [2]_.
+
         Notes
         -----
         Is this supposed to return "stanardized residuals,"
@@ -393,8 +395,11 @@ class RegressionResults(LikelihoodModelResults):
 
         Where MS_E = SSE / (n - k)
 
-        See: Montgomery and Peck 3.2.1 p. 68
-             Davidson and MacKinnon 15.2 p 662
+        References
+        ----------
+        .. [1] Montgomery and Peck 3.2.1 p. 68
+
+        .. [2] Davidson and MacKinnon 15.2 p 662
 
         """
         return self.residuals * positive_reciprocal(np.sqrt(self.dispersion))
@@ -433,8 +438,8 @@ class SimpleRegressionResults(LikelihoodModelResults):
 
     Its intended to save memory when details of the model are unnecessary.
 
-    Note
-    ----
+    Notes
+    -----
     This class is experimental.
     It may change in any future release of Nilearn.
 
@@ -494,6 +499,8 @@ class SimpleRegressionResults(LikelihoodModelResults):
     def normalized_residuals(self, Y):
         """Residuals, normalized to have unit length.
 
+        See [1]_ and [2]_.
+
         Notes
         -----
         Is this supposed to return "stanardized residuals,"
@@ -504,8 +511,11 @@ class SimpleRegressionResults(LikelihoodModelResults):
 
         Where MS_E = SSE / (n - k)
 
-        See: Montgomery and Peck 3.2.1 p. 68
-             Davidson and MacKinnon 15.2 p 662
+        References
+        ----------
+        .. [1] Montgomery and Peck 3.2.1 p. 68
+
+        .. [2] Davidson and MacKinnon 15.2 p 662
 
         """
         return (self.residuals(Y)
