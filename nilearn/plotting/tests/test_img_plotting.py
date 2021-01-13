@@ -1062,22 +1062,22 @@ def test_add_markers_using_plot_glass_brain():
     # Add a single marker in right hemishpere such that no marker
     # should appear in the left hemisphere when plotting
     display = plotting.plot_glass_brain(None, display_mode='lyrz')
-    display.add_markers([[20,20,20]])
+    display.add_markers([[20, 20, 20]])
     # Check that Axe 'l' has no marker
-    assert display.axes['l'].ax.collections[0].get_offsets().data.shape == (0,2)
+    assert display.axes['l'].ax.collections[0].get_offsets().data.shape == (0, 2)
     # Check that all other Axes have one marker
     for d in 'ryz':
-        assert display.axes[d].ax.collections[0].get_offsets().data.shape == (1,2)
+        assert display.axes[d].ax.collections[0].get_offsets().data.shape == (1, 2)
 
     # Add a single marker in left hemisphere such that no marker
     # should appear in the right hemisphere when plotting
     display = plotting.plot_glass_brain(None, display_mode='lyrz')
-    display.add_markers([[-20,20,20]])
+    display.add_markers([[-20, 20, 20]])
     # Check that Axe 'r' has no marker
-    assert display.axes['r'].ax.collections[0].get_offsets().data.shape == (0,2)
+    assert display.axes['r'].ax.collections[0].get_offsets().data.shape == (0, 2)
     # Check that all other Axes have one marker
     for d in 'lyz':
-        assert display.axes[d].ax.collections[0].get_offsets().data.shape == (1,2)
+        assert display.axes[d].ax.collections[0].get_offsets().data.shape == (1, 2)
 
 
 def test_plotting_functions_with_display_mode_tiled(testdata_3d):
