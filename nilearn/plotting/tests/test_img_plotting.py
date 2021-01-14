@@ -478,6 +478,22 @@ def test_plot_connectome(tmpdir):
     plot_connectome(*args, **kwargs)
     plt.close()
 
+    # Unique node color
+    node_color = np.array(['red'])
+    kwargs = dict(edge_threshold=0.38,
+                  title='threshold=0.38',
+                  node_size=10, node_color=node_color)
+    plot_connectome(*args, **kwargs)
+    plt.close()
+
+    node_color = 'green'
+    kwargs = dict(edge_threshold=0.38,
+                  title='threshold=0.38',
+                  node_size=10)
+    plot_connectome(*args, node_color=node_color, **kwargs)
+    plt.close()
+
+
     # used to speed-up tests for the next plots
     kwargs['display_mode'] = 'x'
 
@@ -520,7 +536,8 @@ def test_plot_connectome(tmpdir):
     plt.close()
 
     # NaN matrix support
-    node_color = ['green', 'blue', 'k']
+    # Node colors specified as a numpy array rather than a list
+    node_color = np.array(['green', 'blue', 'k'])
     # Overriding 'node_color' for 3  elements of size 3.
     kwargs['node_color'] = node_color
     nan_adjacency_matrix = np.array([[1., np.nan, 0.],
@@ -577,6 +594,19 @@ def test_plot_connectome_exceptions():
                        match='should be either a number or a string'):
         plot_connectome(adjacency_matrix, node_coords,
                         edge_threshold=object(),
+                        **kwargs)
+
+    # wrong number of node colors
+    with pytest.raises(ValueError,
+                       match='Mismatch between the number of nodes'):
+        plot_connectome(adjacency_matrix, node_coords,
+                        node_color=['red', 'blue', 'yellow'],
+                        **kwargs)
+
+    with pytest.raises(ValueError,
+                       match='Mismatch between the number of nodes'):
+        plot_connectome(adjacency_matrix, node_coords,
+                        node_color=np.array(['red', 'blue', 'yellow', 'cyan']),
                         **kwargs)
 
     # wrong shapes for node_coords or adjacency_matrix
