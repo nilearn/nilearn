@@ -331,8 +331,8 @@ class FirstLevelModel(BaseGLM):
 
     def fit(self, run_imgs, events=None, confounds=None,
             design_matrices=None):
-        """ Fit the GLM
-
+        """Fit the GLM
+        
         For each run:
         1. create design matrix X
         2. do a masker job: fMRI_data -> Y
@@ -344,20 +344,20 @@ class FirstLevelModel(BaseGLM):
             Data on which the GLM will be fitted. If this is a list,
             the affine is considered the same for all.
 
-        events : pandas Dataframe or string or list of pandas DataFrames or strings
+        events : pandas Dataframe or string or list of pandas DataFrames or strings, optional
             fMRI events used to build design matrices. One events object
             expected per run_img. Ignored in case designs is not None.
             If string, then a path to a csv file is expected.
 
         confounds : pandas Dataframe, numpy array or string or
-                   list of pandas DataFrames, numpy arays or strings
+            list of pandas DataFrames, numpy arays or strings, optional
             Each column in a DataFrame corresponds to a confound variable
             to be included in the regression model of the respective run_img.
             The number of rows must match the number of volumes in the
             respective run_img. Ignored in case designs is not None.
             If string, then a path to a csv file is expected.
 
-        design_matrices : pandas DataFrame or list of pandas DataFrames,
+        design_matrices : pandas DataFrame or list of pandas DataFrames, optional
             Design matrices that will be used to fit the GLM. If given it
             takes precedence over events and confounds.
 
