@@ -802,6 +802,13 @@ class BaseSlicer(object):
     def _map_show(self, img, type='imshow',
                   resampling_interpolation='continuous',
                   threshold=None, **kwargs):
+        # In the special case where the affine of img is not diagonal,
+        # the function `reorder_img` will trigger a resampling
+        # of the provided image with a continuous interpolation
+        # since this is the default value here. In the special
+        # case where this image is binary, such as when this function
+        # is called from `add_contours`, continuous interpolation
+        # does not make sense and we turn to nearest interpolation instead.
         if _utils.niimg._is_binary_niimg(img):
             img = reorder_img(img, resample='nearest')
         else:
