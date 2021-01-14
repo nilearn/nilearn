@@ -267,6 +267,14 @@ def _resample_one_img(data, A, b, target_shape,
         data = _extrapolate_out_mask(data, np.logical_not(not_finite),
                                      iterations=2)[0]
 
+    # If data is binary and interpolation is continuous or linear,
+    # warn the user as this might be unintentional
+    if sorted(list(np.unique(data))) == [0,1] and interpolation_order != 0:
+        warnings.warn("Resampling binary images with continuous or "
+                      "linear interpolation. This might lead to "
+                      "unexpected results. You might consider using "
+                      "nearest interpolation instead.")
+
     # Suppresses warnings in https://github.com/nilearn/nilearn/issues/1363
     with warnings.catch_warnings():
         if LooseVersion(scipy.__version__) >= LooseVersion('0.18'):
