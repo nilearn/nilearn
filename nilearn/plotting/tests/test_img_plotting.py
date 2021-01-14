@@ -13,6 +13,7 @@ import pytest
 
 from scipy import sparse
 
+from nilearn import _utils
 from nilearn.image.resampling import coord_transform, reorder_img
 from nilearn._utils import data_gen
 from nilearn.image import get_data
@@ -431,6 +432,7 @@ def test_plot_img_with_resampling(testdata_3d):
                        [0.,  0.,  1.,  0.],
                        [0.,  0.,  0.,  1.]])
     img = nibabel.Nifti1Image(data, affine)
+    assert not _utils.niimg._is_binary_niimg(img)
     display = plot_img(img)
     display.add_overlay(img)
     display.add_contours(img, contours=2, linewidth=4,
@@ -438,6 +440,21 @@ def test_plot_img_with_resampling(testdata_3d):
     display.add_edges(img, color='c')
 
     # Save execution time and memory
+    plt.close()
+
+def test_plot_binary_img_with_resampling(testdata_3d):
+    data = get_data(testdata_3d['img'])
+    data[data > 0] = 1
+    data[data < 0] = 0
+    affine = np.array([[1., -1.,  0.,  0.],
+                       [1.,  1.,  0.,  0.],
+                       [0.,  0.,  1.,  0.],
+                       [0.,  0.,  0.,  1.]])
+    img = nibabel.Nifti1Image(data, affine)
+    assert _utils.niimg._is_binary_niimg(img)
+    display = plot_img(img)
+    display.add_overlay(img)
+    display.add_contours(img)
     plt.close()
 
 
