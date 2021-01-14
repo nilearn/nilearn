@@ -27,13 +27,21 @@ from ..datasets import load_mni152_template
 
 def _data_to_sprite(data):
     """ Convert a 3D array into a sprite of sagittal slices.
-        Returns: sprite (2D numpy array)
+
+    Parameters
+    ----------
+    data : Numpy array
+        Input data to convert to sprite.
+
+    Returns
+    -------
+    sprite : 2D numpy array
         If each sagittal slice is nz (height) x ny (width) pixels, the sprite
         size is (M x nz) x (N x ny), where M and N are computed to be roughly
         equal. All slices are pasted together row by row, from top left to
         bottom right. The last row is completed with empty slices.
-    """
 
+    """
     nx, ny, nz = data.shape
     nrows = int(np.ceil(np.sqrt(nx)))
     ncolumns = int(np.ceil(nx / float(nrows)))
@@ -50,8 +58,27 @@ def _data_to_sprite(data):
 
 
 def _threshold_data(data, threshold=None):
-    """ Threshold a data array.
-        Returns: data (array), mask (boolean array) threshold (updated)
+    """Threshold a data array.
+
+    Parameters
+    ----------
+    data : Numpy array
+        Data to apply threshold on.
+
+    threshold : Float, optional
+        Threshold to apply to data.
+
+    Returns
+    -------
+    data : Numpy array
+        Thresholded data.
+
+    mask : boolean numpy array
+        Boolean mask.
+
+    threshold : float
+        Updated threshold value.
+
     """
     # If threshold is None, do nothing
     if threshold is None:
@@ -86,10 +113,34 @@ def _threshold_data(data, threshold=None):
 
 def _save_sprite(data, output_sprite, vmax, vmin, mask=None, cmap='Greys',
                  format='png'):
-    """ Generate a sprite from a 3D Niimg-like object.
-        Returns: sprite
-    """
+    """Generate a sprite from a 3D Niimg-like object.
 
+    Parameters
+    ----------
+    data : Numpy array
+        Input data.
+
+    output_sprite : Numpy array
+        Output sprite.
+
+    vmax, vmin : Float
+        ???
+
+    mask : Numpy array, optional
+        Mask to use.
+
+    cmap : String or colormap, optional
+        Colormap to use. Default='Greys'.
+
+    format : String, optional
+        Format to use for output image. Default='png'.
+
+    Returns
+    -------
+    sprite : Numpy array
+        Returned sprite.
+
+    """
     # Create sprite
     sprite = _data_to_sprite(data)
 
@@ -149,9 +200,10 @@ def _mask_stat_map(stat_map_img, threshold=None):
 
 
 def _load_bg_img(stat_map_img, bg_img='MNI152', black_bg='auto', dim='auto'):
-    """ Load and resample bg_img in an isotropic resolution,
-        with a positive diagonal affine matrix.
-        Returns: bg_img, bg_min, bg_max, black_bg
+    """Load and resample bg_img in an isotropic resolution,
+    with a positive diagonal affine matrix.
+    Returns: bg_img, bg_min, bg_max, black_bg
+
     """
     if (bg_img is None or bg_img is False) and black_bg == 'auto':
         black_bg = False
@@ -172,8 +224,9 @@ def _load_bg_img(stat_map_img, bg_img='MNI152', black_bg='auto', dim='auto'):
 
 def _resample_stat_map(stat_map_img, bg_img, mask_img,
                        resampling_interpolation='continuous'):
-    """ Resample the stat map and mask to the background.
-        Returns: stat_map_img, mask_img
+    """Resample the stat map and mask to the background.
+    Returns: stat_map_img, mask_img
+
     """
     stat_map_img = resample_to_img(stat_map_img, bg_img,
                                    interpolation=resampling_interpolation)
@@ -186,10 +239,10 @@ def _resample_stat_map(stat_map_img, bg_img, mask_img,
 def _json_view_params(shape, affine, vmin, vmax, cut_slices, black_bg=False,
                       opacity=1, draw_cross=True, annotate=True, title=None,
                       colorbar=True, value=True):
-    """ Create a dictionary with all the brainsprite parameters.
-        Returns: params
-    """
+    """Create a dictionary with all the brainsprite parameters.
+    Returns: params
 
+    """
     # Set color parameters
     if black_bg:
         cfont = '#FFFFFF'
@@ -233,8 +286,9 @@ def _json_view_params(shape, affine, vmin, vmax, cut_slices, black_bg=False,
 
 
 def _json_view_size(params):
-    """ Define the size of the viewer.
-        Returns: width_view, height_view
+    """Define the size of the viewer.
+    Returns: width_view, height_view
+
     """
     # slices_width = sagittal_width (y) + coronal_width (x) + axial_width (x)
     slices_width = params['nbSlice']['Y'] + 2 * params['nbSlice']['X']
@@ -255,8 +309,9 @@ def _json_view_size(params):
 
 def _json_view_data(bg_img, stat_map_img, mask_img, bg_min, bg_max, colors,
                     cmap, colorbar):
-    """ Create a json-like viewer object, and populate with base64 data.
-        Returns: json_view
+    """Create a json-like viewer object, and populate with base64 data.
+    Returns: json_view
+
     """
     # Initialise brainsprite data structure
     json_view = dict.fromkeys(['bg_base64', 'stat_map_base64', 'cm_base64',
@@ -288,10 +343,10 @@ def _json_view_data(bg_img, stat_map_img, mask_img, bg_min, bg_max, colors,
 
 
 def _json_view_to_html(json_view):
-    """ Fill a brainsprite html template with relevant parameters and data.
-        Returns: html_view
-    """
+    """Fill a brainsprite html template with relevant parameters and data.
+    Returns: html_view
 
+    """
     # Fix the size of the viewer
     width, height = _json_view_size(json_view['params'])
 
@@ -313,9 +368,10 @@ def _json_view_to_html(json_view):
 
 
 def _get_cut_slices(stat_map_img, cut_coords=None, threshold=None):
-    """ For internal use.
-        Find slice numbers for the cut.
-        Based on find_xyz_cut_coords
+    """For internal use.
+    Find slice numbers for the cut.
+    Based on find_xyz_cut_coords
+
     """
     # Select coordinates for the cut
     if cut_coords is None:
@@ -357,8 +413,7 @@ def view_img(stat_map_img, bg_img='MNI152',
              opacity=1,
              **kwargs
              ):
-    """
-    Interactive html viewer of a statistical map, with optional background
+    """Interactive html viewer of a statistical map, with optional background.
 
     Parameters
     ----------
@@ -366,68 +421,89 @@ def view_img(stat_map_img, bg_img='MNI152',
         See http://nilearn.github.io/manipulating_images/input_output.html
         The statistical map image. Can be either a 3D volume or a 4D volume
         with exactly one time point.
-    bg_img : Niimg-like object (default='MNI152')
+
+    bg_img : Niimg-like object, optional
         See http://nilearn.github.io/manipulating_images/input_output.html
         The background image that the stat map will be plotted on top of.
         If nothing is specified, the MNI152 template will be used.
         To turn off background image, just pass "bg_img=False".
-    cut_coords : None, or a tuple of floats (default None)
+        Default='MNI152'.
+
+    cut_coords : None, or a tuple of floats
         The MNI coordinates of the point where the cut is performed
         as a 3-tuple: (x, y, z). If None is given, the cuts are calculated
         automaticaly.
-    colorbar : boolean, optional (default True)
-        If True, display a colorbar on top of the plots.
-    title : string or None (default=None)
+
+    colorbar : boolean, optional
+        If True, display a colorbar on top of the plots. Default=True.
+
+    title : string or None, optional
         The title displayed on the figure (or None: no title).
-    threshold : string, number or None  (default=1e-6)
+
+    threshold : string, number or None, optional
         If None is given, the image is not thresholded.
         If a string of the form "90%" is given, use the 90-th percentile of
         the absolute value in the image.
         If a number is given, it is used to threshold the image:
         values below the threshold (in absolute value) are plotted
         as transparent. If auto is given, the threshold is determined
-        automatically.
-    annotate : boolean (default=True)
+        automatically. Default=1e-6.
+
+    annotate : boolean, optional
         If annotate is True, current cuts are added to the viewer.
-    draw_cross : boolean (default=True)
+        Default=True.
+
+    draw_cross : boolean, optional
         If draw_cross is True, a cross is drawn on the plot to
-        indicate the cuts.
-    black_bg : boolean (default='auto')
+        indicate the cuts. Default=True.
+
+    black_bg : boolean or 'auto', optional
         If True, the background of the image is set to be black.
         Otherwise, a white background is used.
         If set to auto, an educated guess is made to find if the background
         is white or black.
+        Default='auto'.
+
     cmap : matplotlib colormap, optional
-        The colormap for specified image.
-    symmetric_cmap : bool, optional (default=True)
+        The colormap for specified image. Default=cm.cold_hot.
+
+    symmetric_cmap : bool, optional
         True: make colormap symmetric (ranging from -vmax to vmax).
         False: the colormap will go from the minimum of the volume to vmax.
         Set it to False if you are plotting a positive volume, e.g. an atlas
-        or an anatomical image.
-    dim : float, 'auto' (default='auto')
+        or an anatomical image. Default=True.
+
+    dim : float, 'auto', optional
         Dimming factor applied to background image. By default, automatic
         heuristics are applied based upon the background image intensity.
         Accepted float values, where a typical scan is between -2 and 2
         (-2 = increase constrast; 2 = decrease contrast), but larger values
         can be used for a more pronounced effect. 0 means no dimming.
-    vmax : float, or None (default=None)
+        Default='auto'.
+
+    vmax : float, or None, optional
         max value for mapping colors.
         If vmax is None and symmetric_cmap is True, vmax is the max
         absolute value of the volume.
         If vmax is None and symmetric_cmap is False, vmax is the max
         value of the volume.
-    vmin : float, or None (default=None)
+
+    vmin : float, or None, optional
         min value for mapping colors.
         If `symmetric_cmap` is `True`, `vmin` is always equal to `-vmax` and
         cannot be chosen.
         If `symmetric_cmap` is `False`, `vmin` defaults to the min of the
         image, or 0 when a threshold is used.
-    resampling_interpolation : string, optional (default continuous)
+
+    resampling_interpolation : string, optional
         The interpolation method for resampling.
         Can be 'continuous', 'linear', or 'nearest'.
         See nilearn.image.resample_img
-    opacity : float in [0,1] (default 1)
-        The level of opacity of the overlay (0: transparent, 1: opaque)
+        Default='continuous'.
+
+    opacity : float in [0,1], optional
+        The level of opacity of the overlay (0: transparent, 1: opaque).
+        Default=1.
 
     Returns
     -------
@@ -448,8 +524,8 @@ def view_img(stat_map_img, bg_img='MNI152',
     nilearn.plotting.view_surf, nilearn.plotting.view_img_on_surf:
         interactive view of statistical maps or surface atlases on the cortical
         surface.
-    """
 
+    """
     # Prepare the color map and thresholding
     mask_img, stat_map_img, data, threshold = _mask_stat_map(
         stat_map_img, threshold)

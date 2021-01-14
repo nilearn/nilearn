@@ -14,9 +14,9 @@ from .._utils.extmath import fast_abs_percentile
 # Edge detection
 
 def _orientation_kernel(t):
-    """ structure elements for calculating the value of neighbors in several 
+    """ structure elements for calculating the value of neighbors in several
         directions
-    """ 
+    """
     sin = np.sin
     pi  = np.pi
     t = pi * t
@@ -27,36 +27,42 @@ def _orientation_kernel(t):
 
 
 def _edge_detect(image, high_threshold=.75, low_threshold=.4):
-    """ Edge detection for 2D images based on Canny filtering.
+    """Edge detection for 2D images based on Canny filtering.
 
-        Parameters
-        ----------
-        image: 2D array
-            The image on which edge detection is applied
-        high_threshold: float, optional
-            The quantile defining the upper threshold of the hysteries 
-            thresholding: decrease this to keep more edges
-        low_threshold: float, optional
-            The quantile defining the lower threshold of the hysteries 
-            thresholding: decrease this to extract wider edges
+    Parameters
+    ----------
+    image : 2D array
+        The image on which edge detection is applied.
 
-        Returns
-        --------
-        grad_mag: 2D array of floats
-            The magnitude of the gradient
-        edge_mask: 2D array of booleans
-            A mask of where have edges been detected
+    high_threshold : float, optional
+        The quantile defining the upper threshold of the hysteries.
+        thresholding decrease this to keep more edges.
+        Default=0.75.
 
-        Notes
-        ------
-        This function is based on a Canny filter, however it has been
-        taylored to visualization purposes on brain images: don't use it
-        in the general case.
+    low_threshold : float, optional
+        The quantile defining the lower threshold of the hysteries
+        thresholding decrease this to extract wider edges.
+        Default=0.4.
 
-        It computes the norm of the gradient, extracts the ridge by
-        keeping only local maximum in each direction, and performs
-        hysteresis filtering to keep only edges with high gradient
-        magnitude.
+    Returns
+    --------
+    grad_mag : 2D array of floats
+        The magnitude of the gradient.
+
+    edge_mask : 2D array of booleans
+        A mask of where have edges been detected.
+
+    Notes
+    -----
+    This function is based on a Canny filter, however it has been
+    taylored to visualization purposes on brain images: don't use it
+    in the general case.
+
+    It computes the norm of the gradient, extracts the ridge by
+    keeping only local maximum in each direction, and performs
+    hysteresis filtering to keep only edges with high gradient
+    magnitude.
+
     """
     # This code is loosely based on code by Stefan van der Waalt
     # Convert to floats to avoid overflows
@@ -105,17 +111,18 @@ def _edge_detect(image, high_threshold=.75, low_threshold=.4):
 def _edge_map(image):
     """ Return a maps of edges suitable for visualization.
 
-        Parameters
-        ----------
-        image: 2D array
-            The image that the edges are extracted from.
+    Parameters
+    ----------
+    image : 2D array
+        The image that the edges are extracted from.
 
-        Returns
-        --------
-        edge_mask: 2D masked array
-            A mask of the edge as a masked array with parts without
-            edges masked and the large extents detected with lower
-            coefficients.
+    Returns
+    --------
+    edge_mask : 2D masked array
+        A mask of the edge as a masked array with parts without
+        edges masked and the large extents detected with lower
+        coefficients.
+
     """
     edge_mask = _edge_detect(image)[-1]
     edge_mask = edge_mask.astype(np.float)

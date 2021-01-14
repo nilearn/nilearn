@@ -31,25 +31,30 @@ DEFAULT_CUT_COORDS = (0., 0., 0.)
 def find_xyz_cut_coords(img, mask_img=None, activation_threshold=None):
     """ Find the center of the largest activation connected component.
 
-        Parameters
-        -----------
-        img : 3D Nifti1Image
-            The brain map.
-        mask_img : 3D Nifti1Image, optional
-            An optional brain mask, provided mask_img should not be empty.
-        activation_threshold : float, optional
-            The lower threshold to the positive activation. If None, the
-            activation threshold is computed using the 80% percentile of
-            the absolute value of the map.
+    Parameters
+    -----------
+    img : 3D Nifti1Image
+        The brain map.
 
-        Returns
-        -------
-        x : float
-            the x world coordinate.
-        y : float
-            the y world coordinate.
-        z : float
-            the z world coordinate.
+    mask_img : 3D Nifti1Image, optional
+        An optional brain mask, provided mask_img should not be empty.
+
+    activation_threshold : float, optional
+        The lower threshold to the positive activation. If None, the
+        activation threshold is computed using the 80% percentile of
+        the absolute value of the map.
+
+    Returns
+    -------
+    x : float
+        The x world coordinate.
+
+    y : float
+        The y world coordinate.
+
+    z : float
+        The z world coordinate.
+
     """
     # if a pseudo-4D image or several images were passed (cf. #922),
     # we reduce to a single 3D image to find the coordinates
@@ -173,19 +178,20 @@ def _transform_cut_coords(cut_coords, direction, affine):
 
     Parameters
     ----------
-    cut_coords: 1D array of length n_cuts
+    cut_coords : 1D array of length n_cuts
         The coordinates to be transformed.
 
-    direction: string, optional (default "z")
-        sectional direction; possible values are "x", "y", or "z"
+    direction : string
+        Sectional direction; possible values are "x", "y", or "z".
 
-    affine: 2D array of shape (4, 4)
+    affine : 2D array of shape (4, 4)
         The affine for the image.
 
     Returns
     -------
-    cut_coords: 1D array of length n_cuts
+    cut_coords : 1D array of length n_cuts
        The original cut_coords transformed image space.
+
     """
     # make kwargs
     axis = 'xyz'.index(direction)
@@ -206,21 +212,26 @@ def find_cut_slices(img, direction='z', n_cuts=7, spacing='auto'):
 
     Parameters
     ----------
-    img: 3D Niimg-like object
+    img : 3D Niimg-like object
         See http://nilearn.github.io/manipulating_images/input_output.html
-        the brain map
-    direction: string, optional (default "z")
-        sectional direction; possible values are "x", "y", or "z"
-    n_cuts: int, optional (default 7)
-        number of cuts in the plot
-    spacing: 'auto' or int, optional (default 'auto')
-        minimum spacing between cuts (in voxels, not milimeters)
-        if 'auto', the spacing is .5 / n_cuts * img_length
+        the brain map.
+
+    direction : string, optional
+        Sectional direction; possible values are "x", "y", or "z".
+        Default='z'.
+
+    n_cuts : int, optional
+        Number of cuts in the plot. Default=7.
+
+    spacing : 'auto' or int, optional
+        Minimum spacing between cuts (in voxels, not milimeters)
+        if 'auto', the spacing is .5 / n_cuts * img_length.
+        Default='auto'.
 
     Returns
     -------
-    cut_coords: 1D array of length n_cuts
-        the computed cut_coords
+    cut_coords : 1D array of length n_cuts
+        The computed cut_coords.
 
     Notes
     -----
@@ -229,13 +240,13 @@ def find_cut_slices(img, direction='z', n_cuts=7, spacing='auto'):
     large and all the activated regions are covered, cuts with a spacing
     less than 'spacing' will be returned.
 
-    Warning
-    -------
+    Warnings
+    --------
     If a non-diagonal img is given. This function automatically reorders
     img to get it back to diagonal. This is to avoid finding same cuts in
     the slices.
-    """
 
+    """
     # misc
     if not direction in 'xyz':
         raise ValueError(
@@ -354,37 +365,39 @@ def find_cut_slices(img, direction='z', n_cuts=7, spacing='auto'):
 
 def find_parcellation_cut_coords(labels_img, background_label=0, return_label_names=False,
                                  label_hemisphere='left'):
-    """ Return coordinates of center of mass of 3D parcellation atlas
+    """Return coordinates of center of mass of 3D parcellation atlas.
 
     Parameters
     ----------
-    labels_img: 3D Nifti1Image
+    labels_img : 3D Nifti1Image
         A brain parcellation atlas with specific mask labels for each
         parcellated region.
 
-    background_label: int, optional (default 0)
+    background_label : int, optional
         Label value used in labels_img to represent background.
+        Default=0.
 
-    return_label_names: bool, optional (default False)
-        Returns list of labels
+    return_label_names : bool, optional
+        Returns list of labels. Default=False.
 
-    label_hemisphere: 'left' or 'right', optional (default 'left')
+    label_hemisphere : 'left' or 'right', optional
         Choice of hemisphere to compute label center coords for.
         Applies only in cases where atlas labels are lateralized.
-        Eg. Yeo or Harvard Oxford atlas.
+        Eg. Yeo or Harvard Oxford atlas. Default='left'.
 
     Returns
     -------
-    coords: numpy.ndarray of shape (n_labels, 3)
+    coords : numpy.ndarray of shape (n_labels, 3)
         Label regions cut coordinates in image space (mm).
 
-    labels_list: list, optional
+    labels_list : list, optional
         Label region. Returned only when return_label_names is True.
 
     See Also
     --------
     nilearn.plotting.find_probabilistic_atlas_cut_coords : For coordinates
         extraction on probabilistic atlases (4D) (Eg. MSDL atlas)
+
     """
     # check label_hemisphere input
     if label_hemisphere not in ['left', 'right']:
@@ -443,17 +456,17 @@ def find_parcellation_cut_coords(labels_img, background_label=0, return_label_na
 
 
 def find_probabilistic_atlas_cut_coords(maps_img):
-    """ Return coordinates of center probabilistic atlas 4D image
+    """Return coordinates of center probabilistic atlas 4D image.
 
     Parameters
     ----------
-    label_img: 4D Nifti1Image
+    label_img : 4D Nifti1Image
         A probabilistic brain atlas with probabilistic masks in the fourth
         dimension.
 
     Returns
     -------
-    coords: numpy.ndarray of shape (n_maps, 3)
+    coords : numpy.ndarray of shape (n_maps, 3)
         Label regions cut coordinates in image space (mm).
 
     See Also
@@ -461,6 +474,7 @@ def find_probabilistic_atlas_cut_coords(maps_img):
     nilearn.plotting.find_parcellation_cut_coords : For coordinates
         extraction on parcellations denoted with labels (3D)
         (Eg. Harvard Oxford atlas)
+
     """
     maps_img = check_niimg_4d(maps_img)
     maps_imgs = iter_img(maps_img)
