@@ -40,13 +40,22 @@ def test_find_cut_coords():
 
     # regression test (cf. #473)
     # test case: no data exceeds the activation threshold
+    # Cut coords should be the center of mass rather than
+    # the center of the image (10, 10, 10).
     data = np.ones((36, 43, 36))
     affine = np.eye(4)
     img = nibabel.Nifti1Image(data, affine)
     x, y, z = find_xyz_cut_coords(img, activation_threshold=1.1)
-    np.testing.assert_array_equal(
-        np.array([x, y, z]),
-        0.5 * np.array(data.shape).astype(np.float))
+    np.testing.assert_array_equal([x, y, z],
+                                  [17.5, 21., 17.5])
+
+    data = np.zeros((20, 20, 20))
+    data[4:6, 4:6, 4:6] = 1000
+    img = nibabel.Nifti1Image(data, np.eye(4))
+    mask_img = nibabel.Nifti1Image(np.ones((20, 20, 20), dtype=int), np.eye(4))
+    cut_coords = find_xyz_cut_coords(img, mask_img=mask_img)
+    np.testing.assert_array_equal(cut_coords,
+                                  [4.5, 4.5, 4.5])
 
     # regression test (cf. #922)
     # pseudo-4D images as input (i.e., X, Y, Z, 1)
