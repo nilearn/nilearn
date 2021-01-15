@@ -25,11 +25,11 @@ def _local_max(data, affine, min_distance):
     data : array_like
         3D array of with masked values for cluster.
 
-    affine: np.ndarray
+    affine : np.ndarray
         Square matrix specifying the position of the image array data
         in a reference space.
 
-    min_distance : `int`
+    min_distance : int
         Minimum distance between local maxima in ``data``, in terms of mm.
 
     Returns
@@ -39,6 +39,7 @@ def _local_max(data, affine, min_distance):
 
     vals : `numpy.ndarray`
         (n_foci,) array of values from data at ijk.
+
     """
     ijk, vals = _identify_subpeaks(data)
     xyz, ijk, vals = _sort_subpeaks(ijk, vals, affine)
@@ -101,15 +102,15 @@ def get_clusters_table(stat_img, stat_threshold, cluster_threshold=None,
     stat_img : Niimg-like object,
        Statistical image (presumably in z- or p-scale).
 
-    stat_threshold: `float`
+    stat_threshold : `float`
         Cluster forming threshold in same scale as `stat_img` (either a
         p-value or z-scale value).
 
     cluster_threshold : `int` or `None`, optional
         Cluster size threshold, in voxels.
 
-    min_distance: `float`, optional
-        Minimum distance between subpeaks in mm. Default is 8 mm.
+    min_distance : `float`, optional
+        Minimum distance between subpeaks in mm. Default=8mm.
 
     Returns
     -------
@@ -118,6 +119,7 @@ def get_clusters_table(stat_img, stat_threshold, cluster_threshold=None,
         clusters (clusters with >1 voxel containing only one value), the table
         reports the center of mass of the cluster,
         rather than any peaks/subpeaks.
+
     """
     cols = ['Cluster ID', 'X', 'Y', 'Z', 'Peak Stat', 'Cluster Size (mm3)']
 

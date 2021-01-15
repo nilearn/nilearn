@@ -1057,16 +1057,16 @@ class BaseSlicer(object):
         scale_loc : integer, optional
             The positioning for the scalebar. Default=4.
             Valid location codes are::
-                    'upper right'  : 1,
-                    'upper left'   : 2,
-                    'lower left'   : 3,
-                    'lower right'  : 4,
-                    'right'        : 5,
-                    'center left'  : 6,
-                    'center right' : 7,
-                    'lower center' : 8,
-                    'upper center' : 9,
-                    'center'       : 10
+                - 'upper right'  : 1
+                - 'upper left'   : 2
+                - 'lower left'   : 3
+                - 'lower right'  : 4
+                - 'right'        : 5
+                - 'center left'  : 6
+                - 'center right' : 7
+                - 'lower center' : 8
+                - 'upper center' : 9
+                - 'center'       : 10
 
         decimals : integer, optional
             Number of decimal places on slice position annotation. If zero,
