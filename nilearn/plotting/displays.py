@@ -1026,7 +1026,7 @@ class BaseSlicer(object):
     def annotate(self, left_right=True, positions=True, scalebar=False,
                  size=12, scale_size=5.0, scale_units='cm', scale_loc=4,
                  decimals=0, **kwargs):
-        """ Add annotations to the plot.
+        """Add annotations to the plot.
 
         Parameters
         ----------
@@ -1055,7 +1055,8 @@ class BaseSlicer(object):
             The units for the scalebar. Default='cm'.
 
         scale_loc : integer, optional
-            The positioning for the scalebar, valid location codes are::
+            The positioning for the scalebar. Default=4.
+            Valid location codes are::
                     'upper right'  : 1,
                     'upper left'   : 2,
                     'lower left'   : 3,
@@ -1066,7 +1067,6 @@ class BaseSlicer(object):
                     'lower center' : 8,
                     'upper center' : 9,
                     'center'       : 10
-            Default=4.
 
         decimals : integer, optional
             Number of decimal places on slice position annotation. If zero,
