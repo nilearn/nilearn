@@ -69,10 +69,12 @@ def assert_memory_less_than(memory_limit, tolerance,
     ----------
     memory_limit : int
         The expected memory limit in MiB.
-    tolerance: float
+
+    tolerance : float
         As memory_profiler results have some variability, this adds some
         tolerance around memory_limit. Accepted values are in range [0.0, 1.0].
-    callable_obj: callable
+
+    callable_obj : callable
         The function to be called to check memory consumption.
 
     """
@@ -118,26 +120,27 @@ def write_tmp_imgs(*imgs, **kwargs):
 
     Parameters
     ----------
-    imgs: Nifti1Image
+    imgs : Nifti1Image
         Several Nifti images. Every format understood by nibabel.save is
         accepted.
 
-    create_files: bool
-        if True, imgs are written on disk and filenames are returned. If
+    create_files : bool
+        If True, imgs are written on disk and filenames are returned. If
         False, nothing is written, and imgs is returned as output. This is
         useful to test the two cases (filename / Nifti1Image) in the same
         loop.
 
-    use_wildcards: bool
-        if True, and create_files is True, imgs are written on disk and a
+    use_wildcards : bool
+        If True, and create_files is True, imgs are written on disk and a
         matching glob is returned.
 
     Returns
     -------
-    filenames: string or list of
-        filename(s) where input images have been written. If a single image
+    filenames : string or list of strings
+        Filename(s) where input images have been written. If a single image
         has been given as input, a single string is returned. Otherwise, a
         list of string is returned.
+
     """
     valid_keys = set(("create_files", "use_wildcards"))
     input_keys = set(kwargs.keys())
@@ -194,8 +197,9 @@ def skip_if_running_tests(msg=''):
 
     Parameters
     ----------
-    msg: string, optional
-        The message issued when a test is skipped
+    msg : string, optional
+        The message issued when a test is skipped.
+
     """
     if are_tests_running():
         pytest.skip(msg)

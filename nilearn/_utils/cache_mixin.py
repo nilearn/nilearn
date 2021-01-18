@@ -28,16 +28,17 @@ def _check_memory(memory, verbose=0):
 
     Parameters
     ----------
-    memory: None or instance of joblib.Memory or str
+    memory : None or instance of joblib.Memory or str
         Used to cache the masking process.
         If a str is given, it is the path to the caching directory.
 
-    verbose : int, optional (default 0)
-        Verbosity level.
+    verbose : int, optional
+        Verbosity level. Default=0.
 
     Returns
     -------
-    instance of joblib.Memory.
+    memory : instance of joblib.Memory.
+
     """
     if memory is None:
         memory = Memory(location=None, verbose=verbose)
@@ -79,8 +80,9 @@ def _check_memory(memory, verbose=0):
 
 
 def _safe_cache(memory, func, **kwargs):
-    """ A wrapper for mem.cache that flushes the cache if the version
-        number of nibabel has changed.
+    """A wrapper for mem.cache that flushes the cache if the version
+    number of nibabel has changed.
+
     """
     ''' Workaround for
      https://github.com/scikit-learn-contrib/imbalanced-learn/issues/482
@@ -163,7 +165,7 @@ class _ShelvedFunc(object):
 
 def cache(func, memory, func_memory_level=None, memory_level=None,
           shelve=False, **kwargs):
-    """ Return a joblib.Memory object.
+    """Return a joblib.Memory object.
 
     The memory_level determines the level above which the wrapped
     function output is cached. By specifying a numeric value for
@@ -173,35 +175,37 @@ def cache(func, memory, func_memory_level=None, memory_level=None,
 
     Parameters
     ----------
-    func: function
+    func : function
         The function which output is to be cached.
 
-    memory: instance of joblib.Memory or string
+    memory : instance of joblib.Memory or string
         Used to cache the function call.
 
-    func_memory_level: int, optional
+    func_memory_level : int, optional
         The memory_level from which caching must be enabled for the wrapped
         function.
 
-    memory_level: int, optional
+    memory_level : int, optional
         The memory_level used to determine if function call must
         be cached or not (if user_memory_level is equal of greater than
-        func_memory_level the function is cached)
+        func_memory_level the function is cached).
 
-    shelve: bool
+    shelve : bool, optional
         Whether to return a joblib MemorizedResult, callable by a .get()
-        method, instead of the return value of func
+        method, instead of the return value of func.
+        Default=False.
 
-    kwargs: keyword arguments
-        The keyword arguments passed to memory.cache
+    kwargs : keyword arguments, optional
+        The keyword arguments passed to memory.cache.
 
     Returns
     -------
-    mem: joblib.MemorizedFunc, wrapped in _ShelvedFunc if shelving
+    mem : joblib.MemorizedFunc, wrapped in _ShelvedFunc if shelving
         Object that wraps the function func to cache its further call.
         This object may be a no-op, if the requested level is lower
         than the value given to _cache()).
         For consistency, a callable object is always returned.
+
     """
     verbose = kwargs.get('verbose', 0)
 
@@ -244,10 +248,13 @@ class CacheMixin(object):
     This class is a thin layer on top of joblib.Memory, that mainly adds a
     "caching level", similar to a "log level".
 
+    Notes
+    -----
     Usage: to cache the results of a method, wrap it in self._cache()
     defined by this class. Caching is performed only if the user-specified
     cache level (self._memory_level) is greater than the value given as a
     parameter to self._cache(). See _cache() documentation for details.
+
     """
     def _cache(self, func, func_memory_level=1, shelve=False, **kwargs):
         """Return a joblib.Memory object.
@@ -260,24 +267,25 @@ class CacheMixin(object):
 
         Parameters
         ----------
-        func: function
+        func : function
             The function the output of which is to be cached.
 
-        memory_level: int
+        func_memory_level : int, optional
             The memory_level from which caching must be enabled for the wrapped
-            function.
+            function. Default=1.
 
-        shelve: bool
+        shelve : bool, optional
             Whether to return a joblib MemorizedResult, callable by a .get()
-            method, instead of the return value of func
+            method, instead of the return value of func. Default=False.
 
         Returns
         -------
-        mem: joblib.MemorizedFunc, wrapped in _ShelvedFunc if shelving
+        mem : joblib.MemorizedFunc, wrapped in _ShelvedFunc if shelving
             Object that wraps the function func to cache its further call.
             This object may be a no-op, if the requested level is lower
             than the value given to _cache()).
             For consistency, a callable object is always returned.
+
         """
         verbose = getattr(self, 'verbose', 0)
 

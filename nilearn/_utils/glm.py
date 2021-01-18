@@ -24,18 +24,19 @@ def _check_list_length_match(list_1, list_2, var_name_1, var_name_2):
 
 
 def _read_events_table(table):
-    """
-    Accepts the path to en event.tsv file and loads it as a Pandas Dataframe.
+    """Accepts the path to en event.tsv file and loads it as a Pandas Dataframe.
     Raises an error if loading fails.
+
     Parameters
     ----------
-    table: string
-        Accepts the path to an events file
+    table : string
+        Accepts the path to an events file.
 
     Returns
     -------
-    loaded: pandas.Dataframe object
+    loaded : pandas.Dataframe object
         Pandas Dataframe witht e events data.
+
     """
     try:
         # kept for historical reasons, a lot of tests use csv with index column
@@ -69,23 +70,22 @@ def _check_and_load_tables(tables_, var_name):
 
 
 def _check_events_file_uses_tab_separators(events_files):
-    """
-    Raises a ValueError if provided list of text based data files
+    """Raises a ValueError if provided list of text based data files
     (.csv, .tsv, etc) do not enforce the BIDS convention of using Tabs
     as separators.
 
     Only scans their first row.
     Does nothing if:
-        If the separator used is BIDS compliant.
-        Paths are invalid.
-        File(s) are not text files.
+        - If the separator used is BIDS compliant.
+        - Paths are invalid.
+        - File(s) are not text files.
 
     Does not flag comma-separated-values-files for compatibility reasons;
     this may change in future as commas are not BIDS compliant.
 
     parameters
     ----------
-    events_files: str, List/Tuple[str]
+    events_files : str, List/Tuple[str]
         A single file's path or a collection of filepaths.
         Files are expected to be text files.
         Non-text files will raise ValueError.
@@ -98,6 +98,7 @@ def _check_events_file_uses_tab_separators(events_files):
     ------
     ValueError:
         If value separators are not Tabs (or commas)
+
     """
     valid_separators = [',', '\t']
     if not isinstance(events_files, (list, tuple)):
@@ -144,25 +145,23 @@ def _check_run_tables(run_imgs, tables_, tables_name):
 
 
 def z_score(pvalue, one_minus_pvalue=None):
-    """ Return the z-score(s) corresponding to certain p-value(s) and,
+    """Return the z-score(s) corresponding to certain p-value(s) and,
     optionally, one_minus_pvalue(s) provided as inputs.
 
     Parameters
     ----------
-    pvalue: float or 1-d array shape=(n_pvalues,) computed using
-            the survival function
+    pvalue : float or 1-d array shape=(n_pvalues,)
+        P-values computed using the survival function.
 
-    one_minus_pvalue: float or
-                      1-d array shape=(n_one_minus_pvalues,), optional;
-                      it shall take the value returned by
-                      /nilearn/glm/contrasts.py::one_minus_pvalue
-                      which computes the p_value using the
-                      cumulative distribution function,
-                      with n_one_minus_pvalues = n_pvalues
+    one_minus_pvalue : float or 1-d array shape=(n_one_minus_pvalues,), optional
+        It shall take the value returned by /nilearn/glm/contrasts.py::one_minus_pvalue
+        which computes the p_value using the cumulative distribution function,
+        with n_one_minus_pvalues = n_pvalues.
 
     Returns
     -------
-    z_scores: 1-d array shape=(n_z_scores,), with n_z_scores = n_pvalues
+    z_scores : 1-d array shape=(n_z_scores,), with n_z_scores = n_pvalues
+
     """
     pvalue = np.clip(pvalue, 1.e-300, 1. - 1.e-16)
     z_scores_sf = norm.isf(pvalue)
@@ -185,18 +184,19 @@ def multiple_fast_inverse(a):
 
     Parameters
     ----------
-    a: array_like of shape (n_samples, n_dim, n_dim)
+    a : array_like of shape (n_samples, n_dim, n_dim)
         Set of square matrices to be inverted. A is changed in place.
 
     Returns
     -------
-    a: ndarray
-       yielding the inverse of the inputs
+    a : ndarray
+       Yielding the inverse of the inputs.
 
     Raises
     ------
     LinAlgError :
         If `a` is singular.
+
     ValueError :
         If `a` is not square, or not 2-dimensional.
 
@@ -204,6 +204,7 @@ def multiple_fast_inverse(a):
     -----
     This function is borrowed from scipy.linalg.inv,
     but with some customizations for speed-up.
+
     """
     if a.shape[1] != a.shape[2]:
         raise ValueError('a must have shape (n_samples, n_dim, n_dim)')
@@ -245,16 +246,17 @@ def multiple_mahalanobis(effect, covariance):
 
     Parameters
     ----------
-    effect: array of shape (n_features, n_samples),
-        Each column represents a vector to be evaluated
+    effect : array of shape (n_features, n_samples)
+        Each column represents a vector to be evaluated.
 
-    covariance: array of shape (n_features, n_features, n_samples),
-        Corresponding covariance models stacked along the last axis
+    covariance : array of shape (n_features, n_features, n_samples)
+        Corresponding covariance models stacked along the last axis.
 
     Returns
     -------
-    sqd: array of shape (n_samples,)
-         the squared distances (one per sample)
+    sqd : array of shape (n_samples,)
+         The squared distances (one per sample).
+
     """
     # check size
     if effect.ndim == 1:
@@ -278,24 +280,26 @@ def multiple_mahalanobis(effect, covariance):
 
 
 def full_rank(X, cmax=1e15):
-    """ Computes the condition number of X and if it is larger than cmax,
+    """Computes the condition number of X and if it is larger than cmax,
     returns a matrix with a condition number smaller than cmax.
 
     Parameters
     ----------
     X : array of shape (nrows, ncols)
-        input array
+        Input array.
 
-    cmax : float, optional (default:1.e15),
-        tolerance for condition number
+    cmax : float, optional
+        Tolerance for condition number.
+        Default=1e15.
 
     Returns
     -------
     X : array of shape (nrows, ncols)
-        output array
+        Output array.
 
     cond : float,
-        actual condition number
+        Actual condition number.
+
     """
     U, s, V = spl.svd(X, full_matrices=False)
     smax, smin = s.max(), s.min()
@@ -310,7 +314,7 @@ def full_rank(X, cmax=1e15):
 
 
 def positive_reciprocal(X):
-    """ Return element-wise reciprocal of array, setting `X`>=0 to 0
+    """Return element-wise reciprocal of array, setting `X`>=0 to 0
 
     Return the reciprocal of an array, setting all entries less than or
     equal to 0 to 0. Therefore, it presumes that X should be positive in
@@ -323,8 +327,9 @@ def positive_reciprocal(X):
     Returns
     -------
     rX : array
-       array of same shape as `X`, dtype np.float, with values set to
-       1/X where X > 0, 0 otherwise
+       Array of same shape as `X`, dtype np.float, with values set to
+       1/X where X > 0, 0 otherwise.
+
     """
     X = np.asarray(X)
     return np.where(X <= 0, 0, 1. / X)
@@ -352,47 +357,52 @@ def get_bids_files(main_path, file_tag='*', file_type='*', sub_label='*',
 
     Parameters
     ----------
-    main_path: str
-        Directory of the BIDS dataset
+    main_path : str
+        Directory of the BIDS dataset.
 
-    file_tag: str accepted by glob, optional (default: '*')
+    file_tag : str accepted by glob, optional
         The final tag of the desired files. For example 'bold' if one is
         interested in the files related to the neuroimages.
+        Default='*'.
 
-    file_type: str accepted by glob, optional (default: '*')
+    file_type : str accepted by glob, optional
         The type of the desired files. For example to be able to request only
         'nii' or 'json' files for the 'bold' tag.
+        Default='*'.
 
-    sub_label: str accepted by glob, optional (default: '*')
+    sub_label : str accepted by glob, optional
         Such a common filter is given as a direct option since it applies also
         at the level of directories. the label is what follows the 'sub' field
         in the BIDS convention as 'sub-label'.
+        Default='*'.
 
-    modality_folder: str accepted by glob, optional (default: '*')
+    modality_folder : str accepted by glob, optional
         Inside the subject and optional session folders a final level of
         folders is expected in the BIDS convention that groups files according
         to different neuroimaging modalities and any other additions of the
         dataset provider. For example the 'func' and 'anat' standard folders.
         If given as the empty string '', files will be searched inside the
         sub-label/ses-label directories.
+        Default='*'.
 
-    filters: list of tuples (str, str), optional (default: None)
+    filters : list of tuples (str, str), optional
         Filters are of the form (field, label). Only one filter per field
         allowed. A file that does not match a filter will be discarded.
         Filter examples would be ('ses', '01'), ('dir', 'ap') and
         ('task', 'localizer').
 
-    sub_folder: boolean, optional (default: True)
+    sub_folder : boolean, optional
         Determines if the files searched are at the level of
         subject/session folders or just below the dataset main folder.
         Setting this option to False with other default values would return
         all the files below the main directory, ignoring files in subject
         or derivatives folders.
+        Default=True.
 
     Returns
     -------
-    files: list of str
-        list of file paths found.
+    files : list of str
+        List of file paths found.
 
     """
     filters = filters if filters else []
@@ -427,12 +437,12 @@ def parse_bids_filename(img_path):
 
     Parameters
     ----------
-    img_path: str
+    img_path : str
 
     Returns
     -------
-    reference: dict
-        returns a dictionary with all key-value pairs in the file name
+    reference : dict
+        Returns a dictionary with all key-value pairs in the file name
         parsed and other useful fields like 'file_path', 'file_basename',
         'file_tag', 'file_type' and 'file_fields'.
 
