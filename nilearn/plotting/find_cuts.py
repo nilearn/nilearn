@@ -114,7 +114,9 @@ def find_xyz_cut_coords(img, mask_img=None, activation_threshold=None):
             "Could not determine cut coords: "
             "All values were masked. "
             "Returning center of mass of unmasked data instead.")
-        cut_coords = ndimage.center_of_mass(np.abs(data)) + offset
+        # Call center of mass on initial data since my_map is zero.
+        # Therefore, do not add offset to cut_coords.
+        cut_coords = ndimage.center_of_mass(np.abs(data))
         x_map, y_map, z_map = cut_coords
         return np.asarray(coord_transform(x_map, y_map, z_map,
                                           img.affine)).tolist()
