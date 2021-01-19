@@ -142,25 +142,28 @@ def _space_net_alpha_grid(X, y, eps=1e-3, n_alphas=10, l1_ratio=1.,
     y : ndarray, shape (n_samples,)
         Target / response vector.
 
-    l1_ratio : float, optional, default is 1.
+    l1_ratio : float, optional
         The ElasticNet mixing parameter, with ``0 <= l1_ratio <= 1``.
         For ``l1_ratio = 0`` the penalty is purely a spatial prior
         (Graph-Net, TV, etc.). ``For l1_ratio = 1`` it is an L1 penalty.
         For ``0 < l1_ratio < 1``, the penalty is a combination of L1
         and a spatial prior.
+        Default=1.
 
-    eps : float, optional, default is 1e-3.
+    eps : float, optional
         Length of the path. ``eps=1e-3`` means that
         ``alpha_min / alpha_max = 1e-3``.
+        Default=1e-3.
 
-    n_alphas : int, optional, default is 10.
+    n_alphas : int, optional
         Number of alphas along the regularization path.
+        Default=10.
 
-    logistic : bool, optional (default False)
+    logistic : bool, optional
         Indicates where the underlying loss function is logistic.
+        Default=False.
 
     """
-
     if logistic:
         # Computes the theoretical upper bound for the overall
         # regularization, as derived in "An Interior-Point Method for
@@ -324,29 +327,33 @@ def path_scores(solver, X, y, mask, alphas, l1_ratios, train, test,
     solver : function handle
        See for example tv.TVl1Classifier documentation.
 
-    solver_params: dict
+    solver_params : dict
        Dictionary of param-value pairs to be passed to solver.
 
-    is_classif: ??? TODO: Add description.
+    is_classif : bool, optional
+        Indicates whether the loss is a classification loss or a
+        regression loss. Default=False.
 
     Xmean: ??? TODO: Add description.
 
     key: ??? TODO: Add description.
 
-    debias : bool, optional (default False)
+    debias : bool, optional
         If set, then the estimated weights maps will be debiased.
+        Default=False.
 
-    screening_percentile : float in the interval [0, 100]; Optional (
-    default 20)
+    screening_percentile : float in the interval [0, 100], optional
         Percentile value for ANOVA univariate feature selection. A value of
         100 means 'keep all features'. This percentile is expressed
         w.r.t the volume of a standard (MNI152) brain, and so is corrected
         at runtime to correspond to the volume of the user-supplied mask
         (which is typically smaller). If '100' is given, all the features
         are used, regardless of the number of voxels.
+        Default=20.
 
-    verbose: integer, optional, default is 1.
-        Indicate the level of verbosity.
+    verbose : integer, optional
+        Indicate the level of verbosity. Default=1.
+
     """
     if l1_ratios is None:
         raise ValueError("l1_ratios must be specified!")

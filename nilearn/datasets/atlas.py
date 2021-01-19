@@ -28,14 +28,15 @@ def fetch_atlas_difumo(dimension=64, resolution_mm=2, data_dir=None, resume=True
     These modes are optimized to represent well raw BOLD timeseries,
     over a with range of experimental conditions. See [1]_.
 
+    Notes
+    -----
     Direct download links from OSF:
 
-    dic = {64: https://osf.io/wjum7/download,
-           128: https://osf.io/n3vba/download,
-           256: https://osf.io/vza2y/download,
-           512: https://osf.io/a23gw/download,
-           1024: https://osf.io/jpdum/download,
-           }
+    - 64: https://osf.io/wjum7/download
+    - 128: https://osf.io/n3vba/download
+    - 256: https://osf.io/vza2y/download
+    - 512: https://osf.io/a23gw/download
+    - 1024: https://osf.io/jpdum/download
 
     Parameters
     ----------

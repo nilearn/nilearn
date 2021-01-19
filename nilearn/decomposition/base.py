@@ -546,21 +546,22 @@ def explained_variance(X, components, per_component=True):
 
         Parameters
         ----------
-        X : ndarray,
-            Holds single subject data to be tested against components
+        X : ndarray
+            Holds single subject data to be tested against components.
 
-        components : ????? TODO: Add description
+        components : array-like
+            Represents the components estimated by the decomposition algorithm.
 
         per_component : boolean, optional
             Specify whether the explained variance ratio is desired for each
-            map or for the global set of components_
+            map or for the global set of components_.
             Default=True.
 
         Returns
         -------
         score : ndarray
             Holds the score for each subjects. score is two dimensional if
-            per_component = True
+            per_component = True.
 
         """
     full_var = np.var(X)

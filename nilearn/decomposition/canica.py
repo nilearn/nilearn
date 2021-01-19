@@ -111,6 +111,7 @@ class CanICA(MultiPCA):
         Used to cache the masking process.
         By default, no caching is done. If a string is given, it is the
         path to the caching directory.
+        Default=Memory(location=None).
 
     memory_level : integer, optional
         Rough estimator of the amount of memory used by caching. Higher value

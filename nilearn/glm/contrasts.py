@@ -173,15 +173,16 @@ class Contrast(object):
             Specification of the contrast type.
             Default='t'.
 
-        tiny : ??, optional
-            ???. Default=DEF_TINY
+        tiny : float, optional
+            Small quantity used to avoid numerical underflows.
+            Default=DEF_TINY
 
-        dofmax: scalar, optional
+        dofmax : scalar, optional
             The maximum degrees of freedom of the residuals.
             Default=DEF_DOFMAX.
 
-        Notes
-        -----
+        Warnings
+        --------
         This class is experimental.
         It may change in any future release of Nilearn.
 
@@ -220,7 +221,7 @@ class Contrast(object):
         return self.variance
 
     def stat(self, baseline=0.0):
-        """ Return the decision statistic associated with the test of the
+        """Return the decision statistic associated with the test of the
         null hypothesis: (H0) 'contrast equals baseline'
 
         Parameters
@@ -231,8 +232,8 @@ class Contrast(object):
 
         Returns
         -------
-        stat: 1-d array, shape=(n_voxels,)
-            statistical values, one per voxel
+        stat : 1-d array, shape=(n_voxels,)
+            statistical values, one per voxel.
 
         """
         self.baseline = baseline
