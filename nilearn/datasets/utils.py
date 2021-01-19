@@ -79,21 +79,21 @@ def _chunk_report_(bytes_so_far, total_size, initial_size, t0):
 
     Parameters
     ----------
-    bytes_so_far: int
-        Number of downloaded bytes
+    bytes_so_far : int
+        Number of downloaded bytes.
 
-    total_size: int
+    total_size : int
         Total size of the file (may be 0/None, depending on download method).
 
-    t0: int
+    t0 : int
         The time in seconds (as returned by time.time()) at which the
         download was resumed / started.
 
-    initial_size: int
+    initial_size : int
         If resuming, indicate the initial size of the file.
         If not resuming, set to zero.
-    """
 
+    """
     if not total_size:
         sys.stderr.write("\rDownloaded %d of ? bytes." % (bytes_so_far))
 
@@ -122,30 +122,31 @@ def _chunk_read_(response, local_file, chunk_size=8192, report_hook=None,
 
     Parameters
     ----------
-    response: urllib.response.addinfourl
-        Response to the download request in order to get file size
+    response : urllib.response.addinfourl
+        Response to the download request in order to get file size.
 
-    local_file: file
-        Hard disk file where data should be written
+    local_file : file
+        Hard disk file where data should be written.
 
-    chunk_size: int, optional, default is 8192.
-        Size of downloaded chunks.
+    chunk_size : int, optional
+        Size of downloaded chunks. Default=8192.
 
-    report_hook: bool, optional.
+    report_hook : bool, optional
         Whether or not to show downloading advancement. Default: None
 
-    initial_size: int, optional, default is 0.
-        If resuming, indicate the initial size of the file
+    initial_size : int, optional
+        If resuming, indicate the initial size of the file.
+        Default=0.
 
-    total_size: int, optional
+    total_size : int, optional
         Expected final size of download (None means it is unknown).
 
-    verbose: int, optional, default is 1.
-        verbosity level (0 means no message).
+    verbose : int, optional
+        Verbosity level (0 means no message). Default=1.
 
     Returns
     -------
-    data: string
+    data : string
         The downloaded file.
 
     """
@@ -181,31 +182,33 @@ def _chunk_read_(response, local_file, chunk_size=8192, report_hook=None,
 
 
 def get_data_dirs(data_dir=None):
-    """ Returns the directories in which nilearn looks for data.
+    """Returns the directories in which nilearn looks for data.
 
     This is typically useful for the end-user to check where the data is
     downloaded and stored.
 
     Parameters
     ----------
-    data_dir: string, optional
+    data_dir : string, optional
         Path of the data directory. Used to force data storage in a specified
         location. Default: None
 
     Returns
     -------
-    paths: list of strings
+    paths : list of strings
         Paths of the dataset directories.
 
     Notes
     -----
     This function retrieves the datasets directories using the following
     priority :
+
     1. defaults system paths
     2. the keyword argument data_dir
     3. the global environment variable NILEARN_SHARED_DATA
     4. the user environment variable NILEARN_DATA
     5. nilearn_data in the user home folder
+
     """
     # We build an array of successive paths by priority
     # The boolean indicates if it is a pre_dir: in that case, we won't add the
@@ -232,38 +235,40 @@ def get_data_dirs(data_dir=None):
 
 def _get_dataset_dir(dataset_name, data_dir=None, default_paths=None,
                      verbose=1):
-    """ Create if necessary and returns data directory of given dataset.
+    """Creates if necessary and returns data directory of given dataset.
 
     Parameters
     ----------
-    dataset_name: string
+    dataset_name : string
         The unique name of the dataset.
 
-    data_dir: string, optional
+    data_dir : string, optional
         Path of the data directory. Used to force data storage in a specified
         location. Default: None
 
-    default_paths: list of string, optional
+    default_paths : list of string, optional
         Default system paths in which the dataset may already have been
         installed by a third party software. They will be checked first.
 
-    verbose: int, optional, default is 1.
-        verbosity level (0 means no message).
+    verbose : int, optional
+        Verbosity level (0 means no message). Default=1.
 
     Returns
     -------
-    data_dir: string
+    data_dir : string
         Path of the given dataset directory.
 
     Notes
     -----
     This function retrieves the datasets directory (or data directory) using
     the following priority :
+
     1. defaults system paths
     2. the keyword argument data_dir
     3. the global environment variable NILEARN_SHARED_DATA
     4. the user environment variable NILEARN_DATA
     5. nilearn_data in the user home folder
+
     """
     paths = []
     # Search possible data-specific system paths
@@ -313,18 +318,20 @@ def _uncompress_file(file_, delete_archive=True, verbose=1):
 
     Parameters
     ----------
-    file_: string
-        path of file to be uncompressed.
+    file_ : string
+        Path of file to be uncompressed.
 
-    delete_archive: bool, optional, default is True.
+    delete_archive : bool, optional
         Wheteher or not to delete archive once it is uncompressed.
+        Default=True.
 
-    verbose: int, optional, default is 1.
-        verbosity level (0 means no message).
+    verbose : int, optional
+        Verbosity level (0 means no message). Default=1.
 
     Notes
     -----
     This handles zip, tar, gzip and bzip files only.
+
     """
     if verbose > 0:
         sys.stderr.write('Extracting data from %s...' % file_)
@@ -378,21 +385,21 @@ def _uncompress_file(file_, delete_archive=True, verbose=1):
 
 
 def _filter_column(array, col, criteria):
-    """ Return index array matching criteria
+    """Return index array matching criteria
 
     Parameters
     ----------
+    array : numpy array with columns
+        Array in which data will be filtered.
 
-    array: numpy array with columns
-        Array in which data will be filtered
+    col : string
+        Name of the column.
 
-    col: string
-        Name of the column
-
-    criteria: integer (or float), pair of integers, string or list of these
+    criteria : integer (or float), pair of integers, string or list of these
         if integer, select elements in column matching integer
         if a tuple, select elements between the limits given by the tuple
         if a string, select elements that match the string
+
     """
     # Raise an error if the column does not exist. This is the only way to
     # test it across all possible types (pandas, recarray...)
@@ -429,20 +436,20 @@ def _filter_column(array, col, criteria):
 
 
 def _filter_columns(array, filters, combination='and'):
-    """ Return indices of recarray entries that match criteria.
+    """Return indices of recarray entries that match criteria.
 
     Parameters
     ----------
+    array : numpy array with columns
+        Array in which data will be filtered.
 
-    array: numpy array with columns
-        Array in which data will be filtered
+    filters : list of criteria
+        See _filter_column.
 
-    filters: list of criteria
-        See _filter_column
-
-    combination: string, optional, default is 'and'.
+    combination : string {'and', 'or'}, optional
         String describing the combination operator. Possible values are "and"
-        and "or".
+        and "or". Default='and'.
+
     """
     if combination == 'and':
         fcomb = np.logical_and
@@ -487,43 +494,45 @@ def _fetch_file(url, data_dir, resume=True, overwrite=False,
 
     Parameters
     ----------
-    url: string
+    url : string
         Contains the url of the file to be downloaded.
 
-    data_dir: string
+    data_dir : string
         Path of the data directory. Used for data storage in the specified
         location.
 
-    resume: bool, optional, default is True.
-        If true, try to resume partially downloaded files
+    resume : bool, optional
+        If true, try to resume partially downloaded files.
+        Default=True.
 
-    overwrite: bool, optional, default is False.
-        If true and file already exists, delete it.
+    overwrite : bool, optional
+        If true and file already exists, delete it. Default=False.
 
-    md5sum: string, optional
-        MD5 sum of the file. Checked if download of the file is required
+    md5sum : string, optional
+        MD5 sum of the file. Checked if download of the file is required.
 
-    username: string, optional
-        Username used for basic HTTP authentication
+    username : string, optional
+        Username used for basic HTTP authentication.
 
-    password: string, optional
-        Password used for basic HTTP authentication
+    password : string, optional
+        Password used for basic HTTP authentication.
 
-    verbose: int, optional, default is 1.
-        verbosity level (0 means no message).
+    verbose : int, optional
+        Verbosity level (0 means no message). Default=1.
 
-    session:
-        `requests.Session` to use to send requests
+    session : requests.Session, optional
+        Session to use to send requests.
 
     Returns
     -------
-    files: string
+    files : string
         Absolute path of downloaded file.
 
     Notes
     -----
     If, for any reason, the download procedure fails, all downloaded files are
     removed.
+
     """
     if session is None:
         with requests.Session() as session:
@@ -684,11 +693,11 @@ def _fetch_files(data_dir, files, resume=True, verbose=1, session=None):
 
     Parameters
     ----------
-    data_dir: string
+    data_dir : string
         Path of the data directory. Used for data storage in a specified
         location.
 
-    files: list of (string, string, dict)
+    files : list of (string, string, dict)
         List of files and their corresponding url with dictionary that contains
         options regarding the files. Eg. (file_path, url, opt). If a file_path
         is not found in data_dir, as in data_dir/file_path the download will
@@ -699,18 +708,20 @@ def _fetch_files(data_dir, files, resume=True, verbose=1, session=None):
             * 'md5sum' to check the md5 sum of the file
             * 'overwrite' if the file should be re-downloaded even if it exists
 
-    resume: bool, optional, default is True.
-        If true, try resuming download if possible
+    resume : bool, optional
+        If true, try resuming download if possible. Default=True.
 
-    verbose: int, optional, default is 1.
-        verbosity level (0 means no message).
+    verbose : int, optional
+        Verbosity level (0 means no message). Default=1.
 
-    session:
-        `requests.Session` to use to send requests
+    session : `requests.Session`, optional
+        Session to use to send requests.
+
     Returns
     -------
-    files: list of string
-        Absolute paths of downloaded files on disk
+    files : list of string
+        Absolute paths of downloaded files on disk.
+
     """
     if session is None:
         with requests.Session() as session:
@@ -805,18 +816,20 @@ def _fetch_files(data_dir, files, resume=True, verbose=1, session=None):
 
 
 def _tree(path, pattern=None, dictionary=False):
-    """ Return a directory tree under the form of a dictionaries and list
+    """Return a directory tree under the form of a dictionaries and list
 
     Parameters:
     -----------
-    path: string
-        Path browsed
+    path : string
+        Path browsed.
 
-    pattern: string, optional
-        Pattern used to filter files (see fnmatch)
+    pattern : string, optional
+        Pattern used to filter files (see fnmatch).
 
-    dictionary: boolean, optional, default is False.
-        If True, the function will return a dict instead of a list
+    dictionary : boolean, optional
+        If True, the function will return a dict instead of a list.
+        Default=False.
+
     """
     files = []
     dirs = [] if not dictionary else {}
@@ -845,7 +858,7 @@ def make_fresh_openneuro_dataset_urls_index(
         dataset_version='ds000030_R1.0.4',
         verbose=1,
         ):
-    """ ONLY intended for Nilearn developers, not general users.
+    """ONLY intended for Nilearn developers, not general users.
     Creates a fresh, updated OpenNeuro BIDS dataset index from AWS,
     ready for upload to osf.io .
 
@@ -853,7 +866,9 @@ def make_fresh_openneuro_dataset_urls_index(
     and makes a JSON file `nistats_fetcher_openneuro_dataset_urls.json'
     containing a fresh list of dataset file URLs.
 
-    Note: Needs Python package `Boto3`.
+    Notes
+    -----
+    Needs Python package `Boto3`.
 
     Do NOT rename this file.
 
@@ -872,23 +887,25 @@ def make_fresh_openneuro_dataset_urls_index(
 
     Parameters
     ----------
-    data_dir: string, optional
+    data_dir : string, optional
         Path to store the downloaded dataset.
-        If None downloads to user's Desktop
+        If None downloads to user's Desktop.
 
-    dataset_version: string, optional, default is `ds000030_R1.0.4`.
-        dataset version name. Assumes it is of the form [name]_[version].
+    dataset_version : string, optional
+        Dataset version name. Assumes it is of the form [name]_[version].
+        Default is `ds000030_R1.0.4`.
 
-    verbose: int, optional, default is 1.
-        verbosity level (0 means no message).
+    verbose : int, optional
+        Verbosity level (0 means no message). Default=1.
 
     Returns
     -------
-    urls_path: string
-        Path to downloaded dataset index
+    urls_path : string
+        Path to downloaded dataset index.
 
-    urls: list of string
-        Sorted list of dataset directories
+    urls : list of string
+        Sorted list of dataset directories.
+
     """
     import boto3
     from botocore.handlers import disable_signing
