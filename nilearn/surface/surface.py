@@ -921,8 +921,18 @@ def check_mesh_and_data(mesh, data):
     """Load surface mesh and data, check that they have compatible shapes."""
     mesh = load_surf_mesh(mesh)
     data = load_surf_data(data)
+    # Check that mesh coordinates has a number of nodes
+    # equals to the size of the data.
     if len(data) != len(mesh.coordinates):
         raise ValueError(
             'Mismatch between number of nodes in mesh ({}) and '
             'size of surface data ({})'.format(len(mesh.coordinates),len(data)))
+    # Check that the indices of faces are consistent with the
+    # mesh coordinates. That is, we shouldn't have an index
+    # larger or equal to the length of the coordinates array.
+    if mesh.faces.max() >= len(mesh.coordinates):
+        raise ValueError(
+            "Mismatch between the indices of faces and the number of nodes. "
+            "Maximum face index is {} while coordinates array has length {}.".format(
+                mesh.faces.max(), len(mesh.coordinates)))
     return mesh, data

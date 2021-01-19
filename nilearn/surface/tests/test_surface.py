@@ -621,11 +621,22 @@ def test_check_mesh():
 
 
 def test_check_mesh_and_data():
-    mesh = generate_surf()
+    coords, faces = generate_surf()
+    mesh = Mesh(coords, faces)
     data = mesh[0][:, 0]
     m, d = surface.check_mesh_and_data(mesh, data)
     assert (m[0] == mesh[0]).all()
     assert (m[1] == mesh[1]).all()
     assert (d == data).all()
+    # Generate faces such that max index is larger than
+    # the length of coordinates array.
+    rng = np.random.RandomState(42)
+    wrong_faces = rng.randint(coords.shape[0] + 1, size=(30, 3))
+    wrong_mesh = Mesh(coords, wrong_faces)
+    # Check that check_mesh_and_data raises an error with the resulting wrong mesh
+    with pytest.raises(ValueError, match="Mismatch between the indices of faces and the number of nodes."):
+        surface.check_mesh_and_data(wrong_mesh, data)
+    # Alter the data and check that an error is raised
     data = mesh[0][::2, 0]
-    pytest.raises(ValueError, surface.check_mesh_and_data, mesh, data)
+    with pytest.raises(ValueError, match="Mismatch between number of nodes in mesh"):
+        surface.check_mesh_and_data(mesh, data)
