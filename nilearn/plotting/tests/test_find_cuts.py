@@ -51,15 +51,16 @@ def test_find_cut_coords():
 
     data = np.zeros((20, 20, 20))
     data[4:6, 4:6, 4:6] = 1000
-    img = nibabel.Nifti1Image(data, np.eye(4))
+    img = nibabel.Nifti1Image(data, 2 * np.eye(4))
     mask_data = np.ones((20, 20, 20), dtype=int)
-    mask_img = nibabel.Nifti1Image(mask_data, np.eye(4))
+    mask_img = nibabel.Nifti1Image(mask_data, 2 * np.eye(4))
     cut_coords = find_xyz_cut_coords(img, mask_img=mask_img)
     np.testing.assert_array_equal(cut_coords,
-                                  [4.5, 4.5, 4.5])
+                                  [9., 9., 9.])
 
     # Check that a warning is given when all values are masked
     # and that the center of mass is returned
+    img = nibabel.Nifti1Image(data, np.eye(4))
     mask_data[np.argwhere(data == 1000)] = 0
     mask_img = nibabel.Nifti1Image(mask_data, np.eye(4))
     with pytest.warns(UserWarning,
