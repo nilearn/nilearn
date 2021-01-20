@@ -1,4 +1,4 @@
-name: 'nilearn tests on GitHub Actions'
+name: 'build'
 
 on:
   push:
