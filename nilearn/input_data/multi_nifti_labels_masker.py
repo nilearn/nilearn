@@ -193,9 +193,8 @@ class MultiNiftiLabelsMasker(NiftiLabelsMasker, CacheMixin):
         if confounds is None:
             confounds = itertools.repeat(None, len(imgs_list))
 
-        func = self._cache(self.transform_single_imgs,
-                           ignore=['verbose', 'memory', 'memory_level',
-                                   'copy'])
+        func = self._cache(self.transform_single_imgs)
+
         region_signals = Parallel(n_jobs=n_jobs)(delayed(func)
                                                  (imgs=imgs, confounds=cfs)
                                                  for imgs, cfs in zip(niimg_iter, confounds))
