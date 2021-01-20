@@ -879,7 +879,7 @@ def load_surf_mesh(surf_mesh):
                               'array containing  the indices (into coords) of '
                               'the mesh faces. The input was a list with '
                               '%r elements.') % len(surf_mesh))
-    elif (hasattr(surf_mesh, "faces") and hasattr(surf_mesh,"coordinates")):
+    elif (hasattr(surf_mesh, "faces") and hasattr(surf_mesh, "coordinates")):
         coords, faces = surf_mesh.coordinates, surf_mesh.faces
         mesh = Mesh(coordinates=coords, faces=faces)
 
@@ -922,7 +922,7 @@ def check_mesh_and_data(mesh, data):
     mesh = load_surf_mesh(mesh)
     data = load_surf_data(data)
     # Check that mesh coordinates has a number of nodes
-    # equals to the size of the data.
+    # equal to the size of the data.
     if len(data) != len(mesh.coordinates):
         raise ValueError(
             'Mismatch between number of nodes in mesh ({}) and '
