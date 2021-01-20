@@ -1,14 +1,16 @@
 	.. -*- mode: rst -*-
 
-.. image:: https://travis-ci.org/nilearn/nilearn.svg?branch=master
-   :target: https://travis-ci.org/nilearn/nilearn
-   :alt: Travis Build Status
+.. image:: https://github.com/nilearn/nilearn/workflows/build/badge.svg?branch=master&event=push
+   :target: https://github.com/nilearn/nilearn/actions
+   :alt: Github Actions Build Status
 
 .. image:: https://codecov.io/gh/nilearn/nilearn/branch/master/graph/badge.svg
    :target: https://codecov.io/gh/nilearn/nilearn
+   :alt: Coverage Status
 
 .. image:: https://dev.azure.com/Parietal/Nilearn/_apis/build/status/nilearn.nilearn?branchName=master
-    :target: https://dev.azure.com/Parietal/Nilearn/_apis/build/status/nilearn.nilearn?branchName=master
+   :target: https://dev.azure.com/Parietal/Nilearn/_apis/build/status/nilearn.nilearn?branchName=master
+   :alt: Azure Build Status
 
 nilearn
 =======
