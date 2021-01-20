@@ -1,6 +1,7 @@
 import warnings
 
 import numpy as np
+from string import Template
 
 from .._utils.class_inspect import get_params
 from .._utils.cache_mixin import _check_memory
@@ -52,9 +53,30 @@ def check_embedded_nifti_masker(estimator, multi_subject=True):
     if multi_subject and hasattr(estimator, 'n_jobs'):
         # For MultiNiftiMasker only
         new_masker_params['n_jobs'] = estimator.n_jobs
-    new_masker_params['memory'] = _check_memory(estimator.memory)
-    new_masker_params['memory_level'] = max(0, estimator.memory_level - 1)
-    new_masker_params['verbose'] = estimator.verbose
+
+    warning_msg = Template("Provided estimator has no $attribute attribute set."
+                           "Setting $attribute to $default_value by default.")
+
+    if hasattr(estimator, 'memory'):
+        new_masker_params['memory'] = _check_memory(estimator.memory)
+    else:
+        warnings.warn(warning_msg.substitute(attribute='memory',
+                                             default_value='Memory(location=None)'))
+        new_masker_params['memory'] = _check_memory(None)
+
+    if hasattr(estimator, 'memory_level'):
+        new_masker_params['memory_level'] = max(0, estimator.memory_level - 1)
+    else:
+        warnings.warn(warning_msg.substitute(attribute='memory_level',
+                                             default_value='0'))
+        new_masker_params['memory_level'] = 0
+
+    if hasattr(estimator, 'verbose'):
+        new_masker_params['verbose'] = estimator.verbose
+    else:
+        warnings.warn(warning_msg.substitute(attribute='verbose',
+                                             default_value='0'))
+        new_masker_params['verbose'] = 0
 
     # Raising warning if masker override parameters
     conflict_string = ""
