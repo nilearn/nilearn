@@ -33,6 +33,21 @@ currdir = os.path.dirname(os.path.abspath(__file__))
 datadir = os.path.join(currdir, 'data')
 
 
+class MeshLikeObject(object):
+    """Class with attributes coordinates and
+    faces to be used for testing purposes.
+    """
+    def __init__(self, coordinates, faces):
+        self._coordinates = coordinates
+        self._faces = faces
+    @property
+    def coordinates(self):
+        return self._coordinates
+    @property
+    def faces(self):
+        return self._faces
+
+
 def test_load_surf_data_array():
     # test loading and squeezing data from numpy array
     data_flat = np.zeros((20, ))
@@ -150,10 +165,22 @@ def test_load_surf_mesh():
     mesh = Mesh(coords, faces)
     assert_array_equal(mesh.coordinates, coords)
     assert_array_equal(mesh.faces, faces)
+    # Call load_surf_mesh with a Mesh as argument
     loaded_mesh = load_surf_mesh(mesh)
     assert isinstance(loaded_mesh, Mesh)
     assert_array_equal(mesh.coordinates, loaded_mesh.coordinates)
     assert_array_equal(mesh.faces, loaded_mesh.faces)
+
+    mesh_like = MeshLikeObject(coords, faces)
+    assert_array_equal(mesh_like.coordinates, coords)
+    assert_array_equal(mesh_like.faces, faces)
+    # Call load_surf_mesh with an object having
+    # coordinates and faces attributes
+    loaded_mesh = load_surf_mesh(mesh_like)
+    assert isinstance(loaded_mesh, Mesh)
+    assert_array_equal(mesh_like.coordinates, loaded_mesh.coordinates)
+    assert_array_equal(mesh_like.faces, loaded_mesh.faces)
+
 
 def test_load_surf_mesh_list():
     # test if correct list is returned

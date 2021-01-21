@@ -926,7 +926,7 @@ def check_mesh_and_data(mesh, data):
     if len(data) != len(mesh.coordinates):
         raise ValueError(
             'Mismatch between number of nodes in mesh ({}) and '
-            'size of surface data ({})'.format(len(mesh.coordinates),len(data)))
+            'size of surface data ({})'.format(len(mesh.coordinates), len(data)))
     # Check that the indices of faces are consistent with the
     # mesh coordinates. That is, we shouldn't have an index
     # larger or equal to the length of the coordinates array.
