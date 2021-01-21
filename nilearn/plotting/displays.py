@@ -950,19 +950,19 @@ class BaseSlicer(object):
 	        # Allow markers only in their respective hemisphere when appropriate
             marker_color_ = marker_color
             if direction in ('lr'):
-	            if not isinstance(marker_color, str) and \
-	                    not isinstance(marker_color, np.ndarray):
-	                marker_color_ = np.asarray(marker_color)
-	            xcoords, ycoords, zcoords = marker_coords.T
-	            if direction == 'r':
-	                relevant_coords = (xcoords >= 0)
-	            elif direction == 'l':
-	                relevant_coords = (xcoords <= 0)
-	            xdata = xdata[relevant_coords]
-	            ydata = ydata[relevant_coords]
-	            if not isinstance(marker_color, str) and \
-	                    len(marker_color) != 1:
-	                marker_color_ = marker_color_[relevant_coords]
+                if (not isinstance(marker_color, str) and
+	            not isinstance(marker_color, np.ndarray)):
+                    marker_color_ = np.asarray(marker_color)
+                xcoords, ycoords, zcoords = marker_coords.T
+                if direction == 'r':
+                    relevant_coords = (xcoords >= 0)
+                elif direction == 'l':
+                    relevant_coords = (xcoords <= 0)
+                xdata = xdata[relevant_coords]
+                ydata = ydata[relevant_coords]
+                if (not isinstance(marker_color, str) and
+                        len(marker_color) != 1):
+                    marker_color_ = marker_color_[relevant_coords]
             # Check if coord has integer represents a cut in direction
             # to follow the heuristic. If no foreground image is given
             # coordinate is empty or None. This case is valid for plotting
