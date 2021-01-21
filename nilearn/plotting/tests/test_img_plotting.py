@@ -1069,15 +1069,16 @@ def test_add_markers_using_plot_glass_brain():
     for d in 'ryz':
         assert display.axes[d].ax.collections[0].get_offsets().data.shape == (1, 2)
 
-    # Add a single marker in left hemisphere such that no marker
+    # Add two markers in left hemisphere such that no marker
     # should appear in the right hemisphere when plotting
     display = plotting.plot_glass_brain(None, display_mode='lyrz')
-    display.add_markers([[-20, 20, 20]])
+    display.add_markers([[-20, 20, 20], [-10, 10, 10]],
+                        marker_color=['r', 'b'])
     # Check that Axe 'r' has no marker
     assert display.axes['r'].ax.collections[0].get_offsets().data.shape == (0, 2)
-    # Check that all other Axes have one marker
+    # Check that all other Axes have two markers
     for d in 'lyz':
-        assert display.axes[d].ax.collections[0].get_offsets().data.shape == (1, 2)
+        assert display.axes[d].ax.collections[0].get_offsets().data.shape == (2, 2)
 
 
 def test_plotting_functions_with_display_mode_tiled(testdata_3d):
