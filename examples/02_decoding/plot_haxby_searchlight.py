@@ -106,7 +106,8 @@ from nilearn import image
 mean_fmri = image.mean_img(fmri_img)
 
 from nilearn.plotting import plot_stat_map, plot_img, show
-searchlight_img = new_img_like(mean_fmri, searchlight.scores_)
+scores = np.mean(searchlight.scores_, axis=-1)
+searchlight_img = new_img_like(mean_fmri, scores)
 
 # Because scores are not a zero-center test statistics, we cannot use
 # plot_stat_map

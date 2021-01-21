@@ -25,7 +25,7 @@ from .. import masking
 from ..image.resampling import coord_transform
 from ..input_data.nifti_spheres_masker import _apply_mask_and_get_affinity
 from .._utils import check_niimg_4d
-from sklearn.model_selection import cross_val_score
+from sklearn.model_selection import cross_validate
 
 ESTIMATOR_CATALOG = dict(svc=svm.LinearSVC, svr=svm.SVR)
 
@@ -53,13 +53,13 @@ def search_light(X, y, estimator, A, groups=None, scoring=None,
         group label for each sample for cross validation. default None
         NOTE: will have no effect for scikit learn < 0.18
 
-    scoring : string or callable, optional
+    scoring : list, string or callable, optional
         The scoring strategy to use. See the scikit-learn documentation
         for possible values.
-        If callable, it taks as arguments the fitted estimator, the
+        If callable, it takes as arguments the fitted estimator, the
         test data (X_test) and the test target (y_test) if y is
         not None.
-
+    
     cv : cross-validation generator, optional
         A cross-validation generator. If None, a 3-fold cross
         validation is used or 3-fold stratified cross-validation
@@ -74,8 +74,9 @@ def search_light(X, y, estimator, A, groups=None, scoring=None,
 
     Returns
     -------
-    scores : array-like of shape (number of rows in A)
-        search_light scores
+    scores : dict of float of shape=(n_voxels, n_fold)
+        search_light scores for each score metrics and for each fold, 
+        if scoring is not specified the default key is 'test_score'.
     """
     group_iter = GroupIterator(A.shape[0], n_jobs)
     with warnings.catch_warnings():  # might not converge
@@ -86,7 +87,13 @@ def search_light(X, y, estimator, A, groups=None, scoring=None,
                 estimator, X, y, groups, scoring, cv,
                 thread_id + 1, A.shape[0], verbose)
             for thread_id, list_i in enumerate(group_iter))
-    return np.concatenate(scores)
+        
+    multi_scores = dict()
+    score_keys = list(scores[0].keys())
+    for score in score_keys:
+        multi_scores[score] = np.concatenate([s[score] for s in scores])
+    
+    return multi_scores
 
 
 class GroupIterator(object):
@@ -138,7 +145,7 @@ def _group_iter_search_light(list_rows, estimator, X, y, groups,
     groups : array-like, optional
         group label for each sample for cross validation.
 
-    scoring : string or callable, optional
+    scoring : list, string or callable, optional
         Scoring strategy to use. See the scikit-learn documentation.
         If callable, takes as arguments the fitted estimator, the
         test data (X_test) and the test target (y_test) if y is
@@ -162,15 +169,27 @@ def _group_iter_search_light(list_rows, estimator, X, y, groups,
     par_scores : numpy.ndarray
         score for each voxel. dtype: float64.
     """
-    par_scores = np.zeros(len(list_rows))
     t0 = time.time()
+
+    results = dict()
+    first_dim = len(list_rows)
+    
     for i, row in enumerate(list_rows):
         kwargs = dict()
         kwargs['scoring'] = scoring
         kwargs['groups'] = groups
-        par_scores[i] = np.mean(cross_val_score(estimator, X[:, row],
-                                                y, cv=cv, n_jobs=1,
-                                                **kwargs))
+        cross_validation_res = cross_validate(estimator, X[:, row],
+                                              y, cv=cv, n_jobs=1,
+                                              **kwargs)
+        if i == 0:
+            for key, value in cross_validation_res.items():
+                if "test" in key:
+                    shape = (first_dim, value.shape[-1])
+                    results[key] = np.zeros(shape)
+        
+        for key in results.keys():
+            results[key][i] = cross_validation_res[key]
+
         if verbose > 0:
             # One can't print less than each 10 iterations
             step = 11 - min(verbose, 10)
@@ -189,7 +208,8 @@ def _group_iter_search_light(list_rows, estimator, X, y, groups,
                     "Job #%d, processed %d/%d voxels "
                     "(%0.2f%%, %i seconds remaining)%s"
                     % (thread_id, i, len(list_rows), percent, remaining, crlf))
-    return par_scores
+    
+    return results
 
 
 ##############################################################################
@@ -219,7 +239,7 @@ class SearchLight(BaseEstimator):
         The number of CPUs to use to do the computation. -1 means
         'all CPUs'.
 
-    scoring : string or callable, optional
+    scoring : list, string or callable, optional
         The scoring strategy to use. See the scikit-learn documentation
         If callable, takes as arguments the fitted estimator, the
         test data (X_test) and the test target (y_test) if y is
@@ -309,11 +329,23 @@ class SearchLight(BaseEstimator):
         estimator = self.estimator
         if isinstance(estimator, str):
             estimator = ESTIMATOR_CATALOG[estimator]()
-
+        
         scores = search_light(X, y, estimator, A, groups,
                               self.scoring, self.cv, self.n_jobs,
                               self.verbose)
-        scores_3D = np.zeros(process_mask.shape)
-        scores_3D[process_mask] = scores
-        self.scores_ = scores_3D
+        
+        if len(scores.items()) > 1:
+            self.scores_ = dict()
+        
+        for score, result in scores.items():
+            last_dim = result.shape[-1]
+            shape = process_mask.shape + (last_dim,)
+            scores_3D = np.zeros(shape)
+            scores_3D[process_mask] = scores[score]
+            
+            if len(scores.items()) > 1:
+                self.scores_[score] = scores_3D
+            else:
+                self.scores_ = scores_3D
+
         return self

@@ -13,6 +13,7 @@ searchlight decoding. NeuroImage 56, 582–592.
 # Load Haxby dataset
 # -------------------
 import pandas as pd
+import numpy as np
 from nilearn import datasets
 
 # We fetch 2nd subject from haxby datasets (which is default)
@@ -75,6 +76,7 @@ cv = KFold(n_splits=3, shuffle=False)
 
 # Cross-validated search light
 scores = search_light(X, y, estimator, adjacency, cv=cv, n_jobs=1)
+scores = np.mean(scores['test_score'], axis=-1)
 
 #########################################################################
 # Visualization
