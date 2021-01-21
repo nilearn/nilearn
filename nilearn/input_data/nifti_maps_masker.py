@@ -69,6 +69,10 @@ class NiftiMapsMasker(BaseMasker, CacheMixin):
         to zero mean and scaled to unit variance.
         False : Do not standardize the data.
 
+    standardize_confounds: boolean, optional, default is True
+        If standardize_confounds is True, the confounds are z-scored:
+        their mean is put to 0 and their variance to 1 in the time dimension.
+
     detrend: boolean, optional
         This parameter is passed to signal.clean. Please see the related
         documentation for details
@@ -124,7 +128,7 @@ class NiftiMapsMasker(BaseMasker, CacheMixin):
 
     def __init__(self, maps_img, mask_img=None,
                  allow_overlap=True, smoothing_fwhm=None, standardize=False,
-                 detrend=False, low_pass=None, high_pass=None, t_r=None,
+                 standardize_confounds=True, detrend=False, low_pass=None, high_pass=None, t_r=None,
                  dtype=None, resampling_target="data",
                  memory=Memory(location=None, verbose=0), memory_level=0,
                  verbose=0):
@@ -139,6 +143,7 @@ class NiftiMapsMasker(BaseMasker, CacheMixin):
 
         # Parameters for clean()
         self.standardize = standardize
+        self.standardize_confounds = standardize_confounds
         self.detrend = detrend
         self.low_pass = low_pass
         self.high_pass = high_pass
@@ -170,7 +175,8 @@ class NiftiMapsMasker(BaseMasker, CacheMixin):
         """
         # Load images
         logger.log("loading regions from %s" %
-                   _utils._repr_niimgs(self.maps_img)[:200],
+                   _utils._repr_niimgs(self.maps_img,
+                                       shorten=(not self.verbose)),
                    verbose=self.verbose)
 
         self.maps_img_ = _utils.check_niimg_4d(self.maps_img, dtype=self.dtype)
@@ -180,7 +186,8 @@ class NiftiMapsMasker(BaseMasker, CacheMixin):
 
         if self.mask_img is not None:
             logger.log("loading mask from %s" %
-                       _utils._repr_niimgs(self.mask_img)[:200],
+                       _utils._repr_niimgs(self.mask_img,
+                                           shorten=(not self.verbose)),
                        verbose=self.verbose)
             self.mask_img_ = _utils.check_niimg_3d(self.mask_img)
         else:

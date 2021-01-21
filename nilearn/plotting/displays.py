@@ -257,9 +257,15 @@ class CutAxes(BaseAxes):
                              self.direction)
         return cut
 
-    def draw_position(self, size, bg_color, **kwargs):
+    def draw_position(self, size, bg_color, decimals=False, **kwargs):
+        if decimals:
+            text = '%s=%.{}f'.format(decimals)
+            coord = float(self.coord)
+        else:
+            text = '%s=%i'
+            coord = self.coord
         ax = self.ax
-        ax.text(0, 0, '%s=%i' % (self.direction, self.coord),
+        ax.text(0, 0, text % (self.direction, coord),
                 transform=ax.transAxes,
                 horizontalalignment='left',
                 verticalalignment='bottom',
@@ -957,7 +963,7 @@ class BaseSlicer(object):
 
     def annotate(self, left_right=True, positions=True, scalebar=False,
                  size=12, scale_size=5.0, scale_units='cm', scale_loc=4,
-                 **kwargs):
+                 decimals=0, **kwargs):
         """ Add annotations to the plot.
 
         Parameters
@@ -991,6 +997,9 @@ class BaseSlicer(object):
                     'lower center' : 8,
                     'upper center' : 9,
                     'center'       : 10
+        decimals: integer, optional
+            Number of decimal places on slice position annotation. If False (default),
+            the slice position is integer without decimal point.
         kwargs:
             Extra keyword arguments are passed to matplotlib's text
             function.
@@ -1012,6 +1021,7 @@ class BaseSlicer(object):
         if positions:
             for display_axis in self.axes.values():
                 display_axis.draw_position(size=size, bg_color=bg_color,
+                                           decimals=decimals,
                                            **kwargs)
 
         if scalebar:
@@ -1766,10 +1776,9 @@ class OrthoProjector(OrthoSlicer):
             edge_kwargs = {}
         if node_kwargs is None:
             node_kwargs = {}
-        if node_color == 'auto':
+        if isinstance(node_color, str) and node_color == 'auto':
             nb_nodes = len(node_coords)
             node_color = mpl_cm.Set2(np.linspace(0, 1, nb_nodes))
-
         node_coords = np.asarray(node_coords)
 
         # decompress input matrix if sparse
@@ -1804,6 +1813,13 @@ class OrthoProjector(OrthoSlicer):
                                                   node_coords_shape)
 
             raise ValueError(message)
+
+        if isinstance(node_color, (list, np.ndarray)) and len(node_color) != 1:
+            if len(node_color) != node_coords_shape[0]:
+                raise ValueError(
+                    "Mismatch between the number of nodes ({0}) "
+                    "and and the number of node colors ({1})."
+                    .format(node_coords_shape[0], len(node_color)))
 
         if node_coords_shape[0] != adjacency_matrix_shape[0]:
             raise ValueError(

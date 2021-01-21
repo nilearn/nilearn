@@ -5,8 +5,9 @@ import pytest
 
 from _pytest.doctest import DoctestItem
 
-from nilearn.datasets import func, utils
-from nilearn.datasets.tests import test_utils as tst
+# we need to import these fixtures even if not used in this module
+from nilearn.datasets._testing import request_mocker  # noqa: F401
+from nilearn.datasets._testing import temp_nilearn_data_dir  # noqa: F401
 
 try:
     import matplotlib  # noqa: F401
@@ -14,6 +15,22 @@ except ImportError:
     collect_ignore = ['plotting',
                       'reporting',
                       ]
+    matplotlib = None
+
+
+def pytest_configure(config):
+    """Use Agg so that no figures pop up."""
+    if matplotlib is not None:
+        matplotlib.use('Agg', force=True)
+
+
+@pytest.fixture(autouse=True)
+def close_all():
+    """Close all matplotlib figures."""
+    yield
+    if matplotlib is not None:
+        import matplotlib.pyplot as plt
+        plt.close('all')  # takes < 1 us so just always do it
 
 
 def pytest_collection_modifyitems(items):
@@ -30,10 +47,3 @@ def pytest_collection_modifyitems(items):
         for item in items:
             if isinstance(item, DoctestItem):
                 item.add_marker(skip_marker)
-
-
-@pytest.fixture()
-def request_mocker():
-    tst.setup_mock(utils, func)
-    yield
-    tst.teardown_mock(utils, func)

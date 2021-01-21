@@ -40,7 +40,6 @@ def list_required_packages():
         if package.startswith('sklearn'):
             package = package.replace('sklearn', 'scikit-learn')
         required_packages.append(package)
-    required_packages.append('sklearn')
     return required_packages
 
 
@@ -92,22 +91,26 @@ if __name__ == "__main__":
               'Programming Language :: Python :: 3.7',
           ],
           packages=find_packages(),
-          package_data={'nilearn.datasets.data': ['*.nii.gz', '*.csv', '*.txt'
-                                                  ],
-                        'nilearn.datasets.data.fsaverage5': ['*.gz'],
-                        'nilearn.surface.data': ['*.csv'],
-                        'nilearn.plotting.data.js': ['*.js'],
-                        'nilearn.plotting.data.html': ['*.html'],
-                        'nilearn.plotting.glass_brain_files': ['*.json'],
-                        'nilearn.tests.data': ['*'],
-                        'nilearn.image.tests.data': ['*.mgz'],
-                        'nilearn.surface.tests.data': ['*.annot', '*.label'],
-                        'nilearn.datasets.tests.data': ['*.*'],
-                        'nilearn.datasets.description': ['*.rst'],
-                        'nilearn.reporting.data.html': ['*.html'],
-                        'nilearn.glm.tests': ['*.nii.gz', '*.npz'],
-                        'nilearn.reporting.glm_reporter_templates': ['*.html'],
-                        },
+          package_data={
+              'nilearn.datasets.data': ['*.nii.gz', '*.csv', '*.txt'],
+              'nilearn.datasets.data.fsaverage5': ['*.gz'],
+              'nilearn.surface.data': ['*.csv'],
+              'nilearn.plotting.data.js': ['*.js'],
+              'nilearn.plotting.data.html': ['*.html'],
+              'nilearn.plotting.glass_brain_files': ['*.json'],
+              'nilearn.tests.data': ['*'],
+              'nilearn.image.tests.data': ['*.mgz'],
+              'nilearn.surface.tests.data': ['*.annot', '*.label'],
+              'nilearn.datasets.tests.data': ['*.*'],
+              'nilearn.datasets.tests.data.archive_contents': ['*'],
+              'nilearn.datasets.tests.data.archive_contents.nyu_rest': ['*'],
+              'nilearn.datasets.tests.data.archive_contents.test_examples':
+              ['*'],
+              'nilearn.datasets.description': ['*.rst'],
+              'nilearn.reporting.data.html': ['*.html'],
+              'nilearn.glm.tests': ['*.nii.gz', '*.npz'],
+              'nilearn.reporting.glm_reporter_templates': ['*.html'],
+          },
           install_requires=list_required_packages(),
           python_requires='>=3.5',
           )

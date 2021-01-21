@@ -40,7 +40,7 @@ events = pd.read_table(events_file)
 #
 
 from nilearn.glm.first_level import FirstLevelModel
-from nilearn.reporting import plot_design_matrix, plot_contrast_matrix
+from nilearn.plotting import plot_design_matrix, plot_contrast_matrix
 
 first_level_model = FirstLevelModel(t_r, hrf_model='fir', fir_delays=[1, 2, 3])
 first_level_model = first_level_model.fit(fmri_img, events=events)
@@ -113,7 +113,7 @@ for index, (contrast_id, contrast_val) in enumerate(contrasts.items()):
     plot_stat_map(
         z_map, display_mode='z', threshold=3.0, title=contrast_id, axes=ax,
         cut_coords=1)
-    plt.show()
+plt.show()
 
 #########################################################################
 # The result is acceptable. Note that we're asking a lot of questions

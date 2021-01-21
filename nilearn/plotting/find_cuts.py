@@ -252,6 +252,7 @@ def find_cut_slices(img, direction='z', n_cuts=7, spacing='auto'):
         # affine and rotation.
         img = reorder_img(img, resample='nearest')
         affine = img.affine
+    # note: orig_data is a copy of img._data_cache thanks to np.abs
     orig_data = np.abs(_safe_get_data(img))
     this_shape = orig_data.shape[axis]
 
@@ -414,9 +415,9 @@ def find_parcellation_cut_coords(labels_img, background_label=0, return_label_na
 
         # Two connected component in both hemispheres
         if not np.all(left_hemi == False) or np.all(right_hemi == False):
-            if label_hemisphere is 'left':
+            if label_hemisphere == 'left':
                 cur_img = left_hemi.astype(int)
-            elif label_hemisphere is 'right':
+            elif label_hemisphere == 'right':
                 cur_img = right_hemi.astype(int)
 
         # Take the largest connected component

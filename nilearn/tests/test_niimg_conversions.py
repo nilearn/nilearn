@@ -11,6 +11,7 @@ ignores modules whose name starts with an underscore.
 import os
 import re
 import tempfile
+from pathlib import Path
 
 import numpy as np
 import pytest
@@ -389,23 +390,129 @@ def test_iter_check_niimgs_memory():
 
 
 def test_repr_niimgs():
-    # Test with file path
+    # Tests with file path
     assert _utils._repr_niimgs("test") == "test"
+    assert _utils._repr_niimgs("test", shorten=False) == "test"
+
+    # Shortening long names by default
+    long_name = 'this-is-a-very-long-name-for-a-nifti-file.nii'
+    short_name = 'this-is-a-very-lon...'
+    assert _utils._repr_niimgs(long_name) == short_name
+    # Explicit shortening of long names
+    assert _utils._repr_niimgs(long_name, shorten=True) == short_name
+    # Force long display of long names
+    assert _utils._repr_niimgs(long_name, shorten=False) == long_name
+
+    # Tests with list of file paths
     assert _utils._repr_niimgs(["test", "retest"]) == "[test, retest]"
-    # Create phony Niimg with filename
+    assert _utils._repr_niimgs(["test", "retest"], shorten=False) == "[test, retest]"
+
+    # Lists of long names up to length 3
+    list_of_size_3 = ['this-is-a-very-long-name-for-a-nifti-file.nii',
+                      'this-is-another-very-long-name-for-a-nifti-file.nii',
+                      'this-is-again-another-very-long-name-for-a-nifti-file.nii']
+    # Explicit shortening, all 3 names are displayed, but shortened
+    shortened_rep_list_of_size_3 = ("[this-is-a-very-lon...,"
+                                    " this-is-another-ve...,"
+                                    " this-is-again-anot...]")
+
+    assert (_utils._repr_niimgs(list_of_size_3, shorten=True) ==
+            shortened_rep_list_of_size_3)
+
+    # Force display, all 3 names are displayed
+    long_rep_list_of_size_3 = ("[this-is-a-very-long-name-for-a-nifti-file.nii,"
+                               " this-is-another-very-long-name-for-a-nifti-file.nii,"
+                               " this-is-again-another-very-long-name-for-a-nifti-file.nii]")
+
+    assert (_utils._repr_niimgs(list_of_size_3, shorten=False) ==
+            long_rep_list_of_size_3)
+
+    # Lists longer than 3
+    # Small names - Explicit shortening
+    long_list_small_names = ["test", "retest", "reretest", "rereretest"]
+    shortened_rep_long_list_small_names = ("[test,\n"
+                                           "         ...\n"
+                                           " rereretest]")
+
+    assert (_utils._repr_niimgs(long_list_small_names, shorten=True) ==
+            shortened_rep_long_list_small_names)
+
+    # Small names - Force full display
+    long_rep_long_list_small_names = ("[test,\n"
+                                      " retest,\n"
+                                      " reretest,\n"
+                                      " rereretest]")
+
+    assert (_utils._repr_niimgs(long_list_small_names, shorten=False) ==
+            long_rep_long_list_small_names)
+
+    # Long names - Explicit shortening
+    list_of_size_4 = list_of_size_3 + ['this-is-again-another-super-very-long-name-for-a-nifti-file.nii']
+    shortened_rep_long_list_long_names = ("[this-is-a-very-lon...,\n"
+                                          "         ...\n"
+                                          " this-is-again-anot...]")
+
+    assert (_utils._repr_niimgs(list_of_size_4, shorten=True) ==
+            shortened_rep_long_list_long_names)
+
+    # Long names - Force full display in pretty print style for readability
+
+    long_rep_long_list_long_names = (long_rep_list_of_size_3[:-1].replace(",", ",\n") +
+                                     ",\n this-is-again-another-super-very-long-name-for-a-nifti-file.nii]")
+
+    assert (_utils._repr_niimgs(list_of_size_4, shorten=False) ==
+            long_rep_long_list_long_names)
+
+    # Tests with pathlib
+    # Case with very long path and small filename
+    long_path = Path('/this/is/a/fake/long/path/to/file.nii')
+    short_path = Path('.../path/to/file.nii')
+    assert _utils._repr_niimgs(long_path, shorten=True) == str(short_path)
+    assert _utils._repr_niimgs(long_path, shorten=False) == str(long_path)
+
+    # Case with very long path but very long filename
+    long_path_long_name = Path('/this/is/a/fake/long/path/to/my_file_with_a_very_long_name.nii')
+    short_name = 'my_file_with_a_ver...'
+    assert _utils._repr_niimgs(long_path_long_name, shorten=True) == short_name
+    assert _utils._repr_niimgs(long_path_long_name, shorten=False) == str(long_path_long_name)
+
+    # Case with lists
+    list_of_paths = [Path('/this/is/a/fake/long/path/to/file.nii'),
+                     Path('/this/is/a/fake/long/path/to/another/file2.nii'),
+                     Path('/again/another/fake/long/path/to/file3.nii'),
+                     Path('/this/is/a/fake/long/path/to/a-very-long-file-name.nii')]
+
+    shortened_list_of_paths = ("[...{0},\n"
+                               "         ...\n"
+                               " a-very-long-file-n...]".format(str(Path("/path/to/file.nii"))))
+
+    assert _utils._repr_niimgs(list_of_paths, shorten=True) == shortened_list_of_paths
+
+    long_list_of_paths = "[%s]" % ',\n '.join(_ for _ in [str(_) for _ in list_of_paths])
+
+    assert _utils._repr_niimgs(list_of_paths, shorten=False) == long_list_of_paths
+
+    # Create phony Niimg without filename
     affine = np.eye(4)
     shape = (10, 10, 10)
     img1 = Nifti1Image(np.ones(shape), affine)
-    assert (
-        _utils._repr_niimgs(img1).replace("10L","10") ==
-        ("%s(\nshape=%s,\naffine=%s\n)" %
-            (img1.__class__.__name__,
-             repr(shape), repr(affine))))
-    _, tmpimg1 = tempfile.mkstemp(suffix='.nii')
+    # Shorten has no effect in this case
+    for shorten in [True, False]:
+        assert (
+            _utils._repr_niimgs(img1, shorten=shorten).replace("10L", "10") ==
+            ("%s(\nshape=%s,\naffine=%s\n)" %
+                (img1.__class__.__name__,
+                repr(shape), repr(affine))))
+
+    # Add filename long enough to qualify for shortening
+    _, tmpimg1 = tempfile.mkstemp(suffix='_very_long.nii')
     nibabel.save(img1, tmpimg1)
     assert (
-        _utils._repr_niimgs(img1) ==
+        _utils._repr_niimgs(img1, shorten=False) ==
         ("%s('%s')" % (img1.__class__.__name__, img1.get_filename())))
+    assert (
+        _utils._repr_niimgs(img1, shorten=True) ==
+        ("%s('%s...')" % (img1.__class__.__name__, Path(img1.get_filename()).name[:18])))
 
 
 def _remove_if_exists(file):
@@ -488,24 +595,30 @@ def test_concat_niimg_dtype():
 
 
 def nifti_generator(buffer):
+    rng = np.random.RandomState(42)
     for i in range(10):
-        buffer.append(Nifti1Image(np.random.random((10, 10, 10)), np.eye(4)))
+        buffer.append(Nifti1Image(rng.random_sample((10, 10, 10)), np.eye(4)))
         yield buffer[-1]
 
 
 def test_iterator_generator():
     # Create a list of random images
-    l = [Nifti1Image(np.random.random((10, 10, 10)), np.eye(4))
-         for i in range(10)]
-    cc = _utils.concat_niimgs(l)
+    rng = np.random.RandomState(42)
+    list_images = [
+        Nifti1Image(
+            rng.random_sample((10, 10, 10)), np.eye(4)
+        )
+        for i in range(10)
+    ]
+    cc = _utils.concat_niimgs(list_images)
     assert cc.shape[-1] == 10
-    assert_array_almost_equal(get_data(cc)[..., 0], get_data(l[0]))
+    assert_array_almost_equal(get_data(cc)[..., 0], get_data(list_images[0]))
 
     # Same with iteration
-    i = image.iter_img(l)
+    i = image.iter_img(list_images)
     cc = _utils.concat_niimgs(i)
     assert cc.shape[-1] == 10
-    assert_array_almost_equal(get_data(cc)[..., 0], get_data(l[0]))
+    assert_array_almost_equal(get_data(cc)[..., 0], get_data(list_images[0]))
 
     # Now, a generator
     b = []

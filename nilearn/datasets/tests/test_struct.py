@@ -6,24 +6,16 @@ Test the datasets module
 
 import os
 import shutil
+from pathlib import Path
 
 import nibabel
 import numpy as np
+import pandas as pd
 import pytest
 
 from nilearn.datasets import utils, struct
+from nilearn.datasets._testing import list_to_archive, dict_to_archive
 
-from . import test_utils as tst
-
-
-@pytest.fixture()
-def request_mocker():
-    """ Mocks URL calls for structural dataset fetchers during testing.
-    Tests the fetcher code without actually downloading the files.
-    """
-    tst.setup_mock(utils, struct)
-    yield
-    tst.teardown_mock(utils, struct)
 
 
 def test_get_dataset_dir(tmp_path):
@@ -97,28 +89,41 @@ def test_fetch_icbm152_2009(tmp_path, request_mocker):
     assert isinstance(dataset.t2, str)
     assert isinstance(dataset.t2_relax, str)
     assert isinstance(dataset.wm, str)
-    assert len(tst.mock_url_request.urls) == 1
+    assert request_mocker.url_count == 1
     assert dataset.description != ''
 
 
-def test_fetch_oasis_vbm(tmp_path, request_mocker):
-    local_url = "file://" + tst.datadir
-    ids = np.asarray(['OAS1_%4d' % i for i in range(457)])
-    ids = ids.view(dtype=[('ID', 'S9')])
-    tst.mock_fetch_files.add_csv('oasis_cross-sectional.csv', ids)
+def _make_oasis_data(dartel=True):
+    n_subjects = 457
+    prefix = "mwrc" if dartel else "mwc"
+    ids = pd.DataFrame(
+        {"ID": list(map("OAS1_{:04}".format, range(n_subjects)))}
+    ).to_csv(index=False, sep="\t")
+    data = {"oasis_cross-sectional.csv": ids, "data_usage_agreement.txt": ""}
+    path_pattern = str(Path(
+        "OAS1_{subj:04}_MR1",
+        "{prefix}{kind}OAS1_{subj:04}_MR1_mpr_anon_fslswapdim_bet.nii.gz"))
+    for i in range(457):
+        for kind in [1, 2]:
+            data[path_pattern.format(subj=i, kind=kind, prefix=prefix)] = ""
+    return dict_to_archive(data)
 
-    # Disabled: cannot be tested without actually fetching covariates CSV file
-    dataset = struct.fetch_oasis_vbm(data_dir=str(tmp_path), url=local_url,
-                                     verbose=0)
+
+def test_fetch_oasis_vbm(tmp_path, request_mocker):
+    request_mocker.url_mapping["*archive_dartel.tgz*"] = _make_oasis_data()
+    request_mocker.url_mapping["*archive.tgz*"] = _make_oasis_data(False)
+
+    dataset = struct.fetch_oasis_vbm(
+        data_dir=str(tmp_path), verbose=0)
     assert len(dataset.gray_matter_maps) == 403
     assert len(dataset.white_matter_maps) == 403
     assert isinstance(dataset.gray_matter_maps[0], str)
     assert isinstance(dataset.white_matter_maps[0], str)
     assert isinstance(dataset.ext_vars, np.recarray)
     assert isinstance(dataset.data_usage_agreement, str)
-    assert len(tst.mock_url_request.urls) == 3
+    assert request_mocker.url_count == 1
 
-    dataset = struct.fetch_oasis_vbm(data_dir=str(tmp_path), url=local_url,
+    dataset = struct.fetch_oasis_vbm(data_dir=str(tmp_path),
                                      dartel_version=False, verbose=0)
     assert len(dataset.gray_matter_maps) == 415
     assert len(dataset.white_matter_maps) == 415
@@ -126,7 +131,7 @@ def test_fetch_oasis_vbm(tmp_path, request_mocker):
     assert isinstance(dataset.white_matter_maps[0], str)
     assert isinstance(dataset.ext_vars, np.recarray)
     assert isinstance(dataset.data_usage_agreement, str)
-    assert len(tst.mock_url_request.urls) == 4
+    assert request_mocker.url_count == 2
     assert dataset.description != ''
 
 
@@ -152,21 +157,22 @@ def test_fetch_icbm152_brain_gm_mask(tmp_path, request_mocker):
     assert isinstance(grey_matter_img, nibabel.Nifti1Image)
 
 
-def test_fetch_surf_fsaverage(tmp_path, request_mocker):
-    # for mesh in ['fsaverage5', 'fsaverage']:
-    for mesh in ['fsaverage']:
-
-        dataset = struct.fetch_surf_fsaverage(
-            mesh, data_dir=str(tmp_path))
-
-        keys = {'pial_left', 'pial_right', 'infl_left', 'infl_right',
-                'sulc_left', 'sulc_right'}
-
-        assert keys.issubset(set(dataset.keys()))
-        assert dataset.description != ''
+@pytest.mark.parametrize("mesh", ["fsaverage5", "fsaverage"])
+def test_fetch_surf_fsaverage(mesh, tmp_path, request_mocker):
+    keys = {'pial_left', 'pial_right', 'infl_left', 'infl_right',
+            'sulc_left', 'sulc_right', 'white_left', 'white_right'}
+    request_mocker.url_mapping["*fsaverage.tar.gz"] = list_to_archive(
+        [Path("fsaverage") / "{}.gii".format(k.replace("infl", "inflated")) for
+         k in keys])
+    dataset = struct.fetch_surf_fsaverage(mesh, data_dir=str(tmp_path))
+    assert keys.issubset(set(dataset.keys()))
+    assert dataset.description != ''
 
 
 def test_fetch_surf_fsaverage5_sphere(tmp_path, request_mocker):
+    request_mocker.url_mapping["*b79fy*"] = list_to_archive([
+        "sphere_right.gii", "sphere_left.gii"
+    ])
     for mesh in ['fsaverage5_sphere']:
 
         dataset = struct.fetch_surf_fsaverage(

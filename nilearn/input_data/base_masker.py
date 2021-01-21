@@ -62,7 +62,7 @@ def filter_and_extract(imgs, extraction_function,
     if verbose > 0:
         print("[%s] Loading data from %s" % (
             class_name,
-            _utils._repr_niimgs(imgs)[:200]))
+            _utils._repr_niimgs(imgs, shorten=False)))
     imgs = _utils.check_niimg(imgs, atleast_4d=True, ensure_ndim=4,
                               dtype=dtype)
 
@@ -113,6 +113,7 @@ def filter_and_extract(imgs, extraction_function,
             region_signals,
             detrend=parameters['detrend'],
             standardize=parameters['standardize'],
+            standardize_confounds=parameters['standardize_confounds'],
             t_r=parameters['t_r'],
             low_pass=parameters['low_pass'],
             high_pass=parameters['high_pass'],

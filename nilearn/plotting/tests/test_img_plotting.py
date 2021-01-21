@@ -2,7 +2,6 @@
 # emacs: -*- mode: python; py-indent-offset: 4; indent-tabs-mode: nil -*-
 # vi: set ft=python sts=4 ts=4 sw=4 et:
 import os
-import tempfile
 from functools import partial
 from distutils.version import LooseVersion
 
@@ -14,17 +13,21 @@ import pytest
 
 from scipy import sparse
 
-from nilearn.image.resampling import coord_transform
+from nilearn.image.resampling import coord_transform, reorder_img
+from nilearn._utils import data_gen
 from nilearn.image import get_data
+from nilearn import image
+from nilearn.input_data import NiftiMasker
 from nilearn.datasets import load_mni152_template
 from nilearn.plotting.find_cuts import find_cut_slices
 from nilearn.plotting.img_plotting import (MNI152TEMPLATE, plot_anat, plot_img,
                                            plot_roi, plot_stat_map, plot_epi,
                                            plot_glass_brain, plot_connectome,
                                            plot_connectome_strength,
-                                           plot_markers, plot_prob_atlas, 
+                                           plot_markers, plot_prob_atlas,
                                            plot_carpet,
                                            _get_colorbar_and_data_ranges)
+from nilearn import plotting
 
 mni_affine = np.array([[-2.,    0.,    0.,   90.],
                        [0.,    2.,    0., -126.],
@@ -38,7 +41,7 @@ def testdata_3d():
     """
     data_positive = np.zeros((7, 7, 3))
     rng = np.random.RandomState(42)
-    data_rng = rng.rand(7, 7, 3)
+    data_rng = rng.uniform(size=(7, 7, 3))
     data_positive[1:-1, 2:-1, 1:] = data_rng[1:-1, 2:-1, 1:]
     img_3d = nibabel.Nifti1Image(data_positive, mni_affine)
     data = {
@@ -52,8 +55,10 @@ def testdata_4d():
     """Random 4D images for testing figures for multivolume data.
     """
     rng = np.random.RandomState(42)
-    img_4d = nibabel.Nifti1Image(rng.rand(7, 7, 3, 10), mni_affine)
-    img_4d_long = nibabel.Nifti1Image(rng.rand(7, 7, 3, 1777), mni_affine)
+    img_4d = nibabel.Nifti1Image(rng.uniform(size=(7, 7, 3, 10)), mni_affine)
+    img_4d_long = nibabel.Nifti1Image(
+        rng.uniform(size=(7, 7, 3, 1777)), mni_affine
+    )
     img_mask = nibabel.Nifti1Image(np.ones((7, 7, 3), int), mni_affine)
     data = {
         'img_4d': img_4d,
@@ -61,6 +66,14 @@ def testdata_4d():
         'img_mask': img_mask,
     }
     return data
+
+
+def test_mni152template_is_reordered():
+    """See issue #2550"""
+    reordered_mni = reorder_img(load_mni152_template())
+    assert np.allclose(get_data(reordered_mni), get_data(MNI152TEMPLATE))
+    assert np.allclose(reordered_mni.affine, MNI152TEMPLATE.affine)
+    assert np.allclose(reordered_mni.shape, MNI152TEMPLATE.shape)
 
 
 def demo_plot_roi(**kwargs):
@@ -78,7 +91,35 @@ def demo_plot_roi(**kwargs):
     return plot_roi(img, title="Broca's area", **kwargs)
 
 
-def test_demo_plot_roi():
+def test_plot_roi_view_types():
+    # This is only a smoke test contours rois
+    demo_plot_roi(view_type='contours')
+    # This is only a smoke test contours rois
+    demo_plot_roi(view_type='continuous')
+
+    # Test error message for invalid view_type
+    with pytest.raises(ValueError,
+                       match='Unknown view type:'
+                       ):
+        demo_plot_roi(view_type='flled')
+    plt.close()
+
+
+def test_plot_roi_contours():
+    display = plot_roi(None)
+    data = np.zeros((91, 109, 91))
+    x, y, z = -52, 10, 22
+    x_map, y_map, z_map = coord_transform(x, y, z,
+                                          np.linalg.inv(mni_affine))
+    data[int(x_map) - 5:int(x_map) + 5, int(y_map) - 3:int(y_map) + 3,
+         int(z_map) - 10:int(z_map) + 10] = 1
+    img = nibabel.Nifti1Image(data, mni_affine)
+    plot_roi(img, cmap='RdBu', alpha=0.1, view_type='contours',
+             linewidths=2.)
+    plt.close()
+
+
+def test_demo_plot_roi(tmpdir):
     # This is only a smoke test
     demo_plot_roi()
     # Test the black background code path
@@ -88,76 +129,54 @@ def test_demo_plot_roi():
 
     # Save execution time and memory
     plt.close()
-
-    with tempfile.NamedTemporaryFile(suffix='.png') as fp:
+    filename = str(tmpdir.join('test.png'))
+    with open(filename, 'wb') as fp:
         out = demo_plot_roi(output_file=fp)
     assert out is None
 
 
-def test_plot_anat(testdata_3d):
+def test_plot_anat(testdata_3d, tmpdir):
     img = testdata_3d['img']
 
     # Test saving with empty plot
     z_slicer = plot_anat(anat_img=False, display_mode='z')
-    filename = tempfile.mktemp(suffix='.png')
-    try:
-        z_slicer.savefig(filename)
-    finally:
-        os.remove(filename)
+    filename = str(tmpdir.join('test.png'))
+    z_slicer.savefig(filename)
 
     z_slicer = plot_anat(display_mode='z')
-    filename = tempfile.mktemp(suffix='.png')
-    try:
-        z_slicer.savefig(filename)
-    finally:
-        os.remove(filename)
+    z_slicer.savefig(filename)
 
     ortho_slicer = plot_anat(img, dim='auto')
-    filename = tempfile.mktemp(suffix='.png')
-    try:
-        ortho_slicer.savefig(filename)
-    finally:
-        os.remove(filename)
+    ortho_slicer.savefig(filename)
 
     # Save execution time and memory
     plt.close()
 
 
-def test_plot_functions(testdata_3d, testdata_4d):
+def test_plot_functions(testdata_3d, testdata_4d, tmpdir):
     img_3d = testdata_3d['img']
     img_4d = testdata_4d['img_4d']
     img_4d_mask = testdata_4d['img_mask']
 
     # smoke-test for 3D plotting functions with default arguments
+    filename = str(tmpdir.join('temp.png'))
     for plot_func in [plot_anat, plot_img, plot_stat_map, plot_epi,
                       plot_glass_brain]:
-        filename = tempfile.mktemp(suffix='.png')
-        try:
-            plot_func(img_3d, output_file=filename)
-        finally:
-            os.remove(filename)
+        plot_func(img_3d, output_file=filename)
 
     # smoke-test for 4D plotting functions with default arguments
     for plot_func in [plot_carpet]:
-        filename = tempfile.mktemp(suffix='.png')
-        try:
-            plot_func(img_4d, mask_img=img_4d_mask, output_file=filename)
-        finally:
-            os.remove(filename)
+        plot_func(img_4d, mask_img=img_4d_mask, output_file=filename)
 
     # test for bad input arguments (cf. #510)
     ax = plt.subplot(111, rasterized=True)
-    filename = tempfile.mktemp(suffix='.png')
-    try:
-        plot_stat_map(img_3d, symmetric_cbar=True,
-                      output_file=filename,
-                      axes=ax, vmax=np.nan)
-    finally:
-        os.remove(filename)
+    plot_stat_map(img_3d, symmetric_cbar=True,
+                  output_file=filename,
+                  axes=ax, vmax=np.nan)
     plt.close()
 
 
-def test_plot_glass_brain(testdata_3d):
+def test_plot_glass_brain(testdata_3d, tmpdir):
     img = testdata_3d['img']
 
     # test plot_glass_brain with colorbar
@@ -170,7 +189,7 @@ def test_plot_glass_brain(testdata_3d):
     # Save execution time and memory
     plt.close()
     # smoke-test for hemispheric glass brain
-    filename = tempfile.mktemp(suffix='.png')
+    filename = str(tmpdir.join('test.png'))
     plot_glass_brain(img, output_file=filename, display_mode='lzry')
     plt.close()
 
@@ -197,7 +216,7 @@ def test_plot_stat_map(testdata_3d):
     plot_stat_map(new_img, threshold=1000, colorbar=True)
 
     rng = np.random.RandomState(42)
-    data = rng.randn(91, 109, 91)
+    data = rng.standard_normal(size=(91, 109, 91))
     new_img = nibabel.Nifti1Image(data, aff)
     plot_stat_map(new_img, threshold=1000, colorbar=True)
 
@@ -208,7 +227,8 @@ def test_plot_stat_map(testdata_3d):
 def test_plot_stat_map_threshold_for_affine_with_rotation(testdata_3d):
     # threshold was not being applied when affine has a rotation
     # see https://github.com/nilearn/nilearn/issues/599 for more details
-    data = np.random.randn(10, 10, 10)
+    rng = np.random.RandomState(42)
+    data = rng.standard_normal(size=(10, 10, 10))
     # matrix with rotation
     affine = np.array([[-3., 1., 0., 1.],
                        [-1., -3., 0., -2.],
@@ -311,25 +331,18 @@ def test_plot_carpet(testdata_4d):
     plt.close(display)
 
 
-def test_save_plot(testdata_3d):
+def test_save_plot(testdata_3d, tmpdir):
     img = testdata_3d['img']
 
     kwargs_list = [{}, {'display_mode': 'x', 'cut_coords': 3}]
 
+    filename = str(tmpdir.join('test.png'))
     for kwargs in kwargs_list:
-        filename = tempfile.mktemp(suffix='.png')
-        try:
-            display = plot_stat_map(img, output_file=filename, **kwargs)
-        finally:
-            os.remove(filename)
+        display = plot_stat_map(img, output_file=filename, **kwargs)
         assert display is None
 
         display = plot_stat_map(img, **kwargs)
-        filename = tempfile.mktemp(suffix='.png')
-        try:
-            display.savefig(filename)
-        finally:
-            os.remove(filename)
+        display.savefig(filename)
 
         # Save execution time and memory
         plt.close()
@@ -363,7 +376,9 @@ def test_plot_stat_map_colorbar_variations(testdata_3d):
     data_positive = get_data(img_positive)
     rng = np.random.RandomState(42)
     data_negative = -data_positive
-    data_heterogeneous = data_positive * rng.randn(*data_positive.shape)
+    data_heterogeneous = data_positive * rng.standard_normal(
+        size=data_positive.shape
+    )
     img_negative = nibabel.Nifti1Image(data_negative, mni_affine)
     img_heterogeneous = nibabel.Nifti1Image(data_heterogeneous, mni_affine)
 
@@ -428,8 +443,8 @@ def test_plot_img_with_resampling(testdata_3d):
 
 def test_plot_noncurrent_axes():
     """Regression test for Issue #450"""
-
-    maps_img = nibabel.Nifti1Image(np.random.random((10, 10, 10)), np.eye(4))
+    rng = np.random.RandomState(42)
+    maps_img = nibabel.Nifti1Image(rng.random_sample((10, 10, 10)), np.eye(4))
     fh1 = plt.figure()
     fh2 = plt.figure()
     ax1 = fh1.add_subplot(1, 1, 1)
@@ -447,7 +462,7 @@ def test_plot_noncurrent_axes():
     plt.close()
 
 
-def test_plot_connectome():
+def test_plot_connectome(tmpdir):
     node_color = ['green', 'blue', 'k', 'cyan']
     # symmetric up to 1e-3 relative tolerance
     adjacency_matrix = np.array([[1., -2., 0.3, 0.],
@@ -463,6 +478,22 @@ def test_plot_connectome():
     plot_connectome(*args, **kwargs)
     plt.close()
 
+    # Unique node color
+    node_color = np.array(['red'])
+    kwargs = dict(edge_threshold=0.38,
+                  title='threshold=0.38',
+                  node_size=10, node_color=node_color)
+    plot_connectome(*args, **kwargs)
+    plt.close()
+
+    node_color = 'green'
+    kwargs = dict(edge_threshold=0.38,
+                  title='threshold=0.38',
+                  node_size=10)
+    plot_connectome(*args, node_color=node_color, **kwargs)
+    plt.close()
+
+
     # used to speed-up tests for the next plots
     kwargs['display_mode'] = 'x'
 
@@ -471,14 +502,11 @@ def test_plot_connectome():
                     [tuple(each) for each in node_coords],
                     **kwargs)
     # saving to file
-    filename = tempfile.mktemp(suffix='.png')
-    try:
-        display = plot_connectome(*args, output_file=filename, **kwargs)
-        assert display is None
-        assert (os.path.isfile(filename) and
-                    os.path.getsize(filename) > 0)
-    finally:
-        os.remove(filename)
+    filename = str(tmpdir.join('temp.png'))
+    display = plot_connectome(*args, output_file=filename, **kwargs)
+    assert display is None
+    assert os.path.isfile(filename)
+    assert os.path.getsize(filename) > 0
     plt.close()
 
     # with node_kwargs, edge_kwargs and edge_cmap arguments
@@ -508,7 +536,8 @@ def test_plot_connectome():
     plt.close()
 
     # NaN matrix support
-    node_color = ['green', 'blue', 'k']
+    # Node colors specified as a numpy array rather than a list
+    node_color = np.array(['green', 'blue', 'k'])
     # Overriding 'node_color' for 3  elements of size 3.
     kwargs['node_color'] = node_color
     nan_adjacency_matrix = np.array([[1., np.nan, 0.],
@@ -567,6 +596,19 @@ def test_plot_connectome_exceptions():
                         edge_threshold=object(),
                         **kwargs)
 
+    # wrong number of node colors
+    with pytest.raises(ValueError,
+                       match='Mismatch between the number of nodes'):
+        plot_connectome(adjacency_matrix, node_coords,
+                        node_color=['red', 'blue', 'yellow'],
+                        **kwargs)
+
+    with pytest.raises(ValueError,
+                       match='Mismatch between the number of nodes'):
+        plot_connectome(adjacency_matrix, node_coords,
+                        node_color=np.array(['red', 'blue', 'yellow', 'cyan']),
+                        **kwargs)
+
     # wrong shapes for node_coords or adjacency_matrix
     with pytest.raises(
             ValueError,
@@ -622,7 +664,7 @@ def test_singleton_ax_dim():
 def test_plot_prob_atlas():
     affine = np.eye(4)
     shape = (6, 8, 10, 5)
-    rng = np.random.RandomState(0)
+    rng = np.random.RandomState(42)
     data_rng = rng.normal(size=shape)
     img = nibabel.Nifti1Image(data_rng, affine)
     # Testing the 4D plot prob atlas with contours
@@ -1093,7 +1135,7 @@ def test_plot_glass_brain_with_completely_masked_img():
     plt.close()
 
 
-def test_connectome_strength():
+def test_connectome_strength(tmpdir):
     # symmetric up to 1e-3 relative tolerance
     adjacency_matrix = np.array([[1., -2., 0.3, 0.],
                                  [-2.002, 1, 0., 0.],
@@ -1115,16 +1157,13 @@ def test_connectome_strength():
                              **kwargs)
 
     # saving to file
-    filename = tempfile.mktemp(suffix='.png')
-    try:
-        display = plot_connectome_strength(
-            *args, output_file=filename, **kwargs
-        )
-        assert display is None
-        assert (os.path.isfile(filename) and  # noqa: W504
-                    os.path.getsize(filename) > 0)
-    finally:
-        os.remove(filename)
+    filename = str(tmpdir.join('test.png'))
+    display = plot_connectome_strength(
+        *args, output_file=filename, **kwargs
+    )
+    assert display is None
+    assert os.path.isfile(filename)
+    assert os.path.getsize(filename) > 0
     plt.close()
 
     # passing node args
@@ -1210,7 +1249,7 @@ def test_plot_connectome_strength_exceptions():
                                  **kwargs)
 
 
-def test_plot_markers():
+def test_plot_markers(tmpdir):
     # Minimal usage
     node_values = [1, 2, 3, 4]
     node_coords = np.array([[39 ,   6, -32],
@@ -1241,15 +1280,12 @@ def test_plot_markers():
     plt.close()
 
     # Saving to file
-    filename = tempfile.mktemp(suffix='.png')
-    try:
-        display = plot_markers(*args, output_file=filename, **kwargs)
-        assert display is None
-        assert (os.path.isfile(filename) and  # noqa: W504
-                    os.path.getsize(filename) > 0)
-    finally:
-        os.remove(filename)
-        plt.close()
+    filename = str(tmpdir.join('test.png'))
+    display = plot_markers(*args, output_file=filename, **kwargs)
+    assert display is None
+    assert (os.path.isfile(filename) and  # noqa: W504
+                os.path.getsize(filename) > 0)
+    plt.close()
 
     # Different options for node_size
     plot_markers(*args, node_size=10, **kwargs)
@@ -1296,7 +1332,7 @@ def test_plot_markers_exceptions():
         plot_markers([1, 2, 3], node_coords, **kwargs)
 
     # node_values incorrect shape
-    adjacency_matrix = np.random.random((4, 4))
+    adjacency_matrix = np.random.RandomState(42).random_sample((4, 4))
     with pytest.raises(ValueError, match="Dimension mismatch"):
         plot_markers(adjacency_matrix, node_coords, **kwargs)
 
@@ -1322,3 +1358,37 @@ def test_plot_connectome_strength_deprecation_warning():
                                      [0, 0, 0, 1]])
         node_coords = np.arange(3 * 4).reshape(4, 3)
         plot_connectome_strength(adjacency_matrix, node_coords)
+
+
+def test_plot_img_comparison():
+    fig, axes = plt.subplots(2, 1)
+    axes = axes.ravel()
+    kwargs = {"shape": (3, 2, 4), "length": 5}
+    query_images, mask_img = data_gen.generate_fake_fmri(
+        rand_gen=np.random.RandomState(0), **kwargs)
+    # plot_img_comparison doesn't handle 4d images ATM
+    query_images = list(image.iter_img(query_images))
+    target_images, _ = data_gen.generate_fake_fmri(
+        rand_gen=np.random.RandomState(1), **kwargs)
+    target_images = list(image.iter_img(target_images))
+    target_images[0] = query_images[0]
+    masker = NiftiMasker(mask_img).fit()
+    correlations = plotting.plot_img_comparison(
+        target_images, query_images, masker, axes=axes, src_label="query")
+    assert len(correlations) == len(query_images)
+    assert correlations[0] == pytest.approx(1.)
+    ax_0, ax_1 = axes
+    # 5 scatterplots
+    assert len(ax_0.collections) == 5
+    assert len(ax_0.collections[0].get_edgecolors() == masker.transform(
+        target_images[0]).ravel().shape[0])
+    assert ax_0.get_ylabel() == "query"
+    assert ax_0.get_xlabel() == "image set 1"
+    # 5 regression lines
+    assert len(ax_0.lines) == 5
+    assert ax_0.lines[0].get_linestyle() == "--"
+    assert ax_1.get_title() == "Histogram of imgs values"
+    assert len(ax_1.patches) == 5 * 2 * 128
+    correlations_1 = plotting.plot_img_comparison(
+        target_images, query_images, masker, plot_hist=False)
+    assert np.allclose(correlations, correlations_1)

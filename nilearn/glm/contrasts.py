@@ -2,7 +2,7 @@
 This module is for contrast computation and operation on contrast to
 obtain fixed effect results.
 
-Author: Bertrand Thirion, Martin Perez-Guevara, 2016
+Author: Bertrand Thirion, Martin Perez-Guevara, Ana Luisa Pinho 2020
 """
 
 from warnings import warn
@@ -11,6 +11,7 @@ import numpy as np
 import scipy.stats as sps
 import pandas as pd
 
+from nilearn.input_data import NiftiMasker
 from nilearn._utils.glm import z_score
 
 DEF_TINY = 1e-50
@@ -18,6 +19,21 @@ DEF_DOFMAX = 1e10
 
 
 def expression_to_contrast_vector(expression, design_columns):
+    """ Converts a string describing a contrast to a contrast vector
+    
+    Parameters
+    ----------
+    expression: string,
+                the expression to convert to a vector
+    design_columns: list or array of strings,
+                    the column names of the design matrix
+
+    Note
+    ----
+    This function is experimental. 
+    It may change in any future release of Nilearn.
+
+    """
     if expression in design_columns:
         contrast_vector = np.zeros(len(design_columns))
         contrast_vector[list(design_columns).index(expression)] = 1.
@@ -29,7 +45,7 @@ def expression_to_contrast_vector(expression, design_columns):
 
 def compute_contrast(labels, regression_result, con_val, contrast_type=None):
     """ Compute the specified contrast given an estimated glm
-
+    
     Parameters
     ----------
     labels : array of shape (n_voxels,),
@@ -50,6 +66,11 @@ def compute_contrast(labels, regression_result, con_val, contrast_type=None):
     -------
     con : Contrast instance,
         Yields the statistics of the contrast (effects, variance, p-values)
+
+    Note
+    ----
+    This function is experimental. 
+    It may change in any future release of Nilearn.
     """
     con_val = np.asarray(con_val)
     dim = 1
@@ -146,6 +167,12 @@ class Contrast(object):
 
         contrast_type: {'t', 'F'}
             specification of the contrast type
+
+        Note
+        ----
+        This class is experimental. 
+        It may change in any future release of Nilearn.
+
         """
         if variance.ndim != 1:
             raise ValueError('Variance array should have 1 dimension')
@@ -165,6 +192,7 @@ class Contrast(object):
         self.contrast_type = contrast_type
         self.stat_ = None
         self.p_value_ = None
+        self.one_minus_pvalue_ = None
         self.baseline = 0
         self.tiny = tiny
         self.dofmax = dofmax
@@ -209,8 +237,9 @@ class Contrast(object):
         return self.stat_
 
     def p_value(self, baseline=0.0):
-        """Return a parametric estimate of the p-value associated
-        with the null hypothesis: (H0) 'contrast equals baseline'
+        """Return a parametric estimate of the p-value associated with
+        the null hypothesis (H0): 'contrast equals baseline',
+        using the survival function
 
         Parameters
         ----------
@@ -235,6 +264,35 @@ class Contrast(object):
         self.p_value_ = p_values
         return p_values
 
+    def one_minus_pvalue(self, baseline=0.0):
+        """Return a parametric estimate of the 1 - p-value associated with
+        the null hypothesis (H0): 'contrast equals baseline',
+        using the cumulative distribution function,
+        to ensure numerical stability
+
+        Parameters
+        ----------
+        baseline : float, optional
+            baseline value for the test statistic
+
+        Returns
+        -------
+        one_minus_pvalues : 1-d array, shape=(n_voxels,)
+            one_minus_pvalues, one per voxel
+        """
+        if self.stat_ is None or not self.baseline == baseline:
+            self.stat_ = self.stat(baseline)
+        # Valid conjunction as in Nichols et al, Neuroimage 25, 2005.
+        if self.contrast_type == 't':
+            one_minus_pvalues = sps.t.cdf(self.stat_,
+                                          np.minimum(self.dof, self.dofmax))
+        else:
+            assert self.contrast_type == 'F'
+            one_minus_pvalues = sps.f.cdf(self.stat_, self.dim,
+                                          np.minimum(self.dof, self.dofmax))
+        self.one_minus_pvalue_ = one_minus_pvalues
+        return one_minus_pvalues
+
     def z_score(self, baseline=0.0):
         """Return a parametric estimation of the z-score associated
         with the null hypothesis: (H0) 'contrast equals baseline'
@@ -252,9 +310,12 @@ class Contrast(object):
         """
         if self.p_value_ is None or not self.baseline == baseline:
             self.p_value_ = self.p_value(baseline)
+        if self.one_minus_pvalue_ is None:
+            self.one_minus_pvalue_ = self.one_minus_pvalue(baseline)
 
         # Avoid inf values kindly supplied by scipy.
-        self.z_score_ = z_score(self.p_value_)
+        self.z_score_ = z_score(self.p_value_,
+                                one_minus_pvalue=self.one_minus_pvalue_)
         return self.z_score_
 
     def __add__(self, other):
@@ -313,9 +374,13 @@ def compute_fixed_effects(contrast_imgs, variance_imgs, mask=None,
              the fixed effects variance computed within the mask
     fixed_fx_t_img: Nifti1Image,
              the fixed effects t-test computed within the mask
+
+    Note
+    ----
+    This function is experimental. 
+    It may change in any future release of Nilearn.
+
     """
-    # Prevent circular import between reporting & stats module
-    from nilearn.input_data import NiftiMasker
 
     if len(contrast_imgs) != len(variance_imgs):
         raise ValueError(

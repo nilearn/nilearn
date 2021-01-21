@@ -6,11 +6,10 @@ Functions
 ---------
 
 make_glm_report(model, contrasts):
-    Creates an HTMLDocument Object which can be viewed or saved as a report.
+    Creates an HTMLReport Object which can be viewed or saved as a report.
 
 """
 
-import io
 import os
 import string
 import warnings
@@ -18,24 +17,29 @@ import warnings
 from collections import OrderedDict
 from collections.abc import Iterable
 from html import escape
-from urllib.parse import quote
 
 import numpy as np
 import pandas as pd
-
 from matplotlib import pyplot as plt
+
 from nilearn.plotting import (plot_glass_brain,
                               plot_roi,
                               plot_stat_map,
                               )
 from nilearn.plotting.img_plotting import MNI152TEMPLATE
-from nilearn.plotting.js_plotting_utils import HTMLDocument
-from nilearn import glm
-from nilearn.reporting import (plot_contrast_matrix,
-                               plot_design_matrix,
-                               get_clusters_table,
-                               )
-from nilearn.glm.thresholding import threshold_stats_img
+from nilearn.reporting.html_report import HTMLReport
+from nilearn.plotting.matrix_plotting import (
+    plot_contrast_matrix,
+    plot_design_matrix,
+)
+
+with warnings.catch_warnings():
+    warnings.simplefilter("ignore", FutureWarning)
+    from nilearn import glm
+    from nilearn.glm.thresholding import threshold_stats_img
+
+from nilearn.reporting._get_clusters_table import get_clusters_table
+from nilearn.reporting.utils import figure_to_svg_quoted
 
 
 HTML_TEMPLATE_ROOT_PATH = os.path.join(os.path.dirname(__file__),
@@ -45,7 +49,7 @@ HTML_TEMPLATE_ROOT_PATH = os.path.join(os.path.dirname(__file__),
 def make_glm_report(model,
                     contrasts,
                     title=None,
-                    bg_img=MNI152TEMPLATE,
+                    bg_img="MNI152TEMPLATE",
                     threshold=3.09,
                     alpha=0.001,
                     cluster_threshold=0,
@@ -55,7 +59,7 @@ def make_glm_report(model,
                     display_mode=None,
                     report_dims=(1600, 800),
                     ):
-    """ Returns HTMLDocument object
+    """ Returns HTMLReport object
     for a report which shows all important aspects of a fitted GLM.
     The object can be opened in a browser, displayed in a notebook,
     or saved to disk as a standalone HTML file.
@@ -152,7 +156,7 @@ def make_glm_report(model,
 
     Returns
     -------
-    report_text: HTMLDocument Object
+    report_text: HTMLReport Object
         Contains the HTML code for the GLM Report.
 
     """
@@ -162,6 +166,8 @@ def make_glm_report(model,
     limits number of digits shown instead of precision.
     Hence pd.option_context('display.precision', 2) has been used.
     '''
+    if bg_img == "MNI152TEMPLATE":
+        bg_img = MNI152TEMPLATE
     display_mode_selector = {'slice': 'z', 'glass': 'lzry'}
     if not display_mode:
         display_mode = display_mode_selector[plot_type]
@@ -171,11 +177,19 @@ def make_glm_report(model,
     except AttributeError:
         design_matrices = [model.design_matrix_]
 
-    html_template_path = os.path.join(HTML_TEMPLATE_ROOT_PATH,
-                                      'report_template.html')
-    with open(html_template_path) as html_file_obj:
-        html_template_text = html_file_obj.read()
-    report_template = string.Template(html_template_text)
+    html_head_template_path = os.path.join(HTML_TEMPLATE_ROOT_PATH,
+                                          'report_head_template.html')
+
+    html_body_template_path = os.path.join(HTML_TEMPLATE_ROOT_PATH,
+                                          'report_body_template.html')
+
+    with open(html_head_template_path) as html_head_file_obj:
+        html_head_template_text = html_head_file_obj.read()
+    report_head_template = string.Template(html_head_template_text)
+
+    with open(html_body_template_path) as html_body_file_obj:
+        html_body_template_text = html_body_file_obj.read()
+    report_body_template = string.Template(html_body_template_text)
 
     contrasts = _coerce_to_dict(contrasts)
     contrast_plots = _plot_contrasts(contrasts, design_matrices)
@@ -191,7 +205,7 @@ def make_glm_report(model,
                                                    header=False,
                                                    sparsify=False,
                                                    )
-    statistical_maps = make_stat_maps(model, contrasts)
+    statistical_maps = _make_stat_maps(model, contrasts)
     html_design_matrices = _dmtx_to_svg_url(design_matrices)
     mask_img = model.mask_img or model.masker_.mask_img_
     mask_plot_html_code = _mask_to_svg(mask_img=mask_img,
@@ -210,18 +224,19 @@ def make_glm_report(model,
         plot_type=plot_type,
     )
     all_components_text = '\n'.join(all_components)
-    report_values = {'page_title': escape(page_title),
-                     'page_heading_1': page_heading_1,
-                     'page_heading_2': page_heading_2,
-                     'model_attributes': model_attributes_html,
-                     'all_contrasts_with_plots': ''.join(
-                         contrast_plots.values()),
-                     'design_matrices': html_design_matrices,
-                     'mask_plot': mask_plot_html_code,
-                     'component': all_components_text,
-                     }
-    report_text = report_template.safe_substitute(**report_values)
-    report_text = HTMLDocument(report_text)
+    report_values_head = {'page_title': escape(page_title),
+                          }
+    report_values_body = {'page_heading_1': page_heading_1,
+                          'page_heading_2': page_heading_2,
+                          'model_attributes': model_attributes_html,
+                          'all_contrasts_with_plots': ''.join(
+                               contrast_plots.values()),
+                          'design_matrices': html_design_matrices,
+                          'mask_plot': mask_plot_html_code,
+                          'component': all_components_text,
+                         }
+    report_text_body = report_body_template.safe_substitute(**report_values_body)
+    report_text = HTMLReport(body=report_text_body, head_tpl=report_head_template, head_values=report_values_head)
     # setting report size for better visual experience in Jupyter Notebooks.
     report_text.width, report_text.height = _check_report_dims(report_dims)
     return report_text
@@ -287,7 +302,7 @@ def _coerce_to_dict(input_arg):
     return input_arg
 
 
-def plot_to_svg(plot):
+def _plot_to_svg(plot):
     """
     Creates an SVG image as a data URL
     from a Matplotlib Axes or Figure object.
@@ -302,17 +317,10 @@ def plot_to_svg(plot):
     url_plot_svg: String
         SVG Image Data URL
     """
-    with io.BytesIO() as buffer:
-        try:
-            plot.figure.savefig(buffer, format='svg')
-        except AttributeError:
-            plot.savefig(buffer, format='svg')
-        svg_plot = buffer.getvalue()
     try:
-        url_svg_plot = quote(svg_plot.decode('utf8'))
-    except KeyError:  # Fails on Python2.
-        url_svg_plot = quote(svg_plot)
-    return url_svg_plot
+        return figure_to_svg_quoted(plot)
+    except AttributeError:
+        return figure_to_svg_quoted(plot.figure)
 
 
 def _plot_contrasts(contrasts, design_matrices):
@@ -351,7 +359,7 @@ def _plot_contrasts(contrasts, design_matrices):
             contrast_plot.set_xlabel(contrast_name)
             contrast_plot.figure.set_figheight(2)
             contrast_plot.figure.set_tight_layout(True)
-            url_contrast_plot_svg = plot_to_svg(contrast_plot)
+            url_contrast_plot_svg = _plot_to_svg(contrast_plot)
             # prevents sphinx-gallery & jupyter
             # from scraping & inserting plots
             plt.close()
@@ -468,7 +476,7 @@ def _model_attributes_to_dataframe(model):
     return model_attributes
 
 
-def make_stat_maps(model, contrasts):
+def _make_stat_maps(model, contrasts):
     """ Given a model and contrasts, return the corresponding z-maps
 
     Parameters
@@ -527,7 +535,7 @@ def _dmtx_to_svg_url(design_matrices):
         dmtx_title = 'Session {}'.format(dmtx_count)
         plt.title(dmtx_title, y=0.987)
         dmtx_plot = _resize_plot_inches(dmtx_plot, height_change=.3)
-        url_design_matrix_svg = plot_to_svg(dmtx_plot)
+        url_design_matrix_svg = _plot_to_svg(dmtx_plot)
         # prevents sphinx-gallery & jupyter from scraping & inserting plots
         plt.close()
         dmtx_text_ = dmtx_text_.safe_substitute(
@@ -604,7 +612,7 @@ def _mask_to_svg(mask_img, bg_img):
                              display_mode='z',
                              cmap='Set1',
                              )
-        mask_plot_svg = plot_to_svg(plt.gcf())
+        mask_plot_svg = _plot_to_svg(plt.gcf())
         # prevents sphinx-gallery & jupyter from scraping & inserting plots
         plt.close()
     else:
@@ -875,7 +883,7 @@ def _stat_map_to_svg(stat_img,
     with pd.option_context('display.precision', 2):
         stat_map_plot = _add_params_to_plot(table_details, stat_map_plot)
     fig = plt.gcf()
-    stat_map_svg = plot_to_svg(fig)
+    stat_map_svg = _plot_to_svg(fig)
     # prevents sphinx-gallery & jupyter from scraping & inserting plots
     plt.close()
     return stat_map_svg

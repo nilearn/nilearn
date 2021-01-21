@@ -1,6 +1,6 @@
 """ Misc utilities for the library
 
-Authors: Bertrand Thirion, Matthew Brett, 2015
+Authors: Bertrand Thirion, Matthew Brett, Ana Luisa Pinho, 2020
 """
 import csv
 import glob
@@ -59,6 +59,8 @@ def _check_and_load_tables(tables_, var_name):
             tables.append(loaded)
         elif isinstance(table, pd.DataFrame):
             tables.append(table)
+        elif isinstance(table, np.ndarray):
+            pass
         else:
             raise TypeError('%s can only be a pandas DataFrames or a'
                             'string. A %s was provided at idx %d' %
@@ -134,18 +136,48 @@ def _check_events_file_uses_tab_separators(events_files):
 
 def _check_run_tables(run_imgs, tables_, tables_name):
     """Check fMRI runs and corresponding tables to raise error if necessary"""
-    if isinstance(tables_, (str, pd.DataFrame)):
+    if isinstance(tables_, (str, pd.DataFrame, np.ndarray)):
         tables_ = [tables_]
     _check_list_length_match(run_imgs, tables_, 'run_imgs', tables_name)
     tables_ = _check_and_load_tables(tables_, tables_name)
     return tables_
 
 
-def z_score(pvalue):
-    """ Return the z-score corresponding to a given p-value.
+def z_score(pvalue, one_minus_pvalue=None):
+    """ Return the z-score(s) corresponding to certain p-value(s) and,
+    optionally, one_minus_pvalue(s) provided as inputs.
+
+    Parameters
+    ----------
+    pvalue: float or 1-d array shape=(n_pvalues,) computed using
+            the survival function
+
+    one_minus_pvalue: float or
+                      1-d array shape=(n_one_minus_pvalues,), optional;
+                      it shall take the value returned by
+                      /nilearn/glm/contrasts.py::one_minus_pvalue
+                      which computes the p_value using the
+                      cumulative distribution function,
+                      with n_one_minus_pvalues = n_pvalues
+
+    Returns
+    -------
+    z_scores: 1-d array shape=(n_z_scores,), with n_z_scores = n_pvalues
     """
-    pvalue = np.minimum(np.maximum(pvalue, 1.e-300), 1. - 1.e-16)
-    return norm.isf(pvalue)
+    pvalue = np.clip(pvalue, 1.e-300, 1. - 1.e-16)
+    z_scores_sf = norm.isf(pvalue)
+
+    if one_minus_pvalue is not None:
+        one_minus_pvalue = np.clip(one_minus_pvalue, 1.e-300, 1. - 1.e-16)
+        z_scores_cdf = norm.ppf(one_minus_pvalue)
+        z_scores = np.empty(pvalue.size)
+        use_cdf = z_scores_sf < 0
+        use_sf = np.logical_not(use_cdf)
+        z_scores[np.atleast_1d(use_cdf)] = z_scores_cdf[use_cdf]
+        z_scores[np.atleast_1d(use_sf)] = z_scores_sf[use_sf]
+    else:
+        z_scores = z_scores_sf
+    return z_scores
 
 
 def multiple_fast_inverse(a):

@@ -59,13 +59,11 @@ import numpy as np
 from nilearn.decoding import Decoder
 
 # Make a data splitting object for cross validation
-from sklearn.model_selection import LeaveOneGroupOut, cross_val_score
+from sklearn.model_selection import LeaveOneGroupOut
 cv = LeaveOneGroupOut()
 
 ##############################################################
-# We use :class:`sklearn.dummy.DummyClassifier` as a baseline.
-from sklearn.dummy import DummyClassifier
-dummy_classifier = DummyClassifier()
+# We use :class:`nilearn.decoding.Decoder` to estimate a baseline.
 
 mask_names = ['mask_vt', 'mask_face', 'mask_house']
 
@@ -77,7 +75,6 @@ for mask_name in mask_names:
     # For decoding, standardizing is often very important
     mask_filename = haxby_dataset[mask_name][0]
     masker = NiftiMasker(mask_img=mask_filename, standardize=True)
-    masked_timecourses = masker.fit_transform(func_filename)[task_mask]
     mask_scores[mask_name] = {}
     mask_chance_scores[mask_name] = {}
 
@@ -95,14 +92,11 @@ for mask_name in mask_names:
               np.mean(mask_scores[mask_name][category]),
               np.std(mask_scores[mask_name][category])))
 
-        mask_chance_scores[mask_name][category] = cross_val_score(
-            dummy_classifier,
-            masked_timecourses,
-            classification_target,
-            cv=cv,
-            groups=session_labels,
-            scoring="roc_auc",
-        )
+        dummy_classifier = Decoder(estimator='dummy_classifier', cv=cv,
+                                   mask=masker, scoring='roc_auc')
+        dummy_classifier.fit(task_data, classification_target,
+                             groups=session_labels)
+        mask_chance_scores[mask_name][category] = dummy_classifier.cv_scores_[1]
 
 
 ##########################################################################

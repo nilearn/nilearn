@@ -7,7 +7,7 @@ import warnings
 
 import numpy as np
 
-from nibabel.onetime import setattr_on_read
+from nibabel.onetime import auto_attr
 from scipy.linalg import inv
 from scipy.stats import t as t_distribution
 
@@ -61,6 +61,9 @@ class LikelihoodModelResults(object):
 
         For (some subset of models) `dispersion` will typically be the mean
         square error from the estimated model (sigma^2)
+        
+        This class is experimental. 
+        It may change in any future release of Nilearn.
         """
         self.theta = theta
         self.Y = Y
@@ -78,7 +81,7 @@ class LikelihoodModelResults(object):
         # put this as a parameter of LikelihoodModel
         self.df_residuals = self.df_total - self.df_model
 
-    @setattr_on_read
+    @auto_attr
     def df_resid(self):
         warnings.warn("'df_resid' from LikelihoodModelResults "
                       "has been deprecated and will be removed. "
@@ -86,7 +89,7 @@ class LikelihoodModelResults(object):
                       FutureWarning)
         return self.df_residuals
 
-    @setattr_on_read
+    @auto_attr
     def logL(self):
         """
         The maximized log-likelihood

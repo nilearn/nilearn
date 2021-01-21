@@ -13,7 +13,6 @@ from .base_masker import BaseMasker, filter_and_extract
 from .. import _utils
 from .. import image
 from .. import masking
-from nilearn.reporting import ReportMixin
 from .._utils import CacheMixin
 from .._utils.class_inspect import get_params
 from .._utils.niimg import img_data_dtype
@@ -66,7 +65,7 @@ def filter_and_mask(imgs, mask_img_, parameters,
     return data
 
 
-class NiftiMasker(BaseMasker, CacheMixin, ReportMixin):
+class NiftiMasker(BaseMasker, CacheMixin):
     """Applying a mask to extract time-series from Niimg-like objects.
 
     NiftiMasker is useful when preprocessing (detrending, standardization,
@@ -81,8 +80,8 @@ class NiftiMasker(BaseMasker, CacheMixin, ReportMixin):
         Optional parameters (mask_args and mask_strategy) can be set to
         fine tune the mask extraction. If the mask and the images have different
         resolutions, the images are resampled to the mask resolution. If target_shape
-        and/or target_affine are provided, the mask is resampled first. 
-        After this, the images are resampled to the resampled mask. 
+        and/or target_affine are provided, the mask is resampled first.
+        After this, the images are resampled to the resampled mask.
 
     sessions : numpy array, optional
         Add a session level to the preprocessing. Each session will be
@@ -101,6 +100,10 @@ class NiftiMasker(BaseMasker, CacheMixin, ReportMixin):
         True : the signal is z-scored. Timeseries are shifted
         to zero mean and scaled to unit variance.
         False : Do not standardize the data.
+
+    standardize_confounds : boolean, optional, default is True
+        If standardize_confounds is True, the confounds are z-scored:
+        their mean is put to 0 and their variance to 1 in the time dimension.
 
     detrend : boolean, optional
         This parameter is passed to signal.clean. Please see the related
@@ -184,7 +187,7 @@ class NiftiMasker(BaseMasker, CacheMixin, ReportMixin):
     """
 
     def __init__(self, mask_img=None, sessions=None, smoothing_fwhm=None,
-                 standardize=False, detrend=False,
+                 standardize=False, standardize_confounds=True, detrend=False,
                  low_pass=None, high_pass=None, t_r=None,
                  target_affine=None, target_shape=None,
                  mask_strategy='background',
@@ -198,6 +201,7 @@ class NiftiMasker(BaseMasker, CacheMixin, ReportMixin):
         self.sessions = sessions
         self.smoothing_fwhm = smoothing_fwhm
         self.standardize = standardize
+        self.standardize_confounds = standardize_confounds
         self.detrend = detrend
         self.low_pass = low_pass
         self.high_pass = high_pass
@@ -222,6 +226,10 @@ class NiftiMasker(BaseMasker, CacheMixin, ReportMixin):
                               'resampling, hover over the displayed image.')
 
         self._shelving = False
+
+    def generate_report(self):
+        from nilearn.reporting.html_report import generate_report
+        return generate_report(self)
 
     def _reporting(self):
         """
@@ -306,7 +314,7 @@ class NiftiMasker(BaseMasker, CacheMixin, ReportMixin):
         if self.verbose > 0:
             print("[%s.fit] Loading data from %s" % (
                 self.__class__.__name__,
-                _utils._repr_niimgs(imgs)[:200]))
+                _utils._repr_niimgs(imgs, shorten=False)))
 
         # Compute the mask if not given by the user
         if self.mask_img is None:
@@ -374,7 +382,7 @@ class NiftiMasker(BaseMasker, CacheMixin, ReportMixin):
             Images to process. It must boil down to a 4D image with scans
             number as last dimension.
 
-        confounds: CSV file or array-like, optional
+        confounds: CSV file or array-like or pandas DataFrame, optional
             This parameter is passed to signal.clean. Please see the related
             documentation for details: :func:`nilearn.signal.clean`.
             shape: (number of scans, number of confounds)

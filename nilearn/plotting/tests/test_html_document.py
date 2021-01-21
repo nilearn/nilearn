@@ -3,7 +3,7 @@ import time
 import pytest
 import tempfile
 import webbrowser
-from nilearn import reporting
+from nilearn.plotting import html_document
 
 from numpy.testing import assert_no_warnings
 
@@ -17,7 +17,7 @@ def _open_mock(f):
 
 
 def test_temp_file_removing():
-    html = reporting.HTMLDocument('hello')
+    html = html_document.HTMLDocument('hello')
     wb_open = webbrowser.open
     webbrowser.open = _open_mock
     fd, tmpfile = tempfile.mkstemp()
@@ -50,12 +50,12 @@ def test_temp_file_removing():
 
 
 def _open_views():
-    return [reporting.HTMLDocument('') for i in range(12)]
+    return [html_document.HTMLDocument('') for i in range(12)]
 
 
 def _open_one_view():
     for i in range(12):
-        v = reporting.HTMLDocument('')
+        v = html_document.HTMLDocument('')
     return v
 
 
@@ -64,11 +64,11 @@ def test_open_view_warning():
     # should raise a warning about memory usage
     pytest.warns(UserWarning, _open_views)
     assert_no_warnings(_open_one_view)
-    reporting.set_max_img_views_before_warning(15)
+    html_document.set_max_img_views_before_warning(15)
     assert_no_warnings(_open_views)
-    reporting.set_max_img_views_before_warning(-1)
+    html_document.set_max_img_views_before_warning(-1)
     assert_no_warnings(_open_views)
-    reporting.set_max_img_views_before_warning(None)
+    html_document.set_max_img_views_before_warning(None)
     assert_no_warnings(_open_views)
-    reporting.set_max_img_views_before_warning(6)
+    html_document.set_max_img_views_before_warning(6)
     pytest.warns(UserWarning, _open_views)

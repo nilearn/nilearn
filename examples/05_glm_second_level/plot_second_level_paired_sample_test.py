@@ -1,6 +1,6 @@
 """
-Second-level fMRI model: a two-sample test
-==========================================
+Second-level fMRI model: a paired-sample test
+=============================================
 
 Full step-by-step example of fitting a GLM to perform a second level analysis
 in experimental data and visualizing the results.
@@ -8,14 +8,14 @@ in experimental data and visualizing the results.
 More specifically:
 
 1. A sample of n=16 visual activity fMRIs are downloaded.
-2. A two-sample t-test is applied to the brain maps in order to see the effect
+2. A paired one-sample t-test is applied to the brain maps in order to see the effect
    of the contrast difference across subjects.
 
-The contrast is between responses to vertical versus horizontal checkerboards
-that are retinotopically distinct. At the individual level, these stimuli are
-sometimes used to map the borders of primary visual areas. At the group level,
-such a mapping is not possible. Yet, we may observe some significant effects in
-these areas.
+The contrast is between responses to vertical versus horizontal
+checkerboards that are retinotopically distinct. At the individual
+level, these stimuli are sometimes used to map the borders of primary
+visual areas. At the group level, such a mapping is not possible. Yet,
+we may observe some significant effects in these areas.
 
 """
 
@@ -26,23 +26,23 @@ from nilearn.datasets import fetch_localizer_contrasts
 #########################################################################
 # Fetch dataset
 # --------------
-# We download a list of left vs right button press contrasts from a localizer
-# dataset.
+# We download a list of left vs right button press contrasts from a
+# localizer dataset.
 n_subjects = 16
 sample_vertical = fetch_localizer_contrasts(
     ["vertical checkerboard"], n_subjects, get_tmaps=True)
 sample_horizontal = fetch_localizer_contrasts(
     ["horizontal checkerboard"], n_subjects, get_tmaps=True)
 
-# What remains implicit here is that there is a one-to-one correspondence
-# between the two samples: the first image of both samples comes from subject
-# S1, the second from subject S2 etc.
+# What remains implicit here is that there is a one-to-one
+# correspondence between the two samples: the first image of both
+# samples comes from subject S1, the second from subject S2 etc.
 
 ############################################################################
 # Estimate second level model
 # ---------------------------
-# We define the input maps and the design matrix for the second level model and
-# fit it.
+# We define the input maps and the design matrix for the second level model
+# and fit it.
 second_level_input = sample_vertical['cmaps'] + sample_horizontal['cmaps']
 
 ############################################################################
@@ -51,8 +51,7 @@ import numpy as np
 condition_effect = np.hstack(([1] * n_subjects, [- 1] * n_subjects))
 
 ############################################################################
-# Subsequently, we can model the subject effect: each subject is observed in
-# sample 1 and sample 2.
+# Subsequently, we can model the subject effect: each subject is observed in sample 1 and sample 2.
 subject_effect = np.vstack((np.eye(n_subjects), np.eye(n_subjects)))
 subjects = ['S%02d' % i for i in range(1, n_subjects + 1)]
 
@@ -64,7 +63,7 @@ design_matrix = pd.DataFrame(
 
 ############################################################################
 # plot the design_matrix.
-from nilearn.reporting import plot_design_matrix
+from nilearn.plotting import plot_design_matrix
 plot_design_matrix(design_matrix)
 
 ############################################################################

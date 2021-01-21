@@ -4,7 +4,8 @@ from numpy.testing import assert_almost_equal
 from sklearn.datasets import make_regression
 from sklearn.linear_model import LinearRegression
 
-from nilearn.glm.contrasts import (_compute_fixed_effect_contrast,
+from nilearn.glm.contrasts import (Contrast,
+                                   _compute_fixed_effect_contrast,
                                    _compute_fixed_effects_params,
                                    compute_contrast,
                                    expression_to_contrast_vector)
@@ -27,8 +28,9 @@ def test_expression_to_contrast_vector():
 
 
 def test_Tcontrast():
+    rng = np.random.RandomState(42)
     n, p, q = 100, 80, 10
-    X, Y = np.random.randn(p, q), np.random.randn(p, n)
+    X, Y = rng.standard_normal(size=(p, q)), rng.standard_normal(size=(p, n))
     labels, results = run_glm(Y, X, 'ar1')
     con_val = np.eye(q)[0]
     z_vals = compute_contrast(labels, results, con_val).z_score()
@@ -37,8 +39,9 @@ def test_Tcontrast():
 
 
 def test_Fcontrast():
+    rng = np.random.RandomState(42)
     n, p, q = 100, 80, 10
-    X, Y = np.random.randn(p, q), np.random.randn(p, n)
+    X, Y = rng.standard_normal(size=(p, q)), rng.standard_normal(size=(p, n))
     for model in ['ols', 'ar1']:
         labels, results = run_glm(Y, X, model)
         for con_val in [np.eye(q)[0], np.eye(q)[:3]]:
@@ -49,8 +52,9 @@ def test_Fcontrast():
 
 
 def test_t_contrast_add():
+    rng = np.random.RandomState(42)
     n, p, q = 100, 80, 10
-    X, Y = np.random.randn(p, q), np.random.randn(p, n)
+    X, Y = rng.standard_normal(size=(p, q)), rng.standard_normal(size=(p, n))
     lab, res = run_glm(Y, X, 'ols')
     c1, c2 = np.eye(q)[0], np.eye(q)[1]
     con = compute_contrast(lab, res, c1) + compute_contrast(lab, res, c2)
@@ -60,8 +64,9 @@ def test_t_contrast_add():
 
 
 def test_fixed_effect_contrast():
+    rng = np.random.RandomState(42)
     n, p, q = 100, 80, 10
-    X, Y = np.random.randn(p, q), np.random.randn(p, n)
+    X, Y = rng.standard_normal(size=(p, q)), rng.standard_normal(size=(p, n))
     lab, res = run_glm(Y, X, 'ols')
     c1, c2 = np.eye(q)[0], np.eye(q)[1]
     con = _compute_fixed_effect_contrast([lab, lab], [res, res], [c1, c2])
@@ -89,8 +94,9 @@ def test_fixed_effect_contrast_nonzero_effect():
 
 
 def test_F_contrast_add():
+    rng = np.random.RandomState(42)
     n, p, q = 100, 80, 10
-    X, Y = np.random.randn(p, q), np.random.randn(p, n)
+    X, Y = rng.standard_normal(size=(p, q)), rng.standard_normal(size=(p, n))
     lab, res = run_glm(Y, X, 'ar1')
     c1, c2 = np.eye(q)[:2], np.eye(q)[2:4]
     con = compute_contrast(lab, res, c1) + compute_contrast(lab, res, c2)
@@ -107,8 +113,9 @@ def test_F_contrast_add():
 
 
 def test_contrast_mul():
+    rng = np.random.RandomState(42)
     n, p, q = 100, 80, 10
-    X, Y = np.random.randn(p, q), np.random.randn(p, n)
+    X, Y = rng.standard_normal(size=(p, q)), rng.standard_normal(size=(p, n))
     lab, res = run_glm(Y, X, 'ar1')
     for c1 in [np.eye(q)[0], np.eye(q)[:3]]:
         con1 = compute_contrast(lab, res, c1)
@@ -119,8 +126,9 @@ def test_contrast_mul():
 
 def test_contrast_values():
     # but this test is circular and should be removed
+    rng = np.random.RandomState(42)
     n, p, q = 100, 80, 10
-    X, Y = np.random.randn(p, q), np.random.randn(p, n)
+    X, Y = rng.standard_normal(size=(p, q)), rng.standard_normal(size=(p, n))
     lab, res = run_glm(Y, X, 'ar1', bins=1)
     # t test
     cval = np.eye(q)[0]
@@ -137,9 +145,10 @@ def test_contrast_values():
 
 
 def test_low_level_fixed_effects():
+    rng = np.random.RandomState(42)
     p = 100
     # X1 is some effects estimate, V1 their variance for "session 1"
-    X1, V1 = np.random.randn(p), np.ones(p)
+    X1, V1 = rng.standard_normal(size=p), np.ones(p)
     # same thing for a "session 2"
     X2, V2 = 2 * X1, 4 * V1
     # compute the fixed effects estimate, Xf, their variance Vf,
@@ -156,3 +165,11 @@ def test_low_level_fixed_effects():
                                                precision_weighted=True)
     assert_almost_equal(Xw, 1.2 * X1)
     assert_almost_equal(Vw, .8 * V1)
+
+
+def test_one_minus_pvalue():
+    effect = np.ones((1, 3))
+    variance = effect[0]
+    contrast = Contrast(effect, variance, contrast_type="t")
+    assert np.allclose(contrast.one_minus_pvalue(), 0.84, 1)
+    assert np.allclose(contrast.stat_, 1., 1)

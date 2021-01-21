@@ -3,7 +3,7 @@ regression strategies such as SVM, LogisticRegression and Ridge, with optional
 feature selection, integrated hyper-parameter selection and aggregation
 strategy in which the best models within a cross validation loop are averaged.
 
-Also exposes a high-level method fREM that uses clustering and model
+Also exposes a high-level method FREM that uses clustering and model
 ensembling to achieve state of the art performance
 """
 # Authors: Yannick Schwartz
@@ -22,11 +22,13 @@ from sklearn import clone
 from sklearn.linear_model import LogisticRegression
 from sklearn.linear_model import LinearRegression
 from sklearn.linear_model import RidgeClassifierCV, RidgeCV
+from sklearn.dummy import DummyRegressor, DummyClassifier
 from sklearn.model_selection import (LeaveOneGroupOut, ParameterGrid,
                                      ShuffleSplit, StratifiedShuffleSplit,
                                      check_cv)
 from sklearn.preprocessing import LabelBinarizer
 from sklearn.svm import SVR, LinearSVC, l1_min_c
+from sklearn.utils import check_random_state
 from sklearn.utils.extmath import safe_sparse_dot
 from sklearn.utils.validation import check_is_fitted, check_X_y
 
@@ -54,6 +56,9 @@ SUPPORTED_ESTIMATORS = dict(
     ridge_regressor=RidgeCV(),
     ridge=RidgeCV(),
     svr=SVR(kernel='linear', max_iter=1e4),
+    dummy_classifier = DummyClassifier(strategy='prior',
+                                       random_state=0),
+    dummy_regressor = DummyRegressor(strategy='mean'),
 )
 
 
@@ -89,10 +94,13 @@ def _check_param_grid(estimator, X, y, param_grid=None):
         useful to avoid exploring parameter combinations that make no sense
         or have no effect. See scikit-learn documentation for more information.
 
+        For Dummy estimators, parameter grid defaults to empty as these
+        estimators do not have hyperparameters to grid search.
+
     Returns
     -------
     param_grid: dict of str to sequence, or sequence of such. Sensible default
-    dict has size 1.
+    dict has size 1 for linear models.
 
     """
     if param_grid is None:
@@ -103,6 +111,12 @@ def _check_param_grid(estimator, X, y, param_grid=None):
         elif isinstance(estimator,
                         (LinearSVC, RidgeCV, RidgeClassifierCV, SVR)):
             loss = 'squared_hinge'
+        elif isinstance(estimator,
+                        (DummyClassifier, DummyRegressor)):
+            if estimator.strategy in ['constant', 'uniform']:
+                message = ('Dummy classification implemented only for strategies'
+                           ' "most_frequent", "prior", "stratified"')
+                raise NotImplementedError(message)
         else:
             raise ValueError(
                 "Invalid estimator. The supported estimators are: {}".format(
@@ -114,7 +128,8 @@ def _check_param_grid(estimator, X, y, param_grid=None):
         else:
             min_c = 0.5
 
-        if not isinstance(estimator, (RidgeCV, RidgeClassifierCV)):
+        if not isinstance(estimator, (RidgeCV, RidgeClassifierCV,
+                                      DummyClassifier, DummyRegressor)):
             param_grid['C'] = np.array([2, 20, 200]) * min_c
         else:
             param_grid = {}
@@ -151,7 +166,7 @@ def _parallel_fit(estimator, X, y, train, test, param_grid, is_classification,
     X_train, y_train = X[train], y[train]
     X_test, y_test = X[test], y[test]
 
-    # for fREM Classifier and Regressor : start by doing a quick ReNA
+    # for FREM Classifier and Regressor : start by doing a quick ReNA
     # clustering to reduce the number of feature by agglomerating similar ones
 
     if clustering_percentile < 100:
@@ -176,7 +191,7 @@ def _parallel_fit(estimator, X, y, train, test, param_grid, is_classification,
 
         if is_classification:
             score = scorer(estimator, X_test, y_test)
-            if np.all(estimator.coef_ == 0):
+            if hasattr(estimator, 'coef_') and np.all(estimator.coef_ == 0):
                 score = 0
         else:  # regression
             score = scorer(estimator, X_test, y_test)
@@ -184,17 +199,26 @@ def _parallel_fit(estimator, X, y, train, test, param_grid, is_classification,
         # Store best parameters and estimator coefficients
         if (best_score is None) or (score >= best_score):
             best_score = score
-            best_coef = np.reshape(estimator.coef_, (1, -1))
-            best_intercept = estimator.intercept_
+            if hasattr(estimator, 'coef_'):
+                best_coef = np.reshape(estimator.coef_, (1, -1))
+                best_intercept = estimator.intercept_
+                dummy_output = None
+            else:
+                best_coef, best_intercept = None, None
+                if isinstance(estimator, DummyClassifier):
+                    dummy_output = estimator.class_prior_
+                elif isinstance(estimator, DummyRegressor):
+                    dummy_output = estimator.constant_
             best_param = param
 
-    if do_screening:
-        best_coef = selector.inverse_transform(best_coef)
+    if best_coef is not None:
+        if do_screening:
+            best_coef = selector.inverse_transform(best_coef)
 
-    if clustering_percentile < 100:
-        best_coef = clustering.inverse_transform(best_coef)
+        if clustering_percentile < 100:
+            best_coef = clustering.inverse_transform(best_coef)
 
-    return class_index, best_coef, best_intercept, best_param, best_score
+    return class_index, best_coef, best_intercept, best_param, best_score, dummy_output
 
 
 class _BaseDecoder(LinearRegression, CacheMixin):
@@ -214,8 +238,10 @@ class _BaseDecoder(LinearRegression, CacheMixin):
         The estimator to choose among: 'svc', 'svc_l2', 'svc_l1', 'logistic',
         'logistic_l1', 'logistic_l2', 'ridge', 'ridge_classifier',
         'ridge_regressor', and 'svr'. Note that the 'svc' and 'svc_l2';
-        'logistic' and 'logistic_l2'; 'ridge' and 'ridge_regressor'
-        correspond to the same estimator. Default 'svc'.
+        'logistic' and 'logistic_l2'; 'ridge' and 'ridge_regressor',
+        correspond to the same estimator.
+        Dummy estimators are named as 'dummy_classifier', 'dummy_regressor'.
+        Default 'svc'.
 
     mask: filename, Nifti1Image, NiftiMasker, or MultiNiftiMasker, optional
         Mask to be used on data. If an instance of masker is passed,
@@ -238,6 +264,8 @@ class _BaseDecoder(LinearRegression, CacheMixin):
         useful to avoid exploring parameter combinations that make no sense
         or have no effect. See scikit-learn documentation for more information,
         for example: https://scikit-learn.org/stable/modules/grid_search.html
+
+        For Dummy estimators, parameter grid defaults to empty dictionary.
 
     clustering_percentile: int, float, optional, in the [0, 100] Default: 10.
         Percentile of features to keep after clustering. If it is lower
@@ -323,9 +351,9 @@ class _BaseDecoder(LinearRegression, CacheMixin):
     ------------
     nilearn.decoding.Decoder: Classification strategies for Neuroimaging,
     nilearn.decoding.DecoderRegressor: Regression strategies for Neuroimaging,
-    nilearn.decoding.fREMClassifier: State of the art classification pipeline
+    nilearn.decoding.FREMClassifier: State of the art classification pipeline
         for Neuroimaging
-    nilearn.decoding.fREMRegressor: State of the art regression pipeline
+    nilearn.decoding.FREMRegressor: State of the art regression pipeline
         for Neuroimaging
     nilearn.decoding.SpaceNetClassifier: Graph-Net and TV-L1 priors/penalties
 
@@ -403,15 +431,17 @@ class _BaseDecoder(LinearRegression, CacheMixin):
 
         `coef_` : numpy.ndarray, shape=(n_classes, n_features)
             Contains the mean of the models weight vector across
-            fold for each class.
+            fold for each class. Returns None for Dummy estimators.
 
         `coef_img_` : dict of Nifti1Image
             Dictionary containing `coef_` with class names as keys,
             and `coef_` transformed in Nifti1Images as values. In the case of
             a regression, it contains a single Nifti1Image at the key 'beta'.
+            Ignored if Dummy estimators are provided.
 
         `intercept_` : ndarray, shape (nclasses,)
             Intercept (a.k.a. bias) added to the decision function.
+            Ignored if Dummy estimators are provided.
 
         `cv_` : list of pairs of lists
             List of the (n_folds,) folds. For the corresponding fold,
@@ -422,24 +452,42 @@ class _BaseDecoder(LinearRegression, CacheMixin):
             Contains the standard deviation of the models weight vector across
             fold for each class. Note that folds are not independent, see
             https://scikit-learn.org/stable/modules/cross_validation.html#cross-validation-iterators-for-grouped-data
+            Ignored if Dummy estimators are provided.
 
         `std_coef_img_` : dict of Nifti1Image
             Dictionary containing `std_coef_` with class names as keys,
             and `coef_` transformed in Nifti1Image as values. In the case of
             a regression, it contains a single Nifti1Image at the key 'beta'.
+            Ignored if Dummy estimators are provided.
 
         `cv_params_` : dict of lists
             Best point in the parameter grid for each tested fold
-            in the inner cross validation loop.
+            in the inner cross validation loop. The grid is empty
+            when Dummy estimators are provided.
 
         `cv_scores_` : dict, (classes, n_folds)
             Scores (misclassification) for each parameter, and on each fold
+
+        `n_outputs_` : int
+            Number of outputs (column-wise)
+
+        `dummy_output_`: ndarray, shape=(n_classes, 2) or shape=(1, 1) for regression
+            Contains dummy estimator attributes after class predictions using strategies
+            of DummyClassifier (class_prior) and DummyRegressor (constant)
+            from scikit-learn. This attribute is necessary for estimating class
+            predictions after fit. Returns None if non-dummy estimators are
+            provided.
         """
         self.estimator = _check_estimator(self.estimator)
         self.memory_ = _check_memory(self.memory, self.verbose)
 
         X = self._apply_mask(X)
         X, y = check_X_y(X, y, dtype=np.float, multi_output=True)
+
+        if y.ndim == 1:
+            self.n_outputs_ = 1
+        else:
+            self.n_outputs_ = y.shape[1]
 
         # Setup scorer
         scorer = check_scoring(self.estimator, self.scoring)
@@ -511,19 +559,29 @@ class _BaseDecoder(LinearRegression, CacheMixin):
             parallel_fit_outputs, y, n_problems)
 
         # Build the final model (the aggregated one)
-        self.coef_ = np.vstack([np.mean(coefs[class_index], axis=0)
-                                for class_index in self.classes_])
-        self.std_coef_ = np.vstack([np.std(coefs[class_index], axis=0)
+        if not isinstance(self.estimator, (DummyClassifier,
+                                           DummyRegressor)):
+            self.coef_ = np.vstack([np.mean(coefs[class_index], axis=0)
                                     for class_index in self.classes_])
-        self.intercept_ = np.hstack([np.mean(intercepts[class_index], axis=0)
-                                     for class_index in self.classes_])
+            self.std_coef_ = np.vstack([np.std(coefs[class_index], axis=0)
+                                        for class_index in self.classes_])
+            self.intercept_ = np.hstack([np.mean(intercepts[class_index], axis=0)
+                                         for class_index in self.classes_])
 
-        self.coef_img_, self.std_coef_img_ = self._output_image(
-            self.classes_, self.coef_, self.std_coef_)
+            self.coef_img_, self.std_coef_img_ = self._output_image(
+                self.classes_, self.coef_, self.std_coef_)
 
-        if self.is_classification and (self.n_classes_ == 2):
-            self.coef_ = self.coef_[0, :][np.newaxis, :]
-            self.intercept_ = self.intercept_[0]
+            if self.is_classification and (self.n_classes_ == 2):
+                self.coef_ = self.coef_[0, :][np.newaxis, :]
+                self.intercept_ = self.intercept_[0]
+        else:
+            # For Dummy estimators
+            self.coef_ = None
+            self.dummy_output_ = np.vstack([np.mean(self.dummy_output_[class_index], axis=0)
+                                            for class_index in self.classes_])
+            if self.is_classification and (self.n_classes_ == 2):
+                if not self.n_outputs_ > 1:
+                    self.dummy_output_ = self.dummy_output_[0, :][np.newaxis, :]
 
     def decision_function(self, X):
         """Predict class labels for samples in X.
@@ -541,8 +599,6 @@ class _BaseDecoder(LinearRegression, CacheMixin):
         y_pred: ndarray, shape (n_samples,)
             Predicted class label per sample.
         """
-        X = self.masker_.transform(X)
-
         n_features = self.coef_.shape[1]
         if X.shape[1] != n_features:
             raise ValueError(
@@ -572,6 +628,12 @@ class _BaseDecoder(LinearRegression, CacheMixin):
 
         check_is_fitted(self, "coef_")
         check_is_fitted(self, "masker_")
+
+        X = self.masker_.transform(X)
+        n_samples = X.shape[0]
+
+        if isinstance(self.estimator, (DummyClassifier, DummyRegressor)):
+            return self._predict_dummy(n_samples)
 
         scores = self.decision_function(X)
 
@@ -618,10 +680,11 @@ class _BaseDecoder(LinearRegression, CacheMixin):
         intercepts = {}
         cv_scores = {}
         self.cv_params_ = {}
+        self.dummy_output_ = {}
         classes = self.classes_
 
         for i, (class_index, coef, intercept, params,
-                scores) in enumerate(parallel_fit_outputs):
+                scores, dummy_output) in enumerate(parallel_fit_outputs):
 
             coefs.setdefault(classes[class_index], []).append(coef)
             intercepts.setdefault(classes[class_index], []).append(intercept)
@@ -629,18 +692,34 @@ class _BaseDecoder(LinearRegression, CacheMixin):
             cv_scores.setdefault(classes[class_index], []).append(scores)
 
             self.cv_params_.setdefault(classes[class_index], {})
+            if isinstance(self.estimator, (DummyClassifier, DummyRegressor)):
+                self.dummy_output_.setdefault(classes[class_index],
+                                              []).append(dummy_output)
+            else:
+                self.dummy_output_.setdefault(classes[class_index],
+                                              []).append(None)
             for k in params:
                 self.cv_params_[classes[class_index]].setdefault(
                     k, []).append(params[k])
-
+ 
             if (n_problems <= 2) and self.is_classification:
                 # Binary classification
                 other_class = np.setdiff1d(classes, classes[class_index])[0]
-                coefs.setdefault(other_class, []).append(-coef)
-                intercepts.setdefault(other_class, []).append(-intercept)
+                if coef is not None:
+                    coefs.setdefault(other_class, []).append(-coef)
+                    intercepts.setdefault(other_class, []).append(-intercept)
+                else:
+                    coefs.setdefault(other_class, []).append(None)
+                    intercepts.setdefault(other_class, []).append(None)
+
                 cv_scores.setdefault(other_class, []).append(scores)
                 self.cv_params_[other_class] = self.cv_params_[
                     classes[class_index]]
+                if isinstance(self.estimator, (DummyClassifier, DummyRegressor)):
+                    self.dummy_output_.setdefault(other_class,
+                                                  []).append(dummy_output)
+                else:
+                    self.dummy_output_.setdefault(other_class, []).append(None)
 
         self.cv_scores_ = cv_scores
 
@@ -666,6 +745,31 @@ class _BaseDecoder(LinearRegression, CacheMixin):
         self.n_classes_ = len(self.classes_)
         return y
 
+    def _predict_dummy(self, n_samples):
+        """Non-sparse scikit-learn based prediction steps for classification
+           and regression"""
+        dummy_output = self.dummy_output_
+
+        if isinstance(self.estimator, DummyClassifier):
+            estimator_params = self.estimator.get_params()
+            strategy = estimator_params['strategy']
+            if strategy in ['most_frequent', 'prior']:
+                scores = np.tile([dummy_output[k].argmax() for
+                                  k in range(self.n_outputs_)], [n_samples, 1])
+            elif strategy == 'stratified':
+                rs = check_random_state(0)
+                proba = []
+                for k in range(self.n_outputs_):
+                    out = rs.multinomial(1, dummy_output[k], size=n_samples)
+                    out = out.astype(np.float64)
+                    proba.append(out)
+                scores = np.vstack([proba[k].argmax(axis=1) for
+                                    k in range(self.n_outputs_)]).T
+        elif isinstance(self.estimator, DummyRegressor):
+                scores = np.full((n_samples, self.n_outputs_), self.dummy_output_,
+                                  dtype=np.array(self.dummy_output_).dtype)
+        return scores.ravel() if scores.shape[1] == 1 else scores
+
 
 class Decoder(_BaseDecoder):
     """A wrapper for popular classification strategies in neuroimaging.
@@ -682,7 +786,7 @@ class Decoder(_BaseDecoder):
         The estimator to choose among: 'svc', 'svc_l2', 'svc_l1', 'logistic',
         'logistic_l1', 'logistic_l2' and 'ridge_classifier'. Note that
         'svc' and 'svc_l2'; 'logistic' and 'logistic_l2' correspond to the same
-        estimator. Default 'svc'.
+        estimator. Dummy classifier is named as 'dummy_classifier'. Default 'svc'.
 
     mask: filename, Nifti1Image, NiftiMasker, or MultiNiftiMasker, optional
         Mask to be used on data. If an instance of masker is passed,
@@ -705,6 +809,9 @@ class Decoder(_BaseDecoder):
         useful to avoid exploring parameter combinations that make no sense
         or have no effect. See scikit-learn documentation for more information,
         for example: https://scikit-learn.org/stable/modules/grid_search.html
+
+        For DummyClassifier, parameter grid defaults to empty dictionary, class
+        predictions are estimated using default strategy.
 
     screening_percentile: int, float, optional, in the closed interval [0, 100]
         The percentage of brain volume that will be kept with respect to a full
@@ -780,7 +887,7 @@ class Decoder(_BaseDecoder):
     See Also
     ------------
     nilearn.decoding.DecoderRegressor: regression strategies for Neuro-imaging,
-    nilearn.decoding.fREMClassifier: State of the art classification pipeline
+    nilearn.decoding.FREMClassifier: State of the art classification pipeline
         for Neuroimaging
     nilearn.decoding.SpaceNetClassifier: Graph-Net and TV-L1 priors/penalties
     """
@@ -816,7 +923,7 @@ class DecoderRegressor(_BaseDecoder):
     estimator: str, optional
         The estimator to choose among: 'ridge', 'ridge_regressor', and 'svr'.
         Note that the 'ridge' and 'ridge_regressor' correspond to the same
-        estimator. Default 'svr'.
+        estimator. Dummy regressor is named as 'dummy_regressor'. Default 'svr'.
 
     mask: filename, Nifti1Image, NiftiMasker, or MultiNiftiMasker, optional
         Mask to be used on data. If an instance of masker is passed,
@@ -839,6 +946,9 @@ class DecoderRegressor(_BaseDecoder):
         useful to avoid exploring parameter combinations that make no sense
         or have no effect. See scikit-learn documentation for more information,
         for example: https://scikit-learn.org/stable/modules/grid_search.html
+
+        For DummyRegressor, parameter grid defaults to empty dictionary, class
+        predictions are estimated using default strategy.
 
     screening_percentile: int, float, optional, in the closed interval [0, 100]
         The percentage of brain volume that will be kept with respect to a full
@@ -914,7 +1024,7 @@ class DecoderRegressor(_BaseDecoder):
     See Also
     ------------
     nilearn.decoding.Decoder: classification strategies for Neuroimaging,
-    nilearn.decoding.fREMRegressor: State of the art regression pipeline
+    nilearn.decoding.FREMRegressor: State of the art regression pipeline
         for Neuroimaging
     nilearn.decoding.SpaceNetClassifier: Graph-Net and TV-L1 priors/penalties
     """
@@ -938,10 +1048,10 @@ class DecoderRegressor(_BaseDecoder):
             verbose=verbose, n_jobs=n_jobs)
 
 
-class fREMRegressor(_BaseDecoder):
+class FREMRegressor(_BaseDecoder):
     """ State of the art decoding scheme applied to usual regression estimators.
 
-    fREM uses an implicit spatial regularization through fast clustering and
+    FREM uses an implicit spatial regularization through fast clustering and
     aggregates a high number of estimators trained on various splits of the
     training set, thus returning a very robust decoder at a lower computational
     cost than other spatially regularized methods.[1]_.
@@ -1065,7 +1175,7 @@ class fREMRegressor(_BaseDecoder):
     See Also
     ------------
     nilearn.decoding.DecoderRegressor: Regression strategies for Neuroimaging,
-    nilearn.decoding.fREMClassifier: State of the art classification pipeline
+    nilearn.decoding.FREMClassifier: State of the art classification pipeline
         for Neuroimaging
     """
 
@@ -1093,10 +1203,10 @@ class fREMRegressor(_BaseDecoder):
             verbose=verbose, n_jobs=n_jobs)
 
 
-class fREMClassifier(_BaseDecoder):
+class FREMClassifier(_BaseDecoder):
     """ State of the art decoding scheme applied to usual classifiers.
 
-    fREM uses an implicit spatial regularization through fast clustering and
+    FREM uses an implicit spatial regularization through fast clustering and
     aggregates a high number of estimators trained on various splits of the
     training set, thus returning a very robust decoder at a lower computational
     cost than other spatially regularized methods.[1]_.
@@ -1221,7 +1331,7 @@ class fREMClassifier(_BaseDecoder):
     See Also
     ------------
     nilearn.decoding.Decoder: Classification strategies for Neuroimaging,
-    nilearn.decoding.fREMRegressor: State of the art regression pipeline
+    nilearn.decoding.FREMRegressor: State of the art regression pipeline
         for Neuroimaging
 
     """

@@ -49,6 +49,10 @@ class MultiNiftiMasker(NiftiMasker, CacheMixin):
         to zero mean and scaled to unit variance.
         False : Do not standardize the data.
 
+    standardize_confounds: boolean, optional default is True
+        If standardize_confounds is True, the confounds are z-scored:
+        their mean is put to 0 and their variance to 1 in the time dimension.
+
     detrend: boolean, optional
         This parameter is passed to signal.clean. Please see the related
         documentation for details
@@ -127,8 +131,8 @@ class MultiNiftiMasker(NiftiMasker, CacheMixin):
     """
 
     def __init__(self, mask_img=None, smoothing_fwhm=None,
-                 standardize=False, detrend=False, low_pass=None,
-                 high_pass=None, t_r=None, target_affine=None,
+                 standardize=False, standardize_confounds=True, detrend=False,
+                 low_pass=None, high_pass=None, t_r=None, target_affine=None,
                  target_shape=None, mask_strategy='background',
                  mask_args=None, dtype=None, memory=Memory(location=None),
                  memory_level=0, n_jobs=1, verbose=0):
@@ -137,6 +141,7 @@ class MultiNiftiMasker(NiftiMasker, CacheMixin):
 
         self.smoothing_fwhm = smoothing_fwhm
         self.standardize = standardize
+        self.standardize_confounds = standardize_confounds
         self.detrend = detrend
         self.low_pass = low_pass
         self.high_pass = high_pass
@@ -170,7 +175,7 @@ class MultiNiftiMasker(NiftiMasker, CacheMixin):
         if self.verbose > 0:
             print("[%s.fit] Loading data from %s" % (
                 self.__class__.__name__,
-                _utils._repr_niimgs(imgs)[:200]))
+                _utils._repr_niimgs(imgs, shorten=False)))
         # Compute the mask if not given by the user
         if self.mask_img is None:
             if self.verbose > 0:
@@ -242,7 +247,7 @@ class MultiNiftiMasker(NiftiMasker, CacheMixin):
 
         confounds: list of confounds, optional
             List of confounds (2D arrays or filenames pointing to CSV
-            files). Must be of same length than imgs_list.
+            files or pandas DataFrames). Must be of same length than imgs_list.
 
         copy: boolean, optional
             If True, guarantees that output array has no memory in common with
@@ -310,7 +315,7 @@ class MultiNiftiMasker(NiftiMasker, CacheMixin):
             See http://nilearn.github.io/manipulating_images/input_output.html
             Data to be preprocessed
 
-        confounds: CSV file path or 2D matrix
+        confounds: CSV file path or 2D array or pandas DataFrame
             This parameter is passed to signal.clean. Please see the
             corresponding documentation for details.
 

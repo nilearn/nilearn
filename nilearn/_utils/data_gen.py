@@ -8,6 +8,7 @@ import string
 import numpy as np
 import pandas as pd
 import scipy.signal
+from scipy import ndimage
 
 from sklearn.utils import check_random_state
 import scipy.linalg
@@ -17,6 +18,23 @@ from nibabel import Nifti1Image
 
 from .. import masking
 from . import logger
+from nilearn import datasets, image, input_data
+
+
+def generate_mni_space_img(n_scans=1, res=30, random_state=0, mask_dilation=2):
+    rng = check_random_state(random_state)
+    mni = datasets.load_mni152_brain_mask()
+    target_affine = np.eye(3) * res
+    mask_img = image.resample_img(
+        mni, target_affine=target_affine, interpolation="nearest")
+    masker = input_data.NiftiMasker(mask_img).fit()
+    n_voxels = image.get_data(mask_img).sum()
+    data = rng.randn(n_scans, n_voxels)
+    if mask_dilation is not None and mask_dilation > 0:
+        mask_img = image.new_img_like(
+            mask_img, ndimage.binary_dilation(
+                image.get_data(mask_img), iterations=mask_dilation))
+    return masker.inverse_transform(data), mask_img
 
 
 def generate_timeseries(n_instants, n_features,
@@ -97,6 +115,8 @@ def generate_maps(shape, n_regions, overlap=0, border=1,
     -------
     maps: nibabel.Nifti1Image
         4D array, containing maps.
+    mask_img: nibabel.Nifti1Image
+        3D, The mask outside of which maps are 0
     """
 
     mask = np.zeros(shape, dtype=np.int8)
@@ -108,7 +128,7 @@ def generate_maps(shape, n_regions, overlap=0, border=1,
 
 
 def generate_labeled_regions(shape, n_regions, rand_gen=None, labels=None,
-                             affine=np.eye(4), dtype=np.int):
+                             affine=np.eye(4), dtype=int):
     """Generate a 3D volume with labeled regions.
 
     Parameters
@@ -146,7 +166,7 @@ def generate_labeled_regions(shape, n_regions, rand_gen=None, labels=None,
     for n, row in zip(labels, regions):
         row[row > 0] = n
     data = np.zeros(shape, dtype=dtype)
-    data[np.ones(shape, dtype=np.bool)] = regions.sum(axis=0).T
+    data[np.ones(shape, dtype=bool)] = regions.sum(axis=0).T
     return nibabel.Nifti1Image(data, affine)
 
 
@@ -246,9 +266,9 @@ def generate_fake_fmri(shape=(10, 11, 12), length=17, kind="noise",
                 nibabel.Nifti1Image(mask, affine))
 
     block_size = 3 if block_size is None else block_size
-    flat_fmri = fmri[mask.astype(np.bool)]
+    flat_fmri = fmri[mask.astype(bool)]
     flat_fmri /= np.abs(flat_fmri).max()
-    target = np.zeros(length, dtype=np.int)
+    target = np.zeros(length, dtype=int)
     rest_max_size = (length - (n_blocks * block_size)) // n_blocks
     if rest_max_size < 0:
         raise ValueError(
@@ -278,7 +298,7 @@ def generate_fake_fmri(shape=(10, 11, 12), length=17, kind="noise",
     target = target if block_type == 'classification' \
         else target.astype(np.float)
     fmri = np.zeros(fmri.shape)
-    fmri[mask.astype(np.bool)] = flat_fmri
+    fmri[mask.astype(bool)] = flat_fmri
     return (nibabel.Nifti1Image(fmri, affine),
             nibabel.Nifti1Image(mask, affine), target)
 
@@ -463,7 +483,9 @@ def basic_confounds(length):
 def create_fake_bids_dataset(base_dir='', n_sub=10, n_ses=2,
                              tasks=['localizer', 'main'],
                              n_runs=[1, 3], with_derivatives=True,
-                             with_confounds=True, no_session=False):
+                             with_confounds=True,
+                             confounds_tag="desc-confounds_timeseries",
+                             no_session=False):
     """Creates a fake bids dataset directory with dummy files.
     Returns fake dataset directory name.
 
@@ -493,6 +515,12 @@ def create_fake_bids_dataset(base_dir='', n_sub=10, n_ses=2,
 
     with_confounds: bool, optional
         Default: True
+
+    confounds_tag: string (filename suffix), optional
+        If generating confounds, what path should they have? Defaults to
+        `desc-confounds_timeseries` as in `fmriprep` >= 20.2 but can be other
+        values (e.g. "desc-confounds_regressors" as in `fmriprep` < 20.2)
+        Default: "desc-confounds_timeseries"
 
     no_session: bool, optional
         Specifying no_sessions will only produce runs and files without the
@@ -592,7 +620,7 @@ def create_fake_bids_dataset(base_dir='', n_sub=10, n_ses=2,
                         if with_confounds:
                             confounds_path = os.path.join(
                                 func_path,
-                                file_id + '_desc-confounds_regressors.tsv',
+                                file_id + '_' + confounds_tag + '.tsv',
                             )
                             basic_confounds(100).to_csv(confounds_path,
                                                         sep='\t', index=None)

@@ -70,6 +70,10 @@ class NiftiLabelsMasker(BaseMasker, CacheMixin):
         to zero mean and scaled to unit variance.
         False : Do not standardize the data.
 
+    standardize_confounds: boolean, optional,  default is True
+        If standardize_confounds is True, the confounds are z-scored:
+        their mean is put to 0 and their variance to 1 in the time dimension.
+
     detrend: boolean, optional
         This parameter is passed to signal.clean. Please see the related
         documentation for details
@@ -123,8 +127,8 @@ class NiftiLabelsMasker(BaseMasker, CacheMixin):
     # memory and memory_level are used by CacheMixin.
 
     def __init__(self, labels_img, background_label=0, mask_img=None,
-                 smoothing_fwhm=None, standardize=False, detrend=False,
-                 low_pass=None, high_pass=None, t_r=None, dtype=None,
+                 smoothing_fwhm=None, standardize=False, standardize_confounds=True,
+                 detrend=False, low_pass=None, high_pass=None, t_r=None, dtype=None,
                  resampling_target="data",
                  memory=Memory(location=None, verbose=0), memory_level=1,
                  verbose=0, strategy="mean"):
@@ -137,6 +141,7 @@ class NiftiLabelsMasker(BaseMasker, CacheMixin):
 
         # Parameters for clean()
         self.standardize = standardize
+        self.standardize_confounds = standardize_confounds
         self.detrend = detrend
         self.low_pass = low_pass
         self.high_pass = high_pass
@@ -174,12 +179,14 @@ class NiftiLabelsMasker(BaseMasker, CacheMixin):
         All parameters are unused, they are for scikit-learn compatibility.
         """
         logger.log("loading data from %s" %
-                   _utils._repr_niimgs(self.labels_img)[:200],
+                   _utils._repr_niimgs(self.labels_img,
+                                       shorten=(not self.verbose)),
                    verbose=self.verbose)
         self.labels_img_ = _utils.check_niimg_3d(self.labels_img)
         if self.mask_img is not None:
             logger.log("loading data from %s" %
-                       _utils._repr_niimgs(self.mask_img)[:200],
+                       _utils._repr_niimgs(self.mask_img,
+                                           shorten=(not self.verbose)),
                        verbose=self.verbose)
             self.mask_img_ = _utils.check_niimg_3d(self.mask_img)
         else:
@@ -244,7 +251,7 @@ class NiftiLabelsMasker(BaseMasker, CacheMixin):
             Images to process. It must boil down to a 4D image with scans
             number as last dimension.
 
-        confounds: CSV file or array-like, optional
+        confounds: CSV file or array-like or pandas DataFrame, optional
             This parameter is passed to signal.clean. Please see the related
             documentation for details.
             shape: (number of scans, number of confounds)

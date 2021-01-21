@@ -22,7 +22,7 @@ import warnings
 
 import numpy as np
 
-from nibabel.onetime import setattr_on_read
+from nibabel.onetime import auto_attr
 from numpy.linalg import matrix_rank
 import scipy.linalg as spl
 
@@ -67,6 +67,11 @@ class OLSModel(object):
 
     df_model : scalar
         Degrees of freedome of the model.  The rank of the design.
+
+    Note
+    ----
+    This class is experimental. 
+    It may change in any future release of Nilearn.
     """
 
     def __init__(self, design):
@@ -95,7 +100,7 @@ class OLSModel(object):
         self.df_model = matrix_rank(self.design, eps)
         self.df_residuals = self.df_total - self.df_model
 
-    @setattr_on_read
+    @auto_attr
     def df_resid(self):
         warnings.warn("'df_resid' from OLSModel"
                       "has been deprecated and will be removed. "
@@ -103,7 +108,7 @@ class OLSModel(object):
                       FutureWarning)
         return self.df_residuals
 
-    @setattr_on_read
+    @auto_attr
     def wdesign(self):
         warnings.warn("'wdesign' from OLSModel"
                       "has been deprecated and will be removed. "
@@ -234,6 +239,10 @@ class ARModel(OLSModel):
     and sigma, a scalar nuisance parameter that
     shows up as multiplier in front of the AR(p) covariance.
 
+    Note
+    ----
+    This class is experimental. 
+    It may change in any future release of Nilearn.
     """
 
     def __init__(self, design, rho):
@@ -288,6 +297,12 @@ class RegressionResults(LikelihoodModelResults):
     This class summarizes the fit of a linear regression model.
 
     It handles the output of contrasts, estimates of covariance, etc.
+    
+    Note
+    ----
+    This class is experimental. 
+    It may change in any future release of Nilearn.
+
     """
 
     @rename_parameters(
@@ -307,7 +322,7 @@ class RegressionResults(LikelihoodModelResults):
         self.whitened_residuals = whitened_residuals
         self.whitened_design = model.whitened_design
 
-    @setattr_on_read
+    @auto_attr
     def wdesign(self):
         warnings.warn("'wdesign' from RegressionResults"
                       "has been deprecated and will be removed. "
@@ -315,7 +330,7 @@ class RegressionResults(LikelihoodModelResults):
                       FutureWarning)
         return self.whitened_design
 
-    @setattr_on_read
+    @auto_attr
     def wY(self):
         warnings.warn("'wY' from RegressionResults "
                       "has been deprecated and will be removed. "
@@ -324,7 +339,7 @@ class RegressionResults(LikelihoodModelResults):
                       )
         return self.whitened_Y
 
-    @setattr_on_read
+    @auto_attr
     def wresid(self):
         warnings.warn("'wresid' from RegressionResults "
                       "has been deprecated and will be removed. "
@@ -333,7 +348,7 @@ class RegressionResults(LikelihoodModelResults):
                       )
         return self.whitened_residuals
 
-    @setattr_on_read
+    @auto_attr
     def resid(self):
         warnings.warn("'resid' from RegressionResults "
                       "has been deprecated and will be removed. "
@@ -342,14 +357,14 @@ class RegressionResults(LikelihoodModelResults):
                       )
         return self.residuals
 
-    @setattr_on_read
+    @auto_attr
     def residuals(self):
         """
         Residuals from the fit.
         """
         return self.Y - self.predicted
 
-    @setattr_on_read
+    @auto_attr
     def norm_resid(self):
         warnings.warn("'norm_resid' from RegressionResults "
                       "has been deprecated and will be removed. "
@@ -358,7 +373,7 @@ class RegressionResults(LikelihoodModelResults):
                       )
         return self.normalized_residuals
 
-    @setattr_on_read
+    @auto_attr
     def normalized_residuals(self):
         """
         Residuals, normalized to have unit length.
@@ -378,7 +393,7 @@ class RegressionResults(LikelihoodModelResults):
         """
         return self.residuals * positive_reciprocal(np.sqrt(self.dispersion))
 
-    @setattr_on_read
+    @auto_attr
     def predicted(self):
         """ Return linear predictor values from a design matrix.
         """
@@ -387,20 +402,20 @@ class RegressionResults(LikelihoodModelResults):
         X = self.whitened_design
         return np.dot(X, beta)
 
-    @setattr_on_read
+    @auto_attr
     def SSE(self):
         """Error sum of squares. If not from an OLS model this is "pseudo"-SSE.
         """
         return (self.whitened_residuals ** 2).sum(0)
 
-    @setattr_on_read
+    @auto_attr
     def r_square(self):
         """Proportion of explained variance.
         If not from an OLS model this is "pseudo"-R2.
         """
         return np.var(self.predicted, 0) / np.var(self.whitened_Y, 0)
 
-    @setattr_on_read
+    @auto_attr
     def MSE(self):
         """ Mean square (error) """
         return self.SSE / self.df_residuals
@@ -411,6 +426,11 @@ class SimpleRegressionResults(LikelihoodModelResults):
     for contast computation.
 
     Its intended to save memory when details of the model are unnecessary.
+
+    Note
+    ----
+    This class is experimental. 
+    It may change in any future release of Nilearn.
     """
 
     def __init__(self, results):
@@ -449,7 +469,7 @@ class SimpleRegressionResults(LikelihoodModelResults):
         """
         return Y - self.predicted
 
-    @setattr_on_read
+    @auto_attr
     def df_resid(self):
         warnings.warn("The attribute 'df_resid' from OLSModel"
                       "has been deprecated and will be removed. "

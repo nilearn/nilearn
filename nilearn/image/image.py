@@ -467,7 +467,7 @@ def _pad_array(array, pad_sizes):
 def _compute_mean(imgs, target_affine=None,
                   target_shape=None, smooth=False):
     from . import resampling
-    input_repr = _repr_niimgs(imgs)
+    input_repr = _repr_niimgs(imgs, shorten=True)
 
     imgs = check_niimg(imgs)
     mean_data = _safe_get_data(imgs)
@@ -816,9 +816,7 @@ def threshold_img(img, threshold, mask_img=None, copy=True):
     from .. import masking
 
     img = check_niimg(img)
-    img_data = _safe_get_data(img, ensure_finite=True)
-    if copy:
-        img_data = img_data.copy()
+    img_data = _safe_get_data(img, ensure_finite=True, copy_data=copy)
     affine = img.affine
 
     if mask_img is not None:

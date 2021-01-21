@@ -76,13 +76,13 @@ def test_explicit_fixed_effects():
         ) = compute_fixed_effects(contrasts, variance, mask)
 
         assert_almost_equal(
-            fixed_fx_contrast.get_data(),
-            fixed_fx_dic['effect_size'].get_data())
+            get_data(fixed_fx_contrast),
+            get_data(fixed_fx_dic['effect_size']))
         assert_almost_equal(
-            fixed_fx_variance.get_data(),
-            fixed_fx_dic['effect_variance'].get_data())
+            get_data(fixed_fx_variance),
+            get_data(fixed_fx_dic['effect_variance']))
         assert_almost_equal(
-            fixed_fx_stat.get_data(), fixed_fx_dic['stat'].get_data())
+            get_data(fixed_fx_stat), get_data(fixed_fx_dic['stat']))
 
         # test without mask variable
         (
@@ -91,13 +91,13 @@ def test_explicit_fixed_effects():
             fixed_fx_stat,
         ) = compute_fixed_effects(contrasts, variance)
         assert_almost_equal(
-            fixed_fx_contrast.get_data(),
-            fixed_fx_dic['effect_size'].get_data())
+            get_data(fixed_fx_contrast),
+            get_data(fixed_fx_dic['effect_size']))
         assert_almost_equal(
-            fixed_fx_variance.get_data(),
-            fixed_fx_dic['effect_variance'].get_data())
+            get_data(fixed_fx_variance),
+            get_data(fixed_fx_dic['effect_variance']))
         assert_almost_equal(
-            fixed_fx_stat.get_data(), fixed_fx_dic['stat'].get_data())
+            get_data(fixed_fx_stat), get_data(fixed_fx_dic['stat']))
 
         # ensure that using unbalanced effects size and variance images
         # raises an error
@@ -212,13 +212,14 @@ def test_high_level_glm_different_design_matrices():
         fmri_data[1], design_matrices=design_matrices[1])
     z2 = model2.compute_contrast(np.eye(rk + 1)[:1],
                                  output_type='effect_size')
-    assert_almost_equal(z1.get_data() + z2.get_data(),
-                        2 * z_joint.get_data())
+    assert_almost_equal(get_data(z1) + get_data(z2),
+                        2 * get_data(z_joint))
 
 
 def test_run_glm():
+    rng = np.random.RandomState(42)
     n, p, q = 100, 80, 10
-    X, Y = np.random.RandomState(0).randn(p, q), np.random.randn(p, n)
+    X, Y = rng.standard_normal(size=(p, q)), rng.standard_normal(size=(p, n))
 
     # Ordinary Least Squares case
     labels, results = run_glm(Y, X, 'ols')
@@ -275,9 +276,10 @@ def test_run_glm():
 
 def test_scaling():
     """Test the scaling function"""
+    rng = np.random.RandomState(42)
     shape = (400, 10)
-    u = np.random.randn(*shape)
-    mean = 100 * np.random.rand(shape[1]) + 1
+    u = rng.standard_normal(size=shape)
+    mean = 100 * rng.uniform(size=shape[1]) + 1
     Y = u + mean
     Y_, mean_ = mean_scaling(Y)
     assert_almost_equal(Y_.mean(0), 0, 5)
@@ -303,6 +305,13 @@ def test_fmri_inputs():
                 FirstLevelModel(mask_img=None).fit([fi], design_matrices=d)
                 FirstLevelModel(mask_img=mask).fit(fi, design_matrices=[d])
                 FirstLevelModel(mask_img=mask).fit([fi], design_matrices=[d])
+                # test with confounds
+                FirstLevelModel(mask_img=mask).fit([fi], design_matrices=[d],
+                                                   confounds=conf)
+                # test with confounds as numpy array
+                FirstLevelModel(mask_img=mask).fit([fi], design_matrices=[d],
+                                                   confounds=conf.values)
+                
                 FirstLevelModel(mask_img=mask).fit([fi, fi],
                                                    design_matrices=[d, d])
                 FirstLevelModel(mask_img=None).fit((fi, fi),
@@ -506,7 +515,7 @@ def test_first_level_from_bids():
         # test issues with confound files. There should be only one confound
         # file per img. An one per image or None. Case when one is missing
         confound_files = get_bids_files(os.path.join(bids_path, 'derivatives'),
-                                        file_tag='desc-confounds_regressors')
+                                        file_tag='desc-confounds_timeseries')
         os.remove(confound_files[-1])
         with pytest.raises(ValueError):
             first_level_from_bids(
