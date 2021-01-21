@@ -128,7 +128,7 @@ def run_glm(Y, X, noise_model='ar1', bins=100, n_jobs=1, verbose=0):
         values are RegressionResults instances corresponding to the voxels.
 
     """
-    acceptable_noise_models = ['ols']
+    acceptable_noise_models = ['ols', 'arN']
     if (('ar' not in noise_model) and (noise_model is not 'ols')):
         raise ValueError(
             "Acceptable noise models are {0}. You provided "
