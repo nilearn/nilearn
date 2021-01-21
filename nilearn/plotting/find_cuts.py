@@ -96,7 +96,9 @@ def find_xyz_cut_coords(img, mask_img=None, activation_threshold=None):
         # check against empty mask
         if mask.sum() == 0.:
             warnings.warn(
-                "Provided mask is empty. Returning center of mass instead.")
+                "Could not determine cut coords: "
+                "Provided mask is empty. "
+                "Returning center of mass instead.")
             cut_coords = ndimage.center_of_mass(np.abs(my_map)) + offset
             x_map, y_map, z_map = cut_coords
             return np.asarray(coord_transform(x_map, y_map, z_map,
@@ -106,10 +108,18 @@ def find_xyz_cut_coords(img, mask_img=None, activation_threshold=None):
         mask = mask[slice_x, slice_y, slice_z]
         my_map *= mask
         offset += [slice_x.start, slice_y.start, slice_z.start]
-
     # Testing min and max is faster than np.all(my_map == 0)
     if (my_map.max() == 0) and (my_map.min() == 0):
-        return .5 * np.array(data.shape)
+        warnings.warn(
+            "Could not determine cut coords: "
+            "All values were masked. "
+            "Returning center of mass of unmasked data instead.")
+        # Call center of mass on initial data since my_map is zero.
+        # Therefore, do not add offset to cut_coords.
+        cut_coords = ndimage.center_of_mass(np.abs(data))
+        x_map, y_map, z_map = cut_coords
+        return np.asarray(coord_transform(x_map, y_map, z_map,
+                                          img.affine)).tolist()
     if activation_threshold is None:
         activation_threshold = fast_abs_percentile(my_map[my_map != 0].ravel(),
                                                    80)
@@ -122,7 +132,15 @@ def find_xyz_cut_coords(img, mask_img=None, activation_threshold=None):
     mask = np.abs(my_map) > (activation_threshold - eps)
     # mask may be zero everywhere in rare cases
     if mask.max() == 0:
-        return .5 * np.array(data.shape)
+        warnings.warn(
+            "Could not determine cut coords: "
+            "All voxels were masked by the thresholding. "
+            "Returning the center of mass instead.")
+        cut_coords = ndimage.center_of_mass(np.abs(my_map)) + offset
+        x_map, y_map, z_map = cut_coords
+        return np.asarray(coord_transform(x_map, y_map, z_map,
+                                          img.affine)).tolist()
+
     mask = largest_connected_component(mask)
     slice_x, slice_y, slice_z = ndimage.find_objects(mask)[0]
     my_map = my_map[slice_x, slice_y, slice_z]
