@@ -18,6 +18,7 @@ def _check_square(matrix):
     ----------
     matrix : numpy.ndarray
         Input array.
+
     """
     if matrix.ndim != 2 or (matrix.shape[0] != matrix.shape[-1]):
         raise ValueError('Expected a square matrix, got array of shape'
@@ -32,6 +33,7 @@ def _check_spd(matrix):
     ----------
     matrix : numpy.ndarray
         Input array.
+
     """
     if not is_spd(matrix, decimal=7):
         raise ValueError('Expected a symmetric positive definite matrix.')
@@ -57,6 +59,7 @@ def _form_symmetric(function, eigenvalues, eigenvectors):
     output : numpy.ndarray, shape (n_features, n_features)
         The symmetric matrix obtained after transforming the eigenvalues, while
         keeping the same eigenvectors.
+
     """
     return np.dot(eigenvectors * function(eigenvalues), eigenvectors.T)
 
@@ -83,6 +86,7 @@ def _map_eigenvalues(function, symmetric):
     -----
     If input matrix is not real symmetric, no error is reported but result will
     be wrong.
+
     """
     eigenvalues, eigenvectors = linalg.eigh(symmetric)
     return _form_symmetric(function, eigenvalues, eigenvectors)
@@ -103,11 +107,12 @@ def _geometric_mean(matrices, init=None, max_iter=10, tol=1e-7):
 
     In case of positive numbers, this mean is the usual geometric mean.
 
+    See Algorithm 3 of [1]_.
+
     References
     ----------
-    See Algorithm 3 of:
-        P. Thomas Fletcher, Sarang Joshi. Riemannian Geometry for the
-        Statistical Analysis of Diffusion Tensor Data. Signal Processing, 2007.
+    .. [1] P. Thomas Fletcher, Sarang Joshi. Riemannian Geometry for the
+       Statistical Analysis of Diffusion Tensor Data. Signal Processing, 2007.
 
     Parameters
     ----------
@@ -121,17 +126,18 @@ def _geometric_mean(matrices, init=None, max_iter=10, tol=1e-7):
         same shape as the elements of matrices.
 
     max_iter : int, optional
-        Maximal number of iterations.
+        Maximal number of iterations. Default=10.
 
     tol : positive float or None, optional
         The tolerance to declare convergence: if the gradient norm goes below
         this value, the gradient descent is stopped. If None, no  check is
-        performed.
+        performed. Default=1e-7.
 
     Returns
     -------
     gmean : numpy.ndarray, shape (n_features, n_features)
         Geometric mean of the matrices.
+
     """
     # Shape and symmetry positive definiteness checks
     n_features = matrices[0].shape[0]
@@ -212,7 +218,7 @@ def sym_to_vec(symmetric, discard_diagonal=False):
 
     discard_diagonal : boolean, optional
         If True, the values of the diagonal are not returned.
-        Default is False.
+        Default=False.
 
     Returns
     -------
@@ -220,6 +226,7 @@ def sym_to_vec(symmetric, discard_diagonal=False):
         The output flattened lower triangular part of symmetric. Shape is
         (..., n_features * (n_features + 1) / 2) if discard_diagonal is False
         and (..., (n_features - 1) * n_features / 2) otherwise.
+
     """
     return sym_matrix_to_vec(symmetric=symmetric,
                              discard_diagonal=discard_diagonal)
@@ -243,7 +250,7 @@ def sym_matrix_to_vec(symmetric, discard_diagonal=False):
 
     discard_diagonal : boolean, optional
         If True, the values of the diagonal are not returned.
-        Default is False.
+        Default=False.
 
     Returns
     -------
@@ -251,7 +258,6 @@ def sym_matrix_to_vec(symmetric, discard_diagonal=False):
         The output flattened lower triangular part of symmetric. Shape is
         (..., n_features * (n_features + 1) / 2) if discard_diagonal is False
         and (..., (n_features - 1) * n_features / 2) otherwise.
-
 
     """
     if discard_diagonal:
@@ -300,6 +306,7 @@ def vec_to_sym_matrix(vec, diagonal=None):
     See also
     --------
     nilearn.connectome.sym_matrix_to_vec
+
     """
     n = vec.shape[-1]
     # Compute the number of the symmetric matrix columns
@@ -355,6 +362,7 @@ def cov_to_corr(covariance):
     -------
     correlation : 2D numpy.ndarray
         The ouput correlation matrix.
+
     """
     diagonal = np.atleast_2d(1. / np.sqrt(np.diag(covariance)))
     correlation = covariance * diagonal * diagonal.T
@@ -376,6 +384,7 @@ def prec_to_partial(precision):
     -------
     partial_correlation : 2D numpy.ndarray
         The 2D ouput partial correlation matrix.
+
     """
     partial_correlation = -cov_to_corr(precision)
     np.fill_diagonal(partial_correlation, 1.)
@@ -395,17 +404,19 @@ class ConnectivityMeasure(BaseEstimator, TransformerMixin):
         is used. This implies that correlations are slightly shrunk
         towards zero compared to a maximum-likelihood estimate
 
-    kind : {"correlation", "partial correlation", "tangent",\
-            "covariance", "precision"}, optional
-        The matrix kind.
+    kind : {"covariance", "correlation", "partial correlation",\
+            "tangent", "precision"}, optional
+        The matrix kind. For the use of "tangent" see [1]_.
+        Default='covariance'.
 
     vectorize : bool, optional
         If True, connectivity matrices are reshaped into 1D arrays and only
-        their flattened lower triangular parts are returned.
+        their flattened lower triangular parts are returned. Default=False.
 
     discard_diagonal : bool, optional
         If True, vectorized connectivity coefficients do not include the
         matrices diagonal elements. Used only when vectorize is set to True.
+        Default=False.
 
     Attributes
     ----------
@@ -424,9 +435,9 @@ class ConnectivityMeasure(BaseEstimator, TransformerMixin):
 
     References
     ----------
-    For the use of "tangent", see the paper:
-    G. Varoquaux et al. "Detection of brain functional-connectivity difference
-    in post-stroke patients using group-level covariance modeling, MICCAI 2010.
+    .. [1] G. Varoquaux et al. "Detection of brain functional-connectivity difference
+       in post-stroke patients using group-level covariance modeling, MICCAI 2010.
+
     """
 
     def __init__(self, cov_estimator=LedoitWolf(store_precision=False),
@@ -478,6 +489,7 @@ class ConnectivityMeasure(BaseEstimator, TransformerMixin):
         -------
         self : ConnectivityMatrix instance
             The object itself. Useful for chaining operations.
+
         """
         self._fit_transform(X, do_fit=True)
         return self
@@ -485,6 +497,7 @@ class ConnectivityMeasure(BaseEstimator, TransformerMixin):
     def _fit_transform(self, X, do_transform=False, do_fit=False,
                        confounds=None):
         """ Internal function to avoid duplication of computation
+
         """
         self._check_input(X, confounds=confounds)
         if do_fit:
@@ -576,6 +589,7 @@ class ConnectivityMeasure(BaseEstimator, TransformerMixin):
             is set to True.
             The transformed individual connectivities, as matrices or vectors.
             Vectors are cleaned when vectorize=True and confounds are provided.
+
         """
         if self.kind == 'tangent':
             # Check that people are applying fit_transform to a group of
@@ -616,6 +630,7 @@ class ConnectivityMeasure(BaseEstimator, TransformerMixin):
             is set to True.
             The transformed individual connectivities, as matrices or vectors.
             Vectors are cleaned when vectorize=True and confounds are provided.
+
         """
         self._check_fitted()
         return self._fit_transform(X, do_transform=True, confounds=confounds)
@@ -649,6 +664,7 @@ class ConnectivityMeasure(BaseEstimator, TransformerMixin):
             'partial correlation', the correlation/partial correlation
             matrices are returned.
             If kind is 'tangent', the covariance matrices are reconstructed.
+
         """
         self._check_fitted()
 

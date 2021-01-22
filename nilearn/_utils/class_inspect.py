@@ -8,7 +8,7 @@ from .exceptions import AuthorizedException
 
 
 def get_params(cls, instance, ignore=None):
-    """ Retrieve the initialization parameters corresponding to a class
+    """Retrieve the initialization parameters corresponding to a class
 
     This helper function retrieves the parameters of function __init__ for
     class 'cls' and returns the value for these parameters in object
@@ -17,22 +17,21 @@ def get_params(cls, instance, ignore=None):
 
     Parameters
     ----------
-    cls: class
-        The class that gives us the list of parameters we are interested
-        in
+    cls : class
+        The class that gives us the list of parameters we are interested in.
 
-    instance: object, instance of BaseEstimator
-        The object that gives us the values of the parameters
+    instance : object, instance of BaseEstimator
+        The object that gives us the values of the parameters.
 
-    ignore: None or list of strings
+    ignore : None or list of strings
         Names of the parameters that are not returned.
 
     Returns
     -------
-    params: dict
-        The dict of parameters
-    """
+    params : dict
+        The dict of parameters.
 
+    """
     _ignore = set(('memory', 'memory_level', 'verbose', 'copy', 'n_jobs'))
     if ignore is not None:
         _ignore.update(ignore)
@@ -50,7 +49,7 @@ def get_params(cls, instance, ignore=None):
 
 
 def enclosing_scope_name(ensure_estimator=True, stack_level=2):
-    """ Find the name of the enclosing scope for debug output purpose
+    """Find the name of the enclosing scope for debug output purpose
 
     Use inspection to climb up the stack until the calling object. This is
     typically used to get the estimator at the origin of a functional call
@@ -58,11 +57,14 @@ def enclosing_scope_name(ensure_estimator=True, stack_level=2):
 
     Parameters
     ----------
-    ensure_estimator: boolean, default: True
-        If true, find the enclosing object deriving from 'BaseEstimator'
-    stack_level: integer, default 2
+    ensure_estimator : boolean, optional
+        If true, find the enclosing object deriving from 'BaseEstimator'.
+        Default=True.
+
+    stack_level : integer, optional
         If ensure_estimator is not True, stack_level quantifies the
-        number of frame we will go up.
+        number of frame we will go up. Default=2.
+
     """
     try:
         frame = inspect.currentframe()

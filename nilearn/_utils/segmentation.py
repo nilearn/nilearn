@@ -23,23 +23,26 @@ def _make_graph_edges_3d(n_x, n_y, n_z):
 
     Parameters
     ----------
-    n_x: integer
+    n_x : integer
         The size of the grid in the x direction.
-    n_y: integer
-        The size of the grid in the y direction
-    n_z: integer
-        The size of the grid in the z direction
+
+    n_y : integer
+        The size of the grid in the y direction.
+
+    n_z : integer
+        The size of the grid in the z direction.
 
     Returns
     -------
     edges : (2, N) ndarray
-        with the total number of edges::
+        With the total number of edges:
 
             N = n_x * n_y * (nz - 1) +
                 n_x * (n_y - 1) * nz +
                 (n_x - 1) * n_y * nz
 
         Graph edges with each column describing a node-id pair.
+
     """
     vertices = np.arange(n_x * n_y * n_z).reshape((n_x, n_y, n_z))
     edges_deep = np.vstack((vertices[:, :, :-1].ravel(),
@@ -159,6 +162,7 @@ def _random_walker(data, labels, beta=130, tol=1.e-3, copy=True, spacing=None):
     data : array_like
         Image to be segmented in phases. Data spacing is assumed isotropic unless
         the `spacing` keyword argument is used.
+
     labels : array of ints, of same shape as `data` without channels dimension
         Array of seed markers labeled with different positive integers
         for different phases. Zero-labeled pixels are unlabeled pixels.
@@ -166,26 +170,31 @@ def _random_walker(data, labels, beta=130, tol=1.e-3, copy=True, spacing=None):
         into account (they are removed from the graph). If labels are not
         consecutive integers, the labels array will be transformed so that
         labels are consecutive.
-    beta : float
+
+    beta : float, optional
         Penalization coefficient for the random walker motion
         (the greater `beta`, the more difficult the diffusion).
-    tol : float
-        tolerance to achieve when solving the linear system, in
-        cg' mode.
-    copy : bool
+        Default=130.
+
+    tol : float, optional
+        Tolerance to achieve when solving the linear system, in
+        cg' mode. Default=1e-3.
+
+    copy : bool, optional
         If copy is False, the `labels` array will be overwritten with
         the result of the segmentation. Use copy=False if you want to
-        save on memory.
-    spacing : iterable of floats
+        save on memory. Default=True.
+
+    spacing : iterable of floats, optional
         Spacing between voxels in each spatial dimension. If `None`, then
         the spacing between pixels/voxels in each dimension is assumed 1.
 
     Returns
     -------
     output : ndarray
-        * An array of ints of same shape as `data`, in which each pixel has
-          been labeled according to the marker that reached the pixel first
-          by anisotropic diffusion.
+        An array of ints of same shape as `data`, in which each pixel has
+        been labeled according to the marker that reached the pixel first
+        by anisotropic diffusion.
 
     Notes
     -----
@@ -193,9 +202,7 @@ def _random_walker(data, labels, beta=130, tol=1.e-3, copy=True, spacing=None):
     data points are spaced differently in one or more spatial dimensions.
     Anisotropic data is commonly encountered in medical imaging.
 
-    The algorithm was first proposed in *Random walks for image
-    segmentation*, Leo Grady, IEEE Trans Pattern Anal Mach Intell.
-    2006 Nov;28(11):1768-83.
+    The algorithm was first proposed in [1]_.
 
     The algorithm solves the diffusion equation at infinite times for
     sources placed on markers of each phase in turn. A pixel is labeled with
@@ -229,6 +236,11 @@ def _random_walker(data, labels, beta=130, tol=1.e-3, copy=True, spacing=None):
     where x_m = 1 on markers of the given phase, and 0 on other markers.
     This linear system is solved in the algorithm using a direct method for
     small images, and an iterative method for larger images.
+
+    References
+    ----------
+    .. [1] Random walks for image segmentation, Leo Grady, IEEE Trans Pattern
+       Anal Mach Intell. 2006 Nov;28(11):1768-83.
 
     """
     out_labels = np.copy(labels)
@@ -320,9 +332,10 @@ def _random_walker(data, labels, beta=130, tol=1.e-3, copy=True, spacing=None):
 
 def _solve_cg(lap_sparse, B, tol):
     """
-    solves lap_sparse X_i = B_i for each phase i, using the conjugate
+    Solves lap_sparse X_i = B_i for each phase i, using the conjugate
     gradient method. For each pixel, the label i corresponding to the
     maximal X_i is returned.
+
     """
     lap_sparse = lap_sparse.tocsc()
     X = []

@@ -16,12 +16,12 @@ def largest_connected_component(volume):
 
     Parameters
     -----------
-    volume: numpy.ndarray
+    volume : numpy.ndarray
         3D boolean array indicating a volume.
 
     Returns
     --------
-    volume: numpy.ndarray
+    volume : numpy.ndarray
         3D boolean array with only one connected component.
 
     See Also
@@ -31,7 +31,6 @@ def largest_connected_component(volume):
 
     Notes
     -----
-
     **Handling big-endian in given numpy.ndarray**
     This function changes the existing byte-ordering information to new byte
     order, if the given volume has non-native data type. This operation
@@ -78,25 +77,29 @@ def _peak_local_max(image, min_distance=10, threshold_abs=0, threshold_rel=0.1,
     Peaks are the local maxima in a region of `2 * min_distance + 1`
     (i.e. peaks are separated by at least `min_distance`).
 
-    NOTE: If peaks are flat (i.e. multiple adjacent pixels have identical
-    intensities), the coordinates of all such pixels are returned.
-
     Parameters
     ----------
     image : ndarray of floats
         Input image.
-    min_distance : int
+
+    min_distance : int, optional
         Minimum number of pixels separating peaks in a region of `2 *
         min_distance + 1` (i.e. peaks are separated by at least
         `min_distance`). To find the maximum number of peaks, use
         `min_distance=1`.
-    threshold_abs : float
-        Minimum intensity of peaks.
-    threshold_rel : float
+        Default=10.
+
+    threshold_abs : float, optional
+        Minimum intensity of peaks. Default=0.
+
+    threshold_rel : float, optional
         Minimum intensity of peaks calculated as `max(image) * threshold_rel`.
-    num_peaks : int
+        Default=0.1.
+
+    num_peaks : int, optional
         Maximum number of peaks. When the number of peaks exceeds `num_peaks`,
         return `num_peaks` peaks based on highest peak intensity.
+        Default=np.inf.
 
     Returns
     -------
@@ -106,6 +109,9 @@ def _peak_local_max(image, min_distance=10, threshold_abs=0, threshold_rel=0.1,
 
     Notes
     -----
+    If peaks are flat (i.e. multiple adjacent pixels have identical
+    intensities), the coordinates of all such pixels are returned.
+
     The peak local maximum function returns the coordinates of local peaks
     (maxima) in a image. A maximum filter is used for finding local maxima.
     This operation dilates the original image. After comparison between
@@ -115,6 +121,7 @@ def _peak_local_max(image, min_distance=10, threshold_abs=0, threshold_rel=0.1,
     This code is mostly adapted from scikit image 0.11.3 release.
     Location of file in scikit image: peak_local_max function in
     skimage.feature.peak
+
     """
     out = np.zeros_like(image, dtype=np.bool)
 

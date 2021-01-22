@@ -23,11 +23,11 @@ MAX_IMG_VIEWS_BEFORE_WARNING = 10
 
 
 def add_js_lib(html, embed_js=True):
-    """
-    Add javascript libraries to html template.
+    """Add javascript libraries to html template.
 
-    if embed_js is True, jquery and plotly are embedded in resulting page.
+    If embed_js is True, jquery and plotly are embedded in resulting page.
     otherwise, they are loaded via CDNs.
+
     """
     js_dir = os.path.join(os.path.dirname(__file__), 'data', 'js')
     with open(os.path.join(js_dir, 'surface-plot-utils.js')) as f:
