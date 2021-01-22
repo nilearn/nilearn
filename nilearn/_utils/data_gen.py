@@ -114,13 +114,14 @@ def generate_maps(shape, n_regions, overlap=0, border=1,
 
     overlap : int, optional
         Approximate number of voxels common to two neighboring regions.
+        Default=0.
 
     window : str, optional
         Name of a window in scipy.signal. Used to get non-uniform regions.
         Default='boxcar'.
 
-    ran_gen : numpy.random.RandomState, optional
-        Random generator to use for generation.
+    ran_gen : None or numpy.random.RandomState, optional
+        Random generator to use for generation. Default=None.
 
     affine : Numpy array, optional
         Affine transformation to use. Default=np.eye(4).
@@ -538,10 +539,10 @@ def create_fake_bids_dataset(base_dir='', n_sub=10, n_ses=2,
         Ignored if no_session=True.
         Default=2.
 
-    tasks : List[str], optional
+    tasks : List of str, optional
         List of tasks. Default=["localizer", "main"].
 
-    n_runs : List[int], optional
+    n_runs : List of int, optional
         Default=[1, 3].
 
     with_derivatives : bool, optional
@@ -569,9 +570,9 @@ def create_fake_bids_dataset(base_dir='', n_sub=10, n_ses=2,
     dataset directory name : string
         'bids_dataset'.
 
-    Creates
-    -------
-        Directory with dummy files.
+    Notes
+    -----
+        Creates a directory with dummy files.
 
     """
     bids_path = os.path.join(base_dir, 'bids_dataset')

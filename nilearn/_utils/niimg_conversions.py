@@ -205,10 +205,11 @@ def check_niimg(niimg, ensure_ndim=None, atleast_4d=False, dtype=None,
         Indicates if a 3d image should be turned into a single-scan 4d niimg.
         Default=False.
 
-    dtype : {dtype, "auto"}, otional
+    dtype : {None, dtype, "auto"}, optional
         Data type toward which the data should be converted. If "auto", the
         data will be converted to int32 if dtype is discrete and float32 if it
-        is continuous.
+        is continuous. If None, data will not be converted to a new data type.
+        Default=None.
 
     return_iterator : boolean, optional
         Returns an iterator on the content of the niimg file input.
