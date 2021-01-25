@@ -22,7 +22,7 @@ from nilearn.input_data import NiftiMasker
 from sklearn.datasets import load_iris, make_classification, make_regression
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.linear_model import LogisticRegression, RidgeClassifierCV, RidgeCV
-from sklearn.metrics import accuracy_score, r2_score, roc_auc_score
+from sklearn.metrics import accuracy_score, r2_score, roc_auc_score, make_scorer
 from sklearn.model_selection import KFold, LeaveOneGroupOut
 from sklearn.preprocessing import StandardScaler
 from sklearn.svm import SVR, LinearSVC
@@ -191,6 +191,16 @@ def test_decoder_binary_classification():
     assert model.scoring == "roc_auc"
     assert model.score(X, y) == 0.5
     assert accuracy_score(y, y_pred) == 0.5
+
+    # Set scoring of decoder with a callable
+    accuracy_scorer = make_scorer(accuracy_score)
+    model = Decoder(estimator='dummy_classifier',
+                    mask=mask,
+                    scoring=accuracy_scorer)
+    model.fit(X, y)
+    y_pred = model.predict(X)
+    assert model.scoring == accuracy_scorer
+    assert model.score(X, y) == accuracy_score(y, y_pred)
 
     # An error should be raise when trying to compute
     # the score whithout having called fit first.

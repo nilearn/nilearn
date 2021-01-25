@@ -39,7 +39,8 @@ from sklearn.metrics import (accuracy_score,
                              recall_score,
                              r2_score,
                              mean_absolute_error,
-                             mean_squared_error)
+                             mean_squared_error,
+                             make_scorer)
 
 from nilearn._utils import CacheMixin
 from nilearn._utils.cache_mixin import _check_memory
@@ -80,6 +81,7 @@ SCORING_METRICS = {"accuracy": accuracy_score,
                    "neg_mean_absolute_error": mean_absolute_error,
                    "neg_mean_squared_error": mean_squared_error,
                    }
+SCORING_METRICS = {k: make_scorer(v) for k,v in SCORING_METRICS.items()}
 
 def _check_param_grid(estimator, X, y, param_grid=None):
     """Check param_grid and return sensible default if param_grid is None.
@@ -640,8 +642,7 @@ class _BaseDecoder(LinearRegression, CacheMixin):
             raise ValueError("Unable to compute score. "
                              "No scoring metric was provided "
                              "to Decoder object.")
-        y_pred = self.predict(X)
-        return self._scoring_metric(y, y_pred, *args)
+        return self._scoring_metric(self, X, y, *args)
 
     def decision_function(self, X):
         """Predict class labels for samples in X.
