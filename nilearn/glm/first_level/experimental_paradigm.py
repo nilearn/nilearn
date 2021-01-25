@@ -17,6 +17,12 @@ import warnings
 
 import numpy as np
 
+VALID_FIELDS = set(["name",
+                    "onset",
+                    "duration",
+                    "trial_type",
+                    "modulation",
+                    ])
 
 def check_events(events):
     """Test that the events data describes a valid experimental paradigm
@@ -54,13 +60,19 @@ def check_events(events):
     onset = np.array(events['onset'])
     duration = np.array(events['duration']).astype(np.float)
     n_events = len(onset)
-    trial_type = np.array(events['trial_type'])
     modulation = np.ones(n_events)
     if 'trial_type' not in events.keys():
         warnings.warn("'trial_type' column not found "
                       "in the given events data.")
         trial_type = np.repeat('dummy', n_events)
+    else:
+        trial_type = np.array(events['trial_type'])
     if 'modulation' in events.keys():
         warnings.warn("'modulation' column found in the given events data.")
         modulation = np.array(events['modulation']).astype(np.float)
+    for event,_ in events.items():
+        if event not in VALID_FIELDS:
+            warnings.warn("Unexpected key `{}` in events "
+                          "will be ignored.".format(
+                              event))
     return trial_type, onset, duration, modulation
