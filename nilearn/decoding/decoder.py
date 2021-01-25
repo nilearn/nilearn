@@ -32,6 +32,15 @@ from sklearn.utils import check_random_state
 from sklearn.utils.extmath import safe_sparse_dot
 from sklearn.utils.validation import check_is_fitted, check_X_y
 
+from sklearn.metrics import (accuracy_score,
+                             roc_auc_score,
+                             f1_score,
+                             precision_score,
+                             recall_score,
+                             r2_score,
+                             mean_absolute_error,
+                             mean_squared_error)
+
 from nilearn._utils import CacheMixin
 from nilearn._utils.cache_mixin import _check_memory
 from nilearn._utils.param_validation import check_feature_screening
@@ -61,6 +70,16 @@ SUPPORTED_ESTIMATORS = dict(
     dummy_regressor = DummyRegressor(strategy='mean'),
 )
 
+
+SCORING_METRICS = {"accuracy": accuracy_score,
+                   "roc_auc": roc_auc_score,
+                   "f1": f1_score,
+                   "precision": precision_score,
+                   "recall": recall_score,
+                   "r2": r2_score,
+                   "neg_mean_absolute_error": mean_absolute_error,
+                   "neg_mean_squared_error": mean_squared_error,
+                   }
 
 def _check_param_grid(estimator, X, y, param_grid=None):
     """Check param_grid and return sensible default if param_grid is None.
@@ -387,6 +406,19 @@ class _BaseDecoder(LinearRegression, CacheMixin):
         self.n_jobs = n_jobs
         self.verbose = verbose
 
+        # Determine the scoring strategy
+        self._scoring_metric = None
+        if callable(self.scoring):
+             self._scoring_metric = self.scoring
+        elif(isinstance(self.scoring, str) and
+             self.scoring in SCORING_METRICS):
+            self._scoring_metric = SCORING_METRICS[self.scoring]
+        elif self.scoring is not None:
+            raise ValueError("Unknown scoring metric {}. "
+                             "Refer to the documentation for "
+                             "available metrics.".format(
+                                 self.scoring))
+
     def fit(self, X, y, groups=None):
         """Fit the decoder (learner).
 
@@ -582,6 +614,34 @@ class _BaseDecoder(LinearRegression, CacheMixin):
             if self.is_classification and (self.n_classes_ == 2):
                 if not self.n_outputs_ > 1:
                     self.dummy_output_ = self.dummy_output_[0, :][np.newaxis, :]
+
+    def score(self, X, y, *args):
+        """Compute the prediction score using the scoring
+        metric defined by the scoring attribute.
+
+        Parameters
+        ----------
+        X : {array-like, sparse matrix}, shape = (n_samples, n_features)
+            Samples.
+
+        y : array-like
+            Target values.
+
+        args : Optional arguments that can be passed to
+            scoring metrics. Example: sample_weight.
+
+        Returns
+        -------
+        score : float
+            Prediction score.
+
+        """
+        if self.scoring is None:
+            raise ValueError("Unable to compute score. "
+                             "No scoring metric was provided "
+                             "to Decoder object.")
+        y_pred = self.predict(X)
+        return self._scoring_metric(y, y_pred, *args)
 
     def decision_function(self, X):
         """Predict class labels for samples in X.
