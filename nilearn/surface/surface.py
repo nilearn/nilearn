@@ -6,6 +6,7 @@ import warnings
 import collections
 import gzip
 from distutils.version import LooseVersion
+from collections import namedtuple
 
 
 import numpy as np
@@ -28,6 +29,9 @@ from nilearn.image import resampling
 from nilearn._utils.path_finding import _resolve_globbing
 from nilearn import _utils
 from nilearn.image import get_data
+
+# Create a namedtuple object for meshes
+Mesh = namedtuple("mesh", ["coordinates", "faces"])
 
 
 def _uniform_ball_cloud(n_points=20, dim=3, n_monte_carlo=50000):
@@ -474,13 +478,12 @@ def vol_to_surf(img, surf_mesh,
     img : Niimg-like object, 3d or 4d.
         See http://nilearn.github.io/manipulating_images/input_output.html
 
-    surf_mesh : str or numpy.ndarray
+    surf_mesh : str or numpy.ndarray or Mesh
         Either a file containing surface mesh geometry (valid formats
         are .gii or Freesurfer specific files such as .orig, .pial,
-        .sphere, .white, .inflated) or a list of two Numpy arrays,
-        the first containing the x-y-z coordinates of the mesh
-        vertices, the second containing the indices (into coords)
-        of the mesh faces.
+        .sphere, .white, .inflated) or two Numpy arrays organized in a list,
+        tuple or a namedtuple with the fields "coordinates" and "faces", or
+        a Mesh object with "coordinates" and "faces" attributes.
 
     radius : float, optional
         The size (in mm) of the neighbourhood from which samples are drawn
@@ -812,21 +815,21 @@ def load_surf_mesh(surf_mesh):
 
     Parameters
     ----------
-    surf_mesh : str or numpy.ndarray
+    surf_mesh : str or numpy.ndarray or Mesh
         Either a file containing surface mesh geometry (valid formats
         are .gii .gii.gz or Freesurfer specific files such as .orig, .pial,
-        .sphere, .white, .inflated) or a list or tuple of two Numpy arrays,
-        the first containing the x-y-z coordinates of the mesh
-        vertices, the second containing the indices (into coords)
-        of the mesh faces.
+        .sphere, .white, .inflated) or two Numpy arrays organized in a list,
+        tuple or a namedtuple with the fields "coordinates" and "faces", or a
+        Mesh object with "coordinates" and "faces" attributes.
 
     Returns
     --------
-    [coords, faces] : List of two numpy.ndarray
-        The first containing the x-y-z coordinates of the mesh vertices,
-        the second containing the indices (into coords) of the mesh faces.
+    mesh : Mesh
+        With the fields "coordinates" and "faces", each containing a
+        numpy.ndarray
 
     """
+
     # if input is a filename, try to load it
     if isinstance(surf_mesh, str):
         # resolve globbing
@@ -843,26 +846,31 @@ def load_surf_mesh(surf_mesh):
                 surf_mesh.endswith('white') or surf_mesh.endswith('sphere') or
                 surf_mesh.endswith('inflated')):
             coords, faces = fs.io.read_geometry(surf_mesh)
+            mesh = Mesh(coordinates=coords, faces=faces)
         elif surf_mesh.endswith('gii'):
             if LooseVersion(nibabel.__version__) >= LooseVersion('2.1.0'):
                 gifti_img = nibabel.load(surf_mesh)
             else:
                 gifti_img = gifti.read(surf_mesh)
             coords, faces = _gifti_img_to_mesh(gifti_img)
+            mesh = Mesh(coordinates=coords, faces=faces)
         elif surf_mesh.endswith('.gii.gz'):
             gifti_img = _load_surf_files_gifti_gzip(surf_mesh)
             coords, faces = _gifti_img_to_mesh(gifti_img)
+            mesh = Mesh(coordinates=coords, faces=faces)
         else:
             raise ValueError(('The input type is not recognized. %r was given '
                               'while valid inputs are one of the following '
                               'file formats: .gii, .gii.gz, Freesurfer '
                               'specific files such as .orig, .pial, .sphere, '
-                              '.white, .inflated or a list containing two '
-                              'Numpy arrays [vertex coordinates, face indices]'
+                              '.white, .inflated or two Numpy arrays organized '
+                              'in a list, tuple or a namedtuple with the '
+                              'fields "coordinates" and "faces"'
                               ) % surf_mesh)
     elif isinstance(surf_mesh, (list, tuple)):
         try:
             coords, faces = surf_mesh
+            mesh = Mesh(coordinates=coords, faces=faces)
         except Exception:
             raise ValueError(('If a list or tuple is given as input, '
                               'it must have two elements, the first is '
@@ -871,15 +879,20 @@ def load_surf_mesh(surf_mesh):
                               'array containing  the indices (into coords) of '
                               'the mesh faces. The input was a list with '
                               '%r elements.') % len(surf_mesh))
+    elif (hasattr(surf_mesh, "faces") and hasattr(surf_mesh, "coordinates")):
+        coords, faces = surf_mesh.coordinates, surf_mesh.faces
+        mesh = Mesh(coordinates=coords, faces=faces)
+
     else:
         raise ValueError('The input type is not recognized. '
                          'Valid inputs are one of the following file '
                          'formats: .gii, .gii.gz, Freesurfer specific files '
                          'such as .orig, .pial, .sphere, .white, .inflated '
-                         'or a list containing two Numpy arrays '
-                         '[vertex coordinates, face indices]')
+                         'or two Numpy arrays organized in a list, tuple or '
+                         'a namedtuple with the fields "coordinates" and '
+                         '"faces"')
 
-    return [coords, faces]
+    return mesh
 
 
 def _check_mesh(mesh):
@@ -907,10 +920,19 @@ def _check_mesh(mesh):
 def check_mesh_and_data(mesh, data):
     """Load surface mesh and data, check that they have compatible shapes."""
     mesh = load_surf_mesh(mesh)
-    nodes, faces = mesh
     data = load_surf_data(data)
-    if len(data) != len(nodes):
+    # Check that mesh coordinates has a number of nodes
+    # equal to the size of the data.
+    if len(data) != len(mesh.coordinates):
         raise ValueError(
             'Mismatch between number of nodes in mesh ({}) and '
-            'size of surface data ({})'.format(len(nodes), len(data)))
+            'size of surface data ({})'.format(len(mesh.coordinates), len(data)))
+    # Check that the indices of faces are consistent with the
+    # mesh coordinates. That is, we shouldn't have an index
+    # larger or equal to the length of the coordinates array.
+    if mesh.faces.max() >= len(mesh.coordinates):
+        raise ValueError(
+            "Mismatch between the indices of faces and the number of nodes. "
+            "Maximum face index is {} while coordinates array has length {}.".format(
+                mesh.faces.max(), len(mesh.coordinates)))
     return mesh, data

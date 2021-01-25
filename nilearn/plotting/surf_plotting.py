@@ -38,13 +38,14 @@ def plot_surf(surf_mesh, surf_map=None, bg_map=None,
 
     Parameters
     ----------
-    surf_mesh : str or list of two numpy.ndarray
+    surf_mesh : str or list of two numpy.ndarray or Mesh
         Surface mesh geometry, can be a file (valid formats are
         .gii or Freesurfer specific files such as .orig, .pial,
         .sphere, .white, .inflated) or
         a list of two Numpy arrays, the first containing the x-y-z coordinates
         of the mesh vertices, the second containing the indices
-        (into coords) of the mesh faces.
+        (into coords) of the mesh faces, or a Mesh object with
+        "coordinates" and "faces" attributes.
 
     surf_map : str or numpy.ndarray, optional
         Data to be displayed on the surface mesh. Can be a file (valid formats
@@ -513,13 +514,14 @@ def plot_surf_stat_map(surf_mesh, stat_map, bg_map=None,
 
     Parameters
     ----------
-    surf_mesh : str or list of two numpy.ndarray
+    surf_mesh : str or list of two numpy.ndarray or Mesh
         Surface mesh geometry, can be a file (valid formats are
         .gii or Freesurfer specific files such as .orig, .pial,
         .sphere, .white, .inflated) or
         a list of two Numpy arrays, the first containing the x-y-z
         coordinates of the mesh vertices, the second containing the
-        indices (into coords) of the mesh faces
+        indices (into coords) of the mesh faces, or a Mesh object
+        with "coordinates" and "faces" attributes.
 
     stat_map : str or numpy.ndarray
         Statistical map to be displayed on the surface mesh, can
@@ -877,13 +879,14 @@ def plot_surf_roi(surf_mesh, roi_map, bg_map=None,
 
     Parameters
     ----------
-    surf_mesh : str or list of two numpy.ndarray
+    surf_mesh : str or list of two numpy.ndarray or Mesh
         Surface mesh geometry, can be a file (valid formats are
         .gii or Freesurfer specific files such as .orig, .pial,
         .sphere, .white, .inflated) or
         a list of two Numpy arrays, the first containing the x-y-z
         coordinates of the mesh vertices, the second containing the indices
-        (into coords) of the mesh faces
+        (into coords) of the mesh faces, or a Mesh object with
+        "coordinates" and "faces" attributes.
 
     roi_map : str or numpy.ndarray or list of numpy.ndarray
         ROI map to be displayed on the surface mesh, can be a file
