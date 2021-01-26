@@ -104,21 +104,9 @@ contrasts = {
 # Fit the GLM for the 2 sessions by speficying a FirstLevelModel and then
 # fitting it.
 from nilearn.glm.first_level import FirstLevelModel
-import time
-
-print('Fitting ar1 GLM')
-start = time.process_time()
+print('Fitting a GLM')
 fmri_glm = FirstLevelModel()
 fmri_glm = fmri_glm.fit(fmri_img, design_matrices=design_matrices)
-print(time.process_time() - start)
-
-print('Fitting arN GLM')
-start = time.process_time()
-fmri_glm = FirstLevelModel(noise_model='ar3')
-fmri_glm = fmri_glm.fit(fmri_img, design_matrices=design_matrices, bins=10)
-print(time.process_time() - start)
-
-
 
 #########################################################################
 # Now we can compute contrast-related statistical maps (in z-scale), and plot
