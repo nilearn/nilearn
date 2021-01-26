@@ -108,9 +108,7 @@ def run_glm(Y, X, noise_model='ar1', bins=100, n_jobs=1, verbose=0):
         The temporal variance model. Default='ar1'.
 
     bins : int, optional
-        Maximum number of discrete bins for the AR(1) coef histogram.
-        If higher order AR models are selected this specifies the maximum
-        number of bins per AR coefficient.
+        Maximum number of discrete bins for the AR coef histogram.
         Default=100.
 
     n_jobs : int, optional
@@ -149,6 +147,12 @@ def run_glm(Y, X, noise_model='ar1', bins=100, n_jobs=1, verbose=0):
 
     if 'ar' in noise_model:
         ar_order = int(re.split('ar', noise_model)[1])
+
+        if ar_order > 1:
+            # If AR(N>1) is requested the number of bins is applied
+            # per coefficient, so we compute the bins per coefficient to match
+            # the number of total bins requested by the user.
+            bins = np.floor(bins ** (1. / ar_order))
 
         # compute and discretize the AR coeficents
         ar_coef_ = [_yule_walker(ols_result.residuals[:, res].reshape(-1, 1).T,
@@ -398,9 +402,7 @@ class FirstLevelModel(BaseGLM):
             takes precedence over events and confounds.
 
         bins : int, optional
-            Maximum number of discrete bins for the AR(1) coef histogram.
-            If higher order AR models are selected this specifies the maximum
-            number of bins per AR coefficient.
+            Maximum number of discrete bins for the AR coef histogram.
             Default=100.
 
         """
