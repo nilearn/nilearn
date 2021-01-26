@@ -7,6 +7,7 @@ the data with different layout of cuts.
 
 import collections.abc
 import numbers
+import itertools
 from distutils.version import LooseVersion
 
 import matplotlib
@@ -1807,8 +1808,164 @@ class YZSlicer(OrthoSlicer):
     _cut_displayed = 'yz'
 
 
+class MosaicSlicer(BaseSlicer):
+    """
+    """
+    _cut_displayed = 'yxz'
+    _axes_class = CutAxes
+    _default_figsize = [11.1, 7.2]
+
+    @classmethod
+    def find_cut_coords(self, img=None, threshold=None, cut_coords=None):
+        """Instantiate the slicer and find cut coordinates for mosaic plotting.
+
+        Parameters
+        ----------
+        """
+        if cut_coords is None:
+            cut_coords = 7
+
+        coords = dict()
+        if img is None or img is False:
+            bounds = ((-40, 40), (-30, 30), (-30, 75))
+            for direction in sorted(self._cut_displayed):
+                lower, upper = bounds['xyz'.index(direction)]
+                coords[direction] = np.linspace(lower, upper,
+                                                cut_coords).tolist()
+        else:
+            if (not isinstance(cut_coords, collections.abc.Sequence) and
+                    isinstance(cut_coords, numbers.Number)):
+                for direction in sorted(self._cut_displayed):
+                    coords[direction] = find_cut_slices(img, direction=direction,
+                                                        n_cuts=cut_coords)
+        return coords
+
+    def _init_axes(self, **kwargs):
+        """Initializes and places axes for display of 'xyz' multiple cuts.
+
+        Parameters
+        ----------
+        kwargs:
+            additional arguments to pass to self._axes_class
+
+        """
+        cut_coords = self.cut_coords
+        if len(cut_coords) != len(self._cut_displayed):
+            raise ValueError('The number cut_coords passed does not'
+                             ' match the display_mode')
+        x0, y0, x1, y1 = self.rect
+        # Create our axes:
+        self.axes = dict()
+        # portions for main axes
+        fraction = 1. / len(self.cut_coords)
+        height = fraction
+        for index, direction in enumerate(self._cut_displayed):
+            coords = self.cut_coords[direction]
+            # portions allotment for each of 'x', 'y', 'z' coordinate
+            fraction_c = 1. / len(coords)
+            fh = self.frame_axes.get_figure()
+            indices = [x0, fraction * index * (y1 - y0) + y0,
+                       x1, fraction * (y1 - y0)]
+            ax = fh.add_axes(indices)
+            ax.axis('off')
+            this_x0, this_y0, this_x1, this_y1 = indices
+            for index_c, coord in enumerate(coords):
+                coord = float(coord)
+                fh_c = ax.get_figure()
+                # indices for each sub axes within main axes
+                indices = [fraction_c * index_c * (this_x1 - this_x0) + this_x0,
+                           this_y0,
+                           fraction_c * (this_x1 - this_x0),
+                           height]
+                ax = fh_c.add_axes(indices)
+                ax.axis('off')
+                display_ax = self._axes_class(ax, direction,
+                                              coord, **kwargs)
+                self.axes[coord] = display_ax
+                ax.set_axes_locator(self._locator)
+
+    def _locator(self, axes, renderer):
+        """ The locator function used by matplotlib to position axes.
+            Here we put the logic used to adjust the size of the axes.
+        """
+        x0, y0, x1, y1 = self.rect
+        display_ax_dict = self.axes
+
+        if self._colorbar:
+            adjusted_width = self._colorbar_width / len(self.axes)
+            right_margin = self._colorbar_margin['right'] / len(self.axes)
+            ticks_margin = self._colorbar_margin['left'] / len(self.axes)
+            x1 = x1 - (adjusted_width + right_margin + ticks_margin)
+
+        # capture widths for each axes for anchoring Bbox
+        width_dict = dict()
+        height_dict = dict()
+        for direction in self._cut_displayed:
+            this_width = dict()
+            this_height = dict()
+            for display_ax in display_ax_dict.values():
+                if direction == display_ax.direction:
+                    bounds = display_ax.get_object_bounds()
+                    if not bounds:
+                        # This happens if the call to _map_show was not
+                        # successful. As it happens asynchronously (during a
+                        # refresh of the figure) we capture the problem and
+                        # ignore it: it only adds a non informative traceback
+                        bounds = [0, 1, 0, 1]
+                    xmin, xmax, ymin, ymax = bounds
+                    this_width[display_ax.ax] = (xmax - xmin)
+                    this_height[display_ax.ax] = (ymax - ymin)
+            total_width = float(sum(this_width.values()))
+            total_height = float(sum(this_height.values()))
+            for ax, w in this_width.items():
+                width_dict[ax] = w / total_width * (x1 - x0)
+            for ax, h in this_height.items():
+                height_dict[ax] = w / total_height * (y1 - y0)
+
+        left_dict = dict()
+        # bottom positions in Bbox according to cuts
+        bottom_dict = dict()
+        fraction = np.round(1 / len(self._cut_displayed), decimals=1)
+        height_dict = dict()
+        for index, direction in enumerate(self._cut_displayed):
+            left = float(x0)
+            for coord, display_ax in display_ax_dict.items():
+                if direction == display_ax.direction:
+                    left_dict[display_ax.ax] = left
+                    this_width = width_dict[display_ax.ax]
+                    left += this_width
+                if 'z' in display_ax.direction:
+                    bottom_dict[display_ax.ax] = 0.6
+                    height_dict[display_ax.ax] = 1.
+                elif 'x' in display_ax.direction:
+                    bottom_dict[display_ax.ax] = 0.3
+                    height_dict[display_ax.ax] = 0.6
+                elif 'y' in display_ax.direction:
+                    bottom_dict[display_ax.ax] = 0.0
+                    height_dict[display_ax.ax] = 0.3
+        return transforms.Bbox([[left_dict[axes], bottom_dict[axes]],
+                                [left_dict[axes] + width_dict[axes],
+                                 height_dict[axes]]])
+
+
+    def draw_cross(self, cut_coords=None, **kwargs):
+        """ Draw a crossbar on the plot to show where the cut is
+        performed.
+
+        Parameters
+        ----------
+        cut_coords: 3-tuple of floats, optional
+            The position of the cross to draw. If none is passed, the
+            ortho_slicer's cut coordinates are used.
+        kwargs:
+            Extra keyword arguments are passed to axhline
+        """
+        return
+
+
 SLICERS = dict(ortho=OrthoSlicer,
                tiled=TiledSlicer,
+               mosaic=MosaicSlicer,
                xz=XZSlicer,
                yz=YZSlicer,
                yx=YXSlicer,
