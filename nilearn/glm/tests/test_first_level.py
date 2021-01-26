@@ -218,16 +218,12 @@ def test_high_level_glm_different_design_matrices():
 
 
 def test_run_glm():
-    import time
     rng = np.random.RandomState(42)
-    n, p, q = 100, 3000, 10
+    n, p, q = 100, 300, 10
     X, Y = rng.standard_normal(size=(p, q)), rng.standard_normal(size=(p, n))
 
     # Ordinary Least Squares case
-    print('Fitting ols GLM')
-    start = time.process_time()
     labels, results = run_glm(Y, X, 'ols')
-    print(time.process_time() - start)
     assert_array_equal(labels, np.zeros(n))
     assert list(results.keys()) == [0.0]
     assert results[0.0].theta.shape == (q, n)
@@ -236,11 +232,7 @@ def test_run_glm():
     assert type(results[labels[0]].model) == OLSModel
 
     # ar(1) case
-    print(" ")
-    print('Fitting ar1 GLM')
-    start = time.process_time()
     labels, results = run_glm(Y, X, 'ar1')
-    print(time.process_time() - start)
     assert len(labels) == n
     assert len(results.keys()) > 1
     tmp = sum([val.theta.shape[1] for val in results.values()])
@@ -248,11 +240,8 @@ def test_run_glm():
     assert results[labels[0]].model.order == 1
     assert type(results[labels[0]].model) == ARModel
 
-    print(" ")
-    print('Fitting ar3 GLM')
-    start = time.process_time()
+    # ar(3) case
     labels_ar3, results_ar3 = run_glm(Y, X, 'ar3', bins=100)
-    print(time.process_time() - start)
     assert len(labels_ar3) == n
     assert len(results_ar3.keys()) > 1
     tmp = sum([val.theta.shape[1] for val in results_ar3.values()])
