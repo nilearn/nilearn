@@ -33,6 +33,8 @@ from nilearn.image import get_data
 # Create a namedtuple object for meshes
 Mesh = namedtuple("mesh", ["coordinates", "faces"])
 
+# Create a namedtuple object for surfaces
+Surface = namedtuple("surface", ["mesh", "data"])
 
 def _uniform_ball_cloud(n_points=20, dim=3, n_monte_carlo=50000):
     """Get points uniformly spaced in the unit ball."""
@@ -895,6 +897,65 @@ def load_surf_mesh(surf_mesh):
     return mesh
 
 
+def load_surface(surface):
+    """Loads a surface.
+
+    Parameters
+    ----------
+    surface : List or numpy.ndarray or Surface
+        Surface to be loaded. This can be passed as:
+
+        - a list of two files (valid formats are .gii
+        .gii.gz or Freesurfer specific files such as
+        .orig, .pial, .sphere, .white, .inflated) containing:
+            - a surface mesh geometry
+            - surface data
+        - three Numpy arrays organized in a list with coordinates,
+        faces, and data in this specific order
+        - a length 2 tuple or a namedtuple with the fields "mesh" and "data"
+        - a length 3 tuple or a namedtuple with the fileds "coordinates",
+        "faces", and "data"
+        - a Surface object with "mesh" and "data" attributes.
+
+    Returns
+    --------
+    surface : Surface
+        With the fields "mesh" (Mesh object) and "data" (numpy.ndarray).
+
+    """
+    # Handle the case where we received a Surface-like
+    # object of a namedtuple with mesh and data attributes
+    if hasattr(surface, "mesh") and hasattr(surface, "data"):
+        mesh = load_surf_mesh(surface.mesh)
+        data = load_surf_data(surface.data)
+    # Handle the case where we received an object with
+    # coordinates, faces, and data attributes
+    elif(hasattr(surface, "coordinates") and
+         hasattr(surface, "faces") and
+         hasattr(surface, "data")):
+        mesh = load_surf_mesh((surface.coordinates,
+                               surface.faces))
+        data = load_surf_data(surface.data)
+    # At this point, we can have an iterable of length
+    # two or three
+    elif isinstance(surface, (list, tuple, np.ndarray)):
+        if len(surface) == 2:
+            mesh = load_surf_mesh(surface[0])
+            data = load_surf_data(surface[1])
+        elif len(surface) == 3:
+            mesh = load_surf_mesh(surface[:2])
+            data = load_surf_data(surface[2])
+        else:
+            raise ValueError("`load_surface` accepts iterables "
+                             "of length 2 or 3 to define a surface. "
+                             "You provided a {} of length {}.".format(
+                                 type(surface), len(surface)))
+    else:
+        raise ValueError("Wrong parameter `surface` in `load_surface`. "
+                         "Please refer to the documentation for more information.")
+    return Surface(mesh, data)
+
+
 def _check_mesh(mesh):
     """Check that mesh data is either a str, or a dict with sufficient
     entries.
@@ -961,3 +1022,37 @@ def check_mesh_and_data(mesh, data):
             "Maximum face index is {} while coordinates array has length {}.".format(
                 mesh.faces.max(), len(mesh.coordinates)))
     return mesh, data
+
+
+def check_surface(surface):
+    """Load a surface as a Surface object.
+    This function will make sure that the surfaces's
+    mesh and data have compatible shapes.
+
+    Parameters
+    ----------
+    surface : List or numpy.ndarray or Surface
+        Surface to be checked. This can be passed as:
+
+        - a list of two files (valid formats are .gii
+        .gii.gz or Freesurfer specific files such as
+        .orig, .pial, .sphere, .white, .inflated) containing:
+            - a surface mesh geometry
+            - surface data
+        - three Numpy arrays organized in a list with coordinates,
+        faces, and data in this specific order
+        - a length 2 tuple or a namedtuple with the fields "mesh" and "data"
+        - a length 3 tuple or a namedtuple with the fileds "coordinates",
+        "faces", and "data"
+        - a Surface object with "mesh" and "data" attributes.
+
+    Returns
+    -------
+    surface : Surface
+        Checked surface object.
+
+    """
+    surface = load_surface(surface)
+    mesh, data = check_mesh_and_data(surface.mesh,
+                                     surface.data)
+    return Surface(mesh, data)
