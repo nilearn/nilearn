@@ -918,7 +918,32 @@ def _check_mesh(mesh):
 
 
 def check_mesh_and_data(mesh, data):
-    """Load surface mesh and data, check that they have compatible shapes."""
+    """Load surface mesh and data, check that they have compatible shapes.
+
+    Parameters
+    ----------
+    mesh : str or numpy.ndarray or Mesh
+        Either a file containing surface mesh geometry (valid formats
+        are .gii .gii.gz or Freesurfer specific files such as .orig, .pial,
+        .sphere, .white, .inflated) or two Numpy arrays organized in a list,
+        tuple or a namedtuple with the fields "coordinates" and "faces", or a
+        Mesh object with "coordinates" and "faces" attributes.
+
+    data : str or numpy.ndarray
+        Either a file containing surface data (valid format are .gii,
+        .gii.gz, .mgz, .nii, .nii.gz, or Freesurfer specific files such as
+        .thickness, .curv, .sulc, .annot, .label), lists of 1D data files are
+        returned as 2D arrays, or a Numpy array containing surface data.
+
+    Returns
+    -------
+    mesh : Mesh
+        Checked mesh.
+
+    data : numpy.ndarray
+        Checked data.
+
+    """
     mesh = load_surf_mesh(mesh)
     data = load_surf_data(data)
     # Check that mesh coordinates has a number of nodes
