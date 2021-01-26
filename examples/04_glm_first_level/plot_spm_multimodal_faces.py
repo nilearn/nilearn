@@ -115,7 +115,7 @@ print(time.process_time() - start)
 print('Fitting arN GLM')
 start = time.process_time()
 fmri_glm = FirstLevelModel(noise_model='ar3')
-fmri_glm = fmri_glm.fit(fmri_img, design_matrices=design_matrices)
+fmri_glm = fmri_glm.fit(fmri_img, design_matrices=design_matrices, bins=10)
 print(time.process_time() - start)
 
 

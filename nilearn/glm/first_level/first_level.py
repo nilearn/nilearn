@@ -368,7 +368,7 @@ class FirstLevelModel(BaseGLM):
         self.subject_label = subject_label
 
     def fit(self, run_imgs, events=None, confounds=None,
-            design_matrices=None):
+            design_matrices=None, bins=100):
         """Fit the GLM
         
         For each run:
@@ -398,6 +398,12 @@ class FirstLevelModel(BaseGLM):
         design_matrices : pandas DataFrame or list of pandas DataFrames, optional
             Design matrices that will be used to fit the GLM. If given it
             takes precedence over events and confounds.
+
+        bins : int, optional
+            Maximum number of discrete bins for the AR(1) coef histogram.
+            If higher order AR models are selected this specifies the maximum
+            number of bins per AR coefficient.
+            Default=100.
 
         """
         # Local import to prevent circular imports
@@ -540,7 +546,7 @@ class FirstLevelModel(BaseGLM):
                 sys.stderr.write('Performing GLM computation\r')
             labels, results = mem_glm(Y, design.values,
                                       noise_model=self.noise_model,
-                                      bins=10, n_jobs=self.n_jobs)
+                                      bins=bins, n_jobs=self.n_jobs)
             if self.verbose > 1:
                 t_glm = time.time() - t_glm
                 sys.stderr.write('GLM took %d seconds         \n' % t_glm)
