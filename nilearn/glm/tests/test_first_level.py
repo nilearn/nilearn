@@ -276,7 +276,7 @@ def test_run_glm():
         labels, results = run_glm(Y, X, 'ar1')
         assert len(labels) == n
         for lab in results.keys():
-            assert_almost_equal(lab, ar1, decimal=1)
+            assert_almost_equal(float(lab), ar1, decimal=1)
 
     n, p, q = 1, 1000, 3
     for ar1 in [-0.2, -0.5]:

@@ -150,9 +150,12 @@ def run_glm(Y, X, noise_model='ar1', bins=100, n_jobs=1, verbose=0):
     if 'ar' in noise_model:
         ar_order = int(re.split('ar', noise_model)[1])
         # compute and discretize the AR1 coefs
+        start = time.process_time()
         ar_coef_ = [_yule_walker(ols_result.residuals[:, res].reshape(-1, 1).T,
                                  ar_order)
                     for res in range(ols_result.residuals.shape[1])]
+
+
         if len(ar_coef_[0]) == 1:
             ar_coef_ = np.asarray(ar_coef_).ravel()
         del ols_result
@@ -162,25 +165,26 @@ def run_glm(Y, X, noise_model='ar1', bins=100, n_jobs=1, verbose=0):
         results = {}
         if type(ar_coef_[0]) is np.float64:
             labels = ar_coef_
+            labels = np.array([np.str(val) for val in ar_coef_])
         else:  # AR(N) case
-            labels = ['_'.join([str(v) for v in val]) for val in ar_coef_]
+            labels = np.array([np.str('_'.join([str(v) for v in val])) for val in ar_coef_])
+        vals = np.unique(labels)
+        ar_coef_ = np.array(ar_coef_)
 
-        # Parallelize by creating a job per ARModel
-        if type(ar_coef_[0]) is np.float64:
-            vals = np.unique(ar_coef_)
-        else:
-            vals = np.unique(ar_coef_, axis=0)
+
         ar_result = Parallel(n_jobs=n_jobs, verbose=verbose)(
-            delayed(_ar_model_fit)(X, val, Y[:, [np.all(lab == val)
-                                                 for lab in ar_coef_]])
+            delayed(_ar_model_fit)(X,
+                                   ar_coef_[np.where(labels == val)][0],
+                                   Y[:, labels == val])
             for val in vals)
 
-        if type(ar_coef_[0]) is np.float64:
-            for val, result in zip(vals, ar_result):
-                results[val] = result
-        else:  # AR(N) case
-            for val, result in zip(vals, ar_result):
-                results['_'.join([str(v) for v in val])] = result
+
+        # if type(ar_coef_[0]) is np.float64:
+        for val, result in zip(vals, ar_result):
+            results[val] = result
+        # else:  # AR(N) case
+        #     for val, result in zip(vals, ar_result):
+        #         results['_'.join([str(v) for v in val])] = result
         del vals
         del ar_result
 

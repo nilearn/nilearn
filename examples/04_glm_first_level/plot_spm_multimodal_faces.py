@@ -120,30 +120,30 @@ print(time.process_time() - start)
 
 
 
-# #########################################################################
-# # Now we can compute contrast-related statistical maps (in z-scale), and plot
-# # them.
-# print('Computing contrasts')
-# from nilearn import plotting
-#
-# # Iterate on contrasts
-# for contrast_id, contrast_val in contrasts.items():
-#     print("\tcontrast id: %s" % contrast_id)
-#     # compute the contrasts
-#     z_map = fmri_glm.compute_contrast(
-#         contrast_val, output_type='z_score')
-#     # plot the contrasts as soon as they're generated
-#     # the display is overlayed on the mean fMRI image
-#     # a threshold of 3.0 is used, more sophisticated choices are possible
-#     plotting.plot_stat_map(
-#         z_map, bg_img=mean_image, threshold=3.0, display_mode='z',
-#         cut_coords=3, black_bg=True, title=contrast_id)
-#     # plotting.show()
-#
-# #########################################################################
-# # Based on the resulting maps we observe that the analysis results in
-# # wide activity for the 'effects of interest' contrast, showing the
-# # implications of large portions of the visual cortex in the
-# # conditions. By contrast, the differential effect between "faces" and
-# # "scrambled" involves sparser, more anterior and lateral regions. It
-# # also displays some responses in the frontal lobe.
+#########################################################################
+# Now we can compute contrast-related statistical maps (in z-scale), and plot
+# them.
+print('Computing contrasts')
+from nilearn import plotting
+
+# Iterate on contrasts
+for contrast_id, contrast_val in contrasts.items():
+    print("\tcontrast id: %s" % contrast_id)
+    # compute the contrasts
+    z_map = fmri_glm.compute_contrast(
+        contrast_val, output_type='z_score')
+    # plot the contrasts as soon as they're generated
+    # the display is overlayed on the mean fMRI image
+    # a threshold of 3.0 is used, more sophisticated choices are possible
+    plotting.plot_stat_map(
+        z_map, bg_img=mean_image, threshold=3.0, display_mode='z',
+        cut_coords=3, black_bg=True, title=contrast_id)
+    plotting.show()
+
+#########################################################################
+# Based on the resulting maps we observe that the analysis results in
+# wide activity for the 'effects of interest' contrast, showing the
+# implications of large portions of the visual cortex in the
+# conditions. By contrast, the differential effect between "faces" and
+# "scrambled" involves sparser, more anterior and lateral regions. It
+# also displays some responses in the frontal lobe.
