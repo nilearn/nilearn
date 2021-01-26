@@ -219,7 +219,7 @@ def test_high_level_glm_different_design_matrices():
 
 def test_run_glm():
     rng = np.random.RandomState(42)
-    n, p, q = 100, 300, 10
+    n, p, q = 100, 80, 10
     X, Y = rng.standard_normal(size=(p, q)), rng.standard_normal(size=(p, n))
 
     # Ordinary Least Squares case
