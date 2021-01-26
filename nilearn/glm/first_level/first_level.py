@@ -160,23 +160,25 @@ def run_glm(Y, X, noise_model='ar1', bins=100, n_jobs=1, verbose=0):
             ar_coef_[idx] = (ar_coef_[idx] * bins).astype(np.int) * 1. / bins
         # Fit the AR model acccording to current AR(N) estimates
         results = {}
-        labels = ar_coef_
+        if type(ar_coef_[0]) is np.float64:
+            labels = ar_coef_
+        else:  # AR(N) case
+            labels = ['_'.join([str(v) for v in val]) for val in ar_coef_]
 
         # Parallelize by creating a job per ARModel
         if type(ar_coef_[0]) is np.float64:
             vals = np.unique(ar_coef_)
         else:
-            vals = ar_coef_
+            vals = np.unique(ar_coef_, axis=0)
         ar_result = Parallel(n_jobs=n_jobs, verbose=verbose)(
             delayed(_ar_model_fit)(X, val, Y[:, [np.all(lab == val)
-                                                 for lab in labels]])
+                                                 for lab in ar_coef_]])
             for val in vals)
 
         if type(ar_coef_[0]) is np.float64:
             for val, result in zip(vals, ar_result):
                 results[val] = result
-        else:
-            labels = ['_'.join([str(v) for v in val]) for val in vals]
+        else:  # AR(N) case
             for val, result in zip(vals, ar_result):
                 results['_'.join([str(v) for v in val])] = result
         del vals
@@ -538,7 +540,7 @@ class FirstLevelModel(BaseGLM):
                 sys.stderr.write('Performing GLM computation\r')
             labels, results = mem_glm(Y, design.values,
                                       noise_model=self.noise_model,
-                                      bins=100, n_jobs=self.n_jobs)
+                                      bins=10, n_jobs=self.n_jobs)
             if self.verbose > 1:
                 t_glm = time.time() - t_glm
                 sys.stderr.write('GLM took %d seconds         \n' % t_glm)

@@ -251,7 +251,7 @@ def test_run_glm():
     print(" ")
     print('Fitting ar3 GLM')
     start = time.process_time()
-    labels_ar3, results_ar3 = run_glm(Y, X, 'ar3')
+    labels_ar3, results_ar3 = run_glm(Y, X, 'ar3', bins=100)
     print(time.process_time() - start)
     assert len(labels_ar3) == n
     assert len(results_ar3.keys()) > 1
@@ -261,36 +261,36 @@ def test_run_glm():
     assert results_ar3[labels_ar3[0]].model.order == 3
     assert len(results_ar3[labels_ar3[0]].model.rho) == 3
 
-    # # non-existant case
-    # with pytest.raises(ValueError):
-    #     run_glm(Y, X, 'ars2')
-    # with pytest.raises(ValueError):
-    #     run_glm(Y, X.T)
-    #
-    # n, p, q = 1, 1000, 3
-    # for ar1 in [-0.2, -0.5, -0.7]:
-    #     X = np.random.RandomState(2).randn(p, q)
-    #     Y = np.random.RandomState(2).randn(p, n)
-    #     for idx in range(1, len(Y)):
-    #         Y[idx] += ar1 * Y[idx - 1]
-    #     labels, results = run_glm(Y, X, 'ar1')
-    #     assert len(labels) == n
-    #     for lab in results.keys():
-    #         assert_almost_equal(lab, ar1, decimal=1)
-    #
-    # n, p, q = 1, 1000, 3
-    # for ar1 in [-0.2, -0.5]:
-    #     for ar2 in [-0.3, -0.4]:
-    #         X = np.random.RandomState(2).randn(p, q)
-    #         Y = np.random.RandomState(2).randn(p, n)
-    #         for idx in range(0, len(Y)):
-    #             Y[idx] += (ar1 * Y[idx - 1]) + (ar2 * Y[idx - 2])
-    #         labels, results = run_glm(Y, X, 'ar2')
-    #         assert len(labels) == n
-    #         for lab in results.keys():
-    #             ar_est = lab.split("_")
-    #             assert_almost_equal(float(ar_est[0]), ar1, decimal=1)
-    #             assert_almost_equal(float(ar_est[1]), ar2, decimal=1)
+    # non-existant case
+    with pytest.raises(ValueError):
+        run_glm(Y, X, 'ars2')
+    with pytest.raises(ValueError):
+        run_glm(Y, X.T)
+
+    n, p, q = 1, 1000, 3
+    for ar1 in [-0.2, -0.5, -0.7]:
+        X = np.random.RandomState(2).randn(p, q)
+        Y = np.random.RandomState(2).randn(p, n)
+        for idx in range(1, len(Y)):
+            Y[idx] += ar1 * Y[idx - 1]
+        labels, results = run_glm(Y, X, 'ar1')
+        assert len(labels) == n
+        for lab in results.keys():
+            assert_almost_equal(lab, ar1, decimal=1)
+
+    n, p, q = 1, 1000, 3
+    for ar1 in [-0.2, -0.5]:
+        for ar2 in [-0.3, -0.4]:
+            X = np.random.RandomState(2).randn(p, q)
+            Y = np.random.RandomState(2).randn(p, n)
+            for idx in range(0, len(Y)):
+                Y[idx] += (ar1 * Y[idx - 1]) + (ar2 * Y[idx - 2])
+            labels, results = run_glm(Y, X, 'ar2')
+            assert len(labels) == n
+            for lab in results.keys():
+                ar_est = lab.split("_")
+                assert_almost_equal(float(ar_est[0]), ar1, decimal=1)
+                assert_almost_equal(float(ar_est[1]), ar2, decimal=1)
 
 
 def test_scaling():
