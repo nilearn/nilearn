@@ -22,7 +22,7 @@ from nilearn.input_data import NiftiMasker
 from sklearn.datasets import load_iris, make_classification, make_regression
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.linear_model import LogisticRegression, RidgeClassifierCV, RidgeCV
-from sklearn.metrics import accuracy_score, r2_score, roc_auc_score, make_scorer
+from sklearn.metrics import accuracy_score, r2_score, roc_auc_score, get_scorer
 from sklearn.model_selection import KFold, LeaveOneGroupOut
 from sklearn.preprocessing import StandardScaler
 from sklearn.svm import SVR, LinearSVC
@@ -193,7 +193,7 @@ def test_decoder_binary_classification():
     assert accuracy_score(y, y_pred) == 0.5
 
     # Set scoring of decoder with a callable
-    accuracy_scorer = make_scorer(accuracy_score)
+    accuracy_scorer = get_scorer('accuracy')
     model = Decoder(estimator='dummy_classifier',
                     mask=mask,
                     scoring=accuracy_scorer)
@@ -240,20 +240,19 @@ def test_decoder_binary_classification():
     pytest.raises(NotImplementedError, model.fit, X, y)
 
     # Raises an error with unknown scoring metrics
-    with pytest.raises(ValueError, match="Unknown scoring metric"):
+    with pytest.raises(ValueError,
+                       match="'foo' is not a valid scoring value"):
         model = Decoder(estimator=dummy_classifier,
                         mask=mask,
                         scoring="foo")
 
-    # Raises an error when computing score without
-    # a defined scoring strategy
+    # Default scoring
     model = Decoder(estimator='dummy_classifier',
                     scoring=None)
     assert model.scoring is None
-    assert model._scoring_metric is None
+    assert model._scorer == get_scorer("accuracy")
     model.fit(X, y)
-    with pytest.raises(ValueError, match="Unable to compute score"):
-        model.score(X, y)
+    assert model.score(X, y) == 0.5
 
     # check different screening_percentile value
     for screening_percentile in [100, 20, None]:
