@@ -149,28 +149,26 @@ def run_glm(Y, X, noise_model='ar1', bins=100, n_jobs=1, verbose=0):
 
     if 'ar' in noise_model:
         ar_order = int(re.split('ar', noise_model)[1])
-        # compute and discretize the AR1 coefs
-        start = time.process_time()
+
+        # compute and discretize the AR coefs
         ar_coef_ = [_yule_walker(ols_result.residuals[:, res].reshape(-1, 1).T,
                                  ar_order)
                     for res in range(ols_result.residuals.shape[1])]
-
-
+        del ols_result
         if len(ar_coef_[0]) == 1:
             ar_coef_ = np.asarray(ar_coef_).ravel()
-        del ols_result
         for idx in range(len(ar_coef_)):
             ar_coef_[idx] = (ar_coef_[idx] * bins).astype(np.int) * 1. / bins
-        # Fit the AR model acccording to current AR(N) estimates
+
+        # Fit the AR model according to current AR(N) estimates
         results = {}
         if type(ar_coef_[0]) is np.float64:
-            labels = ar_coef_
             labels = np.array([np.str(val) for val in ar_coef_])
         else:  # AR(N) case
-            labels = np.array([np.str('_'.join([str(v) for v in val])) for val in ar_coef_])
+            labels = np.array([np.str('_'.join([str(v) for v in val]))
+                               for val in ar_coef_])
         vals = np.unique(labels)
         ar_coef_ = np.array(ar_coef_)
-
 
         ar_result = Parallel(n_jobs=n_jobs, verbose=verbose)(
             delayed(_ar_model_fit)(X,
@@ -178,13 +176,8 @@ def run_glm(Y, X, noise_model='ar1', bins=100, n_jobs=1, verbose=0):
                                    Y[:, labels == val])
             for val in vals)
 
-
-        # if type(ar_coef_[0]) is np.float64:
         for val, result in zip(vals, ar_result):
             results[val] = result
-        # else:  # AR(N) case
-        #     for val, result in zip(vals, ar_result):
-        #         results['_'.join([str(v) for v in val])] = result
         del vals
         del ar_result
 
