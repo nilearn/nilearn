@@ -3,7 +3,7 @@ Single-subject data (two sessions) in native space
 ==================================================
 
 The example shows the analysis of an SPM dataset studying face perception.  The
-anaylsis is performed in native spave. Realignment parameters are provided with
+anaylsis is performed in native space. Realignment parameters are provided with
 the input images, but those have not been resampled to a common space.
 
 The experimental paradigm is simple, with two conditions; viewing a face image
@@ -104,34 +104,46 @@ contrasts = {
 # Fit the GLM for the 2 sessions by speficying a FirstLevelModel and then
 # fitting it.
 from nilearn.glm.first_level import FirstLevelModel
-print('Fitting a GLM')
+import time
+
+print('Fitting ar1 GLM')
+start = time.process_time()
 fmri_glm = FirstLevelModel()
 fmri_glm = fmri_glm.fit(fmri_img, design_matrices=design_matrices)
+print(time.process_time() - start)
 
-#########################################################################
-# Now we can compute contrast-related statistical maps (in z-scale), and plot
-# them.
-print('Computing contrasts')
-from nilearn import plotting
+print('Fitting arN GLM')
+start = time.process_time()
+fmri_glm = FirstLevelModel(noise_model='ar3')
+fmri_glm = fmri_glm.fit(fmri_img, design_matrices=design_matrices)
+print(time.process_time() - start)
 
-# Iterate on contrasts
-for contrast_id, contrast_val in contrasts.items():
-    print("\tcontrast id: %s" % contrast_id)
-    # compute the contrasts
-    z_map = fmri_glm.compute_contrast(
-        contrast_val, output_type='z_score')
-    # plot the contrasts as soon as they're generated
-    # the display is overlayed on the mean fMRI image
-    # a threshold of 3.0 is used, more sophisticated choices are possible
-    plotting.plot_stat_map(
-        z_map, bg_img=mean_image, threshold=3.0, display_mode='z',
-        cut_coords=3, black_bg=True, title=contrast_id)
-    plotting.show()
 
-#########################################################################
-# Based on the resulting maps we observe that the analysis results in
-# wide activity for the 'effects of interest' contrast, showing the
-# implications of large portions of the visual cortex in the
-# conditions. By contrast, the differential effect between "faces" and
-# "scrambled" involves sparser, more anterior and lateral regions. It
-# also displays some responses in the frontal lobe.
+
+# #########################################################################
+# # Now we can compute contrast-related statistical maps (in z-scale), and plot
+# # them.
+# print('Computing contrasts')
+# from nilearn import plotting
+#
+# # Iterate on contrasts
+# for contrast_id, contrast_val in contrasts.items():
+#     print("\tcontrast id: %s" % contrast_id)
+#     # compute the contrasts
+#     z_map = fmri_glm.compute_contrast(
+#         contrast_val, output_type='z_score')
+#     # plot the contrasts as soon as they're generated
+#     # the display is overlayed on the mean fMRI image
+#     # a threshold of 3.0 is used, more sophisticated choices are possible
+#     plotting.plot_stat_map(
+#         z_map, bg_img=mean_image, threshold=3.0, display_mode='z',
+#         cut_coords=3, black_bg=True, title=contrast_id)
+#     # plotting.show()
+#
+# #########################################################################
+# # Based on the resulting maps we observe that the analysis results in
+# # wide activity for the 'effects of interest' contrast, showing the
+# # implications of large portions of the visual cortex in the
+# # conditions. By contrast, the differential effect between "faces" and
+# # "scrambled" involves sparser, more anterior and lateral regions. It
+# # also displays some responses in the frontal lobe.
