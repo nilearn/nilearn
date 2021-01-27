@@ -17,8 +17,7 @@ import warnings
 
 import numpy as np
 
-VALID_FIELDS = set(["name",
-                    "onset",
+VALID_FIELDS = set(["onset",
                     "duration",
                     "trial_type",
                     "modulation",
