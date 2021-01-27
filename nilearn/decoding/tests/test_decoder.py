@@ -372,6 +372,14 @@ def test_decoder_regression():
     assert r2_score(y, y_pred) <= 0.
     assert model.score(X, y) == r2_score(y, y_pred)
 
+    # Check that default scoring metric for regression is r2
+    model = DecoderRegressor(estimator='dummy_regressor',
+                             mask=mask,
+                             scoring=None)
+    model.fit(X, y)
+    y_pred = model.predict(X)
+    assert model.score(X, y) == r2_score(y, y_pred)
+
     # decoder object use other strategy for dummy regressor
     param = dict(strategy='median')
     dummy_regressor.set_params(**param)
