@@ -276,7 +276,7 @@ def test_glm_AR_estimates():
             Y = np.random.RandomState(2).randn(p, n)
             for idx in range(0, len(Y)):
                 Y[idx] += (ar1 * Y[idx - 1]) + (ar2 * Y[idx - 2])
-            labels, results = run_glm(Y, X, 'ar2')
+            labels, results = run_glm(Y, X, 'ar2', bins=1000)
             assert len(labels) == n
             for lab in results.keys():
                 ar_est = lab.split("_")
