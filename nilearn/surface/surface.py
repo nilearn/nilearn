@@ -902,7 +902,7 @@ def load_surface(surface):
 
     Parameters
     ----------
-    surface : List or numpy.ndarray or Surface
+    surface : List of numpy.ndarray or Surface
         Surface to be loaded. This can be passed as:
 
         - a list of two files (valid formats are .gii
