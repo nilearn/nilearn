@@ -256,6 +256,8 @@ def test_run_glm():
     with pytest.raises(ValueError):
         run_glm(Y, X.T)
 
+
+def test_glm_AR_estimates():
     n, p, q = 1, 1000, 3
     for ar1 in [-0.2, -0.5, -0.7]:
         X = np.random.RandomState(2).randn(p, q)
