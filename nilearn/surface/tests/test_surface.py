@@ -206,17 +206,11 @@ def test_load_surface():
     data = mesh[0][:,0]
     surf = Surface(mesh, data)
     surf_like_obj = SurfaceLikeObject(mesh, data)
-    SurfaceTuple = namedtuple("SurfaceTuple",
-                              ["coordinates", "faces", "data"])
-    surf_tuple = SurfaceTuple(coords, faces, data)
     # Load the surface from:
     #   - Surface-like objects having the right attributes
-    #   - a list of 3 arrays (coords, faces, and data)
     #   - a list of length 2 (mesh, data)
     for loadings in [surf,
                      surf_like_obj,
-                     surf_tuple,
-                     [coords, faces, data],
                      [mesh, data]]:
         s = surface.load_surface(loadings)
         assert_array_equal(s.data, data)
@@ -224,14 +218,14 @@ def test_load_surface():
         assert_array_equal(s.mesh.coordinates, coords)
         assert_array_equal(s.mesh.coordinates, surf.mesh.coordinates)
         assert_array_equal(s.mesh.faces, surf.mesh.faces)
-    # Giving an iterable of length other than 2 or 3 will raise an error
-    # Length 4
+    # Giving an iterable of length other than 2 will raise an error
+    # Length 3
     with pytest.raises(ValueError,
-                       match="`load_surface` accepts iterables of length 2 or 3"):
-        s = surface.load_surface([coords, faces, data, "foo"])
+                       match="`load_surface` accepts iterables of length 2"):
+        s = surface.load_surface([coords, faces, data])
     # Length 1
     with pytest.raises(ValueError,
-                       match="`load_surface` accepts iterables of length 2 or 3"):
+                       match="`load_surface` accepts iterables of length 2"):
         s = surface.load_surface([coords])
     # Giving other objects will raise an error
     with pytest.raises(ValueError,

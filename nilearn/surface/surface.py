@@ -902,20 +902,21 @@ def load_surface(surface):
 
     Parameters
     ----------
-    surface : List of numpy.ndarray or Surface
-        Surface to be loaded. This can be passed as:
-
-        - a list of two files (valid formats are .gii
-        .gii.gz or Freesurfer specific files such as
-        .orig, .pial, .sphere, .white, .inflated) containing:
-            - a surface mesh geometry
-            - surface data
-        - three Numpy arrays organized in a list with coordinates,
-        faces, and data in this specific order
-        - a length 2 tuple or a namedtuple with the fields "mesh" and "data"
-        - a length 3 tuple or a namedtuple with the fileds "coordinates",
-        "faces", and "data"
-        - a Surface object with "mesh" and "data" attributes.
+    surface : Surface-like (see description)
+        The surface to be loaded.
+        A surface can be:
+            - a nilearn.surface.Surface
+            - a sequence (mesh, data) where:
+                - mesh can be:
+                    - a nilearn.surface.Mesh
+                    - a path to .gii or .gii.gz etc.
+                    - a sequence of two numpy arrays,
+                    the first containing vertex coordinates
+                    and the second containing triangles.
+                - data can be:
+                    - a path to .gii or .gii.gz etc.
+                    - a numpy array with shape (n_vertices,)
+                    or (n_time_points, n_vertices)
 
     Returns
     --------
@@ -923,31 +924,20 @@ def load_surface(surface):
         With the fields "mesh" (Mesh object) and "data" (numpy.ndarray).
 
     """
-    # Handle the case where we received a Surface-like
-    # object of a namedtuple with mesh and data attributes
+    # Handle the case where we received a Surface
+    # object with mesh and data attributes
     if hasattr(surface, "mesh") and hasattr(surface, "data"):
         mesh = load_surf_mesh(surface.mesh)
         data = load_surf_data(surface.data)
-    # Handle the case where we received an object with
-    # coordinates, faces, and data attributes
-    elif(hasattr(surface, "coordinates") and
-         hasattr(surface, "faces") and
-         hasattr(surface, "data")):
-        mesh = load_surf_mesh((surface.coordinates,
-                               surface.faces))
-        data = load_surf_data(surface.data)
-    # At this point, we can have an iterable of length
-    # two or three
+    # Handle the case where we received a sequence
+    # (mesh, data)
     elif isinstance(surface, (list, tuple, np.ndarray)):
         if len(surface) == 2:
             mesh = load_surf_mesh(surface[0])
             data = load_surf_data(surface[1])
-        elif len(surface) == 3:
-            mesh = load_surf_mesh(surface[:2])
-            data = load_surf_data(surface[2])
         else:
             raise ValueError("`load_surface` accepts iterables "
-                             "of length 2 or 3 to define a surface. "
+                             "of length 2 to define a surface. "
                              "You provided a {} of length {}.".format(
                                  type(surface), len(surface)))
     else:
@@ -1031,20 +1021,21 @@ def check_surface(surface):
 
     Parameters
     ----------
-    surface : List or numpy.ndarray or Surface
-        Surface to be checked. This can be passed as:
-
-        - a list of two files (valid formats are .gii
-        .gii.gz or Freesurfer specific files such as
-        .orig, .pial, .sphere, .white, .inflated) containing:
-            - a surface mesh geometry
-            - surface data
-        - three Numpy arrays organized in a list with coordinates,
-        faces, and data in this specific order
-        - a length 2 tuple or a namedtuple with the fields "mesh" and "data"
-        - a length 3 tuple or a namedtuple with the fileds "coordinates",
-        "faces", and "data"
-        - a Surface object with "mesh" and "data" attributes.
+    surface : Surface-like (see description)
+        The surface to be loaded.
+        A surface can be:
+            - a nilearn.surface.Surface
+            - a sequence (mesh, data) where:
+                - mesh can be:
+                    - a nilearn.surface.Mesh
+                    - a path to .gii or .gii.gz etc.
+                    - a sequence of two numpy arrays,
+                    the first containing vertex coordinates
+                    and the second containing triangles.
+                - data can be:
+                    - a path to .gii or .gii.gz etc.
+                    - a numpy array with shape (n_vertices,)
+                    or (n_time_points, n_vertices)
 
     Returns
     -------
