@@ -6,9 +6,11 @@ not whether it is exact.
 """
 
 import os
-
+import pytest
 import numpy as np
 import pandas as pd
+from numpy.testing import assert_array_equal
+from nilearn.glm.first_level import check_events
 
 
 def basic_paradigm():
@@ -64,6 +66,48 @@ def write_events(events, tmpdir):
     tsvfile = os.path.join(tmpdir, 'events.tsv')
     events.to_csv(tsvfile, sep='\t')
     return tsvfile
+
+
+def test_check_events():
+    """Test the function which tests that the events
+    data describes a valid experimental paradigm.
+    """
+    events = basic_paradigm()
+    # Errors checkins
+    # Missing onset
+    missing_onset = events.drop(columns=['onset'])
+    with pytest.raises(ValueError,
+                       match='The provided events data has no onset column.'):
+        check_events(missing_onset)
+    # Missing duration
+    missing_duration = events.drop(columns=['duration'])
+    with pytest.raises(ValueError,
+                       match='The provided events data has no duration column.'):
+        check_events(missing_duration)
+    # Warnings checkins
+    # Missing trial type
+    with pytest.warns(UserWarning,
+                      match="'trial_type' column not found"):
+        ttype, onset, duration, modulation = check_events(events)
+    # Check that missing trial type yields a 'dummy' array
+    assert_array_equal(ttype, np.repeat('dummy', len(events)))
+    # Check that missing modulation yields an array one ones
+    assert_array_equal(modulation, np.ones(len(events)))
+    # Modulation is provided
+    events['modulation'] = np.ones(len(events))
+    with pytest.warns(UserWarning,
+                      match="'modulation' column found in the given events data."):
+        check_events(events)
+    # An unexpected field is provided
+    events = events.drop(columns=['modulation'])
+    events['foo'] = np.zeros(len(events))
+    with pytest.warns(UserWarning,
+                      match="Unexpected key `foo` in events will be ignored."):
+        ttype2, onset2, duration2, modulation2 = check_events(events)
+    assert_array_equal(ttype, ttype2)
+    assert_array_equal(onset, onset2)
+    assert_array_equal(duration, duration2)
+    assert_array_equal(modulation, modulation2)
 
 
 def test_read_events():
