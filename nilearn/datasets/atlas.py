@@ -33,7 +33,7 @@ def fetch_atlas_difumo(dimension=64, resolution_mm=2, data_dir=None, resume=True
     Direct download links from OSF:
 
     - 64: https://osf.io/pqu9r/download
-    - 128: hhttps://osf.io/wjvd5/download
+    - 128: https://osf.io/wjvd5/download
     - 256: https://osf.io/3vrct/download
     - 512: https://osf.io/9b76y/download
     - 1024: https://osf.io/34792/download
