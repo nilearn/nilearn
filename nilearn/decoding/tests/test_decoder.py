@@ -240,18 +240,20 @@ def test_decoder_binary_classification():
     pytest.raises(NotImplementedError, model.fit, X, y)
 
     # Raises an error with unknown scoring metrics
+    model = Decoder(estimator=dummy_classifier,
+                    mask=mask,
+                    scoring="foo")
     with pytest.raises(ValueError,
                        match="'foo' is not a valid scoring value"):
-        model = Decoder(estimator=dummy_classifier,
-                        mask=mask,
-                        scoring="foo")
+        model.fit(X, y)
 
     # Default scoring
     model = Decoder(estimator='dummy_classifier',
                     scoring=None)
     assert model.scoring is None
-    assert model._scorer == get_scorer("accuracy")
+    assert model.scorer is None
     model.fit(X, y)
+    assert model.scorer == get_scorer("accuracy")
     assert model.score(X, y) == 0.5
 
     # check different screening_percentile value

@@ -387,15 +387,8 @@ class _BaseDecoder(LinearRegression, CacheMixin):
         self.memory_level = memory_level
         self.n_jobs = n_jobs
         self.verbose = verbose
+        self.scorer = None
 
-        # Determine the scoring strategy
-        if self.scoring is not None:
-            self._scorer = get_scorer(self.scoring)
-        else:
-            if self.is_classification:
-                self._scorer = get_scorer("accuracy")
-            else:
-                self._scorer = get_scorer("r2")
 
     def fit(self, X, y, groups=None):
         """Fit the decoder (learner).
@@ -500,7 +493,14 @@ class _BaseDecoder(LinearRegression, CacheMixin):
             self.n_outputs_ = y.shape[1]
 
         # Setup scorer
-        scorer = check_scoring(self.estimator, self.scoring)
+        if self.scoring is not None:
+            self.scorer = check_scoring(self.estimator,
+                                        self.scoring)
+        else:
+            if self.is_classification:
+                self.scorer = get_scorer("accuracy")
+            else:
+                self.scorer = get_scorer("r2")
 
         # Setup cross-validation object. Default is StratifiedKFold when groups
         # is None. If groups is specified but self.cv is not set to custom CV
@@ -560,7 +560,7 @@ class _BaseDecoder(LinearRegression, CacheMixin):
                 X=X, y=y[:, c], train=train, test=test,
                 param_grid=self.param_grid,
                 is_classification=self.is_classification, selector=selector,
-                scorer=scorer, mask_img=self.mask_img_, class_index=c,
+                scorer=self.scorer, mask_img=self.mask_img_, class_index=c,
                 clustering_percentile=self.clustering_percentile)
             for c, (train, test) in itertools.product(
                 range(n_problems), self.cv_))
@@ -614,7 +614,9 @@ class _BaseDecoder(LinearRegression, CacheMixin):
             Prediction score.
 
         """
-        return self._scorer(self, X, y, *args)
+        check_is_fitted(self, "coef_")
+        check_is_fitted(self, "masker_")
+        return self.scorer(self, X, y, *args)
 
     def decision_function(self, X):
         """Predict class labels for samples in X.
