@@ -387,7 +387,6 @@ class _BaseDecoder(LinearRegression, CacheMixin):
         self.memory_level = memory_level
         self.n_jobs = n_jobs
         self.verbose = verbose
-        self.scorer = None
 
 
     def fit(self, X, y, groups=None):
@@ -468,6 +467,10 @@ class _BaseDecoder(LinearRegression, CacheMixin):
             in the inner cross validation loop. The grid is empty
             when Dummy estimators are provided.
 
+        'scorer_' : function
+            Scorer function used on the held out data to choose the best
+            parameters for the model.
+
         `cv_scores_` : dict, (classes, n_folds)
             Scores (misclassification) for each parameter, and on each fold
 
@@ -494,13 +497,13 @@ class _BaseDecoder(LinearRegression, CacheMixin):
 
         # Setup scorer
         if self.scoring is not None:
-            self.scorer = check_scoring(self.estimator,
-                                        self.scoring)
+            self.scorer_ = check_scoring(self.estimator,
+                                         self.scoring)
         else:
             if self.is_classification:
-                self.scorer = get_scorer("accuracy")
+                self.scorer_ = get_scorer("accuracy")
             else:
-                self.scorer = get_scorer("r2")
+                self.scorer_ = get_scorer("r2")
 
         # Setup cross-validation object. Default is StratifiedKFold when groups
         # is None. If groups is specified but self.cv is not set to custom CV
@@ -560,7 +563,7 @@ class _BaseDecoder(LinearRegression, CacheMixin):
                 X=X, y=y[:, c], train=train, test=test,
                 param_grid=self.param_grid,
                 is_classification=self.is_classification, selector=selector,
-                scorer=self.scorer, mask_img=self.mask_img_, class_index=c,
+                scorer=self.scorer_, mask_img=self.mask_img_, class_index=c,
                 clustering_percentile=self.clustering_percentile)
             for c, (train, test) in itertools.product(
                 range(n_problems), self.cv_))
@@ -616,7 +619,7 @@ class _BaseDecoder(LinearRegression, CacheMixin):
         """
         check_is_fitted(self, "coef_")
         check_is_fitted(self, "masker_")
-        return self.scorer(self, X, y, *args)
+        return self.scorer_(self, X, y, *args)
 
     def decision_function(self, X):
         """Predict class labels for samples in X.

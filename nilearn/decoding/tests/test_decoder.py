@@ -251,9 +251,8 @@ def test_decoder_binary_classification():
     model = Decoder(estimator='dummy_classifier',
                     scoring=None)
     assert model.scoring is None
-    assert model.scorer is None
     model.fit(X, y)
-    assert model.scorer == get_scorer("accuracy")
+    assert model.scorer_ == get_scorer("accuracy")
     assert model.score(X, y) == 0.5
 
     # check different screening_percentile value
