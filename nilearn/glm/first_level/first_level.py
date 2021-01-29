@@ -22,6 +22,7 @@ from joblib import Memory, Parallel, delayed
 from nibabel import Nifti1Image
 from nibabel.onetime import auto_attr
 from sklearn.base import clone
+from sklearn.cluster import KMeans
 
 from nilearn._utils.glm import (_check_events_file_uses_tab_separators,
                                 _check_run_tables, get_bids_files,
@@ -159,13 +160,7 @@ def run_glm(Y, X, noise_model='ar1', bins=100, n_jobs=1, verbose=0):
         except ValueError:
             raise ValueError(err_msg)
 
-        if ar_order > 1:
-            # If AR(N>1) is requested the number of bins is applied
-            # per coefficient, so we compute the bins per coefficient to match
-            # the number of total bins requested by the user.
-            bins = np.floor(bins ** (1. / ar_order))
-
-        # compute and discretize the AR coeficents
+        # compute the AR coeficents
         ar_coef_ = [_yule_walker(ols_result.residuals[:, res].reshape(-1, 1).T,
                                  ar_order)
                     for res in range(ols_result.residuals.shape[1])]
@@ -173,17 +168,32 @@ def run_glm(Y, X, noise_model='ar1', bins=100, n_jobs=1, verbose=0):
         del ols_result
         if len(ar_coef_[0]) == 1:
             ar_coef_ = ar_coef_.ravel()
-        for idx in range(len(ar_coef_)):
-            ar_coef_[idx] = (ar_coef_[idx] * bins).astype(np.int) * 1. / bins
 
-        # Specify variables to be returned by function
-        results = {}
+        # Either bin the AR1 coefs or cluster ARN coefs
         if type(ar_coef_[0]) is np.float64:
+            for idx in range(len(ar_coef_)):
+                ar_coef_[idx] = (ar_coef_[idx] * bins).astype(np.int) \
+                                * 1. / bins
             labels = np.array([np.str(val) for val in ar_coef_])
         else:  # AR(N) case
-            labels = np.array([np.str('_'.join([str(v) for v in val]))
-                               for val in ar_coef_])
+            n_clusters = np.min([bins, Y.shape[1]])
+            kmeans = KMeans(n_clusters=n_clusters).fit(ar_coef_)
+            ar_coef_ = np.array([kmeans.cluster_centers_[i]
+                                 for i in kmeans.labels_])
+
+            # Create a set of rounded values for the labels
+            cluster_labels = kmeans.cluster_centers_.copy()
+            for idx in range(len(cluster_labels)):
+                cluster_labels[idx] = (cluster_labels[idx] * 100).\
+                                          astype(np.int) * 1. / 100
+            cluster_labels = np.array([np.str('_'.join([str(v) for v in val]))
+                 for val in cluster_labels])
+
+            # Create labels and coef per voxel
+            labels = np.array([cluster_labels[i] for i in kmeans.labels_])
+
         unique_labels = np.unique(labels)
+        results = {}
 
         # Fit the AR model according to current AR(N) estimates
         ar_result = Parallel(n_jobs=n_jobs, verbose=verbose)(

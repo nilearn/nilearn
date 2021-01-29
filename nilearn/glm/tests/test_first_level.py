@@ -220,7 +220,7 @@ def test_high_level_glm_different_design_matrices():
 
 def test_run_glm():
     rng = np.random.RandomState(42)
-    n, p, q = 100, 80, 10
+    n, p, q = 123, 80, 10
     X, Y = rng.standard_normal(size=(p, q)), rng.standard_normal(size=(p, n))
 
     # Ordinary Least Squares case
@@ -255,24 +255,40 @@ def test_run_glm():
     with pytest.raises(ValueError):
         run_glm(Y, X, 'ar0')
     with pytest.raises(ValueError):
-        run_glm(Y, X, 'ars')
+        run_glm(Y, X, 'arfoo')
+    with pytest.raises(ValueError):
+        run_glm(Y, X, 'arr3')
     with pytest.raises(ValueError):
         run_glm(Y, X, 'ar1.2')
 
 
 def test_glm_AR_estimates():
-    n, p, q = 1, 1000, 3
+    n, p, q = 100, 800, 10
     for ar1 in [-0.2, -0.5, -0.7]:
         X = np.random.RandomState(2).randn(p, q)
         Y = np.random.RandomState(2).randn(p, n)
         for idx in range(1, len(Y)):
             Y[idx] += ar1 * Y[idx - 1]
-        labels, results = run_glm(Y, X, 'ar1')
+        labels, results = run_glm(Y, X, 'ar1', bins=200)
         assert len(labels) == n
         for lab in results.keys():
             assert_almost_equal(float(lab), ar1, decimal=1)
 
-    n, p, q = 1, 10000, 3
+    n, p, q = 30, 800, 10
+    for ar1 in [-0.2, -0.5]:
+        for ar2 in [-0.3, -0.4]:
+            X = np.random.RandomState(2).randn(p, q)
+            Y = np.random.RandomState(2).randn(p, n)
+            for idx in range(0, len(Y)):
+                Y[idx] += (ar1 * Y[idx - 1]) + (ar2 * Y[idx - 2])
+            labels, results = run_glm(Y, X, 'ar2', bins=200)
+            assert len(labels) == n
+            for lab in results.keys():
+                ar_est = lab.split("_")
+                assert_almost_equal(float(ar_est[0]), ar1, decimal=1)
+                assert_almost_equal(float(ar_est[1]), ar2, decimal=1)
+
+    n, p, q = 1, 1000, 3
     for ar1 in [-0.2, -0.5]:
         for ar2 in [-0.3, -0.4]:
             for ar3 in [-0.3, -0.4]:
