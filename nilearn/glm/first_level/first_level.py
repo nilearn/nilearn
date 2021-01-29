@@ -78,9 +78,11 @@ def _yule_walker(X, order):
     Operates in-place.
     """
     from scipy import linalg
-    assert X.ndim == 2
-    assert order > 0, "AR order must be positive"
-    assert isinstance(order, int), "AR order must be an integer"
+    if order < 1:
+        raise ValueError("AR order must be positive")
+    if type(order) is not int:
+        raise TypeError("AR order must be an integer")
+
     denom = X.shape[-1] - np.arange(order + 1)
     r = np.zeros(order + 1, np.float64)
     X = X.ravel()
@@ -146,7 +148,16 @@ def run_glm(Y, X, noise_model='ar1', bins=100, n_jobs=1, verbose=0):
     ols_result = OLSModel(X).fit(Y)
 
     if 'ar' in noise_model:
-        ar_order = int(re.split('ar', noise_model)[1])
+
+        err_msg = ("AR order must be a positive integer specified as arN, "
+                   "where N is an integer. E.g. ar3. "
+                   f"You provied {noise_model}.")
+        if 'ar' not in noise_model[0:2]:
+            raise ValueError(err_msg)
+        try:
+            ar_order = int(re.split('ar', noise_model)[1])
+        except ValueError:
+            raise ValueError(err_msg)
 
         if ar_order > 1:
             # If AR(N>1) is requested the number of bins is applied

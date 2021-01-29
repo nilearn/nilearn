@@ -21,6 +21,7 @@ from nilearn.glm.first_level import (FirstLevelModel, first_level_from_bids,
                                      mean_scaling, run_glm)
 from nilearn.glm.first_level.design_matrix import (
     check_design_matrix, make_first_level_design_matrix)
+from nilearn.glm.first_level.first_level import _yule_walker
 from nilearn.image import get_data
 from nilearn.glm.regression import ARModel, OLSModel
 
@@ -232,7 +233,7 @@ def test_run_glm():
     assert type(results[labels[0]].model) == OLSModel
 
     # ar(1) case
-    labels, results = run_glm(Y, X, 'ar1')
+    labels, results = run_glm(Y, X, "ar1")
     assert len(labels) == n
     assert len(results.keys()) > 1
     tmp = sum([val.theta.shape[1] for val in results.values()])
@@ -252,9 +253,11 @@ def test_run_glm():
 
     # non-existant case
     with pytest.raises(ValueError):
-        run_glm(Y, X, 'ars2')
+        run_glm(Y, X, 'ar0')
     with pytest.raises(ValueError):
-        run_glm(Y, X.T)
+        run_glm(Y, X, 'ars')
+    with pytest.raises(ValueError):
+        run_glm(Y, X, 'ar1.2')
 
 
 def test_glm_AR_estimates():
@@ -269,19 +272,28 @@ def test_glm_AR_estimates():
         for lab in results.keys():
             assert_almost_equal(float(lab), ar1, decimal=1)
 
-    n, p, q = 1, 1000, 3
+    n, p, q = 1, 10000, 3
     for ar1 in [-0.2, -0.5]:
         for ar2 in [-0.3, -0.4]:
-            X = np.random.RandomState(2).randn(p, q)
-            Y = np.random.RandomState(2).randn(p, n)
-            for idx in range(0, len(Y)):
-                Y[idx] += (ar1 * Y[idx - 1]) + (ar2 * Y[idx - 2])
-            labels, results = run_glm(Y, X, 'ar2', bins=1000)
-            assert len(labels) == n
-            for lab in results.keys():
-                ar_est = lab.split("_")
-                assert_almost_equal(float(ar_est[0]), ar1, decimal=1)
-                assert_almost_equal(float(ar_est[1]), ar2, decimal=1)
+            for ar3 in [-0.3, -0.4]:
+                Y = np.random.RandomState(2).randn(p, n)
+                for idx in range(0, len(Y)):
+                    Y[idx] += (ar1 * Y[idx - 1]) +\
+                              (ar2 * Y[idx - 2]) +\
+                              (ar3 * Y[idx - 3])
+                estimate = _yule_walker(Y.T, 3)
+                assert_almost_equal(float(estimate[0]), ar1, decimal=1)
+                estimate = _yule_walker(Y.ravel(), 3)  # Also test ndim=1
+                assert_almost_equal(float(estimate[1]), ar2, decimal=1)
+                assert_almost_equal(float(estimate[2]), ar3, decimal=1)
+
+    Y = np.random.RandomState(2).randn(p, n).T
+    with pytest.raises(TypeError):
+        _yule_walker(Y, 1.2)
+    with pytest.raises(ValueError):
+        _yule_walker(Y, 0)
+    with pytest.raises(ValueError):
+        _yule_walker(Y, -2)
 
 
 def test_scaling():
