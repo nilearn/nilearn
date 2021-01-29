@@ -31,6 +31,7 @@ from sklearn.svm import SVR, LinearSVC, l1_min_c
 from sklearn.utils import check_random_state
 from sklearn.utils.extmath import safe_sparse_dot
 from sklearn.utils.validation import check_is_fitted, check_X_y
+from sklearn.metrics import get_scorer
 
 from nilearn._utils import CacheMixin
 from nilearn._utils.cache_mixin import _check_memory
@@ -387,6 +388,7 @@ class _BaseDecoder(LinearRegression, CacheMixin):
         self.n_jobs = n_jobs
         self.verbose = verbose
 
+
     def fit(self, X, y, groups=None):
         """Fit the decoder (learner).
 
@@ -465,6 +467,10 @@ class _BaseDecoder(LinearRegression, CacheMixin):
             in the inner cross validation loop. The grid is empty
             when Dummy estimators are provided.
 
+        'scorer_' : function
+            Scorer function used on the held out data to choose the best
+            parameters for the model.
+
         `cv_scores_` : dict, (classes, n_folds)
             Scores (misclassification) for each parameter, and on each fold
 
@@ -490,7 +496,14 @@ class _BaseDecoder(LinearRegression, CacheMixin):
             self.n_outputs_ = y.shape[1]
 
         # Setup scorer
-        scorer = check_scoring(self.estimator, self.scoring)
+        if self.scoring is not None:
+            self.scorer_ = check_scoring(self.estimator,
+                                         self.scoring)
+        else:
+            if self.is_classification:
+                self.scorer_ = get_scorer("accuracy")
+            else:
+                self.scorer_ = get_scorer("r2")
 
         # Setup cross-validation object. Default is StratifiedKFold when groups
         # is None. If groups is specified but self.cv is not set to custom CV
@@ -550,7 +563,7 @@ class _BaseDecoder(LinearRegression, CacheMixin):
                 X=X, y=y[:, c], train=train, test=test,
                 param_grid=self.param_grid,
                 is_classification=self.is_classification, selector=selector,
-                scorer=scorer, mask_img=self.mask_img_, class_index=c,
+                scorer=self.scorer_, mask_img=self.mask_img_, class_index=c,
                 clustering_percentile=self.clustering_percentile)
             for c, (train, test) in itertools.product(
                 range(n_problems), self.cv_))
@@ -582,6 +595,31 @@ class _BaseDecoder(LinearRegression, CacheMixin):
             if self.is_classification and (self.n_classes_ == 2):
                 if not self.n_outputs_ > 1:
                     self.dummy_output_ = self.dummy_output_[0, :][np.newaxis, :]
+
+    def score(self, X, y, *args):
+        """Compute the prediction score using the scoring
+        metric defined by the scoring attribute.
+
+        Parameters
+        ----------
+        X : {array-like, sparse matrix}, shape = (n_samples, n_features)
+            Samples.
+
+        y : array-like
+            Target values.
+
+        args : Optional arguments that can be passed to
+            scoring metrics. Example: sample_weight.
+
+        Returns
+        -------
+        score : float
+            Prediction score.
+
+        """
+        check_is_fitted(self, "coef_")
+        check_is_fitted(self, "masker_")
+        return self.scorer_(self, X, y, *args)
 
     def decision_function(self, X):
         """Predict class labels for samples in X.

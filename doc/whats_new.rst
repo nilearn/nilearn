@@ -26,6 +26,13 @@ Enhancements
 - :class:`nilearn.decoding.Decoder` and :class:`nilearn.decoding.DecoderRegressor`
   is now implemented with random predictions to estimate a chance level.
 
+- :class:`nilearn.decoding.Decoder`, :class:`nilearn.decoding.DecoderRegressor`,
+  :class:`nilearn.decoding.FREMRegressor`, and :class:`nilearn.decoding.FREMClassifier`
+  now override the `score` method to use whatever scoring strategy was defined through
+  the `scoring` attribute instead of the sklearn default. 
+  If the `scoring` attribute of the decoder is set to None, the scoring strategy
+  will default to accuracy for classifiers and to r2 score for regressors.
+
 - :func:`nilearn.plotting.plot_surf` and deriving functions like :func:`nilearn.plotting.plot_surf_roi`
   now accept an optional argument `cbar_tick_format` to specify how numbers should be displayed on the
   colorbar of surface plots. The default format is scientific notation except for :func:`nilearn.plotting.plot_surf_roi`
