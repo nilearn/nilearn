@@ -150,9 +150,9 @@ def run_glm(Y, X, noise_model='ar1', bins=100, n_jobs=1, verbose=0):
 
     if 'ar' in noise_model:
 
-        err_msg = ("AR order must be a positive integer specified as arN, "
-                   "where N is an integer. E.g. ar3. "
-                   f"You provied {noise_model}.")
+        err_msg = ('AR order must be a positive integer specified as arN, '
+                   'where N is an integer. E.g. ar3. '
+                   'You provied {0}.'.format(noise_model))
         if 'ar' not in noise_model[0:2]:
             raise ValueError(err_msg)
         try:
