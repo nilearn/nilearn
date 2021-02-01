@@ -6,12 +6,15 @@ labels: 'Enhancement'
 assignees: ''
 
 ---
+<!--Provide a brief description what you would like changes and why.-->
 
-<!-- 
-Include the following:
-------------------------
-What would you like changed/added and why?
-What would be the benefit? Does the change make something easier to use?
-Clarifies something?
-If it is a new feature, what is the benefit? 
--->
+
+<!--Please fill in the following information, to the best of your ability.-->
+### Benefits to the change
+
+
+### Pseudocode for the new behavior, if applicable
+
+```python
+
+```
