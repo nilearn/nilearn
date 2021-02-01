@@ -18,6 +18,9 @@ NEW
 Fixes
 -----
 
+- Fix altered, non-zero baseline in design matrices where multiple events in the same condition
+  end at the same time (https://github.com/nilearn/nilearn/issues/2674).
+
 - Fix testing issues on ARM machine.
 
 Enhancements
