@@ -18,6 +18,9 @@ NEW
 Fixes
 -----
 
+- Fix altered, non-zero baseline in design matrices where multiple events in the same condition
+  end at the same time.
+
 - Fix testing issues on ARM machine.
 
 Enhancements
