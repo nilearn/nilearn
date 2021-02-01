@@ -5,8 +5,7 @@ title: ''
 labels: Documentation
 assignees: ''
 ---
-
-
-#### Proposed documentation enhancement
 <!--Describe your proposed enhancement in detail.-->
 
+<!--List any pages that would be impacted by the enhancement.-->
+### Affected pages
