@@ -139,10 +139,10 @@ def plot_matrix(mat, title=None, labels=None, figure=None, axes=None,
         mat = mat[index, :][:, index]
 
     if tri == 'lower':
-        mask = np.tri(mat.shape[0], k=-1, dtype=np.bool) ^ True
+        mask = np.tri(mat.shape[0], k=-1, dtype=bool) ^ True
         mat = np.ma.masked_array(mat, mask)
     elif tri == 'diag':
-        mask = np.tri(mat.shape[0], dtype=np.bool) ^ True
+        mask = np.tri(mat.shape[0], dtype=bool) ^ True
         mat = np.ma.masked_array(mat, mask)
     if axes is not None and figure is not None:
         raise ValueError("Parameters figure and axes cannot be specified "
