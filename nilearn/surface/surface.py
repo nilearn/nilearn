@@ -33,6 +33,8 @@ from nilearn.image import get_data
 # Create a namedtuple object for meshes
 Mesh = namedtuple("mesh", ["coordinates", "faces"])
 
+# Create a namedtuple object for surfaces
+Surface = namedtuple("surface", ["mesh", "data"])
 
 def _uniform_ball_cloud(n_points=20, dim=3, n_monte_carlo=50000):
     """Get points uniformly spaced in the unit ball."""
@@ -895,6 +897,55 @@ def load_surf_mesh(surf_mesh):
     return mesh
 
 
+def load_surface(surface):
+    """Loads a surface.
+
+    Parameters
+    ----------
+    surface : Surface-like (see description)
+        The surface to be loaded.
+        A surface can be:
+            - a nilearn.surface.Surface
+            - a sequence (mesh, data) where:
+                - mesh can be:
+                    - a nilearn.surface.Mesh
+                    - a path to .gii or .gii.gz etc.
+                    - a sequence of two numpy arrays,
+                    the first containing vertex coordinates
+                    and the second containing triangles.
+                - data can be:
+                    - a path to .gii or .gii.gz etc.
+                    - a numpy array with shape (n_vertices,)
+                    or (n_time_points, n_vertices)
+
+    Returns
+    --------
+    surface : Surface
+        With the fields "mesh" (Mesh object) and "data" (numpy.ndarray).
+
+    """
+    # Handle the case where we received a Surface
+    # object with mesh and data attributes
+    if hasattr(surface, "mesh") and hasattr(surface, "data"):
+        mesh = load_surf_mesh(surface.mesh)
+        data = load_surf_data(surface.data)
+    # Handle the case where we received a sequence
+    # (mesh, data)
+    elif isinstance(surface, (list, tuple, np.ndarray)):
+        if len(surface) == 2:
+            mesh = load_surf_mesh(surface[0])
+            data = load_surf_data(surface[1])
+        else:
+            raise ValueError("`load_surface` accepts iterables "
+                             "of length 2 to define a surface. "
+                             "You provided a {} of length {}.".format(
+                                 type(surface), len(surface)))
+    else:
+        raise ValueError("Wrong parameter `surface` in `load_surface`. "
+                         "Please refer to the documentation for more information.")
+    return Surface(mesh, data)
+
+
 def _check_mesh(mesh):
     """Check that mesh data is either a str, or a dict with sufficient
     entries.
@@ -918,7 +969,32 @@ def _check_mesh(mesh):
 
 
 def check_mesh_and_data(mesh, data):
-    """Load surface mesh and data, check that they have compatible shapes."""
+    """Load surface mesh and data, check that they have compatible shapes.
+
+    Parameters
+    ----------
+    mesh : str or numpy.ndarray or Mesh
+        Either a file containing surface mesh geometry (valid formats
+        are .gii .gii.gz or Freesurfer specific files such as .orig, .pial,
+        .sphere, .white, .inflated) or two Numpy arrays organized in a list,
+        tuple or a namedtuple with the fields "coordinates" and "faces", or a
+        Mesh object with "coordinates" and "faces" attributes.
+
+    data : str or numpy.ndarray
+        Either a file containing surface data (valid format are .gii,
+        .gii.gz, .mgz, .nii, .nii.gz, or Freesurfer specific files such as
+        .thickness, .curv, .sulc, .annot, .label), lists of 1D data files are
+        returned as 2D arrays, or a Numpy array containing surface data.
+
+    Returns
+    -------
+    mesh : Mesh
+        Checked mesh.
+
+    data : numpy.ndarray
+        Checked data.
+
+    """
     mesh = load_surf_mesh(mesh)
     data = load_surf_data(data)
     # Check that mesh coordinates has a number of nodes
@@ -936,3 +1012,38 @@ def check_mesh_and_data(mesh, data):
             "Maximum face index is {} while coordinates array has length {}.".format(
                 mesh.faces.max(), len(mesh.coordinates)))
     return mesh, data
+
+
+def check_surface(surface):
+    """Load a surface as a Surface object.
+    This function will make sure that the surfaces's
+    mesh and data have compatible shapes.
+
+    Parameters
+    ----------
+    surface : Surface-like (see description)
+        The surface to be loaded.
+        A surface can be:
+            - a nilearn.surface.Surface
+            - a sequence (mesh, data) where:
+                - mesh can be:
+                    - a nilearn.surface.Mesh
+                    - a path to .gii or .gii.gz etc.
+                    - a sequence of two numpy arrays,
+                    the first containing vertex coordinates
+                    and the second containing triangles.
+                - data can be:
+                    - a path to .gii or .gii.gz etc.
+                    - a numpy array with shape (n_vertices,)
+                    or (n_time_points, n_vertices)
+
+    Returns
+    -------
+    surface : Surface
+        Checked surface object.
+
+    """
+    surface = load_surface(surface)
+    mesh, data = check_mesh_and_data(surface.mesh,
+                                     surface.data)
+    return Surface(mesh, data)
