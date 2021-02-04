@@ -251,7 +251,7 @@ def test_run_glm():
     assert results_ar3[labels_ar3[0]].model.order == 3
     assert len(results_ar3[labels_ar3[0]].model.rho) == 3
 
-    # non-existant case
+    # Check correct errors are thrown for nonsense noise model requests
     with pytest.raises(ValueError):
         run_glm(Y, X, 'ar0')
     with pytest.raises(ValueError):
@@ -263,52 +263,37 @@ def test_run_glm():
 
 
 def test_glm_AR_estimates():
-    n, p, q = 1, 1000, 3
+    """Test that Yule-Walker AR fits are correct."""
 
-    for ar1 in [-0.2, -0.5, -0.7]:
-        X = np.random.RandomState(2).randn(p, q)
-        Y = np.random.RandomState(2).randn(p, n)
+    n, p, q = 1, 1000, 3
+    X_orig = np.random.RandomState(2).randn(p, q)
+    Y_orig = np.random.RandomState(2).randn(p, n)
+
+    for ar_vals in [[-0.2], [-0.2, -0.5], [-0.2, -0.5, -0.7, -0.3]]:
+        ar_order = len(ar_vals)
+        ar_arg = "ar" + str(ar_order)
+
+        X = X_orig.copy()
+        Y = Y_orig.copy()
+
         for idx in range(1, len(Y)):
-            Y[idx] += ar1 * Y[idx - 1]
-        labels, results = run_glm(Y, X, 'ar1', bins=100)
+            for lag in range(ar_order):
+                Y[idx] += ar_vals[lag] * Y[idx - 1 - lag]
+
+        labels, results = run_glm(Y, X, ar_arg, bins=100)
         assert len(labels) == n
         for lab in results.keys():
-            assert_almost_equal(float(lab), ar1, decimal=1)
+            ar_estimate = lab.split("_")
+            for lag in range(ar_order):
+                assert_almost_equal(float(ar_estimate[lag]),
+                                    ar_vals[lag], decimal=1)
 
-    for ar1 in [-0.2, -0.5]:
-        for ar2 in [-0.3, -0.4]:
-            X = np.random.RandomState(2).randn(p, q)
-            Y = np.random.RandomState(2).randn(p, n)
-            for idx in range(0, len(Y)):
-                Y[idx] += (ar1 * Y[idx - 1]) + (ar2 * Y[idx - 2])
-            labels, results = run_glm(Y, X, 'ar2', bins=1000)
-            assert len(labels) == n
-            for lab in results.keys():
-                ar_est = lab.split("_")
-                assert_almost_equal(float(ar_est[0]), ar1, decimal=1)
-                assert_almost_equal(float(ar_est[1]), ar2, decimal=1)
-
-    for ar1 in [-0.2, -0.5]:
-        for ar2 in [-0.3, -0.4]:
-            for ar3 in [-0.3, -0.4]:
-                Y = np.random.RandomState(2).randn(p, n)
-                for idx in range(0, len(Y)):
-                    Y[idx] += (ar1 * Y[idx - 1]) +\
-                              (ar2 * Y[idx - 2]) +\
-                              (ar3 * Y[idx - 3])
-                estimate = _yule_walker(Y.T, 3)
-                assert_almost_equal(float(estimate[0]), ar1, decimal=1)
-                estimate = _yule_walker(Y.ravel(), 3)  # Also test ndim=1
-                assert_almost_equal(float(estimate[1]), ar2, decimal=1)
-                assert_almost_equal(float(estimate[2]), ar3, decimal=1)
-
-    Y = np.random.RandomState(2).randn(p, n).T
     with pytest.raises(TypeError):
-        _yule_walker(Y, 1.2)
+        _yule_walker(Y_orig, 1.2)
     with pytest.raises(ValueError):
-        _yule_walker(Y, 0)
+        _yule_walker(Y_orig, 0)
     with pytest.raises(ValueError):
-        _yule_walker(Y, -2)
+        _yule_walker(Y_orig, -2)
 
 
 def test_scaling():
