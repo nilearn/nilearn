@@ -17,9 +17,12 @@ from nilearn.plotting.img_plotting import (_get_colorbar_and_data_ranges,
                                            _crop_colorbar)
 from nilearn.surface import (load_surf_data,
                              load_surf_mesh,
+                             load_surface,
                              vol_to_surf)
 from nilearn.surface.surface import _check_mesh
 from nilearn._utils import check_niimg_3d
+import warnings
+from functools import wraps, partial
 
 from matplotlib.colors import to_rgba
 from matplotlib.patches import Patch
@@ -29,7 +32,51 @@ VALID_VIEWS = "anterior", "posterior", "medial", "lateral", "dorsal", "ventral"
 VALID_HEMISPHERES = "left", "right"
 
 
-def plot_surf(surf_mesh, surf_map=None, bg_map=None,
+def _deprecate_seperate_mesh_data(func, argument):
+    """Decorator to deprecate usage of mesh and
+    texture as multiple arguments in surface related
+    functions. The new usage consists in providing a
+    single surface object. This new usage will become
+    mandatory in the 0.9 release of Nilearn.
+
+    """
+    @wraps(func)
+    def wrapper(surf_mesh, *args, **kwargs):
+        # Deprecate previous usage where the first argument
+        # is a mesh instead of a surface.
+        if not (hasattr(surf_mesh, "mesh") and
+                hasattr(surf_mesh, "data")):
+            warnings.warn("Giving a mesh and a texture separately "
+                          "to `{}` has been deprecated. You should "
+                          "now provide a nilearn Surface object instead. "
+                          "The `surf_mesh` arg will be renamed `surface`, "
+                          "and `{}` will be removed in version 0.9.".format(
+                              func.__name__, argument),
+                          FutureWarning)
+            return func(surf_mesh, *args, **kwargs)
+        # Otherwise, warn the user that surface.data will
+        # overwrite whatever data was passed to separately to the function
+        else:
+            warnings.warn("`{}` received a surface object such that the "
+                          "argument `{}`, if provided, will be overwritten "
+                          "by the surface data.".format(
+                              func.__name__, argument))
+            if argument in kwargs and kwargs[argument] is not None:
+                kwargs[argument] = surf_mesh.data
+            try:
+                return func(surf_mesh.mesh, surf_mesh.data, *args, **kwargs)
+            except TypeError:
+                if len(args) > 0:
+                    args = args[1:]
+                    return func(surf_mesh.mesh, surf_mesh.data, *args, **kwargs)
+                return func(surf_mesh.mesh, *args, **kwargs)
+    return wrapper
+
+deprecate_seperate_mesh_data_plot_surf = partial(
+    _deprecate_seperate_mesh_data, argument="surf_map")
+
+@deprecate_seperate_mesh_data_plot_surf
+def plot_surf(surf_mesh, surf_map=None, *, bg_map=None,
               hemi='left', view='lateral', cmap=None, colorbar=False,
               avg_method='mean', threshold=None, alpha='auto',
               bg_on_data=False, darkness=1, vmin=None, vmax=None,
@@ -41,16 +88,37 @@ def plot_surf(surf_mesh, surf_map=None, bg_map=None,
 
     Parameters
     ----------
-    surf_mesh : str or list of two numpy.ndarray or Mesh
-        Surface mesh geometry, can be a file (valid formats are
-        .gii or Freesurfer specific files such as .orig, .pial,
-        .sphere, .white, .inflated) or
-        a list of two Numpy arrays, the first containing the x-y-z coordinates
-        of the mesh vertices, the second containing the indices
-        (into coords) of the mesh faces, or a Mesh object with
-        "coordinates" and "faces" attributes.
+    surf_mesh : str or list of two numpy.ndarray or Mesh or Surface
+        Deprecated, will be renamed `surface` in 0.9. Either:
+            - a Surface-like object with a mesh and data attributes
+                A surface can be:
+                    - a nilearn.surface.Surface
+                    - a sequence (mesh, data) where:
+                        - mesh can be:
+                            - a nilearn.surface.Mesh
+                            - a path to .gii or .gii.gz etc.
+                            - a sequence of two numpy arrays,
+                            the first containing vertex coordinates
+                            and the second containing triangles.
+                        - data can be:
+                            - a path to .gii or .gii.gz etc.
+                            - a numpy array with shape (n_vertices,)
+                            or (n_time_points, n_vertices)
+            - a surface mesh geometry (deprecated)
+                A Mesh can be:
+                    - a file (valid formats are .gii or Freesurfer specific
+                    files such as .orig, .pial, .sphere, .white, .inflated)
+                    - a list of two Numpy arrays, the first containing the
+                    x-y-z coordinates of the mesh vertices, the second
+                    containing the indices (into coords) of the mesh faces
+                    - a Mesh object with "coordinates" and "faces" attributes.
+        If a Surface-like object is provided instead of a Mesh, `surface.data`
+        will overwrite the `surf_map` argument.
 
     surf_map : str or numpy.ndarray, optional
+        Deprecated, will be removed in 0.9. Please use a Surface object to
+        define the map. This argument will be ignored if a Surface object is
+        provided as first argument.
         Data to be displayed on the surface mesh. Can be a file (valid formats
         are .gii, .mgz, .nii, .nii.gz, or Freesurfer specific files such as
         .thickness, .area, .curv, .sulc, .annot, .label) or
@@ -422,22 +490,48 @@ def _get_faces_on_edge(faces, parc_idx):
     return np.logical_and(faces_outside_edge > 0, verts_per_face < 3)
 
 
-def plot_surf_contours(surf_mesh, roi_map, axes=None, figure=None, levels=None,
+deprecate_seperate_mesh_data_plot_surf_contours = partial(
+    _deprecate_seperate_mesh_data, argument="roi_map")
+
+@deprecate_seperate_mesh_data_plot_surf_contours
+def plot_surf_contours(surf_mesh, roi_map, *, axes=None, figure=None, levels=None,
                        labels=None, colors=None, legend=False, cmap='tab20',
                        title=None, output_file=None, **kwargs):
     """Plotting contours of ROIs on a surface, optionally over a statistical map.
 
     Parameters
     ----------
-    surf_mesh : str or list of two numpy.ndarray
-        Surface mesh geometry, can be a file (valid formats are
-        .gii or Freesurfer specific files such as .orig, .pial,
-        .sphere, .white, .inflated) or
-        a list of two Numpy arrays, the first containing the x-y-z coordinates
-        of the mesh vertices, the second containing the indices
-        (into coords) of the mesh faces.
+    surf_mesh : str or list of two numpy.ndarray or Mesh or Surface
+        Deprecated, will be renamed `surface` in 0.9. Either:
+            - a Surface-like object with a mesh and data attributes
+                A surface can be:
+                    - a nilearn.surface.Surface
+                    - a sequence (mesh, data) where:
+                        - mesh can be:
+                            - a nilearn.surface.Mesh
+                            - a path to .gii or .gii.gz etc.
+                            - a sequence of two numpy arrays,
+                            the first containing vertex coordinates
+                            and the second containing triangles.
+                        - data can be:
+                            - a path to .gii or .gii.gz etc.
+                            - a numpy array with shape (n_vertices,)
+                            or (n_time_points, n_vertices)
+            - a surface mesh geometry (deprecated)
+                A Mesh can be:
+                    - a file (valid formats are .gii or Freesurfer specific
+                    files such as .orig, .pial, .sphere, .white, .inflated)
+                    - a list of two Numpy arrays, the first containing the
+                    x-y-z coordinates of the mesh vertices, the second
+                    containing the indices (into coords) of the mesh faces
+                    - a Mesh object with "coordinates" and "faces" attributes.
+        If a Surface-like object is provided instead of a Mesh, `surface.data`
+        will overwrite the `surf_map` argument.
 
     roi_map : str or numpy.ndarray or list of numpy.ndarray
+        Deprecated, will be removed in 0.9. Please use a Surface object to
+        define the map. This argument will be ignored if a Surface object is
+        provided as first argument.
         ROI map to be displayed on the surface mesh, can be a file
         (valid formats are .gii, .mgz, .nii, .nii.gz, or Freesurfer specific
         files such as .annot or .label), or
@@ -557,8 +651,11 @@ def plot_surf_contours(surf_mesh, roi_map, axes=None, figure=None, levels=None,
     else:
         return figure
 
+deprecate_seperate_mesh_data_plot_surf_stat_map = partial(
+    _deprecate_seperate_mesh_data, argument="stat_map")
 
-def plot_surf_stat_map(surf_mesh, stat_map, bg_map=None,
+@deprecate_seperate_mesh_data_plot_surf_stat_map
+def plot_surf_stat_map(surf_mesh, stat_map, *, bg_map=None,
                        hemi='left', view='lateral', threshold=None,
                        alpha='auto', vmax=None, cmap='cold_hot',
                        colorbar=True, symmetric_cbar="auto", bg_on_data=False,
@@ -570,16 +667,37 @@ def plot_surf_stat_map(surf_mesh, stat_map, bg_map=None,
 
     Parameters
     ----------
-    surf_mesh : str or list of two numpy.ndarray or Mesh
-        Surface mesh geometry, can be a file (valid formats are
-        .gii or Freesurfer specific files such as .orig, .pial,
-        .sphere, .white, .inflated) or
-        a list of two Numpy arrays, the first containing the x-y-z
-        coordinates of the mesh vertices, the second containing the
-        indices (into coords) of the mesh faces, or a Mesh object
-        with "coordinates" and "faces" attributes.
+    surf_mesh : str or list of two numpy.ndarray or Mesh or Surface
+        Deprecated, will be renamed `surface` in 0.9. Either:
+            - a Surface-like object with a mesh and data attributes
+                A surface can be:
+                    - a nilearn.surface.Surface
+                    - a sequence (mesh, data) where:
+                        - mesh can be:
+                            - a nilearn.surface.Mesh
+                            - a path to .gii or .gii.gz etc.
+                            - a sequence of two numpy arrays,
+                            the first containing vertex coordinates
+                            and the second containing triangles.
+                        - data can be:
+                            - a path to .gii or .gii.gz etc.
+                            - a numpy array with shape (n_vertices,)
+                            or (n_time_points, n_vertices)
+            - a surface mesh geometry (deprecated)
+                A Mesh can be:
+                    - a file (valid formats are .gii or Freesurfer specific
+                    files such as .orig, .pial, .sphere, .white, .inflated)
+                    - a list of two Numpy arrays, the first containing the
+                    x-y-z coordinates of the mesh vertices, the second
+                    containing the indices (into coords) of the mesh faces
+                    - a Mesh object with "coordinates" and "faces" attributes.
+        If a Surface-like object is provided instead of a Mesh, `surface.data`
+        will overwrite the `surf_map` argument.
 
     stat_map : str or numpy.ndarray
+        Deprecated, will be removed in 0.9. Please use a Surface object to
+        define the map. This argument will be ignored if a Surface object is
+        provided as first argument.
         Statistical map to be displayed on the surface mesh, can
         be a file (valid formats are .gii, .mgz, .nii, .nii.gz, or
         Freesurfer specific files such as .thickness, .area, .curv,
@@ -925,7 +1043,11 @@ def plot_img_on_surf(stat_map, surf_mesh='fsaverage5', mask_img=None,
         return fig, axes
 
 
-def plot_surf_roi(surf_mesh, roi_map, bg_map=None,
+deprecate_seperate_mesh_data_plot_surf_roi = partial(
+    _deprecate_seperate_mesh_data, argument="roi_map")
+
+@deprecate_seperate_mesh_data_plot_surf_roi
+def plot_surf_roi(surf_mesh, roi_map, *, bg_map=None,
                   hemi='left', view='lateral', threshold=1e-14,
                   alpha='auto', vmin=None, vmax=None, cmap='gist_ncar',
                   cbar_tick_format="%i", bg_on_data=False, darkness=1,
@@ -936,16 +1058,37 @@ def plot_surf_roi(surf_mesh, roi_map, bg_map=None,
 
     Parameters
     ----------
-    surf_mesh : str or list of two numpy.ndarray or Mesh
-        Surface mesh geometry, can be a file (valid formats are
-        .gii or Freesurfer specific files such as .orig, .pial,
-        .sphere, .white, .inflated) or
-        a list of two Numpy arrays, the first containing the x-y-z
-        coordinates of the mesh vertices, the second containing the indices
-        (into coords) of the mesh faces, or a Mesh object with
-        "coordinates" and "faces" attributes.
+    surf_mesh : str or list of two numpy.ndarray or Mesh or Surface
+        Deprecated, will be renamed `surface` in 0.9. Either:
+            - a Surface-like object with a mesh and data attributes
+                A surface can be:
+                    - a nilearn.surface.Surface
+                    - a sequence (mesh, data) where:
+                        - mesh can be:
+                            - a nilearn.surface.Mesh
+                            - a path to .gii or .gii.gz etc.
+                            - a sequence of two numpy arrays,
+                            the first containing vertex coordinates
+                            and the second containing triangles.
+                        - data can be:
+                            - a path to .gii or .gii.gz etc.
+                            - a numpy array with shape (n_vertices,)
+                            or (n_time_points, n_vertices)
+            - a surface mesh geometry (deprecated)
+                A Mesh can be:
+                    - a file (valid formats are .gii or Freesurfer specific
+                    files such as .orig, .pial, .sphere, .white, .inflated)
+                    - a list of two Numpy arrays, the first containing the
+                    x-y-z coordinates of the mesh vertices, the second
+                    containing the indices (into coords) of the mesh faces
+                    - a Mesh object with "coordinates" and "faces" attributes.
+        If a Surface-like object is provided instead of a Mesh, `surface.data`
+        will overwrite the `surf_map` argument.
 
     roi_map : str or numpy.ndarray or list of numpy.ndarray
+        Deprecated, will be removed in 0.9. Please use a Surface object to
+        define the map. This argument will be ignored if a Surface object is
+        provided as first argument.
         ROI map to be displayed on the surface mesh, can be a file
         (valid formats are .gii, .mgz, .nii, .nii.gz, or Freesurfer specific
         files such as .annot or .label), or
