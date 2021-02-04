@@ -265,7 +265,7 @@ def test_run_glm():
 def test_glm_AR_estimates():
     """Test that Yule-Walker AR fits are correct."""
 
-    n, p, q = 1, 200, 2
+    n, p, q = 1, 500, 2
     X_orig = np.random.RandomState(2).randn(p, q)
     Y_orig = np.random.RandomState(2).randn(p, n)
 
