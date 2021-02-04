@@ -84,6 +84,10 @@ def test_check_events():
     """
     events = basic_paradigm()
     # Errors checkins
+    # Wrong type
+    with pytest.raises(TypeError,
+                       match="Events should be a Pandas DataFrame."):
+        check_events([])
     # Missing onset
     missing_onset = events.drop(columns=['onset'])
     with pytest.raises(ValueError,
