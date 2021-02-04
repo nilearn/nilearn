@@ -220,7 +220,7 @@ def test_high_level_glm_different_design_matrices():
 
 def test_run_glm():
     rng = np.random.RandomState(42)
-    n, p, q = 123, 80, 10
+    n, p, q = 33, 80, 10
     X, Y = rng.standard_normal(size=(p, q)), rng.standard_normal(size=(p, n))
 
     # Ordinary Least Squares case
@@ -242,7 +242,7 @@ def test_run_glm():
     assert type(results[labels[0]].model) == ARModel
 
     # ar(3) case
-    labels_ar3, results_ar3 = run_glm(Y, X, 'ar3', bins=100)
+    labels_ar3, results_ar3 = run_glm(Y, X, 'ar3', bins=10)
     assert len(labels_ar3) == n
     assert len(results_ar3.keys()) > 1
     tmp = sum([val.theta.shape[1] for val in results_ar3.values()])
@@ -265,7 +265,7 @@ def test_run_glm():
 def test_glm_AR_estimates():
     """Test that Yule-Walker AR fits are correct."""
 
-    n, p, q = 1, 1000, 3
+    n, p, q = 1, 200, 2
     X_orig = np.random.RandomState(2).randn(p, q)
     Y_orig = np.random.RandomState(2).randn(p, n)
 
