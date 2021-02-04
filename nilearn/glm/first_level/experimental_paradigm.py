@@ -101,11 +101,11 @@ def check_events(events):
     #   - trial type
     #   - onset
     column_defining_event_identity = ['trial_type',
-                                      'onset']
+                                      'onset',
+                                      'duration',]
 
     # Duplicate handling strategy
-    strategy = {'duration': np.max,   # Keep the max duration of duplicate events
-                'modulation': np.sum, # Sum the modulation values of duplicate events
+    strategy = {'modulation': np.sum, # Sum the modulation values of duplicate events
                 }
 
     cleaned_events = events_copy.groupby(

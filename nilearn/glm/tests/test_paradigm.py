@@ -25,7 +25,7 @@ def basic_paradigm():
 def duplicate_events_paradigm():
     conditions = ['c0', 'c0', 'c0', 'c1', 'c1', 'c0']
     onsets = [10, 30, 70, 10, 30, 70]
-    durations = [1., 1., 1., 1., 1., 1.2]
+    durations = [1., 1., 1., 1., 1., 1]
     events = pd.DataFrame({'trial_type': conditions,
                            'onset': onsets,
                            'duration': durations})
@@ -152,8 +152,7 @@ def test_duplicate_events():
         ttype, onset, duration, modulation = check_events(events)
     assert_array_equal(ttype, ['c0', 'c0', 'c0', 'c1', 'c1'])
     assert_array_equal(onset, [10, 30, 70, 10, 30])
-    # Max duration was kept
-    assert_array_equal(duration, [1. , 1. , 1.2, 1. , 1. ])
+    assert_array_equal(duration, [1. , 1. , 1., 1. , 1. ])
     # Modulation was updated
     assert_array_equal(modulation, [1, 1, 2, 1, 1])
 
