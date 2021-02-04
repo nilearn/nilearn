@@ -22,9 +22,10 @@ def basic_paradigm():
                            'duration': durations})
     return events
 
+
 def duplicate_events_paradigm():
-    conditions = ['c0', 'c0', 'c0', 'c1', 'c1', 'c0']
-    onsets = [10, 30, 70, 10, 30, 70]
+    conditions = ['c0', 'c0', 'c0', 'c0','c1', 'c1']
+    onsets = [10, 30, 70, 70, 10, 30]
     durations = [1., 1., 1., 1., 1., 1]
     events = pd.DataFrame({'trial_type': conditions,
                            'onset': onsets,
@@ -155,6 +156,7 @@ def test_duplicate_events():
     assert_array_equal(duration, [1. , 1. , 1., 1. , 1. ])
     # Modulation was updated
     assert_array_equal(modulation, [1, 1, 2, 1, 1])
+
 
 def test_read_events():
     """ test that a events for an experimental paradigm are correctly read.

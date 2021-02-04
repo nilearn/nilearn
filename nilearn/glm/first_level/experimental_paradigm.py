@@ -85,8 +85,9 @@ def check_events(events):
     # not be used afterwards
     unexpected_columns = set(events_copy.columns).difference(VALID_FIELDS)
     for unexpected_column in unexpected_columns:
-        warnings.warn("Unexpected column `{}` in events data.".format(
-            unexpected_column))
+        warnings.warn(("Unexpected column `{}` in events "
+                       "data will be ignored.").format(
+                            unexpected_column))
 
     # Make sure we have a numeric type for duration
     if not is_numeric_dtype(events_copy['duration']):
@@ -94,27 +95,28 @@ def check_events(events):
             events_copy = events_copy.astype({'duration': float})
         except:
             raise ValueError("Could not cast duration to float "
-                             " in events data.")
+                             "in events data.")
 
     # Handle duplicate events
     # Two events are duplicates if they have the same:
     #   - trial type
     #   - onset
-    column_defining_event_identity = ['trial_type',
+    COLUMN_DEFINING_EVENT_IDENTITY = ['trial_type',
                                       'onset',
                                       'duration',]
 
     # Duplicate handling strategy
-    strategy = {'modulation': np.sum, # Sum the modulation values of duplicate events
+    STRATEGY = {'modulation': np.sum, # Sum the modulation values of duplicate events
                 }
 
     cleaned_events = events_copy.groupby(
-                        column_defining_event_identity,
-                        sort=False).agg(strategy).reset_index()
+                        COLUMN_DEFINING_EVENT_IDENTITY,
+                        sort=False).agg(STRATEGY).reset_index()
 
     # If there are duplicates, give a warning
     if len(cleaned_events) != len(events_copy):
         warnings.warn("Duplicated events were detected. "
+                      "Amplitudes of these events will be summed. "
                       "You might want to verify your inputs.")
 
     trial_type = cleaned_events['trial_type'].values
