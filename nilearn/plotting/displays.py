@@ -1822,10 +1822,10 @@ class MosaicSlicer(BaseSlicer):
         Parameters
         ----------
         """
+        coords = dict()
         if cut_coords is None:
             cut_coords = 7
 
-        coords = dict()
         if img is None or img is False:
             bounds = ((-40, 40), (-30, 30), (-30, 75))
             for direction in sorted(self._cut_displayed):
@@ -1854,10 +1854,11 @@ class MosaicSlicer(BaseSlicer):
             raise ValueError('The number cut_coords passed does not'
                              ' match the display_mode')
         x0, y0, x1, y1 = self.rect
+
         # Create our axes:
         self.axes = dict()
         # portions for main axes
-        fraction = 1. / len(self.cut_coords)
+        fraction = y1 / len(self.cut_coords)
         height = fraction
         for index, direction in enumerate(self._cut_displayed):
             coords = self.cut_coords[direction]
@@ -1899,10 +1900,8 @@ class MosaicSlicer(BaseSlicer):
 
         # capture widths for each axes for anchoring Bbox
         width_dict = dict()
-        height_dict = dict()
         for direction in self._cut_displayed:
             this_width = dict()
-            this_height = dict()
             for display_ax in display_ax_dict.values():
                 if direction == display_ax.direction:
                     bounds = display_ax.get_object_bounds()
@@ -1914,35 +1913,26 @@ class MosaicSlicer(BaseSlicer):
                         bounds = [0, 1, 0, 1]
                     xmin, xmax, ymin, ymax = bounds
                     this_width[display_ax.ax] = (xmax - xmin)
-                    this_height[display_ax.ax] = (ymax - ymin)
             total_width = float(sum(this_width.values()))
-            total_height = float(sum(this_height.values()))
             for ax, w in this_width.items():
                 width_dict[ax] = w / total_width * (x1 - x0)
-            for ax, h in this_height.items():
-                height_dict[ax] = w / total_height * (y1 - y0)
 
         left_dict = dict()
         # bottom positions in Bbox according to cuts
         bottom_dict = dict()
-        fraction = np.round(1 / len(self._cut_displayed), decimals=1)
+        # fraction is divided by the cut directions 'y', 'x', 'z'
+        fraction = y1 / len(self._cut_displayed)
         height_dict = dict()
         for index, direction in enumerate(self._cut_displayed):
             left = float(x0)
+            this_height = fraction + fraction * index
             for coord, display_ax in display_ax_dict.items():
                 if direction == display_ax.direction:
                     left_dict[display_ax.ax] = left
                     this_width = width_dict[display_ax.ax]
                     left += this_width
-                if 'z' in display_ax.direction:
-                    bottom_dict[display_ax.ax] = 0.6
-                    height_dict[display_ax.ax] = 1.
-                elif 'x' in display_ax.direction:
-                    bottom_dict[display_ax.ax] = 0.3
-                    height_dict[display_ax.ax] = 0.6
-                elif 'y' in display_ax.direction:
-                    bottom_dict[display_ax.ax] = 0.0
-                    height_dict[display_ax.ax] = 0.3
+                    bottom_dict[display_ax.ax] = fraction * index * (y1 - y0)
+                    height_dict[display_ax.ax] = this_height
         return transforms.Bbox([[left_dict[axes], bottom_dict[axes]],
                                 [left_dict[axes] + width_dict[axes],
                                  height_dict[axes]]])
