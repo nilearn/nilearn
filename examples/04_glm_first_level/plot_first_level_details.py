@@ -350,15 +350,16 @@ plt.show()
 # The noise model: ar(1), ols, or higher order ar?
 # ------------------------------------------------
 #
-# So far,we have implicitly used a lag-1 autoregressive model ---aka
-# ar(1)--- for the temporal structure of the noise. An alternative
+# So far,we have implicitly used a lag-1 autoregressive model---aka
+# ar(1)---for the temporal structure of the noise. An alternative
 # choice is to use an ordinary least squares model (ols) that assumes
 # no temporal structure (time-independent noise) or
 # to use an autoregressive model with a higher order,
-# for example a third order autoregressive model ---aka ar(3).
+# for example a third order autoregressive model---aka ar(3).
 #
-# First we recompute using the `spm + derivative` hrf model but using the
-# slice_time_ref parameter from above and an ar(1) noise model.
+# First we recompute using the `spm + derivative` hrf model, the
+# slice_time_ref parameter chosen above, and explicitly set
+# the noise model to be ar(1).
 
 first_level_model = FirstLevelModel(t_r, slice_time_ref=0.5,
                                     hrf_model='spm + derivative',
@@ -369,8 +370,8 @@ plt.show()
 
 
 #########################################################################
-# Next we change the noise model to ols and observe the difference to the
-# ar(1) model.
+# Next we change the noise model to ols and observe the difference
+# relative to the ar(1) model.
 
 first_level_model = FirstLevelModel(t_r, slice_time_ref=0.5,
                                     hrf_model='spm + derivative',
