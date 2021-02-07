@@ -568,6 +568,11 @@ class FirstLevelModel(BaseGLM):
             raise ValueError('contrast_def must be an array or str or list of'
                              ' (array or str)')
 
+        n_runs = len(self.labels_)
+        if len(con_vals) != n_runs:
+            warn('One contrast given, assuming it for all %d runs' % n_runs)
+            con_vals = con_vals * n_runs
+        
         # Translate formulas to vectors
         for cidx, (con, design_mat) in enumerate(zip(con_vals,
                                                      self.design_matrices_)
@@ -576,11 +581,6 @@ class FirstLevelModel(BaseGLM):
             if isinstance(con, str):
                 con_vals[cidx] = expression_to_contrast_vector(
                     con, design_columns)
-
-        n_runs = len(self.labels_)
-        if len(con_vals) != n_runs:
-            warn('One contrast given, assuming it for all %d runs' % n_runs)
-            con_vals = con_vals * n_runs
 
         valid_types = ['z_score', 'stat', 'p_value', 'effect_size',
                        'effect_variance']
