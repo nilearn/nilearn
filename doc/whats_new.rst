@@ -31,6 +31,9 @@ Enhancements
   colorbar of surface plots. The default format is scientific notation except for :func:`nilearn.plotting.plot_surf_roi`
   for which it is set as integers.
 
+- :class:`nilearn.glm.first_level.run_glm` now allows auto regressive noise
+  models of order greater than one.
+
 .. _v0.7.0:
 
 0.7.0
