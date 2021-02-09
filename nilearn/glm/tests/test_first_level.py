@@ -232,7 +232,7 @@ def test_high_level_glm_different_design_matrices_formulas():
 
     # Compute contrast with formulas
     cols_formula = tuple(design_matrices[0].columns[:2])
-    formula = "%s-%s"%(cols_formula)
+    formula = "%s-%s" % cols_formula
     z_joint_formula = multi_session_model.compute_contrast(
         formula, output_type='effect_size')
 

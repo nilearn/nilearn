@@ -332,7 +332,7 @@ class FirstLevelModel(BaseGLM):
     def fit(self, run_imgs, events=None, confounds=None,
             design_matrices=None):
         """Fit the GLM
-        
+
         For each run:
         1. create design matrix X
         2. do a masker job: fMRI_data -> Y
@@ -569,10 +569,14 @@ class FirstLevelModel(BaseGLM):
                              ' (array or str)')
 
         n_runs = len(self.labels_)
-        if len(con_vals) != n_runs:
+        n_contrasts = len(con_vals)
+        if n_contrasts == 1:
             warn('One contrast given, assuming it for all %d runs' % n_runs)
             con_vals = con_vals * n_runs
-        
+        elif n_contrasts != n_runs:
+            raise ValueError('%n contrasts given, while there are %n runs' %
+                             (n_contrasts, n_runs))
+
         # Translate formulas to vectors
         for cidx, (con, design_mat) in enumerate(zip(con_vals,
                                                      self.design_matrices_)
