@@ -216,6 +216,27 @@ def test_high_level_glm_different_design_matrices():
                         2 * get_data(z_joint))
 
 
+def test_high_level_glm_different_design_matrices_formulas():
+    # test that one can estimate a contrast when design matrices are different
+    shapes, rk = ((7, 8, 7, 15), (7, 8, 7, 19)), 3
+    mask, fmri_data, design_matrices = generate_fake_fmri_data_and_design(shapes, rk)
+
+    # make column names identical
+    design_matrices[1].columns = design_matrices[0].columns
+    # add a column to the second design matrix
+    design_matrices[1]['new'] = np.ones((19, 1))
+
+    # Fit a glm with two sessions and design matrices
+    multi_session_model = FirstLevelModel(mask_img=mask).fit(
+        fmri_data, design_matrices=design_matrices)
+
+    # Compute contrast with formulas
+    cols_formula = tuple(design_matrices[0].columns[:2])
+    formula = "%s-%s"%(cols_formula)
+    z_joint_formula = multi_session_model.compute_contrast(
+        formula, output_type='effect_size')
+
+
 def test_run_glm():
     rng = np.random.RandomState(42)
     n, p, q = 100, 80, 10
@@ -280,7 +301,7 @@ def test_fmri_inputs():
                 # test with confounds as numpy array
                 FirstLevelModel(mask_img=mask).fit([fi], design_matrices=[d],
                                                    confounds=conf.values)
-                
+
                 FirstLevelModel(mask_img=mask).fit([fi, fi],
                                                    design_matrices=[d, d])
                 FirstLevelModel(mask_img=None).fit((fi, fi),
