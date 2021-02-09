@@ -11,7 +11,6 @@ Author: Bertrand Thirion, Martin Perez-Guevara, 2016
 import glob
 import json
 import os
-import re
 import sys
 import time
 from warnings import warn
@@ -132,7 +131,7 @@ def run_glm(Y, X, noise_model='ar1', bins=100, n_jobs=1, verbose=0):
 
     """
     acceptable_noise_models = ['ols', 'arN']
-    if (('ar' not in noise_model) and (noise_model is not 'ols')):
+    if ((noise_model[:2] != 'ar') and (noise_model is not 'ols')):
         raise ValueError(
             "Acceptable noise models are {0}. You provided "
             "'noise_model={1}'".format(acceptable_noise_models,
@@ -148,15 +147,13 @@ def run_glm(Y, X, noise_model='ar1', bins=100, n_jobs=1, verbose=0):
     # Create the model
     ols_result = OLSModel(X).fit(Y)
 
-    if 'ar' in noise_model:
+    if noise_model[:2] == 'ar':
 
         err_msg = ('AR order must be a positive integer specified as arN, '
                    'where N is an integer. E.g. ar3. '
                    'You provied {0}.'.format(noise_model))
-        if 'ar' not in noise_model[0:2]:
-            raise ValueError(err_msg)
         try:
-            ar_order = int(re.split('ar', noise_model)[1])
+            ar_order = int(noise_model[2:])
         except ValueError:
             raise ValueError(err_msg)
 
@@ -172,7 +169,7 @@ def run_glm(Y, X, noise_model='ar1', bins=100, n_jobs=1, verbose=0):
         # Either bin the AR1 coefs or cluster ARN coefs
         if type(ar_coef_[0]) is np.float64:
             for idx in range(len(ar_coef_)):
-                ar_coef_[idx] = (ar_coef_[idx] * bins).astype(np.int) \
+                ar_coef_[idx] = (ar_coef_[idx] * bins).astype(int) \
                                 * 1. / bins
             labels = np.array([np.str(val) for val in ar_coef_])
         else:  # AR(N) case
@@ -185,7 +182,7 @@ def run_glm(Y, X, noise_model='ar1', bins=100, n_jobs=1, verbose=0):
             cluster_labels = kmeans.cluster_centers_.copy()
             for idx in range(len(cluster_labels)):
                 cluster_labels[idx] = (cluster_labels[idx] * 100).\
-                                          astype(np.int) * 1. / 100
+                                          astype(int) * 1. / 100
             cluster_labels = np.array([np.str('_'.join([str(v) for v in val]))
                  for val in cluster_labels])
 

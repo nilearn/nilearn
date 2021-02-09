@@ -260,6 +260,10 @@ def test_run_glm():
         run_glm(Y, X, 'arr3')
     with pytest.raises(ValueError):
         run_glm(Y, X, 'ar1.2')
+    with pytest.raises(ValueError):
+        run_glm(Y, X, 'ar')
+    with pytest.raises(ValueError):
+        run_glm(Y, X, '3ar')
 
 
 def test_glm_AR_estimates():
