@@ -93,28 +93,33 @@ def plot_surf(surf_mesh, surf_map=None, *, bg_map=None,
         If a Surface-like object is provided instead of a Mesh, `surface.data`
         will overwrite the `surf_map` argument.
         It can be:
-            - a Surface-like object with a mesh and data attributes
-            A surface can be:
-                - a nilearn.surface.Surface
-                - a sequence (mesh, data) where:
-                    - mesh can be:
-                        - a nilearn.surface.Mesh
-                        - a path to .gii or .gii.gz etc.
-                        - a sequence of two numpy arrays,
-                        the first containing vertex coordinates
-                        and the second containing triangles.
-                    - data can be:
-                        - a path to .gii or .gii.gz etc.
-                        - a numpy array with shape (n_vertices,)
-                        or (n_time_points, n_vertices)
-            - a surface mesh geometry (deprecated)
-            A Mesh can be:
-                - a file (valid formats are .gii or Freesurfer specific
-                files such as .orig, .pial, .sphere, .white, .inflated)
-                - a list of two Numpy arrays, the first containing the
-                x-y-z coordinates of the mesh vertices, the second
-                containing the indices (into coords) of the mesh faces
-                - a Mesh object with "coordinates" and "faces" attributes.
+        - a Surface-like object with a mesh and data attributes
+
+        A surface can be:
+            - a nilearn.surface.Surface
+            - a sequence (mesh, data) where:
+
+            A mesh can be:
+                - a nilearn.surface.Mesh
+                - a path to .gii or .gii.gz etc.
+                - a sequence of two numpy arrays,
+                  the first containing vertex coordinates
+                  and the second containing triangles.
+
+            Data can be:
+                - a path to .gii or .gii.gz etc.
+                - a numpy array with shape (n_vertices,)
+                  or (n_time_points, n_vertices)
+
+        - a surface mesh geometry (deprecated)
+
+        A Mesh can be:
+            - a file (valid formats are .gii or Freesurfer specific
+              files such as .orig, .pial, .sphere, .white, .inflated)
+            - a list of two Numpy arrays, the first containing the
+              x-y-z coordinates of the mesh vertices, the second
+              containing the indices (into coords) of the mesh faces
+            - a Mesh object with "coordinates" and "faces" attributes.
 
     surf_map : str or numpy.ndarray, optional
         Deprecated, will be removed in 0.9. Please use a Surface object to
@@ -507,28 +512,33 @@ def plot_surf_contours(surf_mesh, roi_map, *, axes=None, figure=None, levels=Non
         If a Surface-like object is provided instead of a Mesh, `surface.data`
         will overwrite the `surf_map` argument.
         It can be:
-            - a Surface-like object with a mesh and data attributes
-            A surface can be:
-                - a nilearn.surface.Surface
-                - a sequence (mesh, data) where:
-                    - mesh can be:
-                        - a nilearn.surface.Mesh
-                        - a path to .gii or .gii.gz etc.
-                        - a sequence of two numpy arrays,
-                        the first containing vertex coordinates
-                        and the second containing triangles.
-                    - data can be:
-                        - a path to .gii or .gii.gz etc.
-                        - a numpy array with shape (n_vertices,)
-                        or (n_time_points, n_vertices)
-            - a surface mesh geometry (deprecated)
-            A Mesh can be:
-                - a file (valid formats are .gii or Freesurfer specific
-                files such as .orig, .pial, .sphere, .white, .inflated)
-                - a list of two Numpy arrays, the first containing the
-                x-y-z coordinates of the mesh vertices, the second
-                containing the indices (into coords) of the mesh faces
-                - a Mesh object with "coordinates" and "faces" attributes.
+        - a Surface-like object with a mesh and data attributes
+
+        A surface can be:
+            - a nilearn.surface.Surface
+            - a sequence (mesh, data) where:
+
+            A mesh can be:
+                - a nilearn.surface.Mesh
+                - a path to .gii or .gii.gz etc.
+                - a sequence of two numpy arrays,
+                  the first containing vertex coordinates
+                  and the second containing triangles.
+
+            Data can be:
+                - a path to .gii or .gii.gz etc.
+                - a numpy array with shape (n_vertices,)
+                  or (n_time_points, n_vertices)
+
+        - a surface mesh geometry (deprecated)
+
+        A Mesh can be:
+            - a file (valid formats are .gii or Freesurfer specific
+              files such as .orig, .pial, .sphere, .white, .inflated)
+            - a list of two Numpy arrays, the first containing the
+              x-y-z coordinates of the mesh vertices, the second
+              containing the indices (into coords) of the mesh faces
+            - a Mesh object with "coordinates" and "faces" attributes.
 
     roi_map : str or numpy.ndarray or list of numpy.ndarray
         Deprecated, will be removed in 0.9. Please use a Surface object to
@@ -663,7 +673,7 @@ def plot_surf_stat_map(surf_mesh, stat_map, *, bg_map=None,
                        colorbar=True, symmetric_cbar="auto", bg_on_data=False,
                        darkness=1, title=None, output_file=None, axes=None,
                        figure=None, **kwargs):
-    """Plotting a stats map on a surface mesh with optional background
+    """Plotting a stats map on a surface mesh with optional background.
 
     .. versionadded:: 0.3
 
@@ -674,28 +684,33 @@ def plot_surf_stat_map(surf_mesh, stat_map, *, bg_map=None,
         If a Surface-like object is provided instead of a Mesh, `surface.data`
         will overwrite the `surf_map` argument.
         It can be:
-            - a Surface-like object with a mesh and data attributes
-            A surface can be:
-                - a nilearn.surface.Surface
-                - a sequence (mesh, data) where:
-                    - mesh can be:
-                        - a nilearn.surface.Mesh
-                        - a path to .gii or .gii.gz etc.
-                        - a sequence of two numpy arrays,
-                        the first containing vertex coordinates
-                        and the second containing triangles.
-                    - data can be:
-                        - a path to .gii or .gii.gz etc.
-                        - a numpy array with shape (n_vertices,)
-                        or (n_time_points, n_vertices)
-            - a surface mesh geometry (deprecated)
-            A Mesh can be:
-                - a file (valid formats are .gii or Freesurfer specific
-                files such as .orig, .pial, .sphere, .white, .inflated)
-                - a list of two Numpy arrays, the first containing the
-                x-y-z coordinates of the mesh vertices, the second
-                containing the indices (into coords) of the mesh faces
-                - a Mesh object with "coordinates" and "faces" attributes.
+        - a Surface-like object with a mesh and data attributes
+
+        A surface can be:
+            - a nilearn.surface.Surface
+            - a sequence (mesh, data) where:
+
+            A mesh can be:
+                - a nilearn.surface.Mesh
+                - a path to .gii or .gii.gz etc.
+                - a sequence of two numpy arrays,
+                  the first containing vertex coordinates
+                  and the second containing triangles.
+
+            Data can be:
+                - a path to .gii or .gii.gz etc.
+                - a numpy array with shape (n_vertices,)
+                  or (n_time_points, n_vertices)
+
+        - a surface mesh geometry (deprecated)
+
+        A Mesh can be:
+            - a file (valid formats are .gii or Freesurfer specific
+              files such as .orig, .pial, .sphere, .white, .inflated)
+            - a list of two Numpy arrays, the first containing the
+              x-y-z coordinates of the mesh vertices, the second
+              containing the indices (into coords) of the mesh faces
+            - a Mesh object with "coordinates" and "faces" attributes.
 
     stat_map : str or numpy.ndarray
         Deprecated, will be removed in 0.9. Please use a Surface object to
@@ -1066,28 +1081,33 @@ def plot_surf_roi(surf_mesh, roi_map, *, bg_map=None,
         If a Surface-like object is provided instead of a Mesh, `surface.data`
         will overwrite the `surf_map` argument.
         It can be:
-            - a Surface-like object with a mesh and data attributes
-            A surface can be:
-                - a nilearn.surface.Surface
-                - a sequence (mesh, data) where:
-                    - mesh can be:
-                        - a nilearn.surface.Mesh
-                        - a path to .gii or .gii.gz etc.
-                        - a sequence of two numpy arrays,
-                        the first containing vertex coordinates
-                        and the second containing triangles.
-                    - data can be:
-                        - a path to .gii or .gii.gz etc.
-                        - a numpy array with shape (n_vertices,)
-                        or (n_time_points, n_vertices)
-            - a surface mesh geometry (deprecated)
-            A Mesh can be:
-                - a file (valid formats are .gii or Freesurfer specific
-                files such as .orig, .pial, .sphere, .white, .inflated)
-                - a list of two Numpy arrays, the first containing the
-                x-y-z coordinates of the mesh vertices, the second
-                containing the indices (into coords) of the mesh faces
-                - a Mesh object with "coordinates" and "faces" attributes.
+        - a Surface-like object with a mesh and data attributes
+
+        A surface can be:
+            - a nilearn.surface.Surface
+            - a sequence (mesh, data) where:
+
+            A mesh can be:
+                - a nilearn.surface.Mesh
+                - a path to .gii or .gii.gz etc.
+                - a sequence of two numpy arrays,
+                  the first containing vertex coordinates
+                  and the second containing triangles.
+
+            Data can be:
+                - a path to .gii or .gii.gz etc.
+                - a numpy array with shape (n_vertices,)
+                  or (n_time_points, n_vertices)
+
+        - a surface mesh geometry (deprecated)
+
+        A Mesh can be:
+            - a file (valid formats are .gii or Freesurfer specific
+              files such as .orig, .pial, .sphere, .white, .inflated)
+            - a list of two Numpy arrays, the first containing the
+              x-y-z coordinates of the mesh vertices, the second
+              containing the indices (into coords) of the mesh faces
+            - a Mesh object with "coordinates" and "faces" attributes.
 
     roi_map : str or numpy.ndarray or list of numpy.ndarray
         Deprecated, will be removed in 0.9. Please use a Surface object to
