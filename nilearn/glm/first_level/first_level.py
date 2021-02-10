@@ -82,10 +82,11 @@ def _yule_walker(X, order):
         raise ValueError("AR order must be positive")
     if type(order) is not int:
         raise TypeError("AR order must be an integer")
+    if X.ndim is not 1:
+        raise TypeError("Input data must have 1 dimension")
 
     denom = X.shape[-1] - np.arange(order + 1)
     r = np.zeros(order + 1, np.float64)
-    X = X.ravel()
     X -= X.mean()
     r[0] += np.dot(X, X)
     for k in range(1, order + 1):
@@ -164,7 +165,7 @@ def run_glm(Y, X, noise_model='ar1', bins=100, n_jobs=1, verbose=0):
             raise ValueError(err_msg)
 
         # compute the AR coeficents
-        ar_coef_ = [_yule_walker(ols_result.residuals[:, res].reshape(-1, 1).T,
+        ar_coef_ = [_yule_walker(ols_result.residuals[:, res],
                                  ar_order)
                     for res in range(ols_result.residuals.shape[1])]
         ar_coef_ = np.array(ar_coef_)
@@ -173,7 +174,7 @@ def run_glm(Y, X, noise_model='ar1', bins=100, n_jobs=1, verbose=0):
             ar_coef_ = ar_coef_.ravel()
 
         # Either bin the AR1 coefs or cluster ARN coefs
-        if type(ar_coef_[0]) is np.float64:
+        if ar_order is 1:
             for idx in range(len(ar_coef_)):
                 ar_coef_[idx] = (ar_coef_[idx] * bins).astype(int) \
                                 * 1. / bins
