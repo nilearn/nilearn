@@ -27,6 +27,7 @@ from nilearn import datasets
 from nilearn.image import load_img
 from nilearn.image import resampling
 from nilearn._utils.path_finding import _resolve_globbing
+from nilearn._utils import deprecated
 from nilearn import _utils
 from nilearn.image import get_data
 
@@ -468,6 +469,9 @@ def _interpolation_sampling(images, mesh, affine, kind='auto', radius=3,
     return texture
 
 
+@deprecated(("The return value is deprecated and will change to "
+             "a Surface object with provided mesh and computed "
+             "texture as arguments in release 0.9."))
 def vol_to_surf(img, surf_mesh,
                 radius=3., interpolation='linear', kind='auto',
                 n_samples=None, mask_img=None, inner_mesh=None, depth=None):
@@ -569,6 +573,8 @@ def vol_to_surf(img, surf_mesh,
         for each mesh node.
         If 4D image is provided, a 2d array is returned, where each row
         corresponds to a mesh node.
+        The return value is deprecated and will change to a Surface object
+        with provided mesh and computed texture as arguments in release 0.9.
 
     Notes
     -----
@@ -619,6 +625,9 @@ def vol_to_surf(img, surf_mesh,
     --------
     This function is experimental and details such as the interpolation method
     are subject to change.
+
+    The return value is deprecated and will change to a Surface object
+    with provided mesh and computed texture as arguments in release 0.9.
 
     """
     sampling_schemes = {'linear': _interpolation_sampling,

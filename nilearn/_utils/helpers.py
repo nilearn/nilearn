@@ -2,6 +2,18 @@ import functools
 import warnings
 
 
+def deprecated(message):
+  def deprecated_decorator(func):
+      def deprecated_func(*args, **kwargs):
+          warnings.warn("{} deprecation : {}".format(
+                                    func.__name__, message),
+                        category=DeprecationWarning,
+                        stacklevel=2)
+          return func(*args, **kwargs)
+      return deprecated_func
+  return deprecated_decorator
+
+
 def rename_parameters(replacement_params,
                       end_version='future',
                       lib_name='Nilearn',
