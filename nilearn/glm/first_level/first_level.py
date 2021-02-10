@@ -106,11 +106,17 @@ def run_glm(Y, X, noise_model='ar1', bins=100, n_jobs=1, verbose=0):
     X : array of shape (n_time_points, n_regressors)
         The design matrix.
 
-    noise_model : {'ar1', 'ols'}, optional
-        The temporal variance model. Default='ar1'.
+    noise_model : {'ar(N)', 'ols'}, optional
+        The temporal variance model.
+        To specify the order of an auto regressive model place the
+        order after the characters `ar`, for example to specify a third order
+        model use `ar3`.
+        Default='ar1'.
 
     bins : int, optional
         Maximum number of discrete bins for the AR coef histogram.
+        If an auto regressive model with order greater than one is specified
+        the AR coefficient will be clustered via K-means.
         Default=100.
 
     n_jobs : int, optional
