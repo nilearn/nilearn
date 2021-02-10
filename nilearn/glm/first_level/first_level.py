@@ -182,8 +182,7 @@ def run_glm(Y, X, noise_model='ar1', bins=100, n_jobs=1, verbose=0):
         else:  # AR(N) case
             n_clusters = np.min([bins, Y.shape[1]])
             kmeans = KMeans(n_clusters=n_clusters).fit(ar_coef_)
-            ar_coef_ = np.array([kmeans.cluster_centers_[i]
-                                 for i in kmeans.labels_])
+            ar_coef_ = kmeans.cluster_centers_[kmeans.labels_]
 
             # Create a set of rounded values for the labels
             cluster_labels = kmeans.cluster_centers_.copy()
@@ -202,7 +201,7 @@ def run_glm(Y, X, noise_model='ar1', bins=100, n_jobs=1, verbose=0):
         # Fit the AR model according to current AR(N) estimates
         ar_result = Parallel(n_jobs=n_jobs, verbose=verbose)(
             delayed(_ar_model_fit)(X,
-                                   ar_coef_[np.where(labels == val)][0],
+                                   ar_coef_[labels == val][0],
                                    Y[:, labels == val])
             for val in unique_labels)
 
