@@ -116,7 +116,7 @@ def run_glm(Y, X, noise_model='ar1', bins=100, n_jobs=1, verbose=0):
 
     bins : int, optional
         Maximum number of discrete bins for the AR coef histogram.
-        If an auto regressive model with order greater than one is specified
+        If an autoregressive model with order greater than one is specified
         then adaptive quantification is performed and the coefficients
         will be clustered via K-means with `bins` number of clusters.
         Default=100.
