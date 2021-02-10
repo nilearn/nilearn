@@ -165,7 +165,7 @@ def run_glm(Y, X, noise_model='ar1', bins=100, n_jobs=1, verbose=0):
         except ValueError:
             raise ValueError(err_msg)
 
-        # compute the AR coeficents
+        # compute the AR coefficients
         ar_coef_ = [_yule_walker(ols_result.residuals[:, res],
                                  ar_order)
                     for res in range(ols_result.residuals.shape[1])]
@@ -179,42 +179,35 @@ def run_glm(Y, X, noise_model='ar1', bins=100, n_jobs=1, verbose=0):
             for idx in range(len(ar_coef_)):
                 ar_coef_[idx] = (ar_coef_[idx] * bins).astype(int) \
                                 * 1. / bins
-            labels = np.array([val for val in ar_coef_])
+            labels = np.array([str(val) for val in ar_coef_])
         else:  # AR(N>1) case
             n_clusters = np.min([bins, Y.shape[1]])
             kmeans = KMeans(n_clusters=n_clusters).fit(ar_coef_)
             ar_coef_ = kmeans.cluster_centers_[kmeans.labels_]
 
-            # Create a set of rounded values for the labels
+            # Create a set of rounded values for the labels with _ between
+            # each coefficient
             cluster_labels = kmeans.cluster_centers_.copy()
             for idx in range(len(cluster_labels)):
                 cluster_labels[idx] = (cluster_labels[idx] * 100).\
                                           astype(int) * 1. / 100
-
+            cluster_labels = np.array(['_'.join(map(str, np.round(a, 2)))
+                                       for a in cluster_labels])
             # Create labels and coef per voxel
             labels = np.array([cluster_labels[i] for i in kmeans.labels_])
 
-        unique_labels = np.unique(labels, axis=0)
+        unique_labels = np.unique(labels)
         results = {}
 
         # Fit the AR model according to current AR(N) estimates
-        if ar_order == 1:
-            ar_result = Parallel(n_jobs=n_jobs, verbose=verbose)(
-                delayed(_ar_model_fit)(X, ar_coef_[labels == val][0],
-                                       Y[:, labels == val])
-                for val in unique_labels)
-        else:
-            ar_result = Parallel(n_jobs=n_jobs, verbose=verbose)(
-                delayed(_ar_model_fit)(X,
-                                       ar_coef_[np.all(labels == val,
-                                                       axis=1)][0],
-                                       Y[:, np.all(labels == val, axis=1)])
-                for val in unique_labels)
+        ar_result = Parallel(n_jobs=n_jobs, verbose=verbose)(
+            delayed(_ar_model_fit)(X, ar_coef_[labels == val][0],
+                                   Y[:, labels == val])
+            for val in unique_labels)
 
         # Converting the key to a string is required for AR(N>1) cases
         for val, result in zip(unique_labels, ar_result):
-            results[str(val)] = result
-        labels = np.array([str(lab) for lab in labels])
+            results[val] = result
         del unique_labels
         del ar_result
 

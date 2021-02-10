@@ -287,9 +287,7 @@ def test_glm_AR_estimates():
         labels, results = run_glm(Y, X, ar_arg, bins=100)
         assert len(labels) == n
         for lab in results.keys():
-            ar_estimate = lab.replace('[', '').\
-                replace(' ]', '').replace(']', '').\
-                split(" ")
+            ar_estimate = lab.split("_")
             for lag in range(ar_order):
                 assert_almost_equal(float(ar_estimate[lag]),
                                     ar_vals[lag], decimal=1)
