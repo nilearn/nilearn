@@ -18,7 +18,8 @@ from nilearn.plotting.img_plotting import (_get_colorbar_and_data_ranges,
 from nilearn.surface import (load_surf_data,
                              load_surf_mesh,
                              load_surface,
-                             vol_to_surf)
+                             vol_to_surf,
+                             Surface)
 from nilearn.surface.surface import _check_mesh
 from nilearn._utils import check_niimg_3d
 import warnings
@@ -812,10 +813,12 @@ def plot_surf_stat_map(surf_mesh, stat_map, *, bg_map=None,
     cbar_vmin, cbar_vmax, vmin, vmax = _get_colorbar_and_data_ranges(
         loaded_stat_map, vmax, symmetric_cbar, kwargs)
 
+    surf = Surface(surf_mesh, loaded_stat_map)
+
     display = plot_surf(
-        surf_mesh, surf_map=loaded_stat_map, bg_map=bg_map, hemi=hemi, view=view,
-        avg_method='mean', threshold=threshold, cmap=cmap, colorbar=colorbar,
-        alpha=alpha, bg_on_data=bg_on_data, darkness=darkness, vmax=vmax,
+        surf, bg_map=bg_map, hemi=hemi, view=view, avg_method='mean',
+        threshold=threshold, cmap=cmap, colorbar=colorbar, alpha=alpha,
+        bg_on_data=bg_on_data, darkness=darkness, vmax=vmax,
         vmin=vmin, title=title, output_file=output_file, axes=axes,
         figure=figure, cbar_vmin=cbar_vmin, cbar_vmax=cbar_vmax, **kwargs)
 
@@ -1212,7 +1215,9 @@ def plot_surf_roi(surf_mesh, roi_map, *, bg_map=None,
                          'roi_map = np.zeros(n_vertices)\n'
                          'roi_map[roi_idx] = 1')
 
-    display = plot_surf(mesh, surf_map=roi, bg_map=bg_map,
+    surf = Surface(mesh, roi)
+
+    display = plot_surf(surf, bg_map=bg_map,
                         hemi=hemi, view=view, avg_method='median',
                         threshold=threshold, cmap=cmap,
                         cbar_tick_format=cbar_tick_format, alpha=alpha,
