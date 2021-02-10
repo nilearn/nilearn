@@ -237,6 +237,22 @@ def test_high_level_glm_different_design_matrices_formulas():
         formula, output_type='effect_size')
 
 
+def test_compute_contrast_num_contrasts():
+
+    shapes, rk = ((7, 8, 7, 15), (7, 8, 7, 19), (7, 8, 7, 13)), 3
+    mask, fmri_data, design_matrices = generate_fake_fmri_data_and_design(shapes, rk)
+
+    # Fit a glm with 3 sessions and design matrices
+    multi_session_model = FirstLevelModel(mask_img=mask).fit(
+        fmri_data, design_matrices=design_matrices)
+
+    # raise when n_contrast != n_runs | 1
+    with pytest.raises(ValueError):
+        multi_session_model.compute_contrast([np.eye(rk)[1]]*2)
+
+    multi_session_model.compute_contrast([np.eye(rk)[1]]*3)
+    multi_session_model.compute_contrast([np.eye(rk)[1]])
+
 def test_run_glm():
     rng = np.random.RandomState(42)
     n, p, q = 100, 80, 10
