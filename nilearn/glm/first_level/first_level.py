@@ -188,9 +188,6 @@ def run_glm(Y, X, noise_model='ar1', bins=100, n_jobs=1, verbose=0):
             # Create a set of rounded values for the labels with _ between
             # each coefficient
             cluster_labels = kmeans.cluster_centers_.copy()
-            for idx in range(len(cluster_labels)):
-                cluster_labels[idx] = (cluster_labels[idx] * 100).\
-                                          astype(int) * 1. / 100
             cluster_labels = np.array(['_'.join(map(str, np.round(a, 2)))
                                        for a in cluster_labels])
             # Create labels and coef per voxel
