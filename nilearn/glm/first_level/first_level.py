@@ -109,7 +109,7 @@ def run_glm(Y, X, noise_model='ar1', bins=100, n_jobs=1, verbose=0):
 
     noise_model : {'ar(N)', 'ols'}, optional
         The temporal variance model.
-        To specify the order of an auto regressive model place the
+        To specify the order of an autoregressive model place the
         order after the characters `ar`, for example to specify a third order
         model use `ar3`.
         Default='ar1'.
