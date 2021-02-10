@@ -175,7 +175,7 @@ def run_glm(Y, X, noise_model='ar1', bins=100, n_jobs=1, verbose=0):
             ar_coef_ = ar_coef_.ravel()
 
         # Either bin the AR1 coefs or cluster ARN coefs
-        if ar_order is 1:
+        if ar_order == 1:
             for idx in range(len(ar_coef_)):
                 ar_coef_[idx] = (ar_coef_[idx] * bins).astype(int) \
                                 * 1. / bins
@@ -198,7 +198,7 @@ def run_glm(Y, X, noise_model='ar1', bins=100, n_jobs=1, verbose=0):
         results = {}
 
         # Fit the AR model according to current AR(N) estimates
-        if ar_order is 1:
+        if ar_order == 1:
             ar_result = Parallel(n_jobs=n_jobs, verbose=verbose)(
                 delayed(_ar_model_fit)(X, ar_coef_[labels == val][0],
                                        Y[:, labels == val])
@@ -435,6 +435,9 @@ class FirstLevelModel(BaseGLM):
 
         bins : int, optional
             Maximum number of discrete bins for the AR coef histogram.
+            If an auto regressive model with order greater than one is specified
+            then adaptive quantification is performed and the coefficients
+            will be clustered via K-means with `bins` number of clusters.
             Default=100.
 
         """
