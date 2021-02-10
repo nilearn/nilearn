@@ -172,7 +172,7 @@ def run_glm(Y, X, noise_model='ar1', bins=100, n_jobs=1, verbose=0):
         ar_coef_ = np.array(ar_coef_)
         del ols_result
         if len(ar_coef_[0]) == 1:
-            ar_coef_ = ar_coef_.ravel()
+            ar_coef_ = ar_coef_[:, 0]
 
         # Either bin the AR1 coefs or cluster ARN coefs
         if ar_order == 1:
