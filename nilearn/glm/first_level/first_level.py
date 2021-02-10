@@ -73,7 +73,7 @@ def _ar_model_fit(X, val, Y):
     return ARModel(X, val).fit(Y)
 
 
-def _yule_walker(X, order):
+def _yule_walker(x, order):
     """Compute Yule-Walker (adapted from MNE and statsmodels).
     Operates in-place.
     """
@@ -82,16 +82,16 @@ def _yule_walker(X, order):
         raise ValueError("AR order must be positive")
     if type(order) is not int:
         raise TypeError("AR order must be an integer")
-    if X.ndim is not 1:
+    if x.ndim is not 1:
         raise TypeError("Input data must have 1 dimension")
 
-    denom = X.shape[-1] - np.arange(order + 1)
+    denom = x.shape[-1] - np.arange(order + 1)
     r = np.zeros(order + 1, np.float64)
-    X -= X.mean()
-    r[0] += np.dot(X, X)
+    y = x - x.mean()
+    r[0] += np.dot(y, y)
     for k in range(1, order + 1):
-        r[k] += np.dot(X[0:-k], X[k:])
-    r /= denom * len(X)
+        r[k] += np.dot(y[0:-k], y[k:])
+    r /= denom * len(y)
     rho = linalg.solve(linalg.toeplitz(r[:-1]), r[1:])
     return rho
 
@@ -189,6 +189,7 @@ def run_glm(Y, X, noise_model='ar1', bins=100, n_jobs=1, verbose=0):
             for idx in range(len(cluster_labels)):
                 cluster_labels[idx] = (cluster_labels[idx] * 100).\
                                           astype(int) * 1. / 100
+
             cluster_labels = np.array([np.str('_'.join([str(v) for v in val]))
                  for val in cluster_labels])
 
@@ -200,8 +201,7 @@ def run_glm(Y, X, noise_model='ar1', bins=100, n_jobs=1, verbose=0):
 
         # Fit the AR model according to current AR(N) estimates
         ar_result = Parallel(n_jobs=n_jobs, verbose=verbose)(
-            delayed(_ar_model_fit)(X,
-                                   ar_coef_[labels == val][0],
+            delayed(_ar_model_fit)(X, ar_coef_[labels == val][0],
                                    Y[:, labels == val])
             for val in unique_labels)
 
