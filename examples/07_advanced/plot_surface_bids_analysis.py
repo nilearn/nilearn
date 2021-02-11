@@ -74,7 +74,7 @@ fsaverage = fetch_surf_fsaverage(mesh='fsaverage5')
 # The projection function simply takes the fMRI data and the mesh.
 # Note that those correspond spatially, as they are both in MNI space.
 import numpy as np
-from nilearn import surface
+from nilearn.surface import vol_to_surf, Surface
 from nilearn.glm.first_level import make_first_level_design_matrix
 from nilearn.glm.first_level import run_glm
 from nilearn.glm.contrasts import compute_contrast
@@ -85,8 +85,9 @@ z_scores_right = []
 z_scores_left = []
 for (fmri_img, confound, events) in zip(
         models_run_imgs, models_confounds, models_events):
-    texture = surface.vol_to_surf(fmri_img[0], fsaverage.pial_right)
-    n_scans = texture.shape[1]
+    texture = vol_to_surf(fmri_img[0], fsaverage.pial_right)
+    surf_right = Surface(fsaverage.pial_right, texture)
+    n_scans = surf_right.data.shape[1]
     frame_times = t_r * (np.arange(n_scans) + .5)
 
     # Create the design matrix
@@ -106,7 +107,7 @@ for (fmri_img, confound, events) in zip(
     # `labels` tags voxels according to noise autocorrelation.
     # `estimates` contains the parameter estimates.
     # We input them for contrast computation.
-    labels, estimates = run_glm(texture.T, design_matrix.values)
+    labels, estimates = run_glm(surf_right.data.T, design_matrix.values)
     contrast = compute_contrast(labels, estimates, contrast_values,
                                 contrast_type='t')
     # We present the Z-transform of the t map.
@@ -114,8 +115,9 @@ for (fmri_img, confound, events) in zip(
     z_scores_right.append(z_score)
 
     # Do the left hemipshere exactly in the same way.
-    texture = surface.vol_to_surf(fmri_img, fsaverage.pial_left)
-    labels, estimates = run_glm(texture.T, design_matrix.values)
+    texture = vol_to_surf(fmri_img, fsaverage.pial_left)
+    surf_left = Surface(fsaverage.pial_left, texture)
+    labels, estimates = run_glm(surf_left.data.T, design_matrix.values)
     contrast = compute_contrast(labels, estimates, contrast_values,
                                 contrast_type='t')
     z_scores_left.append(contrast.z_score())
@@ -138,20 +140,18 @@ t_right, pval_right = ttest_1samp(np.array(z_scores_right), 0)
 
 ############################################################################
 # What we have so far are p-values: we convert them to z-values for plotting.
-z_val_left = norm.isf(pval_left)
-z_val_right = norm.isf(pval_right)
+surf_z_val_left = Surface(fsaverage.infl_left, norm.isf(pval_left))
+surf_z_val_right = Surface(fsaverage.infl_right, norm.isf(pval_right))
 
 ############################################################################
 # Plot the resulting maps, at first on the left hemipshere.
 from nilearn import plotting
-plotting.plot_surf_stat_map(
-    fsaverage.infl_left, z_val_left, hemi='left',
+plotting.plot_surf_stat_map(surf_z_val_left, hemi='left',
     title="language-string, left hemisphere", colorbar=True,
     threshold=3., bg_map=fsaverage.sulc_left)
 ############################################################################
 # Next, on the right hemisphere.
-plotting.plot_surf_stat_map(
-    fsaverage.infl_right, z_val_left, hemi='right',
+plotting.plot_surf_stat_map(surf_z_val_left, hemi='right',
     title="language-string, right hemisphere", colorbar=True,
     threshold=3., bg_map=fsaverage.sulc_right)
 

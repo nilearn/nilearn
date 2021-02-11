@@ -29,9 +29,11 @@ fsaverage = datasets.fetch_surf_fsaverage()
 # Sample the 3D data around each node of the mesh
 # -----------------------------------------------
 
-from nilearn import surface
+from nilearn.surface import vol_to_surf, Surface
 
-texture = surface.vol_to_surf(stat_img, fsaverage.pial_right)
+texture = vol_to_surf(stat_img, fsaverage.pial_right)
+# Define a Surface object with mesh and texture
+surf = Surface(fsaverage.infl_right, texture)
 
 ##############################################################################
 # Plot the result
@@ -39,9 +41,8 @@ texture = surface.vol_to_surf(stat_img, fsaverage.pial_right)
 
 from nilearn import plotting
 
-plotting.plot_surf_stat_map(fsaverage.infl_right, texture, hemi='right',
-                            title='Surface right hemisphere', colorbar=True,
-                            threshold=1., bg_map=fsaverage.sulc_right)
+plotting.plot_surf_stat_map(surf, hemi='right', title='Surface right hemisphere',
+                            colorbar=True, threshold=1., bg_map=fsaverage.sulc_right)
 
 ##############################################################################
 # Plot 3D image for comparison
@@ -61,6 +62,7 @@ import numpy as np
 
 destrieux_atlas = datasets.fetch_atlas_surf_destrieux()
 parcellation = destrieux_atlas['map_right']
+surf_parcellation = Surface(fsaverage.infl_right, parcellation)
 
 # these are the regions we want to outline
 regions_dict = {b'G_postcentral': 'Postcentral gyrus',
@@ -76,14 +78,11 @@ labels = list(regions_dict.values())
 # Display outlines of the regions of interest on top of a statistical map
 # -----------------------------------------------------------------------
 
-figure = plotting.plot_surf_stat_map(fsaverage.infl_right, texture, hemi='right',
-                                     title='Surface right hemisphere',
-                                     colorbar=True, threshold=1.,
-                                     bg_map=fsaverage.sulc_right)
+figure = plotting.plot_surf_stat_map(surf, hemi='right', title='Surface right hemisphere',
+                                     colorbar=True, threshold=1., bg_map=fsaverage.sulc_right)
 
-plotting.plot_surf_contours(fsaverage.infl_right, parcellation, labels=labels,
-                            levels=regions_indices, figure=figure, legend=True,
-                            colors=['g', 'k'])
+plotting.plot_surf_contours(surf_parcellation, labels=labels, levels=regions_indices,
+                            figure=figure, legend=True, colors=['g', 'k'])
 plotting.show()
 
 ##############################################################################
@@ -96,10 +95,10 @@ plotting.show()
 # computation time, but finer visualizations.
 
 big_fsaverage = datasets.fetch_surf_fsaverage('fsaverage')
-big_texture = surface.vol_to_surf(stat_img, big_fsaverage.pial_right)
+big_texture = vol_to_surf(stat_img, big_fsaverage.pial_right)
+big_surf = Surface(big_fsaverage.infl_right, big_texture)
 
-plotting.plot_surf_stat_map(big_fsaverage.infl_right,
-                            big_texture, hemi='right', colorbar=True,
+plotting.plot_surf_stat_map(big_surf, hemi='right', colorbar=True,
                             title='Surface right hemisphere: fine mesh',
                             threshold=1., bg_map=big_fsaverage.sulc_right)
 

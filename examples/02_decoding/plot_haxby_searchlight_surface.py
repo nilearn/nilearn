@@ -35,27 +35,29 @@ y, session = y[condition_mask], session[condition_mask]
 #########################################################################
 # Surface bold response
 # ----------------------
-from nilearn import datasets, surface
+from nilearn.datasets import fetch_surf_fsaverage
+from nilearn.surface import Mesh, vol_to_surf, load_surf_mesh
 from sklearn import neighbors
 
 # Fetch a coarse surface of the left hemisphere only for speed
-fsaverage = datasets.fetch_surf_fsaverage(mesh='fsaverage5')
+fsaverage = fetch_surf_fsaverage(mesh='fsaverage5')
 hemi = 'left'
 
 # Average voxels 5 mm close to the 3d pial surface
 radius = 5.
 pial_mesh = fsaverage['pial_' + hemi]
-X = surface.vol_to_surf(fmri_img, pial_mesh, radius=radius).T
+X = vol_to_surf(fmri_img, pial_mesh, radius=radius).T
 
 # To define the :term:`BOLD` responses to be included within each searchlight "sphere"
 # we define an adjacency matrix based on the inflated surface vertices such
 # that nearby surfaces are concatenated within the same searchlight.
 
-infl_mesh = fsaverage['infl_' + hemi]
-coords, _ = surface.load_surf_mesh(infl_mesh)
+infl_mesh = load_surf_mesh(fsaverage['infl_' + hemi])
 radius = 3.
 nn = neighbors.NearestNeighbors(radius=radius)
-adjacency = nn.fit(coords).radius_neighbors_graph(coords).tolil()
+adjacency = nn.fit(
+                infl_mesh.coordinates).radius_neighbors_graph(
+                                infl_mesh.coordinates).tolil()
 
 #########################################################################
 # Searchlight computation
@@ -80,9 +82,12 @@ scores = search_light(X, y, estimator, adjacency, cv=cv, n_jobs=1)
 # Visualization
 # -------------
 from nilearn import plotting
+from nilearn.surface import Surface
+
 chance = .5
-plotting.plot_surf_stat_map(infl_mesh, scores - chance,
-                            view='medial', colorbar=True, threshold=0.1,
-                            bg_map=fsaverage['sulc_' + hemi],
+surf = Surface(infl_mesh, scores - chance)
+
+plotting.plot_surf_stat_map(surf, view='medial', colorbar=True,
+                            threshold=0.1, bg_map=fsaverage['sulc_' + hemi],
                             title='Accuracy map, left hemisphere')
 plotting.show()
