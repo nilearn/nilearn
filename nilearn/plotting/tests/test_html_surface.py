@@ -113,11 +113,12 @@ def test_view_surf():
     mesh = surface.load_surf_mesh(fsaverage['pial_right'])
     surf_map = mesh[0][:, 0]
     html = html_surface.view_surf(fsaverage['pial_right'], surf_map,
-                                  fsaverage['sulc_right'], '90%')
+                                  bg_map=fsaverage['sulc_right'],
+                                  threshold='90%')
     check_html(html, title="Surface plot")
     html = html_surface.view_surf(fsaverage['pial_right'], surf_map,
-                                  fsaverage['sulc_right'], .3,
-                                  title="SOME_TITLE")
+                                  bg_map=fsaverage['sulc_right'],
+                                  threshold=.3, title="SOME_TITLE")
     check_html(html, title="SOME_TITLE")
     assert "SOME_TITLE" in html.html
     html = html_surface.view_surf(fsaverage['pial_right'])
