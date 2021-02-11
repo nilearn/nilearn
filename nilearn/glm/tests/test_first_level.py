@@ -7,6 +7,7 @@ import shutil
 import numpy as np
 import pandas as pd
 import pytest
+import warnings
 from nibabel import Nifti1Image, load
 from nibabel.tmpdirs import InTemporaryDirectory
 from numpy.testing import (assert_almost_equal, assert_array_almost_equal,
@@ -251,7 +252,8 @@ def test_compute_contrast_num_contrasts():
         multi_session_model.compute_contrast([np.eye(rk)[1]]*2)
 
     multi_session_model.compute_contrast([np.eye(rk)[1]]*3)
-    multi_session_model.compute_contrast([np.eye(rk)[1]])
+    with pytest.warns(UserWarning, match='One contrast given, assuming it for all 3 runs'):
+        multi_session_model.compute_contrast([np.eye(rk)[1]])
 
 def test_run_glm():
     rng = np.random.RandomState(42)

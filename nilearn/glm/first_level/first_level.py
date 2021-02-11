@@ -570,7 +570,7 @@ class FirstLevelModel(BaseGLM):
 
         n_runs = len(self.labels_)
         n_contrasts = len(con_vals)
-        if n_contrasts == 1:
+        if n_contrasts == 1 and n_runs > 1:
             warn('One contrast given, assuming it for all %d runs' % n_runs)
             con_vals = con_vals * n_runs
         elif n_contrasts != n_runs:
