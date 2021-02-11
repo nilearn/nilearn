@@ -83,9 +83,9 @@ print('Fsaverage5 sulcal depth map of left hemisphere is at: %s' %
 # --------------------------------
 
 # Load resting state time series from nilearn
-from nilearn import surface
+from nilearn.surface import load_surf_data, Surface
 
-timeseries = surface.load_surf_data(nki_dataset['func_left'][0])
+timeseries = load_surf_data(nki_dataset['func_left'][0])
 
 # Extract seed region via label
 pcc_region = b'G_cingul-Post-dorsal'
@@ -117,26 +117,26 @@ stat_map[np.where(np.mean(timeseries, axis=1) == 0)] = 0
 # Transform ROI indices in ROI map
 pcc_map = np.zeros(parcellation.shape[0], dtype=int)
 pcc_map[pcc_labels] = 1
+pcc_surf = Surface(fsaverage.pial_left, pcc_map)
 
 from nilearn import plotting
 
-plotting.plot_surf_roi(fsaverage['pial_left'], roi_map=pcc_map,
-                       hemi='left', view='medial',
+plotting.plot_surf_roi(pcc_surf, hemi='left', view='medial',
                        bg_map=fsaverage['sulc_left'], bg_on_data=True,
                        title='PCC Seed')
 
 ###############################################################################
 # Display unthresholded stat map with a slightly dimmed background
-plotting.plot_surf_stat_map(fsaverage['pial_left'], stat_map=stat_map,
-                            hemi='left', view='medial', colorbar=True,
+surf = Surface(fsaverage.pial_left, stat_map)
+
+plotting.plot_surf_stat_map(surf, hemi='left', view='medial', colorbar=True,
                             bg_map=fsaverage['sulc_left'], bg_on_data=True,
                             darkness=.3, title='Correlation map')
 
 ###############################################################################
 # Many different options are available for plotting, for example thresholding,
 # or using custom colormaps
-plotting.plot_surf_stat_map(fsaverage['pial_left'], stat_map=stat_map,
-                            hemi='left', view='medial', colorbar=True,
+plotting.plot_surf_stat_map(surf, hemi='left', view='medial', colorbar=True,
                             bg_map=fsaverage['sulc_left'], bg_on_data=True,
                             cmap='Spectral', threshold=.5,
                             title='Threshold and colormap')
@@ -147,16 +147,14 @@ plotting.plot_surf_stat_map(fsaverage['pial_left'], stat_map=stat_map,
 # half transparent surface.
 # Note that you can also control the transparency with a background map using
 # the alpha parameter.
-plotting.plot_surf_stat_map(fsaverage['pial_left'], stat_map=stat_map,
-                            hemi='left', view='lateral', colorbar=True,
+plotting.plot_surf_stat_map(surf, hemi='left', view='lateral', colorbar=True,
                             cmap='Spectral', threshold=.5,
                             title='Plotting without background')
 
 ###############################################################################
 # The plots can be saved to file, in which case the display is closed after
 # creating the figure
-plotting.plot_surf_stat_map(fsaverage['infl_left'], stat_map=stat_map,
-                            hemi='left', bg_map=fsaverage['sulc_left'],
+plotting.plot_surf_stat_map(surf, hemi='left', bg_map=fsaverage['sulc_left'],
                             bg_on_data=True, threshold=.5, colorbar=True,
                             output_file='plot_surf_stat_map.png')
 
