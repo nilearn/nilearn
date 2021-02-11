@@ -1040,16 +1040,18 @@ def check_surface(surface):
         A surface can be:
             - a nilearn.surface.Surface
             - a sequence (mesh, data) where:
-                - mesh can be:
-                    - a nilearn.surface.Mesh
-                    - a path to .gii or .gii.gz etc.
-                    - a sequence of two numpy arrays,
-                    the first containing vertex coordinates
-                    and the second containing triangles.
-                - data can be:
-                    - a path to .gii or .gii.gz etc.
-                    - a numpy array with shape (n_vertices,)
-                    or (n_time_points, n_vertices)
+
+            A mesh can be:
+                - a nilearn.surface.Mesh
+                - a path to .gii or .gii.gz etc.
+                - a sequence of two numpy arrays,
+                  the first containing vertex coordinates
+                  and the second containing triangles.
+
+            Data can be:
+                - a path to .gii or .gii.gz etc.
+                - a numpy array with shape (n_vertices,)
+                  or (n_time_points, n_vertices)
 
     Returns
     -------
