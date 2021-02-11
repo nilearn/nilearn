@@ -48,31 +48,32 @@ print('Fsaverage5 sulcal depth map of left hemisphere is at: %s' %
 # -------------
 
 # Display Destrieux parcellation on fsaverage5 pial surface using nilearn
+from nilearn.surface import Surface
 from nilearn import plotting
 
-plotting.plot_surf_roi(fsaverage['pial_left'], roi_map=parcellation,
-                       hemi='left', view='lateral',
+surf_pial_left = Surface(fsaverage.pial_left, parcellation)
+
+plotting.plot_surf_roi(surf_pial_left, hemi='left', view='lateral',
                        bg_map=fsaverage['sulc_left'], bg_on_data=True,
                        darkness=.5)
 
 ###############################################################################
 # Display Destrieux parcellation on inflated fsaverage5 surface
-plotting.plot_surf_roi(fsaverage['infl_left'], roi_map=parcellation,
-                       hemi='left', view='lateral',
+surf_infl_left = Surface(fsaverage.infl_left, parcellation)
+
+plotting.plot_surf_roi(surf_infl_left, hemi='left', view='lateral',
                        bg_map=fsaverage['sulc_left'], bg_on_data=True,
                        darkness=.5)
 
 ###############################################################################
 # Display Destrieux parcellation with different views: posterior
-plotting.plot_surf_roi(fsaverage['infl_left'], roi_map=parcellation,
-                       hemi='left', view='posterior',
+plotting.plot_surf_roi(surf_infl_left, hemi='left', view='posterior',
                        bg_map=fsaverage['sulc_left'], bg_on_data=True,
                        darkness=.5)
 
 ###############################################################################
 # Display Destrieux parcellation with different views: ventral
-plotting.plot_surf_roi(fsaverage['infl_left'], roi_map=parcellation,
-                       hemi='left', view='ventral',
+plotting.plot_surf_roi(surf_infl_left, hemi='left', view='ventral',
                        bg_map=fsaverage['sulc_left'], bg_on_data=True,
                        darkness=.5)
 plotting.show()
@@ -93,11 +94,11 @@ coordinates = []
 labels = destrieux_atlas['labels']
 for hemi in ['left', 'right']:
     vert = destrieux_atlas['map_%s' % hemi]
-    rr, _ = surface.load_surf_mesh(fsaverage['pial_%s' % hemi])
+    mesh = surface.load_surf_mesh(fsaverage['pial_%s' % hemi])
     for k, label in enumerate(labels):
         if "Unknown" not in str(label):  # Omit the Unknown label.
             # Compute mean location of vertices in label of index k
-            coordinates.append(np.mean(rr[vert == k], axis=0))
+            coordinates.append(np.mean(mesh.coordinates[vert == k], axis=0))
 
 coordinates = np.array(coordinates)  # 3D coordinates of parcels
 
@@ -122,8 +123,7 @@ plotting.show()
 # visualizations in a web browser. See :ref:`interactive-surface-plotting` for
 # more details.
 
-view = plotting.view_surf(fsaverage.infl_left, parcellation,
-                          cmap='gist_ncar', symmetric_cmap=False)
+view = plotting.view_surf(surf_infl_left, cmap='gist_ncar', symmetric_cmap=False)
 # In a Jupyter notebook, if ``view`` is the output of a cell, it will
 # be displayed below the cell
 
