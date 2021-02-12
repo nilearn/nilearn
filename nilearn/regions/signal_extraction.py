@@ -132,8 +132,6 @@ def img_to_signals_labels(imgs, labels_img, mask_img=None,
         reduce_ts = getattr(ndimage.measurements, strategy)
         return n, np.asarray(reduce_ts(img, labels, index))
 
-    img_sig_list = [[n, img] for n, img in enumerate(np.rollaxis(data, -1))]
-
     with Parallel(
             n_jobs=n_jobs,
             verbose=verbose,
@@ -145,7 +143,7 @@ def img_to_signals_labels(imgs, labels_img, mask_img=None,
                 index=labels,
                 n=n
             )
-            for n, img in img_sig_list
+            for n, img in enumerate(np.rollaxis(data, -1))
         )
     for n, sig in outs:
         signals[n] = sig
