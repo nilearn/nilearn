@@ -397,24 +397,27 @@ def test_nifti_labels_masker_parallelization():
         assert np.allclose(n_result, expected_result)
 
     with pytest.raises(ValueError,
-                       match=f"Invalid value for n_jobs '{-2}'. Must be an "
-                             f"integer >= 1 or == to -1."):
+                       match=str.format("Invalid value for n_jobs '{}'. "
+                                        "Must be an integer >= 1 or == to "
+                                        "-1.", -2)):
         NiftiLabelsMasker(
             labels_img,
             n_jobs=-2
         )
 
     with pytest.raises(ValueError,
-                       match=f"Invalid value for n_jobs '{0}'. Must be an "
-                             f"integer >= 1 or == to -1."):
+                       match=str.format("Invalid value for n_jobs '{}'. "
+                                        "Must be an integer >= 1 or == to "
+                                        "-1.", 0)):
         NiftiLabelsMasker(
             labels_img,
             n_jobs=0
         )
 
     with pytest.raises(ValueError,
-                       match=f"Invalid value for n_jobs '{1.5}'. Must be an "
-                             f"integer >= 1 or == to -1."):
+                       match=str.format("Invalid value for n_jobs '{}'. "
+                                        "Must be an integer >= 1 or == to "
+                                        "-1.", 1.5)):
         NiftiLabelsMasker(
             labels_img,
             n_jobs=1.5

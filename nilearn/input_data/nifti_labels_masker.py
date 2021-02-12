@@ -126,6 +126,10 @@ class NiftiLabelsMasker(BaseMasker, CacheMixin):
         Must be one of: sum, mean, median, mininum, maximum, variance,
         standard_deviation. Default='mean'.
 
+    n_jobs : int, optional
+        The number of CPUs to use to do the computation. -1 means
+        'all CPUs'.
+        
     See also
     --------
     nilearn.input_data.NiftiMasker
@@ -182,7 +186,8 @@ class NiftiLabelsMasker(BaseMasker, CacheMixin):
             raise ValueError("invalid value for 'resampling_target' "
                              "parameter: " + str(resampling_target))
 
-        if n_jobs < -1 or not float(n_jobs).is_integer() or n_jobs == 0:
+        if float(n_jobs) < -1 or not float(n_jobs).is_integer() or \
+                float(n_jobs) == 0:
             raise ValueError(str.format(
                 "Invalid value for n_jobs '{}'. Must be an integer >= 1 "
                 "or == to -1.",
