@@ -19,7 +19,7 @@ from ..image import new_img_like
 # FIXME: naming scheme is not really satisfying. Any better idea appreciated.
 def img_to_signals_labels(imgs, labels_img, mask_img=None,
                           background_label=0, order="F", strategy='mean',
-                          n_jobs=-1, verbose=0):
+                          n_jobs=1, verbose=0):
     """Extract region signals from image.
 
     This function is applicable to regions defined by labels.
@@ -153,6 +153,9 @@ def img_to_signals_labels(imgs, labels_img, mask_img=None,
     labels_index = dict([(l, n) for n, l in enumerate(labels)])
     for l in missing_labels:
         signals[:, labels_index[l]] = 0
+
+    del outs, data, labels_data, imgs
+
     return signals, labels
 
 
