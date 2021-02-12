@@ -249,7 +249,7 @@ class NiftiMasker(BaseMasker, CacheMixin):
                                     'mask and its input image. ')
         self._overlay_text = ('\n To see the input Nifti image before '
                               'resampling, hover over the displayed image.')
-
+        self._warning_message = ""
         self._shelving = False
 
     def generate_report(self):
@@ -283,6 +283,10 @@ class NiftiMasker(BaseMasker, CacheMixin):
                 # compute middle image from 4D series for plotting
                 img = image.index_img(img, dim[-1] // 2)
         else:  # images were not provided to fit
+            msg = ("No image provided to fit in NiftiMasker. "
+                   "Setting image to mask for reporting.")
+            warnings.warn(msg)
+            self._warning_message = msg
             img = mask
 
         # create display of retained input mask, image

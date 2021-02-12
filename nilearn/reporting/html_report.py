@@ -46,7 +46,7 @@ def _str_params(params):
 
 
 def _update_template(title, docstring, content, overlay,
-                     parameters, description=None):
+                     parameters, description=None, warning_message=None):
     """Populate a report with content.
 
     Parameters
@@ -69,6 +69,11 @@ def _update_template(title, docstring, content, overlay,
     description : str, optional
         An optional description of the content.
 
+    warning_message : str, optional
+        An optional warning message to be displayed in red.
+        This is used for example when no image was provided
+        to the estimator when fitting.
+
     Returns
     -------
     report : HTMLReport
@@ -85,7 +90,8 @@ def _update_template(title, docstring, content, overlay,
                           overlay=overlay,
                           docstring=docstring,
                           parameters=parameters,
-                          description=description)
+                          description=description,
+                          warning_message=warning_message)
 
     head_template_name = 'report_head_template.html'
     head_template_path = resource_path.joinpath(head_template_name)
@@ -148,6 +154,7 @@ def generate_report(estimator):
     else:  # We can create a report
         overlay, image = _define_overlay(estimator)
         description = estimator._report_description
+        warning_message = estimator._warning_message
         parameters = _str_params(estimator.get_params())
         docstring = estimator.__doc__
         snippet = docstring.partition('Parameters\n    ----------\n')[0]
@@ -156,7 +163,8 @@ def generate_report(estimator):
                                   content=_embed_img(image),
                                   overlay=_embed_img(overlay),
                                   parameters=parameters,
-                                  description=description)
+                                  description=description,
+                                  warning_message=warning_message)
     return report
 
 
