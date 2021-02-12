@@ -18,7 +18,8 @@ from ..image import new_img_like
 
 # FIXME: naming scheme is not really satisfying. Any better idea appreciated.
 def img_to_signals_labels(imgs, labels_img, mask_img=None,
-                          background_label=0, order="F", strategy='mean'):
+                          background_label=0, order="F", strategy='mean',
+                          n_jobs=-1, verbose=0):
     """Extract region signals from image.
 
     This function is applicable to regions defined by labels.
@@ -53,6 +54,10 @@ def img_to_signals_labels(imgs, labels_img, mask_img=None,
         Must be one of: sum, mean, median, mininum, maximum, variance,
         standard_deviation. Default='mean'.
 
+    n_jobs : int, optional
+        The number of CPUs to use to do the computation. -1 means
+        'all CPUs'.
+
     Returns
     -------
     signals : numpy.ndarray
@@ -73,6 +78,8 @@ def img_to_signals_labels(imgs, labels_img, mask_img=None,
         e.g. clusters
 
     """
+    from joblib import Parallel, delayed
+
     labels_img = _utils.check_niimg_3d(labels_img)
 
     # TODO: Make a special case for list of strings (load one image at a
@@ -120,11 +127,29 @@ def img_to_signals_labels(imgs, labels_img, mask_img=None,
     # Nilearn issue: 2135, PR: 2195 for why this is necessary.
     signals = np.ndarray((data.shape[-1], len(labels)), order=order,
                          dtype=target_datatype)
-    reduction_function = getattr(ndimage.measurements, strategy)
-    for n, img in enumerate(np.rollaxis(data, -1)):
-        signals[n] = np.asarray(reduction_function(img,
-                                                   labels=labels_data,
-                                                   index=labels))
+
+    def reduction_function(img, labels, index, n):
+        reduce_ts = getattr(ndimage.measurements, strategy)
+        return n, np.asarray(reduce_ts(img, labels, index))
+
+    img_sig_list = [[n, img] for n, img in enumerate(np.rollaxis(data, -1))]
+
+    with Parallel(
+            n_jobs=n_jobs,
+            verbose=verbose,
+    ) as parallel:
+        outs = parallel(
+            delayed(reduction_function)(
+                img,
+                labels=labels_data,
+                index=labels,
+                n=n
+            )
+            for n, img in img_sig_list
+        )
+    for n, sig in outs:
+        signals[n] = sig
+
     # Set to zero signals for missing labels. Workaround for Scipy behaviour
     missing_labels = set(labels) - set(np.unique(labels_data))
     labels_index = dict([(l, n) for n, l in enumerate(labels)])
