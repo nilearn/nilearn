@@ -132,7 +132,7 @@ def run_glm(Y, X, noise_model='ar1', bins=100, n_jobs=1, verbose=0):
             / (ols_result.residuals ** 2).sum(axis=0)
         )
         del ols_result
-        ar1 = (ar1 * bins).astype(np.int) * 1. / bins
+        ar1 = (ar1 * bins).astype(np.int64) * 1. / bins
         # Fit the AR model acccording to current AR(1) estimates
         results = {}
         labels = ar1
