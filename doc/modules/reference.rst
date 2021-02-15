@@ -536,17 +536,6 @@ the :ref:`user guide <user_guide>` for more information and usage examples.
 
 .. No relevant user manual section yet.
 
-**Classes**:
-
-.. currentmodule:: nilearn.surface
-
-.. autosummary::
-   :toctree: generated/
-   :template: class.rst
-
-   Surface
-   Mesh
-
 **Functions**:
 
 .. currentmodule:: nilearn.surface
