@@ -19,7 +19,8 @@ import pytest
 
 from nilearn.datasets import neurovault
 from nilearn.image import load_img
-import datetime
+from nilearn._utils.data_gen import generate_fake_fmri
+
 
 def _get_neurovault_data(random_seed=0):
     """Make fake images and collections to mock neurovault in the unit tests.
@@ -177,8 +178,8 @@ def _neurovault_one_image(img_id):
 
 
 def _neurovault_file(parts, query):
-    """Mocks the Neurovault API behind the `/api/media/` path."""
-    return ""
+    """Mocks the Neurovault API behind the `/media/images/` path."""
+    return generate_fake_fmri(length=1)[0]
 
 
 class _NumpyJsonEncoder(json.JSONEncoder):
@@ -199,14 +200,24 @@ def _neurovault(match, request):
     responses: https://neurovault.org/api-docs
 
     """
-    handlers = {"collections": _neurovault_collections,
-                "images": _neurovault_images,
-                "media": _neurovault_file}
+    handlers = {
+        "media": {"images": _neurovault_file},
+        "api": {
+            "collections": _neurovault_collections,
+            "images": _neurovault_images,
+        }
+    }
     info = parse.urlparse(request.url)
     parts = list(filter(bool, info.path.split("/")))
-    section = parts[1]
-    result = handlers[section](parts[2:], _parse_query(info.query))
-    return json.dumps(result, cls=_NumpyJsonEncoder).encode("UTF-8")
+    endpoint, section = parts[0], parts[1]
+
+    result = handlers[endpoint][section](parts[2:], _parse_query(info.query))
+    should_jsonify_response = endpoint == "api"
+    return (
+        json.dumps(result, cls=_NumpyJsonEncoder).encode("UTF-8")
+        if should_jsonify_response
+        else result
+    )
 
 
 @pytest.fixture(autouse=True)
