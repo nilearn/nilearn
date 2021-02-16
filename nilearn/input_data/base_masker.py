@@ -18,6 +18,7 @@ from .. import signal
 from .. import _utils
 from .._utils.cache_mixin import CacheMixin, cache
 from .._utils.class_inspect import enclosing_scope_name
+from nilearn.image import high_variance_confounds
 
 
 def filter_and_extract(imgs, extraction_function,
@@ -180,7 +181,19 @@ class BaseMasker(BaseEstimator, TransformerMixin, CacheMixin):
         """
         self._check_fitted()
 
-        return self.transform_single_imgs(imgs, confounds)
+        # Compute high variance confounds if requested
+        all_confounds = []
+        if self.high_variance_confounds:
+            hv_confounds = self._cache(
+                high_variance_confounds)(imgs)
+            all_confounds.append(hv_confounds)
+        if confounds is not None:
+            if isinstance(confounds, list):
+                all_confounds += confounds
+            else:
+                all_confounds.append(confounds)
+
+        return self.transform_single_imgs(imgs, all_confounds)
 
     def fit_transform(self, X, y=None, confounds=None, **fit_params):
         """Fit to data, then transform it
