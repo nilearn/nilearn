@@ -29,11 +29,11 @@ fsaverage = datasets.fetch_surf_fsaverage()
 # Sample the 3D data around each node of the mesh
 # -----------------------------------------------
 
-from nilearn.surface import vol_to_surf, Surface
+from nilearn.surface import vol_to_surf, load_surface
 
 texture = vol_to_surf(stat_img, fsaverage.pial_right)
 # Define a Surface object with mesh and texture
-surf = Surface(fsaverage.infl_right, texture)
+surf = load_surface((fsaverage.infl_right, texture))
 
 ##############################################################################
 # Plot the result
@@ -62,7 +62,8 @@ import numpy as np
 
 destrieux_atlas = datasets.fetch_atlas_surf_destrieux()
 parcellation = destrieux_atlas['map_right']
-surf_parcellation = Surface(fsaverage.infl_right, parcellation)
+surf_parcellation = load_surface((fsaverage.infl_right,
+                                  parcellation))
 
 # these are the regions we want to outline
 regions_dict = {b'G_postcentral': 'Postcentral gyrus',
@@ -96,7 +97,8 @@ plotting.show()
 
 big_fsaverage = datasets.fetch_surf_fsaverage('fsaverage')
 big_texture = vol_to_surf(stat_img, big_fsaverage.pial_right)
-big_surf = Surface(big_fsaverage.infl_right, big_texture)
+big_surf = load_surface((big_fsaverage.infl_right,
+                         big_texture))
 
 plotting.plot_surf_stat_map(big_surf, hemi='right', colorbar=True,
                             title='Surface right hemisphere: fine mesh',

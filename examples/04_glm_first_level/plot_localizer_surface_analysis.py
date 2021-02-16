@@ -64,9 +64,9 @@ fsaverage = nilearn.datasets.fetch_surf_fsaverage()
 ###############################################################################
 # The projection function simply takes the fMRI data and the mesh.
 # Note that those correspond spatially, are they are both in MNI space.
-from nilearn.surface import vol_to_surf, Surface
+from nilearn.surface import vol_to_surf, load_surface
 texture = vol_to_surf(fmri_img, fsaverage.pial_right)
-surf = Surface(fsaverage.pial_right, texture)
+surf = load_surface((fsaverage.pial_right, texture))
 
 ###############################################################################
 # Perform first level analysis
@@ -173,8 +173,8 @@ for index, (contrast_id, contrast_val) in enumerate(contrasts.items()):
     contrast = compute_contrast(labels, estimates, contrast_val,
                                 contrast_type='t')
     # we present the Z-transform of the t map
-    z_score = contrast.z_score()
-    score_surface = Surface(fsaverage.infl_right, z_score)
+    score_surface = load_surface((fsaverage.infl_right,
+                                  contrast.z_score()))
     # we plot it on the surface, on the inflated fsaverage mesh,
     # together with a suitable background to give an impression
     # of the cortex folding.
@@ -192,7 +192,8 @@ for index, (contrast_id, contrast_val) in enumerate(contrasts.items()):
 ###############################################################################
 # We project the fMRI data to the mesh.
 texture = vol_to_surf(fmri_img, fsaverage.pial_left)
-surf = Surface(fsaverage.pial_left, texture)
+surf = load_surface((fsaverage.pial_left,
+                     texture))
 
 ###############################################################################
 # Then we estimate the General Linear Model.
@@ -206,8 +207,8 @@ for index, (contrast_id, contrast_val) in enumerate(contrasts.items()):
     # compute contrasts
     contrast = compute_contrast(labels, estimates, contrast_val,
                                 contrast_type='t')
-    z_score = contrast.z_score()
-    score_surf = Surface(fsaverage.infl_left, z_score)
+    score_surf = load_surface((fsaverage.infl_left,
+                               contrast.z_score()))
     # plot the result
     plotting.plot_surf_stat_map(score_surf, hemi='left',
                                 title=contrast_id, colorbar=True,

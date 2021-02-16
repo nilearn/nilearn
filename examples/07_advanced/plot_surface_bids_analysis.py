@@ -74,7 +74,7 @@ fsaverage = fetch_surf_fsaverage(mesh='fsaverage5')
 # The projection function simply takes the fMRI data and the mesh.
 # Note that those correspond spatially, as they are both in MNI space.
 import numpy as np
-from nilearn.surface import vol_to_surf, Surface
+from nilearn.surface import vol_to_surf, load_surface
 from nilearn.glm.first_level import make_first_level_design_matrix
 from nilearn.glm.first_level import run_glm
 from nilearn.glm.contrasts import compute_contrast
@@ -86,7 +86,8 @@ z_scores_left = []
 for (fmri_img, confound, events) in zip(
         models_run_imgs, models_confounds, models_events):
     texture = vol_to_surf(fmri_img[0], fsaverage.pial_right)
-    surf_right = Surface(fsaverage.pial_right, texture)
+    surf_right = load_surface((fsaverage.pial_right,
+                               texture))
     n_scans = surf_right.data.shape[1]
     frame_times = t_r * (np.arange(n_scans) + .5)
 
@@ -116,7 +117,8 @@ for (fmri_img, confound, events) in zip(
 
     # Do the left hemipshere exactly in the same way.
     texture = vol_to_surf(fmri_img, fsaverage.pial_left)
-    surf_left = Surface(fsaverage.pial_left, texture)
+    surf_left = load_surface((fsaverage.pial_left,
+                              texture))
     labels, estimates = run_glm(surf_left.data.T, design_matrix.values)
     contrast = compute_contrast(labels, estimates, contrast_values,
                                 contrast_type='t')
@@ -140,8 +142,10 @@ t_right, pval_right = ttest_1samp(np.array(z_scores_right), 0)
 
 ############################################################################
 # What we have so far are p-values: we convert them to z-values for plotting.
-surf_z_val_left = Surface(fsaverage.infl_left, norm.isf(pval_left))
-surf_z_val_right = Surface(fsaverage.infl_right, norm.isf(pval_right))
+surf_z_val_left = load_surface((fsaverage.infl_left,
+                                norm.isf(pval_left)))
+surf_z_val_right = load_surface((fsaverage.infl_right,
+                                 norm.isf(pval_right)))
 
 ############################################################################
 # Plot the resulting maps, at first on the left hemipshere.

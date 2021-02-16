@@ -48,10 +48,11 @@ print('Fsaverage5 sulcal depth map of left hemisphere is at: %s' %
 # -------------
 
 # Display Destrieux parcellation on fsaverage5 pial surface using nilearn
-from nilearn.surface import Surface
+from nilearn.surface import load_surface
 from nilearn import plotting
 
-surf_pial_left = Surface(fsaverage.pial_left, parcellation)
+surf_pial_left = load_surface((fsaverage.pial_left,
+                               parcellation))
 
 plotting.plot_surf_roi(surf_pial_left, hemi='left', view='lateral',
                        bg_map=fsaverage['sulc_left'], bg_on_data=True,
@@ -59,7 +60,8 @@ plotting.plot_surf_roi(surf_pial_left, hemi='left', view='lateral',
 
 ###############################################################################
 # Display Destrieux parcellation on inflated fsaverage5 surface
-surf_infl_left = Surface(fsaverage.infl_left, parcellation)
+surf_infl_left = load_surface((fsaverage.infl_left,
+                               parcellation))
 
 plotting.plot_surf_roi(surf_infl_left, hemi='left', view='lateral',
                        bg_map=fsaverage['sulc_left'], bg_on_data=True,

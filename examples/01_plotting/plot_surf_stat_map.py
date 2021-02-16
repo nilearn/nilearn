@@ -83,7 +83,7 @@ print('Fsaverage5 sulcal depth map of left hemisphere is at: %s' %
 # --------------------------------
 
 # Load resting state time series from nilearn
-from nilearn.surface import load_surf_data, Surface
+from nilearn.surface import load_surf_data, load_surface
 
 timeseries = load_surf_data(nki_dataset['func_left'][0])
 
@@ -117,7 +117,8 @@ stat_map[np.where(np.mean(timeseries, axis=1) == 0)] = 0
 # Transform ROI indices in ROI map
 pcc_map = np.zeros(parcellation.shape[0], dtype=int)
 pcc_map[pcc_labels] = 1
-pcc_surf = Surface(fsaverage.pial_left, pcc_map)
+pcc_surf = load_surface((fsaverage.pial_left,
+                         pcc_map))
 
 from nilearn import plotting
 
@@ -127,7 +128,8 @@ plotting.plot_surf_roi(pcc_surf, hemi='left', view='medial',
 
 ###############################################################################
 # Display unthresholded stat map with a slightly dimmed background
-surf = Surface(fsaverage.pial_left, stat_map)
+surf = load_surface((fsaverage.pial_left,
+                     stat_map))
 
 plotting.plot_surf_stat_map(surf, hemi='left', view='medial', colorbar=True,
                             bg_map=fsaverage['sulc_left'], bg_on_data=True,

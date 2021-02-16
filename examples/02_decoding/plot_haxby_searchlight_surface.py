@@ -82,10 +82,11 @@ scores = search_light(X, y, estimator, adjacency, cv=cv, n_jobs=1)
 # Visualization
 # -------------
 from nilearn import plotting
-from nilearn.surface import Surface
+from nilearn.surface import load_surface
 
 chance = .5
-surf = Surface(infl_mesh, scores - chance)
+surf = load_surface((infl_mesh,
+                     scores - chance))
 
 plotting.plot_surf_stat_map(surf, view='medial', colorbar=True,
                             threshold=0.1, bg_map=fsaverage['sulc_' + hemi],
