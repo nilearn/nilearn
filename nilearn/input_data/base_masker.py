@@ -181,6 +181,9 @@ class BaseMasker(BaseEstimator, TransformerMixin, CacheMixin):
         """
         self._check_fitted()
 
+        if confounds is None and not self.high_variance_confounds:
+            return self.transform_single_imgs(imgs, confounds)
+
         # Compute high variance confounds if requested
         all_confounds = []
         if self.high_variance_confounds:
