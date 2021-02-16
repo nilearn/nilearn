@@ -746,14 +746,21 @@ def test_fetch_neurovault_ids(tmp_path):
     assert data['images_meta'][0]['some_key'] == 'some_value'
 
 
-def test_resampling(tmp_path):
-    ### Tests all the usecases with resampling
-    ### First test case : a collection hasn't been downloaded yet, user asks for resampled version
+def test_should_download_resampled_images_only_if_no_previous_download(tmp_path):
+    collections, images = _get_neurovault_data()
 
-    data = neurovault.fetch_neurovault_ids(collection_ids=[4666], data_dir=str(tmp_path), resample=True)
+    sample_collection = collections.iloc[0]
+    sample_collection_id = sample_collection["id"]
+    expected_number_of_images = sample_collection["true_number_of_images"]
+
+    data = neurovault.fetch_neurovault_ids(
+        collection_ids=[sample_collection_id],
+        data_dir=str(tmp_path),
+        resample=True,
+    )
 
     # Check the expected size of the dataset
-    assert (len(data['images_meta'])) == 3
+    assert (len(data['images_meta'])) == expected_number_of_images
 
     # Check that the resampled version is here
     assert np.all([os.path.isfile(im_meta['resampled_absolute_path']) for im_meta in data['images_meta']])
@@ -765,13 +772,26 @@ def test_resampling(tmp_path):
     # Check that the original version is NOT here
     assert not np.any([os.path.isfile(im_meta['absolute_path']) for im_meta in data['images_meta']])
 
-    # Ask to download the non-resampled version. This should trigger download
+
+def test_should_download_original_images_along_resampled_images_if_previously_downloaded(tmp_path):
+    collections, images = _get_neurovault_data()
+
+    sample_collection = collections.iloc[0]
+    sample_collection_id = sample_collection["id"]
+
+    # Fetch non-resampled images
+    data = neurovault.fetch_neurovault_ids(collection_ids=[sample_collection_id], data_dir=str(tmp_path),
+                                                resample=True)
+
+    # Check that only the resampled version is here
+    assert np.all([os.path.isfile(im_meta['resampled_absolute_path']) for im_meta in data['images_meta']])
+    assert not np.any([os.path.isfile(im_meta['absolute_path']) for im_meta in data['images_meta']])
 
     # Get the time of the last access to the resampled data
     access_time_resampled = (os.path.getatime(data['images_meta'][0]['resampled_absolute_path']))
 
     # Download original data
-    data_orig = neurovault.fetch_neurovault_ids(collection_ids=[4666], data_dir=str(tmp_path), resample=False)
+    data_orig = neurovault.fetch_neurovault_ids(collection_ids=[sample_collection_id], data_dir=str(tmp_path), resample=False)
 
     # Get the time of the last access to one of the original files (which should be download time)
     access_time = (os.path.getatime(data_orig['images_meta'][0]['absolute_path']))
@@ -786,9 +806,16 @@ def test_resampling(tmp_path):
     affines_orig = [load_img(cur_im).affine for cur_im in data_orig['images']]
     assert not np.any([np.all(affine == neurovault.STD_AFFINE) for affine in affines_orig])
 
-    ### Second test case : a collection has been downloaded in the original version, user asks for resampled version
 
-    data_orig = neurovault.fetch_neurovault_ids(collection_ids=[4666], data_dir=str(tmp_path), resample=False)
+
+def test_should_download_resampled_images_along_original_images_if_previously_downloaded(tmp_path):
+    collections, images = _get_neurovault_data()
+
+    sample_collection = collections.iloc[0]
+    sample_collection_id = sample_collection["id"]
+
+    # Fetch non-resampled images
+    data_orig = neurovault.fetch_neurovault_ids(collection_ids=[sample_collection_id], data_dir=str(tmp_path), resample=False)
 
     # Check that the original version is here
     assert np.all([os.path.isfile(im_meta['absolute_path']) for im_meta in data_orig['images_meta']])
@@ -802,7 +829,7 @@ def test_resampling(tmp_path):
     modif_time_original = (os.path.getmtime(data_orig['images_meta'][0]['absolute_path']))
 
     # Ask for resampled data, which should only trigger resample
-    data = neurovault.fetch_neurovault_ids(collection_ids=[4666], data_dir=str(tmp_path), resample=True)
+    data = neurovault.fetch_neurovault_ids(collection_ids=[sample_collection_id], data_dir=str(tmp_path), resample=True)
 
     # Get the time of the last modification to the original data, after fetch
     modif_time_original_after = (os.path.getmtime(data['images_meta'][0]['absolute_path']))
@@ -817,7 +844,6 @@ def test_resampling(tmp_path):
     assert np.all([os.path.isfile(im_meta['absolute_path']) for im_meta in data['images_meta']])
 
     # Load resampled images and check the affines
-
     affines = [load_img(cur_im).affine for cur_im in data['images']]
     assert np.all([np.all(affine == neurovault.STD_AFFINE) for affine in affines])
 
