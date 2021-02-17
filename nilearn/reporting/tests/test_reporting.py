@@ -94,7 +94,11 @@ def test_get_clusters_table(tmp_path):
     assert len(cluster_table) == 1
 
     # test with extra dimension
-    array[..., np.newaxis]
+    data_extra_dim = data[..., np.newaxis]
+    stat_img_extra_dim = nib.Nifti1Image(data_extra_dim, np.eye(4))
+    cluster_table = get_clusters_table(stat_img_extra_dim, 4, 0)
+    assert len(cluster_table) == 1
+
 
 def test_get_clusters_table_not_modifying_stat_image():
     shape = (9, 10, 11)
