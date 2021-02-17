@@ -1959,7 +1959,7 @@ def plot_carpet(img, mask_img=None, mask_labels=None, ordering=None,
             https://doi.org/10.1016/j.neuroimage.2016.08.009
 
     """
-    img = _utils.check_niimg_4d(img, dtype='auto')
+    img = _utils.check_niimg_4d(img, dtype="auto")
 
     # Define TR and number of frames
     tr = img.header.get_zooms()[-1]
@@ -1968,21 +1968,14 @@ def plot_carpet(img, mask_img=None, mask_labels=None, ordering=None,
     if mask_img is None:
         mask_img = compute_epi_mask(img)
     else:
-        mask_img = _utils.check_niimg_3d(mask_img, dtype='auto')
+        mask_img = _utils.check_niimg_3d(mask_img, dtype="auto")
 
     use_atlas = len(np.unique(mask_img.get_fdata())) > 2
     if use_atlas:
         background_label = 0
 
-        atlas_img_res = resample_to_img(
-            mask_img,
-            img,
-            interpolation="nearest"
-        )
-        atlas_bin = math_img(
-            "img != {}".format(background_label),
-            img=atlas_img_res
-        )
+        atlas_img_res = resample_to_img(mask_img, img, interpolation="nearest")
+        atlas_bin = math_img("img != {}".format(background_label), img=atlas_img_res)
         masker = NiftiMasker(atlas_bin, target_affine=img.affine)
 
         data = masker.fit_transform(img)
@@ -1998,12 +1991,14 @@ def plot_carpet(img, mask_img=None, mask_labels=None, ordering=None,
         good_voxels = np.where(np.std(data, axis=0) != 0)[0]
         n_bad_voxels = len(bad_voxels)
         if n_bad_voxels > 0:
-            warnings.warn(f"{n_bad_voxels}/{data.shape[1]} bad voxels identified. Dropping.")
+            warnings.warn(
+                f"{n_bad_voxels}/{data.shape[1]} bad voxels identified. Dropping."
+            )
             data = data[:, good_voxels]
             atlas_values = atlas_values[good_voxels]
 
         if ordering == "hierarchical":
-            data_z = clean(data, t_r=tr, detrend=False, standardize='zscore')
+            data_z = clean(data, t_r=tr, detrend=False, standardize="zscore")
             full_node_order = np.arange(data_z.shape[1])
             last_ts, first_node_order = None, None
             atlas_ids = np.unique(atlas_values)
@@ -2019,14 +2014,12 @@ def plot_carpet(img, mask_img=None, mask_labels=None, ordering=None,
                 node_order = cluster.hierarchy.leaves_list(node_order)
                 if i_val > 1:
                     # Determine if we should flip the current mask's order
-                    first_corr = np.corrcoef((
-                        last_ts,
-                        data_val[:, node_order[0]]
-                    ))[0, 1]
-                    last_corr = np.corrcoef((
-                        last_ts,
-                        data_val[:, node_order[-1]]
-                    ))[0, 1]
+                    first_corr = np.corrcoef((last_ts, data_val[:, node_order[0]]))[
+                        0, 1
+                    ]
+                    last_corr = np.corrcoef((last_ts, data_val[:, node_order[-1]]))[
+                        0, 1
+                    ]
                     if last_corr > first_corr:
                         print(f"Flipping {val}")
                         node_order = node_order[::-1]
@@ -2036,31 +2029,33 @@ def plot_carpet(img, mask_img=None, mask_labels=None, ordering=None,
                     first_first_ts = data_first_val[:, first_node_order[0]]
                     first_last_ts = data_first_val[:, first_node_order[-1]]
 
-                    first_first_corr = np.corrcoef((
-                        first_first_ts,
-                        data_val[:, node_order[0]]
-                    ))[0, 1]
-                    first_last_corr = np.corrcoef((
-                        first_first_ts,
-                        data_val[:, node_order[-1]]
-                    ))[0, 1]
-                    last_first_corr = np.corrcoef((
-                        first_last_ts,
-                        data_val[:, node_order[0]]
-                    ))[0, 1]
-                    last_last_corr = np.corrcoef((
-                        first_last_ts,
-                        data_val[:, node_order[-1]]
-                    ))[0, 1]
+                    first_first_corr = np.corrcoef(
+                        (first_first_ts, data_val[:, node_order[0]])
+                    )[0, 1]
+                    first_last_corr = np.corrcoef(
+                        (first_first_ts, data_val[:, node_order[-1]])
+                    )[0, 1]
+                    last_first_corr = np.corrcoef(
+                        (first_last_ts, data_val[:, node_order[0]])
+                    )[0, 1]
+                    last_last_corr = np.corrcoef(
+                        (first_last_ts, data_val[:, node_order[-1]])
+                    )[0, 1]
 
                     # Determine if we should flip the first mask's order
-                    if (np.maximum(last_first_corr, last_last_corr) > np.maximum(first_first_corr, first_last_corr)):
+                    if np.maximum(last_first_corr, last_last_corr) > np.maximum(
+                        first_first_corr, first_last_corr
+                    ):
                         print(f"Flipping {atlas_ids[0]}")
                         first_node_order = first_node_order[::-1]
-                        full_node_order[first_val_idx] = full_node_order[first_val_idx][first_node_order]
+                        full_node_order[first_val_idx] = full_node_order[first_val_idx][
+                            first_node_order
+                        ]
 
                     # Determine if we should flip the second mask's order
-                    if (np.maximum(first_last_corr, last_last_corr) > np.maximum(first_first_corr, last_first_corr)):
+                    if np.maximum(first_last_corr, last_last_corr) > np.maximum(
+                        first_first_corr, last_first_corr
+                    ):
                         print(f"Flipping {val}")
                         node_order = node_order[::-1]
                 else:
@@ -2072,7 +2067,7 @@ def plot_carpet(img, mask_img=None, mask_labels=None, ordering=None,
     else:
         data = apply_mask(img, mask_img)
         if ordering == "hierarchical":
-            data_z = clean(data, t_r=tr, detrend=False, standardize='zscore')
+            data_z = clean(data, t_r=tr, detrend=False, standardize="zscore")
             node_order = cluster.hierarchy.linkage(
                 data_z.T,
                 method="average",
@@ -2083,7 +2078,7 @@ def plot_carpet(img, mask_img=None, mask_labels=None, ordering=None,
 
     # Detrend and standardize data
     if detrend:
-        data = clean(data, t_r=tr, detrend=True, standardize='zscore')
+        data = clean(data, t_r=tr, detrend=True, standardize="zscore")
 
     if figure is None:
         if not axes:
@@ -2095,8 +2090,7 @@ def plot_carpet(img, mask_img=None, mask_labels=None, ordering=None,
     if axes is None:
         axes = figure.add_subplot(1, 1, 1)
     else:
-        assert axes.figure is figure, ("The axes passed are not "
-                                       "in the figure")
+        assert axes.figure is figure, "The axes passed are not in the figure"
 
     # Determine vmin and vmax based on the full data
     std = np.mean(data.std(axis=0))
@@ -2108,7 +2102,7 @@ def plot_carpet(img, mask_img=None, mask_labels=None, ordering=None,
     # Get smallest power of 2 greater than the number of volumes divided by the
     # cutoff, to determine how much to decimate (downsample) the data.
     n_decimations = int(np.ceil(np.log2(np.ceil(n_tsteps / LONG_CUTOFF))))
-    data = data[::2 ** n_decimations, :]
+    data = data[:: 2 ** n_decimations, :]
 
     if use_atlas:
         # Define nested GridSpec
@@ -2126,10 +2120,7 @@ def plot_carpet(img, mask_img=None, mask_labels=None, ordering=None,
         ax0.set_yticks([])
         ax0.set_xticks([])
         ax0.imshow(
-            atlas_values[:, np.newaxis],
-            interpolation="none",
-            aspect="auto",
-            cmap=cmap
+            atlas_values[:, np.newaxis], interpolation="none", aspect="auto", cmap=cmap
         )
 
         # Carpet plot
@@ -2140,7 +2131,7 @@ def plot_carpet(img, mask_img=None, mask_labels=None, ordering=None,
             aspect="auto",
             cmap="gray",
             vmin=vmin or default_vmin,
-            vmax=vmax or default_vmax
+            vmax=vmax or default_vmax,
         )
 
         # Remove and redefine spines
@@ -2149,40 +2140,43 @@ def plot_carpet(img, mask_img=None, mask_labels=None, ordering=None,
             ax0.spines[side].set_color("none")
             ax0.spines[side].set_visible(False)
     else:
-        axes.imshow(data.T, interpolation='nearest',
-                    aspect='auto', cmap='gray',
-                    vmin=vmin or default_vmin,
-                    vmax=vmax or default_vmax)
+        axes.imshow(
+            data.T,
+            interpolation="nearest",
+            aspect="auto",
+            cmap="gray",
+            vmin=vmin or default_vmin,
+            vmax=vmax or default_vmax,
+        )
 
     axes.grid(False)
     axes.set_yticks([])
     axes.set_yticklabels([])
 
     # Set 10 frame markers in X axis
-    interval = max(
-        (int(data.shape[0] + 1) // 10, int(data.shape[0] + 1) // 5, 1))
+    interval = max((int(data.shape[0] + 1) // 10, int(data.shape[0] + 1) // 5, 1))
     xticks = list(range(0, data.shape[0])[::interval])
     axes.set_xticks(xticks)
 
-    axes.set_xlabel('time (s)')
-    axes.set_ylabel('voxels')
+    axes.set_xlabel("time (s)")
+    axes.set_ylabel("voxels")
 
     if title:
         axes.set_title(title)
     labels = tr * (np.array(xticks))
-    labels *= (2 ** n_decimations)
-    axes.set_xticklabels(['%.02f' % t for t in labels.tolist()])
+    labels *= 2 ** n_decimations
+    axes.set_xticklabels(["%.02f" % t for t in labels.tolist()])
 
     # Remove and redefine spines
-    for side in ['top', 'right']:
+    for side in ["top", "right"]:
         # Toggle the spine objects
-        axes.spines[side].set_color('none')
+        axes.spines[side].set_color("none")
         axes.spines[side].set_visible(False)
 
-    axes.yaxis.set_ticks_position('left')
-    axes.xaxis.set_ticks_position('bottom')
-    axes.spines['bottom'].set_position(('outward', 20))
-    axes.spines['left'].set_position(('outward', 20))
+    axes.yaxis.set_ticks_position("left")
+    axes.xaxis.set_ticks_position("bottom")
+    axes.spines["bottom"].set_position(("outward", 20))
+    axes.spines["left"].set_position(("outward", 20))
 
     if output_file is not None:
         figure.savefig(output_file)
