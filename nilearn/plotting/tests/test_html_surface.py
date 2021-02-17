@@ -111,25 +111,25 @@ def test_fill_html_template():
 def test_view_surf():
     fsaverage = fetch_surf_fsaverage()
     mesh = surface.load_surf_mesh(fsaverage['pial_right'])
-    surf_map = mesh[0][:, 0]
-    html = html_surface.view_surf(fsaverage['pial_right'], surf_map,
-                                  bg_map=fsaverage['sulc_right'],
+    surf = surface.load_surface((mesh, mesh[0][:, 0]))
+    html = html_surface.view_surf(surf, bg_map=fsaverage['sulc_right'],
                                   threshold='90%')
     check_html(html, title="Surface plot")
-    html = html_surface.view_surf(fsaverage['pial_right'], surf_map,
-                                  bg_map=fsaverage['sulc_right'],
+    html = html_surface.view_surf(surf, bg_map=fsaverage['sulc_right'],
                                   threshold=.3, title="SOME_TITLE")
     check_html(html, title="SOME_TITLE")
     assert "SOME_TITLE" in html.html
     html = html_surface.view_surf(fsaverage['pial_right'])
     check_html(html)
     atlas = np.random.RandomState(42).randint(0, 10, size=len(mesh[0]))
-    html = html_surface.view_surf(
-        fsaverage['pial_left'], atlas, symmetric_cmap=False)
+    with pytest.warns(FutureWarning,
+                      match="Giving a mesh and a texture separately"):
+        html = html_surface.view_surf(
+            fsaverage['pial_left'], atlas, symmetric_cmap=False)
     check_html(html)
-    html = html_surface.view_surf(fsaverage['pial_right'],
-                                  fsaverage['sulc_right'],
-                                  threshold=None, cmap='Greys')
+    surf = surface.load_surface((fsaverage['pial_right'],
+                                 fsaverage['sulc_right']))
+    html = html_surface.view_surf(surf, threshold=None, cmap='Greys')
     check_html(html)
     with pytest.raises(ValueError):
         html_surface.view_surf(mesh, mesh[0][::2, 0])
