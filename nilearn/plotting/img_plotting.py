@@ -19,7 +19,7 @@ from distutils.version import LooseVersion
 # Standard scientific libraries imports (more specific imports are
 # delayed, so that the part module can be used without them).
 import numpy as np
-from scipy import ndimage
+from scipy import cluster, ndimage
 from scipy import sparse
 from scipy import stats
 from nibabel.spatialimages import SpatialImage
@@ -1887,7 +1887,7 @@ def plot_markers(node_values, node_coords, node_size='auto',
     return display
 
 
-def plot_carpet(img, mask_img=None, mask_labels=None,
+def plot_carpet(img, mask_img=None, mask_labels=None, ordering=None,
                 detrend=True, output_file=None,
                 figure=None, axes=None, vmin=None, vmax=None, title=None,
                 colorbar=False, cmap=plt.cm.gist_ncar):
@@ -1912,6 +1912,13 @@ def plot_carpet(img, mask_img=None, mask_labels=None,
     mask_labels : :obj:`dict`, optional
         If ``mask_img`` corresponds to an atlas, then this dictionary maps
         values from the ``mask_img`` to labels.
+
+    ordering : {None, "hierarchical"}, optional
+        Method by which to reorder voxels within the figure.
+        If "hierarchical", then hierarchical average linkage clustering will
+        be applied to Euclidean distances between pairs of z-scored time
+        series.
+        If None, no reordering will be applied. Default=None.
 
     detrend : :obj:`bool`, optional
         Detrend and z-score the data prior to plotting. Default=True.
@@ -1987,8 +1994,92 @@ def plot_carpet(img, mask_img=None, mask_labels=None,
         order = np.squeeze(order)
         atlas_values = atlas_values[order]
         data = data[:, order]
+        bad_voxels = np.where(np.std(data, axis=0) == 0)[0]
+        good_voxels = np.where(np.std(data, axis=0) != 0)[0]
+        n_bad_voxels = len(bad_voxels)
+        if n_bad_voxels > 0:
+            warnings.warn(f"{n_bad_voxels}/{data.shape[1]} bad voxels identified. Dropping.")
+            data = data[:, good_voxels]
+            atlas_values = atlas_values[good_voxels]
+
+        if ordering == "hierarchical":
+            data_z = clean(data, t_r=tr, detrend=False, standardize='zscore')
+            full_node_order = np.arange(data_z.shape[1])
+            last_ts, first_node_order = None, None
+            atlas_ids = np.unique(atlas_values)
+            for i_val, val in enumerate(atlas_ids):
+                roi_idx = np.where(atlas_values == val)[0]
+                print(f"Processing {val}: {len(roi_idx)} voxels")
+                data_val = data_z[:, roi_idx]
+                node_order = cluster.hierarchy.linkage(
+                    data_val.T,
+                    method="average",
+                    metric="euclidean",
+                )
+                node_order = cluster.hierarchy.leaves_list(node_order)
+                if i_val > 1:
+                    # Determine if we should flip the current mask's order
+                    first_corr = np.corrcoef((
+                        last_ts,
+                        data_val[:, node_order[0]]
+                    ))[0, 1]
+                    last_corr = np.corrcoef((
+                        last_ts,
+                        data_val[:, node_order[-1]]
+                    ))[0, 1]
+                    if last_corr > first_corr:
+                        print(f"Flipping {val}")
+                        node_order = node_order[::-1]
+                elif i_val == 1:
+                    first_val_idx = np.where(atlas_values == atlas_ids[0])[0]
+                    data_first_val = data_z[:, first_val_idx]
+                    first_first_ts = data_first_val[:, first_node_order[0]]
+                    first_last_ts = data_first_val[:, first_node_order[-1]]
+
+                    first_first_corr = np.corrcoef((
+                        first_first_ts,
+                        data_val[:, node_order[0]]
+                    ))[0, 1]
+                    first_last_corr = np.corrcoef((
+                        first_first_ts,
+                        data_val[:, node_order[-1]]
+                    ))[0, 1]
+                    last_first_corr = np.corrcoef((
+                        first_last_ts,
+                        data_val[:, node_order[0]]
+                    ))[0, 1]
+                    last_last_corr = np.corrcoef((
+                        first_last_ts,
+                        data_val[:, node_order[-1]]
+                    ))[0, 1]
+
+                    # Determine if we should flip the first mask's order
+                    if (np.maximum(last_first_corr, last_last_corr) > np.maximum(first_first_corr, first_last_corr)):
+                        print(f"Flipping {atlas_ids[0]}")
+                        first_node_order = first_node_order[::-1]
+                        full_node_order[first_val_idx] = full_node_order[first_val_idx][first_node_order]
+
+                    # Determine if we should flip the second mask's order
+                    if (np.maximum(first_last_corr, last_last_corr) > np.maximum(first_first_corr, last_first_corr)):
+                        print(f"Flipping {val}")
+                        node_order = node_order[::-1]
+                else:
+                    first_node_order = node_order[:]
+
+                full_node_order[roi_idx] = full_node_order[roi_idx][node_order]
+                last_ts = data_val[:, node_order[-1]]
+            data = data[:, full_node_order]
     else:
         data = apply_mask(img, mask_img)
+        if ordering == "hierarchical":
+            data_z = clean(data, t_r=tr, detrend=False, standardize='zscore')
+            node_order = cluster.hierarchy.linkage(
+                data_z.T,
+                method="average",
+                metric="euclidean",
+            )
+            node_order = cluster.hierarchy.leaves_list(node_order)
+            data = data[:, node_order]
 
     # Detrend and standardize data
     if detrend:
