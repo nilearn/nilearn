@@ -577,7 +577,9 @@ def test_plot_connectome_exceptions():
     # adjacency_matrix is not symmetric
     non_symmetric_adjacency_matrix = np.array([[1., 2],
                                                [0.4, 1.]])
-    with pytest.raises(ValueError, match='should be symmetric'):
+    with pytest.warns(UserWarning,
+                      match=("'adjacency_matrix' is not symmetric. "
+                             "A directed graph will be plotted.")):
         plot_connectome(non_symmetric_adjacency_matrix, node_coords, **kwargs)
 
     adjacency_matrix = np.array([[1., 2.],
@@ -586,7 +588,10 @@ def test_plot_connectome_exceptions():
     masked_adjacency_matrix = np.ma.masked_array(
         adjacency_matrix, [[False, True], [False, False]])
 
-    with pytest.raises(ValueError, match='non symmetric mask'):
+    with pytest.warns(UserWarning,
+                      match=("'adjacency_matrix' was masked with "
+                             "a non symmetric mask. A directed "
+                             "graph will be plotted.")):
         plot_connectome(masked_adjacency_matrix, node_coords, **kwargs)
 
     # edges threshold is neither a number nor a string
