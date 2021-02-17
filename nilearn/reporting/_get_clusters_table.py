@@ -16,6 +16,7 @@ from nilearn.image import get_data
 from nilearn.image.resampling import coord_transform
 from nilearn._utils import check_niimg_3d
 
+
 def _local_max(data, affine, min_distance):
     """Find all local maxima of the array, separated by at least min_distance.
     Adapted from https://stackoverflow.com/a/22631583/2589328
