@@ -25,9 +25,10 @@ else:
 @pytest.mark.skipif(not have_mpl,
                     reason='Matplotlib not installed; required for this test')
 def test_local_max():
+    """Basic test of nilearn.reporting._get_clusters_table._local_max()"""
     shape = (9, 10, 11)
-    data = np.zeros(shape)
     # Two maxima (one global, one local), 10 voxels apart.
+    data = np.zeros(shape)
     data[4, 5, :] = [4, 3, 2, 1, 1, 1, 1, 1, 2, 3, 4]
     data[5, 5, :] = [5, 4, 3, 2, 1, 1, 1, 2, 3, 4, 6]
     data[6, 5, :] = [4, 3, 2, 1, 1, 1, 1, 1, 2, 3, 4]
@@ -40,6 +41,32 @@ def test_local_max():
     ijk, vals = _local_max(data, affine, min_distance=11)
     assert np.array_equal(ijk, np.array([[5., 5., 10.]]))
     assert np.array_equal(vals, np.array([6]))
+
+    # Two global (equal) maxima, 10 voxels apart.
+    data = np.zeros(shape)
+    data[4, 5, :] = [4, 3, 2, 1, 1, 1, 1, 1, 2, 3, 4]
+    data[5, 5, :] = [5, 4, 3, 2, 1, 1, 1, 2, 3, 4, 5]
+    data[6, 5, :] = [4, 3, 2, 1, 1, 1, 1, 1, 2, 3, 4]
+    affine = np.eye(4)
+
+    ijk, vals = _local_max(data, affine, min_distance=9)
+    assert np.array_equal(ijk, np.array([[5., 5., 0.], [5., 5., 10.]]))
+    assert np.array_equal(vals, np.array([5, 5]))
+
+    ijk, vals = _local_max(data, affine, min_distance=11)
+    assert np.array_equal(ijk, np.array([[5., 5., 0.]]))
+    assert np.array_equal(vals, np.array([5]))
+
+    # A donut.
+    data = np.zeros(shape)
+    data[4, 5, :] = [0, 0, 0, 0, 1, 1, 1, 0, 0, 0, 0]
+    data[5, 5, :] = [0, 0, 0, 0, 1, 0, 1, 0, 0, 0, 0]
+    data[6, 5, :] = [0, 0, 0, 0, 1, 1, 1, 0, 0, 0, 0]
+    affine = np.eye(4)
+
+    ijk, vals = _local_max(data, affine, min_distance=9)
+    assert np.array_equal(ijk, np.array([[5., 5., 5.]]))
+    assert np.all(np.isnan(vals))
 
 
 def test_get_clusters_table():

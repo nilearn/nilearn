@@ -44,7 +44,7 @@ def _load_mask_img(mask_img, allow_empty=False):
         boolean version of the mask
     """
     mask_img = _utils.check_niimg_3d(mask_img)
-    mask = get_data(mask_img)
+    mask = _safe_get_data(mask_img, ensure_finite=True)
     values = np.unique(mask)
 
     if len(values) == 1:

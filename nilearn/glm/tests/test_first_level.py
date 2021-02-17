@@ -7,6 +7,7 @@ import shutil
 import numpy as np
 import pandas as pd
 import pytest
+import warnings
 from nibabel import Nifti1Image, load
 from nibabel.tmpdirs import InTemporaryDirectory
 from numpy.testing import (assert_almost_equal, assert_array_almost_equal,
@@ -76,13 +77,13 @@ def test_explicit_fixed_effects():
         ) = compute_fixed_effects(contrasts, variance, mask)
 
         assert_almost_equal(
-            fixed_fx_contrast.get_data(),
-            fixed_fx_dic['effect_size'].get_data())
+            get_data(fixed_fx_contrast),
+            get_data(fixed_fx_dic['effect_size']))
         assert_almost_equal(
-            fixed_fx_variance.get_data(),
-            fixed_fx_dic['effect_variance'].get_data())
+            get_data(fixed_fx_variance),
+            get_data(fixed_fx_dic['effect_variance']))
         assert_almost_equal(
-            fixed_fx_stat.get_data(), fixed_fx_dic['stat'].get_data())
+            get_data(fixed_fx_stat), get_data(fixed_fx_dic['stat']))
 
         # test without mask variable
         (
@@ -91,13 +92,13 @@ def test_explicit_fixed_effects():
             fixed_fx_stat,
         ) = compute_fixed_effects(contrasts, variance)
         assert_almost_equal(
-            fixed_fx_contrast.get_data(),
-            fixed_fx_dic['effect_size'].get_data())
+            get_data(fixed_fx_contrast),
+            get_data(fixed_fx_dic['effect_size']))
         assert_almost_equal(
-            fixed_fx_variance.get_data(),
-            fixed_fx_dic['effect_variance'].get_data())
+            get_data(fixed_fx_variance),
+            get_data(fixed_fx_dic['effect_variance']))
         assert_almost_equal(
-            fixed_fx_stat.get_data(), fixed_fx_dic['stat'].get_data())
+            get_data(fixed_fx_stat), get_data(fixed_fx_dic['stat']))
 
         # ensure that using unbalanced effects size and variance images
         # raises an error
@@ -212,9 +213,48 @@ def test_high_level_glm_different_design_matrices():
         fmri_data[1], design_matrices=design_matrices[1])
     z2 = model2.compute_contrast(np.eye(rk + 1)[:1],
                                  output_type='effect_size')
-    assert_almost_equal(z1.get_data() + z2.get_data(),
-                        2 * z_joint.get_data())
+    assert_almost_equal(get_data(z1) + get_data(z2),
+                        2 * get_data(z_joint))
 
+
+def test_high_level_glm_different_design_matrices_formulas():
+    # test that one can estimate a contrast when design matrices are different
+    shapes, rk = ((7, 8, 7, 15), (7, 8, 7, 19)), 3
+    mask, fmri_data, design_matrices = generate_fake_fmri_data_and_design(shapes, rk)
+
+    # make column names identical
+    design_matrices[1].columns = design_matrices[0].columns
+    # add a column to the second design matrix
+    design_matrices[1]['new'] = np.ones((19, 1))
+
+    # Fit a glm with two sessions and design matrices
+    multi_session_model = FirstLevelModel(mask_img=mask).fit(
+        fmri_data, design_matrices=design_matrices)
+
+    # Compute contrast with formulas
+    cols_formula = tuple(design_matrices[0].columns[:2])
+    formula = "%s-%s" % cols_formula
+    with pytest.warns(UserWarning, match='One contrast given, assuming it for all 2 runs'):
+        z_joint_formula = multi_session_model.compute_contrast(
+            formula, output_type='effect_size')
+
+
+def test_compute_contrast_num_contrasts():
+
+    shapes, rk = ((7, 8, 7, 15), (7, 8, 7, 19), (7, 8, 7, 13)), 3
+    mask, fmri_data, design_matrices = generate_fake_fmri_data_and_design(shapes, rk)
+
+    # Fit a glm with 3 sessions and design matrices
+    multi_session_model = FirstLevelModel(mask_img=mask).fit(
+        fmri_data, design_matrices=design_matrices)
+
+    # raise when n_contrast != n_runs | 1
+    with pytest.raises(ValueError):
+        multi_session_model.compute_contrast([np.eye(rk)[1]]*2)
+
+    multi_session_model.compute_contrast([np.eye(rk)[1]]*3)
+    with pytest.warns(UserWarning, match='One contrast given, assuming it for all 3 runs'):
+        multi_session_model.compute_contrast([np.eye(rk)[1]])
 
 def test_run_glm():
     rng = np.random.RandomState(42)
@@ -274,6 +314,13 @@ def test_fmri_inputs():
                 FirstLevelModel(mask_img=None).fit([fi], design_matrices=d)
                 FirstLevelModel(mask_img=mask).fit(fi, design_matrices=[d])
                 FirstLevelModel(mask_img=mask).fit([fi], design_matrices=[d])
+                # test with confounds
+                FirstLevelModel(mask_img=mask).fit([fi], design_matrices=[d],
+                                                   confounds=conf)
+                # test with confounds as numpy array
+                FirstLevelModel(mask_img=mask).fit([fi], design_matrices=[d],
+                                                   confounds=conf.values)
+
                 FirstLevelModel(mask_img=mask).fit([fi, fi],
                                                    design_matrices=[d, d])
                 FirstLevelModel(mask_img=None).fit((fi, fi),
@@ -477,7 +524,7 @@ def test_first_level_from_bids():
         # test issues with confound files. There should be only one confound
         # file per img. An one per image or None. Case when one is missing
         confound_files = get_bids_files(os.path.join(bids_path, 'derivatives'),
-                                        file_tag='desc-confounds_regressors')
+                                        file_tag='desc-confounds_timeseries')
         os.remove(confound_files[-1])
         with pytest.raises(ValueError):
             first_level_from_bids(

@@ -45,7 +45,8 @@ def mean_scaling(Y, axis=0):
     Y : array of shape (n_time_points, n_voxels)
        The input data.
 
-    axis : Axis along which the scaling mean should be calculated. Default 0.
+    axis : int, optional
+        Axis along which the scaling mean should be calculated. Default=0.
 
     Returns
     -------
@@ -83,17 +84,18 @@ def run_glm(Y, X, noise_model='ar1', bins=100, n_jobs=1, verbose=0):
         The design matrix.
 
     noise_model : {'ar1', 'ols'}, optional
-        The temporal variance model. Defaults to 'ar1'.
+        The temporal variance model. Default='ar1'.
 
     bins : int, optional
         Maximum number of discrete bins for the AR(1) coef histogram.
+        Default=100.
 
     n_jobs : int, optional
         The number of CPUs to use to do the computation. -1 means
-        'all CPUs'.
+        'all CPUs'. Default=1.
 
     verbose : int, optional
-        The verbosity level. Defaut is 0
+        The verbosity level. Defaut=0.
 
     Returns
     -------
@@ -163,38 +165,39 @@ class FirstLevelModel(BaseGLM):
         matrix. This parameter is also passed to nilearn.signal.clean.
         Please see the related documentation for details.
 
-    slice_time_ref : float, optional (default 0.)
+    slice_time_ref : float, optional
         This parameter indicates the time of the reference slice used in the
         slice timing preprocessing step of the experimental runs. It is
         expressed as a percentage of the t_r (time repetition), so it can have
-        values between 0. and 1.
+        values between 0. and 1. Default=0.
 
-    hrf_model : {'spm', 'spm + derivative', 'spm + derivative + dispersion',
-        'glover', 'glover + derivative', 'glover + derivative + dispersion',
-        'fir', None}
+    hrf_model : {'glover', 'spm', 'spm + derivative', 'spm + derivative + dispersion',
+        'glover + derivative', 'glover + derivative + dispersion', 'fir', None}, optional
         String that specifies the hemodynamic response function.
-        Defaults to 'glover'.
+        Default='glover'.
 
     drift_model : string, optional
         This parameter specifies the desired drift model for the design
         matrices. It can be 'polynomial', 'cosine' or None.
+        Default='cosine'.
 
     high_pass : float, optional
         This parameter specifies the cut frequency of the high-pass filter in
         Hz for the design matrices. Used only if drift_model is 'cosine'.
+        Default=0.01.
 
     drift_order : int, optional
         This parameter specifices the order of the drift model (in case it is
-        polynomial) for the design matrices.
+        polynomial) for the design matrices. Default=1.
 
     fir_delays : array of shape(n_onsets) or list, optional
         In case of FIR design, yields the array of delays used in the FIR
-        model, in scans.
+        model, in scans. Default=[0].
 
     min_onset : float, optional
         This parameter specifies the minimal onset relative to the design
         (in seconds). Events that start before (slice_time_ref * t_r +
-        min_onset) are not considered.
+        min_onset) are not considered. Default=-24.
 
     mask_img : Niimg-like, NiftiMasker object or False, optional
         Mask to be used on data. If an instance of masker is passed,
@@ -225,9 +228,9 @@ class FirstLevelModel(BaseGLM):
 
     standardize : boolean, optional
         If standardize is True, the time-series are centered and normed:
-        their variance is put to 1 in the time dimension.
+        their variance is put to 1 in the time dimension. Default=False.
 
-    signal_scaling : False, int or (int, int), optional,
+    signal_scaling : False, int or (int, int), optional
         If not False, fMRI signals are
         scaled to the mean value of scaling_axis given,
         which can be 0, 1 or (0, 1).
@@ -237,25 +240,27 @@ class FirstLevelModel(BaseGLM):
         which is known as grand mean scaling.
         Incompatible with standardize (standardize=False is enforced when
         signal_scaling is not False).
+        Default=0.
 
     noise_model : {'ar1', 'ols'}, optional
-        The temporal variance model. Defaults to 'ar1'
+        The temporal variance model. Default='ar1'.
 
     verbose : integer, optional
         Indicate the level of verbosity. By default, nothing is printed.
         If 0 prints nothing. If 1 prints progress by computation of
         each run. If 2 prints timing details of masker and GLM. If 3
-        prints masker computation details.
+        prints masker computation details. Default=0.
 
     n_jobs : integer, optional
         The number of CPUs to use to do the computation. -1 means
         'all CPUs', -2 'all CPUs but one', and so on.
+        Default=1.
 
     minimize_memory : boolean, optional
         Gets rid of some variables on the model fit results that are not
         necessary for contrast computation and would only be useful for
         further inspection of model details. This has an important impact
-        on memory consumption. True by default.
+        on memory consumption. Default=True.
 
     subject_label : string, optional
         This id will be used to identify a `FirstLevelModel` when passed to
@@ -272,9 +277,12 @@ class FirstLevelModel(BaseGLM):
         if minimize_memory is True,
         RegressionResults if minimize_memory is False
 
+    Notes
+    -----
+    This class is experimental.
+    It may change in any future release of Nilearn.
 
     """
-
     def __init__(self, t_r=None, slice_time_ref=0., hrf_model='glover',
                  drift_model='cosine', high_pass=.01, drift_order=1,
                  fir_delays=[0], min_onset=-24, mask_img=None,
@@ -323,7 +331,7 @@ class FirstLevelModel(BaseGLM):
 
     def fit(self, run_imgs, events=None, confounds=None,
             design_matrices=None):
-        """ Fit the GLM
+        """Fit the GLM
 
         For each run:
         1. create design matrix X
@@ -332,28 +340,24 @@ class FirstLevelModel(BaseGLM):
 
         Parameters
         ----------
-        run_imgs: Niimg-like object or list of Niimg-like objects,
-            See http://nilearn.github.io/manipulating_images/input_output.html#inputing-data-file-names-or-image-objects  # noqa:E501
+        run_imgs : Niimg-like object or list of Niimg-like objects,
             Data on which the GLM will be fitted. If this is a list,
             the affine is considered the same for all.
 
-        events: pandas Dataframe or string or list of pandas DataFrames or
-                   strings
-
+        events : pandas Dataframe or string or list of pandas DataFrames or strings, optional
             fMRI events used to build design matrices. One events object
             expected per run_img. Ignored in case designs is not None.
             If string, then a path to a csv file is expected.
 
-        confounds: pandas Dataframe or string or list of pandas DataFrames or
-                   strings
-
+        confounds : pandas Dataframe, numpy array or string or
+            list of pandas DataFrames, numpy arays or strings, optional
             Each column in a DataFrame corresponds to a confound variable
             to be included in the regression model of the respective run_img.
             The number of rows must match the number of volumes in the
             respective run_img. Ignored in case designs is not None.
             If string, then a path to a csv file is expected.
 
-        design_matrices: pandas DataFrame or list of pandas DataFrames,
+        design_matrices : pandas DataFrame or list of pandas DataFrames, optional
             Design matrices that will be used to fit the GLM. If given it
             takes precedence over events and confounds.
 
@@ -543,7 +547,8 @@ class FirstLevelModel(BaseGLM):
 
         output_type : str, optional
             Type of the output map. Can be 'z_score', 'stat', 'p_value',
-            'effect_size', 'effect_variance' or 'all'
+            'effect_size', 'effect_variance' or 'all'.
+            Default='z-score'.
 
         Returns
         -------
@@ -563,6 +568,15 @@ class FirstLevelModel(BaseGLM):
             raise ValueError('contrast_def must be an array or str or list of'
                              ' (array or str)')
 
+        n_runs = len(self.labels_)
+        n_contrasts = len(con_vals)
+        if n_contrasts == 1 and n_runs > 1:
+            warn('One contrast given, assuming it for all %d runs' % n_runs)
+            con_vals = con_vals * n_runs
+        elif n_contrasts != n_runs:
+            raise ValueError('%n contrasts given, while there are %n runs' %
+                             (n_contrasts, n_runs))
+
         # Translate formulas to vectors
         for cidx, (con, design_mat) in enumerate(zip(con_vals,
                                                      self.design_matrices_)
@@ -571,11 +585,6 @@ class FirstLevelModel(BaseGLM):
             if isinstance(con, str):
                 con_vals[cidx] = expression_to_contrast_vector(
                     con, design_columns)
-
-        n_runs = len(self.labels_)
-        if len(con_vals) != n_runs:
-            warn('One contrast given, assuming it for all %d runs' % n_runs)
-            con_vals = con_vals * n_runs
 
         valid_types = ['z_score', 'stat', 'p_value', 'effect_size',
                        'effect_variance']
@@ -612,6 +621,7 @@ class FirstLevelModel(BaseGLM):
             an attribute of a RegressionResults instance.
             possible values include: resid, norm_resid, predicted,
             SSE, r_square, MSE.
+
         result_as_time_series : bool
             whether the RegressionResult attribute has a value
             per timepoint of the input nifti image.
@@ -619,7 +629,8 @@ class FirstLevelModel(BaseGLM):
         Returns
         -------
         output : list
-            a list of Nifti1Image(s)
+            A list of Nifti1Image(s).
+
         """
         # check if valid attribute is being accessed.
         all_attributes = dict(vars(RegressionResults)).keys()
@@ -675,7 +686,8 @@ class FirstLevelModel(BaseGLM):
         Returns
         -------
         output : list
-            a list of Nifti1Image(s)
+            A list of Nifti1Image(s).
+
         """
         return self._get_voxelwise_model_attribute('resid',
                                                    result_as_time_series=True)
@@ -688,7 +700,8 @@ class FirstLevelModel(BaseGLM):
         Returns
         -------
         output : list
-            a list of Nifti1Image(s)
+            A list of Nifti1Image(s).
+
         """
         return self._get_voxelwise_model_attribute('predicted',
                                                    result_as_time_series=True)
@@ -701,7 +714,8 @@ class FirstLevelModel(BaseGLM):
         Returns
         -------
         output : list
-            a list of Nifti1Image(s)
+            A list of Nifti1Image(s).
+
         """
         return self._get_voxelwise_model_attribute('r_square',
                                                    result_as_time_series=False
@@ -728,27 +742,27 @@ def first_level_from_bids(dataset_path, task_label, space_label=None,
 
     Parameters
     ----------
-    dataset_path: str
+    dataset_path : str
         Directory of the highest level folder of the BIDS dataset. Should
         contain subject folders and a derivatives folder.
 
-    task_label: str
+    task_label : str
         Task_label as specified in the file names like _task-<task_label>_.
 
-    space_label: str, optional
+    space_label : str, optional
         Specifies the space label of the preprocessed bold.nii images.
         As they are specified in the file names like _space-<space_label>_.
 
-    img_filters: list of tuples (str, str), optional (default: None)
+    img_filters : list of tuples (str, str), optional
         Filters are of the form (field, label). Only one filter per field
         allowed. A file that does not match a filter will be discarded.
         Possible filters are 'acq', 'ce', 'dir', 'rec', 'run', 'echo', 'res',
         'den', and 'desc'. Filter examples would be ('desc', 'preproc'),
         ('dir', 'pa') and ('run', '10').
 
-    derivatives_folder: str, optional
+    derivatives_folder : str, optional
         derivatives and app folder path containing preprocessed files.
-        Like "derivatives/FMRIPREP". default is simply "derivatives".
+        Like "derivatives/FMRIPREP". Default="derivatives".
 
     All other parameters correspond to a `FirstLevelModel` object, which
     contains their documentation. The subject label of the model will be
@@ -756,19 +770,20 @@ def first_level_from_bids(dataset_path, task_label, space_label=None,
 
     Returns
     -------
-    models: list of `FirstLevelModel` objects
+    models : list of `FirstLevelModel` objects
         Each FirstLevelModel object corresponds to a subject. All runs from
         different sessions are considered together for the same subject to run
         a fixed effects analysis on them.
 
-    models_run_imgs: list of list of Niimg-like objects,
+    models_run_imgs : list of list of Niimg-like objects,
         Items for the FirstLevelModel fit function of their respective model.
 
-    models_events: list of list of pandas DataFrames,
+    models_events : list of list of pandas DataFrames,
         Items for the FirstLevelModel fit function of their respective model.
 
-    models_confounds: list of list of pandas DataFrames or None,
+    models_confounds : list of list of pandas DataFrames or None,
         Items for the FirstLevelModel fit function of their respective model.
+
     """
     # check arguments
     img_filters = img_filters if img_filters else []
@@ -962,7 +977,7 @@ def first_level_from_bids(dataset_path, task_label, space_label=None,
         # Get confounds. If not found it will be assumed there are none.
         # If there are confounds, they are assumed to be present for all runs.
         confounds = get_bids_files(derivatives_path, modality_folder='func',
-                                   file_tag='desc-confounds_regressors',
+                                   file_tag='desc-confounds*',
                                    file_type='tsv', sub_label=sub_label,
                                    filters=filters)
 

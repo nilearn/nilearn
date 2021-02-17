@@ -179,6 +179,11 @@ div.nilearn_report .image:hover .overlay {
   opacity: 1;
 }
 
+.elem-warn {
+    color: #FF0000;
+    font-weight: bold;
+}
+
 </style>
 <div class="nilearn_report">
   <h1 class="withtooltip">
@@ -197,6 +202,7 @@ div.nilearn_report .image:hover .overlay {
       </div>
   </div>
   <div class="pure-u-1 pure-u-md-1-3 raise">
+    <p class="elem-warn">{{warning_message}}</p>
     <p class="elem-desc">{{description}}</p>
     <p></p>
     <details>

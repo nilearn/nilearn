@@ -42,24 +42,24 @@ class NiftiMapsMasker(BaseMasker, CacheMixin):
 
     Parameters
     ----------
-    maps_img: 4D niimg-like object
+    maps_img : 4D niimg-like object
         See http://nilearn.github.io/manipulating_images/input_output.html
         Set of continuous maps. One representative time course per map is
         extracted using least square regression.
 
-    mask_img: 3D niimg-like object, optional
+    mask_img : 3D niimg-like object, optional
         See http://nilearn.github.io/manipulating_images/input_output.html
         Mask to apply to regions before extracting signals.
 
-    allow_overlap: boolean, optional
+    allow_overlap : boolean, optional
         If False, an error is raised if the maps overlaps (ie at least two
-        maps have a non-zero value for the same voxel). Default is True.
+        maps have a non-zero value for the same voxel). Default=True.
 
-    smoothing_fwhm: float, optional
+    smoothing_fwhm : float, optional
         If smoothing_fwhm is not None, it gives the full-width half maximum in
         millimeters of the spatial smoothing to apply to the signal.
 
-    standardize: {'zscore', 'psc', True, False}, default is 'zscore'
+    standardize : {False, True, 'zscore', 'psc'}, optional
         Strategy to standardize the signal.
         'zscore': the signal is z-scored. Timeseries are shifted
         to zero mean and scaled to unit variance.
@@ -68,46 +68,54 @@ class NiftiMapsMasker(BaseMasker, CacheMixin):
         True : the signal is z-scored. Timeseries are shifted
         to zero mean and scaled to unit variance.
         False : Do not standardize the data.
+        Default=False.
 
-    detrend: boolean, optional
+    standardize_confounds : boolean, optional
+        If standardize_confounds is True, the confounds are z-scored:
+        their mean is put to 0 and their variance to 1 in the time dimension.
+        Default=True.
+
+    detrend : boolean, optional
+        This parameter is passed to signal.clean. Please see the related
+        documentation for details. Default=False.
+
+    low_pass : None or float, optional
         This parameter is passed to signal.clean. Please see the related
         documentation for details
 
-    low_pass: None or float, optional
+    high_pass : None or float, optional
         This parameter is passed to signal.clean. Please see the related
         documentation for details
 
-    high_pass: None or float, optional
+    t_r : float, optional
         This parameter is passed to signal.clean. Please see the related
         documentation for details
 
-    t_r: float, optional
-        This parameter is passed to signal.clean. Please see the related
-        documentation for details
-
-    dtype: {dtype, "auto"}
+    dtype : {dtype, "auto"}, optional
         Data type toward which the data should be converted. If "auto", the
         data will be converted to int32 if dtype is discrete and float32 if it
         is continuous.
 
-    resampling_target: {"mask", "maps", "data", None} optional.
+    resampling_target : {"data", "mask", "maps", None}, optional.
         Gives which image gives the final shape/size. For example, if
         `resampling_target` is "mask" then maps_img and images provided to
         fit() are resampled to the shape and affine of mask_img. "None" means
         no resampling: if shapes and affines do not match, a ValueError is
-        raised. Default value: "data".
+        raised. Default="data".
 
-    memory: joblib.Memory or str, optional
+    memory : joblib.Memory or str, optional
         Used to cache the region extraction process.
         By default, no caching is done. If a string is given, it is the
         path to the caching directory.
 
-    memory_level: int, optional
+    memory_level : int, optional
         Aggressiveness of memory caching. The higher the number, the higher
         the number of functions that will be cached. Zero means no caching.
+        Default=0.
 
-    verbose: integer, optional
-        Indicate the level of verbosity. By default, nothing is printed
+    verbose : integer, optional
+        Indicate the level of verbosity. By default, nothing is printed.
+        Default=0.
 
     Notes
     -----
@@ -119,12 +127,13 @@ class NiftiMapsMasker(BaseMasker, CacheMixin):
     --------
     nilearn.input_data.NiftiMasker
     nilearn.input_data.NiftiLabelsMasker
+
     """
     # memory and memory_level are used by CacheMixin.
 
     def __init__(self, maps_img, mask_img=None,
                  allow_overlap=True, smoothing_fwhm=None, standardize=False,
-                 detrend=False, low_pass=None, high_pass=None, t_r=None,
+                 standardize_confounds=True, detrend=False, low_pass=None, high_pass=None, t_r=None,
                  dtype=None, resampling_target="data",
                  memory=Memory(location=None, verbose=0), memory_level=0,
                  verbose=0):
@@ -139,6 +148,7 @@ class NiftiMapsMasker(BaseMasker, CacheMixin):
 
         # Parameters for clean()
         self.standardize = standardize
+        self.standardize_confounds = standardize_confounds
         self.detrend = detrend
         self.low_pass = low_pass
         self.high_pass = high_pass
@@ -167,10 +177,12 @@ class NiftiMapsMasker(BaseMasker, CacheMixin):
         """Prepare signal extraction from regions.
 
         All parameters are unused, they are for scikit-learn compatibility.
+
         """
         # Load images
         logger.log("loading regions from %s" %
-                   _utils._repr_niimgs(self.maps_img)[:200],
+                   _utils._repr_niimgs(self.maps_img,
+                                       shorten=(not self.verbose)),
                    verbose=self.verbose)
 
         self.maps_img_ = _utils.check_niimg_4d(self.maps_img, dtype=self.dtype)
@@ -180,7 +192,8 @@ class NiftiMapsMasker(BaseMasker, CacheMixin):
 
         if self.mask_img is not None:
             logger.log("loading mask from %s" %
-                       _utils._repr_niimgs(self.mask_img)[:200],
+                       _utils._repr_niimgs(self.mask_img,
+                                           shorten=(not self.verbose)),
                        verbose=self.verbose)
             self.mask_img_ = _utils.check_niimg_3d(self.mask_img)
         else:
@@ -221,6 +234,7 @@ class NiftiMapsMasker(BaseMasker, CacheMixin):
 
     def fit_transform(self, imgs, confounds=None):
         """Prepare and perform signal extraction.
+
         """
         return self.fit().transform(imgs, confounds=confounds)
 
@@ -229,21 +243,22 @@ class NiftiMapsMasker(BaseMasker, CacheMixin):
 
         Parameters
         ----------
-        imgs: 3D/4D Niimg-like object
+        imgs : 3D/4D Niimg-like object
             See http://nilearn.github.io/manipulating_images/input_output.html
             Images to process. It must boil down to a 4D image with scans
             number as last dimension.
 
-        confounds: CSV file or array-like, optional
+        confounds : CSV file or array-like, optional
             This parameter is passed to signal.clean. Please see the related
             documentation for details.
             shape: (number of scans, number of confounds)
 
         Returns
         -------
-        region_signals: 2D numpy.ndarray
+        region_signals : 2D numpy.ndarray
             Signal for each map.
             shape: (number of scans, number of maps)
+
         """
         # We handle the resampling of maps and mask separately because the
         # affine of the maps and mask images should not impact the extraction
@@ -341,14 +356,15 @@ class NiftiMapsMasker(BaseMasker, CacheMixin):
 
         Parameters
         ----------
-        region_signals: 2D numpy.ndarray
+        region_signals : 2D numpy.ndarray
             Signal for each region.
             shape: (number of scans, number of regions)
 
         Returns
         -------
-        voxel_signals: nibabel.Nifti1Image
+        voxel_signals : nibabel.Nifti1Image
             Signal for each voxel. shape: that of maps.
+
         """
         from ..regions import signal_extraction
 

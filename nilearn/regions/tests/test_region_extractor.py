@@ -355,14 +355,15 @@ def test_connected_label_regions():
 
     # Test if unknown/negative integers are provided as labels in labels_img,
     # we raise an error and test the same whether error is raised.
-    labels_data = np.zeros(shape, dtype=np.int)
+    # Introduce data type of float, see issue: https://github.com/nilearn/nilearn/issues/2580
+    labels_data = np.zeros(shape, dtype=np.float32)
     h0 = shape[0] // 2
     h1 = shape[1] // 2
     h2 = shape[2] // 2
     labels_data[:h0, :h1, :h2] = 1
     labels_data[:h0, :h1, h2:] = 2
     labels_data[:h0, h1:, :h2] = 3
-    labels_data[:h0, h1:, h2:] = 4
+    labels_data[:h0, h1:, h2:] = -4
     labels_data[h0:, :h1, :h2] = 5
     labels_data[h0:, :h1, h2:] = 6
     labels_data[h0:, h1:, :h2] = np.nan

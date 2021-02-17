@@ -32,24 +32,24 @@ def _check_fov(img, affine, shape):
 
 def _check_same_fov(*args, **kwargs):
     """Returns True if provided images has the same field of view (shape and
-       affine). Returns False or raise an error elsewhere, depending on the
-       `raise_error` argument. This function can take an unlimited number of
-       images as arguments or keyword arguments and raise a user-friendly
-       ValueError if asked.
+    affine). Returns False or raise an error elsewhere, depending on the
+    `raise_error` argument. This function can take an unlimited number of
+    images as arguments or keyword arguments and raise a user-friendly
+    ValueError if asked.
 
     Parameters
     ----------
-
-    args: images
+    args : images
         Images to be checked. Images passed without keywords will be labelled
         as img_#1 in the error message (replace 1 with the appropriate index).
 
-    kwargs: images
+    kwargs : images
         Images to be checked. In case of error, images will be reference by
         their keyword name in the error message.
 
-    raise_error: boolean, optional
+    raise_error : boolean, optional
         If True, an error will be raised in case of error.
+
     """
     raise_error = kwargs.pop('raise_error', False)
     for i, arg in enumerate(args):
@@ -85,28 +85,43 @@ def _iter_check_niimg(niimgs, ensure_ndim=None, atleast_4d=False,
 
     Parameters
     ----------
+    niimgs : list of niimg or glob pattern
+        Image to iterate over.
 
-    niimgs: list of niimg or glob pattern
-        Image to iterate over
-
-    ensure_ndim: integer, optional
+    ensure_ndim : integer, optional
         If specified, an error is raised if the data does not have the
         required dimension.
 
-    atleast_4d: boolean, optional
+    atleast_4d : boolean, optional
         If True, any 3D image is converted to a 4D single scan.
+        Default=False.
 
-    target_fov: tuple of affine and shape
-       If specified, images are resampled to this field of view
+    target_fov : tuple of affine and shape, optional
+       If specified, images are resampled to this field of view.
 
-    dtype: {dtype, "auto"}
+    dtype : {dtype, "auto"}, optional
         Data type toward which the data should be converted. If "auto", the
         data will be converted to int32 if dtype is discrete and float32 if it
         is continuous.
 
+    memory : instance of joblib.Memory or string, optional
+        Used to cache the masking process.
+        By default, no caching is done. If a string is given, it is the
+        path to the caching directory.
+        Default=Memory(location=None).
+
+    memory_level : integer, optional
+        Rough estimator of the amount of memory used by caching. Higher value
+        means more memory for caching. Default=0.
+
+    verbose : integer, optional
+        Indicate the level of verbosity. By default, nothing is printed.
+        Default=0.
+
     See also
     --------
         check_niimg, check_niimg_3d, check_niimg_4d
+
     """
     # If niimgs is a string, use glob to expand it to the matching filenames.
     niimgs = _resolve_globbing(niimgs)
@@ -174,7 +189,7 @@ def check_niimg(niimg, ensure_ndim=None, atleast_4d=False, dtype=None,
 
     Parameters
     ----------
-    niimg: Niimg-like object
+    niimg : Niimg-like object
         See http://nilearn.github.io/manipulating_images/input_output.html
         If niimg is a string, consider it as a path to Nifti image and
         call nibabel.load on it. The '~' symbol is expanded to the user home
@@ -182,32 +197,36 @@ def check_niimg(niimg, ensure_ndim=None, atleast_4d=False, dtype=None,
         If it is an object, check if the affine attribute present and that
         nilearn.image.get_data returns a result, raise TypeError otherwise.
 
-    ensure_ndim: integer {3, 4}, optional
+    ensure_ndim : integer {3, 4}, optional
         Indicate the dimensionality of the expected niimg. An
         error is raised if the niimg is of another dimensionality.
 
-    atleast_4d: boolean, optional
+    atleast_4d : boolean, optional
         Indicates if a 3d image should be turned into a single-scan 4d niimg.
+        Default=False.
 
-    dtype: {dtype, "auto"}
+    dtype : {None, dtype, "auto"}, optional
         Data type toward which the data should be converted. If "auto", the
         data will be converted to int32 if dtype is discrete and float32 if it
-        is continuous.
+        is continuous. If None, data will not be converted to a new data type.
+        Default=None.
 
-    return_iterator: boolean, optional
-        Returns an iterator on the content of the niimg file input
+    return_iterator : boolean, optional
+        Returns an iterator on the content of the niimg file input.
+        Default=False.
 
-    wildcards: boolean, optional
+    wildcards : boolean, optional
         Use niimg as a regular expression to get a list of matching input
         filenames.
         If multiple files match, the returned list is sorted using an ascending
         order.
         If no file matches the regular expression, a ValueError exception is
         raised.
+        Default=True.
 
     Returns
     -------
-    result: 3D/4D Niimg-like object
+    result : 3D/4D Niimg-like object
         Result can be nibabel.Nifti1Image or the input, as-is. It is guaranteed
         that the returned object has an affine attribute and that its data can
         be retrieved with nilearn.image.get_data.
@@ -224,6 +243,7 @@ def check_niimg(niimg, ensure_ndim=None, atleast_4d=False, dtype=None,
     See also
     --------
         _iter_check_niimg, check_niimg_3d, check_niimg_4d
+
     """
     from ..image import new_img_like  # avoid circular imports
 
@@ -283,23 +303,24 @@ def check_niimg(niimg, ensure_ndim=None, atleast_4d=False, dtype=None,
 
 def check_niimg_3d(niimg, dtype=None):
     """Check that niimg is a proper 3D niimg-like object and load it.
+
     Parameters
     ----------
-    niimg: Niimg-like object
+    niimg : Niimg-like object
         See http://nilearn.github.io/manipulating_images/input_output.html
         If niimg is a string, consider it as a path to Nifti image and
         call nibabel.load on it.
         If it is an object, check if the affine attribute present and that
         nilearn.image.get_data returns a result, raise TypeError otherwise.
 
-    dtype: {dtype, "auto"}
+    dtype : {dtype, "auto"}, optional
         Data type toward which the data should be converted. If "auto", the
         data will be converted to int32 if dtype is discrete and float32 if it
         is continuous.
 
     Returns
     -------
-    result: 3D Niimg-like object
+    result : 3D Niimg-like object
         Result can be nibabel.Nifti1Image or the input, as-is. It is guaranteed
         that the returned object has an affine attribute and that its data can
         be retrieved with nilearn.image.get_data.
@@ -312,6 +333,7 @@ def check_niimg_3d(niimg, dtype=None):
     necessary.
 
     Its application is idempotent.
+
     """
     return check_niimg(niimg, ensure_ndim=3, dtype=dtype)
 
@@ -321,7 +343,7 @@ def check_niimg_4d(niimg, return_iterator=False, dtype=None):
 
     Parameters
     ----------
-    niimg: 4D Niimg-like object
+    niimg : 4D Niimg-like object
         See http://nilearn.github.io/manipulating_images/input_output.html
         If niimgs is an iterable, checks if data is really 4D. Then,
         considering that it is a list of niimg and load them one by one.
@@ -330,16 +352,17 @@ def check_niimg_4d(niimg, return_iterator=False, dtype=None):
         If it is an object, check if the affine attribute present and that
         nilearn.image.get_data returns a result, raise TypeError otherwise.
 
-    dtype: {dtype, "auto"}
+    dtype : {dtype, "auto"}, optional
         Data type toward which the data should be converted. If "auto", the
         data will be converted to int32 if dtype is discrete and float32 if it
         is continuous.
 
-    return_iterator: boolean
+    return_iterator : boolean, optional
         If True, an iterator of 3D images is returned. This reduces the memory
         usage when `niimgs` contains 3D images.
         If False, a single 4D image is returned. When `niimgs` contains 3D
         images they are concatenated together.
+        Default=False.
 
     Returns
     -------
@@ -351,6 +374,7 @@ def check_niimg_4d(niimg, return_iterator=False, dtype=None):
     with a session level.
 
     Its application is idempotent.
+
     """
     return check_niimg(niimg, ensure_ndim=4, return_iterator=return_iterator,
                        dtype=dtype)
@@ -367,35 +391,38 @@ def concat_niimgs(niimgs, dtype=np.float32, ensure_ndim=None,
 
     Parameters
     ----------
-    niimgs: iterable of Niimg-like objects or glob pattern
+    niimgs : iterable of Niimg-like objects or glob pattern
         See http://nilearn.github.io/manipulating_images/input_output.html
         Niimgs to concatenate.
 
-    dtype: numpy dtype, optional
-        the dtype of the returned image
+    dtype : numpy dtype, optional
+        The dtype of the returned image. Default=np.float32.
 
-    ensure_ndim: integer, optional
+    ensure_ndim : integer, optional
         Indicate the dimensionality of the expected niimg. An
         error is raised if the niimg is of another dimensionality.
 
-    auto_resample: boolean
+    auto_resample : boolean, optional
         Converts all images to the space of the first one.
+        Default=False.
 
-    verbose: int
+    verbose : int, optional
         Controls the amount of verbosity (0 means no messages).
+        Default=0.
 
-    memory : instance of joblib.Memory or string
+    memory : instance of joblib.Memory or string, optional
         Used to cache the resampling process.
         By default, no caching is done. If a string is given, it is the
         path to the caching directory.
+        Default=Memory(location=None).
 
     memory_level : integer, optional
         Rough estimator of the amount of memory used by caching. Higher value
-        means more memory for caching.
+        means more memory for caching. Default=0.
 
     Returns
     -------
-    concatenated: nibabel.Nifti1Image
+    concatenated : nibabel.Nifti1Image
         A single image.
 
     See Also

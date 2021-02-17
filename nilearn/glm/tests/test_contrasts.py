@@ -4,7 +4,8 @@ from numpy.testing import assert_almost_equal
 from sklearn.datasets import make_regression
 from sklearn.linear_model import LinearRegression
 
-from nilearn.glm.contrasts import (_compute_fixed_effect_contrast,
+from nilearn.glm.contrasts import (Contrast,
+                                   _compute_fixed_effect_contrast,
                                    _compute_fixed_effects_params,
                                    compute_contrast,
                                    expression_to_contrast_vector)
@@ -164,3 +165,11 @@ def test_low_level_fixed_effects():
                                                precision_weighted=True)
     assert_almost_equal(Xw, 1.2 * X1)
     assert_almost_equal(Vw, .8 * V1)
+
+
+def test_one_minus_pvalue():
+    effect = np.ones((1, 3))
+    variance = effect[0]
+    contrast = Contrast(effect, variance, contrast_type="t")
+    assert np.allclose(contrast.one_minus_pvalue(), 0.84, 1)
+    assert np.allclose(contrast.stat_, 1., 1)

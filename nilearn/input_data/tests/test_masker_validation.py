@@ -37,6 +37,29 @@ class OwningClass(BaseEstimator):
         self.verbose = verbose
         self.dummy = dummy
 
+class DummyEstimator(object):
+
+    def __init__(self, **kwargs):
+        for k, v in kwargs.items():
+            setattr(self, k, v)
+
+    def fit(self, *args, **kwargs):
+        self.masker = check_embedded_nifti_masker(self)
+
+def test_check_embedded_nifti_masker_defaults():
+    dummy = DummyEstimator(memory=None, memory_level=1)
+    with pytest.warns(Warning, match="Provided estimator has no verbose attribute set."):
+        dummy.fit()
+    assert dummy.masker.memory_level == 0
+    assert dummy.masker.verbose == 0
+    dummy = DummyEstimator(verbose=1)
+    with pytest.warns(Warning, match="Provided estimator has no memory attribute set."):
+        dummy.fit()
+    assert isinstance(dummy.masker.memory, Memory)
+    assert dummy.masker.memory.location is None
+    assert dummy.masker.memory_level == 0
+    assert dummy.masker.verbose == 1
+
 
 def test_check_embedded_nifti_masker():
     owner = OwningClass()

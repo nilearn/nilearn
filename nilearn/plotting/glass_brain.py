@@ -147,21 +147,23 @@ def _get_object_bounds(json_content, transform):
 
 def plot_brain_schematics(ax, direction, **kwargs):
     """Creates matplotlib patches from a json custom format and plots them
-       on a matplotlib Axes.
+    on a matplotlib Axes.
 
-       Parameters
-       ----------
-           ax: a MPL axes instance
-                The axes in which the plots will be drawn
-            direction: {'x', 'y', 'z', 'l', 'r'}
-                The directions of the view
-            **kwargs:
-                Passed to the matplotlib patches constructor
+    Parameters
+    ----------
+    ax : A MPL axes instance
+        The axes in which the plots will be drawn.
 
-       Returns
-       -------
-       object_bounds: (xmin, xmax, ymin, ymax) tuple
-           Useful for the caller to be able to set axes limits
+    direction : {'x', 'y', 'z', 'l', 'r'}
+        The directions of the view.
+
+    **kwargs :
+        Passed to the matplotlib patches constructor.
+
+    Returns
+    -------
+    object_bounds : (xmin, xmax, ymin, ymax) tuple
+        Useful for the caller to be able to set axes limits.
 
     """
     if LooseVersion(matplotlib.__version__) >= LooseVersion("2.0"):

@@ -2,7 +2,6 @@
 # emacs: -*- mode: python; py-indent-offset: 4; indent-tabs-mode: nil -*-
 # vi: set ft=python sts=4 ts=4 sw=4 et:
 import os
-import tempfile
 from functools import partial
 from distutils.version import LooseVersion
 
@@ -25,7 +24,7 @@ from nilearn.plotting.img_plotting import (MNI152TEMPLATE, plot_anat, plot_img,
                                            plot_roi, plot_stat_map, plot_epi,
                                            plot_glass_brain, plot_connectome,
                                            plot_connectome_strength,
-                                           plot_markers, plot_prob_atlas, 
+                                           plot_markers, plot_prob_atlas,
                                            plot_carpet,
                                            _get_colorbar_and_data_ranges)
 from nilearn import plotting
@@ -120,7 +119,7 @@ def test_plot_roi_contours():
     plt.close()
 
 
-def test_demo_plot_roi():
+def test_demo_plot_roi(tmpdir):
     # This is only a smoke test
     demo_plot_roi()
     # Test the black background code path
@@ -130,76 +129,54 @@ def test_demo_plot_roi():
 
     # Save execution time and memory
     plt.close()
-
-    with tempfile.NamedTemporaryFile(suffix='.png') as fp:
+    filename = str(tmpdir.join('test.png'))
+    with open(filename, 'wb') as fp:
         out = demo_plot_roi(output_file=fp)
     assert out is None
 
 
-def test_plot_anat(testdata_3d):
+def test_plot_anat(testdata_3d, tmpdir):
     img = testdata_3d['img']
 
     # Test saving with empty plot
     z_slicer = plot_anat(anat_img=False, display_mode='z')
-    filename = tempfile.mktemp(suffix='.png')
-    try:
-        z_slicer.savefig(filename)
-    finally:
-        os.remove(filename)
+    filename = str(tmpdir.join('test.png'))
+    z_slicer.savefig(filename)
 
     z_slicer = plot_anat(display_mode='z')
-    filename = tempfile.mktemp(suffix='.png')
-    try:
-        z_slicer.savefig(filename)
-    finally:
-        os.remove(filename)
+    z_slicer.savefig(filename)
 
     ortho_slicer = plot_anat(img, dim='auto')
-    filename = tempfile.mktemp(suffix='.png')
-    try:
-        ortho_slicer.savefig(filename)
-    finally:
-        os.remove(filename)
+    ortho_slicer.savefig(filename)
 
     # Save execution time and memory
     plt.close()
 
 
-def test_plot_functions(testdata_3d, testdata_4d):
+def test_plot_functions(testdata_3d, testdata_4d, tmpdir):
     img_3d = testdata_3d['img']
     img_4d = testdata_4d['img_4d']
     img_4d_mask = testdata_4d['img_mask']
 
     # smoke-test for 3D plotting functions with default arguments
+    filename = str(tmpdir.join('temp.png'))
     for plot_func in [plot_anat, plot_img, plot_stat_map, plot_epi,
                       plot_glass_brain]:
-        filename = tempfile.mktemp(suffix='.png')
-        try:
-            plot_func(img_3d, output_file=filename)
-        finally:
-            os.remove(filename)
+        plot_func(img_3d, output_file=filename)
 
     # smoke-test for 4D plotting functions with default arguments
     for plot_func in [plot_carpet]:
-        filename = tempfile.mktemp(suffix='.png')
-        try:
-            plot_func(img_4d, mask_img=img_4d_mask, output_file=filename)
-        finally:
-            os.remove(filename)
+        plot_func(img_4d, mask_img=img_4d_mask, output_file=filename)
 
     # test for bad input arguments (cf. #510)
     ax = plt.subplot(111, rasterized=True)
-    filename = tempfile.mktemp(suffix='.png')
-    try:
-        plot_stat_map(img_3d, symmetric_cbar=True,
-                      output_file=filename,
-                      axes=ax, vmax=np.nan)
-    finally:
-        os.remove(filename)
+    plot_stat_map(img_3d, symmetric_cbar=True,
+                  output_file=filename,
+                  axes=ax, vmax=np.nan)
     plt.close()
 
 
-def test_plot_glass_brain(testdata_3d):
+def test_plot_glass_brain(testdata_3d, tmpdir):
     img = testdata_3d['img']
 
     # test plot_glass_brain with colorbar
@@ -212,7 +189,7 @@ def test_plot_glass_brain(testdata_3d):
     # Save execution time and memory
     plt.close()
     # smoke-test for hemispheric glass brain
-    filename = tempfile.mktemp(suffix='.png')
+    filename = str(tmpdir.join('test.png'))
     plot_glass_brain(img, output_file=filename, display_mode='lzry')
     plt.close()
 
@@ -354,25 +331,18 @@ def test_plot_carpet(testdata_4d):
     plt.close(display)
 
 
-def test_save_plot(testdata_3d):
+def test_save_plot(testdata_3d, tmpdir):
     img = testdata_3d['img']
 
     kwargs_list = [{}, {'display_mode': 'x', 'cut_coords': 3}]
 
+    filename = str(tmpdir.join('test.png'))
     for kwargs in kwargs_list:
-        filename = tempfile.mktemp(suffix='.png')
-        try:
-            display = plot_stat_map(img, output_file=filename, **kwargs)
-        finally:
-            os.remove(filename)
+        display = plot_stat_map(img, output_file=filename, **kwargs)
         assert display is None
 
         display = plot_stat_map(img, **kwargs)
-        filename = tempfile.mktemp(suffix='.png')
-        try:
-            display.savefig(filename)
-        finally:
-            os.remove(filename)
+        display.savefig(filename)
 
         # Save execution time and memory
         plt.close()
@@ -492,7 +462,7 @@ def test_plot_noncurrent_axes():
     plt.close()
 
 
-def test_plot_connectome():
+def test_plot_connectome(tmpdir):
     node_color = ['green', 'blue', 'k', 'cyan']
     # symmetric up to 1e-3 relative tolerance
     adjacency_matrix = np.array([[1., -2., 0.3, 0.],
@@ -508,6 +478,22 @@ def test_plot_connectome():
     plot_connectome(*args, **kwargs)
     plt.close()
 
+    # Unique node color
+    node_color = np.array(['red'])
+    kwargs = dict(edge_threshold=0.38,
+                  title='threshold=0.38',
+                  node_size=10, node_color=node_color)
+    plot_connectome(*args, **kwargs)
+    plt.close()
+
+    node_color = 'green'
+    kwargs = dict(edge_threshold=0.38,
+                  title='threshold=0.38',
+                  node_size=10)
+    plot_connectome(*args, node_color=node_color, **kwargs)
+    plt.close()
+
+
     # used to speed-up tests for the next plots
     kwargs['display_mode'] = 'x'
 
@@ -516,14 +502,11 @@ def test_plot_connectome():
                     [tuple(each) for each in node_coords],
                     **kwargs)
     # saving to file
-    filename = tempfile.mktemp(suffix='.png')
-    try:
-        display = plot_connectome(*args, output_file=filename, **kwargs)
-        assert display is None
-        assert (os.path.isfile(filename) and
-                    os.path.getsize(filename) > 0)
-    finally:
-        os.remove(filename)
+    filename = str(tmpdir.join('temp.png'))
+    display = plot_connectome(*args, output_file=filename, **kwargs)
+    assert display is None
+    assert os.path.isfile(filename)
+    assert os.path.getsize(filename) > 0
     plt.close()
 
     # with node_kwargs, edge_kwargs and edge_cmap arguments
@@ -553,7 +536,8 @@ def test_plot_connectome():
     plt.close()
 
     # NaN matrix support
-    node_color = ['green', 'blue', 'k']
+    # Node colors specified as a numpy array rather than a list
+    node_color = np.array(['green', 'blue', 'k'])
     # Overriding 'node_color' for 3  elements of size 3.
     kwargs['node_color'] = node_color
     nan_adjacency_matrix = np.array([[1., np.nan, 0.],
@@ -610,6 +594,19 @@ def test_plot_connectome_exceptions():
                        match='should be either a number or a string'):
         plot_connectome(adjacency_matrix, node_coords,
                         edge_threshold=object(),
+                        **kwargs)
+
+    # wrong number of node colors
+    with pytest.raises(ValueError,
+                       match='Mismatch between the number of nodes'):
+        plot_connectome(adjacency_matrix, node_coords,
+                        node_color=['red', 'blue', 'yellow'],
+                        **kwargs)
+
+    with pytest.raises(ValueError,
+                       match='Mismatch between the number of nodes'):
+        plot_connectome(adjacency_matrix, node_coords,
+                        node_color=np.array(['red', 'blue', 'yellow', 'cyan']),
                         **kwargs)
 
     # wrong shapes for node_coords or adjacency_matrix
@@ -1092,6 +1089,27 @@ def test_add_markers_using_plot_glass_brain():
     fig.add_markers(coords)
     fig.close()
 
+    # Add a single marker in right hemishpere such that no marker
+    # should appear in the left hemisphere when plotting
+    display = plotting.plot_glass_brain(None, display_mode='lyrz')
+    display.add_markers([[20, 20, 20]])
+    # Check that Axe 'l' has no marker
+    assert display.axes['l'].ax.collections[0].get_offsets().data.shape == (0, 2)
+    # Check that all other Axes have one marker
+    for d in 'ryz':
+        assert display.axes[d].ax.collections[0].get_offsets().data.shape == (1, 2)
+
+    # Add two markers in left hemisphere such that no marker
+    # should appear in the right hemisphere when plotting
+    display = plotting.plot_glass_brain(None, display_mode='lyrz')
+    display.add_markers([[-20, 20, 20], [-10, 10, 10]],
+                        marker_color=['r', 'b'])
+    # Check that Axe 'r' has no marker
+    assert display.axes['r'].ax.collections[0].get_offsets().data.shape == (0, 2)
+    # Check that all other Axes have two markers
+    for d in 'lyz':
+        assert display.axes[d].ax.collections[0].get_offsets().data.shape == (2, 2)
+
 
 def test_plotting_functions_with_display_mode_tiled(testdata_3d):
     img = testdata_3d['img']
@@ -1138,7 +1156,7 @@ def test_plot_glass_brain_with_completely_masked_img():
     plt.close()
 
 
-def test_connectome_strength():
+def test_connectome_strength(tmpdir):
     # symmetric up to 1e-3 relative tolerance
     adjacency_matrix = np.array([[1., -2., 0.3, 0.],
                                  [-2.002, 1, 0., 0.],
@@ -1160,16 +1178,13 @@ def test_connectome_strength():
                              **kwargs)
 
     # saving to file
-    filename = tempfile.mktemp(suffix='.png')
-    try:
-        display = plot_connectome_strength(
-            *args, output_file=filename, **kwargs
-        )
-        assert display is None
-        assert (os.path.isfile(filename) and  # noqa: W504
-                    os.path.getsize(filename) > 0)
-    finally:
-        os.remove(filename)
+    filename = str(tmpdir.join('test.png'))
+    display = plot_connectome_strength(
+        *args, output_file=filename, **kwargs
+    )
+    assert display is None
+    assert os.path.isfile(filename)
+    assert os.path.getsize(filename) > 0
     plt.close()
 
     # passing node args
@@ -1255,7 +1270,7 @@ def test_plot_connectome_strength_exceptions():
                                  **kwargs)
 
 
-def test_plot_markers():
+def test_plot_markers(tmpdir):
     # Minimal usage
     node_values = [1, 2, 3, 4]
     node_coords = np.array([[39 ,   6, -32],
@@ -1286,15 +1301,12 @@ def test_plot_markers():
     plt.close()
 
     # Saving to file
-    filename = tempfile.mktemp(suffix='.png')
-    try:
-        display = plot_markers(*args, output_file=filename, **kwargs)
-        assert display is None
-        assert (os.path.isfile(filename) and  # noqa: W504
-                    os.path.getsize(filename) > 0)
-    finally:
-        os.remove(filename)
-        plt.close()
+    filename = str(tmpdir.join('test.png'))
+    display = plot_markers(*args, output_file=filename, **kwargs)
+    assert display is None
+    assert (os.path.isfile(filename) and  # noqa: W504
+                os.path.getsize(filename) > 0)
+    plt.close()
 
     # Different options for node_size
     plot_markers(*args, node_size=10, **kwargs)

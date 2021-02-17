@@ -15,7 +15,7 @@ from nilearn.connectome.connectivity_matrices import (
     _check_square, _check_spd, _map_eigenvalues, _form_symmetric,
     _geometric_mean, sym_matrix_to_vec, vec_to_sym_matrix, prec_to_partial,
     ConnectivityMeasure)
-
+from pandas import DataFrame
 
 def grad_geometric_mean(mats, init=None, max_iter=10, tol=1e-7):
     """Return the norm of the covariant derivative at each iteration step of
@@ -414,7 +414,6 @@ def test_connectivity_measure_errors():
     pytest.raises(ValueError, conn_measure.fit,
                   [np.ones((100, 40)), np.ones((100, 41))])
 
-
     # Raising an error for fit_transform with a single subject and
     # kind=tangent
     conn_measure = ConnectivityMeasure(kind='tangent')
@@ -617,6 +616,11 @@ def test_confounds_connectome_measure():
         np.dot(confounds[0:10].T, cleaned_vectors), zero_matrix)
     assert(isinstance(cleaned_vectors, np.ndarray))
 
+    # Confounds as pandas DataFrame
+    confounds_df = DataFrame(confounds[0:10])
+    cleaned_vectors_df = correlation_measure.fit_transform(
+        signals, confounds=confounds_df)  
+    
     # Raising error for input confounds are not iterable
     conn_measure = ConnectivityMeasure(vectorize=True)
     pytest.raises(ValueError, conn_measure._check_input, signals, confounds=1.)

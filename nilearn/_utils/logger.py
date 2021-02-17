@@ -20,23 +20,26 @@ def log(msg, verbose=1, object_classes=(BaseEstimator, ),
 
     Parameters
     ----------
-    msg: str
-        message to display
+    msg : str
+        Message to display.
 
-    verbose: int
-        current verbosity level. Message is displayed if this value is greater
-        or equal to msg_level.
+    verbose : int, optional
+        Current verbosity level. Message is displayed if this value is greater
+        or equal to msg_level. Default=1.
 
-    object_classes: tuple of type
-        classes that should appear to emit the message
+    object_classes : tuple of type, optional
+        Classes that should appear to emit the message.
+        Default=(BaseEstimator, ).
 
-    stack_level: int
-        if no object in the call stack matches object_classes, go back that
+    stack_level : int, optional
+        If no object in the call stack matches object_classes, go back that
         amount in the call stack and display class/function name thereof.
+        Default=1.
 
-    msg_level: int
-        verbosity level at and above which message should be displayed to the
+    msg_level : int, optional
+        Verbosity level at and above which message should be displayed to the
         user. Most of the time this parameter can be left unchanged.
+        Default=1.
 
     Notes
     -----
@@ -47,8 +50,8 @@ def log(msg, verbose=1, object_classes=(BaseEstimator, ),
     displayed to the user. If several matching objects exist in the call
     stack, the highest one is used (first call chronologically), because this
     is the one which is most likely to have been written in the user's script.
-    """
 
+    """
     if verbose >= msg_level:
         stack = inspect.stack()
         object_frame = None
@@ -82,14 +85,15 @@ def _compose_err_msg(msg, **kwargs):
 
     Parameters
     ----------
-    msg: string
-        arbitrary message
-    kwargs: dict
-        arbitrary dictionary
+    msg : string
+        Arbitrary message.
+
+    kwargs : dict, optional
+        Arbitrary dictionary.
 
     Returns
     -------
-    updated_msg: string
+    updated_msg : string
         msg, with "key: value" appended. Only string values are appended.
 
     Example
@@ -98,6 +102,7 @@ def _compose_err_msg(msg, **kwargs):
         arg_str='filename.nii', arg_bool=True)
     'Error message with arguments...\\narg_str: filename.nii'
     >>>
+
     """
     updated_msg = msg
     for k, v in sorted(kwargs.items()):

@@ -23,23 +23,26 @@ def _make_graph_edges_3d(n_x, n_y, n_z):
 
     Parameters
     ----------
-    n_x: integer
+    n_x : integer
         The size of the grid in the x direction.
-    n_y: integer
-        The size of the grid in the y direction
-    n_z: integer
-        The size of the grid in the z direction
+
+    n_y : integer
+        The size of the grid in the y direction.
+
+    n_z : integer
+        The size of the grid in the z direction.
 
     Returns
     -------
     edges : (2, N) ndarray
-        with the total number of edges::
+        With the total number of edges:
 
             N = n_x * n_y * (nz - 1) +
                 n_x * (n_y - 1) * nz +
                 (n_x - 1) * n_y * nz
 
         Graph edges with each column describing a node-id pair.
+
     """
     vertices = np.arange(n_x * n_y * n_z).reshape((n_x, n_y, n_z))
     edges_deep = np.vstack((vertices[:, :, :-1].ravel(),
@@ -159,6 +162,7 @@ def _random_walker(data, labels, beta=130, tol=1.e-3, copy=True, spacing=None):
     data : array_like
         Image to be segmented in phases. Data spacing is assumed isotropic unless
         the `spacing` keyword argument is used.
+
     labels : array of ints, of same shape as `data` without channels dimension
         Array of seed markers labeled with different positive integers
         for different phases. Zero-labeled pixels are unlabeled pixels.
@@ -166,26 +170,31 @@ def _random_walker(data, labels, beta=130, tol=1.e-3, copy=True, spacing=None):
         into account (they are removed from the graph). If labels are not
         consecutive integers, the labels array will be transformed so that
         labels are consecutive.
-    beta : float
+
+    beta : float, optional
         Penalization coefficient for the random walker motion
         (the greater `beta`, the more difficult the diffusion).
-    tol : float
-        tolerance to achieve when solving the linear system, in
-        cg' mode.
-    copy : bool
+        Default=130.
+
+    tol : float, optional
+        Tolerance to achieve when solving the linear system, in
+        cg' mode. Default=1e-3.
+
+    copy : bool, optional
         If copy is False, the `labels` array will be overwritten with
         the result of the segmentation. Use copy=False if you want to
-        save on memory.
-    spacing : iterable of floats
+        save on memory. Default=True.
+
+    spacing : iterable of floats, optional
         Spacing between voxels in each spatial dimension. If `None`, then
         the spacing between pixels/voxels in each dimension is assumed 1.
 
     Returns
     -------
     output : ndarray
-        * An array of ints of same shape as `data`, in which each pixel has
-          been labeled according to the marker that reached the pixel first
-          by anisotropic diffusion.
+        An array of ints of same shape as `data`, in which each pixel has
+        been labeled according to the marker that reached the pixel first
+        by anisotropic diffusion.
 
     Notes
     -----
@@ -193,9 +202,7 @@ def _random_walker(data, labels, beta=130, tol=1.e-3, copy=True, spacing=None):
     data points are spaced differently in one or more spatial dimensions.
     Anisotropic data is commonly encountered in medical imaging.
 
-    The algorithm was first proposed in *Random walks for image
-    segmentation*, Leo Grady, IEEE Trans Pattern Anal Mach Intell.
-    2006 Nov;28(11):1768-83.
+    The algorithm was first proposed in [1]_.
 
     The algorithm solves the diffusion equation at infinite times for
     sources placed on markers of each phase in turn. A pixel is labeled with
@@ -230,12 +237,21 @@ def _random_walker(data, labels, beta=130, tol=1.e-3, copy=True, spacing=None):
     This linear system is solved in the algorithm using a direct method for
     small images, and an iterative method for larger images.
 
+    References
+    ----------
+    .. [1] Random walks for image segmentation, Leo Grady, IEEE Trans Pattern
+       Anal Mach Intell. 2006 Nov;28(11):1768-83.
+
     """
+    out_labels = np.copy(labels)
     if (labels != 0).all():
         warnings.warn('Random walker only segments unlabeled areas, where '
                       'labels == 0. No zero valued areas in labels were '
                       'found. Returning provided labels.')
-        out_labels = labels
+        return out_labels
+
+    if (labels == 0).all():
+        warnings.warn('Random walker received no seed label. Returning provided labels.')
         return out_labels
 
     # We take multichannel as always False since we are not strictly using
@@ -270,13 +286,31 @@ def _random_walker(data, labels, beta=130, tol=1.e-3, copy=True, spacing=None):
         labels[mask] = np.searchsorted(np.unique(labels[mask]),
                                        labels[mask]).astype(labels.dtype)
     labels = labels.astype(np.int32)
-
-    # If the array has pruned zones, be sure that no isolated pixels
-    # exist between pruned zones (they could not be determined)
+    # If the array has pruned zones, we can have two problematic situations:
+    #   - isolated zero-labeled pixels that cannot be determined because they
+    #     are not connected to any seed.
+    #   - isolated seeds, that is pixels with labels > 0 in connected components
+    #     without any zero-labeled pixel to determine. This causes errors when
+    #     computing the Laplacian of the graph.
+    # For both cases, the problematic pixels are ignored (label is set to -1).
     if np.any(labels < 0):
+        # Handle the isolated zero-labeled pixels first
         filled = ndi.binary_propagation(labels > 0, mask=labels >= 0)
         labels[np.logical_and(np.logical_not(filled), labels == 0)] = -1
         del filled
+        # Handle the isolated seeds
+        filled = ndi.binary_propagation(labels == 0, mask=labels >= 0)
+        isolated = np.logical_and(labels > 0, np.logical_not(filled))
+        labels[isolated] = -1
+        del filled
+
+    # If the operations above yield only -1 pixels
+    if (labels == -1).all():
+        warnings.warn('Random walker only segments unlabeled areas, where '
+                      'labels == 0. Data provided only contains isolated seeds '
+                      'and isolated pixels. Returning provided labels.')
+        return out_labels
+
     labels = np.atleast_3d(labels)
     if np.any(labels < 0):
         lap_sparse = _build_laplacian(data, spacing, mask=labels >= 0, beta=beta)
@@ -298,9 +332,10 @@ def _random_walker(data, labels, beta=130, tol=1.e-3, copy=True, spacing=None):
 
 def _solve_cg(lap_sparse, B, tol):
     """
-    solves lap_sparse X_i = B_i for each phase i, using the conjugate
+    Solves lap_sparse X_i = B_i for each phase i, using the conjugate
     gradient method. For each pixel, the label i corresponding to the
     maximal X_i is returned.
+
     """
     lap_sparse = lap_sparse.tocsc()
     X = []

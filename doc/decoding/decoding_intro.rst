@@ -290,12 +290,26 @@ of :class:`nilearn.decoding.Decoder`.
   the `list of scoring options
   <http://scikit-learn.org/stable/modules/model_evaluation.html#common-cases-predefined-values>`_
 
+Prediction accuracy at chance using simple strategies
+.....................................................
+
+When performing decoding, prediction performance of a model can be checked against
+null distributions or random predictions. For this, we guess a chance level score using
+simple strategies while predicting condition **y** with **X** imaging data.
+
+In Nilearn, we wrap
+`Dummy estimators <https://scikit-learn.org/stable/modules/model_evaluation.html#dummy-estimators>`_
+into the :class:`nilearn.decoding.Decoder` that
+can be readily used to estimate this chance level score with the same model parameters
+that was previously used for real predictions. This allows us to compare whether the
+model is better than chance or not.
+
 .. topic:: **Putting it all together**
 
     The :ref:`ROI-based decoding example
     <sphx_glr_auto_examples_02_decoding_plot_haxby_full_analysis.py>`
-    does a decoding analysis per mask, giving the f1-score of the prediction
-    for each object.
+    does a decoding analysis per mask, giving the f1-score and chance score of
+    the prediction for each object.
 
     It uses all the notions presented above, with ``for`` loop to iterate
     over masks and categories and Python dictionaries to store the

@@ -132,7 +132,8 @@ def test_nifti_maps_masker_with_nans():
 
     # nans
     maps_data = get_data(maps_img)
-    mask_data = get_data(mask_img)
+    mask_data = np.array(get_data(mask_img),
+                         dtype=np.float64)
 
     maps_data[:, 9, 9] = np.nan
     maps_data[:, 5, 5] = np.inf

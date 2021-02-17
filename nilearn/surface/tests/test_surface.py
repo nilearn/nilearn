@@ -4,6 +4,7 @@ import os
 import tempfile
 import warnings
 
+from collections import namedtuple
 from distutils.version import LooseVersion
 
 import nibabel as nb
@@ -20,6 +21,7 @@ from nilearn import datasets
 from nilearn import image
 from nilearn.image import resampling
 from nilearn.image.tests.test_resampling import rotation
+from nilearn.surface import Mesh, Surface
 from nilearn.surface import surface
 from nilearn.surface import load_surf_data, load_surf_mesh, vol_to_surf
 from nilearn.surface.surface import (_gifti_img_to_mesh,
@@ -30,6 +32,38 @@ from nilearn._utils import data_gen
 
 currdir = os.path.dirname(os.path.abspath(__file__))
 datadir = os.path.join(currdir, 'data')
+
+
+class MeshLikeObject(object):
+    """Class with attributes coordinates and
+    faces to be used for testing purposes.
+    """
+    def __init__(self, coordinates, faces):
+        self._coordinates = coordinates
+        self._faces = faces
+    @property
+    def coordinates(self):
+        return self._coordinates
+    @property
+    def faces(self):
+        return self._faces
+
+class SurfaceLikeObject(object):
+    """Class with attributes mesh and
+    data to be used for testing purposes.
+    """
+    def __init__(self, mesh, data):
+        self._mesh = mesh
+        self._data = data
+    @classmethod
+    def fromarrays(cls, coordinates, faces, data):
+        return cls(MeshLikeObject(coordinates, faces), data)
+    @property
+    def mesh(self):
+        return self._mesh
+    @property
+    def data(self):
+        return self._data
 
 
 def test_load_surf_data_array():
@@ -142,6 +176,61 @@ def test_load_surf_data_file_error():
                            ):
             load_surf_data(filename_wrong)
         os.remove(filename_wrong)
+
+
+def test_load_surf_mesh():
+    coords, faces = generate_surf()
+    mesh = Mesh(coords, faces)
+    assert_array_equal(mesh.coordinates, coords)
+    assert_array_equal(mesh.faces, faces)
+    # Call load_surf_mesh with a Mesh as argument
+    loaded_mesh = load_surf_mesh(mesh)
+    assert isinstance(loaded_mesh, Mesh)
+    assert_array_equal(mesh.coordinates, loaded_mesh.coordinates)
+    assert_array_equal(mesh.faces, loaded_mesh.faces)
+
+    mesh_like = MeshLikeObject(coords, faces)
+    assert_array_equal(mesh_like.coordinates, coords)
+    assert_array_equal(mesh_like.faces, faces)
+    # Call load_surf_mesh with an object having
+    # coordinates and faces attributes
+    loaded_mesh = load_surf_mesh(mesh_like)
+    assert isinstance(loaded_mesh, Mesh)
+    assert_array_equal(mesh_like.coordinates, loaded_mesh.coordinates)
+    assert_array_equal(mesh_like.faces, loaded_mesh.faces)
+
+
+def test_load_surface():
+    coords, faces = generate_surf()
+    mesh = Mesh(coords, faces)
+    data = mesh[0][:,0]
+    surf = Surface(mesh, data)
+    surf_like_obj = SurfaceLikeObject(mesh, data)
+    # Load the surface from:
+    #   - Surface-like objects having the right attributes
+    #   - a list of length 2 (mesh, data)
+    for loadings in [surf,
+                     surf_like_obj,
+                     [mesh, data]]:
+        s = surface.load_surface(loadings)
+        assert_array_equal(s.data, data)
+        assert_array_equal(s.data, surf.data)
+        assert_array_equal(s.mesh.coordinates, coords)
+        assert_array_equal(s.mesh.coordinates, surf.mesh.coordinates)
+        assert_array_equal(s.mesh.faces, surf.mesh.faces)
+    # Giving an iterable of length other than 2 will raise an error
+    # Length 3
+    with pytest.raises(ValueError,
+                       match="`load_surface` accepts iterables of length 2"):
+        s = surface.load_surface([coords, faces, data])
+    # Length 1
+    with pytest.raises(ValueError,
+                       match="`load_surface` accepts iterables of length 2"):
+        s = surface.load_surface([coords])
+    # Giving other objects will raise an error
+    with pytest.raises(ValueError,
+                       match="Wrong parameter `surface` in `load_surface`"):
+        s = surface.load_surface("foo")
 
 
 def test_load_surf_mesh_list():
@@ -610,11 +699,54 @@ def test_check_mesh():
 
 
 def test_check_mesh_and_data():
-    mesh = generate_surf()
+    coords, faces = generate_surf()
+    mesh = Mesh(coords, faces)
     data = mesh[0][:, 0]
     m, d = surface.check_mesh_and_data(mesh, data)
     assert (m[0] == mesh[0]).all()
     assert (m[1] == mesh[1]).all()
     assert (d == data).all()
+    # Generate faces such that max index is larger than
+    # the length of coordinates array.
+    rng = np.random.RandomState(42)
+    wrong_faces = rng.randint(coords.shape[0] + 1, size=(30, 3))
+    wrong_mesh = Mesh(coords, wrong_faces)
+    # Check that check_mesh_and_data raises an error with the resulting wrong mesh
+    with pytest.raises(ValueError,
+                       match="Mismatch between the indices of faces and the number of nodes."):
+        surface.check_mesh_and_data(wrong_mesh, data)
+    # Alter the data and check that an error is raised
     data = mesh[0][::2, 0]
-    pytest.raises(ValueError, surface.check_mesh_and_data, mesh, data)
+    with pytest.raises(ValueError,
+                       match="Mismatch between number of nodes in mesh"):
+        surface.check_mesh_and_data(mesh, data)
+
+
+def test_check_surface():
+    coords, faces = generate_surf()
+    mesh = Mesh(coords, faces)
+    data = mesh[0][:,0]
+    surf = Surface(mesh, data)
+    s = surface.check_surface(surf)
+    assert_array_equal(s.data, data)
+    assert_array_equal(s.data, surf.data)
+    assert_array_equal(s.mesh.coordinates, coords)
+    assert_array_equal(s.mesh.coordinates, mesh.coordinates)
+    assert_array_equal(s.mesh.faces, faces)
+    assert_array_equal(s.mesh.faces, mesh.faces)
+    # Generate faces such that max index is larger than
+    # the length of coordinates array.
+    rng = np.random.RandomState(42)
+    wrong_faces = rng.randint(coords.shape[0] + 1, size=(30, 3))
+    wrong_mesh = Mesh(coords, wrong_faces)
+    wrong_surface = Surface(wrong_mesh, data)
+    # Check that check_mesh_and_data raises an error with the resulting wrong mesh
+    with pytest.raises(ValueError,
+                       match="Mismatch between the indices of faces and the number of nodes."):
+        surface.check_surface(wrong_surface)
+    # Alter the data and check that an error is raised
+    wrong_data = mesh[0][::2, 0]
+    wrong_surface = Surface(mesh, wrong_data)
+    with pytest.raises(ValueError,
+                       match="Mismatch between number of nodes in mesh"):
+        surface.check_surface(wrong_surface)

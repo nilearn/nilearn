@@ -88,13 +88,23 @@ def _concat_cmap(cmap1, cmap2):
 
 def alpha_cmap(color, name='', alpha_min=0.5, alpha_max=1.):
     """ Return a colormap with the given color, and alpha going from
-        zero to 1.
+    zero to 1.
 
-        Parameters
-        ----------
-        color: (r, g, b), or a string
-            A triplet of floats ranging from 0 to 1, or a matplotlib
-            color string
+    Parameters
+    ----------
+    color : (r, g, b), or a string
+        A triplet of floats ranging from 0 to 1, or a matplotlib
+        color string.
+
+    name : string, optional
+        Name of the colormap. Default=''.
+
+    alpha_min : Float, optional
+        Minimum value for alpha. Default=0.5.
+
+    alpha_max : Float, optional
+        Maximum value for alpha. Default=1.0.
+
     """
     red, green, blue = _colors.colorConverter.to_rgb(color)
     if name == '' and hasattr(color, 'startswith'):
@@ -211,7 +221,10 @@ _cmap_d['videen_style'] = _colors.LinearSegmentedColormap.from_list(
 locals().update(_cmap_d)
 # Register cmaps in matplotlib too
 for k, v in _cmap_d.items():
-    _cm.register_cmap(name=k, cmap=v)
+    try:  # "bwr" is in latest matplotlib
+        _cm.register_cmap(name=k, cmap=v)
+    except ValueError:
+        pass
 
 
 ################################################################################

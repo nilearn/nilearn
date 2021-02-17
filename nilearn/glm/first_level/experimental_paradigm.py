@@ -16,7 +16,14 @@ Author: Bertrand Thirion, 2015
 import warnings
 
 import numpy as np
+import pandas as pd
+from pandas.api.types import is_numeric_dtype
 
+VALID_FIELDS = set(["onset",
+                    "duration",
+                    "trial_type",
+                    "modulation",
+                    ])
 
 def check_events(events):
     """Test that the events data describes a valid experimental paradigm
@@ -43,23 +50,78 @@ def check_events(events):
 
     modulation : array of shape (n_events,), dtype='f'
         Per-event modulation, (in seconds)
-        defaults to ones(n_events) when no duration is provided
-    """
-    if 'onset' not in events.keys():
-        raise ValueError('The provided events data has no onset column.')
-    if 'duration' not in events.keys():
-        raise ValueError('The provided events data has no duration column.')
+        defaults to ones(n_events) when no duration is provided.
 
-    onset = np.array(events['onset'])
-    duration = np.array(events['duration']).astype(np.float)
-    n_events = len(onset)
-    trial_type = np.array(events['trial_type'])
-    modulation = np.ones(n_events)
-    if 'trial_type' not in events.keys():
+    """
+    # Check that events is a Pandas DataFrame
+    if not isinstance(events, pd.DataFrame):
+        raise TypeError("Events should be a Pandas DataFrame. "
+                        "A {} was provided instead.".format(
+                            type(events)))
+    # Column checks
+    for col_name in ['onset', 'duration']:
+        if col_name not in events.columns:
+            raise ValueError("The provided events data "
+                             "has no {} column.".format(
+                                 col_name))
+
+    # Make a copy of the dataframe
+    events_copy = events.copy()
+
+    # Handle missing trial types
+    if 'trial_type' not in events_copy.columns:
         warnings.warn("'trial_type' column not found "
                       "in the given events data.")
-        trial_type = np.repeat('dummy', n_events)
-    if 'modulation' in events.keys():
-        warnings.warn("'modulation' column found in the given events data.")
-        modulation = np.array(events['modulation']).astype(np.float)
+        events_copy['trial_type'] = 'dummy'
+
+    # Handle modulation
+    if 'modulation' in events_copy.columns:
+        warnings.warn("'modulation' column found in "
+                      "the given events data.")
+    else:
+        events_copy['modulation'] = 1
+
+    # Warn for each unexpected column that will
+    # not be used afterwards
+    unexpected_columns = set(events_copy.columns).difference(VALID_FIELDS)
+    for unexpected_column in unexpected_columns:
+        warnings.warn(("Unexpected column `{}` in events "
+                       "data will be ignored.").format(
+                            unexpected_column))
+
+    # Make sure we have a numeric type for duration
+    if not is_numeric_dtype(events_copy['duration']):
+        try:
+            events_copy = events_copy.astype({'duration': float})
+        except:
+            raise ValueError("Could not cast duration to float "
+                             "in events data.")
+
+    # Handle duplicate events
+    # Two events are duplicates if they have the same:
+    #   - trial type
+    #   - onset
+    COLUMN_DEFINING_EVENT_IDENTITY = ['trial_type',
+                                      'onset',
+                                      'duration',]
+
+    # Duplicate handling strategy
+    STRATEGY = {'modulation': np.sum, # Sum the modulation values of duplicate events
+                }
+
+    cleaned_events = events_copy.groupby(
+                        COLUMN_DEFINING_EVENT_IDENTITY,
+                        sort=False).agg(STRATEGY).reset_index()
+
+    # If there are duplicates, give a warning
+    if len(cleaned_events) != len(events_copy):
+        warnings.warn("Duplicated events were detected. "
+                      "Amplitudes of these events will be summed. "
+                      "You might want to verify your inputs.")
+
+    trial_type = cleaned_events['trial_type'].values
+    onset = cleaned_events['onset'].values
+    duration = cleaned_events['duration'].values
+    modulation = cleaned_events['modulation'].values
     return trial_type, onset, duration, modulation
+

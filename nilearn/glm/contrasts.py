@@ -2,7 +2,7 @@
 This module is for contrast computation and operation on contrast to
 obtain fixed effect results.
 
-Author: Bertrand Thirion, Martin Perez-Guevara, 2016
+Author: Bertrand Thirion, Martin Perez-Guevara, Ana Luisa Pinho 2020
 """
 
 from warnings import warn
@@ -19,6 +19,22 @@ DEF_DOFMAX = 1e10
 
 
 def expression_to_contrast_vector(expression, design_columns):
+    """ Converts a string describing a contrast to a contrast vector
+
+    Parameters
+    ----------
+    expression : string
+        The expression to convert to a vector.
+
+    design_columns : list or array of strings
+        The column names of the design matrix.
+
+    Notes
+    -----
+    This function is experimental.
+    It may change in any future release of Nilearn.
+
+    """
     if expression in design_columns:
         contrast_vector = np.zeros(len(design_columns))
         contrast_vector[list(design_columns).index(expression)] = 1.
@@ -33,10 +49,10 @@ def compute_contrast(labels, regression_result, con_val, contrast_type=None):
 
     Parameters
     ----------
-    labels : array of shape (n_voxels,),
+    labels : array of shape (n_voxels,)
         A map of values on voxels used to identify the corresponding model
 
-    regression_result : dict,
+    regression_result : dict
         With keys corresponding to the different labels
         values are RegressionResults instances corresponding to the voxels.
 
@@ -51,6 +67,12 @@ def compute_contrast(labels, regression_result, con_val, contrast_type=None):
     -------
     con : Contrast instance,
         Yields the statistics of the contrast (effects, variance, p-values)
+
+    Notes
+    -----
+    This function is experimental.
+    It may change in any future release of Nilearn.
+
     """
     con_val = np.asarray(con_val)
     dim = 1
@@ -99,6 +121,7 @@ def _compute_fixed_effect_contrast(labels, results, con_vals,
     """Computes the summary contrast assuming fixed effects.
 
     Adds the same contrast applied to all labels and results lists.
+
     """
     contrast = None
     n_contrasts = 0
@@ -126,27 +149,43 @@ class Contrast(object):
     The current implementation is meant to be simple,
     and could be enhanced in the future on the computational side
     (high-dimensional F constrasts may lead to memory breakage).
-    """
 
+    """
     def __init__(self, effect, variance, dim=None, dof=DEF_DOFMAX,
                  contrast_type='t', tiny=DEF_TINY, dofmax=DEF_DOFMAX):
         """
         Parameters
         ----------
         effect : array of shape (contrast_dim, n_voxels)
-            the effects related to the contrast
+            The effects related to the contrast.
 
         variance : array of shape (n_voxels)
-            the associated variance estimate
+            The associated variance estimate.
 
-        dim: int or None,
-            the dimension of the contrast
+        dim : int or None, optional
+            The dimension of the contrast.
 
-        dof : scalar
-            the degrees of freedom of the residuals
+        dof : scalar, optional
+            The degrees of freedom of the residuals.
+            Default=DEF_DOFMAX
 
-        contrast_type: {'t', 'F'}
-            specification of the contrast type
+        contrast_type : {'t', 'F'}, optional
+            Specification of the contrast type.
+            Default='t'.
+
+        tiny : float, optional
+            Small quantity used to avoid numerical underflows.
+            Default=DEF_TINY
+
+        dofmax : scalar, optional
+            The maximum degrees of freedom of the residuals.
+            Default=DEF_DOFMAX.
+
+        Warnings
+        --------
+        This class is experimental.
+        It may change in any future release of Nilearn.
+
         """
         if variance.ndim != 1:
             raise ValueError('Variance array should have 1 dimension')
@@ -166,6 +205,7 @@ class Contrast(object):
         self.contrast_type = contrast_type
         self.stat_ = None
         self.p_value_ = None
+        self.one_minus_pvalue_ = None
         self.baseline = 0
         self.tiny = tiny
         self.dofmax = dofmax
@@ -181,18 +221,20 @@ class Contrast(object):
         return self.variance
 
     def stat(self, baseline=0.0):
-        """ Return the decision statistic associated with the test of the
+        """Return the decision statistic associated with the test of the
         null hypothesis: (H0) 'contrast equals baseline'
 
         Parameters
         ----------
         baseline : float, optional
-            Baseline value for the test statistic
+            Baseline value for the test statistic.
+            Default=0.0.
 
         Returns
         -------
-        stat: 1-d array, shape=(n_voxels,)
-            statistical values, one per voxel
+        stat : 1-d array, shape=(n_voxels,)
+            statistical values, one per voxel.
+
         """
         self.baseline = baseline
 
@@ -210,18 +252,21 @@ class Contrast(object):
         return self.stat_
 
     def p_value(self, baseline=0.0):
-        """Return a parametric estimate of the p-value associated
-        with the null hypothesis: (H0) 'contrast equals baseline'
+        """Return a parametric estimate of the p-value associated with
+        the null hypothesis (H0): 'contrast equals baseline',
+        using the survival function
 
         Parameters
         ----------
         baseline : float, optional
-            baseline value for the test statistic
+            Baseline value for the test statistic.
+            Default=0.0.
 
         Returns
         -------
         p_values : 1-d array, shape=(n_voxels,)
             p-values, one per voxel
+
         """
         if self.stat_ is None or not self.baseline == baseline:
             self.stat_ = self.stat(baseline)
@@ -236,26 +281,61 @@ class Contrast(object):
         self.p_value_ = p_values
         return p_values
 
+    def one_minus_pvalue(self, baseline=0.0):
+        """Return a parametric estimate of the 1 - p-value associated with
+        the null hypothesis (H0): 'contrast equals baseline',
+        using the cumulative distribution function,
+        to ensure numerical stability
+
+        Parameters
+        ----------
+        baseline : float, optional
+            Baseline value for the test statistic.
+            Default=0.0.
+
+        Returns
+        -------
+        one_minus_pvalues : 1-d array, shape=(n_voxels,)
+            one_minus_pvalues, one per voxel
+
+        """
+        if self.stat_ is None or not self.baseline == baseline:
+            self.stat_ = self.stat(baseline)
+        # Valid conjunction as in Nichols et al, Neuroimage 25, 2005.
+        if self.contrast_type == 't':
+            one_minus_pvalues = sps.t.cdf(self.stat_,
+                                          np.minimum(self.dof, self.dofmax))
+        else:
+            assert self.contrast_type == 'F'
+            one_minus_pvalues = sps.f.cdf(self.stat_, self.dim,
+                                          np.minimum(self.dof, self.dofmax))
+        self.one_minus_pvalue_ = one_minus_pvalues
+        return one_minus_pvalues
+
     def z_score(self, baseline=0.0):
         """Return a parametric estimation of the z-score associated
         with the null hypothesis: (H0) 'contrast equals baseline'
 
         Parameters
         ----------
-        baseline: float, optional,
-                  Baseline value for the test statistic
+        baseline : float, optional,
+            Baseline value for the test statistic.
+            Default=0.0.
 
         Returns
         -------
-        z_score: 1-d array, shape=(n_voxels,)
+        z_score : 1-d array, shape=(n_voxels,)
             statistical values, one per voxel
 
         """
         if self.p_value_ is None or not self.baseline == baseline:
             self.p_value_ = self.p_value(baseline)
+        if self.one_minus_pvalue_ is None:
+            self.one_minus_pvalue_ = self.one_minus_pvalue(baseline)
 
         # Avoid inf values kindly supplied by scipy.
-        self.z_score_ = z_score(self.p_value_)
+        self.z_score_ = z_score(self.p_value_,
+                                one_minus_pvalue=self.one_minus_pvalue_)
         return self.z_score_
 
     def __add__(self, other):
@@ -296,26 +376,36 @@ def compute_fixed_effects(contrast_imgs, variance_imgs, mask=None,
 
     Parameters
     ----------
-    contrast_imgs: list of Nifti1Images or strings
-              the input contrast images
-    variance_imgs: list of Nifti1Images or strings
-              the input variance images
-    mask: Nifti1Image or NiftiMasker instance or None, optional,
-              mask image. If None, it is recomputed from contrast_imgs
-    precision_weighted: Bool, optional,
-              Whether fixed effects estimates should be weighted by inverse
-              variance or not. Defaults to False.
+    contrast_imgs : list of Nifti1Images or strings
+        The input contrast images.
+
+    variance_imgs : list of Nifti1Images or strings
+        The input variance images.
+
+    mask : Nifti1Image or NiftiMasker instance or None, optional
+        Mask image. If None, it is recomputed from contrast_imgs.
+
+    precision_weighted : Bool, optional
+        Whether fixed effects estimates should be weighted by inverse
+        variance or not. Default=False.
 
     Returns
     -------
-    fixed_fx_contrast_img: Nifti1Image,
-             the fixed effects contrast computed within the mask
-    fixed_fx_variance_img: Nifti1Image,
-             the fixed effects variance computed within the mask
-    fixed_fx_t_img: Nifti1Image,
-             the fixed effects t-test computed within the mask
-    """
+    fixed_fx_contrast_img : Nifti1Image
+        The fixed effects contrast computed within the mask.
 
+    fixed_fx_variance_img : Nifti1Image
+        The fixed effects variance computed within the mask.
+
+    fixed_fx_t_img : Nifti1Image
+        The fixed effects t-test computed within the mask.
+
+    Notes
+    -----
+    This function is experimental.
+    It may change in any future release of Nilearn.
+
+    """
     if len(contrast_imgs) != len(variance_imgs):
         raise ValueError(
             'The number of contrast images (%d) '

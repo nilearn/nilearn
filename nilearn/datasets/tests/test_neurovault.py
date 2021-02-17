@@ -431,7 +431,7 @@ def test_result_filter():
     filter_0 = neurovault.ResultFilter(query_terms={'a': 0},
                                        callable_filter=lambda d: len(d) < 5,
                                        b=1)
-    assert np.unicode(filter_0) == u'ResultFilter'
+    assert str(filter_0) == 'ResultFilter'
     assert filter_0['a'] == 0
     assert filter_0({'a': 0, 'b': 1, 'c': 2})
     assert not filter_0({'a': 0, 'b': 1, 'c': 2, 'd': 3, 'e': 4})

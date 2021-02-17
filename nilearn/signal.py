@@ -7,16 +7,14 @@ features
 # Authors: Alexandre Abraham, Gael Varoquaux, Philippe Gervais
 # License: simplified BSD
 
-import distutils.version
 import warnings
 
 import numpy as np
+import pandas as pd
 from scipy import linalg, signal as sp_signal
 from sklearn.utils import gen_even_slices, as_float_array
 
 from ._utils.numpy_conversions import csv_to_array, as_ndarray
-
-NP_VERSION = distutils.version.LooseVersion(np.version.short_version).version
 
 
 def _standardize(signals, detrend=False, standardize='zscore'):
@@ -409,7 +407,7 @@ def _ensure_float(data):
 
 
 def clean(signals, sessions=None, detrend=True, standardize='zscore',
-          confounds=None, low_pass=None,
+          confounds=None, standardize_confounds=True, low_pass=None,
           high_pass=None, t_r=2.5, ensure_finite=False):
     """Improve SNR on masked fMRI signals.
 
@@ -442,7 +440,7 @@ def clean(signals, sessions=None, detrend=True, standardize='zscore',
         Add a session level to the cleaning process. Each session will be
         cleaned independently. Must be a 1D array of n_samples elements.
 
-    confounds: numpy.ndarray, str or list of
+    confounds: numpy.ndarray, str, DataFrame or list of
         Confounds timeseries. Shape must be
         (instant number, confound number), or just (instant number,)
         The number of time instants in signals and confounds must be
@@ -469,6 +467,10 @@ def clean(signals, sessions=None, detrend=True, standardize='zscore',
         'psc':  Timeseries are shifted to zero mean value and scaled
         to percent signal change (as compared to original mean signal).
         False : Do not standardize the data.
+
+    standardize_confounds: boolean, optional, default is True
+        If standardize_confounds is True, the confounds are z-scored:
+        their mean is put to 0 and their variance to 1 in the time dimension.
 
     ensure_finite: bool
         If True, the non-finite values (NANs and infs) found in the data
@@ -505,7 +507,8 @@ def clean(signals, sessions=None, detrend=True, standardize='zscore',
                         "high_pass='{0}'".format(high_pass))
 
     if not isinstance(confounds,
-                      (list, tuple, str, np.ndarray, type(None))):
+                      (list, tuple, str, np.ndarray, pd.DataFrame,
+                       type(None))):
         raise TypeError("confounds keyword has an unhandled type: %s"
                         % confounds.__class__)
 
@@ -530,15 +533,16 @@ def clean(signals, sessions=None, detrend=True, standardize='zscore',
 
         all_confounds = []
         for confound in confounds:
+            # cast DataFrame to array
+            if isinstance(confound, pd.DataFrame):
+                confound = confound.values
+
             if isinstance(confound, str):
                 filename = confound
                 confound = csv_to_array(filename)
                 if np.isnan(confound.flat[0]):
                     # There may be a header
-                    if NP_VERSION >= [1, 4, 0]:
-                        confound = csv_to_array(filename, skip_header=1)
-                    else:
-                        confound = csv_to_array(filename, skiprows=1)
+                    confound = csv_to_array(filename, skip_header=1)
                 if confound.shape[0] != signals.shape[0]:
                     raise ValueError("Confound signal has an incorrect length")
 
@@ -603,10 +607,10 @@ def clean(signals, sessions=None, detrend=True, standardize='zscore',
             confounds = butterworth(confounds, sampling_rate=1. / t_r,
                                     low_pass=low_pass, high_pass=high_pass)
 
-        confounds = _standardize(confounds, standardize=standardize,
+        confounds = _standardize(confounds, standardize=standardize_confounds,
                                  detrend=detrend)
 
-        if not standardize:
+        if not standardize_confounds:
             # Improve numerical stability by controlling the range of
             # confounds. We don't rely on _standardize as it removes any
             # constant contribution to confounds.

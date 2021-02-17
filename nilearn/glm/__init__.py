@@ -1,6 +1,10 @@
 """
 Analysing fMRI data using GLMs.
+
+Note that the nilearn.glm module is experimental.
+     It may change in any future (>0.7.0) release of Nilearn.
 """
+from warnings import warn
 from nilearn.glm.contrasts import (
     compute_contrast,
     compute_fixed_effects,
@@ -47,3 +51,6 @@ __all__ = [
     'first_level',
     'second_level',
 ]
+
+warn('The nilearn.glm module is experimental. '
+     'It may change in any future release of Nilearn.', FutureWarning)
