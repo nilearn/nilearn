@@ -1471,8 +1471,9 @@ def plot_connectome(adjacency_matrix, node_coords,
     Parameters
     ----------
     adjacency_matrix : numpy array of shape (n, n)
-        Represents the link strengths of the graph. Assumed to be
-        a symmetric matrix.
+        Represents the link strengths of the graph. The matrix can be
+        symmetric which will result in an undirected graph, or not
+        symmetric which will result in a directed graph.
 
     node_coords : numpy array_like of shape (n, 3)
         3d coordinates of the graph nodes in world space.
