@@ -1691,7 +1691,8 @@ def plot_markers(node_values, node_coords, node_size='auto',
     return display
 
 
-def plot_carpet(img, mask_img=None, detrend=True, output_file=None,
+def plot_carpet(img, mask_img=None, mask_labels=None,
+                detrend=True, output_file=None,
                 figure=None, axes=None, vmin=None, vmax=None, title=None,
                 colorbar=False, cmap=plt.cm.gist_ncar):
     """Plot an image representation of voxel intensities across time.
@@ -1705,8 +1706,14 @@ def plot_carpet(img, mask_img=None, detrend=True, output_file=None,
         See http://nilearn.github.io/manipulating_images/input_output.html.
     mask_img : Niimg-like object or None, optional
         Limit plotted voxels to those inside the provided mask (default is
-        None). If not specified a new mask will be derived from data.
+        None). If a 3D atlas is provided, voxels will be grouped by atlas
+        value and a colorbar will be added to the left side of the figure
+        with atlas labels.
+        If not specified, a new mask will be derived from data.
         See http://nilearn.github.io/manipulating_images/input_output.html.
+    mask_labels : :obj:`dict`, optional
+        If ``mask_img`` corresponds to an atlas, then this dictionary maps
+        values from the ``mask_img`` to labels.
     detrend : :obj:`bool`, optional
         Detrend and z-score the data prior to plotting (default is `True`).
     output_file : :obj:`str` or None, optional
@@ -1752,7 +1759,8 @@ def plot_carpet(img, mask_img=None, detrend=True, output_file=None,
     else:
         mask_img = _utils.check_niimg_3d(mask_img, dtype='auto')
 
-    if colorbar:
+    use_atlas = len(np.unique(mask_img.get_fdata())) > 2
+    if use_atlas:
         background_label = 0
 
         atlas_img_res = resample_to_img(
@@ -1807,7 +1815,7 @@ def plot_carpet(img, mask_img=None, detrend=True, output_file=None,
     n_decimations = int(np.ceil(np.log2(np.ceil(n_tsteps / LONG_CUTOFF))))
     data = data[::2 ** n_decimations, :]
 
-    if colorbar:
+    if use_atlas:
         # Define nested GridSpec
         legend = False
         wratios = [2, 100, 20]
@@ -1863,6 +1871,7 @@ def plot_carpet(img, mask_img=None, detrend=True, output_file=None,
 
     axes.set_xlabel('time (s)')
     axes.set_ylabel('voxels')
+
     if title:
         axes.set_title(title)
     labels = tr * (np.array(xticks))
