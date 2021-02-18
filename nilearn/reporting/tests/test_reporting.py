@@ -69,7 +69,7 @@ def test_local_max():
     assert np.all(np.isnan(vals))
 
 
-def test_get_clusters_table():
+def test_get_clusters_table(tmp_path):
     shape = (9, 10, 11)
     data = np.zeros(shape)
     data[2:4, 5:7, 6:8] = 5.
@@ -86,6 +86,18 @@ def test_get_clusters_table():
     # test empty table on high cluster threshold
     cluster_table = get_clusters_table(stat_img, 4, 9)
     assert len(cluster_table) == 0
+
+    # test with filename
+    fname = str(tmp_path / "stat_img.nii.gz")
+    stat_img.to_filename(fname)
+    cluster_table = get_clusters_table(fname, 4, 0)
+    assert len(cluster_table) == 1
+
+    # test with extra dimension
+    data_extra_dim = data[..., np.newaxis]
+    stat_img_extra_dim = nib.Nifti1Image(data_extra_dim, np.eye(4))
+    cluster_table = get_clusters_table(stat_img_extra_dim, 4, 0)
+    assert len(cluster_table) == 1
 
 
 def test_get_clusters_table_not_modifying_stat_image():
