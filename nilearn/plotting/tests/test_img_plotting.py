@@ -7,6 +7,7 @@ from distutils.version import LooseVersion
 
 import matplotlib
 import matplotlib.pyplot as plt
+from matplotlib.patches import FancyArrow
 import nibabel
 import numpy as np
 import pytest
@@ -565,6 +566,58 @@ def test_plot_connectome(tmpdir):
     plt.close()
     plot_connectome(*args, node_color=['red'], display_mode='lzry')
     plt.close()
+
+    # Non symmetric matrix
+    adjacency_matrix = np.array([[1., -2., 0.3, 0.2],
+                                 [0.1, 1, 1.1, 0.1],
+                                 [0.01, 2.3, 1., 3.1],
+                                 [0.6, 0.03, 1.2, 1.]])
+    ax = plot_connectome(adjacency_matrix,
+                         node_coords,
+                         display_mode='ortho')
+    # No thresholding was performed, we should get
+    # as many arrows as we have edges
+    for direction in ['x', 'y', 'z']:
+        assert(len([patch for patch in ax.axes[direction].ax.patches
+             if isinstance(patch, FancyArrow)]) ==
+                    np.prod(adjacency_matrix.shape))
+
+    # Set a few elements of adjacency matrix to zero
+    adjacency_matrix[1, 0] = 0.0
+    adjacency_matrix[2, 3] = 0.0
+    # Plot with different display mode
+    ax = plot_connectome(adjacency_matrix,
+                         node_coords,
+                         display_mode='lzry')
+    # No edge in direction 'l' because of node coords
+    assert(len([patch for patch in ax.axes['l'].ax.patches
+             if isinstance(patch, FancyArrow)]) == 0)
+    for direction in ['z', 'r', 'y']:
+        assert(len([patch for patch in ax.axes[direction].ax.patches
+             if isinstance(patch, FancyArrow)]) ==
+                    np.prod(adjacency_matrix.shape) - 2)
+
+    # Edge thresholding
+    # Case 1: Threshold is a number
+    thresh = 1.1
+    ax = plot_connectome(adjacency_matrix,
+                         node_coords,
+                         edge_threshold=thresh)
+    for direction in ['x', 'y', 'z']:
+        assert(len([patch for patch in ax.axes[direction].ax.patches
+             if isinstance(patch, FancyArrow)]) ==
+                    np.sum(np.abs(adjacency_matrix) >= thresh))
+    # Case 2: Threshold is a percentage
+    thresh = 80
+    ax = plot_connectome(adjacency_matrix,
+                         node_coords,
+                         edge_threshold="{}%".format(thresh))
+    for direction in ['x', 'y', 'z']:
+        assert(len([patch for patch in ax.axes[direction].ax.patches
+             if isinstance(patch, FancyArrow)]) ==
+               np.sum(np.abs(adjacency_matrix) >=
+                    np.percentile(np.abs(
+                        adjacency_matrix.ravel()), thresh)))
 
 
 def test_plot_connectome_exceptions():
