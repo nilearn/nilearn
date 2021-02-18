@@ -549,13 +549,22 @@ class GlassBrainAxes(BaseAxes):
             xdata, ydata = start_end_point_2d.T
             # If directed is True, add an arrow
             if directed:
-                arrow = FancyArrow(xdata[0], ydata[0],
-                                   xdata[1] - xdata[0],
-                                   ydata[1] - ydata[0],
-                                   length_includes_head=True,
-                                   width=linewidth,
-                                   head_width=3*linewidth,
-                                   **this_kwargs)
+                dx = xdata[1] - xdata[0]
+                dy = ydata[1] - ydata[0]
+                # Hack to avoid empty arrows to crash with
+                # matplotlib versions older than 3.1
+                # This can be removed once support for
+                # matplotlib pre 3.1 has been dropped.
+                if dx == 0 and dy == 0:
+                    arrow = FancyArrow(xdata[0], ydata[0],
+                                       dx, dy)
+                else:
+                    arrow = FancyArrow(xdata[0], ydata[0],
+                                       dx, dy,
+                                       length_includes_head=True,
+                                       width=linewidth,
+                                       head_width=3*linewidth,
+                                       **this_kwargs)
                 self.ax.add_patch(arrow)
             # Otherwise a line
             else:
