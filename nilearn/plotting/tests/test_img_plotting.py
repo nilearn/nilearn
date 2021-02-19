@@ -387,7 +387,7 @@ def test_plot_carpet_with_atlas(testdata_4d):
     # The ytick labels of the colorbar should match the atlas labels
     yticklabels = ax.get_yticklabels()
     yticklabels = [yt.get_text() for yt in yticklabels]
-    assert yticklabels == list(atlas_labels.keys())
+    assert set(yticklabels) == set(atlas_labels.keys())
 
     # Next two lines retrieve the numpy array from the plot
     ax = display.axes[0]
