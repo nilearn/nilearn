@@ -95,19 +95,22 @@ def _update_template(title, docstring, content, overlay,
     data : dict
         A dictionary holding the data to be added to the report.
         The keys must match exactly the ones used in the template.
+        The default template accepts the following:
+            - description (str) : Description of the content.
+            - warning_message (str) : An optional warning
+              message to be displayed in red. This is used
+              for example when no image was provided to the
+              estimator when fitting.
+        The NiftiLabelsMasker template accepts the additional
+        fields:
+            - summary (dict) : A summary description of the
+              region labels and sizes. This will be displayed
+              as an expandable table in the report.
 
     template_name : str, optional
         The name of the template to use. If not provided, the
         default template `report_body_template.html` will be
         used.
-
-    description : str, optional
-        An optional description of the content.
-
-    warning_message : str, optional
-        An optional warning message to be displayed in red.
-        This is used for example when no image was provided
-        to the estimator when fitting.
 
     Returns
     -------
