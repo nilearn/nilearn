@@ -3,6 +3,7 @@ Transformer for computing ROI signals.
 """
 
 import numpy as np
+import warnings
 
 from joblib import Memory
 
@@ -48,6 +49,10 @@ class NiftiLabelsMasker(BaseMasker, CacheMixin):
     labels_img : Niimg-like object
         See http://nilearn.github.io/manipulating_images/input_output.html
         Region definitions, as one image of labels.
+
+    labels : list of str, optional
+        Full labels corresponding to the labels image. This is used
+        to improve reporting quality if provided.
 
     background_label : number, optional
         Label used in labels_img to represent background. Default=0.
@@ -136,13 +141,14 @@ class NiftiLabelsMasker(BaseMasker, CacheMixin):
     """
     # memory and memory_level are used by CacheMixin.
 
-    def __init__(self, labels_img, background_label=0, mask_img=None,
+    def __init__(self, labels_img, labels=None, background_label=0, mask_img=None,
                  smoothing_fwhm=None, standardize=False, standardize_confounds=True,
                  high_variance_confounds=False, detrend=False, low_pass=None,
                  high_pass=None, t_r=None, dtype=None, resampling_target="data",
                  memory=Memory(location=None, verbose=0), memory_level=1,
-                 verbose=0, strategy="mean"):
+                 verbose=0, strategy="mean", reports=True):
         self.labels_img = labels_img
+        self.labels = labels
         self.background_label = background_label
         self.mask_img = mask_img
 
@@ -166,6 +172,9 @@ class NiftiLabelsMasker(BaseMasker, CacheMixin):
         self.memory = memory
         self.memory_level = memory_level
         self.verbose = verbose
+        self.reports = reports
+        self._report_content = dict()
+        self._report_content['warning_message'] = None
 
         available_reduction_strategies = {'mean', 'median', 'sum',
                                           'minimum', 'maximum',
@@ -183,6 +192,60 @@ class NiftiLabelsMasker(BaseMasker, CacheMixin):
         if resampling_target not in ("labels", "data", None):
             raise ValueError("invalid value for 'resampling_target' "
                              "parameter: " + str(resampling_target))
+
+    def generate_report(self):
+        from nilearn.reporting.html_report import generate_report
+        return generate_report(self)
+
+    def _reporting(self):
+        """
+        Returns
+        -------
+        displays : list
+            A list of all displays to be rendered.
+
+        """
+        try:
+            from nilearn import plotting
+        except ImportError:
+            with warnings.catch_warnings():
+                mpl_unavail_msg = ('Matplotlib is not imported! '
+                                   'No reports will be generated.')
+                warnings.filterwarnings('always', message=mpl_unavail_msg)
+                warnings.warn(category=ImportWarning,
+                              message=mpl_unavail_msg)
+                return [None]
+
+        if 'labels_image' in self._reporting_data:
+            labels_image = self._reporting_data['labels_image']
+            labels_image_data = image.get_data(labels_image)
+            number_of_regions = np.sum(np.unique(labels_image_data) != 0)
+            self._report_content['description'] = (
+            'This reports shows the regions defined by the labels of the mask.')
+            self._report_content['number_of_regions'] = number_of_regions
+            
+            label_values = np.unique(labels_image_data).nonzero()[0]
+            columns = ['label value', 'region name', 'size (in #voxels)',
+                       'relative size (in %)']
+            if self.labels is None:
+                columns.remove('region name')
+            regions_summary = {c:[] for c in columns}
+            for label in label_values:
+                regions_summary['label value'].append(label)
+                if self.labels is not None:
+                    regions_summary['region name'].append(self.labels[label])
+                size = len(labels_image_data[labels_image_data == label])
+                regions_summary['size (in #voxels)'].append(size)
+                regions_summary['relative size (in %)'].append(round(
+                    size / len(labels_image_data[labels_image_data != 0]) * 100,
+                    2))
+            self._report_content['summary'] = regions_summary
+            display = plotting.plot_roi(self._reporting_data['labels_image'])
+        else:
+            self._report_content['summary'] = None
+            display = None
+
+        return [display]
 
     def fit(self, X=None, y=None):
         """Prepare signal extraction from regions.
@@ -239,6 +302,12 @@ class NiftiLabelsMasker(BaseMasker, CacheMixin):
         if not hasattr(self, '_resampled_labels_img_'):
             # obviates need to run .transform() before .inverse_transform()
             self._resampled_labels_img_ = self.labels_img_
+
+        if self.reports:
+            self._reporting_data = {'labels_image': self._resampled_labels_img_,
+                                    'mask': self.mask_img_}
+        else:
+            self._reporting_data = None
 
         return self
 
