@@ -81,6 +81,56 @@ plotting.plot_connectome(mean_correlation_matrix, coordinates,
                          title='Yeo Atlas 17 thick (func)')
 
 ##########################################################################
+# Plot a directed connectome - asymmetric connectivity measure
+# -----------------------------------------------------------------
+# In this section, we use the lag-1 correlation as the connectivity
+# measure, which leads to an asymmetric connectivity matrix.
+# The plot_connectome function accepts both symmetric and asymmetric
+# matrices, but plot the latter as a directed graph.
+import numpy as np
+
+# Define a custom function to compute lag correlation on the time series
+def lag_correlation(time_series, lag):
+    n_subjects = len(time_series)
+    n_samples, n_features = time_series[0].shape
+    lag_cor = np.zeros((n_subjects, n_features, n_features))
+    for subject, serie in enumerate(time_series):
+        for i in range(n_features):
+            for j in range(n_features):
+                if lag == 0:
+                    lag_cor[subject, i, j] = np.corrcoef(serie[:, i],
+                                                         serie[:, j])[0, 1]
+                else:
+                    lag_cor[subject, i, j] = np.corrcoef(serie[lag:, i],
+                                                         serie[:-lag, j])[0, 1]
+    return np.mean(lag_cor, axis=0)
+
+# We can check that this function mimics the underlying work done by
+# ConnectivityMeasure when the covariance estimator is empirical
+# rather than Ledoit-Wolf (default estimator)
+from sklearn.covariance import EmpiricalCovariance
+from numpy.testing import assert_array_almost_equal
+
+empirical_connectome_measure = ConnectivityMeasure(
+                                    cov_estimator=EmpiricalCovariance(),
+                                    kind='correlation')
+empirical_correlation_matrices = empirical_connectome_measure.fit_transform(
+                                    time_series)
+mean_empirical_correlation_matrix = empirical_connectome_measure.mean_
+lag0_correlation = lag_correlation(time_series, 0)
+assert_array_almost_equal(mean_empirical_correlation_matrix,
+                          lag0_correlation)
+
+# Compute lag-1 correlations and plot connectomes for lag-0 and lag-1
+lag1_correlation = lag_correlation(time_series, 1)
+
+plotting.plot_connectome(lag0_correlation, coordinates, edge_threshold="90%",
+                         title='Lag-0 correlation')
+
+plotting.plot_connectome(lag1_correlation, coordinates, edge_threshold="90%",
+                         title='Lag-1 correlation')
+
+##########################################################################
 # Load probabilistic atlases - extracting coordinates on brain maps
 # -----------------------------------------------------------------
 
