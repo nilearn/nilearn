@@ -77,9 +77,9 @@ class NiftiLabelsMasker(BaseMasker, CacheMixin):
         Default=True.
 
     high_variance_confounds : boolean, optional
-        Boolean indicating whether high-variance confounds should be computed
-        from provided image and regressed out.
-        Default=False.
+        If True, high variance confounds are computed on provided image with
+        :func:`nilearn.image.high_variance_confounds` and default parameters
+        and regressed out. Default=False.
 
     detrend : boolean, optional
         This parameter is passed to signal.clean. Please see the related
