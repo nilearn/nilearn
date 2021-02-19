@@ -173,6 +173,10 @@ def generate_report(estimator):
     report : HTMLReport
 
     """
+    if hasattr(estimator, '_report_content'):
+        data = estimator._report_content
+    else:
+        data = dict()
     if not hasattr(estimator, '_reporting_data'):
         warnings.warn('This object has not been fitted yet ! '
                       'Make sure to run `fit` before inspecting reports.')
@@ -183,7 +187,7 @@ def generate_report(estimator):
                                   content=_embed_img(None),
                                   overlay=None,
                                   parameters=dict(),
-                                  data=dict())
+                                  data=data)
 
     elif estimator._reporting_data is None:
         warnings.warn('Report generation not enabled ! '
@@ -195,12 +199,11 @@ def generate_report(estimator):
                                   content=_embed_img(None),
                                   overlay=None,
                                   parameters=dict(),
-                                  data=dict())
+                                  data=data)
 
     else:  # We can create a report
         html_template = _get_estimator_template(estimator)
         overlay, image = _define_overlay(estimator)
-        data = estimator._report_content
         parameters = _str_params(estimator.get_params())
         docstring = estimator.__doc__
         snippet = docstring.partition('Parameters\n    ----------\n')[0]
