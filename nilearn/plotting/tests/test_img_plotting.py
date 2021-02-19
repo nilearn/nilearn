@@ -60,10 +60,21 @@ def testdata_4d():
         rng.uniform(size=(7, 7, 3, 1777)), mni_affine
     )
     img_mask = nibabel.Nifti1Image(np.ones((7, 7, 3), int), mni_affine)
+    atlas = np.ones((7, 7, 3), int)
+    atlas[2:5, :, :] = 2
+    atlas[5:8, :, :] = 3
+    img_atlas = nibabel.Nifti1Image(atlas, mni_affine)
+    atlas_labels = {
+        "gm": 1,
+        "wm": 2,
+        "csf": 3,
+    }
     data = {
         'img_4d': img_4d,
         'img_4d_long': img_4d_long,
         'img_mask': img_mask,
+        'img_atlas': img_atlas,
+        'atlas_labels': atlas_labels,
     }
     return data
 
@@ -328,6 +339,61 @@ def test_plot_carpet(testdata_4d):
     # Check size
     n_items = (np.prod(img_4d_long.shape[:-1]) * np.ceil(img_4d_long.shape[-1] / 4))
     assert plotted_array.size == n_items
+    plt.close(display)
+
+
+def test_plot_carpet_with_atlas(testdata_4d):
+    """Test plot_carpet when using an atlas.
+    """
+    img_4d = testdata_4d['img_4d']
+    mask_img = testdata_4d['img_atlas']
+    atlas_labels = testdata_4d['atlas_labels']
+
+    # Test atlas - labels
+    display = plot_carpet(img_4d, mask_img, detrend=False, title='TEST')
+
+    # Check the output
+    # Two axes: 1 for colorbar and 1 for imshow
+    assert len(display.axes) == 2
+    # The y-axis label of the imshow should be "voxels" since atlas labels are
+    # unknown
+    ax = display.axes[1]
+    assert ax.get_ylabel() == "voxels"
+
+    # Next two lines retrieve the numpy array from the plot
+    ax = display.axes[0]
+    colorbar = ax.images[0].get_array()
+    assert len(np.unique(colorbar)) == len(atlas_labels)
+
+    # Save execution time and memory
+    plt.close(display)
+
+    # Test atlas + labels
+    fig, ax = plt.subplots()
+    display = plot_carpet(
+        img_4d,
+        mask_img,
+        mask_labels=atlas_labels,
+        detrend=True,
+        title='TEST',
+        figure=fig,
+        axes=ax,
+    )
+    # Check the output
+    # Two axes: 1 for colorbar and 1 for imshow
+    assert len(display.axes) == 2
+    ax = display.axes[0]
+
+    # The ytick labels of the colorbar should match the atlas labels
+    yticklabels = ax.get_yticklabels()
+    yticklabels = [yt.get_text() for yt in yticklabels]
+    assert yticklabels == list(atlas_labels.keys())
+
+    # Next two lines retrieve the numpy array from the plot
+    ax = display.axes[0]
+    colorbar = ax.images[0].get_array()
+    assert len(np.unique(colorbar)) == len(atlas_labels)
+
     plt.close(display)
 
 
