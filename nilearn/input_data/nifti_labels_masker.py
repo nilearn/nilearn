@@ -184,6 +184,7 @@ class NiftiLabelsMasker(BaseMasker, CacheMixin):
         All parameters are unused, they are for scikit-learn compatibility.
 
         """
+
         logger.log("loading data from %s" %
                    _utils._repr_niimgs(self.labels_img,
                                        shorten=(not self.verbose)),
@@ -240,6 +241,7 @@ class NiftiLabelsMasker(BaseMasker, CacheMixin):
         """ Prepare and perform signal extraction from regions.
 
         """
+        
         return self.fit().transform(imgs, confounds=confounds)
 
     def _check_fitted(self):
@@ -272,6 +274,13 @@ class NiftiLabelsMasker(BaseMasker, CacheMixin):
         """
         # We handle the resampling of labels separately because the affine of
         # the labels image should not impact the extraction of the signal.
+
+        # If a 3D image is given, it will be appended to an empty list
+        is_3d = False
+        
+        if type(imgs) != list:
+            imgs = [imgs]
+            is_3d = True
 
         if not hasattr(self, '_resampled_labels_img_'):
             self._resampled_labels_img_ = self.labels_img_
@@ -329,6 +338,8 @@ class NiftiLabelsMasker(BaseMasker, CacheMixin):
 
         self.labels_ = labels_
 
+        if is_3d:
+            return region_signals[0]
         return region_signals
 
     def inverse_transform(self, signals):

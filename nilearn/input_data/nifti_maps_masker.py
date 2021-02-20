@@ -236,6 +236,11 @@ class NiftiMapsMasker(BaseMasker, CacheMixin):
         """Prepare and perform signal extraction.
 
         """
+        # If a 3D image is given, it will be appended to an empty list
+        if type(imgs) != list:
+            imgs = [imgs]
+            return self.fit().transform(imgs, confounds=confounds)[0]
+
         return self.fit().transform(imgs, confounds=confounds)
 
     def transform_single_imgs(self, imgs, confounds=None):
@@ -263,6 +268,11 @@ class NiftiMapsMasker(BaseMasker, CacheMixin):
         # We handle the resampling of maps and mask separately because the
         # affine of the maps and mask images should not impact the extraction
         # of the signal.
+        is_3d = False
+        
+        if type(imgs) != list:
+            imgs = [imgs]
+            is_3d = True
 
         if not hasattr(self, '_resampled_maps_img_'):
             self._resampled_maps_img_ = self.maps_img_
@@ -347,6 +357,8 @@ class NiftiMapsMasker(BaseMasker, CacheMixin):
                 verbose=self.verbose)
         self.labels_ = labels_
 
+        if is_3d:
+            return region_signals[0]
         return region_signals
 
     def inverse_transform(self, region_signals):
