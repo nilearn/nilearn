@@ -237,9 +237,6 @@ class NiftiMapsMasker(BaseMasker, CacheMixin):
 
         """
         # If a 3D image is given, it will be appended to an empty list
-        if type(imgs) != list:
-            imgs = [imgs]
-            return self.fit().transform(imgs, confounds=confounds)[0]
 
         return self.fit().transform(imgs, confounds=confounds)
 
@@ -271,8 +268,9 @@ class NiftiMapsMasker(BaseMasker, CacheMixin):
         is_3d = False
         
         if type(imgs) != list:
-            imgs = [imgs]
-            is_3d = True
+            if len(imgs.shape) < 4:
+                imgs = np.expand_dims(imgs, 0)
+                is_3d = True
 
         if not hasattr(self, '_resampled_maps_img_'):
             self._resampled_maps_img_ = self.maps_img_

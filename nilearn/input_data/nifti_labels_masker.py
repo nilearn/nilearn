@@ -275,12 +275,13 @@ class NiftiLabelsMasker(BaseMasker, CacheMixin):
         # We handle the resampling of labels separately because the affine of
         # the labels image should not impact the extraction of the signal.
 
-        # If a 3D image is given, it will be appended to an empty list
+        # If a 3D image is given, an extra dimension will be added
         is_3d = False
         
         if type(imgs) != list:
-            imgs = [imgs]
-            is_3d = True
+            if len(imgs.shape) < 4:
+                imgs = np.expand_dims(imgs, 0)
+                is_3d = True
 
         if not hasattr(self, '_resampled_labels_img_'):
             self._resampled_labels_img_ = self.labels_img_
