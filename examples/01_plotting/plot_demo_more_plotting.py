@@ -134,6 +134,14 @@ plotting.plot_stat_map(stat_img, display_mode='tiled',
                        cut_coords=[36, -27, 60],
                        title="display_mode='tiled'")
 
+########################################
+# Visualizing three views along multiple rows and columns
+# -------------------------------------------------------------------------
+# display_mode='mosaic' for sagittal, coronal and axial view
+
+plotting.plot_stat_map(stat_img, display_mode='mosaic',
+                       title="display_mode='mosaic'")
+
 ###############################################################################
 # Demonstrating various display features
 # ---------------------------------------

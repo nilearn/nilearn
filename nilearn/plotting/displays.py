@@ -693,7 +693,12 @@ class BaseSlicer(object):
         if bgcolor is None:
             bgcolor = 'w' if self._black_bg else 'k'
         if hasattr(self, '_cut_displayed'):
-            first_axe = self._cut_displayed[0]
+            # Adapt to the case of mosaic plotting
+            if isinstance(self.cut_coords, dict):
+                first_axe = self._cut_displayed[-1]
+                first_axe = (first_axe, self.cut_coords[first_axe][0])
+            else:
+                first_axe = self._cut_displayed[0]
         else:
             first_axe = self.cut_coords[0]
         ax = self.axes[first_axe].ax
@@ -1821,8 +1826,23 @@ class MosaicSlicer(BaseSlicer):
 
         Parameters
         ----------
+        img : 3D Nifti1Image
+            The brain image.
+
+        threshold : float, optional
+            The lower threshold to the positive activation. If None, the
+            activation threshold is computed using the 80% percentile of
+            the absolute value of the map.
+
+        cut_coords : list/tuple of 3 floats, integer, optional
+            xyz world coordinates of cuts.
+
+        Returns
+        -------
+        cut_coords : dict
+            xyz world coordinates of cuts in a direction. Each key
+            denotes the direction.
         """
-        coords = dict()
         if cut_coords is None:
             cut_coords = 7
 
@@ -1835,9 +1855,45 @@ class MosaicSlicer(BaseSlicer):
         else:
             if (not isinstance(cut_coords, collections.abc.Sequence) and
                     isinstance(cut_coords, numbers.Number)):
-                for direction in sorted(self._cut_displayed):
-                    coords[direction] = find_cut_slices(img, direction=direction,
-                                                        n_cuts=cut_coords)
+                cut_coords = [cut_coords] * 3
+                cut_coords = self._find_cut_coords(img, cut_coords,
+                                                   self._cut_displayed)
+            else:
+                if len(cut_coords) != len(self._cut_displayed):
+                    raise ValueError('The number cut_coords passed does not'
+                                     ' match the display_mode. Mosaic plotting '
+                                     'expects tuple of length 3.' )
+                cut_coords = [cut_coords['xyz'.find(c)]
+                    for c in sorted(self._cut_displayed)]
+                cut_coords = self._find_cut_coords(img, cut_coords,
+                                                   self._cut_displayed)
+        return cut_coords
+
+    def _find_cut_coords(img, cut_coords, cut_displayed):
+        """ Find slicing positions along a given axis.
+
+            Helper function to find_cut_coords.
+
+        Parameters
+        ----------
+        img : 3D Nifti1Image
+            The brain image.
+
+        cut_coords : list/tuple of 3 floats, integer, optional
+            xyz world coordinates of cuts.
+
+        cut_displayed : str
+            Sectional directions 'yxz'
+
+        Returns
+        -------
+        cut_coords : 1D array of length specified in n_cuts
+            The computed cut_coords.
+        """
+        coords = dict()
+        for direction, n_cuts in zip(sorted(cut_displayed), cut_coords):
+            coords[direction] = find_cut_slices(img, direction=direction,
+                                                n_cuts=n_cuts)
         return coords
 
     def _init_axes(self, **kwargs):
@@ -1852,7 +1908,7 @@ class MosaicSlicer(BaseSlicer):
         cut_coords = self.cut_coords
         if len(cut_coords) != len(self._cut_displayed):
             raise ValueError('The number cut_coords passed does not'
-                             ' match the display_mode')
+                             ' match the mosaic mode')
         x0, y0, x1, y1 = self.rect
 
         # Create our axes:
@@ -1882,7 +1938,7 @@ class MosaicSlicer(BaseSlicer):
                 ax.axis('off')
                 display_ax = self._axes_class(ax, direction,
                                               coord, **kwargs)
-                self.axes[coord] = display_ax
+                self.axes[(direction, coord)] = display_ax
                 ax.set_axes_locator(self._locator)
 
     def _locator(self, axes, renderer):
