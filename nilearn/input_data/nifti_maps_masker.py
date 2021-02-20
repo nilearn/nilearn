@@ -358,8 +358,6 @@ class NiftiMapsMasker(BaseMasker, CacheMixin):
                 verbose=self.verbose)
         self.labels_ = labels_
         
-        if is_3d:
-            return region_signals[0]
         return region_signals
 
     def inverse_transform(self, region_signals):

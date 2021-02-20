@@ -403,7 +403,7 @@ class NiftiMasker(BaseMasker, CacheMixin):
 
         return self
 
-    def transform_single_imgs(self, imgs, confounds=None, is_3d=False, copy=True):
+    def transform_single_imgs(self, imgs, confounds=None, copy=True):
         """Apply mask, spatial and temporal preprocessing
 
         Parameters
