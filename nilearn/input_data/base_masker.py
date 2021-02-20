@@ -179,7 +179,7 @@ class BaseMasker(BaseEstimator, TransformerMixin, CacheMixin):
 
         """
         self._check_fitted()
-
+        
         return self.transform_single_imgs(imgs, confounds)
 
     def fit_transform(self, X, y=None, confounds=None, **fit_params):

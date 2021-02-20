@@ -189,12 +189,14 @@ class NiftiLabelsMasker(BaseMasker, CacheMixin):
                    _utils._repr_niimgs(self.labels_img,
                                        shorten=(not self.verbose)),
                    verbose=self.verbose)
+
         self.labels_img_ = _utils.check_niimg_3d(self.labels_img)
         if self.mask_img is not None:
             logger.log("loading data from %s" %
                        _utils._repr_niimgs(self.mask_img,
                                            shorten=(not self.verbose)),
                        verbose=self.verbose)
+
             self.mask_img_ = _utils.check_niimg_3d(self.mask_img)
         else:
             self.mask_img_ = None
@@ -241,7 +243,7 @@ class NiftiLabelsMasker(BaseMasker, CacheMixin):
         """ Prepare and perform signal extraction from regions.
 
         """
-        
+
         return self.fit().transform(imgs, confounds=confounds)
 
     def _check_fitted(self):
@@ -275,20 +277,15 @@ class NiftiLabelsMasker(BaseMasker, CacheMixin):
         # We handle the resampling of labels separately because the affine of
         # the labels image should not impact the extraction of the signal.
 
-        # If a 3D image is given, an extra dimension will be added
-        is_3d = False
-        
-        if type(imgs) != list:
-            if len(imgs.shape) < 4:
-                imgs = np.expand_dims(imgs, 0)
-                is_3d = True
-
         if not hasattr(self, '_resampled_labels_img_'):
             self._resampled_labels_img_ = self.labels_img_
         if not hasattr(self, '_resampled_mask_img'):
             self._resampled_mask_img = self.mask_img_
         if self.resampling_target == "data":
-            imgs_ = _utils.check_niimg_4d(imgs)
+            try:
+                imgs_ = _utils.check_niimg_4d(imgs)
+            except:
+                imgs_ = _utils.check_niimg_3d(imgs)
             if not _check_same_fov(imgs_, self._resampled_labels_img_):
                 if self.verbose > 0:
                     print("Resampling labels")
@@ -339,8 +336,6 @@ class NiftiLabelsMasker(BaseMasker, CacheMixin):
 
         self.labels_ = labels_
 
-        if is_3d:
-            return region_signals[0]
         return region_signals
 
     def inverse_transform(self, signals):

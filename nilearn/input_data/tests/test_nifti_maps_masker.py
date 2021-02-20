@@ -339,3 +339,24 @@ def test_standardization():
             unstandarized_label_signals /
             unstandarized_label_signals.mean(0) * 100 - 100,
             )
+
+def test_3d_images():
+    # Test that the NiftiLabelsMasker works with 3D images
+    affine = np.diag((4, 4, 4, 1))
+    n_regions = 3
+    shape3 = (2, 2, 2)
+
+    labels33_img = data_gen.generate_labeled_regions(shape3, n_regions,
+                                                     affine=affine)
+    mask_img = nibabel.Nifti1Image(np.ones(shape3, dtype=np.int8),
+                           affine=affine)
+    epi_img1 = nibabel.Nifti1Image(np.ones(shape3),
+                           affine=affine)
+    epi_img2 = nibabel.Nifti1Image(np.ones(shape3),
+                           affine=affine)
+    masker = NiftiMapsMasker(labels33_img, mask_img=mask_img)
+
+    epis = masker.fit_transform(epi_img1)
+    epis = masker.fit_transform([epi_img1, epi_img2])
+    # This is mostly a smoke test
+    assert len(epis) == 2

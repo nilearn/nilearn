@@ -173,7 +173,7 @@ class NiftiMapsMasker(BaseMasker, CacheMixin):
                 "has been provided.\nSet resampling_target to something else"
                 " or provide a mask.")
 
-    def fit(self, X=None, y=None):
+    def fit(self, X=None, y=None, is_3d=False):
         """Prepare signal extraction from regions.
 
         All parameters are unused, they are for scikit-learn compatibility.
@@ -184,12 +184,16 @@ class NiftiMapsMasker(BaseMasker, CacheMixin):
                    _utils._repr_niimgs(self.maps_img,
                                        shorten=(not self.verbose)),
                    verbose=self.verbose)
-
-        self.maps_img_ = _utils.check_niimg_4d(self.maps_img, dtype=self.dtype)
-        self.maps_img_ = image.clean_img(self.maps_img_, detrend=False,
-                                         standardize=False,
-                                         ensure_finite=True)
-
+        try:
+            self.maps_img_ = _utils.check_niimg_4d(self.maps_img, dtype=self.dtype)
+            self.maps_img_ = image.clean_img(self.maps_img_, detrend=False,
+                                            standardize=False,
+                                            ensure_finite=True)
+        except:
+            self.maps_img_ = _utils.check_niimg_3d(self.maps_img, dtype=self.dtype)
+            self.maps_img_ = image.clean_img(np.expand_dims(self.maps_img_, 0), detrend=False,
+                                            standardize=False,
+                                            ensure_finite=True)
         if self.mask_img is not None:
             logger.log("loading mask from %s" %
                        _utils._repr_niimgs(self.mask_img,
@@ -236,11 +240,10 @@ class NiftiMapsMasker(BaseMasker, CacheMixin):
         """Prepare and perform signal extraction.
 
         """
-        # If a 3D image is given, it will be appended to an empty list
 
         return self.fit().transform(imgs, confounds=confounds)
 
-    def transform_single_imgs(self, imgs, confounds=None):
+    def transform_single_imgs(self, imgs, confounds=None, is_3d=False):
         """Extract signals from a single 4D niimg.
 
         Parameters
@@ -265,12 +268,6 @@ class NiftiMapsMasker(BaseMasker, CacheMixin):
         # We handle the resampling of maps and mask separately because the
         # affine of the maps and mask images should not impact the extraction
         # of the signal.
-        is_3d = False
-        
-        if type(imgs) != list:
-            if len(imgs.shape) < 4:
-                imgs = np.expand_dims(imgs, 0)
-                is_3d = True
 
         if not hasattr(self, '_resampled_maps_img_'):
             self._resampled_maps_img_ = self.maps_img_
@@ -278,14 +275,20 @@ class NiftiMapsMasker(BaseMasker, CacheMixin):
             self._resampled_mask_img_ = self.mask_img_
 
         if self.resampling_target is None:
-            imgs_ = _utils.check_niimg_4d(imgs)
+            try:
+                imgs_ = _utils.check_niimg_4d(imgs)
+            except:
+                imgs_ = _utils.check_niimg_3d(imgs)
             images = dict(maps=self.maps_img_, data=imgs_)
             if self.mask_img_ is not None:
                 images['mask'] = self.mask_img_
             _check_same_fov(raise_error=True, **images)
         else:
             if self.resampling_target == "data":
-                imgs_ = _utils.check_niimg_4d(imgs)
+                try:
+                    imgs_ = _utils.check_niimg_4d(imgs)
+                except: 
+                    imgs_ = _utils.check_niimg_3d(imgs)
                 ref_img = imgs_
             elif self.resampling_target == "mask":
                 self._resampled_mask_img_ = self.mask_img_
@@ -354,7 +357,7 @@ class NiftiMapsMasker(BaseMasker, CacheMixin):
                 # kwargs
                 verbose=self.verbose)
         self.labels_ = labels_
-
+        
         if is_3d:
             return region_signals[0]
         return region_signals
