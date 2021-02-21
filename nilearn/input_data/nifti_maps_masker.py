@@ -173,7 +173,7 @@ class NiftiMapsMasker(BaseMasker, CacheMixin):
                 "has been provided.\nSet resampling_target to something else"
                 " or provide a mask.")
 
-    def fit(self, X=None, y=None, is_3d=False):
+    def fit(self, X=None, y=None):
         """Prepare signal extraction from regions.
 
         All parameters are unused, they are for scikit-learn compatibility.
@@ -243,7 +243,7 @@ class NiftiMapsMasker(BaseMasker, CacheMixin):
 
         return self.fit().transform(imgs, confounds=confounds)
 
-    def transform_single_imgs(self, imgs, confounds=None, is_3d=False):
+    def transform_single_imgs(self, imgs, confounds=None):
         """Extract signals from a single 4D niimg.
 
         Parameters
@@ -357,7 +357,6 @@ class NiftiMapsMasker(BaseMasker, CacheMixin):
                 # kwargs
                 verbose=self.verbose)
         self.labels_ = labels_
-        
         return region_signals
 
     def inverse_transform(self, region_signals):

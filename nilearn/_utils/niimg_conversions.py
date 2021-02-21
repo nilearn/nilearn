@@ -277,25 +277,21 @@ def check_niimg(niimg, ensure_ndim=None, atleast_4d=False, dtype=None,
         if return_iterator:
             return _iter_check_niimg(niimg, ensure_ndim=ensure_ndim,
                                      dtype=dtype)
-
         return concat_niimgs(niimg, ensure_ndim=ensure_ndim, dtype=dtype)
 
     # Otherwise, it should be a filename or a SpatialImage, we load it
     niimg = load_niimg(niimg, dtype=dtype)
-    
     if ensure_ndim == 3 and len(niimg.shape) == 4 and niimg.shape[3] == 1:
         # "squeeze" the image.
         data = _safe_get_data(niimg)
         affine = niimg.affine
         niimg = new_img_like(niimg, data[:, :, :, 0], affine)
-
     if atleast_4d and len(niimg.shape) == 3:
         data = _get_data(niimg).view()
         data.shape = data.shape + (1, )
         niimg = new_img_like(niimg, data, niimg.affine)
 
     if ensure_ndim is not None and len(niimg.shape) != ensure_ndim:
-
         raise DimensionError(len(niimg.shape), ensure_ndim)
 
     if return_iterator:
