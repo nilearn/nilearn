@@ -8,6 +8,7 @@ import numpy as np
 
 from nilearn.plotting.displays import OrthoSlicer, XSlicer, OrthoProjector
 from nilearn.plotting.displays import TiledSlicer
+from nilearn.plotting.displays import MosaicSlicer
 from nilearn.plotting.displays import LZRYProjector
 from nilearn.plotting.displays import LYRZProjector
 from nilearn.datasets import load_mni152_template
@@ -50,6 +51,26 @@ def test_tiled_slicer():
     # Forcing a layout here, to test the locator code
     with tempfile.TemporaryFile() as fp:
         slicer.savefig(fp)
+    slicer.close()
+
+
+def test_mosaic_slicer():
+    img = load_mni152_template()
+    # default cut_coords=None
+    slicer = MosaicSlicer.init_with_figure(img=img, colorbar=True)
+    slicer.add_overlay(img, cmap=plt.cm.gray, colorbar=True)
+    # Forcing a layout here, to test the locator code
+    with tempfile.TemporaryFile() as fp:
+        slicer.savefig(fp)
+
+    # cut_coords as an integer
+    slicer = MosaicSlicer.init_with_figure(img=img, cut_coords=4)
+    slicer.add_overlay(img, cmap=plt.cm.gray, colorbar=True)
+    # cut_coords as a tuple
+    slicer = MosaicSlicer.init_with_figure(img=img, cut_coords=(4, 5, 2))
+    slicer.add_overlay(img, cmap=plt.cm.gray, colorbar=True)
+    # test title
+    slicer.title('Showing mosaic mode')
     slicer.close()
 
 

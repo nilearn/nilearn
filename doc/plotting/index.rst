@@ -193,7 +193,7 @@ Different display modes
 
 .. |plot_mosaic| image:: ../auto_examples/01_plotting/images/sphx_glr_plot_demo_more_plotting_010.png
      :target: ../auto_examples/01_plotting/plot_demo_more_plotting.html
-     :scale: 50
+     :scale: 30
 
 .. |plot_lzr| image:: ../auto_examples/01_plotting/images/sphx_glr_plot_demo_glass_brain_extensive_006.png
      :target: ../auto_examples/01_plotting/plot_demo_glass_brain_extensive.html
@@ -250,7 +250,7 @@ Different display modes
                    Tiled slicer: 3 cuts along the x, y, z directions,
                    arranged in a 2x2 grid
 
-|plot_mosaic|      `display_mode='tiled', cut_coords=[36, -27, 60]`
+|plot_mosaic|      `display_mode='mosaic'`
                    |hack|
                    Mosaic slicer: multiple cuts along the x, y, z directions,
                    with cuts automatically positioned by default
