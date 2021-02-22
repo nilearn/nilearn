@@ -184,9 +184,7 @@ class NiftiMapsMasker(BaseMasker, CacheMixin):
                    _utils._repr_niimgs(self.maps_img,
                                        shorten=(not self.verbose)),
                    verbose=self.verbose)
-        self.maps_img_ = _utils.check_niimg(self.maps_img, dtype=self.dtype)
-        self.maps_img_ = np.expand_dims(self.maps_img_, 0) if len(
-            self.maps_img_.shape) < 4 else self.maps_img_
+        self.maps_img_ = _utils.check_niimg(self.maps_img, dtype=self.dtype, atleast_4d=True)
         self.maps_img_ = image.clean_img(self.maps_img_, detrend=False,
                                          standardize=False,
                                          ensure_finite=True)
@@ -270,14 +268,14 @@ class NiftiMapsMasker(BaseMasker, CacheMixin):
             self._resampled_mask_img_ = self.mask_img_
 
         if self.resampling_target is None:
-            imgs_ = _utils.check_niimg(imgs)
+            imgs_ = _utils.check_niimg(imgs, atleast_4d=True)
             images = dict(maps=self.maps_img_, data=imgs_)
             if self.mask_img_ is not None:
                 images['mask'] = self.mask_img_
             _check_same_fov(raise_error=True, **images)
         else:
             if self.resampling_target == "data":
-                imgs_ = _utils.check_niimg(imgs)
+                imgs_ = _utils.check_niimg(imgs, atleast_4d=True)
                 ref_img = imgs_
             elif self.resampling_target == "mask":
                 self._resampled_mask_img_ = self.mask_img_
