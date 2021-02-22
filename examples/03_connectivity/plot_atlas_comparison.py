@@ -105,30 +105,13 @@ def lag_correlation(time_series, lag):
                                                          serie[:-lag, j])[0, 1]
     return np.mean(lag_cor, axis=0)
 
-# We can check that this function mimics the underlying work done by
-# ConnectivityMeasure when the covariance estimator is empirical
-# rather than Ledoit-Wolf (default estimator)
-from sklearn.covariance import EmpiricalCovariance
-from numpy.testing import assert_array_almost_equal
-
-empirical_connectome_measure = ConnectivityMeasure(
-                                    cov_estimator=EmpiricalCovariance(),
-                                    kind='correlation')
-empirical_correlation_matrices = empirical_connectome_measure.fit_transform(
-                                    time_series)
-mean_empirical_correlation_matrix = empirical_connectome_measure.mean_
-lag0_correlation = lag_correlation(time_series, 0)
-assert_array_almost_equal(mean_empirical_correlation_matrix,
-                          lag0_correlation)
-
-# Compute lag-1 correlations and plot connectomes for lag-0 and lag-1
-lag1_correlation = lag_correlation(time_series, 1)
-
-plotting.plot_connectome(lag0_correlation, coordinates, edge_threshold="90%",
-                         title='Lag-0 correlation')
-
-plotting.plot_connectome(lag1_correlation, coordinates, edge_threshold="90%",
-                         title='Lag-1 correlation')
+# Compute lag-0 and lag-1 correlations and plot associated connectomes
+for lag in [0, 1]:
+    lag_correlation_matrix = lag_correlation(time_series, lag)
+    plotting.plot_connectome(lag_correlation_matrix, coordinates,
+                             edge_threshold="90%",
+                             title='Lag-{} correlation'.format(
+                                 lag))
 
 ##########################################################################
 # Load probabilistic atlases - extracting coordinates on brain maps
