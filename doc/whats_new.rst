@@ -48,7 +48,7 @@ Enhancements
   controlled through the `high_variance_confounds` boolean parameter of these maskers which
   default to False.
 
-- :func:`nilearn.datasets.neurovault.fetch_neurovault` now implements a `resample` boolean argument to either
+- :func:`nilearn.datasets.fetch_neurovault` now implements a `resample` boolean argument to either
   perform a fixed resampling during download or keep original images. This can be handy to reduce disk usage.
   By default, the downloaded images are not resampled.
 
