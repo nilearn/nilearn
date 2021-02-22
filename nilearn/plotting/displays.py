@@ -1846,27 +1846,20 @@ class MosaicSlicer(BaseSlicer):
         if cut_coords is None:
             cut_coords = 7
 
-        if img is None or img is False:
-            bounds = ((-40, 40), (-30, 30), (-30, 75))
-            for direction in sorted(self._cut_displayed):
-                lower, upper = bounds['xyz'.index(direction)]
-                coords[direction] = np.linspace(lower, upper,
-                                                cut_coords).tolist()
+        if (not isinstance(cut_coords, collections.abc.Sequence) and
+                isinstance(cut_coords, numbers.Number)):
+            cut_coords = [cut_coords] * 3
+            cut_coords = self._find_cut_coords(img, cut_coords,
+                                               self._cut_displayed)
         else:
-            if (not isinstance(cut_coords, collections.abc.Sequence) and
-                    isinstance(cut_coords, numbers.Number)):
-                cut_coords = [cut_coords] * 3
-                cut_coords = self._find_cut_coords(img, cut_coords,
-                                                   self._cut_displayed)
-            else:
-                if len(cut_coords) != len(self._cut_displayed):
-                    raise ValueError('The number cut_coords passed does not'
-                                     ' match the display_mode. Mosaic plotting '
-                                     'expects tuple of length 3.' )
-                cut_coords = [cut_coords['xyz'.find(c)]
-                    for c in sorted(self._cut_displayed)]
-                cut_coords = self._find_cut_coords(img, cut_coords,
-                                                   self._cut_displayed)
+            if len(cut_coords) != len(self._cut_displayed):
+                raise ValueError('The number cut_coords passed does not'
+                                 ' match the display_mode. Mosaic plotting '
+                                 'expects tuple of length 3.' )
+            cut_coords = [cut_coords['xyz'.find(c)]
+                for c in sorted(self._cut_displayed)]
+            cut_coords = self._find_cut_coords(img, cut_coords,
+                                               self._cut_displayed)
         return cut_coords
 
     def _find_cut_coords(img, cut_coords, cut_displayed):
@@ -1891,9 +1884,18 @@ class MosaicSlicer(BaseSlicer):
             The computed cut_coords.
         """
         coords = dict()
-        for direction, n_cuts in zip(sorted(cut_displayed), cut_coords):
-            coords[direction] = find_cut_slices(img, direction=direction,
-                                                n_cuts=n_cuts)
+        if img is None or img is False:
+            bounds = ((-40, 40), (-30, 30), (-30, 75))
+            for direction, n_cuts in zip(sorted(cut_displayed),
+                                         cut_coords):
+                lower, upper = bounds['xyz'.index(direction)]
+                coords[direction] = np.linspace(lower, upper,
+                                                n_cuts).tolist()
+        else:
+            for direction, n_cuts in zip(sorted(cut_displayed),
+                                         cut_coords):
+                coords[direction] = find_cut_slices(img, direction=direction,
+                                                    n_cuts=n_cuts)
         return coords
 
     def _init_axes(self, **kwargs):
@@ -1905,8 +1907,7 @@ class MosaicSlicer(BaseSlicer):
             additional arguments to pass to self._axes_class
 
         """
-        cut_coords = self.cut_coords
-        if len(cut_coords) != len(self._cut_displayed):
+        if len(self.cut_coords) != len(self._cut_displayed):
             raise ValueError('The number cut_coords passed does not'
                              ' match the mosaic mode')
         x0, y0, x1, y1 = self.rect

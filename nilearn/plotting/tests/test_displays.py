@@ -4,6 +4,7 @@ import tempfile
 
 import matplotlib.pyplot as plt
 import nibabel
+import pytest
 import numpy as np
 
 from nilearn.plotting.displays import OrthoSlicer, XSlicer, OrthoProjector
@@ -57,7 +58,7 @@ def test_tiled_slicer():
 def test_mosaic_slicer():
     img = load_mni152_template()
     # default cut_coords=None
-    slicer = MosaicSlicer.init_with_figure(img=img, colorbar=True)
+    slicer = MosaicSlicer.init_with_figure(img=img)
     slicer.add_overlay(img, cmap=plt.cm.gray, colorbar=True)
     # Forcing a layout here, to test the locator code
     with tempfile.TemporaryFile() as fp:
@@ -71,7 +72,31 @@ def test_mosaic_slicer():
     slicer.add_overlay(img, cmap=plt.cm.gray, colorbar=True)
     # test title
     slicer.title('Showing mosaic mode')
+
+    # test when img is None or False while initializing figure
+    slicer = MosaicSlicer.init_with_figure(img=None, cut_coords=None)
+    slicer.add_overlay(img, cmap=plt.cm.gray, colorbar=True)
+    # same test but cut_coords as integer and tuple
+    slicer = MosaicSlicer.init_with_figure(img=None, cut_coords=5)
+    slicer.add_overlay(img, cmap=plt.cm.gray, colorbar=True)
+    slicer = MosaicSlicer.init_with_figure(img=None, cut_coords=(1, 1, 1))
+    slicer.add_overlay(img, cmap=plt.cm.gray, colorbar=True)
+
+    # assert raises ValueError
+    pytest.raises(ValueError, MosaicSlicer.init_with_figure,
+                  img=None, cut_coords=(5, 4))
+
     slicer.close()
+
+
+#def test_demo_mosaic_slicer():
+#    tslicer = MosaicSlicer(cut_coords=(1, 1, 1))
+#    img = load_mni152_template()
+#    tslicer.add_overlay(img, cmap=plt.cm.gray)
+    # cut_coords as integer
+#    tslicer = MosaicSlicer(cut_coords=5)
+#    tslicer.add_overlay(img, cmap=plt.cm.gray)
+#    tslicer.close()
 
 
 def test_demo_ortho_projector():
