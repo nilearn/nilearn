@@ -519,7 +519,7 @@ class FirstLevelModel(BaseGLM):
         if self.verbose > 0:
             sys.stderr.write("\nComputation of %d runs done in %i seconds\n\n"
                              % (n_runs, time.time() - t0))
-
+        warn('If the design matrices are given, it takes precedence over events and confounds.')
         return self
 
     def compute_contrast(self, contrast_def, stat_type=None,
