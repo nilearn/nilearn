@@ -240,7 +240,6 @@ class NiftiMapsMasker(BaseMasker, CacheMixin):
         """Prepare and perform signal extraction.
 
         """
-
         return self.fit().transform(imgs, confounds=confounds)
 
     def transform_single_imgs(self, imgs, confounds=None):
@@ -275,20 +274,14 @@ class NiftiMapsMasker(BaseMasker, CacheMixin):
             self._resampled_mask_img_ = self.mask_img_
 
         if self.resampling_target is None:
-            try:
-                imgs_ = _utils.check_niimg_4d(imgs)
-            except:
-                imgs_ = _utils.check_niimg_3d(imgs)
+            imgs_ = _utils.check_niimg(imgs)
             images = dict(maps=self.maps_img_, data=imgs_)
             if self.mask_img_ is not None:
                 images['mask'] = self.mask_img_
             _check_same_fov(raise_error=True, **images)
         else:
             if self.resampling_target == "data":
-                try:
-                    imgs_ = _utils.check_niimg_4d(imgs)
-                except: 
-                    imgs_ = _utils.check_niimg_3d(imgs)
+                imgs_ = _utils.check_niimg(imgs)
                 ref_img = imgs_
             elif self.resampling_target == "mask":
                 self._resampled_mask_img_ = self.mask_img_
