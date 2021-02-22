@@ -184,16 +184,12 @@ class NiftiMapsMasker(BaseMasker, CacheMixin):
                    _utils._repr_niimgs(self.maps_img,
                                        shorten=(not self.verbose)),
                    verbose=self.verbose)
-        try:
-            self.maps_img_ = _utils.check_niimg_4d(self.maps_img, dtype=self.dtype)
-            self.maps_img_ = image.clean_img(self.maps_img_, detrend=False,
-                                            standardize=False,
-                                            ensure_finite=True)
-        except:
-            self.maps_img_ = _utils.check_niimg_3d(self.maps_img, dtype=self.dtype)
-            self.maps_img_ = image.clean_img(np.expand_dims(self.maps_img_, 0), detrend=False,
-                                            standardize=False,
-                                            ensure_finite=True)
+        self.maps_img_ = _utils.check_niimg(self.maps_img, dtype=self.dtype)
+        self.maps_img_ = np.expand_dims(self.maps_img_, 0) if len(
+            self.maps_img_.shape) < 4 else self.maps_img_
+        self.maps_img_ = image.clean_img(self.maps_img_, detrend=False,
+                                         standardize=False,
+                                         ensure_finite=True)
         if self.mask_img is not None:
             logger.log("loading mask from %s" %
                        _utils._repr_niimgs(self.mask_img,
@@ -294,18 +290,18 @@ class NiftiMapsMasker(BaseMasker, CacheMixin):
                 if self.verbose > 0:
                     print("Resampling maps")
                 self._resampled_maps_img_ = self._cache(image.resample_img)(
-                        self.maps_img_, interpolation="continuous",
-                        target_shape=ref_img.shape[:3],
-                        target_affine=ref_img.affine)
+                    self.maps_img_, interpolation="continuous",
+                    target_shape=ref_img.shape[:3],
+                    target_affine=ref_img.affine)
 
-            if (self.mask_img_ is not None and
-                    not _check_same_fov(ref_img, self.mask_img_)):
+            if (self.mask_img_ is not None
+                    and not _check_same_fov(ref_img, self.mask_img_)):
                 if self.verbose > 0:
                     print("Resampling mask")
                 self._resampled_mask_img_ = self._cache(image.resample_img)(
-                        self.mask_img_, interpolation="nearest",
-                        target_shape=ref_img.shape[:3],
-                        target_affine=ref_img.affine)
+                    self.mask_img_, interpolation="nearest",
+                    target_shape=ref_img.shape[:3],
+                    target_affine=ref_img.affine)
 
         if not self.allow_overlap:
             # Check if there is an overlap.
