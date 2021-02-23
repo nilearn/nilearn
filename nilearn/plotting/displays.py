@@ -1814,7 +1814,17 @@ class YZSlicer(OrthoSlicer):
 
 
 class MosaicSlicer(BaseSlicer):
-    """
+    """ A class to create 3 axes for plotting cuts of 3D maps,
+    in multiple rows and columns.
+
+    Attributes
+    ----------
+    axes : dictionary of axes
+        The 3 axes used to plot multiple views.
+
+    frame_axes : axes
+        The axes framing the whole set of views.
+
     """
     _cut_displayed = 'yxz'
     _axes_class = CutAxes

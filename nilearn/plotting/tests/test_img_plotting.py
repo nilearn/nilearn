@@ -1003,6 +1003,18 @@ def test_invalid_in_display_mode_tiled_cut_coords_all_plots(testdata_3d):
             plot_func(img, display_mode='tiled', cut_coords=(2, 2))
 
 
+def test_invalid_in_display_mode_mosaic_cut_coords_all_plots(testdata_3d):
+    img = testdata_3d['img']
+
+    for plot_func in [plot_img, plot_anat, plot_roi, plot_epi,
+                      plot_stat_map, plot_prob_atlas]:
+        with pytest.raises(ValueError,
+                           match="The number cut_coords passed does not "
+                                 "match the display_mode"
+                           ):
+            plot_func(img, display_mode='mosaic', cut_coords=(2, 2))
+
+
 def test_outlier_cut_coords():
     """ Test to plot a subset of a large set of cuts found for a small area."""
     bg_img = load_mni152_template()

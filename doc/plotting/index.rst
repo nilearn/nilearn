@@ -191,9 +191,9 @@ Different display modes
      :target: ../auto_examples/01_plotting/plot_demo_more_plotting.html
      :scale: 50
 
-.. |plot_mosaic| image:: ../auto_examples/01_plotting/images/sphx_glr_plot_demo_more_plotting_010.png
+.. |plot_mosaic| image:: ../auto_examples/01_plotting/images/sphx_glr_plot_demo_more_plotting_011.png
      :target: ../auto_examples/01_plotting/plot_demo_more_plotting.html
-     :scale: 30
+     :scale: 50
 
 .. |plot_lzr| image:: ../auto_examples/01_plotting/images/sphx_glr_plot_demo_glass_brain_extensive_006.png
      :target: ../auto_examples/01_plotting/plot_demo_glass_brain_extensive.html

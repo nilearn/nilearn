@@ -532,18 +532,23 @@ def plot_anat(anat_img=MNI152TEMPLATE, cut_coords=None,
         coordinates of each cut in the corresponding direction.
         If None is given, the cuts is calculated automaticaly.
         If display_mode is 'x', 'y' or 'z', cut_coords can be an integer,
-        in which case it specifies the number of cuts to perform
+        in which case it specifies the number of cuts to perform.
+        If display_mode is 'mosaic', and the number of cuts is the same
+        for all directions, cut_coords can be specified as an integer.
+        It can also be a length 3 tuple specifying the number of cuts for
+        every direction if these are different.
 
     output_file : string, or None, optional
         The name of an image file to export the plot to. Valid extensions
         are .png, .pdf, .svg. If output_file is not None, the plot
         is saved to a file, and the display is closed.
 
-    display_mode : {'ortho', 'tiled', 'x', 'y', 'z', 'yx', 'xz', 'yz'}, optional
+    display_mode : {'ortho', 'tiled', 'mosaic', 'x', 'y', 'z', 'yx', 'xz', 'yz'}, optional
         Choose the direction of the cuts: 'x' - sagittal, 'y' - coronal,
         'z' - axial, 'ortho' - three cuts are performed in orthogonal
         directions, 'tiled' - three cuts are performed
-        and arranged in a 2x2 grid. Default='ortho'.
+        and arranged in a 2x2 grid, 'mosaic' - three cuts
+        are performed along multiple rows and columns, Default='ortho'.
 
     figure : integer or matplotlib figure, optional
         Matplotlib figure used or its number. If None is given, a
@@ -640,18 +645,23 @@ def plot_epi(epi_img=None, cut_coords=None, output_file=None,
         coordinates of each cut in the corresponding direction.
         If None is given, the cuts is calculated automaticaly.
         If display_mode is 'x', 'y' or 'z', cut_coords can be an integer,
-        in which case it specifies the number of cuts to perform
+        in which case it specifies the number of cuts to perform.
+        If display_mode is 'mosaic', and the number of cuts is the same
+        for all directions, cut_coords can be specified as an integer.
+        It can also be a length 3 tuple specifying the number of cuts for
+        every direction if these are different.
 
     output_file : string, or None, optional
         The name of an image file to export the plot to. Valid extensions
         are .png, .pdf, .svg. If output_file is not None, the plot
         is saved to a file, and the display is closed.
 
-    display_mode : {'ortho', 'tiled', 'x', 'y', 'z', 'yx', 'xz', 'yz'}, optional
+    display_mode : {'ortho', 'tiled', 'mosaic', 'x', 'y', 'z', 'yx', 'xz', 'yz'}, optional
         Choose the direction of the cuts: 'x' - sagittal, 'y' - coronal,
         'z' - axial, 'ortho' - three cuts are performed in orthogonal
         directions, 'tiled' - three cuts are performed
-        and arranged in a 2x2 grid. Default='ortho'.
+        and arranged in a 2x2 grid. 'mosaic' - three cuts are
+        performed along multiple rows and columns. Default='ortho'.
 
     figure : integer or matplotlib figure, optional
         Matplotlib figure used or its number. If None is given, a
@@ -787,17 +797,22 @@ def plot_roi(roi_img, bg_img=MNI152TEMPLATE, cut_coords=None,
         For display_mode == 'x', 'y', or 'z', then these are the
         coordinates of each cut in the corresponding direction.
         If None is given, the cuts is calculated automaticaly.
+        If display_mode is 'mosaic', and the number of cuts is the same
+        for all directions, cut_coords can be specified as an integer.
+        It can also be a length 3 tuple specifying the number of cuts for
+        every direction if these are different.
 
     output_file : string, or None, optional
         The name of an image file to export the plot to. Valid extensions
         are .png, .pdf, .svg. If output_file is not None, the plot
         is saved to a file, and the display is closed.
 
-    display_mode : {'ortho', 'tiled', 'x', 'y', 'z', 'yx', 'xz', 'yz'}, optional
+    display_mode : {'ortho', 'mosaic', 'tiled', 'x', 'y', 'z', 'yx', 'xz', 'yz'}, optional
         Choose the direction of the cuts: 'x' - sagittal, 'y' - coronal,
         'z' - axial, 'ortho' - three cuts are performed in orthogonal
         directions, 'tiled' - three cuts are performed
-        and arranged in a 2x2 grid. Default='ortho'.
+        and arranged in a 2x2 grid, 'mosaic' - three cuts
+        are performed along multiple rows and columns, Default='ortho'.
 
     figure : integer or matplotlib figure, optional
         Matplotlib figure used or its number. If None is given, a
@@ -983,19 +998,23 @@ def plot_prob_atlas(maps_img, bg_img=MNI152TEMPLATE, view_type='auto',
         coordinates of each cut in the corresponding direction.
         If None is given, the cuts is calculated automaticaly.
         If display_mode is 'x', 'y' or 'z', cut_coords can be an integer,
-        in which case it specifies the number of cuts to perform
+        in which case it specifies the number of cuts to perform.
+        If display_mode is 'mosaic', and the number of cuts is the same
+        for all directions, cut_coords can be specified as an integer.
+        It can also be a length 3 tuple specifying the number of cuts for
+        every direction if these are different.
 
     output_file : string, or None, optional
         The name of an image file to export the plot to. Valid extensions
         are .png, .pdf, .svg. If output_file is not None, the plot
         is saved to a file, and the display is closed.
 
-    display_mode : {'ortho', 'tiled', 'x', 'y', 'z', 'yx', 'xz', 'yz'}, optional
+    display_mode : {'ortho', 'tiled', 'mosaic', 'x', 'y', 'z', 'yx', 'xz', 'yz'}, optional
         Choose the direction of the cuts: 'x' - sagittal, 'y' - coronal,
         'z' - axial, 'ortho' - three cuts are performed in orthogonal
         directions, 'tiled' - three cuts are performed
-        and arranged in a 2x2 grid.
-        Default='ortho'.
+        and arranged in a 2x2 grid, 'mosaic' - three cuts are performed along
+        multiple rows and columns, Default='ortho'.
 
     figure : integer or matplotlib figure, optional
         Matplotlib figure used or its number. If None is given, a
@@ -1179,19 +1198,23 @@ def plot_stat_map(stat_map_img, bg_img=MNI152TEMPLATE, cut_coords=None,
         coordinates of each cut in the corresponding direction.
         If None is given, the cuts is calculated automaticaly.
         If display_mode is 'x', 'y' or 'z', cut_coords can be an integer,
-        in which case it specifies the number of cuts to perform
+        in which case it specifies the number of cuts to perform.
+        If display_mode is 'mosaic', and the number of cuts is the same
+        for all directions, cut_coords can be specified as an integer.
+        It can also be a length 3 tuple specifying the number of cuts for
+        every direction if these are different.
 
     output_file : string, or None, optional
         The name of an image file to export the plot to. Valid extensions
         are .png, .pdf, .svg. If output_file is not None, the plot
         is saved to a file, and the display is closed.
 
-    display_mode : {'ortho', 'tiled', 'x', 'y', 'z', 'yx', 'xz', 'yz'}, optional
+    display_mode : {'ortho', 'tiled', 'mosaic', 'x', 'y', 'z', 'yx', 'xz', 'yz'}, optional
         Choose the direction of the cuts: 'x' - sagittal, 'y' - coronal,
         'z' - axial, 'ortho' - three cuts are performed in orthogonal
         directions, 'tiled' - three cuts are performed
-        and arranged in a 2x2 grid.
-        Default='ortho'.
+        and arranged in a 2x2 grid, 'mosaic' - three cuts
+        are performed along multiple rows and columns, Default='ortho'.
 
     colorbar : boolean, optional
         If True, display a colorbar on the right of the plots. Default=True.
