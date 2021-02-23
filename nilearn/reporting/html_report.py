@@ -22,8 +22,8 @@ def _get_estimator_template(estimator):
 
     Parameters
     ----------
-    estimator : ll
-        fff
+    estimator : object instance of BaseEstimator
+        The object we wish to retrieve template of.
 
     Returns
     -------
@@ -167,6 +167,11 @@ def generate_report(estimator):
     Reports are useful to visualize steps in a processing pipeline.
     Example use case: visualize the overlap of a mask and reference image
     in NiftiMasker.
+
+    Parameters
+    ----------
+    estimator : Object instance of BaseEstimator.
+        Object for which the report should be generated.
 
     Returns
     -------
