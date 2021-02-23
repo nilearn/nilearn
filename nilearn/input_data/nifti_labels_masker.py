@@ -53,9 +53,14 @@ class NiftiLabelsMasker(BaseMasker, CacheMixin):
     labels : list of str, optional
         Full labels corresponding to the labels image. This is used
         to improve reporting quality if provided.
+        Warning: The labels must be consistent with the label
+        values provided through `labels_img`.
 
     background_label : number, optional
-        Label used in labels_img to represent background. Default=0.
+        Label used in labels_img to represent background.
+        Warning: This value must be consisent with label values and
+        image provided.
+        Default=0.
 
     mask_img : Niimg-like object, optional
         See http://nilearn.github.io/manipulating_images/input_output.html
@@ -219,12 +224,23 @@ class NiftiLabelsMasker(BaseMasker, CacheMixin):
         if 'labels_image' in self._reporting_data:
             labels_image = self._reporting_data['labels_image']
             labels_image_data = image.get_data(labels_image)
-            number_of_regions = np.sum(np.unique(labels_image_data) != 0)
+            # Number of regions excluding the background
+            number_of_regions = np.sum(np.unique(labels_image_data) !=
+                                       self.background_label)
+            # Basic safety check to ensure we have as many labels as we
+            # have regions (plus background).
+            if(self.labels is not None and
+               len(self.labels) != number_of_regions + 1):
+                raise ValueError(("Mismatch between the number of provided "
+                                  "labels ({0}) and the number of regions "
+                                  "in provided label image ({1})").format(
+                                      len(self.labels), number_of_regions + 1))
             self._report_content['description'] = (
             'This reports shows the regions defined by the labels of the mask.')
             self._report_content['number_of_regions'] = number_of_regions
-            
-            label_values = np.unique(labels_image_data).nonzero()[0]
+
+            label_values = np.unique(labels_image_data)
+            label_values = label_values[label_values != self.background_label]
             columns = ['label value', 'region name', 'size (in #voxels)',
                        'relative size (in %)']
             if self.labels is None:
