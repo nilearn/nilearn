@@ -176,6 +176,17 @@ def test_plot_functions(testdata_3d, testdata_4d, tmpdir):
     plt.close()
 
 
+def test_plot_functions_mosaic_mode(testdata_3d):
+    img_3d = testdata_3d['img']
+
+    # smoke-test for 3D plotting functions with display_mode='mosaic'
+    for plot_func in [plot_anat, plot_img, plot_stat_map, plot_epi,
+                      plot_roi]:
+        plot_func(img_3d, display_mode='mosaic')
+
+    plt.close()
+
+
 def test_plot_glass_brain(testdata_3d, tmpdir):
     img = testdata_3d['img']
 
