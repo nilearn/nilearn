@@ -41,6 +41,13 @@ Enhancements
   colorbar of surface plots. The default format is scientific notation except for :func:`nilearn.plotting.plot_surf_roi`
   for which it is set as integers.
 
+- :class:`nilearn.input_data.NiftiMasker`, :class:`nilearn.input_data.NiftiLabelsMasker`, 
+  :class:`nilearn.input_data.MultiNiftiMasker`, :class:`nilearn.input_data.NiftiMapsMasker`,
+  and :class:`nilearn.input_data.NiftiSpheresMasker` can now compute high variance confounds
+  on the images provided to `transform` and regress them out automatically. This behaviour is 
+  controlled through the `high_variance_confounds` boolean parameter of these maskers which
+  default to False.
+
 .. _v0.7.0:
 
 0.7.0
