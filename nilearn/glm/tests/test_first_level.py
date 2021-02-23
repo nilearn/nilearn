@@ -648,4 +648,4 @@ def test_warning_fit():
                 # test with confounds
                 with warnings.catch_warnings(record=True) as w:
                     FirstLevelModel(mask_img=mask).fit([fi], design_matrices=[d],confounds=conf)
-                    assert len(w) > 1
+                    assert len(w) > 0
