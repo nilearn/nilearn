@@ -314,7 +314,7 @@ def test_fmri_inputs():
                 FirstLevelModel(mask_img=None).fit([fi], design_matrices=d)
                 FirstLevelModel(mask_img=mask).fit(fi, design_matrices=[d])
                 FirstLevelModel(mask_img=mask).fit([fi], design_matrices=[d])
-                with pytest.warns(UserWarning, match="If the design matrices are given"):
+                with pytest.warns(UserWarning, match="If design matrices are supplied"):
                     # test with confounds
                     FirstLevelModel(mask_img=mask).fit([fi], design_matrices=[d],
                                                     confounds=conf)
