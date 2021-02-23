@@ -1907,6 +1907,9 @@ class MosaicSlicer(BaseSlicer):
             additional arguments to pass to self._axes_class
 
         """
+        if not isinstance(self.cut_coords, dict):
+            self.cut_coords = self.find_cut_coords(cut_coords=self.cut_coords)
+
         if len(self.cut_coords) != len(self._cut_displayed):
             raise ValueError('The number cut_coords passed does not'
                              ' match the mosaic mode')

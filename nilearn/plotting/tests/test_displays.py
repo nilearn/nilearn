@@ -89,14 +89,22 @@ def test_mosaic_slicer():
     slicer.close()
 
 
-#def test_demo_mosaic_slicer():
-#    tslicer = MosaicSlicer(cut_coords=(1, 1, 1))
-#    img = load_mni152_template()
-#    tslicer.add_overlay(img, cmap=plt.cm.gray)
+def test_demo_mosaic_slicer():
+    # cut_coords as tuple of length 3
+    mslicer = MosaicSlicer(cut_coords=(1, 1, 1))
+    img = load_mni152_template()
+    mslicer.add_overlay(img, cmap=plt.cm.gray)
     # cut_coords as integer
-#    tslicer = MosaicSlicer(cut_coords=5)
-#    tslicer.add_overlay(img, cmap=plt.cm.gray)
-#    tslicer.close()
+    mslicer = MosaicSlicer(cut_coords=5)
+    mslicer.add_overlay(img, cmap=plt.cm.gray)
+    # cut_coords as dictionary
+    mslicer = MosaicSlicer(cut_coords={'x': [10, 20],
+                                       'y': [30, 40],
+                                       'z': [15, 16]})
+    mslicer.add_overlay(img, cmap=plt.cm.gray)
+    # assert raises a ValueError
+    pytest.raises(ValueError, MosaicSlicer, cut_coords=(2, 3))
+    mslicer.close()
 
 
 def test_demo_ortho_projector():
