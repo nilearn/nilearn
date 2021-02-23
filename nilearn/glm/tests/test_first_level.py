@@ -646,6 +646,6 @@ def test_warning_fit():
         for fi in func_img, FUNCFILE:
             for d in des, des_fname:
                 # test with confounds
-                with warnings.catch_warnings(record=True) as w:
+                with warnings.catch_warnings(record=True) as warning:
                     FirstLevelModel(mask_img=mask).fit([fi], design_matrices=[d],confounds=conf)
-                    assert len(w) > 0
+                    assert len(warning) > 0
