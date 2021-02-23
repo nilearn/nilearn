@@ -630,3 +630,22 @@ def test_first_level_predictions_r_square():
 
     r_square_2d = model.masker_.transform(r_square_3d)
     assert_array_less(0., r_square_2d)
+
+
+def test_warning_fit():
+    with InTemporaryDirectory():
+        shapes = ((7, 8, 9, 10),)
+        mask, FUNCFILE, _ = write_fake_fmri_data_and_design(shapes)
+        FUNCFILE = FUNCFILE[0]
+        func_img = load(FUNCFILE)
+        T = func_img.shape[-1]
+        conf = pd.DataFrame([0, 0])
+        des = pd.DataFrame(np.ones((T, 1)), columns=[''])
+        des_fname = 'design.csv'
+        des.to_csv(des_fname)
+        for fi in func_img, FUNCFILE:
+            for d in des, des_fname:
+                # test with confounds
+                with warnings.catch_warnings(record=True) as w:
+                    FirstLevelModel(mask_img=mask).fit([fi], design_matrices=[d],confounds=conf)
+                    assert len(w) == 1
