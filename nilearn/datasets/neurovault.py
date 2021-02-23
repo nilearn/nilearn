@@ -1478,7 +1478,11 @@ def _download_image_nii_file(image_info, collection, download_params):
 
         # Resample here
         print('Resampling...')
-        im_resampled = resample_img(img=tmp_path, target_affine=STD_AFFINE)
+        im_resampled = resample_img(
+            img=tmp_path,
+            target_affine=STD_AFFINE,
+            interpolation=download_params['interpolation'],
+        )
         im_resampled.to_filename(resampled_image_absolute_path)
 
         # Remove temporary file
@@ -1699,7 +1703,11 @@ def _scroll_local(download_params):
                     download_params['visited_collections'].add(collection['id'])
                     yield image, collection
                 else:
-                    im_resampled = resample_img(img=image['absolute_path'], target_affine=STD_AFFINE)
+                    im_resampled = resample_img(
+                        img=image['absolute_path'],
+                        target_affine=STD_AFFINE,
+                        interpolation=download_params['interpolation'],
+                    )
                     im_resampled.to_filename(image['resampled_absolute_path'])
                     download_params['visited_images'].add(image['id'])
                     download_params['visited_collections'].add(collection['id'])
@@ -2109,7 +2117,7 @@ def _read_download_params(
     wanted_image_ids=None, max_images=None,
     max_consecutive_fails=_MAX_CONSECUTIVE_FAILS,
     max_fails_in_collection=_MAX_FAILS_IN_COLLECTION,
-    resample=False,
+    resample=False, interpolation='continuous',
     batch_size=None, verbose=3, fetch_neurosynth_words=False,
         vectorize_words=True):
 
@@ -2142,6 +2150,7 @@ def _read_download_params(
     download_params['max_fails_in_collection'] = max_fails_in_collection
     download_params['batch_size'] = batch_size
     download_params['resample'] = resample
+    download_params['interpolation'] = interpolation
     download_params['wanted_image_ids'] = wanted_image_ids
     download_params['wanted_collection_ids'] = wanted_collection_ids
     download_params['fetch_neurosynth_words'] = fetch_neurosynth_words
@@ -2257,7 +2266,7 @@ def _fetch_neurovault_implementation(
     collection_filter=_empty_filter, image_terms=basic_image_terms(),
     image_filter=_empty_filter, collection_ids=None, image_ids=None,
     mode='download_new', data_dir=None, fetch_neurosynth_words=False, resample=False,
-        vectorize_words=True, verbose=3, **kwarg_image_filters):
+    interpolation='continuous', vectorize_words=True, verbose=3, **kwarg_image_filters):
     """Download data from neurovault.org and neurosynth.org."""
     image_terms = dict(image_terms, **kwarg_image_filters)
     neurovault_data_dir = _get_dataset_dir('neurovault', data_dir)
@@ -2272,7 +2281,8 @@ def _fetch_neurovault_implementation(
         collection_terms=collection_terms,
         collection_filter=collection_filter, image_terms=image_terms,
         image_filter=image_filter, wanted_collection_ids=collection_ids,
-        wanted_image_ids=image_ids, max_images=max_images, resample=resample, verbose=verbose,
+        wanted_image_ids=image_ids, max_images=max_images, resample=resample,
+        interpolation=interpolation, verbose=verbose,
         fetch_neurosynth_words=fetch_neurosynth_words,
         vectorize_words=vectorize_words)
     download_params = _prepare_download_params(download_params)
@@ -2362,6 +2372,10 @@ def fetch_neurovault(
 
     resample : bool, optional (default=False)
         Resamples downloaded images to a 3x3x3 grid before saving them, to save disk space.
+
+    interpolation : str, optional
+        Can be 'continuous', 'linear', or 'nearest'. Indicates the resample
+        method. Default='continuous'. Argument passed to nilearn.image.resample_img.
 
     verbose : int, optional
         An integer in [0, 1, 2, 3] to control the verbosity level.
