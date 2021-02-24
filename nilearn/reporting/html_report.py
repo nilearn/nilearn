@@ -125,7 +125,7 @@ def _update_template(title, docstring, content, overlay,
     else:
         body_template_name = template_name
     body_template_path = resource_path.joinpath(body_template_name)
-    if not os.path.exists(body_template_path):
+    if not os.path.exists(str(body_template_path)):
         raise FileNotFoundError("No template {}".format(
                     body_template_name))
     tpl = tempita.HTMLTemplate.from_filename(str(body_template_path),
