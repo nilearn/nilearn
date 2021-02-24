@@ -434,12 +434,12 @@ def compute_background_mask(data_imgs, border_size=2,
                                                 target_shape=target_shape,
                                                 smooth=False)
 
-    background = np.median(get_border_data(data, border_size))
-    if np.isnan(background):
+    if np.isnan(get_border_data(data, border_size)).any():
         # We absolutely need to catter for NaNs as a background:
         # SPM does that by default
         mask = np.logical_not(np.isnan(data))
     else:
+        background = np.median(get_border_data(data, border_size))
         mask = data != background
 
     mask, affine = _post_process_mask(mask, affine, opening=opening,
