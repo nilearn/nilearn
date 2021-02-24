@@ -1,8 +1,11 @@
 import pytest
-import numpy as np
 from nibabel import Nifti1Image
+from collections import Counter
+import numpy as np
 from nilearn import input_data
-
+from nilearn._utils import data_gen
+from nilearn.image import get_data
+from numpy.testing import assert_almost_equal
 
 # Note: html output by nilearn view_* functions
 # should validate as html5 using https://validator.w3.org/nu/ with no
@@ -51,6 +54,47 @@ def test_3d_reports():
         html = masker.generate_report()
     assert masker._report_content['warning_message'] == warn_message
     _check_html(html)
+
+
+def test_nifti_labels_masker_report():
+    shape = (13, 11, 12)
+    affine = np.eye(4)
+    n_regions = 9
+    labels = ['background'] + ['region_{}'.format(i) for i in range(1, n_regions+1)]
+    length = 3
+    EXPECTED_COLUMNS = ['label value',
+                        'region name',
+                        'size (in mm^3)',
+                        'relative size (in %)']
+    labels_img = data_gen.generate_labeled_regions(shape,
+                                                   affine=affine,
+                                                   n_regions=n_regions)
+    masker = input_data.NiftiLabelsMasker(labels_img,
+                                          labels=labels)
+    masker.fit()
+    report = masker.generate_report()
+    # Resolution and background label were left as default
+    assert masker.background_label == 0
+    assert masker.resolution == 2.0
+    assert masker._report_content['description'] == (
+        'This reports shows the regions defined by the labels of the mask.')
+    # Check that the number of regions is correct
+    assert masker._report_content['number_of_regions'] == n_regions
+    # Check that all expected columns are present with the right size
+    for col in EXPECTED_COLUMNS:
+        assert col in masker._report_content['summary']
+        assert len(masker._report_content['summary'][col]) == n_regions
+    # Check that labels match
+    assert masker._report_content['summary']['region name'] == labels[1:]
+    # Relative sizes of regions should sum to 100%
+    assert_almost_equal(sum(masker._report_content['summary']['relative size (in %)']), 100)
+    _check_html(report)
+    assert "Regions summary" in str(report)
+    # Check region sizes calculations
+    expected_region_sizes = Counter(get_data(labels_img).ravel())
+    for r in range(1, n_regions+1):
+        assert(masker._report_content['summary']['size (in mm^3)'][r-1] ==
+               expected_region_sizes[r] * masker.resolution)
 
 
 def test_4d_reports():
