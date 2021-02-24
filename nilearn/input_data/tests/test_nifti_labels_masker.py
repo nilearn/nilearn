@@ -368,14 +368,14 @@ def test_nifti_labels_masker_with_mask():
     masked_signals = masked_masker.fit().transform(fmri_img)
     assert np.allclose(signals, masked_signals)
 
+
 def test_3d_images():
     # Test that the NiftiLabelsMasker works with 3D images
-    affine = np.diag((4, 4, 4, 1))
+    affine = np.eye(4)
     n_regions = 3
     shape3 = (2, 2, 2)
 
-    labels33_img = data_gen.generate_labeled_regions(shape3, n_regions,
-                                                     affine=affine)
+    labels33_img = data_gen.generate_labeled_regions(shape3, n_regions)
     mask_img = nibabel.Nifti1Image(np.ones(shape3, dtype=np.int8),
                            affine=affine)
     epi_img1 = nibabel.Nifti1Image(np.ones(shape3),
@@ -385,6 +385,6 @@ def test_3d_images():
     masker = NiftiLabelsMasker(labels33_img, mask_img=mask_img)
 
     epis = masker.fit_transform(epi_img1)
+    assert(epis.shape == (1, 3))
     epis = masker.fit_transform([epi_img1, epi_img2])
-    # This is mostly a smoke test
-    assert len(epis) == 2
+    assert(epis.shape == (2, 3))

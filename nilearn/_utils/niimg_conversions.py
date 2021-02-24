@@ -281,6 +281,7 @@ def check_niimg(niimg, ensure_ndim=None, atleast_4d=False, dtype=None,
 
     # Otherwise, it should be a filename or a SpatialImage, we load it
     niimg = load_niimg(niimg, dtype=dtype)
+    
     if ensure_ndim == 3 and len(niimg.shape) == 4 and niimg.shape[3] == 1:
         # "squeeze" the image.
         data = _safe_get_data(niimg)
