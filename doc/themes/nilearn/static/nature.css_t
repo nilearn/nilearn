@@ -69,6 +69,7 @@ div.content {
     background-color: #e74c3c;
     border-color: #e74c3c;
     color: #ffffff;
+    padding: 0.2em;
 }
 
 div.topic {
@@ -693,7 +694,7 @@ div.sphinxsidebar ul ul li {
 
 div.sphinxsidebarwrapper {
     width: 227px;
-    padding-top: 1em;
+    padding-top: 1.5em;
 }
 
 div.sphinxsidebarwrapper ul li p {
