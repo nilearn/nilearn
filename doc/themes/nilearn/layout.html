@@ -85,6 +85,26 @@ $(function() {
         updateTopMenuPosition(banner_height, width)
     })
 });
+
+/* When the user clicks on the button,
+toggle between hiding and showing the dropdown content */
+function toggle_button() {
+  document.getElementById("VersionDropdown").classList.toggle("show");
+}
+
+// Close the dropdown menu if the user clicks outside of it
+window.onclick = function(event) {
+  if (!event.target.matches('.dropbtn')) {
+    var dropdowns = document.getElementsByClassName("dropdown-content");
+    var i;
+    for (i = 0; i < dropdowns.length; i++) {
+      var openDropdown = dropdowns[i];
+      if (openDropdown.classList.contains('show')) {
+        openDropdown.classList.remove('show');
+      }
+    }
+  }
+} 
 </script>
 
 {%- if (pagename == 'index') %}
@@ -242,6 +262,15 @@ $(function () {
     <h1>Nilearn:</h1>
     <h2>Statistics for NeuroImaging in Python</h2>
   </div>
+
+    <div class="dropdown">
+        <button onclick="toggle_button()" class="dropbtn">Select documentation version</button>
+        <div id="VersionDropdown" class="dropdown-content">
+            <a href="https://nilearn.github.io/dev/index.html">Development version</a>
+            <a href="https://nilearn.github.io/stable/index.html">Stable version</a>
+        </div>
+    </div>
+
   <div class="search_form">
     <div class="gcse-search" id="cse" style="width: 100%;"></div>
     <script>
