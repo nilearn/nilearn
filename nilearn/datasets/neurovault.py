@@ -2117,7 +2117,7 @@ def _read_download_params(
     wanted_image_ids=None, max_images=None,
     max_consecutive_fails=_MAX_CONSECUTIVE_FAILS,
     max_fails_in_collection=_MAX_FAILS_IN_COLLECTION,
-    resample=False, interpolation='continuous',
+    resample=False, interpolation='linear',
     batch_size=None, verbose=3, fetch_neurosynth_words=False,
         vectorize_words=True):
 
