@@ -7,7 +7,6 @@ the data with different layout of cuts.
 
 import collections.abc
 import numbers
-import itertools
 from distutils.version import LooseVersion
 
 import matplotlib

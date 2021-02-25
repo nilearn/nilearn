@@ -180,9 +180,11 @@ def test_plot_functions_mosaic_mode(testdata_3d):
     img_3d = testdata_3d['img']
 
     # smoke-test for 3D plotting functions with display_mode='mosaic'
-    for plot_func in [plot_anat, plot_img, plot_stat_map, plot_epi,
-                      plot_roi]:
-        plot_func(img_3d, display_mode='mosaic')
+    for cut_coords in [None, 5, (5, 4, 3)]:
+        for plot_func in [plot_anat, plot_img, plot_stat_map, plot_epi,
+                          plot_roi]:
+            plot_func(img_3d, display_mode='mosaic',
+                      title='mosaic mode', cut_coords=cut_coords)
 
     plt.close()
 

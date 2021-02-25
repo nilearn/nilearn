@@ -23,6 +23,7 @@ def test_demo_ortho_slicer():
     oslicer = OrthoSlicer(cut_coords=(0, 0, 0))
     img = load_mni152_template()
     oslicer.add_overlay(img, cmap=plt.cm.gray)
+    oslicer.title("display mode is ortho")
     oslicer.close()
 
 
