@@ -1835,7 +1835,7 @@ class MosaicSlicer(BaseSlicer):
 
         Parameters
         ----------
-        img : 3D Nifti1Image
+        img : 3D Nifti1Image, optional
             The brain image.
 
         threshold : float, optional
@@ -1844,7 +1844,9 @@ class MosaicSlicer(BaseSlicer):
             the absolute value of the map.
 
         cut_coords : list/tuple of 3 floats, integer, optional
-            xyz world coordinates of cuts.
+            xyz world coordinates of cuts. If cut_coords
+            are not provided, 7 coordinates of cuts are automatically
+            calculated.
 
         Returns
         -------

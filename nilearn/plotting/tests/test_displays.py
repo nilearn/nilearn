@@ -68,9 +68,15 @@ def test_mosaic_slicer():
     # cut_coords as an integer
     slicer = MosaicSlicer.init_with_figure(img=img, cut_coords=4)
     slicer.add_overlay(img, cmap=plt.cm.gray, colorbar=True)
+    for d in ['x', 'y', 'z']:
+        assert d in slicer.cut_coords
+        assert len(slicer.cut_coords[d]) == 4
     # cut_coords as a tuple
     slicer = MosaicSlicer.init_with_figure(img=img, cut_coords=(4, 5, 2))
     slicer.add_overlay(img, cmap=plt.cm.gray, colorbar=True)
+    assert len(slicer.cut_coords['x']) == 4
+    assert len(slicer.cut_coords['y']) == 5
+    assert len(slicer.cut_coords['z']) == 2
     # test title
     slicer.title('Showing mosaic mode')
 
@@ -103,6 +109,7 @@ def test_demo_mosaic_slicer():
                                        'y': [30, 40],
                                        'z': [15, 16]})
     mslicer.add_overlay(img, cmap=plt.cm.gray)
+    assert mslicer.cut_coords == {'x': [10, 20], 'y': [30, 40], 'z': [15, 16]}
     # assert raises a ValueError
     pytest.raises(ValueError, MosaicSlicer, cut_coords=(2, 3))
     mslicer.close()
