@@ -284,7 +284,7 @@ class NiftiLabelsMasker(BaseMasker, CacheMixin):
         if not hasattr(self, '_resampled_mask_img'):
             self._resampled_mask_img = self.mask_img_
         if self.resampling_target == "data":
-            imgs_ = _utils.check_niimg_4d(imgs)
+            imgs_ = _utils.check_niimg(imgs, atleast_4d=True)
             if not _check_same_fov(imgs_, self._resampled_labels_img_):
                 if self.verbose > 0:
                     print("Resampling labels")
