@@ -66,10 +66,6 @@ class NiftiLabelsMasker(BaseMasker, CacheMixin):
         See http://nilearn.github.io/manipulating_images/input_output.html
         Mask to apply to regions before extracting signals.
 
-    resolution : float, optional
-        Resolution of provided `labels_img` (in mm^3).
-        Default=2.
-
     smoothing_fwhm : float, optional
         If smoothing_fwhm is not None, it gives the full-width half maximum in
         millimeters of the spatial smoothing to apply to the signal.
@@ -151,16 +147,15 @@ class NiftiLabelsMasker(BaseMasker, CacheMixin):
     # memory and memory_level are used by CacheMixin.
 
     def __init__(self, labels_img, labels=None, background_label=0, mask_img=None,
-                 resolution=2.0, smoothing_fwhm=None, standardize=False,
-                 standardize_confounds=True, high_variance_confounds=False, detrend=False,
-                 low_pass=None, high_pass=None, t_r=None, dtype=None, resampling_target="data",
+                 smoothing_fwhm=None, standardize=False, standardize_confounds=True,
+                 high_variance_confounds=False, detrend=False, low_pass=None,
+                 high_pass=None, t_r=None, dtype=None, resampling_target="data",
                  memory=Memory(location=None, verbose=0), memory_level=1,
                  verbose=0, strategy="mean", reports=True):
         self.labels_img = labels_img
         self.labels = labels
         self.background_label = background_label
         self.mask_img = mask_img
-        self.resolution = resolution
 
         # Parameters for _smooth_array
         self.smoothing_fwhm = smoothing_fwhm
@@ -229,6 +224,7 @@ class NiftiLabelsMasker(BaseMasker, CacheMixin):
         if 'labels_image' in self._reporting_data:
             labels_image = self._reporting_data['labels_image']
             labels_image_data = image.get_data(labels_image)
+            labels_image_affine = image.load_img(labels_image).affine
             # Number of regions excluding the background
             number_of_regions = np.sum(np.unique(labels_image_data) !=
                                        self.background_label)
@@ -256,8 +252,10 @@ class NiftiLabelsMasker(BaseMasker, CacheMixin):
                 if self.labels is not None:
                     regions_summary['region name'].append(self.labels[label])
                 size = len(labels_image_data[labels_image_data == label])
-                regions_summary['size (in mm^3)'].append(
-                                        size * self.resolution)
+                voxel_volume = np.abs(np.linalg.det(
+                                    labels_image_affine[:3, :3]))
+                regions_summary['size (in mm^3)'].append(round(
+                                        size * voxel_volume))
                 regions_summary['relative size (in %)'].append(round(
                     size / len(labels_image_data[labels_image_data != 0]) * 100,
                     2))

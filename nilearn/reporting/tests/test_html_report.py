@@ -58,7 +58,7 @@ def test_3d_reports():
 
 def test_nifti_labels_masker_report():
     shape = (13, 11, 12)
-    affine = np.eye(4)
+    affine = np.diag([2, 2, 2, 1])
     n_regions = 9
     labels = ['background'] + ['region_{}'.format(i) for i in range(1, n_regions+1)]
     length = 3
@@ -75,7 +75,6 @@ def test_nifti_labels_masker_report():
     report = masker.generate_report()
     # Resolution and background label were left as default
     assert masker.background_label == 0
-    assert masker.resolution == 2.0
     assert masker._report_content['description'] == (
         'This reports shows the regions defined by the labels of the mask.')
     # Check that the number of regions is correct
@@ -93,8 +92,9 @@ def test_nifti_labels_masker_report():
     # Check region sizes calculations
     expected_region_sizes = Counter(get_data(labels_img).ravel())
     for r in range(1, n_regions+1):
-        assert(masker._report_content['summary']['size (in mm^3)'][r-1] ==
-               expected_region_sizes[r] * masker.resolution)
+        assert_almost_equal(masker._report_content['summary']['size (in mm^3)'][r-1],
+               expected_region_sizes[r] *
+               np.abs(np.linalg.det(affine[:3, :3])))
 
 
 def test_4d_reports():
