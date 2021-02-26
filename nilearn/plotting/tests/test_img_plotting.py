@@ -176,6 +176,19 @@ def test_plot_functions(testdata_3d, testdata_4d, tmpdir):
     plt.close()
 
 
+def test_plot_functions_mosaic_mode(testdata_3d):
+    img_3d = testdata_3d['img']
+
+    # smoke-test for 3D plotting functions with display_mode='mosaic'
+    for cut_coords in [None, 5, (5, 4, 3)]:
+        for plot_func in [plot_anat, plot_img, plot_stat_map, plot_epi,
+                          plot_roi]:
+            plot_func(img_3d, display_mode='mosaic',
+                      title='mosaic mode', cut_coords=cut_coords)
+
+    plt.close()
+
+
 def test_plot_glass_brain(testdata_3d, tmpdir):
     img = testdata_3d['img']
 
@@ -1001,6 +1014,18 @@ def test_invalid_in_display_mode_tiled_cut_coords_all_plots(testdata_3d):
                                  "match the display_mode"
                            ):
             plot_func(img, display_mode='tiled', cut_coords=(2, 2))
+
+
+def test_invalid_in_display_mode_mosaic_cut_coords_all_plots(testdata_3d):
+    img = testdata_3d['img']
+
+    for plot_func in [plot_img, plot_anat, plot_roi, plot_epi,
+                      plot_stat_map, plot_prob_atlas]:
+        with pytest.raises(ValueError,
+                           match="The number cut_coords passed does not "
+                                 "match the display_mode"
+                           ):
+            plot_func(img, display_mode='mosaic', cut_coords=(2, 2))
 
 
 def test_outlier_cut_coords():

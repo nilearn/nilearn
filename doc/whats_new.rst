@@ -52,6 +52,11 @@ Enhancements
   perform a fixed resampling during download or keep original images. This can be handy to reduce disk usage.
   By default, the downloaded images are not resampled.
 
+- The functions :func:`nilearn.plotting.plot_epi`, :func:`nilearn.plotting.plot_roi`,
+  :func:`nilearn.plotting.plot_stat_map`, :func:`nilearn.plotting.plot_prob_atlas`
+  is now implemented with new display mode Mosaic. That implies plotting 3D maps
+  in multiple columns and rows in a single axes.
+
 .. _v0.7.0:
 
 0.7.0
