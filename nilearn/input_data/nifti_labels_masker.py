@@ -221,8 +221,8 @@ class NiftiLabelsMasker(BaseMasker, CacheMixin):
                               message=mpl_unavail_msg)
                 return [None]
 
-        if 'labels_image' in self._reporting_data:
-            labels_image = self._reporting_data['labels_image']
+        labels_image = self._reporting_data['labels_image']
+        if labels_image is not None:
             labels_image_data = image.get_data(labels_image)
             labels_image_affine = image.load_img(labels_image).affine
             # Number of regions excluding the background
@@ -260,14 +260,43 @@ class NiftiLabelsMasker(BaseMasker, CacheMixin):
                     size / len(labels_image_data[labels_image_data != 0]) * 100,
                     2))
             self._report_content['summary'] = regions_summary
-            display = plotting.plot_roi(self._reporting_data['labels_image'])
+
+            img = self._reporting_data['img']
+            # If we have a func image to show in the report, use it
+            if img is not None:
+                dim = image.load_img(img).shape
+                if len(dim) == 4:
+                    # compute middle image from 4D series for plotting
+                    img = image.index_img(img, dim[-1] // 2)
+                display = plotting.plot_img(img,
+                                            black_bg=False,
+                                            cmap='CMRmap_r')
+                display.add_contours(labels_image,
+                                     filled=False,
+                                     linewidths=3)
+
+            # Otherwise, simply plot the ROI of the label image
+            # and give a warning to the user
+            else:
+                msg = ("No image provided to fit in NiftiLabelsMasker. "
+                       "Plotting ROI of label image for reporting.")
+                warnings.warn(msg)
+                self._report_content['warning_message'] = msg
+                display = plotting.plot_roi(labels_image)
+
+            # If we have a mask, show its contours
+            if self._reporting_data['mask'] is not None:
+                display.add_contours(self._reporting_data['mask'],
+                                     filled=False,
+                                     colors="g",
+                                     linewidths=3)
         else:
             self._report_content['summary'] = None
             display = None
 
         return [display]
 
-    def fit(self, X=None, y=None):
+    def fit(self, imgs=None, y=None):
         """Prepare signal extraction from regions.
 
         All parameters are unused, they are for scikit-learn compatibility.
@@ -325,7 +354,8 @@ class NiftiLabelsMasker(BaseMasker, CacheMixin):
 
         if self.reports:
             self._reporting_data = {'labels_image': self._resampled_labels_img_,
-                                    'mask': self.mask_img_}
+                                    'mask': self.mask_img_,
+                                    'img': imgs}
         else:
             self._reporting_data = None
 
