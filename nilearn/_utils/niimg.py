@@ -7,11 +7,13 @@ Neuroimaging file input and output.
 import copy
 import gc
 import collections.abc
+from warnings import warn
 
 import numpy as np
 import nibabel
 
 from pathlib import Path
+
 
 def _get_data(img):
     # copy-pasted from https://github.com/nipy/nibabel/blob/de44a105c1267b07ef9e28f6c35b31f851d5a005/nibabel/dataobj_images.py#L204
@@ -55,7 +57,11 @@ def _safe_get_data(img, ensure_finite=False, copy_data=False):
     data = _get_data(img)
     if ensure_finite:
         non_finite_mask = np.logical_not(np.isfinite(data))
-        if non_finite_mask.sum() > 0: # any non_finite_mask values?
+        if non_finite_mask.sum() > 0:  # any non_finite_mask values?
+            warn(
+                "Non-finite data detected. "
+                "These data will be replaced with zeros."
+            )
             data[non_finite_mask] = 0
 
     return data
