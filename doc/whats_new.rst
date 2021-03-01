@@ -56,6 +56,9 @@ Enhancements
   :func:`nilearn.plotting.plot_stat_map`, :func:`nilearn.plotting.plot_prob_atlas`
   is now implemented with new display mode Mosaic. That implies plotting 3D maps
   in multiple columns and rows in a single axes.
+  
+- :func:`nilearn.signal._standardize` option `psc` now allow time series with negative mean value. 
+
 
 .. _v0.7.0:
 
