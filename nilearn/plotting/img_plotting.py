@@ -1984,9 +1984,9 @@ def plot_carpet(img, mask_img=None, mask_labels=None,
         atlas_values = np.squeeze(atlas_values)
 
         if mask_labels:
-            label_dtype = type(mask_labels.values()[0])
+            label_dtype = type(list(mask_labels.values())[0])
             if label_dtype != atlas_values.dtype:
-                print(f"Coercing atlas_values to {label_dtype}")
+                print("Coercing atlas_values to {}".format(label_dtype))
                 atlas_values = atlas_values.astype(label_dtype)
 
         # Sort data and atlas by atlas values
