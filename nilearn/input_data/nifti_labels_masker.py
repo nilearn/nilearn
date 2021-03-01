@@ -179,6 +179,8 @@ class NiftiLabelsMasker(BaseMasker, CacheMixin):
         self.verbose = verbose
         self.reports = reports
         self._report_content = dict()
+        self._report_content['description'] = (
+            'This reports shows the regions defined by the labels of the mask.')
         self._report_content['warning_message'] = None
 
         available_reduction_strategies = {'mean', 'median', 'sum',
@@ -221,7 +223,11 @@ class NiftiLabelsMasker(BaseMasker, CacheMixin):
                               message=mpl_unavail_msg)
                 return [None]
 
-        labels_image = self._reporting_data['labels_image']
+        if self._reporting_data is not None:
+            labels_image = self._reporting_data['labels_image']
+        else:
+            labels_image = None
+
         if labels_image is not None:
             labels_image_data = image.get_data(labels_image)
             labels_image_affine = image.load_img(labels_image).affine
@@ -236,8 +242,6 @@ class NiftiLabelsMasker(BaseMasker, CacheMixin):
                                   "labels ({0}) and the number of regions "
                                   "in provided label image ({1})").format(
                                       len(self.labels), number_of_regions + 1))
-            self._report_content['description'] = (
-            'This reports shows the regions defined by the labels of the mask.')
             self._report_content['number_of_regions'] = number_of_regions
 
             label_values = np.unique(labels_image_data)

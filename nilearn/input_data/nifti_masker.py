@@ -310,8 +310,14 @@ class NiftiMasker(BaseMasker, CacheMixin):
                             message=mpl_unavail_msg)
                 return [None]
 
+        # Handle the edge case where this function is
+        # called with a masker having report capabilities disabled
+        if self._reporting_data is None:
+            return [None]
+
         img = self._reporting_data['images']
         mask = self._reporting_data['mask']
+
         if img is not None:
             dim = image.load_img(img).shape
             if len(dim) == 4:
@@ -329,8 +335,9 @@ class NiftiMasker(BaseMasker, CacheMixin):
         init_display = plotting.plot_img(img,
                                          black_bg=False,
                                          cmap='CMRmap_r')
-        init_display.add_contours(mask, levels=[.5], colors='g',
-                                  linewidths=2.5)
+        if mask is not None:
+            init_display.add_contours(mask, levels=[.5], colors='g',
+                                      linewidths=2.5)
 
         if 'transform' not in self._reporting_data:
             return [init_display]

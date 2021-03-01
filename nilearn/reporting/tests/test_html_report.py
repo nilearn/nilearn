@@ -148,19 +148,28 @@ def test_4d_reports():
     _check_html(html)
 
 
-def _generate_empty_report():
+def test_empty_report():
+    # Data for NiftiMasker
     data = np.zeros((9, 9, 9))
     data[3:-3, 3:-3, 3:-3] = 10
     data_img_3d = Nifti1Image(data, np.eye(4))
-
+    # Data for NiftiLabelsMasker
+    shape = (13, 11, 12)
+    affine = np.diag([2, 2, 2, 1])
+    n_regions = 9
+    labels_img = data_gen.generate_labeled_regions(shape,
+                                                   affine=affine,
+                                                   n_regions=n_regions)
     # turn off reporting
-    mask = input_data.NiftiMasker(reports=False)
-    mask.fit(data_img_3d)
-    mask.generate_report()
-
-
-def test_empty_report():
-    pytest.warns(UserWarning, _generate_empty_report)
+    maskers = [input_data.NiftiMasker(reports=False),
+               input_data.NiftiLabelsMasker(labels_img, reports=False)]
+    for masker in maskers:
+        masker.fit(data_img_3d)
+        assert masker._reporting() == [None]
+        with pytest.warns(UserWarning,
+                          match=("Report generation not enabled ! "
+                                 "No visual outputs will be created.")):
+            masker.generate_report()
 
 
 def test_overlaid_report():
