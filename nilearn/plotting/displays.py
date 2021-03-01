@@ -12,6 +12,7 @@ from distutils.version import LooseVersion
 import matplotlib
 import matplotlib.pyplot as plt
 import numpy as np
+import warnings
 from matplotlib import cm as mpl_cm
 from matplotlib import (colors,
                         lines,
@@ -19,6 +20,7 @@ from matplotlib import (colors,
                         )
 from matplotlib.colorbar import ColorbarBase
 from matplotlib.font_manager import FontProperties
+from matplotlib.patches import FancyArrow
 from mpl_toolkits.axes_grid1.anchored_artists import AnchoredSizeBar
 from scipy import sparse, stats
 
@@ -456,7 +458,7 @@ class GlassBrainAxes(BaseAxes):
                         c=marker_color, **kwargs)
 
     def _add_lines(self, line_coords, line_values, cmap,
-                   vmin=None, vmax=None, **kwargs):
+                   vmin=None, vmax=None, directed=False, **kwargs):
         """Plot lines
 
         Parameters
@@ -476,6 +478,10 @@ class GlassBrainAxes(BaseAxes):
             supplied the maximum absolute value within the given threshold
             will be used as minimum (multiplied by -1) and maximum
             coloring levels.
+
+        directed : boolean, optional
+            Add arrows instead of lines if set to True. Use this when plotting
+            directed graphs for example. Default=False.
 
         kwargs : dict
             Additional arguments to pass to matplotlib Line2D.
@@ -541,8 +547,29 @@ class GlassBrainAxes(BaseAxes):
             # user can override the default logic
             this_kwargs.update(kwargs)
             xdata, ydata = start_end_point_2d.T
-            line = lines.Line2D(xdata, ydata, **this_kwargs)
-            self.ax.add_line(line)
+            # If directed is True, add an arrow
+            if directed:
+                dx = xdata[1] - xdata[0]
+                dy = ydata[1] - ydata[0]
+                # Hack to avoid empty arrows to crash with
+                # matplotlib versions older than 3.1
+                # This can be removed once support for
+                # matplotlib pre 3.1 has been dropped.
+                if dx == 0 and dy == 0:
+                    arrow = FancyArrow(xdata[0], ydata[0],
+                                       dx, dy)
+                else:
+                    arrow = FancyArrow(xdata[0], ydata[0],
+                                       dx, dy,
+                                       length_includes_head=True,
+                                       width=linewidth,
+                                       head_width=3*linewidth,
+                                       **this_kwargs)
+                self.ax.add_patch(arrow)
+            # Otherwise a line
+            else:
+                line = lines.Line2D(xdata, ydata, **this_kwargs)
+                self.ax.add_line(line)
 
 
 ###############################################################################
@@ -2063,8 +2090,10 @@ class OrthoProjector(OrthoSlicer):
         Parameters
         ----------
         adjacency_matrix : numpy array of shape (n, n)
-            Represents the edges strengths of the graph. Assumed to be
-            a symmetric matrix.
+            Represents the edges strengths of the graph.
+            The matrix can be symmetric which will result in
+            an undirected graph, or not symmetric which will
+            result in a directed graph.
 
         node_coords : numpy array_like of shape (n, 3)
             3d coordinates of the graph nodes in world space.
@@ -2158,34 +2187,48 @@ class OrthoProjector(OrthoSlicer):
                 "'adjacency_matrix' shape is {0}, 'node_coords' shape is {1}"
                 .format(adjacency_matrix_shape, node_coords_shape))
 
+        # If the adjacency matrix is not symmetric, give a warning
+        symmetric = True
         if not np.allclose(adjacency_matrix, adjacency_matrix.T, rtol=1e-3):
-            raise ValueError("'adjacency_matrix' should be symmetric")
+            symmetric = False
+            warnings.warn(("'adjacency_matrix' is not symmetric. "
+                           "A directed graph will be plotted."))
 
         # For a masked array, masked values are replaced with zeros
         if hasattr(adjacency_matrix, 'mask'):
             if not (adjacency_matrix.mask == adjacency_matrix.mask.T).all():
-                raise ValueError(
-                    "'adjacency_matrix' was masked with a non symmetric mask")
+                symmetric = False
+                warnings.warn(("'adjacency_matrix' was masked with "
+                               "a non symmetric mask. A directed "
+                               "graph will be plotted."))
             adjacency_matrix = adjacency_matrix.filled(0)
 
         if edge_threshold is not None:
-            # Keep a percentile of edges with the highest absolute
-            # values, so only need to look at the covariance
-            # coefficients below the diagonal
-            lower_diagonal_indices = np.tril_indices_from(adjacency_matrix,
-                                                          k=-1)
-            lower_diagonal_values = adjacency_matrix[
-                lower_diagonal_indices]
-            edge_threshold = _utils.param_validation.check_threshold(
-                edge_threshold, np.abs(lower_diagonal_values),
-                stats.scoreatpercentile, 'edge_threshold')
+            if symmetric:
+                # Keep a percentile of edges with the highest absolute
+                # values, so only need to look at the covariance
+                # coefficients below the diagonal
+                lower_diagonal_indices = np.tril_indices_from(adjacency_matrix,
+                                                              k=-1)
+                lower_diagonal_values = adjacency_matrix[
+                    lower_diagonal_indices]
+                edge_threshold = _utils.param_validation.check_threshold(
+                    edge_threshold, np.abs(lower_diagonal_values),
+                    stats.scoreatpercentile, 'edge_threshold')
+            else:
+                edge_threshold = _utils.param_validation.check_threshold(
+                    edge_threshold, np.abs(adjacency_matrix.ravel()),
+                    stats.scoreatpercentile, 'edge_threshold')
 
             adjacency_matrix = adjacency_matrix.copy()
             threshold_mask = np.abs(adjacency_matrix) < edge_threshold
             adjacency_matrix[threshold_mask] = 0
 
-        lower_triangular_adjacency_matrix = np.tril(adjacency_matrix, k=-1)
-        non_zero_indices = lower_triangular_adjacency_matrix.nonzero()
+        if symmetric:
+            lower_triangular_adjacency_matrix = np.tril(adjacency_matrix, k=-1)
+            non_zero_indices = lower_triangular_adjacency_matrix.nonzero()
+        else:
+            non_zero_indices = adjacency_matrix.nonzero()
 
         line_coords = [node_coords[list(index)]
                        for index in zip(*non_zero_indices)]
@@ -2195,7 +2238,7 @@ class OrthoProjector(OrthoSlicer):
             ax._add_markers(node_coords, node_color, node_size, **node_kwargs)
             if line_coords:
                 ax._add_lines(line_coords, adjacency_matrix_values, edge_cmap,
-                              vmin=edge_vmin, vmax=edge_vmax,
+                              vmin=edge_vmin, vmax=edge_vmax, directed=(not symmetric),
                               **edge_kwargs)
             # To obtain the brain left view, we simply invert the x axis
             if ax.direction == 'l' and not (ax.ax.get_xlim()[0] > ax.ax.get_xlim()[1]):
