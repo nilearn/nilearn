@@ -1953,7 +1953,7 @@ def plot_carpet(img, mask_img=None, mask_labels=None,
             https://doi.org/10.1016/j.neuroimage.2016.08.009
 
     """
-    img = _utils.check_niimg_4d(img, dtype="auto")
+    img = _utils.check_niimg_4d(img, dtype='auto')
 
     # Define TR and number of frames
     tr = img.header.get_zooms()[-1]
@@ -1962,7 +1962,7 @@ def plot_carpet(img, mask_img=None, mask_labels=None,
     if mask_img is None:
         mask_img = compute_epi_mask(img)
     else:
-        mask_img = _utils.check_niimg_3d(mask_img, dtype="auto")
+        mask_img = _utils.check_niimg_3d(mask_img, dtype='auto')
 
     is_atlas = len(np.unique(mask_img.get_fdata())) > 2
     if is_atlas:
@@ -1971,11 +1971,11 @@ def plot_carpet(img, mask_img=None, mask_labels=None,
         atlas_img_res = resample_to_img(
             mask_img,
             img,
-            interpolation="nearest"
+            interpolation='nearest',
         )
         atlas_bin = math_img(
-            "img != {}".format(background_label),
-            img=atlas_img_res
+            'img != {}'.format(background_label),
+            img=atlas_img_res,
         )
         masker = NiftiMasker(atlas_bin, target_affine=img.affine)
 
@@ -1986,7 +1986,7 @@ def plot_carpet(img, mask_img=None, mask_labels=None,
         if mask_labels:
             label_dtype = type(list(mask_labels.values())[0])
             if label_dtype != atlas_values.dtype:
-                print("Coercing atlas_values to {}".format(label_dtype))
+                print('Coercing atlas_values to {}'.format(label_dtype))
                 atlas_values = atlas_values.astype(label_dtype)
 
         # Sort data and atlas by atlas values
@@ -1999,7 +1999,7 @@ def plot_carpet(img, mask_img=None, mask_labels=None,
 
     # Detrend and standardize data
     if detrend:
-        data = clean(data, t_r=tr, detrend=True, standardize="zscore")
+        data = clean(data, t_r=tr, detrend=True, standardize='zscore')
 
     if figure is None:
         if not axes:
@@ -2011,7 +2011,7 @@ def plot_carpet(img, mask_img=None, mask_labels=None,
     if axes is None:
         axes = figure.add_subplot(1, 1, 1)
     else:
-        assert axes.figure is figure, ("The axes passed are not in the figure")
+        assert axes.figure is figure, ('The axes passed are not in the figure')
 
     # Determine vmin and vmax based on the full data
     std = np.mean(data.std(axis=0))
@@ -2041,8 +2041,8 @@ def plot_carpet(img, mask_img=None, mask_labels=None,
         ax0.set_xticks([])
         ax0.imshow(
             atlas_values[:, np.newaxis],
-            interpolation="none",
-            aspect="auto",
+            interpolation='none',
+            aspect='auto',
             cmap=cmap
         )
         if mask_labels:
@@ -2063,19 +2063,19 @@ def plot_carpet(img, mask_img=None, mask_labels=None,
         axes = plt.subplot(gs[1])  # overwrite axes
         axes.imshow(
             data.T,
-            interpolation="nearest",
-            aspect="auto",
-            cmap="gray",
+            interpolation='nearest',
+            aspect='auto',
+            cmap='gray',
             vmin=vmin or default_vmin,
             vmax=vmax or default_vmax,
         )
-        ax0.tick_params(axis="both", which="both", length=0)
+        ax0.tick_params(axis='both', which='both', length=0)
     else:
         axes.imshow(
             data.T,
-            interpolation="nearest",
-            aspect="auto",
-            cmap="gray",
+            interpolation='nearest',
+            aspect='auto',
+            cmap='gray',
             vmin=vmin or default_vmin,
             vmax=vmax or default_vmax,
         )
@@ -2089,7 +2089,7 @@ def plot_carpet(img, mask_img=None, mask_labels=None,
         (int(data.shape[0] + 1) // 10, int(data.shape[0] + 1) // 5, 1))
     xticks = list(range(0, data.shape[0])[::interval])
     axes.set_xticks(xticks)
-    axes.set_xlabel("time (s)")
+    axes.set_xlabel('time (s)')
 
     if title:
         axes.set_title(title)
@@ -2099,19 +2099,19 @@ def plot_carpet(img, mask_img=None, mask_labels=None,
     axes.set_xticklabels(['%.02f' % t for t in labels.tolist()])
 
     # Remove and redefine spines
-    for side in ["top", "right"]:
+    for side in ['top', 'right']:
         # Toggle the spine objects
-        axes.spines[side].set_color("none")
+        axes.spines[side].set_color('none')
         axes.spines[side].set_visible(False)
 
-    axes.xaxis.set_ticks_position("bottom")
-    axes.spines["bottom"].set_position(("outward", 10))
+    axes.xaxis.set_ticks_position('bottom')
+    axes.spines['bottom'].set_position(('outward', 10))
 
     if not mask_labels:
-        axes.yaxis.set_ticks_position("left")
+        axes.yaxis.set_ticks_position('left')
         buffer = 20 if is_atlas else 10
-        axes.spines["left"].set_position(("outward", buffer))
-        axes.set_ylabel("voxels")
+        axes.spines['left'].set_position(('outward', buffer))
+        axes.set_ylabel('voxels')
 
     if output_file is not None:
         figure.savefig(output_file)

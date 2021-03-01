@@ -311,8 +311,7 @@ def test_plot_glass_brain_threshold_for_uint8(testdata_3d):
 
 
 def test_plot_carpet(testdata_4d):
-    """Check contents of plot_carpet figure against data in image.
-    """
+    """Check contents of plot_carpet figure against data in image."""
     img_4d = testdata_4d['img_4d']
     img_4d_long = testdata_4d['img_4d_long']
     mask_img = testdata_4d['img_mask']
@@ -343,8 +342,7 @@ def test_plot_carpet(testdata_4d):
 
 
 def test_plot_carpet_with_atlas(testdata_4d):
-    """Test plot_carpet when using an atlas.
-    """
+    """Test plot_carpet when using an atlas."""
     img_4d = testdata_4d['img_4d']
     mask_img = testdata_4d['img_atlas']
     atlas_labels = testdata_4d['atlas_labels']
@@ -355,10 +353,10 @@ def test_plot_carpet_with_atlas(testdata_4d):
     # Check the output
     # Two axes: 1 for colorbar and 1 for imshow
     assert len(display.axes) == 2
-    # The y-axis label of the imshow should be "voxels" since atlas labels are
+    # The y-axis label of the imshow should be 'voxels' since atlas labels are
     # unknown
     ax = display.axes[1]
-    assert ax.get_ylabel() == "voxels"
+    assert ax.get_ylabel() == 'voxels'
 
     # Next two lines retrieve the numpy array from the plot
     ax = display.axes[0]
