@@ -14,6 +14,7 @@ from scipy import ndimage
 
 from nilearn.image import get_data
 from nilearn.image.resampling import coord_transform
+from nilearn._utils import check_niimg_3d
 
 
 def _local_max(data, affine, min_distance):
@@ -159,6 +160,8 @@ def get_clusters_table(stat_img, stat_threshold, cluster_threshold=None,
     """
     cols = ['Cluster ID', 'X', 'Y', 'Z', 'Peak Stat', 'Cluster Size (mm3)']
 
+    # check that stat_img is niimg-like object and 3D
+    stat_img = check_niimg_3d(stat_img)
     # If cluster threshold is used, there is chance that stat_map will be
     # modified, therefore copy is needed
     if cluster_threshold is None:

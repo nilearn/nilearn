@@ -18,6 +18,8 @@ import pandas as pd
 import pytest
 
 from nilearn.datasets import neurovault
+from nilearn.image import load_img
+from nilearn._utils.data_gen import generate_fake_fmri
 
 
 def _get_neurovault_data(random_seed=0):
@@ -176,8 +178,8 @@ def _neurovault_one_image(img_id):
 
 
 def _neurovault_file(parts, query):
-    """Mocks the Neurovault API behind the `/api/media/` path."""
-    return ""
+    """Mocks the Neurovault API behind the `/media/images/` path."""
+    return generate_fake_fmri(length=1)[0]
 
 
 class _NumpyJsonEncoder(json.JSONEncoder):
@@ -198,14 +200,24 @@ def _neurovault(match, request):
     responses: https://neurovault.org/api-docs
 
     """
-    handlers = {"collections": _neurovault_collections,
-                "images": _neurovault_images,
-                "media": _neurovault_file}
+    handlers = {
+        "media": {"images": _neurovault_file},
+        "api": {
+            "collections": _neurovault_collections,
+            "images": _neurovault_images,
+        }
+    }
     info = parse.urlparse(request.url)
     parts = list(filter(bool, info.path.split("/")))
-    section = parts[1]
-    result = handlers[section](parts[2:], _parse_query(info.query))
-    return json.dumps(result, cls=_NumpyJsonEncoder).encode("UTF-8")
+    endpoint, section = parts[0], parts[1]
+
+    result = handlers[endpoint][section](parts[2:], _parse_query(info.query))
+    should_jsonify_response = endpoint == "api"
+    return (
+        json.dumps(result, cls=_NumpyJsonEncoder).encode("UTF-8")
+        if should_jsonify_response
+        else result
+    )
 
 
 @pytest.fixture(autouse=True)
@@ -732,3 +744,109 @@ def test_fetch_neurovault_ids(tmp_path):
         image_ids=[img_ids[0]], data_dir=data_dir, mode='offline')
     # should be back to the original version
     assert data['images_meta'][0]['some_key'] == 'some_value'
+
+
+def test_should_download_resampled_images_only_if_no_previous_download(tmp_path):
+    collections, images = _get_neurovault_data()
+
+    sample_collection = collections.iloc[0]
+    sample_collection_id = sample_collection["id"]
+    expected_number_of_images = sample_collection["true_number_of_images"]
+
+    data = neurovault.fetch_neurovault_ids(
+        collection_ids=[sample_collection_id],
+        data_dir=str(tmp_path),
+        resample=True,
+    )
+
+    # Check the expected size of the dataset
+    assert (len(data['images_meta'])) == expected_number_of_images
+
+    # Check that the resampled version is here
+    assert np.all([os.path.isfile(im_meta['resampled_absolute_path']) for im_meta in data['images_meta']])
+
+    # Load images that are fetched and check the affines
+    affines = [load_img(cur_im).affine for cur_im in data['images']]
+    assert np.all([np.all(affine == neurovault.STD_AFFINE) for affine in affines])
+
+    # Check that the original version is NOT here
+    assert not np.any([os.path.isfile(im_meta['absolute_path']) for im_meta in data['images_meta']])
+
+
+def test_should_download_original_images_along_resampled_images_if_previously_downloaded(tmp_path):
+    collections, images = _get_neurovault_data()
+
+    sample_collection = collections.iloc[0]
+    sample_collection_id = sample_collection["id"]
+
+    # Fetch non-resampled images
+    data = neurovault.fetch_neurovault_ids(collection_ids=[sample_collection_id], data_dir=str(tmp_path),
+                                                resample=True)
+
+    # Check that only the resampled version is here
+    assert np.all([os.path.isfile(im_meta['resampled_absolute_path']) for im_meta in data['images_meta']])
+    assert not np.any([os.path.isfile(im_meta['absolute_path']) for im_meta in data['images_meta']])
+
+    # Get the time of the last access to the resampled data
+    access_time_resampled = (os.path.getatime(data['images_meta'][0]['resampled_absolute_path']))
+
+    # Download original data
+    data_orig = neurovault.fetch_neurovault_ids(collection_ids=[sample_collection_id], data_dir=str(tmp_path), resample=False)
+
+    # Get the time of the last access to one of the original files (which should be download time)
+    access_time = (os.path.getatime(data_orig['images_meta'][0]['absolute_path']))
+
+    # Check that the last access to the original data is after the access to the resampled data
+    assert (access_time - access_time_resampled > 0)
+
+    # Check that the original version is now here (previous test should have failed anyway if not)
+    assert np.all([os.path.isfile(im_meta['absolute_path']) for im_meta in data_orig['images_meta']])
+
+    # Check that the affines of the original version do not correspond to the resampled one
+    affines_orig = [load_img(cur_im).affine for cur_im in data_orig['images']]
+    assert not np.any([np.all(affine == neurovault.STD_AFFINE) for affine in affines_orig])
+
+
+
+def test_should_download_resampled_images_along_original_images_if_previously_downloaded(tmp_path):
+    collections, images = _get_neurovault_data()
+
+    sample_collection = collections.iloc[0]
+    sample_collection_id = sample_collection["id"]
+
+    # Fetch non-resampled images
+    data_orig = neurovault.fetch_neurovault_ids(collection_ids=[sample_collection_id], data_dir=str(tmp_path), resample=False)
+
+    # Check that the original version is here
+    assert np.all([os.path.isfile(im_meta['absolute_path']) for im_meta in data_orig['images_meta']])
+
+    # Check that the resampled version is NOT here
+    assert not np.any([os.path.isfile(im_meta['resampled_absolute_path']) for im_meta in data_orig['images_meta']])
+
+    # Asks for the resampled version. This should only resample, not download.
+
+    # Get the time of the last modification to the original data
+    modif_time_original = (os.path.getmtime(data_orig['images_meta'][0]['absolute_path']))
+
+    # Ask for resampled data, which should only trigger resample
+    data = neurovault.fetch_neurovault_ids(collection_ids=[sample_collection_id], data_dir=str(tmp_path), resample=True)
+
+    # Get the time of the last modification to the original data, after fetch
+    modif_time_original_after = (os.path.getmtime(data['images_meta'][0]['absolute_path']))
+
+    # The time difference should be 0
+    assert (np.isclose(modif_time_original, modif_time_original_after))
+
+    # Check that the resampled version is here
+    assert np.all([os.path.isfile(im_meta['resampled_absolute_path']) for im_meta in data['images_meta']])
+
+    # And the original version should still be here as well
+    assert np.all([os.path.isfile(im_meta['absolute_path']) for im_meta in data['images_meta']])
+
+    # Load resampled images and check the affines
+    affines = [load_img(cur_im).affine for cur_im in data['images']]
+    assert np.all([np.all(affine == neurovault.STD_AFFINE) for affine in affines])
+
+    # Check that the affines of the original version do not correspond to the resampled one
+    affines_orig = [load_img(cur_im).affine for cur_im in data_orig['images']]
+    assert not np.any([np.all(affine == neurovault.STD_AFFINE) for affine in affines_orig])

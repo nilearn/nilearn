@@ -45,6 +45,22 @@ Enhancements
   When an atlas is used, a colorbar is added to the figure,
   optionally with labels corresponding to the different values in the atlas.
 
+- :class:`nilearn.input_data.NiftiMasker`, :class:`nilearn.input_data.NiftiLabelsMasker`,
+  :class:`nilearn.input_data.MultiNiftiMasker`, :class:`nilearn.input_data.NiftiMapsMasker`,
+  and :class:`nilearn.input_data.NiftiSpheresMasker` can now compute high variance confounds
+  on the images provided to `transform` and regress them out automatically. This behaviour is 
+  controlled through the `high_variance_confounds` boolean parameter of these maskers which
+  default to False.
+
+- :func:`nilearn.datasets.fetch_neurovault` now implements a `resample` boolean argument to either
+  perform a fixed resampling during download or keep original images. This can be handy to reduce disk usage.
+  By default, the downloaded images are not resampled.
+
+- The functions :func:`nilearn.plotting.plot_epi`, :func:`nilearn.plotting.plot_roi`,
+  :func:`nilearn.plotting.plot_stat_map`, :func:`nilearn.plotting.plot_prob_atlas`
+  is now implemented with new display mode Mosaic. That implies plotting 3D maps
+  in multiple columns and rows in a single axes.
+
 .. _v0.7.0:
 
 0.7.0
