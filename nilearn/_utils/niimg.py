@@ -59,8 +59,8 @@ def _safe_get_data(img, ensure_finite=False, copy_data=False):
         non_finite_mask = np.logical_not(np.isfinite(data))
         if non_finite_mask.sum() > 0:  # any non_finite_mask values?
             warn(
-                "Non-finite data detected. "
-                "These data will be replaced with zeros."
+                "Non-finite values detected. "
+                "These values will be replaced with zeros."
             )
             data[non_finite_mask] = 0
 
@@ -138,7 +138,7 @@ def load_niimg(niimg, dtype=None):
         if niimg.header is not None:
             niimg = new_img_like(niimg, _get_data(niimg).astype(dtype),
                                 niimg.affine, copy_header=True)
-            niimg.header.set_data_dtype(dtype)        
+            niimg.header.set_data_dtype(dtype)
         else:
             niimg = new_img_like(niimg, _get_data(niimg).astype(dtype),
                                 niimg.affine)
