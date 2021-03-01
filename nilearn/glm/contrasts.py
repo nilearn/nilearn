@@ -5,6 +5,7 @@ obtain fixed effect results.
 Author: Bertrand Thirion, Martin Perez-Guevara, Ana Luisa Pinho 2020
 """
 
+import os
 from warnings import warn
 
 import numpy as np
@@ -451,3 +452,82 @@ def _compute_fixed_effects_params(contrasts, variances, precision_weighted):
 
     fixed_fx_stat = fixed_fx_contrasts / np.sqrt(fixed_fx_variance)
     return fixed_fx_contrasts, fixed_fx_variance, fixed_fx_stat
+
+
+def _clean_contrast_name(contrast_name):
+    new_name = "".join(ch for ch in contrast_name if ch.isalnum())
+    if new_name != contrast_name:
+        warn(f"Contrast name '{contrast_name}' changed to '{new_name}'")
+    return new_name
+
+
+def save_glm_results(model, contrast_maps, contrast_name, stat_type, out_dir="."):
+    """Save GLM results to BIDS-like files.
+
+    To output:
+    - design matrix
+    - contrast plot
+    - contrast maps
+    - model-level stat maps
+    - metadata
+    """
+    out_dir = os.path.abspath(out_dir)
+
+    # Model metadata
+    out_name = os.path.join(out_dir, "dataset_description.json")
+    attributes = {
+        "t_r": "RepetitionTime",
+        ""
+    }
+    selected_attributes = [
+        'subject_label',
+        'drift_model',
+        'hrf_model',
+        'standardize',
+÷.        't_r',
+        'high_pass',
+        'target_shape',
+        'signal_scaling',
+        'drift_order',
+        'scaling_axis',
+        'smoothing_fwhm',
+        'target_affine',
+        'slice_time_ref',
+        'fir_delays',
+    ]
+    attribute_units = {
+        't_r': 's',
+        'high_pass': 'Hz',
+    }
+
+    selected_attributes.sort()
+    display_attributes = OrderedDict(
+        (attr_name, getattr(model, attr_name))
+        for attr_name in selected_attributes
+        if hasattr(model, attr_name)
+    )
+
+    # Contrast-level images
+    MAPPING = {
+        "effect_size": f"contrast-{contrast_name}_stat-effect_statmap.nii.gz",
+        "stat": f"contrast-{contrast_name}_stat-{stat_type}_statmap.nii.gz",
+        "effect_variance": f"contrast-{contrast_name}_stat-variance_statmap.nii.gz",
+        "z_score": f"contrast-{contrast_name}_stat-z_statmap.nii.gz",
+        "p_value": f"contrast-{contrast_name}_stat-p_statsmap.nii.gz",
+    }
+    # Rename keys
+    contrast_maps = {MAPPING.get(k, k): v for k, v in contrast_maps.items()}
+
+    for map_name, img in contrast_maps.items():
+        out_file = os.path.join(out_dir, map_name)
+        img.to_filename(out_file)
+
+    # Model-level images
+    attributes = {
+        "residuals": "stat-errorts_statmap.nii.gz",
+        "r_square": "stat-rSquare_statmap.nii.gz",
+    }
+    for attr, map_name in attributes.items():
+        img = getattr(model, attr)
+        out_file = os.path.join(out_dir, map_name)
+        img.to_filename(out_file)
