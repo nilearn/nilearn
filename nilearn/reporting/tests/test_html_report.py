@@ -69,11 +69,22 @@ def test_nifti_labels_masker_report():
     labels_img = data_gen.generate_labeled_regions(shape,
                                                    affine=affine,
                                                    n_regions=n_regions)
+    # Check that providing incorrect labels raises an error
+    masker = input_data.NiftiLabelsMasker(labels_img,
+                                          labels = labels[:-1])
+    masker.fit()
+    with pytest.raises(ValueError,
+                      match="Mismatch between the number of provided labels"):
+        report = masker.generate_report()
     masker = input_data.NiftiLabelsMasker(labels_img,
                                           labels=labels)
     masker.fit()
-    report = masker.generate_report()
-    # Resolution and background label were left as default
+    # Check that a warning is given when generating the report
+    # since no image was provided to fit
+    with pytest.warns(UserWarning,
+                      match="No image provided to fit in NiftiLabelsMasker"):
+        report = masker.generate_report()
+    # Check that background label was left as default
     assert masker.background_label == 0
     assert masker._report_content['description'] == (
         'This reports shows the regions defined by the labels of the mask.')
@@ -95,6 +106,18 @@ def test_nifti_labels_masker_report():
         assert_almost_equal(masker._report_content['summary']['size (in mm^3)'][r-1],
                expected_region_sizes[r] *
                np.abs(np.linalg.det(affine[:3, :3])))
+
+    # Check that region labels are no displayed in the report
+    # when they were not provided by the user.
+    masker = input_data.NiftiLabelsMasker(labels_img)
+    masker.fit()
+    report = masker.generate_report()
+    for col in EXPECTED_COLUMNS:
+        if col == "region name":
+            assert col not in masker._report_content["summary"]
+        else:
+            assert col in masker._report_content["summary"]
+            assert len(masker._report_content['summary'][col]) == n_regions
 
 
 def test_4d_reports():
