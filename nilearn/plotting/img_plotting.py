@@ -1911,7 +1911,8 @@ def plot_carpet(img, mask_img=None, mask_labels=None,
 
     mask_labels : :obj:`dict`, optional
         If ``mask_img`` corresponds to an atlas, then this dictionary maps
-        values from the ``mask_img`` to labels.
+        values from the ``mask_img`` to labels. Dictionary keys are labels
+        and values are values within the atlas.
 
     detrend : :obj:`bool`, optional
         Detrend and z-score the data prior to plotting. Default=True.
@@ -1982,6 +1983,12 @@ def plot_carpet(img, mask_img=None, mask_labels=None,
         atlas_values = masker.transform(atlas_img_res)
         atlas_values = np.squeeze(atlas_values)
 
+        if mask_labels:
+            label_dtype = type(mask_labels.values()[0])
+            if label_dtype != atlas_values.dtype:
+                print(f"Coercing atlas_values to {label_dtype}")
+                atlas_values = atlas_values.astype(label_dtype)
+
         # Sort data and atlas by atlas values
         order = np.argsort(atlas_values)
         order = np.squeeze(order)
@@ -2047,7 +2054,7 @@ def plot_carpet(img, mask_img=None, mask_labels=None,
             ]
             ax0.set_yticks(ytick_locs)
             ax0.set_yticklabels([
-                mask_labels_inv[int(i)] for i in np.unique(atlas_values)
+                mask_labels_inv[i] for i in np.unique(atlas_values)
             ])
         else:
             ax0.set_yticks([])
