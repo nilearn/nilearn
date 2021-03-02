@@ -139,6 +139,10 @@ class NiftiLabelsMasker(BaseMasker, CacheMixin):
         Must be one of: sum, mean, median, mininum, maximum, variance,
         standard_deviation. Default='mean'.
 
+    reports : boolean, optional
+         If set to True, data is saved in order to produce a report.
+         Default=True.
+
     See also
     --------
     nilearn.input_data.NiftiMasker
