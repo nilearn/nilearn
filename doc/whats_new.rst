@@ -104,6 +104,12 @@ NEW
   Distribution Function in the same way as `nilearn.glm.Contrast.p_value`
   computes the p-value using the Survival Function.
 
+- :class:`nilearn.input_data.NiftiLabelsMasker` can now generate HTML reports in the same
+  way as :class:`nilearn.input_data.NiftiMasker`. The report shows the regions defined by
+  the provided label image and provide summary statistics on each region (name, volume...).
+  If a functional image was provided to fit, the middle image is plotted with the regions
+  overlaid as contours. Finally, if a mask is provided, its contours are shown in green.
+
 Fixes
 -----
 
