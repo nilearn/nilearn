@@ -57,6 +57,9 @@ def test_3d_reports():
 
 
 def test_nifti_labels_masker_report():
+    data = np.zeros((9, 9, 9))
+    data[3:-3, 3:-3, 3:-3] = 10
+    data_img_3d = Nifti1Image(data, np.eye(4))
     shape = (13, 11, 12)
     affine = np.diag([2, 2, 2, 1])
     n_regions = 9
@@ -75,7 +78,7 @@ def test_nifti_labels_masker_report():
     masker.fit()
     with pytest.raises(ValueError,
                       match="Mismatch between the number of provided labels"):
-        report = masker.generate_report()
+        masker.generate_report()
     masker = input_data.NiftiLabelsMasker(labels_img,
                                           labels=labels)
     masker.fit()
@@ -83,7 +86,33 @@ def test_nifti_labels_masker_report():
     # since no image was provided to fit
     with pytest.warns(UserWarning,
                       match="No image provided to fit in NiftiLabelsMasker"):
-        report = masker.generate_report()
+        masker.generate_report()
+
+    # No image was provided to fit, regions are plotted using
+    # plot_roi such that no contour should be in the image
+    display = masker._reporting()
+    for d in ['x', 'y', 'z']:
+        assert len(display[0].axes[d].ax.collections) == 0
+
+    masker = input_data.NiftiLabelsMasker(labels_img,
+                                          labels=labels)
+    masker.fit(data_img_3d)
+
+    display = masker._reporting()
+    for d in ['x', 'y', 'z']:
+        assert len(display[0].axes[d].ax.collections) > 0
+        assert len(display[0].axes[d].ax.collections) <= n_regions
+
+    mask = np.zeros((10, 10, 10), dtype=int)
+    mask[3:7, 3:7, 3:7] = 1
+    mask_img = Nifti1Image(mask, np.eye(4))
+
+    masker = input_data.NiftiLabelsMasker(labels_img,
+                                          labels=labels,
+                                          mask_img=mask_img)
+    masker.fit(data_img_3d)
+    report = masker.generate_report()
+    assert masker._reporting_data is not None
     # Check that background label was left as default
     assert masker.background_label == 0
     assert masker._report_content['description'] == (
@@ -165,6 +194,7 @@ def test_empty_report():
                input_data.NiftiLabelsMasker(labels_img, reports=False)]
     for masker in maskers:
         masker.fit(data_img_3d)
+        assert masker._reporting_data is None
         assert masker._reporting() == [None]
         with pytest.warns(UserWarning,
                           match=("Report generation not enabled ! "
