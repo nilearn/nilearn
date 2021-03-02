@@ -6,12 +6,12 @@ NEW
 
 - New atlas fetcher
   :func:`nilearn.datasets.fetch_atlas_difumo` to download *Dictionaries of Functional Modes*,
-  or “DiFuMo”, that can serve as atlases to extract functional signals with different 
+  or “DiFuMo”, that can serve as atlases to extract functional signals with different
   dimensionalities (64, 128, 256, 512, and 1024). These modes are optimized to represent well
   raw BOLD timeseries, over a with range of experimental conditions.
 
-- :func:`nilearn.glm.Contrast.one_minus_pvalue` was added to ensure numerical 
-  stability of p-value estimation. It computes 1 - p-value using the Cumulative 
+- :func:`nilearn.glm.Contrast.one_minus_pvalue` was added to ensure numerical
+  stability of p-value estimation. It computes 1 - p-value using the Cumulative
   Distribution Function in the same way as `nilearn.glm.Contrast.p_value`
   computes the p-value using the Survival Function.
 
@@ -32,7 +32,7 @@ Enhancements
 - :class:`nilearn.decoding.Decoder`, :class:`nilearn.decoding.DecoderRegressor`,
   :class:`nilearn.decoding.FREMRegressor`, and :class:`nilearn.decoding.FREMClassifier`
   now override the `score` method to use whatever scoring strategy was defined through
-  the `scoring` attribute instead of the sklearn default. 
+  the `scoring` attribute instead of the sklearn default.
   If the `scoring` attribute of the decoder is set to None, the scoring strategy
   will default to accuracy for classifiers and to r2 score for regressors.
 
@@ -44,9 +44,12 @@ Enhancements
 - :class:`nilearn.input_data.NiftiMasker`, :class:`nilearn.input_data.NiftiLabelsMasker`,
   :class:`nilearn.input_data.MultiNiftiMasker`, :class:`nilearn.input_data.NiftiMapsMasker`,
   and :class:`nilearn.input_data.NiftiSpheresMasker` can now compute high variance confounds
-  on the images provided to `transform` and regress them out automatically. This behaviour is 
+  on the images provided to `transform` and regress them out automatically. This behaviour is
   controlled through the `high_variance_confounds` boolean parameter of these maskers which
   default to False.
+
+- :class:`nilearn.input_data.NiftiLabelsMasker` now automatically replaces NaNs in input data
+  with zeros, to match the behavior of other maskers.
 
 - :func:`nilearn.datasets.fetch_neurovault` now implements a `resample` boolean argument to either
   perform a fixed resampling during download or keep original images. This can be handy to reduce disk usage.
