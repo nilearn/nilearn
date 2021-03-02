@@ -3,6 +3,7 @@ Transformer for computing ROI signals.
 """
 
 import numpy as np
+import warnings
 from joblib import Memory
 
 from .. import _utils
@@ -121,6 +122,10 @@ class NiftiMapsMasker(BaseMasker, CacheMixin):
         Indicate the level of verbosity. By default, nothing is printed.
         Default=0.
 
+    reports : boolean, optional
+        If set to True, data is saved in order to produce a report.
+        Default=True.
+
     Notes
     -----
     If resampling_target is set to "maps", every 3D image processed by
@@ -141,7 +146,7 @@ class NiftiMapsMasker(BaseMasker, CacheMixin):
                  detrend=False, low_pass=None, high_pass=None, t_r=None,
                  dtype=None, resampling_target="data",
                  memory=Memory(location=None, verbose=0), memory_level=0,
-                 verbose=0):
+                 verbose=0, reports=True):
         self.maps_img = maps_img
         self.mask_img = mask_img
 
@@ -169,6 +174,12 @@ class NiftiMapsMasker(BaseMasker, CacheMixin):
         self.memory_level = memory_level
         self.verbose = verbose
 
+        self.reports = reports
+        self._report_content = dict()
+        self._report_content['description'] = (
+            'This reports shows the spatial maps provided to the mask.')
+        self._report_content['warning_message'] = None
+
         if resampling_target not in ("mask", "maps", "data", None):
             raise ValueError("invalid value for 'resampling_target'"
                              " parameter: " + str(resampling_target))
@@ -179,7 +190,70 @@ class NiftiMapsMasker(BaseMasker, CacheMixin):
                 "has been provided.\nSet resampling_target to something else"
                 " or provide a mask.")
 
-    def fit(self, X=None, y=None):
+    def generate_report(self):
+        from nilearn.reporting.html_report import generate_report
+        return generate_report(self)
+
+    def _reporting(self):
+        """
+        Returns
+        -------
+        displays : list
+            A list of all displays to be rendered.
+
+        """
+        try:
+            from nilearn import plotting
+        except ImportError:
+            with warnings.catch_warnings():
+                mpl_unavail_msg = ('Matplotlib is not imported! '
+                                   'No reports will be generated.')
+                warnings.filterwarnings('always', message=mpl_unavail_msg)
+                warnings.warn(category=ImportWarning,
+                              message=mpl_unavail_msg)
+                return [None]
+
+        if self._reporting_data is not None:
+            maps_image = self._reporting_data['maps_image']
+        else:
+            maps_image = None
+
+        if maps_image is not None:
+            n_maps = image.get_data(maps_image).shape[-1]
+            self._report_content['number_of_maps'] = n_maps
+            img = self._reporting_data['img']
+            if img is not None:
+                dim = image.load_img(img).shape
+                if len(dim) == 4:
+                    # compute middle image from 4D series for plotting
+                    img = image.index_img(img, dim[-1] // 2)
+                # Find the cut coordinates
+                cut_coords = [plotting.find_xyz_cut_coords(
+                                image.index_img(maps_image, i))
+                                for i in range(n_maps)]
+                displays = [plotting.plot_img(img,
+                                                   cut_coords=cut_coords[component],
+                                                   black_bg=False,
+                                                   cmap='CMRmap_r') 
+                                    for component in range(n_maps)]
+                for i,d in enumerate(displays):
+                    d.add_overlay(image.index_img(maps_image, i),
+                                    cmap=plotting.cm.black_blue)
+                return displays
+            else:
+                msg = ("No image provided to fit in NiftiMapsMasker. "
+                       "Plotting only spatial maps for reporting.")
+                warnings.warn(msg)
+                self._report_content['warning_message'] = msg
+                displays = [plotting.plot_stat_map(
+                                image.index_img(maps_image, component)) 
+                                    for component in range(n_maps)]
+                return displays
+        else:
+            return [None]
+
+
+    def fit(self, imgs=None, y=None):
         """Prepare signal extraction from regions.
 
         All parameters are unused, they are for scikit-learn compatibility.
@@ -227,6 +301,13 @@ class NiftiMapsMasker(BaseMasker, CacheMixin):
                 target_shape=self.maps_img_.shape[:3],
                 interpolation="nearest",
                 copy=True)
+
+        if self.reports:
+            self._reporting_data = {'maps_image': self.maps_img_,
+                                    'mask': self.mask_img_,
+                                    'img': imgs}
+        else:
+            self._reporting_data = None
 
         return self
 
