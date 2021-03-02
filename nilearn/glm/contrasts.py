@@ -5,6 +5,7 @@ obtain fixed effect results.
 Author: Bertrand Thirion, Martin Perez-Guevara, Ana Luisa Pinho 2020
 """
 
+import json
 import os
 from warnings import warn
 
@@ -14,6 +15,11 @@ import pandas as pd
 
 from nilearn.input_data import NiftiMasker
 from nilearn._utils.glm import z_score
+from nilearn.reporting import glm_reporter
+from nilearn.plotting.matrix_plotting import (
+    plot_contrast_matrix,
+    plot_design_matrix,
+)
 
 DEF_TINY = 1e-50
 DEF_DOFMAX = 1e10
@@ -461,7 +467,7 @@ def _clean_contrast_name(contrast_name):
     return new_name
 
 
-def save_glm_results(model, contrast_maps, contrast_name, stat_type, out_dir="."):
+def save_glm_results(model, contrasts, out_dir="."):
     """Save GLM results to BIDS-like files.
 
     To output:
@@ -473,18 +479,48 @@ def save_glm_results(model, contrast_maps, contrast_name, stat_type, out_dir="."
     """
     out_dir = os.path.abspath(out_dir)
 
+    # Write out design matrices to files.
+    try:
+        design_matrices = model.design_matrices_
+    except AttributeError:
+        design_matrices = [model.design_matrix_]
+
+    if len(design_matrices) > 1:
+        for i_run, dm in enumerate(design_matrices):
+            run_name = i_run + 1
+            dm_file = os.path.join(out_dir, f"run-{run_name}_design.tsv")
+            dm.to_csv(dm_file, sep="\t", index=False)
+
+            dm_fig_file = os.path.join(out_dir, f"run-{run_name}_design.svg")
+            dm_fig = plot_design_matrix(dm)
+            dm_fig.to_filename(dm_fig_file)
+    else:
+        dm_file = os.path.join(out_dir, "design.tsv")
+        dm.to_csv(dm_file, sep="\t", index=False)
+
+        dm_fig_file = os.path.join(out_dir, "design.svg")
+        dm_fig = plot_design_matrix(dm)
+        dm_fig.to_filename(dm_fig_file)
+
+    # Save contrast figures
+    contrasts = glm_reporter._coerce_to_dict(contrasts)
+    contrast_plots = glm_reporter._plot_contrasts(contrasts, design_matrices)
+
+    statistical_maps = glm_reporter._make_stat_maps(
+        model,
+        contrasts,
+        output_type="all",
+    )
+
     # Model metadata
-    out_name = os.path.join(out_dir, "dataset_description.json")
-    attributes = {
-        "t_r": "RepetitionTime",
-        ""
-    }
+    metadata_file = os.path.join(out_dir, "dataset_description.json")
+
     selected_attributes = [
         'subject_label',
         'drift_model',
         'hrf_model',
         'standardize',
-÷.        't_r',
+        't_r',
         'high_pass',
         'target_shape',
         'signal_scaling',
@@ -501,26 +537,33 @@ def save_glm_results(model, contrast_maps, contrast_name, stat_type, out_dir="."
     }
 
     selected_attributes.sort()
-    display_attributes = OrderedDict(
+    model_attributes = OrderedDict(
         (attr_name, getattr(model, attr_name))
         for attr_name in selected_attributes
         if hasattr(model, attr_name)
     )
 
-    # Contrast-level images
-    MAPPING = {
-        "effect_size": f"contrast-{contrast_name}_stat-effect_statmap.nii.gz",
-        "stat": f"contrast-{contrast_name}_stat-{stat_type}_statmap.nii.gz",
-        "effect_variance": f"contrast-{contrast_name}_stat-variance_statmap.nii.gz",
-        "z_score": f"contrast-{contrast_name}_stat-z_statmap.nii.gz",
-        "p_value": f"contrast-{contrast_name}_stat-p_statsmap.nii.gz",
-    }
-    # Rename keys
-    contrast_maps = {MAPPING.get(k, k): v for k, v in contrast_maps.items()}
+    with open(metadata_file, "w") as fo:
+        json.dump(model_attributes, fo, indent=4, sort_keys=True)
 
-    for map_name, img in contrast_maps.items():
-        out_file = os.path.join(out_dir, map_name)
-        img.to_filename(out_file)
+    for contrast_name, contrast_maps in statistical_maps.items():
+        # Extract stat_type
+        stat_type = "t"  # TODO: implement a real solution
+
+        # Contrast-level images
+        MAPPING = {
+            "effect_size": f"contrast-{contrast_name}_stat-effect_statmap.nii.gz",
+            "stat": f"contrast-{contrast_name}_stat-{stat_type}_statmap.nii.gz",
+            "effect_variance": f"contrast-{contrast_name}_stat-variance_statmap.nii.gz",
+            "z_score": f"contrast-{contrast_name}_stat-z_statmap.nii.gz",
+            "p_value": f"contrast-{contrast_name}_stat-p_statsmap.nii.gz",
+        }
+        # Rename keys
+        renamed_contrast_maps = {MAPPING.get(k, k): v for k, v in contrast_maps.items()}
+
+        for map_name, img in renamed_contrast_maps.items():
+            out_file = os.path.join(out_dir, map_name)
+            img.to_filename(out_file)
 
     # Model-level images
     attributes = {
