@@ -1955,8 +1955,22 @@ def plot_carpet(img, mask_img=None, mask_labels=None,
         The axes used to display the plot (default is None).
         If None, the complete figure is used.
 
+    vmin : float or None, optional
+        Lower bound for plotting, passed to matplotlib.pyplot.imshow.
+        If None, vmin will be automatically determined based on the data.
+        Default=None.
+
+    vmax : float or None, optional
+        Upper bound for plotting, passed to matplotlib.pyplot.imshow.
+        If None, vmax will be automatically determined based on the data.
+        Default=None.
+
     title : :obj:`str` or None, optional
         The title displayed on the figure (default is None).
+
+    cmap : matplotlib colormap, optional
+        The colormap for the sidebar, if an atlas is used.
+        Default=plt.cm.gist_ncar.
 
     Returns
     -------
