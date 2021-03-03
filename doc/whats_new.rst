@@ -60,7 +60,7 @@ Enhancements
   is now implemented with new display mode Mosaic. That implies plotting 3D maps
   in multiple columns and rows in a single axes.
   
-- :func:`nilearn.signal._standardize` option `psc` now allow time series with negative mean value. 
+- `psc` standardization option of :func:`nilearn.signal.clean` now allows time series with negative mean values. 
 
 
 .. _v0.7.0:
