@@ -734,6 +734,7 @@ def _make_stat_maps_contrast_clusters(stat_img, contrasts_plots, threshold,
             stat_threshold=threshold,
             cluster_threshold=cluster_threshold,
             min_distance=min_distance,
+            two_sided=True,
         )
 
         cluster_table_html = _dataframe_to_html(cluster_table,
