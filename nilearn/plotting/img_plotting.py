@@ -2024,6 +2024,12 @@ def plot_carpet(img, mask_img=None, mask_labels=None, ordering=None,
         atlas_values = masker.transform(atlas_img_res)
         atlas_values = np.squeeze(atlas_values)
 
+        if mask_labels:
+            label_dtype = type(list(mask_labels.values())[0])
+            if label_dtype != atlas_values.dtype:
+                print('Coercing atlas_values to {}'.format(label_dtype))
+                atlas_values = atlas_values.astype(label_dtype)
+
         # Sort data and atlas by atlas values
         order = np.argsort(atlas_values)
         order = np.squeeze(order)
@@ -2125,39 +2131,6 @@ def plot_carpet(img, mask_img=None, mask_labels=None, ordering=None,
             )
             node_order = cluster.hierarchy.leaves_list(node_order)
             data = data[:, node_order]
-
-    is_atlas = len(np.unique(mask_img.get_fdata())) > 2
-    if is_atlas:
-        background_label = 0
-
-        atlas_img_res = resample_to_img(
-            mask_img,
-            img,
-            interpolation='nearest',
-        )
-        atlas_bin = math_img(
-            'img != {}'.format(background_label),
-            img=atlas_img_res,
-        )
-        masker = NiftiMasker(atlas_bin, target_affine=img.affine)
-
-        data = masker.fit_transform(img)
-        atlas_values = masker.transform(atlas_img_res)
-        atlas_values = np.squeeze(atlas_values)
-
-        if mask_labels:
-            label_dtype = type(list(mask_labels.values())[0])
-            if label_dtype != atlas_values.dtype:
-                print('Coercing atlas_values to {}'.format(label_dtype))
-                atlas_values = atlas_values.astype(label_dtype)
-
-        # Sort data and atlas by atlas values
-        order = np.argsort(atlas_values)
-        order = np.squeeze(order)
-        atlas_values = atlas_values[order]
-        data = data[:, order]
-    else:
-        data = apply_mask(img, mask_img)
 
     # Detrend and standardize data
     if detrend:
