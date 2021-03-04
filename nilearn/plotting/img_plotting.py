@@ -2014,7 +2014,10 @@ def plot_carpet(img, mask_img=None, mask_labels=None, ordering=None,
         background_label = 0
 
         atlas_img_res = resample_to_img(mask_img, img, interpolation='nearest')
-        atlas_bin = math_img('img != {}'.format(background_label), img=atlas_img_res)
+        atlas_bin = math_img(
+            'img != {}'.format(background_label),
+            img=atlas_img_res,
+        )
         masker = NiftiMasker(atlas_bin, target_affine=img.affine)
 
         data = masker.fit_transform(img)
@@ -2031,7 +2034,8 @@ def plot_carpet(img, mask_img=None, mask_labels=None, ordering=None,
         n_bad_voxels = len(bad_voxels)
         if n_bad_voxels > 0:
             warnings.warn(
-                f'{n_bad_voxels}/{data.shape[1]} bad voxels identified. Dropping.'
+                f'{n_bad_voxels}/{data.shape[1]} bad voxels identified. '
+                'Dropping.'
             )
             data = data[:, good_voxels]
             atlas_values = atlas_values[good_voxels]
@@ -2053,21 +2057,26 @@ def plot_carpet(img, mask_img=None, mask_labels=None, ordering=None,
                 node_order = cluster.hierarchy.leaves_list(node_order)
                 if i_val > 1:
                     # Determine if we should flip the current mask's order
-                    first_corr = np.corrcoef((last_ts, data_val[:, node_order[0]]))[
-                        0, 1
-                    ]
-                    last_corr = np.corrcoef((last_ts, data_val[:, node_order[-1]]))[
-                        0, 1
-                    ]
+                    first_corr = np.corrcoef(
+                        (last_ts, data_val[:, node_order[0]])
+                    )[0, 1]
+                    last_corr = np.corrcoef(
+                        (last_ts, data_val[:, node_order[-1]])
+                    )[0, 1]
                     if last_corr > first_corr:
                         print(f'Flipping {val}')
                         node_order = node_order[::-1]
                 elif i_val == 1:
+                    # Determine if we should flip the first and/or the second
+                    # masks' orders
                     first_val_idx = np.where(atlas_values == atlas_ids[0])[0]
                     data_first_val = data_z[:, first_val_idx]
                     first_first_ts = data_first_val[:, first_node_order[0]]
                     first_last_ts = data_first_val[:, first_node_order[-1]]
 
+                    # Correlate the first and last voxel time series from the
+                    # first mask against the first and last voxel time series
+                    # from the second one.
                     first_first_corr = np.corrcoef(
                         (first_first_ts, data_val[:, node_order[0]])
                     )[0, 1]
@@ -2087,9 +2096,9 @@ def plot_carpet(img, mask_img=None, mask_labels=None, ordering=None,
                     ):
                         print(f'Flipping {atlas_ids[0]}')
                         first_node_order = first_node_order[::-1]
-                        full_node_order[first_val_idx] = full_node_order[first_val_idx][
-                            first_node_order
-                        ]
+                        full_node_order[first_val_idx] = full_node_order[
+                            first_val_idx
+                        ][first_node_order]
 
                     # Determine if we should flip the second mask's order
                     if np.maximum(first_last_corr, last_last_corr) > np.maximum(
@@ -2101,6 +2110,8 @@ def plot_carpet(img, mask_img=None, mask_labels=None, ordering=None,
                     first_node_order = node_order[:]
 
                 full_node_order[roi_idx] = full_node_order[roi_idx][node_order]
+
+                # Retain the last voxel's time series for the next mask
                 last_ts = data_val[:, node_order[-1]]
             data = data[:, full_node_order]
     else:
