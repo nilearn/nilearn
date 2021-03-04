@@ -287,7 +287,8 @@ class NiftiLabelsMasker(BaseMasker, CacheMixin):
             # and give a warning to the user
             else:
                 msg = ("No image provided to fit in NiftiLabelsMasker. "
-                       "Plotting ROI of label image for reporting.")
+                       "Plotting ROIs of label image on the "
+                       "MNI152Template for reporting.")
                 warnings.warn(msg)
                 self._report_content['warning_message'] = msg
                 display = plotting.plot_roi(labels_image)
