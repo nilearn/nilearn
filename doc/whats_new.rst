@@ -41,6 +41,10 @@ Enhancements
   colorbar of surface plots. The default format is scientific notation except for :func:`nilearn.plotting.plot_surf_roi`
   for which it is set as integers.
 
+- :func:`nilearn.plotting.plot_carpet` now supports discrete atlases.
+  When an atlas is used, a colorbar is added to the figure,
+  optionally with labels corresponding to the different values in the atlas.
+
 - :class:`nilearn.input_data.NiftiMasker`, :class:`nilearn.input_data.NiftiLabelsMasker`,
   :class:`nilearn.input_data.MultiNiftiMasker`, :class:`nilearn.input_data.NiftiMapsMasker`,
   and :class:`nilearn.input_data.NiftiSpheresMasker` can now compute high variance confounds
