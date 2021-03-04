@@ -2178,18 +2178,6 @@ def plot_carpet(img, mask_img=None, mask_labels=None, ordering=None,
             wspace=0.0,
         )
 
-    if is_atlas:
-        # Define nested GridSpec
-        legend = False
-        wratios = [2, 100, 20]
-        gs = mgs.GridSpecFromSubplotSpec(
-            1,
-            2 + int(legend),
-            subplot_spec=axes,
-            width_ratios=wratios[: 2 + int(legend)],
-            wspace=0.0,
-        )
-
         ax0 = plt.subplot(gs[0])
         ax0.set_xticks([])
         ax0.imshow(
