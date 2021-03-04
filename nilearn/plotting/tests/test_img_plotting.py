@@ -409,6 +409,43 @@ def test_plot_carpet_with_atlas(testdata_4d):
     plt.close(display)
 
 
+def test_plot_carpet_with_atlas_and_hierarchical_ordering(testdata_4d):
+    """Test plot_carpet when using an atlas and hierarchical ordering."""
+    img_4d = testdata_4d['img_4d']
+    mask_img = testdata_4d['img_atlas']
+    atlas_labels = testdata_4d['atlas_labels']
+
+    # Test atlas + labels
+    fig, ax = plt.subplots()
+    display = plot_carpet(
+        img_4d,
+        mask_img,
+        mask_labels=atlas_labels,
+        ordering='hierarchical',
+        detrend=True,
+        title='TEST',
+        figure=fig,
+        axes=ax,
+    )
+
+    # Check the output
+    # Two axes: 1 for colorbar and 1 for imshow
+    assert len(display.axes) == 2
+    ax = display.axes[0]
+
+    # The ytick labels of the colorbar should match the atlas labels
+    yticklabels = ax.get_yticklabels()
+    yticklabels = [yt.get_text() for yt in yticklabels]
+    assert set(yticklabels) == set(atlas_labels.keys())
+
+    # Next two lines retrieve the numpy array from the plot
+    ax = display.axes[0]
+    colorbar = ax.images[0].get_array()
+    assert len(np.unique(colorbar)) == len(atlas_labels)
+
+    plt.close(display)
+
+
 def test_save_plot(testdata_3d, tmpdir):
     img = testdata_3d['img']
 

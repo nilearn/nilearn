@@ -2053,7 +2053,7 @@ def plot_carpet(img, mask_img=None, mask_labels=None, ordering=None,
             atlas_values = atlas_values[good_voxels]
 
         if ordering == 'hierarchical':
-            data_z = clean(data, t_r=tr, detrend=False, standardize='zscore')
+            data_z = clean(data, t_r=tr, detrend=detrend, standardize='zscore')
             full_node_order = np.arange(data_z.shape[1])
             last_ts, first_node_order = None, None
             atlas_ids = np.unique(atlas_values)
@@ -2129,7 +2129,7 @@ def plot_carpet(img, mask_img=None, mask_labels=None, ordering=None,
     else:
         data = apply_mask(img, mask_img)
         if ordering == 'hierarchical':
-            data_z = clean(data, t_r=tr, detrend=False, standardize='zscore')
+            data_z = clean(data, t_r=tr, detrend=detrend, standardize='zscore')
             node_order = cluster.hierarchy.linkage(
                 data_z.T,
                 method='average',
