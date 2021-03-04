@@ -2013,7 +2013,11 @@ def plot_carpet(img, mask_img=None, mask_labels=None, ordering=None,
     if is_atlas:
         background_label = 0
 
-        atlas_img_res = resample_to_img(mask_img, img, interpolation='nearest')
+        atlas_img_res = resample_to_img(
+            mask_img,
+            img,
+            interpolation='nearest',
+        )
         atlas_bin = math_img(
             'img != {}'.format(background_label),
             img=atlas_img_res,
@@ -2035,13 +2039,15 @@ def plot_carpet(img, mask_img=None, mask_labels=None, ordering=None,
         order = np.squeeze(order)
         atlas_values = atlas_values[order]
         data = data[:, order]
+
+        # Remove voxels with standard deviation of zero.
         bad_voxels = np.where(np.std(data, axis=0) == 0)[0]
         good_voxels = np.where(np.std(data, axis=0) != 0)[0]
         n_bad_voxels = len(bad_voxels)
         if n_bad_voxels > 0:
             warnings.warn(
-                f'{n_bad_voxels}/{data.shape[1]} bad voxels identified. '
-                'Dropping.'
+                '{0}/{1} bad voxels identified. '
+                'Dropping.'.format(n_bad_voxels, data.shape[1])
             )
             data = data[:, good_voxels]
             atlas_values = atlas_values[good_voxels]
@@ -2053,7 +2059,7 @@ def plot_carpet(img, mask_img=None, mask_labels=None, ordering=None,
             atlas_ids = np.unique(atlas_values)
             for i_val, val in enumerate(atlas_ids):
                 roi_idx = np.where(atlas_values == val)[0]
-                print(f'Processing {val}: {len(roi_idx)} voxels')
+                print('Processing {0}: {1} voxels'.format(val, len(roi_idx)))
                 data_val = data_z[:, roi_idx]
                 node_order = cluster.hierarchy.linkage(
                     data_val.T,
@@ -2070,7 +2076,7 @@ def plot_carpet(img, mask_img=None, mask_labels=None, ordering=None,
                         (last_ts, data_val[:, node_order[-1]])
                     )[0, 1]
                     if last_corr > first_corr:
-                        print(f'Flipping {val}')
+                        print('Flipping {}'.format(val))
                         node_order = node_order[::-1]
                 elif i_val == 1:
                     # Determine if we should flip the first and/or the second
@@ -2100,7 +2106,7 @@ def plot_carpet(img, mask_img=None, mask_labels=None, ordering=None,
                     if np.maximum(last_first_corr, last_last_corr) > np.maximum(
                         first_first_corr, first_last_corr
                     ):
-                        print(f'Flipping {atlas_ids[0]}')
+                        print('Flipping {}'.format(atlas_ids[0]))
                         first_node_order = first_node_order[::-1]
                         full_node_order[first_val_idx] = full_node_order[
                             first_val_idx
@@ -2110,7 +2116,7 @@ def plot_carpet(img, mask_img=None, mask_labels=None, ordering=None,
                     if np.maximum(first_last_corr, last_last_corr) > np.maximum(
                         first_first_corr, last_first_corr
                     ):
-                        print(f'Flipping {val}')
+                        print('Flipping {}'.format(val))
                         node_order = node_order[::-1]
                 else:
                     first_node_order = node_order[:]
@@ -2158,7 +2164,7 @@ def plot_carpet(img, mask_img=None, mask_labels=None, ordering=None,
     # Get smallest power of 2 greater than the number of volumes divided by the
     # cutoff, to determine how much to decimate (downsample) the data.
     n_decimations = int(np.ceil(np.log2(np.ceil(n_tsteps / LONG_CUTOFF))))
-    data = data[:: 2 ** n_decimations, :]
+    data = data[::2 ** n_decimations, :]
 
     if is_atlas:
         # Define nested GridSpec
@@ -2232,7 +2238,9 @@ def plot_carpet(img, mask_img=None, mask_labels=None, ordering=None,
     axes.set_yticklabels([])
 
     # Set 10 frame markers in X axis
-    interval = max((int(data.shape[0] + 1) // 10, int(data.shape[0] + 1) // 5, 1))
+    interval = max(
+        (int(data.shape[0] + 1) // 10, int(data.shape[0] + 1) // 5, 1)
+    )
     xticks = list(range(0, data.shape[0])[::interval])
     axes.set_xticks(xticks)
     axes.set_xlabel('time (s)')
@@ -2241,7 +2249,7 @@ def plot_carpet(img, mask_img=None, mask_labels=None, ordering=None,
         axes.set_title(title)
 
     labels = tr * (np.array(xticks))
-    labels *= 2 ** n_decimations
+    labels *= (2 ** n_decimations)
     axes.set_xticklabels(['%.02f' % t for t in labels.tolist()])
 
     # Remove and redefine spines
