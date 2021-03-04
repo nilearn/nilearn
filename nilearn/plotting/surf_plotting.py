@@ -279,7 +279,10 @@ def plot_surf(surf_mesh, surf_map=None, bg_map=None,
 
         # treshold if indicated
         if threshold is None:
-            kept_indices = np.arange(surf_map_faces.shape[0])
+            # If no thresholding and nans, filter them out
+            kept_indices = np.where(
+                            np.logical_not(
+                                np.isnan(surf_map_faces)))[0]
         else:
             kept_indices = np.where(np.abs(surf_map_faces) >= threshold)[0]
 

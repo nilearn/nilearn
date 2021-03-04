@@ -14,7 +14,7 @@ from numpy.testing import assert_array_equal
 from nibabel import Nifti1Image
 
 from nilearn import masking
-from nilearn.image import get_data
+from nilearn.image import get_data, high_variance_confounds
 from nilearn.masking import (compute_epi_mask, compute_multi_epi_mask,
                              compute_background_mask, compute_brain_mask,
                              compute_multi_gray_matter_mask,
@@ -60,6 +60,21 @@ def _confounds_regression(standardize_signal=True, standardize_confounds=True):
         conf = StandardScaler(with_std=False).fit_transform(conf)
     cov_mat = _cov_conf(tseries, conf)
     return np.sum(np.abs(cov_mat))
+
+def test_high_variance_confounds():
+    rng = np.random.RandomState(42)
+    img, mask, conf = _simu_img()
+    hv_confounds = high_variance_confounds(img)
+    masker1 = NiftiMasker(standardize=True, detrend=False,
+                          high_variance_confounds=False,
+                          mask_img=mask).fit()
+    tseries1 = masker1.transform(img, confounds=[hv_confounds, conf])
+    masker2 = NiftiMasker(standardize=True, detrend=False,
+                          high_variance_confounds=True,
+                          mask_img=mask).fit()
+    tseries2 = masker2.transform(img, confounds=conf)
+    np.testing.assert_array_equal(tseries1, tseries2)
+
 
 def test_confounds_standardization():
     # Tests for confounds standardization

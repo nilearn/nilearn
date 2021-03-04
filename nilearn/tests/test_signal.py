@@ -629,16 +629,35 @@ def test_clean_psc():
 
     signals, _, _ = generate_signals(n_features=n_features,
                                      length=n_samples)
+
+    # positive mean signal
     means = rng.randn(1, n_features)
-    signals += means
+    signals_pos_mean = signals + means
 
-    cleaned_signals = clean(signals, standardize='psc')
-    np.testing.assert_almost_equal(cleaned_signals.mean(0), 0)
+    # a mix of pos and neg mean signal
+    signals_mixed_mean = signals + np.append(means[:, :-3], -1 * means[:, -3:])
 
-    cleaned_signals.std(axis=0)
-    np.testing.assert_almost_equal(cleaned_signals.mean(0), 0)
-    np.testing.assert_almost_equal(cleaned_signals,
-                                   signals / signals.mean(0) * 100 - 100)
+    # both types should pass
+    for s in [signals_pos_mean, signals_mixed_mean]:
+        cleaned_signals = clean(s, standardize='psc')
+        np.testing.assert_almost_equal(cleaned_signals.mean(0), 0)
+
+        cleaned_signals.std(axis=0)
+        np.testing.assert_almost_equal(cleaned_signals.mean(0), 0)
+
+        tmp = (s - s.mean(0)) / np.abs(s.mean(0))
+        tmp *= 100
+        np.testing.assert_almost_equal(cleaned_signals, tmp)
+
+    # leave out the last 3 columns with a mean of zero to test user warning
+    signals_w_zero = signals + np.append(means[:, :-3], np.zeros((1, 3)))
+    cleaned_w_zero = clean(signals_w_zero, standardize='psc')
+    with pytest.warns(UserWarning) as records:
+        cleaned_w_zero = clean(signals_w_zero, standardize='psc')
+    psc_warning = sum('psc standardization strategy' in str(r.message)
+                         for r in records)
+    assert psc_warning == 1
+    np.testing.assert_equal(cleaned_w_zero[:, -3:].mean(0), 0)
 
 
 def test_clean_zscore():

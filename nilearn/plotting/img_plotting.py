@@ -534,18 +534,23 @@ def plot_anat(anat_img=MNI152TEMPLATE, cut_coords=None,
         coordinates of each cut in the corresponding direction.
         If None is given, the cuts is calculated automaticaly.
         If display_mode is 'x', 'y' or 'z', cut_coords can be an integer,
-        in which case it specifies the number of cuts to perform
+        in which case it specifies the number of cuts to perform.
+        If display_mode is 'mosaic', and the number of cuts is the same
+        for all directions, cut_coords can be specified as an integer.
+        It can also be a length 3 tuple specifying the number of cuts for
+        every direction if these are different.
 
     output_file : string, or None, optional
         The name of an image file to export the plot to. Valid extensions
         are .png, .pdf, .svg. If output_file is not None, the plot
         is saved to a file, and the display is closed.
 
-    display_mode : {'ortho', 'tiled', 'x', 'y', 'z', 'yx', 'xz', 'yz'}, optional
+    display_mode : {'ortho', 'tiled', 'mosaic', 'x', 'y', 'z', 'yx', 'xz', 'yz'}, optional
         Choose the direction of the cuts: 'x' - sagittal, 'y' - coronal,
         'z' - axial, 'ortho' - three cuts are performed in orthogonal
         directions, 'tiled' - three cuts are performed
-        and arranged in a 2x2 grid. Default='ortho'.
+        and arranged in a 2x2 grid, 'mosaic' - three cuts
+        are performed along multiple rows and columns, Default='ortho'.
 
     figure : integer or matplotlib figure, optional
         Matplotlib figure used or its number. If None is given, a
@@ -642,18 +647,23 @@ def plot_epi(epi_img=None, cut_coords=None, output_file=None,
         coordinates of each cut in the corresponding direction.
         If None is given, the cuts is calculated automaticaly.
         If display_mode is 'x', 'y' or 'z', cut_coords can be an integer,
-        in which case it specifies the number of cuts to perform
+        in which case it specifies the number of cuts to perform.
+        If display_mode is 'mosaic', and the number of cuts is the same
+        for all directions, cut_coords can be specified as an integer.
+        It can also be a length 3 tuple specifying the number of cuts for
+        every direction if these are different.
 
     output_file : string, or None, optional
         The name of an image file to export the plot to. Valid extensions
         are .png, .pdf, .svg. If output_file is not None, the plot
         is saved to a file, and the display is closed.
 
-    display_mode : {'ortho', 'tiled', 'x', 'y', 'z', 'yx', 'xz', 'yz'}, optional
+    display_mode : {'ortho', 'tiled', 'mosaic', 'x', 'y', 'z', 'yx', 'xz', 'yz'}, optional
         Choose the direction of the cuts: 'x' - sagittal, 'y' - coronal,
         'z' - axial, 'ortho' - three cuts are performed in orthogonal
         directions, 'tiled' - three cuts are performed
-        and arranged in a 2x2 grid. Default='ortho'.
+        and arranged in a 2x2 grid. 'mosaic' - three cuts are
+        performed along multiple rows and columns. Default='ortho'.
 
     figure : integer or matplotlib figure, optional
         Matplotlib figure used or its number. If None is given, a
@@ -789,17 +799,22 @@ def plot_roi(roi_img, bg_img=MNI152TEMPLATE, cut_coords=None,
         For display_mode == 'x', 'y', or 'z', then these are the
         coordinates of each cut in the corresponding direction.
         If None is given, the cuts is calculated automaticaly.
+        If display_mode is 'mosaic', and the number of cuts is the same
+        for all directions, cut_coords can be specified as an integer.
+        It can also be a length 3 tuple specifying the number of cuts for
+        every direction if these are different.
 
     output_file : string, or None, optional
         The name of an image file to export the plot to. Valid extensions
         are .png, .pdf, .svg. If output_file is not None, the plot
         is saved to a file, and the display is closed.
 
-    display_mode : {'ortho', 'tiled', 'x', 'y', 'z', 'yx', 'xz', 'yz'}, optional
+    display_mode : {'ortho', 'mosaic', 'tiled', 'x', 'y', 'z', 'yx', 'xz', 'yz'}, optional
         Choose the direction of the cuts: 'x' - sagittal, 'y' - coronal,
         'z' - axial, 'ortho' - three cuts are performed in orthogonal
         directions, 'tiled' - three cuts are performed
-        and arranged in a 2x2 grid. Default='ortho'.
+        and arranged in a 2x2 grid, 'mosaic' - three cuts
+        are performed along multiple rows and columns, Default='ortho'.
 
     figure : integer or matplotlib figure, optional
         Matplotlib figure used or its number. If None is given, a
@@ -985,19 +1000,23 @@ def plot_prob_atlas(maps_img, bg_img=MNI152TEMPLATE, view_type='auto',
         coordinates of each cut in the corresponding direction.
         If None is given, the cuts is calculated automaticaly.
         If display_mode is 'x', 'y' or 'z', cut_coords can be an integer,
-        in which case it specifies the number of cuts to perform
+        in which case it specifies the number of cuts to perform.
+        If display_mode is 'mosaic', and the number of cuts is the same
+        for all directions, cut_coords can be specified as an integer.
+        It can also be a length 3 tuple specifying the number of cuts for
+        every direction if these are different.
 
     output_file : string, or None, optional
         The name of an image file to export the plot to. Valid extensions
         are .png, .pdf, .svg. If output_file is not None, the plot
         is saved to a file, and the display is closed.
 
-    display_mode : {'ortho', 'tiled', 'x', 'y', 'z', 'yx', 'xz', 'yz'}, optional
+    display_mode : {'ortho', 'tiled', 'mosaic', 'x', 'y', 'z', 'yx', 'xz', 'yz'}, optional
         Choose the direction of the cuts: 'x' - sagittal, 'y' - coronal,
         'z' - axial, 'ortho' - three cuts are performed in orthogonal
         directions, 'tiled' - three cuts are performed
-        and arranged in a 2x2 grid.
-        Default='ortho'.
+        and arranged in a 2x2 grid, 'mosaic' - three cuts are performed along
+        multiple rows and columns, Default='ortho'.
 
     figure : integer or matplotlib figure, optional
         Matplotlib figure used or its number. If None is given, a
@@ -1181,19 +1200,23 @@ def plot_stat_map(stat_map_img, bg_img=MNI152TEMPLATE, cut_coords=None,
         coordinates of each cut in the corresponding direction.
         If None is given, the cuts is calculated automaticaly.
         If display_mode is 'x', 'y' or 'z', cut_coords can be an integer,
-        in which case it specifies the number of cuts to perform
+        in which case it specifies the number of cuts to perform.
+        If display_mode is 'mosaic', and the number of cuts is the same
+        for all directions, cut_coords can be specified as an integer.
+        It can also be a length 3 tuple specifying the number of cuts for
+        every direction if these are different.
 
     output_file : string, or None, optional
         The name of an image file to export the plot to. Valid extensions
         are .png, .pdf, .svg. If output_file is not None, the plot
         is saved to a file, and the display is closed.
 
-    display_mode : {'ortho', 'tiled', 'x', 'y', 'z', 'yx', 'xz', 'yz'}, optional
+    display_mode : {'ortho', 'tiled', 'mosaic', 'x', 'y', 'z', 'yx', 'xz', 'yz'}, optional
         Choose the direction of the cuts: 'x' - sagittal, 'y' - coronal,
         'z' - axial, 'ortho' - three cuts are performed in orthogonal
         directions, 'tiled' - three cuts are performed
-        and arranged in a 2x2 grid.
-        Default='ortho'.
+        and arranged in a 2x2 grid, 'mosaic' - three cuts
+        are performed along multiple rows and columns, Default='ortho'.
 
     colorbar : boolean, optional
         If True, display a colorbar on the right of the plots. Default=True.
@@ -1473,8 +1496,9 @@ def plot_connectome(adjacency_matrix, node_coords,
     Parameters
     ----------
     adjacency_matrix : numpy array of shape (n, n)
-        Represents the link strengths of the graph. Assumed to be
-        a symmetric matrix.
+        Represents the link strengths of the graph. The matrix can be
+        symmetric which will result in an undirected graph, or not
+        symmetric which will result in a directed graph.
 
     node_coords : numpy array_like of shape (n, 3)
         3d coordinates of the graph nodes in world space.
@@ -1890,7 +1914,7 @@ def plot_markers(node_values, node_coords, node_size='auto',
 def plot_carpet(img, mask_img=None, mask_labels=None, ordering=None,
                 detrend=True, output_file=None,
                 figure=None, axes=None, vmin=None, vmax=None, title=None,
-                colorbar=False, cmap=plt.cm.gist_ncar):
+                cmap=plt.cm.gist_ncar):
     """Plot an image representation of voxel intensities across time.
 
     This figure is also known as a "grayplot" or "Power plot".
@@ -1911,7 +1935,8 @@ def plot_carpet(img, mask_img=None, mask_labels=None, ordering=None,
 
     mask_labels : :obj:`dict`, optional
         If ``mask_img`` corresponds to an atlas, then this dictionary maps
-        values from the ``mask_img`` to labels.
+        values from the ``mask_img`` to labels. Dictionary keys are labels
+        and values are values within the atlas.
 
     ordering : {None, "hierarchical"}, optional
         Method by which to reorder voxels within the figure.
@@ -1937,8 +1962,22 @@ def plot_carpet(img, mask_img=None, mask_labels=None, ordering=None,
         The axes used to display the plot (default is None).
         If None, the complete figure is used.
 
+    vmin : float or None, optional
+        Lower bound for plotting, passed to matplotlib.pyplot.imshow.
+        If None, vmin will be automatically determined based on the data.
+        Default=None.
+
+    vmax : float or None, optional
+        Upper bound for plotting, passed to matplotlib.pyplot.imshow.
+        If None, vmax will be automatically determined based on the data.
+        Default=None.
+
     title : :obj:`str` or None, optional
         The title displayed on the figure (default is None).
+
+    cmap : matplotlib colormap, optional
+        The colormap for the sidebar, if an atlas is used.
+        Default=plt.cm.gist_ncar.
 
     Returns
     -------
@@ -1959,7 +1998,7 @@ def plot_carpet(img, mask_img=None, mask_labels=None, ordering=None,
             https://doi.org/10.1016/j.neuroimage.2016.08.009
 
     """
-    img = _utils.check_niimg_4d(img, dtype="auto")
+    img = _utils.check_niimg_4d(img, dtype='auto')
 
     # Define TR and number of frames
     tr = img.header.get_zooms()[-1]
@@ -1968,14 +2007,14 @@ def plot_carpet(img, mask_img=None, mask_labels=None, ordering=None,
     if mask_img is None:
         mask_img = compute_epi_mask(img)
     else:
-        mask_img = _utils.check_niimg_3d(mask_img, dtype="auto")
+        mask_img = _utils.check_niimg_3d(mask_img, dtype='auto')
 
-    use_atlas = len(np.unique(mask_img.get_fdata())) > 2
-    if use_atlas:
+    is_atlas = len(np.unique(mask_img.get_fdata())) > 2
+    if is_atlas:
         background_label = 0
 
-        atlas_img_res = resample_to_img(mask_img, img, interpolation="nearest")
-        atlas_bin = math_img("img != {}".format(background_label), img=atlas_img_res)
+        atlas_img_res = resample_to_img(mask_img, img, interpolation='nearest')
+        atlas_bin = math_img('img != {}'.format(background_label), img=atlas_img_res)
         masker = NiftiMasker(atlas_bin, target_affine=img.affine)
 
         data = masker.fit_transform(img)
@@ -1992,24 +2031,24 @@ def plot_carpet(img, mask_img=None, mask_labels=None, ordering=None,
         n_bad_voxels = len(bad_voxels)
         if n_bad_voxels > 0:
             warnings.warn(
-                f"{n_bad_voxels}/{data.shape[1]} bad voxels identified. Dropping."
+                f'{n_bad_voxels}/{data.shape[1]} bad voxels identified. Dropping.'
             )
             data = data[:, good_voxels]
             atlas_values = atlas_values[good_voxels]
 
-        if ordering == "hierarchical":
-            data_z = clean(data, t_r=tr, detrend=False, standardize="zscore")
+        if ordering == 'hierarchical':
+            data_z = clean(data, t_r=tr, detrend=False, standardize='zscore')
             full_node_order = np.arange(data_z.shape[1])
             last_ts, first_node_order = None, None
             atlas_ids = np.unique(atlas_values)
             for i_val, val in enumerate(atlas_ids):
                 roi_idx = np.where(atlas_values == val)[0]
-                print(f"Processing {val}: {len(roi_idx)} voxels")
+                print(f'Processing {val}: {len(roi_idx)} voxels')
                 data_val = data_z[:, roi_idx]
                 node_order = cluster.hierarchy.linkage(
                     data_val.T,
-                    method="average",
-                    metric="euclidean",
+                    method='average',
+                    metric='euclidean',
                 )
                 node_order = cluster.hierarchy.leaves_list(node_order)
                 if i_val > 1:
@@ -2021,7 +2060,7 @@ def plot_carpet(img, mask_img=None, mask_labels=None, ordering=None,
                         0, 1
                     ]
                     if last_corr > first_corr:
-                        print(f"Flipping {val}")
+                        print(f'Flipping {val}')
                         node_order = node_order[::-1]
                 elif i_val == 1:
                     first_val_idx = np.where(atlas_values == atlas_ids[0])[0]
@@ -2046,7 +2085,7 @@ def plot_carpet(img, mask_img=None, mask_labels=None, ordering=None,
                     if np.maximum(last_first_corr, last_last_corr) > np.maximum(
                         first_first_corr, first_last_corr
                     ):
-                        print(f"Flipping {atlas_ids[0]}")
+                        print(f'Flipping {atlas_ids[0]}')
                         first_node_order = first_node_order[::-1]
                         full_node_order[first_val_idx] = full_node_order[first_val_idx][
                             first_node_order
@@ -2056,7 +2095,7 @@ def plot_carpet(img, mask_img=None, mask_labels=None, ordering=None,
                     if np.maximum(first_last_corr, last_last_corr) > np.maximum(
                         first_first_corr, last_first_corr
                     ):
-                        print(f"Flipping {val}")
+                        print(f'Flipping {val}')
                         node_order = node_order[::-1]
                 else:
                     first_node_order = node_order[:]
@@ -2066,19 +2105,52 @@ def plot_carpet(img, mask_img=None, mask_labels=None, ordering=None,
             data = data[:, full_node_order]
     else:
         data = apply_mask(img, mask_img)
-        if ordering == "hierarchical":
-            data_z = clean(data, t_r=tr, detrend=False, standardize="zscore")
+        if ordering == 'hierarchical':
+            data_z = clean(data, t_r=tr, detrend=False, standardize='zscore')
             node_order = cluster.hierarchy.linkage(
                 data_z.T,
-                method="average",
-                metric="euclidean",
+                method='average',
+                metric='euclidean',
             )
             node_order = cluster.hierarchy.leaves_list(node_order)
             data = data[:, node_order]
 
+    is_atlas = len(np.unique(mask_img.get_fdata())) > 2
+    if is_atlas:
+        background_label = 0
+
+        atlas_img_res = resample_to_img(
+            mask_img,
+            img,
+            interpolation='nearest',
+        )
+        atlas_bin = math_img(
+            'img != {}'.format(background_label),
+            img=atlas_img_res,
+        )
+        masker = NiftiMasker(atlas_bin, target_affine=img.affine)
+
+        data = masker.fit_transform(img)
+        atlas_values = masker.transform(atlas_img_res)
+        atlas_values = np.squeeze(atlas_values)
+
+        if mask_labels:
+            label_dtype = type(list(mask_labels.values())[0])
+            if label_dtype != atlas_values.dtype:
+                print('Coercing atlas_values to {}'.format(label_dtype))
+                atlas_values = atlas_values.astype(label_dtype)
+
+        # Sort data and atlas by atlas values
+        order = np.argsort(atlas_values)
+        order = np.squeeze(order)
+        atlas_values = atlas_values[order]
+        data = data[:, order]
+    else:
+        data = apply_mask(img, mask_img)
+
     # Detrend and standardize data
     if detrend:
-        data = clean(data, t_r=tr, detrend=True, standardize="zscore")
+        data = clean(data, t_r=tr, detrend=True, standardize='zscore')
 
     if figure is None:
         if not axes:
@@ -2090,7 +2162,7 @@ def plot_carpet(img, mask_img=None, mask_labels=None, ordering=None,
     if axes is None:
         axes = figure.add_subplot(1, 1, 1)
     else:
-        assert axes.figure is figure, "The axes passed are not in the figure"
+        assert axes.figure is figure, ('The axes passed are not in the figure')
 
     # Determine vmin and vmax based on the full data
     std = np.mean(data.std(axis=0))
@@ -2104,7 +2176,19 @@ def plot_carpet(img, mask_img=None, mask_labels=None, ordering=None,
     n_decimations = int(np.ceil(np.log2(np.ceil(n_tsteps / LONG_CUTOFF))))
     data = data[:: 2 ** n_decimations, :]
 
-    if use_atlas:
+    if is_atlas:
+        # Define nested GridSpec
+        legend = False
+        wratios = [2, 100, 20]
+        gs = mgs.GridSpecFromSubplotSpec(
+            1,
+            2 + int(legend),
+            subplot_spec=axes,
+            width_ratios=wratios[: 2 + int(legend)],
+            wspace=0.0,
+        )
+
+    if is_atlas:
         # Define nested GridSpec
         legend = False
         wratios = [2, 100, 20]
@@ -2117,34 +2201,44 @@ def plot_carpet(img, mask_img=None, mask_labels=None, ordering=None,
         )
 
         ax0 = plt.subplot(gs[0])
-        ax0.set_yticks([])
         ax0.set_xticks([])
         ax0.imshow(
-            atlas_values[:, np.newaxis], interpolation="none", aspect="auto", cmap=cmap
+            atlas_values[:, np.newaxis],
+            interpolation='none',
+            aspect='auto',
+            cmap=cmap
         )
+        if mask_labels:
+            # Add labels to middle of each associated band
+            mask_labels_inv = {v: k for k, v in mask_labels.items()}
+            ytick_locs = [
+                np.mean(np.where(atlas_values == i)[0])
+                for i in np.unique(atlas_values)
+            ]
+            ax0.set_yticks(ytick_locs)
+            ax0.set_yticklabels([
+                mask_labels_inv[i] for i in np.unique(atlas_values)
+            ])
+        else:
+            ax0.set_yticks([])
 
         # Carpet plot
         axes = plt.subplot(gs[1])  # overwrite axes
         axes.imshow(
             data.T,
-            interpolation="nearest",
-            aspect="auto",
-            cmap="gray",
+            interpolation='nearest',
+            aspect='auto',
+            cmap='gray',
             vmin=vmin or default_vmin,
             vmax=vmax or default_vmax,
         )
-
-        # Remove and redefine spines
-        for side in ["top", "right"]:
-            # Toggle the spine objects
-            ax0.spines[side].set_color("none")
-            ax0.spines[side].set_visible(False)
+        ax0.tick_params(axis='both', which='both', length=0)
     else:
         axes.imshow(
             data.T,
-            interpolation="nearest",
-            aspect="auto",
-            cmap="gray",
+            interpolation='nearest',
+            aspect='auto',
+            cmap='gray',
             vmin=vmin or default_vmin,
             vmax=vmax or default_vmax,
         )
@@ -2157,26 +2251,29 @@ def plot_carpet(img, mask_img=None, mask_labels=None, ordering=None,
     interval = max((int(data.shape[0] + 1) // 10, int(data.shape[0] + 1) // 5, 1))
     xticks = list(range(0, data.shape[0])[::interval])
     axes.set_xticks(xticks)
-
-    axes.set_xlabel("time (s)")
-    axes.set_ylabel("voxels")
+    axes.set_xlabel('time (s)')
 
     if title:
         axes.set_title(title)
+
     labels = tr * (np.array(xticks))
     labels *= 2 ** n_decimations
-    axes.set_xticklabels(["%.02f" % t for t in labels.tolist()])
+    axes.set_xticklabels(['%.02f' % t for t in labels.tolist()])
 
     # Remove and redefine spines
-    for side in ["top", "right"]:
+    for side in ['top', 'right']:
         # Toggle the spine objects
-        axes.spines[side].set_color("none")
+        axes.spines[side].set_color('none')
         axes.spines[side].set_visible(False)
 
-    axes.yaxis.set_ticks_position("left")
-    axes.xaxis.set_ticks_position("bottom")
-    axes.spines["bottom"].set_position(("outward", 20))
-    axes.spines["left"].set_position(("outward", 20))
+    axes.xaxis.set_ticks_position('bottom')
+    axes.spines['bottom'].set_position(('outward', 10))
+
+    if not mask_labels:
+        axes.yaxis.set_ticks_position('left')
+        buffer = 20 if is_atlas else 10
+        axes.spines['left'].set_position(('outward', buffer))
+        axes.set_ylabel('voxels')
 
     if output_file is not None:
         figure.savefig(output_file)

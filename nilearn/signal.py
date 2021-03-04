@@ -70,14 +70,14 @@ def _standardize(signals, detrend=False, standardize='zscore'):
 
         elif standardize == 'psc':
             mean_signal = signals.mean(axis=0)
-            invalid_ix = mean_signal < np.finfo(np.float).eps
-            signals = (signals / mean_signal) * 100
-            signals -= 100
+            invalid_ix = np.absolute(mean_signal) < np.finfo(np.float).eps
+            signals = (signals - mean_signal) / np.absolute(mean_signal)
+            signals *= 100
 
             if np.any(invalid_ix):
                 warnings.warn('psc standardization strategy is meaningless '
-                              'for features that have a mean of 0 or '
-                              'less. These time series are set to 0.')
+                              'for features that have a mean of 0. '
+                              'These time series are set to 0.')
                 signals[:, invalid_ix] = 0
 
     return signals
