@@ -131,7 +131,7 @@ def _get_val(row, input_arr):
 
 
 def get_clusters_table(stat_img, stat_threshold, cluster_threshold=None,
-                       two_sided=True, min_distance=8.):
+                       two_sided=False, min_distance=8.):
     """Creates pandas dataframe with img cluster statistics.
 
     Parameters
@@ -148,7 +148,7 @@ def get_clusters_table(stat_img, stat_threshold, cluster_threshold=None,
 
     two_sided : `bool`, optional
         Whether to employ two-sided thresholding or to evaluate positive values
-        only. Default=True.
+        only. Default=False.
 
     min_distance : `float`, optional
         Minimum distance between subpeaks in mm. Default=8mm.
