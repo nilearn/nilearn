@@ -146,6 +146,10 @@ def get_clusters_table(stat_img, stat_threshold, cluster_threshold=None,
     cluster_threshold : `int` or `None`, optional
         Cluster size threshold, in voxels.
 
+    two_sided : `bool`, optional
+        Whether to employ two-sided thresholding or to evaluate positive values
+        only. Default=True.
+
     min_distance : `float`, optional
         Minimum distance between subpeaks in mm. Default=8mm.
 
