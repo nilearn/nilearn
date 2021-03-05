@@ -35,7 +35,11 @@ import matplotlib.pyplot as plt
 
 from nilearn.plotting import plot_carpet
 
-display = plot_carpet(adhd_dataset.func[0], mask_img)
+display = plot_carpet(
+    adhd_dataset.func[0],
+    mask_img,
+    ordering='hierarchical',
+)
 
 display.show()
 
