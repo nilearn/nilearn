@@ -41,9 +41,11 @@ Enhancements
   colorbar of surface plots. The default format is scientific notation except for :func:`nilearn.plotting.plot_surf_roi`
   for which it is set as integers.
 
-- :func:`nilearn.plotting.plot_carpet` now supports discrete atlases.
+- :func:`nilearn.plotting.plot_carpet` now supports discrete atlases and allows hierarchical ordering.
   When an atlas is used, a colorbar is added to the figure,
   optionally with labels corresponding to the different values in the atlas.
+  When hierarchical order is applied,
+  hierarchical clustering is applied to the time series within each mask.
 
 - :class:`nilearn.input_data.NiftiMasker`, :class:`nilearn.input_data.NiftiLabelsMasker`,
   :class:`nilearn.input_data.MultiNiftiMasker`, :class:`nilearn.input_data.NiftiMapsMasker`,
@@ -63,8 +65,8 @@ Enhancements
   :func:`nilearn.plotting.plot_stat_map`, :func:`nilearn.plotting.plot_prob_atlas`
   is now implemented with new display mode Mosaic. That implies plotting 3D maps
   in multiple columns and rows in a single axes.
-  
-- `psc` standardization option of :func:`nilearn.signal.clean` now allows time series with negative mean values. 
+
+- `psc` standardization option of :func:`nilearn.signal.clean` now allows time series with negative mean values.
 
 
 .. _v0.7.0:
