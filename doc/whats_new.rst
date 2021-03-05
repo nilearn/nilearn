@@ -15,6 +15,10 @@ NEW
   Distribution Function in the same way as `nilearn.glm.Contrast.p_value`
   computes the p-value using the Survival Function.
 
+- :func:`nilearn.reporting.glm_reporter.make_glm_report` and
+  :func:`nilearn.reporting._get_clusters_table.get_clusters_table` have a new argument,
+  "two_sided", which allows for two-sided thresholding, which is disabled by default.
+
 Fixes
 -----
 
