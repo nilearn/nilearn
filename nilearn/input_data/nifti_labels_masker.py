@@ -233,6 +233,10 @@ class NiftiLabelsMasker(BaseMasker, CacheMixin):
             labels_image = None
 
         if labels_image is not None:
+            # Remove warning message in case where the masker was
+            # previously fitted with no func image and is re-fitted
+            if 'warning_message' in self._report_content:
+                self._report_content['warning_message'] = None
             labels_image_data = image.get_data(labels_image)
             labels_image_affine = image.load_img(labels_image).affine
             # Number of regions excluding the background
