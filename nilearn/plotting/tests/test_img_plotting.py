@@ -56,7 +56,9 @@ def testdata_4d():
     """Random 4D images for testing figures for multivolume data.
     """
     rng = np.random.RandomState(42)
-    img_4d = nibabel.Nifti1Image(rng.uniform(size=(7, 7, 3, 10)), mni_affine)
+    data_4d = rng.uniform(size=(7, 7, 3, 10))
+    data_4d[0, 0, 0, :] = 1.
+    img_4d = nibabel.Nifti1Image(data_4d, mni_affine)
     img_4d_long = nibabel.Nifti1Image(
         rng.uniform(size=(7, 7, 3, 1777)), mni_affine
     )
@@ -329,6 +331,8 @@ def test_plot_carpet(testdata_4d):
     img_4d = testdata_4d['img_4d']
     img_4d_long = testdata_4d['img_4d_long']
     mask_img = testdata_4d['img_mask']
+
+    # Basic test
     display = plot_carpet(img_4d, mask_img, detrend=False, title='TEST')
     # Next two lines retrieve the numpy array from the plot
     ax = display.axes[0]
@@ -343,6 +347,16 @@ def test_plot_carpet(testdata_4d):
     # Save execution time and memory
     plt.close(display)
 
+    # Basic test with hierarchical ordering
+    display = plot_carpet(img_4d, mask_img, ordering='hierarchical')
+    # Next two lines retrieve the numpy array from the plot
+    ax = display.axes[0]
+    plotted_array = ax.images[0].get_array()
+    assert plotted_array.shape == (np.prod(img_4d.shape[:-1]), img_4d.shape[-1])
+    # Save execution time and memory
+    plt.close(display)
+
+    # Long data --> downsampling
     fig, ax = plt.subplots()
     display = plot_carpet(img_4d_long, mask_img, detrend=True, title='TEST',
                           figure=fig, axes=ax)
