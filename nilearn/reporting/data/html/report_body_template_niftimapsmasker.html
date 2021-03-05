@@ -298,7 +298,7 @@ div.nilearn_report .image:hover .overlay {
     function displayNextMap() {
         document.getElementById('map' + current_map).classList.replace("show", "hide");
         current_map = current_map + 1;
-        if (current_map >= number_maps - 1){
+        if (current_map >= number_maps){
             current_map = 0;
         }
         document.getElementById('map' + current_map).classList.replace("hide", "show");
