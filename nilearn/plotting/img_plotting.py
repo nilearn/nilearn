@@ -2067,20 +2067,19 @@ def plot_carpet(img, mask_img=None, mask_labels=None, ordering=None,
                     metric='euclidean',
                 )
                 node_order = cluster.hierarchy.leaves_list(node_order)
-                if i_val > 1:
-                    # Determine if we should flip the current mask's order
-                    first_corr = np.corrcoef(
-                        (last_ts, data_val[:, node_order[0]])
-                    )[0, 1]
-                    last_corr = np.corrcoef(
-                        (last_ts, data_val[:, node_order[-1]])
-                    )[0, 1]
-                    if last_corr > first_corr:
-                        print('Flipping {}'.format(val))
-                        node_order = node_order[::-1]
+
+                # Apply a cross-region sorting procedure to minimize hard
+                # boundaries between regions in the atlas.
+                # This procedure finds the maximized correlation between
+                # adjacent sets of time series, and flips the voxel order when
+                # doing so would improve similarity between adjacent regions.
+                if i_val == 0:
+                    # Wait until second mask to determine whether to flip
+                    # first mask or not.
+                    first_node_order = node_order[:]
                 elif i_val == 1:
-                    # Determine if we should flip the first and/or the second
-                    # masks' orders
+                    # For the second mask, check both the first mask voxel
+                    # order *and* the second mask voxel order.
                     first_val_idx = np.where(atlas_values == atlas_ids[0])[0]
                     data_first_val = data_z[:, first_val_idx]
                     first_first_ts = data_first_val[:, first_node_order[0]]
@@ -2119,7 +2118,16 @@ def plot_carpet(img, mask_img=None, mask_labels=None, ordering=None,
                         print('Flipping {}'.format(val))
                         node_order = node_order[::-1]
                 else:
-                    first_node_order = node_order[:]
+                    # Determine if we should flip the current mask's order
+                    first_corr = np.corrcoef(
+                        (last_ts, data_val[:, node_order[0]])
+                    )[0, 1]
+                    last_corr = np.corrcoef(
+                        (last_ts, data_val[:, node_order[-1]])
+                    )[0, 1]
+                    if last_corr > first_corr:
+                        print('Flipping {}'.format(val))
+                        node_order = node_order[::-1]
 
                 full_node_order[roi_idx] = full_node_order[roi_idx][node_order]
 
