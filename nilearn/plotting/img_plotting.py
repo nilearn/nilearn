@@ -1911,6 +1911,101 @@ def plot_markers(node_values, node_coords, node_size='auto',
     return display
 
 
+def _apply_hierarchical_clustering(data, mask_values):
+    """Apply hierarchical clustering to 2D data, split by values in a mask.
+
+    Parameters
+    ----------
+    data : array_like of shape (T x S)
+    mask_values : array_like of shape (S,)
+
+    Returns
+    -------
+    sorting_idx : array_like of shape (S,)
+        Optimized order of voxels from data.
+    """
+    sorting_idx = np.arange(data.shape[1])
+    last_ts, first_node_order = None, None
+    atlas_ids = np.unique(mask_values)
+    for i_val, val in enumerate(atlas_ids):
+        roi_idx = mask_values == val
+        print('Processing {0}: {1} voxels'.format(val, sum(roi_idx)))
+        data_val = data[:, roi_idx]
+        node_order = cluster.hierarchy.linkage(
+            data_val.T,
+            method='average',
+            metric='euclidean',
+        )
+        node_order = cluster.hierarchy.leaves_list(node_order)
+
+        # Apply a cross-region sorting procedure to minimize hard
+        # boundaries between regions in the atlas.
+        # This procedure finds the maximized correlation between
+        # adjacent sets of time series, and flips the voxel order when
+        # doing so would improve similarity between adjacent regions.
+        if i_val == 0:
+            # Wait until second mask to determine whether to flip
+            # first mask or not.
+            first_node_order = node_order[:]
+        elif i_val == 1:
+            # For the second mask, check both the first mask voxel
+            # order *and* the second mask voxel order.
+            first_val_idx = mask_values == atlas_ids[0]
+            data_first_val = data[:, first_val_idx]
+            first_first_ts = data_first_val[:, first_node_order[0]]
+            first_last_ts = data_first_val[:, first_node_order[-1]]
+
+            # Correlate the first and last voxel time series from the
+            # first mask against the first and last voxel time series
+            # from the second one.
+            first_first_corr = np.corrcoef(
+                (first_first_ts, data_val[:, node_order[0]])
+            )[0, 1]
+            first_last_corr = np.corrcoef(
+                (first_first_ts, data_val[:, node_order[-1]])
+            )[0, 1]
+            last_first_corr = np.corrcoef(
+                (first_last_ts, data_val[:, node_order[0]])
+            )[0, 1]
+            last_last_corr = np.corrcoef(
+                (first_last_ts, data_val[:, node_order[-1]])
+            )[0, 1]
+
+            # Determine if we should flip the first mask's order
+            if np.maximum(last_first_corr, last_last_corr) > np.maximum(
+                first_first_corr, first_last_corr
+            ):
+                print('Flipping {}'.format(atlas_ids[0]))
+                first_node_order = first_node_order[::-1]
+                sorting_idx[first_val_idx] = sorting_idx[first_val_idx][
+                    first_node_order
+                ]
+
+            # Determine if we should flip the second mask's order
+            if np.maximum(first_last_corr, last_last_corr) > np.maximum(
+                first_first_corr, last_first_corr
+            ):
+                print('Flipping {}'.format(val))
+                node_order = node_order[::-1]
+        else:
+            # Determine if we should flip the current mask's order
+            first_corr = np.corrcoef(
+                (last_ts, data_val[:, node_order[0]])
+            )[0, 1]
+            last_corr = np.corrcoef(
+                (last_ts, data_val[:, node_order[-1]])
+            )[0, 1]
+            if last_corr > first_corr:
+                print('Flipping {}'.format(val))
+                node_order = node_order[::-1]
+
+        sorting_idx[roi_idx] = sorting_idx[roi_idx][node_order]
+
+        # Retain the last voxel's time series for the next mask
+        last_ts = data_val[:, node_order[-1]]
+    return sorting_idx
+
+
 def plot_carpet(img, mask_img=None, mask_labels=None, ordering=None,
                 detrend=True, output_file=None,
                 figure=None, axes=None, vmin=None, vmax=None, title=None,
@@ -2041,115 +2136,29 @@ def plot_carpet(img, mask_img=None, mask_labels=None, ordering=None,
         data = data[:, order]
 
         # Remove voxels with standard deviation of zero.
-        bad_voxels = np.where(np.std(data, axis=0) == 0)[0]
-        good_voxels = np.where(np.std(data, axis=0) != 0)[0]
-        n_bad_voxels = len(bad_voxels)
+        bad_voxels = np.std(data, axis=0) == 0
+        n_bad_voxels = sum(bad_voxels)
         if n_bad_voxels > 0:
             warnings.warn(
                 '{0}/{1} bad voxels identified. '
                 'Dropping.'.format(n_bad_voxels, data.shape[1])
             )
-            data = data[:, good_voxels]
-            atlas_values = atlas_values[good_voxels]
-
-        if ordering == 'hierarchical':
-            data_z = clean(data, t_r=tr, detrend=detrend, standardize='zscore')
-            full_node_order = np.arange(data_z.shape[1])
-            last_ts, first_node_order = None, None
-            atlas_ids = np.unique(atlas_values)
-            for i_val, val in enumerate(atlas_ids):
-                roi_idx = np.where(atlas_values == val)[0]
-                print('Processing {0}: {1} voxels'.format(val, len(roi_idx)))
-                data_val = data_z[:, roi_idx]
-                node_order = cluster.hierarchy.linkage(
-                    data_val.T,
-                    method='average',
-                    metric='euclidean',
-                )
-                node_order = cluster.hierarchy.leaves_list(node_order)
-
-                # Apply a cross-region sorting procedure to minimize hard
-                # boundaries between regions in the atlas.
-                # This procedure finds the maximized correlation between
-                # adjacent sets of time series, and flips the voxel order when
-                # doing so would improve similarity between adjacent regions.
-                if i_val == 0:
-                    # Wait until second mask to determine whether to flip
-                    # first mask or not.
-                    first_node_order = node_order[:]
-                elif i_val == 1:
-                    # For the second mask, check both the first mask voxel
-                    # order *and* the second mask voxel order.
-                    first_val_idx = np.where(atlas_values == atlas_ids[0])[0]
-                    data_first_val = data_z[:, first_val_idx]
-                    first_first_ts = data_first_val[:, first_node_order[0]]
-                    first_last_ts = data_first_val[:, first_node_order[-1]]
-
-                    # Correlate the first and last voxel time series from the
-                    # first mask against the first and last voxel time series
-                    # from the second one.
-                    first_first_corr = np.corrcoef(
-                        (first_first_ts, data_val[:, node_order[0]])
-                    )[0, 1]
-                    first_last_corr = np.corrcoef(
-                        (first_first_ts, data_val[:, node_order[-1]])
-                    )[0, 1]
-                    last_first_corr = np.corrcoef(
-                        (first_last_ts, data_val[:, node_order[0]])
-                    )[0, 1]
-                    last_last_corr = np.corrcoef(
-                        (first_last_ts, data_val[:, node_order[-1]])
-                    )[0, 1]
-
-                    # Determine if we should flip the first mask's order
-                    if np.maximum(last_first_corr, last_last_corr) > np.maximum(
-                        first_first_corr, first_last_corr
-                    ):
-                        print('Flipping {}'.format(atlas_ids[0]))
-                        first_node_order = first_node_order[::-1]
-                        full_node_order[first_val_idx] = full_node_order[
-                            first_val_idx
-                        ][first_node_order]
-
-                    # Determine if we should flip the second mask's order
-                    if np.maximum(first_last_corr, last_last_corr) > np.maximum(
-                        first_first_corr, last_first_corr
-                    ):
-                        print('Flipping {}'.format(val))
-                        node_order = node_order[::-1]
-                else:
-                    # Determine if we should flip the current mask's order
-                    first_corr = np.corrcoef(
-                        (last_ts, data_val[:, node_order[0]])
-                    )[0, 1]
-                    last_corr = np.corrcoef(
-                        (last_ts, data_val[:, node_order[-1]])
-                    )[0, 1]
-                    if last_corr > first_corr:
-                        print('Flipping {}'.format(val))
-                        node_order = node_order[::-1]
-
-                full_node_order[roi_idx] = full_node_order[roi_idx][node_order]
-
-                # Retain the last voxel's time series for the next mask
-                last_ts = data_val[:, node_order[-1]]
-            data = data[:, full_node_order]
+            data = data[:, ~bad_voxels]
+            atlas_values = atlas_values[~bad_voxels]
     else:
         data = apply_mask(img, mask_img)
-        if ordering == 'hierarchical':
-            data_z = clean(data, t_r=tr, detrend=detrend, standardize='zscore')
-            node_order = cluster.hierarchy.linkage(
-                data_z.T,
-                method='average',
-                metric='euclidean',
-            )
-            node_order = cluster.hierarchy.leaves_list(node_order)
-            data = data[:, node_order]
+        atlas_values = np.ones(data.shape[1], dtype=int)
+
+    if ordering == 'hierarchical':
+        data_z = clean(data, t_r=tr, detrend=detrend, standardize='zscore')
+        sorting_idx = _apply_hierarchical_clustering(data_z, atlas_values)
+        data = data[:, sorting_idx]
 
     # Detrend and standardize data
     if detrend:
         data = clean(data, t_r=tr, detrend=True, standardize='zscore')
 
+    # Start building the figure
     if figure is None:
         if not axes:
             figsize = (10, 5)
