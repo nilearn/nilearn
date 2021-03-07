@@ -473,25 +473,31 @@ def save_glm_results(model, contrasts, out_dir="."):
     To output:
     - design matrix
     - contrast plot
-    - contrast maps
+    - contrast-level stat maps
     - model-level stat maps
     - metadata
     """
     out_dir = os.path.abspath(out_dir)
 
     # Write out design matrices to files.
-    try:
+    if hasattr(model, "design_matrices_"):
         design_matrices = model.design_matrices_
-    except AttributeError:
+    else:
         design_matrices = [model.design_matrix_]
 
     if len(design_matrices) > 1:
         for i_run, dm in enumerate(design_matrices):
             run_name = i_run + 1
-            dm_file = os.path.join(out_dir, f"run-{run_name}_design.tsv")
+            dm_file = os.path.join(
+                out_dir,
+                "run-{}_design.tsv".format(run_name),
+            )
             dm.to_csv(dm_file, sep="\t", index=False)
 
-            dm_fig_file = os.path.join(out_dir, f"run-{run_name}_design.svg")
+            dm_fig_file = os.path.join(
+                out_dir,
+                "run-{}_design.svg".format(run_name),
+            )
             dm_fig = plot_design_matrix(dm)
             dm_fig.to_filename(dm_fig_file)
     else:
@@ -504,7 +510,7 @@ def save_glm_results(model, contrasts, out_dir="."):
 
     # Save contrast figures
     contrasts = glm_reporter._coerce_to_dict(contrasts)
-    contrast_plots = glm_reporter._plot_contrasts(contrasts, design_matrices)
+    # contrast_plots = glm_reporter._plot_contrasts(contrasts, design_matrices)
 
     statistical_maps = glm_reporter._make_stat_maps(
         model,
@@ -531,35 +537,45 @@ def save_glm_results(model, contrasts, out_dir="."):
         'slice_time_ref',
         'fir_delays',
     ]
-    attribute_units = {
-        't_r': 's',
-        'high_pass': 'Hz',
+    # attribute_units = {
+    #     't_r': 's',
+    #     'high_pass': 'Hz',
+    # }
+    attr_rename = {
+        "t_r": "RepetitionTime",
     }
 
     selected_attributes.sort()
-    model_attributes = OrderedDict(
-        (attr_name, getattr(model, attr_name))
+    model_attributes = {
+        attr_name: getattr(model, attr_name)
         for attr_name in selected_attributes
         if hasattr(model, attr_name)
-    )
+    }
+    model_attributes = {
+        attr_rename.get(k, k): v for k, v in model_attributes.items()
+    }
 
     with open(metadata_file, "w") as fo:
         json.dump(model_attributes, fo, indent=4, sort_keys=True)
 
     for contrast_name, contrast_maps in statistical_maps.items():
+        contrast_name = _clean_contrast_name(contrast_name)
+
         # Extract stat_type
         stat_type = "t"  # TODO: implement a real solution
 
         # Contrast-level images
         MAPPING = {
-            "effect_size": f"contrast-{contrast_name}_stat-effect_statmap.nii.gz",
-            "stat": f"contrast-{contrast_name}_stat-{stat_type}_statmap.nii.gz",
-            "effect_variance": f"contrast-{contrast_name}_stat-variance_statmap.nii.gz",
-            "z_score": f"contrast-{contrast_name}_stat-z_statmap.nii.gz",
-            "p_value": f"contrast-{contrast_name}_stat-p_statsmap.nii.gz",
+            "effect_size": "contrast-{}_stat-effect_statmap.nii.gz".format(contrast_name),
+            "stat": "contrast-{}_stat-{}_statmap.nii.gz".format(contrast_name, stat_type),
+            "effect_variance": "contrast-{}_stat-variance_statmap.nii.gz".format(contrast_name),
+            "z_score": "contrast-{}_stat-z_statmap.nii.gz".format(contrast_name),
+            "p_value": "contrast-{}_stat-p_statsmap.nii.gz".format(contrast_name),
         }
         # Rename keys
-        renamed_contrast_maps = {MAPPING.get(k, k): v for k, v in contrast_maps.items()}
+        renamed_contrast_maps = {
+            MAPPING.get(k, k): v for k, v in contrast_maps.items()
+        }
 
         for map_name, img in renamed_contrast_maps.items():
             out_file = os.path.join(out_dir, map_name)
