@@ -1914,14 +1914,20 @@ def plot_markers(node_values, node_coords, node_size='auto',
 def _apply_hierarchical_clustering(data, mask_values):
     """Apply hierarchical clustering to 2D data, split by values in a mask.
 
+    In cases where multiple regions are present within the mask/atlas,
+    this function will apply a flipping procedure to maximize the similarity
+    of adjacent voxels from one region to the next.
+
     Parameters
     ----------
     data : array_like of shape (T x S)
-    mask_values : array_like of shape (S,)
+        Masked time series data to reorganize.
+    mask_values : array_like of dtype int and shape (S,)
+        Array of identifiers indicating region within ``data``.
 
     Returns
     -------
-    sorting_idx : array_like of shape (S,)
+    sorting_idx : array_like of dtype int and shape (S,)
         Optimized order of voxels from data.
     """
     sorting_idx = np.arange(data.shape[1])
@@ -1938,26 +1944,24 @@ def _apply_hierarchical_clustering(data, mask_values):
         )
         node_order = cluster.hierarchy.leaves_list(node_order)
 
-        # Apply a cross-region sorting procedure to minimize hard
-        # boundaries between regions in the atlas.
-        # This procedure finds the maximized correlation between
-        # adjacent sets of time series, and flips the voxel order when
-        # doing so would improve similarity between adjacent regions.
+        # Apply a cross-region sorting procedure to minimize hard boundaries
+        # between regions in the atlas.
+        # This procedure finds the maximized correlation between adjacent sets
+        # of time series, and flips the voxel order when doing so would improve
+        # similarity between adjacent regions.
         if i_val == 0:
-            # Wait until second mask to determine whether to flip
-            # first mask or not.
+            # Wait until second mask to determine whether to flip first mask.
             first_node_order = node_order[:]
         elif i_val == 1:
-            # For the second mask, check both the first mask voxel
-            # order *and* the second mask voxel order.
+            # For the second mask, check both the first mask voxel order *and*
+            # the second mask voxel order.
             first_val_idx = mask_values == atlas_ids[0]
             data_first_val = data[:, first_val_idx]
             first_first_ts = data_first_val[:, first_node_order[0]]
             first_last_ts = data_first_val[:, first_node_order[-1]]
 
-            # Correlate the first and last voxel time series from the
-            # first mask against the first and last voxel time series
-            # from the second one.
+            # Correlate the first & last voxel time series from the first mask
+            # against the first & last voxel time series from the second.
             first_first_corr = np.corrcoef(
                 (first_first_ts, data_val[:, node_order[0]])
             )[0, 1]
