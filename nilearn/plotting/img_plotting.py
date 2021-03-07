@@ -2047,7 +2047,7 @@ def plot_carpet(img, mask_img=None, mask_labels=None, ordering=None,
         Method by which to reorder voxels within the figure.
         If "hierarchical", then hierarchical average linkage clustering will
         be applied to Euclidean distances between pairs of z-scored time
-        series.
+        series, as described in [2]_.
         If None, no reordering will be applied. Default=None.
 
     detrend : :obj:`bool`, optional
@@ -2101,6 +2101,11 @@ def plot_carpet(img, mask_img=None, mask_labels=None, ordering=None,
     .. [1] Power, J. D. (2017). A simple but useful way to assess fMRI scan
             qualities. Neuroimage, 154, 150-158. doi:
             https://doi.org/10.1016/j.neuroimage.2016.08.009
+    .. [2] Aquino, K. M., Fulcher, B. D., Parkes, L., Sabaroedin, K., &
+            Fornito, A. (2020). Identifying and removing widespread signal
+            deflections from fMRI data: Rethinking the global signal regression
+            problem. Neuroimage, 212, 116614.
+            https://doi.org/10.1016/j.neuroimage.2020.116614
 
     """
     img = _utils.check_niimg_4d(img, dtype='auto')
@@ -2116,17 +2121,12 @@ def plot_carpet(img, mask_img=None, mask_labels=None, ordering=None,
 
     is_atlas = len(np.unique(mask_img.get_fdata())) > 2
     if is_atlas:
-        background_label = 0
-
         atlas_img_res = resample_to_img(
             mask_img,
             img,
             interpolation='nearest',
         )
-        atlas_bin = math_img(
-            'img != {}'.format(background_label),
-            img=atlas_img_res,
-        )
+        atlas_bin = math_img('img != 0', img=atlas_img_res)
         masker = NiftiMasker(atlas_bin, target_affine=img.affine)
 
         data = masker.fit_transform(img)
@@ -2144,20 +2144,20 @@ def plot_carpet(img, mask_img=None, mask_labels=None, ordering=None,
         order = np.squeeze(order)
         atlas_values = atlas_values[order]
         data = data[:, order]
-
-        # Remove voxels with standard deviation of zero.
-        bad_voxels = np.std(data, axis=0) == 0
-        n_bad_voxels = sum(bad_voxels)
-        if n_bad_voxels > 0:
-            warnings.warn(
-                '{0}/{1} bad voxels identified. '
-                'Dropping.'.format(n_bad_voxels, data.shape[1])
-            )
-            data = data[:, ~bad_voxels]
-            atlas_values = atlas_values[~bad_voxels]
     else:
         data = apply_mask(img, mask_img)
         atlas_values = np.ones(data.shape[1], dtype=int)
+
+    # Remove voxels with standard deviation of zero.
+    bad_voxels = np.std(data, axis=0) == 0
+    n_bad_voxels = sum(bad_voxels)
+    if n_bad_voxels > 0:
+        warnings.warn(
+            '{0}/{1} bad voxels identified. '
+            'Dropping.'.format(n_bad_voxels, data.shape[1])
+        )
+        data = data[:, ~bad_voxels]
+        atlas_values = atlas_values[~bad_voxels]
 
     if ordering == 'hierarchical':
         data_z = clean(data, t_r=tr, detrend=detrend, standardize='zscore')
@@ -2171,8 +2171,7 @@ def plot_carpet(img, mask_img=None, mask_labels=None, ordering=None,
     # Start building the figure
     if figure is None:
         if not axes:
-            figsize = (10, 5)
-            figure = plt.figure(figsize=figsize)
+            figure = plt.figure(figsize=(10, 5))
         else:
             figure = axes.figure
 
@@ -2211,7 +2210,7 @@ def plot_carpet(img, mask_img=None, mask_labels=None, ordering=None,
             atlas_values[:, np.newaxis],
             interpolation='none',
             aspect='auto',
-            cmap=cmap
+            cmap=cmap,
         )
         if mask_labels:
             # Add labels to middle of each associated band
@@ -2229,24 +2228,16 @@ def plot_carpet(img, mask_img=None, mask_labels=None, ordering=None,
 
         # Carpet plot
         axes = plt.subplot(gs[1])  # overwrite axes
-        axes.imshow(
-            data.T,
-            interpolation='nearest',
-            aspect='auto',
-            cmap='gray',
-            vmin=vmin or default_vmin,
-            vmax=vmax or default_vmax,
-        )
         ax0.tick_params(axis='both', which='both', length=0)
-    else:
-        axes.imshow(
-            data.T,
-            interpolation='nearest',
-            aspect='auto',
-            cmap='gray',
-            vmin=vmin or default_vmin,
-            vmax=vmax or default_vmax,
-        )
+
+    axes.imshow(
+        data.T,
+        interpolation='nearest',
+        aspect='auto',
+        cmap='gray',
+        vmin=vmin or default_vmin,
+        vmax=vmax or default_vmax,
+    )
 
     axes.grid(False)
     axes.set_yticks([])
