@@ -1931,8 +1931,11 @@ def _apply_hierarchical_clustering(data, mask_values):
         Optimized order of voxels from data.
     """
     sorting_idx = np.arange(data.shape[1])
-    last_ts, first_node_order = None, None
+    orig_idx = sorting_idx.copy()
+
+    last_ts, node_order_reg1 = None, None
     atlas_ids = np.unique(mask_values)
+    voxel_offset = 0
     for i_val, val in enumerate(atlas_ids):
         roi_idx = mask_values == val
         print('Processing {0}: {1} voxels'.format(val, sum(roi_idx)))
@@ -1950,15 +1953,15 @@ def _apply_hierarchical_clustering(data, mask_values):
         # of time series, and flips the voxel order when doing so would improve
         # similarity between adjacent regions.
         if i_val == 0:
-            # Wait until second mask to determine whether to flip first mask.
-            first_node_order = node_order[:]
+            # Retain order to determine whether to flip first mask.
+            node_order_reg1 = node_order.copy()
         elif i_val == 1:
             # For the second mask, check both the first mask voxel order *and*
             # the second mask voxel order.
-            first_val_idx = mask_values == atlas_ids[0]
-            data_first_val = data[:, first_val_idx]
-            first_first_ts = data_first_val[:, first_node_order[0]]
-            first_last_ts = data_first_val[:, first_node_order[-1]]
+            roi_idx_reg1 = mask_values == atlas_ids[0]
+            data_first_reg = data[:, roi_idx_reg1]
+            first_first_ts = data_first_reg[:, node_order_reg1[0]]
+            first_last_ts = data_first_reg[:, node_order_reg1[-1]]
 
             # Correlate the first & last voxel time series from the first mask
             # against the first & last voxel time series from the second.
@@ -1976,20 +1979,20 @@ def _apply_hierarchical_clustering(data, mask_values):
             )[0, 1]
 
             # Determine if we should flip the first mask's order
-            if np.maximum(last_first_corr, last_last_corr) > np.maximum(
-                first_first_corr, first_last_corr
+            if np.maximum(first_first_corr, first_last_corr) > np.maximum(
+                last_first_corr, last_last_corr
             ):
-                print('Flipping {}'.format(atlas_ids[0]))
-                first_node_order = first_node_order[::-1]
-                sorting_idx[first_val_idx] = sorting_idx[first_val_idx][
-                    first_node_order
+                print('Flipping region {}'.format(atlas_ids[0]))
+                node_order_reg1 = node_order_reg1[::-1]
+                sorting_idx[:voxel_offset] = orig_idx[roi_idx_reg1][
+                    node_order_reg1
                 ]
 
             # Determine if we should flip the second mask's order
             if np.maximum(first_last_corr, last_last_corr) > np.maximum(
                 first_first_corr, last_first_corr
             ):
-                print('Flipping {}'.format(val))
+                print('Flipping region {}'.format(val))
                 node_order = node_order[::-1]
         else:
             # Determine if we should flip the current mask's order
@@ -2000,13 +2003,16 @@ def _apply_hierarchical_clustering(data, mask_values):
                 (last_ts, data_val[:, node_order[-1]])
             )[0, 1]
             if last_corr > first_corr:
-                print('Flipping {}'.format(val))
+                print('Flipping region {}'.format(val))
                 node_order = node_order[::-1]
 
-        sorting_idx[roi_idx] = sorting_idx[roi_idx][node_order]
+        sorting_idx[
+            voxel_offset:voxel_offset + sum(roi_idx)
+        ] = orig_idx[roi_idx][node_order]
 
         # Retain the last voxel's time series for the next mask
         last_ts = data_val[:, node_order[-1]]
+        voxel_offset += sum(roi_idx)
     return sorting_idx
 
 

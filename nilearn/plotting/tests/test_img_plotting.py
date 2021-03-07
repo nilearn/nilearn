@@ -326,6 +326,39 @@ def test_plot_glass_brain_threshold_for_uint8(testdata_3d):
     plt.close()
 
 
+def test__apply_hierarchical_clustering_smoke():
+    """Smoke test for _apply_hierarchical_clustering."""
+    from nilearn.plotting.img_plotting import _apply_hierarchical_clustering
+
+    np.random.seed(1)
+    data = np.random.random(size=(200, 100))
+    mask_values = np.ones(data.shape[1], int)
+    sorting_idx = _apply_hierarchical_clustering(data, mask_values)
+    assert len(sorting_idx) == data.shape[1]
+
+    # Now a test for the atlas
+    atlas_values = mask_values.copy()
+    atlas_values[25:75] = 2
+    atlas_values[90:100] = 3
+
+    # Ensure that two voxels (one in each region) have the same time series
+    data[:, 0] = np.arange(data.shape[0])
+    data[:, 74] = np.arange(data.shape[0])
+
+    sorting_idx = _apply_hierarchical_clustering(data, atlas_values)
+    assert len(sorting_idx) == data.shape[1]
+
+    assert np.all(atlas_values[sorting_idx][:40] == 1)
+    assert np.all(atlas_values[sorting_idx][40:90] == 2)
+    assert np.all(atlas_values[sorting_idx][90:100] == 3)
+
+    # After clustering+flipping, the same-data voxels should be adjacent
+    # right on the border between the regions
+    sorted_data = data[:, sorting_idx]
+    assert np.array_equal(sorted_data[:, 39], np.arange(data.shape[0]))
+    assert np.array_equal(sorted_data[:, 40], np.arange(data.shape[0]))
+
+
 def test_plot_carpet(testdata_4d):
     """Check contents of plot_carpet figure against data in image."""
     img_4d = testdata_4d['img_4d']
