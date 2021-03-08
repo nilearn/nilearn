@@ -54,6 +54,7 @@ def make_glm_report(model,
                     alpha=0.001,
                     cluster_threshold=0,
                     height_control='fpr',
+                    two_sided=False,
                     min_distance=8.,
                     plot_type='slice',
                     display_mode=None,
@@ -127,6 +128,10 @@ def make_glm_report(model,
         false positive control meaning of cluster forming
         threshold: 'fpr' (default) or 'fdr' or 'bonferroni' or None.
         Default='fpr'.
+
+    two_sided : `bool`, optional
+        Whether to employ two-sided thresholding or to evaluate positive values
+        only. Default=False.
 
     min_distance : float, optional
         For display purposes only.
@@ -220,6 +225,7 @@ def make_glm_report(model,
         alpha=alpha,
         cluster_threshold=cluster_threshold,
         height_control=height_control,
+        two_sided=two_sided,
         min_distance=min_distance,
         bg_img=bg_img,
         display_mode=display_mode,
@@ -630,6 +636,7 @@ def _mask_to_svg(mask_img, bg_img):
 def _make_stat_maps_contrast_clusters(stat_img, contrasts_plots, threshold,
                                       alpha,
                                       cluster_threshold, height_control,
+                                      two_sided,
                                       min_distance, bg_img,
                                       display_mode, plot_type):
     """Populates a smaller HTML sub-template with the proper values,
@@ -667,6 +674,10 @@ def _make_stat_maps_contrast_clusters(stat_img, contrasts_plots, threshold,
     height_control : string
         False positive control meaning of cluster forming
         threshold: 'fpr' or 'fdr' or 'bonferroni' or None.
+
+    two_sided : `bool`, optional
+        Whether to employ two-sided thresholding or to evaluate positive values
+        only. Default=False.
 
     min_distance : float
         For display purposes only.
@@ -734,6 +745,7 @@ def _make_stat_maps_contrast_clusters(stat_img, contrasts_plots, threshold,
             stat_threshold=threshold,
             cluster_threshold=cluster_threshold,
             min_distance=min_distance,
+            two_sided=two_sided,
         )
 
         cluster_table_html = _dataframe_to_html(cluster_table,

@@ -63,9 +63,12 @@ Enhancements
   :func:`nilearn.plotting.plot_stat_map`, :func:`nilearn.plotting.plot_prob_atlas`
   is now implemented with new display mode Mosaic. That implies plotting 3D maps
   in multiple columns and rows in a single axes.
-  
-- `psc` standardization option of :func:`nilearn.signal.clean` now allows time series with negative mean values. 
 
+- `psc` standardization option of :func:`nilearn.signal.clean` now allows time series with negative mean values.
+
+- :func:`nilearn.reporting.make_glm_report` and
+  :func:`nilearn.reporting.get_clusters_table` have a new argument,
+  "two_sided", which allows for two-sided thresholding, which is disabled by default.
 
 .. _v0.7.0:
 

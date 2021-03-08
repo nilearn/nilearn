@@ -73,31 +73,49 @@ def test_get_clusters_table(tmp_path):
     shape = (9, 10, 11)
     data = np.zeros(shape)
     data[2:4, 5:7, 6:8] = 5.
+    data[4:6, 7:9, 8:10] = -5.
     stat_img = nib.Nifti1Image(data, np.eye(4))
 
     # test one cluster extracted
-    cluster_table = get_clusters_table(stat_img, 4, 0)
+    cluster_table = get_clusters_table(stat_img, 4, 0, two_sided=False)
     assert len(cluster_table) == 1
 
     # test empty table on high stat threshold
-    cluster_table = get_clusters_table(stat_img, 6, 0)
+    cluster_table = get_clusters_table(stat_img, 6, 0, two_sided=False)
     assert len(cluster_table) == 0
 
     # test empty table on high cluster threshold
-    cluster_table = get_clusters_table(stat_img, 4, 9)
+    cluster_table = get_clusters_table(stat_img, 4, 9, two_sided=False)
+    assert len(cluster_table) == 0
+
+    # test two clusters with different signs extracted
+    cluster_table = get_clusters_table(stat_img, 4, 0, two_sided=True)
+    assert len(cluster_table) == 2
+
+    # test empty table on high stat threshold
+    cluster_table = get_clusters_table(stat_img, 6, 0, two_sided=True)
+    assert len(cluster_table) == 0
+
+    # test empty table on high cluster threshold
+    cluster_table = get_clusters_table(stat_img, 4, 9, two_sided=True)
     assert len(cluster_table) == 0
 
     # test with filename
     fname = str(tmp_path / "stat_img.nii.gz")
     stat_img.to_filename(fname)
-    cluster_table = get_clusters_table(fname, 4, 0)
-    assert len(cluster_table) == 1
+    cluster_table = get_clusters_table(fname, 4, 0, two_sided=True)
+    assert len(cluster_table) == 2
 
     # test with extra dimension
     data_extra_dim = data[..., np.newaxis]
     stat_img_extra_dim = nib.Nifti1Image(data_extra_dim, np.eye(4))
-    cluster_table = get_clusters_table(stat_img_extra_dim, 4, 0)
-    assert len(cluster_table) == 1
+    cluster_table = get_clusters_table(
+        stat_img_extra_dim,
+        4,
+        0,
+        two_sided=True
+    )
+    assert len(cluster_table) == 2
 
 
 def test_get_clusters_table_not_modifying_stat_image():
@@ -110,18 +128,33 @@ def test_get_clusters_table_not_modifying_stat_image():
     data_orig = get_data(stat_img).copy()
 
     # test one cluster should be removed
-    clusters_table = get_clusters_table(stat_img, 4, cluster_threshold=10)
+    clusters_table = get_clusters_table(
+        stat_img,
+        4,
+        cluster_threshold=10,
+        two_sided=True
+    )
     assert np.allclose(data_orig, get_data(stat_img))
     assert len(clusters_table) == 1
 
     # test no clusters should be removed
     stat_img = nib.Nifti1Image(data, np.eye(4))
-    clusters_table = get_clusters_table(stat_img, 4, cluster_threshold=7)
+    clusters_table = get_clusters_table(
+        stat_img,
+        4,
+        cluster_threshold=7,
+        two_sided=False
+    )
     assert np.allclose(data_orig, get_data(stat_img))
     assert len(clusters_table) == 2
 
     # test cluster threshold is None
     stat_img = nib.Nifti1Image(data, np.eye(4))
-    clusters_table = get_clusters_table(stat_img, 4, cluster_threshold=None)
+    clusters_table = get_clusters_table(
+        stat_img,
+        4,
+        cluster_threshold=None,
+        two_sided=False
+    )
     assert np.allclose(data_orig, get_data(stat_img))
     assert len(clusters_table) == 2
