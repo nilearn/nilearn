@@ -28,7 +28,7 @@ from . import cm, glass_brain
 from .edge_detect import _edge_map
 from .find_cuts import find_xyz_cut_coords, find_cut_slices
 from .. import _utils
-from ..image import new_img_like
+from ..image import new_img_like, load_img
 from ..image.resampling import (get_bounds, reorder_img, coord_transform,
                                 get_mask_bounds)
 from nilearn.image import get_data
@@ -834,7 +834,17 @@ class BaseSlicer(object):
     def _map_show(self, img, type='imshow',
                   resampling_interpolation='continuous',
                   threshold=None, **kwargs):
-        img = reorder_img(img, resample=resampling_interpolation)
+        # In the special case where the affine of img is not diagonal,
+        # the function `reorder_img` will trigger a resampling
+        # of the provided image with a continuous interpolation
+        # since this is the default value here. In the special
+        # case where this image is binary, such as when this function
+        # is called from `add_contours`, continuous interpolation
+        # does not make sense and we turn to nearest interpolation instead.
+        if _utils.niimg._is_binary_niimg(img):
+            img = reorder_img(img, resample='nearest')
+        else:
+            img = reorder_img(img, resample=resampling_interpolation)
         threshold = float(threshold) if threshold is not None else None
 
         if threshold is not None:
