@@ -211,7 +211,9 @@ def test_nifti_spheres_masker_inverse_transform():
 
     # Test inverse transform with 1D input
     inverse_input_1d = masker.inverse_transform(s[0, :])
-    inverse_input_1d.ndim == 4
+    # pending resolution of https://github.com/nilearn/nilearn/issues/2726
+    with pytest.raises(AssertionError):
+        assert len(inverse_input_1d.shape) == 4
 
     # Testing whether mask is applied to inverse transform
     assert_array_equal(np.mean(get_data(inverse_map), axis=-1) != 0,

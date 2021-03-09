@@ -109,7 +109,7 @@ def test_nifti_labels_masker():
 
     # Call inverse transform with one sample
     fmri11_img_r_1d = masker11.inverse_transform(signals11[0, :])
-    assert fmri11_img_r_1d.ndim == 4
+    assert len(fmri11_img_r_1d.shape) == 4
 
 
 def test_nifti_labels_masker_with_nans_and_infs():

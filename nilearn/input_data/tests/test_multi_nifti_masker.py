@@ -105,7 +105,7 @@ def test_3d_images():
     epi_img1_r = masker.inverse_transform(epis[0][0, :])
     # pending outcome of https://github.com/nilearn/nilearn/issues/2726
     with pytest.raises(AssertionError):
-        assert epi_img1_r.ndim == 4
+        assert len(epi_img1_r.shape) == 4
 
     # verify that 4D mask arguments are refused
     mask_img_4d = Nifti1Image(np.ones((2, 2, 2, 2), dtype=np.int8),

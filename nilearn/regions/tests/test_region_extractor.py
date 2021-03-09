@@ -211,7 +211,7 @@ def test_region_extractor_fit_and_transform():
     img_r_1d = extractor.inverse_transform(signal[0, :])
     # pending outcome of https://github.com/nilearn/nilearn/issues/2726
     with pytest.raises(AssertionError):
-        assert img_r_1d.ndim == 4
+        assert len(img_r_1d.shape) == 4
     np.testing.assert_equal(get_data(img_r_1d), get_data(img_r_2d)[..., 0])
 
     # smoke test with high resolution image

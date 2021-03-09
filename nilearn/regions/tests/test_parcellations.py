@@ -307,5 +307,5 @@ def test_transform_3d_input_images():
     # test inverse transform with 1D data
     img_r_1d = parcellate.inverse_transform(X[0, :])
     img_r_2d = parcellate.inverse_transform(X)
-    assert img_r_1d.ndim == 4
+    assert len(img_r_1d.shape) == 4
     np.testing.assert_equal(img_r_1d.get_fdata(), img_r_2d.get_fdata())
