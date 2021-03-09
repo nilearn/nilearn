@@ -146,6 +146,7 @@ def signals_to_img_labels(signals, labels_img, mask_img=None,
     ----------
     signals : numpy.ndarray
         2D array with shape: (scan number, number of regions in labels_img).
+        If signals is one-dimensional, it is assumed that scan number == 1.
 
     labels_img : Niimg-like object
         See http://nilearn.github.io/manipulating_images/input_output.html
@@ -178,6 +179,10 @@ def signals_to_img_labels(signals, labels_img, mask_img=None,
     labels_img = _utils.check_niimg_3d(labels_img)
 
     signals = np.asarray(signals)
+    orig_dim = signals.ndim
+    if orig_dim == 1:
+        signals = np.atleast_2d(signals)
+
     target_affine = labels_img.affine
     target_shape = labels_img.shape[:3]
 
@@ -215,7 +220,8 @@ def signals_to_img_labels(signals, labels_img, mask_img=None,
                 num = labels_dict.get(label, None)
                 if num is not None:
                     data[i, j, k, :] = signals[:, num]
-
+    if orig_dim == 1:
+        data = np.reshape(data, data.shape[:3], order=order)
     return new_img_like(labels_img, data, target_affine)
 
 
