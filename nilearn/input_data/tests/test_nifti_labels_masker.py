@@ -68,6 +68,8 @@ def test_nifti_labels_masker():
     masker11 = NiftiLabelsMasker(labels11_img, resampling_target=None)
     masker11.fit()
     masker11.inverse_transform(signals11)
+    # test with one sample
+    masker11.inverse_transform(signals11[0, :])
 
     masker11 = NiftiLabelsMasker(labels11_img, mask_img=mask11_img,
                                  resampling_target=None)
