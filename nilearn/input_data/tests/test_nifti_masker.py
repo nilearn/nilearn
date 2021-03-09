@@ -129,6 +129,14 @@ def test_matrix_orientation():
     recovered = masker.inverse_transform(timeseries)
     np.testing.assert_array_almost_equal(get_data(recovered), get_data(fmri))
 
+    # Test inverse transform on 1D data
+    recovered_1d = masker.inverse_transform(timeseries[0, :])
+    # pending outcome of https://github.com/nilearn/nilearn/issues/2726
+    with pytest.raises(AssertionError):
+        assert recovered_1d.ndim == 4
+
+    np.testing.assert_equal(get_data(recovered_1d), get_data(recovered)[..., 0])
+
 
 def test_mask_3d():
     # Dummy mask
