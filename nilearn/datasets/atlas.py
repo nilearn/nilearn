@@ -428,6 +428,7 @@ def fetch_atlas_harvard_oxford(atlas_name, data_dir=None,
     atlas_img = new_img_like(atlas_img, new_atlas, atlas_img.affine)
     return Bunch(maps=atlas_img, labels=new_names)
 
+
 def fetch_atlas_juelich(atlas_name, data_dir=None,
                         symmetric_split=False,
                         resume=True, verbose=1):
@@ -559,6 +560,7 @@ def fetch_atlas_juelich(atlas_name, data_dir=None,
 
     atlas_img = new_img_like(atlas_img, new_atlas, atlas_img.affine)
     return Bunch(maps=atlas_img, labels=new_names)
+
 
 def fetch_atlas_msdl(data_dir=None, url=None, resume=True, verbose=1):
     """Download and load the MSDL brain atlas.

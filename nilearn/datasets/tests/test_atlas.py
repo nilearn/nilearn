@@ -242,6 +242,7 @@ def test_fail_fetch_atlas_harvard_oxford(tmp_path, request_mocker):
     assert ho.labels[5] == "Left R3"
     assert ho.labels[6] == "Right R3"
 
+
 def test_fail_fetch_atlas_juelich(tmp_path, request_mocker):
     # specify non-existing atlas item
     with pytest.raises(ValueError, match='Invalid atlas name'):
@@ -333,6 +334,7 @@ def test_fail_fetch_atlas_juelich(tmp_path, request_mocker):
     assert ho.labels[4] == "R2, right part"
     assert ho.labels[5] == "R3, left part"
     assert ho.labels[6] == "R3, right part"
+
 
 def test_fetch_atlas_craddock_2012(tmp_path, request_mocker):
     local_archive = Path(
