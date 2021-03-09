@@ -115,10 +115,10 @@ def test_signals_extraction_with_labels():
     assert np.all(data.std(axis=-1) > 0)
 
     # test one dimensional input (assumed shape of (1 instance, n_regions))
-    three_d_img = signal_extraction.signals_to_img_labels(signals[0, :], labels_img)
-    assert three_d_img.shape == shape
-    four_d_img = signal_extraction.signals_to_img_labels(signals[:1, :], labels_img)
-    assert np.all(np.squeeze(get_data(four_d_img)) == get_data(three_d_img))
+    one_d_input = signal_extraction.signals_to_img_labels(signals[0, :], labels_img)
+    assert one_d_input.shape == shape + (1,)
+    two_d_input = signal_extraction.signals_to_img_labels(signals[:1, :], labels_img)
+    assert np.all(get_data(one_d_input) == get_data(two_d_input))
 
     # verify that 4D label images are refused
     with pytest.raises(DimensionError, match=_TEST_DIM_ERROR_MSG):

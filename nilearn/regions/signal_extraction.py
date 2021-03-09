@@ -178,10 +178,7 @@ def signals_to_img_labels(signals, labels_img, mask_img=None,
     """
     labels_img = _utils.check_niimg_3d(labels_img)
 
-    signals = np.asarray(signals)
-    orig_dim = signals.ndim
-    if orig_dim == 1:
-        signals = np.atleast_2d(signals)
+    signals = np.atleast_2d(np.asarray(signals))
 
     target_affine = labels_img.affine
     target_shape = labels_img.shape[:3]
@@ -220,8 +217,7 @@ def signals_to_img_labels(signals, labels_img, mask_img=None,
                 num = labels_dict.get(label, None)
                 if num is not None:
                     data[i, j, k, :] = signals[:, num]
-    if orig_dim == 1:
-        data = np.reshape(data, data.shape[:3], order=order)
+
     return new_img_like(labels_img, data, target_affine)
 
 
