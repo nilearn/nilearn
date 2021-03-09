@@ -482,8 +482,9 @@ class Parcellations(MultiPCA):
 
         Parameters
         ----------
-        signals : List of 2D numpy.ndarray
+        signals : List of 1/2D numpy.ndarray
             Each 2D array with shape (number of scans, number of regions).
+            If array is one-dimensional, it is assumed that number of scans == 1.
 
         Returns
         -------

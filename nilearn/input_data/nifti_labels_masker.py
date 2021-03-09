@@ -344,9 +344,10 @@ class NiftiLabelsMasker(BaseMasker, CacheMixin):
 
         Parameters
         ----------
-        signals : (2D numpy.ndarray)
+        signals : (1D/2D numpy.ndarray)
             Signal for each region.
             shape: (number of scans, number of regions)
+            If signals is one-dimensional, it is assumed that number of scans == 1.
 
         Returns
         -------
