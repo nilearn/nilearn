@@ -146,6 +146,29 @@ def load_niimg(niimg, dtype=None):
     return niimg
 
 
+def _is_binary_niimg(niimg):
+    """Returns whether a given niimg is binary or not.
+
+    Parameters
+    ----------
+    niimg: Niimg-like object
+        See http://nilearn.github.io/manipulating_images/input_output.html
+        Image to test.
+
+    Returns
+    -------
+    is_binary: Boolean
+        True if binary, False otherwise.
+
+    """
+    niimg = load_niimg(niimg)
+    data = _safe_get_data(niimg, ensure_finite=True)
+    unique_values = np.unique(data)
+    if len(unique_values) != 2:
+        return False
+    return sorted(list(unique_values)) == [0,1]
+
+
 def copy_img(img):
     """Copy an image to a nibabel.Nifti1Image.
 

@@ -13,6 +13,7 @@ import pytest
 
 from nibabel import Nifti1Image
 
+from nilearn import _utils
 from nilearn.image.resampling import resample_img, resample_to_img, reorder_img
 from nilearn.image.resampling import from_matrix_vector, coord_transform
 from nilearn.image.resampling import get_bounds
@@ -248,6 +249,27 @@ def test_resampling_error_checks():
                      target_affine=affine,
                      interpolation="an_invalid_interpolation"
                      )
+
+    # Resampling a binary image with continuous or
+    # linear interpolation should raise a warning.
+    data_binary = rng.randint(4, size=(1, 4, 4))
+    data_binary[data_binary>0] = 1
+    assert sorted(list(np.unique(data_binary))) == [0,1]
+
+    rot = rotation(0, np.pi / 4)
+    img_binary = Nifti1Image(data_binary, np.eye(4))
+    assert _utils.niimg._is_binary_niimg(img_binary)
+
+    with pytest.warns(Warning, match="Resampling binary images with"):
+        rot_img = resample_img(img_binary,
+                               target_affine=rot,
+                               interpolation='continuous')
+
+    with pytest.warns(Warning, match="Resampling binary images with"):
+        rot_img = resample_img(img_binary,
+                               target_affine=rot,
+                               interpolation='linear')
+
 
     # Noop
     target_shape = shape[:3]
