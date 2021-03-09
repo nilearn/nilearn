@@ -68,8 +68,6 @@ def test_nifti_labels_masker():
     masker11 = NiftiLabelsMasker(labels11_img, resampling_target=None)
     masker11.fit()
     masker11.inverse_transform(signals11)
-    # test with one sample
-    masker11.inverse_transform(signals11[0, :])
 
     masker11 = NiftiLabelsMasker(labels11_img, mask_img=mask11_img,
                                  resampling_target=None)
@@ -108,6 +106,10 @@ def test_nifti_labels_masker():
     fmri11_img_r = masker11.inverse_transform(signals11)
     assert fmri11_img_r.shape == fmri11_img.shape
     np.testing.assert_almost_equal(fmri11_img_r.affine, fmri11_img.affine)
+
+    # Call inverse transform with one sample
+    fmri11_img_r_1d = masker11.inverse_transform(signals11[0, :])
+    assert fmri11_img_r_1d.ndim == 4
 
 
 def test_nifti_labels_masker_with_nans_and_infs():
