@@ -242,6 +242,97 @@ def test_fail_fetch_atlas_harvard_oxford(tmp_path, request_mocker):
     assert ho.labels[5] == "Left R3"
     assert ho.labels[6] == "Right R3"
 
+def test_fail_fetch_atlas_juelich(tmp_path, request_mocker):
+    # specify non-existing atlas item
+    with pytest.raises(ValueError, match='Invalid atlas name'):
+        atlas.fetch_atlas_juelich('not_inside')
+
+    # specify existing atlas item
+    target_atlas = 'maxprob-thr0-1mm'
+    target_atlas_fname = 'Juelich-' + target_atlas + '.nii.gz'
+    ho_dir = str(tmp_path / 'fsl' / 'data' / 'atlases')
+    os.makedirs(ho_dir)
+    nifti_dir = os.path.join(ho_dir, 'Juelich')
+    os.makedirs(nifti_dir)
+
+    target_atlas_nii = os.path.join(nifti_dir, target_atlas_fname)
+
+    # Create false atlas
+    atlas_data = np.zeros((10, 10, 10), dtype=int)
+
+    # Create interhemispheric maps
+    atlas_data[:, :2, :] = 1
+
+    atlas_data[:5, 3:5, :] = 2
+    atlas_data[5:, 3:5, :] = 2
+
+    atlas_data[:5, 7:9, :] = 3
+    atlas_data[5:, 7:9, :] = 3
+
+
+    nibabel.Nifti1Image(atlas_data, np.eye(4) * 3).to_filename(
+        target_atlas_nii)
+
+    dummy = open(os.path.join(ho_dir, 'Juelich.xml'), 'w')
+    dummy.write("<?xml version='1.0' encoding='us-ascii'?>\n"
+                "<data>\n"
+                '<label index="0" x="125" y="75" z="107">R1</label>\n'
+                '<label index="1" x="53" y="78" z="108">R2</label>\n'
+                '<label index="2" x="135" y="89" z="109">R3</label>\n'
+                "</data>")
+    dummy.close()
+
+    # when symmetric_split=False (by default), then atlas fetcher should
+    # have maps as string and n_labels=4 with background. Since, we relay on xml
+    # file to retrieve labels.
+    ho_wo_symm = atlas.fetch_atlas_juelich(target_atlas,
+                                                  data_dir=str(tmp_path))
+    assert isinstance(ho_wo_symm.maps, str)
+    assert isinstance(ho_wo_symm.labels, list)
+    assert len(ho_wo_symm.labels) == 4
+    assert ho_wo_symm.labels[0] == "Background"
+    assert ho_wo_symm.labels[1] == "R1"
+    assert ho_wo_symm.labels[2] == "R2"
+    assert ho_wo_symm.labels[3] == "R3"
+
+    # This section tests with lateralized version. In other words,
+    # symmetric_split=True
+
+    # We test the fetcher with symmetric_split=True by creating a new
+    # dummy local file and fetch them and test the output variables
+    # accordingly.
+    dummy = open(os.path.join(ho_dir, 'Juelich.xml'), 'w')
+    dummy.write("<?xml version='1.0' encoding='us-ascii'?>\n"
+                "<data>\n"
+                '<label index="0" x="125" y="75" z="107">R1</label>\n'
+                '<label index="1" x="53" y="78" z="108">R2</label>\n'
+                '<label index="2" x="135" y="89" z="109">R3</label>\n'
+                "</data>")
+    dummy.close()
+
+    # Here, with symmetric_split=True, atlas maps are returned as nibabel Nifti
+    # image but not string. Now, with symmetric split number of labels should be
+    # more than without split and contain Left and Right tags in the labels.
+
+    # Create dummy image files too with maxprob specified for symmetric split.
+    split_atlas_fname = 'Juelich-' + 'maxprob-thr0-1mm' + '.nii.gz'
+    nifti_target_split = os.path.join(nifti_dir, split_atlas_fname)
+    nibabel.Nifti1Image(atlas_data, np.eye(4) * 3).to_filename(
+        nifti_target_split)
+    ho = atlas.fetch_atlas_juelich(target_atlas,
+                                          data_dir=str(tmp_path),
+                                          symmetric_split=True)
+
+    assert isinstance(ho.maps, nibabel.Nifti1Image)
+    assert isinstance(ho.labels, list)
+    assert len(ho.labels) == 7
+    assert ho.labels[0] == "Background"
+    assert ho.labels[1] == "R1, left part"
+    assert ho.labels[2] == "R1, right part"
+    assert ho.labels[3] == "R2, left part"
+    assert ho.labels[4] == "R2, right part"
+    assert ho.labels[5] == "R3, left part"
+    assert ho.labels[6] == "R3, right part"
 
 def test_fetch_atlas_craddock_2012(tmp_path, request_mocker):
     local_archive = Path(
