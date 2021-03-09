@@ -102,6 +102,13 @@ def test_nifti_maps_masker():
     assert fmri11_img_r.shape == fmri11_img.shape
     np.testing.assert_almost_equal(fmri11_img_r.affine, fmri11_img.affine)
 
+    # Call inverse transform with 1D input
+    fmri11_img_1d = masker11.inverse_transform(signals11[0, :])
+    # https://github.com/nilearn/nilearn/issues/2726
+    with pytest.raises(AssertionError):
+        # output _should_ be 4D, but is currently 3D
+        assert fmri11_img_1d.ndim == fmri11_img.ndim
+
     # Now try on a masker that has never seen the call to "transform"
     masker2 = NiftiMapsMasker(labels11_img, resampling_target=None)
     masker2.fit()
