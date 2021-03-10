@@ -249,7 +249,7 @@ Add these changes and submit a PR:
 
 .. code:: bash
     
-    git add doc/whats_new.rst nilearn.version.py
+    git add doc/whats_new.rst nilearn/version.py
     git commit -m "REL x.y.z"
     git push origin REL-x.y.z
 
@@ -259,9 +259,9 @@ Once the PR has been reviewed and merged, pull from master and tag the merge com
 .. code:: bash
 
     git checkout master
-    git pull origin master
+    git pull upstream master
     git tag x.y.z
-    git push --tags
+    git push upstream --tags
 
 
 Build the distributions and upload them to Pypi
