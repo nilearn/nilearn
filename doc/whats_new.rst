@@ -1,5 +1,31 @@
-0.7.X
+
+.. _v0.7.1:
+
+0.7.1
 =====
+
+**Released March 2021**
+
+HIGHLIGHTS
+----------
+
+- New atlas fetcher
+  :func:`nilearn.datasets.fetch_atlas_difumo` to download *Dictionaries of Functional Modes*,
+  or “DiFuMo”, that can serve as atlases to extract functional signals with different
+  dimensionalities (64, 128, 256, 512, and 1024). These modes are optimized to represent well
+  raw BOLD timeseries, over a with range of experimental conditions.
+
+- :class:`nilearn.decoding.Decoder` and :class:`nilearn.decoding.DecoderRegressor`
+  is now implemented with random predictions to estimate a chance level.
+
+- The functions :func:`nilearn.plotting.plot_epi`, :func:`nilearn.plotting.plot_roi`,
+  :func:`nilearn.plotting.plot_stat_map`, :func:`nilearn.plotting.plot_prob_atlas`
+  is now implemented with new display mode Mosaic. That implies plotting 3D maps
+  in multiple columns and rows in a single axes.
+
+- :func:`nilearn.plotting.plot_carpet` now supports discrete atlases.
+  When an atlas is used, a colorbar is added to the figure,
+  optionally with labels corresponding to the different values in the atlas.
 
 NEW
 ---
@@ -69,6 +95,7 @@ Enhancements
 - :func:`nilearn.reporting.make_glm_report` and
   :func:`nilearn.reporting.get_clusters_table` have a new argument,
   "two_sided", which allows for two-sided thresholding, which is disabled by default.
+
 
 .. _v0.7.0:
 
