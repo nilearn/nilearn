@@ -184,6 +184,13 @@ For example, make sure all deprecations that are supposed to be removed with thi
 Prepare the release
 -------------------
 
+Switch to a new branch locally:
+
+.. code-block:: bash
+
+    git checkout -b REL-x.y.z
+
+
 First we need to prepare the release by updating the file `nilearn/doc/whats_new.rst` to make sure all the new features, enhancements, and bug fixes are included in their respective sections.
 We also need to write a "Highlights" section promoting the most important additions that come with this new release, and add the version tag just above the corresponding title:
 
@@ -238,14 +245,22 @@ Here, we should remove the last entry and add the new release on top of the list
 
 In addition, we can have a look at `MANIFEST.in` to check that all additional files that we want to be included or excluded from the release are indicated. Normally we shouldn't have to touch this file.
 
-Add these changes and the version tag, and commit them:
+Add these changes and submit a PR:
 
 .. code:: bash
     
     git add doc/whats_new.rst nilearn.version.py
     git commit -m "REL x.y.z"
+    git push origin REL-x.y.z
+
+
+Once the PR has been reviewed and merged, pull from master and tag the merge commit:
+
+.. code:: bash
+
+    git checkout master
+    git pull origin master
     git tag x.y.z
-    git push origin release-x.y.z
     git push --tags
 
 
@@ -327,18 +342,18 @@ This will build the documentation (beware, this is time consuming...) and push i
 Post-release
 ------------
 
-At this point, the release has been made. We can now update the file `nilearn/version.py` and update the version number by appending `.dev`:
+At this point, the release has been made. We can now update the file `nilearn/version.py` and update the version number by increasing the patch number and appending `.dev`:
 
 .. code-block:: python
     
-    __version__ = x.y.z.dev
+    __version__ = x.y.(z+1).dev
 
 
 We can also update the file `doc/whats_new.rst` by adding a title and the usual `New`, `Enhancements`, and `Bug Fixes` sections for the version currently under developement:
 
 .. code-block:: RST
     
-    x.y.z.dev
+    x.y.z+1.dev
     =========
 
     NEW
