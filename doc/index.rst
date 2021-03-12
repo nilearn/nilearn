@@ -107,5 +107,6 @@
    auto_examples/index.rst
    whats_new.rst
    development.rst
+   glossary.rst
 
 Nilearn is part of the `NiPy ecosystem <http://nipy.org>`_.
