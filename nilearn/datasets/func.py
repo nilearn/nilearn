@@ -2225,7 +2225,7 @@ def fetch_language_localizer_demo_dataset(data_dir=None, verbose=1):
 
 
 def fetch_bids_langloc_dataset(data_dir=None, verbose=1):
-    """Download language localizer example bids dataset.
+    """Download language localizer example :term:`bids` dataset.
 
     Parameters
     ----------
@@ -2265,7 +2265,7 @@ def fetch_bids_langloc_dataset(data_dir=None, verbose=1):
 def fetch_openneuro_dataset_index(data_dir=None,
                                   dataset_version='ds000030_R1.0.4',
                                   verbose=1):
-    """Download a file with OpenNeuro BIDS dataset index.
+    """Download a file with OpenNeuro :term:`BIDS` dataset index.
 
     Downloading the index allows to explore the dataset directories
     to select specific files to download. The index is a sorted list of urls.
@@ -2382,7 +2382,7 @@ def select_from_index(urls, inclusion_filters=None, exclusion_filters=None,
 
 
 def patch_openneuro_dataset(file_list):
-    """Add symlinks for files not named according to latest BIDS conventions.
+    """Add symlinks for files not named according to latest :term:`BIDS` conventions.
     """
     rep = {'_T1w_brainmask': '_desc-brain_mask',
            '_T1w_preproc': '_desc-preproc_T1w',
@@ -2410,7 +2410,7 @@ def patch_openneuro_dataset(file_list):
 def fetch_openneuro_dataset(
     urls=None, data_dir=None, dataset_version='ds000030_R1.0.4',
     verbose=1):
-    """Download OpenNeuro BIDS dataset.
+    """Download OpenNeuro :term:`BIDS` dataset.
 
     Parameters
     ----------
