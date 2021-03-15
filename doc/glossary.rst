@@ -13,6 +13,13 @@ If you wish to add a missing term, please `create a new issue`_ or
     :sorted:
 
     
+    ANOVA
+    Anova
+        Analysis of variance.
+
+    AUC
+        Area under the curve.
+
     BIDS
     bids
         `Brain Imaging Data Structure`_ is a simple and easy to adopt way
@@ -120,10 +127,18 @@ If you wish to add a missing term, please `create a new issue`_ or
     predictive modelling
         TODO.
 
+    ReNA
+        TODO.
+
     resting-state
         TODO.
 
+    ROC
+        The `receiver operating characteristic curve`_ plots the true positive rate
+        (TPR) against the false positive rate (FPR) at various threshold settings.
+
     searchlight
+    Searchlight
         `Searchlight analysis`_ consists of scanning the brain with a searchlight. 
         That is, a ball of given radius is scanned across the brain volume and the 
         prediction accuracy of a classifier trained on the corresponding voxels is measured.
@@ -131,6 +146,9 @@ If you wish to add a missing term, please `create a new issue`_ or
     SpaceNet
         `SpaceNet`_ is a decoder implementing spatial penalties which improve brain 
         decoding power as well as decoder maps.
+
+    SPM
+        Statistical Parametric Mapping.
 
     supervised learning
         `Supervised learning`_ is interested in predicting an output variable, 
@@ -155,6 +173,9 @@ If you wish to add a missing term, please `create a new issue`_ or
         underlying cognitive process (e.g., emotional versus non-emotional theory of 
         mind), a behavioral variable (e.g., reaction time or IQ), or diagnosis status 
         (e.g., schizophrenia versus healthy) from brain images.
+
+    SVM
+        TODO.
 
     TR
         Repetition time.
@@ -216,6 +237,9 @@ If you wish to add a missing term, please `create a new issue`_ or
 
 .. _`Neurovault`:
     https://www.neurovault.org/
+
+.. _`receiver operating characteristic curve`:
+    https://en.wikipedia.org/wiki/Receiver_operating_characteristic
 
 .. _`Searchlight analysis`:
     https://nilearn.github.io/decoding/searchlight.html
