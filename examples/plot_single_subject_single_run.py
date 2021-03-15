@@ -21,7 +21,7 @@ under the direction of Karl Friston. It is provided by FIL methods
 group which develops the SPM software.
 
 According to SPM documentation, 96 scans were acquired (repetition time
-:term:`TR`=7s) in one session. The paradigm consisted of alternating periods
+:term:`TR` = 7s) in one session. The paradigm consisted of alternating periods
 of stimulation and rest, lasting 42s each (that is, for 6 scans). The session
 started with a rest block.  Auditory stimulation consisted of bi-syllabic words
 presented binaurally at a rate of 60 per minute. The functional data starts at scan

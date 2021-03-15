@@ -26,9 +26,7 @@ If you wish to add a missing term, please `create a new issue`_ or
     CanICA
         Canonical independant component analysis.
 
-    Contrast
     contrast
-    Contrasts
     contrasts
         A `contrast`_ is a linear combination of variables (parameters or
         statistics) whose coefficients add up to zero, allowing comparison
@@ -70,8 +68,17 @@ If you wish to add a missing term, please `create a new issue`_ or
     fpr
         False positive rate correction.
 
+    FREM
+        `FREM`_ means "Fast ensembling of REgularized Models". It uses an implicit
+        spatial regularization through fast clustering and aggregates a high 
+        number of estimators trained on various splits of the training set, thus 
+        returning a very robust decoder at a lower computational cost than other 
+        spatially regularized methods. 
+
     functional connectivity
-        TODO.
+    functional connectome
+        A `functional connectome`_ is a set of connections representing brain 
+        interactions between regions.
 
     FWER correction
         `Family-wise error rate`_ is the probability of making one or more
@@ -100,6 +107,10 @@ If you wish to add a missing term, please `create a new issue`_ or
     MVPA
         Mutli-Voxel Pattern Analysis.
 
+    Neurovault
+        `Neurovault`_ is a public repository of unthresholded statistical maps, 
+        parcellations, and atlases of the human brain.
+
     parcellation
     parcellations
     brain parcellation
@@ -111,6 +122,15 @@ If you wish to add a missing term, please `create a new issue`_ or
 
     resting-state
         TODO.
+
+    searchlight
+        `Searchlight analysis`_ consists of scanning the brain with a searchlight. 
+        That is, a ball of given radius is scanned across the brain volume and the 
+        prediction accuracy of a classifier trained on the corresponding voxels is measured.
+
+    SpaceNet
+        `SpaceNet`_ is a decoder implementing spatial penalties which improve brain 
+        decoding power as well as decoder maps.
 
     supervised learning
         `Supervised learning`_ is interested in predicting an output variable, 
@@ -153,11 +173,17 @@ If you wish to add a missing term, please `create a new issue`_ or
         and neurobiological disorders.
 
     VBM
-        TODO.
+        `Voxel-Based Morphometry`_ measures differences in local concentrations of brain 
+        tissue, through a voxel-wise comparison of multiple brain images.
 
     voxel
     voxels
         A voxel represents a value on a regular grid in 3D space.
+
+    Ward clustering
+        Ward’s algorithm is a hierarchical clustering algorithm: it recursively merges voxels, 
+        then clusters that have similar signal (parameters, measurements or time courses).
+
 
 .. LINKS
 
@@ -182,8 +208,26 @@ If you wish to add a missing term, please `create a new issue`_ or
 .. _`Family-wise error rate`:
     https://en.wikipedia.org/wiki/Family-wise_error_rate
 
+.. _`FREM`:
+    https://nilearn.github.io/decoding/frem.html
+
+.. _`functional connectome`:
+    https://nilearn.github.io/connectivity/functional_connectomes.html
+
+.. _`Neurovault`:
+    https://www.neurovault.org/
+
+.. _`Searchlight analysis`:
+    https://nilearn.github.io/decoding/searchlight.html
+
+.. _`SpaceNet`:
+    https://nilearn.github.io/decoding/space_net.html
+
 .. _`Supervised learning`:
     https://en.wikipedia.org/wiki/Supervised_learning
 
 .. _`Unsupervised learning`:
     https://en.wikipedia.org/wiki/Unsupervised_learning
+
+.. _`Voxel-Based Morphometry`:
+    https://en.wikipedia.org/wiki/Voxel-based_morphometry
