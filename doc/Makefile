@@ -72,6 +72,12 @@ html-strict:	sym_links
 	@echo
 	@echo "Build finished. The HTML pages are in $(BUILDDIR)/html."
 
+html-pattern: 	sym_links
+	$(SPHINXBUILD) -D sphinx_gallery_conf.filename_pattern=$(PATTERN) -D sphinx_gallery_conf.run_stale_examples=True -b html $(ALLSPHINXOPTS) $(BUILDDIR)/html
+	touch $(BUILDDIR)/html/.nojekyll
+	@echo
+	@echo "Build finished. The HTML pages are in $(BUILDDIR)/html."
+
 html-noplot:
 	$(SPHINXBUILD) -D plot_gallery=0 -b html $(ALLSPHINXOPTS) $(BUILDDIR)/html
 	touch $(BUILDDIR)/html/.nojekyll
