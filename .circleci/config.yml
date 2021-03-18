@@ -96,7 +96,7 @@ workflows:
 
   default:
     jobs:
-      - build_docs:
+      - build_docs
 
   nightly:
     triggers:
