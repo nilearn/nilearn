@@ -10,7 +10,7 @@ from scipy import ndimage
 from sklearn.utils import Bunch
 
 from .utils import (_get_dataset_dir, _fetch_files,
-                    _get_dataset_descr, _uncompress_file)
+                    _get_dataset_descr)
 
 from .._utils import check_niimg, niimg
 from ..image import new_img_like, get_data
@@ -229,6 +229,68 @@ def fetch_icbm152_brain_gm_mask(data_dir=None, threshold=0.2, resume=True,
     gm_mask = ndimage.binary_closing(gm_mask, iterations=2)
     gm_mask_img = new_img_like(gm_img, gm_mask)
     return gm_mask_img
+
+
+def fetch_icbm152_brain_wm_mask(data_dir=None, threshold=0.2, resume=True,
+                                verbose=1):
+    """Downloads ICBM152 template first, then loads 'wm' mask image.
+
+    .. versionadded:: 0.2.5
+
+    Parameters
+    ----------
+    data_dir : str, optional
+        Path of the data directory. Used to force storage in a specified
+        location. Defaults to None.
+
+    threshold : float, optional
+        The parameter which amounts to include the values in the mask image.
+        The values lies above than this threshold will be included. Defaults
+        to 0.2 (one fifth) of values.
+        Default=0.2.
+
+    resume : bool, optional
+        If True, try resuming partially downloaded data.
+        Default=True.
+
+    verbose : int, optional
+        Verbosity level (0 means no message). Default=1.
+
+    Returns
+    -------
+    wm_mask_img : Nifti image
+        Corresponding to brain white matter from ICBM152 template.
+
+    Notes
+    -----
+    This function relies on ICBM152 templates where we particularly pick
+    white matter template and threshold the template at .2 to take one fifth
+    of the values. Then, do a bit post processing such as binary closing
+    operation to more compact mask image.
+
+    Note: It is advised to check the mask image with your own data processing.
+
+    See Also
+    --------
+    nilearn.datasets.fetch_icbm152_2009: for details regarding the ICBM152
+        template.
+
+    nilearn.datasets.load_mni152_template: for details about version of MNI152
+        template and related.
+
+    """
+    # Fetching ICBM152 white matter mask image
+    icbm = fetch_icbm152_2009(data_dir=data_dir, resume=resume, verbose=verbose)
+    wm = icbm['wm']
+    wm_img = check_niimg(wm)
+    wm_data = niimg._safe_get_data(wm_img)
+
+    # getting one fifth of the values
+    wm_mask = (wm_data > threshold)
+
+    wm_mask = ndimage.binary_closing(wm_mask, iterations=2)
+    wm_mask_img = new_img_like(wm_img, wm_mask)
+    return wm_mask_img
 
 
 def fetch_oasis_vbm(n_subjects=None, dartel_version=True, data_dir=None,

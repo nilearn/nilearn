@@ -1,7 +1,7 @@
 """
 Utilities to compute and operate on brain masks
 """
-# Author: Gael Varoquaux, Alexandre Abraham, Philippe Gervais
+# Authors: Gael Varoquaux, Alexandre Abraham, Philippe Gervais, Ana Luisa Pinho
 # License: simplified BSD
 import warnings
 import numbers
@@ -16,6 +16,8 @@ from .image import new_img_like
 from ._utils.cache_mixin import cache
 from ._utils.ndimage import largest_connected_component, get_border_data
 from ._utils.niimg import _safe_get_data, img_data_dtype
+from .datasets import (load_mni152_brain_mask, fetch_icbm152_brain_gm_mask,
+                       fetch_icbm152_brain_wm_mask)
 from nilearn.image import get_data
 
 
@@ -568,13 +570,16 @@ def compute_gray_matter_mask(target_img, threshold=.5,
     """
     return compute_brain_mask(target_img=target_img, threshold=threshold,
                               connected=connected, opening=opening,
-                              memory=memory, verbose=verbose)
+                              memory=memory, verbose=verbose,
+                              mask_type='whole-brain')
 
 
 def compute_brain_mask(target_img, threshold=.5, connected=True,
-                       opening=2, memory=None, verbose=0):
-    """Compute the whole-brain mask. This mask is calculated through the
-    resampling of the MNI152 template mask onto the target image.
+                       opening=2, memory=None, verbose=0,
+                       mask_type='whole-brain'):
+    """Compute the whole-brain, grey-matter or white-matter mask.
+    This mask is calculated through the resampling of the corresponding
+    MNI152 template mask onto the target image.
 
     Parameters
     ----------
@@ -607,18 +612,28 @@ def compute_brain_mask(target_img, threshold=.5, connected=True,
         Controls the amount of verbosity: higher numbers give
         more messages
 
+    mask_type : {'whole-brain', 'gm', 'wm'}, optional
+        Type of mask to be computed. Default = 'whole-brain'
+
     Returns
     -------
     mask : nibabel.Nifti1Image
         The whole-brain mask (3D image)
     """
     if verbose > 0:
-        print("Template mask computation")
+        msg_to_print = "Template " + mask_type + " mask computation"
+        print(msg_to_print)
 
     target_img = _utils.check_niimg(target_img)
 
-    from .datasets import load_mni152_brain_mask
-    template = load_mni152_brain_mask()
+    if mask_type == 'whole-brain':
+        template = load_mni152_brain_mask()
+    elif mask_type == 'gm':
+        template = fetch_icbm152_brain_gm_mask()
+    else:
+        assert mask_type == 'wm'
+        template = fetch_icbm152_brain_wm_mask()
+
     dtype = img_data_dtype(target_img)
     template = new_img_like(template,
                             get_data(template).astype(dtype))
@@ -705,8 +720,8 @@ def compute_multi_gray_matter_mask(target_imgs, threshold=.5,
         pass
 
     mask = compute_brain_mask(target_imgs[0], threshold=threshold,
-                                    connected=connected, opening=opening,
-                                    memory=memory, verbose=verbose)
+                              connected=connected, opening=opening,
+                              memory=memory, verbose=verbose, mask_type='gm')
     return mask
 
 

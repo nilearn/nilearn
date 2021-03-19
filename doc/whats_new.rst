@@ -7,6 +7,11 @@ NEW
 Fixes
 -----
 
+- :func:`nilearn.masking.compute_brain_mask` accepts now as input not only the
+averaged, whole-brain MNI152 T1 template (“avg152T1_brain.nii.gz”) but also
+the grey-matter and white-matter ICBM152 templates dated from 2009.
+
+
 Enhancements
 ------------
 
