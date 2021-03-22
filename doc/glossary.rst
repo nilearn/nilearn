@@ -15,10 +15,12 @@ If you wish to add a missing term, please `create a new issue`_ or
     
     ANOVA
     Anova
-        Analysis of variance.
+        `Analysis of variance`_ is a collection of statistical models and
+        their associated estimation procedures used to analyze the differences
+        among means.
 
     AUC
-        Area under the curve.
+        `Area under the curve`_.
 
     BIDS
     bids
@@ -28,10 +30,11 @@ If you wish to add a missing term, please `create a new issue`_ or
     BOLD
     Bold
     bold
-        Blood oxygenation level dependent.
+        Blood oxygenation level dependent. This is the kind of signal measured
+        by functional Magnetic Resonance Imaging.
 
     CanICA
-        Canonical independant component analysis.
+        `Canonical independant component analysis`_.
 
     contrast
     contrasts
@@ -44,10 +47,12 @@ If you wish to add a missing term, please `create a new issue`_ or
         associated to trial.
 
     EEG
-        Electroencephalography.
+        `Electroencephalography`_ is a monitoring method to record electrical
+        activity of the brain.
     
     EPI
-        Echo-Planar Imaging.
+        Echo-Planar Imaging. This is the type of sequence used to acquire
+        functional or diffusion MRI data.
 
     FDR correction
         `False discovery rate`_ controlling procedures are designed to control
@@ -55,7 +60,9 @@ If you wish to add a missing term, please `create a new issue`_ or
         that are false (incorrect rejections of the null).
 
     FIR
-        Finite impulse response.
+        Finite impulse response. This is a type of free-form temporal filter
+        that is used to link neural activity with hemodynamic response, when
+        there is uncertainty on the true model.
 
     fMRI
     fmri
@@ -73,7 +80,9 @@ If you wish to add a missing term, please `create a new issue`_ or
     FPR correction
     FPR
     fpr
-        False positive rate correction.
+        False positive rate correction. This refers to the methods employed to
+        correct false positive rates such as the Bonferroni correction which
+        divides the significance level by the number of comparisions made.
 
     FREM
         `FREM`_ means "Fast ensembling of REgularized Models". It uses an implicit
@@ -93,17 +102,22 @@ If you wish to add a missing term, please `create a new issue`_ or
         hypotheses tests.
 
     GLM
-        General Linear Model.
+        General Linear Model. This is the name of the models traditionally fit
+        to fMRI data, where one linear model is fit to each voxel time course.
 
     HRF
     hrf
-        Haemodynamic response function.
+        Haemodynamic response function. This is a temporal filter that converts
+        neural signals to hemodynamic signals observable with :term:`fMRI`.
 
     ICA
-        Independant component analysis.
+        `Independant component analysis`_ is a computational method for separating
+        a multivariate signal into additive subcomponents.
 
     MEG
-        Magnetoencephalography.
+        `Magnetoencephalography`_ is a functional neuroimaging technique for mapping
+        brain activity by recording magnetic fields produced by electrical currents 
+        occurring naturally in the brain.
 
     MNI
         MNI stands for "Montreal Neurological Institute". Usually, this is
@@ -112,7 +126,8 @@ If you wish to add a missing term, please `create a new issue`_ or
         that have been matched to the MNI305 using a 9 parameter affine transform.
 
     MVPA
-        Mutli-Voxel Pattern Analysis.
+        Mutli-Voxel Pattern Analysis. This is the way :term:`supervised learning`
+        methods are called in the field of brain imaging.
 
     Neurovault
         `Neurovault`_ is a public repository of unthresholded statistical maps, 
@@ -148,7 +163,11 @@ If you wish to add a missing term, please `create a new issue`_ or
         decoding power as well as decoder maps.
 
     SPM
-        Statistical Parametric Mapping.
+        `Statistical Parametric Mapping`_ is a statistical technique for examining
+        differences in brain activity recorded during functional neuroimaging
+        experiments. It may alternatively refer to a `software`_ created by the Wellcome
+        Department of Imaging Neuroscience at University College London to carry out
+        such analyses. 
 
     supervised learning
         `Supervised learning`_ is interested in predicting an output variable, 
@@ -175,10 +194,12 @@ If you wish to add a missing term, please `create a new issue`_ or
         (e.g., schizophrenia versus healthy) from brain images.
 
     SVM
-        TODO.
+        `Support vector machines`_ are a set of :term:`supervised learning` methods used
+        for :term:`classification`, :term:`regression` and outliers detection.
 
     TR
-        Repetition time.
+        Repetition time. This is the time in seconds between the beginning of an
+        acquisition of one volume and the beginning of acquisition of the volume following it.
 
     Unsupervised learning
     unsupervised learning
@@ -214,14 +235,26 @@ If you wish to add a missing term, please `create a new issue`_ or
 .. _`open a Pull Request`:
     https://github.com/nilearn/nilearn/compare
 
+.. _`Analysis of variance`:
+    https://en.wikipedia.org/wiki/Analysis_of_variance
+
+.. _`Area under the curve`:
+    https://scikit-learn.org/stable/modules/model_evaluation.html#roc-metrics
+
 .. _`Brain Imaging Data Structure`:
     https://bids.neuroimaging.io/
+
+.. _`Canonical independant component analysis`:
+    https://arxiv.org/abs/1006.2300
 
 .. _`contrast`:
     https://en.wikipedia.org/wiki/Contrast_(statistics)
 
 .. _`Decoding`:
     https://nilearn.github.io/decoding/decoding_intro.html
+
+.. _`Electroencephalography`:
+    https://en.wikipedia.org/wiki/Electroencephalography
 
 .. _`False discovery rate`:
     https://en.wikipedia.org/wiki/False_discovery_rate
@@ -235,6 +268,12 @@ If you wish to add a missing term, please `create a new issue`_ or
 .. _`functional connectome`:
     https://nilearn.github.io/connectivity/functional_connectomes.html
 
+.. _`Independant component analysis`:
+    https://en.wikipedia.org/wiki/Independent_component_analysis
+
+.. _`Magnetoencephalography`:
+    https://en.wikipedia.org/wiki/Magnetoencephalography
+
 .. _`Neurovault`:
     https://www.neurovault.org/
 
@@ -244,14 +283,23 @@ If you wish to add a missing term, please `create a new issue`_ or
 .. _`Searchlight analysis`:
     https://nilearn.github.io/decoding/searchlight.html
 
+.. _`software`:
+    https://www.fil.ion.ucl.ac.uk/spm/software/
+
 .. _`SpaceNet`:
     https://nilearn.github.io/decoding/space_net.html
+
+.. _`Statistical Parametric Mapping`:
+    https://en.wikipedia.org/wiki/Statistical_parametric_mapping
 
 .. _`Supervised learning`:
     https://en.wikipedia.org/wiki/Supervised_learning
 
 .. _`Unsupervised learning`:
     https://en.wikipedia.org/wiki/Unsupervised_learning
+
+.. _`Support vector machines`:
+    https://scikit-learn.org/stable/modules/svm.html
 
 .. _`Voxel-Based Morphometry`:
     https://en.wikipedia.org/wiki/Voxel-based_morphometry
