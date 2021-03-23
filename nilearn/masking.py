@@ -74,7 +74,7 @@ def _extrapolate_out_mask(data, mask, iterations=1):
         data, mask = _extrapolate_out_mask(data, mask,
                                            iterations=iterations - 1)
     new_mask = ndimage.binary_dilation(mask)
-    larger_mask = np.zeros(np.array(mask.shape) + 2, dtype=np.bool)
+    larger_mask = np.zeros(np.array(mask.shape) + 2, dtype=bool)
     larger_mask[1:-1, 1:-1, 1:-1] = mask
     # Use nans as missing value: ugly
     masked_data = np.zeros(larger_mask.shape + data.shape[3:])
@@ -773,7 +773,7 @@ def _apply_mask_fmri(imgs, mask_img, dtype='f',
     mask_img = _utils.check_niimg_3d(mask_img)
     mask_affine = mask_img.affine
     mask_data = _utils.as_ndarray(get_data(mask_img),
-                                  dtype=np.bool)
+                                  dtype=bool)
 
     if smoothing_fwhm is not None:
         ensure_finite = True
@@ -824,7 +824,7 @@ def _unmask_3d(X, mask, order="C"):
         Mask. mask.ndim must be equal to 3, and dtype *must* be bool.
     """
 
-    if mask.dtype != np.bool:
+    if mask.dtype != bool:
         raise TypeError("mask must be a boolean array")
     if X.ndim != 1:
         raise TypeError("X must be a 1-dimensional array")
@@ -857,7 +857,7 @@ def _unmask_4d(X, mask, order="C"):
         Shape: (mask.shape[0], mask.shape[1], mask.shape[2], X.shape[0])
     """
 
-    if mask.dtype != np.bool:
+    if mask.dtype != bool:
         raise TypeError("mask must be a boolean array")
     if X.ndim != 2:
         raise TypeError("X must be a 2-dimensional array")

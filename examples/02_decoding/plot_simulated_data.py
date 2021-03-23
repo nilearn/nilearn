@@ -121,13 +121,13 @@ X_train, X_test, y_train, y_test, snr, coefs, size = \
 # Create masks for SearchLight. process_mask is the voxels where SearchLight
 # computation is performed. It is a subset of the brain mask, just to reduce
 # computation time.
-mask = np.ones((size, size, size), np.bool)
-mask_img = nibabel.Nifti1Image(mask.astype(np.int), np.eye(4))
-process_mask = np.zeros((size, size, size), np.bool)
+mask = np.ones((size, size, size), dtype=bool)
+mask_img = nibabel.Nifti1Image(mask.astype(int), np.eye(4))
+process_mask = np.zeros((size, size, size), dtype=bool)
 process_mask[:, :, 0] = True
 process_mask[:, :, 6] = True
 process_mask[:, :, 11] = True
-process_mask_img = nibabel.Nifti1Image(process_mask.astype(np.int), np.eye(4))
+process_mask_img = nibabel.Nifti1Image(process_mask.astype(int), np.eye(4))
 
 coefs = np.reshape(coefs, [size, size, size])
 plot_slices(coefs, title="Ground truth")
