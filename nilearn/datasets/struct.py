@@ -231,8 +231,6 @@ def fetch_icbm152_brain_gm_mask(data_dir=None, threshold=0.2, resume=True,
                                 verbose=1):
     """Downloads ICBM152 template first, then loads 'gm' mask image.
 
-    .. versionadded:: 0.2.5
-
     Parameters
     ----------
     data_dir : str, optional
