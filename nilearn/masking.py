@@ -12,12 +12,12 @@ from joblib import Parallel, delayed
 
 from sklearn.utils import deprecated
 from . import _utils
-from .image import new_img_like
+from .image import new_img_like, resampling
 from ._utils.cache_mixin import cache
 from ._utils.ndimage import largest_connected_component, get_border_data
 from ._utils.niimg import _safe_get_data, img_data_dtype
-from .datasets import (load_mni152_brain_mask, fetch_icbm152_brain_gm_mask,
-                       fetch_icbm152_brain_wm_mask)
+from .datasets import (load_mni152_brain_mask, load_mni152_gm_mask,
+                       load_mni152_wm_mask)
 from nilearn.image import get_data
 
 
@@ -577,7 +577,7 @@ def compute_gray_matter_mask(target_img, threshold=.5,
 def compute_brain_mask(target_img, threshold=.5, connected=True,
                        opening=2, memory=None, verbose=0,
                        mask_type='whole-brain'):
-    """Compute the whole-brain, grey-matter or white-matter mask.
+    """Compute the whole-brain, gray-matter or white-matter mask.
     This mask is calculated through the resampling of the corresponding
     MNI152 template mask onto the target image.
 
@@ -629,25 +629,27 @@ def compute_brain_mask(target_img, threshold=.5, connected=True,
     if mask_type == 'whole-brain':
         template = load_mni152_brain_mask()
     elif mask_type == 'gm':
-        template = fetch_icbm152_brain_gm_mask()
+        template = load_mni152_gm_mask()
+    elif mask_type == 'wm':
+        template = load_mni152_wm_mask()
     else:
-        assert mask_type == 'wm'
-        template = fetch_icbm152_brain_wm_mask()
+        raise ValueError("Unknown mask type {}".format(mask_type))
 
     dtype = img_data_dtype(target_img)
     template = new_img_like(template,
                             get_data(template).astype(dtype))
 
-    from .image.resampling import resample_to_img
-    resampled_template = cache(resample_to_img, memory)(template, target_img)
+    resampled_template = cache(resampling.resample_to_img, memory)(template,
+                                                                   target_img)
 
     mask = get_data(resampled_template) >= threshold
 
+    warning_message = mask_type.capitalize() + \
+                      " mask is empty, " + \
+                      "lower the threshold or check your input FOV"
     mask, affine = _post_process_mask(mask, target_img.affine, opening=opening,
                                       connected=connected,
-                                      warning_msg="Gray matter mask is empty, "
-                                                  "lower the threshold or "
-                                                  "check your input FOV")
+                                      warning_msg=warning_message)
 
     return new_img_like(target_img, mask, affine)
 
