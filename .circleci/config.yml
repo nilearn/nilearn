@@ -45,6 +45,10 @@ jobs:
               chmod +x ~/miniconda.sh && ~/miniconda.sh -b;
               echo 'export PATH="$HOME/miniconda3/bin:$PATH"'  >> $BASH_ENV;
       - run:
+          name: Install apt packages
+          command: |
+              ./tools/circleci_dependencies_apt.sh
+      - run:
           name: Install packages in conda env
           command: |
               ./tools/circleci_dependencies.sh

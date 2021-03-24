@@ -1,7 +1,5 @@
 #!/bin/bash -ef
 
-sudo -E apt-get -yq update
-sudo -E apt-get -yq --no-install-suggests --no-install-recommends --force-yes install dvipng texlive-latex-base texlive-latex-extra
 conda init bash
 echo "conda version = $(conda --version)"
 conda create -n testenv
