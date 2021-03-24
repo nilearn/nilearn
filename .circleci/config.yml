@@ -10,7 +10,7 @@ jobs:
   build_docs:
     
     docker:
-      - image: circleci/python:3.7
+      - image: circleci/python:3.8
 
     steps:
       - restore_cache:
@@ -38,22 +38,16 @@ jobs:
                   echo "Merging $(cat merge.txt)";
                   git pull --ff-only upstream "refs/pull/$(cat merge.txt)/merge";
               fi
-      - restore_cache:
-          keys:
-              - pip-cache
       - run:
-          name: Install dependencies
+          name: setup conda
+          command: |
+              wget https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh -O ~/miniconda.sh;
+              chmod +x ~/miniconda.sh && ~/miniconda.sh -b;
+              echo 'export PATH="$HOME/miniconda3/bin:$PATH"'  >> $BASH_ENV;
+      - run:
+          name: Install packages in conda env
           command: |
               ./tools/circleci_dependencies.sh
-      - save_cache:
-          key: pip-cache
-          paths:
-              - ~/.cache/pip
-      - save_cache:
-          key: user-install-bin-cache
-          paths:
-              - ~/.local/lib/python3.7/site-packages
-              - ~/.local/bin
       - run:
           name: Find build type
           command: |
@@ -66,6 +60,8 @@ jobs:
       - run:
           name: build doc
           command: |
+              source activate testenv;
+              echo "Conda active env = $CONDA_DEFAULT_ENV";
               cd doc;
               PATTERN=$(cat ../pattern.txt) make $(cat ../build.txt)
           no_output_timeout: 7h
