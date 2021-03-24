@@ -230,39 +230,50 @@ def load_mni152_wm_mask():
 def fetch_icbm152_brain_gm_mask(data_dir=None, threshold=0.2, resume=True,
                                 verbose=1):
     """Downloads ICBM152 template first, then loads 'gm' mask image.
+
     .. versionadded:: 0.2.5
+
     Parameters
     ----------
     data_dir : str, optional
         Path of the data directory. Used to force storage in a specified
         location. Defaults to None.
+
     threshold : float, optional
         The parameter which amounts to include the values in the mask image.
         The values lies above than this threshold will be included. Defaults
         to 0.2 (one fifth) of values.
         Default=0.2.
+
     resume : bool, optional
         If True, try resuming partially downloaded data.
         Default=True.
+
     verbose : int, optional
         Verbosity level (0 means no message). Default=1.
+
     Returns
     -------
     gm_mask_img : Nifti image
         Corresponding to brain grey matter from ICBM152 template.
+
     Notes
     -----
     This function relies on ICBM152 templates where we particularly pick
     grey matter template and threshold the template at .2 to take one fifth
     of the values. Then, do a bit post processing such as binary closing
     operation to more compact mask image.
+
     Note: It is advised to check the mask image with your own data processing.
+
     See Also
     --------
     nilearn.datasets.fetch_icbm152_2009: for details regarding the ICBM152
         template.
+
     nilearn.datasets.load_mni152_template: for details about version of MNI152
         template and related.
+
     """
     # Fetching ICBM152 grey matter mask image
     icbm = fetch_icbm152_2009(data_dir=data_dir, resume=resume,
