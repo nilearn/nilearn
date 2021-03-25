@@ -206,25 +206,37 @@ def load_mni152_gm_mask():
 
     """
     # Load MNI template
-    gm_target_img = load_mni152_gm_template()
-    gm_mask_voxels = (get_data(gm_target_img) > 0).astype(int)
-    gm_mask_img = new_img_like(gm_target_img, gm_mask_voxels)
-    return gm_mask_img
+    gm_target = load_mni152_gm_template()
+    gm_target_img = check_niimg(gm_target)
+    gm_target_data = niimg._safe_get_data(gm_target_img)
+
+    gm_target_mask = (gm_target_data > 0.2)
+
+    gm_target_mask = ndimage.binary_closing(gm_target_mask, iterations=2)
+    gm_target_mask_img = new_img_like(gm_target_img, gm_target_mask)
+
+    return gm_target_mask_img
 
 
 def load_mni152_wm_mask():
-    """Load brain mask from gray-matter MNI152 template
+    """Load brain mask from white-matter MNI152 template
 
     Returns
     -------
-    mask_img : Nifti-like mask image corresponding to gray matter.
+    mask_img : Nifti-like mask image corresponding to white matter.
 
     """
     # Load MNI template
-    wm_target_img = load_mni152_wm_template()
-    wm_mask_voxels = (get_data(wm_target_img) > 0).astype(int)
-    wm_mask_img = new_img_like(wm_target_img, wm_mask_voxels)
-    return wm_mask_img
+    wm_target = load_mni152_wm_template()
+    wm_target_img = check_niimg(wm_target)
+    wm_target_data = niimg._safe_get_data(wm_target_img)
+
+    wm_target_mask = (wm_target_data > 0.2)
+
+    wm_target_mask = ndimage.binary_closing(wm_target_mask, iterations=2)
+    wm_target_mask_img = new_img_like(wm_target_img, wm_target_mask)
+
+    return wm_target_mask_img
 
 
 def fetch_icbm152_brain_gm_mask(data_dir=None, threshold=0.2, resume=True,

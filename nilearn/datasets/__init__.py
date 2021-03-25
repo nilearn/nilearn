@@ -4,10 +4,12 @@ Helper functions to download NeuroImaging datasets
 
 from warnings import warn
 from .struct import (fetch_icbm152_2009, load_mni152_template,
-                     load_mni152_brain_mask, load_mni152_gm_mask,
+                     load_mni152_brain_mask, load_mni152_gm_template,
+                     load_mni152_gm_mask, load_mni152_wm_template,
                      load_mni152_wm_mask, fetch_oasis_vbm,
                      fetch_icbm152_brain_gm_mask,
-                     MNI152_FILE_PATH, fetch_surf_fsaverage)
+                     MNI152_FILE_PATH, GM_MNI152_FILE_PATH,
+                     WM_MNI152_FILE_PATH, fetch_surf_fsaverage)
 from .func import (fetch_haxby, fetch_nyu_rest,
                    fetch_adhd, fetch_miyawaki2008,
                    fetch_localizer_contrasts, fetch_abide_pcp,
@@ -49,6 +51,7 @@ from .neurovault import (fetch_neurovault,
 )
 
 __all__ = ['MNI152_FILE_PATH', 'fetch_icbm152_2009', 'load_mni152_template',
+           'load_mni152_gm_template', 'load_mni152_wm_template'
            'fetch_oasis_vbm',
            'fetch_haxby', 'fetch_nyu_rest',
            'fetch_adhd', 'fetch_miyawaki2008', 'fetch_localizer_contrasts',
