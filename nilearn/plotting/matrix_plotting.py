@@ -19,16 +19,16 @@ def fit_axes(ax):
     """
     fig = ax.get_figure()
     renderer = get_renderer(fig)
-    ylabel_width = ax.yaxis.get_tightbbox(renderer).inverse_transformed(
-        ax.figure.transFigure).width
+    ylabel_width = ax.yaxis.get_tightbbox(renderer).transformed(
+        ax.figure.transFigure.inverted()).width
     if ax.get_position().xmin < 1.1 * ylabel_width:
         # we need to move it over
         new_position = ax.get_position()
         new_position.x0 = 1.1 * ylabel_width  # pad a little
         ax.set_position(new_position)
 
-    xlabel_height = ax.xaxis.get_tightbbox(renderer).inverse_transformed(
-        ax.figure.transFigure).height
+    xlabel_height = ax.xaxis.get_tightbbox(renderer).transformed(
+        ax.figure.transFigure.inverted()).height
     if ax.get_position().ymin < 1.1 * xlabel_height:
         # we need to move it over
         new_position = ax.get_position()
