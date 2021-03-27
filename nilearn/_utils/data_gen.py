@@ -212,7 +212,7 @@ def generate_labeled_regions_large(shape, n_regions, rand_gen=None,
 def generate_fake_fmri(shape=(10, 11, 12), length=17, kind="noise",
                        affine=np.eye(4), n_blocks=None, block_size=None,
                        block_type='classification',
-                       rand_gen=np.random.RandomState(0)):
+                       rand_gen=None):
     """Generate a signal which can be used for testing.
 
     The return value is a 4D array, representing 3D volumes along time.
@@ -274,6 +274,9 @@ def generate_fake_fmri(shape=(10, 11, 12), length=17, kind="noise",
     width = [s // 2 for s in shape]
     shift = [s // 4 for s in shape]
 
+    if rand_gen is None:
+        rand_gen = check_random_state(rand_gen)
+    
     if kind == "noise":
         signals = rand_gen.randint(256, size=(width + [length]))
     elif kind == "step":
@@ -316,8 +319,8 @@ def generate_fake_fmri(shape=(10, 11, 12), length=17, kind="noise",
             trials_effect = (rand_gen.random_sample(block_size) + 1) * 3.
         else:
             # Select the voxel in the image center and add some signal
-            # that increases with each block
             voxel_idx = flat_fmri.shape[0] // 2
+            # that increases with each block
             trials_effect = (
                 rand_gen.random_sample(block_size) + 1) * block
         t_rest = 0
