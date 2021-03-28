@@ -276,7 +276,6 @@ def generate_fake_fmri(shape=(10, 11, 12), length=17, kind="noise",
 
     if rand_gen is None:
         rand_gen = check_random_state(rand_gen)
-    
     if kind == "noise":
         signals = rand_gen.randint(256, size=(width + [length]))
     elif kind == "step":
@@ -319,8 +318,8 @@ def generate_fake_fmri(shape=(10, 11, 12), length=17, kind="noise",
             trials_effect = (rand_gen.random_sample(block_size) + 1) * 3.
         else:
             # Select the voxel in the image center and add some signal
-            voxel_idx = flat_fmri.shape[0] // 2
             # that increases with each block
+            voxel_idx = flat_fmri.shape[0] // 2
             trials_effect = (
                 rand_gen.random_sample(block_size) + 1) * block
         t_rest = 0
