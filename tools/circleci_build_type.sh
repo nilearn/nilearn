@@ -15,6 +15,7 @@ else
     done;
     echo PATTERN="$PATTERN";
     if [[ $PATTERN ]]; then
+        # Remove trailing \| introduced by the for loop above
         PATTERN="\(${PATTERN::-2}\)";
         echo html-pattern > build.txt;
     else
