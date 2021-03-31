@@ -17,7 +17,7 @@ else
     if [[ $PATTERN ]]; then
         # Remove trailing \| introduced by the for loop above
         PATTERN="\(${PATTERN::-2}\)";
-        echo html-pattern > build.txt;
+        echo html-modified-examples-only > build.txt;
     else
         echo html-noplot > build.txt;
     fi;
