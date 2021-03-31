@@ -178,7 +178,7 @@ def view_connectome(adjacency_matrix, node_coords, edge_threshold=None,
 
 
 def view_markers(marker_coords, marker_color=None, marker_size=5.,
-                 title=None, title_fontsize=25):
+                 marker_labels=None,title=None, title_fontsize=25):
     """Insert a 3d plot of markers in a brain into an HTML page.
 
     Parameters
@@ -193,6 +193,9 @@ def view_markers(marker_coords, marker_color=None, marker_size=5.,
 
     marker_size : float or array-like, optional
         Size of the markers showing the seeds in pixels. Default=5.0.
+
+    marker_labels : list of str, shape=(n_nodes), optional
+        Labels for the markers: list of strings
 
     title : str, optional
         Title for the plot.
@@ -228,7 +231,10 @@ def view_markers(marker_coords, marker_color=None, marker_size=5.,
     connectome_info = _get_markers(marker_coords, marker_color)
     if hasattr(marker_size, 'tolist'):
         marker_size = marker_size.tolist()
+    if marker_labels is None:
+        marker_labels = ['' for i in range(marker_coords.shape[0])]
     connectome_info["marker_size"] = marker_size
+    connectome_info["marker_labels"] = marker_labels
     connectome_info['title'] = title
     connectome_info['title_fontsize'] = title_fontsize
     return _make_connectome_html(connectome_info)
