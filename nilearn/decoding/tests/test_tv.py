@@ -13,7 +13,7 @@ def test_tvl1_from_gradient(size=5, n_samples=10, random_state=42):
     X = rng.randn(n_samples, n_voxels)
     y = rng.randn(n_samples)
     w = rng.randn(*shape)
-    mask = np.ones_like(w).astype(np.bool)
+    mask = np.ones_like(w).astype(bool)
     for alpha in [0., 1e-1, 1e-3]:
         for l1_ratio in [0., .5, 1.]:
             gradid = _gradient_id(w, l1_ratio=l1_ratio)

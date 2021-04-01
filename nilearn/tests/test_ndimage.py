@@ -70,4 +70,4 @@ def test_constant_image_in_peak_local_max():
 def test_trivial_cases_in_peak_local_max():
     trivial = np.zeros((25, 25))
     peaks = _peak_local_max(trivial, min_distance=1)
-    assert (peaks.astype(np.bool) == trivial).all()
+    assert (peaks.astype(bool) == trivial).all()

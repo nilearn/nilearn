@@ -412,7 +412,7 @@ def _filter_column(array, col, criteria):
         not isinstance(criteria, bytes) and
         not isinstance(criteria, tuple) and
             isinstance(criteria, collections.abc.Iterable)):
-        filter = np.zeros(array.shape[0], dtype=np.bool)
+        filter = np.zeros(array.shape[0], dtype=bool)
         for criterion in criteria:
             filter = np.logical_or(filter,
                                    _filter_column(array, col, criterion))
@@ -453,10 +453,10 @@ def _filter_columns(array, filters, combination='and'):
     """
     if combination == 'and':
         fcomb = np.logical_and
-        mask = np.ones(array.shape[0], dtype=np.bool)
+        mask = np.ones(array.shape[0], dtype=bool)
     elif combination == 'or':
         fcomb = np.logical_or
-        mask = np.zeros(array.shape[0], dtype=np.bool)
+        mask = np.zeros(array.shape[0], dtype=bool)
     else:
         raise ValueError('Combination mode not known: %s' % combination)
 

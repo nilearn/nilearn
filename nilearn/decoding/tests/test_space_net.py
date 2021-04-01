@@ -126,7 +126,7 @@ def test_logistic_path_scores():
     iris = load_iris()
     X, y = iris.data, iris.target
     _, mask = to_niimgs(X, [2, 2, 2])
-    mask = get_data(mask).astype(np.bool)
+    mask = get_data(mask).astype(bool)
     alphas = [1., .1, .01]
     test_scores, best_w = logistic_path_scores(
         _graph_net_logistic, X, y, mask, alphas, .5,
@@ -140,7 +140,7 @@ def test_squared_loss_path_scores():
     iris = load_iris()
     X, y = iris.data, iris.target
     _, mask = to_niimgs(X, [2, 2, 2])
-    mask = get_data(mask).astype(np.bool)
+    mask = get_data(mask).astype(bool)
     alphas = [1., .1, .01]
     test_scores, best_w = squared_loss_path_scores(
         _graph_net_squared_loss, X, y, mask, alphas, .5,
@@ -260,7 +260,7 @@ def test_params_correctly_propagated_in_constructors_biz():
 
 def test_crop_mask():
     rng = np.random.RandomState(42)
-    mask = np.zeros((3, 4, 5), dtype=np.bool)
+    mask = np.zeros((3, 4, 5), dtype=bool)
     box = mask[:2, :3, :4]
     box[rng.rand(*box.shape) < 3.] = 1  # mask covers 30% of brain
     idx = np.where(mask)

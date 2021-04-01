@@ -27,7 +27,7 @@ def _make_data(task="regression", size=4):
         snr=1., n_samples=10, size=size, n_points=5, random_state=42,
         task=task)
     X_, _ = to_niimgs(X, [size] * 3)
-    mask_ = nibabel.Nifti1Image(mask.astype(np.float),
+    mask_ = nibabel.Nifti1Image(mask.astype(float),
                                 X_.affine)
     return X, y, w, mask, mask_, X_
 
@@ -83,7 +83,7 @@ def test_identity_adjointness(size=4):
     rng = check_random_state(42)
 
     # A mask full of ones
-    mask = np.ones((size, size, size), dtype=np.bool)
+    mask = np.ones((size, size, size), dtype=bool)
 
     # But with some zeros
     mask[0:3, 0:3, 0:3] = 0
@@ -105,7 +105,7 @@ def test_operators_adjointness(size=4):
     rng = check_random_state(42)
 
     # A mask full of ones
-    mask = np.ones((size, size, size), dtype=np.bool)
+    mask = np.ones((size, size, size), dtype=bool)
 
     # But with some zeros
     mask[0:3, 0:3, 0:3] = 0
@@ -238,7 +238,7 @@ def test_mfista_solver_graph_net_no_l1_term():
     f1_grad = lambda w: np.dot(X.T, np.dot(X, w) - y)
     f2_prox = lambda w, l, *args, **kwargs: (w, dict(converged=True))
     lipschitz_constant = _squared_loss_derivative_lipschitz_constant(
-        X, (np.eye(2) == 1).astype(np.bool), 1)
+        X, (np.eye(2) == 1).astype(bool), 1)
     estimate_solution, _, _ = mfista(
         f1_grad, f2_prox, f1, lipschitz_constant, w.size, tol=1e-8)
 
