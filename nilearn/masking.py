@@ -639,8 +639,8 @@ def compute_brain_mask(target_img, threshold=.5, connected=True,
     template = new_img_like(template,
                             get_data(template).astype(dtype))
 
-    resampled_template = cache(resampling.resample_to_img, memory)(template,
-                                                                   target_img)
+    resampled_template = cache(resampling.resample_to_img, memory)(
+        template, target_img, force_resample=True)
 
     mask = get_data(resampled_template) >= threshold
 
