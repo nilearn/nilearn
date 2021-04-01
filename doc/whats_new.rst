@@ -108,6 +108,7 @@ Enhancements
   :func:`nilearn.reporting.get_clusters_table` have a new argument,
   "two_sided", which allows for two-sided thresholding, which is disabled by default.
 
+- :func:`nilearn.plotting.view_markers` now accept an optional argument `marker_labels` to provide labels to each marker.
 
 .. _v0.7.0:
 

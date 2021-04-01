@@ -178,7 +178,7 @@ def view_connectome(adjacency_matrix, node_coords, edge_threshold=None,
 
 
 def view_markers(marker_coords, marker_color=None, marker_size=5.,
-                 marker_labels=None,title=None, title_fontsize=25):
+                 marker_labels=None, title=None, title_fontsize=25):
     """Insert a 3d plot of markers in a brain into an HTML page.
 
     Parameters
