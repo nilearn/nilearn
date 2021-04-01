@@ -67,7 +67,8 @@ jobs:
               source activate testenv;
               echo "Conda active env = $CONDA_DEFAULT_ENV";
               cd doc;
-              PATTERN=$(cat ../pattern.txt) make $(cat ../build.txt)
+              set -o pipefail;
+              PATTERN=$(cat ../pattern.txt) make $(cat ../build.txt) 2>&1 | tee log.txt;
           no_output_timeout: 7h
       - store_test_results:
           path: doc/_build/test-results
