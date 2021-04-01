@@ -7,4 +7,4 @@ conda install -n testenv -yq python=3.8 numpy scipy scikit-learn matplotlib pand
 conda install -n testenv -yq nibabel sphinx-gallery junit-xml -c conda-forge
 source activate testenv
 python -m pip install --user --upgrade --progress-bar off pip setuptools
-python -m pip install --user -e .
+python -m pip install .
