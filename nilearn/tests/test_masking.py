@@ -208,20 +208,20 @@ def test_compute_brain_mask():
     img2 = Nifti1Image(np.full((9, 9, 9), rng.uniform()), np.eye(4))
 
     # ... for whole-brain mask
-    mask_img1 = compute_brain_mask(img1)
-    mask_img2 = compute_brain_mask(img2)
+    mask_img1 = compute_brain_mask(img1, verbose=1)
+    mask_img2 = compute_brain_mask(img2, verbose=1)
     np.testing.assert_array_equal(get_data(mask_img1),
                                   get_data(mask_img2))
 
     # ... for grey-matter mask
-    mask_img3 = compute_brain_mask(img1, mask_type='gm')
-    mask_img4 = compute_brain_mask(img2, mask_type='gm')
+    mask_img3 = compute_brain_mask(img1, verbose=1, mask_type='gm')
+    mask_img4 = compute_brain_mask(img2, verbose=1, mask_type='gm')
     np.testing.assert_array_equal(get_data(mask_img3),
                                   get_data(mask_img4))
 
     # ... for white-matter mask
-    mask_img5 = compute_brain_mask(img1, mask_type='wm')
-    mask_img6 = compute_brain_mask(img2, mask_type='wm')
+    mask_img5 = compute_brain_mask(img1, verbose=1, mask_type='wm')
+    mask_img6 = compute_brain_mask(img2, verbose=1, mask_type='wm')
     np.testing.assert_array_equal(get_data(mask_img5),
                                   get_data(mask_img6))
 
