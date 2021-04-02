@@ -104,7 +104,7 @@ def test_z_score():
 
 def test_z_score_opposite_contrast():
     fmri, mask = generate_fake_fmri(shape=(50, 20, 50), length=96,
-                                    rand_gen=np.random.RandomState(42))
+                                    random_state=np.random.RandomState(42))
 
     nifti_masker = NiftiMasker(mask_img=mask)
     data = nifti_masker.fit_transform(fmri)

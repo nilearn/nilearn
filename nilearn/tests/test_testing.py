@@ -52,13 +52,13 @@ def test_generate_fake_fmri():
                 shape=shape, length=length, kind=kind,
                 n_blocks=n_block, block_size=bsize,
                 block_type=btype,
-                rand_gen=rand_gen)
+                random_state=rand_gen)
         else:
             fmri, mask, target = generate_fake_fmri(
                 shape=shape, length=length, kind=kind,
                 n_blocks=n_block, block_size=bsize,
                 block_type=btype,
-                rand_gen=rand_gen)
+                random_state=rand_gen)
 
         assert fmri.shape[:-1] == shape
         assert fmri.shape[-1] == length
@@ -67,4 +67,4 @@ def test_generate_fake_fmri():
             assert target.size == length
 
     pytest.raises(ValueError, generate_fake_fmri, length=10, n_blocks=10,
-                  block_size=None, rand_gen=rand_gen)
+                  block_size=None, random_state=rand_gen)
