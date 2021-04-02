@@ -50,7 +50,8 @@ from .neurovault import (fetch_neurovault,
                          fetch_neurovault_auditory_computation_task
 )
 
-__all__ = ['MNI152_FILE_PATH', 'fetch_icbm152_2009', 'load_mni152_template',
+__all__ = ['MNI152_FILE_PATH', 'GM_MNI152_FILE_PATH', 'WM_MNI152_FILE_PATH',
+           'fetch_icbm152_2009', 'load_mni152_template',
            'load_mni152_gm_template', 'load_mni152_wm_template'
            'fetch_oasis_vbm',
            'fetch_haxby', 'fetch_nyu_rest',
