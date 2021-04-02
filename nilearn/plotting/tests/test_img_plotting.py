@@ -1550,11 +1550,11 @@ def test_plot_img_comparison():
     axes = axes.ravel()
     kwargs = {"shape": (3, 2, 4), "length": 5}
     query_images, mask_img = data_gen.generate_fake_fmri(
-        rand_gen=np.random.RandomState(0), **kwargs)
+        random_state=np.random.RandomState(0), **kwargs)
     # plot_img_comparison doesn't handle 4d images ATM
     query_images = list(image.iter_img(query_images))
     target_images, _ = data_gen.generate_fake_fmri(
-        rand_gen=np.random.RandomState(1), **kwargs)
+        random_state=np.random.RandomState(1), **kwargs)
     target_images = list(image.iter_img(target_images))
     target_images[0] = query_images[0]
     masker = NiftiMasker(mask_img).fit()
