@@ -4,6 +4,10 @@
     :target: https://pypi.org/project/nilearn/
     :alt: Pypi Package
 
+.. image:: https://img.shields.io/pypi/pyversions/nilearn.svg
+    :target: https://pypi.org/project/nilearn/
+    :alt: PyPI - Python Version
+
 .. image:: https://github.com/nilearn/nilearn/workflows/build/badge.svg?branch=master&event=push
    :target: https://github.com/nilearn/nilearn/actions
    :alt: Github Actions Build Status
