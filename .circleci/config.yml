@@ -82,8 +82,6 @@ jobs:
           path: doc/_build/html_stable
           destination: stable
       - store_artifacts:
-          path: coverage
-      - store_artifacts:
           path: doc/log.txt
       - persist_to_workspace:
           root: doc/_build
