@@ -633,7 +633,7 @@ def compute_brain_mask(target_img, threshold=.5, connected=True,
     elif mask_type == 'wm':
         template = load_mni152_wm_mask()
     else:
-        raise ValueError("Unknown mask type {}".format(mask_type))
+        raise ValueError("Unknown mask type {}.".format(mask_type))
 
     dtype = img_data_dtype(target_img)
     template = new_img_like(template,

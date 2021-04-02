@@ -225,6 +225,10 @@ def test_compute_brain_mask():
     np.testing.assert_array_equal(get_data(mask_img5),
                                   get_data(mask_img6))
 
+    # Test error message of unknown mask type
+    with pytest.raises(ValueError, match='Unknown mask type foo.'):
+        compute_brain_mask(img2, verbose=1, mask_type='foo')
+
 
 def test_deprecation_warning_compute_gray_matter_mask():
     img = Nifti1Image(np.ones((9, 9, 9)), np.eye(4))
