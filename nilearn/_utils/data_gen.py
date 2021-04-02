@@ -712,8 +712,9 @@ def generate_group_sparse_gaussian_graphs(n_subjects=5,
 
 
 def basic_paradigm():
-    """generate basic paradigm
-    
+    """
+    generate basic paradigm
+
     Parameters
     ----------
     None
