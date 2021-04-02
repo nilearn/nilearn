@@ -22,6 +22,39 @@ from nilearn import datasets, image, input_data
 
 
 def generate_mni_space_img(n_scans=1, res=30, random_state=0, mask_dilation=2):
+    """Generate mni space img.
+
+    Parameters
+    ----------
+    n_scans : int, optional
+        #TODO review
+        Number of scans.
+        Default=1.
+
+    res : int, optional
+        #TODO review
+        resolution.
+        Default=30.
+
+    random_state : int or numpy.random.RandomState instance, optional
+        Random number generator, or seed.
+        Default=0.
+
+    mask_dilation : int, optional
+        #TODO review
+        dialation of mast.
+        Default=2.
+
+    Returns
+    -------
+    #TODO how to specify returns without variable name?
+    inverse_img : Transformed image in brain space.
+        #TODO review
+
+    mask_img : nibabel.Nifti1Image
+        #TODO what to put here?
+
+    """
     rand_gen = check_random_state(random_state)
     mni = datasets.load_mni152_brain_mask()
     target_affine = np.eye(3) * res
@@ -36,11 +69,29 @@ def generate_mni_space_img(n_scans=1, res=30, random_state=0, mask_dilation=2):
             mask_img,
             ndimage.binary_dilation(image.get_data(mask_img),
                                     iterations=mask_dilation))
-    return masker.inverse_transform(data), mask_img
+    inverse_img = masker.inverse_transform(data)
+    return inverse_img, mask_img
 
 
 def generate_timeseries(n_instants, n_features, random_state=0):
-    """Generate some random timeseries. """
+    """Generate some random timeseries.
+
+    Parameters
+    ----------
+    n_instants : int
+        Number of instants
+
+    n_features : int
+        Number of features
+
+    random_state : int or numpy.random.RandomState instance, optional
+        Random number generator, or seed.
+        Default=0.
+
+    Returns
+    -------
+        #TODO How to specify returns
+    """
 
     rand_gen = check_random_state(random_state)
     # TODO: add an "order" keyword
@@ -64,6 +115,10 @@ def generate_regions_ts(n_features,
 
     overlap : int, optional
         Number of overlapping voxels between two regions (more or less).
+        Default=0.
+
+    random_state : int or numpy.random.RandomState instance, optional
+        Random number generator, or seed.
         Default=0.
 
     window : str, optional
@@ -126,8 +181,9 @@ def generate_maps(shape,
         Name of a window in scipy.signal. Used to get non-uniform regions.
         Default='boxcar'.
 
-    ran_gen : None or numpy.random.RandomState, optional
-        Random generator to use for generation. Default=None.
+    random_state : int or numpy.random.RandomState instance, optional
+        Random number generator, or seed.
+        Default=0.
 
     affine : Numpy array, optional
         Affine transformation to use. Default=np.eye(4).
@@ -176,8 +232,9 @@ def generate_labeled_regions(shape,
     labels : iterable, optional
         Labels to use for each zone. If provided, n_regions is unused.
 
-    random_state : numpy.random.RandomState
-        Random generator to use for generation.
+    random_state : int or numpy.random.RandomState instance, optional
+        Random number generator, or seed.
+        Default=0.
 
     affine : numpy.ndarray, optional
         Affine of returned image. Default=np.eye(4).
@@ -217,6 +274,27 @@ def generate_labeled_regions_large(shape,
     regions.
 
     See generate_labeled_regions for details.
+
+    Parameters
+    ----------
+    shape : tuple
+        Shape of returned array.
+
+    n_regions : int
+        Number of regions to generate. By default (if "labels" is None),
+        add a background with value zero.
+
+    random_state : int or numpy.random.RandomState instance, optional
+        Random number generator, or seed.
+        Default=0.
+
+    affine : numpy.ndarray, optional
+        Affine of returned image. Default=np.eye(4).
+
+    Returns
+    -------
+    regions : nibabel.Nifti1Image
+        Data has shape "shape", containing region labels.
     """
     rand_gen = check_random_state(random_state)
     data = rand_gen.randint(n_regions + 1, size=shape)
@@ -270,9 +348,9 @@ def generate_fake_fmri(shape=(10, 11, 12),
         'classification' or 'regression'.
         Default='classification'.
 
-    rand_gen : numpy.random.RandomState, optional
-        Random generator to use for generation.
-        Default=np.random.RandomState(0).
+    random_state : int or numpy.random.RandomState instance, optional
+        Random number generator, or seed.
+        Default=0.
 
     Returns
     -------
@@ -355,6 +433,38 @@ def generate_fake_fmri_data_and_design(shapes,
                                        rk=3,
                                        affine=np.eye(4),
                                        random_state=0):
+    """
+    #TODO help with description
+
+    Parameters
+    ----------
+    shape : tuple
+        Shape of returned array
+
+    rk : int, optional
+        #TODO what is rk.
+        Default=3.
+
+    affine : numpy.ndarray, optional
+        Affine of returned images.
+        Default=np.eye(4).
+
+    random_state : int or numpy.random.RandomState instance, optional
+        Random number generator, or seed.
+        Default=0.
+
+    Returns
+    -------
+    mask : nibabel.Nifti1Image
+        #TODO what's this mask?
+
+    fmri_data : List
+        list of nibabel.Nifti1Image
+
+    design_matrices : List
+        list of pd.DataFrame
+
+    """
     fmri_data = []
     design_matrices = []
     rand_gen = check_random_state(random_state)
@@ -376,6 +486,38 @@ def write_fake_fmri_data_and_design(shapes,
                                     rk=3,
                                     affine=np.eye(4),
                                     random_state=0):
+    """
+    #TODO help with docstring
+
+    Parameters
+    ----------
+    shapes : List
+        List of shapes in tuple format
+
+    rk : int, optional
+        #TODO what is rk.
+        Default=3.
+
+    affine : numpy.ndarray, optional
+        Affine of returned images.
+        Default=np.eye(4).
+
+    random_state : int or numpy.random.RandomState instance, optional
+        Random number generator, or seed.
+        Default=0.
+
+    Returns
+    -------
+    mask_file : str
+        path to mask file.
+
+    fmri_files : List
+        list of str.
+
+    design_files : List
+        list of str.
+
+    """
     mask_file, fmri_files, design_files = 'mask.nii', [], []
     rand_gen = check_random_state(random_state)
     for i, shape in enumerate(shapes):
@@ -396,6 +538,35 @@ def write_fake_bold_img(file_path,
                         rk=3,
                         affine=np.eye(4),
                         random_state=0):
+    """
+    #TODO help with docstring
+
+    Parameters
+    ----------
+    file_path : str
+        output file path.
+
+    shape : tuple
+        Shape of output array.
+
+    rk : int, optional
+        #TODO what is rk.
+        Default=3.
+
+    affine : numpy.ndarray, optional
+        Affine of returned images.
+        Default=np.eye(4).
+
+    random_state : int or numpy.random.RandomState instance, optional
+        Random number generator, or seed.
+        Default=0.
+
+    Returns
+    -------
+    file_path : str
+        output file path.
+
+    """
     rand_gen = check_random_state(random_state)
     data = rand_gen.randn(*shape)
     data[1:-1, 1:-1, 1:-1] += 100
@@ -422,8 +593,9 @@ def generate_signals_from_precisions(precisions,
         The number of samples drawn for each timeseries is taken at random
         between these two numbers. Defaults are 50 and 100.
 
-    random_state : int, optional
-        Random state. Default=0.
+    random_state : int or numpy.random.RandomState instance, optional
+        Random number generator, or seed.
+        Default=0.
 
     Returns
     -------
@@ -540,6 +712,18 @@ def generate_group_sparse_gaussian_graphs(n_subjects=5,
 
 
 def basic_paradigm():
+    """generate basic paradigm
+    
+    Parameters
+    ----------
+    None
+
+    Returns
+    -------
+    events : pd.DataFrame.
+        #TODO description for event?
+        basic paradigm
+    """
     conditions = ['c0', 'c0', 'c0', 'c1', 'c1', 'c1', 'c2', 'c2', 'c2']
     onsets = [30, 70, 100, 10, 30, 90, 30, 40, 60]
     events = pd.DataFrame({'trial_type': conditions, 'onset': onsets})
@@ -547,6 +731,24 @@ def basic_paradigm():
 
 
 def basic_confounds(length, random_state=0):
+    """generate basic confounds
+
+    Parameters
+    ----------
+    length : int
+        #TODO is the description for length correct
+        Length of basic confounds
+
+    random_state : int or numpy.random.RandomState instance, optional
+        Random number generator, or seed.
+        Default=0.
+
+    Returns
+    -------
+    confounds : pd.DataFrame.
+        basic confounds
+
+    """
     rand_gen = check_random_state(random_state)
     columns = ['RotX', 'RotY', 'RotZ', 'X', 'Y', 'Z']
     data = rand_gen.rand(length, 6)
@@ -607,6 +809,10 @@ def create_fake_bids_dataset(base_dir='',
         Specifying no_sessions will only produce runs and files without the
         optional session field. In this case n_ses will be ignored.
         Default=False.
+
+    random_state : int or numpy.random.RandomState instance, optional
+        Random number generator, or seed.
+        Default=0.
 
     Returns
     -------
