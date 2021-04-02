@@ -973,9 +973,9 @@ def plot_surf_roi(surf_mesh, roi_map, bg_map=None,
 
     roi = load_surf_data(roi_map)
     if vmin is None:
-        vmin = np.min(roi)
+        vmin = np.nanmin(roi)
     if vmax is None:
-        vmax = 1 + np.max(roi)
+        vmax = 1 + np.nanmax(roi)
 
     mesh = load_surf_mesh(surf_mesh)
 
