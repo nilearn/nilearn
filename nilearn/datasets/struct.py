@@ -170,10 +170,14 @@ def load_mni152_wm_template():
     return check_niimg(WM_MNI152_FILE_PATH)
 
 
-def load_mni152_brain_mask():
+def load_mni152_brain_mask(threshold=0.):
     """Load brain mask from MNI152 T1 template
 
-    .. versionadded:: 0.2.5
+    Parameters
+    ----------
+    threshold : float, optional
+        The parameter which amounts to include the values in the mask image.
+        Values lying above this threshold will be included. Default=0.
 
     Returns
     -------
@@ -181,8 +185,8 @@ def load_mni152_brain_mask():
 
     Notes
     -----
-    Refer to load_mni152_template function for more information about the MNI152
-    T1 template
+    Refer to load_mni152_template function for more information about the
+    MNI152 T1 template
 
     See Also
     --------
@@ -192,13 +196,19 @@ def load_mni152_brain_mask():
     """
     # Load MNI template
     target_img = load_mni152_template()
-    mask_voxels = (get_data(target_img) > 0).astype(int)
+    mask_voxels = (get_data(target_img) > threshold).astype(int)
     mask_img = new_img_like(target_img, mask_voxels)
     return mask_img
 
 
-def load_mni152_gm_mask():
+def load_mni152_gm_mask(threshold=.2):
     """Load brain mask from gray-matter MNI152 template
+
+    Parameters
+    ----------
+    threshold : float, optional
+        The parameter which amounts to include the values in the mask image.
+        Values lying above this threshold will be included. Default=0.2
 
     Returns
     -------
@@ -210,7 +220,7 @@ def load_mni152_gm_mask():
     gm_target_img = check_niimg(gm_target)
     gm_target_data = niimg._safe_get_data(gm_target_img)
 
-    gm_target_mask = (gm_target_data > 0.2)
+    gm_target_mask = (gm_target_data > threshold)
 
     gm_target_mask = ndimage.binary_closing(gm_target_mask, iterations=2)
     gm_target_mask_img = new_img_like(gm_target_img, gm_target_mask)
@@ -218,8 +228,14 @@ def load_mni152_gm_mask():
     return gm_target_mask_img
 
 
-def load_mni152_wm_mask():
+def load_mni152_wm_mask(threshold=.2):
     """Load brain mask from white-matter MNI152 template
+
+    Parameters
+    ----------
+    threshold : float, optional
+        The parameter which amounts to include the values in the mask image.
+        Values lying above this threshold will be included. Default=0.2
 
     Returns
     -------
@@ -231,7 +247,7 @@ def load_mni152_wm_mask():
     wm_target_img = check_niimg(wm_target)
     wm_target_data = niimg._safe_get_data(wm_target_img)
 
-    wm_target_mask = (wm_target_data > 0.2)
+    wm_target_mask = (wm_target_data > threshold)
 
     wm_target_mask = ndimage.binary_closing(wm_target_mask, iterations=2)
     wm_target_mask_img = new_img_like(wm_target_img, wm_target_mask)
@@ -251,9 +267,7 @@ def fetch_icbm152_brain_gm_mask(data_dir=None, threshold=0.2, resume=True,
 
     threshold : float, optional
         The parameter which amounts to include the values in the mask image.
-        The values lies above than this threshold will be included. Defaults
-        to 0.2 (one fifth) of values.
-        Default=0.2.
+        Values lying above this threshold will be included. Default=0.2
 
     resume : bool, optional
         If True, try resuming partially downloaded data.
