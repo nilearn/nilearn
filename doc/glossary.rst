@@ -111,7 +111,7 @@ If you wish to add a missing term, please `create a new issue`_ or
         neural signals to hemodynamic signals observable with :term:`fMRI`.
 
     ICA
-        `Independant component analysis`_ is a computational method for separating
+        `Independent component analysis`_ is a computational method for separating
         a multivariate signal into additive subcomponents.
 
     MEG
@@ -268,7 +268,7 @@ If you wish to add a missing term, please `create a new issue`_ or
 .. _`functional connectome`:
     https://nilearn.github.io/connectivity/functional_connectomes.html
 
-.. _`Independant component analysis`:
+.. _`Independent component analysis`:
     https://en.wikipedia.org/wiki/Independent_component_analysis
 
 .. _`Magnetoencephalography`:
