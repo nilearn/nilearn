@@ -126,16 +126,20 @@ If you wish to add a missing term, please `create a new issue`_ or
 
     parcellation
     brain parcellation
-        TODO.
+        Act of dividing the brain into smaller regions, i.e. parcels, in order to
+        gain a better understanding of complex human behaviors.
 
     predictive modelling
-        TODO.
+        `Predictive modelling`_ uses statistics to predict outcomes.
 
     ReNA
-        TODO.
+        `Recursive nearest agglomeration`_.
 
     resting-state
-        TODO.
+        `Resting state`_ :term:`fMRI` is a method of functional magnetic resonance
+        imaging that is used in brain mapping to evaluate regional interactions that
+        occur in a resting or task-negative state, when an explicit task is not being
+        performed.
 
     ROC
         The `receiver operating characteristic curve`_ plots the true positive rate
@@ -263,8 +267,17 @@ If you wish to add a missing term, please `create a new issue`_ or
 .. _`Neurovault`:
     https://www.neurovault.org/
 
+.. _`Predictive modelling`:
+    https://en.wikipedia.org/wiki/Predictive_modelling
+
+.. _`Recursive nearest agglomeration`:
+    https://hal.archives-ouvertes.fr/hal-01366651/
+
 .. _`receiver operating characteristic curve`:
     https://en.wikipedia.org/wiki/Receiver_operating_characteristic
+
+.. _`Resting state`:
+    https://en.wikipedia.org/wiki/Resting_state_fMRI
 
 .. _`Searchlight analysis`:
     https://nilearn.github.io/decoding/searchlight.html
