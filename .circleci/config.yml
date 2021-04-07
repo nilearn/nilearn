@@ -52,6 +52,83 @@ jobs:
           name: Install packages in conda env
           command: |
               ./tools/circleci_dependencies.sh
+
+      - restore_cache:
+          keys:
+              - small-cache
+
+      - restore_cache:
+          keys:
+              - adhd
+
+      - restore_cache:
+          keys:
+              - allen_rsn_2011
+
+      - restore_cache:
+          keys:
+              - brainomics_localizer
+
+      - restore_cache:
+          keys:
+              - development_fmri
+
+      - restore_cache:
+          keys:
+              - ds000030
+
+      - restore_cache:
+          keys:
+              - fiac_nilearn.glm
+
+      - restore_cache:
+          keys:
+              - fMRI-language-localizer-demo-dataset
+
+      - restore_cache:
+          keys:
+              - fsl
+
+      - restore_cache:
+          keys:
+              - haxby2001
+
+      - restore_cache:
+          keys:
+              - icbm152_2009
+
+      - restore_cache:
+          keys:
+              - jimura_poldrack_2012_zmaps
+
+      - restore_cache:
+          keys:
+              - localizer_first_level
+
+      - restore_cache:
+          keys:
+              - miyawaki2008
+
+      - restore_cache:
+          keys:
+              - nki_enhanced_surface
+
+      - restore_cache:
+          keys:
+              - oasis1
+
+      - restore_cache:
+          keys:
+              - smith_2009
+
+      - restore_cache:
+          keys:
+              - spm_auditory
+
+      - restore_cache:
+          keys:
+              - spm_multimodal_fmri
+
       - run:
           name: Find build type
           command: |
@@ -89,6 +166,108 @@ jobs:
               - html
               - html_stable
 
+      - save_cache:
+          key: small-cache # Small datasets are combined (<= 100 MB)
+          paths:
+              - ~/nilearn_data/basc_multiscale_2015 # <  1 MB
+              - ~/nilearn_data/destrieux_surface    # <  1 MB
+              - ~/nilearn_data/difumo_atlases       # ~  4 MB
+              - ~/nilearn_data/fsaverage            # ~ 28 MB
+              - ~/nilearn_data/Megatrawls           # ~  9 MB
+              - ~/nilearn_data/msdl_atlas           # ~ 21 MB
+              - ~/nilearn_data/neurovault           # ~ 13 MB
+              - ~/nilearn_data/pauli_2017           # ~  1 MB
+              - ~/nilearn_data/yeo_2011             # ~  3 MB
+      
+      - save_cache:
+          key: adhd
+          paths:
+              - ~/nilearn_data/adhd                 # ~ 45 MB
+
+      - save_cache:
+          key: allen_rsn_2011
+          paths:
+              - ~/nilearn_data/allen_rsn_2011       # ~ 32 MB
+
+      - save_cache:
+          key: brainomics_localizer
+          paths:
+              - ~/nilearn_data/brainomics_localizer # ~ 66 MB
+
+      - save_cache:
+          key: development_fmri
+          paths:
+              - ~/nilearn_data/development_fmri     # ~373 MB
+
+      - save_cache:
+          key: ds000030
+          paths:
+              - ~/nilearn_data/ds000030             # ~832 MB
+
+      - save_cache:
+          key: fiac_nilearn.glm
+          paths:
+              - ~/nilearn_data/fiac_nilearn.glm     # ~ 82 MB
+
+      - save_cache:
+          key: fMRI-language-localizer-demo-dataset
+          paths:
+              - ~/nilearn_data/fMRI-language-localizer-demo-dataset # ~ 750 MB
+
+      - save_cache:
+          key: fsl
+          paths:
+              - ~/nilearn_data/fsl                  # ~ 30 MB
+
+      - save_cache:
+          key: haxby2001
+          paths:
+              - ~/nilearn_data/haxby2001            # ~302 MB
+
+      - save_cache:
+          key: icbm152_2009
+          paths:
+              - ~/nilearn_data/icbm152_2009         # ~ 63 MB
+
+      - save_cache:
+          key: jimura_poldrack_2012_zmaps
+          paths:
+              - ~/nilearn_data/jimura_poldrack_2012_zmaps # ~ 105 MB
+
+      - save_cache:
+          key: localizer_first_level
+          paths:
+              - ~/nilearn_data/localizer_first_level # ~ 35 MB
+
+      - save_cache:
+          key: miyawaki2008
+          paths:
+              - ~/nilearn_data/miyawaki2008          # ~181 MB
+
+      - save_cache:
+          key: nki_enhanced_surface
+          paths:
+              - ~/nilearn_data/nki_enhanced_surface  # ~ 85 MB
+
+      - save_cache:
+          key: oasis1
+          paths:
+              - ~/nilearn_data/oasis1                # ~913 MB
+
+      - save_cache:
+          key: smith_2009
+          paths:
+              - ~/nilearn_data/smith_2009            # ~171 MB
+
+      - save_cache:
+          key: spm_auditory
+          paths:
+              - ~/nilearn_data/spm_auditory          # ~230 MB
+
+      - save_cache:
+          key: spm_multimodal_fmri
+          paths:
+              - ~/nilearn_data/spm_multimodal_fmri   # ~227 MB
 
 workflows:
   version: 2
