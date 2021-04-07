@@ -20,7 +20,7 @@ Principle of the Searchlight
 mapping <http://www.pnas.org/content/103/10/3863>`_ (Kriegeskorte et al., 
 2006), and consists of scanning the brain with a *searchlight*. Briefly, a 
 ball of given radius is scanned across the brain volume and the prediction 
-accuracy of a classifier trained on the corresponding :term:`voxels` is measured. 
+accuracy of a classifier trained on the corresponding :term:`voxels<voxel>` is measured. 
 
 Searchlights are also not limited to :term:`classification`; 
 :term:`regression` (e.g., `Kahnt et al, 2011
@@ -59,7 +59,7 @@ Two masks are used with :class:`SearchLight`:
   frontal cortex). If no *process_mask_img* is set, then :class:`nilearn.decoding.SearchLight` 
   defaults to performing a searchlight over the whole brain.  
 
-*mask_img* ensures that only :term:`voxels` with useable signals are included in the 
+*mask_img* ensures that only :term:`voxels<voxel>` with useable signals are included in the 
 searchlight. This could be a full-brain mask or a gray-matter mask. 
 
 
@@ -88,7 +88,7 @@ Cross validation
 ----------------
 
 :class:`SearchLight` will iterate on the volume and give a score to each :term:`voxel`. 
-This score is computed by running a classifier on selected :term:`voxels`.
+This score is computed by running a classifier on selected :term:`voxels<voxel>`.
 In order to make this score as accurate as possible (and avoid overfitting),
 cross-validation is used.
 
@@ -112,12 +112,12 @@ Sphere radius
 
 An important parameter is the radius of the sphere that will run through 
 the data. The sphere size determines the number of voxels/features to use 
-for :term:`classification` (i.e. more :term:`voxels` are included with larger spheres). 
+for :term:`classification` (i.e. more :term:`voxels<voxel>` are included with larger spheres). 
 
 .. note::
 
     :class:`SearchLight` defines sphere radius in milimeters; the number 
-    of :term:`voxels` included in the sphere will therefore depend on the
+    of :term:`voxels<voxel>` included in the sphere will therefore depend on the
     :term:`voxel` size. 
 
     For reference, Kriegskorte et al. use a 4mm radius because it yielded 
@@ -134,7 +134,7 @@ The results of the searchlight can be found in the `scores_` attribute of the
 visualization of the results from :ref:`Searchlight analysis of face 
 vs house recognition <sphx_glr_auto_examples_02_decoding_plot_haxby_searchlight.py>`.
 The searchlight was restriced to a slice in the back of the brain. Within 
-this slice, we can see that a cluster of :term:`voxels` in visual cortex 
+this slice, we can see that a cluster of :term:`voxels<voxel>` in visual cortex 
 contains information to distinguish pictures showed to the volunteers, 
 which was the expected result.
 
@@ -153,7 +153,7 @@ Comparing to massively univariate analysis: F_score or SPM
 The standard approach to brain mapping is performed using *Statistical
 Parametric Mapping* (:term:`SPM`), using :term:`ANOVA` (analysis of
 variance), and parametric tests (F-tests ot t-tests).
-Here we compute the *p-values* of the :term:`voxels` [1]_.
+Here we compute the *p-values* of the :term:`voxels<voxel>` [1]_.
 To display the results, we use the negative log of the p-value.
 
 .. figure:: ../auto_examples/02_decoding/images/sphx_glr_plot_haxby_searchlight_002.png
@@ -171,7 +171,7 @@ to break any effect and the corresponding decision statistic is
 recomputed. One thus builds the distribution of the decision statistic
 under the hypothesis that there is no relationship between the tested
 variates and the target variates.  In neuroimaging, this is generally
-done by swapping the signal values of all :term:`voxels` while the tested
+done by swapping the signal values of all :term:`voxels<voxel>` while the tested
 variables remain unchanged [2]_. A voxel-wise analysis is then
 performed on the permuted data. The relationships between the image
 descriptors and the tested variates are broken while the value of the
@@ -200,7 +200,7 @@ p-values remain smaller than 1). Thus, we control the occurrence of one
 false detection *at most*, the so-called *family-wise error control*.
 A similar control can be performed when performing a permutation test:
 For each permutation, only the maximum value of the F-statistic across
-:term:`voxels` is considered and is used to build the null distribution.
+:term:`voxels<voxel>` is considered and is used to build the null distribution.
 It is crucial to assume that the distribution of the signal is the same in
 every :term:`voxel` so that the F-statistics are comparable.
 This correction strategy is applied in nilearn

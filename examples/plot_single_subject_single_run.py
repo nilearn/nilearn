@@ -214,7 +214,7 @@ plt.show()
 # statistical validity of the procedure: here we used an arbitrary
 # threshold of 3.0 but the threshold should provide some guarantees on
 # the risk of false detections (aka type-1 errors in statistics).
-# One suggestion is to control the false positive rate (:term:`fpr`, denoted by
+# One suggestion is to control the false positive rate (:term:`fpr<FPR>`, denoted by
 # alpha) at a certain level, e.g. 0.001: this means that there is 0.1% chance
 # of declaring an inactive :term:`voxel`, active.
 

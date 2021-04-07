@@ -523,7 +523,7 @@ def create_fake_bids_dataset(base_dir='', n_sub=10, n_ses=2,
                              with_confounds=True,
                              confounds_tag="desc-confounds_timeseries",
                              no_session=False):
-    """Creates a fake :term:`bids` dataset directory with dummy files.
+    """Creates a fake :term:`bids<BIDS>` dataset directory with dummy files.
     Returns fake dataset directory name.
 
     Parameters

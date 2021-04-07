@@ -24,7 +24,7 @@ Predictions: regression, classification and multi-class
 As seen in the previous section, high-level objects in Nilearn help you decode
 easily your dataset using a **mask** and/or **feature selection**. You can tune
 the **cross-validation** and **scoring** schemes of your model. Those objects
-come in two kinds, depending on your usecase : :term:`regression` or :term:`classification`.
+come in two kinds, depending on your usecase : :term:`Regression<regression>` or :term:`Classification<classification>`.
 
 Regression
 ----------

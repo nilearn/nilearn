@@ -2225,7 +2225,7 @@ def fetch_language_localizer_demo_dataset(data_dir=None, verbose=1):
 
 
 def fetch_bids_langloc_dataset(data_dir=None, verbose=1):
-    """Download language localizer example :term:`bids` dataset.
+    """Download language localizer example :term:`bids<BIDS>` dataset.
 
     Parameters
     ----------

@@ -39,7 +39,7 @@ Cross-validation with scikit-learn
 
 To perform cross-validation using a scikit-learn estimator, you should first
 mask the data using a :class:`nilearn.input_data.NiftiMasker`: to extract
-only the :term:`voxels` inside the mask of interest, and transform 4D input :term:`fMRI`
+only the :term:`voxels<voxel>` inside the mask of interest, and transform 4D input :term:`fMRI`
 data to 2D arrays (shape (n_timepoints, n_voxels)) that estimators can work on.
 
 .. note::
@@ -118,7 +118,7 @@ based feature selection (a.k.a. `Anova <https://en.wikipedia.org/wiki/Analysis_o
 Using any other model in the pipeline
 ------------------------------------------------------
 
-:term:`Anova` - :term:`SVM` is a good baseline that will give reasonable results
+:term:`Anova<ANOVA>` - :term:`SVM` is a good baseline that will give reasonable results
 in common settings. However it may be interesting for you to to explore the
 `wide variety of supervised learning algorithms in the scikit-learn
 <http://scikit-learn.org/stable/supervised_learning.html>`_. These can readily

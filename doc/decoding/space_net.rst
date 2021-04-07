@@ -22,7 +22,7 @@ implements spatial penalties which improve brain decoding power as well as decod
 These regularize :term:`classification` and :term:`regression`
 problems in brain imaging. The results are brain maps which are both
 sparse (i.e regression coefficients are zero everywhere, except at
-predictive :term:`voxels`) and structured (blobby). The superiority of TV-L1
+predictive :term:`voxels<voxel>`) and structured (blobby). The superiority of TV-L1
 over methods without structured priors like the Lasso, :term:`SVM`, :term:`ANOVA`,
 Ridge, etc. for yielding more interpretable maps and improved
 prediction scores is now well established `[Baldassarre et al. 2012]
@@ -36,7 +36,7 @@ can be slow to run. Under the hood, a few heuristics are used to make
 things a bit faster. These include:
 
 - Feature preprocessing, where an F-test is used to eliminate
-  non-predictive :term:`voxels`, thus reducing the size of the brain
+  non-predictive :term:`voxels<voxel>`, thus reducing the size of the brain
   mask in a principled way.
 - Continuation is used along the regularization path, where the
   solution of the optimization problem for a given value of the

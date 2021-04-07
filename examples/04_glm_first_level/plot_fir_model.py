@@ -30,7 +30,7 @@ events = pd.read_table(events_file)
 
 #########################################################################
 # Next solution is to try Finite Impulse Reponse (:term:`FIR`) models: we just
-# say that the :term:`hrf` is an arbitrary function that lags behind the
+# say that the :term:`hrf<HRF>` is an arbitrary function that lags behind the
 # stimulus onset.  In the present case, given that the numbers of
 # conditions is high, we should use a simple :term:`FIR` model.
 #

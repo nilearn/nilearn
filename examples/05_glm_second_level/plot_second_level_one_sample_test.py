@@ -21,9 +21,10 @@ hemisphere, negative in the left hemisphere).
 #########################################################################
 # Fetch dataset
 # --------------
-# We download a list of left vs right button press :term:`contrasts` from a localizer
-# dataset. Note that we fetch individual t-maps that represent the :term:`Bold`
-# activity estimate divided by the uncertainty about this estimate.
+# We download a list of left vs right button press :term:`contrasts<contrast>`
+# from a localizer dataset. Note that we fetch individual t-maps that represent
+# the :term:`Bold<BOLD>` activity estimate divided by the uncertainty about this
+# estimate.
 from nilearn.datasets import fetch_localizer_contrasts
 n_subjects = 16
 data = fetch_localizer_contrasts(["left vs right button press"], n_subjects,

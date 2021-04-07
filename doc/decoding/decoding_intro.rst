@@ -117,8 +117,8 @@ Loading the data into nilearn
   (:ref:`more on data input <loading_data>`).
 
 
-* **Masking fMRI data**: To perform the analysis on some :term:`voxels` only, we will
-  provide a spatial mask of :term:`voxels` to keep, which is provided with the dataset
+* **Masking fMRI data**: To perform the analysis on some :term:`voxels<voxel>` only, we will
+  provide a spatial mask of :term:`voxels<voxel>` to keep, which is provided with the dataset
   (here `mask_vt` a mask of the ventral temporal cortex that comes with data).
 
 * **Loading the behavioral labels**: Behavioral information is often stored
@@ -134,7 +134,7 @@ Loading the data into nilearn
     To better control this process of spatial masking and add additional signal
     processing steps (smoothing, filtering, standardizing...), we could
     explicitly define a masker :  :class:`nilearn.input_data.NiftiMasker`.
-    This object extracts :term:`voxels` belonging to a given spatial mask and converts
+    This object extracts :term:`voxels<voxel>` belonging to a given spatial mask and converts
     their signal to a 2D data matrix with a shape (n_timepoints, n_voxels)
     (see :ref:`mask_4d_2_3d` for a discussion on using
 

@@ -16,9 +16,9 @@ FREM pipeline
 :term:`FREM` pipeline averages the coefficients of many models, each trained on a
 different split of the training data. For each split:
 
-  * aggregate similar :term:`voxels` together to reduce the number of features (and the
+  * aggregate similar :term:`voxels<voxel>` together to reduce the number of features (and the
     computational complexity of the decoding problem). :term:`ReNA` algorithm is used at this
-    step, usually to reduce by a 10 factor the number of :term:`voxels`.
+    step, usually to reduce by a 10 factor the number of :term:`voxels<voxel>`.
 
   * optional : apply feature selection, an univariate statistical test on clusters
     to keep only the ones most informative to predict variable of interest and

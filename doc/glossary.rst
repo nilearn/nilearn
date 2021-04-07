@@ -14,7 +14,6 @@ If you wish to add a missing term, please `create a new issue`_ or
 
     
     ANOVA
-    Anova
         `Analysis of variance`_ is a collection of statistical models and
         their associated estimation procedures used to analyze the differences
         among means.
@@ -23,13 +22,10 @@ If you wish to add a missing term, please `create a new issue`_ or
         `Area under the curve`_.
 
     BIDS
-    bids
         `Brain Imaging Data Structure`_ is a simple and easy to adopt way
         of organizing neuroimaging and behavioral data.
     
     BOLD
-    Bold
-    bold
         Blood oxygenation level dependent. This is the kind of signal measured
         by functional Magnetic Resonance Imaging.
 
@@ -37,7 +33,6 @@ If you wish to add a missing term, please `create a new issue`_ or
         `Canonical independant component analysis`_.
 
     contrast
-    contrasts
         A `contrast`_ is a linear combination of variables (parameters or
         statistics) whose coefficients add up to zero, allowing comparison
         of different treatments.
@@ -65,7 +60,6 @@ If you wish to add a missing term, please `create a new issue`_ or
         there is uncertainty on the true model.
 
     fMRI
-    fmri
         Functional magnetic resonance imaging is based on the fact that 
         when local neural activity increases, increases in metabolism and
         blood flow lead to fluctuations of the relative concentrations of
@@ -78,8 +72,6 @@ If you wish to add a missing term, please `create a new issue`_ or
         modifications of the local magnetic field.
 
     FPR correction
-    FPR
-    fpr
         False positive rate correction. This refers to the methods employed to
         correct false positive rates such as the Bonferroni correction which
         divides the significance level by the number of comparisions made.
@@ -106,7 +98,6 @@ If you wish to add a missing term, please `create a new issue`_ or
         to fMRI data, where one linear model is fit to each voxel time course.
 
     HRF
-    hrf
         Haemodynamic response function. This is a temporal filter that converts
         neural signals to hemodynamic signals observable with :term:`fMRI`.
 
@@ -134,9 +125,7 @@ If you wish to add a missing term, please `create a new issue`_ or
         parcellations, and atlases of the human brain.
 
     parcellation
-    parcellations
     brain parcellation
-    brain parcellations
         TODO.
 
     predictive modelling
@@ -152,7 +141,6 @@ If you wish to add a missing term, please `create a new issue`_ or
         The `receiver operating characteristic curve`_ plots the true positive rate
         (TPR) against the false positive rate (FPR) at various threshold settings.
 
-    searchlight
     Searchlight
         `Searchlight analysis`_ consists of scanning the brain with a searchlight. 
         That is, a ball of given radius is scanned across the brain volume and the 
@@ -202,7 +190,6 @@ If you wish to add a missing term, please `create a new issue`_ or
         acquisition of one volume and the beginning of acquisition of the volume following it.
 
     Unsupervised learning
-    unsupervised learning
         `Unsupervised learning`_ is concerned with data X without any labels. It analyzes 
         the structure of a dataset to find coherent underlying structure, for instance 
         using clustering, or to extract latent factors, for instance using independent 
@@ -219,7 +206,6 @@ If you wish to add a missing term, please `create a new issue`_ or
         tissue, through a voxel-wise comparison of multiple brain images.
 
     voxel
-    voxels
         A voxel represents a value on a regular grid in 3D space.
 
     Ward clustering
