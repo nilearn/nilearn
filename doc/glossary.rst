@@ -263,7 +263,7 @@ If you wish to add a missing term, please `create a new issue`_ or
     https://en.wikipedia.org/wiki/Family-wise_error_rate
 
 .. _`FREM`:
-    https://nilearn.github.io/decoding/frem.html
+    https://www.sciencedirect.com/science/article/abs/pii/S1053811917308182
 
 .. _`functional connectome`:
     https://nilearn.github.io/connectivity/functional_connectomes.html
