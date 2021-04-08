@@ -84,6 +84,9 @@ If you wish to add a missing term, please `create a new issue`_ or
         spatially regularized methods. 
 
     functional connectivity
+        Functional connectivity is a measure of the similarity of the response
+        patterns in two or more regions.
+
     functional connectome
         A `functional connectome`_ is a set of connections representing brain 
         interactions between regions.
@@ -125,9 +128,11 @@ If you wish to add a missing term, please `create a new issue`_ or
         parcellations, and atlases of the human brain.
 
     parcellation
-    brain parcellation
-        Act of dividing the brain into smaller regions, i.e. parcels, in order to
-        gain a better understanding of complex human behaviors.
+        Act of dividing the brain into smaller regions, i.e. parcels. Parcellations
+        can be defined by many different criteria including anatomical or functional
+        characteristics. Parcellations can either be composed of "hard" deterministic
+        parcels with no overlap between individual regions or "soft" probabilistic
+        parcels with a non-zero probability of overlap.
 
     predictive modelling
         `Predictive modelling`_ uses statistics to predict outcomes.
