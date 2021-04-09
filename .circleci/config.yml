@@ -241,7 +241,7 @@ jobs:
       - run:
           name: determine force download
           command: |
-              commit_msg=$(git log -1 --format=oneline);
+              commit_msg=$(git log -2 --format=oneline);
               echo $commit_msg;
               if [[ $commit_msg == *"[force download]"* ]]; then
                 echo "All datasets will be downloaded as requested.";
