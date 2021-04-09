@@ -11,7 +11,7 @@ Nilearn development process
 How to help?
 =============
 
-* If you have a usage question : create a question on `neurostars <https://neurostars.org/>`_ with tag nilearn
+* If you have a usage question : create a question on `neurostars <https://neurostars.org/>`_ with the `nilearn tag <https://neurostars.org/tag/nilearn>`_
 
 * You think you discovered a bug ? Create `an issue <https://github.com/nilearn/nilearn/issues>`_
   including a minimal runnable example to showcase it (preferably using Nilearn data).
@@ -24,7 +24,7 @@ How to help?
 
 * Want to contribute code ? Thank you very much! For new features, please be
   sure to create an issue first, to discuss whether it can be included and its
-  specifications. If you have time to help dealing with known issues check
+  specifications. If you have time to help deal with known issues check
   `Good first issues <https://github.com/nilearn/nilearn/labels/Good%20first%20issue>`_
   to get started, `known bugs <https://github.com/nilearn/nilearn/labels/Bug>`_
   or `proposed enhancements <https://github.com/nilearn/nilearn/labels/Enhancement>`_.

@@ -27,7 +27,7 @@ Contribution Guidelines
 We ask every contributor to respect common guidelines. Those are inspired from
 `scikit-learn
 <https://scikit-learn.org/stable/developers/contributing.html#contributing-code>`_
-and ensure Nilearn remains simple to understand, efficient and maintanable.
+and ensure Nilearn remains simple to understand, efficient and maintainable.
 For example tests need to run quickly in order not to burden the development process.
 To keep continuous integration efficient with our limited infrastructure, running
 all the examples must lead to downloading a limited amount of data (gigabytes)
@@ -64,7 +64,7 @@ Those guidelines will hence be checked during reviewing process.
 |              |             | - Renders well after build            |
 |              |             | - Doesn't include code                |
 +--------------+-------------+---------------------------------------+
-|    Other     |    Any      | - Add entry in "doc/whats_new.py"     |
+|    Other     |    Any      | - Add entry in "doc/whats_new.rst"     |
 +--------------+-------------+---------------------------------------+
 
 Contributing to the documentation
@@ -178,8 +178,8 @@ atlases):
 
 - ``description`` (bytes): A text description of the atlas. This should be
   brief but thorough, describing the source (paper), relevant information
-  related to its construction (modality, dataset, method), and if there are
-  more than one maps, a description of each map.
+  related to its construction (modality, dataset, method), and, if there is
+  more than one map, a description of each map.
 - ``labels`` (list): a list of string labels corresponding to each atlas
   label, in the same (numerical) order as the atlas labels
 - ``maps`` (list or string): the path to the nifti image, or a list of paths
