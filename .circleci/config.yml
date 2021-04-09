@@ -20,79 +20,79 @@ commands:
                     fi
             - restore_cache:
                 keys:
-                    - v1-small-cache-{{ checksum "week_num" }}
+                    - v1-small-cache-{{ checksum "week_num" }}-XxREeVGdS+mePo1KYK4gIXd9Qr4TY6MfIxq9Jzdo1qY=
 
             - restore_cache:
                 keys:
-                    - v1-adhd-{{ checksum "week_num" }}
+                    - v1-adhd-{{ checksum "week_num" }}-PVYEVHLXXkDAFKewa11O5cqADsjoYmyHq69gFpJ5WL8=
 
             - restore_cache:
                 keys:
-                    - v1-allen_rsn_2011-{{ checksum "week_num" }}
+                    - v1-allen_rsn_2011-{{ checksum "week_num" }}-45voyLwS637KunkJ1FHJuDKDJFMZDXiKbFpwwR34_X4=
 
             - restore_cache:
                 keys:
-                    - v1-brainomics_localizer-{{ checksum "week_num" }}
+                    - v1-brainomics_localizer-{{ checksum "week_num" }}-Q2AtMTkmZXI12yYP9cu87YkdPekblnnylOQsbEqInPg=
 
             - restore_cache:
                 keys:
-                    - v1-development_fmri-{{ checksum "week_num" }}
+                    - v1-development_fmri-{{ checksum "week_num" }}-q3GPT9lpgtFo5+Ia5CsEOTPiFnaXKEm5KsWcplTPo3I=
 
             - restore_cache:
                 keys:
-                    - v1-ds000030-{{ checksum "week_num" }}
+                    - v1-ds000030-{{ checksum "week_num" }}-E7zQwKT+4FbJVW+UrlJgn+XWzUIWj4L8ulZSRE8r_30=
 
             - restore_cache:
                 keys:
-                    - v1-fiac_nilearn.glm-{{ checksum "week_num" }}
+                    - v1-fiac_nilearn.glm-{{ checksum "week_num" }}-TwFzO6G1vuG6jt+PmqErBuj9GDkkFqkHoSIF+3vlKnU=
 
             - restore_cache:
                 keys:
-                    - v1-fMRI-language-localizer-demo-dataset-{{ checksum "week_num" }}
+                    - v1-fMRI-language-localizer-demo-dataset-{{ checksum "week_num" }}-CoUWMm2PgFkUQQGFwJmlZGX_nWcrWeKu9vcTLX1L2ro=
 
             - restore_cache:
                 keys:
-                    - v1-fsl-{{ checksum "week_num" }}
+                    - v1-fsl-{{ checksum "week_num" }}-bPpQkf3KZS+ofh2E0pcdKC+SL8RnoN8ADGI98umrnSw=
 
             - restore_cache:
                 keys:
-                    - v1-haxby2001-{{ checksum "week_num" }}
+                    - v1-haxby2001-{{ checksum "week_num" }}-F6seJ6D+mGNq99iKsbawXRLGAL4_nKk32skn9qqk5no=
 
             - restore_cache:
                 keys:
-                    - v1-icbm152_2009-{{ checksum "week_num" }}
+                    - v1-icbm152_2009-{{ checksum "week_num" }}-b2g4qJHm6kFzL4dC+Z23ilhsZqI_M07VAG1VXkcR6s4=
 
             - restore_cache:
                 keys:
-                    - v1-jimura_poldrack_2012_zmaps-{{ checksum "week_num" }}
+                    - v1-jimura_poldrack_2012_zmaps-{{ checksum "week_num" }}-v7L4wOGvXf1ZoERcmKQ1ZcJucQVij5_0VNb5Ai0TNyk=
 
             - restore_cache:
                 keys:
-                    - v1-localizer_first_level-{{ checksum "week_num" }}
+                    - v1-localizer_first_level-{{ checksum "week_num" }}-pATSm5mYAGYVNfI0+1zoU74kGKeG35HlYyW+BP__dsY=
 
             - restore_cache:
                 keys:
-                    - v1-miyawaki2008-{{ checksum "week_num" }}
+                    - v1-miyawaki2008-{{ checksum "week_num" }}-AM6VybIipnAZnDM+cc3uXwpknfJqpMFSqeJ37kQnpDc=
 
             - restore_cache:
                 keys:
-                    - v1-nki_enhanced_surface-{{ checksum "week_num" }}
+                    - v1-nki_enhanced_surface-{{ checksum "week_num" }}-Nrwzhp+cjerqjEI1UdufNyFGrhOfHODP58kILwuFuyo=
 
             - restore_cache:
                 keys:
-                    - v1-oasis1-{{ checksum "week_num" }}
+                    - v1-oasis1-{{ checksum "week_num" }}-NFLHpBTrgANr8WtiMddCitgoBwcvif8YG7+PWTKlxmQ=
 
             - restore_cache:
                 keys:
-                    - v1-smith_2009-{{ checksum "week_num" }}
+                    - v1-smith_2009-{{ checksum "week_num" }}-TyfA0HP15wgSDWkDSQd7ekoRxnmovLAUEFtMM5UBaNA=
 
             - restore_cache:
                 keys:
-                    - v1-spm_auditory-{{ checksum "week_num" }}
+                    - v1-spm_auditory-{{ checksum "week_num" }}-2KfDAha+NEcBr0RYbNLM6b2EpabW9JQncSPfPfPzZFE=
 
             - restore_cache:
                 keys:
-                    - v1-spm_multimodal_fmri-{{ checksum "week_num" }}
+                    - v1-spm_multimodal_fmri-{{ checksum "week_num" }}-ROJh9PxGax4448vhOWAGO6elLj5xbRQ3r_t0sLS5FBc=
 
 
     save_data_cache:
