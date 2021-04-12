@@ -859,7 +859,7 @@ def make_fresh_openneuro_dataset_urls_index(
         verbose=1,
         ):
     """ONLY intended for Nilearn developers, not general users.
-    Creates a fresh, updated OpenNeuro BIDS dataset index from AWS,
+    Creates a fresh, updated OpenNeuro :term:`BIDS` dataset index from AWS,
     ready for upload to osf.io .
 
     Crawls the server where OpenNeuro dataset is stored
