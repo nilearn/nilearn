@@ -29,7 +29,7 @@ number 4, that is the image file ``fM00223_004``.
 
 The whole brain :term:`BOLD`/:term:`EPI` images were acquired on a 2T Siemens
 MAGNETOM Vision system. Each scan consisted of 64 contiguous slices (64x64x64
-3mm x 3mm x 3mm :term:`voxels`). Acquisition of one scan took 6.05s, with the
+3mm x 3mm x 3mm :term:`voxels<voxel>`). Acquisition of one scan took 6.05s, with the
 scan to scan repeat time (:term:`TR`) set arbitrarily to 7s.
 
 
@@ -214,7 +214,7 @@ plt.show()
 # statistical validity of the procedure: here we used an arbitrary
 # threshold of 3.0 but the threshold should provide some guarantees on
 # the risk of false detections (aka type-1 errors in statistics).
-# One suggestion is to control the false positive rate (:term:`fpr<FPR>`, denoted by
+# One suggestion is to control the false positive rate (:term:`fpr<FPR correction>`, denoted by
 # alpha) at a certain level, e.g. 0.001: this means that there is 0.1% chance
 # of declaring an inactive :term:`voxel`, active.
 
