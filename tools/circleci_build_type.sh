@@ -1,6 +1,6 @@
 #!/bin/bash -ef
 
-if [ "CIRCLE_BRANCH" == "master" ] || [[ $(cat gitlog.txt) == *"[circle full]"* ]]; then
+if [ "$CIRCLE_BRANCH" == "master" ] || [[ $(cat gitlog.txt) == *"[circle full]"* ]]; then
     echo "Doing a full build";
     echo html-strict > build.txt;
 else
