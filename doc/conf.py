@@ -51,6 +51,7 @@ extensions = [
               'sphinx.ext.autosummary',
               'sphinx.ext.imgmath',
               'sphinx.ext.intersphinx',
+              'sphinxcontrib.bibtex',
               'numpydoc',
               ]
 
@@ -87,6 +88,11 @@ plot_gallery = 'True'
 
 # The master toctree document.
 master_doc = 'index'
+
+# sphinxcontrib-bibtex
+bibtex_bibfiles = ['./references.bib']
+bibtex_style = 'unsrt'
+bibtex_footbibliography_header = ''
 
 # General information about the project.
 project = u'Nilearn'
