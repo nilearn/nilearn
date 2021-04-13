@@ -94,7 +94,7 @@ def _get_mask_volume(mask_img):
     """
     affine = mask_img.affine
     prod_vox_dims = 1. * np.abs(np.linalg.det(affine[:3, :3]))
-    return prod_vox_dims * _get_data(mask_img).astype(np.bool).sum()
+    return prod_vox_dims * _get_data(mask_img).astype(bool).sum()
 
 
 def _adjust_screening_percentile(screening_percentile, mask_img,

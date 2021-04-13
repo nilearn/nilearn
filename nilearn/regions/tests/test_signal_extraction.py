@@ -336,13 +336,13 @@ def test_signal_extraction_with_maps_and_labels():
         maps_signals, maps_img, mask_img=mask_img)
     assert maps_img_r.shape == shape + (length,)
 
-    # Check that NaNs in regions inside mask are preserved
+    # Check that NaNs in regions inside mask are replaced with zeros
     region1 = labels_data == 2
     indices = [ind[:1] for ind in np.where(region1)]
-    get_data(fmri_img)[indices + [slice(None)]] = float('nan')
+    get_data(fmri_img)[indices + [slice(None)]] = np.nan
     labels_signals, labels_labels = signal_extraction.img_to_signals_labels(
         fmri_img, labels_img, mask_img=mask_img)
-    assert np.all(np.isnan(labels_signals[:, labels_labels.index(2)]))
+    assert np.all(labels_signals[:, labels_labels.index(2)] == 0.)
 
 
 def test_generate_maps():

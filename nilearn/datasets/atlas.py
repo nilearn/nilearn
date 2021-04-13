@@ -32,11 +32,11 @@ def fetch_atlas_difumo(dimension=64, resolution_mm=2, data_dir=None, resume=True
     -----
     Direct download links from OSF:
 
-    - 64: https://osf.io/wjum7/download
-    - 128: https://osf.io/n3vba/download
-    - 256: https://osf.io/vza2y/download
-    - 512: https://osf.io/a23gw/download
-    - 1024: https://osf.io/jpdum/download
+    - 64: https://osf.io/pqu9r/download
+    - 128: https://osf.io/wjvd5/download
+    - 256: https://osf.io/3vrct/download
+    - 512: https://osf.io/9b76y/download
+    - 1024: https://osf.io/34792/download
 
     Parameters
     ----------
@@ -77,11 +77,11 @@ def fetch_atlas_difumo(dimension=64, resolution_mm=2, data_dir=None, resume=True
        NeuroImage, Elsevier, 2020, pp.117126, https://hal.inria.fr/hal-02904869
 
     """
-    dic = {64: 'wjum7',
-           128: 'n3vba',
-           256: 'vza2y',
-           512: 'a23gw',
-           1024: 'jpdum',
+    dic = {64: 'pqu9r',
+           128: 'wjvd5',
+           256: '3vrct',
+           512: '9b76y',
+           1024: '34792',
            }
     valid_dimensions = [64, 128, 256, 512, 1024]
     valid_resolution_mm = [2, 3]
@@ -98,9 +98,9 @@ def fetch_atlas_difumo(dimension=64, resolution_mm=2, data_dir=None, resume=True
 
     csv_file = os.path.join('{0}', 'labels_{0}_dictionary.csv')
     if resolution_mm != 3:
-        nifti_file = os.path.join('{0}', 'maps.nii.gz')
+        nifti_file = os.path.join('{0}', '2mm', 'maps.nii.gz')
     else:
-        nifti_file = os.path.join('{0}', '3mm', 'resampled_maps.nii.gz')
+        nifti_file = os.path.join('{0}', '3mm', 'maps.nii.gz')
 
     files = [(csv_file.format(dimension), url, opts),
              (nifti_file.format(dimension), url, opts)]
@@ -115,16 +115,10 @@ def fetch_atlas_difumo(dimension=64, resolution_mm=2, data_dir=None, resume=True
     labels = np.recfromcsv(files_[0])
 
     # README
-    readme_files = [('README.md', 'https://osf.io/u5xhn/download',
+    readme_files = [('README.md', 'https://osf.io/4k9bf/download',
                     {'move': 'README.md'})]
     if not os.path.exists(os.path.join(data_dir, 'README.md')):
         _fetch_files(data_dir, readme_files, verbose=verbose)
-
-    # Python resampling script
-    script_files = [('resample_dictionaries.py', 'https://osf.io/ezr37/download',
-                    {'move': 'resample_dictionaries.py'})]
-    if not os.path.exists(os.path.join(data_dir, 'resample_dictionaries.py')):
-        _fetch_files(data_dir, script_files, verbose=verbose)
 
     fdescr = _get_dataset_descr(dataset_name)
 
@@ -801,13 +795,12 @@ def fetch_atlas_aal(version='SPM12', data_dir=None, url=None, resume=True,
                                           verbose=verbose)
 
     fdescr = _get_dataset_descr(dataset_name)
-
     # We return the labels contained in the xml file as a dictionary
     xml_tree = xml.etree.ElementTree.parse(labels_file)
     root = xml_tree.getroot()
     labels = []
     indices = []
-    for label in root.getiterator('label'):
+    for label in root.iter('label'):
         indices.append(label.find('index').text)
         labels.append(label.find('name').text)
 

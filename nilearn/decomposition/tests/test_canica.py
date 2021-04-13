@@ -158,8 +158,13 @@ def test_percentile_range():
     canica = CanICA(n_components=edge_case, threshold=float(edge_case))
     with warnings.catch_warnings(record=True) as warning:
         canica.fit(data)
-        assert len(warning) == 1  # ensure single warning
-        assert "critical threshold" in str(warning[-1].message)
+        # Filter out deprecation warnings
+        not_deprecation_warning = [not issubclass(w.category,
+                                                  DeprecationWarning)
+                                        for w in warning]
+        assert sum(not_deprecation_warning) == 1  # ensure single warning
+        idx_critical_warning = not_deprecation_warning.index(True)
+        assert "critical threshold" in str(warning[idx_critical_warning].message)
 
 
 def test_masker_attributes_with_fit():

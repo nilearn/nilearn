@@ -7,7 +7,8 @@ SpaceNet: decoding with spatial structure for better maps
 The SpaceNet decoder
 =====================
 
-SpaceNet implements spatial penalties which improve brain decoding power as well as decoder maps:
+:class:`nilearn.decoding.SpaceNetRegressor` and :class:`nilearn.decoding.SpaceNetClassifier`
+implements spatial penalties which improve brain decoding power as well as decoder maps:
 
 * penalty="tvl1": priors inspired from TV (Total Variation) `[Michel et
   al. 2011] <https://hal.inria.fr/inria-00563468/document>`_, TV-L1
@@ -18,11 +19,11 @@ SpaceNet implements spatial penalties which improve brain decoding power as well
 * penalty="graph-net": GraphNet prior `[Grosenick et al. 2013]
   <https://www.ncbi.nlm.nih.gov/pubmed/23298747>`_)
 
-These regularize classification and regression
+These regularize :term:`classification` and :term:`regression`
 problems in brain imaging. The results are brain maps which are both
 sparse (i.e regression coefficients are zero everywhere, except at
-predictive voxels) and structured (blobby). The superiority of TV-L1
-over methods without structured priors like the Lasso, SVM, ANOVA,
+predictive :term:`voxels<voxel>`) and structured (blobby). The superiority of TV-L1
+over methods without structured priors like the Lasso, :term:`SVM`, :term:`ANOVA`,
 Ridge, etc. for yielding more interpretable maps and improved
 prediction scores is now well established `[Baldassarre et al. 2012]
 <http://www0.cs.ucl.ac.uk/staff/M.Pontil/reading/neurosparse_prni.pdf>`_,
@@ -35,8 +36,8 @@ can be slow to run. Under the hood, a few heuristics are used to make
 things a bit faster. These include:
 
 - Feature preprocessing, where an F-test is used to eliminate
-  non-predictive voxels, thus reducing the size of the brain mask in
-  a principled way.
+  non-predictive :term:`voxels<voxel>`, thus reducing the size of the brain
+  mask in a principled way.
 - Continuation is used along the regularization path, where the
   solution of the optimization problem for a given value of the
   regularization parameter `alpha` is used as initialization

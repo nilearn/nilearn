@@ -52,8 +52,8 @@ def largest_connected_component(volume):
     if not label_nb:
         raise ValueError('No non-zero values: no connected components')
     if label_nb == 1:
-        return volume.astype(np.bool)
-    label_count = np.bincount(labels.ravel().astype(np.int))
+        return volume.astype(bool)
+    label_count = np.bincount(labels.ravel().astype(int))
     # discard the 0 label
     label_count[0] = 0
     return labels == label_count.argmax()
@@ -123,7 +123,7 @@ def _peak_local_max(image, min_distance=10, threshold_abs=0, threshold_rel=0.1,
     skimage.feature.peak
 
     """
-    out = np.zeros_like(image, dtype=np.bool)
+    out = np.zeros_like(image, dtype=bool)
 
     if np.all(image == image.flat[0]):
         return out

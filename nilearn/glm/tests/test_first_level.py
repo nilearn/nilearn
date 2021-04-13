@@ -7,6 +7,7 @@ import shutil
 import numpy as np
 import pandas as pd
 import pytest
+import warnings
 from nibabel import Nifti1Image, load
 from nibabel.tmpdirs import InTemporaryDirectory
 from numpy.testing import (assert_almost_equal, assert_array_almost_equal,
@@ -218,6 +219,45 @@ def test_high_level_glm_different_design_matrices():
                         2 * get_data(z_joint))
 
 
+def test_high_level_glm_different_design_matrices_formulas():
+    # test that one can estimate a contrast when design matrices are different
+    shapes, rk = ((7, 8, 7, 15), (7, 8, 7, 19)), 3
+    mask, fmri_data, design_matrices = generate_fake_fmri_data_and_design(shapes, rk)
+
+    # make column names identical
+    design_matrices[1].columns = design_matrices[0].columns
+    # add a column to the second design matrix
+    design_matrices[1]['new'] = np.ones((19, 1))
+
+    # Fit a glm with two sessions and design matrices
+    multi_session_model = FirstLevelModel(mask_img=mask).fit(
+        fmri_data, design_matrices=design_matrices)
+
+    # Compute contrast with formulas
+    cols_formula = tuple(design_matrices[0].columns[:2])
+    formula = "%s-%s" % cols_formula
+    with pytest.warns(UserWarning, match='One contrast given, assuming it for all 2 runs'):
+        z_joint_formula = multi_session_model.compute_contrast(
+            formula, output_type='effect_size')
+
+
+def test_compute_contrast_num_contrasts():
+
+    shapes, rk = ((7, 8, 7, 15), (7, 8, 7, 19), (7, 8, 7, 13)), 3
+    mask, fmri_data, design_matrices = generate_fake_fmri_data_and_design(shapes, rk)
+
+    # Fit a glm with 3 sessions and design matrices
+    multi_session_model = FirstLevelModel(mask_img=mask).fit(
+        fmri_data, design_matrices=design_matrices)
+
+    # raise when n_contrast != n_runs | 1
+    with pytest.raises(ValueError):
+        multi_session_model.compute_contrast([np.eye(rk)[1]]*2)
+
+    multi_session_model.compute_contrast([np.eye(rk)[1]]*3)
+    with pytest.warns(UserWarning, match='One contrast given, assuming it for all 3 runs'):
+        multi_session_model.compute_contrast([np.eye(rk)[1]])
+
 def test_run_glm():
     rng = np.random.RandomState(42)
     n, p, q = 33, 80, 10
@@ -333,13 +373,14 @@ def test_fmri_inputs():
                 FirstLevelModel(mask_img=None).fit([fi], design_matrices=d)
                 FirstLevelModel(mask_img=mask).fit(fi, design_matrices=[d])
                 FirstLevelModel(mask_img=mask).fit([fi], design_matrices=[d])
-                # test with confounds
-                FirstLevelModel(mask_img=mask).fit([fi], design_matrices=[d],
-                                                   confounds=conf)
+                with pytest.warns(UserWarning, match="If design matrices are supplied"):
+                    # test with confounds
+                    FirstLevelModel(mask_img=mask).fit([fi], design_matrices=[d],
+                                                    confounds=conf)
                 # test with confounds as numpy array
                 FirstLevelModel(mask_img=mask).fit([fi], design_matrices=[d],
                                                    confounds=conf.values)
-                
+
                 FirstLevelModel(mask_img=mask).fit([fi, fi],
                                                    design_matrices=[d, d])
                 FirstLevelModel(mask_img=None).fit((fi, fi),

@@ -3,17 +3,18 @@ BIDS dataset first and second level analysis
 ============================================
 
 
-Full step-by-step example of fitting a GLM to perform a first and second level
-analysis in a BIDS dataset and visualizing the results. Details about the BIDS
-standard can be consulted at http://bids.neuroimaging.io/.
+Full step-by-step example of fitting a :term:`GLM` to perform a first and second level
+analysis in a :term:`BIDS` dataset and visualizing the results.
+Details about the :term:`BIDS` standard can be consulted at
+`http://bids.neuroimaging.io/ <http://bids.neuroimaging.io/>`_.
 
 More specifically:
 
-1. Download an fMRI BIDS dataset with two language conditions to contrast.
-2. Extract first level model objects automatically from the BIDS dataset.
+1. Download an :term:`fMRI` :term:`BIDS` dataset with two language conditions to contrast.
+2. Extract first level model objects automatically from the :term:`BIDS` dataset.
 3. Fit a second level model on the fitted first level models. Notice that
-   in this case the preprocessed bold images were already normalized to the
-   same MNI space.
+   in this case the preprocessed :term:`bold<BOLD>` images were already normalized to the
+   same :term:`MNI` space.
 
 To run this example, you must launch IPython via ``ipython
 --matplotlib`` in a terminal, or use the Jupyter notebook.
@@ -26,7 +27,7 @@ To run this example, you must launch IPython via ``ipython
 ##############################################################################
 # Fetch example BIDS dataset
 # --------------------------
-# We download a simplified BIDS dataset made available for illustrative
+# We download a simplified :term:`BIDS` dataset made available for illustrative
 # purposes. It contains only the necessary
 # information to run a statistical analysis using Nilearn. The raw data
 # subject folders only contain bold.json and events.tsv files, while the
@@ -43,9 +44,9 @@ print(data_dir)
 # Obtain automatically FirstLevelModel objects and fit arguments
 # --------------------------------------------------------------
 # From the dataset directory we automatically obtain the FirstLevelModel objects
-# with their subject_id filled from the BIDS dataset. Moreover, we obtain
+# with their subject_id filled from the :term:`BIDS` dataset. Moreover, we obtain
 # for each model a dictionary with run_imgs, events and confounder regressors
-# since in this case a confounds.tsv file is available in the BIDS dataset.
+# since in this case a confounds.tsv file is available in the :term:`BIDS` dataset.
 # To get the first level models we only have to specify the dataset directory
 # and the task_label as specified in the file names.
 from nilearn.glm.first_level import first_level_from_bids
@@ -82,9 +83,10 @@ print(models_events[0][0]['trial_type'].value_counts())
 # First level model estimation
 # ----------------------------
 # Now we simply fit each first level model and plot for each subject the
-# contrast that reveals the language network (language - string). Notice that
-# we can define a contrast using the names of the conditions specified in the
-# events dataframe. Sum, substraction and scalar multiplication are allowed.
+# :term:`contrast` that reveals the language network (language - string).
+# Notice that we can define a contrast using the names of the conditions
+# specified in the events dataframe.
+# Sum, substraction and scalar multiplication are allowed.
 
 ############################################################################
 # Set the threshold as the z-variate with an uncorrected p-value of 0.001.

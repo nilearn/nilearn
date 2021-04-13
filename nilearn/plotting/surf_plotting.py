@@ -279,7 +279,10 @@ def plot_surf(surf_mesh, surf_map=None, bg_map=None,
 
         # treshold if indicated
         if threshold is None:
-            kept_indices = np.arange(surf_map_faces.shape[0])
+            # If no thresholding and nans, filter them out
+            kept_indices = np.where(
+                            np.logical_not(
+                                np.isnan(surf_map_faces)))[0]
         else:
             kept_indices = np.where(np.abs(surf_map_faces) >= threshold)[0]
 
@@ -970,9 +973,9 @@ def plot_surf_roi(surf_mesh, roi_map, bg_map=None,
 
     roi = load_surf_data(roi_map)
     if vmin is None:
-        vmin = np.min(roi)
+        vmin = np.nanmin(roi)
     if vmax is None:
-        vmax = 1 + np.max(roi)
+        vmax = 1 + np.nanmax(roi)
 
     mesh = load_surf_mesh(surf_mesh)
 

@@ -1,22 +1,67 @@
-0.7.X
+0.7.2.dev
+=========
+
+NEW
+---
+
+Fixes
+-----
+
+Enhancements
+------------
+
+- :func:`nilearn.plotting.view_markers` now accept an optional argument `marker_labels` to provide labels to each marker.
+
+- :class:`nilearn.glm.first_level.run_glm` now allows auto regressive noise
+  models of order greater than one.
+
+.. _v0.7.1:
+
+0.7.1
 =====
+
+**Released March 2021**
+
+HIGHLIGHTS
+----------
+
+- New atlas fetcher
+  :func:`nilearn.datasets.fetch_atlas_difumo` to download *Dictionaries of Functional Modes*,
+  or “DiFuMo”, that can serve as atlases to extract functional signals with different
+  dimensionalities (64, 128, 256, 512, and 1024). These modes are optimized to represent well
+  raw BOLD timeseries, over a with range of experimental conditions.
+
+- :class:`nilearn.decoding.Decoder` and :class:`nilearn.decoding.DecoderRegressor`
+  is now implemented with random predictions to estimate a chance level.
+
+- The functions :func:`nilearn.plotting.plot_epi`, :func:`nilearn.plotting.plot_roi`,
+  :func:`nilearn.plotting.plot_stat_map`, :func:`nilearn.plotting.plot_prob_atlas`
+  is now implemented with new display mode Mosaic. That implies plotting 3D maps
+  in multiple columns and rows in a single axes.
+
+- :func:`nilearn.plotting.plot_carpet` now supports discrete atlases.
+  When an atlas is used, a colorbar is added to the figure,
+  optionally with labels corresponding to the different values in the atlas.
 
 NEW
 ---
 
 - New atlas fetcher
   :func:`nilearn.datasets.fetch_atlas_difumo` to download *Dictionaries of Functional Modes*,
-  or “DiFuMo”, that can serve as atlases to extract functional signals with different 
+  or “DiFuMo”, that can serve as atlases to extract functional signals with different
   dimensionalities (64, 128, 256, 512, and 1024). These modes are optimized to represent well
   raw BOLD timeseries, over a with range of experimental conditions.
 
-- :func:`nilearn.glm.Contrast.one_minus_pvalue` was added to ensure numerical 
-  stability of p-value estimation. It computes 1 - p-value using the Cumulative 
+- :func:`nilearn.glm.Contrast.one_minus_pvalue` was added to ensure numerical
+  stability of p-value estimation. It computes 1 - p-value using the Cumulative
   Distribution Function in the same way as `nilearn.glm.Contrast.p_value`
   computes the p-value using the Survival Function.
 
 Fixes
 -----
+
+- Fix altered, non-zero baseline in design matrices where multiple events in the same condition
+  end at the same time (https://github.com/nilearn/nilearn/issues/2674).
 
 - Fix testing issues on ARM machine.
 
@@ -26,13 +71,47 @@ Enhancements
 - :class:`nilearn.decoding.Decoder` and :class:`nilearn.decoding.DecoderRegressor`
   is now implemented with random predictions to estimate a chance level.
 
+- :class:`nilearn.decoding.Decoder`, :class:`nilearn.decoding.DecoderRegressor`,
+  :class:`nilearn.decoding.FREMRegressor`, and :class:`nilearn.decoding.FREMClassifier`
+  now override the `score` method to use whatever scoring strategy was defined through
+  the `scoring` attribute instead of the sklearn default.
+  If the `scoring` attribute of the decoder is set to None, the scoring strategy
+  will default to accuracy for classifiers and to r2 score for regressors.
+
 - :func:`nilearn.plotting.plot_surf` and deriving functions like :func:`nilearn.plotting.plot_surf_roi`
   now accept an optional argument `cbar_tick_format` to specify how numbers should be displayed on the
   colorbar of surface plots. The default format is scientific notation except for :func:`nilearn.plotting.plot_surf_roi`
   for which it is set as integers.
 
-- :class:`nilearn.glm.first_level.run_glm` now allows auto regressive noise
-  models of order greater than one.
+- :func:`nilearn.plotting.plot_carpet` now supports discrete atlases.
+  When an atlas is used, a colorbar is added to the figure,
+  optionally with labels corresponding to the different values in the atlas.
+
+- :class:`nilearn.input_data.NiftiMasker`, :class:`nilearn.input_data.NiftiLabelsMasker`,
+  :class:`nilearn.input_data.MultiNiftiMasker`, :class:`nilearn.input_data.NiftiMapsMasker`,
+  and :class:`nilearn.input_data.NiftiSpheresMasker` can now compute high variance confounds
+  on the images provided to `transform` and regress them out automatically. This behaviour is
+  controlled through the `high_variance_confounds` boolean parameter of these maskers which
+  default to False.
+
+- :class:`nilearn.input_data.NiftiLabelsMasker` now automatically replaces NaNs in input data
+  with zeros, to match the behavior of other maskers.
+
+- :func:`nilearn.datasets.fetch_neurovault` now implements a `resample` boolean argument to either
+  perform a fixed resampling during download or keep original images. This can be handy to reduce disk usage.
+  By default, the downloaded images are not resampled.
+
+- The functions :func:`nilearn.plotting.plot_epi`, :func:`nilearn.plotting.plot_roi`,
+  :func:`nilearn.plotting.plot_stat_map`, :func:`nilearn.plotting.plot_prob_atlas`
+  is now implemented with new display mode Mosaic. That implies plotting 3D maps
+  in multiple columns and rows in a single axes.
+
+- `psc` standardization option of :func:`nilearn.signal.clean` now allows time series with negative mean values.
+
+- :func:`nilearn.reporting.make_glm_report` and
+  :func:`nilearn.reporting.get_clusters_table` have a new argument,
+  "two_sided", which allows for two-sided thresholding, which is disabled by default.
+>>>>>>> upstream/master
 
 .. _v0.7.0:
 
@@ -95,7 +174,7 @@ NEW
   interface with the Nifti files on disk.
 - Plot events file
   Use :func:`nilearn.plotting.plot_event` to visualize events file.
-  The function accepts the BIDS events file read using `pandas`
+  The function accepts the :term:`BIDS` events file read using `pandas`
   utilities.
 - Plotting function :func:`nilearn.plotting.plot_roi` can now plot ROIs
   in contours with `view_type` argument.
@@ -481,7 +560,7 @@ NEW
   and `examples/03_connectivity/plot_canica_analysis.py` into an improved
   `examples/03_connectivity/plot_compare_decomposition.py`.
 
-- The Localizer dataset now follows the BIDS organization.
+- The Localizer dataset now follows the :term:`BIDS` organization.
 
 Changes
 -------

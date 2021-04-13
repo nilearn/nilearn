@@ -120,6 +120,7 @@ def test_plot_surf_stat_map():
 
     fig = plot_surf_stat_map(mesh, stat_map=data, colorbar=False)
     assert len(fig.axes) == 1
+
     # symmetric_cbar
     fig = plot_surf_stat_map(
         mesh, stat_map=data, colorbar=True, symmetric_cbar=True)
@@ -128,6 +129,7 @@ def test_plot_surf_stat_map():
     yticklabels = fig.axes[1].get_yticklabels()
     first, last = yticklabels[0].get_text(), yticklabels[-1].get_text()
     assert float(first) == - float(last)
+
     # no symmetric_cbar
     fig = plot_surf_stat_map(
         mesh, stat_map=data, colorbar=True, symmetric_cbar=False)
@@ -136,6 +138,17 @@ def test_plot_surf_stat_map():
     yticklabels = fig.axes[1].get_yticklabels()
     first, last = yticklabels[0].get_text(), yticklabels[-1].get_text()
     assert float(first) != - float(last)
+
+    # Test handling of nan values in texture data
+    # Add nan values in the texture
+    data[2] = np.nan
+    # Plot the surface stat map
+    ax = plot_surf_stat_map(mesh, stat_map=data)
+    # Check that the resulting plot facecolors contain no transparent faces
+    # (last column equals zero) even though the texture contains nan values
+    assert(mesh[1].shape[0] ==
+            ((ax._axstack.as_list()[0].collections[0]._facecolors[:, 3]) != 0).sum())
+
     # Save execution time and memory
     plt.close()
 
@@ -208,6 +221,13 @@ def test_plot_surf_roi():
         plot_surf_roi(mesh, roi_map=roi_map, ax=plt.gca(), figure=None,
                       output_file=tmp_file.name, colorbar=True)
 
+    # Test nans handling
+    parcellation[::2] = np.nan
+    img = plot_surf_roi(mesh, roi_map=parcellation)
+    # Check that the resulting plot facecolors contain no transparent faces
+    # (last column equals zero) even though the texture contains nan values
+    assert(mesh[1].shape[0] ==
+           ((img._axstack.as_list()[0].collections[0]._facecolors[:, 3]) != 0).sum())
     # Save execution time and memory
     plt.close()
 

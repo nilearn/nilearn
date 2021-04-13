@@ -356,7 +356,7 @@ class Parcellations(MultiPCA):
                                                                  rena, method)
 
         else:
-            mask_ = _safe_get_data(mask_img_).astype(np.bool)
+            mask_ = _safe_get_data(mask_img_).astype(bool)
             shape = mask_.shape
             connectivity = image.grid_to_graph(n_x=shape[0], n_y=shape[1],
                                                n_z=shape[2], mask=mask_)

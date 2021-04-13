@@ -123,6 +123,11 @@ class NiftiMasker(BaseMasker, CacheMixin):
         their mean is put to 0 and their variance to 1 in the time dimension.
         Default=True.
 
+    high_variance_confounds : boolean, optional
+        If True, high variance confounds are computed on provided image with
+        :func:`nilearn.image.high_variance_confounds` and default parameters
+        and regressed out. Default=False.
+
     detrend : boolean, optional
         This parameter is passed to signal.clean. Please see the related
         documentation for details: :func:`nilearn.signal.clean`.
@@ -206,18 +211,17 @@ class NiftiMasker(BaseMasker, CacheMixin):
     nilearn.masking.compute_background_mask
     nilearn.masking.compute_epi_mask
     nilearn.image.resample_img
+    nilearn.image.high_variance_confounds
     nilearn.masking.apply_mask
     nilearn.signal.clean
 
     """
-
     def __init__(self, mask_img=None, sessions=None, smoothing_fwhm=None,
                  standardize=False, standardize_confounds=True, detrend=False,
-                 low_pass=None, high_pass=None, t_r=None,
-                 target_affine=None, target_shape=None,
-                 mask_strategy='background',
-                 mask_args=None, sample_mask=None, dtype=None,
-                 memory_level=1, memory=Memory(location=None),
+                 high_variance_confounds=False, low_pass=None, high_pass=None,
+                 t_r=None, target_affine=None, target_shape=None,
+                 mask_strategy='background', mask_args=None, sample_mask=None,
+                 dtype=None, memory_level=1, memory=Memory(location=None),
                  verbose=0, reports=True,
                  ):
         # Mask is provided or computed
@@ -227,6 +231,7 @@ class NiftiMasker(BaseMasker, CacheMixin):
         self.smoothing_fwhm = smoothing_fwhm
         self.standardize = standardize
         self.standardize_confounds = standardize_confounds
+        self.high_variance_confounds = high_variance_confounds
         self.detrend = detrend
         self.low_pass = low_pass
         self.high_pass = high_pass
@@ -249,7 +254,7 @@ class NiftiMasker(BaseMasker, CacheMixin):
                                     'mask and its input image. ')
         self._overlay_text = ('\n To see the input Nifti image before '
                               'resampling, hover over the displayed image.')
-
+        self._warning_message = ""
         self._shelving = False
 
     def generate_report(self):
@@ -283,6 +288,10 @@ class NiftiMasker(BaseMasker, CacheMixin):
                 # compute middle image from 4D series for plotting
                 img = image.index_img(img, dim[-1] // 2)
         else:  # images were not provided to fit
+            msg = ("No image provided to fit in NiftiMasker. "
+                   "Setting image to mask for reporting.")
+            warnings.warn(msg)
+            self._warning_message = msg
             img = mask
 
         # create display of retained input mask, image
