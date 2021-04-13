@@ -359,6 +359,7 @@ def fetch_atlases_fsl(atlas_source, atlas_name,
                    "prob-1mm", "prob-2mm"))
 
     atlas_sources = ("HarvardOxford", "Juelich")
+
     if atlas_source not in atlas_sources:
         raise ValueError("Invalid source name: {0}. Please choose a source "
                          "among:\n{1}".format(
