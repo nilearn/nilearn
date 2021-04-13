@@ -20,79 +20,79 @@ commands:
                     fi
             - restore_cache:
                 keys:
-                    - v1-small-cache-{{ checksum "week_num" }}-XxREeVGdS+mePo1KYK4gIXd9Qr4TY6MfIxq9Jzdo1qY=
+                    - v1-small-cache-{{ checksum "week_num" }}
 
             - restore_cache:
                 keys:
-                    - v1-adhd-{{ checksum "week_num" }}-PVYEVHLXXkDAFKewa11O5cqADsjoYmyHq69gFpJ5WL8=
+                    - v1-adhd-{{ checksum "week_num" }}
 
             - restore_cache:
                 keys:
-                    - v1-allen_rsn_2011-{{ checksum "week_num" }}-45voyLwS637KunkJ1FHJuDKDJFMZDXiKbFpwwR34_X4=
+                    - v1-allen_rsn_2011-{{ checksum "week_num" }}
 
             - restore_cache:
                 keys:
-                    - v1-brainomics_localizer-{{ checksum "week_num" }}-Q2AtMTkmZXI12yYP9cu87YkdPekblnnylOQsbEqInPg=
+                    - v1-brainomics_localizer-{{ checksum "week_num" }}
 
             - restore_cache:
                 keys:
-                    - v1-development_fmri-{{ checksum "week_num" }}-q3GPT9lpgtFo5+Ia5CsEOTPiFnaXKEm5KsWcplTPo3I=
+                    - v1-development_fmri-{{ checksum "week_num" }}
 
             - restore_cache:
                 keys:
-                    - v1-ds000030-{{ checksum "week_num" }}-E7zQwKT+4FbJVW+UrlJgn+XWzUIWj4L8ulZSRE8r_30=
+                    - v1-ds000030-{{ checksum "week_num" }}
 
             - restore_cache:
                 keys:
-                    - v1-fiac_nilearn.glm-{{ checksum "week_num" }}-TwFzO6G1vuG6jt+PmqErBuj9GDkkFqkHoSIF+3vlKnU=
+                    - v1-fiac_nilearn.glm-{{ checksum "week_num" }}
 
             - restore_cache:
                 keys:
-                    - v1-fMRI-language-localizer-demo-dataset-{{ checksum "week_num" }}-CoUWMm2PgFkUQQGFwJmlZGX_nWcrWeKu9vcTLX1L2ro=
+                    - v1-fMRI-language-localizer-demo-dataset-{{ checksum "week_num" }}
 
             - restore_cache:
                 keys:
-                    - v1-fsl-{{ checksum "week_num" }}-bPpQkf3KZS+ofh2E0pcdKC+SL8RnoN8ADGI98umrnSw=
+                    - v1-fsl-{{ checksum "week_num" }}
 
             - restore_cache:
                 keys:
-                    - v1-haxby2001-{{ checksum "week_num" }}-F6seJ6D+mGNq99iKsbawXRLGAL4_nKk32skn9qqk5no=
+                    - v1-haxby2001-{{ checksum "week_num" }}
 
             - restore_cache:
                 keys:
-                    - v1-icbm152_2009-{{ checksum "week_num" }}-b2g4qJHm6kFzL4dC+Z23ilhsZqI_M07VAG1VXkcR6s4=
+                    - v1-icbm152_2009-{{ checksum "week_num" }}
 
             - restore_cache:
                 keys:
-                    - v1-jimura_poldrack_2012_zmaps-{{ checksum "week_num" }}-v7L4wOGvXf1ZoERcmKQ1ZcJucQVij5_0VNb5Ai0TNyk=
+                    - v1-jimura_poldrack_2012_zmaps-{{ checksum "week_num" }}
 
             - restore_cache:
                 keys:
-                    - v1-localizer_first_level-{{ checksum "week_num" }}-pATSm5mYAGYVNfI0+1zoU74kGKeG35HlYyW+BP__dsY=
+                    - v1-localizer_first_level-{{ checksum "week_num" }}
 
             - restore_cache:
                 keys:
-                    - v1-miyawaki2008-{{ checksum "week_num" }}-AM6VybIipnAZnDM+cc3uXwpknfJqpMFSqeJ37kQnpDc=
+                    - v1-miyawaki2008-{{ checksum "week_num" }}
 
             - restore_cache:
                 keys:
-                    - v1-nki_enhanced_surface-{{ checksum "week_num" }}-Nrwzhp+cjerqjEI1UdufNyFGrhOfHODP58kILwuFuyo=
+                    - v1-nki_enhanced_surface-{{ checksum "week_num" }}
 
             - restore_cache:
                 keys:
-                    - v1-oasis1-{{ checksum "week_num" }}-NFLHpBTrgANr8WtiMddCitgoBwcvif8YG7+PWTKlxmQ=
+                    - v1-oasis1-{{ checksum "week_num" }}
 
             - restore_cache:
                 keys:
-                    - v1-smith_2009-{{ checksum "week_num" }}-TyfA0HP15wgSDWkDSQd7ekoRxnmovLAUEFtMM5UBaNA=
+                    - v1-smith_2009-{{ checksum "week_num" }}
 
             - restore_cache:
                 keys:
-                    - v1-spm_auditory-{{ checksum "week_num" }}-2KfDAha+NEcBr0RYbNLM6b2EpabW9JQncSPfPfPzZFE=
+                    - v1-spm_auditory-{{ checksum "week_num" }}
 
             - restore_cache:
                 keys:
-                    - v1-spm_multimodal_fmri-{{ checksum "week_num" }}-ROJh9PxGax4448vhOWAGO6elLj5xbRQ3r_t0sLS5FBc=
+                    - v1-spm_multimodal_fmri-{{ checksum "week_num" }}
 
 
     save_data_cache:
@@ -102,16 +102,8 @@ commands:
                 name: Generate cache keys
                 command: |
                     date +%U > week_num;
-                    for dataset in ~/nilearn_data/*; do
-                        short=${dataset##*/};
-                        echo "Generating hash of dataset $short...";
-                        if [[ -d "$dataset" ]]; then
-                            find $dataset -xdev -type f -print0 | LC_COLLATE=C sort -z | xargs -0 cat | md5sum - > "gen_key_$short";
-                        fi
-                    done
-                    cat gen_key_basc_multiscale_2015 gen_key_destrieux_surface gen_key_difumo_atlases gen_key_fsaverage gen_key_Megatrawls gen_key_msdl_atlas gen_key_neurovault gen_key_pauli_2017 gen_key_yeo_2011 | md5sum - > gen_key_small_cache;
             - save_cache:
-                key: v1-small-cache-{{ checksum "week_num" }}-{{ checksum "gen_key_small_cache" }} # Small datasets are combined (<= 100 MB)
+                key: v1-small-cache-{{ checksum "week_num" }} # Small datasets are combined (<= 100 MB)
                 paths:
                     - ~/nilearn_data/basc_multiscale_2015 # <  1 MB
                     - ~/nilearn_data/destrieux_surface    # <  1 MB
@@ -124,92 +116,92 @@ commands:
                     - ~/nilearn_data/yeo_2011             # ~  3 MB
       
             - save_cache:
-                key: v1-adhd-{{ checksum "week_num" }}-{{ checksum "gen_key_adhd" }}
+                key: v1-adhd-{{ checksum "week_num" }}
                 paths:
                     - ~/nilearn_data/adhd                 # ~ 45 MB
 
             - save_cache:
-                key: v1-allen_rsn_2011-{{ checksum "week_num" }}-{{ checksum "gen_key_allen_rsn_2011" }}
+                key: v1-allen_rsn_2011-{{ checksum "week_num" }}
                 paths:
                     - ~/nilearn_data/allen_rsn_2011       # ~ 32 MB
 
             - save_cache:
-                key: v1-brainomics_localizer-{{ checksum "week_num" }}-{{ checksum "gen_key_brainomics_localizer" }}
+                key: v1-brainomics_localizer-{{ checksum "week_num" }}
                 paths:
                     - ~/nilearn_data/brainomics_localizer # ~ 66 MB
 
             - save_cache:
-                key: v1-development_fmri-{{ checksum "week_num" }}-{{ checksum "gen_key_development_fmri" }}
+                key: v1-development_fmri-{{ checksum "week_num" }}
                 paths:
                     - ~/nilearn_data/development_fmri     # ~373 MB
 
             - save_cache:
-                key: v1-ds000030-{{ checksum "week_num" }}-{{ checksum "gen_key_ds000030" }}
+                key: v1-ds000030-{{ checksum "week_num" }}
                 paths:
                     - ~/nilearn_data/ds000030             # ~832 MB
 
             - save_cache:
-                key: v1-fiac_nilearn.glm-{{ checksum "week_num" }}-{{ checksum "gen_key_fiac_nilearn.glm" }}
+                key: v1-fiac_nilearn.glm-{{ checksum "week_num" }}
                 paths:
                     - ~/nilearn_data/fiac_nilearn.glm     # ~ 82 MB
 
             - save_cache:
-                key: v1-fMRI-language-localizer-demo-dataset-{{ checksum "week_num" }}-{{ checksum "gen_key_fMRI-language-localizer-demo-dataset" }}
+                key: v1-fMRI-language-localizer-demo-dataset-{{ checksum "week_num" }}
                 paths:
                     - ~/nilearn_data/fMRI-language-localizer-demo-dataset # ~ 750 MB
 
             - save_cache:
-                key: v1-fsl-{{ checksum "week_num" }}-{{ checksum "gen_key_fsl" }}
+                key: v1-fsl-{{ checksum "week_num" }}
                 paths:
                     - ~/nilearn_data/fsl                  # ~ 30 MB
 
             - save_cache:
-                key: v1-haxby2001-{{ checksum "week_num" }}-{{ checksum "gen_key_haxby2001" }}
+                key: v1-haxby2001-{{ checksum "week_num" }}
                 paths:
                     - ~/nilearn_data/haxby2001            # ~302 MB
 
             - save_cache:
-                key: v1-icbm152_2009-{{ checksum "week_num" }}-{{ checksum "gen_key_icbm152_2009" }}
+                key: v1-icbm152_2009-{{ checksum "week_num" }}
                 paths:
                     - ~/nilearn_data/icbm152_2009         # ~ 63 MB
 
             - save_cache:
-                key: v1-jimura_poldrack_2012_zmaps-{{ checksum "week_num" }}-{{ checksum "gen_key_jimura_poldrack_2012_zmaps" }}
+                key: v1-jimura_poldrack_2012_zmaps-{{ checksum "week_num" }}
                 paths:
                     - ~/nilearn_data/jimura_poldrack_2012_zmaps # ~ 105 MB
 
             - save_cache:
-                key: v1-localizer_first_level-{{ checksum "week_num" }}-{{ checksum "gen_key_localizer_first_level" }}
+                key: v1-localizer_first_level-{{ checksum "week_num" }}
                 paths:
                     - ~/nilearn_data/localizer_first_level # ~ 35 MB
 
             - save_cache:
-                key: v1-miyawaki2008-{{ checksum "week_num" }}-{{ checksum "gen_key_miyawaki2008" }}
+                key: v1-miyawaki2008-{{ checksum "week_num" }}
                 paths:
                     - ~/nilearn_data/miyawaki2008          # ~181 MB
 
             - save_cache:
-                key: v1-nki_enhanced_surface-{{ checksum "week_num" }}-{{ checksum "gen_key_nki_enhanced_surface" }}
+                key: v1-nki_enhanced_surface-{{ checksum "week_num" }}
                 paths:
                     - ~/nilearn_data/nki_enhanced_surface  # ~ 85 MB
 
             - save_cache:
-                key: v1-oasis1-{{ checksum "week_num" }}-{{ checksum "gen_key_oasis1" }}
+                key: v1-oasis1-{{ checksum "week_num" }}
                 paths:
                     - ~/nilearn_data/oasis1                # ~913 MB
 
             - save_cache:
-                key: v1-smith_2009-{{ checksum "week_num" }}-{{ checksum "gen_key_smith_2009" }}
+                key: v1-smith_2009-{{ checksum "week_num" }}
                 paths:
                     - ~/nilearn_data/smith_2009            # ~171 MB
 
             - save_cache:
-                key: v1-spm_auditory-{{ checksum "week_num" }}-{{ checksum "gen_key_spm_auditory" }}
+                key: v1-spm_auditory-{{ checksum "week_num" }}
                 paths:
                     - ~/nilearn_data/spm_auditory          # ~230 MB
 
             - save_cache:
-                key: v1-spm_multimodal_fmri-{{ checksum "week_num" }}-{{ checksum "gen_key_spm_multimodal_fmri" }}
+                key: v1-spm_multimodal_fmri-{{ checksum "week_num" }}
                 paths:
                     - ~/nilearn_data/spm_multimodal_fmri   # ~227 MB
 
