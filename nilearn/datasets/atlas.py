@@ -329,6 +329,12 @@ def fetch_atlas_harvard_oxford(atlas_name, data_dir=None,
         - "labels": string list, labels of the regions in the atlas.
 
     """
+
+    warnings.warn(
+    "fetch_atlas_harvard_oxford is deprecated and will be removed in release 0.9 ."
+    + "Use fetch_atlases_fsl with atlas_source set to (HarvardOxford) instead.", 
+    PendingDeprecationWarning)
+
     atlas_items = ("cort-maxprob-thr0-1mm", "cort-maxprob-thr0-2mm",
                    "cort-maxprob-thr25-1mm", "cort-maxprob-thr25-2mm",
                    "cort-maxprob-thr50-1mm", "cort-maxprob-thr50-2mm",
