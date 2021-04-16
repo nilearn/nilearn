@@ -410,6 +410,8 @@ class FirstLevelModel(BaseGLM):
                                        )
             self.masker_.fit(run_imgs[0])
         else:
+            # Make sure masker has been fitted otherwise no attribute mask_img_
+            self.mask_img._check_fitted()
             if self.mask_img.mask_img_ is None and self.masker_ is None:
                 self.masker_ = clone(self.mask_img)
                 for param_name in ['target_affine', 'target_shape',
