@@ -57,6 +57,11 @@ def test_high_level_glm_one_session():
                     fmri_data[0], design_matrices=design_matrices[0])
     assert single_session_model.masker_ == masker
 
+    # Call with verbose (improve coverage)
+    single_session_model = FirstLevelModel(mask_img=None,
+                                           verbose=1).fit(
+        fmri_data[0], design_matrices=design_matrices[0])
+
     single_session_model = FirstLevelModel(mask_img=None).fit(
         fmri_data[0], design_matrices=design_matrices[0])
     assert isinstance(single_session_model.masker_.mask_img_,
