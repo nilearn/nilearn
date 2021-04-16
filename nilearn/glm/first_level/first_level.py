@@ -362,6 +362,9 @@ class FirstLevelModel(BaseGLM):
             takes precedence over events and confounds.
 
         """
+        # Initialize masker_ to None such that attribute exists
+        self.masker_ = None
+
         # Raise a warning if both design_matrices and confounds are provided
         if design_matrices is not None and (confounds is not None or events is not None):
             warn('If design matrices are supplied, confounds and events will be ignored.')
