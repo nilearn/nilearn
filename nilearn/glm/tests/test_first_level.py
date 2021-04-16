@@ -23,6 +23,7 @@ from nilearn.glm.first_level import (FirstLevelModel, first_level_from_bids,
 from nilearn.glm.first_level.design_matrix import (
     check_design_matrix, make_first_level_design_matrix)
 from nilearn.image import get_data
+from nilearn.input_data import NiftiMasker
 
 BASEDIR = os.path.dirname(os.path.abspath(__file__))
 FUNCFILE = os.path.join(BASEDIR, 'functional.nii.gz')
@@ -31,6 +32,30 @@ FUNCFILE = os.path.join(BASEDIR, 'functional.nii.gz')
 def test_high_level_glm_one_session():
     shapes, rk = [(7, 8, 9, 15)], 3
     mask, fmri_data, design_matrices = generate_fake_fmri_data_and_design(shapes, rk)
+
+    # Give an unfitted NiftiMasker as mask_img and check that we get an error
+    masker = NiftiMasker(mask)
+    with pytest.raises(ValueError,
+                       match="It seems that NiftiMasker has not been fitted."):
+        single_session_model = FirstLevelModel(mask_img=masker).fit(
+                fmri_data[0], design_matrices=design_matrices[0])
+
+    # Give a fitted NiftiMasker with a None mask_img_ attribute
+    # and check that the masker parameters are overriden by the
+    # FirstLevelModel parameters
+    masker.fit()
+    masker.mask_img_ = None
+    with pytest.warns(UserWarning,
+                      match="Parameter memory of the masker overriden"):
+        single_session_model = FirstLevelModel(mask_img=masker).fit(
+                fmri_data[0], design_matrices=design_matrices[0])
+
+    # Give a fitted NiftiMasker
+    masker = NiftiMasker(mask)
+    masker.fit()
+    single_session_model = FirstLevelModel(mask_img=masker).fit(
+                    fmri_data[0], design_matrices=design_matrices[0])
+    assert single_session_model.masker_ == masker
 
     single_session_model = FirstLevelModel(mask_img=None).fit(
         fmri_data[0], design_matrices=design_matrices[0])
