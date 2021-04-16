@@ -653,10 +653,31 @@ def test_first_level_residuals():
     for i in range(len(design_matrices)):
         design_matrices[i].iloc[:, 0] = 1
 
-    model = FirstLevelModel(mask_img=mask, minimize_memory=False,
+    # Check that voxelwise model attributes cannot be
+    # accessed if minimize_memory is set to True
+    model = FirstLevelModel(mask_img=mask, minimize_memory=True,
                             noise_model='ols')
     model.fit(fmri_data, design_matrices=design_matrices)
 
+    with pytest.raises(ValueError,
+                       match="To access voxelwise attributes"):
+        residuals = model.residuals[0]
+
+    model = FirstLevelModel(mask_img=mask, minimize_memory=False,
+                            noise_model='ols')
+
+    # Check that trying to access residuals without fitting
+    # raises an error
+    with pytest.raises(ValueError,
+                       match="The model has not been fit yet"):
+        residuals = model.residuals[0]
+
+    model.fit(fmri_data, design_matrices=design_matrices)
+
+    # For coverage
+    with pytest.raises(ValueError,
+                       match="attribute must be one of"):
+        model._get_voxelwise_model_attribute("foo", True)
     residuals = model.residuals[0]
     mean_residuals = model.masker_.transform(residuals).mean(0)
     assert_array_almost_equal(mean_residuals, 0)
