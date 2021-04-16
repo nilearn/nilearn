@@ -338,6 +338,7 @@ def test_fmri_inputs():
         des = pd.DataFrame(np.ones((T, 1)), columns=[''])
         des_fname = 'design.csv'
         des.to_csv(des_fname)
+        events = basic_paradigm()
         for fi in func_img, FUNCFILE:
             for d in des, des_fname:
                 FirstLevelModel().fit(fi, design_matrices=d)
@@ -348,6 +349,20 @@ def test_fmri_inputs():
                     # test with confounds
                     FirstLevelModel(mask_img=mask).fit([fi], design_matrices=[d],
                                                     confounds=conf)
+
+                # Provide t_r, confounds, and events but no design matrix
+                FirstLevelModel(mask_img=mask, t_r=2.0).fit(
+                    fi,
+                    confounds=pd.DataFrame([0] * 10, columns=['conf']),
+                    events=events)
+
+                # Same, but check that an error is raised if there is a
+                # mismatch in the dimensions of the inputs
+                with pytest.raises(ValueError,
+                                   match="Rows in confounds does not match"):
+                    FirstLevelModel(mask_img=mask, t_r=2.0).fit(
+                            fi, confounds=conf, events=events)
+
                 # test with confounds as numpy array
                 FirstLevelModel(mask_img=mask).fit([fi], design_matrices=[d],
                                                    confounds=conf.values)
