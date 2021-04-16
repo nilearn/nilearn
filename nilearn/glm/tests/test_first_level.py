@@ -555,6 +555,26 @@ def test_first_level_from_bids():
         with pytest.raises(TypeError):
             first_level_from_bids(bids_path, 'main', 'MNI',
                                          model_init=[])
+        with pytest.raises(TypeError,
+                           match="space_label must be a string"):
+            first_level_from_bids(bids_path, 'main',
+                                  space_label=42)
+
+        with pytest.raises(TypeError,
+                           match="img_filters must be a list"):
+            first_level_from_bids(bids_path, 'main',
+                                  img_filters="foo")
+
+        with pytest.raises(TypeError,
+                           match="filters in img"):
+            first_level_from_bids(bids_path, 'main',
+                                  img_filters=[(1, 2)])
+
+        with pytest.raises(ValueError,
+                           match="field foo is not a possible filter."):
+            first_level_from_bids(bids_path, 'main',
+                                  img_filters=[("foo", "bar")])
+
         # test output is as expected
         models, m_imgs, m_events, m_confounds = first_level_from_bids(
             bids_path, 'main', 'MNI', [('desc', 'preproc')])
