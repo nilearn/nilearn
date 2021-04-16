@@ -575,6 +575,12 @@ def test_first_level_with_no_signal_scaling():
                                         columns=list(
                                             'abcdefghijklmnopqrstuvwxyz')[:rk])
                            )
+    # Check error with invalid signal_scaling values
+    with pytest.raises(ValueError,
+                       match="signal_scaling must be"):
+        FirstLevelModel(mask_img=False, noise_model='ols',
+                        signal_scaling="foo")
+
     first_level = FirstLevelModel(mask_img=False, noise_model='ols',
                                         signal_scaling=False)
     fmri_data.append(Nifti1Image(np.zeros((1, 1, 1, 2)) + 6, np.eye(4)))
