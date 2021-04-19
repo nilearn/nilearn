@@ -21,6 +21,7 @@ from numpy.testing import (assert_almost_equal,
 from nilearn._utils.data_gen import (write_fake_fmri_data_and_design,
                                      generate_fake_fmri_data_and_design)
 from nilearn.image import concat_imgs, get_data
+from nilearn.input_data import NiftiMasker
 from nilearn.glm.first_level import (FirstLevelModel,
                                              run_glm,
                                              )
@@ -208,6 +209,13 @@ def test_high_level_glm_with_paths():
         assert isinstance(z_image, Nifti1Image)
         assert_array_equal(z_image.affine, load(mask).affine)
 
+        # Provide a masker as mask_img
+        masker = NiftiMasker(mask)
+        with pytest.warns(UserWarning,
+                          match="Parameter memory of the masker overriden"):
+            SecondLevelModel(mask_img=masker,
+                             verbose=1).fit(Y, design_matrix=X)
+
         # try with target_shape
         target_shape = (10, 10, 10)
         target_affine = np.eye(4)
@@ -235,7 +243,8 @@ def test_high_level_non_parametric_inference_with_paths():
         c1 = np.eye(len(X.columns))[0]
         neg_log_pvals_img = non_parametric_inference(Y, design_matrix=X,
                                                      second_level_contrast=c1,
-                                                     mask=mask, n_perm=n_perm)
+                                                     mask=mask, n_perm=n_perm,
+                                                     verbose=1) # For coverage
         neg_log_pvals = get_data(neg_log_pvals_img)
 
         assert isinstance(neg_log_pvals_img, Nifti1Image)
@@ -243,6 +252,13 @@ def test_high_level_non_parametric_inference_with_paths():
 
         assert np.all(neg_log_pvals <= - np.log10(1.0 / (n_perm + 1)))
         assert np.all(0 <= neg_log_pvals)
+        masker = NiftiMasker(mask, smoothing_fwhm=2.0)
+        with pytest.warns(UserWarning,
+                          match="Parameter smoothing_fwhm of the masker overriden"):
+            non_parametric_inference(Y, design_matrix=X,
+                                     second_level_contrast=c1,
+                                     smoothing_fwhm=3.0,
+                                     mask=masker, n_perm=n_perm)
         # Delete objects attached to files to avoid WindowsError when deleting
         # temporary directory
         del X, Y, FUNCFILE, func_img, neg_log_pvals_img
