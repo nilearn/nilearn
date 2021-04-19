@@ -31,6 +31,13 @@ from nilearn.glm.second_level import (SecondLevelModel,
 BASEDIR = os.path.dirname(os.path.abspath(__file__))
 FUNCFILE = os.path.join(BASEDIR, 'functional.nii.gz')
 
+def test_check_output_type():
+    from nilearn.glm.second_level.second_level import _check_output_type
+    _check_output_type(int, [str, int, float])
+    with pytest.raises(ValueError,
+                       match="output_type must be one of"):
+        _check_output_type("foo", [str, int, float])
+
 
 def test_high_level_glm_with_paths():
     with InTemporaryDirectory():
