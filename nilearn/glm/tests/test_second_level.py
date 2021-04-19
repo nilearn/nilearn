@@ -67,6 +67,15 @@ def test_check_confounds():
              'conf': [4, 5, 6]}))
 
 
+def test_check_first_level_contrast():
+    from nilearn.glm.second_level.second_level import _check_first_level_contrast
+    _check_first_level_contrast(["foo"], None) # Should not do anything
+    with pytest.raises(ValueError,
+                       match="If second_level_input was a list"):
+        _check_first_level_contrast([FirstLevelModel()], None)
+    _check_first_level_contrast([FirstLevelModel()], "foo")
+
+
 def test_high_level_glm_with_paths():
     with InTemporaryDirectory():
         shapes = ((7, 8, 9, 1),)
