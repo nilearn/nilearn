@@ -48,6 +48,25 @@ def test_check_design_matrix():
     _check_design_matrix(pd.DataFrame())
 
 
+def test_check_confounds():
+    from nilearn.glm.second_level.second_level import _check_confounds
+    _check_confounds(None) # Should not do anything
+    with pytest.raises(ValueError,
+                       match="confounds must be a pandas DataFrame"):
+        _check_confounds("foo")
+    with pytest.raises(ValueError,
+                       match="confounds DataFrame must contain column"):
+        _check_confounds(pd.DataFrame())
+    with pytest.raises(ValueError,
+                       match="confounds should contain at least 2 columns"):
+        _check_confounds(pd.DataFrame(columns=['subject_label']))
+    with pytest.raises(ValueError,
+                       match="subject_label column must contain only strings"):
+        _check_confounds(pd.DataFrame(
+            {'subject_label': [None, None, None],
+             'conf': [4, 5, 6]}))
+
+
 def test_high_level_glm_with_paths():
     with InTemporaryDirectory():
         shapes = ((7, 8, 9, 1),)
