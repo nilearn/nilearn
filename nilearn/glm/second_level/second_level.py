@@ -82,12 +82,8 @@ def _check_second_level_input(second_level_input, design_matrix,
                                  ' columns subject_label, map_name and'
                                  ' effects_map_path')
         # Make sure subject_label contain strings
-        second_level_columns = second_level_input.columns.tolist()
-        labels_index = second_level_columns.index('subject_label')
-        labels_dtype = second_level_input.dtypes[labels_index]
-        if not isinstance(labels_dtype, np.object):
-            raise ValueError('subject_label column must be of dtype '
-                             'object instead of dtype %s' % labels_dtype)
+        if not all([isinstance(_, str) for _ in second_level_input['subject_label'].tolist()]):
+            raise ValueError('subject_label column must contain only strings')
     elif isinstance(second_level_input, (str, Nifti1Image)):
         if design_matrix is None:
             raise ValueError('List of niimgs as second_level_input'

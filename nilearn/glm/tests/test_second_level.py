@@ -18,7 +18,8 @@ from numpy.testing import (assert_almost_equal,
                            assert_array_equal,
                            )
 
-from nilearn._utils.data_gen import write_fake_fmri_data_and_design
+from nilearn._utils.data_gen import (write_fake_fmri_data_and_design,
+                                     generate_fake_fmri_data_and_design)
 from nilearn.image import concat_imgs, get_data
 from nilearn.glm.first_level import (FirstLevelModel,
                                              run_glm,
@@ -30,6 +31,64 @@ from nilearn.glm.second_level import (SecondLevelModel,
 # This directory path
 BASEDIR = os.path.dirname(os.path.abspath(__file__))
 FUNCFILE = os.path.join(BASEDIR, 'functional.nii.gz')
+
+
+def test_check_second_level_input():
+    from nilearn.glm.second_level.second_level import _check_second_level_input
+    with pytest.raises(ValueError,
+                       match="A second level model requires a list with at "
+                             "least two first level models or niimgs"):
+        _check_second_level_input([FirstLevelModel()], pd.DataFrame())
+    with pytest.raises(ValueError,
+                       match="Model sub_1 at index 0 has not been fit yet"):
+        _check_second_level_input([FirstLevelModel(subject_label="sub_{}".format(i))
+                                   for i in range(1,3)], pd.DataFrame())
+    with InTemporaryDirectory():
+        shapes, rk = [(7, 8, 9, 15)], 3
+        mask, fmri_data, design_matrices = generate_fake_fmri_data_and_design(shapes, rk)
+        input_models = [FirstLevelModel(mask_img=mask).fit(fmri_data[0],
+                                                           design_matrices=design_matrices[0])]
+        obj = lambda: None
+        obj.results_ = "foo"
+        obj.labels_ = "bar"
+        with pytest.raises(ValueError,
+                           match=" object at idx 1 is <class 'function'> "
+                                 "instead of FirstLevelModel object"):
+            _check_second_level_input(input_models + [obj], pd.DataFrame())
+        with pytest.raises(ValueError,
+                           match="In case confounds are provided, first level "
+                                 "objects need to provide the attribute subject_label"):
+            _check_second_level_input(input_models * 2, pd.DataFrame(),
+                                      confounds=pd.DataFrame())
+        with pytest.raises(ValueError,
+                           match="List of niimgs as second_level_input "
+                                 "require a design matrix to be provided"):
+            _check_second_level_input(fmri_data * 2, None)
+        _check_second_level_input(fmri_data[0], pd.DataFrame())
+    with pytest.raises(ValueError,
+                       match=" object at idx 1 is <class 'int'> instead"):
+        _check_second_level_input(["foo", 1], pd.DataFrame())
+    with pytest.raises(ValueError,
+                       match="second_level_input DataFrame must have columns "
+                             "subject_label, map_name and effects_map_path"):
+        _check_second_level_input(pd.DataFrame(columns=["foo", "bar"]), pd.DataFrame())
+    with pytest.raises(ValueError,
+                       match="subject_label column must contain only strings"):
+        _check_second_level_input(pd.DataFrame({"subject_label": [1, 2],
+                                                "map_name": ["a", "b"],
+                                                "effects_map_path": ["c", "d"]}),
+                                  pd.DataFrame())
+    with pytest.raises(ValueError,
+                       match="List of niimgs as second_level_input "
+                             "require a design matrix to be provided"):
+        _check_second_level_input("foo", None)
+    with pytest.raises(ValueError,
+                       match="second_level_input must be a list of"):
+        _check_second_level_input(1, None)
+    with pytest.raises(ValueError,
+                       match="second_level_input must be a list"):
+        _check_second_level_input(1, None, flm_object=False)
+
 
 def test_check_output_type():
     from nilearn.glm.second_level.second_level import _check_output_type
