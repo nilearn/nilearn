@@ -76,6 +76,14 @@ def test_check_first_level_contrast():
     _check_first_level_contrast([FirstLevelModel()], "foo")
 
 
+def test_check_effect_maps():
+    from nilearn.glm.second_level.second_level import _check_effect_maps
+    _check_effect_maps([1, 2, 3], np.array([[1, 2], [3, 4], [5, 6]]))
+    with pytest.raises(ValueError,
+                       match="design_matrix does not match the number of maps considered"):
+        _check_effect_maps([1, 2], np.array([[1, 2], [3, 4], [5, 6]]))
+
+
 def test_high_level_glm_with_paths():
     with InTemporaryDirectory():
         shapes = ((7, 8, 9, 1),)
