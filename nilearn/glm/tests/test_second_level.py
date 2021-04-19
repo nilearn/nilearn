@@ -103,6 +103,32 @@ def test_get_contrast():
     assert _get_contrast([1, 0], design_matrix) == 'conf1'
 
 
+def test_infer_effect_maps():
+    from nilearn.glm.second_level.second_level import _infer_effect_maps
+    with InTemporaryDirectory():
+        shapes = ((7, 8, 9, 1),)
+        mask, FUNCFILE, _ = write_fake_fmri_data_and_design(shapes)
+        FUNCFILE = FUNCFILE[0]
+        func_img = load(FUNCFILE)
+        second_level_input = pd.DataFrame({'map_name': ["a", "b"] ,
+                                           'effects_map_path': [FUNCFILE, "bar"]})
+        assert _infer_effect_maps(second_level_input, "a") == [FUNCFILE]
+        with pytest.raises(ValueError,
+                           match="File not found: 'bar'"):
+            _infer_effect_maps(second_level_input, "b")
+        assert _infer_effect_maps([FUNCFILE], None) == [FUNCFILE]
+
+    with InTemporaryDirectory():
+        shapes, rk = ((7, 8, 7, 15), (7, 8, 7, 16)), 3
+        mask, fmri_data, design_matrices = write_fake_fmri_data_and_design(shapes, rk)
+        contrast = np.eye(rk)[1]
+        second_level_input = [FirstLevelModel(mask_img=mask)] * 2
+        for i,model in enumerate(second_level_input):
+            model.fit(fmri_data[i],
+                      design_matrices=design_matrices[i])
+        assert len(_infer_effect_maps(second_level_input, contrast)) == 2
+
+
 def test_high_level_glm_with_paths():
     with InTemporaryDirectory():
         shapes = ((7, 8, 9, 1),)
