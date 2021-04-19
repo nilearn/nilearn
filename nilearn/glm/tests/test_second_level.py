@@ -39,6 +39,15 @@ def test_check_output_type():
         _check_output_type("foo", [str, int, float])
 
 
+def test_check_design_matrix():
+    from nilearn.glm.second_level.second_level import _check_design_matrix
+    _check_design_matrix(None) # Should not do anything
+    with pytest.raises(ValueError,
+                       match="design matrix must be a pandas DataFrame"):
+        _check_design_matrix("foo")
+    _check_design_matrix(pd.DataFrame())
+
+
 def test_high_level_glm_with_paths():
     with InTemporaryDirectory():
         shapes = ((7, 8, 9, 1),)
