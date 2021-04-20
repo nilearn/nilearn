@@ -43,7 +43,7 @@ def test_check_second_level_input():
     with pytest.raises(ValueError,
                        match="Model sub_1 at index 0 has not been fit yet"):
         _check_second_level_input([FirstLevelModel(subject_label="sub_{}".format(i))
-                                   for i in range(1,3)], pd.DataFrame())
+                                   for i in range(1, 3)], pd.DataFrame())
     with InTemporaryDirectory():
         shapes, rk = [(7, 8, 9, 15)], 3
         mask, fmri_data, design_matrices = generate_fake_fmri_data_and_design(shapes, rk)
@@ -177,8 +177,6 @@ def test_infer_effect_maps():
                            match="File not found: 'bar'"):
             _infer_effect_maps(second_level_input, "b")
         assert _infer_effect_maps([FUNCFILE], None) == [FUNCFILE]
-
-    with InTemporaryDirectory():
         shapes, rk = ((7, 8, 7, 15), (7, 8, 7, 16)), 3
         mask, fmri_data, design_matrices = write_fake_fmri_data_and_design(shapes, rk)
         contrast = np.eye(rk)[1]
