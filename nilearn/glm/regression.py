@@ -97,7 +97,7 @@ class OLSModel(object):
                                           np.transpose(self.calc_beta))
         self.df_total = self.whitened_design.shape[0]
 
-        eps = np.abs(self.design).sum() * np.finfo(np.float).eps
+        eps = np.abs(self.design).sum() * np.finfo(np.float64).eps
         self.df_model = matrix_rank(self.design, eps)
         self.df_residuals = self.df_total - self.df_model
 

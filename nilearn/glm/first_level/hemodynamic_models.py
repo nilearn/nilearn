@@ -60,7 +60,7 @@ def _gamma_difference_hrf(tr, oversampling=50, time_length=32., onset=0.,
     """
     dt = tr / oversampling
     time_stamps = np.linspace(0, time_length,
-                              np.rint(float(time_length) / dt).astype(np.int))
+                              np.rint(float(time_length) / dt).astype(int))
     time_stamps -= onset
     hrf = (
         gamma.pdf(time_stamps, delay / dispersion, dt / dispersion)
@@ -291,7 +291,7 @@ def _sample_condition(exp_condition, frame_times, oversampling=50,
 
     hr_frame_times = np.linspace(frame_times.min() + min_onset,
                                  frame_times.max() * (1 + 1. / (n - 1)),
-                                 np.rint(n_hr).astype(np.int))
+                                 np.rint(n_hr).astype(int))
 
     # Get the condition information
     onsets, durations, values = tuple(map(np.asanyarray, exp_condition))
@@ -302,7 +302,7 @@ def _sample_condition(exp_condition, frame_times, oversampling=50,
 
     # Set up the regressor timecourse
     tmax = len(hr_frame_times)
-    regressor = np.zeros_like(hr_frame_times).astype(np.float)
+    regressor = np.zeros_like(hr_frame_times).astype(np.float64)
     t_onset = np.minimum(np.searchsorted(hr_frame_times, onsets), tmax - 1)
     for t, v in zip(t_onset, values):
         regressor[t] += v

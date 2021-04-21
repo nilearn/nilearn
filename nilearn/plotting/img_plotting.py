@@ -401,7 +401,7 @@ class _MNI152Template(SpatialImage):
             anat_img = load_mni152_template()
             anat_img = reorder_img(anat_img)
             data = get_data(anat_img)
-            data = data.astype(np.float)
+            data = data.astype(np.float64)
             anat_mask = ndimage.morphology.binary_fill_holes(data > 0)
             data = np.ma.masked_array(data, np.logical_not(anat_mask))
             self._affine = anat_img.affine

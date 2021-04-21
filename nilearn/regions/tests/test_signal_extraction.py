@@ -74,7 +74,7 @@ def test_signals_extraction_with_labels():
     n_instants = 11
     n_regions = 8  # must be 8
 
-    eps = np.finfo(np.float).eps
+    eps = np.finfo(np.float64).eps
     # data
     affine = np.eye(4)
     signals = generate_timeseries(n_instants, n_regions)

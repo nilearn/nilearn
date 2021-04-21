@@ -219,7 +219,7 @@ def test_detrend():
     # Mean removal only (out-of-place)
     detrended = nisignal._detrend(x, inplace=False, type="constant")
     assert (abs(detrended.mean(axis=0)).max()
-                < 15. * np.finfo(np.float).eps)
+                < 15. * np.finfo(np.float64).eps)
 
     # out-of-place detrending. Use scipy as a reference implementation
     detrended = nisignal._detrend(x, inplace=False)
@@ -227,14 +227,14 @@ def test_detrend():
 
     # "x" must be left untouched
     np.testing.assert_almost_equal(original, x, decimal=14)
-    assert abs(detrended.mean(axis=0)).max() < 15. * np.finfo(np.float).eps
+    assert abs(detrended.mean(axis=0)).max() < 15. * np.finfo(np.float64).eps
     np.testing.assert_almost_equal(detrended_scipy, detrended, decimal=14)
     # for this to work, there must be no trends at all in "signals"
     np.testing.assert_almost_equal(detrended, signals, decimal=14)
 
     # inplace detrending
     nisignal._detrend(x, inplace=True)
-    assert abs(x.mean(axis=0)).max() < 15. * np.finfo(np.float).eps
+    assert abs(x.mean(axis=0)).max() < 15. * np.finfo(np.float64).eps
     # for this to work, there must be no trends at all in "signals"
     np.testing.assert_almost_equal(detrended_scipy, detrended, decimal=14)
     np.testing.assert_almost_equal(x, signals, decimal=14)
@@ -248,7 +248,7 @@ def test_detrend():
     detrended = nisignal._detrend(x.astype(np.int64), inplace=True,
                                   type="constant")
     assert (abs(detrended.mean(axis=0)).max() <
-                20. * np.finfo(np.float).eps)
+                20. * np.finfo(np.float64).eps)
 
 
 def test_mean_of_squares():
@@ -399,7 +399,7 @@ def test_clean_confounds():
     signals, noises, confounds = generate_signals(n_features=41,
                                                   n_confounds=5, length=45)
     # No signal: output must be zero.
-    eps = np.finfo(np.float).eps
+    eps = np.finfo(np.float64).eps
     noises1 = noises.copy()
     cleaned_signals = nisignal.clean(noises, confounds=confounds,
                                      detrend=True, standardize=False)
