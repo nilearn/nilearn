@@ -671,9 +671,9 @@ class _BaseDecoder(LinearRegression, CacheMixin):
         n_samples = X.shape[0]
 
         if isinstance(self.estimator, (DummyClassifier, DummyRegressor)):
-            return self._predict_dummy(n_samples)
-
-        scores = self.decision_function(X)
+            scores = self._predict_dummy(n_samples)
+        else:
+            scores = self.decision_function(X)
 
         if self.is_classification:
             if len(scores.shape) == 1:
