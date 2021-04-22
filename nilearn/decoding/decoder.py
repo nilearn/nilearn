@@ -490,11 +490,6 @@ class _BaseDecoder(LinearRegression, CacheMixin):
         X = self._apply_mask(X)
         X, y = check_X_y(X, y, dtype=np.float, multi_output=True)
 
-        if y.ndim == 1:
-            self.n_outputs_ = 1
-        else:
-            self.n_outputs_ = y.shape[1]
-
         # Setup scorer
         if self.scoring is not None:
             self.scorer_ = check_scoring(self.estimator,
@@ -532,6 +527,11 @@ class _BaseDecoder(LinearRegression, CacheMixin):
             n_problems = self.n_classes_
         else:
             n_problems = 1
+
+        if y.ndim == 1:
+            self.n_outputs_ = 1
+        else:
+            self.n_outputs_ = y.shape[1]
 
         # Check if the size of the mask image and the number of features allow
         # to perform feature screening.
