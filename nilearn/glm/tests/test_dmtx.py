@@ -22,7 +22,7 @@ from nilearn.glm.first_level.design_matrix import (_convolve_regressors,
                                                    make_second_level_design_matrix,
                                                    )
 
-from nilearn/_utils/data_gen.py import basic_paradigm()
+from nilearn._utils.data_gen import basic_paradigm
 
 # load the spm file to test cosine basis
 my_path = osp.dirname(osp.abspath(__file__))

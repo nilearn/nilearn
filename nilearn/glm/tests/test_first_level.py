@@ -25,7 +25,7 @@ from nilearn.glm.first_level.design_matrix import (
 from nilearn.image import get_data
 from nilearn.input_data import NiftiMasker
 
-from nilearn/_utils/data_gen.py import basic_paradigm()
+from nilearn._utils.data_gen import basic_paradigm
 
 BASEDIR = os.path.dirname(os.path.abspath(__file__))
 FUNCFILE = os.path.join(BASEDIR, 'functional.nii.gz')
