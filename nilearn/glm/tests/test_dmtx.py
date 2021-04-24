@@ -12,7 +12,7 @@ import pytest
 
 from nibabel.tmpdirs import InTemporaryDirectory
 from numpy.testing import (
-    assert_almost_equal, assert_array_equal, assert_array_almost_equal,
+    assert_almost_equal, assert_array_equal, sassert_array_almost_equal,
     assert_equal)
 
 from nilearn.glm.first_level.design_matrix import (_convolve_regressors,
@@ -154,7 +154,7 @@ def test_design_matrix10():
     # Check that the first column o FIR design matrix is OK
     tr = 1.0
     frame_times = np.linspace(0, 127 * tr, 128)
-    events = basic_paradigm()
+    events = basic_paradigm
     hrf_model = 'FIR'
     X, names = design_matrix_light(frame_times, events, hrf_model=hrf_model,
                                    drift_model='polynomial', drift_order=3,
@@ -180,7 +180,7 @@ def test_design_matrix1():
     # basic test based on basic_paradigm and glover hrf
     tr = 1.0
     frame_times = np.linspace(0, 127 * tr, 128)
-    events = basic_paradigm()
+    events = basic_paradigm
     hrf_model = 'glover'
     X, names = design_matrix_light(frame_times, events, hrf_model=hrf_model,
                                    drift_model='polynomial', drift_order=3)
@@ -194,7 +194,7 @@ def test_design_matrix2():
     # idem test_design_matrix1 with a different drift term
     tr = 1.0
     frame_times = np.linspace(0, 127 * tr, 128)
-    events = basic_paradigm()
+    events = basic_paradigm
     hrf_model = 'glover'
     X, names = design_matrix_light(frame_times, events, hrf_model=hrf_model,
                                    drift_model='cosine', high_pass=1. / 63)
@@ -205,7 +205,7 @@ def test_design_matrix3():
     # idem test_design_matrix1 with a different drift term
     tr = 1.0
     frame_times = np.linspace(0, 127 * tr, 128)
-    events = basic_paradigm()
+    events = basic_paradigm
     hrf_model = 'glover'
     X, names = design_matrix_light(frame_times, events, hrf_model=hrf_model,
                                    drift_model=None)
@@ -216,7 +216,7 @@ def test_design_matrix4():
     # idem test_design_matrix1 with a different hrf model
     tr = 1.0
     frame_times = np.linspace(0, 127 * tr, 128)
-    events = basic_paradigm()
+    events = basic_paradigm
     hrf_model = 'glover + derivative'
     X, names = design_matrix_light(frame_times, events, hrf_model=hrf_model,
                                    drift_model='polynomial', drift_order=3)
@@ -269,7 +269,7 @@ def test_design_matrix8():
     # basic test based on basic_paradigm and FIR
     tr = 1.0
     frame_times = np.linspace(0, 127 * tr, 128)
-    events = basic_paradigm()
+    events = basic_paradigm
     hrf_model = 'FIR'
     X, names = design_matrix_light(frame_times, events, hrf_model=hrf_model,
                                    drift_model='polynomial', drift_order=3)
@@ -280,7 +280,7 @@ def test_design_matrix9():
     # basic test based on basic_paradigm and FIR
     tr = 1.0
     frame_times = np.linspace(0, 127 * tr, 128)
-    events = basic_paradigm()
+    events = basic_paradigm
     hrf_model = 'FIR'
     X, names = design_matrix_light(frame_times, events, hrf_model=hrf_model,
                                    drift_model='polynomial', drift_order=3,
@@ -292,7 +292,7 @@ def test_design_matrix11():
     # check that the second column of the FIR design matrix is OK indeed
     tr = 1.0
     frame_times = np.linspace(0, 127 * tr, 128)
-    events = basic_paradigm()
+    events = basic_paradigm
     hrf_model = 'FIR'
     X, names = design_matrix_light(frame_times, events, hrf_model=hrf_model,
                                    drift_model='polynomial', drift_order=3,
@@ -305,7 +305,7 @@ def test_design_matrix12():
     # check that the 11th column of a FIR design matrix is indeed OK
     tr = 1.0
     frame_times = np.linspace(0, 127 * tr, 128)
-    events = basic_paradigm()
+    events = basic_paradigm
     hrf_model = 'FIR'
     X, names = design_matrix_light(frame_times, events, hrf_model=hrf_model,
                                    drift_model='polynomial', drift_order=3,
@@ -318,7 +318,7 @@ def test_design_matrix13():
     # Check that the fir_duration is well taken into account
     tr = 1.0
     frame_times = np.linspace(0, 127 * tr, 128)
-    events = basic_paradigm()
+    events = basic_paradigm
     hrf_model = 'FIR'
     X, names = design_matrix_light(frame_times, events, hrf_model=hrf_model,
                                    drift_model='polynomial', drift_order=3,
@@ -332,7 +332,7 @@ def test_design_matrix14():
     # time shift
     tr = 1.0
     frame_times = np.linspace(0, 127 * tr, 128) + tr / 2
-    events = basic_paradigm()
+    events = basic_paradigm
     hrf_model = 'FIR'
     X, names = design_matrix_light(frame_times, events, hrf_model=hrf_model,
                                    drift_model='polynomial', drift_order=3,
@@ -346,7 +346,7 @@ def test_design_matrix15():
     rng = np.random.RandomState(42)
     tr = 1.0
     frame_times = np.linspace(0, 127 * tr, 128)
-    events = basic_paradigm()
+    events = basic_paradigm
     hrf_model = 'glover'
     ax = rng.standard_normal(size=(128, 4))
     X, names = design_matrix_light(frame_times, events, hrf_model=hrf_model,
@@ -361,7 +361,7 @@ def test_design_matrix16():
     rng = np.random.RandomState(42)
     tr = 1.0
     frame_times = np.linspace(0, 127 * tr, 128)
-    events = basic_paradigm()
+    events = basic_paradigm
     hrf_model = 'glover'
     ax = rng.standard_normal(size=(128, 4))
     X, names = design_matrix_light(frame_times, events, hrf_model=hrf_model,
@@ -423,7 +423,7 @@ def test_design_matrix21():
     rng = np.random.RandomState(42)
     tr = 1.0
     frame_times = np.linspace(0, 127 * tr, 128)
-    events = basic_paradigm()
+    events = basic_paradigm
     hrf_model = 'glover'
     ax = rng.standard_normal(size=(128, 4))
     with pytest.raises(ValueError):
@@ -450,7 +450,7 @@ def test_fir_block():
 
 
 def test_oversampling():
-    events = basic_paradigm()
+    events = basic_paradigm
     frame_times = np.linspace(0, 127, 128)
     X1 = make_first_level_design_matrix(
         frame_times, events, drift_model=None)

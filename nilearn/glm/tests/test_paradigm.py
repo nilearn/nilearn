@@ -6,11 +6,11 @@ not whether it is exact.
 """
 
 import os
-import pytest
+# import pytest
 import numpy as np
 import pandas as pd
 from numpy.testing import assert_array_equal
-from nilearn.glm.first_level import check_events
+# from nilearn.glm.first_level import check_events
 
 from nilearn._utils.data_gen import basic_paradigm
 
@@ -75,7 +75,7 @@ def test_check_events():
     """Test the function which tests that the events
     data describes a valid experimental paradigm.
     """
-    events = basic_paradigm()
+    events = basic_paradigm
     # Errors checkins
     # Wrong type
     with pytest.raises(TypeError,
@@ -163,7 +163,7 @@ def test_read_events():
     for events in (block_paradigm(),
                    modulated_event_paradigm(),
                    modulated_block_paradigm(),
-                   basic_paradigm()):
+                   basic_paradigm):
         csvfile = write_events(events, tmpdir)
         read_paradigm = pd.read_table(csvfile)
         assert (read_paradigm['onset'] == events['onset']).all()
