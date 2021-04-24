@@ -12,15 +12,8 @@ import pandas as pd
 from numpy.testing import assert_array_equal
 from nilearn.glm.first_level import check_events
 
+from nilearn/_utils/data_gen.py import basic_paradigm()
 
-def basic_paradigm():
-    conditions = ['c0', 'c0', 'c0', 'c1', 'c1', 'c1', 'c2', 'c2', 'c2']
-    onsets = [30, 70, 100, 10, 30, 90, 30, 40, 60]
-    durations = 1 * np.ones(9)
-    events = pd.DataFrame({'trial_type': conditions,
-                           'onset': onsets,
-                           'duration': durations})
-    return events
 
 
 def duplicate_events_paradigm():

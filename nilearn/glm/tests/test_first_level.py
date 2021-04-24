@@ -25,6 +25,8 @@ from nilearn.glm.first_level.design_matrix import (
 from nilearn.image import get_data
 from nilearn.input_data import NiftiMasker
 
+from nilearn/_utils/data_gen.py import basic_paradigm()
+
 BASEDIR = os.path.dirname(os.path.abspath(__file__))
 FUNCFILE = os.path.join(BASEDIR, 'functional.nii.gz')
 
@@ -393,16 +395,6 @@ def test_fmri_inputs():
         # Delete objects attached to files to avoid WindowsError when deleting
         # temporary directory (in Windows)
         del fi, func_img, mask, d, des, FUNCFILE, _
-
-
-def basic_paradigm():
-    conditions = ['c0', 'c0', 'c0', 'c1', 'c1', 'c1', 'c2', 'c2', 'c2']
-    onsets = [30, 70, 100, 10, 30, 90, 30, 40, 60]
-    durations = 1 * np.ones(9)
-    events = pd.DataFrame({'trial_type': conditions,
-                           'onset': onsets,
-                           'duration': durations})
-    return events
 
 
 def test_first_level_design_creation():

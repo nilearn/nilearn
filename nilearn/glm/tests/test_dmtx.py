@@ -22,6 +22,8 @@ from nilearn.glm.first_level.design_matrix import (_convolve_regressors,
                                                    make_second_level_design_matrix,
                                                    )
 
+from nilearn/_utils/data_gen.py import basic_paradigm()
+
 # load the spm file to test cosine basis
 my_path = osp.dirname(osp.abspath(__file__))
 full_path_design_matrix_file = osp.join(my_path, 'spm_dmtx.npz')
@@ -43,16 +45,6 @@ def design_matrix_light(
                                           add_regs, add_reg_names, min_onset)
     _, matrix, names = check_design_matrix(dmtx)
     return matrix, names
-
-
-def basic_paradigm():
-    conditions = ['c0', 'c0', 'c0', 'c1', 'c1', 'c1', 'c2', 'c2', 'c2']
-    onsets = [30, 70, 100, 10, 30, 90, 30, 40, 60]
-    durations = 1 * np.ones(9)
-    events = pd.DataFrame({'trial_type': conditions,
-                           'onset': onsets,
-                           'duration': durations})
-    return events
 
 
 def modulated_block_paradigm():
