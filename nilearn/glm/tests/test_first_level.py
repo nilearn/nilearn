@@ -340,7 +340,7 @@ def test_fmri_inputs():
         des = pd.DataFrame(np.ones((T, 1)), columns=[''])
         des_fname = 'design.csv'
         des.to_csv(des_fname)
-        events = basic_paradigm
+        events = basic_paradigm()
         for fi in func_img, FUNCFILE:
             for d in des, des_fname:
                 FirstLevelModel().fit(fi, design_matrices=d)
@@ -404,10 +404,10 @@ def test_first_level_design_creation():
         mask, FUNCFILE, _ = write_fake_fmri_data_and_design(shapes)
         FUNCFILE = FUNCFILE[0]
         func_img = load(FUNCFILE)
-        # basic test based on basic_paradigm and glover hrf
+        # basic test based on basic_paradigm() and glover hrf
         t_r = 10.0
         slice_time_ref = 0.
-        events = basic_paradigm
+        events = basic_paradigm()
         model = FirstLevelModel(t_r, slice_time_ref, mask_img=mask,
                                 drift_model='polynomial', drift_order=3)
         model = model.fit(func_img, events)
@@ -435,10 +435,10 @@ def test_first_level_glm_computation():
         mask, FUNCFILE, _ = write_fake_fmri_data_and_design(shapes)
         FUNCFILE = FUNCFILE[0]
         func_img = load(FUNCFILE)
-        # basic test based on basic_paradigm and glover hrf
+        # basic test based on basic_paradigm() and glover hrf
         t_r = 10.0
         slice_time_ref = 0.
-        events = basic_paradigm
+        events = basic_paradigm()
         # Ordinary Least Squares case
         model = FirstLevelModel(t_r, slice_time_ref, mask_img=mask,
                                 drift_model='polynomial', drift_order=3,
@@ -459,7 +459,7 @@ def test_first_level_glm_computation_with_memory_caching():
         # initialize FirstLevelModel with memory option enabled
         t_r = 10.0
         slice_time_ref = 0.
-        events = basic_paradigm
+        events = basic_paradigm()
         # Ordinary Least Squares case
         model = FirstLevelModel(t_r, slice_time_ref, mask_img=mask,
                                 drift_model='polynomial', drift_order=3,
@@ -477,10 +477,10 @@ def test_first_level_contrast_computation():
         mask, FUNCFILE, _ = write_fake_fmri_data_and_design(shapes)
         FUNCFILE = FUNCFILE[0]
         func_img = load(FUNCFILE)
-        # basic test based on basic_paradigm and glover hrf
+        # basic test based on basic_paradigm() and glover hrf
         t_r = 10.0
         slice_time_ref = 0.
-        events = basic_paradigm
+        events = basic_paradigm()
         # Ordinary Least Squares case
         model = FirstLevelModel(t_r, slice_time_ref, mask_img=mask,
                                 drift_model='polynomial', drift_order=3,
