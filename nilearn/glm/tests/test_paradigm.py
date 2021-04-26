@@ -10,7 +10,6 @@ import os
 import numpy as np
 import pandas as pd
 from numpy.testing import assert_array_equal
-# from nilearn.glm.first_level import check_events
 
 from nilearn._utils.data_gen import basic_paradigm
 

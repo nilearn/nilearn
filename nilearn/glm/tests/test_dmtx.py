@@ -12,7 +12,7 @@ import pytest
 
 from nibabel.tmpdirs import InTemporaryDirectory
 from numpy.testing import (
-    assert_almost_equal, assert_array_equal, sassert_array_almost_equal,
+    assert_almost_equal, assert_array_equal, assert_array_almost_equal,
     assert_equal)
 
 from nilearn.glm.first_level.design_matrix import (_convolve_regressors,
@@ -266,7 +266,7 @@ def test_design_matrix7():
 
 
 def test_design_matrix8():
-    # basic test based on basic_paradigm() and FIR
+    # basic test based on basic_paradigm and FIR
     tr = 1.0
     frame_times = np.linspace(0, 127 * tr, 128)
     events = basic_paradigm()

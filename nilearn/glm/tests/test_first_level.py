@@ -404,7 +404,7 @@ def test_first_level_design_creation():
         mask, FUNCFILE, _ = write_fake_fmri_data_and_design(shapes)
         FUNCFILE = FUNCFILE[0]
         func_img = load(FUNCFILE)
-        # basic test based on basic_paradigm() and glover hrf
+        # basic test based on basic_paradigm and glover hrf
         t_r = 10.0
         slice_time_ref = 0.
         events = basic_paradigm()
@@ -477,7 +477,7 @@ def test_first_level_contrast_computation():
         mask, FUNCFILE, _ = write_fake_fmri_data_and_design(shapes)
         FUNCFILE = FUNCFILE[0]
         func_img = load(FUNCFILE)
-        # basic test based on basic_paradigm() and glover hrf
+        # basic test based on basic_paradigm and glover hrf
         t_r = 10.0
         slice_time_ref = 0.
         events = basic_paradigm()
