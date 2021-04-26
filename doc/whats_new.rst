@@ -111,7 +111,6 @@ Enhancements
 - :func:`nilearn.reporting.make_glm_report` and
   :func:`nilearn.reporting.get_clusters_table` have a new argument,
   "two_sided", which allows for two-sided thresholding, which is disabled by default.
->>>>>>> upstream/master
 
 .. _v0.7.0:
 
