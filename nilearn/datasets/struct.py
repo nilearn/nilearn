@@ -15,10 +15,12 @@ from .utils import (_get_dataset_dir, _fetch_files,
 from .._utils import check_niimg, niimg
 from ..image import new_img_like, get_data
 
+
 _package_directory = os.path.dirname(os.path.abspath(__file__))
-# Useful for the very simple examples
-MNI152_FILE_PATH = os.path.join(_package_directory, "data",
-                                "avg152T1_brain.nii.gz")
+
+MNI152_FILE_PATH = os.path.join(
+    _package_directory, "data",
+    "mni_icbm152_t1_tal_nlin_sym_09a_noskull.nii.gz")
 GM_MNI152_FILE_PATH = os.path.join(_package_directory, "data",
                                    "mni_icbm152_gm_tal_nlin_sym_09a.nii.gz")
 WM_MNI152_FILE_PATH = os.path.join(_package_directory, "data",
