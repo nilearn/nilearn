@@ -354,6 +354,7 @@ def test_glm_AR_estimates():
             for lag in range(ar_order):
                 Y[idx] += ar_vals[lag] * Y[idx - 1 - lag]
 
+        # Test using run_glm
         labels, results = run_glm(Y, X, ar_arg, bins=100)
         assert len(labels) == n
         for lab in results.keys():
@@ -361,6 +362,10 @@ def test_glm_AR_estimates():
             for lag in range(ar_order):
                 assert_almost_equal(float(ar_estimate[lag]),
                                     ar_vals[lag], decimal=1)
+
+        # Test using _yule_walker
+        yw = _yule_walker(Y.T, ar_order)
+        assert_almost_equal(yw[0], ar_vals, decimal=1)
 
     with pytest.raises(TypeError):
         _yule_walker(Y_orig, 1.2)
