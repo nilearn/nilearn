@@ -973,7 +973,7 @@ def _dataframe_to_html(df, precision, **kwargs):
 def _clean_contrast_name(contrast_name):
     new_name = "".join(ch for ch in contrast_name if ch.isalnum())
     if new_name != contrast_name:
-        warnings.warn(f"Contrast name '{contrast_name}' changed to '{new_name}'")
+        warnings.warn("Contrast name '{}' changed to '{}'".format(contrast_name, new_name))
     return new_name
 
 
