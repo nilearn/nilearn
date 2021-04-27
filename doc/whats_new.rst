@@ -10,10 +10,7 @@ Fixes
 Enhancements
 ------------
 
-- :func:`nilearn.masking.compute_brain_mask` accepts now as input not only the
-  averaged, whole-brain MNI152 T1 template (`avg152T1_brain.nii.gz`) but also
-  the grey-matter and white-matter ICBM152 templates dated from 2009.
-
+- :func:`nilearn.plotting.view_markers` now accept an optional argument `marker_labels` to provide labels to each marker.
 
 .. _v0.7.1:
 
@@ -112,7 +109,6 @@ Enhancements
   :func:`nilearn.reporting.get_clusters_table` have a new argument,
   "two_sided", which allows for two-sided thresholding, which is disabled by default.
 
-
 .. _v0.7.0:
 
 0.7.0
@@ -174,7 +170,7 @@ NEW
   interface with the Nifti files on disk.
 - Plot events file
   Use :func:`nilearn.plotting.plot_event` to visualize events file.
-  The function accepts the BIDS events file read using `pandas`
+  The function accepts the :term:`BIDS` events file read using `pandas`
   utilities.
 - Plotting function :func:`nilearn.plotting.plot_roi` can now plot ROIs
   in contours with `view_type` argument.
@@ -560,7 +556,7 @@ NEW
   and `examples/03_connectivity/plot_canica_analysis.py` into an improved
   `examples/03_connectivity/plot_compare_decomposition.py`.
 
-- The Localizer dataset now follows the BIDS organization.
+- The Localizer dataset now follows the :term:`BIDS` organization.
 
 Changes
 -------
