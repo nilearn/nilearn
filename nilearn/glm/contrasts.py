@@ -5,8 +5,6 @@ obtain fixed effect results.
 Author: Bertrand Thirion, Martin Perez-Guevara, Ana Luisa Pinho 2020
 """
 
-import json
-import os
 from warnings import warn
 
 import numpy as np
@@ -15,11 +13,6 @@ import pandas as pd
 
 from nilearn.input_data import NiftiMasker
 from nilearn._utils.glm import z_score
-from nilearn.reporting import glm_reporter
-from nilearn.plotting.matrix_plotting import (
-    plot_contrast_matrix,
-    plot_design_matrix,
-)
 
 DEF_TINY = 1e-50
 DEF_DOFMAX = 1e10
@@ -458,140 +451,3 @@ def _compute_fixed_effects_params(contrasts, variances, precision_weighted):
 
     fixed_fx_stat = fixed_fx_contrasts / np.sqrt(fixed_fx_variance)
     return fixed_fx_contrasts, fixed_fx_variance, fixed_fx_stat
-
-
-def _clean_contrast_name(contrast_name):
-    new_name = "".join(ch for ch in contrast_name if ch.isalnum())
-    if new_name != contrast_name:
-        warn(f"Contrast name '{contrast_name}' changed to '{new_name}'")
-    return new_name
-
-
-def save_glm_results(model, contrasts, out_dir=".", prefix=None):
-    """Save GLM results to BIDS-like files.
-
-    To output:
-    - design matrix
-    - contrast plot
-    - contrast-level stat maps
-    - model-level stat maps
-    - metadata
-    """
-    if isinstance(prefix, str) and not prefix.endswith("_"):
-        prefix += "_"
-    else:
-        prefix = ""
-
-    out_dir = os.path.abspath(out_dir)
-
-    # Write out design matrices to files.
-    if hasattr(model, "design_matrices_"):
-        design_matrices = model.design_matrices_
-    else:
-        design_matrices = [model.design_matrix_]
-
-    if len(design_matrices) > 1:
-        for i_run, dm in enumerate(design_matrices):
-            run_name = i_run + 1
-            dm_file = os.path.join(
-                out_dir,
-                "{}run-{}_design.tsv".format(prefix, run_name),
-            )
-            dm.to_csv(dm_file, sep="\t", index=False)
-
-            dm_fig_file = os.path.join(
-                out_dir,
-                "{}run-{}_design.svg".format(prefix, run_name),
-            )
-            dm_fig = plot_design_matrix(dm)
-            dm_fig.to_filename(dm_fig_file)
-    else:
-        dm_file = os.path.join(out_dir, "{}design.tsv".format(prefix))
-        dm.to_csv(dm_file, sep="\t", index=False)
-
-        dm_fig_file = os.path.join(out_dir, "{}design.svg".format(prefix))
-        dm_fig = plot_design_matrix(dm)
-        dm_fig.to_filename(dm_fig_file)
-
-    # Save contrast figures
-    contrasts = glm_reporter._coerce_to_dict(contrasts)
-    # contrast_plots = glm_reporter._plot_contrasts(contrasts, design_matrices)
-
-    statistical_maps = glm_reporter._make_stat_maps(
-        model,
-        contrasts,
-        output_type="all",
-    )
-
-    # Model metadata
-    metadata_file = os.path.join(out_dir, "dataset_description.json")
-
-    selected_attributes = [
-        "subject_label",
-        "drift_model",
-        "hrf_model",
-        "standardize",
-        "t_r",
-        "high_pass",
-        "target_shape",
-        "signal_scaling",
-        "drift_order",
-        "scaling_axis",
-        "smoothing_fwhm",
-        "target_affine",
-        "slice_time_ref",
-        "fir_delays",
-    ]
-    # attribute_units = {
-    #     "t_r": "s",
-    #     "high_pass": "Hz",
-    # }
-    attr_rename = {
-        "t_r": "RepetitionTime",
-    }
-
-    selected_attributes.sort()
-    model_attributes = {
-        attr_name: getattr(model, attr_name)
-        for attr_name in selected_attributes
-        if hasattr(model, attr_name)
-    }
-    model_attributes = {
-        attr_rename.get(k, k): v for k, v in model_attributes.items()
-    }
-
-    with open(metadata_file, "w") as fo:
-        json.dump(model_attributes, fo, indent=4, sort_keys=True)
-
-    for contrast_name, contrast_maps in statistical_maps.items():
-        contrast_name = _clean_contrast_name(contrast_name)
-
-        # Extract stat_type
-        stat_type = "t"  # TODO: implement a real solution
-
-        # Contrast-level images
-        MAPPING = {
-            "effect_size": "{}contrast-{}_stat-effect_statmap.nii.gz".format(prefix, contrast_name),
-            "stat": "{}contrast-{}_stat-{}_statmap.nii.gz".format(prefix, contrast_name, stat_type),
-            "effect_variance": "{}contrast-{}_stat-variance_statmap.nii.gz".format(prefix, contrast_name),
-            "z_score": "{}contrast-{}_stat-z_statmap.nii.gz".format(prefix, contrast_name),
-            "p_value": "{}contrast-{}_stat-p_statsmap.nii.gz".format(prefix, contrast_name),
-        }
-        # Rename keys
-        renamed_contrast_maps = {
-            MAPPING.get(k, k): v for k, v in contrast_maps.items()
-        }
-
-        for map_name, img in renamed_contrast_maps.items():
-            out_file = os.path.join(out_dir, map_name)
-            img.to_filename(out_file)
-
-    # Model-level images
-    attributes = {
-        "residuals": "{}stat-errorts_statmap.nii.gz".format(prefix),
-        "r_square": "{}stat-rSquare_statmap.nii.gz".format(prefix),
-    }
-    for attr, map_name in attributes.items():
-        img = getattr(model, attr)
-        out_file = os.path.join(out_dir, map_name)
-        img.to_filename(out_file)

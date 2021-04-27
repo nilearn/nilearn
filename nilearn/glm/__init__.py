@@ -10,7 +10,6 @@ from nilearn.glm.contrasts import (
     compute_fixed_effects,
     Contrast,
     expression_to_contrast_vector,
-    save_glm_results,
 )
 from nilearn.glm.model import (
     LikelihoodModelResults,
@@ -39,7 +38,6 @@ __all__ = [
     'compute_fixed_effects',
     'Contrast',
     'expression_to_contrast_vector',
-    'save_glm_results',
     'LikelihoodModelResults',
     'TContrastResults',
     'FContrastResults',
