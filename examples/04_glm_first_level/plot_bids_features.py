@@ -4,16 +4,17 @@ First level analysis of a complete BIDS dataset from openneuro
 
 
 Full step-by-step example of fitting a GLM to perform a first level analysis
-in an openneuro BIDS dataset. We demonstrate how BIDS derivatives can be
-exploited to perform a simple one subject analysis with minimal code.
-Details about the BIDS standard are available at http://bids.neuroimaging.io/.
+in an openneuro :term:`BIDS` dataset. We demonstrate how :term:`BIDS`
+derivatives can be exploited to perform a simple one subject analysis with
+minimal code. Details about the :term:`BIDS` standard are available at
+`http://bids.neuroimaging.io/ <http://bids.neuroimaging.io/>`_.
 We also demonstrate how to download individual groups of files from the
 Openneuro s3 bucket.
 
 More specifically:
 
-1. Download an fMRI BIDS dataset with derivatives from openneuro.
-2. Extract first level model objects automatically from the BIDS dataset.
+1. Download an :term:`fMRI` :term:`BIDS` dataset with derivatives from openneuro.
+2. Extract first level model objects automatically from the :term:`BIDS` dataset.
 3. Demonstrate Quality assurance of Nistats estimation against available FSL.
    estimation in the openneuro dataset.
 4. Display contrast plot and uncorrected first level statistics table report.
@@ -30,7 +31,7 @@ To run this example, you must launch IPython via ``ipython
 ##############################################################################
 # Fetch openneuro BIDS dataset
 # -----------------------------
-# We download one subject from the stopsignal task in the ds000030 V4 BIDS
+# We download one subject from the stopsignal task in the ds000030 V4 :term:`BIDS`
 # dataset available in openneuro.
 # This dataset contains the necessary information to run a statistical analysis
 # using Nilearn. The dataset also contains statistical results from a previous
@@ -54,14 +55,14 @@ data_dir, _ = fetch_openneuro_dataset(urls=urls)
 # Obtain FirstLevelModel objects automatically and fit arguments
 # ---------------------------------------------------------------
 # From the dataset directory we automatically obtain FirstLevelModel objects
-# with their subject_id filled from the BIDS dataset. Moreover we obtain,
+# with their subject_id filled from the :term:`BIDS` dataset. Moreover we obtain,
 # for each model, the list of run images and their respective events and
 # confound regressors. Those are inferred from the confounds.tsv files
-# available in the BIDS dataset.
+# available in the :term:`BIDS` dataset.
 # To get the first level models we have to specify the dataset directory,
 # the task_label and the space_label as specified in the file names.
 # We also have to provide the folder with the desired derivatives, that in this
-# case were produced by the fmriprep BIDS app.
+# case were produced by the fmriprep :term:`BIDS` app.
 from nilearn.glm.first_level import first_level_from_bids
 task_label = 'stopsignal'
 space_label = 'MNI152NLin2009cAsym'

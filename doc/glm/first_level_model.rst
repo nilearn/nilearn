@@ -39,7 +39,7 @@ Event-based
 
 To create an event-based design matrix, information about the trial type, onset time and duration of the
 events in the experiment are necessary. This can be provided by the user, or be part of the dataset if
-using a BIDS-compatible dataset or one of the nilearn dataset fetcher functions like
+using a :term:`BIDS`-compatible dataset or one of the nilearn dataset fetcher functions like
 :func:`nilearn.datasets.fetch_spm_multimodal_fmri`,
 :func:`nilearn.datasets.fetch_language_localizer_demo_dataset`, etc.
 

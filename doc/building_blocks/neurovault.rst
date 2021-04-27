@@ -57,8 +57,8 @@ every key, value pair in ``collection_terms`` will be discarded. We use
 ``image_terms`` in the same way to filter images.
 
 For example, many images on Neurovault have a "modality" field in their
-metadata.  BOLD images should have it set to "fMRI-BOLD". We can ask for BOLD
-images only :
+metadata.  :term:`BOLD` images should have it set to "fMRI-BOLD".
+We can ask for :term:`BOLD` images only :
 
     >>> bold = fetch_neurovault(image_terms={'modality': 'fMRI-BOLD'}, # doctest: +SKIP
     ... max_images=7) # doctest: +SKIP

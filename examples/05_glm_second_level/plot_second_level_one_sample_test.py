@@ -2,12 +2,12 @@
 Second-level fMRI model: one sample test
 ========================================
 
-Full step-by-step example of fitting a GLM to perform a second-level analysis
+Full step-by-step example of fitting a :term:`GLM` to perform a second-level analysis
 (one-sample test) and visualizing the results.
 
 More specifically:
 
-1. A sequence of subject fMRI button press contrasts is downloaded.
+1. A sequence of subject :term:`fMRI` button press contrasts is downloaded.
 2. A mask of the useful brain volume is computed.
 3. A one-sample t-test is applied to the brain maps.
 
@@ -21,9 +21,10 @@ hemisphere, negative in the left hemisphere).
 #########################################################################
 # Fetch dataset
 # --------------
-# We download a list of left vs right button press contrasts from a localizer
-# dataset. Note that we fetch individual t-maps that represent the Bold
-# activity estimate divided by the uncertainty about this estimate.
+# We download a list of left vs right button press :term:`contrasts<contrast>`
+# from a localizer dataset. Note that we fetch individual t-maps that represent
+# the :term:`Bold<BOLD>` activity estimate divided by the uncertainty about this
+# estimate.
 from nilearn.datasets import fetch_localizer_contrasts
 n_subjects = 16
 data = fetch_localizer_contrasts(["left vs right button press"], n_subjects,
@@ -65,7 +66,7 @@ second_level_model = second_level_model.fit(second_level_input,
                                             design_matrix=design_matrix)
 
 ##########################################################################
-# To estimate the contrast is very simple. We can just provide the column
+# To estimate the :term:`contrast` is very simple. We can just provide the column
 # name of the design matrix.
 z_map = second_level_model.compute_contrast(output_type='z_score')
 

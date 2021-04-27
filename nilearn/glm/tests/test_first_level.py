@@ -23,6 +23,7 @@ from nilearn.glm.first_level import (FirstLevelModel, first_level_from_bids,
 from nilearn.glm.first_level.design_matrix import (
     check_design_matrix, make_first_level_design_matrix)
 from nilearn.image import get_data
+from nilearn.input_data import NiftiMasker
 
 BASEDIR = os.path.dirname(os.path.abspath(__file__))
 FUNCFILE = os.path.join(BASEDIR, 'functional.nii.gz')
@@ -31,6 +32,35 @@ FUNCFILE = os.path.join(BASEDIR, 'functional.nii.gz')
 def test_high_level_glm_one_session():
     shapes, rk = [(7, 8, 9, 15)], 3
     mask, fmri_data, design_matrices = generate_fake_fmri_data_and_design(shapes, rk)
+
+    # Give an unfitted NiftiMasker as mask_img and check that we get an error
+    masker = NiftiMasker(mask)
+    with pytest.raises(ValueError,
+                       match="It seems that NiftiMasker has not been fitted."):
+        single_session_model = FirstLevelModel(mask_img=masker).fit(
+                fmri_data[0], design_matrices=design_matrices[0])
+
+    # Give a fitted NiftiMasker with a None mask_img_ attribute
+    # and check that the masker parameters are overriden by the
+    # FirstLevelModel parameters
+    masker.fit()
+    masker.mask_img_ = None
+    with pytest.warns(UserWarning,
+                      match="Parameter memory of the masker overriden"):
+        single_session_model = FirstLevelModel(mask_img=masker).fit(
+                fmri_data[0], design_matrices=design_matrices[0])
+
+    # Give a fitted NiftiMasker
+    masker = NiftiMasker(mask)
+    masker.fit()
+    single_session_model = FirstLevelModel(mask_img=masker).fit(
+                    fmri_data[0], design_matrices=design_matrices[0])
+    assert single_session_model.masker_ == masker
+
+    # Call with verbose (improve coverage)
+    single_session_model = FirstLevelModel(mask_img=None,
+                                           verbose=1).fit(
+        fmri_data[0], design_matrices=design_matrices[0])
 
     single_session_model = FirstLevelModel(mask_img=None).fit(
         fmri_data[0], design_matrices=design_matrices[0])
@@ -308,6 +338,7 @@ def test_fmri_inputs():
         des = pd.DataFrame(np.ones((T, 1)), columns=[''])
         des_fname = 'design.csv'
         des.to_csv(des_fname)
+        events = basic_paradigm()
         for fi in func_img, FUNCFILE:
             for d in des, des_fname:
                 FirstLevelModel().fit(fi, design_matrices=d)
@@ -318,6 +349,20 @@ def test_fmri_inputs():
                     # test with confounds
                     FirstLevelModel(mask_img=mask).fit([fi], design_matrices=[d],
                                                     confounds=conf)
+
+                # Provide t_r, confounds, and events but no design matrix
+                FirstLevelModel(mask_img=mask, t_r=2.0).fit(
+                    fi,
+                    confounds=pd.DataFrame([0] * 10, columns=['conf']),
+                    events=events)
+
+                # Same, but check that an error is raised if there is a
+                # mismatch in the dimensions of the inputs
+                with pytest.raises(ValueError,
+                                   match="Rows in confounds does not match"):
+                    FirstLevelModel(mask_img=mask, t_r=2.0).fit(
+                            fi, confounds=conf, events=events)
+
                 # test with confounds as numpy array
                 FirstLevelModel(mask_img=mask).fit([fi], design_matrices=[d],
                                                    confounds=conf.values)
@@ -454,6 +499,10 @@ def test_first_level_contrast_computation():
             model.compute_contrast(c1)
         # fit model
         model = model.fit([func_img, func_img], [events, events])
+        # Check that an error is raised for invalid contrast_def
+        with pytest.raises(ValueError,
+                           match="contrast_def must be an array or str or list"):
+            model.compute_contrast(37)
         # smoke test for different contrasts in fixed effects
         model.compute_contrast([c1, c2])
         # smoke test for same contrast in fixed effects
@@ -506,6 +555,26 @@ def test_first_level_from_bids():
         with pytest.raises(TypeError):
             first_level_from_bids(bids_path, 'main', 'MNI',
                                          model_init=[])
+        with pytest.raises(TypeError,
+                           match="space_label must be a string"):
+            first_level_from_bids(bids_path, 'main',
+                                  space_label=42)
+
+        with pytest.raises(TypeError,
+                           match="img_filters must be a list"):
+            first_level_from_bids(bids_path, 'main',
+                                  img_filters="foo")
+
+        with pytest.raises(TypeError,
+                           match="filters in img"):
+            first_level_from_bids(bids_path, 'main',
+                                  img_filters=[(1, 2)])
+
+        with pytest.raises(ValueError,
+                           match="field foo is not a possible filter."):
+            first_level_from_bids(bids_path, 'main',
+                                  img_filters=[("foo", "bar")])
+
         # test output is as expected
         models, m_imgs, m_events, m_confounds = first_level_from_bids(
             bids_path, 'main', 'MNI', [('desc', 'preproc')])
@@ -575,6 +644,12 @@ def test_first_level_with_no_signal_scaling():
                                         columns=list(
                                             'abcdefghijklmnopqrstuvwxyz')[:rk])
                            )
+    # Check error with invalid signal_scaling values
+    with pytest.raises(ValueError,
+                       match="signal_scaling must be"):
+        FirstLevelModel(mask_img=False, noise_model='ols',
+                        signal_scaling="foo")
+
     first_level = FirstLevelModel(mask_img=False, noise_model='ols',
                                         signal_scaling=False)
     fmri_data.append(Nifti1Image(np.zeros((1, 1, 1, 2)) + 6, np.eye(4)))
@@ -598,10 +673,31 @@ def test_first_level_residuals():
     for i in range(len(design_matrices)):
         design_matrices[i].iloc[:, 0] = 1
 
-    model = FirstLevelModel(mask_img=mask, minimize_memory=False,
+    # Check that voxelwise model attributes cannot be
+    # accessed if minimize_memory is set to True
+    model = FirstLevelModel(mask_img=mask, minimize_memory=True,
                             noise_model='ols')
     model.fit(fmri_data, design_matrices=design_matrices)
 
+    with pytest.raises(ValueError,
+                       match="To access voxelwise attributes"):
+        residuals = model.residuals[0]
+
+    model = FirstLevelModel(mask_img=mask, minimize_memory=False,
+                            noise_model='ols')
+
+    # Check that trying to access residuals without fitting
+    # raises an error
+    with pytest.raises(ValueError,
+                       match="The model has not been fit yet"):
+        residuals = model.residuals[0]
+
+    model.fit(fmri_data, design_matrices=design_matrices)
+
+    # For coverage
+    with pytest.raises(ValueError,
+                       match="attribute must be one of"):
+        model._get_voxelwise_model_attribute("foo", True)
     residuals = model.residuals[0]
     mean_residuals = model.masker_.transform(residuals).mean(0)
     assert_array_almost_equal(mean_residuals, 0)

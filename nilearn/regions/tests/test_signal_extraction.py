@@ -74,7 +74,7 @@ def test_signals_extraction_with_labels():
     n_instants = 11
     n_regions = 8  # must be 8
 
-    eps = np.finfo(np.float).eps
+    eps = np.finfo(np.float64).eps
     # data
     affine = np.eye(4)
     signals = generate_timeseries(n_instants, n_regions)
@@ -87,7 +87,7 @@ def test_signals_extraction_with_labels():
     mask_4d_img = nibabel.Nifti1Image(np.ones(shape + (2, )), affine)
 
     # labels
-    labels_data = np.zeros(shape, dtype=np.int)
+    labels_data = np.zeros(shape, dtype=int)
     h0 = shape[0] // 2
     h1 = shape[1] // 2
     h2 = shape[2] // 2

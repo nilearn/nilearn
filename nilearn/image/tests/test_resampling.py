@@ -488,7 +488,7 @@ def test_resampling_nan():
         # create deterministic data, padded with one
         # voxel thickness of zeros
         core_data = np.arange(np.prod(core_shape)
-                              ).reshape(core_shape).astype(np.float)
+                              ).reshape(core_shape).astype(np.float64)
         # Introduce a nan
         core_data[2, 2:4, 1] = np.nan
         full_data_shape = np.array(core_shape) + 2
