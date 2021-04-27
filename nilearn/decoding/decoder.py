@@ -488,7 +488,7 @@ class _BaseDecoder(LinearRegression, CacheMixin):
         self.memory_ = _check_memory(self.memory, self.verbose)
 
         X = self._apply_mask(X)
-        X, y = check_X_y(X, y, dtype=np.float, multi_output=True)
+        X, y = check_X_y(X, y, dtype=np.float64, multi_output=True)
 
         if y.ndim == 1:
             self.n_outputs_ = 1
@@ -677,7 +677,7 @@ class _BaseDecoder(LinearRegression, CacheMixin):
 
         if self.is_classification:
             if len(scores.shape) == 1:
-                indices = (scores > 0).astype(np.int)
+                indices = (scores > 0).astype(int)
             else:
                 indices = scores.argmax(axis=1)
             return self.classes_[indices]
@@ -739,7 +739,7 @@ class _BaseDecoder(LinearRegression, CacheMixin):
             for k in params:
                 self.cv_params_[classes[class_index]].setdefault(
                     k, []).append(params[k])
- 
+
             if (n_problems <= 2) and self.is_classification:
                 # Binary classification
                 other_class = np.setdiff1d(classes, classes[class_index])[0]
