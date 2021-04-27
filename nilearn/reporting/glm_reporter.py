@@ -973,7 +973,7 @@ def _dataframe_to_html(df, precision, **kwargs):
 def _clean_contrast_name(contrast_name):
     new_name = "".join(ch for ch in contrast_name if ch.isalnum())
     if new_name != contrast_name:
-        warn(f"Contrast name '{contrast_name}' changed to '{new_name}'")
+        warnings.warn(f"Contrast name '{contrast_name}' changed to '{new_name}'")
     return new_name
 
 
@@ -1014,14 +1014,14 @@ def save_glm_results(model, contrasts, out_dir=".", prefix=None):
                 "{}run-{}_design.svg".format(prefix, run_name),
             )
             dm_fig = plot_design_matrix(dm)
-            dm_fig.to_filename(dm_fig_file)
+            dm_fig.figure.savefig(dm_fig_file)
     else:
         dm_file = os.path.join(out_dir, "{}design.tsv".format(prefix))
         dm.to_csv(dm_file, sep="\t", index=False)
 
         dm_fig_file = os.path.join(out_dir, "{}design.svg".format(prefix))
         dm_fig = plot_design_matrix(dm)
-        dm_fig.to_filename(dm_fig_file)
+        dm_fig.figure.savefig(dm_fig_file)
 
     # Save contrast figures
     contrasts = _coerce_to_dict(contrasts)
@@ -1102,6 +1102,10 @@ def save_glm_results(model, contrasts, out_dir=".", prefix=None):
         "r_square": "{}stat-rSquare_statmap.nii.gz".format(prefix),
     }
     for attr, map_name in attributes.items():
+        print("Extracting and saving {}".format(attr))
         img = getattr(model, attr)
+        if isinstance(img, list):
+            img = img[0]
+
         out_file = os.path.join(out_dir, map_name)
         img.to_filename(out_file)
