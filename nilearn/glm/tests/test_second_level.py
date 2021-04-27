@@ -178,7 +178,7 @@ def test_infer_effect_maps():
     assert _infer_effect_maps([fmri_data[0]], None) == [fmri_data[0]]
     contrast = np.eye(rk)[1]
     second_level_input = [FirstLevelModel(mask_img=mask)] * 2
-    for i,model in enumerate(second_level_input):
+    for i, model in enumerate(second_level_input):
         model.fit(fmri_data[i],
                   design_matrices=design_matrices[i])
     assert len(_infer_effect_maps(second_level_input, contrast)) == 2
