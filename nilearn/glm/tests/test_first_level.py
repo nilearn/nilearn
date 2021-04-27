@@ -368,8 +368,8 @@ def test_glm_AR_estimates():
         _yule_walker(Y_orig, 0)
     with pytest.raises(ValueError):
         _yule_walker(Y_orig, -2)
-    with pytest.raises(TypeError):
-        _yule_walker(np.zeros((31, 1)), 2)
+    with pytest.raises(TypeError, match='at least 1 dim'):
+        _yule_walker(np.array(0.), 2)
 
 
 def test_scaling():

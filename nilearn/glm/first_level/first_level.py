@@ -75,24 +75,29 @@ def _ar_model_fit(X, val, Y):
 
 def _yule_walker(x, order):
     """Compute Yule-Walker (adapted from MNE and statsmodels).
-    Operates in-place.
+
+    Operates along the last axis of x.
     """
-    from scipy import linalg
+    from scipy.linalg import toeplitz
     if order < 1:
         raise ValueError("AR order must be positive")
     if type(order) is not int:
         raise TypeError("AR order must be an integer")
-    if x.ndim is not 1:
-        raise TypeError("Input data must have 1 dimension")
+    if x.ndim < 1:
+        raise TypeError("Input data must have at least 1 dimension")
 
     denom = x.shape[-1] - np.arange(order + 1)
-    r = np.zeros(order + 1, np.float64)
+    n = np.prod(np.array(x.shape[:-1], int))
+    r = np.zeros((n, order + 1), np.float64)
     y = x - x.mean()
-    r[0] += np.dot(y, y)
+    y.shape = (n, x.shape[-1])  # inplace
+    r[:, 0] += (y[:, np.newaxis, :] @ y[:, :, np.newaxis])[:, 0, 0]
     for k in range(1, order + 1):
-        r[k] += np.dot(y[0:-k], y[k:])
-    r /= denom * len(y)
-    rho = linalg.solve(linalg.toeplitz(r[:-1]), r[1:])
+        r[:, k] += (y[:, np.newaxis, 0:-k] @ y[:, k:, np.newaxis])[:, 0, 0]
+    r /= denom * x.shape[-1]
+    rt = np.array([toeplitz(rr[:-1]) for rr in r], np.float64)
+    rho = np.linalg.solve(rt, r[:, 1:])
+    rho.shape = x.shape[:-1] + (order,)
     return rho
 
 
@@ -166,10 +171,7 @@ def run_glm(Y, X, noise_model='ar1', bins=100, n_jobs=1, verbose=0):
             raise ValueError(err_msg)
 
         # compute the AR coefficients
-        ar_coef_ = [_yule_walker(ols_result.residuals[:, res],
-                                 ar_order)
-                    for res in range(ols_result.residuals.shape[1])]
-        ar_coef_ = np.array(ar_coef_)
+        ar_coef_ = _yule_walker(ols_result.residuals.T, ar_order)
         del ols_result
         if len(ar_coef_[0]) == 1:
             ar_coef_ = ar_coef_[:, 0]
