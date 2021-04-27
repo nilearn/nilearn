@@ -574,7 +574,7 @@ def compute_gray_matter_mask(target_img, threshold=.5,
                               mask_type='whole-brain')
 
 
-def compute_brain_mask(target_img, threshold=.5, connected=True,
+def compute_brain_mask(target_img, threshold=.2, connected=True,
                        opening=2, memory=None, verbose=0,
                        mask_type='whole-brain'):
     """Compute the whole-brain, gray-matter or white-matter mask.
