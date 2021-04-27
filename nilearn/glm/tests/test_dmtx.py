@@ -277,7 +277,7 @@ def test_design_matrix8():
 
 
 def test_design_matrix9():
-    # basic test based on basic_paradigm() and FIR
+    # basic test based on basic_paradigm and FIR
     tr = 1.0
     frame_times = np.linspace(0, 127 * tr, 128)
     events = basic_paradigm()
@@ -342,7 +342,7 @@ def test_design_matrix14():
 
 
 def test_design_matrix15():
-    # basic test based on basic_paradigm(), plus user supplied regressors
+    # basic test based on basic_paradigm, plus user supplied regressors
     rng = np.random.RandomState(42)
     tr = 1.0
     frame_times = np.linspace(0, 127 * tr, 128)

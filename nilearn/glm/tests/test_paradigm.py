@@ -6,14 +6,11 @@ not whether it is exact.
 """
 
 import os
-# import pytest
+import pytest
 import numpy as np
 import pandas as pd
 from numpy.testing import assert_array_equal
-
 from nilearn._utils.data_gen import basic_paradigm
-
-
 
 def duplicate_events_paradigm():
     conditions = ['c0', 'c0', 'c0', 'c0','c1', 'c1']

@@ -24,7 +24,6 @@ from nilearn.glm.first_level.design_matrix import (
     check_design_matrix, make_first_level_design_matrix)
 from nilearn.image import get_data
 from nilearn.input_data import NiftiMasker
-
 from nilearn._utils.data_gen import basic_paradigm
 
 BASEDIR = os.path.dirname(os.path.abspath(__file__))
@@ -435,7 +434,7 @@ def test_first_level_glm_computation():
         mask, FUNCFILE, _ = write_fake_fmri_data_and_design(shapes)
         FUNCFILE = FUNCFILE[0]
         func_img = load(FUNCFILE)
-        # basic test based on basic_paradigm() and glover hrf
+        # basic test based on basic_paradigm and glover hrf
         t_r = 10.0
         slice_time_ref = 0.
         events = basic_paradigm()
