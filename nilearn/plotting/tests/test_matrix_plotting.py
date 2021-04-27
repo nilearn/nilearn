@@ -30,6 +30,9 @@ def test_matrix_plotting():
     # test if it returns an AxesImage
     ax.axes.set_title('Title')
     plt.close()
+    ax = plot_matrix(mat, labels=labels, tri='diag')
+    ax.axes.set_title('Title')
+    plt.close()
     # test if an empty list works as an argument for labels
     ax = plot_matrix(mat, labels=[])
     plt.close()

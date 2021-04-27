@@ -7,192 +7,308 @@ version: 2.1
 
 commands:
 
-  preinstall:
-    description: "Cleans up unused packages; Updates system packages"
-    steps:
-      - run:
-          name: Remove conflicting packages
-          command: |
-            # Get rid of existing virtualenvs on circle ci as they conflict with conda.
-            # Trick found here:
-            # https://discuss.circleci.com/t/disable-autodetection-of-project-or-application-of-python-venv/235/10
-            cd && rm -rf ~/.pyenv && rm -rf ~/virtualenvs
+    restore_data_cache:
+        description: "Restore data cache"
+        steps:
+            - run:
+                name: Get cache key
+                command: |
+                    if [[ $(cat restore.txt) == "true" ]]; then
+                        date +%U > week_num;
+                    else
+                        echo 'missing' > week_num;
+                    fi
+            - restore_cache:
+                keys:
+                    - v1-small-cache-{{ checksum "week_num" }}
 
-            # We need to remove conflicting texlive packages.
-            sudo -E apt-get -yq remove texlive-binaries --purge
-      - run:
-          name: Install packages for make -C doc check
-          command: |
-            # Installing required packages for `make -C doc check command` to work.
-            sudo -E apt-get -yq update
-            sudo -E apt-get -yq --no-install-suggests --no-install-recommends --force-yes install dvipng texlive-latex-base texlive-latex-extra
+            - restore_cache:
+                keys:
+                    - v1-adhd-{{ checksum "week_num" }}
 
-  restore_from_cache:
-    description: "Restores the cache of previously built docs & python packages if present"
+            - restore_cache:
+                keys:
+                    - v1-allen_rsn_2011-{{ checksum "week_num" }}
+
+            - restore_cache:
+                keys:
+                    - v1-brainomics_localizer-{{ checksum "week_num" }}
+
+            - restore_cache:
+                keys:
+                    - v1-development_fmri-{{ checksum "week_num" }}
+
+            - restore_cache:
+                keys:
+                    - v1-ds000030-{{ checksum "week_num" }}
+
+            - restore_cache:
+                keys:
+                    - v1-fiac_nilearn.glm-{{ checksum "week_num" }}
+
+            - restore_cache:
+                keys:
+                    - v1-fMRI-language-localizer-demo-dataset-{{ checksum "week_num" }}
+
+            - restore_cache:
+                keys:
+                    - v1-fsl-{{ checksum "week_num" }}
+
+            - restore_cache:
+                keys:
+                    - v1-haxby2001-{{ checksum "week_num" }}
+
+            - restore_cache:
+                keys:
+                    - v1-icbm152_2009-{{ checksum "week_num" }}
+
+            - restore_cache:
+                keys:
+                    - v1-jimura_poldrack_2012_zmaps-{{ checksum "week_num" }}
+
+            - restore_cache:
+                keys:
+                    - v1-localizer_first_level-{{ checksum "week_num" }}
+
+            - restore_cache:
+                keys:
+                    - v1-miyawaki2008-{{ checksum "week_num" }}
+
+            - restore_cache:
+                keys:
+                    - v1-nki_enhanced_surface-{{ checksum "week_num" }}
+
+            - restore_cache:
+                keys:
+                    - v1-oasis1-{{ checksum "week_num" }}
+
+            - restore_cache:
+                keys:
+                    - v1-smith_2009-{{ checksum "week_num" }}
+
+            - restore_cache:
+                keys:
+                    - v1-spm_auditory-{{ checksum "week_num" }}
+
+            - restore_cache:
+                keys:
+                    - v1-spm_multimodal_fmri-{{ checksum "week_num" }}
+
+
+    save_data_cache:
+        description: "Cache downloaded data"
+        steps:
+            - run:
+                name: Generate cache keys
+                command: |
+                    date +%U > week_num;
+            - save_cache:
+                key: v1-small-cache-{{ checksum "week_num" }} # Small datasets are combined (<= 100 MB)
+                paths:
+                    - ~/nilearn_data/basc_multiscale_2015 # <  1 MB
+                    - ~/nilearn_data/destrieux_surface    # <  1 MB
+                    - ~/nilearn_data/difumo_atlases       # ~  4 MB
+                    - ~/nilearn_data/fsaverage            # ~ 28 MB
+                    - ~/nilearn_data/Megatrawls           # ~  9 MB
+                    - ~/nilearn_data/msdl_atlas           # ~ 21 MB
+                    - ~/nilearn_data/neurovault           # ~ 13 MB
+                    - ~/nilearn_data/pauli_2017           # ~  1 MB
+                    - ~/nilearn_data/yeo_2011             # ~  3 MB
+      
+            - save_cache:
+                key: v1-adhd-{{ checksum "week_num" }}
+                paths:
+                    - ~/nilearn_data/adhd                 # ~ 45 MB
+
+            - save_cache:
+                key: v1-allen_rsn_2011-{{ checksum "week_num" }}
+                paths:
+                    - ~/nilearn_data/allen_rsn_2011       # ~ 32 MB
+
+            - save_cache:
+                key: v1-brainomics_localizer-{{ checksum "week_num" }}
+                paths:
+                    - ~/nilearn_data/brainomics_localizer # ~ 66 MB
+
+            - save_cache:
+                key: v1-development_fmri-{{ checksum "week_num" }}
+                paths:
+                    - ~/nilearn_data/development_fmri     # ~373 MB
+
+            - save_cache:
+                key: v1-ds000030-{{ checksum "week_num" }}
+                paths:
+                    - ~/nilearn_data/ds000030             # ~832 MB
+
+            - save_cache:
+                key: v1-fiac_nilearn.glm-{{ checksum "week_num" }}
+                paths:
+                    - ~/nilearn_data/fiac_nilearn.glm     # ~ 82 MB
+
+            - save_cache:
+                key: v1-fMRI-language-localizer-demo-dataset-{{ checksum "week_num" }}
+                paths:
+                    - ~/nilearn_data/fMRI-language-localizer-demo-dataset # ~ 750 MB
+
+            - save_cache:
+                key: v1-fsl-{{ checksum "week_num" }}
+                paths:
+                    - ~/nilearn_data/fsl                  # ~ 30 MB
+
+            - save_cache:
+                key: v1-haxby2001-{{ checksum "week_num" }}
+                paths:
+                    - ~/nilearn_data/haxby2001            # ~302 MB
+
+            - save_cache:
+                key: v1-icbm152_2009-{{ checksum "week_num" }}
+                paths:
+                    - ~/nilearn_data/icbm152_2009         # ~ 63 MB
+
+            - save_cache:
+                key: v1-jimura_poldrack_2012_zmaps-{{ checksum "week_num" }}
+                paths:
+                    - ~/nilearn_data/jimura_poldrack_2012_zmaps # ~ 105 MB
+
+            - save_cache:
+                key: v1-localizer_first_level-{{ checksum "week_num" }}
+                paths:
+                    - ~/nilearn_data/localizer_first_level # ~ 35 MB
+
+            - save_cache:
+                key: v1-miyawaki2008-{{ checksum "week_num" }}
+                paths:
+                    - ~/nilearn_data/miyawaki2008          # ~181 MB
+
+            - save_cache:
+                key: v1-nki_enhanced_surface-{{ checksum "week_num" }}
+                paths:
+                    - ~/nilearn_data/nki_enhanced_surface  # ~ 85 MB
+
+            - save_cache:
+                key: v1-oasis1-{{ checksum "week_num" }}
+                paths:
+                    - ~/nilearn_data/oasis1                # ~913 MB
+
+            - save_cache:
+                key: v1-smith_2009-{{ checksum "week_num" }}
+                paths:
+                    - ~/nilearn_data/smith_2009            # ~171 MB
+
+            - save_cache:
+                key: v1-spm_auditory-{{ checksum "week_num" }}
+                paths:
+                    - ~/nilearn_data/spm_auditory          # ~230 MB
+
+            - save_cache:
+                key: v1-spm_multimodal_fmri-{{ checksum "week_num" }}
+                paths:
+                    - ~/nilearn_data/spm_multimodal_fmri   # ~227 MB
+
+jobs:
+
+  build_docs:
+    
+    docker:
+      - image: circleci/python:3.8
+
     steps:
-      - run:
-          name: Generate cache keys from today's date for built docs & week number for python packages
-          command: |
-            date +%F > today
-            date +%U > week_num
       - restore_cache:
           keys:
-            - v1-packages+datasets-{{ checksum "week_num" }}-{{ checksum ".circleci/packages-cache-timestamp" }}
-            - v1-packages+datasets-U3h5YwdTXfPsjYsVouLcVkFBnD0wYM_jIjjA+pc_eqM=
-            - v1-packages+datasets
-      - restore_cache:
-         key: v1-docs-{{ .Branch }}-{{ checksum "today" }}-{{ checksum ".circleci/docs-cache-timestamp" }}
-
-  cache_aware_conda_setup:
-    description: "Downloads & installs conda if not restored by cache"
-    steps:
+              - source-cache
+      - checkout
       - run:
-          name: Download & install conda if absent
+          name: Complete checkout
           command: |
-            if
-              ls $HOME/miniconda3/bin | grep conda -q
-            then
-              echo "(Mini)Conda already present from the cache."
-            else
-              wget https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh -O ~/miniconda.sh
-              chmod +x ~/miniconda.sh && ~/miniconda.sh -b
-            fi
+              if ! git remote -v | grep upstream; then
+                  git remote add upstream git://github.com/nilearn/nilearn.git
+              fi
+              git fetch upstream
+      - save_cache:
+          key: source-cache
+          paths:
+              - ".git"
       - run:
-          name: Setup conda path in env variables
+          name: Merge with upstream
           command: |
-            echo 'export PATH="$HOME/miniconda3/bin:$PATH"'  >> $BASH_ENV
+              echo $(git log -1 --pretty=%B) | tee gitlog.txt
+              echo "gitlog.txt = $(cat gitlog.txt)"
+              echo ${CI_PULL_REQUEST//*pull\//} | tee merge.txt
+              if [[ $(cat merge.txt) != "" ]]; then
+                  echo "Merging $(cat merge.txt)";
+                  git pull --ff-only upstream "refs/pull/$(cat merge.txt)/merge";
+              fi
       - run:
-          name: Create new conda env
+          name: determine force download
           command: |
-            if
-              conda env list | grep testenv
-            then
-              echo "Conda env testenv already exists courtesy of the cache."
-            else
-              conda create -n testenv -yq
-            fi
-
-  cache_ignorant_conda_setup:
-    description: "Downloads & installs only the fresh copy of conda."
-    steps:
+              commit_msg=$(git log -2 --format=oneline);
+              echo $commit_msg;
+              if [[ $commit_msg == *"[force download]"* ]]; then
+                echo "All datasets will be downloaded as requested.";
+                touch restore.txt;
+              else
+                echo "Data cache will be used if available.";
+                echo "true" | tee restore.txt;
+              fi
       - run:
-          name: setup conda afresh
+          name: setup conda
           command: |
-            wget https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh -O ~/miniconda.sh
-            chmod +x ~/miniconda.sh && ~/miniconda.sh -b
-            echo 'export PATH="$HOME/miniconda3/bin:$PATH"'  >> $BASH_ENV
-      - run: conda create -n testenv
-
-  install_dependencies:
-    description: "Installs the necessary Python packages"
-    steps:
+              wget https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh -O ~/miniconda.sh;
+              chmod +x ~/miniconda.sh && ~/miniconda.sh -b;
+              echo 'export PATH="$HOME/miniconda3/bin:$PATH"'  >> $BASH_ENV;
+      - run:
+          name: Install apt packages
+          command: |
+              ./tools/circleci_dependencies_apt.sh
       - run:
           name: Install packages in conda env
           command: |
-            conda install -n testenv python=3.7 numpy scipy scikit-learn matplotlib pandas \
-            lxml mkl sphinx numpydoc pillow pandas -yq
-            conda install -n testenv nibabel sphinx-gallery junit-xml -c conda-forge -yq
-
-  build_docs:
-    description: "Installs Nilearn & builds documentation using Sphinx's make html-strict"
-    steps:
+              ./tools/circleci_dependencies.sh
+      - restore_data_cache
       - run:
-          name: Building documentation
+          name: Find build type
           command: |
-            source activate testenv
-            pip install -e .
-            set -o pipefail && cd doc && make html-strict 2>&1 | tee log.txt
+              ./tools/circleci_build_type.sh
+      - run:
+          name: Verify build type
+          command: |
+              echo "PATTERN = $(cat pattern.txt)"
+              echo "BUILD = $(cat build.txt)"
+      - run:
+          name: build doc
+          command: |
+              source activate testenv;
+              echo "Conda active env = $CONDA_DEFAULT_ENV";
+              cd doc;
+              set -o pipefail;
+              PATTERN=$(cat ../pattern.txt) make $(cat ../build.txt) 2>&1 | tee log.txt;
           no_output_timeout: 7h
-
-  store_results:
-    description: "Stores build times and artifacts"
-    steps:
       - store_test_results:
           path: doc/_build/test-results
       - store_artifacts:
           path: doc/_build/test-results
+          destination: test-results
       - store_artifacts:
-          path: doc/_build/html
+          path: doc/_build/html/
+          destination: dev
       - store_artifacts:
-          path: coverage
+          path: doc/_build/html_stable
+          destination: stable
       - store_artifacts:
           path: doc/log.txt
-
-  save_to_cache:
-    description: "Caches the downloaded packages & buit docs."
-    steps:
-      - save_cache:
-          key: v1-packages+datasets-{{ checksum "week_num" }}-{{ checksum ".circleci/packages-cache-timestamp" }}
+      - persist_to_workspace:
+          root: doc/_build
           paths:
-            - ../nilearn_data
-            - ../miniconda3
-      - save_cache:
-          key: v1-docs-{{ .Branch }}-{{ checksum "today" }}-{{ checksum ".circleci/docs-cache-timestamp" }}
-          paths:
-            - doc
-
-
-jobs:
-
-  quick-build:
-    docker:
-      - image: circleci/python:3.7
-    environment:
-      DISTRIB: "conda"
-      PYTHON_VERSION: "3.7"
-      NUMPY_VERSION: "*"
-      SCIPY_VERSION: "*"
-      SCIKIT_LEARN_VERSION: "*"
-      JOBLIB_VERSION: "*"
-      MATPLOTLIB_VERSION: "*"
-
-    steps:
-      - checkout
-      - preinstall
-      - restore_from_cache
-      - cache_aware_conda_setup
-      - install_dependencies
-      - build_docs
-      - store_results
-      - save_to_cache
-
-  full-build:
-    docker:
-      - image: circleci/python:3.7
-    environment:
-      DISTRIB: "conda"
-      PYTHON_VERSION: "3.7"
-      NUMPY_VERSION: "*"
-      SCIPY_VERSION: "*"
-      SCIKIT_LEARN_VERSION: "*"
-      MATPLOTLIB_VERSION: "*"
-
-    steps:
-      - checkout
-      - preinstall
-      - cache_ignorant_conda_setup
-      - install_dependencies
-      - build_docs
-      - store_results
-
+              - html
+              - html_stable
+      - save_data_cache
 
 workflows:
   version: 2
-  push:
-    jobs:
-      - quick-build:
-          filters:
-            branches:
-              ignore:
-                - master
-                - test-circleci  # test branch to check if merges occur on master as expected.
 
-      - full-build:
-          filters:
-            branches:
-              only:
-                - master
-                - test-circleci  # test branch to check if merges occur on master as expected.
+  default:
+    jobs:
+      - build_docs
 
   nightly:
     triggers:
@@ -203,4 +319,4 @@ workflows:
               only:
                 - master
     jobs:
-      - full-build
+      - build_docs

@@ -221,6 +221,13 @@ def test_plot_surf_roi():
         plot_surf_roi(mesh, roi_map=roi_map, ax=plt.gca(), figure=None,
                       output_file=tmp_file.name, colorbar=True)
 
+    # Test nans handling
+    parcellation[::2] = np.nan
+    img = plot_surf_roi(mesh, roi_map=parcellation)
+    # Check that the resulting plot facecolors contain no transparent faces
+    # (last column equals zero) even though the texture contains nan values
+    assert(mesh[1].shape[0] ==
+           ((img._axstack.as_list()[0].collections[0]._facecolors[:, 3]) != 0).sum())
     # Save execution time and memory
     plt.close()
 

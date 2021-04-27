@@ -470,7 +470,7 @@ def test_new_img_like_mgz():
     """
 
     ref_img = nibabel.load(os.path.join(datadir, 'test.mgz'))
-    data = np.ones(get_data(ref_img).shape, dtype=np.bool)
+    data = np.ones(get_data(ref_img).shape, dtype=bool)
     affine = ref_img.affine
     new_img_like(ref_img, data, affine, copy_header=False)
 

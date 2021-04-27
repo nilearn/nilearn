@@ -219,7 +219,7 @@ def test_detrend():
     # Mean removal only (out-of-place)
     detrended = nisignal._detrend(x, inplace=False, type="constant")
     assert (abs(detrended.mean(axis=0)).max()
-                < 15. * np.finfo(np.float).eps)
+                < 15. * np.finfo(np.float64).eps)
 
     # out-of-place detrending. Use scipy as a reference implementation
     detrended = nisignal._detrend(x, inplace=False)
@@ -227,14 +227,14 @@ def test_detrend():
 
     # "x" must be left untouched
     np.testing.assert_almost_equal(original, x, decimal=14)
-    assert abs(detrended.mean(axis=0)).max() < 15. * np.finfo(np.float).eps
+    assert abs(detrended.mean(axis=0)).max() < 15. * np.finfo(np.float64).eps
     np.testing.assert_almost_equal(detrended_scipy, detrended, decimal=14)
     # for this to work, there must be no trends at all in "signals"
     np.testing.assert_almost_equal(detrended, signals, decimal=14)
 
     # inplace detrending
     nisignal._detrend(x, inplace=True)
-    assert abs(x.mean(axis=0)).max() < 15. * np.finfo(np.float).eps
+    assert abs(x.mean(axis=0)).max() < 15. * np.finfo(np.float64).eps
     # for this to work, there must be no trends at all in "signals"
     np.testing.assert_almost_equal(detrended_scipy, detrended, decimal=14)
     np.testing.assert_almost_equal(x, signals, decimal=14)
@@ -248,7 +248,7 @@ def test_detrend():
     detrended = nisignal._detrend(x.astype(np.int64), inplace=True,
                                   type="constant")
     assert (abs(detrended.mean(axis=0)).max() <
-                20. * np.finfo(np.float).eps)
+                20. * np.finfo(np.float64).eps)
 
 
 def test_mean_of_squares():
@@ -399,7 +399,7 @@ def test_clean_confounds():
     signals, noises, confounds = generate_signals(n_features=41,
                                                   n_confounds=5, length=45)
     # No signal: output must be zero.
-    eps = np.finfo(np.float).eps
+    eps = np.finfo(np.float64).eps
     noises1 = noises.copy()
     cleaned_signals = nisignal.clean(noises, confounds=confounds,
                                      detrend=True, standardize=False)
@@ -629,16 +629,35 @@ def test_clean_psc():
 
     signals, _, _ = generate_signals(n_features=n_features,
                                      length=n_samples)
+
+    # positive mean signal
     means = rng.randn(1, n_features)
-    signals += means
+    signals_pos_mean = signals + means
 
-    cleaned_signals = clean(signals, standardize='psc')
-    np.testing.assert_almost_equal(cleaned_signals.mean(0), 0)
+    # a mix of pos and neg mean signal
+    signals_mixed_mean = signals + np.append(means[:, :-3], -1 * means[:, -3:])
 
-    cleaned_signals.std(axis=0)
-    np.testing.assert_almost_equal(cleaned_signals.mean(0), 0)
-    np.testing.assert_almost_equal(cleaned_signals,
-                                   signals / signals.mean(0) * 100 - 100)
+    # both types should pass
+    for s in [signals_pos_mean, signals_mixed_mean]:
+        cleaned_signals = clean(s, standardize='psc')
+        np.testing.assert_almost_equal(cleaned_signals.mean(0), 0)
+
+        cleaned_signals.std(axis=0)
+        np.testing.assert_almost_equal(cleaned_signals.mean(0), 0)
+
+        tmp = (s - s.mean(0)) / np.abs(s.mean(0))
+        tmp *= 100
+        np.testing.assert_almost_equal(cleaned_signals, tmp)
+
+    # leave out the last 3 columns with a mean of zero to test user warning
+    signals_w_zero = signals + np.append(means[:, :-3], np.zeros((1, 3)))
+    cleaned_w_zero = clean(signals_w_zero, standardize='psc')
+    with pytest.warns(UserWarning) as records:
+        cleaned_w_zero = clean(signals_w_zero, standardize='psc')
+    psc_warning = sum('psc standardization strategy' in str(r.message)
+                         for r in records)
+    assert psc_warning == 1
+    np.testing.assert_equal(cleaned_w_zero[:, -3:].mean(0), 0)
 
 
 def test_clean_zscore():

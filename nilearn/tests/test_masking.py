@@ -342,7 +342,7 @@ def test_unmask():
             assert_array_equal(t[0], unmasked3D)
 
     # Error test: shape
-    vec_1D = np.empty((500,), dtype=np.int)
+    vec_1D = np.empty((500,), dtype=int)
     pytest.raises(TypeError, unmask, vec_1D, mask_img)
     pytest.raises(TypeError, unmask, [vec_1D], mask_img)
 
@@ -352,19 +352,19 @@ def test_unmask():
 
     # Error test: mask type
     with pytest.raises(TypeError, match='mask must be a boolean array'):
-        _unmask_3d(vec_1D, mask.astype(np.int))
+        _unmask_3d(vec_1D, mask.astype(int))
     with pytest.raises(TypeError, match='mask must be a boolean array'):
         _unmask_4d(vec_2D, mask.astype(np.float64))
 
     # Transposed vector
-    transposed_vector = np.ones((np.sum(mask), 1), dtype=np.bool)
+    transposed_vector = np.ones((np.sum(mask), 1), dtype=bool)
     with pytest.raises(TypeError, match='X must be of shape'):
         unmask(transposed_vector, mask_img)
 
 
 def test_intersect_masks_filename():
     # Create dummy masks
-    mask_a = np.zeros((4, 4, 1), dtype=np.bool)
+    mask_a = np.zeros((4, 4, 1), dtype=bool)
     mask_a[2:4, 2:4] = 1
     mask_a_img = Nifti1Image(mask_a.astype(int), np.eye(4))
 
@@ -378,7 +378,7 @@ def test_intersect_masks_filename():
     # |   |   | X | X |
     # +---+---+---+---+
 
-    mask_b = np.zeros((4, 4, 1), dtype=np.bool)
+    mask_b = np.zeros((4, 4, 1), dtype=bool)
     mask_b[1:3, 1:3] = 1
     mask_b_img = Nifti1Image(mask_b.astype(int), np.eye(4))
 
@@ -394,7 +394,7 @@ def test_intersect_masks_filename():
 
     with write_tmp_imgs(mask_a_img, mask_b_img, create_files=True)\
             as filenames:
-        mask_ab = np.zeros((4, 4, 1), dtype=np.bool)
+        mask_ab = np.zeros((4, 4, 1), dtype=bool)
         mask_ab[2, 2] = 1
         mask_ab_ = intersect_masks(filenames, threshold=1.)
         assert_array_equal(mask_ab, get_data(mask_ab_))
@@ -405,7 +405,7 @@ def test_intersect_masks():
     """
 
     # Create dummy masks
-    mask_a = np.zeros((4, 4, 1), dtype=np.bool)
+    mask_a = np.zeros((4, 4, 1), dtype=bool)
     mask_a[2:4, 2:4] = 1
     mask_a_img = Nifti1Image(mask_a.astype(int), np.eye(4))
 
@@ -419,7 +419,7 @@ def test_intersect_masks():
     # |   |   | X | X |
     # +---+---+---+---+
 
-    mask_b = np.zeros((4, 4, 1), dtype=np.bool)
+    mask_b = np.zeros((4, 4, 1), dtype=bool)
     mask_b[1:3, 1:3] = 1
     mask_b_img = Nifti1Image(mask_b.astype(int), np.eye(4))
 
@@ -433,7 +433,7 @@ def test_intersect_masks():
     # |   |   |   |   |
     # +---+---+---+---+
 
-    mask_c = np.zeros((4, 4, 1), dtype=np.bool)
+    mask_c = np.zeros((4, 4, 1), dtype=bool)
     mask_c[:, 2] = 1
     mask_c[0, 0] = 1
     mask_c_img = Nifti1Image(mask_c.astype(int), np.eye(4))
@@ -448,7 +448,7 @@ def test_intersect_masks():
     # |   |   | X |   |
     # +---+---+---+---+
 
-    mask_ab = np.zeros((4, 4, 1), dtype=np.bool)
+    mask_ab = np.zeros((4, 4, 1), dtype=bool)
     mask_ab[2, 2] = 1
     mask_ab_ = intersect_masks([mask_a_img, mask_b_img], threshold=1.)
     assert_array_equal(mask_ab, get_data(mask_ab_))
@@ -490,11 +490,11 @@ def test_compute_multi_epi_mask():
     pytest.raises(TypeError, compute_multi_epi_mask, [])
     # As it calls intersect_masks, we only test resampling here.
     # Same masks as test_intersect_masks
-    mask_a = np.zeros((4, 4, 1), dtype=np.bool)
+    mask_a = np.zeros((4, 4, 1), dtype=bool)
     mask_a[2:4, 2:4] = 1
     mask_a_img = Nifti1Image(mask_a.astype(int), np.eye(4))
 
-    mask_b = np.zeros((8, 8, 1), dtype=np.bool)
+    mask_b = np.zeros((8, 8, 1), dtype=bool)
     mask_b[2:6, 2:6] = 1
     mask_b_img = Nifti1Image(mask_b.astype(int), np.eye(4) / 2.)
 
@@ -502,7 +502,7 @@ def test_compute_multi_epi_mask():
         warnings.simplefilter("ignore", MaskWarning)
         pytest.raises(ValueError, compute_multi_epi_mask,
                       [mask_a_img, mask_b_img])
-    mask_ab = np.zeros((4, 4, 1), dtype=np.bool)
+    mask_ab = np.zeros((4, 4, 1), dtype=bool)
     mask_ab[2, 2] = 1
     mask_ab_ = compute_multi_epi_mask([mask_a_img, mask_b_img], threshold=1.,
                                       opening=0,
@@ -656,7 +656,7 @@ def test_unmask_from_to_3d_array(size=5):
     rng = np.random.RandomState(42)
     for ndim in range(1, 4):
         shape = [size] * ndim
-        mask = np.zeros(shape).astype(np.bool)
+        mask = np.zeros(shape).astype(bool)
         mask[rng.uniform(size=shape) > .8] = 1
         support = rng.standard_normal(size=mask.sum())
         full = _unmask_from_to_3d_array(support, mask)

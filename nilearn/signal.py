@@ -65,19 +65,19 @@ def _standardize(signals, detrend=False, standardize='zscore'):
                 signals = signals - signals.mean(axis=0)
 
             std = signals.std(axis=0)
-            std[std < np.finfo(np.float).eps] = 1.  # avoid numerical problems
+            std[std < np.finfo(np.float64).eps] = 1.  # avoid numerical problems
             signals /= std
 
         elif standardize == 'psc':
             mean_signal = signals.mean(axis=0)
-            invalid_ix = mean_signal < np.finfo(np.float).eps
-            signals = (signals / mean_signal) * 100
-            signals -= 100
+            invalid_ix = np.absolute(mean_signal) < np.finfo(np.float64).eps
+            signals = (signals - mean_signal) / np.absolute(mean_signal)
+            signals *= 100
 
             if np.any(invalid_ix):
                 warnings.warn('psc standardization strategy is meaningless '
-                              'for features that have a mean of 0 or '
-                              'less. These time series are set to 0.')
+                              'for features that have a mean of 0. '
+                              'These time series are set to 0.')
                 signals[:, invalid_ix] = 0
 
     return signals
@@ -201,7 +201,7 @@ def _detrend(signals, inplace=False, type="linear", n_batches=10):
         regressor -= regressor.mean()
         std = np.sqrt((regressor ** 2).sum())
         # avoid numerical problems
-        if not std < np.finfo(np.float).eps:
+        if not std < np.finfo(np.float64).eps:
             regressor /= std
         regressor = regressor[:, np.newaxis]
 
@@ -620,7 +620,7 @@ def clean(signals, sessions=None, detrend=True, standardize='zscore',
 
         # Pivoting in qr decomposition was added in scipy 0.10
         Q, R, _ = linalg.qr(confounds, mode='economic', pivoting=True)
-        Q = Q[:, np.abs(np.diag(R)) > np.finfo(np.float).eps * 100.]
+        Q = Q[:, np.abs(np.diag(R)) > np.finfo(np.float64).eps * 100.]
         signals -= Q.dot(Q.T).dot(signals)
 
     # Standardize

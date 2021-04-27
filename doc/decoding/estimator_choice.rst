@@ -24,12 +24,12 @@ Predictions: regression, classification and multi-class
 As seen in the previous section, high-level objects in Nilearn help you decode
 easily your dataset using a **mask** and/or **feature selection**. You can tune
 the **cross-validation** and **scoring** schemes of your model. Those objects
-come in two kinds, depending on your usecase : Regression or Classification.
+come in two kinds, depending on your usecase : :term:`Regression<regression>` or :term:`Classification<classification>`.
 
 Regression
 ----------
 
-A regression problem is a learning task in which the variable to predict
+A :term:`regression` problem is a learning task in which the variable to predict
 --that we often call **y** -- is a continuous value, such as an age.
 Encoding models [1]_ typically call for regressions.
 :class:`nilearn.decoding.DecoderRegressor` implement easy and efficient
@@ -49,16 +49,16 @@ regression pipelines.
 Classification: two classes or multi-class
 ------------------------------------------
 
-A classification task consists in predicting a *class* label for each
+A :term:`classification` task consists in predicting a *class* label for each
 observation. In other words, the variable to predict is categorical.
 
-Often classification is performed between two classes, but it may well be
+Often :term:`classification` is performed between two classes, but it may well be
 applied to multiple classes, in which case it is known as a multi-class
 problem. It is important to keep in mind that the larger the number of
 classes, the harder the prediction problem.
 
 :class:`nilearn.decoding.Decoder` implement easy and efficient
-classification pipelines.
+:term:`classification` pipelines.
 
 Some estimators support multi-class prediction out of the box, but many
 work by dividing the multi-class problem in a set of two class problems.
@@ -114,7 +114,7 @@ Different linear models
 
 Using Nilearn high-level objects, several estimators are easily available
 to model the relations between your images and the target to predict.
-For classification, :class:`nilearn.decoding.Decoder` let you choose them
+For :term:`classification`, :class:`nilearn.decoding.Decoder` let you choose them
 through the `estimator` parameter:
 
 * 'svc' (same as 'svc_l2') : the `support vector classifier <https://scikit-learn.org/stable/modules/svm.html>`_

@@ -27,7 +27,7 @@ def test_sphere_extraction():
     masker.fit()
     # Test the transform
     s = masker.transform(img)
-    mask = np.zeros((3, 3, 3), dtype=np.bool)
+    mask = np.zeros((3, 3, 3), dtype=bool)
     mask[:, 1, 1] = True
     mask[1, :, 1] = True
     mask[1, 1, :] = True
@@ -55,7 +55,7 @@ def test_anisotropic_sphere_extraction():
     masker.fit()
     # Test the transform
     s = masker.transform(img)
-    mask = np.zeros((3, 3, 3), dtype=np.bool)
+    mask = np.zeros((3, 3, 3), dtype=bool)
     mask[1, :, 1] = True
     assert_array_equal(s[:, 0], np.mean(data[mask], axis=0))
     # Now with a mask
@@ -192,7 +192,7 @@ def test_nifti_spheres_masker_inverse_transform():
         masker.inverse_transform(data[0, 0, 0, :])
 
     # Mask describes the extend of the masker's sphere
-    mask = np.zeros((3, 3, 3), dtype=np.bool)
+    mask = np.zeros((3, 3, 3), dtype=bool)
     mask[:, 1, 1] = True
     mask[1, :, 1] = True
     mask[1, 1, :] = True

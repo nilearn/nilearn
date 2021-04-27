@@ -1,11 +1,11 @@
 """Analysis of an fMRI dataset with a Finite Impule Response (FIR) model
 =====================================================================
 
-FIR models are used to estimate the hemodyamic response non-parametrically.
+:term:`FIR` models are used to estimate the hemodyamic response non-parametrically.
 The example below shows that they're good to do statistical inference
-even on fast event-related fMRI datasets.
+even on fast event-related :term:`fMRI` datasets.
 
-Here, we demonstrate the use of a FIR model with 3 lags, computing 4 contrasts
+Here, we demonstrate the use of a :term:`FIR` model with 3 lags, computing 4 contrasts
 from a single subject dataset from the "Neurospin Localizer". It is a fast
 event related design: During 5 minutes, 80 events of the following types are
 presented : ['audio_computation', 'audio_left_hand_button_press',
@@ -29,10 +29,10 @@ events = pd.read_table(events_file)
 
 
 #########################################################################
-# Next solution is to try Finite Impulse Reponse (FIR) models: we just
-# say that the hrf is an arbitrary function that lags behind the
+# Next solution is to try Finite Impulse Reponse (:term:`FIR`) models: we just
+# say that the :term:`hrf<HRF>` is an arbitrary function that lags behind the
 # stimulus onset.  In the present case, given that the numbers of
-# conditions is high, we should use a simple FIR model.
+# conditions is high, we should use a simple :term:`FIR` model.
 #
 # Concretely, we set `hrf_model` to 'fir' and `fir_delays` to [1, 2,
 # 3] (scans) corresponding to a 3-step functions on the [1 * t_r, 4 *
@@ -48,7 +48,7 @@ design_matrix = first_level_model.design_matrices_[0]
 plot_design_matrix(design_matrix)
 
 #########################################################################
-# We have to adapt contrast specification. We characterize the BOLD
+# We have to adapt contrast specification. We characterize the :term:`BOLD`
 # response by the sum across the three time lags. It's a bit hairy,
 # sorry, but this is the price to pay for flexibility...
 

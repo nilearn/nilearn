@@ -795,13 +795,12 @@ def fetch_atlas_aal(version='SPM12', data_dir=None, url=None, resume=True,
                                           verbose=verbose)
 
     fdescr = _get_dataset_descr(dataset_name)
-
     # We return the labels contained in the xml file as a dictionary
     xml_tree = xml.etree.ElementTree.parse(labels_file)
     root = xml_tree.getroot()
     labels = []
     indices = []
-    for label in root.getiterator('label'):
+    for label in root.iter('label'):
         indices.append(label.find('index').text)
         labels.append(label.find('name').text)
 

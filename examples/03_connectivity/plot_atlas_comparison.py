@@ -81,6 +81,39 @@ plotting.plot_connectome(mean_correlation_matrix, coordinates,
                          title='Yeo Atlas 17 thick (func)')
 
 ##########################################################################
+# Plot a directed connectome - asymmetric connectivity measure
+# -----------------------------------------------------------------
+# In this section, we use the lag-1 correlation as the connectivity
+# measure, which leads to an asymmetric connectivity matrix.
+# The plot_connectome function accepts both symmetric and asymmetric
+# matrices, but plot the latter as a directed graph.
+import numpy as np
+
+# Define a custom function to compute lag correlation on the time series
+def lag_correlation(time_series, lag):
+    n_subjects = len(time_series)
+    n_samples, n_features = time_series[0].shape
+    lag_cor = np.zeros((n_subjects, n_features, n_features))
+    for subject, serie in enumerate(time_series):
+        for i in range(n_features):
+            for j in range(n_features):
+                if lag == 0:
+                    lag_cor[subject, i, j] = np.corrcoef(serie[:, i],
+                                                         serie[:, j])[0, 1]
+                else:
+                    lag_cor[subject, i, j] = np.corrcoef(serie[lag:, i],
+                                                         serie[:-lag, j])[0, 1]
+    return np.mean(lag_cor, axis=0)
+
+# Compute lag-0 and lag-1 correlations and plot associated connectomes
+for lag in [0, 1]:
+    lag_correlation_matrix = lag_correlation(time_series, lag)
+    plotting.plot_connectome(lag_correlation_matrix, coordinates,
+                             edge_threshold="90%",
+                             title='Lag-{} correlation'.format(
+                                 lag))
+
+##########################################################################
 # Load probabilistic atlases - extracting coordinates on brain maps
 # -----------------------------------------------------------------
 
