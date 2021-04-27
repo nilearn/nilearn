@@ -10,7 +10,12 @@ Fixes
 Enhancements
 ------------
 
-- :func:`nilearn.plotting.view_markers` now accept an optional argument `marker_labels` to provide labels to each marker.
+- :func:`nilearn.masking.compute_brain_mask` accepts now as input not only the
+  averaged, whole-brain MNI152 T1 template (`avg152T1_brain.nii.gz`) but also
+  the grey-matter and white-matter ICBM152 templates dated from 2009.
+
+- :func:`nilearn.plotting.view_markers` now accept an optional argument
+  `marker_labels` to provide labels to each marker.
 
 .. _v0.7.1:
 
