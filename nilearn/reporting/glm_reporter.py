@@ -971,13 +971,13 @@ def _dataframe_to_html(df, precision, **kwargs):
 
 
 def _clean_contrast_name(contrast_name):
-    new_name = "".join(ch for ch in contrast_name if ch.isalnum())
+    new_name = ''.join(ch for ch in contrast_name if ch.isalnum())
     if new_name != contrast_name:
-        warnings.warn("Contrast name '{}' changed to '{}'".format(contrast_name, new_name))
+        warnings.warn('Contrast name "{}" changed to "{}"'.format(contrast_name, new_name))
     return new_name
 
 
-def save_glm_results(model, contrasts, out_dir=".", prefix=None):
+def save_glm_results(model, contrasts, out_dir='.', prefix=None):
     """Save GLM results to BIDS-like files.
 
     To output:
@@ -987,15 +987,15 @@ def save_glm_results(model, contrasts, out_dir=".", prefix=None):
     - model-level stat maps
     - metadata
     """
-    if isinstance(prefix, str) and not prefix.endswith("_"):
-        prefix += "_"
+    if isinstance(prefix, str) and not prefix.endswith('_'):
+        prefix += '_'
     else:
-        prefix = ""
+        prefix = ''
 
     out_dir = os.path.abspath(out_dir)
 
     # Write out design matrices to files.
-    if hasattr(model, "design_matrices_"):
+    if hasattr(model, 'design_matrices_'):
         design_matrices = model.design_matrices_
     else:
         design_matrices = [model.design_matrix_]
@@ -1005,21 +1005,21 @@ def save_glm_results(model, contrasts, out_dir=".", prefix=None):
             run_name = i_run + 1
             dm_file = os.path.join(
                 out_dir,
-                "{}run-{}_design.tsv".format(prefix, run_name),
+                '{}run-{}_design.tsv'.format(prefix, run_name),
             )
-            dm.to_csv(dm_file, sep="\t", index=False)
+            dm.to_csv(dm_file, sep='\t', index=False)
 
             dm_fig_file = os.path.join(
                 out_dir,
-                "{}run-{}_design.svg".format(prefix, run_name),
+                '{}run-{}_design.svg'.format(prefix, run_name),
             )
             dm_fig = plot_design_matrix(dm)
             dm_fig.figure.savefig(dm_fig_file)
     else:
-        dm_file = os.path.join(out_dir, "{}design.tsv".format(prefix))
-        dm.to_csv(dm_file, sep="\t", index=False)
+        dm_file = os.path.join(out_dir, '{}design.tsv'.format(prefix))
+        dm.to_csv(dm_file, sep='\t', index=False)
 
-        dm_fig_file = os.path.join(out_dir, "{}design.svg".format(prefix))
+        dm_fig_file = os.path.join(out_dir, '{}design.svg'.format(prefix))
         dm_fig = plot_design_matrix(dm)
         dm_fig.figure.savefig(dm_fig_file)
 
@@ -1030,34 +1030,34 @@ def save_glm_results(model, contrasts, out_dir=".", prefix=None):
     statistical_maps = _make_stat_maps(
         model,
         contrasts,
-        output_type="all",
+        output_type='all',
     )
 
     # Model metadata
-    metadata_file = os.path.join(out_dir, "dataset_description.json")
+    metadata_file = os.path.join(out_dir, 'dataset_description.json')
 
     selected_attributes = [
-        "subject_label",
-        "drift_model",
-        "hrf_model",
-        "standardize",
-        "t_r",
-        "high_pass",
-        "target_shape",
-        "signal_scaling",
-        "drift_order",
-        "scaling_axis",
-        "smoothing_fwhm",
-        "target_affine",
-        "slice_time_ref",
-        "fir_delays",
+        'subject_label',
+        'drift_model',
+        'hrf_model',
+        'standardize',
+        't_r',
+        'high_pass',
+        'target_shape',
+        'signal_scaling',
+        'drift_order',
+        'scaling_axis',
+        'smoothing_fwhm',
+        'target_affine',
+        'slice_time_ref',
+        'fir_delays',
     ]
     # attribute_units = {
-    #     "t_r": "s",
-    #     "high_pass": "Hz",
+    #     't_r': 's',
+    #     'high_pass': 'Hz',
     # }
     attr_rename = {
-        "t_r": "RepetitionTime",
+        't_r': 'RepetitionTime',
     }
 
     selected_attributes.sort()
@@ -1070,22 +1070,22 @@ def save_glm_results(model, contrasts, out_dir=".", prefix=None):
         attr_rename.get(k, k): v for k, v in model_attributes.items()
     }
 
-    with open(metadata_file, "w") as fo:
+    with open(metadata_file, 'w') as fo:
         json.dump(model_attributes, fo, indent=4, sort_keys=True)
 
     for contrast_name, contrast_maps in statistical_maps.items():
         contrast_name = _clean_contrast_name(contrast_name)
 
         # Extract stat_type
-        stat_type = "t"  # TODO: implement a real solution
+        stat_type = 't'  # TODO: implement a real solution
 
         # Contrast-level images
         MAPPING = {
-            "effect_size": "{}contrast-{}_stat-effect_statmap.nii.gz".format(prefix, contrast_name),
-            "stat": "{}contrast-{}_stat-{}_statmap.nii.gz".format(prefix, contrast_name, stat_type),
-            "effect_variance": "{}contrast-{}_stat-variance_statmap.nii.gz".format(prefix, contrast_name),
-            "z_score": "{}contrast-{}_stat-z_statmap.nii.gz".format(prefix, contrast_name),
-            "p_value": "{}contrast-{}_stat-p_statsmap.nii.gz".format(prefix, contrast_name),
+            'effect_size': '{}contrast-{}_stat-effect_statmap.nii.gz'.format(prefix, contrast_name),
+            'stat': '{}contrast-{}_stat-{}_statmap.nii.gz'.format(prefix, contrast_name, stat_type),
+            'effect_variance': '{}contrast-{}_stat-variance_statmap.nii.gz'.format(prefix, contrast_name),
+            'z_score': '{}contrast-{}_stat-z_statmap.nii.gz'.format(prefix, contrast_name),
+            'p_value': '{}contrast-{}_stat-p_statsmap.nii.gz'.format(prefix, contrast_name),
         }
         # Rename keys
         renamed_contrast_maps = {
@@ -1098,11 +1098,11 @@ def save_glm_results(model, contrasts, out_dir=".", prefix=None):
 
     # Model-level images
     attributes = {
-        "residuals": "{}stat-errorts_statmap.nii.gz".format(prefix),
-        "r_square": "{}stat-rSquare_statmap.nii.gz".format(prefix),
+        'residuals': '{}stat-errorts_statmap.nii.gz'.format(prefix),
+        'r_square': '{}stat-rSquare_statmap.nii.gz'.format(prefix),
     }
     for attr, map_name in attributes.items():
-        print("Extracting and saving {}".format(attr))
+        print('Extracting and saving {}'.format(attr))
         img = getattr(model, attr)
         if isinstance(img, list):
             img = img[0]
