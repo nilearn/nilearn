@@ -649,24 +649,24 @@ def index_img(imgs, index):
      >>> joint_mni_image = concat_imgs([datasets.load_mni152_template(),
      ...                                datasets.load_mni152_template()])
      >>> print(joint_mni_image.shape)
-     (91, 109, 91, 2)
+     (197, 233, 189, 2)
 
     We can now select one slice from the last dimension of this 4D-image::
 
      >>> single_mni_image = index_img(joint_mni_image, 1)
      >>> print(single_mni_image.shape)
-     (91, 109, 91)
+     (197, 233, 189)
 
     We can also select multiple frames using the `slice` constructor::
 
      >>> five_mni_images = concat_imgs([datasets.load_mni152_template()] * 5)
      >>> print(five_mni_images.shape)
-     (91, 109, 91, 5)
+     (197, 233, 189, 5)
 
      >>> first_three_images = index_img(five_mni_images,
      ...                                slice(0, 3))
      >>> print(first_three_images.shape)
-     (91, 109, 91, 3)
+     (197, 233, 189, 3)
 
     """
     imgs = check_niimg_4d(imgs)

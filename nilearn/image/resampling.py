@@ -130,7 +130,7 @@ def coord_transform(x, y, z, affine):
         >>> niimg = datasets.load_mni152_template()
         >>> # Find the MNI coordinates of the voxel (50, 50, 50)
         >>> image.coord_transform(50, 50, 50, niimg.affine)
-        (-10.0, -26.0, 28.0)
+        (-48.0, -84.0, -22.0)
 
     """
     squeeze = (not hasattr(x, '__iter__'))
