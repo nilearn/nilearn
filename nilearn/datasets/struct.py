@@ -20,7 +20,7 @@ _package_directory = os.path.dirname(os.path.abspath(__file__))
 
 MNI152_FILE_PATH = os.path.join(
     _package_directory, "data",
-    "mni_icbm152_t1_tal_nlin_sym_09a_noskull.nii.gz")
+    "mni_icbm152_t1_tal_nlin_sym_09a_noskull_rescaled.nii.gz")
 GM_MNI152_FILE_PATH = os.path.join(_package_directory, "data",
                                    "mni_icbm152_gm_tal_nlin_sym_09a.nii.gz")
 WM_MNI152_FILE_PATH = os.path.join(_package_directory, "data",
