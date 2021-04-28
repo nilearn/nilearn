@@ -16,8 +16,8 @@ from .image import new_img_like, resampling
 from ._utils.cache_mixin import cache
 from ._utils.ndimage import largest_connected_component, get_border_data
 from ._utils.niimg import _safe_get_data, img_data_dtype
-from .datasets import (load_mni152_brain_mask, load_mni152_gm_mask,
-                       load_mni152_wm_mask)
+from .datasets import (load_mni152_template, load_mni152_gm_template,
+                       load_mni152_wm_template)
 from nilearn.image import get_data
 
 
@@ -627,11 +627,11 @@ def compute_brain_mask(target_img, threshold=.2, connected=True,
     target_img = _utils.check_niimg(target_img)
 
     if mask_type == 'whole-brain':
-        template = load_mni152_brain_mask()
+        template = load_mni152_template()
     elif mask_type == 'gm':
-        template = load_mni152_gm_mask()
+        template = load_mni152_gm_template()
     elif mask_type == 'wm':
-        template = load_mni152_wm_mask()
+        template = load_mni152_wm_template()
     else:
         raise ValueError("Unknown mask type {}.".format(mask_type))
 
