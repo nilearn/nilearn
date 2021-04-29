@@ -303,7 +303,7 @@ def test_run_glm():
     assert type(results[labels[0]].model) == OLSModel
 
     # ar(1) case
-    labels, results = run_glm(Y, X, "ar1")
+    labels, results = run_glm(Y, X, 'ar1')
     assert len(labels) == n
     assert len(results.keys()) > 1
     tmp = sum([val.theta.shape[1] for val in results.values()])
@@ -345,7 +345,7 @@ def test_glm_AR_estimates():
 
     for ar_vals in [[-0.2], [-0.2, -0.5], [-0.2, -0.5, -0.7, -0.3]]:
         ar_order = len(ar_vals)
-        ar_arg = "ar" + str(ar_order)
+        ar_arg = 'ar' + str(ar_order)
 
         X = X_orig.copy()
         Y = Y_orig.copy()
