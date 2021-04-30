@@ -506,15 +506,13 @@ def test_clean_confounds():
     # (it thus solves issue # 2730).
     signals_clean = nisignal.clean(signals,
                                    detrend=True,
-                                   high_pass=0.01, 
-                                   low_pass=0.1,
+                                   high_pass=0.01,
                                    standardize_confounds=True,
                                    standardize=True,
                                    confounds=confounds)
     confounds_clean = nisignal.clean(confounds,
                                      detrend=True,
                                      high_pass=0.01,
-                                     low_pass=0.1,
                                      standardize=True)
     assert abs(np.dot(confounds_clean.T, signals_clean)).max() < 1000. * eps
 
