@@ -499,10 +499,11 @@ def test_clean_confounds():
                                                   ).mean(),
                                    np.zeros((20, 2)))
 
-    # Test to check that confounders effects are effectively removed when 
-    # having detrending and a filtering operation. This did not happen 
-    # due to a different order in which these operation were being applied 
-    # to the data and confounders (it thus solves issue # 2730).
+    # Test to check that confounders effects are effectively removed from 
+    # the signals when having a detrending and filtering operation together. 
+    # This did not happen originally due to a different order in which 
+    # these operations were being applied to the data and confounders 
+    # (it thus solves issue # 2730).
     signals_clean = nisignal.clean(signals,
                                    detrend=True,
                                    high_pass=0.01, 
