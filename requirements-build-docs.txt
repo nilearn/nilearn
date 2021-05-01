@@ -6,6 +6,7 @@ lxml
 mkl
 sphinx
 sphinx-gallery
+sphinxcontrib-bibtex
 numpydoc
 coverage
 pillow
