@@ -433,7 +433,7 @@ def test_clean_confounds():
                                      detrend=True, standardize=False)
     coeffs = np.polyfit(np.arange(cleaned_signals.shape[0]),
                         cleaned_signals, 1)
-    assert (abs(coeffs) < 200. * eps).all()  # trend removed
+    assert (abs(coeffs) < 1000. * eps).all()  # trend removed
 
     # Test no-op
     input_signals = 10 * signals
