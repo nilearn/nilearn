@@ -72,7 +72,7 @@ def plot_surf(surf_mesh, surf_map=None, bg_map=None,
     colorbar : bool, optional
         If True, a colorbar of surf_map is displayed. Default=False.
 
-    avg_method : {'mean', 'median'}, optional
+    avg_method : {'mean', 'median', 'min', 'max'}, optional
         How to average vertex values to derive the face value, mean results
         in smooth, median in sharp boundaries. Default='mean'.
 
@@ -270,6 +270,10 @@ def plot_surf(surf_mesh, surf_map=None, bg_map=None,
             surf_map_faces = np.mean(surf_map_data[faces], axis=1)
         elif avg_method == 'median':
             surf_map_faces = np.median(surf_map_data[faces], axis=1)
+        elif avg_method == 'min':
+            surf_map_faces = np.min(surf_map_data[faces], axis=1)
+        elif avg_method == 'max':
+            surf_map_faces = np.max(surf_map_data[faces], axis=1)
 
         # if no vmin/vmax are passed figure them out from data
         if vmin is None:
