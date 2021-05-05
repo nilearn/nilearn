@@ -3,6 +3,7 @@ import numpy as np
 import nibabel
 import matplotlib.pyplot as plt
 import pytest
+import re
 import tempfile
 
 from nilearn.plotting.img_plotting import MNI152TEMPLATE
@@ -10,7 +11,9 @@ from nilearn.plotting.surf_plotting import (plot_surf, plot_surf_stat_map,
                                             plot_surf_roi, plot_img_on_surf,
                                             plot_surf_contours)
 from nilearn.datasets import fetch_surf_fsaverage
+from nilearn.surface import load_surf_mesh
 from nilearn.surface.testing_utils import generate_surf
+from numpy.testing import assert_array_equal
 
 
 def test_plot_surf():
@@ -37,8 +40,29 @@ def test_plot_surf():
               cbar_vmax=150, cbar_tick_format="%i")
 
     # Plot with avg_method
-    plot_surf(mesh, surf_map=rng.standard_normal(size=mesh[0].shape[0]), avg_method='mean')
-    plot_surf(mesh, surf_map=rng.standard_normal(size=mesh[0].shape[0]), avg_method='min')
+    ## Test all built-in methods and check
+    mapp = rng.standard_normal(size=mesh[0].shape[0])
+    mesh_ = load_surf_mesh(mesh)
+    coords, faces = mesh_[0], mesh_[1]
+
+    for method in ['mean', 'median', 'min', 'max']:
+        display = plot_surf(mesh, surf_map=mapp, avg_method=method)
+        if method == 'mean':
+            agg_faces = np.mean(mapp[faces], axis=1)
+        elif method == 'median':
+            agg_faces = np.median(mapp[faces], axis=1)
+        elif method == 'min':
+            agg_faces = np.min(mapp[faces], axis=1)
+        elif method == 'max':
+            agg_faces = np.max(mapp[faces], axis=1)
+        vmin = np.min(agg_faces)
+        vmax = np.max(agg_faces)
+        agg_faces -= vmin
+        agg_faces /= (vmax - vmin)
+        cmap = plt.cm.get_cmap(plt.rcParamsDefault['image.cmap'])
+        assert_array_equal(cmap(agg_faces),
+                           display._axstack.as_list()[0].collections[0]._facecolors)
+
     ## Try custom avg_method
     def custom_avg_function(vertices):
         return vertices[0] * vertices[1] * vertices[2]
@@ -79,6 +103,20 @@ def test_plot_surf_error():
             mesh, surf_map=rng.standard_normal(size=(mesh[0].shape[0], 2))
         )
 
+    with pytest.raises(
+        ValueError, match="Array computed with the custom function from avg_method does not have the correct shape"
+    ):
+        def custom_avg_function(vertices):
+            return [vertices[0] * vertices[1], vertices[2]]
+
+        plot_surf(mesh, surf_map=rng.standard_normal(size=mesh[0].shape[0]), avg_method=custom_avg_function)
+
+    with pytest.raises(
+        ValueError, match=re.escape("avg_method should be either ['mean', 'median', 'max', 'min'] or a custom function")
+    ):
+        custom_avg_function = dict()
+
+        plot_surf(mesh, surf_map=rng.standard_normal(size=mesh[0].shape[0]), avg_method=custom_avg_function)
 
 def test_plot_surf_stat_map():
     mesh = generate_surf()
