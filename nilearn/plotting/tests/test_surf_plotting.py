@@ -36,6 +36,14 @@ def test_plot_surf():
     plot_surf(mesh, bg_map=bg, colorbar=True, cbar_vmin=0,
               cbar_vmax=150, cbar_tick_format="%i")
 
+    # Plot with avg_method
+    plot_surf(mesh, surf_map=rng.standard_normal(size=mesh[0].shape[0]), avg_method='mean')
+    plot_surf(mesh, surf_map=rng.standard_normal(size=mesh[0].shape[0]), avg_method='min')
+    ## Try custom avg_method
+    def custom_avg_function(vertices):
+        return vertices[0] * vertices[1] * vertices[2]
+    plot_surf(mesh, surf_map=rng.standard_normal(size=mesh[0].shape[0]), avg_method=custom_avg_function)
+
     # Save execution time and memory
     plt.close()
 
