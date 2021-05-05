@@ -574,7 +574,7 @@ def compute_gray_matter_mask(target_img, threshold=.5,
                               mask_type='whole-brain')
 
 
-def compute_brain_mask(target_img, threshold=.2, connected=True,
+def compute_brain_mask(target_img, threshold=.5, connected=True,
                        opening=2, memory=None, verbose=0,
                        mask_type='whole-brain'):
     """Compute the whole-brain, gray-matter or white-matter mask.
@@ -654,7 +654,7 @@ def compute_brain_mask(target_img, threshold=.2, connected=True,
     return new_img_like(target_img, mask, affine)
 
 
-def compute_multi_gray_matter_mask(target_imgs, threshold=0.,
+def compute_multi_gray_matter_mask(target_imgs, threshold=.5,
                                    connected=True, opening=2,
                                    memory=None, verbose=0, n_jobs=1, **kwargs):
     """ Compute a mask corresponding to the gray matter part of the brain for
@@ -673,7 +673,7 @@ def compute_multi_gray_matter_mask(target_imgs, threshold=0.,
 
     threshold: float, optional
         The value under which the MNI template is cut off.
-        Default value is 0.
+        Default value is 0.5.
 
     connected: bool, optional
         if connected is True, only the largest connect component is kept.

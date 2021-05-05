@@ -203,14 +203,14 @@ def load_mni152_brain_mask(threshold=0.):
     return mask_img
 
 
-def load_mni152_gm_mask(threshold=0.):
+def load_mni152_gm_mask(threshold=0.2):
     """Load brain mask from gray-matter MNI152 template
 
     Parameters
     ----------
     threshold : float, optional
         The parameter which amounts to include the values in the mask image.
-        Values lying above this threshold will be included. Default=0.
+        Values lying above this threshold will be included. Default=0.2
 
     Returns
     -------
@@ -230,14 +230,14 @@ def load_mni152_gm_mask(threshold=0.):
     return gm_target_mask_img
 
 
-def load_mni152_wm_mask(threshold=0.):
+def load_mni152_wm_mask(threshold=0.2):
     """Load brain mask from white-matter MNI152 template
 
     Parameters
     ----------
     threshold : float, optional
         The parameter which amounts to include the values in the mask image.
-        Values lying above this threshold will be included. Default=0.
+        Values lying above this threshold will be included. Default=0.2
 
     Returns
     -------
