@@ -1,5 +1,32 @@
 .. _contributing:
 
+Too long, didn't read
+=====================
+
+Installing
+----------
+
+Here are the key steps you need to go through to copy the repo before contributing:
+
+1. fork the repo from github (fork button in the top right corner of our `main github page <https://github.com/nilearn/nilearn>`_) and clone your fork locally: `git clone git@github.com:<your_username>/nilearn.git`
+1. (optional but highly recommended) setup a conda environment to work on: `conda create -n nilearn python=3.9`
+1. (optional but highly recommended) activate this environment with `conda activate nilearn`
+1. install dependencies with `pip install -e .`
+1. check that all tests pass with `pytest nilearn` (this can take a while)
+
+Contributing
+------------
+
+Here are the key steps you need to go through to contribute code to `nilearn`:
+
+1. open or join an already existing issue explaining what you want to work on
+1. on your fork, create a new branch from master: `git checkout -b your_branch`
+1. implement and commit your changes on this branch (don't forget to write tests!)
+1. run the tests locally (to go faster, only run tests which are relevant to what you work on with, ex: `pytest -v nilearn/plotting/tests/test_surf_plotting.py`)
+1. push your changes to your online fork `git push`
+1. in github, open a pull request from your online fork to the main repo (most likely from `your_fork:your_branch` to `nilearn:master`). Make sure you mention the original issue in your pull request
+1. check that all online tests pass and assign someone for a code review
+
 How to help?
 =============
 
