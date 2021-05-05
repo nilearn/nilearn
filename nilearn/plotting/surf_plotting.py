@@ -281,8 +281,13 @@ def plot_surf(surf_mesh, surf_map=None, bg_map=None,
             surf_map_faces = np.min(surf_map_data[faces], axis=1)
         elif avg_method == 'max':
             surf_map_faces = np.max(surf_map_data[faces], axis=1)
-        elif avg_method is not None:
+        elif callable(avg_method):
             surf_map_faces = np.apply_along_axis(avg_method, 1, surf_map_data[faces])
+            ## check that surf_map_faces has the same length as face_colors
+            if surf_map_faces.shape != (face_colors.shape[0],):
+                raise ValueError(f'Array computed with the custom function from avg_method does not have the correct shape: {surf_map_faces.shape[0]} != {face_colors.shape[0]}')
+        else:
+            raise ValueError(f"avg_method should be either ['mean', 'median', 'max', 'min'] or a custom function")
 
         # if no vmin/vmax are passed figure them out from data
         if vmin is None:
