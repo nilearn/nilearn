@@ -600,6 +600,13 @@ def clean(signals, sessions=None, detrend=True, standardize='zscore',
     # Remove confounds
     if confounds is not None:
         confounds = _ensure_float(confounds)
+        
+        # Apply detrend to keep this operation orthogonal
+        # (according to Lindquist et al. (2018))
+        if detrend:
+            confounds = _standardize(confounds, standardize=False,
+                                     detrend=detrend)
+         
         # Apply low- and high-pass filters to keep filters orthogonal
         # (according to Lindquist et al. (2018))
         if low_pass is not None or high_pass is not None:
@@ -608,7 +615,7 @@ def clean(signals, sessions=None, detrend=True, standardize='zscore',
                                     low_pass=low_pass, high_pass=high_pass)
 
         confounds = _standardize(confounds, standardize=standardize_confounds,
-                                 detrend=detrend)
+                                 detrend=False)
 
         if not standardize_confounds:
             # Improve numerical stability by controlling the range of

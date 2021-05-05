@@ -350,7 +350,8 @@ def recursive_neighbor_agglomeration(X, mask_img, n_clusters,
                                      n_iter=10, threshold=1e-7,
                                      verbose=0):
     """Recursive neighbor agglomeration (ReNA): it performs iteratively
-    the nearest neighbor grouping [1]_.
+    the nearest neighbor grouping.
+    See :footcite:`Hoyos2019`.
 
     Parameters
     ----------
@@ -383,11 +384,7 @@ def recursive_neighbor_agglomeration(X, mask_img, n_clusters,
 
     References
     ----------
-    .. [1] A. Hoyos-Idrobo, G. Varoquaux, J. Kahn and B. Thirion, "Recursive
-       Nearest Agglomeration (ReNA): Fast Clustering for Approximation of
-       Structured Signals," in IEEE Transactions on Pattern Analysis and
-       Machine Intelligence, vol. 41, no. 3, pp. 669-681, 1 March 2019.
-       https://hal.archives-ouvertes.fr/hal-01366651/
+    .. footbibliography::
 
     """
     connectivity = weighted_connectivity_graph(X, mask_img)
@@ -418,7 +415,8 @@ def recursive_neighbor_agglomeration(X, mask_img, n_clusters,
 class ReNA(BaseEstimator, ClusterMixin, TransformerMixin):
     """Recursive Neighbor Agglomeration (ReNA):
     Recursively merges the pair of clusters according to 1-nearest neighbors
-    criterion [1]_.
+    criterion.
+    See :footcite:`Hoyos2019`.
 
     Parameters
     ----------
@@ -465,11 +463,7 @@ class ReNA(BaseEstimator, ClusterMixin, TransformerMixin):
 
     References
     ----------
-    .. [1] A. Hoyos-Idrobo, G. Varoquaux, J. Kahn and B. Thirion, "Recursive
-       Nearest Agglomeration (ReNA): Fast Clustering for Approximation of
-       Structured Signals," in IEEE Transactions on Pattern Analysis and
-       Machine Intelligence, vol. 41, no. 3, pp. 669-681, 1 March 2019.
-       https://hal.archives-ouvertes.fr/hal-01366651/
+    .. footbibliography::
 
     """
     def __init__(self, mask_img, n_clusters=2, scaling=False, n_iter=10,

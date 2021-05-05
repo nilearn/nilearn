@@ -1,0 +1,37 @@
+@article{DADI2020117126,
+title = {Fine-grain atlases of functional modes for fMRI analysis},
+journal = {NeuroImage},
+volume = {221},
+pages = {117126},
+year = {2020},
+issn = {1053-8119},
+doi = {https://doi.org/10.1016/j.neuroimage.2020.117126},
+url = {https://www.sciencedirect.com/science/article/pii/S1053811920306121},
+author = {Kamalaker Dadi and Gaël Varoquaux and Antonia Machlouzarides-Shalit and Krzysztof J. Gorgolewski and Demian Wassermann and Bertrand Thirion and Arthur Mensch},
+keywords = {Brain imaging atlases, Functional networks, Functional parcellations, Multi-resolution},
+abstract = {Population imaging markedly increased the size of functional-imaging datasets, shedding new light on the neural basis of inter-individual differences. Analyzing these large data entails new scalability challenges, computational and statistical. For this reason, brain images are typically summarized in a few signals, for instance reducing voxel-level measures with brain atlases or functional modes. A good choice of the corresponding brain networks is important, as most data analyses start from these reduced signals. We contribute finely-resolved atlases of functional modes, comprising from 64 to 1024 networks. These dictionaries of functional modes (DiFuMo) are trained on millions of fMRI functional brain volumes of total size 2.4 ​TB, spanned over 27 studies and many research groups. We demonstrate the benefits of extracting reduced signals on our fine-grain atlases for many classic functional data analysis pipelines: stimuli decoding from 12,334 brain responses, standard GLM analysis of fMRI across sessions and individuals, extraction of resting-state functional-connectomes biomarkers for 2500 individuals, data compression and meta-analysis over more than 15,000 statistical maps. In each of these analysis scenarii, we compare the performance of our functional atlases with that of other popular references, and to a simple voxel-level analysis. Results highlight the importance of using high-dimensional “soft” functional atlases, to represent and analyze brain activity while capturing its functional gradients. Analyses on high-dimensional modes achieve similar statistical performance as at the voxel level, but with much reduced computational cost and higher interpretability. In addition to making them available, we provide meaningful names for these modes, based on their anatomical location. It will facilitate reporting of results.}
+}
+
+
+@article{Hoyos2019,
+author = {Hoyos-Idrobo, Andres and Varoquaux, Gael and Kahn, Jonas and Thirion, Bertrand},
+title = {Recursive Nearest Agglomeration (ReNA): Fast Clustering for Approximation of Structured Signals},
+year = {2019},
+issue_date = {March 2019},
+publisher = {IEEE Computer Society},
+address = {USA},
+volume = {41},
+number = {3},
+issn = {0162-8828},
+url = {https://doi.org/10.1109/TPAMI.2018.2815524},
+doi = {10.1109/TPAMI.2018.2815524},
+abstract = {In this work, we revisit fast dimension reduction approaches, as with random projections and random sampling. Our goal is to summarize the data to decrease computational costs and memory footprint of subsequent analysis. Such dimension reduction can be very efficient when the signals of interest have a strong structure, such as with images. We focus on this setting and investigate feature clustering schemes for data reductions that capture this structure. An impediment to fast dimension reduction is then that good clustering comes with large algorithmic costs. We address it by contributing a linear-time agglomerative clustering scheme, Recursive Nearest Agglomeration (ReNA). Unlike existing fast agglomerative schemes, it avoids the creation of giant clusters. We empirically validate that it approximates the data as well as traditional variance-minimizing clustering schemes that have a quadratic complexity. In addition, we analyze signal approximation with feature clustering and show that it can remove noise, improving subsequent analysis steps. As a consequence, data reduction by clustering features with ReNA yields very fast and accurate models, enabling to process large datasets on budget. Our theoretical analysis is backed by extensive experiments on publicly-available data that illustrate the computation efficiency and the denoising properties of the resulting dimension reduction scheme.},
+journal = {IEEE Trans. Pattern Anal. Mach. Intell.},
+month = mar,
+pages = {669–681},
+numpages = {13}
+}
+
+
+
+
