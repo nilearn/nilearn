@@ -433,7 +433,7 @@ def test_clean_confounds():
                                      detrend=True, standardize=False)
     coeffs = np.polyfit(np.arange(cleaned_signals.shape[0]),
                         cleaned_signals, 1)
-    assert (abs(coeffs) < 200. * eps).all()  # trend removed
+    assert (abs(coeffs) < 1000. * eps).all()  # trend removed
 
     # Test no-op
     input_signals = 10 * signals
@@ -498,6 +498,23 @@ def test_clean_confounds():
                                                   detrend=False,
                                                   ).mean(),
                                    np.zeros((20, 2)))
+
+    # Test to check that confounders effects are effectively removed from 
+    # the signals when having a detrending and filtering operation together. 
+    # This did not happen originally due to a different order in which 
+    # these operations were being applied to the data and confounders 
+    # (it thus solves issue # 2730).
+    signals_clean = nisignal.clean(signals,
+                                   detrend=True,
+                                   high_pass=0.01,
+                                   standardize_confounds=True,
+                                   standardize=True,
+                                   confounds=confounds)
+    confounds_clean = nisignal.clean(confounds,
+                                     detrend=True,
+                                     high_pass=0.01,
+                                     standardize=True)
+    assert abs(np.dot(confounds_clean.T, signals_clean)).max() < 1000. * eps
 
 
 def test_clean_frequencies_using_power_spectrum_density():

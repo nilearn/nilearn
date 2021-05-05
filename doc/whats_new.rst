@@ -7,6 +7,12 @@ NEW
 Fixes
 -----
 
+- Fix detrending and temporal filtering order for confounders
+  in :func:`nilearn.signal.clean`, so that these operations are applied
+  in the same order as for the signals, i.e., first detrending and
+  then temporal filtering (https://github.com/nilearn/nilearn/issues/2730).
+
+
 Enhancements
 ------------
 
