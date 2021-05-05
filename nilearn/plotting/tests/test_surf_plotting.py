@@ -118,6 +118,14 @@ def test_plot_surf_error():
 
         plot_surf(mesh, surf_map=rng.standard_normal(size=mesh[0].shape[0]), avg_method=custom_avg_function)
 
+    with pytest.raises(
+        ValueError, match=re.escape("Array computed with the custom function from avg_method should be an array of numbers (int or float)")
+    ):
+        def custom_avg_function(vertices):
+            return "string"
+
+        plot_surf(mesh, surf_map=rng.standard_normal(size=mesh[0].shape[0]), avg_method=custom_avg_function)
+
 def test_plot_surf_stat_map():
     mesh = generate_surf()
     rng = np.random.RandomState(42)

@@ -289,6 +289,10 @@ def plot_surf(surf_mesh, surf_map=None, bg_map=None,
                 raise ValueError('Array computed with the custom function from avg_method does not have the correct shape: {} != {}'.format(surf_map_faces.shape[0], face_colors.shape[0])
                 )
 
+            ## check that dtype is either int or float
+            if not ("int" in str(surf_map_faces.dtype) or "float" in str(surf_map_faces.dtype)):
+                raise ValueError('Array computed with the custom function from avg_method should be an array of numbers (int or float)')
+
         else:
             raise ValueError(f"avg_method should be either ['mean', 'median', 'max', 'min'] or a custom function")
 
