@@ -4,7 +4,8 @@ Making a surface plot of a 3D statistical map
 
 project a 3D statistical map onto a cortical mesh using
 :func:`nilearn.surface.vol_to_surf`. Display a surface plot of the projected
-map using :func:`nilearn.plotting.plot_surf_stat_map`.
+map using :func:`nilearn.plotting.plot_surf_stat_map` and adding contours of
+regions of interest using :func:`nilearn.plotting.plot_surf_contours`.
 
 """
 
@@ -52,6 +53,38 @@ plotting.plot_glass_brain(stat_img, display_mode='r', plot_abs=False,
 plotting.plot_stat_map(stat_img, display_mode='x', threshold=1.,
                        cut_coords=range(0, 51, 10), title='Slices')
 
+##############################################################################
+# Use an atlas and choose regions to outline
+# ------------------------------------------
+
+import numpy as np
+
+destrieux_atlas = datasets.fetch_atlas_surf_destrieux()
+parcellation = destrieux_atlas['map_right']
+
+# these are the regions we want to outline
+regions_dict = {b'G_postcentral': 'Postcentral gyrus',
+                b'G_precentral': 'Precentral gyrus'}
+
+# get indices in atlas for these labels
+regions_indices = [np.where(np.array(destrieux_atlas['labels']) == region)[0][0]
+                   for region in regions_dict]
+
+labels = list(regions_dict.values())
+
+##############################################################################
+# Display outlines of the regions of interest on top of a statistical map
+# -----------------------------------------------------------------------
+
+figure = plotting.plot_surf_stat_map(fsaverage.infl_right, texture, hemi='right',
+                                     title='Surface right hemisphere',
+                                     colorbar=True, threshold=1.,
+                                     bg_map=fsaverage.sulc_right)
+
+plotting.plot_surf_contours(fsaverage.infl_right, parcellation, labels=labels,
+                            levels=regions_indices, figure=figure, legend=True,
+                            colors=['g', 'k'])
+plotting.show()
 
 ##############################################################################
 # Plot with higher-resolution mesh
@@ -71,8 +104,21 @@ plotting.plot_surf_stat_map(big_fsaverage.infl_right,
                             threshold=1., bg_map=big_fsaverage.sulc_right)
 
 
-plotting.show()
+##############################################################################
+# Plot multiple views of the 3D volume on a surface
+# -------------------------------------------------
+#
+# *plot_img_on_surf* takes a statistical map and projects it onto a surface.
+# It supports multiple choices of orientations, and can plot either one or both
+# hemispheres. If no *surf_mesh* is given, *plot_img_on_surf* projects the
+# images onto `FreeSurfer <https://surfer.nmr.mgh.harvard.edu/>`_\'s
+# fsaverage5.
 
+plotting.plot_img_on_surf(stat_img,
+                          views=['lateral', 'medial'],
+                          hemispheres=['left', 'right'],
+                          colorbar=True)
+plotting.show()
 
 ##############################################################################
 # 3D visualization in a web browser

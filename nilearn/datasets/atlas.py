@@ -20,47 +20,154 @@ from ..image import new_img_like, get_data
 _TALAIRACH_LEVELS = ['hemisphere', 'lobe', 'gyrus', 'tissue', 'ba']
 
 
+def fetch_atlas_difumo(dimension=64, resolution_mm=2, data_dir=None, resume=True, verbose=1):
+    """Fetch DiFuMo brain atlas
+
+    Dictionaries of Functional Modes, or “DiFuMo”, can serve as atlases to extract
+    functional signals with different dimensionalities (64, 128, 256, 512, and 1024).
+    These modes are optimized to represent well raw BOLD timeseries,
+    over a with range of experimental conditions. See :footcite:`DADI2020117126`.
+
+    Notes
+    -----
+    Direct download links from OSF:
+
+    - 64: https://osf.io/pqu9r/download
+    - 128: https://osf.io/wjvd5/download
+    - 256: https://osf.io/3vrct/download
+    - 512: https://osf.io/9b76y/download
+    - 1024: https://osf.io/34792/download
+
+    Parameters
+    ----------
+    dimension : int, optional
+        Number of dimensions in the dictionary. Valid resolutions
+        available are {64, 128, 256, 512, 1024}.
+        Default=64.
+
+    resolution_mm : int, optional
+        The resolution in mm of the atlas to fetch. Valid options
+        available are {2, 3}. Default=2mm.
+
+    data_dir : string, optional
+        Path where data should be downloaded. By default,
+        files are downloaded in home directory.
+
+    resume : bool, optional
+        Whether to resumed download of a partly-downloaded file.
+        Default=True.
+
+    verbose : int, optional
+        Verbosity level (0 means no message). Default=1.
+
+    Returns
+    -------
+    data : sklearn.datasets.base.Bunch
+        Dictionary-like object, the interest attributes are :
+
+        - 'maps': str, 4D path to nifti file containing regions definition.
+        - 'labels': Numpy recarray containing the labels of the regions.
+        - 'description': str, general description of the dataset.
+
+    References
+    ----------
+    .. footbibliography::
+
+    """
+    dic = {64: 'pqu9r',
+           128: 'wjvd5',
+           256: '3vrct',
+           512: '9b76y',
+           1024: '34792',
+           }
+    valid_dimensions = [64, 128, 256, 512, 1024]
+    valid_resolution_mm = [2, 3]
+    if dimension not in valid_dimensions:
+        raise ValueError("Requested dimension={} is not available. Valid "
+                         "options: {}".format(dimension, valid_dimensions))
+    if resolution_mm not in valid_resolution_mm:
+        raise ValueError("Requested resolution_mm={} is not available. Valid "
+                         "options: {}".format(resolution_mm,
+                                              valid_resolution_mm))
+
+    url = 'https://osf.io/{}/download'.format(dic[dimension])
+    opts = {'uncompress': True}
+
+    csv_file = os.path.join('{0}', 'labels_{0}_dictionary.csv')
+    if resolution_mm != 3:
+        nifti_file = os.path.join('{0}', '2mm', 'maps.nii.gz')
+    else:
+        nifti_file = os.path.join('{0}', '3mm', 'maps.nii.gz')
+
+    files = [(csv_file.format(dimension), url, opts),
+             (nifti_file.format(dimension), url, opts)]
+
+    dataset_name = 'difumo_atlases'
+
+    data_dir = _get_dataset_dir(dataset_name=dataset_name, data_dir=data_dir,
+                                verbose=verbose)
+
+    # Download the zip file, first
+    files_ = _fetch_files(data_dir, files, verbose=verbose)
+    labels = np.recfromcsv(files_[0])
+
+    # README
+    readme_files = [('README.md', 'https://osf.io/4k9bf/download',
+                    {'move': 'README.md'})]
+    if not os.path.exists(os.path.join(data_dir, 'README.md')):
+        _fetch_files(data_dir, readme_files, verbose=verbose)
+
+    fdescr = _get_dataset_descr(dataset_name)
+
+    params = dict(description=fdescr, maps=files_[1], labels=labels)
+
+    return Bunch(**params)
+
+
 def fetch_atlas_craddock_2012(data_dir=None, url=None, resume=True, verbose=1):
     """Download and return file names for the Craddock 2012 parcellation
 
     The provided images are in MNI152 space.
 
+    See [1]_ for the licence and [2]_ and [3]_ for more information
+    on this parcellation.
+
     Parameters
     ----------
-    data_dir: string
-        directory where data should be downloaded and unpacked.
+    data_dir : string, optional
+        Directory where data should be downloaded and unpacked.
 
-    url: string
+    url : string, optional
         url of file to download.
 
-    resume: bool
-        whether to resumed download of a partly-downloaded file.
+    resume : bool, optional
+        Whether to resumed download of a partly-downloaded file.
+        Default=True.
 
-    verbose: int
-        verbosity level (0 means no message).
+    verbose : int, optional
+        Verbosity level (0 means no message). Default=1.
 
     Returns
     -------
-    data: sklearn.datasets.base.Bunch
-        dictionary-like object, keys are:
+    data : sklearn.datasets.base.Bunch
+        Dictionary-like object, keys are:
         scorr_mean, tcorr_mean,
         scorr_2level, tcorr_2level,
         random
 
     References
     ----------
-    Licence: Creative Commons Attribution Non-commercial Share Alike
-    http://creativecommons.org/licenses/by-nc-sa/2.5/
+    .. [1] Licence: Creative Commons Attribution Non-commercial Share Alike
+       http://creativecommons.org/licenses/by-nc-sa/2.5/
 
-    Craddock, R. Cameron, G.Andrew James, Paul E. Holtzheimer, Xiaoping P. Hu,
-    and Helen S. Mayberg. "A Whole Brain fMRI Atlas Generated via Spatially
-    Constrained Spectral Clustering". Human Brain Mapping 33, no 8 (2012):
-    1914-1928. doi:10.1002/hbm.21333.
+    .. [2] Craddock, R. Cameron, G.Andrew James, Paul E. Holtzheimer, Xiaoping P. Hu,
+       and Helen S. Mayberg. "A Whole Brain fMRI Atlas Generated via Spatially
+       Constrained Spectral Clustering". Human Brain Mapping 33, no 8 (2012):
+       1914-1928. doi:10.1002/hbm.21333.
 
-    See http://www.nitrc.org/projects/cluster_roi/ for more information
-    on this parcellation.
+    .. [3] http://www.nitrc.org/projects/cluster_roi/
+
     """
-
     if url is None:
         url = "ftp://www.nitrc.org/home/groups/cluster_roi/htdocs" \
               "/Parcellations/craddock_2011_parcellations.tar.gz"
@@ -92,37 +199,47 @@ def fetch_atlas_craddock_2012(data_dir=None, url=None, resume=True, verbose=1):
 
 def fetch_atlas_destrieux_2009(lateralized=True, data_dir=None, url=None,
                                resume=True, verbose=1):
-    """Download and load the Destrieux cortical atlas (dated 2009)
+    """Download and load the Destrieux cortical atlas (dated 2009) [1]_ [2]_.
 
     Parameters
     ----------
-    lateralized: boolean, optional
+    lateralized : boolean, optional
         If True, returns an atlas with distinct regions for right and left
-        hemispheres.
-    data_dir: string, optional
+        hemispheres. Default=True.
+
+    data_dir : string, optional
         Path of the data directory. Use to forec data storage in a non-
         standard location. Default: None (meaning: default)
-    url: string, optional
+
+    url : string, optional
         Download URL of the dataset. Overwrite the default URL.
+
+    resume : bool, optional
+        Whether to resumed download of a partly-downloaded file.
+        Default=True.
+
+    verbose : int, optional
+        Verbosity level (0 means no message). Default=1.
 
     Returns
     -------
-    data: sklearn.datasets.base.Bunch
-        dictionary-like object, contains:
+    data : sklearn.datasets.base.Bunch
+        Dictionary-like object, contains:
+
         - Cortical ROIs, lateralized or not (maps)
         - Labels of the ROIs (labels)
 
     References
     ----------
+    .. [1] Fischl, Bruce, et al. "Automatically parcellating the human cerebral
+       cortex." Cerebral cortex 14.1 (2004): 11-22.
 
-    Fischl, Bruce, et al. "Automatically parcellating the human cerebral
-    cortex." Cerebral cortex 14.1 (2004): 11-22.
+    .. [2] Destrieux, C., et al. "A sulcal depth-based anatomical parcellation
+       of the cerebral cortex." NeuroImage 47 (2009): S151.
 
-    Destrieux, C., et al. "A sulcal depth-based anatomical parcellation
-    of the cerebral cortex." NeuroImage 47 (2009): S151.
     """
     if url is None:
-        url = "https://www.nitrc.org/frs/download.php/7739/"
+        url = "https://www.nitrc.org/frs/download.php/11942/"
 
     url += "destrieux2009.tgz"
     opts = {'uncompress': True}
@@ -162,7 +279,7 @@ def fetch_atlas_harvard_oxford(atlas_name, data_dir=None,
 
     Parameters
     ----------
-    atlas_name: string
+    atlas_name : string
         Name of atlas to load. Can be:
         cort-maxprob-thr0-1mm,  cort-maxprob-thr0-2mm,
         cort-maxprob-thr25-1mm, cort-maxprob-thr25-2mm,
@@ -173,7 +290,7 @@ def fetch_atlas_harvard_oxford(atlas_name, data_dir=None,
         cort-prob-1mm, cort-prob-2mm,
         sub-prob-1mm, sub-prob-2mm
 
-    data_dir: string, optional
+    data_dir : string, optional
         Path of data directory where data will be stored. Optionally,
         it can also be a FSL installation directory (which is dependent
         on your installation).
@@ -182,23 +299,32 @@ def fetch_atlas_harvard_oxford(atlas_name, data_dir=None,
         from your installed directory. Since we mimic same root directory
         as FSL to load it easily from your installation.
 
-    symmetric_split: bool, optional, (default False).
+    symmetric_split : bool, optional
         If True, lateralized atlases of cort or sub with maxprob will be
         returned. For subcortical types (sub-maxprob), we split every
         symmetric region in left and right parts. Effectively doubles the
         number of regions.
         NOTE Not implemented for full probabilistic atlas (*-prob-* atlases).
+        Default=False.
+
+    resume : bool, optional
+        Whether to resumed download of a partly-downloaded file.
+        Default=True.
+
+    verbose : int, optional
+        Verbosity level (0 means no message). Default=1.
 
     Returns
     -------
-    data: sklearn.datasets.base.Bunch
-        dictionary-like object, keys are:
+    data : sklearn.datasets.base.Bunch
+        Dictionary-like object, keys are:
 
         - "maps": nibabel.Nifti1Image, 4D maps if a probabilistic atlas is
           requested and 3D labels if a maximum probabilistic atlas was
           requested.
 
         - "labels": string list, labels of the regions in the atlas.
+
     """
     atlas_items = ("cort-maxprob-thr0-1mm", "cort-maxprob-thr0-2mm",
                    "cort-maxprob-thr25-1mm", "cort-maxprob-thr25-2mm",
@@ -303,19 +429,29 @@ def fetch_atlas_harvard_oxford(atlas_name, data_dir=None,
 def fetch_atlas_msdl(data_dir=None, url=None, resume=True, verbose=1):
     """Download and load the MSDL brain atlas.
 
+    It can be downloaded at [1]_, and cited using [2]_. See also [3]_
+    for more information.
+
     Parameters
     ----------
-    data_dir: string, optional
+    data_dir : string, optional
         Path of the data directory. Used to force data storage in a specified
         location. Default: None
 
-    url: string, optional
+    url : string, optional
         Override download URL. Used for test only (or if you setup a mirror of
         the data).
 
+    resume : bool, optional
+        Whether to resumed download of a partly-downloaded file.
+        Default=True.
+
+    verbose : int, optional
+        Verbosity level (0 means no message). Default=1.
+
     Returns
     -------
-    data: sklearn.datasets.base.Bunch
+    data : sklearn.datasets.base.Bunch
         Dictionary-like object, the interest attributes are :
 
         - 'maps': str, path to nifti file containing regions definition.
@@ -325,23 +461,19 @@ def fetch_atlas_msdl(data_dir=None, url=None, resume=True, verbose=1):
         - 'networks': string list containing names of the networks.
         - 'description': description about the atlas.
 
-
     References
     ----------
-    :Download:
-        https://team.inria.fr/parietal/files/2015/01/MSDL_rois.zip
+    .. [1] https://team.inria.fr/parietal/files/2015/01/MSDL_rois.zip
 
-    :Paper to cite:
-        `Multi-subject dictionary learning to segment an atlas of brain
-        spontaneous activity <http://hal.inria.fr/inria-00588898/en>`_
-        Gael Varoquaux, Alexandre Gramfort, Fabian Pedregosa, Vincent Michel,
-        Bertrand Thirion. Information Processing in Medical Imaging, 2011,
-        pp. 562-573, Lecture Notes in Computer Science.
+    .. [2] `Multi-subject dictionary learning to segment an atlas of brain
+       spontaneous activity <http://hal.inria.fr/inria-00588898/en>`_
+       Gael Varoquaux, Alexandre Gramfort, Fabian Pedregosa, Vincent Michel,
+       Bertrand Thirion. Information Processing in Medical Imaging, 2011,
+       pp. 562-573, Lecture Notes in Computer Science.
 
-    :Other references:
-        `Learning and comparing functional connectomes across subjects
-        <http://hal.inria.fr/hal-00812911/en>`_.
-        Gael Varoquaux, R.C. Craddock NeuroImage, 2013.
+    .. [3] `Learning and comparing functional connectomes across subjects
+       <http://hal.inria.fr/hal-00812911/en>`_.
+       Gael Varoquaux, R.C. Craddock NeuroImage, 2013.
 
     """
     url = 'https://team.inria.fr/parietal/files/2015/01/MSDL_rois.zip'
@@ -369,19 +501,20 @@ def fetch_atlas_msdl(data_dir=None, url=None, resume=True, verbose=1):
 
 
 def fetch_coords_power_2011():
-    """Download and load the Power et al. brain atlas composed of 264 ROIs.
+    """Download and load the Power et al. brain atlas composed of 264 ROIs [1]_.
 
     Returns
     -------
-    data: sklearn.datasets.base.Bunch
-        dictionary-like object, contains:
+    data : sklearn.datasets.base.Bunch
+        Dictionary-like object, contains:
         - "rois": coordinates of 264 ROIs in MNI space
 
 
     References
     ----------
-    Power, Jonathan D., et al. "Functional network organization of the human
-    brain." Neuron 72.4 (2011): 665-678.
+    .. [1] Power, Jonathan D., et al. "Functional network organization of the human
+       brain." Neuron 72.4 (2011): 665-678.
+
     """
     dataset_name = 'power_2011'
     fdescr = _get_dataset_descr(dataset_name)
@@ -394,24 +527,33 @@ def fetch_coords_power_2011():
 
 def fetch_atlas_smith_2009(data_dir=None, mirror='origin', url=None,
                            resume=True, verbose=1):
-    """Download and load the Smith ICA and BrainMap atlas (dated 2009)
+    """Download and load the Smith ICA and BrainMap atlas (dated 2009) [1]_ [2]_.
 
     Parameters
     ----------
-    data_dir: string, optional
+    data_dir : string, optional
         Path of the data directory. Used to force data storage in a non-
         standard location. Default: None (meaning: default)
-    mirror: string, optional
+
+    mirror : string, optional
         By default, the dataset is downloaded from the original website of the
         atlas. Specifying "nitrc" will force download from a mirror, with
-        potentially higher bandwith.
-    url: string, optional
+        potentially higher bandwith. Default='origin'.
+
+    url : string, optional
         Download URL of the dataset. Overwrite the default URL.
+
+    resume : bool, optional
+        Whether to resumed download of a partly-downloaded file.
+        Default=True.
+
+    verbose : int, optional
+        Verbosity level (0 means no message). Default=1.
 
     Returns
     -------
-    data: sklearn.datasets.base.Bunch
-        dictionary-like object, contains:
+    data : sklearn.datasets.base.Bunch
+        Dictionary-like object, contains:
 
         - 20-dimensional ICA, Resting-FMRI components:
 
@@ -427,23 +569,22 @@ def fetch_atlas_smith_2009(data_dir=None, mirror='origin', url=None,
 
         - 70-dimensional ICA, BrainMap components (bm70)
 
-
     References
     ----------
+    .. [1] S.M. Smith, P.T. Fox, K.L. Miller, D.C. Glahn, P.M. Fox, C.E. Mackay, N.
+       Filippini, K.E. Watkins, R. Toro, A.R. Laird, and C.F. Beckmann.
+       Correspondence of the brain's functional architecture during activation and
+       rest. Proc Natl Acad Sci USA (PNAS), 106(31):13040-13045, 2009.
 
-    S.M. Smith, P.T. Fox, K.L. Miller, D.C. Glahn, P.M. Fox, C.E. Mackay, N.
-    Filippini, K.E. Watkins, R. Toro, A.R. Laird, and C.F. Beckmann.
-    Correspondence of the brain's functional architecture during activation and
-    rest. Proc Natl Acad Sci USA (PNAS), 106(31):13040-13045, 2009.
-
-    A.R. Laird, P.M. Fox, S.B. Eickhoff, J.A. Turner, K.L. Ray, D.R. McKay, D.C
-    Glahn, C.F. Beckmann, S.M. Smith, and P.T. Fox. Behavioral interpretations
-    of intrinsic connectivity networks. Journal of Cognitive Neuroscience, 2011
+    .. [2] A.R. Laird, P.M. Fox, S.B. Eickhoff, J.A. Turner, K.L. Ray, D.R. McKay, D.C
+       Glahn, C.F. Beckmann, S.M. Smith, and P.T. Fox. Behavioral interpretations
+       of intrinsic connectivity networks. Journal of Cognitive Neuroscience, 2011
 
     Notes
     -----
     For more information about this dataset's structure:
     http://www.fmrib.ox.ac.uk/datasets/brainmap+rsns/
+
     """
     if url is None:
         if mirror == 'origin':
@@ -495,24 +636,27 @@ def fetch_atlas_yeo_2011(data_dir=None, url=None, resume=True, verbose=1):
 
     The provided images are in MNI152 space.
 
+    For more information on this dataset's structure, see [1]_ and [2]_.
+
     Parameters
     ----------
-    data_dir: string
-        directory where data should be downloaded and unpacked.
+    data_dir : string, optional
+        Directory where data should be downloaded and unpacked.
 
-    url: string
-        url of file to download.
+    url : string, optional
+        Url of file to download.
 
-    resume: bool
-        whether to resumed download of a partly-downloaded file.
+    resume : bool, optional
+        Whether to resumed download of a partly-downloaded file.
+        Default=True.
 
-    verbose: int
-        verbosity level (0 means no message).
+    verbose : int, optional
+        Verbosity level (0 means no message). Default=1.
 
     Returns
     -------
-    data: sklearn.datasets.base.Bunch
-        dictionary-like object, keys are:
+    data : sklearn.datasets.base.Bunch
+        Dictionary-like object, keys are:
 
         - "thin_7", "thick_7": 7-region parcellations,
           fitted to resp. thin and thick template cortex segmentations.
@@ -524,17 +668,19 @@ def fetch_atlas_yeo_2011(data_dir=None, url=None, resume=True, verbose=1):
 
         - "anat": anatomy image.
 
+    References
+    ----------
+    .. [1] http://surfer.nmr.mgh.harvard.edu/fswiki/CorticalParcellation_Yeo2011
+
+    .. [2] Yeo BT, Krienen FM, Sepulcre J, Sabuncu MR, Lashkari D, Hollinshead M,
+       Roffman JL, Smoller JW, Zollei L., Polimeni JR, Fischl B, Liu H,
+       Buckner RL. The organization of the human cerebral cortex estimated by
+       intrinsic functional connectivity. J Neurophysiol 106(3):1125-65, 2011.
+
     Notes
     -----
-    For more information on this dataset's structure, see
-    http://surfer.nmr.mgh.harvard.edu/fswiki/CorticalParcellation_Yeo2011
-
-    Yeo BT, Krienen FM, Sepulcre J, Sabuncu MR, Lashkari D, Hollinshead M,
-    Roffman JL, Smoller JW, Zollei L., Polimeni JR, Fischl B, Liu H,
-    Buckner RL. The organization of the human cerebral cortex estimated by
-    intrinsic functional connectivity. J Neurophysiol 106(3):1125-65, 2011.
-
     Licence: unknown.
+
     """
     if url is None:
         url = ('ftp://surfer.nmr.mgh.harvard.edu/pub/data/'
@@ -577,45 +723,50 @@ def fetch_atlas_aal(version='SPM12', data_dir=None, url=None, resume=True,
     the Montreal Neurological Institute (MNI) (D. L. Collins et al., 1998,
     Trans. Med. Imag. 17, 463-468, PubMed).
 
+    For more information on this dataset's structure, see [1]_ and [2]_.
+
     Parameters
     ----------
-    version: string, optional
-        The version of the AAL atlas. Must be SPM5, SPM8 or SPM12. Default is
-        SPM12.
+    version : string {'SPM12', 'SPM5', 'SPM8'}, optional
+        The version of the AAL atlas. Must be SPM5, SPM8 or SPM12.
+        Default='SPM12'.
 
-    data_dir: string
-        directory where data should be downloaded and unpacked.
+    data_dir : string, optional
+        Directory where data should be downloaded and unpacked.
 
-    url: string
-        url of file to download.
+    url : string, optional
+        Url of file to download.
 
-    resume: bool
-        whether to resumed download of a partly-downloaded file.
+    resume : bool, optional
+        Whether to resumed download of a partly-downloaded file.
+        Default=True.
 
-    verbose: int
-        verbosity level (0 means no message).
+    verbose : int, optional
+        Verbosity level (0 means no message). Default=1.
 
     Returns
     -------
-    data: sklearn.datasets.base.Bunch
-        dictionary-like object, keys are:
+    data : sklearn.datasets.base.Bunch
+        Dictionary-like object, keys are:
 
         - "maps": str. path to nifti file containing regions.
 
         - "labels": list of the names of the regions
 
+    References
+    ----------
+    .. [1] http://www.gin.cnrs.fr/AAL-217?lang=en
+
+    .. [2] Automated Anatomical Labeling of Activations in SPM Using a Macroscopic
+       Anatomical Parcellation of the MNI MRI Single-Subject Brain.
+       N. Tzourio-Mazoyer, B. Landeau, D. Papathanassiou, F. Crivello,
+       O. Etard, N. Delcroix, B. Mazoyer, and M. Joliot.
+       NeuroImage 2002. 15 :273-28
+
     Notes
     -----
-    For more information on this dataset's structure, see
-    http://www.gin.cnrs.fr/AAL-217?lang=en
-
-    Automated Anatomical Labeling of Activations in SPM Using a Macroscopic
-    Anatomical Parcellation of the MNI MRI Single-Subject Brain.
-    N. Tzourio-Mazoyer, B. Landeau, D. Papathanassiou, F. Crivello,
-    O. Etard, N. Delcroix, B. Mazoyer, and M. Joliot.
-    NeuroImage 2002. 15 :273-28
-
     Licence: unknown.
+
     """
     versions = ['SPM5', 'SPM8', 'SPM12']
     if version not in versions:
@@ -641,13 +792,12 @@ def fetch_atlas_aal(version='SPM12', data_dir=None, url=None, resume=True,
                                           verbose=verbose)
 
     fdescr = _get_dataset_descr(dataset_name)
-
     # We return the labels contained in the xml file as a dictionary
     xml_tree = xml.etree.ElementTree.parse(labels_file)
     root = xml_tree.getroot()
     labels = []
     indices = []
-    for label in root.getiterator('label'):
+    for label in root.iter('label'):
         indices.append(label.find('index').text)
         labels.append(label.find('name').text)
 
@@ -657,7 +807,7 @@ def fetch_atlas_aal(version='SPM12', data_dir=None, url=None, resume=True,
     return Bunch(**params)
 
 
-def fetch_atlas_basc_multiscale_2015(version='sym', data_dir=None,
+def fetch_atlas_basc_multiscale_2015(version='sym', data_dir=None, url=None,
                                      resume=True, verbose=1):
     """Downloads and loads multiscale functional brain parcellations
 
@@ -668,9 +818,8 @@ def fetch_atlas_basc_multiscale_2015(version='sym', data_dir=None,
     Multiple scales (number of networks) are available, among
     7, 12, 20, 36, 64, 122, 197, 325, 444. The brain parcellations
     have been generated using a method called bootstrap analysis of
-    stable clusters called as BASC, (Bellec et al., 2010) and the
-    scales have been selected using a data-driven method called MSTEPS
-    (Bellec, 2013).
+    stable clusters called as BASC [1]_, and the scales have been
+    selected using a data-driven method called MSTEPS [2]_.
 
     Note that two versions of the template are available, 'sym' or 'asym'.
     The 'asym' type contains brain images that have been registered in the
@@ -685,26 +834,28 @@ def fetch_atlas_basc_multiscale_2015(version='sym', data_dir=None,
 
     Parameters
     ----------
-    version: str, optional
+    version : str {'sym', 'asym'}, optional
         Available versions are 'sym' or 'asym'. By default all scales of
         brain parcellations of version 'sym' will be returned.
+        Default='sym'.
 
-    data_dir: str, optional
-        directory where data should be downloaded and unpacked.
+    data_dir : str, optional
+        Directory where data should be downloaded and unpacked.
 
-    url: str, optional
-        url of file to download.
+    url : str, optional
+        Url of file to download.
 
-    resume: bool
-        whether to resumed download of a partly-downloaded file.
+    resume : bool, optional
+        Whether to resumed download of a partly-downloaded file.
+        Default=True.
 
-    verbose: int
-        verbosity level (0 means no message).
+    verbose : int, optional
+        Verbosity level (0 means no message). Default=1.
 
     Returns
     -------
-    data: sklearn.datasets.base.Bunch
-        dictionary-like object, Keys are:
+    data : sklearn.datasets.base.Bunch
+        Dictionary-like object, Keys are:
 
         - "scale007", "scale012", "scale020", "scale036", "scale064",
           "scale122", "scale197", "scale325", "scale444": str, path
@@ -714,19 +865,20 @@ def fetch_atlas_basc_multiscale_2015(version='sym', data_dir=None,
 
     References
     ----------
-    Bellec P, Rosa-Neto P, Lyttelton OC, Benali H, Evans AC, Jul. 2010.
-    Multi-level bootstrap analysis of stable clusters in resting-state fMRI.
-    NeuroImage 51 (3), 1126-1139.
-    URL http://dx.doi.org/10.1016/j.neuroimage.2010.02.082
+    .. [1] Bellec P, Rosa-Neto P, Lyttelton OC, Benali H, Evans AC, Jul. 2010.
+       Multi-level bootstrap analysis of stable clusters in resting-state fMRI.
+       NeuroImage 51 (3), 1126-1139.
+       URL http://dx.doi.org/10.1016/j.neuroimage.2010.02.082
 
-    Bellec P, Jun. 2013. Mining the Hierarchy of Resting-State Brain Networks:
-    Selection of Representative Clusters in a Multiscale Structure.
-    Pattern Recognition in Neuroimaging (PRNI), 2013 pp. 54-57.
+    .. [2] Bellec P, Jun. 2013. Mining the Hierarchy of Resting-State Brain Networks:
+       Selection of Representative Clusters in a Multiscale Structure.
+       Pattern Recognition in Neuroimaging (PRNI), 2013 pp. 54-57.
 
     Notes
     -----
     For more information on this dataset's structure, see
     https://figshare.com/articles/basc/1285615
+
     """
     versions = ['sym', 'asym']
     if version not in versions:
@@ -766,26 +918,29 @@ def fetch_atlas_basc_multiscale_2015(version='sym', data_dir=None,
 def fetch_coords_dosenbach_2010(ordered_regions=True):
     """Load the Dosenbach et al. 160 ROIs. These ROIs cover
     much of the cerebral cortex and cerebellum and are assigned to 6
-    networks.
+    networks [1]_.
 
     Parameters
     ----------
     ordered_regions : bool, optional
         ROIs from same networks are grouped together and ordered with respect
         to their names and their locations (anterior to posterior).
+        Default=True.
 
     Returns
     -------
-    data: sklearn.datasets.base.Bunch
-        dictionary-like object, contains:
+    data : sklearn.datasets.base.Bunch
+        Dictionary-like object, contains:
+
         - "rois": coordinates of 160 ROIs in MNI space
         - "labels": ROIs labels
         - "networks": networks names
 
     References
     ----------
-    Dosenbach N.U., Nardos B., et al. "Prediction of individual brain maturity
-    using fMRI.", 2010, Science 329, 1358-1361.
+    .. [1] Dosenbach N.U., Nardos B., et al. "Prediction of individual brain maturity
+       using fMRI.", 2010, Science 329, 1358-1361.
+
     """
     dataset_name = 'dosenbach_2010'
     fdescr = _get_dataset_descr(dataset_name)
@@ -815,7 +970,7 @@ def fetch_coords_seitzman_2018(ordered_regions=True):
     FrontoParietal, MedialTemporalLobe, ParietoMedial, Reward, Salience,
     SomatomotorDorsal, SomatomotorLateral, VentralAttention, Visual) and
     have a regional label (cortexL, cortexR, cerebellum, thalamus, hippocampus,
-    basalGanglia, amygdala, cortexMid).
+    basalGanglia, amygdala, cortexMid). See [1]_.
 
     .. versionadded:: 0.5.1
 
@@ -823,12 +978,13 @@ def fetch_coords_seitzman_2018(ordered_regions=True):
     ----------
     ordered_regions : bool, optional
         ROIs from same networks are grouped together and ordered with respect
-        to their locations (anterior to posterior).
+        to their locations (anterior to posterior). Default=True.
 
     Returns
     -------
-    data: sklearn.datasets.base.Bunch
-        dictionary-like object, contains:
+    data : sklearn.datasets.base.Bunch
+        Dictionary-like object, contains:
+
         - "rois": Coordinates of 300 ROIs in MNI space
         - "radius": Radius of each ROI in mm
         - "networks": Network names
@@ -836,10 +992,11 @@ def fetch_coords_seitzman_2018(ordered_regions=True):
 
     References
     ----------
-    Seitzman, B. A., Gratton, C., Marek, S., Raut, R. V., Dosenbach, N. U.,
-    Schlaggar, B. L., et al. (2018). A set of functionally-defined brain
-    regions with improved representation of the subcortex and cerebellum.
-    bioRxiv, 450452. http://doi.org/10.1101/450452
+    .. [1] Seitzman, B. A., Gratton, C., Marek, S., Raut, R. V., Dosenbach, N. U.,
+       Schlaggar, B. L., et al. (2018). A set of functionally-defined brain
+       regions with improved representation of the subcortex and cerebellum.
+       bioRxiv, 450452. http://doi.org/10.1101/450452
+
     """
     dataset_name = 'seitzman_2018'
     fdescr = _get_dataset_descr(dataset_name)
@@ -883,25 +1040,29 @@ def fetch_coords_seitzman_2018(ordered_regions=True):
 
 def fetch_atlas_allen_2011(data_dir=None, url=None, resume=True, verbose=1):
     """Download and return file names for the Allen and MIALAB ICA atlas
-    (dated 2011).
+    (dated 2011). See [1]_.
 
     The provided images are in MNI152 space.
 
     Parameters
     ----------
-    data_dir: str, optional
-        directory where data should be downloaded and unpacked.
-    url: str, optional
-        url of file to download.
-    resume: bool
-        whether to resumed download of a partly-downloaded file.
-    verbose: int
-        verbosity level (0 means no message).
+    data_dir : str, optional
+        Directory where data should be downloaded and unpacked.
+
+    url : str, optional
+        Url of file to download.
+
+    resume : bool, optional
+        Whether to resumed download of a partly-downloaded file.
+        Default=True.
+
+    verbose : int, optional
+        Verbosity level (0 means no message). Default=1.
 
     Returns
     -------
-    data: sklearn.datasets.base.Bunch
-        dictionary-like object, keys are:
+    data : sklearn.datasets.base.Bunch
+        Dictionary-like object, keys are:
 
         - "maps": T-maps of all 75 unthresholded components.
         - "rsn28": T-maps of 28 RSNs included in E. Allen et al.
@@ -913,8 +1074,8 @@ def fetch_atlas_allen_2011(data_dir=None, url=None, resume=True, verbose=1):
 
     References
     ----------
-    E. Allen, et al, "A baseline for the multivariate comparison of resting
-    state networks," Frontiers in Systems Neuroscience, vol. 5, p. 12, 2011.
+    .. [1] E. Allen, et al, "A baseline for the multivariate comparison of resting
+       state networks," Frontiers in Systems Neuroscience, vol. 5, p. 12, 2011.
 
     Notes
     -----
@@ -922,6 +1083,7 @@ def fetch_atlas_allen_2011(data_dir=None, url=None, resume=True, verbose=1):
 
     See http://mialab.mrn.org/data/index.html for more information
     on this dataset.
+
     """
     if url is None:
         url = "https://osf.io/hrcku/download"
@@ -965,7 +1127,7 @@ def fetch_atlas_allen_2011(data_dir=None, url=None, resume=True, verbose=1):
 
 def fetch_atlas_surf_destrieux(data_dir=None, url=None,
                                resume=True, verbose=1):
-    """Download and load Destrieux et al, 2010 cortical atlas.
+    """Download and load Destrieux et al, 2010 cortical atlas [1]_.
 
     This atlas returns 76 labels per hemisphere based on sulco-gryal pattnerns
     as distributed with Freesurfer in fsaverage5 surface space.
@@ -974,23 +1136,25 @@ def fetch_atlas_surf_destrieux(data_dir=None, url=None,
 
     Parameters
     ----------
-    data_dir: str, optional
+    data_dir : str, optional
         Path of the data directory. Use to force data storage in a non-
         standard location. Default: None
 
-    url: str, optional
+    url : str, optional
         Download URL of the dataset. Overwrite the default URL.
 
-    resume: bool, optional (default True)
+    resume : bool, optional
         If True, try resuming download if possible.
+        Default=True.
 
-    verbose: int, optional (default 1)
+    verbose : int, optional
         Defines the level of verbosity of the output.
+        Default=1.
 
     Returns
     -------
-    data: sklearn.datasets.base.Bunch
-        dictionary-like object, contains:
+    data : sklearn.datasets.base.Bunch
+        Dictionary-like object, contains:
 
         - "labels": list
                      Contains region labels
@@ -1006,13 +1170,12 @@ def fetch_atlas_surf_destrieux(data_dir=None, url=None,
         - "description": str
                          Details about the dataset
 
-
     References
     ----------
-    Destrieux et al. (2010), Automatic parcellation of human cortical gyri and
-    sulci using standard anatomical nomenclature. NeuroImage 53, 1-15.
-    """
+    .. [1] Destrieux et al. (2010), Automatic parcellation of human cortical gyri and
+       sulci using standard anatomical nomenclature. NeuroImage 53, 1-15.
 
+    """
     if url is None:
         url = "https://www.nitrc.org/frs/download.php/"
 
@@ -1138,20 +1301,22 @@ def _get_talairach_all_levels(data_dir=None, verbose=1):
 def fetch_atlas_talairach(level_name, data_dir=None, verbose=1):
     """Download the Talairach atlas.
 
+    For more information, see [1]_, [2]_, and [3]_.
+
     .. versionadded:: 0.4.0
 
     Parameters
     ----------
-    level_name : {'hemisphere', 'lobe', 'gyrus', 'tissue', 'ba'}
+    level_name : string {'hemisphere', 'lobe', 'gyrus', 'tissue', 'ba'}
         Which level of the atlas to use: the hemisphere, the lobe, the gyrus,
-          the tissue type or the Brodmann area.
+        the tissue type or the Brodmann area.
 
-    data_dir : str, optional (default=None)
+    data_dir : str, optional
         Path of the data directory. Used to force data storage in a specified
         location.
 
-    verbose : int
-        verbosity level (0 means no message).
+    verbose : int, optional
+        Verbosity level (0 means no message). Default=1.
 
     Returns
     -------
@@ -1164,17 +1329,17 @@ def fetch_atlas_talairach(level_name, data_dir=None, verbose=1):
 
     References
     ----------
-    http://talairach.org/about.html#Labels
+    .. [1] http://talairach.org/about.html#Labels
 
-    `Lancaster JL, Woldorff MG, Parsons LM, Liotti M, Freitas CS, Rainey L,
-    Kochunov PV, Nickerson D, Mikiten SA, Fox PT, "Automated Talairach Atlas
-    labels for functional brain mapping". Human Brain Mapping 10:120-131,
-    2000.`
+    .. [2] `Lancaster JL, Woldorff MG, Parsons LM, Liotti M, Freitas CS, Rainey L,
+       Kochunov PV, Nickerson D, Mikiten SA, Fox PT, "Automated Talairach Atlas
+       labels for functional brain mapping". Human Brain Mapping 10:120-131, 2000.`
 
-    `Lancaster JL, Rainey LH, Summerlin JL, Freitas CS, Fox PT, Evans AC, Toga
-    AW, Mazziotta JC. Automated labeling of the human brain: A preliminary
-    report on the development and evaluation of a forward-transform method. Hum
-    Brain Mapp 5, 238-242, 1997.`
+    .. [3] `Lancaster JL, Rainey LH, Summerlin JL, Freitas CS, Fox PT, Evans AC, Toga
+       AW, Mazziotta JC. Automated labeling of the human brain: A preliminary
+       report on the development and evaluation of a forward-transform method. Hum
+       Brain Mapp 5, 238-242, 1997.`
+
     """
     if level_name not in _TALAIRACH_LEVELS:
         raise ValueError('"level_name" should be one of {}'.format(
@@ -1193,22 +1358,21 @@ def fetch_atlas_talairach(level_name, data_dir=None, verbose=1):
 
 def fetch_atlas_pauli_2017(version='prob', data_dir=None, verbose=1):
     """Download the Pauli et al. (2017) atlas with in total
-    12 subcortical nodes.
+    12 subcortical nodes [1]_ [2]_.
 
     Parameters
     ----------
-
-    version: str, optional (default='prob')
+    version : str {'prob', 'det'}, optional
         Which version of the atlas should be download. This can be
         'prob' for the probabilistic atlas or 'det' for the
-        deterministic atlas.
+        deterministic atlas. Default='prob'.
 
-    data_dir : str, optional (default=None)
+    data_dir : str, optional
         Path of the data directory. Used to force data storage in a specified
         location.
 
-    verbose : int
-        verbosity level (0 means no message).
+    verbose : int, optional
+        Verbosity level (0 means no message). Default=1.
 
     Returns
     -------
@@ -1221,13 +1385,13 @@ def fetch_atlas_pauli_2017(version='prob', data_dir=None, verbose=1):
 
     References
     ----------
-    https://osf.io/r2hvk/
+    .. [1] https://osf.io/r2hvk/
 
-    `Pauli, W. M., Nili, A. N., & Tyszka, J. M. (2018). A high-resolution
-    probabilistic in vivo atlas of human subcortical brain nuclei.
-    Scientific Data, 5, 180063-13. http://doi.org/10.1038/sdata.2018.63``
+    .. [2] `Pauli, W. M., Nili, A. N., & Tyszka, J. M. (2018). A high-resolution
+       probabilistic in vivo atlas of human subcortical brain nuclei.
+       Scientific Data, 5, 180063-13. http://doi.org/10.1038/sdata.2018.63``
+
     """
-
     if version == 'prob':
         url_maps = 'https://osf.io/w8zq2/download'
         filename = 'pauli_2017_prob.nii.gz'
@@ -1271,33 +1435,39 @@ def fetch_atlas_schaefer_2018(n_rois=400, yeo_networks=7, resolution_mm=1,
 
     The provided images are in MNI152 space.
 
+    For more information on this dataset, see [1]_ [2]_ and [3]_.
+
     Parameters
     ----------
-    n_rois: int
-        number of regions of interest {100, 200, 300, 400 (default), 500, 600,
-        700, 800, 900, 1000}
+    n_rois : int, optional
+        Number of regions of interest {100, 200, 300, 400, 500, 600,
+        700, 800, 900, 1000}.
+        Default=400.
 
-    yeo_networks: int
-        ROI annotation according to yeo networks {7 (default), 17}
+    yeo_networks : int, optional
+        ROI annotation according to yeo networks {7, 17}.
+        Default=7.
 
-    resolution_mm: int
-        Spatial resolution of atlas image in mm {1 (default), 2}
+    resolution_mm : int, optional
+        Spatial resolution of atlas image in mm {1, 2}.
+        Default=1mm.
 
-    data_dir: string
-        directory where data should be downloaded and unpacked.
+    data_dir : string, optional
+        Directory where data should be downloaded and unpacked.
 
-    base_url: string
+    base_url : string, optional
         base_url of files to download (None results in default base_url).
 
-    resume: bool
-        whether to resumed download of a partly-downloaded file.
+    resume : bool, optional
+        Whether to resumed download of a partly-downloaded file.
+        Default=True.
 
-    verbose: int
-        verbosity level (0 means no message).
+    verbose : int, optional
+        Verbosity level (0 means no message). Default=1.
 
     Returns
     -------
-    data: sklearn.datasets.base.Bunch
+    data : sklearn.datasets.base.Bunch
         Dictionary-like object, contains:
 
         - maps: 3D Nifti image, values are indices in the list of labels.
@@ -1306,20 +1476,17 @@ def fetch_atlas_schaefer_2018(n_rois=400, yeo_networks=7, resolution_mm=1,
 
     References
     ----------
-    For more information on this dataset, see
-    https://github.com/ThomasYeoLab/CBIG/tree/v0.14.3-Update_Yeo2011_Schaefer2018_labelname/stable_projects/brain_parcellation/Schaefer2018_LocalGlobal/Parcellations
+    .. [1] https://github.com/ThomasYeoLab/CBIG/tree/v0.14.3-Update_Yeo2011_Schaefer2018_labelname/stable_projects/brain_parcellation/Schaefer2018_LocalGlobal/Parcellations
 
-    Schaefer A, Kong R, Gordon EM, Laumann TO, Zuo XN, Holmes AJ,
-    Eickhoff SB, Yeo BTT. Local-Global parcellation of the human
-    cerebral cortex from intrinsic functional connectivity MRI,
-    Cerebral Cortex, 29:3095-3114, 2018.
+    .. [2] Schaefer A, Kong R, Gordon EM, Laumann TO, Zuo XN, Holmes AJ,
+       Eickhoff SB, Yeo BTT. Local-Global parcellation of the human
+       cerebral cortex from intrinsic functional connectivity MRI,
+       Cerebral Cortex, 29:3095-3114, 2018.
 
-    Yeo BT, Krienen FM, Sepulcre J, Sabuncu MR, Lashkari D, Hollinshead M,
-    Roffman JL, Smoller JW, Zollei L., Polimeni JR, Fischl B, Liu H,
-    Buckner RL. The organization of the human cerebral cortex estimated by
-    intrinsic functional connectivity. J Neurophysiol 106(3):1125-65, 2011.
-
-    Licence: MIT.
+    .. [3] Yeo BT, Krienen FM, Sepulcre J, Sabuncu MR, Lashkari D, Hollinshead M,
+       Roffman JL, Smoller JW, Zollei L., Polimeni JR, Fischl B, Liu H,
+       Buckner RL. The organization of the human cerebral cortex estimated by
+       intrinsic functional connectivity. J Neurophysiol 106(3):1125-65, 2011.
 
     Notes
     -----
@@ -1327,6 +1494,9 @@ def fetch_atlas_schaefer_2018(n_rois=400, yeo_networks=7, resolution_mm=1,
     default. Versions prior to v0.14.3 are known to contain erroneous region
     label names. For more details, see
     https://github.com/ThomasYeoLab/CBIG/blob/master/stable_projects/brain_parcellation/Schaefer2018_LocalGlobal/Parcellations/Updates/Update_20190916_README.md
+
+    Licence: MIT.
+
     """
     valid_n_rois = list(range(100, 1100, 100))
     valid_yeo_networks = [7, 17]

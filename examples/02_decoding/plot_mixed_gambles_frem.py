@@ -1,10 +1,10 @@
 """
-fREM on Jimura et al "mixed gambles" dataset.
+FREM on Jimura et al "mixed gambles" dataset.
 ==================================================
 
-In this example, we use fast ensembling of regularized models (fREM) to
+In this example, we use fast ensembling of regularized models (FREM) to
 solve a regression problem, predicting the gain level corresponding to each
-beta maps regressed from mixed gambles experiment. fREM uses an implicit
+beta maps regressed from mixed gambles experiment. FREM uses an implicit
 spatial regularization through fast clustering and aggregates a high number
 of  estimators trained on various splits of the training set, thus returning
 a very robust decoder at a lower computational cost than other spatially
@@ -24,29 +24,29 @@ behavioral_target = data.gain
 mask_filename = data.mask_img
 
 #############################################################################
-# Fit fREM
+# Fit FREM
 # ---------------------------------------------------------------------------
 # We compare both of these models to a pipeline ensembling many models
 #
-from nilearn.decoding import fREMRegressor
-fREM = fREMRegressor('svr', cv=10)
+from nilearn.decoding import FREMRegressor
+frem = FREMRegressor('svr', cv=10)
 
-fREM.fit(zmap_filenames, behavioral_target)
+frem.fit(zmap_filenames, behavioral_target)
 
-# Visualize fREM weights
+# Visualize FREM weights
 # ---------------------------------------------------------------------------
 
 from nilearn.plotting import plot_stat_map
-plot_stat_map(fREM.coef_img_['beta'], title="fREM", display_mode="yz",
+plot_stat_map(frem.coef_img_['beta'], title="FREM", display_mode="yz",
               cut_coords=[20, -2], threshold=.2)
 
 #############################################################################
-# We can observe that the coefficients map learnt by fREM is structured,
+# We can observe that the coefficients map learnt by FREM is structured,
 # due to the spatial regularity imposed by working on clusters and model
 # ensembling. Although these maps have been thresholded for display, they are
 # not sparse (i.e. almost all voxels have non-zero coefficients). See also this
 # :ref:`other example <sphx_glr_auto_examples_02_decoding_plot_haxby_frem.py>`
-# using fREM, and related :ref:`section of user guide <frem>`.
+# using FREM, and related :ref:`section of user guide <frem>`.
 #
 
 #############################################################################

@@ -6,14 +6,13 @@ import functools
 import os
 import sys
 import tempfile
-import urllib
 import warnings
 import gc
+import distutils
+from pathlib import Path
 
-import numpy as np
 import pytest
-
-from ..datasets.utils import _fetch_files
+import sklearn
 
 # we use memory_profiler library for memory consumption checks
 try:
@@ -49,6 +48,19 @@ except ImportError:
     memory_usage = memory_used = None
 
 
+def check_deprecation(func, match=None):
+    @functools.wraps(func)
+    def wrapped(*args, **kwargs):
+        if distutils.version.LooseVersion(sklearn.__version__) < '0.22':
+            with pytest.deprecated_call():
+                result = func(*args, **kwargs)
+        else:
+            with pytest.warns(FutureWarning, match=match):
+                result = func(*args, **kwargs)
+        return result
+    return wrapped
+
+
 def assert_memory_less_than(memory_limit, tolerance,
                             callable_obj, *args, **kwargs):
     """Check memory consumption of a callable stays below a given limit.
@@ -57,10 +69,12 @@ def assert_memory_less_than(memory_limit, tolerance,
     ----------
     memory_limit : int
         The expected memory limit in MiB.
-    tolerance: float
+
+    tolerance : float
         As memory_profiler results have some variability, this adds some
         tolerance around memory_limit. Accepted values are in range [0.0, 1.0].
-    callable_obj: callable
+
+    callable_obj : callable
         The function to be called to check memory consumption.
 
     """
@@ -83,20 +97,18 @@ def assert_memory_less_than(memory_limit, tolerance,
                          format(mem_used, memory_limit))
 
 
-class MockRequest(object):
-    def __init__(self, url):
-        self.url = url
+def serialize_niimg(img, gzipped=True):
+    """Serialize a Nifti1Image to nifti.
 
-    def add_header(*args):
-        pass
+    Serialize to .nii.gz if gzipped, else to .nii Returns a `bytes` object.
 
-
-class MockOpener(object):
-    def __init__(self):
-        pass
-
-    def open(self, request):
-        return request.url
+    """
+    with tempfile.TemporaryDirectory() as tmp_dir:
+        tmp_dir = Path(tmp_dir)
+        file_path = tmp_dir / "img.nii{}".format(".gz" if gzipped else "")
+        img.to_filename(str(file_path))
+        with file_path.open("rb") as f:
+            return f.read()
 
 
 @contextlib.contextmanager
@@ -108,26 +120,27 @@ def write_tmp_imgs(*imgs, **kwargs):
 
     Parameters
     ----------
-    imgs: Nifti1Image
+    imgs : Nifti1Image
         Several Nifti images. Every format understood by nibabel.save is
         accepted.
 
-    create_files: bool
-        if True, imgs are written on disk and filenames are returned. If
+    create_files : bool
+        If True, imgs are written on disk and filenames are returned. If
         False, nothing is written, and imgs is returned as output. This is
         useful to test the two cases (filename / Nifti1Image) in the same
         loop.
 
-    use_wildcards: bool
-        if True, and create_files is True, imgs are written on disk and a
+    use_wildcards : bool
+        If True, and create_files is True, imgs are written on disk and a
         matching glob is returned.
 
     Returns
     -------
-    filenames: string or list of
-        filename(s) where input images have been written. If a single image
+    filenames : string or list of strings
+        Filename(s) where input images have been written. If a single image
         has been given as input, a single string is returned. Otherwise, a
         list of string is returned.
+
     """
     valid_keys = set(("create_files", "use_wildcards"))
     input_keys = set(kwargs.keys())
@@ -173,81 +186,6 @@ def write_tmp_imgs(*imgs, **kwargs):
             yield imgs
 
 
-class mock_request(object):
-    def __init__(self):
-        """Object that mocks the urllib (future) module to store downloaded filenames.
-
-        `urls` is the list of the files whose download has been
-        requested.
-        """
-        self.urls = set()
-
-    def reset(self):
-        self.urls = set()
-
-    def Request(self, url):
-        self.urls.add(url)
-        return MockRequest(url)
-
-    def build_opener(self, *args, **kwargs):
-        return MockOpener()
-
-
-def wrap_chunk_read_(_chunk_read_):
-    def mock_chunk_read_(response, local_file, initial_size=0, chunk_size=8192,
-                         report_hook=None, verbose=0):
-        if not isinstance(response, str):
-            return _chunk_read_(response, local_file,
-                                initial_size=initial_size,
-                                chunk_size=chunk_size,
-                                report_hook=report_hook, verbose=verbose)
-        return response
-
-    return mock_chunk_read_
-
-
-def mock_chunk_read_raise_error_(response, local_file, initial_size=0,
-                                 chunk_size=8192, report_hook=None,
-                                 verbose=0):
-    raise urllib.errors.HTTPError("url", 418, "I'm a teapot", None, None)
-
-
-class FetchFilesMock(object):
-    _mock_fetch_files = functools.partial(_fetch_files, mock=True)
-
-    def __init__(self):
-        """Create a mock that can fill a CSV file if needed
-        """
-        self.csv_files = {}
-
-    def add_csv(self, filename, content):
-        self.csv_files[filename] = content
-
-    def __call__(self, *args, **kwargs):
-        """Load requested dataset, downloading it if needed or requested.
-
-        For test purpose, instead of actually fetching the dataset, this
-        function creates empty files and return their paths.
-        """
-        filenames = self._mock_fetch_files(*args, **kwargs)
-        # Fill CSV files with given content if needed
-        for fname in filenames:
-            basename = os.path.basename(fname)
-            if basename in self.csv_files:
-                array = self.csv_files[basename]
-
-                # np.savetxt does not have a header argument for numpy 1.6
-                # np.savetxt(fname, array, delimiter=',', fmt="%s",
-                #            header=','.join(array.dtype.names))
-                # We need to add the header ourselves
-                with open(fname, 'wb') as f:
-                    header = '# {0}\n'.format(','.join(array.dtype.names))
-                    f.write(header.encode())
-                    np.savetxt(f, array, delimiter=',', fmt='%s')
-
-        return filenames
-
-
 def are_tests_running():
     """Returns whether we are running the pytest test loader
     """
@@ -259,8 +197,9 @@ def skip_if_running_tests(msg=''):
 
     Parameters
     ----------
-    msg: string, optional
-        The message issued when a test is skipped
+    msg : string, optional
+        The message issued when a test is skipped.
+
     """
     if are_tests_running():
         pytest.skip(msg)

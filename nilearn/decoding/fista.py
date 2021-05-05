@@ -87,21 +87,28 @@ def mfista(f1_grad, f2_prox, total_energy, lipschitz_constant, w_size,
     lipschitz_constant : float
         Lipschitz constant of gradient of f1_grad.
 
+    check_lipschitz : boolean, optional
+        If True, check Lipschitz continuity of gradient of smooth part.
+        Default=False.
+
     w_size : int
         Size of the solution. f1, f2, f1_grad, f2_prox (fixed l, tol) must
         accept a w such that w.shape = (w_size,).
 
-    tol : float
-        Tolerance on the (primal) cost function.
+    tol : float, optional
+        Tolerance on the (primal) cost function. Default=1e-4.
 
-    dgap_tol : float
+    dgap_tol : float, optional
         If None, the nonsmooth_prox argument returns a float, with the value,
         if not 0, the nonsmooth_prox accepts a third parameter tol, which is
         the tolerance on the computation of the proximal operator and returns a
         float, and a dict with the key "converged", that says if the method to
         compute f2_prox converged or not.
 
-    init : dict-like, optional (default None)
+    dgap_factor : float, optional
+        Dual gap factor. Used for debugging purpose (control the convergence).
+
+    init : dict-like, optional
         Dictionary of initialization parameters. Possible keys are 'w',
         'stepsize', 'z', 't', 'dgap_factor', etc.
 
@@ -109,8 +116,13 @@ def mfista(f1_grad, f2_prox, total_energy, lipschitz_constant, w_size,
         Function called on every iteration. If it returns True, then the loop
         breaks.
 
-    max_iter : int
+    max_iter : integer, optional
         Maximum number of iterations for the solver.
+        Default=1000.
+
+    verbose : integer, optional
+        Indicate the level of verbosity.
+        Default=2.
 
     Returns
     -------
@@ -131,8 +143,8 @@ def mfista(f1_grad, f2_prox, total_energy, lipschitz_constant, w_size,
     "Benchmarking solvers for TV-L1 least-squares and logistic regression
     in brain imaging". Pattern Recoginition in Neuroimaging (PRNI),
     Jun 2014, Tubingen, Germany. IEEE
-    """
 
+    """
     # initialization
     if init is None:
         init = dict()

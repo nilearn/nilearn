@@ -3,6 +3,8 @@ Downloading NeuroImaging datasets: structural datasets
 """
 import warnings
 import os
+from pathlib import Path
+
 import numpy as np
 from scipy import ndimage
 from sklearn.utils import Bunch
@@ -21,20 +23,30 @@ FSAVERAGE5_PATH = os.path.join(_package_directory, "data", "fsaverage5")
 
 
 def fetch_icbm152_2009(data_dir=None, url=None, resume=True, verbose=1):
-    """Download and load the ICBM152 template (dated 2009)
+    """Download and load the ICBM152 template (dated 2009).
+
+    For more information, see [1]_, [2]_, and [3]_.
 
     Parameters
     ----------
-    data_dir: string, optional
+    data_dir : string, optional
         Path of the data directory. Used to force data storage in a non-
         standard location. Default: None (meaning: default)
-    url: string, optional
+
+    url : string, optional
         Download URL of the dataset. Overwrite the default URL.
+
+    resume : bool, optional
+        If True, try resuming partially downloaded data.
+        Default=True.
+
+    verbose : int, optional
+        Verbosity level (0 means no message). Default=1.
 
     Returns
     -------
-    data: sklearn.datasets.base.Bunch
-        dictionary-like object, interest keys are:
+    data : sklearn.datasets.base.Bunch
+        Dictionary-like object, interest keys are:
         "t1", "t2", "t2_relax", "pd": anatomical images obtained with the
         given modality (resp. T1, T2, T2 relaxometry and proton
         density weighted). Values are file paths.
@@ -45,18 +57,18 @@ def fetch_icbm152_2009(data_dir=None, url=None, resume=True, verbose=1):
 
     References
     ----------
-    VS Fonov, AC Evans, K Botteron, CR Almli, RC McKinstry, DL Collins
-    and BDCG, "Unbiased average age-appropriate atlases for pediatric studies",
-    NeuroImage,Volume 54, Issue 1, January 2011
+    .. [1] VS Fonov, AC Evans, K Botteron, CR Almli, RC McKinstry, DL Collins
+       and BDCG, "Unbiased average age-appropriate atlases for pediatric studies",
+       NeuroImage,Volume 54, Issue 1, January 2011
 
-    VS Fonov, AC Evans, RC McKinstry, CR Almli and DL Collins,
-    "Unbiased nonlinear average age-appropriate brain templates from birth
-    to adulthood", NeuroImage, Volume 47, Supplement 1, July 2009, Page S102
-    Organization for Human Brain Mapping 2009 Annual Meeting.
+    .. [2] VS Fonov, AC Evans, RC McKinstry, CR Almli and DL Collins,
+       "Unbiased nonlinear average age-appropriate brain templates from birth
+       to adulthood", NeuroImage, Volume 47, Supplement 1, July 2009, Page S102
+       Organization for Human Brain Mapping 2009 Annual Meeting.
 
-    DL Collins, AP Zijdenbos, WFC Baare and AC Evans,
-    "ANIMAL+INSECT: Improved Cortical Structure Segmentation",
-    IPMI Lecture Notes in Computer Science, 1999, Volume 1613/1999, 210-223
+    .. [3] DL Collins, AP Zijdenbos, WFC Baare and AC Evans,
+       "ANIMAL+INSECT: Improved Cortical Structure Segmentation",
+       IPMI Lecture Notes in Computer Science, 1999, Volume 1613/1999, 210-223
 
     Notes
     -----
@@ -65,6 +77,7 @@ def fetch_icbm152_2009(data_dir=None, url=None, resume=True, verbose=1):
 
     The original download URL is
     http://www.bic.mni.mcgill.ca/~vfonov/icbm/2009/mni_icbm152_nlin_sym_09a_nifti.zip
+
     """
     if url is None:
         # The URL can be retrieved from the nilearn account on OSF (Open
@@ -105,25 +118,25 @@ def fetch_icbm152_2009(data_dir=None, url=None, resume=True, verbose=1):
 
 def load_mni152_template():
     """Load skullstripped 2mm version of the MNI152 originally distributed
-    with FSL
+    with FSL.
+
+    For more information, see [1]_ and [2]_.
 
     Returns
     -------
-    mni152_template: nibabel object corresponding to the template
-
+    mni152_template : nibabel object corresponding to the template
 
     References
     ----------
+    .. [1] VS Fonov, AC Evans, K Botteron, CR Almli, RC McKinstry, DL Collins and
+       BDCG, Unbiased average age-appropriate atlases for pediatric studies,
+       NeuroImage, Volume 54, Issue 1, January 2011, ISSN 1053-8119, DOI:
+       10.1016/j.neuroimage.2010.07.033
 
-    VS Fonov, AC Evans, K Botteron, CR Almli, RC McKinstry, DL Collins and
-    BDCG, Unbiased average age-appropriate atlases for pediatric studies,
-    NeuroImage, Volume 54, Issue 1, January 2011, ISSN 1053-8119, DOI:
-    10.1016/j.neuroimage.2010.07.033
-
-    VS Fonov, AC Evans, RC McKinstry, CR Almli and DL Collins, Unbiased
-    nonlinear average age-appropriate brain templates from birth to adulthood,
-    NeuroImage, Volume 47, Supplement 1, July 2009, Page S102 Organization for
-    Human Brain Mapping 2009 Annual Meeting, DOI: 10.1016/S1053-8119(09)70884-5
+    .. [2] VS Fonov, AC Evans, RC McKinstry, CR Almli and DL Collins, Unbiased
+       nonlinear average age-appropriate brain templates from birth to adulthood,
+       NeuroImage, Volume 47, Supplement 1, July 2009, Page S102 Organization for
+       Human Brain Mapping 2009 Annual Meeting, DOI: 10.1016/S1053-8119(09)70884-5
 
     """
     return check_niimg(MNI152_FILE_PATH)
@@ -136,10 +149,10 @@ def load_mni152_brain_mask():
 
     Returns
     -------
-    mask_img: Nifti-like mask image corresponding to grey and white matter.
+    mask_img : Nifti-like mask image corresponding to grey and white matter.
 
-    References
-    ----------
+    Notes
+    -----
     Refer to load_mni152_template function for more information about the MNI152
     T1 template
 
@@ -147,6 +160,7 @@ def load_mni152_brain_mask():
     --------
     nilearn.datasets.load_mni152_template : for details about version of the
         MNI152 T1 template and related.
+
     """
     # Load MNI template
     target_img = load_mni152_template()
@@ -163,24 +177,26 @@ def fetch_icbm152_brain_gm_mask(data_dir=None, threshold=0.2, resume=True,
 
     Parameters
     ----------
-    data_dir: str, optional
+    data_dir : str, optional
         Path of the data directory. Used to force storage in a specified
         location. Defaults to None.
 
-    threshold: float, optional
+    threshold : float, optional
         The parameter which amounts to include the values in the mask image.
         The values lies above than this threshold will be included. Defaults
         to 0.2 (one fifth) of values.
+        Default=0.2.
 
-    resume: bool, optional
-        If True, try resuming partially downloaded data. Defaults to True.
+    resume : bool, optional
+        If True, try resuming partially downloaded data.
+        Default=True.
 
-    verbose: int, optional
-        verbosity level (0 means no message).
+    verbose : int, optional
+        Verbosity level (0 means no message). Default=1.
 
     Returns
     -------
-    gm_mask_img: Nifti image
+    gm_mask_img : Nifti image
         Corresponding to brain grey matter from ICBM152 template.
 
     Notes
@@ -219,33 +235,35 @@ def fetch_oasis_vbm(n_subjects=None, dartel_version=True, data_dir=None,
                     url=None, resume=True, verbose=1):
     """Download and load Oasis "cross-sectional MRI" dataset (416 subjects).
 
+    For more information, see [1]_ and [2]_.
+
     Parameters
     ----------
-    n_subjects: int, optional
+    n_subjects : int, optional
         The number of subjects to load. If None is given, all the
         subjects are used.
 
-    dartel_version: boolean,
+    dartel_version : boolean, optional
         Whether or not to use data normalized with DARTEL instead of standard
-        SPM8 normalization.
+        SPM8 normalization. Default=True.
 
-    data_dir: string, optional
+    data_dir : string, optional
         Path of the data directory. Used to force data storage in a specified
         location. Default: None
 
-    url: string, optional
+    url : string, optional
         Override download URL. Used for test only (or if you setup a mirror of
         the data).
 
-    resume: bool, optional
-        If true, try resuming download if possible
+    resume : bool, optional
+        If true, try resuming download if possible. Default=True.
 
-    verbose: int, optional
-        verbosity level (0 means no message).
+    verbose : int, optional
+        Verbosity level (0 means no message). Default=1.
 
     Returns
     -------
-    data: Bunch
+    data : Bunch
         Dictionary-like object, the interest attributes are :
 
         - 'gray_matter_maps': string list
@@ -259,15 +277,15 @@ def fetch_oasis_vbm(n_subjects=None, dartel_version=True, data_dir=None,
 
     References
     ----------
-    [1] http://www.oasis-brains.org/
+    .. [1] http://www.oasis-brains.org/
 
-    [2] Open Access Series of Imaging Studies (OASIS): Cross-sectional MRI
-        Data in Young, Middle Aged, Nondemented, and Demented Older Adults.
-        Marcus, D. S and al., 2007, Journal of Cognitive Neuroscience.
+    .. [2] Open Access Series of Imaging Studies (OASIS): Cross-sectional MRI
+       Data in Young, Middle Aged, Nondemented, and Demented Older Adults.
+       Marcus, D. S and al., 2007, Journal of Cognitive Neuroscience.
 
     Notes
     -----
-    In the DARTEL version, original Oasis data [1] have been preprocessed
+    In the DARTEL version, original Oasis data have been preprocessed
     with the following steps:
 
       1. Dimension swapping (technically required for subsequent steps)
@@ -432,25 +450,26 @@ def fetch_oasis_vbm(n_subjects=None, dartel_version=True, data_dir=None,
 
 
 def fetch_surf_fsaverage(mesh='fsaverage5', data_dir=None):
-    """ Download a Freesurfer fsaverage surface
+    """Download a Freesurfer fsaverage surface.
+    See [1]_.
 
     Parameters
     ----------
-    mesh: str, optional (default='fsaverage5')
-        Which mesh to fetch.
-        'fsaverage5': the low-resolution fsaverage5 mesh (10242 nodes)
-        'fsaverage5_sphere': the low-resolution fsaverage5 spheres (10242 nodes)
-        'fsaverage': the high-resolution fsaverage mesh (163842 nodes)
-        (high-resolution fsaverage will result in
-        more computation time and memory usage)
+    mesh : str, optional
+        Which mesh to fetch. Default='fsaverage5'.
 
-    data_dir: str, optional (default=None)
+        - 'fsaverage5': the low-resolution fsaverage5 mesh (10242 nodes)
+        - 'fsaverage5_sphere': the low-resolution fsaverage5 spheres (10242 nodes)
+        - 'fsaverage': the high-resolution fsaverage mesh (163842 nodes)
+            (high-resolution fsaverage will result in more computation time and memory usage)
+
+    data_dir : str, optional
         Path of the data directory. Used to force data storage in a specified
         location.
 
     Returns
     -------
-    data: sklearn.datasets.base.Bunch
+    data : sklearn.datasets.base.Bunch
         Dictionary-like object, the interest attributes are :
          - 'pial_left': Gifti file, left hemisphere pial surface mesh
          - 'pial_right': Gifti file, right hemisphere pial surface mesh
@@ -462,8 +481,8 @@ def fetch_surf_fsaverage(mesh='fsaverage5', data_dir=None):
 
     References
     ----------
-    Fischl et al, (1999). High-resolution intersubject averaging and a
-    coordinate system for the cortical surface. Hum Brain Mapp 8, 272-284.
+    .. [1] Fischl et al, (1999). High-resolution intersubject averaging and a
+       coordinate system for the cortical surface. Hum Brain Mapp 8, 272-284.
 
     """
     meshes = {'fsaverage5': _fetch_surf_fsaverage5,
@@ -481,58 +500,23 @@ def _fetch_surf_fsaverage(data_dir=None):
     and sulcal information with Nilearn.
 
     The source of the data is downloaded from nitrc.
+
     """
     dataset_dir = _get_dataset_dir('fsaverage', data_dir=data_dir)
-    url = 'https://www.nitrc.org/frs/download.php/10846/fsaverage.tar.gz'
-    if not os.path.isdir(os.path.join(dataset_dir, 'fsaverage')):
-        _fetch_files(dataset_dir, [('fsaverage.tar.gz', url, {})])
-        _uncompress_file(os.path.join(dataset_dir, 'fsaverage.tar.gz'))
+    url = "https://www.nitrc.org/frs/download.php/11807/fsaverage.tar.gz"
+    file_names = ["{}_{}".format(part, hemi)
+                  for part in ["pial", "sulc", "white", "inflated"]
+                  for hemi in ["left", "right"]]
+    _fetch_files(dataset_dir,
+                 [(os.path.join("fsaverage", "{}.gii".format(name)), url,
+                   {"uncompress": True})
+                  for name in file_names])
     result = {
-        name: os.path.join(dataset_dir, 'fsaverage', '{}.gii'.format(name))
-        for name in ['pial_right', 'sulc_right', 'sulc_left', 'pial_left']}
-    result['infl_left'] = os.path.join(
-        dataset_dir, 'fsaverage', 'inflated_left.gii')
-    result['infl_right'] = os.path.join(
-        dataset_dir, 'fsaverage', 'inflated_right.gii')
-
+        name.replace("inflated", "infl"): os.path.join(
+            dataset_dir, "fsaverage", '{}.gii'.format(name))
+        for name in file_names}
     result['description'] = str(_get_dataset_descr('fsaverage'))
     return Bunch(**result)
-
-
-def fetch_surf_fsaverage5(data_dir=None, url=None, resume=True, verbose=1):
-    """ Deprecated since version 0.4.3
-
-    Use fetch_surf_fsaverage instead.
-
-    Parameters
-    ----------
-    data_dir: str, optional (default=None)
-        Path of the data directory. Used to force data storage in a specified
-        location.
-
-    Returns
-    -------
-    data: sklearn.datasets.base.Bunch
-        Dictionary-like object, the interest attributes are :
-         - 'pial_left': Gifti file, left hemisphere pial surface mesh
-         - 'pial_right': Gifti file, right hemisphere pial surface mesh
-         - 'infl_left': Gifti file, left hemisphere inflated pial surface mesh
-         - 'infl_right': Gifti file, right hemisphere inflated pial
-                         surface mesh
-         - 'sulc_left': Gifti file, left hemisphere sulcal depth data
-         - 'sulc_right': Gifti file, right hemisphere sulcal depth data
-
-    References
-    ----------
-    Fischl et al, (1999). High-resolution intersubject averaging and a
-    coordinate system for the cortical surface. Hum Brain Mapp 8, 272-284.
-
-    """
-    warnings.warn("fetch_surf_fsaverage5 has been deprecated and will "
-                  "be removed in a future release. "
-                  "Use fetch_surf_fsaverage(mesh='fsaverage5')",
-                  np.VisibleDeprecationWarning, stacklevel=2)
-    return fetch_surf_fsaverage(mesh='fsaverage5', data_dir=data_dir)
 
 
 def _fetch_surf_fsaverage5(data_dir=None, url=None, resume=True, verbose=1):
@@ -543,40 +527,17 @@ def _fetch_surf_fsaverage5(data_dir=None, url=None, resume=True, verbose=1):
     Manually downloaded gzipped and shipped with this function.
 
     Shipping is done with Nilearn based on issue #1705.
+
     """
+    data = {"description": _get_dataset_descr("fsaverage5")}
+    data_dir = Path(FSAVERAGE5_PATH)
+    for hemi in ["left", "right"]:
+        for part in ["white", "sulc", "pial", "infl"]:
+            data["{}_{}".format(part, hemi)] = str(
+                data_dir / "{}.{}.gii.gz".format(
+                    {"infl": "pial_inflated"}.get(part, part), hemi))
+    return Bunch(**data)
 
-    dataset_name = 'fsaverage5'
-
-    # Dataset description
-    fdescr = _get_dataset_descr(dataset_name)
-
-    # Download fsaverage surfaces and sulcal information
-    surface_file = '%s.%s.gii.gz'
-    surface_path = os.path.join(FSAVERAGE5_PATH, surface_file)
-
-    pials = []
-    infls = []
-    sulcs = []
-    for hemi in ['left', 'right']:
-        # pial
-        pial_path = surface_path % ('pial', hemi)
-        pials.append(pial_path)
-
-        # pial_inflated
-        pial_infl_path = surface_path % ('pial_inflated', hemi)
-        infls.append(pial_infl_path)
-
-        # sulcal
-        sulc = surface_path % ('sulc', hemi)
-        sulcs.append(sulc)
-
-    return Bunch(pial_left=pials[0],
-                 pial_right=pials[1],
-                 infl_left=infls[0],
-                 infl_right=infls[1],
-                 sulc_left=sulcs[0],
-                 sulc_right=sulcs[1],
-                 description=fdescr)
 
 def _fetch_surf_fsaverage5_sphere(data_dir=None):
     """Helper function to ship fsaverage5 spherical meshes.
@@ -585,8 +546,8 @@ def _fetch_surf_fsaverage5_sphere(data_dir=None):
     cortical surface-based searchlight decoding.
 
     The source of the data is downloaded from OSF.
-    """
 
+    """
     fsaverage_dir = _get_dataset_dir('fsaverage', data_dir=data_dir)
     dataset_dir = _get_dataset_dir('fsaverage5_sphere', data_dir=fsaverage_dir)
     url = 'https://osf.io/b79fy/download'

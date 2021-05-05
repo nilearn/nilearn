@@ -11,14 +11,15 @@ import numpy as np
 def _asarray(arr, dtype=None, order=None):
     # np.asarray does not take "K" and "A" orders in version 1.3.0
     if order in ("K", "A", None):
-        if (arr.itemsize == 1 and dtype == np.bool) \
-                or (arr.dtype == np.bool and np.dtype(dtype).itemsize == 1):
+        if (arr.itemsize == 1 and dtype in (bool, np.bool_)) \
+                or (arr.dtype in (bool, np.bool_) and
+                    np.dtype(dtype).itemsize == 1):
             ret = arr.view(dtype=dtype)
         else:
             ret = np.asarray(arr, dtype=dtype)
     else:
-        if (((arr.itemsize == 1 and dtype == np.bool) or
-            (arr.dtype == np.bool and np.dtype(dtype).itemsize == 1))
+        if (((arr.itemsize == 1 and dtype in (bool, np.bool)) or
+            (arr.dtype in (bool, np.bool_) and np.dtype(dtype).itemsize == 1))
             and (order == "F" and arr.flags["F_CONTIGUOUS"]
                  or order == "C" and arr.flags["C_CONTIGUOUS"])):
             ret = arr.view(dtype=dtype)

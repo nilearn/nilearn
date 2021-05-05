@@ -83,47 +83,6 @@ Why is machine learning relevant to NeuroImaging? A few examples!
     For example,
     :ref:`extracting_rsn` or :ref:`parcellating_brain` with clustering.
 
-Glossary: machine learning vocabulary
---------------------------------------
-
-:Supervised learning:
-
-    :ref:`Supervised learning <decoding>` is interested in predicting an
-    **output variable**, or **target**, `y`, from **data** `X`.
-    Typically, we start from labeled data (the **training set**). We need to
-    know the `y` for each instance of `X` in order to train the model. Once
-    learned, this model is then applied to new unlabeled data (the **test set**)
-    to predict the labels (although we actually know them). There are
-    essentially two possible goals:
-
-    * a **regression** problem: predicting a continuous variable, such
-      as participant age, from the data `X`
-
-    * a **classification** problem: predicting a binary variable that splits
-      the observations into two groups, such as patients versus controls
-
-    In neuroimaging research, supervised learning is typically used to
-    derive an underlying cognitive process (e.g., emotional versus non-emotional
-    theory of mind), a behavioral variable (e.g., reaction time or IQ), or
-    diagnosis status (e.g., schizophrenia versus healthy) from brain images.
-
-:Unsupervised learning:
-
-    `Unsupervised learning
-    <http://scikit-learn.org/stable/unsupervised_learning.html>`_ is
-    concerned with data `X` without any labels. It analyzes the structure
-    of a dataset to find coherent underlying structure,
-    for instance using **clustering**, or to extract latent
-    factors, for instance using **independent components analysis (ICA)**.
-
-    In neuroimaging research, it is typically used to create functional and
-    anatomical brain atlases by clustering based on connectivity or to
-    extract the main brain networks from resting-state correlations. An
-    important option of future research will be the identification of
-    potential neurobiological subgroups in psychiatric and neurobiological
-    disorders.
-
-|
 
 .. _installation:
 

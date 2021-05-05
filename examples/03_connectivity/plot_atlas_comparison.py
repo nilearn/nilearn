@@ -81,10 +81,45 @@ plotting.plot_connectome(mean_correlation_matrix, coordinates,
                          title='Yeo Atlas 17 thick (func)')
 
 ##########################################################################
+# Plot a directed connectome - asymmetric connectivity measure
+# -----------------------------------------------------------------
+# In this section, we use the lag-1 correlation as the connectivity
+# measure, which leads to an asymmetric connectivity matrix.
+# The plot_connectome function accepts both symmetric and asymmetric
+# matrices, but plot the latter as a directed graph.
+import numpy as np
+
+# Define a custom function to compute lag correlation on the time series
+def lag_correlation(time_series, lag):
+    n_subjects = len(time_series)
+    n_samples, n_features = time_series[0].shape
+    lag_cor = np.zeros((n_subjects, n_features, n_features))
+    for subject, serie in enumerate(time_series):
+        for i in range(n_features):
+            for j in range(n_features):
+                if lag == 0:
+                    lag_cor[subject, i, j] = np.corrcoef(serie[:, i],
+                                                         serie[:, j])[0, 1]
+                else:
+                    lag_cor[subject, i, j] = np.corrcoef(serie[lag:, i],
+                                                         serie[:-lag, j])[0, 1]
+    return np.mean(lag_cor, axis=0)
+
+# Compute lag-0 and lag-1 correlations and plot associated connectomes
+for lag in [0, 1]:
+    lag_correlation_matrix = lag_correlation(time_series, lag)
+    plotting.plot_connectome(lag_correlation_matrix, coordinates,
+                             edge_threshold="90%",
+                             title='Lag-{} correlation'.format(
+                                 lag))
+
+##########################################################################
 # Load probabilistic atlases - extracting coordinates on brain maps
 # -----------------------------------------------------------------
 
-msdl = datasets.fetch_atlas_msdl()
+dim = 64
+difumo = datasets.fetch_atlas_difumo(dimension=dim,
+                                     resolution_mm=2)
 
 ##########################################################################
 # Iterate over fetched atlases to extract coordinates - probabilistic
@@ -92,7 +127,7 @@ msdl = datasets.fetch_atlas_msdl()
 from nilearn.input_data import NiftiMapsMasker
 
 # create masker to extract functional data within atlas parcels
-masker = NiftiMapsMasker(maps_img=msdl['maps'], standardize=True,
+masker = NiftiMapsMasker(maps_img=difumo.maps, standardize=True,
                          memory='nilearn_cache')
 
 # extract time series from all subjects and concatenate them
@@ -108,9 +143,10 @@ correlation_matrices = connectome_measure.fit_transform(time_series)
 mean_correlation_matrix = connectome_measure.mean_
 
 # grab center coordinates for probabilistic atlas
-coordinates = plotting.find_probabilistic_atlas_cut_coords(maps_img=msdl['maps'])
+coordinates = plotting.find_probabilistic_atlas_cut_coords(maps_img=difumo.maps)
 
-# plot connectome with 80% edge strength in the connectivity
+# plot connectome with 85% edge strength in the connectivity
 plotting.plot_connectome(mean_correlation_matrix, coordinates,
-                         edge_threshold="80%", title='MSDL (probabilistic)')
+                         edge_threshold="85%",
+                         title='DiFuMo with {0} dimensions (probabilistic)'.format(dim))
 plotting.show()

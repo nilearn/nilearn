@@ -7,16 +7,14 @@ features
 # Authors: Alexandre Abraham, Gael Varoquaux, Philippe Gervais
 # License: simplified BSD
 
-import distutils.version
 import warnings
 
 import numpy as np
+import pandas as pd
 from scipy import linalg, signal as sp_signal
 from sklearn.utils import gen_even_slices, as_float_array
 
 from ._utils.numpy_conversions import csv_to_array, as_ndarray
-
-NP_VERSION = distutils.version.LooseVersion(np.version.short_version).version
 
 
 def _standardize(signals, detrend=False, standardize='zscore'):
@@ -67,19 +65,19 @@ def _standardize(signals, detrend=False, standardize='zscore'):
                 signals = signals - signals.mean(axis=0)
 
             std = signals.std(axis=0)
-            std[std < np.finfo(np.float).eps] = 1.  # avoid numerical problems
+            std[std < np.finfo(np.float64).eps] = 1.  # avoid numerical problems
             signals /= std
 
         elif standardize == 'psc':
             mean_signal = signals.mean(axis=0)
-            invalid_ix = mean_signal < np.finfo(np.float).eps
-            signals = (signals / mean_signal) * 100
-            signals -= 100
+            invalid_ix = np.absolute(mean_signal) < np.finfo(np.float64).eps
+            signals = (signals - mean_signal) / np.absolute(mean_signal)
+            signals *= 100
 
             if np.any(invalid_ix):
                 warnings.warn('psc standardization strategy is meaningless '
-                              'for features that have a mean of 0 or '
-                              'less. These time series are set to 0.')
+                              'for features that have a mean of 0. '
+                              'These time series are set to 0.')
                 signals[:, invalid_ix] = 0
 
     return signals
@@ -116,6 +114,38 @@ def _mean_of_squares(signals, n_batches=20):
         tvar = np.copy(signals[:, batch])
         tvar **= 2
         var[batch] = tvar.mean(axis=0)
+
+    return var
+
+
+def _row_sum_of_squares(signals, n_batches=20):
+    """Compute sum of squares for each signal.
+    This function is equivalent to
+
+        signals **= 2
+        signals = signals.sum(axis=0)
+
+    but uses a lot less memory.
+
+    Parameters
+    ----------
+    signals : numpy.ndarray, shape (n_samples, n_features)
+        signal whose sum of squares must be computed.
+
+    n_batches : int, optional
+        number of batches to use in the computation. Tweaking this value
+        can lead to variation of memory usage and computation time. The higher
+        the value, the lower the memory consumption.
+
+    """
+    # No batching for small arrays
+    if signals.shape[1] < 500:
+        n_batches = 1
+
+    # Fastest for C order
+    var = np.empty(signals.shape[1])
+    for batch in gen_even_slices(signals.shape[1], n_batches):
+        var[batch] = np.sum(signals[:, batch] ** 2, 0)
 
     return var
 
@@ -171,7 +201,7 @@ def _detrend(signals, inplace=False, type="linear", n_batches=10):
         regressor -= regressor.mean()
         std = np.sqrt((regressor ** 2).sum())
         # avoid numerical problems
-        if not std < np.finfo(np.float).eps:
+        if not std < np.finfo(np.float64).eps:
             regressor /= std
         regressor = regressor[:, np.newaxis]
 
@@ -377,7 +407,7 @@ def _ensure_float(data):
 
 
 def clean(signals, sessions=None, detrend=True, standardize='zscore',
-          confounds=None, low_pass=None,
+          confounds=None, standardize_confounds=True, low_pass=None,
           high_pass=None, t_r=2.5, ensure_finite=False):
     """Improve SNR on masked fMRI signals.
 
@@ -410,7 +440,7 @@ def clean(signals, sessions=None, detrend=True, standardize='zscore',
         Add a session level to the cleaning process. Each session will be
         cleaned independently. Must be a 1D array of n_samples elements.
 
-    confounds: numpy.ndarray, str or list of
+    confounds: numpy.ndarray, str, DataFrame or list of
         Confounds timeseries. Shape must be
         (instant number, confound number), or just (instant number,)
         The number of time instants in signals and confounds must be
@@ -437,6 +467,10 @@ def clean(signals, sessions=None, detrend=True, standardize='zscore',
         'psc':  Timeseries are shifted to zero mean value and scaled
         to percent signal change (as compared to original mean signal).
         False : Do not standardize the data.
+
+    standardize_confounds: boolean, optional, default is True
+        If standardize_confounds is True, the confounds are z-scored:
+        their mean is put to 0 and their variance to 1 in the time dimension.
 
     ensure_finite: bool
         If True, the non-finite values (NANs and infs) found in the data
@@ -473,7 +507,8 @@ def clean(signals, sessions=None, detrend=True, standardize='zscore',
                         "high_pass='{0}'".format(high_pass))
 
     if not isinstance(confounds,
-                      (list, tuple, str, np.ndarray, type(None))):
+                      (list, tuple, str, np.ndarray, pd.DataFrame,
+                       type(None))):
         raise TypeError("confounds keyword has an unhandled type: %s"
                         % confounds.__class__)
 
@@ -482,13 +517,13 @@ def clean(signals, sessions=None, detrend=True, standardize='zscore',
                          "but you provided ensure_finite={0}"
                          .format(ensure_finite))
 
+    signals = signals.copy()
     if not isinstance(signals, np.ndarray):
         signals = as_ndarray(signals)
 
     if ensure_finite:
         mask = np.logical_not(np.isfinite(signals))
         if mask.any():
-            signals = signals.copy()
             signals[mask] = 0
 
     # Read confounds
@@ -498,15 +533,16 @@ def clean(signals, sessions=None, detrend=True, standardize='zscore',
 
         all_confounds = []
         for confound in confounds:
+            # cast DataFrame to array
+            if isinstance(confound, pd.DataFrame):
+                confound = confound.values
+
             if isinstance(confound, str):
                 filename = confound
                 confound = csv_to_array(filename)
                 if np.isnan(confound.flat[0]):
                     # There may be a header
-                    if NP_VERSION >= [1, 4, 0]:
-                        confound = csv_to_array(filename, skip_header=1)
-                    else:
-                        confound = csv_to_array(filename, skiprows=1)
+                    confound = csv_to_array(filename, skip_header=1)
                 if confound.shape[0] != signals.shape[0]:
                     raise ValueError("Confound signal has an incorrect length")
 
@@ -564,6 +600,13 @@ def clean(signals, sessions=None, detrend=True, standardize='zscore',
     # Remove confounds
     if confounds is not None:
         confounds = _ensure_float(confounds)
+        
+        # Apply detrend to keep this operation orthogonal
+        # (according to Lindquist et al. (2018))
+        if detrend:
+            confounds = _standardize(confounds, standardize=False,
+                                     detrend=detrend)
+         
         # Apply low- and high-pass filters to keep filters orthogonal
         # (according to Lindquist et al. (2018))
         if low_pass is not None or high_pass is not None:
@@ -571,10 +614,10 @@ def clean(signals, sessions=None, detrend=True, standardize='zscore',
             confounds = butterworth(confounds, sampling_rate=1. / t_r,
                                     low_pass=low_pass, high_pass=high_pass)
 
-        confounds = _standardize(confounds, standardize=standardize,
-                                 detrend=detrend)
+        confounds = _standardize(confounds, standardize=standardize_confounds,
+                                 detrend=False)
 
-        if not standardize:
+        if not standardize_confounds:
             # Improve numerical stability by controlling the range of
             # confounds. We don't rely on _standardize as it removes any
             # constant contribution to confounds.
@@ -584,7 +627,7 @@ def clean(signals, sessions=None, detrend=True, standardize='zscore',
 
         # Pivoting in qr decomposition was added in scipy 0.10
         Q, R, _ = linalg.qr(confounds, mode='economic', pivoting=True)
-        Q = Q[:, np.abs(np.diag(R)) > np.finfo(np.float).eps * 100.]
+        Q = Q[:, np.abs(np.diag(R)) > np.finfo(np.float64).eps * 100.]
         signals -= Q.dot(Q.T).dot(signals)
 
     # Standardize

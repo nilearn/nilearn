@@ -45,7 +45,7 @@ different heuristics to find cutting coordinates.
      :target: ../auto_examples/03_connectivity/plot_sphere_based_connectome.html
      :scale: 50
 
-.. |plot_strength| image:: ../auto_examples/03_connectivity/images/sphx_glr_plot_sphere_based_connectome_004.png
+.. |plot_nodes| image:: ../auto_examples/03_connectivity/images/sphx_glr_plot_sphere_based_connectome_007.png
      :target: ../auto_examples/03_connectivity/plot_sphere_based_connectome.html
      :scale: 50
 
@@ -63,6 +63,10 @@ different heuristics to find cutting coordinates.
 
 .. |plot_prob_atlas| image:: ../auto_examples/01_plotting/images/sphx_glr_plot_prob_atlas_003.png
      :target: ../auto_examples/01_plotting/plot_prob_atlas.html
+     :scale: 50
+
+.. |plot_carpet| image:: ../auto_examples/01_plotting/images/sphx_glr_plot_carpet_001.png
+     :target: ../auto_examples/01_plotting/plot_carpet.html
      :scale: 50
 
 .. A temporary hack to avoid a sphinx bug
@@ -106,18 +110,22 @@ different heuristics to find cutting coordinates.
                      are demonstrated in
                      **Example:** :ref:`sphx_glr_auto_examples_03_connectivity_plot_atlas_comparison.py`
 
-|plot_strength|     :func:`plot_connectome_strength`
+|plot_nodes|         :func:`plot_markers`
                      |hack|
-                     Plotting a connectome strength
+                     Plotting network nodes (markers)
 
-                     Functions for automatic extraction of coords based on
-                     brain parcellations useful for :func:`plot_connectome`
-                     are demonstrated in
+                     Function for automatic plotting of network nodes (markers) 
+                     and color coding them according to provided nodal measure
+                     (i.e. connection strength) as demonstrated in
                      **Example:** :ref:`sphx_glr_auto_examples_03_connectivity_plot_atlas_comparison.py`
 
 |plot_prob_atlas|    :func:`plot_prob_atlas`
                      |hack|
                      Plotting 4D probabilistic atlas maps
+
+|plot_carpet|        :func:`plot_carpet`
+                     |hack|
+                     Plotting voxel intensities across time.
 
 **plot_img**         :func:`plot_img`
                      |hack|
@@ -183,6 +191,10 @@ Different display modes
      :target: ../auto_examples/01_plotting/plot_demo_more_plotting.html
      :scale: 50
 
+.. |plot_mosaic| image:: ../auto_examples/01_plotting/images/sphx_glr_plot_demo_more_plotting_010.png
+     :target: ../auto_examples/01_plotting/plot_demo_more_plotting.html
+     :scale: 30
+
 .. |plot_lzr| image:: ../auto_examples/01_plotting/images/sphx_glr_plot_demo_glass_brain_extensive_006.png
      :target: ../auto_examples/01_plotting/plot_demo_glass_brain_extensive.html
      :scale: 50
@@ -237,6 +249,11 @@ Different display modes
                    |hack|
                    Tiled slicer: 3 cuts along the x, y, z directions,
                    arranged in a 2x2 grid
+
+|plot_mosaic|      `display_mode='mosaic'`
+                   |hack|
+                   Mosaic slicer: multiple cuts along the x, y, z directions,
+                   with cuts automatically positioned by default
 
 |plot_lzr|         `Glass brain display_mode='lzr'`
                    |hack|

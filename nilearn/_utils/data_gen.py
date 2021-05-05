@@ -8,6 +8,7 @@ import string
 import numpy as np
 import pandas as pd
 import scipy.signal
+from scipy import ndimage
 
 from sklearn.utils import check_random_state
 import scipy.linalg
@@ -17,6 +18,23 @@ from nibabel import Nifti1Image
 
 from .. import masking
 from . import logger
+from nilearn import datasets, image, input_data
+
+
+def generate_mni_space_img(n_scans=1, res=30, random_state=0, mask_dilation=2):
+    rng = check_random_state(random_state)
+    mni = datasets.load_mni152_brain_mask()
+    target_affine = np.eye(3) * res
+    mask_img = image.resample_img(
+        mni, target_affine=target_affine, interpolation="nearest")
+    masker = input_data.NiftiMasker(mask_img).fit()
+    n_voxels = image.get_data(mask_img).sum()
+    data = rng.randn(n_scans, n_voxels)
+    if mask_dilation is not None and mask_dilation > 0:
+        mask_img = image.new_img_like(
+            mask_img, ndimage.binary_dilation(
+                image.get_data(mask_img), iterations=mask_dilation))
+    return masker.inverse_transform(data), mask_img
 
 
 def generate_timeseries(n_instants, n_features,
@@ -36,18 +54,27 @@ def generate_regions_ts(n_features, n_regions,
 
     Parameters
     ----------
-    overlap: int
-        Number of overlapping voxels between two regions (more or less)
-    window: str
+    n_features : int
+        Number of features.
+
+    n_regions : int
+        Number of regions.
+
+    overlap : int, optional
+        Number of overlapping voxels between two regions (more or less).
+        Default=0.
+
+    window : str, optional
         Name of a window in scipy.signal. e.g. "hamming".
+        Default='boxcar'.
 
     Returns
     -------
-    regions: numpy.ndarray
-        regions, nepresented as signals.
+    regions : numpy.ndarray
+        Regions, nepresented as signals.
         shape (n_features, n_regions)
-    """
 
+    """
     if rand_gen is None:
         rand_gen = np.random.RandomState(0)
     if window is None:
@@ -79,26 +106,39 @@ def generate_regions_ts(n_features, n_regions,
 def generate_maps(shape, n_regions, overlap=0, border=1,
                   window="boxcar", rand_gen=None, affine=np.eye(4)):
     """Generate a 4D volume containing several maps.
+
     Parameters
     ----------
-    n_regions: int
-        number of regions to generate
+    n_regions : int
+        Number of regions to generate.
 
-    overlap: int
-        approximate number of voxels common to two neighboring regions
+    overlap : int, optional
+        Approximate number of voxels common to two neighboring regions.
+        Default=0.
 
-    window: str
-        name of a window in scipy.signal. Used to get non-uniform regions.
+    window : str, optional
+        Name of a window in scipy.signal. Used to get non-uniform regions.
+        Default='boxcar'.
 
-    border: int
-        number of background voxels on each side of the 3D volumes.
+    ran_gen : None or numpy.random.RandomState, optional
+        Random generator to use for generation. Default=None.
+
+    affine : Numpy array, optional
+        Affine transformation to use. Default=np.eye(4).
+
+    border : int, optional
+        Number of background voxels on each side of the 3D volumes.
+        Default=1.
 
     Returns
     -------
-    maps: nibabel.Nifti1Image
+    maps : nibabel.Nifti1Image
         4D array, containing maps.
-    """
 
+    mask_img : nibabel.Nifti1Image
+        3D, The mask outside of which maps are 0.
+
+    """
     mask = np.zeros(shape, dtype=np.int8)
     mask[border:-border, border:-border, border:-border] = 1
     ts = generate_regions_ts(mask.sum(), n_regions, overlap=overlap,
@@ -108,31 +148,35 @@ def generate_maps(shape, n_regions, overlap=0, border=1,
 
 
 def generate_labeled_regions(shape, n_regions, rand_gen=None, labels=None,
-                             affine=np.eye(4), dtype=np.int):
+                             affine=np.eye(4), dtype=int):
     """Generate a 3D volume with labeled regions.
 
     Parameters
     ----------
-    shape: tuple
-        shape of returned array
+    shape : tuple
+        Shape of returned array.
 
-    n_regions: int
-        number of regions to generate. By default (if "labels" is None),
+    n_regions : int
+        Number of regions to generate. By default (if "labels" is None),
         add a background with value zero.
 
-    labels: iterable
-        labels to use for each zone. If provided, n_regions is unused.
+    labels : iterable, optional
+        Labels to use for each zone. If provided, n_regions is unused.
 
-    rand_gen: numpy.random.RandomState
-        random generator to use for generation.
+    rand_gen : numpy.random.RandomState
+        Random generator to use for generation.
 
-    affine: numpy.ndarray
-        affine of returned image
+    affine : numpy.ndarray, optional
+        Affine of returned image. Default=np.eye(4).
+
+    dtype : type, optional
+        Data type of image. Default=int.
 
     Returns
     -------
-    regions: nibabel.Nifti1Image
-        data has shape "shape", containing region labels.
+    regions : nibabel.Nifti1Image
+        Data has shape "shape", containing region labels.
+
     """
     n_voxels = shape[0] * shape[1] * shape[2]
     if labels is None:
@@ -146,7 +190,7 @@ def generate_labeled_regions(shape, n_regions, rand_gen=None, labels=None,
     for n, row in zip(labels, regions):
         row[row > 0] = n
     data = np.zeros(shape, dtype=dtype)
-    data[np.ones(shape, dtype=np.bool)] = regions.sum(axis=0).T
+    data[np.ones(shape, dtype=bool)] = regions.sum(axis=0).T
     return nibabel.Nifti1Image(data, affine)
 
 
@@ -179,43 +223,50 @@ def generate_fake_fmri(shape=(10, 11, 12), length=17, kind="noise",
 
     Parameters
     ----------
-    shape: tuple, optional
-        Shape of 3D volume
+    shape : tuple, optional
+        Shape of 3D volume. Default=(10, 11, 12).
 
-    length: int, optional
-        Number of time instants
+    length : int, optional
+        Number of time instants. Default=17.
 
-    kind: string, optional
+    kind : string, optional
         Kind of signal used as timeseries.
         "noise": uniformly sampled values in [0..255]
         "step": 0.5 for the first half then 1.
+        Default='noise'.
 
-    affine: numpy.ndarray
-        Affine of returned images
+    affine : numpy.ndarray, optional
+        Affine of returned images. Default=np.eye(4).
 
-    n_blocks: int or None
+    n_blocks : int or None, optional
         Number of condition blocks.
 
-    block_size: int or None
+    block_size : int or None, optional
         Number of timepoints in a block. Used only if n_blocks is not
         None. Defaults to 3 if n_blocks is not None.
 
-    block_type: str
+    block_type : str, optional
         Defines if the returned target should be used for
         'classification' or 'regression'.
+        Default='classification'.
+
+    rand_gen : numpy.random.RandomState, optional
+        Random generator to use for generation.
+        Default=np.random.RandomState(0).
 
     Returns
     -------
-    fmri: nibabel.Nifti1Image
-        fake fmri signal.
+    fmri : nibabel.Nifti1Image
+        Fake fmri signal.
         shape: shape + (length,)
 
-    mask: nibabel.Nifti1Image
-        mask giving non-zero voxels
+    mask : nibabel.Nifti1Image
+        Mask giving non-zero voxels.
 
-    target: numpy.ndarray
+    target : numpy.ndarray
         Classification or regression target. Shape of number of
-        time points (length). Returned only if n_blocks is not None
+        time points (length). Returned only if n_blocks is not None.
+
     """
     full_shape = shape + (length, )
     fmri = np.zeros(full_shape)
@@ -246,9 +297,9 @@ def generate_fake_fmri(shape=(10, 11, 12), length=17, kind="noise",
                 nibabel.Nifti1Image(mask, affine))
 
     block_size = 3 if block_size is None else block_size
-    flat_fmri = fmri[mask.astype(np.bool)]
+    flat_fmri = fmri[mask.astype(bool)]
     flat_fmri /= np.abs(flat_fmri).max()
-    target = np.zeros(length, dtype=np.int)
+    target = np.zeros(length, dtype=int)
     rest_max_size = (length - (n_blocks * block_size)) // n_blocks
     if rest_max_size < 0:
         raise ValueError(
@@ -276,9 +327,9 @@ def generate_fake_fmri(shape=(10, 11, 12), length=17, kind="noise",
         target[t_start:t_start + block_size] = block + 1
         t_start += t_rest + block_size
     target = target if block_type == 'classification' \
-        else target.astype(np.float)
+        else target.astype(np.float64)
     fmri = np.zeros(fmri.shape)
-    fmri[mask.astype(np.bool)] = flat_fmri
+    fmri[mask.astype(bool)] = flat_fmri
     return (nibabel.Nifti1Image(fmri, affine),
             nibabel.Nifti1Image(mask, affine), target)
 
@@ -290,7 +341,9 @@ def generate_fake_fmri_data_and_design(shapes, rk=3, affine=np.eye(4)):
         data = np.random.randn(*shape)
         data[1:-1, 1:-1, 1:-1] += 100
         fmri_data.append(Nifti1Image(data, affine))
-        columns = np.random.choice(list(string.ascii_lowercase), size=rk)
+        columns = np.random.choice(list(string.ascii_lowercase),
+                                   size=rk,
+                                   replace=False)
         design_matrices.append(pd.DataFrame(np.random.randn(shape[3], rk),
                                             columns=columns))
     mask = Nifti1Image((np.random.rand(*shape[:3]) > .5).astype(np.int8),
@@ -329,20 +382,24 @@ def generate_signals_from_precisions(precisions,
 
     Parameters
     ----------
-    precisions: list of numpy.ndarray
-        list of precision matrices. Every matrix must be square (with the same
+    precisions : list of numpy.ndarray
+        List of precision matrices. Every matrix must be square (with the same
         size) and positive definite. The output of
         generate_group_sparse_gaussian_graphs() can be used here.
 
-    min_samples, max_samples: int
-        the number of samples drawn for each timeseries is taken at random
-        between these two numbers.
+    min_samples, max_samples : int, optional
+        The number of samples drawn for each timeseries is taken at random
+        between these two numbers. Defaults are 50 and 100.
+
+    random_state : int, optional
+        Random state. Default=0.
 
     Returns
     -------
-    signals: list of numpy.ndarray
-        output signals. signals[n] corresponds to precisions[n], and has shape
+    signals : list of numpy.ndarray
+        Output signals. signals[n] corresponds to precisions[n], and has shape
         (sample number, precisions[n].shape[0]).
+
     """
     random_state = check_random_state(random_state)
 
@@ -366,24 +423,24 @@ def generate_group_sparse_gaussian_graphs(
     Parameters
     ----------
     n_subjects : int, optional
-        number of subjects
+        Number of subjects. Default=5.
 
     n_features : int, optional
-        number of signals per subject to generate
+        Number of signals per subject to generate. Default=30.
 
     density : float, optional
-        density of edges in graph topology
+        Density of edges in graph topology. Default=0.1.
 
     min_n_samples, max_n_samples : int, optional
         Each subject have a different number of samples, between these two
         numbers. All signals for a given subject have the same number of
-        samples.
+        samples. Defaults are 30 and 50.
 
     random_state : int or numpy.random.RandomState instance, optional
-        random number generator, or seed.
+        Random number generator, or seed. Default=0.
 
-    verbose: int, optional
-        verbosity level (0 means no message).
+    verbose : int, optional
+        Verbosity level (0 means no message). Default=0.
 
     Returns
     -------
@@ -392,13 +449,13 @@ def generate_group_sparse_gaussian_graphs(
         len(subjects) = n_subjects. n_samples varies according to the subject.
 
     precisions : list of numpy.ndarray
-        precision matrices.
+        Precision matrices.
 
     topology : numpy.ndarray
-        binary array giving the graph topology used for generating covariances
+        Binary array giving the graph topology used for generating covariances
         and signals.
-    """
 
+    """
     random_state = check_random_state(random_state)
     # Generate topology (upper triangular binary matrix, with zeros on the
     # diagonal)
@@ -463,50 +520,62 @@ def basic_confounds(length):
 def create_fake_bids_dataset(base_dir='', n_sub=10, n_ses=2,
                              tasks=['localizer', 'main'],
                              n_runs=[1, 3], with_derivatives=True,
-                             with_confounds=True, no_session=False):
-    """Creates a fake bids dataset directory with dummy files.
+                             with_confounds=True,
+                             confounds_tag="desc-confounds_timeseries",
+                             no_session=False):
+    """Creates a fake :term:`bids<BIDS>` dataset directory with dummy files.
     Returns fake dataset directory name.
 
     Parameters
     ----------
-    base_dir: string (Absolute path), optional
-        Absolute directory path in which to create the fake BIDS dataset dir.
+    base_dir : string (Absolute path), optional
+        Absolute directory path in which to create the fake :term:`BIDS` dataset dir.
         Default: Current directory.
 
-    n_sub: int, optional
+    n_sub : int, optional
         Number of subject to be simulated in the dataset.
-        Default: 10
+        Default=10.
 
-    n_ses: int, optional
+    n_ses : int, optional
         Number of sessions to be simulated in the dataset.
         Ignored if no_session=True.
-        Default: 2
+        Default=2.
 
-    n_runs: List[int], optional
-        Default: [1, 3]
+    tasks : List of str, optional
+        List of tasks. Default=["localizer", "main"].
 
-    with_derivatives: bool, optional
+    n_runs : List of int, optional
+        Default=[1, 3].
+
+    with_derivatives : bool, optional
         In the case derivatives are included, they come with two spaces and
         descriptions. Spaces are 'MNI' and 'T1w'. Descriptions are 'preproc'
         and 'fmriprep'. Only space 'T1w' include both descriptions.
-        Default: True
+        Default=True.
 
-    with_confounds: bool, optional
-        Default: True
+    with_confounds : bool, optional
+        Default=True.
 
-    no_session: bool, optional
+    confounds_tag : string (filename suffix), optional
+        If generating confounds, what path should they have? Defaults to
+        `desc-confounds_timeseries` as in `fmriprep` >= 20.2 but can be other
+        values (e.g. "desc-confounds_regressors" as in `fmriprep` < 20.2)
+        Default="desc-confounds_timeseries".
+
+    no_session : bool, optional
         Specifying no_sessions will only produce runs and files without the
         optional session field. In this case n_ses will be ignored.
-        Default: False
+        Default=False.
 
     Returns
     -------
-    dataset directory name: string
-        'bids_dataset'
+    dataset directory name : string
+        'bids_dataset'.
 
-    Creates
-    -------
-        Directory with dummy files
+    Notes
+    -----
+        Creates a directory with dummy files.
+
     """
     bids_path = os.path.join(base_dir, 'bids_dataset')
     os.makedirs(bids_path)
@@ -592,7 +661,7 @@ def create_fake_bids_dataset(base_dir='', n_sub=10, n_ses=2,
                         if with_confounds:
                             confounds_path = os.path.join(
                                 func_path,
-                                file_id + '_desc-confounds_regressors.tsv',
+                                file_id + '_' + confounds_tag + '.tsv',
                             )
                             basic_confounds(100).to_csv(confounds_path,
                                                         sep='\t', index=None)

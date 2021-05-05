@@ -34,10 +34,9 @@ tags
 *.tgz
 
 .idea/
+venv/
 
 doc/themes/nilearn/static/jquery.js
-!/doc/_build/
-!/.pytest_cache/
-!/build/
-!/doc/auto_examples/
-!/dist/
+.vscode/
+examples/results/
+examples/**/*.pdf

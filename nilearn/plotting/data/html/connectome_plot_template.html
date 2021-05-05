@@ -92,11 +92,12 @@
 
             Plotly.plot('connectome-plot', [{
                 type: 'scatter3d',
-                mode: 'lines+markers',
+                mode: 'lines+markers+text',
                 x: info["con_x"],
                 y: info["con_y"],
                 z: info["con_z"],
                 opacity: 1,
+                text: info["marker_labels"],
                 line: {
                     width: info["line_width"],
                     color: info["con_w"],
@@ -128,11 +129,12 @@
 
             Plotly.plot('connectome-plot', [{
                 type: 'scatter3d',
-                mode: 'markers',
+                mode: 'markers+text',
                 x: info["con_x"],
                 y: info["con_y"],
                 z: info["con_z"],
                 opacity: 1,
+                text: info["marker_labels"],
                 marker: {
                     size: info["marker_size"],
                     color: info["marker_color"],

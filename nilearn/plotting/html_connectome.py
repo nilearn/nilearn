@@ -10,7 +10,7 @@ from . import cm
 from .js_plotting_utils import (add_js_lib, mesh_to_plotly,
                                 encode, colorscale, get_html_template,
                                 to_color_strings)
-from nilearn.reporting import HTMLDocument
+from nilearn.plotting.html_document import HTMLDocument
 
 
 class ConnectomeView(HTMLDocument):
@@ -93,18 +93,17 @@ def view_connectome(adjacency_matrix, node_coords, edge_threshold=None,
                     linewidth=6., node_size=3., colorbar=True,
                     colorbar_height=.5, colorbar_fontsize=25,
                     title=None, title_fontsize=25):
-    """
-    Insert a 3d plot of a connectome into an HTML page.
+    """Insert a 3d plot of a connectome into an HTML page.
 
     Parameters
     ----------
     adjacency_matrix : ndarray, shape=(n_nodes, n_nodes)
-        the weights of the edges.
+        The weights of the edges.
 
     node_coords : ndarray, shape=(n_nodes, 3)
-        the coordinates of the nodes in MNI space.
+        The coordinates of the nodes in MNI space.
 
-    edge_threshold : str, number or None, optional (default=None)
+    edge_threshold : str, number or None, optional
         If None, no thresholding.
         If it is a number only connections of amplitude greater
         than threshold will be shown.
@@ -113,30 +112,34 @@ def view_connectome(adjacency_matrix, node_coords, edge_threshold=None,
         given percentile will be shown.
 
     edge_cmap : str or matplotlib colormap, optional
+        Colormap to use. Default=cm.bwr.
 
-    symmetric_cmap : bool, optional (default=True)
+    symmetric_cmap : bool, optional
         Make colormap symmetric (ranging from -vmax to vmax).
+        Default=True.
 
-    linewidth : float, optional (default=6.)
-        Width of the lines that show connections.
+    linewidth : float, optional
+        Width of the lines that show connections. Default=6.0.
 
-    node_size : float, optional (default=3.)
+    node_size : float, optional
         Size of the markers showing the seeds in pixels.
+        Default=3.0.
 
-    colorbar : bool, optional (default=True)
-        add a colorbar
+    colorbar : bool, optional
+        Add a colorbar. Default=True.
 
-    colorbar_height : float, optional (default=.5)
-        height of the colorbar, relative to the figure height
+    colorbar_height : float, optional
+        Height of the colorbar, relative to the figure height.
+        Default=0.5.
 
-    colorbar_fontsize : int, optional (default=25)
-        fontsize of the colorbar tick labels
+    colorbar_fontsize : int, optional
+        Fontsize of the colorbar tick labels. Default=25.
 
-    title : str, optional (default=None)
-        title for the plot
+    title : str, optional
+        Title for the plot.
 
-    title_fontsize : int, optional (default=25)
-        fontsize of the title
+    title_fontsize : int, optional
+        Fontsize of the title. Default=25.
 
     Returns
     -------
@@ -175,28 +178,30 @@ def view_connectome(adjacency_matrix, node_coords, edge_threshold=None,
 
 
 def view_markers(marker_coords, marker_color=None, marker_size=5.,
-                 title=None, title_fontsize=25):
-    """
-    Insert a 3d plot of markers in a brain into an HTML page.
+                 marker_labels=None, title=None, title_fontsize=25):
+    """Insert a 3d plot of markers in a brain into an HTML page.
 
     Parameters
     ----------
     marker_coords : ndarray, shape=(n_nodes, 3)
-        the coordinates of the nodes in MNI space.
+        The coordinates of the nodes in MNI space.
 
-    marker_color : ndarray, shape=(n_nodes,)
+    marker_color : ndarray, shape=(n_nodes,), optional
         colors of the markers: list of strings, hex rgb or rgba strings, rgb
         triplets, or rgba triplets (i.e. formats accepted by matplotlib, see
         https://matplotlib.org/users/colors.html#specifying-colors)
 
-    marker_size : float or array-like, optional (default=3.)
-        Size of the markers showing the seeds in pixels.
+    marker_size : float or array-like, optional
+        Size of the markers showing the seeds in pixels. Default=5.0.
 
-    title : str, optional (default=None)
-        title for the plot
+    marker_labels : list of str, shape=(n_nodes), optional
+        Labels for the markers: list of strings
 
-    title_fontsize : int, optional (default=25)
-        fontsize of the title
+    title : str, optional
+        Title for the plot.
+
+    title_fontsize : int, optional
+        Fontsize of the title. Default=25.
 
     Returns
     -------
@@ -226,7 +231,10 @@ def view_markers(marker_coords, marker_color=None, marker_size=5.,
     connectome_info = _get_markers(marker_coords, marker_color)
     if hasattr(marker_size, 'tolist'):
         marker_size = marker_size.tolist()
+    if marker_labels is None:
+        marker_labels = ['' for i in range(marker_coords.shape[0])]
     connectome_info["marker_size"] = marker_size
+    connectome_info["marker_labels"] = marker_labels
     connectome_info['title'] = title
     connectome_info['title_fontsize'] = title_fontsize
     return _make_connectome_html(connectome_info)

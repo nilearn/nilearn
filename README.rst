@@ -1,14 +1,24 @@
 	.. -*- mode: rst -*-
 
-.. image:: https://travis-ci.org/nilearn/nilearn.svg?branch=master
-   :target: https://travis-ci.org/nilearn/nilearn
-   :alt: Travis Build Status
+.. image:: https://img.shields.io/pypi/v/nilearn.svg
+    :target: https://pypi.org/project/nilearn/
+    :alt: Pypi Package
+
+.. image:: https://img.shields.io/pypi/pyversions/nilearn.svg
+    :target: https://pypi.org/project/nilearn/
+    :alt: PyPI - Python Version
+
+.. image:: https://github.com/nilearn/nilearn/workflows/build/badge.svg?branch=master&event=push
+   :target: https://github.com/nilearn/nilearn/actions
+   :alt: Github Actions Build Status
 
 .. image:: https://codecov.io/gh/nilearn/nilearn/branch/master/graph/badge.svg
    :target: https://codecov.io/gh/nilearn/nilearn
+   :alt: Coverage Status
 
 .. image:: https://dev.azure.com/Parietal/Nilearn/_apis/build/status/nilearn.nilearn?branchName=master
-    :target: https://dev.azure.com/Parietal/Nilearn/_apis/build/status/nilearn.nilearn?branchName=master
+   :target: https://dev.azure.com/Parietal/Nilearn/_apis/build/status/nilearn.nilearn?branchName=master
+   :alt: Azure Build Status
 
 nilearn
 =======
@@ -16,12 +26,6 @@ nilearn
 Nilearn enables approachable and versatile analyses of brain volumes. It provides statistical and machine-learning tools, with instructive documentation & friendly community.
 
 It supports general linear model (GLM) based analysis and leverages the `scikit-learn <http://scikit-learn.org>`_ Python toolbox for multivariate statistics with applications such as predictive modelling, classification, decoding, or connectivity analysis.
-
-This work is made available by a community of people, amongst which
-the INRIA Parietal Project Team and the scikit-learn folks, in particular
-P. Gervais, A. Abraham, V. Michel, A.
-Gramfort, G. Varoquaux, F. Pedregosa, B. Thirion, M. Eickenberg, C. F. Gorgolewski,
-D. Bzdok, L. Esteve and B. Cipollini.
 
 Important links
 ===============

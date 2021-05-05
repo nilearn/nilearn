@@ -2,6 +2,7 @@
 
 import numpy as np
 import pytest
+import warnings
 
 from numpy.testing import assert_array_almost_equal
 import nibabel
@@ -147,6 +148,25 @@ def test_threshold_bound():
     pytest.raises(ValueError, CanICA, n_components=4, threshold=5.)
 
 
+def test_percentile_range():
+    # Smoke test to test warning in case ignored thresholds
+    rng = np.random.RandomState(0)
+    edge_case = rng.randint(low=1, high=10)
+    data, *_ = _make_canica_test_data()
+
+    # stess thresholding via edge case
+    canica = CanICA(n_components=edge_case, threshold=float(edge_case))
+    with warnings.catch_warnings(record=True) as warning:
+        canica.fit(data)
+        # Filter out deprecation warnings
+        not_deprecation_warning = [not issubclass(w.category,
+                                                  DeprecationWarning)
+                                        for w in warning]
+        assert sum(not_deprecation_warning) == 1  # ensure single warning
+        idx_critical_warning = not_deprecation_warning.index(True)
+        assert "critical threshold" in str(warning[idx_critical_warning].message)
+
+
 def test_masker_attributes_with_fit():
     # Test base module at sub-class
     data, mask_img, components, rng = _make_canica_test_data(n_subjects=3)
@@ -219,3 +239,22 @@ def test_with_globbing_patterns_with_multi_subjects():
         # n_components = 3
         check_shape = data[0].shape[:3] + (3,)
         assert components_img.shape, check_shape
+
+
+def test_canica_score():
+    # Multi subjects
+    imgs, mask_img, _, _ = _make_canica_test_data(n_subjects=3)
+    n_components = 10
+    canica = CanICA(n_components=10, mask=mask_img, random_state=0)
+    canica.fit(imgs)
+
+    # One score for all components
+    scores = canica.score(imgs, per_component=False)
+    assert scores <= 1
+    assert 0 <= scores
+
+    # Per component score
+    scores = canica.score(imgs, per_component=True)
+    assert scores.shape, (n_components,)
+    assert np.all(scores <= 1)
+    assert np.all(0 <= scores)

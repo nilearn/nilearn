@@ -47,7 +47,7 @@ def test_input_args_and_kwargs():
     sig[60:75] = 1
     y = sig + noise_std * rng.randn(*sig.shape)
     X = np.eye(p)
-    mask = np.ones((p,)).astype(np.bool)
+    mask = np.ones((p,)).astype(bool)
     alpha = .01
     alpha_ = alpha * X.shape[0]
     l1_ratio = .2

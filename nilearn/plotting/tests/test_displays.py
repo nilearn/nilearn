@@ -4,10 +4,12 @@ import tempfile
 
 import matplotlib.pyplot as plt
 import nibabel
+import pytest
 import numpy as np
 
 from nilearn.plotting.displays import OrthoSlicer, XSlicer, OrthoProjector
 from nilearn.plotting.displays import TiledSlicer
+from nilearn.plotting.displays import MosaicSlicer
 from nilearn.plotting.displays import LZRYProjector
 from nilearn.plotting.displays import LYRZProjector
 from nilearn.datasets import load_mni152_template
@@ -21,6 +23,7 @@ def test_demo_ortho_slicer():
     oslicer = OrthoSlicer(cut_coords=(0, 0, 0))
     img = load_mni152_template()
     oslicer.add_overlay(img, cmap=plt.cm.gray)
+    oslicer.title("display mode is ortho")
     oslicer.close()
 
 
@@ -51,6 +54,65 @@ def test_tiled_slicer():
     with tempfile.TemporaryFile() as fp:
         slicer.savefig(fp)
     slicer.close()
+
+
+def test_mosaic_slicer():
+    img = load_mni152_template()
+    # default cut_coords=None
+    slicer = MosaicSlicer.init_with_figure(img=img)
+    slicer.add_overlay(img, cmap=plt.cm.gray, colorbar=True)
+    # Forcing a layout here, to test the locator code
+    with tempfile.TemporaryFile() as fp:
+        slicer.savefig(fp)
+
+    # cut_coords as an integer
+    slicer = MosaicSlicer.init_with_figure(img=img, cut_coords=4)
+    slicer.add_overlay(img, cmap=plt.cm.gray, colorbar=True)
+    for d in ['x', 'y', 'z']:
+        assert d in slicer.cut_coords
+        assert len(slicer.cut_coords[d]) == 4
+    # cut_coords as a tuple
+    slicer = MosaicSlicer.init_with_figure(img=img, cut_coords=(4, 5, 2))
+    slicer.add_overlay(img, cmap=plt.cm.gray, colorbar=True)
+    assert len(slicer.cut_coords['x']) == 4
+    assert len(slicer.cut_coords['y']) == 5
+    assert len(slicer.cut_coords['z']) == 2
+    # test title
+    slicer.title('Showing mosaic mode')
+
+    # test when img is None or False while initializing figure
+    slicer = MosaicSlicer.init_with_figure(img=None, cut_coords=None)
+    slicer.add_overlay(img, cmap=plt.cm.gray, colorbar=True)
+    # same test but cut_coords as integer and tuple
+    slicer = MosaicSlicer.init_with_figure(img=None, cut_coords=5)
+    slicer.add_overlay(img, cmap=plt.cm.gray, colorbar=True)
+    slicer = MosaicSlicer.init_with_figure(img=None, cut_coords=(1, 1, 1))
+    slicer.add_overlay(img, cmap=plt.cm.gray, colorbar=True)
+
+    # assert raises ValueError
+    pytest.raises(ValueError, MosaicSlicer.init_with_figure,
+                  img=None, cut_coords=(5, 4))
+
+    slicer.close()
+
+
+def test_demo_mosaic_slicer():
+    # cut_coords as tuple of length 3
+    mslicer = MosaicSlicer(cut_coords=(1, 1, 1))
+    img = load_mni152_template()
+    mslicer.add_overlay(img, cmap=plt.cm.gray)
+    # cut_coords as integer
+    mslicer = MosaicSlicer(cut_coords=5)
+    mslicer.add_overlay(img, cmap=plt.cm.gray)
+    # cut_coords as dictionary
+    mslicer = MosaicSlicer(cut_coords={'x': [10, 20],
+                                       'y': [30, 40],
+                                       'z': [15, 16]})
+    mslicer.add_overlay(img, cmap=plt.cm.gray)
+    assert mslicer.cut_coords == {'x': [10, 20], 'y': [30, 40], 'z': [15, 16]}
+    # assert raises a ValueError
+    pytest.raises(ValueError, MosaicSlicer, cut_coords=(2, 3))
+    mslicer.close()
 
 
 def test_demo_ortho_projector():
@@ -137,6 +199,12 @@ def test_annotations():
                          scale_size=2.5,
                          scale_units='cm',
                          scale_loc=3)
+
+
+def test_position_annotation_with_decimals():
+    # Test of decimals position annotation with precision of 2
+    orthoslicer = OrthoSlicer(cut_coords=(0, 0, 0))
+    orthoslicer.annotate(positions=True, decimals=2)
     orthoslicer.close()
 
 

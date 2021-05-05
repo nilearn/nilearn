@@ -26,3 +26,4 @@ predicting an output value.
    frem.rst
    space_net.rst
    searchlight.rst
+   going_further.rst

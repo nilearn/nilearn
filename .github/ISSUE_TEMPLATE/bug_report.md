@@ -2,39 +2,24 @@
 name: Bug report
 about: Something not working as described? Missing/incorrect documentation? This is the place.
 title: ''
-labels: 'bug'
+labels: 'Bug'
 assignees: ''
 
 ---
-<!--
+<!--Provide a brief description of the bug.-->
 
-Hi! 
-If you have: 
- -1 Questions about how to use Nilearn or 
- -2 Need analysis suggestions & recommendations?
 
-A bunch of fMRI researchers hang out at Neurostars (http://neurostars.org/). 
-Post those questions there. 
-Add the tag `nilearn` (we get an email from Neurostars if you do).
+<!--Please fill in the following information, to the best of your ability.-->
+Nilearn version:
 
-Posting them here makes life more complicated for the Nilearn developers.  
--->
+### Expected behavior
 
-<!--
 
-For the Bug Report, 
-Include this information:
--------------------------
-What version of Nilearn are you using?
-What were you trying to do?
-What did you expect will happen?
-What actually happened?
+### Actual behavior
 
-List the steps you performed that revealed the bug to you.
-Include any code samples. Enclose them in triple back-ticks (```)
-Like this:
+
+### Steps and code to reproduce bug
+
+```python
 
 ```
-<code>
-``` 
--->

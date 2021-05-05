@@ -13,6 +13,7 @@ import pytest
 
 from nibabel import Nifti1Image
 
+from nilearn import _utils
 from nilearn.image.resampling import resample_img, resample_to_img, reorder_img
 from nilearn.image.resampling import from_matrix_vector, coord_transform
 from nilearn.image.resampling import get_bounds
@@ -43,8 +44,9 @@ def rotation(theta, phi):
 def test_identity_resample():
     """ Test resampling with an identity affine.
     """
+    rng = np.random.RandomState(42)
     shape = (3, 2, 5, 2)
-    data = np.random.randint(0, 10, shape)
+    data = rng.randint(0, 10, shape)
     affine = np.eye(4)
     affine[:3, -1] = 0.5 * np.array(shape[:3])
     rot_img = resample_img(Nifti1Image(data, affine),
@@ -80,9 +82,9 @@ def test_identity_resample():
 def test_downsample():
     """ Test resampling with a 1/2 down-sampling affine.
     """
-    rand_gen = np.random.RandomState(0)
+    rng = np.random.RandomState(42)
     shape = (6, 3, 6, 2)
-    data = rand_gen.random_sample(shape)
+    data = rng.random_sample(shape)
     affine = np.eye(4)
     rot_img = resample_img(Nifti1Image(data, affine),
                            target_affine=2 * affine, interpolation='nearest')
@@ -123,10 +125,10 @@ def test_downsample():
 def test_resampling_fill_value():
     """ Test resampling with a non-zero fill value
     """
-    prng = np.random.RandomState(10)
+    rng = np.random.RandomState(42)
 
-    data_3d = prng.rand(1, 4, 4)
-    data_4d = prng.rand(1, 4, 4, 3)
+    data_3d = rng.uniform(size=(1, 4, 4))
+    data_4d = rng.uniform(size=(1, 4, 4, 3))
 
     angle = np.pi/4
     rot = rotation(0, angle)
@@ -159,10 +161,10 @@ def test_resampling_fill_value():
 def test_resampling_with_affine():
     """ Test resampling with a given rotation part of the affine.
     """
-    prng = np.random.RandomState(10)
+    rng = np.random.RandomState(42)
 
-    data_3d = prng.randint(4, size=(1, 4, 4))
-    data_4d = prng.randint(4, size=(1, 4, 4, 3))
+    data_4d = rng.randint(4, size=(1, 4, 4, 3))
+    data_3d = rng.randint(4, size=(1, 4, 4))
 
     for data in [data_3d, data_4d]:
         for angle in (0, np.pi, np.pi / 2., np.pi / 4., np.pi / 3.):
@@ -187,10 +189,10 @@ def test_resampling_with_affine():
 
 
 def test_resampling_continuous_with_affine():
-    prng = np.random.RandomState(10)
+    rng = np.random.RandomState(42)
 
-    data_3d = prng.randint(1, 4, size=(1, 10, 10))
-    data_4d = prng.randint(1, 4, size=(1, 10, 10, 3))
+    data_3d = rng.randint(1, 4, size=(1, 10, 10))
+    data_4d = rng.randint(1, 4, size=(1, 10, 10, 3))
 
     for data in [data_3d, data_4d]:
         for angle in (0, np.pi / 2., np.pi, 3 * np.pi / 2.):
@@ -217,10 +219,11 @@ def test_resampling_continuous_with_affine():
 
 
 def test_resampling_error_checks():
+    rng = np.random.RandomState(42)
     shape = (3, 2, 5, 2)
     target_shape = (5, 3, 2)
     affine = np.eye(4)
-    data = np.random.randint(0, 10, shape)
+    data = rng.randint(0, 10, shape)
     img = Nifti1Image(data, affine)
 
     # Correct parameters: no exception
@@ -246,6 +249,27 @@ def test_resampling_error_checks():
                      target_affine=affine,
                      interpolation="an_invalid_interpolation"
                      )
+
+    # Resampling a binary image with continuous or
+    # linear interpolation should raise a warning.
+    data_binary = rng.randint(4, size=(1, 4, 4))
+    data_binary[data_binary>0] = 1
+    assert sorted(list(np.unique(data_binary))) == [0,1]
+
+    rot = rotation(0, np.pi / 4)
+    img_binary = Nifti1Image(data_binary, np.eye(4))
+    assert _utils.niimg._is_binary_niimg(img_binary)
+
+    with pytest.warns(Warning, match="Resampling binary images with"):
+        rot_img = resample_img(img_binary,
+                               target_affine=rot,
+                               interpolation='continuous')
+
+    with pytest.warns(Warning, match="Resampling binary images with"):
+        rot_img = resample_img(img_binary,
+                               target_affine=rot,
+                               interpolation='linear')
+
 
     # Noop
     target_shape = shape[:3]
@@ -464,7 +488,7 @@ def test_resampling_nan():
         # create deterministic data, padded with one
         # voxel thickness of zeros
         core_data = np.arange(np.prod(core_shape)
-                              ).reshape(core_shape).astype(np.float)
+                              ).reshape(core_shape).astype(np.float64)
         # Introduce a nan
         core_data[2, 2:4, 1] = np.nan
         full_data_shape = np.array(core_shape) + 2
@@ -479,7 +503,7 @@ def test_resampling_nan():
 
         # check 3x3 transformation matrix
         target_affine = np.eye(3)[axis_permutation]
-        with pytest.warns(RuntimeWarning):
+        with pytest.warns(Warning, match=r"(\bnan\b|invalid value)"):
             resampled_img = resample_img(source_img,
                                          target_affine=target_affine)
 
@@ -517,9 +541,9 @@ def test_resampling_nan():
 
 def test_resample_to_img():
     # Testing resample to img function
-    rand_gen = np.random.RandomState(0)
+    rng = np.random.RandomState(42)
     shape = (6, 3, 6, 3)
-    data = rand_gen.random_sample(shape)
+    data = rng.random_sample(shape)
 
     source_affine = np.eye(4)
     source_img = Nifti1Image(data, source_affine)
@@ -549,12 +573,12 @@ def test_crop():
 
 def test_resample_identify_affine_int_translation():
     # Testing resample to img function
-    rand_gen = np.random.RandomState(0)
+    rng = np.random.RandomState(42)
 
     source_shape = (6, 4, 6)
     source_affine = np.eye(4)
     source_affine[:, 3] = np.append(np.random.randint(0, 4, 3), 1)
-    source_data = rand_gen.random_sample(source_shape)
+    source_data = rng.random_sample(source_shape)
     source_img = Nifti1Image(source_data, source_affine)
 
     target_shape = (11, 10, 9)
@@ -617,12 +641,12 @@ def test_reorder_img():
     # shape, whereas reordering does.
     shape = (5, 5, 5, 2, 2)
     rng = np.random.RandomState(42)
-    data = rng.rand(*shape)
+    data = rng.uniform(size=shape)
     affine = np.eye(4)
     affine[:3, -1] = 0.5 * np.array(shape[:3])
     ref_img = Nifti1Image(data, affine)
     # Test with purely positive matrices and compare to a rotation
-    for theta, phi in np.random.randint(4, size=(5, 2)):
+    for theta, phi in rng.randint(4, size=(5, 2)):
         rot = rotation(theta * np.pi / 2, phi * np.pi / 2)
         rot[np.abs(rot) < 0.001] = 0
         rot[rot > 0.9] = 1
@@ -664,7 +688,7 @@ def test_reorder_img():
         reorder_img(ref_img, resample=interpolation)
 
     # Test flipping an axis
-    data = rng.rand(*shape)
+    data = rng.uniform(size=shape)
     for i in (0, 1, 2):
         # Make a diagonal affine with a negative axis, and check that
         # can be reordered, also vary the shape
@@ -727,10 +751,11 @@ def test_reorder_img_mirror():
 
 
 def test_coord_transform_trivial():
+    rng = np.random.RandomState(42)
     sform = np.eye(4)
-    x = np.random.random((10,))
-    y = np.random.random((10,))
-    z = np.random.random((10,))
+    x = rng.random_sample((10,))
+    y = rng.random_sample((10,))
+    z = rng.random_sample((10,))
 
     x_, y_, z_ = coord_transform(x, y, z, sform)
     np.testing.assert_array_equal(x, x_)

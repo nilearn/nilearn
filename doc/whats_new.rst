@@ -1,5 +1,153 @@
-0.7.0a
-======
+0.7.2.dev
+=========
+
+NEW
+---
+
+Fixes
+-----
+
+- Fix detrending and temporal filtering order for confounders
+  in :func:`nilearn.signal.clean`, so that these operations are applied
+  in the same order as for the signals, i.e., first detrending and
+  then temporal filtering (https://github.com/nilearn/nilearn/issues/2730).
+
+
+Enhancements
+------------
+
+- :func:`nilearn.plotting.view_markers` now accept an optional argument `marker_labels` to provide labels to each marker.
+
+.. _v0.7.1:
+
+0.7.1
+=====
+
+**Released March 2021**
+
+HIGHLIGHTS
+----------
+
+- New atlas fetcher
+  :func:`nilearn.datasets.fetch_atlas_difumo` to download *Dictionaries of Functional Modes*,
+  or “DiFuMo”, that can serve as atlases to extract functional signals with different
+  dimensionalities (64, 128, 256, 512, and 1024). These modes are optimized to represent well
+  raw BOLD timeseries, over a with range of experimental conditions.
+
+- :class:`nilearn.decoding.Decoder` and :class:`nilearn.decoding.DecoderRegressor`
+  is now implemented with random predictions to estimate a chance level.
+
+- The functions :func:`nilearn.plotting.plot_epi`, :func:`nilearn.plotting.plot_roi`,
+  :func:`nilearn.plotting.plot_stat_map`, :func:`nilearn.plotting.plot_prob_atlas`
+  is now implemented with new display mode Mosaic. That implies plotting 3D maps
+  in multiple columns and rows in a single axes.
+
+- :func:`nilearn.plotting.plot_carpet` now supports discrete atlases.
+  When an atlas is used, a colorbar is added to the figure,
+  optionally with labels corresponding to the different values in the atlas.
+
+NEW
+---
+
+- New atlas fetcher
+  :func:`nilearn.datasets.fetch_atlas_difumo` to download *Dictionaries of Functional Modes*,
+  or “DiFuMo”, that can serve as atlases to extract functional signals with different
+  dimensionalities (64, 128, 256, 512, and 1024). These modes are optimized to represent well
+  raw BOLD timeseries, over a with range of experimental conditions.
+
+- :func:`nilearn.glm.Contrast.one_minus_pvalue` was added to ensure numerical
+  stability of p-value estimation. It computes 1 - p-value using the Cumulative
+  Distribution Function in the same way as `nilearn.glm.Contrast.p_value`
+  computes the p-value using the Survival Function.
+
+Fixes
+-----
+
+- Fix altered, non-zero baseline in design matrices where multiple events in the same condition
+  end at the same time (https://github.com/nilearn/nilearn/issues/2674).
+
+- Fix testing issues on ARM machine.
+
+Enhancements
+------------
+
+- :class:`nilearn.decoding.Decoder` and :class:`nilearn.decoding.DecoderRegressor`
+  is now implemented with random predictions to estimate a chance level.
+
+- :class:`nilearn.decoding.Decoder`, :class:`nilearn.decoding.DecoderRegressor`,
+  :class:`nilearn.decoding.FREMRegressor`, and :class:`nilearn.decoding.FREMClassifier`
+  now override the `score` method to use whatever scoring strategy was defined through
+  the `scoring` attribute instead of the sklearn default.
+  If the `scoring` attribute of the decoder is set to None, the scoring strategy
+  will default to accuracy for classifiers and to r2 score for regressors.
+
+- :func:`nilearn.plotting.plot_surf` and deriving functions like :func:`nilearn.plotting.plot_surf_roi`
+  now accept an optional argument `cbar_tick_format` to specify how numbers should be displayed on the
+  colorbar of surface plots. The default format is scientific notation except for :func:`nilearn.plotting.plot_surf_roi`
+  for which it is set as integers.
+
+- :func:`nilearn.plotting.plot_carpet` now supports discrete atlases.
+  When an atlas is used, a colorbar is added to the figure,
+  optionally with labels corresponding to the different values in the atlas.
+
+- :class:`nilearn.input_data.NiftiMasker`, :class:`nilearn.input_data.NiftiLabelsMasker`,
+  :class:`nilearn.input_data.MultiNiftiMasker`, :class:`nilearn.input_data.NiftiMapsMasker`,
+  and :class:`nilearn.input_data.NiftiSpheresMasker` can now compute high variance confounds
+  on the images provided to `transform` and regress them out automatically. This behaviour is
+  controlled through the `high_variance_confounds` boolean parameter of these maskers which
+  default to False.
+
+- :class:`nilearn.input_data.NiftiLabelsMasker` now automatically replaces NaNs in input data
+  with zeros, to match the behavior of other maskers.
+
+- :func:`nilearn.datasets.fetch_neurovault` now implements a `resample` boolean argument to either
+  perform a fixed resampling during download or keep original images. This can be handy to reduce disk usage.
+  By default, the downloaded images are not resampled.
+
+- The functions :func:`nilearn.plotting.plot_epi`, :func:`nilearn.plotting.plot_roi`,
+  :func:`nilearn.plotting.plot_stat_map`, :func:`nilearn.plotting.plot_prob_atlas`
+  is now implemented with new display mode Mosaic. That implies plotting 3D maps
+  in multiple columns and rows in a single axes.
+
+- `psc` standardization option of :func:`nilearn.signal.clean` now allows time series with negative mean values.
+
+- :func:`nilearn.reporting.make_glm_report` and
+  :func:`nilearn.reporting.get_clusters_table` have a new argument,
+  "two_sided", which allows for two-sided thresholding, which is disabled by default.
+
+.. _v0.7.0:
+
+0.7.0
+=====
+
+**Released November 2020**
+
+HIGHLIGHTS
+----------
+
+- Nilearn now includes the functionality of `Nistats <https://nistats.github.io>`_ as :mod:`nilearn.glm`. This module is experimental, hence subject to change in any future release.
+  :ref:`Here's a guide to replacing Nistats imports to work in Nilearn. <nistats_migration>`
+- New decoder object
+  :class:`nilearn.decoding.Decoder` (for classification) and
+  :class:`nilearn.decoding.DecoderRegressor` (for regression) implement a model
+  selection scheme that averages the best models within a cross validation loop.
+- New FREM object
+  :class:`nilearn.decoding.FREMClassifier` (for classification) and
+  :class:`nilearn.decoding.FREMRegressor` (for regression) extend the decoder
+  object with one fast clustering step at the beginning and  aggregates a high number of estimators trained on various splits of the training set.
+
+- New plotting functions:
+
+  * :func:`nilearn.plotting.plot_event` to visualize events file.
+  * :func:`nilearn.plotting.plot_roi` can now plot ROIs in contours with `view_type` argument.
+  * :func:`nilearn.plotting.plot_carpet` generates a "carpet plot" (also known
+    as a "Power plot" or a "grayplot")
+  * :func:`nilearn.plotting.plot_img_on_surf` generates multiple views of
+    :func:`nilearn.plotting.plot_surf_stat_map` in a single figure.
+  * :func:`nilearn.plotting.plot_markers` shows network nodes (markers) on a glass
+    brain template
+  * :func:`nilearn.plotting.plot_surf_contours` plots the contours of regions of
+    interest on the surface
 
 .. warning::
 
@@ -8,7 +156,8 @@
 
 NEW
 ---
-
+- Nilearn now includes the functionality of `Nistats <https://nistats.github.io>`_.
+  :ref:`Here's a guide to replacing Nistats imports to work in Nilearn. <nistats_migration>`
 - New decoder object
   :class:`nilearn.decoding.Decoder` (for classification) and
   :class:`nilearn.decoding.DecoderRegressor` (for regression) implement a model
@@ -16,11 +165,82 @@ NEW
   The resulting average model is the one used as a classifier or a regressor.
   These two objects also leverage the `NiftiMaskers` to provide a direct
   interface with the Nifti files on disk.
+- New FREM object
+  :class:`nilearn.decoding.FREMClassifier` (for classification) and
+  :class:`nilearn.decoding.FREMRegressor` (for regression) extend the decoder
+  object pipeline with one fast clustering step at the beginning (yielding an
+  implicit spatial regularization) and  aggregates a high number of estimators
+  trained on various splits of the training set. This returns a state-of-the-art
+  decoding pipeline at a low computational cost.
+  These two objects also leverage the `NiftiMaskers` to provide a direct
+  interface with the Nifti files on disk.
+- Plot events file
+  Use :func:`nilearn.plotting.plot_event` to visualize events file.
+  The function accepts the :term:`BIDS` events file read using `pandas`
+  utilities.
+- Plotting function :func:`nilearn.plotting.plot_roi` can now plot ROIs
+  in contours with `view_type` argument.
+- New plotting function
+  :func:`nilearn.plotting.plot_carpet` generates a "carpet plot" (also known
+  as a "Power plot" or a "grayplot"), for visualizing global patterns in
+  4D functional data over time.
+- New plotting function
+  :func:`nilearn.plotting.plot_img_on_surf` generates multiple views of
+  :func:`nilearn.plotting.plot_surf_stat_map` in a single figure.
+- :func:`nilearn.plotting.plot_markers` shows network nodes (markers) on a glass
+  brain template and color code them according to provided nodal measure (i.e.
+  connection strength). This function will replace
+  :func:`nilearn.plotting.plot_connectome_strength`.
+- New plotting function
+  :func:`nilearn.plotting.plot_surf_contours` plots the contours of regions of
+  interest on the surface, optionally overlayed on top of a statistical map.
+- The position annotation on the plot methods now implements the `decimals` option
+  to enable annotation of a slice coordinate position with the float.
+- New example in
+  :ref:`sphx_glr_auto_examples_02_decoding_plot_haxby_searchlight_surface.py`
+  to demo how to do cortical surface-based searchlight decoding with Nilearn.
+- confounds or additional regressors for design matrix can be specified as
+  numpy arrays or pandas DataFrames interchangeably
+- The decomposition estimators will now accept argument `per_component`
+  with `score` method to explain the variance for each component.
+
 
 Fixes
 -----
 
 - :class:`nilearn.input_data.NiftiLabelsMasker` no longer ignores its `mask_img`
+- :func:`nilearn.masking.compute_brain_mask` has replaced
+  nilearn.masking.compute_gray_matter_mask. Features remained the same but
+  some corrections regarding its description were made in the docstring.
+- the default background (MNI template) in plotting functions now has the
+  correct orientation; before left and right were inverted.
+- first level modelling can deal with regressors
+  having multiple events which share onsets or offsets.
+  Previously, such cases could lead to an erroneous baseline shift.
+- :func:`nilearn.mass_univariate.permuted_ols` no longer returns transposed
+  t-statistic arrays when no permutations are performed.
+- Fix decomposition estimators returning explained variance score as 0.
+  based on all components i.e., when per_component=False.
+- Fix readme file of the Destrieux 2009 atlas.
+
+
+Changes
+-------
+
+- :func:`nilearn.datasets.fetch_cobre` has been deprecated and will be
+  removed in release 0.9 .
+- :func:`nilearn.plotting.plot_connectome_strength` has been deprecated and will
+  be removed in release 0.9 .
+
+- :class:`nilearn.connectome.ConnectivityMeasure` can now remove
+  confounds in its transform step.
+- :func:`nilearn.surface.vol_to_surf` can now sample between two nested surfaces
+  (eg white matter and pial surfaces) at specific cortical depths
+- :func:`nilearn.datasets.fetch_surf_fsaverage` now also downloads white matter
+  surfaces.
+
+
+.. _v0.6.2:
 
 0.6.2
 ======
@@ -30,6 +250,8 @@ ENHANCEMENTS
 
 - Generated documentation now includes Binder links to launch examples interactively
   in the browser
+- :class:`nilearn.input_data.NiftiSpheresMasker` now has an inverse transform,
+  projecting spheres to the corresponding mask_img.
 
 Fixes
 -----
@@ -54,6 +276,10 @@ The following people contributed to this release::
      Joshua Teves
      Kshitij Chawla (kchawla-pi)
      Zvi Baratz
+     Simon R. Steinkamp
+
+
+.. _v0.6.1:
 
 0.6.1
 =====
@@ -320,7 +546,7 @@ NEW
   when using the `mask_strategy="template"` option for brains in MNI space.
 - New brain development fMRI dataset fetcher
   :func:`nilearn.datasets.fetch_development_fmri` can be used to download
-  movie-watching data in children and adults; a light-weight dataset 
+  movie-watching data in children and adults; a light-weight dataset
   implemented for teaching and usage in the examples.
 - New example in `examples/05_advanced/plot_age_group_prediction_cross_val.py`
   to compare methods for classifying subjects into age groups based on
@@ -336,15 +562,15 @@ NEW
   and `examples/03_connectivity/plot_canica_analysis.py` into an improved
   `examples/03_connectivity/plot_compare_decomposition.py`.
 
-- The Localizer dataset now follows the BIDS organization.
+- The Localizer dataset now follows the :term:`BIDS` organization.
 
 Changes
 -------
 
 - All the connectivity examples are changed from ADHD to brain development
   fmri dataset.
-- Examples plot_decoding_tutorial, plot_haxby_decoder, 
-  plot_haxby_different_estimators, plot_haxby_full_analysis, plot_oasis_vbm now 
+- Examples plot_decoding_tutorial, plot_haxby_decoder,
+  plot_haxby_different_estimators, plot_haxby_full_analysis, plot_oasis_vbm now
   use :class:`nilearn.decoding.Decoder` and :class:`nilearn.decoding.DecoderRegressor`
   instead of sklearn SVC and SVR.
 
@@ -1565,7 +1791,7 @@ New features
    - The new module :mod:`nilearn.connectome` now has class
      :class:`nilearn.connectome.ConnectivityMeasure` can be useful for
      computing functional connectivity matrices.
-   - The function :func:`nilearn.connectome.sym_to_vec` in same module
+   - The function nilearn.connectome.sym_to_vec in same module
      :mod:`nilearn.connectome` is also implemented as a helper function to
      :class:`nilearn.connectome.ConnectivityMeasure`.
    - The class :class:`nilearn.decomposition.DictLearning` in
