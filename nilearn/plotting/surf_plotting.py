@@ -294,7 +294,7 @@ def plot_surf(surf_mesh, surf_map=None, bg_map=None,
                 raise ValueError('Array computed with the custom function from avg_method should be an array of numbers (int or float)')
 
         else:
-            raise ValueError(f"avg_method should be either ['mean', 'median', 'max', 'min'] or a custom function")
+            raise ValueError("avg_method should be either ['mean', 'median', 'max', 'min'] or a custom function")
 
         # if no vmin/vmax are passed figure them out from data
         if vmin is None:
