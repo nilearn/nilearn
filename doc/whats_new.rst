@@ -11,6 +11,9 @@ Fixes
   in :func:`nilearn.signal.clean`, so that these operations are applied
   in the same order as for the signals, i.e., first detrending and
   then temporal filtering (https://github.com/nilearn/nilearn/issues/2730).
+- Fix number of attributes returned by the
+  :func:`nilearn.glm.first_level.FirstLevelModel._get_voxelwise_model_attribute` method in the first level model.
+  It used to return only the first attribute, and now returns as many attributes as design matrices.
 
 
 Enhancements
