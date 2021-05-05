@@ -286,6 +286,7 @@ def test_compute_contrast_num_contrasts():
     with pytest.warns(UserWarning, match='One contrast given, assuming it for all 3 runs'):
         multi_session_model.compute_contrast([np.eye(rk)[1]])
 
+
 def test_run_glm():
     rng = np.random.RandomState(42)
     n, p, q = 100, 80, 10
@@ -701,6 +702,24 @@ def test_first_level_residuals():
     residuals = model.residuals[0]
     mean_residuals = model.masker_.transform(residuals).mean(0)
     assert_array_almost_equal(mean_residuals, 0)
+
+
+@pytest.mark.parametrize("shapes", [
+    [(10, 10, 10, 25)],
+    [(10, 10, 10, 25), (10, 10, 10, 100)],
+])
+def test_get_voxelwise_attributes_should_return_as_many_as_design_matrices(shapes):
+    mask, fmri_data, design_matrices = generate_fake_fmri_data_and_design(shapes)
+
+    for i in range(len(design_matrices)):
+        design_matrices[i].iloc[:, 0] = 1
+
+    model = FirstLevelModel(mask_img=mask, minimize_memory=False,
+                            noise_model='ols')
+    model.fit(fmri_data, design_matrices=design_matrices)
+
+    # Check that length of outputs is the same as the number of design matrices
+    assert len(model._get_voxelwise_model_attribute("resid", True)) == len(shapes)
 
 
 def test_first_level_predictions_r_square():

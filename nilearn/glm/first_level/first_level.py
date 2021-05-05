@@ -683,7 +683,7 @@ class FirstLevelModel(BaseGLM):
 
             output.append(self.masker_.inverse_transform(voxelwise_attribute))
 
-            return output
+        return output
 
     @auto_attr
     def residuals(self):
