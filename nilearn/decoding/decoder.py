@@ -1244,7 +1244,7 @@ class FREMClassifier(_BaseDecoder):
     FREM uses an implicit spatial regularization through fast clustering and
     aggregates a high number of estimators trained on various splits of the
     training set, thus returning a very robust decoder at a lower computational
-    cost than other spatially regularized methods.:footcite:`HOYOSIDROBO2018160`.
+    cost than other spatially regularized methods :footcite:`HOYOSIDROBO2018160`.
 
     Parameters
     -----------
