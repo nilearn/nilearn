@@ -210,7 +210,7 @@ def load_mni152_gm_mask(threshold=0.):
     ----------
     threshold : float, optional
         The parameter which amounts to include the values in the mask image.
-        Values lying above this threshold will be included. Default=0.2
+        Values lying above this threshold will be included. Default=0.
 
     Returns
     -------
@@ -237,7 +237,7 @@ def load_mni152_wm_mask(threshold=0.):
     ----------
     threshold : float, optional
         The parameter which amounts to include the values in the mask image.
-        Values lying above this threshold will be included. Default=0.2
+        Values lying above this threshold will be included. Default=0.
 
     Returns
     -------
