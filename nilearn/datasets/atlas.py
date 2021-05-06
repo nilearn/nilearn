@@ -284,13 +284,17 @@ def fetch_atlas_harvard_oxford(atlas_name, data_dir=None,
     ----------
     atlas_name : string
         Name of atlas to load. Can be:
-        cort-maxprob-thr0-1mm,  cort-maxprob-thr0-2mm,
+        cort-maxprob-thr0-1mm, cort-maxprob-thr0-2mm,
         cort-maxprob-thr25-1mm, cort-maxprob-thr25-2mm,
         cort-maxprob-thr50-1mm, cort-maxprob-thr50-2mm,
-        sub-maxprob-thr0-1mm,  sub-maxprob-thr0-2mm,
+        cort-prob-1mm, cort-prob-2mm,
+        cortl-maxprob-thr0-1mm, cortl-maxprob-thr0-2mm,
+        cortl-maxprob-thr25-1mm, cortl-maxprob-thr25-2mm,
+        cortl-maxprob-thr50-1mm, cortl-maxprob-thr50-2mm,
+        cortl-prob-1mm, cortl-prob-2mm,
+        sub-maxprob-thr0-1mm, sub-maxprob-thr0-2mm,
         sub-maxprob-thr25-1mm, sub-maxprob-thr25-2mm,
         sub-maxprob-thr50-1mm, sub-maxprob-thr50-2mm,
-        cort-prob-1mm, cort-prob-2mm,
         sub-prob-1mm, sub-prob-2mm
 
     data_dir : string, optional
@@ -407,10 +411,14 @@ def _fetch_atlases_fsl(atlas_source, atlas_name,
     atlas_items = (("cort-maxprob-thr0-1mm", "cort-maxprob-thr0-2mm",
                     "cort-maxprob-thr25-1mm", "cort-maxprob-thr25-2mm",
                     "cort-maxprob-thr50-1mm", "cort-maxprob-thr50-2mm",
+                    "cort-prob-1mm", "cort-prob-2mm",
+                    "cortl-maxprob-thr0-1mm", "cortl-maxprob-thr0-2mm",
+                    "cortl-maxprob-thr25-1mm", "cortl-maxprob-thr25-2mm",
+                    "cortl-maxprob-thr50-1mm", "cortl-maxprob-thr50-2mm",
+                    "cortl-prob-1mm", "cortl-prob-2mm",
                     "sub-maxprob-thr0-1mm", "sub-maxprob-thr0-2mm",
                     "sub-maxprob-thr25-1mm", "sub-maxprob-thr25-2mm",
                     "sub-maxprob-thr50-1mm", "sub-maxprob-thr50-2mm",
-                    "cort-prob-1mm", "cort-prob-2mm",
                     "sub-prob-1mm", "sub-prob-2mm"),
                    ("maxprob-thr0-1mm", "maxprob-thr0-2mm",
                    "maxprob-thr25-1mm", "maxprob-thr25-2mm",
@@ -434,7 +442,7 @@ def _fetch_atlases_fsl(atlas_source, atlas_name,
     if source_idx == 0:
         if atlas_name[0] == 'c':
             lateralized = False
-            if 'cort-maxprob' in atlas_name and symmetric_split:
+            if 'cort-maxprob' in atlas_name or 'cortl-maxprob' in atlas_name and symmetric_split:
                 split_name = atlas_name.split('cort')
                 atlas_name = 'cortl{}'.format(split_name[1])
                 label_file = 'HarvardOxford-Cortical-Lateralized.xml'
