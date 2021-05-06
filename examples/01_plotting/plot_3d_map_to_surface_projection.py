@@ -148,3 +148,24 @@ view = plotting.view_img_on_surf(stat_img, threshold='90%')
 # view.open_in_browser()
 
 view
+
+##############################################################################
+# Impact of plot parameters on visualization
+# ------------------------------------------
+# You can specify arguments to be passed on to the function
+# :func:`nilearn.plotting.vol_to_surf` using `vol_to_surf_kwargs`. This allows
+# fine-grained control of how the input 3D image is resampled and interpolated -
+# for example if you are viewing a volumetric atlas, using nearest-neighbor
+# interpolation will produce a plot with discrete regions.
+
+destrieux = datasets.fetch_atlas_destrieux_2009()
+
+view = plotting.view_img_on_surf(
+    destrieux.maps,
+    surf_mesh="fsaverage",
+    vol_to_surf_kwargs={"n_samples": 1, "radius": 0.0, "interpolation": "nearest"},
+    symmetric_cmap=False,
+)
+
+# view.open_in_browser()
+view
