@@ -856,18 +856,20 @@ def plot_img_on_surf(stat_map, surf_mesh='fsaverage5', mask_img=None,
                                   vmax, threshold, kwargs,
                                   cmap=get_cmap(cmap))
        
-        # if figure has two rows, change colorbar position for less excess space
-        if (axes.shape[0] == 2):
+        # if figure has more than two rows, change colorbar position for less excess space
+        if (axes.shape[0] > 1):
             cbar_ax = fig.add_axes([0.265,0.10,0.5,0.04]) 
         else:
             cbar_ax = fig.add_axes([0.265,0.17,0.5,0.04]) 
         fig.colorbar(sm, cax=cbar_ax, orientation='horizontal')
    
-    # if figure has two rows and two axes, adjust subplot for less excess space
-    if (axes.shape[0] == 2) & (axes.shape[1] ==  2):
+    # if figure has multple rows or columns, adjust subplot for less excess space
+    if (axes.shape[0] > 2):
+        fig.subplots_adjust(wspace=-0.7, hspace=-0.1)
+    elif (axes.shape[0] == 2) & (axes.shape[1] ==  2):
         fig.subplots_adjust(wspace=-0.4, hspace=-0.175)
     else:
-        fig.subplots_adjust(wspace=-0.02, hspace=-0.3)
+        fig.subplots_adjust(wspace=-0.02, hspace=-0.15)
 
     if title is not None:
         fig.suptitle(title)
