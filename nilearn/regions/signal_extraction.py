@@ -18,7 +18,7 @@ from ..image import new_img_like
 INF = 1e-9
 
 
-def __check_labels(labels_img, target_shape, target_affine):
+def _check_labels(labels_img, target_shape, target_affine):
     """Validate shapes and affines of labels.
     Parameters
     ----------
@@ -44,14 +44,14 @@ def __check_labels(labels_img, target_shape, target_affine):
         raise ValueError("labels_img and imgs affines must be identical")
 
 
-def __check_imgs(target_shape, target_affine, mask_img=None, dim=None):
+def _check_imgs(target_shape, target_affine, mask_img=None, dim=None):
     """Validate shapes and affines of images and masks.
     Parameters
     ----------
     target_shape : numpy.ndarray
         Desired shape of labels image and mask.
 
-    target_shape : numpy.ndarray
+    target_affine : numpy.ndarray
         Desired affine of labels image and mask.
 
     mask_img : Niimg-like object, optional
@@ -69,22 +69,27 @@ def __check_imgs(target_shape, target_affine, mask_img=None, dim=None):
         
     """
     mask_state = False
-    if mask_img is not None:
-        if dim is None:
-            mask_img = _utils.check_niimg_3d(mask_img)
-            if mask_img.shape != target_shape:
-                raise ValueError("mask_img and imgs shapes must be identical.")
-        else:
-            if mask_img.shape[:dim] != target_shape:
-                raise ValueError("mask_img and imgs shapes must be identical.")
-        if abs(mask_img.affine - target_affine).max() > INF:
-            raise ValueError("mask_img and imgs affines must be identical")
+
+    # Check shape
+    if mask_img is not None and dim is None:
+        mask_img = _utils.check_niimg_3d(mask_img)
+        if mask_img.shape != target_shape:
+            raise ValueError("mask_img and imgs shapes must be identical.")
+    elif mask_img is not None and mask_img.shape[:dim] != target_shape:
+        raise ValueError("mask_img and imgs shapes must be identical.")
+
+    # Check affines & set state
+    if mask_img is not None and \
+       abs(mask_img.affine - target_affine).max() > INF:
+        raise ValueError("mask_img and imgs affines must be identical")
+    elif mask_img is not None:
         mask_state = True
+
     return mask_state
 
 
-def __get_labels_data(labels_img, target_shape, target_affine,
-                      mask_img=None, background_label=0, dim=None):
+def _get_labels_data(labels_img, target_shape, target_affine,
+                     mask_img=None, background_label=0, dim=None):
     """Gets the label data.
 
     Ensures that labels, imgs and mask shapes and affines fit.
@@ -131,7 +136,7 @@ def __get_labels_data(labels_img, target_shape, target_affine,
     
     """
     # Check labels
-    __check_labels(labels_img, target_shape, target_affine)
+    _check_labels(labels_img, target_shape, target_affine)
 
     # Get non-infinite data from image
     labels_data = _safe_get_data(
@@ -143,7 +148,7 @@ def __get_labels_data(labels_img, target_shape, target_affine,
         labels.remove(background_label)
 
     # Consider only data within the mask
-    img_state = __check_imgs(target_shape, target_affine, mask_img, dim)
+    img_state = _check_imgs(target_shape, target_affine, mask_img, dim)
     if img_state:
         mask_img = _utils.check_niimg_3d(mask_img)
         mask_data = _safe_get_data(mask_img, ensure_finite=True)
@@ -229,7 +234,7 @@ def img_to_signals_labels(imgs, labels_img, mask_img=None,
             available_reduction_strategies
         ))
 
-    labels, labels_data = __get_labels_data(
+    labels, labels_data = _get_labels_data(
         labels_img, target_shape, target_affine, mask_img, background_label)
 
     data = _safe_get_data(imgs, ensure_finite=True)
@@ -298,7 +303,7 @@ def signals_to_img_labels(signals, labels_img, mask_img=None,
     target_affine = labels_img.affine
     target_shape = labels_img.shape[:3]
 
-    labels, labels_data = __get_labels_data(
+    labels, labels_data = _get_labels_data(
         labels_img, target_shape, target_affine, mask_img, background_label)
 
     # nditer is not available in numpy 1.3: using multiple loops.
@@ -366,8 +371,8 @@ def img_to_signals_maps(imgs, maps_img, mask_img=None):
     target_shape = imgs.shape[:3]
 
     # Check shapes and affines
-    __check_imgs(target_shape, target_affine, maps_img, 3)
-    img_state = __check_imgs(target_shape, target_affine, mask_img)
+    _check_imgs(target_shape, target_affine, maps_img, 3)
+    img_state = _check_imgs(target_shape, target_affine, mask_img)
 
     maps_data = _safe_get_data(maps_img, ensure_finite=True)
 
@@ -425,7 +430,7 @@ def signals_to_img_maps(region_signals, maps_img, mask_img=None):
     target_affine = maps_img.affine
     target_shape = maps_img.shape[:3]
 
-    img_state = __check_imgs(target_shape, target_affine, mask_img)
+    img_state = _check_imgs(target_shape, target_affine, mask_img)
     if img_state:
         mask_img = _utils.check_niimg_3d(mask_img)
         maps_data, maps_mask, _ = _trim_maps(
