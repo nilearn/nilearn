@@ -129,7 +129,7 @@ def view_img_on_surf(stat_map_img, surf_mesh='fsaverage5',
                      threshold=None, cmap=cm.cold_hot,
                      black_bg=False, vmax=None, vmin=None, symmetric_cmap=True,
                      colorbar=True, colorbar_height=.5, colorbar_fontsize=25,
-                     title=None, title_fontsize=25):
+                     title=None, title_fontsize=25, vol_to_surf_kwargs={}):
     """Insert a surface plot of a statistical map into an HTML page.
 
     Parameters
@@ -211,7 +211,7 @@ def view_img_on_surf(stat_map_img, surf_mesh='fsaverage5',
     info = full_brain_info(
         volume_img=stat_map_img, mesh=surf_mesh, threshold=threshold,
         cmap=cmap, black_bg=black_bg, vmax=vmax, vmin=vmin,
-        symmetric_cmap=symmetric_cmap)
+        symmetric_cmap=symmetric_cmap, vol_to_surf_kwargs=vol_to_surf_kwargs)
     info['colorbar'] = colorbar
     info['cbar_height'] = colorbar_height
     info['cbar_fontsize'] = colorbar_fontsize
