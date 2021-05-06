@@ -1,7 +1,7 @@
 """
 Test the multi_nifti_masker module
 """
-# Author: Gael Varoquaux
+# Author: Gael Varoquaux, Ana Luisa Pinho
 # License: simplified BSD
 import shutil
 from tempfile import mkdtemp
@@ -168,18 +168,29 @@ def test_compute_multi_gray_matter_mask():
     imgs = [Nifti1Image(rng.uniform(size=(9, 9, 5)), np.eye(4)),
             Nifti1Image(rng.uniform(size=(9, 9, 5)), np.eye(4))]
 
-    masker = MultiNiftiMasker(mask_strategy='template')
+    masker = MultiNiftiMasker(mask_strategy='template',
+                              mask_args={'opening': 1})
     masker.fit(imgs)
 
     # Check that the order of the images does not change the output
-    masker2 = MultiNiftiMasker(mask_strategy='template')
+    masker2 = MultiNiftiMasker(mask_strategy='template',
+                               mask_args={'opening': 1})
     masker2.fit(imgs[::-1])
 
     mask = masker.mask_img_
     mask2 = masker2.mask_img_
 
-    mask_ref = np.zeros((9, 9, 5))
-    mask_ref[2:7, 2:7, 2] = 1
+    mask_ref = np.zeros((9, 9, 5), dtype='int8')
+    mask_ref[3, 1, 1] = 1
+    mask_ref[4, 1:4, 1] = 1
+    mask_ref[4, 1, 2] = 1
+    mask_ref[5, 1:3, 1:4] = 1
+    mask_ref[5, 3, 1:3] = 1
+    mask_ref[5, 4, 1] = 1
+    mask_ref[6, 1:5, 1:4] = 1
+    mask_ref[6, 5, 1] = 1
+    mask_ref[7, 2:6, 1:4] = 1
+    mask_ref[7, 6, 1] = 1
 
     np.testing.assert_array_equal(get_data(mask), mask_ref)
     np.testing.assert_array_equal(get_data(mask2), mask_ref)
