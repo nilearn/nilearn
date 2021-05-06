@@ -114,41 +114,39 @@ and execute in a reasonable amount of time (a few hours). Those guidelines will
 hence be enforced during the reviewing process.
 
 
-+--------------------+-------------+----------------------------------------------+
-|                    | Which PR ?  |        Guidelines                            |
-+====================+=============+==============================================+
-|                    |             | - Clear name                                 |
-|                    |             | - Link issue through mention :"Closes #XXXX" |
-| PR Structure       |    Any      | - Clearly outline goals and changes proposed |
-|                    |             | - Doesn't include "unrelated" code change    |
-|                    |             | - Add entry in "doc/whats_new.rst"           |
-+--------------------+-------------+----------------------------------------------+
-|                    |             | - Variables, functions, arguments            |
-|                    |             | have clear and consistent names              |
-|                    |             | - Easy to read, PEP8                         |
-|:ref:`Coding Style` |    Any      | - Clear docstring in numpydoc format of      |
-|                    |             | public functions                             |
-|                    |             | - Low redundancy                             |
-|                    |             | - No new dependency                          |
-|                    |             | - Backward compatibility                     |
-+--------------------+-------------+----------------------------------------------+
-|                    |             | - Test type is adapted to behavior           |
-|                    |             | - Tests pass continuous integration          |
-|                    |  Bugfixes   | - Doesn't decrease coverage                  |
-|:ref:`Tests`        | New features| - Fast, using small mocked data              |
-|                    |             | - Atomic (one per function) and seeded       |
-|                    |             | - For Bugfixes: non-regression test          |
-+--------------------+-------------+----------------------------------------------+
-|                    |             | - Clearly showcase benefits                  |
-|    Examples        | New features| - Run in less than a minute                  |
-|                    |             | - Use light data (generated or from Nilearn) |
-|                    |             | - Renders well after build                   |
-+--------------------+-------------+----------------------------------------------+
-|                    |             | - Simple and didactic                        |
-|:ref:`Documentation`|    Any      | - Links to relevant examples                 |
-|                    |             | - Renders well after build                   |
-|                    |             | - Doesn't include code                       |
-+--------------------+-------------+----------------------------------------------+
++--------------------+-------------+----------------------------------------------------+
+|                    | Which PR ?  |        Guidelines                                  |
++====================+=============+====================================================+
+|                    |             | - Clear name                                       |
+|                    |             | - Link issue through mention :"Closes #XXXX"       |
+| PR Structure       |    Any      | - Clearly outline goals and changes proposed       |
+|                    |             | - Doesn't include "unrelated" code change          |
+|                    |             | - Add entry in "doc/whats_new.rst"                 |
++--------------------+-------------+----------------------------------------------------+
+|                    |             | - Variables, functions, arguments have clear names |
+|                    |             | - Easy to read, PEP8                               |
+|:ref:`Coding Style` |    Any      | - Public functions have docstring (numpydoc format)|
+|                    |             | - Low redundancy                                   |
+|                    |             | - No new dependency                                |
+|                    |             | - Backward compatibility                           |
++--------------------+-------------+----------------------------------------------------+
+|                    |             | - Test type is adapted to behavior                 |
+|                    |             | - Tests pass continuous integration                |
+|                    |  Bugfixes   | - Doesn't decrease coverage                        |
+|:ref:`Tests`        | New features| - Fast, using small mocked data                    |
+|                    |             | - Atomic (one per function) and seeded             |
+|                    |             | - For Bugfixes: non-regression test                |
++--------------------+-------------+----------------------------------------------------+
+|                    |             | - Clearly showcase benefits                        |
+|    Examples        | New features| - Run in less than a minute                        |
+|                    |             | - Use light data (generated or from Nilearn)       |
+|                    |             | - Renders well after build                         |
++--------------------+-------------+----------------------------------------------------+
+|                    |             | - Simple and didactic                              |
+|:ref:`Documentation`|    Any      | - Links to relevant examples                       |
+|                    |             | - Renders well after build                         |
+|                    |             | - Doesn't include code                             |
++--------------------+-------------+----------------------------------------------------+
 
 
 Coding Style
