@@ -155,8 +155,9 @@ view
 # You can specify arguments to be passed on to the function
 # :func:`nilearn.plotting.vol_to_surf` using `vol_to_surf_kwargs`. This allows
 # fine-grained control of how the input 3D image is resampled and interpolated -
-# for example if you are viewing a volumetric atlas, using nearest-neighbor
-# interpolation will produce a plot with discrete regions.
+# for example if you are viewing a volumetric atlas, you would want to avoid
+# averaging the labels between neighboring regions. Using nearest-neighbor
+# interpolation with zero radius will achieve this.
 
 destrieux = datasets.fetch_atlas_destrieux_2009()
 
