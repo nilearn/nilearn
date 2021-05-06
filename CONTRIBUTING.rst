@@ -1,32 +1,5 @@
 .. _contributing:
 
-Too long, didn't read
-=====================
-
-Installing
-----------
-
-Here are the key steps you need to go through to copy the repo before contributing:
-
-1. fork the repo from github (fork button in the top right corner of our `main github page <https://github.com/nilearn/nilearn>`_) and clone your fork locally: `git clone git@github.com:<your_username>/nilearn.git`
-1. (optional but highly recommended) setup a conda environment to work on: `conda create -n nilearn python=3.9`
-1. (optional but highly recommended) activate this environment with `conda activate nilearn`
-1. install the forked version of `nilearn`: `pip install .`
-1. install dependencies with `pip install -r requirements-dev.txt`
-1. check that all tests pass with `pytest nilearn` (this can take a while)
-
-Contributing
-------------
-
-Here are the key steps you need to go through to contribute code to `nilearn`:
-
-1. open or join an already existing issue explaining what you want to work on
-1. on your fork, create a new branch from master: `git checkout -b your_branch`
-1. implement and commit your changes on this branch (don't forget to write tests!)
-1. run the tests locally (to go faster, only run tests which are relevant to what you work on with, ex: `pytest -v nilearn/plotting/tests/test_surf_plotting.py`)
-1. push your changes to your online fork `git push`
-1. in github, open a pull request from your online fork to the main repo (most likely from `your_fork:your_branch` to `nilearn:master`). Make sure you mention the original issue in your pull request
-1. check that all online tests pass and assign someone for a code review
 
 How to help?
 =============
@@ -39,22 +12,22 @@ How to help?
 * If you have ideas for new features, check it's in the scope of the project
   and feel free to open an issue to discuss it.
 
-* You think documentation can be improved, you can directly send proposed
-  improvements in `a pull request <https://github.com/nilearn/nilearn/pulls>`_.
-
 * Want to contribute code ? Thank you very much! For new features, please be
   sure to create an issue first, to discuss whether it can be included and its
   specifications. If you have time to help dealing with known issues check
   `Good first issues <https://github.com/nilearn/nilearn/labels/Good%20first%20issue>`_
   to get started, `known bugs <https://github.com/nilearn/nilearn/labels/Bug>`_
   or `proposed enhancements <https://github.com/nilearn/nilearn/labels/Enhancement>`_.
-  In any case, before sending code, be sure to **read and follow the
-  contribution guide below**.
+  In any case, before sending code, be sure to **follow the :ref:`Contribution Guidelines`**.
+
+* To follow the :ref:`Setting up your environment`
+
+* You think documentation can be improved, you can directly send proposed
+  improvements in `a pull request <https://github.com/nilearn/nilearn/pulls>`_.
 
 
 How do we decide what codes goes in?
 =====================================
-
 
 Scope of the project
 ---------------------
@@ -129,7 +102,7 @@ choices.
 
 Contribution Guidelines
 ---------------------------
-
+To set-up your contribution environment see : :ref:`Setting up your environment`
 We ask every contributor to respect common guidelines. Those are inspired from
 `scikit-learn
 <https://scikit-learn.org/stable/developers/contributing.html#contributing-code>`_
@@ -141,51 +114,59 @@ and execute in a reasonable amount of time (a few hours). Those guidelines will
 hence be enforced during the reviewing process.
 
 
-+--------------+-------------+----------------------------------------------+
-|              | Which PR ?  |        Guidelines                            |
-+==============+=============+==============================================+
-|              |             | - Clear name                                 |
-|              |             | - Link issue through mention :"Closes #XXXX" |
-| PR Structure |    Any      | - Clearly outline goals and changes proposed |
-|              |             | - Doesn't include "unrelated" code change    |
-|              |             | - Add entry in "doc/whats_new.rst"           |
-+--------------+-------------+----------------------------------------------+
-|              |             | - Variables, functions, arguments            |
-|              |             | have clear and consistent names              |
-|              |             | - Easy to read, PEP8                         |
-| Coding Style |    Any      | - Clear docstring in numpydoc format of      |
-|              |             | public functions                             |
-|              |             | - Low redundancy                             |
-|              |             | - No new dependency                          |
-|              |             | - Backward compatibility                     |
-+--------------+-------------+----------------------------------------------+
-|              |             | - Test type is adapted to behavior           |
-|              |             | - Tests pass continuous integration          |
-|              |  Bugfixes   | - Doesn't decrease coverage                  |
-|    Tests     | New features| - Fast, using small mocked data              |
-|              |             | - Atomic (one per function) and seeded       |
-|              |             | - For Bugfixes: non-regression test          |
-+--------------+-------------+----------------------------------------------+
-|              |             | - Clearly showcase benefits                  |
-|  Examples    | New features| - Run in a few seconds                       |
-|              |             | - Use light data (generated or from Nilearn) |
-|              |             | - Renders well after build                   |
-+--------------+-------------+----------------------------------------------+
-|              |             | - Simple and didactic                        |
-| Documentation|    Any      | - Links to relevant examples                 |
-|              |             | - Renders well after build                   |
-|              |             | - Doesn't include code                       |
-+--------------+-------------+----------------------------------------------+
++--------------------+-------------+----------------------------------------------+
+|                    | Which PR ?  |        Guidelines                            |
++====================+=============+==============================================+
+|                    |             | - Clear name                                 |
+|                    |             | - Link issue through mention :"Closes #XXXX" |
+| PR Structure       |    Any      | - Clearly outline goals and changes proposed |
+|                    |             | - Doesn't include "unrelated" code change    |
+|                    |             | - Add entry in "doc/whats_new.rst"           |
++--------------------+-------------+----------------------------------------------+
+|                    |             | - Variables, functions, arguments            |
+|                    |             | have clear and consistent names              |
+|                    |             | - Easy to read, PEP8                         |
+|:ref:`Coding Style` |    Any      | - Clear docstring in numpydoc format of      |
+|                    |             | public functions                             |
+|                    |             | - Low redundancy                             |
+|                    |             | - No new dependency                          |
+|                    |             | - Backward compatibility                     |
++--------------------+-------------+----------------------------------------------+
+|                    |             | - Test type is adapted to behavior           |
+|                    |             | - Tests pass continuous integration          |
+|                    |  Bugfixes   | - Doesn't decrease coverage                  |
+|:ref:`Tests`        | New features| - Fast, using small mocked data              |
+|                    |             | - Atomic (one per function) and seeded       |
+|                    |             | - For Bugfixes: non-regression test          |
++--------------------+-------------+----------------------------------------------+
+|                    |             | - Clearly showcase benefits                  |
+|    Examples        | New features| - Run in less than a minute                  |
+|                    |             | - Use light data (generated or from Nilearn) |
+|                    |             | - Renders well after build                   |
++--------------------+-------------+----------------------------------------------+
+|                    |             | - Simple and didactic                        |
+|:ref:`Documentation`|    Any      | - Links to relevant examples                 |
+|                    |             | - Renders well after build                   |
+|                    |             | - Doesn't include code                       |
++--------------------+-------------+----------------------------------------------+
+
 
 Coding Style
-------------
+-------------
+
 The main conventions we follow are : line length < 80, spaces around operators,
-variable names, length of functions, single/double quotes...
+variable names, function names are underscore separated (a_nice_function),
+classes in CamelCase, 2 empty lines between functions or classes
+Each function and class must come with “docstrings” at the top of the function
+code, respecting numpydoc formatting. They must summarize what the function and
+document every parameter.
 
 
 Test
 -----
-You should have roughly one test_function per function covering every line and
+When fixing a bug, the first step is to write a minimal test that fails because
+of it, and then write the bugfix to make this test pass. For new code you should
+have roughly one test_function per function covering every line and
 testing the logic of the function. They should run on small mocked data,
 cover a representative range of parameters. If used, random number generator
 must be seeded through : "".
@@ -195,8 +176,21 @@ To do quicker checks it's possible to run only a subset of tests (e.g. using
 `pytest -v test_module.py`)
 
 
-Contributing to the documentation
------------------------------------
+Documentation
+---------------
+
+Documentation must be understandable by people from different background.
+The “narrative” documentation should be an introduction to the concepts of
+the library, it includes very little code. The documentation should first
+help the user figure out which parts of the library he needs and then how to
+use it. It must be full of links, of easily-understandable titles,
+colorful boxes and figures.
+
+Examples take a hands-on approach focused on a generic usecase from which users
+will be able to adapt code to solve their own problems. They include plain text
+for explanations, python code and its output and most importantly
+figures to depict its results. Examples should run fast
+
 
 To build our documentation, we are using `sphinx <https://www.sphinx-doc.org/en/master/usage/quickstart.html>`_ for the main documentation and `sphinx-gallery <https://sphinx-gallery.github.io/stable/index.html>`_ for the example tutorials.
 If you want to make changes to the example tutorials, please do the following :
@@ -226,30 +220,33 @@ TIPS : To reduce building time, we suggest you to use the ``filename_pattern`` t
 
 .. _git_repo:
 
-Retrieving the latest code
----------------------------
+Setting up your environment
+============================
 
-We use `Git <http://git-scm.com/>`_ for version control and
-`GitHub <https://github.com/>`_ for hosting our main repository. If you are
-new on GitHub and don't know how to work with it, please first
-have a look at `this <https://try.github.io/>`_ to get the basics.
+Installing
+----------
 
+Here are the key steps you need to go through to copy the repo before contributing:
 
-You can check out the latest sources with the command::
+1. fork the repo from github (fork button in the top right corner of our `main github page <https://github.com/nilearn/nilearn>`_) and clone your fork locally: `git clone git@github.com:<your_username>/nilearn.git`
+1. (optional but highly recommended) setup a conda environment to work on: `conda create -n nilearn python=3.9`
+1. (optional but highly recommended) activate this environment with `conda activate nilearn`
+1. install the forked version of `nilearn`: `pip install .`
+1. install dependencies with `pip install -r requirements-dev.txt`
+1. check that all tests pass with `pytest nilearn` (this can take a while)
 
-    git clone git://github.com/nilearn/nilearn.git
+Contributing
+------------
 
-or if you have write privileges::
+Here are the key steps you need to go through to contribute code to `nilearn`:
 
-    git clone git@github.com:nilearn/nilearn.git
-
-Installing the latest code
----------------------------
-
-In order to ensure that any code changes are reflected in your installation, navigate to your cloned Nilearn base directory and install using the following command::
-
-    pip install -e .
-
+1. open or join an already existing issue explaining what you want to work on
+1. on your fork, create a new branch from master: `git checkout -b your_branch`
+1. implement and commit your changes on this branch (don't forget to write tests!)
+1. run the tests locally (to go faster, only run tests which are relevant to what you work on with, ex: `pytest -v nilearn/plotting/tests/test_surf_plotting.py`)
+1. push your changes to your online fork `git push`
+1. in github, open a pull request from your online fork to the main repo (most likely from `your_fork:your_branch` to `nilearn:master`).
+1. check that all online tests pass
 
 
 
