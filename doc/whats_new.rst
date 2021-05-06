@@ -20,6 +20,11 @@ Enhancements
 ------------
 
 - :func:`nilearn.plotting.view_markers` now accept an optional argument `marker_labels` to provide labels to each marker.
+- :func:`nilearn.plotting.view_img_on_surf` can now optionally pass through
+  parameters to :func:`nilearn.surface.vol_to_surf` using the
+  `vol_to_surf_kwargs` argument. One application is better HTML visualization of
+  atlases.
+  (http://nilearn.github.io/auto_examples/01_plotting/plot_3d_map_to_surface_projection.html)
 
 .. _v0.7.1:
 
