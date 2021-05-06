@@ -80,9 +80,10 @@ def _check_imgs(target_shape, target_affine, mask_img=None, dim=None):
         raise ValueError("mask_img and imgs shapes must be identical.")
 
     # Check affines & set state
-    if mask_img is not None and (mask_img.affine.shape != target_affine.shap or
+    if mask_img is not None and (
+       mask_img.affine.shape != target_affine.shape or
        abs(mask_img.affine - target_affine).max() > INF):
-        raise ValueError("mask_img and imgs affines must be identical")
+        raise ValueError("mask_img and imgs affines must be identical.")
     elif mask_img is not None:
         mask_state = True
 

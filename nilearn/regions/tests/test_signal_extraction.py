@@ -20,6 +20,8 @@ from nilearn.image import get_data, new_img_like
 _TEST_DIM_ERROR_MSG = ("Input data has incompatible dimensionality: "
                        "Expected dimension is 3D and you provided "
                        "a 4D image")
+_TEST_SHAPE_LABEL_ERROR_MSG = "labels_img and imgs shapes must be identical."
+_TEST_AFFINE_LABEL_ERROR_MSG = "labels_img and imgs affines must be identical."
 
 
 def test_generate_regions_ts():
@@ -64,6 +66,45 @@ def test_generate_labeled_regions():
     regions = generate_labeled_regions(shape, n_regions)
     assert regions.shape == shape
     assert (len(np.unique(get_data(regions))) == n_regions + 1)
+
+
+def test_shape_affine_check_with_labels():
+    """Test to ensure correct check for valid shapes & affines of labels."""
+
+    shape = (8, 9, 10)
+    test_shape = (8, 9, 5)
+
+    # data
+    affine = np.eye(4)
+    test_affine = np.eye(3)
+
+    # labels
+    labels_data = np.zeros(shape, dtype=int)
+    h0 = shape[0] // 2
+    h1 = shape[1] // 2
+    h2 = shape[2] // 2
+    labels_data[:h0, :h1, :h2] = 1
+    labels_data[:h0, :h1, h2:] = 2
+    labels_data[:h0, h1:, :h2] = 3
+    labels_data[:h0, h1:, h2:] = 4
+    labels_data[h0:, :h1, :h2] = 5
+    labels_data[h0:, :h1, h2:] = 6
+    labels_data[h0:, h1:, :h2] = 7
+    labels_data[h0:, h1:, h2:] = 8
+
+    labels_img = nibabel.Nifti1Image(labels_data, affine)
+
+    # Ensure correct behaviour for valid data.
+    with pytest.warns(None):
+        signal_extraction._check_labels(labels_img, shape, affine)
+
+    # Smoke test to make sure an error is raised when affine is not correct.
+    with pytest.raises(ValueError, match=_TEST_SHAPE_LABEL_ERROR_MSG):
+        signal_extraction._check_labels(labels_img, test_shape, affine)
+
+    # Smoke test to make sure an error is raised when affine is not correct.
+    with pytest.raises(ValueError, match=_TEST_AFFINE_LABEL_ERROR_MSG):
+        signal_extraction._check_labels(labels_img, shape, test_affine)
 
 
 def test_signals_extraction_with_labels():
@@ -435,4 +476,3 @@ def test_img_to_signals_labels_non_float_type(target_dtype):
     timeseries_float = masker.transform(fake_fmri_img_orig)
     assert np.sum(timeseries_int) != 0
     assert np.allclose(timeseries_int, timeseries_float)
-
