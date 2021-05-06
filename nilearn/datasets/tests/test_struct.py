@@ -157,7 +157,7 @@ def test_fetch_icbm152_brain_gm_mask(tmp_path, request_mocker):
     assert isinstance(grey_matter_img, nibabel.Nifti1Image)
 
 
-@pytest.mark.parametrize("mesh", ["fsaverage5", "fsaverage"])
+@pytest.mark.parametrize("mesh", ["fsaverage5", "fsaverage", "fsaverage6"])
 def test_fetch_surf_fsaverage(mesh, tmp_path, request_mocker):
     keys = {'pial_left', 'pial_right', 'infl_left', 'infl_right',
             'sulc_left', 'sulc_right', 'white_left', 'white_right'}

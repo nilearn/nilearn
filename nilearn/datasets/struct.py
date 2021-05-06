@@ -459,6 +459,7 @@ def fetch_surf_fsaverage(mesh='fsaverage5', data_dir=None):
         Which mesh to fetch. Default='fsaverage5'.
 
         - 'fsaverage5': the low-resolution fsaverage5 mesh (10242 nodes)
+        - 'fsaverage6': the medium-resolution fsaverage5 mesh (40962 nodes)
         - 'fsaverage5_sphere': the low-resolution fsaverage5 spheres (10242 nodes)
         - 'fsaverage': the high-resolution fsaverage mesh (163842 nodes)
             (high-resolution fsaverage will result in more computation time and memory usage)
@@ -487,7 +488,9 @@ def fetch_surf_fsaverage(mesh='fsaverage5', data_dir=None):
     """
     meshes = {'fsaverage5': _fetch_surf_fsaverage5,
               'fsaverage5_sphere': _fetch_surf_fsaverage5_sphere,
-              'fsaverage': _fetch_surf_fsaverage}
+              'fsaverage': _fetch_surf_fsaverage,
+              'fsaverage6': _fetch_surf_fsaverage6,
+    }
     if mesh not in meshes:
         raise ValueError(
             "'mesh' should be one of {}; {!r} was provided".format(
@@ -561,4 +564,41 @@ def _fetch_surf_fsaverage5_sphere(data_dir=None):
         for name in names}
 
     result['description'] = str(_get_dataset_descr('fsaverage5_sphere'))
+    return Bunch(**result)
+
+
+def _fetch_surf_fsaverage6(data_dir=None):
+    """Helper function to ship fsaverage5 spherical meshes.
+
+    These meshes can be used for visualization purposes, but also to run
+    cortical surface-based searchlight decoding.
+
+    The source of the data is downloaded from OSF.
+
+    """
+    dataset_dir = _get_dataset_dir('fsaverage6')
+    url = 'https://osf.io/3s4r2/download'
+    opts = {'uncompress': True}
+    names = [
+        "{}.{}".format(hemi, part)
+        for hemi in ["lh", "rh"]
+        for part in ["curl", "inflated", "pial", "white"]
+    ]
+    filenames = [
+        (os.path.join(
+            'tpl-fsaverage',
+            'fsaverage6',
+            'surf',
+            '{}.{}'.format(hemi, part)
+        ), url, opts)
+        for hemi in ["lh", "rh"]
+        for part in ["curl", "inflated", "pial", "white"]
+    ]
+
+    _fetch_files(dataset_dir, filenames)
+    result = {
+        name: os.path.join(dataset_dir, '{}.gii'.format(name))
+        for name in names}
+
+    result['description'] = str(_get_dataset_descr('fsaverage6'))
     return Bunch(**result)
