@@ -195,7 +195,9 @@ def view_img_on_surf(stat_map_img, surf_mesh='fsaverage5',
     vol_to_surf_kwargs : dict, optional
         Dictionary of keyword arguments that are passed on to
         :func:`nilearn.surface.vol_to_surf` when extracting a surface from
-        the input image. See the function documentation for details.
+        the input image. See the function documentation for details.This
+        parameter is especially useful when plotting an atlas. See
+        https://nilearn.github.io/auto_examples/01_plotting/plot_3d_map_to_surface_projection.html
 
     Returns
     -------
