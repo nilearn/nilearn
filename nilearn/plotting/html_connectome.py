@@ -1,9 +1,9 @@
 import json
 
 import numpy as np
+from matplotlib import colors as mpl_colors
 from scipy import sparse
 
-from nilearn._utils import rename_parameters
 from .. import datasets
 from . import cm
 
@@ -27,8 +27,32 @@ def _prepare_line(edges, nodes):
     return path_edges, path_nodes
 
 
+def _prepare_colors(marker_color, path_nodes):
+    marker_colors, marker_colorscale = None, None
+
+    if isinstance(marker_color, str) and marker_color == 'auto':
+        marker_colors = np.linspace(0, 100, len(path_nodes)).astype("uint8").tolist()
+        marker_colorscale = 'Viridis'
+    elif isinstance(marker_color, str):
+        color_as_hex = mpl_colors.to_hex(marker_color)
+        marker_colorscale = [[0, color_as_hex], [1, color_as_hex]]
+        marker_colors = [0] * len(path_nodes)
+    elif isinstance(marker_color, list):
+        if len(marker_color) != np.max(path_nodes) + 1:
+            raise ValueError("Number of colors provided should match the number of nodes")
+        # Colorscale values must be between 0 and 1
+        marker_colorscale = [
+            [index / np.max(path_nodes), mpl_colors.to_hex(color)]
+            for index, color in enumerate(marker_color)
+        ]
+        marker_colors = (path_nodes / np.max(path_nodes)).tolist()
+
+    return marker_colors, marker_colorscale
+
+
 def _get_connectome(adjacency_matrix, coords, threshold=None,
-                    marker_size=None, cmap=cm.cold_hot, symmetric_cmap=True):
+                    marker_size=None, marker_color='auto', cmap=cm.cold_hot,
+                    symmetric_cmap=True):
     connectome = {}
     coords = np.asarray(coords, dtype='<f4')
     adjacency_matrix = np.nan_to_num(adjacency_matrix, copy=True)
@@ -58,6 +82,11 @@ def _get_connectome(adjacency_matrix, coords, threshold=None,
     if hasattr(marker_size, 'tolist'):
         marker_size = marker_size.tolist()
     connectome['marker_size'] = marker_size
+
+    marker_colors, marker_colorscale = _prepare_colors(marker_color, path_nodes)
+
+    connectome['marker_color'] = marker_colors
+    connectome['marker_colorscale'] = marker_colorscale
     return connectome
 
 
@@ -90,8 +119,8 @@ def _make_connectome_html(connectome_info, embed_js=True):
 
 def view_connectome(adjacency_matrix, node_coords, edge_threshold=None,
                     edge_cmap=cm.bwr, symmetric_cmap=True,
-                    linewidth=6., node_size=3., colorbar=True,
-                    colorbar_height=.5, colorbar_fontsize=25,
+                    linewidth=6., node_color="auto", node_size=3.,
+                    colorbar=True, colorbar_height=.5, colorbar_fontsize=25,
                     title=None, title_fontsize=25):
     """Insert a 3d plot of a connectome into an HTML page.
 
@@ -102,6 +131,9 @@ def view_connectome(adjacency_matrix, node_coords, edge_threshold=None,
 
     node_coords : ndarray, shape=(n_nodes, 3)
         The coordinates of the nodes in MNI space.
+
+    node_color : color or sequence of colors, optional
+        Color(s) of the nodes. Default='auto'.
 
     edge_threshold : str, number or None, optional
         If None, no thresholding.
@@ -167,7 +199,8 @@ def view_connectome(adjacency_matrix, node_coords, edge_threshold=None,
     connectome_info = _get_connectome(
         adjacency_matrix, node_coords,
         threshold=edge_threshold, cmap=edge_cmap,
-        symmetric_cmap=symmetric_cmap, marker_size=node_size)
+        symmetric_cmap=symmetric_cmap, marker_size=node_size,
+        marker_color=node_color)
     connectome_info['line_width'] = linewidth
     connectome_info['colorbar'] = colorbar
     connectome_info['cbar_height'] = colorbar_height
