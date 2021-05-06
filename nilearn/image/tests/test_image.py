@@ -10,6 +10,7 @@ import nibabel
 from nibabel import Nifti1Image
 import numpy as np
 import pytest
+import pathlib
 
 from numpy.testing import assert_array_equal, assert_allclose
 from nilearn._utils.exceptions import DimensionError

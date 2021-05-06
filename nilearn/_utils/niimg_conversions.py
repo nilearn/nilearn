@@ -10,6 +10,7 @@ import glob
 import nilearn as ni
 import numpy as np
 import itertools
+import pathlib
 
 from joblib import Memory
 
@@ -248,6 +249,34 @@ def check_niimg(niimg, ensure_ndim=None, atleast_4d=False, dtype=None,
     from ..image import new_img_like  # avoid circular imports
 
     if isinstance(niimg, str):
+        if wildcards and ni.EXPAND_PATH_WILDCARDS:
+            # Ascending sorting + expand user path
+            filenames = sorted(glob.glob(os.path.expanduser(niimg)))
+
+            # processing filenames matching globbing expression
+            if len(filenames) >= 1 and glob.has_magic(niimg):
+                niimg = filenames  # iterable case
+            # niimg is an existing filename
+            elif [niimg] == filenames:
+                niimg = filenames[0]
+            # No files found by glob
+            elif glob.has_magic(niimg):
+                # No files matching the glob expression, warn the user
+                message = ("No files matching the entered niimg expression: "
+                            "'%s'.\n You may have left wildcards usage "
+                           "activated: please set the global constant "
+                           "'nilearn.EXPAND_PATH_WILDCARDS' to False to "
+                           "deactivate this behavior.") % niimg
+                raise ValueError(message)
+            else:
+                raise ValueError("File not found: '%s'" % niimg)
+        elif not os.path.exists(niimg):
+            raise ValueError("File not found: '%s'" % niimg)
+    
+    if isinstance(niimg, pathlib.Path):
+        # get the string from pathlib object
+        # and then process like a normal string
+        niimg = niimg.absolute().as_posix()
         if wildcards and ni.EXPAND_PATH_WILDCARDS:
             # Ascending sorting + expand user path
             filenames = sorted(glob.glob(os.path.expanduser(niimg)))
