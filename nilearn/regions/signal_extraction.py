@@ -29,7 +29,7 @@ def _check_labels(labels_img, target_shape, target_affine):
     target_shape : numpy.ndarray
         Desired shape of labels image and mask.
 
-    target_shape : numpy.ndarray
+    target_affine : numpy.ndarray
         Desired affine of labels image and mask.
 
     Returns
@@ -252,8 +252,8 @@ def img_to_signals_labels(imgs, labels_img, mask_img=None,
     # Set to zero signals for missing labels. Workaround for Scipy behaviour
     missing_labels = set(labels) - set(np.unique(labels_data))
     labels_index = dict([(l, n) for n, l in enumerate(labels)])
-    for i in missing_labels:
-        signals[:, labels_index[i]] = 0
+    for l in missing_labels:
+        signals[:, labels_index[l]] = 0
     return signals, labels
 
 
