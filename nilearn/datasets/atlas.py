@@ -129,7 +129,7 @@ def fetch_atlas_craddock_2012(data_dir=None, url=None, resume=True, verbose=1):
 
     The provided images are in MNI152 space.
 
-    See [1]_ for the licence and [2]_ and [3]_ for more information
+    See [1]_ for the licence and :footcite:`craddock2012whole` and [3]_ for more information
     on this parcellation.
 
     Parameters
@@ -160,10 +160,7 @@ def fetch_atlas_craddock_2012(data_dir=None, url=None, resume=True, verbose=1):
     .. [1] Licence: Creative Commons Attribution Non-commercial Share Alike
        http://creativecommons.org/licenses/by-nc-sa/2.5/
 
-    .. [2] Craddock, R. Cameron, G.Andrew James, Paul E. Holtzheimer, Xiaoping P. Hu,
-       and Helen S. Mayberg. "A Whole Brain fMRI Atlas Generated via Spatially
-       Constrained Spectral Clustering". Human Brain Mapping 33, no 8 (2012):
-       1914-1928. doi:10.1002/hbm.21333.
+    .. footbibliography::
 
     .. [3] http://www.nitrc.org/projects/cluster_roi/
 
@@ -199,7 +196,7 @@ def fetch_atlas_craddock_2012(data_dir=None, url=None, resume=True, verbose=1):
 
 def fetch_atlas_destrieux_2009(lateralized=True, data_dir=None, url=None,
                                resume=True, verbose=1):
-    """Download and load the Destrieux cortical atlas (dated 2009) [1]_ [2]_.
+    """Download and load the Destrieux cortical atlas (dated 2009) :footcite:`Fischl2004Automatically` :footcite:`Destrieux2009sulcal`.
 
     Parameters
     ----------
@@ -231,11 +228,7 @@ def fetch_atlas_destrieux_2009(lateralized=True, data_dir=None, url=None,
 
     References
     ----------
-    .. [1] Fischl, Bruce, et al. "Automatically parcellating the human cerebral
-       cortex." Cerebral cortex 14.1 (2004): 11-22.
-
-    .. [2] Destrieux, C., et al. "A sulcal depth-based anatomical parcellation
-       of the cerebral cortex." NeuroImage 47 (2009): S151.
+    .. footbibliography::
 
     """
     if url is None:

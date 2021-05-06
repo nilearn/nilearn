@@ -1,3 +1,21 @@
+@article{craddock2012whole,
+author = {Craddock, R. Cameron and James, G.Andrew and Holtzheimer III, Paul E. and Hu, Xiaoping P. and Mayberg, Helen S.},
+title = {A whole brain fMRI atlas generated via spatially constrained spectral clustering},
+journal = {Human Brain Mapping},
+volume = {33},
+number = {8},
+pages = {1914-1928},
+keywords = {resting state, functional connectivity, regions of interest, clustering, atlas},
+doi = {https://doi.org/10.1002/hbm.21333},
+url = {https://onlinelibrary.wiley.com/doi/abs/10.1002/hbm.21333},
+eprint = {https://onlinelibrary.wiley.com/doi/pdf/10.1002/hbm.21333},
+abstract = {Abstract Connectivity analyses and computational modeling of human brain function from fMRI data frequently require the specification of regions of interests (ROIs). Several analyses have relied on atlases derived from anatomical or cyto-architectonic boundaries to specify these ROIs, yet the suitability of atlases for resting state functional connectivity (FC) studies has yet to be established. This article introduces a data-driven method for generating an ROI atlas by parcellating whole brain resting-state fMRI data into spatially coherent regions of homogeneous FC. Several clustering statistics are used to compare methodological trade-offs as well as determine an adequate number of clusters. Additionally, we evaluate the suitability of the parcellation atlas against four ROI atlases (Talairach and Tournoux, Harvard-Oxford, Eickoff-Zilles, and Automatic Anatomical Labeling) and a random parcellation approach. The evaluated anatomical atlases exhibit poor ROI homogeneity and do not accurately reproduce FC patterns present at the voxel scale. In general, the proposed functional and random parcellations perform equivalently for most of the metrics evaluated. ROI size and hence the number of ROIs in a parcellation had the greatest impact on their suitability for FC analysis. With 200 or fewer ROIs, the resulting parcellations consist of ROIs with anatomic homology, and thus offer increased interpretability. Parcellation results containing higher numbers of ROIs (600 or 1,000) most accurately represent FC patterns present at the voxel scale and are preferable when interpretability can be sacrificed for accuracy. The resulting atlases and clustering software have been made publicly available at: http://www.nitrc.org/projects/cluster\_roi/. Hum Brain Mapp, 2012. © 2011 Wiley Periodicals, Inc},
+year = {2012}
+}
+
+
+
+
 @article{DADI2020117126,
 title = {Fine-grain atlases of functional modes for fMRI analysis},
 journal = {NeuroImage},
@@ -10,6 +28,35 @@ url = {https://www.sciencedirect.com/science/article/pii/S1053811920306121},
 author = {Kamalaker Dadi and Gaël Varoquaux and Antonia Machlouzarides-Shalit and Krzysztof J. Gorgolewski and Demian Wassermann and Bertrand Thirion and Arthur Mensch},
 keywords = {Brain imaging atlases, Functional networks, Functional parcellations, Multi-resolution},
 abstract = {Population imaging markedly increased the size of functional-imaging datasets, shedding new light on the neural basis of inter-individual differences. Analyzing these large data entails new scalability challenges, computational and statistical. For this reason, brain images are typically summarized in a few signals, for instance reducing voxel-level measures with brain atlases or functional modes. A good choice of the corresponding brain networks is important, as most data analyses start from these reduced signals. We contribute finely-resolved atlases of functional modes, comprising from 64 to 1024 networks. These dictionaries of functional modes (DiFuMo) are trained on millions of fMRI functional brain volumes of total size 2.4 ​TB, spanned over 27 studies and many research groups. We demonstrate the benefits of extracting reduced signals on our fine-grain atlases for many classic functional data analysis pipelines: stimuli decoding from 12,334 brain responses, standard GLM analysis of fMRI across sessions and individuals, extraction of resting-state functional-connectomes biomarkers for 2500 individuals, data compression and meta-analysis over more than 15,000 statistical maps. In each of these analysis scenarii, we compare the performance of our functional atlases with that of other popular references, and to a simple voxel-level analysis. Results highlight the importance of using high-dimensional “soft” functional atlases, to represent and analyze brain activity while capturing its functional gradients. Analyses on high-dimensional modes achieve similar statistical performance as at the voxel level, but with much reduced computational cost and higher interpretability. In addition to making them available, we provide meaningful names for these modes, based on their anatomical location. It will facilitate reporting of results.}
+}
+
+
+@article{Destrieux2009sulcal,
+	author = {Destrieux, C and Fischl, B and Dale, AM and Halgren, E},
+	doi = {10.1016/S1053-8119(09)71561-7},
+	journal = {NeuroImage},
+	language = {English},
+	number = {Supplement 1},
+	pages = {S151},
+	title = {A sulcal depth-based anatomical parcellation of the cerebral cortex.},
+	volume = {47},
+	year = {2009},
+}
+
+@article{Fischl2004Automatically,
+    author = {Fischl, Bruce and van der Kouwe, André and Destrieux, Christophe and Halgren, Eric and Ségonne, Florent and Salat, David H. and Busa, Evelina and Seidman, Larry J. and Goldstein, Jill and Kennedy, David and Caviness, Verne and Makris, Nikos and Rosen, Bruce and Dale, Anders M.},
+    title = "{Automatically Parcellating the Human Cerebral Cortex}",
+    journal = {Cerebral Cortex},
+    volume = {14},
+    number = {1},
+    pages = {11-22},
+    year = {2004},
+    month = {01},
+    abstract = "{We present a technique for automatically assigning a neuroanatomical label to each location on a cortical surface model based on probabilistic information estimated from a manually labeled training set. This procedure incorporates both geometric information derived from the cortical model, and neuroanatomical convention, as found in the training set. The result is a complete labeling of cortical sulci and gyri. Examples are given from two different training sets generated using different neuroanatomical conventions, illustrating the flexibility of the algorithm. The technique is shown to be comparable in accuracy to manual labeling.}",
+    issn = {1047-3211},
+    doi = {10.1093/cercor/bhg087},
+    url = {https://doi.org/10.1093/cercor/bhg087},
+    eprint = {https://academic.oup.com/cercor/article-pdf/14/1/11/1193353/bhg087.pdf},
 }
 
 
@@ -45,4 +92,22 @@ url = {https://www.sciencedirect.com/science/article/pii/S1053811917308182},
 author = {Andrés Hoyos-Idrobo and Gaël Varoquaux and Yannick Schwartz and Bertrand Thirion},
 keywords = {fMRI, Supervised learning, Decoding, Bagging, MVPA},
 abstract = {Brain decoding relates behavior to brain activity through predictive models. These are also used to identify brain regions involved in the cognitive operations related to the observed behavior. Training such multivariate models is a high-dimensional statistical problem that calls for suitable priors. State of the art priors –eg small total-variation– enforce spatial structure on the maps to stabilize them and improve prediction. However, they come with a hefty computational cost. We build upon very fast dimension reduction with spatial structure and model ensembling to achieve decoders that are fast on large datasets and increase the stability of the predictions and the maps. Our approach, fast regularized ensemble of models (FReM), includes an implicit spatial regularization by using a voxel grouping with a fast clustering algorithm. In addition, it aggregates different estimators obtained across splits of a cross-validation loop, each time keeping the best possible model. Experiments on a large number of brain imaging datasets show that our combination of voxel clustering and model ensembling improves decoding maps stability and reduces the variance of prediction accuracy. Importantly, our method requires less samples than state-of-the-art methods to achieve a given level of prediction accuracy. Finally, FreM is much faster than other spatially-regularized methods and, in addition, it can better exploit parallel computing resources.}
+}
+
+@InProceedings{Varoquaux2011multisubject,
+author="Varoquaux, Gael
+and Gramfort, Alexandre
+and Pedregosa, Fabian
+and Michel, Vincent
+and Thirion, Bertrand",
+editor="Sz{\'e}kely, G{\'a}bor
+and Hahn, Horst K.",
+title="Multi-subject Dictionary Learning to Segment an Atlas of Brain Spontaneous Activity",
+booktitle="Information Processing in Medical Imaging",
+year="2011",
+publisher="Springer Berlin Heidelberg",
+address="Berlin, Heidelberg",
+pages="562--573",
+abstract="Fluctuations in brain on-going activity can be used to reveal its intrinsic functional organization. To mine this information, we give a new hierarchical probabilistic model for brain activity patterns that does not require an experimental design to be specified. We estimate this model in the dictionary learning framework, learning simultaneously latent spatial maps and the corresponding brain activity time-series. Unlike previous dictionary learning frameworks, we introduce an explicit difference between subject-level spatial maps and their corresponding population-level maps, forming an atlas. We give a novel algorithm using convex optimization techniques to solve efficiently this problem with non-smooth penalties well-suited to image denoising. We show on simulated data that it can recover population-level maps as well as subject specificities. On resting-state fMRI data, we extract the first atlas of spontaneous brain activity and show how it defines a subject-specific functional parcellation of the brain in localized regions.",
+isbn="978-3-642-22092-0"
 }
