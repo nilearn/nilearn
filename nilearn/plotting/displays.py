@@ -680,7 +680,7 @@ class BaseSlicer(object):
         axes.axis('off')
         return cls(cut_coords, axes, black_bg, brain_color, **kwargs)
 
-    def title(self, text, x=0.01, y=0.99, size=15, color=None, bgcolor=None,
+    def title(self, text, x=0.01, y=1.08, size=15, color=None, bgcolor=None,
               alpha=1, **kwargs):
         """ Write a title to the view.
 
@@ -695,7 +695,7 @@ class BaseSlicer(object):
 
         y : float, optional
             The vertical position of the title on the frame in
-            fraction of the frame height. Default=0.99.
+            fraction of the frame height. Default=1.08.
 
         size : integer, optional
             The size of the title text. Default=15.
