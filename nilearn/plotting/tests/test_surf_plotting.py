@@ -60,13 +60,19 @@ def test_plot_surf():
         agg_faces -= vmin
         agg_faces /= (vmax - vmin)
         cmap = plt.cm.get_cmap(plt.rcParamsDefault['image.cmap'])
-        assert_array_equal(cmap(agg_faces),
-                           display._axstack.as_list()[0].collections[0]._facecolors)
+        assert_array_equal(
+            cmap(agg_faces),
+            display._axstack.as_list()[0].collections[0]._facecolors
+        )
 
     ## Try custom avg_method
     def custom_avg_function(vertices):
         return vertices[0] * vertices[1] * vertices[2]
-    plot_surf(mesh, surf_map=rng.standard_normal(size=mesh[0].shape[0]), avg_method=custom_avg_function)
+    plot_surf(
+        mesh,
+        surf_map=rng.standard_normal(size=mesh[0].shape[0]),
+        avg_method=custom_avg_function
+    )
 
     # Save execution time and memory
     plt.close()
@@ -104,7 +110,12 @@ def test_plot_surf_error():
         )
 
     with pytest.raises(
-        ValueError, match="Array computed with the custom function from avg_method does not have the correct shape"
+        ValueError,
+        match=(
+            "Array computed with the custom "
+            "function from avg_method does "
+            "not have the correct shape"
+        )
     ):
         def custom_avg_function(vertices):
             return [vertices[0] * vertices[1], vertices[2]]
@@ -112,14 +123,24 @@ def test_plot_surf_error():
         plot_surf(mesh, surf_map=rng.standard_normal(size=mesh[0].shape[0]), avg_method=custom_avg_function)
 
     with pytest.raises(
-        ValueError, match=re.escape("avg_method should be either ['mean', 'median', 'max', 'min'] or a custom function")
+        ValueError,
+        match=re.escape(
+            "avg_method should be either "
+            "['mean', 'median', 'max', 'min'] "
+            "or a custom function"
+        )
     ):
         custom_avg_function = dict()
 
         plot_surf(mesh, surf_map=rng.standard_normal(size=mesh[0].shape[0]), avg_method=custom_avg_function)
 
     with pytest.raises(
-        ValueError, match=re.escape("Array computed with the custom function from avg_method should be an array of numbers (int or float)")
+        ValueError,
+        match=re.escape(
+            "Array computed with the custom function "
+            "from avg_method should be an array of "
+            "numbers (int or float)"
+        )
     ):
         def custom_avg_function(vertices):
             return "string"

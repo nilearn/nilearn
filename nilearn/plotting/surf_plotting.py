@@ -282,24 +282,38 @@ def plot_surf(surf_mesh, surf_map=None, bg_map=None,
         elif avg_method == 'max':
             surf_map_faces = np.max(surf_map_data[faces], axis=1)
         elif callable(avg_method):
-            surf_map_faces = np.apply_along_axis(avg_method, 1, surf_map_data[faces])
+            surf_map_faces = np.apply_along_axis(
+                avg_method, 1, surf_map_data[faces]
+            )
 
             ## check that surf_map_faces has the same length as face_colors
             if surf_map_faces.shape != (face_colors.shape[0],):
-                raise ValueError('Array computed with the custom function '
-                'from avg_method does not have the correct shape: '
-                '{} != {}'.format(surf_map_faces.shape[0], face_colors.shape[0])
+                raise ValueError(
+                    'Array computed with the custom function '
+                    'from avg_method does not have the correct shape: '
+                    '{} != {}'.format(
+                        surf_map_faces.shape[0],
+                        face_colors.shape[0]
+                    )
                 )
 
             ## check that dtype is either int or float
-            if not ("int" in str(surf_map_faces.dtype) or "float" in str(surf_map_faces.dtype)):
-                raise ValueError('Array computed with the custom function '
-                'from avg_method should be an array of numbers (int or float)')
+            if not (
+                "int" in str(surf_map_faces.dtype) or
+                "float" in str(surf_map_faces.dtype)
+            ):
+                raise ValueError(
+                    'Array computed with the custom function '
+                    'from avg_method should be an array of numbers '
+                    '(int or float)'
+                )
 
         else:
-            raise ValueError("avg_method should be either "
-            "['mean', 'median', 'max', 'min'] "
-            "or a custom function")
+            raise ValueError(
+                "avg_method should be either "
+                "['mean', 'median', 'max', 'min'] "
+                "or a custom function"
+            )
 
         # if no vmin/vmax are passed figure them out from data
         if vmin is None:
