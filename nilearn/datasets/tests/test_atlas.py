@@ -188,11 +188,6 @@ def test_fail_fetch_atlas_harvard_oxford(tmp_path, request_mocker):
     # have maps as string and n_labels=4 with background. Since, we relay on xml
     # file to retrieve labels.
 
-    # Deprecation warning for the function
-    with pytest.warns(PendingDeprecationWarning, 
-    match="fetch_atlas_harvard_oxford is deprecated"):
-        atlas.fetch_atlas_harvard_oxford(target_atlas, data_dir=str(tmp_path))
-
     ho_wo_symm = atlas.fetch_atlas_harvard_oxford(target_atlas,
                                                   data_dir=str(tmp_path))
     assert isinstance(ho_wo_symm.maps, str)
@@ -250,17 +245,11 @@ def test_fail_fetch_atlas_harvard_oxford(tmp_path, request_mocker):
     assert ho.labels[6] == "Right R3"
 
 
-def test_fail_fetch_atlases_fsl_with_HarvardOxford(tmp_path, request_mocker):
-
-    # specify non-existing atlas source
-    with pytest.raises(ValueError, match='Invalid source name'):
-        atlas.fetch_atlases_fsl(atlas_source='not_inside',
-                                atlas_name='nothing')
+def fetch_atlas_harvard_oxford(tmp_path, request_mocker):
 
     # specify non-existing atlas item in HarvardOxford
     with pytest.raises(ValueError, match='Invalid atlas name'):
-        atlas.fetch_atlases_fsl(atlas_source='HarvardOxford', 
-                                atlas_name = 'not_inside')
+        atlas.fetch_atlas_harvard_oxford(atlas_name = 'not_inside')
 
     # specify existing atlas item
     target_atlas = 'cort-maxprob-thr0-1mm'
@@ -300,9 +289,8 @@ def test_fail_fetch_atlases_fsl_with_HarvardOxford(tmp_path, request_mocker):
     # when symmetric_split=False (by default), then atlas fetcher should
     # have maps as string and n_labels=4 with background. Since, we relay on xml
     # file to retrieve labels.
-    ho_wo_symm = atlas.fetch_atlases_fsl(atlas_source='HarvardOxford', 
-                                         atlas_name = target_atlas,
-                                         data_dir=str(tmp_path))
+    ho_wo_symm = atlas.fetch_atlas_harvard_oxford(atlas_name = target_atlas,
+                                                  data_dir=str(tmp_path))
     assert isinstance(ho_wo_symm.maps, str)
     assert isinstance(ho_wo_symm.labels, list)
     assert ho_wo_symm.labels[0] == "Background"
@@ -342,10 +330,9 @@ def test_fail_fetch_atlases_fsl_with_HarvardOxford(tmp_path, request_mocker):
     nifti_target_split = os.path.join(nifti_dir, split_atlas_fname)
     nibabel.Nifti1Image(atlas_data, np.eye(4) * 3).to_filename(
         nifti_target_split)
-    ho = atlas.fetch_atlases_fsl(atlas_source='HarvardOxford',
-                                 atlas_name = target_atlas,
-                                 data_dir=str(tmp_path),
-                                 symmetric_split=True)
+    ho = atlas.fetch_atlas_harvard_oxford(atlas_name = target_atlas,
+                                          data_dir=str(tmp_path),
+                                          symmetric_split=True)
 
     assert isinstance(ho.maps, nibabel.Nifti1Image)
     assert isinstance(ho.labels, list)
@@ -359,12 +346,11 @@ def test_fail_fetch_atlases_fsl_with_HarvardOxford(tmp_path, request_mocker):
     assert ho.labels[6] == "Right R3"
 
 
-def test_fail_fetch_atlases_fsl_with_Juelich(tmp_path, request_mocker):
+def fetch_atlas_juelich(tmp_path, request_mocker):
 
     # specify non-existing atlas item in Juelich
     with pytest.raises(ValueError, match='Invalid atlas name'):
-        atlas.fetch_atlases_fsl(atlas_source='Juelich',
-                                atlas_name='not_inside')
+        atlas.fetch_atlas_juelich(atlas_name='not_inside')
 
     # specify existing atlas item
     target_atlas = 'maxprob-thr0-1mm'
@@ -404,9 +390,8 @@ def test_fail_fetch_atlases_fsl_with_Juelich(tmp_path, request_mocker):
     # when symmetric_split=False (by default), then atlas fetcher should
     # have maps as string and n_labels=4 with background. Since, we relay on xml
     # file to retrieve labels.
-    ho_wo_symm = atlas.fetch_atlases_fsl(atlas_source='Juelich',
-                                         atlas_name = target_atlas,
-                                         data_dir=str(tmp_path))
+    ho_wo_symm = atlas.fetch_atlas_juelich(atlas_name = target_atlas,
+                                           data_dir=str(tmp_path))
     assert isinstance(ho_wo_symm.maps, str)
     assert isinstance(ho_wo_symm.labels, list)
     assert len(ho_wo_symm.labels) == 4
@@ -439,10 +424,9 @@ def test_fail_fetch_atlases_fsl_with_Juelich(tmp_path, request_mocker):
     nifti_target_split = os.path.join(nifti_dir, split_atlas_fname)
     nibabel.Nifti1Image(atlas_data, np.eye(4) * 3).to_filename(
         nifti_target_split)
-    ho = atlas.fetch_atlases_fsl(atlas_source='Juelich',
-                                 atlas_name = target_atlas,
-                                 data_dir=str(tmp_path),
-                                 symmetric_split=True)
+    ho = atlas.fetch_atlas_juelich(atlas_name = target_atlas,
+                                   data_dir=str(tmp_path),
+                                   symmetric_split=True)
 
     assert isinstance(ho.maps, nibabel.Nifti1Image)
     assert isinstance(ho.labels, list)

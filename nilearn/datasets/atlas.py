@@ -330,152 +330,38 @@ def fetch_atlas_harvard_oxford(atlas_name, data_dir=None,
 
     """
 
-    warnings.warn(
-    "fetch_atlas_harvard_oxford is deprecated and will be removed in release 0.9 ."
-    + "Use fetch_atlases_fsl with atlas_source set to (HarvardOxford) instead.", 
-    PendingDeprecationWarning)
-
-    atlas_items = ("cort-maxprob-thr0-1mm", "cort-maxprob-thr0-2mm",
-                   "cort-maxprob-thr25-1mm", "cort-maxprob-thr25-2mm",
-                   "cort-maxprob-thr50-1mm", "cort-maxprob-thr50-2mm",
-                   "sub-maxprob-thr0-1mm", "sub-maxprob-thr0-2mm",
-                   "sub-maxprob-thr25-1mm", "sub-maxprob-thr25-2mm",
-                   "sub-maxprob-thr50-1mm", "sub-maxprob-thr50-2mm",
-                   "cort-prob-1mm", "cort-prob-2mm",
-                   "sub-prob-1mm", "sub-prob-2mm")
-    if atlas_name not in atlas_items:
-        raise ValueError("Invalid atlas name: {0}. Please chose an atlas "
-                         "among:\n{1}".format(
-                             atlas_name, '\n'.join(atlas_items)))
-
-    url = 'http://www.nitrc.org/frs/download.php/9902/HarvardOxford.tgz'
-
-    # For practical reasons, we mimic the FSL data directory here.
-    dataset_name = 'fsl'
-    data_dir = _get_dataset_dir(dataset_name, data_dir=data_dir,
-                                verbose=verbose)
-    opts = {'uncompress': True}
-    root = os.path.join('data', 'atlases')
-
-    if atlas_name[0] == 'c':
-        if 'cort-maxprob' in atlas_name and symmetric_split:
-            split_name = atlas_name.split('cort')
-            atlas_name = 'cortl' + split_name[1]
-            label_file = 'HarvardOxford-Cortical-Lateralized.xml'
-            lateralized = True
-        else:
-            label_file = 'HarvardOxford-Cortical.xml'
-            lateralized = False
-    else:
-        label_file = 'HarvardOxford-Subcortical.xml'
-        lateralized = False
-    label_file = os.path.join(root, label_file)
-
-    atlas_file = os.path.join(root, 'HarvardOxford',
-                              'HarvardOxford-' + atlas_name + '.nii.gz')
-
-    atlas_img, label_file = _fetch_files(
-        data_dir,
-        [(atlas_file, url, opts), (label_file, url, opts)],
-        resume=resume, verbose=verbose)
-
-    names = {}
-    from xml.etree import ElementTree
-    names[0] = 'Background'
-    for label in ElementTree.parse(label_file).findall('.//label'):
-        names[int(label.get('index')) + 1] = label.text
-    names = list(names.values())
-
-    if not symmetric_split:
-        return Bunch(maps=atlas_img, labels=names)
-
-    if atlas_name in ("cort-prob-1mm", "cort-prob-2mm",
-                      "sub-prob-1mm", "sub-prob-2mm"):
-        raise ValueError("Region splitting not supported for probabilistic "
-                         "atlases")
-
-    atlas_img = check_niimg(atlas_img)
-    if lateralized:
-        return Bunch(maps=atlas_img, labels=names)
-
-    atlas = get_data(atlas_img)
-
-    labels = np.unique(atlas)
-    # Build a mask of both halves of the brain
-    middle_ind = (atlas.shape[0] - 1) // 2
-    # Put zeros on the median plane
-    atlas[middle_ind, ...] = 0
-    # Split every zone crossing the median plane into two parts.
-    left_atlas = atlas.copy()
-    left_atlas[middle_ind:, ...] = 0
-    right_atlas = atlas.copy()
-    right_atlas[:middle_ind, ...] = 0
-
-    new_label = 0
-    new_atlas = atlas.copy()
-    # Assumes that the background label is zero.
-    new_names = [names[0]]
-    for label, name in zip(labels[1:], names[1:]):
-        new_label += 1
-        left_elements = (left_atlas == label).sum()
-        right_elements = (right_atlas == label).sum()
-        n_elements = float(left_elements + right_elements)
-        if (left_elements / n_elements < 0.05 or
-                right_elements / n_elements < 0.05):
-            new_atlas[atlas == label] = new_label
-            new_names.append(name)
-            continue
-        new_atlas[right_atlas == label] = new_label
-        new_names.append(name + ', left part')
-        new_label += 1
-        new_atlas[left_atlas == label] = new_label
-        new_names.append(name + ', right part')
-
-    atlas_img = new_img_like(atlas_img, new_atlas, atlas_img.affine)
-    return Bunch(maps=atlas_img, labels=new_names)
+    return _fetch_atlases_fsl("HarvardOxford", atlas_name, data_dir=data_dir,
+                              symmetric_split=symmetric_split, 
+                              resume=resume, verbose=verbose)
 
 
-def fetch_atlases_fsl(atlas_source, atlas_name, 
-                      data_dir=None, symmetric_split=False,
-                      resume=True, verbose=1):
-    """Load Harvard-Oxford/Juelich parcellations from FSL.
+def fetch_atlas_juelich(atlas_name, data_dir=None,
+                        symmetric_split=False,
+                        resume=True, verbose=1):
+    """Load Juelich parcellations from FSL.
 
-    This function downloads Harvard Oxford/Juelich atlas packaged from FSL 5.0
+    This function downloads Juelich atlas packaged from FSL 5.0
     and stores atlases in NILEARN_DATA folder in home directory.
 
-    This function can also load Harvard Oxford/Juelich atlas from your local directory
+    This function can also load Juelich atlas from your local directory
     specified by your FSL installed path given in `data_dir` argument.
     See documentation for details.
 
     Parameters
     ----------
-    atlas source: string
-        Source of atlases to download/load. Can be:
-        HarvardOxford, Juelich
-
     atlas_name : string
         Name of atlas to load. Can be:
-            if HarvardOxford:
-                cort-maxprob-thr0-1mm,  cort-maxprob-thr0-2mm,
-                cort-maxprob-thr25-1mm, cort-maxprob-thr25-2mm,
-                cort-maxprob-thr50-1mm, cort-maxprob-thr50-2mm,
-                sub-maxprob-thr0-1mm,  sub-maxprob-thr0-2mm,
-                sub-maxprob-thr25-1mm, sub-maxprob-thr25-2mm,
-                sub-maxprob-thr50-1mm, sub-maxprob-thr50-2mm,
-                cort-prob-1mm, cort-prob-2mm,
-                sub-prob-1mm, sub-prob-2mm 
-            if Juelich:
-                maxprob-thr0-1mm,  maxprob-thr0-2mm,
-                maxprob-thr25-1mm, maxprob-thr25-2mm,
-                maxprob-thr50-1mm, maxprob-thr50-2mm,
-                prob-1mm,          prob-2mm
+        maxprob-thr0-1mm,  maxprob-thr0-2mm,
+        maxprob-thr25-1mm, maxprob-thr25-2mm,
+        maxprob-thr50-1mm, maxprob-thr50-2mm,
+        prob-1mm,          prob-2mm
 
     data_dir : string, optional
         Path of data directory where data will be stored. Optionally,
         it can also be a FSL installation directory (which is dependent
         on your installation).
         Example, if FSL is installed in /usr/share/fsl/ then
-        specifying as '/usr/share/' can get you HarvardOxford/Juelich atlas
+        specifying as '/usr/share/' can get you Juelich atlas
         from your installed directory. Since we mimic same root directory
         as FSL to load it easily from your installation.
 
@@ -506,8 +392,15 @@ def fetch_atlases_fsl(atlas_source, atlas_name,
         - "labels": string list, labels of the regions in the atlas.
 
     """
-    # The first index corresponds for the Harvard Oxford source
-    # and the second index for Juelich source.
+
+    return _fetch_atlases_fsl("Juelich", atlas_name, data_dir=data_dir,
+                              symmetric_split=symmetric_split, 
+                              resume=resume, verbose=verbose)
+
+
+def _fetch_atlases_fsl(atlas_source, atlas_name, 
+                      data_dir=None, symmetric_split=False,
+                      resume=True, verbose=1):
 
     urls = ('http://www.nitrc.org/frs/download.php/9902/HarvardOxford.tgz',
             'https://www.nitrc.org/frs/download.php/12096/Juelich.tgz')
@@ -525,14 +418,7 @@ def fetch_atlases_fsl(atlas_source, atlas_name,
                    "maxprob-thr50-1mm", "maxprob-thr50-2mm",
                    "prob-1mm", "prob-2mm"))
 
-    atlas_sources = ("HarvardOxford", "Juelich")
-
-    if atlas_source not in atlas_sources:
-        raise ValueError("Invalid source name: {0}. Please choose a source "
-                         "among:\n{1}".format(
-                             atlas_source, '\n'.join(atlas_sources)))
-    else:
-        source_idx = 0 if atlas_source == 'HarvardOxford' else 1
+    source_idx = 0 if atlas_source == 'HarvardOxford' else 1
 
     if atlas_name not in atlas_items[source_idx]:
         raise ValueError("Invalid atlas name: {0}. Please choose an atlas "
