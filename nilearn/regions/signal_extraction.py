@@ -40,15 +40,16 @@ def _check_labels(labels_img, target_shape, target_affine):
     """
     if labels_img.shape != target_shape:
         raise ValueError("labels_img and imgs shapes must be identical.")
-    if abs(labels_img.affine - target_affine).max() > INF:
-        raise ValueError("labels_img and imgs affines must be identical")
+    if labels_img.affine.shape != target_affine.shape or \
+       abs(labels_img.affine - target_affine).max() > INF:
+        raise ValueError("labels_img and imgs affines must be identical.")
 
 
 def _check_imgs(target_shape, target_affine, mask_img=None, dim=None):
     """Validate shapes and affines of images and masks.
     Parameters
     ----------
-    target_shape : numpy.ndarray
+    target_shape : tuple
         Desired shape of labels image and mask.
 
     target_affine : numpy.ndarray
@@ -79,8 +80,8 @@ def _check_imgs(target_shape, target_affine, mask_img=None, dim=None):
         raise ValueError("mask_img and imgs shapes must be identical.")
 
     # Check affines & set state
-    if mask_img is not None and \
-       abs(mask_img.affine - target_affine).max() > INF:
+    if mask_img is not None and (mask_img.affine.shape != target_affine.shap or
+       abs(mask_img.affine - target_affine).max() > INF):
         raise ValueError("mask_img and imgs affines must be identical")
     elif mask_img is not None:
         mask_state = True
@@ -101,7 +102,7 @@ def _get_labels_data(labels_img, target_shape, target_affine,
         regions definition as labels. By default, the label zero is used to
         denote an absence of region. Use background_label to change it.
 
-    target_shape : numpy.ndarray
+    target_shape : tuple
         Desired shape of labels image and mask.
 
     target_affine : numpy.ndarray
@@ -126,7 +127,7 @@ def _get_labels_data(labels_img, target_shape, target_affine,
 
     labels_data : numpy.ndarray
         Extracted data for each region within the mask.
-        Data outside the mask are assigned to the background 
+        Data outside the mask are assigned to the background
         label to restrict signal extraction
         
     See also
@@ -301,7 +302,7 @@ def signals_to_img_labels(signals, labels_img, mask_img=None,
 
     signals = np.asarray(signals)
     target_affine = labels_img.affine
-    target_shape = labels_img.shape[:3]
+    target_shape = labels_img.shape
 
     labels, labels_data = _get_labels_data(
         labels_img, target_shape, target_affine, mask_img, background_label)
