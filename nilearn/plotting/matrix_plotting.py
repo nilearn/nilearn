@@ -264,7 +264,6 @@ def plot_contrast_matrix(contrast_def, design_matrix, colorbar=False, ax=None,
         Include a colorbar in the contrast matrix plot. Default=False.
 
     ax : matplotlib Axes object, optional
-        Directory where plotted figures will be stored.
 
     output_file : string or None, optional
         The name of an image file to export the plot to. Valid extensions
