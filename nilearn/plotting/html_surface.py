@@ -192,6 +192,11 @@ def view_img_on_surf(stat_map_img, surf_mesh='fsaverage5',
     title_fontsize : int, optional
         Fontsize of the title. Default=25.
 
+    vol_to_surf_kwargs : dict, optional
+        Dictionary of keyword arguments that are passed on to
+        :func:`nilearn.surface.vol_to_surf` when extracting a surface from
+        the input image. See the function documentation for details.
+
     Returns
     -------
     SurfaceView : plot of the stat map.
