@@ -1979,16 +1979,14 @@ def plot_carpet(img, mask_img=None, mask_labels=None,
 
     Notes
     -----
-    This figure was originally developed in [1]_.
+    This figure was originally developed in :footcite:`POWER2017150`.
 
     In cases of long acquisitions (>800 volumes), the data will be downsampled
     to have fewer than 800 volumes before being plotted.
 
     References
     ----------
-    .. [1] Power, J. D. (2017). A simple but useful way to assess fMRI scan
-            qualities. Neuroimage, 154, 150-158. doi:
-            https://doi.org/10.1016/j.neuroimage.2016.08.009
+    .. footbibliography::
 
     """
     img = _utils.check_niimg_4d(img, dtype='auto')
