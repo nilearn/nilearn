@@ -26,6 +26,7 @@ from nilearn.image import iter_img, index_img
 from nilearn.image import math_img
 from nilearn.image import largest_connected_component_img
 from nilearn.image import get_data
+from nilearn.image import load_img
 
 try:
     import pandas as pd
@@ -36,7 +37,6 @@ X64 = (platform.architecture()[0] == '64bit')
 
 currdir = os.path.dirname(os.path.abspath(__file__))
 datadir = os.path.join(currdir, 'data')
-
 
 def test_get_data():
     img, *_ = data_gen.generate_fake_fmri(shape=(10, 11, 12))
