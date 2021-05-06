@@ -20,9 +20,9 @@ How to help?
   or `proposed enhancements <https://github.com/nilearn/nilearn/labels/Enhancement>`_.
   In any case, before sending code, be sure to **follow the :ref:`Contribution Guidelines`**.
 
-* To follow the :ref:`Setting up your environment`
+* Section :ref:`Setting up your environment` will get you ready for contributing.
 
-* You think documentation can be improved, you can directly send proposed
+* If you think documentation can be improved, you can directly send proposed
   improvements in `a pull request <https://github.com/nilearn/nilearn/pulls>`_.
 
 
