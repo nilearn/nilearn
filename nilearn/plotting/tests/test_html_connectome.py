@@ -2,6 +2,8 @@ import warnings
 import json
 
 import numpy as np
+import pytest
+from matplotlib import colors as mpl_colors
 
 from nilearn.plotting import cm
 from nilearn.plotting.js_plotting_utils import decode
@@ -16,6 +18,28 @@ def test_prepare_line():
     pe, pn = html_connectome._prepare_line(e, n)
     assert (pn == [0, 1, 0, 0, 2, 0, 2, 3, 0, 8, 9, 0]).all()
     assert(pe == [0, 0, 0, 1, 1, 0, 2, 2, 0, 3, 3, 0]).all()
+
+
+@pytest.mark.parametrize('node_color,expected_marker_colors,expected_marker_colorscale', [
+    ('cyan', [0, 0, 0, 0, 0], [[0, mpl_colors.to_hex("cyan")], [1, mpl_colors.to_hex("cyan")]]),
+    ('auto', [0, 25, 25, 50, 0], "Viridis"),
+    (['cyan', 'red', 'blue'],
+     [0., 0.5, 0.5, 1., 0.],
+     [[0., mpl_colors.to_hex('cyan')], [0.5, mpl_colors.to_hex('red')], [1., mpl_colors.to_hex('blue')]])
+])
+def test_prepare_colors(node_color, expected_marker_colors, expected_marker_colorscale):
+    path_nodes = [0, 1, 1, 2, 0]
+    marker_colors, marker_colorscale = html_connectome._prepare_colors(node_color, path_nodes)
+
+    assert marker_colors == expected_marker_colors
+    assert marker_colorscale == expected_marker_colorscale
+
+
+def test_prepare_colors_should_fail_if_color_list_is_too_short():
+    path_nodes = [0, 1, 1, 2, 0]
+
+    with pytest.raises(ValueError, match="Number of colors provided should match"):
+        html_connectome._prepare_colors(["cyan", "red"], path_nodes)
 
 
 def _make_connectome():

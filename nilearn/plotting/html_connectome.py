@@ -31,7 +31,8 @@ def _prepare_colors(marker_color, path_nodes):
     marker_colors, marker_colorscale = None, None
 
     if isinstance(marker_color, str) and marker_color == 'auto':
-        marker_colors = np.linspace(0, 100, len(path_nodes)).astype("uint8").tolist()
+        marker_colors = np.linspace(0, 100, len(path_nodes)).astype("uint8")
+        marker_colors = marker_colors[path_nodes].tolist()
         marker_colorscale = 'Viridis'
     elif isinstance(marker_color, str):
         color_as_hex = mpl_colors.to_hex(marker_color)
