@@ -73,12 +73,14 @@ def plot_surf(surf_mesh, surf_map=None, bg_map=None,
         If True, a colorbar of surf_map is displayed. Default=False.
 
     avg_method : {'mean', 'median', 'min', 'max', custom function}, optional
-        How to average vertex values to derive the face value, mean results
-        in smooth, median in sharp boundaries, min or max for sparse matrices.
-        You can also pass a custom function which will be executed though `numpy.apply_along_axis`. Here is an example of a custom function:
+        How to average vertex values to derive the face value,
+        mean results in smooth, median in sharp boundaries,
+        min or max for sparse matrices.
+        You can also pass a custom function which will be
+        executed though `numpy.apply_along_axis`.
+        Here is an example of a custom function:
         ```
         def custom_function(vertices):
-            "Assigns the value of each face of the mesh depending on the values of all vertices of the face."
             return vertices[0] * vertices[1] * vertices[2]
         ```.
         Default='mean'.
