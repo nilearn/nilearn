@@ -334,9 +334,9 @@ def test_compute_brain_mask():
     mask2 = masker2.mask_img_
 
     mask_ref = np.zeros((9, 9, 5))
-    mask_ref[2:7, 2:7, 2] = 1
-
     np.testing.assert_array_equal(get_data(mask1), mask_ref)
+
+    mask_ref[2:7, 2:7, 2] = 1
     np.testing.assert_array_equal(get_data(mask2), mask_ref)
 
 
