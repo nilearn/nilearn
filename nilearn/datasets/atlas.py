@@ -390,7 +390,6 @@ def fetch_atlas_juelich(atlas_name, data_dir=None,
           requested.
 
         - "labels": string list, labels of the regions in the atlas.
-
     """
 
     return _fetch_atlases_fsl("Juelich", atlas_name, data_dir=data_dir,
@@ -434,6 +433,7 @@ def _fetch_atlases_fsl(atlas_source, atlas_name,
 
     if source_idx == 0:
         if atlas_name[0] == 'c':
+            lateralized = False
             if 'cort-maxprob' in atlas_name and symmetric_split:
                 split_name = atlas_name.split('cort')
                 atlas_name = 'cortl{}'.format(split_name[1])
@@ -441,10 +441,8 @@ def _fetch_atlases_fsl(atlas_source, atlas_name,
                 lateralized = True
             else:
                 label_file = 'HarvardOxford-Cortical.xml'
-                lateralized = False
         else:
             label_file = 'HarvardOxford-Subcortical.xml'
-            lateralized = False
     else:
         label_file = "Juelich.xml"
         lateralized = False

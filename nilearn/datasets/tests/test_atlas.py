@@ -252,7 +252,7 @@ def fetch_atlas_harvard_oxford(tmp_path, request_mocker):
         atlas.fetch_atlas_harvard_oxford(atlas_name = 'not_inside')
 
     # specify existing atlas item
-    target_atlas = 'cort-maxprob-thr0-1mm'
+    target_atlas = 'sub-maxprob-thr0-1mm'
     target_atlas_fname = 'HarvardOxford-{}.nii.gz'.format(target_atlas)
     ho_dir = str(tmp_path / 'fsl' / 'data' / 'atlases')
     os.makedirs(ho_dir)
