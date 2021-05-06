@@ -849,17 +849,25 @@ def plot_img_on_surf(stat_map, surf_mesh='fsaverage5', mask_img=None,
     for ax in axes.flatten():
         # We increase this value to better position the camera of the
         # 3D projection plot. The default value makes meshes look too small.
-        ax.dist = 7
+        ax.dist = 7 
 
     if colorbar:
         sm = _colorbar_from_array(image.get_data(stat_map),
                                   vmax, threshold, kwargs,
                                   cmap=get_cmap(cmap))
-
-        cbar_ax = fig.add_subplot(32, 1, 32)
+       
+        # if figure has two rows, change colorbar position for less excess space
+        if (axes.shape[0] == 2):
+            cbar_ax = fig.add_axes([0.265,0.10,0.5,0.04]) 
+        else:
+            cbar_ax = fig.add_axes([0.265,0.17,0.5,0.04]) 
         fig.colorbar(sm, cax=cbar_ax, orientation='horizontal')
-
-    fig.subplots_adjust(wspace=-0.02, hspace=0)
+   
+    # if figure has two rows and two axes, adjust subplot for less excess space
+    if (axes.shape[0] == 2) & (axes.shape[1] ==  2):
+        fig.subplots_adjust(wspace=-0.4, hspace=-0.175)
+    else:
+        fig.subplots_adjust(wspace=-0.02, hspace=-0.3)
 
     if title is not None:
         fig.suptitle(title)
