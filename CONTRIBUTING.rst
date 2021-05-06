@@ -47,9 +47,8 @@ How to help?
   `Good first issues <https://github.com/nilearn/nilearn/labels/Good%20first%20issue>`_
   to get started, `known bugs <https://github.com/nilearn/nilearn/labels/Bug>`_
   or `proposed enhancements <https://github.com/nilearn/nilearn/labels/Enhancement>`_.
-  In any case, before sending code, be sure to ** read and follow the
-  contribution guide below **. Otherwise we might ask quite a lot of revisions
-  during the reviewing process.
+  In any case, before sending code, be sure to **read and follow the
+  contribution guide below**.
 
 
 How do we decide what codes goes in?
@@ -59,10 +58,10 @@ How do we decide what codes goes in?
 Scope of the project
 ---------------------
 
-Nilearn strives to develop open and powerful statistical analysis of
-brain volumes (as produced by multiple modalities: MRI, PET, and others).
-Its focus is to reach end users of the methods (as opposed to methods
-developers).
+Nilearn is an Open-source Python package for visualizing and analyzing human
+brain MRI data. It provides statistical and machine-learning tools for brain
+mapping, connectivity estimation and predictive modelling. It brings
+visualization tools with instructive documentation & open community.
 
 Nilearn targets ease of use, but as Python code. In other words, we will
 not add graphical user interfaces, but we want our code to be as easy to
@@ -80,9 +79,9 @@ complexity of the code, runtime of the examples). As a rule of thumb:
   publications)
 
 * It must have a concrete use case, illustrated with a simple example in the
-  nilearn documentation to teach it easily to end-users.
+  Nilearn documentation to teach it easily to end-users.
 
-* It must be thouroughly tested, and respect coding conventions of the existing codebase.
+* It must be thoroughly tested, and respect coding conventions of the existing codebase.
 
 * Features introducing new dependencies will generally not be accepted.
 
@@ -100,11 +99,11 @@ Who makes decisions
 
 We strongly aim to be a community oriented project where decisions are
 made based on consensus according to the criteria described above.
-Decisions are made public, through discussion on issues and pull requests
+Discussions are public, held on issues and pull requests
 in Github.
-
-The decisions are made by the core-contributors, ie people with write
-access to the repository, as listed :ref:`here <core_devs>`
+In case a consensus does not emerge easily, the decisions are made by the
+core-contributors, ie people with write access to the repository, as listed
+:ref:`here <core_devs>`
 
 How to contribute to nilearn
 =============================
@@ -137,44 +136,66 @@ and ensure Nilearn remains simple to understand, efficient and maintainable.
 For example tests need to run quickly in order not to burden the development process.
 To keep continuous integration efficient with our limited infrastructure, running
 all the examples must lead to downloading a limited amount of data (gigabytes)
-and execute in a reasonable amount of time (a few hours).
+and execute in a reasonable amount of time (a few hours). Those guidelines will
+hence be enforced during the reviewing process.
 
-Those guidelines will hence be checked during reviewing process.
+
++--------------+-------------+----------------------------------------------+
+|              | Which PR ?  |        Guidelines                            |
++==============+=============+==============================================+
+|              |             | - Clear name                                 |
+|              |             | - Link issue through mention :"Closes #XXXX" |
+| PR Structure |    Any      | - Clearly outline goals and changes proposed |
+|              |             | - Doesn't include "unrelated" code change    |
+|              |             | - Add entry in "doc/whats_new.rst"           |
++--------------+-------------+----------------------------------------------+
+|              |             | - Variables, functions, arguments            |
+|              |             | have clear and consistent names              |
+|              |             | - Easy to read, PEP8                         |
+| Coding Style |    Any      | - Clear docstring in numpydoc format of      |
+|              |             | public functions                             |
+|              |             | - Low redundancy                             |
+|              |             | - No new dependency                          |
+|              |             | - Backward compatibility                     |
++--------------+-------------+----------------------------------------------+
+|              |             | - Test type is adapted to behavior           |
+|              |             | - Tests pass continuous integration          |
+|              |  Bugfixes   | - Doesn't decrease coverage                  |
+|    Tests     | New features| - Fast, using small mocked data              |
+|              |             | - Atomic (one per function) and seeded       |
+|              |             | - For Bugfixes: non-regression test          |
++--------------+-------------+----------------------------------------------+
+|              |             | - Clearly showcase benefits                  |
+|  Examples    | New features| - Run in a few seconds                       |
+|              |             | - Use light data (generated or from Nilearn) |
+|              |             | - Renders well after build                   |
++--------------+-------------+----------------------------------------------+
+|              |             | - Simple and didactic                        |
+| Documentation|    Any      | - Links to relevant examples                 |
+|              |             | - Renders well after build                   |
+|              |             | - Doesn't include code                       |
++--------------+-------------+----------------------------------------------+
+
+Coding Style
+------------
+The main conventions we follow are : line length < 80, spaces around operators,
+variable names, length of functions, single/double quotes...
 
 
-+--------------+-------------+---------------------------------------+
-|              | Which PR ?  |        Guidelines                     |
-+==============+=============+=======================================+
-|              |             | - Clearly showcase benefits           |
-|  Examples    | New features| - Run in a few minutes                |
-|              |             | - Use light data from Nilearn         |
-|              |             | - Renders well after build            |
-+--------------+-------------+---------------------------------------+
-|              |             | - Test type is adapted to behavior    |
-|              |             | - Tests pass continuous integration   |
-|              |  Bugfixes   | - Doesn't decrease coverage           |
-|    Tests     | New features| - Fast, using small mocked data       |
-|              |             | - Atomic (one per function) and seeded|
-|              |             | - For Bugfixes: non-regression test   |
-+--------------+-------------+---------------------------------------+
-|              |             | - Variables, functions, arguments     |
-|              |             | have clear and consistent names       |
-|              |             | - Easy to read, PEP8                  |
-| Coding Style |    Any      | - Clear docstring of public functions |
-|              |             | - Low redundancy                      |
-|              |             | - No new dependency                   |
-|              |             | - Backward compatibility              |
-+--------------+-------------+---------------------------------------+
-|              |             | - Simple and didactic                 |
-| Documentation|    Any      | - Links to relevant examples          |
-|              |             | - Renders well after build            |
-|              |             | - Doesn't include code                |
-+--------------+-------------+---------------------------------------+
-|    Other     |    Any      | - Add entry in "doc/whats_new.rst"     |
-+--------------+-------------+---------------------------------------+
+Test
+-----
+You should have roughly one test_function per function covering every line and
+testing the logic of the function. They should run on small mocked data,
+cover a representative range of parameters. If used, random number generator
+must be seeded through : "".
+
+To check your changes worked and didn't break anything run `pytest nilearn`.
+To do quicker checks it's possible to run only a subset of tests (e.g. using
+`pytest -v test_module.py`)
+
 
 Contributing to the documentation
--------------------------------------------------
+-----------------------------------
 
 To build our documentation, we are using `sphinx <https://www.sphinx-doc.org/en/master/usage/quickstart.html>`_ for the main documentation and `sphinx-gallery <https://sphinx-gallery.github.io/stable/index.html>`_ for the example tutorials.
 If you want to make changes to the example tutorials, please do the following :
