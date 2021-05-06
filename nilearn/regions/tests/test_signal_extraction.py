@@ -22,6 +22,8 @@ _TEST_DIM_ERROR_MSG = ("Input data has incompatible dimensionality: "
                        "a 4D image")
 _TEST_SHAPE_LABEL_ERROR_MSG = "labels_img and imgs shapes must be identical."
 _TEST_AFFINE_LABEL_ERROR_MSG = "labels_img and imgs affines must be identical."
+_TEST_SHAPE_IMG_ERROR_MSG = "mask_img and imgs shapes must be identical."
+_TEST_AFFINE_IMG_ERROR_MSG = "mask_img and imgs affines must be identical."
 
 
 def test_generate_regions_ts():
@@ -107,6 +109,47 @@ def test_shape_affine_check_with_labels():
         signal_extraction._check_labels(labels_img, shape, test_affine)
 
 
+def test_shape_affine_check_with_img():
+    """Test to ensure correct check for valid shapes & affines of masks
+    and maps."""
+
+    maps_shape = (2, 3, 4, 7)
+    mask_shape = (2, 3, 4)
+    test_mask_shape = (2, 3, 5)
+
+    affine = np.eye(4)
+    test_affine = 2 * affine
+
+    # Ensure correct behaviour for valid data without dim.
+    with pytest.warns(None):
+        signal_extraction._check_imgs(
+            mask_shape,
+            affine,
+            nibabel.Nifti1Image(np.zeros(mask_shape), affine))
+
+    # Ensure correct behaviour for valid data with dim.
+    with pytest.warns(None):
+        signal_extraction._check_imgs(
+            maps_shape[:3],
+            affine,
+            nibabel.Nifti1Image(np.zeros(maps_shape), affine),
+            3)
+
+    # Smoke test for shape error.
+    with pytest.raises(ValueError, match=_TEST_SHAPE_IMG_ERROR_MSG):
+        signal_extraction._check_imgs(
+            mask_shape,
+            affine,
+            nibabel.Nifti1Image(np.zeros(test_mask_shape), affine))
+
+    # Smoke test for affine error.
+    with pytest.raises(ValueError, match=_TEST_AFFINE_IMG_ERROR_MSG):
+        signal_extraction._check_imgs(
+            mask_shape,
+            affine,
+            nibabel.Nifti1Image(np.zeros(mask_shape), test_affine))
+
+
 def test_signals_extraction_with_labels():
     """Test conversion between signals and images using regions defined
     by labels."""
@@ -146,9 +189,13 @@ def test_signals_extraction_with_labels():
     labels_4d_data = np.zeros((shape) + (2, ))
     labels_4d_data[..., 0] = labels_data
     labels_4d_data[..., 1] = labels_data
-    labels_4d_img = nibabel.Nifti1Image(labels_4d_data, np.eye(4))
+    labels_4d_img = nibabel.Nifti1Image(labels_4d_data, affine)
 
     # Without mask
+    # test labels - labels data is evaluated via signals below
+    r_labels, _ = signal_extraction._get_labels_data(labels_img, shape, affine)
+    assert r_labels == list(range(1, 9))
+    
     # from labels
     data_img = signal_extraction.signals_to_img_labels(signals, labels_img)
     data = get_data(data_img)
@@ -181,6 +228,10 @@ def test_signals_extraction_with_labels():
         assert labels_r == list(range(1, 9))
 
     # Same thing, with mask.
+    r_labels, _ = signal_extraction._get_labels_data(
+        labels_img, shape, affine, mask_img=mask_img)
+    assert r_labels == list(range(1, 9))
+
     with pytest.raises(DimensionError, match=_TEST_DIM_ERROR_MSG):
         signal_extraction.img_to_signals_labels(data_img, labels_img,
                                                 mask_img=mask_4d_img
@@ -200,8 +251,8 @@ def test_signals_extraction_with_labels():
     data = get_data(data_img)
     assert abs(data).max() > 1e-9
     # Zero outside of the mask
-    assert np.all(data[np.logical_not(get_data(mask_img))
-                            ].std(axis=-1) < eps)
+    assert np.all(
+        data[np.logical_not(get_data(mask_img))].std(axis=-1) < eps)
 
     with write_tmp_imgs(labels_img, mask_img) as filenames:
         data_img = signal_extraction.signals_to_img_labels(
@@ -211,8 +262,8 @@ def test_signals_extraction_with_labels():
         data = get_data(data_img)
         assert abs(data).max() > 1e-9
         # Zero outside of the mask
-        assert np.all(data[np.logical_not(get_data(mask_img))
-                                ].std(axis=-1) < eps)
+        assert np.all(
+            data[np.logical_not(get_data(mask_img))].std(axis=-1) < eps)
 
     # mask labels before checking
     masked_labels_data = labels_data.copy()
@@ -462,11 +513,9 @@ def test_img_to_signals_labels_non_float_type(target_dtype):
     )
     fake_affine = np.eye(4, 4).astype(np.float64)
     fake_fmri_img_orig = nibabel.Nifti1Image(
-                                        fake_fmri_data.astype(np.float64),
-                                        fake_affine,
-                                        )
-    fake_fmri_img_target_dtype = new_img_like(fake_fmri_img_orig,
-                                              fake_fmri_data.astype(target_dtype))
+        fake_fmri_data.astype(np.float64), fake_affine)
+    fake_fmri_img_target_dtype = new_img_like(
+        fake_fmri_img_orig, fake_fmri_data.astype(target_dtype))
     fake_mask_data = np.ones((10, 10, 10), dtype=np.uint8)
     fake_mask = nibabel.Nifti1Image(fake_mask_data, fake_affine)
 
