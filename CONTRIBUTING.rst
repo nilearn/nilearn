@@ -11,7 +11,8 @@ Here are the key steps you need to go through to copy the repo before contributi
 1. fork the repo from github (fork button in the top right corner of our `main github page <https://github.com/nilearn/nilearn>`_) and clone your fork locally: `git clone git@github.com:<your_username>/nilearn.git`
 1. (optional but highly recommended) setup a conda environment to work on: `conda create -n nilearn python=3.9`
 1. (optional but highly recommended) activate this environment with `conda activate nilearn`
-1. install dependencies with `pip install -e .`
+1. install the forked version of `nilearn`: `pip install .`
+1. install dependencies with `pip install -r requirements-dev.txt`
 1. check that all tests pass with `pytest nilearn` (this can take a while)
 
 Contributing
