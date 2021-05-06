@@ -46,3 +46,17 @@ author = {Andrés Hoyos-Idrobo and Gaël Varoquaux and Yannick Schwartz and Bert
 keywords = {fMRI, Supervised learning, Decoding, Bagging, MVPA},
 abstract = {Brain decoding relates behavior to brain activity through predictive models. These are also used to identify brain regions involved in the cognitive operations related to the observed behavior. Training such multivariate models is a high-dimensional statistical problem that calls for suitable priors. State of the art priors –eg small total-variation– enforce spatial structure on the maps to stabilize them and improve prediction. However, they come with a hefty computational cost. We build upon very fast dimension reduction with spatial structure and model ensembling to achieve decoders that are fast on large datasets and increase the stability of the predictions and the maps. Our approach, fast regularized ensemble of models (FReM), includes an implicit spatial regularization by using a voxel grouping with a fast clustering algorithm. In addition, it aggregates different estimators obtained across splits of a cross-validation loop, each time keeping the best possible model. Experiments on a large number of brain imaging datasets show that our combination of voxel clustering and model ensembling improves decoding maps stability and reduces the variance of prediction accuracy. Importantly, our method requires less samples than state-of-the-art methods to achieve a given level of prediction accuracy. Finally, FreM is much faster than other spatially-regularized methods and, in addition, it can better exploit parallel computing resources.}
 }
+
+@article{POWER2017150,
+title = {A simple but useful way to assess fMRI scan qualities},
+journal = {NeuroImage},
+volume = {154},
+pages = {150-158},
+year = {2017},
+note = {Cleaning up the fMRI time series: Mitigating noise with advanced acquisition and correction strategies},
+issn = {1053-8119},
+doi = {https://doi.org/10.1016/j.neuroimage.2016.08.009},
+url = {https://www.sciencedirect.com/science/article/pii/S1053811916303871},
+author = {Jonathan D. Power},
+abstract = {This short “how to” article describes a plot I find useful for assessing fMRI data quality. I discuss the reasoning behind the plot and how it is constructed. I create the plot in scans from several publicly available datasets to illustrate different kinds of fMRI signal variance, ranging from thermal noise to motion artifacts to respiratory-related signals. I also show how the plot can be used to understand the variance removed during denoising. Code to make the plot is provided with the article, and supplemental movies show plots for hundreds of additional subjects.}
+}
