@@ -12,15 +12,15 @@ How to help?
 * If you have ideas for new features, check it's in the scope of the project
   and feel free to open an issue to discuss it.
 
-* Want to contribute code ? Thank you very much! For new features, please be
-  sure to create an issue first, to discuss whether it can be included and its
-  specifications. If you have time to help dealing with known issues check
-  `Good first issues <https://github.com/nilearn/nilearn/labels/Good%20first%20issue>`_
-  to get started, `known bugs <https://github.com/nilearn/nilearn/labels/Bug>`_
-  or `proposed enhancements <https://github.com/nilearn/nilearn/labels/Enhancement>`_.
-  In any case, before sending code, be sure to **follow the :ref:`Contribution Guidelines`**.
-
-* Section :ref:`Setting up your environment` will get you ready for contributing.
+* Want to contribute code ? Thank you very much!
+  * For new features, please be sure to create an issue first, to discuss
+    whether it can be included and  its specifications.
+  * If you have time to help dealing with known issues check
+    `Good first issues <https://github.com/nilearn/nilearn/labels/Good%20first%20issue>`_
+    to get started, `known bugs <https://github.com/nilearn/nilearn/labels/Bug>`_
+    or `proposed enhancements <https://github.com/nilearn/nilearn/labels/Enhancement>`_.
+  * In any case, before sending code, be sure to **follow the :ref:`Contribution Guidelines`**.
+  * Section :ref:`Setting up your environment` will get you ready for contributing.
 
 * If you think documentation can be improved, you can directly send proposed
   improvements in `a pull request <https://github.com/nilearn/nilearn/pulls>`_.
@@ -101,7 +101,7 @@ choices.
 
 
 Contribution Guidelines
----------------------------
+------------------------
 To set-up your contribution environment see : :ref:`Setting up your environment`
 We ask every contributor to respect common guidelines. Those are inspired from
 `scikit-learn
@@ -246,10 +246,11 @@ Here are the key steps you need to go through to contribute code to `nilearn`:
 1. in github, open a pull request from your online fork to the main repo (most likely from `your_fork:your_branch` to `nilearn:master`).
 1. check that all online tests pass
 
+Additional cases
+=================
 
-
-Special case: How to contribute a dataset fetcher
---------------------------------------------------
+How to contribute a dataset fetcher
+------------------------------------
 
 The ``nilearn.datasets`` package provides functions to download some
 neuroimaging datasets, such as ``fetch_haxby`` or
@@ -292,8 +293,8 @@ class it contains provide information on how to write a test using this fixture.
 Existing tests can also serve as examples.
 
 
-Special case: How to contribute an atlas
------------------------------------------
+How to contribute an atlas
+---------------------------
 
 We want atlases in nilearn to be internally consistent. Specifically,
 your atlas object should have three attributes (as with the existing
