@@ -394,6 +394,7 @@ def fetch_atlas_juelich(atlas_name, data_dir=None,
           requested.
 
         - "labels": string list, labels of the regions in the atlas.
+
     """
 
     return _fetch_atlases_fsl("Juelich", atlas_name, data_dir=data_dir,
