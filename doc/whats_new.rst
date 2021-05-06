@@ -24,7 +24,7 @@ Enhancements
   parameters to :func:`nilearn.surface.vol_to_surf` using the
   `vol_to_surf_kwargs` argument. One application is better HTML visualization of
   atlases.
-  (http://nilearn.github.io/auto_examples/01_plotting/plot_3d_map_to_surface_projection.html)
+  (https://nilearn.github.io/auto_examples/01_plotting/plot_3d_map_to_surface_projection.html)
 
 .. _v0.7.1:
 
