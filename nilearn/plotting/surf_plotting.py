@@ -79,10 +79,12 @@ def plot_surf(surf_mesh, surf_map=None, bg_map=None,
         You can also pass a custom function which will be
         executed though `numpy.apply_along_axis`.
         Here is an example of a custom function:
-        ```
-        def custom_function(vertices):
-            return vertices[0] * vertices[1] * vertices[2]
-        ```.
+
+        .. code-block:: python
+
+            def custom_function(vertices):
+                return vertices[0] * vertices[1] * vertices[2].
+
         Default='mean'.
 
     threshold : a number or None, default is None.
