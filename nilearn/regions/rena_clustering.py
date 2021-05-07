@@ -145,7 +145,7 @@ def _make_edges_and_weights(X, mask_img):
     return edges, weights
 
 
-def weighted_connectivity_graph(X, mask_img):
+def _weighted_connectivity_graph(X, mask_img):
     """Creating symmetric weighted graph: data and topology are encoded by a
     connectivity matrix.
 
@@ -283,7 +283,7 @@ def _reduce_data_and_connectivity(X, labels, n_components, connectivity,
     return reduced_connectivity, reduced_X
 
 
-def nearest_neighbor_grouping(X, connectivity, n_clusters, threshold=1e-7):
+def _nearest_neighbor_grouping(X, connectivity, n_clusters, threshold=1e-7):
     """Cluster using nearest neighbor agglomeration: merge clusters according
     to their nearest neighbors, then the data and the connectivity are reduced.
 
@@ -346,9 +346,9 @@ def nearest_neighbor_grouping(X, connectivity, n_clusters, threshold=1e-7):
     return reduced_connectivity, reduced_X, labels
 
 
-def recursive_neighbor_agglomeration(X, mask_img, n_clusters,
-                                     n_iter=10, threshold=1e-7,
-                                     verbose=0):
+def _recursive_neighbor_agglomeration(X, mask_img, n_clusters,
+                                      n_iter=10, threshold=1e-7,
+                                      verbose=0):
     """Recursive neighbor agglomeration (ReNA): it performs iteratively
     the nearest neighbor grouping.
     See :footcite:`Hoyos2019`.
@@ -387,7 +387,7 @@ def recursive_neighbor_agglomeration(X, mask_img, n_clusters,
     .. footbibliography::
 
     """
-    connectivity = weighted_connectivity_graph(X, mask_img)
+    connectivity = _weighted_connectivity_graph(X, mask_img)
 
     # Initialization
     labels = np.arange(connectivity.shape[0])
@@ -395,7 +395,7 @@ def recursive_neighbor_agglomeration(X, mask_img, n_clusters,
 
     for i in range(n_iter):
 
-        connectivity, X, reduced_labels = nearest_neighbor_grouping(
+        connectivity, X, reduced_labels = _nearest_neighbor_grouping(
             X, connectivity, n_clusters, threshold)
 
         labels = reduced_labels[labels]
@@ -522,11 +522,11 @@ class ReNA(BaseEstimator, ClusterMixin, TransformerMixin):
                           % str(n_features))
 
         n_components, labels = self.memory_.cache(
-            recursive_neighbor_agglomeration)(X, self.mask_img,
-                                              self.n_clusters,
-                                              n_iter=self.n_iter,
-                                              threshold=self.threshold,
-                                              verbose=self.verbose)
+            _recursive_neighbor_agglomeration)(X, self.mask_img,
+                                               self.n_clusters,
+                                               n_iter=self.n_iter,
+                                               threshold=self.threshold,
+                                               verbose=self.verbose)
 
         sizes = np.bincount(labels)
         sizes = sizes[sizes > 0]
