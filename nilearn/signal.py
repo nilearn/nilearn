@@ -528,7 +528,7 @@ def clean(signals, sessions=None, detrend=True, standardize='zscore',
                                 detrend=detrend)
 
     # Apply low- and high-pass filters
-    if filter == "butterworth":  # this change enticipate extra fltering methods
+    if filter == "butterworth" and t_r is not None:  # this change enticipate extra fltering methods
         signals = butterworth(signals, sampling_rate=1. / t_r,
                               low_pass=low_pass, high_pass=high_pass)
         if confounds is not None:
@@ -649,7 +649,7 @@ def _check_filter_parameters(filter, low_pass, high_pass, t_r):
         if isinstance(high_pass, bool):
             raise TypeError("high pass must be float or None but you provided "
                             "high_pass='{0}'".format(high_pass))
-        if t_r is None:
+        if (isinstance(high_pass, float) or isinstance(low_pass, float)) and t_r is None:
             raise ValueError("Repetition time (t_r) must be specified for "
                              "filtering. You specified None.")
         return True
