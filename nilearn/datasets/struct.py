@@ -130,7 +130,8 @@ def load_mni152_template():
 
     Returns
     -------
-    mni152_template : nibabel object corresponding to the template
+    mni152_template : Nifti1Image, image representing the resampled whole-brain
+        template
 
     References
     ----------
@@ -154,7 +155,8 @@ def load_mni152_gm_template():
 
     Returns
     -------
-    gray-matter_mni152_template : nibabel object corresponding to the template
+    gm_mni152_template : Nifti1Image, image representing the resampled
+        gray-matter template
 
     """
     return check_niimg(GM_MNI152_FILE_PATH)
@@ -166,7 +168,8 @@ def load_mni152_wm_template():
 
     Returns
     -------
-    white-matter_mni152_template : nibabel object corresponding to the template
+    wm_mni152_template : Nifti1Image, image representing the resampled
+        white-matter template
 
     """
     return check_niimg(WM_MNI152_FILE_PATH)
@@ -183,7 +186,7 @@ def load_mni152_brain_mask(threshold=0.2):
 
     Returns
     -------
-    mask_img : Nifti-like mask image corresponding to gray and white matter.
+    mask_img : Nifti1Image, image corresponding to the whole-brain mask.
 
     Notes
     -----
@@ -214,7 +217,7 @@ def load_mni152_gm_mask(threshold=0.2, n_iter=2):
 
     Returns
     -------
-    mask_img : Nifti-like mask image corresponding to gray matter.
+    gm_mask_img : Nifti1Image, image corresponding to the gray-matter mask.
 
     """
     # Load MNI template
@@ -241,7 +244,7 @@ def load_mni152_wm_mask(threshold=0.2, n_iter=2):
 
     Returns
     -------
-    mask_img : Nifti-like mask image corresponding to white matter.
+    wm_mask_img : Nifti1Image, image corresponding to the white-matter mask.
 
     """
     # Load MNI template
@@ -284,8 +287,8 @@ def fetch_icbm152_brain_gm_mask(data_dir=None, threshold=0.2, resume=True,
 
     Returns
     -------
-    gm_mask_img : Nifti image
-        Corresponding to brain grey matter from ICBM152 template.
+    gm_mask_img : Nifti1Image, image corresponding to the brain gray matter
+        from ICBM152 template.
 
     Notes
     -----
