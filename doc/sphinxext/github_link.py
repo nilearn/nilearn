@@ -38,8 +38,6 @@ def _linkcode_resolve(domain, info, package, url_fmt, revision):
         return
     if not info.get('module') or not info.get('fullname'):
         return
-    if 'nilearn' not in info.get('module'):
-        return
 
     class_name = info['fullname'].split('.')[0]
     module = __import__(info['module'], fromlist=[class_name])
@@ -59,6 +57,10 @@ def _linkcode_resolve(domain, info, package, url_fmt, revision):
         except Exception:
             fn = None
     if not fn:
+        return
+    
+    # Don't include filenames from outside this package's tree
+    if os.path.dirname(__import__(package).__file__) not in fn:
         return
 
     fn = os.path.relpath(fn,
