@@ -1,3 +1,49 @@
+@ARTICLE{Allen2011baseline,
+AUTHOR={Allen, Elena and Erhardt, Erik and Damaraju, Eswar and Gruner, William and Segall, Judith and Silva, Rogers and Havlicek, Martin and Rachakonda, Srinivas and Fries, Jill and Kalyanam, Ravi and Michael, Andrew and Caprihan, Arvind and Turner, Jessica and Eichele, Tom and Adelsheim, Steven and Bryan, Angela and Bustillo, Juan and Clark, Vincent and Feldstein Ewing, Sarah and Filbey, Francesca and Ford, Corey and Hutchison, Kent and Jung, Rex and Kiehl, Kent and Kodituwakku, Piyadasa and Komesu, Yuko and Mayer, Andrew and Pearlson, Godfrey and Phillips, John and Sadek, Joseph and Stevens, Michael and Teuscher, Ursina and Thoma, Robert and Calhoun, Vince},   
+TITLE={A Baseline for the Multivariate Comparison of Resting-State Networks},      
+JOURNAL={Frontiers in Systems Neuroscience},      
+VOLUME={5},      
+PAGES={2},     
+YEAR={2011},      
+URL={https://www.frontiersin.org/article/10.3389/fnsys.2011.00002},       
+DOI={10.3389/fnsys.2011.00002},      
+ISSN={1662-5137},   
+ABSTRACT={As the size of functional and structural MRI datasets expands, it becomes increasingly important to establish a baseline from which diagnostic relevance may be determined, a processing strategy that efficiently prepares data for analysis, and a statistical approach that identifies important effects in a manner that is both robust and reproducible. In this paper, we introduce a multivariate analytic approach that optimizes sensitivity and reduces unnecessary testing. We demonstrate the utility of this mega-analytic approach by identifying the effects of age and gender on the resting-state networks (RSNs) of 603 healthy adolescents and adults (mean age: 23.4 years, range: 12–71 years). Data were collected on the same scanner, preprocessed using an automated analysis pipeline based in SPM, and studied using group independent component analysis. RSNs were identified and evaluated in terms of three primary outcome measures: time course spectral power, spatial map intensity, and functional network connectivity. Results revealed robust effects of age on all three outcome measures, largely indicating decreases in network coherence and connectivity with increasing age. Gender effects were of smaller magnitude but suggested stronger intra-network connectivity in females and more inter-network connectivity in males, particularly with regard to sensorimotor networks. These findings, along with the analysis approach and statistical framework described here, provide a useful baseline for future investigations of brain networks in health and disease.}
+}
+
+@INPROCEEDINGS{Bellec2013Mining,
+author={Bellec, Pierre},
+booktitle={2013 International Workshop on Pattern Recognition in Neuroimaging}, 
+title={Mining the Hierarchy of Resting-State Brain Networks: Selection of Representative Clusters in a Multiscale Structure}, 
+year={2013},
+volume={},
+number={},
+pages={54-57},
+abstract={The hierarchical organization of brain networks can be captured by clustering time series using multiple numbers of clusters, or scales, in resting-state functional magnetic resonance imaging. However, the systematic examination of all scales is a tedious task. Here, I propose a method to select a limited number of scales that are representative of the full hierarchy. A bootstrap analysis is first performed to estimate stability matrices, which quantify the reliability of the clustering for every pair of brain regions, over a grid of possible scales. A subset of scales is then selected to approximate linearly all stability matrices with a specified level of accuracy. On real data, the method was found to select a relatively small (~7) number of scales to explain 95% of the energy of 73 scales ranging from 2 to 1100 clusters. The number of selected scales was very consistent across 43 subjects, and the actual scales also showed some good level of agreement. This approach thus provides a principled approach to mine hierarchical brain networks, in the form of a few scales amenable to detailed examination.},
+keywords={},
+doi={10.1109/PRNI.2013.23},
+ISSN={},
+month={June},
+}
+
+
+
+@article{BELLEC20101126,
+title = {Multi-level bootstrap analysis of stable clusters in resting-state fMRI},
+journal = {NeuroImage},
+volume = {51},
+number = {3},
+pages = {1126-1139},
+year = {2010},
+issn = {1053-8119},
+doi = {https://doi.org/10.1016/j.neuroimage.2010.02.082},
+url = {https://www.sciencedirect.com/science/article/pii/S1053811910002697},
+author = {Pierre Bellec and Pedro Rosa-Neto and Oliver C. Lyttelton and Habib Benali and Alan C. Evans},
+keywords = {Bootstrap, Clustering, Functional MRI, Hierarchical clustering, -Means, Multi-level analysis, Resting-state networks, Stability analysis},
+abstract = {A variety of methods have been developed to identify brain networks with spontaneous, coherent activity in resting-state functional magnetic resonance imaging (fMRI). We propose here a generic statistical framework to quantify the stability of such resting-state networks (RSNs), which was implemented with k-means clustering. The core of the method consists in bootstrapping the available datasets to replicate the clustering process a large number of times and quantify the stable features across all replications. This bootstrap analysis of stable clusters (BASC) has several benefits: (1) it can be implemented in a multi-level fashion to investigate stable RSNs at the level of individual subjects and at the level of a group; (2) it provides a principled measure of RSN stability; and (3) the maximization of the stability measure can be used as a natural criterion to select the number of RSNs. A simulation study validated the good performance of the multi-level BASC on purely synthetic data. Stable networks were also derived from a real resting-state study for 43 subjects. At the group level, seven RSNs were identified which exhibited a good agreement with the previous findings from the literature. The comparison between the individual and group-level stability maps demonstrated the capacity of BASC to establish successful correspondences between these two levels of analysis and at the same time retain some interesting subject-specific characteristics, e.g. the specific involvement of subcortical regions in the visual and fronto-parietal networks for some subjects.}
+}
+
+
 @article{craddock2012whole,
 author = {Craddock, R. Cameron and James, G.Andrew and Holtzheimer III, Paul E. and Hu, Xiaoping P. and Mayberg, Helen S.},
 title = {A whole brain fMRI atlas generated via spatially constrained spectral clustering},
@@ -13,7 +59,21 @@ abstract = {Abstract Connectivity analyses and computational modeling of human b
 year = {2012}
 }
 
-
+@article {Dosenbach20101358,
+author = {Dosenbach, Nico U. F. and Nardos, Binyam and Cohen, Alexander L. and Fair, Damien A. and Power, Jonathan D. and Church, Jessica A. and Nelson, Steven M. and Wig, Gagan S. and Vogel, Alecia C. and Lessov-Schlaggar, Christina N. and Barnes, Kelly Anne and Dubis, Joseph W. and Feczko, Eric and Coalson, Rebecca S. and Pruett, John R. and Barch, Deanna M. and Petersen, Steven E. and Schlaggar, Bradley L.},
+title = {Prediction of Individual Brain Maturity Using fMRI},
+volume = {329},
+number = {5997},
+pages = {1358--1361},
+year = {2010},
+doi = {10.1126/science.1194144},
+publisher = {American Association for the Advancement of Science},
+abstract = {Group functional connectivity magnetic resonance imaging (fcMRI) studies have documented reliable changes in human functional brain maturity over development. Here we show that support vector machine-based multivariate pattern analysis extracts sufficient information from fcMRI data to make accurate predictions about individuals{\textquoteright} brain maturity across development. The use of only 5 minutes of resting-state fcMRI data from 238 scans of typically developing volunteers (ages 7 to 30 years) allowed prediction of individual brain maturity as a functional connectivity maturation index. The resultant functional maturation curve accounted for 55\% of the sample variance and followed a nonlinear asymptotic growth curve shape. The greatest relative contribution to predicting individual brain maturity was made by the weakening of short-range functional connections between the adult brain{\textquoteright}s major functional networks.},
+issn = {0036-8075},
+URL = {https://science.sciencemag.org/content/329/5997/1358},
+eprint = {https://science.sciencemag.org/content/329/5997/1358.full.pdf},
+journal = {Science}
+}
 
 
 @article{DADI2020117126,
@@ -32,31 +92,46 @@ abstract = {Population imaging markedly increased the size of functional-imaging
 
 
 @article{Destrieux2009sulcal,
-	author = {Destrieux, C and Fischl, B and Dale, AM and Halgren, E},
-	doi = {10.1016/S1053-8119(09)71561-7},
-	journal = {NeuroImage},
-	language = {English},
-	number = {Supplement 1},
-	pages = {S151},
-	title = {A sulcal depth-based anatomical parcellation of the cerebral cortex.},
-	volume = {47},
-	year = {2009},
+author = {Destrieux, C and Fischl, B and Dale, AM and Halgren, E},
+doi = {10.1016/S1053-8119(09)71561-7},
+journal = {NeuroImage},
+language = {English},
+number = {Supplement 1},
+pages = {S151},
+title = {A sulcal depth-based anatomical parcellation of the cerebral cortex.},
+volume = {47},
+year = {2009},
+}
+
+@article{DESTRIEUX20101,
+title = {Automatic parcellation of human cortical gyri and sulci using standard anatomical nomenclature},
+journal = {NeuroImage},
+volume = {53},
+number = {1},
+pages = {1-15},
+year = {2010},
+issn = {1053-8119},
+doi = {https://doi.org/10.1016/j.neuroimage.2010.06.010},
+url = {https://www.sciencedirect.com/science/article/pii/S1053811910008542},
+author = {Christophe Destrieux and Bruce Fischl and Anders Dale and Eric Halgren},
+keywords = {Anatomy, Atlas, Brain, Cerebral cortex, MRI},
+abstract = {Precise localization of sulco-gyral structures of the human cerebral cortex is important for the interpretation of morpho-functional data, but requires anatomical expertise and is time consuming because of the brain's geometric complexity. Software developed to automatically identify sulco-gyral structures has improved substantially as a result of techniques providing topologically correct reconstructions permitting inflated views of the human brain. Here we describe a complete parcellation of the cortical surface using standard internationally accepted nomenclature and criteria. This parcellation is available in the FreeSurfer package. First, a computer-assisted hand parcellation classified each vertex as sulcal or gyral, and these were then subparcellated into 74 labels per hemisphere. Twelve datasets were used to develop rules and algorithms (reported here) that produced labels consistent with anatomical rules as well as automated computational parcellation. The final parcellation was used to build an atlas for automatically labeling the whole cerebral cortex. This atlas was used to label an additional 12 datasets, which were found to have good concordance with manual labels. This paper presents a precisely defined method for automatically labeling the cortical surface in standard terminology.}
 }
 
 @article{Fischl2004Automatically,
-    author = {Fischl, Bruce and van der Kouwe, André and Destrieux, Christophe and Halgren, Eric and Ségonne, Florent and Salat, David H. and Busa, Evelina and Seidman, Larry J. and Goldstein, Jill and Kennedy, David and Caviness, Verne and Makris, Nikos and Rosen, Bruce and Dale, Anders M.},
-    title = "{Automatically Parcellating the Human Cerebral Cortex}",
-    journal = {Cerebral Cortex},
-    volume = {14},
-    number = {1},
-    pages = {11-22},
-    year = {2004},
-    month = {01},
-    abstract = "{We present a technique for automatically assigning a neuroanatomical label to each location on a cortical surface model based on probabilistic information estimated from a manually labeled training set. This procedure incorporates both geometric information derived from the cortical model, and neuroanatomical convention, as found in the training set. The result is a complete labeling of cortical sulci and gyri. Examples are given from two different training sets generated using different neuroanatomical conventions, illustrating the flexibility of the algorithm. The technique is shown to be comparable in accuracy to manual labeling.}",
-    issn = {1047-3211},
-    doi = {10.1093/cercor/bhg087},
-    url = {https://doi.org/10.1093/cercor/bhg087},
-    eprint = {https://academic.oup.com/cercor/article-pdf/14/1/11/1193353/bhg087.pdf},
+author = {Fischl, Bruce and van der Kouwe, André and Destrieux, Christophe and Halgren, Eric and Ségonne, Florent and Salat, David H. and Busa, Evelina and Seidman, Larry J. and Goldstein, Jill and Kennedy, David and Caviness, Verne and Makris, Nikos and Rosen, Bruce and Dale, Anders M.},
+title = "{Automatically Parcellating the Human Cerebral Cortex}",
+journal = {Cerebral Cortex},
+volume = {14},
+number = {1},
+pages = {11-22},
+year = {2004},
+month = {01},
+abstract = "{We present a technique for automatically assigning a neuroanatomical label to each location on a cortical surface model based on probabilistic information estimated from a manually labeled training set. This procedure incorporates both geometric information derived from the cortical model, and neuroanatomical convention, as found in the training set. The result is a complete labeling of cortical sulci and gyri. Examples are given from two different training sets generated using different neuroanatomical conventions, illustrating the flexibility of the algorithm. The technique is shown to be comparable in accuracy to manual labeling.}",
+issn = {1047-3211},
+doi = {10.1093/cercor/bhg087},
+url = {https://doi.org/10.1093/cercor/bhg087},
+eprint = {https://academic.oup.com/cercor/article-pdf/14/1/11/1193353/bhg087.pdf},
 }
 
 
@@ -94,6 +169,179 @@ keywords = {fMRI, Supervised learning, Decoding, Bagging, MVPA},
 abstract = {Brain decoding relates behavior to brain activity through predictive models. These are also used to identify brain regions involved in the cognitive operations related to the observed behavior. Training such multivariate models is a high-dimensional statistical problem that calls for suitable priors. State of the art priors –eg small total-variation– enforce spatial structure on the maps to stabilize them and improve prediction. However, they come with a hefty computational cost. We build upon very fast dimension reduction with spatial structure and model ensembling to achieve decoders that are fast on large datasets and increase the stability of the predictions and the maps. Our approach, fast regularized ensemble of models (FReM), includes an implicit spatial regularization by using a voxel grouping with a fast clustering algorithm. In addition, it aggregates different estimators obtained across splits of a cross-validation loop, each time keeping the best possible model. Experiments on a large number of brain imaging datasets show that our combination of voxel clustering and model ensembling improves decoding maps stability and reduces the variance of prediction accuracy. Importantly, our method requires less samples than state-of-the-art methods to achieve a given level of prediction accuracy. Finally, FreM is much faster than other spatially-regularized methods and, in addition, it can better exploit parallel computing resources.}
 }
 
+@article{Laird2011behavioral,
+author = {Laird, Angela R. and Fox, P. Mickle and Eickhoff, Simon B. and Turner, Jessica A. and Ray, Kimberly L. and McKay, D. Reese and Glahn, David C. and Beckmann, Christian F. and Smith, Stephen M. and Fox, Peter T.},
+title = "{Behavioral Interpretations of Intrinsic Connectivity Networks}",
+journal = {Journal of Cognitive Neuroscience},
+volume = {23},
+number = {12},
+pages = {4022-4037},
+year = {2011},
+month = {12},
+abstract = "{An increasingly large number of neuroimaging studies have investigated functionally connected networks during rest, providing insight into human brain architecture. Assessment of the functional qualities of resting state networks has been limited by the task-independent state, which results in an inability to relate these networks to specific mental functions. However, it was recently demonstrated that similar brain networks can be extracted from resting state data and data extracted from thousands of task-based neuroimaging experiments archived in the BrainMap database. Here, we present a full functional explication of these intrinsic connectivity networks at a standard low order decomposition using a neuroinformatics approach based on the BrainMap behavioral taxonomy as well as a stratified, data-driven ordering of cognitive processes. Our results serve as a resource for functional interpretations of brain networks in resting state studies and future investigations into mental operations and the tasks that drive them.}",
+issn = {0898-929X},
+doi = {10.1162/jocn_a_00077},
+url = {https://doi.org/10.1162/jocn\_a\_00077},
+eprint = {https://direct.mit.edu/jocn/article-pdf/23/12/4022/1777164/jocn\_a\_00077.pdf},
+}
+
+@article{Lancaster1997labeling,
+author = {Lancaster, J.L. and Rainey, L.H. and Summerlin, J.L. and Freitas, C.S. and Fox, P.T. and Evans, A.C. and Toga, A.W. and Mazziotta, J.C.},
+title = {Automated labeling of the human brain: A preliminary report on the development and evaluation of a forward-transform method},
+journal = {Human Brain Mapping},
+volume = {5},
+number = {4},
+pages = {238-242},
+keywords = {spatial normalization, segmentation, Talairach Atlas, Talairach Daemon, naming hierarchy, brain labeling},
+doi = {https://doi.org/10.1002/(SICI)1097-0193(1997)5:4<238::AID-HBM6>3.0.CO;2-4},
+url = {https://onlinelibrary.wiley.com/doi/abs/10.1002/%28SICI%291097-0193%281997%295%3A4%3C238%3A%3AAID-HBM6%3E3.0.CO%3B2-4},
+eprint = {https://onlinelibrary.wiley.com/doi/pdf/10.1002/%28SICI%291097-0193%281997%295%3A4%3C238%3A%3AAID-HBM6%3E3.0.CO%3B2-4},
+abstract = {Abstract A forward-transform method for retrieving brain labels from the 1988 Talairach Atlas using x-y-z coordinates is presented. A hierarchical volume-occupancy labeling scheme was created to simplify the organization of atlas labels using volume and subvolumetric components. Segmentation rules were developed to define boundaries that were not given explicitly in the atlas. The labeling scheme and segmentation rules guided the segmentation and labeling of 160 contiguous regions within the atlas. A unique three-dimensional (3-D) database label server called the Talairach Daemon (http://ric.uthscsa.edu/projects) was developed for serving labels keyed to the Talairach coordinate system. Given an x-y-z Talairach coordinate, a corresponding hierarchical listing of labels is returned by the server. The accuracy and precision of the forward-transform labeling method is now under evaluation. Hum. Brain Mapping 5:238–242, 1997. © 1997 Wiley-Liss, Inc.},
+year = {1997}
+}
+
+
+@article{Lancaster2000Talairach,
+author = {Lancaster, Jack L. and Woldorff, Marty G. and Parsons, Lawrence M. and Liotti, Mario and Freitas, Catarina S. and Rainey, Lacy and Kochunov, Peter V. and Nickerson, Dan and Mikiten, Shawn A. and Fox, Peter T.},
+title = {Automated Talairach Atlas labels for functional brain mapping},
+journal = {Human Brain Mapping},
+volume = {10},
+number = {3},
+pages = {120-131},
+keywords = {Talairach Daemon, volume occupancy, Talairach Labels, brain labels},
+doi = {https://doi.org/10.1002/1097-0193(200007)10:3<120::AID-HBM30>3.0.CO;2-8},
+url = {https://onlinelibrary.wiley.com/doi/abs/10.1002/1097-0193%28200007%2910%3A3%3C120%3A%3AAID-HBM30%3E3.0.CO%3B2-8},
+eprint = {https://onlinelibrary.wiley.com/doi/pdf/10.1002/1097-0193%28200007%2910%3A3%3C120%3A%3AAID-HBM30%3E3.0.CO%3B2-8},
+abstract = {Abstract An automated coordinate-based system to retrieve brain labels from the 1988 Talairach Atlas, called the Talairach Daemon (TD), was previously introduced [Lancaster et al., 1997]. In the present study, the TD system and its 3-D database of labels for the 1988 Talairach atlas were tested for labeling of functional activation foci. TD system labels were compared with author-designated labels of activation coordinates from over 250 published functional brain-mapping studies and with manual atlas-derived labels from an expert group using a subset of these activation coordinates. Automated labeling by the TD system compared well with authors' labels, with a 70\% or greater label match averaged over all locations. Author-label matching improved to greater than 90\% within a search range of ±5 mm for most sites. An adaptive grey matter (GM) range-search utility was evaluated using individual activations from the M1 mouth region (30 subjects, 52 sites). It provided an 87\% label match to Brodmann area labels (BA 4 \& BA 6) within a search range of ±5 mm. Using the adaptive GM range search, the TD system's overall match with authors' labels (90\%) was better than that of the expert group (80\%). When used in concert with authors' deeper knowledge of an experiment, the TD system provides consistent and comprehensive labels for brain activation foci. Additional suggested applications of the TD system include interactive labeling, anatomical grouping of activation foci, lesion-deficit analysis, and neuroanatomy education. Hum. Brain Mapping 10:120–131, 2000. © 2000 Wiley-Liss, Inc.},
+year = {2000}
+}
+
+﻿@Article{Pauli2018probabilistic,
+author={Pauli, Wolfgang M.
+and Nili, Amanda N.
+and Tyszka, J. Michael},
+title={A high-resolution probabilistic in vivo atlas of human subcortical brain nuclei},
+journal={Scientific Data},
+year={2018},
+month={Apr},
+day={17},
+volume={5},
+number={1},
+pages={180063},
+abstract={Recent advances in magnetic resonance imaging methods, including data acquisition, pre-processing and analysis, have benefited research on the contributions of subcortical brain nuclei to human cognition and behavior. At the same time, these developments have led to an increasing need for a high-resolution probabilistic in vivo anatomical atlas of subcortical nuclei. In order to address this need, we constructed high spatial resolution, three-dimensional templates, using high-accuracy diffeomorphic registration of T1- and T2- weighted structural images from 168 typical adults between 22 and 35 years old. In these templates, many tissue boundaries are clearly visible, which would otherwise be impossible to delineate in data from individual studies. The resulting delineations of subcortical nuclei complement current histology-based atlases. We further created a companion library of software tools for atlas development, to offer an open and evolving resource for the creation of a crowd-sourced in vivo probabilistic anatomical atlas of the human brain.},
+issn={2052-4463},
+doi={10.1038/sdata.2018.63},
+url={https://doi.org/10.1038/sdata.2018.63}
+}
+
+
+
+﻿@Article{Power2011Functional,
+author={Power, Jonathan D.
+and Cohen, Alexander L.
+and Nelson, Steven M.
+and Wig, Gagan S.
+and Barnes, Kelly Anne
+and Church, Jessica A.
+and Vogel, Alecia C.
+and Laumann, Timothy O.
+and Miezin, Fran M.
+and Schlaggar, Bradley L.
+and Petersen, Steven E.},
+title={Functional Network Organization of the Human Brain},
+journal={Neuron},
+year={2011},
+month={Nov},
+day={17},
+publisher={Elsevier},
+volume={72},
+number={4},
+pages={665-678},
+abstract={Real-world complex systems may be mathematically modeled as graphs, revealing properties of the system. Here we study graphs of functional brain organization in healthy adults using resting state functional connectivity MRI. We propose two novel brain-wide graphs, one of 264 putative functional areas, the other a modification of voxelwise networks that eliminates potentially artificial short-distance relationships. These graphs contain many subgraphs in good agreement with known functional brain systems. Other subgraphs lack established functional identities; we suggest possible functional characteristics for these subgraphs. Further, graph measures of the areal network indicate that the default mode subgraph shares network properties with sensory and motor subgraphs: it is internally integrated but isolated from other subgraphs, much like a ?processing? system. The modified voxelwise graph also reveals spatial motifs in the patterning of systems across the cortex.},
+issn={0896-6273},
+doi={10.1016/j.neuron.2011.09.006},
+url={https://doi.org/10.1016/j.neuron.2011.09.006}
+}
+
+@article{Schaefer2017parcellation,
+author = {Schaefer, Alexander and Kong, Ru and Gordon, Evan M and Laumann, Timothy O and Zuo, Xi-Nian and Holmes, Avram J and Eickhoff, Simon B and Yeo, B T Thomas},
+title = "{Local-Global Parcellation of the Human Cerebral Cortex from Intrinsic Functional Connectivity MRI}",
+journal = {Cerebral Cortex},
+volume = {28},
+number = {9},
+pages = {3095-3114},
+year = {2017},
+month = {07},
+abstract = "{A central goal in systems neuroscience is the parcellation of the cerebral cortex into discrete neurobiological “atoms”. Resting-state functional magnetic resonance imaging (rs-fMRI) offers the possibility of in vivo human cortical parcellation. Almost all previous parcellations relied on 1 of 2 approaches. The local gradient approach detects abrupt transitions in functional connectivity patterns. These transitions potentially reflect cortical areal boundaries defined by histology or visuotopic fMRI. By contrast, the global similarity approach clusters similar functional connectivity patterns regardless of spatial proximity, resulting in parcels with homogeneous (similar) rs-fMRI signals. Here, we propose a gradient-weighted Markov Random Field (gwMRF) model integrating local gradient and global similarity approaches. Using task-fMRI and rs-fMRI across diverse acquisition protocols, we found gwMRF parcellations to be more homogeneous than 4 previously published parcellations. Furthermore, gwMRF parcellations agreed with the boundaries of certain cortical areas defined using histology and visuotopic fMRI. Some parcels captured subareal (somatotopic and visuotopic) features that likely reflect distinct computational units within known cortical areas. These results suggest that gwMRF parcellations reveal neurobiologically meaningful features of brain organization and are potentially useful for future applications requiring dimensionality reduction of voxel-wise fMRI data. Multiresolution parcellations generated from 1489 participants are publicly available (https://github.com/ThomasYeoLab/CBIG/tree/master/stable\_projects/brain\_parcellation/Schaefer2018\_LocalGlobal).}",
+issn = {1047-3211},
+doi = {10.1093/cercor/bhx179},
+url = {https://doi.org/10.1093/cercor/bhx179},
+eprint = {https://academic.oup.com/cercor/article-pdf/28/9/3095/25696344/bhx179\_schaeferfullsupp.pdf},
+}
+
+
+
+
+@article{SEITZMAN2020116290,
+title = {A set of functionally-defined brain regions with improved representation of the subcortex and cerebellum},
+journal = {NeuroImage},
+volume = {206},
+pages = {116290},
+year = {2020},
+issn = {1053-8119},
+doi = {https://doi.org/10.1016/j.neuroimage.2019.116290},
+url = {https://www.sciencedirect.com/science/article/pii/S105381191930881X},
+author = {Benjamin A. Seitzman and Caterina Gratton and Scott Marek and Ryan V. Raut and Nico U.F. Dosenbach and Bradley L. Schlaggar and Steven E. Petersen and Deanna J. Greene},
+keywords = {Subcortical, Cerebellum, Networks, Resting-state, Functional connectivity},
+abstract = {An important aspect of network-based analysis is robust node definition. This issue is critical for functional brain network analyses, as poor node choice can lead to spurious findings and misleading inferences about functional brain organization. Two sets of functional brain nodes from our group are well represented in the literature: (1) 264 volumetric regions of interest (ROIs) reported in Power et al., 2011, and (2) 333 cortical surface parcels reported in Gordon et al., 2016. However, subcortical and cerebellar structures are either incompletely captured or missing from these ROI sets. Therefore, properties of functional network organization involving the subcortex and cerebellum may be underappreciated thus far. Here, we apply a winner-take-all partitioning method to resting-state fMRI data to generate novel functionally-constrained ROIs in the thalamus, basal ganglia, amygdala, hippocampus, and cerebellum. We validate these ROIs in three datasets using several criteria, including agreement with existing literature and anatomical atlases. Further, we demonstrate that combining these ROIs with established cortical ROIs recapitulates and extends previously described functional network organization. This new set of ROIs is made publicly available for general use, including a full list of MNI coordinates and functional network labels.}
+}
+
+@article {Smith200913040,
+author = {Smith, Stephen M. and Fox, Peter T. and Miller, Karla L. and Glahn, David C. and Fox, P. Mickle and Mackay, Clare E. and Filippini, Nicola and Watkins, Kate E. and Toro, Roberto and Laird, Angela R. and Beckmann, Christian F.},
+title = {Correspondence of the brain{\textquoteright}s functional architecture during activation and rest},
+volume = {106},
+number = {31},
+pages = {13040--13045},
+year = {2009},
+doi = {10.1073/pnas.0905267106},
+publisher = {National Academy of Sciences},
+abstract = {Neural connections, providing the substrate for functional networks, exist whether or not they are functionally active at any given moment. However, it is not known to what extent brain regions are continuously interacting when the brain is {\textquotedblleft}at rest.{\textquotedblright} In this work, we identify the major explicit activation networks by carrying out an image-based activation network analysis of thousands of separate activation maps derived from the BrainMap database of functional imaging studies, involving nearly 30,000 human subjects. Independently, we extract the major covarying networks in the resting brain, as imaged with functional magnetic resonance imaging in 36 subjects at rest. The sets of major brain networks, and their decompositions into subnetworks, show close correspondence between the independent analyses of resting and activation brain dynamics. We conclude that the full repertoire of functional networks utilized by the brain in action is continuously and dynamically {\textquotedblleft}active{\textquotedblright} even when at {\textquotedblleft}rest.{\textquotedblright}},
+issn = {0027-8424},
+URL = {https://www.pnas.org/content/106/31/13040},
+eprint = {https://www.pnas.org/content/106/31/13040.full.pdf},
+journal = {Proceedings of the National Academy of Sciences}
+}
+
+@article{TZOURIOMAZOYER2002273,
+title = {Automated Anatomical Labeling of Activations in SPM Using a Macroscopic Anatomical Parcellation of the MNI MRI Single-Subject Brain},
+journal = {NeuroImage},
+volume = {15},
+number = {1},
+pages = {273-289},
+year = {2002},
+issn = {1053-8119},
+doi = {https://doi.org/10.1006/nimg.2001.0978},
+url = {https://www.sciencedirect.com/science/article/pii/S1053811901909784},
+author = {N. Tzourio-Mazoyer and B. Landeau and D. Papathanassiou and F. Crivello and O. Etard and N. Delcroix and B. Mazoyer and M. Joliot},
+abstract = {An anatomical parcellation of the spatially normalized single-subject high-resolution T1 volume provided by the Montreal Neurological Institute (MNI) (D. L. Collins et al., 1998, Trans. Med. Imag. 17, 463–468) was performed. The MNI single-subject main sulci were first delineated and further used as landmarks for the 3D definition of 45 anatomical volumes of interest (AVOI) in each hemisphere. This procedure was performed using a dedicated software which allowed a 3D following of the sulci course on the edited brain. Regions of interest were then drawn manually with the same software every 2 mm on the axial slices of the high-resolution MNI single subject. The 90 AVOI were reconstructed and assigned a label. Using this parcellation method, three procedures to perform the automated anatomical labeling of functional studies are proposed: (1) labeling of an extremum defined by a set of coordinates, (2) percentage of voxels belonging to each of the AVOI intersected by a sphere centered by a set of coordinates, and (3) percentage of voxels belonging to each of the AVOI intersected by an activated cluster. An interface with the Statistical Parametric Mapping package (SPM, J. Ashburner and K. J. Friston, 1999, Hum. Brain Mapp. 7, 254–266) is provided as a freeware to researchers of the neuroimaging community. We believe that this tool is an improvement for the macroscopical labeling of activated area compared to labeling assessed using the Talairach atlas brain in which deformations are well known. However, this tool does not alleviate the need for more sophisticated labeling strategies based on anatomical or cytoarchitectonic probabilistic maps.}
+}
+
+
+@article{VAROQUAUX2013405,
+title = {Learning and comparing functional connectomes across subjects},
+journal = {NeuroImage},
+volume = {80},
+pages = {405-415},
+year = {2013},
+note = {Mapping the Connectome},
+issn = {1053-8119},
+doi = {https://doi.org/10.1016/j.neuroimage.2013.04.007},
+url = {https://www.sciencedirect.com/science/article/pii/S1053811913003340},
+author = {Gaël Varoquaux and R. Cameron Craddock},
+keywords = {Functional connectivity, Connectome, Group study, Effective connectivity, fMRI, Resting-state},
+abstract = {Functional connectomes capture brain interactions via synchronized fluctuations in the functional magnetic resonance imaging signal. If measured during rest, they map the intrinsic functional architecture of the brain. With task-driven experiments they represent integration mechanisms between specialized brain areas. Analyzing their variability across subjects and conditions can reveal markers of brain pathologies and mechanisms underlying cognition. Methods of estimating functional connectomes from the imaging signal have undergone rapid developments and the literature is full of diverse strategies for comparing them. This review aims to clarify links across functional-connectivity methods as well as to expose different steps to perform a group study of functional connectomes.}
+}
+
 @InProceedings{Varoquaux2011multisubject,
 author="Varoquaux, Gael
 and Gramfort, Alexandre
@@ -110,4 +358,24 @@ address="Berlin, Heidelberg",
 pages="562--573",
 abstract="Fluctuations in brain on-going activity can be used to reveal its intrinsic functional organization. To mine this information, we give a new hierarchical probabilistic model for brain activity patterns that does not require an experimental design to be specified. We estimate this model in the dictionary learning framework, learning simultaneously latent spatial maps and the corresponding brain activity time-series. Unlike previous dictionary learning frameworks, we introduce an explicit difference between subject-level spatial maps and their corresponding population-level maps, forming an atlas. We give a novel algorithm using convex optimization techniques to solve efficiently this problem with non-smooth penalties well-suited to image denoising. We show on simulated data that it can recover population-level maps as well as subject specificities. On resting-state fMRI data, we extract the first atlas of spontaneous brain activity and show how it defines a subject-specific functional parcellation of the brain in localized regions.",
 isbn="978-3-642-22092-0"
+}
+
+@article{Yeo2011organization,
+author = {Thomas Yeo, B. T. and Krienen, Fenna M. and Sepulcre, Jorge and Sabuncu, Mert R. and Lashkari, Danial and Hollinshead, Marisa and Roffman, Joshua L. and Smoller, Jordan W. and Zöllei, Lilla and Polimeni, Jonathan R. and Fischl, Bruce and Liu, Hesheng and Buckner, Randy L.},
+title = {The organization of the human cerebral cortex estimated by intrinsic functional connectivity},
+journal = {Journal of Neurophysiology},
+volume = {106},
+number = {3},
+pages = {1125-1165},
+year = {2011},
+doi = {10.1152/jn.00338.2011},
+    note ={PMID: 21653723},
+URL = { 
+        https://doi.org/10.1152/jn.00338.2011   
+},
+eprint = { 
+        https://doi.org/10.1152/jn.00338.2011  
+}
+,
+abstract = { Information processing in the cerebral cortex involves interactions among distributed areas. Anatomical connectivity suggests that certain areas form local hierarchical relations such as within the visual system. Other connectivity patterns, particularly among association areas, suggest the presence of large-scale circuits without clear hierarchical relations. In this study the organization of networks in the human cerebrum was explored using resting-state functional connectivity MRI. Data from 1,000 subjects were registered using surface-based alignment. A clustering approach was employed to identify and replicate networks of functionally coupled regions across the cerebral cortex. The results revealed local networks confined to sensory and motor cortices as well as distributed networks of association regions. Within the sensory and motor cortices, functional connectivity followed topographic representations across adjacent areas. In association cortex, the connectivity patterns often showed abrupt transitions between network boundaries. Focused analyses were performed to better understand properties of network connectivity. A canonical sensory-motor pathway involving primary visual area, putative middle temporal area complex (MT+), lateral intraparietal area, and frontal eye field was analyzed to explore how interactions might arise within and between networks. Results showed that adjacent regions of the MT+ complex demonstrate differential connectivity consistent with a hierarchical pathway that spans networks. The functional connectivity of parietal and prefrontal association cortices was next explored. Distinct connectivity profiles of neighboring regions suggest they participate in distributed networks that, while showing evidence for interactions, are embedded within largely parallel, interdigitated circuits. We conclude by discussing the organization of these large-scale cerebral networks in relation to monkey anatomy and their potential evolutionary expansion in humans to support cognition. }
 }

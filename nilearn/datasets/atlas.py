@@ -26,7 +26,8 @@ def fetch_atlas_difumo(dimension=64, resolution_mm=2, data_dir=None, resume=True
     Dictionaries of Functional Modes, or “DiFuMo”, can serve as atlases to extract
     functional signals with different dimensionalities (64, 128, 256, 512, and 1024).
     These modes are optimized to represent well raw BOLD timeseries,
-    over a with range of experimental conditions. See :footcite:`DADI2020117126`.
+    over a with range of experimental conditions. 
+    See :footcite:`DADI2020117126`.
 
     Notes
     -----
@@ -196,7 +197,8 @@ def fetch_atlas_craddock_2012(data_dir=None, url=None, resume=True, verbose=1):
 
 def fetch_atlas_destrieux_2009(lateralized=True, data_dir=None, url=None,
                                resume=True, verbose=1):
-    """Download and load the Destrieux cortical atlas (dated 2009) :footcite:`Fischl2004Automatically` :footcite:`Destrieux2009sulcal`.
+    """Download and load the Destrieux cortical atlas (dated 2009) 
+    :footcite:`Fischl2004Automatically` :footcite:`Destrieux2009sulcal`.
 
     Parameters
     ----------
@@ -422,7 +424,7 @@ def fetch_atlas_harvard_oxford(atlas_name, data_dir=None,
 def fetch_atlas_msdl(data_dir=None, url=None, resume=True, verbose=1):
     """Download and load the MSDL brain atlas.
 
-    It can be downloaded at [1]_, and cited using [2]_. See also [3]_
+    It can be downloaded at [1]_, and cited using :footcite:`Varoquaux2011multisubject`. See also :footcite:`VAROQUAUX2013405`
     for more information.
 
     Parameters
@@ -458,15 +460,8 @@ def fetch_atlas_msdl(data_dir=None, url=None, resume=True, verbose=1):
     ----------
     .. [1] https://team.inria.fr/parietal/files/2015/01/MSDL_rois.zip
 
-    .. [2] `Multi-subject dictionary learning to segment an atlas of brain
-       spontaneous activity <http://hal.inria.fr/inria-00588898/en>`_
-       Gael Varoquaux, Alexandre Gramfort, Fabian Pedregosa, Vincent Michel,
-       Bertrand Thirion. Information Processing in Medical Imaging, 2011,
-       pp. 562-573, Lecture Notes in Computer Science.
+    .. footbibliography::
 
-    .. [3] `Learning and comparing functional connectomes across subjects
-       <http://hal.inria.fr/hal-00812911/en>`_.
-       Gael Varoquaux, R.C. Craddock NeuroImage, 2013.
 
     """
     url = 'https://team.inria.fr/parietal/files/2015/01/MSDL_rois.zip'
@@ -494,7 +489,8 @@ def fetch_atlas_msdl(data_dir=None, url=None, resume=True, verbose=1):
 
 
 def fetch_coords_power_2011():
-    """Download and load the Power et al. brain atlas composed of 264 ROIs [1]_.
+    """Download and load the Power et al. brain atlas composed of 264 ROIs 
+    :footcite:`Power2011Functional`.
 
     Returns
     -------
@@ -505,8 +501,7 @@ def fetch_coords_power_2011():
 
     References
     ----------
-    .. [1] Power, Jonathan D., et al. "Functional network organization of the human
-       brain." Neuron 72.4 (2011): 665-678.
+    .. footbibliography::
 
     """
     dataset_name = 'power_2011'
@@ -520,7 +515,8 @@ def fetch_coords_power_2011():
 
 def fetch_atlas_smith_2009(data_dir=None, mirror='origin', url=None,
                            resume=True, verbose=1):
-    """Download and load the Smith ICA and BrainMap atlas (dated 2009) [1]_ [2]_.
+    """Download and load the Smith ICA and BrainMap atlas (dated 2009) 
+    :footcite:`Smith200913040` :footcite:`Laird2011behavioral`.
 
     Parameters
     ----------
@@ -564,14 +560,7 @@ def fetch_atlas_smith_2009(data_dir=None, mirror='origin', url=None,
 
     References
     ----------
-    .. [1] S.M. Smith, P.T. Fox, K.L. Miller, D.C. Glahn, P.M. Fox, C.E. Mackay, N.
-       Filippini, K.E. Watkins, R. Toro, A.R. Laird, and C.F. Beckmann.
-       Correspondence of the brain's functional architecture during activation and
-       rest. Proc Natl Acad Sci USA (PNAS), 106(31):13040-13045, 2009.
-
-    .. [2] A.R. Laird, P.M. Fox, S.B. Eickhoff, J.A. Turner, K.L. Ray, D.R. McKay, D.C
-       Glahn, C.F. Beckmann, S.M. Smith, and P.T. Fox. Behavioral interpretations
-       of intrinsic connectivity networks. Journal of Cognitive Neuroscience, 2011
+    .. footbibliography::
 
     Notes
     -----
@@ -629,7 +618,7 @@ def fetch_atlas_yeo_2011(data_dir=None, url=None, resume=True, verbose=1):
 
     The provided images are in MNI152 space.
 
-    For more information on this dataset's structure, see [1]_ and [2]_.
+    For more information on this dataset's structure, see [1]_ and :footcite:`Yeo2011organization`.
 
     Parameters
     ----------
@@ -665,10 +654,7 @@ def fetch_atlas_yeo_2011(data_dir=None, url=None, resume=True, verbose=1):
     ----------
     .. [1] http://surfer.nmr.mgh.harvard.edu/fswiki/CorticalParcellation_Yeo2011
 
-    .. [2] Yeo BT, Krienen FM, Sepulcre J, Sabuncu MR, Lashkari D, Hollinshead M,
-       Roffman JL, Smoller JW, Zollei L., Polimeni JR, Fischl B, Liu H,
-       Buckner RL. The organization of the human cerebral cortex estimated by
-       intrinsic functional connectivity. J Neurophysiol 106(3):1125-65, 2011.
+    .. footbibliography::
 
     Notes
     -----
@@ -716,7 +702,7 @@ def fetch_atlas_aal(version='SPM12', data_dir=None, url=None, resume=True,
     the Montreal Neurological Institute (MNI) (D. L. Collins et al., 1998,
     Trans. Med. Imag. 17, 463-468, PubMed).
 
-    For more information on this dataset's structure, see [1]_ and [2]_.
+    For more information on this dataset's structure, see [1]_ and :footcite:`TZOURIOMAZOYER2002273`.
 
     Parameters
     ----------
@@ -750,11 +736,7 @@ def fetch_atlas_aal(version='SPM12', data_dir=None, url=None, resume=True,
     ----------
     .. [1] http://www.gin.cnrs.fr/AAL-217?lang=en
 
-    .. [2] Automated Anatomical Labeling of Activations in SPM Using a Macroscopic
-       Anatomical Parcellation of the MNI MRI Single-Subject Brain.
-       N. Tzourio-Mazoyer, B. Landeau, D. Papathanassiou, F. Crivello,
-       O. Etard, N. Delcroix, B. Mazoyer, and M. Joliot.
-       NeuroImage 2002. 15 :273-28
+    .. footbibliography::
 
     Notes
     -----
@@ -811,8 +793,8 @@ def fetch_atlas_basc_multiscale_2015(version='sym', data_dir=None, url=None,
     Multiple scales (number of networks) are available, among
     7, 12, 20, 36, 64, 122, 197, 325, 444. The brain parcellations
     have been generated using a method called bootstrap analysis of
-    stable clusters called as BASC [1]_, and the scales have been
-    selected using a data-driven method called MSTEPS [2]_.
+    stable clusters called as BASC :footcite:`BELLEC20101126`, and the scales have been
+    selected using a data-driven method called MSTEPS :footcite:`Bellec2013Mining`.
 
     Note that two versions of the template are available, 'sym' or 'asym'.
     The 'asym' type contains brain images that have been registered in the
@@ -858,14 +840,7 @@ def fetch_atlas_basc_multiscale_2015(version='sym', data_dir=None, url=None,
 
     References
     ----------
-    .. [1] Bellec P, Rosa-Neto P, Lyttelton OC, Benali H, Evans AC, Jul. 2010.
-       Multi-level bootstrap analysis of stable clusters in resting-state fMRI.
-       NeuroImage 51 (3), 1126-1139.
-       URL http://dx.doi.org/10.1016/j.neuroimage.2010.02.082
-
-    .. [2] Bellec P, Jun. 2013. Mining the Hierarchy of Resting-State Brain Networks:
-       Selection of Representative Clusters in a Multiscale Structure.
-       Pattern Recognition in Neuroimaging (PRNI), 2013 pp. 54-57.
+    .. footbibliography::
 
     Notes
     -----
@@ -911,7 +886,8 @@ def fetch_atlas_basc_multiscale_2015(version='sym', data_dir=None, url=None,
 def fetch_coords_dosenbach_2010(ordered_regions=True):
     """Load the Dosenbach et al. 160 ROIs. These ROIs cover
     much of the cerebral cortex and cerebellum and are assigned to 6
-    networks [1]_.
+    networks 
+    :footcite:`Dosenbach20101358`.
 
     Parameters
     ----------
@@ -931,8 +907,7 @@ def fetch_coords_dosenbach_2010(ordered_regions=True):
 
     References
     ----------
-    .. [1] Dosenbach N.U., Nardos B., et al. "Prediction of individual brain maturity
-       using fMRI.", 2010, Science 329, 1358-1361.
+    .. footbibliography::
 
     """
     dataset_name = 'dosenbach_2010'
@@ -963,7 +938,8 @@ def fetch_coords_seitzman_2018(ordered_regions=True):
     FrontoParietal, MedialTemporalLobe, ParietoMedial, Reward, Salience,
     SomatomotorDorsal, SomatomotorLateral, VentralAttention, Visual) and
     have a regional label (cortexL, cortexR, cerebellum, thalamus, hippocampus,
-    basalGanglia, amygdala, cortexMid). See [1]_.
+    basalGanglia, amygdala, cortexMid). 
+    See :footcite:`SEITZMAN2020116290`.
 
     .. versionadded:: 0.5.1
 
@@ -985,10 +961,7 @@ def fetch_coords_seitzman_2018(ordered_regions=True):
 
     References
     ----------
-    .. [1] Seitzman, B. A., Gratton, C., Marek, S., Raut, R. V., Dosenbach, N. U.,
-       Schlaggar, B. L., et al. (2018). A set of functionally-defined brain
-       regions with improved representation of the subcortex and cerebellum.
-       bioRxiv, 450452. http://doi.org/10.1101/450452
+    .. footbibliography::
 
     """
     dataset_name = 'seitzman_2018'
@@ -1033,7 +1006,8 @@ def fetch_coords_seitzman_2018(ordered_regions=True):
 
 def fetch_atlas_allen_2011(data_dir=None, url=None, resume=True, verbose=1):
     """Download and return file names for the Allen and MIALAB ICA atlas
-    (dated 2011). See [1]_.
+    (dated 2011). 
+    See :footcite:`Allen2011baseline`.
 
     The provided images are in MNI152 space.
 
@@ -1067,8 +1041,7 @@ def fetch_atlas_allen_2011(data_dir=None, url=None, resume=True, verbose=1):
 
     References
     ----------
-    .. [1] E. Allen, et al, "A baseline for the multivariate comparison of resting
-       state networks," Frontiers in Systems Neuroscience, vol. 5, p. 12, 2011.
+    .. footbibliography::
 
     Notes
     -----
@@ -1120,7 +1093,8 @@ def fetch_atlas_allen_2011(data_dir=None, url=None, resume=True, verbose=1):
 
 def fetch_atlas_surf_destrieux(data_dir=None, url=None,
                                resume=True, verbose=1):
-    """Download and load Destrieux et al, 2010 cortical atlas [1]_.
+    """Download and load Destrieux et al, 2010 cortical atlas 
+    :footcite:`DESTRIEUX20101`.
 
     This atlas returns 76 labels per hemisphere based on sulco-gryal pattnerns
     as distributed with Freesurfer in fsaverage5 surface space.
@@ -1165,8 +1139,7 @@ def fetch_atlas_surf_destrieux(data_dir=None, url=None,
 
     References
     ----------
-    .. [1] Destrieux et al. (2010), Automatic parcellation of human cortical gyri and
-       sulci using standard anatomical nomenclature. NeuroImage 53, 1-15.
+    .. footbibliography::
 
     """
     if url is None:
@@ -1294,7 +1267,7 @@ def _get_talairach_all_levels(data_dir=None, verbose=1):
 def fetch_atlas_talairach(level_name, data_dir=None, verbose=1):
     """Download the Talairach atlas.
 
-    For more information, see [1]_, [2]_, and [3]_.
+    For more information, see [1]_, :footcite:`Lancaster2000Talairach`, and :footcite:`Lancaster1997labeling`.
 
     .. versionadded:: 0.4.0
 
@@ -1323,15 +1296,7 @@ def fetch_atlas_talairach(level_name, data_dir=None, verbose=1):
     References
     ----------
     .. [1] http://talairach.org/about.html#Labels
-
-    .. [2] `Lancaster JL, Woldorff MG, Parsons LM, Liotti M, Freitas CS, Rainey L,
-       Kochunov PV, Nickerson D, Mikiten SA, Fox PT, "Automated Talairach Atlas
-       labels for functional brain mapping". Human Brain Mapping 10:120-131, 2000.`
-
-    .. [3] `Lancaster JL, Rainey LH, Summerlin JL, Freitas CS, Fox PT, Evans AC, Toga
-       AW, Mazziotta JC. Automated labeling of the human brain: A preliminary
-       report on the development and evaluation of a forward-transform method. Hum
-       Brain Mapp 5, 238-242, 1997.`
+    .. footbibliography::
 
     """
     if level_name not in _TALAIRACH_LEVELS:
@@ -1351,7 +1316,8 @@ def fetch_atlas_talairach(level_name, data_dir=None, verbose=1):
 
 def fetch_atlas_pauli_2017(version='prob', data_dir=None, verbose=1):
     """Download the Pauli et al. (2017) atlas with in total
-    12 subcortical nodes [1]_ [2]_.
+    12 subcortical nodes [1]_ 
+    :footcite:`Pauli2018probabilistic`.
 
     Parameters
     ----------
@@ -1380,9 +1346,7 @@ def fetch_atlas_pauli_2017(version='prob', data_dir=None, verbose=1):
     ----------
     .. [1] https://osf.io/r2hvk/
 
-    .. [2] `Pauli, W. M., Nili, A. N., & Tyszka, J. M. (2018). A high-resolution
-       probabilistic in vivo atlas of human subcortical brain nuclei.
-       Scientific Data, 5, 180063-13. http://doi.org/10.1038/sdata.2018.63``
+    .. footbibliography::
 
     """
     if version == 'prob':
@@ -1428,7 +1392,7 @@ def fetch_atlas_schaefer_2018(n_rois=400, yeo_networks=7, resolution_mm=1,
 
     The provided images are in MNI152 space.
 
-    For more information on this dataset, see [1]_ [2]_ and [3]_.
+    For more information on this dataset, see [1]_ :footcite:`Schaefer2017parcellation` and :footcite:`Yeo2011organization`.
 
     Parameters
     ----------
@@ -1471,15 +1435,8 @@ def fetch_atlas_schaefer_2018(n_rois=400, yeo_networks=7, resolution_mm=1,
     ----------
     .. [1] https://github.com/ThomasYeoLab/CBIG/tree/v0.14.3-Update_Yeo2011_Schaefer2018_labelname/stable_projects/brain_parcellation/Schaefer2018_LocalGlobal/Parcellations
 
-    .. [2] Schaefer A, Kong R, Gordon EM, Laumann TO, Zuo XN, Holmes AJ,
-       Eickhoff SB, Yeo BTT. Local-Global parcellation of the human
-       cerebral cortex from intrinsic functional connectivity MRI,
-       Cerebral Cortex, 29:3095-3114, 2018.
+    .. footbibliography::
 
-    .. [3] Yeo BT, Krienen FM, Sepulcre J, Sabuncu MR, Lashkari D, Hollinshead M,
-       Roffman JL, Smoller JW, Zollei L., Polimeni JR, Fischl B, Liu H,
-       Buckner RL. The organization of the human cerebral cortex estimated by
-       intrinsic functional connectivity. J Neurophysiol 106(3):1125-65, 2011.
 
     Notes
     -----
