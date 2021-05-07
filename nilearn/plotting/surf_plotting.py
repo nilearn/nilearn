@@ -83,7 +83,7 @@ def plot_surf(surf_mesh, surf_map=None, bg_map=None,
         .. code-block:: python
 
             def custom_function(vertices):
-                return vertices[0] * vertices[1] * vertices[2].
+                return vertices[0] * vertices[1] * vertices[2]
 
         Default='mean'.
 
