@@ -6,6 +6,7 @@ import os
 from pathlib import Path
 
 import numpy as np
+import pandas as pd
 from scipy import ndimage
 from sklearn.utils import Bunch
 
@@ -429,14 +430,14 @@ def fetch_oasis_vbm(n_subjects=None, dartel_version=True, data_dir=None,
     data_usage_agreement = files[-1]
 
     # Keep CSV information only for selected subjects
-    csv_data = np.recfromcsv(ext_vars_file)
+    csv_data = pd.read_csv(ext_vars_file)
     # Comparisons to recfromcsv data must be bytes.
     actual_subjects_ids = [("OAS1" +
                             str.split(os.path.basename(x),
                                       "OAS1")[1][:9]).encode()
                            for x in gm_maps]
     subject_mask = np.asarray([subject_id in actual_subjects_ids
-                               for subject_id in csv_data['id']])
+                               for subject_id in csv_data['ID']])
     csv_data = csv_data[subject_mask]
 
     fdescr = _get_dataset_descr(dataset_name)

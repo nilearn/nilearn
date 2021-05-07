@@ -980,20 +980,17 @@ def fetch_localizer_contrasts(contrasts, n_subjects=None, get_tmaps=False,
     # Load covariates file
     from numpy.lib.recfunctions import join_by
     participants_file = os.path.join(data_dir, participants_file)
-    csv_data = np.recfromcsv(participants_file, delimiter='\t')
+    csv_data = pd.read_csv(participants_file, delimiter='\t')
     behavioural_file = os.path.join(data_dir, behavioural_file)
-    csv_data2 = np.recfromcsv(behavioural_file, delimiter='\t')
-    csv_data = join_by(
-        "participant_id", csv_data, csv_data2, usemask=False, asrecarray=True)
+    csv_data2 = pd.read_csv(behavioural_file, delimiter='\t')
+    csv_data = csv_data.merge(csv_data2)
     subject_names = csv_data["participant_id"].tolist()
     subjects_indices = []
     for name in subject_ids:
-        name = name.encode("utf8")
         if name not in subject_names:
             continue
         subjects_indices.append(subject_names.index(name))
-    csv_data = csv_data[subjects_indices]
-
+    csv_data = csv_data.iloc[subjects_indices]
     return Bunch(ext_vars=csv_data, description=fdescr, **files)
 
 
@@ -1238,10 +1235,10 @@ def fetch_abide_pcp(data_dir=None, n_subjects=None, pipeline='cpac',
     # bytes (encode()) needed for python 2/3 compat with numpy
     pheno = '\n'.join(pheno).encode()
     pheno = BytesIO(pheno)
-    pheno = np.recfromcsv(pheno, comments='$', case_sensitive=True)
+    pheno = pd.read_csv(pheno, comment='$')
 
     # First, filter subjects with no filename
-    pheno = pheno[pheno['FILE_ID'] != b'no_filename']
+    pheno = pheno[pheno['FILE_ID'] != 'no_filename']
     # Apply user defined filters
     user_filter = _filter_columns(pheno, kwargs)
     pheno = pheno[user_filter]
@@ -1252,7 +1249,7 @@ def fetch_abide_pcp(data_dir=None, n_subjects=None, pipeline='cpac',
 
     # Get the files
     results = {}
-    file_ids = [file_id.decode() for file_id in pheno['FILE_ID']]
+    file_ids = pheno['FILE_ID'].tolist()
     if n_subjects is not None:
         file_ids = file_ids[:n_subjects]
         pheno = pheno[:n_subjects]
@@ -1634,9 +1631,8 @@ def fetch_cobre(n_subjects=10, data_dir=None, url=None, verbose=1):
     names = ['ID', 'Current Age', 'Gender', 'Handedness', 'Subject Type',
              'Diagnosis', 'Frames OK', 'FD', 'FD Scrubbed']
 
-    csv_array_phen = np.recfromcsv(csv_file_phen, names=names,
-                                   skip_header=True, delimiter='\t')
-
+    csv_array_phen = pd.read_csv(csv_file_phen, names=names, header=0,
+                                   delimiter='\t')
     # Check number of subjects
     max_subjects = len(csv_array_phen)
     if n_subjects is None:
@@ -1646,19 +1642,19 @@ def fetch_cobre(n_subjects=10, data_dir=None, url=None, verbose=1):
         warnings.warn('Warning: there are only %d subjects' % max_subjects)
         n_subjects = max_subjects
 
-    sz_count = list(csv_array_phen['subject_type']).count(b'Patient')
-    ct_count = list(csv_array_phen['subject_type']).count(b'Control')
+    sz_count = list(csv_array_phen['Subject Type']).count('Patient')
+    ct_count = list(csv_array_phen['Subject Type']).count('Control')
 
     n_sz = np.round(float(n_subjects) / max_subjects * sz_count).astype(int)
     n_ct = np.round(float(n_subjects) / max_subjects * ct_count).astype(int)
 
     # First, restrict the csv files to the adequate number of subjects
-    sz_ids = csv_array_phen[csv_array_phen['subject_type'] ==
-                            b'Patient']['id'][:n_sz]
-    ct_ids = csv_array_phen[csv_array_phen['subject_type'] ==
-                            b'Control']['id'][:n_ct]
+    sz_ids = csv_array_phen[csv_array_phen['Subject Type'] ==
+                            'Patient']['ID'][:n_sz]
+    ct_ids = csv_array_phen[csv_array_phen['Subject Type'] ==
+                            'Control']['ID'][:n_ct]
     ids = np.hstack([sz_ids, ct_ids])
-    csv_array_phen = csv_array_phen[np.in1d(csv_array_phen['id'], ids)]
+    csv_array_phen = csv_array_phen[np.in1d(csv_array_phen['ID'], ids)]
 
     # Call fetch_files once per subject.
 
@@ -2170,7 +2166,7 @@ def _reduce_confounds(regressors, keep_confounds):
         out_file = in_file.replace('desc-confounds',
                                    'desc-reducedConfounds')
         if not os.path.isfile(out_file):
-            confounds = np.recfromcsv(in_file, delimiter='\t')
+            confounds = pd.read_csv(in_file, delimiter='\t').to_records()
             selected_confounds = confounds[keep_confounds]
             header = '\t'.join(selected_confounds.dtype.names)
             np.savetxt(out_file, np.array(selected_confounds.tolist()),

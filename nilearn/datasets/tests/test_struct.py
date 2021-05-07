@@ -119,7 +119,7 @@ def test_fetch_oasis_vbm(tmp_path, request_mocker):
     assert len(dataset.white_matter_maps) == 403
     assert isinstance(dataset.gray_matter_maps[0], str)
     assert isinstance(dataset.white_matter_maps[0], str)
-    assert isinstance(dataset.ext_vars, np.recarray)
+    assert isinstance(dataset.ext_vars, pd.DataFrame)
     assert isinstance(dataset.data_usage_agreement, str)
     assert request_mocker.url_count == 1
 
@@ -129,7 +129,7 @@ def test_fetch_oasis_vbm(tmp_path, request_mocker):
     assert len(dataset.white_matter_maps) == 415
     assert isinstance(dataset.gray_matter_maps[0], str)
     assert isinstance(dataset.white_matter_maps[0], str)
-    assert isinstance(dataset.ext_vars, np.recarray)
+    assert isinstance(dataset.ext_vars, pd.DataFrame)
     assert isinstance(dataset.data_usage_agreement, str)
     assert request_mocker.url_count == 2
     assert dataset.description != ''

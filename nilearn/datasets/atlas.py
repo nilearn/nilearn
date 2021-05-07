@@ -10,6 +10,7 @@ import shutil
 
 import nibabel as nb
 import numpy as np
+import pandas as pd
 from numpy.lib import recfunctions
 from sklearn.utils import Bunch
 
@@ -109,7 +110,7 @@ def fetch_atlas_difumo(dimension=64, resolution_mm=2, data_dir=None, resume=True
 
     # Download the zip file, first
     files_ = _fetch_files(data_dir, files, verbose=verbose)
-    labels = np.recfromcsv(files_[0])
+    labels = pd.read_csv(files_[0]).to_records()
 
     # README
     readme_files = [('README.md', 'https://osf.io/4k9bf/download',
@@ -257,7 +258,7 @@ def fetch_atlas_destrieux_2009(lateralized=True, data_dir=None, url=None,
     files_ = _fetch_files(data_dir, files, resume=resume,
                           verbose=verbose)
 
-    params = dict(maps=files_[1], labels=np.recfromcsv(files_[0]))
+    params = dict(maps=files_[1], labels=pd.read_csv(files_[0]))
 
     with open(files_[2], 'r') as rst_file:
         params['description'] = rst_file.read()
@@ -486,13 +487,13 @@ def fetch_atlas_msdl(data_dir=None, url=None, resume=True, verbose=1):
     data_dir = _get_dataset_dir(dataset_name, data_dir=data_dir,
                                 verbose=verbose)
     files = _fetch_files(data_dir, files, resume=resume, verbose=verbose)
-    csv_data = np.recfromcsv(files[0])
+    csv_data = pd.read_csv(files[0])
     labels = [name.strip() for name in csv_data['name'].tolist()]
-    labels = [label.decode("utf-8") for label in labels]
+
     with warnings.catch_warnings():
         warnings.filterwarnings('ignore', module='numpy',
                                 category=FutureWarning)
-        region_coords = csv_data[['x', 'y', 'z']].tolist()
+        region_coords = csv_data[['x', 'y', 'z']].values.tolist()
     net_names = [net_name.strip() for net_name in csv_data['net_name'].tolist()]
     fdescr = _get_dataset_descr(dataset_name)
 
@@ -520,7 +521,7 @@ def fetch_coords_power_2011():
     fdescr = _get_dataset_descr(dataset_name)
     package_directory = os.path.dirname(os.path.abspath(__file__))
     csv = os.path.join(package_directory, "data", "power_2011.csv")
-    params = dict(rois=np.recfromcsv(csv), description=fdescr)
+    params = dict(rois=pd.read_csv(csv).to_records(), description=fdescr)
 
     return Bunch(**params)
 
@@ -946,10 +947,10 @@ def fetch_coords_dosenbach_2010(ordered_regions=True):
     fdescr = _get_dataset_descr(dataset_name)
     package_directory = os.path.dirname(os.path.abspath(__file__))
     csv = os.path.join(package_directory, "data", "dosenbach_2010.csv")
-    out_csv = np.recfromcsv(csv)
+    out_csv = pd.read_csv(csv)
 
     if ordered_regions:
-        out_csv = np.sort(out_csv, order=['network', 'name', 'y'])
+        out_csv = out_csv.sort_values(by=['network', 'name', 'y'])
 
     # We add the ROI number to its name, since names are not unique
     names = out_csv['name']
@@ -1006,10 +1007,8 @@ def fetch_coords_seitzman_2018(ordered_regions=True):
     anatomical_file = os.path.join(package_directory, "data",
                                    "seitzman_2018_ROIs_anatomicalLabels.txt")
 
-    rois = np.recfromcsv(roi_file, delimiter=" ")
-    rois = recfunctions.rename_fields(rois, {"netname": "network",
-                                             "radiusmm": "radius"})
-    rois.network = rois.network.astype(str)
+    rois = pd.read_csv(roi_file, delimiter=" ")
+    rois = rois.rename(columns={"netName": "network", "radius(mm)": "radius"})
 
     # get integer regional labels and convert to text labels with mapping
     # from header line
@@ -1023,16 +1022,15 @@ def fetch_coords_seitzman_2018(ordered_regions=True):
     anatomical = np.genfromtxt(anatomical_file, skip_header=1)
     anatomical_names = np.array([region_mapping[a] for a in anatomical])
 
-    rois = recfunctions.merge_arrays((rois, anatomical_names),
-                                     asrecarray=True, flatten=True)
-    rois.dtype.names = rois.dtype.names[:-1] + ("region",)
+    rois = pd.concat([rois, pd.DataFrame(anatomical_names)], axis=1)
+    rois.columns = list(rois.columns[:-1]) + ["region"]
 
     if ordered_regions:
-        rois = np.sort(rois, order=['network', 'y'])
+        rois = rois.sort_values(by=['network', 'y'])
 
     params = dict(rois=rois[['x', 'y', 'z']],
                   radius=rois['radius'],
-                  networks=rois['network'].astype(str),
+                  networks=rois['network'],
                   regions=rois['region'], description=fdescr)
 
     return Bunch(**params)

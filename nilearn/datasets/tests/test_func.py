@@ -206,9 +206,9 @@ def test_fetch_localizer_contrasts(tmp_path, request_mocker, localizer_mocker):
     assert not hasattr(dataset, 'tmaps')
     assert not hasattr(dataset, 'masks')
     assert isinstance(dataset.cmaps[0], str)
-    assert isinstance(dataset.ext_vars, np.recarray)
+    assert isinstance(dataset.ext_vars, pd.DataFrame)
     assert len(dataset.cmaps) == 2
-    assert dataset.ext_vars.size == 2
+    assert len(dataset['ext_vars']) == 2
 
     # Multiple contrasts
     dataset = func.fetch_localizer_contrasts(
@@ -216,10 +216,10 @@ def test_fetch_localizer_contrasts(tmp_path, request_mocker, localizer_mocker):
         n_subjects=2,
         data_dir=str(tmp_path),
         verbose=1)
-    assert isinstance(dataset.ext_vars, np.recarray)
+    assert isinstance(dataset.ext_vars, pd.DataFrame)
     assert isinstance(dataset.cmaps[0], str)
     assert len(dataset.cmaps) == 2 * 2  # two contrasts are fetched
-    assert dataset.ext_vars.size == 2
+    assert len(dataset['ext_vars']) == 2
 
     # all get_*=True
     dataset = func.fetch_localizer_contrasts(
@@ -230,12 +230,12 @@ def test_fetch_localizer_contrasts(tmp_path, request_mocker, localizer_mocker):
         get_masks=True,
         get_tmaps=True,
         verbose=1)
-    assert isinstance(dataset.ext_vars, np.recarray)
+    assert isinstance(dataset.ext_vars, pd.DataFrame)
     assert isinstance(dataset.anats[0], str)
     assert isinstance(dataset.cmaps[0], str)
     assert isinstance(dataset.masks[0], str)
     assert isinstance(dataset.tmaps[0], str)
-    assert dataset.ext_vars.size == 1
+    assert len(dataset['ext_vars']) == 1
     assert len(dataset.anats) == 1
     assert len(dataset.cmaps) == 1
     assert len(dataset.masks) == 1
@@ -248,10 +248,10 @@ def test_fetch_localizer_contrasts(tmp_path, request_mocker, localizer_mocker):
         n_subjects=[2, 3, 5],
         data_dir=str(tmp_path),
         verbose=1)
-    assert dataset2.ext_vars.size == 3
+    assert len(dataset2['ext_vars']) == 3
     assert len(dataset2.cmaps) == 3
-    assert ([row[0] for row in dataset2.ext_vars] ==
-                 [b'S02', b'S03', b'S05'])
+    assert (list(dataset2['ext_vars']['participant_id'].values) ==
+                 ['S02', 'S03', 'S05'])
 
 
 def test_fetch_localizer_calculation_task(tmp_path, request_mocker,
@@ -261,9 +261,9 @@ def test_fetch_localizer_calculation_task(tmp_path, request_mocker,
         n_subjects=2,
         data_dir=str(tmp_path),
         verbose=1)
-    assert isinstance(dataset.ext_vars, np.recarray)
+    assert isinstance(dataset.ext_vars, pd.DataFrame)
     assert isinstance(dataset.cmaps[0], str)
-    assert dataset.ext_vars.size == 2
+    assert len(dataset['ext_vars']) == 2
     assert len(dataset.cmaps) == 2
     assert dataset.description != ''
 
@@ -494,7 +494,7 @@ def test_fetch_cobre(tmp_path, request_mocker):
     assert isinstance(cobre_data.confounds, list)
     assert isinstance(cobre_data.func[0], str)
     # returned phenotypic data will be an array
-    assert isinstance(cobre_data.phenotypic, np.recarray)
+    assert isinstance(cobre_data.phenotypic, pd.DataFrame)
 
     # Fetch only 30 subjects
     data_30_subjects = func.fetch_cobre(n_subjects=30,
