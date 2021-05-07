@@ -12,7 +12,7 @@ Fixes
   in the same order as for the signals, i.e., first detrending and
   then temporal filtering (https://github.com/nilearn/nilearn/issues/2730).
 - Fix number of attributes returned by the
-  :func:`nilearn.glm.first_level.FirstLevelModel._get_voxelwise_model_attribute` method in the first level model.
+  `nilearn.glm.first_level.FirstLevelModel._get_voxelwise_model_attribute` method in the first level model.
   It used to return only the first attribute, and now returns as many attributes as design matrices.
 
 
@@ -22,9 +22,12 @@ Enhancements
 - :func:`nilearn.masking.compute_brain_mask` accepts now as input not only the
   averaged, whole-brain MNI152 T1 template (`avg152T1_brain.nii.gz`) but also
   the grey-matter and white-matter ICBM152 templates dated from 2009.
-
-- :func:`nilearn.plotting.view_markers` now accept an optional argument
-  `marker_labels` to provide labels to each marker.
+- :func:`nilearn.plotting.view_markers` now accept an optional argument `marker_labels` to provide labels to each marker.
+- :func:`nilearn.plotting.view_img_on_surf` can now optionally pass through
+  parameters to :func:`nilearn.surface.vol_to_surf` using the
+  `vol_to_surf_kwargs` argument. One application is better HTML visualization of
+  atlases.
+  (https://nilearn.github.io/auto_examples/01_plotting/plot_3d_map_to_surface_projection.html)
 
 .. _v0.7.1:
 
