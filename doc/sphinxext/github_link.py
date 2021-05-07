@@ -38,6 +38,8 @@ def _linkcode_resolve(domain, info, package, url_fmt, revision):
         return
     if not info.get('module') or not info.get('fullname'):
         return
+    if info.get('module') is not 'nilearn':
+        return
 
     class_name = info['fullname'].split('.')[0]
     module = __import__(info['module'], fromlist=[class_name])
