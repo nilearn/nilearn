@@ -23,10 +23,8 @@ abstract={The hierarchical organization of brain networks can be captured by clu
 keywords={},
 doi={10.1109/PRNI.2013.23},
 ISSN={},
-month={June},
+month={06},
 }
-
-
 
 @article{BELLEC20101126,
 title = {Multi-level bootstrap analysis of stable clusters in resting-state fMRI},
@@ -42,7 +40,6 @@ author = {Pierre Bellec and Pedro Rosa-Neto and Oliver C. Lyttelton and Habib Be
 keywords = {Bootstrap, Clustering, Functional MRI, Hierarchical clustering, -Means, Multi-level analysis, Resting-state networks, Stability analysis},
 abstract = {A variety of methods have been developed to identify brain networks with spontaneous, coherent activity in resting-state functional magnetic resonance imaging (fMRI). We propose here a generic statistical framework to quantify the stability of such resting-state networks (RSNs), which was implemented with k-means clustering. The core of the method consists in bootstrapping the available datasets to replicate the clustering process a large number of times and quantify the stable features across all replications. This bootstrap analysis of stable clusters (BASC) has several benefits: (1) it can be implemented in a multi-level fashion to investigate stable RSNs at the level of individual subjects and at the level of a group; (2) it provides a principled measure of RSN stability; and (3) the maximization of the stability measure can be used as a natural criterion to select the number of RSNs. A simulation study validated the good performance of the multi-level BASC on purely synthetic data. Stable networks were also derived from a real resting-state study for 43 subjects. At the group level, seven RSNs were identified which exhibited a good agreement with the previous findings from the literature. The comparison between the individual and group-level stability maps demonstrated the capacity of BASC to establish successful correspondences between these two levels of analysis and at the same time retain some interesting subject-specific characteristics, e.g. the specific involvement of subcortical regions in the visual and fronto-parietal networks for some subjects.}
 }
-
 
 @article{craddock2012whole,
 author = {Craddock, R. Cameron and James, G.Andrew and Holtzheimer III, Paul E. and Hu, Xiaoping P. and Mayberg, Helen S.},
@@ -75,7 +72,6 @@ eprint = {https://science.sciencemag.org/content/329/5997/1358.full.pdf},
 journal = {Science}
 }
 
-
 @article{DADI2020117126,
 title = {Fine-grain atlases of functional modes for fMRI analysis},
 journal = {NeuroImage},
@@ -90,6 +86,64 @@ keywords = {Brain imaging atlases, Functional networks, Functional parcellations
 abstract = {Population imaging markedly increased the size of functional-imaging datasets, shedding new light on the neural basis of inter-individual differences. Analyzing these large data entails new scalability challenges, computational and statistical. For this reason, brain images are typically summarized in a few signals, for instance reducing voxel-level measures with brain atlases or functional modes. A good choice of the corresponding brain networks is important, as most data analyses start from these reduced signals. We contribute finely-resolved atlases of functional modes, comprising from 64 to 1024 networks. These dictionaries of functional modes (DiFuMo) are trained on millions of fMRI functional brain volumes of total size 2.4 ​TB, spanned over 27 studies and many research groups. We demonstrate the benefits of extracting reduced signals on our fine-grain atlases for many classic functional data analysis pipelines: stimuli decoding from 12,334 brain responses, standard GLM analysis of fMRI across sessions and individuals, extraction of resting-state functional-connectomes biomarkers for 2500 individuals, data compression and meta-analysis over more than 15,000 statistical maps. In each of these analysis scenarii, we compare the performance of our functional atlases with that of other popular references, and to a simple voxel-level analysis. Results highlight the importance of using high-dimensional “soft” functional atlases, to represent and analyze brain activity while capturing its functional gradients. Analyses on high-dimensional modes achieve similar statistical performance as at the voxel level, but with much reduced computational cost and higher interpretability. In addition to making them available, we provide meaningful names for these modes, based on their anatomical location. It will facilitate reporting of results.}
 }
 
+@article{Duchi2012,
+title = {Projected subgradient methods for learning sparse gaussians},
+author = {Duchi, John and Gould, Stephen and Koller, Daphne},
+year = {2012},
+month = {06},
+abstract = {Gaussian Markov random fields (GMRFs) are useful in a broad range of applications. In this paper we tackle the problem of learning a sparse GMRF in a high-dimensional space. Our approach uses the l1-norm as a regularization on the inverse covariance matrix. We utilize a novel projected gradient method, which is faster than previous methods in practice and equal to the best performing of these in asymptotic complexity. We also extend the l1-regularized objective to the problem of sparsifying entire blocks within the inverse covariance matrix. Our methods generalize fairly easily to this case, while other methods do not. We demonstrate that our extensions give better generalization performance on two real domains--biological network analysis and a 2D-shape modeling image task.},
+url = {https://arxiv.org/abs/1206.3249},
+archiveprefix = {arXiv},
+eprint = {1206.3249},
+eprinttype = {arxiv},
+journal = {arXiv:1206.3249 [cs, stat]},
+primaryclass = {cs, stat}
+}
+
+@article{Fletcher2007,
+title = {Riemannian geometry for the statistical analysis of diffusion tensor data},
+journal = {Signal Processing},
+volume = {87},
+number = {2},
+pages = {250-262},
+year = {2007},
+note = {Tensor Signal Processing},
+issn = {0165-1684},
+doi = {https://doi.org/10.1016/j.sigpro.2005.12.018},
+url = {https://www.sciencedirect.com/science/article/pii/S0165168406001691},
+author = {P. Thomas Fletcher and Sarang Joshi},
+keywords = {Diffusion tensor MRI, Statistics, Riemannian manifolds},
+abstract = {The tensors produced by diffusion tensor magnetic resonance imaging (DT-MRI) represent the covariance in a Brownian motion model of water diffusion. Under this physical interpretation, diffusion tensors are required to be symmetric, positive-definite. However, current approaches to statistical analysis of diffusion tensor data, which treat the tensors as linear entities, do not take this positive-definite constraint into account. This difficulty is due to the fact that the space of diffusion tensors does not form a vector space. In this paper we show that the space of diffusion tensors is a type of curved manifold known as a Riemannian symmetric space. We then develop methods for producing statistics, namely averages and modes of variation, in this space. We show that these statistics preserve natural geometric properties of the tensors, including the constraint that their eigenvalues be positive. The symmetric space formulation also leads to a natural definition for interpolation of diffusion tensors and a new measure of anisotropy. We expect that these methods will be useful in the registration of diffusion tensor images, the production of statistical atlases from diffusion tensor data, and the quantification of the anatomical variability caused by disease. The framework presented in this paper should also be useful in other applications where symmetric, positive-definite tensors arise, such as mechanics and computer vision.}
+}
+
+@article{friston1994statistical,
+author = {Friston, K. J. and Holmes, A. P. and Worsley, K. J. and Poline, J.-P. and Frith, C. D. and Frackowiak, R. S. J.},
+title = {Statistical parametric maps in functional imaging: A general linear approach},
+journal = {Human Brain Mapping},
+volume = {2},
+number = {4},
+pages = {189-210},
+keywords = {statistical parametric maps, analysis of variance, general linear model, statistics, functional imaging, Gaussian fields, functional anatomy},
+doi = {https://doi.org/10.1002/hbm.460020402},
+url = {https://onlinelibrary.wiley.com/doi/abs/10.1002/hbm.460020402},
+eprint = {https://onlinelibrary.wiley.com/doi/pdf/10.1002/hbm.460020402},
+abstract = {Abstract Statistical parametric maps are spatially extended statistical processes that are used to test hypotheses about regionally specific effects in neuroimaging data. The most established sorts of statistical parametric maps (e.g., Friston et al. [1991]: J Cereb Blood Flow Metab 11:690–699; Worsley et al. [1992]: J Cereb Blood Flow Metab 12:900–918) are based on linear models, for example ANCOVA, correlation coefficients and t tests. In the sense that these examples are all special cases of the general linear model it should be possible to implement them (and many others) within a unified framework. We present here a general approach that accomodates most forms of experimental layout and ensuing analysis (designed experiments with fixed effects for factors, covariates and interaction of factors). This approach brings together two well established bodies of theory (the general linear model and the theory of Gaussian fields) to provide a complete and simple framework for the analysis of imaging data. The importance of this framework is twofold: (i) Conceptual and mathematical simplicity, in that the same small number of operational equations is used irrespective of the complexity of the experiment or nature of the statistical model and (ii) the generality of the framework provides for great latitude in experimental design and analysis. © 1995 Wiley-Liss, Inc.},
+year = {1994}
+}
+
+@article{Honorio2015,
+title = {On the statistical efficiency of l1,p multi-task learning of Gaussian graphical models},
+author = {Honorio, Jean and Jaakkola, Tommi and Samaras, Dimitris},
+year = {2015},
+month = {10},
+abstract = {In this paper, we present l1,p multi-task structure learning for Gaussian graphical models. We analyze the sufficient number of samples for the correct recovery of the support union and edge signs. We also analyze the necessary number of samples for any conceivable method by providing information-theoretic lower bounds. We compare the statistical efficiency of multi-task learning versus that of single-task learning. For experiments, we use a block coordinate descent method that is provably convergent and generates a sequence of positive definite solutions. We provide experimental validation on synthetic data as well as on two publicly available real-world data sets, including functional magnetic resonance imaging and gene expression data.},
+url = {https://arxiv.org/abs/1207.4255},
+archiveprefix = {arXiv},
+eprint = {1207.4255},
+eprinttype = {arxiv},
+journal = {arXiv:1207.4255 [cs, stat]},
+primaryclass = {cs, stat}
+}
 
 @article{Destrieux2009sulcal,
 author = {Destrieux, C and Fischl, B and Dale, AM and Halgren, E},
@@ -100,7 +154,7 @@ number = {Supplement 1},
 pages = {S151},
 title = {A sulcal depth-based anatomical parcellation of the cerebral cortex.},
 volume = {47},
-year = {2009},
+year = {2009}
 }
 
 @article{DESTRIEUX20101,
@@ -133,7 +187,6 @@ doi = {10.1093/cercor/bhg087},
 url = {https://doi.org/10.1093/cercor/bhg087},
 eprint = {https://academic.oup.com/cercor/article-pdf/14/1/11/1193353/bhg087.pdf},
 }
-
 
 @article{Hoyos2019,
 author = {Hoyos-Idrobo, Andres and Varoquaux, Gael and Kahn, Jonas and Thirion, Bertrand},
@@ -199,7 +252,6 @@ abstract = {Abstract A forward-transform method for retrieving brain labels from
 year = {1997}
 }
 
-
 @article{Lancaster2000Talairach,
 author = {Lancaster, Jack L. and Woldorff, Marty G. and Parsons, Lawrence M. and Liotti, Mario and Freitas, Catarina S. and Rainey, Lacy and Kochunov, Peter V. and Nickerson, Dan and Mikiten, Shawn A. and Fox, Peter T.},
 title = {Automated Talairach Atlas labels for functional brain mapping},
@@ -213,6 +265,18 @@ url = {https://onlinelibrary.wiley.com/doi/abs/10.1002/1097-0193%28200007%2910%3
 eprint = {https://onlinelibrary.wiley.com/doi/pdf/10.1002/1097-0193%28200007%2910%3A3%3C120%3A%3AAID-HBM30%3E3.0.CO%3B2-8},
 abstract = {Abstract An automated coordinate-based system to retrieve brain labels from the 1988 Talairach Atlas, called the Talairach Daemon (TD), was previously introduced [Lancaster et al., 1997]. In the present study, the TD system and its 3-D database of labels for the 1988 Talairach atlas were tested for labeling of functional activation foci. TD system labels were compared with author-designated labels of activation coordinates from over 250 published functional brain-mapping studies and with manual atlas-derived labels from an expert group using a subset of these activation coordinates. Automated labeling by the TD system compared well with authors' labels, with a 70\% or greater label match averaged over all locations. Author-label matching improved to greater than 90\% within a search range of ±5 mm for most sites. An adaptive grey matter (GM) range-search utility was evaluated using individual activations from the M1 mouth region (30 subjects, 52 sites). It provided an 87\% label match to Brodmann area labels (BA 4 \& BA 6) within a search range of ±5 mm. Using the adaptive GM range search, the TD system's overall match with authors' labels (90\%) was better than that of the expert group (80\%). When used in concert with authors' deeper knowledge of an experiment, the TD system provides consistent and comprehensive labels for brain activation foci. Additional suggested applications of the TD system include interactive labeling, anatomical grouping of activation foci, lesion-deficit analysis, and neuroanatomy education. Hum. Brain Mapping 10:120–131, 2000. © 2000 Wiley-Liss, Inc.},
 year = {2000}
+}
+
+@article {Lindquist407676,
+author = {Lindquist, Martin A. and Geuter, Stephan and Wager, Tor D. and Caffo, Brian S.},
+title = {Modular preprocessing pipelines can reintroduce artifacts into fMRI data},
+year = {2018},
+doi = {10.1101/407676},
+publisher = {Cold Spring Harbor Laboratory},
+abstract = {The preprocessing pipelines typically used in both task and restingstate fMRI (rs-fMRI) analysis are modular in nature: They are composed of a number of separate filtering/regression steps, including removal of head motion covariates and band-pass filtering, performed sequentially and in a flexible order. In this paper we illustrate the shortcomings of this approach, as we show how later preprocessing steps can reintroduce artifacts previously removed from the data in prior preprocessing steps. We show that each regression step is a geometric projection of data onto a subspace, and that performing a sequence of projections can move the data into subspaces no longer orthogonal to those previously removed, reintroducing signal related to nuisance covariates. Thus, linear filtering operations are not commutative, and the order in which the preprocessing steps are performed is critical. These issues can arise in practice when any combination of standard preprocessing steps{\textemdash}including motion regression, scrubbing, component-based correction, global signal regression, and temporal filtering{\textemdash}are performed sequentially. In this work we focus primarily on rs-fMRI. We illustrate the problem both theoretically and empirically through application to a test-retest rs-fMRI data set, and suggest remedies. These include (a) combining all steps into a single linear filter, or (b) sequential orthogonalization of covariates/linear filters performed in series.},
+URL = {https://www.biorxiv.org/content/early/2018/09/04/407676},
+eprint = {https://www.biorxiv.org/content/early/2018/09/04/407676.full.pdf},
+journal = {bioRxiv}
 }
 
 ﻿@Article{Pauli2018probabilistic,
@@ -233,7 +297,19 @@ doi={10.1038/sdata.2018.63},
 url={https://doi.org/10.1038/sdata.2018.63}
 }
 
-
+@article{POWER2017150,
+title = {A simple but useful way to assess fMRI scan qualities},
+journal = {NeuroImage},
+volume = {154},
+pages = {150-158},
+year = {2017},
+note = {Cleaning up the fMRI time series: Mitigating noise with advanced acquisition and correction strategies},
+issn = {1053-8119},
+doi = {https://doi.org/10.1016/j.neuroimage.2016.08.009},
+url = {https://www.sciencedirect.com/science/article/pii/S1053811916303871},
+author = {Jonathan D. Power},
+abstract = {This short “how to” article describes a plot I find useful for assessing fMRI data quality. I discuss the reasoning behind the plot and how it is constructed. I create the plot in scans from several publicly available datasets to illustrate different kinds of fMRI signal variance, ranging from thermal noise to motion artifacts to respiratory-related signals. I also show how the plot can be used to understand the variance removed during denoising. Code to make the plot is provided with the article, and supplemental movies show plots for hundreds of additional subjects.}
+}
 
 ﻿@Article{Power2011Functional,
 author={Power, Jonathan D.
@@ -277,9 +353,6 @@ doi = {10.1093/cercor/bhx179},
 url = {https://doi.org/10.1093/cercor/bhx179},
 eprint = {https://academic.oup.com/cercor/article-pdf/28/9/3095/25696344/bhx179\_schaeferfullsupp.pdf},
 }
-
-
-
 
 @article{SEITZMAN2020116290,
 title = {A set of functionally-defined brain regions with improved representation of the subcortex and cerebellum},
@@ -325,6 +398,20 @@ author = {N. Tzourio-Mazoyer and B. Landeau and D. Papathanassiou and F. Crivell
 abstract = {An anatomical parcellation of the spatially normalized single-subject high-resolution T1 volume provided by the Montreal Neurological Institute (MNI) (D. L. Collins et al., 1998, Trans. Med. Imag. 17, 463–468) was performed. The MNI single-subject main sulci were first delineated and further used as landmarks for the 3D definition of 45 anatomical volumes of interest (AVOI) in each hemisphere. This procedure was performed using a dedicated software which allowed a 3D following of the sulci course on the edited brain. Regions of interest were then drawn manually with the same software every 2 mm on the axial slices of the high-resolution MNI single subject. The 90 AVOI were reconstructed and assigned a label. Using this parcellation method, three procedures to perform the automated anatomical labeling of functional studies are proposed: (1) labeling of an extremum defined by a set of coordinates, (2) percentage of voxels belonging to each of the AVOI intersected by a sphere centered by a set of coordinates, and (3) percentage of voxels belonging to each of the AVOI intersected by an activated cluster. An interface with the Statistical Parametric Mapping package (SPM, J. Ashburner and K. J. Friston, 1999, Hum. Brain Mapp. 7, 254–266) is provided as a freeware to researchers of the neuroimaging community. We believe that this tool is an improvement for the macroscopical labeling of activated area compared to labeling assessed using the Talairach atlas brain in which deformations are well known. However, this tool does not alleviate the need for more sophisticated labeling strategies based on anatomical or cytoarchitectonic probabilistic maps.}
 }
 
+@inproceedings{Varoquaux2010b,
+title = {Detection of brain functional-connectivity difference in post-stroke patients using group-level covariance modeling},
+booktitle = {Medical image computing and computer-assisted intervention - {{MICCAI}} 2010},
+author = {Varoquaux, Gael and Baronnet, Flore and Kleinschmidt, Andreas and Fillard, Pierre and Thirion, Bertrand},
+editor = {Jiang, Tianzi and Navab, Nassir and Pluim, Josien P. W. and Viergever, Max A.},
+year = {2010},
+pages = {200--208},
+publisher = {{Springer}},
+address = {{Berlin, Heidelberg}},
+doi = {10/cn2h9c},
+abstract = {Functional brain connectivity, as revealed through distant correlations in the signals measured by functional Magnetic Resonance Imaging (fMRI), is a promising source of biomarkers of brain pathologies. However, establishing and using diagnostic markers requires probabilistic inter-subject comparisons. Principled comparison of functional-connectivity structures is still a challenging issue. We give a new matrix-variate probabilistic model suitable for inter-subject comparison of functional connectivity matrices on the manifold of Symmetric Positive Definite (SPD) matrices. We show that this model leads to a new algorithm for principled comparison of connectivity coefficients between pairs of regions. We apply this model to comparing separately post-stroke patients to a group of healthy controls. We find neurologically-relevant connection differences and show that our model is more sensitive that the standard procedure. To the best of our knowledge, these results are the first report of functional connectivity differences between a single-patient and a group and thus establish an important step toward using functional connectivity as a diagnostic tool.},
+isbn = {978-3-642-15705-9},
+series = {Lecture notes in computer science}
+}
 
 @article{VAROQUAUX2013405,
 title = {Learning and comparing functional connectomes across subjects},
@@ -347,8 +434,6 @@ and Gramfort, Alexandre
 and Pedregosa, Fabian
 and Michel, Vincent
 and Thirion, Bertrand",
-editor="Sz{\'e}kely, G{\'a}bor
-and Hahn, Horst K.",
 title="Multi-subject Dictionary Learning to Segment an Atlas of Brain Spontaneous Activity",
 booktitle="Information Processing in Medical Imaging",
 year="2011",
@@ -357,6 +442,20 @@ address="Berlin, Heidelberg",
 pages="562--573",
 abstract="Fluctuations in brain on-going activity can be used to reveal its intrinsic functional organization. To mine this information, we give a new hierarchical probabilistic model for brain activity patterns that does not require an experimental design to be specified. We estimate this model in the dictionary learning framework, learning simultaneously latent spatial maps and the corresponding brain activity time-series. Unlike previous dictionary learning frameworks, we introduce an explicit difference between subject-level spatial maps and their corresponding population-level maps, forming an atlas. We give a novel algorithm using convex optimization techniques to solve efficiently this problem with non-smooth penalties well-suited to image denoising. We show on simulated data that it can recover population-level maps as well as subject specificities. On resting-state fMRI data, we extract the first atlas of spontaneous brain activity and show how it defines a subject-specific functional parcellation of the brain in localized regions.",
 isbn="978-3-642-22092-0"
+}
+
+@article{Varoquaux2010a,
+title = {Brain covariance selection: Better individual functional connectivity models using population prior},
+author = {Varoquaux, Gael and Gramfort, Alexandre and Poline, Jean Baptiste and Thirion, Bertrand},
+year = {2010},
+month = {11},
+abstract = {Spontaneous brain activity, as observed in functional neuroimaging, has been shown to display reproducible structure that expresses brain architecture and carries markers of brain pathologies. An important view of modern neuroscience is that such large-scale structure of coherent activity reflects modularity properties of brain connectivity graphs. However, to date, there has been no demonstration that the limited and noisy data available in spontaneous activity observations could be used to learn full-brain probabilistic models that generalize to new data. Learning such models entails two main challenges: i) modeling full brain connectivity is a difficult estimation problem that faces the curse of dimensionality and ii) variability between subjects, coupled with the variability of functional signals between experimental runs, makes the use of multiple datasets challenging. We describe subject-level brain functional connectivity structure as a multivariate Gaussian process and introduce a new strategy to estimate it from group data, by imposing a common structure on the graphical model in the population. We show that individual models learned from functional Magnetic Resonance Imaging (fMRI) data using this population prior generalize better to unseen data than models based on alternative regularization schemes. To our knowledge, this is the first report of a cross-validated model of spontaneous brain activity. Finally, we use the estimated graphical model to explore the large-scale characteristics of functional architecture and show for the first time that known cognitive networks appear as the integrated communities of functional connectivity graph.},
+url = {https://arxiv.org/abs/1008.5071},
+archiveprefix = {arXiv},
+eprint = {1008.5071},
+eprinttype = {arxiv},
+journal = {arXiv:1008.5071 [q-bio, stat]},
+primaryclass = {q-bio, stat}
 }
 
 @article{Yeo2011organization,
@@ -368,13 +467,8 @@ number = {3},
 pages = {1125-1165},
 year = {2011},
 doi = {10.1152/jn.00338.2011},
-    note ={PMID: 21653723},
-URL = { 
-        https://doi.org/10.1152/jn.00338.2011   
-},
-eprint = { 
-        https://doi.org/10.1152/jn.00338.2011  
-}
-,
+note = {PMID: 21653723},
+URL = {https://doi.org/10.1152/jn.00338.2011},
+eprint = {https://doi.org/10.1152/jn.00338.2011},
 abstract = { Information processing in the cerebral cortex involves interactions among distributed areas. Anatomical connectivity suggests that certain areas form local hierarchical relations such as within the visual system. Other connectivity patterns, particularly among association areas, suggest the presence of large-scale circuits without clear hierarchical relations. In this study the organization of networks in the human cerebrum was explored using resting-state functional connectivity MRI. Data from 1,000 subjects were registered using surface-based alignment. A clustering approach was employed to identify and replicate networks of functionally coupled regions across the cerebral cortex. The results revealed local networks confined to sensory and motor cortices as well as distributed networks of association regions. Within the sensory and motor cortices, functional connectivity followed topographic representations across adjacent areas. In association cortex, the connectivity patterns often showed abrupt transitions between network boundaries. Focused analyses were performed to better understand properties of network connectivity. A canonical sensory-motor pathway involving primary visual area, putative middle temporal area complex (MT+), lateral intraparietal area, and frontal eye field was analyzed to explore how interactions might arise within and between networks. Results showed that adjacent regions of the MT+ complex demonstrate differential connectivity consistent with a hierarchical pathway that spans networks. The functional connectivity of parietal and prefrontal association cortices was next explored. Distinct connectivity profiles of neighboring regions suggest they participate in distributed networks that, while showing evidence for interactions, are embedded within largely parallel, interdigitated circuits. We conclude by discussing the organization of these large-scale cerebral networks in relation to monkey anatomy and their potential evolutionary expansion in humans to support cognition. }
 }
