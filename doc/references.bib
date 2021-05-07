@@ -32,6 +32,63 @@ pages = {669–681},
 numpages = {13}
 }
 
+@article{HOYOSIDROBO2018160,
+title = {FReM – Scalable and stable decoding with fast regularized ensemble of models},
+journal = {NeuroImage},
+volume = {180},
+pages = {160-172},
+year = {2018},
+note = {New advances in encoding and decoding of brain signals},
+issn = {1053-8119},
+doi = {https://doi.org/10.1016/j.neuroimage.2017.10.005},
+url = {https://www.sciencedirect.com/science/article/pii/S1053811917308182},
+author = {Andrés Hoyos-Idrobo and Gaël Varoquaux and Yannick Schwartz and Bertrand Thirion},
+keywords = {fMRI, Supervised learning, Decoding, Bagging, MVPA},
+abstract = {Brain decoding relates behavior to brain activity through predictive models. These are also used to identify brain regions involved in the cognitive operations related to the observed behavior. Training such multivariate models is a high-dimensional statistical problem that calls for suitable priors. State of the art priors –eg small total-variation– enforce spatial structure on the maps to stabilize them and improve prediction. However, they come with a hefty computational cost. We build upon very fast dimension reduction with spatial structure and model ensembling to achieve decoders that are fast on large datasets and increase the stability of the predictions and the maps. Our approach, fast regularized ensemble of models (FReM), includes an implicit spatial regularization by using a voxel grouping with a fast clustering algorithm. In addition, it aggregates different estimators obtained across splits of a cross-validation loop, each time keeping the best possible model. Experiments on a large number of brain imaging datasets show that our combination of voxel clustering and model ensembling improves decoding maps stability and reduces the variance of prediction accuracy. Importantly, our method requires less samples than state-of-the-art methods to achieve a given level of prediction accuracy. Finally, FreM is much faster than other spatially-regularized methods and, in addition, it can better exploit parallel computing resources.}
+}
 
 
+@article{friston1994statistical,
+author = {Friston, K. J. and Holmes, A. P. and Worsley, K. J. and Poline, J.-P. and Frith, C. D. and Frackowiak, R. S. J.},
+title = {Statistical parametric maps in functional imaging: A general linear approach},
+journal = {Human Brain Mapping},
+volume = {2},
+number = {4},
+pages = {189-210},
+keywords = {statistical parametric maps, analysis of variance, general linear model, statistics, functional imaging, Gaussian fields, functional anatomy},
+doi = {https://doi.org/10.1002/hbm.460020402},
+url = {https://onlinelibrary.wiley.com/doi/abs/10.1002/hbm.460020402},
+eprint = {https://onlinelibrary.wiley.com/doi/pdf/10.1002/hbm.460020402},
+abstract = {Abstract Statistical parametric maps are spatially extended statistical processes that are used to test hypotheses about regionally specific effects in neuroimaging data. The most established sorts of statistical parametric maps (e.g., Friston et al. [1991]: J Cereb Blood Flow Metab 11:690–699; Worsley et al. [1992]: J Cereb Blood Flow Metab 12:900–918) are based on linear models, for example ANCOVA, correlation coefficients and t tests. In the sense that these examples are all special cases of the general linear model it should be possible to implement them (and many others) within a unified framework. We present here a general approach that accomodates most forms of experimental layout and ensuing analysis (designed experiments with fixed effects for factors, covariates and interaction of factors). This approach brings together two well established bodies of theory (the general linear model and the theory of Gaussian fields) to provide a complete and simple framework for the analysis of imaging data. The importance of this framework is twofold: (i) Conceptual and mathematical simplicity, in that the same small number of operational equations is used irrespective of the complexity of the experiment or nature of the statistical model and (ii) the generality of the framework provides for great latitude in experimental design and analysis. © 1995 Wiley-Liss, Inc.},
+year = {1994}
+}
+
+
+@article {Lindquist407676,
+author = {Lindquist, Martin A. and Geuter, Stephan and Wager, Tor D. and Caffo, Brian S.},
+title = {Modular preprocessing pipelines can reintroduce artifacts into fMRI data},
+elocation-id = {407676},
+year = {2018},
+doi = {10.1101/407676},
+publisher = {Cold Spring Harbor Laboratory},
+abstract = {The preprocessing pipelines typically used in both task and restingstate fMRI (rs-fMRI) analysis are modular in nature: They are composed of a number of separate filtering/regression steps, including removal of head motion covariates and band-pass filtering, performed sequentially and in a flexible order. In this paper we illustrate the shortcomings of this approach, as we show how later preprocessing steps can reintroduce artifacts previously removed from the data in prior preprocessing steps. We show that each regression step is a geometric projection of data onto a subspace, and that performing a sequence of projections can move the data into subspaces no longer orthogonal to those previously removed, reintroducing signal related to nuisance covariates. Thus, linear filtering operations are not commutative, and the order in which the preprocessing steps are performed is critical. These issues can arise in practice when any combination of standard preprocessing steps{\textemdash}including motion regression, scrubbing, component-based correction, global signal regression, and temporal filtering{\textemdash}are performed sequentially. In this work we focus primarily on rs-fMRI. We illustrate the problem both theoretically and empirically through application to a test-retest rs-fMRI data set, and suggest remedies. These include (a) combining all steps into a single linear filter, or (b) sequential orthogonalization of covariates/linear filters performed in series.},
+URL = {https://www.biorxiv.org/content/early/2018/09/04/407676},
+eprint = {https://www.biorxiv.org/content/early/2018/09/04/407676.full.pdf},
+journal = {bioRxiv}
+}
+
+
+@article{POWER2017150,
+title = {A simple but useful way to assess fMRI scan qualities},
+journal = {NeuroImage},
+volume = {154},
+pages = {150-158},
+year = {2017},
+note = {Cleaning up the fMRI time series: Mitigating noise with advanced acquisition and correction strategies},
+issn = {1053-8119},
+doi = {https://doi.org/10.1016/j.neuroimage.2016.08.009},
+url = {https://www.sciencedirect.com/science/article/pii/S1053811916303871},
+author = {Jonathan D. Power},
+abstract = {This short “how to” article describes a plot I find useful for assessing fMRI data quality. I discuss the reasoning behind the plot and how it is constructed. I create the plot in scans from several publicly available datasets to illustrate different kinds of fMRI signal variance, ranging from thermal noise to motion artifacts to respiratory-related signals. I also show how the plot can be used to understand the variance removed during denoising. Code to make the plot is provided with the article, and supplemental movies show plots for hundreds of additional subjects.}
+}
 

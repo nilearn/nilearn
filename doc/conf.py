@@ -37,6 +37,7 @@ shutil.copy(
 # absolute, like shown here.
 sys.path.insert(0, os.path.abspath('sphinxext'))
 import sphinx_gallery
+from github_link import make_linkcode_resolve
 
 # We also add the directory just above to enable local imports of nilearn
 sys.path.insert(0, os.path.abspath('..'))
@@ -53,6 +54,7 @@ extensions = [
               'sphinx.ext.intersphinx',
               'sphinxcontrib.bibtex',
               'numpydoc',
+              'sphinx.ext.linkcode',
               ]
 
 autosummary_generate = True
@@ -354,3 +356,12 @@ def touch_example_backreferences(app, what, name, obj, options, lines):
 def setup(app):
     app.add_javascript('copybutton.js')
     app.connect('autodoc-process-docstring', touch_example_backreferences)
+
+
+
+# The following is used by sphinx.ext.linkcode to provide links to github
+linkcode_resolve = make_linkcode_resolve('nilearn',
+                                         'https://github.com/nilearn/'
+                                         'nilearn/blob/{revision}/'
+                                         '{package}/{path}#L{lineno}') 
+

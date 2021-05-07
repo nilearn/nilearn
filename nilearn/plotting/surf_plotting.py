@@ -153,6 +153,8 @@ def plot_surf(surf_mesh, surf_map=None, bg_map=None,
     nilearn.plotting.plot_surf_stat_map : for plotting statistical maps on
         brain surfaces.
 
+    nilearn.surface.vol_to_surf : For info on the generation of surfaces.
+
     """
     _default_figsize = [6, 4]
 
@@ -487,6 +489,8 @@ def plot_surf_contours(surf_mesh, roi_map, axes=None, figure=None, levels=None,
     nilearn.plotting.plot_surf_stat_map : for plotting statistical maps on
         brain surfaces.
 
+    nilearn.surface.vol_to_surf : For info on the generation of surfaces.
+
     """
     if figure is None and axes is None:
         figure = plot_surf(surf_mesh, **kwargs)
@@ -658,6 +662,8 @@ def plot_surf_stat_map(surf_mesh, stat_map, bg_map=None,
         used as background map for this plotting function.
 
     nilearn.plotting.plot_surf: For brain surface visualization.
+
+    nilearn.surface.vol_to_surf : For info on the generation of surfaces.
 
     """
     loaded_stat_map = load_surf_data(stat_map)
@@ -1012,6 +1018,8 @@ def plot_surf_roi(surf_mesh, roi_map, bg_map=None,
         used as background map for this plotting function.
 
     nilearn.plotting.plot_surf: For brain surface visualization.
+
+    nilearn.surface.vol_to_surf : For info on the generation of surfaces.
 
     """
     # preload roi and mesh to determine vmin, vmax and give more useful error
