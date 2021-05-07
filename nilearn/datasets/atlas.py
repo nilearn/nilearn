@@ -406,10 +406,10 @@ def _fetch_atlases_fsl(atlas_source, atlas_name,
                       data_dir=None, symmetric_split=False,
                       resume=True, verbose=1):
 
-    urls = ('http://www.nitrc.org/frs/download.php/9902/HarvardOxford.tgz',
-            'https://www.nitrc.org/frs/download.php/12096/Juelich.tgz')
+    urls = {'HarvardOxford': 'http://www.nitrc.org/frs/download.php/9902/HarvardOxford.tgz',
+            'Juelich': 'https://www.nitrc.org/frs/download.php/12096/Juelich.tgz'}
 
-    atlas_items = (("cort-maxprob-thr0-1mm", "cort-maxprob-thr0-2mm",
+    atlas_items = {'HarvardOxford':("cort-maxprob-thr0-1mm", "cort-maxprob-thr0-2mm",
                     "cort-maxprob-thr25-1mm", "cort-maxprob-thr25-2mm",
                     "cort-maxprob-thr50-1mm", "cort-maxprob-thr50-2mm",
                     "cort-prob-1mm", "cort-prob-2mm",
@@ -421,17 +421,22 @@ def _fetch_atlases_fsl(atlas_source, atlas_name,
                     "sub-maxprob-thr25-1mm", "sub-maxprob-thr25-2mm",
                     "sub-maxprob-thr50-1mm", "sub-maxprob-thr50-2mm",
                     "sub-prob-1mm", "sub-prob-2mm"),
-                   ("maxprob-thr0-1mm", "maxprob-thr0-2mm",
+                   'Juelich': ("maxprob-thr0-1mm", "maxprob-thr0-2mm",
                    "maxprob-thr25-1mm", "maxprob-thr25-2mm",
                    "maxprob-thr50-1mm", "maxprob-thr50-2mm",
-                   "prob-1mm", "prob-2mm"))
+                   "prob-1mm", "prob-2mm")}
 
-    source_idx = 0 if atlas_source == 'HarvardOxford' else 1
-
-    if atlas_name not in atlas_items[source_idx]:
+    if atlas_name not in atlas_items[atlas_source]:
         raise ValueError("Invalid atlas name: {0}. Please choose an atlas "
                         "among:\n{1}".format(
-                            atlas_name, '\n'.join(atlas_items[source_idx])))
+                            atlas_name, '\n'.join(atlas_items[atlas_source])))
+
+    if atlas_name in ("cortl-prob-1mm", "cortl-prob-2mm",
+                      "cort-prob-1mm", "cort-prob-2mm",
+                      "sub-prob-1mm", "sub-prob-2mm",
+                      "prob-1mm", "prob-2mm") and symmetric_split:
+        raise ValueError("Region splitting not supported for probabilistic "
+                         "atlases")
 
     # For practical reasons, we mimic the FSL data directory here.
     dataset_name = 'fsl'
@@ -440,18 +445,19 @@ def _fetch_atlases_fsl(atlas_source, atlas_name,
     opts = {'uncompress': True}
     root = os.path.join('data', 'atlases')
 
-    if source_idx == 0:
+    if atlas_source == 'HarvardOxford':
         if atlas_name[0] == 'c':
-            lateralized = False
-            if 'cort-maxprob' in atlas_name or 'cortl-maxprob' in atlas_name and symmetric_split:
+            if 'cort-maxprob' in atlas_name  and symmetric_split or 'cortl-maxprob' in atlas_name:
                 split_name = atlas_name.split('cort')
                 atlas_name = 'cortl{}'.format(split_name[1])
                 label_file = 'HarvardOxford-Cortical-Lateralized.xml'
                 lateralized = True
             else:
                 label_file = 'HarvardOxford-Cortical.xml'
+                lateralized = False
         else:
             label_file = 'HarvardOxford-Subcortical.xml'
+            lateralized = False
     else:
         label_file = "Juelich.xml"
         lateralized = False
@@ -463,8 +469,8 @@ def _fetch_atlases_fsl(atlas_source, atlas_name,
 
     atlas_img, label_file = _fetch_files(
         data_dir,
-        [(atlas_file, urls[source_idx], opts),
-         (label_file, urls[source_idx], opts)],
+        [(atlas_file, urls[atlas_source], opts),
+         (label_file, urls[atlas_source], opts)],
         resume=resume, verbose=verbose)
 
     names = {}
@@ -476,12 +482,6 @@ def _fetch_atlases_fsl(atlas_source, atlas_name,
 
     if not symmetric_split:
         return Bunch(maps=atlas_img, labels=names)
-
-    if atlas_name in ("cort-prob-1mm", "cort-prob-2mm",
-                      "sub-prob-1mm", "sub-prob-2mm",
-                      "prob-1mm", "prob-2mm"):
-        raise ValueError("Region splitting not supported for probabilistic "
-                         "atlases")
 
     atlas_img = check_niimg(atlas_img)
     if lateralized:

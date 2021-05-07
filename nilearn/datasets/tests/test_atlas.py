@@ -186,14 +186,15 @@ def test_fail_fetch_atlas_harvard_oxford(tmp_path, request_mocker):
 
     nibabel.Nifti1Image(atlas_data, np.eye(4) * 3).to_filename(
         target_atlas_nii)
-    ho_wo_symm = atlas.fetch_atlas_harvard_oxford('sub-maxprob-thr25-1mm',
-                                                  data_dir=str(tmp_path))
-    assert isinstance(ho_wo_symm.maps, str)
-    assert isinstance(ho_wo_symm.labels, list)
-    assert ho_wo_symm.labels[0] == "Background"
-    assert ho_wo_symm.labels[1] == "R1"
-    assert ho_wo_symm.labels[2] == "R2"
-    assert ho_wo_symm.labels[3] == "R3"
+    ho_wo = atlas.fetch_atlas_harvard_oxford('sub-maxprob-thr25-1mm',
+                                             data_dir=str(tmp_path))
+
+    assert isinstance(ho_wo.maps, str)
+    assert isinstance(ho_wo.labels, list)
+    assert ho_wo.labels[0] == "Background"
+    assert ho_wo.labels[1] == "R1"
+    assert ho_wo.labels[2] == "R2"
+    assert ho_wo.labels[3] == "R3"
 
     # Testing with Cortical atlas with no cort-maxprob
     with open(os.path.join(ho_dir, 'HarvardOxford-Cortical.xml'), 'w') as dummy:
@@ -272,7 +273,7 @@ def test_fail_fetch_atlas_harvard_oxford(tmp_path, request_mocker):
     assert ho.labels[6] == "Right R3"
 
 
-def fetch_atlas_juelich(tmp_path, request_mocker):
+def test_fail_fetch_atlas_juelich(tmp_path, request_mocker):
 
     # specify non-existing atlas item in Juelich
     with pytest.raises(ValueError, match='Invalid atlas name'):
