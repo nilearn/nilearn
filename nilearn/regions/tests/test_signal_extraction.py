@@ -50,11 +50,11 @@ def test_generate_regions_ts():
     # Check that some regions overlap
     regions = generate_regions_ts(n_voxels, n_regions, overlap=1)
     assert regions.shape == (n_regions, n_voxels)
-    assert(np.any((regions > 0).sum(axis=-1) > 1.9))
+    assert (np.any((regions > 0).sum(axis=-1) > 1.9))
 
     regions = generate_regions_ts(n_voxels, n_regions, overlap=1,
                                   window="hamming")
-    assert(np.any((regions > 0).sum(axis=-1) > 1.9))
+    assert (np.any((regions > 0).sum(axis=-1) > 1.9))
 
 
 def test_generate_labeled_regions():
@@ -74,7 +74,7 @@ def test_signals_extraction_with_labels():
     n_instants = 11
     n_regions = 8  # must be 8
 
-    eps = np.finfo(np.float64).eps
+    eps = np.finfo(np.float).eps
     # data
     affine = np.eye(4)
     signals = generate_timeseries(n_instants, n_regions)
@@ -84,10 +84,10 @@ def test_signals_extraction_with_labels():
     mask_data[1:-1, 1:-1, 1:-1] = 1
     mask_img = nibabel.Nifti1Image(mask_data, affine)
 
-    mask_4d_img = nibabel.Nifti1Image(np.ones(shape + (2, )), affine)
+    mask_4d_img = nibabel.Nifti1Image(np.ones(shape + (2,)), affine)
 
     # labels
-    labels_data = np.zeros(shape, dtype=int)
+    labels_data = np.zeros(shape, dtype=np.int)
     h0 = shape[0] // 2
     h1 = shape[1] // 2
     h2 = shape[2] // 2
@@ -102,7 +102,7 @@ def test_signals_extraction_with_labels():
 
     labels_img = nibabel.Nifti1Image(labels_data, affine)
 
-    labels_4d_data = np.zeros((shape) + (2, ))
+    labels_4d_data = np.zeros((shape) + (2,))
     labels_4d_data[..., 0] = labels_data
     labels_4d_data[..., 1] = labels_data
     labels_4d_img = nibabel.Nifti1Image(labels_4d_data, np.eye(4))
@@ -160,7 +160,7 @@ def test_signals_extraction_with_labels():
     assert abs(data).max() > 1e-9
     # Zero outside of the mask
     assert np.all(data[np.logical_not(get_data(mask_img))
-                            ].std(axis=-1) < eps)
+                  ].std(axis=-1) < eps)
 
     with write_tmp_imgs(labels_img, mask_img) as filenames:
         data_img = signal_extraction.signals_to_img_labels(
@@ -171,7 +171,7 @@ def test_signals_extraction_with_labels():
         assert abs(data).max() > 1e-9
         # Zero outside of the mask
         assert np.all(data[np.logical_not(get_data(mask_img))
-                                ].std(axis=-1) < eps)
+                      ].std(axis=-1) < eps)
 
     # mask labels before checking
     masked_labels_data = labels_data.copy()
@@ -223,7 +223,7 @@ def test_signal_extraction_with_maps():
     maps_data = get_data(maps_img)
     data = np.zeros(shape + (n_instants,), dtype=np.float32)
 
-    mask_4d_img = nibabel.Nifti1Image(np.ones((shape + (2, ))), np.eye(4))
+    mask_4d_img = nibabel.Nifti1Image(np.ones((shape + (2,))), np.eye(4))
 
     signals = np.zeros((n_instants, maps_data.shape[-1]))
     for n in range(maps_data.shape[-1]):
@@ -336,13 +336,58 @@ def test_signal_extraction_with_maps_and_labels():
         maps_signals, maps_img, mask_img=mask_img)
     assert maps_img_r.shape == shape + (length,)
 
-    # Check that NaNs in regions inside mask are replaced with zeros
+    # Check that NaNs in regions inside mask are preserved
     region1 = labels_data == 2
     indices = [ind[:1] for ind in np.where(region1)]
-    get_data(fmri_img)[indices + [slice(None)]] = np.nan
+    get_data(fmri_img)[indices + [slice(None)]] = float('nan')
     labels_signals, labels_labels = signal_extraction.img_to_signals_labels(
         fmri_img, labels_img, mask_img=mask_img)
-    assert np.all(labels_signals[:, labels_labels.index(2)] == 0.)
+    assert np.all(np.isnan(labels_signals[:, labels_labels.index(2)]))
+
+
+def test_parallel_signal_extraction():
+    shape = (4, 5, 6)
+    n_regions = 16
+    length = 8
+
+    # Generate labels
+    labels = list(range(n_regions + 1))  # 0 is background
+    labels_img = generate_labeled_regions(shape, n_regions, labels=labels)
+
+    # Generate fake data
+    fmri_img, _ = generate_fake_fmri(shape=shape, length=length,
+                                     affine=labels_img.affine)
+
+    expected_labels_signals, expected_labels_labels = \
+        signal_extraction.img_to_signals_labels(
+        fmri_img, labels_img, n_jobs=1)
+
+    for n in [-1, 2]:
+        labels_signals, labels_labels = \
+            signal_extraction.img_to_signals_labels(fmri_img, labels_img,
+                                                    n_jobs=n)
+        np.testing.assert_almost_equal(labels_signals, expected_labels_signals)
+        assert np.allclose(labels_labels, expected_labels_labels)
+
+    with pytest.raises(ValueError,
+                       match=str.format("Invalid value for n_jobs '{}'. "
+                                        "Must be an integer >= 1 or == to "
+                                        "-1.", -2)):
+        signal_extraction.img_to_signals_labels(fmri_img, labels_img,
+                                                n_jobs=-2)
+
+    with pytest.raises(ValueError,
+                       match=str.format("Invalid value for n_jobs '{}'. "
+                                        "Must be an integer >= 1 or == to "
+                                        "-1.", 0)):
+        signal_extraction.img_to_signals_labels(fmri_img, labels_img, n_jobs=0)
+
+    with pytest.raises(ValueError,
+                       match=str.format("Invalid value for n_jobs '{}'. "
+                                        "Must be an integer >= 1 or == to "
+                                        "-1.", 1.5)):
+        signal_extraction.img_to_signals_labels(fmri_img, labels_img,
+                                                n_jobs=1.5)
 
 
 def test_generate_maps():
@@ -417,15 +462,16 @@ def test__trim_maps():
                          )
 def test_img_to_signals_labels_non_float_type(target_dtype):
     fake_fmri_data = (
-        np.random.RandomState(42).uniform(size=(10, 10, 10, 10)) > 0.5
+            np.random.RandomState(42).uniform(size=(10, 10, 10, 10)) > 0.5
     )
     fake_affine = np.eye(4, 4).astype(np.float64)
     fake_fmri_img_orig = nibabel.Nifti1Image(
-                                        fake_fmri_data.astype(np.float64),
-                                        fake_affine,
-                                        )
+        fake_fmri_data.astype(np.float64),
+        fake_affine,
+    )
     fake_fmri_img_target_dtype = new_img_like(fake_fmri_img_orig,
-                                              fake_fmri_data.astype(target_dtype))
+                                              fake_fmri_data.astype(
+                                                  target_dtype))
     fake_mask_data = np.ones((10, 10, 10), dtype=np.uint8)
     fake_mask = nibabel.Nifti1Image(fake_mask_data, fake_affine)
 
@@ -435,4 +481,3 @@ def test_img_to_signals_labels_non_float_type(target_dtype):
     timeseries_float = masker.transform(fake_fmri_img_orig)
     assert np.sum(timeseries_int) != 0
     assert np.allclose(timeseries_int, timeseries_float)
-

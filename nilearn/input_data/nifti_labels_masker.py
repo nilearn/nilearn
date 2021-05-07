@@ -28,14 +28,6 @@ class _ExtractionFunctor(object):
         self.n_jobs = n_jobs
         self.verbose = verbose
 
-        if float(self.n_jobs) < -1 or not float(self.n_jobs).is_integer() or \
-                float(self.n_jobs) == 0:
-            raise ValueError(str.format(
-                "Invalid value for n_jobs '{}'. Must be an integer >= 1 "
-                "or == to -1.",
-                self.n_jobs,
-            ))
-
     def __call__(self, imgs):
         from ..regions import signal_extraction
 

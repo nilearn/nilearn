@@ -80,6 +80,14 @@ def img_to_signals_labels(imgs, labels_img, mask_img=None,
     """
     from joblib import Parallel, delayed
 
+    if float(n_jobs) < -1 or not float(n_jobs).is_integer() or \
+            float(n_jobs) == 0:
+        raise ValueError(str.format(
+            "Invalid value for n_jobs '{}'. Must be an integer >= 1 "
+            "or == to -1.",
+            n_jobs,
+        ))
+
     labels_img = _utils.check_niimg_3d(labels_img)
 
     # TODO: Make a special case for list of strings (load one image at a
