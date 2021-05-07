@@ -7,11 +7,13 @@ Neuroimaging file input and output.
 import copy
 import gc
 import collections.abc
+from warnings import warn
 
 import numpy as np
 import nibabel
 
 from pathlib import Path
+
 
 def _get_data(img):
     # copy-pasted from https://github.com/nipy/nibabel/blob/de44a105c1267b07ef9e28f6c35b31f851d5a005/nibabel/dataobj_images.py#L204
@@ -55,7 +57,11 @@ def _safe_get_data(img, ensure_finite=False, copy_data=False):
     data = _get_data(img)
     if ensure_finite:
         non_finite_mask = np.logical_not(np.isfinite(data))
-        if non_finite_mask.sum() > 0: # any non_finite_mask values?
+        if non_finite_mask.sum() > 0:  # any non_finite_mask values?
+            warn(
+                "Non-finite values detected. "
+                "These values will be replaced with zeros."
+            )
             data[non_finite_mask] = 0
 
     return data
@@ -132,12 +138,35 @@ def load_niimg(niimg, dtype=None):
         if niimg.header is not None:
             niimg = new_img_like(niimg, _get_data(niimg).astype(dtype),
                                 niimg.affine, copy_header=True)
-            niimg.header.set_data_dtype(dtype)        
+            niimg.header.set_data_dtype(dtype)
         else:
             niimg = new_img_like(niimg, _get_data(niimg).astype(dtype),
                                 niimg.affine)
 
     return niimg
+
+
+def _is_binary_niimg(niimg):
+    """Returns whether a given niimg is binary or not.
+
+    Parameters
+    ----------
+    niimg: Niimg-like object
+        See http://nilearn.github.io/manipulating_images/input_output.html
+        Image to test.
+
+    Returns
+    -------
+    is_binary: Boolean
+        True if binary, False otherwise.
+
+    """
+    niimg = load_niimg(niimg)
+    data = _safe_get_data(niimg, ensure_finite=True)
+    unique_values = np.unique(data)
+    if len(unique_values) != 2:
+        return False
+    return sorted(list(unique_values)) == [0,1]
 
 
 def copy_img(img):

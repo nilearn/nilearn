@@ -12,6 +12,7 @@ from distutils.version import LooseVersion
 import matplotlib
 import matplotlib.pyplot as plt
 import numpy as np
+import warnings
 from matplotlib import cm as mpl_cm
 from matplotlib import (colors,
                         lines,
@@ -19,6 +20,7 @@ from matplotlib import (colors,
                         )
 from matplotlib.colorbar import ColorbarBase
 from matplotlib.font_manager import FontProperties
+from matplotlib.patches import FancyArrow
 from mpl_toolkits.axes_grid1.anchored_artists import AnchoredSizeBar
 from scipy import sparse, stats
 
@@ -26,7 +28,7 @@ from . import cm, glass_brain
 from .edge_detect import _edge_map
 from .find_cuts import find_xyz_cut_coords, find_cut_slices
 from .. import _utils
-from ..image import new_img_like
+from ..image import new_img_like, load_img
 from ..image.resampling import (get_bounds, reorder_img, coord_transform,
                                 get_mask_bounds)
 from nilearn.image import get_data
@@ -456,7 +458,7 @@ class GlassBrainAxes(BaseAxes):
                         c=marker_color, **kwargs)
 
     def _add_lines(self, line_coords, line_values, cmap,
-                   vmin=None, vmax=None, **kwargs):
+                   vmin=None, vmax=None, directed=False, **kwargs):
         """Plot lines
 
         Parameters
@@ -476,6 +478,10 @@ class GlassBrainAxes(BaseAxes):
             supplied the maximum absolute value within the given threshold
             will be used as minimum (multiplied by -1) and maximum
             coloring levels.
+
+        directed : boolean, optional
+            Add arrows instead of lines if set to True. Use this when plotting
+            directed graphs for example. Default=False.
 
         kwargs : dict
             Additional arguments to pass to matplotlib Line2D.
@@ -541,8 +547,29 @@ class GlassBrainAxes(BaseAxes):
             # user can override the default logic
             this_kwargs.update(kwargs)
             xdata, ydata = start_end_point_2d.T
-            line = lines.Line2D(xdata, ydata, **this_kwargs)
-            self.ax.add_line(line)
+            # If directed is True, add an arrow
+            if directed:
+                dx = xdata[1] - xdata[0]
+                dy = ydata[1] - ydata[0]
+                # Hack to avoid empty arrows to crash with
+                # matplotlib versions older than 3.1
+                # This can be removed once support for
+                # matplotlib pre 3.1 has been dropped.
+                if dx == 0 and dy == 0:
+                    arrow = FancyArrow(xdata[0], ydata[0],
+                                       dx, dy)
+                else:
+                    arrow = FancyArrow(xdata[0], ydata[0],
+                                       dx, dy,
+                                       length_includes_head=True,
+                                       width=linewidth,
+                                       head_width=3*linewidth,
+                                       **this_kwargs)
+                self.ax.add_patch(arrow)
+            # Otherwise a line
+            else:
+                line = lines.Line2D(xdata, ydata, **this_kwargs)
+                self.ax.add_line(line)
 
 
 ###############################################################################
@@ -692,7 +719,12 @@ class BaseSlicer(object):
         if bgcolor is None:
             bgcolor = 'w' if self._black_bg else 'k'
         if hasattr(self, '_cut_displayed'):
-            first_axe = self._cut_displayed[0]
+            # Adapt to the case of mosaic plotting
+            if isinstance(self.cut_coords, dict):
+                first_axe = self._cut_displayed[-1]
+                first_axe = (first_axe, self.cut_coords[first_axe][0])
+            else:
+                first_axe = self._cut_displayed[0]
         else:
             first_axe = self.cut_coords[0]
         ax = self.axes[first_axe].ax
@@ -802,7 +834,17 @@ class BaseSlicer(object):
     def _map_show(self, img, type='imshow',
                   resampling_interpolation='continuous',
                   threshold=None, **kwargs):
-        img = reorder_img(img, resample=resampling_interpolation)
+        # In the special case where the affine of img is not diagonal,
+        # the function `reorder_img` will trigger a resampling
+        # of the provided image with a continuous interpolation
+        # since this is the default value here. In the special
+        # case where this image is binary, such as when this function
+        # is called from `add_contours`, continuous interpolation
+        # does not make sense and we turn to nearest interpolation instead.
+        if _utils.niimg._is_binary_niimg(img):
+            img = reorder_img(img, resample='nearest')
+        else:
+            img = reorder_img(img, resample=resampling_interpolation)
         threshold = float(threshold) if threshold is not None else None
 
         if threshold is not None:
@@ -1807,8 +1849,221 @@ class YZSlicer(OrthoSlicer):
     _cut_displayed = 'yz'
 
 
+class MosaicSlicer(BaseSlicer):
+    """ A class to create 3 axes for plotting cuts of 3D maps,
+    in multiple rows and columns.
+
+    Attributes
+    ----------
+    axes : dictionary of axes
+        The 3 axes used to plot multiple views.
+
+    frame_axes : axes
+        The axes framing the whole set of views.
+
+    """
+    _cut_displayed = 'yxz'
+    _axes_class = CutAxes
+    _default_figsize = [11.1, 7.2]
+
+    @classmethod
+    def find_cut_coords(self, img=None, threshold=None, cut_coords=None):
+        """Instantiate the slicer and find cut coordinates for mosaic plotting.
+
+        Parameters
+        ----------
+        img : 3D Nifti1Image, optional
+            The brain image.
+
+        threshold : float, optional
+            The lower threshold to the positive activation. If None, the
+            activation threshold is computed using the 80% percentile of
+            the absolute value of the map.
+
+        cut_coords : list/tuple of 3 floats, integer, optional
+            xyz world coordinates of cuts. If cut_coords
+            are not provided, 7 coordinates of cuts are automatically
+            calculated.
+
+        Returns
+        -------
+        cut_coords : dict
+            xyz world coordinates of cuts in a direction. Each key
+            denotes the direction.
+        """
+        if cut_coords is None:
+            cut_coords = 7
+
+        if (not isinstance(cut_coords, collections.abc.Sequence) and
+                isinstance(cut_coords, numbers.Number)):
+            cut_coords = [cut_coords] * 3
+            cut_coords = self._find_cut_coords(img, cut_coords,
+                                               self._cut_displayed)
+        else:
+            if len(cut_coords) != len(self._cut_displayed):
+                raise ValueError('The number cut_coords passed does not'
+                                 ' match the display_mode. Mosaic plotting '
+                                 'expects tuple of length 3.' )
+            cut_coords = [cut_coords['xyz'.find(c)]
+                for c in sorted(self._cut_displayed)]
+            cut_coords = self._find_cut_coords(img, cut_coords,
+                                               self._cut_displayed)
+        return cut_coords
+
+    def _find_cut_coords(img, cut_coords, cut_displayed):
+        """ Find slicing positions along a given axis.
+
+            Helper function to find_cut_coords.
+
+        Parameters
+        ----------
+        img : 3D Nifti1Image
+            The brain image.
+
+        cut_coords : list/tuple of 3 floats, integer, optional
+            xyz world coordinates of cuts.
+
+        cut_displayed : str
+            Sectional directions 'yxz'
+
+        Returns
+        -------
+        cut_coords : 1D array of length specified in n_cuts
+            The computed cut_coords.
+        """
+        coords = dict()
+        if img is None or img is False:
+            bounds = ((-40, 40), (-30, 30), (-30, 75))
+            for direction, n_cuts in zip(sorted(cut_displayed),
+                                         cut_coords):
+                lower, upper = bounds['xyz'.index(direction)]
+                coords[direction] = np.linspace(lower, upper,
+                                                n_cuts).tolist()
+        else:
+            for direction, n_cuts in zip(sorted(cut_displayed),
+                                         cut_coords):
+                coords[direction] = find_cut_slices(img, direction=direction,
+                                                    n_cuts=n_cuts)
+        return coords
+
+    def _init_axes(self, **kwargs):
+        """Initializes and places axes for display of 'xyz' multiple cuts.
+
+        Parameters
+        ----------
+        kwargs:
+            additional arguments to pass to self._axes_class
+
+        """
+        if not isinstance(self.cut_coords, dict):
+            self.cut_coords = self.find_cut_coords(cut_coords=self.cut_coords)
+
+        if len(self.cut_coords) != len(self._cut_displayed):
+            raise ValueError('The number cut_coords passed does not'
+                             ' match the mosaic mode')
+        x0, y0, x1, y1 = self.rect
+
+        # Create our axes:
+        self.axes = dict()
+        # portions for main axes
+        fraction = y1 / len(self.cut_coords)
+        height = fraction
+        for index, direction in enumerate(self._cut_displayed):
+            coords = self.cut_coords[direction]
+            # portions allotment for each of 'x', 'y', 'z' coordinate
+            fraction_c = 1. / len(coords)
+            fh = self.frame_axes.get_figure()
+            indices = [x0, fraction * index * (y1 - y0) + y0,
+                       x1, fraction * (y1 - y0)]
+            ax = fh.add_axes(indices)
+            ax.axis('off')
+            this_x0, this_y0, this_x1, this_y1 = indices
+            for index_c, coord in enumerate(coords):
+                coord = float(coord)
+                fh_c = ax.get_figure()
+                # indices for each sub axes within main axes
+                indices = [fraction_c * index_c * (this_x1 - this_x0) + this_x0,
+                           this_y0,
+                           fraction_c * (this_x1 - this_x0),
+                           height]
+                ax = fh_c.add_axes(indices)
+                ax.axis('off')
+                display_ax = self._axes_class(ax, direction,
+                                              coord, **kwargs)
+                self.axes[(direction, coord)] = display_ax
+                ax.set_axes_locator(self._locator)
+
+    def _locator(self, axes, renderer):
+        """ The locator function used by matplotlib to position axes.
+            Here we put the logic used to adjust the size of the axes.
+        """
+        x0, y0, x1, y1 = self.rect
+        display_ax_dict = self.axes
+
+        if self._colorbar:
+            adjusted_width = self._colorbar_width / len(self.axes)
+            right_margin = self._colorbar_margin['right'] / len(self.axes)
+            ticks_margin = self._colorbar_margin['left'] / len(self.axes)
+            x1 = x1 - (adjusted_width + right_margin + ticks_margin)
+
+        # capture widths for each axes for anchoring Bbox
+        width_dict = dict()
+        for direction in self._cut_displayed:
+            this_width = dict()
+            for display_ax in display_ax_dict.values():
+                if direction == display_ax.direction:
+                    bounds = display_ax.get_object_bounds()
+                    if not bounds:
+                        # This happens if the call to _map_show was not
+                        # successful. As it happens asynchronously (during a
+                        # refresh of the figure) we capture the problem and
+                        # ignore it: it only adds a non informative traceback
+                        bounds = [0, 1, 0, 1]
+                    xmin, xmax, ymin, ymax = bounds
+                    this_width[display_ax.ax] = (xmax - xmin)
+            total_width = float(sum(this_width.values()))
+            for ax, w in this_width.items():
+                width_dict[ax] = w / total_width * (x1 - x0)
+
+        left_dict = dict()
+        # bottom positions in Bbox according to cuts
+        bottom_dict = dict()
+        # fraction is divided by the cut directions 'y', 'x', 'z'
+        fraction = y1 / len(self._cut_displayed)
+        height_dict = dict()
+        for index, direction in enumerate(self._cut_displayed):
+            left = float(x0)
+            this_height = fraction + fraction * index
+            for coord, display_ax in display_ax_dict.items():
+                if direction == display_ax.direction:
+                    left_dict[display_ax.ax] = left
+                    this_width = width_dict[display_ax.ax]
+                    left += this_width
+                    bottom_dict[display_ax.ax] = fraction * index * (y1 - y0)
+                    height_dict[display_ax.ax] = this_height
+        return transforms.Bbox([[left_dict[axes], bottom_dict[axes]],
+                                [left_dict[axes] + width_dict[axes],
+                                 height_dict[axes]]])
+
+
+    def draw_cross(self, cut_coords=None, **kwargs):
+        """ Draw a crossbar on the plot to show where the cut is
+        performed.
+
+        Parameters
+        ----------
+        cut_coords: 3-tuple of floats, optional
+            The position of the cross to draw. If none is passed, the
+            ortho_slicer's cut coordinates are used.
+        kwargs:
+            Extra keyword arguments are passed to axhline
+        """
+        return
+
+
 SLICERS = dict(ortho=OrthoSlicer,
                tiled=TiledSlicer,
+               mosaic=MosaicSlicer,
                xz=XZSlicer,
                yz=YZSlicer,
                yx=YXSlicer,
@@ -1845,8 +2100,10 @@ class OrthoProjector(OrthoSlicer):
         Parameters
         ----------
         adjacency_matrix : numpy array of shape (n, n)
-            Represents the edges strengths of the graph. Assumed to be
-            a symmetric matrix.
+            Represents the edges strengths of the graph.
+            The matrix can be symmetric which will result in
+            an undirected graph, or not symmetric which will
+            result in a directed graph.
 
         node_coords : numpy array_like of shape (n, 3)
             3d coordinates of the graph nodes in world space.
@@ -1940,34 +2197,48 @@ class OrthoProjector(OrthoSlicer):
                 "'adjacency_matrix' shape is {0}, 'node_coords' shape is {1}"
                 .format(adjacency_matrix_shape, node_coords_shape))
 
+        # If the adjacency matrix is not symmetric, give a warning
+        symmetric = True
         if not np.allclose(adjacency_matrix, adjacency_matrix.T, rtol=1e-3):
-            raise ValueError("'adjacency_matrix' should be symmetric")
+            symmetric = False
+            warnings.warn(("'adjacency_matrix' is not symmetric. "
+                           "A directed graph will be plotted."))
 
         # For a masked array, masked values are replaced with zeros
         if hasattr(adjacency_matrix, 'mask'):
             if not (adjacency_matrix.mask == adjacency_matrix.mask.T).all():
-                raise ValueError(
-                    "'adjacency_matrix' was masked with a non symmetric mask")
+                symmetric = False
+                warnings.warn(("'adjacency_matrix' was masked with "
+                               "a non symmetric mask. A directed "
+                               "graph will be plotted."))
             adjacency_matrix = adjacency_matrix.filled(0)
 
         if edge_threshold is not None:
-            # Keep a percentile of edges with the highest absolute
-            # values, so only need to look at the covariance
-            # coefficients below the diagonal
-            lower_diagonal_indices = np.tril_indices_from(adjacency_matrix,
-                                                          k=-1)
-            lower_diagonal_values = adjacency_matrix[
-                lower_diagonal_indices]
-            edge_threshold = _utils.param_validation.check_threshold(
-                edge_threshold, np.abs(lower_diagonal_values),
-                stats.scoreatpercentile, 'edge_threshold')
+            if symmetric:
+                # Keep a percentile of edges with the highest absolute
+                # values, so only need to look at the covariance
+                # coefficients below the diagonal
+                lower_diagonal_indices = np.tril_indices_from(adjacency_matrix,
+                                                              k=-1)
+                lower_diagonal_values = adjacency_matrix[
+                    lower_diagonal_indices]
+                edge_threshold = _utils.param_validation.check_threshold(
+                    edge_threshold, np.abs(lower_diagonal_values),
+                    stats.scoreatpercentile, 'edge_threshold')
+            else:
+                edge_threshold = _utils.param_validation.check_threshold(
+                    edge_threshold, np.abs(adjacency_matrix.ravel()),
+                    stats.scoreatpercentile, 'edge_threshold')
 
             adjacency_matrix = adjacency_matrix.copy()
             threshold_mask = np.abs(adjacency_matrix) < edge_threshold
             adjacency_matrix[threshold_mask] = 0
 
-        lower_triangular_adjacency_matrix = np.tril(adjacency_matrix, k=-1)
-        non_zero_indices = lower_triangular_adjacency_matrix.nonzero()
+        if symmetric:
+            lower_triangular_adjacency_matrix = np.tril(adjacency_matrix, k=-1)
+            non_zero_indices = lower_triangular_adjacency_matrix.nonzero()
+        else:
+            non_zero_indices = adjacency_matrix.nonzero()
 
         line_coords = [node_coords[list(index)]
                        for index in zip(*non_zero_indices)]
@@ -1977,7 +2248,7 @@ class OrthoProjector(OrthoSlicer):
             ax._add_markers(node_coords, node_color, node_size, **node_kwargs)
             if line_coords:
                 ax._add_lines(line_coords, adjacency_matrix_values, edge_cmap,
-                              vmin=edge_vmin, vmax=edge_vmax,
+                              vmin=edge_vmin, vmax=edge_vmax, directed=(not symmetric),
                               **edge_kwargs)
             # To obtain the brain left view, we simply invert the x axis
             if ax.direction == 'l' and not (ax.ax.get_xlim()[0] > ax.ax.get_xlim()[1]):

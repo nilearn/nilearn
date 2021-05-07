@@ -332,7 +332,7 @@ class FirstLevelModel(BaseGLM):
     def fit(self, run_imgs, events=None, confounds=None,
             design_matrices=None):
         """Fit the GLM
-        
+
         For each run:
         1. create design matrix X
         2. do a masker job: fMRI_data -> Y
@@ -362,6 +362,12 @@ class FirstLevelModel(BaseGLM):
             takes precedence over events and confounds.
 
         """
+        # Initialize masker_ to None such that attribute exists
+        self.masker_ = None
+
+        # Raise a warning if both design_matrices and confounds are provided
+        if design_matrices is not None and (confounds is not None or events is not None):
+            warn('If design matrices are supplied, confounds and events will be ignored.')
         # Local import to prevent circular imports
         from nilearn.input_data import NiftiMasker  # noqa
 
@@ -407,6 +413,8 @@ class FirstLevelModel(BaseGLM):
                                        )
             self.masker_.fit(run_imgs[0])
         else:
+            # Make sure masker has been fitted otherwise no attribute mask_img_
+            self.mask_img._check_fitted()
             if self.mask_img.mask_img_ is None and self.masker_ is None:
                 self.masker_ = clone(self.mask_img)
                 for param_name in ['target_affine', 'target_shape',
@@ -519,7 +527,6 @@ class FirstLevelModel(BaseGLM):
         if self.verbose > 0:
             sys.stderr.write("\nComputation of %d runs done in %i seconds\n\n"
                              % (n_runs, time.time() - t0))
-
         return self
 
     def compute_contrast(self, contrast_def, stat_type=None,
@@ -568,6 +575,15 @@ class FirstLevelModel(BaseGLM):
             raise ValueError('contrast_def must be an array or str or list of'
                              ' (array or str)')
 
+        n_runs = len(self.labels_)
+        n_contrasts = len(con_vals)
+        if n_contrasts == 1 and n_runs > 1:
+            warn('One contrast given, assuming it for all %d runs' % n_runs)
+            con_vals = con_vals * n_runs
+        elif n_contrasts != n_runs:
+            raise ValueError('%n contrasts given, while there are %n runs' %
+                             (n_contrasts, n_runs))
+
         # Translate formulas to vectors
         for cidx, (con, design_mat) in enumerate(zip(con_vals,
                                                      self.design_matrices_)
@@ -576,11 +592,6 @@ class FirstLevelModel(BaseGLM):
             if isinstance(con, str):
                 con_vals[cidx] = expression_to_contrast_vector(
                     con, design_columns)
-
-        n_runs = len(self.labels_)
-        if len(con_vals) != n_runs:
-            warn('One contrast given, assuming it for all %d runs' % n_runs)
-            con_vals = con_vals * n_runs
 
         valid_types = ['z_score', 'stat', 'p_value', 'effect_size',
                        'effect_variance']
@@ -672,7 +683,7 @@ class FirstLevelModel(BaseGLM):
 
             output.append(self.masker_.inverse_transform(voxelwise_attribute))
 
-            return output
+        return output
 
     @auto_attr
     def residuals(self):

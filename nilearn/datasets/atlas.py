@@ -26,7 +26,7 @@ def fetch_atlas_difumo(dimension=64, resolution_mm=2, data_dir=None, resume=True
     Dictionaries of Functional Modes, or “DiFuMo”, can serve as atlases to extract
     functional signals with different dimensionalities (64, 128, 256, 512, and 1024).
     These modes are optimized to represent well raw BOLD timeseries,
-    over a with range of experimental conditions. See [1]_.
+    over a with range of experimental conditions. See :footcite:`DADI2020117126`.
 
     Notes
     -----
@@ -71,10 +71,7 @@ def fetch_atlas_difumo(dimension=64, resolution_mm=2, data_dir=None, resume=True
 
     References
     ----------
-    .. [1] Dadi, K., Varoquaux, G., Machlouzarides-Shalit,
-       A., Gorgolewski, KJ., Wassermann, D., Thirion, B., Mensch,
-       A. Fine-grain atlases of functional modes for fMRI analysis.
-       NeuroImage, Elsevier, 2020, pp.117126, https://hal.inria.fr/hal-02904869
+    .. footbibliography::
 
     """
     dic = {64: 'pqu9r',
@@ -795,13 +792,12 @@ def fetch_atlas_aal(version='SPM12', data_dir=None, url=None, resume=True,
                                           verbose=verbose)
 
     fdescr = _get_dataset_descr(dataset_name)
-
     # We return the labels contained in the xml file as a dictionary
     xml_tree = xml.etree.ElementTree.parse(labels_file)
     root = xml_tree.getroot()
     labels = []
     indices = []
-    for label in root.getiterator('label'):
+    for label in root.iter('label'):
         indices.append(label.find('index').text)
         labels.append(label.find('name').text)
 

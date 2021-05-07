@@ -488,7 +488,7 @@ class _BaseDecoder(LinearRegression, CacheMixin):
         self.memory_ = _check_memory(self.memory, self.verbose)
 
         X = self._apply_mask(X)
-        X, y = check_X_y(X, y, dtype=np.float, multi_output=True)
+        X, y = check_X_y(X, y, dtype=np.float64, multi_output=True)
 
         if y.ndim == 1:
             self.n_outputs_ = 1
@@ -677,7 +677,7 @@ class _BaseDecoder(LinearRegression, CacheMixin):
 
         if self.is_classification:
             if len(scores.shape) == 1:
-                indices = (scores > 0).astype(np.int)
+                indices = (scores > 0).astype(int)
             else:
                 indices = scores.argmax(axis=1)
             return self.classes_[indices]
@@ -739,7 +739,7 @@ class _BaseDecoder(LinearRegression, CacheMixin):
             for k in params:
                 self.cv_params_[classes[class_index]].setdefault(
                     k, []).append(params[k])
- 
+
             if (n_problems <= 2) and self.is_classification:
                 # Binary classification
                 other_class = np.setdiff1d(classes, classes[class_index])[0]
@@ -1092,7 +1092,7 @@ class FREMRegressor(_BaseDecoder):
     FREM uses an implicit spatial regularization through fast clustering and
     aggregates a high number of estimators trained on various splits of the
     training set, thus returning a very robust decoder at a lower computational
-    cost than other spatially regularized methods.[1]_.
+    cost than other spatially regularized methods :footcite:`HOYOSIDROBO2018160`.
 
     Parameters
     -----------
@@ -1205,10 +1205,7 @@ class FREMRegressor(_BaseDecoder):
 
     References
     ----------
-    * A. Hoyos-Idrobo, G. Varoquaux, J. Kahn and B. Thirion, "FReM –
-      scalable and stable decoding with fast regularized ensemble of models"
-      in NeuroImage, Elsevier, 2017  pp.1-16, 11 October 2017.
-      https://hal.archives-ouvertes.fr/hal-01615015/
+    .. footbibliography::
 
     See Also
     ------------
@@ -1247,7 +1244,7 @@ class FREMClassifier(_BaseDecoder):
     FREM uses an implicit spatial regularization through fast clustering and
     aggregates a high number of estimators trained on various splits of the
     training set, thus returning a very robust decoder at a lower computational
-    cost than other spatially regularized methods.[1]_.
+    cost than other spatially regularized methods :footcite:`HOYOSIDROBO2018160`.
 
     Parameters
     -----------
@@ -1361,10 +1358,7 @@ class FREMClassifier(_BaseDecoder):
 
     References
     ----------
-    * A. Hoyos-Idrobo, G. Varoquaux, J. Kahn and B. Thirion, "FReM –
-      scalable and stable decoding with fast regularized ensemble of models"
-      in NeuroImage, Elsevier, 2017  pp.1-16, 11 October 2017.
-      https://hal.archives-ouvertes.fr/hal-01615015/
+    .. footbibliography::
 
     See Also
     ------------

@@ -107,12 +107,11 @@ def _geometric_mean(matrices, init=None, max_iter=10, tol=1e-7):
 
     In case of positive numbers, this mean is the usual geometric mean.
 
-    See Algorithm 3 of [1]_.
+    See Algorithm 3 of :footcite:`Fletcher2007`.
 
     References
     ----------
-    .. [1] P. Thomas Fletcher, Sarang Joshi. Riemannian Geometry for the
-       Statistical Analysis of Diffusion Tensor Data. Signal Processing, 2007.
+    .. footbibliography::
 
     Parameters
     ----------
@@ -263,11 +262,11 @@ def sym_matrix_to_vec(symmetric, discard_diagonal=False):
     if discard_diagonal:
         # No scaling, we directly return the values
         tril_mask = np.tril(np.ones(symmetric.shape[-2:]), k=-1).astype(
-            np.bool)
+            bool)
         return symmetric[..., tril_mask]
     scaling = np.ones(symmetric.shape[-2:])
     np.fill_diagonal(scaling, sqrt(2.))
-    tril_mask = np.tril(np.ones(symmetric.shape[-2:])).astype(np.bool)
+    tril_mask = np.tril(np.ones(symmetric.shape[-2:])).astype(bool)
     return symmetric[..., tril_mask] / scaling[tril_mask]
 
 
@@ -333,7 +332,7 @@ def vec_to_sym_matrix(vec, diagonal=None):
     # Fill lower triangular part
     skip_diagonal = (diagonal is not None)
     mask = np.tril(np.ones((n_columns, n_columns)), k=-skip_diagonal).astype(
-        np.bool)
+        bool)
     sym[..., mask] = vec
 
     # Fill upper triangular part
@@ -406,7 +405,7 @@ class ConnectivityMeasure(BaseEstimator, TransformerMixin):
 
     kind : {"covariance", "correlation", "partial correlation",\
             "tangent", "precision"}, optional
-        The matrix kind. For the use of "tangent" see [1]_.
+        The matrix kind. For the use of "tangent" see :footcite:`Varoquaux2010b`.
         Default='covariance'.
 
     vectorize : bool, optional
@@ -435,8 +434,7 @@ class ConnectivityMeasure(BaseEstimator, TransformerMixin):
 
     References
     ----------
-    .. [1] G. Varoquaux et al. "Detection of brain functional-connectivity difference
-       in post-stroke patients using group-level covariance modeling, MICCAI 2010.
+    .. footbibliography::
 
     """
 

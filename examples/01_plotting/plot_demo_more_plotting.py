@@ -134,6 +134,34 @@ plotting.plot_stat_map(stat_img, display_mode='tiled',
                        cut_coords=[36, -27, 60],
                        title="display_mode='tiled'")
 
+########################################
+# Visualizing three views along multiple rows and columns
+# -------------------------------------------------------------------------
+# display_mode='mosaic' for sagittal, coronal and axial view with
+# default option i.e. cut_coords=None
+
+plotting.plot_stat_map(stat_img, display_mode='mosaic',
+                       title="display_mode='mosaic' default cut_coords")
+
+########################################
+# Now, changing the number of slices along columns
+# -------------------------------------------------------------------------
+# display_mode='mosaic' for sagittal, coronal and axial view with
+# number of slices specified as integer i.e. cut_coords=3
+
+plotting.plot_stat_map(stat_img, display_mode='mosaic',
+                       cut_coords=3,
+                       title="display_mode='mosaic' with cut_coords=3")
+
+########################################
+# Now, another way of limiting the number of slices along rows and columns
+# -------------------------------------------------------------------------
+# display_mode='mosaic' for sagittal, coronal and axial view with
+# number of slices specified as tuple of length 3
+
+plotting.plot_stat_map(stat_img, display_mode='mosaic',
+                       cut_coords=(5, 4, 10),
+                       title="display_mode='mosaic' with cut_coords as tuple")
 ###############################################################################
 # Demonstrating various display features
 # ---------------------------------------

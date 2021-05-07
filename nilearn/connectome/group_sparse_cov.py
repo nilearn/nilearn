@@ -34,7 +34,7 @@ def compute_alpha_max(emp_covs, n_samples):
     matrices are fully dense (i.e. minimal number of zero coefficients).
 
     The formula used in this function was derived using the same method
-    as in [1]_.
+    as in :footcite:`Duchi2012`.
 
     Parameters
     ----------
@@ -55,11 +55,9 @@ def compute_alpha_max(emp_covs, n_samples):
         minimal value for the regularization parameter that gives a fully
         dense matrix.
 
-    Reference
+    References
     ---------
-    .. [1] Duchi, John, Stephen Gould, and Daphne Koller. 'Projected Subgradient
-       Methods for Learning Sparse Gaussians'. ArXiv E-prints 1206 (1 June
-       2012): 3249.
+    .. footbibliography::
 
     """
     A = np.copy(emp_covs)
@@ -145,7 +143,7 @@ def group_sparse_covariance(subjects, alpha, max_iter=50, tol=1e-3, verbose=0,
     Running time is linear on max_iter, and number of subjects (len(subjects)),
     but cubic on number of features (subjects[0].shape[1]).
 
-    The present algorithm is based on [1]_.
+    The present algorithm is based on :footcite:`Honorio2015`.
 
     Parameters
     ----------
@@ -205,9 +203,7 @@ def group_sparse_covariance(subjects, alpha, max_iter=50, tol=1e-3, verbose=0,
 
     References
     ----------
-    .. [1] Jean Honorio and Dimitris Samaras, "Simultaneous and Group-Sparse
-       Multi-Task Learning of Gaussian Graphical Models". arXiv:1207.4255
-       (17 July 2012). http://arxiv.org/abs/1207.4255.
+    .. footbibliography::
 
     """
 
@@ -252,7 +248,7 @@ def _group_sparse_covariance(emp_covs, n_samples, alpha, max_iter=10, tol=1e-3,
 
     if precisions_init is None:
         # Fortran order make omega[..., k] contiguous, which is often useful.
-        omega = np.ndarray(shape=emp_covs.shape, dtype=np.float,
+        omega = np.ndarray(shape=emp_covs.shape, dtype=np.float64,
                            order="F")
         for k in range(n_subjects):
             # Values on main diagonals are far from zero, because they
@@ -262,21 +258,21 @@ def _group_sparse_covariance(emp_covs, n_samples, alpha, max_iter=10, tol=1e-3,
         omega = precisions_init.copy()
 
     # Preallocate arrays
-    y = np.ndarray(shape=(n_subjects, n_features - 1), dtype=np.float)
-    u = np.ndarray(shape=(n_subjects, n_features - 1), dtype=np.float)
-    y_1 = np.ndarray(shape=(n_subjects, n_features - 2), dtype=np.float)
-    h_12 = np.ndarray(shape=(n_subjects, n_features - 2), dtype=np.float)
-    q = np.ndarray(shape=(n_subjects,), dtype=np.float)
-    aq = np.ndarray(shape=(n_subjects,), dtype=np.float)  # temp. array
-    c = np.ndarray(shape=(n_subjects,), dtype=np.float)
+    y = np.ndarray(shape=(n_subjects, n_features - 1), dtype=np.float64)
+    u = np.ndarray(shape=(n_subjects, n_features - 1), dtype=np.float64)
+    y_1 = np.ndarray(shape=(n_subjects, n_features - 2), dtype=np.float64)
+    h_12 = np.ndarray(shape=(n_subjects, n_features - 2), dtype=np.float64)
+    q = np.ndarray(shape=(n_subjects,), dtype=np.float64)
+    aq = np.ndarray(shape=(n_subjects,), dtype=np.float64)  # temp. array
+    c = np.ndarray(shape=(n_subjects,), dtype=np.float64)
     W = np.ndarray(shape=(omega.shape[0] - 1, omega.shape[1] - 1,
                           omega.shape[2]),
-                   dtype=np.float, order="F")
-    W_inv = np.ndarray(shape=W.shape, dtype=np.float, order="F")
+                   dtype=np.float64, order="F")
+    W_inv = np.ndarray(shape=W.shape, dtype=np.float64, order="F")
 
     # Auxilliary arrays.
-    v = np.ndarray((omega.shape[0] - 1,), dtype=np.float)
-    h = np.ndarray((omega.shape[1] - 1,), dtype=np.float)
+    v = np.ndarray((omega.shape[0] - 1,), dtype=np.float64)
+    h = np.ndarray((omega.shape[1] - 1,), dtype=np.float64)
 
     # Optional.
     tolerance_reached = False
@@ -312,7 +308,7 @@ def _group_sparse_covariance(emp_covs, n_samples, alpha, max_iter=10, tol=1e-3,
             if p == 0:
                 # Initial state: remove first col/row
                 W = omega[1:, 1:, :].copy()   # stack of W(k)
-                W_inv = np.ndarray(shape=W.shape, dtype=np.float)
+                W_inv = np.ndarray(shape=W.shape, dtype=np.float64)
                 for k in range(W.shape[2]):
                     # stack of W^-1(k)
                     W_inv[..., k] = scipy.linalg.inv(W[..., k])
@@ -456,8 +452,8 @@ def _group_sparse_covariance(emp_covs, n_samples, alpha, max_iter=10, tol=1e-3,
 class GroupSparseCovariance(BaseEstimator, CacheMixin):
     """Covariance and precision matrix estimator.
 
-    The model used has been introduced in [1]_, and the algorithm used is
-    based on what is described in [2]_.
+    The model used has been introduced in :footcite:`Varoquaux2010a`, and the
+    algorithm used is based on what is described in :footcite:`Honorio2015`.
 
     Parameters
     ----------
@@ -497,12 +493,7 @@ class GroupSparseCovariance(BaseEstimator, CacheMixin):
 
     References
     ----------
-    .. [1] Gael Varoquaux, et al. `Brain Covariance Selection: Better Individual
-       Functional Connectivity Models Using Population Prior
-       <http://arxiv.org/abs/1008.5071>`_'.
-
-    .. [2] Jean Honorio and Dimitris Samaras, "Simultaneous and Group-Sparse
-       Multi-Task Learning of Gaussian Graphical Models". http://arxiv.org/abs/1207.4255.
+    .. footbibliography::
 
     """
 
@@ -573,7 +564,7 @@ def empirical_covariances(subjects, assume_centered=False, standardize=False):
         empirical covariances.
 
     n_samples : numpy.ndarray, shape: (subject number,)
-        number of samples for each subject. dtype is np.float.
+        number of samples for each subject. dtype is np.float64.
 
     """
     if not hasattr(subjects, "__iter__"):
@@ -601,7 +592,7 @@ def empirical_covariances(subjects, assume_centered=False, standardize=False):
         emp_covs[..., k] = M + M.T
     emp_covs /= 2
 
-    n_samples = np.asarray([s.shape[0] for s in subjects], dtype=np.float)
+    n_samples = np.asarray([s.shape[0] for s in subjects], dtype=np.float64)
 
     return emp_covs, n_samples
 
@@ -665,7 +656,7 @@ def group_sparse_scores(precisions, n_samples, emp_covs, alpha,
 
     # Compute duality gap if requested
     if duality_gap is True:
-        A = np.empty(precisions.shape, dtype=np.float, order="F")
+        A = np.empty(precisions.shape, dtype=np.float64, order="F")
         for k in range(n_subjects):
             # TODO: can be computed more efficiently using W_inv. See
             # Friedman, Jerome, Trevor Hastie, and Robert Tibshirani.
@@ -1029,7 +1020,7 @@ class GroupSparseCovarianceCV(BaseEstimator, CacheMixin):
             best_score = -np.inf
             last_finite_idx = 0
             for index, (alpha, this_score, _) in enumerate(path):
-                if this_score >= .1 / np.finfo(np.float).eps:
+                if this_score >= .1 / np.finfo(np.float64).eps:
                     this_score = np.nan
                 if np.isfinite(this_score):
                     last_finite_idx = index

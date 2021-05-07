@@ -122,7 +122,12 @@ def test_nifti_maps_masker():
                                   affine2)
 
 
-def test_nifti_maps_masker_with_nans():
+def test_nifti_maps_masker_with_nans_and_infs():
+    """Apply a NiftiMapsMasker containing NaNs and infs.
+
+    The masker should replace those NaNs and infs with zeros,
+    without raising a warning.
+    """
     length = 3
     n_regions = 8
     fmri_img, mask_img = generate_random_img((13, 11, 12),
@@ -130,21 +135,88 @@ def test_nifti_maps_masker_with_nans():
     maps_img, maps_mask_img = data_gen.generate_maps((13, 11, 12), n_regions,
                                                      affine=np.eye(4))
 
-    # nans
-    maps_data = get_data(maps_img)
-    mask_data = np.array(get_data(mask_img),
-                         dtype=np.float64)
+    # Add NaNs and infs to atlas
+    maps_data = get_data(maps_img).astype(np.float32)
+    mask_data = get_data(mask_img).astype(np.float32)
+    maps_data = maps_data * mask_data[..., None]
 
-    maps_data[:, 9, 9] = np.nan
-    maps_data[:, 5, 5] = np.inf
+    # Choose a good voxel from the first label
+    vox_idx = np.where(maps_data[..., 0] > 0)
+    i1, j1, k1 = vox_idx[0][0], vox_idx[1][0], vox_idx[2][0]
+    i2, j2, k2 = vox_idx[0][1], vox_idx[1][1], vox_idx[2][1]
+
+    maps_data[:, :, :, 0] = np.nan
+    maps_data[i2, j2, k2, 0] = np.inf
+    maps_data[i1, j1, k1, 0] = 1
+
+    maps_img = nibabel.Nifti1Image(maps_data, np.eye(4))
+
+    # No warning, because maps_img is run through clean_img
+    # *before* _safe_get_data.
+    masker = NiftiMapsMasker(maps_img, mask_img=mask_img)
+
+    sig = masker.fit_transform(fmri_img)
+
+    assert sig.shape == (length, n_regions)
+    assert np.all(np.isfinite(sig))
+
+
+def test_nifti_maps_masker_with_nans_and_infs_in_mask():
+    """Apply a NiftiMapsMasker with a mask containing NaNs and infs.
+
+    The masker should replace those NaNs and infs with zeros,
+    while raising a warning.
+    """
+    length = 3
+    n_regions = 8
+    fmri_img, mask_img = generate_random_img((13, 11, 12),
+                                             affine=np.eye(4), length=length)
+    maps_img, maps_mask_img = data_gen.generate_maps((13, 11, 12), n_regions,
+                                                     affine=np.eye(4))
+
+    # Add NaNs and infs to mask
+    mask_data = np.array(get_data(mask_img), dtype=np.float64)
+
     mask_data[:, :, 7] = np.nan
     mask_data[:, :, 5] = np.inf
 
-    maps_img = nibabel.Nifti1Image(maps_data, np.eye(4))
     mask_img = nibabel.Nifti1Image(mask_data, np.eye(4))
 
     masker = NiftiMapsMasker(maps_img, mask_img=mask_img)
-    sig = masker.fit_transform(fmri_img)
+
+    with pytest.warns(UserWarning, match="Non-finite values detected."):
+        sig = masker.fit_transform(fmri_img)
+
+    assert sig.shape == (length, n_regions)
+    assert np.all(np.isfinite(sig))
+
+
+def test_nifti_maps_masker_with_nans_and_infs_in_data():
+    """Apply a NiftiMapsMasker to 4D data containing NaNs and infs.
+
+    The masker should replace those NaNs and infs with zeros,
+    while raising a warning.
+    """
+    length = 3
+    n_regions = 8
+    fmri_img, mask_img = generate_random_img((13, 11, 12),
+                                             affine=np.eye(4), length=length)
+    maps_img, maps_mask_img = data_gen.generate_maps((13, 11, 12), n_regions,
+                                                     affine=np.eye(4))
+
+    # Add NaNs and infs to data
+    fmri_data = get_data(fmri_img)
+
+    fmri_data[:, 9, 9, :] = np.nan
+    fmri_data[:, 5, 5, :] = np.inf
+
+    fmri_img = nibabel.Nifti1Image(fmri_data, np.eye(4))
+
+    masker = NiftiMapsMasker(maps_img, mask_img=mask_img)
+
+    with pytest.warns(UserWarning, match="Non-finite values detected."):
+        sig = masker.fit_transform(fmri_img)
+
     assert sig.shape == (length, n_regions)
     assert np.all(np.isfinite(sig))
 
@@ -339,3 +411,24 @@ def test_standardization():
             unstandarized_label_signals /
             unstandarized_label_signals.mean(0) * 100 - 100,
             )
+
+
+def test_3d_images():
+    # Test that the NiftiMapsMasker works with 3D images
+    affine = np.eye(4)
+    n_regions = 3
+    shape3 = (16, 17, 18)
+
+    maps33_img, _ = data_gen.generate_maps(shape3, n_regions)
+    mask_img = nibabel.Nifti1Image(np.ones(shape3, dtype=np.int8),
+                           affine=affine)
+    epi_img1 = nibabel.Nifti1Image(np.ones(shape3),
+                           affine=affine)
+    epi_img2 = nibabel.Nifti1Image(np.ones(shape3),
+                           affine=affine)
+    masker = NiftiMapsMasker(maps33_img, mask_img=mask_img)
+
+    epis = masker.fit_transform(epi_img1)
+    assert(epis.shape == (1, 3))
+    epis = masker.fit_transform([epi_img1, epi_img2])
+    assert(epis.shape == (2, 3))

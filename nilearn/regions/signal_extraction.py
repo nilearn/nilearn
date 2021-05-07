@@ -122,7 +122,7 @@ def img_to_signals_labels(imgs, labels_img, mask_img=None,
         labels_data = labels_data.copy()
         labels_data[np.logical_not(mask_data)] = background_label
 
-    data = _safe_get_data(imgs)
+    data = _safe_get_data(imgs, ensure_finite=True)
     target_datatype = np.float32 if data.dtype == np.float32 else np.float64
     # Nilearn issue: 2135, PR: 2195 for why this is necessary.
     signals = np.ndarray((data.shape[-1], len(labels)), order=order,
@@ -308,10 +308,10 @@ def img_to_signals_maps(imgs, maps_img, mask_img=None):
                    _trim_maps(maps_data,
                               _safe_get_data(mask_img, ensure_finite=True),
                               keep_empty=True)
-        maps_mask = _utils.as_ndarray(maps_mask, dtype=np.bool)
+        maps_mask = _utils.as_ndarray(maps_mask, dtype=bool)
     else:
-        maps_mask = np.ones(maps_data.shape[:3], dtype=np.bool)
-        labels = np.arange(maps_data.shape[-1], dtype=np.int)
+        maps_mask = np.ones(maps_data.shape[:3], dtype=bool)
+        labels = np.arange(maps_data.shape[-1], dtype=int)
 
     data = _safe_get_data(imgs, ensure_finite=True)
     region_signals = linalg.lstsq(maps_data[maps_mask, :],
@@ -368,9 +368,9 @@ def signals_to_img_maps(region_signals, maps_img, mask_img=None):
         maps_data, maps_mask, _ = _trim_maps(
             maps_data, _safe_get_data(mask_img, ensure_finite=True),
             keep_empty=True)
-        maps_mask = _utils.as_ndarray(maps_mask, dtype=np.bool)
+        maps_mask = _utils.as_ndarray(maps_mask, dtype=bool)
     else:
-        maps_mask = np.ones(maps_data.shape[:3], dtype=np.bool)
+        maps_mask = np.ones(maps_data.shape[:3], dtype=bool)
 
     assert(maps_mask.shape == maps_data.shape[:3])
 
@@ -423,7 +423,7 @@ def _trim_maps(maps, mask, keep_empty=False, order="F"):
 
     """
     maps = maps.copy()
-    sums = abs(maps[_utils.as_ndarray(mask, dtype=np.bool),
+    sums = abs(maps[_utils.as_ndarray(mask, dtype=bool),
                     :]).sum(axis=0)
 
     if keep_empty:
@@ -437,7 +437,7 @@ def _trim_maps(maps, mask, keep_empty=False, order="F"):
 
     # iterate on maps
     p = 0
-    mask = _utils.as_ndarray(mask, dtype=np.bool, order="C")
+    mask = _utils.as_ndarray(mask, dtype=bool, order="C")
     for n, m in enumerate(np.rollaxis(maps, -1)):
         if not keep_empty and sums[n] == 0:
             continue
@@ -447,6 +447,6 @@ def _trim_maps(maps, mask, keep_empty=False, order="F"):
 
     if keep_empty:
         return trimmed_maps, maps_mask, np.arange(trimmed_maps.shape[-1],
-                                                  dtype=np.int)
+                                                  dtype=int)
     else:
         return trimmed_maps, maps_mask, np.where(sums > 0)[0]

@@ -9,7 +9,6 @@ import numpy as np
 
 import nibabel
 import pytest
-
 from nilearn.input_data.nifti_labels_masker import NiftiLabelsMasker
 from nilearn.input_data import NiftiMasker
 from nilearn._utils import testing, as_ndarray, data_gen
@@ -110,6 +109,40 @@ def test_nifti_labels_masker():
 
 
 def test_nifti_labels_masker_with_nans_and_infs():
+    """Apply a NiftiLabelsMasker containing NaNs and infs.
+
+    The masker should replace those NaNs and infs with zeros,
+    while raising a warning.
+    """
+    length = 3
+    n_regions = 9
+    fmri_img, mask_img = generate_random_img((13, 11, 12),
+                                             affine=np.eye(4), length=length)
+    labels_img = data_gen.generate_labeled_regions((13, 11, 12),
+                                                   affine=np.eye(4),
+                                                   n_regions=n_regions)
+    # Introduce nans with data type float
+    # See issue: https://github.com/nilearn/nilearn/issues/2580
+    labels_data = get_data(labels_img).astype(np.float32)
+    labels_data[:, :, 7] = np.nan
+    labels_data[:, :, 4] = np.inf
+    labels_img = nibabel.Nifti1Image(labels_data, np.eye(4))
+
+    masker = NiftiLabelsMasker(labels_img, mask_img=mask_img)
+
+    with pytest.warns(UserWarning, match="Non-finite values detected."):
+        sig = masker.fit_transform(fmri_img)
+
+    assert sig.shape == (length, n_regions)
+    assert np.all(np.isfinite(sig))
+
+
+def test_nifti_labels_masker_with_nans_and_infs_in_mask():
+    """Apply a NiftiLabelsMasker with a mask containing NaNs and infs.
+
+    The masker should replace those NaNs and infs with zeros,
+    while raising a warning.
+    """
     length = 3
     n_regions = 9
     fmri_img, mask_img = generate_random_img((13, 11, 12),
@@ -125,7 +158,41 @@ def test_nifti_labels_masker_with_nans_and_infs():
     mask_img = nibabel.Nifti1Image(mask_data, np.eye(4))
 
     masker = NiftiLabelsMasker(labels_img, mask_img=mask_img)
-    sig = masker.fit_transform(fmri_img)
+
+    with pytest.warns(UserWarning, match="Non-finite values detected."):
+        sig = masker.fit_transform(fmri_img)
+
+    assert sig.shape == (length, n_regions)
+    assert np.all(np.isfinite(sig))
+
+
+def test_nifti_labels_masker_with_nans_and_infs_in_data():
+    """Apply a NiftiLabelsMasker to 4D data containing NaNs and infs.
+
+    The masker should replace those NaNs and infs with zeros,
+    while raising a warning.
+    """
+    length = 3
+    n_regions = 9
+    fmri_img, mask_img = generate_random_img((13, 11, 12),
+                                             affine=np.eye(4), length=length)
+    labels_img = data_gen.generate_labeled_regions((13, 11, 12),
+                                                   affine=np.eye(4),
+                                                   n_regions=n_regions)
+    # Introduce nans with data type float
+    # See issues:
+    # - https://github.com/nilearn/nilearn/issues/2580 (why floats)
+    # - https://github.com/nilearn/nilearn/issues/2711 (why test)
+    fmri_data = get_data(fmri_img).astype(np.float32)
+    fmri_data[:, :, 7, :] = np.nan
+    fmri_data[:, :, 4, 0] = np.inf
+    fmri_img = nibabel.Nifti1Image(fmri_data, np.eye(4))
+
+    masker = NiftiLabelsMasker(labels_img, mask_img=mask_img)
+
+    with pytest.warns(UserWarning, match="Non-finite values detected."):
+        sig = masker.fit_transform(fmri_img)
+
     assert sig.shape == (length, n_regions)
     assert np.all(np.isfinite(sig))
 
@@ -370,6 +437,7 @@ def test_nifti_labels_masker_with_mask():
     assert np.allclose(signals, masked_signals)
 
 
+
 def test_nifti_labels_masker_parallelization():
     """Tests:
     1. whether the usage of different values for n_jobs works
@@ -425,3 +493,24 @@ def test_nifti_labels_masker_parallelization():
 
     default_masker = NiftiLabelsMasker(labels_img)
     assert default_masker.n_jobs == 1
+
+
+def test_3d_images():
+    # Test that the NiftiLabelsMasker works with 3D images
+    affine = np.eye(4)
+    n_regions = 3
+    shape3 = (2, 2, 2)
+
+    labels33_img = data_gen.generate_labeled_regions(shape3, n_regions)
+    mask_img = nibabel.Nifti1Image(np.ones(shape3, dtype=np.int8),
+                           affine=affine)
+    epi_img1 = nibabel.Nifti1Image(np.ones(shape3),
+                           affine=affine)
+    epi_img2 = nibabel.Nifti1Image(np.ones(shape3),
+                           affine=affine)
+    masker = NiftiLabelsMasker(labels33_img, mask_img=mask_img)
+
+    epis = masker.fit_transform(epi_img1)
+    assert(epis.shape == (1, 3))
+    epis = masker.fit_transform([epi_img1, epi_img2])
+    assert(epis.shape == (2, 3))

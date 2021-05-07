@@ -37,13 +37,19 @@ def test_3d_reports():
     # check providing mask to init
     masker = input_data.NiftiMasker(mask_img=mask_img_3d)
     masker.fit(data_img_3d)
+    assert mask._warning_message == ""
     html = masker.generate_report()
     _check_html(html)
 
     # check providing mask to init and no images to .fit
     masker = input_data.NiftiMasker(mask_img=mask_img_3d)
+    assert masker._warning_message == ""
     masker.fit()
-    html = masker.generate_report()
+    warn_message = ("No image provided to fit in NiftiMasker. "
+                    "Setting image to mask for reporting.")
+    with pytest.warns(UserWarning, match=warn_message):
+        html = masker.generate_report()
+    assert masker._warning_message == warn_message
     _check_html(html)
 
 
@@ -63,12 +69,14 @@ def test_4d_reports():
     # test .fit method
     mask = input_data.NiftiMasker(mask_strategy='epi')
     mask.fit(data_img_4d)
+    assert mask._warning_message == ""
     html = mask.generate_report()
     _check_html(html)
 
     # test .fit_transform method
     masker = input_data.NiftiMasker(mask_img=mask_img, standardize=True)
     masker.fit_transform(data_img_4d)
+    assert mask._warning_message == ""
     html = masker.generate_report()
     _check_html(html)
 

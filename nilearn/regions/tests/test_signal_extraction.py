@@ -74,7 +74,7 @@ def test_signals_extraction_with_labels():
     n_instants = 11
     n_regions = 8  # must be 8
 
-    eps = np.finfo(np.float).eps
+    eps = np.finfo(np.float64).eps
     # data
     affine = np.eye(4)
     signals = generate_timeseries(n_instants, n_regions)
@@ -87,7 +87,7 @@ def test_signals_extraction_with_labels():
     mask_4d_img = nibabel.Nifti1Image(np.ones(shape + (2, )), affine)
 
     # labels
-    labels_data = np.zeros(shape, dtype=np.int)
+    labels_data = np.zeros(shape, dtype=int)
     h0 = shape[0] // 2
     h1 = shape[1] // 2
     h2 = shape[2] // 2
@@ -336,13 +336,13 @@ def test_signal_extraction_with_maps_and_labels():
         maps_signals, maps_img, mask_img=mask_img)
     assert maps_img_r.shape == shape + (length,)
 
-    # Check that NaNs in regions inside mask are preserved
+    # Check that NaNs in regions inside mask are replaced with zeros
     region1 = labels_data == 2
     indices = [ind[:1] for ind in np.where(region1)]
-    get_data(fmri_img)[indices + [slice(None)]] = float('nan')
+    get_data(fmri_img)[indices + [slice(None)]] = np.nan
     labels_signals, labels_labels = signal_extraction.img_to_signals_labels(
         fmri_img, labels_img, mask_img=mask_img)
-    assert np.all(np.isnan(labels_signals[:, labels_labels.index(2)]))
+    assert np.all(labels_signals[:, labels_labels.index(2)] == 0.)
 
 
 def test_generate_maps():

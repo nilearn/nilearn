@@ -86,6 +86,11 @@ class NiftiLabelsMasker(BaseMasker, CacheMixin):
         their mean is put to 0 and their variance to 1 in the time dimension.
         Default=True.
 
+    high_variance_confounds : boolean, optional
+        If True, high variance confounds are computed on provided image with
+        :func:`nilearn.image.high_variance_confounds` and default parameters
+        and regressed out. Default=False.
+
     detrend : boolean, optional
         This parameter is passed to signal.clean. Please see the related
         documentation for details. Default=False.
@@ -146,10 +151,9 @@ class NiftiLabelsMasker(BaseMasker, CacheMixin):
     # memory and memory_level are used by CacheMixin.
 
     def __init__(self, labels_img, background_label=0, mask_img=None,
-                 smoothing_fwhm=None, standardize=False,
-                 standardize_confounds=True, detrend=False, low_pass=None,
-                 high_pass=None, t_r=None, dtype=None,
-                 resampling_target="data",
+                 smoothing_fwhm=None, standardize=False, standardize_confounds=True,
+                 high_variance_confounds=False, detrend=False, low_pass=None,
+                 high_pass=None, t_r=None, dtype=None, resampling_target="data",
                  memory=Memory(location=None, verbose=0), memory_level=1,
                  verbose=0, strategy="mean", n_jobs=1):
         self.labels_img = labels_img
@@ -162,6 +166,7 @@ class NiftiLabelsMasker(BaseMasker, CacheMixin):
         # Parameters for clean()
         self.standardize = standardize
         self.standardize_confounds = standardize_confounds
+        self.high_variance_confounds = high_variance_confounds
         self.detrend = detrend
         self.low_pass = low_pass
         self.high_pass = high_pass
@@ -303,7 +308,7 @@ class NiftiLabelsMasker(BaseMasker, CacheMixin):
         if not hasattr(self, '_resampled_mask_img'):
             self._resampled_mask_img = self.mask_img_
         if self.resampling_target == "data":
-            imgs_ = _utils.check_niimg_4d(imgs)
+            imgs_ = _utils.check_niimg(imgs, atleast_4d=True)
             if not _check_same_fov(imgs_, self._resampled_labels_img_):
                 if self.verbose > 0:
                     print("Resampling labels")
