@@ -153,7 +153,7 @@ view
 # Impact of plot parameters on visualization
 # ------------------------------------------
 # You can specify arguments to be passed on to the function
-# :func:`nilearn.plotting.vol_to_surf` using `vol_to_surf_kwargs`. This allows
+# :func:`nilearn.surface.vol_to_surf` using `vol_to_surf_kwargs`. This allows
 # fine-grained control of how the input 3D image is resampled and interpolated -
 # for example if you are viewing a volumetric atlas, you would want to avoid
 # averaging the labels between neighboring regions. Using nearest-neighbor
