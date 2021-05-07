@@ -38,7 +38,7 @@ def _linkcode_resolve(domain, info, package, url_fmt, revision):
         return
     if not info.get('module') or not info.get('fullname'):
         return
-    if info.get('module') is not 'nilearn':
+    if 'nilearn' not in info.get('module'):
         return
 
     class_name = info['fullname'].split('.')[0]
