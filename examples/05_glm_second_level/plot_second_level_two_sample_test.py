@@ -76,8 +76,8 @@ from nilearn.plotting import plot_design_matrix
 _, (ax_unpaired, ax_paired) = plt.subplots(1,2, gridspec_kw={'width_ratios': [1, 17]})
 plot_design_matrix(unpaired_design_matrix, rescale=False, ax=ax_unpaired)
 plot_design_matrix(paired_design_matrix, rescale=False, ax=ax_paired)
-ax_unpaired.set_title('unpaired design matrix', fontsize=8)
-ax_paired.set_title('paired design matrix', fontsize=8)
+ax_unpaired.set_title('unpaired design', fontsize=12)
+ax_paired.set_title('paired design', fontsize=12)
 plt.tight_layout()
 plotting.show()
 
