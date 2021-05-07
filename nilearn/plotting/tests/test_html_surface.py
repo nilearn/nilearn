@@ -159,3 +159,9 @@ def test_view_img_on_surf():
     np.clip(get_data(img), 0, None, out=get_data(img))
     html = html_surface.view_img_on_surf(img, symmetric_cmap=False)
     check_html(html)
+    html = html_surface.view_img_on_surf(img, symmetric_cmap=False,
+                                         vol_to_surf_kwargs={
+                                             "n_samples": 1,
+                                             "radius": 0.,
+                                             "interpolation": "nearest"})
+    check_html(html)
