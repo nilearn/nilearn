@@ -28,6 +28,14 @@ class _ExtractionFunctor(object):
         self.n_jobs = n_jobs
         self.verbose = verbose
 
+        if float(self.n_jobs) < -1 or not float(self.n_jobs).is_integer() or \
+                float(self.n_jobs) == 0:
+            raise ValueError(str.format(
+                "Invalid value for n_jobs '{}'. Must be an integer >= 1 "
+                "or == to -1.",
+                self.n_jobs,
+            ))
+
     def __call__(self, imgs):
         from ..regions import signal_extraction
 
@@ -129,7 +137,7 @@ class NiftiLabelsMasker(BaseMasker, CacheMixin):
     n_jobs : int, optional
         The number of CPUs to use to do the computation. -1 means
         'all CPUs'.
-        
+
     See also
     --------
     nilearn.input_data.NiftiMasker
@@ -185,14 +193,6 @@ class NiftiLabelsMasker(BaseMasker, CacheMixin):
         if resampling_target not in ("labels", "data", None):
             raise ValueError("invalid value for 'resampling_target' "
                              "parameter: " + str(resampling_target))
-
-        if float(n_jobs) < -1 or not float(n_jobs).is_integer() or \
-                float(n_jobs) == 0:
-            raise ValueError(str.format(
-                "Invalid value for n_jobs '{}'. Must be an integer >= 1 "
-                "or == to -1.",
-                n_jobs,
-            ))
 
     def fit(self, X=None, y=None):
         """Prepare signal extraction from regions.
@@ -286,6 +286,15 @@ class NiftiLabelsMasker(BaseMasker, CacheMixin):
             shape: (number of scans, number of labels)
 
         """
+
+        if float(self.n_jobs) < -1 or not float(self.n_jobs).is_integer() or \
+                float(self.n_jobs) == 0:
+            raise ValueError(str.format(
+                "Invalid value for n_jobs '{}'. Must be an integer >= 1 "
+                "or == to -1.",
+                self.n_jobs,
+            ))
+
         # We handle the resampling of labels separately because the affine of
         # the labels image should not impact the extraction of the signal.
 
