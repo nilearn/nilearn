@@ -172,14 +172,14 @@ def load_mni152_wm_template():
     return check_niimg(WM_MNI152_FILE_PATH)
 
 
-def load_mni152_brain_mask(threshold=0.):
+def load_mni152_brain_mask(threshold=0.2):
     """Load brain mask from MNI152 T1 template
 
     Parameters
     ----------
     threshold : float, optional
         The parameter which amounts to include the values in the mask image.
-        Values lying above this threshold will be included. Default=0.
+        Values lying above this threshold will be included. Default=0.2
 
     Returns
     -------
@@ -203,7 +203,7 @@ def load_mni152_brain_mask(threshold=0.):
     return mask_img
 
 
-def load_mni152_gm_mask(threshold=0.2):
+def load_mni152_gm_mask(threshold=0.2, n_iter=2):
     """Load brain mask from gray-matter MNI152 template
 
     Parameters
@@ -224,13 +224,13 @@ def load_mni152_gm_mask(threshold=0.2):
 
     gm_target_mask = (gm_target_data > threshold)
 
-    gm_target_mask = ndimage.binary_closing(gm_target_mask, iterations=2)
+    gm_target_mask = ndimage.binary_closing(gm_target_mask, iterations=n_iter)
     gm_target_mask_img = new_img_like(gm_target_img, gm_target_mask)
 
     return gm_target_mask_img
 
 
-def load_mni152_wm_mask(threshold=0.2):
+def load_mni152_wm_mask(threshold=0.2, n_iter=2):
     """Load brain mask from white-matter MNI152 template
 
     Parameters
@@ -251,14 +251,14 @@ def load_mni152_wm_mask(threshold=0.2):
 
     wm_target_mask = (wm_target_data > threshold)
 
-    wm_target_mask = ndimage.binary_closing(wm_target_mask, iterations=2)
+    wm_target_mask = ndimage.binary_closing(wm_target_mask, iterations=n_iter)
     wm_target_mask_img = new_img_like(wm_target_img, wm_target_mask)
 
     return wm_target_mask_img
 
 
 def fetch_icbm152_brain_gm_mask(data_dir=None, threshold=0.2, resume=True,
-                                verbose=1):
+                                n_iter=2, verbose=1):
     """Downloads ICBM152 template first, then loads 'gm' mask image.
 
     Parameters
@@ -274,6 +274,10 @@ def fetch_icbm152_brain_gm_mask(data_dir=None, threshold=0.2, resume=True,
     resume : bool, optional
         If True, try resuming partially downloaded data.
         Default=True.
+
+    n_iter: int, optional
+        Number of repetitions of dilation and erosion steps performed in
+        scipy.ndimage.binary_closing function. Default=2.
 
     verbose : int, optional
         Verbosity level (0 means no message). Default=1.
@@ -311,7 +315,7 @@ def fetch_icbm152_brain_gm_mask(data_dir=None, threshold=0.2, resume=True,
     # getting one fifth of the values
     gm_mask = (gm_data > threshold)
 
-    gm_mask = ndimage.binary_closing(gm_mask, iterations=2)
+    gm_mask = ndimage.binary_closing(gm_mask, iterations=n_iter)
     gm_mask_img = new_img_like(gm_img, gm_mask)
     return gm_mask_img
 
