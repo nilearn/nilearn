@@ -35,7 +35,8 @@ def fetch_haxby(data_dir=None, subjects=(2,),
     ----------
     data_dir : string, optional
         Path of the data directory. Used to force data storage in a specified
-        location. Default: None
+        location. if None, files are downloaded in (nilearn_data) folder 
+        in the home directory
 
     subjects : list or int, optional
         Either a list of subjects or the number of subjects to load, from 1 to
@@ -198,7 +199,8 @@ def fetch_nyu_rest(n_subjects=None, sessions=[1], data_dir=None, resume=True,
 
     data_dir : string, optional
         Path of the data directory. Used to force data storage in a specified
-        location. Default: None
+        location. if None, files are downloaded in (nilearn_data) folder 
+        in the home directory
 
     resume : bool, optional
         Whether to resume download of a partly-downloaded file.
@@ -392,7 +394,8 @@ def fetch_adhd(n_subjects=30, data_dir=None, url=None, resume=True,
 
     data_dir : string, optional
         Path of the data directory. Used to force data storage in a specified
-        location. Default: None
+        location. if None, files are downloaded in (nilearn_data) folder 
+        in the home directory
 
     url : string, optional
         Override download URL. Used for test only (or if you setup a mirror of
@@ -490,7 +493,8 @@ def fetch_miyawaki2008(data_dir=None, url=None, resume=True, verbose=1):
     ----------
     data_dir : string, optional
         Path of the data directory. Used to force data storage in a specified
-        location. Default: None
+        location. if None, files are downloaded in (nilearn_data) folder 
+        in the home directory
 
     url : string, optional
         Override download URL. Used for test only (or if you setup a mirror of
@@ -747,7 +751,8 @@ def fetch_localizer_contrasts(contrasts, n_subjects=None, get_tmaps=False,
 
     data_dir : string, optional
         Path of the data directory. Used to force data storage in a specified
-        location.
+        location. if None, files are downloaded in (nilearn_data) folder 
+        in the home directory
 
     url : string, optional
         Override download URL. Used for test only (or if you setup a mirror of
@@ -1009,7 +1014,8 @@ def fetch_localizer_calculation_task(n_subjects=1, data_dir=None, url=None,
 
     data_dir : string, optional
         Path of the data directory. Used to force data storage in a specified
-        location.
+        location. if None, files are downloaded in (nilearn_data) folder 
+        in the home directory
 
     url : string, optional
         Override download URL. Used for test only (or if you setup a mirror of
@@ -1052,7 +1058,8 @@ def fetch_localizer_button_task(data_dir=None, url=None,
     ----------
     data_dir : string, optional
         Path of the data directory. Used to force data storage in a specified
-        location.
+        location. if None, files are downloaded in (nilearn_data) folder 
+        in the home directory
 
     url : string, optional
         Override download URL. Used for test only (or if you setup a mirror of
@@ -1108,7 +1115,8 @@ def fetch_abide_pcp(data_dir=None, n_subjects=None, pipeline='cpac',
     ----------
     data_dir : string, optional
         Path of the data directory. Used to force data storage in a specified
-        location. Default: None
+        location. if None, files are downloaded in (nilearn_data) folder 
+        in the home directory
 
     n_subjects : int, optional
         The number of subjects to load. If None is given,
@@ -1332,7 +1340,8 @@ def fetch_mixed_gambles(n_subjects=1, data_dir=None, url=None, resume=True,
 
     data_dir : string, optional
         Path of the data directory. Used to force data storage in a specified
-        location. Default: None.
+        location. if None, files are downloaded in (nilearn_data) folder 
+        in the home directory
 
     url : string, optional
         Override download URL. Used for test only (or if you setup a mirror of
@@ -1429,7 +1438,8 @@ def fetch_megatrawls_netmats(dimensionality=100, timeseries='eigen_regression',
 
     data_dir : str, optional
         Path of the data directory. Used to force data storage in a specified
-        location.
+        location. if None, files are downloaded in (nilearn_data) folder 
+        in the home directory
 
     resume : bool, optional
         This parameter is required if a partially downloaded file is needed
@@ -1568,7 +1578,8 @@ def fetch_cobre(n_subjects=10, data_dir=None, url=None, verbose=1):
 
     data_dir : str, optional
         Path to the data directory. Used to force data storage in a
-        specified location. Default: None
+        specified location. if None, files are downloaded in (nilearn_data) 
+        folder in the home directory
 
     url : str, optional
         Override download url. Used for test only (or if you setup a
@@ -1720,7 +1731,8 @@ def fetch_surf_nki_enhanced(n_subjects=10, data_dir=None,
 
     data_dir : str, optional
         Path of the data directory. Used to force data storage in a specified
-        location. Default: None
+        location. if None, files are downloaded in (nilearn_data) folder 
+        in the home directory
 
     url : str, optional
         Override download URL. Used for test only (or if you setup a mirror of
@@ -1856,7 +1868,8 @@ def _fetch_development_fmri_participants(data_dir, url, verbose):
     ----------
     data_dir : str
         Path of the data directory. Used to force data storage in a specified
-        location. If None is given, data are stored in home directory.
+        location. if None, files are downloaded in (nilearn_data) folder 
+        in the home directory
 
     url : str
         Override download URL. Used for test only (or if you setup a mirror of
@@ -2188,8 +2201,8 @@ def fetch_language_localizer_demo_dataset(data_dir=None, verbose=1):
     Parameters
     ----------
     data_dir : string, optional
-        Path to store the downloaded dataset. if None employ nilearn
-        datasets default download directory.
+        Path to store the downloaded dataset. if None, files are downloaded 
+        in (nilearn_data) folder in the home directory
 
     verbose : int, optional
         Verbosity level (0 means no message). Default=1.
@@ -2230,8 +2243,8 @@ def fetch_bids_langloc_dataset(data_dir=None, verbose=1):
     Parameters
     ----------
     data_dir : string, optional
-        Path to store the downloaded dataset. if None employ nilearn
-        datasets default download directory.
+        Path to store the downloaded dataset. if None, files are downloaded 
+        in (nilearn_data) folder in the home directory
 
     verbose : int, optional
         Verbosity level (0 means no message). Default=1.
@@ -2273,8 +2286,8 @@ def fetch_openneuro_dataset_index(data_dir=None,
     Parameters
     ----------
     data_dir : string, optional
-        Path to store the downloaded dataset. if None employ nilearn
-        datasets default download directory.
+        Path to store the downloaded dataset. if None, files are downloaded 
+        in (nilearn_data) folder in the home directory
 
     dataset_version : string, optional
         Dataset version name. Assumes it is of the form [name]_[version].
@@ -2419,8 +2432,8 @@ def fetch_openneuro_dataset(
         all files of the specified dataset will be downloaded.
 
     data_dir : string, optional
-        Path to store the downloaded dataset. if None employ nilearn
-        datasets default download directory.
+        Path to store the downloaded dataset. if None, files are downloaded 
+        in (nilearn_data) folder in the home directory
 
     dataset_version : string, optional
         Dataset version name. Assumes it is of the form [name]_[version].
@@ -2486,7 +2499,8 @@ def fetch_localizer_first_level(data_dir=None, verbose=1):
     Parameters
     ----------
     data_dir : string
-        Directory where data should be downloaded and unpacked.
+        Directory where data should be downloaded and unpacked. if None,
+        files are downloaded in (nilearn_data) folder in the home directory
 
     verbose : int, optional
         Verbosity level (0 means no message). Default=1.
@@ -2644,7 +2658,8 @@ def fetch_spm_auditory(data_dir=None, data_name='spm_auditory',
     data_dir : string, optional.
         Path of the data directory. Used to force data storage in a specified
         location. If the data is already present there, then will simply
-        glob it.
+        glob it. if None, files are downloaded in (nilearn_data) folder 
+        in the home directory
 
     data_name : string, optional
         Name of the dataset. Default='spm_auditory'.
@@ -2823,7 +2838,8 @@ def fetch_spm_multimodal_fmri(data_dir=None, data_name='spm_multimodal_fmri',
     ----------
     data_dir : string, optional.
         Path of the data directory. Used to force data storage in a specified
-        location. If the data is already present there, then will simply glob it.
+        location. If the data is already present there, then will simply glob it. if None,
+        files are downloaded in (nilearn_data) folder in the home directory
 
     data_name : string, optional
         Name of the dataset. Default='spm_multimodal_fmri'.
@@ -2867,7 +2883,8 @@ def fetch_fiac_first_level(data_dir=None, verbose=1):
     Parameters
     ----------
     data_dir : string, optional
-        Directory where data should be downloaded and unpacked.
+        Directory where data should be downloaded and unpacked. if None,
+        files are downloaded in (nilearn_data) folder in the home directory
 
     verbose : int, optional
         Verbosity level (0 means no message). Default=1.

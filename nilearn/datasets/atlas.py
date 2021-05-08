@@ -50,8 +50,8 @@ def fetch_atlas_difumo(dimension=64, resolution_mm=2, data_dir=None, resume=True
         available are {2, 3}. Default=2mm.
 
     data_dir : string, optional
-        Path where data should be downloaded. By default,
-        files are downloaded in home directory.
+        Path where data should be downloaded. if None, files are downloaded 
+        in (nilearn_data) folder in the home directory.
 
     resume : bool, optional
         Whether to resumed download of a partly-downloaded file.
@@ -135,7 +135,8 @@ def fetch_atlas_craddock_2012(data_dir=None, url=None, resume=True, verbose=1):
     Parameters
     ----------
     data_dir : string, optional
-        Directory where data should be downloaded and unpacked.
+        Directory where data should be downloaded and unpacked. if None,
+        files are downloaded in (nilearn_data) folder in the home directory
 
     url : string, optional
         url of file to download.
@@ -209,7 +210,8 @@ def fetch_atlas_destrieux_2009(lateralized=True, data_dir=None, url=None,
 
     data_dir : string, optional
         Path of the data directory. Use to forec data storage in a non-
-        standard location. Default: None (meaning: default)
+        standard location. if None, files are downloaded in (nilearn_data) 
+        folder in the home directory
 
     url : string, optional
         Download URL of the dataset. Overwrite the default URL.
@@ -297,7 +299,8 @@ def fetch_atlas_harvard_oxford(atlas_name, data_dir=None,
         Example, if FSL is installed in /usr/share/fsl/ then
         specifying as '/usr/share/' can get you Harvard Oxford atlas
         from your installed directory. Since we mimic same root directory
-        as FSL to load it easily from your installation.
+        as FSL to load it easily from your installation. if None,
+        files are downloaded in (nilearn_data) folder in the home directory
 
     symmetric_split : bool, optional
         If True, lateralized atlases of cort or sub with maxprob will be
@@ -436,7 +439,8 @@ def fetch_atlas_msdl(data_dir=None, url=None, resume=True, verbose=1):
     ----------
     data_dir : string, optional
         Path of the data directory. Used to force data storage in a specified
-        location. Default: None
+        location. if None, files are downloaded in (nilearn_data) folder 
+        in the home directory
 
     url : string, optional
         Override download URL. Used for test only (or if you setup a mirror of
@@ -533,7 +537,8 @@ def fetch_atlas_smith_2009(data_dir=None, mirror='origin', url=None,
     ----------
     data_dir : string, optional
         Path of the data directory. Used to force data storage in a non-
-        standard location. Default: None (meaning: default)
+        standard location. if None, files are downloaded in (nilearn_data) 
+        folder in the home directory
 
     mirror : string, optional
         By default, the dataset is downloaded from the original website of the
@@ -641,7 +646,8 @@ def fetch_atlas_yeo_2011(data_dir=None, url=None, resume=True, verbose=1):
     Parameters
     ----------
     data_dir : string, optional
-        Directory where data should be downloaded and unpacked.
+        Directory where data should be downloaded and unpacked. if None,
+        files are downloaded in (nilearn_data) folder in the home directory
 
     url : string, optional
         Url of file to download.
@@ -732,7 +738,8 @@ def fetch_atlas_aal(version='SPM12', data_dir=None, url=None, resume=True,
         Default='SPM12'.
 
     data_dir : string, optional
-        Directory where data should be downloaded and unpacked.
+        Directory where data should be downloaded and unpacked. if None,
+        files are downloaded in (nilearn_data) folder in the home directory
 
     url : string, optional
         Url of file to download.
@@ -840,7 +847,8 @@ def fetch_atlas_basc_multiscale_2015(version='sym', data_dir=None, url=None,
         Default='sym'.
 
     data_dir : str, optional
-        Directory where data should be downloaded and unpacked.
+        Directory where data should be downloaded and unpacked. if None,
+        files are downloaded in (nilearn_data) folder in the home directory
 
     url : str, optional
         Url of file to download.
@@ -1047,7 +1055,8 @@ def fetch_atlas_allen_2011(data_dir=None, url=None, resume=True, verbose=1):
     Parameters
     ----------
     data_dir : str, optional
-        Directory where data should be downloaded and unpacked.
+        Directory where data should be downloaded and unpacked. if None,
+        files are downloaded in (nilearn_data) folder in the home directory
 
     url : str, optional
         Url of file to download.
@@ -1138,7 +1147,8 @@ def fetch_atlas_surf_destrieux(data_dir=None, url=None,
     ----------
     data_dir : str, optional
         Path of the data directory. Use to force data storage in a non-
-        standard location. Default: None
+        standard location. if None, files are downloaded in (nilearn_data) 
+        folder in the home directory
 
     url : str, optional
         Download URL of the dataset. Overwrite the default URL.
@@ -1313,7 +1323,8 @@ def fetch_atlas_talairach(level_name, data_dir=None, verbose=1):
 
     data_dir : str, optional
         Path of the data directory. Used to force data storage in a specified
-        location.
+        location. if None, files are downloaded in (nilearn_data) folder 
+        in the home directory
 
     verbose : int, optional
         Verbosity level (0 means no message). Default=1.
@@ -1369,7 +1380,8 @@ def fetch_atlas_pauli_2017(version='prob', data_dir=None, verbose=1):
 
     data_dir : str, optional
         Path of the data directory. Used to force data storage in a specified
-        location.
+        location. if None, files are downloaded in (nilearn_data) folder 
+        in the home directory
 
     verbose : int, optional
         Verbosity level (0 means no message). Default=1.
@@ -1453,7 +1465,8 @@ def fetch_atlas_schaefer_2018(n_rois=400, yeo_networks=7, resolution_mm=1,
         Default=1mm.
 
     data_dir : string, optional
-        Directory where data should be downloaded and unpacked.
+        Directory where data should be downloaded and unpacked. if None,
+        files are downloaded in (nilearn_data) folder in the home directory
 
     base_url : string, optional
         base_url of files to download (None results in default base_url).

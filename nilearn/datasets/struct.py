@@ -31,7 +31,8 @@ def fetch_icbm152_2009(data_dir=None, url=None, resume=True, verbose=1):
     ----------
     data_dir : string, optional
         Path of the data directory. Used to force data storage in a non-
-        standard location. Default: None (meaning: default)
+        standard location. if None, files are downloaded in (nilearn_data) 
+        folder in the home directory.
 
     url : string, optional
         Download URL of the dataset. Overwrite the default URL.
@@ -179,7 +180,8 @@ def fetch_icbm152_brain_gm_mask(data_dir=None, threshold=0.2, resume=True,
     ----------
     data_dir : str, optional
         Path of the data directory. Used to force storage in a specified
-        location. Defaults to None.
+        location. if None, files are downloaded in (nilearn_data) folder 
+        in the home directory
 
     threshold : float, optional
         The parameter which amounts to include the values in the mask image.
@@ -249,7 +251,8 @@ def fetch_oasis_vbm(n_subjects=None, dartel_version=True, data_dir=None,
 
     data_dir : string, optional
         Path of the data directory. Used to force data storage in a specified
-        location. Default: None
+        location. if None, files are downloaded in (nilearn_data) folder 
+        in the home directory.
 
     url : string, optional
         Override download URL. Used for test only (or if you setup a mirror of
@@ -465,7 +468,7 @@ def fetch_surf_fsaverage(mesh='fsaverage5', data_dir=None):
 
     data_dir : str, optional
         Path of the data directory. Used to force data storage in a specified
-        location.
+        location. if None, files are downloaded in (nilearn_data) folder in the home directory
 
     Returns
     -------
