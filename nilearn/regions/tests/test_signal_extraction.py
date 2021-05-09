@@ -13,6 +13,7 @@ from nilearn.regions import signal_extraction
 from nilearn._utils.testing import write_tmp_imgs
 from nilearn._utils.data_gen import generate_timeseries, generate_regions_ts
 from nilearn._utils.data_gen import generate_labeled_regions, generate_maps
+from nilearn._utils.data_gen import generate_labeled_regions_large
 from nilearn._utils.data_gen import generate_fake_fmri
 from nilearn._utils.exceptions import DimensionError
 from nilearn.image import get_data, new_img_like
@@ -20,10 +21,12 @@ from nilearn.image import get_data, new_img_like
 _TEST_DIM_ERROR_MSG = ("Input data has incompatible dimensionality: "
                        "Expected dimension is 3D and you provided "
                        "a 4D image")
-_TEST_SHAPE_LABEL_ERROR_MSG = "labels_img and imgs shapes must be identical."
-_TEST_AFFINE_LABEL_ERROR_MSG = "labels_img and imgs affines must be identical."
-_TEST_SHAPE_IMG_ERROR_MSG = "mask_img and imgs shapes must be identical."
-_TEST_AFFINE_IMG_ERROR_MSG = "mask_img and imgs affines must be identical."
+_TEST_SHAPE_LABEL_ERROR_MSG = "label img and imgs shapes must be identical."
+_TEST_AFFINE_LABEL_ERROR_MSG = "label img and imgs affines must be identical."
+_TEST_SHAPE_IMG_ERROR_MSG = "mask/map and imgs shapes must be identical."
+_TEST_AFFINE_IMG_ERROR_MSG = "mask/map and imgs affines must be identical."
+
+INF = 1e-9
 
 
 def test_generate_regions_ts():
@@ -64,13 +67,17 @@ def test_generate_regions_ts():
 def test_generate_labeled_regions():
     """Minimal testing of generate_labeled_regions"""
     shape = (3, 4, 5)
+    shape_4D = (3, 4, 5, 2)
     n_regions = 10
     regions = generate_labeled_regions(shape, n_regions)
+    regions_4d = generate_labeled_regions_large(shape_4D, n_regions)
     assert regions.shape == shape
     assert (len(np.unique(get_data(regions))) == n_regions + 1)
+    assert regions_4d.shape == shape_4D
+    assert (len(np.unique(get_data(regions_4d))) == n_regions + 1)
 
 
-def test_shape_affine_check_with_labels():
+def test__check_shappe_affine_label_img():
     """Test to ensure correct check for valid shapes & affines of labels."""
 
     shape = (8, 9, 10)
@@ -81,35 +88,25 @@ def test_shape_affine_check_with_labels():
     test_affine = np.eye(3)
 
     # labels
-    labels_data = np.zeros(shape, dtype=int)
-    h0 = shape[0] // 2
-    h1 = shape[1] // 2
-    h2 = shape[2] // 2
-    labels_data[:h0, :h1, :h2] = 1
-    labels_data[:h0, :h1, h2:] = 2
-    labels_data[:h0, h1:, :h2] = 3
-    labels_data[:h0, h1:, h2:] = 4
-    labels_data[h0:, :h1, :h2] = 5
-    labels_data[h0:, :h1, h2:] = 6
-    labels_data[h0:, h1:, :h2] = 7
-    labels_data[h0:, h1:, h2:] = 8
-
-    labels_img = nibabel.Nifti1Image(labels_data, affine)
+    labels_img = generate_labeled_regions(shape, 7, affine=affine)
 
     # Ensure correct behaviour for valid data.
     with pytest.warns(None):
-        signal_extraction._check_labels(labels_img, shape, affine)
+        signal_extraction._check_shappe_affine_label_img(
+            labels_img, shape, affine)
 
     # Smoke test to make sure an error is raised when affine is not correct.
     with pytest.raises(ValueError, match=_TEST_SHAPE_LABEL_ERROR_MSG):
-        signal_extraction._check_labels(labels_img, test_shape, affine)
+        signal_extraction._check_shappe_affine_label_img(
+            labels_img, test_shape, affine)
 
     # Smoke test to make sure an error is raised when affine is not correct.
     with pytest.raises(ValueError, match=_TEST_AFFINE_LABEL_ERROR_MSG):
-        signal_extraction._check_labels(labels_img, shape, test_affine)
+        signal_extraction._check_shappe_affine_label_img(
+            labels_img, shape, test_affine)
 
 
-def test_shape_affine_check_with_img():
+def test__check_shappe_affine_maps_masks():
     """Test to ensure correct check for valid shapes & affines of masks
     and maps."""
 
@@ -122,14 +119,14 @@ def test_shape_affine_check_with_img():
 
     # Ensure correct behaviour for valid data without dim.
     with pytest.warns(None):
-        signal_extraction._check_imgs(
+        signal_extraction._check_shappe_affine_maps_masks(
             mask_shape,
             affine,
             nibabel.Nifti1Image(np.zeros(mask_shape), affine))
 
     # Ensure correct behaviour for valid data with dim.
     with pytest.warns(None):
-        signal_extraction._check_imgs(
+        signal_extraction._check_shappe_affine_maps_masks(
             maps_shape[:3],
             affine,
             nibabel.Nifti1Image(np.zeros(maps_shape), affine),
@@ -137,14 +134,14 @@ def test_shape_affine_check_with_img():
 
     # Smoke test for shape error.
     with pytest.raises(ValueError, match=_TEST_SHAPE_IMG_ERROR_MSG):
-        signal_extraction._check_imgs(
+        signal_extraction._check_shappe_affine_maps_masks(
             mask_shape,
             affine,
             nibabel.Nifti1Image(np.zeros(test_mask_shape), affine))
 
     # Smoke test for affine error.
     with pytest.raises(ValueError, match=_TEST_AFFINE_IMG_ERROR_MSG):
-        signal_extraction._check_imgs(
+        signal_extraction._check_shappe_affine_maps_masks(
             mask_shape,
             affine,
             nibabel.Nifti1Image(np.zeros(mask_shape), test_affine))
@@ -155,48 +152,34 @@ def test_signals_extraction_with_labels():
     by labels."""
 
     shape = (8, 9, 10)
+    shape_4d = (8, 9, 10, 2)
     n_instants = 11
     n_regions = 8  # must be 8
 
     eps = np.finfo(np.float64).eps
+    
     # data
     affine = np.eye(4)
     signals = generate_timeseries(n_instants, n_regions)
 
     # mask
     mask_data = np.zeros(shape)
-    mask_data[1:-1, 1:-1, 1:-1] = 1
+    mask_data[1:, 1:-1, 1:-1] = 1  # mask should preserve all regions
     mask_img = nibabel.Nifti1Image(mask_data, affine)
-
     mask_4d_img = nibabel.Nifti1Image(np.ones(shape + (2, )), affine)
 
-    # labels
-    labels_data = np.zeros(shape, dtype=int)
-    h0 = shape[0] // 2
-    h1 = shape[1] // 2
-    h2 = shape[2] // 2
-    labels_data[:h0, :h1, :h2] = 1
-    labels_data[:h0, :h1, h2:] = 2
-    labels_data[:h0, h1:, :h2] = 3
-    labels_data[:h0, h1:, h2:] = 4
-    labels_data[h0:, :h1, :h2] = 5
-    labels_data[h0:, :h1, h2:] = 6
-    labels_data[h0:, h1:, :h2] = 7
-    labels_data[h0:, h1:, h2:] = 8
-
-    labels_img = nibabel.Nifti1Image(labels_data, affine)
-
-    labels_4d_data = np.zeros((shape) + (2, ))
-    labels_4d_data[..., 0] = labels_data
-    labels_4d_data[..., 1] = labels_data
-    labels_4d_img = nibabel.Nifti1Image(labels_4d_data, affine)
+    # labels without background
+    labels = list(range(1, n_regions + 1))
+    labels_img = generate_labeled_regions(
+        shape, n_regions, affine=affine, labels=labels)
+    labels_4d_img = generate_labeled_regions_large(
+        shape_4d, n_regions, affine=affine)
 
     # Without mask
     # test labels - labels data is evaluated via signals below
     r_labels, _ = signal_extraction._get_labels_data(labels_img, shape, affine)
-    assert r_labels == list(range(1, 9))
+    assert r_labels == labels
     
-    # from labels
     data_img = signal_extraction.signals_to_img_labels(signals, labels_img)
     data = get_data(data_img)
     assert data_img.shape == (shape + (n_instants,))
@@ -207,30 +190,30 @@ def test_signals_extraction_with_labels():
         signal_extraction.img_to_signals_labels(data_img, labels_4d_img)
 
     # There must be non-zero data (safety net)
-    assert abs(data).max() > 1e-9
+    assert abs(data).max() > INF
 
     # Check that signals in each region are identical in each voxel
-    for n in range(1, n_regions + 1):
-        sigs = data[labels_data == n, :]
+    for n in labels:
+        sigs = data[get_data(labels_img) == n, :]
         np.testing.assert_almost_equal(sigs[0, :], signals[:, n - 1])
         assert abs(sigs - sigs[0, :]).max() < eps
 
     # and back
-    signals_r, labels_r = signal_extraction.img_to_signals_labels(data_img,
-                                                                  labels_img)
+    signals_r, labels_r = signal_extraction.img_to_signals_labels(
+        data_img, labels_img)
     np.testing.assert_almost_equal(signals_r, signals)
-    assert labels_r == list(range(1, 9))
+    assert labels_r == labels
 
     with write_tmp_imgs(data_img) as fname_img:
         signals_r, labels_r = signal_extraction.img_to_signals_labels(
             fname_img, labels_img)
         np.testing.assert_almost_equal(signals_r, signals)
-        assert labels_r == list(range(1, 9))
+        assert labels_r == labels
 
     # Same thing, with mask.
     r_labels, _ = signal_extraction._get_labels_data(
         labels_img, shape, affine, mask_img=mask_img)
-    assert r_labels == list(range(1, 9))
+    assert r_labels == labels
 
     with pytest.raises(DimensionError, match=_TEST_DIM_ERROR_MSG):
         signal_extraction.img_to_signals_labels(data_img, labels_img,
@@ -249,7 +232,7 @@ def test_signals_extraction_with_labels():
     assert data_img.shape == (shape + (n_instants,))
 
     data = get_data(data_img)
-    assert abs(data).max() > 1e-9
+    assert abs(data).max() > INF
     # Zero outside of the mask
     assert np.all(
         data[np.logical_not(get_data(mask_img))].std(axis=-1) < eps)
@@ -260,15 +243,14 @@ def test_signals_extraction_with_labels():
         assert data_img.shape == (shape + (n_instants,))
 
         data = get_data(data_img)
-        assert abs(data).max() > 1e-9
+        assert abs(data).max() > INF
         # Zero outside of the mask
         assert np.all(
             data[np.logical_not(get_data(mask_img))].std(axis=-1) < eps)
 
-    # mask labels before checking
-    masked_labels_data = labels_data.copy()
+    masked_labels_data = get_data(labels_img)
     masked_labels_data[np.logical_not(get_data(mask_img))] = 0
-    for n in range(1, n_regions + 1):
+    for n in labels:
         sigs = data[masked_labels_data == n, :]
         np.testing.assert_almost_equal(sigs[0, :], signals[:, n - 1])
         assert abs(sigs - sigs[0, :]).max() < eps
@@ -277,30 +259,7 @@ def test_signals_extraction_with_labels():
     signals_r, labels_r = signal_extraction.img_to_signals_labels(
         data_img, labels_img, mask_img=mask_img)
     np.testing.assert_almost_equal(signals_r, signals)
-    assert labels_r == list(range(1, 9))
-
-    # Test input validation
-    data_img = nibabel.Nifti1Image(np.zeros((2, 3, 4, 5)), np.eye(4))
-
-    good_labels_img = nibabel.Nifti1Image(np.zeros((2, 3, 4)), np.eye(4))
-    bad_labels1_img = nibabel.Nifti1Image(np.zeros((2, 3, 5)), np.eye(4))
-    bad_labels2_img = nibabel.Nifti1Image(np.zeros((2, 3, 4)), 2 * np.eye(4))
-
-    good_mask_img = nibabel.Nifti1Image(np.zeros((2, 3, 4)), np.eye(4))
-    bad_mask1_img = nibabel.Nifti1Image(np.zeros((2, 3, 5)), np.eye(4))
-    bad_mask2_img = nibabel.Nifti1Image(np.zeros((2, 3, 4)), 2 * np.eye(4))
-    pytest.raises(ValueError, signal_extraction.img_to_signals_labels,
-                  data_img, bad_labels1_img)
-    pytest.raises(ValueError, signal_extraction.img_to_signals_labels,
-                  data_img, bad_labels2_img)
-    pytest.raises(ValueError, signal_extraction.img_to_signals_labels,
-                  data_img, bad_labels1_img, mask_img=good_mask_img)
-    pytest.raises(ValueError, signal_extraction.img_to_signals_labels,
-                  data_img, bad_labels2_img, mask_img=good_mask_img)
-    pytest.raises(ValueError, signal_extraction.img_to_signals_labels,
-                  data_img, good_labels_img, mask_img=bad_mask1_img)
-    pytest.raises(ValueError, signal_extraction.img_to_signals_labels,
-                  data_img, good_labels_img, mask_img=bad_mask2_img)
+    assert labels_r == labels
 
 
 def test_signal_extraction_with_maps():
@@ -347,29 +306,6 @@ def test_signal_extraction_with_maps():
     np.testing.assert_almost_equal(get_data(img_r), get_data(img))
     img_r = signal_extraction.signals_to_img_maps(signals, maps_img)
     np.testing.assert_almost_equal(get_data(img_r), get_data(img))
-
-    # Test input validation
-    data_img = nibabel.Nifti1Image(np.zeros((2, 3, 4, 5)), np.eye(4))
-
-    good_maps_img = nibabel.Nifti1Image(np.zeros((2, 3, 4, 7)), np.eye(4))
-    bad_maps1_img = nibabel.Nifti1Image(np.zeros((2, 3, 5, 7)), np.eye(4))
-    bad_maps2_img = nibabel.Nifti1Image(np.zeros((2, 3, 4, 7)), 2 * np.eye(4))
-
-    good_mask_img = nibabel.Nifti1Image(np.zeros((2, 3, 4)), np.eye(4))
-    bad_mask1_img = nibabel.Nifti1Image(np.zeros((2, 3, 5)), np.eye(4))
-    bad_mask2_img = nibabel.Nifti1Image(np.zeros((2, 3, 4)), 2 * np.eye(4))
-    pytest.raises(ValueError, signal_extraction.img_to_signals_maps, data_img,
-                  bad_maps1_img)
-    pytest.raises(ValueError, signal_extraction.img_to_signals_maps, data_img,
-                  bad_maps2_img)
-    pytest.raises(ValueError, signal_extraction.img_to_signals_maps, data_img,
-                  bad_maps1_img, mask_img=good_mask_img)
-    pytest.raises(ValueError, signal_extraction.img_to_signals_maps, data_img,
-                  bad_maps2_img, mask_img=good_mask_img)
-    pytest.raises(ValueError, signal_extraction.img_to_signals_maps, data_img,
-                  good_maps_img, mask_img=bad_mask1_img)
-    pytest.raises(ValueError, signal_extraction.img_to_signals_maps, data_img,
-                  good_maps_img, mask_img=bad_mask2_img)
 
 
 def test_signal_extraction_with_maps_and_labels():
@@ -483,7 +419,7 @@ def test__trim_maps():
     maps_i_correct[np.logical_not(mask_data), :] = 0
     np.testing.assert_almost_equal(maps_i_correct, maps_i)
     np.testing.assert_equal(mask_data, maps_i_mask)
-    np.testing.assert_equal(np.asarray(list(range(8))), maps_i_indices)
+    np.testing.assert_equal(np.asarray(list(range(n_regions))), maps_i_indices)
 
     # mask intersecting half of the regions
     mask_data = np.zeros(shape, dtype=np.int8)
@@ -509,8 +445,7 @@ def test__trim_maps():
                          )
 def test_img_to_signals_labels_non_float_type(target_dtype):
     fake_fmri_data = (
-        np.random.RandomState(42).uniform(size=(10, 10, 10, 10)) > 0.5
-    )
+        np.random.RandomState(42).uniform(size=(10, 10, 10, 10)) > 0.5)
     fake_affine = np.eye(4, 4).astype(np.float64)
     fake_fmri_img_orig = nibabel.Nifti1Image(
         fake_fmri_data.astype(np.float64), fake_affine)
