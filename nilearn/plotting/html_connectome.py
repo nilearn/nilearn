@@ -65,36 +65,84 @@ def _prepare_lines_metadata(adjacency_matrix, coords, threshold, cmap, symmetric
     nodes = np.asarray([s.row, s.col], dtype=int).T
     edges = np.arange(len(nodes))
     path_edges, path_nodes = _prepare_line(edges, nodes)
-    connectome["_con_w"] = encode(np.asarray(s.data, dtype='<f4')[path_edges])
-    c = coords[path_nodes]
+    lines_metadata["_con_w"] = encode(np.asarray(s.data, dtype='<f4')[path_edges])
+
+    line_coords = coords[path_nodes]
+
+    lines_metadata = {
+        **lines_metadata,
+        **_encode_lines_coordinates(line_coords)
+    }
+
+    return lines_metadata
+
+
+def _encode_coordinates(coords, prefix):
+    coordinates = {}
+
+    coords = np.asarray(coords, dtype='<f4')
+    marker_x, marker_y, marker_z = coords.T
+    for coord, cname in [(marker_x, "x"), (marker_y, "y"), (marker_z, "z")]:
+        coordinates["{}{}".format(prefix, cname)] = encode(
+            np.asarray(coord, dtype='<f4'))
+
+    return coordinates
+
+
+def _encode_markers_coordinates(coords):
+    return _encode_coordinates(coords, "_marker_")
+
+
+def _encode_lines_coordinates(coords):
+    return _encode_coordinates(coords, "_con_")
+
+
+def _prepare_markers_metadata(coords, marker_size, marker_color):
+    markers_coordinates = _encode_markers_coordinates(coords)
+    markers_metadata = {
+        "markers_only": False,
+        **markers_coordinates
+    }
+
     if np.ndim(marker_size) > 0:
         marker_size = np.asarray(marker_size)
-        marker_size = marker_size[path_nodes]
-    x, y, z = c.T
-    for coord, cname in [(x, "x"), (y, "y"), (z, "z")]:
-        connectome["_con_{}".format(cname)] = encode(
-            np.asarray(coord, dtype='<f4'))
-    connectome["markers_only"] = False
     if hasattr(marker_size, 'tolist'):
         marker_size = marker_size.tolist()
-    connectome['marker_size'] = marker_size
+    markers_metadata['marker_size'] = marker_size
 
-    marker_colors, marker_colorscale = _prepare_colors(marker_color, path_nodes)
+    marker_colors, marker_colorscale = _prepare_colors(marker_color, len(coords))
 
-    connectome['marker_color'] = marker_colors
-    connectome['marker_colorscale'] = marker_colorscale
-    return connectome
+    markers_metadata['marker_color'] = marker_colors
+    markers_metadata['marker_colorscale'] = marker_colorscale
+
+    return markers_metadata
+
+
+def _get_connectome(adjacency_matrix, coords, threshold=None,
+                    marker_size=None, marker_color='auto', cmap=cm.cold_hot,
+                    symmetric_cmap=True):
+    connectome = {}
+    adjacency_matrix = np.nan_to_num(adjacency_matrix, copy=True)
+
+    lines_metadata = _prepare_lines_metadata(adjacency_matrix, coords, threshold, cmap, symmetric_cmap)
+
+    markers_metadata = _prepare_markers_metadata(coords, marker_size, marker_color)
+
+    return {
+        **connectome,
+        **lines_metadata,
+        **markers_metadata,
+    }
 
 
 def _get_markers(coords, colors):
-    connectome = {}
-    coords = np.asarray(coords, dtype='<f4')
-    x, y, z = coords.T
-    for coord, cname in [(x, "x"), (y, "y"), (z, "z")]:
-        connectome["_con_{}".format(cname)] = encode(
-            np.asarray(coord, dtype='<f4'))
-    connectome["marker_color"] = to_color_strings(colors)
-    connectome["markers_only"] = True
+    markers_coordinates = _encode_markers_coordinates(coords)
+    connectome = {
+        "markers_only": True,
+        "marker_color": to_color_strings(colors),
+        **markers_coordinates
+    }
+
     return connectome
 
 
@@ -256,12 +304,12 @@ def view_markers(marker_coords, marker_color=None, marker_size=5.,
 
     """
     if marker_color is None:
-        marker_color = ['red' for i in range(len(marker_coords))]
+        marker_color = ['red' for _ in range(len(marker_coords))]
     connectome_info = _get_markers(marker_coords, marker_color)
     if hasattr(marker_size, 'tolist'):
         marker_size = marker_size.tolist()
     if marker_labels is None:
-        marker_labels = ['' for i in range(marker_coords.shape[0])]
+        marker_labels = ['' for _ in range(marker_coords.shape[0])]
     connectome_info["marker_size"] = marker_size
     connectome_info["marker_labels"] = marker_labels
     connectome_info['title'] = title
