@@ -15,7 +15,7 @@ from scipy import linalg, signal as sp_signal
 from sklearn.utils import gen_even_slices, as_float_array
 
 from ._utils.numpy_conversions import csv_to_array, as_ndarray
-
+from ._utils.helpers import rename_parameters
 
 availiable_filters = ['butterworth', ]
 
@@ -408,8 +408,8 @@ def _ensure_float(data):
             data = data.astype(np.float32)
     return data
 
-
-def clean(signals, sessions=None, detrend=True, standardize='zscore',
+@rename_parameters({'sessions': 'runs'}, "0.9.0")
+def clean(signals, runs=None, detrend=True, standardize='zscore',
           confounds=None, standardize_confounds=True, filter='butterworth',
           low_pass=None, high_pass=None, t_r=2.5, ensure_finite=False):
     """Improve SNR on masked fMRI signals.
@@ -513,8 +513,8 @@ def clean(signals, sessions=None, detrend=True, standardize='zscore',
     _ = _check_filter_parameters(filter, low_pass, high_pass, t_r)
 
     # Restrict the signal to the orthogonal of the confounds
-    if sessions is not None:
-        signals = _process_runs(signals, sessions, detrend, standardize,
+    if runs is not None:
+        signals = _process_runs(signals, runs, detrend, standardize,
                                    confounds, low_pass, high_pass, t_r)
 
     # Detrend
@@ -568,18 +568,19 @@ def clean(signals, sessions=None, detrend=True, standardize='zscore',
 
     return signals
 
-def _process_runs(signals, sessions, detrend, standardize, confounds, low_pass, high_pass, t_r):
+
+def _process_runs(signals, runs, detrend, standardize, confounds, low_pass, high_pass, t_r):
     """Process each run independently."""
-    if len(sessions) != len(signals):
+    if len(runs) != len(signals):
         raise ValueError(('The length of the session vector (%i) '
                             'does not match the length of the signals (%i)')
-                            % (len(sessions), len(signals)))
-    for s in np.unique(sessions):
+                            % (len(runs), len(signals)))
+    for s in np.unique(runs):
         session_confounds = None
         if confounds is not None:
-            session_confounds = confounds[sessions == s]
-        signals[sessions == s, :] = \
-            clean(signals[sessions == s],
+            session_confounds = confounds[runs == s]
+        signals[runs == s, :] = \
+            clean(signals[runs == s],
                   detrend=detrend, standardize=standardize,
                   confounds=session_confounds, low_pass=low_pass,
                   high_pass=high_pass, t_r=t_r)
