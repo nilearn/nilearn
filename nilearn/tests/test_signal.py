@@ -470,6 +470,10 @@ def test_clean_confounds():
     nisignal.clean(signals, detrend=False, standardize=False,
                    confounds=confounds_df)
 
+    # test array-like signals
+    list_signal = signals.tolist()
+    nisignal.clean(list_signal)
+
     # Use a list containing two filenames, a 2D array and a 1D array
     nisignal.clean(signals, detrend=False, standardize=False,
                    confounds=[filename1, confounds[:, 0:2],
@@ -488,6 +492,7 @@ def test_clean_confounds():
                   confounds=[None])
     pytest.raises(ValueError, nisignal.clean, signals, t_r=None,
                   low_pass=.01)
+    pytest.raises(ValueError, clean, signals, ensure_finite=None)
 
     # Test without standardizing that constant parts of confounds are
     # accounted for
@@ -523,6 +528,9 @@ def test_clean_confounds():
     filter_warning = sum('No filter type selected' in str(r.message)
                          for r in records)
     assert filter_warning == 1
+    # invalid filter method
+    pytest.raises(ValueError, nisignal.clean, signals, filter="not_implemented")
+
 
 def test_clean_frequencies_using_power_spectrum_density():
 

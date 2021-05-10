@@ -17,7 +17,7 @@ from sklearn.utils import gen_even_slices, as_float_array
 from ._utils.numpy_conversions import csv_to_array, as_ndarray
 
 
-availiable_filters = ["butterworth", ]
+availiable_filters = ['butterworth', ]
 
 
 def _standardize(signals, detrend=False, standardize='zscore'):
@@ -410,7 +410,7 @@ def _ensure_float(data):
 
 
 def clean(signals, sessions=None, detrend=True, standardize='zscore',
-          confounds=None, standardize_confounds=True, filter="butterworth",
+          confounds=None, standardize_confounds=True, filter='butterworth',
           low_pass=None, high_pass=None, t_r=2.5, ensure_finite=False):
     """Improve SNR on masked fMRI signals.
 
@@ -509,12 +509,12 @@ def clean(signals, sessions=None, detrend=True, standardize='zscore',
     """
     # Read confounds and signals
     signals, confounds = _sanitize_inputs(signals, confounds, ensure_finite)
-    # check if filter paramters are satidfied
+    # check if filter parameters are satisfied
     _ = _check_filter_parameters(filter, low_pass, high_pass, t_r)
 
     # Restrict the signal to the orthogonal of the confounds
     if sessions is not None:
-        signals = _process_session(signals, sessions, detrend, standardize,
+        signals = _process_runs(signals, sessions, detrend, standardize,
                                    confounds, low_pass, high_pass, t_r)
 
     # Detrend
@@ -528,7 +528,7 @@ def clean(signals, sessions=None, detrend=True, standardize='zscore',
                                 detrend=detrend)
 
     # Apply low- and high-pass filters
-    if filter == "butterworth" and t_r is not None:  # this change enticipate extra fltering methods
+    if filter == 'butterworth' and t_r is not None:  # this change enticipate extra fltering methods
         signals = butterworth(signals, sampling_rate=1. / t_r,
                               low_pass=low_pass, high_pass=high_pass)
         if confounds is not None:
@@ -568,8 +568,8 @@ def clean(signals, sessions=None, detrend=True, standardize='zscore',
 
     return signals
 
-def _process_session(signals, sessions, detrend, standardize, confounds, low_pass, high_pass, t_r):
-    """Process each session independently."""
+def _process_runs(signals, sessions, detrend, standardize, confounds, low_pass, high_pass, t_r):
+    """Process each run independently."""
     if len(sessions) != len(signals):
         raise ValueError(('The length of the session vector (%i) '
                             'does not match the length of the signals (%i)')
