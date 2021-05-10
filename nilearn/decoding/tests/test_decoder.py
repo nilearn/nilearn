@@ -213,7 +213,7 @@ def test_decoder_binary_classification():
 
 
 def test_decoder_dummy_classifier():
-    n_samples = 200
+    n_samples = 400
     X, y = make_classification(n_samples=n_samples, n_features=125, scale=3.0,
                                n_informative=5, n_classes=2, random_state=42)
     X, mask = to_niimgs(X, [5, 5, 5])
@@ -227,7 +227,7 @@ def test_decoder_dummy_classifier():
     model = Decoder(estimator='dummy_classifier', mask=mask)
     model.fit(X, y)
     y_pred = model.predict(X)
-    assert np.sum(y_pred == 1.0) / n_samples - proportion < 0.5
+    assert np.sum(y_pred == 1.0) / n_samples - proportion < 0.05
 
     # Set scoring of decoder with a callable
     accuracy_scorer = get_scorer('accuracy')
@@ -271,7 +271,7 @@ def test_decoder_dummy_classifier():
     # decoder object use other scoring metric for dummy classifier
     model = Decoder(estimator='dummy_classifier', mask=mask, scoring='roc_auc')
     model.fit(X, y)
-    assert np.mean(model.cv_scores_[0]) >= 0.5
+    assert np.mean(model.cv_scores_[0]) >= 0.45
 
     # Raises a not implemented error with strategy constant
     param = dict(strategy='constant')
