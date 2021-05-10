@@ -27,42 +27,37 @@ def _prepare_line(edges, nodes):
     return path_edges, path_nodes
 
 
-def _prepare_colors(marker_color, path_nodes):
+def _prepare_colors(marker_color, node_number):
     marker_colors, marker_colorscale = None, None
 
     if isinstance(marker_color, str) and marker_color == 'auto':
-        marker_colors = np.linspace(0, 100, len(path_nodes)).astype("uint8")
-        marker_colors = marker_colors[path_nodes].tolist()
+        marker_colors = np.linspace(0, 100, node_number).astype("uint8")
+        marker_colors = marker_colors.tolist()
         marker_colorscale = 'Viridis'
     elif isinstance(marker_color, str):
         color_as_hex = mpl_colors.to_hex(marker_color)
         marker_colorscale = [[0, color_as_hex], [1, color_as_hex]]
-        marker_colors = [0] * len(path_nodes)
+        marker_colors = [0] * node_number
     elif isinstance(marker_color, list):
-        if len(marker_color) != np.max(path_nodes) + 1:
-            raise ValueError("Number of colors provided should match the number of nodes")
         # Colorscale values must be between 0 and 1
         marker_colorscale = [
-            [index / np.max(path_nodes), mpl_colors.to_hex(color)]
+            [index / (node_number - 1), mpl_colors.to_hex(color)]
             for index, color in enumerate(marker_color)
         ]
-        marker_colors = (path_nodes / np.max(path_nodes)).tolist()
+        marker_colors = (np.arange(node_number) / (node_number - 1)).tolist()
 
     return marker_colors, marker_colorscale
 
 
-def _get_connectome(adjacency_matrix, coords, threshold=None,
-                    marker_size=None, marker_color='auto', cmap=cm.cold_hot,
-                    symmetric_cmap=True):
-    connectome = {}
-    coords = np.asarray(coords, dtype='<f4')
-    adjacency_matrix = np.nan_to_num(adjacency_matrix, copy=True)
+def _prepare_lines_metadata(adjacency_matrix, coords, threshold, cmap, symmetric_cmap):
+    lines_metadata = {}
+
     colors = colorscale(
         cmap, adjacency_matrix.ravel(), threshold=threshold,
         symmetric_cmap=symmetric_cmap)
-    connectome['colorscale'] = colors['colors']
-    connectome['cmin'] = float(colors['vmin'])
-    connectome['cmax'] = float(colors['vmax'])
+    lines_metadata['line_colorscale'] = colors['colors']
+    lines_metadata['line_cmin'] = float(colors['vmin'])
+    lines_metadata['line_cmax'] = float(colors['vmax'])
     if threshold is not None:
         adjacency_matrix[
             np.abs(adjacency_matrix) <= colors['abs_threshold']] = 0
