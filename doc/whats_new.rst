@@ -19,7 +19,8 @@ Fixes
 Enhancements
 ------------
 
-- :func:`nilearn.plotting.view_markers` now accept an optional argument `marker_labels` to provide labels to each marker.
+- :func:`nilearn.plotting.view_markers` now accepts an optional argument `marker_labels` to provide labels to each marker.
+- :func:`nilearn.plotting.plot_surf` now accepts new values for `avg_method` argument, such as `min`, `max`, or even a custom python function to compute the value displayed for each face of the plotted mesh.
 - :func:`nilearn.plotting.view_img_on_surf` can now optionally pass through
   parameters to :func:`nilearn.surface.vol_to_surf` using the
   `vol_to_surf_kwargs` argument. One application is better HTML visualization of

@@ -72,9 +72,20 @@ def plot_surf(surf_mesh, surf_map=None, bg_map=None,
     colorbar : bool, optional
         If True, a colorbar of surf_map is displayed. Default=False.
 
-    avg_method : {'mean', 'median'}, optional
-        How to average vertex values to derive the face value, mean results
-        in smooth, median in sharp boundaries. Default='mean'.
+    avg_method : {'mean', 'median', 'min', 'max', custom function}, optional
+        How to average vertex values to derive the face value,
+        mean results in smooth, median in sharp boundaries,
+        min or max for sparse matrices.
+        You can also pass a custom function which will be
+        executed though `numpy.apply_along_axis`.
+        Here is an example of a custom function:
+
+        .. code-block:: python
+
+            def custom_function(vertices):
+                return vertices[0] * vertices[1] * vertices[2]
+
+        Default='mean'.
 
     threshold : a number or None, default is None.
         If None is given, the image is not thresholded.
@@ -272,6 +283,43 @@ def plot_surf(surf_mesh, surf_map=None, bg_map=None,
             surf_map_faces = np.mean(surf_map_data[faces], axis=1)
         elif avg_method == 'median':
             surf_map_faces = np.median(surf_map_data[faces], axis=1)
+        elif avg_method == 'min':
+            surf_map_faces = np.min(surf_map_data[faces], axis=1)
+        elif avg_method == 'max':
+            surf_map_faces = np.max(surf_map_data[faces], axis=1)
+        elif callable(avg_method):
+            surf_map_faces = np.apply_along_axis(
+                avg_method, 1, surf_map_data[faces]
+            )
+
+            ## check that surf_map_faces has the same length as face_colors
+            if surf_map_faces.shape != (face_colors.shape[0],):
+                raise ValueError(
+                    'Array computed with the custom function '
+                    'from avg_method does not have the correct shape: '
+                    '{} != {}'.format(
+                        surf_map_faces.shape[0],
+                        face_colors.shape[0]
+                    )
+                )
+
+            ## check that dtype is either int or float
+            if not (
+                "int" in str(surf_map_faces.dtype) or
+                "float" in str(surf_map_faces.dtype)
+            ):
+                raise ValueError(
+                    'Array computed with the custom function '
+                    'from avg_method should be an array of numbers '
+                    '(int or float)'
+                )
+
+        else:
+            raise ValueError(
+                "avg_method should be either "
+                "['mean', 'median', 'max', 'min'] "
+                "or a custom function"
+            )
 
         # if no vmin/vmax are passed figure them out from data
         if vmin is None:
