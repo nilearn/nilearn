@@ -1,6 +1,6 @@
 """
 Second-level fMRI model: two-sample test, unpaired and paired
-=============================================
+==============================================================
 
 Full step-by-step example of fitting a GLM to perform a second level analysis
 in experimental data and visualizing the results
@@ -44,7 +44,7 @@ sample_horizontal = fetch_localizer_contrasts(
 
 ##########################################################################
 # Estimate second level models
-# ---------------------------
+# ------------------------------
 # We define the input maps and the design matrix for the second level model
 # and fit it.
 second_level_input = sample_vertical['cmaps'] + sample_horizontal['cmaps']
