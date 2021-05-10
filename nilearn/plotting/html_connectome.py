@@ -17,6 +17,44 @@ class ConnectomeView(HTMLDocument):
     pass
 
 
+def _encode_coordinates(coords, prefix):
+    """
+    Transform a 2D-array of 3D data (x, y, z) into a dict of base64 values
+
+    Parameters
+    ----------
+    coords : ndarray, shape=(n_nodes, 3)
+        The coordinates of the nodes in MNI space.
+
+    prefix : str
+        Prefix for the key value in the returned dict. Schema is {prefix}{x|y|z}
+
+    Returns
+    -------
+    coordinates : dict
+        Dictionary containing base64 values for each axis
+    """
+    coordinates = {}
+
+    coords = np.asarray(coords, dtype='<f4')
+    marker_x, marker_y, marker_z = coords.T
+    for coord, cname in [(marker_x, "x"), (marker_y, "y"), (marker_z, "z")]:
+        coordinates["{}{}".format(prefix, cname)] = encode(
+            np.asarray(coord, dtype='<f4'))
+
+    return coordinates
+
+
+def _encode_markers_coordinates(coords):
+    """Wrapper for _encode_coordinates specific to markers"""
+    return _encode_coordinates(coords, "_marker_")
+
+
+def _encode_lines_coordinates(coords):
+    """Wrapper for _encode_coordinates specific to lines"""
+    return _encode_coordinates(coords, "_con_")
+
+
 def _prepare_line(edges, nodes):
     path_edges = np.zeros(len(edges) * 3, dtype=int)
     path_edges[::3] = edges
@@ -27,31 +65,82 @@ def _prepare_line(edges, nodes):
     return path_edges, path_nodes
 
 
-def _prepare_colors(marker_color, node_number):
+def _prepare_colors(marker_color, number_of_nodes):
+    """
+    Generate "color" and "colorscale" attributes based on `marker_color` mode
+
+    Parameters
+    ----------
+    marker_color : color or sequence of colors, optional
+        Color(s) of the nodes. Default='auto'.
+
+    number_of_nodes : int
+        Number of nodes in the view
+
+    Returns
+    -------
+    markers_colors: list
+
+    marker_colorscale: list
+    """
     marker_colors, marker_colorscale = None, None
 
     if isinstance(marker_color, str) and marker_color == 'auto':
-        marker_colors = np.linspace(0, 100, node_number).astype("uint8")
+        marker_colors = np.linspace(0, 100, number_of_nodes).astype("uint8")
         marker_colors = marker_colors.tolist()
         marker_colorscale = 'Viridis'
     elif isinstance(marker_color, str):
         color_as_hex = mpl_colors.to_hex(marker_color)
         marker_colorscale = [[0, color_as_hex], [1, color_as_hex]]
-        marker_colors = [0] * node_number
+        marker_colors = [0] * number_of_nodes
     elif isinstance(marker_color, list):
         # Colorscale values must be between 0 and 1
         marker_colorscale = [
-            [index / (node_number - 1), mpl_colors.to_hex(color)]
+            [index / (number_of_nodes - 1), mpl_colors.to_hex(color)]
             for index, color in enumerate(marker_color)
         ]
-        marker_colors = (np.arange(node_number) / (node_number - 1)).tolist()
+        marker_colors = (
+                np.arange(number_of_nodes) / (number_of_nodes - 1)
+        ).tolist()
 
     return marker_colors, marker_colorscale
 
 
 def _prepare_lines_metadata(adjacency_matrix, coords, threshold, cmap, symmetric_cmap):
+    """
+    Generate metadata related to lines for _connectome_view plot
+
+    Parameters
+    ----------
+    adjacency_matrix : ndarray, shape=(n_nodes, n_nodes)
+        The weights of the edges.
+
+    coords : ndarray, shape=(n_nodes, 3)
+        The coordinates of the nodes in MNI space.
+
+    threshold : str, number or None, optional
+        If None, no thresholding.
+        If it is a number only connections of amplitude greater
+        than threshold will be shown.
+        If it is a string it must finish with a percent sign,
+        e.g. "25.3%", and only connections of amplitude above the
+        given percentile will be shown.
+
+    cmap : str or matplotlib colormap, optional
+        Colormap to use. Default=cm.bwr.
+
+    symmetric_cmap : bool, optional
+        Make colormap symmetric (ranging from -vmax to vmax).
+        Default=True.
+
+    Returns
+    -------
+    coordinates : dict
+        Dictionary containing base64 values for each axis
+    """
     lines_metadata = {}
 
+    adjacency_matrix = np.nan_to_num(adjacency_matrix, copy=True)
     colors = colorscale(
         cmap, adjacency_matrix.ravel(), threshold=threshold,
         symmetric_cmap=symmetric_cmap)
@@ -75,26 +164,6 @@ def _prepare_lines_metadata(adjacency_matrix, coords, threshold, cmap, symmetric
     }
 
     return lines_metadata
-
-
-def _encode_coordinates(coords, prefix):
-    coordinates = {}
-
-    coords = np.asarray(coords, dtype='<f4')
-    marker_x, marker_y, marker_z = coords.T
-    for coord, cname in [(marker_x, "x"), (marker_y, "y"), (marker_z, "z")]:
-        coordinates["{}{}".format(prefix, cname)] = encode(
-            np.asarray(coord, dtype='<f4'))
-
-    return coordinates
-
-
-def _encode_markers_coordinates(coords):
-    return _encode_coordinates(coords, "_marker_")
-
-
-def _encode_lines_coordinates(coords):
-    return _encode_coordinates(coords, "_con_")
 
 
 def _prepare_markers_metadata(coords, marker_size, marker_color):
@@ -121,15 +190,11 @@ def _prepare_markers_metadata(coords, marker_size, marker_color):
 def _get_connectome(adjacency_matrix, coords, threshold=None,
                     marker_size=None, marker_color='auto', cmap=cm.cold_hot,
                     symmetric_cmap=True):
-    connectome = {}
-    adjacency_matrix = np.nan_to_num(adjacency_matrix, copy=True)
-
     lines_metadata = _prepare_lines_metadata(adjacency_matrix, coords, threshold, cmap, symmetric_cmap)
 
     markers_metadata = _prepare_markers_metadata(coords, marker_size, marker_color)
 
     return {
-        **connectome,
         **lines_metadata,
         **markers_metadata,
     }
