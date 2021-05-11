@@ -16,7 +16,8 @@ Fixes
   It used to return only the first attribute, and now returns as many attributes as design matrices.
 - Plotting functions that show a stack of slices from a 3D image (e.g. 
   :func:`nilearn.plotting.plot_stat_map`) will now plot the slices in the user 
-  specified order, rather than automatically sorting into ascending order. 
+  specified order, rather than automatically sorting into ascending order
+  (https://github.com/nilearn/nilearn/issues/1155). 
 
 Enhancements
 ------------
