@@ -667,7 +667,8 @@ def _check_filter_parameters(filter, low_pass, high_pass, t_r):
                                  "butterworth filtering.")
             if not any(isinstance(item, float) for item in [low_pass, high_pass]):
                 raise TypeError("high/low pass must be float or None but you provided "
-                                f"high_pass='{high_pass}', low_pass='{low_pass}'")
+                                "high_pass='{0}', low_pass='{1}'".format(high_pass,
+                                                                         low_pass))
         return True
     else:
         raise ValueError("Filter method not implemented.")
