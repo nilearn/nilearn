@@ -14,10 +14,14 @@ import pandas as pd
 from scipy import linalg, signal as sp_signal
 from sklearn.utils import gen_even_slices, as_float_array
 
+# from .glm.first_level.design_matrix import _cosine_drift
 from ._utils.numpy_conversions import csv_to_array, as_ndarray
 from ._utils.helpers import rename_parameters
 
-availiable_filters = ['butterworth', ]
+
+availiable_filters = ['butterworth',
+                    #   'cosine'
+                      ]
 
 
 def _standardize(signals, detrend=False, standardize='zscore'):
@@ -410,7 +414,7 @@ def _ensure_float(data):
 
 @rename_parameters({'sessions': 'runs'}, "0.9.0")
 def clean(signals, runs=None, detrend=True, standardize='zscore',
-          confounds=None, standardize_confounds=True, filter='butterworth',
+          confounds=None, standardize_confounds=True, filter=False,
           low_pass=None, high_pass=None, t_r=2.5, ensure_finite=False):
     """Improve SNR on masked fMRI signals.
 
@@ -439,8 +443,8 @@ def clean(signals, runs=None, detrend=True, standardize='zscore',
         Timeseries. Must have shape (instant number, features number).
         This array is not modified.
 
-    sessions : numpy array, optional
-        Add a session level to the cleaning process. Each session will be
+    runs : numpy array, optional
+        Add a run level to the cleaning process. Each run will be
         cleaned independently. Must be a 1D array of n_samples elements.
 
     confounds: numpy.ndarray, str, DataFrame or list of
@@ -456,13 +460,15 @@ def clean(signals, runs=None, detrend=True, standardize='zscore',
     t_r: float
         Repetition time, in second (sampling period). Set to None if not.
 
-    filter: {'butterworth', False}
+    filter: {'butterworth', 'cosine', False}
         Filtering methods.
         'butterworth': perform butterworth filtering.
+        'cosine': generate discrete cosine transformation drift terms.
         False : Do not perform filtering.
 
     low_pass, high_pass: float
         Respectively high and low cutoff frequencies, in Hertz.
+        `low_pass` is not implemented for filter='cosine'.
 
     detrend: bool
         If detrending should be applied on timeseries (before
@@ -509,8 +515,6 @@ def clean(signals, runs=None, detrend=True, standardize='zscore',
     """
     # Read confounds and signals
     signals, confounds = _sanitize_inputs(signals, confounds, ensure_finite)
-    # check if filter parameters are satisfied
-    _ = _check_filter_parameters(filter, low_pass, high_pass, t_r)
 
     # Restrict the signal to the orthogonal of the confounds
     if runs is not None:
@@ -526,18 +530,10 @@ def clean(signals, runs=None, detrend=True, standardize='zscore',
         if confounds is not None:
             confounds = _standardize(confounds, standardize=False,
                                 detrend=detrend)
-
-    # Apply low- and high-pass filters
-    if filter == 'butterworth' and t_r is not None:  # this change enticipate extra fltering methods
-        signals = butterworth(signals, sampling_rate=1. / t_r,
-                              low_pass=low_pass, high_pass=high_pass)
-        if confounds is not None:
-            # Apply low- and high-pass filters to keep filters orthogonal
-            # (according to Lindquist et al. (2018))
-            confounds = butterworth(confounds, sampling_rate=1. / t_r,
-                                    low_pass=low_pass, high_pass=high_pass)
-    # if filter == "cosine":
-    #   ...
+    if _check_filter_parameters(filter, low_pass, high_pass, t_r):
+        # check if filter parameters are satisfied and filter according to the strategy
+        signals, confounds = _filter_signal(signals, confounds, filter,
+                                            low_pass, high_pass, t_r)
 
     # Remove confounds
     if confounds is not None:
@@ -567,6 +563,23 @@ def clean(signals, runs=None, detrend=True, standardize='zscore',
                                detrend=False)
 
     return signals
+
+
+def _filter_signal(signals, confounds, filter, low_pass, high_pass, t_r):
+    '''Filter signal based on provided strategy.'''
+    if filter == 'butterworth':
+        signals = butterworth(signals, sampling_rate=1. / t_r,
+                              low_pass=low_pass, high_pass=high_pass)
+        if confounds is not None:
+            # Apply low- and high-pass filters to keep filters orthogonal
+            # (according to Lindquist et al. (2018))
+            confounds = butterworth(confounds, sampling_rate=1. / t_r,
+                                    low_pass=low_pass, high_pass=high_pass)
+    # elif filter == "cosine":
+    #     frame_times = np.arange(signals.shape[0]) * t_r
+    #     cosine_drift = _cosine_drift(high_pass, frame_times)
+    #     confounds = np.hstack((confounds, cosine_drift))
+    return signals, confounds
 
 
 def _process_runs(signals, runs, detrend, standardize, confounds, low_pass, high_pass, t_r):
@@ -638,21 +651,21 @@ def _sanitize_confound_dtype(n_signal, confound):
 
 def _check_filter_parameters(filter, low_pass, high_pass, t_r):
     """Check all filter related parameters are set correcly."""
-    if not filter:  # anticipate new filtering method.
+    if not filter:
         if isinstance(low_pass, float) or isinstance(high_pass, float):
             warnings.warn("No filter type selected but cutoff frequency provided."
                           "Will not perform filtering.")
         return False
     elif filter in availiable_filters:
+        if t_r is None:
+            raise ValueError("Repetition time (t_r) must be specified for "
+                             "filtering. You specified None.")
         if isinstance(low_pass, bool):
             raise TypeError("low pass must be float or None but you provided "
                             "low_pass='{0}'".format(low_pass))
         if isinstance(high_pass, bool):
             raise TypeError("high pass must be float or None but you provided "
                             "high_pass='{0}'".format(high_pass))
-        if (isinstance(high_pass, float) or isinstance(low_pass, float)) and t_r is None:
-            raise ValueError("Repetition time (t_r) must be specified for "
-                             "filtering. You specified None.")
         return True
     else:
         raise ValueError("Filter method not implemented.")
