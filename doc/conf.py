@@ -99,7 +99,7 @@ bibtex_footbibliography_header = ''
 
 # General information about the project.
 project = u'Nilearn'
-copyright = u'The nilearn developers 2010-2020'
+copyright = u'The nilearn developers 2010-2021'
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
