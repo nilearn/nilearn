@@ -80,8 +80,7 @@ def _prepare_colors_for_markers(marker_color, number_of_nodes):
     Returns
     -------
     markers_colors: list
-
-    marker_colorscale: list
+        List of `number_of_nodes` colors as hexadecimal values
     """
     if isinstance(marker_color, str) and marker_color == 'auto':
         colors = mpl_cm.Set2(np.linspace(0, 1, number_of_nodes))
