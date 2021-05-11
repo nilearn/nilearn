@@ -515,7 +515,7 @@ def clean(signals, runs=None, detrend=True, standardize='zscore',
     """
     # Read confounds and signals
     signals, confounds = _sanitize_inputs(signals, confounds, ensure_finite)
-
+    use_filter = _check_filter_parameters(filter, low_pass, high_pass, t_r)
     # Restrict the signal to the orthogonal of the confounds
     if runs is not None:
         signals = _process_runs(signals, runs, detrend, standardize,
@@ -530,7 +530,7 @@ def clean(signals, runs=None, detrend=True, standardize='zscore',
         if confounds is not None:
             confounds = _standardize(confounds, standardize=False,
                                 detrend=detrend)
-    if _check_filter_parameters(filter, low_pass, high_pass, t_r):
+    if use_filter:
         # check if filter parameters are satisfied and filter according to the strategy
         signals, confounds = _filter_signal(signals, confounds, filter,
                                             low_pass, high_pass, t_r)
@@ -652,20 +652,22 @@ def _sanitize_confound_dtype(n_signal, confound):
 def _check_filter_parameters(filter, low_pass, high_pass, t_r):
     """Check all filter related parameters are set correcly."""
     if not filter:
-        if isinstance(low_pass, float) or isinstance(high_pass, float):
+        if any(isinstance(item, float) for item in [low_pass, high_pass]):
             warnings.warn("No filter type selected but cutoff frequency provided."
                           "Will not perform filtering.")
         return False
     elif filter in availiable_filters:
-        if t_r is None:
-            raise ValueError("Repetition time (t_r) must be specified for "
-                             "filtering. You specified None.")
-        if isinstance(low_pass, bool):
-            raise TypeError("low pass must be float or None but you provided "
-                            "low_pass='{0}'".format(low_pass))
-        if isinstance(high_pass, bool):
-            raise TypeError("high pass must be float or None but you provided "
-                            "high_pass='{0}'".format(high_pass))
+        if filter == 'cosine' and not all(isinstance(item, float)
+                                          for item in [t_r, high_pass]):
+            raise ValueError("Repetition time (t_r) and low cutoff frequency "
+                             "must be specified for cosine filtering.")
+        if filter == 'butterworth':
+            if t_r is None:
+                raise ValueError("Repetition time (t_r) must be specified for "
+                                 "butterworth filtering.")
+            if not any(isinstance(item, float) for item in [low_pass, high_pass]):
+                raise TypeError("high/low pass must be float or None but you provided "
+                                f"high_pass='{high_pass}', low_pass='{low_pass}'")
         return True
     else:
         raise ValueError("Filter method not implemented.")
