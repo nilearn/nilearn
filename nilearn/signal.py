@@ -14,13 +14,12 @@ import pandas as pd
 from scipy import linalg, signal as sp_signal
 from sklearn.utils import gen_even_slices, as_float_array
 
-# from .glm.first_level.design_matrix import _cosine_drift
 from ._utils.numpy_conversions import csv_to_array, as_ndarray
 from ._utils.helpers import rename_parameters
 
 
 availiable_filters = ['butterworth',
-                    #   'cosine'
+                      'cosine'
                       ]
 
 
@@ -575,10 +574,11 @@ def _filter_signal(signals, confounds, filter, low_pass, high_pass, t_r):
             # (according to Lindquist et al. (2018))
             confounds = butterworth(confounds, sampling_rate=1. / t_r,
                                     low_pass=low_pass, high_pass=high_pass)
-    # elif filter == "cosine":
-    #     frame_times = np.arange(signals.shape[0]) * t_r
-    #     cosine_drift = _cosine_drift(high_pass, frame_times)
-    #     confounds = np.hstack((confounds, cosine_drift))
+    elif filter == "cosine":
+        from .glm.first_level.design_matrix import _cosine_drift
+        frame_times = np.arange(signals.shape[0]) * t_r
+        cosine_drift = _cosine_drift(high_pass, frame_times)
+        confounds = np.hstack((confounds, cosine_drift))
     return signals, confounds
 
 
