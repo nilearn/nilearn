@@ -130,7 +130,8 @@ def fetch_atlas_craddock_2012(data_dir=None, url=None, resume=True, verbose=1):
 
     The provided images are in MNI152 space.
 
-    See [1]_ for the licence and :footcite:`craddock2012whole` and [3]_ for more information
+    See :footcite:`CreativeCommons` for the licence.
+    See :footcite:`craddock2012whole` and :footcite:`nitrcClusterROI` for more information.
     on this parcellation.
 
     Parameters
@@ -158,12 +159,7 @@ def fetch_atlas_craddock_2012(data_dir=None, url=None, resume=True, verbose=1):
 
     References
     ----------
-    .. [1] Licence: Creative Commons Attribution Non-commercial Share Alike
-       http://creativecommons.org/licenses/by-nc-sa/2.5/
-
     .. footbibliography::
-
-    .. [3] http://www.nitrc.org/projects/cluster_roi/
 
     """
     if url is None:
