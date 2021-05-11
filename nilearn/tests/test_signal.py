@@ -328,7 +328,7 @@ def test_clean_detrending():
 
 
 def test_clean_t_r():
-    """Different TRs must produce different results after filtering"""
+    """Different TRs must produce different results after butterworth filtering"""
     rng = np.random.RandomState(42)
     n_samples = 34
     # n_features  Must be higher than 500
