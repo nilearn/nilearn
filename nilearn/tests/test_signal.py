@@ -382,7 +382,7 @@ def test_clean_frequencies():
 def test_clean_sessions():
     n_samples = 21
     n_features = 501  # Must be higher than 500
-    signals, _, _ = generate_signals(n_features=n_features,
+    signals, _, confounds = generate_signals(n_features=n_features,
                                      length=n_samples)
     trends = generate_trends(n_features=n_features,
                              length=n_samples)
@@ -391,7 +391,7 @@ def test_clean_sessions():
     # Create session info
     sessions = np.ones(n_samples)
     sessions[0:n_samples // 2] = 0
-    x_detrended = nisignal.clean(x, standardize=False, detrend=True,
+    x_detrended = nisignal.clean(x, confounds=confounds, standardize=False, detrend=True,
                                  low_pass=None, high_pass=None,
                                  sessions=sessions)
     # clean should not modify inputs
@@ -493,6 +493,8 @@ def test_clean_confounds():
                   confounds=filename1)
     pytest.raises(TypeError, nisignal.clean, signals,
                   confounds=[None])
+    pytest.raises(ValueError, nisignal.clean, signals, filter='cosine',
+                 t_r=None, high_pass=0.008)
     pytest.raises(ValueError, nisignal.clean, signals, filter='butterworth',
                   t_r=None, low_pass=.01)
     pytest.raises(ValueError, nisignal.clean, signals, filter='not_implemented')
