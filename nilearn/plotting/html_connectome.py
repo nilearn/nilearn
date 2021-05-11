@@ -1,6 +1,7 @@
 import json
 
 import numpy as np
+from matplotlib import cm as mpl_cm
 from matplotlib import colors as mpl_colors
 from scipy import sparse
 
@@ -8,8 +9,7 @@ from .. import datasets
 from . import cm
 
 from .js_plotting_utils import (add_js_lib, mesh_to_plotly,
-                                encode, colorscale, get_html_template,
-                                to_color_strings)
+                                encode, colorscale, get_html_template)
 from nilearn.plotting.html_document import HTMLDocument
 
 
@@ -65,7 +65,7 @@ def _prepare_line(edges, nodes):
     return path_edges, path_nodes
 
 
-def _prepare_colors(marker_color, number_of_nodes):
+def _prepare_colors_for_markers(marker_color, number_of_nodes):
     """
     Generate "color" and "colorscale" attributes based on `marker_color` mode
 
@@ -83,27 +83,20 @@ def _prepare_colors(marker_color, number_of_nodes):
 
     marker_colorscale: list
     """
-    marker_colors, marker_colorscale = None, None
-
     if isinstance(marker_color, str) and marker_color == 'auto':
-        marker_colors = np.linspace(0, 100, number_of_nodes).astype("uint8")
-        marker_colors = marker_colors.tolist()
-        marker_colorscale = 'Viridis'
+        colors = mpl_cm.Set2(np.linspace(0, 1, number_of_nodes))
     elif isinstance(marker_color, str):
-        color_as_hex = mpl_colors.to_hex(marker_color)
-        marker_colorscale = [[0, color_as_hex], [1, color_as_hex]]
-        marker_colors = [0] * number_of_nodes
-    elif isinstance(marker_color, list):
-        # Colorscale values must be between 0 and 1
-        marker_colorscale = [
-            [index / (number_of_nodes - 1), mpl_colors.to_hex(color)]
-            for index, color in enumerate(marker_color)
-        ]
-        marker_colors = (
-                np.arange(number_of_nodes) / (number_of_nodes - 1)
-        ).tolist()
+        cmap = mpl_colors.ListedColormap([marker_color] * number_of_nodes)
+        colors = cmap(np.arange(cmap.N))
+    else:
+        cmap = mpl_colors.ListedColormap(marker_color)
+        colors = cmap(np.arange(cmap.N))
 
-    return marker_colors, marker_colorscale
+    colors = colors[:, :3]
+    colors = np.asarray(colors * 255, dtype='uint8')
+    colors = ['#{:02x}{:02x}{:02x}'.format(*row) for row in colors]
+
+    return colors
 
 
 def _prepare_lines_metadata(adjacency_matrix, coords, threshold, cmap, symmetric_cmap):
@@ -169,7 +162,7 @@ def _prepare_lines_metadata(adjacency_matrix, coords, threshold, cmap, symmetric
 def _prepare_markers_metadata(coords, marker_size, marker_color):
     markers_coordinates = _encode_markers_coordinates(coords)
     markers_metadata = {
-        "markers_only": False,
+        'markers_only': False,
         **markers_coordinates
     }
 
@@ -178,11 +171,7 @@ def _prepare_markers_metadata(coords, marker_size, marker_color):
     if hasattr(marker_size, 'tolist'):
         marker_size = marker_size.tolist()
     markers_metadata['marker_size'] = marker_size
-
-    marker_colors, marker_colorscale = _prepare_colors(marker_color, len(coords))
-
-    markers_metadata['marker_color'] = marker_colors
-    markers_metadata['marker_colorscale'] = marker_colorscale
+    markers_metadata['marker_color'] = _prepare_colors_for_markers(marker_color, len(coords))
 
     return markers_metadata
 
@@ -203,8 +192,8 @@ def _get_connectome(adjacency_matrix, coords, threshold=None,
 def _get_markers(coords, colors):
     markers_coordinates = _encode_markers_coordinates(coords)
     connectome = {
-        "markers_only": True,
-        "marker_color": to_color_strings(colors),
+        'markers_only': True,
+        'marker_color': _prepare_colors_for_markers(colors, len(coords)),
         **markers_coordinates
     }
 
@@ -228,7 +217,7 @@ def _make_connectome_html(connectome_info, embed_js=True):
 
 def view_connectome(adjacency_matrix, node_coords, edge_threshold=None,
                     edge_cmap=cm.bwr, symmetric_cmap=True,
-                    linewidth=6., node_color="auto", node_size=3.,
+                    linewidth=6., node_color='auto', node_size=3.,
                     colorbar=True, colorbar_height=.5, colorbar_fontsize=25,
                     title=None, title_fontsize=25):
     """Insert a 3d plot of a connectome into an HTML page.
@@ -319,7 +308,7 @@ def view_connectome(adjacency_matrix, node_coords, edge_threshold=None,
     return _make_connectome_html(connectome_info)
 
 
-def view_markers(marker_coords, marker_color=None, marker_size=5.,
+def view_markers(marker_coords, marker_color='auto', marker_size=5.,
                  marker_labels=None, title=None, title_fontsize=25):
     """Insert a 3d plot of markers in a brain into an HTML page.
 
@@ -375,8 +364,8 @@ def view_markers(marker_coords, marker_color=None, marker_size=5.,
         marker_size = marker_size.tolist()
     if marker_labels is None:
         marker_labels = ['' for _ in range(marker_coords.shape[0])]
-    connectome_info["marker_size"] = marker_size
-    connectome_info["marker_labels"] = marker_labels
+    connectome_info['marker_size'] = marker_size
+    connectome_info['marker_labels'] = marker_labels
     connectome_info['title'] = title
     connectome_info['title_fontsize'] = title_fontsize
     return _make_connectome_html(connectome_info)

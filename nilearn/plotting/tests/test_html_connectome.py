@@ -1,11 +1,8 @@
-import warnings
 import json
 
 import numpy as np
 import pytest
-from matplotlib import colors as mpl_colors
 
-from nilearn.plotting import cm
 from nilearn.plotting.js_plotting_utils import decode
 from nilearn.plotting import html_connectome
 
@@ -20,26 +17,19 @@ def test_prepare_line():
     assert(pe == [0, 0, 0, 1, 1, 0, 2, 2, 0, 3, 3, 0]).all()
 
 
-@pytest.mark.parametrize('node_color,expected_marker_colors,expected_marker_colorscale', [
-    ('cyan', [0, 0, 0, 0, 0], [[0, mpl_colors.to_hex("cyan")], [1, mpl_colors.to_hex("cyan")]]),
-    ('auto', [0, 25, 25, 50, 0], "Viridis"),
-    (['cyan', 'red', 'blue'],
-     [0., 0.5, 0.5, 1., 0.],
-     [[0., mpl_colors.to_hex('cyan')], [0.5, mpl_colors.to_hex('red')], [1., mpl_colors.to_hex('blue')]])
+@pytest.mark.parametrize('node_color,expected_marker_colors', [
+    ('cyan', ['#00ffff', '#00ffff', '#00ffff']),
+    ('auto', ['#66c2a5', '#a6d854', '#b3b3b3']),
+    (['cyan', 'red', 'blue'], ['#00ffff', '#ff0000', '#0000ff'])
 ])
-def test_prepare_colors(node_color, expected_marker_colors, expected_marker_colorscale):
-    path_nodes = [0, 1, 1, 2, 0]
-    marker_colors, marker_colorscale = html_connectome._prepare_colors(node_color, path_nodes)
+def test_prepare_colors_for_markers(node_color, expected_marker_colors):
+    number_of_nodes = 3
+    marker_colors = html_connectome._prepare_colors_for_markers(
+        node_color,
+        number_of_nodes,
+    )
 
     assert marker_colors == expected_marker_colors
-    assert marker_colorscale == expected_marker_colorscale
-
-
-def test_prepare_colors_should_fail_if_color_list_is_too_short():
-    path_nodes = [0, 1, 1, 2, 0]
-
-    with pytest.raises(ValueError, match="Number of colors provided should match"):
-        html_connectome._prepare_colors(["cyan", "red"], path_nodes)
 
 
 def _make_connectome():
@@ -69,14 +59,13 @@ def test_get_connectome():
          40, 20, 0,
          40, 40, 0], dtype='<f4')
     assert (con_x == expected_x).all()
-    assert {'_con_x', '_con_y', '_con_z', '_con_w', 'colorscale'
-            }.issubset(connectome.keys())
-    assert (connectome['cmin'], connectome['cmax']) == (-2.5, 2.5)
+    assert {'_con_x', '_con_y', '_con_z', '_con_w'}.issubset(connectome.keys())
+    assert (connectome['line_cmin'], connectome['line_cmax']) == (-2.5, 2.5)
     adj[adj == 0] = np.nan
     connectome = html_connectome._get_connectome(adj, coord)
     con_x = decode(connectome['_con_x'], '<f4')
     assert (con_x == expected_x).all()
-    assert (connectome['cmin'], connectome['cmax']) == (-2.5, 2.5)
+    assert (connectome['line_cmin'], connectome['line_cmax']) == (-2.5, 2.5)
 
 
 def test_view_connectome():
@@ -102,7 +91,7 @@ def test_get_markers():
     assert markers["marker_color"] == [
         '#ff0000', '#007f00', '#000000', '#ffffff']
     assert markers['markers_only']
-    con_x = decode(markers['_con_x'], '<f4')
+    con_x = decode(markers['_marker_x'], '<f4')
     assert np.allclose(con_x, coords[:, 0])
 
 
