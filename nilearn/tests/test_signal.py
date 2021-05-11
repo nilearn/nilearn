@@ -309,8 +309,8 @@ def test_clean_detrending():
     np.testing.assert_almost_equal(y_orig, y, decimal=13)
 
     # test boolean is not given to signal.clean
-    pytest.raises(TypeError, nisignal.clean, x, low_pass=False, filter='butterworth')
-    pytest.raises(TypeError, nisignal.clean, x, high_pass=False, filter='butterworth')
+    pytest.raises(TypeError, nisignal.clean, x, low_pass=False)
+    pytest.raises(TypeError, nisignal.clean, x, high_pass=False)
 
     # This should remove trends
     x_detrended = nisignal.clean(x, standardize=False, detrend=True,
@@ -343,9 +343,9 @@ def test_clean_t_r():
         for low_cutoff, high_cutoff in zip(low_pass_freq_list,
                                            high_pass_freq_list):
             det_one_tr = nisignal.clean(x_orig, t_r=tr1, low_pass=low_cutoff,
-                                        high_pass=high_cutoff, filter='butterworth')
+                                        high_pass=high_cutoff)
             det_diff_tr = nisignal.clean(x_orig, t_r=tr2, low_pass=low_cutoff,
-                                         high_pass=high_cutoff, filter='butterworth')
+                                         high_pass=high_cutoff)
 
             if not np.isclose(tr1, tr2, atol=0.3):
                 msg = ('results do not differ for different TRs: {} and {} '
@@ -360,22 +360,20 @@ def test_clean_t_r():
 
 
 def test_clean_frequencies():
+    '''Using butterworth method.'''
     sx1 = np.sin(np.linspace(0, 100, 2000))
     sx2 = np.sin(np.linspace(0, 100, 2000))
     sx = np.vstack((sx1, sx2)).T
     sx_orig = sx.copy()
     assert clean(sx, standardize=False, high_pass=0.002, low_pass=None,
-                      t_r=2.5, filter='butterworth').max() > 0.1
+                      t_r=2.5).max() > 0.1
     assert clean(sx, standardize=False, high_pass=0.2, low_pass=None,
-                      t_r=2.5, filter='butterworth') .max() < 0.01
-    assert clean(sx, standardize=False, low_pass=0.01, t_r=2.5,
-                 filter='butterworth').max() > 0.9
-    pytest.raises(ValueError, clean, sx, low_pass=0.4, high_pass=0.5, t_r=2.5,
-                  filter='butterworth')
+                      t_r=2.5) .max() < 0.01
+    assert clean(sx, standardize=False, low_pass=0.01, t_r=2.5).max() > 0.9
+    pytest.raises(ValueError, clean, sx, low_pass=0.4, high_pass=0.5, t_r=2.5)
 
     # clean should not modify inputs
-    sx_cleaned = clean(sx, standardize=False, detrend=False, low_pass=0.2, t_r=2.5,
-                       filter='butterworth')
+    sx_cleaned = clean(sx, standardize=False, detrend=False, low_pass=0.2, t_r=2.5)
     assert np.array_equal(sx_orig, sx)
 
 
@@ -495,14 +493,14 @@ def test_clean_confounds():
                   confounds=[None])
     pytest.raises(ValueError, nisignal.clean, signals, filter='cosine',
                  t_r=None, high_pass=0.008)
-    pytest.raises(ValueError, nisignal.clean, signals, filter='butterworth',
-                  t_r=None, low_pass=.01)
+    pytest.raises(ValueError, nisignal.clean, signals, t_r=None,
+                  low_pass=.01)  # using butterworth filter here
     pytest.raises(ValueError, nisignal.clean, signals, filter='not_implemented')
     pytest.raises(ValueError, nisignal.clean, signals, ensure_finite=None)
     # Check warning message when no confound methods were specified,
     # but cutoff frequency provided.
     pytest.warns(UserWarning, nisignal.clean, signals,
-                t_r=2.5, low_pass=.01, match='not perform filtering')
+                t_r=2.5, filter=False, low_pass=.01, match='not perform filtering')
 
     # Test without standardizing that constant parts of confounds are
     # accounted for
@@ -549,9 +547,9 @@ def test_clean_frequencies_using_power_spectrum_density():
     low_pass = 0.1
     high_pass = 0.4
     res_low = clean(sx, detrend=False, standardize=False, low_pass=low_pass,
-                    high_pass=None, t_r=t_r, filter='butterworth')
+                    high_pass=None, t_r=t_r)
     res_high = clean(sx, detrend=False, standardize=False, low_pass=None,
-                     high_pass=high_pass, t_r=t_r, filter='butterworth')
+                     high_pass=high_pass, t_r=t_r)
 
     # Compute power spectrum density for both test
     f, Pxx_den_low = scipy.signal.welch(np.mean(res_low.T, axis=0), fs=t_r)

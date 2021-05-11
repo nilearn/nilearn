@@ -413,7 +413,7 @@ def _ensure_float(data):
 
 @rename_parameters({'sessions': 'runs'}, "0.9.0")
 def clean(signals, runs=None, detrend=True, standardize='zscore',
-          confounds=None, standardize_confounds=True, filter=False,
+          confounds=None, standardize_confounds=True, filter='butterworth',
           low_pass=None, high_pass=None, t_r=2.5, ensure_finite=False):
     """Improve SNR on masked fMRI signals.
 
@@ -662,16 +662,19 @@ def _check_filter_parameters(filter, low_pass, high_pass, t_r):
             raise ValueError("Repetition time (t_r) and low cutoff frequency "
                              "must be specified for cosine filtering.")
         if filter == 'butterworth':
+            if all(item is None for item in [low_pass, high_pass, t_r]):
+                # Butterworth was switched off by passing None to all these parameters
+                return False
             if t_r is None:
                 raise ValueError("Repetition time (t_r) must be specified for "
                                  "butterworth filtering.")
-            if not any(isinstance(item, float) for item in [low_pass, high_pass]):
+            if any(isinstance(item, bool) for item in [low_pass, high_pass]):
                 raise TypeError("high/low pass must be float or None but you provided "
                                 "high_pass='{0}', low_pass='{1}'".format(high_pass,
                                                                          low_pass))
         return True
     else:
-        raise ValueError("Filter method not implemented.")
+        raise ValueError("Filter method {} not implemented.".format(filter))
 
 
 def _sanitize_signals(signals, ensure_finite):
