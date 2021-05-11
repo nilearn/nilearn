@@ -578,8 +578,12 @@ def _filter_signal(signals, confounds, filter, low_pass, high_pass, t_r):
         from .glm.first_level.design_matrix import _cosine_drift
         frame_times = np.arange(signals.shape[0]) * t_r
         cosine_drift = _cosine_drift(high_pass, frame_times)
-        confounds = np.hstack((confounds, cosine_drift))
+        if confounds is None:
+            confounds = cosine_drift.copy()
+        else:
+            confounds = np.hstack((confounds, cosine_drift))
     return signals, confounds
+
 
 
 def _process_runs(signals, runs, detrend, standardize, confounds, low_pass, high_pass, t_r):
