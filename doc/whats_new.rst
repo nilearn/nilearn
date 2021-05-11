@@ -14,7 +14,9 @@ Fixes
 - Fix number of attributes returned by the
   `nilearn.glm.first_level.FirstLevelModel._get_voxelwise_model_attribute` method in the first level model.
   It used to return only the first attribute, and now returns as many attributes as design matrices.
-
+- Plotting functions that show a stack of slices from a 3D image (e.g. 
+  :func:`nilearn.plotting.plot_stat_map`) will now plot the slices in the user 
+  specified order, rather than automatically sorting into ascending order. 
 
 Enhancements
 ------------
