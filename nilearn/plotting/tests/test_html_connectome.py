@@ -19,7 +19,7 @@ def test_prepare_line():
 
 @pytest.mark.parametrize('node_color,expected_marker_colors', [
     ('cyan', ['#00ffff', '#00ffff', '#00ffff']),
-    ('auto', ['#66c2a5', '#a6d854', '#b3b3b3']),
+    ('auto', ['#440154', '#20908c', '#fde724']),
     (['cyan', 'red', 'blue'], ['#00ffff', '#ff0000', '#0000ff'])
 ])
 def test_prepare_colors_for_markers(node_color, expected_marker_colors):
@@ -82,17 +82,6 @@ def test_view_connectome():
     html = html_connectome.view_connectome(
         adj, coord, '85.3%', linewidth=8.5, node_size=np.arange(len(coord)))
     check_html(html, False, 'connectome-plot')
-
-
-def test_get_markers():
-    coords = np.arange(12).reshape((4, 3))
-    colors = ['r', 'g', 'black', 'white']
-    markers = html_connectome._get_markers(coords, colors)
-    assert markers["marker_color"] == [
-        '#ff0000', '#007f00', '#000000', '#ffffff']
-    assert markers['markers_only']
-    con_x = decode(markers['_marker_x'], '<f4')
-    assert np.allclose(con_x, coords[:, 0])
 
 
 def test_view_markers():

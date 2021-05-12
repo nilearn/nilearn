@@ -9,7 +9,8 @@ from .. import datasets
 from . import cm
 
 from .js_plotting_utils import (add_js_lib, mesh_to_plotly,
-                                encode, colorscale, get_html_template)
+                                encode, colorscale, get_html_template,
+                                to_color_strings)
 from nilearn.plotting.html_document import HTMLDocument
 
 
@@ -73,19 +74,13 @@ def _prepare_colors_for_markers(marker_color, number_of_nodes):
         List of `number_of_nodes` colors as hexadecimal values
     """
     if isinstance(marker_color, str) and marker_color == 'auto':
-        colors = mpl_cm.Set2(np.linspace(0, 1, number_of_nodes))
+        colors = mpl_cm.viridis(np.linspace(0, 1, number_of_nodes))
     elif isinstance(marker_color, str):
-        cmap = mpl_colors.ListedColormap([marker_color] * number_of_nodes)
-        colors = cmap(np.arange(cmap.N))
+        colors = [marker_color] * number_of_nodes
     else:
-        cmap = mpl_colors.ListedColormap(marker_color)
-        colors = cmap(np.arange(cmap.N))
+        colors = marker_color
 
-    colors = colors[:, :3]
-    colors = np.asarray(colors * 255, dtype='uint8')
-    colors = ['#{:02x}{:02x}{:02x}'.format(*row) for row in colors]
-
-    return colors
+    return to_color_strings(colors)
 
 
 def _prepare_lines_metadata(adjacency_matrix, coords, threshold,
