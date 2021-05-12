@@ -2,7 +2,6 @@ import json
 
 import numpy as np
 from matplotlib import cm as mpl_cm
-from matplotlib import colors as mpl_colors
 from scipy import sparse
 
 from .. import datasets
@@ -47,6 +46,28 @@ def _encode_coordinates(coords, prefix):
 
 
 def _prepare_line(edges, nodes):
+    """prepare a plotly scatter3d line plot so that a set of disconnected edges
+    can be drawn as a single line.
+
+    `edges` are values associated with each edge (that get mapped to colors
+    through a colorscale). `nodes` are pairs of (source, target) node indices
+    for each edge.
+
+    the color of a line segment in plotly is a mixture of the colors associated
+    with the points it connects. Moreover, segments that begin or end at a
+    point whose value is `null` are not drawn.
+
+    given edges = [eab, ecd, eef] and nodes = [(a, b), (c, d), (e, f)], this
+    function returns:
+
+        path_edges: eab eab   0 ecd ecd   0 eef eef   0
+        path_nodes:   a   b   0   c   d   0   e   f   0
+
+    moreover the javascript code replaces every third element (the '0' in the
+    lists above) with `null`, so only the a-b, c-d, and e-f segments will get
+    plotted, and their colors are correct because both their start and end
+    points are associated with the same value.
+    """
     path_edges = np.zeros(len(edges) * 3, dtype=int)
     path_edges[::3] = edges
     path_edges[1::3] = edges

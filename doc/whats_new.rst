@@ -26,8 +26,8 @@ Enhancements
   `vol_to_surf_kwargs` argument. One application is better HTML visualization of
   atlases.
   (https://nilearn.github.io/auto_examples/01_plotting/plot_3d_map_to_surface_projection.html)
-- :func:`nilearn.plotting.view_connectome` now accepts an optional argument `node_color` to provide a single color,
-  multiple colors. It defaults to `auto` which colors markers according to the viridis colormap.
+- :func:`nilearn.plotting.view_connectome` now accepts an optional argument `node_color` to provide a single color
+  for all nodes, or one color per node. It defaults to `auto` which colors markers according to the viridis colormap.
 
 .. _v0.7.1:
 
