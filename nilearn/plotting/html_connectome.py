@@ -45,16 +45,6 @@ def _encode_coordinates(coords, prefix):
     return coordinates
 
 
-def _encode_markers_coordinates(coords):
-    """Wrapper for _encode_coordinates specific to markers"""
-    return _encode_coordinates(coords, "_marker_")
-
-
-def _encode_lines_coordinates(coords):
-    """Wrapper for _encode_coordinates specific to lines"""
-    return _encode_coordinates(coords, "_con_")
-
-
 def _prepare_line(edges, nodes):
     path_edges = np.zeros(len(edges) * 3, dtype=int)
     path_edges[::3] = edges
@@ -153,16 +143,16 @@ def _prepare_lines_metadata(adjacency_matrix, coords, threshold,
 
     lines_metadata = {
         **lines_metadata,
-        **_encode_lines_coordinates(line_coords)
+        **_encode_coordinates(line_coords, prefix="_con_")
     }
 
     return lines_metadata
 
 
-def _prepare_markers_metadata(coords, marker_size, marker_color):
-    markers_coordinates = _encode_markers_coordinates(coords)
+def _prepare_markers_metadata(coords, marker_size, marker_color, marker_only):
+    markers_coordinates = _encode_coordinates(coords, prefix="_marker_")
     markers_metadata = {
-        'markers_only': False,
+        'markers_only': marker_only,
         **markers_coordinates
     }
 
@@ -194,23 +184,13 @@ def _get_connectome(adjacency_matrix, coords, threshold=None,
         coords,
         marker_size,
         marker_color,
+        marker_only=False,
     )
 
     return {
         **lines_metadata,
         **markers_metadata,
     }
-
-
-def _get_markers(coords, colors):
-    markers_coordinates = _encode_markers_coordinates(coords)
-    connectome = {
-        'markers_only': True,
-        'marker_color': _prepare_colors_for_markers(colors, len(coords)),
-        **markers_coordinates
-    }
-
-    return connectome
 
 
 def _make_connectome_html(connectome_info, embed_js=True):
@@ -372,12 +352,14 @@ def view_markers(marker_coords, marker_color='auto', marker_size=5.,
     """
     if marker_color is None:
         marker_color = ['red' for _ in range(len(marker_coords))]
-    connectome_info = _get_markers(marker_coords, marker_color)
-    if hasattr(marker_size, 'tolist'):
-        marker_size = marker_size.tolist()
+    connectome_info = _prepare_markers_metadata(
+        marker_coords,
+        marker_size,
+        marker_color,
+        marker_only=True,
+    )
     if marker_labels is None:
         marker_labels = ['' for _ in range(marker_coords.shape[0])]
-    connectome_info['marker_size'] = marker_size
     connectome_info['marker_labels'] = marker_labels
     connectome_info['title'] = title
     connectome_info['title_fontsize'] = title_fontsize
