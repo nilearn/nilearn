@@ -55,6 +55,7 @@ extensions = [
               'sphinxcontrib.bibtex',
               'numpydoc',
               'sphinx.ext.linkcode',
+              'sphinx_copybutton'
               ]
 
 autosummary_generate = True
@@ -349,12 +350,9 @@ def touch_example_backreferences(app, what, name, obj, options, lines):
         # touch file
         open(examples_path, 'w').close()
 
-# Add the 'copybutton' javascript, to hide/show the prompt in code
-# examples
 
 
 def setup(app):
-    app.add_javascript('copybutton.js')
     app.connect('autodoc-process-docstring', touch_example_backreferences)
 
 
@@ -363,5 +361,5 @@ def setup(app):
 linkcode_resolve = make_linkcode_resolve('nilearn',
                                          'https://github.com/nilearn/'
                                          'nilearn/blob/{revision}/'
-                                         '{package}/{path}#L{lineno}') 
+                                         '{package}/{path}#L{lineno}')
 
