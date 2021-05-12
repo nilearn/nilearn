@@ -98,7 +98,8 @@ def _prepare_colors_for_markers(marker_color, number_of_nodes):
     return colors
 
 
-def _prepare_lines_metadata(adjacency_matrix, coords, threshold, cmap, symmetric_cmap):
+def _prepare_lines_metadata(adjacency_matrix, coords, threshold,
+                            cmap, symmetric_cmap):
     """
     Generate metadata related to lines for _connectome_view plot
 
@@ -170,7 +171,10 @@ def _prepare_markers_metadata(coords, marker_size, marker_color):
     if hasattr(marker_size, 'tolist'):
         marker_size = marker_size.tolist()
     markers_metadata['marker_size'] = marker_size
-    markers_metadata['marker_color'] = _prepare_colors_for_markers(marker_color, len(coords))
+    markers_metadata['marker_color'] = _prepare_colors_for_markers(
+        marker_color,
+        len(coords),
+    )
 
     return markers_metadata
 
@@ -178,9 +182,19 @@ def _prepare_markers_metadata(coords, marker_size, marker_color):
 def _get_connectome(adjacency_matrix, coords, threshold=None,
                     marker_size=None, marker_color='auto', cmap=cm.cold_hot,
                     symmetric_cmap=True):
-    lines_metadata = _prepare_lines_metadata(adjacency_matrix, coords, threshold, cmap, symmetric_cmap)
+    lines_metadata = _prepare_lines_metadata(
+        adjacency_matrix,
+        coords,
+        threshold,
+        cmap,
+        symmetric_cmap,
+    )
 
-    markers_metadata = _prepare_markers_metadata(coords, marker_size, marker_color)
+    markers_metadata = _prepare_markers_metadata(
+        coords,
+        marker_size,
+        marker_color,
+    )
 
     return {
         **lines_metadata,
