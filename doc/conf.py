@@ -351,8 +351,12 @@ def touch_example_backreferences(app, what, name, obj, options, lines):
         open(examples_path, 'w').close()
 
 
+# Add the 'copybutton' javascript, to hide/show the prompt in code
+# examples
+
 
 def setup(app):
+    app.add_js_file('copybutton.js')
     app.connect('autodoc-process-docstring', touch_example_backreferences)
 
 
