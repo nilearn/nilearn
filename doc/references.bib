@@ -12,6 +12,49 @@ keywords = {Brain imaging atlases, Functional networks, Functional parcellations
 abstract = {Population imaging markedly increased the size of functional-imaging datasets, shedding new light on the neural basis of inter-individual differences. Analyzing these large data entails new scalability challenges, computational and statistical. For this reason, brain images are typically summarized in a few signals, for instance reducing voxel-level measures with brain atlases or functional modes. A good choice of the corresponding brain networks is important, as most data analyses start from these reduced signals. We contribute finely-resolved atlases of functional modes, comprising from 64 to 1024 networks. These dictionaries of functional modes (DiFuMo) are trained on millions of fMRI functional brain volumes of total size 2.4 ​TB, spanned over 27 studies and many research groups. We demonstrate the benefits of extracting reduced signals on our fine-grain atlases for many classic functional data analysis pipelines: stimuli decoding from 12,334 brain responses, standard GLM analysis of fMRI across sessions and individuals, extraction of resting-state functional-connectomes biomarkers for 2500 individuals, data compression and meta-analysis over more than 15,000 statistical maps. In each of these analysis scenarii, we compare the performance of our functional atlases with that of other popular references, and to a simple voxel-level analysis. Results highlight the importance of using high-dimensional “soft” functional atlases, to represent and analyze brain activity while capturing its functional gradients. Analyses on high-dimensional modes achieve similar statistical performance as at the voxel level, but with much reduced computational cost and higher interpretability. In addition to making them available, we provide meaningful names for these modes, based on their anatomical location. It will facilitate reporting of results.}
 }
 
+@article{Duchi2012,
+title = {Projected subgradient methods for learning sparse gaussians},
+author = {Duchi, John and Gould, Stephen and Koller, Daphne},
+year = {2012},
+month = jun,
+abstract = {Gaussian Markov random fields (GMRFs) are useful in a broad range of applications. In this paper we tackle the problem of learning a sparse GMRF in a high-dimensional space. Our approach uses the l1-norm as a regularization on the inverse covariance matrix. We utilize a novel projected gradient method, which is faster than previous methods in practice and equal to the best performing of these in asymptotic complexity. We also extend the l1-regularized objective to the problem of sparsifying entire blocks within the inverse covariance matrix. Our methods generalize fairly easily to this case, while other methods do not. We demonstrate that our extensions give better generalization performance on two real domains--biological network analysis and a 2D-shape modeling image task.},
+url = {https://arxiv.org/abs/1206.3249},
+archiveprefix = {arXiv},
+eprint = {1206.3249},
+eprinttype = {arxiv},
+journal = {arXiv:1206.3249 [cs, stat]},
+primaryclass = {cs, stat}
+}
+
+@article{Fletcher2007,
+title = {Riemannian geometry for the statistical analysis of diffusion tensor data},
+journal = {Signal Processing},
+volume = {87},
+number = {2},
+pages = {250-262},
+year = {2007},
+note = {Tensor Signal Processing},
+issn = {0165-1684},
+doi = {https://doi.org/10.1016/j.sigpro.2005.12.018},
+url = {https://www.sciencedirect.com/science/article/pii/S0165168406001691},
+author = {P. Thomas Fletcher and Sarang Joshi},
+keywords = {Diffusion tensor MRI, Statistics, Riemannian manifolds},
+abstract = {The tensors produced by diffusion tensor magnetic resonance imaging (DT-MRI) represent the covariance in a Brownian motion model of water diffusion. Under this physical interpretation, diffusion tensors are required to be symmetric, positive-definite. However, current approaches to statistical analysis of diffusion tensor data, which treat the tensors as linear entities, do not take this positive-definite constraint into account. This difficulty is due to the fact that the space of diffusion tensors does not form a vector space. In this paper we show that the space of diffusion tensors is a type of curved manifold known as a Riemannian symmetric space. We then develop methods for producing statistics, namely averages and modes of variation, in this space. We show that these statistics preserve natural geometric properties of the tensors, including the constraint that their eigenvalues be positive. The symmetric space formulation also leads to a natural definition for interpolation of diffusion tensors and a new measure of anisotropy. We expect that these methods will be useful in the registration of diffusion tensor images, the production of statistical atlases from diffusion tensor data, and the quantification of the anatomical variability caused by disease. The framework presented in this paper should also be useful in other applications where symmetric, positive-definite tensors arise, such as mechanics and computer vision.}
+}
+
+@article{Honorio2015,
+title = {On the statistical efficiency of l1,p multi-task learning of Gaussian graphical models},
+author = {Honorio, Jean and Jaakkola, Tommi and Samaras, Dimitris},
+year = {2015},
+month = oct,
+abstract = {In this paper, we present l1,p multi-task structure learning for Gaussian graphical models. We analyze the sufficient number of samples for the correct recovery of the support union and edge signs. We also analyze the necessary number of samples for any conceivable method by providing information-theoretic lower bounds. We compare the statistical efficiency of multi-task learning versus that of single-task learning. For experiments, we use a block coordinate descent method that is provably convergent and generates a sequence of positive definite solutions. We provide experimental validation on synthetic data as well as on two publicly available real-world data sets, including functional magnetic resonance imaging and gene expression data.},
+url = {https://arxiv.org/abs/1207.4255},
+archiveprefix = {arXiv},
+eprint = {1207.4255},
+eprinttype = {arxiv},
+journal = {arXiv:1207.4255 [cs, stat]},
+primaryclass = {cs, stat}
+}
 
 @article{Hoyos2019,
 author = {Hoyos-Idrobo, Andres and Varoquaux, Gael and Kahn, Jonas and Thirion, Bertrand},
@@ -45,4 +88,78 @@ url = {https://www.sciencedirect.com/science/article/pii/S1053811917308182},
 author = {Andrés Hoyos-Idrobo and Gaël Varoquaux and Yannick Schwartz and Bertrand Thirion},
 keywords = {fMRI, Supervised learning, Decoding, Bagging, MVPA},
 abstract = {Brain decoding relates behavior to brain activity through predictive models. These are also used to identify brain regions involved in the cognitive operations related to the observed behavior. Training such multivariate models is a high-dimensional statistical problem that calls for suitable priors. State of the art priors –eg small total-variation– enforce spatial structure on the maps to stabilize them and improve prediction. However, they come with a hefty computational cost. We build upon very fast dimension reduction with spatial structure and model ensembling to achieve decoders that are fast on large datasets and increase the stability of the predictions and the maps. Our approach, fast regularized ensemble of models (FReM), includes an implicit spatial regularization by using a voxel grouping with a fast clustering algorithm. In addition, it aggregates different estimators obtained across splits of a cross-validation loop, each time keeping the best possible model. Experiments on a large number of brain imaging datasets show that our combination of voxel clustering and model ensembling improves decoding maps stability and reduces the variance of prediction accuracy. Importantly, our method requires less samples than state-of-the-art methods to achieve a given level of prediction accuracy. Finally, FreM is much faster than other spatially-regularized methods and, in addition, it can better exploit parallel computing resources.}
+}
+
+
+@article{friston1994statistical,
+author = {Friston, K. J. and Holmes, A. P. and Worsley, K. J. and Poline, J.-P. and Frith, C. D. and Frackowiak, R. S. J.},
+title = {Statistical parametric maps in functional imaging: A general linear approach},
+journal = {Human Brain Mapping},
+volume = {2},
+number = {4},
+pages = {189-210},
+keywords = {statistical parametric maps, analysis of variance, general linear model, statistics, functional imaging, Gaussian fields, functional anatomy},
+doi = {https://doi.org/10.1002/hbm.460020402},
+url = {https://onlinelibrary.wiley.com/doi/abs/10.1002/hbm.460020402},
+eprint = {https://onlinelibrary.wiley.com/doi/pdf/10.1002/hbm.460020402},
+abstract = {Abstract Statistical parametric maps are spatially extended statistical processes that are used to test hypotheses about regionally specific effects in neuroimaging data. The most established sorts of statistical parametric maps (e.g., Friston et al. [1991]: J Cereb Blood Flow Metab 11:690–699; Worsley et al. [1992]: J Cereb Blood Flow Metab 12:900–918) are based on linear models, for example ANCOVA, correlation coefficients and t tests. In the sense that these examples are all special cases of the general linear model it should be possible to implement them (and many others) within a unified framework. We present here a general approach that accomodates most forms of experimental layout and ensuing analysis (designed experiments with fixed effects for factors, covariates and interaction of factors). This approach brings together two well established bodies of theory (the general linear model and the theory of Gaussian fields) to provide a complete and simple framework for the analysis of imaging data. The importance of this framework is twofold: (i) Conceptual and mathematical simplicity, in that the same small number of operational equations is used irrespective of the complexity of the experiment or nature of the statistical model and (ii) the generality of the framework provides for great latitude in experimental design and analysis. © 1995 Wiley-Liss, Inc.},
+year = {1994}
+}
+
+
+@article {Lindquist407676,
+author = {Lindquist, Martin A. and Geuter, Stephan and Wager, Tor D. and Caffo, Brian S.},
+title = {Modular preprocessing pipelines can reintroduce artifacts into fMRI data},
+elocation-id = {407676},
+year = {2018},
+doi = {10.1101/407676},
+publisher = {Cold Spring Harbor Laboratory},
+abstract = {The preprocessing pipelines typically used in both task and restingstate fMRI (rs-fMRI) analysis are modular in nature: They are composed of a number of separate filtering/regression steps, including removal of head motion covariates and band-pass filtering, performed sequentially and in a flexible order. In this paper we illustrate the shortcomings of this approach, as we show how later preprocessing steps can reintroduce artifacts previously removed from the data in prior preprocessing steps. We show that each regression step is a geometric projection of data onto a subspace, and that performing a sequence of projections can move the data into subspaces no longer orthogonal to those previously removed, reintroducing signal related to nuisance covariates. Thus, linear filtering operations are not commutative, and the order in which the preprocessing steps are performed is critical. These issues can arise in practice when any combination of standard preprocessing steps{\textemdash}including motion regression, scrubbing, component-based correction, global signal regression, and temporal filtering{\textemdash}are performed sequentially. In this work we focus primarily on rs-fMRI. We illustrate the problem both theoretically and empirically through application to a test-retest rs-fMRI data set, and suggest remedies. These include (a) combining all steps into a single linear filter, or (b) sequential orthogonalization of covariates/linear filters performed in series.},
+URL = {https://www.biorxiv.org/content/early/2018/09/04/407676},
+eprint = {https://www.biorxiv.org/content/early/2018/09/04/407676.full.pdf},
+journal = {bioRxiv}
+}
+
+
+@article{POWER2017150,
+title = {A simple but useful way to assess fMRI scan qualities},
+journal = {NeuroImage},
+volume = {154},
+pages = {150-158},
+year = {2017},
+note = {Cleaning up the fMRI time series: Mitigating noise with advanced acquisition and correction strategies},
+issn = {1053-8119},
+doi = {https://doi.org/10.1016/j.neuroimage.2016.08.009},
+url = {https://www.sciencedirect.com/science/article/pii/S1053811916303871},
+author = {Jonathan D. Power},
+abstract = {This short “how to” article describes a plot I find useful for assessing fMRI data quality. I discuss the reasoning behind the plot and how it is constructed. I create the plot in scans from several publicly available datasets to illustrate different kinds of fMRI signal variance, ranging from thermal noise to motion artifacts to respiratory-related signals. I also show how the plot can be used to understand the variance removed during denoising. Code to make the plot is provided with the article, and supplemental movies show plots for hundreds of additional subjects.}
+}
+
+@article{Varoquaux2010a,
+title = {Brain covariance selection: Better individual functional connectivity models using population prior},
+author = {Varoquaux, Gael and Gramfort, Alexandre and Poline, Jean Baptiste and Thirion, Bertrand},
+year = {2010},
+month = nov,
+abstract = {Spontaneous brain activity, as observed in functional neuroimaging, has been shown to display reproducible structure that expresses brain architecture and carries markers of brain pathologies. An important view of modern neuroscience is that such large-scale structure of coherent activity reflects modularity properties of brain connectivity graphs. However, to date, there has been no demonstration that the limited and noisy data available in spontaneous activity observations could be used to learn full-brain probabilistic models that generalize to new data. Learning such models entails two main challenges: i) modeling full brain connectivity is a difficult estimation problem that faces the curse of dimensionality and ii) variability between subjects, coupled with the variability of functional signals between experimental runs, makes the use of multiple datasets challenging. We describe subject-level brain functional connectivity structure as a multivariate Gaussian process and introduce a new strategy to estimate it from group data, by imposing a common structure on the graphical model in the population. We show that individual models learned from functional Magnetic Resonance Imaging (fMRI) data using this population prior generalize better to unseen data than models based on alternative regularization schemes. To our knowledge, this is the first report of a cross-validated model of spontaneous brain activity. Finally, we use the estimated graphical model to explore the large-scale characteristics of functional architecture and show for the first time that known cognitive networks appear as the integrated communities of functional connectivity graph.},
+url = {https://arxiv.org/abs/1008.5071},
+archiveprefix = {arXiv},
+eprint = {1008.5071},
+eprinttype = {arxiv},
+journal = {arXiv:1008.5071 [q-bio, stat]},
+primaryclass = {q-bio, stat}
+}
+
+@inproceedings{Varoquaux2010b,
+title = {Detection of brain functional-connectivity difference in post-stroke patients using group-level covariance modeling},
+booktitle = {Medical image computing and computer-assisted intervention - {{MICCAI}} 2010},
+author = {Varoquaux, Gael and Baronnet, Flore and Kleinschmidt, Andreas and Fillard, Pierre and Thirion, Bertrand},
+editor = {Jiang, Tianzi and Navab, Nassir and Pluim, Josien P. W. and Viergever, Max A.},
+year = {2010},
+pages = {200--208},
+publisher = {{Springer}},
+address = {{Berlin, Heidelberg}},
+doi = {10/cn2h9c},
+abstract = {Functional brain connectivity, as revealed through distant correlations in the signals measured by functional Magnetic Resonance Imaging (fMRI), is a promising source of biomarkers of brain pathologies. However, establishing and using diagnostic markers requires probabilistic inter-subject comparisons. Principled comparison of functional-connectivity structures is still a challenging issue. We give a new matrix-variate probabilistic model suitable for inter-subject comparison of functional connectivity matrices on the manifold of Symmetric Positive Definite (SPD) matrices. We show that this model leads to a new algorithm for principled comparison of connectivity coefficients between pairs of regions. We apply this model to comparing separately post-stroke patients to a group of healthy controls. We find neurologically-relevant connection differences and show that our model is more sensitive that the standard procedure. To the best of our knowledge, these results are the first report of functional connectivity differences between a single-patient and a group and thus establish an important step toward using functional connectivity as a diagnostic tool.},
+isbn = {978-3-642-15705-9},
+series = {Lecture notes in computer science}
 }
