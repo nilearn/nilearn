@@ -2,9 +2,12 @@
 Functions for surface visualization.
 Only matplotlib is required.
 """
+import itertools
+
 import matplotlib.pyplot as plt
 import numpy as np
 
+from matplotlib import gridspec
 from matplotlib.colorbar import make_axes
 from matplotlib.cm import ScalarMappable, get_cmap
 from matplotlib.colors import Normalize, LinearSegmentedColormap
@@ -229,7 +232,6 @@ def plot_surf(surf_mesh, surf_map=None, bg_map=None,
     else:
         if figure is None:
             figure = axes.get_figure()
-            figure.set_size_inches(*figsize)
         axes.set_xlim(*limits)
         axes.set_ylim(*limits)
     axes.view_init(elev=elev, azim=azim)
@@ -771,7 +773,7 @@ def plot_img_on_surf(stat_map, surf_mesh='fsaverage5', mask_img=None,
                      views=['lateral', 'medial'],
                      output_file=None, title=None, colorbar=True,
                      vmax=None, threshold=None,
-                     cmap='cold_hot', aspect_ratio=1.4, **kwargs):
+                     cmap='cold_hot', **kwargs):
     """Convenience function to plot multiple views of plot_surf_stat_map
     in a single figure. It projects stat_map into meshes and plots views of
     left and right hemispheres. The *views* argument defines the views
@@ -876,31 +878,28 @@ def plot_img_on_surf(stat_map, surf_mesh='fsaverage5', mask_img=None,
                              mask_img=mask_img)
     }
 
-    figsize = plt.figaspect(len(modes) / (aspect_ratio * len(hemispheres)))
-    fig, axes = plt.subplots(nrows=len(modes),
-                             ncols=len(hemis),
-                             figsize=figsize,
-                             subplot_kw={'projection': '3d'})
-
-    axes = np.atleast_2d(axes)
-
-    if len(hemis) == 1:
-        axes = axes.T
-
-    for index_mode, mode in enumerate(modes):
-        for index_hemi, hemi in enumerate(hemis):
-            bg_map = surf_mesh['sulc_%s' % hemi]
-            plot_surf_stat_map(surf[hemi], texture[hemi],
-                               view=mode, hemi=hemi,
-                               bg_map=bg_map,
-                               axes=axes[index_mode, index_hemi],
-                               colorbar=False,  # Colorbar created externally.
-                               vmax=vmax,
-                               threshold=threshold,
-                               cmap=cmap,
-                               **kwargs)
-
-    for ax in axes.flatten():
+    cbar_h = .25
+    w, h = plt.figaspect((len(modes) + cbar_h) / len(hemispheres))
+    fig = plt.figure(figsize=(w, h))
+    grid = gridspec.GridSpec(
+        len(modes) + 1, len(hemis),
+        left=0., right=1., bottom=0., top=1.,
+        height_ratios=[1.] * len(modes) + [cbar_h], hspace=0.0, wspace=0.0)
+    axes = []
+    for i, (mode, hemi) in enumerate(itertools.product(modes, hemis)):
+        bg_map = surf_mesh['sulc_%s' % hemi]
+        ax = fig.add_subplot(grid[i], projection="3d")
+        axes.append(ax)
+        plot_surf_stat_map(surf[hemi], texture[hemi],
+                           view=mode, hemi=hemi,
+                           bg_map=bg_map,
+                           axes=ax,
+                           colorbar=False,  # Colorbar created externally.
+                           vmax=vmax,
+                           threshold=threshold,
+                           cmap=cmap,
+                           **kwargs)
+        # ax.set_facecolor("#e0e0e0")
         # We increase this value to better position the camera of the
         # 3D projection plot. The default value makes meshes look too small.
         ax.dist = 7 
@@ -909,21 +908,11 @@ def plot_img_on_surf(stat_map, surf_mesh='fsaverage5', mask_img=None,
         sm = _colorbar_from_array(image.get_data(stat_map),
                                   vmax, threshold, kwargs,
                                   cmap=get_cmap(cmap))
-       
-        # if figure has more than two rows, change colorbar position for less excess space
-        if (axes.shape[0] > 1):
-            cbar_ax = fig.add_axes([0.265,0.10,0.5,0.04]) 
-        else:
-            cbar_ax = fig.add_axes([0.265,0.17,0.5,0.04]) 
+
+        cbar_grid = gridspec.GridSpecFromSubplotSpec(3, 3, grid[-1, :])
+        cbar_ax = fig.add_subplot(cbar_grid[1])
+        axes.append(cbar_ax)
         fig.colorbar(sm, cax=cbar_ax, orientation='horizontal')
-   
-    # if figure has multple rows or columns, adjust subplot for less excess space
-    if (axes.shape[0] > 2):
-        fig.subplots_adjust(wspace=-0.7, hspace=-0.1)
-    elif (axes.shape[0] == 2) & (axes.shape[1] ==  2):
-        fig.subplots_adjust(wspace=-0.4, hspace=-0.175)
-    else:
-        fig.subplots_adjust(wspace=-0.02, hspace=-0.15)
 
     if title is not None:
         fig.suptitle(title)
