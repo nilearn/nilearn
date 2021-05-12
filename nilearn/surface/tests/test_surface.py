@@ -76,7 +76,7 @@ def test_load_surf_data_array():
 
 def test_load_surf_data_file_nii_gii():
     # test loading of fake data from gifti file
-    filename_gii = tempfile.mktemp(suffix='.gii')
+    fd_gii, filename_gii = tempfile.mkstemp(suffix='.gii')
     if LooseVersion(nb.__version__) > LooseVersion('2.0.2'):
         darray = gifti.GiftiDataArray(data=np.zeros((20, )))
     else:
@@ -90,7 +90,7 @@ def test_load_surf_data_file_nii_gii():
     os.remove(filename_gii)
 
     # test loading of data from empty gifti file
-    filename_gii_empty = tempfile.mktemp(suffix='.gii')
+    fd_empty, filename_gii_empty = tempfile.mkstemp(suffix='.gii')
     gii_empty = gifti.GiftiImage()
     gifti.write(gii_empty, filename_gii_empty)
     with pytest.raises(ValueError,
@@ -100,8 +100,8 @@ def test_load_surf_data_file_nii_gii():
     os.remove(filename_gii_empty)
 
     # test loading of fake data from nifti file
-    filename_nii = tempfile.mktemp(suffix='.nii')
-    filename_niigz = tempfile.mktemp(suffix='.nii.gz')
+    fd_gii2, filename_nii = tempfile.mkstemp(suffix='.nii')
+    fd_niigz, filename_niigz = tempfile.mkstemp(suffix='.nii.gz')
     nii = nb.Nifti1Image(np.zeros((20, )), affine=None)
     nb.save(nii, filename_nii)
     nb.save(nii, filename_niigz)
@@ -136,12 +136,12 @@ def test_load_surf_data_file_freesurfer():
     # version is recent with nibabel >= 2.1.0
     if LooseVersion(nb.__version__) >= LooseVersion('2.1.0'):
         data = np.zeros((20, ))
-        filename_sulc = tempfile.mktemp(suffix='.sulc')
+        fd_sulc, filename_sulc = tempfile.mkstemp(suffix='.sulc')
         nb.freesurfer.io.write_morph_data(filename_sulc, data)
         assert_array_equal(load_surf_data(filename_sulc), np.zeros((20, )))
         os.remove(filename_sulc)
 
-        filename_thick = tempfile.mktemp(suffix='.thickness')
+        fd_thick, filename_thick = tempfile.mkstemp(suffix='.thickness')
         nb.freesurfer.io.write_morph_data(filename_thick, data)
         assert_array_equal(load_surf_data(filename_thick), np.zeros((20, )))
         os.remove(filename_thick)
@@ -169,7 +169,7 @@ def test_load_surf_data_file_error():
     data = np.zeros((20, ))
     wrong_suff = ['.vtk', '.obj', '.mnc', '.txt']
     for suff in wrong_suff:
-        filename_wrong = tempfile.mktemp(suffix=suff)
+        fd, filename_wrong = tempfile.mkstemp(suffix=suff)
         np.savetxt(filename_wrong, data)
         with pytest.raises(ValueError,
                            match='input type is not recognized'
@@ -290,7 +290,7 @@ def test_load_surf_mesh_file_gii():
     mesh = generate_surf()
 
     # test if correct gii is loaded into correct list
-    filename_gii_mesh = tempfile.mktemp(suffix='.gii')
+    fd_mesh, filename_gii_mesh = tempfile.mkstemp(suffix='.gii')
 
     coord_array = gifti.GiftiDataArray(data=mesh[0],
                                        intent=nb.nifti1.intent_codes[
@@ -306,14 +306,14 @@ def test_load_surf_mesh_file_gii():
     os.remove(filename_gii_mesh)
 
     # test if incorrect gii raises error
-    filename_gii_mesh_no_point = tempfile.mktemp(suffix='.gii')
+    fd_no, filename_gii_mesh_no_point = tempfile.mkstemp(suffix='.gii')
     gifti.write(gifti.GiftiImage(darrays=[face_array, face_array]),
                 filename_gii_mesh_no_point)
     with pytest.raises(ValueError, match='NIFTI_INTENT_POINTSET'):
         load_surf_mesh(filename_gii_mesh_no_point)
     os.remove(filename_gii_mesh_no_point)
 
-    filename_gii_mesh_no_face = tempfile.mktemp(suffix='.gii')
+    fd_face, filename_gii_mesh_no_face = tempfile.mkstemp(suffix='.gii')
     gifti.write(gifti.GiftiImage(darrays=[coord_array, coord_array]),
                 filename_gii_mesh_no_face)
     with pytest.raises(ValueError, match='NIFTI_INTENT_TRIANGLE'):
@@ -324,7 +324,7 @@ def test_load_surf_mesh_file_gii():
 def test_load_surf_mesh_file_freesurfer():
     mesh = generate_surf()
     for suff in ['.pial', '.inflated', '.white', '.orig', 'sphere']:
-        filename_fs_mesh = tempfile.mktemp(suffix=suff)
+        fd, filename_fs_mesh = tempfile.mkstemp(suffix=suff)
         nb.freesurfer.write_geometry(filename_fs_mesh, mesh[0], mesh[1])
         assert len(load_surf_mesh(filename_fs_mesh)) == 2
         assert_array_almost_equal(load_surf_mesh(filename_fs_mesh)[0],
@@ -339,7 +339,7 @@ def test_load_surf_mesh_file_error():
     mesh = generate_surf()
     wrong_suff = ['.vtk', '.obj', '.mnc', '.txt']
     for suff in wrong_suff:
-        filename_wrong = tempfile.mktemp(suffix=suff)
+        fd, filename_wrong = tempfile.mkstemp(suffix=suff)
         nb.freesurfer.write_geometry(filename_wrong, mesh[0], mesh[1])
         with pytest.raises(ValueError,
                            match='input type is not recognized'
@@ -350,9 +350,9 @@ def test_load_surf_mesh_file_error():
 
 def test_load_surf_mesh_file_glob():
     mesh = generate_surf()
-    fname1 = tempfile.mktemp(suffix='.pial')
+    fd1, fname1 = tempfile.mkstemp(suffix='.pial')
     nb.freesurfer.write_geometry(fname1, mesh[0], mesh[1])
-    fname2 = tempfile.mktemp(suffix='.pial')
+    fd2, fname2 = tempfile.mkstemp(suffix='.pial')
     nb.freesurfer.write_geometry(fname2, mesh[0], mesh[1])
 
     with pytest.raises(ValueError, match='More than one file matching path'):
@@ -374,7 +374,9 @@ def test_load_surf_data_file_glob():
     data2D = np.ones((20, 3))
     fnames = []
     for f in range(3):
-        fnames.append(tempfile.mktemp(prefix='glob_%s_' % f, suffix='.gii'))
+        fd, filename = tempfile.mkstemp(prefix='glob_%s_' % f,
+                                        suffix='.gii')
+        fnames.append(filename)
         data2D[:, f] *= f
         if LooseVersion(nb.__version__) > LooseVersion('2.0.2'):
             darray = gifti.GiftiDataArray(data=data2D[:, f])
@@ -392,7 +394,9 @@ def test_load_surf_data_file_glob():
     )
 
     # make one more gii file that has more than one dimension
-    fnames.append(tempfile.mktemp(prefix='glob_3_', suffix='.gii'))
+    fd, filename = tempfile.mkstemp(prefix='glob_3_',
+                                    suffix='.gii')
+    fnames.append(filename)
     if LooseVersion(nb.__version__) > LooseVersion('2.0.2'):
         darray1 = gifti.GiftiDataArray(data=np.ones((20, )))
         darray2 = gifti.GiftiDataArray(data=np.ones((20, )))
@@ -414,7 +418,9 @@ def test_load_surf_data_file_glob():
                                                    "glob*.gii")), data2D)
 
     # make one more gii file that has a different shape in axis=0
-    fnames.append(tempfile.mktemp(prefix='glob_4_', suffix='.gii'))
+    fd, filename = tempfile.mkstemp(prefix='glob_4_',
+                                    suffix='.gii')
+    fnames.append(filename)
     if LooseVersion(nb.__version__) > LooseVersion('2.0.2'):
         darray = gifti.GiftiDataArray(data=np.ones((15, 1)))
     else:

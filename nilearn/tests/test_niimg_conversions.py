@@ -355,9 +355,9 @@ def test_iter_check_niimgs():
         list(_iter_check_niimg(nofile_path))
 
     # Create a test file
-    filename = tempfile.mktemp(prefix="nilearn_test",
-                               suffix=".nii",
-                               dir=None)
+    fd, filename = tempfile.mkstemp(prefix="nilearn_test",
+                                    suffix=".nii",
+                                    dir=None)
     img_4d.to_filename(filename)
     niimgs = list(_iter_check_niimg([filename]))
     assert_array_equal(get_data(niimgs[0]),

@@ -235,7 +235,7 @@ def test_as_ndarray():
 
 def test_csv_to_array():
     # Create a phony CSV file
-    filename = tempfile.mktemp(suffix='.csv')
+    fd, filename = tempfile.mkstemp(suffix='.csv')
     try:
         with open(filename, mode='wt') as fp:
             fp.write('1.,2.,3.,4.,5.\n')

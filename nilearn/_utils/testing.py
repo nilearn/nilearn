@@ -161,11 +161,11 @@ def write_tmp_imgs(*imgs, **kwargs):
             with warnings.catch_warnings():
                 warnings.simplefilter("ignore", RuntimeWarning)
                 for img in imgs:
-                    filename = tempfile.mktemp(prefix=prefix,
-                                               suffix=suffix,
-                                               dir=None)
-                    filenames.append(filename)
-                    img.to_filename(filename)
+                    fd, path = tempfile.mkstemp(prefix=prefix,
+                                                suffix=suffix,
+                                                dir=None)
+                    filenames.append(path)
+                    img.to_filename(path)
                     del img
 
                 if use_wildcards:
