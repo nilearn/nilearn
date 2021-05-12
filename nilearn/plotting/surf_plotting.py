@@ -881,7 +881,7 @@ def plot_img_on_surf(stat_map, surf_mesh='fsaverage5', mask_img=None,
     cbar_h = .25
     title_h = .25 * (title is not None)
     w, h = plt.figaspect((len(modes) + cbar_h + title_h) / len(hemispheres))
-    fig = plt.figure(figsize=(w, h))
+    fig = plt.figure(figsize=(w, h), constrained_layout=False)
     height_ratios = [title_h] + [1.] * len(modes) + [cbar_h]
     grid = gridspec.GridSpec(
         len(modes) + 2, len(hemis),
