@@ -702,3 +702,28 @@ def test_clean_zscore():
     cleaned_signals = clean(signals, standardize='zscore')
     np.testing.assert_almost_equal(cleaned_signals.mean(0), 0)
     np.testing.assert_almost_equal(cleaned_signals.std(0), 1)
+
+
+def test_cosine_filter():
+    '''Testing cosine filter interface and output.'''
+    from nilearn.glm.first_level.design_matrix import _cosine_drift
+
+    t_r, high_pass, low_pass, filter = 2.5, 0.002, None, 'cosine'
+    signals, _, confounds = generate_signals(n_features=41,
+                                                  n_confounds=5, length=45)
+
+    # Not passing confounds it will return drift terms only
+    frame_times = np.arange(signals.shape[0]) * t_r
+    cosine_drift = _cosine_drift(high_pass, frame_times)
+
+    signals_unchanged, cosine_confounds = nisignal._filter_signal(
+        signals, confounds, filter, low_pass, high_pass, t_r)
+    np.testing.assert_array_equal(signals_unchanged, signals)
+    np.testing.assert_almost_equal(cosine_confounds,
+                                   np.hstack((confounds, cosine_drift)))
+
+    # Not passing confounds it will return drift terms only
+    signals_unchanged, drift_terms_only = nisignal._filter_signal(
+        signals, None, filter, low_pass, high_pass, t_r)
+    np.testing.assert_array_equal(signals_unchanged, signals)
+    np.testing.assert_almost_equal(drift_terms_only, cosine_drift)
