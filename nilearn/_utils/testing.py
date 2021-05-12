@@ -152,7 +152,7 @@ def write_tmp_imgs(*imgs, **kwargs):
     create_files = kwargs.get("create_files", True)
     use_wildcards = kwargs.get("use_wildcards", False)
 
-    prefix = "nilearn_"
+    prefix = "nilearn_{}_".format(os.getpid())
     suffix = ".nii"
 
     if create_files:
