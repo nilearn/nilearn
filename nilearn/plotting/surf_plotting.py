@@ -880,7 +880,7 @@ def plot_img_on_surf(stat_map, surf_mesh='fsaverage5', mask_img=None,
 
     cbar_h = .25
     w, h = plt.figaspect((len(modes) + cbar_h) / len(hemispheres))
-    fig = plt.figure(figsize=(w, h))
+    fig = plt.figure(figsize=(w, h), constrained_layout=False)
     grid = gridspec.GridSpec(
         len(modes) + 1, len(hemis),
         left=0., right=1., bottom=0., top=1.,
