@@ -152,7 +152,7 @@ def write_tmp_imgs(*imgs, **kwargs):
     create_files = kwargs.get("create_files", True)
     use_wildcards = kwargs.get("use_wildcards", False)
 
-    prefix = "nilearn_{}_".format(os.getpid())
+    prefix = "nilearn_"
     suffix = ".nii"
 
     if create_files:
@@ -161,23 +161,25 @@ def write_tmp_imgs(*imgs, **kwargs):
             with warnings.catch_warnings():
                 warnings.simplefilter("ignore", RuntimeWarning)
                 for img in imgs:
-                    fd, path = tempfile.mkstemp(prefix=prefix,
-                                                suffix=suffix,
-                                                dir=None)
-                    filenames.append(path)
-                    img.to_filename(path)
+                    fd, filename = tempfile.mkstemp(prefix=prefix,
+                                                    suffix=suffix,
+                                                    dir=None)
+                    filenames.append((fd, filename))
+                    img.to_filename(filename)
                     del img
 
                 if use_wildcards:
                     yield prefix + "*" + suffix
                 else:
                     if len(imgs) == 1:
-                        yield filenames[0]
+                        yield filenames[0][1]
                     else:
-                        yield filenames
+                        yield [f[1] for f in filenames]
         finally:
             # Ensure all created files are removed
-            for filename in filenames:
+            for temp in filenames:
+                fd, filename = temp
+                os.close(fd)
                 os.remove(filename)
     else:  # No-op
         if len(imgs) == 1:
