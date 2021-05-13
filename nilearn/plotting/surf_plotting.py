@@ -879,16 +879,18 @@ def plot_img_on_surf(stat_map, surf_mesh='fsaverage5', mask_img=None,
     }
 
     cbar_h = .25
-    w, h = plt.figaspect((len(modes) + cbar_h) / len(hemispheres))
+    title_h = .25 * (title is not None)
+    w, h = plt.figaspect((len(modes) + cbar_h + title_h) / len(hemispheres))
     fig = plt.figure(figsize=(w, h), constrained_layout=False)
+    height_ratios = [title_h] + [1.] * len(modes) + [cbar_h]
     grid = gridspec.GridSpec(
-        len(modes) + 1, len(hemis),
+        len(modes) + 2, len(hemis),
         left=0., right=1., bottom=0., top=1.,
-        height_ratios=[1.] * len(modes) + [cbar_h], hspace=0.0, wspace=0.0)
+        height_ratios=height_ratios, hspace=0.0, wspace=0.0)
     axes = []
     for i, (mode, hemi) in enumerate(itertools.product(modes, hemis)):
         bg_map = surf_mesh['sulc_%s' % hemi]
-        ax = fig.add_subplot(grid[i], projection="3d")
+        ax = fig.add_subplot(grid[i + len(hemis)], projection="3d")
         axes.append(ax)
         plot_surf_stat_map(surf[hemi], texture[hemi],
                            view=mode, hemi=hemi,
@@ -915,7 +917,7 @@ def plot_img_on_surf(stat_map, surf_mesh='fsaverage5', mask_img=None,
         fig.colorbar(sm, cax=cbar_ax, orientation='horizontal')
 
     if title is not None:
-        fig.suptitle(title)
+        fig.suptitle(title, y=1. - title_h / sum(height_ratios), va="bottom")
 
     if output_file is not None:
         fig.savefig(output_file)
