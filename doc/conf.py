@@ -345,5 +345,5 @@ def touch_example_backreferences(app, what, name, obj, options, lines):
 
 
 def setup(app):
-    app.add_javascript('copybutton.js')
+    app.add_js_file('copybutton.js')
     app.connect('autodoc-process-docstring', touch_example_backreferences)
