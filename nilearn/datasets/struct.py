@@ -122,7 +122,7 @@ def fetch_icbm152_2009(data_dir=None, url=None, resume=True, verbose=1):
     return Bunch(**params)
 
 
-def load_mni152_template(template_path=MNI152_FILE_PATH):
+def load_mni152_template():
     """Load skullstripped 1mm version of the MNI152 template originally
     distributed with FSL.
 
@@ -147,13 +147,13 @@ def load_mni152_template(template_path=MNI152_FILE_PATH):
 
     """
 
-    img = check_niimg(template_path)
+    img = check_niimg(MNI152_FILE_PATH)
     brain_template = new_img_like(img, get_data(img).astype("float32"))
 
     return brain_template
 
 
-def load_mni152_gm_template(template_path=GM_MNI152_FILE_PATH):
+def load_mni152_gm_template():
     """Load skullstripped 1mm version of the gray-matter MNI152 template
     originally distributed with FSL.
 
@@ -164,13 +164,13 @@ def load_mni152_gm_template(template_path=GM_MNI152_FILE_PATH):
 
     """
 
-    img = check_niimg(template_path)
+    img = check_niimg(GM_MNI152_FILE_PATH)
     gm_template = new_img_like(img, get_data(img).astype("float32"))
 
     return gm_template
 
 
-def load_mni152_wm_template(template_path=WM_MNI152_FILE_PATH):
+def load_mni152_wm_template():
     """Load skullstripped 1mm version of the white-matter MNI152 template
     originally distributed with FSL.
 
@@ -181,7 +181,7 @@ def load_mni152_wm_template(template_path=WM_MNI152_FILE_PATH):
 
     """
 
-    img = check_niimg(template_path)
+    img = check_niimg(WM_MNI152_FILE_PATH)
     wm_template = new_img_like(img, get_data(img).astype("float32"))
 
     return wm_template
