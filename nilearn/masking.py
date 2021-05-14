@@ -18,7 +18,7 @@ from ._utils.ndimage import largest_connected_component, get_border_data
 from ._utils.niimg import _safe_get_data, img_data_dtype
 from .datasets import (load_mni152_template, load_mni152_gm_template,
                        load_mni152_wm_template)
-from nilearn.image import get_data
+from nilearn.image import get_data, load_img, resample_to_img
 
 
 class MaskWarning(UserWarning):
@@ -568,15 +568,24 @@ def compute_gray_matter_mask(target_img, threshold=.5,
     mask : nibabel.Nifti1Image
         The brain mask (3D image)
     """
+
+    import os
+
+    _package_directory = os.path.dirname(os.path.abspath(__file__))
+
+    MNI152_FILE_PATH_2mm = os.path.join(_package_directory, "datasets", "data",
+                                        "avg152T1_brain.nii.gz")
+
     return compute_brain_mask(target_img=target_img, threshold=threshold,
                               connected=connected, opening=opening,
                               memory=memory, verbose=verbose,
-                              mask_type='whole-brain')
+                              mask_type='whole-brain',
+                              resolution=MNI152_FILE_PATH_2mm)
 
 
-def compute_brain_mask(target_img, threshold=.5, connected=True,
-                       opening=2, memory=None, verbose=0,
-                       mask_type='whole-brain'):
+def compute_brain_mask(target_img, threshold=.5, connected=True, opening=2,
+                       memory=None, verbose=0, mask_type='whole-brain',
+                       **kwarg):
     """Compute the whole-brain, gray-matter or white-matter mask.
     This mask is calculated through the resampling of the corresponding
     MNI152 template mask onto the target image.
@@ -635,14 +644,22 @@ def compute_brain_mask(target_img, threshold=.5, connected=True,
     else:
         raise ValueError("Unknown mask type {}.".format(mask_type))
 
+    # Change the resolution of the template
+    if kwarg:
+        if 'resolution' in kwarg.keys():
+            ref_template = load_img(kwarg['resolution'])
+        else:
+            raise KeyError('missing resolution argument.')
+        template = cache(resampling.resample_to_img, memory)(
+            template, ref_template)
+
     dtype = img_data_dtype(target_img)
-    template = new_img_like(template,
-                            get_data(template).astype(dtype))
+    template = new_img_like(template, get_data(template).astype(dtype))
 
     resampled_template = cache(resampling.resample_to_img, memory)(
         template, target_img, force_resample=True)
 
-    mask = get_data(resampled_template) >= threshold
+    mask = (get_data(resampled_template) >= threshold).astype("int8")
 
     warning_message = mask_type.capitalize() + \
                       " mask is empty, " + \
