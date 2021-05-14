@@ -122,8 +122,8 @@ def fetch_icbm152_2009(data_dir=None, url=None, resume=True, verbose=1):
     return Bunch(**params)
 
 
-def load_mni152_template():
-    """Load skullstripped 2mm version of the MNI152 template originally
+def load_mni152_template(template_path=MNI152_FILE_PATH):
+    """Load skullstripped 1mm version of the MNI152 template originally
     distributed with FSL.
 
     For more information, see [1]_ and [2]_.
@@ -146,11 +146,15 @@ def load_mni152_template():
        Human Brain Mapping 2009 Annual Meeting, DOI: 10.1016/S1053-8119(09)70884-5
 
     """
-    return check_niimg(MNI152_FILE_PATH)
+
+    img = check_niimg(template_path)
+    brain_template = new_img_like(img, get_data(img).astype("float32"))
+
+    return brain_template
 
 
-def load_mni152_gm_template():
-    """Load skullstripped 2mm version of the gray-matter MNI152 template
+def load_mni152_gm_template(template_path=GM_MNI152_FILE_PATH):
+    """Load skullstripped 1mm version of the gray-matter MNI152 template
     originally distributed with FSL.
 
     Returns
@@ -159,11 +163,15 @@ def load_mni152_gm_template():
         gray-matter template
 
     """
-    return check_niimg(GM_MNI152_FILE_PATH)
+
+    img = check_niimg(template_path)
+    gm_template = new_img_like(img, get_data(img).astype("float32"))
+
+    return gm_template
 
 
-def load_mni152_wm_template():
-    """Load skullstripped 2mm version of the white-matter MNI152 template
+def load_mni152_wm_template(template_path=WM_MNI152_FILE_PATH):
+    """Load skullstripped 1mm version of the white-matter MNI152 template
     originally distributed with FSL.
 
     Returns
@@ -172,7 +180,11 @@ def load_mni152_wm_template():
         white-matter template
 
     """
-    return check_niimg(WM_MNI152_FILE_PATH)
+
+    img = check_niimg(template_path)
+    wm_template = new_img_like(img, get_data(img).astype("float32"))
+
+    return wm_template
 
 
 def load_mni152_brain_mask(threshold=0.2):
@@ -201,8 +213,9 @@ def load_mni152_brain_mask(threshold=0.2):
     """
     # Load MNI template
     target_img = load_mni152_template()
-    mask_voxels = (get_data(target_img) > threshold).astype(int)
+    mask_voxels = (get_data(target_img) > threshold).astype("int8")
     mask_img = new_img_like(target_img, mask_voxels)
+
     return mask_img
 
 
@@ -225,12 +238,12 @@ def load_mni152_gm_mask(threshold=0.2, n_iter=2):
     gm_target_img = check_niimg(gm_target)
     gm_target_data = niimg._safe_get_data(gm_target_img)
 
-    gm_target_mask = (gm_target_data > threshold)
+    gm_target_mask = (gm_target_data > threshold).astype("int8")
 
     gm_target_mask = ndimage.binary_closing(gm_target_mask, iterations=n_iter)
-    gm_target_mask_img = new_img_like(gm_target_img, gm_target_mask)
+    gm_mask_img = new_img_like(gm_target_img, gm_target_mask)
 
-    return gm_target_mask_img
+    return gm_mask_img
 
 
 def load_mni152_wm_mask(threshold=0.2, n_iter=2):
@@ -252,12 +265,12 @@ def load_mni152_wm_mask(threshold=0.2, n_iter=2):
     wm_target_img = check_niimg(wm_target)
     wm_target_data = niimg._safe_get_data(wm_target_img)
 
-    wm_target_mask = (wm_target_data > threshold)
+    wm_target_mask = (wm_target_data > threshold).astype("int8")
 
     wm_target_mask = ndimage.binary_closing(wm_target_mask, iterations=n_iter)
-    wm_target_mask_img = new_img_like(wm_target_img, wm_target_mask)
+    wm_mask_img = new_img_like(wm_target_img, wm_target_mask)
 
-    return wm_target_mask_img
+    return wm_mask_img
 
 
 def fetch_icbm152_brain_gm_mask(data_dir=None, threshold=0.2, resume=True,
@@ -316,10 +329,11 @@ def fetch_icbm152_brain_gm_mask(data_dir=None, threshold=0.2, resume=True,
     gm_data = niimg._safe_get_data(gm_img)
 
     # getting one fifth of the values
-    gm_mask = (gm_data > threshold)
+    gm_mask = (gm_data > threshold).astype("int8")
 
     gm_mask = ndimage.binary_closing(gm_mask, iterations=n_iter)
     gm_mask_img = new_img_like(gm_img, gm_mask)
+
     return gm_mask_img
 
 
