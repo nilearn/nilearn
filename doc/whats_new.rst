@@ -20,6 +20,12 @@ Enhancements
 ------------
 
 - :func:`nilearn.plotting.view_markers` now accept an optional argument `marker_labels` to provide labels to each marker.
+- Refactor :func:`nilearn.signal.clean` to clarify the data flow.
+  Replace `sessions` with `runs` to matchin BIDS semantics and deprecate `sessions` in 0.9.0.
+  Add argument `filter` and allow a selection of signal filtering strategies:
+  * "butterwoth" (butterworth filter)
+  * "cosine" (discrete cosine transformation)
+  * `False` (no filtering)
 
 .. _v0.7.1:
 

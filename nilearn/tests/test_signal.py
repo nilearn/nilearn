@@ -377,7 +377,7 @@ def test_clean_frequencies():
     assert np.array_equal(sx_orig, sx)
 
 
-def test_clean_sessions():
+def test_clean_runs():
     n_samples = 21
     n_features = 501  # Must be higher than 500
     signals, _, confounds = generate_signals(n_features=n_features,
@@ -387,11 +387,11 @@ def test_clean_sessions():
     x = signals + trends
     x_orig = x.copy()
     # Create session info
-    sessions = np.ones(n_samples)
-    sessions[0:n_samples // 2] = 0
+    runs = np.ones(n_samples)
+    runs[0:n_samples // 2] = 0
     x_detrended = nisignal.clean(x, confounds=confounds, standardize=False, detrend=True,
                                  low_pass=None, high_pass=None,
-                                 sessions=sessions)
+                                 runs=runs)
     # clean should not modify inputs
     assert np.array_equal(x_orig, x)
 
@@ -491,8 +491,9 @@ def test_clean_confounds():
                   confounds=filename1)
     pytest.raises(TypeError, nisignal.clean, signals,
                   confounds=[None])
-    pytest.raises(ValueError, nisignal.clean, signals, filter='cosine',
-                 t_r=None, high_pass=0.008)
+    error_msg = pytest.raises(ValueError, nisignal.clean, signals, filter='cosine',
+                              t_r=None, high_pass=0.008)
+    assert "t_r='None'" in str(error_msg.value)
     pytest.raises(ValueError, nisignal.clean, signals, t_r=None,
                   low_pass=.01)  # using butterworth filter here
     pytest.raises(ValueError, nisignal.clean, signals, filter='not_implemented')
@@ -710,7 +711,7 @@ def test_cosine_filter():
 
     t_r, high_pass, low_pass, filter = 2.5, 0.002, None, 'cosine'
     signals, _, confounds = generate_signals(n_features=41,
-                                                  n_confounds=5, length=45)
+                                              n_confounds=5, length=45)
 
     # Not passing confounds it will return drift terms only
     frame_times = np.arange(signals.shape[0]) * t_r

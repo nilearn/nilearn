@@ -411,7 +411,8 @@ def _ensure_float(data):
             data = data.astype(np.float32)
     return data
 
-@rename_parameters({'sessions': 'runs'}, "0.9.0")
+
+@rename_parameters({'sessions': 'runs'}, '0.9.0')
 def clean(signals, runs=None, detrend=True, standardize='zscore',
           confounds=None, standardize_confounds=True, filter='butterworth',
           low_pass=None, high_pass=None, t_r=2.5, ensure_finite=False):
@@ -445,6 +446,8 @@ def clean(signals, runs=None, detrend=True, standardize='zscore',
     runs : numpy array, optional
         Add a run level to the cleaning process. Each run will be
         cleaned independently. Must be a 1D array of n_samples elements.
+        'runs' replaces 'sessions' after release 0.9.0.
+        Using 'session' will result in an error after release 0.9.0.
 
     confounds: numpy.ndarray, str, DataFrame or list of
         Confounds timeseries. Shape must be
@@ -592,12 +595,12 @@ def _process_runs(signals, runs, detrend, standardize, confounds, low_pass, high
         raise ValueError(('The length of the session vector (%i) '
                             'does not match the length of the signals (%i)')
                             % (len(runs), len(signals)))
-    for s in np.unique(runs):
+    for run in np.unique(runs):
         session_confounds = None
         if confounds is not None:
-            session_confounds = confounds[runs == s]
-        signals[runs == s, :] = \
-            clean(signals[runs == s],
+            session_confounds = confounds[runs == run]
+        signals[runs == run, :] = \
+            clean(signals[runs == run],
                   detrend=detrend, standardize=standardize,
                   confounds=session_confounds, low_pass=low_pass,
                   high_pass=high_pass, t_r=t_r)
@@ -664,7 +667,8 @@ def _check_filter_parameters(filter, low_pass, high_pass, t_r):
         if filter == 'cosine' and not all(isinstance(item, float)
                                           for item in [t_r, high_pass]):
             raise ValueError("Repetition time (t_r) and low cutoff frequency "
-                             "must be specified for cosine filtering.")
+                             "(high_pass) must be specified for cosine filtering."
+                             "t_r='{0}', high_pass='{1}'".format(t_r, high_pass))
         if filter == 'butterworth':
             if all(item is None for item in [low_pass, high_pass, t_r]):
                 # Butterworth was switched off by passing None to all these parameters
