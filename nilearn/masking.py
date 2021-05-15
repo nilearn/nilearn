@@ -18,7 +18,7 @@ from ._utils.ndimage import largest_connected_component, get_border_data
 from ._utils.niimg import _safe_get_data, img_data_dtype
 from .datasets import (load_mni152_template, load_mni152_gm_template,
                        load_mni152_wm_template)
-from nilearn.image import get_data, load_img, resample_to_img
+from nilearn.image import get_data, load_img
 
 
 class MaskWarning(UserWarning):
@@ -569,18 +569,11 @@ def compute_gray_matter_mask(target_img, threshold=.5,
         The brain mask (3D image)
     """
 
-    import os
-
-    _package_directory = os.path.dirname(os.path.abspath(__file__))
-
-    MNI152_FILE_PATH_2mm = os.path.join(_package_directory, "datasets", "data",
-                                        "avg152T1_brain.nii.gz")
-
     return compute_brain_mask(target_img=target_img, threshold=threshold,
                               connected=connected, opening=opening,
                               memory=memory, verbose=verbose,
                               mask_type='whole-brain',
-                              resolution=MNI152_FILE_PATH_2mm)
+                              resolution=2)
 
 
 def compute_brain_mask(target_img, threshold=.5, connected=True, opening=2,
@@ -647,11 +640,11 @@ def compute_brain_mask(target_img, threshold=.5, connected=True, opening=2,
     # Change the resolution of the template
     if kwarg:
         if 'resolution' in kwarg.keys():
-            ref_template = load_img(kwarg['resolution'])
+            target_resolution = kwarg['resolution']
         else:
             raise KeyError('missing resolution argument.')
-        template = cache(resampling.resample_to_img, memory)(
-            template, ref_template)
+        template = cache(resampling.resample_img, memory)(
+            template, np.eye(3) * target_resolution)
 
     dtype = img_data_dtype(target_img)
     template = new_img_like(template, get_data(template).astype(dtype))
