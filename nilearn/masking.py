@@ -580,7 +580,7 @@ def compute_brain_mask(target_img, threshold=.5, connected=True, opening=2,
                        **kwarg):
     """Compute the whole-brain, gray-matter or white-matter mask.
     This mask is calculated through the resampling of the corresponding
-    MNI152 template mask onto the target image.
+    MNI152 1mm-resolution template mask onto the target image.
 
     Parameters
     ----------
@@ -615,6 +615,10 @@ def compute_brain_mask(target_img, threshold=.5, connected=True, opening=2,
 
     mask_type : {'whole-brain', 'gm', 'wm'}, optional
         Type of mask to be computed. Default = 'whole-brain'
+
+    **kwarg: optional argument
+        resolution (int) is taken here as an optional argument to resample the
+        original template at the specified resolution
 
     Returns
     -------

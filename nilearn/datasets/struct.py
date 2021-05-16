@@ -123,8 +123,8 @@ def fetch_icbm152_2009(data_dir=None, url=None, resume=True, verbose=1):
 
 
 def load_mni152_template():
-    """Load skullstripped 1mm version of the MNI152 template originally
-    distributed with FSL.
+    """Load the skullstripped 1mm-resolution version of the MNI152 T1 template
+    originally distributed with FSL.
 
     For more information, see [1]_ and [2]_.
 
@@ -154,8 +154,8 @@ def load_mni152_template():
 
 
 def load_mni152_gm_template():
-    """Load skullstripped 1mm version of the gray-matter MNI152 template
-    originally distributed with FSL.
+    """Load the skullstripped 1mm-resolution version of the gray-matter MNI152
+    template originally distributed with FSL.
 
     Returns
     -------
@@ -171,8 +171,8 @@ def load_mni152_gm_template():
 
 
 def load_mni152_wm_template():
-    """Load skullstripped 1mm version of the white-matter MNI152 template
-    originally distributed with FSL.
+    """Load the skullstripped 1mm-resolution version of the white-matter MNI152
+    template originally distributed with FSL.
 
     Returns
     -------
@@ -188,7 +188,7 @@ def load_mni152_wm_template():
 
 
 def load_mni152_brain_mask(threshold=0.2):
-    """Load brain mask from MNI152 T1 template
+    """Load brain mask from the MNI152 T1 template.
 
     Parameters
     ----------
@@ -220,7 +220,7 @@ def load_mni152_brain_mask(threshold=0.2):
 
 
 def load_mni152_gm_mask(threshold=0.2, n_iter=2):
-    """Load brain mask from gray-matter MNI152 template
+    """Load brain mask from the gray-matter MNI152 template.
 
     Parameters
     ----------
@@ -247,7 +247,7 @@ def load_mni152_gm_mask(threshold=0.2, n_iter=2):
 
 
 def load_mni152_wm_mask(threshold=0.2, n_iter=2):
-    """Load brain mask from white-matter MNI152 template
+    """Load brain mask from the white-matter MNI152 template.
 
     Parameters
     ----------
@@ -275,7 +275,7 @@ def load_mni152_wm_mask(threshold=0.2, n_iter=2):
 
 def fetch_icbm152_brain_gm_mask(data_dir=None, threshold=0.2, resume=True,
                                 n_iter=2, verbose=1):
-    """Downloads ICBM152 template first, then loads 'gm' mask image.
+    """Downloads ICBM152 template first, then loads the 'gm' mask.
 
     Parameters
     ----------
