@@ -577,7 +577,7 @@ def _filter_signal(signals, confounds, filter, low_pass, high_pass, t_r):
             # (according to Lindquist et al. (2018))
             confounds = butterworth(confounds, sampling_rate=1. / t_r,
                                     low_pass=low_pass, high_pass=high_pass)
-    elif filter == "cosine":
+    elif filter == 'cosine':
         from .glm.first_level.design_matrix import _cosine_drift
         frame_times = np.arange(signals.shape[0]) * t_r
         cosine_drift = _cosine_drift(high_pass, frame_times)
@@ -588,13 +588,16 @@ def _filter_signal(signals, confounds, filter, low_pass, high_pass, t_r):
     return signals, confounds
 
 
-
-def _process_runs(signals, runs, detrend, standardize, confounds, low_pass, high_pass, t_r):
+def _process_runs(signals, runs, detrend, standardize, confounds,
+                  low_pass, high_pass, t_r):
     """Process each run independently."""
     if len(runs) != len(signals):
-        raise ValueError(('The length of the session vector (%i) '
-                            'does not match the length of the signals (%i)')
-                            % (len(runs), len(signals)))
+        raise ValueError(
+            (
+                'The length of the session vector (%i) '
+                'does not match the length of the signals (%i)'
+            ) % (len(runs), len(signals))
+        )
     for run in np.unique(runs):
         session_confounds = None
         if confounds is not None:
@@ -638,21 +641,30 @@ def _sanitize_confound_dtype(n_signal, confound):
         filename = confound
         confound = csv_to_array(filename)
         if np.isnan(confound.flat[0]):
-                    # There may be a header
+            # There may be a header
             confound = csv_to_array(filename, skip_header=1)
         if confound.shape[0] != n_signal:
-            raise ValueError("Confound signal has an incorrect length")
+            raise ValueError(
+                "Confound signal has an incorrect length"
+                "Signal length: {0}; confound length: {1}".format(
+                    n_signal, confound.shape[0])
+            )
     elif isinstance(confound, np.ndarray):
         if confound.ndim == 1:
             confound = np.atleast_2d(confound).T
         elif confound.ndim != 2:
             raise ValueError("confound array has an incorrect number "
-                                        "of dimensions: %d" % confound.ndim)
+                             "of dimensions: %d" % confound.ndim)
         if confound.shape[0] != n_signal:
-            raise ValueError("Confound signal has an incorrect length")
+            raise ValueError(
+                "Confound signal has an incorrect length"
+                "Signal length: {0}; confound length: {1}".format(
+                    n_signal, confound.shape[0])
+            )
+
     else:
         raise TypeError("confound has an unhandled type: %s"
-                                % confound.__class__)
+                        % confound.__class__)
     return confound
 
 
@@ -660,26 +672,33 @@ def _check_filter_parameters(filter, low_pass, high_pass, t_r):
     """Check all filter related parameters are set correcly."""
     if not filter:
         if any(isinstance(item, float) for item in [low_pass, high_pass]):
-            warnings.warn("No filter type selected but cutoff frequency provided."
-                          "Will not perform filtering.")
+            warnings.warn(
+                "No filter type selected but cutoff frequency provided."
+                "Will not perform filtering."
+            )
         return False
     elif filter in availiable_filters:
         if filter == 'cosine' and not all(isinstance(item, float)
                                           for item in [t_r, high_pass]):
-            raise ValueError("Repetition time (t_r) and low cutoff frequency "
-                             "(high_pass) must be specified for cosine filtering."
-                             "t_r='{0}', high_pass='{1}'".format(t_r, high_pass))
+            raise ValueError(
+                "Repetition time (t_r) and low cutoff frequency "
+                "(high_pass) must be specified for cosine filtering."
+                "t_r='{0}', high_pass='{1}'".format(t_r, high_pass)
+            )
         if filter == 'butterworth':
             if all(item is None for item in [low_pass, high_pass, t_r]):
-                # Butterworth was switched off by passing None to all these parameters
+                # Butterworth was switched off by passing
+                # None to all these parameters
                 return False
             if t_r is None:
                 raise ValueError("Repetition time (t_r) must be specified for "
                                  "butterworth filtering.")
             if any(isinstance(item, bool) for item in [low_pass, high_pass]):
-                raise TypeError("high/low pass must be float or None but you provided "
-                                "high_pass='{0}', low_pass='{1}'".format(high_pass,
-                                                                         low_pass))
+                raise TypeError(
+                    "high/low pass must be float or None but you provided "
+                    "high_pass='{0}', low_pass='{1}'"
+                    .format(high_pass, low_pass)
+                )
         return True
     else:
         raise ValueError("Filter method {} not implemented.".format(filter))
