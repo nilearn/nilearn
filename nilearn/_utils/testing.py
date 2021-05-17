@@ -164,7 +164,8 @@ def write_tmp_imgs(*imgs, **kwargs):
                     fd, filename = tempfile.mkstemp(prefix=prefix,
                                                     suffix=suffix,
                                                     dir=None)
-                    filenames.append((fd, filename))
+                    os.close(fd)
+                    filenames.append(filename)
                     img.to_filename(filename)
                     del img
 
@@ -172,15 +173,16 @@ def write_tmp_imgs(*imgs, **kwargs):
                     yield prefix + "*" + suffix
                 else:
                     if len(imgs) == 1:
-                        yield filenames[0][1]
+                        yield filenames[0]
                     else:
-                        yield [f[1] for f in filenames]
+                        yield filenames
         finally:
             # Ensure all created files are removed
-            for temp in filenames:
-                fd, filename = temp
-                os.close(fd)
-                os.remove(filename)
+            for filename in filenames:
+                try:
+                    os.remove(filename)
+                except OSError:
+                    pass
     else:  # No-op
         if len(imgs) == 1:
             yield imgs[0]
