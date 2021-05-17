@@ -179,10 +179,7 @@ def write_tmp_imgs(*imgs, **kwargs):
         finally:
             # Ensure all created files are removed
             for filename in filenames:
-                try:
-                    os.remove(filename)
-                except OSError:
-                    pass
+                os.remove(filename)
     else:  # No-op
         if len(imgs) == 1:
             yield imgs[0]
