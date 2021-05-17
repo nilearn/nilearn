@@ -1982,8 +1982,8 @@ def fetch_development_fmri(n_subjects=None, reduce_confounds=True,
                            age_group='both'):
     """Fetch movie watching based brain development dataset (fMRI)
 
-    The data is downsampled to 4mm resolution for convenience. The origin of
-    the data is coming from OpenNeuro. See Notes below.
+    The data is downsampled to 4mm resolution for convenience with a repetition time (TR)
+    of 2 secs. The origin of the data is coming from OpenNeuro. See Notes below.
 
     Please cite [1]_ if you are using this dataset.
 
