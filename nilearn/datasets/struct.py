@@ -7,13 +7,13 @@ from pathlib import Path
 
 import numpy as np
 from scipy import ndimage
-from sklearn.utils import Bunch
 
+from sklearn.utils import Bunch
 from .utils import (_get_dataset_dir, _fetch_files,
                     _get_dataset_descr)
 
 from .._utils import check_niimg, niimg
-from ..image import new_img_like, get_data
+from ..image import new_img_like, get_data, resampling
 
 
 _package_directory = os.path.dirname(os.path.abspath(__file__))
@@ -64,8 +64,8 @@ def fetch_icbm152_2009(data_dir=None, url=None, resume=True, verbose=1):
     References
     ----------
     .. [1] VS Fonov, AC Evans, K Botteron, CR Almli, RC McKinstry, DL Collins
-       and BDCG, "Unbiased average age-appropriate atlases for pediatric studies",
-       NeuroImage,Volume 54, Issue 1, January 2011
+       and BDCG, "Unbiased average age-appropriate atlases for pediatric
+       studies", NeuroImage,Volume 54, Issue 1, January 2011
 
     .. [2] VS Fonov, AC Evans, RC McKinstry, CR Almli and DL Collins,
        "Unbiased nonlinear average age-appropriate brain templates from birth
@@ -97,18 +97,18 @@ def fetch_icbm152_2009(data_dir=None, url=None, resume=True, verbose=1):
             "eye_mask", "face_mask", "mask")
     filenames = [(os.path.join("mni_icbm152_nlin_sym_09a", name), url, opts)
                  for name in (
-                    "mni_icbm152_csf_tal_nlin_sym_09a.nii.gz",
-                    "mni_icbm152_gm_tal_nlin_sym_09a.nii.gz",
-                    "mni_icbm152_wm_tal_nlin_sym_09a.nii.gz",
+        "mni_icbm152_csf_tal_nlin_sym_09a.nii.gz",
+        "mni_icbm152_gm_tal_nlin_sym_09a.nii.gz",
+        "mni_icbm152_wm_tal_nlin_sym_09a.nii.gz",
 
-                    "mni_icbm152_pd_tal_nlin_sym_09a.nii.gz",
-                    "mni_icbm152_t1_tal_nlin_sym_09a.nii.gz",
-                    "mni_icbm152_t2_tal_nlin_sym_09a.nii.gz",
-                    "mni_icbm152_t2_relx_tal_nlin_sym_09a.nii.gz",
+        "mni_icbm152_pd_tal_nlin_sym_09a.nii.gz",
+        "mni_icbm152_t1_tal_nlin_sym_09a.nii.gz",
+        "mni_icbm152_t2_tal_nlin_sym_09a.nii.gz",
+        "mni_icbm152_t2_relx_tal_nlin_sym_09a.nii.gz",
 
-                    "mni_icbm152_t1_tal_nlin_sym_09a_eye_mask.nii.gz",
-                    "mni_icbm152_t1_tal_nlin_sym_09a_face_mask.nii.gz",
-                    "mni_icbm152_t1_tal_nlin_sym_09a_mask.nii.gz")]
+        "mni_icbm152_t1_tal_nlin_sym_09a_eye_mask.nii.gz",
+        "mni_icbm152_t1_tal_nlin_sym_09a_face_mask.nii.gz",
+        "mni_icbm152_t1_tal_nlin_sym_09a_mask.nii.gz")]
 
     dataset_name = 'icbm152_2009'
     data_dir = _get_dataset_dir(dataset_name, data_dir=data_dir,
@@ -122,40 +122,53 @@ def fetch_icbm152_2009(data_dir=None, url=None, resume=True, verbose=1):
     return Bunch(**params)
 
 
-def load_mni152_template():
-    """Load the skullstripped 1mm-resolution version of the MNI152 T1 template
-    originally distributed with FSL.
+def load_mni152_template(resolution=1):
+    """Load the skullstripped 1mm-resolution version of the MNI152 T1 template,
+    originally distributed with FSL, and re-samples it using a different
+    resolution, if specified.
 
     For more information, see [1]_ and [2]_.
 
+    Parameters
+    ----------
+    resolution: int, optional, Default = 1
+        If resolution is different from 1, the template is re-sampled with the
+        specified resolution.
+
     Returns
     -------
-    mni152_template : Nifti1Image, image representing the resampled whole-brain
-        template
+    mni152_template : Nifti1Image, image representing the re-sampled
+        whole-brain template
 
     References
     ----------
-    .. [1] VS Fonov, AC Evans, K Botteron, CR Almli, RC McKinstry, DL Collins and
-       BDCG, Unbiased average age-appropriate atlases for pediatric studies,
-       NeuroImage, Volume 54, Issue 1, January 2011, ISSN 1053-8119, DOI:
-       10.1016/j.neuroimage.2010.07.033
+    .. [1] VS Fonov, AC Evans, K Botteron, CR Almli, RC McKinstry, DL Collins
+       and BDCG, Unbiased average age-appropriate atlases for pediatric
+       studies, NeuroImage, Volume 54, Issue 1, January 2011, ISSN 1053-8119,
+       DOI: 10.1016/j.neuroimage.2010.07.033
 
     .. [2] VS Fonov, AC Evans, RC McKinstry, CR Almli and DL Collins, Unbiased
-       nonlinear average age-appropriate brain templates from birth to adulthood,
-       NeuroImage, Volume 47, Supplement 1, July 2009, Page S102 Organization for
-       Human Brain Mapping 2009 Annual Meeting, DOI: 10.1016/S1053-8119(09)70884-5
+       nonlinear average age-appropriate brain templates from birth to
+       adulthood, NeuroImage, Volume 47, Supplement 1, July 2009, Page S102
+       Organization for Human Brain Mapping 2009 Annual Meeting,
+       DOI: 10.1016/S1053-8119(09)70884-5
 
     """
 
-    img = check_niimg(MNI152_FILE_PATH)
-    brain_template = new_img_like(img, get_data(img).astype("float32"))
+    brain_template = check_niimg(MNI152_FILE_PATH)
+
+    # Change the resolution of the template
+    if resolution != 1:
+        brain_template = resampling.resample_img(brain_template,
+                                                 np.eye(3) * resolution)
 
     return brain_template
 
 
-def load_mni152_gm_template():
+def load_mni152_gm_template(resolution=1):
     """Load the skullstripped 1mm-resolution version of the gray-matter MNI152
-    template originally distributed with FSL.
+    template, originally distributed with FSL, and re-samples it using a
+    different resolution, if specified.
 
     Returns
     -------
@@ -164,15 +177,20 @@ def load_mni152_gm_template():
 
     """
 
-    img = check_niimg(GM_MNI152_FILE_PATH)
-    gm_template = new_img_like(img, get_data(img).astype("float32"))
+    gm_template = check_niimg(GM_MNI152_FILE_PATH)
+
+    # Change the resolution of the template
+    if resolution != 1:
+        gm_template = resampling.resample_img(gm_template,
+                                              np.eye(3) * resolution)
 
     return gm_template
 
 
-def load_mni152_wm_template():
+def load_mni152_wm_template(resolution=1):
     """Load the skullstripped 1mm-resolution version of the white-matter MNI152
-    template originally distributed with FSL.
+    template, originally distributed with FSL, and re-samples it using a
+    different resolution, if specified.
 
     Returns
     -------
@@ -181,8 +199,12 @@ def load_mni152_wm_template():
 
     """
 
-    img = check_niimg(WM_MNI152_FILE_PATH)
-    wm_template = new_img_like(img, get_data(img).astype("float32"))
+    wm_template = check_niimg(WM_MNI152_FILE_PATH)
+
+    # Change the resolution of the template
+    if resolution != 1:
+        wm_template = resampling.resample_img(wm_template,
+                                              np.eye(3) * resolution)
 
     return wm_template
 
@@ -484,15 +506,15 @@ def fetch_oasis_vbm(n_subjects=None, dartel_version=True, data_dir=None,
         missing_subjects = sorted(missing_subjects + removed_outliers)
         file_names_gm = [
             (os.path.join(
-                    "OAS1_%04d_MR1",
-                    "mwrc1OAS1_%04d_MR1_mpr_anon_fslswapdim_bet.nii.gz")
+                "OAS1_%04d_MR1",
+                "mwrc1OAS1_%04d_MR1_mpr_anon_fslswapdim_bet.nii.gz")
              % (s, s),
              url_images, opts)
             for s in range(1, 457) if s not in missing_subjects][:n_subjects]
         file_names_wm = [
             (os.path.join(
-                    "OAS1_%04d_MR1",
-                    "mwrc2OAS1_%04d_MR1_mpr_anon_fslswapdim_bet.nii.gz")
+                "OAS1_%04d_MR1",
+                "mwrc2OAS1_%04d_MR1_mpr_anon_fslswapdim_bet.nii.gz")
              % (s, s),
              url_images, opts)
             for s in range(1, 457) if s not in missing_subjects]
@@ -502,15 +524,15 @@ def fetch_oasis_vbm(n_subjects=None, dartel_version=True, data_dir=None,
         missing_subjects = sorted(missing_subjects + removed_outliers)
         file_names_gm = [
             (os.path.join(
-                    "OAS1_%04d_MR1",
-                    "mwc1OAS1_%04d_MR1_mpr_anon_fslswapdim_bet.nii.gz")
+                "OAS1_%04d_MR1",
+                "mwc1OAS1_%04d_MR1_mpr_anon_fslswapdim_bet.nii.gz")
              % (s, s),
              url_images, opts)
             for s in range(1, 457) if s not in missing_subjects][:n_subjects]
         file_names_wm = [
             (os.path.join(
-                    "OAS1_%04d_MR1",
-                    "mwc2OAS1_%04d_MR1_mpr_anon_fslswapdim_bet.nii.gz")
+                "OAS1_%04d_MR1",
+                "mwc2OAS1_%04d_MR1_mpr_anon_fslswapdim_bet.nii.gz")
              % (s, s),
              url_images, opts)
             for s in range(1, 457) if s not in missing_subjects]
@@ -520,8 +542,8 @@ def fetch_oasis_vbm(n_subjects=None, dartel_version=True, data_dir=None,
     file_names_gm = file_names_gm[:n_subjects]
     file_names_wm = file_names_wm[:n_subjects]
 
-    file_names = (file_names_gm + file_names_wm +
-                  file_names_extvars + file_names_dua)
+    file_names = (
+        file_names_gm + file_names_wm + file_names_extvars + file_names_dua)
     dataset_name = 'oasis1'
     data_dir = _get_dataset_dir(dataset_name, data_dir=data_dir,
                                 verbose=verbose)
@@ -537,9 +559,8 @@ def fetch_oasis_vbm(n_subjects=None, dartel_version=True, data_dir=None,
     # Keep CSV information only for selected subjects
     csv_data = np.recfromcsv(ext_vars_file)
     # Comparisons to recfromcsv data must be bytes.
-    actual_subjects_ids = [("OAS1" +
-                            str.split(os.path.basename(x),
-                                      "OAS1")[1][:9]).encode()
+    actual_subjects_ids = [("OAS1" + str.split(os.path.basename(x),
+                                               "OAS1")[1][:9]).encode()
                            for x in gm_maps]
     subject_mask = np.asarray([subject_id in actual_subjects_ids
                                for subject_id in csv_data['id']])
@@ -565,9 +586,11 @@ def fetch_surf_fsaverage(mesh='fsaverage5', data_dir=None):
         Which mesh to fetch. Default='fsaverage5'.
 
         - 'fsaverage5': the low-resolution fsaverage5 mesh (10242 nodes)
-        - 'fsaverage5_sphere': the low-resolution fsaverage5 spheres (10242 nodes)
+        - 'fsaverage5_sphere': the low-resolution fsaverage5 spheres (10242
+          nodes)
         - 'fsaverage': the high-resolution fsaverage mesh (163842 nodes)
-            (high-resolution fsaverage will result in more computation time and memory usage)
+          (high-resolution fsaverage will result in more computation time and
+          memory usage)
 
     data_dir : str, optional
         Path of the data directory. Used to force data storage in a specified
