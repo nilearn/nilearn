@@ -87,6 +87,7 @@ def test_load_surf_data_file_nii_gii():
     gii = gifti.GiftiImage(darrays=[darray])
     gifti.write(gii, filename_gii)
     assert_array_equal(load_surf_data(filename_gii), np.zeros((20, )))
+    os.close(fd_gii)
     os.remove(filename_gii)
 
     # test loading of data from empty gifti file
@@ -97,6 +98,7 @@ def test_load_surf_data_file_nii_gii():
                        match='must contain at least one data array'
                        ):
         load_surf_data(filename_gii_empty)
+    os.close(fd_empty)
     os.remove(filename_gii_empty)
 
     # test loading of fake data from nifti file
@@ -107,6 +109,8 @@ def test_load_surf_data_file_nii_gii():
     nb.save(nii, filename_niigz)
     assert_array_equal(load_surf_data(filename_nii), np.zeros((20, )))
     assert_array_equal(load_surf_data(filename_niigz), np.zeros((20, )))
+    os.close(fd_gii2)
+    os.close(fd_niigz)
     os.remove(filename_nii)
     os.remove(filename_niigz)
 
@@ -139,11 +143,13 @@ def test_load_surf_data_file_freesurfer():
         fd_sulc, filename_sulc = tempfile.mkstemp(suffix='.sulc')
         nb.freesurfer.io.write_morph_data(filename_sulc, data)
         assert_array_equal(load_surf_data(filename_sulc), np.zeros((20, )))
+        os.close(fd_sulc)
         os.remove(filename_sulc)
 
         fd_thick, filename_thick = tempfile.mkstemp(suffix='.thickness')
         nb.freesurfer.io.write_morph_data(filename_thick, data)
         assert_array_equal(load_surf_data(filename_thick), np.zeros((20, )))
+        os.close(fd_thick)
         os.remove(filename_thick)
 
     # test loading of data from real label and annot files
@@ -175,6 +181,7 @@ def test_load_surf_data_file_error():
                            match='input type is not recognized'
                            ):
             load_surf_data(filename_wrong)
+        os.close(fd)
         os.remove(filename_wrong)
 
 
@@ -303,6 +310,7 @@ def test_load_surf_mesh_file_gii():
     gifti.write(gii, filename_gii_mesh)
     assert_array_equal(load_surf_mesh(filename_gii_mesh)[0], mesh[0])
     assert_array_equal(load_surf_mesh(filename_gii_mesh)[1], mesh[1])
+    os.close(fd_mesh)
     os.remove(filename_gii_mesh)
 
     # test if incorrect gii raises error
@@ -311,6 +319,7 @@ def test_load_surf_mesh_file_gii():
                 filename_gii_mesh_no_point)
     with pytest.raises(ValueError, match='NIFTI_INTENT_POINTSET'):
         load_surf_mesh(filename_gii_mesh_no_point)
+    os.close(fd_no)
     os.remove(filename_gii_mesh_no_point)
 
     fd_face, filename_gii_mesh_no_face = tempfile.mkstemp(suffix='.gii')
@@ -318,6 +327,7 @@ def test_load_surf_mesh_file_gii():
                 filename_gii_mesh_no_face)
     with pytest.raises(ValueError, match='NIFTI_INTENT_TRIANGLE'):
         load_surf_mesh(filename_gii_mesh_no_face)
+    os.close(fd_face)
     os.remove(filename_gii_mesh_no_face)
 
 
@@ -331,6 +341,7 @@ def test_load_surf_mesh_file_freesurfer():
                                   mesh[0])
         assert_array_almost_equal(load_surf_mesh(filename_fs_mesh)[1],
                                   mesh[1])
+        os.close(fd)
         os.remove(filename_fs_mesh)
 
 
@@ -345,6 +356,7 @@ def test_load_surf_mesh_file_error():
                            match='input type is not recognized'
                            ):
             load_surf_mesh(filename_wrong)
+        os.close(fd)
         os.remove(filename_wrong)
 
 
@@ -365,6 +377,8 @@ def test_load_surf_mesh_file_glob():
     assert_array_almost_equal(load_surf_mesh(fname1)[0], mesh[0])
     assert_array_almost_equal(load_surf_mesh(fname1)[1], mesh[1])
 
+    os.close(fd1)
+    os.close(fd2)
     os.remove(fname1)
     os.remove(fname2)
 
@@ -377,6 +391,7 @@ def test_load_surf_data_file_glob():
         fd, filename = tempfile.mkstemp(prefix='glob_%s_' % f,
                                         suffix='.gii')
         fnames.append(filename)
+        os.close(fd)
         data2D[:, f] *= f
         if LooseVersion(nb.__version__) > LooseVersion('2.0.2'):
             darray = gifti.GiftiDataArray(data=data2D[:, f])
@@ -397,6 +412,7 @@ def test_load_surf_data_file_glob():
     fd, filename = tempfile.mkstemp(prefix='glob_3_',
                                     suffix='.gii')
     fnames.append(filename)
+    os.close(fd)
     if LooseVersion(nb.__version__) > LooseVersion('2.0.2'):
         darray1 = gifti.GiftiDataArray(data=np.ones((20, )))
         darray2 = gifti.GiftiDataArray(data=np.ones((20, )))
@@ -421,6 +437,7 @@ def test_load_surf_data_file_glob():
     fd, filename = tempfile.mkstemp(prefix='glob_4_',
                                     suffix='.gii')
     fnames.append(filename)
+    os.close(fd)
     if LooseVersion(nb.__version__) > LooseVersion('2.0.2'):
         darray = gifti.GiftiDataArray(data=np.ones((15, 1)))
     else:

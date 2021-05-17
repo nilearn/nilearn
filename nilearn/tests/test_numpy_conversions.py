@@ -243,4 +243,5 @@ def test_csv_to_array():
                     np.asarray([1., 2., 3., 4., 5.]))
         pytest.raises(TypeError, csv_to_array, filename, delimiters='?!')
     finally:
+        os.close(fd)
         os.remove(filename)

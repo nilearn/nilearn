@@ -359,6 +359,7 @@ def test_iter_check_niimgs():
                                     suffix=".nii",
                                     dir=None)
     img_4d.to_filename(filename)
+    os.close(fd)
     niimgs = list(_iter_check_niimg([filename]))
     assert_array_equal(get_data(niimgs[0]),
                        get_data(_utils.check_niimg(img_4d)))
@@ -505,8 +506,9 @@ def test_repr_niimgs():
                 repr(shape), repr(affine))))
 
     # Add filename long enough to qualify for shortening
-    _, tmpimg1 = tempfile.mkstemp(suffix='_very_long.nii')
+    fd, tmpimg1 = tempfile.mkstemp(suffix='_very_long.nii')
     nibabel.save(img1, tmpimg1)
+    os.close(fd)
     assert (
         _utils._repr_niimgs(img1, shorten=False) ==
         ("%s('%s')" % (img1.__class__.__name__, img1.get_filename())))
