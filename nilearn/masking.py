@@ -523,9 +523,7 @@ def compute_multi_background_mask(data_imgs, border_size=2, upper_cutoff=0.85,
 
 @deprecated("Function 'compute_gray_matter_mask' has been renamed to "
             "'compute_brain_mask' and 'compute_gray_matter_mask' will be "
-            "removed in release 0.9.0. The default resolution of the "
-            "estimated mask will also change in release 0.9.0 from 2mm to "
-            "1mm.")
+            "removed in release 0.9.0.")
 def compute_gray_matter_mask(target_img, threshold=.5,
                              connected=True, opening=2, memory=None,
                              verbose=0):
@@ -579,10 +577,10 @@ def compute_gray_matter_mask(target_img, threshold=.5,
 
 def compute_brain_mask(target_img, threshold=.5, connected=True, opening=2,
                        memory=None, verbose=0, mask_type='whole-brain',
-                       resolution=1):
+                       resolution=2):
     """Compute the whole-brain, gray-matter or white-matter mask.
     This mask is calculated through the resampling of the corresponding
-    MNI152 1mm-resolution template mask onto the target image.
+    MNI152 2mm-resolution template mask onto the target image.
 
     Parameters
     ----------
@@ -618,7 +616,7 @@ def compute_brain_mask(target_img, threshold=.5, connected=True, opening=2,
     mask_type : {'whole-brain', 'gm', 'wm'}, optional
         Type of mask to be computed. Default = 'whole-brain'
 
-    resolution: int, optional, Default = 1
+    resolution: int, optional, Default = 2
         If resolution is different from 1, the original template is re-sampled
         with the specified resolution and a mask with the same resolution is
         computed.
@@ -635,18 +633,13 @@ def compute_brain_mask(target_img, threshold=.5, connected=True, opening=2,
     target_img = _utils.check_niimg(target_img)
 
     if mask_type == 'whole-brain':
-        template = load_mni152_template()
+        template = load_mni152_template(resolution=2)
     elif mask_type == 'gm':
-        template = load_mni152_gm_template()
+        template = load_mni152_gm_template(resolution=2)
     elif mask_type == 'wm':
-        template = load_mni152_wm_template()
+        template = load_mni152_wm_template(resolution=2)
     else:
         raise ValueError("Unknown mask type {}.".format(mask_type))
-
-    # Change the resolution of the template
-    if resolution != 1:
-        template = cache(resampling.resample_img, memory)(
-            template, np.eye(3) * resolution)
 
     dtype = img_data_dtype(target_img)
     template = new_img_like(template, get_data(template).astype(dtype))

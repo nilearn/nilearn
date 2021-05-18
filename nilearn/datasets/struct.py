@@ -122,7 +122,7 @@ def fetch_icbm152_2009(data_dir=None, url=None, resume=True, verbose=1):
     return Bunch(**params)
 
 
-def load_mni152_template(resolution=1):
+def load_mni152_template(resolution=2):
     """Load the skullstripped 1mm-resolution version of the MNI152 T1 template,
     originally distributed with FSL, and re-samples it using a different
     resolution, if specified.
@@ -165,7 +165,7 @@ def load_mni152_template(resolution=1):
     return brain_template
 
 
-def load_mni152_gm_template(resolution=1):
+def load_mni152_gm_template(resolution=2):
     """Load the skullstripped 1mm-resolution version of the gray-matter MNI152
     template, originally distributed with FSL, and re-samples it using a
     different resolution, if specified.
@@ -187,7 +187,7 @@ def load_mni152_gm_template(resolution=1):
     return gm_template
 
 
-def load_mni152_wm_template(resolution=1):
+def load_mni152_wm_template(resolution=2):
     """Load the skullstripped 1mm-resolution version of the white-matter MNI152
     template, originally distributed with FSL, and re-samples it using a
     different resolution, if specified.
