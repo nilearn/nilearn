@@ -233,7 +233,7 @@ def test_as_ndarray():
     pytest.raises(ValueError, as_ndarray, [], order="invalid")
 
 
-def test_csv_to_array(temp_path):
+def test_csv_to_array(tmp_path):
     # Create a phony CSV file
     fd, filename = tempfile.mkstemp(suffix='.csv',
                                     dir=tmp_path)
