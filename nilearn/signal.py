@@ -65,12 +65,12 @@ def _standardize(signals, detrend=False, standardize='zscore'):
                 signals = signals - signals.mean(axis=0)
 
             std = signals.std(axis=0)
-            std[std < np.finfo(np.float).eps] = 1.  # avoid numerical problems
+            std[std < np.finfo(np.float64).eps] = 1.  # avoid numerical problems
             signals /= std
 
         elif standardize == 'psc':
             mean_signal = signals.mean(axis=0)
-            invalid_ix = np.absolute(mean_signal) < np.finfo(np.float).eps
+            invalid_ix = np.absolute(mean_signal) < np.finfo(np.float64).eps
             signals = (signals - mean_signal) / np.absolute(mean_signal)
             signals *= 100
 
@@ -201,7 +201,7 @@ def _detrend(signals, inplace=False, type="linear", n_batches=10):
         regressor -= regressor.mean()
         std = np.sqrt((regressor ** 2).sum())
         # avoid numerical problems
-        if not std < np.finfo(np.float).eps:
+        if not std < np.finfo(np.float64).eps:
             regressor /= std
         regressor = regressor[:, np.newaxis]
 
@@ -600,6 +600,13 @@ def clean(signals, sessions=None, detrend=True, standardize='zscore',
     # Remove confounds
     if confounds is not None:
         confounds = _ensure_float(confounds)
+        
+        # Apply detrend to keep this operation orthogonal
+        # (according to Lindquist et al. (2018))
+        if detrend:
+            confounds = _standardize(confounds, standardize=False,
+                                     detrend=detrend)
+         
         # Apply low- and high-pass filters to keep filters orthogonal
         # (according to Lindquist et al. (2018))
         if low_pass is not None or high_pass is not None:
@@ -608,7 +615,7 @@ def clean(signals, sessions=None, detrend=True, standardize='zscore',
                                     low_pass=low_pass, high_pass=high_pass)
 
         confounds = _standardize(confounds, standardize=standardize_confounds,
-                                 detrend=detrend)
+                                 detrend=False)
 
         if not standardize_confounds:
             # Improve numerical stability by controlling the range of
@@ -620,7 +627,7 @@ def clean(signals, sessions=None, detrend=True, standardize='zscore',
 
         # Pivoting in qr decomposition was added in scipy 0.10
         Q, R, _ = linalg.qr(confounds, mode='economic', pivoting=True)
-        Q = Q[:, np.abs(np.diag(R)) > np.finfo(np.float).eps * 100.]
+        Q = Q[:, np.abs(np.diag(R)) > np.finfo(np.float64).eps * 100.]
         signals -= Q.dot(Q.T).dot(signals)
 
     # Standardize

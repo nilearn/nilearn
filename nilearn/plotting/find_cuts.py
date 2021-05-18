@@ -302,7 +302,7 @@ def find_cut_slices(img, direction='z', n_cuts=7, spacing='auto'):
     # first convert it to float.
     data = orig_data.copy()
     if data.dtype.kind in ('i', 'u'):
-        data = data.astype(np.float)
+        data = data.astype(np.float64)
 
     data = _smooth_array(data, affine, fwhm='fast')
 

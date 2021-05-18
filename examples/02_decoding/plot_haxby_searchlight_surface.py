@@ -47,7 +47,7 @@ radius = 5.
 pial_mesh = fsaverage['pial_' + hemi]
 X = surface.vol_to_surf(fmri_img, pial_mesh, radius=radius).T
 
-# To define the BOLD responses to be included within each searchlight "sphere"
+# To define the :term:`BOLD` responses to be included within each searchlight "sphere"
 # we define an adjacency matrix based on the inflated surface vertices such
 # that nearby surfaces are concatenated within the same searchlight.
 

@@ -4,17 +4,17 @@ Deriving spatial maps from group fMRI data using ICA and Dictionary Learning
 
 Various approaches exist to derive spatial maps or networks from
 group fmr data. The methods extract distributed brain regions that
-exhibit similar BOLD fluctuations over time. Decomposition
+exhibit similar :term:`BOLD` fluctuations over time. Decomposition
 methods allow for generation of many independent maps simultaneously
 without the need to provide a priori information (e.g. seeds or priors.)
 
-This example will apply two popular decomposition methods, ICA and
-Dictionary Learning, to fMRI data measured while children and young adults
+This example will apply two popular decomposition methods, :term:`ICA` and
+Dictionary Learning, to :term:`fMRI` data measured while children and young adults
 watch movies. The resulting maps will be visualized using atlas plotting
 tools.
 
-CanICA is an ICA method for group-level analysis of fMRI data. Compared
-to other strategies, it brings a well-controlled group model, as well as a
+:term:`CanICA` is an :term:`ICA` method for group-level analysis of :term:`fMRI` data.
+Compared to other strategies, it brings a well-controlled group model, as well as a
 thresholding algorithm controlling for specificity and sensitivity with
 an explicit model of the signal. The reference paper is:
 
@@ -41,7 +41,7 @@ print('First functional nifti image (4D) is at: %s' %
 # ---------------------------------
 # We use as "template" as a strategy to compute the mask, as this leads
 # to slightly faster and more reproducible results. However, the images
-# need to be in MNI template space
+# need to be in :term:`MNI` template space.
 
 from nilearn.decomposition import CanICA
 
@@ -69,7 +69,7 @@ plot_prob_atlas(canica_components_img, title='All ICA components')
 
 
 ####################################################################
-# Finally, we plot the map for each ICA component separately
+# Finally, we plot the map for each :term:`ICA` component separately
 from nilearn.image import iter_img
 from nilearn.plotting import plot_stat_map, show
 
@@ -83,8 +83,8 @@ for i, cur_img in enumerate(iter_img(canica_components_img)):
 # -------------------------------------------------------------
 # Dictionary learning is a sparsity based decomposition method for extracting
 # spatial maps. It extracts maps that are naturally sparse and usually cleaner
-# than ICA. Here, we will compare networks built with CanICA to networks built
-# with Dictionary Learning.
+# than :term:`ICA`. Here, we will compare networks built with :term:`CanICA` to
+# networks built with Dictionary Learning.
 #
 #    * Arthur Mensch et al. `Compressed online dictionary learning for fast resting-state fMRI decomposition
 #      <https://hal.archives-ouvertes.fr/hal-01271033/>`_,
@@ -154,6 +154,6 @@ show()
 # .. note::
 #
 #     To see how to extract subject-level timeseries' from regions
-#     created using Dictionary Learning, see :ref:`example Regions 
+#     created using Dictionary Learning, see :ref:`example Regions
 #     extraction using Dictionary Learning and functional connectomes
 #     <sphx_glr_auto_examples_03_connectivity_plot_extract_regions_dictlearning_maps.py>`.

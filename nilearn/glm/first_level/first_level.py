@@ -362,6 +362,9 @@ class FirstLevelModel(BaseGLM):
             takes precedence over events and confounds.
 
         """
+        # Initialize masker_ to None such that attribute exists
+        self.masker_ = None
+
         # Raise a warning if both design_matrices and confounds are provided
         if design_matrices is not None and (confounds is not None or events is not None):
             warn('If design matrices are supplied, confounds and events will be ignored.')
@@ -410,6 +413,8 @@ class FirstLevelModel(BaseGLM):
                                        )
             self.masker_.fit(run_imgs[0])
         else:
+            # Make sure masker has been fitted otherwise no attribute mask_img_
+            self.mask_img._check_fitted()
             if self.mask_img.mask_img_ is None and self.masker_ is None:
                 self.masker_ = clone(self.mask_img)
                 for param_name in ['target_affine', 'target_shape',
@@ -678,7 +683,7 @@ class FirstLevelModel(BaseGLM):
 
             output.append(self.masker_.inverse_transform(voxelwise_attribute))
 
-            return output
+        return output
 
     @auto_attr
     def residuals(self):

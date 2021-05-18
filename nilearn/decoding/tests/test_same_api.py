@@ -30,7 +30,7 @@ from nilearn.image import get_data
 def _make_data(rng=None, masked=False, dim=(2, 2, 2)):
     if rng is None:
         rng = check_random_state(42)
-    mask = np.ones(dim).astype(np.bool)
+    mask = np.ones(dim).astype(bool)
     mask[rng.rand(*dim) < .7] = 0
     w = np.zeros(dim)
     w[dim[0] // 2:, dim[1] // 2:, :dim[2] // 2] = 1
@@ -51,7 +51,7 @@ def to_niimgs(X, dim):
     p = np.prod(dim)
     assert len(dim) == 3
     assert X.shape[-1] <= p
-    mask = np.zeros(p).astype(np.bool)
+    mask = np.zeros(p).astype(bool)
     mask[:X.shape[-1]] = 1
     assert mask.sum() == X.shape[1]
     mask = mask.reshape(dim)
@@ -59,7 +59,7 @@ def to_niimgs(X, dim):
         np.array([_unmask_from_to_3d_array(x, mask) for x in X]), 0, start=4)
     affine = np.eye(4)
     return nibabel.Nifti1Image(X, affine), nibabel.Nifti1Image(
-        mask.astype(np.float), affine)
+        mask.astype(np.float64), affine)
 
 
 def test_same_energy_calculus_pure_lasso():
@@ -82,7 +82,7 @@ def test_lipschitz_constant_loss_mse():
     X, _, w, mask = _make_data(rng=rng, masked=True)
     l1_ratio = 1.
     alpha = .1
-    mask = np.ones(X.shape[1]).astype(np.bool)
+    mask = np.ones(X.shape[1]).astype(bool)
     grad_weight = alpha * X.shape[0] * (1. - l1_ratio)
     a = _squared_loss_derivative_lipschitz_constant(X, mask, grad_weight)
     b = spectral_norm_squared(X)
@@ -119,8 +119,8 @@ def test_graph_net_and_tvl1_same_for_pure_l1(max_iter=100, decimal=2):
                                 max_iter=max_iter,
                                 mask=mask)[0]
 
-    mask = nibabel.Nifti1Image(mask.astype(np.float), np.eye(4))
-    X = nibabel.Nifti1Image(X.astype(np.float), np.eye(4))
+    mask = nibabel.Nifti1Image(mask.astype(np.float64), np.eye(4))
+    X = nibabel.Nifti1Image(X.astype(np.float64), np.eye(4))
     for standardize in [True, False]:
         sl = BaseSpaceNet(
             alphas=alpha, l1_ratios=1., mask=mask, penalty="graph-net",
@@ -149,7 +149,7 @@ def test_graph_net_and_tvl1_same_for_pure_l1_logistic(max_iter=20,
     y = y > 0.
     alpha = 1. / X.shape[0]
     X_, mask_ = to_niimgs(X, (2, 2, 2))
-    mask = get_data(mask_).astype(np.bool).ravel()
+    mask = get_data(mask_).astype(bool).ravel()
 
     # results should be exactly the same for pure lasso
     a = _graph_net_logistic(X, y, alpha, 1., mask=mask,

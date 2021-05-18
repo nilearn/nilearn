@@ -327,7 +327,7 @@ def generate_fake_fmri(shape=(10, 11, 12), length=17, kind="noise",
         target[t_start:t_start + block_size] = block + 1
         t_start += t_rest + block_size
     target = target if block_type == 'classification' \
-        else target.astype(np.float)
+        else target.astype(np.float64)
     fmri = np.zeros(fmri.shape)
     fmri[mask.astype(bool)] = flat_fmri
     return (nibabel.Nifti1Image(fmri, affine),
@@ -523,13 +523,13 @@ def create_fake_bids_dataset(base_dir='', n_sub=10, n_ses=2,
                              with_confounds=True,
                              confounds_tag="desc-confounds_timeseries",
                              no_session=False):
-    """Creates a fake bids dataset directory with dummy files.
+    """Creates a fake :term:`bids<BIDS>` dataset directory with dummy files.
     Returns fake dataset directory name.
 
     Parameters
     ----------
     base_dir : string (Absolute path), optional
-        Absolute directory path in which to create the fake BIDS dataset dir.
+        Absolute directory path in which to create the fake :term:`BIDS` dataset dir.
         Default: Current directory.
 
     n_sub : int, optional

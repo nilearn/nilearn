@@ -19,16 +19,16 @@ def fit_axes(ax):
     """
     fig = ax.get_figure()
     renderer = get_renderer(fig)
-    ylabel_width = ax.yaxis.get_tightbbox(renderer).inverse_transformed(
-        ax.figure.transFigure).width
+    ylabel_width = ax.yaxis.get_tightbbox(renderer).transformed(
+        ax.figure.transFigure.inverted()).width
     if ax.get_position().xmin < 1.1 * ylabel_width:
         # we need to move it over
         new_position = ax.get_position()
         new_position.x0 = 1.1 * ylabel_width  # pad a little
         ax.set_position(new_position)
 
-    xlabel_height = ax.xaxis.get_tightbbox(renderer).inverse_transformed(
-        ax.figure.transFigure).height
+    xlabel_height = ax.xaxis.get_tightbbox(renderer).transformed(
+        ax.figure.transFigure.inverted()).height
     if ax.get_position().ymin < 1.1 * xlabel_height:
         # we need to move it over
         new_position = ax.get_position()
@@ -139,10 +139,10 @@ def plot_matrix(mat, title=None, labels=None, figure=None, axes=None,
         mat = mat[index, :][:, index]
 
     if tri == 'lower':
-        mask = np.tri(mat.shape[0], k=-1, dtype=np.bool) ^ True
+        mask = np.tri(mat.shape[0], k=-1, dtype=bool) ^ True
         mat = np.ma.masked_array(mat, mask)
     elif tri == 'diag':
-        mask = np.tri(mat.shape[0], dtype=np.bool) ^ True
+        mask = np.tri(mat.shape[0], dtype=bool) ^ True
         mat = np.ma.masked_array(mat, mask)
     if axes is not None and figure is not None:
         raise ValueError("Parameters figure and axes cannot be specified "
@@ -264,7 +264,7 @@ def plot_contrast_matrix(contrast_def, design_matrix, colorbar=False, ax=None,
         Include a colorbar in the contrast matrix plot. Default=False.
 
     ax : matplotlib Axes object, optional
-        Directory where plotted figures will be stored.
+        Axis on which to plot the figure. If None, a new figure will be created.
 
     output_file : string or None, optional
         The name of an image file to export the plot to. Valid extensions

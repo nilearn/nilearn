@@ -219,7 +219,7 @@ def test_detrend():
     # Mean removal only (out-of-place)
     detrended = nisignal._detrend(x, inplace=False, type="constant")
     assert (abs(detrended.mean(axis=0)).max()
-                < 15. * np.finfo(np.float).eps)
+                < 15. * np.finfo(np.float64).eps)
 
     # out-of-place detrending. Use scipy as a reference implementation
     detrended = nisignal._detrend(x, inplace=False)
@@ -227,14 +227,14 @@ def test_detrend():
 
     # "x" must be left untouched
     np.testing.assert_almost_equal(original, x, decimal=14)
-    assert abs(detrended.mean(axis=0)).max() < 15. * np.finfo(np.float).eps
+    assert abs(detrended.mean(axis=0)).max() < 15. * np.finfo(np.float64).eps
     np.testing.assert_almost_equal(detrended_scipy, detrended, decimal=14)
     # for this to work, there must be no trends at all in "signals"
     np.testing.assert_almost_equal(detrended, signals, decimal=14)
 
     # inplace detrending
     nisignal._detrend(x, inplace=True)
-    assert abs(x.mean(axis=0)).max() < 15. * np.finfo(np.float).eps
+    assert abs(x.mean(axis=0)).max() < 15. * np.finfo(np.float64).eps
     # for this to work, there must be no trends at all in "signals"
     np.testing.assert_almost_equal(detrended_scipy, detrended, decimal=14)
     np.testing.assert_almost_equal(x, signals, decimal=14)
@@ -248,7 +248,7 @@ def test_detrend():
     detrended = nisignal._detrend(x.astype(np.int64), inplace=True,
                                   type="constant")
     assert (abs(detrended.mean(axis=0)).max() <
-                20. * np.finfo(np.float).eps)
+                20. * np.finfo(np.float64).eps)
 
 
 def test_mean_of_squares():
@@ -399,7 +399,7 @@ def test_clean_confounds():
     signals, noises, confounds = generate_signals(n_features=41,
                                                   n_confounds=5, length=45)
     # No signal: output must be zero.
-    eps = np.finfo(np.float).eps
+    eps = np.finfo(np.float64).eps
     noises1 = noises.copy()
     cleaned_signals = nisignal.clean(noises, confounds=confounds,
                                      detrend=True, standardize=False)
@@ -433,7 +433,7 @@ def test_clean_confounds():
                                      detrend=True, standardize=False)
     coeffs = np.polyfit(np.arange(cleaned_signals.shape[0]),
                         cleaned_signals, 1)
-    assert (abs(coeffs) < 200. * eps).all()  # trend removed
+    assert (abs(coeffs) < 1000. * eps).all()  # trend removed
 
     # Test no-op
     input_signals = 10 * signals
@@ -498,6 +498,23 @@ def test_clean_confounds():
                                                   detrend=False,
                                                   ).mean(),
                                    np.zeros((20, 2)))
+
+    # Test to check that confounders effects are effectively removed from 
+    # the signals when having a detrending and filtering operation together. 
+    # This did not happen originally due to a different order in which 
+    # these operations were being applied to the data and confounders 
+    # (it thus solves issue # 2730).
+    signals_clean = nisignal.clean(signals,
+                                   detrend=True,
+                                   high_pass=0.01,
+                                   standardize_confounds=True,
+                                   standardize=True,
+                                   confounds=confounds)
+    confounds_clean = nisignal.clean(confounds,
+                                     detrend=True,
+                                     high_pass=0.01,
+                                     standardize=True)
+    assert abs(np.dot(confounds_clean.T, signals_clean)).max() < 1000. * eps
 
 
 def test_clean_frequencies_using_power_spectrum_density():

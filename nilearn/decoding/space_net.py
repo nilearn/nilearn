@@ -122,7 +122,7 @@ def _univariate_feature_screening(
     mask_ = mask.copy()
     mask_[mask] = (support > 0)
     mask_ = ndimage.binary_dilation(ndimage.binary_erosion(
-        mask_)).astype(np.bool)
+        mask_)).astype(bool)
     mask_[np.logical_not(mask)] = 0
     support = mask_[mask]
     X = X[:, support]
@@ -788,7 +788,7 @@ class BaseSpaceNet(LinearRegression, CacheMixin):
         self.masker_ = check_embedded_nifti_masker(self, multi_subject=False)
         X = self.masker_.fit_transform(X)
 
-        X, y = check_X_y(X, y, ['csr', 'csc', 'coo'], dtype=np.float,
+        X, y = check_X_y(X, y, ['csr', 'csc', 'coo'], dtype=float,
                          multi_output=True, y_numeric=not self.is_classif)
 
         if not self.is_classif and np.all(np.diff(y) == 0.):
@@ -801,7 +801,7 @@ class BaseSpaceNet(LinearRegression, CacheMixin):
         self.Xstd_ = X.std(axis=0)
         self.Xstd_[self.Xstd_ < 1e-8] = 1
         self.mask_img_ = self.masker_.mask_img_
-        self.mask_ = get_data(self.mask_img_).astype(np.bool)
+        self.mask_ = get_data(self.mask_img_).astype(bool)
         n_samples, _ = X.shape
         y = np.array(y).copy()
         l1_ratios = self.l1_ratios
@@ -976,7 +976,7 @@ class BaseSpaceNet(LinearRegression, CacheMixin):
         # prediction proper
         scores = self.decision_function(X)
         if len(scores.shape) == 1:
-            indices = (scores > 0).astype(np.int)
+            indices = (scores > 0).astype(int)
         else:
             indices = scores.argmax(axis=1)
         return self.classes_[indices]
