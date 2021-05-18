@@ -66,6 +66,7 @@ the :ref:`user guide <user_guide>` for more information and usage examples.
    fetch_atlas_craddock_2012
    fetch_atlas_destrieux_2009
    fetch_atlas_harvard_oxford
+   fetch_atlas_juelich
    fetch_atlas_msdl
    fetch_atlas_difumo
    fetch_coords_power_2011

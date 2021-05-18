@@ -4,6 +4,9 @@
 NEW
 ---
 
+- New atlas fetcher
+  :func:`nilearn.datasets.fetch_atlas_juelich` to download Juelich atlas from FSL.
+
 Fixes
 -----
 
