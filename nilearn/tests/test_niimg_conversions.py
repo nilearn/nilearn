@@ -357,7 +357,7 @@ def test_iter_check_niimgs(tmp_path):
     # Create a test file
     fd, filename = tempfile.mkstemp(prefix="nilearn_test",
                                     suffix=".nii",
-                                    dir=tmp_path)
+                                    dir=str(tmp_path))
     os.close(fd)
     img_4d.to_filename(filename)
     niimgs = list(_iter_check_niimg([filename]))
@@ -507,7 +507,7 @@ def test_repr_niimgs(tmp_path):
 
     # Add filename long enough to qualify for shortening
     fd, tmpimg1 = tempfile.mkstemp(suffix='_very_long.nii',
-                                   dir=tmp_path)
+                                   dir=str(tmp_path))
     os.close(fd)
     nibabel.save(img1, tmpimg1)
     assert (
