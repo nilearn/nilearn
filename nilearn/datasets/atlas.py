@@ -406,6 +406,8 @@ def _fetch_atlases_fsl(atlas_source, atlas_name,
                       data_dir=None, symmetric_split=False,
                       resume=True, verbose=1):
 
+    atlas_sources = {"HarvardOxford", "Juelich"}
+
     urls = {'HarvardOxford': 'http://www.nitrc.org/frs/download.php/9902/HarvardOxford.tgz',
             'Juelich': 'https://www.nitrc.org/frs/download.php/12096/Juelich.tgz'}
 
@@ -426,6 +428,11 @@ def _fetch_atlases_fsl(atlas_source, atlas_name,
                    "maxprob-thr50-1mm", "maxprob-thr50-2mm",
                    "prob-1mm", "prob-2mm")}
 
+    if atlas_source not in atlas_sources:
+        raise ValueError("Invalid atlas source: {0}. Please choose an atlas source "
+                        "among:\n{1}".format(
+                            atlas_source, '\n'.join(atlas_sources)))
+        
     if atlas_name not in atlas_items[atlas_source]:
         raise ValueError("Invalid atlas name: {0}. Please choose an atlas "
                         "among:\n{1}".format(
@@ -448,8 +455,8 @@ def _fetch_atlases_fsl(atlas_source, atlas_name,
     if atlas_source == 'HarvardOxford':
         if atlas_name[0] == 'c':
             if 'cort-maxprob' in atlas_name  and symmetric_split or 'cortl-maxprob' in atlas_name:
-                split_name = atlas_name.split('cort')
-                atlas_name = 'cortl{}'.format(split_name[1])
+                split_name = atlas_name.split('-', 1)
+                atlas_name = 'cortl-{}'.format(split_name[1])
                 label_file = 'HarvardOxford-Cortical-Lateralized.xml'
                 lateralized = True
             else:
