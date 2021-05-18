@@ -633,11 +633,11 @@ def compute_brain_mask(target_img, threshold=.5, connected=True, opening=2,
     target_img = _utils.check_niimg(target_img)
 
     if mask_type == 'whole-brain':
-        template = load_mni152_template(resolution=2)
+        template = load_mni152_template(resolution=resolution)
     elif mask_type == 'gm':
-        template = load_mni152_gm_template(resolution=2)
+        template = load_mni152_gm_template(resolution=resolution)
     elif mask_type == 'wm':
-        template = load_mni152_wm_template(resolution=2)
+        template = load_mni152_wm_template(resolution=resolution)
     else:
         raise ValueError("Unknown mask type {}.".format(mask_type))
 
