@@ -14,10 +14,10 @@ Fixes
 - Fix number of attributes returned by the
   `nilearn.glm.first_level.FirstLevelModel._get_voxelwise_model_attribute` method in the first level model.
   It used to return only the first attribute, and now returns as many attributes as design matrices.
-- Plotting functions that show a stack of slices from a 3D image (e.g. 
-  :func:`nilearn.plotting.plot_stat_map`) will now plot the slices in the user 
+- Plotting functions that show a stack of slices from a 3D image (e.g.
+  :func:`nilearn.plotting.plot_stat_map`) will now plot the slices in the user
   specified order, rather than automatically sorting into ascending order
-  (https://github.com/nilearn/nilearn/issues/1155). 
+  (https://github.com/nilearn/nilearn/issues/1155).
 
 Enhancements
 ------------
@@ -31,6 +31,12 @@ Enhancements
   (https://nilearn.github.io/auto_examples/01_plotting/plot_3d_map_to_surface_projection.html)
 - :func:`nilearn.plotting.view_connectome` now accepts an optional argument `node_color` to provide a single color
   for all nodes, or one color per node. It defaults to `auto` which colors markers according to the viridis colormap.
+- Refactor :func:`nilearn.signal.clean` to clarify the data flow.
+  Replace `sessions` with `runs` to matchin BIDS semantics and deprecate `sessions` in 0.9.0.
+  Add argument `filter` and allow a selection of signal filtering strategies:
+  * "butterwoth" (butterworth filter)
+  * "cosine" (discrete cosine transformation)
+  * `False` (no filtering)
 
 .. _v0.7.1:
 

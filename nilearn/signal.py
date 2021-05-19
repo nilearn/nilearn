@@ -15,6 +15,12 @@ from scipy import linalg, signal as sp_signal
 from sklearn.utils import gen_even_slices, as_float_array
 
 from ._utils.numpy_conversions import csv_to_array, as_ndarray
+from ._utils.helpers import rename_parameters
+
+
+availiable_filters = ['butterworth',
+                      'cosine'
+                      ]
 
 
 def _standardize(signals, detrend=False, standardize='zscore'):
@@ -406,9 +412,10 @@ def _ensure_float(data):
     return data
 
 
-def clean(signals, sessions=None, detrend=True, standardize='zscore',
-          confounds=None, standardize_confounds=True, low_pass=None,
-          high_pass=None, t_r=2.5, ensure_finite=False):
+@rename_parameters({'sessions': 'runs'}, '0.9.0')
+def clean(signals, runs=None, detrend=True, standardize='zscore',
+          confounds=None, standardize_confounds=True, filter='butterworth',
+          low_pass=None, high_pass=None, t_r=2.5, ensure_finite=False):
     """Improve SNR on masked fMRI signals.
 
     This function can do several things on the input signals, in
@@ -436,9 +443,11 @@ def clean(signals, sessions=None, detrend=True, standardize='zscore',
         Timeseries. Must have shape (instant number, features number).
         This array is not modified.
 
-    sessions : numpy array, optional
-        Add a session level to the cleaning process. Each session will be
+    runs : numpy array, optional
+        Add a run level to the cleaning process. Each run will be
         cleaned independently. Must be a 1D array of n_samples elements.
+        'runs' replaces 'sessions' after release 0.9.0.
+        Using 'session' will result in an error after release 0.9.0.
 
     confounds: numpy.ndarray, str, DataFrame or list of
         Confounds timeseries. Shape must be
@@ -453,8 +462,15 @@ def clean(signals, sessions=None, detrend=True, standardize='zscore',
     t_r: float
         Repetition time, in second (sampling period). Set to None if not.
 
+    filter: {'butterworth', 'cosine', False}
+        Filtering methods.
+        'butterworth': perform butterworth filtering.
+        'cosine': generate discrete cosine transformation drift terms.
+        False : Do not perform filtering.
+
     low_pass, high_pass: float
         Respectively high and low cutoff frequencies, in Hertz.
+        `low_pass` is not implemented for filter='cosine'.
 
     detrend: bool
         If detrending should be applied on timeseries (before
@@ -499,124 +515,32 @@ def clean(signals, sessions=None, detrend=True, standardize='zscore',
     --------
         nilearn.image.clean_img
     """
-    if isinstance(low_pass, bool):
-        raise TypeError("low pass must be float or None but you provided "
-                        "low_pass='{0}'".format(low_pass))
-    if isinstance(high_pass, bool):
-        raise TypeError("high pass must be float or None but you provided "
-                        "high_pass='{0}'".format(high_pass))
+    # Read confounds and signals
+    signals, confounds = _sanitize_inputs(signals, confounds, ensure_finite)
+    use_filter = _check_filter_parameters(filter, low_pass, high_pass, t_r)
+    # Restrict the signal to the orthogonal of the confounds
+    if runs is not None:
+        signals = _process_runs(signals, runs, detrend, standardize,
+                                   confounds, low_pass, high_pass, t_r)
 
-    if not isinstance(confounds,
-                      (list, tuple, str, np.ndarray, pd.DataFrame,
-                       type(None))):
-        raise TypeError("confounds keyword has an unhandled type: %s"
-                        % confounds.__class__)
-
-    if not isinstance(ensure_finite, bool):
-        raise ValueError("'ensure_finite' must be boolean type True or False "
-                         "but you provided ensure_finite={0}"
-                         .format(ensure_finite))
-
-    signals = signals.copy()
-    if not isinstance(signals, np.ndarray):
-        signals = as_ndarray(signals)
-
-    if ensure_finite:
-        mask = np.logical_not(np.isfinite(signals))
-        if mask.any():
-            signals[mask] = 0
-
-    # Read confounds
-    if confounds is not None:
-        if not isinstance(confounds, (list, tuple)):
-            confounds = (confounds, )
-
-        all_confounds = []
-        for confound in confounds:
-            # cast DataFrame to array
-            if isinstance(confound, pd.DataFrame):
-                confound = confound.values
-
-            if isinstance(confound, str):
-                filename = confound
-                confound = csv_to_array(filename)
-                if np.isnan(confound.flat[0]):
-                    # There may be a header
-                    confound = csv_to_array(filename, skip_header=1)
-                if confound.shape[0] != signals.shape[0]:
-                    raise ValueError("Confound signal has an incorrect length")
-
-            elif isinstance(confound, np.ndarray):
-                if confound.ndim == 1:
-                    confound = np.atleast_2d(confound).T
-                elif confound.ndim != 2:
-                    raise ValueError("confound array has an incorrect number "
-                                     "of dimensions: %d" % confound.ndim)
-
-                if confound.shape[0] != signals.shape[0]:
-                    raise ValueError("Confound signal has an incorrect length")
-            else:
-                raise TypeError("confound has an unhandled type: %s"
-                                % confound.__class__)
-            all_confounds.append(confound)
-
-        # Restrict the signal to the orthogonal of the confounds
-        confounds = np.hstack(all_confounds)
-        del all_confounds
-
-    if sessions is not None:
-        if not len(sessions) == len(signals):
-            raise ValueError(('The length of the session vector (%i) '
-                              'does not match the length of the signals (%i)')
-                              % (len(sessions), len(signals)))
-        for s in np.unique(sessions):
-            session_confounds = None
-            if confounds is not None:
-                session_confounds = confounds[sessions == s]
-            signals[sessions == s, :] = \
-                clean(signals[sessions == s],
-                      detrend=detrend, standardize=standardize,
-                      confounds=session_confounds, low_pass=low_pass,
-                      high_pass=high_pass, t_r=t_r)
-
-    signals = _ensure_float(signals)
-
-    # Apply low- and high-pass filters
-    if low_pass is not None or high_pass is not None:
-        if t_r is None:
-            raise ValueError("Repetition time (t_r) must be specified for "
-                             "filtering. You specified None.")
+    # Detrend
+    # Detrend and filtering should apply to confounds, if confound presents
+    # keep filters orthogonal (according to Lindquist et al. (2018))
     if detrend:
         mean_signals = signals.mean(axis=0)
         signals = _standardize(signals, standardize=False, detrend=detrend)
+        if confounds is not None:
+            confounds = _standardize(confounds, standardize=False,
+                                detrend=detrend)
+    if use_filter:
+        # check if filter parameters are satisfied and filter according to the strategy
+        signals, confounds = _filter_signal(signals, confounds, filter,
+                                            low_pass, high_pass, t_r)
 
-    if low_pass is not None or high_pass is not None:
-        if t_r is None:
-            raise ValueError("Repetition time (t_r) must be specified for "
-                             "filtering")
-
-        signals = butterworth(signals, sampling_rate=1. / t_r,
-                              low_pass=low_pass, high_pass=high_pass)
     # Remove confounds
     if confounds is not None:
-        confounds = _ensure_float(confounds)
-        
-        # Apply detrend to keep this operation orthogonal
-        # (according to Lindquist et al. (2018))
-        if detrend:
-            confounds = _standardize(confounds, standardize=False,
-                                     detrend=detrend)
-         
-        # Apply low- and high-pass filters to keep filters orthogonal
-        # (according to Lindquist et al. (2018))
-        if low_pass is not None or high_pass is not None:
-
-            confounds = butterworth(confounds, sampling_rate=1. / t_r,
-                                    low_pass=low_pass, high_pass=high_pass)
-
         confounds = _standardize(confounds, standardize=standardize_confounds,
                                  detrend=False)
-
         if not standardize_confounds:
             # Improve numerical stability by controlling the range of
             # confounds. We don't rely on _standardize as it removes any
@@ -641,3 +565,156 @@ def clean(signals, sessions=None, detrend=True, standardize='zscore',
                                detrend=False)
 
     return signals
+
+
+def _filter_signal(signals, confounds, filter, low_pass, high_pass, t_r):
+    '''Filter signal based on provided strategy.'''
+    if filter == 'butterworth':
+        signals = butterworth(signals, sampling_rate=1. / t_r,
+                              low_pass=low_pass, high_pass=high_pass)
+        if confounds is not None:
+            # Apply low- and high-pass filters to keep filters orthogonal
+            # (according to Lindquist et al. (2018))
+            confounds = butterworth(confounds, sampling_rate=1. / t_r,
+                                    low_pass=low_pass, high_pass=high_pass)
+    elif filter == 'cosine':
+        from .glm.first_level.design_matrix import _cosine_drift
+        frame_times = np.arange(signals.shape[0]) * t_r
+        cosine_drift = _cosine_drift(high_pass, frame_times)
+        if confounds is None:
+            confounds = cosine_drift.copy()
+        else:
+            confounds = np.hstack((confounds, cosine_drift))
+    return signals, confounds
+
+
+def _process_runs(signals, runs, detrend, standardize, confounds,
+                  low_pass, high_pass, t_r):
+    """Process each run independently."""
+    if len(runs) != len(signals):
+        raise ValueError(
+            (
+                'The length of the session vector (%i) '
+                'does not match the length of the signals (%i)'
+            ) % (len(runs), len(signals))
+        )
+    for run in np.unique(runs):
+        session_confounds = None
+        if confounds is not None:
+            session_confounds = confounds[runs == run]
+        signals[runs == run, :] = \
+            clean(signals[runs == run],
+                  detrend=detrend, standardize=standardize,
+                  confounds=session_confounds, low_pass=low_pass,
+                  high_pass=high_pass, t_r=t_r)
+    return signals
+
+
+def _sanitize_inputs(signals, confounds, ensure_finite):
+    """Clean up signals and confounds before processing."""
+    signals = _sanitize_signals(signals, ensure_finite)
+
+    if not isinstance(confounds,
+                      (list, tuple, str, np.ndarray, pd.DataFrame,
+                       type(None))):
+        raise TypeError("confounds keyword has an unhandled type: %s"
+                        % confounds.__class__)
+    if confounds is None:
+        return signals, confounds
+
+    if not isinstance(confounds, (list, tuple)):
+        confounds = (confounds, )
+    all_confounds = []
+    n_time = signals.shape[0]
+    for confound in confounds:
+        confound = _sanitize_confound_dtype(n_time, confound)
+        all_confounds.append(confound)
+    confounds = np.hstack(all_confounds)
+    return signals, _ensure_float(confounds)
+
+
+def _sanitize_confound_dtype(n_signal, confound):
+    """Check confound is the correct datatype."""
+    if isinstance(confound, pd.DataFrame):
+        confound = confound.values
+    if isinstance(confound, str):
+        filename = confound
+        confound = csv_to_array(filename)
+        if np.isnan(confound.flat[0]):
+            # There may be a header
+            confound = csv_to_array(filename, skip_header=1)
+        if confound.shape[0] != n_signal:
+            raise ValueError(
+                "Confound signal has an incorrect length"
+                "Signal length: {0}; confound length: {1}".format(
+                    n_signal, confound.shape[0])
+            )
+    elif isinstance(confound, np.ndarray):
+        if confound.ndim == 1:
+            confound = np.atleast_2d(confound).T
+        elif confound.ndim != 2:
+            raise ValueError("confound array has an incorrect number "
+                             "of dimensions: %d" % confound.ndim)
+        if confound.shape[0] != n_signal:
+            raise ValueError(
+                "Confound signal has an incorrect length"
+                "Signal length: {0}; confound length: {1}".format(
+                    n_signal, confound.shape[0])
+            )
+
+    else:
+        raise TypeError("confound has an unhandled type: %s"
+                        % confound.__class__)
+    return confound
+
+
+def _check_filter_parameters(filter, low_pass, high_pass, t_r):
+    """Check all filter related parameters are set correcly."""
+    if not filter:
+        if any(isinstance(item, float) for item in [low_pass, high_pass]):
+            warnings.warn(
+                "No filter type selected but cutoff frequency provided."
+                "Will not perform filtering."
+            )
+        return False
+    elif filter in availiable_filters:
+        if filter == 'cosine' and not all(isinstance(item, float)
+                                          for item in [t_r, high_pass]):
+            raise ValueError(
+                "Repetition time (t_r) and low cutoff frequency "
+                "(high_pass) must be specified for cosine filtering."
+                "t_r='{0}', high_pass='{1}'".format(t_r, high_pass)
+            )
+        if filter == 'butterworth':
+            if all(item is None for item in [low_pass, high_pass, t_r]):
+                # Butterworth was switched off by passing
+                # None to all these parameters
+                return False
+            if t_r is None:
+                raise ValueError("Repetition time (t_r) must be specified for "
+                                 "butterworth filtering.")
+            if any(isinstance(item, bool) for item in [low_pass, high_pass]):
+                raise TypeError(
+                    "high/low pass must be float or None but you provided "
+                    "high_pass='{0}', low_pass='{1}'"
+                    .format(high_pass, low_pass)
+                )
+        return True
+    else:
+        raise ValueError("Filter method {} not implemented.".format(filter))
+
+
+def _sanitize_signals(signals, ensure_finite):
+    """Ensure signals are in the correct state."""
+    if not isinstance(ensure_finite, bool):
+        raise ValueError("'ensure_finite' must be boolean type True or False "
+                         "but you provided ensure_finite={0}"
+                         .format(ensure_finite))
+    signals = signals.copy()
+    if not isinstance(signals, np.ndarray):
+        signals = as_ndarray(signals)
+    if ensure_finite:
+        mask = np.logical_not(np.isfinite(signals))
+        if mask.any():
+            signals[mask] = 0
+    return _ensure_float(signals)
