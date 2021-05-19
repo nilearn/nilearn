@@ -303,6 +303,8 @@ def view_connectome(adjacency_matrix, node_coords, edge_threshold=None,
         surface.
 
     """
+    node_coords = np.asarray(node_coords)
+
     connectome_info = _get_connectome(
         adjacency_matrix, node_coords,
         threshold=edge_threshold, cmap=edge_cmap,
@@ -366,6 +368,7 @@ def view_markers(marker_coords, marker_color='auto', marker_size=5.,
         surface.
 
     """
+    marker_coords = np.asarray(marker_coords)
     if marker_color is None:
         marker_color = ['red' for _ in range(len(marker_coords))]
     connectome_info = _prepare_markers_metadata(
