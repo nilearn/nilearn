@@ -20,11 +20,13 @@ class _ExtractionFunctor(object):
     func_name = 'nifti_labels_masker_extractor'
 
     def __init__(self, _resampled_labels_img_, background_label, strategy,
-                 mask_img):
+                 mask_img, n_jobs, verbose):
         self._resampled_labels_img_ = _resampled_labels_img_
         self.background_label = background_label
         self.strategy = strategy
         self.mask_img = mask_img
+        self.n_jobs = n_jobs
+        self.verbose = verbose
 
     def __call__(self, imgs):
         from ..regions import signal_extraction
@@ -32,7 +34,7 @@ class _ExtractionFunctor(object):
         return signal_extraction.img_to_signals_labels(
             imgs, self._resampled_labels_img_,
             background_label=self.background_label, strategy=self.strategy,
-            mask_img=self.mask_img)
+            mask_img=self.mask_img, n_jobs=self.n_jobs, verbose=self.verbose)
 
 
 class NiftiLabelsMasker(BaseMasker, CacheMixin):
@@ -129,6 +131,10 @@ class NiftiLabelsMasker(BaseMasker, CacheMixin):
         Must be one of: sum, mean, median, mininum, maximum, variance,
         standard_deviation. Default='mean'.
 
+    n_jobs : int, optional
+        The number of CPUs to use to do the computation. -1 means
+        'all CPUs'.
+
     See also
     --------
     nilearn.input_data.NiftiMasker
@@ -141,7 +147,7 @@ class NiftiLabelsMasker(BaseMasker, CacheMixin):
                  high_variance_confounds=False, detrend=False, low_pass=None,
                  high_pass=None, t_r=None, dtype=None, resampling_target="data",
                  memory=Memory(location=None, verbose=0), memory_level=1,
-                 verbose=0, strategy="mean"):
+                 verbose=0, strategy="mean", n_jobs=1):
         self.labels_img = labels_img
         self.background_label = background_label
         self.mask_img = mask_img
@@ -164,6 +170,7 @@ class NiftiLabelsMasker(BaseMasker, CacheMixin):
 
         # Parameters for joblib
         self.memory = memory
+        self.n_jobs = n_jobs
         self.memory_level = memory_level
         self.verbose = verbose
 
@@ -276,6 +283,15 @@ class NiftiLabelsMasker(BaseMasker, CacheMixin):
             shape: (number of scans, number of labels)
 
         """
+
+        if float(self.n_jobs) < -1 or not float(self.n_jobs).is_integer() or \
+                float(self.n_jobs) == 0:
+            raise ValueError(str.format(
+                "Invalid value for n_jobs '{}'. Must be an integer >= 1 "
+                "or == to -1.",
+                self.n_jobs,
+            ))
+
         # We handle the resampling of labels separately because the affine of
         # the labels image should not impact the extraction of the signal.
 
@@ -323,7 +339,8 @@ class NiftiLabelsMasker(BaseMasker, CacheMixin):
             # Images
             imgs, _ExtractionFunctor(self._resampled_labels_img_,
                                      self.background_label, self.strategy,
-                                     self._resampled_mask_img),
+                                     self._resampled_mask_img, self.n_jobs,
+                                     self.verbose),
             # Pre-processing
             params,
             confounds=confounds,

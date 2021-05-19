@@ -437,6 +437,64 @@ def test_nifti_labels_masker_with_mask():
     assert np.allclose(signals, masked_signals)
 
 
+
+def test_nifti_labels_masker_parallelization():
+    """Tests:
+    1. whether the usage of different values for n_jobs works
+    2. whether when n_jobs 0 or is non-integer or is a negative value other
+    than -1, it produces a ValueError
+    """
+    # Check working of shape/affine checks
+    shape1 = (13, 11, 12)
+    affine1 = np.eye(4)
+
+    n_regions = 9
+    length = 3
+
+    fmri_img, mask_img = generate_random_img(shape1, affine=affine1,
+                                                 length=length)
+    labels_img = data_gen.generate_labeled_regions(shape1, affine=affine1,
+                                                     n_regions=n_regions)
+
+    masker_1 = NiftiLabelsMasker(labels_img, mask_img=mask_img, n_jobs=1)
+    expected_result = masker_1.fit_transform(fmri_img).squeeze()
+
+    for n in [-1, 2]:
+        masker = NiftiLabelsMasker(labels_img, mask_img=mask_img, n_jobs=n)
+        n_result = masker.fit_transform(fmri_img).squeeze()
+        assert np.allclose(n_result, expected_result)
+
+    with pytest.raises(ValueError,
+                       match=str.format("Invalid value for n_jobs '{}'. "
+                                        "Must be an integer >= 1 or == to "
+                                        "-1.", -2)):
+        NiftiLabelsMasker(
+            labels_img,
+            n_jobs=-2
+        )
+
+    with pytest.raises(ValueError,
+                       match=str.format("Invalid value for n_jobs '{}'. "
+                                        "Must be an integer >= 1 or == to "
+                                        "-1.", 0)):
+        NiftiLabelsMasker(
+            labels_img,
+            n_jobs=0
+        )
+
+    with pytest.raises(ValueError,
+                       match=str.format("Invalid value for n_jobs '{}'. "
+                                        "Must be an integer >= 1 or == to "
+                                        "-1.", 1.5)):
+        NiftiLabelsMasker(
+            labels_img,
+            n_jobs=1.5
+        )
+
+    default_masker = NiftiLabelsMasker(labels_img)
+    assert default_masker.n_jobs == 1
+
+
 def test_3d_images():
     # Test that the NiftiLabelsMasker works with 3D images
     affine = np.eye(4)
