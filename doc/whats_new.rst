@@ -22,9 +22,10 @@ Fixes
 Enhancements
 ------------
 
-- :func:`nilearn.masking.compute_brain_mask` accepts now as input not only the
-  averaged, whole-brain MNI152 T1 template (`avg152T1_brain.nii.gz`) but also
-  the grey-matter and white-matter ICBM152 templates dated from 2009.
+- :func:`nilearn.masking.compute_brain_mask` accepts now as input the
+  whole-brain, 1mm-resolution, MNI152 T1 template instead of the averaged,
+  whole-brain, 2mm-resolution MNI152 T1 template; it also accepts as input the
+  gray-matter and white-matter ICBM152 1mm-resolution templates dated from 2009.
 - :func:`nilearn.plotting.view_markers` now accepts an optional argument `marker_labels` to provide labels to each marker.
 - :func:`nilearn.plotting.plot_surf` now accepts new values for `avg_method` argument, such as `min`, `max`, or even a custom python function to compute the value displayed for each face of the plotted mesh.
 - :func:`nilearn.plotting.view_img_on_surf` can now optionally pass through
