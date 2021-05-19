@@ -1,3 +1,6 @@
+# Source: Scikit-learn
+# See: https://github.com/scikit-learn/scikit-learn/blob/main/.github/workflows/assign.yml
+
 name: Assign
 on:
   issue_comment:
