@@ -131,7 +131,7 @@ def load_mni152_template(resolution=2):
 
     Parameters
     ----------
-    resolution: int, optional, Default = 1
+    resolution: int, optional, Default = 2
         If resolution is different from 1, the template is re-sampled with the
         specified resolution.
 
@@ -170,6 +170,12 @@ def load_mni152_gm_template(resolution=2):
     gray-matter MNI152 template, originally distributed with FSL, and
     re-samples it using a different resolution, if specified.
 
+    Parameters
+    ----------
+    resolution: int, optional, Default = 2
+        If resolution is different from 1, the template is re-sampled with the
+        specified resolution.
+
     Returns
     -------
     gm_mni152_template : Nifti1Image, image representing the resampled
@@ -192,6 +198,12 @@ def load_mni152_wm_template(resolution=2):
     white-matter MNI152 template, originally distributed with FSL, and
     re-samples it using a different resolution, if specified.
 
+    Parameters
+    ----------
+    resolution: int, optional, Default = 2
+        If resolution is different from 1, the template is re-sampled with the
+        specified resolution.
+
     Returns
     -------
     wm_mni152_template : Nifti1Image, image representing the resampled
@@ -209,11 +221,15 @@ def load_mni152_wm_template(resolution=2):
     return wm_template
 
 
-def load_mni152_brain_mask(threshold=0.2):
+def load_mni152_brain_mask(resolution=2, threshold=0.2):
     """Load brain mask from the MNI152 T1 template.
 
     Parameters
     ----------
+    resolution: int, optional, Default = 2
+        If resolution is different from 1, the template loaded is first
+        re-sampled with the specified resolution.
+
     threshold : float, optional
         The parameter which amounts to include the values in the mask image.
         Values lying above this threshold will be included. Default=0.2
@@ -234,18 +250,22 @@ def load_mni152_brain_mask(threshold=0.2):
 
     """
     # Load MNI template
-    target_img = load_mni152_template()
+    target_img = load_mni152_template(resolution=resolution)
     mask_voxels = (get_data(target_img) > threshold).astype("int8")
     mask_img = new_img_like(target_img, mask_voxels)
 
     return mask_img
 
 
-def load_mni152_gm_mask(threshold=0.2, n_iter=2):
+def load_mni152_gm_mask(resolution=2, threshold=0.2, n_iter=2):
     """Load brain mask from the gray-matter MNI152 template.
 
     Parameters
     ----------
+    resolution: int, optional, Default = 2
+        If resolution is different from 1, the template loaded is first
+        re-sampled with the specified resolution.
+
     threshold : float, optional
         The parameter which amounts to include the values in the mask image.
         Values lying above this threshold will be included. Default=0.2
@@ -256,7 +276,7 @@ def load_mni152_gm_mask(threshold=0.2, n_iter=2):
 
     """
     # Load MNI template
-    gm_target = load_mni152_gm_template()
+    gm_target = load_mni152_gm_template(resolution=resolution)
     gm_target_img = check_niimg(gm_target)
     gm_target_data = niimg._safe_get_data(gm_target_img)
 
@@ -268,11 +288,15 @@ def load_mni152_gm_mask(threshold=0.2, n_iter=2):
     return gm_mask_img
 
 
-def load_mni152_wm_mask(threshold=0.2, n_iter=2):
+def load_mni152_wm_mask(resolution=2, threshold=0.2, n_iter=2):
     """Load brain mask from the white-matter MNI152 template.
 
     Parameters
     ----------
+    resolution: int, optional, Default = 2
+        If resolution is different from 1, the template loaded is first
+        re-sampled with the specified resolution.
+
     threshold : float, optional
         The parameter which amounts to include the values in the mask image.
         Values lying above this threshold will be included. Default=0.2
@@ -283,7 +307,7 @@ def load_mni152_wm_mask(threshold=0.2, n_iter=2):
 
     """
     # Load MNI template
-    wm_target = load_mni152_wm_template()
+    wm_target = load_mni152_wm_template(resolution=resolution)
     wm_target_img = check_niimg(wm_target)
     wm_target_data = niimg._safe_get_data(wm_target_img)
 

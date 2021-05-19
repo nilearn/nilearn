@@ -137,16 +137,22 @@ def test_fetch_oasis_vbm(tmp_path, request_mocker):
 
 def test_load_mni152_template():
     # All subjects
-    template_nii = struct.load_mni152_template()
-    assert template_nii.shape == (197, 233, 189)
-    assert template_nii.header.get_zooms() == (1.0, 1.0, 1.0)
+    template_nii_1mm = struct.load_mni152_template(resolution=1)
+    template_nii_2mm = struct.load_mni152_template(resolution=2)
+    assert template_nii_1mm.shape == (197, 233, 189)
+    assert template_nii_2mm.shape == (99, 117, 95)
+    assert template_nii_1mm.header.get_zooms() == (1.0, 1.0, 1.0)
+    assert template_nii_2mm.header.get_zooms() == (2.0, 2.0, 2.0)
 
 
 def test_load_mni152_brain_mask():
-    brain_mask = struct.load_mni152_brain_mask()
-    assert isinstance(brain_mask, nibabel.Nifti1Image)
+    brain_mask_1mm = struct.load_mni152_brain_mask(resolution=1)
+    brain_mask_2mm = struct.load_mni152_brain_mask(resolution=2)
+    assert isinstance(brain_mask_1mm, nibabel.Nifti1Image)
+    assert isinstance(brain_mask_2mm, nibabel.Nifti1Image)
     # standard MNI template shape
-    assert brain_mask.shape == (197, 233, 189)
+    assert brain_mask_1mm.shape == (197, 233, 189)
+    assert brain_mask_2mm.shape == (99, 117, 95)
 
 
 def test_fetch_icbm152_brain_gm_mask(tmp_path, request_mocker):
