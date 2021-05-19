@@ -222,7 +222,7 @@ def load_mni152_wm_template(resolution=2):
 
 
 def load_mni152_brain_mask(resolution=2, threshold=0.2):
-    """Load brain mask from the MNI152 T1 template.
+    """Load mask from the whole-brain MNI152 T1 template.
 
     Parameters
     ----------
@@ -258,7 +258,7 @@ def load_mni152_brain_mask(resolution=2, threshold=0.2):
 
 
 def load_mni152_gm_mask(resolution=2, threshold=0.2, n_iter=2):
-    """Load brain mask from the gray-matter MNI152 template.
+    """Load mask from the gray-matter MNI152 template.
 
     Parameters
     ----------
@@ -289,7 +289,7 @@ def load_mni152_gm_mask(resolution=2, threshold=0.2, n_iter=2):
 
 
 def load_mni152_wm_mask(resolution=2, threshold=0.2, n_iter=2):
-    """Load brain mask from the white-matter MNI152 template.
+    """Load mask from the white-matter MNI152 template.
 
     Parameters
     ----------
