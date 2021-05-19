@@ -177,9 +177,20 @@ def write_tmp_imgs(*imgs, **kwargs):
                     else:
                         yield filenames
         finally:
+            failures = []
             # Ensure all created files are removed
             for filename in filenames:
-                os.remove(filename)
+                try:
+                    os.remove(filename)
+                except FileNotFoundError:
+                    # ok, file already removed
+                    pass
+                except OSError as e:
+                    # problem eg permission, or open file descriptor
+                    failures.append(e)
+            if failures:
+                raise ValueError(functools.reduce(lambda x,y: x+'\n'+y,
+                                    [str(e) for e in failures]))
     else:  # No-op
         if len(imgs) == 1:
             yield imgs[0]
