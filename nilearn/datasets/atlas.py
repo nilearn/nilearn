@@ -420,7 +420,7 @@ def fetch_atlas_harvard_oxford(atlas_name, data_dir=None,
 def fetch_atlas_msdl(data_dir=None, url=None, resume=True, verbose=1):
     """Download and load the MSDL brain atlas.
 
-    It can be downloaded at [1]_, and cited using :footcite:`Varoquaux2011multisubject`. See also :footcite:`VAROQUAUX2013405`
+    It can be downloaded at :footcite:`atlas_msdl`, and cited using :footcite:`Varoquaux2011multisubject`. See also :footcite:`VAROQUAUX2013405`
     for more information.
 
     Parameters
@@ -454,8 +454,6 @@ def fetch_atlas_msdl(data_dir=None, url=None, resume=True, verbose=1):
 
     References
     ----------
-    .. [1] https://team.inria.fr/parietal/files/2015/01/MSDL_rois.zip
-
     .. footbibliography::
 
 
@@ -614,7 +612,7 @@ def fetch_atlas_yeo_2011(data_dir=None, url=None, resume=True, verbose=1):
 
     The provided images are in MNI152 space.
 
-    For more information on this dataset's structure, see [1]_ and :footcite:`Yeo2011organization`.
+    For more information on this dataset's structure, see :footcite:`CorticalParcellation_Yeo2011` and :footcite:`Yeo2011organization`.
 
     Parameters
     ----------
@@ -648,8 +646,6 @@ def fetch_atlas_yeo_2011(data_dir=None, url=None, resume=True, verbose=1):
 
     References
     ----------
-    .. [1] http://surfer.nmr.mgh.harvard.edu/fswiki/CorticalParcellation_Yeo2011
-
     .. footbibliography::
 
     Notes
@@ -698,7 +694,7 @@ def fetch_atlas_aal(version='SPM12', data_dir=None, url=None, resume=True,
     the Montreal Neurological Institute (MNI) (D. L. Collins et al., 1998,
     Trans. Med. Imag. 17, 463-468, PubMed).
 
-    For more information on this dataset's structure, see [1]_ and :footcite:`TZOURIOMAZOYER2002273`.
+    For more information on this dataset's structure, see :footcite:`AAL_atlas` and :footcite:`TZOURIOMAZOYER2002273`.
 
     Parameters
     ----------
@@ -730,8 +726,6 @@ def fetch_atlas_aal(version='SPM12', data_dir=None, url=None, resume=True,
 
     References
     ----------
-    .. [1] http://www.gin.cnrs.fr/AAL-217?lang=en
-
     .. footbibliography::
 
     Notes
@@ -1263,7 +1257,7 @@ def _get_talairach_all_levels(data_dir=None, verbose=1):
 def fetch_atlas_talairach(level_name, data_dir=None, verbose=1):
     """Download the Talairach atlas.
 
-    For more information, see [1]_, :footcite:`Lancaster2000Talairach`, and :footcite:`Lancaster1997labeling`.
+    For more information, see :footcite:`talairach_atlas`, :footcite:`Lancaster2000Talairach`, and :footcite:`Lancaster1997labeling`.
 
     .. versionadded:: 0.4.0
 
@@ -1291,7 +1285,6 @@ def fetch_atlas_talairach(level_name, data_dir=None, verbose=1):
 
     References
     ----------
-    .. [1] http://talairach.org/about.html#Labels
     .. footbibliography::
 
     """
@@ -1312,7 +1305,8 @@ def fetch_atlas_talairach(level_name, data_dir=None, verbose=1):
 
 def fetch_atlas_pauli_2017(version='prob', data_dir=None, verbose=1):
     """Download the Pauli et al. (2017) atlas with in total
-    12 subcortical nodes [1]_ 
+    12 subcortical nodes
+    :footcite:`pauli_atlas`.
     :footcite:`Pauli2018probabilistic`.
 
     Parameters
@@ -1340,8 +1334,6 @@ def fetch_atlas_pauli_2017(version='prob', data_dir=None, verbose=1):
 
     References
     ----------
-    .. [1] https://osf.io/r2hvk/
-
     .. footbibliography::
 
     """
@@ -1388,7 +1380,7 @@ def fetch_atlas_schaefer_2018(n_rois=400, yeo_networks=7, resolution_mm=1,
 
     The provided images are in MNI152 space.
 
-    For more information on this dataset, see [1]_ :footcite:`Schaefer2017parcellation` and :footcite:`Yeo2011organization`.
+    For more information on this dataset, see :footcite:`schaefer_atlas`, :footcite:`Schaefer2017parcellation` and :footcite:`Yeo2011organization`.
 
     Parameters
     ----------
@@ -1429,8 +1421,6 @@ def fetch_atlas_schaefer_2018(n_rois=400, yeo_networks=7, resolution_mm=1,
 
     References
     ----------
-    .. [1] https://github.com/ThomasYeoLab/CBIG/tree/v0.14.3-Update_Yeo2011_Schaefer2018_labelname/stable_projects/brain_parcellation/Schaefer2018_LocalGlobal/Parcellations
-
     .. footbibliography::
 
 
