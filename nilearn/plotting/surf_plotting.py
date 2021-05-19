@@ -920,7 +920,7 @@ def plot_img_on_surf(stat_map, surf_mesh='fsaverage5', mask_img=None,
         fig.suptitle(title, y=1. - title_h / sum(height_ratios), va="bottom")
 
     if output_file is not None:
-        fig.savefig(output_file)
+        fig.savefig(output_file, bbox_inches="tight")
         plt.close(fig)
     else:
         return fig, axes
