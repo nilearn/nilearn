@@ -14,17 +14,27 @@ Fixes
 - Fix number of attributes returned by the
   `nilearn.glm.first_level.FirstLevelModel._get_voxelwise_model_attribute` method in the first level model.
   It used to return only the first attribute, and now returns as many attributes as design matrices.
-
+- Plotting functions that show a stack of slices from a 3D image (e.g.
+  :func:`nilearn.plotting.plot_stat_map`) will now plot the slices in the user
+  specified order, rather than automatically sorting into ascending order
+  (https://github.com/nilearn/nilearn/issues/1155).
 
 Enhancements
 ------------
 
-- :func:`nilearn.plotting.view_markers` now accept an optional argument `marker_labels` to provide labels to each marker.
+- :func:`nilearn.plotting.view_markers` now accepts an optional argument `marker_labels` to provide labels to each marker.
+- :func:`nilearn.plotting.plot_surf` now accepts new values for `avg_method` argument, such as `min`, `max`, or even a custom python function to compute the value displayed for each face of the plotted mesh.
 - :func:`nilearn.plotting.view_img_on_surf` can now optionally pass through
   parameters to :func:`nilearn.surface.vol_to_surf` using the
   `vol_to_surf_kwargs` argument. One application is better HTML visualization of
   atlases.
   (https://nilearn.github.io/auto_examples/01_plotting/plot_3d_map_to_surface_projection.html)
+- Refactor :func:`nilearn.signal.clean` to clarify the data flow.
+  Replace `sessions` with `runs` to matchin BIDS semantics and deprecate `sessions` in 0.9.0.
+  Add argument `filter` and allow a selection of signal filtering strategies:
+  * "butterwoth" (butterworth filter)
+  * "cosine" (discrete cosine transformation)
+  * `False` (no filtering)
 
 .. _v0.7.1:
 

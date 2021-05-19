@@ -99,7 +99,7 @@ bibtex_footbibliography_header = ''
 
 # General information about the project.
 project = u'Nilearn'
-copyright = u'The nilearn developers 2010-2020'
+copyright = u'The nilearn developers 2010-2021'
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
@@ -354,7 +354,7 @@ def touch_example_backreferences(app, what, name, obj, options, lines):
 
 
 def setup(app):
-    app.add_javascript('copybutton.js')
+    app.add_js_file('copybutton.js')
     app.connect('autodoc-process-docstring', touch_example_backreferences)
 
 
