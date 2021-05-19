@@ -1,7 +1,7 @@
 """
 Test the datasets module
 """
-# Author: Alexandre Abraham
+# Authors: Alexandre Abraham, Ana Luisa Pinho
 # License: simplified BSD
 
 import os
