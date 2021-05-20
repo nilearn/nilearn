@@ -627,8 +627,7 @@ def compute_brain_mask(target_img, threshold=.5, connected=True, opening=2,
         The whole-brain mask (3D image)
     """
     if verbose > 0:
-        msg_to_print = "Template " + mask_type + " mask computation"
-        print(msg_to_print)
+        print("Template", mask_type, "mask computation")
 
     target_img = _utils.check_niimg(target_img)
 
