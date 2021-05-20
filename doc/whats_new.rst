@@ -10,10 +10,10 @@ NEW
 - :func:`nilearn.datasets.load_mni152_wm_template` takes the skullstripped
   1mm-resolution version of the white-matter MNI152 template and re-samples it
   using a different resolution, if specified.
-- :func:`nilearn.datasets.load_mni152_gm_mask` loads the mask from the
-  gray-matter MNI152 template.
-- :func:`nilearn.datasets.load_mni152_wm_mask` loads the mask from the
-  white-matter MNI152 template.
+- :func:`nilearn.datasets.load_mni152_gm_mask` loads mask from the gray-matter
+  MNI152 template.
+- :func:`nilearn.datasets.load_mni152_wm_mask` loads mask from the white-matter
+  MNI152 template.
 
 
 Fixes
