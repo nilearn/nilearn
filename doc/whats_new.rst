@@ -36,7 +36,16 @@ Enhancements
 
 - :func:`nilearn.datasets.load_mni152_template` resamples now the template to
   a preset resolution different from the resolution of the original template,
-  i.e. 1mm.
+  i.e. 1mm. The default resolution is 2mm, which means that the new template is
+  resampled to the resolution of the old template. Nevertheless, the shape of
+  the template changed from (91, 109, 91) to (99, 117, 95); the affine also
+  changed from array([[-2., 0., 0., 90.], [0., 2., 0., -126.],
+  [0., 0., 2., -72.], [0., 0., 0., 1.]]) to array([[1., 0., 0., -98.],
+  [0., 1., 0., -134.], [0., 0., 1., -72.], [0., 0., 0., 1.]]). Additionally,
+  the new template has also been rescaled; whereas the old one contained int16
+  floats varying between 0 and 8339, the new one contains floats varying between
+  0. and 1.
+
 - :func:`nilearn.datasets.load_mni152_brain_mask` accepts now the parameter
   resolution, which will set the resolution of the template used for the
   masking.
