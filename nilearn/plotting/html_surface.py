@@ -239,7 +239,7 @@ def view_surf(surf_mesh, surf_map=None, bg_map=None, threshold=None,
     surf_map : str or numpy.ndarray, optional
         Data to be displayed on the surface mesh. Can be a file (valid formats
         are .gii, .mgz, .nii, .nii.gz, or Freesurfer specific files such as
-        .thickness, .curv, .sulc, .annot, .label) or
+        .thickness, .area, .curv, .sulc, .annot, .label) or
         a Numpy array
 
     bg_map : Surface data, optional

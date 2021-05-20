@@ -136,6 +136,16 @@ def test_load_surf_data_file_freesurfer():
     # version is recent with nibabel >= 2.1.0
     if LooseVersion(nb.__version__) >= LooseVersion('2.1.0'):
         data = np.zeros((20, ))
+        filename_area = tempfile.mktemp(suffix='.area')
+        nb.freesurfer.io.write_morph_data(filename_area, data)
+        assert_array_equal(load_surf_data(filename_area), np.zeros((20, )))
+        os.remove(filename_area)
+
+        filename_curv = tempfile.mktemp(suffix='.curv')
+        nb.freesurfer.io.write_morph_data(filename_curv, data)
+        assert_array_equal(load_surf_data(filename_curv), np.zeros((20, )))
+        os.remove(filename_curv)
+
         filename_sulc = tempfile.mktemp(suffix='.sulc')
         nb.freesurfer.io.write_morph_data(filename_sulc, data)
         assert_array_equal(load_surf_data(filename_sulc), np.zeros((20, )))

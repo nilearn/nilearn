@@ -718,8 +718,12 @@ def load_surf_data(surf_data):
             if (surf_data.endswith('nii') or surf_data.endswith('nii.gz') or
                     surf_data.endswith('mgz')):
                 data_part = np.squeeze(get_data(nibabel.load(surf_data)))
-            elif (surf_data.endswith('curv') or surf_data.endswith('sulc') or
-                    surf_data.endswith('thickness')):
+            elif (
+                surf_data.endswith('area') or
+                surf_data.endswith('curv') or
+                surf_data.endswith('sulc') or
+                surf_data.endswith('thickness')
+            ):
                 data_part = fs.io.read_morph_data(surf_data)
             elif surf_data.endswith('annot'):
                 data_part = fs.io.read_annot(surf_data)[0]
@@ -739,7 +743,7 @@ def load_surf_data(surf_data):
                                   'given while valid inputs are a Numpy array '
                                   'or one of the following file formats: .gii,'
                                   ' .gii.gz, .mgz, .nii, .nii.gz, Freesurfer '
-                                  'specific files such as .curv, .sulc, '
+                                  'specific files such as .area, .curv, .sulc, '
                                   '.thickness, .annot, .label') % surf_data)
 
             if len(data_part.shape) == 1:
@@ -761,7 +765,7 @@ def load_surf_data(surf_data):
         raise ValueError('The input type is not recognized. '
                          'Valid inputs are a Numpy array or one of the '
                          'following file formats: .gii, .gii.gz, .mgz, .nii, '
-                         '.nii.gz, Freesurfer specific files such as .curv, '
+                         '.nii.gz, Freesurfer specific files such as .area, .curv, '
                          '.sulc, .thickness, .annot, .label')
     return np.squeeze(data)
 
@@ -983,7 +987,7 @@ def check_mesh_and_data(mesh, data):
     data : str or numpy.ndarray
         Either a file containing surface data (valid format are .gii,
         .gii.gz, .mgz, .nii, .nii.gz, or Freesurfer specific files such as
-        .thickness, .curv, .sulc, .annot, .label), lists of 1D data files are
+        .thickness, .area, .curv, .sulc, .annot, .label), lists of 1D data files are
         returned as 2D arrays, or a Numpy array containing surface data.
 
     Returns
