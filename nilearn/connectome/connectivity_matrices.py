@@ -107,12 +107,11 @@ def _geometric_mean(matrices, init=None, max_iter=10, tol=1e-7):
 
     In case of positive numbers, this mean is the usual geometric mean.
 
-    See Algorithm 3 of [1]_.
+    See Algorithm 3 of :footcite:`Fletcher2007`.
 
     References
     ----------
-    .. [1] P. Thomas Fletcher, Sarang Joshi. Riemannian Geometry for the
-       Statistical Analysis of Diffusion Tensor Data. Signal Processing, 2007.
+    .. footbibliography::
 
     Parameters
     ----------
@@ -406,7 +405,7 @@ class ConnectivityMeasure(BaseEstimator, TransformerMixin):
 
     kind : {"covariance", "correlation", "partial correlation",\
             "tangent", "precision"}, optional
-        The matrix kind. For the use of "tangent" see [1]_.
+        The matrix kind. For the use of "tangent" see :footcite:`Varoquaux2010b`.
         Default='covariance'.
 
     vectorize : bool, optional
@@ -435,8 +434,7 @@ class ConnectivityMeasure(BaseEstimator, TransformerMixin):
 
     References
     ----------
-    .. [1] G. Varoquaux et al. "Detection of brain functional-connectivity difference
-       in post-stroke patients using group-level covariance modeling, MICCAI 2010.
+    .. footbibliography::
 
     """
 

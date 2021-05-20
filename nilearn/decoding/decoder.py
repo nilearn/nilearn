@@ -1092,7 +1092,7 @@ class FREMRegressor(_BaseDecoder):
     FREM uses an implicit spatial regularization through fast clustering and
     aggregates a high number of estimators trained on various splits of the
     training set, thus returning a very robust decoder at a lower computational
-    cost than other spatially regularized methods.[1]_.
+    cost than other spatially regularized methods :footcite:`HOYOSIDROBO2018160`.
 
     Parameters
     -----------
@@ -1205,10 +1205,7 @@ class FREMRegressor(_BaseDecoder):
 
     References
     ----------
-    * A. Hoyos-Idrobo, G. Varoquaux, J. Kahn and B. Thirion, "FReM –
-      scalable and stable decoding with fast regularized ensemble of models"
-      in NeuroImage, Elsevier, 2017  pp.1-16, 11 October 2017.
-      https://hal.archives-ouvertes.fr/hal-01615015/
+    .. footbibliography::
 
     See Also
     ------------
@@ -1247,7 +1244,7 @@ class FREMClassifier(_BaseDecoder):
     FREM uses an implicit spatial regularization through fast clustering and
     aggregates a high number of estimators trained on various splits of the
     training set, thus returning a very robust decoder at a lower computational
-    cost than other spatially regularized methods.[1]_.
+    cost than other spatially regularized methods :footcite:`HOYOSIDROBO2018160`.
 
     Parameters
     -----------
@@ -1361,10 +1358,7 @@ class FREMClassifier(_BaseDecoder):
 
     References
     ----------
-    * A. Hoyos-Idrobo, G. Varoquaux, J. Kahn and B. Thirion, "FReM –
-      scalable and stable decoding with fast regularized ensemble of models"
-      in NeuroImage, Elsevier, 2017  pp.1-16, 11 October 2017.
-      https://hal.archives-ouvertes.fr/hal-01615015/
+    .. footbibliography::
 
     See Also
     ------------
