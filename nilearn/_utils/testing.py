@@ -189,8 +189,11 @@ def write_tmp_imgs(*imgs, **kwargs):
                     # problem eg permission, or open file descriptor
                     failures.append(e)
             if failures:
-                raise ValueError(functools.reduce(lambda x,y: x+'\n'+y,
-                                    [str(e) for e in failures]))
+                raise OSError(
+                    "The following files could not be removed:\n".format(
+                        "\n".join(str(e) for e in failures)
+                    )
+                )
     else:  # No-op
         if len(imgs) == 1:
             yield imgs[0]
