@@ -544,7 +544,7 @@ def _fetch_surf_fsaverage7(data_dir=None):
     return Bunch(**result)
 
 
-def _fetch_surf_fsaverage5(data_dir=None, url=None, resume=True, verbose=1):
+def _fetch_surf_fsaverage5():
     """Helper function to ship fsaverage5 surfaces and sulcal information
     with Nilearn.
 
