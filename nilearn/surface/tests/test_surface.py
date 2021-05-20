@@ -742,7 +742,7 @@ def test_check_mesh():
     mesh = surface._check_mesh('fsaverage5')
     assert mesh is surface._check_mesh(mesh)
     with pytest.raises(ValueError):
-        surface._check_mesh('fsaverage3')
+        surface._check_mesh('fsaverage2')
     mesh.pop('pial_left')
     with pytest.raises(ValueError):
         surface._check_mesh(mesh)
