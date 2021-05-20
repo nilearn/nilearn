@@ -161,7 +161,7 @@ def plot_surf(surf_mesh, surf_map=None, bg_map=None,
     nilearn.surface.vol_to_surf : For info on the generation of surfaces.
 
     """
-    _default_figsize = [6, 4]
+    _default_figsize = [4, 4]
 
     # load mesh and derive axes limits
     mesh = load_surf_mesh(surf_mesh)
@@ -227,13 +227,12 @@ def plot_surf(surf_mesh, surf_map=None, bg_map=None,
     if axes is None:
         if figure is None:
             figure = plt.figure(figsize=figsize)
-        axes = Axes3D(figure, rect=[0, 0, 1, 1],
-                      xlim=limits, ylim=limits)
+        axes = figure.add_axes((0, 0, 1, 1), projection="3d")
     else:
         if figure is None:
             figure = axes.get_figure()
-        axes.set_xlim(*limits)
-        axes.set_ylim(*limits)
+    axes.set_xlim(*limits)
+    axes.set_ylim(*limits)
     axes.view_init(elev=elev, azim=azim)
     axes.set_axis_off()
 
@@ -375,8 +374,8 @@ def plot_surf(surf_mesh, surf_map=None, bg_map=None,
             # we need to create a proxy mappable
             proxy_mappable = ScalarMappable(cmap=our_cmap, norm=norm)
             proxy_mappable.set_array(surf_map_faces)
-            cax, kw = make_axes(axes, location='right', fraction=.1,
-                                shrink=.6, pad=.0)
+            cax, kw = make_axes(axes, location='right', fraction=.15,
+                                shrink=.5, pad=.0, aspect=10.)
             cbar = figure.colorbar(
                 proxy_mappable, cax=cax, ticks=ticks,
                 boundaries=bounds, spacing='proportional',
