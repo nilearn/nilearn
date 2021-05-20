@@ -33,6 +33,7 @@ jobs:
         shell: bash
     env:
         MIN_REQUIREMENTS: true
+        FLAKE8: true
     steps:
       - uses: actions/checkout@v2
       - uses: actions/setup-python@v2
