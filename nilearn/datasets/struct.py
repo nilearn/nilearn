@@ -458,9 +458,12 @@ def fetch_surf_fsaverage(mesh='fsaverage5', data_dir=None):
     mesh : str, optional
         Which mesh to fetch. Default='fsaverage5'.
 
+        - 'fsaverage3': the low-resolution fsaverage3 mesh (642 nodes)
+        - 'fsaverage4': the low-resolution fsaverage4 mesh (2562 nodes)
         - 'fsaverage5': the low-resolution fsaverage5 mesh (10242 nodes)
-        - 'fsaverage6': the medium-resolution fsaverage5 mesh (40962 nodes)
         - 'fsaverage5_sphere': the low-resolution fsaverage5 spheres (10242 nodes)
+        - 'fsaverage6': the medium-resolution fsaverage6 mesh (40962 nodes)
+        - 'fsaverage7': same as 'fsaverage'
         - 'fsaverage': the high-resolution fsaverage mesh (163842 nodes)
             (high-resolution fsaverage will result in more computation time and memory usage)
 
@@ -479,6 +482,8 @@ def fetch_surf_fsaverage(mesh='fsaverage5', data_dir=None):
                          surface mesh
          - 'sulc_left': Gifti file, left hemisphere sulcal depth data
          - 'sulc_right': Gifti file, right hemisphere sulcal depth data
+         - 'white_left': Gifti file, left hemisphere white surface mesh
+         - 'white_right': Gifti file, right hemisphere white surface mesh
 
     References
     ----------
@@ -486,20 +491,37 @@ def fetch_surf_fsaverage(mesh='fsaverage5', data_dir=None):
        coordinate system for the cortical surface. Hum Brain Mapp 8, 272-284.
 
     """
-    meshes = {'fsaverage5': _fetch_surf_fsaverage5,
-              'fsaverage5_sphere': _fetch_surf_fsaverage5_sphere,
-              'fsaverage': _fetch_surf_fsaverage,
-              'fsaverage6': _fetch_surf_fsaverage6,
-    }
-    if mesh not in meshes:
+    available_meshes = [
+        "fsaverage3", "fsaverage4", "fsaverage5", "fsaverage5_sphere",
+        "fsaverage6", "fsaverage7", "fsaverage",
+    ]
+
+    # Call a dataset loader depending on the value of mesh
+    if (
+        mesh == "fsaverage3" or
+        mesh == "fsaverage4" or
+        mesh == "fsaverage6"
+    ):
+        return _fetch_surf_fsaverage(mesh, data_dir=data_dir)
+    elif mesh == "fsaverage5":
+        return _fetch_surf_fsaverage5()
+    elif mesh == "fsaverage5_sphere":
+        return _fetch_surf_fsaverage5_sphere(data_dir=data_dir)
+    elif (
+        mesh == "fsaverage7" or
+        mesh == "fsaverage"
+    ):
+        return _fetch_surf_fsaverage7(data_dir=data_dir)
+    else:
         raise ValueError(
             "'mesh' should be one of {}; {!r} was provided".format(
-                list(meshes.keys()), mesh))
-    return meshes[mesh](data_dir=data_dir)
+                available_meshes, mesh
+            )
+        )
 
 
-def _fetch_surf_fsaverage(data_dir=None):
-    """Helper function to ship fsaverage (highest resolution) surfaces
+def _fetch_surf_fsaverage7(data_dir=None):
+    """Helper function to ship fsaverage7 (highest resolution) surfaces
     and sulcal information with Nilearn.
 
     The source of the data is downloaded from nitrc.
@@ -567,38 +589,50 @@ def _fetch_surf_fsaverage5_sphere(data_dir=None):
     return Bunch(**result)
 
 
-def _fetch_surf_fsaverage6(data_dir=None):
-    """Helper function to ship fsaverage5 spherical meshes.
+def _fetch_surf_fsaverage(dataset_name, data_dir=None):
+    """Helper function to ship fsaverage{3,4,6} meshes.
 
     These meshes can be used for visualization purposes, but also to run
     cortical surface-based searchlight decoding.
 
     The source of the data is downloaded from OSF.
-
     """
-    dataset_dir = _get_dataset_dir('fsaverage6')
-    url = 'https://osf.io/3s4r2/download'
+    dataset_dir = _get_dataset_dir(dataset_name, data_dir=data_dir)
     opts = {'uncompress': True}
-    names = [
-        "{}.{}".format(hemi, part)
-        for hemi in ["lh", "rh"]
-        for part in ["curl", "inflated", "pial", "white"]
-    ]
-    filenames = [
-        (os.path.join(
-            'tpl-fsaverage',
-            'fsaverage6',
-            'surf',
-            '{}.{}'.format(hemi, part)
-        ), url, opts)
-        for hemi in ["lh", "rh"]
-        for part in ["curl", "inflated", "pial", "white"]
-    ]
+    url = {
+        # todo: use real urls
+        "fsaverage3": "https://osf.io/3s4r2/download",
+        "fsaverage4": "https://osf.io/3s4r2/download",
+        "fsaverage6": "https://osf.io/3s4r2/download",
+    }[dataset_name]
+    attribute_to_filename = {
+        # "area_left": "lh.area",
+        # "area_right": "rh.area",
+        # "curv_left": "lh.curv",
+        # "curv_right": "rh.curv",
+        "infl_left": "lh.inflated",
+        "infl_right": "rh.inflated",
+        "pial_left": "lh.pial",
+        "pial_right": "rh.pial",
+        # "sphere_left": "lh.sphere",
+        # "sphere_right": "rh.sphere",
+        "sulc_left": "lh.sulc",
+        "sulc_right": "rh.sulc",
+        # "thick_left": "lh.thickness",
+        # "thick_right": "rh.thickness",
+        "white_left": "lh.white",
+        "white_right": "rh.white",
+    }
 
-    _fetch_files(dataset_dir, filenames)
+    _fetch_files(
+        dataset_dir,
+        [(filename, url, opts) for filename in attribute_to_filename.values()]
+    )
+
     result = {
-        name: os.path.join(dataset_dir, '{}.gii'.format(name))
-        for name in names}
+        attribute: os.path.join(dataset_dir, filename)
+        for attribute, filename in attribute_to_filename.items()
+    }
+    result["description"] = str(_get_dataset_descr(dataset_name))
 
-    result['description'] = str(_get_dataset_descr('fsaverage6'))
     return Bunch(**result)
