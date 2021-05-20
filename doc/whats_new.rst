@@ -18,6 +18,8 @@ Fixes
   :func:`nilearn.plotting.plot_stat_map`) will now plot the slices in the user
   specified order, rather than automatically sorting into ascending order
   (https://github.com/nilearn/nilearn/issues/1155).
+- Fix the axes zoom on plot_img_on_surf function so brain would not be cutoff, and edited function so less white space surrounds brain views & smaller colorbar using gridspec (https://github.com/nilearn/nilearn/pull/2798). 
+
 
 Enhancements
 ------------
