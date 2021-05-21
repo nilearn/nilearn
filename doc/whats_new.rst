@@ -31,6 +31,8 @@ Enhancements
   `vol_to_surf_kwargs` argument. One application is better HTML visualization of
   atlases.
   (https://nilearn.github.io/auto_examples/01_plotting/plot_3d_map_to_surface_projection.html)
+- :func:`nilearn.plotting.view_connectome` now accepts an optional argument `node_color` to provide a single color
+  for all nodes, or one color per node. It defaults to `auto` which colors markers according to the viridis colormap.
 - Refactor :func:`nilearn.signal.clean` to clarify the data flow.
   Replace `sessions` with `runs` to matchin BIDS semantics and deprecate `sessions` in 0.9.0.
   Add argument `filter` and allow a selection of signal filtering strategies:

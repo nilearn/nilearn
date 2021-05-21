@@ -1,9 +1,8 @@
-import warnings
 import json
 
 import numpy as np
+import pytest
 
-from nilearn.plotting import cm
 from nilearn.plotting.js_plotting_utils import decode
 from nilearn.plotting import html_connectome
 
@@ -16,6 +15,21 @@ def test_prepare_line():
     pe, pn = html_connectome._prepare_line(e, n)
     assert (pn == [0, 1, 0, 0, 2, 0, 2, 3, 0, 8, 9, 0]).all()
     assert(pe == [0, 0, 0, 1, 1, 0, 2, 2, 0, 3, 3, 0]).all()
+
+
+@pytest.mark.parametrize('node_color,expected_marker_colors', [
+    ('cyan', ['#00ffff', '#00ffff', '#00ffff']),
+    ('auto', ['#440154', '#20908c', '#fde724']),
+    (['cyan', 'red', 'blue'], ['#00ffff', '#ff0000', '#0000ff'])
+])
+def test_prepare_colors_for_markers(node_color, expected_marker_colors):
+    number_of_nodes = 3
+    marker_colors = html_connectome._prepare_colors_for_markers(
+        node_color,
+        number_of_nodes,
+    )
+
+    assert marker_colors == expected_marker_colors
 
 
 def _make_connectome():
@@ -45,14 +59,13 @@ def test_get_connectome():
          40, 20, 0,
          40, 40, 0], dtype='<f4')
     assert (con_x == expected_x).all()
-    assert {'_con_x', '_con_y', '_con_z', '_con_w', 'colorscale'
-            }.issubset(connectome.keys())
-    assert (connectome['cmin'], connectome['cmax']) == (-2.5, 2.5)
+    assert {'_con_x', '_con_y', '_con_z', '_con_w'}.issubset(connectome.keys())
+    assert (connectome['line_cmin'], connectome['line_cmax']) == (-2.5, 2.5)
     adj[adj == 0] = np.nan
     connectome = html_connectome._get_connectome(adj, coord)
     con_x = decode(connectome['_con_x'], '<f4')
     assert (con_x == expected_x).all()
-    assert (connectome['cmin'], connectome['cmax']) == (-2.5, 2.5)
+    assert (connectome['line_cmin'], connectome['line_cmax']) == (-2.5, 2.5)
 
 
 def test_view_connectome():
@@ -69,17 +82,6 @@ def test_view_connectome():
     html = html_connectome.view_connectome(
         adj, coord, '85.3%', linewidth=8.5, node_size=np.arange(len(coord)))
     check_html(html, False, 'connectome-plot')
-
-
-def test_get_markers():
-    coords = np.arange(12).reshape((4, 3))
-    colors = ['r', 'g', 'black', 'white']
-    markers = html_connectome._get_markers(coords, colors)
-    assert markers["marker_color"] == [
-        '#ff0000', '#007f00', '#000000', '#ffffff']
-    assert markers['markers_only']
-    con_x = decode(markers['_con_x'], '<f4')
-    assert np.allclose(con_x, coords[:, 0])
 
 
 def test_view_markers():
