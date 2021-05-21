@@ -110,6 +110,7 @@ function getLayout(plotDivId, viewSelectId, blackBg) {
     let width = height * 3 / 2;
 
     let layout = {
+        showLegend: false,
         height: height, width: width,
         margin: {l:0, r:0, b:0, t:0, pad:0},
         hovermode: false,
