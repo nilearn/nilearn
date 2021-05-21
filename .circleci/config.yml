@@ -301,6 +301,11 @@ jobs:
           paths:
               - html
               - html_stable
+      - run: |
+          if [[ "$(cat build.txt)" != "html-strict" ]]; then
+                echo "Partial build : No caching of data will be done!";
+                circleci-agent step halt
+          fi
       - save_data_cache
 
 workflows:
