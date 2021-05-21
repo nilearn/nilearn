@@ -53,7 +53,7 @@ if [[ -n "$TMP_REMOTE" ]]; then
     git remote remove $TMP_REMOTE
 fi
 
-if [ -z "$COMMIT" ]; then
+if [[ -z "$COMMIT" ]]; then
     exit 1
 fi
 
