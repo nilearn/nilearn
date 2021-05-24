@@ -148,7 +148,6 @@ def test_mask_4d():
     mask[3:7, 3:7, 3:7] = 1
     mask_bool = mask.astype(bool)
     mask_img = Nifti1Image(mask, np.eye(4))
-
     # Dummy data
     data = np.zeros((10, 10, 10, 3), dtype=int)
     data[..., 0] = 1
@@ -160,17 +159,17 @@ def test_mask_4d():
 
     # check whether transform is indeed selecting niimgs subset
     sample_mask = np.array([0, 2])
-    masker = NiftiMasker(mask_img=mask_img, sample_mask=sample_mask)
+    masker = NiftiMasker(mask_img=mask_img)
     masker.fit()
-    data_trans = masker.transform(data_imgs)
+    data_trans = masker.transform(data_imgs, sample_mask=sample_mask)
     data_trans_img = index_img(data_img_4d, sample_mask)
     data_trans_direct = get_data(data_trans_img)[mask_bool, :]
     data_trans_direct = np.swapaxes(data_trans_direct, 0, 1)
     assert_array_equal(data_trans, data_trans_direct)
 
-    masker = NiftiMasker(mask_img=mask_img, sample_mask=sample_mask)
+    masker = NiftiMasker(mask_img=mask_img)
     masker.fit()
-    data_trans2 = masker.transform(data_img_4d)
+    data_trans2 = masker.transform(data_img_4d, sample_mask=sample_mask)
     assert_array_equal(data_trans2, data_trans_direct)
 
 
