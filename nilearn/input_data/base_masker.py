@@ -26,6 +26,7 @@ def filter_and_extract(imgs, extraction_function,
                        memory_level=0, memory=Memory(location=None),
                        verbose=0,
                        confounds=None,
+                       sample_mask=None,
                        copy=True,
                        dtype=None):
     """Extract representative time series using given function.
@@ -68,9 +69,13 @@ def filter_and_extract(imgs, extraction_function,
     imgs = _utils.check_niimg(imgs, atleast_4d=True, ensure_ndim=4,
                               dtype=dtype)
 
-    sample_mask = parameters.get('sample_mask')
     if sample_mask is not None:
         imgs = image.index_img(imgs, sample_mask)
+        if confounds is not None and confounds.shape[0] != len(sample_mask):
+            raise ValueError("Confounds and sample_mask shape mismatch: "
+                             "Time points in confounds: {} "
+                             "Time points in sample_mask: {}".format(confounds.shape[0], len(sample_mask))
+                             )
 
     target_shape = parameters.get('target_shape')
     target_affine = parameters.get('target_affine')
@@ -108,6 +113,7 @@ def filter_and_extract(imgs, extraction_function,
     # Normalizing
     if verbose > 0:
         print("[%s] Cleaning extracted signals" % class_name)
+        print(region_signals.shape)
     sessions = parameters.get('sessions')
     region_signals = cache(
         signal.clean, memory=memory, func_memory_level=2,
@@ -130,7 +136,7 @@ class BaseMasker(BaseEstimator, TransformerMixin, CacheMixin):
     """
 
     @abc.abstractmethod
-    def transform_single_imgs(self, imgs, confounds=None, copy=True):
+    def transform_single_imgs(self, imgs, confounds=None, sample_mask=None, copy=True):
         """Extract signals from a single 4D niimg.
 
         Parameters
@@ -157,7 +163,7 @@ class BaseMasker(BaseEstimator, TransformerMixin, CacheMixin):
         """
         raise NotImplementedError()
 
-    def transform(self, imgs, confounds=None):
+    def transform(self, imgs, confounds=None, sample_mask=None):
         """Apply mask, spatial and temporal preprocessing
 
         Parameters
@@ -182,7 +188,7 @@ class BaseMasker(BaseEstimator, TransformerMixin, CacheMixin):
         self._check_fitted()
 
         if confounds is None and not self.high_variance_confounds:
-            return self.transform_single_imgs(imgs, confounds)
+            return self.transform_single_imgs(imgs, confounds=confounds, sample_mask=sample_mask)
 
         # Compute high variance confounds if requested
         all_confounds = []
@@ -196,9 +202,9 @@ class BaseMasker(BaseEstimator, TransformerMixin, CacheMixin):
             else:
                 all_confounds.append(confounds)
 
-        return self.transform_single_imgs(imgs, all_confounds)
+        return self.transform_single_imgs(imgs, confounds=all_confounds, sample_mask=sample_mask)
 
-    def fit_transform(self, X, y=None, confounds=None, **fit_params):
+    def fit_transform(self, X, y=None, confounds=None, sample_mask=None, **fit_params):
         """Fit to data, then transform it
 
         Parameters
@@ -225,20 +231,20 @@ class BaseMasker(BaseEstimator, TransformerMixin, CacheMixin):
             # fit method of arity 1 (unsupervised transformation)
             if self.mask_img is None:
                 return self.fit(X, **fit_params
-                                ).transform(X, confounds=confounds)
+                                ).transform(X, confounds=confounds, sample_mask=sample_mask)
             else:
-                return self.fit(**fit_params).transform(X, confounds=confounds)
+                return self.fit(**fit_params).transform(X, confounds=confounds, sample_mask=sample_mask)
         else:
             # fit method of arity 2 (supervised transformation)
             if self.mask_img is None:
                 return self.fit(X, y, **fit_params
-                                ).transform(X, confounds=confounds)
+                                ).transform(X, confounds=confounds, sample_mask=sample_mask)
             else:
                 warnings.warn('[%s.fit] Generation of a mask has been'
                               ' requested (y != None) while a mask has'
                               ' been provided at masker creation. Given mask'
                               ' will be used.' % self.__class__.__name__)
-                return self.fit(**fit_params).transform(X, confounds=confounds)
+                return self.fit(**fit_params).transform(X, confounds=confounds, sample_mask=sample_mask)
 
     def inverse_transform(self, X):
         """ Transform the 2D data matrix back to an image in brain space.
