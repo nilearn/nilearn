@@ -34,6 +34,7 @@ jobs:
     env:
         MIN_REQUIREMENTS: true
         FLAKE8: true
+        TEST_DOC: false
     steps:
       - uses: actions/checkout@v2
       - uses: actions/setup-python@v2
@@ -69,6 +70,8 @@ jobs:
     defaults:
       run:
         shell: bash
+    env:
+        TEST_DOC: true
     steps:
       - uses: actions/checkout@v2
       - uses: actions/setup-python@v2

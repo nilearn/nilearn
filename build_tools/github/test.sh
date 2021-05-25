@@ -7,4 +7,7 @@ fi
 
 python -m pytest --pyargs nilearn --cov=nilearn
 
-make test-doc
+if [[ $TEST_DOC == true ]]; then
+    echo "Running make test-doc...";
+    make test-doc
+fi
