@@ -6,3 +6,5 @@ if [[ -n "$FLAKE8" ]]; then
 fi
 
 python -m pytest --pyargs nilearn --cov=nilearn
+
+make test-doc
