@@ -18,7 +18,7 @@ $ git commit -m "[circle full] request full build"
 
 ## Dataset caching
 
-We also implemented a dataset caching strategy within the CircleCI workflow such that datasets are only downloaded once every week. Once these datasets are cached, they will be used by all jobs running on CircleCI without requiring any download. This saves a lot of time and avoid potential network errors which can happen when downloading datasets from remote servers. 
+We also implemented a dataset caching strategy within the CircleCI workflow such that datasets are only downloaded once every week. Once these datasets are cached, they will be used by all jobs running on CircleCI without requiring any download. This saves a lot of time and avoids potential network errors that can happen when downloading datasets from remote servers. 
 
 Note that you can request to download all datasets and ignore the cache at any time by including the tag "[force download]" in your commit message.
 
