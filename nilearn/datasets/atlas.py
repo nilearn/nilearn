@@ -131,7 +131,7 @@ def fetch_atlas_craddock_2012(data_dir=None, url=None, resume=True, verbose=1):
     The provided images are in MNI152 space.
 
     See :footcite:`CreativeCommons` for the licence.
-    See :footcite:`craddock2012whole` and :footcite:`nitrcClusterROI` for more information.
+    See :footcite:`craddock2012whole,nitrcClusterROI` for more information.
     on this parcellation.
 
     Parameters
@@ -193,8 +193,9 @@ def fetch_atlas_craddock_2012(data_dir=None, url=None, resume=True, verbose=1):
 
 def fetch_atlas_destrieux_2009(lateralized=True, data_dir=None, url=None,
                                resume=True, verbose=1):
-    """Download and load the Destrieux cortical atlas (dated 2009) 
-    :footcite:`Fischl2004Automatically` :footcite:`Destrieux2009sulcal`.
+    """Download and load the Destrieux cortical atlas (dated 2009).
+
+    See :footcite:`Fischl2004Automatically,Destrieux2009sulcal`.
 
     Parameters
     ----------
@@ -483,8 +484,9 @@ def fetch_atlas_msdl(data_dir=None, url=None, resume=True, verbose=1):
 
 
 def fetch_coords_power_2011():
-    """Download and load the Power et al. brain atlas composed of 264 ROIs 
-    :footcite:`Power2011Functional`.
+    """Download and load the Power et al. brain atlas composed of 264 ROIs.
+
+    See :footcite:`Power2011Functional`.
 
     Returns
     -------
@@ -509,8 +511,9 @@ def fetch_coords_power_2011():
 
 def fetch_atlas_smith_2009(data_dir=None, mirror='origin', url=None,
                            resume=True, verbose=1):
-    """Download and load the Smith ICA and BrainMap atlas (dated 2009) 
-    :footcite:`Smith200913040` :footcite:`Laird2011behavioral`.
+    """Download and load the Smith ICA and BrainMap atlas (dated 2009).
+
+    See :footcite:`Smith200913040,Laird2011behavioral`.
 
     Parameters
     ----------
@@ -612,7 +615,7 @@ def fetch_atlas_yeo_2011(data_dir=None, url=None, resume=True, verbose=1):
 
     The provided images are in MNI152 space.
 
-    For more information on this dataset's structure, see :footcite:`CorticalParcellation_Yeo2011` and :footcite:`Yeo2011organization`.
+    For more information on this dataset's structure, see :footcite:`CorticalParcellation_Yeo2011,Yeo2011organization`.
 
     Parameters
     ----------
@@ -694,7 +697,7 @@ def fetch_atlas_aal(version='SPM12', data_dir=None, url=None, resume=True,
     the Montreal Neurological Institute (MNI) (D. L. Collins et al., 1998,
     Trans. Med. Imag. 17, 463-468, PubMed).
 
-    For more information on this dataset's structure, see :footcite:`AAL_atlas` and :footcite:`TZOURIOMAZOYER2002273`.
+    For more information on this dataset's structure, see :footcite:`AAL_atlas,TZOURIOMAZOYER2002273`.
 
     Parameters
     ----------
@@ -877,7 +880,8 @@ def fetch_coords_dosenbach_2010(ordered_regions=True):
     """Load the Dosenbach et al. 160 ROIs. These ROIs cover
     much of the cerebral cortex and cerebellum and are assigned to 6
     networks 
-    :footcite:`Dosenbach20101358`.
+    
+    See :footcite:`Dosenbach20101358`.
 
     Parameters
     ----------
@@ -929,6 +933,7 @@ def fetch_coords_seitzman_2018(ordered_regions=True):
     SomatomotorDorsal, SomatomotorLateral, VentralAttention, Visual) and
     have a regional label (cortexL, cortexR, cerebellum, thalamus, hippocampus,
     basalGanglia, amygdala, cortexMid). 
+    
     See :footcite:`SEITZMAN2020116290`.
 
     .. versionadded:: 0.5.1
@@ -997,6 +1002,7 @@ def fetch_coords_seitzman_2018(ordered_regions=True):
 def fetch_atlas_allen_2011(data_dir=None, url=None, resume=True, verbose=1):
     """Download and return file names for the Allen and MIALAB ICA atlas
     (dated 2011). 
+    
     See :footcite:`Allen2011baseline`.
 
     The provided images are in MNI152 space.
@@ -1083,8 +1089,9 @@ def fetch_atlas_allen_2011(data_dir=None, url=None, resume=True, verbose=1):
 
 def fetch_atlas_surf_destrieux(data_dir=None, url=None,
                                resume=True, verbose=1):
-    """Download and load Destrieux et al, 2010 cortical atlas 
-    :footcite:`DESTRIEUX20101`.
+    """Download and load Destrieux et al, 2010 cortical atlas.
+
+    See :footcite:`DESTRIEUX20101`.
 
     This atlas returns 76 labels per hemisphere based on sulco-gryal pattnerns
     as distributed with Freesurfer in fsaverage5 surface space.
@@ -1257,7 +1264,7 @@ def _get_talairach_all_levels(data_dir=None, verbose=1):
 def fetch_atlas_talairach(level_name, data_dir=None, verbose=1):
     """Download the Talairach atlas.
 
-    For more information, see :footcite:`talairach_atlas`, :footcite:`Lancaster2000Talairach`, and :footcite:`Lancaster1997labeling`.
+    For more information, see :footcite:`talairach_atlas,Lancaster2000Talairach,Lancaster1997labeling`.
 
     .. versionadded:: 0.4.0
 
@@ -1305,9 +1312,9 @@ def fetch_atlas_talairach(level_name, data_dir=None, verbose=1):
 
 def fetch_atlas_pauli_2017(version='prob', data_dir=None, verbose=1):
     """Download the Pauli et al. (2017) atlas with in total
-    12 subcortical nodes
-    :footcite:`pauli_atlas`.
-    :footcite:`Pauli2018probabilistic`.
+    12 subcortical nodes.
+    
+    See :footcite:`pauli_atlas,Pauli2018probabilistic`.
 
     Parameters
     ----------
@@ -1380,7 +1387,7 @@ def fetch_atlas_schaefer_2018(n_rois=400, yeo_networks=7, resolution_mm=1,
 
     The provided images are in MNI152 space.
 
-    For more information on this dataset, see :footcite:`schaefer_atlas`, :footcite:`Schaefer2017parcellation` and :footcite:`Yeo2011organization`.
+    For more information on this dataset, see :footcite:`schaefer_atlas,Schaefer2017parcellation,Yeo2011organization`.
 
     Parameters
     ----------
