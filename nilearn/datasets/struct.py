@@ -25,7 +25,8 @@ FSAVERAGE5_PATH = os.path.join(_package_directory, "data", "fsaverage5")
 def fetch_icbm152_2009(data_dir=None, url=None, resume=True, verbose=1):
     """Download and load the ICBM152 template (dated 2009).
 
-    For more information, see :footcite:`FONOV2011313, Fonov2009, Collins1999algorithm`.
+    For more information, see :footcite:`FONOV2011313`,
+    :footcite:`Fonov2009`, and :footcite:`Collins1999algorithm`.
 
     Parameters
     ----------
@@ -109,7 +110,8 @@ def load_mni152_template():
     """Load skullstripped 2mm version of the MNI152 originally distributed
     with FSL.
 
-    For more information, see :footcite:`FONOV2011313, Fonov2009`.
+    For more information, see :footcite:`FONOV2011313`,
+    and :footcite:`Fonov2009`.
 
     Returns
     -------
@@ -216,7 +218,8 @@ def fetch_oasis_vbm(n_subjects=None, dartel_version=True, data_dir=None,
                     url=None, resume=True, verbose=1):
     """Download and load Oasis "cross-sectional MRI" dataset (416 subjects).
 
-    For more information, see :footcite:`OASISbrain, Marcus2007OASIS`.
+    For more information, see :footcite:`OASISbrain`, 
+    and :footcite:`Marcus2007OASIS`.
 
     Parameters
     ----------
