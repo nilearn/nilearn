@@ -179,7 +179,7 @@ def fetch_nyu_rest(n_subjects=None, sessions=[1], data_dir=None, resume=True,
     """Download and loads the NYU resting-state test-retest dataset.
 
     For documentation see :footcite:`NYUdataset` and see :footcite:`NYUdatasetlist` for download. See :footcite:`Shehzad2009restingstate` for
-    citing the paper, and see :footcite:`ZUO20101432,ZUO20102163` for additional references.
+    citing the paper, and see :footcite:`ZUO20101432, ZUO20102163` for additional references.
 
     Warnings
     --------
@@ -1377,7 +1377,7 @@ def fetch_megatrawls_netmats(dimensionality=100, timeseries='eigen_regression',
     The network matrices are estimated from functional connectivity
     datasets of 461 subjects. Full technical details in references.
 
-    More information available in :footcite:`smithhcp2015,smith2015positive,Filippini7209,smith2014methods,reilly2009cerebellum`.
+    More information available in :footcite:`smithhcp2015, smith2015positive, Filippini7209, smith2014methods, reilly2009cerebellum`.
 
     Parameters
     ----------

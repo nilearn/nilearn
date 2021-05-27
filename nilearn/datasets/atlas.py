@@ -131,7 +131,7 @@ def fetch_atlas_craddock_2012(data_dir=None, url=None, resume=True, verbose=1):
     The provided images are in MNI152 space.
 
     See :footcite:`CreativeCommons` for the licence.
-    See :footcite:`craddock2012whole,nitrcClusterROI` for more information.
+    See :footcite:`craddock2012whole, nitrcClusterROI` for more information.
     on this parcellation.
 
     Parameters
@@ -195,7 +195,7 @@ def fetch_atlas_destrieux_2009(lateralized=True, data_dir=None, url=None,
                                resume=True, verbose=1):
     """Download and load the Destrieux cortical atlas (dated 2009).
 
-    See :footcite:`Fischl2004Automatically,Destrieux2009sulcal`.
+    See :footcite:`Fischl2004Automatically, Destrieux2009sulcal`.
 
     Parameters
     ----------
@@ -513,7 +513,7 @@ def fetch_atlas_smith_2009(data_dir=None, mirror='origin', url=None,
                            resume=True, verbose=1):
     """Download and load the Smith ICA and BrainMap atlas (dated 2009).
 
-    See :footcite:`Smith200913040,Laird2011behavioral`.
+    See :footcite:`Smith200913040, Laird2011behavioral`.
 
     Parameters
     ----------
@@ -615,7 +615,7 @@ def fetch_atlas_yeo_2011(data_dir=None, url=None, resume=True, verbose=1):
 
     The provided images are in MNI152 space.
 
-    For more information on this dataset's structure, see :footcite:`CorticalParcellation_Yeo2011,Yeo2011organization`.
+    For more information on this dataset's structure, see :footcite:`CorticalParcellation_Yeo2011, Yeo2011organization`.
 
     Parameters
     ----------
@@ -697,7 +697,7 @@ def fetch_atlas_aal(version='SPM12', data_dir=None, url=None, resume=True,
     the Montreal Neurological Institute (MNI) (D. L. Collins et al., 1998,
     Trans. Med. Imag. 17, 463-468, PubMed).
 
-    For more information on this dataset's structure, see :footcite:`AAL_atlas,TZOURIOMAZOYER2002273`.
+    For more information on this dataset's structure, see :footcite:`AAL_atlas, TZOURIOMAZOYER2002273`.
 
     Parameters
     ----------
@@ -1264,7 +1264,7 @@ def _get_talairach_all_levels(data_dir=None, verbose=1):
 def fetch_atlas_talairach(level_name, data_dir=None, verbose=1):
     """Download the Talairach atlas.
 
-    For more information, see :footcite:`talairach_atlas,Lancaster2000Talairach,Lancaster1997labeling`.
+    For more information, see :footcite:`talairach_atlas, Lancaster2000Talairach, Lancaster1997labeling`.
 
     .. versionadded:: 0.4.0
 
@@ -1314,7 +1314,7 @@ def fetch_atlas_pauli_2017(version='prob', data_dir=None, verbose=1):
     """Download the Pauli et al. (2017) atlas with in total
     12 subcortical nodes.
     
-    See :footcite:`pauli_atlas,Pauli2018probabilistic`.
+    See :footcite:`pauli_atlas, Pauli2018probabilistic`.
 
     Parameters
     ----------
@@ -1387,7 +1387,7 @@ def fetch_atlas_schaefer_2018(n_rois=400, yeo_networks=7, resolution_mm=1,
 
     The provided images are in MNI152 space.
 
-    For more information on this dataset, see :footcite:`schaefer_atlas,Schaefer2017parcellation,Yeo2011organization`.
+    For more information on this dataset, see :footcite:`schaefer_atlas, Schaefer2017parcellation, Yeo2011organization`.
 
     Parameters
     ----------
