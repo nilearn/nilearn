@@ -510,55 +510,26 @@ def fetch_surf_fsaverage(mesh='fsaverage5', data_dir=None):
     if (
         mesh == "fsaverage3" or
         mesh == "fsaverage4" or
-        mesh == "fsaverage6"
+        mesh == "fsaverage6" or
+        mesh == "fsaverage7" or
+        mesh == "fsaverage"
     ):
+        # rename mesh to "fsaverage" to download it once
+        # regardless of whether mesh equals "fsaverage" or "fsaverage7"
+        if mesh == "fsaverage7":
+            mesh = "fsaverage"
+
         return _fetch_surf_fsaverage(mesh, data_dir=data_dir)
     elif mesh == "fsaverage5":
         return _fetch_surf_fsaverage5()
     elif mesh == "fsaverage5_sphere":
         return _fetch_surf_fsaverage5_sphere(data_dir=data_dir)
-    elif (
-        mesh == "fsaverage7" or
-        mesh == "fsaverage"
-    ):
-        return _fetch_surf_fsaverage7(data_dir=data_dir)
     else:
         raise ValueError(
             "'mesh' should be one of {}; {!r} was provided".format(
                 available_meshes, mesh
             )
         )
-
-
-def _fetch_surf_fsaverage7(data_dir=None):
-    """Helper function to ship fsaverage7 (highest resolution) surfaces
-    and sulcal information with Nilearn.
-
-    The source of the data is downloaded from nitrc.
-
-    """
-    dataset_dir = _get_dataset_dir('fsaverage', data_dir=data_dir)
-    url = "https://www.nitrc.org/frs/download.php/11807/fsaverage.tar.gz"
-    file_names = [
-        "{}_{}".format(part, hemi)
-        for part in [
-            "area", "curv", "inflated", "pial",
-            "sphere", "sulc", "thick", "white"
-        ]
-        for hemi in ["left", "right"]
-    ]
-
-    _fetch_files(dataset_dir,
-                 [(os.path.join("fsaverage", "{}.gii".format(name)), url,
-                   {"uncompress": True})
-                  for name in file_names])
-
-    result = {
-        name.replace("inflated", "infl"): os.path.join(
-            dataset_dir, "fsaverage", '{}.gii'.format(name))
-        for name in file_names}
-    result['description'] = str(_get_dataset_descr('fsaverage'))
-    return Bunch(**result)
 
 
 def _fetch_surf_fsaverage5():
@@ -573,6 +544,7 @@ def _fetch_surf_fsaverage5():
     """
     data = {"description": _get_dataset_descr("fsaverage5")}
     data_dir = Path(FSAVERAGE5_PATH)
+
     for hemi in ["left", "right"]:
         for part in [
             "area", "curv", "infl", "pial",
@@ -581,6 +553,7 @@ def _fetch_surf_fsaverage5():
             data["{}_{}".format(part, hemi)] = str(
                 data_dir / "{}.{}.gii.gz".format(
                     {"infl": "pial_inflated"}.get(part, part), hemi))
+
     return Bunch(**data)
 
 
@@ -624,7 +597,8 @@ def _fetch_surf_fsaverage(dataset_name, data_dir=None):
         "fsaverage3": "https://osf.io/mvnpx/download",
         "fsaverage4": "https://osf.io/6mndf/download",
         "fsaverage6": "https://osf.io/xk9zv/download",
-        # "fsaverage7": "https://osf.io/w7csy/download",
+        "fsaverage7": "https://osf.io/w7csy/download",
+        "fsaverage": "https://osf.io/w7csy/download",
     }[dataset_name]
 
     attribute_to_filename = {
