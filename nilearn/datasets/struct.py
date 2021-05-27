@@ -451,6 +451,8 @@ def fetch_oasis_vbm(n_subjects=None, dartel_version=True, data_dir=None,
 
 def fetch_surf_fsaverage(mesh='fsaverage5', data_dir=None):
     """Download a Freesurfer fsaverage surface.
+    File names are subject to change and only attribute names
+    are guaranteed to be stable across nilearn versions.
     See [1]_.
 
     Parameters
@@ -461,7 +463,7 @@ def fetch_surf_fsaverage(mesh='fsaverage5', data_dir=None):
         - 'fsaverage3': the low-resolution fsaverage3 mesh (642 nodes)
         - 'fsaverage4': the low-resolution fsaverage4 mesh (2562 nodes)
         - 'fsaverage5': the low-resolution fsaverage5 mesh (10242 nodes)
-        - 'fsaverage5_sphere': the low-resolution fsaverage5 spheres (10242 nodes)
+        - 'fsaverage5_sphere': deprecated; since v0.7.2, sphere coordinates are directly accessible from fsaverage5.sphere_{left, right}
         - 'fsaverage6': the medium-resolution fsaverage6 mesh (40962 nodes)
         - 'fsaverage7': same as 'fsaverage'
         - 'fsaverage': the high-resolution fsaverage mesh (163842 nodes)
@@ -475,13 +477,21 @@ def fetch_surf_fsaverage(mesh='fsaverage5', data_dir=None):
     -------
     data : sklearn.datasets.base.Bunch
         Dictionary-like object, the interest attributes are :
+         - 'area_left': Gifti file, left hemisphere area data
+         - 'area_right': Gifti file, right hemisphere area data
+         - 'curv_left': Gifti file, left hemisphere curvature data
+         - 'curv_right': Gifti file, right hemisphere curvature data
          - 'pial_left': Gifti file, left hemisphere pial surface mesh
          - 'pial_right': Gifti file, right hemisphere pial surface mesh
          - 'infl_left': Gifti file, left hemisphere inflated pial surface mesh
          - 'infl_right': Gifti file, right hemisphere inflated pial
                          surface mesh
+         - 'sphere_left': Gifti file, left hemisphere sphere surface mesh
+         - 'sphere_right': Gifti file, right hemisphere sphere surface mesh
          - 'sulc_left': Gifti file, left hemisphere sulcal depth data
          - 'sulc_right': Gifti file, right hemisphere sulcal depth data
+         - 'thick_left': Gifti file, left hemisphere cortical thickness data
+         - 'thick_right': Gifti file, right hemisphere cortical thickness data
          - 'white_left': Gifti file, left hemisphere white surface mesh
          - 'white_right': Gifti file, right hemisphere white surface mesh
 
@@ -529,13 +539,20 @@ def _fetch_surf_fsaverage7(data_dir=None):
     """
     dataset_dir = _get_dataset_dir('fsaverage', data_dir=data_dir)
     url = "https://www.nitrc.org/frs/download.php/11807/fsaverage.tar.gz"
-    file_names = ["{}_{}".format(part, hemi)
-                  for part in ["pial", "sulc", "white", "inflated"]
-                  for hemi in ["left", "right"]]
+    file_names = [
+        "{}_{}".format(part, hemi)
+        for part in [
+            "area", "curv", "inflated", "pial",
+            "sphere", "sulc", "thick", "white"
+        ]
+        for hemi in ["left", "right"]
+    ]
+
     _fetch_files(dataset_dir,
                  [(os.path.join("fsaverage", "{}.gii".format(name)), url,
                    {"uncompress": True})
                   for name in file_names])
+
     result = {
         name.replace("inflated", "infl"): os.path.join(
             dataset_dir, "fsaverage", '{}.gii'.format(name))
@@ -557,7 +574,10 @@ def _fetch_surf_fsaverage5():
     data = {"description": _get_dataset_descr("fsaverage5")}
     data_dir = Path(FSAVERAGE5_PATH)
     for hemi in ["left", "right"]:
-        for part in ["white", "sulc", "pial", "infl"]:
+        for part in [
+            "area", "curv", "infl", "pial",
+            "sphere", "sulc", "thick", "white"
+        ]:
             data["{}_{}".format(part, hemi)] = str(
                 data_dir / "{}.{}.gii.gz".format(
                     {"infl": "pial_inflated"}.get(part, part), hemi))
@@ -599,29 +619,31 @@ def _fetch_surf_fsaverage(dataset_name, data_dir=None):
     """
     dataset_dir = _get_dataset_dir(dataset_name, data_dir=data_dir)
     opts = {'uncompress': True}
+
     url = {
-        # todo: use real urls
-        "fsaverage3": "https://osf.io/3s4r2/download",
-        "fsaverage4": "https://osf.io/3s4r2/download",
-        "fsaverage6": "https://osf.io/3s4r2/download",
+        "fsaverage3": "https://osf.io/mvnpx/download",
+        "fsaverage4": "https://osf.io/6mndf/download",
+        "fsaverage6": "https://osf.io/xk9zv/download",
+        # "fsaverage7": "https://osf.io/w7csy/download",
     }[dataset_name]
+
     attribute_to_filename = {
-        # "area_left": "lh.area",
-        # "area_right": "rh.area",
-        # "curv_left": "lh.curv",
-        # "curv_right": "rh.curv",
-        "infl_left": "lh.inflated",
-        "infl_right": "rh.inflated",
-        "pial_left": "lh.pial",
-        "pial_right": "rh.pial",
-        # "sphere_left": "lh.sphere",
-        # "sphere_right": "rh.sphere",
-        "sulc_left": "lh.sulc",
-        "sulc_right": "rh.sulc",
-        # "thick_left": "lh.thickness",
-        # "thick_right": "rh.thickness",
-        "white_left": "lh.white",
-        "white_right": "rh.white",
+        "area_left": "area_left.gii.gz",
+        "area_right": "area_right.gii.gz",
+        "curv_left": "curv_left.gii.gz",
+        "curv_right": "curv_right.gii.gz",
+        "infl_left": "infl_left.gii.gz",
+        "infl_right": "infl_right.gii.gz",
+        "pial_left": "pial_left.gii.gz",
+        "pial_right": "pial_right.gii.gz",
+        "sphere_left": "sphere_left.gii.gz",
+        "sphere_right": "sphere_right.gii.gz",
+        "sulc_left": "sulc_left.gii.gz",
+        "sulc_right": "sulc_right.gii.gz",
+        "thick_left": "thick_left.gii.gz",
+        "thick_right": "thick_right.gii.gz",
+        "white_left": "white_left.gii.gz",
+        "white_right": "white_right.gii.gz",
     }
 
     _fetch_files(

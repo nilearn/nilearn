@@ -159,28 +159,35 @@ def test_fetch_icbm152_brain_gm_mask(tmp_path, request_mocker):
 
 @pytest.mark.parametrize(
     "mesh",
-    ["fsaverage3", "fsaverage4", "fsaverage5", "fsaverage6", "fsaverage"]
+    [
+        "fsaverage3",
+        "fsaverage4",
+        "fsaverage5",
+        "fsaverage6",
+        "fsaverage7",
+        "fsaverage",
+    ]
 )
 def test_fetch_surf_fsaverage(mesh, tmp_path, request_mocker):
     # Define attribute list that nilearn meshs should contain
     mesh_attributes = {
-        # "area_left", "area_right",
-        # "curv_left", "curv_right",
+        "area_left", "area_right",
+        "curv_left", "curv_right",
         "infl_left", "infl_right",
         "pial_left", "pial_right",
-        # "sphere_left", "sphere_right",
+        "sphere_left", "sphere_right",
         "sulc_left", "sulc_right",
-        # "thick_left", "thick_right",
-        "white_left", "white_right"
+        "thick_left", "thick_right",
+        "white_left", "white_right",
     }
 
     # Define file list that downloaded archives should contain
     keys_fsaverage_other = [
-        "{}.{}".format(hemi, part)
-        for hemi in ["lh", "rh"]
+        "{}_{}".format(part, hemi)
+        for hemi in ["left", "right"]
         for part in [
-            "area", "curv", "inflated", "pial",
-            "sphere", "sulc", "thickness", "white"
+            "area", "curv", "infl", "pial",
+            "sphere", "sulc", "thick", "white"
         ]
     ]
 
@@ -189,10 +196,16 @@ def test_fetch_surf_fsaverage(mesh, tmp_path, request_mocker):
         [Path("fsaverage") / "{}.gii".format(k.replace("infl", "inflated")) for
          k in mesh_attributes])
 
-    # Mock fsaverage6 download (with actual url)
-    request_mocker.url_mapping["https://osf.io/3s4r2/download"] = list_to_archive(
-        ["{}".format(k) for k in keys_fsaverage_other]
-    )
+    # Mock fsaverage3,4,6 download (with actual url)
+    fs_urls = [
+        "https://osf.io/mvnpx/download",
+        "https://osf.io/6mndf/download",
+        "https://osf.io/xk9zv/download",
+    ]
+    for fs_url in fs_urls:
+        request_mocker.url_mapping[fs_url] = list_to_archive(
+            ["{}.gii.gz".format(k) for k in keys_fsaverage_other]
+        )
 
     dataset = struct.fetch_surf_fsaverage(mesh, data_dir=str(tmp_path))
     assert mesh_attributes.issubset(set(dataset.keys()))
