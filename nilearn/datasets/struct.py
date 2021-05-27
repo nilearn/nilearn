@@ -585,7 +585,7 @@ def _fetch_surf_fsaverage5_sphere(data_dir=None):
 
 
 def _fetch_surf_fsaverage(dataset_name, data_dir=None):
-    """Helper function to ship fsaverage{3,4,6} meshes.
+    """Helper function to ship fsaverage{3,4,6,7} meshes.
 
     These meshes can be used for visualization purposes, but also to run
     cortical surface-based searchlight decoding.
@@ -599,37 +599,31 @@ def _fetch_surf_fsaverage(dataset_name, data_dir=None):
         "fsaverage3": "https://osf.io/mvnpx/download",
         "fsaverage4": "https://osf.io/6mndf/download",
         "fsaverage6": "https://osf.io/xk9zv/download",
-        "fsaverage7": "https://osf.io/w7csy/download",
-        "fsaverage": "https://osf.io/w7csy/download",
+        "fsaverage": "https://osf.io/w7csy/download", # fsaverage7
     }[dataset_name]
 
-    attribute_to_filename = {
-        "area_left": "area_left.gii.gz",
-        "area_right": "area_right.gii.gz",
-        "curv_left": "curv_left.gii.gz",
-        "curv_right": "curv_right.gii.gz",
-        "infl_left": "infl_left.gii.gz",
-        "infl_right": "infl_right.gii.gz",
-        "pial_left": "pial_left.gii.gz",
-        "pial_right": "pial_right.gii.gz",
-        "sphere_left": "sphere_left.gii.gz",
-        "sphere_right": "sphere_right.gii.gz",
-        "sulc_left": "sulc_left.gii.gz",
-        "sulc_right": "sulc_right.gii.gz",
-        "thick_left": "thick_left.gii.gz",
-        "thick_right": "thick_right.gii.gz",
-        "white_left": "white_left.gii.gz",
-        "white_right": "white_right.gii.gz",
-    }
+    # List of attributes exposed by the dataset
+    dataset_attributes = [
+        "{}_{}".format(part, hemi)
+        for part in [
+            "area", "curv", "infl", "pial",
+            "sphere", "sulc", "thick", "white"
+        ]
+        for hemi in ["left", "right"]
+    ]
 
+    # Note that the file names match the attribute's
     _fetch_files(
         dataset_dir,
-        [(filename, url, opts) for filename in attribute_to_filename.values()]
+        [
+            ("{}.gii.gz".format(attribute), url, opts)
+            for attribute in dataset_attributes
+        ]
     )
 
     result = {
-        attribute: os.path.join(dataset_dir, filename)
-        for attribute, filename in attribute_to_filename.items()
+        attribute: os.path.join(dataset_dir, "{}.gii.gz".format(attribute))
+        for attribute in dataset_attributes
     }
     result["description"] = str(_get_dataset_descr(dataset_name))
 
