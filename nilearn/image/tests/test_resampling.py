@@ -792,6 +792,8 @@ def test_coord_transform_trivial():
 
 @pytest.mark.skipif(os.environ.get('APPVEYOR') == 'True',
                     reason='This test too slow (7-8 minutes) on AppVeyor')
+@pytest.mark.skipif(os.environ.get('TRAVIS') == 'True',
+                    reason='This test does not run on ARM arch.')
 def test_resample_img_segmentation_fault():
     # see https://github.com/nilearn/nilearn/issues/346
     shape_in = (64, 64, 64)
@@ -799,7 +801,7 @@ def test_resample_img_segmentation_fault():
     aff_out = np.diag([3., 3., 3., 1.])
     # fourth_dim = 1024 works fine but for 1025 creates a segmentation
     # fault with scipy < 0.14.1
-    fourth_dim = 1024
+    fourth_dim = 1025
 
     try:
         data = np.ones(shape_in + (fourth_dim, ), dtype=np.float64)
