@@ -545,14 +545,16 @@ def _fetch_surf_fsaverage5():
     data = {"description": _get_dataset_descr("fsaverage5")}
     data_dir = Path(FSAVERAGE5_PATH)
 
-    for hemi in ["left", "right"]:
+    data = {
+        "{}_{}".format(part, hemi): os.path.join(
+            data_dir, "{}_{}.gii.gz".format(part, hemi)
+        )
         for part in [
             "area", "curv", "infl", "pial",
             "sphere", "sulc", "thick", "white"
-        ]:
-            data["{}_{}".format(part, hemi)] = str(
-                data_dir / "{}.{}.gii.gz".format(
-                    {"infl": "pial_inflated"}.get(part, part), hemi))
+        ]
+        for hemi in ["left", "right"]
+    }
 
     return Bunch(**data)
 
