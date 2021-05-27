@@ -463,7 +463,9 @@ def fetch_surf_fsaverage(mesh='fsaverage5', data_dir=None):
         - 'fsaverage3': the low-resolution fsaverage3 mesh (642 nodes)
         - 'fsaverage4': the low-resolution fsaverage4 mesh (2562 nodes)
         - 'fsaverage5': the low-resolution fsaverage5 mesh (10242 nodes)
-        - 'fsaverage5_sphere': deprecated; since v0.7.2, sphere coordinates are directly accessible from fsaverage5.sphere_{left, right}
+        - 'fsaverage5_sphere': deprecated;
+            since v0.7.2, sphere coordinates are directly accessible from
+            fsaverage5.sphere_{left, right}
         - 'fsaverage6': the medium-resolution fsaverage6 mesh (40962 nodes)
         - 'fsaverage7': same as 'fsaverage'
         - 'fsaverage': the high-resolution fsaverage mesh (163842 nodes)
@@ -508,11 +510,11 @@ def fetch_surf_fsaverage(mesh='fsaverage5', data_dir=None):
 
     # Call a dataset loader depending on the value of mesh
     if (
-        mesh == "fsaverage3" or
-        mesh == "fsaverage4" or
-        mesh == "fsaverage6" or
-        mesh == "fsaverage7" or
-        mesh == "fsaverage"
+        mesh == "fsaverage3"
+        or mesh == "fsaverage4"
+        or mesh == "fsaverage6"
+        or mesh == "fsaverage7"
+        or mesh == "fsaverage"
     ):
         # rename mesh to "fsaverage" to download it once
         # regardless of whether mesh equals "fsaverage" or "fsaverage7"
@@ -599,7 +601,7 @@ def _fetch_surf_fsaverage(dataset_name, data_dir=None):
         "fsaverage3": "https://osf.io/mvnpx/download",
         "fsaverage4": "https://osf.io/6mndf/download",
         "fsaverage6": "https://osf.io/xk9zv/download",
-        "fsaverage": "https://osf.io/w7csy/download", # fsaverage7
+        "fsaverage": "https://osf.io/w7csy/download",  # fsaverage7
     }[dataset_name]
 
     # List of attributes exposed by the dataset
