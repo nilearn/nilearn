@@ -20,7 +20,7 @@ conda update --yes conda
 
 conda init bash
 conda create -n testenv -yq
-conda install -n testenv -yq python=3.8 numpy scipy scikit-learn matplotlib pandas pytest joblib nibabel cython requests
+conda install -n testenv -yq python=3.8 numpy scipy scikit-learn matplotlib pandas pytest pytest-xdist joblib nibabel cython requests
 source activate testenv
 python -m pip install --user --upgrade --progress-bar off pip setuptools
 python -m pip install .
