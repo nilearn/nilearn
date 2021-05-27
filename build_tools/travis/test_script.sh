@@ -2,21 +2,10 @@
 
 set -e
 
-if [[ -n "$FLAKE8_VERSION" ]]; then
-    source continuous_integration/flake8_diff.sh
+TEST_CMD="pytest --pyargs"
+
+if [[ $TRAVIS_CPU_ARCH == arm64 ]]; then
+    TEST_CMD="$TEST_CMD -n $CPU_COUNT"
 fi
 
-if [[ "$SKIP_TESTS" != "true" ]]; then
-    python continuous_integration/show-python-packages-versions.py
-    # Copy setup.cfg to TEST_RUN_FOLDER where we are going to run the tests from
-    # Mainly for test config settings
-    cp setup.cfg "$TEST_RUN_FOLDER"
-    cp .coveragerc "$TEST_RUN_FOLDER"
-    # We want to back out of the current working directory to make
-    # sure we are using nilearn installed in site-packages rather
-    # than the one from the current working directory
-    # Parentheses (run in a subshell) are used to leave
-    # the current directory unchanged
-    (cd "$TEST_RUN_FOLDER" && make -f $OLDPWD/Makefile test-code)
-    test "$MATPLOTLIB_VERSION" == "" || make test-doc
-fi
+$TEST_CMD nilearn

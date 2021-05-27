@@ -1,0 +1,25 @@
+sudo: required
+dist: xenial
+
+language: python
+
+env:
+    global:
+        - TEST_RUN_FOLDER="/tmp"
+
+cache:
+    global:
+        - TEST_DIR=/tmp/nilearn
+
+jobs:
+    include:
+
+        - python: 3.9
+          os: linux
+          arch: arm64
+          if: commit_message =~ /\[arm64\]/
+          env:
+              - CPU_COUNT=4
+
+install: source build_tools/travis/install.sh
+script: source build_tools/travis/test_script.sh
