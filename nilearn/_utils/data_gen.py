@@ -505,8 +505,10 @@ def generate_group_sparse_gaussian_graphs(
 def basic_paradigm():
     conditions = ['c0', 'c0', 'c0', 'c1', 'c1', 'c1', 'c2', 'c2', 'c2']
     onsets = [30, 70, 100, 10, 30, 90, 30, 40, 60]
+    durations = 1 * np.ones(9)
     events = pd.DataFrame({'trial_type': conditions,
-                           'onset': onsets})
+                           'onset': onsets,
+                           'duration': durations})
     return events
 
 
