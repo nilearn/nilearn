@@ -799,7 +799,7 @@ def test_resample_img_segmentation_fault():
     aff_out = np.diag([3., 3., 3., 1.])
     # fourth_dim = 1024 works fine but for 1025 creates a segmentation
     # fault with scipy < 0.14.1
-    fourth_dim = 1025
+    fourth_dim = 1024
 
     try:
         data = np.ones(shape_in + (fourth_dim, ), dtype=np.float64)
