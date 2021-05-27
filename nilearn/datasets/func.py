@@ -178,8 +178,11 @@ def fetch_nyu_rest(n_subjects=None, sessions=[1], data_dir=None, resume=True,
                    verbose=1):
     """Download and loads the NYU resting-state test-retest dataset.
 
-    For documentation see :footcite:`NYUdataset` and see :footcite:`NYUdatasetlist` for download. See :footcite:`Shehzad2009restingstate` for
-    citing the paper, and see :footcite:`ZUO20101432` and :footcite:`ZUO20102163` for additional references.
+    For documentation see :footcite:`NYUdataset`,
+    and see :footcite:`NYUdatasetlist` for download. 
+    See :footcite:`Shehzad2009restingstate` for citing the paper, 
+    and see :footcite:`ZUO20101432`,
+    and :footcite:`ZUO20102163` for additional references.
 
     Warnings
     --------
@@ -633,7 +636,8 @@ def fetch_localizer_contrasts(contrasts, n_subjects=None, get_tmaps=False,
 
     You may cite :footcite:`PAPADOPOULOSORFANOS2017309` when using this dataset.
 
-    Scientific results obtained using this dataset are described in :footcite:`Pinel2007fast`.
+    Scientific results obtained using this dataset are described 
+    in :footcite:`Pinel2007fast`.
 
     Parameters
     ----------
@@ -1377,7 +1381,9 @@ def fetch_megatrawls_netmats(dimensionality=100, timeseries='eigen_regression',
     The network matrices are estimated from functional connectivity
     datasets of 461 subjects. Full technical details in references.
 
-    More information available in :footcite:`smithhcp2015`, :footcite:`smith2015positive`, :footcite:`Filippini7209`, :footcite:`smith2014methods`, and :footcite:`reilly2009cerebellum`.
+    More information available in :footcite:`smithhcp2015`, 
+    :footcite:`smith2015positive`, :footcite:`Filippini7209`, 
+    :footcite:`smith2014methods`, and :footcite:`reilly2009cerebellum`.
 
     Parameters
     ----------
@@ -1666,7 +1672,7 @@ def fetch_surf_nki_enhanced(n_subjects=10, data_dir=None,
     """Download and load the NKI enhanced resting-state dataset,
     preprocessed and projected to the fsaverage5 space surface.
 
-    See :footcite:`Nooner2012NKI`
+    See :footcite:`Nooner2012NKI`.
 
     Direct download link :footcite:`NKIdataset`.
 
@@ -2591,6 +2597,7 @@ def _make_events_file_spm_auditory_data(events_filepath):
 def fetch_spm_auditory(data_dir=None, data_name='spm_auditory',
                        subject_id='sub001', verbose=1):
     """Function to fetch SPM auditory single-subject data.
+    
     See :footcite:`spm_auditory`.
 
     Parameters
