@@ -21,8 +21,9 @@ from .. import masking
 from .base_masker import filter_and_extract, BaseMasker
 
 
-def _apply_mask_and_get_affinity(seeds, niimg, radius, allow_overlap,
-                                 mask_img=None):
+def _apply_mask_and_get_affinity(
+    seeds, niimg, radius, allow_overlap, mask_img=None
+):
     '''Utility function to get only the rows which are occupied by sphere at
     given seed locations and the provided radius. Rows are in target_affine and
     target_shape space.
@@ -72,9 +73,12 @@ def _apply_mask_and_get_affinity(seeds, niimg, radius, allow_overlap,
     elif mask_img is not None:
         affine = niimg.affine
         mask_img = check_niimg_3d(mask_img)
-        mask_img = image.resample_img(mask_img, target_affine=affine,
-                                      target_shape=niimg.shape[:3],
-                                      interpolation='nearest')
+        mask_img = image.resample_img(
+            mask_img,
+            target_affine=affine,
+            target_shape=niimg.shape[:3],
+            interpolation='nearest',
+        )
         mask, _ = masking._load_mask_img(mask_img)
         mask_coords = list(zip(*np.where(mask != 0)))
 
@@ -82,8 +86,10 @@ def _apply_mask_and_get_affinity(seeds, niimg, radius, allow_overlap,
     elif niimg is not None:
         affine = niimg.affine
         if np.isnan(np.sum(_safe_get_data(niimg))):
-            warnings.warn('The imgs you have fed into fit_transform() contains'
-                          ' NaN values which will be converted to zeroes ')
+            warnings.warn(
+                'The imgs you have fed into fit_transform() contains'
+                ' NaN values which will be converted to zeroes '
+            )
             X = _safe_get_data(niimg, True).reshape([-1, niimg.shape[3]]).T
         else:
             X = _safe_get_data(niimg).reshape([-1, niimg.shape[3]]).T
@@ -103,8 +109,9 @@ def _apply_mask_and_get_affinity(seeds, niimg, radius, allow_overlap,
             nearests.append(None)
 
     mask_coords = np.asarray(list(zip(*mask_coords)))
-    mask_coords = coord_transform(mask_coords[0], mask_coords[1],
-                                  mask_coords[2], affine)
+    mask_coords = coord_transform(
+        mask_coords[0], mask_coords[1], mask_coords[2], affine
+    )
     mask_coords = np.asarray(mask_coords).T
 
     clf = neighbors.NearestNeighbors(radius=radius)
@@ -136,8 +143,9 @@ def _apply_mask_and_get_affinity(seeds, niimg, radius, allow_overlap,
     return X, A
 
 
-def _iter_signals_from_spheres(seeds, niimg, radius, allow_overlap,
-                               mask_img=None):
+def _iter_signals_from_spheres(
+    seeds, niimg, radius, allow_overlap, mask_img=None
+):
     """Utility function to iterate over spheres.
 
     Parameters
@@ -163,9 +171,9 @@ def _iter_signals_from_spheres(seeds, niimg, radius, allow_overlap,
         Mask to apply to regions before extracting signals.
 
     """
-    X, A = _apply_mask_and_get_affinity(seeds, niimg, radius,
-                                        allow_overlap,
-                                        mask_img=mask_img)
+    X, A = _apply_mask_and_get_affinity(
+        seeds, niimg, radius, allow_overlap, mask_img=mask_img
+    )
     for i, row in enumerate(A.rows):
         yield X[:, row]
 
@@ -185,10 +193,18 @@ class _ExtractionFunctor(object):
         n_seeds = len(self.seeds_)
         imgs = check_niimg_4d(imgs, dtype=self.dtype)
 
-        signals = np.empty((imgs.shape[3], n_seeds), dtype=img_data_dtype(imgs))
-        for i, sphere in enumerate(_iter_signals_from_spheres(
-                self.seeds_, imgs, self.radius, self.allow_overlap,
-                mask_img=self.mask_img)):
+        signals = np.empty(
+            (imgs.shape[3], n_seeds), dtype=img_data_dtype(imgs)
+        )
+        for i, sphere in enumerate(
+            _iter_signals_from_spheres(
+                self.seeds_,
+                imgs,
+                self.radius,
+                self.allow_overlap,
+                mask_img=self.mask_img,
+            )
+        ):
             signals[:, i] = np.mean(sphere, axis=1)
         return signals, None
 
@@ -283,14 +299,28 @@ class NiftiSpheresMasker(BaseMasker, CacheMixin):
     nilearn.input_data.NiftiMasker
 
     """
+
     # memory and memory_level are used by CacheMixin.
 
-    def __init__(self, seeds, radius=None, mask_img=None, allow_overlap=False,
-                 smoothing_fwhm=None, standardize=False, standardize_confounds=True,
-                 high_variance_confounds=False, detrend=False, low_pass=None,
-                 high_pass=None, t_r=None, dtype=None,
-                 memory=Memory(location=None, verbose=0), memory_level=1,
-                 verbose=0):
+    def __init__(
+        self,
+        seeds,
+        radius=None,
+        mask_img=None,
+        allow_overlap=False,
+        smoothing_fwhm=None,
+        standardize=False,
+        standardize_confounds=True,
+        high_variance_confounds=False,
+        detrend=False,
+        low_pass=None,
+        high_pass=None,
+        t_r=None,
+        dtype=None,
+        memory=Memory(location=None, verbose=0),
+        memory_level=1,
+        verbose=0,
+    ):
         self.seeds = seeds
         self.mask_img = mask_img
         self.radius = radius
@@ -324,21 +354,25 @@ class NiftiSpheresMasker(BaseMasker, CacheMixin):
         if hasattr(self, 'seeds_'):
             return self
 
-        error = ("Seeds must be a list of triplets of coordinates in "
-                 "native space.\n")
+        error = (
+            "Seeds must be a list of triplets of coordinates in "
+            "native space.\n"
+        )
 
         if not hasattr(self.seeds, '__iter__'):
-            raise ValueError(error + "Given seed list is of type: " +
-                             type(self.seeds))
+            raise ValueError(
+                error + "Given seed list is of type: " + type(self.seeds)
+            )
 
         self.seeds_ = []
         # Check seeds and convert them to lists if needed
         for i, seed in enumerate(self.seeds):
             # Check the type first
             if not hasattr(seed, '__len__'):
-                raise ValueError(error + "Seed #%i is not a valid triplet "
-                                 "of coordinates. It is of type %s."
-                                 % (i, type(seed)))
+                raise ValueError(
+                    error + "Seed #%i is not a valid triplet "
+                    "of coordinates. It is of type %s." % (i, type(seed))
+                )
             # Convert to list because it is easier to process
             if isinstance(seed, np.ndarray):
                 seed = seed.tolist()
@@ -348,24 +382,30 @@ class NiftiSpheresMasker(BaseMasker, CacheMixin):
 
             # Check the length
             if len(seed) != 3:
-                raise ValueError(error + "Seed #%i is of length %i "
-                                 "instead of 3." % (i, len(seed)))
+                raise ValueError(
+                    error + "Seed #%i is of length %i "
+                    "instead of 3." % (i, len(seed))
+                )
 
             self.seeds_.append(seed)
 
         return self
 
-    def fit_transform(self, imgs, confounds=None):
+    def fit_transform(self, imgs, confounds=None, sample_mask=None):
         """Prepare and perform signal extraction"""
-        return self.fit().transform(imgs, confounds=confounds)
+        return self.fit().transform(
+            imgs, confounds=confounds, sample_mask=sample_mask
+        )
 
     def _check_fitted(self):
         if not hasattr(self, "seeds_"):
-            raise ValueError('It seems that %s has not been fitted. '
-                             'You must call fit() before calling transform().'
-                             % self.__class__.__name__)
+            raise ValueError(
+                'It seems that %s has not been fitted. '
+                'You must call fit() before calling transform().'
+                % self.__class__.__name__
+            )
 
-    def transform_single_imgs(self, imgs, confounds=None):
+    def transform_single_imgs(self, imgs, confounds=None, sample_mask=None):
         """Extract signals from a single 4D niimg.
 
         Parameters
@@ -392,20 +432,28 @@ class NiftiSpheresMasker(BaseMasker, CacheMixin):
         params = get_params(NiftiSpheresMasker, self)
 
         signals, _ = self._cache(
-                filter_and_extract,
-                ignore=['verbose', 'memory', 'memory_level'])(
+            filter_and_extract, ignore=['verbose', 'memory', 'memory_level']
+        )(
             # Images
-            imgs, _ExtractionFunctor(self.seeds_, self.radius, self.mask_img,
-                                     self.allow_overlap, self.dtype),
+            imgs,
+            _ExtractionFunctor(
+                self.seeds_,
+                self.radius,
+                self.mask_img,
+                self.allow_overlap,
+                self.dtype,
+            ),
             # Pre-processing
             params,
             confounds=confounds,
+            sample_mask=sample_mask,
             dtype=self.dtype,
             # Caching
             memory=self.memory,
             memory_level=self.memory_level,
             # kwargs
-            verbose=self.verbose)
+            verbose=self.verbose,
+        )
 
         return signals
 
@@ -435,10 +483,13 @@ class NiftiSpheresMasker(BaseMasker, CacheMixin):
         if self.mask_img is not None:
             mask = check_niimg_3d(self.mask_img)
         else:
-            raise ValueError('Please provide mask_img at initialization to'
-                             ' provide a reference for the inverse_transform.')
+            raise ValueError(
+                'Please provide mask_img at initialization to'
+                ' provide a reference for the inverse_transform.'
+            )
         _, adjacency = _apply_mask_and_get_affinity(
-            self.seeds_, None, self.radius, self.allow_overlap, mask_img=mask)
+            self.seeds_, None, self.radius, self.allow_overlap, mask_img=mask
+        )
         adjacency = adjacency.tocsr()
         # Compute overlap scaling for mean signal:
         if self.allow_overlap:
