@@ -386,9 +386,10 @@ def test_clean_runs():
                              length=n_samples)
     x = signals + trends
     x_orig = x.copy()
-    # Create session info
+    # Create run info
     runs = np.ones(n_samples)
     runs[0:n_samples // 2] = 0
+
     x_detrended = nisignal.clean(x, confounds=confounds, standardize=False, detrend=True,
                                  low_pass=None, high_pass=None,
                                  runs=runs)

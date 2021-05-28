@@ -69,14 +69,6 @@ def filter_and_extract(imgs, extraction_function,
     imgs = _utils.check_niimg(imgs, atleast_4d=True, ensure_ndim=4,
                               dtype=dtype)
 
-    if sample_mask is not None:
-        imgs = image.index_img(imgs, sample_mask)
-        if confounds is not None and confounds.shape[0] != len(sample_mask):
-            raise ValueError("Confounds and sample_mask shape mismatch: "
-                             "Time points in confounds: {} "
-                             "Time points in sample_mask: {}".format(confounds.shape[0], len(sample_mask))
-                             )
-
     target_shape = parameters.get('target_shape')
     target_affine = parameters.get('target_affine')
     if target_shape is not None or target_affine is not None:
@@ -126,6 +118,7 @@ def filter_and_extract(imgs, extraction_function,
             low_pass=parameters['low_pass'],
             high_pass=parameters['high_pass'],
             confounds=confounds,
+            sample_mask=sample_mask,
             sessions=sessions)
 
     return region_signals, aux
