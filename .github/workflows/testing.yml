@@ -49,9 +49,6 @@ jobs:
         run: ./build_tools/github/install.sh
         name: 'Install nilearn'
       - shell: bash -l {0}
-        run: ./build_tools/github/test_docs.sh
-        name: 'Run doctests'
-      - shell: bash -l {0}
         run: ./build_tools/github/test.sh
         name: 'Run tests'
       - shell: bash -l {0}
