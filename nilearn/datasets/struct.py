@@ -548,8 +548,8 @@ def _fetch_surf_fsaverage5():
     data_dir = Path(FSAVERAGE5_PATH)
 
     data = {
-        "{}_{}".format(part, hemi): os.path.join(
-            data_dir, "{}_{}.gii.gz".format(part, hemi)
+        "{}_{}".format(part, hemi): str(
+            data_dir / "{}_{}.gii.gz".format(part, hemi)
         )
         for part in [
             "area", "curv", "infl", "pial",
