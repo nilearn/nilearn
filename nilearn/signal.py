@@ -18,7 +18,7 @@ from ._utils.numpy_conversions import csv_to_array, as_ndarray
 from ._utils.helpers import rename_parameters
 
 
-availiable_filters = ["butterworth", "cosine"]
+availiable_filters = ['butterworth', 'cosine']
 
 
 def _standardize(signals, detrend=False, standardize="zscore"):
@@ -48,7 +48,7 @@ def _standardize(signals, detrend=False, standardize="zscore"):
         copy of signals, standardized.
     """
 
-    if standardize not in [True, False, "psc", "zscore"]:
+    if standardize not in [True, False, 'psc', 'zscore']:
         raise ValueError(
             "{} is no valid standardize strategy.".format(standardize)
         )
@@ -66,7 +66,7 @@ def _standardize(signals, detrend=False, standardize="zscore"):
             )
             return signals
 
-        elif (standardize == "zscore") or (standardize is True):
+        elif (standardize == 'zscore') or (standardize is True):
             if not detrend:
                 # remove mean if not already detrended
                 signals = signals - signals.mean(axis=0)
@@ -77,7 +77,7 @@ def _standardize(signals, detrend=False, standardize="zscore"):
             ] = 1.0  # avoid numerical problems
             signals /= std
 
-        elif standardize == "psc":
+        elif standardize == 'psc':
             mean_signal = signals.mean(axis=0)
             invalid_ix = np.absolute(mean_signal) < np.finfo(np.float64).eps
             signals = (signals - mean_signal) / np.absolute(mean_signal)
@@ -161,7 +161,7 @@ def _row_sum_of_squares(signals, n_batches=20):
     return var
 
 
-def _detrend(signals, inplace=False, type="linear", n_batches=10):
+def _detrend(signals, inplace=False, type='linear', n_batches=10):
     """Detrend columns of input array.
 
     Signals are supposed to be columns of `signals`.
@@ -207,7 +207,7 @@ def _detrend(signals, inplace=False, type="linear", n_batches=10):
         return signals
 
     signals -= np.mean(signals, axis=0)
-    if type == "linear":
+    if type == 'linear':
         # Keeping "signals" dtype avoids some type conversion further down,
         # and can save a lot of memory if dtype is single-precision.
         regressor = np.arange(signals.shape[0], dtype=signals.dtype)
@@ -319,19 +319,19 @@ def butterworth(
 
     critical_freq = []
     if high_pass is not None:
-        btype = "high"
+        btype = 'high'
         critical_freq.append(_check_wn(btype, high_pass, nyq))
 
     if low_pass is not None:
-        btype = "low"
+        btype = 'low'
         critical_freq.append(_check_wn(btype, low_pass, nyq))
 
     if len(critical_freq) == 2:
-        btype = "band"
+        btype = 'band'
     else:
         critical_freq = critical_freq[0]
 
-    b, a = sp_signal.butter(order, critical_freq, btype=btype, output="ba")
+    b, a = sp_signal.butter(order, critical_freq, btype=btype, output='ba')
     if signals.ndim == 1:
         # 1D case
         output = sp_signal.filtfilt(b, a, signals)
@@ -419,24 +419,24 @@ def high_variance_confounds(
 
 def _ensure_float(data):
     "Make sure that data is a float type"
-    if not data.dtype.kind == "f":
-        if data.dtype.itemsize == "8":
+    if not data.dtype.kind == 'f':
+        if data.dtype.itemsize == '8':
             data = data.astype(np.float64)
         else:
             data = data.astype(np.float32)
     return data
 
 
-@rename_parameters({"sessions": "runs"}, "0.9.0")
+@rename_parameters({'sessions': 'runs'}, '0.9.0')
 def clean(
     signals,
     runs=None,
     detrend=True,
-    standardize="zscore",
+    standardize='zscore',
     confounds=None,
     sample_mask=None,
     standardize_confounds=True,
-    filter="butterworth",
+    filter='butterworth',
     low_pass=None,
     high_pass=None,
     t_r=2.5,
@@ -598,12 +598,12 @@ def clean(
             confounds /= confound_max
 
         # Pivoting in qr decomposition was added in scipy 0.10
-        Q, R, _ = linalg.qr(confounds, mode="economic", pivoting=True)
+        Q, R, _ = linalg.qr(confounds, mode='economic', pivoting=True)
         Q = Q[:, np.abs(np.diag(R)) > np.finfo(np.float64).eps * 100.0]
         signals -= Q.dot(Q.T).dot(signals)
 
     # Standardize
-    if detrend and (standardize == "psc"):
+    if detrend and (standardize == 'psc'):
         # If the signal is detrended, we have to know the original mean
         # signal to calculate the psc.
         signals = _standardize(
@@ -633,7 +633,7 @@ def _filter_signal(signals, confounds, filter, low_pass, high_pass, t_r):
                 low_pass=low_pass,
                 high_pass=high_pass,
             )
-    elif filter == "cosine":
+    elif filter == 'cosine':
         from .glm.first_level.design_matrix import _cosine_drift
 
         frame_times = np.arange(signals.shape[0]) * t_r
@@ -816,7 +816,7 @@ def _check_filter_parameters(filter, low_pass, high_pass, t_r):
             )
         return False
     elif filter in availiable_filters:
-        if filter == "cosine" and not all(
+        if filter == 'cosine' and not all(
             isinstance(item, float) for item in [t_r, high_pass]
         ):
             raise ValueError(
@@ -824,7 +824,7 @@ def _check_filter_parameters(filter, low_pass, high_pass, t_r):
                 "(high_pass) must be specified for cosine filtering."
                 "t_r='{0}', high_pass='{1}'".format(t_r, high_pass)
             )
-        if filter == "butterworth":
+        if filter == 'butterworth':
             if all(item is None for item in [low_pass, high_pass, t_r]):
                 # Butterworth was switched off by passing
                 # None to all these parameters
