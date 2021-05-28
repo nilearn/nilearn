@@ -179,8 +179,8 @@ def fetch_nyu_rest(n_subjects=None, sessions=[1], data_dir=None, resume=True,
     """Download and loads the NYU resting-state test-retest dataset.
 
     For documentation see :footcite:`NYUdataset`,
-    and see :footcite:`NYUdatasetlist` for download. 
-    See :footcite:`Shehzad2009restingstate` for citing the paper, 
+    and see :footcite:`NYUdatasetlist` for download.
+    See :footcite:`Shehzad2009restingstate` for citing the paper,
     and see :footcite:`ZUO20101432`,
     and :footcite:`ZUO20102163` for additional references.
 
@@ -634,9 +634,10 @@ def fetch_localizer_contrasts(contrasts, n_subjects=None, get_tmaps=False,
     Functional Localizer page."
     (see http://brainomics.cea.fr/localizer/)
 
-    You may cite :footcite:`PAPADOPOULOSORFANOS2017309` when using this dataset.
+    You may cite :footcite:`PAPADOPOULOSORFANOS2017309`
+    when using this dataset.
 
-    Scientific results obtained using this dataset are described 
+    Scientific results obtained using this dataset are described
     in :footcite:`Pinel2007fast`.
 
     Parameters
@@ -1381,8 +1382,8 @@ def fetch_megatrawls_netmats(dimensionality=100, timeseries='eigen_regression',
     The network matrices are estimated from functional connectivity
     datasets of 461 subjects. Full technical details in references.
 
-    More information available in :footcite:`smithhcp2015`, 
-    :footcite:`smith2015positive`, :footcite:`Filippini7209`, 
+    More information available in :footcite:`smithhcp2015`,
+    :footcite:`smith2015positive`, :footcite:`Filippini7209`,
     :footcite:`smith2014methods`, and :footcite:`reilly2009cerebellum`.
 
     Parameters
@@ -1948,7 +1949,8 @@ def fetch_development_fmri(n_subjects=None, reduce_confounds=True,
     The data is downsampled to 4mm resolution for convenience with a repetition time (TR)
     of 2 secs. The origin of the data is coming from OpenNeuro. See Notes below.
 
-    Please cite :footcite:`richardson2018development` if you are using this dataset.
+    Please cite :footcite:`richardson2018development`
+    if you are using this dataset.
 
     .. versionadded:: 0.5.2
 
@@ -2597,7 +2599,7 @@ def _make_events_file_spm_auditory_data(events_filepath):
 def fetch_spm_auditory(data_dir=None, data_name='spm_auditory',
                        subject_id='sub001', verbose=1):
     """Function to fetch SPM auditory single-subject data.
-    
+
     See :footcite:`spm_auditory`.
 
     Parameters
@@ -2778,7 +2780,7 @@ def _make_events_file_spm_multimodal_fmri(_subject_data, session):
 def fetch_spm_multimodal_fmri(data_dir=None, data_name='spm_multimodal_fmri',
                               subject_id='sub001', verbose=1):
     """Fetcher for Multi-modal Face Dataset.
-    
+
     See :footcite:`spm_multiface`.
 
     Parameters

@@ -218,7 +218,7 @@ def fetch_oasis_vbm(n_subjects=None, dartel_version=True, data_dir=None,
                     url=None, resume=True, verbose=1):
     """Download and load Oasis "cross-sectional MRI" dataset (416 subjects).
 
-    For more information, see :footcite:`OASISbrain`, 
+    For more information, see :footcite:`OASISbrain`,
     and :footcite:`Marcus2007OASIS`.
 
     Parameters
@@ -431,7 +431,7 @@ def fetch_oasis_vbm(n_subjects=None, dartel_version=True, data_dir=None,
 
 def fetch_surf_fsaverage(mesh='fsaverage5', data_dir=None):
     """Download a Freesurfer fsaverage surface.
-    
+
     See :footcite:`Fischl1999neurons`.
 
     Parameters

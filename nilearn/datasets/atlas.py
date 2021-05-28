@@ -132,7 +132,7 @@ def fetch_atlas_craddock_2012(data_dir=None, url=None, resume=True, verbose=1):
 
     See :footcite:`CreativeCommons` for the licence.
 
-    See :footcite:`craddock2012whole` and :footcite:`nitrcClusterROI` 
+    See :footcite:`craddock2012whole` and :footcite:`nitrcClusterROI`
     for more information on this parcellation.
 
     Parameters
@@ -194,9 +194,9 @@ def fetch_atlas_craddock_2012(data_dir=None, url=None, resume=True, verbose=1):
 
 def fetch_atlas_destrieux_2009(lateralized=True, data_dir=None, url=None,
                                resume=True, verbose=1):
-    """Download and load the Destrieux cortical atlas (dated 2009) 
+    """Download and load the Destrieux cortical atlas (dated 2009)
     
-    see :footcite:`Fischl2004Automatically`, 
+    see :footcite:`Fischl2004Automatically`,
     and :footcite:`Destrieux2009sulcal`.
 
     Parameters
@@ -423,8 +423,8 @@ def fetch_atlas_harvard_oxford(atlas_name, data_dir=None,
 def fetch_atlas_msdl(data_dir=None, url=None, resume=True, verbose=1):
     """Download and load the MSDL brain atlas.
 
-    It can be downloaded at :footcite:`atlas_msdl`, and cited 
-    using :footcite:`Varoquaux2011multisubject`. 
+    It can be downloaded at :footcite:`atlas_msdl`, and cited
+    using :footcite:`Varoquaux2011multisubject`.
     See also :footcite:`VAROQUAUX2013405` for more information.
 
     Parameters
@@ -487,7 +487,7 @@ def fetch_atlas_msdl(data_dir=None, url=None, resume=True, verbose=1):
 
 
 def fetch_coords_power_2011():
-    """Download and load the Power et al. brain atlas composed of 264 ROIs 
+    """Download and load the Power et al. brain atlas composed of 264 ROIs
     
     See :footcite:`Power2011Functional`.
 
@@ -515,7 +515,7 @@ def fetch_coords_power_2011():
 def fetch_atlas_smith_2009(data_dir=None, mirror='origin', url=None,
                            resume=True, verbose=1):
     """Download and load the Smith ICA and BrainMap atlas (dated 2009).
-    
+
     See :footcite:`Smith200913040` and :footcite:`Laird2011behavioral`.
 
     Parameters
@@ -618,7 +618,7 @@ def fetch_atlas_yeo_2011(data_dir=None, url=None, resume=True, verbose=1):
 
     The provided images are in MNI152 space.
 
-    For more information on this dataset's structure, 
+    For more information on this dataset's structure,
     see :footcite:`CorticalParcellation_Yeo2011`,
     and :footcite:`Yeo2011organization`.
 
@@ -702,8 +702,8 @@ def fetch_atlas_aal(version='SPM12', data_dir=None, url=None, resume=True,
     the Montreal Neurological Institute (MNI) (D. L. Collins et al., 1998,
     Trans. Med. Imag. 17, 463-468, PubMed).
 
-    For more information on this dataset's structure, 
-    see :footcite:`AAL_atlas`, 
+    For more information on this dataset's structure,
+    see :footcite:`AAL_atlas`,
     and :footcite:`TZOURIOMAZOYER2002273`.
 
     Parameters
@@ -793,8 +793,8 @@ def fetch_atlas_basc_multiscale_2015(version='sym', data_dir=None, url=None,
     Multiple scales (number of networks) are available, among
     7, 12, 20, 36, 64, 122, 197, 325, 444. The brain parcellations
     have been generated using a method called bootstrap analysis of
-    stable clusters called as BASC :footcite:`BELLEC20101126`, 
-    and the scales have been selected using a data-driven method 
+    stable clusters called as BASC :footcite:`BELLEC20101126`,
+    and the scales have been selected using a data-driven method
     called MSTEPS :footcite:`Bellec2013Mining`.
 
     Note that two versions of the template are available, 'sym' or 'asym'.
@@ -888,7 +888,7 @@ def fetch_coords_dosenbach_2010(ordered_regions=True):
     """Load the Dosenbach et al. 160 ROIs. These ROIs cover
     much of the cerebral cortex and cerebellum and are assigned to 6
     networks.
-    
+
     See :footcite:`Dosenbach20101358`.
 
     Parameters
@@ -1097,7 +1097,7 @@ def fetch_atlas_allen_2011(data_dir=None, url=None, resume=True, verbose=1):
 
 def fetch_atlas_surf_destrieux(data_dir=None, url=None,
                                resume=True, verbose=1):
-    """Download and load Destrieux et al, 2010 cortical atlas 
+    """Download and load Destrieux et al, 2010 cortical atlas
     
     See :footcite:`DESTRIEUX20101`.
 
@@ -1273,7 +1273,7 @@ def fetch_atlas_talairach(level_name, data_dir=None, verbose=1):
     """Download the Talairach atlas.
 
     For more information, see :footcite:`talairach_atlas`,
-    :footcite:`Lancaster2000Talairach`, 
+    :footcite:`Lancaster2000Talairach`,
     and :footcite:`Lancaster1997labeling`.
 
     .. versionadded:: 0.4.0
@@ -1323,7 +1323,7 @@ def fetch_atlas_talairach(level_name, data_dir=None, verbose=1):
 def fetch_atlas_pauli_2017(version='prob', data_dir=None, verbose=1):
     """Download the Pauli et al. (2017) atlas with in total
     12 subcortical nodes
-    
+
     See :footcite:`pauli_atlas` and :footcite:`Pauli2018probabilistic`.
 
     Parameters
@@ -1397,7 +1397,7 @@ def fetch_atlas_schaefer_2018(n_rois=400, yeo_networks=7, resolution_mm=1,
 
     The provided images are in MNI152 space.
 
-    For more information on this dataset, see :footcite:`schaefer_atlas`, 
+    For more information on this dataset, see :footcite:`schaefer_atlas`,
     :footcite:`Schaefer2017parcellation`,
     and :footcite:`Yeo2011organization`.
 
