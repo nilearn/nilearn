@@ -9,6 +9,7 @@ import warnings
 from distutils.version import LooseVersion
 
 import numpy as np
+from numpy.lib.function_base import delete
 import pytest
 
 # Use nisignal here to avoid name collisions (using nilearn.signal is
@@ -729,3 +730,51 @@ def test_cosine_filter():
         signals, None, filter, low_pass, high_pass, t_r)
     np.testing.assert_array_equal(signals_unchanged, signals)
     np.testing.assert_almost_equal(drift_terms_only, cosine_drift)
+
+
+def test_sample_mask():
+    """Test sample_mask related feature."""
+    signals, _, confounds = generate_signals(n_features=11,
+                                             n_confounds=5, length=40)
+
+    sample_mask = np.arange(signals.shape[0])
+    scrub_index = [2, 3, 6, 7, 8, 30, 31, 32]
+    sample_mask = np.delete(sample_mask, scrub_index)
+
+    scrub_clean = clean(signals, confounds=confounds, sample_mask=sample_mask)
+    assert scrub_clean.shape[0] == sample_mask.shape[0]
+
+    # invalid index
+    sample_mask[-1] = 999
+    pytest.raises(ValueError, clean, signals, confounds=confounds,
+                  sample_mask=sample_mask, filter="invalid index")
+
+    # invalid input
+    pytest.raises(TypeError, clean, signals, sample_mask="not_supported",
+                  filter="unhandled type")
+
+    # list of sample_mask for each run
+    runs = np.ones(signals.shape[0])
+    runs[0:signals.shape[0] // 2] = 0
+    sample_mask_sep = [np.arange(20), np.arange(20)]
+    scrub_index = [[6, 7, 8], [10, 11, 12]]
+    sample_mask_sep = [np.delete(sm, si)
+                       for sm, si in zip(sample_mask_sep, scrub_index)]
+    scrub_sep_mask = clean(signals, confounds=confounds,
+                           sample_mask=sample_mask_sep, runs=runs)
+    assert scrub_sep_mask.shape[0] == signals.shape[0] - 6
+
+    # 1D sample mask with valid indexing
+    sample_mask_1D = [np.arange(20), np.arange(20)]
+    sample_mask_1D = [np.delete(sm, si) + i * 20
+                      for i, (sm, si) in enumerate(zip(sample_mask_1D, scrub_index))]
+    sample_mask_1D = np.hstack(sample_mask_1D)
+
+    scrub_one_mask = clean(signals, confounds=confounds,
+                           sample_mask=sample_mask_1D, runs=runs)
+    np.testing.assert_array_equal(scrub_sep_mask, scrub_one_mask)
+
+    # 1D sample mask with valid indexing
+    sample_mask_1D[-1] = 100
+    scrub_one_mask = clean(signals, confounds=confounds,
+                           sample_mask=sample_mask_1D, runs=runs)

@@ -693,7 +693,7 @@ def _sanitize_inputs(signals, runs, confounds, sample_mask, ensure_finite):
     n_time = len(signals)  # original length of the signal
     n_runs, runs = _sanitize_runs(n_time, runs)
     confounds = _sanitize_confounds(n_time, n_runs, confounds)
-    sample_mask = _sanitize_sample_mask(n_runs, runs, sample_mask)
+    sample_mask = _sanitize_sample_mask(n_time, n_runs, runs, sample_mask)
     signals = _sanitize_signals(signals, ensure_finite)
 
     if sample_mask is None:
@@ -702,11 +702,11 @@ def _sanitize_inputs(signals, runs, confounds, sample_mask, ensure_finite):
     if confounds is not None:
         confounds = confounds[sample_mask, :]
     if runs is not None:
-        runs = runs[sample_mask, :]
+        runs = runs[sample_mask]
     return signals[sample_mask, :], runs, confounds
 
 
-def _sanitize_sample_mask(n_runs, runs, sample_mask):
+def _sanitize_sample_mask(n_time, n_runs, runs, sample_mask):
     """Check sample_mask is the right data type and matches the run index."""
     if sample_mask is None:
         return sample_mask
@@ -714,23 +714,21 @@ def _sanitize_sample_mask(n_runs, runs, sample_mask):
         raise TypeError(
             "sample_mask has an unhandled type: %s" % sample_mask.__class__
         )
-
     if not isinstance(sample_mask, (list, tuple)):
-        sample_mask = (sample_mask,)
-    if len(sample_mask) != n_runs:
-        raise ValueError(
-            "Number of runs not matching the sets of sample_mask"
-            "supplied. Found {} of runs and {} sets of sample_mask"
-            "regressors".format(n_runs, len(sample_mask))
-        )
+        sample_mask = (sample_mask, )
+
+    if runs is None:
+        runs = np.zeros(n_time)
+
     # handle multiple runs
     masks = []
     starting_index = 0
     for i, current_mask in enumerate(sample_mask):
+        if len(sample_mask) == n_runs:
+            _check_current_sample_mask(i, runs, current_mask)
         current_mask += starting_index
         masks.append(current_mask)
-        if n_runs > 1:
-            starting_index = _check_current_sample_mask(i, runs, current_mask)
+        starting_index = sum(i == runs)
     sample_mask = np.hstack(masks)
     return sample_mask
 
@@ -747,7 +745,17 @@ def _check_current_sample_mask(i, runs, current_mask):
                 len(current_mask), i, n_timepoints_in_run
             )
         )
-    return n_timepoints_in_run
+    # TODO: index out of bound is not correctly deteched for multiple runs
+    # but one 1D sample_mask
+    invalid_index = current_mask[current_mask > n_timepoints_in_run]
+    if invalid_index.size > 0:
+        raise ValueError(
+            "Sample_mask includes invalid index."
+            "The sample_masks index {} contains {}; "
+            "The current run contains {} of time points.".format(
+                i, invalid_index, n_timepoints_in_run
+            )
+        )
 
 
 def _sanitize_runs(n_time, runs):
