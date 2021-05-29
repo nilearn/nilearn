@@ -732,7 +732,7 @@ def test_cosine_filter():
 
 
 def test_sample_mask():
-    """Test sample_mask related feature."""
+    """Test sample_mask related behaviour."""
     signals, _, confounds = generate_signals(n_features=11,
                                              n_confounds=5, length=40)
 

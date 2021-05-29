@@ -21,7 +21,7 @@ from ._utils.helpers import rename_parameters
 availiable_filters = ['butterworth', 'cosine']
 
 
-def _standardize(signals, detrend=False, standardize="zscore"):
+def _standardize(signals, detrend=False, standardize='zscore'):
     """Center and standardize a given signal (time is along first axis)
 
     Parameters
@@ -179,7 +179,7 @@ def _detrend(signals, inplace=False, type='linear', n_batches=10):
         False).
 
     type : str, optional
-        Detrending type ("linear" or "constant").
+        Detrending type ('linear' or 'constant').
         See also scipy.signal.detrend.
 
     n_batches : int, optional
@@ -618,7 +618,7 @@ def clean(
 
 def _filter_signal(signals, confounds, filter, low_pass, high_pass, t_r):
     """Filter signal based on provided strategy."""
-    if filter == "butterworth":
+    if filter == 'butterworth':
         signals = butterworth(
             signals,
             sampling_rate=1.0 / t_r,
