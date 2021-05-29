@@ -463,9 +463,10 @@ def fetch_surf_fsaverage(mesh='fsaverage5', data_dir=None):
         - 'fsaverage3': the low-resolution fsaverage3 mesh (642 nodes)
         - 'fsaverage4': the low-resolution fsaverage4 mesh (2562 nodes)
         - 'fsaverage5': the low-resolution fsaverage5 mesh (10242 nodes)
-        - 'fsaverage5_sphere': deprecated;
-            since v0.7.2, sphere coordinates are directly accessible from
-            fsaverage5.sphere_{left, right}
+        - 'fsaverage5_sphere': this option has been deprecated
+            and will be removed in v0.9.0.
+            fsaverage5 sphere coordinates can now be accessed through
+            attributes sphere_{left, right} using mesh='fsaverage5'
         - 'fsaverage6': the medium-resolution fsaverage6 mesh (40962 nodes)
         - 'fsaverage7': same as 'fsaverage'
         - 'fsaverage': the high-resolution fsaverage mesh (163842 nodes)
@@ -525,7 +526,13 @@ def fetch_surf_fsaverage(mesh='fsaverage5', data_dir=None):
     elif mesh == "fsaverage5":
         return _fetch_surf_fsaverage5()
     elif mesh == "fsaverage5_sphere":
-        return _fetch_surf_fsaverage5_sphere(data_dir=data_dir)
+        warnings.warn(
+            "mesh='fsaverage5_sphere' has been deprecated "
+            "and will be removed in v0.9.0.\n"
+            "fsaverage5 sphere coordinates can now be accessed through "
+            "attributes sphere_{left, right} using mesh='fsaverage5'"
+        )
+        return _fetch_surf_fsaverage5()
     else:
         raise ValueError(
             "'mesh' should be one of {}; {!r} was provided".format(
@@ -544,7 +551,6 @@ def _fetch_surf_fsaverage5():
     Shipping is done with Nilearn based on issue #1705.
 
     """
-    data = {"description": _get_dataset_descr("fsaverage5")}
     data_dir = Path(FSAVERAGE5_PATH)
 
     data = {
@@ -557,33 +563,9 @@ def _fetch_surf_fsaverage5():
         ]
         for hemi in ["left", "right"]
     }
+    data["description"] = _get_dataset_descr("fsaverage5")
 
     return Bunch(**data)
-
-
-def _fetch_surf_fsaverage5_sphere(data_dir=None):
-    """Helper function to ship fsaverage5 spherical meshes.
-
-    These meshes can be used for visualization purposes, but also to run
-    cortical surface-based searchlight decoding.
-
-    The source of the data is downloaded from OSF.
-
-    """
-    fsaverage_dir = _get_dataset_dir('fsaverage', data_dir=data_dir)
-    dataset_dir = _get_dataset_dir('fsaverage5_sphere', data_dir=fsaverage_dir)
-    url = 'https://osf.io/b79fy/download'
-    opts = {'uncompress': True}
-    names = ['sphere_right', 'sphere_left']
-    filenames = [('{}.gii'.format(name), url, opts)
-                 for name in names]
-    _fetch_files(dataset_dir, filenames)
-    result = {
-        name: os.path.join(dataset_dir, '{}.gii'.format(name))
-        for name in names}
-
-    result['description'] = str(_get_dataset_descr('fsaverage5_sphere'))
-    return Bunch(**result)
 
 
 def _fetch_surf_fsaverage(dataset_name, data_dir=None):
