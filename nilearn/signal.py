@@ -489,7 +489,8 @@ def clean(
         Default is None.
         Masks the niimgs along time/fourth dimension. Containing indeice in a
         1D array of the time points to keep. This masking step is applied
-        before data cleaning.
+        before data cleaning. When supplying run information, sample_mask
+        must be a list containing sets of indexes that matches each run.
         This is useful to perform signal scrubbing/censoring.
 
     t_r: float
@@ -717,6 +718,12 @@ def _sanitize_sample_mask(n_time, n_runs, runs, sample_mask):
     if not isinstance(sample_mask, (list, tuple)):
         sample_mask = (sample_mask, )
 
+    if len(sample_mask) != n_runs:
+        raise ValueError(
+            "Number of sample_mask ({}) not matching "
+            "number of runs ({}).".format(len(sample_mask), n_runs)
+        )
+
     if runs is None:
         runs = np.zeros(n_time)
 
@@ -724,8 +731,7 @@ def _sanitize_sample_mask(n_time, n_runs, runs, sample_mask):
     masks = []
     starting_index = 0
     for i, current_mask in enumerate(sample_mask):
-        if len(sample_mask) == n_runs:
-            _check_current_sample_mask(i, runs, current_mask)
+        _check_sample_mask_index(i, n_runs, runs, current_mask)
         current_mask += starting_index
         masks.append(current_mask)
         starting_index = sum(i == runs)
@@ -733,27 +739,26 @@ def _sanitize_sample_mask(n_time, n_runs, runs, sample_mask):
     return sample_mask
 
 
-def _check_current_sample_mask(i, runs, current_mask):
-    """Ensure the kept number of time point is less than time
-    points in the current run."""
-    n_timepoints_in_run = sum(i == runs)
-    if len(current_mask) > n_timepoints_in_run:
-        raise ValueError(
-            "More indices to mask supplied for the current run."
-            "{} of volumnes in the sample_masks index {}, "
-            "{} of time points in the current run".format(
-                len(current_mask), i, n_timepoints_in_run
+def _check_sample_mask_index(i, n_runs, runs, current_mask):
+    """Ensure the index in sample mask is valid."""
+    len_run = sum(i == runs)
+    len_current_mask = len(current_mask)
+    # sample_mask longer than signal
+    if len_current_mask > len_run:
+        raise IndexError(
+            "sample_mask {} of {} is has more timepoints than the current "
+            "run ;sample_mask contains {} index but the run has {} "
+            "timepoints.".format(
+                (i + 1), n_runs, len_current_mask, len_run
             )
         )
-    # TODO: index out of bound is not correctly deteched for multiple runs
-    # but one 1D sample_mask
-    invalid_index = current_mask[current_mask > n_timepoints_in_run]
+    # sample_mask index exceed signal timepoints
+    invalid_index = current_mask[current_mask > len_run]
     if invalid_index.size > 0:
-        raise ValueError(
-            "Sample_mask includes invalid index."
-            "The sample_masks index {} contains {}; "
-            "The current run contains {} of time points.".format(
-                i, invalid_index, n_timepoints_in_run
+        raise IndexError(
+            "sample_mask {} of {} contains invalid index {}; "
+            "The signal contains {} time points.".format(
+                (i + 1), n_runs, invalid_index, len_run
             )
         )
 

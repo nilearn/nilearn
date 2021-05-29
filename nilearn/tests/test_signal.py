@@ -744,15 +744,6 @@ def test_sample_mask():
     scrub_clean = clean(signals, confounds=confounds, sample_mask=sample_mask)
     assert scrub_clean.shape[0] == sample_mask.shape[0]
 
-    # invalid index
-    sample_mask[-1] = 999
-    pytest.raises(ValueError, clean, signals, confounds=confounds,
-                  sample_mask=sample_mask, filter="invalid index")
-
-    # invalid input
-    pytest.raises(TypeError, clean, signals, sample_mask="not_supported",
-                  filter="unhandled type")
-
     # list of sample_mask for each run
     runs = np.ones(signals.shape[0])
     runs[0:signals.shape[0] // 2] = 0
@@ -764,17 +755,32 @@ def test_sample_mask():
                            sample_mask=sample_mask_sep, runs=runs)
     assert scrub_sep_mask.shape[0] == signals.shape[0] - 6
 
-    # 1D sample mask with valid indexing
-    sample_mask_1D = [np.arange(20), np.arange(20)]
-    sample_mask_1D = [np.delete(sm, si) + i * 20
-                      for i, (sm, si) in enumerate(zip(sample_mask_1D, scrub_index))]
-    sample_mask_1D = np.hstack(sample_mask_1D)
+    # 1D sample mask with runs labels
+    with pytest.raises(ValueError,
+                       match=r'Number of sample_mask \(\d\) not matching'):
+        clean(signals, sample_mask=sample_mask, runs=runs)
 
-    scrub_one_mask = clean(signals, confounds=confounds,
-                           sample_mask=sample_mask_1D, runs=runs)
-    np.testing.assert_array_equal(scrub_sep_mask, scrub_one_mask)
+    # invalid input for sample_mask
+    with pytest.raises(TypeError, match='unhandled type'):
+        clean(signals, sample_mask='not_supported')
 
-    # 1D sample mask with valid indexing
-    sample_mask_1D[-1] = 100
-    scrub_one_mask = clean(signals, confounds=confounds,
-                           sample_mask=sample_mask_1D, runs=runs)
+    # sample_mask too long
+    with pytest.raises(IndexError,
+                       match='more timepoints than the current run'):
+        clean(signals, sample_mask=np.hstack((sample_mask, sample_mask)))
+
+    # list of sample_mask with one that's too long
+    invalid_sample_mask_sep = [np.arange(10), np.arange(30)]
+    with pytest.raises(IndexError,
+                       match='more timepoints than the current run'):
+        clean(signals, sample_mask=invalid_sample_mask_sep, runs=runs)
+
+    # list of sample_mask  with invalid indexing in one
+    sample_mask_sep[-1][-1] = 100
+    with pytest.raises(IndexError, match='invalid index'):
+        clean(signals, sample_mask=sample_mask_sep, runs=runs)
+
+    # invalid index in 1D sample_mask
+    sample_mask[-1] = 999
+    with pytest.raises(IndexError, match=r'invalid index \[\d*\]'):
+        clean(signals, sample_mask=sample_mask)
