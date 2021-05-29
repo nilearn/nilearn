@@ -9,7 +9,6 @@ import warnings
 from distutils.version import LooseVersion
 
 import numpy as np
-from numpy.lib.function_base import delete
 import pytest
 
 # Use nisignal here to avoid name collisions (using nilearn.signal is
@@ -713,7 +712,7 @@ def test_cosine_filter():
 
     t_r, high_pass, low_pass, filter = 2.5, 0.002, None, 'cosine'
     signals, _, confounds = generate_signals(n_features=41,
-                                              n_confounds=5, length=45)
+                                             n_confounds=5, length=45)
 
     # Not passing confounds it will return drift terms only
     frame_times = np.arange(signals.shape[0]) * t_r
