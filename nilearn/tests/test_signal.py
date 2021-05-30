@@ -730,7 +730,6 @@ def test_cosine_filter():
     np.testing.assert_almost_equal(drift_terms_only, cosine_drift)
 
 
-
 def test_sample_mask():
     """Test sample_mask related feature."""
     signals, _, confounds = generate_signals(n_features=11,
