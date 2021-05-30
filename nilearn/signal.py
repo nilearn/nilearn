@@ -621,6 +621,24 @@ def _process_runs(signals, runs, detrend, standardize, confounds,
     return signals
 
 
+def _sanitize_inputs(signals, runs, confounds, sample_mask, ensure_finite):
+    """Clean up signals and confounds before processing."""
+    n_time = len(signals)  # original length of the signal
+    n_runs, runs = _sanitize_runs(n_time, runs)
+    confounds = _sanitize_confounds(n_time, n_runs, confounds)
+    sample_mask = _sanitize_sample_mask(n_time, n_runs, runs, sample_mask)
+    signals = _sanitize_signals(signals, ensure_finite)
+
+    if sample_mask is None:
+        return signals, runs, confounds
+
+    if confounds is not None:
+        confounds = confounds[sample_mask, :]
+    if runs is not None:
+        runs = runs[sample_mask]
+    return signals[sample_mask, :], runs, confounds
+
+
 def _sanitize_confounds(n_time, n_runs, confounds):
     """Check confounds are the correct type. When passing mutiple runs, ensure the
     number of runs matches the sets of confound regressors.
@@ -642,24 +660,6 @@ def _sanitize_confounds(n_time, n_runs, confounds):
         all_confounds.append(confound)
     confounds = np.hstack(all_confounds)
     return _ensure_float(confounds)
-
-
-def _sanitize_inputs(signals, runs, confounds, sample_mask, ensure_finite):
-    """Clean up signals and confounds before processing."""
-    n_time = len(signals)  # original length of the signal
-    n_runs, runs = _sanitize_runs(n_time, runs)
-    confounds = _sanitize_confounds(n_time, n_runs, confounds)
-    sample_mask = _sanitize_sample_mask(n_time, n_runs, runs, sample_mask)
-    signals = _sanitize_signals(signals, ensure_finite)
-
-    if sample_mask is None:
-        return signals, runs, confounds
-
-    if confounds is not None:
-        confounds = confounds[sample_mask, :]
-    if runs is not None:
-        runs = runs[sample_mask]
-    return signals[sample_mask, :], runs, confounds
 
 
 def _sanitize_sample_mask(n_time, n_runs, runs, sample_mask):
