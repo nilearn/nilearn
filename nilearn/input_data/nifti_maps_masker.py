@@ -237,13 +237,14 @@ class NiftiMapsMasker(BaseMasker, CacheMixin):
                              'You must call fit() before calling transform().'
                              % self.__class__.__name__)
 
-    def fit_transform(self, imgs, confounds=None):
+    def fit_transform(self, imgs, confounds=None, sample_mask=None):
         """Prepare and perform signal extraction.
 
         """
-        return self.fit().transform(imgs, confounds=confounds)
+        return self.fit().transform(imgs, confounds=confounds,
+                                    sample_mask=sample_mask)
 
-    def transform_single_imgs(self, imgs, confounds=None):
+    def transform_single_imgs(self, imgs, confounds=None, sample_mask=None):
         """Extract signals from a single 4D niimg.
 
         Parameters
@@ -344,6 +345,7 @@ class NiftiMapsMasker(BaseMasker, CacheMixin):
                 # Pre-treatments
                 params,
                 confounds=confounds,
+                sample_mask=sample_mask,
                 dtype=self.dtype,
                 # Caching
                 memory=self.memory,

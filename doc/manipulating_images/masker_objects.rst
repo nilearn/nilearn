@@ -196,9 +196,9 @@ preparation::
          high_variance_confounds=False, low_pass=None, mask_args=None,
          mask_img=None, mask_strategy='background',
          memory=Memory(location=None), memory_level=1, reports=True,
-         sample_mask=None, sessions=None, smoothing_fwhm=None,
-         standardize=False, standardize_confounds=True, t_r=None, 
-         target_affine=None, target_shape=None, verbose=0)
+         sessions=None, smoothing_fwhm=None, standardize=False,
+         standardize_confounds=True, t_r=None, target_affine=None,
+         target_shape=None, verbose=0)
 
 .. note::
 

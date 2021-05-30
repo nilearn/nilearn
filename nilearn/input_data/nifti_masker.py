@@ -35,6 +35,7 @@ def filter_and_mask(imgs, mask_img_, parameters,
                     memory_level=0, memory=Memory(location=None),
                     verbose=0,
                     confounds=None,
+                    sample_mask=None,
                     copy=True,
                     dtype=None):
     """Extract representative time series using given mask.
@@ -70,7 +71,9 @@ def filter_and_mask(imgs, mask_img_, parameters,
                                       memory_level=memory_level,
                                       memory=memory,
                                       verbose=verbose,
-                                      confounds=confounds, copy=copy,
+                                      confounds=confounds,
+                                      sample_mask=sample_mask,
+                                      copy=copy,
                                       dtype=dtype)
 
     # For _later_: missing value removal or imputing of missing data
@@ -169,13 +172,6 @@ class NiftiMasker(BaseMasker, CacheMixin):
         to fine-tune mask computation. Please see the related documentation
         for details.
 
-    sample_mask : Any type compatible with numpy-array indexing, optional
-        Masks the niimgs along time/fourth dimension. This complements
-        3D masking by the mask_img argument. This masking step is applied
-        before data preprocessing at the beginning of NiftiMasker.transform.
-        This is useful to perform data subselection as part of a scikit-learn
-        pipeline.
-
     dtype : {dtype, "auto"}, optional
         Data type toward which the data should be converted. If "auto", the
         data will be converted to int32 if dtype is discrete and float32 if it
@@ -220,7 +216,7 @@ class NiftiMasker(BaseMasker, CacheMixin):
                  standardize=False, standardize_confounds=True, detrend=False,
                  high_variance_confounds=False, low_pass=None, high_pass=None,
                  t_r=None, target_affine=None, target_shape=None,
-                 mask_strategy='background', mask_args=None, sample_mask=None,
+                 mask_strategy='background', mask_args=None,
                  dtype=None, memory_level=1, memory=Memory(location=None),
                  verbose=0, reports=True,
                  ):
@@ -240,7 +236,6 @@ class NiftiMasker(BaseMasker, CacheMixin):
         self.target_shape = target_shape
         self.mask_strategy = mask_strategy
         self.mask_args = mask_args
-        self.sample_mask = sample_mask
         self.dtype = dtype
 
         self.memory = memory
@@ -408,7 +403,8 @@ class NiftiMasker(BaseMasker, CacheMixin):
 
         return self
 
-    def transform_single_imgs(self, imgs, confounds=None, copy=True):
+    def transform_single_imgs(self, imgs, confounds=None, sample_mask=None,
+                              copy=True):
         """Apply mask, spatial and temporal preprocessing
 
         Parameters
@@ -449,6 +445,7 @@ class NiftiMasker(BaseMasker, CacheMixin):
             memory=self.memory,
             verbose=self.verbose,
             confounds=confounds,
+            sample_mask=sample_mask,
             copy=copy,
             dtype=self.dtype
         )
