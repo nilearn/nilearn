@@ -261,17 +261,16 @@ class NiftiMapsMasker(BaseMasker, CacheMixin):
 
     def _check_fitted(self):
         if not hasattr(self, "maps_img_"):
-            raise ValueError(
-                'It seems that %s has not been fitted. '
-                'You must call fit() before calling transform().'
-                % self.__class__.__name__
-            )
+            raise ValueError('It seems that %s has not been fitted. '
+                             'You must call fit() before calling transform().'
+                             % self.__class__.__name__)
 
     def fit_transform(self, imgs, confounds=None, sample_mask=None):
-        """Prepare and perform signal extraction."""
-        return self.fit().transform(
-            imgs, confounds=confounds, sample_mask=sample_mask
-        )
+        """Prepare and perform signal extraction.
+
+        """
+        return self.fit().transform(imgs, confounds=confounds,
+                                    sample_mask=sample_mask)
 
     def transform_single_imgs(self, imgs, confounds=None, sample_mask=None):
         """Extract signals from a single 4D niimg.
@@ -373,24 +372,20 @@ class NiftiMapsMasker(BaseMasker, CacheMixin):
         params['target_affine'] = target_affine
 
         region_signals, labels_ = self._cache(
-            filter_and_extract, ignore=['verbose', 'memory', 'memory_level']
-        )(
-            # Images
-            imgs,
-            _ExtractionFunctor(
-                self._resampled_maps_img_, self._resampled_mask_img_
-            ),
-            # Pre-treatments
-            params,
-            confounds=confounds,
-            sample_mask=sample_mask,
-            dtype=self.dtype,
-            # Caching
-            memory=self.memory,
-            memory_level=self.memory_level,
-            # kwargs
-            verbose=self.verbose,
-        )
+            filter_and_extract, ignore=['verbose', 'memory', 'memory_level'])(
+                # Images
+                imgs, _ExtractionFunctor(self._resampled_maps_img_,
+                                         self._resampled_mask_img_),
+                # Pre-treatments
+                params,
+                confounds=confounds,
+                sample_mask=sample_mask,
+                dtype=self.dtype,
+                # Caching
+                memory=self.memory,
+                memory_level=self.memory_level,
+                # kwargs
+                verbose=self.verbose)
         self.labels_ = labels_
         return region_signals
 

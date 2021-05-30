@@ -274,9 +274,8 @@ class MultiNiftiMasker(NiftiMasker, CacheMixin):
         get_data(self.mask_img_)
         return self
 
-    def transform_imgs(
-        self, imgs_list, confounds=None, sample_mask=None, copy=True, n_jobs=1
-    ):
+    def transform_imgs(self, imgs_list, confounds=None, sample_mask=None,
+                       copy=True, n_jobs=1):
         """Prepare multi subject data in parallel
 
         Parameters
@@ -365,7 +364,7 @@ class MultiNiftiMasker(NiftiMasker, CacheMixin):
         return data
 
     def transform(self, imgs, confounds=None, sample_mask=None):
-        """Apply mask, spatial and temporal preprocessing
+        """ Apply mask, spatial and temporal preprocessing
 
         Parameters
         ----------
@@ -377,6 +376,10 @@ class MultiNiftiMasker(NiftiMasker, CacheMixin):
             This parameter is passed to signal.clean. Please see the
             corresponding documentation for details.
 
+        sample_mask : list of sample_mask, optional
+            List of sample_mask (1D arrays) if scrubbing motion outliers.
+            Must be of same length than imgs_list.
+
         Returns
         -------
         data : {list of numpy arrays}
@@ -386,6 +389,6 @@ class MultiNiftiMasker(NiftiMasker, CacheMixin):
         self._check_fitted()
         if not hasattr(imgs, '__iter__') or isinstance(imgs, str):
             return self.transform_single_imgs(imgs)
-        return self.transform_imgs(
-            imgs, confounds, sample_mask, n_jobs=self.n_jobs
-        )
+        return self.transform_imgs(imgs, confounds=confounds,
+                                   sample_mask=sample_mask,
+                                   n_jobs=self.n_jobs)

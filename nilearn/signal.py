@@ -428,20 +428,10 @@ def _ensure_float(data):
 
 
 @rename_parameters({'sessions': 'runs'}, '0.9.0')
-def clean(
-    signals,
-    runs=None,
-    detrend=True,
-    standardize='zscore',
-    confounds=None,
-    sample_mask=None,
-    standardize_confounds=True,
-    filter='butterworth',
-    low_pass=None,
-    high_pass=None,
-    t_r=2.5,
-    ensure_finite=False,
-):
+def clean(signals, runs=None, detrend=True, standardize='zscore',
+          sample_mask=None, confounds=None, standardize_confounds=True,
+          filter='butterworth', low_pass=None, high_pass=None, t_r=2.5,
+          ensure_finite=False):
     """Improve SNR on masked fMRI signals.
 
     This function can do several things on the input signals, in
@@ -549,7 +539,7 @@ def clean(
     --------
         nilearn.image.clean_img
     """
-    # sanitize inputs and apply sample_mask
+    # Read confounds and signals
     signals, runs, confounds = _sanitize_inputs(
         signals, runs, confounds, sample_mask, ensure_finite
     )

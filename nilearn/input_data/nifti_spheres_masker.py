@@ -393,9 +393,8 @@ class NiftiSpheresMasker(BaseMasker, CacheMixin):
 
     def fit_transform(self, imgs, confounds=None, sample_mask=None):
         """Prepare and perform signal extraction"""
-        return self.fit().transform(
-            imgs, confounds=confounds, sample_mask=sample_mask
-        )
+        return self.fit().transform(imgs, confounds=confounds,
+                                    sample_mask=sample_mask)
 
     def _check_fitted(self):
         if not hasattr(self, "seeds_"):
