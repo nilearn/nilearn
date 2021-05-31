@@ -176,7 +176,8 @@ def test_fail_fetch_atlas_harvard_oxford(tmp_path, request_mocker):
     atlas_data[4, 7, 0] = 3
 
     # Testing with Subcortical atlas
-    with open(os.path.join(ho_dir, 'HarvardOxford-Subcortical.xml'), 'w') as dummy:
+    with open(os.path.join(ho_dir,
+                           'HarvardOxford-Subcortical.xml'), 'w') as dummy:
         dummy.write("<?xml version='1.0' encoding='us-ascii'?>\n"
                     "<data>\n"
                     '<label index="0" x="48" y="94" z="35">R1</label>\n'
@@ -186,8 +187,8 @@ def test_fail_fetch_atlas_harvard_oxford(tmp_path, request_mocker):
         dummy.close()
 
     # when symmetric_split=False (by default), then atlas fetcher should
-    # have maps as string and n_labels=4 with background. Since, we relay on xml
-    # file to retrieve labels.
+    # have maps as string and n_labels=4 with background.
+    # Since, we relay on xml file to retrieve labels.
     target_atlas_fname = 'HarvardOxford-sub-maxprob-thr25-1mm.nii.gz'
     target_atlas_nii = os.path.join(nifti_dir, target_atlas_fname)
 
@@ -204,7 +205,8 @@ def test_fail_fetch_atlas_harvard_oxford(tmp_path, request_mocker):
     assert ho_wo.labels[3] == "R3"
 
     # Testing with Cortical atlas with no cort-maxprob
-    with open(os.path.join(ho_dir, 'HarvardOxford-Cortical.xml'), 'w') as dummy:
+    with open(os.path.join(ho_dir,
+              'HarvardOxford-Cortical.xml'), 'w') as dummy:
         dummy.write("<?xml version='1.0' encoding='us-ascii'?>\n"
                     "<data>\n"
                     '<label index="0" x="48" y="94" z="35">R1</label>\n'
@@ -214,8 +216,8 @@ def test_fail_fetch_atlas_harvard_oxford(tmp_path, request_mocker):
         dummy.close()
 
     # when symmetric_split=False (by default), then atlas fetcher should
-    # have maps as string and n_labels=4 with background. Since, we relay on xml
-    # file to retrieve labels.
+    # have maps as string and n_labels=4 with background.
+    # Since, we relay on xml file to retrieve labels.
 
     target_atlas_fname = 'HarvardOxford-cort-prob-1mm.nii.gz'
     target_atlas_nii = os.path.join(nifti_dir, target_atlas_fname)
@@ -242,21 +244,24 @@ def test_fail_fetch_atlas_harvard_oxford(tmp_path, request_mocker):
     # So, we test the fetcher with symmetric_split=True by creating a new
     # dummy local file and fetch them and test the output variables
     # accordingly.
-    with open(os.path.join(ho_dir, 'HarvardOxford-Cortical-Lateralized.xml'), 'w') as dummy2:
+    with open(os.path.join(ho_dir,
+                           'HarvardOxford-Cortical-Lateralized.xml'),
+              'w') as dummy2:
         dummy2.write("<?xml version='1.0' encoding='us-ascii'?>\n"
-                    "<data>\n"
-                    '<label index="0" x="63" y="86" z="49">Left R1</label>\n'
-                    '<label index="1" x="21" y="86" z="33">Right R1</label>\n'
-                    '<label index="2" x="64" y="69" z="32">Left R2</label>\n'
-                    '<label index="3" x="26" y="70" z="32">Right R2</label>\n'
-                    '<label index="4" x="47" y="75" z="66">Left R3</label>\n'
-                    '<label index="5" x="43" y="80" z="61">Right R3</label>\n'
-                    "</data>")
+                     "<data>\n"
+                     '<label index="0" x="63" y="86" z="49">Left R1</label>\n'
+                     '<label index="1" x="21" y="86" z="33">Right R1</label>\n'
+                     '<label index="2" x="64" y="69" z="32">Left R2</label>\n'
+                     '<label index="3" x="26" y="70" z="32">Right R2</label>\n'
+                     '<label index="4" x="47" y="75" z="66">Left R3</label>\n'
+                     '<label index="5" x="43" y="80" z="61">Right R3</label>\n'
+                     "</data>")
         dummy2.close()
 
     # Here, with symmetric_split=True, atlas maps are returned as nibabel Nifti
-    # image but not string. Now, with symmetric split number of labels should be
-    # more than without split and contain Left and Right tags in the labels.
+    # image but not string. Now, with symmetric split number of labels
+    # should be more than without split and contain Left and Right tags
+    # in the labels.
 
     # Create dummy image files too with cortl specified for symmetric split.
     split_atlas_fname = 'HarvardOxford-cortl-maxprob-thr0-1mm.nii.gz'
@@ -308,7 +313,6 @@ def test_fail_fetch_atlas_juelich(tmp_path, request_mocker):
     atlas_data[:5, 7:9, :] = 3
     atlas_data[5:, 7:9, :] = 3
 
-
     nibabel.Nifti1Image(atlas_data, np.eye(4) * 3).to_filename(
         target_atlas_nii)
 
@@ -322,8 +326,8 @@ def test_fail_fetch_atlas_juelich(tmp_path, request_mocker):
         dummy.close()
 
     # when symmetric_split=False (by default), then atlas fetcher should
-    # have maps as string and n_labels=4 with background. Since, we relay on xml
-    # file to retrieve labels.
+    # have maps as string and n_labels=4 with background.
+    # Since, we relay on xml file to retrieve labels.
     ho_wo_symm = atlas.fetch_atlas_juelich(atlas_name=target_atlas,
                                            data_dir=str(tmp_path))
     assert isinstance(ho_wo_symm.maps, str)
@@ -342,16 +346,17 @@ def test_fail_fetch_atlas_juelich(tmp_path, request_mocker):
     # accordingly.
     with open(os.path.join(ho_dir, 'Juelich.xml'), 'w') as dummy2:
         dummy2.write("<?xml version='1.0' encoding='us-ascii'?>\n"
-                    "<data>\n"
-                    '<label index="0" x="125" y="75" z="107">R1</label>\n'
-                    '<label index="1" x="53" y="78" z="108">R2</label>\n'
-                    '<label index="2" x="135" y="89" z="109">R3</label>\n'
-                    "</data>")
+                     "<data>\n"
+                     '<label index="0" x="125" y="75" z="107">R1</label>\n'
+                     '<label index="1" x="53" y="78" z="108">R2</label>\n'
+                     '<label index="2" x="135" y="89" z="109">R3</label>\n'
+                     "</data>")
         dummy2.close()
 
     # Here, with symmetric_split=True, atlas maps are returned as nibabel Nifti
-    # image but not string. Now, with symmetric split number of labels should be
-    # more than without split and contain Left and Right tags in the labels.
+    # image but not string. Now, with symmetric split number of labels
+    # should be more than without split and contain Left and Right tags
+    # in the labels.
 
     # Create dummy image files too with maxprob specified for symmetric split.
     split_atlas_fname = 'Juelich-maxprob-thr0-1mm.nii.gz'

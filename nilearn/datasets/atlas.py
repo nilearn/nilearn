@@ -406,38 +406,40 @@ def _fetch_atlases_fsl(atlas_source, atlas_name,
     atlas_sources = {"HarvardOxford", "Juelich"}
 
     urls = {'HarvardOxford':
-                'http://www.nitrc.org/frs/download.php/9902/HarvardOxford.tgz',
+            'http://www.nitrc.org/frs/download.php/9902/HarvardOxford.tgz',
             'Juelich':
-                'https://www.nitrc.org/frs/download.php/12096/Juelich.tgz'}
+            'https://www.nitrc.org/frs/download.php/12096/Juelich.tgz'}
 
     atlas_items = {'HarvardOxford': (
-                    "cort-maxprob-thr0-1mm", "cort-maxprob-thr0-2mm",
-                    "cort-maxprob-thr25-1mm", "cort-maxprob-thr25-2mm",
-                    "cort-maxprob-thr50-1mm", "cort-maxprob-thr50-2mm",
-                    "cort-prob-1mm", "cort-prob-2mm",
-                    "cortl-maxprob-thr0-1mm", "cortl-maxprob-thr0-2mm",
-                    "cortl-maxprob-thr25-1mm", "cortl-maxprob-thr25-2mm",
-                    "cortl-maxprob-thr50-1mm", "cortl-maxprob-thr50-2mm",
-                    "cortl-prob-1mm", "cortl-prob-2mm",
-                    "sub-maxprob-thr0-1mm", "sub-maxprob-thr0-2mm",
-                    "sub-maxprob-thr25-1mm", "sub-maxprob-thr25-2mm",
-                    "sub-maxprob-thr50-1mm", "sub-maxprob-thr50-2mm",
-                    "sub-prob-1mm", "sub-prob-2mm"),
+                   "cort-maxprob-thr0-1mm", "cort-maxprob-thr0-2mm",
+                   "cort-maxprob-thr25-1mm", "cort-maxprob-thr25-2mm",
+                   "cort-maxprob-thr50-1mm", "cort-maxprob-thr50-2mm",
+                   "cort-prob-1mm", "cort-prob-2mm",
+                   "cortl-maxprob-thr0-1mm", "cortl-maxprob-thr0-2mm",
+                   "cortl-maxprob-thr25-1mm", "cortl-maxprob-thr25-2mm",
+                   "cortl-maxprob-thr50-1mm", "cortl-maxprob-thr50-2mm",
+                   "cortl-prob-1mm", "cortl-prob-2mm",
+                   "sub-maxprob-thr0-1mm", "sub-maxprob-thr0-2mm",
+                   "sub-maxprob-thr25-1mm", "sub-maxprob-thr25-2mm",
+                   "sub-maxprob-thr50-1mm", "sub-maxprob-thr50-2mm",
+                   "sub-prob-1mm", "sub-prob-2mm"),
                    'Juelich': (
-                    "maxprob-thr0-1mm", "maxprob-thr0-2mm",
+                   "maxprob-thr0-1mm", "maxprob-thr0-2mm",
                    "maxprob-thr25-1mm", "maxprob-thr25-2mm",
                    "maxprob-thr50-1mm", "maxprob-thr50-2mm",
                    "prob-1mm", "prob-2mm")}
 
     if atlas_source not in atlas_sources:
-        raise ValueError("Invalid atlas source: {0}. Please choose an atlas source "
-                        "among:\n{1}".format(
-                            atlas_source, '\n'.join(atlas_sources)))
-        
+        raise ValueError("Invalid atlas source: {0}. "
+                         "Please choose an atlas source "
+                         "among:\n{1}".format(atlas_source,
+                                              '\n'.join(atlas_sources)))
+
     if atlas_name not in atlas_items[atlas_source]:
         raise ValueError("Invalid atlas name: {0}. Please choose an atlas "
-                        "among:\n{1}".format(
-                            atlas_name, '\n'.join(atlas_items[atlas_source])))
+                         "among:\n{1}".format(atlas_name,
+                                              '\n'.join(
+                                                  atlas_items[atlas_source])))
 
     if atlas_name in ("cortl-prob-1mm", "cortl-prob-2mm",
                       "cort-prob-1mm", "cort-prob-2mm",
@@ -455,7 +457,8 @@ def _fetch_atlases_fsl(atlas_source, atlas_name,
 
     if atlas_source == 'HarvardOxford':
         if atlas_name[0] == 'c':
-            if 'cort-maxprob' in atlas_name and symmetric_split or 'cortl-maxprob' in atlas_name:
+            if ('cort-maxprob' in atlas_name and symmetric_split
+                    or 'cortl-maxprob' in atlas_name):
                 split_name = atlas_name.split('-', 1)
                 atlas_name = 'cortl-{}'.format(split_name[1])
                 label_file = 'HarvardOxford-Cortical-Lateralized.xml'
@@ -489,6 +492,7 @@ def _fetch_atlases_fsl(atlas_source, atlas_name,
     names = list(names.values())
 
     if not symmetric_split:
+        names = list(np.unique([name.rsplit(" ", 1)[0] for name in names]))
         return Bunch(maps=atlas_img, labels=names)
 
     atlas_img = check_niimg(atlas_img)
@@ -517,8 +521,8 @@ def _fetch_atlases_fsl(atlas_source, atlas_name,
         left_elements = (left_atlas == label).sum()
         right_elements = (right_atlas == label).sum()
         n_elements = float(left_elements + right_elements)
-        if (left_elements / n_elements < 0.05 or
-                right_elements / n_elements < 0.05):
+        if (left_elements / n_elements < 0.05
+                or right_elements / n_elements < 0.05):
             new_atlas[atlas == label] = new_label
             new_names.append(name)
             continue
