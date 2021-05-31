@@ -485,12 +485,7 @@ def _fetch_atlases_fsl(atlas_source, atlas_name,
     names = list(names.values())
 
     if not symmetric_split:
-        # unique_list = []
-        # for name in names:
-        #     current_t = name.rsplit(" ", 1)[0]
-        #     if current_t not in unique_list:
-        #         unique_list.append(current_t)
-        return Bunch(maps=atlas_img, labels=unique_list)
+        return Bunch(maps=atlas_img, labels=names)
 
     atlas_img = check_niimg(atlas_img)
     if lateralized:
