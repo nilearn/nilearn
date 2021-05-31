@@ -65,6 +65,7 @@ class BaseSlicer(object):
         self._brain_color = brain_color
         self._colorbar = False
         self._colorbar_width = 0.05 * bb.width
+        self._cbar_tick_format = "%.2g"
         self._colorbar_margin = dict(left=0.25 * bb.width,
                                      right=0.02 * bb.width,
                                      top=0.05 * bb.height,
@@ -217,8 +218,9 @@ class BaseSlicer(object):
         ax.set_zorder(1000)
 
     @fill_doc
-    def add_overlay(self, img, threshold=1e-6, colorbar=False, **kwargs):
-        """Plot a 3D map in all the views.
+    def add_overlay(self, img, threshold=1e-6, colorbar=False,
+                    cbar_tick_format="%.2g", **kwargs):
+        """ Plot a 3D map in all the views.
 
         Parameters
         ----------
@@ -235,6 +237,11 @@ class BaseSlicer(object):
 
             Default=1e-6.
 
+        cbar_tick_format: str, optional
+            Controls how to format the tick labels of the colorbar.
+            Ex: use "%i" to display as integers.
+            Default is '%.2g' for scientific notation.
+
         colorbar : :obj:`bool`, optional
             If ``True``, display a colorbar on the right of the plots.
             Default=False.
@@ -248,6 +255,7 @@ class BaseSlicer(object):
                              "colorbar.")
         else:
             self._colorbar = colorbar
+            self._cbar_tick_format = cbar_tick_format
 
         img = check_niimg_3d(img)
 
@@ -458,7 +466,7 @@ class BaseSlicer(object):
         self._cbar = ColorbarBase(
             self._colorbar_ax, ticks=ticks, norm=norm,
             orientation='vertical', cmap=our_cmap, boundaries=bounds,
-            spacing='proportional', format='%.2g')
+            spacing='proportional', format=self._cbar_tick_format)
         self._cbar.ax.set_facecolor(self._brain_color)
 
         self._colorbar_ax.yaxis.tick_left()

@@ -124,6 +124,7 @@ def _plot_img_with_bg(img, bg_img=None, cut_coords=None,
                       bg_vmin=None, bg_vmax=None, interpolation="nearest",
                       display_factory=get_slicer,
                       cbar_vmin=None, cbar_vmax=None,
+                      cbar_tick_format="%.2g",
                       brain_color=(0.5, 0.5, 0.5),
                       decimals=False,
                       **kwargs):
@@ -201,6 +202,7 @@ def _plot_img_with_bg(img, bg_img=None, cut_coords=None,
         display.add_overlay(new_img_like(img, data, affine),
                             threshold=threshold, interpolation=interpolation,
                             colorbar=colorbar, vmin=vmin, vmax=vmax,
+                            cbar_tick_format=cbar_tick_format,
                             **kwargs)
 
     if annotate:
@@ -268,6 +270,7 @@ def _crop_colorbar(cbar, cbar_vmin, cbar_vmax):
 def plot_img(img, cut_coords=None, output_file=None, display_mode='ortho',
              figure=None, axes=None, title=None, threshold=None,
              annotate=True, draw_cross=True, black_bg=False, colorbar=False,
+             cbar_tick_format="%.2g",
              resampling_interpolation='continuous',
              bg_img=None, vmin=None, vmax=None, **kwargs):
     """ Plot cuts of a given image (by default Frontal, Axial, and Lateral)
@@ -291,6 +294,10 @@ def plot_img(img, cut_coords=None, output_file=None, display_mode='ortho',
         Default=False.
     %(colorbar)s
         Default=False.
+    cbar_tick_format: str, optional
+        Controls how to format the tick labels of the colorbar.
+        Ex: use "%i" to display as integers.
+        Default is '%.2g' for scientific notation.
     %(resampling_interpolation)s
         Default='continuous'.
     %(bg_img)s
@@ -310,6 +317,7 @@ def plot_img(img, cut_coords=None, output_file=None, display_mode='ortho',
         draw_cross=draw_cross,
         resampling_interpolation=resampling_interpolation,
         black_bg=black_bg, colorbar=colorbar,
+        cbar_tick_format=cbar_tick_format,
         bg_img=bg_img, vmin=vmin, vmax=vmax, **kwargs)
 
     return display
