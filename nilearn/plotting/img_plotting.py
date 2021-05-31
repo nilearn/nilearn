@@ -464,7 +464,8 @@ def plot_anat(anat_img=MNI152TEMPLATE, cut_coords=None,
               output_file=None, display_mode='ortho', figure=None,
               axes=None, title=None, annotate=True, threshold=None,
               draw_cross=True, black_bg='auto', dim='auto', cmap=plt.cm.gray,
-              colorbar=False, cbar_tick_format="%.2g", vmin=None, vmax=None, **kwargs):
+              colorbar=False, cbar_tick_format="%.2g", vmin=None,
+              vmax=None, **kwargs):
     """Plot cuts of an anatomical image (by default 3 cuts:
     Frontal, Axial, and Lateral)
 
