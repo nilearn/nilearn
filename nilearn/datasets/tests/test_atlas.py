@@ -358,7 +358,7 @@ def test_fail_fetch_atlas_juelich(tmp_path, request_mocker):
     nifti_target_split = os.path.join(nifti_dir, split_atlas_fname)
     nibabel.Nifti1Image(atlas_data, np.eye(4) * 3).to_filename(
         nifti_target_split)
-    ho = atlas.fetch_atlas_juelich(atlas_name = target_atlas,
+    ho = atlas.fetch_atlas_juelich(atlas_name=target_atlas,
                                    data_dir=str(tmp_path),
                                    symmetric_split=True)
 
