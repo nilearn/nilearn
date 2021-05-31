@@ -33,8 +33,6 @@ jobs:
         shell: bash
     env:
         MIN_REQUIREMENTS: true
-        FLAKE8: true
-        TEST_DOC: false
     steps:
       - uses: actions/checkout@v2
       - uses: actions/setup-python@v2
@@ -53,6 +51,9 @@ jobs:
       - shell: bash -l {0}
         run: ./build_tools/github/test.sh
         name: 'Run tests'
+      - shell: bash -l {0}
+        run: ./build_tools/flake8_diff.sh
+        name: 'Run flake8 diff'
       - uses: codecov/codecov-action@v1
         if: success()
         name: 'Upload coverage to CodeCov'
@@ -70,8 +71,6 @@ jobs:
     defaults:
       run:
         shell: bash
-    env:
-        TEST_DOC: true
     steps:
       - uses: actions/checkout@v2
       - uses: actions/setup-python@v2
@@ -87,6 +86,9 @@ jobs:
       - shell: bash {0}
         run: ./build_tools/github/install.sh
         name: 'Install nilearn'
+      - shell: bash {0}
+        run: ./build_tools/github/test_docs.sh
+        name: 'Run doctests'
       - shell: bash {0}
         run: ./build_tools/github/test.sh
         name: 'Run tests'
