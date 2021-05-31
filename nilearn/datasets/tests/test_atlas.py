@@ -324,7 +324,7 @@ def test_fail_fetch_atlas_juelich(tmp_path, request_mocker):
     # when symmetric_split=False (by default), then atlas fetcher should
     # have maps as string and n_labels=4 with background. Since, we relay on xml
     # file to retrieve labels.
-    ho_wo_symm = atlas.fetch_atlas_juelich(atlas_name = target_atlas,
+    ho_wo_symm = atlas.fetch_atlas_juelich(atlas_name=target_atlas,
                                            data_dir=str(tmp_path))
     assert isinstance(ho_wo_symm.maps, str)
     assert isinstance(ho_wo_symm.labels, list)

@@ -400,15 +400,18 @@ def fetch_atlas_juelich(atlas_name, data_dir=None,
 
 
 def _fetch_atlases_fsl(atlas_source, atlas_name,
-                      data_dir=None, symmetric_split=False,
-                      resume=True, verbose=1):
+                       data_dir=None, symmetric_split=False,
+                       resume=True, verbose=1):
 
     atlas_sources = {"HarvardOxford", "Juelich"}
 
-    urls = {'HarvardOxford': 'http://www.nitrc.org/frs/download.php/9902/HarvardOxford.tgz',
-            'Juelich': 'https://www.nitrc.org/frs/download.php/12096/Juelich.tgz'}
+    urls = {'HarvardOxford':
+                'http://www.nitrc.org/frs/download.php/9902/HarvardOxford.tgz',
+            'Juelich':
+                'https://www.nitrc.org/frs/download.php/12096/Juelich.tgz'}
 
-    atlas_items = {'HarvardOxford':("cort-maxprob-thr0-1mm", "cort-maxprob-thr0-2mm",
+    atlas_items = {'HarvardOxford': (
+                    "cort-maxprob-thr0-1mm", "cort-maxprob-thr0-2mm",
                     "cort-maxprob-thr25-1mm", "cort-maxprob-thr25-2mm",
                     "cort-maxprob-thr50-1mm", "cort-maxprob-thr50-2mm",
                     "cort-prob-1mm", "cort-prob-2mm",
@@ -420,7 +423,8 @@ def _fetch_atlases_fsl(atlas_source, atlas_name,
                     "sub-maxprob-thr25-1mm", "sub-maxprob-thr25-2mm",
                     "sub-maxprob-thr50-1mm", "sub-maxprob-thr50-2mm",
                     "sub-prob-1mm", "sub-prob-2mm"),
-                   'Juelich': ("maxprob-thr0-1mm", "maxprob-thr0-2mm",
+                   'Juelich': (
+                    "maxprob-thr0-1mm", "maxprob-thr0-2mm",
                    "maxprob-thr25-1mm", "maxprob-thr25-2mm",
                    "maxprob-thr50-1mm", "maxprob-thr50-2mm",
                    "prob-1mm", "prob-2mm")}
@@ -451,7 +455,7 @@ def _fetch_atlases_fsl(atlas_source, atlas_name,
 
     if atlas_source == 'HarvardOxford':
         if atlas_name[0] == 'c':
-            if 'cort-maxprob' in atlas_name  and symmetric_split or 'cortl-maxprob' in atlas_name:
+            if 'cort-maxprob' in atlas_name and symmetric_split or 'cortl-maxprob' in atlas_name:
                 split_name = atlas_name.split('-', 1)
                 atlas_name = 'cortl-{}'.format(split_name[1])
                 label_file = 'HarvardOxford-Cortical-Lateralized.xml'
