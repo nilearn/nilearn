@@ -35,6 +35,14 @@ if [[ "$TRAVIS" == "true" ]]; then
         git fetch $REMOTE pull/$TRAVIS_PULL_REQUEST/head:$BRANCH_NAME
         git checkout $BRANCH_NAME
     fi
+elif [[ "$GITHUB_ACTIONS" == true ]]; then
+    if [[ "$GITHUB_EVENT_NAME" == "pull_request" ]]; then
+        PULL_REQUEST_NUMBER=${GITHUB_REF//*pull\//}
+        PULL_REQUEST_NUMBER=${PULL_REQUEST_NUMBER//\/merge/}
+        BRANCH_NAME=github_pr_$PULL_REQUEST_NUMBER
+        git fetch $REMOTE refs/pull/$PULL_REQUEST_NUMBER/head:$BRANCH_NAME
+        git checkout $BRANCH_NAME
+    fi
 fi
 
 
@@ -53,7 +61,7 @@ if [[ -n "$TMP_REMOTE" ]]; then
     git remote remove $TMP_REMOTE
 fi
 
-if [ -z "$COMMIT" ]; then
+if [[ -z "$COMMIT" ]]; then
     exit 1
 fi
 
