@@ -485,7 +485,7 @@ def _fetch_atlases_fsl(atlas_source, atlas_name,
     names = list(names.values())
 
     if not symmetric_split:
-        names = list(np.unique([name.rsplit(" ", 1)[0] for name in names]))
+        names = set([name.rsplit(" ", 1)[0] for name in names])
         return Bunch(maps=atlas_img, labels=names)
 
     atlas_img = check_niimg(atlas_img)
