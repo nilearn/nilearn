@@ -42,6 +42,9 @@ Enhancements
   * "cosine" (discrete cosine transformation)
   * `False` (no filtering)
 
+- :class:`nilearn.glm.first_level.run_glm` now allows auto regressive noise
+  models of order greater than one.
+
 .. _v0.7.1:
 
 0.7.1
