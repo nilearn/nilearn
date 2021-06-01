@@ -144,6 +144,12 @@ class BaseMasker(BaseEstimator, TransformerMixin, CacheMixin):
             documentation for details.
             shape: (number of scans, number of confounds)
 
+        sample_mask : Any type compatible with numpy-array indexing, optional
+            Masks the niimgs along time/fourth dimension to perform scrubbing
+            (remove volumes with high motion) and/or non-steady-state volumes.
+            This parameter is passed to signal.clean.
+            shape: (number of scans - number of volumes removed, )
+
         copy : Boolean, optional
             Indicates whether a copy is returned or not. Default=True.
 
@@ -170,6 +176,12 @@ class BaseMasker(BaseEstimator, TransformerMixin, CacheMixin):
             This parameter is passed to signal.clean. Please see the related
             documentation for details.
             shape: (number of scans, number of confounds)
+
+        sample_mask : Any type compatible with numpy-array indexing, optional
+            Masks the niimgs along time/fourth dimension to perform scrubbing
+            (remove volumes with high motion) and/or non-steady-state volumes.
+            This parameter is passed to signal.clean.
+            shape: (number of scans - number of volumes removed, )
 
         Returns
         -------
@@ -215,6 +227,10 @@ class BaseMasker(BaseEstimator, TransformerMixin, CacheMixin):
         confounds : list of confounds, optional
             List of confounds (2D arrays or filenames pointing to CSV
             files). Must be of same length than imgs_list.
+
+        sample_mask : list of sample_mask, optional
+            List of sample_mask (1D arrays) if scrubbing motion outliers.
+            Must be of same length than imgs_list.
 
         Returns
         -------

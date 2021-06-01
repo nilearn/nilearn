@@ -262,6 +262,10 @@ class MultiNiftiMasker(NiftiMasker, CacheMixin):
             List of confounds (2D arrays or filenames pointing to CSV
             files or pandas DataFrames). Must be of same length than imgs_list.
 
+        sample_mask : list of sample_mask, optional
+            List of sample_mask (1D arrays) if scrubbing motion outliers.
+            Must be of same length than imgs_list.
+
         copy : boolean, optional
             If True, guarantees that output array has no memory in common with
             input array. Default=True.

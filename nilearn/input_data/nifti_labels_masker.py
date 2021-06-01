@@ -270,6 +270,12 @@ class NiftiLabelsMasker(BaseMasker, CacheMixin):
             documentation for details.
             shape: (number of scans, number of confounds)
 
+        sample_mask : Any type compatible with numpy-array indexing, optional
+            Masks the niimgs along time/fourth dimension to perform scrubbing
+            (remove volumes with high motion) and/or non-steady-state volumes.
+            This parameter is passed to signal.clean.
+            shape: (number of scans - number of volumes removed, )
+
         Returns
         -------
         region_signals : 2D numpy.ndarray
