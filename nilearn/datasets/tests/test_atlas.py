@@ -197,7 +197,7 @@ def test_fetch_atlas_harvard_oxford(tmp_path, request_mocker):
     ho_wo = atlas.fetch_atlas_harvard_oxford('sub-maxprob-thr25-1mm',
                                              data_dir=str(tmp_path))
 
-    assert isinstance(ho_wo.maps, nibabel.nifti1.Nifti1Image)
+    assert isinstance(ho_wo.maps, nibabel.Nifti1Image)
     assert isinstance(ho_wo.labels, list)
     assert ho_wo.labels[0] == "Background"
     assert ho_wo.labels[1] == "R1"
