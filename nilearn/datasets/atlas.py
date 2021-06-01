@@ -399,7 +399,7 @@ def fetch_atlas_juelich(atlas_name, data_dir=None,
                               resume=resume, verbose=verbose)
 
 
-def _fetch_atlases_fsl(atlas_source, atlas_name,
+def _fetch_atlases_fsl(source, atlas_name,
                        data_dir=None, symmetric_split=False,
                        resume=True, verbose=1):
 
@@ -427,16 +427,15 @@ def _fetch_atlases_fsl(atlas_source, atlas_name,
                    "maxprob-thr50-1mm", "maxprob-thr50-2mm",
                    "prob-1mm", "prob-2mm")}
 
-    if atlas_source not in atlas_sources:
+    if source not in atlas_sources:
         raise ValueError("Invalid atlas source: {0}. "
                          "Please choose an atlas source among:\n{1}".
-                         format(atlas_source, '\n'.join(atlas_sources)))
+                         format(source, '\n'.join(atlas_sources)))
 
-    if atlas_name not in atlas_items[atlas_source]:
+    if atlas_name not in atlas_items[source]:
         raise ValueError("Invalid atlas name: {0}. Please choose "
                          "an atlas among:\n{1}".
-                         format(atlas_name, '\n'.join(
-                             atlas_items[atlas_source])))
+                         format(atlas_name, '\n'.join(atlas_items[source])))
 
     if atlas_name in ("cortl-prob-1mm", "cortl-prob-2mm",
                       "cort-prob-1mm", "cort-prob-2mm",
@@ -452,7 +451,7 @@ def _fetch_atlases_fsl(atlas_source, atlas_name,
     opts = {'uncompress': True}
     root = os.path.join('data', 'atlases')
 
-    if atlas_source == 'HarvardOxford':
+    if source == 'HarvardOxford':
         if atlas_name[0] == 'c':
             if ('cort-maxprob' in atlas_name and symmetric_split
                     or 'cortl-maxprob' in atlas_name):
@@ -472,13 +471,13 @@ def _fetch_atlases_fsl(atlas_source, atlas_name,
 
     label_file = os.path.join(root, label_file)
 
-    atlas_file = os.path.join(root, atlas_source,
-                              '{}-{}.nii.gz'.format(atlas_source, atlas_name))
+    atlas_file = os.path.join(root, source,
+                              '{}-{}.nii.gz'.format(source, atlas_name))
 
     atlas_img, label_file = _fetch_files(
         data_dir,
-        [(atlas_file, urls[atlas_source], opts),
-         (label_file, urls[atlas_source], opts)],
+        [(atlas_file, urls[source], opts),
+         (label_file, urls[source], opts)],
         resume=resume, verbose=verbose)
 
     names = {}
