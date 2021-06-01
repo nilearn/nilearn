@@ -462,11 +462,12 @@ def clean(signals, runs=None, detrend=True, standardize='zscore',
 
     sample_mask: None, numpy.ndarray, list, tuple, or list of
         Default is None.
-        Masks the niimgs along time/fourth dimension. Containing indices in a
-        1D array of the time points to keep. This masking step is applied
-        before data cleaning. When supplying run information, sample_mask
-        must be a list containing sets of indexes that matches each run.
-        This is useful to perform signal scrubbing/censoring.
+        Masks the niimgs along time/fourth dimension to perform scrubbing
+        (remove volumes with high motion) and/or non-steady-state volumes.
+        This masking step is applied before signal cleaning. When supplying run
+        information, sample_mask must be a list containing sets of indexes for
+        each run.
+        shape: (number of scans - number of volumes removed, )
 
     t_r: float
         Repetition time, in second (sampling period). Set to None if not.
