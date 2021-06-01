@@ -498,7 +498,7 @@ def _fetch_atlases_fsl(atlas_source, atlas_name,
         labels = np.unique(atlas)
         new_label = 0
         new_atlas = atlas.copy()
-
+        # Assumes that the background label is zero.
         new_names = [names[0]]
         for label, name in zip(labels[1:], names[1:]):
             new_label += 1
@@ -512,10 +512,8 @@ def _fetch_atlases_fsl(atlas_source, atlas_name,
                     new_names.append(name.rsplit(" ", 1)[0])
                 else:
                     new_names.append(name)
-
         atlas_img = new_img_like(atlas_img, new_atlas, atlas_img.affine)
         return Bunch(maps=atlas_img, labels=new_names)
-
     atlas_img = check_niimg(atlas_img)
     if lateralized or not symmetric_split:
         return Bunch(maps=atlas_img, labels=names)
