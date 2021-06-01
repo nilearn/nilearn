@@ -435,8 +435,8 @@ def _fetch_atlases_fsl(atlas_source, atlas_name,
     if atlas_name not in atlas_items[atlas_source]:
         raise ValueError("Invalid atlas name: {0}. Please choose "
                          "an atlas among:\n{1}".
-                         format(atlas_name,
-                                '\n'.join(atlas_items[atlas_source])))
+                         format(atlas_name, '\n'.join(
+                             atlas_items[atlas_source])))
 
     if atlas_name in ("cortl-prob-1mm", "cortl-prob-2mm",
                       "cort-prob-1mm", "cort-prob-2mm",
@@ -494,7 +494,6 @@ def _fetch_atlases_fsl(atlas_source, atlas_name,
         return Bunch(maps=atlas_img, labels=names)
 
     if not symmetric_split:
-        atlas_img = check_niimg(atlas_img)
         atlas = get_data(atlas_img)
         labels = np.unique(atlas)
         new_label = 0
