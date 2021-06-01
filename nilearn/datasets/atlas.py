@@ -431,15 +431,14 @@ def _fetch_atlases_fsl(atlas_source, atlas_name,
 
     if atlas_source not in atlas_sources:
         raise ValueError("Invalid atlas source: {0}. "
-                         "Please choose an atlas source "
-                         "among:\n{1}".format(atlas_source,
-                                              '\n'.join(atlas_sources)))
+                         "Please choose an atlas source among:\n{1}".
+                         format(atlas_source, '\n'.join(atlas_sources)))
 
     if atlas_name not in atlas_items[atlas_source]:
-        raise ValueError("Invalid atlas name: {0}. Please choose an atlas "
-                         "among:\n{1}".format(atlas_name,
-                                              '\n'.join(atlas_items[
-                                                  atlas_source])))
+        raise ValueError("Invalid atlas name: {0}. Please choose "
+                         "an atlas among:\n{1}".
+                         format(atlas_name,
+                                '\n'.join(atlas_items[atlas_source])))
 
     if atlas_name in ("cortl-prob-1mm", "cortl-prob-2mm",
                       "cort-prob-1mm", "cort-prob-2mm",
