@@ -402,7 +402,7 @@ def fetch_atlas_juelich(atlas_name, data_dir=None,
 def _fetch_atlases_fsl(atlas_source, atlas_name,
                        data_dir=None, symmetric_split=False,
                        resume=True, verbose=1):
-    
+
     atlas_sources = {"HarvardOxford", "Juelich"}
     urls = {'HarvardOxford':
             'http://www.nitrc.org/frs/download.php/9902/HarvardOxford.tgz',
@@ -491,7 +491,6 @@ def _fetch_atlases_fsl(atlas_source, atlas_name,
     if not symmetric_split and atlas_source == "Juelich":
         atlas_img = check_niimg(atlas_img)
         atlas = get_data(atlas_img)
-
         labels = np.unique(atlas)
         new_label = 0
         new_atlas = atlas.copy()
