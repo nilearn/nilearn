@@ -29,7 +29,9 @@ from nilearn.image import get_data
 
 def fetch_haxby(data_dir=None, subjects=(2,),
                 fetch_stimuli=False, url=None, resume=True, verbose=1):
-    """Download and loads complete haxby dataset [1]_.
+    """Download and loads complete haxby dataset.
+
+    See :footcite:`Haxby2425`.
 
     Parameters
     ----------
@@ -70,9 +72,7 @@ def fetch_haxby(data_dir=None, subjects=(2,),
 
     References
     ----------
-    .. [1] `Haxby, J., Gobbini, M., Furey, M., Ishai, A., Schouten, J.,
-       and Pietrini, P. (2001). Distributed and overlapping representations of
-       faces and objects in ventral temporal cortex. Science 293, 2425-2430.`
+    .. footbibliography::
 
     Notes
     -----
@@ -178,8 +178,11 @@ def fetch_nyu_rest(n_subjects=None, sessions=[1], data_dir=None, resume=True,
                    verbose=1):
     """Download and loads the NYU resting-state test-retest dataset.
 
-    For documentation see [1]_ and see [2]_ for download. See [3]_ for
-    citing the paper, and see [4]_ and [5]_ for additional references.
+    For documentation see :footcite:`NYUdataset`,
+    and see :footcite:`NYUdatasetlist` for download.
+    See :footcite:`Shehzad2009restingstate` for citing the paper,
+    and see :footcite:`ZUO20101432`,
+    and :footcite:`ZUO20102163` for additional references.
 
     Warnings
     --------
@@ -244,26 +247,7 @@ def fetch_nyu_rest(n_subjects=None, sessions=[1], data_dir=None, resume=True,
 
     References
     ----------
-    .. [1] http://www.nitrc.org/docman/?group_id=274
-
-    .. [2] http://www.nitrc.org/frs/?group_id=274
-
-    .. [3] `The Resting Brain: Unconstrained yet Reliable
-       <http://cercor.oxfordjournals.org/content/19/10/2209>`_
-       Z. Shehzad, A.M.C. Kelly, P.T. Reiss, D.G. Gee, K. Gotimer,
-       L.Q. Uddin, S.H. Lee, D.S. Margulies, A.K. Roy, B.B. Biswal,
-       E. Petkova, F.X. Castellanos and M.P. Milham.
-
-    .. [4] `The oscillating brain: Complex and Reliable
-       <http://dx.doi.org/10.1016/j.neuroimage.2009.09.037>`_
-       X-N. Zuo, A. Di Martino, C. Kelly, Z. Shehzad, D.G. Gee,
-       D.F. Klein, F.X. Castellanos, B.B. Biswal, M.P. Milham
-
-    .. [5] `Reliable intrinsic connectivity networks: Test-retest
-       evaluation using ICA and dual regression approach
-       <http://dx.doi.org/10.1016/j.neuroimage.2009.10.080>`_,
-       X-N. Zuo, C. Kelly, J.S. Adelstein, D.F. Klein,
-       F.X. Castellanos, M.P. Milham
+    .. footbibliography::
 
     """
     warnings.warn("fetch_nyu_rest has been deprecated and will "
@@ -381,7 +365,9 @@ def fetch_nyu_rest(n_subjects=None, sessions=[1], data_dir=None, resume=True,
 
 def fetch_adhd(n_subjects=30, data_dir=None, url=None, resume=True,
                verbose=1):
-    """Download and load the ADHD resting-state dataset [1]_.
+    """Download and load the ADHD resting-state dataset.
+
+    See :footcite:`ADHDdataset`.
 
     Parameters
     ----------
@@ -415,7 +401,7 @@ def fetch_adhd(n_subjects=30, data_dir=None, url=None, resume=True,
 
     References
     ----------
-    .. [1] ftp://www.nitrc.org/fcon_1000/htdocs/indi/adhd200/sites/ADHD200_40sub_preprocessed.tgz
+    .. footbibliography::
 
     """
     if url is None:
@@ -484,7 +470,9 @@ def fetch_adhd(n_subjects=30, data_dir=None, url=None, resume=True,
 
 
 def fetch_miyawaki2008(data_dir=None, url=None, resume=True, verbose=1):
-    """Download and loads Miyawaki et al. 2008 dataset (153MB) [1]_.
+    """Download and loads Miyawaki et al. 2008 dataset (153MB).
+
+    See :footcite:`MIYAWAKI2008915`.
 
     Parameters
     ----------
@@ -520,12 +508,7 @@ def fetch_miyawaki2008(data_dir=None, url=None, resume=True, verbose=1):
 
     References
     ----------
-    .. [1] `Visual image reconstruction from human brain activity
-       using a combination of multiscale local image decoders
-       <http://www.cell.com/neuron/abstract/S0896-6273%2808%2900958-6>`_,
-       Miyawaki, Y., Uchida, H., Yamashita, O., Sato, M. A.,
-       Morito, Y., Tanabe, H. C., ... & Kamitani, Y. (2008).
-       Neuron, 60(5), 915-929.
+    .. footbibliography::
 
     Notes
     -----
@@ -651,9 +634,11 @@ def fetch_localizer_contrasts(contrasts, n_subjects=None, get_tmaps=False,
     Functional Localizer page."
     (see http://brainomics.cea.fr/localizer/)
 
-    You may cite [1]_ when using this dataset.
+    You may cite :footcite:`PAPADOPOULOSORFANOS2017309`
+    when using this dataset.
 
-    Scientific results obtained using this dataset are described in [2]_.
+    Scientific results obtained using this dataset are described
+    in :footcite:`Pinel2007fast`.
 
     Parameters
     ----------
@@ -775,11 +760,7 @@ def fetch_localizer_contrasts(contrasts, n_subjects=None, get_tmaps=False,
 
     References
     ----------
-    .. [1] Papadopoulos Orfanos, Dimitri, et al., "The Brainomics/Localizer database."
-       NeuroImage 144.B (2017): 309.
-
-    .. [2] Pinel, Philippe, et al., "Fast reproducible identification and large-scale
-       databasing of individual functional cognitive networks." BMC Neuroscience 8.1 (2007): 91.
+    .. footbibliography::
 
     See Also
     ---------
@@ -1102,7 +1083,7 @@ def fetch_abide_pcp(data_dir=None, n_subjects=None, pipeline='cpac',
     Fetch the Autism Brain Imaging Data Exchange (ABIDE) dataset wrt criteria
     that can be passed as parameter. Note that this is the preprocessed
     version of ABIDE provided by the preprocess connectome projects (PCP).
-    See [1]_.
+    See :footcite:`Nielsen2013Multisite`.
 
     Parameters
     ----------
@@ -1174,9 +1155,7 @@ def fetch_abide_pcp(data_dir=None, n_subjects=None, pipeline='cpac',
 
     References
     ----------
-    .. [1] Nielsen, Jared A., et al. "Multisite functional connectivity MRI
-       classification of autism: ABIDE results." Frontiers in human neuroscience
-       7 (2013).
+    .. footbibliography::
 
     """
     # People keep getting it wrong and submiting a string instead of a
@@ -1322,7 +1301,9 @@ def _load_mixed_gambles(zmap_imgs):
 
 def fetch_mixed_gambles(n_subjects=1, data_dir=None, url=None, resume=True,
                         return_raw_data=False, verbose=1):
-    """Fetch Jimura "mixed gambles" dataset [1]_.
+    """Fetch Jimura "mixed gambles" dataset.
+
+    See :footcite:`JIMURA2012544`.
 
     Parameters
     ----------
@@ -1366,9 +1347,7 @@ def fetch_mixed_gambles(n_subjects=1, data_dir=None, url=None, resume=True,
 
     References
     ----------
-    .. [1] K. Jimura and R. Poldrack, "Analyses of regional-average activation
-       and multivoxel pattern information tell complementary stories",
-       Neuropsychologia, vol. 50, page 544, 2012
+    .. footbibliography::
 
     """
     if n_subjects > 16:
@@ -1403,7 +1382,9 @@ def fetch_megatrawls_netmats(dimensionality=100, timeseries='eigen_regression',
     The network matrices are estimated from functional connectivity
     datasets of 461 subjects. Full technical details in references.
 
-    More information available in [1]_, [2]_, [3]_, [4]_, and [5]_.
+    More information available in :footcite:`smithhcp2015`,
+    :footcite:`smith2015positive`, :footcite:`Filippini7209`,
+    :footcite:`smith2014methods`, and :footcite:`reilly2009cerebellum`.
 
     Parameters
     ----------
@@ -1460,22 +1441,7 @@ def fetch_megatrawls_netmats(dimensionality=100, timeseries='eigen_regression',
 
     References
     ----------
-    .. [1] Stephen Smith et al, HCP beta-release of the Functional Connectivity
-       MegaTrawl. April 2015 "HCP500-MegaTrawl" release.
-       https://db.humanconnectome.org/megatrawl/
-
-    .. [2] Smith, S.M. et al. Nat. Neurosci. 18, 1565-1567 (2015).
-
-    .. [3] N.Filippini, et al. Distinct patterns of brain activity in young
-       carriers of the APOE-e4 allele.
-       Proc Natl Acad Sci USA (PNAS), 106::7209-7214, 2009.
-
-    .. [4] S.Smith, et al. Methods for network modelling from high quality rfMRI data.
-       Meeting of the Organization for Human Brain Mapping. 2014
-
-    .. [5] J.X. O'Reilly et al. Distinct and overlapping functional zones in the
-       cerebellum defined by resting state functional connectivity.
-       Cerebral Cortex, 2009.
+    .. footbibliography::
 
     Notes
     -----
@@ -1705,9 +1671,11 @@ def fetch_cobre(n_subjects=10, data_dir=None, url=None, verbose=1):
 def fetch_surf_nki_enhanced(n_subjects=10, data_dir=None,
                             url=None, resume=True, verbose=1):
     """Download and load the NKI enhanced resting-state dataset,
-    preprocessed and projected to the fsaverage5 space surface [2]_.
+    preprocessed and projected to the fsaverage5 space surface.
 
-    Direct download link [1]_.
+    See :footcite:`Nooner2012NKI`.
+
+    Direct download link :footcite:`NKIdataset`.
 
     .. versionadded:: 0.3
 
@@ -1747,11 +1715,7 @@ def fetch_surf_nki_enhanced(n_subjects=10, data_dir=None,
 
     References
     ----------
-    .. [1] http://fcon_1000.projects.nitrc.org/indi/enhanced/
-
-    .. [2] Nooner et al, (2012). The NKI-Rockland Sample: A model for accelerating the
-       pace of discovery science in psychiatry. Frontiers in neuroscience 6, 152.
-       URL http://dx.doi.org/10.3389/fnins.2012.00152
+    .. footbibliography::
 
     """
     if url is None:
@@ -1982,10 +1946,11 @@ def fetch_development_fmri(n_subjects=None, reduce_confounds=True,
                            age_group='both'):
     """Fetch movie watching based brain development dataset (fMRI)
 
-    The data is downsampled to 4mm resolution for convenience. The origin of
-    the data is coming from OpenNeuro. See Notes below.
+    The data is downsampled to 4mm resolution for convenience with a repetition time (TR)
+    of 2 secs. The origin of the data is coming from OpenNeuro. See Notes below.
 
-    Please cite [1]_ if you are using this dataset.
+    Please cite :footcite:`richardson2018development`
+    if you are using this dataset.
 
     .. versionadded:: 0.5.2
 
@@ -2053,10 +2018,7 @@ def fetch_development_fmri(n_subjects=None, reduce_confounds=True,
 
     References
     ----------
-    .. [1] Richardson, H., Lisandrelli, G., Riobueno-Naylor, A., & Saxe, R. (2018).
-       Development of the social brain from age three to twelve years.
-       Nature communications, 9(1), 1027.
-       https://www.nature.com/articles/s41467-018-03399-2
+    .. footbibliography::
 
     """
     dataset_name = 'development_fmri'
@@ -2637,7 +2599,8 @@ def _make_events_file_spm_auditory_data(events_filepath):
 def fetch_spm_auditory(data_dir=None, data_name='spm_auditory',
                        subject_id='sub001', verbose=1):
     """Function to fetch SPM auditory single-subject data.
-    See [1]_.
+
+    See :footcite:`spm_auditory`.
 
     Parameters
     ----------
@@ -2665,7 +2628,7 @@ def fetch_spm_auditory(data_dir=None, data_name='spm_auditory',
 
     References
     ----------
-    .. [1] http://www.fil.ion.ucl.ac.uk/spm/data/auditory/
+    .. footbibliography::
 
     """
     data_dir = _get_dataset_dir(data_name, data_dir=data_dir,
@@ -2817,7 +2780,8 @@ def _make_events_file_spm_multimodal_fmri(_subject_data, session):
 def fetch_spm_multimodal_fmri(data_dir=None, data_name='spm_multimodal_fmri',
                               subject_id='sub001', verbose=1):
     """Fetcher for Multi-modal Face Dataset.
-    See [1]_.
+
+    See :footcite:`spm_multiface`.
 
     Parameters
     ----------
@@ -2846,7 +2810,7 @@ def fetch_spm_multimodal_fmri(data_dir=None, data_name='spm_multimodal_fmri',
 
     References
     ----------
-    .. [1] http://www.fil.ion.ucl.ac.uk/spm/data/mmfaces/
+    .. footbibliography::
 
     """
     data_dir = _get_dataset_dir(data_name, data_dir=data_dir, verbose=verbose)
