@@ -488,6 +488,11 @@ def _fetch_atlases_fsl(atlas_source, atlas_name,
         names[int(label.get('index')) + 1] = label.text
     names = list(names.values())
 
+    atlas_img = check_niimg(atlas_img)
+
+    if lateralized:
+        return Bunch(maps=atlas_img, labels=names)
+
     if not symmetric_split:
         atlas_img = check_niimg(atlas_img)
         atlas = get_data(atlas_img)
@@ -510,10 +515,6 @@ def _fetch_atlases_fsl(atlas_source, atlas_name,
                     new_names.append(name)
         atlas_img = new_img_like(atlas_img, new_atlas, atlas_img.affine)
         return Bunch(maps=atlas_img, labels=new_names)
-    atlas_img = check_niimg(atlas_img)
-
-    if lateralized:
-        return Bunch(maps=atlas_img, labels=names)
 
     atlas = get_data(atlas_img)
 
