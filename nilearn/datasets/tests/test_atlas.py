@@ -143,14 +143,14 @@ def test_downloader(tmp_path, request_mocker):
     assert stuff == ''
 
 
-def test_fail_fetch_atlases_fsl(tmp_path, request_mocker):
+def test_fetch_atlases_fsl(tmp_path, request_mocker):
 
     # specify non-existing atlas source
     with pytest.raises(ValueError, match='Invalid atlas source'):
         atlas._fetch_atlases_fsl('new_source', 'not_inside')
 
 
-def test_fail_fetch_atlas_harvard_oxford(tmp_path, request_mocker):
+def test_fetch_atlas_harvard_oxford(tmp_path, request_mocker):
 
     # specify non-existing atlas item
     with pytest.raises(ValueError, match='Invalid atlas name'):
@@ -285,7 +285,7 @@ def test_fail_fetch_atlas_harvard_oxford(tmp_path, request_mocker):
     assert ho.labels[6] == "Right R3"
 
 
-def test_fail_fetch_atlas_juelich(tmp_path, request_mocker):
+def test_fetch_atlas_juelich(tmp_path, request_mocker):
 
     # specify non-existing atlas item in Juelich
     with pytest.raises(ValueError, match='Invalid atlas name'):
