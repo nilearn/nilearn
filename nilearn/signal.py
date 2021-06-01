@@ -462,7 +462,7 @@ def clean(signals, runs=None, detrend=True, standardize='zscore',
 
     sample_mask: None, numpy.ndarray, list, tuple, or list of
         Default is None.
-        Masks the niimgs along time/fourth dimension. Containing indeice in a
+        Masks the niimgs along time/fourth dimension. Containing indices in a
         1D array of the time points to keep. This masking step is applied
         before data cleaning. When supplying run information, sample_mask
         must be a list containing sets of indexes that matches each run.
