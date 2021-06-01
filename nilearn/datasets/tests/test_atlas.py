@@ -197,7 +197,7 @@ def test_fail_fetch_atlas_harvard_oxford(tmp_path, request_mocker):
     ho_wo = atlas.fetch_atlas_harvard_oxford('sub-maxprob-thr25-1mm',
                                              data_dir=str(tmp_path))
 
-    assert isinstance(ho_wo.maps, str)
+    assert isinstance(ho_wo.maps, nibabel.nifti1.Nifti1Image)
     assert isinstance(ho_wo.labels, list)
     assert ho_wo.labels[0] == "Background"
     assert ho_wo.labels[1] == "R1"
@@ -226,7 +226,7 @@ def test_fail_fetch_atlas_harvard_oxford(tmp_path, request_mocker):
         target_atlas_nii)
     ho_wo_symm = atlas.fetch_atlas_harvard_oxford('cort-prob-1mm',
                                                   data_dir=str(tmp_path))
-    assert isinstance(ho_wo_symm.maps, str)
+    assert isinstance(ho_wo_symm.maps, nibabel.Nifti1Image)
     assert isinstance(ho_wo_symm.labels, list)
     assert ho_wo_symm.labels[0] == "Background"
     assert ho_wo_symm.labels[1] == "R1"
@@ -330,7 +330,7 @@ def test_fail_fetch_atlas_juelich(tmp_path, request_mocker):
     # Since, we relay on xml file to retrieve labels.
     ho_wo_symm = atlas.fetch_atlas_juelich(atlas_name=target_atlas,
                                            data_dir=str(tmp_path))
-    assert isinstance(ho_wo_symm.maps, str)
+    assert isinstance(ho_wo_symm.maps, nibabel.Nifti1Image)
     assert isinstance(ho_wo_symm.labels, list)
     assert len(ho_wo_symm.labels) == 4
     assert ho_wo_symm.labels[0] == "Background"
