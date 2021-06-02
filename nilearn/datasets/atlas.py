@@ -505,7 +505,7 @@ def _fetch_atlases_fsl(source, atlas_name,
             if name not in new_names.keys():
                 new_names[name] = new_label
                 new_label += 1
-            new_atlas[atlas == label] == new_names[name]
+            new_atlas[atlas == label] = new_names[name]
 
         atlas_img = new_img_like(atlas_img, new_atlas, atlas_img.affine)
         return Bunch(maps=atlas_img, labels=list(new_names.keys()))
