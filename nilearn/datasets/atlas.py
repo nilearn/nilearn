@@ -495,23 +495,20 @@ def _fetch_atlases_fsl(source, atlas_name,
     if not symmetric_split:
         atlas = get_data(atlas_img)
         labels = np.unique(atlas)
-        new_label = 0
+        new_label = 1
         new_atlas = atlas.copy()
         # Assumes that the background label is zero.
-        new_names = [names[0]]
+        new_names = {names[0]:0}
         for label, name in zip(labels[1:], names[1:]):
-            if name.endswith('R'):
-                new_atlas[atlas == label] = new_label
-                continue
-            else:
+            if name.endswith('R') or name.endswith('L'):
+                name = name.rsplit(" ", 1)[0]
+            if name not in new_names.keys():
+                new_names[name] = new_label
                 new_label += 1
-                new_atlas[atlas == label] = new_label
-                if name.endswith('L'):
-                    new_names.append(name.rsplit(" ", 1)[0])
-                else:
-                    new_names.append(name)
+            new_atlas[atlas == label] == new_names[name]
+
         atlas_img = new_img_like(atlas_img, new_atlas, atlas_img.affine)
-        return Bunch(maps=atlas_img, labels=new_names)
+        return Bunch(maps=atlas_img, labels=list(new_names.keys()))
 
     atlas = get_data(atlas_img)
 
@@ -525,6 +522,13 @@ def _fetch_atlases_fsl(source, atlas_name,
     left_atlas[middle_ind:, ...] = 0
     right_atlas = atlas.copy()
     right_atlas[:middle_ind, ...] = 0
+
+    if source == "Juelich":
+        for idx in range(len(names)):
+            if names[idx].endswith('L'):
+                names[idx] = names[idx].rsplit(" ", 1)[0] + ", left part"
+            if names[idx].endswith('R'):
+                names[idx] = names[idx].rsplit(" ", 1)[0] + ", right part"
 
     new_label = 0
     new_atlas = atlas.copy()
