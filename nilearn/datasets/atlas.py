@@ -498,7 +498,7 @@ def _fetch_atlases_fsl(source, atlas_name,
         new_label = 1
         new_atlas = atlas.copy()
         # Assumes that the background label is zero.
-        new_names = {names[0]:0}
+        new_names = {names[0]: 0}
         for label, name in zip(labels[1:], names[1:]):
             if name.endswith('R') or name.endswith('L'):
                 name = name.rsplit(" ", 1)[0]
