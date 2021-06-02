@@ -513,9 +513,7 @@ def _fetch_atlases_fsl(source, atlas_name,
 
     labels = np.unique(atlas)
     # Build a mask of both halves of the brain
-    middle_ind = (atlas.shape[0] - 1) // 2
-    # Put zeros on the median plane
-    atlas[middle_ind, ...] = 0
+    middle_ind = (atlas.shape[0]) // 2
     # Split every zone crossing the median plane into two parts.
     left_atlas = atlas.copy()
     left_atlas[middle_ind:, ...] = 0
