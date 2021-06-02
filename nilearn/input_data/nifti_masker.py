@@ -213,9 +213,9 @@ class NiftiMasker(BaseMasker, CacheMixin):
     nilearn.signal.clean
 
     """
-    @deprecated_parameters(["sample_mask"],
+    @deprecated_parameters(['sample_mask'],
                            "supply sample_masker in transform method",
-                           "0.9.0")
+                           '0.9.0')
     def __init__(self, mask_img=None, sessions=None, smoothing_fwhm=None,
                  standardize=False, standardize_confounds=True, detrend=False,
                  high_variance_confounds=False, low_pass=None, high_pass=None,
