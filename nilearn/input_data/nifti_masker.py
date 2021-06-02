@@ -15,6 +15,7 @@ from .. import image
 from .. import masking
 from .._utils import CacheMixin
 from .._utils.class_inspect import get_params
+from .._utils.helpers import deprecated_parameters
 from .._utils.niimg import img_data_dtype
 from .._utils.niimg_conversions import _check_same_fov
 from nilearn.image import get_data
@@ -212,11 +213,14 @@ class NiftiMasker(BaseMasker, CacheMixin):
     nilearn.signal.clean
 
     """
+    @deprecated_parameters(["sample_mask"],
+                           "supply sample_masker in transform method",
+                           "0.9.0")
     def __init__(self, mask_img=None, sessions=None, smoothing_fwhm=None,
                  standardize=False, standardize_confounds=True, detrend=False,
                  high_variance_confounds=False, low_pass=None, high_pass=None,
                  t_r=None, target_affine=None, target_shape=None,
-                 mask_strategy='background', mask_args=None,
+                 mask_strategy='background', mask_args=None, sample_mask=None,
                  dtype=None, memory_level=1, memory=Memory(location=None),
                  verbose=0, reports=True,
                  ):
@@ -236,6 +240,7 @@ class NiftiMasker(BaseMasker, CacheMixin):
         self.target_shape = target_shape
         self.mask_strategy = mask_strategy
         self.mask_args = mask_args
+        self.sample_mask = sample_mask
         self.dtype = dtype
 
         self.memory = memory

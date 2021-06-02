@@ -69,6 +69,9 @@ def filter_and_extract(imgs, extraction_function,
     imgs = _utils.check_niimg(imgs, atleast_4d=True, ensure_ndim=4,
                               dtype=dtype)
 
+    if sample_mask is None:
+        sample_mask = parameters.get('sample_mask', None)
+
     target_shape = parameters.get('target_shape')
     target_affine = parameters.get('target_affine')
     if target_shape is not None or target_affine is not None:

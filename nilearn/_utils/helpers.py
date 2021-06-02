@@ -1,5 +1,29 @@
 import functools
+from platform import version
 import warnings
+
+
+def deprecated_parameters(removed_params,
+                          reason,
+                          end_version='future'):
+    def _remove_params(func):
+        @functools.wraps(func)
+        def wrapper(*args, **kwargs):
+            found = set(removed_params).intersection(kwargs)
+            if found:
+                message = ("Parameter(s) {} deprecated from version {}; "
+                           "{}".format(
+                               ', '.join(found),
+                               end_version,
+                               reason
+                               )
+                           )
+                warnings.warn(category=FutureWarning,
+                              message=message,
+                              stacklevel=3)
+            return func(*args, **kwargs)
+        return wrapper
+    return _remove_params
 
 
 def rename_parameters(replacement_params,

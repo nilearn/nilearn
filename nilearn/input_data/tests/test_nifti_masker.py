@@ -173,6 +173,11 @@ def test_mask_4d():
     data_trans2 = masker.transform(data_img_4d, sample_mask=sample_mask)
     assert_array_equal(data_trans2, data_trans_direct)
 
+    # check deprication warning
+    with pytest.warns(FutureWarning) as record:
+        masker = NiftiMasker(mask_img=mask_img, sample_mask=sample_mask)
+    assert "sample_mask deprecated" in record[0].message.args[0]
+
 
 def test_4d_single_scan():
     mask = np.zeros((10, 10, 10))
