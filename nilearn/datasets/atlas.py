@@ -498,17 +498,16 @@ def _fetch_atlases_fsl(source, atlas_name,
         new_label = 1
         new_atlas = atlas.copy()
         # Assumes that the background label is zero.
-        new_names = {names[0]: 0}
+        new_names = [names[0]]
         for label, name in zip(labels[1:], names[1:]):
             if name.endswith('R') or name.endswith('L'):
                 name = name.rsplit(" ", 1)[0]
-            if name not in new_names.keys():
-                new_names[name] = new_label
-                new_label += 1
-            new_atlas[atlas == label] = new_names[name]
+            if name not in new_names:
+                new_names.append(name)
+            new_atlas[atlas == label] = new_names.index(name)
 
         atlas_img = new_img_like(atlas_img, new_atlas, atlas_img.affine)
-        return Bunch(maps=atlas_img, labels=list(new_names.keys()))
+        return Bunch(maps=atlas_img, labels=new_names)
 
     atlas = get_data(atlas_img)
 
