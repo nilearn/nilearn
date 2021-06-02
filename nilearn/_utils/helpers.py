@@ -1,5 +1,4 @@
 import functools
-from platform import version
 import warnings
 
 
