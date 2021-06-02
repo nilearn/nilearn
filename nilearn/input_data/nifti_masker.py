@@ -15,7 +15,7 @@ from .. import image
 from .. import masking
 from .._utils import CacheMixin
 from .._utils.class_inspect import get_params
-from .._utils.helpers import deprecated_parameters
+from .._utils.helpers import remove_parameters, rename_parameters
 from .._utils.niimg import img_data_dtype
 from .._utils.niimg_conversions import _check_same_fov
 from nilearn.image import get_data
@@ -103,9 +103,11 @@ class NiftiMasker(BaseMasker, CacheMixin):
         and/or target_affine are provided, the mask is resampled first.
         After this, the images are resampled to the resampled mask.
 
-    sessions : numpy array, optional
-        Add a session level to the preprocessing. Each session will be
+    runs : numpy array, optional
+        Add a run level to the preprocessing. Each run will be
         detrended independently. Must be a 1D array of n_samples elements.
+        'runs' replaces 'sessions' after release 0.9.0.
+        Using 'session' will result in an error after release 0.9.0.
 
     smoothing_fwhm : float, optional
         If smoothing_fwhm is not None, it gives the full-width half maximum in
@@ -213,10 +215,12 @@ class NiftiMasker(BaseMasker, CacheMixin):
     nilearn.signal.clean
 
     """
-    @deprecated_parameters(['sample_mask'],
-                           "supply sample_masker in transform method",
-                           '0.9.0')
-    def __init__(self, mask_img=None, sessions=None, smoothing_fwhm=None,
+    @remove_parameters(['sample_mask'],
+                       ('supply sample_masker through transform or '
+                        'fit_transform methods instead.'),
+                       '0.9.0')
+    @rename_parameters({'sessions': 'runs'}, '0.9.0')
+    def __init__(self, mask_img=None, runs=None, smoothing_fwhm=None,
                  standardize=False, standardize_confounds=True, detrend=False,
                  high_variance_confounds=False, low_pass=None, high_pass=None,
                  t_r=None, target_affine=None, target_shape=None,
@@ -227,7 +231,7 @@ class NiftiMasker(BaseMasker, CacheMixin):
         # Mask is provided or computed
         self.mask_img = mask_img
 
-        self.sessions = sessions
+        self.runs = runs
         self.smoothing_fwhm = smoothing_fwhm
         self.standardize = standardize
         self.standardize_confounds = standardize_confounds
