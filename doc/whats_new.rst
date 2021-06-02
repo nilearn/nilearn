@@ -44,7 +44,9 @@ Enhancements
   * `False` (no filtering)
 - Change the default strategy for Dummy Classifier from 'prior' to
   'stratified' (https://github.com/nilearn/nilearn/pull/2826/).
-    
+- :class:`nilearn.glm.first_level.run_glm` now allows auto regressive noise
+  models of order greater than one.
+
 .. _v0.7.1:
 
 0.7.1
