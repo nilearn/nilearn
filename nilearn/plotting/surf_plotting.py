@@ -45,8 +45,8 @@ def _deprecate_separate_mesh_data(func, argument):
     def wrapper(surf_mesh, *args, **kwargs):
         # Deprecate previous usage where the first argument
         # is a mesh instead of a surface.
-        if not (hasattr(surf_mesh, "mesh") and
-                hasattr(surf_mesh, "data")):
+        if not (hasattr(surf_mesh, "mesh")
+                and hasattr(surf_mesh, "data")):
             warnings.warn("Giving a mesh and a texture separately "
                           "to `{}` has been deprecated. You should "
                           "now provide a nilearn Surface object instead. "
@@ -65,16 +65,26 @@ def _deprecate_separate_mesh_data(func, argument):
             if argument in kwargs and kwargs[argument] is not None:
                 kwargs[argument] = surf_mesh.data
             try:
-                return func(surf_mesh.mesh, surf_mesh.data, *args, **kwargs)
+                return func(surf_mesh.mesh,
+                            surf_mesh.data,
+                            *args,
+                            **kwargs)
             except TypeError:
                 if len(args) > 0:
                     args = args[1:]
-                    return func(surf_mesh.mesh, surf_mesh.data, *args, **kwargs)
-                return func(surf_mesh.mesh, *args, **kwargs)
+                    return func(surf_mesh.mesh,
+                                surf_mesh.data,
+                                *args,
+                                **kwargs)
+                return func(surf_mesh.mesh,
+                            *args,
+                            **kwargs)
     return wrapper
+
 
 deprecate_separate_mesh_data_plot_surf = partial(
     _deprecate_separate_mesh_data, argument="surf_map")
+
 
 @deprecate_separate_mesh_data_plot_surf
 def plot_surf(surf_mesh, surf_map=None, *, bg_map=None,
@@ -500,10 +510,12 @@ def _get_faces_on_edge(faces, parc_idx):
 deprecate_separate_mesh_data_plot_surf_contours = partial(
     _deprecate_separate_mesh_data, argument="roi_map")
 
+
 @deprecate_separate_mesh_data_plot_surf_contours
-def plot_surf_contours(surf_mesh, roi_map, *, axes=None, figure=None, levels=None,
-                       labels=None, colors=None, legend=False, cmap='tab20',
-                       title=None, output_file=None, **kwargs):
+def plot_surf_contours(surf_mesh, roi_map, *, axes=None, figure=None,
+                       levels=None, labels=None, colors=None,
+                       legend=False, cmap='tab20', title=None,
+                       output_file=None, **kwargs):
     """Plotting contours of ROIs on a surface, optionally over a statistical map.
 
     Parameters
@@ -664,8 +676,10 @@ def plot_surf_contours(surf_mesh, roi_map, *, axes=None, figure=None, levels=Non
     else:
         return figure
 
+
 deprecate_separate_mesh_data_plot_surf_stat_map = partial(
     _deprecate_separate_mesh_data, argument="stat_map")
+
 
 @deprecate_separate_mesh_data_plot_surf_stat_map
 def plot_surf_stat_map(surf_mesh, stat_map, *, bg_map=None,
@@ -1042,7 +1056,7 @@ def plot_img_on_surf(stat_map, surf_mesh='fsaverage5', mask_img=None,
         # ax.set_facecolor("#e0e0e0")
         # We increase this value to better position the camera of the
         # 3D projection plot. The default value makes meshes look too small.
-        ax.dist = 7 
+        ax.dist = 7
 
     if colorbar:
         sm = _colorbar_from_array(image.get_data(stat_map),
@@ -1066,6 +1080,7 @@ def plot_img_on_surf(stat_map, surf_mesh='fsaverage5', mask_img=None,
 
 deprecate_separate_mesh_data_plot_surf_roi = partial(
     _deprecate_separate_mesh_data, argument="roi_map")
+
 
 @deprecate_separate_mesh_data_plot_surf_roi
 def plot_surf_roi(surf_mesh, roi_map, *, bg_map=None,

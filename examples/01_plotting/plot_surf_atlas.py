@@ -125,7 +125,9 @@ plotting.show()
 # visualizations in a web browser. See :ref:`interactive-surface-plotting` for
 # more details.
 
-view = plotting.view_surf(surf_infl_left, cmap='gist_ncar', symmetric_cmap=False)
+view = plotting.view_surf(surf_infl_left,
+                          cmap='gist_ncar',
+                          symmetric_cmap=False)
 # In a Jupyter notebook, if ``view`` is the output of a cell, it will
 # be displayed below the cell
 

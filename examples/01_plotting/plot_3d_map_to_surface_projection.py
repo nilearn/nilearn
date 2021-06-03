@@ -41,18 +41,28 @@ surf = load_surface((fsaverage.infl_right, texture))
 
 from nilearn import plotting
 
-plotting.plot_surf_stat_map(surf, hemi='right', title='Surface right hemisphere',
-                            colorbar=True, threshold=1., bg_map=fsaverage.sulc_right)
+plotting.plot_surf_stat_map(surf,
+                            hemi='right',
+                            title='Surface right hemisphere',
+                            colorbar=True,
+                            threshold=1.,
+                            bg_map=fsaverage.sulc_right)
 
 ##############################################################################
 # Plot 3D image for comparison
 # ----------------------------
 
-plotting.plot_glass_brain(stat_img, display_mode='r', plot_abs=False,
-                          title='Glass brain', threshold=2.)
+plotting.plot_glass_brain(stat_img,
+                          display_mode='r',
+                          plot_abs=False,
+                          title='Glass brain',
+                          threshold=2.)
 
-plotting.plot_stat_map(stat_img, display_mode='x', threshold=1.,
-                       cut_coords=range(0, 51, 10), title='Slices')
+plotting.plot_stat_map(stat_img,
+                       display_mode='x',
+                       threshold=1.,
+                       cut_coords=range(0, 51, 10),
+                       title='Slices')
 
 ##############################################################################
 # Use an atlas and choose regions to outline
@@ -79,11 +89,19 @@ labels = list(regions_dict.values())
 # Display outlines of the regions of interest on top of a statistical map
 # -----------------------------------------------------------------------
 
-figure = plotting.plot_surf_stat_map(surf, hemi='right', title='Surface right hemisphere',
-                                     colorbar=True, threshold=1., bg_map=fsaverage.sulc_right)
+figure = plotting.plot_surf_stat_map(surf,
+                                     hemi='right',
+                                     title='Surface right hemisphere',
+                                     colorbar=True,
+                                     threshold=1.,
+                                     bg_map=fsaverage.sulc_right)
 
-plotting.plot_surf_contours(surf_parcellation, labels=labels, levels=regions_indices,
-                            figure=figure, legend=True, colors=['g', 'k'])
+plotting.plot_surf_contours(surf_parcellation,
+                            labels=labels,
+                            levels=regions_indices,
+                            figure=figure,
+                            legend=True,
+                            colors=['g', 'k'])
 plotting.show()
 
 ##############################################################################
@@ -100,9 +118,12 @@ big_texture = vol_to_surf(stat_img, big_fsaverage.pial_right)
 big_surf = load_surface((big_fsaverage.infl_right,
                          big_texture))
 
-plotting.plot_surf_stat_map(big_surf, hemi='right', colorbar=True,
+plotting.plot_surf_stat_map(big_surf,
+                            hemi='right',
+                            colorbar=True,
                             title='Surface right hemisphere: fine mesh',
-                            threshold=1., bg_map=big_fsaverage.sulc_right)
+                            threshold=1.,
+                            bg_map=big_fsaverage.sulc_right)
 
 
 ##############################################################################
@@ -130,7 +151,9 @@ plotting.show()
 # visualizations in a web browser. See :ref:`interactive-surface-plotting` for
 # more details.
 
-view = plotting.view_surf(fsaverage.infl_right, texture, threshold='90%',
+view = plotting.view_surf(fsaverage.infl_right,
+                          texture,
+                          threshold='90%',
                           bg_map=fsaverage.sulc_right)
 
 # In a Jupyter notebook, if ``view`` is the output of a cell, it will

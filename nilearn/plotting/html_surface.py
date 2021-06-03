@@ -235,6 +235,7 @@ def view_img_on_surf(stat_map_img, surf_mesh='fsaverage5',
 deprecate_separate_mesh_data_view_surf = partial(
     _deprecate_separate_mesh_data, argument="surf_map")
 
+
 @deprecate_separate_mesh_data_view_surf
 def view_surf(surf_mesh, surf_map=None, *, bg_map=None, threshold=None,
               cmap=cm.cold_hot, black_bg=False, vmax=None, vmin=None,

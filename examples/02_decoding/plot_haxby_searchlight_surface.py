@@ -36,7 +36,7 @@ y, session = y[condition_mask], session[condition_mask]
 # Surface bold response
 # ----------------------
 from nilearn.datasets import fetch_surf_fsaverage
-from nilearn.surface import Mesh, vol_to_surf, load_surf_mesh
+from nilearn.surface import vol_to_surf, load_surf_mesh
 from sklearn import neighbors
 
 # Fetch a coarse surface of the left hemisphere only for speed
@@ -56,8 +56,8 @@ infl_mesh = load_surf_mesh(fsaverage['infl_' + hemi])
 radius = 3.
 nn = neighbors.NearestNeighbors(radius=radius)
 adjacency = nn.fit(
-                infl_mesh.coordinates).radius_neighbors_graph(
-                                infl_mesh.coordinates).tolil()
+    infl_mesh.coordinates).radius_neighbors_graph(
+        infl_mesh.coordinates).tolil()
 
 #########################################################################
 # Searchlight computation
