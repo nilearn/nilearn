@@ -462,12 +462,12 @@ def clean(signals, runs=None, detrend=True, standardize='zscore',
 
     sample_mask: None, numpy.ndarray, list, tuple, or list of
         Default is None.
+        shape: (number of scans - number of volumes removed, )
         Masks the niimgs along time/fourth dimension to perform scrubbing
         (remove volumes with high motion) and/or non-steady-state volumes.
         This masking step is applied before signal cleaning. When supplying run
         information, sample_mask must be a list containing sets of indexes for
         each run.
-        shape: (number of scans - number of volumes removed, )
 
     t_r: float
         Repetition time, in second (sampling period). Set to None if not.

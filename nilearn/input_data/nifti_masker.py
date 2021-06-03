@@ -436,10 +436,10 @@ class NiftiMasker(BaseMasker, CacheMixin):
             shape: (number of scans, number of confounds)
 
         sample_mask : Any type compatible with numpy-array indexing, optional
+            shape: (number of scans - number of volumes removed, )
             Masks the niimgs along time/fourth dimension to perform scrubbing
             (remove volumes with high motion) and/or non-steady-state volumes.
             This parameter is passed to signal.clean.
-            shape: (number of scans - number of volumes removed, )
 
         copy : Boolean, optional
             Indicates whether a copy is returned or not. Default=True.
