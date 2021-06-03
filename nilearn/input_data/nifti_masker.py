@@ -457,7 +457,6 @@ class NiftiMasker(BaseMasker, CacheMixin):
         # target_shape and target_affine are conveyed implicitly in mask_img
         params = get_params(self.__class__, self,
                             ignore=['mask_img', 'mask_args', 'mask_strategy'])
-
         data = self._cache(filter_and_mask,
                            ignore=['verbose', 'memory', 'memory_level',
                                    'copy'],

@@ -239,9 +239,10 @@ def test_sessions():
     pytest.raises(ValueError, masker.fit_transform, data_img)
 
     # check deprication warning of attribute session
-    with pytest.warns(FutureWarning,
-                      match="'sessions' attribute is deprecated") as record:
+    with pytest.warns(FutureWarning) as record:
         masker.sessions
+    assert "'sessions' attribute is deprecated" in str(record[0].message)
+
 
 def test_joblib_cache():
     from joblib import hash, Memory
