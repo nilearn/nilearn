@@ -21,7 +21,8 @@ Fixes
   specified order, rather than automatically sorting into ascending order
   (https://github.com/nilearn/nilearn/issues/1155).
 - Fix the axes zoom on plot_img_on_surf function so brain would not be cutoff, and edited function so less white space surrounds brain views & smaller colorbar using gridspec (https://github.com/nilearn/nilearn/pull/2798). 
-
+- Fix inconsistency in prediction values of Dummy Classifier for Decoder
+  object (https://github.com/nilearn/nilearn/issues/2767).
 
 Enhancements
 ------------
@@ -41,7 +42,8 @@ Enhancements
   * "butterwoth" (butterworth filter)
   * "cosine" (discrete cosine transformation)
   * `False` (no filtering)
-
+- Change the default strategy for Dummy Classifier from 'prior' to
+  'stratified' (https://github.com/nilearn/nilearn/pull/2826/).
 - :class:`nilearn.glm.first_level.run_glm` now allows auto regressive noise
   models of order greater than one.
 
