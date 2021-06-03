@@ -487,13 +487,13 @@ def _fetch_atlases_fsl(source, atlas_name,
         names[int(label.get('index')) + 1] = label.text
     names = list(names.values())
 
-    atlas_img = check_niimg(atlas_img)
+    atlas_niimg = check_niimg(atlas_img)
 
     if lateralized:
-        return Bunch(maps=atlas_img, labels=names)
+        return Bunch(maps=atlas_niimg, labels=names)
 
     if not symmetric_split:
-        atlas = get_data(atlas_img)
+        atlas = get_data(atlas_niimg)
         labels = np.unique(atlas)
         new_label = 1
         new_atlas = atlas.copy()
@@ -506,10 +506,10 @@ def _fetch_atlases_fsl(source, atlas_name,
                 new_names.append(name)
             new_atlas[atlas == label] = new_names.index(name)
 
-        atlas_img = new_img_like(atlas_img, new_atlas, atlas_img.affine)
-        return Bunch(maps=atlas_img, labels=new_names)
+        atlas_niimg = new_img_like(atlas_niimg, new_atlas, atlas_niimg.affine)
+        return Bunch(filename=atlas_img, maps=atlas_niimg, labels=new_names)
 
-    atlas = get_data(atlas_img)
+    atlas = get_data(atlas_niimg)
 
     labels = np.unique(atlas)
     # Build a mask of both halves of the brain
@@ -547,8 +547,8 @@ def _fetch_atlases_fsl(source, atlas_name,
         new_atlas[left_atlas == label] = new_label
         new_names.append(name + ', right part')
 
-    atlas_img = new_img_like(atlas_img, new_atlas, atlas_img.affine)
-    return Bunch(maps=atlas_img, labels=new_names)
+    atlas_niimg = new_img_like(atlas_niimg, new_atlas, atlas_niimg.affine)
+    return Bunch(filename=atlas_img, maps=atlas_niimg, labels=new_names)
 
 
 def fetch_atlas_msdl(data_dir=None, url=None, resume=True, verbose=1):
