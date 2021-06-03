@@ -331,7 +331,7 @@ sphinx_gallery_conf = {
         'org': 'nilearn',
         'repo': 'nilearn.github.io',
         'binderhub_url': 'https://mybinder.org',
-        'branch': 'master',
+        'branch': 'main',
         'dependencies': ['../requirements-build-docs.txt',
                          'binder/requirements.txt'],
         'notebooks_dir': 'examples'
@@ -363,5 +363,5 @@ def setup(app):
 linkcode_resolve = make_linkcode_resolve('nilearn',
                                          'https://github.com/nilearn/'
                                          'nilearn/blob/{revision}/'
-                                         '{package}/{path}#L{lineno}') 
+                                         '{package}/{path}#L{lineno}')
 

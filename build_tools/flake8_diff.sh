@@ -25,11 +25,11 @@ if [[ "$TRAVIS" == "true" ]]; then
     then
         # Travis does the git clone with a limited depth (50 at the time of
         # writing). This may not be enough to find the common ancestor with
-        # $REMOTE/master so we unshallow the git checkout
+        # $REMOTE/main so we unshallow the git checkout
         git fetch --unshallow || echo "Unshallowing the git checkout failed"
     else
         # We want to fetch the code as it is in the PR branch and not
-        # the result of the merge into master. This way line numbers
+        # the result of the merge into main. This way line numbers
         # reported by Travis will match with the local code.
         BRANCH_NAME=travis_pr_$TRAVIS_PULL_REQUEST
         git fetch $REMOTE pull/$TRAVIS_PULL_REQUEST/head:$BRANCH_NAME
@@ -50,12 +50,12 @@ echo -e '\nLast 2 commits:'
 echo '--------------------------------------------------------------------------------'
 git log -2 --pretty=short
 
-git fetch $REMOTE master
-REMOTE_MASTER_REF="$REMOTE/master"
+git fetch $REMOTE main
+REMOTE_MAIN_REF="$REMOTE/main"
 
-# Find common ancestor between HEAD and remotes/$REMOTE/master
-COMMIT=$(git merge-base @ $REMOTE_MASTER_REF) || \
-    echo "No common ancestor found for $(git show @ -q) and $(git show $REMOTE_MASTER_REF -q)"
+# Find common ancestor between HEAD and remotes/$REMOTE/main
+COMMIT=$(git merge-base @ $REMOTE_MAIN_REF) || \
+    echo "No common ancestor found for $(git show @ -q) and $(git show $REMOTE_MAIN_REF -q)"
 
 if [[ -n "$TMP_REMOTE" ]]; then
     git remote remove $TMP_REMOTE
@@ -65,7 +65,7 @@ if [[ -z "$COMMIT" ]]; then
     exit 1
 fi
 
-echo -e "\nCommon ancestor between HEAD and $REMOTE_MASTER_REF is:"
+echo -e "\nCommon ancestor between HEAD and $REMOTE_MAIN_REF is:"
 echo '--------------------------------------------------------------------------------'
 git show --no-patch $COMMIT
 

@@ -564,7 +564,7 @@ def test_clean_frequencies_using_power_spectrum_density():
 def test_clean_finite_no_inplace_mod():
     """
     Test for verifying that the passed in signal array is not modified.
-    For PR #2125 . This test is failing on master, passing in this PR.
+    For PR #2125 . This test is failing on main, passing in this PR.
     """
     n_samples = 2
     # n_features  Must be higher than 500

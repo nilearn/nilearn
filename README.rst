@@ -8,16 +8,16 @@
     :target: https://pypi.org/project/nilearn/
     :alt: PyPI - Python Version
 
-.. image:: https://github.com/nilearn/nilearn/workflows/build/badge.svg?branch=master&event=push
+.. image:: https://github.com/nilearn/nilearn/workflows/build/badge.svg?branch=main&event=push
    :target: https://github.com/nilearn/nilearn/actions
    :alt: Github Actions Build Status
 
-.. image:: https://codecov.io/gh/nilearn/nilearn/branch/master/graph/badge.svg
+.. image:: https://codecov.io/gh/nilearn/nilearn/branch/main/graph/badge.svg
    :target: https://codecov.io/gh/nilearn/nilearn
    :alt: Coverage Status
 
-.. image:: https://dev.azure.com/Parietal/Nilearn/_apis/build/status/nilearn.nilearn?branchName=master
-   :target: https://dev.azure.com/Parietal/Nilearn/_apis/build/status/nilearn.nilearn?branchName=master
+.. image:: https://dev.azure.com/Parietal/Nilearn/_apis/build/status/nilearn.nilearn?branchName=main
+   :target: https://dev.azure.com/Parietal/Nilearn/_apis/build/status/nilearn.nilearn?branchName=main
    :alt: Azure Build Status
 
 nilearn
