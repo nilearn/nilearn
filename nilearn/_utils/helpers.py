@@ -118,7 +118,7 @@ def remove_parameters(removed_params,
     Parameters
     ----------
     removed_params : list[string]
-        List of old parameters to be rmoved.
+        List of old parameters to be removed.
         Example: [old_param1, old_param2, ...]
 
     reason : str
