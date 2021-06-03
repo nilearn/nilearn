@@ -92,7 +92,7 @@ plot_gallery = 'True'
 master_doc = 'index'
 
 # sphinxcontrib-bibtex
-bibtex_bibfiles = ['./references.bib']
+bibtex_bibfiles = ['./references.bib', './soft_references.bib']
 bibtex_style = 'unsrt'
 bibtex_reference_style = 'author_year'
 bibtex_footbibliography_header = ''

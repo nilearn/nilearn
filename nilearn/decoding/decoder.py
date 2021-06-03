@@ -18,11 +18,16 @@ import warnings
 
 import numpy as np
 from joblib import Parallel, delayed
+from nilearn._utils import CacheMixin
+from nilearn._utils.cache_mixin import _check_memory
+from nilearn._utils.param_validation import check_feature_screening
+from nilearn.input_data.masker_validation import check_embedded_nifti_masker
+from nilearn.regions.rena_clustering import ReNA
 from sklearn import clone
-from sklearn.linear_model import LogisticRegression
-from sklearn.linear_model import LinearRegression
-from sklearn.linear_model import RidgeClassifierCV, RidgeCV
-from sklearn.dummy import DummyRegressor, DummyClassifier
+from sklearn.dummy import DummyClassifier, DummyRegressor
+from sklearn.linear_model import (LinearRegression, LogisticRegression,
+                                  RidgeClassifierCV, RidgeCV)
+from sklearn.metrics import get_scorer
 from sklearn.model_selection import (LeaveOneGroupOut, ParameterGrid,
                                      ShuffleSplit, StratifiedShuffleSplit,
                                      check_cv)
@@ -31,13 +36,6 @@ from sklearn.svm import SVR, LinearSVC, l1_min_c
 from sklearn.utils import check_random_state
 from sklearn.utils.extmath import safe_sparse_dot
 from sklearn.utils.validation import check_is_fitted, check_X_y
-from sklearn.metrics import get_scorer
-
-from nilearn._utils import CacheMixin
-from nilearn._utils.cache_mixin import _check_memory
-from nilearn._utils.param_validation import check_feature_screening
-from nilearn.input_data.masker_validation import check_embedded_nifti_masker
-from nilearn.regions.rena_clustering import ReNA
 
 try:
     from sklearn.metrics import check_scoring
@@ -57,9 +55,9 @@ SUPPORTED_ESTIMATORS = dict(
     ridge_regressor=RidgeCV(),
     ridge=RidgeCV(),
     svr=SVR(kernel='linear', max_iter=1e4),
-    dummy_classifier = DummyClassifier(strategy='prior',
-                                       random_state=0),
-    dummy_regressor = DummyRegressor(strategy='mean'),
+    dummy_classifier=DummyClassifier(strategy='stratified',
+                                     random_state=0),
+    dummy_regressor=DummyRegressor(strategy='mean'),
 )
 
 
@@ -114,7 +112,7 @@ def _check_param_grid(estimator, X, y, param_grid=None):
             loss = 'squared_hinge'
         elif isinstance(estimator,
                         (DummyClassifier, DummyRegressor)):
-            if estimator.strategy in ['constant', 'uniform']:
+            if estimator.strategy in ['constant']:
                 message = ('Dummy classification implemented only for strategies'
                            ' "most_frequent", "prior", "stratified"')
                 raise NotImplementedError(message)
@@ -388,7 +386,6 @@ class _BaseDecoder(LinearRegression, CacheMixin):
         self.n_jobs = n_jobs
         self.verbose = verbose
 
-
     def fit(self, X, y, groups=None):
         """Fit the decoder (learner).
 
@@ -590,11 +587,11 @@ class _BaseDecoder(LinearRegression, CacheMixin):
         else:
             # For Dummy estimators
             self.coef_ = None
-            self.dummy_output_ = np.vstack([np.mean(self.dummy_output_[class_index], axis=0)
-                                            for class_index in self.classes_])
+            self.dummy_output_ = \
+                np.vstack([np.mean(self.dummy_output_[class_index], axis=0)
+                           for class_index in self.classes_])
             if self.is_classification and (self.n_classes_ == 2):
-                if not self.n_outputs_ > 1:
-                    self.dummy_output_ = self.dummy_output_[0, :][np.newaxis, :]
+                self.dummy_output_ = self.dummy_output_[0, :][np.newaxis, :]
 
     def score(self, X, y, *args):
         """Compute the prediction score using the scoring
@@ -670,13 +667,15 @@ class _BaseDecoder(LinearRegression, CacheMixin):
         X = self.masker_.transform(X)
         n_samples = X.shape[0]
 
+        # Prediction for dummy estimator is different from others as there is
+        # no fitted coefficient
         if isinstance(self.estimator, (DummyClassifier, DummyRegressor)):
-            return self._predict_dummy(n_samples)
-
-        scores = self.decision_function(X)
+            scores = self._predict_dummy(n_samples)
+        else:
+            scores = self.decision_function(X)
 
         if self.is_classification:
-            if len(scores.shape) == 1:
+            if scores.ndim == 1:
                 indices = (scores > 0).astype(int)
             else:
                 indices = scores.argmax(axis=1)
@@ -786,26 +785,22 @@ class _BaseDecoder(LinearRegression, CacheMixin):
     def _predict_dummy(self, n_samples):
         """Non-sparse scikit-learn based prediction steps for classification
            and regression"""
-        dummy_output = self.dummy_output_
 
+        if len(self.dummy_output_) == 1:
+            dummy_output = self.dummy_output_[0]
+        else:
+            dummy_output = self.dummy_output_[:, 1]
         if isinstance(self.estimator, DummyClassifier):
-            estimator_params = self.estimator.get_params()
-            strategy = estimator_params['strategy']
+            strategy = self.estimator.get_params()['strategy']
             if strategy in ['most_frequent', 'prior']:
-                scores = np.tile([dummy_output[k].argmax() for
-                                  k in range(self.n_outputs_)], [n_samples, 1])
+                scores = np.tile(dummy_output, reps=(n_samples, 1))
             elif strategy == 'stratified':
                 rs = check_random_state(0)
-                proba = []
-                for k in range(self.n_outputs_):
-                    out = rs.multinomial(1, dummy_output[k], size=n_samples)
-                    out = out.astype(np.float64)
-                    proba.append(out)
-                scores = np.vstack([proba[k].argmax(axis=1) for
-                                    k in range(self.n_outputs_)]).T
+                scores = rs.multinomial(1, dummy_output, size=n_samples)
+
         elif isinstance(self.estimator, DummyRegressor):
-                scores = np.full((n_samples, self.n_outputs_), self.dummy_output_,
-                                  dtype=np.array(self.dummy_output_).dtype)
+            scores = np.full((n_samples, self.n_outputs_), self.dummy_output_,
+                             dtype=np.array(self.dummy_output_).dtype)
         return scores.ravel() if scores.shape[1] == 1 else scores
 
 
