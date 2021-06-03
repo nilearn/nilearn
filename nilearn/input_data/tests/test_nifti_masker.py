@@ -238,6 +238,10 @@ def test_sessions():
     masker = NiftiMasker(sessions=np.ones(3, dtype=np.int))
     pytest.raises(ValueError, masker.fit_transform, data_img)
 
+    # check deprication warning of attribute session
+    with pytest.warns(FutureWarning,
+                      match="'sessions' attribute is deprecated") as record:
+        masker.sessions
 
 def test_joblib_cache():
     from joblib import hash, Memory

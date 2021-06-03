@@ -108,7 +108,7 @@ def filter_and_extract(imgs, extraction_function,
     # Normalizing
     if verbose > 0:
         print("[%s] Cleaning extracted signals" % class_name)
-    runs = parameters.get('runs')
+    runs = parameters['runs']
     region_signals = cache(
         signal.clean, memory=memory, func_memory_level=2,
         memory_level=memory_level)(

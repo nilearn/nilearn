@@ -37,6 +37,7 @@ def filter_and_mask(imgs, mask_img_, parameters,
                     verbose=0,
                     confounds=None,
                     sample_mask=None,
+                    runs=None,
                     copy=True,
                     dtype=None):
     """Extract representative time series using given mask.
@@ -230,7 +231,6 @@ class NiftiMasker(BaseMasker, CacheMixin):
                  ):
         # Mask is provided or computed
         self.mask_img = mask_img
-
         self.runs = runs
         self.smoothing_fwhm = smoothing_fwhm
         self.standardize = standardize
@@ -260,6 +260,13 @@ class NiftiMasker(BaseMasker, CacheMixin):
                               'resampling, hover over the displayed image.')
         self._warning_message = ""
         self._shelving = False
+
+    @property
+    def sessions(self):
+        warnings.warn(FutureWarning("'sessions' attribute is deprecated and "
+                                    "will be removed in 0.9.0, use 'runs' "
+                                    "instead."))
+        return self.runs
 
     def generate_report(self):
         from nilearn.reporting.html_report import generate_report
