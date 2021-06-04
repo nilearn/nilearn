@@ -43,11 +43,11 @@ def _deprecation_warning(old_param,
                           message=("'{}' has been deprecated in version {} "
                                    "and will be removed in version {}. "
                                    "Please use '{}' instead.".format(
-                               old_param,
-                               start_version,
-                               end_version,
-                               new_param
-                           )))
+                                       old_param,
+                                       start_version,
+                                       end_version,
+                                       new_param
+                                   )))
             return func(*args, **kwargs)
         return wrapper
     return _warned_func
