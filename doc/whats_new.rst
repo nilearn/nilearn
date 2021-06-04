@@ -8,7 +8,7 @@ NEW
   volumes with high motion) and/or non-steady-state volumes. This masking step
   is applied before signal cleaning.
   shape: (number of scans - number of volumes removed, )
-  - Moving parameter `sample_mask` from :class:`nilearn.input_data.NiftiMasker`
+- Moving parameter `sample_mask` from :class:`nilearn.input_data.NiftiMasker`
   to method `transform` in base class :class:`nilearn.input_data.base_masker`.
   All inheritent classes of :class:`nilearn.input_data.base_masker` can use
   parameter `sample_mask` for sub-sample masking.
