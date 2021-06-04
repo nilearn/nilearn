@@ -69,9 +69,6 @@ def filter_and_extract(imgs, extraction_function,
     imgs = _utils.check_niimg(imgs, atleast_4d=True, ensure_ndim=4,
                               dtype=dtype)
 
-    if sample_mask is None:
-        sample_mask = parameters.get('sample_mask', None)
-
     target_shape = parameters.get('target_shape')
     target_affine = parameters.get('target_affine')
     if target_shape is not None or target_affine is not None:
@@ -152,6 +149,7 @@ class BaseMasker(BaseEstimator, TransformerMixin, CacheMixin):
             Masks the niimgs along time/fourth dimension to perform scrubbing
             (remove volumes with high motion) and/or non-steady-state volumes.
             This parameter is passed to signal.clean.
+                .. versionadded:: 0.7.2
 
         copy : Boolean, optional
             Indicates whether a copy is returned or not. Default=True.
@@ -185,6 +183,7 @@ class BaseMasker(BaseEstimator, TransformerMixin, CacheMixin):
             Masks the niimgs along time/fourth dimension to perform scrubbing
             (remove volumes with high motion) and/or non-steady-state volumes.
             This parameter is passed to signal.clean.
+                .. versionadded:: 0.7.2
 
         Returns
         -------
@@ -234,6 +233,7 @@ class BaseMasker(BaseEstimator, TransformerMixin, CacheMixin):
         sample_mask : list of sample_mask, optional
             List of sample_mask (1D arrays) if scrubbing motion outliers.
             Must be of same length than imgs_list.
+                .. versionadded:: 0.7.2
 
         Returns
         -------

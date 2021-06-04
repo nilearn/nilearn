@@ -150,7 +150,7 @@ def test_mask_4d():
     mask_img = Nifti1Image(mask, np.eye(4))
 
     # Dummy data
-    data = np.zeros((10, 10, 10, 3), dtype=int)
+    data = np.zeros((10, 10, 10, 5), dtype=int)
     data[..., 0] = 1
     data[..., 1] = 2
     data[..., 2] = 3
@@ -173,11 +173,26 @@ def test_mask_4d():
     data_trans2 = masker.transform(data_img_4d, sample_mask=sample_mask)
     assert_array_equal(data_trans2, data_trans_direct)
 
-    # check deprication warning
-    with pytest.warns(FutureWarning) as record:
+    # check deprication warning, and the old API shoud still work
+    with pytest.warns(DeprecationWarning) as record:
         masker = NiftiMasker(mask_img=mask_img, sample_mask=sample_mask)
-    assert "sample_mask deprecated" in record[0].message.args[0]
+        masker.fit()
+        data_trans_depr = masker.transform(data_img_4d)
+    assert "sample_mask will be removed" in record[0].message.args[0]
+    assert_array_equal(data_trans_depr, data_trans_direct)
 
+    # show warning when supplying both, use the sample_mask from transform
+    diff_sample_mask = np.array([2, 4])
+    data_trans_img_diff = index_img(data_img_4d, diff_sample_mask)
+    data_trans_direct_diff = get_data(data_trans_img_diff)[mask_bool, :]
+    data_trans_direct_diff = np.swapaxes(data_trans_direct_diff, 0, 1)
+    masker = NiftiMasker(mask_img=mask_img, sample_mask=sample_mask)
+    masker.fit()
+    with pytest.warns(UserWarning, match=r'^Overwriting') as record:
+        data_trans3 = masker.transform(data_img_4d,
+                                       sample_mask=diff_sample_mask)
+    assert_array_equal(data_trans3, data_trans_direct_diff)
+    assert "Overwriting depricated attribute " in record[0].message.args[0]
 
 def test_4d_single_scan():
     mask = np.zeros((10, 10, 10))
@@ -239,9 +254,9 @@ def test_sessions():
     pytest.raises(ValueError, masker.fit_transform, data_img)
 
     # check deprication warning of attribute session
-    with pytest.warns(FutureWarning) as record:
+    with pytest.warns(DeprecationWarning) as record:
         masker.sessions
-    assert "'sessions' attribute is deprecated" in str(record[0].message)
+    assert "`sessions` attribute is deprecated" in record[0].message.args[0]
 
 
 def test_joblib_cache():

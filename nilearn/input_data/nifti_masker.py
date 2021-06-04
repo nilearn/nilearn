@@ -37,7 +37,6 @@ def filter_and_mask(imgs, mask_img_, parameters,
                     verbose=0,
                     confounds=None,
                     sample_mask=None,
-                    runs=None,
                     copy=True,
                     dtype=None):
     """Extract representative time series using given mask.
@@ -170,6 +169,16 @@ class NiftiMasker(BaseMasker, CacheMixin):
         masking.compute_background_mask, masking.compute_epi_mask or
         masking.compute_brain_mask. Default='background'.
 
+    sample_mask : Any type compatible with numpy-array indexing, optional
+        Masks the niimgs along time/fourth dimension. This complements
+        3D masking by the mask_img argument. This masking step is applied
+        before data preprocessing at the beginning of NiftiMasker.transform.
+        This is useful to perform data subselection as part of a scikit-learn
+        pipeline.
+            .. deprecated:: 0.7.2
+                `sample_mask` is deprecated in 0.7.2 and will be removed in
+                0.9.0.
+
     mask_args : dict, optional
         If mask is None, these are additional parameters passed to
         masking.compute_background_mask or masking.compute_epi_mask
@@ -217,8 +226,8 @@ class NiftiMasker(BaseMasker, CacheMixin):
 
     """
     @remove_parameters(['sample_mask'],
-                       ('supply sample_masker through transform or '
-                        'fit_transform methods instead.'),
+                       ('Deprecated in 0.7.2. Supply `sample_masker` through '
+                        '`transform` or `fit_transform` methods instead. '),
                        '0.9.0')
     @rename_parameters({'sessions': 'runs'}, '0.9.0')
     def __init__(self, mask_img=None, runs=None, smoothing_fwhm=None,
@@ -244,7 +253,7 @@ class NiftiMasker(BaseMasker, CacheMixin):
         self.target_shape = target_shape
         self.mask_strategy = mask_strategy
         self.mask_args = mask_args
-        self.sample_mask = sample_mask
+        self._sample_mask = sample_mask
         self.dtype = dtype
 
         self.memory = memory
@@ -263,10 +272,18 @@ class NiftiMasker(BaseMasker, CacheMixin):
 
     @property
     def sessions(self):
-        warnings.warn(FutureWarning("'sessions' attribute is deprecated and "
-                                    "will be removed in 0.9.0, use 'runs' "
-                                    "instead."))
+        warnings.warn(DeprecationWarning("`sessions` attribute is deprecated "
+                                         "and  will be removed in 0.9.0, use "
+                                         "`runs` instead."))
         return self.runs
+
+    @property
+    def sample_mask(self):
+        warnings.warn(DeprecationWarning(
+            "Deprecated. `sample_mask` will be removed  in 0.9.0 in favor of "
+            "supplying `sample_mask` through method `transform` or "
+            "`fit_transform`."))
+        return self._sample_mask
 
     def generate_report(self):
         from nilearn.reporting.html_report import generate_report
@@ -456,7 +473,19 @@ class NiftiMasker(BaseMasker, CacheMixin):
         # just invalid the cache for no good reason
         # target_shape and target_affine are conveyed implicitly in mask_img
         params = get_params(self.__class__, self,
-                            ignore=['mask_img', 'mask_args', 'mask_strategy'])
+                            ignore=['mask_img', 'mask_args', 'mask_strategy',
+                                    '_sample_mask', 'sample_mask'])
+
+        if hasattr(self, '_sample_mask') and self._sample_mask is not None:
+            if sample_mask is not None:
+                warnings.warn(
+                    UserWarning("Overwriting depricated attribute "
+                                "`NiftiMasker.sample_mask` with parameter "
+                                "`sample_masker` in method `transform`.")
+                )
+            else:
+                sample_mask = self._sample_mask
+
         data = self._cache(filter_and_mask,
                            ignore=['verbose', 'memory', 'memory_level',
                                    'copy'],
