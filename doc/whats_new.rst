@@ -3,11 +3,20 @@
 
 NEW
 ---
+- :func:`nilearn.signal.clean` accept new parameter `sample_mask`.
+  Masks the niimgs along time/fourth dimension to perform scrubbing (remove
+  volumes with high motion) and/or non-steady-state volumes. This masking step
+  is applied before signal cleaning.
+  shape: (number of scans - number of volumes removed, )
+  - Moving parameter `sample_mask` from :class:`nilearn.input_data.NiftiMasker`
+  to method `transform` in base class :class:`nilearn.input_data.base_masker`.
+  All inheritent classes of :class:`nilearn.input_data.base_masker` can use
+  parameter `sample_mask` for sub-sample masking.
 
 Fixes
 -----
 
-- Convert references in atlas.py, func.py, neurovault.py, and struct.py 
+- Convert references in atlas.py, func.py, neurovault.py, and struct.py
   to use footcite / footbibliography.
 - Fix detrending and temporal filtering order for confounders
   in :func:`nilearn.signal.clean`, so that these operations are applied
@@ -20,7 +29,7 @@ Fixes
   :func:`nilearn.plotting.plot_stat_map`) will now plot the slices in the user
   specified order, rather than automatically sorting into ascending order
   (https://github.com/nilearn/nilearn/issues/1155).
-- Fix the axes zoom on plot_img_on_surf function so brain would not be cutoff, and edited function so less white space surrounds brain views & smaller colorbar using gridspec (https://github.com/nilearn/nilearn/pull/2798). 
+- Fix the axes zoom on plot_img_on_surf function so brain would not be cutoff, and edited function so less white space surrounds brain views & smaller colorbar using gridspec (https://github.com/nilearn/nilearn/pull/2798).
 - Fix inconsistency in prediction values of Dummy Classifier for Decoder
   object (https://github.com/nilearn/nilearn/issues/2767).
 
@@ -46,18 +55,9 @@ Enhancements
   'stratified' (https://github.com/nilearn/nilearn/pull/2826/).
 - :class:`nilearn.glm.first_level.run_glm` now allows auto regressive noise
   models of order greater than one.
-- :func:`nilearn.signal.clean` accept new parameter `sample_mask`.
-  Masks the niimgs along time/fourth dimension to perform scrubbing (remove
-  volumes with high motion) and/or non-steady-state volumes. This masking step
-  is applied before signal cleaning.
-  shape: (number of scans - number of volumes removed, )
 - :class:`nilearn.input_data.NiftiMasker` replace `sessions` with `runs` and
   deprecates attribute `sessions` in 0.9.0. Match the relevant change in
   :func:`nilearn.signal.clean`.
-- Moving parameter `sample_mask` from :class:`nilearn.input_data.NiftiMasker`
-  to method `transform` in base class :class:`nilearn.input_data.base_masker`.
-  All inheritent classes of :class:`nilearn.input_data.base_masker` can use
-  parameter `sample_mask` for sub-sample masking.
 
 .. _v0.7.1:
 
