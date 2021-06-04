@@ -58,7 +58,7 @@ Enhancements
   deprecates attribute `sessions` in 0.9.0. Match the relevant change in
   :func:`nilearn.signal.clean`.
 - Moves parameter `sample_mask` from :class:`nilearn.input_data.NiftiMasker`
-  to method `transform` in base class :class:`nilearn.input_data.base_masker`.
+  to method `transform` in base class :class:`nilearn.input_data.BaseMasker`.
 
 .. _v0.7.1:
 
