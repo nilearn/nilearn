@@ -40,9 +40,9 @@ def _deprecation_warning(old_param,
         @functools.wraps(func)
         def wrapper(*args, **kwargs):
             warnings.warn(category=FutureWarning,
-                          message=("{} has been deprecated in version {} "
+                          message=("'{}' has been deprecated in version {} "
                                    "and will be removed in version {}. "
-                                   "Please use {} instead.".format(
+                                   "Please use '{}' instead.".format(
                                old_param,
                                start_version,
                                end_version,
