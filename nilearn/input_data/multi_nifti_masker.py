@@ -265,6 +265,7 @@ class MultiNiftiMasker(NiftiMasker, CacheMixin):
         sample_mask : list of sample_mask, optional
             List of sample_mask (1D arrays) if scrubbing motion outliers.
             Must be of same length than imgs_list.
+
                 .. versionadded:: 0.7.2
 
         copy : boolean, optional
@@ -341,6 +342,7 @@ class MultiNiftiMasker(NiftiMasker, CacheMixin):
         sample_mask : list of sample_mask, optional
             List of sample_mask (1D arrays) if scrubbing motion outliers.
             Must be of same length than imgs_list.
+
                 .. versionadded:: 0.7.2
 
         Returns

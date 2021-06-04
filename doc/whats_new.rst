@@ -54,7 +54,7 @@ Enhancements
   'stratified' (https://github.com/nilearn/nilearn/pull/2826/).
 - :class:`nilearn.glm.first_level.run_glm` now allows auto regressive noise
   models of order greater than one.
-- :class:`nilearn.input_data.NiftiMasker` replace `sessions` with `runs` and
+- :class:`nilearn.input_data.NiftiMasker` replaces `sessions` with `runs` and
   deprecates attribute `sessions` in 0.9.0. Match the relevant change in
   :func:`nilearn.signal.clean`.
 - Moves parameter `sample_mask` from :class:`nilearn.input_data.NiftiMasker`

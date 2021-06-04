@@ -386,6 +386,7 @@ class NiftiSpheresMasker(BaseMasker, CacheMixin):
             (remove volumes with high motion) and/or non-steady-state volumes.
             This parameter is passed to signal.clean.
             shape: (number of scans - number of volumes removed, )
+
                 .. versionadded:: 0.7.2
 
         Returns

@@ -468,6 +468,7 @@ def clean(signals, runs=None, detrend=True, standardize='zscore',
         This masking step is applied before signal cleaning. When supplying run
         information, sample_mask must be a list containing sets of indexes for
         each run.
+
             .. versionadded:: 0.7.2
 
     t_r: float

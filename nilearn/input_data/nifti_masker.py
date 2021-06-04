@@ -181,6 +181,7 @@ class NiftiMasker(BaseMasker, CacheMixin):
         before data preprocessing at the beginning of NiftiMasker.transform.
         This is useful to perform data subselection as part of a scikit-learn
         pipeline.
+
             .. deprecated:: 0.7.2
                 `sample_mask` is deprecated in 0.7.2 and will be removed in
                 0.9.0.

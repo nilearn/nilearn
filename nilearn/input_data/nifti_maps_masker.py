@@ -264,6 +264,7 @@ class NiftiMapsMasker(BaseMasker, CacheMixin):
             Masks the niimgs along time/fourth dimension to perform scrubbing
             (remove volumes with high motion) and/or non-steady-state volumes.
             This parameter is passed to signal.clean.
+
                 .. versionadded:: 0.7.2
 
         Returns

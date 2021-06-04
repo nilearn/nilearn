@@ -149,6 +149,7 @@ class BaseMasker(BaseEstimator, TransformerMixin, CacheMixin):
             Masks the niimgs along time/fourth dimension to perform scrubbing
             (remove volumes with high motion) and/or non-steady-state volumes.
             This parameter is passed to signal.clean.
+
                 .. versionadded:: 0.7.2
 
         copy : Boolean, optional
@@ -183,6 +184,7 @@ class BaseMasker(BaseEstimator, TransformerMixin, CacheMixin):
             Masks the niimgs along time/fourth dimension to perform scrubbing
             (remove volumes with high motion) and/or non-steady-state volumes.
             This parameter is passed to signal.clean.
+
                 .. versionadded:: 0.7.2
 
         Returns
@@ -233,6 +235,7 @@ class BaseMasker(BaseEstimator, TransformerMixin, CacheMixin):
         sample_mask : list of sample_mask, optional
             List of sample_mask (1D arrays) if scrubbing motion outliers.
             Must be of same length than imgs_list.
+
                 .. versionadded:: 0.7.2
 
         Returns
