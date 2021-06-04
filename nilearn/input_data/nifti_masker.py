@@ -169,6 +169,12 @@ class NiftiMasker(BaseMasker, CacheMixin):
         masking.compute_background_mask, masking.compute_epi_mask or
         masking.compute_brain_mask. Default='background'.
 
+    mask_args : dict, optional
+        If mask is None, these are additional parameters passed to
+        masking.compute_background_mask or masking.compute_epi_mask
+        to fine-tune mask computation. Please see the related documentation
+        for details.
+
     sample_mask : Any type compatible with numpy-array indexing, optional
         Masks the niimgs along time/fourth dimension. This complements
         3D masking by the mask_img argument. This masking step is applied
@@ -178,12 +184,6 @@ class NiftiMasker(BaseMasker, CacheMixin):
             .. deprecated:: 0.7.2
                 `sample_mask` is deprecated in 0.7.2 and will be removed in
                 0.9.0.
-
-    mask_args : dict, optional
-        If mask is None, these are additional parameters passed to
-        masking.compute_background_mask or masking.compute_epi_mask
-        to fine-tune mask computation. Please see the related documentation
-        for details.
 
     dtype : {dtype, "auto"}, optional
         Data type toward which the data should be converted. If "auto", the
