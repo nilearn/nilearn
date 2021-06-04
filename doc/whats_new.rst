@@ -52,7 +52,7 @@ Enhancements
   is applied before signal cleaning.
   shape: (number of scans - number of volumes removed, )
 - :class:`nilearn.input_data.NiftiMasker` replace `sessions` with `runs` and
-  depricates attribute `sessions` in 0.9.0. Match the relevant change in
+  deprecates attribute `sessions` in 0.9.0. Match the relevant change in
   :func:`nilearn.signal.clean`.
 - Moving parameter `sample_mask` from :class:`nilearn.input_data.NiftiMasker`
   to method `transform` in base class :class:`nilearn.input_data.base_masker`.
