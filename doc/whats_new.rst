@@ -9,7 +9,7 @@ NEW
   Masks the niimgs along time/fourth dimension to perform scrubbing (remove
   volumes with high motion) and/or non-steady-state volumes. Masking is applied
   before signal cleaning.
-- All inherent classes of :class:`nilearn.input_data.base_masker` can use
+- All inherent classes of :class:`nilearn.input_data.BaseMasker` can use
   parameter `sample_mask` for sub-sample masking.
 
 Fixes
