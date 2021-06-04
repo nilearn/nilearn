@@ -347,26 +347,57 @@ plt.show()
 # can drop that one.
 
 #########################################################################
-# The noise model: ar(1) or ols ?
-# -------------------------------
+# The noise model: ar(1), ols, or higher order ar?
+# ------------------------------------------------
 #
-# So far,we have implicitly used a lag-1 autoregressive model ---aka
-# ar(1)--- for the temporal structure of the noise. An alternative
+# So far,we have implicitly used a lag-1 autoregressive model---aka
+# ar(1)---for the temporal structure of the noise. An alternative
 # choice is to use an ordinary least squares model (ols) that assumes
-# no temporal structure (time-independent noise).
+# no temporal structure (time-independent noise) or
+# to use an autoregressive model with a higher order,
+# for example a third order autoregressive model---aka ar(3).
+#
+# First we recompute using the `spm + derivative` hrf model, the
+# slice_time_ref parameter chosen above, and explicitly set
+# the noise model to be ar(1).
+
+first_level_model = FirstLevelModel(t_r, slice_time_ref=0.5,
+                                    hrf_model='spm + derivative',
+                                    noise_model='ar1')
+first_level_model = first_level_model.fit(fmri_img, events=events)
+plot_contrast(first_level_model)
+plt.show()
+
+
+#########################################################################
+# Next we change the noise model to ols and observe the difference
+# relative to the ar(1) model.
 
 first_level_model = FirstLevelModel(t_r, slice_time_ref=0.5,
                                     hrf_model='spm + derivative',
                                     noise_model='ols')
 first_level_model = first_level_model.fit(fmri_img, events=events)
-design_matrix = first_level_model.design_matrices_[0]
-plot_design_matrix(design_matrix)
 plot_contrast(first_level_model)
 plt.show()
 
 #########################################################################
 # While the difference is not obvious you should rather stick to the
 # ar(1) model, which is arguably more accurate.
+#
+# Alternatively we can include more terms in the autoregressive model to
+# account for greater temporal complexity in the noise structure.
+
+first_level_model = FirstLevelModel(t_r, slice_time_ref=0.5,
+                                    hrf_model='spm + derivative',
+                                    noise_model='ar3')
+first_level_model = first_level_model.fit(fmri_img, events=events)
+plot_contrast(first_level_model)
+plt.show()
+
+#########################################################################
+# This noise model arguably reduces the amount of spurious activity.
+# However, as the difference is not obvious you may wish to stick to the
+# ar(1) model, which is computationally more efficient.
 
 #########################################################################
 # Removing confounds

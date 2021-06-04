@@ -43,13 +43,13 @@ jobs:
         name: 'Display Python version'
         run: python -c "import sys; print(sys.version)"
       - shell: bash -l {0}
-        run: ./tools/github_actions_dependencies.sh
+        run: ./build_tools/github/dependencies.sh
         name: 'Install dependencies'
       - shell: bash -l {0}
-        run: ./tools/github_actions_install.sh
+        run: ./build_tools/github/install.sh
         name: 'Install nilearn'
       - shell: bash -l {0}
-        run: ./tools/github_actions_test.sh
+        run: ./build_tools/github/test.sh
         name: 'Run tests'
       - uses: codecov/codecov-action@v1
         if: success()
@@ -78,13 +78,16 @@ jobs:
         name: 'Display Python version'
         run: python -c "import sys; print(sys.version)"
       - shell: bash {0}
-        run: ./tools/github_actions_dependencies.sh
+        run: ./build_tools/github/dependencies.sh
         name: 'Install dependencies'
       - shell: bash {0}
-        run: ./tools/github_actions_install.sh
+        run: ./build_tools/github/install.sh
         name: 'Install nilearn'
       - shell: bash {0}
-        run: ./tools/github_actions_test.sh
+        run: ./build_tools/github/test_docs.sh
+        name: 'Run doctests'
+      - shell: bash {0}
+        run: ./build_tools/github/test.sh
         name: 'Run tests'
       - uses: codecov/codecov-action@v1
         if: success()
