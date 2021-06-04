@@ -173,7 +173,7 @@ def test_mask_4d():
     data_trans2 = masker.transform(data_img_4d, sample_mask=sample_mask)
     assert_array_equal(data_trans2, data_trans_direct)
 
-    # check deprication warning, and the old API shoud still work
+    # check deprecation warning, and the old API should still work
     with pytest.warns(DeprecationWarning) as record:
         masker = NiftiMasker(mask_img=mask_img, sample_mask=sample_mask)
         masker.fit()
@@ -192,7 +192,7 @@ def test_mask_4d():
         data_trans3 = masker.transform(data_img_4d,
                                        sample_mask=diff_sample_mask)
     assert_array_equal(data_trans3, data_trans_direct_diff)
-    assert "Overwriting depricated attribute " in record[0].message.args[0]
+    assert "Overwriting deprecated attribute " in record[0].message.args[0]
 
 def test_4d_single_scan():
     mask = np.zeros((10, 10, 10))
@@ -253,7 +253,7 @@ def test_sessions():
     masker = NiftiMasker(sessions=np.ones(3, dtype=np.int))
     pytest.raises(ValueError, masker.fit_transform, data_img)
 
-    # check deprication warning of attribute session
+    # check deprecation warning of attribute sessions
     with pytest.warns(DeprecationWarning) as record:
         masker.sessions
     assert "`sessions` attribute is deprecated" in record[0].message.args[0]

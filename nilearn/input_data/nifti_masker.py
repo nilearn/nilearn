@@ -479,9 +479,9 @@ class NiftiMasker(BaseMasker, CacheMixin):
         if hasattr(self, '_sample_mask') and self._sample_mask is not None:
             if sample_mask is not None:
                 warnings.warn(
-                    UserWarning("Overwriting depricated attribute "
+                    UserWarning("Overwriting deprecated attribute "
                                 "`NiftiMasker.sample_mask` with parameter "
-                                "`sample_masker` in method `transform`.")
+                                "`sample_mask` in method `transform`.")
                 )
             else:
                 sample_mask = self._sample_mask
