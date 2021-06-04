@@ -539,6 +539,7 @@ class SimpleRegressionResults(LikelihoodModelResults):
                 * positive_reciprocal(np.sqrt(self.dispersion))
                 )
 
+    @auto_attr
     def predicted(self):
         """ Return linear predictor values from a design matrix.
         """
