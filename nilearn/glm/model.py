@@ -86,7 +86,8 @@ class LikelihoodModelResults(object):
     @auto_attr
     def df_resid(self):
         warnings.warn("'df_resid' from LikelihoodModelResults "
-                      "has been deprecated and will be removed. "
+                      "has been deprecated in 0.7.0 and will "
+                      "be removed in 0.9.0. "
                       "Please use 'df_residuals'.",
                       FutureWarning)
         return self.df_residuals
