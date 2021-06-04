@@ -321,7 +321,7 @@ def test_fetch_files_use_session(tmp_path, request_mocker):
             ("example1", "https://example.org/example1", {"overwrite": True}),
             ("example2", "https://example.org/example2", {"overwrite": True}),
         ],
-        data_dir=tmp_path,
+        data_dir=str(tmp_path),
         session=session,
     )
     assert session.send.call_count == 2
