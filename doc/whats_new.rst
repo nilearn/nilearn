@@ -9,7 +9,7 @@ NEW
   Masks the niimgs along time/fourth dimension to perform scrubbing (remove
   volumes with high motion) and/or non-steady-state volumes. Masking is applied
   before signal cleaning.
-- All inherent classes of :class:`nilearn.input_data.BaseMasker` can use
+- All inherent classes of `nilearn.input_data.BaseMasker` can use
   parameter `sample_mask` for sub-sample masking.
 
 Fixes
@@ -58,7 +58,7 @@ Enhancements
   deprecates attribute `sessions` in 0.9.0. Match the relevant change in
   :func:`nilearn.signal.clean`.
 - Moves parameter `sample_mask` from :class:`nilearn.input_data.NiftiMasker`
-  to method `transform` in base class :class:`nilearn.input_data.BaseMasker`.
+  to method `transform` in base class `nilearn.input_data.BaseMasker`.
 
 .. _v0.7.1:
 
