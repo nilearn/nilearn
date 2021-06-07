@@ -100,7 +100,12 @@ def plot_surf(surf_mesh, surf_map=None, *, bg_map=None,
     Parameters
     ----------
     surf_mesh : str or list of two numpy.ndarray or Mesh or Surface
-        Deprecated, will be renamed `surface` in 0.9.
+
+            .. deprecated:: 0.7.2
+                `surf_mesh` is deprecated in 0.7.2 and will be renamed
+                `surface` in 0.9.0. A Surface object will have to be
+                provided.
+
         If a Surface-like object is provided instead of a Mesh, `surface.data`
         will overwrite the `surf_map` argument.
         It can be:
@@ -133,13 +138,15 @@ def plot_surf(surf_mesh, surf_map=None, *, bg_map=None,
             - a Mesh object with "coordinates" and "faces" attributes.
 
     surf_map : str or numpy.ndarray, optional
-        Deprecated, will be removed in 0.9. Please use a Surface object to
-        define the map. This argument will be ignored if a Surface object is
-        provided as first argument.
         Data to be displayed on the surface mesh. Can be a file (valid formats
         are .gii, .mgz, .nii, .nii.gz, or Freesurfer specific files such as
         .thickness, .area, .curv, .sulc, .annot, .label) or
         a Numpy array with a value for each vertex of the surf_mesh.
+
+            .. deprecated:: 0.7.2
+                `surf_map` is deprecated in 0.7.2 and will be removed in 0.9.0.
+                Please use a Surface object to define the map. Will be ignored
+                if a Surface object is provided as first argument.
 
     bg_map : Surface data object (to be defined), optional
         Background image to be plotted on the mesh underneath the
@@ -521,7 +528,12 @@ def plot_surf_contours(surf_mesh, roi_map, *, axes=None, figure=None,
     Parameters
     ----------
     surf_mesh : str or list of two numpy.ndarray or Mesh or Surface
-        Deprecated, will be renamed `surface` in 0.9.
+
+            .. deprecated:: 0.7.2
+                `surf_mesh` is deprecated in 0.7.2 and will be renamed
+                `surface` in 0.9.0. A Surface object will have to be
+                provided.
+
         If a Surface-like object is provided instead of a Mesh, `surface.data`
         will overwrite the `surf_map` argument.
         It can be:
@@ -554,15 +566,17 @@ def plot_surf_contours(surf_mesh, roi_map, *, axes=None, figure=None,
             - a Mesh object with "coordinates" and "faces" attributes.
 
     roi_map : str or numpy.ndarray or list of numpy.ndarray
-        Deprecated, will be removed in 0.9. Please use a Surface object to
-        define the map. This argument will be ignored if a Surface object is
-        provided as first argument.
         ROI map to be displayed on the surface mesh, can be a file
         (valid formats are .gii, .mgz, .nii, .nii.gz, or Freesurfer specific
         files such as .annot or .label), or
         a Numpy array with a value for each vertex of the surf_mesh.
         The value at each vertex one inside the ROI and zero inside ROI, or an
         integer giving the label number for atlases.
+
+            .. deprecated:: 0.7.2
+                `roi_map` is deprecated in 0.7.2 and will be removed in 0.9.0.
+                Please use a Surface object to define the map. Will be ignored
+                if a Surface object is provided as first argument.
 
     axes : instance of matplotlib axes, None, optional
         The axes instance to plot to. The projection must be '3d' (e.g.,
@@ -695,7 +709,12 @@ def plot_surf_stat_map(surf_mesh, stat_map, *, bg_map=None,
     Parameters
     ----------
     surf_mesh : str or list of two numpy.ndarray or Mesh or Surface
-        Deprecated, will be renamed `surface` in 0.9.
+
+            .. deprecated:: 0.7.2
+                `surf_mesh` is deprecated and will be renamed
+                `surface` in 0.9.0. A Surface object will have to be
+                provided.
+
         If a Surface-like object is provided instead of a Mesh, `surface.data`
         will overwrite the `surf_map` argument.
         It can be:
@@ -728,14 +747,15 @@ def plot_surf_stat_map(surf_mesh, stat_map, *, bg_map=None,
             - a Mesh object with "coordinates" and "faces" attributes.
 
     stat_map : str or numpy.ndarray
-        Deprecated, will be removed in 0.9. Please use a Surface object to
-        define the map. This argument will be ignored if a Surface object is
-        provided as first argument.
         Statistical map to be displayed on the surface mesh, can
         be a file (valid formats are .gii, .mgz, .nii, .nii.gz, or
-        Freesurfer specific files such as .thickness, .area, .curv,
-        .sulc, .annot, .label) or
-        a Numpy array with a value for each vertex of the surf_mesh.
+        Freesurfer specific files such as .thickness, .curv, .sulc, .annot,
+        .label) or a Numpy array with a value for each vertex of the surf_mesh.
+
+            .. deprecated:: 0.7.2
+                `stat_map` is deprecated in 0.7.2 and will be removed in 0.9.0.
+                Please use a Surface object to define the map. Will be ignored
+                if a Surface object is provided as first argument.
 
     bg_map : Surface data object (to be defined), optional
         Background image to be plotted on the mesh underneath the
@@ -1095,7 +1115,12 @@ def plot_surf_roi(surf_mesh, roi_map, *, bg_map=None,
     Parameters
     ----------
     surf_mesh : str or list of two numpy.ndarray or Mesh or Surface
-        Deprecated, will be renamed `surface` in 0.9.
+
+            .. deprecated:: 0.7.2
+                `surf_mesh` is deprecated in 0.7.2 and will be renamed
+                `surface` in 0.9.0. A Surface object will have to be
+                provided.
+
         If a Surface-like object is provided instead of a Mesh, `surface.data`
         will overwrite the `surf_map` argument.
         It can be:
@@ -1128,15 +1153,17 @@ def plot_surf_roi(surf_mesh, roi_map, *, bg_map=None,
             - a Mesh object with "coordinates" and "faces" attributes.
 
     roi_map : str or numpy.ndarray or list of numpy.ndarray
-        Deprecated, will be removed in 0.9. Please use a Surface object to
-        define the map. This argument will be ignored if a Surface object is
-        provided as first argument.
         ROI map to be displayed on the surface mesh, can be a file
         (valid formats are .gii, .mgz, .nii, .nii.gz, or Freesurfer specific
         files such as .annot or .label), or
         a Numpy array with a value for each vertex of the surf_mesh.
         The value at each vertex one inside the ROI and zero inside ROI, or an
         integer giving the label number for atlases.
+
+            .. deprecated:: 0.7.2
+                `roi_map` is deprecated in 0.7.2 and will be removed in 0.9.0.
+                Please use a Surface object to define the map. Will be ignored
+                if a Surface object is provided as first argument.
 
     hemi : {'left', 'right'}, optional
         Hemisphere to display. Default='left'.

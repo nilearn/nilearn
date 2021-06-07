@@ -246,7 +246,11 @@ def view_surf(surf_mesh, surf_map=None, *, bg_map=None, threshold=None,
     Parameters
     ----------
     surf_mesh : str or list of two numpy.ndarray or Mesh or Surface
-        Deprecated, will be renamed 'surface' in 0.9.
+
+            .. deprecated:: 0.7.2
+                `surf_mesh` is deprecated in 0.7.2 and will be renamed
+                'surface' in 0.9.0.
+
         If a Surface-like object is provided instead of a Mesh, `surface.data`
         will overwrite the `surf_map` argument.
         It can be:
@@ -278,13 +282,15 @@ def view_surf(surf_mesh, surf_map=None, *, bg_map=None, threshold=None,
               containing the indices (into coords) of the mesh faces.
 
     surf_map : str or numpy.ndarray, optional
-        Deprecated, will be removed in 0.9. Please use a Surface object to
-        define the map. This argument will be removed if a Surface object is
-        provided as first argument.
         Data to be displayed on the surface mesh. Can be a file (valid formats
         are .gii, .mgz, .nii, .nii.gz, or Freesurfer specific files such as
         .thickness, .area, .curv, .sulc, .annot, .label) or
         a Numpy array
+
+            .. deprecated:: 0.7.2
+                `surf_map` is deprecated in 0.7.2 and will be removed in 0.9.0.
+                Please use a Surface object to define the map. This will not be
+                used if a Surface is provided as first argument.
 
     bg_map : Surface data, optional
         Background image to be plotted on the mesh underneath the

@@ -573,8 +573,11 @@ def vol_to_surf(img, surf_mesh,
         for each mesh node.
         If 4D image is provided, a 2d array is returned, where each row
         corresponds to a mesh node.
-        The return value is deprecated and will change to a Surface object
-        with provided mesh and computed texture as arguments in release 0.9.
+
+            .. deprecated:: 0.7.2
+                The return value is deprecated and will change
+                from a numpy array to a Surface object with provided
+                mesh and computed texture as arguments in release 0.9.0.
 
     Notes
     -----
