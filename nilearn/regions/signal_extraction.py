@@ -60,7 +60,7 @@ def _check_shappe_affine_maps_masks(target_shape, target_affine,
 
     Returns
     -------
-    state : boolean
+    non_empty : bool,
         Is only true for non-empty img.
         
     """
