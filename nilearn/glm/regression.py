@@ -334,7 +334,7 @@ class RegressionResults(LikelihoodModelResults):
     """
     @rename_parameters(
         {'wresid': 'whitened_residuals', 'wY': 'whitened_Y'},
-        lib_name='Nistats',
+        lib_name='Nilearn',
         end_version='0.9.0',
     )
     def __init__(self, theta, Y, model, whitened_Y, whitened_residuals,
