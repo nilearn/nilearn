@@ -109,6 +109,9 @@ NEW
   the provided label image and provide summary statistics on each region (name, volume...).
   If a functional image was provided to fit, the middle image is plotted with the regions
   overlaid as contours. Finally, if a mask is provided, its contours are shown in green.
+- Meshes and Surfaces are now represented by dedicated objects.
+- :func:`nilearn.surface.load_surface` was added to instanciate a surface object from a mesh
+  and texture data.
 
 Fixes
 -----
@@ -233,11 +236,6 @@ NEW
   stability of p-value estimation. It computes 1 - p-value using the Cumulative
   Distribution Function in the same way as `nilearn.glm.Contrast.p_value`
   computes the p-value using the Survival Function.
-
-- Meshes and Surfaces are now represented by dedicated objects.
-
-- :func:`nilearn.surface.load_surface` was added to instanciate a surface object from a mesh
-  and texture data.
 
 Fixes
 -----
