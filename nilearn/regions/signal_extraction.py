@@ -34,7 +34,7 @@ def _check_shappe_affine_label_img(labels_img, target_shape, target_affine):
 
     """
     if labels_img.shape != target_shape:
-        raise ValueError("label img and imgs shapes must be identical.")
+        raise ValueError("label_imgs.shape and target_shape must be identical.")
     if labels_img.affine.shape != target_affine.shape or \
        abs(labels_img.affine - target_affine).max() > INF:
         raise ValueError("label img and imgs affines must be identical.")
