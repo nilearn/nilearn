@@ -61,6 +61,8 @@ Enhancements
   to method `transform` in base class `nilearn.input_data.BaseMasker`.
 - Function sym_to_vec from :mod:`nilearn.connectome` was deprecated since release 0.4 and
   has been removed.
+- Fetcher `nilearn.datasets.fetch_nyu_rest` is deprecated since release 0.6.2 and
+  has been removed.
 
 .. _v0.7.1:
 
