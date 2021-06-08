@@ -418,8 +418,9 @@ def _ensure_float(data):
 
 @rename_parameters({'sessions': 'runs'}, '0.9.0')
 def clean(signals, runs=None, detrend=True, standardize='zscore',
-          confounds=None, standardize_confounds=True, filter='butterworth',
-          low_pass=None, high_pass=None, t_r=2.5, ensure_finite=False):
+          sample_mask=None, confounds=None, standardize_confounds=True,
+          filter='butterworth', low_pass=None, high_pass=None, t_r=2.5,
+          ensure_finite=False):
     """Improve SNR on masked fMRI signals.
 
     This function can do several things on the input signals, in
@@ -462,6 +463,17 @@ def clean(signals, runs=None, detrend=True, standardize='zscore',
         containing signals as columns, with an optional one-line header.
         If a list is provided, all confounds are removed from the input
         signal, as if all were in the same array.
+
+    sample_mask: None, numpy.ndarray, list, tuple, or list of
+        Default is None.
+        shape: (number of scans - number of volumes removed, )
+        Masks the niimgs along time/fourth dimension to perform scrubbing
+        (remove volumes with high motion) and/or non-steady-state volumes.
+        This masking step is applied before signal cleaning. When supplying run
+        information, sample_mask must be a list containing sets of indexes for
+        each run.
+
+            .. versionadded:: 0.7.2
 
     t_r: float
         Repetition time, in second (sampling period). Set to None if not.
@@ -518,7 +530,9 @@ def clean(signals, runs=None, detrend=True, standardize='zscore',
         nilearn.image.clean_img
     """
     # Read confounds and signals
-    signals, confounds = _sanitize_inputs(signals, confounds, ensure_finite)
+    signals, runs, confounds = _sanitize_inputs(
+        signals, runs, confounds, sample_mask, ensure_finite
+    )
     use_filter = _check_filter_parameters(filter, low_pass, high_pass, t_r)
     # Restrict the signal to the orthogonal of the confounds
     if runs is not None:
@@ -612,27 +626,117 @@ def _process_runs(signals, runs, detrend, standardize, confounds,
     return signals
 
 
-def _sanitize_inputs(signals, confounds, ensure_finite):
+def _sanitize_inputs(signals, runs, confounds, sample_mask, ensure_finite):
     """Clean up signals and confounds before processing."""
+    n_time = len(signals)  # original length of the signal
+    n_runs, runs = _sanitize_runs(n_time, runs)
+    confounds = _sanitize_confounds(n_time, n_runs, confounds)
+    sample_mask = _sanitize_sample_mask(n_time, n_runs, runs, sample_mask)
     signals = _sanitize_signals(signals, ensure_finite)
 
-    if not isinstance(confounds,
-                      (list, tuple, str, np.ndarray, pd.DataFrame,
-                       type(None))):
-        raise TypeError("confounds keyword has an unhandled type: %s"
-                        % confounds.__class__)
+    if sample_mask is None:
+        return signals, runs, confounds
+
+    if confounds is not None:
+        confounds = confounds[sample_mask, :]
+    if runs is not None:
+        runs = runs[sample_mask]
+    return signals[sample_mask, :], runs, confounds
+
+
+def _sanitize_confounds(n_time, n_runs, confounds):
+    """Check confounds are the correct type. When passing mutiple runs, ensure the
+    number of runs matches the sets of confound regressors.
+    """
     if confounds is None:
-        return signals, confounds
+        return confounds
+
+    if not isinstance(confounds, (list, tuple, str, np.ndarray, pd.DataFrame)):
+        raise TypeError(
+            "confounds keyword has an unhandled type: %s" % confounds.__class__
+        )
 
     if not isinstance(confounds, (list, tuple)):
-        confounds = (confounds, )
+        confounds = (confounds,)
+
     all_confounds = []
-    n_time = signals.shape[0]
     for confound in confounds:
         confound = _sanitize_confound_dtype(n_time, confound)
         all_confounds.append(confound)
     confounds = np.hstack(all_confounds)
-    return signals, _ensure_float(confounds)
+    return _ensure_float(confounds)
+
+
+def _sanitize_sample_mask(n_time, n_runs, runs, sample_mask):
+    """Check sample_mask is the right data type and matches the run index."""
+    if sample_mask is None:
+        return sample_mask
+    if not isinstance(sample_mask, (list, tuple, np.ndarray)):
+        raise TypeError(
+            "sample_mask has an unhandled type: %s" % sample_mask.__class__
+        )
+    if not isinstance(sample_mask, (list, tuple)):
+        sample_mask = (sample_mask, )
+
+    if len(sample_mask) != n_runs:
+        raise ValueError(
+            "Number of sample_mask ({}) not matching "
+            "number of runs ({}).".format(len(sample_mask), n_runs)
+        )
+
+    if runs is None:
+        runs = np.zeros(n_time)
+
+    # handle multiple runs
+    masks = []
+    starting_index = 0
+    for i, current_mask in enumerate(sample_mask):
+        _check_sample_mask_index(i, n_runs, runs, current_mask)
+        current_mask += starting_index
+        masks.append(current_mask)
+        starting_index = sum(i == runs)
+    sample_mask = np.hstack(masks)
+    return sample_mask
+
+
+def _check_sample_mask_index(i, n_runs, runs, current_mask):
+    """Ensure the index in sample mask is valid."""
+    len_run = sum(i == runs)
+    len_current_mask = len(current_mask)
+    # sample_mask longer than signal
+    if len_current_mask > len_run:
+        raise IndexError(
+            "sample_mask {} of {} is has more timepoints than the current "
+            "run ;sample_mask contains {} index but the run has {} "
+            "timepoints.".format(
+                (i + 1), n_runs, len_current_mask, len_run
+            )
+        )
+    # sample_mask index exceed signal timepoints
+    invalid_index = current_mask[current_mask > len_run]
+    if invalid_index.size > 0:
+        raise IndexError(
+            "sample_mask {} of {} contains invalid index {}; "
+            "The signal contains {} time points.".format(
+                (i + 1), n_runs, invalid_index, len_run
+            )
+        )
+
+
+def _sanitize_runs(n_time, runs):
+    """Check runs are supplied in the correct format and detect the number of
+    unique runs.
+    """
+    if runs is not None and len(runs) != n_time:
+        raise ValueError(
+            (
+                "The length of the session vector (%i) "
+                "does not match the length of the signals (%i)"
+            )
+            % (len(runs), n_time)
+        )
+    n_runs = 1 if runs is None else len(np.unique(runs))
+    return n_runs, runs
 
 
 def _sanitize_confound_dtype(n_signal, confound):

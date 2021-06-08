@@ -1,7 +1,7 @@
 # quick-build rebuilds changes using the cached documentation.
 # The cache is emptied everyday, forcing a full build on the day's first push.
-# It doesn't operate on master branch. New branches are always built from scratch.
-# full-build always rebuilds from scratch, without any cache. Only for changes in master branch.
+# It doesn't operate on main branch. New branches are always built from scratch.
+# full-build always rebuilds from scratch, without any cache. Only for changes in main branch.
 
 version: 2.1
 
@@ -322,6 +322,6 @@ workflows:
           filters:
             branches:
               only:
-                - master
+                - main
     jobs:
       - build_docs
