@@ -33,8 +33,6 @@ signal                  --- Set of preprocessing functions for time series
 """
 
 import gzip
-import sys
-import warnings
 import os
 
 from distutils.version import LooseVersion
@@ -47,25 +45,7 @@ from .version import _check_module_dependencies, __version__
 # see also https://github.com/scikit-learn/scikit-learn/pull/15020
 os.environ.setdefault("KMP_INIT_AT_FORK", "FALSE")
 
-
-def _py35_deprecation_warning():
-    py35_warning = ('Python 3.5 support is deprecated and will be removed in '
-                    'the 0.8.0 release. Consider switching to Python 3.6 or 3.7'
-                    )
-    warnings.filterwarnings('once', message=py35_warning)
-    warnings.warn(message=py35_warning,
-                  category=FutureWarning,
-                  stacklevel=3,
-                  )
-
-
-def _python_deprecation_warnings():
-    if sys.version_info.major == 3 and sys.version_info.minor == 5:
-        _py35_deprecation_warning()
-
-
 _check_module_dependencies()
-_python_deprecation_warnings()
 
 # Temporary work around to address formatting issues in doc tests
 # with NumPy 1.14. NumPy had made more consistent str/repr formatting
