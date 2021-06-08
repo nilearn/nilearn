@@ -15,7 +15,6 @@ NEW
 Fixes
 -----
 
-
 - Convert references in signal.py, atlas.py, func.py, neurovault.py, and struct.py 
   to use footcite / footbibliography.
 - Fix detrending and temporal filtering order for confounders
