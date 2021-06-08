@@ -370,7 +370,7 @@ def high_variance_confounds(series, n_confounds=5, percentile=2.,
     Notes
     -----
     This method is related to what has been published in the literature
-    as 'CompCor' (Behzadi NeuroImage 2007).
+    as 'CompCor' footcite:`BEHZADI200790`.
 
     The implemented algorithm does the following:
 
@@ -379,6 +379,10 @@ def high_variance_confounds(series, n_confounds=5, percentile=2.,
     - compute an svd of the extracted series
     - return a given number (n_confounds) of series from the svd with
       highest singular values.
+
+    References
+    ----------
+    .. footbibliography::
 
     See also
     --------
@@ -433,7 +437,7 @@ def clean(signals, runs=None, detrend=True, standardize='zscore',
 
     Filtering is only meaningful on evenly-sampled signals.
 
-    According to Lindquist et al. (2018), removal of confounds will be done
+    According to footcite:`Lindquist407676`, removal of confounds will be done
     orthogonally to temporal filters (low- and/or high-pass filters), if both
     are specified.
 
@@ -500,16 +504,14 @@ def clean(signals, runs=None, detrend=True, standardize='zscore',
     Notes
     -----
     Confounds removal is based on a projection on the orthogonal
-    of the signal space. See `Friston, K. J., A. P. Holmes,
-    K. J. Worsley, J.-P. Poline, C. D. Frith, et R. S. J. Frackowiak.
-    "Statistical Parametric Maps in Functional Imaging: A General
-    Linear Approach". Human Brain Mapping 2, no 4 (1994): 189-210.
-    <http://dx.doi.org/10.1002/hbm.460020402>`_
+    of the signal space. See footcite:`Friston1994`.
 
     Orthogonalization between temporal filters and confound removal is based on
-    suggestions in `Lindquist, M., Geuter, S., Wager, T., & Caffo, B. (2018).
-    Modular preprocessing pipelines can reintroduce artifacts into fMRI data.
-    bioRxiv, 407676. <http://dx.doi.org/10.1101/407676>`_
+    suggestions in footcite:`Lindquist407676`.
+
+    References
+    ----------
+    .. footbibliography::
 
     See Also
     --------
