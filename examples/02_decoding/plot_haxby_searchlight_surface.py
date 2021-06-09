@@ -88,7 +88,11 @@ chance = .5
 surf = load_surface((infl_mesh,
                      scores - chance))
 
+# Define a background surface
+background = load_surface((infl_mesh,
+                           fsaverage['sulc_' + hemi]))
+
 plotting.plot_surf_stat_map(surf, view='medial', colorbar=True,
-                            threshold=0.1, bg_map=fsaverage['sulc_' + hemi],
+                            threshold=0.1, bg_surf=background,
                             title='Accuracy map, left hemisphere')
 plotting.show()

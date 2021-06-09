@@ -54,8 +54,15 @@ from nilearn import plotting
 surf_pial_left = load_surface((fsaverage.pial_left,
                                parcellation))
 
-plotting.plot_surf_roi(surf_pial_left, hemi='left', view='lateral',
-                       bg_map=fsaverage['sulc_left'], bg_on_data=True,
+# Define a background surface
+background = load_surface((fsaverage.pial_left,
+                           fsaverage.sulc_left))
+
+plotting.plot_surf_roi(surf_pial_left,
+                       hemi='left',
+                       view='lateral',
+                       bg_surf=background,
+                       bg_on_data=True,
                        darkness=.5)
 
 ###############################################################################
@@ -63,20 +70,23 @@ plotting.plot_surf_roi(surf_pial_left, hemi='left', view='lateral',
 surf_infl_left = load_surface((fsaverage.infl_left,
                                parcellation))
 
-plotting.plot_surf_roi(surf_infl_left, hemi='left', view='lateral',
-                       bg_map=fsaverage['sulc_left'], bg_on_data=True,
+plotting.plot_surf_roi(surf_infl_left,
+                       hemi='left',
+                       view='lateral',
+                       bg_surf=background,
+                       bg_on_data=True,
                        darkness=.5)
 
 ###############################################################################
 # Display Destrieux parcellation with different views: posterior
 plotting.plot_surf_roi(surf_infl_left, hemi='left', view='posterior',
-                       bg_map=fsaverage['sulc_left'], bg_on_data=True,
+                       bg_surf=background, bg_on_data=True,
                        darkness=.5)
 
 ###############################################################################
 # Display Destrieux parcellation with different views: ventral
 plotting.plot_surf_roi(surf_infl_left, hemi='left', view='ventral',
-                       bg_map=fsaverage['sulc_left'], bg_on_data=True,
+                       bg_surf=background, bg_on_data=True,
                        darkness=.5)
 plotting.show()
 

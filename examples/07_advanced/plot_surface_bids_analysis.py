@@ -150,13 +150,28 @@ surf_z_val_right = load_surface((fsaverage.infl_right,
 ############################################################################
 # Plot the resulting maps, at first on the left hemipshere.
 from nilearn import plotting
-plotting.plot_surf_stat_map(surf_z_val_left, hemi='left',
-    title="language-string, left hemisphere", colorbar=True,
-    threshold=3., bg_map=fsaverage.sulc_left)
+
+# Define a background surface
+background_left = load_surface((fsaverage.infl_left,
+                                fsaverage.sulc_left))
+
+plotting.plot_surf_stat_map(surf_z_val_left,
+                            hemi='left',
+                            title="language-string, left hemisphere",
+                            colorbar=True,
+                            threshold=3.,
+                            bg_surf=background_left)
+
 ############################################################################
 # Next, on the right hemisphere.
-plotting.plot_surf_stat_map(surf_z_val_left, hemi='right',
-    title="language-string, right hemisphere", colorbar=True,
-    threshold=3., bg_map=fsaverage.sulc_right)
+background_right = load_surface((fsaverage.infl_left,
+                                fsaverage.sulc_left))
+
+plotting.plot_surf_stat_map(surf_z_val_right,
+                            hemi='right',
+                            title="language-string, right hemisphere",
+                            colorbar=True,
+                            threshold=3.,
+                            bg_surf=background_right)
 
 plotting.show()

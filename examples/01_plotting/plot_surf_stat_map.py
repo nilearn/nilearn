@@ -120,10 +120,17 @@ pcc_map[pcc_labels] = 1
 pcc_surf = load_surface((fsaverage.pial_left,
                          pcc_map))
 
+# Define a background surface
+background = load_surface((fsaverage.pial_left,
+                           fsaverage.sulc_left))
+
 from nilearn import plotting
 
-plotting.plot_surf_roi(pcc_surf, hemi='left', view='medial',
-                       bg_map=fsaverage['sulc_left'], bg_on_data=True,
+plotting.plot_surf_roi(pcc_surf,
+                       hemi='left',
+                       view='medial',
+                       bg_surf=background,
+                       bg_on_data=True,
                        title='PCC Seed')
 
 ###############################################################################
@@ -132,14 +139,14 @@ surf = load_surface((fsaverage.pial_left,
                      stat_map))
 
 plotting.plot_surf_stat_map(surf, hemi='left', view='medial', colorbar=True,
-                            bg_map=fsaverage['sulc_left'], bg_on_data=True,
+                            bg_surf=background, bg_on_data=True,
                             darkness=.3, title='Correlation map')
 
 ###############################################################################
 # Many different options are available for plotting, for example thresholding,
 # or using custom colormaps
 plotting.plot_surf_stat_map(surf, hemi='left', view='medial', colorbar=True,
-                            bg_map=fsaverage['sulc_left'], bg_on_data=True,
+                            bg_map=background, bg_on_data=True,
                             cmap='Spectral', threshold=.5,
                             title='Threshold and colormap')
 
@@ -156,7 +163,7 @@ plotting.plot_surf_stat_map(surf, hemi='left', view='lateral', colorbar=True,
 ###############################################################################
 # The plots can be saved to file, in which case the display is closed after
 # creating the figure
-plotting.plot_surf_stat_map(surf, hemi='left', bg_map=fsaverage['sulc_left'],
+plotting.plot_surf_stat_map(surf, hemi='left', bg_surf=background,
                             bg_on_data=True, threshold=.5, colorbar=True,
                             output_file='plot_surf_stat_map.png')
 

@@ -67,6 +67,8 @@ fsaverage = nilearn.datasets.fetch_surf_fsaverage()
 from nilearn.surface import vol_to_surf, load_surface
 texture = vol_to_surf(fmri_img, fsaverage.pial_right)
 surf = load_surface((fsaverage.pial_right, texture))
+background = load_surface((fsaverage.pial_right,
+                           fsaverage.sulc_right))
 
 ###############################################################################
 # Perform first level analysis
@@ -178,9 +180,12 @@ for index, (contrast_id, contrast_val) in enumerate(contrasts.items()):
     # we plot it on the surface, on the inflated fsaverage mesh,
     # together with a suitable background to give an impression
     # of the cortex folding.
-    plotting.plot_surf_stat_map(score_surface, hemi='right',
-                                title=contrast_id, colorbar=True,
-                                threshold=3., bg_map=fsaverage.sulc_right)
+    plotting.plot_surf_stat_map(score_surface,
+                                hemi='right',
+                                title=contrast_id,
+                                colorbar=True,
+                                threshold=3.,
+                                bg_surf=background)
 
 ###############################################################################
 # Analysing the left hemisphere
@@ -194,6 +199,8 @@ for index, (contrast_id, contrast_val) in enumerate(contrasts.items()):
 texture = vol_to_surf(fmri_img, fsaverage.pial_left)
 surf = load_surface((fsaverage.pial_left,
                      texture))
+background = load_surface((fsaverage.pial_left,
+                           fsaverage.sulc_left))
 
 ###############################################################################
 # Then we estimate the General Linear Model.
@@ -210,8 +217,11 @@ for index, (contrast_id, contrast_val) in enumerate(contrasts.items()):
     score_surf = load_surface((fsaverage.infl_left,
                                contrast.z_score()))
     # plot the result
-    plotting.plot_surf_stat_map(score_surf, hemi='left',
-                                title=contrast_id, colorbar=True,
-                                threshold=3., bg_map=fsaverage.sulc_left)
+    plotting.plot_surf_stat_map(score_surf,
+                                hemi='left',
+                                title=contrast_id,
+                                colorbar=True,
+                                threshold=3.,
+                                bg_surf=background)
 
 plotting.show()

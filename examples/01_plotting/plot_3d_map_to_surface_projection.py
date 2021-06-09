@@ -41,12 +41,17 @@ surf = load_surface((fsaverage.infl_right, texture))
 
 from nilearn import plotting
 
+# Define a background surface
+# using sulcal depth
+background = load_surface((fsaverage.infl_right,
+                           fsaverage.sulc_right))
+
 plotting.plot_surf_stat_map(surf,
                             hemi='right',
                             title='Surface right hemisphere',
                             colorbar=True,
                             threshold=1.,
-                            bg_map=fsaverage.sulc_right)
+                            bg_surf=background)
 
 ##############################################################################
 # Plot 3D image for comparison
@@ -94,7 +99,7 @@ figure = plotting.plot_surf_stat_map(surf,
                                      title='Surface right hemisphere',
                                      colorbar=True,
                                      threshold=1.,
-                                     bg_map=fsaverage.sulc_right)
+                                     bg_surf=background)
 
 plotting.plot_surf_contours(surf_parcellation,
                             labels=labels,
@@ -117,13 +122,15 @@ big_fsaverage = datasets.fetch_surf_fsaverage('fsaverage')
 big_texture = vol_to_surf(stat_img, big_fsaverage.pial_right)
 big_surf = load_surface((big_fsaverage.infl_right,
                          big_texture))
+big_background = load_surface((big_fsaverage.infl_right,
+                               big_fsaverage.sulc_right))
 
 plotting.plot_surf_stat_map(big_surf,
                             hemi='right',
                             colorbar=True,
                             title='Surface right hemisphere: fine mesh',
                             threshold=1.,
-                            bg_map=big_fsaverage.sulc_right)
+                            bg_surf=big_background)
 
 
 ##############################################################################
@@ -154,7 +161,7 @@ plotting.show()
 view = plotting.view_surf(fsaverage.infl_right,
                           texture,
                           threshold='90%',
-                          bg_map=fsaverage.sulc_right)
+                          bg_surf=background)
 
 # In a Jupyter notebook, if ``view`` is the output of a cell, it will
 # be displayed below the cell
