@@ -22,6 +22,7 @@ from nilearn.surface import (load_surf_data,
                              Surface)
 from nilearn.surface.surface import _check_mesh
 from nilearn._utils import check_niimg_3d
+from nilearn._utils.helpers import rename_parameters
 import warnings
 from functools import wraps, partial
 
@@ -86,8 +87,9 @@ deprecate_separate_mesh_data_plot_surf = partial(
     _deprecate_separate_mesh_data, argument="surf_map")
 
 
+@rename_parameters({'bg_map': 'bg_surf'}, '0.9.0')
 @deprecate_separate_mesh_data_plot_surf
-def plot_surf(surf_mesh, surf_map=None, *, bg_map=None,
+def plot_surf(surf_mesh, surf_map=None, *, bg_surf=None,
               hemi='left', view='lateral', cmap=None, colorbar=False,
               avg_method='mean', threshold=None, alpha='auto',
               bg_on_data=False, darkness=1, vmin=None, vmax=None,
@@ -148,10 +150,14 @@ def plot_surf(surf_mesh, surf_map=None, *, bg_map=None,
                 Please use a Surface object to define the map. Will be ignored
                 if a Surface object is provided as first argument.
 
-    bg_map : Surface data object (to be defined), optional
-        Background image to be plotted on the mesh underneath the
-        surf_data in greyscale, most likely a sulcal depth map for
-        realistic shading.
+    bg_surf : Surface, optional
+        Background surface to be plotted on `surface.mesh` underneath
+        `surface.data` in greyscale. `bg_surf.data` is most likely a
+        sulcal depth map for realistic shading.
+
+        .. versionchanged:: 0.7.2
+            `bg_surf` was introduced in 0.7.2 and replaces `bg_map`.
+            `bg_map` will not be supported after release 0.9.0.
 
     hemi : {'left', 'right'}, optional
         Hemisphere to display. Default='left'.
@@ -194,12 +200,14 @@ def plot_surf(surf_mesh, surf_map=None, *, bg_map=None,
         Default='auto'.
 
     bg_on_data : bool, optional
-        If True, and a bg_map is specified, the surf_data data is multiplied
-        by the background image, so that e.g. sulcal depth is visible beneath
-        the surf_data.
-        NOTE: that this non-uniformly changes the surf_data values according
-        to e.g the sulcal depth.
+        If True, and a bg_surf is specified, `surface.data` is multiplied
+        by the background image `bg_surf.data`, so that e.g. sulcal depth
+        is visible beneath `surface.data`.
         Default=False.
+
+        .. note::
+            This non-uniformly changes the surf_data values according
+            to e.g the sulcal depth.
 
     darkness : float between 0 and 1, optional
         Specifying the darkness of the background image.
@@ -298,7 +306,7 @@ def plot_surf(surf_mesh, surf_map=None, *, bg_map=None,
 
     # set alpha if in auto mode
     if alpha == 'auto':
-        if bg_map is None:
+        if bg_surf is None:
             alpha = .5
         else:
             alpha = 1
@@ -341,13 +349,19 @@ def plot_surf(surf_mesh, surf_map=None, *, bg_map=None,
     # facecolors argument to plot_trisurf does not seem to work
     face_colors = np.ones((faces.shape[0], 4))
 
-    if bg_map is None:
+    if bg_surf is None:
         bg_data = np.ones(coords.shape[0]) * 0.5
 
     else:
-        bg_data = load_surf_data(bg_map)
+        # If bg_surf is a Surface, just get its data
+        if hasattr(bg_surf, 'mesh') and hasattr(bg_surf, 'data'):
+            bg_data = bg_surf.data
+        # Otherwise, load the data from provided file name
+        else:
+            bg_data = load_surf_data(bg_surf)
         if bg_data.shape[0] != coords.shape[0]:
-            raise ValueError('The bg_map does not have the same number '
+            raise ValueError('The background texture does not '
+                             'have the same number '
                              'of vertices as the mesh.')
 
     bg_faces = np.mean(bg_data[faces], axis=1)
@@ -695,8 +709,9 @@ deprecate_separate_mesh_data_plot_surf_stat_map = partial(
     _deprecate_separate_mesh_data, argument="stat_map")
 
 
+@rename_parameters({'bg_map': 'bg_surf'}, '0.9.0')
 @deprecate_separate_mesh_data_plot_surf_stat_map
-def plot_surf_stat_map(surf_mesh, stat_map, *, bg_map=None,
+def plot_surf_stat_map(surf_mesh, stat_map, *, bg_surf=None,
                        hemi='left', view='lateral', threshold=None,
                        alpha='auto', vmax=None, cmap='cold_hot',
                        colorbar=True, symmetric_cbar="auto", bg_on_data=False,
@@ -757,10 +772,14 @@ def plot_surf_stat_map(surf_mesh, stat_map, *, bg_map=None,
                 Please use a Surface object to define the map. Will be ignored
                 if a Surface object is provided as first argument.
 
-    bg_map : Surface data object (to be defined), optional
-        Background image to be plotted on the mesh underneath the
-        stat_map in greyscale, most likely a sulcal depth map for
-        realistic shading.
+    bg_surf : Surface, optional
+        Background surface to be plotted on `surface.mesh` underneath
+        `surface.data` in greyscale. `bg_surf.data` is most likely a
+        sulcal depth map for realistic shading.
+
+        .. versionchanged:: 0.7.2
+            `bg_surf` was introduced in 0.7.2 and replaces `bg_map`.
+            `bg_map` will not be supported after release 0.9.0.
 
     hemi : {'left', 'right'}, optional
         Hemispere to display. Default='left'.
@@ -800,12 +819,14 @@ def plot_surf_stat_map(surf_mesh, stat_map, *, bg_map=None,
         Default='auto'.
 
     bg_on_data : bool, optional
-        If True, and a bg_map is specified, the stat_map data is multiplied
-        by the background image, so that e.g. sulcal depth is visible beneath
-        the stat_map.
-        NOTE: that this non-uniformly changes the stat_map values according
-        to e.g the sulcal depth.
+        If True, and a bg_surf is specified, `surface.data` is multiplied
+        by the background image `bg_surf.data`, so that e.g. sulcal depth
+        is visible beneath `surface.data`.
         Default=False.
+
+        .. note::
+            This non-uniformly changes surface data values according
+            to e.g the sulcal depth.
 
     darkness : float between 0 and 1, optional
         Specifying the darkness of the background image. 1 indicates that the
@@ -850,7 +871,7 @@ def plot_surf_stat_map(surf_mesh, stat_map, *, bg_map=None,
     surf = Surface(surf_mesh, loaded_stat_map)
 
     display = plot_surf(
-        surf, bg_map=bg_map, hemi=hemi, view=view, avg_method='mean',
+        surf, bg_surf=bg_surf, hemi=hemi, view=view, avg_method='mean',
         threshold=threshold, cmap=cmap, colorbar=colorbar, alpha=alpha,
         bg_on_data=bg_on_data, darkness=darkness, vmax=vmax,
         vmin=vmin, title=title, output_file=output_file, axes=axes,
@@ -1061,12 +1082,20 @@ def plot_img_on_surf(stat_map, surf_mesh='fsaverage5', mask_img=None,
         height_ratios=height_ratios, hspace=0.0, wspace=0.0)
     axes = []
     for i, (mode, hemi) in enumerate(itertools.product(modes, hemis)):
-        bg_map = surf_mesh['sulc_%s' % hemi]
+        # Define the surface to be plotted
+        surface = load_surface((surf[hemi],
+                                texture[hemi]))
+        # Define the background surface on the
+        # same mesh as stat map surface and with
+        # sulcal depth texture
+        background = load_surface((surf[hemi],
+                                   surf_mesh['sulc_%s' % hemi]))
         ax = fig.add_subplot(grid[i + len(hemis)], projection="3d")
         axes.append(ax)
-        plot_surf_stat_map(surf[hemi], texture[hemi],
-                           view=mode, hemi=hemi,
-                           bg_map=bg_map,
+        plot_surf_stat_map(surface,
+                           view=mode,
+                           hemi=hemi,
+                           bg_surf=background,
                            axes=ax,
                            colorbar=False,  # Colorbar created externally.
                            vmax=vmax,
@@ -1102,8 +1131,9 @@ deprecate_separate_mesh_data_plot_surf_roi = partial(
     _deprecate_separate_mesh_data, argument="roi_map")
 
 
+@rename_parameters({'bg_map': 'bg_surf'}, '0.9.0')
 @deprecate_separate_mesh_data_plot_surf_roi
-def plot_surf_roi(surf_mesh, roi_map, *, bg_map=None,
+def plot_surf_roi(surf_mesh, roi_map, *, bg_surf=None,
                   hemi='left', view='lateral', threshold=1e-14,
                   alpha='auto', vmin=None, vmax=None, cmap='gist_ncar',
                   cbar_tick_format="%i", bg_on_data=False, darkness=1,
@@ -1168,10 +1198,14 @@ def plot_surf_roi(surf_mesh, roi_map, *, bg_map=None,
     hemi : {'left', 'right'}, optional
         Hemisphere to display. Default='left'.
 
-    bg_map : Surface data object (to be defined), optional
-        Background image to be plotted on the mesh underneath the
-        stat_map in greyscale, most likely a sulcal depth map for
-        realistic shading.
+    bg_surf : Surface, optional
+        Background surface to be plotted on `surface.mesh` underneath
+        `surface.data` in greyscale. `bg_surf.data` is most likely a
+        sulcal depth map for realistic shading.
+
+        .. versionchanged:: 0.7.2
+            `bg_surf` was introduced in 0.7.2 and replaces `bg_map`.
+            `bg_map` will not be supported after release 0.9.0.
 
     view : {'lateral', 'medial', 'dorsal', 'ventral', 'anterior', 'posterior'}, optional
         View of the surface that is rendered. Default='lateral'.
@@ -1198,11 +1232,14 @@ def plot_surf_roi(surf_mesh, roi_map, *, bg_map=None,
         Default='auto'.
 
     bg_on_data : bool, optional
-        If True, and a bg_map is specified, the stat_map data is multiplied
-        by the background image, so that e.g. sulcal depth is visible beneath
-        the stat_map. Beware that this non-uniformly changes the stat_map
-        values according to e.g the sulcal depth.
+        If True, and a bg_surf is specified, `surface.data` is multiplied
+        by the background image `bg_surf.data`, so that e.g. sulcal depth
+        is visible beneath `surface.data`.
         Default=False.
+
+        .. note::
+            This non-uniformly changes surface data values according
+            to e.g the sulcal depth.
 
     darkness : float between 0 and 1, optional
         Specifying the darkness of the background image. 1 indicates that the
@@ -1259,7 +1296,7 @@ def plot_surf_roi(surf_mesh, roi_map, *, bg_map=None,
 
     surf = Surface(mesh, roi)
 
-    display = plot_surf(surf, bg_map=bg_map,
+    display = plot_surf(surf, bg_surf=bg_surf,
                         hemi=hemi, view=view, avg_method='median',
                         threshold=threshold, cmap=cmap,
                         cbar_tick_format=cbar_tick_format, alpha=alpha,

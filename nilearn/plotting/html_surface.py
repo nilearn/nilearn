@@ -8,6 +8,7 @@ from functools import partial
 
 from nilearn._utils.niimg_conversions import check_niimg_3d
 from nilearn._utils import fill_doc
+from nilearn._utils.helpers import rename_parameters
 from nilearn import surface
 from nilearn import datasets
 from nilearn.plotting.surf_plotting import _deprecate_separate_mesh_data
@@ -23,15 +24,18 @@ class SurfaceView(HTMLDocument):
 
 
 def _get_vertexcolor(surf_map, cmap, norm,
-                     absolute_threshold=None, bg_map=None):
+                     absolute_threshold=None, bg_surf=None):
     vertexcolor = cmap(norm(surf_map).data)
     if absolute_threshold is None:
         return to_color_strings(vertexcolor)
-    if bg_map is None:
+    if bg_surf is None:
         bg_map = np.ones(len(surf_map)) * .5
         bg_vmin, bg_vmax = 0, 1
     else:
-        bg_map = surface.load_surf_data(bg_map)
+        if hasattr(bg_surf, 'data'):
+            bg_map = bg_surf.data
+        else:
+            bg_map = surface.load_surf_data(bg_surf)
         bg_vmin, bg_vmax = np.min(bg_map), np.max(bg_map)
     bg_norm = mpl.colors.Normalize(vmin=bg_vmin, vmax=bg_vmax)
     bg_color = mpl_cm.get_cmap('Greys')(bg_norm(bg_map))
@@ -40,8 +44,8 @@ def _get_vertexcolor(surf_map, cmap, norm,
     return to_color_strings(vertexcolor)
 
 
-def one_mesh_info(surf_map, surf_mesh, threshold=None, cmap=cm.cold_hot,
-                  black_bg=False, bg_map=None, symmetric_cmap=True,
+def _one_mesh_info(surf_map, surf_mesh, threshold=None, cmap=cm.cold_hot,
+                  black_bg=False, bg_surf=None, symmetric_cmap=True,
                   vmax=None, vmin=None):
     """Prepare info for plotting one surface map on a single mesh.
 
@@ -57,7 +61,7 @@ def one_mesh_info(surf_map, surf_mesh, threshold=None, cmap=cm.cold_hot,
     info['inflated_left'] = mesh_to_plotly(surf_mesh)
     info['vertexcolor_left'] = _get_vertexcolor(
         surf_map, colors['cmap'], colors['norm'],
-        colors['abs_threshold'], bg_map)
+        colors['abs_threshold'], bg_surf)
     info["cmin"], info["cmax"] = float(colors['vmin']), float(colors['vmax'])
     info['black_bg'] = black_bg
     info['full_brain_mesh'] = False
@@ -236,8 +240,9 @@ deprecate_separate_mesh_data_view_surf = partial(
     _deprecate_separate_mesh_data, argument="surf_map")
 
 
+@rename_parameters({'bg_map': 'bg_surf'}, '0.9.0')
 @deprecate_separate_mesh_data_view_surf
-def view_surf(surf_mesh, surf_map=None, *, bg_map=None, threshold=None,
+def view_surf(surf_mesh, surf_map=None, *, bg_surf=None, threshold=None,
               cmap=cm.cold_hot, black_bg=False, vmax=None, vmin=None,
               symmetric_cmap=True, colorbar=True, colorbar_height=.5,
               colorbar_fontsize=25, title=None, title_fontsize=25):
@@ -292,10 +297,14 @@ def view_surf(surf_mesh, surf_map=None, *, bg_map=None, threshold=None,
                 Please use a Surface object to define the map. This will not be
                 used if a Surface is provided as first argument.
 
-    bg_map : Surface data, optional
-        Background image to be plotted on the mesh underneath the
-        surf_data in greyscale, most likely a sulcal depth map for
-        realistic shading.
+    bg_surf : Surface, optional
+        Background surface to be plotted on `surface.mesh` underneath
+        `surface.data` in greyscale. `bg_surf.data` is most likely a
+        sulcal depth map for realistic shading.
+
+        .. versionchanged:: 0.7.2
+            `bg_surf` was introduced in 0.7.2 and replaces `bg_map`.
+            `bg_map` will not be supported after release 0.9.0.
 
     threshold : str, number or None, optional
         If None, no thresholding.
@@ -364,11 +373,12 @@ def view_surf(surf_mesh, surf_map=None, *, bg_map=None, threshold=None,
     else:
         surf_mesh, surf_map = surface.check_mesh_and_data(
             surf_mesh, surf_map)
-    if bg_map is not None:
-        _, bg_map = surface.check_mesh_and_data(surf_mesh, bg_map)
-    info = one_mesh_info(
+    if bg_surf is not None:
+        if not hasattr(bg_surf, 'mesh'):
+            _, bg_surf = surface.check_mesh_and_data(surf_mesh, bg_surf)
+    info = _one_mesh_info(
         surf_map=surf_map, surf_mesh=surf_mesh, threshold=threshold,
-        cmap=cmap, black_bg=black_bg, bg_map=bg_map,
+        cmap=cmap, black_bg=black_bg, bg_surf=bg_surf,
         symmetric_cmap=symmetric_cmap, vmax=vmax, vmin=vmin)
     info['colorbar'] = colorbar
     info['cbar_height'] = colorbar_height
