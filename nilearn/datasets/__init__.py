@@ -48,7 +48,7 @@ from .neurovault import (fetch_neurovault,
 )
 
 __all__ = ['MNI152_FILE_PATH', 'fetch_icbm152_2009', 'load_mni152_template',
-           'fetch_oasis_vbm', 'fetch_haxby','fetch_adhd',
+           'fetch_oasis_vbm', 'fetch_haxby', 'fetch_adhd',
            'fetch_miyawaki2008', 'fetch_localizer_contrasts',
            'fetch_localizer_button_task',
            'fetch_abide_pcp', 'fetch_localizer_calculation_task',
