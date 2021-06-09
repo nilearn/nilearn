@@ -53,8 +53,8 @@ def test_one_mesh_info():
     background = surface.load_surface((mesh,
                                        surf_map))
     info1 = html_surface._one_mesh_info(
-         surf_map, mesh, '90%', black_bg=True,
-         bg_surf=surf_map)
+        surf_map, mesh, '90%', black_bg=True,
+        bg_surf=surf_map)
     info = html_surface._one_mesh_info(
         surf_map, mesh, '90%', black_bg=True,
         bg_surf=background)

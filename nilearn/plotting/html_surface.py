@@ -32,7 +32,8 @@ def _get_vertexcolor(surf_map, cmap, norm,
         bg_map = np.ones(len(surf_map)) * .5
         bg_vmin, bg_vmax = 0, 1
     else:
-        if hasattr(bg_surf, 'data'):
+        if(hasattr(bg_surf, 'mesh')
+           and hasattr(bg_surf, 'data')):
             bg_map = bg_surf.data
         else:
             bg_map = surface.load_surf_data(bg_surf)
@@ -45,8 +46,8 @@ def _get_vertexcolor(surf_map, cmap, norm,
 
 
 def _one_mesh_info(surf_map, surf_mesh, threshold=None, cmap=cm.cold_hot,
-                  black_bg=False, bg_surf=None, symmetric_cmap=True,
-                  vmax=None, vmin=None):
+                   black_bg=False, bg_surf=None, symmetric_cmap=True,
+                   vmax=None, vmin=None):
     """Prepare info for plotting one surface map on a single mesh.
 
     This computes the dictionary that gets inserted in the web page,
@@ -374,7 +375,8 @@ def view_surf(surf_mesh, surf_map=None, *, bg_surf=None, threshold=None,
         surf_mesh, surf_map = surface.check_mesh_and_data(
             surf_mesh, surf_map)
     if bg_surf is not None:
-        if not hasattr(bg_surf, 'mesh'):
+        if(not hasattr(bg_surf, 'mesh')
+           or not hasattr(bg_surf, 'data')):
             _, bg_surf = surface.check_mesh_and_data(surf_mesh, bg_surf)
     info = _one_mesh_info(
         surf_map=surf_map, surf_mesh=surf_mesh, threshold=threshold,
