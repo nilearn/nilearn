@@ -50,9 +50,15 @@ def test_one_mesh_info():
     mesh = fsaverage["pial_left"]
     surf_map = surface.load_surf_data(fsaverage["sulc_left"])
     mesh = surface.load_surf_mesh(mesh)
-    info = html_surface.one_mesh_info(
+    background = surface.load_surface((mesh,
+                                       surf_map))
+    info1 = html_surface._one_mesh_info(
+         surf_map, mesh, '90%', black_bg=True,
+         bg_surf=surf_map)
+    info = html_surface._one_mesh_info(
         surf_map, mesh, '90%', black_bg=True,
-        bg_map=surf_map)
+        bg_surf=background)
+    assert info1 == info
     assert {'_x', '_y', '_z', '_i', '_j', '_k'}.issubset(
         info['inflated_left'].keys())
     assert len(decode(
@@ -93,10 +99,12 @@ def test_fill_html_template():
     fsaverage = fetch_surf_fsaverage()
     mesh = surface.load_surf_mesh(fsaverage['pial_right'])
     surf_map = mesh[0][:, 0]
+    background = surface.load_surface((mesh,
+                                       fsaverage.sulc_right))
     img = _get_img()
-    info = html_surface.one_mesh_info(
+    info = html_surface._one_mesh_info(
         surf_map, fsaverage['pial_right'], '90%', black_bg=True,
-        bg_map=fsaverage['sulc_right'])
+        bg_surf=background)
     info["title"] = None
     html = html_surface._fill_html_template(info, embed_js=False)
     check_html(html)
@@ -112,11 +120,27 @@ def test_view_surf():
     fsaverage = fetch_surf_fsaverage()
     mesh = surface.load_surf_mesh(fsaverage['pial_right'])
     surf = surface.load_surface((mesh, mesh[0][:, 0]))
-    html = html_surface.view_surf(surf, bg_map=fsaverage['sulc_right'],
-                                  threshold='90%')
+    background = surface.load_surface((mesh,
+                                       fsaverage.sulc_right))
+    with pytest.warns(FutureWarning,
+                      match="The parameter"):
+        html1 = html_surface.view_surf(surf,
+                                       bg_map=fsaverage['sulc_right'],
+                                       threshold='90%')
+    with pytest.warns(UserWarning,
+                      match=("`view_surf` received a surface object "
+                             "such that the argument `surf_map`, if "
+                             "provided, will be overwritten by the "
+                             "surface data.")):
+        html = html_surface.view_surf(surf,
+                                      bg_surf=background,
+                                      threshold='90%')
+    assert html.html == html1.html
     check_html(html, title="Surface plot")
-    html = html_surface.view_surf(surf, bg_map=fsaverage['sulc_right'],
-                                  threshold=.3, title="SOME_TITLE")
+    html = html_surface.view_surf(surf,
+                                  bg_surf=background,
+                                  threshold=.3,
+                                  title="SOME_TITLE")
     check_html(html, title="SOME_TITLE")
     assert "SOME_TITLE" in html.html
     html = html_surface.view_surf(fsaverage['pial_right'])
@@ -135,7 +159,7 @@ def test_view_surf():
         html_surface.view_surf(mesh, mesh[0][::2, 0])
     with pytest.raises(ValueError):
         html_surface.view_surf(mesh, mesh[0][:, 0],
-                               bg_map=mesh[0][::2, 0])
+                               bg_surf=mesh[0][::2, 0])
 
 
 def test_view_img_on_surf():

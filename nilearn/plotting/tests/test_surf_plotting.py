@@ -22,6 +22,7 @@ def test_plot_surf():
     bg = rng.standard_normal(size=mesh[0].shape[0])
     data = 10 * rng.standard_normal(size=mesh[0].shape[0])
     surf = load_surface([mesh, data])
+    background = load_surface((mesh, bg))
 
     # Plot mesh only
     # Check that a FutureWarning is given
@@ -31,22 +32,28 @@ def test_plot_surf():
         plot_surf(mesh)
 
     # Plot surface
-    plot_surf(surf, bg_map=bg)
+    with pytest.warns(FutureWarning,
+                      match="The parameter"):
+        plot_surf(surf, bg_map=bg)
+
+    plot_surf(surf, bg_surf=background)
 
     # Plot mesh with background
-    plot_surf(mesh, bg_map=bg)
-    plot_surf(mesh, bg_map=bg, darkness=0.5)
-    plot_surf(mesh, bg_map=bg, alpha=0.5)
+    plot_surf(mesh, bg_surf=background)
+    plot_surf(mesh, bg_surf=background, darkness=0.5)
+    plot_surf(mesh, bg_surf=background, alpha=0.5)
 
     # Plot different views
-    plot_surf(mesh, bg_map=bg, hemi='right')
-    plot_surf(mesh, bg_map=bg, view='medial')
-    plot_surf(mesh, bg_map=bg, hemi='right', view='medial')
+    plot_surf(mesh, bg_surf=background, hemi='right')
+    plot_surf(mesh, bg_surf=background, view='medial')
+    plot_surf(mesh, bg_surf=background,
+              hemi='right', view='medial')
 
     # Plot with colorbar
-    plot_surf(mesh, bg_map=bg, colorbar=True)
-    plot_surf(mesh, bg_map=bg, colorbar=True, cbar_vmin=0,
-              cbar_vmax=150, cbar_tick_format="%i")
+    plot_surf(mesh, bg_surf=background, colorbar=True)
+    plot_surf(mesh, bg_surf=background, colorbar=True,
+              cbar_vmin=0, cbar_vmax=150,
+              cbar_tick_format="%i")
 
     # Plot with avg_method
     ## Test all built-in methods and check
@@ -98,10 +105,11 @@ def test_plot_surf_error():
         plot_surf(mesh, hemi='lft')
 
     # Wrong size of background image
-    with pytest.raises(
-            ValueError,
-            match='bg_map does not have the same number of vertices'):
-        plot_surf(mesh, bg_map=rng.standard_normal(size=mesh[0].shape[0] - 1))
+    with pytest.raises(ValueError,
+                       match=('background texture does not have '
+                              'the same number of vertices')):
+        plot_surf(mesh,
+                  bg_surf=rng.standard_normal(size=mesh[0].shape[0] - 1))
 
     # Wrong size of surface data
     with pytest.raises(
@@ -165,6 +173,7 @@ def test_plot_surf_stat_map():
     bg = rng.standard_normal(size=mesh[0].shape[0])
     data = 10 * rng.standard_normal(size=mesh[0].shape[0])
     surf = load_surface([mesh, data])
+    background = load_surface((mesh, bg))
 
     # Plot mesh with stat map
     # Check that a FutureWarning is given
@@ -187,22 +196,32 @@ def test_plot_surf_stat_map():
                              "will be overwritten by the surface data.")):
         plot_surf_stat_map(surf, stat_map=data)
     # Plot mesh with background and stat map
-    plot_surf_stat_map(mesh, stat_map=data, bg_map=bg)
-    plot_surf_stat_map(surf, bg_map=bg, bg_on_data=True, darkness=0.5)
-    plot_surf_stat_map(mesh, stat_map=data, bg_map=bg, colorbar=True,
+    with pytest.warns(FutureWarning,
+                      match="The parameter"):
+        plot_surf_stat_map(surf, bg_map=bg)
+
+    plot_surf_stat_map(mesh, stat_map=data,
+                       bg_surf=background)
+    plot_surf_stat_map(surf, bg_surf=background,
+                       bg_on_data=True, darkness=0.5)
+    plot_surf_stat_map(mesh, stat_map=data,
+                       bg_surf=background, colorbar=True,
                        bg_on_data=True, darkness=0.5)
 
     # Apply threshold
-    plot_surf_stat_map(mesh, stat_map=data, bg_map=bg,
+    plot_surf_stat_map(mesh, stat_map=data, bg_surf=background,
                        bg_on_data=True, darkness=0.5,
                        threshold=0.3)
-    plot_surf_stat_map(mesh, stat_map=data, bg_map=bg, colorbar=True,
+    plot_surf_stat_map(mesh, stat_map=data,
+                       bg_surf=background, colorbar=True,
                        bg_on_data=True, darkness=0.5,
                        threshold=0.3)
 
     # Change colorbar tick format
-    plot_surf_stat_map(mesh, stat_map=data, bg_map=bg, colorbar=True,
-                       bg_on_data=True, darkness=0.5, cbar_tick_format="%.2g")
+    plot_surf_stat_map(mesh, stat_map=data,
+                       bg_surf=background, colorbar=True,
+                       bg_on_data=True, darkness=0.5,
+                       cbar_tick_format="%.2g")
 
     # Change vmax
     plot_surf_stat_map(mesh, stat_map=data, vmax=5)
