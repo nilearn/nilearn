@@ -14,6 +14,7 @@ ESTIMATOR_TEMPLATES = {
     'NiftiLabelsMasker': 'report_body_template_niftilabelsmasker.html',
     'default': 'report_body_template.html'}
 
+
 def _get_estimator_template(estimator):
     """Returns the HTML template to use for a given
     estimator if a specific template was defined in
@@ -127,15 +128,14 @@ def _update_template(title, docstring, content, overlay,
     body_template_path = resource_path.joinpath(body_template_name)
     if not os.path.exists(str(body_template_path)):
         raise FileNotFoundError("No template {}".format(
-                    body_template_name))
+            body_template_name))
     tpl = tempita.HTMLTemplate.from_filename(str(body_template_path),
                                              encoding='utf-8')
     body = tpl.substitute(title=title, content=content,
                           overlay=overlay,
                           docstring=docstring,
                           parameters=parameters,
-                          **data
-                        )
+                          **data)
 
     head_template_name = 'report_head_template.html'
     head_template_path = resource_path.joinpath(head_template_name)
@@ -218,8 +218,7 @@ def generate_report(estimator):
                                   overlay=_embed_img(overlay),
                                   parameters=parameters,
                                   data=data,
-                                  template_name=html_template,
-                                 )
+                                  template_name=html_template)
     return report
 
 

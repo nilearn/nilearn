@@ -63,8 +63,8 @@ def test_nifti_labels_masker_report():
     shape = (13, 11, 12)
     affine = np.diag([2, 2, 2, 1])
     n_regions = 9
-    labels = ['background'] + ['region_{}'.format(i) for i in range(1, n_regions+1)]
-    length = 3
+    labels = ['background'] + ['region_{}'.format(i)
+                               for i in range(1, n_regions + 1)]
     EXPECTED_COLUMNS = ['label value',
                         'region name',
                         'size (in mm^3)',
@@ -74,10 +74,10 @@ def test_nifti_labels_masker_report():
                                                    n_regions=n_regions)
     # Check that providing incorrect labels raises an error
     masker = input_data.NiftiLabelsMasker(labels_img,
-                                          labels = labels[:-1])
+                                          labels=labels[:-1])
     masker.fit()
     with pytest.raises(ValueError,
-                      match="Mismatch between the number of provided labels"):
+                       match="Mismatch between the number of provided labels"):
         masker.generate_report()
     masker = input_data.NiftiLabelsMasker(labels_img,
                                           labels=labels)
@@ -126,15 +126,19 @@ def test_nifti_labels_masker_report():
     # Check that labels match
     assert masker._report_content['summary']['region name'] == labels[1:]
     # Relative sizes of regions should sum to 100%
-    assert_almost_equal(sum(masker._report_content['summary']['relative size (in %)']), 100)
+    assert_almost_equal(
+        sum(
+            masker._report_content['summary']['relative size (in %)']),
+        100)
     _check_html(report)
     assert "Regions summary" in str(report)
     # Check region sizes calculations
     expected_region_sizes = Counter(get_data(labels_img).ravel())
-    for r in range(1, n_regions+1):
-        assert_almost_equal(masker._report_content['summary']['size (in mm^3)'][r-1],
-               expected_region_sizes[r] *
-               np.abs(np.linalg.det(affine[:3, :3])))
+    for r in range(1, n_regions + 1):
+        assert_almost_equal(
+            masker._report_content['summary']['size (in mm^3)'][r - 1],
+            expected_region_sizes[r]
+            * np.abs(np.linalg.det(affine[:3, :3])))
 
     # Check that region labels are no displayed in the report
     # when they were not provided by the user.

@@ -150,12 +150,15 @@ class NiftiLabelsMasker(BaseMasker, CacheMixin):
     """
     # memory and memory_level are used by CacheMixin.
 
-    def __init__(self, labels_img, labels=None, background_label=0, mask_img=None,
-                 smoothing_fwhm=None, standardize=False, standardize_confounds=True,
-                 high_variance_confounds=False, detrend=False, low_pass=None,
-                 high_pass=None, t_r=None, dtype=None, resampling_target="data",
-                 memory=Memory(location=None, verbose=0), memory_level=1,
-                 verbose=0, strategy="mean", reports=True):
+    def __init__(self, labels_img, labels=None, background_label=0,
+                 mask_img=None, smoothing_fwhm=None,
+                 standardize=False, standardize_confounds=True,
+                 high_variance_confounds=False, detrend=False,
+                 low_pass=None, high_pass=None, t_r=None, dtype=None,
+                 resampling_target="data",
+                 memory=Memory(location=None, verbose=0),
+                 memory_level=1, verbose=0, strategy="mean",
+                 reports=True):
         self.labels_img = labels_img
         self.labels = labels
         self.background_label = background_label
@@ -184,7 +187,8 @@ class NiftiLabelsMasker(BaseMasker, CacheMixin):
         self.reports = reports
         self._report_content = dict()
         self._report_content['description'] = (
-            'This reports shows the regions defined by the labels of the mask.')
+            'This reports shows the regions '
+            'defined by the labels of the mask.')
         self._report_content['warning_message'] = None
 
         available_reduction_strategies = {'mean', 'median', 'sum',
@@ -240,12 +244,12 @@ class NiftiLabelsMasker(BaseMasker, CacheMixin):
             labels_image_data = image.get_data(labels_image)
             labels_image_affine = image.load_img(labels_image).affine
             # Number of regions excluding the background
-            number_of_regions = np.sum(np.unique(labels_image_data) !=
-                                       self.background_label)
+            number_of_regions = np.sum(np.unique(labels_image_data)
+                                       != self.background_label)
             # Basic safety check to ensure we have as many labels as we
             # have regions (plus background).
-            if(self.labels is not None and
-               len(self.labels) != number_of_regions + 1):
+            if(self.labels is not None
+               and len(self.labels) != number_of_regions + 1):
                 raise ValueError(("Mismatch between the number of provided "
                                   "labels ({0}) and the number of regions "
                                   "in provided label image ({1})").format(
@@ -258,19 +262,20 @@ class NiftiLabelsMasker(BaseMasker, CacheMixin):
                        'relative size (in %)']
             if self.labels is None:
                 columns.remove('region name')
-            regions_summary = {c:[] for c in columns}
+            regions_summary = {c: [] for c in columns}
             for label in label_values:
                 regions_summary['label value'].append(label)
                 if self.labels is not None:
                     regions_summary['region name'].append(self.labels[label])
                 size = len(labels_image_data[labels_image_data == label])
                 voxel_volume = np.abs(np.linalg.det(
-                                    labels_image_affine[:3, :3]))
+                    labels_image_affine[:3, :3]))
                 regions_summary['size (in mm^3)'].append(round(
-                                        size * voxel_volume))
+                    size * voxel_volume))
                 regions_summary['relative size (in %)'].append(round(
-                    size / len(labels_image_data[labels_image_data != 0]) * 100,
-                    2))
+                    size / len(
+                        labels_image_data[labels_image_data != 0]
+                    ) * 100, 2))
             self._report_content['summary'] = regions_summary
 
             img = self._reporting_data['img']
@@ -361,14 +366,16 @@ class NiftiLabelsMasker(BaseMasker, CacheMixin):
 
             mask_data, mask_affine = masking._load_mask_img(self.mask_img_)
 
-        if not hasattr(self, '_resampled_labels_img_'):
+        if not hasattr(self,
+                       '_resampled_labels_img_'):
             # obviates need to run .transform() before .inverse_transform()
             self._resampled_labels_img_ = self.labels_img_
 
         if self.reports:
-            self._reporting_data = {'labels_image': self._resampled_labels_img_,
-                                    'mask': self.mask_img_,
-                                    'img': imgs}
+            self._reporting_data = {
+                'labels_image': self._resampled_labels_img_,
+                'mask': self.mask_img_,
+                'img': imgs}
         else:
             self._reporting_data = None
 

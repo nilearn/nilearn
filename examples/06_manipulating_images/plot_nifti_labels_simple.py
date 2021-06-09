@@ -29,7 +29,7 @@ atlas = datasets.fetch_atlas_harvard_oxford('cort-maxprob-thr25-2mm')
 
 # The first label correspond to the background
 print('The atlas contains {} non-overlapping regions'.format(
-                                len(atlas.labels)-1))
+    len(atlas.labels) - 1))
 
 ###########################################################################
 # Instantiate the mask and visualize atlas
@@ -80,7 +80,7 @@ ax = fig.add_subplot(111)
 for label_idx in range(3):
     ax.plot(signals[:, label_idx],
             linewidth=2,
-            label=atlas.labels[label_idx+1]) # 0 is background
+            label=atlas.labels[label_idx + 1])  # 0 is background
 ax.legend(loc=2)
 ax.set_title("Signals for first 3 regions")
 plt.show()
