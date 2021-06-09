@@ -59,6 +59,8 @@ Enhancements
   :func:`nilearn.signal.clean`.
 - Moves parameter `sample_mask` from :class:`nilearn.input_data.NiftiMasker`
   to method `transform` in base class `nilearn.input_data.BaseMasker`.
+- Function sym_to_vec from :mod:`nilearn.connectome` was deprecated since release 0.4 and
+  has been removed.
 
 .. _v0.7.1:
 
