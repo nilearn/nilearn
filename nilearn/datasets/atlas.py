@@ -437,10 +437,14 @@ def _fetch_atlases_fsl(source, atlas_name,
                          "an atlas among:\n{1}".
                          format(atlas_name, '\n'.join(atlas_items[source])))
 
+    is_probabilistic = False
     if atlas_name in ("cortl-prob-1mm", "cortl-prob-2mm",
                       "cort-prob-1mm", "cort-prob-2mm",
                       "sub-prob-1mm", "sub-prob-2mm",
-                      "prob-1mm", "prob-2mm") and symmetric_split:
+                      "prob-1mm", "prob-2mm"):
+        is_probabilistic = True
+
+    if is_probabilistic and symmetric_split:
         raise ValueError("Region splitting not supported for probabilistic "
                          "atlases")
 
@@ -487,29 +491,50 @@ def _fetch_atlases_fsl(source, atlas_name,
         names[int(label.get('index')) + 1] = label.text
     names = list(names.values())
 
+    if source == 'HarardOxford' and not symmetric_split:
+        return Bunch(maps=atlas_img, labels=names)
+
     atlas_niimg = check_niimg(atlas_img)
 
     if lateralized:
         return Bunch(maps=atlas_niimg, labels=names)
 
-    if not symmetric_split:
-        atlas = get_data(atlas_niimg)
-        labels = np.unique(atlas)
-        new_label = 1
-        new_atlas = atlas.copy()
-        # Assumes that the background label is zero.
-        new_names = [names[0]]
-        for label, name in zip(labels[1:], names[1:]):
-            if name.endswith('R') or name.endswith('L'):
-                name = name.rsplit(" ", 1)[0]
-            if name not in new_names:
-                new_names.append(name)
-            new_atlas[atlas == label] = new_names.index(name)
+    atlas = get_data(atlas_niimg)
 
+    if not symmetric_split:
+        # Here we are dealing with the case:
+        # Juelich and not symmetric_split
+        new_names = np.unique(
+            [name[:-2] if name.endswith(' L')
+             or name.endswith(' R') else name for name in names])
+        if is_probabilistic:
+            # We need to merge maps corresponding to the same label
+            assert atlas.ndim == 4
+            new_atlas = np.zeros((*atlas.shape[:3],
+                                  len(new_names)))
+            for i,name in enumerate(new_names):
+                if name != "Background":
+                    if name in names:
+                        idx = names.index(name) - 1
+                        new_atlas[...,(i-1)] = atlas[...,idx]
+                    else:
+                        idx_l = names.index(name + ' L') - 1
+                        idx_r = names.index(name + ' R') - 1
+                        new_atlas[...,(i-1)] = atlas[...,idx_l] + atlas[...,idx_r]
+        else:
+            assert atlas.ndim == 3
+            labels = np.unique(atlas)
+            new_label = 1
+            new_atlas = atlas.copy()
+            new_names = [names[0]]
+            for label, name in zip(labels[1:], names[1:]):
+                if name.endswith('R') or name.endswith('L'):
+                    name = name.rsplit(" ", 1)[0]
+                if name not in new_names:
+                    new_names.append(name)
+                new_atlas[atlas == label] = new_names.index(name)
         atlas_niimg = new_img_like(atlas_niimg, new_atlas, atlas_niimg.affine)
         return Bunch(filename=atlas_img, maps=atlas_niimg, labels=new_names)
-
-    atlas = get_data(atlas_niimg)
 
     labels = np.unique(atlas)
     # Build a mask of both halves of the brain
