@@ -181,12 +181,12 @@ def test_fetch_surf_fsaverage(mesh, tmp_path, request_mocker):
         for side in ["left", "right"]
     }
 
-    # Mock fsaverage3,4,6,7 download (with actual url)
+    # Mock fsaverage3, 4, 6, 7 download (with actual url)
     fs_urls = [
-        "https://osf.io/mvnpx/download",
-        "https://osf.io/6mndf/download",
-        "https://osf.io/xk9zv/download",
-        "https://osf.io/w7csy/download",
+        "https://osf.io/asvjk/download",
+        "https://osf.io/x2j49/download",
+        "https://osf.io/um5ag/download",
+        "https://osf.io/q7a5k/download",
     ]
     for fs_url in fs_urls:
         request_mocker.url_mapping[fs_url] = list_to_archive(

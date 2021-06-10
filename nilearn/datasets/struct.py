@@ -580,10 +580,10 @@ def _fetch_surf_fsaverage(dataset_name, data_dir=None):
     opts = {'uncompress': True}
 
     url = {
-        "fsaverage3": "https://osf.io/mvnpx/download",
-        "fsaverage4": "https://osf.io/6mndf/download",
-        "fsaverage6": "https://osf.io/xk9zv/download",
-        "fsaverage": "https://osf.io/w7csy/download",  # fsaverage7
+        "fsaverage3": "https://osf.io/asvjk/download",
+        "fsaverage4": "https://osf.io/x2j49/download",
+        "fsaverage6": "https://osf.io/um5ag/download",
+        "fsaverage": "https://osf.io/q7a5k/download",  # fsaverage7
     }[dataset_name]
 
     # List of attributes exposed by the dataset
