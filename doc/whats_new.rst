@@ -60,6 +60,21 @@ Enhancements
 - Moves parameter `sample_mask` from :class:`nilearn.input_data.NiftiMasker`
   to method `transform` in base class `nilearn.input_data.BaseMasker`.
 
+Changes
+-------
+
+- Python 3.5 is no longer supported. We recommend upgrading to
+  Python 3.7.
+- Support for Nibabel 2.x is now deprecated and will be removed
+  in the 0.9 release. Users with a version of Nibabel < 3.0 will
+  be warned at their first Nilearn import.
+- Minimum supported versions of packages have been bumped up:
+  * Numpy -- v1.16
+  * SciPy -- v1.2
+  * Scikit-learn -- v0.21
+  * Nibabel -- v2.5
+  * Pandas -- v0.24
+
 .. _v0.7.1:
 
 0.7.1
