@@ -108,42 +108,6 @@ def test_fetch_haxby(tmp_path, request_mocker):
             func.fetch_haxby(data_dir=str(tmp_path), subjects=[sub_id])
 
 
-def test_fetch_nyu_rest(tmp_path, request_mocker):
-    # First session, all subjects
-    with pytest.warns(np.VisibleDeprecationWarning,
-                      match='fetch_nyu_rest has been deprecated'):
-        nyu = func.fetch_nyu_rest(data_dir=str(tmp_path), verbose=0)
-    assert request_mocker.url_count == 2
-    assert len(nyu.func) == 25
-    assert len(nyu.anat_anon) == 25
-    assert len(nyu.anat_skull) == 25
-    assert np.all(np.asarray(nyu.session) == 1)
-
-    # All sessions, 12 subjects
-    with pytest.warns(np.VisibleDeprecationWarning,
-                      match='fetch_nyu_rest has been deprecated'):
-        nyu = func.fetch_nyu_rest(data_dir=str(tmp_path),
-                                  sessions=[1, 2, 3],
-                                  n_subjects=12, verbose=0)
-    # Session 1 already downloaded, 2b and 3b not needed for 12 subjects
-    assert request_mocker.url_count == 4
-    assert len(nyu.func) == 36
-    assert len(nyu.anat_anon) == 36
-    assert len(nyu.anat_skull) == 36
-    s = np.asarray(nyu.session)
-    assert np.all(s[:12] == 1)
-    assert np.all(s[12:24] == 2)
-    assert np.all(s[24:] == 3)
-    with pytest.warns(np.VisibleDeprecationWarning,
-                      match='fetch_nyu_rest has been deprecated'):
-        nyu = func.fetch_nyu_rest(data_dir=str(tmp_path),
-                                  sessions=[1, 2, 3],
-                                  n_subjects=None, verbose=0)
-    # For the full dataset (a, b) x (1, 2, 3) = 6 files are downloaded
-    assert request_mocker.url_count == 6
-    assert nyu.description != ''
-
-
 def _adhd_example_subject(match, request):
     contents = [
         Path("data", match.group(1), match.expand(r"\1_regressors.csv")),

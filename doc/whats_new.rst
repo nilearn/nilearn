@@ -4,9 +4,19 @@
 NEW
 ---
 
+- :func:`nilearn.signal.clean` accepts new parameter `sample_mask`.
+  shape: (number of scans - number of volumes removed, )
+  Masks the niimgs along time/fourth dimension to perform scrubbing (remove
+  volumes with high motion) and/or non-steady-state volumes. Masking is applied
+  before signal cleaning.
+- All inherent classes of `nilearn.input_data.BaseMasker` can use
+  parameter `sample_mask` for sub-sample masking.
+
 Fixes
 -----
 
+- Convert references in signal.py, atlas.py, func.py, neurovault.py, and struct.py 
+  to use footcite / footbibliography.
 - Fix detrending and temporal filtering order for confounders
   in :func:`nilearn.signal.clean`, so that these operations are applied
   in the same order as for the signals, i.e., first detrending and
@@ -18,8 +28,9 @@ Fixes
   :func:`nilearn.plotting.plot_stat_map`) will now plot the slices in the user
   specified order, rather than automatically sorting into ascending order
   (https://github.com/nilearn/nilearn/issues/1155).
-- Fix the axes zoom on plot_img_on_surf function so brain would not be cutoff, and edited function so less white space surrounds brain views & smaller colorbar using gridspec (https://github.com/nilearn/nilearn/pull/2798). 
-
+- Fix the axes zoom on plot_img_on_surf function so brain would not be cutoff, and edited function so less white space surrounds brain views & smaller colorbar using gridspec (https://github.com/nilearn/nilearn/pull/2798).
+- Fix inconsistency in prediction values of Dummy Classifier for Decoder
+  object (https://github.com/nilearn/nilearn/issues/2767).
 
 Enhancements
 ------------
@@ -39,6 +50,19 @@ Enhancements
   * "butterwoth" (butterworth filter)
   * "cosine" (discrete cosine transformation)
   * `False` (no filtering)
+- Change the default strategy for Dummy Classifier from 'prior' to
+  'stratified' (https://github.com/nilearn/nilearn/pull/2826/).
+- :class:`nilearn.glm.first_level.run_glm` now allows auto regressive noise
+  models of order greater than one.
+- :class:`nilearn.input_data.NiftiMasker` replaces `sessions` with `runs` and
+  deprecates attribute `sessions` in 0.9.0. Match the relevant change in
+  :func:`nilearn.signal.clean`.
+- Moves parameter `sample_mask` from :class:`nilearn.input_data.NiftiMasker`
+  to method `transform` in base class `nilearn.input_data.BaseMasker`.
+- Function sym_to_vec from :mod:`nilearn.connectome` was deprecated since release 0.4 and
+  has been removed.
+- Fetcher `nilearn.datasets.fetch_nyu_rest` is deprecated since release 0.6.2 and
+  has been removed.
 
 .. _v0.7.1:
 

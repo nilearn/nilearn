@@ -3,7 +3,7 @@ name: 'build'
 on:
   push:
     branches:
-      - "master"
+      - "main"
   pull_request:
     branches:
       - '*'
@@ -33,8 +33,6 @@ jobs:
         shell: bash
     env:
         MIN_REQUIREMENTS: true
-        FLAKE8: true
-        TEST_DOC: false
     steps:
       - uses: actions/checkout@v2
       - uses: actions/setup-python@v2
@@ -70,8 +68,6 @@ jobs:
     defaults:
       run:
         shell: bash
-    env:
-        TEST_DOC: true
     steps:
       - uses: actions/checkout@v2
       - uses: actions/setup-python@v2
@@ -87,6 +83,9 @@ jobs:
       - shell: bash {0}
         run: ./build_tools/github/install.sh
         name: 'Install nilearn'
+      - shell: bash {0}
+        run: ./build_tools/github/test_docs.sh
+        name: 'Run doctests'
       - shell: bash {0}
         run: ./build_tools/github/test.sh
         name: 'Run tests'

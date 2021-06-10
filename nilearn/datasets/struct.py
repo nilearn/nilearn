@@ -25,7 +25,8 @@ FSAVERAGE5_PATH = os.path.join(_package_directory, "data", "fsaverage5")
 def fetch_icbm152_2009(data_dir=None, url=None, resume=True, verbose=1):
     """Download and load the ICBM152 template (dated 2009).
 
-    For more information, see [1]_, [2]_, and [3]_.
+    For more information, see :footcite:`FONOV2011313`,
+    :footcite:`Fonov2009`, and :footcite:`Collins1999algorithm`.
 
     Parameters
     ----------
@@ -57,18 +58,7 @@ def fetch_icbm152_2009(data_dir=None, url=None, resume=True, verbose=1):
 
     References
     ----------
-    .. [1] VS Fonov, AC Evans, K Botteron, CR Almli, RC McKinstry, DL Collins
-       and BDCG, "Unbiased average age-appropriate atlases for pediatric studies",
-       NeuroImage,Volume 54, Issue 1, January 2011
-
-    .. [2] VS Fonov, AC Evans, RC McKinstry, CR Almli and DL Collins,
-       "Unbiased nonlinear average age-appropriate brain templates from birth
-       to adulthood", NeuroImage, Volume 47, Supplement 1, July 2009, Page S102
-       Organization for Human Brain Mapping 2009 Annual Meeting.
-
-    .. [3] DL Collins, AP Zijdenbos, WFC Baare and AC Evans,
-       "ANIMAL+INSECT: Improved Cortical Structure Segmentation",
-       IPMI Lecture Notes in Computer Science, 1999, Volume 1613/1999, 210-223
+    .. footbibliography::
 
     Notes
     -----
@@ -120,7 +110,8 @@ def load_mni152_template():
     """Load skullstripped 2mm version of the MNI152 originally distributed
     with FSL.
 
-    For more information, see [1]_ and [2]_.
+    For more information, see :footcite:`FONOV2011313`,
+    and :footcite:`Fonov2009`.
 
     Returns
     -------
@@ -128,15 +119,7 @@ def load_mni152_template():
 
     References
     ----------
-    .. [1] VS Fonov, AC Evans, K Botteron, CR Almli, RC McKinstry, DL Collins and
-       BDCG, Unbiased average age-appropriate atlases for pediatric studies,
-       NeuroImage, Volume 54, Issue 1, January 2011, ISSN 1053-8119, DOI:
-       10.1016/j.neuroimage.2010.07.033
-
-    .. [2] VS Fonov, AC Evans, RC McKinstry, CR Almli and DL Collins, Unbiased
-       nonlinear average age-appropriate brain templates from birth to adulthood,
-       NeuroImage, Volume 47, Supplement 1, July 2009, Page S102 Organization for
-       Human Brain Mapping 2009 Annual Meeting, DOI: 10.1016/S1053-8119(09)70884-5
+    .. footbibliography::
 
     """
     return check_niimg(MNI152_FILE_PATH)
@@ -235,7 +218,8 @@ def fetch_oasis_vbm(n_subjects=None, dartel_version=True, data_dir=None,
                     url=None, resume=True, verbose=1):
     """Download and load Oasis "cross-sectional MRI" dataset (416 subjects).
 
-    For more information, see [1]_ and [2]_.
+    For more information, see :footcite:`OASISbrain`,
+    and :footcite:`Marcus2007OASIS`.
 
     Parameters
     ----------
@@ -277,11 +261,7 @@ def fetch_oasis_vbm(n_subjects=None, dartel_version=True, data_dir=None,
 
     References
     ----------
-    .. [1] http://www.oasis-brains.org/
-
-    .. [2] Open Access Series of Imaging Studies (OASIS): Cross-sectional MRI
-       Data in Young, Middle Aged, Nondemented, and Demented Older Adults.
-       Marcus, D. S and al., 2007, Journal of Cognitive Neuroscience.
+    .. footbibliography::
 
     Notes
     -----
@@ -453,7 +433,7 @@ def fetch_surf_fsaverage(mesh='fsaverage5', data_dir=None):
     """Download a Freesurfer fsaverage surface.
     File names are subject to change and only attribute names
     are guaranteed to be stable across nilearn versions.
-    See [1]_.
+    See :footcite:`Fischl1999neurons`.
 
     Parameters
     ----------
@@ -500,8 +480,7 @@ def fetch_surf_fsaverage(mesh='fsaverage5', data_dir=None):
 
     References
     ----------
-    .. [1] Fischl et al, (1999). High-resolution intersubject averaging and a
-       coordinate system for the cortical surface. Hum Brain Mapp 8, 272-284.
+    .. footbibliography::
 
     """
     available_meshes = [

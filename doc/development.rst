@@ -151,11 +151,11 @@ atlases):
   label, in the same (numerical) order as the atlas labels
 - ``maps`` (list or string): the path to the nifti image, or a list of paths
 
-In addition, the atlas will need to be called by a fetcher. For example, see `here <https://github.com/nilearn/nilearn/blob/master/nilearn/datasets/atlas.py>`__.
+In addition, the atlas will need to be called by a fetcher. For example, see `here <https://github.com/nilearn/nilearn/blob/main/nilearn/datasets/atlas.py>`__.
 
 Finally, as with other features, please provide a test for your atlas.
 Examples can be found `here
-<https://github.com/nilearn/nilearn/blob/master/nilearn/datasets/tests/test_atlas.py>`__
+<https://github.com/nilearn/nilearn/blob/main/nilearn/datasets/tests/test_atlas.py>`__
 
 Who makes decisions
 --------------------
@@ -254,12 +254,12 @@ Add these changes and submit a PR:
     git push origin REL-x.y.z
 
 
-Once the PR has been reviewed and merged, pull from master and tag the merge commit:
+Once the PR has been reviewed and merged, pull from main and tag the merge commit:
 
 .. code:: bash
 
-    git checkout master
-    git pull upstream master
+    git checkout main
+    git pull upstream main
     git tag x.y.z
     git push upstream --tags
 

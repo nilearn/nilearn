@@ -5,7 +5,7 @@ It's designed to capture information we've found to be useful in reviewing pull 
 If there is other information that would be helpful to include, please don't hesitate to add it!
 
 See here for more information on what is expected for pull requests:
-https://github.com/nilearn/nilearn/blob/master/CONTRIBUTING.rst#pull-requests
+https://github.com/nilearn/nilearn/blob/main/CONTRIBUTING.rst#pull-requests
 -->
 
 <!-- Please indicate after the # which issue you're closing with this PR.

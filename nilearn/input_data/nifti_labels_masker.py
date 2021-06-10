@@ -242,11 +242,12 @@ class NiftiLabelsMasker(BaseMasker, CacheMixin):
 
         return self
 
-    def fit_transform(self, imgs, confounds=None):
+    def fit_transform(self, imgs, confounds=None, sample_mask=None):
         """ Prepare and perform signal extraction from regions.
 
         """
-        return self.fit().transform(imgs, confounds=confounds)
+        return self.fit().transform(imgs, confounds=confounds,
+                                    sample_mask=sample_mask)
 
     def _check_fitted(self):
         if not hasattr(self, "labels_img_"):
@@ -254,7 +255,7 @@ class NiftiLabelsMasker(BaseMasker, CacheMixin):
                              'You must call fit() before calling transform().'
                              % self.__class__.__name__)
 
-    def transform_single_imgs(self, imgs, confounds=None):
+    def transform_single_imgs(self, imgs, confounds=None, sample_mask=None):
         """Extract signals from a single 4D niimg.
 
         Parameters
@@ -268,6 +269,14 @@ class NiftiLabelsMasker(BaseMasker, CacheMixin):
             This parameter is passed to signal.clean. Please see the related
             documentation for details.
             shape: (number of scans, number of confounds)
+
+        sample_mask : Any type compatible with numpy-array indexing, optional
+            shape: (number of scans - number of volumes removed, )
+            Masks the niimgs along time/fourth dimension to perform scrubbing
+            (remove volumes with high motion) and/or non-steady-state volumes.
+            This parameter is passed to signal.clean.
+
+                .. versionadded:: 0.7.2
 
         Returns
         -------
@@ -327,6 +336,7 @@ class NiftiLabelsMasker(BaseMasker, CacheMixin):
             # Pre-processing
             params,
             confounds=confounds,
+            sample_mask=sample_mask,
             dtype=self.dtype,
             # Caching
             memory=self.memory,
