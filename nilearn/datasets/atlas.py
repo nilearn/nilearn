@@ -330,10 +330,50 @@ def fetch_atlas_harvard_oxford(atlas_name, data_dir=None,
         - "labels": string list, labels of the regions in the atlas.
 
     """
-
-    return _fetch_atlases_fsl("HarvardOxford", atlas_name, data_dir=data_dir,
-                              symmetric_split=symmetric_split,
-                              resume=resume, verbose=verbose)
+    atlases = ["cort-maxprob-thr0-1mm", "cort-maxprob-thr0-2mm",
+               "cort-maxprob-thr25-1mm", "cort-maxprob-thr25-2mm",
+               "cort-maxprob-thr50-1mm", "cort-maxprob-thr50-2mm",
+               "cort-prob-1mm", "cort-prob-2mm",
+               "cortl-maxprob-thr0-1mm", "cortl-maxprob-thr0-2mm",
+               "cortl-maxprob-thr25-1mm", "cortl-maxprob-thr25-2mm",
+               "cortl-maxprob-thr50-1mm", "cortl-maxprob-thr50-2mm",
+               "cortl-prob-1mm", "cortl-prob-2mm",
+               "sub-maxprob-thr0-1mm", "sub-maxprob-thr0-2mm",
+               "sub-maxprob-thr25-1mm", "sub-maxprob-thr25-2mm",
+               "sub-maxprob-thr50-1mm", "sub-maxprob-thr50-2mm",
+               "sub-prob-1mm", "sub-prob-2mm"]
+    if atlas_name not in atlases:
+        raise ValueError("Invalid atlas name: {0}. Please choose "
+                         "an atlas among:\n{1}".
+                         format(atlas_name, '\n'.join(atlases)))
+    is_probabilistic = False
+    if atlas_name in ("cortl-prob-1mm", "cortl-prob-2mm",
+                      "cort-prob-1mm", "cort-prob-2mm",
+                      "sub-prob-1mm", "sub-prob-2mm"):
+        is_probabilistic = True
+    if is_probabilistic and symmetric_split:
+        raise ValueError("Region splitting not supported for probabilistic "
+                         "atlases")
+    atlas_img, names, lateralized = _get_atlas_data_and_labels(
+        "HarvardOxford",
+        atlas_name,
+        symmetric_split=symmetric_split,
+        data_dir=data_dir,
+        resume=resume,
+        verbose=verbose)
+    if not symmetric_split:
+        return Bunch(maps=atlas_img, labels=names)
+    atlas_niimg = check_niimg(atlas_img)
+    if lateralized:
+        return Bunch(maps=atlas_niimg, labels=names)
+    atlas_data = get_data(atlas_niimg)
+    new_atlas_data, new_names = _compute_symmetric_split("HarvardOxford",
+                                                         atlas_data,
+                                                         names)
+    new_atlas_niimg = new_img_like(atlas_niimg,
+                                   new_atlas_data,
+                                   atlas_niimg.affine)
+    return Bunch(filename=atlas_img, maps=new_atlas_niimg, labels=new_names)
 
 
 def fetch_atlas_juelich(atlas_name, data_dir=None,
@@ -393,69 +433,65 @@ def fetch_atlas_juelich(atlas_name, data_dir=None,
         - "labels": string list, labels of the regions in the atlas.
 
     """
-
-    return _fetch_atlases_fsl("Juelich", atlas_name, data_dir=data_dir,
-                              symmetric_split=symmetric_split,
-                              resume=resume, verbose=verbose)
-
-
-def _fetch_atlases_fsl(source, atlas_name,
-                       data_dir=None, symmetric_split=False,
-                       resume=True, verbose=1):
-
-    atlas_sources = {"HarvardOxford", "Juelich"}
-    urls = {'HarvardOxford':
-            'http://www.nitrc.org/frs/download.php/9902/HarvardOxford.tgz',
-            'Juelich':
-            'https://www.nitrc.org/frs/download.php/12096/Juelich.tgz'}
-    atlas_items = {'HarvardOxford': (
-                   "cort-maxprob-thr0-1mm", "cort-maxprob-thr0-2mm",
-                   "cort-maxprob-thr25-1mm", "cort-maxprob-thr25-2mm",
-                   "cort-maxprob-thr50-1mm", "cort-maxprob-thr50-2mm",
-                   "cort-prob-1mm", "cort-prob-2mm",
-                   "cortl-maxprob-thr0-1mm", "cortl-maxprob-thr0-2mm",
-                   "cortl-maxprob-thr25-1mm", "cortl-maxprob-thr25-2mm",
-                   "cortl-maxprob-thr50-1mm", "cortl-maxprob-thr50-2mm",
-                   "cortl-prob-1mm", "cortl-prob-2mm",
-                   "sub-maxprob-thr0-1mm", "sub-maxprob-thr0-2mm",
-                   "sub-maxprob-thr25-1mm", "sub-maxprob-thr25-2mm",
-                   "sub-maxprob-thr50-1mm", "sub-maxprob-thr50-2mm",
-                   "sub-prob-1mm", "sub-prob-2mm"),
-                   'Juelich': (
-                   "maxprob-thr0-1mm", "maxprob-thr0-2mm",
-                   "maxprob-thr25-1mm", "maxprob-thr25-2mm",
-                   "maxprob-thr50-1mm", "maxprob-thr50-2mm",
-                   "prob-1mm", "prob-2mm")}
-
-    if source not in atlas_sources:
-        raise ValueError("Invalid atlas source: {0}. "
-                         "Please choose an atlas source among:\n{1}".
-                         format(source, '\n'.join(atlas_sources)))
-
-    if atlas_name not in atlas_items[source]:
+    atlases = ["maxprob-thr0-1mm", "maxprob-thr0-2mm",
+               "maxprob-thr25-1mm", "maxprob-thr25-2mm",
+               "maxprob-thr50-1mm", "maxprob-thr50-2mm",
+               "prob-1mm", "prob-2mm"]
+    if atlas_name not in atlases:
         raise ValueError("Invalid atlas name: {0}. Please choose "
                          "an atlas among:\n{1}".
-                         format(atlas_name, '\n'.join(atlas_items[source])))
-
+                         format(atlas_name, '\n'.join(atlases)))
     is_probabilistic = False
-    if atlas_name in ("cortl-prob-1mm", "cortl-prob-2mm",
-                      "cort-prob-1mm", "cort-prob-2mm",
-                      "sub-prob-1mm", "sub-prob-2mm",
-                      "prob-1mm", "prob-2mm"):
+    if atlas_name in ("prob-1mm", "prob-2mm"):
         is_probabilistic = True
 
     if is_probabilistic and symmetric_split:
         raise ValueError("Region splitting not supported for probabilistic "
                          "atlases")
+    atlas_img, names, _ = _get_atlas_data_and_labels("Juelich",
+                                                     atlas_name,
+                                                     data_dir=data_dir,
+                                                     resume=resume,
+                                                     verbose=verbose)
+    atlas_niimg = check_niimg(atlas_img)
+    atlas_data = get_data(atlas_niimg)
 
+    if not symmetric_split:
+        if is_probabilistic:
+            new_atlas_data, new_names = _merge_probabilistic_maps_juelich(atlas_data,
+                                                                          names)
+        else:
+            new_atlas_data, new_names = _merge_labels_juelich(atlas_data,
+                                                              names)
+    else:
+        new_atlas_data, new_names = _compute_symmetric_split("Juelich",
+                                                             atlas_data,
+                                                             names)
+    new_atlas_niimg = new_img_like(atlas_niimg,
+                                   new_atlas_data,
+                                   atlas_niimg.affine)
+    return Bunch(filename=atlas_img, maps=new_atlas_niimg, labels=new_names)
+
+
+def _get_atlas_data_and_labels(atlas_source, atlas_name, symmetric_split=False,
+                               data_dir=None, resume=True, verbose=1):
+    """Helper function for both fetch_atlas_juelich and fetch_atlas_harvard_oxford.
+    This function downloads the atlas image and labels.
+    """
+    if atlas_source == "Juelich":
+        url = 'https://www.nitrc.org/frs/download.php/12096/Juelich.tgz'
+    elif atlas_source == "HarvardOxford":
+        url = 'http://www.nitrc.org/frs/download.php/9902/HarvardOxford.tgz'
+    else:
+        raise ValueError("Atlas source {} is not valid.".format(
+            atlas_source))
     # For practical reasons, we mimic the FSL data directory here.
-    dataset_name = 'fsl'
-    data_dir = _get_dataset_dir(dataset_name, data_dir=data_dir,
+    data_dir = _get_dataset_dir('fsl', data_dir=data_dir,
                                 verbose=verbose)
     opts = {'uncompress': True}
     root = os.path.join('data', 'atlases')
 
-    if source == 'HarvardOxford':
+    if atlas_source == 'HarvardOxford':
         if atlas_name[0] == 'c':
             if ('cort-maxprob' in atlas_name and symmetric_split
                     or 'cortl-maxprob' in atlas_name):
@@ -472,77 +508,84 @@ def _fetch_atlases_fsl(source, atlas_name,
     else:
         label_file = "Juelich.xml"
         lateralized = False
-
     label_file = os.path.join(root, label_file)
-
-    atlas_file = os.path.join(root, source,
-                              '{}-{}.nii.gz'.format(source, atlas_name))
-
+    atlas_file = os.path.join(root, atlas_source,
+                              '{}-{}.nii.gz'.format(atlas_source,
+                                                    atlas_name))
     atlas_img, label_file = _fetch_files(
         data_dir,
-        [(atlas_file, urls[source], opts),
-         (label_file, urls[source], opts)],
+        [(atlas_file, url, opts),
+         (label_file, url, opts)],
         resume=resume, verbose=verbose)
-
     names = {}
     from xml.etree import ElementTree
     names[0] = 'Background'
     for label in ElementTree.parse(label_file).findall('.//label'):
         names[int(label.get('index')) + 1] = label.text
     names = list(names.values())
+    return atlas_img, names, lateralized
 
-    if source == 'HarardOxford' and not symmetric_split:
-        return Bunch(maps=atlas_img, labels=names)
 
-    atlas_niimg = check_niimg(atlas_img)
+def _merge_probabilistic_maps_juelich(atlas_data, names):
+    """Helper function for fetch_atlas_juelich.
+    This function handles probabilistic juelich atlases
+    when symmetric_split=False. In this situation, we need
+    to merge labels and maps corresponding to left and right
+    regions.
+    """
+    if atlas_data.ndim != 4:
+        raise ValueError("Expected a 4D atlas here.")
+    new_names = np.unique([name[:-2] if name.endswith(' L')
+                           or name.endswith(' R') else name for name in names])
+    new_atlas_data = np.zeros((*atlas_data.shape[:3],
+                               len(new_names)-1))
+    for i,name in enumerate(new_names):
+        if name != "Background":
+            # If the name has no R or L, then simply copy the map
+            if name in names:
+                idx = names.index(name) - 1 # -1 because of background
+                new_atlas_data[...,(i-1)] = atlas_data[...,idx]
+            # otherwise, merge the maps
+            else:
+                idx_l = names.index(name + ' L') - 1
+                idx_r = names.index(name + ' R') - 1
+                new_atlas_data[...,(i-1)] = atlas_data[...,idx_l] + atlas_data[...,idx_r]
+    return new_atlas_data, new_names
 
-    if lateralized:
-        return Bunch(maps=atlas_niimg, labels=names)
 
-    atlas = get_data(atlas_niimg)
+def _merge_labels_juelich(atlas_data, names):
+    """Helper function for fetch_atlas_juelich.
+    This function handles 3D atlases when symmetric_split=False.
+    In this case, we need to merge the labels corresponding to
+    left and right regions.
+    """
+    if atlas_data.ndim != 3:
+        raise ValueError("Expected a 3D atlas here.")
+    labels = np.unique(atlas_data)
+    new_label = 1
+    new_atlas_data = atlas_data.copy()
+    new_names = [names[0]]
+    for label, name in zip(labels[1:], names[1:]):
+        if name.endswith('R') or name.endswith('L'):
+            name = name.rsplit(" ", 1)[0]
+        if name not in new_names:
+            new_names.append(name)
+        new_atlas_data[atlas_data == label] = new_names.index(name)
+    return new_atlas_data, new_names
 
-    if not symmetric_split:
-        # Here we are dealing with the case:
-        # Juelich and not symmetric_split
-        new_names = np.unique(
-            [name[:-2] if name.endswith(' L')
-             or name.endswith(' R') else name for name in names])
-        if is_probabilistic:
-            # We need to merge maps corresponding to the same label
-            assert atlas.ndim == 4
-            new_atlas = np.zeros((*atlas.shape[:3],
-                                  len(new_names)))
-            for i,name in enumerate(new_names):
-                if name != "Background":
-                    if name in names:
-                        idx = names.index(name) - 1
-                        new_atlas[...,(i-1)] = atlas[...,idx]
-                    else:
-                        idx_l = names.index(name + ' L') - 1
-                        idx_r = names.index(name + ' R') - 1
-                        new_atlas[...,(i-1)] = atlas[...,idx_l] + atlas[...,idx_r]
-        else:
-            assert atlas.ndim == 3
-            labels = np.unique(atlas)
-            new_label = 1
-            new_atlas = atlas.copy()
-            new_names = [names[0]]
-            for label, name in zip(labels[1:], names[1:]):
-                if name.endswith('R') or name.endswith('L'):
-                    name = name.rsplit(" ", 1)[0]
-                if name not in new_names:
-                    new_names.append(name)
-                new_atlas[atlas == label] = new_names.index(name)
-        atlas_niimg = new_img_like(atlas_niimg, new_atlas, atlas_niimg.affine)
-        return Bunch(filename=atlas_img, maps=atlas_niimg, labels=new_names)
 
-    labels = np.unique(atlas)
+def _compute_symmetric_split(source, atlas_data, names):
+    """Helper function for both fetch_atlas_juelich and
+    fetch_atlas_harvard_oxford.
+    This function handles 3D atlases when symmetric_split=True.
+    """
+    labels = np.unique(atlas_data)
     # Build a mask of both halves of the brain
-    middle_ind = (atlas.shape[0]) // 2
+    middle_ind = (atlas_data.shape[0]) // 2
     # Split every zone crossing the median plane into two parts.
-    left_atlas = atlas.copy()
+    left_atlas = atlas_data.copy()
     left_atlas[middle_ind:, ...] = 0
-    right_atlas = atlas.copy()
+    right_atlas = atlas_data.copy()
     right_atlas[:middle_ind, ...] = 0
 
     if source == "Juelich":
@@ -553,7 +596,7 @@ def _fetch_atlases_fsl(source, atlas_name,
                 names[idx] = names[idx].rsplit(" ", 1)[0] + ", right part"
 
     new_label = 0
-    new_atlas = atlas.copy()
+    new_atlas_data = atlas_data.copy()
     # Assumes that the background label is zero.
     new_names = [names[0]]
     for label, name in zip(labels[1:], names[1:]):
@@ -571,9 +614,7 @@ def _fetch_atlases_fsl(source, atlas_name,
         new_label += 1
         new_atlas[left_atlas == label] = new_label
         new_names.append(name + ', right part')
-
-    atlas_niimg = new_img_like(atlas_niimg, new_atlas, atlas_niimg.affine)
-    return Bunch(filename=atlas_img, maps=atlas_niimg, labels=new_names)
+    return new_atlas, new_names
 
 
 def fetch_atlas_msdl(data_dir=None, url=None, resume=True, verbose=1):
