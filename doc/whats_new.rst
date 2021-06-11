@@ -66,7 +66,7 @@ Enhancements
 - Fetcher :func:`nilearn.datasets.fetch_surf_fsaverage` now accepts
   `fsaverage3`, `fsaverage4` and `fsaverage6` as values for parameter `mesh`, so that
   all resolutions of fsaverage from 3 to 7 are now available.
-- Fetcher `nilearn.datasets.fetch_surf_fsaverage` now provides
+- Fetcher :func:`nilearn.datasets.fetch_surf_fsaverage` now provides
   attributes `{area, curv, sphere, thick}_{left, right}` for all fsaverage
   resolutions.
 
