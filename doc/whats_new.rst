@@ -63,7 +63,7 @@ Enhancements
   has been removed.
 - Fetcher `nilearn.datasets.fetch_nyu_rest` is deprecated since release 0.6.2 and
   has been removed.
-- Fetcher `nilearn.datasets.fetch_surf_fsaverage` now accepts
+- Fetcher :func:`nilearn.datasets.fetch_surf_fsaverage` now accepts
   `fsaverage3`, `fsaverage4` and `fsaverage6` as values for parameter `mesh`, so that
   all resolutions of fsaverage from 3 to 7 are now available.
 - Fetcher `nilearn.datasets.fetch_surf_fsaverage` now provides
