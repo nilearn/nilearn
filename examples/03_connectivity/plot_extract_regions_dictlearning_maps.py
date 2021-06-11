@@ -17,13 +17,6 @@ ICA decomposition using :class:`nilearn.decomposition.CanICA`
 Please see the related documentation of :class:`nilearn.regions.RegionExtractor`
 for more details.
 
-.. note::
-
-    The use of the attribute `components_img_` from dictionary learning
-    estimator is implemented from version 0.4.1. For older versions,
-    unmask the deprecated attribute `components_` to get the components
-    image using attribute `masker_` embedded in estimator.
-    See the :ref:`section Inverse transform: unmasking data <unmasking_step>`.
 """
 
 ################################################################################
@@ -52,8 +45,6 @@ dict_learn = DictLearning(n_components=8, smoothing_fwhm=6.,
 # Fit to the data
 dict_learn.fit(func_filenames)
 # Resting state networks/maps in attribute `components_img_`
-# Note that this attribute is implemented from version 0.4.1.
-# For older versions, see the note section above for details.
 components_img = dict_learn.components_img_
 
 # Visualization of functional networks
