@@ -53,7 +53,7 @@ def plot_surf(surf_mesh, surf_map=None, bg_map=None,
     surf_map : str or numpy.ndarray, optional
         Data to be displayed on the surface mesh. Can be a file (valid formats
         are .gii, .mgz, .nii, .nii.gz, or Freesurfer specific files such as
-        .thickness, .curv, .sulc, .annot, .label) or
+        .thickness, .area, .curv, .sulc, .annot, .label) or
         a Numpy array with a value for each vertex of the surf_mesh.
 
     bg_map : Surface data object (to be defined), optional
@@ -582,8 +582,8 @@ def plot_surf_stat_map(surf_mesh, stat_map, bg_map=None,
     stat_map : str or numpy.ndarray
         Statistical map to be displayed on the surface mesh, can
         be a file (valid formats are .gii, .mgz, .nii, .nii.gz, or
-        Freesurfer specific files such as .thickness, .curv, .sulc, .annot,
-        .label) or
+        Freesurfer specific files such as .thickness, .area, .curv,
+        .sulc, .annot, .label) or
         a Numpy array with a value for each vertex of the surf_mesh.
 
     bg_map : Surface data object (to be defined), optional

@@ -144,6 +144,20 @@ def test_load_surf_data_file_freesurfer(tmp_path):
     # version is recent with nibabel >= 2.1.0
     if LooseVersion(nb.__version__) >= LooseVersion('2.1.0'):
         data = np.zeros((20, ))
+        fs_area, filename_area = tempfile.mkstemp(suffix='.area',
+                                                  dir=str(tmp_path))
+        os.close(fs_area)
+        nb.freesurfer.io.write_morph_data(filename_area, data)
+        assert_array_equal(load_surf_data(filename_area), np.zeros((20, )))
+        os.remove(filename_area)
+
+        fs_curv, filename_curv = tempfile.mkstemp(suffix='.curv',
+                                                  dir=str(tmp_path))
+        os.close(fs_curv)
+        nb.freesurfer.io.write_morph_data(filename_curv, data)
+        assert_array_equal(load_surf_data(filename_curv), np.zeros((20, )))
+        os.remove(filename_curv)
+
         fd_sulc, filename_sulc = tempfile.mkstemp(suffix='.sulc',
                                                   dir=str(tmp_path))
         os.close(fd_sulc)
@@ -728,7 +742,7 @@ def test_check_mesh():
     mesh = surface._check_mesh('fsaverage5')
     assert mesh is surface._check_mesh(mesh)
     with pytest.raises(ValueError):
-        surface._check_mesh('fsaverage3')
+        surface._check_mesh('fsaverage2')
     mesh.pop('pial_left')
     with pytest.raises(ValueError):
         surface._check_mesh(mesh)

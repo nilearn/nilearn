@@ -1,9 +1,9 @@
-fsaverage5
+fsaverage3
 
 
 Notes
 -----
-Fsaverage5 standard surface as distributed with Freesurfer (Fischl et al, 1999)
+Fsaverage3 standard surface as distributed with Freesurfer (Fischl et al, 1999)
 
 Content
 -------
