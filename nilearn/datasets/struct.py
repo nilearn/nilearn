@@ -7,31 +7,26 @@ from pathlib import Path
 
 import numpy as np
 from scipy import ndimage
-
 from sklearn.utils import Bunch
+
 from .utils import (_get_dataset_dir, _fetch_files,
-                    _get_dataset_descr)
+                    _get_dataset_descr, _uncompress_file)
 
 from .._utils import check_niimg, niimg
-from ..image import new_img_like, get_data, resampling
-
+from ..image import new_img_like, get_data
 
 _package_directory = os.path.dirname(os.path.abspath(__file__))
-
-MNI152_FILE_PATH = os.path.join(
-    _package_directory, "data",
-    "mni_icbm152_t1_tal_nlin_sym_09a_noskull_rescaled.nii.gz")
-GM_MNI152_FILE_PATH = os.path.join(_package_directory, "data",
-                                   "mni_icbm152_gm_tal_nlin_sym_09a.nii.gz")
-WM_MNI152_FILE_PATH = os.path.join(_package_directory, "data",
-                                   "mni_icbm152_wm_tal_nlin_sym_09a.nii.gz")
+# Useful for the very simple examples
+MNI152_FILE_PATH = os.path.join(_package_directory, "data",
+                                "avg152T1_brain.nii.gz")
 FSAVERAGE5_PATH = os.path.join(_package_directory, "data", "fsaverage5")
 
 
 def fetch_icbm152_2009(data_dir=None, url=None, resume=True, verbose=1):
     """Download and load the ICBM152 template (dated 2009).
 
-    For more information, see [1]_, [2]_, and [3]_.
+    For more information, see :footcite:`FONOV2011313`,
+    :footcite:`Fonov2009`, and :footcite:`Collins1999algorithm`.
 
     Parameters
     ----------
@@ -63,18 +58,7 @@ def fetch_icbm152_2009(data_dir=None, url=None, resume=True, verbose=1):
 
     References
     ----------
-    .. [1] VS Fonov, AC Evans, K Botteron, CR Almli, RC McKinstry, DL Collins
-       and BDCG, "Unbiased average age-appropriate atlases for pediatric
-       studies", NeuroImage,Volume 54, Issue 1, January 2011
-
-    .. [2] VS Fonov, AC Evans, RC McKinstry, CR Almli and DL Collins,
-       "Unbiased nonlinear average age-appropriate brain templates from birth
-       to adulthood", NeuroImage, Volume 47, Supplement 1, July 2009, Page S102
-       Organization for Human Brain Mapping 2009 Annual Meeting.
-
-    .. [3] DL Collins, AP Zijdenbos, WFC Baare and AC Evans,
-       "ANIMAL+INSECT: Improved Cortical Structure Segmentation",
-       IPMI Lecture Notes in Computer Science, 1999, Volume 1613/1999, 210-223
+    .. footbibliography::
 
     Notes
     -----
@@ -97,18 +81,18 @@ def fetch_icbm152_2009(data_dir=None, url=None, resume=True, verbose=1):
             "eye_mask", "face_mask", "mask")
     filenames = [(os.path.join("mni_icbm152_nlin_sym_09a", name), url, opts)
                  for name in (
-        "mni_icbm152_csf_tal_nlin_sym_09a.nii.gz",
-        "mni_icbm152_gm_tal_nlin_sym_09a.nii.gz",
-        "mni_icbm152_wm_tal_nlin_sym_09a.nii.gz",
+                    "mni_icbm152_csf_tal_nlin_sym_09a.nii.gz",
+                    "mni_icbm152_gm_tal_nlin_sym_09a.nii.gz",
+                    "mni_icbm152_wm_tal_nlin_sym_09a.nii.gz",
 
-        "mni_icbm152_pd_tal_nlin_sym_09a.nii.gz",
-        "mni_icbm152_t1_tal_nlin_sym_09a.nii.gz",
-        "mni_icbm152_t2_tal_nlin_sym_09a.nii.gz",
-        "mni_icbm152_t2_relx_tal_nlin_sym_09a.nii.gz",
+                    "mni_icbm152_pd_tal_nlin_sym_09a.nii.gz",
+                    "mni_icbm152_t1_tal_nlin_sym_09a.nii.gz",
+                    "mni_icbm152_t2_tal_nlin_sym_09a.nii.gz",
+                    "mni_icbm152_t2_relx_tal_nlin_sym_09a.nii.gz",
 
-        "mni_icbm152_t1_tal_nlin_sym_09a_eye_mask.nii.gz",
-        "mni_icbm152_t1_tal_nlin_sym_09a_face_mask.nii.gz",
-        "mni_icbm152_t1_tal_nlin_sym_09a_mask.nii.gz")]
+                    "mni_icbm152_t1_tal_nlin_sym_09a_eye_mask.nii.gz",
+                    "mni_icbm152_t1_tal_nlin_sym_09a_face_mask.nii.gz",
+                    "mni_icbm152_t1_tal_nlin_sym_09a_mask.nii.gz")]
 
     dataset_name = 'icbm152_2009'
     data_dir = _get_dataset_dir(dataset_name, data_dir=data_dir,
@@ -122,126 +106,38 @@ def fetch_icbm152_2009(data_dir=None, url=None, resume=True, verbose=1):
     return Bunch(**params)
 
 
-def load_mni152_template(resolution=2):
-    """This function takes the skullstripped 1mm-resolution version of the
-    MNI152 T1 template, originally distributed with FSL, and re-samples it
-    using a different resolution, if specified.
+def load_mni152_template():
+    """Load skullstripped 2mm version of the MNI152 originally distributed
+    with FSL.
 
-    For more information, see [1]_ and [2]_.
-
-    Parameters
-    ----------
-    resolution: int, optional, Default = 2
-        If resolution is different from 1, the template is re-sampled with the
-        specified resolution.
+    For more information, see :footcite:`FONOV2011313`,
+    and :footcite:`Fonov2009`.
 
     Returns
     -------
-    mni152_template : Nifti1Image, image representing the re-sampled
-        whole-brain template
+    mni152_template : nibabel object corresponding to the template
 
     References
     ----------
-    .. [1] VS Fonov, AC Evans, K Botteron, CR Almli, RC McKinstry, DL Collins
-       and BDCG, Unbiased average age-appropriate atlases for pediatric
-       studies, NeuroImage, Volume 54, Issue 1, January 2011, ISSN 1053-8119,
-       DOI: 10.1016/j.neuroimage.2010.07.033
-
-    .. [2] VS Fonov, AC Evans, RC McKinstry, CR Almli and DL Collins, Unbiased
-       nonlinear average age-appropriate brain templates from birth to
-       adulthood, NeuroImage, Volume 47, Supplement 1, July 2009, Page S102
-       Organization for Human Brain Mapping 2009 Annual Meeting,
-       DOI: 10.1016/S1053-8119(09)70884-5
+    .. footbibliography::
 
     """
-
-    brain_template = check_niimg(MNI152_FILE_PATH)
-
-    # Change the resolution of the template
-    if resolution != 1:
-        brain_template = resampling.resample_img(brain_template,
-                                                 np.eye(3) * resolution)
-
-    return brain_template
+    return check_niimg(MNI152_FILE_PATH)
 
 
-def load_mni152_gm_template(resolution=2):
-    """This function takes the skullstripped 1mm-resolution version of the
-    gray-matter MNI152 template, originally distributed with FSL, and
-    re-samples it using a different resolution, if specified.
+def load_mni152_brain_mask():
+    """Load brain mask from MNI152 T1 template
 
-    Parameters
-    ----------
-    resolution: int, optional, Default = 2
-        If resolution is different from 1, the template is re-sampled with the
-        specified resolution.
+    .. versionadded:: 0.2.5
 
     Returns
     -------
-    gm_mni152_template : Nifti1Image, image representing the resampled
-        gray-matter template
-
-    """
-
-    gm_template = check_niimg(GM_MNI152_FILE_PATH)
-
-    # Change the resolution of the template
-    if resolution != 1:
-        gm_template = resampling.resample_img(gm_template,
-                                              np.eye(3) * resolution)
-
-    return gm_template
-
-
-def load_mni152_wm_template(resolution=2):
-    """This function takes the skullstripped 1mm-resolution version of the
-    white-matter MNI152 template, originally distributed with FSL, and
-    re-samples it using a different resolution, if specified.
-
-    Parameters
-    ----------
-    resolution: int, optional, Default = 2
-        If resolution is different from 1, the template is re-sampled with the
-        specified resolution.
-
-    Returns
-    -------
-    wm_mni152_template : Nifti1Image, image representing the resampled
-        white-matter template
-
-    """
-
-    wm_template = check_niimg(WM_MNI152_FILE_PATH)
-
-    # Change the resolution of the template
-    if resolution != 1:
-        wm_template = resampling.resample_img(wm_template,
-                                              np.eye(3) * resolution)
-
-    return wm_template
-
-
-def load_mni152_brain_mask(resolution=2, threshold=0.2):
-    """Load mask from the whole-brain MNI152 T1 template.
-
-    Parameters
-    ----------
-    resolution: int, optional, Default = 2
-        If resolution is different from 1, the template loaded is first
-        re-sampled with the specified resolution.
-
-    threshold : float, optional
-        The parameter which amounts to include the values in the mask image.
-        Values lying above this threshold will be included. Default=0.2
-
-    Returns
-    -------
-    mask_img : Nifti1Image, image corresponding to the whole-brain mask.
+    mask_img : Nifti-like mask image corresponding to grey and white matter.
 
     Notes
     -----
-    Refer to load_mni152_template function for more information about the
-    MNI152 T1 template
+    Refer to load_mni152_template function for more information about the MNI152
+    T1 template
 
     See Also
     --------
@@ -250,78 +146,17 @@ def load_mni152_brain_mask(resolution=2, threshold=0.2):
 
     """
     # Load MNI template
-    target_img = load_mni152_template(resolution=resolution)
-    mask_voxels = (get_data(target_img) > threshold).astype("int8")
+    target_img = load_mni152_template()
+    mask_voxels = (get_data(target_img) > 0).astype(int)
     mask_img = new_img_like(target_img, mask_voxels)
-
     return mask_img
 
 
-def load_mni152_gm_mask(resolution=2, threshold=0.2, n_iter=2):
-    """Load mask from the gray-matter MNI152 template.
-
-    Parameters
-    ----------
-    resolution: int, optional, Default = 2
-        If resolution is different from 1, the template loaded is first
-        re-sampled with the specified resolution.
-
-    threshold : float, optional
-        The parameter which amounts to include the values in the mask image.
-        Values lying above this threshold will be included. Default=0.2
-
-    Returns
-    -------
-    gm_mask_img : Nifti1Image, image corresponding to the gray-matter mask.
-
-    """
-    # Load MNI template
-    gm_target = load_mni152_gm_template(resolution=resolution)
-    gm_target_img = check_niimg(gm_target)
-    gm_target_data = niimg._safe_get_data(gm_target_img)
-
-    gm_target_mask = (gm_target_data > threshold).astype("int8")
-
-    gm_target_mask = ndimage.binary_closing(gm_target_mask, iterations=n_iter)
-    gm_mask_img = new_img_like(gm_target_img, gm_target_mask)
-
-    return gm_mask_img
-
-
-def load_mni152_wm_mask(resolution=2, threshold=0.2, n_iter=2):
-    """Load mask from the white-matter MNI152 template.
-
-    Parameters
-    ----------
-    resolution: int, optional, Default = 2
-        If resolution is different from 1, the template loaded is first
-        re-sampled with the specified resolution.
-
-    threshold : float, optional
-        The parameter which amounts to include the values in the mask image.
-        Values lying above this threshold will be included. Default=0.2
-
-    Returns
-    -------
-    wm_mask_img : Nifti1Image, image corresponding to the white-matter mask.
-
-    """
-    # Load MNI template
-    wm_target = load_mni152_wm_template(resolution=resolution)
-    wm_target_img = check_niimg(wm_target)
-    wm_target_data = niimg._safe_get_data(wm_target_img)
-
-    wm_target_mask = (wm_target_data > threshold).astype("int8")
-
-    wm_target_mask = ndimage.binary_closing(wm_target_mask, iterations=n_iter)
-    wm_mask_img = new_img_like(wm_target_img, wm_target_mask)
-
-    return wm_mask_img
-
-
 def fetch_icbm152_brain_gm_mask(data_dir=None, threshold=0.2, resume=True,
-                                n_iter=2, verbose=1):
-    """Downloads ICBM152 template first, then loads the 'gm' mask.
+                                verbose=1):
+    """Downloads ICBM152 template first, then loads 'gm' mask image.
+
+    .. versionadded:: 0.2.5
 
     Parameters
     ----------
@@ -331,23 +166,21 @@ def fetch_icbm152_brain_gm_mask(data_dir=None, threshold=0.2, resume=True,
 
     threshold : float, optional
         The parameter which amounts to include the values in the mask image.
-        Values lying above this threshold will be included. Default=0.2
+        The values lies above than this threshold will be included. Defaults
+        to 0.2 (one fifth) of values.
+        Default=0.2.
 
     resume : bool, optional
         If True, try resuming partially downloaded data.
         Default=True.
-
-    n_iter: int, optional
-        Number of repetitions of dilation and erosion steps performed in
-        scipy.ndimage.binary_closing function. Default=2.
 
     verbose : int, optional
         Verbosity level (0 means no message). Default=1.
 
     Returns
     -------
-    gm_mask_img : Nifti1Image, image corresponding to the brain gray matter
-        from ICBM152 template.
+    gm_mask_img : Nifti image
+        Corresponding to brain grey matter from ICBM152 template.
 
     Notes
     -----
@@ -368,18 +201,16 @@ def fetch_icbm152_brain_gm_mask(data_dir=None, threshold=0.2, resume=True,
 
     """
     # Fetching ICBM152 grey matter mask image
-    icbm = fetch_icbm152_2009(data_dir=data_dir, resume=resume,
-                              verbose=verbose)
+    icbm = fetch_icbm152_2009(data_dir=data_dir, resume=resume, verbose=verbose)
     gm = icbm['gm']
     gm_img = check_niimg(gm)
     gm_data = niimg._safe_get_data(gm_img)
 
     # getting one fifth of the values
-    gm_mask = (gm_data > threshold).astype("int8")
+    gm_mask = (gm_data > threshold)
 
-    gm_mask = ndimage.binary_closing(gm_mask, iterations=n_iter)
+    gm_mask = ndimage.binary_closing(gm_mask, iterations=2)
     gm_mask_img = new_img_like(gm_img, gm_mask)
-
     return gm_mask_img
 
 
@@ -387,7 +218,8 @@ def fetch_oasis_vbm(n_subjects=None, dartel_version=True, data_dir=None,
                     url=None, resume=True, verbose=1):
     """Download and load Oasis "cross-sectional MRI" dataset (416 subjects).
 
-    For more information, see [1]_ and [2]_.
+    For more information, see :footcite:`OASISbrain`,
+    and :footcite:`Marcus2007OASIS`.
 
     Parameters
     ----------
@@ -429,11 +261,7 @@ def fetch_oasis_vbm(n_subjects=None, dartel_version=True, data_dir=None,
 
     References
     ----------
-    .. [1] http://www.oasis-brains.org/
-
-    .. [2] Open Access Series of Imaging Studies (OASIS): Cross-sectional MRI
-       Data in Young, Middle Aged, Nondemented, and Demented Older Adults.
-       Marcus, D. S and al., 2007, Journal of Cognitive Neuroscience.
+    .. footbibliography::
 
     Notes
     -----
@@ -530,15 +358,15 @@ def fetch_oasis_vbm(n_subjects=None, dartel_version=True, data_dir=None,
         missing_subjects = sorted(missing_subjects + removed_outliers)
         file_names_gm = [
             (os.path.join(
-                "OAS1_%04d_MR1",
-                "mwrc1OAS1_%04d_MR1_mpr_anon_fslswapdim_bet.nii.gz")
+                    "OAS1_%04d_MR1",
+                    "mwrc1OAS1_%04d_MR1_mpr_anon_fslswapdim_bet.nii.gz")
              % (s, s),
              url_images, opts)
             for s in range(1, 457) if s not in missing_subjects][:n_subjects]
         file_names_wm = [
             (os.path.join(
-                "OAS1_%04d_MR1",
-                "mwrc2OAS1_%04d_MR1_mpr_anon_fslswapdim_bet.nii.gz")
+                    "OAS1_%04d_MR1",
+                    "mwrc2OAS1_%04d_MR1_mpr_anon_fslswapdim_bet.nii.gz")
              % (s, s),
              url_images, opts)
             for s in range(1, 457) if s not in missing_subjects]
@@ -548,15 +376,15 @@ def fetch_oasis_vbm(n_subjects=None, dartel_version=True, data_dir=None,
         missing_subjects = sorted(missing_subjects + removed_outliers)
         file_names_gm = [
             (os.path.join(
-                "OAS1_%04d_MR1",
-                "mwc1OAS1_%04d_MR1_mpr_anon_fslswapdim_bet.nii.gz")
+                    "OAS1_%04d_MR1",
+                    "mwc1OAS1_%04d_MR1_mpr_anon_fslswapdim_bet.nii.gz")
              % (s, s),
              url_images, opts)
             for s in range(1, 457) if s not in missing_subjects][:n_subjects]
         file_names_wm = [
             (os.path.join(
-                "OAS1_%04d_MR1",
-                "mwc2OAS1_%04d_MR1_mpr_anon_fslswapdim_bet.nii.gz")
+                    "OAS1_%04d_MR1",
+                    "mwc2OAS1_%04d_MR1_mpr_anon_fslswapdim_bet.nii.gz")
              % (s, s),
              url_images, opts)
             for s in range(1, 457) if s not in missing_subjects]
@@ -566,8 +394,8 @@ def fetch_oasis_vbm(n_subjects=None, dartel_version=True, data_dir=None,
     file_names_gm = file_names_gm[:n_subjects]
     file_names_wm = file_names_wm[:n_subjects]
 
-    file_names = (
-        file_names_gm + file_names_wm + file_names_extvars + file_names_dua)
+    file_names = (file_names_gm + file_names_wm +
+                  file_names_extvars + file_names_dua)
     dataset_name = 'oasis1'
     data_dir = _get_dataset_dir(dataset_name, data_dir=data_dir,
                                 verbose=verbose)
@@ -583,8 +411,9 @@ def fetch_oasis_vbm(n_subjects=None, dartel_version=True, data_dir=None,
     # Keep CSV information only for selected subjects
     csv_data = np.recfromcsv(ext_vars_file)
     # Comparisons to recfromcsv data must be bytes.
-    actual_subjects_ids = [("OAS1" + str.split(os.path.basename(x),
-                                               "OAS1")[1][:9]).encode()
+    actual_subjects_ids = [("OAS1" +
+                            str.split(os.path.basename(x),
+                                      "OAS1")[1][:9]).encode()
                            for x in gm_maps]
     subject_mask = np.asarray([subject_id in actual_subjects_ids
                                for subject_id in csv_data['id']])
@@ -602,19 +431,26 @@ def fetch_oasis_vbm(n_subjects=None, dartel_version=True, data_dir=None,
 
 def fetch_surf_fsaverage(mesh='fsaverage5', data_dir=None):
     """Download a Freesurfer fsaverage surface.
-    See [1]_.
+    File names are subject to change and only attribute names
+    are guaranteed to be stable across nilearn versions.
+    See :footcite:`Fischl1999neurons`.
 
     Parameters
     ----------
     mesh : str, optional
         Which mesh to fetch. Default='fsaverage5'.
 
+        - 'fsaverage3': the low-resolution fsaverage3 mesh (642 nodes)
+        - 'fsaverage4': the low-resolution fsaverage4 mesh (2562 nodes)
         - 'fsaverage5': the low-resolution fsaverage5 mesh (10242 nodes)
-        - 'fsaverage5_sphere': the low-resolution fsaverage5 spheres (10242
-          nodes)
+        - 'fsaverage5_sphere': this option has been deprecated
+            and will be removed in v0.9.0.
+            fsaverage5 sphere coordinates can now be accessed through
+            attributes sphere_{left, right} using mesh='fsaverage5'
+        - 'fsaverage6': the medium-resolution fsaverage6 mesh (40962 nodes)
+        - 'fsaverage7': same as 'fsaverage'
         - 'fsaverage': the high-resolution fsaverage mesh (163842 nodes)
-          (high-resolution fsaverage will result in more computation time and
-          memory usage)
+            (high-resolution fsaverage will result in more computation time and memory usage)
 
     data_dir : str, optional
         Path of the data directory. Used to force data storage in a specified
@@ -624,55 +460,67 @@ def fetch_surf_fsaverage(mesh='fsaverage5', data_dir=None):
     -------
     data : sklearn.datasets.base.Bunch
         Dictionary-like object, the interest attributes are :
+         - 'area_left': Gifti file, left hemisphere area data
+         - 'area_right': Gifti file, right hemisphere area data
+         - 'curv_left': Gifti file, left hemisphere curvature data
+         - 'curv_right': Gifti file, right hemisphere curvature data
          - 'pial_left': Gifti file, left hemisphere pial surface mesh
          - 'pial_right': Gifti file, right hemisphere pial surface mesh
          - 'infl_left': Gifti file, left hemisphere inflated pial surface mesh
          - 'infl_right': Gifti file, right hemisphere inflated pial
                          surface mesh
+         - 'sphere_left': Gifti file, left hemisphere sphere surface mesh
+         - 'sphere_right': Gifti file, right hemisphere sphere surface mesh
          - 'sulc_left': Gifti file, left hemisphere sulcal depth data
          - 'sulc_right': Gifti file, right hemisphere sulcal depth data
+         - 'thick_left': Gifti file, left hemisphere cortical thickness data
+         - 'thick_right': Gifti file, right hemisphere cortical thickness data
+         - 'white_left': Gifti file, left hemisphere white surface mesh
+         - 'white_right': Gifti file, right hemisphere white surface mesh
 
     References
     ----------
-    .. [1] Fischl et al, (1999). High-resolution intersubject averaging and a
-       coordinate system for the cortical surface. Hum Brain Mapp 8, 272-284.
+    .. footbibliography::
 
     """
-    meshes = {'fsaverage5': _fetch_surf_fsaverage5,
-              'fsaverage5_sphere': _fetch_surf_fsaverage5_sphere,
-              'fsaverage': _fetch_surf_fsaverage}
-    if mesh not in meshes:
+    available_meshes = [
+        "fsaverage3", "fsaverage4", "fsaverage5", "fsaverage5_sphere",
+        "fsaverage6", "fsaverage7", "fsaverage",
+    ]
+
+    # Call a dataset loader depending on the value of mesh
+    if (
+        mesh == "fsaverage3"
+        or mesh == "fsaverage4"
+        or mesh == "fsaverage6"
+        or mesh == "fsaverage7"
+        or mesh == "fsaverage"
+    ):
+        # rename mesh to "fsaverage" to download it once
+        # regardless of whether mesh equals "fsaverage" or "fsaverage7"
+        if mesh == "fsaverage7":
+            mesh = "fsaverage"
+
+        return _fetch_surf_fsaverage(mesh, data_dir=data_dir)
+    elif mesh == "fsaverage5":
+        return _fetch_surf_fsaverage5()
+    elif mesh == "fsaverage5_sphere":
+        warnings.warn(
+            "mesh='fsaverage5_sphere' has been deprecated "
+            "and will be removed in v0.9.0.\n"
+            "fsaverage5 sphere coordinates can now be accessed through "
+            "attributes sphere_{left, right} using mesh='fsaverage5'"
+        )
+        return _fetch_surf_fsaverage5()
+    else:
         raise ValueError(
             "'mesh' should be one of {}; {!r} was provided".format(
-                list(meshes.keys()), mesh))
-    return meshes[mesh](data_dir=data_dir)
+                available_meshes, mesh
+            )
+        )
 
 
-def _fetch_surf_fsaverage(data_dir=None):
-    """Helper function to ship fsaverage (highest resolution) surfaces
-    and sulcal information with Nilearn.
-
-    The source of the data is downloaded from nitrc.
-
-    """
-    dataset_dir = _get_dataset_dir('fsaverage', data_dir=data_dir)
-    url = "https://www.nitrc.org/frs/download.php/11807/fsaverage.tar.gz"
-    file_names = ["{}_{}".format(part, hemi)
-                  for part in ["pial", "sulc", "white", "inflated"]
-                  for hemi in ["left", "right"]]
-    _fetch_files(dataset_dir,
-                 [(os.path.join("fsaverage", "{}.gii".format(name)), url,
-                   {"uncompress": True})
-                  for name in file_names])
-    result = {
-        name.replace("inflated", "infl"): os.path.join(
-            dataset_dir, "fsaverage", '{}.gii'.format(name))
-        for name in file_names}
-    result['description'] = str(_get_dataset_descr('fsaverage'))
-    return Bunch(**result)
-
-
-def _fetch_surf_fsaverage5(data_dir=None, url=None, resume=True, verbose=1):
+def _fetch_surf_fsaverage5():
     """Helper function to ship fsaverage5 surfaces and sulcal information
     with Nilearn.
 
@@ -682,36 +530,64 @@ def _fetch_surf_fsaverage5(data_dir=None, url=None, resume=True, verbose=1):
     Shipping is done with Nilearn based on issue #1705.
 
     """
-    data = {"description": _get_dataset_descr("fsaverage5")}
     data_dir = Path(FSAVERAGE5_PATH)
-    for hemi in ["left", "right"]:
-        for part in ["white", "sulc", "pial", "infl"]:
-            data["{}_{}".format(part, hemi)] = str(
-                data_dir / "{}.{}.gii.gz".format(
-                    {"infl": "pial_inflated"}.get(part, part), hemi))
+
+    data = {
+        "{}_{}".format(part, hemi): str(
+            data_dir / "{}_{}.gii.gz".format(part, hemi)
+        )
+        for part in [
+            "area", "curv", "infl", "pial",
+            "sphere", "sulc", "thick", "white"
+        ]
+        for hemi in ["left", "right"]
+    }
+    data["description"] = _get_dataset_descr("fsaverage5")
+
     return Bunch(**data)
 
 
-def _fetch_surf_fsaverage5_sphere(data_dir=None):
-    """Helper function to ship fsaverage5 spherical meshes.
+def _fetch_surf_fsaverage(dataset_name, data_dir=None):
+    """Helper function to ship fsaverage{3,4,6,7} meshes.
 
     These meshes can be used for visualization purposes, but also to run
     cortical surface-based searchlight decoding.
 
     The source of the data is downloaded from OSF.
-
     """
-    fsaverage_dir = _get_dataset_dir('fsaverage', data_dir=data_dir)
-    dataset_dir = _get_dataset_dir('fsaverage5_sphere', data_dir=fsaverage_dir)
-    url = 'https://osf.io/b79fy/download'
+    dataset_dir = _get_dataset_dir(dataset_name, data_dir=data_dir)
     opts = {'uncompress': True}
-    names = ['sphere_right', 'sphere_left']
-    filenames = [('{}.gii'.format(name), url, opts)
-                 for name in names]
-    _fetch_files(dataset_dir, filenames)
-    result = {
-        name: os.path.join(dataset_dir, '{}.gii'.format(name))
-        for name in names}
 
-    result['description'] = str(_get_dataset_descr('fsaverage5_sphere'))
+    url = {
+        "fsaverage3": "https://osf.io/asvjk/download",
+        "fsaverage4": "https://osf.io/x2j49/download",
+        "fsaverage6": "https://osf.io/um5ag/download",
+        "fsaverage": "https://osf.io/q7a5k/download",  # fsaverage7
+    }[dataset_name]
+
+    # List of attributes exposed by the dataset
+    dataset_attributes = [
+        "{}_{}".format(part, hemi)
+        for part in [
+            "area", "curv", "infl", "pial",
+            "sphere", "sulc", "thick", "white"
+        ]
+        for hemi in ["left", "right"]
+    ]
+
+    # Note that the file names match the attribute's
+    _fetch_files(
+        dataset_dir,
+        [
+            ("{}.gii.gz".format(attribute), url, opts)
+            for attribute in dataset_attributes
+        ]
+    )
+
+    result = {
+        attribute: os.path.join(dataset_dir, "{}.gii.gz".format(attribute))
+        for attribute in dataset_attributes
+    }
+    result["description"] = str(_get_dataset_descr(dataset_name))
+
     return Bunch(**result)
