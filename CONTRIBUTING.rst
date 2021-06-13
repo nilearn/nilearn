@@ -12,6 +12,7 @@ The best way to contribute and to help the project is to start working on known
 issues.
 See `Good first issues <https://github.com/nilearn/nilearn/labels/Good%20first%20issue>`_ to get
 started.
+If the issue is not already assigned to someone, you can request it by commenting "take". This will automatically assign you the issue.
 
 If an issue does not already exist for a potential contribution, we ask that
 you first open an `issue <https://github.com/nilearn/nilearn/issues>`_ before

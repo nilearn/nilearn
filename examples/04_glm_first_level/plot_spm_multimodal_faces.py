@@ -3,7 +3,7 @@ Single-subject data (two sessions) in native space
 ==================================================
 
 The example shows the analysis of an SPM dataset studying face perception.  The
-anaylsis is performed in native spave. Realignment parameters are provided with
+anaylsis is performed in native space. Realignment parameters are provided with
 the input images, but those have not been resampled to a common space.
 
 The experimental paradigm is simple, with two conditions; viewing a face image

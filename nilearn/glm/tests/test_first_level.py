@@ -22,7 +22,9 @@ from nilearn.glm.first_level import (FirstLevelModel, first_level_from_bids,
                                      mean_scaling, run_glm)
 from nilearn.glm.first_level.design_matrix import (
     check_design_matrix, make_first_level_design_matrix)
+from nilearn.glm.first_level.first_level import _yule_walker
 from nilearn.image import get_data
+from nilearn.glm.regression import ARModel, OLSModel
 from nilearn.input_data import NiftiMasker
 
 BASEDIR = os.path.dirname(os.path.abspath(__file__))
@@ -289,7 +291,7 @@ def test_compute_contrast_num_contrasts():
 
 def test_run_glm():
     rng = np.random.RandomState(42)
-    n, p, q = 100, 80, 10
+    n, p, q = 33, 80, 10
     X, Y = rng.standard_normal(size=(p, q)), rng.standard_normal(size=(p, n))
 
     # Ordinary Least Squares case
@@ -299,6 +301,7 @@ def test_run_glm():
     assert results[0.0].theta.shape == (q, n)
     assert_almost_equal(results[0.0].theta.mean(), 0, 1)
     assert_almost_equal(results[0.0].theta.var(), 1. / p, 1)
+    assert type(results[labels[0]].model) == OLSModel
 
     # ar(1) case
     labels, results = run_glm(Y, X, 'ar1')
@@ -306,12 +309,73 @@ def test_run_glm():
     assert len(results.keys()) > 1
     tmp = sum([val.theta.shape[1] for val in results.values()])
     assert tmp == n
+    assert results[labels[0]].model.order == 1
+    assert type(results[labels[0]].model) == ARModel
 
-    # non-existant case
+    # ar(3) case
+    labels_ar3, results_ar3 = run_glm(Y, X, 'ar3', bins=10)
+    assert len(labels_ar3) == n
+    assert len(results_ar3.keys()) > 1
+    tmp = sum([val.theta.shape[1] for val in results_ar3.values()])
+    assert tmp == n
+    assert type(results_ar3[labels_ar3[0]].model) == ARModel
+    assert results_ar3[labels_ar3[0]].model.order == 3
+    assert len(results_ar3[labels_ar3[0]].model.rho) == 3
+
+    # Check correct errors are thrown for nonsense noise model requests
     with pytest.raises(ValueError):
-        run_glm(Y, X, 'ar2')
+        run_glm(Y, X, 'ar0')
     with pytest.raises(ValueError):
-        run_glm(Y, X.T)
+        run_glm(Y, X, 'arfoo')
+    with pytest.raises(ValueError):
+        run_glm(Y, X, 'arr3')
+    with pytest.raises(ValueError):
+        run_glm(Y, X, 'ar1.2')
+    with pytest.raises(ValueError):
+        run_glm(Y, X, 'ar')
+    with pytest.raises(ValueError):
+        run_glm(Y, X, '3ar')
+
+
+def test_glm_AR_estimates():
+    """Test that Yule-Walker AR fits are correct."""
+
+    n, p, q = 1, 500, 2
+    X_orig = np.random.RandomState(2).randn(p, q)
+    Y_orig = np.random.RandomState(2).randn(p, n)
+
+    for ar_vals in [[-0.2], [-0.2, -0.5], [-0.2, -0.5, -0.7, -0.3]]:
+        ar_order = len(ar_vals)
+        ar_arg = 'ar' + str(ar_order)
+
+        X = X_orig.copy()
+        Y = Y_orig.copy()
+
+        for idx in range(1, len(Y)):
+            for lag in range(ar_order):
+                Y[idx] += ar_vals[lag] * Y[idx - 1 - lag]
+
+        # Test using run_glm
+        labels, results = run_glm(Y, X, ar_arg, bins=100)
+        assert len(labels) == n
+        for lab in results.keys():
+            ar_estimate = lab.split("_")
+            for lag in range(ar_order):
+                assert_almost_equal(float(ar_estimate[lag]),
+                                    ar_vals[lag], decimal=1)
+
+        # Test using _yule_walker
+        yw = _yule_walker(Y.T, ar_order)
+        assert_almost_equal(yw[0], ar_vals, decimal=1)
+
+    with pytest.raises(TypeError):
+        _yule_walker(Y_orig, 1.2)
+    with pytest.raises(ValueError):
+        _yule_walker(Y_orig, 0)
+    with pytest.raises(ValueError):
+        _yule_walker(Y_orig, -2)
+    with pytest.raises(TypeError, match='at least 1 dim'):
+        _yule_walker(np.array(0.), 2)
 
 
 def test_scaling():

@@ -1,7 +1,7 @@
 # quick-build rebuilds changes using the cached documentation.
 # The cache is emptied everyday, forcing a full build on the day's first push.
-# It doesn't operate on master branch. New branches are always built from scratch.
-# full-build always rebuilds from scratch, without any cache. Only for changes in master branch.
+# It doesn't operate on main branch. New branches are always built from scratch.
+# full-build always rebuilds from scratch, without any cache. Only for changes in main branch.
 
 version: 2.1
 
@@ -259,16 +259,16 @@ jobs:
       - run:
           name: Install apt packages
           command: |
-              ./tools/circleci_dependencies_apt.sh
+              ./build_tools/circle/dependencies_apt.sh
       - run:
           name: Install packages in conda env
           command: |
-              ./tools/circleci_dependencies.sh
+              ./build_tools/circle/dependencies.sh
       - restore_data_cache
       - run:
           name: Find build type
           command: |
-              ./tools/circleci_build_type.sh
+              ./build_tools/circle/build_type.sh
       - run:
           name: Verify build type
           command: |
@@ -301,6 +301,11 @@ jobs:
           paths:
               - html
               - html_stable
+      - run: |
+          if [[ "$(cat build.txt)" != "html-strict" ]]; then
+                echo "Partial build : No caching of data will be done!";
+                circleci-agent step halt
+          fi
       - save_data_cache
 
 workflows:
@@ -317,6 +322,6 @@ workflows:
           filters:
             branches:
               only:
-                - master
+                - main
     jobs:
       - build_docs
