@@ -9,24 +9,27 @@ import numpy as np
 from scipy import ndimage
 from sklearn.utils import Bunch
 
-from .utils import (_get_dataset_dir, _fetch_files,
-                    _get_dataset_descr, _uncompress_file)
+from .utils import (_get_dataset_dir, _fetch_files, _get_dataset_descr)
 
 from .._utils import check_niimg, niimg
-from ..image import new_img_like, get_data
+from ..image import new_img_like, get_data, resampling
+
 
 _package_directory = os.path.dirname(os.path.abspath(__file__))
-# Useful for the very simple examples
-MNI152_FILE_PATH = os.path.join(_package_directory, "data",
-                                "avg152T1_brain.nii.gz")
+MNI152_FILE_PATH = os.path.join(
+    _package_directory, "data",
+    "mni_icbm152_t1_tal_nlin_sym_09a_noskull_rescaled.nii.gz")
+GM_MNI152_FILE_PATH = os.path.join(_package_directory, "data",
+                                   "mni_icbm152_gm_tal_nlin_sym_09a.nii.gz")
+WM_MNI152_FILE_PATH = os.path.join(_package_directory, "data",
+                                   "mni_icbm152_wm_tal_nlin_sym_09a.nii.gz")
 FSAVERAGE5_PATH = os.path.join(_package_directory, "data", "fsaverage5")
 
 
 def fetch_icbm152_2009(data_dir=None, url=None, resume=True, verbose=1):
     """Download and load the ICBM152 template (dated 2009).
 
-    For more information, see :footcite:`FONOV2011313`,
-    :footcite:`Fonov2009`, and :footcite:`Collins1999algorithm`.
+    For more information, see [1]_, [2]_, and [3]_.
 
     Parameters
     ----------
@@ -58,7 +61,18 @@ def fetch_icbm152_2009(data_dir=None, url=None, resume=True, verbose=1):
 
     References
     ----------
-    .. footbibliography::
+    .. [1] VS Fonov, AC Evans, K Botteron, CR Almli, RC McKinstry, DL Collins
+       and BDCG, "Unbiased average age-appropriate atlases for pediatric
+       studies", NeuroImage,Volume 54, Issue 1, January 2011
+
+    .. [2] VS Fonov, AC Evans, RC McKinstry, CR Almli and DL Collins,
+       "Unbiased nonlinear average age-appropriate brain templates from birth
+       to adulthood", NeuroImage, Volume 47, Supplement 1, July 2009, Page S102
+       Organization for Human Brain Mapping 2009 Annual Meeting.
+
+    .. [3] DL Collins, AP Zijdenbos, WFC Baare and AC Evans,
+       "ANIMAL+INSECT: Improved Cortical Structure Segmentation",
+       IPMI Lecture Notes in Computer Science, 1999, Volume 1613/1999, 210-223
 
     Notes
     -----
@@ -81,18 +95,18 @@ def fetch_icbm152_2009(data_dir=None, url=None, resume=True, verbose=1):
             "eye_mask", "face_mask", "mask")
     filenames = [(os.path.join("mni_icbm152_nlin_sym_09a", name), url, opts)
                  for name in (
-                    "mni_icbm152_csf_tal_nlin_sym_09a.nii.gz",
-                    "mni_icbm152_gm_tal_nlin_sym_09a.nii.gz",
-                    "mni_icbm152_wm_tal_nlin_sym_09a.nii.gz",
+        "mni_icbm152_csf_tal_nlin_sym_09a.nii.gz",
+        "mni_icbm152_gm_tal_nlin_sym_09a.nii.gz",
+        "mni_icbm152_wm_tal_nlin_sym_09a.nii.gz",
 
-                    "mni_icbm152_pd_tal_nlin_sym_09a.nii.gz",
-                    "mni_icbm152_t1_tal_nlin_sym_09a.nii.gz",
-                    "mni_icbm152_t2_tal_nlin_sym_09a.nii.gz",
-                    "mni_icbm152_t2_relx_tal_nlin_sym_09a.nii.gz",
+        "mni_icbm152_pd_tal_nlin_sym_09a.nii.gz",
+        "mni_icbm152_t1_tal_nlin_sym_09a.nii.gz",
+        "mni_icbm152_t2_tal_nlin_sym_09a.nii.gz",
+        "mni_icbm152_t2_relx_tal_nlin_sym_09a.nii.gz",
 
-                    "mni_icbm152_t1_tal_nlin_sym_09a_eye_mask.nii.gz",
-                    "mni_icbm152_t1_tal_nlin_sym_09a_face_mask.nii.gz",
-                    "mni_icbm152_t1_tal_nlin_sym_09a_mask.nii.gz")]
+        "mni_icbm152_t1_tal_nlin_sym_09a_eye_mask.nii.gz",
+        "mni_icbm152_t1_tal_nlin_sym_09a_face_mask.nii.gz",
+        "mni_icbm152_t1_tal_nlin_sym_09a_mask.nii.gz")]
 
     dataset_name = 'icbm152_2009'
     data_dir = _get_dataset_dir(dataset_name, data_dir=data_dir,
@@ -106,38 +120,126 @@ def fetch_icbm152_2009(data_dir=None, url=None, resume=True, verbose=1):
     return Bunch(**params)
 
 
-def load_mni152_template():
-    """Load skullstripped 2mm version of the MNI152 originally distributed
-    with FSL.
+def load_mni152_template(resolution=2):
+    """This function takes the skullstripped 1mm-resolution version of the
+    MNI152 T1 template, originally distributed with FSL, and re-samples it
+    using a different resolution, if specified.
 
-    For more information, see :footcite:`FONOV2011313`,
-    and :footcite:`Fonov2009`.
+    For more information, see [1]_ and [2]_.
+
+    Parameters
+    ----------
+    resolution: int, optional, Default = 2
+        If resolution is different from 1, the template is re-sampled with the
+        specified resolution.
 
     Returns
     -------
-    mni152_template : nibabel object corresponding to the template
+    mni152_template : Nifti1Image, image representing the re-sampled
+        whole-brain template
 
     References
     ----------
-    .. footbibliography::
+    .. [1] VS Fonov, AC Evans, K Botteron, CR Almli, RC McKinstry, DL Collins
+       and BDCG, Unbiased average age-appropriate atlases for pediatric
+       studies, NeuroImage, Volume 54, Issue 1, January 2011, ISSN 1053-8119,
+       DOI: 10.1016/j.neuroimage.2010.07.033
+
+    .. [2] VS Fonov, AC Evans, RC McKinstry, CR Almli and DL Collins, Unbiased
+       nonlinear average age-appropriate brain templates from birth to
+       adulthood, NeuroImage, Volume 47, Supplement 1, July 2009, Page S102
+       Organization for Human Brain Mapping 2009 Annual Meeting,
+       DOI: 10.1016/S1053-8119(09)70884-5
 
     """
-    return check_niimg(MNI152_FILE_PATH)
+
+    brain_template = check_niimg(MNI152_FILE_PATH)
+
+    # Change the resolution of the template
+    if resolution != 1:
+        brain_template = resampling.resample_img(brain_template,
+                                                 np.eye(3) * resolution)
+
+    return brain_template
 
 
-def load_mni152_brain_mask():
-    """Load brain mask from MNI152 T1 template
+def load_mni152_gm_template(resolution=2):
+    """This function takes the skullstripped 1mm-resolution version of the
+    gray-matter MNI152 template, originally distributed with FSL, and
+    re-samples it using a different resolution, if specified.
 
-    .. versionadded:: 0.2.5
+    Parameters
+    ----------
+    resolution: int, optional, Default = 2
+        If resolution is different from 1, the template is re-sampled with the
+        specified resolution.
 
     Returns
     -------
-    mask_img : Nifti-like mask image corresponding to grey and white matter.
+    gm_mni152_template : Nifti1Image, image representing the resampled
+        gray-matter template
+
+    """
+
+    gm_template = check_niimg(GM_MNI152_FILE_PATH)
+
+    # Change the resolution of the template
+    if resolution != 1:
+        gm_template = resampling.resample_img(gm_template,
+                                              np.eye(3) * resolution)
+
+    return gm_template
+
+
+def load_mni152_wm_template(resolution=2):
+    """This function takes the skullstripped 1mm-resolution version of the
+    white-matter MNI152 template, originally distributed with FSL, and
+    re-samples it using a different resolution, if specified.
+
+    Parameters
+    ----------
+    resolution: int, optional, Default = 2
+        If resolution is different from 1, the template is re-sampled with the
+        specified resolution.
+
+    Returns
+    -------
+    wm_mni152_template : Nifti1Image, image representing the resampled
+        white-matter template
+
+    """
+
+    wm_template = check_niimg(WM_MNI152_FILE_PATH)
+
+    # Change the resolution of the template
+    if resolution != 1:
+        wm_template = resampling.resample_img(wm_template,
+                                              np.eye(3) * resolution)
+
+    return wm_template
+
+
+def load_mni152_brain_mask(resolution=2, threshold=0.2):
+    """Load mask from the whole-brain MNI152 T1 template.
+
+    Parameters
+    ----------
+    resolution: int, optional, Default = 2
+        If resolution is different from 1, the template loaded is first
+        re-sampled with the specified resolution.
+
+    threshold : float, optional
+        The parameter which amounts to include the values in the mask image.
+        Values lying above this threshold will be included. Default=0.2
+
+    Returns
+    -------
+    mask_img : Nifti1Image, image corresponding to the whole-brain mask.
 
     Notes
     -----
-    Refer to load_mni152_template function for more information about the MNI152
-    T1 template
+    Refer to load_mni152_template function for more information about the
+    MNI152 T1 template
 
     See Also
     --------
@@ -146,17 +248,78 @@ def load_mni152_brain_mask():
 
     """
     # Load MNI template
-    target_img = load_mni152_template()
-    mask_voxels = (get_data(target_img) > 0).astype(int)
+    target_img = load_mni152_template(resolution=resolution)
+    mask_voxels = (get_data(target_img) > threshold).astype("int8")
     mask_img = new_img_like(target_img, mask_voxels)
+
     return mask_img
 
 
-def fetch_icbm152_brain_gm_mask(data_dir=None, threshold=0.2, resume=True,
-                                verbose=1):
-    """Downloads ICBM152 template first, then loads 'gm' mask image.
+def load_mni152_gm_mask(resolution=2, threshold=0.2, n_iter=2):
+    """Load mask from the gray-matter MNI152 template.
 
-    .. versionadded:: 0.2.5
+    Parameters
+    ----------
+    resolution: int, optional, Default = 2
+        If resolution is different from 1, the template loaded is first
+        re-sampled with the specified resolution.
+
+    threshold : float, optional
+        The parameter which amounts to include the values in the mask image.
+        Values lying above this threshold will be included. Default=0.2
+
+    Returns
+    -------
+    gm_mask_img : Nifti1Image, image corresponding to the gray-matter mask.
+
+    """
+    # Load MNI template
+    gm_target = load_mni152_gm_template(resolution=resolution)
+    gm_target_img = check_niimg(gm_target)
+    gm_target_data = niimg._safe_get_data(gm_target_img)
+
+    gm_target_mask = (gm_target_data > threshold).astype("int8")
+
+    gm_target_mask = ndimage.binary_closing(gm_target_mask, iterations=n_iter)
+    gm_mask_img = new_img_like(gm_target_img, gm_target_mask)
+
+    return gm_mask_img
+
+
+def load_mni152_wm_mask(resolution=2, threshold=0.2, n_iter=2):
+    """Load mask from the white-matter MNI152 template.
+
+    Parameters
+    ----------
+    resolution: int, optional, Default = 2
+        If resolution is different from 1, the template loaded is first
+        re-sampled with the specified resolution.
+
+    threshold : float, optional
+        The parameter which amounts to include the values in the mask image.
+        Values lying above this threshold will be included. Default=0.2
+
+    Returns
+    -------
+    wm_mask_img : Nifti1Image, image corresponding to the white-matter mask.
+
+    """
+    # Load MNI template
+    wm_target = load_mni152_wm_template(resolution=resolution)
+    wm_target_img = check_niimg(wm_target)
+    wm_target_data = niimg._safe_get_data(wm_target_img)
+
+    wm_target_mask = (wm_target_data > threshold).astype("int8")
+
+    wm_target_mask = ndimage.binary_closing(wm_target_mask, iterations=n_iter)
+    wm_mask_img = new_img_like(wm_target_img, wm_target_mask)
+
+    return wm_mask_img
+
+
+def fetch_icbm152_brain_gm_mask(data_dir=None, threshold=0.2, resume=True,
+                                n_iter=2, verbose=1):
+    """Downloads ICBM152 template first, then loads the 'gm' mask.
 
     Parameters
     ----------
@@ -166,21 +329,23 @@ def fetch_icbm152_brain_gm_mask(data_dir=None, threshold=0.2, resume=True,
 
     threshold : float, optional
         The parameter which amounts to include the values in the mask image.
-        The values lies above than this threshold will be included. Defaults
-        to 0.2 (one fifth) of values.
-        Default=0.2.
+        Values lying above this threshold will be included. Default=0.2
 
     resume : bool, optional
         If True, try resuming partially downloaded data.
         Default=True.
+
+    n_iter: int, optional
+        Number of repetitions of dilation and erosion steps performed in
+        scipy.ndimage.binary_closing function. Default=2.
 
     verbose : int, optional
         Verbosity level (0 means no message). Default=1.
 
     Returns
     -------
-    gm_mask_img : Nifti image
-        Corresponding to brain grey matter from ICBM152 template.
+    gm_mask_img : Nifti1Image, image corresponding to the brain gray matter
+        from ICBM152 template.
 
     Notes
     -----
@@ -201,16 +366,18 @@ def fetch_icbm152_brain_gm_mask(data_dir=None, threshold=0.2, resume=True,
 
     """
     # Fetching ICBM152 grey matter mask image
-    icbm = fetch_icbm152_2009(data_dir=data_dir, resume=resume, verbose=verbose)
+    icbm = fetch_icbm152_2009(data_dir=data_dir, resume=resume,
+                              verbose=verbose)
     gm = icbm['gm']
     gm_img = check_niimg(gm)
     gm_data = niimg._safe_get_data(gm_img)
 
     # getting one fifth of the values
-    gm_mask = (gm_data > threshold)
+    gm_mask = (gm_data > threshold).astype("int8")
 
-    gm_mask = ndimage.binary_closing(gm_mask, iterations=2)
+    gm_mask = ndimage.binary_closing(gm_mask, iterations=n_iter)
     gm_mask_img = new_img_like(gm_img, gm_mask)
+
     return gm_mask_img
 
 
