@@ -261,14 +261,15 @@ class NiftiMasker(BaseMasker, CacheMixin):
         self.memory_level = memory_level
         self.verbose = verbose
         self.reports = reports
-        self._report_description = ('This report shows the input Nifti '
-                                    'image overlaid with the outlines of the '
-                                    'mask (in green). We recommend to inspect '
-                                    'the report for the overlap between the '
-                                    'mask and its input image. ')
+        self._report_content = dict()
+        self._report_content['description'] = (
+            'This report shows the input Nifti image overlaid '
+            'with the outlines of the mask (in green). We '
+            'recommend to inspect the report for the overlap '
+            'between the mask and its input image. ')
+        self._report_content['warning_message'] = None
         self._overlay_text = ('\n To see the input Nifti image before '
                               'resampling, hover over the displayed image.')
-        self._warning_message = ""
         self._shelving = False
 
     @property
@@ -309,8 +310,14 @@ class NiftiMasker(BaseMasker, CacheMixin):
                             message=mpl_unavail_msg)
                 return [None]
 
+        # Handle the edge case where this function is
+        # called with a masker having report capabilities disabled
+        if self._reporting_data is None:
+            return [None]
+
         img = self._reporting_data['images']
         mask = self._reporting_data['mask']
+
         if img is not None:
             dim = image.load_img(img).shape
             if len(dim) == 4:
@@ -320,7 +327,7 @@ class NiftiMasker(BaseMasker, CacheMixin):
             msg = ("No image provided to fit in NiftiMasker. "
                    "Setting image to mask for reporting.")
             warnings.warn(msg)
-            self._warning_message = msg
+            self._report_content['warning_message'] = msg
             img = mask
 
         # create display of retained input mask, image
@@ -328,15 +335,15 @@ class NiftiMasker(BaseMasker, CacheMixin):
         init_display = plotting.plot_img(img,
                                          black_bg=False,
                                          cmap='CMRmap_r')
-        init_display.add_contours(mask, levels=[.5], colors='g',
-                                  linewidths=2.5)
+        if mask is not None:
+            init_display.add_contours(mask, levels=[.5], colors='g',
+                                      linewidths=2.5)
 
         if 'transform' not in self._reporting_data:
             return [init_display]
 
         else:  # if resampling was performed
-            self._report_description = (self._report_description +
-                                        self._overlay_text)
+            self._report_content['description'] += self._overlay_text
 
             # create display of resampled NiftiImage and mask
             # assuming that resampl_img has same dim as img

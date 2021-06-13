@@ -11,6 +11,11 @@ NEW
   before signal cleaning.
 - All inherent classes of `nilearn.input_data.BaseMasker` can use
   parameter `sample_mask` for sub-sample masking.
+- :class:`nilearn.input_data.NiftiLabelsMasker` can now generate HTML reports in the same
+  way as :class:`nilearn.input_data.NiftiMasker`. The report shows the regions defined by
+  the provided label image and provide summary statistics on each region (name, volume...).
+  If a functional image was provided to fit, the middle image is plotted with the regions
+  overlaid as contours. Finally, if a mask is provided, its contours are shown in green.
 
 Fixes
 -----
