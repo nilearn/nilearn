@@ -28,25 +28,20 @@ FSAVERAGE5_PATH = os.path.join(_package_directory, "data", "fsaverage5")
 
 def fetch_icbm152_2009(data_dir=None, url=None, resume=True, verbose=1):
     """Download and load the ICBM152 template (dated 2009).
-
-    For more information, see [1]_, [2]_, and [3]_.
-
+    For more information, see :footcite:`FONOV2011313`,
+    :footcite:`Fonov2009`, and :footcite:`Collins1999algorithm`.
     Parameters
     ----------
     data_dir : string, optional
         Path of the data directory. Used to force data storage in a non-
         standard location. Default: None (meaning: default)
-
     url : string, optional
         Download URL of the dataset. Overwrite the default URL.
-
     resume : bool, optional
         If True, try resuming partially downloaded data.
         Default=True.
-
     verbose : int, optional
         Verbosity level (0 means no message). Default=1.
-
     Returns
     -------
     data : sklearn.datasets.base.Bunch
@@ -58,30 +53,15 @@ def fetch_icbm152_2009(data_dir=None, url=None, resume=True, verbose=1):
         white matter and cerebrospinal fluid. Values are file paths.
         "eye_mask", "face_mask", "mask": use these images to mask out
         parts of mri images. Values are file paths.
-
     References
     ----------
-    .. [1] VS Fonov, AC Evans, K Botteron, CR Almli, RC McKinstry, DL Collins
-       and BDCG, "Unbiased average age-appropriate atlases for pediatric
-       studies", NeuroImage,Volume 54, Issue 1, January 2011
-
-    .. [2] VS Fonov, AC Evans, RC McKinstry, CR Almli and DL Collins,
-       "Unbiased nonlinear average age-appropriate brain templates from birth
-       to adulthood", NeuroImage, Volume 47, Supplement 1, July 2009, Page S102
-       Organization for Human Brain Mapping 2009 Annual Meeting.
-
-    .. [3] DL Collins, AP Zijdenbos, WFC Baare and AC Evans,
-       "ANIMAL+INSECT: Improved Cortical Structure Segmentation",
-       IPMI Lecture Notes in Computer Science, 1999, Volume 1613/1999, 210-223
-
+    .. footbibliography::
     Notes
     -----
     For more information about this dataset's structure:
     http://www.bic.mni.mcgill.ca/ServicesAtlases/ICBM152NLin2009
-
     The original download URL is
     http://www.bic.mni.mcgill.ca/~vfonov/icbm/2009/mni_icbm152_nlin_sym_09a_nifti.zip
-
     """
     if url is None:
         # The URL can be retrieved from the nilearn account on OSF (Open
@@ -125,7 +105,8 @@ def load_mni152_template(resolution=2):
     MNI152 T1 template, originally distributed with FSL, and re-samples it
     using a different resolution, if specified.
 
-    For more information, see [1]_ and [2]_.
+    For more information, see :footcite:`FONOV2011313`,
+    and :footcite:`Fonov2009`.
 
     Parameters
     ----------
@@ -140,16 +121,7 @@ def load_mni152_template(resolution=2):
 
     References
     ----------
-    .. [1] VS Fonov, AC Evans, K Botteron, CR Almli, RC McKinstry, DL Collins
-       and BDCG, Unbiased average age-appropriate atlases for pediatric
-       studies, NeuroImage, Volume 54, Issue 1, January 2011, ISSN 1053-8119,
-       DOI: 10.1016/j.neuroimage.2010.07.033
-
-    .. [2] VS Fonov, AC Evans, RC McKinstry, CR Almli and DL Collins, Unbiased
-       nonlinear average age-appropriate brain templates from birth to
-       adulthood, NeuroImage, Volume 47, Supplement 1, July 2009, Page S102
-       Organization for Human Brain Mapping 2009 Annual Meeting,
-       DOI: 10.1016/S1053-8119(09)70884-5
+    .. footbibliography::
 
     """
 
@@ -167,6 +139,8 @@ def load_mni152_gm_template(resolution=2):
     """This function takes the skullstripped 1mm-resolution version of the
     gray-matter MNI152 template, originally distributed with FSL, and
     re-samples it using a different resolution, if specified.
+
+    .. versionadded:: 0.8.0
 
     Parameters
     ----------
@@ -196,6 +170,8 @@ def load_mni152_wm_template(resolution=2):
     white-matter MNI152 template, originally distributed with FSL, and
     re-samples it using a different resolution, if specified.
 
+    .. versionadded:: 0.8.0
+
     Parameters
     ----------
     resolution: int, optional, Default = 2
@@ -221,6 +197,8 @@ def load_mni152_wm_template(resolution=2):
 
 def load_mni152_brain_mask(resolution=2, threshold=0.2):
     """Load mask from the whole-brain MNI152 T1 template.
+
+    .. versionadded:: 0.8.0
 
     Parameters
     ----------
@@ -258,6 +236,8 @@ def load_mni152_brain_mask(resolution=2, threshold=0.2):
 def load_mni152_gm_mask(resolution=2, threshold=0.2, n_iter=2):
     """Load mask from the gray-matter MNI152 template.
 
+    .. versionadded:: 0.8.0
+
     Parameters
     ----------
     resolution: int, optional, Default = 2
@@ -267,6 +247,10 @@ def load_mni152_gm_mask(resolution=2, threshold=0.2, n_iter=2):
     threshold : float, optional
         The parameter which amounts to include the values in the mask image.
         Values lying above this threshold will be included. Default=0.2
+
+    n_iter: int, optional, Default = 2
+        Number of repetitions of dilation and erosion steps performed in
+        scipy.ndimage.binary_closing function.
 
     Returns
     -------
@@ -289,6 +273,8 @@ def load_mni152_gm_mask(resolution=2, threshold=0.2, n_iter=2):
 def load_mni152_wm_mask(resolution=2, threshold=0.2, n_iter=2):
     """Load mask from the white-matter MNI152 template.
 
+    .. versionadded:: 0.8.0
+
     Parameters
     ----------
     resolution: int, optional, Default = 2
@@ -298,6 +284,10 @@ def load_mni152_wm_mask(resolution=2, threshold=0.2, n_iter=2):
     threshold : float, optional
         The parameter which amounts to include the values in the mask image.
         Values lying above this threshold will be included. Default=0.2
+
+    n_iter: int, optional, Default = 2
+        Number of repetitions of dilation and erosion steps performed in
+        scipy.ndimage.binary_closing function.
 
     Returns
     -------
@@ -321,6 +311,8 @@ def fetch_icbm152_brain_gm_mask(data_dir=None, threshold=0.2, resume=True,
                                 n_iter=2, verbose=1):
     """Downloads ICBM152 template first, then loads the 'gm' mask.
 
+    .. versionadded:: 0.8.0
+
     Parameters
     ----------
     data_dir : str, optional
@@ -335,9 +327,9 @@ def fetch_icbm152_brain_gm_mask(data_dir=None, threshold=0.2, resume=True,
         If True, try resuming partially downloaded data.
         Default=True.
 
-    n_iter: int, optional
+    n_iter: int, optional, Default = 2
         Number of repetitions of dilation and erosion steps performed in
-        scipy.ndimage.binary_closing function. Default=2.
+        scipy.ndimage.binary_closing function.
 
     verbose : int, optional
         Verbosity level (0 means no message). Default=1.
