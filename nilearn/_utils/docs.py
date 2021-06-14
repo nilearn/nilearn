@@ -43,6 +43,7 @@ url : string, optional
 
 docdict_indented = {}
 
+
 def _indentcount_lines(lines):
     """Minimum indent for all lines in line list
 
@@ -115,4 +116,3 @@ def fill_doc(f):
         raise RuntimeError('Error documenting %s:\n%s'
                            % (funcname, str(exp)))
     return f
-
