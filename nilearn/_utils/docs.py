@@ -48,15 +48,15 @@ def _indentcount_lines(lines):
     """Minimum indent for all lines in line list
 
     >>> lines = [' one', '  two', '   three']
-    >>> indentcount_lines(lines)
+    >>> _indentcount_lines(lines)
     1
     >>> lines = []
-    >>> indentcount_lines(lines)
+    >>> _indentcount_lines(lines)
     0
     >>> lines = [' one']
-    >>> indentcount_lines(lines)
+    >>> _indentcount_lines(lines)
     1
-    >>> indentcount_lines(['    '])
+    >>> _indentcount_lines(['    '])
     0
 
     """
