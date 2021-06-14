@@ -14,20 +14,23 @@ from numpy.lib import recfunctions
 from sklearn.utils import Bunch
 
 from .utils import _get_dataset_dir, _fetch_files, _get_dataset_descr
-from .._utils import check_niimg
+from .._utils import check_niimg, fill_doc
 from ..image import new_img_like, get_data
 
 _TALAIRACH_LEVELS = ['hemisphere', 'lobe', 'gyrus', 'tissue', 'ba']
 
 
+@fill_doc
 def fetch_atlas_difumo(dimension=64, resolution_mm=2, data_dir=None, resume=True, verbose=1):
     """Fetch DiFuMo brain atlas
 
     Dictionaries of Functional Modes, or “DiFuMo”, can serve as atlases to extract
     functional signals with different dimensionalities (64, 128, 256, 512, and 1024).
     These modes are optimized to represent well raw BOLD timeseries,
-    over a with range of experimental conditions. 
+    over a with range of experimental conditions.
     See :footcite:`DADI2020117126`.
+
+    .. versionadded:: 0.7.1
 
     Notes
     -----
@@ -49,17 +52,9 @@ def fetch_atlas_difumo(dimension=64, resolution_mm=2, data_dir=None, resume=True
     resolution_mm : int, optional
         The resolution in mm of the atlas to fetch. Valid options
         available are {2, 3}. Default=2mm.
-
-    data_dir : string, optional
-        Path where data should be downloaded. By default,
-        files are downloaded in home directory.
-
-    resume : bool, optional
-        Whether to resumed download of a partly-downloaded file.
-        Default=True.
-
-    verbose : int, optional
-        Verbosity level (0 means no message). Default=1.
+    %(data_dir)s
+    %(resume)s
+    %(verbose)s
 
     Returns
     -------
@@ -125,6 +120,7 @@ def fetch_atlas_difumo(dimension=64, resolution_mm=2, data_dir=None, resume=True
     return Bunch(**params)
 
 
+@fill_doc
 def fetch_atlas_craddock_2012(data_dir=None, url=None, resume=True, verbose=1):
     """Download and return file names for the Craddock 2012 parcellation
 
@@ -137,18 +133,10 @@ def fetch_atlas_craddock_2012(data_dir=None, url=None, resume=True, verbose=1):
 
     Parameters
     ----------
-    data_dir : string, optional
-        Directory where data should be downloaded and unpacked.
-
-    url : string, optional
-        url of file to download.
-
-    resume : bool, optional
-        Whether to resumed download of a partly-downloaded file.
-        Default=True.
-
-    verbose : int, optional
-        Verbosity level (0 means no message). Default=1.
+    %(data_dir)s
+    %(url)s
+    %(resume)s
+    %(verbose)s
 
     Returns
     -------
@@ -192,10 +180,11 @@ def fetch_atlas_craddock_2012(data_dir=None, url=None, resume=True, verbose=1):
     return Bunch(**params)
 
 
+@fill_doc
 def fetch_atlas_destrieux_2009(lateralized=True, data_dir=None, url=None,
                                resume=True, verbose=1):
     """Download and load the Destrieux cortical atlas (dated 2009)
-    
+
     see :footcite:`Fischl2004Automatically`,
     and :footcite:`Destrieux2009sulcal`.
 
@@ -204,20 +193,10 @@ def fetch_atlas_destrieux_2009(lateralized=True, data_dir=None, url=None,
     lateralized : boolean, optional
         If True, returns an atlas with distinct regions for right and left
         hemispheres. Default=True.
-
-    data_dir : string, optional
-        Path of the data directory. Use to forec data storage in a non-
-        standard location. Default: None (meaning: default)
-
-    url : string, optional
-        Download URL of the dataset. Overwrite the default URL.
-
-    resume : bool, optional
-        Whether to resumed download of a partly-downloaded file.
-        Default=True.
-
-    verbose : int, optional
-        Verbosity level (0 means no message). Default=1.
+    %(data_dir)s
+    %(url)s
+    %(resume)s
+    %(verbose)s
 
     Returns
     -------
@@ -259,6 +238,7 @@ def fetch_atlas_destrieux_2009(lateralized=True, data_dir=None, url=None,
     return Bunch(**params)
 
 
+@fill_doc
 def fetch_atlas_harvard_oxford(atlas_name, data_dir=None,
                                symmetric_split=False,
                                resume=True, verbose=1):
@@ -300,13 +280,8 @@ def fetch_atlas_harvard_oxford(atlas_name, data_dir=None,
         number of regions.
         NOTE Not implemented for full probabilistic atlas (*-prob-* atlases).
         Default=False.
-
-    resume : bool, optional
-        Whether to resumed download of a partly-downloaded file.
-        Default=True.
-
-    verbose : int, optional
-        Verbosity level (0 means no message). Default=1.
+    %(resume)s
+    %(verbose)s
 
     Returns
     -------
@@ -420,6 +395,7 @@ def fetch_atlas_harvard_oxford(atlas_name, data_dir=None,
     return Bunch(maps=atlas_img, labels=new_names)
 
 
+@fill_doc
 def fetch_atlas_msdl(data_dir=None, url=None, resume=True, verbose=1):
     """Download and load the MSDL brain atlas.
 
@@ -429,20 +405,10 @@ def fetch_atlas_msdl(data_dir=None, url=None, resume=True, verbose=1):
 
     Parameters
     ----------
-    data_dir : string, optional
-        Path of the data directory. Used to force data storage in a specified
-        location. Default: None
-
-    url : string, optional
-        Override download URL. Used for test only (or if you setup a mirror of
-        the data).
-
-    resume : bool, optional
-        Whether to resumed download of a partly-downloaded file.
-        Default=True.
-
-    verbose : int, optional
-        Verbosity level (0 means no message). Default=1.
+    %(data_dir)s
+    %(url)s
+    %(resume)s
+    %(verbose)s
 
     Returns
     -------
@@ -488,7 +454,7 @@ def fetch_atlas_msdl(data_dir=None, url=None, resume=True, verbose=1):
 
 def fetch_coords_power_2011():
     """Download and load the Power et al. brain atlas composed of 264 ROIs
-    
+
     See :footcite:`Power2011Functional`.
 
     Returns
@@ -512,6 +478,7 @@ def fetch_coords_power_2011():
     return Bunch(**params)
 
 
+@fill_doc
 def fetch_atlas_smith_2009(data_dir=None, mirror='origin', url=None,
                            resume=True, verbose=1):
     """Download and load the Smith ICA and BrainMap atlas (dated 2009).
@@ -520,24 +487,14 @@ def fetch_atlas_smith_2009(data_dir=None, mirror='origin', url=None,
 
     Parameters
     ----------
-    data_dir : string, optional
-        Path of the data directory. Used to force data storage in a non-
-        standard location. Default: None (meaning: default)
-
+    %(data_dir)s
     mirror : string, optional
         By default, the dataset is downloaded from the original website of the
         atlas. Specifying "nitrc" will force download from a mirror, with
         potentially higher bandwith. Default='origin'.
-
-    url : string, optional
-        Download URL of the dataset. Overwrite the default URL.
-
-    resume : bool, optional
-        Whether to resumed download of a partly-downloaded file.
-        Default=True.
-
-    verbose : int, optional
-        Verbosity level (0 means no message). Default=1.
+    %(url)s
+    %(resume)s
+    %(verbose)s
 
     Returns
     -------
@@ -624,18 +581,10 @@ def fetch_atlas_yeo_2011(data_dir=None, url=None, resume=True, verbose=1):
 
     Parameters
     ----------
-    data_dir : string, optional
-        Directory where data should be downloaded and unpacked.
-
-    url : string, optional
-        Url of file to download.
-
-    resume : bool, optional
-        Whether to resumed download of a partly-downloaded file.
-        Default=True.
-
-    verbose : int, optional
-        Verbosity level (0 means no message). Default=1.
+    %(data_dir)s
+    %(url)s
+    %(resume)s
+    %(verbose)s
 
     Returns
     -------
@@ -693,6 +642,7 @@ def fetch_atlas_yeo_2011(data_dir=None, url=None, resume=True, verbose=1):
     return Bunch(**params)
 
 
+@fill_doc
 def fetch_atlas_aal(version='SPM12', data_dir=None, url=None, resume=True,
                     verbose=1):
     """Downloads and returns the AAL template for SPM 12.
@@ -711,19 +661,10 @@ def fetch_atlas_aal(version='SPM12', data_dir=None, url=None, resume=True,
     version : string {'SPM12', 'SPM5', 'SPM8'}, optional
         The version of the AAL atlas. Must be SPM5, SPM8 or SPM12.
         Default='SPM12'.
-
-    data_dir : string, optional
-        Directory where data should be downloaded and unpacked.
-
-    url : string, optional
-        Url of file to download.
-
-    resume : bool, optional
-        Whether to resumed download of a partly-downloaded file.
-        Default=True.
-
-    verbose : int, optional
-        Verbosity level (0 means no message). Default=1.
+    %(data_dir)s
+    %(url)s
+    %(resume)s
+    %(verbose)s
 
     Returns
     -------
@@ -782,6 +723,7 @@ def fetch_atlas_aal(version='SPM12', data_dir=None, url=None, resume=True,
     return Bunch(**params)
 
 
+@fill_doc
 def fetch_atlas_basc_multiscale_2015(version='sym', data_dir=None, url=None,
                                      resume=True, verbose=1):
     """Downloads and loads multiscale functional brain parcellations
@@ -814,19 +756,10 @@ def fetch_atlas_basc_multiscale_2015(version='sym', data_dir=None, url=None,
         Available versions are 'sym' or 'asym'. By default all scales of
         brain parcellations of version 'sym' will be returned.
         Default='sym'.
-
-    data_dir : str, optional
-        Directory where data should be downloaded and unpacked.
-
-    url : str, optional
-        Url of file to download.
-
-    resume : bool, optional
-        Whether to resumed download of a partly-downloaded file.
-        Default=True.
-
-    verbose : int, optional
-        Verbosity level (0 means no message). Default=1.
+    %(data_dir)s
+    %(url)s
+    %(resume)s
+    %(verbose)s
 
     Returns
     -------
@@ -1007,6 +940,7 @@ def fetch_coords_seitzman_2018(ordered_regions=True):
     return Bunch(**params)
 
 
+@fill_doc
 def fetch_atlas_allen_2011(data_dir=None, url=None, resume=True, verbose=1):
     """Download and return file names for the Allen and MIALAB ICA atlas
     (dated 2011).
@@ -1017,18 +951,10 @@ def fetch_atlas_allen_2011(data_dir=None, url=None, resume=True, verbose=1):
 
     Parameters
     ----------
-    data_dir : str, optional
-        Directory where data should be downloaded and unpacked.
-
-    url : str, optional
-        Url of file to download.
-
-    resume : bool, optional
-        Whether to resumed download of a partly-downloaded file.
-        Default=True.
-
-    verbose : int, optional
-        Verbosity level (0 means no message). Default=1.
+    %(data_dir)s
+    %(url)s
+    %(resume)s
+    %(verbose)s
 
     Returns
     -------
@@ -1095,10 +1021,11 @@ def fetch_atlas_allen_2011(data_dir=None, url=None, resume=True, verbose=1):
     return Bunch(**dict(params))
 
 
+@fill_doc
 def fetch_atlas_surf_destrieux(data_dir=None, url=None,
                                resume=True, verbose=1):
     """Download and load Destrieux et al, 2010 cortical atlas
-    
+
     See :footcite:`DESTRIEUX20101`.
 
     This atlas returns 76 labels per hemisphere based on sulco-gryal patterns
@@ -1108,20 +1035,10 @@ def fetch_atlas_surf_destrieux(data_dir=None, url=None,
 
     Parameters
     ----------
-    data_dir : str, optional
-        Path of the data directory. Use to force data storage in a non-
-        standard location. Default: None
-
-    url : str, optional
-        Download URL of the dataset. Overwrite the default URL.
-
-    resume : bool, optional
-        If True, try resuming download if possible.
-        Default=True.
-
-    verbose : int, optional
-        Defines the level of verbosity of the output.
-        Default=1.
+    %(data_dir)s
+    %(url)s
+    %(resume)s
+    %(verbose)s
 
     Returns
     -------
@@ -1269,6 +1186,7 @@ def _get_talairach_all_levels(data_dir=None, verbose=1):
     return img_file, labels_file
 
 
+@fill_doc
 def fetch_atlas_talairach(level_name, data_dir=None, verbose=1):
     """Download the Talairach atlas.
 
@@ -1283,13 +1201,8 @@ def fetch_atlas_talairach(level_name, data_dir=None, verbose=1):
     level_name : string {'hemisphere', 'lobe', 'gyrus', 'tissue', 'ba'}
         Which level of the atlas to use: the hemisphere, the lobe, the gyrus,
         the tissue type or the Brodmann area.
-
-    data_dir : str, optional
-        Path of the data directory. Used to force data storage in a specified
-        location.
-
-    verbose : int, optional
-        Verbosity level (0 means no message). Default=1.
+    %(data_dir)s
+    %(verbose)s
 
     Returns
     -------
@@ -1320,6 +1233,7 @@ def fetch_atlas_talairach(level_name, data_dir=None, verbose=1):
     return Bunch(maps=atlas_img, labels=labels, description=description)
 
 
+@fill_doc
 def fetch_atlas_pauli_2017(version='prob', data_dir=None, verbose=1):
     """Download the Pauli et al. (2017) atlas with in total
     12 subcortical nodes
@@ -1332,13 +1246,8 @@ def fetch_atlas_pauli_2017(version='prob', data_dir=None, verbose=1):
         Which version of the atlas should be download. This can be
         'prob' for the probabilistic atlas or 'det' for the
         deterministic atlas. Default='prob'.
-
-    data_dir : str, optional
-        Path of the data directory. Used to force data storage in a specified
-        location.
-
-    verbose : int, optional
-        Verbosity level (0 means no message). Default=1.
+    %(data_dir)s
+    %(verbose)s
 
     Returns
     -------
@@ -1387,7 +1296,7 @@ def fetch_atlas_pauli_2017(version='prob', data_dir=None, verbose=1):
                  description=fdescr)
 
 
-
+@fill_doc
 def fetch_atlas_schaefer_2018(n_rois=400, yeo_networks=7, resolution_mm=1,
                               data_dir=None, base_url=None, resume=True,
                               verbose=1):
@@ -1415,19 +1324,11 @@ def fetch_atlas_schaefer_2018(n_rois=400, yeo_networks=7, resolution_mm=1,
     resolution_mm : int, optional
         Spatial resolution of atlas image in mm {1, 2}.
         Default=1mm.
-
-    data_dir : string, optional
-        Directory where data should be downloaded and unpacked.
-
+    %(data_dir)s
     base_url : string, optional
         base_url of files to download (None results in default base_url).
-
-    resume : bool, optional
-        Whether to resumed download of a partly-downloaded file.
-        Default=True.
-
-    verbose : int, optional
-        Verbosity level (0 means no message). Default=1.
+    %(resume)s
+    %(verbose)s
 
     Returns
     -------
