@@ -48,6 +48,7 @@ def fetch_haxby(data_dir=None, subjects=(2,),
     %(url)s
     %(resume)s
     %(verbose)s
+        Default=1.
 
     Returns
     -------
@@ -185,6 +186,7 @@ def fetch_adhd(n_subjects=30, data_dir=None, url=None, resume=True,
     %(url)s
     %(resume)s
     %(verbose)s
+        Default=1.
 
     Returns
     -------
@@ -277,6 +279,7 @@ def fetch_miyawaki2008(data_dir=None, url=None, resume=True, verbose=1):
     %(url)s
     %(resume)s
     %(verbose)s
+        Default=1.
 
     Returns
     -------
@@ -522,6 +525,7 @@ def fetch_localizer_contrasts(contrasts, n_subjects=None, get_tmaps=False,
     %(url)s
     %(resume)s
     %(verbose)s
+        Default=1.
 
     Returns
     -------
@@ -770,6 +774,7 @@ def fetch_localizer_calculation_task(n_subjects=1, data_dir=None, url=None,
     %(data_dir)s
     %(url)s
     %(verbose)s
+        Default=1.
 
     Returns
     -------
@@ -807,6 +812,7 @@ def fetch_localizer_button_task(data_dir=None, url=None,
     %(data_dir)s
     %(url)s
     %(verbose)s
+        Default=1.
 
     Returns
     -------
@@ -886,6 +892,7 @@ def fetch_abide_pcp(data_dir=None, n_subjects=None, pipeline='cpac',
         passed quality assessment for all raters. Default=True.
     %(url)s
     %(verbose)s
+        Default=1.
     kwargs : parameter list, optional
         Any extra keyword argument will be used to filter downloaded subjects
         according to the CSV phenotypic file. Some examples of filters are
@@ -1080,6 +1087,7 @@ def fetch_mixed_gambles(n_subjects=1, data_dir=None, url=None, resume=True,
     %(url)s
     %(resume)s
     %(verbose)s
+        Default=1.
     return_raw_data : bool, optional
         If false, then the data will transformed into and (X, y) pair, suitable
         for machine learning routines. X is a list of n_subjects * 48
@@ -1166,6 +1174,7 @@ def fetch_megatrawls_netmats(dimensionality=100, timeseries='eigen_regression',
     %(data_dir)s
     %(resume)s
     %(verbose)s
+        Default=1.
 
     Returns
     -------
@@ -1280,6 +1289,7 @@ def fetch_cobre(n_subjects=10, data_dir=None, url=None, verbose=1):
     %(data_dir)s
     %(url)s
     %(verbose)s
+        Default=1.
 
     Returns
     -------
@@ -1428,6 +1438,7 @@ def fetch_surf_nki_enhanced(n_subjects=10, data_dir=None,
     %(url)s
     %(resume)s
     %(verbose)s
+        Default=1.
 
     Returns
     -------
@@ -1686,6 +1697,7 @@ def fetch_development_fmri(n_subjects=None, reduce_confounds=True,
     %(data_dir)s
     %(resume)s
     %(verbose)s
+        Default=1.
     age_group : str, optional
         Default='both'. Which age group to fetch
 
@@ -1858,6 +1870,7 @@ def fetch_language_localizer_demo_dataset(data_dir=None, verbose=1):
     ----------
     %(data_dir)s
     %(verbose)s
+        Default=1.
 
     Returns
     -------
@@ -1897,6 +1910,7 @@ def fetch_bids_langloc_dataset(data_dir=None, verbose=1):
     ----------
     %(data_dir)s
     %(verbose)s
+        Default=1.
 
     Returns
     -------
@@ -1940,6 +1954,7 @@ def fetch_openneuro_dataset_index(data_dir=None,
         Dataset version name. Assumes it is of the form [name]_[version].
         Default='ds000030_R1.0.4'.
     %(verbose)s
+        Default=1.
 
     Returns
     -------
@@ -2081,6 +2096,7 @@ def fetch_openneuro_dataset(
         Dataset version name. Assumes it is of the form [name]_[version].
         Default is `ds000030_R1.0.4`.
     %(verbose)s
+        Default=1.
 
     Returns
     -------
@@ -2141,6 +2157,7 @@ def fetch_localizer_first_level(data_dir=None, verbose=1):
     ----------
     %(data_dir)s
     %(verbose)s
+        Default=1.
 
     Returns
     -------
@@ -2302,6 +2319,7 @@ def fetch_spm_auditory(data_dir=None, data_name='spm_auditory',
         Indicates which subject to retrieve.
         Default='sub001'.
     %(verbose)s
+        Default=1.
 
     Returns
     -------
@@ -2477,6 +2495,7 @@ def fetch_spm_multimodal_fmri(data_dir=None, data_name='spm_multimodal_fmri',
     subject_id : string, optional
         Indicates which subject to retrieve. Default='sub001'.
     %(verbose)s
+        Default=1.
 
     Returns
     -------
@@ -2513,6 +2532,7 @@ def fetch_fiac_first_level(data_dir=None, verbose=1):
     ----------
     %(data_dir)s
     %(verbose)s
+        Default=1.
 
     """
     data_dir = _get_dataset_dir('fiac_nilearn.glm', data_dir=data_dir,

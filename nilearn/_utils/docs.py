@@ -50,22 +50,27 @@ smoothing_fwhm : float, optional.
 # Standardize
 docdict['standardize'] = """
 standardize : bool, optional.
-    If standardize is True, the time-series are centered and normed:
+    If standardize is True, the data are centered and normed:
     their variance is put to 1 in the time dimension.
     Default=True."""
 
 # Target_affine
 docdict['target_affine'] = """
-target_affine: 3x3 or 4x4 matrix, optional.
-    This parameter is passed to image.resample_img. Please see the
-    related documentation for details.
+target_affine: numpy.ndarray, optional.
+    If specified, the image is resampled corresponding to this new affine.
+    target_affine can be a 3x3 or a 4x4 matrix.
     Default=None."""
 
 # Target_shape
 docdict['target_shape'] = """
-target_shape: 3-tuple of int, optional.
-    This parameter is passed to image.resample_img. Please see the
-    related documentation for details.
+target_shape: tuple or list, optional.
+    If specified, the image will be resized to match this new shape.
+    len(target_shape) must be equal to 3.
+
+    .. note::
+        If `target_shape` is specified, a `target_affine` of shape
+        (4, 4) must also be given.
+
     Default=None."""
 
 # Low_pass

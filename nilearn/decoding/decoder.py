@@ -18,7 +18,7 @@ import warnings
 
 import numpy as np
 from joblib import Parallel, delayed
-from nilearn._utils import CacheMixin
+from nilearn._utils import CacheMixin, fill_doc
 from nilearn._utils.cache_mixin import _check_memory
 from nilearn._utils.param_validation import check_feature_screening
 from nilearn.input_data.masker_validation import check_embedded_nifti_masker
@@ -220,6 +220,7 @@ def _parallel_fit(estimator, X, y, train, test, param_grid, is_classification,
     return class_index, best_coef, best_intercept, best_param, best_score, dummy_output
 
 
+@fill_doc
 class _BaseDecoder(LinearRegression, CacheMixin):
     """A wrapper for popular classification/regression strategies in
     neuroimaging.
@@ -292,35 +293,13 @@ class _BaseDecoder(LinearRegression, CacheMixin):
 
         For classification, valid entries are: 'accuracy', 'f1', 'precision',
         'recall' or 'roc_auc'. Default: 'roc_auc'.
-
-    smoothing_fwhm: float, optional. Default: None
-        If smoothing_fwhm is not None, it gives the size in millimeters of the
-        spatial smoothing to apply to the signal.
-
-    standardize: bool, optional. Default: True
-        If standardize is True, the time-series are centered and normed:
-        their variance is put to 1 in the time dimension.
-
-    target_affine: 3x3 or 4x4 matrix, optional. Default: None
-        This parameter is passed to image.resample_img. Please see the
-        related documentation for details.
-
-    target_shape: 3-tuple of int, optional. Default: None
-        This parameter is passed to image.resample_img. Please see the
-        related documentation for details.
-
-    low_pass: None or float, optional
-        This parameter is passed to signal.clean. Please see the related
-        documentation for details
-
-    high_pass: None or float, optional
-        This parameter is passed to signal.clean. Please see the related
-        documentation for details
-
-    t_r: float, optional. Default: None
-        This parameter is passed to signal.clean. Please see the related
-        documentation for details.
-
+    %(smoothing_fwhm)s
+    %(standardize)s
+    %(target_affine)s
+    %(target_shape)s
+    %(low_pass)s
+    %(high_pass)s
+    %(t_r)s
     mask_strategy: {'background' or 'epi'}, optional. Default: 'background'
         The strategy used to compute the mask: use 'background' if your
         images present a clear homogeneous background, and 'epi' if they
@@ -328,23 +307,15 @@ class _BaseDecoder(LinearRegression, CacheMixin):
         computed from masking.compute_background_mask or
         masking.compute_epi_mask.
 
-        This parameter will be ignored if a mask image is provided.
+        .. note::
+            This parameter will be ignored if a mask image is provided.
 
-    memory: instance of joblib.Memory or str
-        Used to cache the masking process.
-        By default, no caching is done. If a str is given, it is the
-        path to the caching directory.
-
-    memory_level: int, optional. Default: 0
-        Rough estimator of the amount of memory used by caching. Higher value
-        means more memory for caching.
-
-    n_jobs: int, optional. Default: 1.
-        The number of CPUs to use to do the computation. -1 means
-        'all CPUs'.
-
-    verbose: int, optional. Default: 0.
-        Verbosity level.
+    %(memory)s
+    %(memory_level)s
+    %(n_jobs)s
+        Default=1.
+    %(verbose)s
+        Default=0.
 
     See Also
     ------------
@@ -804,6 +775,7 @@ class _BaseDecoder(LinearRegression, CacheMixin):
         return scores.ravel() if scores.shape[1] == 1 else scores
 
 
+@fill_doc
 class Decoder(_BaseDecoder):
     """A wrapper for popular classification strategies in neuroimaging.
 
@@ -863,35 +835,13 @@ class Decoder(_BaseDecoder):
 
         For classification, valid entries are: 'accuracy', 'f1', 'precision',
         'recall' or 'roc_auc'. Default: 'roc_auc'.
-
-    smoothing_fwhm: float, optional. Default: None
-        If smoothing_fwhm is not None, it gives the size in millimeters of the
-        spatial smoothing to apply to the signal.
-
-    standardize: bool, optional. Default: True
-        If standardize is True, the time-series are centered and normed:
-        their variance is put to 1 in the time dimension.
-
-    target_affine: 3x3 or 4x4 matrix, optional. Default: None
-        This parameter is passed to image.resample_img. Please see the
-        related documentation for details.
-
-    target_shape: 3-tuple of int, optional. Default: None
-        This parameter is passed to image.resample_img. Please see the
-        related documentation for details.
-
-    low_pass: None or float, optional
-        This parameter is passed to signal.clean. Please see the related
-        documentation for details
-
-    high_pass: None or float, optional
-        This parameter is passed to signal.clean. Please see the related
-        documentation for details
-
-    t_r: float, optional. Default: None
-        This parameter is passed to signal.clean. Please see the related
-        documentation for details.
-
+    %(smoothing_fwhm)s
+    %(standardize)s
+    %(target_affine)s
+    %(target_shape)s
+    %(low_pass)s
+    %(high_pass)s
+    %(t_r)s
     mask_strategy: {'background' or 'epi'}, optional. Default: 'background'
         The strategy used to compute the mask: use 'background' if your
         images present a clear homogeneous background, and 'epi' if they
@@ -899,23 +849,15 @@ class Decoder(_BaseDecoder):
         computed from masking.compute_background_mask or
         masking.compute_epi_mask.
 
-        This parameter will be ignored if a mask image is provided.
+        .. note::
+            This parameter will be ignored if a mask image is provided.
 
-    memory: instance of joblib.Memory or str
-        Used to cache the masking process.
-        By default, no caching is done. If a str is given, it is the
-        path to the caching directory.
-
-    memory_level: int, optional. Default: 0
-        Rough estimator of the amount of memory used by caching. Higher value
-        means more memory for caching.
-
-    n_jobs: int, optional. Default: 1.
-        The number of CPUs to use to do the computation. -1 means
-        'all CPUs'.
-
-    verbose: int, optional. Default: 0.
-        Verbosity level.
+    %(memory)s
+    %(memory_level)s
+    %(n_jobs)s
+        Default=1.
+    %(verbose)s
+        Default=0.
 
     See Also
     ------------
@@ -942,6 +884,7 @@ class Decoder(_BaseDecoder):
             verbose=verbose, n_jobs=n_jobs)
 
 
+@fill_doc
 class DecoderRegressor(_BaseDecoder):
     """A wrapper for popular regression strategies in neuroimaging.
 
@@ -1000,35 +943,13 @@ class DecoderRegressor(_BaseDecoder):
 
         For regression, valid entries are: 'r2', 'neg_mean_absolute_error',
         or 'neg_mean_squared_error'. Default: 'r2'.
-
-    smoothing_fwhm: float, optional. Default: None
-        If smoothing_fwhm is not None, it gives the size in millimeters of the
-        spatial smoothing to apply to the signal.
-
-    standardize: bool, optional. Default: True
-        If standardize is True, the time-series are centered and normed:
-        their variance is put to 1 in the time dimension.
-
-    target_affine: 3x3 or 4x4 matrix, optional. Default: None
-        This parameter is passed to image.resample_img. Please see the
-        related documentation for details.
-
-    target_shape: 3-tuple of int, optional. Default: None
-        This parameter is passed to image.resample_img. Please see the
-        related documentation for details.
-
-    low_pass: None or float, optional
-        This parameter is passed to signal.clean. Please see the related
-        documentation for details
-
-    high_pass: None or float, optional
-        This parameter is passed to signal.clean. Please see the related
-        documentation for details
-
-    t_r: float, optional. Default: None
-        This parameter is passed to signal.clean. Please see the related
-        documentation for details.
-
+    %(smoothing_fwhm)s
+    %(standardize)s
+    %(target_affine)s
+    %(target_shape)s
+    %(low_pass)s
+    %(high_pass)s
+    %(t_r)s
     mask_strategy: {'background' or 'epi'}, optional. Default: 'background'
         The strategy used to compute the mask: use 'background' if your
         images present a clear homogeneous background, and 'epi' if they
@@ -1036,23 +957,15 @@ class DecoderRegressor(_BaseDecoder):
         computed from masking.compute_background_mask or
         masking.compute_epi_mask.
 
-        This parameter will be ignored if a mask image is provided.
+        .. note::
+            This parameter will be ignored if a mask image is provided.
 
-    memory: instance of joblib.Memory or str
-        Used to cache the masking process.
-        By default, no caching is done. If a str is given, it is the
-        path to the caching directory.
-
-    memory_level: int, optional. Default: 0
-        Rough estimator of the amount of memory used by caching. Higher value
-        means more memory for caching.
-
-    n_jobs: int, optional. Default: 1.
-        The number of CPUs to use to do the computation. -1 means
-        'all CPUs'.
-
-    verbose: int, optional. Default: 0.
-        Verbosity level.
+    %(memory)s
+    %(memory_level)s
+    %(n_jobs)s
+        Default=1.
+    %(verbose)s
+        Default=0.
 
     See Also
     ------------
@@ -1081,6 +994,7 @@ class DecoderRegressor(_BaseDecoder):
             verbose=verbose, n_jobs=n_jobs)
 
 
+@fill_doc
 class FREMRegressor(_BaseDecoder):
     """ State of the art decoding scheme applied to usual regression estimators.
 
@@ -1144,35 +1058,13 @@ class FREMRegressor(_BaseDecoder):
 
         For regression, valid entries are: 'r2', 'neg_mean_absolute_error',
         or 'neg_mean_squared_error'. Default: 'r2'.
-
-    smoothing_fwhm : float, optional. Default: None
-        If smoothing_fwhm is not None, it gives the size in millimeters of the
-        spatial smoothing to apply to the signal.
-
-    standardize : bool, optional. Default: True
-        If standardize is True, the time-series are centered and normed:
-        their variance is put to 1 in the time dimension.
-
-    target_affine : 3x3 or 4x4 matrix, optional. Default: None
-        This parameter is passed to image.resample_img. Please see the
-        related documentation for details.
-
-    target_shape : 3-tuple of int, optional. Default: None
-        This parameter is passed to image.resample_img. Please see the
-        related documentation for details.
-
-    low_pass : None or float, optional
-        This parameter is passed to signal.clean. Please see the related
-        documentation for details
-
-    high_pass : None or float, optional
-        This parameter is passed to signal.clean. Please see the related
-        documentation for details
-
-    t_r : float, optional. Default: None
-        This parameter is passed to signal.clean. Please see the related
-        documentation for details.
-
+    %(smoothing_fwhm)s
+    %(standardize)s
+    %(target_affine)s
+    %(target_shape)s
+    %(low_pass)s
+    %(high_pass)s
+    %(t_r)s
     mask_strategy : {'background' or 'epi'}, optional. Default: 'background'
         The strategy used to compute the mask: use 'background' if your
         images present a clear homogeneous background, and 'epi' if they
@@ -1180,23 +1072,15 @@ class FREMRegressor(_BaseDecoder):
         computed from masking.compute_background_mask or
         masking.compute_epi_mask.
 
-        This parameter will be ignored if a mask image is provided.
+        .. note::
+            This parameter will be ignored if a mask image is provided.
 
-    memory : instance of joblib.Memory or str
-        Used to cache the masking process.
-        By default, no caching is done. If a str is given, it is the
-        path to the caching directory.
-
-    memory_level : int, optional. Default: 0
-        Rough estimator of the amount of memory used by caching. Higher value
-        means more memory for caching.
-
-    n_jobs : int, optional. Default: 1.
-        The number of CPUs to use to do the computation. -1 means
-        'all CPUs'.
-
-    verbose : int, optional. Default: 0.
-        Verbosity level.
+    %(memory)s
+    %(memory_level)s
+    %(n_jobs)s
+        Default=1.
+    %(verbose)s
+        Default=0.
 
     References
     ----------
@@ -1233,6 +1117,7 @@ class FREMRegressor(_BaseDecoder):
             verbose=verbose, n_jobs=n_jobs)
 
 
+@fill_doc
 class FREMClassifier(_BaseDecoder):
     """ State of the art decoding scheme applied to usual classifiers.
 
@@ -1297,35 +1182,13 @@ class FREMClassifier(_BaseDecoder):
 
         For classification, valid entries are: 'accuracy', 'f1', 'precision',
         'recall' or 'roc_auc'. Default: 'roc_auc'.
-
-    smoothing_fwhm : float, optional. Default: None
-        If smoothing_fwhm is not None, it gives the size in millimeters of the
-        spatial smoothing to apply to the signal.
-
-    standardize : bool, optional. Default: True
-        If standardize is True, the time-series are centered and normed:
-        their variance is put to 1 in the time dimension.
-
-    target_affine : 3x3 or 4x4 matrix, optional. Default: None
-        This parameter is passed to image.resample_img. Please see the
-        related documentation for details.
-
-    target_shape : 3-tuple of int, optional. Default: None
-        This parameter is passed to image.resample_img. Please see the
-        related documentation for details.
-
-    low_pass : None or float, optional
-        This parameter is passed to signal.clean. Please see the related
-        documentation for details
-
-    high_pass : None or float, optional
-        This parameter is passed to signal.clean. Please see the related
-        documentation for details
-
-    t_r : float, optional. Default: None
-        This parameter is passed to signal.clean. Please see the related
-        documentation for details.
-
+    %(smoothing_fwhm)s
+    %(standardize)s
+    %(target_affine)s
+    %(target_shape)s
+    %(low_pass)s
+    %(high_pass)s
+    %(t_r)s
     mask_strategy : {'background' or 'epi'}, optional. Default: 'background'
         The strategy used to compute the mask: use 'background' if your
         images present a clear homogeneous background, and 'epi' if they
@@ -1333,23 +1196,15 @@ class FREMClassifier(_BaseDecoder):
         computed from masking.compute_background_mask or
         masking.compute_epi_mask.
 
-        This parameter will be ignored if a mask image is provided.
+        .. note::
+            This parameter will be ignored if a mask image is provided.
 
-    memory : instance of joblib.Memory or str
-        Used to cache the masking process.
-        By default, no caching is done. If a str is given, it is the
-        path to the caching directory.
-
-    memory_level : int, optional. Default: 0
-        Rough estimator of the amount of memory used by caching. Higher value
-        means more memory for caching.
-
-    n_jobs : int, optional. Default: 1.
-        The number of CPUs to use to do the computation. -1 means
-        'all CPUs'.
-
-    verbose : int, optional. Default: 0.
-        Verbosity level.
+    %(memory)s
+    %(memory_level)s
+    %(n_jobs)s
+        Default=1.
+    %(verbose)s
+        Default=0.
 
     References
     ----------

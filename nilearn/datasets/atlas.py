@@ -55,6 +55,7 @@ def fetch_atlas_difumo(dimension=64, resolution_mm=2, data_dir=None, resume=True
     %(data_dir)s
     %(resume)s
     %(verbose)s
+        Default=1.
 
     Returns
     -------
@@ -137,6 +138,7 @@ def fetch_atlas_craddock_2012(data_dir=None, url=None, resume=True, verbose=1):
     %(url)s
     %(resume)s
     %(verbose)s
+        Default=1.
 
     Returns
     -------
@@ -197,6 +199,7 @@ def fetch_atlas_destrieux_2009(lateralized=True, data_dir=None, url=None,
     %(url)s
     %(resume)s
     %(verbose)s
+        Default=1.
 
     Returns
     -------
@@ -282,6 +285,7 @@ def fetch_atlas_harvard_oxford(atlas_name, data_dir=None,
         Default=False.
     %(resume)s
     %(verbose)s
+        Default=1.
 
     Returns
     -------
@@ -409,6 +413,7 @@ def fetch_atlas_msdl(data_dir=None, url=None, resume=True, verbose=1):
     %(url)s
     %(resume)s
     %(verbose)s
+        Default=1.
 
     Returns
     -------
@@ -495,6 +500,7 @@ def fetch_atlas_smith_2009(data_dir=None, mirror='origin', url=None,
     %(url)s
     %(resume)s
     %(verbose)s
+        Default=1.
 
     Returns
     -------
@@ -585,6 +591,7 @@ def fetch_atlas_yeo_2011(data_dir=None, url=None, resume=True, verbose=1):
     %(url)s
     %(resume)s
     %(verbose)s
+        Default=1.
 
     Returns
     -------
@@ -665,6 +672,7 @@ def fetch_atlas_aal(version='SPM12', data_dir=None, url=None, resume=True,
     %(url)s
     %(resume)s
     %(verbose)s
+        Default=1.
 
     Returns
     -------
@@ -760,6 +768,7 @@ def fetch_atlas_basc_multiscale_2015(version='sym', data_dir=None, url=None,
     %(url)s
     %(resume)s
     %(verbose)s
+        Default=1.
 
     Returns
     -------
@@ -955,6 +964,7 @@ def fetch_atlas_allen_2011(data_dir=None, url=None, resume=True, verbose=1):
     %(url)s
     %(resume)s
     %(verbose)s
+        Default=1.
 
     Returns
     -------
@@ -1039,6 +1049,7 @@ def fetch_atlas_surf_destrieux(data_dir=None, url=None,
     %(url)s
     %(resume)s
     %(verbose)s
+        Default=1.
 
     Returns
     -------
@@ -1203,6 +1214,7 @@ def fetch_atlas_talairach(level_name, data_dir=None, verbose=1):
         the tissue type or the Brodmann area.
     %(data_dir)s
     %(verbose)s
+        Default=1.
 
     Returns
     -------
@@ -1248,6 +1260,7 @@ def fetch_atlas_pauli_2017(version='prob', data_dir=None, verbose=1):
         deterministic atlas. Default='prob'.
     %(data_dir)s
     %(verbose)s
+        Default=1.
 
     Returns
     -------
@@ -1329,6 +1342,7 @@ def fetch_atlas_schaefer_2018(n_rois=400, yeo_networks=7, resolution_mm=1,
         base_url of files to download (None results in default base_url).
     %(resume)s
     %(verbose)s
+        Default=1.
 
     Returns
     -------

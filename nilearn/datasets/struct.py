@@ -52,6 +52,7 @@ def fetch_icbm152_2009(data_dir=None, url=None, resume=True, verbose=1):
     %(url)s
     %(resume)s
     %(verbose)s
+        Default=1.
 
     Returns
     -------
@@ -477,6 +478,7 @@ def fetch_icbm152_brain_gm_mask(data_dir=None, threshold=0.2, resume=True,
         .. versionadded:: 0.8.1
 
     %(verbose)s
+        Default=1.
 
     Returns
     -------
@@ -490,7 +492,8 @@ def fetch_icbm152_brain_gm_mask(data_dir=None, threshold=0.2, resume=True,
     of the values. Then, do a bit post processing such as binary closing
     operation to more compact mask image.
 
-    Note: It is advised to check the mask image with your own data processing.
+    .. note::
+        It is advised to check the mask image with your own data processing.
 
     See Also
     --------
@@ -538,6 +541,7 @@ def fetch_oasis_vbm(n_subjects=None, dartel_version=True, data_dir=None,
     %(url)s
     %(resume)s
     %(verbose)s
+        Default=1.
 
     Returns
     -------

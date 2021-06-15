@@ -28,6 +28,7 @@ from sklearn.preprocessing import LabelBinarizer
 from sklearn.metrics import accuracy_score
 from ..input_data.masker_validation import check_embedded_nifti_masker
 from .._utils.param_validation import _adjust_screening_percentile
+from .._utils import fill_doc
 from sklearn.utils import check_X_y
 from sklearn.model_selection import check_cv
 try:
@@ -60,6 +61,7 @@ def _crop_mask(mask):
     return mask[i_min:i_max + 1, j_min:j_max + 1, k_min:k_max + 1]
 
 
+@fill_doc
 def _univariate_feature_screening(
         X, y, mask, is_classif, screening_percentile, smoothing_fwhm=2.):
     """
@@ -82,10 +84,8 @@ def _univariate_feature_screening(
     screening_percentile : float in the closed interval [0., 100.]
         Only the `screening_percentile * 100" percent most import voxels will
         be retained.
-
-    smoothing_fwhm : float, optional (default 2.)
-        FWHM for isotropically smoothing the data X before F-testing. A value
-        of zero means "don't smooth".
+    %(smoothing_fwhm)s
+        Default=2.
 
     Returns
     -------
@@ -285,6 +285,7 @@ class _EarlyStoppingCallback(object):
             return pearson_score, spearman_score
 
 
+@fill_doc
 def path_scores(solver, X, y, mask, alphas, l1_ratios, train, test,
                 solver_params, is_classif=False, n_alphas=10, eps=1E-3,
                 key=None, debias=False, Xmean=None,
@@ -350,9 +351,8 @@ def path_scores(solver, X, y, mask, alphas, l1_ratios, train, test,
         (which is typically smaller). If '100' is given, all the features
         are used, regardless of the number of voxels.
         Default=20.
-
-    verbose : integer, optional
-        Indicate the level of verbosity. Default=1.
+    %(verbose)s
+        Default=1.
 
     """
     if l1_ratios is None:
@@ -479,6 +479,7 @@ def path_scores(solver, X, y, mask, alphas, l1_ratios, train, test,
             y_train_mean, key)
 
 
+@fill_doc
 class BaseSpaceNet(LinearRegression, CacheMixin):
     """
     Regression and classification learners with sparsity and spatial priors
@@ -524,29 +525,13 @@ class BaseSpaceNet(LinearRegression, CacheMixin):
         Mask to be used on data. If an instance of masker is passed,
         then its mask will be used. If no mask is it will be computed
         automatically by a NiftiMasker.
-
-    target_affine : 3x3 or 4x4 matrix, optional (default None)
-        This parameter is passed to image.resample_img. An important use-case
-        of this parameter is for downsampling the input data to a coarser
-        resolution (to speed of the model fit). Please see the related
-        documentation for details.
-
-    target_shape : 3-tuple of integers, optional (default None)
-        This parameter is passed to image.resample_img. Please see the
-        related documentation for details.
-
-    low_pass: None or float, optional
-        This parameter is passed to signal.clean. Please see the related
-        documentation for details
-
-    high_pass: None or float, optional
-        This parameter is passed to signal.clean. Please see the related
-        documentation for details
-
-    t_r : float, optional (default None)
-        This parameter is passed to signal.clean. Please see the related
-        documentation for details.
-
+    %(target_affine)s
+        An important use-case of this parameter is for downsampling the
+        input data to a coarser resolution (to speed of the model fit).
+    %(target_shape)s
+    %(low_pass)s
+    %(high_pass)s
+    %(t_r)s
     screening_percentile : float in the interval [0, 100]; Optional (
     default 20)
         Percentile value for ANOVA univariate feature selection. A value of
@@ -569,22 +554,12 @@ class BaseSpaceNet(LinearRegression, CacheMixin):
 
     tol : float, optional (default 5e-4)
         Defines the tolerance for convergence for the backend FISTA solver.
-
-    verbose : int, optional (default 1)
-        Verbosity level.
-
-    n_jobs : int, optional (default 1)
-        Number of jobs in solving the sub-problems.
-
-    memory: instance of joblib.Memory or string
-        Used to cache the masking process.
-        By default, no caching is done. If a string is given, it is the
-        path to the caching directory.
-
-    memory_level: integer, optional (default 1)
-        Rough estimator of the amount of memory used by caching. Higher value
-        means more memory for caching.
-
+    %(verbose)s
+        Default=1.
+    %(n_jobs)s
+        Default=1.
+    %(memory)s
+    %(memory_level)s
     cv : int, a cv generator instance, or None (default 8)
         The input specifying which cross-validation generator to use.
         It can be an integer, in which case it is the number of folds in a
@@ -982,6 +957,7 @@ class BaseSpaceNet(LinearRegression, CacheMixin):
         return self.classes_[indices]
 
 
+@fill_doc
 class SpaceNetClassifier(BaseSpaceNet):
     """Classification learners with sparsity and spatial priors.
 
@@ -1023,27 +999,11 @@ class SpaceNetClassifier(BaseSpaceNet):
         Mask to be used on data. If an instance of masker is passed,
         then its mask will be used. If no mask is it will be computed
         automatically by a MultiNiftiMasker with default parameters.
-
-    target_affine : 3x3 or 4x4 matrix, optional (default None)
-        This parameter is passed to image.resample_img. Please see the
-        related documentation for details.
-
-    target_shape : 3-tuple of integers, optional (default None)
-        This parameter is passed to image.resample_img. Please see the
-        related documentation for details.
-
-    low_pass: None or float, optional
-        This parameter is passed to signal.clean. Please see the related
-        documentation for details
-
-    high_pass: None or float, optional
-        This parameter is passed to signal.clean. Please see the related
-        documentation for details
-
-    t_r : float, optional (default None)
-        This parameter is passed to signal.clean. Please see the related
-        documentation for details.
-
+    %(target_affine)s
+    %(target_shape)s
+    %(low_pass)s
+    %(high_pass)s
+    %(t_r)s
     screening_percentile : float in the interval [0, 100]; Optional (default 20)
         Percentile value for ANOVA univariate feature selection. A value of
         100 means 'keep all features'. This percentile is is expressed
@@ -1065,22 +1025,12 @@ class SpaceNetClassifier(BaseSpaceNet):
 
     tol : float
         Defines the tolerance for convergence. Defaults to 1e-4.
-
-    verbose : int, optional (default 1)
-        Verbosity level.
-
-    n_jobs : int, optional (default 1)
-        Number of jobs in solving the sub-problems.
-
-    memory: instance of joblib.Memory or string
-        Used to cache the masking process.
-        By default, no caching is done. If a string is given, it is the
-        path to the caching directory.
-
-    memory_level: integer, optional (default 1)
-        Rough estimator of the amount of memory used by caching. Higher value
-        means more memory for caching.
-
+    %(verbose)s
+        Default=1.
+    %(n_jobs)s
+        Default=1.
+    %(memory)s
+    %(memory_level)s
     cv : int, a cv generator instance, or None (default 8)
         The input specifying which cross-validation generator to use.
         It can be an integer, in which case it is the number of folds in a
@@ -1160,6 +1110,11 @@ class SpaceNetClassifier(BaseSpaceNet):
 
     `Xstd_` : array, shape (n_features,)
         Standard deviation of X across samples
+
+    See Also
+    --------
+    nilearn.decoding.SpaceNetRegressor: Graph-Net and TV-L1 priors/penalties
+
     """
 
     def __init__(self, penalty="graph-net", loss="logistic",
@@ -1213,6 +1168,7 @@ class SpaceNetClassifier(BaseSpaceNet):
         return accuracy_score(y, self.predict(X))
 
 
+@fill_doc
 class SpaceNetRegressor(BaseSpaceNet):
     """Regression learners with sparsity and spatial priors.
 
@@ -1251,27 +1207,11 @@ class SpaceNetRegressor(BaseSpaceNet):
         Mask to be used on data. If an instance of masker is passed,
         then its mask will be used. If no mask is it will be computed
         automatically by a MultiNiftiMasker with default parameters.
-
-    target_affine : 3x3 or 4x4 matrix, optional (default None)
-        This parameter is passed to image.resample_img. Please see the
-        related documentation for details.
-
-    target_shape : 3-tuple of integers, optional (default None)
-        This parameter is passed to image.resample_img. Please see the
-        related documentation for details.
-
-    low_pass: None or float, optional
-        This parameter is passed to signal.clean. Please see the related
-        documentation for details
-
-    high_pass: None or float, optional
-        This parameter is passed to signal.clean. Please see the related
-        documentation for details
-
-    t_r : float, optional (default None)
-        This parameter is passed to signal.clean. Please see the related
-        documentation for details
-
+    %(target_affine)s
+    %(target_shape)s
+    %(low_pass)s
+    %(high_pass)s
+    %(t_r)s
     screening_percentile : float in the interval [0, 100]; Optional (default 20)
         Percentile value for ANOVA univariate feature selection. A value of
         100 means 'keep all features'. This percentile is is expressed
@@ -1292,22 +1232,12 @@ class SpaceNetRegressor(BaseSpaceNet):
 
     tol : float
         Defines the tolerance for convergence. Defaults to 1e-4.
-
-    verbose : int, optional (default 1)
-        Verbosity level.
-
-    n_jobs : int, optional (default 1)
-        Number of jobs in solving the sub-problems.
-
-    memory: instance of joblib.Memory or string
-        Used to cache the masking process.
-        By default, no caching is done. If a string is given, it is the
-        path to the caching directory.
-
-    memory_level: integer, optional (default 1)
-        Rough estimator of the amount of memory used by caching. Higher value
-        means more memory for caching.
-
+    %(verbose)s
+        Default=1.
+    %(n_jobs)s
+        Default=1.
+    %(memory)s
+    %(memory_level)s
     cv : int, a cv generator instance, or None (default 8)
         The input specifying which cross-validation generator to use.
         It can be an integer, in which case it is the number of folds in a
@@ -1374,6 +1304,11 @@ class SpaceNetRegressor(BaseSpaceNet):
 
     `Xstd_` : array, shape (n_features,)
         Standard deviation of X across samples
+
+    See Also
+    --------
+    nilearn.decoding.SpaceNetClassifier: Graph-Net and TV-L1 priors/penalties
+
     """
 
     def __init__(self, penalty="graph-net", l1_ratios=.5, alphas=None,
