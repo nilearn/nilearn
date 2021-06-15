@@ -9,23 +9,19 @@
 HIGHLIGHTS
 ----------
 
-Warning
-.......
+.. warning::
 
-**Python 3.5 is no longer supported. We recommend upgrading to Python 3.8.**
-
-**Support for Nibabel 2.x is deprecated and will be removed in the 0.9 release.**
-Users with a version of Nibabel < 3.0 will be warned at their first Nilearn import.
-
-**Minimum supported versions of packages have been bumped up:**
-- Numpy -- v1.16
-- SciPy -- v1.2
-- Scikit-learn -- v0.21
-- Nibabel -- v2.5
-- Pandas -- v0.24
-
-Main additions
-..............
+ | **Python 3.5 is no longer supported. We recommend upgrading to Python 3.8.**
+ |
+ | **Support for Nibabel 2.x is deprecated and will be removed in the 0.9 release.**
+ | Users with a version of Nibabel < 3.0 will be warned at their first Nilearn import.
+ |
+ | **Minimum supported versions of packages have been bumped up:**
+ | - Numpy -- v1.16
+ | - SciPy -- v1.2
+ | - Scikit-learn -- v0.21
+ | - Nibabel -- v2.5
+ | - Pandas -- v0.24
 
 - :class:`nilearn.input_data.NiftiLabelsMasker` can now generate HTML reports in the same
   way as :class:`nilearn.input_data.NiftiMasker`.
@@ -122,11 +118,13 @@ Changes
   in the 0.9 release. Users with a version of Nibabel < 3.0 will
   be warned at their first Nilearn import.
 - Minimum supported versions of packages have been bumped up:
-  * Numpy -- v1.16
-  * SciPy -- v1.2
-  * Scikit-learn -- v0.21
-  * Nibabel -- v2.5
-  * Pandas -- v0.24
+
+    * Numpy -- v1.16
+    * SciPy -- v1.2
+    * Scikit-learn -- v0.21
+    * Nibabel -- v2.5
+    * Pandas -- v0.24
+
 - Function sym_to_vec from :mod:`nilearn.connectome` was deprecated since release 0.4 and
   has been removed.
 - Fetcher `nilearn.datasets.fetch_nyu_rest` is deprecated since release 0.6.2 and
