@@ -722,7 +722,7 @@ def compute_multi_gray_matter_mask(target_imgs, threshold=.5,
 
 def compute_multi_brain_mask(target_imgs, threshold=.5, connected=True,
                              opening=2, memory=None, verbose=0, n_jobs=1,
-                             mask ='whole-brain', **kwargs):
+                             mask='whole-brain', **kwargs):
     """ Compute a mask corresponding to the gray matter part of the brain for
     a list of images.
     The gray matter part is calculated through the resampling of MNI152
