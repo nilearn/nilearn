@@ -299,7 +299,7 @@ latex_show_urls = 'footnote'
 
 trim_doctests_flags = True
 
-_python_doc_base = 'https://docs.python.org/3.6'
+_python_doc_base = 'https://docs.python.org/3.8'
 
 # Example configuration for intersphinx: refer to the Python standard library.
 intersphinx_mapping = {

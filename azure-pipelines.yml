@@ -14,10 +14,10 @@ jobs:
     vmImage: 'vs2017-win2016'
   strategy:
     matrix:
-      Python35:
-        python.version: '3.5'
-      Python37:
-        python.version: '3.7'
+      Python36:
+        python.version: '3.6'
+      Python38:
+        python.version: '3.8'
     maxParallel: 4
 
   steps:
@@ -55,8 +55,8 @@ jobs:
     vmImage: 'ubuntu-18.04'
   strategy:
     matrix:
-      Python36:
-        python.version: '3.6'
+      Python37:
+        python.version: '3.7'
     maxParallel: 4
 
   steps:
@@ -93,8 +93,8 @@ jobs:
     vmImage: 'macOS-latest'
   strategy:
     matrix:
-      Python36:
-        python.version: '3.6'
+      Python37:
+        python.version: '3.7'
     maxParallel: 4
 
   steps:
@@ -131,8 +131,8 @@ jobs:
     vmImage: 'vs2017-win2016'
   strategy:
     matrix:
-      Python36:
-        python.version: '3.6'
+      Python37:
+        python.version: '3.7'
     maxParallel: 4
 
   steps:
