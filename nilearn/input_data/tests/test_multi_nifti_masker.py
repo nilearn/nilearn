@@ -181,12 +181,6 @@ def test_compute_multi_gray_matter_mask():
     mask2 = masker2.mask_img_
 
     mask_ref = np.zeros((9, 9, 5), dtype='int8')
-    mask_ref[1, 3:8, 1:4] = 1
-    mask_ref[2, 3, 1] = 1
-    mask_ref[2, 4:7, 1:4] = 1
-    mask_ref[2, 7, 1:3] = 1
-    mask_ref[3, 4:7, 1] = 1
-    mask_ref[3, 5, 2] = 1
 
     np.testing.assert_array_equal(get_data(mask), mask_ref)
     np.testing.assert_array_equal(get_data(mask2), mask_ref)
