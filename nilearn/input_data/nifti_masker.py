@@ -182,8 +182,8 @@ class NiftiMasker(BaseMasker, CacheMixin):
         This is useful to perform data subselection as part of a scikit-learn
         pipeline.
 
-            .. deprecated:: 0.7.2
-                `sample_mask` is deprecated in 0.7.2 and will be removed in
+            .. deprecated:: 0.8.0
+                `sample_mask` is deprecated in 0.8.0 and will be removed in
                 0.9.0.
 
     dtype : {dtype, "auto"}, optional
@@ -227,7 +227,7 @@ class NiftiMasker(BaseMasker, CacheMixin):
 
     """
     @remove_parameters(['sample_mask'],
-                       ('Deprecated in 0.7.2. Supply `sample_masker` through '
+                       ('Deprecated in 0.8.0. Supply `sample_masker` through '
                         '`transform` or `fit_transform` methods instead. '),
                        '0.9.0')
     @rename_parameters({'sessions': 'runs'}, '0.9.0')
