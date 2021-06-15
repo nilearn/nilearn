@@ -30,6 +30,11 @@ NEW
 Fixes
 -----
 
+- :func:`nilearn.masking.compute_multi_brain_mask` has replaced
+  nilearn.masking.compute_multi_gray_matter_mask. A mask parameter has been added;
+  it accepts three types of masks---i.e. whole-brain, gray-matter and
+  white-matter---following the enhancements made in the function
+  :func:`nilearn.masking.compute_brain_mask` in this release.
 - Convert references in signal.py, atlas.py, func.py, neurovault.py, and struct.py 
   to use footcite / footbibliography.
 - Fix detrending and temporal filtering order for confounders
