@@ -290,7 +290,7 @@ def load_mni152_wm_mask(resolution=2, threshold=0.2, n_iter=2):
         re-sampled with the specified resolution.
 
     threshold : float, optional
-        The parameter which amounts to include the values in the mask image.
+        Thresolding parameter used to binarize the mask image.
         Values lying above this threshold will be included. Default=0.2
 
     n_iter: int, optional, Default = 2
