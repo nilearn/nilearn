@@ -473,7 +473,7 @@ def clean(signals, runs=None, detrend=True, standardize='zscore',
         information, sample_mask must be a list containing sets of indexes for
         each run.
 
-            .. versionadded:: 0.7.2
+            .. versionadded:: 0.8.0
 
     t_r: float
         Repetition time, in second (sampling period). Set to None if not.

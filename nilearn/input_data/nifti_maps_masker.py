@@ -265,7 +265,7 @@ class NiftiMapsMasker(BaseMasker, CacheMixin):
             (remove volumes with high motion) and/or non-steady-state volumes.
             This parameter is passed to signal.clean.
 
-                .. versionadded:: 0.7.2
+                .. versionadded:: 0.8.0
 
         Returns
         -------
