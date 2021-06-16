@@ -52,7 +52,6 @@ def fetch_icbm152_2009(data_dir=None, url=None, resume=True, verbose=1):
     %(url)s
     %(resume)s
     %(verbose)s
-        Default=1.
 
     Returns
     -------
@@ -478,7 +477,6 @@ def fetch_icbm152_brain_gm_mask(data_dir=None, threshold=0.2, resume=True,
         .. versionadded:: 0.8.1
 
     %(verbose)s
-        Default=1.
 
     Returns
     -------
@@ -541,7 +539,6 @@ def fetch_oasis_vbm(n_subjects=None, dartel_version=True, data_dir=None,
     %(url)s
     %(resume)s
     %(verbose)s
-        Default=1.
 
     Returns
     -------
@@ -737,21 +734,9 @@ def fetch_surf_fsaverage(mesh='fsaverage5', data_dir=None):
     Parameters
     ----------
     mesh : str, optional
-        Which mesh to fetch. Default='fsaverage5'.
-
-        - 'fsaverage3': the low-resolution fsaverage3 mesh (642 nodes)
-        - 'fsaverage4': the low-resolution fsaverage4 mesh (2562 nodes)
-        - 'fsaverage5': the low-resolution fsaverage5 mesh (10242 nodes)
-        - 'fsaverage5_sphere': this option has been deprecated
-            and will be removed in v0.9.0.
-            fsaverage5 sphere coordinates can now be accessed through
-            attributes sphere_{left, right} using mesh='fsaverage5'
-        - 'fsaverage6': the medium-resolution fsaverage6 mesh (40962 nodes)
-        - 'fsaverage7': same as 'fsaverage'
-        - 'fsaverage': the high-resolution fsaverage mesh (163842 nodes)
-            (high-resolution fsaverage will result in more computation time and
-            memory usage)
-
+        Which mesh to fetch. Should be one of the following values:
+        %(fsaverage_options)s
+        Default='fsaverage5'.
     %(data_dir)s
 
     Returns

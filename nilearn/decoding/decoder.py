@@ -61,17 +61,17 @@ SUPPORTED_ESTIMATORS = dict(
 )
 
 
+@fill_doc
 def _check_param_grid(estimator, X, y, param_grid=None):
     """Check param_grid and return sensible default if param_grid is None.
 
     Parameters
     -----------
     estimator: str, optional
-        The estimator to choose among: 'svc', 'svc_l2', 'svc_l1', 'logistic',
-        'logistic_l1', 'logistic_l2', 'ridge', 'ridge_classifier',
-        'ridge_regressor', and 'svr'. Note that the 'svc' and 'svc_l2';
-        'logistic' and 'logistic_l2'; 'ridge' and 'ridge_regressor'
-        correspond to the same estimator. Default 'svc'.
+        The estimator to choose among:
+        %(classifier_options)s
+        %(regressor_options)s
+        Default 'svc'.
 
     X: list of Niimg-like objects
         See http://nilearn.github.io/manipulating_images/input_output.html
@@ -235,12 +235,10 @@ class _BaseDecoder(LinearRegression, CacheMixin):
     Parameters
     -----------
     estimator: str, optional
-        The estimator to choose among: 'svc', 'svc_l2', 'svc_l1', 'logistic',
-        'logistic_l1', 'logistic_l2', 'ridge', 'ridge_classifier',
-        'ridge_regressor', and 'svr'. Note that the 'svc' and 'svc_l2';
-        'logistic' and 'logistic_l2'; 'ridge' and 'ridge_regressor',
-        correspond to the same estimator.
-        Dummy estimators are named as 'dummy_classifier', 'dummy_regressor'.
+        The estimator to use. For classification, choose among:
+        %(classifier_options)s
+        For regression, choose among:
+        %(regressor_options)s
         Default 'svc'.
 
     mask: filename, Nifti1Image, NiftiMasker, or MultiNiftiMasker, optional
@@ -313,9 +311,7 @@ class _BaseDecoder(LinearRegression, CacheMixin):
     %(memory)s
     %(memory_level)s
     %(n_jobs)s
-        Default=1.
-    %(verbose)s
-        Default=0.
+    %(verbose0)s
 
     See Also
     ------------
@@ -788,10 +784,9 @@ class Decoder(_BaseDecoder):
     Parameters
     -----------
     estimator: str, optional
-        The estimator to choose among: 'svc', 'svc_l2', 'svc_l1', 'logistic',
-        'logistic_l1', 'logistic_l2' and 'ridge_classifier'. Note that
-        'svc' and 'svc_l2'; 'logistic' and 'logistic_l2' correspond to the same
-        estimator. Dummy classifier is named as 'dummy_classifier'. Default 'svc'.
+        The estimator to choose among:
+        %(classifier_options)s
+        Default 'svc'.
 
     mask: filename, Nifti1Image, NiftiMasker, or MultiNiftiMasker, optional
         Mask to be used on data. If an instance of masker is passed,
@@ -855,9 +850,7 @@ class Decoder(_BaseDecoder):
     %(memory)s
     %(memory_level)s
     %(n_jobs)s
-        Default=1.
-    %(verbose)s
-        Default=0.
+    %(verbose0)s
 
     See Also
     ------------
@@ -897,9 +890,9 @@ class DecoderRegressor(_BaseDecoder):
     Parameters
     -----------
     estimator: str, optional
-        The estimator to choose among: 'ridge', 'ridge_regressor', and 'svr'.
-        Note that the 'ridge' and 'ridge_regressor' correspond to the same
-        estimator. Dummy regressor is named as 'dummy_regressor'. Default 'svr'.
+        The estimator to choose among:
+        %(regressor_options)s
+        Default 'svr'.
 
     mask: filename, Nifti1Image, NiftiMasker, or MultiNiftiMasker, optional
         Mask to be used on data. If an instance of masker is passed,
@@ -963,9 +956,7 @@ class DecoderRegressor(_BaseDecoder):
     %(memory)s
     %(memory_level)s
     %(n_jobs)s
-        Default=1.
-    %(verbose)s
-        Default=0.
+    %(verbose0)s
 
     See Also
     ------------
@@ -1006,9 +997,9 @@ class FREMRegressor(_BaseDecoder):
     Parameters
     -----------
     estimator : str, optional
-        The estimator to choose among: 'ridge', 'ridge_regressor', and 'svr'.
-        Note that the 'ridge' and 'ridge_regressor' correspond to the same
-        estimator. Default 'svr'.
+        The estimator to choose among:
+        %(regressor_options)s
+        Default 'svr'.
 
     mask : filename, Nifti1Image, NiftiMasker, or MultiNiftiMasker, optional
         Mask to be used on data. If an instance of masker is passed,
@@ -1078,9 +1069,7 @@ class FREMRegressor(_BaseDecoder):
     %(memory)s
     %(memory_level)s
     %(n_jobs)s
-        Default=1.
-    %(verbose)s
-        Default=0.
+    %(verbose0)s
 
     References
     ----------
@@ -1129,10 +1118,9 @@ class FREMClassifier(_BaseDecoder):
     Parameters
     -----------
     estimator : str, optional
-        The estimator to choose among: 'svc', 'svc_l2', 'svc_l1', 'logistic',
-        'logistic_l1', 'logistic_l2' and 'ridge_classifier'. Note that
-        'svc' and 'svc_l2'; 'logistic' and 'logistic_l2' correspond to the same
-        estimator. Default 'svc'.
+        The estimator to choose among:
+        %(classifier_options)s
+        Default 'svc'.
 
     mask : filename, Nifti1Image, NiftiMasker, or MultiNiftiMasker, optional
         Mask to be used on data. If an instance of masker is passed,
@@ -1202,9 +1190,7 @@ class FREMClassifier(_BaseDecoder):
     %(memory)s
     %(memory_level)s
     %(n_jobs)s
-        Default=1.
-    %(verbose)s
-        Default=0.
+    %(verbose0)s
 
     References
     ----------

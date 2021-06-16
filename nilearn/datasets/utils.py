@@ -143,7 +143,6 @@ def _chunk_read_(response, local_file, chunk_size=8192, report_hook=None,
     total_size : int, optional
         Expected final size of download (None means it is unknown).
     %(verbose)s
-        Default=1.
 
     Returns
     -------
@@ -247,7 +246,6 @@ def _get_dataset_dir(dataset_name, data_dir=None, default_paths=None,
         Default system paths in which the dataset may already have been
         installed by a third party software. They will be checked first.
     %(verbose)s
-        Default=1.
 
     Returns
     -------
@@ -322,7 +320,6 @@ def _uncompress_file(file_, delete_archive=True, verbose=1):
         Wheteher or not to delete archive once it is uncompressed.
         Default=True.
     %(verbose)s
-        Default=1.
 
     Notes
     -----
@@ -506,7 +503,6 @@ def _fetch_file(url, data_dir, resume=True, overwrite=False,
     password : string, optional
         Password used for basic HTTP authentication.
     %(verbose)s
-        Default=1.
     session : requests.Session, optional
         Session to use to send requests.
 
@@ -694,7 +690,6 @@ def _fetch_files(data_dir, files, resume=True, verbose=1, session=None):
             * 'overwrite' if the file should be re-downloaded even if it exists
     %(resume)s
     %(verbose)s
-        Default=1.
     session : `requests.Session`, optional
         Session to use to send requests.
 
@@ -874,7 +869,6 @@ def make_fresh_openneuro_dataset_urls_index(
         Dataset version name. Assumes it is of the form [name]_[version].
         Default is `ds000030_R1.0.4`.
     %(verbose)s
-        Default=1.
 
     Returns
     -------

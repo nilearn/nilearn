@@ -352,7 +352,6 @@ def path_scores(solver, X, y, mask, alphas, l1_ratios, train, test,
         are used, regardless of the number of voxels.
         Default=20.
     %(verbose)s
-        Default=1.
 
     """
     if l1_ratios is None:
@@ -555,11 +554,9 @@ class BaseSpaceNet(LinearRegression, CacheMixin):
     tol : float, optional (default 5e-4)
         Defines the tolerance for convergence for the backend FISTA solver.
     %(verbose)s
-        Default=1.
     %(n_jobs)s
-        Default=1.
     %(memory)s
-    %(memory_level)s
+    %(memory_level1)s
     cv : int, a cv generator instance, or None (default 8)
         The input specifying which cross-validation generator to use.
         It can be an integer, in which case it is the number of folds in a
@@ -1026,11 +1023,9 @@ class SpaceNetClassifier(BaseSpaceNet):
     tol : float
         Defines the tolerance for convergence. Defaults to 1e-4.
     %(verbose)s
-        Default=1.
     %(n_jobs)s
-        Default=1.
     %(memory)s
-    %(memory_level)s
+    %(memory_level1)s
     cv : int, a cv generator instance, or None (default 8)
         The input specifying which cross-validation generator to use.
         It can be an integer, in which case it is the number of folds in a
@@ -1233,11 +1228,9 @@ class SpaceNetRegressor(BaseSpaceNet):
     tol : float
         Defines the tolerance for convergence. Defaults to 1e-4.
     %(verbose)s
-        Default=1.
     %(n_jobs)s
-        Default=1.
     %(memory)s
-    %(memory_level)s
+    %(memory_level1)s
     cv : int, a cv generator instance, or None (default 8)
         The input specifying which cross-validation generator to use.
         It can be an integer, in which case it is the number of folds in a

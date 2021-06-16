@@ -67,10 +67,8 @@ def search_light(X, y, estimator, A, groups=None, scoring=None,
         A cross-validation generator. If None, a 3-fold cross
         validation is used or 3-fold stratified cross-validation
         when y is supplied.
-    %(n_jobs)s
-        Default=-1.
-    %(verbose)s
-        Default=0.
+    %(n_jobs_all)s
+    %(verbose0)s
 
     Returns
     -------
@@ -101,8 +99,6 @@ class GroupIterator(object):
     n_features : int
         Total number of features
     %(n_jobs)s
-    n_jobs : int, optional
-        Defaut=1.
 
     """
     def __init__(self, n_features, n_jobs=1):
@@ -217,7 +213,6 @@ class SearchLight(BaseEstimator):
     estimator : 'svr', 'svc', or an estimator object implementing 'fit'
         The object to use to fit the data
     %(n_jobs)s
-        Default=1.
     scoring : string or callable, optional
         The scoring strategy to use. See the scikit-learn documentation
         If callable, takes as arguments the fitted estimator, the
@@ -228,8 +223,7 @@ class SearchLight(BaseEstimator):
         A cross-validation generator. If None, a 3-fold cross
         validation is used or 3-fold stratified cross-validation
         when y is supplied.
-    %(verbose)s
-        Default=0.
+    %(verbose0)s
 
     Notes
     ------
