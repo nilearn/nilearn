@@ -16,9 +16,12 @@ import sys
 docdict = dict()
 
 # Verbose
-docdict['verbose'] = """
+verbose = """
 verbose : int, optional
-    Verbosity level (0 means no message)."""
+    Verbosity level (0 means no message).
+    Default={}."""
+docdict['verbose'] = verbose.format(1)
+docdict['verbose0'] = verbose.format(0)
 
 # Resume
 docdict['resume'] = """
@@ -48,11 +51,13 @@ smoothing_fwhm : float, optional.
     Default=None."""
 
 # Standardize
-docdict['standardize'] = """
+standardize = """
 standardize : bool, optional.
     If standardize is True, the data are centered and normed:
     their variance is put to 1 in the time dimension.
-    Default=True."""
+    Default={}."""
+docdict['standardize'] = standardize.format('True')
+docdict['standardize_false'] = standardize.format('False')
 
 # Target_affine
 docdict['target_affine'] = """
@@ -99,17 +104,110 @@ memory : instance of joblib.Memory or str
     path to the caching directory."""
 
 # Memory_level
-docdict['memory_level'] = """
+memory_level = """
 memory_level: int, optional.
     Rough estimator of the amount of memory used by caching. Higher value
     means more memory for caching.
-    Default=0."""
+    Default={}."""
+docdict['memory_level'] = memory_level.format(0)
+docdict['memory_level1'] = memory_level.format(1)
 
 # n_jobs
-docdict['n_jobs'] = """
+n_jobs = """
 n_jobs : int, optional.
-    The number of CPUs to use to do the computation. -1 means 'all CPUs'.."""
+    The number of CPUs to use to do the computation. -1 means 'all CPUs'.
+    Default={}."""
+docdict['n_jobs'] = n_jobs.format("1")
+docdict['n_jobs_all'] = n_jobs.format("-1")
 
+# fsaverage options
+docdict['fsaverage_options'] = """
+
+        - 'fsaverage3': the low-resolution fsaverage3 mesh (642 nodes)
+        - 'fsaverage4': the low-resolution fsaverage4 mesh (2562 nodes)
+        - 'fsaverage5': the low-resolution fsaverage5 mesh (10242 nodes)
+        - 'fsaverage5_sphere': the low-resolution fsaverage5 spheres
+
+            .. deprecated:: 0.8.0
+                This option has been deprecated and will be removed in v0.9.0.
+                fsaverage5 sphere coordinates can now be accessed through
+                attributes sphere_{left, right} using mesh='fsaverage5'
+
+        - 'fsaverage6': the medium-resolution fsaverage6 mesh (40962 nodes)
+        - 'fsaverage7': same as 'fsaverage'
+        - 'fsaverage': the high-resolution fsaverage mesh (163842 nodes)
+
+            .. note::
+                The high-resolution fsaverage will result in more computation
+                time and memory usage
+
+"""
+
+# Classifiers
+docdict['classifier_options'] = """
+
+        - `svc`: `Linear support vector classifier <https://scikit-learn.org/stable/modules/generated/sklearn.svm.SVC.html>`_ with L2 penalty.
+            .. code-block:: python
+
+                svc = LinearSVC(penalty='l2', max_iter=1e4)
+
+        - `svc_l2`: `Linear support vector classifier <https://scikit-learn.org/stable/modules/generated/sklearn.svm.SVC.html>`_ with L2 penalty.
+            .. note::
+                Same as option `svc`.
+
+        - `svc_l1`: `Linear support vector classifier <https://scikit-learn.org/stable/modules/generated/sklearn.svm.SVC.html>`_ with L1 penalty.
+            .. code-block:: python
+
+                svc_l1 = LinearSVC(penalty='l1', dual=False, max_iter=1e4)
+
+        - `logistic`: `Logistic regression <https://scikit-learn.org/stable/modules/generated/sklearn.linear_model.LogisticRegression.html>`_ with L2 penalty.
+            .. code-block:: python
+
+                logistic = LogisticRegression(penalty='l2',solver='liblinear')
+
+        - `logistic_l1`: `Logistic regression <https://scikit-learn.org/stable/modules/generated/sklearn.linear_model.LogisticRegression.html>`_ with L1 penalty.
+            .. code-block:: python
+
+                logistic_l1 = LogisticRegression(penalty='l1', solver='liblinear')
+
+        - `logistic_l2`: `Logistic regression <https://scikit-learn.org/stable/modules/generated/sklearn.linear_model.LogisticRegression.html>`_ with L2 penalty
+            .. note::
+                Same as option `logistic`.
+
+        - `ridge_classifier`: `Ridge classifier <https://scikit-learn.org/stable/modules/generated/sklearn.linear_model.RidgeClassifierCV.html>`_.
+            .. code-block:: python
+
+                ridge_classifier = RidgeClassifierCV()
+
+        - `dummy_classifier`: `Dummy classifier <https://scikit-learn.org/stable/modules/generated/sklearn.dummy.DummyClassifier.html>`_ with stratified strategy.
+            .. code-block:: python
+
+                dummy = DummyClassifier(strategy='stratified', random_state=0)
+
+"""
+
+docdict['regressor_options'] = """
+
+        - `ridge`: `Ridge regression <https://scikit-learn.org/stable/modules/generated/sklearn.linear_model.RidgeCV.html>`_.
+            .. code-block:: python
+
+                ridge = RidgeCV()
+
+        - `ridge_regressor`: `Ridge regression <https://scikit-learn.org/stable/modules/generated/sklearn.linear_model.RidgeCV.html>`_.
+            .. note::
+                Same option as `ridge`.
+
+        - `svr`: `Support vector regression <https://scikit-learn.org/stable/modules/generated/sklearn.svm.SVR.html>`_.
+            .. code-block:: python
+
+                svr = SVR(kernel='linear', max_iter=1e4)
+
+        - `dummy_regressor`: `Dummy regressor <https://scikit-learn.org/stable/modules/generated/sklearn.dummy.DummyRegressor.html>`_.
+            .. code-block:: python
+
+                dummy = DummyRegressor(strategy='mean')
+
+"""
 
 docdict_indented = {}
 
