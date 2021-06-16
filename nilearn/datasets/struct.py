@@ -215,8 +215,8 @@ def load_mni152_brain_mask(resolution=2, threshold=0.2):
         re-sampled with the specified resolution.
 
     threshold : float, optional
-        The parameter which amounts to include the values in the mask image.
-        Values lying above this threshold will be included. Default=0.2
+        Values of the MNI152 T1 template above this threshold will be included.
+        Default=0.2
 
     Returns
     -------
@@ -253,8 +253,8 @@ def load_mni152_gm_mask(resolution=2, threshold=0.2, n_iter=2):
         re-sampled with the specified resolution.
 
     threshold : float, optional
-        The parameter which amounts to include the values in the mask image.
-        Values lying above this threshold will be included. Default=0.2
+        Values of the gray-matter MNI152 template above this threshold will be
+        included. Default=0.2
 
     n_iter: int, optional, Default = 2
         Number of repetitions of dilation and erosion steps performed in
@@ -290,8 +290,8 @@ def load_mni152_wm_mask(resolution=2, threshold=0.2, n_iter=2):
         re-sampled with the specified resolution.
 
     threshold : float, optional
-        Thresolding parameter used to binarize the mask image.
-        Values lying above this threshold will be included. Default=0.2
+        Values of the white-matter MNI152 template above this threshold will be
+        included. Default=0.2
 
     n_iter: int, optional, Default = 2
         Number of repetitions of dilation and erosion steps performed in
@@ -328,8 +328,8 @@ def fetch_icbm152_brain_gm_mask(data_dir=None, threshold=0.2, resume=True,
         location. Defaults to None.
 
     threshold : float, optional
-        The parameter which amounts to include the values in the mask image.
-        Values lying above this threshold will be included. Default=0.2
+        Values of the ICBM152 gray-matter template above this threshold will be
+        included. Default=0.2
 
     resume : bool, optional
         If True, try resuming partially downloaded data.
