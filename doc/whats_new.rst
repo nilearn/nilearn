@@ -102,9 +102,8 @@ Enhancements
   changed from array([[-2., 0., 0., 90.], [0., 2., 0., -126.],
   [0., 0., 2., -72.], [0., 0., 0., 1.]]) to array([[1., 0., 0., -98.],
   [0., 1., 0., -134.], [0., 0., 1., -72.], [0., 0., 0., 1.]]). Additionally,
-  the new template has also been rescaled; whereas the old one contained int16
-  floats varying between 0 and 8339, the new one contains floats varying between
-  0. and 1.
+  the new template has also been rescaled; whereas the old one varied between
+  0 and 8339, the new one varies between 0 and 255.
 - :func:`nilearn.datasets.load_mni152_brain_mask` accepts now the parameter
   resolution, which will set the resolution of the template used for the
   masking.
