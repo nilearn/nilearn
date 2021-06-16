@@ -387,7 +387,7 @@ class NiftiSpheresMasker(BaseMasker, CacheMixin):
             This parameter is passed to signal.clean.
             shape: (number of scans - number of volumes removed, )
 
-                .. versionadded:: 0.7.2
+                .. versionadded:: 0.8.0
 
         Returns
         -------

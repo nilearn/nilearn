@@ -150,7 +150,7 @@ class BaseMasker(BaseEstimator, TransformerMixin, CacheMixin):
             (remove volumes with high motion) and/or non-steady-state volumes.
             This parameter is passed to signal.clean.
 
-                .. versionadded:: 0.7.2
+                .. versionadded:: 0.8.0
 
         copy : Boolean, optional
             Indicates whether a copy is returned or not. Default=True.
@@ -185,7 +185,7 @@ class BaseMasker(BaseEstimator, TransformerMixin, CacheMixin):
             (remove volumes with high motion) and/or non-steady-state volumes.
             This parameter is passed to signal.clean.
 
-                .. versionadded:: 0.7.2
+                .. versionadded:: 0.8.0
 
         Returns
         -------
@@ -236,7 +236,7 @@ class BaseMasker(BaseEstimator, TransformerMixin, CacheMixin):
             List of sample_mask (1D arrays) if scrubbing motion outliers.
             Must be of same length than imgs_list.
 
-                .. versionadded:: 0.7.2
+                .. versionadded:: 0.8.0
 
         Returns
         -------
