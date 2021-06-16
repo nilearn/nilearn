@@ -128,13 +128,15 @@ def load_mni152_template(resolution=2):
     """
 
     brain_template = check_niimg(MNI152_FILE_PATH)
+    new_brain_template = new_img_like(
+        brain_template, get_data(brain_template).astype('uint16'))
 
     # Change the resolution of the template
     if resolution != 1:
-        brain_template = resampling.resample_img(brain_template,
-                                                 np.eye(3) * resolution)
+        new_brain_template = resampling.resample_img(new_brain_template,
+                                                     np.eye(3) * resolution)
 
-    return brain_template
+    return new_brain_template
 
 
 def load_mni152_gm_template(resolution=2):
@@ -158,13 +160,15 @@ def load_mni152_gm_template(resolution=2):
     """
 
     gm_template = check_niimg(GM_MNI152_FILE_PATH)
+    new_gm_template = new_img_like(
+        gm_template, get_data(gm_template).astype('uint16'))
 
     # Change the resolution of the template
     if resolution != 1:
-        gm_template = resampling.resample_img(gm_template,
-                                              np.eye(3) * resolution)
+        new_gm_template = resampling.resample_img(new_gm_template,
+                                                  np.eye(3) * resolution)
 
-    return gm_template
+    return new_gm_template
 
 
 def load_mni152_wm_template(resolution=2):
@@ -188,13 +192,15 @@ def load_mni152_wm_template(resolution=2):
     """
 
     wm_template = check_niimg(WM_MNI152_FILE_PATH)
+    new_wm_template = new_img_like(
+        wm_template, get_data(wm_template).astype('uint16'))
 
     # Change the resolution of the template
     if resolution != 1:
-        wm_template = resampling.resample_img(wm_template,
-                                              np.eye(3) * resolution)
+        new_wm_template = resampling.resample_img(new_wm_template,
+                                                  np.eye(3) * resolution)
 
-    return wm_template
+    return new_wm_template
 
 
 def load_mni152_brain_mask(resolution=2, threshold=0.2):
