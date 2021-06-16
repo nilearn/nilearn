@@ -144,76 +144,98 @@ docdict['fsaverage_options'] = """
 """
 
 # Classifiers
-docdict['classifier_options'] = """
+base_url = "https://scikit-learn.org/stable/modules/generated/sklearn"
+svc = "Linear support vector classifier"
+logistic = "Logistic regression"
+rc = "Ridge classifier"
+dc = "Dummy classifier with stratified strategy"
+SKLEARN_LINKS = {
+    'svc': f"{base_url}.svm.SVC.html",
+    'logistic': f"{base_url}.linear_model.LogisticRegression.html",
+    'ridge_classifier': f"{base_url}.linear_model.RidgeClassifierCV.html",
+    'dummy_classifier': f"{base_url}.dummy.DummyClassifier.html",
+    'ridge': f"{base_url}.linear_model.RidgeCV.html",
+    'svr': f"{base_url}.svm.SVR.html",
+    'dummy_regressor': f"{base_url}.dummy.DummyRegressor.html",
+}
 
-        - `svc`: `Linear support vector classifier <https://scikit-learn.org/stable/modules/generated/sklearn.svm.SVC.html>`_ with L2 penalty.
+docdict['classifier_options'] = f"""
+
+        - `svc`: `{svc} <%(svc)s>`_ with L2 penalty.
             .. code-block:: python
 
-                svc = LinearSVC(penalty='l2', max_iter=1e4)
+                svc = LinearSVC(penalty='l2',
+                                max_iter=1e4)
 
-        - `svc_l2`: `Linear support vector classifier <https://scikit-learn.org/stable/modules/generated/sklearn.svm.SVC.html>`_ with L2 penalty.
+        - `svc_l2`: `{svc} <%(svc)s>`_ with L2 penalty.
             .. note::
                 Same as option `svc`.
 
-        - `svc_l1`: `Linear support vector classifier <https://scikit-learn.org/stable/modules/generated/sklearn.svm.SVC.html>`_ with L1 penalty.
+        - `svc_l1`: `{svc} <%(svc)s>`_ with L1 penalty.
             .. code-block:: python
 
-                svc_l1 = LinearSVC(penalty='l1', dual=False, max_iter=1e4)
+                svc_l1 = LinearSVC(penalty='l1',
+                                   dual=False,
+                                   max_iter=1e4)
 
-        - `logistic`: `Logistic regression <https://scikit-learn.org/stable/modules/generated/sklearn.linear_model.LogisticRegression.html>`_ with L2 penalty.
+        - `logistic`: `{logistic} <%(logistic)s>`_ with L2 penalty.
             .. code-block:: python
 
-                logistic = LogisticRegression(penalty='l2',solver='liblinear')
+                logistic = LogisticRegression(penalty='l2',
+                                              solver='liblinear')
 
-        - `logistic_l1`: `Logistic regression <https://scikit-learn.org/stable/modules/generated/sklearn.linear_model.LogisticRegression.html>`_ with L1 penalty.
+        - `logistic_l1`: `{logistic} <%(logistic)s>`_ with L1 penalty.
             .. code-block:: python
 
-                logistic_l1 = LogisticRegression(penalty='l1', solver='liblinear')
+                logistic_l1 = LogisticRegression(penalty='l1',
+                                                 solver='liblinear')
 
-        - `logistic_l2`: `Logistic regression <https://scikit-learn.org/stable/modules/generated/sklearn.linear_model.LogisticRegression.html>`_ with L2 penalty
+        - `logistic_l2`: `{logistic} <%(logistic)s>`_ with L2 penalty
             .. note::
                 Same as option `logistic`.
 
-        - `ridge_classifier`: `Ridge classifier <https://scikit-learn.org/stable/modules/generated/sklearn.linear_model.RidgeClassifierCV.html>`_.
+        - `ridge_classifier`: `{rc} <%(ridge_classifier)s>`_.
             .. code-block:: python
 
                 ridge_classifier = RidgeClassifierCV()
 
-        - `dummy_classifier`: `Dummy classifier <https://scikit-learn.org/stable/modules/generated/sklearn.dummy.DummyClassifier.html>`_ with stratified strategy.
+        - `dummy_classifier`: `{dc} <%(dummy_classifier)s>`_.
             .. code-block:: python
 
-                dummy = DummyClassifier(strategy='stratified', random_state=0)
+                dummy = DummyClassifier(strategy='stratified',
+                                        random_state=0)
 
-"""
+""" % SKLEARN_LINKS
 
 docdict['regressor_options'] = """
 
-        - `ridge`: `Ridge regression <https://scikit-learn.org/stable/modules/generated/sklearn.linear_model.RidgeCV.html>`_.
+        - `ridge`: `Ridge regression <%(ridge)s>`_.
             .. code-block:: python
 
                 ridge = RidgeCV()
 
-        - `ridge_regressor`: `Ridge regression <https://scikit-learn.org/stable/modules/generated/sklearn.linear_model.RidgeCV.html>`_.
+        - `ridge_regressor`: `Ridge regression <%(ridge)s>`_.
             .. note::
                 Same option as `ridge`.
 
-        - `svr`: `Support vector regression <https://scikit-learn.org/stable/modules/generated/sklearn.svm.SVR.html>`_.
+        - `svr`: `Support vector regression <%(svr)s>`_.
             .. code-block:: python
 
-                svr = SVR(kernel='linear', max_iter=1e4)
+                svr = SVR(kernel='linear',
+                          max_iter=1e4)
 
-        - `dummy_regressor`: `Dummy regressor <https://scikit-learn.org/stable/modules/generated/sklearn.dummy.DummyRegressor.html>`_.
+        - `dummy_regressor`: `Dummy regressor <%(dummy_regressor)s>`_.
             .. code-block:: python
 
                 dummy = DummyRegressor(strategy='mean')
 
-"""
+""" % SKLEARN_LINKS
 
 docdict_indented = {}
 
 
 def _indentcount_lines(lines):
-    """Minimum indent for all lines in line list
+    """Minimum indent for all lines in line list.
 
     >>> lines = [' one', '  two', '   three']
     >>> _indentcount_lines(lines)
