@@ -567,7 +567,7 @@ def _merge_labels_juelich(atlas_data, names):
     new_names = [names[0]]
     for label, name in zip(labels[1:], names[1:]):
         if name.endswith('R') or name.endswith('L'):
-            name = name.rsplit(" ", 1)[0]
+            name = name[:-2]
         if name not in new_names:
             new_names.append(name)
         new_atlas_data[atlas_data == label] = new_names.index(name)
