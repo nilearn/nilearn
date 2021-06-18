@@ -361,9 +361,9 @@ def fetch_atlas_harvard_oxford(atlas_name, data_dir=None,
         data_dir=data_dir,
         resume=resume,
         verbose=verbose)
-    if not symmetric_split:
-        return Bunch(maps=atlas_img, labels=names)
     atlas_niimg = check_niimg(atlas_img)
+    if not symmetric_split:
+        return Bunch(maps=atlas_niimg, labels=names)
     if lateralized:
         return Bunch(maps=atlas_niimg, labels=names)
     atlas_data = get_data(atlas_niimg)
@@ -458,8 +458,8 @@ def fetch_atlas_juelich(atlas_name, data_dir=None,
 
     if not symmetric_split:
         if is_probabilistic:
-            new_atlas_data, new_names = _merge_probabilistic_maps_juelich(atlas_data,
-                                                                          names)
+            new_atlas_data, new_names = _merge_probabilistic_maps_juelich(
+                atlas_data, names)
         else:
             new_atlas_data, new_names = _merge_labels_juelich(atlas_data,
                                                               names)
@@ -538,18 +538,18 @@ def _merge_probabilistic_maps_juelich(atlas_data, names):
     new_names = np.unique([name[:-2] if name.endswith(' L')
                            or name.endswith(' R') else name for name in names])
     new_atlas_data = np.zeros((*atlas_data.shape[:3],
-                               len(new_names)-1))
-    for i,name in enumerate(new_names):
+                               len(new_names) - 1))
+    for i, name in enumerate(new_names):
         if name != "Background":
             # If the name has no R or L, then simply copy the map
             if name in names:
-                idx = names.index(name) - 1 # -1 because of background
-                new_atlas_data[...,(i-1)] = atlas_data[...,idx]
+                idx = names.index(name) - 1  # -1 because of background
+                new_atlas_data[..., (i - 1)] = atlas_data[..., idx]
             # otherwise, merge the maps
             else:
                 idx_l = names.index(name + ' L') - 1
                 idx_r = names.index(name + ' R') - 1
-                new_atlas_data[...,(i-1)] = atlas_data[...,idx_l] + atlas_data[...,idx_r]
+                new_atlas_data[..., (i - 1)] = atlas_data[..., [idx_l, idx_r]]
     return new_atlas_data, new_names
 
 
@@ -562,7 +562,6 @@ def _merge_labels_juelich(atlas_data, names):
     if atlas_data.ndim != 3:
         raise ValueError("Expected a 3D atlas here.")
     labels = np.unique(atlas_data)
-    new_label = 1
     new_atlas_data = atlas_data.copy()
     new_names = [names[0]]
     for label, name in zip(labels[1:], names[1:]):
@@ -596,7 +595,7 @@ def _compute_symmetric_split(source, atlas_data, names):
                 names[idx] = names[idx].rsplit(" ", 1)[0] + ", right part"
 
     new_label = 0
-    new_atlas_data = atlas_data.copy()
+    new_atlas = atlas_data.copy()
     # Assumes that the background label is zero.
     new_names = [names[0]]
     for label, name in zip(labels[1:], names[1:]):
@@ -606,7 +605,7 @@ def _compute_symmetric_split(source, atlas_data, names):
         n_elements = float(left_elements + right_elements)
         if (left_elements / n_elements < 0.05
                 or right_elements / n_elements < 0.05):
-            new_atlas[atlas == label] = new_label
+            new_atlas[atlas_data == label] = new_label
             new_names.append(name)
             continue
         new_atlas[right_atlas == label] = new_label
