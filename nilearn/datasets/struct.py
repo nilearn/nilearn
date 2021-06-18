@@ -1,6 +1,8 @@
 """
 Downloading NeuroImaging datasets: structural datasets
 """
+# Authors: Ana Luisa Pinho, Nicolas Gensollen, Jerome Dockes, Bertrand Thirion
+# License: simplified BSD
 import warnings
 import os
 from pathlib import Path
@@ -30,20 +32,26 @@ FSAVERAGE5_PATH = os.path.join(_package_directory, "data", "fsaverage5")
 
 def fetch_icbm152_2009(data_dir=None, url=None, resume=True, verbose=1):
     """Download and load the ICBM152 template (dated 2009).
+
     For more information, see :footcite:`FONOV2011313`,
     :footcite:`Fonov2009`, and :footcite:`Collins1999algorithm`.
+
     Parameters
     ----------
     data_dir : string, optional
         Path of the data directory. Used to force data storage in a non-
         standard location. Default: None (meaning: default)
+
     url : string, optional
         Download URL of the dataset. Overwrite the default URL.
+
     resume : bool, optional
         If True, try resuming partially downloaded data.
         Default=True.
+
     verbose : int, optional
         Verbosity level (0 means no message). Default=1.
+
     Returns
     -------
     data : sklearn.datasets.base.Bunch
@@ -55,15 +63,19 @@ def fetch_icbm152_2009(data_dir=None, url=None, resume=True, verbose=1):
         white matter and cerebrospinal fluid. Values are file paths.
         "eye_mask", "face_mask", "mask": use these images to mask out
         parts of mri images. Values are file paths.
+
     References
     ----------
     .. footbibliography::
+
     Notes
     -----
     For more information about this dataset's structure:
     http://www.bic.mni.mcgill.ca/ServicesAtlases/ICBM152NLin2009
+
     The original download URL is
     http://www.bic.mni.mcgill.ca/~vfonov/icbm/2009/mni_icbm152_nlin_sym_09a_nifti.zip
+
     """
     if url is None:
         # The URL can be retrieved from the nilearn account on OSF (Open
@@ -116,6 +128,8 @@ def load_mni152_template(resolution=2):
         If resolution is different from 1, the template is re-sampled with the
         specified resolution.
 
+        .. versionadded:: 0.8.1
+
     Returns
     -------
     mni152_template : Nifti1Image, image representing the re-sampled
@@ -144,7 +158,7 @@ def load_mni152_gm_template(resolution=2):
     gray-matter MNI152 template, originally distributed with FSL, and
     re-samples it using a different resolution, if specified.
 
-    .. versionadded:: 0.8.0
+    .. versionadded:: 0.8.1
 
     Parameters
     ----------
@@ -176,7 +190,7 @@ def load_mni152_wm_template(resolution=2):
     white-matter MNI152 template, originally distributed with FSL, and
     re-samples it using a different resolution, if specified.
 
-    .. versionadded:: 0.8.0
+    .. versionadded:: 0.8.1
 
     Parameters
     ----------
@@ -206,13 +220,15 @@ def load_mni152_wm_template(resolution=2):
 def load_mni152_brain_mask(resolution=2, threshold=0.2):
     """Load mask from the whole-brain MNI152 T1 template.
 
-    .. versionadded:: 0.8.0
+    .. versionadded:: 0.2.5
 
     Parameters
     ----------
     resolution: int, optional, Default = 2
         If resolution is different from 1, the template loaded is first
         re-sampled with the specified resolution.
+
+        .. versionadded:: 0.8.1
 
     threshold : float, optional
         Values of the MNI152 T1 template above this threshold will be included.
@@ -244,7 +260,7 @@ def load_mni152_brain_mask(resolution=2, threshold=0.2):
 def load_mni152_gm_mask(resolution=2, threshold=0.2, n_iter=2):
     """Load mask from the gray-matter MNI152 template.
 
-    .. versionadded:: 0.8.0
+    .. versionadded:: 0.8.1
 
     Parameters
     ----------
@@ -281,7 +297,7 @@ def load_mni152_gm_mask(resolution=2, threshold=0.2, n_iter=2):
 def load_mni152_wm_mask(resolution=2, threshold=0.2, n_iter=2):
     """Load mask from the white-matter MNI152 template.
 
-    .. versionadded:: 0.8.0
+    .. versionadded:: 0.8.1
 
     Parameters
     ----------
@@ -319,7 +335,7 @@ def fetch_icbm152_brain_gm_mask(data_dir=None, threshold=0.2, resume=True,
                                 n_iter=2, verbose=1):
     """Downloads ICBM152 template first, then loads the 'gm' mask.
 
-    .. versionadded:: 0.8.0
+    .. versionadded:: 0.2.5
 
     Parameters
     ----------
@@ -338,6 +354,8 @@ def fetch_icbm152_brain_gm_mask(data_dir=None, threshold=0.2, resume=True,
     n_iter: int, optional, Default = 2
         Number of repetitions of dilation and erosion steps performed in
         scipy.ndimage.binary_closing function.
+
+        .. versionadded:: 0.8.1
 
     verbose : int, optional
         Verbosity level (0 means no message). Default=1.

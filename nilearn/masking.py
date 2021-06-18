@@ -615,6 +615,7 @@ def compute_brain_mask(target_img, threshold=.5, connected=True, opening=2,
         Type of mask to be computed: 'whole-brain', 'gray-matter' ('gm') or
         'white-matter' ('wm'). Default = 'whole-brain'
 
+        .. versionadded:: 0.8.1
 
     Returns
     -------
@@ -654,7 +655,7 @@ def compute_brain_mask(target_img, threshold=.5, connected=True, opening=2,
 
 @deprecated("Function 'compute_multi_gray_matter_mask' has been renamed to "
             "'compute_multi_brain_mask' and 'compute_multi_gray_matter_mask' "
-            "will be removed in release 0.9.0.")
+            "will be removed in release 0.10.0")
 def compute_multi_gray_matter_mask(target_imgs, threshold=.5,
                                    connected=True, opening=2,
                                    memory=None, verbose=0, n_jobs=1, **kwargs):
@@ -727,6 +728,8 @@ def compute_multi_brain_mask(target_imgs, threshold=.5, connected=True,
     a list of images.
     The gray matter part is calculated through the resampling of MNI152
     template gray matter mask onto the target image
+
+    .. versionadded:: 0.8.1
 
     Parameters
     ----------
