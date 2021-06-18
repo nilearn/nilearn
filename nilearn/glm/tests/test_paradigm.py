@@ -129,9 +129,8 @@ def test_check_events():
 
     # Modulation is provided
     events['modulation'] = np.ones(len(events))
-    with pytest.warns(UserWarning,
-                      match="'modulation' column found in the given events data."):
-        check_events(events)
+    _, _, _, mod = check_events(events)
+    assert_array_equal(mod, events['modulation'])
 
     # An unexpected field is provided
     events = events.drop(columns=['modulation'])

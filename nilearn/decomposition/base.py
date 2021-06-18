@@ -424,6 +424,15 @@ class BaseDecomposition(BaseEstimator, CacheMixin, TransformerMixin):
             n_jobs=self.n_jobs)
         self._raw_fit(data)
 
+        # Create and fit NiftiMapsMasker for transform
+        # and inverse_transform
+        self.nifti_maps_masker_ = NiftiMapsMasker(
+            self.components_img_,
+            self.masker_.mask_img_,
+            resampling_target='maps')
+
+        self.nifti_maps_masker_.fit()
+
         return self
 
     def _check_components_(self):
@@ -455,15 +464,10 @@ class BaseDecomposition(BaseEstimator, CacheMixin, TransformerMixin):
         """
 
         self._check_components_()
-        components_img_ = self.masker_.inverse_transform(self.components_)
-        nifti_maps_masker = NiftiMapsMasker(
-            components_img_, self.masker_.mask_img_,
-            resampling_target='maps')
-        nifti_maps_masker.fit()
         # XXX: dealing properly with 4D/ list of 4D data?
         if confounds is None:
             confounds = [None] * len(imgs)
-        return [nifti_maps_masker.transform(img, confounds=confound)
+        return [self.nifti_maps_masker_.transform(img, confounds=confound)
                 for img, confound in zip(imgs, confounds)]
 
     def inverse_transform(self, loadings):
@@ -486,13 +490,8 @@ class BaseDecomposition(BaseEstimator, CacheMixin, TransformerMixin):
                        'because fit has not been called or because'
                        '_DecompositionEstimator has directly been used')
         self._check_components_()
-        components_img_ = self.masker_.inverse_transform(self.components_)
-        nifti_maps_masker = NiftiMapsMasker(
-            components_img_, self.masker_.mask_img_,
-            resampling_target='maps')
-        nifti_maps_masker.fit()
         # XXX: dealing properly with 2D/ list of 2D data?
-        return [nifti_maps_masker.inverse_transform(loading)
+        return [self.nifti_maps_masker_.inverse_transform(loading)
                 for loading in loadings]
 
     def _sort_by_score(self, data):

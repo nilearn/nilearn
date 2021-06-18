@@ -152,12 +152,15 @@ class DictLearning(BaseDecomposition):
     `components_` : 2D numpy array (n_components x n-voxels)
         Masked dictionary components extracted from the input images.
 
-        Deprecated since version 0.4.1. Use `components_img_` instead
+        .. note::
+
+            Use attribute `components_img_` rather than manually unmasking
+            `components_` with `masker_` attribute.
 
     `components_img_` : 4D Nifti image
         4D image giving the extracted components. Each 3D image is a component.
 
-        New in version 0.4.1.
+        .. versionadded:: 0.4.1
 
     `masker_` : instance of MultiNiftiMasker
         Masker used to filter and mask data as first step. If an instance of

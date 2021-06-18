@@ -25,7 +25,8 @@ FSAVERAGE5_PATH = os.path.join(_package_directory, "data", "fsaverage5")
 def fetch_icbm152_2009(data_dir=None, url=None, resume=True, verbose=1):
     """Download and load the ICBM152 template (dated 2009).
 
-    For more information, see [1]_, [2]_, and [3]_.
+    For more information, see :footcite:`FONOV2011313`,
+    :footcite:`Fonov2009`, and :footcite:`Collins1999algorithm`.
 
     Parameters
     ----------
@@ -57,18 +58,7 @@ def fetch_icbm152_2009(data_dir=None, url=None, resume=True, verbose=1):
 
     References
     ----------
-    .. [1] VS Fonov, AC Evans, K Botteron, CR Almli, RC McKinstry, DL Collins
-       and BDCG, "Unbiased average age-appropriate atlases for pediatric studies",
-       NeuroImage,Volume 54, Issue 1, January 2011
-
-    .. [2] VS Fonov, AC Evans, RC McKinstry, CR Almli and DL Collins,
-       "Unbiased nonlinear average age-appropriate brain templates from birth
-       to adulthood", NeuroImage, Volume 47, Supplement 1, July 2009, Page S102
-       Organization for Human Brain Mapping 2009 Annual Meeting.
-
-    .. [3] DL Collins, AP Zijdenbos, WFC Baare and AC Evans,
-       "ANIMAL+INSECT: Improved Cortical Structure Segmentation",
-       IPMI Lecture Notes in Computer Science, 1999, Volume 1613/1999, 210-223
+    .. footbibliography::
 
     Notes
     -----
@@ -120,7 +110,8 @@ def load_mni152_template():
     """Load skullstripped 2mm version of the MNI152 originally distributed
     with FSL.
 
-    For more information, see [1]_ and [2]_.
+    For more information, see :footcite:`FONOV2011313`,
+    and :footcite:`Fonov2009`.
 
     Returns
     -------
@@ -128,15 +119,7 @@ def load_mni152_template():
 
     References
     ----------
-    .. [1] VS Fonov, AC Evans, K Botteron, CR Almli, RC McKinstry, DL Collins and
-       BDCG, Unbiased average age-appropriate atlases for pediatric studies,
-       NeuroImage, Volume 54, Issue 1, January 2011, ISSN 1053-8119, DOI:
-       10.1016/j.neuroimage.2010.07.033
-
-    .. [2] VS Fonov, AC Evans, RC McKinstry, CR Almli and DL Collins, Unbiased
-       nonlinear average age-appropriate brain templates from birth to adulthood,
-       NeuroImage, Volume 47, Supplement 1, July 2009, Page S102 Organization for
-       Human Brain Mapping 2009 Annual Meeting, DOI: 10.1016/S1053-8119(09)70884-5
+    .. footbibliography::
 
     """
     return check_niimg(MNI152_FILE_PATH)
@@ -235,7 +218,8 @@ def fetch_oasis_vbm(n_subjects=None, dartel_version=True, data_dir=None,
                     url=None, resume=True, verbose=1):
     """Download and load Oasis "cross-sectional MRI" dataset (416 subjects).
 
-    For more information, see [1]_ and [2]_.
+    For more information, see :footcite:`OASISbrain`,
+    and :footcite:`Marcus2007OASIS`.
 
     Parameters
     ----------
@@ -277,11 +261,7 @@ def fetch_oasis_vbm(n_subjects=None, dartel_version=True, data_dir=None,
 
     References
     ----------
-    .. [1] http://www.oasis-brains.org/
-
-    .. [2] Open Access Series of Imaging Studies (OASIS): Cross-sectional MRI
-       Data in Young, Middle Aged, Nondemented, and Demented Older Adults.
-       Marcus, D. S and al., 2007, Journal of Cognitive Neuroscience.
+    .. footbibliography::
 
     Notes
     -----
@@ -451,15 +431,24 @@ def fetch_oasis_vbm(n_subjects=None, dartel_version=True, data_dir=None,
 
 def fetch_surf_fsaverage(mesh='fsaverage5', data_dir=None):
     """Download a Freesurfer fsaverage surface.
-    See [1]_.
+    File names are subject to change and only attribute names
+    are guaranteed to be stable across nilearn versions.
+    See :footcite:`Fischl1999neurons`.
 
     Parameters
     ----------
     mesh : str, optional
         Which mesh to fetch. Default='fsaverage5'.
 
+        - 'fsaverage3': the low-resolution fsaverage3 mesh (642 nodes)
+        - 'fsaverage4': the low-resolution fsaverage4 mesh (2562 nodes)
         - 'fsaverage5': the low-resolution fsaverage5 mesh (10242 nodes)
-        - 'fsaverage5_sphere': the low-resolution fsaverage5 spheres (10242 nodes)
+        - 'fsaverage5_sphere': this option has been deprecated
+            and will be removed in v0.9.0.
+            fsaverage5 sphere coordinates can now be accessed through
+            attributes sphere_{left, right} using mesh='fsaverage5'
+        - 'fsaverage6': the medium-resolution fsaverage6 mesh (40962 nodes)
+        - 'fsaverage7': same as 'fsaverage'
         - 'fsaverage': the high-resolution fsaverage mesh (163842 nodes)
             (high-resolution fsaverage will result in more computation time and memory usage)
 
@@ -471,55 +460,67 @@ def fetch_surf_fsaverage(mesh='fsaverage5', data_dir=None):
     -------
     data : sklearn.datasets.base.Bunch
         Dictionary-like object, the interest attributes are :
+         - 'area_left': Gifti file, left hemisphere area data
+         - 'area_right': Gifti file, right hemisphere area data
+         - 'curv_left': Gifti file, left hemisphere curvature data
+         - 'curv_right': Gifti file, right hemisphere curvature data
          - 'pial_left': Gifti file, left hemisphere pial surface mesh
          - 'pial_right': Gifti file, right hemisphere pial surface mesh
          - 'infl_left': Gifti file, left hemisphere inflated pial surface mesh
          - 'infl_right': Gifti file, right hemisphere inflated pial
                          surface mesh
+         - 'sphere_left': Gifti file, left hemisphere sphere surface mesh
+         - 'sphere_right': Gifti file, right hemisphere sphere surface mesh
          - 'sulc_left': Gifti file, left hemisphere sulcal depth data
          - 'sulc_right': Gifti file, right hemisphere sulcal depth data
+         - 'thick_left': Gifti file, left hemisphere cortical thickness data
+         - 'thick_right': Gifti file, right hemisphere cortical thickness data
+         - 'white_left': Gifti file, left hemisphere white surface mesh
+         - 'white_right': Gifti file, right hemisphere white surface mesh
 
     References
     ----------
-    .. [1] Fischl et al, (1999). High-resolution intersubject averaging and a
-       coordinate system for the cortical surface. Hum Brain Mapp 8, 272-284.
+    .. footbibliography::
 
     """
-    meshes = {'fsaverage5': _fetch_surf_fsaverage5,
-              'fsaverage5_sphere': _fetch_surf_fsaverage5_sphere,
-              'fsaverage': _fetch_surf_fsaverage}
-    if mesh not in meshes:
+    available_meshes = [
+        "fsaverage3", "fsaverage4", "fsaverage5", "fsaverage5_sphere",
+        "fsaverage6", "fsaverage7", "fsaverage",
+    ]
+
+    # Call a dataset loader depending on the value of mesh
+    if (
+        mesh == "fsaverage3"
+        or mesh == "fsaverage4"
+        or mesh == "fsaverage6"
+        or mesh == "fsaverage7"
+        or mesh == "fsaverage"
+    ):
+        # rename mesh to "fsaverage" to download it once
+        # regardless of whether mesh equals "fsaverage" or "fsaverage7"
+        if mesh == "fsaverage7":
+            mesh = "fsaverage"
+
+        return _fetch_surf_fsaverage(mesh, data_dir=data_dir)
+    elif mesh == "fsaverage5":
+        return _fetch_surf_fsaverage5()
+    elif mesh == "fsaverage5_sphere":
+        warnings.warn(
+            "mesh='fsaverage5_sphere' has been deprecated "
+            "and will be removed in v0.9.0.\n"
+            "fsaverage5 sphere coordinates can now be accessed through "
+            "attributes sphere_{left, right} using mesh='fsaverage5'"
+        )
+        return _fetch_surf_fsaverage5()
+    else:
         raise ValueError(
             "'mesh' should be one of {}; {!r} was provided".format(
-                list(meshes.keys()), mesh))
-    return meshes[mesh](data_dir=data_dir)
+                available_meshes, mesh
+            )
+        )
 
 
-def _fetch_surf_fsaverage(data_dir=None):
-    """Helper function to ship fsaverage (highest resolution) surfaces
-    and sulcal information with Nilearn.
-
-    The source of the data is downloaded from nitrc.
-
-    """
-    dataset_dir = _get_dataset_dir('fsaverage', data_dir=data_dir)
-    url = "https://www.nitrc.org/frs/download.php/11807/fsaverage.tar.gz"
-    file_names = ["{}_{}".format(part, hemi)
-                  for part in ["pial", "sulc", "white", "inflated"]
-                  for hemi in ["left", "right"]]
-    _fetch_files(dataset_dir,
-                 [(os.path.join("fsaverage", "{}.gii".format(name)), url,
-                   {"uncompress": True})
-                  for name in file_names])
-    result = {
-        name.replace("inflated", "infl"): os.path.join(
-            dataset_dir, "fsaverage", '{}.gii'.format(name))
-        for name in file_names}
-    result['description'] = str(_get_dataset_descr('fsaverage'))
-    return Bunch(**result)
-
-
-def _fetch_surf_fsaverage5(data_dir=None, url=None, resume=True, verbose=1):
+def _fetch_surf_fsaverage5():
     """Helper function to ship fsaverage5 surfaces and sulcal information
     with Nilearn.
 
@@ -529,36 +530,64 @@ def _fetch_surf_fsaverage5(data_dir=None, url=None, resume=True, verbose=1):
     Shipping is done with Nilearn based on issue #1705.
 
     """
-    data = {"description": _get_dataset_descr("fsaverage5")}
     data_dir = Path(FSAVERAGE5_PATH)
-    for hemi in ["left", "right"]:
-        for part in ["white", "sulc", "pial", "infl"]:
-            data["{}_{}".format(part, hemi)] = str(
-                data_dir / "{}.{}.gii.gz".format(
-                    {"infl": "pial_inflated"}.get(part, part), hemi))
+
+    data = {
+        "{}_{}".format(part, hemi): str(
+            data_dir / "{}_{}.gii.gz".format(part, hemi)
+        )
+        for part in [
+            "area", "curv", "infl", "pial",
+            "sphere", "sulc", "thick", "white"
+        ]
+        for hemi in ["left", "right"]
+    }
+    data["description"] = _get_dataset_descr("fsaverage5")
+
     return Bunch(**data)
 
 
-def _fetch_surf_fsaverage5_sphere(data_dir=None):
-    """Helper function to ship fsaverage5 spherical meshes.
+def _fetch_surf_fsaverage(dataset_name, data_dir=None):
+    """Helper function to ship fsaverage{3,4,6,7} meshes.
 
     These meshes can be used for visualization purposes, but also to run
     cortical surface-based searchlight decoding.
 
     The source of the data is downloaded from OSF.
-
     """
-    fsaverage_dir = _get_dataset_dir('fsaverage', data_dir=data_dir)
-    dataset_dir = _get_dataset_dir('fsaverage5_sphere', data_dir=fsaverage_dir)
-    url = 'https://osf.io/b79fy/download'
+    dataset_dir = _get_dataset_dir(dataset_name, data_dir=data_dir)
     opts = {'uncompress': True}
-    names = ['sphere_right', 'sphere_left']
-    filenames = [('{}.gii'.format(name), url, opts)
-                 for name in names]
-    _fetch_files(dataset_dir, filenames)
-    result = {
-        name: os.path.join(dataset_dir, '{}.gii'.format(name))
-        for name in names}
 
-    result['description'] = str(_get_dataset_descr('fsaverage5_sphere'))
+    url = {
+        "fsaverage3": "https://osf.io/asvjk/download",
+        "fsaverage4": "https://osf.io/x2j49/download",
+        "fsaverage6": "https://osf.io/um5ag/download",
+        "fsaverage": "https://osf.io/q7a5k/download",  # fsaverage7
+    }[dataset_name]
+
+    # List of attributes exposed by the dataset
+    dataset_attributes = [
+        "{}_{}".format(part, hemi)
+        for part in [
+            "area", "curv", "infl", "pial",
+            "sphere", "sulc", "thick", "white"
+        ]
+        for hemi in ["left", "right"]
+    ]
+
+    # Note that the file names match the attribute's
+    _fetch_files(
+        dataset_dir,
+        [
+            ("{}.gii.gz".format(attribute), url, opts)
+            for attribute in dataset_attributes
+        ]
+    )
+
+    result = {
+        attribute: os.path.join(dataset_dir, "{}.gii.gz".format(attribute))
+        for attribute in dataset_attributes
+    }
+    result["description"] = str(_get_dataset_descr(dataset_name))
+
     return Bunch(**result)

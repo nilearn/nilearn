@@ -8,7 +8,7 @@ On Pull Requests, CircleCI run "partial builds" by default which render all the 
 
 Occasionally, some changes necessitate rebuilding the documentation from scratch, for example to see the full effect of the changes. These are called "full builds".
 
-Note that **CircleCI will always run full builds on master.**
+Note that **CircleCI will always run full builds on main.**
 
 You can request a CircleCI full build from a Pull Request at any time by including the tag "[circle full]" in your commit message. Note that this will trigger a full build of the documentation which usually takes around 90 minutes.
 

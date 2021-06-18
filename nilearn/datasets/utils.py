@@ -779,7 +779,7 @@ def _fetch_files(data_dir, files, resume=True, verbose=1, session=None):
                                   verbose=verbose, md5sum=md5sum,
                                   username=opts.get('username', None),
                                   password=opts.get('password', None),
-                                  overwrite=overwrite)
+                                  session=session, overwrite=overwrite)
             if 'move' in opts:
                 # XXX: here, move is supposed to be a dir, it can be a name
                 move = os.path.join(temp_dir, opts['move'])

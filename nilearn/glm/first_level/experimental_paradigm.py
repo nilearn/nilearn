@@ -76,8 +76,8 @@ def check_events(events):
 
     # Handle modulation
     if 'modulation' in events_copy.columns:
-        warnings.warn("'modulation' column found in "
-                      "the given events data.")
+        print("A 'modulation' column was found in "
+              "the given events data and is used.")
     else:
         events_copy['modulation'] = 1
 

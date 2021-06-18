@@ -157,15 +157,44 @@ def test_fetch_icbm152_brain_gm_mask(tmp_path, request_mocker):
     assert isinstance(grey_matter_img, nibabel.Nifti1Image)
 
 
-@pytest.mark.parametrize("mesh", ["fsaverage5", "fsaverage"])
+@pytest.mark.parametrize(
+    "mesh",
+    [
+        "fsaverage3",
+        "fsaverage4",
+        "fsaverage5",
+        "fsaverage6",
+        "fsaverage7",
+        "fsaverage",
+    ]
+)
 def test_fetch_surf_fsaverage(mesh, tmp_path, request_mocker):
-    keys = {'pial_left', 'pial_right', 'infl_left', 'infl_right',
-            'sulc_left', 'sulc_right', 'white_left', 'white_right'}
-    request_mocker.url_mapping["*fsaverage.tar.gz"] = list_to_archive(
-        [Path("fsaverage") / "{}.gii".format(k.replace("infl", "inflated")) for
-         k in keys])
+    # Define attribute list that nilearn meshs should contain
+    # (each attribute should eventually map to a _.gii.gz file
+    # named after the attribute)
+    mesh_attributes = {
+        "{}_{}".format(part, side)
+        for part in [
+            "area", "curv", "infl", "pial",
+            "sphere", "sulc", "thick", "white"
+        ]
+        for side in ["left", "right"]
+    }
+
+    # Mock fsaverage3, 4, 6, 7 download (with actual url)
+    fs_urls = [
+        "https://osf.io/asvjk/download",
+        "https://osf.io/x2j49/download",
+        "https://osf.io/um5ag/download",
+        "https://osf.io/q7a5k/download",
+    ]
+    for fs_url in fs_urls:
+        request_mocker.url_mapping[fs_url] = list_to_archive(
+            ["{}.gii.gz".format(name) for name in mesh_attributes]
+        )
+
     dataset = struct.fetch_surf_fsaverage(mesh, data_dir=str(tmp_path))
-    assert keys.issubset(set(dataset.keys()))
+    assert mesh_attributes.issubset(set(dataset.keys()))
     assert dataset.description != ''
 
 

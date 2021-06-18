@@ -2314,7 +2314,8 @@ def fetch_neurovault(
     skimmed through the whole database or until an (optional) maximum
     number of images to fetch has been reached.
 
-    For more information, see [1]_ and [2]_.
+    For more information, see :footcite:`Gorgolewski2015neurovault`,
+    and :footcite:`yarkoni2011large`.
 
     Parameters
     ----------
@@ -2452,17 +2453,7 @@ def fetch_neurovault(
 
     References
     ----------
-    .. [1] Gorgolewski KJ, Varoquaux G, Rivera G, Schwartz Y, Ghosh SS,
-       Maumet C, Sochat VV, Nichols TE, Poldrack RA, Poline J-B,
-       Yarkoni T and Margulies DS (2015) NeuroVault.org: a web-based
-       repository for collecting and sharing unthresholded
-       statistical maps of the human brain. Front. Neuroinform. 9:8.
-       doi: 10.3389/fninf.2015.00008
-
-    .. [2] Yarkoni, Tal, Russell A. Poldrack, Thomas E. Nichols, David
-       C. Van Essen, and Tor D. Wager. "Large-scale automated synthesis
-       of human functional neuroimaging data." Nature methods 8, no. 8
-       (2011): 665-670.
+    .. footbibliography::
 
     Examples
     --------
@@ -2528,7 +2519,8 @@ def fetch_neurovault_ids(
     This is the fast way to get the data from the server if we already
     know which images or collections we want.
 
-    For more information, see [1]_ and [2]_.
+    For more information, see :footcite:`Gorgolewski2015neurovault`,
+    and :footcite:`yarkoni2011large`.
 
     Parameters
     ----------
@@ -2609,17 +2601,7 @@ def fetch_neurovault_ids(
 
     References
     ----------
-    .. [1] Gorgolewski KJ, Varoquaux G, Rivera G, Schwartz Y, Ghosh SS,
-       Maumet C, Sochat VV, Nichols TE, Poldrack RA, Poline J-B,
-       Yarkoni T and Margulies DS (2015) NeuroVault.org: a web-based
-       repository for collecting and sharing unthresholded
-       statistical maps of the human brain. Front. Neuroinform. 9:8.
-       doi: 10.3389/fninf.2015.00008
-
-    .. [2] Yarkoni, Tal, Russell A. Poldrack, Thomas E. Nichols, David
-       C. Van Essen, and Tor D. Wager. "Large-scale automated synthesis
-       of human functional neuroimaging data." Nature methods 8, no. 8
-       (2011): 665-670.
+    .. footbibliography::
 
     """
     return _fetch_neurovault_implementation(
