@@ -229,29 +229,27 @@ class NiftiMapsMasker(BaseMasker, CacheMixin):
                     img = image.index_img(img, dim[-1] // 2)
                 # Find the cut coordinates
                 cut_coords = [plotting.find_xyz_cut_coords(
-                                image.index_img(maps_image, i))
-                                for i in range(n_maps)]
+                    image.index_img(
+                        maps_image, i)) for i in range(n_maps)]
                 displays = [plotting.plot_img(img,
-                                                   cut_coords=cut_coords[component],
-                                                   black_bg=False,
-                                                   cmap='CMRmap_r') 
-                                    for component in range(n_maps)]
-                for i,d in enumerate(displays):
+                                              cut_coords=cut_coords[component],
+                                              black_bg=False,
+                                              cmap='CMRmap_r')
+                            for component in range(n_maps)]
+                for i, d in enumerate(displays):
                     d.add_overlay(image.index_img(maps_image, i),
-                                    cmap=plotting.cm.black_blue)
+                                  cmap=plotting.cm.black_blue)
                 return displays
             else:
                 msg = ("No image provided to fit in NiftiMapsMasker. "
                        "Plotting only spatial maps for reporting.")
                 warnings.warn(msg)
                 self._report_content['warning_message'] = msg
-                displays = [plotting.plot_stat_map(
-                                image.index_img(maps_image, component)) 
-                                    for component in range(n_maps)]
+                displays = [plotting.plot_stat_map(image.index_img(
+                    maps_image, component)) for component in range(n_maps)]
                 return displays
         else:
             return [None]
-
 
     def fit(self, imgs=None, y=None):
         """Prepare signal extraction from regions.
