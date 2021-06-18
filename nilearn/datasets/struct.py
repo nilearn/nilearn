@@ -59,7 +59,7 @@ def fetch_icbm152_2009(data_dir=None, url=None, resume=True, verbose=1):
         "t1", "t2", "t2_relax", "pd": anatomical images obtained with the
         given modality (resp. T1, T2, T2 relaxometry and proton
         density weighted). Values are file paths.
-        "gm", "wm", "csf": segmented images, giving resp. gray matter,
+        "gm", "wm", "csf": segmented images, giving resp. grey matter,
         white matter and cerebrospinal fluid. Values are file paths.
         "eye_mask", "face_mask", "mask": use these images to mask out
         parts of mri images. Values are file paths.
@@ -155,7 +155,7 @@ def load_mni152_template(resolution=2):
 
 def load_mni152_gm_template(resolution=2):
     """This function takes the skullstripped 1mm-resolution version of the
-    gray-matter MNI152 template, originally distributed with FSL, and
+    grey-matter MNI152 template, originally distributed with FSL, and
     re-samples it using a different resolution, if specified.
 
     .. versionadded:: 0.8.1
@@ -169,7 +169,7 @@ def load_mni152_gm_template(resolution=2):
     Returns
     -------
     gm_mni152_template : Nifti1Image, image representing the resampled
-        gray-matter template
+        grey-matter template
 
     """
 
@@ -258,7 +258,7 @@ def load_mni152_brain_mask(resolution=2, threshold=0.2):
 
 
 def load_mni152_gm_mask(resolution=2, threshold=0.2, n_iter=2):
-    """Load mask from the gray-matter MNI152 template.
+    """Load mask from the grey-matter MNI152 template.
 
     .. versionadded:: 0.8.1
 
@@ -269,7 +269,7 @@ def load_mni152_gm_mask(resolution=2, threshold=0.2, n_iter=2):
         re-sampled with the specified resolution.
 
     threshold : float, optional
-        Values of the gray-matter MNI152 template above this threshold will be
+        Values of the grey-matter MNI152 template above this threshold will be
         included. Default=0.2
 
     n_iter: int, optional, Default = 2
@@ -278,7 +278,7 @@ def load_mni152_gm_mask(resolution=2, threshold=0.2, n_iter=2):
 
     Returns
     -------
-    gm_mask_img : Nifti1Image, image corresponding to the gray-matter mask.
+    gm_mask_img : Nifti1Image, image corresponding to the grey-matter mask.
 
     """
     # Load MNI template
@@ -344,7 +344,7 @@ def fetch_icbm152_brain_gm_mask(data_dir=None, threshold=0.2, resume=True,
         location. Defaults to None.
 
     threshold : float, optional
-        Values of the ICBM152 gray-matter template above this threshold will be
+        Values of the ICBM152 grey-matter template above this threshold will be
         included. Default=0.2
 
     resume : bool, optional
@@ -362,7 +362,7 @@ def fetch_icbm152_brain_gm_mask(data_dir=None, threshold=0.2, resume=True,
 
     Returns
     -------
-    gm_mask_img : Nifti1Image, image corresponding to the brain gray matter
+    gm_mask_img : Nifti1Image, image corresponding to the brain grey matter
         from ICBM152 template.
 
     Notes

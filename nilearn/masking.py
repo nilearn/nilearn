@@ -576,7 +576,7 @@ def compute_gray_matter_mask(target_img, threshold=.5,
 
 def compute_brain_mask(target_img, threshold=.5, connected=True, opening=2,
                        memory=None, verbose=0, mask_type='whole-brain'):
-    """Compute the whole-brain, gray-matter or white-matter mask.
+    """Compute the whole-brain, grey-matter or white-matter mask.
     This mask is calculated using MNI152 1mm-resolution template mask onto the
     target image.
 
@@ -612,7 +612,7 @@ def compute_brain_mask(target_img, threshold=.5, connected=True, opening=2,
         more messages
 
     mask_type : {'whole-brain', 'gm', 'wm'}, optional
-        Type of mask to be computed: 'whole-brain', 'gray-matter' ('gm') or
+        Type of mask to be computed: 'whole-brain', 'grey-matter' ('gm') or
         'white-matter' ('wm'). Default = 'whole-brain'
 
         .. versionadded:: 0.8.1
@@ -724,10 +724,9 @@ def compute_multi_gray_matter_mask(target_imgs, threshold=.5,
 def compute_multi_brain_mask(target_imgs, threshold=.5, connected=True,
                              opening=2, memory=None, verbose=0, n_jobs=1,
                              mask='whole-brain', **kwargs):
-    """ Compute a mask corresponding to the gray matter part of the brain for
-    a list of images.
-    The gray matter part is calculated through the resampling of MNI152
-    template gray matter mask onto the target image
+    """ Compute the whole-brain, grey-matter or white-matter mask for a list of
+    images. The mask is calculated through the resampling of the corresponding
+    MNI152 template mask onto the target image.
 
     .. versionadded:: 0.8.1
 
@@ -764,7 +763,7 @@ def compute_multi_brain_mask(target_imgs, threshold=.5, connected=True,
         Argument not used but kept to fit the API
 
     mask: {'whole-brain', 'gm', 'wm'}, optional
-        Type of mask to be computed: 'whole-brain', 'gray-matter' ('gm') or
+        Type of mask to be computed: 'whole-brain', 'grey-matter' ('gm') or
         'white-matter' ('wm'). Default = 'whole-brain'
 
     **kwargs: optional arguments

@@ -5,12 +5,12 @@ NEW
 ---
 
 - :func:`nilearn.datasets.load_mni152_gm_template` takes the skullstripped
-  1mm-resolution version of the gray-matter MNI152 template and re-samples it
+  1mm-resolution version of the grey-matter MNI152 template and re-samples it
   using a different resolution, if specified.
 - :func:`nilearn.datasets.load_mni152_wm_template` takes the skullstripped
   1mm-resolution version of the white-matter MNI152 template and re-samples it
   using a different resolution, if specified.
-- :func:`nilearn.datasets.load_mni152_gm_mask` loads mask from the gray-matter
+- :func:`nilearn.datasets.load_mni152_gm_mask` loads mask from the grey-matter
   MNI152 template.
 - :func:`nilearn.datasets.load_mni152_wm_mask` loads mask from the white-matter
   MNI152 template.
@@ -19,8 +19,8 @@ Fixes
 -----
 
 - :func:`nilearn.masking.compute_multi_brain_mask` has replaced
-  nilearn.masking.compute_multi_gray_matter_mask. A mask parameter has been added;
-  it accepts three types of masks---i.e. whole-brain, gray-matter and
+  nilearn.masking.compute_multi_grey_matter_mask. A mask parameter has been added;
+  it accepts three types of masks---i.e. whole-brain, grey-matter and
   white-matter---following the enhancements made in the function
   :func:`nilearn.masking.compute_brain_mask` in this release.
 
@@ -43,7 +43,7 @@ Enhancements
 - :func:`nilearn.masking.compute_brain_mask` accepts now as input the
   whole-brain, 1mm-resolution, MNI152 T1 template instead of the averaged,
   whole-brain, 2mm-resolution MNI152 T1 template; it also accepts as input the
-  gray-matter and white-matter ICBM152 1mm-resolution templates dated from 2009.
+  grey-matter and white-matter ICBM152 1mm-resolution templates dated from 2009.
 
 Changes
 -------
