@@ -471,7 +471,7 @@ def _interpolation_sampling(images, mesh, affine, kind='auto', radius=3,
 
 @deprecated(("The return value is deprecated and will change to "
              "a Surface object with provided mesh and computed "
-             "texture as arguments in release 0.9."))
+             "texture as arguments in release 0.10.0"))
 def vol_to_surf(img, surf_mesh,
                 radius=3., interpolation='linear', kind='auto',
                 n_samples=None, mask_img=None, inner_mesh=None, depth=None):
@@ -574,10 +574,10 @@ def vol_to_surf(img, surf_mesh,
         If 4D image is provided, a 2d array is returned, where each row
         corresponds to a mesh node.
 
-            .. deprecated:: 0.7.2
+            .. deprecated:: 0.8.1
                 The return value is deprecated and will change
                 from a numpy array to a Surface object with provided
-                mesh and computed texture as arguments in release 0.9.0.
+                mesh and computed texture as arguments in release 0.10.0.
 
     Notes
     -----
@@ -630,7 +630,7 @@ def vol_to_surf(img, surf_mesh,
     are subject to change.
 
     The return value is deprecated and will change to a Surface object
-    with provided mesh and computed texture as arguments in release 0.9.
+    with provided mesh and computed texture as arguments in release 0.10.0.
 
     """
     sampling_schemes = {'linear': _interpolation_sampling,

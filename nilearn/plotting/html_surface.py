@@ -241,7 +241,7 @@ deprecate_separate_mesh_data_view_surf = partial(
     _deprecate_separate_mesh_data, argument="surf_map")
 
 
-@rename_parameters({'bg_map': 'bg_surf'}, '0.9.0')
+@rename_parameters({'bg_map': 'bg_surf'}, '0.10.0')
 @deprecate_separate_mesh_data_view_surf
 def view_surf(surf_mesh, surf_map=None, *, bg_surf=None, threshold=None,
               cmap=cm.cold_hot, black_bg=False, vmax=None, vmin=None,
@@ -253,9 +253,9 @@ def view_surf(surf_mesh, surf_map=None, *, bg_surf=None, threshold=None,
     ----------
     surf_mesh : str or list of two numpy.ndarray or Mesh or Surface
 
-            .. deprecated:: 0.7.2
-                `surf_mesh` is deprecated in 0.7.2 and will be renamed
-                'surface' in 0.9.0.
+            .. deprecated:: 0.8.1
+                `surf_mesh` is deprecated in 0.8.1 and will be renamed
+                'surface' in 0.10.0.
 
         If a Surface-like object is provided instead of a Mesh, `surface.data`
         will overwrite the `surf_map` argument.
@@ -293,8 +293,8 @@ def view_surf(surf_mesh, surf_map=None, *, bg_surf=None, threshold=None,
         .thickness, .area, .curv, .sulc, .annot, .label) or
         a Numpy array
 
-            .. deprecated:: 0.7.2
-                `surf_map` is deprecated in 0.7.2 and will be removed in 0.9.0.
+            .. deprecated:: 0.8.1
+                `surf_map` is deprecated in 0.8.1 and will be removed in 0.10.0.
                 Please use a Surface object to define the map. This will not be
                 used if a Surface is provided as first argument.
 
@@ -303,9 +303,9 @@ def view_surf(surf_mesh, surf_map=None, *, bg_surf=None, threshold=None,
         `surface.data` in greyscale. `bg_surf.data` is most likely a
         sulcal depth map for realistic shading.
 
-        .. versionchanged:: 0.7.2
-            `bg_surf` was introduced in 0.7.2 and replaces `bg_map`.
-            `bg_map` will not be supported after release 0.9.0.
+        .. versionchanged:: 0.8.1
+            `bg_surf` was introduced in 0.8.1 and replaces `bg_map`.
+            `bg_map` will not be supported after release 0.10.0.
 
     threshold : str, number or None, optional
         If None, no thresholding.

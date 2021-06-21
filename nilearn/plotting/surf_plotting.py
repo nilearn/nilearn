@@ -39,7 +39,7 @@ def _deprecate_separate_mesh_data(func, argument):
     texture as multiple arguments in surface related
     functions. The new usage consists in providing a
     single surface object. This new usage will become
-    mandatory in the 0.9 release of Nilearn.
+    mandatory in the 0.10 release of Nilearn.
 
     """
     @wraps(func)
@@ -52,7 +52,7 @@ def _deprecate_separate_mesh_data(func, argument):
                           "to `{}` has been deprecated. You should "
                           "now provide a nilearn Surface object instead. "
                           "The `surf_mesh` arg will be renamed `surface`, "
-                          "and `{}` will be removed in version 0.9.".format(
+                          "and `{}` will be removed in version 0.10.".format(
                               func.__name__, argument),
                           FutureWarning)
             return func(surf_mesh, *args, **kwargs)
@@ -87,7 +87,7 @@ deprecate_separate_mesh_data_plot_surf = partial(
     _deprecate_separate_mesh_data, argument="surf_map")
 
 
-@rename_parameters({'bg_map': 'bg_surf'}, '0.9.0')
+@rename_parameters({'bg_map': 'bg_surf'}, '0.10.0')
 @deprecate_separate_mesh_data_plot_surf
 def plot_surf(surf_mesh, surf_map=None, *, bg_surf=None,
               hemi='left', view='lateral', cmap=None, colorbar=False,
@@ -103,9 +103,9 @@ def plot_surf(surf_mesh, surf_map=None, *, bg_surf=None,
     ----------
     surf_mesh : str or list of two numpy.ndarray or Mesh or Surface
 
-            .. deprecated:: 0.7.2
-                `surf_mesh` is deprecated in 0.7.2 and will be renamed
-                `surface` in 0.9.0. A Surface object will have to be
+            .. deprecated:: 0.8.1
+                `surf_mesh` is deprecated in 0.8.1 and will be renamed
+                `surface` in 0.10.0. A Surface object will have to be
                 provided.
 
         If a Surface-like object is provided instead of a Mesh, `surface.data`
@@ -145,8 +145,8 @@ def plot_surf(surf_mesh, surf_map=None, *, bg_surf=None,
         .thickness, .area, .curv, .sulc, .annot, .label) or
         a Numpy array with a value for each vertex of the surf_mesh.
 
-            .. deprecated:: 0.7.2
-                `surf_map` is deprecated in 0.7.2 and will be removed in 0.9.0.
+            .. deprecated:: 0.8.1
+                `surf_map` is deprecated in 0.8.1 and will be removed in 0.10.0.
                 Please use a Surface object to define the map. Will be ignored
                 if a Surface object is provided as first argument.
 
@@ -155,9 +155,9 @@ def plot_surf(surf_mesh, surf_map=None, *, bg_surf=None,
         `surface.data` in greyscale. `bg_surf.data` is most likely a
         sulcal depth map for realistic shading.
 
-        .. versionchanged:: 0.7.2
-            `bg_surf` was introduced in 0.7.2 and replaces `bg_map`.
-            `bg_map` will not be supported after release 0.9.0.
+        .. versionchanged:: 0.8.1
+            `bg_surf` was introduced in 0.8.1 and replaces `bg_map`.
+            `bg_map` will not be supported after release 0.10.0.
 
     hemi : {'left', 'right'}, optional
         Hemisphere to display. Default='left'.
@@ -543,9 +543,9 @@ def plot_surf_contours(surf_mesh, roi_map, *, axes=None, figure=None,
     ----------
     surf_mesh : str or list of two numpy.ndarray or Mesh or Surface
 
-            .. deprecated:: 0.7.2
-                `surf_mesh` is deprecated in 0.7.2 and will be renamed
-                `surface` in 0.9.0. A Surface object will have to be
+            .. deprecated:: 0.8.1
+                `surf_mesh` is deprecated in 0.8.1 and will be renamed
+                `surface` in 0.10.0. A Surface object will have to be
                 provided.
 
         If a Surface-like object is provided instead of a Mesh, `surface.data`
@@ -587,8 +587,8 @@ def plot_surf_contours(surf_mesh, roi_map, *, axes=None, figure=None,
         The value at each vertex one inside the ROI and zero inside ROI, or an
         integer giving the label number for atlases.
 
-            .. deprecated:: 0.7.2
-                `roi_map` is deprecated in 0.7.2 and will be removed in 0.9.0.
+            .. deprecated:: 0.8.1
+                `roi_map` is deprecated in 0.8.1 and will be removed in 0.10.0.
                 Please use a Surface object to define the map. Will be ignored
                 if a Surface object is provided as first argument.
 
@@ -709,7 +709,7 @@ deprecate_separate_mesh_data_plot_surf_stat_map = partial(
     _deprecate_separate_mesh_data, argument="stat_map")
 
 
-@rename_parameters({'bg_map': 'bg_surf'}, '0.9.0')
+@rename_parameters({'bg_map': 'bg_surf'}, '0.10.0')
 @deprecate_separate_mesh_data_plot_surf_stat_map
 def plot_surf_stat_map(surf_mesh, stat_map, *, bg_surf=None,
                        hemi='left', view='lateral', threshold=None,
@@ -725,9 +725,9 @@ def plot_surf_stat_map(surf_mesh, stat_map, *, bg_surf=None,
     ----------
     surf_mesh : str or list of two numpy.ndarray or Mesh or Surface
 
-            .. deprecated:: 0.7.2
+            .. deprecated:: 0.8.1
                 `surf_mesh` is deprecated and will be renamed
-                `surface` in 0.9.0. A Surface object will have to be
+                `surface` in 0.10.0. A Surface object will have to be
                 provided.
 
         If a Surface-like object is provided instead of a Mesh, `surface.data`
@@ -767,8 +767,8 @@ def plot_surf_stat_map(surf_mesh, stat_map, *, bg_surf=None,
         Freesurfer specific files such as .thickness, .curv, .sulc, .annot,
         .label) or a Numpy array with a value for each vertex of the surf_mesh.
 
-            .. deprecated:: 0.7.2
-                `stat_map` is deprecated in 0.7.2 and will be removed in 0.9.0.
+            .. deprecated:: 0.8.1
+                `stat_map` is deprecated in 0.8.1 and will be removed in 0.10.0.
                 Please use a Surface object to define the map. Will be ignored
                 if a Surface object is provided as first argument.
 
@@ -777,9 +777,9 @@ def plot_surf_stat_map(surf_mesh, stat_map, *, bg_surf=None,
         `surface.data` in greyscale. `bg_surf.data` is most likely a
         sulcal depth map for realistic shading.
 
-        .. versionchanged:: 0.7.2
-            `bg_surf` was introduced in 0.7.2 and replaces `bg_map`.
-            `bg_map` will not be supported after release 0.9.0.
+        .. versionchanged:: 0.8.1
+            `bg_surf` was introduced in 0.8.1 and replaces `bg_map`.
+            `bg_map` will not be supported after release 0.10.0.
 
     hemi : {'left', 'right'}, optional
         Hemispere to display. Default='left'.
@@ -1131,7 +1131,7 @@ deprecate_separate_mesh_data_plot_surf_roi = partial(
     _deprecate_separate_mesh_data, argument="roi_map")
 
 
-@rename_parameters({'bg_map': 'bg_surf'}, '0.9.0')
+@rename_parameters({'bg_map': 'bg_surf'}, '0.10.0')
 @deprecate_separate_mesh_data_plot_surf_roi
 def plot_surf_roi(surf_mesh, roi_map, *, bg_surf=None,
                   hemi='left', view='lateral', threshold=1e-14,
@@ -1146,9 +1146,9 @@ def plot_surf_roi(surf_mesh, roi_map, *, bg_surf=None,
     ----------
     surf_mesh : str or list of two numpy.ndarray or Mesh or Surface
 
-            .. deprecated:: 0.7.2
-                `surf_mesh` is deprecated in 0.7.2 and will be renamed
-                `surface` in 0.9.0. A Surface object will have to be
+            .. deprecated:: 0.8.1
+                `surf_mesh` is deprecated in 0.8.1 and will be renamed
+                `surface` in 0.10.0. A Surface object will have to be
                 provided.
 
         If a Surface-like object is provided instead of a Mesh, `surface.data`
@@ -1190,8 +1190,8 @@ def plot_surf_roi(surf_mesh, roi_map, *, bg_surf=None,
         The value at each vertex one inside the ROI and zero inside ROI, or an
         integer giving the label number for atlases.
 
-            .. deprecated:: 0.7.2
-                `roi_map` is deprecated in 0.7.2 and will be removed in 0.9.0.
+            .. deprecated:: 0.8.1
+                `roi_map` is deprecated in 0.8.1 and will be removed in 0.10.0.
                 Please use a Surface object to define the map. Will be ignored
                 if a Surface object is provided as first argument.
 
@@ -1203,9 +1203,9 @@ def plot_surf_roi(surf_mesh, roi_map, *, bg_surf=None,
         `surface.data` in greyscale. `bg_surf.data` is most likely a
         sulcal depth map for realistic shading.
 
-        .. versionchanged:: 0.7.2
-            `bg_surf` was introduced in 0.7.2 and replaces `bg_map`.
-            `bg_map` will not be supported after release 0.9.0.
+        .. versionchanged:: 0.8.1
+            `bg_surf` was introduced in 0.8.1 and replaces `bg_map`.
+            `bg_map` will not be supported after release 0.10.0.
 
     view : {'lateral', 'medial', 'dorsal', 'ventral', 'anterior', 'posterior'}, optional
         View of the surface that is rendered. Default='lateral'.
