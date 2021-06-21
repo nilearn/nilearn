@@ -146,9 +146,10 @@ def plot_surf(surf_mesh, surf_map=None, *, bg_surf=None,
         a Numpy array with a value for each vertex of the surf_mesh.
 
             .. deprecated:: 0.8.1
-                `surf_map` is deprecated in 0.8.1 and will be removed in 0.10.0.
-                Please use a Surface object to define the map. Will be ignored
-                if a Surface object is provided as first argument.
+                `surf_map` is deprecated in 0.8.1 and will be
+                removed in 0.10.0. Please use a Surface object
+                to define the map. Will be ignored if a Surface
+                object is provided as first argument.
 
     bg_surf : Surface, optional
         Background surface to be plotted on `surface.mesh` underneath
@@ -768,9 +769,10 @@ def plot_surf_stat_map(surf_mesh, stat_map, *, bg_surf=None,
         .label) or a Numpy array with a value for each vertex of the surf_mesh.
 
             .. deprecated:: 0.8.1
-                `stat_map` is deprecated in 0.8.1 and will be removed in 0.10.0.
-                Please use a Surface object to define the map. Will be ignored
-                if a Surface object is provided as first argument.
+                `stat_map` is deprecated in 0.8.1 and will be removed
+                in 0.10.0. Please use a Surface object to define the
+                map. Will be ignored if a Surface object is provided
+                as first argument.
 
     bg_surf : Surface, optional
         Background surface to be plotted on `surface.mesh` underneath

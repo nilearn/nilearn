@@ -294,9 +294,10 @@ def view_surf(surf_mesh, surf_map=None, *, bg_surf=None, threshold=None,
         a Numpy array
 
             .. deprecated:: 0.8.1
-                `surf_map` is deprecated in 0.8.1 and will be removed in 0.10.0.
-                Please use a Surface object to define the map. This will not be
-                used if a Surface is provided as first argument.
+                `surf_map` is deprecated in 0.8.1 and will be
+                removed in 0.10.0. Please use a Surface object
+                to define the map. This will not be used if a
+                Surface is provided as first argument.
 
     bg_surf : Surface, optional
         Background surface to be plotted on `surface.mesh` underneath
