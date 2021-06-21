@@ -14,6 +14,9 @@ NEW
   MNI152 template.
 - :func:`nilearn.datasets.load_mni152_wm_mask` loads mask from the white-matter
   MNI152 template.
+- Meshes and Surfaces are now represented by dedicated objects.
+- :func:`nilearn.surface.load_surface` was added to instanciate a surface object from a mesh
+  and texture data.
 
 Fixes
 -----
@@ -52,6 +55,8 @@ Enhancements
   parameters or common lists of options for example. The standard parts are defined
   in a single location (`nilearn._utils.docs.py`) which makes them easier to
   maintain and update. (See `#2875 <https://github.com/nilearn/nilearn/pull/2875>`_).
+- :func:`nilearn.plotting.plot_surf` and deriving functions like :func:`nilearn.plotting.plot_surf_roi` now take a unique Surface object instead of separate mesh and data. Previous usage with separate mesh and data is now deprecated and will be removed in release 0.9.
+- :func:`nilearn.surface.vol_to_surf` return value will change from a texture array to a Surface object in release 0.9. Using this function currently gives a deprecation message.
 
 Changes
 -------
@@ -109,9 +114,6 @@ NEW
   the provided label image and provide summary statistics on each region (name, volume...).
   If a functional image was provided to fit, the middle image is plotted with the regions
   overlaid as contours. Finally, if a mask is provided, its contours are shown in green.
-- Meshes and Surfaces are now represented by dedicated objects.
-- :func:`nilearn.surface.load_surface` was added to instanciate a surface object from a mesh
-  and texture data.
 
 Fixes
 -----
@@ -169,8 +171,6 @@ Enhancements
 - Fetcher :func:`nilearn.datasets.fetch_surf_fsaverage` now provides
   attributes `{area, curv, sphere, thick}_{left, right}` for all fsaverage
   resolutions.
-- :func:`nilearn.plotting.plot_surf` and deriving functions like :func:`nilearn.plotting.plot_surf_roi` now take a unique Surface object instead of separate mesh and data. Previous usage with separate mesh and data is now deprecated and will be removed in release 0.9.
-- :func:`nilearn.surface.vol_to_surf` return value will change from a texture array to a Surface object in release 0.9. Using this function currently gives a deprecation message.
 
 Changes
 -------
