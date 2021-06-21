@@ -1,6 +1,8 @@
 """
 Test the mask-extracting utilities.
 """
+# Authors: Ana Luisa Pinho, Jerome Dockes, NicolasGensollen
+# License: simplified BSD
 import distutils.version
 import warnings
 import numpy as np
@@ -17,9 +19,10 @@ from nilearn import masking
 from nilearn.image import get_data, high_variance_confounds
 from nilearn.masking import (compute_epi_mask, compute_multi_epi_mask,
                              compute_background_mask, compute_brain_mask,
-                             compute_multi_gray_matter_mask,
+                             compute_multi_brain_mask,
                              unmask, _unmask_3d, _unmask_4d, intersect_masks,
-                             MaskWarning, _extrapolate_out_mask, _unmask_from_to_3d_array)
+                             MaskWarning, _extrapolate_out_mask,
+                             _unmask_from_to_3d_array)
 from nilearn._utils.testing import write_tmp_imgs
 from nilearn._utils.exceptions import DimensionError
 from nilearn.input_data import NiftiMasker
@@ -528,25 +531,47 @@ def test_compute_multi_epi_mask():
     assert_array_equal(mask_ab, get_data(mask_ab_))
 
 
-def test_compute_multi_gray_matter_mask():
-    pytest.raises(TypeError, compute_multi_gray_matter_mask, [])
+def test_compute_multi_brain_mask():
+    pytest.raises(TypeError, compute_multi_brain_mask, [])
 
     # Check error raised if images with different shapes are given as input
     imgs = [Nifti1Image(np.ones((9, 9, 9)), np.eye(4)),
             Nifti1Image(np.ones((9, 9, 8)), np.eye(4))]
-    pytest.raises(ValueError, compute_multi_gray_matter_mask, imgs)
+    pytest.raises(ValueError, compute_multi_brain_mask, imgs)
 
     # Check results are the same if affine is the same
     rng = np.random.RandomState(42)
     imgs1 = [Nifti1Image(rng.standard_normal(size=(9, 9, 9)), np.eye(4)),
              Nifti1Image(rng.standard_normal(size=(9, 9, 9)), np.eye(4))]
-    mask1 = compute_multi_gray_matter_mask(imgs1)
-
     imgs2 = [Nifti1Image(rng.standard_normal(size=(9, 9, 9)), np.eye(4)),
              Nifti1Image(rng.standard_normal(size=(9, 9, 9)), np.eye(4))]
-    mask2 = compute_multi_gray_matter_mask(imgs2)
 
+    # ... for whole-brain mask
+    mask1 = compute_multi_brain_mask(imgs1)
+    mask2 = compute_multi_brain_mask(imgs2)
     assert_array_equal(get_data(mask1), get_data(mask2))
+
+    # ... for grey-matter mask
+    mask3 = compute_multi_brain_mask(imgs1, mask='gm')
+    mask4 = compute_multi_brain_mask(imgs2, mask='gm')
+    assert_array_equal(get_data(mask3), get_data(mask4))
+
+    # ... for white-matter mask
+    mask5 = compute_multi_brain_mask(imgs1, mask='wm')
+    mask6 = compute_multi_brain_mask(imgs2, mask='wm')
+    assert_array_equal(get_data(mask5), get_data(mask6))
+
+
+def test_deprecation_warning_compute_multi_gray_matter_mask():
+    imgs = [Nifti1Image(np.ones((9, 9, 9)), np.eye(4)),
+            Nifti1Image(np.ones((9, 9, 9)), np.eye(4))]
+    if distutils.version.LooseVersion(sklearn.__version__) < '0.22':
+        with pytest.deprecated_call():
+            masking.compute_multi_gray_matter_mask(imgs)
+    else:
+        with pytest.warns(FutureWarning,
+                          match="renamed to 'compute_multi_brain_mask'"):
+            masking.compute_multi_gray_matter_mask(imgs)
 
 
 def test_error_shape(random_state=42, shape=(3, 5, 7, 11)):
