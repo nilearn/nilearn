@@ -307,8 +307,8 @@ def _json_view_size(params):
     return width_view, height_view
 
 
-def _json_view_data(bg_img, stat_map_img, mask_img, bg_min, bg_max, colors,
-                    cmap, colorbar):
+def _json_view_data(bg_img, stat_map_img, mask_img, bg_min, bg_max, black_bg,
+                    colors, cmap, colorbar):
     """Create a json-like viewer object, and populate with base64 data.
     Returns: json_view
 
@@ -320,7 +320,8 @@ def _json_view_data(bg_img, stat_map_img, mask_img, bg_min, bg_max, colors,
     # Create a base64 sprite for the background
     bg_sprite = BytesIO()
     bg_data = _safe_get_data(bg_img, ensure_finite=True)
-    _save_sprite(bg_data, bg_sprite, bg_max, bg_min, None, 'gray', 'png')
+    bg_cmap = 'gray' if black_bg else cmap
+    _save_sprite(bg_data, bg_sprite, bg_max, bg_min, None, bg_cmap, 'png')
     json_view['bg_base64'] = _bytesIO_to_base64(bg_sprite)
 
     # Create a base64 sprite for the stat map
@@ -542,7 +543,7 @@ def view_img(stat_map_img, bg_img='MNI152',
 
     # Now create a json-like object for the viewer, and converts in html
     json_view = _json_view_data(bg_img, stat_map_img, mask_img, bg_min, bg_max,
-                                colors, cmap, colorbar)
+                                black_bg, colors, cmap, colorbar)
 
     json_view['params'] = _json_view_params(
         stat_map_img.shape, stat_map_img.affine, colors['vmin'],
