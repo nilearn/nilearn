@@ -135,6 +135,14 @@ def load_mni152_template(resolution=2):
     mni152_template : Nifti1Image, image representing the re-sampled
         whole-brain template
 
+    See Also
+    --------
+    nilearn.datasets.load_mni152_gm_template : for details about version of the
+        MNI152 grey-matter template.
+
+    nilearn.datasets.load_mni152_wm_template : for details about version of the
+        MNI152 white-matter template.
+
     References
     ----------
     .. footbibliography::
@@ -171,6 +179,14 @@ def load_mni152_gm_template(resolution=2):
     gm_mni152_template : Nifti1Image, image representing the resampled
         grey-matter template
 
+    See Also
+    --------
+    nilearn.datasets.load_mni152_template : for details about version of the
+        MNI152 T1 template.
+
+    nilearn.datasets.load_mni152_wm_template : for details about version of the
+        MNI152 white-matter template.
+
     """
 
     gm_template = check_niimg(GM_MNI152_FILE_PATH)
@@ -202,6 +218,14 @@ def load_mni152_wm_template(resolution=2):
     -------
     wm_mni152_template : Nifti1Image, image representing the resampled
         white-matter template
+
+    See Also
+    --------
+    nilearn.datasets.load_mni152_template : for details about version of the
+        MNI152 T1 template.
+
+    nilearn.datasets.load_mni152_gm_template : for details about version of the
+        MNI152 grey-matter template.
 
     """
 
@@ -241,7 +265,7 @@ def load_mni152_brain_mask(resolution=2, threshold=0.2):
     Notes
     -----
     Refer to load_mni152_template function for more information about the
-    MNI152 T1 template
+    MNI152 T1 template.
 
     See Also
     --------
@@ -280,6 +304,16 @@ def load_mni152_gm_mask(resolution=2, threshold=0.2, n_iter=2):
     -------
     gm_mask_img : Nifti1Image, image corresponding to the grey-matter mask.
 
+    Notes
+    -----
+    Refer to load_mni152_gm_template function for more information about the
+    MNI152 grey-matter template.
+
+    See Also
+    --------
+    nilearn.datasets.load_mni152_gm_template : for details about version of the
+        MNI152 grey-matter template and related.
+
     """
     # Load MNI template
     gm_target = load_mni152_gm_template(resolution=resolution)
@@ -316,6 +350,16 @@ def load_mni152_wm_mask(resolution=2, threshold=0.2, n_iter=2):
     Returns
     -------
     wm_mask_img : Nifti1Image, image corresponding to the white-matter mask.
+
+    Notes
+    -----
+    Refer to load_mni152_gm_template function for more information about the
+    MNI152 white-matter template.
+
+    See Also
+    --------
+    nilearn.datasets.load_mni152_wm_template : for details about version of the
+        MNI152 white-matter template and related.
 
     """
     # Load MNI template
