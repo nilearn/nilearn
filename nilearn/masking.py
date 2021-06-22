@@ -644,8 +644,8 @@ def compute_brain_mask(target_img, threshold=.5, connected=True, opening=2,
 
     mask = (get_data(resampled_template) >= threshold).astype("int8")
 
-    warning_message = mask_type.capitalize() + " mask is empty, " + \
-        "lower the threshold or check your input FOV"
+    warning_message = (f"{mask_type} mask is empty, "
+                       "lower the threshold or check your input FOV")
     mask, affine = _post_process_mask(mask, target_img.affine, opening=opening,
                                       connected=connected,
                                       warning_msg=warning_message)
