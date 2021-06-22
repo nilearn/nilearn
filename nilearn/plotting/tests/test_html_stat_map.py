@@ -259,8 +259,8 @@ def test_json_view_data():
 
     # Build a sprite
     json_view = html_stat_map._json_view_data(
-        bg_img, stat_map_img, mask_img, bg_min=0, bg_max=1, colors=colors,
-        cmap='cold_hot', colorbar=True)
+        bg_img, stat_map_img, mask_img, bg_min=0, bg_max=1, black_bg=False,
+        colors=colors, cmap='cold_hot', colorbar=True)
 
     # Check the presence of critical fields
     assert isinstance(json_view['bg_base64'], str)
