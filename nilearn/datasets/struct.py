@@ -242,7 +242,8 @@ def load_mni152_wm_template(resolution=2):
 
 
 def load_mni152_brain_mask(resolution=2, threshold=0.2):
-    """Load mask from the whole-brain MNI152 T1 template.
+    """Load the whole-brain MNI152 T1 template and threshold it to obtain the
+    corresponding whole-brain mask.
 
     .. versionadded:: 0.2.5
 
@@ -282,7 +283,8 @@ def load_mni152_brain_mask(resolution=2, threshold=0.2):
 
 
 def load_mni152_gm_mask(resolution=2, threshold=0.2, n_iter=2):
-    """Load mask from the grey-matter MNI152 template.
+    """Load the grey-matter MNI152 template and threshold it to obtain the
+    corresponding grey-matter mask.
 
     .. versionadded:: 0.8.1
 
@@ -329,7 +331,8 @@ def load_mni152_gm_mask(resolution=2, threshold=0.2, n_iter=2):
 
 
 def load_mni152_wm_mask(resolution=2, threshold=0.2, n_iter=2):
-    """Load mask from the white-matter MNI152 template.
+    """Load the white-matter MNI152 template and threshold it to obtain the
+    corresponding white-matter mask.
 
     .. versionadded:: 0.8.1
 

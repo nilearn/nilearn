@@ -634,7 +634,8 @@ def compute_brain_mask(target_img, threshold=.5, connected=True, opening=2,
     elif mask_type == 'wm':
         template = load_mni152_wm_template(resolution=1)
     else:
-        raise ValueError("Unknown mask type {}.".format(mask_type))
+        raise ValueError("Unknown mask type {}. Only 'whole-brain', 'gm' or \
+        'wm' are accepted.".format(mask_type))
 
     dtype = img_data_dtype(target_img)
     template = new_img_like(template, get_data(template).astype(dtype))
