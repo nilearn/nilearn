@@ -14,7 +14,7 @@ try:
 except ImportError:
     collect_ignore = ['plotting',
                       'reporting',
-                      ]
+                      'datasets/data/convert_templates.py']
     matplotlib = None
 
 
