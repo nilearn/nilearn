@@ -152,14 +152,14 @@ def load_mni152_template(resolution=2):
     brain_template = check_niimg(MNI152_FILE_PATH)
 
     # Typecasting
-    new_brain_template = new_img_like(
-        brain_template, get_data(brain_template).astype('float64'))
+    brain_data = get_data(brain_template).astype("float32")
 
     # Re-scale template from 0 to 1
-    new_brain_data = get_data(new_brain_template)
-    new_brain_data /= np.max(new_brain_data)
+    brain_data /= brain_data.max()
+    new_brain_template = new_img_like(brain_template, brain_data)
 
-    # Change the resolution of the template or typecast only
+    # Resample template according to the pre-specified resolution, if different
+    # than 1
     if resolution != 1:
         new_brain_template = resampling.resample_img(new_brain_template,
                                                      np.eye(3) * resolution)
@@ -198,14 +198,14 @@ def load_mni152_gm_template(resolution=2):
     gm_template = check_niimg(GM_MNI152_FILE_PATH)
 
     # Typecasting
-    new_gm_template = new_img_like(
-        gm_template, get_data(gm_template).astype('float64'))
+    gm_data = get_data(gm_template).astype("float32")
 
     # Re-scale template from 0 to 1
-    new_gm_data = get_data(new_gm_template)
-    new_gm_data /= np.max(new_gm_data)
+    gm_data /= gm_data.max()
+    new_gm_template = new_img_like(gm_template, gm_data)
 
-    # Change the resolution of the template
+    # Resample template according to the pre-specified resolution, if different
+    # than 1
     if resolution != 1:
         new_gm_template = resampling.resample_img(new_gm_template,
                                                   np.eye(3) * resolution)
@@ -244,14 +244,14 @@ def load_mni152_wm_template(resolution=2):
     wm_template = check_niimg(WM_MNI152_FILE_PATH)
 
     # Typecasting
-    new_wm_template = new_img_like(
-        wm_template, get_data(wm_template).astype('float64'))
+    wm_data = get_data(wm_template).astype("float32")
 
     # Re-scale template from 0 to 1
-    new_wm_data = get_data(new_wm_template)
-    new_wm_data /= np.max(new_wm_data)
+    wm_data /= wm_data.max()
+    new_wm_template = new_img_like(wm_template, wm_data)
 
-    # Change the resolution of the template
+    # Resample template according to the pre-specified resolution, if different
+    # than 1
     if resolution != 1:
         new_wm_template = resampling.resample_img(new_wm_template,
                                                   np.eye(3) * resolution)
@@ -338,7 +338,7 @@ def load_mni152_gm_mask(resolution=2, threshold=0.2, n_iter=2):
     # Load MNI template
     gm_target = load_mni152_gm_template(resolution=resolution)
     gm_target_img = check_niimg(gm_target)
-    gm_target_data = niimg._safe_get_data(gm_target_img)
+    gm_target_data = get_data(gm_target_img)
 
     gm_target_mask = (gm_target_data > threshold).astype("int8")
 
@@ -386,7 +386,7 @@ def load_mni152_wm_mask(resolution=2, threshold=0.2, n_iter=2):
     # Load MNI template
     wm_target = load_mni152_wm_template(resolution=resolution)
     wm_target_img = check_niimg(wm_target)
-    wm_target_data = niimg._safe_get_data(wm_target_img)
+    wm_target_data = get_data(wm_target_img)
 
     wm_target_mask = (wm_target_data > threshold).astype("int8")
 
