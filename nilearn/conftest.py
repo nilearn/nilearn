@@ -9,12 +9,14 @@ from _pytest.doctest import DoctestItem
 from nilearn.datasets._testing import request_mocker  # noqa: F401
 from nilearn.datasets._testing import temp_nilearn_data_dir  # noqa: F401
 
+
+collect_ignore = ["datasets/data/convert_templates.py"]
+
+
 try:
     import matplotlib  # noqa: F401
 except ImportError:
-    collect_ignore = ['plotting',
-                      'reporting',
-                      'datasets/data/convert_templates.py']
+    collect_ignore.extend(['plotting', 'reporting'])
     matplotlib = None
 
 
