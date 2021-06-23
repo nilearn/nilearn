@@ -115,9 +115,9 @@ def fetch_icbm152_2009(data_dir=None, url=None, resume=True, verbose=1):
 
 
 def load_mni152_template(resolution=2):
-    """This function takes the skullstripped 1mm-resolution version of the
-    MNI152 T1 template, originally distributed with FSL, and re-samples it
-    using a different resolution, if specified.
+    """This function takes the skullstripped, re-scaled 1mm-resolution version
+    of the MNI152 T1 template and re-samples it using a different resolution,
+    if specified.
 
     For more information, see :footcite:`FONOV2011313`,
     and :footcite:`Fonov2009`.
@@ -150,10 +150,16 @@ def load_mni152_template(resolution=2):
     """
 
     brain_template = check_niimg(MNI152_FILE_PATH)
-    new_brain_template = new_img_like(
-        brain_template, get_data(brain_template).astype('uint16'))
 
-    # Change the resolution of the template
+    # Typecasting
+    new_brain_template = new_img_like(
+        brain_template, get_data(brain_template).astype('float64'))
+
+    # Re-scale template from 0 to 1
+    new_brain_data = get_data(new_brain_template)
+    new_brain_data /= np.max(new_brain_data)
+
+    # Change the resolution of the template or typecast only
     if resolution != 1:
         new_brain_template = resampling.resample_img(new_brain_template,
                                                      np.eye(3) * resolution)
@@ -162,9 +168,9 @@ def load_mni152_template(resolution=2):
 
 
 def load_mni152_gm_template(resolution=2):
-    """This function takes the skullstripped 1mm-resolution version of the
-    grey-matter MNI152 template, originally distributed with FSL, and
-    re-samples it using a different resolution, if specified.
+    """This function takes the re-scaled 1mm-resolution version of the
+    grey-matter MNI152 template and re-samples it using a different resolution,
+    if specified.
 
     .. versionadded:: 0.8.1
 
@@ -190,8 +196,14 @@ def load_mni152_gm_template(resolution=2):
     """
 
     gm_template = check_niimg(GM_MNI152_FILE_PATH)
+
+    # Typecasting
     new_gm_template = new_img_like(
-        gm_template, get_data(gm_template).astype('uint16'))
+        gm_template, get_data(gm_template).astype('float64'))
+
+    # Re-scale template from 0 to 1
+    new_gm_data = get_data(new_gm_template)
+    new_gm_data /= np.max(new_gm_data)
 
     # Change the resolution of the template
     if resolution != 1:
@@ -202,9 +214,9 @@ def load_mni152_gm_template(resolution=2):
 
 
 def load_mni152_wm_template(resolution=2):
-    """This function takes the skullstripped 1mm-resolution version of the
-    white-matter MNI152 template, originally distributed with FSL, and
-    re-samples it using a different resolution, if specified.
+    """This function takes the re-scaled 1mm-resolution version of the
+    white-matter MNI152 template and re-samples it using a different
+    resolution, if specified.
 
     .. versionadded:: 0.8.1
 
@@ -230,8 +242,14 @@ def load_mni152_wm_template(resolution=2):
     """
 
     wm_template = check_niimg(WM_MNI152_FILE_PATH)
+
+    # Typecasting
     new_wm_template = new_img_like(
-        wm_template, get_data(wm_template).astype('uint16'))
+        wm_template, get_data(wm_template).astype('float64'))
+
+    # Re-scale template from 0 to 1
+    new_wm_data = get_data(new_wm_template)
+    new_wm_data /= np.max(new_wm_data)
 
     # Change the resolution of the template
     if resolution != 1:
