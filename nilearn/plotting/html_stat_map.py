@@ -3,6 +3,7 @@ Visualizing 3D stat maps in a Brainsprite viewer
 """
 import os
 import json
+import copy
 import warnings
 from io import BytesIO
 from base64 import b64encode
@@ -23,6 +24,7 @@ from .._utils.param_validation import check_threshold
 from .._utils.extmath import fast_abs_percentile
 from .._utils.niimg import _safe_get_data
 from ..datasets import load_mni152_template
+from ..masking import compute_brain_mask
 
 
 def _data_to_sprite(data):
@@ -319,9 +321,17 @@ def _json_view_data(bg_img, stat_map_img, mask_img, bg_min, bg_max, black_bg,
 
     # Create a base64 sprite for the background
     bg_sprite = BytesIO()
-    bg_data = _safe_get_data(bg_img, ensure_finite=True)
-    bg_cmap = 'gray' if black_bg else cmap
-    _save_sprite(bg_data, bg_sprite, bg_max, bg_min, None, bg_cmap, 'png')
+    bg_data = _safe_get_data(bg_img, ensure_finite=True).astype(float)
+    bg_mask = _safe_get_data(compute_brain_mask(bg_img),
+                             ensure_finite=True)
+    bg_mask = np.logical_not(bg_mask).astype(float)
+    bg_mask[bg_mask == 1] = np.nan
+    bg_cmap = copy.copy(cmap)
+    if black_bg:
+        bg_cmap.set_bad('black')
+    else:
+        bg_cmap.set_bad('white')
+    _save_sprite(bg_data, bg_sprite, bg_max, bg_min, bg_mask, bg_cmap, 'png')
     json_view['bg_base64'] = _bytesIO_to_base64(bg_sprite)
 
     # Create a base64 sprite for the stat map
