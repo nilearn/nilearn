@@ -9,7 +9,7 @@ from pathlib import Path
 
 import numpy as np
 from scipy import ndimage
-from sklearn.utils import Bunch, deprecated
+from sklearn.utils import Bunch
 
 from .utils import (_get_dataset_dir, _fetch_files, _get_dataset_descr)
 
@@ -114,10 +114,7 @@ def fetch_icbm152_2009(data_dir=None, url=None, resume=True, verbose=1):
     return Bunch(**params)
 
 
-@deprecated("Default value of the resolution parameter in function "
-            "`load_mni152_template` will change from 2mm to 1mm in release "
-            "0.10.0.")
-def load_mni152_template(resolution=2):
+def load_mni152_template(resolution=None):
     """Load the MNI152 skullstripped T1 template.
     This function takes the skullstripped, re-scaled 1mm-resolution version of
     the MNI ICBM152 T1 template and re-samples it using a different resolution,
@@ -153,44 +150,11 @@ def load_mni152_template(resolution=2):
 
     """
 
-    return load_mni152_template(resolution=resolution)
-
-
-def load_mni152_template(resolution=1):
-    """Load the MNI152 skullstripped T1 template.
-    This function takes the skullstripped, re-scaled 1mm-resolution version of
-    the MNI ICBM152 T1 template and re-samples it using a different resolution,
-    if specified.
-
-    For more information, see :footcite:`FONOV2011313`,
-    and :footcite:`Fonov2009`.
-
-    Parameters
-    ----------
-    resolution: int, optional, Default = 1
-        If resolution is different from 1, the template is re-sampled with the
-        specified resolution.
-
-        .. versionadded:: 0.8.1
-
-    Returns
-    -------
-    mni152_template : Nifti1Image, image representing the re-sampled
-        whole-brain template
-
-    See Also
-    --------
-    nilearn.datasets.load_mni152_gm_template : for details about version of the
-        MNI152 grey-matter template.
-
-    nilearn.datasets.load_mni152_wm_template : for details about version of the
-        MNI152 white-matter template.
-
-    References
-    ----------
-    .. footbibliography::
-
-    """
+    if resolution is None:
+        warnings.warn(
+            "Default resolution will change from 2mm to 1mm in version 0.10.0",
+            FutureWarning)
+        resolution = 2
 
     brain_template = check_niimg(MNI152_FILE_PATH)
 
@@ -210,10 +174,7 @@ def load_mni152_template(resolution=1):
     return new_brain_template
 
 
-@deprecated("Default value of the resolution parameter in function "
-            "`load_mni152_gm_template` will change from 2mm to 1mm in release "
-            "0.10.0.")
-def load_mni152_gm_template(resolution=2):
+def load_mni152_gm_template(resolution=None):
     """Load the MNI152 grey-matter template.
     This function takes the re-scaled 1mm-resolution version of the grey-matter
     MNI ICBM152 template and re-samples it using a different resolution,
@@ -242,37 +203,11 @@ def load_mni152_gm_template(resolution=2):
 
     """
 
-    return load_mni152_gm_template(resolution=resolution)
-
-
-def load_mni152_gm_template(resolution=1):
-    """Load the MNI152 grey-matter template.
-    This function takes the re-scaled 1mm-resolution version of the grey-matter
-    MNI ICBM152 template and re-samples it using a different resolution,
-    if specified.
-
-    .. versionadded:: 0.8.1
-
-    Parameters
-    ----------
-    resolution: int, optional, Default = 1
-        If resolution is different from 1, the template is re-sampled with the
-        specified resolution.
-
-    Returns
-    -------
-    gm_mni152_template : Nifti1Image, image representing the resampled
-        grey-matter template
-
-    See Also
-    --------
-    nilearn.datasets.load_mni152_template : for details about version of the
-        MNI152 T1 template.
-
-    nilearn.datasets.load_mni152_wm_template : for details about version of the
-        MNI152 white-matter template.
-
-    """
+    if resolution is None:
+        warnings.warn(
+            "Default resolution will change from 2mm to 1mm in version 0.10.0",
+            FutureWarning)
+        resolution = 2
 
     gm_template = check_niimg(GM_MNI152_FILE_PATH)
 
@@ -292,10 +227,7 @@ def load_mni152_gm_template(resolution=1):
     return new_gm_template
 
 
-@deprecated("Default value of the resolution parameter in function "
-            "`load_mni152_wm_template` will change from 2mm to 1mm in release "
-            "0.10.0.")
-def load_mni152_wm_template(resolution=2):
+def load_mni152_wm_template(resolution=None):
     """Load the MNI152 white-matter template.
     This function takes the re-scaled 1mm-resolution version of the
     white-matter MNI ICBM152 template and re-samples it using a different
@@ -324,37 +256,11 @@ def load_mni152_wm_template(resolution=2):
 
     """
 
-    return load_mni152_wm_template(resolution=resolution)
-
-
-def load_mni152_wm_template(resolution=1):
-    """Load the MNI152 white-matter template.
-    This function takes the re-scaled 1mm-resolution version of the
-    white-matter MNI ICBM152 template and re-samples it using a different
-    resolution, if specified.
-
-    .. versionadded:: 0.8.1
-
-    Parameters
-    ----------
-    resolution: int, optional, Default = 1
-        If resolution is different from 1, the template is re-sampled with the
-        specified resolution.
-
-    Returns
-    -------
-    wm_mni152_template : Nifti1Image, image representing the resampled
-        white-matter template
-
-    See Also
-    --------
-    nilearn.datasets.load_mni152_template : for details about version of the
-        MNI152 T1 template.
-
-    nilearn.datasets.load_mni152_gm_template : for details about version of the
-        MNI152 grey-matter template.
-
-    """
+    if resolution is None:
+        warnings.warn(
+            "Default resolution will change from 2mm to 1mm in version 0.10.0",
+            FutureWarning)
+        resolution = 2
 
     wm_template = check_niimg(WM_MNI152_FILE_PATH)
 
@@ -374,10 +280,7 @@ def load_mni152_wm_template(resolution=1):
     return new_wm_template
 
 
-@deprecated("Default value of the resolution parameter in function "
-            "`load_mni152_brain_mask` will change from 2mm to 1mm in release "
-            "0.10.0.")
-def load_mni152_brain_mask(resolution=2, threshold=0.2):
+def load_mni152_brain_mask(resolution=None, threshold=0.2):
     """Load the MNI152 whole-brain mask.
     This function takes the whole-brain MNI152 T1 template and threshold it,
     in order to obtain the corresponding whole-brain mask.
@@ -412,43 +315,12 @@ def load_mni152_brain_mask(resolution=2, threshold=0.2):
 
     """
 
-    return load_mni152_brain_mask(resolution=resolution, threshold=threshold)
+    if resolution is None:
+        warnings.warn(
+            "Default resolution will change from 2mm to 1mm in version 0.10.0",
+            FutureWarning)
+        resolution = 2
 
-
-def load_mni152_brain_mask(resolution=1, threshold=0.2):
-    """Load the MNI152 whole-brain mask.
-    This function takes the whole-brain MNI152 T1 template and threshold it,
-    in order to obtain the corresponding whole-brain mask.
-
-    .. versionadded:: 0.2.5
-
-    Parameters
-    ----------
-    resolution: int, optional, Default = 1
-        If resolution is different from 1, the template loaded is first
-        re-sampled with the specified resolution.
-
-        .. versionadded:: 0.8.1
-
-    threshold : float, optional
-        Values of the MNI152 T1 template above this threshold will be included.
-        Default=0.2
-
-    Returns
-    -------
-    mask_img : Nifti1Image, image corresponding to the whole-brain mask.
-
-    Notes
-    -----
-    Refer to load_mni152_template function for more information about the
-    MNI152 T1 template.
-
-    See Also
-    --------
-    nilearn.datasets.load_mni152_template : for details about version of the
-        MNI152 T1 template and related.
-
-    """
     # Load MNI template
     target_img = load_mni152_template(resolution=resolution)
     mask_voxels = (get_data(target_img) > threshold).astype("int8")
@@ -457,10 +329,7 @@ def load_mni152_brain_mask(resolution=1, threshold=0.2):
     return mask_img
 
 
-@deprecated("Default value of the resolution parameter in function "
-            "`load_mni152_gm_mask` will change from 2mm to 1mm in release "
-            "0.10.0.")
-def load_mni152_gm_mask(resolution=2, threshold=0.2, n_iter=2):
+def load_mni152_gm_mask(resolution=None, threshold=0.2, n_iter=2):
     """Load the MNI152 grey-matter mask.
     This function takes the grey-matter MNI152 template and threshold it, in
     order to obtain the corresponding grey-matter mask.
@@ -497,46 +366,12 @@ def load_mni152_gm_mask(resolution=2, threshold=0.2, n_iter=2):
 
     """
 
-    return load_mni152_gm_mask(resolution=resolution, threshold=threshold,
-                               n_iter=n_iter)
+    if resolution is None:
+        warnings.warn(
+            "Default resolution will change from 2mm to 1mm in version 0.10.0",
+            FutureWarning)
+        resolution = 2
 
-
-def load_mni152_gm_mask(resolution=1, threshold=0.2, n_iter=2):
-    """Load the MNI152 grey-matter mask.
-    This function takes the grey-matter MNI152 template and threshold it, in
-    order to obtain the corresponding grey-matter mask.
-
-    .. versionadded:: 0.8.1
-
-    Parameters
-    ----------
-    resolution: int, optional, Default = 1
-        If resolution is different from 1, the template loaded is first
-        re-sampled with the specified resolution.
-
-    threshold : float, optional
-        Values of the grey-matter MNI152 template above this threshold will be
-        included. Default=0.2
-
-    n_iter: int, optional, Default = 2
-        Number of repetitions of dilation and erosion steps performed in
-        scipy.ndimage.binary_closing function.
-
-    Returns
-    -------
-    gm_mask_img : Nifti1Image, image corresponding to the grey-matter mask.
-
-    Notes
-    -----
-    Refer to load_mni152_gm_template function for more information about the
-    MNI152 grey-matter template.
-
-    See Also
-    --------
-    nilearn.datasets.load_mni152_gm_template : for details about version of the
-        MNI152 grey-matter template and related.
-
-    """
     # Load MNI template
     gm_target = load_mni152_gm_template(resolution=resolution)
     gm_target_img = check_niimg(gm_target)
@@ -550,10 +385,7 @@ def load_mni152_gm_mask(resolution=1, threshold=0.2, n_iter=2):
     return gm_mask_img
 
 
-@deprecated("Default value of the resolution parameter in function "
-            "`load_mni152_wm_mask` will change from 2mm to 1mm in release "
-            "0.10.0.")
-def load_mni152_wm_mask(resolution=2, threshold=0.2, n_iter=2):
+def load_mni152_wm_mask(resolution=None, threshold=0.2, n_iter=2):
     """Load the MNI152 white-matter mask.
     This function takes the white-matter MNI152 template and threshold it, in
     order to obtain the corresponding white-matter mask.
@@ -590,46 +422,12 @@ def load_mni152_wm_mask(resolution=2, threshold=0.2, n_iter=2):
 
     """
 
-    return load_mni152_wm_mask(resolution=resolution, threshold=threshold,
-                               n_iter=n_iter)
+    if resolution is None:
+        warnings.warn(
+            "Default resolution will change from 2mm to 1mm in version 0.10.0",
+            FutureWarning)
+        resolution = 2
 
-
-def load_mni152_wm_mask(resolution=1, threshold=0.2, n_iter=2):
-    """Load the MNI152 white-matter mask.
-    This function takes the white-matter MNI152 template and threshold it, in
-    order to obtain the corresponding white-matter mask.
-
-    .. versionadded:: 0.8.1
-
-    Parameters
-    ----------
-    resolution: int, optional, Default = 1
-        If resolution is different from 1, the template loaded is first
-        re-sampled with the specified resolution.
-
-    threshold : float, optional
-        Values of the white-matter MNI152 template above this threshold will be
-        included. Default=0.2
-
-    n_iter: int, optional, Default = 2
-        Number of repetitions of dilation and erosion steps performed in
-        scipy.ndimage.binary_closing function.
-
-    Returns
-    -------
-    wm_mask_img : Nifti1Image, image corresponding to the white-matter mask.
-
-    Notes
-    -----
-    Refer to load_mni152_gm_template function for more information about the
-    MNI152 white-matter template.
-
-    See Also
-    --------
-    nilearn.datasets.load_mni152_wm_template : for details about version of the
-        MNI152 white-matter template and related.
-
-    """
     # Load MNI template
     wm_target = load_mni152_wm_template(resolution=resolution)
     wm_target_img = check_niimg(wm_target)
