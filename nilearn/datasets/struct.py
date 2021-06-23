@@ -115,8 +115,9 @@ def fetch_icbm152_2009(data_dir=None, url=None, resume=True, verbose=1):
 
 
 def load_mni152_template(resolution=2):
-    """This function takes the skullstripped, re-scaled 1mm-resolution version
-    of the MNI152 T1 template and re-samples it using a different resolution,
+    """Load the MNI152 skullstripped T1 template.
+    This function takes the skullstripped, re-scaled 1mm-resolution version of
+    the MNI ICBM152 T1 template and re-samples it using a different resolution,
     if specified.
 
     For more information, see :footcite:`FONOV2011313`,
@@ -168,8 +169,9 @@ def load_mni152_template(resolution=2):
 
 
 def load_mni152_gm_template(resolution=2):
-    """This function takes the re-scaled 1mm-resolution version of the
-    grey-matter MNI152 template and re-samples it using a different resolution,
+    """Load the MNI152 grey-matter template.
+    This function takes the re-scaled 1mm-resolution version of the grey-matter
+    MNI ICBM152 template and re-samples it using a different resolution,
     if specified.
 
     .. versionadded:: 0.8.1
@@ -214,8 +216,9 @@ def load_mni152_gm_template(resolution=2):
 
 
 def load_mni152_wm_template(resolution=2):
-    """This function takes the re-scaled 1mm-resolution version of the
-    white-matter MNI152 template and re-samples it using a different
+    """Load the MNI152 white-matter template.
+    This function takes the re-scaled 1mm-resolution version of the
+    white-matter MNI ICBM152 template and re-samples it using a different
     resolution, if specified.
 
     .. versionadded:: 0.8.1
@@ -260,8 +263,9 @@ def load_mni152_wm_template(resolution=2):
 
 
 def load_mni152_brain_mask(resolution=2, threshold=0.2):
-    """Load the whole-brain MNI152 T1 template and threshold it to obtain the
-    corresponding whole-brain mask.
+    """Load the MNI152 whole-brain mask.
+    This function takes the whole-brain MNI152 T1 template and threshold it,
+    in order to obtain the corresponding whole-brain mask.
 
     .. versionadded:: 0.2.5
 
@@ -301,8 +305,9 @@ def load_mni152_brain_mask(resolution=2, threshold=0.2):
 
 
 def load_mni152_gm_mask(resolution=2, threshold=0.2, n_iter=2):
-    """Load the grey-matter MNI152 template and threshold it to obtain the
-    corresponding grey-matter mask.
+    """Load the MNI152 grey-matter mask.
+    This function takes the grey-matter MNI152 template and threshold it, in
+    order to obtain the corresponding grey-matter mask.
 
     .. versionadded:: 0.8.1
 
@@ -349,8 +354,9 @@ def load_mni152_gm_mask(resolution=2, threshold=0.2, n_iter=2):
 
 
 def load_mni152_wm_mask(resolution=2, threshold=0.2, n_iter=2):
-    """Load the white-matter MNI152 template and threshold it to obtain the
-    corresponding white-matter mask.
+    """Load the MNI152 white-matter mask.
+    This function takes the white-matter MNI152 template and threshold it, in
+    order to obtain the corresponding white-matter mask.
 
     .. versionadded:: 0.8.1
 
