@@ -31,14 +31,9 @@ Regression
 
 A :term:`regression` problem is a learning task in which the variable to predict
 --that we often call **y** -- is a continuous value, such as an age.
-Encoding models [1]_ typically call for regressions.
+Encoding models [:footcite:t:`Naselaris2011`] typically call for regressions.
 :class:`nilearn.decoding.DecoderRegressor` implement easy and efficient
 regression pipelines.
-
-.. [1]
-
-   Naselaris et al, Encoding and decoding in fMRI, NeuroImage Encoding
-   and decoding in fMRI.2011 http://www.ncbi.nlm.nih.gov/pubmed/20691790
 
 .. seealso::
 
@@ -123,7 +118,7 @@ through the `estimator` parameter:
 
 * `logistic` (or `logistic_l2`) : The `logistic regression <https://scikit-learn.org/stable/modules/linear_model.html#logistic-regression>`_ with `l2 penalty <https://scikit-learn.org/stable/auto_examples/linear_model/plot_logistic_l1_l2_sparsity.html>`_.
 
-* `logistic_l1` :  The `logistic regression <https://scikit-learn.org/stable/modules/linear_model.html#logistic-regression>_` with `l1 penalty <https://scikit-learn.org/stable/auto_examples/linear_model/plot_logistic_l1_l2_sparsity.html>`_ (**sparse model**).
+* `logistic_l1` :  The `logistic regression <https://scikit-learn.org/stable/modules/linear_model.html#logistic-regression>`_ with `l1 penalty <https://scikit-learn.org/stable/auto_examples/linear_model/plot_logistic_l1_l2_sparsity.html>`_ (**sparse model**).
 
 * `ridge_classifier` : A `Ridge Regression variant
   <https://scikit-learn.org/stable/modules/linear_model.html#ridge-regression-and-classification>`_.
@@ -132,7 +127,7 @@ through the `estimator` parameter:
 
 In :class:`nilearn.decoding.DecoderRegressor` you can use some of these objects counterparts for regression :
 
-* `svr` : `Support vector regression <https://scikit-learn.org/stable/modules/generated/sklearn.svm.SVR.html>`_.`
+* `svr` : `Support vector regression <https://scikit-learn.org/stable/modules/generated/sklearn.svm.SVR.html>`_.
 
 * `ridge_regressor` (same as `ridge`) : `Ridge regression <https://scikit-learn.org/stable/modules/generated/sklearn.linear_model.RidgeCV.html>`_.
 
@@ -252,3 +247,8 @@ models is then used to make predictions.
   * :ref:`SpaceNet <space_net>`, a method promoting sparsity that can also
     give good brain decoding power and improved decoder maps when sparsity
     is important.
+
+References
+==========
+
+.. footbibliography::

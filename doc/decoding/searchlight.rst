@@ -16,24 +16,15 @@ in nilearn with the :class:`SearchLight` estimator.
 Principle of the Searchlight
 ============================
 
-:class:`SearchLight` analysis was introduced in `Information-based functional brain 
-mapping <http://www.pnas.org/content/103/10/3863>`_ (Kriegeskorte et al., 
-2006), and consists of scanning the brain with a *searchlight*. Briefly, a 
-ball of given radius is scanned across the brain volume and the prediction 
-accuracy of a classifier trained on the corresponding :term:`voxels<voxel>` is measured. 
+:class:`SearchLight` analysis was introduced in [:footcite:t:`Kriegeskorte3863`], and consists of scanning the brain with a *searchlight*.
+Briefly, a ball of given radius is scanned across the brain volume and the prediction accuracy of a classifier trained on the corresponding :term:`voxels<voxel>` is measured. 
 
-Searchlights are also not limited to :term:`classification`; 
-:term:`regression` (e.g., `Kahnt et al, 2011
-<https://www.sciencedirect.com/science/article/pii/S0896627311002960?via%3Dihub>`_) 
-and representational similarity analysis (e.g., `Clarke and Tyler, 2014 
-<https://www.jneurosci.org/content/34/14/4766.short>`_) are other uses of 
-searchlights. Currently, only :term:`classification` and :term:`regression`
-are supported in nilearn.
+Searchlights are also not limited to :term:`classification`; :term:`regression` (e.g., [:footcite:t:`KAHNT2011549`]) and representational similarity analysis (e.g., [:footcite:t:`Clarke4766`]) are other uses of searchlights.
+Currently, only :term:`classification` and :term:`regression` are supported in nilearn.
 
 .. topic:: **Further Reading**
     
-    For a critical review on searchlights, see `Etzel et al (2013) 
-    <https://www.sciencedirect.com/science/article/pii/S1053811913002917>`_.
+    For a critical review on searchlights, see [:footcite:t:`ETZEL2013261`].
 
 
 Preparing the data
@@ -120,7 +111,7 @@ for :term:`classification` (i.e. more :term:`voxels<voxel>` are included with la
     of :term:`voxels<voxel>` included in the sphere will therefore depend on the
     :term:`voxel` size. 
 
-    For reference, Kriegskorte et al. use a 4mm radius because it yielded 
+    For reference, [:footcite:t:`Kriegeskorte3863`] use a 4mm radius because it yielded 
     the best detection performance in their simulation of 2mm isovoxel data.
 	
 Visualization
@@ -254,3 +245,8 @@ viewing faces.
 
    All the steps discussed in this section can be seen implemented in
    :ref:`a full code example <sphx_glr_auto_examples_02_decoding_plot_haxby_searchlight.py>`.
+
+References
+==========
+
+.. footbibliography::

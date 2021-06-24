@@ -49,7 +49,7 @@ of cross-validation.
 
 You can change many parameters of the cross_validation here, for example:
 
-* use a different cross-validation scheme, for example :func:`sklearn.model_selection.`LeaveOneGroupOut`.
+* use a different cross-validation scheme, for example :class:`sklearn.model_selection.LeaveOneGroupOut`.
 
 * speed up the computation by using `n_jobs=-1`, which will spread the computation equally across all processors.
 
@@ -72,7 +72,7 @@ Measuring the chance level
 
 **Permutation testing**: A more controlled way, but slower, is to do permutation testing on the labels, with :func:`sklearn.model_selection.permutation_test_score`.
 
-.. topic:: Decoding on simulated data
+.. topic:: **Decoding on simulated data**
 
    Simple simulations may be useful to understand the behavior of a given
    decoder on data. In particular, simulations enable us to set the true
@@ -98,14 +98,11 @@ examples are :
 Decoding without a mask: Anova-SVM using scikit-learn
 ------------------------------------------------------
 
-We can also implement feature selection before decoding as a scikit-learn
-`pipeline`(:class:`sklearn.pipeline.Pipeline`). For this, we need to import
-the :mod:`sklearn.feature_selection` module and use
-:func:`sklearn.feature_selection.f_classif`, a simple F-score
-based feature selection (a.k.a. `Anova <https://en.wikipedia.org/wiki/Analysis_of_variance#The_F-test>`_),
+We can also implement feature selection before decoding as a scikit-learn pipeline (:class:`sklearn.pipeline.Pipeline`).
+For this, we need to import the :mod:`sklearn.feature_selection` module and use :func:`sklearn.feature_selection.f_classif`, a simple F-score based feature selection (a.k.a. `Anova <https://en.wikipedia.org/wiki/Analysis_of_variance#The_F-test>`_),
 
 Using any other model in the pipeline
-------------------------------------------------------
+-------------------------------------
 
 :term:`Anova<ANOVA>` - :term:`SVM` is a good baseline that will give reasonable results
 in common settings. However it may be interesting for you to to explore the
@@ -125,12 +122,11 @@ Scikit-learn usually takes care of the rest for us.
 
 .. seealso::
 
-  * The corresponding full code example to practice with pipelines       :ref:`sphx_glr_auto_examples_07_advanced_plot_advanced_decoding_scikit.py`
+  * The corresponding full code example to practice with pipelines :ref:`sphx_glr_auto_examples_07_advanced_plot_advanced_decoding_scikit.py`
 
-  * The `scikit-learn documentation <http://scikit-learn.org>`_
-     with detailed explanations on a large variety of estimators and
-     machine learning techniques. To become better at decoding, you need
-     to study it.
+  * The `scikit-learn documentation <http://scikit-learn.org>`_ with detailed
+    explanations on a large variety of estimators and machine learning techniques.
+    To become better at decoding, you need to study it.
 
 
 Setting estimator parameters
