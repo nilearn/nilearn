@@ -24,14 +24,10 @@ Performing decoding with scikit-learn
 Using scikit-learn estimators
 --------------------------------
 
-You can easily import estimators from the `scikit-learn <http://scikit-learn.org>`
-machine-learning library, those available in the `Decoder` object and many
-others. They all have the `fit` and `predict` functions. For example you can
-directly import the versatile `Support Vector Classifier <http://scikit-learn.org/stable/modules/svm.html>`_ (or SVC).
+You can easily import estimators from the `scikit-learn <http://scikit-learn.org>`_ machine-learning library, those available in the `Decoder` object and many others.
+They all have the `fit` and `predict` functions. For example you can directly import the versatile `Support Vector Classifier <http://scikit-learn.org/stable/modules/svm.html>`_ (or SVC).
 
-To learn more about the variety of classifiers available in scikit-learn,
-see the `scikit-learn documentation on supervised learning
-<http://scikit-learn.org/stable/supervised_learning.html>`_).
+To learn more about the variety of classifiers available in scikit-learn, see the `scikit-learn documentation on supervised learning <http://scikit-learn.org/stable/supervised_learning.html>`_.
 
 
 Cross-validation with scikit-learn
@@ -53,37 +49,30 @@ of cross-validation.
 
 You can change many parameters of the cross_validation here, for example:
 
-* use a different cross-validation scheme, for example LeaveOneGroupOut()
+* use a different cross-validation scheme, for example :func:`sklearn.model_selection.`LeaveOneGroupOut`.
 
-* speed up the computation by using n_jobs=-1, which will spread the
-   computation equally across all processors.
+* speed up the computation by using `n_jobs=-1`, which will spread the computation equally across all processors.
 
-* use a different scoring function, as a keyword or imported from scikit-learn
-   such as `scoring='roc_auc'`
+* use a different scoring function, as a keyword or imported from scikit-learn such as `scoring='roc_auc'`.
 
 .. seealso::
 
    * If you need more than only than cross-validation scores (i.e the predictions
-     or models for each fold) or if you want to learn more on various
-     cross-validation schemes, see:
-     <https://scikit-learn.org/stable/modules/cross_validation.html>`_
+     or models for each fold) or if you want to learn more on various cross-validation schemes,
+     see `here <https://scikit-learn.org/stable/modules/cross_validation.html>`_.
 
-   * `how to evaluate a model using scikit-learn
-     <http://scikit-learn.org/stable/modules/model_evaluation.html#common-cases-predefined-values>`_
+   * `How to evaluate a model using scikit-learn
+     <http://scikit-learn.org/stable/modules/model_evaluation.html#common-cases-predefined-values>`_.
 
 
 Measuring the chance level
 ---------------------------
 
-**Dummy estimators**: The simplest way to measure prediction performance
-at chance, is to use a *"dummy"* classifier,
-:class:`sklearn.dummy.DummyClassifier`:: (purely random)
+**Dummy estimators**: The simplest way to measure prediction performance at chance is to use a *"dummy"* classifier: :class:`sklearn.dummy.DummyClassifier`.
 
-**Permutation testing**: A more controlled way, but slower, is to do
-permutation testing on the labels, with
-:func:`sklearn.model_selection.permutation_test_score`::
+**Permutation testing**: A more controlled way, but slower, is to do permutation testing on the labels, with :func:`sklearn.model_selection.permutation_test_score`.
 
-.. topic:: **Decoding on simulated data**
+.. topic:: Decoding on simulated data
 
    Simple simulations may be useful to understand the behavior of a given
    decoder on data. In particular, simulations enable us to set the true
