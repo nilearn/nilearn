@@ -11,6 +11,20 @@
 	ABSTRACT={As the size of functional and structural MRI datasets expands, it becomes increasingly important to establish a baseline from which diagnostic relevance may be determined, a processing strategy that efficiently prepares data for analysis, and a statistical approach that identifies important effects in a manner that is both robust and reproducible. In this paper, we introduce a multivariate analytic approach that optimizes sensitivity and reduces unnecessary testing. We demonstrate the utility of this mega-analytic approach by identifying the effects of age and gender on the resting-state networks (RSNs) of 603 healthy adolescents and adults (mean age: 23.4 years, range: 12–71 years). Data were collected on the same scanner, preprocessed using an automated analysis pipeline based in SPM, and studied using group independent component analysis. RSNs were identified and evaluated in terms of three primary outcome measures: time course spectral power, spatial map intensity, and functional network connectivity. Results revealed robust effects of age on all three outcome measures, largely indicating decreases in network coherence and connectivity with increasing age. Gender effects were of smaller magnitude but suggested stronger intra-network connectivity in females and more inter-network connectivity in males, particularly with regard to sensorimotor networks. These findings, along with the analysis approach and statistical framework described here, provide a useful baseline for future investigations of brain networks in health and disease.}
 }
 
+
+@INPROCEEDINGS{Baldassarre2012,
+  author={Baldassarre, Luca and Mourao-Miranda, Janaina and Pontil, Massimiliano},
+  booktitle={2012 Second International Workshop on Pattern Recognition in NeuroImaging},
+  title={Structured Sparsity Models for Brain Decoding from fMRI Data},
+  year={2012},
+  volume={},
+  number={},
+  pages={5-8},
+  doi={10.1109/PRNI.2012.31},
+  url = {http://www0.cs.ucl.ac.uk/staff/M.Pontil/reading/neurosparse_prni.pdf},
+}
+
+
 @article{BEHZADI200790,
 	title = {A component based noise correction method (CompCor) for BOLD and perfusion based fMRI},
 	journal = {NeuroImage},
@@ -88,6 +102,38 @@
 	abstract = {Abstract Connectivity analyses and computational modeling of human brain function from fMRI data frequently require the specification of regions of interests (ROIs). Several analyses have relied on atlases derived from anatomical or cyto-architectonic boundaries to specify these ROIs, yet the suitability of atlases for resting state functional connectivity (FC) studies has yet to be established. This article introduces a data-driven method for generating an ROI atlas by parcellating whole brain resting-state fMRI data into spatially coherent regions of homogeneous FC. Several clustering statistics are used to compare methodological trade-offs as well as determine an adequate number of clusters. Additionally, we evaluate the suitability of the parcellation atlas against four ROI atlases (Talairach and Tournoux, Harvard-Oxford, Eickoff-Zilles, and Automatic Anatomical Labeling) and a random parcellation approach. The evaluated anatomical atlases exhibit poor ROI homogeneity and do not accurately reproduce FC patterns present at the voxel scale. In general, the proposed functional and random parcellations perform equivalently for most of the metrics evaluated. ROI size and hence the number of ROIs in a parcellation had the greatest impact on their suitability for FC analysis. With 200 or fewer ROIs, the resulting parcellations consist of ROIs with anatomic homology, and thus offer increased interpretability. Parcellation results containing higher numbers of ROIs (600 or 1,000) most accurately represent FC patterns present at the voxel scale and are preferable when interpretability can be sacrificed for accuracy. The resulting atlases and clustering software have been made publicly available at: http://www.nitrc.org/projects/cluster\_roi/. Hum Brain Mapp, 2012. © 2011 Wiley Periodicals, Inc},
 	year = {2012}
 }
+
+
+@inproceedings{dohmatob:hal-01147731,
+  TITLE = {{Speeding-up model-selection in GraphNet via early-stopping and univariate feature-screening}},
+  AUTHOR = {Dohmatob, Elvis and Eickenberg, Michael and Thirion, Bertrand and Varoquaux, Ga{\"e}l},
+  URL = {https://hal.inria.fr/hal-01147731},
+  BOOKTITLE = {{PRNI}},
+  ADDRESS = {Stanford, United States},
+  YEAR = {2015},
+  MONTH = Jun,
+  KEYWORDS = {univariate feature-screening ; model-selection ; cross-validation ; MRI ; supervised learning ; pattern-recognition ; sparsity ; GraphNet ; S-Lasso ; TV-L1 ; spatial priors},
+  PDF = {https://hal.inria.fr/hal-01147731/file/paper.pdf},
+  HAL_ID = {hal-01147731},
+  HAL_VERSION = {v1},
+}
+
+
+@inproceedings{dohmatob:hal-00991743,
+  TITLE = {{Benchmarking solvers for TV-l1 least-squares and logistic regression in brain imaging}},
+  AUTHOR = {Dohmatob, Elvis and Gramfort, Alexandre and Thirion, Bertrand and Varoquaux, Ga{\"e}l},
+  URL = {https://hal.inria.fr/hal-00991743},
+  BOOKTITLE = {{PRNI 2014 - 4th International Workshop on Pattern Recognition in NeuroImaging}},
+  ADDRESS = {T{\"u}bingen, Germany},
+  PUBLISHER = {{IEEE}},
+  YEAR = {2014},
+  MONTH = Jun,
+  KEYWORDS = {sparse models ; fMRI ; non-smooth convex optimization ; regression ; classification ; Total Variation},
+  PDF = {https://hal.inria.fr/hal-00991743/file/PRNI2014_TVl1.pdf},
+  HAL_ID = {hal-00991743},
+  HAL_VERSION = {v1},
+}
+
 
 @article {Dosenbach20101358,
 	author = {Dosenbach, Nico U. F. and Nardos, Binyam and Cohen, Alexander L. and Fair, Damien A. and Power, Jonathan D. and Church, Jessica A. and Nelson, Steven M. and Wig, Gagan S. and Vogel, Alecia C. and Lessov-Schlaggar, Christina N. and Barnes, Kelly Anne and Dubis, Joseph W. and Feczko, Eric and Coalson, Rebecca S. and Pruett, John R. and Barch, Deanna M. and Petersen, Steven E. and Schlaggar, Bradley L.},
@@ -308,6 +354,37 @@
 	year = {1994}
 }
 
+
+@inproceedings{gramfort:hal-00839984,
+  title = {{Identifying predictive regions from fMRI with TV-L1 prior}},
+  author = {Gramfort, Alexandre and Thirion, Bertrand and Varoquaux, Ga{\"e}l},
+  url = {https://hal.inria.fr/hal-00839984},
+  booktitle = {{Pattern Recognition in Neuroimaging (PRNI)}},
+  address = {Philadelphia, United States},
+  publisher = {{IEEE}},
+  year = {2013},
+  month = Jun,
+  keywords = {fMRI ; supervised learning ; total-variation ; sparse ; decoding ; primal-dual optimization ; support recovery},
+  pdf = {https://hal.inria.fr/hal-00839984/file/paper.pdf},
+  HAL_ID = {hal-00839984},
+  HAL_VERSION = {v1},
+}
+
+
+@article{GROSENICK2013304,
+title = {Interpretable whole-brain prediction analysis with GraphNet},
+journal = {NeuroImage},
+volume = {72},
+pages = {304-321},
+year = {2013},
+issn = {1053-8119},
+doi = {https://doi.org/10.1016/j.neuroimage.2012.12.062},
+url = {https://www.sciencedirect.com/science/article/pii/S1053811912012487},
+author = {Logan Grosenick and Brad Klingenberg and Kiefer Katovich and Brian Knutson and Jonathan E. Taylor},
+abstract = {Multivariate machine learning methods are increasingly used to analyze neuroimaging data, often replacing more traditional “mass univariate” techniques that fit data one voxel at a time. In the functional magnetic resonance imaging (fMRI) literature, this has led to broad application of “off-the-shelf” classification and regression methods. These generic approaches allow investigators to use ready-made algorithms to accurately decode perceptual, cognitive, or behavioral states from distributed patterns of neural activity. However, when applied to correlated whole-brain fMRI data these methods suffer from coefficient instability, are sensitive to outliers, and yield dense solutions that are hard to interpret without arbitrary thresholding. Here, we develop variants of the Graph-constrained Elastic-Net (GraphNet), a fast, whole-brain regression and classification method developed for spatially and temporally correlated data that automatically yields interpretable coefficient maps (Grosenick et al., 2009b). GraphNet methods yield sparse but structured solutions by combining structured graph constraints (based on knowledge about coefficient smoothness or connectivity) with a global sparsity-inducing prior that automatically selects important variables. Because GraphNet methods can efficiently fit regression or classification models to whole-brain, multiple time-point data sets and enhance classification accuracy relative to volume-of-interest (VOI) approaches, they eliminate the need for inherently biased VOI analyses and allow whole-brain fitting without the multiple comparison problems that plague mass univariate and roaming VOI (“searchlight”) methods. As fMRI data are unlikely to be normally distributed, we (1) extend GraphNet to include robust loss functions that confer insensitivity to outliers, (2) equip them with “adaptive” penalties that asymptotically guarantee correct variable selection, and (3) develop a novel sparse structured Support Vector GraphNet classifier (SVGN). When applied to previously published data (Knutson et al., 2007), these efficient whole-brain methods significantly improved classification accuracy over previously reported VOI-based analyses on the same data (Grosenick et al., 2008, Knutson et al., 2007) while discovering task-related regions not documented in the original VOI approach. Critically, GraphNet estimates fit to the Knutson et al. (2007) data generalize well to out-of-sample data collected more than three years later on the same task but with different subjects and stimuli (Karmarkar et al., submitted for publication). By enabling robust and efficient selection of important voxels from whole-brain data taken over multiple time points (>100,000 “features”), these methods enable data-driven selection of brain areas that accurately predict single-trial behavior within and across individuals.}
+}
+
+
 @article {Haxby2425,
 	author = {Haxby, James V. and Gobbini, M. Ida and Furey, Maura L. and Ishai, Alumit and Schouten, Jennifer L. and Pietrini, Pietro},
 	title = {Distributed and Overlapping Representations of Faces and Objects in Ventral Temporal Cortex},
@@ -448,6 +525,22 @@
 }
 
 
+@article{michel:inria-00563468,
+  TITLE = {{Total variation regularization for fMRI-based prediction of behaviour.}},
+  AUTHOR = {Michel, Vincent and Gramfort, Alexandre and Varoquaux, Ga{\"e}l and Eger, Evelyn and Thirion, Bertrand},
+  URL = {https://hal.inria.fr/inria-00563468},
+  JOURNAL = {{IEEE Transactions on Medical Imaging}},
+  PUBLISHER = {{Institute of Electrical and Electronics Engineers}},
+  VOLUME = {30},
+  NUMBER = {7},
+  PAGES = {1328 - 1340},
+  YEAR = {2011},
+  MONTH = Feb,
+  DOI = {10.1109/TMI.2011.2113378},
+  PDF = {https://hal.inria.fr/inria-00563468/file/arxiv_version.pdf},
+  HAL_ID = {inria-00563468},
+  HAL_VERSION = {v1},
+}
 
 
 @article{MIYAWAKI2008915,
