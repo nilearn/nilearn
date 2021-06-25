@@ -220,6 +220,26 @@ def test_plot_glass_brain(testdata_3d, tmpdir):
     plt.close()
 
 
+functions = [plotting.plot_stat_map,
+             plotting.plot_img,]
+EXPECTED = [(i, ['-10', '-5', '0', '5', '10']) for i in [0, 0.1, 0.9, 1]]
+EXPECTED += [(i, ['-10', f'-{i}', '0', f'{i}', '10']) for i in [1.3, 2.5, 3, 4.9, 7.5]]
+EXPECTED += [(i, [f'-{i}', '-5', '0', '5', f'{i}']) for i in [7.6, 8, 9.9]]
+@pytest.mark.parametrize("plot_func, threshold, expected_ticks",
+                         [(f, e[0], e[1]) for e in EXPECTED for f in functions])
+def test_plot_colorbar_threshold(tmp_path, plot_func, threshold, expected_ticks):
+    img_data = np.zeros((10, 10, 10))
+    img_data[4:6, 2:4, 4:6] = -10
+    img_data[5:7, 3:7, 3:6] = 10
+    img = nibabel.Nifti1Image(img_data, affine=np.eye(4))
+    display = plot_func(img, threshold=threshold, colorbar=True)
+    plt.savefig(tmp_path / 'test.png')
+    assert([tick.get_text()
+            for tick in display._cbar.ax.get_yticklabels()]
+           == expected_ticks)
+    plt.close()
+
+
 def test_plot_stat_map(testdata_3d):
     img = testdata_3d['img']
 
