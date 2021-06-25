@@ -25,6 +25,7 @@ from nilearn.masking import (compute_epi_mask, compute_multi_epi_mask,
                              _unmask_from_to_3d_array)
 from nilearn._utils.testing import write_tmp_imgs
 from nilearn._utils.exceptions import DimensionError
+from nilearn._utils import data_gen
 from nilearn.input_data import NiftiMasker
 
 np_version = (np.version.full_version if hasattr(np.version, 'full_version')
@@ -193,44 +194,32 @@ def test_compute_background_mask():
 
 
 def test_compute_brain_mask():
-    image = Nifti1Image(np.ones((9, 9, 9)), np.eye(4))
-
-    mask = compute_brain_mask(image, threshold=-1)
-    mask1 = np.zeros((9, 9, 9))
-    mask1[2:-2, 2:-2, 2:-2] = 1
-
-    np.testing.assert_array_equal(mask1, get_data(mask))
-
+    img, _ = data_gen.generate_mni_space_img(res=8, random_state=0)
+    brain_mask = compute_brain_mask(img, threshold=.2)
+    gm_mask = compute_brain_mask(img, threshold=.2, mask_type="gm")
+    wm_mask = compute_brain_mask(img, threshold=.2, mask_type="wm")
+    brain_data, gm_data, wm_data = map(get_data, (brain_mask, gm_mask,
+                                                  wm_mask))
+    # Check that whole-brain mask is not empty
+    assert (brain_data != 0).any()
+    for subset in wm_data, gm_data:
+        # Test that gm and wm masks are included in the whole-brain mask
+        assert (np.logical_and(brain_data, subset) == subset.astype(
+            bool)).all()
+        # Test that gm and wm masks are non-empty
+        assert (subset != 0).any()
+    # Test that gm and wm masks have empty intersection
+    assert (np.logical_and(gm_data, wm_data) == 0).all()
     # Check that we get a useful warning for empty masks
     with pytest.warns(masking.MaskWarning):
-        compute_brain_mask(image, threshold=1)
-
-    # Check that masks obtained from same FOV are the same...
-    rng = np.random.RandomState(42)
-    img1 = Nifti1Image(np.full((9, 9, 9), rng.uniform()), np.eye(4))
-    img2 = Nifti1Image(np.full((9, 9, 9), rng.uniform()), np.eye(4))
-
-    # ... for whole-brain mask
-    mask_img1 = compute_brain_mask(img1, verbose=1)
-    mask_img2 = compute_brain_mask(img2, verbose=1)
-    np.testing.assert_array_equal(get_data(mask_img1),
-                                  get_data(mask_img2))
-
-    # ... for grey-matter mask
-    mask_img3 = compute_brain_mask(img1, verbose=1, mask_type='gm')
-    mask_img4 = compute_brain_mask(img2, verbose=1, mask_type='gm')
-    np.testing.assert_array_equal(get_data(mask_img3),
-                                  get_data(mask_img4))
-
-    # ... for white-matter mask
-    mask_img5 = compute_brain_mask(img1, verbose=1, mask_type='wm')
-    mask_img6 = compute_brain_mask(img2, verbose=1, mask_type='wm')
-    np.testing.assert_array_equal(get_data(mask_img5),
-                                  get_data(mask_img6))
-
-    # Test error message of unknown mask type
+        compute_brain_mask(img, threshold=1)
+    # Check that masks obtained from same FOV are the same
+    img1, _ = data_gen.generate_mni_space_img(res=8, random_state=1)
+    mask_img1 = compute_brain_mask(img1, verbose=1, threshold=.2)
+    assert (brain_data == get_data(mask_img1)).all()
+    # Check that error is raised if mask type is unknown
     with pytest.raises(ValueError, match='Unknown mask type foo.'):
-        compute_brain_mask(img2, verbose=1, mask_type='foo')
+        compute_brain_mask(img, verbose=1, mask_type='foo')
 
 
 def test_deprecation_warning_compute_gray_matter_mask():
