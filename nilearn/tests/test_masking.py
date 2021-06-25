@@ -524,31 +524,18 @@ def test_compute_multi_brain_mask():
     pytest.raises(TypeError, compute_multi_brain_mask, [])
 
     # Check error raised if images with different shapes are given as input
-    imgs = [Nifti1Image(np.ones((9, 9, 9)), np.eye(4)),
-            Nifti1Image(np.ones((9, 9, 8)), np.eye(4))]
+    imgs = [data_gen.generate_mni_space_img(res=8, random_state=0)[0],
+            data_gen.generate_mni_space_img(res=12, random_state=0)[0]]
     pytest.raises(ValueError, compute_multi_brain_mask, imgs)
 
     # Check results are the same if affine is the same
-    rng = np.random.RandomState(42)
-    imgs1 = [Nifti1Image(rng.standard_normal(size=(9, 9, 9)), np.eye(4)),
-             Nifti1Image(rng.standard_normal(size=(9, 9, 9)), np.eye(4))]
-    imgs2 = [Nifti1Image(rng.standard_normal(size=(9, 9, 9)), np.eye(4)),
-             Nifti1Image(rng.standard_normal(size=(9, 9, 9)), np.eye(4))]
-
-    # ... for whole-brain mask
-    mask1 = compute_multi_brain_mask(imgs1)
-    mask2 = compute_multi_brain_mask(imgs2)
+    imgs1 = [data_gen.generate_mni_space_img(res=9, random_state=42)[0],
+             data_gen.generate_mni_space_img(res=9, random_state=42)[0]]
+    imgs2 = [data_gen.generate_mni_space_img(res=9, random_state=42)[0],
+             data_gen.generate_mni_space_img(res=9, random_state=42)[0]]
+    mask1 = compute_multi_brain_mask(imgs1, threshold=.2)
+    mask2 = compute_multi_brain_mask(imgs2, threshold=.2)
     assert_array_equal(get_data(mask1), get_data(mask2))
-
-    # ... for grey-matter mask
-    mask3 = compute_multi_brain_mask(imgs1, mask='gm')
-    mask4 = compute_multi_brain_mask(imgs2, mask='gm')
-    assert_array_equal(get_data(mask3), get_data(mask4))
-
-    # ... for white-matter mask
-    mask5 = compute_multi_brain_mask(imgs1, mask='wm')
-    mask6 = compute_multi_brain_mask(imgs2, mask='wm')
-    assert_array_equal(get_data(mask5), get_data(mask6))
 
 
 def test_deprecation_warning_compute_multi_gray_matter_mask():
