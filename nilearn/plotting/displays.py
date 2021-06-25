@@ -957,7 +957,33 @@ class BaseSlicer(object):
         # yields a cryptic matplotlib error message
         # when trying to plot the color bar
         nb_ticks = 5 if norm.vmin != norm.vmax else 1
+
+        # Ticks are evenly organized
         ticks = np.linspace(norm.vmin, norm.vmax, nb_ticks)
+
+        # If we have a symmetrical colorbar and a threshold is
+        # specified, we want two of the ticks to correspond to
+        # -thresold and +threshold on the colorbar.
+        # If the threshold is very small compared to vmax, we
+        # leave the original ticks as the result would be very
+        # difficult to see.
+        #
+        if(norm.vmin == -norm.vmax and offset > 0
+           and nb_ticks > 1 and offset / norm.vmax > 0.12):
+            diff = [abs(abs(tick) - offset) for tick in ticks]
+            # Edge case where the thresholds are exactly
+            # at the same distance to 4 ticks
+            if diff.count(min(diff)) == 4:
+                idx_closest = np.sort(np.argpartition(diff, 4)[:4])
+                idx_closest = np.in1d(ticks, np.sort(ticks[idx_closest])[1:3])
+            else:
+                # Find the closest 2 ticks
+                idx_closest = np.sort(np.argpartition(diff, 2)[:2])
+                if 0 in ticks[idx_closest]:
+                    idx_closest = np.sort(np.argpartition(diff, 3)[:3])
+                    idx_closest = idx_closest[[0, 2]]
+            ticks[idx_closest] = [-offset, offset]
+
         bounds = np.linspace(norm.vmin, norm.vmax, our_cmap.N)
 
         # some colormap hacking
