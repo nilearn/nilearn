@@ -327,7 +327,7 @@ def _json_view_data(bg_img, stat_map_img, mask_img, bg_min, bg_max, black_bg,
                              ensure_finite=True)
     bg_mask = np.logical_not(bg_mask).astype(float)
     bg_mask[bg_mask == 1] = np.nan
-    bg_cmap = copy.copy(matplotlib.cm.get_cmap(cmap))
+    bg_cmap = copy.copy(matplotlib.cm.get_cmap('gray'))
     if black_bg:
         bg_cmap.set_bad('black')
     else:
