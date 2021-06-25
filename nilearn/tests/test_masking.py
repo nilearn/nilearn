@@ -200,9 +200,9 @@ def test_compute_brain_mask():
     wm_mask = compute_brain_mask(img, threshold=.2, mask_type="wm")
     brain_data, gm_data, wm_data = map(get_data, (brain_mask, gm_mask,
                                                   wm_mask))
-    # Check that whole-brain mask is not empty
+    # Check that whole-brain mask is non-empty
     assert (brain_data != 0).any()
-    for subset in wm_data, gm_data:
+    for subset in gm_data, wm_data:
         # Test that gm and wm masks are included in the whole-brain mask
         assert (np.logical_and(brain_data, subset) == subset.astype(
             bool)).all()
