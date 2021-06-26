@@ -30,12 +30,8 @@ WM_MNI152_FILE_PATH = os.path.join(
 FSAVERAGE5_PATH = os.path.join(_package_directory, "data", "fsaverage5")
 
 
-class ResolutionWarning():
-    "A class to raise resolution warnings only once for each function."
-
-
-__rw = ResolutionWarning()
-__rw.shown = False
+# workaround for https://github.com/nilearn/nilearn/pull/2738#issuecomment-869018842
+_MNI_RES_WARNING_ALREADY_SHOWN = False
 
 
 def fetch_icbm152_2009(data_dir=None, url=None, resume=True, verbose=1):
