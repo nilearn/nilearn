@@ -152,8 +152,7 @@ def load_mni152_template(resolution=None):
 
     if resolution is None:
         warnings.warn("Default resolution of the MNI template will change "
-                      "from 2mm to 1mm in version 0.10.0", FutureWarning,
-                      stacklevel=2)
+                      "from 2mm to 1mm in version 0.10.0", FutureWarning)
         resolution = 2
 
     brain_template = check_niimg(MNI152_FILE_PATH)
@@ -205,8 +204,7 @@ def load_mni152_gm_template(resolution=None):
 
     if resolution is None:
         warnings.warn("Default resolution of the MNI template will change "
-                      "from 2mm to 1mm in version 0.10.0", FutureWarning,
-                      stacklevel=2)
+                      "from 2mm to 1mm in version 0.10.0", FutureWarning)
         resolution = 2
 
     gm_template = check_niimg(GM_MNI152_FILE_PATH)
@@ -258,8 +256,7 @@ def load_mni152_wm_template(resolution=None):
 
     if resolution is None:
         warnings.warn("Default resolution of the MNI template will change "
-                      "from 2mm to 1mm in version 0.10.0", FutureWarning,
-                      stacklevel=2)
+                      "from 2mm to 1mm in version 0.10.0", FutureWarning)
         resolution = 2
 
     wm_template = check_niimg(WM_MNI152_FILE_PATH)
@@ -317,8 +314,7 @@ def load_mni152_brain_mask(resolution=None, threshold=0.2):
 
     if resolution is None:
         warnings.warn("Default resolution of the MNI template will change "
-                      "from 2mm to 1mm in version 0.10.0", FutureWarning,
-                      stacklevel=2)
+                      "from 2mm to 1mm in version 0.10.0", FutureWarning)
         resolution = 2
 
     # Load MNI template
@@ -368,8 +364,7 @@ def load_mni152_gm_mask(resolution=None, threshold=0.2, n_iter=2):
 
     if resolution is None:
         warnings.warn("Default resolution of the MNI template will change "
-                      "from 2mm to 1mm in version 0.10.0", FutureWarning,
-                      stacklevel=2)
+                      "from 2mm to 1mm in version 0.10.0", FutureWarning)
         resolution = 2
 
     # Load MNI template
@@ -424,8 +419,7 @@ def load_mni152_wm_mask(resolution=None, threshold=0.2, n_iter=2):
 
     if resolution is None:
         warnings.warn("Default resolution of the MNI template will change "
-                      "from 2mm to 1mm in version 0.10.0", FutureWarning,
-                      stacklevel=2)
+                      "from 2mm to 1mm in version 0.10.0", FutureWarning)
         resolution = 2
 
     # Load MNI template
