@@ -158,7 +158,7 @@ def load_mni152_template(resolution=None):
         if __rw.shown is False:
             warnings.warn("Default resolution of the MNI template will change "
                           "from 2mm to 1mm in version 0.10.0", FutureWarning)
-            __rw.shown = True
+           _MNI_RES_WARNING_ALREADY_SHOWN = True
         resolution = 2
 
     brain_template = check_niimg(MNI152_FILE_PATH)
