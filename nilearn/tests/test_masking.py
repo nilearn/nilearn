@@ -529,10 +529,10 @@ def test_compute_multi_brain_mask():
     pytest.raises(ValueError, compute_multi_brain_mask, imgs)
 
     # Check results are the same if affine is the same
-    imgs1 = [data_gen.generate_mni_space_img(res=9, random_state=42)[0],
-             data_gen.generate_mni_space_img(res=9, random_state=42)[0]]
-    imgs2 = [data_gen.generate_mni_space_img(res=9, random_state=42)[0],
-             data_gen.generate_mni_space_img(res=9, random_state=42)[0]]
+    imgs1 = [data_gen.generate_mni_space_img(res=9, random_state=0)[0],
+             data_gen.generate_mni_space_img(res=9, random_state=1)[0]]
+    imgs2 = [data_gen.generate_mni_space_img(res=9, random_state=2)[0],
+             data_gen.generate_mni_space_img(res=9, random_state=3)[0]]
     mask1 = compute_multi_brain_mask(imgs1, threshold=.2)
     mask2 = compute_multi_brain_mask(imgs2, threshold=.2)
     assert_array_equal(get_data(mask1), get_data(mask2))

@@ -716,12 +716,12 @@ def compute_multi_gray_matter_mask(target_imgs, threshold=.5,
                                     threshold=threshold, connected=connected,
                                     opening=opening, memory=memory,
                                     verbose=verbose, n_jobs=n_jobs,
-                                    mask='whole-brain', **kwargs)
+                                    mask_type='whole-brain', **kwargs)
 
 
 def compute_multi_brain_mask(target_imgs, threshold=.5, connected=True,
                              opening=2, memory=None, verbose=0, n_jobs=1,
-                             mask='whole-brain', **kwargs):
+                             mask_type='whole-brain', **kwargs):
     """ Compute the whole-brain, grey-matter or white-matter mask for a list of
     images. The mask is calculated through the resampling of the corresponding
     MNI152 template mask onto the target image.
@@ -760,7 +760,7 @@ def compute_multi_brain_mask(target_imgs, threshold=.5, connected=True,
     n_jobs: integer, optional
         Argument not used but kept to fit the API
 
-    mask: {'whole-brain', 'gm', 'wm'}, optional
+    mask_type: {'whole-brain', 'gm', 'wm'}, optional
         Type of mask to be computed: 'whole-brain', 'grey-matter' ('gm') or
         'white-matter' ('wm'). Default = 'whole-brain'
 
@@ -794,7 +794,7 @@ def compute_multi_brain_mask(target_imgs, threshold=.5, connected=True,
     mask = compute_brain_mask(target_imgs[0], threshold=threshold,
                               connected=connected, opening=opening,
                               memory=memory, verbose=verbose,
-                              mask_type=mask)
+                              mask_type=mask_type)
     return mask
 
 
