@@ -30,7 +30,8 @@ WM_MNI152_FILE_PATH = os.path.join(
 FSAVERAGE5_PATH = os.path.join(_package_directory, "data", "fsaverage5")
 
 
-# workaround for https://github.com/nilearn/nilearn/pull/2738#issuecomment-869018842
+# workaround for
+# https://github.com/nilearn/nilearn/pull/2738#issuecomment-869018842
 _MNI_RES_WARNING_ALREADY_SHOWN = False
 
 
@@ -761,7 +762,8 @@ def fetch_surf_fsaverage(mesh='fsaverage5', data_dir=None):
         - 'fsaverage6': the medium-resolution fsaverage6 mesh (40962 nodes)
         - 'fsaverage7': same as 'fsaverage'
         - 'fsaverage': the high-resolution fsaverage mesh (163842 nodes)
-            (high-resolution fsaverage will result in more computation time and memory usage)
+            (high-resolution fsaverage will result in more computation time and
+            memory usage)
 
     data_dir : str, optional
         Path of the data directory. Used to force data storage in a specified
