@@ -98,8 +98,7 @@ def fdr_threshold(z_vals, alpha):
     z_vals_ = - np.sort(- z_vals)
     p_vals = norm.sf(z_vals_)
     n_samples = len(p_vals)
-    pos = p_vals < alpha * np.linspace(
-        .5 / n_samples, 1 - .5 / n_samples, n_samples)
+    pos = p_vals < alpha * np.linspace(1/n_samples, 1,n_samples)
     if pos.any():
         return (z_vals_[pos][-1] - 1.e-12)
 
