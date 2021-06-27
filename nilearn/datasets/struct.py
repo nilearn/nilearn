@@ -1,10 +1,12 @@
 """
 Downloading NeuroImaging datasets: structural datasets
-"""
-# Authors: Ana Luisa Pinho, Nicolas Gensollen, Jerome Dockes, Bertrand Thirion
+
 # License: simplified BSD
+"""
+
 import warnings
 import os
+import functools
 from pathlib import Path
 
 import numpy as np

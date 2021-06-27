@@ -4,6 +4,7 @@ Test the datasets module
 # Authors: Alexandre Abraham, Ana Luisa Pinho
 # License: simplified BSD
 
+import warnings
 import os
 import shutil
 from pathlib import Path
@@ -193,6 +194,26 @@ def test_load_mni152_wm_mask():
     # standard MNI template shape
     assert wm_mask_1mm.shape == (197, 233, 189)
     assert wm_mask_2mm.shape == (99, 117, 95)
+
+
+@pytest.mark.parametrize("part", ["_brain", "_gm", "_wm"])
+@pytest.mark.parametrize("kind", ["template", "mask"])
+def test_mni152_resolution_warnings(part, kind):
+    struct._MNI_RES_WARNING_ALREADY_SHOWN = False
+    if kind == "template" and part == "_brain":
+        part = ""
+    loader = getattr(struct, f"load_mni152{part}_{kind}")
+    try:
+        loader.cache_clear()
+    except AttributeError:
+        pass
+    with warnings.catch_warnings(record=True) as w:
+        loader(resolution=1)
+    assert len(w) == 0
+    with warnings.catch_warnings(record=True) as w:
+        loader()
+        loader()
+    assert len(w) == 1
 
 
 def test_fetch_icbm152_brain_gm_mask(tmp_path, request_mocker):
