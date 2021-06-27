@@ -119,6 +119,7 @@ def fetch_icbm152_2009(data_dir=None, url=None, resume=True, verbose=1):
     return Bunch(**params)
 
 
+@functools.lru_cache
 def load_mni152_template(resolution=None):
     """Load the MNI152 skullstripped T1 template.
     This function takes the skullstripped, re-scaled 1mm-resolution version of
