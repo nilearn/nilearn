@@ -14,7 +14,7 @@ from nilearn.glm import (cluster_level_inference, fdr_threshold,
 def test_fdr():
     rng = np.random.RandomState(42)
     n = 100
-    x = np.linspace(.5 / n, 1. - .5 / n, n)
+    x = np.linspace(1 / n, 1, n)
     x[:10] = .0005
     x = norm.isf(x)
     rng.shuffle(x)

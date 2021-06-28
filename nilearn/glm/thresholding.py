@@ -99,7 +99,6 @@ def fdr_threshold(z_vals, alpha):
     p_vals = norm.sf(z_vals_)
     n_samples = len(p_vals)
     pos = p_vals < alpha * np.linspace(1 / n_samples, 1, n_samples)
-``` We need to enforce pep8 conventions !
     if pos.any():
         return (z_vals_[pos][-1] - 1.e-12)
 
