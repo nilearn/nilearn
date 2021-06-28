@@ -310,6 +310,20 @@ def _json_view_size(params):
     return width_view, height_view
 
 
+def _get_bg_mask_and_cmap(bg_img, black_bg):
+    """Helper function of _json_view_data."""
+    bg_mask = _safe_get_data(compute_brain_mask(bg_img),
+                             ensure_finite=True)
+    bg_mask = np.logical_not(bg_mask).astype(float)
+    bg_mask[bg_mask == 1] = np.nan
+    bg_cmap = copy.copy(matplotlib.cm.get_cmap('gray'))
+    if black_bg:
+        bg_cmap.set_bad('black')
+    else:
+        bg_cmap.set_bad('white')
+    return bg_mask, bg_cmap
+
+
 def _json_view_data(bg_img, stat_map_img, mask_img, bg_min, bg_max, black_bg,
                     colors, cmap, colorbar):
     """Create a json-like viewer object, and populate with base64 data.
@@ -323,15 +337,7 @@ def _json_view_data(bg_img, stat_map_img, mask_img, bg_min, bg_max, black_bg,
     # Create a base64 sprite for the background
     bg_sprite = BytesIO()
     bg_data = _safe_get_data(bg_img, ensure_finite=True).astype(float)
-    bg_mask = _safe_get_data(compute_brain_mask(bg_img),
-                             ensure_finite=True)
-    bg_mask = np.logical_not(bg_mask).astype(float)
-    bg_mask[bg_mask == 1] = np.nan
-    bg_cmap = copy.copy(matplotlib.cm.get_cmap('gray'))
-    if black_bg:
-        bg_cmap.set_bad('black')
-    else:
-        bg_cmap.set_bad('white')
+    bg_mask, bg_cmap = _get_bg_mask_and_cmap(bg_img, black_bg)
     _save_sprite(bg_data, bg_sprite, bg_max, bg_min, bg_mask, bg_cmap, 'png')
     json_view['bg_base64'] = _bytesIO_to_base64(bg_sprite)
 
