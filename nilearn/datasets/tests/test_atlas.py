@@ -162,6 +162,10 @@ def test_fetch_atlas_harvard_oxford(tmp_path, request_mocker):
     nifti_dir = os.path.join(ho_dir, 'HarvardOxford')
     os.makedirs(nifti_dir)
 
+    # with pytest.raises(ValueError, match='Region splitting'):
+    #     atlas.fetch_atlas_harvard_oxford('cortl-prob-1mm',
+    #                                      data_dir=str(tmp_path))
+
     # Create false atlas
     atlas_data = np.zeros((10, 10, 10), dtype=int)
 

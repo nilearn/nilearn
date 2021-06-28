@@ -340,15 +340,11 @@ def fetch_atlas_harvard_oxford(atlas_name, data_dir=None,
         raise ValueError("Invalid atlas name: {0}. Please choose "
                          "an atlas among:\n{1}".
                          format(atlas_name, '\n'.join(atlases)))
-    is_probabilistic = False
-    if atlas_name in ("cortl-prob-1mm", "cortl-prob-2mm",
-                      "cort-prob-1mm", "cort-prob-2mm",
-                      "sub-prob-1mm", "sub-prob-2mm"):
-        is_probabilistic = True
+    is_probabilistic = "-prob-" in atlas_name
     if is_probabilistic and symmetric_split:
         raise ValueError("Region splitting not supported for probabilistic "
                          "atlases")
-    atlas_img, names, lateralized = _get_atlas_data_and_labels(
+    atlas_img, names, is_lateralized = _get_atlas_data_and_labels(
         "HarvardOxford",
         atlas_name,
         symmetric_split=symmetric_split,
@@ -356,13 +352,10 @@ def fetch_atlas_harvard_oxford(atlas_name, data_dir=None,
         resume=resume,
         verbose=verbose)
     atlas_niimg = check_niimg(atlas_img)
-    if not symmetric_split:
-        return Bunch(maps=atlas_niimg, labels=names)
-    if lateralized:
-        return Bunch(maps=atlas_niimg, labels=names)
-    atlas_data = get_data(atlas_niimg)
+    if not symmetric_split or is_lateralized
+        return Bunch(filename=atlas_img, maps=atlas_niimg, labels=names)
     new_atlas_data, new_names = _compute_symmetric_split("HarvardOxford",
-                                                         atlas_data,
+                                                         get_data(atlas_niimg),
                                                          names)
     new_atlas_niimg = new_img_like(atlas_niimg,
                                    new_atlas_data,
@@ -381,6 +374,7 @@ def fetch_atlas_juelich(atlas_name, data_dir=None,
     This function can also load Juelich atlas from your local directory
     specified by your FSL installed path given in `data_dir` argument.
     See documentation for details.
+    .. versionadded:: 0.8.1
 
     Parameters
     ----------
@@ -435,10 +429,7 @@ def fetch_atlas_juelich(atlas_name, data_dir=None,
         raise ValueError("Invalid atlas name: {0}. Please choose "
                          "an atlas among:\n{1}".
                          format(atlas_name, '\n'.join(atlases)))
-    is_probabilistic = False
-    if atlas_name in ("prob-1mm", "prob-2mm"):
-        is_probabilistic = True
-
+    is_probabilistic = atlas_name.startswith("prob-")
     if is_probabilistic and symmetric_split:
         raise ValueError("Region splitting not supported for probabilistic "
                          "atlases")
@@ -450,17 +441,17 @@ def fetch_atlas_juelich(atlas_name, data_dir=None,
     atlas_niimg = check_niimg(atlas_img)
     atlas_data = get_data(atlas_niimg)
 
-    if not symmetric_split:
-        if is_probabilistic:
-            new_atlas_data, new_names = _merge_probabilistic_maps_juelich(
-                atlas_data, names)
-        else:
-            new_atlas_data, new_names = _merge_labels_juelich(atlas_data,
-                                                              names)
-    else:
+    if is_probabilistic:
+        new_atlas_data, new_names = _merge_probabilistic_maps_juelich(
+            atlas_data, names)
+    elif symmetric_split:
         new_atlas_data, new_names = _compute_symmetric_split("Juelich",
                                                              atlas_data,
                                                              names)
+    else:
+        new_atlas_data, new_names = _merge_labels_juelich(atlas_data,
+                                                            names)
+
     new_atlas_niimg = new_img_like(atlas_niimg,
                                    new_atlas_data,
                                    atlas_niimg.affine)
@@ -486,22 +477,21 @@ def _get_atlas_data_and_labels(atlas_source, atlas_name, symmetric_split=False,
     root = os.path.join('data', 'atlases')
 
     if atlas_source == 'HarvardOxford':
-        if atlas_name[0] == 'c':
-            if ('cort-maxprob' in atlas_name and symmetric_split
-                    or 'cortl-maxprob' in atlas_name):
-                split_name = atlas_name.split('-', 1)
-                atlas_name = 'cortl-{}'.format(split_name[1])
-                label_file = 'HarvardOxford-Cortical-Lateralized.xml'
-                lateralized = True
-            else:
-                label_file = 'HarvardOxford-Cortical.xml'
-                lateralized = False
-        else:
+        if symmetric_split:
+            atlas_name = atlas_name.replace("cort-max", "cortl-max")
+
+        if atlas_name.startswith("sub-"):
             label_file = 'HarvardOxford-Subcortical.xml'
-            lateralized = False
+            is_lateralized = False
+        elif atlas_name.startswith("cortl"):
+            label_file = 'HarvardOxford-Cortical-Lateralized.xml'
+            is_lateralized = True
+        else:
+            label_file = 'HarvardOxford-Cortical.xml'
+            is_lateralized = False
     else:
         label_file = "Juelich.xml"
-        lateralized = False
+        is_lateralized = False
     label_file = os.path.join(root, label_file)
     atlas_file = os.path.join(root, atlas_source,
                               '{}-{}.nii.gz'.format(atlas_source,
@@ -517,7 +507,7 @@ def _get_atlas_data_and_labels(atlas_source, atlas_name, symmetric_split=False,
     for label in ElementTree.parse(label_file).findall('.//label'):
         names[int(label.get('index')) + 1] = label.text
     names = list(names.values())
-    return atlas_img, names, lateralized
+    return atlas_img, names, is_lateralized
 
 
 def _merge_probabilistic_maps_juelich(atlas_data, names):
@@ -527,10 +517,7 @@ def _merge_probabilistic_maps_juelich(atlas_data, names):
     to merge labels and maps corresponding to left and right
     regions.
     """
-    if atlas_data.ndim != 4:
-        raise ValueError("Expected a 4D atlas here.")
-    new_names = np.unique([name[:-2] if name.endswith(' L')
-                           or name.endswith(' R') else name for name in names])
+    new_names = np.unique([re.sub(r" (L|R)$", "", name) for name in names])
     new_atlas_data = np.zeros((*atlas_data.shape[:3],
                                len(new_names) - 1))
     for i, name in enumerate(new_names):
@@ -553,14 +540,12 @@ def _merge_labels_juelich(atlas_data, names):
     In this case, we need to merge the labels corresponding to
     left and right regions.
     """
-    if atlas_data.ndim != 3:
-        raise ValueError("Expected a 3D atlas here.")
     labels = np.unique(atlas_data)
     new_atlas_data = atlas_data.copy()
-    new_names = [names[0]]
-    for label, name in zip(labels[1:], names[1:]):
+    new_names = ["Background"]
+    for label, name in zip(labels, names):
         if name.endswith('R') or name.endswith('L'):
-            name = name[:-2]
+            name = re.sub(r" (L|R)$", "", name)
         if name not in new_names:
             new_names.append(name)
         new_atlas_data[atlas_data == label] = new_names.index(name)
@@ -584,9 +569,9 @@ def _compute_symmetric_split(source, atlas_data, names):
     if source == "Juelich":
         for idx in range(len(names)):
             if names[idx].endswith('L'):
-                names[idx] = names[idx].rsplit(" ", 1)[0] + ", left part"
+                names[idx] = re.sub(r" L$", ", left part", names[idx])
             if names[idx].endswith('R'):
-                names[idx] = names[idx].rsplit(" ", 1)[0] + ", right part"
+                names[idx] = re.sub(r" R$", ", right part", names[idx])
 
     new_label = 0
     new_atlas = atlas_data.copy()
