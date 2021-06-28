@@ -1,104 +1,26 @@
 #!/bin/bash
-# This script is meant to be called by the "install" step defined in
-# .travis.yml. See http://docs.travis-ci.com/ for more details.
-# The behavior of the script is controlled by environment variabled defined
-# in the .travis.yml in the top level folder of the project.
-#
-# This script is adapted from a similar script from the scikit-learn repository.
-#
-# License: 3-clause BSD
 
 set -e
 
-# Fix the compilers to workaround avoid having the Python 3.4 build
-# lookup for g++44 unexpectedly.
-export CC=gcc
-export CXX=g++
+echo "CPU Architecture: $TRAVIS_CPU_ARCH."
 
-create_new_venv() {
-    # At the time of writing numpy 1.9.1 is included in the travis
-    # virtualenv but we want to be in control of the numpy version
-    # we are using for example through apt-get install
-    deactivate
-    virtualenv --system-site-packages testvenv
-    source testvenv/bin/activate
-    pip install pytest
-}
+deactivate
 
-echo_requirements_string() {
-    # Echo a requirement string for example
-    # "pip pytest python='2.7.3 scikit-learn=*". It has a hardcoded
-    # list of possible packages to install and looks at _VERSION
-    # environment variables to know whether to install a given package and
-    # if yes which version to install. For example:
-    #   - for numpy, NUMPY_VERSION is used
-    #   - for scikit-learn, SCIKIT_LEARN_VERSION is used
-    TO_INSTALL_ALWAYS="pip pytest"
-    REQUIREMENTS="$TO_INSTALL_ALWAYS"
-    TO_INSTALL_MAYBE="numpy scipy matplotlib scikit-learn pandas flake8 lxml joblib"
-    for PACKAGE in $TO_INSTALL_MAYBE; do
-        # Capitalize package name and add _VERSION
-        PACKAGE_VERSION_VARNAME="${PACKAGE^^}_VERSION"
-        # replace - by _, needed for scikit-learn for example
-        PACKAGE_VERSION_VARNAME="${PACKAGE_VERSION_VARNAME//-/_}"
-        # dereference $PACKAGE_VERSION_VARNAME to figure out the
-        # version to install
-        PACKAGE_VERSION="${!PACKAGE_VERSION_VARNAME}"
-        if [[ -n "$PACKAGE_VERSION" ]]; then
-            if [[ "$PACKAGE_VERSION" == "*" ]]; then
-                REQUIREMENTS="$REQUIREMENTS $PACKAGE"
-            elif [[ "$PACKAGE_VERSION" != "dev" ]]; then
-                REQUIREMENTS="$REQUIREMENTS $PACKAGE==$PACKAGE_VERSION"
-            fi
-        fi
-    done
-    echo $REQUIREMENTS
-}
-
-create_new_travisci_env() {
-    REQUIREMENTS=$(echo_requirements_string)
-    pip install --upgrade $PIP_FLAGS ${REQUIREMENTS}
-    pip install --upgrade pytest pytest-cov
-
-    if [[ "$MATPLOTLIB_VERSION" == "dev" ]];then
-        # Install Matplotlib dev from source
-        pip install git+https://github.com/matplotlib/matplotlib.git
-    fi
-
-    if [[ "$INSTALL_MKL" == "true" ]]; then
-        # Make sure that MKL is used
-        pip install mkl
-    fi
-}
-
-if [[ "$DISTRIB" == "neurodebian" ]]; then
-    create_new_venv
-    bash <(wget -q -O- http://neuro.debian.net/_files/neurodebian-travis.sh)
-    sudo apt-get install -qq python-scipy python-pytest python-nibabel python-sklearn python-joblib
-
-elif [[ "$DISTRIB" == "travisci" ]]; then
-    create_new_travisci_env
-    # Note: nibabel is in setup.py install_requires so nibabel will
-    # always be installed eventually. Defining NIBABEL_VERSION is only
-    # useful if you happen to want a specific nibabel version rather
-    # than the latest available one.
-    if [[ -n "$NIBABEL_VERSION" ]]; then
-        pip install nibabel=="$NIBABEL_VERSION"
-    fi
-
+if [[ $TRAVIS_CPU_ARCH == arm64 ]]; then
+    MINICONDA_URL="https://github.com/conda-forge/miniforge/releases/latest/download/Miniforge3-Linux-aarch64.sh"
 else
-    echo "Unrecognized distribution ($DISTRIB); cannot setup CI environment."
-    exit 1
+    MINICONDA_URL="https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh"
 fi
 
-pip install psutil memory_profiler
+wget $MINICONDA_URL -O miniconda.sh
+MINICONDA_PATH=$HOME/miniconda
+chmod +x miniconda.sh && ./miniconda.sh -b -p $MINICONDA_PATH
+export PATH=$MINICONDA_PATH/bin:$PATH
+conda update --yes conda
 
-if [[ "$COVERAGE" == "true" ]]; then
-    pip install codecov
-fi
-
-# numpy not installed when skipping the tests so we do not want to run
-# setup.py install
-if [[ "$SKIP_TESTS" != "true" ]]; then
-    pip install $PIP_FLAGS .
-fi
+conda init bash
+conda create -n testenv -yq
+conda install -n testenv -yq python=3.8 numpy scipy scikit-learn matplotlib pandas pytest pytest-xdist joblib nibabel cython requests
+source activate testenv
+python -m pip install --user --upgrade --progress-bar off pip setuptools
+python -m pip install .
