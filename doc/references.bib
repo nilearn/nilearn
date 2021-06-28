@@ -11,6 +11,20 @@
 	ABSTRACT={As the size of functional and structural MRI datasets expands, it becomes increasingly important to establish a baseline from which diagnostic relevance may be determined, a processing strategy that efficiently prepares data for analysis, and a statistical approach that identifies important effects in a manner that is both robust and reproducible. In this paper, we introduce a multivariate analytic approach that optimizes sensitivity and reduces unnecessary testing. We demonstrate the utility of this mega-analytic approach by identifying the effects of age and gender on the resting-state networks (RSNs) of 603 healthy adolescents and adults (mean age: 23.4 years, range: 12–71 years). Data were collected on the same scanner, preprocessed using an automated analysis pipeline based in SPM, and studied using group independent component analysis. RSNs were identified and evaluated in terms of three primary outcome measures: time course spectral power, spatial map intensity, and functional network connectivity. Results revealed robust effects of age on all three outcome measures, largely indicating decreases in network coherence and connectivity with increasing age. Gender effects were of smaller magnitude but suggested stronger intra-network connectivity in females and more inter-network connectivity in males, particularly with regard to sensorimotor networks. These findings, along with the analysis approach and statistical framework described here, provide a useful baseline for future investigations of brain networks in health and disease.}
 }
 
+
+@INPROCEEDINGS{Baldassarre2012,
+  author={Baldassarre, Luca and Mourao-Miranda, Janaina and Pontil, Massimiliano},
+  booktitle={2012 Second International Workshop on Pattern Recognition in NeuroImaging},
+  title={Structured Sparsity Models for Brain Decoding from fMRI Data},
+  year={2012},
+  volume={},
+  number={},
+  pages={5-8},
+  doi={10.1109/PRNI.2012.31},
+  url = {http://www0.cs.ucl.ac.uk/staff/M.Pontil/reading/neurosparse_prni.pdf},
+}
+
+
 @article{BEHZADI200790,
 	title = {A component based noise correction method (CompCor) for BOLD and perfusion based fMRI},
 	journal = {NeuroImage},
@@ -55,6 +69,24 @@
 	abstract = {A variety of methods have been developed to identify brain networks with spontaneous, coherent activity in resting-state functional magnetic resonance imaging (fMRI). We propose here a generic statistical framework to quantify the stability of such resting-state networks (RSNs), which was implemented with k-means clustering. The core of the method consists in bootstrapping the available datasets to replicate the clustering process a large number of times and quantify the stable features across all replications. This bootstrap analysis of stable clusters (BASC) has several benefits: (1) it can be implemented in a multi-level fashion to investigate stable RSNs at the level of individual subjects and at the level of a group; (2) it provides a principled measure of RSN stability; and (3) the maximization of the stability measure can be used as a natural criterion to select the number of RSNs. A simulation study validated the good performance of the multi-level BASC on purely synthetic data. Stable networks were also derived from a real resting-state study for 43 subjects. At the group level, seven RSNs were identified which exhibited a good agreement with the previous findings from the literature. The comparison between the individual and group-level stability maps demonstrated the capacity of BASC to establish successful correspondences between these two levels of analysis and at the same time retain some interesting subject-specific characteristics, e.g. the specific involvement of subcortical regions in the visual and fronto-parietal networks for some subjects.}
 }
 
+
+@article {Clarke4766,
+	author = {Clarke, Alex and Tyler, Lorraine K.},
+	title = {Object-Specific Semantic Coding in Human Perirhinal Cortex},
+	volume = {34},
+	number = {14},
+	pages = {4766--4775},
+	year = {2014},
+	doi = {10.1523/JNEUROSCI.2828-13.2014},
+	publisher = {Society for Neuroscience},
+	abstract = {Category-specificity has been demonstrated in the human posterior ventral temporal cortex for a variety of object categories. Although object representations within the ventral visual pathway must be sufficiently rich and complex to support the recognition of individual objects, little is known about how specific objects are represented. Here, we used representational similarity analysis to determine what different kinds of object information are reflected in fMRI activation patterns and uncover the relationship between categorical and object-specific semantic representations. Our results show a gradient of informational specificity along the ventral stream from representations of image-based visual properties in early visual cortex, to categorical representations in the posterior ventral stream. A key finding showed that object-specific semantic information is uniquely represented in the perirhinal cortex, which was also increasingly engaged for objects that are more semantically confusable. These findings suggest a key role for the perirhinal cortex in representing and processing object-specific semantic information that is more critical for highly confusable objects. Our findings extend current distributed models by showing coarse dissociations between objects in posterior ventral cortex, and fine-grained distinctions between objects supported by the anterior medial temporal lobes, including the perirhinal cortex, which serve to integrate complex object information.},
+	issn = {0270-6474},
+	URL = {https://www.jneurosci.org/content/34/14/4766},
+	eprint = {https://www.jneurosci.org/content/34/14/4766.full.pdf},
+	journal = {Journal of Neuroscience}
+}
+
+
 @InProceedings{Collins1999algorithm,
 	author="Collins, D. Louis
 	and Zijdenbos, Alex P.
@@ -88,6 +120,38 @@
 	abstract = {Abstract Connectivity analyses and computational modeling of human brain function from fMRI data frequently require the specification of regions of interests (ROIs). Several analyses have relied on atlases derived from anatomical or cyto-architectonic boundaries to specify these ROIs, yet the suitability of atlases for resting state functional connectivity (FC) studies has yet to be established. This article introduces a data-driven method for generating an ROI atlas by parcellating whole brain resting-state fMRI data into spatially coherent regions of homogeneous FC. Several clustering statistics are used to compare methodological trade-offs as well as determine an adequate number of clusters. Additionally, we evaluate the suitability of the parcellation atlas against four ROI atlases (Talairach and Tournoux, Harvard-Oxford, Eickoff-Zilles, and Automatic Anatomical Labeling) and a random parcellation approach. The evaluated anatomical atlases exhibit poor ROI homogeneity and do not accurately reproduce FC patterns present at the voxel scale. In general, the proposed functional and random parcellations perform equivalently for most of the metrics evaluated. ROI size and hence the number of ROIs in a parcellation had the greatest impact on their suitability for FC analysis. With 200 or fewer ROIs, the resulting parcellations consist of ROIs with anatomic homology, and thus offer increased interpretability. Parcellation results containing higher numbers of ROIs (600 or 1,000) most accurately represent FC patterns present at the voxel scale and are preferable when interpretability can be sacrificed for accuracy. The resulting atlases and clustering software have been made publicly available at: http://www.nitrc.org/projects/cluster\_roi/. Hum Brain Mapp, 2012. © 2011 Wiley Periodicals, Inc},
 	year = {2012}
 }
+
+
+@inproceedings{dohmatob:hal-01147731,
+  TITLE = {{Speeding-up model-selection in GraphNet via early-stopping and univariate feature-screening}},
+  AUTHOR = {Dohmatob, Elvis and Eickenberg, Michael and Thirion, Bertrand and Varoquaux, Ga{\"e}l},
+  URL = {https://hal.inria.fr/hal-01147731},
+  BOOKTITLE = {{PRNI}},
+  ADDRESS = {Stanford, United States},
+  YEAR = {2015},
+  MONTH = Jun,
+  KEYWORDS = {univariate feature-screening ; model-selection ; cross-validation ; MRI ; supervised learning ; pattern-recognition ; sparsity ; GraphNet ; S-Lasso ; TV-L1 ; spatial priors},
+  PDF = {https://hal.inria.fr/hal-01147731/file/paper.pdf},
+  HAL_ID = {hal-01147731},
+  HAL_VERSION = {v1},
+}
+
+
+@inproceedings{dohmatob:hal-00991743,
+  TITLE = {{Benchmarking solvers for TV-l1 least-squares and logistic regression in brain imaging}},
+  AUTHOR = {Dohmatob, Elvis and Gramfort, Alexandre and Thirion, Bertrand and Varoquaux, Ga{\"e}l},
+  URL = {https://hal.inria.fr/hal-00991743},
+  BOOKTITLE = {{PRNI 2014 - 4th International Workshop on Pattern Recognition in NeuroImaging}},
+  ADDRESS = {T{\"u}bingen, Germany},
+  PUBLISHER = {{IEEE}},
+  YEAR = {2014},
+  MONTH = Jun,
+  KEYWORDS = {sparse models ; fMRI ; non-smooth convex optimization ; regression ; classification ; Total Variation},
+  PDF = {https://hal.inria.fr/hal-00991743/file/PRNI2014_TVl1.pdf},
+  HAL_ID = {hal-00991743},
+  HAL_VERSION = {v1},
+}
+
 
 @article {Dosenbach20101358,
 	author = {Dosenbach, Nico U. F. and Nardos, Binyam and Cohen, Alexander L. and Fair, Damien A. and Power, Jonathan D. and Church, Jessica A. and Nelson, Steven M. and Wig, Gagan S. and Vogel, Alecia C. and Lessov-Schlaggar, Christina N. and Barnes, Kelly Anne and Dubis, Joseph W. and Feczko, Eric and Coalson, Rebecca S. and Pruett, John R. and Barch, Deanna M. and Petersen, Steven E. and Schlaggar, Bradley L.},
@@ -132,6 +196,22 @@
 	journal = {arXiv:1206.3249 [cs, stat]},
 	primaryclass = {cs, stat}
 }
+
+
+@article{ETZEL2013261,
+    title = {Searchlight analysis: Promise, pitfalls, and potential},
+    journal = {NeuroImage},
+    volume = {78},
+    pages = {261-269},
+    year = {2013},
+    issn = {1053-8119},
+    doi = {https://doi.org/10.1016/j.neuroimage.2013.03.041},
+    url = {https://www.sciencedirect.com/science/article/pii/S1053811913002917},
+    author = {Joset A. Etzel and Jeffrey M. Zacks and Todd S. Braver},
+    keywords = {Functional magnetic resonance imaging (fMRI), Multivariate pattern analysis (MVPA), Searchlight analysis, Support vector machines (SVM), Information mapping, Classification},
+    abstract = {Multivariate pattern analysis (MVPA) is an increasingly popular approach for characterizing the information present in neural activity as measured by fMRI. For neuroimaging researchers, the searchlight technique serves as the most intuitively appealing means of implementing MVPA with fMRI data. However, searchlight approaches carry with them a number of special concerns and limitations that can lead to serious interpretation errors in practice, such as misidentifying a cluster as informative, or failing to detect truly informative voxels. Here we describe how such distorted results can occur, using both schematic illustrations and examples from actual fMRI datasets. We recommend that confirmatory and sensitivity tests, such as the ones prescribed here, should be considered a necessary stage of searchlight analysis interpretation, and that their adoption will allow the full potential of searchlight analysis to be realized.}
+}
+
 
 @article{Fletcher2007,
 	title = {Riemannian geometry for the statistical analysis of diffusion tensor data},
@@ -308,6 +388,37 @@
 	year = {1994}
 }
 
+
+@inproceedings{gramfort:hal-00839984,
+  title = {{Identifying predictive regions from fMRI with TV-L1 prior}},
+  author = {Gramfort, Alexandre and Thirion, Bertrand and Varoquaux, Ga{\"e}l},
+  url = {https://hal.inria.fr/hal-00839984},
+  booktitle = {{Pattern Recognition in Neuroimaging (PRNI)}},
+  address = {Philadelphia, United States},
+  publisher = {{IEEE}},
+  year = {2013},
+  month = Jun,
+  keywords = {fMRI ; supervised learning ; total-variation ; sparse ; decoding ; primal-dual optimization ; support recovery},
+  pdf = {https://hal.inria.fr/hal-00839984/file/paper.pdf},
+  HAL_ID = {hal-00839984},
+  HAL_VERSION = {v1},
+}
+
+
+@article{GROSENICK2013304,
+title = {Interpretable whole-brain prediction analysis with GraphNet},
+journal = {NeuroImage},
+volume = {72},
+pages = {304-321},
+year = {2013},
+issn = {1053-8119},
+doi = {https://doi.org/10.1016/j.neuroimage.2012.12.062},
+url = {https://www.sciencedirect.com/science/article/pii/S1053811912012487},
+author = {Logan Grosenick and Brad Klingenberg and Kiefer Katovich and Brian Knutson and Jonathan E. Taylor},
+abstract = {Multivariate machine learning methods are increasingly used to analyze neuroimaging data, often replacing more traditional “mass univariate” techniques that fit data one voxel at a time. In the functional magnetic resonance imaging (fMRI) literature, this has led to broad application of “off-the-shelf” classification and regression methods. These generic approaches allow investigators to use ready-made algorithms to accurately decode perceptual, cognitive, or behavioral states from distributed patterns of neural activity. However, when applied to correlated whole-brain fMRI data these methods suffer from coefficient instability, are sensitive to outliers, and yield dense solutions that are hard to interpret without arbitrary thresholding. Here, we develop variants of the Graph-constrained Elastic-Net (GraphNet), a fast, whole-brain regression and classification method developed for spatially and temporally correlated data that automatically yields interpretable coefficient maps (Grosenick et al., 2009b). GraphNet methods yield sparse but structured solutions by combining structured graph constraints (based on knowledge about coefficient smoothness or connectivity) with a global sparsity-inducing prior that automatically selects important variables. Because GraphNet methods can efficiently fit regression or classification models to whole-brain, multiple time-point data sets and enhance classification accuracy relative to volume-of-interest (VOI) approaches, they eliminate the need for inherently biased VOI analyses and allow whole-brain fitting without the multiple comparison problems that plague mass univariate and roaming VOI (“searchlight”) methods. As fMRI data are unlikely to be normally distributed, we (1) extend GraphNet to include robust loss functions that confer insensitivity to outliers, (2) equip them with “adaptive” penalties that asymptotically guarantee correct variable selection, and (3) develop a novel sparse structured Support Vector GraphNet classifier (SVGN). When applied to previously published data (Knutson et al., 2007), these efficient whole-brain methods significantly improved classification accuracy over previously reported VOI-based analyses on the same data (Grosenick et al., 2008, Knutson et al., 2007) while discovering task-related regions not documented in the original VOI approach. Critically, GraphNet estimates fit to the Knutson et al. (2007) data generalize well to out-of-sample data collected more than three years later on the same task but with different subjects and stimuli (Karmarkar et al., submitted for publication). By enabling robust and efficient selection of important voxels from whole-brain data taken over multiple time points (>100,000 “features”), these methods enable data-driven selection of brain areas that accurately predict single-trial behavior within and across individuals.}
+}
+
+
 @article {Haxby2425,
 	author = {Haxby, James V. and Gobbini, M. Ida and Furey, Maura L. and Ishai, Alumit and Schouten, Jennifer L. and Pietrini, Pietro},
 	title = {Distributed and Overlapping Representations of Faces and Objects in Ventral Temporal Cortex},
@@ -372,6 +483,39 @@
 	keywords = {fMRI, Decision-making, Support vector regression, MVPA, Univariate analysis},
 	abstract = {Multivariate pattern analysis (MVPA) has recently received increasing attention in functional neuroimaging due to its ability to decode mental states from fMRI signals. However, questions remain regarding both the empirical and conceptual relationships between results from MVPA and standard univariate analyses. In the current study, whole-brain univariate and searchlight MVPAs of parametric manipulations of monetary gain and loss in a decision making task (Tom et al., 2007) were compared to identify the differences in the results across these methods and the implications for understanding the underlying mental processes. The MVPA and univariate results did identify some overlapping regions in whole brain analyses. However, an analysis of consistency revealed that in many regions the effect size estimates obtained from MVPA and univariate analysis were uncorrelated. Moreover, comparison of sensitivity showed a general trend towards greater sensitivity to task manipulations by MVPA compared to univariate analysis. These results demonstrate that MVPA methods may provide a different view of the functional organization of mental processing compared to univariate analysis, wherein MVPA is more sensitive to distributed coding of information whereas univariate analysis is more sensitive to global engagement in ongoing tasks. The results also highlight the need for better ways to integrate these methods.}
 }
+
+
+@article{KAHNT2011549,
+    title = {Perceptual Learning and Decision-Making in Human Medial Frontal Cortex},
+    journal = {Neuron},
+    volume = {70},
+    number = {3},
+    pages = {549-559},
+    year = {2011},
+    issn = {0896-6273},
+    doi = {https://doi.org/10.1016/j.neuron.2011.02.054},
+    url = {https://www.sciencedirect.com/science/article/pii/S0896627311002960},
+    author = {Thorsten Kahnt and Marcus Grueschow and Oliver Speck and John-Dylan Haynes},
+    abstract = {Summary
+The dominant view that perceptual learning is accompanied by changes in early sensory representations has recently been challenged. Here we tested the idea that perceptual learning can be accounted for by reinforcement learning involving changes in higher decision-making areas. We trained subjects on an orientation discrimination task involving feedback over 4 days, acquiring fMRI data on the first and last day. Behavioral improvements were well explained by a reinforcement learning model in which learning leads to enhanced readout of sensory information, thereby establishing noise-robust representations of decision variables. We find stimulus orientation encoded in early visual and higher cortical regions such as lateral parietal cortex and anterior cingulate cortex (ACC). However, only activity patterns in the ACC tracked changes in decision variables during learning. These results provide strong evidence for perceptual learning-related changes in higher order areas and suggest that perceptual and reward learning are based on a common neurobiological mechanism.}
+}
+
+
+@article{Kriegeskorte3863,
+	author = {Kriegeskorte, Nikolaus and Goebel, Rainer and Bandettini, Peter},
+	title = {Information-based functional brain mapping},
+	volume = {103},
+	number = {10},
+	pages = {3863--3868},
+	year = {2006},
+	doi = {10.1073/pnas.0600244103},
+	publisher = {National Academy of Sciences},
+	abstract = {The development of high-resolution neuroimaging and multielectrode electrophysiological recording provides neuroscientists with huge amounts of multivariate data. The complexity of the data creates a need for statistical summary, but the local averaging standardly applied to this end may obscure the effects of greatest neuroscientific interest. In neuroimaging, for example, brain mapping analysis has focused on the discovery of activation, i.e., of extended brain regions whose average activity changes across experimental conditions. Here we propose to ask a more general question of the data: Where in the brain does the activity pattern contain information about the experimental condition? To address this question, we propose scanning the imaged volume with a {\textquotedblleft}searchlight,{\textquotedblright} whose contents are analyzed multivariately at each location in the brain.},
+	issn = {0027-8424},
+	URL = {https://www.pnas.org/content/103/10/3863},
+	journal = {Proceedings of the National Academy of Sciences}
+}
+
 
 @article{Laird2011behavioral,
 	author = {Laird, Angela R. and Fox, P. Mickle and Eickhoff, Simon B. and Turner, Jessica A. and Ray, Kimberly L. and McKay, D. Reese and Glahn, David C. and Beckmann, Christian F. and Smith, Stephen M. and Fox, Peter T.},
@@ -448,6 +592,22 @@
 }
 
 
+@article{michel:inria-00563468,
+  TITLE = {{Total variation regularization for fMRI-based prediction of behaviour.}},
+  AUTHOR = {Michel, Vincent and Gramfort, Alexandre and Varoquaux, Ga{\"e}l and Eger, Evelyn and Thirion, Bertrand},
+  URL = {https://hal.inria.fr/inria-00563468},
+  JOURNAL = {{IEEE Transactions on Medical Imaging}},
+  PUBLISHER = {{Institute of Electrical and Electronics Engineers}},
+  VOLUME = {30},
+  NUMBER = {7},
+  PAGES = {1328 - 1340},
+  YEAR = {2011},
+  MONTH = Feb,
+  DOI = {10.1109/TMI.2011.2113378},
+  PDF = {https://hal.inria.fr/inria-00563468/file/arxiv_version.pdf},
+  HAL_ID = {inria-00563468},
+  HAL_VERSION = {v1},
+}
 
 
 @article{MIYAWAKI2008915,
@@ -478,6 +638,28 @@
 	ISSN={1662-5161},    
 	ABSTRACT={Background: Systematic differences in functional connectivity MRI metrics have been consistently observed in autism, with predominantly decreased cortico-cortical connectivity. Previous attempts at single subject classification in high-functioning autism using whole brain point-to-point functional connectivity have yielded about 80% accurate classification of autism vs. control subjects across a wide age range. We attempted to replicate the method and results using the Autism Brain Imaging Data Exchange (ABIDE) including resting state fMRI data obtained from 964 subjects and 16 separate international sites.Methods: For each of 964 subjects, we obtained pairwise functional connectivity measurements from a lattice of 7266 regions of interest covering the gray matter (26.4 million “connections”) after preprocessing that included motion and slice timing correction, coregistration to an anatomic image, normalization to standard space, and voxelwise removal by regression of motion parameters, soft tissue, CSF, and white matter signals. Connections were grouped into multiple bins, and a leave-one-out classifier was evaluated on connections comprising each set of bins. Age, age-squared, gender, handedness, and site were included as covariates for the classifier.Results: Classification accuracy significantly outperformed chance but was much lower for multisite prediction than for previous single site results. As high as 60% accuracy was obtained for whole brain classification, with the best accuracy from connections involving regions of the default mode network, parahippocampaland fusiform gyri, insula, Wernicke Area, and intraparietal sulcus. The classifier score was related to symptom severity, social function, daily living skills, and verbal IQ. Classification accuracy was significantly higher for sites with longer BOLD imaging times.Conclusions: Multisite functional connectivity classification of autism outperformed chance using a simple leave-one-out classifier, but exhibited poorer accuracy than for single site results. Attempts to use multisite classifiers will likely require improved classification algorithms, longer BOLD imaging times, and standardized acquisition parameters for possible future clinical utility.}
 }
+
+
+@Article{Naselaris2011,
+    author={Naselaris, Thomas and Kay, Kendrick N. and Nishimoto, Shinji and Gallant, Jack L.},
+    title={Encoding and decoding in fMRI},
+    journal={NeuroImage},
+    year={2011},
+    month={May},
+    day={15},
+    edition={2010/08/04},
+    volume={56},
+    number={2},
+    pages={400-410},
+    keywords={Brain/*physiology; Brain Mapping/*methods; Humans; Image Processing, Computer-Assisted/*methods; *Magnetic Resonance Imaging; *Models, Neurological},
+    abstract={Over the past decade fMRI researchers have developed increasingly sensitive techniques for analyzing the information represented in BOLD activity. The most popular of these techniques is linear classification, a simple technique for decoding information about experimental stimuli or tasks from patterns of activity across an array of voxels. A more recent development is the voxel-based encoding model, which describes the information about the stimulus or task that is represented in the activity of single voxels. Encoding and decoding are complementary operations: encoding uses stimuli to predict activity while decoding uses activity to predict information about the stimuli. However, in practice these two operations are often confused, and their respective strengths and weaknesses have not been made clear. Here we use the concept of a linearizing feature space to clarify the relationship between encoding and decoding. We show that encoding and decoding operations can both be used to investigate some of the most common questions about how information is represented in the brain. However, focusing on encoding models offers two important advantages over decoding. First, an encoding model can in principle provide a complete functional description of a region of interest, while a decoding model can provide only a partial description. Second, while it is straightforward to derive an optimal decoding model from an encoding model it is much more difficult to derive an encoding model from a decoding model. We propose a systematic modeling approach that begins by estimating an encoding model for every voxel in a scan and ends by using the estimated encoding models to perform decoding.},
+    note={20691790[pmid]},
+    issn={1095-9572},
+    doi={10.1016/j.neuroimage.2010.07.073},
+    url={https://pubmed.ncbi.nlm.nih.gov/20691790},
+    language={eng}
+}
+
 
 @ARTICLE{Nooner2012NKI,
 	AUTHOR={Nooner, Kate and Colcombe, Stanley and Tobe, Russell and Mennes, Maarten and Benedict, Melissa and Moreno, Alexis and Panek, Laura and Brown, Shaquanna and Zavitz, Stephen and Li, Qingyang and Sikka, Sharad and Gutman, David and Bangaru, Saroja and Schlachter, Rochelle Tziona and Kamiel, Stephanie and Anwar, Ayesha and Hinz, Caitlin and Kaplan, Michelle and Rachlin, Anna and Adelsberg, Samantha and Cheung, Brian and Khanuja, Ranjit and Yan, Chaogan and Craddock, Cameron and Calhoun, Vincent and Courtney, William and King, Margaret and Wood, Dylan and Cox, Christine and Kelly, Clare and DiMartino, Adriana and Petkova, Eva and Reiss, Philip and Duan, Nancy and Thompsen, Dawn and Biswal, Bharat and Coffey, Barbara and Hoptman, Matthew and Javitt, Daniel and Pomara, Nunzio and Sidtis, John and Koplewicz, Harold and Castellanos, Francisco and Leventhal, Bennett and Milham, Michael},   	 
