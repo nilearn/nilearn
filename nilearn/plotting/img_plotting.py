@@ -215,7 +215,7 @@ def _plot_img_with_bg(img, bg_img=None, cut_coords=None,
         display.title(title)
     if hasattr(display, '_cbar'):
         cbar = display._cbar
-        _crop_colorbar(cbar, cbar_vmin, cbar_vmax)
+        _crop_colorbar(cbar, cbar_vmin, cbar_vmax, threshold)
     if output_file is not None:
         display.savefig(output_file)
         display.close()
@@ -223,7 +223,7 @@ def _plot_img_with_bg(img, bg_img=None, cut_coords=None,
     return display
 
 
-def _crop_colorbar(cbar, cbar_vmin, cbar_vmax):
+def _crop_colorbar(cbar, cbar_vmin, cbar_vmax, threshold):
     """Crop a colorbar to show from cbar_vmin to cbar_vmax.
     Used when symmetric_cbar=False is used.
 
@@ -237,6 +237,10 @@ def _crop_colorbar(cbar, cbar_vmin, cbar_vmax):
         cbar_vmin = cbar_tick_locs.min()
     new_tick_locs = np.linspace(cbar_vmin, cbar_vmax,
                                 len(cbar_tick_locs))
+    if threshold is not None:
+        idx_closest = np.argmin([abs(abs(new_tick_locs) - abs(threshold))
+                                 for tick in new_tick_locs])
+        new_tick_locs[idx_closest] = threshold
 
     # matplotlib >= 3.2.0 no longer normalizes axes between 0 and 1
     # See https://matplotlib.org/3.2.1/api/prev_api_changes/api_changes_3.2.0.html
