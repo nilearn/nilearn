@@ -223,7 +223,7 @@ def _plot_img_with_bg(img, bg_img=None, cut_coords=None,
     return display
 
 
-def _crop_colorbar(cbar, cbar_vmin, cbar_vmax, threshold):
+def _crop_colorbar(cbar, cbar_vmin, cbar_vmax, threshold=None):
     """Crop a colorbar to show from cbar_vmin to cbar_vmax.
     Used when symmetric_cbar=False is used.
 

@@ -1212,7 +1212,8 @@ def _get_symmetrical_thresholded_cbar_ticks(norm, offset, nb_ticks=5):
     ticks = np.linspace(norm.vmin, norm.vmax, nb_ticks)
     if offset > 0 and offset / norm.vmax > 0.12:
         diff = [abs(abs(tick) - offset) for tick in ticks]
-        # Edge case where the thresholds are exactly at the same distance to 4 ticks
+        # Edge case where the thresholds are exactly at
+        # the same distance to 4 ticks
         if diff.count(min(diff)) == 4:
             idx_closest = np.sort(np.argpartition(diff, 4)[:4])
             idx_closest = np.in1d(ticks, np.sort(ticks[idx_closest])[1:3])
