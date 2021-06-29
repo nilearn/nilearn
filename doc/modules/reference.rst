@@ -102,7 +102,11 @@ the :ref:`user guide <user_guide>` for more information and usage examples.
    fetch_neurovault_motor_task
    get_data_dirs
    load_mni152_template
+   load_mni152_gm_template
+   load_mni152_wm_template
    load_mni152_brain_mask
+   load_mni152_gm_mask
+   load_mni152_wm_mask
    fetch_language_localizer_demo_dataset
    fetch_bids_langloc_dataset
    fetch_openneuro_dataset_index
@@ -244,7 +248,7 @@ the :ref:`user guide <user_guide>` for more information and usage examples.
    compute_epi_mask
    compute_multi_epi_mask
    compute_brain_mask
-   compute_multi_gray_matter_mask
+   compute_multi_brain_mask
    compute_background_mask
    compute_multi_background_mask
    intersect_masks

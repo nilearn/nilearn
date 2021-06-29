@@ -518,6 +518,7 @@ def _merge_probabilistic_maps_juelich(atlas_data, names):
     regions.
     """
     new_names = np.unique([re.sub(r" (L|R)$", "", name) for name in names])
+    print(new_names)
     new_atlas_data = np.zeros((*atlas_data.shape[:3],
                                len(new_names) - 1))
     for i, name in enumerate(new_names):

@@ -20,3 +20,4 @@ ignore:
   - "nilearn/*/tests/"
   - "nilearn/conftest.py"
   - "nilearn/version.py"
+  - "nilearn/datasets/data/convert_templates.py"

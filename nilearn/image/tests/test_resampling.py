@@ -792,6 +792,9 @@ def test_coord_transform_trivial():
 
 @pytest.mark.skipif(os.environ.get('APPVEYOR') == 'True',
                     reason='This test too slow (7-8 minutes) on AppVeyor')
+@pytest.mark.skipif((os.environ.get('TRAVIS') == 'true'
+                     and os.environ.get('TRAVIS_CPU_ARCH') == 'arm64'),
+                    reason='This test does not run on ARM arch.')
 def test_resample_img_segmentation_fault():
     # see https://github.com/nilearn/nilearn/issues/346
     shape_in = (64, 64, 64)

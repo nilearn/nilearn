@@ -1,25 +1,40 @@
 """
 Downloading NeuroImaging datasets: structural datasets
+
+# License: simplified BSD
 """
+
 import warnings
 import os
+import functools
 from pathlib import Path
 
 import numpy as np
 from scipy import ndimage
 from sklearn.utils import Bunch
 
-from .utils import (_get_dataset_dir, _fetch_files,
-                    _get_dataset_descr, _uncompress_file)
+from .utils import (_get_dataset_dir, _fetch_files, _get_dataset_descr)
 
-from .._utils import check_niimg, niimg
-from ..image import new_img_like, get_data
+from .._utils import check_niimg
+from ..image import new_img_like, get_data, resampling
+
 
 _package_directory = os.path.dirname(os.path.abspath(__file__))
-# Useful for the very simple examples
-MNI152_FILE_PATH = os.path.join(_package_directory, "data",
-                                "avg152T1_brain.nii.gz")
+MNI152_FILE_PATH = os.path.join(
+    _package_directory, "data",
+    "mni_icbm152_t1_tal_nlin_sym_09a_converted.nii.gz")
+GM_MNI152_FILE_PATH = os.path.join(
+    _package_directory, "data",
+    "mni_icbm152_gm_tal_nlin_sym_09a_converted.nii.gz")
+WM_MNI152_FILE_PATH = os.path.join(
+    _package_directory, "data",
+    "mni_icbm152_wm_tal_nlin_sym_09a_converted.nii.gz")
 FSAVERAGE5_PATH = os.path.join(_package_directory, "data", "fsaverage5")
+
+
+# workaround for
+# https://github.com/nilearn/nilearn/pull/2738#issuecomment-869018842
+_MNI_RES_WARNING_ALREADY_SHOWN = False
 
 
 def fetch_icbm152_2009(data_dir=None, url=None, resume=True, verbose=1):
@@ -51,7 +66,7 @@ def fetch_icbm152_2009(data_dir=None, url=None, resume=True, verbose=1):
         "t1", "t2", "t2_relax", "pd": anatomical images obtained with the
         given modality (resp. T1, T2, T2 relaxometry and proton
         density weighted). Values are file paths.
-        "gm", "wm", "csf": segmented images, giving resp. gray matter,
+        "gm", "wm", "csf": segmented images, giving resp. grey matter,
         white matter and cerebrospinal fluid. Values are file paths.
         "eye_mask", "face_mask", "mask": use these images to mask out
         parts of mri images. Values are file paths.
@@ -81,18 +96,18 @@ def fetch_icbm152_2009(data_dir=None, url=None, resume=True, verbose=1):
             "eye_mask", "face_mask", "mask")
     filenames = [(os.path.join("mni_icbm152_nlin_sym_09a", name), url, opts)
                  for name in (
-                    "mni_icbm152_csf_tal_nlin_sym_09a.nii.gz",
-                    "mni_icbm152_gm_tal_nlin_sym_09a.nii.gz",
-                    "mni_icbm152_wm_tal_nlin_sym_09a.nii.gz",
+        "mni_icbm152_csf_tal_nlin_sym_09a.nii.gz",
+        "mni_icbm152_gm_tal_nlin_sym_09a.nii.gz",
+        "mni_icbm152_wm_tal_nlin_sym_09a.nii.gz",
 
-                    "mni_icbm152_pd_tal_nlin_sym_09a.nii.gz",
-                    "mni_icbm152_t1_tal_nlin_sym_09a.nii.gz",
-                    "mni_icbm152_t2_tal_nlin_sym_09a.nii.gz",
-                    "mni_icbm152_t2_relx_tal_nlin_sym_09a.nii.gz",
+        "mni_icbm152_pd_tal_nlin_sym_09a.nii.gz",
+        "mni_icbm152_t1_tal_nlin_sym_09a.nii.gz",
+        "mni_icbm152_t2_tal_nlin_sym_09a.nii.gz",
+        "mni_icbm152_t2_relx_tal_nlin_sym_09a.nii.gz",
 
-                    "mni_icbm152_t1_tal_nlin_sym_09a_eye_mask.nii.gz",
-                    "mni_icbm152_t1_tal_nlin_sym_09a_face_mask.nii.gz",
-                    "mni_icbm152_t1_tal_nlin_sym_09a_mask.nii.gz")]
+        "mni_icbm152_t1_tal_nlin_sym_09a_eye_mask.nii.gz",
+        "mni_icbm152_t1_tal_nlin_sym_09a_face_mask.nii.gz",
+        "mni_icbm152_t1_tal_nlin_sym_09a_mask.nii.gz")]
 
     dataset_name = 'icbm152_2009'
     data_dir = _get_dataset_dir(dataset_name, data_dir=data_dir,
@@ -106,38 +121,206 @@ def fetch_icbm152_2009(data_dir=None, url=None, resume=True, verbose=1):
     return Bunch(**params)
 
 
-def load_mni152_template():
-    """Load skullstripped 2mm version of the MNI152 originally distributed
-    with FSL.
+@functools.lru_cache(maxsize=3)
+def load_mni152_template(resolution=None):
+    """Load the MNI152 skullstripped T1 template.
+    This function takes the skullstripped, re-scaled 1mm-resolution version of
+    the MNI ICBM152 T1 template and re-samples it using a different resolution,
+    if specified.
 
     For more information, see :footcite:`FONOV2011313`,
     and :footcite:`Fonov2009`.
 
+    Parameters
+    ----------
+    resolution: int, optional, Default = 2
+        If resolution is different from 1, the template is re-sampled with the
+        specified resolution.
+
+        .. versionadded:: 0.8.1
+
     Returns
     -------
-    mni152_template : nibabel object corresponding to the template
+    mni152_template : Nifti1Image, image representing the re-sampled
+        whole-brain template
+
+    See Also
+    --------
+    nilearn.datasets.load_mni152_gm_template : for details about version of the
+        MNI152 grey-matter template.
+
+    nilearn.datasets.load_mni152_wm_template : for details about version of the
+        MNI152 white-matter template.
 
     References
     ----------
     .. footbibliography::
 
     """
-    return check_niimg(MNI152_FILE_PATH)
+
+    global _MNI_RES_WARNING_ALREADY_SHOWN
+    if resolution is None:
+        if not _MNI_RES_WARNING_ALREADY_SHOWN:
+            warnings.warn("Default resolution of the MNI template will change "
+                          "from 2mm to 1mm in version 0.10.0", FutureWarning)
+            _MNI_RES_WARNING_ALREADY_SHOWN = True
+        resolution = 2
+
+    brain_template = check_niimg(MNI152_FILE_PATH)
+
+    # Typecasting
+    brain_data = get_data(brain_template).astype("float32")
+
+    # Re-scale template from 0 to 1
+    brain_data /= brain_data.max()
+    new_brain_template = new_img_like(brain_template, brain_data)
+
+    # Resample template according to the pre-specified resolution, if different
+    # than 1
+    if resolution != 1:
+        new_brain_template = resampling.resample_img(new_brain_template,
+                                                     np.eye(3) * resolution)
+
+    return new_brain_template
 
 
-def load_mni152_brain_mask():
-    """Load brain mask from MNI152 T1 template
+def load_mni152_gm_template(resolution=None):
+    """Load the MNI152 grey-matter template.
+    This function takes the re-scaled 1mm-resolution version of the grey-matter
+    MNI ICBM152 template and re-samples it using a different resolution,
+    if specified.
 
-    .. versionadded:: 0.2.5
+    .. versionadded:: 0.8.1
+
+    Parameters
+    ----------
+    resolution: int, optional, Default = 2
+        If resolution is different from 1, the template is re-sampled with the
+        specified resolution.
 
     Returns
     -------
-    mask_img : Nifti-like mask image corresponding to grey and white matter.
+    gm_mni152_template : Nifti1Image, image representing the resampled
+        grey-matter template
+
+    See Also
+    --------
+    nilearn.datasets.load_mni152_template : for details about version of the
+        MNI152 T1 template.
+
+    nilearn.datasets.load_mni152_wm_template : for details about version of the
+        MNI152 white-matter template.
+
+    """
+
+    global _MNI_RES_WARNING_ALREADY_SHOWN
+    if resolution is None:
+        if not _MNI_RES_WARNING_ALREADY_SHOWN:
+            warnings.warn("Default resolution of the MNI template will change "
+                          "from 2mm to 1mm in version 0.10.0", FutureWarning)
+            _MNI_RES_WARNING_ALREADY_SHOWN = True
+        resolution = 2
+
+    gm_template = check_niimg(GM_MNI152_FILE_PATH)
+
+    # Typecasting
+    gm_data = get_data(gm_template).astype("float32")
+
+    # Re-scale template from 0 to 1
+    gm_data /= gm_data.max()
+    new_gm_template = new_img_like(gm_template, gm_data)
+
+    # Resample template according to the pre-specified resolution, if different
+    # than 1
+    if resolution != 1:
+        new_gm_template = resampling.resample_img(new_gm_template,
+                                                  np.eye(3) * resolution)
+
+    return new_gm_template
+
+
+def load_mni152_wm_template(resolution=None):
+    """Load the MNI152 white-matter template.
+    This function takes the re-scaled 1mm-resolution version of the
+    white-matter MNI ICBM152 template and re-samples it using a different
+    resolution, if specified.
+
+    .. versionadded:: 0.8.1
+
+    Parameters
+    ----------
+    resolution: int, optional, Default = 2
+        If resolution is different from 1, the template is re-sampled with the
+        specified resolution.
+
+    Returns
+    -------
+    wm_mni152_template : Nifti1Image, image representing the resampled
+        white-matter template
+
+    See Also
+    --------
+    nilearn.datasets.load_mni152_template : for details about version of the
+        MNI152 T1 template.
+
+    nilearn.datasets.load_mni152_gm_template : for details about version of the
+        MNI152 grey-matter template.
+
+    """
+
+    global _MNI_RES_WARNING_ALREADY_SHOWN
+    if resolution is None:
+        if not _MNI_RES_WARNING_ALREADY_SHOWN:
+            warnings.warn("Default resolution of the MNI template will change "
+                          "from 2mm to 1mm in version 0.10.0", FutureWarning)
+            _MNI_RES_WARNING_ALREADY_SHOWN = True
+        resolution = 2
+
+    wm_template = check_niimg(WM_MNI152_FILE_PATH)
+
+    # Typecasting
+    wm_data = get_data(wm_template).astype("float32")
+
+    # Re-scale template from 0 to 1
+    wm_data /= wm_data.max()
+    new_wm_template = new_img_like(wm_template, wm_data)
+
+    # Resample template according to the pre-specified resolution, if different
+    # than 1
+    if resolution != 1:
+        new_wm_template = resampling.resample_img(new_wm_template,
+                                                  np.eye(3) * resolution)
+
+    return new_wm_template
+
+
+def load_mni152_brain_mask(resolution=None, threshold=0.2):
+    """Load the MNI152 whole-brain mask.
+    This function takes the whole-brain MNI152 T1 template and threshold it,
+    in order to obtain the corresponding whole-brain mask.
+
+    .. versionadded:: 0.2.5
+
+    Parameters
+    ----------
+    resolution: int, optional, Default = 2
+        If resolution is different from 1, the template loaded is first
+        re-sampled with the specified resolution.
+
+        .. versionadded:: 0.8.1
+
+    threshold : float, optional
+        Values of the MNI152 T1 template above this threshold will be included.
+        Default=0.2
+
+    Returns
+    -------
+    mask_img : Nifti1Image, image corresponding to the whole-brain mask.
 
     Notes
     -----
-    Refer to load_mni152_template function for more information about the MNI152
-    T1 template
+    Refer to load_mni152_template function for more information about the
+    MNI152 T1 template.
 
     See Also
     --------
@@ -145,16 +328,142 @@ def load_mni152_brain_mask():
         MNI152 T1 template and related.
 
     """
+
+    global _MNI_RES_WARNING_ALREADY_SHOWN
+    if resolution is None:
+        if not _MNI_RES_WARNING_ALREADY_SHOWN:
+            warnings.warn("Default resolution of the MNI template will change "
+                          "from 2mm to 1mm in version 0.10.0", FutureWarning)
+            _MNI_RES_WARNING_ALREADY_SHOWN = True
+        resolution = 2
+
     # Load MNI template
-    target_img = load_mni152_template()
-    mask_voxels = (get_data(target_img) > 0).astype(int)
+    target_img = load_mni152_template(resolution=resolution)
+    mask_voxels = (get_data(target_img) > threshold).astype("int8")
     mask_img = new_img_like(target_img, mask_voxels)
+
     return mask_img
 
 
+def load_mni152_gm_mask(resolution=None, threshold=0.2, n_iter=2):
+    """Load the MNI152 grey-matter mask.
+    This function takes the grey-matter MNI152 template and threshold it, in
+    order to obtain the corresponding grey-matter mask.
+
+    .. versionadded:: 0.8.1
+
+    Parameters
+    ----------
+    resolution: int, optional, Default = 2
+        If resolution is different from 1, the template loaded is first
+        re-sampled with the specified resolution.
+
+    threshold : float, optional
+        Values of the grey-matter MNI152 template above this threshold will be
+        included. Default=0.2
+
+    n_iter: int, optional, Default = 2
+        Number of repetitions of dilation and erosion steps performed in
+        scipy.ndimage.binary_closing function.
+
+    Returns
+    -------
+    gm_mask_img : Nifti1Image, image corresponding to the grey-matter mask.
+
+    Notes
+    -----
+    Refer to load_mni152_gm_template function for more information about the
+    MNI152 grey-matter template.
+
+    See Also
+    --------
+    nilearn.datasets.load_mni152_gm_template : for details about version of the
+        MNI152 grey-matter template and related.
+
+    """
+
+    global _MNI_RES_WARNING_ALREADY_SHOWN
+    if resolution is None:
+        if not _MNI_RES_WARNING_ALREADY_SHOWN:
+            warnings.warn("Default resolution of the MNI template will change "
+                          "from 2mm to 1mm in version 0.10.0", FutureWarning)
+            _MNI_RES_WARNING_ALREADY_SHOWN = True
+        resolution = 2
+
+    # Load MNI template
+    gm_target = load_mni152_gm_template(resolution=resolution)
+    gm_target_img = check_niimg(gm_target)
+    gm_target_data = get_data(gm_target_img)
+
+    gm_target_mask = (gm_target_data > threshold).astype("int8")
+
+    gm_target_mask = ndimage.binary_closing(gm_target_mask, iterations=n_iter)
+    gm_mask_img = new_img_like(gm_target_img, gm_target_mask)
+
+    return gm_mask_img
+
+
+def load_mni152_wm_mask(resolution=None, threshold=0.2, n_iter=2):
+    """Load the MNI152 white-matter mask.
+    This function takes the white-matter MNI152 template and threshold it, in
+    order to obtain the corresponding white-matter mask.
+
+    .. versionadded:: 0.8.1
+
+    Parameters
+    ----------
+    resolution: int, optional, Default = 2
+        If resolution is different from 1, the template loaded is first
+        re-sampled with the specified resolution.
+
+    threshold : float, optional
+        Values of the white-matter MNI152 template above this threshold will be
+        included. Default=0.2
+
+    n_iter: int, optional, Default = 2
+        Number of repetitions of dilation and erosion steps performed in
+        scipy.ndimage.binary_closing function.
+
+    Returns
+    -------
+    wm_mask_img : Nifti1Image, image corresponding to the white-matter mask.
+
+    Notes
+    -----
+    Refer to load_mni152_gm_template function for more information about the
+    MNI152 white-matter template.
+
+    See Also
+    --------
+    nilearn.datasets.load_mni152_wm_template : for details about version of the
+        MNI152 white-matter template and related.
+
+    """
+
+    global _MNI_RES_WARNING_ALREADY_SHOWN
+    if resolution is None:
+        if not _MNI_RES_WARNING_ALREADY_SHOWN:
+            warnings.warn("Default resolution of the MNI template will change "
+                          "from 2mm to 1mm in version 0.10.0", FutureWarning)
+            _MNI_RES_WARNING_ALREADY_SHOWN = True
+        resolution = 2
+
+    # Load MNI template
+    wm_target = load_mni152_wm_template(resolution=resolution)
+    wm_target_img = check_niimg(wm_target)
+    wm_target_data = get_data(wm_target_img)
+
+    wm_target_mask = (wm_target_data > threshold).astype("int8")
+
+    wm_target_mask = ndimage.binary_closing(wm_target_mask, iterations=n_iter)
+    wm_mask_img = new_img_like(wm_target_img, wm_target_mask)
+
+    return wm_mask_img
+
+
 def fetch_icbm152_brain_gm_mask(data_dir=None, threshold=0.2, resume=True,
-                                verbose=1):
-    """Downloads ICBM152 template first, then loads 'gm' mask image.
+                                n_iter=2, verbose=1):
+    """Downloads ICBM152 template first, then loads the 'gm' mask.
 
     .. versionadded:: 0.2.5
 
@@ -165,22 +474,26 @@ def fetch_icbm152_brain_gm_mask(data_dir=None, threshold=0.2, resume=True,
         location. Defaults to None.
 
     threshold : float, optional
-        The parameter which amounts to include the values in the mask image.
-        The values lies above than this threshold will be included. Defaults
-        to 0.2 (one fifth) of values.
-        Default=0.2.
+        Values of the ICBM152 grey-matter template above this threshold will be
+        included. Default=0.2
 
     resume : bool, optional
         If True, try resuming partially downloaded data.
         Default=True.
+
+    n_iter: int, optional, Default = 2
+        Number of repetitions of dilation and erosion steps performed in
+        scipy.ndimage.binary_closing function.
+
+        .. versionadded:: 0.8.1
 
     verbose : int, optional
         Verbosity level (0 means no message). Default=1.
 
     Returns
     -------
-    gm_mask_img : Nifti image
-        Corresponding to brain grey matter from ICBM152 template.
+    gm_mask_img : Nifti1Image, image corresponding to the brain grey matter
+        from ICBM152 template.
 
     Notes
     -----
@@ -201,16 +514,18 @@ def fetch_icbm152_brain_gm_mask(data_dir=None, threshold=0.2, resume=True,
 
     """
     # Fetching ICBM152 grey matter mask image
-    icbm = fetch_icbm152_2009(data_dir=data_dir, resume=resume, verbose=verbose)
+    icbm = fetch_icbm152_2009(data_dir=data_dir, resume=resume,
+                              verbose=verbose)
     gm = icbm['gm']
     gm_img = check_niimg(gm)
-    gm_data = niimg._safe_get_data(gm_img)
+    gm_data = get_data(gm_img)
 
     # getting one fifth of the values
-    gm_mask = (gm_data > threshold)
+    gm_mask = (gm_data > threshold).astype("int8")
 
-    gm_mask = ndimage.binary_closing(gm_mask, iterations=2)
+    gm_mask = ndimage.binary_closing(gm_mask, iterations=n_iter)
     gm_mask_img = new_img_like(gm_img, gm_mask)
+
     return gm_mask_img
 
 
@@ -450,7 +765,8 @@ def fetch_surf_fsaverage(mesh='fsaverage5', data_dir=None):
         - 'fsaverage6': the medium-resolution fsaverage6 mesh (40962 nodes)
         - 'fsaverage7': same as 'fsaverage'
         - 'fsaverage': the high-resolution fsaverage mesh (163842 nodes)
-            (high-resolution fsaverage will result in more computation time and memory usage)
+            (high-resolution fsaverage will result in more computation time and
+            memory usage)
 
     data_dir : str, optional
         Path of the data directory. Used to force data storage in a specified

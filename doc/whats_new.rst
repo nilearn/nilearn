@@ -4,14 +4,51 @@
 NEW
 ---
 
+<<<<<<< HEAD
 - New atlas fetcher
   :func:`nilearn.datasets.fetch_atlas_juelich` to download Juelich atlas from FSL.
+=======
+- :func:`nilearn.datasets.load_mni152_gm_template` takes the skullstripped
+  1mm-resolution version of the grey-matter MNI152 template and re-samples it
+  using a different resolution, if specified.
+- :func:`nilearn.datasets.load_mni152_wm_template` takes the skullstripped
+  1mm-resolution version of the white-matter MNI152 template and re-samples it
+  using a different resolution, if specified.
+- :func:`nilearn.datasets.load_mni152_gm_mask` loads mask from the grey-matter
+  MNI152 template.
+- :func:`nilearn.datasets.load_mni152_wm_mask` loads mask from the white-matter
+  MNI152 template.
+>>>>>>> d9290149e2a0875ee8727802a9ce026ff14e7d39
 
 Fixes
 -----
 
+- :func:`nilearn.masking.compute_multi_brain_mask` has replaced
+  nilearn.masking.compute_multi_grey_matter_mask. A mask parameter has been added;
+  it accepts three types of masks---i.e. whole-brain, grey-matter and
+  white-matter---following the enhancements made in the function
+  :func:`nilearn.masking.compute_brain_mask` in this release.
+
 Enhancements
 ------------
+
+- :func:`nilearn.datasets.load_mni152_template` resamples now the template to
+  a preset resolution different from the resolution of the original template,
+  i.e. 1mm. The default resolution is 2mm, which means that the new template is
+  resampled to the resolution of the old template. Nevertheless, the shape of
+  the template changed from (91, 109, 91) to (99, 117, 95); the affine also
+  changed from array([[-2., 0., 0., 90.], [0., 2., 0., -126.],
+  [0., 0., 2., -72.], [0., 0., 0., 1.]]) to array([[1., 0., 0., -98.],
+  [0., 1., 0., -134.], [0., 0., 1., -72.], [0., 0., 0., 1.]]). Additionally,
+  the new template has also been rescaled; whereas the old one varied between
+  0 and 8339, the new one varies between 0 and 255.
+- :func:`nilearn.datasets.load_mni152_brain_mask` accepts now the parameter
+  resolution, which will set the resolution of the template used for the
+  masking.
+- :func:`nilearn.masking.compute_brain_mask` accepts now as input the
+  whole-brain, 1mm-resolution, MNI152 T1 template instead of the averaged,
+  whole-brain, 2mm-resolution MNI152 T1 template; it also accepts as input the
+  grey-matter and white-matter ICBM152 1mm-resolution templates dated from 2009.
 
 Changes
 -------

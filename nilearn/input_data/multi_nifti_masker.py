@@ -207,7 +207,7 @@ class MultiNiftiMasker(NiftiMasker, CacheMixin):
             elif self.mask_strategy == 'epi':
                 compute_mask = masking.compute_multi_epi_mask
             elif self.mask_strategy == 'template':
-                compute_mask = masking.compute_multi_gray_matter_mask
+                compute_mask = masking.compute_multi_brain_mask
             else:
                 raise ValueError("Unknown value of mask_strategy '%s'. "
                                  "Acceptable values are 'background', 'epi' "
