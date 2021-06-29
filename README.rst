@@ -33,6 +33,13 @@ Important links
 - Official source code repo: https://github.com/nilearn/nilearn/
 - HTML documentation (stable release): http://nilearn.github.io/
 
+Office Hours
+============
+
+The nilearn team organizes regular online office hours to answer questions, discuss feature requests, or have any Nilearn-related discusssions. We try to maintain a frequency of *one hour every two weeks*, usually on Mondays, and make sure that at least one member of the core-developer team is available. These events are fully open, anyone is welcome to join!
+
+The next office hours will be held on **Monday July 12th from 4pm to 5pm UTC** on `Discord <https://discord.gg/bMBhb7w>`_.
+
 Dependencies
 ============
 
