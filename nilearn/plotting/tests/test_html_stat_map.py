@@ -244,8 +244,7 @@ def test_json_view_size():
     assert height == height_exp, "html viewer does not have expected height"
 
 
-def test_json_view_data():
-
+def _get_data_and_json_view(black_bg, cbar):
     # simple simulated data for stat_img and background
     bg_img, data = _simulate_img()
     stat_map_img, data = _simulate_img()
@@ -259,21 +258,25 @@ def test_json_view_data():
 
     # Build a sprite
     json_view = html_stat_map._json_view_data(
-        bg_img, stat_map_img, mask_img, bg_min=0, bg_max=1, colors=colors,
-        cmap='cold_hot', colorbar=True)
+        bg_img, stat_map_img, mask_img, bg_min=0, bg_max=1, black_bg=black_bg,
+        colors=colors, cmap='cold_hot', colorbar=cbar)
+    return data, json_view
 
+
+@pytest.mark.parametrize("black_bg", [True, False])
+@pytest.mark.parametrize("cbar", [True, False])
+def test_json_view_data(black_bg, cbar):
+    _, json_view = _get_data_and_json_view(black_bg, cbar)
     # Check the presence of critical fields
     assert isinstance(json_view['bg_base64'], str)
     assert isinstance(json_view['stat_map_base64'], str)
     assert isinstance(json_view['cm_base64'], str)
 
-    return json_view, data
 
-
-def test_json_view_to_html():
-
-    # Re use the data simulated in another test
-    json_view, data = test_json_view_data()
+@pytest.mark.parametrize("black_bg", [True, False])
+@pytest.mark.parametrize("cbar", [True, False])
+def test_json_view_to_html(black_bg, cbar):
+    data, json_view = _get_data_and_json_view(black_bg, cbar)
     json_view['params'] = html_stat_map._json_view_params(
         data.shape, np.eye(4), vmin=0, vmax=1, cut_slices=[1, 1, 1],
         black_bg=True, opacity=1, draw_cross=True, annotate=False,
