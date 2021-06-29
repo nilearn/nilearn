@@ -233,12 +233,45 @@ EXPECTED += [(i, [f'-{i}', '-5', '0', '5', f'{i}'])
 @pytest.mark.parametrize("plot_func, threshold, expected_ticks",
                          [(f, e[0], e[1])
                           for e in EXPECTED for f in functions])
-def test_plot_colorbar_threshold(tmp_path,
-                                 plot_func,
-                                 threshold,
-                                 expected_ticks):
+def test_plot_symmetric_colorbar_threshold(tmp_path,
+                                           plot_func,
+                                           threshold,
+                                           expected_ticks):
     img_data = np.zeros((10, 10, 10))
     img_data[4:6, 2:4, 4:6] = -10
+    img_data[5:7, 3:7, 3:6] = 10
+    img = nibabel.Nifti1Image(img_data, affine=np.eye(4))
+    display = plot_func(img, threshold=threshold, colorbar=True)
+    plt.savefig(tmp_path / 'test.png')
+    assert([tick.get_text()
+            for tick in display._cbar.ax.get_yticklabels()]
+           == expected_ticks)
+    plt.close()
+
+
+functions = [plotting.plot_stat_map]
+EXPECTED2 = [(0, ['0',  '2.5', '5', '7.5', '10'])]
+EXPECTED2 += [(i, [f'{i}',  '2.5', '5', '7.5', '10'])
+             for i in [0.1, 0.3, 1.2]]
+EXPECTED2 += [(i, ['0', f'{i}', '5', '7.5', '10'])
+             for i in [1.3, 1.9, 2.5, 3, 3.7]]
+EXPECTED2 += [(i, ['0', '2.5', f'{i}', '7.5', '10'])
+             for i in [3.8, 4, 5, 6.2]]
+EXPECTED2 += [(i, ['0', '2.5', '5', f'{i}', '10'])
+             for i in [6.3, 7.5, 8, 8.7]]
+EXPECTED2 += [(i, ['0', '2.5', '5', '7.5', f'{i}'])
+             for i in [8.8, 9, 9.9]]
+
+
+@pytest.mark.parametrize("plot_func, threshold, expected_ticks",
+                         [(f, e[0], e[1])
+                          for e in EXPECTED2 for f in functions])
+def test_plot_asymmetric_colorbar_threshold(tmp_path,
+                                            plot_func,
+                                            threshold,
+                                            expected_ticks):
+    img_data = np.zeros((10, 10, 10))
+    img_data[4:6, 2:4, 4:6] = 5
     img_data[5:7, 3:7, 3:6] = 10
     img = nibabel.Nifti1Image(img_data, affine=np.eye(4))
     display = plot_func(img, threshold=threshold, colorbar=True)
