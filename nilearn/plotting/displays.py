@@ -1194,23 +1194,12 @@ def _get_cbar_ticks(norm, offset, nb_ticks=5):
     if norm.vmin == norm.vmax:
         return np.linspace(norm.vmin, norm.vmax, 1)
 
-    # If we have a symmetrical colorbar and a threshold is specified,
-    # we want two of the ticks to correspond to -thresold and +threshold
-    # on the colorbar. If the threshold is very small compared to vmax, we
-    # leave the original ticks as the result would be very difficult to see.
-    if norm.vmin == -norm.vmax:
-        ticks = _get_symmetrical_thresholded_cbar_ticks(
-            norm, offset, nb_ticks=nb_ticks)
-    else:
-        ticks = _get_thresholded_cbar_ticks(
-            norm, offset, nb_ticks=nb_ticks)
-    return ticks
-
-
-def _get_symmetrical_thresholded_cbar_ticks(norm, offset, nb_ticks=5):
-    """Helper function for BaseSlicer."""
+    # If a threshold is specified, we want two of the ticks to
+    # correspond to -thresold and +threshold on the colorbar.
+    # If the threshold is very small compared to vmax, we use
+    # a simple linspace as the result would be very difficult to see.
     ticks = np.linspace(norm.vmin, norm.vmax, nb_ticks)
-    if offset > 0 and offset / norm.vmax > 0.12:
+    if offset / norm.vmax > 0.12:
         diff = [abs(abs(tick) - offset) for tick in ticks]
         # Edge case where the thresholds are exactly at
         # the same distance to 4 ticks
@@ -1224,14 +1213,6 @@ def _get_symmetrical_thresholded_cbar_ticks(norm, offset, nb_ticks=5):
                 idx_closest = np.sort(np.argpartition(diff, 3)[:3])
                 idx_closest = idx_closest[[0, 2]]
         ticks[idx_closest] = [-offset, offset]
-    return ticks
-
-
-def _get_thresholded_cbar_ticks(norm, offset, nb_ticks=5):
-    """Helper function for BaseSlicer."""
-    ticks = np.linspace(norm.vmin, norm.vmax, nb_ticks)
-    idx_closest = np.argmin([abs(abs(tick) - offset) for tick in ticks])
-    ticks[idx_closest] = offset
     return ticks
 
 

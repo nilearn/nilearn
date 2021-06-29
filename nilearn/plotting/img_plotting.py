@@ -223,6 +223,58 @@ def _plot_img_with_bg(img, bg_img=None, cut_coords=None,
     return display
 
 
+def _get_symmetric_cbar_ticks(cbar_vmin, cbar_vmax, threshold, nb_ticks=5):
+     """Helper function for _get_cbar_ticks."""
+     ticks = np.linspace(cbar_vmin, cbar_vmax, nb_ticks)
+     if threshold / cbar_vmax > 0.12:
+         diff = [abs(abs(tick) - threshold) for tick in ticks]
+         # Edge case where the thresholds are exactly at
+         # the same distance to 4 ticks
+         if diff.count(min(diff)) == 4:
+             idx_closest = np.sort(np.argpartition(diff, 4)[:4])
+             idx_closest = np.in1d(ticks, np.sort(ticks[idx_closest])[1:3])
+         else:
+             # Find the closest 2 ticks
+             idx_closest = np.sort(np.argpartition(diff, 2)[:2])
+             if 0 in ticks[idx_closest]:
+                 idx_closest = np.sort(np.argpartition(diff, 3)[:3])
+                 idx_closest = idx_closest[[0, 2]]
+         ticks[idx_closest] = [-threshold, threshold]
+     return ticks
+
+
+def _get_cbar_ticks(cbar, cbar_vmin, cbar_vmax, threshold=None):
+    """Helper function for _crop_colobar.
+    Returns ticks for cropped colorbars.
+    """
+    cbar_tick_locs = cbar.locator.locs
+    if cbar_vmax is None:
+        cbar_vmax = cbar.norm.vmax
+    if cbar_vmin is None:
+        cbar_vmin = cbar.norm.vmin
+    new_tick_locs = np.linspace(cbar_vmin, cbar_vmax,
+                                len(cbar_tick_locs))
+    if threshold is not None:
+        # Case where cbar is either all positive or all negative
+        if 0 <= cbar_vmin <= cbar_vmax or cbar_vmin <= cbar_vmax <= 0:
+            idx_closest = np.argmin([abs(abs(new_tick_locs) - threshold)
+                                     for tick in new_tick_locs])
+            new_tick_locs[idx_closest] = threshold
+        else:
+            # Case where we do a symmetric thresholding within an
+            # asymmetric cbar and both threshold values are within bounds
+            if cbar_vmin <= -threshold <= threshold <= cbar_vmax:
+                new_tick_locs = _get_symmetric_cbar_ticks(cbar_vmin, cbar_vmax,
+                                                          threshold,
+                                                          nb_ticks=len(new_tick_locs))
+            # Case where one of the threshold values is out of bounds
+            else:
+                idx_closest = np.argmin([abs(new_tick_locs - threshold)
+                                         for tick in new_tick_locs])
+                new_tick_locs[idx_closest] = -threshold if threshold > cbar_vmax else threshold
+    return new_tick_locs
+
+
 def _crop_colorbar(cbar, cbar_vmin, cbar_vmax, threshold=None):
     """Crop a colorbar to show from cbar_vmin to cbar_vmax.
     Used when symmetric_cbar=False is used.
@@ -230,17 +282,7 @@ def _crop_colorbar(cbar, cbar_vmin, cbar_vmax, threshold=None):
     """
     if (cbar_vmin is None) and (cbar_vmax is None):
         return
-    cbar_tick_locs = cbar.locator.locs
-    if cbar_vmax is None:
-        cbar_vmax = cbar_tick_locs.max()
-    if cbar_vmin is None:
-        cbar_vmin = cbar_tick_locs.min()
-    new_tick_locs = np.linspace(cbar_vmin, cbar_vmax,
-                                len(cbar_tick_locs))
-    if threshold is not None:
-        idx_closest = np.argmin([abs(abs(new_tick_locs) - abs(threshold))
-                                 for tick in new_tick_locs])
-        new_tick_locs[idx_closest] = threshold
+    new_tick_locs = _get_cbar_ticks(cbar, cbar_vmin, cbar_vmax, threshold)
 
     # matplotlib >= 3.2.0 no longer normalizes axes between 0 and 1
     # See https://matplotlib.org/3.2.1/api/prev_api_changes/api_changes_3.2.0.html
