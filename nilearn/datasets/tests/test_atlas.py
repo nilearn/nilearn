@@ -335,7 +335,7 @@ def test_fetch_atlas_juelich(tmp_path, request_mocker):
     ho_wo_symm = atlas.fetch_atlas_juelich(atlas_name=target_atlas,
                                            data_dir=str(tmp_path))
     assert isinstance(ho_wo_symm.maps, nibabel.Nifti1Image)
-    assert isinstance(ho_wo_symm.labels, list)
+    assert isinstance(ho_wo_symm.labels, np.ndarray)
     assert len(ho_wo_symm.labels) == 4
     assert ho_wo_symm.labels[0] == "Background"
     assert ho_wo_symm.labels[1] == "R1"

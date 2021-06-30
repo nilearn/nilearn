@@ -11,6 +11,7 @@ import shutil
 import nibabel as nb
 import numpy as np
 from numpy.lib import recfunctions
+import re
 from sklearn.utils import Bunch
 
 from .utils import _get_dataset_dir, _fetch_files, _get_dataset_descr
@@ -352,7 +353,7 @@ def fetch_atlas_harvard_oxford(atlas_name, data_dir=None,
         resume=resume,
         verbose=verbose)
     atlas_niimg = check_niimg(atlas_img)
-    if not symmetric_split or is_lateralized
+    if not symmetric_split or is_lateralized:
         return Bunch(filename=atlas_img, maps=atlas_niimg, labels=names)
     new_atlas_data, new_names = _compute_symmetric_split("HarvardOxford",
                                                          get_data(atlas_niimg),
@@ -449,8 +450,7 @@ def fetch_atlas_juelich(atlas_name, data_dir=None,
                                                              atlas_data,
                                                              names)
     else:
-        new_atlas_data, new_names = _merge_labels_juelich(atlas_data,
-                                                            names)
+        new_atlas_data, new_names = _merge_labels_juelich(atlas_data, names)
 
     new_atlas_niimg = new_img_like(atlas_niimg,
                                    new_atlas_data,
@@ -518,20 +518,13 @@ def _merge_probabilistic_maps_juelich(atlas_data, names):
     regions.
     """
     new_names = np.unique([re.sub(r" (L|R)$", "", name) for name in names])
-    print(new_names)
+    new_dict = {k: v - 1 for v, k in enumerate(new_names)}
     new_atlas_data = np.zeros((*atlas_data.shape[:3],
-                               len(new_names) - 1))
-    for i, name in enumerate(new_names):
+                               len(new_names)))
+    for i, name in enumerate(names):
         if name != "Background":
-            # If the name has no R or L, then simply copy the map
-            if name in names:
-                idx = names.index(name) - 1  # -1 because of background
-                new_atlas_data[..., (i - 1)] = atlas_data[..., idx]
-            # otherwise, merge the maps
-            else:
-                idx_l = names.index(name + ' L') - 1
-                idx_r = names.index(name + ' R') - 1
-                new_atlas_data[..., (i - 1)] = atlas_data[..., [idx_l, idx_r]]
+            new_name = re.sub(r" (L|R)$", "", name)
+            new_atlas_data[..., new_dict[new_name]] += atlas_data[..., i - 1]
     return new_atlas_data, new_names
 
 
@@ -541,15 +534,12 @@ def _merge_labels_juelich(atlas_data, names):
     In this case, we need to merge the labels corresponding to
     left and right regions.
     """
-    labels = np.unique(atlas_data)
+    new_names = np.unique([re.sub(r" (L|R)$", "", name) for name in names])
+    new_names_dict = {k: v for v, k in enumerate(new_names)}
     new_atlas_data = atlas_data.copy()
-    new_names = ["Background"]
-    for label, name in zip(labels, names):
-        if name.endswith('R') or name.endswith('L'):
-            name = re.sub(r" (L|R)$", "", name)
-        if name not in new_names:
-            new_names.append(name)
-        new_atlas_data[atlas_data == label] = new_names.index(name)
+    for label, name in enumerate(names):
+        new_name = re.sub(r" (L|R)$", "", name)
+        new_atlas_data[atlas_data == label] += new_names_dict[new_name]
     return new_atlas_data, new_names
 
 
@@ -563,9 +553,9 @@ def _compute_symmetric_split(source, atlas_data, names):
     middle_ind = (atlas_data.shape[0]) // 2
     # Split every zone crossing the median plane into two parts.
     left_atlas = atlas_data.copy()
-    left_atlas[middle_ind:, ...] = 0
+    left_atlas[middle_ind:] = 0
     right_atlas = atlas_data.copy()
-    right_atlas[:middle_ind, ...] = 0
+    right_atlas[:middle_ind] = 0
 
     if source == "Juelich":
         for idx in range(len(names)):
