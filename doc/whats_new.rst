@@ -28,6 +28,9 @@ Fixes
   it accepts three types of masks---i.e. whole-brain, grey-matter and
   white-matter---following the enhancements made in the function
   :func:`nilearn.masking.compute_brain_mask` in this release.
+- Fix colorbar of :func:`nilearn.plotting.view_img` which was not visible for some
+  combinations of `black_bg` and `bg_img` parameters.
+  (See issue `#2874 <https://github.com/nilearn/nilearn/issues/2874>`_).
 
 Enhancements
 ------------
