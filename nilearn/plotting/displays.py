@@ -953,7 +953,7 @@ class BaseSlicer(object):
             self._colorbar_ax.set_axis_bgcolor('w')
 
         our_cmap = mpl_cm.get_cmap(cmap)
-        ticks = _get_cbar_ticks(norm, offset, nb_ticks=5)
+        ticks = _get_cbar_ticks(norm.vmin, norm.vmax, offset, nb_ticks=5)
         bounds = np.linspace(norm.vmin, norm.vmax, our_cmap.N)
 
         # some colormap hacking
@@ -1187,19 +1187,19 @@ class BaseSlicer(object):
                                        edgecolor=edgecolor)
 
 
-def _get_cbar_ticks(norm, offset, nb_ticks=5):
+def _get_cbar_ticks(vmin, vmax, offset, nb_ticks=5):
     """Helper function for BaseSlicer."""
     # edge case where the data has a single value yields a cryptic
     # matplotlib error message when trying to plot the color bar
-    if norm.vmin == norm.vmax:
-        return np.linspace(norm.vmin, norm.vmax, 1)
+    if vmin == vmax:
+        return np.linspace(vmin, vmax, 1)
 
     # If a threshold is specified, we want two of the ticks to
     # correspond to -thresold and +threshold on the colorbar.
     # If the threshold is very small compared to vmax, we use
     # a simple linspace as the result would be very difficult to see.
-    ticks = np.linspace(norm.vmin, norm.vmax, nb_ticks)
-    if offset / norm.vmax > 0.12:
+    ticks = np.linspace(vmin, vmax, nb_ticks)
+    if offset / vmax > 0.12:
         diff = [abs(abs(tick) - offset) for tick in ticks]
         # Edge case where the thresholds are exactly at
         # the same distance to 4 ticks
