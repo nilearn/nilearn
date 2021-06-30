@@ -15,11 +15,8 @@ from sklearn.utils import Bunch
 
 from .utils import (_get_dataset_dir, _fetch_files, _get_dataset_descr)
 
-from .._utils import check_niimg
 from ..image import new_img_like, get_data, resampling
-
-from .._utils import check_niimg, niimg, fill_doc
-from ..image import new_img_like, get_data
+from .._utils import check_niimg, fill_doc
 
 _package_directory = os.path.dirname(os.path.abspath(__file__))
 MNI152_FILE_PATH = os.path.join(
