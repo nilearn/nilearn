@@ -223,17 +223,12 @@ def _plot_img_with_bg(img, bg_img=None, cut_coords=None,
     return display
 
 
-def _get_cropped_cbar_ticks(cbar, cbar_vmin, cbar_vmax, threshold=None):
+def _get_cropped_cbar_ticks(cbar_vmin, cbar_vmax,
+                            threshold=None, n_ticks=5):
     """Helper function for _crop_colobar.
     Returns ticks for cropped colorbars.
     """
-    cbar_tick_locs = cbar.locator.locs
-    if cbar_vmax is None:
-        cbar_vmax = cbar.norm.vmax
-    if cbar_vmin is None:
-        cbar_vmin = cbar.norm.vmin
-    new_tick_locs = np.linspace(cbar_vmin, cbar_vmax,
-                                len(cbar_tick_locs))
+    new_tick_locs = np.linspace(cbar_vmin, cbar_vmax, n_ticks)
     if threshold is not None:
         # Case where cbar is either all positive or all negative
         if 0 <= cbar_vmin <= cbar_vmax or cbar_vmin <= cbar_vmax <= 0:
@@ -264,8 +259,15 @@ def _crop_colorbar(cbar, cbar_vmin, cbar_vmax, threshold=None):
     """
     if (cbar_vmin is None) and (cbar_vmax is None):
         return
+    cbar_tick_locs = cbar.locator.locs
+    if cbar_vmax is None:
+        cbar_vmax = cbar.norm.vmax
+    if cbar_vmin is None:
+        cbar_vmin = cbar.norm.vmin
+
     new_tick_locs = _get_cropped_cbar_ticks(
-        cbar, cbar_vmin, cbar_vmax, threshold)
+        cbar_vmin, cbar_vmax, threshold,
+        n_ticks=len(cbar_tick_locs))
 
     # matplotlib >= 3.2.0 no longer normalizes axes between 0 and 1
     # See https://matplotlib.org/3.2.1/api/prev_api_changes/api_changes_3.2.0.html
