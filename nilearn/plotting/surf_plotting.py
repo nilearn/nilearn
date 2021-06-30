@@ -6,6 +6,7 @@ import itertools
 
 import matplotlib.pyplot as plt
 import numpy as np
+import warnings
 
 from matplotlib import gridspec
 from matplotlib.colorbar import make_axes
@@ -359,9 +360,14 @@ def plot_surf(surf_mesh, surf_map=None, bg_map=None,
                 ticks = np.arange(vmin, vmax + 1)
                 nb_ticks = len(ticks)
             else:
-                ticks = np.linspace(vmin, vmax, nb_ticks)
+                from nilearn.plotting.displays import _get_cbar_ticks
+                ticks = _get_cbar_ticks(vmin, vmax, threshold, nb_ticks)
             bounds = np.linspace(vmin, vmax, our_cmap.N)
             if threshold is not None:
+                if cbar_tick_format == "%i" and int(threshold) != threshold:
+                    warnings.warn("You provided a non integer threshold "
+                                  "but configured the colorbar to use "
+                                  "integer formatting.")
                 cmaplist = [our_cmap(i) for i in range(our_cmap.N)]
                 # set colors to grey for absolute values < threshold
                 istart = int(norm(-threshold, clip=True) * (our_cmap.N - 1))

@@ -1199,7 +1199,7 @@ def _get_cbar_ticks(vmin, vmax, offset, nb_ticks=5):
     # If the threshold is very small compared to vmax, we use
     # a simple linspace as the result would be very difficult to see.
     ticks = np.linspace(vmin, vmax, nb_ticks)
-    if offset / vmax > 0.12:
+    if offset is not None and offset / vmax > 0.12:
         diff = [abs(abs(tick) - offset) for tick in ticks]
         # Edge case where the thresholds are exactly at
         # the same distance to 4 ticks
