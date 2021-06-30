@@ -539,7 +539,7 @@ def _merge_labels_juelich(atlas_data, names):
     new_atlas_data = atlas_data.copy()
     for label, name in enumerate(names):
         new_name = re.sub(r" (L|R)$", "", name)
-        new_atlas_data[atlas_data == label] += new_names_dict[new_name]
+        new_atlas_data[atlas_data == label] = new_names_dict[new_name]
     return new_atlas_data, new_names
 
 
