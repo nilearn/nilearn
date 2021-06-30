@@ -250,17 +250,17 @@ def test_plot_symmetric_colorbar_threshold(tmp_path,
 
 
 functions = [plotting.plot_stat_map]
-EXPECTED2 = [(0, ['0',  '2.5', '5', '7.5', '10'])]
-EXPECTED2 += [(i, [f'{i}',  '2.5', '5', '7.5', '10'])
-             for i in [0.1, 0.3, 1.2]]
+EXPECTED2 = [(0, ['0', '2.5', '5', '7.5', '10'])]
+EXPECTED2 += [(i, [f'{i}', '2.5', '5', '7.5', '10'])
+              for i in [0.1, 0.3, 1.2]]
 EXPECTED2 += [(i, ['0', f'{i}', '5', '7.5', '10'])
-             for i in [1.3, 1.9, 2.5, 3, 3.7]]
+              for i in [1.3, 1.9, 2.5, 3, 3.7]]
 EXPECTED2 += [(i, ['0', '2.5', f'{i}', '7.5', '10'])
-             for i in [3.8, 4, 5, 6.2]]
+              for i in [3.8, 4, 5, 6.2]]
 EXPECTED2 += [(i, ['0', '2.5', '5', f'{i}', '10'])
-             for i in [6.3, 7.5, 8, 8.7]]
+              for i in [6.3, 7.5, 8, 8.7]]
 EXPECTED2 += [(i, ['0', '2.5', '5', '7.5', f'{i}'])
-             for i in [8.8, 9, 9.9]]
+              for i in [8.8, 9, 9.9]]
 
 
 @pytest.mark.parametrize("plot_func, threshold, expected_ticks",
