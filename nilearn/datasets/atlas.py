@@ -356,7 +356,7 @@ def fetch_atlas_harvard_oxford(atlas_name, data_dir=None,
     if not symmetric_split or is_lateralized:
         return Bunch(filename=atlas_img, maps=atlas_niimg, labels=names)
     new_atlas_data, new_names = _compute_symmetric_split("HarvardOxford",
-                                                         get_data(atlas_niimg),
+                                                         atlas_niimg,
                                                          names)
     new_atlas_niimg = new_img_like(atlas_niimg,
                                    new_atlas_data,
@@ -447,7 +447,7 @@ def fetch_atlas_juelich(atlas_name, data_dir=None,
             atlas_data, names)
     elif symmetric_split:
         new_atlas_data, new_names = _compute_symmetric_split("Juelich",
-                                                             atlas_data,
+                                                             atlas_niimg,
                                                              names)
     else:
         new_atlas_data, new_names = _merge_labels_juelich(atlas_data, names)
@@ -548,19 +548,24 @@ def _merge_labels_juelich(atlas_data, names):
     return new_atlas_data, new_names
 
 
-def _compute_symmetric_split(source, atlas_data, names):
+def _compute_symmetric_split(source, atlas_niimg, names):
     """Helper function for both fetch_atlas_juelich and
     fetch_atlas_harvard_oxford.
     This function handles 3D atlases when symmetric_split=True.
     """
+    atlas_data = get_data(atlas_niimg)
     labels = np.unique(atlas_data)
     # Build a mask of both halves of the brain
     middle_ind = (atlas_data.shape[0]) // 2
     # Split every zone crossing the median plane into two parts.
     left_atlas = atlas_data.copy()
-    left_atlas[middle_ind:] = 0
     right_atlas = atlas_data.copy()
-    right_atlas[:middle_ind] = 0
+    if atlas_niimg.affine[0, 0] < 0:
+        left_atlas[:middle_ind] = 0
+        right_atlas[middle_ind:] = 0
+    else:
+        left_atlas[middle_ind:] = 0
+        right_atlas[:middle_ind] = 0
 
     if source == "Juelich":
         for idx in range(len(names)):
@@ -584,10 +589,10 @@ def _compute_symmetric_split(source, atlas_data, names):
             new_names.append(name)
             continue
         new_atlas[right_atlas == label] = new_label
-        new_names.append(name + ', left part')
+        new_names.append(name + ', right part')
         new_label += 1
         new_atlas[left_atlas == label] = new_label
-        new_names.append(name + ', right part')
+        new_names.append(name + ', left part')
     return new_atlas, new_names
 
 
