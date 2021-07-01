@@ -52,6 +52,9 @@ Enhancements
   parameters or common lists of options for example. The standard parts are defined
   in a single location (`nilearn._utils.docs.py`) which makes them easier to
   maintain and update. (See `#2875 <https://github.com/nilearn/nilearn/pull/2875>`_).
+- When plotting thresholded statistical maps with a colorbar, the threshold
+  value(s) will now be displayed as tick labels on the colorbar.
+  See issue `#2833 <https://github.com/nilearn/nilearn/issues/2833>`_.
 
 Changes
 -------
