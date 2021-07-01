@@ -505,8 +505,13 @@ def _get_atlas_data_and_labels(atlas_source, atlas_name, symmetric_split=False,
     from xml.etree import ElementTree
     names[0] = 'Background'
     for label in ElementTree.parse(label_file).findall('.//label'):
-        names[int(label.get('index')) + 1] = label.text
-    names = list(names.values())
+        new_idx = int(label.get('index')) + 1
+        if new_idx in names:
+            raise IndexError(
+                f"Duplicate index {new_idx} for labels "
+                f"'{names[new_idx]}', and '{label.text}'")
+        names[new_idx] = label.text
+    names = [item[1] for item in sorted(names.items())]
     return atlas_img, names, is_lateralized
 
 
