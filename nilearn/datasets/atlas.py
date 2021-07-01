@@ -16,7 +16,7 @@ from sklearn.utils import Bunch
 
 from .utils import _get_dataset_dir, _fetch_files, _get_dataset_descr
 from .._utils import check_niimg
-from ..image import new_img_like, get_data
+from ..image import new_img_like, get_data, reorder_img
 
 _TALAIRACH_LEVELS = ['hemisphere', 'lobe', 'gyrus', 'tissue', 'ba']
 
@@ -501,6 +501,8 @@ def _get_atlas_data_and_labels(atlas_source, atlas_name, symmetric_split=False,
         [(atlas_file, url, opts),
          (label_file, url, opts)],
         resume=resume, verbose=verbose)
+    # Reorder image to have positive affine diagonal
+    atlas_img = reorder_img(atlas_img)
     names = {}
     from xml.etree import ElementTree
     names[0] = 'Background'
@@ -560,13 +562,9 @@ def _compute_symmetric_split(source, atlas_niimg, names):
     middle_ind = (atlas_data.shape[0]) // 2
     # Split every zone crossing the median plane into two parts.
     left_atlas = atlas_data.copy()
+    left_atlas[middle_ind:] = 0
     right_atlas = atlas_data.copy()
-    if atlas_niimg.affine[0, 0] < 0:
-        left_atlas[:middle_ind] = 0
-        right_atlas[middle_ind:] = 0
-    else:
-        left_atlas[middle_ind:] = 0
-        right_atlas[:middle_ind] = 0
+    right_atlas[:middle_ind] = 0
 
     if source == "Juelich":
         for idx in range(len(names)):
