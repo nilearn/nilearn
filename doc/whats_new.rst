@@ -48,6 +48,10 @@ Enhancements
 Changes
 -------
 
+- :func:`nilearn.plotting.view_markers` is renamed to :func:`nilearn.plotting.view_nodes`.
+  Additionally, all arguments with the pattern `markers_` are renamed to `nodes_` to
+  remove discrepancy with :func:`nilearn.plotting.view_connectome`.
+
 .. _v0.8.0:
 
 0.8.0
