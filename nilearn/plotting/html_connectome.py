@@ -77,7 +77,7 @@ def _prepare_line(edges, nodes):
     return path_edges, path_nodes
 
 
-def _prepare_colors_for_markers(node_color, number_of_nodes):
+def _prepare_colors_for_nodes(node_color, number_of_nodes):
     """
     Generate "color" and "colorscale" attributes based on `node_color` mode
 
@@ -91,7 +91,7 @@ def _prepare_colors_for_markers(node_color, number_of_nodes):
 
     Returns
     -------
-    markers_colors: list
+    node_colors: list
         List of `number_of_nodes` colors as hexadecimal values
     """
     if isinstance(node_color, str) and node_color == 'auto':
@@ -165,24 +165,24 @@ def _prepare_lines_metadata(adjacency_matrix, coords, threshold,
     return lines_metadata
 
 
-def _prepare_markers_metadata(coords, node_size, node_color, node_only):
-    markers_coordinates = _encode_coordinates(coords, prefix="_marker_")
-    markers_metadata = {
+def _prepare_nodes_metadata(coords, node_size, node_color, node_only):
+    nodes_coordinates = _encode_coordinates(coords, prefix="_marker_")
+    nodes_metadata = {
         'markers_only': node_only,
-        **markers_coordinates
+        **nodes_coordinates
     }
 
     if np.ndim(node_size) > 0:
         node_size = np.asarray(node_size)
     if hasattr(node_size, 'tolist'):
         node_size = node_size.tolist()
-    markers_metadata['marker_size'] = node_size
-    markers_metadata['marker_color'] = _prepare_colors_for_markers(
+    nodes_metadata['marker_size'] = node_size
+    nodes_metadata['marker_color'] = _prepare_colors_for_nodes(
         node_color,
         len(coords),
     )
 
-    return markers_metadata
+    return nodes_metadata
 
 
 def _get_connectome(adjacency_matrix, coords, threshold=None,
@@ -196,7 +196,7 @@ def _get_connectome(adjacency_matrix, coords, threshold=None,
         symmetric_cmap,
     )
 
-    markers_metadata = _prepare_markers_metadata(
+    nodes_metadata = _prepare_nodes_metadata(
         coords,
         node_size,
         node_color,
@@ -205,7 +205,7 @@ def _get_connectome(adjacency_matrix, coords, threshold=None,
 
     return {
         **lines_metadata,
-        **markers_metadata,
+        **nodes_metadata,
     }
 
 
@@ -261,7 +261,7 @@ def view_connectome(adjacency_matrix, node_coords, edge_threshold=None,
         Width of the lines that show connections. Default=6.0.
 
     node_size : float, optional
-        Size of the markers showing the seeds in pixels.
+        Size of the nodes showing the seeds in pixels.
         Default=3.0.
 
     colorbar : bool, optional
@@ -295,8 +295,8 @@ def view_connectome(adjacency_matrix, node_coords, edge_threshold=None,
     nilearn.plotting.plot_connectome:
         projected views of a connectome in a glass brain.
 
-    nilearn.plotting.view_markers:
-        interactive plot of colored markers
+    nilearn.plotting.view_nodes:
+        interactive plot of colored nodes
 
     nilearn.plotting.view_surf, nilearn.plotting.view_img_on_surf:
         interactive view of statistical maps or surface atlases on the cortical
@@ -319,9 +319,9 @@ def view_connectome(adjacency_matrix, node_coords, edge_threshold=None,
     return _make_connectome_html(connectome_info)
 
 
-def view_markers(node_coords, node_color='auto', node_size=5.,
+def view_nodes(node_coords, node_color='auto', node_size=5.,
                  node_labels=None, title=None, title_fontsize=25):
-    """Insert a 3d plot of markers in a brain into an HTML page.
+    """Insert a 3d plot of nodes in a brain into an HTML page.
 
     Parameters
     ----------
@@ -329,15 +329,15 @@ def view_markers(node_coords, node_color='auto', node_size=5.,
         The coordinates of the nodes in MNI space.
 
     node_color : ndarray, shape=(n_nodes,), optional
-        colors of the markers: list of strings, hex rgb or rgba strings, rgb
+        colors of the nodes: list of strings, hex rgb or rgba strings, rgb
         triplets, or rgba triplets (i.e. formats accepted by matplotlib, see
         https://matplotlib.org/users/colors.html#specifying-colors)
 
     node_size : float or array-like, optional
-        Size of the markers showing the seeds in pixels. Default=5.0.
+        Size of the nodes showing the seeds in pixels. Default=5.0.
 
     node_labels : list of str, shape=(n_nodes), optional
-        Labels for the markers: list of strings
+        Labels for the nodes: list of strings
 
     title : str, optional
         Title for the plot.
@@ -347,7 +347,7 @@ def view_markers(node_coords, node_color='auto', node_size=5.,
 
     Returns
     -------
-    ConnectomeView : plot of the markers.
+    ConnectomeView : plot of the nodes.
         It can be saved as an html page or rendered (transparently) by the
         Jupyter notebook. Useful methods are :
 
@@ -371,7 +371,7 @@ def view_markers(node_coords, node_color='auto', node_size=5.,
     node_coords = np.asarray(node_coords)
     if node_color is None:
         node_color = ['red' for _ in range(len(node_coords))]
-    connectome_info = _prepare_markers_metadata(
+    connectome_info = _prepare_nodes_metadata(
         node_coords,
         node_size,
         node_color,
