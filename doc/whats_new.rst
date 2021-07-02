@@ -47,6 +47,11 @@ Enhancements
   whole-brain, 1mm-resolution, MNI152 T1 template instead of the averaged,
   whole-brain, 2mm-resolution MNI152 T1 template; it also accepts as input the
   grey-matter and white-matter ICBM152 1mm-resolution templates dated from 2009.
+- Common parts of docstrings accross Nilearn can now be filled automatically using
+  the decorator `nilearn._utils.fill_doc`. This can be applied to common function
+  parameters or common lists of options for example. The standard parts are defined
+  in a single location (`nilearn._utils.docs.py`) which makes them easier to
+  maintain and update. (See `#2875 <https://github.com/nilearn/nilearn/pull/2875`_)
 
 Changes
 -------
