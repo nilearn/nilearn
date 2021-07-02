@@ -105,6 +105,6 @@ def test_view_nodes():
                                       node_size=5.0,
                                       node_color=colors,
                                       node_labels=labels)
-    labels_dict = {"marker_labels": labels}
+    labels_dict = {"node_labels": labels}
     assert json.dumps(labels_dict)[1:-1] in html.html
 

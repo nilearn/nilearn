@@ -166,9 +166,9 @@ def _prepare_lines_metadata(adjacency_matrix, coords, threshold,
 
 
 def _prepare_nodes_metadata(coords, node_size, node_color, node_only):
-    nodes_coordinates = _encode_coordinates(coords, prefix="_marker_")
+    nodes_coordinates = _encode_coordinates(coords, prefix="_node_")
     nodes_metadata = {
-        'markers_only': node_only,
+        'nodes_only': node_only,
         **nodes_coordinates
     }
 
@@ -176,8 +176,8 @@ def _prepare_nodes_metadata(coords, node_size, node_color, node_only):
         node_size = np.asarray(node_size)
     if hasattr(node_size, 'tolist'):
         node_size = node_size.tolist()
-    nodes_metadata['marker_size'] = node_size
-    nodes_metadata['marker_color'] = _prepare_colors_for_nodes(
+    nodes_metadata['node_size'] = node_size
+    nodes_metadata['node_color'] = _prepare_colors_for_nodes(
         node_color,
         len(coords),
     )
@@ -379,7 +379,7 @@ def view_nodes(node_coords, node_color='auto', node_size=5.,
     )
     if node_labels is None:
         node_labels = ['' for _ in range(node_coords.shape[0])]
-    connectome_info['marker_labels'] = node_labels
+    connectome_info['node_labels'] = node_labels
     connectome_info['title'] = title
     connectome_info['title_fontsize'] = title_fontsize
     return _make_connectome_html(connectome_info)

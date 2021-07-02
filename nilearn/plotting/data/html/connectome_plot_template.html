@@ -43,7 +43,7 @@
             for (let hemisphere of ["left", "right"]) {
                 makePlot("pial", hemisphere, "connectome-plot");
             }
-            if(connectomeInfo["connectome"]["markers_only"]){
+            if(connectomeInfo["connectome"]["nodes_only"]){
                 return;
             }
             if(connectomeInfo["connectome"]["colorbar"]){
@@ -76,7 +76,7 @@
         function addConnectome() {
             let info = connectomeInfo["connectome"];
 
-            for (let attribute of ["marker_x", "marker_y", "marker_z"]) {
+            for (let attribute of ["node_x", "node_y", "node_z"]) {
                 if (!(attribute in info)) {
                     info[attribute] = Array.from(decodeBase64(
                         info["_" + attribute], "float32"));
@@ -86,19 +86,19 @@
             let pyplot_elements = [{
                 type: 'scatter3d',
                 mode: 'markers+text',
-                x: info["marker_x"],
-                y: info["marker_y"],
-                z: info["marker_z"],
+                x: info["node_x"],
+                y: info["node_y"],
+                z: info["node_z"],
                 opacity: 1,
-                text: info["marker_labels"],
+                text: info["node_labels"],
                 marker: {
-                    size: info["marker_size"],
-                    color: info["marker_color"],
-                    colorscale: info["marker_colorscale"],
+                    size: info["node_size"],
+                    color: info["node_color"],
+                    colorscale: info["node_colorscale"],
                 }
             }]
 
-            if (!(info["markers_only"])) {
+            if (!(info["nodes_only"])) {
                 for (let attribute of ["con_x", "con_y", "con_z", "con_w"]) {
                   if (!(attribute in info)) {
                     info[attribute] = Array.from(decodeBase64(
