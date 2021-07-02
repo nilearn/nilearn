@@ -375,12 +375,12 @@ def test_fetch_atlas_juelich(tmp_path, request_mocker):
     assert isinstance(ho.labels, list)
     assert len(ho.labels) == 7
     assert ho.labels[0] == "Background"
-    assert ho.labels[1] == "R1, right part"
-    assert ho.labels[2] == "R1, left part"
-    assert ho.labels[3] == "R2, right part"
-    assert ho.labels[4] == "R2, left part"
-    assert ho.labels[5] == "R3, right part"
-    assert ho.labels[6] == "R3, left part"
+    assert ho.labels[1] == "Right R1"
+    assert ho.labels[2] == "Left R1"
+    assert ho.labels[3] == "Right R2"
+    assert ho.labels[4] == "Left R2"
+    assert ho.labels[5] == "Right R3"
+    assert ho.labels[6] == "Left R3"
 
 
 def test_fetch_atlas_craddock_2012(tmp_path, request_mocker):
