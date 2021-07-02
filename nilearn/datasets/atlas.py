@@ -506,13 +506,16 @@ def _get_atlas_data_and_labels(atlas_source, atlas_name, symmetric_split=False,
     names = {}
     from xml.etree import ElementTree
     names[0] = 'Background'
-    for label in ElementTree.parse(label_file).findall('.//label'):
+    for n, label in enumerate(
+            ElementTree.parse(label_file).findall('.//label')):
         new_idx = int(label.get('index')) + 1
         if new_idx in names:
-            raise IndexError(
+            raise ValueError(
                 f"Duplicate index {new_idx} for labels "
                 f"'{names[new_idx]}', and '{label.text}'")
         names[new_idx] = label.text
+    # The label indices should range from 0 to nlabel + 1
+    assert list(names.keys()) == list(range(n + 2))
     names = [item[1] for item in sorted(names.items())]
     return atlas_img, names, is_lateralized
 
@@ -556,6 +559,11 @@ def _compute_symmetric_split(source, atlas_niimg, names):
     fetch_atlas_harvard_oxford.
     This function handles 3D atlases when symmetric_split=True.
     """
+    # The atlas_niimg should have been passed to
+    # reorder_img such that the affine's diagonal
+    # should be positive. This is important to
+    # correctly split left and right hemispheres.
+    assert atlas_niimg.affine[0, 0] > 0
     atlas_data = get_data(atlas_niimg)
     labels = np.unique(atlas_data)
     # Build a mask of both halves of the brain
@@ -567,11 +575,11 @@ def _compute_symmetric_split(source, atlas_niimg, names):
     right_atlas[:middle_ind] = 0
 
     if source == "Juelich":
-        for idx in range(len(names)):
-            if names[idx].endswith('L'):
-                names[idx] = re.sub(r" L$", ", left part", names[idx])
-            if names[idx].endswith('R'):
-                names[idx] = re.sub(r" R$", ", right part", names[idx])
+        for idx, name in enumerate(names):
+            if name.endswith('L'):
+                names[idx] = re.sub(r" L$", ", left part", name)
+            if name.endswith('R'):
+                names[idx] = re.sub(r" R$", ", right part", name)
 
     new_label = 0
     new_atlas = atlas_data.copy()
