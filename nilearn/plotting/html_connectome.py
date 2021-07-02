@@ -386,9 +386,10 @@ def view_nodes(node_coords, node_color='auto', node_size=5.,
     return _make_connectome_html(connectome_info)
 
 
-@deprecated("Function 'view_markers' has been renamed to "
-            "'view_nodes' and 'view_markers' will be removed in release 0.10.0")
+@deprecated("Function 'view_markers' has been renamed to 'view_nodes' "
+            "and 'view_markers' will be removed in release 0.10.0")
 def view_markers(marker_coords, marker_color='auto', marker_size=5.,
                  marker_labels=None, title=None, title_fontsize=25):
-    return view_nodes(marker_coords, node_color=marker_color, node_size=marker_size,
-                 node_labels=marker_labels, title=title, title_fontsize=title_fontsize)
+    return view_nodes(marker_coords, node_color=marker_color,
+                      node_size=marker_size, node_labels=marker_labels,
+                      title=title, title_fontsize=title_fontsize)
