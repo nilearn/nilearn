@@ -3,6 +3,7 @@ import json
 import numpy as np
 from matplotlib import cm as mpl_cm
 from scipy import sparse
+from sklearn.utils import deprecated
 
 from .. import datasets
 from . import cm
@@ -320,7 +321,7 @@ def view_connectome(adjacency_matrix, node_coords, edge_threshold=None,
 
 
 def view_nodes(node_coords, node_color='auto', node_size=5.,
-                 node_labels=None, title=None, title_fontsize=25):
+               node_labels=None, title=None, title_fontsize=25):
     """Insert a 3d plot of nodes in a brain into an HTML page.
 
     Parameters
@@ -383,3 +384,11 @@ def view_nodes(node_coords, node_color='auto', node_size=5.,
     connectome_info['title'] = title
     connectome_info['title_fontsize'] = title_fontsize
     return _make_connectome_html(connectome_info)
+
+
+@deprecated("Function 'view_markers' has been renamed to "
+            "'view_nodes' and 'view_markers' will be removed in release 0.10.0")
+def view_markers(marker_coords, marker_color='auto', marker_size=5.,
+                 marker_labels=None, title=None, title_fontsize=25):
+    return view_nodes(marker_coords, node_color=marker_color, node_size=marker_size,
+                 node_labels=marker_labels, title=title, title_fontsize=title_fontsize)
