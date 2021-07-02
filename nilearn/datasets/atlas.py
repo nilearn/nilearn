@@ -577,9 +577,11 @@ def _compute_symmetric_split(source, atlas_niimg, names):
     if source == "Juelich":
         for idx, name in enumerate(names):
             if name.endswith('L'):
-                names[idx] = re.sub(r" L$", ", left part", name)
+                names[idx] = re.sub(r" L$", "", name)
+                names[idx] = "Left " + name
             if name.endswith('R'):
-                names[idx] = re.sub(r" R$", ", right part", name)
+                names[idx] = re.sub(r" R$", "", name)
+                names[idx] = "Right " + name
 
     new_label = 0
     new_atlas = atlas_data.copy()
@@ -596,10 +598,10 @@ def _compute_symmetric_split(source, atlas_niimg, names):
             new_names.append(name)
             continue
         new_atlas[right_atlas == label] = new_label
-        new_names.append(name + ', right part')
+        new_names.append('Right ' + name)
         new_label += 1
         new_atlas[left_atlas == label] = new_label
-        new_names.append(name + ', left part')
+        new_names.append('Left ' + name)
     return new_atlas, new_names
 
 
