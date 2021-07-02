@@ -93,18 +93,18 @@ def test_view_markers():
     check_html(html, False, 'connectome-plot')
     html = html_connectome.view_markers(coords)
     check_html(html, False, 'connectome-plot')
-    html = html_connectome.view_markers(coords, marker_size=15)
+    html = html_connectome.view_markers(coords, node_size=15)
     check_html(html, False, 'connectome-plot')
     html = html_connectome.view_markers(
-        coords, marker_size=np.arange(len(coords)))
+        coords, node_size=np.arange(len(coords)))
     check_html(html, False, 'connectome-plot')
     html = html_connectome.view_markers(
-        coords, marker_size=list(range(len(coords))))
+        coords, node_size=list(range(len(coords))))
     check_html(html, False, 'connectome-plot')
     html = html_connectome.view_markers(coords, 
-                                    marker_size=5.0,
-                                    marker_color=colors,
-                                    marker_labels=labels)
+                                    node_size=5.0,
+                                    node_color=colors,
+                                    node_labels=labels)
     labels_dict = {"marker_labels": labels}
     assert json.dumps(labels_dict)[1:-1] in html.html
 
