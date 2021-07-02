@@ -37,8 +37,8 @@ def _encode_coordinates(coords, prefix):
     coordinates = {}
 
     coords = np.asarray(coords, dtype='<f4')
-    marker_x, marker_y, marker_z = coords.T
-    for coord, cname in [(marker_x, "x"), (marker_y, "y"), (marker_z, "z")]:
+    node_x, node_y, node_z = coords.T
+    for coord, cname in [(node_x, "x"), (node_y, "y"), (node_z, "z")]:
         coordinates["{}{}".format(prefix, cname)] = encode(
             np.asarray(coord, dtype='<f4'))
 
@@ -77,13 +77,13 @@ def _prepare_line(edges, nodes):
     return path_edges, path_nodes
 
 
-def _prepare_colors_for_markers(marker_color, number_of_nodes):
+def _prepare_colors_for_markers(node_color, number_of_nodes):
     """
-    Generate "color" and "colorscale" attributes based on `marker_color` mode
+    Generate "color" and "colorscale" attributes based on `node_color` mode
 
     Parameters
     ----------
-    marker_color : color or sequence of colors, optional
+    node_color : color or sequence of colors, optional
         Color(s) of the nodes. Default='auto'.
 
     number_of_nodes : int
@@ -94,12 +94,12 @@ def _prepare_colors_for_markers(marker_color, number_of_nodes):
     markers_colors: list
         List of `number_of_nodes` colors as hexadecimal values
     """
-    if isinstance(marker_color, str) and marker_color == 'auto':
+    if isinstance(node_color, str) and node_color == 'auto':
         colors = mpl_cm.viridis(np.linspace(0, 1, number_of_nodes))
-    elif isinstance(marker_color, str):
-        colors = [marker_color] * number_of_nodes
+    elif isinstance(node_color, str):
+        colors = [node_color] * number_of_nodes
     else:
-        colors = marker_color
+        colors = node_color
 
     return to_color_strings(colors)
 
@@ -165,20 +165,20 @@ def _prepare_lines_metadata(adjacency_matrix, coords, threshold,
     return lines_metadata
 
 
-def _prepare_markers_metadata(coords, marker_size, marker_color, marker_only):
+def _prepare_markers_metadata(coords, node_size, node_color, node_only):
     markers_coordinates = _encode_coordinates(coords, prefix="_marker_")
     markers_metadata = {
-        'markers_only': marker_only,
+        'markers_only': node_only,
         **markers_coordinates
     }
 
-    if np.ndim(marker_size) > 0:
-        marker_size = np.asarray(marker_size)
-    if hasattr(marker_size, 'tolist'):
-        marker_size = marker_size.tolist()
-    markers_metadata['marker_size'] = marker_size
+    if np.ndim(node_size) > 0:
+        node_size = np.asarray(node_size)
+    if hasattr(node_size, 'tolist'):
+        node_size = node_size.tolist()
+    markers_metadata['marker_size'] = node_size
     markers_metadata['marker_color'] = _prepare_colors_for_markers(
-        marker_color,
+        node_color,
         len(coords),
     )
 
@@ -186,7 +186,7 @@ def _prepare_markers_metadata(coords, marker_size, marker_color, marker_only):
 
 
 def _get_connectome(adjacency_matrix, coords, threshold=None,
-                    marker_size=None, marker_color='auto', cmap=cm.cold_hot,
+                    node_size=None, node_color='auto', cmap=cm.cold_hot,
                     symmetric_cmap=True):
     lines_metadata = _prepare_lines_metadata(
         adjacency_matrix,
@@ -198,9 +198,9 @@ def _get_connectome(adjacency_matrix, coords, threshold=None,
 
     markers_metadata = _prepare_markers_metadata(
         coords,
-        marker_size,
-        marker_color,
-        marker_only=False,
+        node_size,
+        node_color,
+        node_only=False,
     )
 
     return {
@@ -308,8 +308,8 @@ def view_connectome(adjacency_matrix, node_coords, edge_threshold=None,
     connectome_info = _get_connectome(
         adjacency_matrix, node_coords,
         threshold=edge_threshold, cmap=edge_cmap,
-        symmetric_cmap=symmetric_cmap, marker_size=node_size,
-        marker_color=node_color)
+        symmetric_cmap=symmetric_cmap, node_size=node_size,
+        node_color=node_color)
     connectome_info['line_width'] = linewidth
     connectome_info['colorbar'] = colorbar
     connectome_info['cbar_height'] = colorbar_height
@@ -319,24 +319,24 @@ def view_connectome(adjacency_matrix, node_coords, edge_threshold=None,
     return _make_connectome_html(connectome_info)
 
 
-def view_markers(marker_coords, marker_color='auto', marker_size=5.,
-                 marker_labels=None, title=None, title_fontsize=25):
+def view_markers(node_coords, node_color='auto', node_size=5.,
+                 node_labels=None, title=None, title_fontsize=25):
     """Insert a 3d plot of markers in a brain into an HTML page.
 
     Parameters
     ----------
-    marker_coords : ndarray, shape=(n_nodes, 3)
+    node_coords : ndarray, shape=(n_nodes, 3)
         The coordinates of the nodes in MNI space.
 
-    marker_color : ndarray, shape=(n_nodes,), optional
+    node_color : ndarray, shape=(n_nodes,), optional
         colors of the markers: list of strings, hex rgb or rgba strings, rgb
         triplets, or rgba triplets (i.e. formats accepted by matplotlib, see
         https://matplotlib.org/users/colors.html#specifying-colors)
 
-    marker_size : float or array-like, optional
+    node_size : float or array-like, optional
         Size of the markers showing the seeds in pixels. Default=5.0.
 
-    marker_labels : list of str, shape=(n_nodes), optional
+    node_labels : list of str, shape=(n_nodes), optional
         Labels for the markers: list of strings
 
     title : str, optional
@@ -368,18 +368,18 @@ def view_markers(marker_coords, marker_color='auto', marker_size=5.,
         surface.
 
     """
-    marker_coords = np.asarray(marker_coords)
-    if marker_color is None:
-        marker_color = ['red' for _ in range(len(marker_coords))]
+    node_coords = np.asarray(node_coords)
+    if node_color is None:
+        node_color = ['red' for _ in range(len(node_coords))]
     connectome_info = _prepare_markers_metadata(
-        marker_coords,
-        marker_size,
-        marker_color,
-        marker_only=True,
+        node_coords,
+        node_size,
+        node_color,
+        node_only=True,
     )
-    if marker_labels is None:
-        marker_labels = ['' for _ in range(marker_coords.shape[0])]
-    connectome_info['marker_labels'] = marker_labels
+    if node_labels is None:
+        node_labels = ['' for _ in range(node_coords.shape[0])]
+    connectome_info['marker_labels'] = node_labels
     connectome_info['title'] = title
     connectome_info['title_fontsize'] = title_fontsize
     return _make_connectome_html(connectome_info)
