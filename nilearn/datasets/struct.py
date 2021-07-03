@@ -15,9 +15,8 @@ from sklearn.utils import Bunch
 
 from .utils import (_get_dataset_dir, _fetch_files, _get_dataset_descr)
 
-from .._utils import check_niimg
 from ..image import new_img_like, get_data, resampling
-
+from .._utils import check_niimg, fill_doc
 
 _package_directory = os.path.dirname(os.path.abspath(__file__))
 MNI152_FILE_PATH = os.path.join(
@@ -37,6 +36,7 @@ FSAVERAGE5_PATH = os.path.join(_package_directory, "data", "fsaverage5")
 _MNI_RES_WARNING_ALREADY_SHOWN = False
 
 
+@fill_doc
 def fetch_icbm152_2009(data_dir=None, url=None, resume=True, verbose=1):
     """Download and load the ICBM152 template (dated 2009).
 
@@ -45,19 +45,10 @@ def fetch_icbm152_2009(data_dir=None, url=None, resume=True, verbose=1):
 
     Parameters
     ----------
-    data_dir : string, optional
-        Path of the data directory. Used to force data storage in a non-
-        standard location. Default: None (meaning: default)
-
-    url : string, optional
-        Download URL of the dataset. Overwrite the default URL.
-
-    resume : bool, optional
-        If True, try resuming partially downloaded data.
-        Default=True.
-
-    verbose : int, optional
-        Verbosity level (0 means no message). Default=1.
+    %(data_dir)s
+    %(url)s
+    %(resume)s
+    %(verbose)s
 
     Returns
     -------
@@ -461,6 +452,7 @@ def load_mni152_wm_mask(resolution=None, threshold=0.2, n_iter=2):
     return wm_mask_img
 
 
+@fill_doc
 def fetch_icbm152_brain_gm_mask(data_dir=None, threshold=0.2, resume=True,
                                 n_iter=2, verbose=1):
     """Downloads ICBM152 template first, then loads the 'gm' mask.
@@ -469,26 +461,19 @@ def fetch_icbm152_brain_gm_mask(data_dir=None, threshold=0.2, resume=True,
 
     Parameters
     ----------
-    data_dir : str, optional
-        Path of the data directory. Used to force storage in a specified
-        location. Defaults to None.
-
+    %(data_dir)s
     threshold : float, optional
         Values of the ICBM152 grey-matter template above this threshold will be
         included. Default=0.2
 
-    resume : bool, optional
-        If True, try resuming partially downloaded data.
-        Default=True.
-
+    %(resume)s
     n_iter: int, optional, Default = 2
         Number of repetitions of dilation and erosion steps performed in
         scipy.ndimage.binary_closing function.
 
         .. versionadded:: 0.8.1
 
-    verbose : int, optional
-        Verbosity level (0 means no message). Default=1.
+    %(verbose)s
 
     Returns
     -------
@@ -502,7 +487,8 @@ def fetch_icbm152_brain_gm_mask(data_dir=None, threshold=0.2, resume=True,
     of the values. Then, do a bit post processing such as binary closing
     operation to more compact mask image.
 
-    Note: It is advised to check the mask image with your own data processing.
+    .. note::
+        It is advised to check the mask image with your own data processing.
 
     See Also
     --------
@@ -529,6 +515,7 @@ def fetch_icbm152_brain_gm_mask(data_dir=None, threshold=0.2, resume=True,
     return gm_mask_img
 
 
+@fill_doc
 def fetch_oasis_vbm(n_subjects=None, dartel_version=True, data_dir=None,
                     url=None, resume=True, verbose=1):
     """Download and load Oasis "cross-sectional MRI" dataset (416 subjects).
@@ -545,20 +532,10 @@ def fetch_oasis_vbm(n_subjects=None, dartel_version=True, data_dir=None,
     dartel_version : boolean, optional
         Whether or not to use data normalized with DARTEL instead of standard
         SPM8 normalization. Default=True.
-
-    data_dir : string, optional
-        Path of the data directory. Used to force data storage in a specified
-        location. Default: None
-
-    url : string, optional
-        Override download URL. Used for test only (or if you setup a mirror of
-        the data).
-
-    resume : bool, optional
-        If true, try resuming download if possible. Default=True.
-
-    verbose : int, optional
-        Verbosity level (0 means no message). Default=1.
+    %(data_dir)s
+    %(url)s
+    %(resume)s
+    %(verbose)s
 
     Returns
     -------
@@ -744,6 +721,7 @@ def fetch_oasis_vbm(n_subjects=None, dartel_version=True, data_dir=None,
         description=fdescr)
 
 
+@fill_doc
 def fetch_surf_fsaverage(mesh='fsaverage5', data_dir=None):
     """Download a Freesurfer fsaverage surface.
     File names are subject to change and only attribute names
@@ -753,24 +731,10 @@ def fetch_surf_fsaverage(mesh='fsaverage5', data_dir=None):
     Parameters
     ----------
     mesh : str, optional
-        Which mesh to fetch. Default='fsaverage5'.
-
-        - 'fsaverage3': the low-resolution fsaverage3 mesh (642 nodes)
-        - 'fsaverage4': the low-resolution fsaverage4 mesh (2562 nodes)
-        - 'fsaverage5': the low-resolution fsaverage5 mesh (10242 nodes)
-        - 'fsaverage5_sphere': this option has been deprecated
-            and will be removed in v0.9.0.
-            fsaverage5 sphere coordinates can now be accessed through
-            attributes sphere_{left, right} using mesh='fsaverage5'
-        - 'fsaverage6': the medium-resolution fsaverage6 mesh (40962 nodes)
-        - 'fsaverage7': same as 'fsaverage'
-        - 'fsaverage': the high-resolution fsaverage mesh (163842 nodes)
-            (high-resolution fsaverage will result in more computation time and
-            memory usage)
-
-    data_dir : str, optional
-        Path of the data directory. Used to force data storage in a specified
-        location.
+        Which mesh to fetch. Should be one of the following values:
+        %(fsaverage_options)s
+        Default='fsaverage5'.
+    %(data_dir)s
 
     Returns
     -------
