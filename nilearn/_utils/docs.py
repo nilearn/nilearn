@@ -15,6 +15,9 @@ import sys
 #
 docdict = dict()
 
+NILEARN_REF_DOC = "http://nilearn.github.io"
+NIIMG_LINK = f"{NILEARN_REF_DOC}/manipulating_images/input_output.html"
+
 # Verbose
 verbose = """
 verbose : :obj:`int`, optional
@@ -123,8 +126,8 @@ docdict['n_jobs_all'] = n_jobs.format("-1")
 # img
 docdict['img'] = """
 img : Niimg-like object
-    See `input-output <http://nilearn.github.io/manipulating_images/input_output.html>`_.
-"""
+    See `input-output <{}>`_.
+""".format(NIIMG_LINK)
 
 # cut_coords
 docdict['cut_coords'] = """
@@ -158,29 +161,36 @@ output_file : :obj:`str`, or None, optional
 
 # display_mode
 docdict['display_mode'] = """
-display_mode : {'ortho', 'tiled', 'mosaic','x', 'y', 'z', 'yx', 'xz', 'yz'}, optional
+display_mode : {'ortho', 'tiled', 'mosaic','x', 'y', 'z',\
+'yx', 'xz', 'yz'}, optional
     Choose the direction of the cuts:
 
         - 'x': sagittal
         - 'y': coronal
         - 'z': axial
-        - 'ortho': three cuts are performed in orthogonal directions
-        - 'tiled': three cuts are performed and arranged in a 2x2 grid
-        - 'mosaic': three cuts are performed along multiple rows and columns
+        - 'ortho': three cuts are performed in orthogonal
+          directions
+        - 'tiled': three cuts are performed and arranged
+          in a 2x2 grid
+        - 'mosaic': three cuts are performed along
+          multiple rows and columns
 
     Default='ortho'."""
 
 # figure
 docdict['figure'] = """
-figure : :obj:`int`, or :class:`matplotlib.figure.Figure`, or None,  optional
+figure : :obj:`int`, or :class:`matplotlib.figure.Figure`,\
+or None,  optional
     Matplotlib figure used or its number. If None is given, a
     new figure is created."""
 
 # axes
 docdict['axes'] = """
-axes : :class:`matplotlib.axes.Axes`, or 4 tuple of :obj:`float`: (xmin, ymin, width, height), optional
-    The axes, or the coordinates, in matplotlib figure space, of the axes
-    used to display the plot. If None, the complete figure is used."""
+axes : :class:`matplotlib.axes.Axes`, or 4 tuple \
+of :obj:`float`: (xmin, ymin, width, height), optional
+    The axes, or the coordinates, in matplotlib figure
+    space, of the axes used to display the plot.
+    If None, the complete figure is used."""
 
 # title
 docdict['title'] = """
@@ -193,15 +203,16 @@ docdict['threshold'] = """
 threshold : a number, None, or 'auto', optional
     If None is given, the image is not thresholded.
     If a number is given, it is used to threshold the image:
-    values below the threshold (in absolute value) are plotted as transparent.
-    If auto is given, the threshold is determined magically by analysis of the image.
+    values below the threshold (in absolute value) are plotted
+    as transparent. If auto is given, the threshold is determined
+    magically by analysis of the image.
 """
 
 # annotate
 docdict['annotate'] = """
 annotate : :obj:`bool`, optional
-    If `annotate` is True, positions and left/right annotation are added to the plot.
-    Default=True."""
+    If `annotate` is True, positions and left/right annotation
+    are added to the plot. Default=True."""
 
 # draw_cross
 docdict['draw_cross'] = """
@@ -222,12 +233,24 @@ docdict['colorbar'] = """
 colorbar : :obj:`bool`, optional
     If True, display a colorbar on the right of the plots."""
 
+# symmetric_cbar
+docdict['symmetric_cbar'] = """
+symmetric_cbar : :obj:`bool`, or 'auto', optional
+    Specifies whether the colorbar should range from `-vmax` to `vmax`
+    or from `vmin` to `vmax`. Setting to 'auto' will select the latter
+    if the range of the whole image is either positive or negative.
+
+    .. note::
+        The colormap will always range from `-vmax` to `vmax`.
+
+"""
+
 # bg_img
 docdict['bg_img'] = """
 bg_img : Niimg-like object, optional
-    See `input_output <http://nilearn.github.io/manipulating_images/input_output.html>`_.
+    See `input_output <{}>`_.
     The background image to plot on top of.
-"""
+""".format(NIIMG_LINK)
 
 # vmin
 docdict['vmin'] = """
@@ -256,8 +279,8 @@ bg_vmin : :obj:`float`, optional
 # resampling_interpolation
 docdict['resampling_interpolation'] = """
 resampling_interpolation : :obj:`str`, optional
-    Interpolation to use when resampling the image to the destination space.
-    Can be:
+    Interpolation to use when resampling the image to
+    the destination space. Can be:
 
         - "continuous": use 3rd-order spline interpolation
         - "nearest": use nearest-neighbor mapping.
@@ -269,8 +292,9 @@ resampling_interpolation : :obj:`str`, optional
 
 # cmap
 docdict['cmap'] = """
-cmap : :class:`matplotlib.colors.Colormap`, optional
-    The colormap to use."""
+cmap : :class:`matplotlib.colors.Colormap`, or :obj:`str`, optional
+    The colormap to use. Either a string which is a name of
+    a matplotlib colormap, or a matplotlib colormap object."""
 
 # Dimming factor
 docdict['dim'] = """
@@ -280,6 +304,65 @@ dim : :obj:`float`, or 'auto', optional
     Accepted float values, where a typical span is between -2 and 2
     (-2 = increase contrast; 2 = decrease contrast), but larger values
     can be used for a more pronounced effect. 0 means no dimming."""
+
+# avg_method
+docdict['avg_method'] = """
+avg_method : {'mean', 'median', 'min', 'max', custom function}, optional
+    How to average vertex values to derive the face value:
+
+        - `mean`: results in smooth boundaries
+        - `median`: results in sharp boundaries
+        - `min` or `max`: for sparse matrices
+        - `custom function`: You can also pass a custom function
+          which will be executed though :func:`numpy.apply_along_axis`.
+          Here is an example of a custom function:
+
+            .. code-block:: python
+
+                def custom_function(vertices):
+                    return vertices[0] * vertices[1] * vertices[2]
+
+"""
+
+# hemi
+docdict['hemi'] = """
+hemi : {'left', 'right'}, optional
+    Hemisphere to display. Default='left'."""
+
+# hemispheres
+docdict['hemispheres'] = """
+hemispheres : list of :obj:`str`, optional
+    Hemispheres to display. Default=['left', 'right']."""
+
+# view
+docdict['view'] = """
+view : {'lateral', 'medial', 'dorsal', 'ventral',\
+'anterior', 'posterior'}, optional
+    View of the surface that is rendered. Default='lateral'."""
+
+# bg_on_data
+docdict['bg_on_data'] = """
+bg_on_data : :obj:`bool`, optional
+    If True, and a `bg_map` is specified, the `surf_data` data is multiplied
+    by the background image, so that e.g. sulcal depth is visible beneath
+    the `surf_data`.
+
+        .. note::
+            This non-uniformly changes the surf_data values according
+            to e.g the sulcal depth.
+
+"""
+
+# darkness
+docdict['darkness'] = """
+darkness : :obj:`float` between 0 and 1, optional
+    Specifying the darkness of the background image:
+
+        - 1 indicates that the original values of the background are used
+        - .5 indicates that the background values are reduced by half
+          before being applied.
+
+"""
 
 # fsaverage options
 docdict['fsaverage_options'] = """

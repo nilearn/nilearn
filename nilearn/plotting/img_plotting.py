@@ -916,12 +916,7 @@ def plot_stat_map(stat_map_img, bg_img=MNI152TEMPLATE, cut_coords=None,
             The ccolormap *must* be symmetrical.
 
         Default=`plt.cm.cold_hot`.
-
-    symmetric_cbar : boolean or 'auto', optional
-        Specifies whether the colorbar should range from -vmax to vmax
-        or from vmin to vmax. Setting to 'auto' will select the latter if
-        the range of the whole image is either positive or negative.
-        Note: The colormap will always be set to range from -vmax to vmax.
+    %(symmetric_cbar)s
         Default='auto'.
     %(dim)s
         Default='auto'.
@@ -1026,12 +1021,7 @@ def plot_glass_brain(stat_map_img,
         maximum intensity will be represented with different colors.
         See http://nilearn.github.io/auto_examples/01_plotting/plot_demo_glass_brain_extensive.html
         for examples. Default=True.
-
-    symmetric_cbar : boolean or 'auto', optional
-        Specifies whether the colorbar should range from -vmax to vmax
-        or from vmin to vmax. Setting to 'auto' will select the latter if
-        the range of the whole image is either positive or negative.
-        Note: The colormap will always be set to range from -vmax to vmax.
+    %(symmetric_cbar)s
         Default='auto'.
     %(resampling_interpolation)s
         Default='continuous'.
@@ -1496,6 +1486,7 @@ def plot_carpet(img, mask_img=None, mask_labels=None,
     %(vmax)s
     %(title)s
     %(cmap)s
+
         .. note::
             This argumeent is used only if an atlas is used.
 
