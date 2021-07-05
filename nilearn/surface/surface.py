@@ -27,6 +27,7 @@ from nilearn import datasets
 from nilearn.image import load_img
 from nilearn.image import resampling
 from nilearn._utils.path_finding import _resolve_globbing
+from nilearn._utils import deprecated
 from nilearn import _utils
 from nilearn.image import get_data
 
@@ -468,6 +469,9 @@ def _interpolation_sampling(images, mesh, affine, kind='auto', radius=3,
     return texture
 
 
+@deprecated(("The return value is deprecated and will change to "
+             "a Surface object with provided mesh and computed "
+             "texture as arguments in release 0.10.0"))
 def vol_to_surf(img, surf_mesh,
                 radius=3., interpolation='linear', kind='auto',
                 n_samples=None, mask_img=None, inner_mesh=None, depth=None):
@@ -570,6 +574,11 @@ def vol_to_surf(img, surf_mesh,
         If 4D image is provided, a 2d array is returned, where each row
         corresponds to a mesh node.
 
+            .. deprecated:: 0.8.1
+                The return value is deprecated and will change
+                from a numpy array to a Surface object with provided
+                mesh and computed texture as arguments in release 0.10.0.
+
     Notes
     -----
     This function computes a value for each vertex of the mesh. In order to do
@@ -619,6 +628,9 @@ def vol_to_surf(img, surf_mesh,
     --------
     This function is experimental and details such as the interpolation method
     are subject to change.
+
+    The return value is deprecated and will change to a Surface object
+    with provided mesh and computed texture as arguments in release 0.10.0.
 
     """
     sampling_schemes = {'linear': _interpolation_sampling,
@@ -909,18 +921,20 @@ def load_surface(surface):
     surface : Surface-like (see description)
         The surface to be loaded.
         A surface can be:
-            - a nilearn.surface.Surface
-            - a sequence (mesh, data) where:
-                - mesh can be:
-                    - a nilearn.surface.Mesh
-                    - a path to .gii or .gii.gz etc.
-                    - a sequence of two numpy arrays,
-                    the first containing vertex coordinates
-                    and the second containing triangles.
-                - data can be:
-                    - a path to .gii or .gii.gz etc.
-                    - a numpy array with shape (n_vertices,)
-                    or (n_time_points, n_vertices)
+        - a nilearn.surface.Surface
+        - a sequence (mesh, data) where:
+
+        Mesh can be:
+            - a nilearn.surface.Mesh
+            - a path to .gii or .gii.gz etc.
+            - a sequence of two numpy arrays,
+              the first containing vertex coordinates
+              and the second containing triangles.
+
+        Data can be:
+            - a path to .gii or .gii.gz etc.
+            - a numpy array with shape (n_vertices,)
+              or (n_time_points, n_vertices)
 
     Returns
     --------
@@ -1029,18 +1043,20 @@ def check_surface(surface):
     surface : Surface-like (see description)
         The surface to be loaded.
         A surface can be:
-            - a nilearn.surface.Surface
-            - a sequence (mesh, data) where:
-                - mesh can be:
-                    - a nilearn.surface.Mesh
-                    - a path to .gii or .gii.gz etc.
-                    - a sequence of two numpy arrays,
-                    the first containing vertex coordinates
-                    and the second containing triangles.
-                - data can be:
-                    - a path to .gii or .gii.gz etc.
-                    - a numpy array with shape (n_vertices,)
-                    or (n_time_points, n_vertices)
+        - a nilearn.surface.Surface
+        - a sequence (mesh, data) where:
+
+        A mesh can be:
+            - a nilearn.surface.Mesh
+            - a path to .gii or .gii.gz etc.
+            - a sequence of two numpy arrays,
+              the first containing vertex coordinates
+              and the second containing triangles.
+
+        Data can be:
+            - a path to .gii or .gii.gz etc.
+            - a numpy array with shape (n_vertices,)
+              or (n_time_points, n_vertices)
 
     Returns
     -------

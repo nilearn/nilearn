@@ -27,7 +27,7 @@ import matplotlib
 from matplotlib import pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
 
-from nilearn.surface import surface
+from nilearn.surface import surface, Mesh
 from nilearn.plotting import show
 
 
@@ -43,8 +43,10 @@ angles = u.flatten() * 2 * np.pi / N_T
 x, y = np.cos(angles), np.sin(angles)
 z = v.flatten() * 2 / N_Z
 
-mesh = [np.asarray([x, y, z]).T, triangulation.triangles]
-inner_mesh = [[.7, .7, 1.] * mesh[0], triangulation.triangles]
+mesh = Mesh(np.asarray([x, y, z]).T,
+            triangulation.triangles)
+inner_mesh = Mesh([.7, .7, 1.] * mesh[0],
+                  triangulation.triangles)
 
 
 #########################################################################

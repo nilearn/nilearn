@@ -14,30 +14,46 @@ from nilearn.datasets import fetch_surf_fsaverage
 from nilearn.surface import load_surf_mesh
 from nilearn.surface.testing_utils import generate_surf
 from numpy.testing import assert_array_equal
-
+from nilearn.surface import load_surface
 
 def test_plot_surf():
     mesh = generate_surf()
     rng = np.random.RandomState(42)
     bg = rng.standard_normal(size=mesh[0].shape[0])
+    data = 10 * rng.standard_normal(size=mesh[0].shape[0])
+    surf = load_surface([mesh, data])
+    background = load_surface((mesh, bg))
 
     # Plot mesh only
-    plot_surf(mesh)
+    # Check that a FutureWarning is given
+    with pytest.warns(FutureWarning,
+                      match=("Giving a mesh and a texture separately "
+                             "to `plot_surf` has been deprecated.")):
+        plot_surf(mesh)
+
+    # Plot surface
+    with pytest.warns(FutureWarning,
+                      match="The parameter"):
+        plot_surf(surf, bg_map=bg)
+
+    plot_surf(surf, bg_surf=background)
 
     # Plot mesh with background
-    plot_surf(mesh, bg_map=bg)
-    plot_surf(mesh, bg_map=bg, darkness=0.5)
-    plot_surf(mesh, bg_map=bg, alpha=0.5)
+    plot_surf(mesh, bg_surf=background)
+    plot_surf(mesh, bg_surf=background, darkness=0.5)
+    plot_surf(mesh, bg_surf=background, alpha=0.5)
 
     # Plot different views
-    plot_surf(mesh, bg_map=bg, hemi='right')
-    plot_surf(mesh, bg_map=bg, view='medial')
-    plot_surf(mesh, bg_map=bg, hemi='right', view='medial')
+    plot_surf(mesh, bg_surf=background, hemi='right')
+    plot_surf(mesh, bg_surf=background, view='medial')
+    plot_surf(mesh, bg_surf=background,
+              hemi='right', view='medial')
 
     # Plot with colorbar
-    plot_surf(mesh, bg_map=bg, colorbar=True)
-    plot_surf(mesh, bg_map=bg, colorbar=True, cbar_vmin=0,
-              cbar_vmax=150, cbar_tick_format="%i")
+    plot_surf(mesh, bg_surf=background, colorbar=True)
+    plot_surf(mesh, bg_surf=background, colorbar=True,
+              cbar_vmin=0, cbar_vmax=150,
+              cbar_tick_format="%i")
 
     # Plot with avg_method
     ## Test all built-in methods and check
@@ -89,24 +105,28 @@ def test_plot_surf_error():
         plot_surf(mesh, hemi='lft')
 
     # Wrong size of background image
-    with pytest.raises(
-            ValueError,
-            match='bg_map does not have the same number of vertices'):
-        plot_surf(mesh, bg_map=rng.standard_normal(size=mesh[0].shape[0] - 1))
+    with pytest.raises(ValueError,
+                       match=('background texture does not have '
+                              'the same number of vertices')):
+        plot_surf(mesh,
+                  bg_surf=rng.standard_normal(size=mesh[0].shape[0] - 1))
 
     # Wrong size of surface data
     with pytest.raises(
         ValueError, match="surf_map does not have the same number of vertices"
     ):
         plot_surf(
-            mesh, surf_map=rng.standard_normal(size=mesh[0].shape[0] + 1)
+            mesh,
+            surf_map=rng.standard_normal(size=mesh[0].shape[0] + 1),
+            surface=None
         )
 
     with pytest.raises(
         ValueError, match="surf_map can only have one dimension"
     ):
         plot_surf(
-            mesh, surf_map=rng.standard_normal(size=(mesh[0].shape[0], 2))
+            mesh,
+            surf_map=rng.standard_normal(size=(mesh[0].shape[0], 2))
         )
 
     with pytest.raises(
@@ -152,30 +172,56 @@ def test_plot_surf_stat_map():
     rng = np.random.RandomState(42)
     bg = rng.standard_normal(size=mesh[0].shape[0])
     data = 10 * rng.standard_normal(size=mesh[0].shape[0])
+    surf = load_surface([mesh, data])
+    background = load_surface((mesh, bg))
 
     # Plot mesh with stat map
-    plot_surf_stat_map(mesh, stat_map=data)
-    plot_surf_stat_map(mesh, stat_map=data, colorbar=True)
-    plot_surf_stat_map(mesh, stat_map=data, alpha=1)
+    # Check that a FutureWarning is given
+    with pytest.warns(FutureWarning,
+                      match=("Giving a mesh and a texture separately "
+                             "to `plot_surf_stat_map` has been deprecated.")):
+        plot_surf_stat_map(mesh, stat_map=data)
+    # Provide the surface
+    plot_surf_stat_map(surf, colorbar=True)
+    with pytest.warns(FutureWarning,
+                      match=("Giving a mesh and a texture separately "
+                             "to `plot_surf_stat_map` has been deprecated.")):
+        plot_surf_stat_map(mesh, stat_map=data, alpha=1)
 
+    # Check that a UserWarning is given if a surface
+    # is provided with a stat_map
+    with pytest.warns(UserWarning,
+                      match=("`plot_surf_stat_map` received a surface object "
+                             "such that the argument `stat_map`, if provided, "
+                             "will be overwritten by the surface data.")):
+        plot_surf_stat_map(surf, stat_map=data)
     # Plot mesh with background and stat map
-    plot_surf_stat_map(mesh, stat_map=data, bg_map=bg)
-    plot_surf_stat_map(mesh, stat_map=data, bg_map=bg,
+    with pytest.warns(FutureWarning,
+                      match="The parameter"):
+        plot_surf_stat_map(surf, bg_map=bg)
+
+    plot_surf_stat_map(mesh, stat_map=data,
+                       bg_surf=background)
+    plot_surf_stat_map(surf, bg_surf=background,
                        bg_on_data=True, darkness=0.5)
-    plot_surf_stat_map(mesh, stat_map=data, bg_map=bg, colorbar=True,
+    plot_surf_stat_map(mesh, stat_map=data,
+                       bg_surf=background, colorbar=True,
                        bg_on_data=True, darkness=0.5)
 
     # Apply threshold
-    plot_surf_stat_map(mesh, stat_map=data, bg_map=bg,
+    plot_surf_stat_map(mesh, stat_map=data, bg_surf=background,
                        bg_on_data=True, darkness=0.5,
                        threshold=0.3)
-    plot_surf_stat_map(mesh, stat_map=data, bg_map=bg, colorbar=True,
+    plot_surf_stat_map(mesh, stat_map=data,
+                       bg_surf=background, colorbar=True,
                        bg_on_data=True, darkness=0.5,
                        threshold=0.3)
 
     # Change colorbar tick format
-    plot_surf_stat_map(mesh, stat_map=data, bg_map=bg, colorbar=True,
-                       bg_on_data=True, darkness=0.5, cbar_tick_format="%.2g")
+    plot_surf_stat_map(mesh, stat_map=data,
+                       bg_surf=background, colorbar=True,
+                       bg_on_data=True, darkness=0.5,
+                       cbar_tick_format="%.2g")
 
     # Change vmax
     plot_surf_stat_map(mesh, stat_map=data, vmax=5)
@@ -257,22 +303,35 @@ def test_plot_surf_roi():
     roi_idx = rng.randint(0, mesh[0].shape[0], size=10)
     roi_map = np.zeros(mesh[0].shape[0])
     roi_map[roi_idx] = 1
+    surf = load_surface([mesh, roi_map])
     parcellation = rng.uniform(size=mesh[0].shape[0])
+    surf_parcellation = load_surface([mesh, parcellation])
 
     # plot roi
-    plot_surf_roi(mesh, roi_map=roi_map)
-    plot_surf_roi(mesh, roi_map=roi_map, colorbar=True)
+    # Check that a FutureWarning is given
+    with pytest.warns(FutureWarning,
+                      match=("Giving a mesh and a texture separately "
+                             "to `plot_surf_roi` has been deprecated.")):
+        plot_surf_roi(mesh, roi_map=roi_map)
+    # Provide a surface object
+    plot_surf_roi(surf, colorbar=True)
+    # Check that a UserWarning is given if a surface
+    # is provided with a roi_map
+    with pytest.warns(UserWarning,
+                      match=("`plot_surf_roi` received a surface object "
+                             "such that the argument `roi_map`, if provided, "
+                             "will be overwritten by the surface data.")):
+        plot_surf_roi(surf, roi_map=roi_map)
     # change vmin, vmax
-    img = plot_surf_roi(mesh, roi_map=roi_map, vmin=1.2,
-                        vmax=8.9, colorbar=True)
+    img = plot_surf_roi(surf, vmin=1.2, vmax=8.9, colorbar=True)
     img.canvas.draw()
     cbar = img.axes[-1]
     cbar_vmin = float(cbar.get_yticklabels()[0].get_text())
     cbar_vmax = float(cbar.get_yticklabels()[-1].get_text())
     assert cbar_vmin == 1.0
     assert cbar_vmax == 8.0
-    img2 = plot_surf_roi(mesh, roi_map=roi_map, vmin=1.2,
-                         vmax=8.9, colorbar=True, cbar_tick_format="%.2g")
+    img2 = plot_surf_roi(surf, vmin=1.2, vmax=8.9, colorbar=True,
+                         cbar_tick_format="%.2g")
     img2.canvas.draw()
     cbar = img2.axes[-1]
     cbar_vmin = float(cbar.get_yticklabels()[0].get_text())
@@ -281,9 +340,14 @@ def test_plot_surf_roi():
     assert cbar_vmax == 8.9
 
     # plot parcellation
-    plot_surf_roi(mesh, roi_map=parcellation)
-    plot_surf_roi(mesh, roi_map=parcellation, colorbar=True)
-    plot_surf_roi(mesh, roi_map=parcellation, colorbar=True, cbar_tick_fomat="%f")
+    # Check that a FutureWarning is given
+    with pytest.warns(FutureWarning,
+                      match=("Giving a mesh and a texture separately "
+                             "to `plot_surf_roi` has been deprecated.")):
+        plot_surf_roi(mesh, roi_map=parcellation)
+    # Provide a surface object
+    plot_surf_roi(surf_parcellation, colorbar=True)
+    plot_surf_roi(surf_parcellation, colorbar=True, cbar_tick_fomat="%f")
 
     # plot to axes
     plot_surf_roi(mesh, roi_map=roi_map, ax=None, figure=plt.gcf())
@@ -454,21 +518,35 @@ def test_plot_surf_contours():
     parcellation = np.zeros((mesh[0].shape[0],))
     parcellation[mesh[1][3]] = 1
     parcellation[mesh[1][5]] = 2
-    plot_surf_contours(mesh, parcellation)
-    plot_surf_contours(mesh, parcellation, levels=[1, 2])
-    plot_surf_contours(mesh, parcellation, levels=[1, 2], cmap='gist_ncar')
-    plot_surf_contours(mesh, parcellation, levels=[1, 2],
-                       colors=['r', 'g'])
-    plot_surf_contours(mesh, parcellation, levels=[1, 2], colors=['r', 'g'],
+    surf = load_surface([mesh, parcellation])
+
+    # Check that a FutureWarning is given
+    with pytest.warns(FutureWarning,
+                      match=("Giving a mesh and a texture separately "
+                             "to `plot_surf_contours` has been deprecated.")):
+        plot_surf_contours(mesh, parcellation)
+    # Provide a surface object
+    plot_surf_contours(surf, levels=[1, 2])
+    # Check that a UserWarning is given if a surface
+    # is provided with a parcellation
+    with pytest.warns(UserWarning,
+                      match=("`plot_surf_contours` received a surface object "
+                             "such that the argument `roi_map`, if provided, "
+                             "will be overwritten by the surface data.")):
+        plot_surf_contours(surf, parcellation)
+
+    plot_surf_contours(surf, levels=[1, 2], cmap='gist_ncar')
+    plot_surf_contours(surf, levels=[1, 2], colors=['r', 'g'])
+    plot_surf_contours(surf, levels=[1, 2], colors=['r', 'g'],
                        labels=['1', '2'])
-    fig = plot_surf_contours(mesh, parcellation, levels=[1, 2], colors=['r', 'g'],
+    fig = plot_surf_contours(surf, levels=[1, 2], colors=['r', 'g'],
                              labels=['1', '2'], legend=True)
     assert fig.legends is not None
-    plot_surf_contours(mesh, parcellation, levels=[1, 2],
+    plot_surf_contours(surf, levels=[1, 2],
                        colors=[[0, 0, 0, 1], [1, 1, 1, 1]])
     fig, axes = plt.subplots(1, 1, subplot_kw={'projection': '3d'})
-    plot_surf_contours(mesh, parcellation, axes=axes)
-    plot_surf_contours(mesh, parcellation, figure=fig)
+    plot_surf_contours(surf, axes=axes)
+    plot_surf_contours(surf, figure=fig)
     fig = plot_surf(mesh)
     plot_surf_contours(mesh, parcellation, figure=fig)
     plot_surf_contours(mesh, parcellation, title='title')

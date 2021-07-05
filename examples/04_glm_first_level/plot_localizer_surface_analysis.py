@@ -64,8 +64,11 @@ fsaverage = nilearn.datasets.fetch_surf_fsaverage()
 ###############################################################################
 # The projection function simply takes the fMRI data and the mesh.
 # Note that those correspond spatially, are they are both in MNI space.
-from nilearn import surface
-texture = surface.vol_to_surf(fmri_img, fsaverage.pial_right)
+from nilearn.surface import vol_to_surf, load_surface
+texture = vol_to_surf(fmri_img, fsaverage.pial_right)
+surf = load_surface((fsaverage.pial_right, texture))
+background = load_surface((fsaverage.pial_right,
+                           fsaverage.sulc_right))
 
 ###############################################################################
 # Perform first level analysis
@@ -75,7 +78,7 @@ texture = surface.vol_to_surf(fmri_img, fsaverage.pial_right)
 # We start by specifying the timing of fMRI frames.
 
 import numpy as np
-n_scans = texture.shape[1]
+n_scans = surf.data.shape[1]
 frame_times = t_r * (np.arange(n_scans) + .5)
 
 ###############################################################################
@@ -98,7 +101,7 @@ design_matrix = make_first_level_design_matrix(frame_times,
 # We keep them for later contrast computation.
 
 from nilearn.glm.first_level import run_glm
-labels, estimates = run_glm(texture.T, design_matrix.values)
+labels, estimates = run_glm(surf.data.T, design_matrix.values)
 
 ###############################################################################
 # Estimate contrasts
@@ -172,14 +175,17 @@ for index, (contrast_id, contrast_val) in enumerate(contrasts.items()):
     contrast = compute_contrast(labels, estimates, contrast_val,
                                 contrast_type='t')
     # we present the Z-transform of the t map
-    z_score = contrast.z_score()
+    score_surface = load_surface((fsaverage.infl_right,
+                                  contrast.z_score()))
     # we plot it on the surface, on the inflated fsaverage mesh,
     # together with a suitable background to give an impression
     # of the cortex folding.
-    plotting.plot_surf_stat_map(
-        fsaverage.infl_right, z_score, hemi='right',
-        title=contrast_id, colorbar=True,
-        threshold=3., bg_map=fsaverage.sulc_right)
+    plotting.plot_surf_stat_map(score_surface,
+                                hemi='right',
+                                title=contrast_id,
+                                colorbar=True,
+                                threshold=3.,
+                                bg_surf=background)
 
 ###############################################################################
 # Analysing the left hemisphere
@@ -190,11 +196,15 @@ for index, (contrast_id, contrast_val) in enumerate(contrasts.items()):
 
 ###############################################################################
 # We project the fMRI data to the mesh.
-texture = surface.vol_to_surf(fmri_img, fsaverage.pial_left)
+texture = vol_to_surf(fmri_img, fsaverage.pial_left)
+surf = load_surface((fsaverage.pial_left,
+                     texture))
+background = load_surface((fsaverage.pial_left,
+                           fsaverage.sulc_left))
 
 ###############################################################################
 # Then we estimate the General Linear Model.
-labels, estimates = run_glm(texture.T, design_matrix.values)
+labels, estimates = run_glm(surf.data.T, design_matrix.values)
 
 ###############################################################################
 # Finally, we create contrast-specific maps and plot them.
@@ -204,11 +214,14 @@ for index, (contrast_id, contrast_val) in enumerate(contrasts.items()):
     # compute contrasts
     contrast = compute_contrast(labels, estimates, contrast_val,
                                 contrast_type='t')
-    z_score = contrast.z_score()
+    score_surf = load_surface((fsaverage.infl_left,
+                               contrast.z_score()))
     # plot the result
-    plotting.plot_surf_stat_map(
-        fsaverage.infl_left, z_score, hemi='left',
-        title=contrast_id, colorbar=True,
-        threshold=3., bg_map=fsaverage.sulc_left)
+    plotting.plot_surf_stat_map(score_surf,
+                                hemi='left',
+                                title=contrast_id,
+                                colorbar=True,
+                                threshold=3.,
+                                bg_surf=background)
 
 plotting.show()
