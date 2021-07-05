@@ -512,9 +512,13 @@ def _make_stat_maps(model, contrasts, output_type="z_score"):
     nilearn.glm.second_level.SecondLevelModel.compute_contrast
 
     """
-    statistical_maps = {contrast_id: model.compute_contrast(contrast_val, output_type=output_type)
-                        for contrast_id, contrast_val in contrasts.items()
-                        }
+    statistical_maps = {
+        contrast_id: model.compute_contrast(
+            contrast_val,
+            output_type=output_type,
+        )
+        for contrast_id, contrast_val in contrasts.items()
+    }
     return statistical_maps
 
 
@@ -1081,11 +1085,32 @@ def save_glm_results(model, contrasts, out_dir='.', prefix=None):
 
         # Contrast-level images
         MAPPING = {
-            'effect_size': '{}contrast-{}_stat-effect_statmap.nii.gz'.format(prefix, contrast_name),
-            'stat': '{}contrast-{}_stat-{}_statmap.nii.gz'.format(prefix, contrast_name, stat_type),
-            'effect_variance': '{}contrast-{}_stat-variance_statmap.nii.gz'.format(prefix, contrast_name),
-            'z_score': '{}contrast-{}_stat-z_statmap.nii.gz'.format(prefix, contrast_name),
-            'p_value': '{}contrast-{}_stat-p_statsmap.nii.gz'.format(prefix, contrast_name),
+            'effect_size':
+                '{}contrast-{}_stat-effect_statmap.nii.gz'.format(
+                    prefix,
+                    contrast_name,
+                ),
+            'stat':
+                '{}contrast-{}_stat-{}_statmap.nii.gz'.format(
+                    prefix,
+                    contrast_name,
+                    stat_type,
+                ),
+            'effect_variance':
+                '{}contrast-{}_stat-variance_statmap.nii.gz'.format(
+                    prefix,
+                    contrast_name,
+                ),
+            'z_score':
+                '{}contrast-{}_stat-z_statmap.nii.gz'.format(
+                    prefix,
+                    contrast_name,
+                ),
+            'p_value':
+                '{}contrast-{}_stat-p_statsmap.nii.gz'.format(
+                    prefix,
+                    contrast_name,
+                ),
         }
         # Rename keys
         renamed_contrast_maps = {
