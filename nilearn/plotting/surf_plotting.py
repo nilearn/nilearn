@@ -90,10 +90,7 @@ def plot_surf(surf_mesh, surf_map=None, bg_map=None,
         Lower / upper bounds for the colorbar.
         If None, the values will be set from the data.
         Default values are None.
-
-    cbar_tick_format : str, optional
-        Controls how to format the tick labels of the colorbar.
-        Ex: use "%%i" to display as integers.
+    %(cbar_tick_format)s
         Default='%%.2g' for scientific notation.
     %(title)s
     %(output_file)s
@@ -729,6 +726,7 @@ def plot_img_on_surf(stat_map, surf_mesh='fsaverage5', mask_img=None,
     %(output_file)s
     %(title)s
     %(colorbar)s
+
         .. note::
             This function uses a symmetric colorbar for the statistical map.
 
@@ -862,11 +860,8 @@ def plot_surf_roi(surf_mesh, roi_map, bg_map=None,
         Default=1e-14.
     %(cmap)s
         Default='gist_ncar'.
-    cbar_tick_format : str, optional
-        Controls how to format the tick labels of the colorbar.
-        Ex: use "%%.2g" to display using scientific notation.
+    %(cbar_tick_format)s
         Default='%%i' for integers.
-
     alpha : float or 'auto', optional
         Alpha level of the mesh (not the stat_map). If default,
         alpha will default to .5 when no bg_map is passed

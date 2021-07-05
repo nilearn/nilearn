@@ -161,8 +161,7 @@ output_file : :obj:`str`, or None, optional
 
 # display_mode
 docdict['display_mode'] = """
-display_mode : {'ortho', 'tiled', 'mosaic','x', 'y', 'z',\
-'yx', 'xz', 'yz'}, optional
+display_mode : {'ortho', 'tiled', 'mosaic','x', 'y', 'z', 'yx', 'xz', 'yz'}, optional
     Choose the direction of the cuts:
 
         - 'x': sagittal
@@ -179,15 +178,13 @@ display_mode : {'ortho', 'tiled', 'mosaic','x', 'y', 'z',\
 
 # figure
 docdict['figure'] = """
-figure : :obj:`int`, or :class:`matplotlib.figure.Figure`,\
-or None,  optional
+figure : :obj:`int`, or :class:`matplotlib.figure.Figure`, or None,  optional
     Matplotlib figure used or its number. If None is given, a
     new figure is created."""
 
 # axes
 docdict['axes'] = """
-axes : :class:`matplotlib.axes.Axes`, or 4 tuple \
-of :obj:`float`: (xmin, ymin, width, height), optional
+axes : :class:`matplotlib.axes.Axes`, or 4 tuple of :obj:`float`: (xmin, ymin, width, height), optional
     The axes, or the coordinates, in matplotlib figure
     space, of the axes used to display the plot.
     If None, the complete figure is used."""
@@ -244,6 +241,12 @@ symmetric_cbar : :obj:`bool`, or 'auto', optional
         The colormap will always range from `-vmax` to `vmax`.
 
 """
+
+# cbar_tick_format
+docdict['cbar_tick_format'] = """
+cbar_tick_format : :obj:`str`, optional
+    Controls how to format the tick labels of the colorbar.
+    Ex: use "%%.2g" to display using scientific notation."""
 
 # bg_img
 docdict['bg_img'] = """
@@ -336,8 +339,7 @@ hemispheres : list of :obj:`str`, optional
 
 # view
 docdict['view'] = """
-view : {'lateral', 'medial', 'dorsal', 'ventral',\
-'anterior', 'posterior'}, optional
+view : {'lateral', 'medial', 'dorsal', 'ventral', 'anterior', 'posterior'}, optional
     View of the surface that is rendered. Default='lateral'."""
 
 # bg_on_data
@@ -363,6 +365,12 @@ darkness : :obj:`float` between 0 and 1, optional
           before being applied.
 
 """
+
+# linewidth
+docdict['linewidths'] = """
+linewidths : :obj:`float`, optional
+    Set the boundary thickness of the contours.
+    Only reflects when `view_type`='contours'."""
 
 # fsaverage options
 docdict['fsaverage_options'] = """

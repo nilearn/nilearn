@@ -294,8 +294,8 @@ def plot_img(img, cut_coords=None, output_file=None, display_mode='ortho',
     %(resampling_interpolation)s
         Default='continuous'.
     %(bg_img)s
-         If nothing is specified, no background image is plotted.
-         Default=None.
+        If nothing is specified, no background image is plotted.
+        Default=None.
     %(vmin)s
     %(vmax)s
     kwargs : extra keyword arguments, optional
@@ -647,10 +647,7 @@ def plot_roi(roi_img, bg_img=MNI152TEMPLATE, cut_coords=None,
         If view_type == 'contours', maps are shown as contours. For this type, label
         denoted as 0 is considered as background and not shown.
         Default='continuous'.
-
-    linewidths : float, optional
-        This option can be used to set the boundary thickness of the
-        contours. Only reflects when view_type='contours'.
+    %(linewidths)s
         Default=2.5.
 
     Notes
@@ -749,9 +746,7 @@ def plot_prob_atlas(maps_img, bg_img=MNI152TEMPLATE, view_type='auto',
         directly to threshold the maps without any percentile calculation.
         If None, a very small threshold is applied to remove numerical
         noise from the maps background.
-
-    linewidths : float, optional
-        This option can be used to set the boundary thickness of the contours.
+    %(linewidths)s
         Default=2.5.
     %(cut_coords)s
     %(output_file)s
