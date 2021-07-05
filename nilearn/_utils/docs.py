@@ -17,7 +17,7 @@ docdict = dict()
 
 # Verbose
 verbose = """
-verbose : int, optional
+verbose : :obj:`int`, optional
     Verbosity level (0 means no message).
     Default={}."""
 docdict['verbose'] = verbose.format(1)
@@ -25,19 +25,19 @@ docdict['verbose0'] = verbose.format(0)
 
 # Resume
 docdict['resume'] = """
-resume : bool, optional
+resume : :obj:`bool`, optional
     Whether to resumed download of a partly-downloaded file.
     Default=True."""
 
 # Data_dir
 docdict['data_dir'] = """
-data_dir : string, optional
+data_dir : :obj:`str`, optional
     Path where data should be downloaded. By default,
     files are downloaded in home directory."""
 
 # URL
 docdict['url'] = """
-url : string, optional
+url : :obj:`str`, optional
     URL of file to download.
     Override download URL. Used for test only (or if you
     setup a mirror of the data).
@@ -45,15 +45,15 @@ url : string, optional
 
 # Smoothing_fwhm
 docdict['smoothing_fwhm'] = """
-smoothing_fwhm : float, optional.
-    If smoothing_fwhm is not None, it gives the size in millimeters of the
+smoothing_fwhm : :obj:`float`, optional.
+    If `smoothing_fwhm` is not None, it gives the size in millimeters of the
     spatial smoothing to apply to the signal.
     Default=None."""
 
 # Standardize
 standardize = """
-standardize : bool, optional.
-    If standardize is True, the data are centered and normed:
+standardize : :obj:`bool`, optional.
+    If `standardize` is True, the data are centered and normed:
     their variance is put to 1 in the time dimension.
     Default={}."""
 docdict['standardize'] = standardize.format('True')
@@ -63,7 +63,7 @@ docdict['standardize_false'] = standardize.format('False')
 docdict['target_affine'] = """
 target_affine: numpy.ndarray, optional.
     If specified, the image is resampled corresponding to this new affine.
-    target_affine can be a 3x3 or a 4x4 matrix.
+    `target_affine` can be a 3x3 or a 4x4 matrix.
     Default=None."""
 
 # Target_shape
@@ -80,32 +80,32 @@ target_shape: tuple or list, optional.
 
 # Low_pass
 docdict['low_pass'] = """
-low_pass: float, optional
+low_pass: :obj:`float`, optional
     Low cutoff frequency in Hertz.
     Default=None."""
 
 # High pass
 docdict['high_pass'] = """
-high_pass: float, optional
+high_pass: :obj:`float`, optional
     High cutoff frequency in Hertz.
     Default=None."""
 
 # t_r
 docdict['t_r'] = """
-t_r: float, optional
+t_r: :obj:`float`, optional
     Repetition time, in second (sampling period). Set to None if not.
     Default=None."""
 
 # Memory
 docdict['memory'] = """
-memory : instance of joblib.Memory or str
+memory : instance of joblib.Memory or :obj:`str`
     Used to cache the masking process.
     By default, no caching is done. If a str is given, it is the
     path to the caching directory."""
 
 # Memory_level
 memory_level = """
-memory_level: int, optional.
+memory_level: :obj:`int`, optional.
     Rough estimator of the amount of memory used by caching. Higher value
     means more memory for caching.
     Default={}."""
@@ -114,11 +114,172 @@ docdict['memory_level1'] = memory_level.format(1)
 
 # n_jobs
 n_jobs = """
-n_jobs : int, optional.
+n_jobs : :obj:`int`, optional.
     The number of CPUs to use to do the computation. -1 means 'all CPUs'.
     Default={}."""
 docdict['n_jobs'] = n_jobs.format("1")
 docdict['n_jobs_all'] = n_jobs.format("-1")
+
+# img
+docdict['img'] = """
+img : Niimg-like object
+    See `input-output <http://nilearn.github.io/manipulating_images/input_output.html>`_.
+"""
+
+# cut_coords
+docdict['cut_coords'] = """
+cut_coords : None, a tuple of :obj:`float`, or :obj:`int`, optional
+    The MNI coordinates of the point where the cut is performed.
+
+        - If `display_mode` is 'ortho' or 'tiled', this should
+          be a 3-tuple: (x, y, z)
+        - For `display_mode` == 'x', 'y', or 'z', then these are
+          the coordinates of each cut in the corresponding direction.
+        - If None is given, the cuts is calculated automaticaly.
+        - If `display_mode` is 'mosaic', and the number of cuts is the same
+          for all directions, `cut_coords` can be specified as an integer.
+          It can also be a length 3 tuple specifying the number of cuts for
+          every direction if these are different.
+
+        .. note::
+            If display_mode is 'x', 'y' or 'z', `cut_coords` can be
+            an integer, in which case it specifies the number of
+            cuts to perform.
+
+"""
+
+# output_file
+docdict['output_file'] = """
+output_file : :obj:`str`, or None, optional
+    The name of an image file to export the plot to. Valid extensions
+    are .png, .pdf, .svg. If `output_file` is not None, the plot
+    is saved to a file, and the display is closed."""
+
+
+# display_mode
+docdict['display_mode'] = """
+display_mode : {'ortho', 'tiled', 'mosaic','x', 'y', 'z', 'yx', 'xz', 'yz'}, optional
+    Choose the direction of the cuts:
+
+        - 'x': sagittal
+        - 'y': coronal
+        - 'z': axial
+        - 'ortho': three cuts are performed in orthogonal directions
+        - 'tiled': three cuts are performed and arranged in a 2x2 grid
+        - 'mosaic': three cuts are performed along multiple rows and columns
+
+    Default='ortho'."""
+
+# figure
+docdict['figure'] = """
+figure : :obj:`int`, or :class:`matplotlib.figure.Figure`, or None,  optional
+    Matplotlib figure used or its number. If None is given, a
+    new figure is created."""
+
+# axes
+docdict['axes'] = """
+axes : :class:`matplotlib.axes.Axes`, or 4 tuple of :obj:`float`: (xmin, ymin, width, height), optional
+    The axes, or the coordinates, in matplotlib figure space, of the axes
+    used to display the plot. If None, the complete figure is used."""
+
+# title
+docdict['title'] = """
+title : :obj:`str`, or None, optional
+    The title displayed on the figure.
+    Default=None."""
+
+# threshold
+docdict['threshold'] = """
+threshold : a number, None, or 'auto', optional
+    If None is given, the image is not thresholded.
+    If a number is given, it is used to threshold the image:
+    values below the threshold (in absolute value) are plotted as transparent.
+    If auto is given, the threshold is determined magically by analysis of the image.
+"""
+
+# annotate
+docdict['annotate'] = """
+annotate : :obj:`bool`, optional
+    If `annotate` is True, positions and left/right annotation are added to the plot.
+    Default=True."""
+
+# draw_cross
+docdict['draw_cross'] = """
+draw_cross : :obj:`bool`, optional
+    If `draw_cross` is True, a cross is drawn on the plot to indicate
+    the cut position. Default=True."""
+
+# black_bg
+docdict['black_bg'] = """
+black_bg : :obj:`bool`, or 'auto', optional
+    If True, the background of the image is set to be black.
+    If you wish to save figures with a black background, you
+    will need to pass "facecolor='k', edgecolor='k'"
+    to :func:`matplotlib.pyplot.savefig`."""
+
+# colorbar
+docdict['colorbar'] = """
+colorbar : :obj:`bool`, optional
+    If True, display a colorbar on the right of the plots."""
+
+# bg_img
+docdict['bg_img'] = """
+bg_img : Niimg-like object, optional
+    See `input_output <http://nilearn.github.io/manipulating_images/input_output.html>`_.
+    The background image to plot on top of.
+"""
+
+# vmin
+docdict['vmin'] = """
+vmin : :obj:`float`, optional
+    Lower bound of the colormap. If `None`, the min of the image is used.
+    Passed to :func:`matplotlib.pyplot.imshow`.
+"""
+
+# vmax
+docdict['vmax'] = """
+vmax : :obj:`float`, optional
+    Upper bound of the colormap. If `None`, the max of the image is used.
+    Passed to :func:`matplotlib.pyplot.imshow`.
+"""
+
+# bg_vmin
+docdict['bg_vmin'] = """
+bg_vmin : :obj:`float`, optional
+    vmin for `bg_img`."""
+
+# bg_vmax
+docdict['bg_vmax'] = """
+bg_vmin : :obj:`float`, optional
+    vmax for `bg_img`."""
+
+# resampling_interpolation
+docdict['resampling_interpolation'] = """
+resampling_interpolation : :obj:`str`, optional
+    Interpolation to use when resampling the image to the destination space.
+    Can be:
+
+        - "continuous": use 3rd-order spline interpolation
+        - "nearest": use nearest-neighbor mapping.
+
+            .. note::
+                "nearest" is faster but can be noisier in some cases.
+
+"""
+
+# cmap
+docdict['cmap'] = """
+cmap : :class:`matplotlib.colors.Colormap`, optional
+    The colormap to use."""
+
+# Dimming factor
+docdict['dim'] = """
+dim : :obj:`float`, or 'auto', optional
+    Dimming factor applied to background image. By default, automatic
+    heuristics are applied based upon the background image intensity.
+    Accepted float values, where a typical span is between -2 and 2
+    (-2 = increase contrast; 2 = decrease contrast), but larger values
+    can be used for a more pronounced effect. 0 means no dimming."""
 
 # fsaverage options
 docdict['fsaverage_options'] = """
