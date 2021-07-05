@@ -207,7 +207,7 @@ class MultiNiftiMasker(NiftiMasker, CacheMixin):
             elif self.mask_strategy == 'epi':
                 compute_mask = masking.compute_multi_epi_mask
             elif self.mask_strategy == 'template':
-                compute_mask = masking.compute_multi_gray_matter_mask
+                compute_mask = masking.compute_multi_brain_mask
             else:
                 raise ValueError("Unknown value of mask_strategy '%s'. "
                                  "Acceptable values are 'background', 'epi' "
@@ -247,7 +247,8 @@ class MultiNiftiMasker(NiftiMasker, CacheMixin):
         get_data(self.mask_img_)
         return self
 
-    def transform_imgs(self, imgs_list, confounds=None, copy=True, n_jobs=1):
+    def transform_imgs(self, imgs_list, confounds=None, sample_mask=None,
+                       copy=True, n_jobs=1):
         """Prepare multi subject data in parallel
 
         Parameters
@@ -260,6 +261,12 @@ class MultiNiftiMasker(NiftiMasker, CacheMixin):
         confounds : list of confounds, optional
             List of confounds (2D arrays or filenames pointing to CSV
             files or pandas DataFrames). Must be of same length than imgs_list.
+
+        sample_mask : list of sample_mask, optional
+            List of sample_mask (1D arrays) if scrubbing motion outliers.
+            Must be of same length than imgs_list.
+
+                .. versionadded:: 0.8.0
 
         copy : boolean, optional
             If True, guarantees that output array has no memory in common with
@@ -319,7 +326,7 @@ class MultiNiftiMasker(NiftiMasker, CacheMixin):
             for imgs, cfs in zip(niimg_iter, confounds))
         return data
 
-    def transform(self, imgs, confounds=None):
+    def transform(self, imgs, confounds=None, sample_mask=None):
         """ Apply mask, spatial and temporal preprocessing
 
         Parameters
@@ -332,6 +339,12 @@ class MultiNiftiMasker(NiftiMasker, CacheMixin):
             This parameter is passed to signal.clean. Please see the
             corresponding documentation for details.
 
+        sample_mask : list of sample_mask, optional
+            List of sample_mask (1D arrays) if scrubbing motion outliers.
+            Must be of same length than imgs_list.
+
+                .. versionadded:: 0.8.0
+
         Returns
         -------
         data : {list of numpy arrays}
@@ -342,4 +355,6 @@ class MultiNiftiMasker(NiftiMasker, CacheMixin):
         if not hasattr(imgs, '__iter__') \
                 or isinstance(imgs, str):
             return self.transform_single_imgs(imgs)
-        return self.transform_imgs(imgs, confounds, n_jobs=self.n_jobs)
+        return self.transform_imgs(imgs, confounds=confounds,
+                                   sample_mask=sample_mask,
+                                   n_jobs=self.n_jobs)

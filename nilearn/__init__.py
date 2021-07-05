@@ -33,9 +33,9 @@ signal                  --- Set of preprocessing functions for time series
 """
 
 import gzip
-import sys
-import warnings
 import os
+import pkg_resources
+import warnings
 
 from distutils.version import LooseVersion
 
@@ -48,24 +48,31 @@ from .version import _check_module_dependencies, __version__
 os.environ.setdefault("KMP_INIT_AT_FORK", "FALSE")
 
 
-def _py35_deprecation_warning():
-    py35_warning = ('Python 3.5 support is deprecated and will be removed in '
-                    'the 0.8.0 release. Consider switching to Python 3.6 or 3.7'
-                    )
-    warnings.filterwarnings('once', message=py35_warning)
-    warnings.warn(message=py35_warning,
+def _nibabel2_deprecation_warning():
+    msg = ('Support for Nibabel 2.x is deprecated and will stop '
+           'in release 0.9.0. Please consider upgrading to '
+           'Nibabel 3.x.')
+    warnings.filterwarnings('once', message=msg)
+    warnings.warn(message=msg,
                   category=FutureWarning,
-                  stacklevel=3,
-                  )
+                  stacklevel=3)
 
 
-def _python_deprecation_warnings():
-    if sys.version_info.major == 3 and sys.version_info.minor == 5:
-        _py35_deprecation_warning()
+def _nibabel_deprecation_warnings():
+    """Give a deprecation warning is the version of
+    Nibabel is < 3.0.0.
+    """
+    # Nibabel should be installed or we would
+    # have had an error when calling
+    # _check_module_dependencies
+    dist = pkg_resources.get_distribution('nibabel')
+    nib_version = LooseVersion(dist.version)
+    if nib_version < '3.0':
+        _nibabel2_deprecation_warning()
 
 
 _check_module_dependencies()
-_python_deprecation_warnings()
+_nibabel_deprecation_warnings()
 
 # Temporary work around to address formatting issues in doc tests
 # with NumPy 1.14. NumPy had made more consistent str/repr formatting

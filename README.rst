@@ -8,16 +8,16 @@
     :target: https://pypi.org/project/nilearn/
     :alt: PyPI - Python Version
 
-.. image:: https://github.com/nilearn/nilearn/workflows/build/badge.svg?branch=master&event=push
+.. image:: https://github.com/nilearn/nilearn/workflows/build/badge.svg?branch=main&event=push
    :target: https://github.com/nilearn/nilearn/actions
    :alt: Github Actions Build Status
 
-.. image:: https://codecov.io/gh/nilearn/nilearn/branch/master/graph/badge.svg
+.. image:: https://codecov.io/gh/nilearn/nilearn/branch/main/graph/badge.svg
    :target: https://codecov.io/gh/nilearn/nilearn
    :alt: Coverage Status
 
-.. image:: https://dev.azure.com/Parietal/Nilearn/_apis/build/status/nilearn.nilearn?branchName=master
-   :target: https://dev.azure.com/Parietal/Nilearn/_apis/build/status/nilearn.nilearn?branchName=master
+.. image:: https://dev.azure.com/Parietal/Nilearn/_apis/build/status/nilearn.nilearn?branchName=main
+   :target: https://dev.azure.com/Parietal/Nilearn/_apis/build/status/nilearn.nilearn?branchName=main
    :alt: Azure Build Status
 
 nilearn
@@ -38,13 +38,14 @@ Dependencies
 
 The required dependencies to use the software are:
 
-* Python >= 3.5,
+* Python >= 3.6,
 * setuptools
-* Numpy >= 1.11
-* SciPy >= 0.19
-* Scikit-learn >= 0.19
+* Numpy >= 1.16
+* SciPy >= 1.2
+* Scikit-learn >= 0.21
 * Joblib >= 0.12
-* Nibabel >= 2.0.2
+* Nibabel >= 2.5
+* Pandas >= 0.24
 
 If you are using nilearn plotting functionalities or running the
 examples, matplotlib >= 1.5.1 is required.

@@ -2,9 +2,12 @@
 Functions for surface visualization.
 Only matplotlib is required.
 """
+import itertools
+
 import matplotlib.pyplot as plt
 import numpy as np
 
+from matplotlib import gridspec
 from matplotlib.colorbar import make_axes
 from matplotlib.cm import ScalarMappable, get_cmap
 from matplotlib.colors import Normalize, LinearSegmentedColormap
@@ -50,7 +53,7 @@ def plot_surf(surf_mesh, surf_map=None, bg_map=None,
     surf_map : str or numpy.ndarray, optional
         Data to be displayed on the surface mesh. Can be a file (valid formats
         are .gii, .mgz, .nii, .nii.gz, or Freesurfer specific files such as
-        .thickness, .curv, .sulc, .annot, .label) or
+        .thickness, .area, .curv, .sulc, .annot, .label) or
         a Numpy array with a value for each vertex of the surf_mesh.
 
     bg_map : Surface data object (to be defined), optional
@@ -72,9 +75,20 @@ def plot_surf(surf_mesh, surf_map=None, bg_map=None,
     colorbar : bool, optional
         If True, a colorbar of surf_map is displayed. Default=False.
 
-    avg_method : {'mean', 'median'}, optional
-        How to average vertex values to derive the face value, mean results
-        in smooth, median in sharp boundaries. Default='mean'.
+    avg_method : {'mean', 'median', 'min', 'max', custom function}, optional
+        How to average vertex values to derive the face value,
+        mean results in smooth, median in sharp boundaries,
+        min or max for sparse matrices.
+        You can also pass a custom function which will be
+        executed though `numpy.apply_along_axis`.
+        Here is an example of a custom function:
+
+        .. code-block:: python
+
+            def custom_function(vertices):
+                return vertices[0] * vertices[1] * vertices[2]
+
+        Default='mean'.
 
     threshold : a number or None, default is None.
         If None is given, the image is not thresholded.
@@ -144,8 +158,10 @@ def plot_surf(surf_mesh, surf_map=None, bg_map=None,
     nilearn.plotting.plot_surf_stat_map : for plotting statistical maps on
         brain surfaces.
 
+    nilearn.surface.vol_to_surf : For info on the generation of surfaces.
+
     """
-    _default_figsize = [6, 4]
+    _default_figsize = [4, 4]
 
     # load mesh and derive axes limits
     mesh = load_surf_mesh(surf_mesh)
@@ -211,14 +227,12 @@ def plot_surf(surf_mesh, surf_map=None, bg_map=None,
     if axes is None:
         if figure is None:
             figure = plt.figure(figsize=figsize)
-        axes = Axes3D(figure, rect=[0, 0, 1, 1],
-                      xlim=limits, ylim=limits)
+        axes = figure.add_axes((0, 0, 1, 1), projection="3d")
     else:
         if figure is None:
             figure = axes.get_figure()
-            figure.set_size_inches(*figsize)
-        axes.set_xlim(*limits)
-        axes.set_ylim(*limits)
+    axes.set_xlim(*limits)
+    axes.set_ylim(*limits)
     axes.view_init(elev=elev, azim=azim)
     axes.set_axis_off()
 
@@ -270,6 +284,43 @@ def plot_surf(surf_mesh, surf_map=None, bg_map=None,
             surf_map_faces = np.mean(surf_map_data[faces], axis=1)
         elif avg_method == 'median':
             surf_map_faces = np.median(surf_map_data[faces], axis=1)
+        elif avg_method == 'min':
+            surf_map_faces = np.min(surf_map_data[faces], axis=1)
+        elif avg_method == 'max':
+            surf_map_faces = np.max(surf_map_data[faces], axis=1)
+        elif callable(avg_method):
+            surf_map_faces = np.apply_along_axis(
+                avg_method, 1, surf_map_data[faces]
+            )
+
+            ## check that surf_map_faces has the same length as face_colors
+            if surf_map_faces.shape != (face_colors.shape[0],):
+                raise ValueError(
+                    'Array computed with the custom function '
+                    'from avg_method does not have the correct shape: '
+                    '{} != {}'.format(
+                        surf_map_faces.shape[0],
+                        face_colors.shape[0]
+                    )
+                )
+
+            ## check that dtype is either int or float
+            if not (
+                "int" in str(surf_map_faces.dtype) or
+                "float" in str(surf_map_faces.dtype)
+            ):
+                raise ValueError(
+                    'Array computed with the custom function '
+                    'from avg_method should be an array of numbers '
+                    '(int or float)'
+                )
+
+        else:
+            raise ValueError(
+                "avg_method should be either "
+                "['mean', 'median', 'max', 'min'] "
+                "or a custom function"
+            )
 
         # if no vmin/vmax are passed figure them out from data
         if vmin is None:
@@ -323,8 +374,8 @@ def plot_surf(surf_mesh, surf_map=None, bg_map=None,
             # we need to create a proxy mappable
             proxy_mappable = ScalarMappable(cmap=our_cmap, norm=norm)
             proxy_mappable.set_array(surf_map_faces)
-            cax, kw = make_axes(axes, location='right', fraction=.1,
-                                shrink=.6, pad=.0)
+            cax, kw = make_axes(axes, location='right', fraction=.15,
+                                shrink=.5, pad=.0, aspect=10.)
             cbar = figure.colorbar(
                 proxy_mappable, cax=cax, ticks=ticks,
                 boundaries=bounds, spacing='proportional',
@@ -441,6 +492,8 @@ def plot_surf_contours(surf_mesh, roi_map, axes=None, figure=None, levels=None,
     nilearn.plotting.plot_surf_stat_map : for plotting statistical maps on
         brain surfaces.
 
+    nilearn.surface.vol_to_surf : For info on the generation of surfaces.
+
     """
     if figure is None and axes is None:
         figure = plot_surf(surf_mesh, **kwargs)
@@ -529,8 +582,8 @@ def plot_surf_stat_map(surf_mesh, stat_map, bg_map=None,
     stat_map : str or numpy.ndarray
         Statistical map to be displayed on the surface mesh, can
         be a file (valid formats are .gii, .mgz, .nii, .nii.gz, or
-        Freesurfer specific files such as .thickness, .curv, .sulc, .annot,
-        .label) or
+        Freesurfer specific files such as .thickness, .area, .curv,
+        .sulc, .annot, .label) or
         a Numpy array with a value for each vertex of the surf_mesh.
 
     bg_map : Surface data object (to be defined), optional
@@ -612,6 +665,8 @@ def plot_surf_stat_map(surf_mesh, stat_map, bg_map=None,
         used as background map for this plotting function.
 
     nilearn.plotting.plot_surf: For brain surface visualization.
+
+    nilearn.surface.vol_to_surf : For info on the generation of surfaces.
 
     """
     loaded_stat_map = load_surf_data(stat_map)
@@ -717,7 +772,7 @@ def plot_img_on_surf(stat_map, surf_mesh='fsaverage5', mask_img=None,
                      views=['lateral', 'medial'],
                      output_file=None, title=None, colorbar=True,
                      vmax=None, threshold=None,
-                     cmap='cold_hot', aspect_ratio=1.4, **kwargs):
+                     cmap='cold_hot', **kwargs):
     """Convenience function to plot multiple views of plot_surf_stat_map
     in a single figure. It projects stat_map into meshes and plots views of
     left and right hemispheres. The *views* argument defines the views
@@ -822,50 +877,49 @@ def plot_img_on_surf(stat_map, surf_mesh='fsaverage5', mask_img=None,
                              mask_img=mask_img)
     }
 
-    figsize = plt.figaspect(len(modes) / (aspect_ratio * len(hemispheres)))
-    fig, axes = plt.subplots(nrows=len(modes),
-                             ncols=len(hemis),
-                             figsize=figsize,
-                             subplot_kw={'projection': '3d'})
-
-    axes = np.atleast_2d(axes)
-
-    if len(hemis) == 1:
-        axes = axes.T
-
-    for index_mode, mode in enumerate(modes):
-        for index_hemi, hemi in enumerate(hemis):
-            bg_map = surf_mesh['sulc_%s' % hemi]
-            plot_surf_stat_map(surf[hemi], texture[hemi],
-                               view=mode, hemi=hemi,
-                               bg_map=bg_map,
-                               axes=axes[index_mode, index_hemi],
-                               colorbar=False,  # Colorbar created externally.
-                               vmax=vmax,
-                               threshold=threshold,
-                               cmap=cmap,
-                               **kwargs)
-
-    for ax in axes.flatten():
+    cbar_h = .25
+    title_h = .25 * (title is not None)
+    w, h = plt.figaspect((len(modes) + cbar_h + title_h) / len(hemispheres))
+    fig = plt.figure(figsize=(w, h), constrained_layout=False)
+    height_ratios = [title_h] + [1.] * len(modes) + [cbar_h]
+    grid = gridspec.GridSpec(
+        len(modes) + 2, len(hemis),
+        left=0., right=1., bottom=0., top=1.,
+        height_ratios=height_ratios, hspace=0.0, wspace=0.0)
+    axes = []
+    for i, (mode, hemi) in enumerate(itertools.product(modes, hemis)):
+        bg_map = surf_mesh['sulc_%s' % hemi]
+        ax = fig.add_subplot(grid[i + len(hemis)], projection="3d")
+        axes.append(ax)
+        plot_surf_stat_map(surf[hemi], texture[hemi],
+                           view=mode, hemi=hemi,
+                           bg_map=bg_map,
+                           axes=ax,
+                           colorbar=False,  # Colorbar created externally.
+                           vmax=vmax,
+                           threshold=threshold,
+                           cmap=cmap,
+                           **kwargs)
+        # ax.set_facecolor("#e0e0e0")
         # We increase this value to better position the camera of the
         # 3D projection plot. The default value makes meshes look too small.
-        ax.dist = 6
+        ax.dist = 7 
 
     if colorbar:
         sm = _colorbar_from_array(image.get_data(stat_map),
                                   vmax, threshold, kwargs,
                                   cmap=get_cmap(cmap))
 
-        cbar_ax = fig.add_subplot(32, 1, 32)
+        cbar_grid = gridspec.GridSpecFromSubplotSpec(3, 3, grid[-1, :])
+        cbar_ax = fig.add_subplot(cbar_grid[1])
+        axes.append(cbar_ax)
         fig.colorbar(sm, cax=cbar_ax, orientation='horizontal')
 
-    fig.subplots_adjust(wspace=-0.02, hspace=0.0)
-
     if title is not None:
-        fig.suptitle(title)
+        fig.suptitle(title, y=1. - title_h / sum(height_ratios), va="bottom")
 
     if output_file is not None:
-        fig.savefig(output_file)
+        fig.savefig(output_file, bbox_inches="tight")
         plt.close(fig)
     else:
         return fig, axes
@@ -966,6 +1020,8 @@ def plot_surf_roi(surf_mesh, roi_map, bg_map=None,
         used as background map for this plotting function.
 
     nilearn.plotting.plot_surf: For brain surface visualization.
+
+    nilearn.surface.vol_to_surf : For info on the generation of surfaces.
 
     """
     # preload roi and mesh to determine vmin, vmax and give more useful error

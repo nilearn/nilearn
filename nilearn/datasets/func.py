@@ -22,21 +22,21 @@ from sklearn.utils import Bunch, deprecated
 
 from .utils import (_get_dataset_dir, _fetch_files, _get_dataset_descr,
                     _read_md5_sum_file, _tree, _filter_columns, _fetch_file, _uncompress_file)
-from .._utils import check_niimg
+from .._utils import check_niimg, fill_doc
 from .._utils.numpy_conversions import csv_to_array
 from nilearn.image import get_data
 
 
+@fill_doc
 def fetch_haxby(data_dir=None, subjects=(2,),
                 fetch_stimuli=False, url=None, resume=True, verbose=1):
-    """Download and loads complete haxby dataset [1]_.
+    """Download and loads complete haxby dataset.
+
+    See :footcite:`Haxby2425`.
 
     Parameters
     ----------
-    data_dir : string, optional
-        Path of the data directory. Used to force data storage in a specified
-        location. Default: None
-
+    %(data_dir)s
     subjects : list or int, optional
         Either a list of subjects or the number of subjects to load, from 1 to
         6. By default, 2nd subject will be loaded. Empty list returns no subject
@@ -45,13 +45,9 @@ def fetch_haxby(data_dir=None, subjects=(2,),
     fetch_stimuli : boolean, optional
         Indicate if stimuli images must be downloaded. They will be presented
         as a dictionary of categories. Default=False.
-
-    resume : bool, optional
-        Whether to resume download of a partly-downloaded file.
-        Default=True.
-
-    verbose : int, optional
-        Verbosity level (0 means no message). Default=1.
+    %(url)s
+    %(resume)s
+    %(verbose)s
 
     Returns
     -------
@@ -70,9 +66,7 @@ def fetch_haxby(data_dir=None, subjects=(2,),
 
     References
     ----------
-    .. [1] `Haxby, J., Gobbini, M., Furey, M., Ishai, A., Schouten, J.,
-       and Pietrini, P. (2001). Distributed and overlapping representations of
-       faces and objects in ventral temporal cortex. Science 293, 2425-2430.`
+    .. footbibliography::
 
     Notes
     -----
@@ -174,214 +168,12 @@ def fetch_haxby(data_dir=None, subjects=(2,),
             **kwargs)
 
 
-def fetch_nyu_rest(n_subjects=None, sessions=[1], data_dir=None, resume=True,
-                   verbose=1):
-    """Download and loads the NYU resting-state test-retest dataset.
-
-    For documentation see [1]_ and see [2]_ for download. See [3]_ for
-    citing the paper, and see [4]_ and [5]_ for additional references.
-
-    Warnings
-    --------
-    This function is deprecated and will be removed in the 0.8.x
-    release, due to lack of preprocessing.
-
-    Parameters
-    ----------
-    n_subjects : int, optional
-        The number of subjects to load. If None is given, all the
-        subjects are used.
-
-    sessions : iterable of int, optional
-        The sessions to load. Load only the first session by default.
-        Default=[1].
-
-    data_dir : string, optional
-        Path of the data directory. Used to force data storage in a specified
-        location. Default: None
-
-    resume : bool, optional
-        Whether to resume download of a partly-downloaded file.
-        Default=True.
-
-    verbose : int, optional
-        Verbosity level (0 means no message). Default=1.
-
-    Returns
-    -------
-    data : sklearn.datasets.base.Bunch
-        Dictionary-like object, the interest attributes are :
-
-        - 'func': string list. Paths to functional images.
-        - 'anat_anon': string list. Paths to anatomic images.
-        - 'anat_skull': string. Paths to skull-stripped images.
-        - 'session': numpy array. List of ids corresponding to images sessions.
-
-    Notes
-    ------
-    This dataset is composed of 3 sessions of 26 participants (11 males).
-    For each session, three sets of data are available:
-
-    - anatomical:
-
-      * anonymized data (defaced thanks to BIRN defacer)
-      * skullstripped data (using 3DSkullStrip from AFNI)
-
-    - functional
-
-    For each participant, 3 resting-state scans of 197 continuous EPI
-    functional volumes were collected :
-
-    - 39 slices
-    - matrix = 64 x 64
-    - acquisition voxel size = 3 x 3 x 3 mm
-
-    Sessions 2 and 3 were conducted in a single scan session, 45 min
-    apart, and were 5-16 months after Scan 1.
-
-    All details about this dataset can be found here :
-    http://cercor.oxfordjournals.org/content/19/10/2209.full
-
-    References
-    ----------
-    .. [1] http://www.nitrc.org/docman/?group_id=274
-
-    .. [2] http://www.nitrc.org/frs/?group_id=274
-
-    .. [3] `The Resting Brain: Unconstrained yet Reliable
-       <http://cercor.oxfordjournals.org/content/19/10/2209>`_
-       Z. Shehzad, A.M.C. Kelly, P.T. Reiss, D.G. Gee, K. Gotimer,
-       L.Q. Uddin, S.H. Lee, D.S. Margulies, A.K. Roy, B.B. Biswal,
-       E. Petkova, F.X. Castellanos and M.P. Milham.
-
-    .. [4] `The oscillating brain: Complex and Reliable
-       <http://dx.doi.org/10.1016/j.neuroimage.2009.09.037>`_
-       X-N. Zuo, A. Di Martino, C. Kelly, Z. Shehzad, D.G. Gee,
-       D.F. Klein, F.X. Castellanos, B.B. Biswal, M.P. Milham
-
-    .. [5] `Reliable intrinsic connectivity networks: Test-retest
-       evaluation using ICA and dual regression approach
-       <http://dx.doi.org/10.1016/j.neuroimage.2009.10.080>`_,
-       X-N. Zuo, C. Kelly, J.S. Adelstein, D.F. Klein,
-       F.X. Castellanos, M.P. Milham
-
-    """
-    warnings.warn("fetch_nyu_rest has been deprecated and will "
-                  "be removed in the 0.8.x release.",
-                  np.VisibleDeprecationWarning, stacklevel=2)
-
-    fa1 = 'http://www.nitrc.org/frs/download.php/1071/NYU_TRT_session1a.tar.gz'
-    fb1 = 'http://www.nitrc.org/frs/download.php/1072/NYU_TRT_session1b.tar.gz'
-    fa2 = 'http://www.nitrc.org/frs/download.php/1073/NYU_TRT_session2a.tar.gz'
-    fb2 = 'http://www.nitrc.org/frs/download.php/1074/NYU_TRT_session2b.tar.gz'
-    fa3 = 'http://www.nitrc.org/frs/download.php/1075/NYU_TRT_session3a.tar.gz'
-    fb3 = 'http://www.nitrc.org/frs/download.php/1076/NYU_TRT_session3b.tar.gz'
-    fa1_opts = {'uncompress': True,
-                'move': os.path.join('session1', 'NYU_TRT_session1a.tar.gz')}
-    fb1_opts = {'uncompress': True,
-                'move': os.path.join('session1', 'NYU_TRT_session1b.tar.gz')}
-    fa2_opts = {'uncompress': True,
-                'move': os.path.join('session2', 'NYU_TRT_session2a.tar.gz')}
-    fb2_opts = {'uncompress': True,
-                'move': os.path.join('session2', 'NYU_TRT_session2b.tar.gz')}
-    fa3_opts = {'uncompress': True,
-                'move': os.path.join('session3', 'NYU_TRT_session3a.tar.gz')}
-    fb3_opts = {'uncompress': True,
-                'move': os.path.join('session3', 'NYU_TRT_session3b.tar.gz')}
-
-    p_anon = os.path.join('anat', 'mprage_anonymized.nii.gz')
-    p_skull = os.path.join('anat', 'mprage_skullstripped.nii.gz')
-    p_func = os.path.join('func', 'lfo.nii.gz')
-
-    subs_a = ['sub05676', 'sub08224', 'sub08889', 'sub09607', 'sub14864',
-              'sub18604', 'sub22894', 'sub27641', 'sub33259', 'sub34482',
-              'sub36678', 'sub38579', 'sub39529']
-    subs_b = ['sub45463', 'sub47000', 'sub49401', 'sub52738', 'sub55441',
-              'sub58949', 'sub60624', 'sub76987', 'sub84403', 'sub86146',
-              'sub90179', 'sub94293']
-
-    # Generate the list of files by session
-    anat_anon_files = [
-        [(os.path.join('session1', sub, p_anon), fa1, fa1_opts)
-            for sub in subs_a]
-        + [(os.path.join('session1', sub, p_anon), fb1, fb1_opts)
-            for sub in subs_b],
-        [(os.path.join('session2', sub, p_anon), fa2, fa2_opts)
-            for sub in subs_a]
-        + [(os.path.join('session2', sub, p_anon), fb2, fb2_opts)
-            for sub in subs_b],
-        [(os.path.join('session3', sub, p_anon), fa3, fa3_opts)
-            for sub in subs_a]
-        + [(os.path.join('session3', sub, p_anon), fb3, fb3_opts)
-            for sub in subs_b]]
-
-    anat_skull_files = [
-        [(os.path.join('session1', sub, p_skull), fa1, fa1_opts)
-            for sub in subs_a]
-        + [(os.path.join('session1', sub, p_skull), fb1, fb1_opts)
-            for sub in subs_b],
-        [(os.path.join('session2', sub, p_skull), fa2, fa2_opts)
-            for sub in subs_a]
-        + [(os.path.join('session2', sub, p_skull), fb2, fb2_opts)
-            for sub in subs_b],
-        [(os.path.join('session3', sub, p_skull), fa3, fa3_opts)
-            for sub in subs_a]
-        + [(os.path.join('session3', sub, p_skull), fb3, fb3_opts)
-            for sub in subs_b]]
-
-    func_files = [
-        [(os.path.join('session1', sub, p_func), fa1, fa1_opts)
-            for sub in subs_a]
-        + [(os.path.join('session1', sub, p_func), fb1, fb1_opts)
-            for sub in subs_b],
-        [(os.path.join('session2', sub, p_func), fa2, fa2_opts)
-            for sub in subs_a]
-        + [(os.path.join('session2', sub, p_func), fb2, fb2_opts)
-            for sub in subs_b],
-        [(os.path.join('session3', sub, p_func), fa3, fa3_opts)
-            for sub in subs_a]
-        + [(os.path.join('session3', sub, p_func), fb3, fb3_opts)
-            for sub in subs_b]]
-
-    max_subjects = len(subs_a) + len(subs_b)
-    # Check arguments
-    if n_subjects is None:
-        n_subjects = len(subs_a) + len(subs_b)
-    if n_subjects > max_subjects:
-        warnings.warn('Warning: there are only %d subjects' % max_subjects)
-        n_subjects = 25
-
-    anat_anon = []
-    anat_skull = []
-    func = []
-    session = []
-    for i in sessions:
-        if not (i in [1, 2, 3]):
-            raise ValueError('NYU dataset session id must be in [1, 2, 3]')
-        anat_anon += anat_anon_files[i - 1][:n_subjects]
-        anat_skull += anat_skull_files[i - 1][:n_subjects]
-        func += func_files[i - 1][:n_subjects]
-        session += [i] * n_subjects
-
-    dataset_name = 'nyu_rest'
-    data_dir = _get_dataset_dir(dataset_name, data_dir=data_dir,
-                                verbose=verbose)
-    anat_anon = _fetch_files(data_dir, anat_anon, resume=resume,
-                             verbose=verbose)
-    anat_skull = _fetch_files(data_dir, anat_skull, resume=resume,
-                              verbose=verbose)
-    func = _fetch_files(data_dir, func, resume=resume,
-                        verbose=verbose)
-
-    fdescr = _get_dataset_descr(dataset_name)
-
-    return Bunch(anat_anon=anat_anon, anat_skull=anat_skull, func=func,
-                 session=session, description=fdescr)
-
-
+@fill_doc
 def fetch_adhd(n_subjects=30, data_dir=None, url=None, resume=True,
                verbose=1):
-    """Download and load the ADHD resting-state dataset [1]_.
+    """Download and load the ADHD resting-state dataset.
+
+    See :footcite:`ADHDdataset`.
 
     Parameters
     ----------
@@ -389,20 +181,10 @@ def fetch_adhd(n_subjects=30, data_dir=None, url=None, resume=True,
         The number of subjects to load from maximum of 40 subjects.
         By default, 30 subjects will be loaded. If None is given,
         all 40 subjects will be loaded. Default=30.
-
-    data_dir : string, optional
-        Path of the data directory. Used to force data storage in a specified
-        location. Default: None
-
-    url : string, optional
-        Override download URL. Used for test only (or if you setup a mirror of
-        the data). Default: None
-
-    resume : bool, optional
-        Whether to resume download of a partly-downloaded file. Default=True.
-
-    verbose : int, optional
-        Verbosity level (0 means no message). Default=1.
+    %(data_dir)s
+    %(url)s
+    %(resume)s
+    %(verbose)s
 
     Returns
     -------
@@ -415,7 +197,7 @@ def fetch_adhd(n_subjects=30, data_dir=None, url=None, resume=True,
 
     References
     ----------
-    .. [1] ftp://www.nitrc.org/fcon_1000/htdocs/indi/adhd200/sites/ADHD200_40sub_preprocessed.tgz
+    .. footbibliography::
 
     """
     if url is None:
@@ -483,24 +265,18 @@ def fetch_adhd(n_subjects=30, data_dir=None, url=None, resume=True,
                  phenotypic=phenotypic, description=fdescr)
 
 
+@fill_doc
 def fetch_miyawaki2008(data_dir=None, url=None, resume=True, verbose=1):
-    """Download and loads Miyawaki et al. 2008 dataset (153MB) [1]_.
+    """Download and loads Miyawaki et al. 2008 dataset (153MB).
+
+    See :footcite:`MIYAWAKI2008915`.
 
     Parameters
     ----------
-    data_dir : string, optional
-        Path of the data directory. Used to force data storage in a specified
-        location. Default: None
-
-    url : string, optional
-        Override download URL. Used for test only (or if you setup a mirror of
-        the data). Default: None
-
-    resume : bool, optional
-        Whether to resume download of a partly-downloaded file. Default=True.
-
-    verbose : int, optional
-        Verbosity level (0 means no message). Default=1.
+    %(data_dir)s
+    %(url)s
+    %(resume)s
+    %(verbose)s
 
     Returns
     -------
@@ -520,12 +296,7 @@ def fetch_miyawaki2008(data_dir=None, url=None, resume=True, verbose=1):
 
     References
     ----------
-    .. [1] `Visual image reconstruction from human brain activity
-       using a combination of multiscale local image decoders
-       <http://www.cell.com/neuron/abstract/S0896-6273%2808%2900958-6>`_,
-       Miyawaki, Y., Uchida, H., Yamashita, O., Sato, M. A.,
-       Morito, Y., Tanabe, H. C., ... & Kamitani, Y. (2008).
-       Neuron, 60(5), 915-929.
+    .. footbibliography::
 
     Notes
     -----
@@ -635,6 +406,7 @@ def fetch_miyawaki2008(data_dir=None, url=None, resume=True, verbose=1):
         description=fdescr)
 
 
+@fill_doc
 def fetch_localizer_contrasts(contrasts, n_subjects=None, get_tmaps=False,
                               get_masks=False, get_anats=False,
                               data_dir=None, url=None, resume=True, verbose=1):
@@ -651,9 +423,11 @@ def fetch_localizer_contrasts(contrasts, n_subjects=None, get_tmaps=False,
     Functional Localizer page."
     (see http://brainomics.cea.fr/localizer/)
 
-    You may cite [1]_ when using this dataset.
+    You may cite :footcite:`PAPADOPOULOSORFANOS2017309`
+    when using this dataset.
 
-    Scientific results obtained using this dataset are described in [2]_.
+    Scientific results obtained using this dataset are described
+    in :footcite:`Pinel2007fast`.
 
     Parameters
     ----------
@@ -744,20 +518,10 @@ def fetch_localizer_contrasts(contrasts, n_subjects=None, get_tmaps=False,
     get_anats : boolean, optional
         Whether individual structural images should be fetched or not.
         Default=False.
-
-    data_dir : string, optional
-        Path of the data directory. Used to force data storage in a specified
-        location.
-
-    url : string, optional
-        Override download URL. Used for test only (or if you setup a mirror of
-        the data).
-
-    resume : bool, optional
-        Whether to resume download of a partly-downloaded file. Default=True.
-
-    verbose : int, optional
-        Verbosity level (0 means no message). Default=1.
+    %(data_dir)s
+    %(url)s
+    %(resume)s
+    %(verbose)s
 
     Returns
     -------
@@ -775,11 +539,7 @@ def fetch_localizer_contrasts(contrasts, n_subjects=None, get_tmaps=False,
 
     References
     ----------
-    .. [1] Papadopoulos Orfanos, Dimitri, et al., "The Brainomics/Localizer database."
-       NeuroImage 144.B (2017): 309.
-
-    .. [2] Pinel, Philippe, et al., "Fast reproducible identification and large-scale
-       databasing of individual functional cognitive networks." BMC Neuroscience 8.1 (2007): 91.
+    .. footbibliography::
 
     See Also
     ---------
@@ -997,6 +757,7 @@ def fetch_localizer_contrasts(contrasts, n_subjects=None, get_tmaps=False,
     return Bunch(ext_vars=csv_data, description=fdescr, **files)
 
 
+@fill_doc
 def fetch_localizer_calculation_task(n_subjects=1, data_dir=None, url=None,
                                      verbose=1):
     """Fetch calculation task contrast maps from the localizer.
@@ -1006,17 +767,9 @@ def fetch_localizer_calculation_task(n_subjects=1, data_dir=None, url=None,
     n_subjects : int, optional
         The number of subjects to load. If None is given,
         all 94 subjects are used. Default=1.
-
-    data_dir : string, optional
-        Path of the data directory. Used to force data storage in a specified
-        location.
-
-    url : string, optional
-        Override download URL. Used for test only (or if you setup a mirror of
-        the data).
-
-    verbose : int, optional
-        Verbosity level (0 means no message). Default=1.
+    %(data_dir)s
+    %(url)s
+    %(verbose)s
 
     Returns
     -------
@@ -1044,22 +797,16 @@ def fetch_localizer_calculation_task(n_subjects=1, data_dir=None, url=None,
     return data
 
 
+@fill_doc
 def fetch_localizer_button_task(data_dir=None, url=None,
                                 verbose=1):
     """Fetch left vs right button press contrast maps from the localizer.
 
     Parameters
     ----------
-    data_dir : string, optional
-        Path of the data directory. Used to force data storage in a specified
-        location.
-
-    url : string, optional
-        Override download URL. Used for test only (or if you setup a mirror of
-        the data).
-
-    verbose : int, optional
-        Verbosity level (0 means no message). Default=1.
+    %(data_dir)s
+    %(url)s
+    %(verbose)s
 
     Returns
     -------
@@ -1093,6 +840,7 @@ def fetch_localizer_button_task(data_dir=None, url=None,
     return data
 
 
+@fill_doc
 def fetch_abide_pcp(data_dir=None, n_subjects=None, pipeline='cpac',
                     band_pass_filtering=False, global_signal_regression=False,
                     derivatives=['func_preproc'],
@@ -1102,14 +850,11 @@ def fetch_abide_pcp(data_dir=None, n_subjects=None, pipeline='cpac',
     Fetch the Autism Brain Imaging Data Exchange (ABIDE) dataset wrt criteria
     that can be passed as parameter. Note that this is the preprocessed
     version of ABIDE provided by the preprocess connectome projects (PCP).
-    See [1]_.
+    See :footcite:`Nielsen2013Multisite`.
 
     Parameters
     ----------
-    data_dir : string, optional
-        Path of the data directory. Used to force data storage in a specified
-        location. Default: None
-
+    %(data_dir)s
     n_subjects : int, optional
         The number of subjects to load. If None is given,
         all available subjects are used (this number depends on the
@@ -1139,7 +884,8 @@ def fetch_abide_pcp(data_dir=None, n_subjects=None, pipeline='cpac',
     quality_checked : boolean, optional
         If true (default), restrict the list of the subjects to the one that
         passed quality assessment for all raters. Default=True.
-
+    %(url)s
+    %(verbose)s
     kwargs : parameter list, optional
         Any extra keyword argument will be used to filter downloaded subjects
         according to the CSV phenotypic file. Some examples of filters are
@@ -1174,9 +920,7 @@ def fetch_abide_pcp(data_dir=None, n_subjects=None, pipeline='cpac',
 
     References
     ----------
-    .. [1] Nielsen, Jared A., et al. "Multisite functional connectivity MRI
-       classification of autism: ABIDE results." Frontiers in human neuroscience
-       7 (2013).
+    .. footbibliography::
 
     """
     # People keep getting it wrong and submiting a string instead of a
@@ -1320,30 +1064,22 @@ def _load_mixed_gambles(zmap_imgs):
     return X, y, mask_img
 
 
+@fill_doc
 def fetch_mixed_gambles(n_subjects=1, data_dir=None, url=None, resume=True,
                         return_raw_data=False, verbose=1):
-    """Fetch Jimura "mixed gambles" dataset [1]_.
+    """Fetch Jimura "mixed gambles" dataset.
+
+    See :footcite:`JIMURA2012544`.
 
     Parameters
     ----------
     n_subjects : int, optional
         The number of subjects to load. If None is given, all the
         subjects are used. Default=1.
-
-    data_dir : string, optional
-        Path of the data directory. Used to force data storage in a specified
-        location. Default: None.
-
-    url : string, optional
-        Override download URL. Used for test only (or if you setup a mirror of
-        the data).
-
-    resume : bool, optional
-        If true, try resuming download if possible. Default=True.
-
-    verbose : int, optional
-        Defines the level of verbosity of the output. Default=1.
-
+    %(data_dir)s
+    %(url)s
+    %(resume)s
+    %(verbose)s
     return_raw_data : bool, optional
         If false, then the data will transformed into and (X, y) pair, suitable
         for machine learning routines. X is a list of n_subjects * 48
@@ -1366,9 +1102,7 @@ def fetch_mixed_gambles(n_subjects=1, data_dir=None, url=None, resume=True,
 
     References
     ----------
-    .. [1] K. Jimura and R. Poldrack, "Analyses of regional-average activation
-       and multivoxel pattern information tell complementary stories",
-       Neuropsychologia, vol. 50, page 544, 2012
+    .. footbibliography::
 
     """
     if n_subjects > 16:
@@ -1393,6 +1127,7 @@ def fetch_mixed_gambles(n_subjects=1, data_dir=None, url=None, resume=True,
     return data
 
 
+@fill_doc
 def fetch_megatrawls_netmats(dimensionality=100, timeseries='eigen_regression',
                              matrices='partial_correlation', data_dir=None,
                              resume=True, verbose=1):
@@ -1403,7 +1138,9 @@ def fetch_megatrawls_netmats(dimensionality=100, timeseries='eigen_regression',
     The network matrices are estimated from functional connectivity
     datasets of 461 subjects. Full technical details in references.
 
-    More information available in [1]_, [2]_, [3]_, [4]_, and [5]_.
+    More information available in :footcite:`smithhcp2015`,
+    :footcite:`smith2015positive`, :footcite:`Filippini7209`,
+    :footcite:`smith2014methods`, and :footcite:`reilly2009cerebellum`.
 
     Parameters
     ----------
@@ -1426,20 +1163,9 @@ def fetch_megatrawls_netmats(dimensionality=100, timeseries='eigen_regression',
         partial correlation matrices will be returned otherwise if selected
         full correlation matrices will be returned.
         Default='partial_correlation'.
-
-    data_dir : str, optional
-        Path of the data directory. Used to force data storage in a specified
-        location.
-
-    resume : bool, optional
-        This parameter is required if a partially downloaded file is needed
-        to be resumed to download again. Default=True.
-
-    verbose : int, optional
-        This parameter is used to set the verbosity level to print the message
-        to give information about the processing.
-        0 indicates no information will be given.
-        Default=1.
+    %(data_dir)s
+    %(resume)s
+    %(verbose)s
 
     Returns
     -------
@@ -1460,22 +1186,7 @@ def fetch_megatrawls_netmats(dimensionality=100, timeseries='eigen_regression',
 
     References
     ----------
-    .. [1] Stephen Smith et al, HCP beta-release of the Functional Connectivity
-       MegaTrawl. April 2015 "HCP500-MegaTrawl" release.
-       https://db.humanconnectome.org/megatrawl/
-
-    .. [2] Smith, S.M. et al. Nat. Neurosci. 18, 1565-1567 (2015).
-
-    .. [3] N.Filippini, et al. Distinct patterns of brain activity in young
-       carriers of the APOE-e4 allele.
-       Proc Natl Acad Sci USA (PNAS), 106::7209-7214, 2009.
-
-    .. [4] S.Smith, et al. Methods for network modelling from high quality rfMRI data.
-       Meeting of the Organization for Human Brain Mapping. 2014
-
-    .. [5] J.X. O'Reilly et al. Distinct and overlapping functional zones in the
-       cerebellum defined by resting state functional connectivity.
-       Cerebral Cortex, 2009.
+    .. footbibliography::
 
     Notes
     -----
@@ -1524,6 +1235,7 @@ def fetch_megatrawls_netmats(dimensionality=100, timeseries='eigen_regression',
         description=description)
 
 
+@fill_doc
 @deprecated("'fetch_cobre' has been deprecated and will be removed "
             "in release 0.9 . "
             "Please consider using a different datasets or downloading it "
@@ -1565,17 +1277,9 @@ def fetch_cobre(n_subjects=10, data_dir=None, url=None, verbose=1):
         The number of subjects to load from maximum of 146 subjects.
         By default, 10 subjects will be loaded. If n_subjects=None,
         all subjects will be loaded. Default=10.
-
-    data_dir : str, optional
-        Path to the data directory. Used to force data storage in a
-        specified location. Default: None
-
-    url : str, optional
-        Override download url. Used for test only (or if you setup a
-        mirror of the data). Default: None
-
-    verbose : int, optional
-       Verbosity level (0 means no message). Default=1.
+    %(data_dir)s
+    %(url)s
+    %(verbose)s
 
     Returns
     -------
@@ -1702,12 +1406,15 @@ def fetch_cobre(n_subjects=10, data_dir=None, url=None, verbose=1):
                  desc_phenotypic=files_keys_phen)
 
 
+@fill_doc
 def fetch_surf_nki_enhanced(n_subjects=10, data_dir=None,
                             url=None, resume=True, verbose=1):
     """Download and load the NKI enhanced resting-state dataset,
-    preprocessed and projected to the fsaverage5 space surface [2]_.
+    preprocessed and projected to the fsaverage5 space surface.
 
-    Direct download link [1]_.
+    See :footcite:`Nooner2012NKI`.
+
+    Direct download link :footcite:`NKIdataset`.
 
     .. versionadded:: 0.3
 
@@ -1717,20 +1424,10 @@ def fetch_surf_nki_enhanced(n_subjects=10, data_dir=None,
         The number of subjects to load from maximum of 102 subjects.
         By default, 10 subjects will be loaded. If None is given,
         all 102 subjects will be loaded. Default=10.
-
-    data_dir : str, optional
-        Path of the data directory. Used to force data storage in a specified
-        location. Default: None
-
-    url : str, optional
-        Override download URL. Used for test only (or if you setup a mirror of
-        the data). Default: None
-
-    resume : bool, optional
-        If True, try resuming download if possible. Default=True.
-
-    verbose : int, optional
-        Defines the level of verbosity of the output. Default=1.
+    %(data_dir)s
+    %(url)s
+    %(resume)s
+    %(verbose)s
 
     Returns
     -------
@@ -1747,11 +1444,7 @@ def fetch_surf_nki_enhanced(n_subjects=10, data_dir=None,
 
     References
     ----------
-    .. [1] http://fcon_1000.projects.nitrc.org/indi/enhanced/
-
-    .. [2] Nooner et al, (2012). The NKI-Rockland Sample: A model for accelerating the
-       pace of discovery science in psychiatry. Frontiers in neuroscience 6, 152.
-       URL http://dx.doi.org/10.3389/fnins.2012.00152
+    .. footbibliography::
 
     """
     if url is None:
@@ -1843,6 +1536,7 @@ def fetch_surf_nki_enhanced(n_subjects=10, data_dir=None,
                  description=fdescr)
 
 
+@fill_doc
 def _fetch_development_fmri_participants(data_dir, url, verbose):
     """Helper function to fetch_development_fmri.
 
@@ -1854,16 +1548,9 @@ def _fetch_development_fmri_participants(data_dir, url, verbose):
 
     Parameters
     ----------
-    data_dir : str
-        Path of the data directory. Used to force data storage in a specified
-        location. If None is given, data are stored in home directory.
-
-    url : str
-        Override download URL. Used for test only (or if you setup a mirror of
-        the data).
-
-    verbose : int
-        Defines the level of verbosity of the output.
+    %(data_dir)s
+    %(url)s
+    %(verbose)s
 
     Returns
     -------
@@ -1892,6 +1579,7 @@ def _fetch_development_fmri_participants(data_dir, url, verbose):
     return participants
 
 
+@fill_doc
 def _fetch_development_fmri_functional(participants, data_dir, url, resume,
                                        verbose):
     """Helper function to fetch_development_fmri.
@@ -1906,20 +1594,10 @@ def _fetch_development_fmri_functional(participants, data_dir, url, resume,
     participants : numpy.ndarray
         Should contain column participant_id which represents subjects id. The
         number of files are fetched based on ids in this column.
-
-    data_dir : str
-        Path of the data directory. Used to force data storage in a specified
-        location. If None is given, data are stored in home directory.
-
-    url : str
-        Override download URL. Used for test only (or if you setup a mirror of
-        the data).
-
-    resume : bool
-        Whether to resume download of a partly-downloaded file.
-
-    verbose : int
-        Defines the level of verbosity of the output.
+    %(data_dir)s
+    %(url)s
+    %(resume)s
+    %(verbose)s
 
     Returns
     -------
@@ -1977,15 +1655,17 @@ def _fetch_development_fmri_functional(participants, data_dir, url, resume,
     return funcs, regressors
 
 
+@fill_doc
 def fetch_development_fmri(n_subjects=None, reduce_confounds=True,
                            data_dir=None, resume=True, verbose=1,
                            age_group='both'):
     """Fetch movie watching based brain development dataset (fMRI)
 
-    The data is downsampled to 4mm resolution for convenience. The origin of
-    the data is coming from OpenNeuro. See Notes below.
+    The data is downsampled to 4mm resolution for convenience with a repetition time (TR)
+    of 2 secs. The origin of the data is coming from OpenNeuro. See Notes below.
 
-    Please cite [1]_ if you are using this dataset.
+    Please cite :footcite:`richardson2018development`
+    if you are using this dataset.
 
     .. versionadded:: 0.5.2
 
@@ -2003,18 +1683,9 @@ def fetch_development_fmri(n_subjects=None, reduce_confounds=True,
         question, other confounds might be more appropriate.
         If False, returns all fmriprep confounds.
         Default=True.
-
-    data_dir : str, optional
-        Path of the data directory. Used to force data storage in a specified
-        location. If None, data are stored in home directory.
-
-    resume : bool, optional
-        Whether to resume download of a partly-downloaded file.
-        Default=True.
-
-    verbose : int, optional
-        Defines the level of verbosity of the output. Default=1.
-
+    %(data_dir)s
+    %(resume)s
+    %(verbose)s
     age_group : str, optional
         Default='both'. Which age group to fetch
 
@@ -2053,10 +1724,7 @@ def fetch_development_fmri(n_subjects=None, reduce_confounds=True,
 
     References
     ----------
-    .. [1] Richardson, H., Lisandrelli, G., Riobueno-Naylor, A., & Saxe, R. (2018).
-       Development of the social brain from age three to twelve years.
-       Nature communications, 9(1), 1027.
-       https://www.nature.com/articles/s41467-018-03399-2
+    .. footbibliography::
 
     """
     dataset_name = 'development_fmri'
@@ -2182,17 +1850,14 @@ def _reduce_confounds(regressors, keep_confounds):
 # datasets originally belonging to nistats follow
 
 
+@fill_doc
 def fetch_language_localizer_demo_dataset(data_dir=None, verbose=1):
     """Download language localizer demo dataset.
 
     Parameters
     ----------
-    data_dir : string, optional
-        Path to store the downloaded dataset. if None employ nilearn
-        datasets default download directory.
-
-    verbose : int, optional
-        Verbosity level (0 means no message). Default=1.
+    %(data_dir)s
+    %(verbose)s
 
     Returns
     -------
@@ -2224,17 +1889,14 @@ def fetch_language_localizer_demo_dataset(data_dir=None, verbose=1):
     return data_dir, sorted(file_list)
 
 
+@fill_doc
 def fetch_bids_langloc_dataset(data_dir=None, verbose=1):
     """Download language localizer example :term:`bids<BIDS>` dataset.
 
     Parameters
     ----------
-    data_dir : string, optional
-        Path to store the downloaded dataset. if None employ nilearn
-        datasets default download directory.
-
-    verbose : int, optional
-        Verbosity level (0 means no message). Default=1.
+    %(data_dir)s
+    %(verbose)s
 
     Returns
     -------
@@ -2262,6 +1924,7 @@ def fetch_bids_langloc_dataset(data_dir=None, verbose=1):
     return os.path.join(data_dir, main_folder), sorted(file_list)
 
 
+@fill_doc
 def fetch_openneuro_dataset_index(data_dir=None,
                                   dataset_version='ds000030_R1.0.4',
                                   verbose=1):
@@ -2272,16 +1935,11 @@ def fetch_openneuro_dataset_index(data_dir=None,
 
     Parameters
     ----------
-    data_dir : string, optional
-        Path to store the downloaded dataset. if None employ nilearn
-        datasets default download directory.
-
+    %(data_dir)s
     dataset_version : string, optional
         Dataset version name. Assumes it is of the form [name]_[version].
         Default='ds000030_R1.0.4'.
-
-    verbose : int, optional
-        Verbosity level (0 means no message). Default=1.
+    %(verbose)s
 
     Returns
     -------
@@ -2407,6 +2065,7 @@ def patch_openneuro_dataset(file_list):
                 name = name.replace(old, rep[old])
 
 
+@fill_doc
 def fetch_openneuro_dataset(
     urls=None, data_dir=None, dataset_version='ds000030_R1.0.4',
     verbose=1):
@@ -2417,17 +2076,11 @@ def fetch_openneuro_dataset(
     urls : list of string, optional
         Openneuro url list of dataset files to download. If not specified
         all files of the specified dataset will be downloaded.
-
-    data_dir : string, optional
-        Path to store the downloaded dataset. if None employ nilearn
-        datasets default download directory.
-
+    %(data_dir)s
     dataset_version : string, optional
         Dataset version name. Assumes it is of the form [name]_[version].
         Default is `ds000030_R1.0.4`.
-
-    verbose : int, optional
-        Verbosity level (0 means no message). Default=1.
+    %(verbose)s
 
     Returns
     -------
@@ -2480,16 +2133,14 @@ def fetch_openneuro_dataset(
     return data_dir, sorted(downloaded)
 
 
+@fill_doc
 def fetch_localizer_first_level(data_dir=None, verbose=1):
     """Download a first-level localizer fMRI dataset
 
     Parameters
     ----------
-    data_dir : string
-        Directory where data should be downloaded and unpacked.
-
-    verbose : int, optional
-        Verbosity level (0 means no message). Default=1.
+    %(data_dir)s
+    %(verbose)s
 
     Returns
     -------
@@ -2634,27 +2285,23 @@ def _make_events_file_spm_auditory_data(events_filepath):
                   columns=['onset', 'duration', 'trial_type'])
 
 
+@fill_doc
 def fetch_spm_auditory(data_dir=None, data_name='spm_auditory',
                        subject_id='sub001', verbose=1):
     """Function to fetch SPM auditory single-subject data.
-    See [1]_.
+
+    See :footcite:`spm_auditory`.
 
     Parameters
     ----------
-    data_dir : string, optional.
-        Path of the data directory. Used to force data storage in a specified
-        location. If the data is already present there, then will simply
-        glob it.
-
+    %(data_dir)s
     data_name : string, optional
         Name of the dataset. Default='spm_auditory'.
 
     subject_id : string, optional
         Indicates which subject to retrieve.
         Default='sub001'.
-
-    verbose : int, optional
-        Verbosity level (0 means no message). Default=1.
+    %(verbose)s
 
     Returns
     -------
@@ -2665,7 +2312,7 @@ def fetch_spm_auditory(data_dir=None, data_name='spm_auditory',
 
     References
     ----------
-    .. [1] http://www.fil.ion.ucl.ac.uk/spm/data/auditory/
+    .. footbibliography::
 
     """
     data_dir = _get_dataset_dir(data_name, data_dir=data_dir,
@@ -2814,25 +2461,22 @@ def _make_events_file_spm_multimodal_fmri(_subject_data, session):
     return events
 
 
+@fill_doc
 def fetch_spm_multimodal_fmri(data_dir=None, data_name='spm_multimodal_fmri',
                               subject_id='sub001', verbose=1):
     """Fetcher for Multi-modal Face Dataset.
-    See [1]_.
+
+    See :footcite:`spm_multiface`.
 
     Parameters
     ----------
-    data_dir : string, optional.
-        Path of the data directory. Used to force data storage in a specified
-        location. If the data is already present there, then will simply glob it.
-
+    %(data_dir)s
     data_name : string, optional
         Name of the dataset. Default='spm_multimodal_fmri'.
 
     subject_id : string, optional
         Indicates which subject to retrieve. Default='sub001'.
-
-    verbose : int, optional
-        Verbosity level (0 means no message). Default=1.
+    %(verbose)s
 
     Returns
     -------
@@ -2846,7 +2490,7 @@ def fetch_spm_multimodal_fmri(data_dir=None, data_name='spm_multimodal_fmri',
 
     References
     ----------
-    .. [1] http://www.fil.ion.ucl.ac.uk/spm/data/mmfaces/
+    .. footbibliography::
 
     """
     data_dir = _get_dataset_dir(data_name, data_dir=data_dir, verbose=verbose)
@@ -2861,16 +2505,14 @@ def fetch_spm_multimodal_fmri(data_dir=None, data_name='spm_multimodal_fmri',
     return _download_data_spm_multimodal(data_dir, subject_dir, subject_id)
 
 
+@fill_doc
 def fetch_fiac_first_level(data_dir=None, verbose=1):
     """Download a first-level fiac fMRI dataset (2 sessions)
 
     Parameters
     ----------
-    data_dir : string, optional
-        Directory where data should be downloaded and unpacked.
-
-    verbose : int, optional
-        Verbosity level (0 means no message). Default=1.
+    %(data_dir)s
+    %(verbose)s
 
     """
     data_dir = _get_dataset_dir('fiac_nilearn.glm', data_dir=data_dir,

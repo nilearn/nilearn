@@ -12,7 +12,7 @@ import tarfile
 import zipfile
 import urllib
 import json
-
+from unittest.mock import MagicMock
 from tempfile import mkdtemp, mkstemp
 
 try:
@@ -311,6 +311,20 @@ def test_fetch_file_overwrite(tmp_path, request_mocker):
     assert os.path.exists(fil)
     with open(fil, 'r') as fp:
         assert fp.read() == ''
+
+
+def test_fetch_files_use_session(tmp_path, request_mocker):
+    # regression test for https://github.com/nilearn/nilearn/issues/2863
+    session = MagicMock()
+    datasets.utils._fetch_files(
+        files=[
+            ("example1", "https://example.org/example1", {"overwrite": True}),
+            ("example2", "https://example.org/example2", {"overwrite": True}),
+        ],
+        data_dir=str(tmp_path),
+        session=session,
+    )
+    assert session.send.call_count == 2
 
 
 def test_fetch_files_overwrite(tmp_path, request_mocker):

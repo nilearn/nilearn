@@ -1798,7 +1798,7 @@ class BaseStackedSlicer(BaseSlicer):
             width_dict[ax] = width / total_width * (x1 - x0)
         left_dict = dict()
         left = float(x0)
-        for coord, display_ax in sorted(display_ax_dict.items()):
+        for coord, display_ax in display_ax_dict.items():
             left_dict[display_ax.ax] = left
             this_width = width_dict[display_ax.ax]
             left += this_width

@@ -107,3 +107,41 @@ def _transfer_deprecated_param_vals(replacement_params, kwargs):
             kwargs[new_param] = old_param_val
         kwargs.pop(old_param)
     return kwargs
+
+
+def remove_parameters(removed_params,
+                      reason,
+                      end_version='future'):
+    """Decorator to deprecate but not renamed parameters in the decorated
+    functions and methods.
+
+    Parameters
+    ----------
+    removed_params : list[string]
+        List of old parameters to be removed.
+        Example: [old_param1, old_param2, ...]
+
+    reason : str
+        Detailed reason of deprecated parameter and alternative solutions.
+
+    end_version : str {'future' | 'next' | <version>}, optional
+        Version when using the deprecated parameters will raise an error.
+        For informational purpose in the warning text.
+        Default='future'.
+
+    """
+    def _remove_params(func):
+        @functools.wraps(func)
+        def wrapper(*args, **kwargs):
+            found = set(removed_params).intersection(kwargs)
+            if found:
+                message = ('Parameter(s) {} will be removed in version {}; '
+                           '{}'.format(', '.join(found),
+                                       end_version, reason)
+                           )
+                warnings.warn(category=DeprecationWarning,
+                              message=message,
+                              stacklevel=3)
+            return func(*args, **kwargs)
+        return wrapper
+    return _remove_params

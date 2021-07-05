@@ -21,6 +21,7 @@ from joblib import Memory, Parallel, delayed
 from nibabel import Nifti1Image
 from nibabel.onetime import auto_attr
 from sklearn.base import clone
+from sklearn.cluster import KMeans
 
 from nilearn._utils.glm import (_check_events_file_uses_tab_separators,
                                 _check_run_tables, get_bids_files,
@@ -72,6 +73,34 @@ def _ar_model_fit(X, val, Y):
     return ARModel(X, val).fit(Y)
 
 
+def _yule_walker(x, order):
+    """Compute Yule-Walker (adapted from MNE and statsmodels).
+
+    Operates along the last axis of x.
+    """
+    from scipy.linalg import toeplitz
+    if order < 1:
+        raise ValueError("AR order must be positive")
+    if type(order) is not int:
+        raise TypeError("AR order must be an integer")
+    if x.ndim < 1:
+        raise TypeError("Input data must have at least 1 dimension")
+
+    denom = x.shape[-1] - np.arange(order + 1)
+    n = np.prod(np.array(x.shape[:-1], int))
+    r = np.zeros((n, order + 1), np.float64)
+    y = x - x.mean()
+    y.shape = (n, x.shape[-1])  # inplace
+    r[:, 0] += (y[:, np.newaxis, :] @ y[:, :, np.newaxis])[:, 0, 0]
+    for k in range(1, order + 1):
+        r[:, k] += (y[:, np.newaxis, 0:-k] @ y[:, k:, np.newaxis])[:, 0, 0]
+    r /= denom * x.shape[-1]
+    rt = np.array([toeplitz(rr[:-1]) for rr in r], np.float64)
+    rho = np.linalg.solve(rt, r[:, 1:])
+    rho.shape = x.shape[:-1] + (order,)
+    return rho
+
+
 def run_glm(Y, X, noise_model='ar1', bins=100, n_jobs=1, verbose=0):
     """ GLM fit for an fMRI data matrix
 
@@ -83,11 +112,18 @@ def run_glm(Y, X, noise_model='ar1', bins=100, n_jobs=1, verbose=0):
     X : array of shape (n_time_points, n_regressors)
         The design matrix.
 
-    noise_model : {'ar1', 'ols'}, optional
-        The temporal variance model. Default='ar1'.
+    noise_model : {'ar(N)', 'ols'}, optional
+        The temporal variance model.
+        To specify the order of an autoregressive model place the
+        order after the characters `ar`, for example to specify a third order
+        model use `ar3`.
+        Default='ar1'.
 
     bins : int, optional
-        Maximum number of discrete bins for the AR(1) coef histogram.
+        Maximum number of discrete bins for the AR coef histogram.
+        If an autoregressive model with order greater than one is specified
+        then adaptive quantification is performed and the coefficients
+        will be clustered via K-means with `bins` number of clusters.
         Default=100.
 
     n_jobs : int, optional
@@ -107,8 +143,8 @@ def run_glm(Y, X, noise_model='ar1', bins=100, n_jobs=1, verbose=0):
         values are RegressionResults instances corresponding to the voxels.
 
     """
-    acceptable_noise_models = ['ar1', 'ols']
-    if noise_model not in acceptable_noise_models:
+    acceptable_noise_models = ['ols', 'arN']
+    if ((noise_model[:2] != 'ar') and (noise_model is not 'ols')):
         raise ValueError(
             "Acceptable noise models are {0}. You provided "
             "'noise_model={1}'".format(acceptable_noise_models,
@@ -124,26 +160,54 @@ def run_glm(Y, X, noise_model='ar1', bins=100, n_jobs=1, verbose=0):
     # Create the model
     ols_result = OLSModel(X).fit(Y)
 
-    if noise_model == 'ar1':
-        # compute and discretize the AR1 coefs
-        ar1 = (
-            (ols_result.residuals[1:]
-             * ols_result.residuals[:-1]).sum(axis=0)
-            / (ols_result.residuals ** 2).sum(axis=0)
-        )
+    if noise_model[:2] == 'ar':
+
+        err_msg = ('AR order must be a positive integer specified as arN, '
+                   'where N is an integer. E.g. ar3. '
+                   'You provied {0}.'.format(noise_model))
+        try:
+            ar_order = int(noise_model[2:])
+        except ValueError:
+            raise ValueError(err_msg)
+
+        # compute the AR coefficients
+        ar_coef_ = _yule_walker(ols_result.residuals.T, ar_order)
         del ols_result
-        ar1 = (ar1 * bins).astype(np.int) * 1. / bins
-        # Fit the AR model acccording to current AR(1) estimates
+        if len(ar_coef_[0]) == 1:
+            ar_coef_ = ar_coef_[:, 0]
+
+        # Either bin the AR1 coefs or cluster ARN coefs
+        if ar_order == 1:
+            for idx in range(len(ar_coef_)):
+                ar_coef_[idx] = (ar_coef_[idx] * bins).astype(int) \
+                                * 1. / bins
+            labels = np.array([str(val) for val in ar_coef_])
+        else:  # AR(N>1) case
+            n_clusters = np.min([bins, Y.shape[1]])
+            kmeans = KMeans(n_clusters=n_clusters).fit(ar_coef_)
+            ar_coef_ = kmeans.cluster_centers_[kmeans.labels_]
+
+            # Create a set of rounded values for the labels with _ between
+            # each coefficient
+            cluster_labels = kmeans.cluster_centers_.copy()
+            cluster_labels = np.array(['_'.join(map(str, np.round(a, 2)))
+                                       for a in cluster_labels])
+            # Create labels and coef per voxel
+            labels = np.array([cluster_labels[i] for i in kmeans.labels_])
+
+        unique_labels = np.unique(labels)
         results = {}
-        labels = ar1
-        # Parallelize by creating a job per ARModel
-        vals = np.unique(ar1)
+
+        # Fit the AR model according to current AR(N) estimates
         ar_result = Parallel(n_jobs=n_jobs, verbose=verbose)(
-            delayed(_ar_model_fit)(X, val, Y[:, labels == val])
-            for val in vals)
-        for val, result in zip(vals, ar_result):
+            delayed(_ar_model_fit)(X, ar_coef_[labels == val][0],
+                                   Y[:, labels == val])
+            for val in unique_labels)
+
+        # Converting the key to a string is required for AR(N>1) cases
+        for val, result in zip(unique_labels, ar_result):
             results[val] = result
-        del vals
+        del unique_labels
         del ar_result
 
     else:
@@ -330,7 +394,7 @@ class FirstLevelModel(BaseGLM):
         self.subject_label = subject_label
 
     def fit(self, run_imgs, events=None, confounds=None,
-            design_matrices=None):
+            design_matrices=None, bins=100):
         """Fit the GLM
 
         For each run:
@@ -360,6 +424,13 @@ class FirstLevelModel(BaseGLM):
         design_matrices : pandas DataFrame or list of pandas DataFrames, optional
             Design matrices that will be used to fit the GLM. If given it
             takes precedence over events and confounds.
+
+        bins : int, optional
+            Maximum number of discrete bins for the AR coef histogram.
+            If an autoregressive model with order greater than one is specified
+            then adaptive quantification is performed and the coefficients
+            will be clustered via K-means with `bins` number of clusters.
+            Default=100.
 
         """
         # Initialize masker_ to None such that attribute exists
@@ -510,7 +581,7 @@ class FirstLevelModel(BaseGLM):
                 sys.stderr.write('Performing GLM computation\r')
             labels, results = mem_glm(Y, design.values,
                                       noise_model=self.noise_model,
-                                      bins=100, n_jobs=self.n_jobs)
+                                      bins=bins, n_jobs=self.n_jobs)
             if self.verbose > 1:
                 t_glm = time.time() - t_glm
                 sys.stderr.write('GLM took %d seconds         \n' % t_glm)
@@ -683,7 +754,7 @@ class FirstLevelModel(BaseGLM):
 
             output.append(self.masker_.inverse_transform(voxelwise_attribute))
 
-            return output
+        return output
 
     @auto_attr
     def residuals(self):

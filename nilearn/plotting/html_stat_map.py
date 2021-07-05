@@ -3,11 +3,13 @@ Visualizing 3D stat maps in a Brainsprite viewer
 """
 import os
 import json
+import copy
 import warnings
 from io import BytesIO
 from base64 import b64encode
 
 import numpy as np
+import matplotlib
 from matplotlib.image import imsave
 
 from nibabel.affines import apply_affine
@@ -23,6 +25,7 @@ from .._utils.param_validation import check_threshold
 from .._utils.extmath import fast_abs_percentile
 from .._utils.niimg import _safe_get_data
 from ..datasets import load_mni152_template
+from ..masking import compute_brain_mask
 
 
 def _data_to_sprite(data):
@@ -307,8 +310,22 @@ def _json_view_size(params):
     return width_view, height_view
 
 
-def _json_view_data(bg_img, stat_map_img, mask_img, bg_min, bg_max, colors,
-                    cmap, colorbar):
+def _get_bg_mask_and_cmap(bg_img, black_bg):
+    """Helper function of _json_view_data."""
+    bg_mask = _safe_get_data(compute_brain_mask(bg_img),
+                             ensure_finite=True)
+    bg_mask = np.logical_not(bg_mask).astype(float)
+    bg_mask[bg_mask == 1] = np.nan
+    bg_cmap = copy.copy(matplotlib.cm.get_cmap('gray'))
+    if black_bg:
+        bg_cmap.set_bad('black')
+    else:
+        bg_cmap.set_bad('white')
+    return bg_mask, bg_cmap
+
+
+def _json_view_data(bg_img, stat_map_img, mask_img, bg_min, bg_max, black_bg,
+                    colors, cmap, colorbar):
     """Create a json-like viewer object, and populate with base64 data.
     Returns: json_view
 
@@ -319,8 +336,9 @@ def _json_view_data(bg_img, stat_map_img, mask_img, bg_min, bg_max, colors,
 
     # Create a base64 sprite for the background
     bg_sprite = BytesIO()
-    bg_data = _safe_get_data(bg_img, ensure_finite=True)
-    _save_sprite(bg_data, bg_sprite, bg_max, bg_min, None, 'gray', 'png')
+    bg_data = _safe_get_data(bg_img, ensure_finite=True).astype(float)
+    bg_mask, bg_cmap = _get_bg_mask_and_cmap(bg_img, black_bg)
+    _save_sprite(bg_data, bg_sprite, bg_max, bg_min, bg_mask, bg_cmap, 'png')
     json_view['bg_base64'] = _bytesIO_to_base64(bg_sprite)
 
     # Create a base64 sprite for the stat map
@@ -542,7 +560,7 @@ def view_img(stat_map_img, bg_img='MNI152',
 
     # Now create a json-like object for the viewer, and converts in html
     json_view = _json_view_data(bg_img, stat_map_img, mask_img, bg_min, bg_max,
-                                colors, cmap, colorbar)
+                                black_bg, colors, cmap, colorbar)
 
     json_view['params'] = _json_view_params(
         stat_map_img.shape, stat_map_img.affine, colors['vmin'],

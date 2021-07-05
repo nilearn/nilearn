@@ -6,7 +6,6 @@ from scipy import linalg
 
 from sklearn.base import BaseEstimator, TransformerMixin, clone
 from sklearn.covariance import LedoitWolf
-from sklearn.utils import deprecated
 from .. import signal
 from .._utils.extmath import is_spd
 
@@ -107,12 +106,11 @@ def _geometric_mean(matrices, init=None, max_iter=10, tol=1e-7):
 
     In case of positive numbers, this mean is the usual geometric mean.
 
-    See Algorithm 3 of [1]_.
+    See Algorithm 3 of :footcite:`Fletcher2007`.
 
     References
     ----------
-    .. [1] P. Thomas Fletcher, Sarang Joshi. Riemannian Geometry for the
-       Statistical Analysis of Diffusion Tensor Data. Signal Processing, 2007.
+    .. footbibliography::
 
     Parameters
     ----------
@@ -198,38 +196,6 @@ def _geometric_mean(matrices, init=None, max_iter=10, tol=1e-7):
                       "{1}.".format(max_iter, tol))
 
     return gmean
-
-
-@deprecated("Function 'sym_to_vec' has been renamed to "
-            "'sym_matrix_to_vec' and will be removed in 0.8")
-def sym_to_vec(symmetric, discard_diagonal=False):
-    """Return the flattened lower triangular part of an array.
-    If diagonal is kept, diagonal elements are divided by sqrt(2) to conserve
-    the norm.
-
-    Acts on the last two dimensions of the array if not 2-dimensional.
-
-    .. versionadded:: 0.2
-
-    Parameters
-    ----------
-    symmetric : numpy.ndarray, shape (..., n_features, n_features)
-        Input array.
-
-    discard_diagonal : boolean, optional
-        If True, the values of the diagonal are not returned.
-        Default=False.
-
-    Returns
-    -------
-    output : numpy.ndarray
-        The output flattened lower triangular part of symmetric. Shape is
-        (..., n_features * (n_features + 1) / 2) if discard_diagonal is False
-        and (..., (n_features - 1) * n_features / 2) otherwise.
-
-    """
-    return sym_matrix_to_vec(symmetric=symmetric,
-                             discard_diagonal=discard_diagonal)
 
 
 def sym_matrix_to_vec(symmetric, discard_diagonal=False):
@@ -406,7 +372,7 @@ class ConnectivityMeasure(BaseEstimator, TransformerMixin):
 
     kind : {"covariance", "correlation", "partial correlation",\
             "tangent", "precision"}, optional
-        The matrix kind. For the use of "tangent" see [1]_.
+        The matrix kind. For the use of "tangent" see :footcite:`Varoquaux2010b`.
         Default='covariance'.
 
     vectorize : bool, optional
@@ -435,8 +401,7 @@ class ConnectivityMeasure(BaseEstimator, TransformerMixin):
 
     References
     ----------
-    .. [1] G. Varoquaux et al. "Detection of brain functional-connectivity difference
-       in post-stroke patients using group-level covariance modeling, MICCAI 2010.
+    .. footbibliography::
 
     """
 

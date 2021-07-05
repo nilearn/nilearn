@@ -6,6 +6,7 @@ import matplotlib as mpl
 from matplotlib import cm as mpl_cm
 
 from nilearn._utils.niimg_conversions import check_niimg_3d
+from nilearn._utils import fill_doc
 from nilearn import surface
 from nilearn import datasets
 from nilearn.plotting.html_document import HTMLDocument
@@ -125,11 +126,12 @@ def _fill_html_template(info, embed_js=True):
     return SurfaceView(as_html)
 
 
+@fill_doc
 def view_img_on_surf(stat_map_img, surf_mesh='fsaverage5',
                      threshold=None, cmap=cm.cold_hot,
                      black_bg=False, vmax=None, vmin=None, symmetric_cmap=True,
                      colorbar=True, colorbar_height=.5, colorbar_fontsize=25,
-                     title=None, title_fontsize=25):
+                     title=None, title_fontsize=25, vol_to_surf_kwargs={}):
     """Insert a surface plot of a statistical map into an HTML page.
 
     Parameters
@@ -138,20 +140,21 @@ def view_img_on_surf(stat_map_img, surf_mesh='fsaverage5',
         See http://nilearn.github.io/manipulating_images/input_output.html
 
     surf_mesh : str or dict, optional.
-        if 'fsaverage5', use fsaverage5 mesh from nilearn.datasets
-        if 'fsaverage', use fsaverage mesh from nilearn.datasets
-        if a dictionary, it should have the same structure as those returned by
+        If a string, it should be one of the following values:
+        %(fsaverage_options)s
+        If a dictionary, it should have the same structure as those returned by
         nilearn.datasets.fetch_surf_fsaverage, i.e. keys should be 'infl_left',
         'pial_left', 'sulc_left', 'infl_right', 'pial_right', and 'sulc_right',
         containing inflated and pial meshes, and sulcal depth values for left
-        and right hemispheres. Default='fsaverage5'.
+        and right hemispheres.
+        Default='fsaverage5'.
 
     threshold : str, number or None, optional
         If None, no thresholding.
         If it is a number only values of amplitude greater
         than threshold will be shown.
         If it is a string it must finish with a percent sign,
-        e.g. "25.3%", and only values of amplitude above the
+        e.g. "25.3%%", and only values of amplitude above the
         given percentile will be shown.
 
     cmap : str or matplotlib colormap, optional
@@ -192,6 +195,13 @@ def view_img_on_surf(stat_map_img, surf_mesh='fsaverage5',
     title_fontsize : int, optional
         Fontsize of the title. Default=25.
 
+    vol_to_surf_kwargs : dict, optional
+        Dictionary of keyword arguments that are passed on to
+        :func:`nilearn.surface.vol_to_surf` when extracting a surface from
+        the input image. See the function documentation for details.This
+        parameter is especially useful when plotting an atlas. See
+        https://nilearn.github.io/auto_examples/01_plotting/plot_3d_map_to_surface_projection.html
+
     Returns
     -------
     SurfaceView : plot of the stat map.
@@ -211,7 +221,7 @@ def view_img_on_surf(stat_map_img, surf_mesh='fsaverage5',
     info = full_brain_info(
         volume_img=stat_map_img, mesh=surf_mesh, threshold=threshold,
         cmap=cmap, black_bg=black_bg, vmax=vmax, vmin=vmin,
-        symmetric_cmap=symmetric_cmap)
+        symmetric_cmap=symmetric_cmap, vol_to_surf_kwargs=vol_to_surf_kwargs)
     info['colorbar'] = colorbar
     info['cbar_height'] = colorbar_height
     info['cbar_fontsize'] = colorbar_fontsize
@@ -239,7 +249,7 @@ def view_surf(surf_mesh, surf_map=None, bg_map=None, threshold=None,
     surf_map : str or numpy.ndarray, optional
         Data to be displayed on the surface mesh. Can be a file (valid formats
         are .gii, .mgz, .nii, .nii.gz, or Freesurfer specific files such as
-        .thickness, .curv, .sulc, .annot, .label) or
+        .thickness, .area, .curv, .sulc, .annot, .label) or
         a Numpy array
 
     bg_map : Surface data, optional

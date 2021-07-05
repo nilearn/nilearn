@@ -160,7 +160,7 @@ def test_percentile_range():
         canica.fit(data)
         # Filter out deprecation warnings
         not_deprecation_warning = [not issubclass(w.category,
-                                                  DeprecationWarning)
+                                                  (DeprecationWarning, FutureWarning))
                                         for w in warning]
         assert sum(not_deprecation_warning) == 1  # ensure single warning
         idx_critical_warning = not_deprecation_warning.index(True)

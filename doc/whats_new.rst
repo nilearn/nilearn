@@ -1,16 +1,194 @@
-0.7.2.dev
+0.8.1.dev
 =========
 
 NEW
 ---
 
+- :func:`nilearn.datasets.load_mni152_gm_template` takes the skullstripped
+  1mm-resolution version of the grey-matter MNI152 template and re-samples it
+  using a different resolution, if specified.
+- :func:`nilearn.datasets.load_mni152_wm_template` takes the skullstripped
+  1mm-resolution version of the white-matter MNI152 template and re-samples it
+  using a different resolution, if specified.
+- :func:`nilearn.datasets.load_mni152_gm_mask` loads mask from the grey-matter
+  MNI152 template.
+- :func:`nilearn.datasets.load_mni152_wm_mask` loads mask from the white-matter
+  MNI152 template.
+
 Fixes
 -----
+
+- :func:`nilearn.masking.compute_multi_brain_mask` has replaced
+  nilearn.masking.compute_multi_grey_matter_mask. A mask parameter has been added;
+  it accepts three types of masks---i.e. whole-brain, grey-matter and
+  white-matter---following the enhancements made in the function
+  :func:`nilearn.masking.compute_brain_mask` in this release.
+- Fix colorbar of :func:`nilearn.plotting.view_img` which was not visible for some
+  combinations of `black_bg` and `bg_img` parameters.
+  (See issue `#2874 <https://github.com/nilearn/nilearn/issues/2874>`_).
 
 Enhancements
 ------------
 
-- :func:`nilearn.plotting.view_markers` now accept an optional argument `marker_labels` to provide labels to each marker.
+- :func:`nilearn.datasets.load_mni152_template` resamples now the template to
+  a preset resolution different from the resolution of the original template,
+  i.e. 1mm. The default resolution is 2mm, which means that the new template is
+  resampled to the resolution of the old template. Nevertheless, the shape of
+  the template changed from (91, 109, 91) to (99, 117, 95); the affine also
+  changed from array([[-2., 0., 0., 90.], [0., 2., 0., -126.],
+  [0., 0., 2., -72.], [0., 0., 0., 1.]]) to array([[1., 0., 0., -98.],
+  [0., 1., 0., -134.], [0., 0., 1., -72.], [0., 0., 0., 1.]]). Additionally,
+  the new template has also been rescaled; whereas the old one varied between
+  0 and 8339, the new one varies between 0 and 255.
+- :func:`nilearn.datasets.load_mni152_brain_mask` accepts now the parameter
+  resolution, which will set the resolution of the template used for the
+  masking.
+- :func:`nilearn.masking.compute_brain_mask` accepts now as input the
+  whole-brain, 1mm-resolution, MNI152 T1 template instead of the averaged,
+  whole-brain, 2mm-resolution MNI152 T1 template; it also accepts as input the
+  grey-matter and white-matter ICBM152 1mm-resolution templates dated from 2009.
+- Common parts of docstrings accross Nilearn can now be filled automatically using
+  the decorator `nilearn._utils.fill_doc`. This can be applied to common function
+  parameters or common lists of options for example. The standard parts are defined
+  in a single location (`nilearn._utils.docs.py`) which makes them easier to
+  maintain and update. (See `#2875 <https://github.com/nilearn/nilearn/pull/2875>`_).
+
+Changes
+-------
+
+.. _v0.8.0:
+
+0.8.0
+=====
+
+**Released June 2021**
+
+HIGHLIGHTS
+----------
+
+.. warning::
+
+ | **Python 3.5 is no longer supported. We recommend upgrading to Python 3.8.**
+ |
+ | **Support for Nibabel 2.x is deprecated and will be removed in the 0.9 release.**
+ | Users with a version of Nibabel < 3.0 will be warned at their first Nilearn import.
+ |
+ | **Minimum supported versions of packages have been bumped up:**
+ | - Numpy -- v1.16
+ | - SciPy -- v1.2
+ | - Scikit-learn -- v0.21
+ | - Nibabel -- v2.5
+ | - Pandas -- v0.24
+
+- :class:`nilearn.input_data.NiftiLabelsMasker` can now generate HTML reports in the same
+  way as :class:`nilearn.input_data.NiftiMasker`.
+- :func:`nilearn.signal.clean` accepts new parameter `sample_mask`.
+  shape: (number of scans - number of volumes removed, )
+- All inherent classes of `nilearn.input_data.BaseMasker` can use parameter `sample_mask`
+  for sub-sample masking.
+- Fetcher :func:`nilearn.datasets.fetch_surf_fsaverage` now accepts `fsaverage3`,
+  `fsaverage4` and `fsaverage6` as values for parameter `mesh`, so that
+  all resolutions of fsaverage from 3 to 7 are now available.
+- Fetcher :func:`nilearn.datasets.fetch_surf_fsaverage` now provides attributes
+  `{area, curv, sphere, thick}_{left, right}` for all fsaverage resolutions.
+- :class:`nilearn.glm.first_level.run_glm` now allows auto regressive noise
+  models of order greater than one.
+
+NEW
+---
+
+- :func:`nilearn.signal.clean` accepts new parameter `sample_mask`.
+  shape: (number of scans - number of volumes removed, )
+  Masks the niimgs along time/fourth dimension to perform scrubbing (remove
+  volumes with high motion) and/or non-steady-state volumes. Masking is applied
+  before signal cleaning.
+- All inherent classes of `nilearn.input_data.BaseMasker` can use
+  parameter `sample_mask` for sub-sample masking.
+- :class:`nilearn.input_data.NiftiLabelsMasker` can now generate HTML reports in the same
+  way as :class:`nilearn.input_data.NiftiMasker`. The report shows the regions defined by
+  the provided label image and provide summary statistics on each region (name, volume...).
+  If a functional image was provided to fit, the middle image is plotted with the regions
+  overlaid as contours. Finally, if a mask is provided, its contours are shown in green.
+
+Fixes
+-----
+
+- Convert references in signal.py, atlas.py, func.py, neurovault.py, and struct.py 
+  to use footcite / footbibliography.
+- Fix detrending and temporal filtering order for confounders
+  in :func:`nilearn.signal.clean`, so that these operations are applied
+  in the same order as for the signals, i.e., first detrending and
+  then temporal filtering (https://github.com/nilearn/nilearn/issues/2730).
+- Fix number of attributes returned by the
+  `nilearn.glm.first_level.FirstLevelModel._get_voxelwise_model_attribute` method
+  in the first level model. It used to return only the first attribute, and now returns
+  as many attributes as design matrices.
+- Plotting functions that show a stack of slices from a 3D image (e.g.
+  :func:`nilearn.plotting.plot_stat_map`) will now plot the slices in the user
+  specified order, rather than automatically sorting into ascending order
+  (https://github.com/nilearn/nilearn/issues/1155).
+- Fix the axes zoom on plot_img_on_surf function so brain would not be cutoff, and
+  edited function so less white space surrounds brain views & smaller colorbar using
+  gridspec (https://github.com/nilearn/nilearn/pull/2798).
+- Fix inconsistency in prediction values of Dummy Classifier for Decoder
+  object (https://github.com/nilearn/nilearn/issues/2767).
+
+Enhancements
+------------
+
+- :func:`nilearn.plotting.view_markers` now accepts an optional argument `marker_labels`
+  to provide labels to each marker.
+- :func:`nilearn.plotting.plot_surf` now accepts new values for `avg_method` argument,
+  such as `min`, `max`, or even a custom python function to compute the value displayed
+  for each face of the plotted mesh.
+- :func:`nilearn.plotting.view_img_on_surf` can now optionally pass through
+  parameters to :func:`nilearn.surface.vol_to_surf` using the
+  `vol_to_surf_kwargs` argument. One application is better HTML visualization of atlases.
+  (https://nilearn.github.io/auto_examples/01_plotting/plot_3d_map_to_surface_projection.html)
+- :func:`nilearn.plotting.view_connectome` now accepts an optional argument `node_color`
+  to provide a single color for all nodes, or one color per node.
+  It defaults to `auto` which colors markers according to the viridis colormap.
+- Refactor :func:`nilearn.signal.clean` to clarify the data flow.
+  Replace `sessions` with `runs` to matchin BIDS semantics and deprecate `sessions` in 0.9.0.
+  Add argument `filter` and allow a selection of signal filtering strategies:
+  * "butterwoth" (butterworth filter)
+  * "cosine" (discrete cosine transformation)
+  * `False` (no filtering)
+- Change the default strategy for Dummy Classifier from 'prior' to
+  'stratified' (https://github.com/nilearn/nilearn/pull/2826/).
+- :class:`nilearn.glm.first_level.run_glm` now allows auto regressive noise
+  models of order greater than one.
+- Moves parameter `sample_mask` from :class:`nilearn.input_data.NiftiMasker`
+  to method `transform` in base class `nilearn.input_data.BaseMasker`.
+- Fetcher :func:`nilearn.datasets.fetch_surf_fsaverage` now accepts
+  `fsaverage3`, `fsaverage4` and `fsaverage6` as values for parameter `mesh`, so that
+  all resolutions of fsaverage from 3 to 7 are now available.
+- Fetcher :func:`nilearn.datasets.fetch_surf_fsaverage` now provides
+  attributes `{area, curv, sphere, thick}_{left, right}` for all fsaverage
+  resolutions.
+
+Changes
+-------
+
+- Python 3.5 is no longer supported. We recommend upgrading to Python 3.7.
+- Support for Nibabel 2.x is now deprecated and will be removed
+  in the 0.9 release. Users with a version of Nibabel < 3.0 will
+  be warned at their first Nilearn import.
+- Minimum supported versions of packages have been bumped up:
+
+    * Numpy -- v1.16
+    * SciPy -- v1.2
+    * Scikit-learn -- v0.21
+    * Nibabel -- v2.5
+    * Pandas -- v0.24
+
+- Function sym_to_vec from :mod:`nilearn.connectome` was deprecated since release 0.4 and
+  has been removed.
+- Fetcher `nilearn.datasets.fetch_nyu_rest` is deprecated since release 0.6.2 and
+  has been removed.
+- :class:`nilearn.input_data.NiftiMasker` replaces `sessions` with `runs` and
+  deprecates attribute `sessions` in 0.9.0. Match the relevant change in
+  :func:`nilearn.signal.clean`.
 
 .. _v0.7.1:
 

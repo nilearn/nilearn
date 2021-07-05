@@ -649,24 +649,24 @@ def index_img(imgs, index):
      >>> joint_mni_image = concat_imgs([datasets.load_mni152_template(),
      ...                                datasets.load_mni152_template()])
      >>> print(joint_mni_image.shape)
-     (91, 109, 91, 2)
+     (99, 117, 95, 2)
 
     We can now select one slice from the last dimension of this 4D-image::
 
      >>> single_mni_image = index_img(joint_mni_image, 1)
      >>> print(single_mni_image.shape)
-     (91, 109, 91)
+     (99, 117, 95)
 
     We can also select multiple frames using the `slice` constructor::
 
      >>> five_mni_images = concat_imgs([datasets.load_mni152_template()] * 5)
      >>> print(five_mni_images.shape)
-     (91, 109, 91, 5)
+     (99, 117, 95, 5)
 
      >>> first_three_images = index_img(five_mni_images,
      ...                                slice(0, 3))
      >>> print(first_three_images.shape)
-     (91, 109, 91, 3)
+     (99, 117, 95, 3)
 
     """
     imgs = check_niimg_4d(imgs)
@@ -1013,21 +1013,14 @@ def clean_img(imgs, sessions=None, detrend=True, standardize=True,
     Notes
     -----
     Confounds removal is based on a projection on the orthogonal
-    of the signal space [1]_.
+    of the signal space [:footcite:`friston1994statistical`].
 
     Orthogonalization between temporal filters and confound removal is based on
-    suggestions in [2]_.
+    suggestions in [:footcite:`Lindquist407676`].
 
     References
     ----------
-    .. [1] Friston, K. J., A. P. Holmes, K. J. Worsley, J.-P. Poline,
-       C. D. Frith, et R. S. J. Frackowiak. "Statistical Parametric Maps
-       in Functional Imaging: A General Linear Approach". Human Brain
-       Mapping 2, no 4 (1994): 189-210. <http://dx.doi.org/10.1002/hbm.460020402>
-
-    .. [2] Lindquist, M., Geuter, S., Wager, T., & Caffo, B. (2018).
-       Modular preprocessing pipelines can reintroduce artifacts into fMRI data.
-       bioRxiv, 407676. <http://dx.doi.org/10.1101/407676>
+    .. footbibliography::
 
     See Also
     --------
