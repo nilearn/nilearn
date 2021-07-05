@@ -975,6 +975,21 @@ def _dataframe_to_html(df, precision, **kwargs):
 
 
 def _clean_contrast_name(contrast_name):
+    """Remove non-alphanumeric characters from a contrast name.
+
+    BIDS filenames, in which the contrast name will appear as a
+    contrast-<name> key/value pair, must be alphanumeric strings.
+
+    Parameters
+    ----------
+    contrast_name : :obj:`str`
+        Contrast name to clean.
+
+    Returns
+    -------
+    new_name : :obj:`str`
+        Contrast name with non-alphanumeric characters removed.
+    """
     new_name = ''.join(ch for ch in contrast_name if ch.isalnum())
     if new_name != contrast_name:
         warnings.warn(
@@ -1022,32 +1037,50 @@ def save_glm_results(model, contrasts, out_dir='.', prefix=None):
     else:
         design_matrices = [model.design_matrix_]
 
-    if len(design_matrices) > 1:
-        for i_run, dm in enumerate(design_matrices):
-            run_name = i_run + 1
-            dm_file = os.path.join(
-                out_dir,
-                '{}run-{}_design.tsv'.format(prefix, run_name),
-            )
-            dm.to_csv(dm_file, sep='\t', index=False)
+    # TODO: Assuming that cases of multiple design matrices correspond to
+    # different runs. Not sure if this is correct. Need to check.
+    for i_run, design_matrix in enumerate(design_matrices):
+        run_str = (
+            "run-{}_".format(i_run + 1) if len(design_matrices) > 1 else ""
+        )
+        dm_file = os.path.join(
+            out_dir,
+            '{}{}design.tsv'.format(prefix, run_str),
+        )
+        design_matrix.to_csv(
+            dm_file,
+            sep='\t',
+            line_terminator='\n',
+            index=False,
+        )
 
-            dm_fig_file = os.path.join(
-                out_dir,
-                '{}run-{}_design.svg'.format(prefix, run_name),
-            )
-            dm_fig = plot_design_matrix(dm)
-            dm_fig.figure.savefig(dm_fig_file)
-    else:
-        dm_file = os.path.join(out_dir, '{}design.tsv'.format(prefix))
-        dm.to_csv(dm_file, sep='\t', index=False)
-
-        dm_fig_file = os.path.join(out_dir, '{}design.svg'.format(prefix))
-        dm_fig = plot_design_matrix(dm)
+        dm_fig_file = os.path.join(
+            out_dir,
+            '{}{}design.svg'.format(prefix, run_str),
+        )
+        dm_fig = plot_design_matrix(design_matrix)
         dm_fig.figure.savefig(dm_fig_file)
 
-    # Save contrast figures
-    contrasts = _coerce_to_dict(contrasts)
-    # contrast_plots = _plot_contrasts(contrasts, design_matrices)
+        # Save contrast plots as well
+        for contrast_name, contrast_data in contrasts.items():
+            contrast_plot = plot_contrast_matrix(
+                contrast_data,
+                design_matrix,
+                colorbar=True,
+            )
+            contrast_plot.set_xlabel(contrast_name)
+            contrast_plot.figure.set_figheight(2)
+            contrast_plot.figure.set_tight_layout(True)
+            contrast_name = _clean_contrast_name(contrast_name)
+            constrast_fig_file = os.path.join(
+                out_dir,
+                "{}{}contrast-{}_design.svg".format(
+                    prefix,
+                    run_str,
+                    contrast_name,
+                )
+            )
+            contrast_plot.figure.savefig(constrast_fig_file)
 
     statistical_maps = _make_stat_maps(
         model,
@@ -1056,9 +1089,10 @@ def save_glm_results(model, contrasts, out_dir='.', prefix=None):
     )
 
     # Model metadata
+    # TODO: Determine optimal mapping of model metadata to BIDS fields.
     metadata_file = os.path.join(out_dir, 'dataset_description.json')
 
-    selected_attributes = [
+    SELECTED_ATTRIBUTES = [
         'subject_label',
         'drift_model',
         'hrf_model',
@@ -1074,35 +1108,38 @@ def save_glm_results(model, contrasts, out_dir='.', prefix=None):
         'slice_time_ref',
         'fir_delays',
     ]
-    # attribute_units = {
+    # ATTRIBUTE_UNITS = {
     #     't_r': 's',
     #     'high_pass': 'Hz',
     # }
-    attr_rename = {
+    ATTRIBUTE_RENAMING = {
         't_r': 'RepetitionTime',
     }
 
-    selected_attributes.sort()
+    SELECTED_ATTRIBUTES.sort()
     model_attributes = {
         attr_name: getattr(model, attr_name)
-        for attr_name in selected_attributes
+        for attr_name in SELECTED_ATTRIBUTES
         if hasattr(model, attr_name)
     }
     model_attributes = {
-        attr_rename.get(k, k): v for k, v in model_attributes.items()
+        ATTRIBUTE_RENAMING.get(k, k): v for k, v in model_attributes.items()
     }
 
     with open(metadata_file, 'w') as fo:
         json.dump(model_attributes, fo, indent=4, sort_keys=True)
 
+    # Write out statistical maps
     for contrast_name, contrast_maps in statistical_maps.items():
         contrast_name = _clean_contrast_name(contrast_name)
 
         # Extract stat_type
-        stat_type = 't'  # TODO: implement a real solution
+        # TODO: Figure out how to infer statistical type (t vs F) from
+        # contrast definition
+        stat_type = 't'
 
         # Contrast-level images
-        MAPPING = {
+        contrast_level_mapping = {
             'effect_size':
                 '{}contrast-{}_stat-effect_statmap.nii.gz'.format(
                     prefix,
@@ -1132,7 +1169,8 @@ def save_glm_results(model, contrasts, out_dir='.', prefix=None):
         }
         # Rename keys
         renamed_contrast_maps = {
-            MAPPING.get(k, k): v for k, v in contrast_maps.items()
+            contrast_level_mapping.get(k, k): v
+            for k, v in contrast_maps.items()
         }
 
         for map_name, img in renamed_contrast_maps.items():
@@ -1140,11 +1178,11 @@ def save_glm_results(model, contrasts, out_dir='.', prefix=None):
             img.to_filename(out_file)
 
     # Model-level images
-    attributes = {
+    model_level_mapping = {
         'residuals': '{}stat-errorts_statmap.nii.gz'.format(prefix),
         'r_square': '{}stat-rSquare_statmap.nii.gz'.format(prefix),
     }
-    for attr, map_name in attributes.items():
+    for attr, map_name in model_level_mapping.items():
         print('Extracting and saving {}'.format(attr))
         img = getattr(model, attr)
         if isinstance(img, list):

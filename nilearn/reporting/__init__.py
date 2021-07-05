@@ -11,4 +11,9 @@ from nilearn.reporting.html_report import HTMLReport
 from nilearn.reporting._get_clusters_table import get_clusters_table
 from nilearn.reporting.glm_reporter import make_glm_report, save_glm_results
 
-__all__ = ['HTMLReport', 'get_clusters_table', 'make_glm_report', 'save_glm_results']
+__all__ = [
+    'HTMLReport',
+    'get_clusters_table',
+    'make_glm_report',
+    'save_glm_results',
+]
