@@ -977,13 +977,31 @@ def _dataframe_to_html(df, precision, **kwargs):
 def _clean_contrast_name(contrast_name):
     new_name = ''.join(ch for ch in contrast_name if ch.isalnum())
     if new_name != contrast_name:
-        warnings.warn('Contrast name "{}" changed to "{}"'.format(contrast_name, new_name))
+        warnings.warn(
+            'Contrast name "{}" changed to "{}"'.format(
+                contrast_name,
+                new_name
+            )
+        )
     return new_name
 
 
 def save_glm_results(model, contrasts, out_dir='.', prefix=None):
     """Save GLM results to BIDS-like files.
 
+    Parameters
+    ----------
+    model
+    contrasts
+    out_dir : :obj:`str`, optional
+        Output directory for files. Default is current working directory.
+    prefix : :obj:`str` or None, optional
+        String to prepend to generated filenames.
+        If a string is provided, "_" will be added to the end.
+        Default is None.
+
+    Notes
+    -----
     To output:
     - design matrix
     - contrast plot
