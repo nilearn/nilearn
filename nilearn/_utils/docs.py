@@ -138,13 +138,14 @@ cut_coords : None, a tuple of :obj:`float`, or :obj:`int`, optional
           be a 3-tuple: (x, y, z)
         - For `display_mode` == 'x', 'y', or 'z', then these are
           the coordinates of each cut in the corresponding direction.
-        - If None is given, the cuts is calculated automaticaly.
+        - If None is given, the cuts are calculated automaticaly.
         - If `display_mode` is 'mosaic', and the number of cuts is the same
           for all directions, `cut_coords` can be specified as an integer.
           It can also be a length 3 tuple specifying the number of cuts for
           every direction if these are different.
 
         .. note::
+
             If display_mode is 'x', 'y' or 'z', `cut_coords` can be
             an integer, in which case it specifies the number of
             cuts to perform.
@@ -222,7 +223,7 @@ docdict['black_bg'] = """
 black_bg : :obj:`bool`, or 'auto', optional
     If True, the background of the image is set to be black.
     If you wish to save figures with a black background, you
-    will need to pass "facecolor='k', edgecolor='k'"
+    will need to pass facecolor='k', edgecolor='k'
     to :func:`matplotlib.pyplot.savefig`."""
 
 # colorbar
@@ -238,6 +239,7 @@ symmetric_cbar : :obj:`bool`, or 'auto', optional
     if the range of the whole image is either positive or negative.
 
     .. note::
+
         The colormap will always range from `-vmax` to `vmax`.
 
 """
@@ -289,6 +291,7 @@ resampling_interpolation : :obj:`str`, optional
         - "nearest": use nearest-neighbor mapping.
 
             .. note::
+
                 "nearest" is faster but can be noisier in some cases.
 
 """
@@ -360,8 +363,8 @@ docdict['darkness'] = """
 darkness : :obj:`float` between 0 and 1, optional
     Specifying the darkness of the background image:
 
-        - 1 indicates that the original values of the background are used
-        - .5 indicates that the background values are reduced by half
+        - '1' indicates that the original values of the background are used
+        - '.5' indicates that the background values are reduced by half
           before being applied.
 
 """
