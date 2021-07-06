@@ -15,8 +15,10 @@ import sys
 #
 docdict = dict()
 
-NILEARN_REF_DOC = "http://nilearn.github.io"
-NIIMG_LINK = f"{NILEARN_REF_DOC}/manipulating_images/input_output.html"
+NILEARN_LINKS = {"landing_page": "http://nilearn.github.io"}
+NILEARN_LINKS["input_output"] = "{}/manipulating_images/input_output.html".format(
+    NILEARN_LINKS["landing_page"]
+)
 
 # Verbose
 verbose = """
@@ -126,8 +128,8 @@ docdict['n_jobs_all'] = n_jobs.format("-1")
 # img
 docdict['img'] = """
 img : Niimg-like object
-    See `input-output <{}>`_.
-""".format(NIIMG_LINK)
+    See `input-output <%(input_output)s>`_.
+""" % NILEARN_LINKS
 
 # cut_coords
 docdict['cut_coords'] = """
@@ -253,9 +255,9 @@ cbar_tick_format : :obj:`str`, optional
 # bg_img
 docdict['bg_img'] = """
 bg_img : Niimg-like object, optional
-    See `input_output <{}>`_.
+    See `input_output <%(input_output)s>`_.
     The background image to plot on top of.
-""".format(NIIMG_LINK)
+""" % NILEARN_LINKS
 
 # vmin
 docdict['vmin'] = """

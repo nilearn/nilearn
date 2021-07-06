@@ -693,7 +693,7 @@ def plot_roi(roi_img, bg_img=MNI152TEMPLATE, cut_coords=None,
     return display
 
 
-#@fill_doc
+@fill_doc
 def plot_prob_atlas(maps_img, bg_img=MNI152TEMPLATE, view_type='auto',
                     threshold='auto', linewidths=2.5, cut_coords=None,
                     output_file=None, display_mode='ortho',
