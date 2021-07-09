@@ -1039,6 +1039,27 @@ def save_glm_results(model, contrasts, out_dir='.', prefix=None):
     - model-level stat maps
     - metadata
     """
+    DATA_ATTRIBUTES = [
+        't_r',
+    ]
+    PARAMETER_ATTRIBUTES = [
+        'drift_model',
+        'hrf_model',
+        'standardize',
+        'high_pass',
+        'target_shape',
+        'signal_scaling',
+        'drift_order',
+        'scaling_axis',
+        'smoothing_fwhm',
+        'target_affine',
+        'slice_time_ref',
+        'fir_delays',
+    ]
+    ATTRIBUTE_RENAMING = {
+        't_r': 'RepetitionTime',
+    }
+
     if isinstance(prefix, str) and not prefix.endswith('_'):
         prefix += '_'
     else:
@@ -1120,32 +1141,11 @@ def save_glm_results(model, contrasts, out_dir='.', prefix=None):
         'dataset_description.json',
     )
 
-    DATA_ATTRIBUTES = [
-        't_r',
-    ]
-    PARAMETER_ATTRIBUTES = [
-        'drift_model',
-        'hrf_model',
-        'standardize',
-        'high_pass',
-        'target_shape',
-        'signal_scaling',
-        'drift_order',
-        'scaling_axis',
-        'smoothing_fwhm',
-        'target_affine',
-        'slice_time_ref',
-        'fir_delays',
-    ]
-    ATTRIBUTE_RENAMING = {
-        't_r': 'RepetitionTime',
-    }
-
     # Fields for the top level of the dictionary
     DATA_ATTRIBUTES.sort()
     data_attributes = {
         attr_name: getattr(model, attr_name)
-        for attr_name in PARAMETER_ATTRIBUTES
+        for attr_name in DATA_ATTRIBUTES
         if hasattr(model, attr_name)
     }
     data_attributes = {
@@ -1192,8 +1192,6 @@ def save_glm_results(model, contrasts, out_dir='.', prefix=None):
 
     # Write out statistical maps
     for contrast_name, contrast_maps in statistical_maps.items():
-        contrast_name = _clean_contrast_name(contrast_name)
-
         # Extract stat_type
         # TODO: Figure out if this is correct
         contrast_matrix = contrasts[contrast_name]
@@ -1201,6 +1199,8 @@ def save_glm_results(model, contrasts, out_dir='.', prefix=None):
             stat_type = 'F'
         else:
             stat_type = 't'
+
+        contrast_name = _clean_contrast_name(contrast_name)
 
         # Contrast-level images
         contrast_level_mapping = {
