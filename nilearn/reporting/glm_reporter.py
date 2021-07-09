@@ -1137,11 +1137,6 @@ def save_glm_results(model, contrasts, out_dir='.', prefix=None):
         'slice_time_ref',
         'fir_delays',
     ]
-    # ATTRIBUTE_UNITS = {
-    #     't_r': 's',
-    #     'high_pass': 'Hz',
-    #     'fir_delays': 's',
-    # }
     ATTRIBUTE_RENAMING = {
         't_r': 'RepetitionTime',
     }
