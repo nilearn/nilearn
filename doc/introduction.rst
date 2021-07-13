@@ -425,7 +425,7 @@ Finding help
 :Mailing lists and forums:
 
     * Don't hesitate to ask questions about nilearn on `neurostars
-      <https://neurostars.org/t/nilearn/>`_.
+      <https://neurostars.org/tag/nilearn>`_.
 
     * You can find help with neuroimaging in Python (file I/O,
       neuroimaging-specific questions) via the nipy user group:

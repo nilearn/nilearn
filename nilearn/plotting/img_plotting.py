@@ -402,7 +402,8 @@ class _MNI152Template(SpatialImage):
             anat_img = reorder_img(anat_img)
             data = get_data(anat_img)
             data = data.astype(np.float64)
-            anat_mask = ndimage.morphology.binary_fill_holes(data > 0)
+            anat_mask = ndimage.morphology.binary_fill_holes(
+                data > np.finfo(float).eps)
             data = np.ma.masked_array(data, np.logical_not(anat_mask))
             self._affine = anat_img.affine
             self.data = data
@@ -694,13 +695,6 @@ def plot_epi(epi_img=None, cut_coords=None, output_file=None,
     cmap : matplotlib colormap, optional
         The colormap for specified image.
         Default=plt.cm.nipy_spectral.
-
-    threshold : a number, None, or 'auto', optional
-        If None is given, the image is not thresholded.
-        If a number is given, it is used to threshold the image:
-        values below the threshold (in absolute value) are plotted
-        as transparent. If auto is given, the threshold is determined
-        magically by analysis of the image.
 
     vmin : float, optional
         Lower bound for plotting, passed to matplotlib.pyplot.imshow.
