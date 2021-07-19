@@ -377,11 +377,10 @@ workflows:
     jobs:
       - build_docs
 
-
 version: 2
 jobs:
   deploy-job:
     steps:
       - add_ssh_keys:
           fingerprints:
-	    - "72:8a:e0:f1:a7:e2:fb:9a:71:bf:35:a6:1a:5a:38:0a"
+            - "72:8a:e0:f1:a7:e2:fb:9a:71:bf:35:a6:1a:5a:38:0a"
