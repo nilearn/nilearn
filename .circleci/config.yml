@@ -377,7 +377,6 @@ workflows:
     jobs:
       - build_docs
 
-version: 2
 jobs:
   deploy-job:
     steps:
