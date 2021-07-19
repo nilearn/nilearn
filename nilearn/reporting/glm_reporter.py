@@ -1002,7 +1002,7 @@ def _clean_contrast_name(contrast_name):
     return new_name
 
 
-def save_glm_results(model, contrasts, out_dir='.', prefix=None):
+def save_glm_results(model, contrasts, contrast_types=None, out_dir='.', prefix=None):
     """Save GLM results to BIDS-like files.
 
     Parameters
@@ -1014,6 +1014,15 @@ def save_glm_results(model, contrasts, out_dir='.', prefix=None):
         A dictionary containing contrasts. Keys are contrast names,
         while values are arrays containing contrast weights.
         The arrays may be 1D (for t-contrasts) or 2D (for F-contrasts).
+    contrast_types : None or :obj:`dict` of :obj:`str`s, optional
+        An optional dictionary mapping some or all of the contrast names to
+        specific contrast types ("t" or "F"). If None, all contrast types will
+        be automatically inferred based on the contrast arrays
+        (1D arrays are t-contrasts, 2D arrays are F-contrasts).
+        Keys in this dictionary must match the keys in the ``contrasts``
+        dictionary, but only those contrasts for which contrast type must be
+        explicitly set need to be included.
+        Default is None.
     out_dir : :obj:`str`, optional
         Output directory for files. Default is current working directory.
     prefix : :obj:`str` or None, optional
@@ -1070,6 +1079,9 @@ def save_glm_results(model, contrasts, out_dir='.', prefix=None):
     model_level = (
         1 if isinstance(model, glm.first_level.FirstLevelModel) else 2
     )
+
+    if not isinstance(contrast_types, dict):
+        contrast_types = {}
 
     # Write out design matrices to files.
     if hasattr(model, 'design_matrices_'):
@@ -1193,12 +1205,14 @@ def save_glm_results(model, contrasts, out_dir='.', prefix=None):
     # Write out statistical maps
     for contrast_name, contrast_maps in statistical_maps.items():
         # Extract stat_type
-        # TODO: Figure out if this is correct
         contrast_matrix = contrasts[contrast_name]
         if contrast_matrix.ndim == 2:
             stat_type = 'F'
         else:
             stat_type = 't'
+
+        # Override automatic detection with explicit type if provided
+        stat_type = contrast_types.get(contrast_name, stat_type)
 
         contrast_name = _clean_contrast_name(contrast_name)
 
