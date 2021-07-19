@@ -976,7 +976,7 @@ def _dataframe_to_html(df, precision, **kwargs):
 
 
 def _clean_contrast_name(contrast_name):
-    """Remove non-alphanumeric characters from a contrast name.
+    """Remove prohibited characters from name and convert to CamelCase.
 
     BIDS filenames, in which the contrast name will appear as a
     contrast-<name> key/value pair, must be alphanumeric strings.
@@ -989,8 +989,13 @@ def _clean_contrast_name(contrast_name):
     Returns
     -------
     new_name : :obj:`str`
-        Contrast name with non-alphanumeric characters removed.
+        Contrast name converted to alphanumeric-only CamelCase.
     """
+    # Some characters translate to words
+    contrast_name = contrast_name.replace("-", "Minus")
+
+    # Remove non-alphanumeric characters and convert to CamelCase
+    contrast_name = contrast_name.title()
     new_name = ''.join(ch for ch in contrast_name if ch.isalnum())
     if new_name != contrast_name:
         warnings.warn(
