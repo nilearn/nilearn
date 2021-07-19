@@ -377,6 +377,8 @@ workflows:
     jobs:
       - build_docs
 
+version: 2.1
+jobs:
   deploy-job:
     steps:
       - add_ssh_keys:
