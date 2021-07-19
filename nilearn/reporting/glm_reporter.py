@@ -1007,7 +1007,13 @@ def _clean_contrast_name(contrast_name):
     return new_name
 
 
-def save_glm_results(model, contrasts, contrast_types=None, out_dir='.', prefix=None):
+def save_glm_results(
+    model,
+    contrasts,
+    contrast_types=None,
+    out_dir='.',
+    prefix=None,
+):
     """Save GLM results to BIDS-like files.
 
     Parameters

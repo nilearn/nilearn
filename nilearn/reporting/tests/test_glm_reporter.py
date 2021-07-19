@@ -304,21 +304,21 @@ def test_save_glm_results(tmp_path_factory):
     nilearn.glm.tests.test_first_level.test_high_level_glm_one_session.
     """
     EXPECTED_FILENAMES = [
-        "dataset_description.json",
-        "sub-01_ses-01_task-nback_contrast-EffectsOfInterest_design.svg",
-        "sub-01_ses-01_task-nback_contrast-EffectsOfInterest_stat-F_statmap.nii.gz",
-        "sub-01_ses-01_task-nback_contrast-EffectsOfInterest_stat-effect_statmap.nii.gz",
-        "sub-01_ses-01_task-nback_contrast-EffectsOfInterest_stat-p_statmap.nii.gz",
-        "sub-01_ses-01_task-nback_contrast-EffectsOfInterest_stat-variance_statmap.nii.gz",
-        "sub-01_ses-01_task-nback_contrast-EffectsOfInterest_stat-z_statmap.nii.gz",
-        "sub-01_ses-01_task-nback_design.svg",
-        "sub-01_ses-01_task-nback_design.tsv",
-        "sub-01_ses-01_task-nback_stat-errorts_statmap.nii.gz",
-        "sub-01_ses-01_task-nback_stat-rSquare_statmap.nii.gz",
-        "sub-01_ses-01_task-nback_statmap.json",
+        'dataset_description.json',
+        'sub-01_ses-01_task-nback_contrast-EffectsOfInterest_design.svg',
+        'sub-01_ses-01_task-nback_contrast-EffectsOfInterest_stat-F_statmap.nii.gz',
+        'sub-01_ses-01_task-nback_contrast-EffectsOfInterest_stat-effect_statmap.nii.gz',
+        'sub-01_ses-01_task-nback_contrast-EffectsOfInterest_stat-p_statmap.nii.gz',
+        'sub-01_ses-01_task-nback_contrast-EffectsOfInterest_stat-variance_statmap.nii.gz',
+        'sub-01_ses-01_task-nback_contrast-EffectsOfInterest_stat-z_statmap.nii.gz',
+        'sub-01_ses-01_task-nback_design.svg',
+        'sub-01_ses-01_task-nback_design.tsv',
+        'sub-01_ses-01_task-nback_stat-errorts_statmap.nii.gz',
+        'sub-01_ses-01_task-nback_stat-rSquare_statmap.nii.gz',
+        'sub-01_ses-01_task-nback_statmap.json',
     ]
 
-    tmpdir = tmp_path_factory.mktemp("test_save_glm_results")
+    tmpdir = tmp_path_factory.mktemp('test_save_glm_results')
 
     shapes, rk = [(7, 8, 9, 15)], 3
     mask, fmri_data, design_matrices = generate_fake_fmri_data_and_design(
@@ -339,17 +339,17 @@ def test_save_glm_results(tmp_path_factory):
     )
 
     contrasts = {
-        "effects of interest": np.eye(rk),
+        'effects of interest': np.eye(rk),
     }
     contrast_types = {
-        "effects of interest": "F",
+        'effects of interest': 'F',
     }
     save_glm_results(
         model=single_session_model,
         contrasts=contrasts,
         contrast_types=contrast_types,
         out_dir=tmpdir,
-        prefix="sub-01_ses-01_task-nback"
+        prefix='sub-01_ses-01_task-nback'
     )
 
     for fname in EXPECTED_FILENAMES:
