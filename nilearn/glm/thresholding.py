@@ -171,6 +171,7 @@ def cluster_level_inference(stat_img, mask_img=None,
     for threshold_ in sorted(threshold):
         label_map, n_labels = label(stat_map > threshold_)
         labels = label_map[get_data(masker.mask_img_) > 0]
+
         for label_ in range(1, n_labels + 1):
             # get the z-vals in the cluster
             cluster_vals = stats[labels == label_]
