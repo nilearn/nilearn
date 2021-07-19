@@ -10,14 +10,16 @@ https://github.com/mne-tools/mne-python/blob/main/mne/utils/docs.py
 
 import sys
 
+
 ###################################
 # Standard documentation entries
 #
 docdict = dict()
 
 NILEARN_LINKS = {"landing_page": "http://nilearn.github.io"}
-NILEARN_LINKS["input_output"] = "{}/manipulating_images/input_output.html".format(
-    NILEARN_LINKS["landing_page"]
+NILEARN_LINKS["input_output"] = (
+    "{}/manipulating_images/input_output.html".format(
+        NILEARN_LINKS["landing_page"])
 )
 
 # Verbose
@@ -31,7 +33,7 @@ docdict['verbose0'] = verbose.format(0)
 # Resume
 docdict['resume'] = """
 resume : :obj:`bool`, optional
-    Whether to resumed download of a partly-downloaded file.
+    Whether to resume download of a partly-downloaded file.
     Default=True."""
 
 # Data_dir
@@ -51,14 +53,14 @@ url : :obj:`str`, optional
 # Smoothing_fwhm
 docdict['smoothing_fwhm'] = """
 smoothing_fwhm : :obj:`float`, optional.
-    If `smoothing_fwhm` is not None, it gives the size in millimeters of the
-    spatial smoothing to apply to the signal.
-    Default=None."""
+    If ``smoothing_fwhm`` is not ``None``, it gives
+    the size in millimeters of the spatial smoothing
+    to apply to the signal. Default=None."""
 
 # Standardize
 standardize = """
 standardize : :obj:`bool`, optional.
-    If `standardize` is True, the data are centered and normed:
+    If ``standardize`` is True, the data are centered and normed:
     their variance is put to 1 in the time dimension.
     Default={}."""
 docdict['standardize'] = standardize.format('True')
@@ -68,18 +70,18 @@ docdict['standardize_false'] = standardize.format('False')
 docdict['target_affine'] = """
 target_affine: numpy.ndarray, optional.
     If specified, the image is resampled corresponding to this new affine.
-    `target_affine` can be a 3x3 or a 4x4 matrix.
+    ``target_affine`` can be a 3x3 or a 4x4 matrix.
     Default=None."""
 
 # Target_shape
 docdict['target_shape'] = """
 target_shape: tuple or list, optional.
     If specified, the image will be resized to match this new shape.
-    len(target_shape) must be equal to 3.
+    ``len(target_shape)`` must be equal to 3.
 
     .. note::
-        If `target_shape` is specified, a `target_affine` of shape
-        (4, 4) must also be given.
+        If ``target_shape`` is specified, a ``target_affine`` of shape
+        ``(4, 4)`` must also be given.
 
     Default=None."""
 
@@ -98,14 +100,14 @@ high_pass: :obj:`float`, optional
 # t_r
 docdict['t_r'] = """
 t_r: :obj:`float`, optional
-    Repetition time, in second (sampling period). Set to None if not.
+    Repetition time, in second (sampling period). Set to ``None`` if not.
     Default=None."""
 
 # Memory
 docdict['memory'] = """
 memory : instance of joblib.Memory or :obj:`str`
     Used to cache the masking process.
-    By default, no caching is done. If a str is given, it is the
+    By default, no caching is done. If a ``str`` is given, it is the
     path to the caching directory."""
 
 # Memory_level
@@ -136,19 +138,19 @@ docdict['cut_coords'] = """
 cut_coords : None, a tuple of :obj:`float`, or :obj:`int`, optional
     The MNI coordinates of the point where the cut is performed.
 
-        - If `display_mode` is 'ortho' or 'tiled', this should
-          be a 3-tuple: (x, y, z)
-        - For `display_mode` == 'x', 'y', or 'z', then these are
+        - If ``display_mode`` is 'ortho' or 'tiled', this should
+          be a 3-tuple: ``(x, y, z)``
+        - For ``display_mode == 'x'``, 'y', or 'z', then these are
           the coordinates of each cut in the corresponding direction.
-        - If None is given, the cuts are calculated automaticaly.
-        - If `display_mode` is 'mosaic', and the number of cuts is the same
-          for all directions, `cut_coords` can be specified as an integer.
+        - If ``None`` is given, the cuts are calculated automaticaly.
+        - If ``display_mode`` is 'mosaic', and the number of cuts is the same
+          for all directions, ``cut_coords`` can be specified as an integer.
           It can also be a length 3 tuple specifying the number of cuts for
           every direction if these are different.
 
         .. note::
 
-            If display_mode is 'x', 'y' or 'z', `cut_coords` can be
+            If ``display_mode`` is 'x', 'y' or 'z', ``cut_coords`` can be
             an integer, in which case it specifies the number of
             cuts to perform.
 
@@ -158,13 +160,14 @@ cut_coords : None, a tuple of :obj:`float`, or :obj:`int`, optional
 docdict['output_file'] = """
 output_file : :obj:`str`, or None, optional
     The name of an image file to export the plot to. Valid extensions
-    are .png, .pdf, .svg. If `output_file` is not None, the plot
+    are .png, .pdf, .svg. If ``output_file`` is not None, the plot
     is saved to a file, and the display is closed."""
 
 
 # display_mode
 docdict['display_mode'] = """
-display_mode : {'ortho', 'tiled', 'mosaic','x', 'y', 'z', 'yx', 'xz', 'yz'}, optional
+display_mode : {'ortho', 'tiled', 'mosaic','x',\
+'y', 'z', 'yx', 'xz', 'yz'}, optional
     Choose the direction of the cuts:
 
         - 'x': sagittal
@@ -182,15 +185,16 @@ display_mode : {'ortho', 'tiled', 'mosaic','x', 'y', 'z', 'yx', 'xz', 'yz'}, opt
 # figure
 docdict['figure'] = """
 figure : :obj:`int`, or :class:`matplotlib.figure.Figure`, or None,  optional
-    Matplotlib figure used or its number. If None is given, a
+    Matplotlib figure used or its number. If ``None`` is given, a
     new figure is created."""
 
 # axes
 docdict['axes'] = """
-axes : :class:`matplotlib.axes.Axes`, or 4 tuple of :obj:`float`: (xmin, ymin, width, height), optional
+axes : :class:`matplotlib.axes.Axes`, or 4 tuple\
+of :obj:`float`: (xmin, ymin, width, height), optional
     The axes, or the coordinates, in matplotlib figure
     space, of the axes used to display the plot.
-    If None, the complete figure is used."""
+    If ``None``, the complete figure is used."""
 
 # title
 docdict['title'] = """
@@ -201,29 +205,29 @@ title : :obj:`str`, or None, optional
 # threshold
 docdict['threshold'] = """
 threshold : a number, None, or 'auto', optional
-    If None is given, the image is not thresholded.
+    If ``None`` is given, the image is not thresholded.
     If a number is given, it is used to threshold the image:
     values below the threshold (in absolute value) are plotted
-    as transparent. If auto is given, the threshold is determined
+    as transparent. If 'auto' is given, the threshold is determined
     magically by analysis of the image.
 """
 
 # annotate
 docdict['annotate'] = """
 annotate : :obj:`bool`, optional
-    If `annotate` is True, positions and left/right annotation
+    If ``annotate`` is ``True``, positions and left/right annotation
     are added to the plot. Default=True."""
 
 # draw_cross
 docdict['draw_cross'] = """
 draw_cross : :obj:`bool`, optional
-    If `draw_cross` is True, a cross is drawn on the plot to indicate
+    If ``draw_cross`` is ``True``, a cross is drawn on the plot to indicate
     the cut position. Default=True."""
 
 # black_bg
 docdict['black_bg'] = """
 black_bg : :obj:`bool`, or 'auto', optional
-    If True, the background of the image is set to be black.
+    If ``True``, the background of the image is set to be black.
     If you wish to save figures with a black background, you
     will need to pass facecolor='k', edgecolor='k'
     to :func:`matplotlib.pyplot.savefig`."""
@@ -231,18 +235,18 @@ black_bg : :obj:`bool`, or 'auto', optional
 # colorbar
 docdict['colorbar'] = """
 colorbar : :obj:`bool`, optional
-    If True, display a colorbar on the right of the plots."""
+    If ``True``, display a colorbar on the right of the plots."""
 
 # symmetric_cbar
 docdict['symmetric_cbar'] = """
 symmetric_cbar : :obj:`bool`, or 'auto', optional
-    Specifies whether the colorbar should range from `-vmax` to `vmax`
-    or from `vmin` to `vmax`. Setting to 'auto' will select the latter
+    Specifies whether the colorbar should range from ``-vmax`` to ``vmax``
+    or from ``vmin`` to ``vmax``. Setting to 'auto' will select the latter
     if the range of the whole image is either positive or negative.
 
     .. note::
 
-        The colormap will always range from `-vmax` to `vmax`.
+        The colormap will always range from ``-vmax`` to ``vmax``.
 
 """
 
@@ -262,26 +266,26 @@ bg_img : Niimg-like object, optional
 # vmin
 docdict['vmin'] = """
 vmin : :obj:`float`, optional
-    Lower bound of the colormap. If `None`, the min of the image is used.
+    Lower bound of the colormap. If ``None``, the min of the image is used.
     Passed to :func:`matplotlib.pyplot.imshow`.
 """
 
 # vmax
 docdict['vmax'] = """
 vmax : :obj:`float`, optional
-    Upper bound of the colormap. If `None`, the max of the image is used.
+    Upper bound of the colormap. If ``None``, the max of the image is used.
     Passed to :func:`matplotlib.pyplot.imshow`.
 """
 
 # bg_vmin
 docdict['bg_vmin'] = """
 bg_vmin : :obj:`float`, optional
-    vmin for `bg_img`."""
+    vmin for ``bg_img``."""
 
 # bg_vmax
 docdict['bg_vmax'] = """
 bg_vmin : :obj:`float`, optional
-    vmax for `bg_img`."""
+    vmax for ``bg_img``."""
 
 # resampling_interpolation
 docdict['resampling_interpolation'] = """
@@ -318,10 +322,10 @@ docdict['avg_method'] = """
 avg_method : {'mean', 'median', 'min', 'max', custom function}, optional
     How to average vertex values to derive the face value:
 
-        - `mean`: results in smooth boundaries
-        - `median`: results in sharp boundaries
-        - `min` or `max`: for sparse matrices
-        - `custom function`: You can also pass a custom function
+        - ``mean``: results in smooth boundaries
+        - ``median``: results in sharp boundaries
+        - ``min`` or ``max``: for sparse matrices
+        - ``custom function``: You can also pass a custom function
           which will be executed though :func:`numpy.apply_along_axis`.
           Here is an example of a custom function:
 
@@ -344,15 +348,19 @@ hemispheres : list of :obj:`str`, optional
 
 # view
 docdict['view'] = """
-view : {'lateral', 'medial', 'dorsal', 'ventral', 'anterior', 'posterior'}, optional
-    View of the surface that is rendered. Default='lateral'."""
+view : {'lateral', 'medial', 'dorsal', 'ventral',\
+        'anterior', 'posterior'}, optional
+    View of the surface that is rendered.
+    Default='lateral'.
+"""
 
 # bg_on_data
 docdict['bg_on_data'] = """
 bg_on_data : :obj:`bool`, optional
-    If True, and a `bg_map` is specified, the `surf_data` data is multiplied
-    by the background image, so that e.g. sulcal depth is visible beneath
-    the `surf_data`.
+    If ``True``, and a ``bg_map`` is specified,
+    the ``surf_data`` data is multiplied by the background
+    image, so that e.g. sulcal depth is visible beneath
+    the ``surf_data``.
 
         .. note::
             This non-uniformly changes the surf_data values according
@@ -375,7 +383,7 @@ darkness : :obj:`float` between 0 and 1, optional
 docdict['linewidths'] = """
 linewidths : :obj:`float`, optional
     Set the boundary thickness of the contours.
-    Only reflects when `view_type`='contours'."""
+    Only reflects when ``view_type=contours``."""
 
 # fsaverage options
 docdict['fsaverage_options'] = """
