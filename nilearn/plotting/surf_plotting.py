@@ -387,6 +387,12 @@ def plot_surf(surf_mesh, surf_map=None, bg_map=None,
     if title is not None:
         axes.set_title(title, position=(.5, .95))
 
+    # Use box aspect ratio to simulate equal
+    # aspect ratio in data space
+    limits = np.array([getattr(axes, f'get_{axis}lim')()
+                       for axis in 'xyz'])
+    axes.set_box_aspect(np.ptp(limits, axis = 1))
+
     # save figure if output file is given
     if output_file is not None:
         figure.savefig(output_file)
