@@ -305,25 +305,25 @@ def test_save_glm_results(tmp_path_factory):
     """
     EXPECTED_FILENAMES = [
         'dataset_description.json',
-        'sub-01_ses-01_task-nback_contrast-EffectsOfInterest_design.svg',
+        'sub-01_ses-01_task-nback_contrast-effectsOfInterest_design.svg',
         (
-            'sub-01_ses-01_task-nback_contrast-EffectsOfInterest_'
+            'sub-01_ses-01_task-nback_contrast-effectsOfInterest_'
             'stat-F_statmap.nii.gz'
         ),
         (
-            'sub-01_ses-01_task-nback_contrast-EffectsOfInterest_'
+            'sub-01_ses-01_task-nback_contrast-effectsOfInterest_'
             'stat-effect_statmap.nii.gz'
         ),
         (
-            'sub-01_ses-01_task-nback_contrast-EffectsOfInterest_'
+            'sub-01_ses-01_task-nback_contrast-effectsOfInterest_'
             'stat-p_statmap.nii.gz'
         ),
         (
-            'sub-01_ses-01_task-nback_contrast-EffectsOfInterest_'
+            'sub-01_ses-01_task-nback_contrast-effectsOfInterest_'
             'stat-variance_statmap.nii.gz'
         ),
         (
-            'sub-01_ses-01_task-nback_contrast-EffectsOfInterest_'
+            'sub-01_ses-01_task-nback_contrast-effectsOfInterest_'
             'stat-z_statmap.nii.gz'
         ),
         'sub-01_ses-01_task-nback_design.svg',
