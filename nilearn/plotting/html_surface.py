@@ -335,4 +335,14 @@ def view_surf(surf_mesh, surf_map=None, bg_map=None, threshold=None,
     info['cbar_fontsize'] = colorbar_fontsize
     info['title'] = title
     info['title_fontsize'] = title_fontsize
+    info['aspect_ratio'] = _compute_aspect_ratio(surf_mesh)
     return _fill_html_template(info, embed_js=True)
+
+
+def _compute_aspect_ratio(surf_mesh):
+    surf_mesh = surface.load_surf_mesh(surf_mesh)
+    data_range = np.ptp(surf_mesh.coordinates, axis=0)
+    min_range = np.min(data_range[data_range != 0])
+    data_range /= min_range
+    data_range[data_range == 0] = 1
+    return dict(zip(['x', 'y', 'z'], [float(_) for _ in data_range]))
