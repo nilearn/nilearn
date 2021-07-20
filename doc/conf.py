@@ -55,6 +55,7 @@ extensions = [
               'sphinxcontrib.bibtex',
               'numpydoc',
               'sphinx.ext.linkcode',
+              'sphinx_copybutton'
               ]
 
 autosummary_generate = True
@@ -234,6 +235,8 @@ html_show_sourcelink = False
 # Output file base name for HTML help builder.
 htmlhelp_basename = 'PythonScientic'
 
+# Sphinx copybutton config
+copybutton_prompt_text = ">>> "
 
 # -- Options for LaTeX output ------------------------------------------------
 
@@ -349,12 +352,9 @@ def touch_example_backreferences(app, what, name, obj, options, lines):
         # touch file
         open(examples_path, 'w').close()
 
-# Add the 'copybutton' javascript, to hide/show the prompt in code
-# examples
 
 
 def setup(app):
-    app.add_js_file('copybutton.js')
     app.connect('autodoc-process-docstring', touch_example_backreferences)
 
 
