@@ -14,6 +14,8 @@ NEW
   MNI152 template.
 - :func:`nilearn.datasets.load_mni152_wm_mask` loads mask from the white-matter
   MNI152 template.
+- :func:`nilearn.image.binarize_img` binarizes images into 0 and 1.
+
 
 Fixes
 -----

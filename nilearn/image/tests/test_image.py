@@ -23,6 +23,7 @@ from nilearn.image import new_img_like
 from nilearn.image import threshold_img
 from nilearn.image import iter_img, index_img
 from nilearn.image import math_img
+from nilearn.image import binarize_img
 from nilearn.image import largest_connected_component_img
 from nilearn.image import get_data
 
@@ -606,6 +607,23 @@ def test_math_img():
                                get_data(expected_result))
             assert_array_equal(result.affine, expected_result.affine)
             assert result.shape == expected_result.shape
+
+
+def test_binarize_img():
+    img = Nifti1Image(np.random.rand(10, 10, 10, 10), np.eye(4))
+    # Test that all output values are 1.
+    img1 = binarize_img(img)
+    np.testing.assert_array_equal(np.unique(img1.dataobj),
+                                  np.array([1]))
+    # Test that it works with threshold
+    img2 = binarize_img(img, threshold=0.5)
+    np.testing.assert_array_equal(np.unique(img2.dataobj),
+                                  np.array([0, 1]))
+    # Test that manual binarization equals binarize_img results.
+    img3 = Nifti1Image(np.random.rand(10, 10, 10, 10), np.eye(4))
+    img3.dataobj[img.dataobj < 0.5] = 0
+    img3.dataobj[img.dataobj >= 0.5] = 1
+    np.testing.assert_array_equal(img2.dataobj, img3.dataobj)
 
 
 def test_clean_img():
