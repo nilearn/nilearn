@@ -5,6 +5,7 @@ Only matplotlib is required.
 import itertools
 
 import matplotlib.pyplot as plt
+import plotly.graph_objects as go
 import numpy as np
 
 from matplotlib import gridspec
@@ -13,6 +14,9 @@ from matplotlib.cm import ScalarMappable, get_cmap
 from matplotlib.colors import Normalize, LinearSegmentedColormap
 from mpl_toolkits.mplot3d import Axes3D  # noqa
 from nilearn import image
+from nilearn.plotting.cm import cold_hot
+from nilearn.plotting.js_plotting_utils import colorscale
+from nilearn.plotting.html_surface import _get_vertexcolor
 from nilearn.plotting.img_plotting import (_get_colorbar_and_data_ranges,
                                            _crop_colorbar)
 from nilearn.surface import (load_surf_data,
@@ -29,11 +33,417 @@ VALID_VIEWS = "anterior", "posterior", "medial", "lateral", "dorsal", "ventral"
 VALID_HEMISPHERES = "left", "right"
 
 
+AXIS_CONFIG = {
+    "showgrid": False,
+    "showline": False,
+    "ticks": "",
+    "title": "",
+    "showticklabels": False,
+    "zeroline": False,
+    "showspikes": False,
+    "spikesides": False,
+    "showbackground": False,
+}
+
+
+CAMERAS = {
+    "left": {
+        "eye": {"x": -1.7, "y": 0, "z": 0},
+        "up": {"x": 0, "y": 0, "z": 1},
+        "center": {"x": 0, "y": 0, "z": 0},
+    },
+    "right": {
+        "eye": {"x": 1.7, "y": 0, "z": 0},
+        "up": {"x": 0, "y": 0, "z": 1},
+        "center": {"x": 0, "y": 0, "z": 0},
+    },
+    "top": {
+        "eye": {"x": 0, "y": 0, "z": 1.7},
+        "up": {"x": 0, "y": 1, "z": 0},
+        "center": {"x": 0, "y": 0, "z": 0},
+    },
+    "bottom": {
+        "eye": {"x": 0, "y": 0, "z": -1.7},
+        "up": {"x": 0, "y": 1, "z": 0},
+        "center": {"x": 0, "y": 0, "z": 0},
+    },
+    "front": {
+        "eye": {"x": 0, "y": 1.7, "z": 0},
+        "up": {"x": 0, "y": 0, "z": 1},
+        "center": {"x": 0, "y": 0, "z": 0},
+    },
+    "back": {
+        "eye": {"x": 0, "y": -1.7, "z": 0},
+        "up": {"x": 0, "y": 0, "z": 1},
+        "center": {"x": 0, "y": 0, "z": 0},
+    },
+}
+
+
+LAYOUT = {
+    "scene": {f"{dim}axis": AXIS_CONFIG for dim in ("x", "y", "z")},
+    "paper_bgcolor": "#fff",
+    "hovermode": False,
+    "margin": {"l": 0, "r": 0, "b": 0, "t": 0, "pad": 0},
+}
+
+
+def _set_view_plot_surf_plotly(hemi, view):
+    """Helper function for plot_surf with plotly engine.
+
+    This function checks the selected hemisphere and view, and
+    returns the cameras view.
+    """
+    hemis = np.array(['left', 'right'])
+    if hemi not in hemis:
+        raise ValueError(f"'hemi' must be one of {VALID_HEMISPHERES}")
+    if view == 'anterior':
+        cameras_view = 'front'
+    elif view == 'posterior':
+        cameras_view = 'back'
+    elif view == 'dorsal':
+        cameras_view = 'top'
+    elif view == 'ventral':
+        cameras_view = 'bottom'
+    elif view == 'lateral':
+        cameras_view = hemi
+    elif view == 'medial':
+        cameras_view = hemis[hemis != hemi][0]
+    else:
+        raise ValueError(f"view must be one of {VALID_VIEWS}")
+    return cameras_view
+
+
+def _plot_surf_plotly(surf_mesh, surf_map=None, bg_map=None,
+                      hemi='left', view='lateral', cmap=None,
+                      colorbar=False, avg_method='mean',
+                      threshold=None, output_file=None):
+    """Helper function for plot_surf.
+
+    .. versionadded:: 0.8.1
+
+    This function handles surface plotting when the selected
+    engine is plotly.
+    """
+    coords, faces = load_surf_mesh(surf_mesh)
+    x, y, z = coords.T
+    i, j, k = faces.T
+    if cmap is None:
+        cmap = cold_hot
+    if surf_map is not None:
+        surf_map_faces = _compute_surf_map_faces(
+            surf_map, faces, avg_method,
+            coords.shape[0], faces.shape[0]
+        )
+        colors = colorscale(cmap, surf_map_faces, threshold)
+        vertexcolor = _get_vertexcolor(
+            surf_map_faces,
+            colors["cmap"],
+            colors["norm"],
+            colors["abs_threshold"],
+            bg_map=bg_map,
+        )
+    else:
+        vertexcolor = None
+    if colorbar:
+        mesh_3d = go.Mesh3d(x=x, y=y, z=z, i=i, j=j, k=k,
+                            intensity=surf_map_faces,
+                            colorscale=colors['colors'])
+    else:
+        mesh_3d = go.Mesh3d(x=x, y=y, z=z, i=i, j=j, k=k,
+                            vertexcolor=vertexcolor)
+    cameras_view = _set_view_plot_surf_plotly(hemi, view)
+    fig = go.Figure(data=[mesh_3d])
+    fig.update_layout(scene_camera=CAMERAS[cameras_view], **LAYOUT)
+    if output_file is not None:
+        fig.write_image(output_file)
+    return fig
+
+
+def _set_view_plot_surf_matplotlib(hemi, view):
+    """Helper function for plot_surf with matplotlib engine.
+
+    This function checks the selected hemisphere and view, and
+    returns elev and azim.
+    """
+    if hemi == 'right':
+        if view == 'lateral':
+            elev, azim = 0, 0
+        elif view == 'medial':
+            elev, azim = 0, 180
+        elif view == 'dorsal':
+            elev, azim = 90, 0
+        elif view == 'ventral':
+            elev, azim = 270, 0
+        elif view == 'anterior':
+            elev, azim = 0, 90
+        elif view == 'posterior':
+            elev, azim = 0, 270
+        else:
+            raise ValueError(f"view must be one of {VALID_VIEWS}")
+    elif hemi == 'left':
+        if view == 'medial':
+            elev, azim = 0, 0
+        elif view == 'lateral':
+            elev, azim = 0, 180
+        elif view == 'dorsal':
+            elev, azim = 90, 0
+        elif view == 'ventral':
+            elev, azim = 270, 0
+        elif view == 'anterior':
+            elev, azim = 0, 90
+        elif view == 'posterior':
+            elev, azim = 0, 270
+        else:
+            raise ValueError(f"view must be one of {VALID_VIEWS}")
+    else:
+        raise ValueError(f"hemi must be one of {VALID_HEMISPHERES}")
+    return elev, azim
+
+
+def _compute_surf_map_faces(surf_map, faces, avg_method, n_vertices,
+                            face_colors_size):
+    """Helper function for plot_surf.
+
+    This function computes the surf map faces using the
+    provided averaging method.
+    """
+    surf_map_data = load_surf_data(surf_map)
+    if surf_map_data.ndim != 1:
+        raise ValueError("'surf_map' can only have one dimension "
+                         f"but has '{surf_map_data.ndim}' dimensions")
+    if surf_map_data.shape[0] != n_vertices:
+        raise ValueError('The surf_map does not have the same number '
+                         'of vertices as the mesh.')
+
+    # create face values from vertex values by selected avg methods
+    if avg_method == 'mean':
+        surf_map_faces = np.mean(surf_map_data[faces], axis=1)
+    elif avg_method == 'median':
+        surf_map_faces = np.median(surf_map_data[faces], axis=1)
+    elif avg_method == 'min':
+        surf_map_faces = np.min(surf_map_data[faces], axis=1)
+    elif avg_method == 'max':
+        surf_map_faces = np.max(surf_map_data[faces], axis=1)
+    elif callable(avg_method):
+        surf_map_faces = np.apply_along_axis(
+            avg_method, 1, surf_map_data[faces]
+        )
+
+        ## check that surf_map_faces has the same length as face_colors
+        if surf_map_faces.shape[0] != face_colors_size:
+            raise ValueError(
+                "Array computed with the custom function "
+                "from avg_method does not have the correct shape: "
+                f"{surf_map_faces[0]} != {face_colors_size}")
+
+        ## check that dtype is either int or float
+        if not (
+            "int" in str(surf_map_faces.dtype) or
+            "float" in str(surf_map_faces.dtype)
+        ):
+            raise ValueError(
+                'Array computed with the custom function '
+                'from avg_method should be an array of numbers '
+                '(int or float)'
+            )
+    else:
+        raise ValueError(
+            "avg_method should be either "
+            "['mean', 'median', 'max', 'min'] "
+            "or a custom function"
+        )
+    return surf_map_faces
+
+
+def _configure_cmap_matplotlib(cmap, vmin, vmax, threshold,
+                               cbar_tick_format):
+    """Helper function for plot_surf with matplotlib engine.
+
+    This function configure the colormap.
+    """
+    our_cmap = get_cmap(cmap)
+    norm = Normalize(vmin=vmin, vmax=vmax)
+    # Default number of ticks is 5...
+    nb_ticks = 5
+    # ...unless we are dealing with integers with a small range
+    # in this case, we reduce the number of ticks
+    if cbar_tick_format == "%i" and vmax - vmin < nb_ticks:
+        ticks = np.arange(vmin, vmax + 1)
+        nb_ticks = len(ticks)
+    else:
+        ticks = np.linspace(vmin, vmax, nb_ticks)
+    bounds = np.linspace(vmin, vmax, our_cmap.N)
+    if threshold is not None:
+        cmaplist = [our_cmap(i) for i in range(our_cmap.N)]
+        # set colors to grey for absolute values < threshold
+        istart = int(norm(-threshold, clip=True) * (our_cmap.N - 1))
+        istop = int(norm(threshold, clip=True) * (our_cmap.N - 1))
+        for i in range(istart, istop):
+            cmaplist[i] = (0.5, 0.5, 0.5, 1.)
+        our_cmap = LinearSegmentedColormap.from_list(
+            'Custom cmap', cmaplist, our_cmap.N)
+    return our_cmap, norm, ticks, bounds
+
+
+def _compute_facecolors(bg_map, faces, n_vertices, darkness, alpha):
+    """Helper function for plot_surf.
+
+    This function computes the facecolors.
+    """
+    # set alpha if in auto mode
+    if alpha == 'auto':
+        alpha = .5 if bg_map is None else 1
+    face_colors = np.ones((faces.shape[0], 4))
+    if bg_map is None:
+        bg_data = np.ones(n_vertices) * 0.5
+    else:
+        bg_data = load_surf_data(bg_map)
+        if bg_data.shape[0] != n_vertices:
+            raise ValueError('The bg_map does not have the same number '
+                             'of vertices as the mesh.')
+    bg_faces = np.mean(bg_data[faces], axis=1)
+    if bg_faces.min() != bg_faces.max():
+        bg_faces = bg_faces - bg_faces.min()
+        bg_faces = bg_faces / bg_faces.max()
+    # control background darkness
+    bg_faces *= darkness
+    face_colors = plt.cm.gray_r(bg_faces)
+    # modify alpha values of background
+    face_colors[:, 3] = alpha * face_colors[:, 3]
+    return face_colors
+
+
+def _threshold_and_rescale(surf_map_faces, threshold, vmin, vmax):
+    """Helper function for plot_surf.
+
+    This function threshold and rescale the surf_map faces.
+    """
+    # if no vmin/vmax are passed figure them out from data
+    if vmin is None:
+        vmin = np.nanmin(surf_map_faces)
+    if vmax is None:
+        vmax = np.nanmax(surf_map_faces)
+    # treshold if indicated
+    if threshold is None:
+        # If no thresholding and nans, filter them out
+        kept_indices = np.where(
+            np.logical_not(
+                np.isnan(surf_map_faces)))[0]
+    else:
+        kept_indices = np.where(
+            np.abs(surf_map_faces) >= threshold)[0]
+    surf_map_faces = surf_map_faces - vmin
+    surf_map_faces = surf_map_faces / (vmax - vmin)
+    return surf_map_faces, kept_indices, vmin, vmax
+
+
+def _plot_surf_matplotlib(surf_mesh, surf_map=None, bg_map=None,
+                          hemi='left', view='lateral', cmap=None,
+                          colorbar=False, avg_method='mean', threshold=None,
+                          alpha='auto', bg_on_data=False, darkness=1, vmin=None,
+                          vmax=None, cbar_vmin=None, cbar_vmax=None,
+                          cbar_tick_format='%.2g', title=None, output_file=None,
+                          axes=None, figure=None, **kwargs):
+    """Helper function for plot_surf.
+
+    This function handles surface plotting when the selected
+    engine is matplotlib.
+    """
+    _default_figsize = [4, 4]
+
+    # load mesh and derive axes limits
+    mesh = load_surf_mesh(surf_mesh)
+    coords, faces = mesh[0], mesh[1]
+    limits = [coords.min(), coords.max()]
+
+    # set view
+    elev, azim = _set_view_plot_surf_matplotlib(hemi, view)
+
+    # if no cmap is given, set to matplotlib default
+    if cmap is None:
+        cmap = plt.cm.get_cmap(plt.rcParamsDefault['image.cmap'])
+    # if cmap is given as string, translate to matplotlib cmap
+    elif isinstance(cmap, str):
+        cmap = plt.cm.get_cmap(cmap)
+
+    figsize = _default_figsize
+    # Leave space for colorbar
+    if colorbar:
+        figsize[0] += .7
+    # initiate figure and 3d axes
+    if axes is None:
+        if figure is None:
+            figure = plt.figure(figsize=figsize)
+        axes = figure.add_axes((0, 0, 1, 1), projection="3d")
+    else:
+        if figure is None:
+            figure = axes.get_figure()
+    axes.set_xlim(*limits)
+    axes.set_ylim(*limits)
+    axes.view_init(elev=elev, azim=azim)
+    axes.set_axis_off()
+
+    # plot mesh without data
+    p3dcollec = axes.plot_trisurf(coords[:, 0], coords[:, 1], coords[:, 2],
+                                  triangles=faces, linewidth=0.,
+                                  antialiased=False,
+                                  color='white')
+
+    # reduce viewing distance to remove space around mesh
+    axes.dist = 8
+
+    face_colors = _compute_facecolors(bg_map, faces,
+                                      coords.shape[0],
+                                      darkness, alpha)
+    if surf_map is not None:
+        surf_map_faces = _compute_surf_map_faces(surf_map,
+                                                 faces,
+                                                 avg_method,
+                                                 coords.shape[0],
+                                                 face_colors.shape[0])
+        surf_map_faces, kept_indices, vmin, vmax = _threshold_and_rescale(
+            surf_map_faces, threshold, vmin, vmax)
+
+        # multiply data with background if indicated
+        if bg_on_data:
+            face_colors[kept_indices] = cmap(surf_map_faces[kept_indices])\
+                * face_colors[kept_indices]
+        else:
+            face_colors[kept_indices] = cmap(surf_map_faces[kept_indices])
+
+        if colorbar:
+            our_cmap, norm, ticks, bounds = _configure_cmap_matplotlib(
+                cmap, vmin, vmax, threshold, cbar_tick_format)
+            # we need to create a proxy mappable
+            proxy_mappable = ScalarMappable(cmap=our_cmap, norm=norm)
+            proxy_mappable.set_array(surf_map_faces)
+            cax, kw = make_axes(axes, location='right', fraction=.15,
+                                shrink=.5, pad=.0, aspect=10.)
+            cbar = figure.colorbar(
+                proxy_mappable, cax=cax, ticks=ticks,
+                boundaries=bounds, spacing='proportional',
+                format=cbar_tick_format, orientation='vertical')
+            _crop_colorbar(cbar, cbar_vmin, cbar_vmax)
+
+        p3dcollec.set_facecolors(face_colors)
+
+    if title is not None:
+        plt.suptitle(title, x=.5, y=.95)
+
+    # save figure if output file is given
+    if output_file is not None:
+        figure.savefig(output_file)
+        plt.close(figure)
+    else:
+        return figure
+
+
 @fill_doc
 def plot_surf(surf_mesh, surf_map=None, bg_map=None,
-              hemi='left', view='lateral', cmap=None, colorbar=False,
-              avg_method='mean', threshold=None, alpha='auto',
-              bg_on_data=False, darkness=1, vmin=None, vmax=None,
+              hemi='left', view='lateral', engine='matplotlib',
+              cmap=None, colorbar=False, avg_method='mean', threshold=None,
+              alpha='auto', bg_on_data=False, darkness=1, vmin=None, vmax=None,
               cbar_vmin=None, cbar_vmax=None, cbar_tick_format='%.2g',
               title=None, output_file=None, axes=None, figure=None, **kwargs):
     """Plotting of surfaces with optional background and data
@@ -63,6 +473,18 @@ def plot_surf(surf_mesh, surf_map=None, bg_map=None,
         realistic shading.
     %(hemi)s
     %(view)s
+    engine : {'matplotlib', 'plotly'}, optional
+
+        .. versionadded:: 0.8.1
+
+        Selects which plotting engine will be used by plot_surf.
+        Currently, only matplotlib and plotly are supported.
+
+        .. note::
+            To use 'plotly' and save figures to disk you should
+            have both `plotly` and `kaleido` installed.
+
+        Default='matplotlib'.
     %(cmap)s
         If None, matplotlib default will be chosen.
     %(colorbar)s
@@ -99,7 +521,14 @@ def plot_surf(surf_mesh, surf_map=None, bg_map=None,
         `figure, axes = plt.subplots(subplot_kw={'projection': '3d'})`,
         where axes should be passed.).
         If None, a new axes is created.
+
+        .. note::
+            Only used when ``engine=='matplotlib'``.
+
     %(figure)s
+
+        .. note::
+            Only used when ``engine=='matplotlib'``.
 
     See Also
     --------
@@ -115,237 +544,27 @@ def plot_surf(surf_mesh, surf_map=None, bg_map=None,
     nilearn.surface.vol_to_surf : For info on the generation of surfaces.
 
     """
-    _default_figsize = [4, 4]
-
-    # load mesh and derive axes limits
-    mesh = load_surf_mesh(surf_mesh)
-    coords, faces = mesh[0], mesh[1]
-    limits = [coords.min(), coords.max()]
-
-    # set view
-    if hemi == 'right':
-        if view == 'lateral':
-            elev, azim = 0, 0
-        elif view == 'medial':
-            elev, azim = 0, 180
-        elif view == 'dorsal':
-            elev, azim = 90, 0
-        elif view == 'ventral':
-            elev, azim = 270, 0
-        elif view == 'anterior':
-            elev, azim = 0, 90
-        elif view == 'posterior':
-            elev, azim = 0, 270
-        else:
-            raise ValueError('view must be one of lateral, medial, '
-                             'dorsal, ventral, anterior, or posterior')
-    elif hemi == 'left':
-        if view == 'medial':
-            elev, azim = 0, 0
-        elif view == 'lateral':
-            elev, azim = 0, 180
-        elif view == 'dorsal':
-            elev, azim = 90, 0
-        elif view == 'ventral':
-            elev, azim = 270, 0
-        elif view == 'anterior':
-            elev, azim = 0, 90
-        elif view == 'posterior':
-            elev, azim = 0, 270
-        else:
-            raise ValueError('view must be one of lateral, medial, '
-                             'dorsal, ventral, anterior, or posterior')
+    if engine == 'matplotlib':
+        fig = _plot_surf_matplotlib(surf_mesh, surf_map=surf_map,
+                              bg_map=bg_map, hemi=hemi, view=view,
+                              cmap=cmap, colorbar=colorbar,
+                              avg_method=avg_method, threshold=threshold,
+                              alpha=alpha, bg_on_data=bg_on_data,
+                              darkness=darkness, vmin=vmin, vmax=vmax,
+                              cbar_vmin=cbar_vmin, cbar_vmax=cbar_vmax,
+                              cbar_tick_format=cbar_tick_format,
+                              title=title, output_file=output_file,
+                              axes=axes, figure=figure, **kwargs)
+    elif engine == 'plotly':
+        fig = _plot_surf_plotly(surf_mesh, surf_map=surf_map, bg_map=bg_map,
+                          view=view, hemi=hemi, cmap=cmap, colorbar=colorbar,
+                          avg_method=avg_method,
+                          threshold=threshold, output_file=output_file)
     else:
-        raise ValueError('hemi must be one of right or left')
-
-    # set alpha if in auto mode
-    if alpha == 'auto':
-        if bg_map is None:
-            alpha = .5
-        else:
-            alpha = 1
-
-    # if no cmap is given, set to matplotlib default
-    if cmap is None:
-        cmap = plt.cm.get_cmap(plt.rcParamsDefault['image.cmap'])
-    else:
-        # if cmap is given as string, translate to matplotlib cmap
-        if isinstance(cmap, str):
-            cmap = plt.cm.get_cmap(cmap)
-
-    figsize = _default_figsize
-    # Leave space for colorbar
-    if colorbar:
-        figsize[0] += .7
-    # initiate figure and 3d axes
-    if axes is None:
-        if figure is None:
-            figure = plt.figure(figsize=figsize)
-        axes = figure.add_axes((0, 0, 1, 1), projection="3d")
-    else:
-        if figure is None:
-            figure = axes.get_figure()
-    axes.set_xlim(*limits)
-    axes.set_ylim(*limits)
-    axes.view_init(elev=elev, azim=azim)
-    axes.set_axis_off()
-
-    # plot mesh without data
-    p3dcollec = axes.plot_trisurf(coords[:, 0], coords[:, 1], coords[:, 2],
-                                  triangles=faces, linewidth=0.,
-                                  antialiased=False,
-                                  color='white')
-
-    # reduce viewing distance to remove space around mesh
-    axes.dist = 8
-
-    # set_facecolors function of Poly3DCollection is used as passing the
-    # facecolors argument to plot_trisurf does not seem to work
-    face_colors = np.ones((faces.shape[0], 4))
-
-    if bg_map is None:
-        bg_data = np.ones(coords.shape[0]) * 0.5
-
-    else:
-        bg_data = load_surf_data(bg_map)
-        if bg_data.shape[0] != coords.shape[0]:
-            raise ValueError('The bg_map does not have the same number '
-                             'of vertices as the mesh.')
-
-    bg_faces = np.mean(bg_data[faces], axis=1)
-    if bg_faces.min() != bg_faces.max():
-        bg_faces = bg_faces - bg_faces.min()
-        bg_faces = bg_faces / bg_faces.max()
-    # control background darkness
-    bg_faces *= darkness
-    face_colors = plt.cm.gray_r(bg_faces)
-
-    # modify alpha values of background
-    face_colors[:, 3] = alpha * face_colors[:, 3]
-    # should it be possible to modify alpha of surf data as well?
-
-    if surf_map is not None:
-        surf_map_data = load_surf_data(surf_map)
-        if surf_map_data.ndim != 1:
-            raise ValueError('surf_map can only have one dimension but has'
-                             '%i dimensions' % surf_map_data.ndim)
-        if surf_map_data.shape[0] != coords.shape[0]:
-            raise ValueError('The surf_map does not have the same number '
-                             'of vertices as the mesh.')
-
-        # create face values from vertex values by selected avg methods
-        if avg_method == 'mean':
-            surf_map_faces = np.mean(surf_map_data[faces], axis=1)
-        elif avg_method == 'median':
-            surf_map_faces = np.median(surf_map_data[faces], axis=1)
-        elif avg_method == 'min':
-            surf_map_faces = np.min(surf_map_data[faces], axis=1)
-        elif avg_method == 'max':
-            surf_map_faces = np.max(surf_map_data[faces], axis=1)
-        elif callable(avg_method):
-            surf_map_faces = np.apply_along_axis(
-                avg_method, 1, surf_map_data[faces]
-            )
-
-            ## check that surf_map_faces has the same length as face_colors
-            if surf_map_faces.shape != (face_colors.shape[0],):
-                raise ValueError(
-                    'Array computed with the custom function '
-                    'from avg_method does not have the correct shape: '
-                    '{} != {}'.format(
-                        surf_map_faces.shape[0],
-                        face_colors.shape[0]
-                    )
-                )
-
-            ## check that dtype is either int or float
-            if not (
-                "int" in str(surf_map_faces.dtype) or
-                "float" in str(surf_map_faces.dtype)
-            ):
-                raise ValueError(
-                    'Array computed with the custom function '
-                    'from avg_method should be an array of numbers '
-                    '(int or float)'
-                )
-
-        else:
-            raise ValueError(
-                "avg_method should be either "
-                "['mean', 'median', 'max', 'min'] "
-                "or a custom function"
-            )
-
-        # if no vmin/vmax are passed figure them out from data
-        if vmin is None:
-            vmin = np.nanmin(surf_map_faces)
-        if vmax is None:
-            vmax = np.nanmax(surf_map_faces)
-
-        # threshold if indicated
-        if threshold is None:
-            # If no thresholding and nans, filter them out
-            kept_indices = np.where(
-                            np.logical_not(
-                                np.isnan(surf_map_faces)))[0]
-        else:
-            kept_indices = np.where(np.abs(surf_map_faces) >= threshold)[0]
-
-        surf_map_faces = surf_map_faces - vmin
-        surf_map_faces = surf_map_faces / (vmax - vmin)
-
-        # multiply data with background if indicated
-        if bg_on_data:
-            face_colors[kept_indices] = cmap(surf_map_faces[kept_indices])\
-                * face_colors[kept_indices]
-        else:
-            face_colors[kept_indices] = cmap(surf_map_faces[kept_indices])
-
-        if colorbar:
-            our_cmap = get_cmap(cmap)
-            norm = Normalize(vmin=vmin, vmax=vmax)
-
-            # Default number of ticks is 5...
-            nb_ticks = 5
-            # ...unless we are dealing with integers with a small range
-            # in this case, we reduce the number of ticks
-            if cbar_tick_format == "%i" and vmax - vmin < nb_ticks:
-                ticks = np.arange(vmin, vmax + 1)
-            else:
-                ticks = np.linspace(vmin, vmax, nb_ticks)
-            bounds = np.linspace(vmin, vmax, our_cmap.N)
-            if threshold is not None:
-                cmaplist = [our_cmap(i) for i in range(our_cmap.N)]
-                # set colors to grey for absolute values < threshold
-                istart = int(norm(-threshold, clip=True) * (our_cmap.N - 1))
-                istop = int(norm(threshold, clip=True) * (our_cmap.N - 1))
-                for i in range(istart, istop):
-                    cmaplist[i] = (0.5, 0.5, 0.5, 1.)
-                our_cmap = LinearSegmentedColormap.from_list(
-                    'Custom cmap', cmaplist, our_cmap.N)
-
-            # we need to create a proxy mappable
-            proxy_mappable = ScalarMappable(cmap=our_cmap, norm=norm)
-            proxy_mappable.set_array(surf_map_faces)
-            cax, kw = make_axes(axes, location='right', fraction=.15,
-                                shrink=.5, pad=.0, aspect=10.)
-            cbar = figure.colorbar(
-                proxy_mappable, cax=cax, ticks=ticks,
-                boundaries=bounds, spacing='proportional',
-                format=cbar_tick_format, orientation='vertical')
-            _crop_colorbar(cbar, cbar_vmin, cbar_vmax)
-
-        p3dcollec.set_facecolors(face_colors)
-
-    if title is not None:
-        plt.suptitle(title, x=.5, y=.95)
-
-    # save figure if output file is given
-    if output_file is not None:
-        figure.savefig(output_file)
-        plt.close(figure)
-    else:
-        return figure
+        raise ValueError(f"Unknown plotting engine {engine}. "
+                         "Please use either 'matplotlib' or "
+                         "'plotly'.")
+    return fig
 
 
 def _get_faces_on_edge(faces, parc_idx):
