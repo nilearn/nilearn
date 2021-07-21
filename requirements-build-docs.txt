@@ -16,3 +16,5 @@ nibabel
 scikit-learn
 joblib
 matplotlib
+plotly
+kaleido
