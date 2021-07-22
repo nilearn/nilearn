@@ -5,7 +5,6 @@ Only matplotlib is required.
 import itertools
 
 import matplotlib.pyplot as plt
-import plotly.graph_objects as go
 import numpy as np
 
 from matplotlib import gridspec
@@ -48,32 +47,32 @@ AXIS_CONFIG = {
 
 CAMERAS = {
     "left": {
-        "eye": {"x": -1.7, "y": 0, "z": 0},
+        "eye": {"x": -1.5, "y": 0, "z": 0},
         "up": {"x": 0, "y": 0, "z": 1},
         "center": {"x": 0, "y": 0, "z": 0},
     },
     "right": {
-        "eye": {"x": 1.7, "y": 0, "z": 0},
+        "eye": {"x": 1.5, "y": 0, "z": 0},
         "up": {"x": 0, "y": 0, "z": 1},
         "center": {"x": 0, "y": 0, "z": 0},
     },
     "top": {
-        "eye": {"x": 0, "y": 0, "z": 1.7},
+        "eye": {"x": 0, "y": 0, "z": 1.5},
         "up": {"x": 0, "y": 1, "z": 0},
         "center": {"x": 0, "y": 0, "z": 0},
     },
     "bottom": {
-        "eye": {"x": 0, "y": 0, "z": -1.7},
+        "eye": {"x": 0, "y": 0, "z": -1.5},
         "up": {"x": 0, "y": 1, "z": 0},
         "center": {"x": 0, "y": 0, "z": 0},
     },
     "front": {
-        "eye": {"x": 0, "y": 1.7, "z": 0},
+        "eye": {"x": 0, "y": 1.5, "z": 0},
         "up": {"x": 0, "y": 0, "z": 1},
         "center": {"x": 0, "y": 0, "z": 0},
     },
     "back": {
-        "eye": {"x": 0, "y": -1.7, "z": 0},
+        "eye": {"x": 0, "y": -1.5, "z": 0},
         "up": {"x": 0, "y": 0, "z": 1},
         "center": {"x": 0, "y": 0, "z": 0},
     },
@@ -94,8 +93,7 @@ def _set_view_plot_surf_plotly(hemi, view):
     This function checks the selected hemisphere and view, and
     returns the cameras view.
     """
-    hemis = np.array(['left', 'right'])
-    if hemi not in hemis:
+    if hemi not in VALID_HEMISPHERES:
         raise ValueError(f"'hemi' must be one of {VALID_HEMISPHERES}")
     if view == 'anterior':
         cameras_view = 'front'
@@ -108,7 +106,9 @@ def _set_view_plot_surf_plotly(hemi, view):
     elif view == 'lateral':
         cameras_view = hemi
     elif view == 'medial':
-        cameras_view = hemis[hemis != hemi][0]
+        cameras_view = (VALID_HEMISPHERES[0]
+                        if hemi == VALID_HEMISPHERES[1]
+                        else VALID_HEMISPHERES[1])
     else:
         raise ValueError(f"view must be one of {VALID_VIEWS}")
     return cameras_view
@@ -124,20 +124,26 @@ def _plot_surf_plotly(surf_mesh, surf_map=None, bg_map=None,
 
     This function handles surface plotting when the selected
     engine is plotly.
+
+    .. note::
+        This function assumes that plotly and kaleido are
+        installed.
+
     """
+    try:
+        import plotly.graph_objects as go
+    except ImportError:
+        raise ImportError("Using engine='plotly' requires that "
+                          "plotly and kaleido are installed.")
     coords, faces = load_surf_mesh(surf_mesh)
     x, y, z = coords.T
     i, j, k = faces.T
     if cmap is None:
         cmap = cold_hot
     if surf_map is not None:
-        surf_map_faces = _compute_surf_map_faces(
-            surf_map, faces, avg_method,
-            coords.shape[0], faces.shape[0]
-        )
-        colors = colorscale(cmap, surf_map_faces, threshold)
+        colors = colorscale(cmap, surf_map, threshold)
         vertexcolor = _get_vertexcolor(
-            surf_map_faces,
+            surf_map,
             colors["cmap"],
             colors["norm"],
             colors["abs_threshold"],
@@ -147,7 +153,7 @@ def _plot_surf_plotly(surf_mesh, surf_map=None, bg_map=None,
         vertexcolor = None
     if colorbar:
         mesh_3d = go.Mesh3d(x=x, y=y, z=z, i=i, j=j, k=k,
-                            intensity=surf_map_faces,
+                            intensity=surf_map,
                             colorscale=colors['colors'])
     else:
         mesh_3d = go.Mesh3d(x=x, y=y, z=z, i=i, j=j, k=k,
@@ -201,12 +207,18 @@ def _set_view_plot_surf_matplotlib(hemi, view):
     return elev, azim
 
 
-def _compute_surf_map_faces(surf_map, faces, avg_method, n_vertices,
-                            face_colors_size):
+def _compute_surf_map_faces_matplotlib(surf_map, faces, avg_method,
+                                       n_vertices, face_colors_size):
     """Helper function for plot_surf.
 
     This function computes the surf map faces using the
     provided averaging method.
+
+    .. note::
+        This method is called exclusively when using matplotlib,
+        since it only supports plotting face-colour maps and not
+        vertex-colour maps.
+
     """
     surf_map_data = load_surf_data(surf_map)
     if surf_map_data.ndim != 1:
