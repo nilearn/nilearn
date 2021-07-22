@@ -243,7 +243,7 @@ def _compute_surf_map_faces_matplotlib(surf_map, faces, avg_method,
         )
 
         # check that surf_map_faces has the same length as face_colors
-        if surf_map_faces.shape[0] != face_colors_size:
+        if surf_map_faces.shape != (face_colors_size,):
             raise ValueError(
                 "Array computed with the custom function "
                 "from avg_method does not have the correct shape: "

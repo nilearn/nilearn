@@ -109,7 +109,7 @@ def test_plot_surf_error():
         )
 
     with pytest.raises(
-        ValueError, match="surf_map can only have one dimension"
+        ValueError, match="'surf_map' can only have one dimension"
     ):
         plot_surf(
             mesh, surf_map=rng.standard_normal(size=(mesh[0].shape[0], 2))
@@ -260,7 +260,7 @@ def test_plot_surf_stat_map_error():
 
     with pytest.raises(
             ValueError,
-            match='surf_map can only have one dimension'):
+            match="'surf_map' can only have one dimension"):
         plot_surf_stat_map(mesh, stat_map=np.vstack((data, data)).T)
 
 
