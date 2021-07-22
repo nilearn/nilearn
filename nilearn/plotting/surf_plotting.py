@@ -242,17 +242,17 @@ def _compute_surf_map_faces_matplotlib(surf_map, faces, avg_method,
             avg_method, 1, surf_map_data[faces]
         )
 
-        ## check that surf_map_faces has the same length as face_colors
+        # check that surf_map_faces has the same length as face_colors
         if surf_map_faces.shape[0] != face_colors_size:
             raise ValueError(
                 "Array computed with the custom function "
                 "from avg_method does not have the correct shape: "
                 f"{surf_map_faces[0]} != {face_colors_size}")
 
-        ## check that dtype is either int or float
+        # check that dtype is either int or float
         if not (
-            "int" in str(surf_map_faces.dtype) or
-            "float" in str(surf_map_faces.dtype)
+            "int" in str(surf_map_faces.dtype)
+            or "float" in str(surf_map_faces.dtype)
         ):
             raise ValueError(
                 'Array computed with the custom function '
@@ -353,10 +353,11 @@ def _threshold_and_rescale(surf_map_faces, threshold, vmin, vmax):
 def _plot_surf_matplotlib(surf_mesh, surf_map=None, bg_map=None,
                           hemi='left', view='lateral', cmap=None,
                           colorbar=False, avg_method='mean', threshold=None,
-                          alpha='auto', bg_on_data=False, darkness=1, vmin=None,
-                          vmax=None, cbar_vmin=None, cbar_vmax=None,
-                          cbar_tick_format='%.2g', title=None, output_file=None,
-                          axes=None, figure=None, **kwargs):
+                          alpha='auto', bg_on_data=False, darkness=1,
+                          vmin=None, vmax=None, cbar_vmin=None,
+                          cbar_vmax=None, cbar_tick_format='%.2g',
+                          title=None, output_file=None, axes=None,
+                          figure=None, **kwargs):
     """Helper function for plot_surf.
 
     This function handles surface plotting when the selected
@@ -409,14 +410,13 @@ def _plot_surf_matplotlib(surf_mesh, surf_map=None, bg_map=None,
                                       coords.shape[0],
                                       darkness, alpha)
     if surf_map is not None:
-        surf_map_faces = _compute_surf_map_faces(surf_map,
-                                                 faces,
-                                                 avg_method,
-                                                 coords.shape[0],
-                                                 face_colors.shape[0])
+        surf_map_faces = _compute_surf_map_faces_matplotlib(
+            surf_map, faces, avg_method, coords.shape[0],
+            face_colors.shape[0]
+        )
         surf_map_faces, kept_indices, vmin, vmax = _threshold_and_rescale(
-            surf_map_faces, threshold, vmin, vmax)
-
+            surf_map_faces, threshold, vmin, vmax
+        )
         # multiply data with background if indicated
         if bg_on_data:
             face_colors[kept_indices] = cmap(surf_map_faces[kept_indices])\
@@ -557,21 +557,19 @@ def plot_surf(surf_mesh, surf_map=None, bg_map=None,
 
     """
     if engine == 'matplotlib':
-        fig = _plot_surf_matplotlib(surf_mesh, surf_map=surf_map,
-                              bg_map=bg_map, hemi=hemi, view=view,
-                              cmap=cmap, colorbar=colorbar,
-                              avg_method=avg_method, threshold=threshold,
-                              alpha=alpha, bg_on_data=bg_on_data,
-                              darkness=darkness, vmin=vmin, vmax=vmax,
-                              cbar_vmin=cbar_vmin, cbar_vmax=cbar_vmax,
-                              cbar_tick_format=cbar_tick_format,
-                              title=title, output_file=output_file,
-                              axes=axes, figure=figure, **kwargs)
+        fig = _plot_surf_matplotlib(
+            surf_mesh, surf_map=surf_map, bg_map=bg_map, hemi=hemi,
+            view=view, cmap=cmap, colorbar=colorbar, avg_method=avg_method,
+            threshold=threshold, alpha=alpha, bg_on_data=bg_on_data,
+            darkness=darkness, vmin=vmin, vmax=vmax, cbar_vmin=cbar_vmin,
+            cbar_vmax=cbar_vmax, cbar_tick_format=cbar_tick_format,
+            title=title, output_file=output_file, axes=axes,
+            figure=figure, **kwargs)
     elif engine == 'plotly':
-        fig = _plot_surf_plotly(surf_mesh, surf_map=surf_map, bg_map=bg_map,
-                          view=view, hemi=hemi, cmap=cmap, colorbar=colorbar,
-                          avg_method=avg_method,
-                          threshold=threshold, output_file=output_file)
+        fig = _plot_surf_plotly(
+            surf_mesh, surf_map=surf_map, bg_map=bg_map, view=view,
+            hemi=hemi, cmap=cmap, colorbar=colorbar, avg_method=avg_method,
+            threshold=threshold, output_file=output_file)
     else:
         raise ValueError(f"Unknown plotting engine {engine}. "
                          "Please use either 'matplotlib' or "
