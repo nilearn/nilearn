@@ -76,10 +76,10 @@ function getCamera(plotDivId, viewSelectId) {
         }
     }
     let cameras = {
-        "left": {eye: {x: -1.7, y: 0, z: 0},
+        "left": {eye: {x: -3.0, y: 0, z: 0},
                     up: {x: 0, y: 0, z: 1},
                     center: {x: 0, y: 0, z: 0}},
-        "right": {eye: {x: 1.7, y: 0, z: 0},
+        "right": {eye: {x: 2.5, y: 0, z: 0},
                     up: {x: 0, y: 0, z: 1},
                     center: {x: 0, y: 0, z: 0}},
         "top": {eye: {x: 0, y: 0, z: 1.7},
