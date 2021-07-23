@@ -114,10 +114,69 @@ def _set_view_plot_surf_plotly(hemi, view):
     return cameras_view
 
 
+def _colorscale_plotly(cmap, data, threshold=None, vmin=None, vmax=None):
+    """Helper function for plot_surf with plotly engine.
+
+    This function returns the colorscale for a given cmap
+    and thresholding configuration.
+
+    .. note::
+        This function does not enforce symmetric cmap.
+
+    """
+    if vmin is None:
+        vmin = np.nanmin(data)
+    if vmax is None:
+        vmax = np.nanmax(data)
+    our_cmap = get_cmap(cmap)
+    norm = Normalize(vmin=vmin, vmax=vmax)
+    bounds = np.linspace(vmin, vmax, our_cmap.N)
+    cmaplist = [our_cmap(i) for i in range(our_cmap.N)]
+    if threshold is not None:
+        # set colors to grey for absolute values < threshold
+        istart = int(norm(-threshold, clip=True) * (our_cmap.N - 1))
+        istop = int(norm(threshold, clip=True) * (our_cmap.N - 1))
+        for i in range(istart, istop):
+            cmaplist[i] = (0.5, 0.5, 0.5, 1.)
+    our_cmap = LinearSegmentedColormap.from_list(
+        'Custom cmap', cmaplist, our_cmap.N)
+    x = np.linspace(0, 1, 100)
+    rgb = our_cmap(x, bytes=True)[:, :3]
+    rgb = np.array(rgb, dtype=int)
+    colors = []
+    for i, col in zip(x, rgb):
+        colors.append([np.round(i, 3), "rgb({}, {}, {})".format(*col)])
+    return colors, our_cmap, norm, vmin, vmax
+
+
+def _configure_title_plotly(title=None,
+                            font_family="Courier New, monospace",
+                            font_color="RebeccaPurple",
+                            font_size=22, pos_x=0.5, pos_y=0.96):
+    """Helper function for plot_surf with plotly engine.
+
+    This function configures the title if provided.
+    """
+    if title is None:
+        return dict()
+    if "title" in LAYOUT:
+        raise ValueError("Title is already configured.")
+    return {"text": title,
+            "font": {"family": font_family,
+                     "size": font_size,
+                     "color": font_color,
+                     },
+            "y": pos_y,
+            "x": pos_x,
+            "xanchor": "center",
+            "yanchor": "top"}
+
+
 def _plot_surf_plotly(surf_mesh, surf_map=None, bg_map=None,
                       hemi='left', view='lateral', cmap=None,
                       colorbar=False, avg_method='mean',
-                      threshold=None, output_file=None):
+                      threshold=None, vmin=None, vmax=None,
+                      title=None, output_file=None):
     """Helper function for plot_surf.
 
     .. versionadded:: 0.8.1
@@ -140,27 +199,28 @@ def _plot_surf_plotly(surf_mesh, surf_map=None, bg_map=None,
     i, j, k = faces.T
     if cmap is None:
         cmap = cold_hot
+    vertexcolor = None
     if surf_map is not None:
-        colors = colorscale(cmap, surf_map, threshold)
-        vertexcolor = _get_vertexcolor(
-            surf_map,
-            colors["cmap"],
-            colors["norm"],
-            colors["abs_threshold"],
-            bg_map=bg_map,
+        colors, our_cmap, norm, vmin, vmax = _colorscale_plotly(
+            cmap, surf_map, threshold, vmin, vmax
         )
-    else:
-        vertexcolor = None
+        if not colorbar:
+            vertexcolor = _get_vertexcolor(
+                surf_map, our_cmap, norm, None, bg_map
+            )
     if colorbar:
         mesh_3d = go.Mesh3d(x=x, y=y, z=z, i=i, j=j, k=k,
                             intensity=surf_map,
-                            colorscale=colors['colors'])
+                            colorscale=colors,
+                            cmin=vmin, cmax=vmax)
     else:
         mesh_3d = go.Mesh3d(x=x, y=y, z=z, i=i, j=j, k=k,
                             vertexcolor=vertexcolor)
     cameras_view = _set_view_plot_surf_plotly(hemi, view)
     fig = go.Figure(data=[mesh_3d])
-    fig.update_layout(scene_camera=CAMERAS[cameras_view], **LAYOUT)
+    fig.update_layout(scene_camera=CAMERAS[cameras_view],
+                      title=_configure_title_plotly(title=title),
+                      **LAYOUT)
     if output_file is not None:
         fig.write_image(output_file)
     return fig
@@ -326,28 +386,28 @@ def _compute_facecolors(bg_map, faces, n_vertices, darkness, alpha):
     return face_colors
 
 
-def _threshold_and_rescale(surf_map_faces, threshold, vmin, vmax):
+def _threshold_and_rescale(data, threshold, vmin, vmax):
     """Helper function for plot_surf.
 
-    This function threshold and rescale the surf_map faces.
+    This function threshold and rescale the provided data.
     """
+    data_copy = np.copy(data)
     # if no vmin/vmax are passed figure them out from data
     if vmin is None:
-        vmin = np.nanmin(surf_map_faces)
+        vmin = np.nanmin(data_copy)
     if vmax is None:
-        vmax = np.nanmax(surf_map_faces)
+        vmax = np.nanmax(data_copy)
     # treshold if indicated
     if threshold is None:
         # If no thresholding and nans, filter them out
         kept_indices = np.where(
             np.logical_not(
-                np.isnan(surf_map_faces)))[0]
+                np.isnan(data_copy)))[0]
     else:
-        kept_indices = np.where(
-            np.abs(surf_map_faces) >= threshold)[0]
-    surf_map_faces = surf_map_faces - vmin
-    surf_map_faces = surf_map_faces / (vmax - vmin)
-    return surf_map_faces, kept_indices, vmin, vmax
+        kept_indices = np.where(np.abs(data_copy) >= threshold)[0]
+    data_copy -= vmin
+    data_copy /= (vmax - vmin)
+    return data_copy, kept_indices, vmin, vmax
 
 
 def _plot_surf_matplotlib(surf_mesh, surf_map=None, bg_map=None,
@@ -514,18 +574,38 @@ def plot_surf(surf_mesh, surf_map=None, bg_map=None,
         If 'auto' is chosen, alpha will default to .5 when no bg_map
         is passed and to 1 if a bg_map is passed.
         Default='auto'.
+
+        .. note::
+            This option is currently only implemented for the
+            matplotlib engine.
+
     %(bg_on_data)s
         Default=False.
     %(darkness)s
         Default=1.
+
+        .. note::
+            This option is currently only implemented for the
+            matplotlib engine.
+
     %(vmin)s
     %(vmax)s
     cbar_vmin, cbar_vmax : float, float, optional
         Lower / upper bounds for the colorbar.
         If None, the values will be set from the data.
         Default values are None.
+
+        .. note::
+            This option is currently only implemented for the
+            matplotlib engine.
+
     %(cbar_tick_format)s
         Default='%%.2g' for scientific notation.
+
+        .. note::
+            This option is currently only implemented for the
+            matplotlib engine.
+
     %(title)s
     %(output_file)s
     axes : instance of matplotlib axes, None, optional
@@ -535,12 +615,14 @@ def plot_surf(surf_mesh, surf_map=None, bg_map=None,
         If None, a new axes is created.
 
         .. note::
-            Only used when ``engine=='matplotlib'``.
+            This option is currently only implemented for the
+            matplotlib engine.
 
     %(figure)s
 
         .. note::
-            Only used when ``engine=='matplotlib'``.
+            This option is currently only implemented for the
+            matplotlib engine.
 
     See Also
     --------
@@ -569,7 +651,8 @@ def plot_surf(surf_mesh, surf_map=None, bg_map=None,
         fig = _plot_surf_plotly(
             surf_mesh, surf_map=surf_map, bg_map=bg_map, view=view,
             hemi=hemi, cmap=cmap, colorbar=colorbar, avg_method=avg_method,
-            threshold=threshold, output_file=output_file)
+            threshold=threshold, vmin=vmin, vmax=vmax, title=title,
+            output_file=output_file)
     else:
         raise ValueError(f"Unknown plotting engine {engine}. "
                          "Please use either 'matplotlib' or "
