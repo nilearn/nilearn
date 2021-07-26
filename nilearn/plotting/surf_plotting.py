@@ -94,7 +94,7 @@ def _set_view_plot_surf_plotly(hemi, view):
     returns the cameras view.
     """
     if hemi not in VALID_HEMISPHERES:
-        raise ValueError(f"'hemi' must be one of {VALID_HEMISPHERES}")
+        raise ValueError(f"hemi must be one of {VALID_HEMISPHERES}")
     if view == 'anterior':
         cameras_view = 'front'
     elif view == 'posterior':
@@ -200,7 +200,13 @@ def _plot_surf_plotly(surf_mesh, surf_map=None, bg_map=None,
     if cmap is None:
         cmap = cold_hot
     vertexcolor = None
+    if bg_map is not None:
+        bg_data = load_surf_data(bg_map)
+        if bg_data.shape[0] != coords.shape[0]:
+            raise ValueError('The bg_map does not have the same number '
+                             'of vertices as the mesh.')
     if surf_map is not None:
+        surf_map_data = _check_surf_map(surf_map, coords.shape[0])
         colors, our_cmap, norm, vmin, vmax = _colorscale_plotly(
             cmap, surf_map, threshold, vmin, vmax
         )
@@ -208,12 +214,12 @@ def _plot_surf_plotly(surf_mesh, surf_map=None, bg_map=None,
             vertexcolor = _get_vertexcolor(
                 surf_map, our_cmap, norm, None, bg_map
             )
-    if colorbar:
-        mesh_3d = go.Mesh3d(x=x, y=y, z=z, i=i, j=j, k=k,
-                            intensity=surf_map,
-                            colorscale=colors,
-                            cmin=vmin, cmax=vmax)
-    else:
+        else:
+            mesh_3d = go.Mesh3d(x=x, y=y, z=z, i=i, j=j, k=k,
+                                intensity=surf_map,
+                                colorscale=colors,
+                                cmin=vmin, cmax=vmax)
+    if not colorbar or surf_map is None:
         mesh_3d = go.Mesh3d(x=x, y=y, z=z, i=i, j=j, k=k,
                             vertexcolor=vertexcolor)
     cameras_view = _set_view_plot_surf_plotly(hemi, view)
@@ -267,6 +273,21 @@ def _set_view_plot_surf_matplotlib(hemi, view):
     return elev, azim
 
 
+def _check_surf_map(surf_map, n_vertices):
+    """Helper function for plot_surf.
+
+    This function checks the dimensions of provided surf_map.
+    """
+    surf_map_data = load_surf_data(surf_map)
+    if surf_map_data.ndim != 1:
+        raise ValueError("'surf_map' can only have one dimension "
+                         f"but has '{surf_map_data.ndim}' dimensions")
+    if surf_map_data.shape[0] != n_vertices:
+        raise ValueError('The surf_map does not have the same number '
+                         'of vertices as the mesh.')
+    return surf_map_data
+
+
 def _compute_surf_map_faces_matplotlib(surf_map, faces, avg_method,
                                        n_vertices, face_colors_size):
     """Helper function for plot_surf.
@@ -280,13 +301,7 @@ def _compute_surf_map_faces_matplotlib(surf_map, faces, avg_method,
         vertex-colour maps.
 
     """
-    surf_map_data = load_surf_data(surf_map)
-    if surf_map_data.ndim != 1:
-        raise ValueError("'surf_map' can only have one dimension "
-                         f"but has '{surf_map_data.ndim}' dimensions")
-    if surf_map_data.shape[0] != n_vertices:
-        raise ValueError('The surf_map does not have the same number '
-                         'of vertices as the mesh.')
+    surf_map_data = _check_surf_map(surf_map, n_vertices)
 
     # create face values from vertex values by selected avg methods
     if avg_method == 'mean':
