@@ -835,9 +835,10 @@ def plot_surf_contours(surf_mesh, roi_map, axes=None, figure=None, levels=None,
 
 @fill_doc
 def plot_surf_stat_map(surf_mesh, stat_map, bg_map=None,
-                       hemi='left', view='lateral', threshold=None,
-                       alpha='auto', vmax=None, cmap='cold_hot',
-                       colorbar=True, symmetric_cbar="auto", bg_on_data=False,
+                       hemi='left', view='lateral', engine='matplotlib',
+                       threshold=None, alpha='auto', vmax=None,
+                       cmap='cold_hot', colorbar=True,
+                       symmetric_cbar="auto", bg_on_data=False,
                        darkness=1, title=None, output_file=None, axes=None,
                        figure=None, **kwargs):
     """Plotting a stats map on a surface mesh with optional background
@@ -868,6 +869,19 @@ def plot_surf_stat_map(surf_mesh, stat_map, bg_map=None,
         realistic shading.
     %(hemi)s
     %(view)s
+    engine : {'matplotlib', 'plotly'}, optional
+
+        .. versionadded:: 0.8.1
+
+        Selects which plotting engine will be used by plot_surf.
+        Currently, only matplotlib and plotly are supported.
+
+        .. note::
+            To use 'plotly' and save figures to disk you should
+            have both `plotly` and `kaleido` installed.
+
+        Default='matplotlib'.
+
     threshold : a number or None, optional
         If None is given, the image is not thresholded.
         If a number is given, it is used to threshold the image,
@@ -921,10 +935,11 @@ def plot_surf_stat_map(surf_mesh, stat_map, bg_map=None,
 
     display = plot_surf(
         surf_mesh, surf_map=loaded_stat_map, bg_map=bg_map, hemi=hemi, view=view,
-        avg_method='mean', threshold=threshold, cmap=cmap, colorbar=colorbar,
-        alpha=alpha, bg_on_data=bg_on_data, darkness=darkness, vmax=vmax,
-        vmin=vmin, title=title, output_file=output_file, axes=axes,
-        figure=figure, cbar_vmin=cbar_vmin, cbar_vmax=cbar_vmax, **kwargs)
+        engine=engine, avg_method='mean', threshold=threshold,
+        cmap=cmap, colorbar=colorbar, alpha=alpha, bg_on_data=bg_on_data,
+        darkness=darkness, vmax=vmax, vmin=vmin, title=title,
+        output_file=output_file, axes=axes, figure=figure,
+        cbar_vmin=cbar_vmin, cbar_vmax=cbar_vmax, **kwargs)
 
     return display
 
