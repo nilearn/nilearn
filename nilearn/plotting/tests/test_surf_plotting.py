@@ -99,6 +99,13 @@ def test_configure_title_plotly():
     assert config["font"]["family"] == "Courier New, monospace"
 
 
+def test_plot_surf_engine_error():
+    mesh = generate_surf()
+    with pytest.raises(ValueError,
+                       match="Unknown plotting engine"):
+        plot_surf(mesh, engine="foo")
+
+
 @pytest.mark.parametrize("engine", ["matplotlib", "plotly"])
 def test_plot_surf(engine):
     mesh = generate_surf()

@@ -172,9 +172,8 @@ def _configure_title_plotly(title=None,
 
 def _plot_surf_plotly(surf_mesh, surf_map=None, bg_map=None,
                       hemi='left', view='lateral', cmap=None,
-                      colorbar=False, avg_method='mean',
-                      threshold=None, vmin=None, vmax=None,
-                      title=None, output_file=None):
+                      colorbar=False, threshold=None, vmin=None,
+                      vmax=None, title=None, output_file=None):
     """Helper function for plot_surf.
 
     .. versionadded:: 0.8.1
@@ -575,6 +574,11 @@ def plot_surf(surf_mesh, surf_map=None, bg_map=None,
     %(colorbar)s
         Default=False.
     %(avg_method)s
+
+        .. note::
+            This option is currently only implemented for the
+            matplotlib engine.
+
         Default='mean'.
 
     threshold : a number or None, default is None.
@@ -663,7 +667,7 @@ def plot_surf(surf_mesh, surf_map=None, bg_map=None,
     elif engine == 'plotly':
         fig = _plot_surf_plotly(
             surf_mesh, surf_map=surf_map, bg_map=bg_map, view=view,
-            hemi=hemi, cmap=cmap, colorbar=colorbar, avg_method=avg_method,
+            hemi=hemi, cmap=cmap, colorbar=colorbar,
             threshold=threshold, vmin=vmin, vmax=vmax, title=title,
             output_file=output_file)
     else:
