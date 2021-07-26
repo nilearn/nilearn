@@ -281,23 +281,25 @@ def test_plot_surf_avg_method_errors():
                   )
 
 
-def test_plot_surf_stat_map():
+@pytest.mark.parametrize("engine", ["matplotlib", "plotly"])
+def test_plot_surf_stat_map(engine):
     mesh = generate_surf()
     rng = np.random.RandomState(42)
     bg = rng.standard_normal(size=mesh[0].shape[0])
     data = 10 * rng.standard_normal(size=mesh[0].shape[0])
 
     # Plot mesh with stat map
-    plot_surf_stat_map(mesh, stat_map=data)
-    plot_surf_stat_map(mesh, stat_map=data, colorbar=True)
-    plot_surf_stat_map(mesh, stat_map=data, alpha=1)
+    plot_surf_stat_map(mesh, stat_map=data, engine=engine)
+    plot_surf_stat_map(mesh, stat_map=data, colorbar=True, engine=engine)
+    plot_surf_stat_map(mesh, stat_map=data, alpha=1, engine=engine)
 
     # Plot mesh with background and stat map
-    plot_surf_stat_map(mesh, stat_map=data, bg_map=bg)
+    plot_surf_stat_map(mesh, stat_map=data, bg_map=bg, engine=engine)
     plot_surf_stat_map(mesh, stat_map=data, bg_map=bg,
-                       bg_on_data=True, darkness=0.5)
+                       bg_on_data=True, darkness=0.5,
+                       engine=engine)
     plot_surf_stat_map(mesh, stat_map=data, bg_map=bg, colorbar=True,
-                       bg_on_data=True, darkness=0.5)
+                       bg_on_data=True, darkness=0.5, engine=engine)
 
     # Plot with title
     display = plot_surf_stat_map(mesh, stat_map=data, bg_map=bg,
@@ -309,23 +311,33 @@ def test_plot_surf_stat_map():
     # Apply threshold
     plot_surf_stat_map(mesh, stat_map=data, bg_map=bg,
                        bg_on_data=True, darkness=0.5,
-                       threshold=0.3)
+                       threshold=0.3, engine=engine)
     plot_surf_stat_map(mesh, stat_map=data, bg_map=bg, colorbar=True,
                        bg_on_data=True, darkness=0.5,
-                       threshold=0.3)
+                       threshold=0.3, engine=engine)
 
     # Change colorbar tick format
     plot_surf_stat_map(mesh, stat_map=data, bg_map=bg, colorbar=True,
-                       bg_on_data=True, darkness=0.5, cbar_tick_format="%.2g")
+                       bg_on_data=True, darkness=0.5, cbar_tick_format="%.2g",
+                       engine=engine)
 
     # Change vmax
-    plot_surf_stat_map(mesh, stat_map=data, vmax=5)
-    plot_surf_stat_map(mesh, stat_map=data, vmax=5, colorbar=True)
+    plot_surf_stat_map(mesh, stat_map=data, vmax=5, engine=engine)
+    plot_surf_stat_map(mesh, stat_map=data, vmax=5,
+                       colorbar=True, engine=engine)
 
     # Change colormap
-    plot_surf_stat_map(mesh, stat_map=data, cmap='cubehelix')
-    plot_surf_stat_map(mesh, stat_map=data, cmap='cubehelix', colorbar=True)
+    plot_surf_stat_map(mesh, stat_map=data, cmap='cubehelix', engine=engine)
+    plot_surf_stat_map(mesh, stat_map=data, cmap='cubehelix',
+                       colorbar=True, engine=engine)
 
+    plt.close()
+
+
+def test_plot_surf_stat_map_matplotlib_specific():
+    mesh = generate_surf()
+    rng = np.random.RandomState(42)
+    data = 10 * rng.standard_normal(size=mesh[0].shape[0])
     # Plot to axes
     axes = plt.subplots(ncols=2, subplot_kw={'projection': '3d'})[1]
     for ax in axes.flatten():
