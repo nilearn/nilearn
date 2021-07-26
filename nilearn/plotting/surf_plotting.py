@@ -404,7 +404,7 @@ def _compute_facecolors(bg_map, faces, n_vertices, darkness, alpha):
 def _threshold_and_rescale(data, threshold, vmin, vmax):
     """Helper function for plot_surf.
 
-    This function threshold and rescale the provided data.
+    This function thresholds and rescales the provided data.
     """
     data_copy = np.copy(data)
     # if no vmin/vmax are passed figure them out from data
