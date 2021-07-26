@@ -57,6 +57,9 @@ The required dependencies to use the software are:
 If you are using nilearn plotting functionalities or running the
 examples, matplotlib >= 1.5.1 is required.
 
+Some plotting functions in Nilearn support both matplotlib and plotly as plotting engines.
+In order to use the plotly engine in these functions, you will need to install both plotly and kaleido, which can both be installed with pip and anaconda. 
+
 If you want to run the tests, you need pytest >= 3.9 and pytest-cov for coverage reporting.
 
 
