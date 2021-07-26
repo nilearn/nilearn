@@ -14,37 +14,129 @@ from nilearn.datasets import fetch_surf_fsaverage
 from nilearn.surface import load_surf_mesh
 from nilearn.surface.testing_utils import generate_surf
 from numpy.testing import assert_array_equal
+from nilearn.plotting.surf_plotting import VALID_HEMISPHERES, VALID_VIEWS
 
 
-def test_plot_surf():
+EXPECTED_CAMERAS_PLOTLY = {"left": {"anterior": "front",
+                                    "posterior": "back",
+                                    "medial": "right",
+                                    "lateral": "left",
+                                    "dorsal": "top",
+                                    "ventral": "bottom"},
+                           "right": {"anterior": "front",
+                                     "posterior": "back",
+                                     "medial": "left",
+                                     "lateral": "right",
+                                     "dorsal": "top",
+                                     "ventral": "bottom"}}
+
+
+EXPECTED_VIEW_MATPLOTLIB = {"left": {"anterior": (0, 90),
+                                    "posterior": (0, 270),
+                                    "medial": (0, 0),
+                                    "lateral": (0, 180),
+                                    "dorsal": (90, 0),
+                                    "ventral": (270, 0)},
+                           "right": {"anterior": (0, 90),
+                                     "posterior": (0, 270),
+                                     "medial": (0, 180),
+                                     "lateral": (0, 0),
+                                     "dorsal": (90, 0),
+                                     "ventral": (270, 0)}}
+
+
+@pytest.fixture
+def expected_cameras_plotly(hemi, view):
+    return EXPECTED_CAMERAS_PLOTLY[hemi][view]
+
+
+@pytest.mark.parametrize("hemi", VALID_HEMISPHERES)
+@pytest.mark.parametrize("view", VALID_VIEWS)
+def test_set_view_plot_surf_plotly(hemi, view, expected_cameras_plotly):
+    from nilearn.plotting.surf_plotting import _set_view_plot_surf_plotly
+    assert _set_view_plot_surf_plotly(hemi, view) == expected_cameras_plotly
+
+
+@pytest.fixture
+def expected_view_matplotlib(hemi, view):
+    return EXPECTED_VIEW_MATPLOTLIB[hemi][view]
+
+
+@pytest.mark.parametrize("hemi", VALID_HEMISPHERES)
+@pytest.mark.parametrize("view", VALID_VIEWS)
+def test_set_view_plot_surf_matplotlib(hemi, view, expected_view_matplotlib):
+    from nilearn.plotting.surf_plotting import _set_view_plot_surf_matplotlib
+    assert _set_view_plot_surf_matplotlib(hemi, view) == expected_view_matplotlib
+
+
+def test_set_view_plot_surf_errors():
+    from nilearn.plotting.surf_plotting import (_set_view_plot_surf_matplotlib,
+                                                _set_view_plot_surf_plotly)
+    with pytest.raises(ValueError,
+                       match="hemi must be one of"):
+        _set_view_plot_surf_matplotlib("foo", "medial")
+        _set_view_plot_surf_plotly("bar", "anterior")
+    with pytest.raises(ValueError,
+                       match="view must be one of"):
+        _set_view_plot_surf_matplotlib("left", "foo")
+        _set_view_plot_surf_matplotlib("right", "bar")
+        _set_view_plot_surf_plotly("left", "foo")
+        _set_view_plot_surf_plotly("right", "bar")
+
+
+def test_configure_title_plotly():
+    from nilearn.plotting.surf_plotting import _configure_title_plotly
+    assert _configure_title_plotly(None) == dict()
+    config = _configure_title_plotly("Test Title")
+    assert config["text"] == "Test Title"
+    assert config["x"] == 0.5
+    assert config["y"] == 0.96
+    assert config["xanchor"] == "center"
+    assert config["yanchor"] == "top"
+    assert config["font"]["size"] == 22
+    assert config["font"]["color"] == "RebeccaPurple"
+    assert config["font"]["family"] == "Courier New, monospace"
+
+
+@pytest.mark.parametrize("engine", ["matplotlib", "plotly"])
+def test_plot_surf(engine):
     mesh = generate_surf()
     rng = np.random.RandomState(42)
     bg = rng.standard_normal(size=mesh[0].shape[0])
 
     # Plot mesh only
-    plot_surf(mesh)
+    plot_surf(mesh, engine=engine)
 
     # Plot mesh with background
-    plot_surf(mesh, bg_map=bg)
-    plot_surf(mesh, bg_map=bg, darkness=0.5)
-    plot_surf(mesh, bg_map=bg, alpha=0.5)
+    plot_surf(mesh, bg_map=bg, engine=engine)
+    plot_surf(mesh, bg_map=bg, darkness=0.5, engine=engine)
+    plot_surf(mesh, bg_map=bg, alpha=0.5, engine=engine)
 
     # Plot different views
-    plot_surf(mesh, bg_map=bg, hemi='right')
-    plot_surf(mesh, bg_map=bg, view='medial')
-    plot_surf(mesh, bg_map=bg, hemi='right', view='medial')
+    plot_surf(mesh, bg_map=bg, hemi='right', engine=engine)
+    plot_surf(mesh, bg_map=bg, view='medial', engine=engine)
+    plot_surf(mesh, bg_map=bg, hemi='right', view='medial', engine=engine)
 
     # Plot with colorbar
-    plot_surf(mesh, bg_map=bg, colorbar=True)
+    plot_surf(mesh, bg_map=bg, colorbar=True, engine=engine)
     plot_surf(mesh, bg_map=bg, colorbar=True, cbar_vmin=0,
-              cbar_vmax=150, cbar_tick_format="%i")
+              cbar_vmax=150, cbar_tick_format="%i", engine=engine)
+    # Save execution time and memory
+    plt.close()
 
     # Plot with title
-    display = plot_surf(mesh, bg_map=bg, title='Test title')
-    assert display._suptitle._text == 'Test title'
-    assert display._suptitle._x == .5
-    assert display._suptitle._y == .95
+    display = plot_surf(mesh, bg_map=bg, title='Test title',
+                        engine=engine)
+    if engine == 'matplotlib':
+        assert display._suptitle._text == 'Test title'
+        assert display._suptitle._x == .5
+        assert display._suptitle._y == .95
 
+
+def test_plot_surf_avg_method():
+    mesh = generate_surf()
+    rng = np.random.RandomState(42)
+    bg = rng.standard_normal(size=mesh[0].shape[0])
     # Plot with avg_method
     ## Test all built-in methods and check
     mapp = rng.standard_normal(size=mesh[0].shape[0])
@@ -52,7 +144,9 @@ def test_plot_surf():
     coords, faces = mesh_[0], mesh_[1]
 
     for method in ['mean', 'median', 'min', 'max']:
-        display = plot_surf(mesh, surf_map=mapp, avg_method=method)
+        display = plot_surf(mesh, surf_map=mapp,
+                            avg_method=method,
+                            engine='matplotlib')
         if method == 'mean':
             agg_faces = np.mean(mapp[faces], axis=1)
         elif method == 'median':
@@ -70,51 +164,62 @@ def test_plot_surf():
             cmap(agg_faces),
             display._axstack.as_list()[0].collections[0]._facecolors
         )
-
     ## Try custom avg_method
     def custom_avg_function(vertices):
         return vertices[0] * vertices[1] * vertices[2]
     plot_surf(
         mesh,
         surf_map=rng.standard_normal(size=mesh[0].shape[0]),
-        avg_method=custom_avg_function
+        avg_method=custom_avg_function,
+        engine='matplotlib',
     )
-
     # Save execution time and memory
     plt.close()
 
 
-def test_plot_surf_error():
+@pytest.mark.parametrize("engine", ["matplotlib", "plotly"])
+def test_plot_surf_error(engine):
     mesh = generate_surf()
     rng = np.random.RandomState(42)
 
     # Wrong inputs for view or hemi
     with pytest.raises(ValueError, match='view must be one of'):
-        plot_surf(mesh, view='middle')
+        plot_surf(mesh, view='middle', engine=engine)
     with pytest.raises(ValueError, match='hemi must be one of'):
-        plot_surf(mesh, hemi='lft')
+        plot_surf(mesh, hemi='lft', engine=engine)
 
     # Wrong size of background image
     with pytest.raises(
             ValueError,
             match='bg_map does not have the same number of vertices'):
-        plot_surf(mesh, bg_map=rng.standard_normal(size=mesh[0].shape[0] - 1))
+        plot_surf(mesh,
+                  bg_map=rng.standard_normal(size=mesh[0].shape[0] - 1),
+                  engine=engine
+                  )
 
     # Wrong size of surface data
     with pytest.raises(
         ValueError, match="surf_map does not have the same number of vertices"
     ):
         plot_surf(
-            mesh, surf_map=rng.standard_normal(size=mesh[0].shape[0] + 1)
+            mesh,
+            surf_map=rng.standard_normal(size=mesh[0].shape[0] + 1),
+            engine=engine
         )
 
     with pytest.raises(
         ValueError, match="'surf_map' can only have one dimension"
     ):
         plot_surf(
-            mesh, surf_map=rng.standard_normal(size=(mesh[0].shape[0], 2))
+            mesh,
+            surf_map=rng.standard_normal(size=(mesh[0].shape[0], 2)),
+            engine=engine
         )
 
+
+def test_plot_surf_avg_method_errors():
+    mesh = generate_surf()
+    rng = np.random.RandomState(42)
     with pytest.raises(
         ValueError,
         match=(
@@ -126,7 +231,12 @@ def test_plot_surf_error():
         def custom_avg_function(vertices):
             return [vertices[0] * vertices[1], vertices[2]]
 
-        plot_surf(mesh, surf_map=rng.standard_normal(size=mesh[0].shape[0]), avg_method=custom_avg_function)
+        plot_surf(mesh,
+                  surf_map=rng.standard_normal(
+                      size=mesh[0].shape[0]),
+                  avg_method=custom_avg_function,
+                  engine='matplotlib'
+                  )
 
     with pytest.raises(
         ValueError,
@@ -138,7 +248,12 @@ def test_plot_surf_error():
     ):
         custom_avg_function = dict()
 
-        plot_surf(mesh, surf_map=rng.standard_normal(size=mesh[0].shape[0]), avg_method=custom_avg_function)
+        plot_surf(mesh,
+                  surf_map=rng.standard_normal(
+                      size=mesh[0].shape[0]),
+                  avg_method=custom_avg_function,
+                  engine='matplotlib'
+                  )
 
     with pytest.raises(
         ValueError,
@@ -151,7 +266,13 @@ def test_plot_surf_error():
         def custom_avg_function(vertices):
             return "string"
 
-        plot_surf(mesh, surf_map=rng.standard_normal(size=mesh[0].shape[0]), avg_method=custom_avg_function)
+        plot_surf(mesh,
+                  surf_map=rng.standard_normal(
+                      size=mesh[0].shape[0]),
+                  avg_method=custom_avg_function,
+                  engine='matplotlib'
+                  )
+
 
 def test_plot_surf_stat_map():
     mesh = generate_surf()
