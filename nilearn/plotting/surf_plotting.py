@@ -14,7 +14,6 @@ from matplotlib.colors import Normalize, LinearSegmentedColormap
 from mpl_toolkits.mplot3d import Axes3D  # noqa
 from nilearn import image
 from nilearn.plotting.cm import cold_hot
-from nilearn.plotting.js_plotting_utils import colorscale
 from nilearn.plotting.html_surface import _get_vertexcolor
 from nilearn.plotting.img_plotting import (_get_colorbar_and_data_ranges,
                                            _crop_colorbar)
@@ -130,7 +129,6 @@ def _colorscale_plotly(cmap, data, threshold=None, vmin=None, vmax=None):
         vmax = np.nanmax(data)
     our_cmap = get_cmap(cmap)
     norm = Normalize(vmin=vmin, vmax=vmax)
-    bounds = np.linspace(vmin, vmax, our_cmap.N)
     cmaplist = [our_cmap(i) for i in range(our_cmap.N)]
     if threshold is not None:
         # set colors to grey for absolute values < threshold
@@ -206,7 +204,7 @@ def _plot_surf_plotly(surf_mesh, surf_map=None, bg_map=None,
             raise ValueError('The bg_map does not have the same number '
                              'of vertices as the mesh.')
     if surf_map is not None:
-        surf_map_data = _check_surf_map(surf_map, coords.shape[0])
+        _check_surf_map(surf_map, coords.shape[0])
         colors, our_cmap, norm, vmin, vmax = _colorscale_plotly(
             cmap, surf_map, threshold, vmin, vmax
         )

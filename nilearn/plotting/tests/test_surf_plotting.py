@@ -32,17 +32,17 @@ EXPECTED_CAMERAS_PLOTLY = {"left": {"anterior": "front",
 
 
 EXPECTED_VIEW_MATPLOTLIB = {"left": {"anterior": (0, 90),
-                                    "posterior": (0, 270),
-                                    "medial": (0, 0),
-                                    "lateral": (0, 180),
-                                    "dorsal": (90, 0),
-                                    "ventral": (270, 0)},
-                           "right": {"anterior": (0, 90),
                                      "posterior": (0, 270),
-                                     "medial": (0, 180),
-                                     "lateral": (0, 0),
+                                     "medial": (0, 0),
+                                     "lateral": (0, 180),
                                      "dorsal": (90, 0),
-                                     "ventral": (270, 0)}}
+                                     "ventral": (270, 0)},
+                            "right": {"anterior": (0, 90),
+                                      "posterior": (0, 270),
+                                      "medial": (0, 180),
+                                      "lateral": (0, 0),
+                                      "dorsal": (90, 0),
+                                      "ventral": (270, 0)}}
 
 
 @pytest.fixture
@@ -66,7 +66,8 @@ def expected_view_matplotlib(hemi, view):
 @pytest.mark.parametrize("view", VALID_VIEWS)
 def test_set_view_plot_surf_matplotlib(hemi, view, expected_view_matplotlib):
     from nilearn.plotting.surf_plotting import _set_view_plot_surf_matplotlib
-    assert _set_view_plot_surf_matplotlib(hemi, view) == expected_view_matplotlib
+    assert(_set_view_plot_surf_matplotlib(hemi, view)
+           == expected_view_matplotlib)
 
 
 def test_set_view_plot_surf_errors():
@@ -136,7 +137,6 @@ def test_plot_surf(engine):
 def test_plot_surf_avg_method():
     mesh = generate_surf()
     rng = np.random.RandomState(42)
-    bg = rng.standard_normal(size=mesh[0].shape[0])
     # Plot with avg_method
     ## Test all built-in methods and check
     mapp = rng.standard_normal(size=mesh[0].shape[0])
