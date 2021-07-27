@@ -16,6 +16,7 @@ from joblib import Memory, Parallel, delayed
 from sklearn.linear_model import LinearRegression
 from sklearn.utils import check_random_state
 from sklearn.utils.extmath import randomized_svd, svd_flip
+from .._utils import fill_doc
 from .._utils.cache_mixin import CacheMixin, cache
 from .._utils.niimg import _safe_get_data
 from .._utils.niimg_conversions import _resolve_globbing
@@ -230,6 +231,7 @@ def _mask_and_reduce_single(masker,
     return U
 
 
+@fill_doc
 class BaseDecomposition(BaseEstimator, CacheMixin, TransformerMixin):
     """Base class for matrix factorization based decomposition estimators.
 
@@ -289,15 +291,15 @@ class BaseDecomposition(BaseEstimator, CacheMixin, TransformerMixin):
         This parameter is passed to image.resample_img. Please see the
         related documentation for details.
 
-    mask_strategy : {'epi', 'background', or 'template'}, optional
-        The strategy used to compute the mask: use 'background' if your
-        images present a clear homogeneous background, 'epi' if they
-        are raw EPI images, or you could use 'template' which will
-        extract the gray matter part of your data by resampling the MNI152
-        brain mask for your data's field of view.
-        Depending on this value, the mask will be computed from
-        masking.compute_background_mask, masking.compute_epi_mask or
-        masking.compute_brain_mask. Default='epi'.
+    %(mask_strategy)s
+
+        .. note::
+             Depending on this value, the mask will be computed from
+             :func:`nilearn.masking.compute_background_mask`,
+             :func:`nilearn.masking.compute_epi_mask`, or
+             :func:`nilearn.masking.compute_brain_mask`.
+
+        Default='epi'.
 
     mask_args : dict, optional
         If mask is None, these are additional parameters passed to

@@ -13,6 +13,7 @@ from ..decomposition.multi_pca import MultiPCA
 from ..input_data import NiftiLabelsMasker
 from .._utils.niimg import _safe_get_data
 from .._utils.niimg_conversions import _iter_check_niimg
+from .._utils import fill_doc
 
 
 def _estimator_fit(data, estimator, method=None):
@@ -110,6 +111,7 @@ def _labels_masker_extraction(img, masker, confound):
     return signals
 
 
+@fill_doc
 class Parcellations(MultiPCA):
     """Learn parcellations on fMRI images.
 
@@ -184,15 +186,15 @@ class Parcellations(MultiPCA):
         This parameter is passed to image.resample_img. Please see the
         related documentation for details.
 
-    mask_strategy: {'epi', 'background', or 'template'}, optional
-        The strategy used to compute the mask: use 'background' if your
-        images present a clear homogeneous background, 'epi' if they
-        are raw EPI images, or you could use 'template' which will
-        extract the gray matter part of your data by resampling the MNI152
-        brain mask for your data's field of view.
-        Depending on this value, the mask will be computed from
-        masking.compute_background_mask, masking.compute_epi_mask or
-        masking.compute_brain_mask. Default='epi'.
+    %(mask_strategy)s
+
+        .. note::
+             Depending on this value, the mask will be computed from
+             :func:`nilearn.masking.compute_background_mask`,
+             :func:`nilearn.masking.compute_epi_mask`, or
+             :func:`nilearn.masking.compute_brain_mask`.
+
+        Default='epi'.
 
     mask_args : dict, optional
         If mask is None, these are additional parameters passed to
