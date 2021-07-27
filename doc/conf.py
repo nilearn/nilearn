@@ -55,7 +55,7 @@ extensions = [
               'sphinxcontrib.bibtex',
               'numpydoc',
               'sphinx.ext.linkcode',
-              'sphinx_copybutton'
+              'sphinx_copybutton',
               'sphinxext.opengraph',
               ]
 
