@@ -22,28 +22,32 @@ from nilearn.image import get_data
 
 
 def _get_mask_strategy(strategy):
-     """Helper function returning the mask computing method based
-     on a provided strategy.
-     """
-     if strategy == 'background':
-         return masking.compute_multi_background_mask
-     elif strategy == 'epi':
-         return masking.compute_multi_epi_mask
-     elif strategy == 'wb-template':
-         return partial(masking.compute_multi_brain_mask, mask_type='whole-brain')
-     elif strategy == 'gm-template':
-         return partial(masking.compute_multi_brain_mask, mask_type='gm')
-     elif strategy == 'wm-template':
-         return partial(masking.compute_multi_brain_mask, mask_type='wm')
-     elif strategy == 'template':
-         warnings.warn("Masking strategy 'template' is deprecated."
-                       "Please use 'wb-template' instead.")
-         return partial(masking.compute_multi_brain_mask, mask_type='whole-brain')
-     else:
-         raise ValueError("Unknown value of mask_strategy '%s'. "
-                          "Acceptable values are 'background', "
-                          "'epi', 'wb-template', 'gm-template', "
-                          "and 'wm-template'." % strategy)
+    """Helper function returning the mask computing method based
+    on a provided strategy.
+    """
+    if strategy == 'background':
+        return masking.compute_multi_background_mask
+    elif strategy == 'epi':
+        return masking.compute_multi_epi_mask
+    elif strategy == 'wb-template':
+        return partial(masking.compute_multi_brain_mask,
+                       mask_type='whole-brain')
+    elif strategy == 'gm-template':
+        return partial(masking.compute_multi_brain_mask,
+                       mask_type='gm')
+    elif strategy == 'wm-template':
+        return partial(masking.compute_multi_brain_mask,
+                       mask_type='wm')
+    elif strategy == 'template':
+        warnings.warn("Masking strategy 'template' is deprecated."
+                      "Please use 'wb-template' instead.")
+        return partial(masking.compute_multi_brain_mask,
+                       mask_type='whole-brain')
+    else:
+        raise ValueError("Unknown value of mask_strategy '%s'. "
+                         "Acceptable values are 'background', "
+                         "'epi', 'wb-template', 'gm-template', "
+                         "and 'wm-template'." % strategy)
 
 
 @fill_doc
@@ -229,7 +233,7 @@ class MultiNiftiMasker(NiftiMasker, CacheMixin):
 
             mask_args = (self.mask_args if self.mask_args is not None
                          else {})
-            compute_mask =  _get_mask_strategy(self.mask_strategy)
+            compute_mask = _get_mask_strategy(self.mask_strategy)
             self.mask_img_ = self._cache(
                 compute_mask, ignore=['n_jobs', 'verbose', 'memory'])(
                     imgs,
