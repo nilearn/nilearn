@@ -421,7 +421,7 @@ def fetch_localizer_contrasts(contrasts, n_subjects=None, get_tmaps=False,
     individual level. Individual functional maps are reliable and
     quite precise. The procedure is decribed in more detail on the
     Functional Localizer page."
-    (see http://brainomics.cea.fr/localizer/)
+    (see https://osf.io/vhtf6/)
 
     You may cite :footcite:`PAPADOPOULOSORFANOS2017309`
     when using this dataset.
