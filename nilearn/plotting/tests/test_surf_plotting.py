@@ -404,20 +404,38 @@ def test_plot_surf_stat_map_error():
         plot_surf_stat_map(mesh, stat_map=np.vstack((data, data)).T)
 
 
-def test_plot_surf_roi():
+def _generate_data_test_surf_roi():
     mesh = generate_surf()
     rng = np.random.RandomState(42)
     roi_idx = rng.randint(0, mesh[0].shape[0], size=10)
     roi_map = np.zeros(mesh[0].shape[0])
     roi_map[roi_idx] = 1
     parcellation = rng.uniform(size=mesh[0].shape[0])
+    return mesh, roi_map, parcellation
 
+
+@pytest.mark.parametrize("engine", ["matplotlib", "plotly"])
+def test_plot_surf_roi(engine):
+    mesh, roi_map, parcellation = _generate_data_test_surf_roi()
     # plot roi
-    plot_surf_roi(mesh, roi_map=roi_map)
-    plot_surf_roi(mesh, roi_map=roi_map, colorbar=True)
+    plot_surf_roi(mesh, roi_map=roi_map, engine=engine)
+    plot_surf_roi(mesh, roi_map=roi_map,
+                  colorbar=True, engine=engine)
+    # plot parcellation
+    plot_surf_roi(mesh, roi_map=parcellation, engine=engine)
+    plot_surf_roi(mesh, roi_map=parcellation, colorbar=True,
+                  engine=engine)
+    plot_surf_roi(mesh, roi_map=parcellation, colorbar=True,
+                  cbar_tick_fomat="%f", engine=engine)
+    plt.close()
+
+
+def test_plot_surf_roi_matplotlib_specific():
+    mesh, roi_map, parcellation = _generate_data_test_surf_roi()
     # change vmin, vmax
     img = plot_surf_roi(mesh, roi_map=roi_map, vmin=1.2,
-                        vmax=8.9, colorbar=True)
+                        vmax=8.9, colorbar=True,
+                        engine='matplotlib')
     img.canvas.draw()
     cbar = img.axes[-1]
     cbar_vmin = float(cbar.get_yticklabels()[0].get_text())
@@ -425,33 +443,33 @@ def test_plot_surf_roi():
     assert cbar_vmin == 1.0
     assert cbar_vmax == 8.0
     img2 = plot_surf_roi(mesh, roi_map=roi_map, vmin=1.2,
-                         vmax=8.9, colorbar=True, cbar_tick_format="%.2g")
+                         vmax=8.9, colorbar=True,
+                         cbar_tick_format="%.2g",
+                         engine='matplotlib')
     img2.canvas.draw()
     cbar = img2.axes[-1]
     cbar_vmin = float(cbar.get_yticklabels()[0].get_text())
     cbar_vmax = float(cbar.get_yticklabels()[-1].get_text())
     assert cbar_vmin == 1.2
     assert cbar_vmax == 8.9
-
-    # plot parcellation
-    plot_surf_roi(mesh, roi_map=parcellation)
-    plot_surf_roi(mesh, roi_map=parcellation, colorbar=True)
-    plot_surf_roi(mesh, roi_map=parcellation, colorbar=True, cbar_tick_fomat="%f")
-
     # plot to axes
-    plot_surf_roi(mesh, roi_map=roi_map, ax=None, figure=plt.gcf())
+    plot_surf_roi(mesh, roi_map=roi_map, ax=None,
+                  figure=plt.gcf(), engine='matplotlib')
 
     # plot to axes
     with tempfile.NamedTemporaryFile() as tmp_file:
-        plot_surf_roi(mesh, roi_map=roi_map, ax=plt.gca(), figure=None,
-                      output_file=tmp_file.name)
+        plot_surf_roi(mesh, roi_map=roi_map, ax=plt.gca(),
+                      figure=None, output_file=tmp_file.name,
+                      engine='matplotlib')
     with tempfile.NamedTemporaryFile() as tmp_file:
-        plot_surf_roi(mesh, roi_map=roi_map, ax=plt.gca(), figure=None,
-                      output_file=tmp_file.name, colorbar=True)
+        plot_surf_roi(mesh, roi_map=roi_map, ax=plt.gca(),
+                      figure=None, output_file=tmp_file.name,
+                      colorbar=True, engine='matplotlib')
 
     # Test nans handling
     parcellation[::2] = np.nan
-    img = plot_surf_roi(mesh, roi_map=parcellation)
+    img = plot_surf_roi(mesh, roi_map=parcellation,
+                        engine='matplotlib')
     # Check that the resulting plot facecolors contain no transparent faces
     # (last column equals zero) even though the texture contains nan values
     assert(mesh[1].shape[0] ==
@@ -460,14 +478,15 @@ def test_plot_surf_roi():
     plt.close()
 
 
-def test_plot_surf_roi_error():
+@pytest.mark.parametrize("engine", ["matplotlib", "plotly"])
+def test_plot_surf_roi_error(engine):
     mesh = generate_surf()
     rng = np.random.RandomState(42)
     roi_idx = rng.randint(0, mesh[0].shape[0], size=5)
     with pytest.raises(
             ValueError,
             match='roi_map does not have the same number of vertices'):
-        plot_surf_roi(mesh, roi_map=roi_idx)
+        plot_surf_roi(mesh, roi_map=roi_idx, engine=engine)
 
 
 def _generate_img():

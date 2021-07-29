@@ -900,6 +900,11 @@ def plot_surf_stat_map(surf_mesh, stat_map, bg_map=None,
         If 'auto' is chosen, alpha will default to .5 when no bg_map is
         passed and to 1 if a bg_map is passed.
         Default='auto'.
+
+        .. note::
+            This option is currently only implemented for the
+            matplotlib engine.
+
     %(vmax)s
     %(symmetric_cbar)s
         Default='auto'.
@@ -907,6 +912,11 @@ def plot_surf_stat_map(surf_mesh, stat_map, bg_map=None,
         Default=False.
     %(darkness)s
         Default=1.
+
+        .. note::
+            This option is currently only implemented for the
+            matplotlib engine.
+
     %(title)s
     %(output_file)s
     axes : instance of matplotlib axes, None, optional
@@ -914,7 +924,16 @@ def plot_surf_stat_map(surf_mesh, stat_map, bg_map=None,
         `figure, axes = plt.subplots(subplot_kw={'projection': '3d'})`,
         where axes should be passed.).
         If None, a new axes is created.
+
+        .. note::
+            This option is currently only implemented for the
+            matplotlib engine.
+
     %(figure)s
+
+        .. note::
+            This option is currently only implemented for the
+            matplotlib engine.
 
     See Also
     --------
@@ -1170,10 +1189,11 @@ def plot_img_on_surf(stat_map, surf_mesh='fsaverage5', mask_img=None,
 
 @fill_doc
 def plot_surf_roi(surf_mesh, roi_map, bg_map=None,
-                  hemi='left', view='lateral', threshold=1e-14,
-                  alpha='auto', vmin=None, vmax=None, cmap='gist_ncar',
-                  cbar_tick_format="%i", bg_on_data=False, darkness=1,
-                  title=None, output_file=None, axes=None, figure=None, **kwargs):
+                  hemi='left', view='lateral', engine='matplotlib',
+                  threshold=1e-14, alpha='auto', vmin=None, vmax=None,
+                  cmap='gist_ncar', cbar_tick_format="%i",
+                  bg_on_data=False, darkness=1, title=None,
+                  output_file=None, axes=None, figure=None, **kwargs):
     """ Plotting ROI on a surface mesh with optional background
 
     .. versionadded:: 0.3
@@ -1202,6 +1222,19 @@ def plot_surf_roi(surf_mesh, roi_map, bg_map=None,
         stat_map in greyscale, most likely a sulcal depth map for
         realistic shading.
     %(view)s
+    engine : {'matplotlib', 'plotly'}, optional
+
+        .. versionadded:: 0.8.1
+
+        Selects which plotting engine will be used by plot_surf.
+        Currently, only matplotlib and plotly are supported.
+
+        .. note::
+            To use 'plotly' and save figures to disk you should
+            have both `plotly` and `kaleido` installed.
+
+        Default='matplotlib'.
+
     threshold : a number or None, optional
         Threshold regions that are labelled 0.
         If you want to use 0 as a label, set threshold to None.
@@ -1210,22 +1243,46 @@ def plot_surf_roi(surf_mesh, roi_map, bg_map=None,
         Default='gist_ncar'.
     %(cbar_tick_format)s
         Default='%%i' for integers.
+
+        .. note::
+            This option is currently only implemented for the
+            matplotlib engine.
+
     alpha : float or 'auto', optional
         Alpha level of the mesh (not the stat_map). If default,
         alpha will default to .5 when no bg_map is passed
         and to 1 if a bg_map is passed.
         Default='auto'.
+
+        .. note::
+            This option is currently only implemented for the
+            matplotlib engine.
+
     %(bg_on_data)s
         Default=False.
     %(darkness)s
         Default=1.
+
+        .. note::
+            This option is currently only implemented for the
+            matplotlib engine.
+
     %(title)s
     %(output_file)s
     axes : Axes instance or None, optional
         The axes instance to plot to. The projection must be '3d' (e.g.,
         `plt.subplots(subplot_kw={'projection': '3d'})`).
         If None, a new axes is created.
+
+        .. note::
+            This option is currently only implemented for the
+            matplotlib engine.
+
     %(figure)s
+
+        .. note::
+            This option is currently only implemented for the
+            matplotlib engine.
 
     See Also
     --------
@@ -1259,12 +1316,12 @@ def plot_surf_roi(surf_mesh, roi_map, bg_map=None,
                          'roi_map[roi_idx] = 1')
 
     display = plot_surf(mesh, surf_map=roi, bg_map=bg_map,
-                        hemi=hemi, view=view, avg_method='median',
-                        threshold=threshold, cmap=cmap,
-                        cbar_tick_format=cbar_tick_format, alpha=alpha,
-                        bg_on_data=bg_on_data, darkness=darkness,
-                        vmin=vmin, vmax=vmax, title=title,
-                        output_file=output_file, axes=axes,
-                        figure=figure, **kwargs)
+                        hemi=hemi, view=view, engine=engine,
+                        avg_method='median', threshold=threshold,
+                        cmap=cmap, cbar_tick_format=cbar_tick_format,
+                        alpha=alpha, bg_on_data=bg_on_data,
+                        darkness=darkness, vmin=vmin, vmax=vmax,
+                        title=title, output_file=output_file,
+                        axes=axes, figure=figure, **kwargs)
 
     return display
