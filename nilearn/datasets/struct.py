@@ -54,13 +54,47 @@ def fetch_icbm152_2009(data_dir=None, url=None, resume=True, verbose=1):
     -------
     data : sklearn.datasets.base.Bunch
         Dictionary-like object, interest keys are:
-        "t1", "t2", "t2_relax", "pd": anatomical images obtained with the
-        given modality (resp. T1, T2, T2 relaxometry and proton
-        density weighted). Values are file paths.
-        "gm", "wm", "csf": segmented images, giving resp. grey matter,
-        white matter and cerebrospinal fluid. Values are file paths.
-        "eye_mask", "face_mask", "mask": use these images to mask out
-        parts of mri images. Values are file paths.
+
+        - "t1": str,
+          Path to anatomical image obtained with the T1 weighted
+        - "t2": str,
+          Path to anatomical image obtained with the T2 weighted
+        - "t2_relax": str,
+          Path to anatomical image obtained with the T2 relaxometry
+        - "pd": str,
+          Path to anatomical image obtained with the proton density
+          weighted
+        - "gm": str,
+          Path to grey matter segmented image
+        - "wm": str,
+          Path to white matter segmented image
+        - "csf": str,
+          Path to cerebrospinal fluid segmented image
+        - "eye_mask": str,
+          Path to eye mask useful to mask out part of mri images
+        - "face_mask": str,
+          Path to face mask useful to mask out part of mri images
+        - "mask": str,
+          Path to whole brain mask useful to mask out skull areas
+
+    See Also
+    --------
+    nilearn.datasets.load_mni152_template: to load MNI152 T1 template.
+
+    nilearn.datasets.load_mni152_gm_template: to load MNI152 grey matter
+        template.
+
+    nilearn.datasets.load_mni152_wm_template: to load MNI152 white matter
+        template.
+
+    nilearn.datasets.load_mni152_brain_mask: to load MNI152 whole brain mask.
+
+    nilearn.datasets.load_mni152_gm_mask: to load MNI152 grey matter mask.
+
+    nilearn.datasets.load_mni152_wm_mask: to load MNI152 white matter mask.
+
+    nilearn.datasets.fetch_icbm152_brain_gm_mask: to fetch only ICBM grey
+        matter mask.
 
     References
     ----------
