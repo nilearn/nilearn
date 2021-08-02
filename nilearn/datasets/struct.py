@@ -56,14 +56,13 @@ def fetch_icbm152_2009(data_dir=None, url=None, resume=True, verbose=1):
         Dictionary-like object, interest keys are:
 
         - "t1": str,
-          Path to anatomical image obtained with the T1 weighted
+          Path to T1-weighted anatomical image
         - "t2": str,
-          Path to anatomical image obtained with the T2 weighted
+          Path to T2-weighted anatomical image
         - "t2_relax": str,
           Path to anatomical image obtained with the T2 relaxometry
         - "pd": str,
-          Path to anatomical image obtained with the proton density
-          weighted
+          Path to the proton density weighted anatomical image
         - "gm": str,
           Path to grey matter segmented image
         - "wm": str,
@@ -71,9 +70,9 @@ def fetch_icbm152_2009(data_dir=None, url=None, resume=True, verbose=1):
         - "csf": str,
           Path to cerebrospinal fluid segmented image
         - "eye_mask": str,
-          Path to eye mask useful to mask out part of mri images
+          Path to eye mask useful to mask out part of MRI images
         - "face_mask": str,
-          Path to face mask useful to mask out part of mri images
+          Path to face mask useful to mask out part of MRI images
         - "mask": str,
           Path to whole brain mask useful to mask out skull areas
 
