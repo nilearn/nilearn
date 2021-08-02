@@ -308,7 +308,7 @@ _python_doc_base = 'https://docs.python.org/3.8'
 intersphinx_mapping = {
     'python': (_python_doc_base, None),
     'numpy': ('https://numpy.org/doc/stable/', None),
-    'scipy': ('https://docs.scipy.org/doc/scipy/reference', None),
+    'scipy': ('http://scipy.github.io/devdocs/', None),
     'matplotlib': ('https://matplotlib.org/', None),
     'sklearn': ('https://scikit-learn.org/stable/', None),
     'nibabel': ('https://nipy.org/nibabel', None),
