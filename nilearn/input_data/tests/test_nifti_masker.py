@@ -364,7 +364,8 @@ def expected_mask(mask_args):
 
 
 @pytest.mark.parametrize('strategy',
-                         [f'{p}-template' for p in ['wb', 'gm', 'wm']])
+                         [f'{p}-template' for p in
+                          ['whole-brain', 'gm', 'wm']])
 @pytest.mark.parametrize('mask_args',
                          [dict(), dict(threshold=0.)])
 def test_compute_brain_mask(strategy, mask_args, expected_mask):

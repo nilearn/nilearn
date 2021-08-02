@@ -181,7 +181,8 @@ def test_mask_strategy_errors():
 
 
 @pytest.mark.parametrize('strategy',
-                         [f'{p}-template' for p in ['wb', 'gm', 'wm']])
+                         [f'{p}-template' for p in
+                          ['whole-brain', 'gm', 'wm']])
 def test_compute_multi_gray_matter_mask(strategy):
     imgs = _get_random_imgs((9, 9, 5), 2)
     masker = MultiNiftiMasker(mask_strategy=strategy,

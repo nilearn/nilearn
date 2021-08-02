@@ -498,16 +498,16 @@ docdict['regressor_options'] = """
 
 # mask_strategy
 docdict["mask_strategy"] = """
-mask_strategy : {'background', 'epi', 'wb-template', 'gm-template',\
-'wm-template'}, optional
+mask_strategy : {'background', 'epi', 'whole-brain-template',\
+'gm-template', 'wm-template'}, optional
     The strategy used to compute the mask:
 
         - 'background': Use this option if your images present
           a clear homogeneous background.
         - 'epi': Use this option if your images are raw EPI images
-        - 'wb-template': This will extract the whole-brain part of your
-          data by resampling the MNI152 brain mask for your data's field
-          of view.
+        - 'whole-brain-template': This will extract the whole-brain
+          part of your data by resampling the MNI152 brain mask for
+          your data's field of view.
 
             .. note::
                 This option is equivalent to the previous 'template' option

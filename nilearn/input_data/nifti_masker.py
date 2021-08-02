@@ -41,7 +41,7 @@ def _get_mask_strategy(strategy):
         return masking.compute_background_mask
     elif strategy == 'epi':
         return masking.compute_epi_mask
-    elif strategy == 'wb-template':
+    elif strategy == 'whole-brain-template':
         return partial(masking.compute_brain_mask, mask_type='whole-brain')
     elif strategy == 'gm-template':
         return partial(masking.compute_brain_mask, mask_type='gm')
@@ -49,13 +49,14 @@ def _get_mask_strategy(strategy):
         return partial(masking.compute_brain_mask, mask_type='wm')
     elif strategy == 'template':
         warnings.warn("Masking strategy 'template' is deprecated."
-                      "Please use 'wb-template' instead.")
+                      "Please use 'whole-brain-template' instead.")
         return partial(masking.compute_brain_mask, mask_type='whole-brain')
     else:
         raise ValueError("Unknown value of mask_strategy '%s'. "
                          "Acceptable values are 'background', "
-                         "'epi', 'wb-template', 'gm-template', "
-                         "and 'wm-template'." % strategy)
+                         "'epi', 'whole-brain-template', "
+                         "'gm-template', and "
+                         "'wm-template'." % strategy)
 
 
 def filter_and_mask(imgs, mask_img_, parameters,
