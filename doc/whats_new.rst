@@ -53,7 +53,7 @@ Enhancements
   the decorator `nilearn._utils.fill_doc`. This can be applied to common function
   parameters or common lists of options for example. The standard parts are defined
   in a single location (`nilearn._utils.docs.py`) which makes them easier to
-  maintain and update. (See `#2875 <https://github.com/nilearn/nilearn/pull/2875>`_).
+  maintain and update. (See `#2875 <https://github.com/nilearn/nilearn/pull/2875>`_)
 
 Changes
 -------
