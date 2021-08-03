@@ -54,28 +54,34 @@ url : :obj:`str`, optional
 docdict['smoothing_fwhm'] = """
 smoothing_fwhm : :obj:`float`, optional.
     If ``smoothing_fwhm`` is not ``None``, it gives
-    the size in millimeters of the spatial smoothing
-    to apply to the signal. Default=None."""
+    the full-width half maximum size in millimeters
+    of the spatial smoothing to apply to the signal."""
 
 # Standardize
 standardize = """
 standardize : :obj:`bool`, optional.
     If ``standardize`` is True, the data are centered and normed:
-    their variance is put to 1 in the time dimension.
+    their mean is put to 0 and their variance is put to 1 in the
+    time dimension.
     Default={}."""
 docdict['standardize'] = standardize.format('True')
 docdict['standardize_false'] = standardize.format('False')
 
+# detrend
+docdict['detrend'] = """
+detrend : :obj:`bool`, optional
+    Whether to detrend signals or not."""
+
 # Target_affine
 docdict['target_affine'] = """
-target_affine: numpy.ndarray, optional.
+target_affine : :class:`numpy.ndarray`, optional.
     If specified, the image is resampled corresponding to this new affine.
     ``target_affine`` can be a 3x3 or a 4x4 matrix.
     Default=None."""
 
 # Target_shape
 docdict['target_shape'] = """
-target_shape: tuple or list, optional.
+target_shape : :obj:`tuple` or :obj:`list`, optional.
     If specified, the image will be resized to match this new shape.
     ``len(target_shape)`` must be equal to 3.
 
@@ -87,32 +93,48 @@ target_shape: tuple or list, optional.
 
 # Low_pass
 docdict['low_pass'] = """
-low_pass: :obj:`float`, optional
+low_pass : :obj:`float`, optional
     Low cutoff frequency in Hertz.
     Default=None."""
 
 # High pass
 docdict['high_pass'] = """
-high_pass: :obj:`float`, optional
+high_pass : :obj:`float`, optional
     High cutoff frequency in Hertz.
     Default=None."""
 
 # t_r
 docdict['t_r'] = """
-t_r: :obj:`float`, optional
+t_r : :obj:`float`, optional
     Repetition time, in second (sampling period). Set to ``None`` if not.
     Default=None."""
 
+# mask_img
+docdict['mask_img'] = """
+mask_img : Niimg-like object
+    Object used for masking the data."""
+
 # Memory
 docdict['memory'] = """
-memory : instance of joblib.Memory or :obj:`str`
+memory : instance of :class:`joblib.Memory` or :obj:`str`
     Used to cache the masking process.
-    By default, no caching is done. If a ``str`` is given, it is the
+    By default, no caching is done. If a :obj:`str` is given, it is the
     path to the caching directory."""
+
+# n_parcels
+docdict['n_parcels'] = """
+n_parcels : :obj:`int`, optional
+    Number of parcellations to divide the brain data into.
+    Default=50."""
+
+# random_state
+docdict['random_state'] = """
+random_state : :obj:`int` or RandomState, optional
+    Pseudo number generator state used for random sampling."""
 
 # Memory_level
 memory_level = """
-memory_level: :obj:`int`, optional.
+memory_level : :obj:`int`, optional.
     Rough estimator of the amount of memory used by caching. Higher value
     means more memory for caching.
     Default={}."""
@@ -133,9 +155,15 @@ img : Niimg-like object
     See `input-output <%(input_output)s>`_.
 """ % NILEARN_LINKS
 
+# imgs
+docdict['imgs'] = """
+imgs : :obj:`list` of Niimg-like objects
+    See `input-output <%(input_output)s>`_.
+""" % NILEARN_LINKS
+
 # cut_coords
 docdict['cut_coords'] = """
-cut_coords : None, a tuple of :obj:`float`, or :obj:`int`, optional
+cut_coords : None, a :obj:`tuple` of :obj:`float`, or :obj:`int`, optional
     The MNI coordinates of the point where the cut is performed.
 
         - If ``display_mode`` is 'ortho' or 'tiled', this should
@@ -163,6 +191,22 @@ output_file : :obj:`str`, or None, optional
     are .png, .pdf, .svg. If ``output_file`` is not None, the plot
     is saved to a file, and the display is closed."""
 
+# extractor / extract_type
+docdict['extractor'] = """
+extractor : :obj:`str` {'local_regions', 'connected_components'}, optional
+    This option can take two values:
+
+        - 'connected_components': each component/region in the image is
+          extracted automatically by labelling each region based upon the
+          presence of unique features in their respective regions.
+
+        - 'local_regions': each component/region is extracted based on
+          their maximum peak value to define a seed marker and then using
+          random walker segementation algorithm on these markers for region
+          separation.
+
+    Default='local_regions'."""
+docdict['extract_type'] = docdict['extractor']
 
 # display_mode
 docdict['display_mode'] = """
