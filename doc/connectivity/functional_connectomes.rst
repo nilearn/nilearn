@@ -170,7 +170,7 @@ the same considerations on using confounds regressors apply.
 
 .. image:: ../auto_examples/03_connectivity/images/sphx_glr_plot_probabilistic_atlas_extraction_001.png
    :target: ../auto_examples/03_connectivity/plot_probabilistic_atlas_extraction.html
-   :scale: 30
+   :scale: 40
 
 
 .. topic:: **Full example**
