@@ -44,8 +44,7 @@ mask_filename = haxby_dataset.mask
 from nilearn.input_data import NiftiMasker
 nifti_masker = NiftiMasker(
     smoothing_fwhm=8,
-    mask_img=mask_filename,
-    memory='nilearn_cache', memory_level=1)  # cache options
+    mask_img=mask_filename)
 func_filename = haxby_dataset.func[0]
 fmri_masked = nifti_masker.fit_transform(func_filename)
 print('Data masked.')
