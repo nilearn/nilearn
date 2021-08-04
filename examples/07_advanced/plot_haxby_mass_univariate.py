@@ -38,3 +38,15 @@ haxby_dataset = datasets.fetch_haxby(subjects=[2])
 print('Mask nifti image (3D) is located at: %s' % haxby_dataset.mask)
 print('Functional nifti image (4D) is located at: %s' % haxby_dataset.func[0])
 
+##############################################################################
+# Mask data
+mask_filename = haxby_dataset.mask
+from nilearn.input_data import NiftiMasker
+nifti_masker = NiftiMasker(
+    smoothing_fwhm=8,
+    mask_img=mask_filename,
+    memory='nilearn_cache', memory_level=1)  # cache options
+func_filename = haxby_dataset.func[0]
+fmri_masked = nifti_masker.fit_transform(func_filename)
+print('Data masked.')
+
