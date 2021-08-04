@@ -162,7 +162,7 @@ pdf: latex
 check:
 	rm -rf _build/doctrees
 	rm -rf $(BUILDDIR)/html/_images
-	$(SPHINXBUILD) -W -T -n -b html $(ALLSPHINXOPTS) $(BUILDDIR)/html
+	$(SPHINXBUILD) -T -n -b html $(ALLSPHINXOPTS) $(BUILDDIR)/html
 
 install:
 	rm -rf _build/doctrees _build/nilearn.github.io
