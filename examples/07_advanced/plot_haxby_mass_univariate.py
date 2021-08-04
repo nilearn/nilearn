@@ -48,6 +48,7 @@ nifti_masker = NiftiMasker(
     memory='nilearn_cache', memory_level=1)  # cache options
 func_filename = haxby_dataset.func[0]
 fmri_masked = nifti_masker.fit_transform(func_filename)
+print('Masking done..')
 
 ##############################################################################
 # Restrict to faces and houses
@@ -64,6 +65,7 @@ sessions = labels['chunks']
 condition_mask = conditions.isin(['face', 'house'])
 conditions_encoded = conditions_encoded[condition_mask]
 fmri_masked = fmri_masked[condition_mask]
+print('Data restricted to faces and houses...')
 
 # We consider the mean image per session and per condition.
 # Otherwise, the observations cannot be exchanged at random because
@@ -74,6 +76,7 @@ grouped_fmri_masked = np.empty((2 * n_sessions,  # two conditions per session
 grouped_conditions_encoded = np.empty((2 * n_sessions, 1))
 
 for s in range(n_sessions):
+    print(s)
     session_mask = sessions[condition_mask] == s
     session_house_mask = np.logical_and(session_mask,
                                         conditions[condition_mask] == 'house')
@@ -101,6 +104,7 @@ neg_log_pvals, t_scores_original_data, _ = permuted_ols(
 signed_neg_log_pvals = neg_log_pvals * np.sign(t_scores_original_data)
 signed_neg_log_pvals_unmasked = nifti_masker.inverse_transform(
     signed_neg_log_pvals)
+print('univ analysis done...')
 
 ##############################################################################
 # scikit-learn F-scores for comparison
@@ -116,6 +120,7 @@ pvals_bonferroni[pvals_bonferroni > 1] = 1
 neg_log_pvals_bonferroni = -np.log10(pvals_bonferroni)
 neg_log_pvals_bonferroni_unmasked = nifti_masker.inverse_transform(
     neg_log_pvals_bonferroni)
+print('F-scores computed...')
 
 ##############################################################################
 # Visualization
@@ -161,5 +166,5 @@ title = ('Negative $\\log_{10}$ p-values'
          '\n%d detections') % n_detections
 
 display.title(title, y=1.1)
-
+print('visualization done...')
 show()
