@@ -53,6 +53,7 @@ fmri_masked = nifti_masker.fit_transform(func_filename)
 # Restrict to faces and houses
 import numpy as np
 import pandas as pd
+
 labels = pd.read_csv(haxby_dataset.session_target[0], sep=" ")
 conditions = labels['labels']
 categories = conditions.unique()
