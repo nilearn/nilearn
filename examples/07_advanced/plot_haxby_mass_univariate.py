@@ -49,7 +49,7 @@ nifti_masker = NiftiMasker(
     memory='nilearn_cache', memory_level=1)
 func_filename = haxby_dataset.func[0]
 func_reduced = image.index_img(
-    func_filename, slice(0,800))
+    func_filename, slice(0,1200))
 print(func_reduced)
 fmri_masked = nifti_masker.fit(func_reduced)
 print('fitted')
