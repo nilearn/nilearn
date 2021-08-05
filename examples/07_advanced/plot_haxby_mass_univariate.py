@@ -31,7 +31,7 @@ References
 
 ##############################################################################
 # Load Haxby dataset
-from nilearn import datasets
+from nilearn import datasets, image
 haxby_dataset = datasets.fetch_haxby(subjects=[2])
 
 # print basic information on the dataset
@@ -48,9 +48,12 @@ nifti_masker = NiftiMasker(
     mask_img=mask_filename,
     memory='nilearn_cache', memory_level=1)
 func_filename = haxby_dataset.func[0]
-fmri_masked = nifti_masker.fit(func_filename)
+func_reduced = image.index_img(
+    func_filename, slice(0,10))
+print(func_reduced)
+fmri_masked = nifti_masker.fit(func_reduced)
 print('fitted')
-series = fmri_masked.transform(func_filename)
+series = fmri_masked.transform(func_reduced)
 print('Data masked.')
 print(series.shape)
 
