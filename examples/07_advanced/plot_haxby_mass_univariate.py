@@ -55,15 +55,15 @@ conditions_encoded = conditions_encoded[condition_mask]
 ##############################################################################
 # Mask data
 mask_filename = haxby_dataset.mask
-from nilearn import image
+from nilearn.image import index_img
 from nilearn.input_data import NiftiMasker
 nifti_masker = NiftiMasker(
     smoothing_fwhm=8,
     mask_img=mask_filename,
     memory='nilearn_cache', memory_level=1)  # cache options
 func_filename = haxby_dataset.func[0]
-func_reduced = image.index_img(func_filename,
-                               condition_mask)
+func_reduced = index_img(func_filename,
+                         condition_mask)
 fmri_masked = nifti_masker.fit_transform(func_reduced)
 
 # We consider the mean image per session and per condition.
