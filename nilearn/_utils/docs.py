@@ -54,7 +54,7 @@ url : :obj:`str`, optional
 docdict['smoothing_fwhm'] = """
 smoothing_fwhm : :obj:`float`, optional.
     If ``smoothing_fwhm`` is not ``None``, it gives
-    the full-width half maximum size in millimeters
+    the full-width at half maximum in millimeters
     of the spatial smoothing to apply to the signal."""
 
 # Standardize
@@ -124,7 +124,7 @@ memory : instance of :class:`joblib.Memory` or :obj:`str`
 # n_parcels
 docdict['n_parcels'] = """
 n_parcels : :obj:`int`, optional
-    Number of parcellations to divide the brain data into.
+    Number of parcels to divide the data into.
     Default=50."""
 
 # random_state
