@@ -22,7 +22,7 @@ If you wish to add a missing term, please `create a new issue`_ or
         `Area under the curve`_.
 
     Beta
-        `Parameter estimate`_.
+        See :term:`Parameter estimate`.
 
     BIDS
         `Brain Imaging Data Structure`_ is a simple and easy to adopt way
@@ -131,11 +131,11 @@ If you wish to add a missing term, please `create a new issue`_ or
         parcellations, and atlases of the human brain.
 
     Parameter estimate
-        In the context of a `GLM`_, each `contrast`_ comparing rows in the 
+        In the context of a :term:`GLM`, each :term:`contrast` comparing rows in the 
         design matrix results in a parameter estimate (PE) that signifies how 
-        well the underlying model fits the data at each voxel. For statistical 
+        well the underlying model fits the data at each :term:`voxel`. For statistical 
         inferences the parameter estimate, sometimes also referred to as 
-        `beta`_, is commonly converted to either a t-, or z-statistic. In 
+        :term:`beta`, is commonly converted to either a t-, or z-statistic. In 
         nilearn the parameter estimate (or beta) is referred to as 
         ``effect_size``.
 
