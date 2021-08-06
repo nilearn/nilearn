@@ -31,23 +31,12 @@ References
 
 ##############################################################################
 # Load Haxby dataset
-from nilearn import datasets
+from nilearn import datasets, image
 haxby_dataset = datasets.fetch_haxby(subjects=[2])
 
 # print basic information on the dataset
 print('Mask nifti image (3D) is located at: %s' % haxby_dataset.mask)
 print('Functional nifti image (4D) is located at: %s' % haxby_dataset.func[0])
-
-##############################################################################
-# Mask data
-mask_filename = haxby_dataset.mask
-from nilearn.input_data import NiftiMasker
-nifti_masker = NiftiMasker(
-    smoothing_fwhm=8,
-    mask_img=mask_filename,
-    memory='nilearn_cache', memory_level=1)  # cache options
-func_filename = haxby_dataset.func[0]
-fmri_masked = nifti_masker.fit_transform(func_filename)
 
 ##############################################################################
 # Restrict to faces and houses
@@ -62,7 +51,20 @@ for c, category in enumerate(categories):
 sessions = labels['chunks']
 condition_mask = conditions.isin(['face', 'house'])
 conditions_encoded = conditions_encoded[condition_mask]
-fmri_masked = fmri_masked[condition_mask]
+
+##############################################################################
+# Mask data
+mask_filename = haxby_dataset.mask
+from nilearn.image import index_img
+from nilearn.input_data import NiftiMasker
+nifti_masker = NiftiMasker(
+    smoothing_fwhm=8,
+    mask_img=mask_filename,
+    memory='nilearn_cache', memory_level=1)  # cache options
+func_filename = haxby_dataset.func[0]
+func_reduced = index_img(func_filename,
+                         condition_mask)
+fmri_masked = nifti_masker.fit_transform(func_reduced)
 
 # We consider the mean image per session and per condition.
 # Otherwise, the observations cannot be exchanged at random because
