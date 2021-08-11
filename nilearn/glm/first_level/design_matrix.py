@@ -281,7 +281,8 @@ def make_first_level_design_matrix(
         Particular attention should be given to the 'trial_type' key
         which defines the different conditions in the experimental paradigm.
 
-    hrf_model : {'glover', 'spm', 'spm + derivative', 'spm + derivative + dispersion',
+    hrf_model : {'glover', 'spm', 'spm + derivative',
+        'spm + derivative + dispersion',
         'glover + derivative', 'glover + derivative + dispersion',
         'fir', None}, optional
         Specifies the hemodynamic response function. Default='glover'.
@@ -301,7 +302,8 @@ def make_first_level_design_matrix(
         In case of FIR design, yields the array of delays used in the FIR
         model (in scans). Default=[0].
 
-    add_regs : array of shape(n_frames, n_add_reg) or pandas DataFrame, optional
+    add_regs : array of shape(n_frames, n_add_reg) or
+               pandas DataFrame, optional
         additional user-supplied regressors, e.g. data driven noise regressors
         or seed based regressors.
 

@@ -86,7 +86,7 @@ def compute_contrast(labels, regression_result, con_val, contrast_type=None):
     if contrast_type not in acceptable_contrast_types:
         raise ValueError(
             '"{0}" is not a known contrast type. Allowed types are {1}'.
-                format(contrast_type, acceptable_contrast_types))
+            format(contrast_type, acceptable_contrast_types))
 
     if contrast_type == 't':
         effect_ = np.zeros((1, labels.size))
@@ -240,8 +240,8 @@ class Contrast(object):
 
         # Case: one-dimensional contrast ==> t or t**2
         if self.contrast_type == 'F':
-            stat = np.sum((self.effect - baseline) ** 2, 0) / self.dim / \
-                   np.maximum(self.variance, self.tiny)
+            stat = np.sum((self.effect - baseline) ** 2, 0) / \
+                self.dim / np.maximum(self.variance, self.tiny)
         elif self.contrast_type == 't':
             # avoids division by zero
             stat = (self.effect - baseline) / np.sqrt(

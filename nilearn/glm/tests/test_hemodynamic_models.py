@@ -8,19 +8,11 @@ from numpy.testing import (assert_almost_equal,
                            assert_array_almost_equal,
                            )
 
-from nilearn.glm.first_level.hemodynamic_models import (_hrf_kernel,
-                                                        _orthogonalize,
-                                                        _regressor_names,
-                                                        _resample_regressor,
-                                                        _sample_condition,
-                                                        compute_regressor,
-                                                        spm_dispersion_derivative,
-                                                        spm_hrf,
-                                                        spm_time_derivative,
-                                                        glover_dispersion_derivative,
-                                                        glover_hrf,
-                                                        glover_time_derivative,
-                                                        )
+from nilearn.glm.first_level.hemodynamic_models import \
+    (_hrf_kernel, _orthogonalize, _regressor_names, _resample_regressor,
+     _sample_condition, compute_regressor, spm_dispersion_derivative,
+     spm_hrf, spm_time_derivative, glover_dispersion_derivative,
+     glover_hrf, glover_time_derivative)
 
 
 def test_spm_hrf():
@@ -173,7 +165,8 @@ def test_sample_condition_5():
 
 
 def test_sample_condition_6():
-    """ Test the experimental condition sampling -- overalapping onsets, different durations
+    """ Test the experimental condition sampling -- overalapping onsets,
+    different durations
     """
     condition = ([0, 0, 10], [1, 2, 1], [1., 1., 1.])
     frame_times = np.linspace(0, 49, 50)
@@ -185,7 +178,8 @@ def test_sample_condition_6():
 
 
 def test_sample_condition_7():
-    """ Test the experimental condition sampling -- different onsets, overlapping offsets
+    """ Test the experimental condition sampling -- different onsets,
+    overlapping offsets
     """
     condition = ([0, 10, 20], [11, 1, 1], [1., 1., 1.])
     frame_times = np.linspace(0, 49, 50)
