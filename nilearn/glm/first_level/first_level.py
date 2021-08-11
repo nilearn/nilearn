@@ -144,7 +144,7 @@ def run_glm(Y, X, noise_model='ar1', bins=100, n_jobs=1, verbose=0):
 
     """
     acceptable_noise_models = ['ols', 'arN']
-    if ((noise_model[:2] != 'ar') and (noise_model is not 'ols')):
+    if ((noise_model[:2] != 'ar') and (noise_model != 'ols')):
         raise ValueError(
             "Acceptable noise models are {0}. You provided "
             "'noise_model={1}'".format(acceptable_noise_models,
