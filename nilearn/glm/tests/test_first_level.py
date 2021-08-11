@@ -576,7 +576,7 @@ def test_first_level_contrast_computation():
         model = model.fit([func_img, func_img], [events, events])
         # Check that an error is raised for invalid contrast_def
         with pytest.raises(ValueError,
-                           match="contrast_def must be an"
+                           match="contrast_def must be an "
                                  "array or str or list"):
             model.compute_contrast(37)
         # smoke test for different contrasts in fixed effects
