@@ -329,7 +329,7 @@ def nearest_neighbor_grouping(X, connectivity, n_clusters, threshold=1e-7):
 
         # select n_edges to merge.
         edge_mask = np.argsort(i_idx - j_idx)[:n_edges]
-        # Set weights to 1, and the connectivity matrix symetrical.
+        # Set weights to 1, and the connectivity matrix symmetrical.
         weight = np.ones(2 * n_edges)
         edges = np.hstack([edges[:, edge_mask], edges[::-1, edge_mask]])
 

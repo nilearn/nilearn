@@ -477,7 +477,7 @@ class BaseDecomposition(BaseEstimator, CacheMixin, TransformerMixin):
         Parameters
         ----------
         loadings : list of numpy array (n_samples x n_components)
-            Component signals to tranform back into voxel signals
+            Component signals to transform back into voxel signals
 
         Returns
         -------

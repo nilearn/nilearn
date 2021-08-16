@@ -141,7 +141,7 @@ display = plotting.plot_stat_map(img, cut_coords=coords, colorbar=False,
 
 ################################################################################
 # Now, we plot (right side) same network after region extraction to show that
-# connected regions are nicely seperated.
+# connected regions are nicely separated.
 # Each brain extracted region is identified as separate color.
 
 # For this, we take the indices of the all regions extracted related to original

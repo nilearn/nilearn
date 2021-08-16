@@ -49,7 +49,7 @@ Enhancements
   whole-brain, 1mm-resolution, MNI152 T1 template instead of the averaged,
   whole-brain, 2mm-resolution MNI152 T1 template; it also accepts as input the
   grey-matter and white-matter ICBM152 1mm-resolution templates dated from 2009.
-- Common parts of docstrings accross Nilearn can now be filled automatically using
+- Common parts of docstrings across Nilearn can now be filled automatically using
   the decorator `nilearn._utils.fill_doc`. This can be applied to common function
   parameters or common lists of options for example. The standard parts are defined
   in a single location (`nilearn._utils.docs.py`) which makes them easier to
@@ -1499,7 +1499,7 @@ Bug fix
     - Fix plotting issues when non-finite values are present in background
       anatomical image.
 
-    - A workaround to handle non-native endianess in the Nifti images passed
+    - A workaround to handle non-native endianness in the Nifti images passed
       to resampling the image.
 
 Enhancements
@@ -1996,7 +1996,7 @@ Bug fixes
    - Fixed bug to control the behaviour when cut_coords=0. in function
      :func:`nilearn.plotting.plot_stat_map` in :mod:`nilearn.plotting`.
      See issue # 784.
-   - Fixed bug in :func:`nilearn.image.copy_img` occured while caching
+   - Fixed bug in :func:`nilearn.image.copy_img` occurred while caching
      the Nifti images. See issue # 793.
    - Fixed bug causing an IndexError in fast_abs_percentile. See issue # 875
 

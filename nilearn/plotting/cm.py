@@ -195,7 +195,7 @@ for color, name in (((1, 0, 0), 'red'),
 
 ###############################################################################
 # HCP Connectome Workbench colormaps
-# As seen in  https://github.com/Washington-University/workbench src/Pallete
+# As seen in  https://github.com/Washington-University/workbench src/Palette
 roy_big_bl = _np.array([(255, 255, 0), (255, 200, 0),
                         (255, 120, 0), (255, 0, 0),
                         (200, 0, 0), (150, 0, 0),

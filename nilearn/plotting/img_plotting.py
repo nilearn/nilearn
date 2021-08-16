@@ -723,7 +723,7 @@ def plot_prob_atlas(maps_img, bg_img=MNI152TEMPLATE, view_type='auto',
         If view_type == 'contours', maps are overlayed as contours
         If view_type == 'filled_contours', maps are overlayed as contours
         along with color fillings inside the contours.
-        If view_type == 'continuous', maps are overlayed as continous
+        If view_type == 'continuous', maps are overlayed as continuous
         colors irrespective of the number maps.
         Default='auto'.
 
@@ -1330,7 +1330,7 @@ def plot_markers(node_values, node_coords, node_size='auto',
     ----------
     node_values : array_like of length n
         Vector containing nodal importance measure. Each node will be colored
-        acording to corresponding node value.
+        according to corresponding node value.
 
     node_coords : numpy array_like of shape (n, 3)
         3d coordinates of the graph nodes in world space.

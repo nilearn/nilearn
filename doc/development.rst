@@ -349,7 +349,7 @@ At this point, the release has been made. We can now update the file `nilearn/ve
     __version__ = x.y.(z+1).dev
 
 
-We can also update the file `doc/whats_new.rst` by adding a title and the usual `New`, `Enhancements`, and `Bug Fixes` sections for the version currently under developement:
+We can also update the file `doc/whats_new.rst` by adding a title and the usual `New`, `Enhancements`, and `Bug Fixes` sections for the version currently under development:
 
 .. code-block:: RST
     

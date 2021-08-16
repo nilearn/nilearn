@@ -343,7 +343,7 @@ class Contrast(object):
         This should be used only on indepndent contrasts"""
         if self.contrast_type != other.contrast_type:
             raise ValueError(
-                'The two contrasts do not have consistant type dimensions')
+                'The two contrasts do not have consistent type dimensions')
         if self.dim != other.dim:
             raise ValueError(
                 'The two contrasts do not have compatible dimensions')

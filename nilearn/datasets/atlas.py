@@ -494,7 +494,7 @@ def fetch_atlas_smith_2009(data_dir=None, mirror='origin', url=None,
     mirror : string, optional
         By default, the dataset is downloaded from the original website of the
         atlas. Specifying "nitrc" will force download from a mirror, with
-        potentially higher bandwith. Default='origin'.
+        potentially higher bandwidth. Default='origin'.
     %(url)s
     %(resume)s
     %(verbose)s

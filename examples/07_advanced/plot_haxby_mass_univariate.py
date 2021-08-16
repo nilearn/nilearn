@@ -7,7 +7,7 @@ order to detemine whether or not it behaves differently under a "face
 viewing" condition and a "house viewing" condition.
 We consider the mean image per session and per condition.
 Otherwise, the observations cannot be exchanged at random because
-a time dependance exists between observations within a same session
+a time dependence exists between observations within a same session
 (see [1] for more detailed explanations).
 
 The example shows the small differences that exist between

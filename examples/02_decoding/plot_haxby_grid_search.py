@@ -77,7 +77,7 @@ decoder = Decoder(estimator='svc', cv=5, mask=mask_img,
                   screening_percentile=2)
 
 ###########################################################################
-# Fit the Decoder and predict the reponses
+# Fit the Decoder and predict the responses
 # -------------------------------------------------
 # As a complete pipeline by itself, decoder will perform cross-validation
 # for the estimator, in this case Support Vector Machine. We can output the

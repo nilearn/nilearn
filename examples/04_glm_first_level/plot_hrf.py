@@ -1,7 +1,7 @@
-"""Example of hemodynamic reponse functions.
-=========================================
+"""Example of hemodynamic response functions.
+==========================================
 
-Within this example we are going to plot the hemodynamic reponse function (hrf)
+Within this example we are going to plot the hemodynamic response function (hrf)
 model in SPM together with the hrf shape proposed by G.Glover, as well as their
 time and dispersion derivatives.
 
@@ -21,7 +21,7 @@ timing issues.
 # Set up some parameters for model display
 # ----------------------------------------
 #
-# To get an impulse reponse, we simulate a single event occurring at time t=0,
+# To get an impulse response, we simulate a single event occurring at time t=0,
 # with duration 1s.
 
 import numpy as np

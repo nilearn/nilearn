@@ -1510,7 +1510,7 @@ def test_plot_markers_exceptions():
     # # Used to speed-up tests because the glass brain is always plotted
     kwargs = {'display_mode': 'x'}
 
-    # node_values lenght mismatch with node_coords
+    # node_values length mismatch with node_coords
     with pytest.raises(ValueError, match="Dimension mismatch"):
         plot_markers([1, 2, 3, 4, 5], node_coords, **kwargs)
     with pytest.raises(ValueError, match="Dimension mismatch"):

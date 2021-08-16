@@ -32,7 +32,7 @@ subject_data = fetch_spm_multimodal_fmri()
 #########################################################################
 # Specfiy timing and design matrix parameters.
 tr = 2.  # repetition time, in seconds
-slice_time_ref = 0.  # we will sample the design matrix at the beggining of each acquisition
+slice_time_ref = 0.  # we will sample the design matrix at the beginning of each acquisition
 drift_model = 'Cosine'  # We use a discrete cosine transform to model signal drifts.
 high_pass = .01  # The cutoff for the drift model is 0.01 Hz.
 hrf_model = 'spm + derivative'  # The hemodynamic response function is the SPM canonical one.

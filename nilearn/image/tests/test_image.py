@@ -669,7 +669,7 @@ def test_clean_img():
 def test_largest_cc_img():
     """ Check the extraction of the largest connected component, for niftis
 
-    Similiar to smooth_img tests for largest connected_component_img, here also
+    Similar to smooth_img tests for largest connected_component_img, here also
     only the added features for largest_connected_component are tested.
     """
 

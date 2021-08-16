@@ -199,7 +199,7 @@ class CanICA(MultiPCA):
 
     def _unmix_components(self, components):
         """Core function of CanICA than rotate components_ to maximize
-        independance"""
+        independence"""
         random_state = check_random_state(self.random_state)
 
         seeds = random_state.randint(np.iinfo(np.int32).max, size=self.n_init)
