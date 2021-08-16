@@ -234,10 +234,9 @@ class FirstLevelModel(BaseGLM):
         expressed as a percentage of the t_r (time repetition), so it can have
         values between 0. and 1. Default=0.
 
-    hrf_model : {'glover', 'spm', 'spm + derivative',
-        'spm + derivative + dispersion',
-        'glover + derivative', 'glover + derivative + dispersion',
-        'fir', None}, optional
+    hrf_model : {'glover', 'spm', 'spm + derivative', \
+            'spm + derivative + dispersion', 'glover + derivative', \
+            'glover + derivative + dispersion', 'fir', None}, optional
         String that specifies the hemodynamic response function.
         Default='glover'.
 
@@ -409,7 +408,7 @@ class FirstLevelModel(BaseGLM):
             Data on which the GLM will be fitted. If this is a list,
             the affine is considered the same for all.
 
-        events : pandas Dataframe or string or list of pandas DataFrames
+        events : pandas Dataframe or string or list of pandas DataFrames \
                  or strings, optional
             fMRI events used to build design matrices. One events object
             expected per run_img. Ignored in case designs is not None.
