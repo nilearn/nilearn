@@ -422,7 +422,7 @@ class FirstLevelModel(BaseGLM):
             respective run_img. Ignored in case designs is not None.
             If string, then a path to a csv file is expected.
 
-        design_matrices : pandas DataFrame or
+        design_matrices : pandas DataFrame or \
                           list of pandas DataFrames, optional
             Design matrices that will be used to fit the GLM. If given it
             takes precedence over events and confounds.
