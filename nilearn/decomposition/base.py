@@ -486,9 +486,10 @@ class BaseDecomposition(BaseEstimator, CacheMixin, TransformerMixin):
 
         """
         if not hasattr(self, 'components_'):
-            ValueError('Object has no components_ attribute. This is either '
-                       'because fit has not been called or because'
-                       '_DecompositionEstimator has directly been used')
+            raise ValueError('Object has no components_ attribute. This is '
+                             'either because fit has not been called '
+                             'or because _DecompositionEstimator has '
+                             'directly been used')
         self._check_components_()
         # XXX: dealing properly with 2D/ list of 2D data?
         return [self.nifti_maps_masker_.inverse_transform(loading)
