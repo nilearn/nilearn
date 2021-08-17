@@ -311,7 +311,6 @@ def plot_surf(surf_mesh, surf_map=None, bg_map=None,
             # in this case, we reduce the number of ticks
             if cbar_tick_format == "%i" and vmax - vmin < nb_ticks:
                 ticks = np.arange(vmin, vmax + 1)
-                nb_ticks = len(ticks)
             else:
                 ticks = np.linspace(vmin, vmax, nb_ticks)
             bounds = np.linspace(vmin, vmax, our_cmap.N)
