@@ -1,7 +1,5 @@
-import io
 import os
 import copy
-import base64
 import warnings
 from pathlib import Path
 from string import Template
