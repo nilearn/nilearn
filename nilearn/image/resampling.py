@@ -445,7 +445,11 @@ def resample_img(img, target_affine=None, target_shape=None,
         if copy and not input_img_is_string:
             img = _utils.copy_img(img)
         return img
-    if target_affine is affine and target_shape is shape:
+    if (
+        np.shape(target_affine) == np.shape(affine)
+        and np.allclose(target_affine, affine)
+        and np.array_equal(target_shape, shape)
+    ):
         return img
     if target_affine is not None:
         target_affine = np.asarray(target_affine)
