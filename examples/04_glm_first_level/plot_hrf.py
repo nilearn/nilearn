@@ -1,9 +1,9 @@
 """Example of hemodynamic response functions.
 ==========================================
 
-Within this example we are going to plot the hemodynamic response function (hrf)
-model in SPM together with the hrf shape proposed by G.Glover, as well as their
-time and dispersion derivatives.
+Within this example we are going to plot the hemodynamic response function
+(hrf) model in SPM together with the hrf shape proposed by G.Glover, as well as
+their time and dispersion derivatives.
 
 This example requires matplotlib.
 
