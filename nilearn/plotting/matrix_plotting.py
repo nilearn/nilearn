@@ -392,8 +392,6 @@ def plot_event(model_event, cmap=None, output_file=None, **fig_kwargs):
         cmap = plt.cm.tab20
     elif isinstance(cmap, str):
         cmap = plt.get_cmap(cmap)
-    else:
-        cmap = cmap
 
     event_labels = pd.concat(event['trial_type'] for event in model_event)
     event_labels = np.unique(event_labels)
