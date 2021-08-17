@@ -649,11 +649,8 @@ def fetch_localizer_contrasts(contrasts, n_subjects=None, get_tmaps=False,
     root_url = "https://osf.io/download/{0}/"
     if isinstance(n_subjects, numbers.Number):
         subject_mask = np.arange(1, n_subjects + 1)
-        subject_id_max = "S%02d" % n_subjects
     else:
         subject_mask = np.array(n_subjects)
-        subject_id_max = "S%02d" % np.max(n_subjects)
-        n_subjects = len(n_subjects)
     subject_ids = ["S%02d" % s for s in subject_mask]
     data_types = ["cmaps"]
     if get_tmaps:
