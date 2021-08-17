@@ -957,7 +957,6 @@ class GroupSparseCovarianceCV(BaseEstimator, CacheMixin):
 
         if isinstance(n_alphas, collections.abc.Sequence):
             alphas = list(self.alphas)
-            n_alphas = len(alphas)
             n_refinements = 1
         else:
             n_refinements = self.n_refinements

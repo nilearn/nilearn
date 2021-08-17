@@ -11,7 +11,7 @@ from matplotlib import gridspec
 from matplotlib.colorbar import make_axes
 from matplotlib.cm import ScalarMappable, get_cmap
 from matplotlib.colors import Normalize, LinearSegmentedColormap
-from mpl_toolkits.mplot3d import Axes3D
+from mpl_toolkits.mplot3d import Axes3D  # noqa
 from nilearn import image
 from nilearn.plotting.img_plotting import (_get_colorbar_and_data_ranges,
                                            _crop_colorbar)
@@ -311,7 +311,6 @@ def plot_surf(surf_mesh, surf_map=None, bg_map=None,
             # in this case, we reduce the number of ticks
             if cbar_tick_format == "%i" and vmax - vmin < nb_ticks:
                 ticks = np.arange(vmin, vmax + 1)
-                nb_ticks = len(ticks)
             else:
                 ticks = np.linspace(vmin, vmax, nb_ticks)
             bounds = np.linspace(vmin, vmax, our_cmap.N)
