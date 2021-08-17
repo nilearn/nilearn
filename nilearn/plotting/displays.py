@@ -1910,6 +1910,7 @@ class MosaicSlicer(BaseSlicer):
                                                self._cut_displayed)
         return cut_coords
 
+    @staticmethod
     def _find_cut_coords(img, cut_coords, cut_displayed):
         """ Find slicing positions along a given axis.
 
