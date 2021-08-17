@@ -6,12 +6,10 @@ from __future__ import division
 from math import ceil
 import itertools
 import glob
-from distutils.version import LooseVersion
 
 import numpy as np
 
 from scipy import linalg
-import sklearn
 import nilearn
 from sklearn.base import BaseEstimator, TransformerMixin
 from joblib import Memory, Parallel, delayed
