@@ -732,7 +732,6 @@ def new_img_like(ref_niimg, data, affine=None, copy_header=False):
         is_str = isinstance(ref_niimg, str)
         has_get_data = hasattr(ref_niimg, 'get_data')
         has_get_fdata = hasattr(ref_niimg, 'get_fdata')
-        has_iter = hasattr(ref_niimg, '__iter__')
         has_affine = hasattr(ref_niimg, 'affine')
     if not ((has_get_data or has_get_fdata) and has_affine):
         if is_str:
