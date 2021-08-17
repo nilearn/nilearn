@@ -605,7 +605,7 @@ class _BaseDecoder(LinearRegression, CacheMixin):
         if X.shape[1] != n_features:
             raise ValueError(
                 "X has {} features per sample; expecting {}".format(
-                    (X.shape[1], n_features)))
+                    X.shape[1], n_features))
 
         scores = safe_sparse_dot(X, self.coef_.T,
                                  dense_output=True) + self.intercept_

@@ -1231,8 +1231,6 @@ def plot_connectome_strength(adjacency_matrix, node_coords, node_size="auto",
         cmap = plt.cm.viridis_r
     elif isinstance(cmap, str):
         cmap = plt.get_cmap(cmap)
-    else:
-        cmap = cmap
 
     node_size = (1 / len(node_coords) * 1e4
                  if node_size == 'auto' else node_size)

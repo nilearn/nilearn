@@ -652,7 +652,7 @@ class FirstLevelModel(BaseGLM):
             warn('One contrast given, assuming it for all %d runs' % n_runs)
             con_vals = con_vals * n_runs
         elif n_contrasts != n_runs:
-            raise ValueError('%n contrasts given, while there are %n runs' %
+            raise ValueError('%d contrasts given, while there are %d runs' %
                              (n_contrasts, n_runs))
 
         # Translate formulas to vectors
