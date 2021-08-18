@@ -913,7 +913,7 @@ def first_level_from_bids(dataset_path, task_label, space_label=None,
         img_specs = get_bids_files(derivatives_path, modality_folder='func',
                                    file_tag='bold', file_type='json',
                                    filters=filters)
-        # If we dont find the parameter information in the derivatives folder
+        # If we don't find the parameter information in the derivatives folder
         # we try to search in the raw data folder
         if not img_specs:
             img_specs = get_bids_files(dataset_path, modality_folder='func',

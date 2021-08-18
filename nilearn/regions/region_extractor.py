@@ -153,7 +153,7 @@ def connected_regions(maps_img, min_region_size=1350,
         features in their respective regions.
         If 'local_regions', each component/region is extracted based on their
         maximum peak value to define a seed marker and then using random walker
-        segementation algorithm on these markers for region separation.
+        segmentation algorithm on these markers for region separation.
         Default='local_regions'.
 
     smoothing_fwhm : scalar, optional
@@ -299,7 +299,7 @@ class RegionExtractor(NiftiMapsMasker):
         presence of unique features in their respective regions. If
         'local_regions', each component/region is extracted based on
         their maximum peak value to define a seed marker and then using
-        random walker segementation algorithm on these markers for region
+        random walker segmentation algorithm on these markers for region
         separation. Default='local_regions'.
 
     smoothing_fwhm : scalar, optional

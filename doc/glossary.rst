@@ -30,7 +30,7 @@ If you wish to add a missing term, please `create a new issue`_ or
         by functional Magnetic Resonance Imaging.
 
     CanICA
-        `Canonical independant component analysis`_.
+        `Canonical independent component analysis`_.
 
     contrast
         A `contrast`_ is a linear combination of variables (parameters or
@@ -74,7 +74,7 @@ If you wish to add a missing term, please `create a new issue`_ or
     FPR correction
         False positive rate correction. This refers to the methods employed to
         correct false positive rates such as the Bonferroni correction which
-        divides the significance level by the number of comparisions made.
+        divides the significance level by the number of comparisons made.
 
     FREM
         `FREM`_ means "Fast ensembling of REgularized Models". It uses an implicit
@@ -239,7 +239,7 @@ If you wish to add a missing term, please `create a new issue`_ or
 .. _`Brain Imaging Data Structure`:
     https://bids.neuroimaging.io/
 
-.. _`Canonical independant component analysis`:
+.. _`Canonical independent component analysis`:
     https://arxiv.org/abs/1006.2300
 
 .. _`contrast`:

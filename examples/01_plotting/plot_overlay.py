@@ -1,8 +1,8 @@
 """
-Visualizing a probablistic atlas: the default mode in the MSDL atlas
+Visualizing a probabilistic atlas: the default mode in the MSDL atlas
 =====================================================================
 
-Visualizing a probablistic atlas requires visualizing the different
+Visualizing a probabilistic atlas requires visualizing the different
 maps that compose it.
 
 Here we represent the nodes constituting the default mode network in the
@@ -52,8 +52,8 @@ plotting.show()
 
 
 ###############################################################################
-# Visualizing a probablistic atlas with plot_prob_atlas
-# =====================================================
+# Visualizing a probabilistic atlas with plot_prob_atlas
+# ======================================================
 #
 # Alternatively, we can create a new 4D-image by selecting the 3rd, 4th, 5th and 6th (zero-based) probabilistic map from atlas
 # via :func:`nilearn.image.index_img` and use :func:`nilearn.plotting.plot_prob_atlas` (added in version 0.2)

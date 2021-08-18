@@ -419,7 +419,7 @@ def fetch_localizer_contrasts(contrasts, n_subjects=None, get_tmaps=False,
     cerebral bases of auditory and visual perception, motor actions,
     reading, language comprehension and mental calculation at an
     individual level. Individual functional maps are reliable and
-    quite precise. The procedure is decribed in more detail on the
+    quite precise. The procedure is described in more detail on the
     Functional Localizer page."
     (see https://osf.io/vhtf6/)
 

@@ -154,7 +154,7 @@ def find_xyz_cut_coords(img, mask_img=None, activation_threshold=None):
     offset += [slice_x.start, slice_y.start, slice_z.start]
 
     # For the second threshold, we use a mean, as it is much faster,
-    # althought it is less robust
+    # although it is less robust
     second_threshold = np.abs(np.mean(my_map[mask]))
     second_mask = (np.abs(my_map) > second_threshold)
     if second_mask.sum() > 50:

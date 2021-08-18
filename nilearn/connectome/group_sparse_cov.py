@@ -270,7 +270,7 @@ def _group_sparse_covariance(emp_covs, n_samples, alpha, max_iter=10, tol=1e-3,
                    dtype=np.float64, order="F")
     W_inv = np.ndarray(shape=W.shape, dtype=np.float64, order="F")
 
-    # Auxilliary arrays.
+    # Auxiliary arrays.
     v = np.ndarray((omega.shape[0] - 1,), dtype=np.float64)
     h = np.ndarray((omega.shape[1] - 1,), dtype=np.float64)
 

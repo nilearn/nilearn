@@ -66,7 +66,7 @@ from sklearn.preprocessing import StandardScaler
 from sklearn.linear_model import RidgeClassifier
 from nilearn.decoding.searchlight import search_light
 
-# Simple linear estimator preceeded by a normalization step
+# Simple linear estimator preceded by a normalization step
 estimator = make_pipeline(StandardScaler(),
                           RidgeClassifier(alpha=10.))
 

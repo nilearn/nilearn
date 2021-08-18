@@ -2,7 +2,7 @@
 """Functions related to the documentation.
 
 docdict contains the standard documentation entries
-used accross Nilearn.
+used across Nilearn.
 
 source: Eric Larson and MNE-python team.
 https://github.com/mne-tools/mne-python/blob/main/mne/utils/docs.py

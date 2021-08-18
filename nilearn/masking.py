@@ -839,7 +839,7 @@ def apply_mask(imgs, mask_img, dtype='f',
     Notes
     -----
     When using smoothing, ensure_finite is set to True, as non-finite
-    values would spread accross the image.
+    values would spread across the image.
     """
     mask_img = _utils.check_niimg_3d(mask_img)
     mask, mask_affine = _load_mask_img(mask_img)

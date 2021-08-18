@@ -250,7 +250,7 @@ def vec_to_sym_matrix(vec, diagonal=None):
     ----------
     vec : numpy.ndarray or list of numpy arrays, shape \
         (..., n_columns * (n_columns + 1) /2) or
-        (..., (n_columns - 1) * n_columns / 2) if diagonal is given seperately.
+        (..., (n_columns - 1) * n_columns / 2) if diagonal is given separately.
         The input array.
 
     diagonal : numpy.ndarray, shape (..., n_columns), optional

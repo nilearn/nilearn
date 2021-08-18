@@ -35,7 +35,7 @@ def _read_events_table(table):
     Returns
     -------
     loaded : pandas.Dataframe object
-        Pandas Dataframe witht e events data.
+        Pandas Dataframe with e events data.
 
     """
     try:
