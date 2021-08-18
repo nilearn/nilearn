@@ -1217,7 +1217,7 @@ class OrthoSlicer(BaseSlicer):
     _axes_class = CutAxes
 
     @classmethod
-    def find_cut_coords(self, img=None, threshold=None, cut_coords=None):
+    def find_cut_coords(cls, img=None, threshold=None, cut_coords=None):
         "Instantiate the slicer and find cut coordinates"
         if cut_coords is None:
             if img is None or img is False:
@@ -1226,7 +1226,7 @@ class OrthoSlicer(BaseSlicer):
                 cut_coords = find_xyz_cut_coords(
                     img, activation_threshold=threshold)
             cut_coords = [cut_coords['xyz'.find(c)]
-                          for c in sorted(self._cut_displayed)]
+                          for c in sorted(cls._cut_displayed)]
         return cut_coords
 
     def _init_axes(self, **kwargs):
@@ -1394,7 +1394,7 @@ class TiledSlicer(BaseSlicer):
     _default_figsize = [2.0, 6.0]
 
     @classmethod
-    def find_cut_coords(self, img=None, threshold=None, cut_coords=None):
+    def find_cut_coords(cls, img=None, threshold=None, cut_coords=None):
         """Instantiate the slicer and find cut coordinates.
 
         Parameters
@@ -1423,7 +1423,7 @@ class TiledSlicer(BaseSlicer):
                 cut_coords = find_xyz_cut_coords(
                     img, activation_threshold=threshold)
             cut_coords = [cut_coords['xyz'.find(c)]
-                          for c in sorted(self._cut_displayed)]
+                          for c in sorted(cls._cut_displayed)]
 
         return cut_coords
 
@@ -1867,7 +1867,7 @@ class MosaicSlicer(BaseSlicer):
     _default_figsize = [11.1, 7.2]
 
     @classmethod
-    def find_cut_coords(self, img=None, threshold=None, cut_coords=None):
+    def find_cut_coords(cls, img=None, threshold=None, cut_coords=None):
         """Instantiate the slicer and find cut coordinates for mosaic plotting.
 
         Parameters
@@ -1897,17 +1897,17 @@ class MosaicSlicer(BaseSlicer):
         if (not isinstance(cut_coords, collections.abc.Sequence) and
                 isinstance(cut_coords, numbers.Number)):
             cut_coords = [cut_coords] * 3
-            cut_coords = self._find_cut_coords(img, cut_coords,
-                                               self._cut_displayed)
+            cut_coords = cls._find_cut_coords(img, cut_coords,
+                                              cls._cut_displayed)
         else:
-            if len(cut_coords) != len(self._cut_displayed):
+            if len(cut_coords) != len(cls._cut_displayed):
                 raise ValueError('The number cut_coords passed does not'
                                  ' match the display_mode. Mosaic plotting '
                                  'expects tuple of length 3.' )
             cut_coords = [cut_coords['xyz'.find(c)]
-                for c in sorted(self._cut_displayed)]
-            cut_coords = self._find_cut_coords(img, cut_coords,
-                                               self._cut_displayed)
+                          for c in sorted(cls._cut_displayed)]
+            cut_coords = cls._find_cut_coords(img, cut_coords,
+                                              cls._cut_displayed)
         return cut_coords
 
     @staticmethod
