@@ -12,7 +12,7 @@ TV-L1, Graph-Net, etc.)
 # License: simplified BSD
 
 import warnings
-import numbers
+import collections
 import time
 import sys
 from functools import partial
@@ -382,7 +382,7 @@ def path_scores(solver, X, y, mask, alphas, l1_ratios, train, test,
         copy=False)
 
     # misc
-    if isinstance(l1_ratios, numbers.Number):
+    if not isinstance(l1_ratios, collections.abc.Iterable):
         l1_ratios = [l1_ratios]
     l1_ratios = sorted(l1_ratios)[::-1]  # from large to small l1_ratios
     best_score = -np.inf
@@ -682,7 +682,7 @@ class BaseSpaceNet(LinearRegression, CacheMixin):
         """Makes sure parameters are sane"""
         if self.l1_ratios is not None:
             l1_ratios = self.l1_ratios
-            if isinstance(l1_ratios, numbers.Number):
+            if not isinstance(l1_ratios, collections.abc.Iterable):
                 l1_ratios = [l1_ratios]
             for l1_ratio in l1_ratios:
                 if not 0 <= l1_ratio <= 1.:
@@ -777,11 +777,12 @@ class BaseSpaceNet(LinearRegression, CacheMixin):
         n_samples, _ = X.shape
         y = np.array(y).copy()
         l1_ratios = self.l1_ratios
-        if isinstance(l1_ratios, numbers.Number):
+        if not isinstance(l1_ratios, collections.abc.Iterable):
             l1_ratios = [l1_ratios]
         alphas = self.alphas
-        if isinstance(alphas, numbers.Number):
-            alphas = [alphas]
+        if alphas is not None:
+            if not isinstance(alphas, collections.abc.Iterable):
+                alphas = [alphas]
         if self.loss is not None:
             loss = self.loss
         elif self.is_classif:
