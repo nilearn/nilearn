@@ -186,7 +186,8 @@ def load_mni152_template(resolution=None):
     if resolution is None:
         if not _MNI_RES_WARNING_ALREADY_SHOWN:
             warnings.warn("Default resolution of the MNI template will change "
-                          "from 2mm to 1mm in version 0.10.0", FutureWarning)
+                          "from 2mm to 1mm in version 0.10.0", FutureWarning,
+                          stacklevel=2)
             _MNI_RES_WARNING_ALREADY_SHOWN = True
         resolution = 2
 
