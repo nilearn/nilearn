@@ -660,12 +660,12 @@ def test_download_image():
 def test_fetch_neurovault(tmp_path):
     # check that nothing is downloaded in offline mode
     data = neurovault.fetch_neurovault(
-        mode='offline', data_dir=str(tmp_path))
+        mode='offline', data_dir=tmp_path)
     assert len(data.images) == 0
     # try to download an image
     data = neurovault.fetch_neurovault(
         max_images=11, fetch_neurosynth_words=True,
-        mode='overwrite', data_dir=str(tmp_path))
+        mode='overwrite', data_dir=tmp_path)
     # specifying a filter while leaving the default term
     # filters in place should raise a warning.
     with pytest.warns(UserWarning):
@@ -685,13 +685,13 @@ def test_fetch_neurovault(tmp_path):
 
     # using a data directory we can't write into should raise a
     # warning unless mode is 'offline'
-    os.chmod(str(tmp_path), stat.S_IREAD | stat.S_IEXEC)
-    os.chmod(os.path.join(str(tmp_path), 'neurovault'),
+    os.chmod(tmp_path, stat.S_IREAD | stat.S_IEXEC)
+    os.chmod(os.path.join(tmp_path, 'neurovault'),
              stat.S_IREAD | stat.S_IEXEC)
-    if os.access(os.path.join(str(tmp_path), 'neurovault'), os.W_OK):
+    if os.access(os.path.join(tmp_path, 'neurovault'), os.W_OK):
         return
     with pytest.warns(UserWarning):
-        neurovault.fetch_neurovault(data_dir=str(tmp_path))
+        neurovault.fetch_neurovault(data_dir=tmp_path)
 
 
 def test_fetch_neurovault_errors(request_mocker):
@@ -701,7 +701,6 @@ def test_fetch_neurovault_errors(request_mocker):
 
 
 def test_fetch_neurovault_ids(tmp_path):
-    data_dir = str(tmp_path)
     collections, images = _get_neurovault_data()
     collections = collections.sort_values(
         by="true_number_of_images", ascending=False)
@@ -711,7 +710,7 @@ def test_fetch_neurovault_ids(tmp_path):
         images["collection_id"].isin(col_ids)]["id"].values
     pytest.raises(ValueError, neurovault.fetch_neurovault_ids, mode='bad')
     data = neurovault.fetch_neurovault_ids(
-        image_ids=img_ids, collection_ids=col_ids, data_dir=data_dir)
+        image_ids=img_ids, collection_ids=col_ids, data_dir=tmp_path)
     expected_images = list(img_ids) + list(img_from_cols_ids)
     assert len(data.images) == len(expected_images)
     assert {img['id'] for img in data['images_meta']} == set(expected_images)
@@ -719,7 +718,7 @@ def test_fetch_neurovault_ids(tmp_path):
         data['images'][0]) == data['collections_meta'][0]['absolute_path']
     # check image can be loaded again from disk
     data = neurovault.fetch_neurovault_ids(
-        image_ids=[img_ids[0]], data_dir=data_dir, mode='offline')
+        image_ids=[img_ids[0]], data_dir=tmp_path, mode='offline')
     assert len(data.images) == 1
     # check that download_new mode forces overwrite
     modified_meta = data['images_meta'][0]
@@ -733,15 +732,15 @@ def test_fetch_neurovault_ids(tmp_path):
         meta_f.write(json.dumps(modified_meta).encode('UTF-8'))
     # fresh download
     data = neurovault.fetch_neurovault_ids(
-        image_ids=[img_ids[0]], data_dir=data_dir, mode='download_new')
+        image_ids=[img_ids[0]], data_dir=tmp_path, mode='download_new')
     data = neurovault.fetch_neurovault_ids(
-        image_ids=[img_ids[0]], data_dir=data_dir, mode='offline')
+        image_ids=[img_ids[0]], data_dir=tmp_path, mode='offline')
     # should not have changed
     assert data['images_meta'][0]['some_key'] == 'some_other_value'
     data = neurovault.fetch_neurovault_ids(
-        image_ids=[img_ids[0]], data_dir=data_dir, mode='overwrite')
+        image_ids=[img_ids[0]], data_dir=tmp_path, mode='overwrite')
     data = neurovault.fetch_neurovault_ids(
-        image_ids=[img_ids[0]], data_dir=data_dir, mode='offline')
+        image_ids=[img_ids[0]], data_dir=tmp_path, mode='offline')
     # should be back to the original version
     assert data['images_meta'][0]['some_key'] == 'some_value'
 
@@ -755,7 +754,7 @@ def test_should_download_resampled_images_only_if_no_previous_download(tmp_path)
 
     data = neurovault.fetch_neurovault_ids(
         collection_ids=[sample_collection_id],
-        data_dir=str(tmp_path),
+        data_dir=tmp_path,
         resample=True,
     )
 
@@ -780,7 +779,7 @@ def test_should_download_original_images_along_resampled_images_if_previously_do
     sample_collection_id = sample_collection["id"]
 
     # Fetch non-resampled images
-    data = neurovault.fetch_neurovault_ids(collection_ids=[sample_collection_id], data_dir=str(tmp_path),
+    data = neurovault.fetch_neurovault_ids(collection_ids=[sample_collection_id], data_dir=tmp_path,
                                                 resample=True)
 
     # Check that only the resampled version is here
@@ -791,7 +790,7 @@ def test_should_download_original_images_along_resampled_images_if_previously_do
     access_time_resampled = (os.path.getatime(data['images_meta'][0]['resampled_absolute_path']))
 
     # Download original data
-    data_orig = neurovault.fetch_neurovault_ids(collection_ids=[sample_collection_id], data_dir=str(tmp_path), resample=False)
+    data_orig = neurovault.fetch_neurovault_ids(collection_ids=[sample_collection_id], data_dir=tmp_path, resample=False)
 
     # Get the time of the last access to one of the original files (which should be download time)
     access_time = (os.path.getatime(data_orig['images_meta'][0]['absolute_path']))
@@ -815,7 +814,7 @@ def test_should_download_resampled_images_along_original_images_if_previously_do
     sample_collection_id = sample_collection["id"]
 
     # Fetch non-resampled images
-    data_orig = neurovault.fetch_neurovault_ids(collection_ids=[sample_collection_id], data_dir=str(tmp_path), resample=False)
+    data_orig = neurovault.fetch_neurovault_ids(collection_ids=[sample_collection_id], data_dir=tmp_path, resample=False)
 
     # Check that the original version is here
     assert np.all([os.path.isfile(im_meta['absolute_path']) for im_meta in data_orig['images_meta']])
@@ -829,7 +828,7 @@ def test_should_download_resampled_images_along_original_images_if_previously_do
     modif_time_original = (os.path.getmtime(data_orig['images_meta'][0]['absolute_path']))
 
     # Ask for resampled data, which should only trigger resample
-    data = neurovault.fetch_neurovault_ids(collection_ids=[sample_collection_id], data_dir=str(tmp_path), resample=True)
+    data = neurovault.fetch_neurovault_ids(collection_ids=[sample_collection_id], data_dir=tmp_path, resample=True)
 
     # Get the time of the last modification to the original data, after fetch
     modif_time_original_after = (os.path.getmtime(data['images_meta'][0]['absolute_path']))
