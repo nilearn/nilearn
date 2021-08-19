@@ -976,7 +976,7 @@ class BaseSlicer(object):
             self._colorbar_ax, ticks=ticks, norm=norm,
             orientation='vertical', cmap=our_cmap, boundaries=bounds,
             spacing='proportional', format='%.2g')
-        self._cbar.patch.set_facecolor(self._brain_color)
+        self._cbar.ax.set_facecolor(self._brain_color)
 
         self._colorbar_ax.yaxis.tick_left()
         tick_color = 'w' if self._black_bg else 'k'
