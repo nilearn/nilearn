@@ -54,6 +54,8 @@ Enhancements
   parameters or common lists of options for example. The standard parts are defined
   in a single location (`nilearn._utils.docs.py`) which makes them easier to
   maintain and update. (See `#2875 <https://github.com/nilearn/nilearn/pull/2875>`_)
+- The `data_dir` argument can now be either a `pathlib.Path` or a string. This
+  extension affects datasets and atlas fetchers.
 
 Changes
 -------
