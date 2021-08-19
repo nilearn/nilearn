@@ -268,7 +268,10 @@ def _get_dataset_dir(dataset_name, data_dir=None, default_paths=None,
     # Search possible data-specific system paths
     if default_paths is not None:
         for default_path in default_paths:
-            paths.extend([(d, True) for d in str(default_path).split(os.pathsep)])
+            paths.extend([
+                (d, True)
+                for d in str(default_path).split(os.pathsep)]
+            )
 
     paths.extend([(d, False) for d in get_data_dirs(data_dir=data_dir)])
 

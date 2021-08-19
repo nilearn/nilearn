@@ -406,8 +406,10 @@ def test_fetch_atlas_difumo(tmp_path, request_mocker):
             assert dataset.description != ''
 
     with pytest.raises(ValueError):
-        atlas.fetch_atlas_difumo(data_dir=tmp_path, dimension=42, resolution_mm=3)
-        atlas.fetch_atlas_difumo(data_dir=tmp_path, dimension=128, resolution_mm=3.14)
+        atlas.fetch_atlas_difumo(data_dir=tmp_path,
+                                 dimension=42, resolution_mm=3)
+        atlas.fetch_atlas_difumo(data_dir=tmp_path,
+                                 dimension=128, resolution_mm=3.14)
 
 
 def test_fetch_atlas_aal(tmp_path, request_mocker):
