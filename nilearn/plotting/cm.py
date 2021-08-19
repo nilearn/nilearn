@@ -7,6 +7,7 @@ import numpy as _np
 
 from matplotlib import cm as _cm
 from matplotlib import colors as _colors
+from matplotlib import rcParams as _rcParams
 
 ################################################################################
 # Custom colormaps for two-tailed symmetric statistics
@@ -113,7 +114,7 @@ def alpha_cmap(color, name='', alpha_min=0.5, alpha_max=1.):
                 (red, green, blue, 1.),
                ]
     cmap = _colors.LinearSegmentedColormap.from_list(
-                                '%s_transparent' % name, cmapspec, _cm.LUTSIZE)
+        '%s_transparent' % name, cmapspec, _rcParams['image.lut'])
     cmap._init()
     cmap._lut[:, -1] = _np.linspace(alpha_min, alpha_max, cmap._lut.shape[0])
     cmap._lut[-1, -1] = 0
