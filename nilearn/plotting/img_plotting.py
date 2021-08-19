@@ -261,7 +261,8 @@ def _crop_colorbar(cbar, cbar_vmin, cbar_vmax):
         outline[6:, 1] += cbar.norm(cbar_vmin)
         cbar.outline.set_xy(outline)
 
-    cbar.set_ticks(new_tick_locs, update_ticks=True)
+    cbar.set_ticks(new_tick_locs)
+    cbar.update_ticks()
 
 
 @fill_doc
