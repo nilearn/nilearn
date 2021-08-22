@@ -39,7 +39,7 @@ def test_high_level_glm_one_session():
     masker = NiftiMasker(mask)
     with pytest.raises(ValueError,
                        match="It seems that NiftiMasker has not been fitted."):
-        _ = FirstLevelModel(mask_img=masker).fit(
+        FirstLevelModel(mask_img=masker).fit(
             fmri_data[0], design_matrices=design_matrices[0])
 
     # Give a fitted NiftiMasker with a None mask_img_ attribute
@@ -49,7 +49,7 @@ def test_high_level_glm_one_session():
     masker.mask_img_ = None
     with pytest.warns(UserWarning,
                       match="Parameter memory of the masker overriden"):
-        _ = FirstLevelModel(mask_img=masker).fit(
+        FirstLevelModel(mask_img=masker).fit(
             fmri_data[0], design_matrices=design_matrices[0])
 
     # Give a fitted NiftiMasker
@@ -274,8 +274,8 @@ def test_high_level_glm_different_design_matrices_formulas():
     formula = "%s-%s" % cols_formula
     with pytest.warns(UserWarning, match='One contrast given, '
                                          'assuming it for all 2 runs'):
-        _ = multi_session_model.compute_contrast(formula,
-                                                 output_type='effect_size')
+        multi_session_model.compute_contrast(formula,
+                                             output_type='effect_size')
 
 
 def test_compute_contrast_num_contrasts():
