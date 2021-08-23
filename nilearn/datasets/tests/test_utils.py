@@ -16,7 +16,7 @@ from unittest.mock import MagicMock
 from tempfile import mkdtemp, mkstemp
 
 try:
-    import boto3  # noqa:F401
+    import boto3  # noqa: F401
 
 except ImportError:
     BOTO_INSTALLED = False
