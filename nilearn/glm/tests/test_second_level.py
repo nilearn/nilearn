@@ -22,12 +22,9 @@ from nilearn._utils.data_gen import (write_fake_fmri_data_and_design,
                                      generate_fake_fmri_data_and_design)
 from nilearn.image import concat_imgs, get_data
 from nilearn.input_data import NiftiMasker
-from nilearn.glm.first_level import (FirstLevelModel,
-                                             run_glm,
-                                             )
+from nilearn.glm.first_level import (FirstLevelModel, run_glm)
 from nilearn.glm.second_level import (SecondLevelModel,
-                                              non_parametric_inference,
-                                              )
+                                      non_parametric_inference)
 
 # This directory path
 BASEDIR = os.path.dirname(os.path.abspath(__file__))
@@ -42,13 +39,15 @@ def test_check_second_level_input():
         _check_second_level_input([FirstLevelModel()], pd.DataFrame())
     with pytest.raises(ValueError,
                        match="Model sub_1 at index 0 has not been fit yet"):
-        _check_second_level_input([FirstLevelModel(subject_label="sub_{}".format(i))
-                                   for i in range(1, 3)], pd.DataFrame())
+        _check_second_level_input([FirstLevelModel(
+            subject_label="sub_{}".format(i))
+            for i in range(1, 3)], pd.DataFrame())
     with InTemporaryDirectory():
         shapes, rk = [(7, 8, 9, 15)], 3
-        mask, fmri_data, design_matrices = generate_fake_fmri_data_and_design(shapes, rk)
-        input_models = [FirstLevelModel(mask_img=mask).fit(fmri_data[0],
-                                                           design_matrices=design_matrices[0])]
+        mask, fmri_data, design_matrices = \
+            generate_fake_fmri_data_and_design(shapes, rk)
+        input_models = [FirstLevelModel(mask_img=mask).fit(
+            fmri_data[0], design_matrices=design_matrices[0])]
         obj = lambda: None
         obj.results_ = "foo"
         obj.labels_ = "bar"
@@ -58,7 +57,8 @@ def test_check_second_level_input():
             _check_second_level_input(input_models + [obj], pd.DataFrame())
         with pytest.raises(ValueError,
                            match="In case confounds are provided, first level "
-                                 "objects need to provide the attribute subject_label"):
+                                 "objects need to provide the attribute "
+                                 "subject_label"):
             _check_second_level_input(input_models * 2, pd.DataFrame(),
                                       confounds=pd.DataFrame())
         with pytest.raises(ValueError,
@@ -72,12 +72,14 @@ def test_check_second_level_input():
     with pytest.raises(ValueError,
                        match="second_level_input DataFrame must have columns "
                              "subject_label, map_name and effects_map_path"):
-        _check_second_level_input(pd.DataFrame(columns=["foo", "bar"]), pd.DataFrame())
+        _check_second_level_input(pd.DataFrame(columns=["foo", "bar"]),
+                                  pd.DataFrame())
     with pytest.raises(ValueError,
                        match="subject_label column must contain only strings"):
         _check_second_level_input(pd.DataFrame({"subject_label": [1, 2],
                                                 "map_name": ["a", "b"],
-                                                "effects_map_path": ["c", "d"]}),
+                                                "effects_map_path":
+                                                    ["c", "d"]}),
                                   pd.DataFrame())
     with pytest.raises(ValueError,
                        match="List of niimgs as second_level_input "
@@ -101,7 +103,7 @@ def test_check_output_type():
 
 def test_check_design_matrix():
     from nilearn.glm.second_level.second_level import _check_design_matrix
-    _check_design_matrix(None) # Should not do anything
+    _check_design_matrix(None)  # Should not do anything
     with pytest.raises(ValueError,
                        match="design matrix must be a pandas DataFrame"):
         _check_design_matrix("foo")
@@ -110,7 +112,7 @@ def test_check_design_matrix():
 
 def test_check_confounds():
     from nilearn.glm.second_level.second_level import _check_confounds
-    _check_confounds(None) # Should not do anything
+    _check_confounds(None)  # Should not do anything
     with pytest.raises(ValueError,
                        match="confounds must be a pandas DataFrame"):
         _check_confounds("foo")
@@ -128,8 +130,9 @@ def test_check_confounds():
 
 
 def test_check_first_level_contrast():
-    from nilearn.glm.second_level.second_level import _check_first_level_contrast
-    _check_first_level_contrast(["foo"], None) # Should not do anything
+    from nilearn.glm.second_level.second_level import \
+        _check_first_level_contrast
+    _check_first_level_contrast(["foo"], None)  # Should not do anything
     with pytest.raises(ValueError,
                        match="If second_level_input was a list"):
         _check_first_level_contrast([FirstLevelModel()], None)
@@ -140,7 +143,8 @@ def test_check_effect_maps():
     from nilearn.glm.second_level.second_level import _check_effect_maps
     _check_effect_maps([1, 2, 3], np.array([[1, 2], [3, 4], [5, 6]]))
     with pytest.raises(ValueError,
-                       match="design_matrix does not match the number of maps considered"):
+                       match="design_matrix does not match "
+                             "the number of maps considered"):
         _check_effect_maps([1, 2], np.array([[1, 2], [3, 4], [5, 6]]))
 
 
@@ -157,7 +161,8 @@ def test_get_contrast():
                        match="No second-level contrast is specified."):
         _get_contrast(None, design_matrix)
     with pytest.raises(ValueError,
-                       match="second_level_contrast must be a list of 0s and 1s"):
+                       match="second_level_contrast must be "
+                             "a list of 0s and 1s"):
         _get_contrast([0, 0], design_matrix)
     assert _get_contrast([0, 1], design_matrix) == 'conf2'
     assert _get_contrast([1, 0], design_matrix) == 'conf1'
@@ -165,12 +170,14 @@ def test_get_contrast():
 
 def test_infer_effect_maps():
     from nilearn.glm.second_level.second_level import _infer_effect_maps
-    #with InTemporaryDirectory():
+    # with InTemporaryDirectory():
     shapes, rk = ((7, 8, 9, 1), (7, 8, 7, 16)), 3
-    mask, fmri_data, design_matrices = write_fake_fmri_data_and_design(shapes, rk)
+    mask, fmri_data, design_matrices = write_fake_fmri_data_and_design(shapes,
+                                                                       rk)
     func_img = load(fmri_data[0])
-    second_level_input = pd.DataFrame({'map_name': ["a", "b"] ,
-                                        'effects_map_path': [fmri_data[0], "bar"]})
+    second_level_input = pd.DataFrame({'map_name': ["a", "b"],
+                                       'effects_map_path': [fmri_data[0],
+                                                            "bar"]})
     assert _infer_effect_maps(second_level_input, "a") == [fmri_data[0]]
     with pytest.raises(ValueError,
                        match="File not found: 'bar'"):
@@ -223,7 +230,7 @@ def test_high_level_glm_with_paths():
         z_image = model.fit(Y, design_matrix=X).compute_contrast(c1)
         assert_array_equal(z_image.shape, target_shape)
         assert_array_equal(z_image.affine, target_affine)
-        
+
         # Delete objects attached to files to avoid WindowsError when deleting
         # temporary directory (in Windows)
         del Y, FUNCFILE, func_img, model
@@ -242,7 +249,7 @@ def test_high_level_non_parametric_inference_with_paths():
         neg_log_pvals_img = non_parametric_inference(Y, design_matrix=X,
                                                      second_level_contrast=c1,
                                                      mask=mask, n_perm=n_perm,
-                                                     verbose=1) # For coverage
+                                                     verbose=1)  # For coverage
         neg_log_pvals = get_data(neg_log_pvals_img)
 
         assert isinstance(neg_log_pvals_img, Nifti1Image)
@@ -252,7 +259,8 @@ def test_high_level_non_parametric_inference_with_paths():
         assert np.all(0 <= neg_log_pvals)
         masker = NiftiMasker(mask, smoothing_fwhm=2.0)
         with pytest.warns(UserWarning,
-                          match="Parameter smoothing_fwhm of the masker overriden"):
+                          match="Parameter smoothing_fwhm "
+                                "of the masker overriden"):
             non_parametric_inference(Y, design_matrix=X,
                                      second_level_contrast=c1,
                                      smoothing_fwhm=3.0,

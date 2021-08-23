@@ -113,7 +113,6 @@ if __name__ == '__main__':
         test_func()
         pprint('... complete')
 
-
     def run_test_suite():
         tests = [
             test_for_invalid_filepath,
@@ -126,6 +125,5 @@ if __name__ == '__main__':
         ]
         for test_ in tests:
             _run_tests_print_test_messages(test_func=test_)
-
 
     run_test_suite()

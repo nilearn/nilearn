@@ -24,7 +24,7 @@ def basic_paradigm():
 
 
 def duplicate_events_paradigm():
-    conditions = ['c0', 'c0', 'c0', 'c0','c1', 'c1']
+    conditions = ['c0', 'c0', 'c0', 'c0', 'c1', 'c1']
     onsets = [10, 30, 70, 70, 10, 30]
     durations = [1., 1., 1., 1., 1., 1]
     events = pd.DataFrame({'trial_type': conditions,
@@ -97,7 +97,8 @@ def test_check_events():
     # Missing duration
     missing_duration = events.drop(columns=['duration'])
     with pytest.raises(ValueError,
-                       match='The provided events data has no duration column.'):
+                       match='The provided events data has '
+                             'no duration column.'):
         check_events(missing_duration)
 
     # Duration wrong type
@@ -156,7 +157,7 @@ def test_duplicate_events():
         ttype, onset, duration, modulation = check_events(events)
     assert_array_equal(ttype, ['c0', 'c0', 'c0', 'c1', 'c1'])
     assert_array_equal(onset, [10, 30, 70, 10, 30])
-    assert_array_equal(duration, [1. , 1. , 1., 1. , 1. ])
+    assert_array_equal(duration, [1., 1., 1., 1., 1.])
     # Modulation was updated
     assert_array_equal(modulation, [1, 1, 2, 1, 1])
 

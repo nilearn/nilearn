@@ -179,8 +179,7 @@ def run_glm(Y, X, noise_model='ar1', bins=100, n_jobs=1, verbose=0):
         # Either bin the AR1 coefs or cluster ARN coefs
         if ar_order == 1:
             for idx in range(len(ar_coef_)):
-                ar_coef_[idx] = (ar_coef_[idx] * bins).astype(int) \
-                                * 1. / bins
+                ar_coef_[idx] = (ar_coef_[idx] * bins).astype(int) * 1. / bins
             labels = np.array([str(val) for val in ar_coef_])
         else:  # AR(N>1) case
             n_clusters = np.min([bins, Y.shape[1]])
@@ -235,8 +234,9 @@ class FirstLevelModel(BaseGLM):
         expressed as a percentage of the t_r (time repetition), so it can have
         values between 0. and 1. Default=0.
 
-    hrf_model : {'glover', 'spm', 'spm + derivative', 'spm + derivative + dispersion',
-        'glover + derivative', 'glover + derivative + dispersion', 'fir', None}, optional
+    hrf_model : {'glover', 'spm', 'spm + derivative', \
+            'spm + derivative + dispersion', 'glover + derivative', \
+            'glover + derivative + dispersion', 'fir', None}, optional
         String that specifies the hemodynamic response function.
         Default='glover'.
 
@@ -408,7 +408,8 @@ class FirstLevelModel(BaseGLM):
             Data on which the GLM will be fitted. If this is a list,
             the affine is considered the same for all.
 
-        events : pandas Dataframe or string or list of pandas DataFrames or strings, optional
+        events : pandas Dataframe or string or list of pandas DataFrames \
+                 or strings, optional
             fMRI events used to build design matrices. One events object
             expected per run_img. Ignored in case designs is not None.
             If string, then a path to a csv file is expected.
@@ -421,7 +422,8 @@ class FirstLevelModel(BaseGLM):
             respective run_img. Ignored in case designs is not None.
             If string, then a path to a csv file is expected.
 
-        design_matrices : pandas DataFrame or list of pandas DataFrames, optional
+        design_matrices : pandas DataFrame or \
+                          list of pandas DataFrames, optional
             Design matrices that will be used to fit the GLM. If given it
             takes precedence over events and confounds.
 
@@ -437,8 +439,12 @@ class FirstLevelModel(BaseGLM):
         self.masker_ = None
 
         # Raise a warning if both design_matrices and confounds are provided
-        if design_matrices is not None and (confounds is not None or events is not None):
-            warn('If design matrices are supplied, confounds and events will be ignored.')
+        if design_matrices is not None and \
+                (confounds is not None or events is not None):
+            warn(
+                'If design matrices are supplied, '
+                'confounds and events will be ignored.'
+            )
         # Local import to prevent circular imports
         from nilearn.input_data import NiftiMasker  # noqa
 
