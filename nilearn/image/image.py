@@ -476,7 +476,7 @@ def _compute_mean(imgs, target_affine=None,
     mean_data = _safe_get_data(imgs)
     affine = imgs.affine
     # Free memory ASAP
-    imgs = None
+    del imgs
     if mean_data.ndim not in (3, 4):
         raise ValueError('Computation expects 3D or 4D '
                          'images, but %i dimensions were given (%s)'
