@@ -139,25 +139,20 @@ def _colorscale_plotly(cmap, data, threshold=None, vmin=None, vmax=None):
     return colors, our_cmap, norm, vmin, vmax
 
 
-def _configure_title_plotly(title=None,
-                            font_family="Courier New, monospace",
-                            font_color="RebeccaPurple",
-                            font_size=22, pos_x=0.5, pos_y=0.96):
+def _configure_title_plotly(title, font_size):
     """Helper function for plot_surf with plotly engine.
 
     This function configures the title if provided.
     """
     if title is None:
         return dict()
-    if "title" in LAYOUT:
-        raise ValueError("Title is already configured.")
     return {"text": title,
-            "font": {"family": font_family,
+            "font": {"family": "Courier New, monospace",
                      "size": font_size,
-                     "color": font_color,
+                     "color": "RebeccaPurple",
                      },
-            "y": pos_y,
-            "x": pos_x,
+            "y": 0.96,
+            "x": 0.5,
             "xanchor": "center",
             "yanchor": "top"}
 
@@ -165,7 +160,8 @@ def _configure_title_plotly(title=None,
 def _plot_surf_plotly(surf_mesh, surf_map=None, bg_map=None,
                       hemi='left', view='lateral', cmap=None,
                       colorbar=False, threshold=None, vmin=None,
-                      vmax=None, title=None, output_file=None):
+                      vmax=None, title=None, font_size=15,
+                      output_file=None):
     """Helper function for plot_surf.
 
     .. versionadded:: 0.8.1
@@ -214,7 +210,7 @@ def _plot_surf_plotly(surf_mesh, surf_map=None, bg_map=None,
     cameras_view = _set_view_plot_surf_plotly(hemi, view)
     fig = go.Figure(data=[mesh_3d])
     fig.update_layout(scene_camera=CAMERAS[cameras_view],
-                      title=_configure_title_plotly(title=title),
+                      title=_configure_title_plotly(title, font_size),
                       **LAYOUT)
     if output_file is not None:
         fig.write_image(output_file)
@@ -420,8 +416,8 @@ def _plot_surf_matplotlib(surf_mesh, surf_map=None, bg_map=None,
                           alpha='auto', bg_on_data=False, darkness=1,
                           vmin=None, vmax=None, cbar_vmin=None,
                           cbar_vmax=None, cbar_tick_format='%.2g',
-                          title=None, output_file=None, axes=None,
-                          figure=None, **kwargs):
+                          title=None, font_size=15, output_file=None,
+                          axes=None, figure=None, **kwargs):
     """Helper function for plot_surf.
 
     This function handles surface plotting when the selected
@@ -505,7 +501,7 @@ def _plot_surf_matplotlib(surf_mesh, surf_map=None, bg_map=None,
         p3dcollec.set_facecolors(face_colors)
 
     if title is not None:
-        plt.suptitle(title, x=.5, y=.95)
+        figure.suptitle(title, x=.5, y=.95, fontsize=font_size)
 
     # save figure if output file is given
     if output_file is not None:
@@ -521,7 +517,8 @@ def plot_surf(surf_mesh, surf_map=None, bg_map=None,
               cmap=None, colorbar=False, avg_method='mean', threshold=None,
               alpha='auto', bg_on_data=False, darkness=1, vmin=None, vmax=None,
               cbar_vmin=None, cbar_vmax=None, cbar_tick_format='%.2g',
-              title=None, output_file=None, axes=None, figure=None, **kwargs):
+              title=None, font_size=15, output_file=None, axes=None,
+              figure=None, **kwargs):
     """Plotting of surfaces with optional background and data
 
     .. versionadded:: 0.3
@@ -616,6 +613,8 @@ def plot_surf(surf_mesh, surf_map=None, bg_map=None,
             matplotlib engine.
 
     %(title)s
+    font_size : :obj:`int`, optional
+        Size for the title font. Default=15.
     %(output_file)s
     axes : instance of matplotlib axes, None, optional
         The axes instance to plot to. The projection must be '3d' (e.g.,
@@ -654,14 +653,14 @@ def plot_surf(surf_mesh, surf_map=None, bg_map=None,
             threshold=threshold, alpha=alpha, bg_on_data=bg_on_data,
             darkness=darkness, vmin=vmin, vmax=vmax, cbar_vmin=cbar_vmin,
             cbar_vmax=cbar_vmax, cbar_tick_format=cbar_tick_format,
-            title=title, output_file=output_file, axes=axes,
+            title=title, font_size=font_size, output_file=output_file, axes=axes,
             figure=figure, **kwargs)
     elif engine == 'plotly':
         fig = _plot_surf_plotly(
             surf_mesh, surf_map=surf_map, bg_map=bg_map, view=view,
             hemi=hemi, cmap=cmap, colorbar=colorbar,
             threshold=threshold, vmin=vmin, vmax=vmax, title=title,
-            output_file=output_file)
+            font_size=font_size, output_file=output_file)
     else:
         raise ValueError(f"Unknown plotting engine {engine}. "
                          "Please use either 'matplotlib' or "
