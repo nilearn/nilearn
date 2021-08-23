@@ -324,10 +324,10 @@ def _configure_cmap_matplotlib(cmap, vmin, vmax, threshold,
     our_cmap = get_cmap(cmap)
     norm = Normalize(vmin=vmin, vmax=vmax)
     # Default number of ticks is 5...
-    nb_ticks = 5
+    n_ticks = 5
     # ...unless we are dealing with integers with a small range
     # in this case, we reduce the number of ticks
-    if cbar_tick_format == "%i" and vmax - vmin < nb_ticks:
+    if cbar_tick_format == "%i" and vmax - vmin < n_ticks:
         ticks = np.arange(vmin, vmax + 1)
         n_ticks = len(ticks)
     else:
