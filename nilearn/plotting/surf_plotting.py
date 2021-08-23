@@ -44,6 +44,23 @@ AXIS_CONFIG = {
 }
 
 
+MATPLOTLIB_VIEWS = {"right": {"lateral": (0, 0),
+                              "medial": (0, 180),
+                              "dorsal": (90, 0),
+                              "ventral": (270, 0),
+                              "anterior": (0, 90),
+                              "posterior": (0, 270)
+                              },
+                    "left": {"medial": (0, 0),
+                             "lateral": (0, 180),
+                             "dorsal": (90, 0),
+                             "ventral": (270, 0),
+                             "anterior": (0, 90),
+                             "posterior": (0, 270)
+                             }
+                    }
+
+
 CAMERAS = {
     "left": {
         "eye": {"x": -1.5, "y": 0, "z": 0},
@@ -224,39 +241,11 @@ def _set_view_plot_surf_matplotlib(hemi, view):
     This function checks the selected hemisphere and view, and
     returns elev and azim.
     """
-    if hemi == 'right':
-        if view == 'lateral':
-            elev, azim = 0, 0
-        elif view == 'medial':
-            elev, azim = 0, 180
-        elif view == 'dorsal':
-            elev, azim = 90, 0
-        elif view == 'ventral':
-            elev, azim = 270, 0
-        elif view == 'anterior':
-            elev, azim = 0, 90
-        elif view == 'posterior':
-            elev, azim = 0, 270
-        else:
-            raise ValueError(f"view must be one of {VALID_VIEWS}")
-    elif hemi == 'left':
-        if view == 'medial':
-            elev, azim = 0, 0
-        elif view == 'lateral':
-            elev, azim = 0, 180
-        elif view == 'dorsal':
-            elev, azim = 90, 0
-        elif view == 'ventral':
-            elev, azim = 270, 0
-        elif view == 'anterior':
-            elev, azim = 0, 90
-        elif view == 'posterior':
-            elev, azim = 0, 270
-        else:
-            raise ValueError(f"view must be one of {VALID_VIEWS}")
-    else:
+    if hemi not in VALID_HEMISPHERES:
         raise ValueError(f"hemi must be one of {VALID_HEMISPHERES}")
-    return elev, azim
+    if view not in MATPLOTLIB_VIEWS[hemi]:
+        raise ValueError(f"view must be one of {VALID_VIEWS}")
+    return MATPLOTLIB_VIEWS[hemi][view]
 
 
 def _check_surf_map(surf_map, n_vertices):
