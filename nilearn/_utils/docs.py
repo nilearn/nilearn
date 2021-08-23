@@ -38,7 +38,7 @@ resume : :obj:`bool`, optional
 
 # Data_dir
 docdict['data_dir'] = """
-data_dir : :obj:`str`, optional
+data_dir : :obj:`pathlib.Path` or :obj:`str`, optional
     Path where data should be downloaded. By default,
     files are downloaded in home directory."""
 
