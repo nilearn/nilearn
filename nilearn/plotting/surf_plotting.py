@@ -55,22 +55,22 @@ CAMERAS = {
         "up": {"x": 0, "y": 0, "z": 1},
         "center": {"x": 0, "y": 0, "z": 0},
     },
-    "top": {
+    "dorsal": {
         "eye": {"x": 0, "y": 0, "z": 1.5},
         "up": {"x": 0, "y": 1, "z": 0},
         "center": {"x": 0, "y": 0, "z": 0},
     },
-    "bottom": {
+    "ventral": {
         "eye": {"x": 0, "y": 0, "z": -1.5},
         "up": {"x": 0, "y": 1, "z": 0},
         "center": {"x": 0, "y": 0, "z": 0},
     },
-    "front": {
+    "anterior": {
         "eye": {"x": 0, "y": 1.5, "z": 0},
         "up": {"x": 0, "y": 0, "z": 1},
         "center": {"x": 0, "y": 0, "z": 0},
     },
-    "back": {
+    "posterior": {
         "eye": {"x": 0, "y": -1.5, "z": 0},
         "up": {"x": 0, "y": 0, "z": 1},
         "center": {"x": 0, "y": 0, "z": 0},
@@ -94,23 +94,15 @@ def _set_view_plot_surf_plotly(hemi, view):
     """
     if hemi not in VALID_HEMISPHERES:
         raise ValueError(f"hemi must be one of {VALID_HEMISPHERES}")
-    if view == 'anterior':
-        cameras_view = 'front'
-    elif view == 'posterior':
-        cameras_view = 'back'
-    elif view == 'dorsal':
-        cameras_view = 'top'
-    elif view == 'ventral':
-        cameras_view = 'bottom'
-    elif view == 'lateral':
-        cameras_view = hemi
+    if view == 'lateral':
+        view = hemi
     elif view == 'medial':
-        cameras_view = (VALID_HEMISPHERES[0]
-                        if hemi == VALID_HEMISPHERES[1]
-                        else VALID_HEMISPHERES[1])
-    else:
+        view = (VALID_HEMISPHERES[0]
+                if hemi == VALID_HEMISPHERES[1]
+                else VALID_HEMISPHERES[1])
+    if view not in CAMERAS:
         raise ValueError(f"view must be one of {VALID_VIEWS}")
-    return cameras_view
+    return view
 
 
 def _colorscale_plotly(cmap, data, threshold=None, vmin=None, vmax=None):
