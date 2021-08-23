@@ -176,6 +176,7 @@ def _plot_surf_plotly(surf_mesh, surf_map=None, bg_map=None,
     """
     try:
         import plotly.graph_objects as go
+        import kaleido  # noqa: F401
     except ImportError:
         raise ImportError("Using engine='plotly' requires that "
                           "plotly and kaleido are installed.")
