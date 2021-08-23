@@ -640,8 +640,8 @@ def plot_surf(surf_mesh, surf_map=None, bg_map=None,
             threshold=threshold, alpha=alpha, bg_on_data=bg_on_data,
             darkness=darkness, vmin=vmin, vmax=vmax, cbar_vmin=cbar_vmin,
             cbar_vmax=cbar_vmax, cbar_tick_format=cbar_tick_format,
-            title=title, font_size=font_size, output_file=output_file, axes=axes,
-            figure=figure, **kwargs)
+            title=title, font_size=font_size, output_file=output_file,
+            axes=axes, figure=figure, **kwargs)
     elif engine == 'plotly':
         fig = _plot_surf_plotly(
             surf_mesh, surf_map=surf_map, bg_map=bg_map, view=view,
