@@ -279,14 +279,15 @@ def _compute_surf_map_faces_matplotlib(surf_map, faces, avg_method,
     surf_map_data = _check_surf_map(surf_map, n_vertices)
 
     # create face values from vertex values by selected avg methods
-    if avg_method == 'mean':
-        surf_map_faces = np.mean(surf_map_data[faces], axis=1)
-    elif avg_method == 'median':
-        surf_map_faces = np.median(surf_map_data[faces], axis=1)
-    elif avg_method == 'min':
-        surf_map_faces = np.min(surf_map_data[faces], axis=1)
-    elif avg_method == 'max':
-        surf_map_faces = np.max(surf_map_data[faces], axis=1)
+    error_message = ("avg_method should be either "
+                     "['mean', 'median', 'max', 'min'] "
+                     "or a custom function")
+    if isinstance(avg_method, str):
+        try:
+            avg_method = getattr(np, avg_method)
+        except AttributeError:
+            raise ValueError(error_message)
+        surf_map_faces = avg_method(surf_map_data[faces], axis=1)
     elif callable(avg_method):
         surf_map_faces = np.apply_along_axis(
             avg_method, 1, surf_map_data[faces]
@@ -310,11 +311,7 @@ def _compute_surf_map_faces_matplotlib(surf_map, faces, avg_method,
                 '(int or float)'
             )
     else:
-        raise ValueError(
-            "avg_method should be either "
-            "['mean', 'median', 'max', 'min'] "
-            "or a custom function"
-        )
+        raise ValueError(error_message)
     return surf_map_faces
 
 
