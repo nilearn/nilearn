@@ -93,8 +93,9 @@ target_shape : :obj:`tuple` or :obj:`list`, optional.
 
 # Low_pass
 docdict['low_pass'] = """
-low_pass : :obj:`float`, optional
+low_pass : :obj:`float` or None, optional
     Low cutoff frequency in Hertz.
+    If None, no low-pass filtering will be performed.
     Default=None."""
 
 # High pass
@@ -105,8 +106,9 @@ high_pass : :obj:`float`, optional
 
 # t_r
 docdict['t_r'] = """
-t_r : :obj:`float`, optional
-    Repetition time, in second (sampling period). Set to ``None`` if not.
+t_r : :obj:`float` or None, optional
+    Repetition time, in seconds (sampling period).
+    Set to ``None`` if not provided.
     Default=None."""
 
 # mask_img
@@ -130,7 +132,7 @@ n_parcels : :obj:`int`, optional
 # random_state
 docdict['random_state'] = """
 random_state : :obj:`int` or RandomState, optional
-    Pseudo number generator state used for random sampling."""
+    Pseudo-random number generator state used for random sampling."""
 
 # Memory_level
 memory_level = """
@@ -193,7 +195,7 @@ output_file : :obj:`str`, or None, optional
 
 # extractor / extract_type
 docdict['extractor'] = """
-extractor : :obj:`str` {'local_regions', 'connected_components'}, optional
+extractor : {'local_regions', 'connected_components'}, optional
     This option can take two values:
 
         - 'connected_components': each component/region in the image is
