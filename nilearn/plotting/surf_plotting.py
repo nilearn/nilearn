@@ -329,9 +329,9 @@ def _configure_cmap_matplotlib(cmap, vmin, vmax, threshold,
     # in this case, we reduce the number of ticks
     if cbar_tick_format == "%i" and vmax - vmin < nb_ticks:
         ticks = np.arange(vmin, vmax + 1)
-        nb_ticks = len(ticks)
+        n_ticks = len(ticks)
     else:
-        ticks = np.linspace(vmin, vmax, nb_ticks)
+        ticks = np.linspace(vmin, vmax, n_ticks)
     bounds = np.linspace(vmin, vmax, our_cmap.N)
     if threshold is not None:
         cmaplist = [our_cmap(i) for i in range(our_cmap.N)]
