@@ -2173,7 +2173,7 @@ def _download_spm_auditory_data(data_dir, subject_dir, subject_id):
     _fetch_file(url, subject_dir)
     try:
         _uncompress_file(archive_path)
-    except:  # noqa:E722
+    except:  # noqa: E722
         print('Archive corrupted, trying to download it again.')
         return fetch_spm_auditory(data_dir=data_dir, data_name='',
                                   subject_id=subject_id)
@@ -2424,7 +2424,7 @@ def _download_data_spm_multimodal(data_dir, subject_dir, subject_id):
         _fetch_file(url, subject_dir)
         try:
             _uncompress_file(archive_path)
-        except:  # noqa:E722
+        except:  # noqa: E722
             print('Archive corrupted, trying to download it again.')
             return fetch_spm_multimodal_fmri(data_dir=data_dir,
                                              data_name='',
@@ -2559,7 +2559,7 @@ def fetch_fiac_first_level(data_dir=None, verbose=1):
     _fetch_file(url, data_dir)
     try:
         _uncompress_file(archive_path)
-    except:  # noqa:E722
+    except:  # noqa: E722
         print('Archive corrupted, trying to download it again.')
         return fetch_fiac_first_level(data_dir=data_dir)
 
