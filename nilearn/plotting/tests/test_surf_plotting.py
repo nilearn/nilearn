@@ -17,18 +17,18 @@ from numpy.testing import assert_array_equal
 from nilearn.plotting.surf_plotting import VALID_HEMISPHERES, VALID_VIEWS
 
 
-EXPECTED_CAMERAS_PLOTLY = {"left": {"anterior": "front",
-                                    "posterior": "back",
+EXPECTED_CAMERAS_PLOTLY = {"left": {"anterior": "anterior",
+                                    "posterior": "posterior",
                                     "medial": "right",
                                     "lateral": "left",
-                                    "dorsal": "top",
-                                    "ventral": "bottom"},
-                           "right": {"anterior": "front",
-                                     "posterior": "back",
+                                    "dorsal": "dorsal",
+                                    "ventral": "ventral"},
+                           "right": {"anterior": "anterior",
+                                     "posterior": "posterior",
                                      "medial": "left",
                                      "lateral": "right",
-                                     "dorsal": "top",
-                                     "ventral": "bottom"}}
+                                     "dorsal": "dorsal",
+                                     "ventral": "ventral"}}
 
 
 EXPECTED_VIEW_MATPLOTLIB = {"left": {"anterior": (0, 90),
@@ -87,8 +87,9 @@ def test_set_view_plot_surf_errors():
 
 def test_configure_title_plotly():
     from nilearn.plotting.surf_plotting import _configure_title_plotly
-    assert _configure_title_plotly(None) == dict()
-    config = _configure_title_plotly("Test Title")
+    assert _configure_title_plotly(None, None) == dict()
+    assert _configure_title_plotly(None, 22) == dict()
+    config = _configure_title_plotly("Test Title", 22)
     assert config["text"] == "Test Title"
     assert config["x"] == 0.5
     assert config["y"] == 0.96
