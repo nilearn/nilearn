@@ -208,11 +208,7 @@ class NiftiLabelsMasker(BaseMasker, CacheMixin):
             raise ValueError("invalid value for 'resampling_target' "
                              "parameter: " + str(resampling_target))
 
-    def generate_report(self):
-        from nilearn.reporting.html_report import generate_report
-        return generate_report(self)
-
-    def _reporting(self):
+    def _build_report(self):
         """
         Returns
         -------
