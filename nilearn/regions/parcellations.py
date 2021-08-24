@@ -468,7 +468,7 @@ class Parcellations(MultiPCA):
                 Please see the related documentation for details.
 
             .. note::
-                Same confounds will used for cleaning signals before
+                Confounds will be used for cleaning signals before
                 learning parcellations.
 
         Returns
