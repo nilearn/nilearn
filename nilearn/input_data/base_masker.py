@@ -129,9 +129,11 @@ def _switch_backend(new_backend):
         @functools.wraps(func)
         def wrapper(*args, **kwargs):
             import matplotlib as mpl
+            import matplotlib.pyplot as plt
             old_backend = mpl.get_backend()
             mpl.use(new_backend)
             value = func(*args, **kwargs)
+            plt.close()
             mpl.use(old_backend)
             return value
         return wrapper
