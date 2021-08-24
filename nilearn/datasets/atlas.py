@@ -573,6 +573,7 @@ def fetch_atlas_smith_2009(data_dir=None, mirror='origin', url=None,
     return Bunch(**params)
 
 
+@fill_doc
 def fetch_atlas_yeo_2011(data_dir=None, url=None, resume=True, verbose=1):
     """Download and return file names for the Yeo 2011 parcellation.
 
