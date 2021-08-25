@@ -174,7 +174,7 @@ def _configure_title_plotly(title, font_size):
             "yanchor": "top"}
 
 
-def _plot_surf_plotly(surf_mesh, surf_map=None, bg_map=None,
+def _plot_surf_plotly(coords, faces, surf_map=None, bg_map=None,
                       hemi='left', view='lateral', cmap=None,
                       colorbar=False, threshold=None, vmin=None,
                       vmax=None, title=None, font_size=15,
@@ -197,7 +197,6 @@ def _plot_surf_plotly(surf_mesh, surf_map=None, bg_map=None,
     except ImportError:
         raise ImportError("Using engine='plotly' requires that "
                           "plotly and kaleido are installed.")
-    coords, faces = load_surf_mesh(surf_mesh)
     x, y, z = coords.T
     i, j, k = faces.T
     if cmap is None:
@@ -397,7 +396,7 @@ def _threshold_and_rescale(data, threshold, vmin, vmax):
     return data_copy, kept_indices, vmin, vmax
 
 
-def _plot_surf_matplotlib(surf_mesh, surf_map=None, bg_map=None,
+def _plot_surf_matplotlib(coords, faces, surf_map=None, bg_map=None,
                           hemi='left', view='lateral', cmap=None,
                           colorbar=False, avg_method='mean', threshold=None,
                           alpha='auto', bg_on_data=False, darkness=1,
@@ -411,10 +410,6 @@ def _plot_surf_matplotlib(surf_mesh, surf_map=None, bg_map=None,
     engine is matplotlib.
     """
     _default_figsize = [4, 4]
-
-    # load mesh and derive axes limits
-    mesh = load_surf_mesh(surf_mesh)
-    coords, faces = mesh[0], mesh[1]
     limits = [coords.min(), coords.max()]
 
     # set view
@@ -633,9 +628,10 @@ def plot_surf(surf_mesh, surf_map=None, bg_map=None,
     nilearn.surface.vol_to_surf : For info on the generation of surfaces.
 
     """
+    coords, faces = load_surf_mesh(surf_mesh)
     if engine == 'matplotlib':
         fig = _plot_surf_matplotlib(
-            surf_mesh, surf_map=surf_map, bg_map=bg_map, hemi=hemi,
+            coords, faces, surf_map=surf_map, bg_map=bg_map, hemi=hemi,
             view=view, cmap=cmap, colorbar=colorbar, avg_method=avg_method,
             threshold=threshold, alpha=alpha, bg_on_data=bg_on_data,
             darkness=darkness, vmin=vmin, vmax=vmax, cbar_vmin=cbar_vmin,
@@ -644,7 +640,7 @@ def plot_surf(surf_mesh, surf_map=None, bg_map=None,
             axes=axes, figure=figure, **kwargs)
     elif engine == 'plotly':
         fig = _plot_surf_plotly(
-            surf_mesh, surf_map=surf_map, bg_map=bg_map, view=view,
+            coords, faces, surf_map=surf_map, bg_map=bg_map, view=view,
             hemi=hemi, cmap=cmap, colorbar=colorbar,
             threshold=threshold, vmin=vmin, vmax=vmax, title=title,
             font_size=font_size, output_file=output_file)
