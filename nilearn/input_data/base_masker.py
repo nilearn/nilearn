@@ -6,7 +6,6 @@ Transformer used to apply basic transformations on MRI data.
 
 import warnings
 import abc
-import functools
 
 import numpy as np
 
@@ -216,17 +215,6 @@ class BaseMasker(BaseEstimator, TransformerMixin, CacheMixin):
 
         return self.transform_single_imgs(imgs, confounds=all_confounds,
                                           sample_mask=sample_mask)
-
-
-    def generate_report(self):
-        from nilearn.reporting.html_report import generate_report
-        return generate_report(self)
-
-    def _reporting(self):
-        if hasattr(self, "_build_report") and callable(self._build_report):
-            return self._build_report()
-        else:
-            raise NotImplementedError("Reporting is not yet implemented.")
 
     def fit_transform(self, X, y=None, confounds=None, sample_mask=None,
                       **fit_params):

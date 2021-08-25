@@ -287,7 +287,11 @@ class NiftiMasker(BaseMasker, CacheMixin):
             "`fit_transform`."))
         return self._sample_mask
 
-    def _build_report(self):
+    def generate_report(self):
+        from nilearn.reporting.html_report import generate_report
+        return generate_report(self)
+
+    def _reporting(self):
         """
         Returns
         -------
