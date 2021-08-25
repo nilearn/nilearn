@@ -344,8 +344,9 @@ def _configure_cmap_matplotlib(cmap, vmin, vmax, threshold,
     return our_cmap, norm, ticks, bounds
 
 
-def _compute_facecolors(bg_map, faces, n_vertices, darkness, alpha):
-    """Helper function for plot_surf.
+def _compute_facecolors_matplotlib(bg_map, faces, n_vertices,
+                                   darkness, alpha):
+    """Helper function for plot_surf with matplotlib engine.
 
     This function computes the facecolors.
     """
@@ -448,9 +449,9 @@ def _plot_surf_matplotlib(coords, faces, surf_map=None, bg_map=None,
     # reduce viewing distance to remove space around mesh
     axes.dist = 8
 
-    face_colors = _compute_facecolors(bg_map, faces,
-                                      coords.shape[0],
-                                      darkness, alpha)
+    face_colors = _compute_facecolors_matplotlib(
+        bg_map, faces, coords.shape[0], darkness, alpha
+    )
     if surf_map is not None:
         surf_map_faces = _compute_surf_map_faces_matplotlib(
             surf_map, faces, avg_method, coords.shape[0],
