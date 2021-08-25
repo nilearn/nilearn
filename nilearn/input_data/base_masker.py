@@ -124,22 +124,6 @@ def filter_and_extract(imgs, extraction_function,
     return region_signals, aux
 
 
-def _switch_backend(new_backend):
-    def decorator_switch_backend(func):
-        @functools.wraps(func)
-        def wrapper(*args, **kwargs):
-            import matplotlib as mpl
-            import matplotlib.pyplot as plt
-            old_backend = mpl.get_backend()
-            mpl.use(new_backend)
-            value = func(*args, **kwargs)
-            plt.close()
-            mpl.use(old_backend)
-            return value
-        return wrapper
-    return decorator_switch_backend
-
-
 class BaseMasker(BaseEstimator, TransformerMixin, CacheMixin):
     """Base class for NiftiMaskers
     """
@@ -238,7 +222,6 @@ class BaseMasker(BaseEstimator, TransformerMixin, CacheMixin):
         from nilearn.reporting.html_report import generate_report
         return generate_report(self)
 
-    @_switch_backend("Agg")
     def _reporting(self):
         if hasattr(self, "_build_report") and callable(self._build_report):
             return self._build_report()

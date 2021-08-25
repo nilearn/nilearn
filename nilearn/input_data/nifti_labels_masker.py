@@ -217,6 +217,7 @@ class NiftiLabelsMasker(BaseMasker, CacheMixin):
 
         """
         try:
+            import matplotlib.pyplot as plt
             from nilearn import plotting
         except ImportError:
             with warnings.catch_warnings():
@@ -284,6 +285,7 @@ class NiftiLabelsMasker(BaseMasker, CacheMixin):
                 display = plotting.plot_img(img,
                                             black_bg=False,
                                             cmap='CMRmap_r')
+                plt.close()
                 display.add_contours(labels_image,
                                      filled=False,
                                      linewidths=3)
@@ -297,6 +299,7 @@ class NiftiLabelsMasker(BaseMasker, CacheMixin):
                 warnings.warn(msg)
                 self._report_content['warning_message'] = msg
                 display = plotting.plot_roi(labels_image)
+                plt.close()
 
             # If we have a mask, show its contours
             if self._reporting_data['mask'] is not None:
