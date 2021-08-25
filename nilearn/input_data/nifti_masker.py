@@ -301,6 +301,7 @@ class NiftiMasker(BaseMasker, CacheMixin):
         """
         try:
             from nilearn import plotting
+            import matplotlib.pyplot as plt
         except ImportError:
             with warnings.catch_warnings():
                 mpl_unavail_msg = ('Matplotlib is not imported! '
@@ -335,6 +336,7 @@ class NiftiMasker(BaseMasker, CacheMixin):
         init_display = plotting.plot_img(img,
                                          black_bg=False,
                                          cmap='CMRmap_r')
+        plt.close()
         if mask is not None:
             init_display.add_contours(mask, levels=[.5], colors='g',
                                       linewidths=2.5)
@@ -358,6 +360,7 @@ class NiftiMasker(BaseMasker, CacheMixin):
             final_display = plotting.plot_img(resampl_img,
                                               black_bg=False,
                                               cmap='CMRmap_r')
+            plt.close()
             final_display.add_contours(resampl_mask, levels=[.5],
                                        colors='g', linewidths=2.5)
 
