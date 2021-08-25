@@ -627,12 +627,12 @@ class FirstLevelModel(BaseGLM):
             with operators +-`*`/.
 
         stat_type : {'t', 'F'}, optional
-            type of the contrast
+            Type of the contrast.
 
         output_type : str, optional
             Type of the output map. Can be 'z_score', 'stat', 'p_value',
             'effect_size', 'effect_variance' or 'all'.
-            Default='z-score'.
+            Default='z_score'.
 
         Returns
         -------
