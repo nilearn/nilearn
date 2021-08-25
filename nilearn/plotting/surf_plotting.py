@@ -3,6 +3,7 @@ Functions for surface visualization.
 Only matplotlib is required.
 """
 import itertools
+import warnings
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -122,21 +123,15 @@ def _set_view_plot_surf_plotly(hemi, view):
     return view
 
 
-def _colorscale_plotly(cmap, data, threshold=None, vmin=None, vmax=None):
-    """Helper function for plot_surf with plotly engine.
+def _get_cmap(cmap, vmin, vmax, threshold=None):
+    """Helper function for plot_surf.
 
-    This function returns the colorscale for a given cmap
-    and thresholding configuration.
-
-    .. note::
-        This function does not enforce symmetric cmap.
-
+    This function returns the colormap.
     """
-    if vmin is None:
-        vmin = np.nanmin(data)
-    if vmax is None:
-        vmax = np.nanmax(data)
     our_cmap = get_cmap(cmap)
+    if vmin is None or vmax is None:
+        raise ValueError("vmin and vmax cannot be None. "
+                         "Use _get_bounds to compute them.")
     norm = Normalize(vmin=vmin, vmax=vmax)
     cmaplist = [our_cmap(i) for i in range(our_cmap.N)]
     if threshold is not None:
@@ -147,13 +142,77 @@ def _colorscale_plotly(cmap, data, threshold=None, vmin=None, vmax=None):
             cmaplist[i] = (0.5, 0.5, 0.5, 1.)
     our_cmap = LinearSegmentedColormap.from_list(
         'Custom cmap', cmaplist, our_cmap.N)
+    return our_cmap, norm
+
+
+def _colorscale_plotly(cmap):
+    """Helper function for plot_surf with plotly engine.
+
+    This function returns the colorscale for a given already
+    configured cmap.
+
+    .. note::
+        See _get_cmap to configure the cmap.
+
+    """
     x = np.linspace(0, 1, 100)
-    rgb = our_cmap(x, bytes=True)[:, :3]
+    rgb = cmap(x, bytes=True)[:, :3]
     rgb = np.array(rgb, dtype=int)
     colors = []
     for i, col in zip(x, rgb):
         colors.append([np.round(i, 3), "rgb({}, {}, {})".format(*col)])
-    return colors, our_cmap, norm, vmin, vmax
+    return colors
+
+
+def _get_bounds(data, vmin, vmax, threshold,
+                symmetric_cmap, enforce_symmetric_cmap=False):
+    """Helper function for colorbar settings.
+
+    If enforce_symmetric_cmap is set to True, the
+    colorbar will range from -vmax to vmax.
+    """
+    if enforce_symmetric_cmap:
+        if not symmetric_cmap:
+            # If all data is positive or negative and
+            # symmetric_cbar is False, then range from vmin to vmax
+            if np.nanmin(data) >= 0 or np.nanmax(data) <= 0:
+                return _get_asymmetric_bounds(data, vmin, vmax)
+            else:
+                warnings.warn('you have specified symmetric_cmap=False '
+                              'but the map contains both negative and '
+                              'and positive values; forcing the colorbar '
+                              'to be symmetric.')
+        return _get_symmetric_bounds(data, vmin, vmax, threshold)
+    else:
+        if symmetric_cmap:
+            return _get_symmetric_bounds(data, vmin, vmax, threshold)
+        else:
+            return _get_asymmetric_bounds(data, vmin, vmax)
+
+
+def _get_asymmetric_bounds(data, vmin, vmax):
+    vmin = np.nanmin(data) if vmin is None else vmin
+    vmax = np.nanmax(data) if vmax is None else vmax
+    return vmin, vmax
+
+
+def _get_symmetric_bounds(data, vmin, vmax, threshold):
+    abs_values = np.abs(data)
+    if vmin is not None:
+        warnings.warn('vmin cannot be chosen when cmap is symmetric')
+        vmin = None
+    if threshold is not None:
+        if vmin is not None:
+            warnings.warn('choosing both vmin and a threshold is not allowed; '
+                          'setting vmin to 0')
+            vmin = 0
+    if vmax is None:
+        vmax = np.nanmax(abs_values)
+    vmax = float(vmax)
+    vmin = - vmax
+    if vmin is None:
+        vmin = np.nanmin(data)
+    return vmin, vmax
 
 
 def _configure_title_plotly(title, font_size):
@@ -209,9 +268,12 @@ def _plot_surf_plotly(coords, faces, surf_map=None, bg_map=None,
                              'of vertices as the mesh.')
     if surf_map is not None:
         _check_surf_map(surf_map, coords.shape[0])
-        colors, our_cmap, norm, vmin, vmax = _colorscale_plotly(
-            cmap, surf_map, threshold, vmin, vmax
+        vmin, vmax = _get_bounds(
+            surf_map, vmin, vmax, threshold, symmetric_cmap=False,
+            enforce_symmetric_cmap=False
         )
+        our_cmap, norm = _get_cmap(cmap, vmin, vmax, threshold)
+        colors = _colorscale_plotly(our_cmap)
         if not colorbar:
             vertexcolor = _get_vertexcolor(
                 surf_map, our_cmap, norm, None, bg_map
@@ -314,14 +376,11 @@ def _compute_surf_map_faces_matplotlib(surf_map, faces, avg_method,
     return surf_map_faces
 
 
-def _configure_cmap_matplotlib(cmap, vmin, vmax, threshold,
-                               cbar_tick_format):
+def _get_ticks_matplotlib(vmin, vmax, cbar_tick_format):
     """Helper function for plot_surf with matplotlib engine.
 
-    This function configure the colormap.
+    This function computes the tick values for the colorbar.
     """
-    our_cmap = get_cmap(cmap)
-    norm = Normalize(vmin=vmin, vmax=vmax)
     # Default number of ticks is 5...
     n_ticks = 5
     # ...unless we are dealing with integers with a small range
@@ -331,17 +390,7 @@ def _configure_cmap_matplotlib(cmap, vmin, vmax, threshold,
         n_ticks = len(ticks)
     else:
         ticks = np.linspace(vmin, vmax, n_ticks)
-    bounds = np.linspace(vmin, vmax, our_cmap.N)
-    if threshold is not None:
-        cmaplist = [our_cmap(i) for i in range(our_cmap.N)]
-        # set colors to grey for absolute values < threshold
-        istart = int(norm(-threshold, clip=True) * (our_cmap.N - 1))
-        istop = int(norm(threshold, clip=True) * (our_cmap.N - 1))
-        for i in range(istart, istop):
-            cmaplist[i] = (0.5, 0.5, 0.5, 1.)
-        our_cmap = LinearSegmentedColormap.from_list(
-            'Custom cmap', cmaplist, our_cmap.N)
-    return our_cmap, norm, ticks, bounds
+    return ticks
 
 
 def _compute_facecolors_matplotlib(bg_map, faces, n_vertices,
@@ -468,8 +517,9 @@ def _plot_surf_matplotlib(coords, faces, surf_map=None, bg_map=None,
             face_colors[kept_indices] = cmap(surf_map_faces[kept_indices])
 
         if colorbar:
-            our_cmap, norm, ticks, bounds = _configure_cmap_matplotlib(
-                cmap, vmin, vmax, threshold, cbar_tick_format)
+            ticks = _get_ticks_matplotlib(vmin, vmax, cbar_tick_format)
+            our_cmap, norm = _get_cmap(cmap, vmin, vmax, threshold)
+            bounds = np.linspace(vmin, vmax, our_cmap.N)
             # we need to create a proxy mappable
             proxy_mappable = ScalarMappable(cmap=our_cmap, norm=norm)
             proxy_mappable.set_array(surf_map_faces)
