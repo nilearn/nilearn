@@ -233,6 +233,21 @@ def _configure_title_plotly(title, font_size):
             "yanchor": "top"}
 
 
+def _get_colors(data, vmin, vmax, threshold, cmap, symmetric_cmap):
+    """Helper function for _plot_surf_plotly.
+
+    Returns colors, ranges, and cmap.
+    """
+    vmin, vmax = _get_bounds(
+        data, vmin, vmax, threshold,
+        symmetric_cmap=symmetric_cmap,
+        enforce_symmetric_cmap=False
+    )
+    our_cmap, norm = _get_cmap(cmap, vmin, vmax, threshold)
+    colors = _colorscale_plotly(our_cmap)
+    return vmin, vmax, colors, our_cmap, norm
+
+
 def _plot_surf_plotly(coords, faces, surf_map=None, bg_map=None,
                       hemi='left', view='lateral', cmap=None,
                       colorbar=False, threshold=None, vmin=None,
@@ -261,6 +276,7 @@ def _plot_surf_plotly(coords, faces, surf_map=None, bg_map=None,
     if cmap is None:
         cmap = cold_hot
     vertexcolor = None
+    bg_data = None
     if bg_map is not None:
         bg_data = load_surf_data(bg_map)
         if bg_data.shape[0] != coords.shape[0]:
@@ -268,24 +284,39 @@ def _plot_surf_plotly(coords, faces, surf_map=None, bg_map=None,
                              'of vertices as the mesh.')
     if surf_map is not None:
         _check_surf_map(surf_map, coords.shape[0])
-        vmin, vmax = _get_bounds(
-            surf_map, vmin, vmax, threshold, symmetric_cmap=False,
-            enforce_symmetric_cmap=False
+        vmin, vmax, colors, our_cmap, norm = _get_colors(
+            surf_map, vmin, vmax, threshold, cmap, symmetric_cmap=False
         )
-        our_cmap, norm = _get_cmap(cmap, vmin, vmax, threshold)
-        colors = _colorscale_plotly(our_cmap)
-        if not colorbar:
+        if threshold is not None:
+            # ISSUE:
+            # I don't see how to get around using vertexcolor in
+            # this case. When using vertexcolor instead of intensity
+            # it seems like the colorbar cannot be displayed...
             vertexcolor = _get_vertexcolor(
-                surf_map, our_cmap, norm, None, bg_map
+                surf_map, our_cmap, norm, threshold, bg_map
             )
+            mesh_3d = go.Mesh3d(x=x, y=y, z=z, i=i, j=j, k=k,
+                                vertexcolor=vertexcolor,
+                                showscale=colorbar)
         else:
             mesh_3d = go.Mesh3d(x=x, y=y, z=z, i=i, j=j, k=k,
                                 intensity=surf_map,
                                 colorscale=colors,
+                                showscale=colorbar,
                                 cmin=vmin, cmax=vmax)
-    if not colorbar or surf_map is None:
-        mesh_3d = go.Mesh3d(x=x, y=y, z=z, i=i, j=j, k=k,
-                            vertexcolor=vertexcolor)
+    else:
+        if bg_data is not None:
+            bg_vmin, bg_vmax, colors, _, _ = _get_colors(
+                bg_data, None, None, None, 'Greys',
+                symmetric_cmap=False
+            )
+            mesh_3d = go.Mesh3d(x=x, y=y, z=z, i=i, j=j, k=k,
+                                intensity=bg_data,
+                                colorscale=colors,
+                                showscale=colorbar)
+        else:
+            mesh_3d = go.Mesh3d(x=x, y=y, z=z, i=i, j=j, k=k,
+                                vertexcolor=None)
     cameras_view = _set_view_plot_surf_plotly(hemi, view)
     fig = go.Figure(data=[mesh_3d])
     fig.update_layout(scene_camera=CAMERAS[cameras_view],
