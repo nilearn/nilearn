@@ -154,7 +154,7 @@ Coding Style
 
 The main conventions we follow are : line length < 80, spaces around operators,
 variable names, function names are underscore separated (a_nice_function),
-classes in CamelCase, 2 empty lines between functions or classes
+classes in CamelCase, 2 empty lines between functions or classes.
 Each function and class must come with “docstrings” at the top of the function
 code, using `numpydoc formatting <https://numpydoc.readthedocs.io/en/latest/format.html>`_.
 They must summarize what the function does and document every parameter.
@@ -166,12 +166,20 @@ When fixing a bug, the first step is to write a minimal test that fails because
 of it, and then write the bugfix to make this test pass. For new code you should
 have roughly one test_function per function covering every line and
 testing the logic of the function. They should run on small mocked data,
-cover a representative range of parameters. If used, random number generator
-must be seeded through : "".
+cover a representative range of parameters.
+
+Tests must be seeded to avoid random failures. For objects using random seeds
+(e.g. scikit-learn estimators), pass either a  `np.random.RandomState` or
+an `int` as the seed. When your test use random numbers,  those must be
+generated through::
+
+      rng = np.random.RandomState(0)
+      my_number = rng.normal()
 
 To check your changes worked and didn't break anything run `pytest nilearn`.
-To do quicker checks it's possible to run only a subset of tests (e.g. using
-`pytest -v test_module.py`)
+To do quicker checks it's possible to run only a subset of tests::
+
+      pytest -v test_module.py
 
 
 Documentation
@@ -193,7 +201,8 @@ figures to depict its results. Examples should run fast
 To build our documentation, we are using `sphinx <https://www.sphinx-doc.org/en/master/usage/quickstart.html>`_ for the main documentation and `sphinx-gallery <https://sphinx-gallery.github.io/stable/index.html>`_ for the example tutorials.
 If you want to make changes to the example tutorials, please do the following :
 
-1. First, ensure that you have installed sphinx and sphinx-gallery. You can install the requirements using ``nilearn/requirements-build-docs.txt``.
+1. First, ensure that you have installed sphinx and sphinx-gallery. You can
+install the requirements using ``nilearn/requirements-build-docs.txt``.
 2. Fork the Nilearn repository and clone your fork.
 3. Then go to ``nilearn/examples``
 4. Make your changes using `reStructuredText files <https://www.sphinx-doc.org/en/2.0/usage/restructuredtext/basics.html>`_
@@ -207,11 +216,12 @@ If you want to make changes to the example tutorials, please do the following :
 
 6. Visually review the output in ``nilearn/doc/_build/html/auto_examples/``. If all looks well and there were no errors, commit and push the changes.
 7. You can now open a Pull Request from Nilearn's Pull Request page.
+8. Request the CI builds the full documentation from your branch::
 
-For more details about the Fork Clone Push worksflow, read here <https://guides.github.com/activities/forking/>_
+      git commit --allow-empty -m "[circle full] request full build"
 
-
-TIPS : To reduce building time, we suggest you to use the ``filename_pattern`` to build just one specific file::
+TIPS : When generating documentation locally, you can build only specific files
+to reduce building time. To do so, use the ``filename_pattern``::
 
       python3 -m sphinx -D sphinx_gallery_conf.filename_pattern=plot_decoding_tutorial.py -b html -d _build/doctrees . _build/html
 
@@ -226,12 +236,26 @@ Installing
 
 Here are the key steps you need to go through to copy the repo before contributing:
 
-1. fork the repo from github (fork button in the top right corner of our `main github page <https://github.com/nilearn/nilearn>`_) and clone your fork locally: `git clone git@github.com:<your_username>/nilearn.git`
-1. (optional but highly recommended) setup a conda environment to work on: `conda create -n nilearn python=3.9`
-1. (optional but highly recommended) activate this environment with `conda activate nilearn`
-1. install the forked version of `nilearn`: `pip install .`
-1. install dependencies with `pip install -r requirements-dev.txt`
-1. check that all tests pass with `pytest nilearn` (this can take a while)
+1. fork the repo from github (fork button in the top right corner of our `main github page <https://github.com/nilearn/nilearn>`_) and clone your fork locally::
+
+      git clone git@github.com:<your_username>/nilearn.git
+
+2. (optional but highly recommended) setup a conda environment to work on and activate it::
+
+      conda create -n nilearn python=3.9
+      conda activate nilearn
+
+3. install the forked version of `nilearn`::
+
+      pip install . -e
+
+4. install development dependencies::
+      pip install -r requirements-dev.txt
+
+5. check that all tests pass with (this can take a while)::
+
+      pytest nilearn
+
 
 Contributing
 ------------
@@ -239,12 +263,26 @@ Contributing
 Here are the key steps you need to go through to contribute code to `nilearn`:
 
 1. open or join an already existing issue explaining what you want to work on
-1. on your fork, create a new branch from master: `git checkout -b your_branch`
-1. implement and commit your changes on this branch (don't forget to write tests!)
-1. run the tests locally (to go faster, only run tests which are relevant to what you work on with, ex: `pytest -v nilearn/plotting/tests/test_surf_plotting.py`)
-1. push your changes to your online fork `git push`
-1. in github, open a pull request from your online fork to the main repo (most likely from `your_fork:your_branch` to `nilearn:master`).
-1. check that all online tests pass
+2. on your fork, create a new branch from master::
+
+      git checkout -b your_branch
+
+3. implement and commit your changes on this branch (don't forget to write tests!)
+4. run the tests locally (to go faster, only run tests which are relevant to what
+you work on with, for example)::
+
+      pytest -v nilearn/plotting/tests/test_surf_plotting.py
+
+5. push your changes to your online fork::
+
+      git push
+
+6. in github, open a pull request from your online fork to the main repo
+(most likely from `your_fork:your_branch` to `nilearn:master`).
+
+7. check that all continuous integration tests pass
+
+For more details about the Fork Clone Push worksflow, read here <https://guides.github.com/activities/forking/>_
 
 Additional cases
 =================
