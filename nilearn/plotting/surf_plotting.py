@@ -338,7 +338,7 @@ def plot_surf(surf_mesh, surf_map=None, bg_map=None,
         p3dcollec.set_facecolors(face_colors)
 
     if title is not None:
-        axes.set_title(title, position=(.5, .95))
+        plt.suptitle(title, x=.5, y=.95)
 
     # save figure if output file is given
     if output_file is not None:
