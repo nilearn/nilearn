@@ -10,6 +10,7 @@ import warnings
 
 import numpy as np
 from scipy.stats import gamma
+from collections.abc import Iterable
 
 
 def _gamma_difference_hrf(tr, oversampling=50, time_length=32., onset=0.,
@@ -435,6 +436,8 @@ def _hrf_kernel(hrf_model, tr, oversampling=50, fir_delays=None):
         'fir',
         'glover', 'glover + derivative', 'glover + derivative + dispersion',
         None]
+    error_msg = ("Could not process custom HRF model provided. "
+                 "Please refer to the related documentation.")
     if hrf_model == 'spm':
         hkernel = [spm_hrf(tr, oversampling)]
     elif hrf_model == 'spm + derivative':
@@ -457,11 +460,24 @@ def _hrf_kernel(hrf_model, tr, oversampling=50, fir_delays=None):
         hkernel = [np.hstack((np.zeros((f) * oversampling),
                               np.ones(oversampling) * 1. / oversampling))
                    for f in fir_delays]
+    elif callable(hrf_model):
+        try:
+            hkernel = [hrf_model(tr, oversampling)]
+        except:
+            raise ValueError(error_msg)
+    elif(isinstance(hrf_model, Iterable)
+         and all([callable(_) for _ in hrf_model])):
+        try:
+            hkernel = [model(tr, oversampling) for model in hrf_model]
+        except:
+            raise ValueError(error_msg)
     elif hrf_model is None:
         hkernel = [np.hstack((1, np.zeros(oversampling - 1)))]
     else:
-        raise ValueError('"{0}" is not a known hrf model. Use one of {1}'.
-                         format(hrf_model, acceptable_hrfs))
+        raise ValueError('"{0}" is not a known hrf model. '
+                         'Use either a custom model or '
+                         'one of {1}'.format(hrf_model,
+                                             acceptable_hrfs))
     return hkernel
 
 
