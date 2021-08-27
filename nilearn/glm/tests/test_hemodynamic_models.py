@@ -15,42 +15,34 @@ from nilearn.glm.first_level.hemodynamic_models import \
      glover_hrf, glover_time_derivative)
 
 
-def test_spm_hrf():
-    """ test that the spm_hrf is correctly normalized and has correct length
+HRF_MODEL_NAMES = ['spm', 'glover', 'spm + derivative',
+                   'glover + derivative',
+                   'spm + derivative + dispersion']
+
+
+HRF_MODELS = [spm_hrf, glover_hrf, spm_time_derivative,
+              glover_time_derivative, spm_dispersion_derivative]
+
+
+@pytest.fixture
+def expected_integral(hrf_model):
+    return 1 if hrf_model in [spm_hrf, glover_hrf] else 0
+
+
+@pytest.fixture
+def expected_length(tr):
+    return int(32 / tr * 50)
+
+
+@pytest.mark.parametrize('hrf_model', HRF_MODELS)
+@pytest.mark.parametrize('tr', [2, 3])
+def test_hrf_norm_and_length(hrf_model, tr, expected_integral, expected_length):
+    """ test that the hrf models are correctly normalized and
+    have correct lengths.
     """
-    h = spm_hrf(2.0)
-    assert_almost_equal(h.sum(), 1)
-    assert len(h) == 800
-
-
-def test_spm_hrf_derivative():
-    """ test that the spm_hrf is correctly normalized and has correct length
-    """
-    h = spm_time_derivative(2.0)
-    assert_almost_equal(h.sum(), 0)
-    assert len(h) == 800
-    h = spm_dispersion_derivative(2.0)
-    assert_almost_equal(h.sum(), 0)
-    assert len(h) == 800
-
-
-def test_glover_hrf():
-    """ test that the spm_hrf is correctly normalized and has correct length
-    """
-    h = glover_hrf(2.0)
-    assert_almost_equal(h.sum(), 1)
-    assert len(h) == 800
-    h = glover_dispersion_derivative(2.0)
-    assert_almost_equal(h.sum(), 0)
-    assert len(h) == 800
-
-
-def test_glover_time_derivative():
-    """ test that the spm_hrf is correctly normalized and has correct length
-    """
-    h = glover_time_derivative(2.0)
-    assert_almost_equal(h.sum(), 0)
-    assert len(h) == 800
+    h = hrf_model(tr)
+    assert_almost_equal(h.sum(), expected_integral)
+    assert len(h) == expected_length
 
 
 def test_resample_regressor():
