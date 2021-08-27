@@ -23,6 +23,7 @@ from nibabel.onetime import auto_attr
 from sklearn.base import clone
 from sklearn.cluster import KMeans
 
+from nilearn._utils import fill_doc
 from nilearn._utils.glm import (_check_events_file_uses_tab_separators,
                                 _check_run_tables, get_bids_files,
                                 parse_bids_filename)
@@ -216,6 +217,7 @@ def run_glm(Y, X, noise_model='ar1', bins=100, n_jobs=1, verbose=0):
     return labels, results
 
 
+@fill_doc
 class FirstLevelModel(BaseGLM):
     """ Implementation of the General Linear Model
     for single session fMRI data.
@@ -225,7 +227,7 @@ class FirstLevelModel(BaseGLM):
     t_r : float
         This parameter indicates repetition times of the experimental runs.
         In seconds. It is necessary to correctly consider times in the design
-        matrix. This parameter is also passed to nilearn.signal.clean.
+        matrix. This parameter is also passed to :func:`nilearn.signal.clean`.
         Please see the related documentation for details.
 
     slice_time_ref : float, optional
@@ -233,13 +235,8 @@ class FirstLevelModel(BaseGLM):
         slice timing preprocessing step of the experimental runs. It is
         expressed as a percentage of the t_r (time repetition), so it can have
         values between 0. and 1. Default=0.
-
-    hrf_model : {'glover', 'spm', 'spm + derivative', \
-            'spm + derivative + dispersion', 'glover + derivative', \
-            'glover + derivative + dispersion', 'fir', None}, optional
-        String that specifies the hemodynamic response function.
+    %(hrf_model)s
         Default='glover'.
-
     drift_model : string, optional
         This parameter specifies the desired drift model for the design
         matrices. It can be 'polynomial', 'cosine' or None.
