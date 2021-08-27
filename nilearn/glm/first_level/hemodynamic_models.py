@@ -464,13 +464,13 @@ def _hrf_kernel(hrf_model, tr, oversampling=50, fir_delays=None):
     elif callable(hrf_model):
         try:
             hkernel = [hrf_model(tr, oversampling)]
-        except:
+        except TypeError:
             raise ValueError(error_msg)
     elif(isinstance(hrf_model, Iterable)
          and all([callable(_) for _ in hrf_model])):
         try:
             hkernel = [model(tr, oversampling) for model in hrf_model]
-        except:
+        except TypeError:
             raise ValueError(error_msg)
     elif hrf_model is None:
         hkernel = [np.hstack((1, np.zeros(oversampling - 1)))]

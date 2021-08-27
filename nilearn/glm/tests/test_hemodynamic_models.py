@@ -36,7 +36,8 @@ def expected_length(tr):
 
 @pytest.mark.parametrize('hrf_model', HRF_MODELS)
 @pytest.mark.parametrize('tr', [2, 3])
-def test_hrf_norm_and_length(hrf_model, tr, expected_integral, expected_length):
+def test_hrf_norm_and_length(hrf_model, tr, expected_integral,
+                             expected_length):
     """ test that the hrf models are correctly normalized and
     have correct lengths.
     """
