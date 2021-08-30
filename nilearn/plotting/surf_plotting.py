@@ -491,7 +491,7 @@ def plot_surf_contours(surf_mesh, roi_map, axes=None, figure=None, levels=None,
     if legend and np.any([lbl is not None for lbl in labels]):
         figure.legend(handles=patch_list)
         # if legends, then move title to the left
-        pos_title_x = .1
+        pos_title_x = .3
     if title is None and hasattr(figure._suptitle, "_text"):
         title = figure._suptitle._text
     if title:
