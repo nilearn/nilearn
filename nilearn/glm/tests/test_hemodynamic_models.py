@@ -17,11 +17,13 @@ from nilearn.glm.first_level.hemodynamic_models import \
 
 HRF_MODEL_NAMES = ['spm', 'glover', 'spm + derivative',
                    'glover + derivative',
-                   'spm + derivative + dispersion']
+                   'spm + derivative + dispersion',
+                   'glover + derivative + dispersion']
 
 
 HRF_MODELS = [spm_hrf, glover_hrf, spm_time_derivative,
-              glover_time_derivative, spm_dispersion_derivative]
+              glover_time_derivative, spm_dispersion_derivative,
+              glover_dispersion_derivative]
 
 
 @pytest.fixture
@@ -223,14 +225,28 @@ def test_hkernel():
     assert_almost_equal(h[1], glover_time_derivative(tr))
     assert_almost_equal(h[0], glover_hrf(tr))
     assert len(h) == 2
+    h = _hrf_kernel('glover + derivative + dispersion', tr)
+    assert len(h) == 3
+    assert_almost_equal(h[2], glover_dispersion_derivative(tr))
+    assert_almost_equal(h[1], glover_time_derivative(tr))
+    assert_almost_equal(h[0], glover_hrf(tr))
     h = _hrf_kernel('fir', tr, fir_delays=np.arange(4))
     assert len(h) == 4
     for dh in h:
         assert_almost_equal(dh.sum(), 1.)
-
     h = _hrf_kernel(None, tr)
     assert len(h) == 1
     assert_almost_equal(h[0], np.hstack((1, np.zeros(49))))
+    with pytest.raises(ValueError,
+                       match="Could not process custom HRF model provided."):
+        _hrf_kernel(lambda x: np.ones(int(x)), tr)
+        _hrf_kernel([lambda x: np.ones(int(x))] * 2, tr)
+    h = _hrf_kernel(lambda tr, ov: np.ones(int(tr * ov)), tr)
+    assert len(h) == 1
+    assert_almost_equal(h[0], np.ones(100))
+    with pytest.raises(ValueError,
+                       match="is not a known hrf model."):
+        _hrf_kernel("foo", tr)
 
 
 def test_make_regressor_1():
