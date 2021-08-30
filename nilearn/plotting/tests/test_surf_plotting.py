@@ -39,6 +39,12 @@ def test_plot_surf():
     plot_surf(mesh, bg_map=bg, colorbar=True, cbar_vmin=0,
               cbar_vmax=150, cbar_tick_format="%i")
 
+    # Plot with title
+    display = plot_surf(mesh, bg_map=bg, title='Test title')
+    assert display._suptitle._text == 'Test title'
+    assert display._suptitle._x == .5
+    assert display._suptitle._y == .95
+
     # Plot with avg_method
     ## Test all built-in methods and check
     mapp = rng.standard_normal(size=mesh[0].shape[0])
@@ -164,6 +170,13 @@ def test_plot_surf_stat_map():
                        bg_on_data=True, darkness=0.5)
     plot_surf_stat_map(mesh, stat_map=data, bg_map=bg, colorbar=True,
                        bg_on_data=True, darkness=0.5)
+
+    # Plot with title
+    display = plot_surf_stat_map(mesh, stat_map=data, bg_map=bg,
+                                 title="Stat map title")
+    assert display._suptitle._text == "Stat map title"
+    assert display._suptitle._x == .5
+    assert display._suptitle._y == .95
 
     # Apply threshold
     plot_surf_stat_map(mesh, stat_map=data, bg_map=bg,
@@ -471,7 +484,12 @@ def test_plot_surf_contours():
     plot_surf_contours(mesh, parcellation, figure=fig)
     fig = plot_surf(mesh)
     plot_surf_contours(mesh, parcellation, figure=fig)
-    plot_surf_contours(mesh, parcellation, title='title')
+    display = plot_surf_contours(mesh, parcellation, levels=[1, 2],
+                                 labels=['1', '2'], colors=['r', 'g'],
+                                 legend=True, title='title')
+    assert display._suptitle._text == 'title'
+    assert display._suptitle._x == .1
+    assert display._suptitle._y == .95
     with tempfile.NamedTemporaryFile() as tmp_file:
         plot_surf_contours(mesh, parcellation, output_file=tmp_file.name)
     plt.close()
