@@ -542,6 +542,37 @@ docdict['regressor_options'] = """
 
 """ % SKLEARN_LINKS
 
+# mask_strategy
+docdict["mask_strategy"] = """
+mask_strategy : {'background', 'epi', 'whole-brain-template',\
+'gm-template', 'wm-template'}, optional
+    The strategy used to compute the mask:
+
+        - 'background': Use this option if your images present
+          a clear homogeneous background.
+        - 'epi': Use this option if your images are raw EPI images
+        - 'whole-brain-template': This will extract the whole-brain
+          part of your data by resampling the MNI152 brain mask for
+          your data's field of view.
+
+            .. note::
+                This option is equivalent to the previous 'template' option
+                which is now deprecated.
+
+        - 'gm-template': This will extract the gray matter part of your
+          data by resampling the corresponding MNI152 template for your
+          data's field of view.
+
+            .. versionadded:: 0.8.1
+
+        - 'wm-template': This will extract the white matter part of your
+          data by resampling the corresponding MNI152 template for your
+          data's field of view.
+
+            .. versionadded:: 0.8.1
+
+"""
+
 docdict_indented = {}
 
 

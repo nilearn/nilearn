@@ -15,7 +15,13 @@ NEW
 - :func:`nilearn.datasets.load_mni152_wm_mask` loads mask from the white-matter
   MNI152 template.
 - :func:`nilearn.image.binarize_img` binarizes images into 0 and 1.
-
+- :class:`nilearn.input_data.NiftiMasker`,
+  :class:`nilearn.input_data.MultiNiftiMasker`, and objects relying on such maskers
+  (:class:`nilearn.decoding.Decoder` or :class:`nilearn.decomposition.CanICA`
+  for example) can now use new options for the argument `mask_strategy`:
+  `whole-brain-template` for whole-brain template (same as previous option
+  `template`), `gm-template` for grey-matter template, and `wm-template`
+  for white-matter template.
 
 Fixes
 -----

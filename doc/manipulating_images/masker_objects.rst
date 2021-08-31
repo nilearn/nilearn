@@ -165,7 +165,9 @@ The `mask_strategy` argument controls how the mask is computed:
 
 * `background`: detects a continuous background
 * `epi`: suitable for EPI images
-* `template`: uses an MNI grey-matter template
+* `whole-brain-template`: uses an MNI whole-brain template
+* `gm-template`: uses an MNI grey-matter template
+* `wm-template`: uses an MNI white-matter template
 
 Extra mask parameters: opening, cutoff...
 ..........................................

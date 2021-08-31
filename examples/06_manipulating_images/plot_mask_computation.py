@@ -120,10 +120,12 @@ report
 # Computing the mask from the MNI template
 ###############################################################################
 #
-# A mask can also be computed from the MNI gray matter template. In this
-# case, it is resampled to the target image
+# A mask can also be computed from the MNI template. In this case, it is
+# resampled to the target image. Three options are available:
+# 'whole-brain-template', 'gm-template', and 'wm-template' depending on whether
+# the whole-brain, gray matter, or white matter template should be used.
 
-masker = NiftiMasker(mask_strategy='template')
+masker = NiftiMasker(mask_strategy='whole-brain-template')
 masker.fit(epi_img)
 report = masker.generate_report()
 report
