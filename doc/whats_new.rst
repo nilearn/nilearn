@@ -60,6 +60,9 @@ Enhancements
 Changes
 -------
 
+- The version of the script `jquery.min.js` was bumped from 3.3.1 to 3.6.0 due
+  to potential vulnerability issues with versions < 3.5.0.
+
 .. _v0.8.0:
 
 0.8.0
