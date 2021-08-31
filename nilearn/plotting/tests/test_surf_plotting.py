@@ -486,8 +486,16 @@ def test_plot_surf_contours():
     plot_surf_contours(mesh, parcellation, figure=fig)
     display = plot_surf_contours(mesh, parcellation, levels=[1, 2],
                                  labels=['1', '2'], colors=['r', 'g'],
-                                 legend=True, title='title')
+                                 legend=True, title='title',
+                                 figure=fig)
     assert display._suptitle._text == 'title'
+    assert display._suptitle._x == .3
+    assert display._suptitle._y == .95
+    fig = plot_surf(mesh, title='title 2')
+    display = plot_surf_contours(mesh, parcellation, levels=[1, 2],
+                                 labels=['1', '2'], colors=['r', 'g'],
+                                 legend=True, figure=fig)
+    assert display._suptitle._text == 'title 2'
     assert display._suptitle._x == .3
     assert display._suptitle._y == .95
     with tempfile.NamedTemporaryFile() as tmp_file:
