@@ -338,7 +338,7 @@ def plot_surf(surf_mesh, surf_map=None, bg_map=None,
         p3dcollec.set_facecolors(face_colors)
 
     if title is not None:
-        axes.set_title(title, position=(.5, .95))
+        plt.suptitle(title, x=.5, y=.95)
 
     # save figure if output file is given
     if output_file is not None:
@@ -487,10 +487,15 @@ def plot_surf_contours(surf_mesh, roi_map, axes=None, figure=None, levels=None,
         if label and legend:
             patch_list.append(Patch(color=color, label=label))
     # plot legend only if indicated and labels provided
+    pos_title_x = .5
     if legend and np.any([lbl is not None for lbl in labels]):
         figure.legend(handles=patch_list)
+        # if legends, then move title to the left
+        pos_title_x = .3
+    if title is None and hasattr(figure._suptitle, "_text"):
+        title = figure._suptitle._text
     if title:
-        figure.suptitle(title)
+        figure.suptitle(title, x=pos_title_x, y=.95)
     # save figure if output file is given
     if output_file is not None:
         figure.savefig(output_file)

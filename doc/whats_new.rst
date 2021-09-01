@@ -34,6 +34,9 @@ Fixes
 - Fix colorbar of :func:`nilearn.plotting.view_img` which was not visible for some
   combinations of `black_bg` and `bg_img` parameters.
   (See issue `#2874 <https://github.com/nilearn/nilearn/issues/2874>`_).
+- Fix missing title with :func:`nilearn.plotting.plot_surf` and
+  deriving functions.
+  (See issue `#2941 <https://github.com/nilearn/nilearn/issues/2941>`_).
 
 Enhancements
 ------------
