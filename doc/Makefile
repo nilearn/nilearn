@@ -172,7 +172,7 @@ install:
 	# --no-checkout just fetches the root folder without content
 	# --depth 1 is a speed optimization since we don't need the
 	# history prior to the last commit
-	git clone --no-checkout --depth 1 https://github.com/nilearn/nilearn.github.io.git _build/nilearn.github.io
+	git clone --no-checkout --depth 1 git@github.com:nilearn/nilearn.github.io.git _build/nilearn.github.io
 	touch _build/nilearn.github.io/.nojekyll
 	make html
 	cd _build/ && \
