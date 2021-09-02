@@ -7,10 +7,10 @@ Extracting functional brain networks: ICA and related
 .. topic:: **Page summary**
 
    This page demonstrates the use of multi-subject decompositions models
-   to extract brain-networks from fMRI data in a data-driven way.
-   Specifically, we will apply Independent Component Analysis (ICA), which 
+   to extract brain-networks from :term:`fMRI` data in a data-driven way.
+   Specifically, we will apply Independent Component Analysis (:term:`ICA`), which 
    implements a multivariate random effects model across subjects. We will
-   then compare ICA to a newer technique, based on dictionary learning.
+   then compare :term:`ICA` to a newer technique, based on dictionary learning.
 
 
 .. currentmodule:: nilearn.decomposition
@@ -26,10 +26,10 @@ Multi-subject ICA: CanICA
 
 Objective
 ----------
-ICA is a useful approach for finding independent sources from fMRI
-images. ICA and similar techniques can be therefore used to define 
-regions or networks that share similar BOLD signal across time. The 
-CanICA incorporates information both within-subjects and across subjects
+:term:`ICA` is a useful approach for finding independent sources from :term:`fMRI`
+images. :term:`ICA` and similar techniques can be therefore used to define 
+regions or networks that share similar :term:`BOLD` signal across time. The 
+:term:`CanICA` incorporates information both within-subjects and across subjects
 to arrive at consensus components.
 
 .. topic:: **Nilearn data for examples**
@@ -45,12 +45,12 @@ Fitting CanICA model with nilearn
 ---------------------------------
 :class:`CanICA` is a ready-to-use object that can be applied to
 multi-subject Nifti data, for instance presented as filenames, and will
-perform a multi-subject ICA decomposition following the CanICA model.
+perform a multi-subject :term:`ICA` decomposition following the :term:`CanICA` model.
 As with every object in nilearn, we give its parameters at construction,
 and then fit it on the data. For examples of this process, see
 here: :ref:`sphx_glr_auto_examples_03_connectivity_plot_compare_decomposition.py`
 
-Once an ICA object has been fit to an fMRI dataset, the individual 
+Once an :term:`ICA` object has been fit to an :term:`fMRI` dataset, the individual 
 components can be accessed as a 4D Nifti object using the 
 ``components_img_`` attribute.
 
@@ -85,7 +85,7 @@ We can also plot the map for different components separately:
 
 .. note::
 
-   Note that as the ICA components are not ordered, the two components
+   Note that as the :term:`ICA` components are not ordered, the two components
    displayed on your computer might not match those of the documentation. For
    a fair representation, you should display all components and
    investigate which one resemble those displayed above.
@@ -93,7 +93,7 @@ We can also plot the map for different components separately:
 Interpreting such components
 -----------------------------
 
-ICA, and related algorithms, extract patterns that coactivate in the
+:term:`ICA`, and related algorithms, extract patterns that coactivate in the
 signal. As a result, it finds functional networks, but also patterns of
 non neural activity, ie confounding signals. Both are visible in the
 plots of the components.
@@ -101,7 +101,7 @@ plots of the components.
 An alternative to ICA: Dictionary learning
 ===========================================
 Recent work has shown that dictionary learning based techniques outperform
-ICA in term of stability and constitutes a better first step in a statistical
+:term:`ICA` in term of stability and constitutes a better first step in a statistical
 analysis pipeline.
 Dictionary learning in neuro-imaging seeks to extract a few representative
 temporal elements along with their sparse spatial loadings, which constitute
@@ -112,9 +112,9 @@ good extracted maps.
     * Arthur Mensch et al. `Compressed online dictionary learning for fast resting-state fMRI decomposition <https://hal.archives-ouvertes.fr/hal-01271033/>`_,
       ISBI 2016, Lecture Notes in Computer Science
 
-:class:`DictLearning` is a ready-to-use class with the same interface as CanICA.
-Sparsity of output map is controlled by a parameter alpha: using a
-larger alpha yields sparser maps.
+:class:`DictLearning` is a ready-to-use class with the same interface as 
+:class:`CanICA`. Sparsity of output map is controlled by a parameter alpha: using 
+a larger alpha yields sparser maps.
 
 We can fit both estimators to compare them. 4D plotting (using
 :func:`nilearn.plotting.plot_prob_atlas`) offers an efficient way to
@@ -130,7 +130,7 @@ compare both resulting outputs.
 
 
 Maps obtained with dictionary learning are often easier to exploit as they are
-more contrasted than ICA maps, with blobs usually better defined. Typically,
+more contrasted than :term:`ICA` maps, with blobs usually better defined. Typically,
 *smoothing can be lower than when doing ICA*.
 
 .. |dl1| image:: ../auto_examples/03_connectivity/images/sphx_glr_plot_compare_decomposition_023.png
@@ -147,9 +147,8 @@ more contrasted than ICA maps, with blobs usually better defined. Typically,
 
 .. centered:: |dl1| |dl2| |dl3| |dl4|
 
-While dictionary learning computation time is comparable to CanICA, obtained
-atlases have been shown to outperform ICA in a variety of
-classification tasks.
+While dictionary learning computation time is comparable to :term:`CanICA`, obtained
+atlases have been shown to outperform :term:`ICA` in a variety of classification tasks.
 
 .. seealso::
 

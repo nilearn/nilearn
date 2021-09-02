@@ -47,7 +47,7 @@ radius = 5.
 pial_mesh = fsaverage['pial_' + hemi]
 X = surface.vol_to_surf(fmri_img, pial_mesh, radius=radius).T
 
-# To define the BOLD responses to be included within each searchlight "sphere"
+# To define the :term:`BOLD` responses to be included within each searchlight "sphere"
 # we define an adjacency matrix based on the inflated surface vertices such
 # that nearby surfaces are concatenated within the same searchlight.
 
@@ -66,7 +66,7 @@ from sklearn.preprocessing import StandardScaler
 from sklearn.linear_model import RidgeClassifier
 from nilearn.decoding.searchlight import search_light
 
-# Simple linear estimator preceeded by a normalization step
+# Simple linear estimator preceded by a normalization step
 estimator = make_pipeline(StandardScaler(),
                           RidgeClassifier(alpha=10.))
 

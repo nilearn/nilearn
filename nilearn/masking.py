@@ -1,7 +1,7 @@
 """
 Utilities to compute and operate on brain masks
 """
-# Author: Gael Varoquaux, Alexandre Abraham, Philippe Gervais
+# Authors: Gael Varoquaux, Alexandre Abraham, Philippe Gervais, Ana Luisa Pinho
 # License: simplified BSD
 import warnings
 import numbers
@@ -12,11 +12,12 @@ from joblib import Parallel, delayed
 
 from sklearn.utils import deprecated
 from . import _utils
-from .image import new_img_like
+from .image import get_data, new_img_like, resampling
 from ._utils.cache_mixin import cache
 from ._utils.ndimage import largest_connected_component, get_border_data
-from ._utils.niimg import _safe_get_data, img_data_dtype
-from nilearn.image import get_data
+from ._utils.niimg import _safe_get_data
+from .datasets import (load_mni152_template, load_mni152_gm_template,
+                       load_mni152_wm_template)
 
 
 class MaskWarning(UserWarning):
@@ -521,8 +522,8 @@ def compute_multi_background_mask(data_imgs, border_size=2, upper_cutoff=0.85,
 
 
 @deprecated("Function 'compute_gray_matter_mask' has been renamed to "
-            "'compute_brain_mask' and "
-            "'compute_gray_matter_mask' will be removed in release 0.9.")
+            "'compute_brain_mask' and 'compute_gray_matter_mask' will be "
+            "removed in release 0.9.0.")
 def compute_gray_matter_mask(target_img, threshold=.5,
                              connected=True, opening=2, memory=None,
                              verbose=0):
@@ -566,15 +567,18 @@ def compute_gray_matter_mask(target_img, threshold=.5,
     mask : nibabel.Nifti1Image
         The brain mask (3D image)
     """
+
     return compute_brain_mask(target_img=target_img, threshold=threshold,
                               connected=connected, opening=opening,
-                              memory=memory, verbose=verbose)
+                              memory=memory, verbose=verbose,
+                              mask_type='whole-brain')
 
 
-def compute_brain_mask(target_img, threshold=.5, connected=True,
-                       opening=2, memory=None, verbose=0):
-    """Compute the whole-brain mask. This mask is calculated through the
-    resampling of the MNI152 template mask onto the target image.
+def compute_brain_mask(target_img, threshold=.5, connected=True, opening=2,
+                       memory=None, verbose=0, mask_type='whole-brain'):
+    """Compute the whole-brain, grey-matter or white-matter mask.
+    This mask is calculated using MNI152 1mm-resolution template mask onto the
+    target image.
 
     Parameters
     ----------
@@ -607,36 +611,49 @@ def compute_brain_mask(target_img, threshold=.5, connected=True,
         Controls the amount of verbosity: higher numbers give
         more messages
 
+    mask_type : {'whole-brain', 'gm', 'wm'}, optional
+        Type of mask to be computed: 'whole-brain', 'grey-matter' ('gm') or
+        'white-matter' ('wm'). Default = 'whole-brain'
+
+        .. versionadded:: 0.8.1
+
     Returns
     -------
     mask : nibabel.Nifti1Image
         The whole-brain mask (3D image)
     """
     if verbose > 0:
-        print("Template mask computation")
+        print("Template", mask_type, "mask computation")
 
     target_img = _utils.check_niimg(target_img)
 
-    from .datasets import load_mni152_brain_mask
-    template = load_mni152_brain_mask()
-    dtype = img_data_dtype(target_img)
-    template = new_img_like(template,
-                            get_data(template).astype(dtype))
+    if mask_type == 'whole-brain':
+        template = load_mni152_template(resolution=1)
+    elif mask_type == 'gm':
+        template = load_mni152_gm_template(resolution=1)
+    elif mask_type == 'wm':
+        template = load_mni152_wm_template(resolution=1)
+    else:
+        raise ValueError(f"Unknown mask type {mask_type}. "
+                         "Only 'whole-brain', 'gm' or 'wm' are accepted.")
 
-    from .image.resampling import resample_to_img
-    resampled_template = cache(resample_to_img, memory)(template, target_img)
+    resampled_template = cache(resampling.resample_to_img, memory)(
+        template, target_img)
 
-    mask = get_data(resampled_template) >= threshold
+    mask = (get_data(resampled_template) >= threshold).astype("int8")
 
+    warning_message = (f"{mask_type} mask is empty, "
+                       "lower the threshold or check your input FOV")
     mask, affine = _post_process_mask(mask, target_img.affine, opening=opening,
                                       connected=connected,
-                                      warning_msg="Gray matter mask is empty, "
-                                                  "lower the threshold or "
-                                                  "check your input FOV")
+                                      warning_msg=warning_message)
 
     return new_img_like(target_img, mask, affine)
 
 
+@deprecated("Function 'compute_multi_gray_matter_mask' has been renamed to "
+            "'compute_multi_brain_mask' and 'compute_multi_gray_matter_mask' "
+            "will be removed in release 0.10.0")
 def compute_multi_gray_matter_mask(target_imgs, threshold=.5,
                                    connected=True, opening=2,
                                    memory=None, verbose=0, n_jobs=1, **kwargs):
@@ -656,7 +673,7 @@ def compute_multi_gray_matter_mask(target_imgs, threshold=.5,
 
     threshold: float, optional
         The value under which the MNI template is cut off.
-        Default value is 0.5
+        Default value is 0.5.
 
     connected: bool, optional
         if connected is True, only the largest connect component is kept.
@@ -695,6 +712,76 @@ def compute_multi_gray_matter_mask(target_imgs, threshold=.5,
     --------
     nilearn.masking.compute_brain_mask
     """
+    return compute_multi_brain_mask(target_imgs=target_imgs,
+                                    threshold=threshold, connected=connected,
+                                    opening=opening, memory=memory,
+                                    verbose=verbose, n_jobs=n_jobs,
+                                    mask_type='whole-brain', **kwargs)
+
+
+def compute_multi_brain_mask(target_imgs, threshold=.5, connected=True,
+                             opening=2, memory=None, verbose=0, n_jobs=1,
+                             mask_type='whole-brain', **kwargs):
+    """ Compute the whole-brain, grey-matter or white-matter mask for a list of
+    images. The mask is calculated through the resampling of the corresponding
+    MNI152 template mask onto the target image.
+
+    .. versionadded:: 0.8.1
+
+    Parameters
+    ----------
+    target_imgs: list of Niimg-like object
+        See http://nilearn.github.io/manipulating_images/input_output.html
+        Images used to compute the mask. 3D and 4D images are accepted.
+        The images in this list must be of same shape and affine. The mask is
+        calculated with the first element of the list for only the shape/affine
+        of the image is used for this masking strategy
+
+    threshold: float, optional
+        The value under which the MNI template is cut off.
+        Default value is 0.5.
+
+    connected: bool, optional
+        if connected is True, only the largest connect component is kept.
+        Default is True
+
+    opening: bool or int, optional
+        if opening is True, a morphological opening is performed, to keep
+        only large structures.
+        If opening is an integer `n`, it is performed via `n` erosions.
+        After estimation of the largest connected constituent, 2`n` closing
+        operations are performed followed by `n` erosions. This corresponds
+        to 1 opening operation of order `n` followed by a closing operator
+        of order `n`.
+
+    memory: instance of joblib.Memory or str
+        Used to cache the function call.
+
+    n_jobs: integer, optional
+        Argument not used but kept to fit the API
+
+    mask_type: {'whole-brain', 'gm', 'wm'}, optional
+        Type of mask to be computed: 'whole-brain', 'grey-matter' ('gm') or
+        'white-matter' ('wm'). Default = 'whole-brain'
+
+    **kwargs: optional arguments
+        arguments such as 'target_affine' are used in the call of other
+        masking strategies, which then would raise an error for this function
+        which does not need such arguments.
+
+    verbose: int, optional
+        Controls the amount of verbosity: higher numbers give
+        more messages
+
+    Returns
+    -------
+    mask: nibabel.Nifti1Image
+        The brain mask (3D image)
+
+    See also
+    --------
+    nilearn.masking.compute_brain_mask
+    """
     if len(target_imgs) == 0:
         raise TypeError('An empty object - %r - was passed instead of an '
                         'image or a list of images' % target_imgs)
@@ -705,8 +792,9 @@ def compute_multi_gray_matter_mask(target_imgs, threshold=.5,
         pass
 
     mask = compute_brain_mask(target_imgs[0], threshold=threshold,
-                                    connected=connected, opening=opening,
-                                    memory=memory, verbose=verbose)
+                              connected=connected, opening=opening,
+                              memory=memory, verbose=verbose,
+                              mask_type=mask_type)
     return mask
 
 
@@ -751,7 +839,7 @@ def apply_mask(imgs, mask_img, dtype='f',
     Notes
     -----
     When using smoothing, ensure_finite is set to True, as non-finite
-    values would spread accross the image.
+    values would spread across the image.
     """
     mask_img = _utils.check_niimg_3d(mask_img)
     mask, mask_affine = _load_mask_img(mask_img)

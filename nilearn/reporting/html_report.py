@@ -1,6 +1,5 @@
-import io
+import os
 import copy
-import base64
 import warnings
 from pathlib import Path
 from string import Template
@@ -9,6 +8,32 @@ from nilearn.plotting.html_document import HTMLDocument
 from nilearn.externals import tempita
 from nilearn.reporting.utils import figure_to_svg_base64
 
+ESTIMATOR_TEMPLATES = {
+    'NiftiLabelsMasker': 'report_body_template_niftilabelsmasker.html',
+    'default': 'report_body_template.html'}
+
+
+def _get_estimator_template(estimator):
+    """Returns the HTML template to use for a given
+    estimator if a specific template was defined in
+    ESTIMATOR_TEMPLATES. Otherwise, return the default
+    template.
+
+    Parameters
+    ----------
+    estimator : object instance of BaseEstimator
+        The object we wish to retrieve template of.
+
+    Returns
+    -------
+    template : str
+        Name of the template file to use.
+
+    """
+    if estimator.__class__.__name__ in ESTIMATOR_TEMPLATES:
+        return ESTIMATOR_TEMPLATES[estimator.__class__.__name__]
+    else:
+        return ESTIMATOR_TEMPLATES['default']
 
 def _embed_img(display):
     """
@@ -46,7 +71,7 @@ def _str_params(params):
 
 
 def _update_template(title, docstring, content, overlay,
-                     parameters, description=None, warning_message=None):
+                     parameters, data, template_name=None):
     """Populate a report with content.
 
     Parameters
@@ -66,13 +91,25 @@ def _update_template(title, docstring, content, overlay,
     parameters : dict
         A dictionary of object parameters and their values.
 
-    description : str, optional
-        An optional description of the content.
+    data : dict
+        A dictionary holding the data to be added to the report.
+        The keys must match exactly the ones used in the template.
+        The default template accepts the following:
+            - description (str) : Description of the content.
+            - warning_message (str) : An optional warning
+              message to be displayed in red. This is used
+              for example when no image was provided to the
+              estimator when fitting.
+        The NiftiLabelsMasker template accepts the additional
+        fields:
+            - summary (dict) : A summary description of the
+              region labels and sizes. This will be displayed
+              as an expandable table in the report.
 
-    warning_message : str, optional
-        An optional warning message to be displayed in red.
-        This is used for example when no image was provided
-        to the estimator when fitting.
+    template_name : str, optional
+        The name of the template to use. If not provided, the
+        default template `report_body_template.html` will be
+        used.
 
     Returns
     -------
@@ -82,16 +119,21 @@ def _update_template(title, docstring, content, overlay,
     """
     resource_path = Path(__file__).resolve().parent.joinpath('data', 'html')
 
-    body_template_name = 'report_body_template.html'
+    if template_name is None:
+        body_template_name = 'report_body_template.html'
+    else:
+        body_template_name = template_name
     body_template_path = resource_path.joinpath(body_template_name)
+    if not os.path.exists(str(body_template_path)):
+        raise FileNotFoundError("No template {}".format(
+            body_template_name))
     tpl = tempita.HTMLTemplate.from_filename(str(body_template_path),
                                              encoding='utf-8')
     body = tpl.substitute(title=title, content=content,
                           overlay=overlay,
                           docstring=docstring,
                           parameters=parameters,
-                          description=description,
-                          warning_message=warning_message)
+                          **data)
 
     head_template_name = 'report_head_template.html'
     head_template_path = resource_path.joinpath(head_template_name)
@@ -124,11 +166,20 @@ def generate_report(estimator):
     Example use case: visualize the overlap of a mask and reference image
     in NiftiMasker.
 
+    Parameters
+    ----------
+    estimator : Object instance of BaseEstimator.
+        Object for which the report should be generated.
+
     Returns
     -------
     report : HTMLReport
 
     """
+    if hasattr(estimator, '_report_content'):
+        data = estimator._report_content
+    else:
+        data = dict()
     if not hasattr(estimator, '_reporting_data'):
         warnings.warn('This object has not been fitted yet ! '
                       'Make sure to run `fit` before inspecting reports.')
@@ -138,7 +189,8 @@ def generate_report(estimator):
                                              'object.'),
                                   content=_embed_img(None),
                                   overlay=None,
-                                  parameters=dict())
+                                  parameters=dict(),
+                                  data=data)
 
     elif estimator._reporting_data is None:
         warnings.warn('Report generation not enabled ! '
@@ -149,12 +201,12 @@ def generate_report(estimator):
                                              'that reporting is enabled.'),
                                   content=_embed_img(None),
                                   overlay=None,
-                                  parameters=dict())
+                                  parameters=dict(),
+                                  data=data)
 
     else:  # We can create a report
+        html_template = _get_estimator_template(estimator)
         overlay, image = _define_overlay(estimator)
-        description = estimator._report_description
-        warning_message = estimator._warning_message
         parameters = _str_params(estimator.get_params())
         docstring = estimator.__doc__
         snippet = docstring.partition('Parameters\n    ----------\n')[0]
@@ -163,8 +215,8 @@ def generate_report(estimator):
                                   content=_embed_img(image),
                                   overlay=_embed_img(overlay),
                                   parameters=parameters,
-                                  description=description,
-                                  warning_message=warning_message)
+                                  data=data,
+                                  template_name=html_template)
     return report
 
 

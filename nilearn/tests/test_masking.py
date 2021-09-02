@@ -1,6 +1,8 @@
 """
 Test the mask-extracting utilities.
 """
+# Authors: Ana Luisa Pinho, Jerome Dockes, NicolasGensollen
+# License: simplified BSD
 import distutils.version
 import warnings
 import numpy as np
@@ -17,11 +19,13 @@ from nilearn import masking
 from nilearn.image import get_data, high_variance_confounds
 from nilearn.masking import (compute_epi_mask, compute_multi_epi_mask,
                              compute_background_mask, compute_brain_mask,
-                             compute_multi_gray_matter_mask,
+                             compute_multi_brain_mask,
                              unmask, _unmask_3d, _unmask_4d, intersect_masks,
-                             MaskWarning, _extrapolate_out_mask, _unmask_from_to_3d_array)
+                             MaskWarning, _extrapolate_out_mask,
+                             _unmask_from_to_3d_array)
 from nilearn._utils.testing import write_tmp_imgs
 from nilearn._utils.exceptions import DimensionError
+from nilearn._utils import data_gen
 from nilearn.input_data import NiftiMasker
 
 np_version = (np.version.full_version if hasattr(np.version, 'full_version')
@@ -190,27 +194,32 @@ def test_compute_background_mask():
 
 
 def test_compute_brain_mask():
-    image = Nifti1Image(np.ones((9, 9, 9)), np.eye(4))
-
-    mask = compute_brain_mask(image, threshold=-1)
-    mask1 = np.zeros((9, 9, 9))
-    mask1[2:-2, 2:-2, 2:-2] = 1
-
-    np.testing.assert_array_equal(mask1, get_data(mask))
-
+    img, _ = data_gen.generate_mni_space_img(res=8, random_state=0)
+    brain_mask = compute_brain_mask(img, threshold=.2)
+    gm_mask = compute_brain_mask(img, threshold=.2, mask_type="gm")
+    wm_mask = compute_brain_mask(img, threshold=.2, mask_type="wm")
+    brain_data, gm_data, wm_data = map(get_data, (brain_mask, gm_mask,
+                                                  wm_mask))
+    # Check that whole-brain mask is non-empty
+    assert (brain_data != 0).any()
+    for subset in gm_data, wm_data:
+        # Test that gm and wm masks are included in the whole-brain mask
+        assert (np.logical_and(brain_data, subset) == subset.astype(
+            bool)).all()
+        # Test that gm and wm masks are non-empty
+        assert (subset != 0).any()
+    # Test that gm and wm masks have empty intersection
+    assert (np.logical_and(gm_data, wm_data) == 0).all()
     # Check that we get a useful warning for empty masks
     with pytest.warns(masking.MaskWarning):
-        compute_brain_mask(image, threshold=1)
-
+        compute_brain_mask(img, threshold=1)
     # Check that masks obtained from same FOV are the same
-    rng = np.random.RandomState(42)
-    img1 = Nifti1Image(np.full((9, 9, 9), rng.uniform()), np.eye(4))
-    img2 = Nifti1Image(np.full((9, 9, 9), rng.uniform()), np.eye(4))
-
-    mask_img1 = compute_brain_mask(img1)
-    mask_img2 = compute_brain_mask(img2)
-    np.testing.assert_array_equal(get_data(mask_img1),
-                                  get_data(mask_img2))
+    img1, _ = data_gen.generate_mni_space_img(res=8, random_state=1)
+    mask_img1 = compute_brain_mask(img1, verbose=1, threshold=.2)
+    assert (brain_data == get_data(mask_img1)).all()
+    # Check that error is raised if mask type is unknown
+    with pytest.raises(ValueError, match='Unknown mask type foo.'):
+        compute_brain_mask(img, verbose=1, mask_type='foo')
 
 
 def test_deprecation_warning_compute_gray_matter_mask():
@@ -342,7 +351,7 @@ def test_unmask():
             assert_array_equal(t[0], unmasked3D)
 
     # Error test: shape
-    vec_1D = np.empty((500,), dtype=np.int)
+    vec_1D = np.empty((500,), dtype=int)
     pytest.raises(TypeError, unmask, vec_1D, mask_img)
     pytest.raises(TypeError, unmask, [vec_1D], mask_img)
 
@@ -352,19 +361,19 @@ def test_unmask():
 
     # Error test: mask type
     with pytest.raises(TypeError, match='mask must be a boolean array'):
-        _unmask_3d(vec_1D, mask.astype(np.int))
+        _unmask_3d(vec_1D, mask.astype(int))
     with pytest.raises(TypeError, match='mask must be a boolean array'):
         _unmask_4d(vec_2D, mask.astype(np.float64))
 
     # Transposed vector
-    transposed_vector = np.ones((np.sum(mask), 1), dtype=np.bool)
+    transposed_vector = np.ones((np.sum(mask), 1), dtype=bool)
     with pytest.raises(TypeError, match='X must be of shape'):
         unmask(transposed_vector, mask_img)
 
 
 def test_intersect_masks_filename():
     # Create dummy masks
-    mask_a = np.zeros((4, 4, 1), dtype=np.bool)
+    mask_a = np.zeros((4, 4, 1), dtype=bool)
     mask_a[2:4, 2:4] = 1
     mask_a_img = Nifti1Image(mask_a.astype(int), np.eye(4))
 
@@ -378,7 +387,7 @@ def test_intersect_masks_filename():
     # |   |   | X | X |
     # +---+---+---+---+
 
-    mask_b = np.zeros((4, 4, 1), dtype=np.bool)
+    mask_b = np.zeros((4, 4, 1), dtype=bool)
     mask_b[1:3, 1:3] = 1
     mask_b_img = Nifti1Image(mask_b.astype(int), np.eye(4))
 
@@ -394,7 +403,7 @@ def test_intersect_masks_filename():
 
     with write_tmp_imgs(mask_a_img, mask_b_img, create_files=True)\
             as filenames:
-        mask_ab = np.zeros((4, 4, 1), dtype=np.bool)
+        mask_ab = np.zeros((4, 4, 1), dtype=bool)
         mask_ab[2, 2] = 1
         mask_ab_ = intersect_masks(filenames, threshold=1.)
         assert_array_equal(mask_ab, get_data(mask_ab_))
@@ -405,7 +414,7 @@ def test_intersect_masks():
     """
 
     # Create dummy masks
-    mask_a = np.zeros((4, 4, 1), dtype=np.bool)
+    mask_a = np.zeros((4, 4, 1), dtype=bool)
     mask_a[2:4, 2:4] = 1
     mask_a_img = Nifti1Image(mask_a.astype(int), np.eye(4))
 
@@ -419,7 +428,7 @@ def test_intersect_masks():
     # |   |   | X | X |
     # +---+---+---+---+
 
-    mask_b = np.zeros((4, 4, 1), dtype=np.bool)
+    mask_b = np.zeros((4, 4, 1), dtype=bool)
     mask_b[1:3, 1:3] = 1
     mask_b_img = Nifti1Image(mask_b.astype(int), np.eye(4))
 
@@ -433,7 +442,7 @@ def test_intersect_masks():
     # |   |   |   |   |
     # +---+---+---+---+
 
-    mask_c = np.zeros((4, 4, 1), dtype=np.bool)
+    mask_c = np.zeros((4, 4, 1), dtype=bool)
     mask_c[:, 2] = 1
     mask_c[0, 0] = 1
     mask_c_img = Nifti1Image(mask_c.astype(int), np.eye(4))
@@ -448,7 +457,7 @@ def test_intersect_masks():
     # |   |   | X |   |
     # +---+---+---+---+
 
-    mask_ab = np.zeros((4, 4, 1), dtype=np.bool)
+    mask_ab = np.zeros((4, 4, 1), dtype=bool)
     mask_ab[2, 2] = 1
     mask_ab_ = intersect_masks([mask_a_img, mask_b_img], threshold=1.)
     assert_array_equal(mask_ab, get_data(mask_ab_))
@@ -490,11 +499,11 @@ def test_compute_multi_epi_mask():
     pytest.raises(TypeError, compute_multi_epi_mask, [])
     # As it calls intersect_masks, we only test resampling here.
     # Same masks as test_intersect_masks
-    mask_a = np.zeros((4, 4, 1), dtype=np.bool)
+    mask_a = np.zeros((4, 4, 1), dtype=bool)
     mask_a[2:4, 2:4] = 1
     mask_a_img = Nifti1Image(mask_a.astype(int), np.eye(4))
 
-    mask_b = np.zeros((8, 8, 1), dtype=np.bool)
+    mask_b = np.zeros((8, 8, 1), dtype=bool)
     mask_b[2:6, 2:6] = 1
     mask_b_img = Nifti1Image(mask_b.astype(int), np.eye(4) / 2.)
 
@@ -502,7 +511,7 @@ def test_compute_multi_epi_mask():
         warnings.simplefilter("ignore", MaskWarning)
         pytest.raises(ValueError, compute_multi_epi_mask,
                       [mask_a_img, mask_b_img])
-    mask_ab = np.zeros((4, 4, 1), dtype=np.bool)
+    mask_ab = np.zeros((4, 4, 1), dtype=bool)
     mask_ab[2, 2] = 1
     mask_ab_ = compute_multi_epi_mask([mask_a_img, mask_b_img], threshold=1.,
                                       opening=0,
@@ -511,25 +520,34 @@ def test_compute_multi_epi_mask():
     assert_array_equal(mask_ab, get_data(mask_ab_))
 
 
-def test_compute_multi_gray_matter_mask():
-    pytest.raises(TypeError, compute_multi_gray_matter_mask, [])
+def test_compute_multi_brain_mask():
+    pytest.raises(TypeError, compute_multi_brain_mask, [])
 
     # Check error raised if images with different shapes are given as input
-    imgs = [Nifti1Image(np.ones((9, 9, 9)), np.eye(4)),
-            Nifti1Image(np.ones((9, 9, 8)), np.eye(4))]
-    pytest.raises(ValueError, compute_multi_gray_matter_mask, imgs)
+    imgs = [data_gen.generate_mni_space_img(res=8, random_state=0)[0],
+            data_gen.generate_mni_space_img(res=12, random_state=0)[0]]
+    pytest.raises(ValueError, compute_multi_brain_mask, imgs)
 
     # Check results are the same if affine is the same
-    rng = np.random.RandomState(42)
-    imgs1 = [Nifti1Image(rng.standard_normal(size=(9, 9, 9)), np.eye(4)),
-             Nifti1Image(rng.standard_normal(size=(9, 9, 9)), np.eye(4))]
-    mask1 = compute_multi_gray_matter_mask(imgs1)
-
-    imgs2 = [Nifti1Image(rng.standard_normal(size=(9, 9, 9)), np.eye(4)),
-             Nifti1Image(rng.standard_normal(size=(9, 9, 9)), np.eye(4))]
-    mask2 = compute_multi_gray_matter_mask(imgs2)
-
+    imgs1 = [data_gen.generate_mni_space_img(res=9, random_state=0)[0],
+             data_gen.generate_mni_space_img(res=9, random_state=1)[0]]
+    imgs2 = [data_gen.generate_mni_space_img(res=9, random_state=2)[0],
+             data_gen.generate_mni_space_img(res=9, random_state=3)[0]]
+    mask1 = compute_multi_brain_mask(imgs1, threshold=.2)
+    mask2 = compute_multi_brain_mask(imgs2, threshold=.2)
     assert_array_equal(get_data(mask1), get_data(mask2))
+
+
+def test_deprecation_warning_compute_multi_gray_matter_mask():
+    imgs = [Nifti1Image(np.ones((9, 9, 9)), np.eye(4)),
+            Nifti1Image(np.ones((9, 9, 9)), np.eye(4))]
+    if distutils.version.LooseVersion(sklearn.__version__) < '0.22':
+        with pytest.deprecated_call():
+            masking.compute_multi_gray_matter_mask(imgs)
+    else:
+        with pytest.warns(FutureWarning,
+                          match="renamed to 'compute_multi_brain_mask'"):
+            masking.compute_multi_gray_matter_mask(imgs)
 
 
 def test_error_shape(random_state=42, shape=(3, 5, 7, 11)):
@@ -656,7 +674,7 @@ def test_unmask_from_to_3d_array(size=5):
     rng = np.random.RandomState(42)
     for ndim in range(1, 4):
         shape = [size] * ndim
-        mask = np.zeros(shape).astype(np.bool)
+        mask = np.zeros(shape).astype(bool)
         mask[rng.uniform(size=shape) > .8] = 1
         support = rng.standard_normal(size=mask.sum())
         full = _unmask_from_to_3d_array(support, mask)

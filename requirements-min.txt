@@ -1,9 +1,9 @@
-numpy==1.11
-scipy==0.19
-pandas==0.23.0
-scikit-learn==0.19
+numpy==1.16
+scipy==1.2.0
+pandas==0.24.0
+scikit-learn==0.21.0
 joblib==0.12
-nibabel==2.0.2
+nibabel==2.5.0
 pytest
 pytest-cov
 lxml

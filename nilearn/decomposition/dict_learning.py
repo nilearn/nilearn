@@ -18,6 +18,7 @@ from sklearn.linear_model import Ridge
 
 from .base import BaseDecomposition
 from .canica import CanICA
+from nilearn._utils import fill_doc
 
 # check_input=False is an optimization available in sklearn.
 sparse_encode_args = {'check_input': False}
@@ -34,6 +35,7 @@ def _compute_loadings(components, data):
     return loadings
 
 
+@fill_doc
 class DictLearning(BaseDecomposition):
     """Perform a map learning algorithm based on spatial component sparsity,
     over a CanICA initialization [1]_.  This yields more stable maps than CanICA.
@@ -114,15 +116,15 @@ class DictLearning(BaseDecomposition):
         This parameter is passed to signal.clean. Please see the related
         documentation for details.
 
-    mask_strategy : {'epi', 'background', or 'template'}, optional
-        The strategy used to compute the mask: use 'background' if your
-        images present a clear homogeneous background, 'epi' if they
-        are raw EPI images, or you could use 'template' which will
-        extract the gray matter part of your data by resampling the MNI152
-        brain mask for your data's field of view.
-        Depending on this value, the mask will be computed from
-        masking.compute_background_mask, masking.compute_epi_mask or
-        masking.compute_brain_mask. Default='epi'.
+    %(mask_strategy)s
+
+        .. note::
+             Depending on this value, the mask will be computed from
+             :func:`nilearn.masking.compute_background_mask`,
+             :func:`nilearn.masking.compute_epi_mask`, or
+             :func:`nilearn.masking.compute_brain_mask`.
+
+        Default='epi'.
 
     mask_args : dict, optional
         If mask is None, these are additional parameters passed to
@@ -152,12 +154,15 @@ class DictLearning(BaseDecomposition):
     `components_` : 2D numpy array (n_components x n-voxels)
         Masked dictionary components extracted from the input images.
 
-        Deprecated since version 0.4.1. Use `components_img_` instead
+        .. note::
+
+            Use attribute `components_img_` rather than manually unmasking
+            `components_` with `masker_` attribute.
 
     `components_img_` : 4D Nifti image
         4D image giving the extracted components. Each 3D image is a component.
 
-        New in version 0.4.1.
+        .. versionadded:: 0.4.1
 
     `masker_` : instance of MultiNiftiMasker
         Masker used to filter and mask data as first step. If an instance of

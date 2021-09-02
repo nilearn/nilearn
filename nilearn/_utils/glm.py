@@ -35,7 +35,7 @@ def _read_events_table(table):
     Returns
     -------
     loaded : pandas.Dataframe object
-        Pandas Dataframe witht e events data.
+        Pandas Dataframe with e events data.
 
     """
     try:
@@ -71,17 +71,17 @@ def _check_and_load_tables(tables_, var_name):
 
 def _check_events_file_uses_tab_separators(events_files):
     """Raises a ValueError if provided list of text based data files
-    (.csv, .tsv, etc) do not enforce the BIDS convention of using Tabs
+    (.csv, .tsv, etc) do not enforce the :term:`BIDS` convention of using Tabs
     as separators.
 
     Only scans their first row.
     Does nothing if:
-        - If the separator used is BIDS compliant.
+        - If the separator used is :term:`BIDS` compliant.
         - Paths are invalid.
         - File(s) are not text files.
 
     Does not flag comma-separated-values-files for compatibility reasons;
-    this may change in future as commas are not BIDS compliant.
+    this may change in future as commas are not :term:`BIDS` compliant.
 
     parameters
     ----------
@@ -338,9 +338,9 @@ def positive_reciprocal(X):
 # UTILITIES FOR THE BIDS STANDARD
 def get_bids_files(main_path, file_tag='*', file_type='*', sub_label='*',
                    modality_folder='*', filters=None, sub_folder=True):
-    """Search for files in a BIDS dataset following given constraints.
+    """Search for files in a :term:`BIDS` dataset following given constraints.
 
-    This utility function allows to filter files in the BIDS dataset by
+    This utility function allows to filter files in the :term:`BIDS` dataset by
     any of the fields contained in the file names. Moreover it allows to search
     for specific types of files or particular tags.
 
@@ -352,13 +352,13 @@ def get_bids_files(main_path, file_tag='*', file_type='*', sub_label='*',
 
     Notice that to search in the derivatives folder, it has to be given as
     part of the main_path. This is useful since the current convention gives
-    exactly the same inner structure to derivatives than to the main BIDS
+    exactly the same inner structure to derivatives than to the main :term:`BIDS`
     dataset folder, so we can search it in the same way.
 
     Parameters
     ----------
     main_path : str
-        Directory of the BIDS dataset.
+        Directory of the :term:`BIDS` dataset.
 
     file_tag : str accepted by glob, optional
         The final tag of the desired files. For example 'bold' if one is
@@ -373,12 +373,12 @@ def get_bids_files(main_path, file_tag='*', file_type='*', sub_label='*',
     sub_label : str accepted by glob, optional
         Such a common filter is given as a direct option since it applies also
         at the level of directories. the label is what follows the 'sub' field
-        in the BIDS convention as 'sub-label'.
+        in the :term:`BIDS` convention as 'sub-label'.
         Default='*'.
 
     modality_folder : str accepted by glob, optional
         Inside the subject and optional session folders a final level of
-        folders is expected in the BIDS convention that groups files according
+        folders is expected in the :term:`BIDS` convention that groups files according
         to different neuroimaging modalities and any other additions of the
         dataset provider. For example the 'func' and 'anat' standard folders.
         If given as the empty string '', files will be searched inside the
@@ -447,13 +447,13 @@ def parse_bids_filename(img_path):
         'file_tag', 'file_type' and 'file_fields'.
 
         The 'file_tag' field refers to the last part of the file under the
-        BIDS convention that is of the form \*_tag.type. Contrary to the rest
-        of the file name it is not a key-value pair. This notion should be
-        revised in the case we are handling derivatives since so far the
-        convention will keep the tag prepended to any fields added in the
-        case of preprocessed files that also end with another tag. This parser
-        will consider any tag in the middle of the file name as a key with no
-        value and will be included in the 'file_fields' key.
+        :term:`BIDS` convention that is of the form \*_tag.type.
+        Contrary to the rest of the file name it is not a key-value pair.
+        This notion should be revised in the case we are handling derivatives
+        since so far the convention will keep the tag prepended to any fields
+        added in the case of preprocessed files that also end with another tag.
+        This parser will consider any tag in the middle of the file name as a
+        key with no value and will be included in the 'file_fields' key.
 
     """
     reference = {}

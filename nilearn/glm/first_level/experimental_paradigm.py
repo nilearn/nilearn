@@ -25,6 +25,7 @@ VALID_FIELDS = set(["onset",
                     "modulation",
                     ])
 
+
 def check_events(events):
     """Test that the events data describes a valid experimental paradigm
 
@@ -76,8 +77,8 @@ def check_events(events):
 
     # Handle modulation
     if 'modulation' in events_copy.columns:
-        warnings.warn("'modulation' column found in "
-                      "the given events data.")
+        print("A 'modulation' column was found in "
+              "the given events data and is used.")
     else:
         events_copy['modulation'] = 1
 
@@ -86,14 +87,13 @@ def check_events(events):
     unexpected_columns = set(events_copy.columns).difference(VALID_FIELDS)
     for unexpected_column in unexpected_columns:
         warnings.warn(("Unexpected column `{}` in events "
-                       "data will be ignored.").format(
-                            unexpected_column))
+                       "data will be ignored.").format(unexpected_column))
 
     # Make sure we have a numeric type for duration
     if not is_numeric_dtype(events_copy['duration']):
         try:
             events_copy = events_copy.astype({'duration': float})
-        except:
+        except ValueError:
             raise ValueError("Could not cast duration to float "
                              "in events data.")
 
@@ -103,15 +103,14 @@ def check_events(events):
     #   - onset
     COLUMN_DEFINING_EVENT_IDENTITY = ['trial_type',
                                       'onset',
-                                      'duration',]
+                                      'duration']
 
     # Duplicate handling strategy
-    STRATEGY = {'modulation': np.sum, # Sum the modulation values of duplicate events
-                }
+    # Sum the modulation values of duplicate events
+    STRATEGY = {'modulation': np.sum}
 
     cleaned_events = events_copy.groupby(
-                        COLUMN_DEFINING_EVENT_IDENTITY,
-                        sort=False).agg(STRATEGY).reset_index()
+        COLUMN_DEFINING_EVENT_IDENTITY, sort=False).agg(STRATEGY).reset_index()
 
     # If there are duplicates, give a warning
     if len(cleaned_events) != len(events_copy):
@@ -124,4 +123,3 @@ def check_events(events):
     duration = cleaned_events['duration'].values
     modulation = cleaned_events['modulation'].values
     return trial_type, onset, duration, modulation
-

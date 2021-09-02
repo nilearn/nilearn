@@ -48,7 +48,6 @@ print('First subject functional nifti image (4D) is at: %s' %
 ##############################################################################
 # Extracting region signals
 # --------------------------
-from nilearn import image
 from nilearn import input_data
 
 # A "memory" to avoid recomputation

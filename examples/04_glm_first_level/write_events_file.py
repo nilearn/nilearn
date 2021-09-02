@@ -63,3 +63,10 @@ events = pd.DataFrame({'trial_type': trial_type,
 tsvfile = 'localizer_events.tsv'
 events.to_csv(tsvfile, sep='\t', index=False)
 print("Created the events file in %s " % tsvfile)
+
+#########################################################################
+# Optionally, the events can be visualized using the plot_event function.
+from matplotlib import pyplot as plt
+from nilearn.plotting import plot_event
+plot_event(events, figsize=(15, 5))
+plt.show()

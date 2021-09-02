@@ -6,6 +6,8 @@ lxml
 mkl
 sphinx
 sphinx-gallery
+sphinxcontrib-bibtex
+sphinx-copybutton
 numpydoc
 coverage
 pillow
@@ -14,3 +16,5 @@ nibabel
 scikit-learn
 joblib
 matplotlib
+plotly
+kaleido

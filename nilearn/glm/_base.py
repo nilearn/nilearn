@@ -19,8 +19,8 @@ class BaseGLM(BaseEstimator, TransformerMixin, CacheMixin):
         ----------
             A fitted first or second level model object.
 
-        contrasts : Dict[string, ndarray] or String or List[String] or ndarray or
-            List[ndarray]
+        contrasts : Dict[string, ndarray] or String or List[String] or
+            ndarray or List[ndarray]
 
             Contrasts information for a first or second level model.
 
@@ -33,7 +33,8 @@ class BaseGLM(BaseEstimator, TransformerMixin, CacheMixin):
                 or contrast coefficient
 
                 Each contrast name must be a string.
-                Each contrast coefficient must be a list or numpy array of ints.
+                Each contrast coefficient must be a list or
+                numpy array of ints.
 
             Contrasts are passed to ``contrast_def`` for FirstLevelModel
             (:func:`nilearn.glm.first_level.FirstLevelModel.compute_contrast`)
@@ -96,7 +97,8 @@ class BaseGLM(BaseEstimator, TransformerMixin, CacheMixin):
 
         report_dims : Sequence[int, int], optional
             Default is (1600, 800) pixels.
-            Specifies width, height (in pixels) of report window within a notebook.
+            Specifies width, height (in pixels) of report window
+            within a notebook.
             Only applicable when inserting the report into a Jupyter notebook.
             Can be set after report creation using report.width, report.height.
 

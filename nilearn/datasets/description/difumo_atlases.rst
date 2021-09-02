@@ -3,9 +3,9 @@ DiFuMo atlas
 
 Notes
 -----
-1. We provide Dictionaries of Functional Modes “DiFuMo” that can serve as atlases to extract functional signals, eg to serve as IDPs, with different dimensionalities (64, 128, 256, 512, and 1024). These modes are optimized to represent well raw BOLD timeseries, over a with range of experimental conditions.
+1. We provide Dictionaries of Functional Modes “DiFuMo” that can serve as atlases to extract functional signals, eg to serve as IDPs, with different dimensionalities (64, 128, 256, 512, and 1024). These modes are optimized to represent well raw :term:`BOLD` timeseries, over a with range of experimental conditions.
                
-    - All atlases are available in .nii.gz format and sampled to MNI space
+    - All atlases are available in .nii.gz format and sampled to :term:`MNI` space
                      
 2. Additionally, we provide meaningful names for these modes, based on their anatomical location, to facilitate reporting of results.
 

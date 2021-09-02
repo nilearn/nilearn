@@ -7,8 +7,10 @@ from joblib import Memory
 from sklearn.utils.extmath import randomized_svd
 
 from .base import BaseDecomposition
+from nilearn._utils import fill_doc
 
 
+@fill_doc
 class MultiPCA(BaseDecomposition):
     """Perform Multi Subject Principal Component Analysis.
 
@@ -37,16 +39,15 @@ class MultiPCA(BaseDecomposition):
         then its mask will be used. If no mask is given,
         it will be computed automatically by a MultiNiftiMasker with default
         parameters.
+    %(mask_strategy)s
 
-    mask_strategy : {'epi', 'background', or 'template'}, optional
-        The strategy used to compute the mask: use 'background' if your
-        images present a clear homogeneous background, 'epi' if they
-        are raw EPI images, or you could use 'template' which will
-        extract the gray matter part of your data by resampling the MNI152
-        brain mask for your data's field of view.
-        Depending on this value, the mask will be computed from
-        masking.compute_background_mask, masking.compute_epi_mask or
-        masking.compute_brain_mask. Default='epi'.
+        .. note::
+             Depending on this value, the mask will be computed from
+             :func:`nilearn.masking.compute_background_mask`,
+             :func:`nilearn.masking.compute_epi_mask`, or
+             :func:`nilearn.masking.compute_brain_mask`.
+
+        Default='epi'.
 
     mask_args : dict, optional
         If mask is None, these are additional parameters passed to
@@ -119,16 +120,18 @@ class MultiPCA(BaseDecomposition):
         the automatically computed mask.
 
     `components_` : 2D numpy array (n_components x n-voxels)
-        Array of masked extracted components. They can be unmasked thanks to
-        the `masker_` attribute.
+        Array of masked extracted components.
 
-        Deprecated since version 0.4.1. Use `components_img_` instead.
+        .. note::
+
+            Use attribute `components_img_` rather than manually unmasking
+            `components_` with `masker_` attribute.
 
     `components_img_` : 4D Nifti image
         4D image giving the extracted PCA components. Each 3D image is a
         component.
 
-        New in version 0.4.1.
+        .. versionadded:: 0.4.1
 
     `variance_` : numpy array (n_components,)
         The amount of variance explained by each of the selected components.

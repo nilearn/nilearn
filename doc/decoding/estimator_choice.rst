@@ -24,21 +24,16 @@ Predictions: regression, classification and multi-class
 As seen in the previous section, high-level objects in Nilearn help you decode
 easily your dataset using a **mask** and/or **feature selection**. You can tune
 the **cross-validation** and **scoring** schemes of your model. Those objects
-come in two kinds, depending on your usecase : Regression or Classification.
+come in two kinds, depending on your usecase : :term:`Regression<regression>` or :term:`Classification<classification>`.
 
 Regression
 ----------
 
-A regression problem is a learning task in which the variable to predict
+A :term:`regression` problem is a learning task in which the variable to predict
 --that we often call **y** -- is a continuous value, such as an age.
-Encoding models [1]_ typically call for regressions.
+Encoding models [:footcite:t:`Naselaris2011`] typically call for regressions.
 :class:`nilearn.decoding.DecoderRegressor` implement easy and efficient
 regression pipelines.
-
-.. [1]
-
-   Naselaris et al, Encoding and decoding in fMRI, NeuroImage Encoding
-   and decoding in fMRI.2011 http://www.ncbi.nlm.nih.gov/pubmed/20691790
 
 .. seealso::
 
@@ -49,16 +44,16 @@ regression pipelines.
 Classification: two classes or multi-class
 ------------------------------------------
 
-A classification task consists in predicting a *class* label for each
+A :term:`classification` task consists in predicting a *class* label for each
 observation. In other words, the variable to predict is categorical.
 
-Often classification is performed between two classes, but it may well be
+Often :term:`classification` is performed between two classes, but it may well be
 applied to multiple classes, in which case it is known as a multi-class
 problem. It is important to keep in mind that the larger the number of
 classes, the harder the prediction problem.
 
 :class:`nilearn.decoding.Decoder` implement easy and efficient
-classification pipelines.
+:term:`classification` pipelines.
 
 Some estimators support multi-class prediction out of the box, but many
 work by dividing the multi-class problem in a set of two class problems.
@@ -84,7 +79,7 @@ whereas the latter is linear with the number of classes.
 
 .. seealso::
 
-  * `Multi-class prediction in scikit-learn's documentation <http://scikit-learn.org/stable/modules multiclass.html>`_
+  * `Multi-class prediction in scikit-learn's documentation <https://scikit-learn.org/stable/modules/multiclass.html>`_
   * :class:`nilearn.decoding.FREMClassifier`, a pipeline described in the
     :ref:`userguide <frem>`, yielding state-of-the art decoding performance.
 
@@ -114,29 +109,29 @@ Different linear models
 
 Using Nilearn high-level objects, several estimators are easily available
 to model the relations between your images and the target to predict.
-For classification, :class:`nilearn.decoding.Decoder` let you choose them
+For :term:`classification`, :class:`nilearn.decoding.Decoder` let you choose them
 through the `estimator` parameter:
 
-* 'svc' (same as 'svc_l2') : the `support vector classifier <https://scikit-learn.org/stable/modules/svm.html>`_
+* `svc` (same as `svc_l2`) : The `support vector classifier <https://scikit-learn.org/stable/modules/svm.html>`_.
 
-* 'svc_l1' : SVC using L1 penalization that yields a sparse solution : only a
-  subset of feature weights is different from zero and contribute to prediction.
+* `svc_l1` : SVC using `L1 penalization <https://scikit-learn.org/stable/auto_examples/linear_model/plot_logistic_l1_l2_sparsity>`_ that yields a sparse solution : only a subset of feature weights is different from zero and contribute to prediction.
 
-* 'logistic' (or 'logistic_l2') : the `logistic regression
-  <https://scikit-learn.org/stable/modules/linear_model.html#logistic-regression>`_ with l2 penalty
+* `logistic` (or `logistic_l2`) : The `logistic regression <https://scikit-learn.org/stable/modules/linear_model.html#logistic-regression>`_ with `l2 penalty <https://scikit-learn.org/stable/auto_examples/linear_model/plot_logistic_l1_l2_sparsity.html>`_.
 
-* 'logistic_l1' :  the logistic regression with l1 penalty (**sparse model**)
+* `logistic_l1` :  The `logistic regression <https://scikit-learn.org/stable/modules/linear_model.html#logistic-regression>`_ with `l1 penalty <https://scikit-learn.org/stable/auto_examples/linear_model/plot_logistic_l1_l2_sparsity.html>`_ (**sparse model**).
 
-* 'ridge_classifier' a `Ridge Regression variant
-  <https://scikit-learn.org/stable/modules/linear_model.html#ridge-regression-and-classification>`_
+* `ridge_classifier` : A `Ridge Regression variant
+  <https://scikit-learn.org/stable/modules/linear_model.html#ridge-regression-and-classification>`_.
 
+* `dummy classifier` : A `dummy classifier <https://scikit-learn.org/stable/modules/generated/sklearn.dummy.DummyClassifier.html>`_ is a classifier that makes predictions using simple rules. It is useful as a simple baseline to compare with other classifiers.
 
-In :class:`nilearn.decoding.DecoderRegressor` you can use some of these objects
-counterparts for regression :
+In :class:`nilearn.decoding.DecoderRegressor` you can use some of these objects counterparts for regression :
 
-* 'svr'
+* `svr` : `Support vector regression <https://scikit-learn.org/stable/modules/generated/sklearn.svm.SVR.html>`_.
 
-* 'ridge_regressor' (same as 'ridge')
+* `ridge_regressor` (same as `ridge`) : `Ridge regression <https://scikit-learn.org/stable/modules/generated/sklearn.linear_model.RidgeCV.html>`_.
+
+* `dummy_regressor` : A `dummy regressor <https://scikit-learn.org/stable/modules/generated/sklearn.dummy.DummyRegressor.html>`_ is a regressor that makes predictions using simple rules. It is useful as a simple baseline to compare with other regressors.
 
 .. note::
 
@@ -252,3 +247,8 @@ models is then used to make predictions.
   * :ref:`SpaceNet <space_net>`, a method promoting sparsity that can also
     give good brain decoding power and improved decoder maps when sparsity
     is important.
+
+References
+==========
+
+.. footbibliography::

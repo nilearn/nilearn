@@ -87,7 +87,7 @@ used for caching.
 .. note::
 
     The Ward clustering computing 1000 parcels runs typically in about 10
-    seconds. Admitedly, this is very fast.
+    seconds. Admittedly, this is very fast.
 
 .. note::
 

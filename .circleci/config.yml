@@ -1,9 +1,209 @@
 # quick-build rebuilds changes using the cached documentation.
 # The cache is emptied everyday, forcing a full build on the day's first push.
-# It doesn't operate on master branch. New branches are always built from scratch.
-# full-build always rebuilds from scratch, without any cache. Only for changes in master branch.
+# It doesn't operate on main branch. New branches are always built from scratch.
+# full-build always rebuilds from scratch, without any cache. Only for changes in main branch.
 
 version: 2.1
+
+commands:
+
+    restore_data_cache:
+        description: "Restore data cache"
+        steps:
+            - run:
+                name: Get cache key
+                command: |
+                    if [[ $(cat restore.txt) == "true" ]]; then
+                        date +%U > week_num;
+                    else
+                        echo 'missing' > week_num;
+                    fi
+            - restore_cache:
+                keys:
+                    - v1-small-cache-{{ checksum "week_num" }}
+
+            - restore_cache:
+                keys:
+                    - v1-adhd-{{ checksum "week_num" }}
+
+            - restore_cache:
+                keys:
+                    - v1-allen_rsn_2011-{{ checksum "week_num" }}
+
+            - restore_cache:
+                keys:
+                    - v1-brainomics_localizer-{{ checksum "week_num" }}
+
+            - restore_cache:
+                keys:
+                    - v1-development_fmri-{{ checksum "week_num" }}
+
+            - restore_cache:
+                keys:
+                    - v1-ds000030-{{ checksum "week_num" }}
+
+            - restore_cache:
+                keys:
+                    - v1-fiac_nilearn.glm-{{ checksum "week_num" }}
+
+            - restore_cache:
+                keys:
+                    - v1-fMRI-language-localizer-demo-dataset-{{ checksum "week_num" }}
+
+            - restore_cache:
+                keys:
+                    - v1-fsl-{{ checksum "week_num" }}
+
+            - restore_cache:
+                keys:
+                    - v1-haxby2001-{{ checksum "week_num" }}
+
+            - restore_cache:
+                keys:
+                    - v1-icbm152_2009-{{ checksum "week_num" }}
+
+            - restore_cache:
+                keys:
+                    - v1-jimura_poldrack_2012_zmaps-{{ checksum "week_num" }}
+
+            - restore_cache:
+                keys:
+                    - v1-localizer_first_level-{{ checksum "week_num" }}
+
+            - restore_cache:
+                keys:
+                    - v1-miyawaki2008-{{ checksum "week_num" }}
+
+            - restore_cache:
+                keys:
+                    - v1-nki_enhanced_surface-{{ checksum "week_num" }}
+
+            - restore_cache:
+                keys:
+                    - v1-oasis1-{{ checksum "week_num" }}
+
+            - restore_cache:
+                keys:
+                    - v1-smith_2009-{{ checksum "week_num" }}
+
+            - restore_cache:
+                keys:
+                    - v1-spm_auditory-{{ checksum "week_num" }}
+
+            - restore_cache:
+                keys:
+                    - v1-spm_multimodal_fmri-{{ checksum "week_num" }}
+
+
+    save_data_cache:
+        description: "Cache downloaded data"
+        steps:
+            - run:
+                name: Generate cache keys
+                command: |
+                    date +%U > week_num;
+            - save_cache:
+                key: v1-small-cache-{{ checksum "week_num" }} # Small datasets are combined (<= 100 MB)
+                paths:
+                    - ~/nilearn_data/basc_multiscale_2015 # <  1 MB
+                    - ~/nilearn_data/destrieux_surface    # <  1 MB
+                    - ~/nilearn_data/difumo_atlases       # ~  4 MB
+                    - ~/nilearn_data/fsaverage            # ~ 28 MB
+                    - ~/nilearn_data/Megatrawls           # ~  9 MB
+                    - ~/nilearn_data/msdl_atlas           # ~ 21 MB
+                    - ~/nilearn_data/neurovault           # ~ 13 MB
+                    - ~/nilearn_data/pauli_2017           # ~  1 MB
+                    - ~/nilearn_data/yeo_2011             # ~  3 MB
+      
+            - save_cache:
+                key: v1-adhd-{{ checksum "week_num" }}
+                paths:
+                    - ~/nilearn_data/adhd                 # ~ 45 MB
+
+            - save_cache:
+                key: v1-allen_rsn_2011-{{ checksum "week_num" }}
+                paths:
+                    - ~/nilearn_data/allen_rsn_2011       # ~ 32 MB
+
+            - save_cache:
+                key: v1-brainomics_localizer-{{ checksum "week_num" }}
+                paths:
+                    - ~/nilearn_data/brainomics_localizer # ~ 66 MB
+
+            - save_cache:
+                key: v1-development_fmri-{{ checksum "week_num" }}
+                paths:
+                    - ~/nilearn_data/development_fmri     # ~373 MB
+
+            - save_cache:
+                key: v1-ds000030-{{ checksum "week_num" }}
+                paths:
+                    - ~/nilearn_data/ds000030             # ~832 MB
+
+            - save_cache:
+                key: v1-fiac_nilearn.glm-{{ checksum "week_num" }}
+                paths:
+                    - ~/nilearn_data/fiac_nilearn.glm     # ~ 82 MB
+
+            - save_cache:
+                key: v1-fMRI-language-localizer-demo-dataset-{{ checksum "week_num" }}
+                paths:
+                    - ~/nilearn_data/fMRI-language-localizer-demo-dataset # ~ 750 MB
+
+            - save_cache:
+                key: v1-fsl-{{ checksum "week_num" }}
+                paths:
+                    - ~/nilearn_data/fsl                  # ~ 30 MB
+
+            - save_cache:
+                key: v1-haxby2001-{{ checksum "week_num" }}
+                paths:
+                    - ~/nilearn_data/haxby2001            # ~302 MB
+
+            - save_cache:
+                key: v1-icbm152_2009-{{ checksum "week_num" }}
+                paths:
+                    - ~/nilearn_data/icbm152_2009         # ~ 63 MB
+
+            - save_cache:
+                key: v1-jimura_poldrack_2012_zmaps-{{ checksum "week_num" }}
+                paths:
+                    - ~/nilearn_data/jimura_poldrack_2012_zmaps # ~ 105 MB
+
+            - save_cache:
+                key: v1-localizer_first_level-{{ checksum "week_num" }}
+                paths:
+                    - ~/nilearn_data/localizer_first_level # ~ 35 MB
+
+            - save_cache:
+                key: v1-miyawaki2008-{{ checksum "week_num" }}
+                paths:
+                    - ~/nilearn_data/miyawaki2008          # ~181 MB
+
+            - save_cache:
+                key: v1-nki_enhanced_surface-{{ checksum "week_num" }}
+                paths:
+                    - ~/nilearn_data/nki_enhanced_surface  # ~ 85 MB
+
+            - save_cache:
+                key: v1-oasis1-{{ checksum "week_num" }}
+                paths:
+                    - ~/nilearn_data/oasis1                # ~913 MB
+
+            - save_cache:
+                key: v1-smith_2009-{{ checksum "week_num" }}
+                paths:
+                    - ~/nilearn_data/smith_2009            # ~171 MB
+
+            - save_cache:
+                key: v1-spm_auditory-{{ checksum "week_num" }}
+                paths:
+                    - ~/nilearn_data/spm_auditory          # ~230 MB
+
+            - save_cache:
+                key: v1-spm_multimodal_fmri-{{ checksum "week_num" }}
+                paths:
+                    - ~/nilearn_data/spm_multimodal_fmri   # ~227 MB
 
 jobs:
 
@@ -39,6 +239,18 @@ jobs:
                   git pull --ff-only upstream "refs/pull/$(cat merge.txt)/merge";
               fi
       - run:
+          name: determine force download
+          command: |
+              commit_msg=$(git log -2 --format=oneline);
+              echo $commit_msg;
+              if [[ $commit_msg == *"[force download]"* ]]; then
+                echo "All datasets will be downloaded as requested.";
+                touch restore.txt;
+              else
+                echo "Data cache will be used if available.";
+                echo "true" | tee restore.txt;
+              fi
+      - run:
           name: setup conda
           command: |
               wget https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh -O ~/miniconda.sh;
@@ -47,15 +259,16 @@ jobs:
       - run:
           name: Install apt packages
           command: |
-              ./tools/circleci_dependencies_apt.sh
+              ./build_tools/circle/dependencies_apt.sh
       - run:
           name: Install packages in conda env
           command: |
-              ./tools/circleci_dependencies.sh
+              ./build_tools/circle/dependencies.sh
+      - restore_data_cache
       - run:
           name: Find build type
           command: |
-              ./tools/circleci_build_type.sh
+              ./build_tools/circle/build_type.sh
       - run:
           name: Verify build type
           command: |
@@ -88,7 +301,12 @@ jobs:
           paths:
               - html
               - html_stable
-
+      - run: |
+          if [[ "$(cat build.txt)" != "html-strict" ]]; then
+                echo "Partial build : No caching of data will be done!";
+                circleci-agent step halt
+          fi
+      - save_data_cache
 
 workflows:
   version: 2
@@ -104,6 +322,6 @@ workflows:
           filters:
             branches:
               only:
-                - master
+                - main
     jobs:
       - build_docs

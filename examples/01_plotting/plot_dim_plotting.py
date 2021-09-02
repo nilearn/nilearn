@@ -1,5 +1,5 @@
 """
-Controling the contrast of the background when plotting
+Controlling the contrast of the background when plotting
 =========================================================
 
 The `dim` argument controls the contrast of the background.

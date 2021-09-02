@@ -202,8 +202,12 @@ div.nilearn_report .image:hover .overlay {
       </div>
   </div>
   <div class="pure-u-1 pure-u-md-1-3 raise">
-    <p class="elem-warn">{{warning_message}}</p>
-    <p class="elem-desc">{{description}}</p>
+    {{if warning_message}}
+      <p class="elem-warn">{{warning_message}}</p>
+    {{endif}}
+    {{if description}}
+      <p class="elem-desc">{{description}}</p>
+    {{endif}}
     <p></p>
     <details>
       <summary class="pure-button">Parameters</summary>

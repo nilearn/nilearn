@@ -1,15 +1,15 @@
 """Intro to GLM Analysis: a single-session, single-subject fMRI dataset
 =====================================================================
 
-In this tutorial, we use a General Linear Model (GLM) to compare the fMRI
-signal during periods of auditory stimulation versus periods of rest.
+In this tutorial, we use a General Linear Model (:term:`GLM`) to compare the
+:term:`fMRI` signal during periods of auditory stimulation versus periods of rest.
 
 .. contents:: **Contents**
     :local:
     :depth: 1
 
 The analyse described here is performed in the native space, directly on the
-original EPI scans without any spatial or temporal preprocessing.
+original :term:`EPI` scans without any spatial or temporal preprocessing.
 (More sensitive results would likely be obtained on the corrected,
 spatially normalized and smoothed images).
 
@@ -20,17 +20,17 @@ The dataset comes from an experiment conducted at the FIL by Geraint Rees
 under the direction of Karl Friston. It is provided by FIL methods
 group which develops the SPM software.
 
-According to SPM documentation, 96 scans were acquired (repetition time TR=7s)
-in one session. The paradigm consisted of alternating periods of stimulation
-and rest, lasting 42s each (that is, for 6 scans). The session started with a
-rest block.  Auditory stimulation consisted of bi-syllabic words presented
-binaurally at a rate of 60 per minute. The functional data starts at scan
+According to SPM documentation, 96 scans were acquired (repetition time
+:term:`TR` = 7s) in one session. The paradigm consisted of alternating periods
+of stimulation and rest, lasting 42s each (that is, for 6 scans). The session
+started with a rest block.  Auditory stimulation consisted of bi-syllabic words
+presented binaurally at a rate of 60 per minute. The functional data starts at scan
 number 4, that is the image file ``fM00223_004``.
 
-The whole brain BOLD/EPI images were acquired on a 2T Siemens MAGNETOM Vision
-system. Each scan consisted of 64 contiguous slices (64x64x64 3mm x 3mm x 3mm
-voxels). Acquisition of one scan took 6.05s, with the scan to scan repeat time
-(TR) set arbitrarily to 7s.
+The whole brain :term:`BOLD`/:term:`EPI` images were acquired on a 2T Siemens
+MAGNETOM Vision system. Each scan consisted of 64 contiguous slices (64x64x64
+3mm x 3mm x 3mm :term:`voxels<voxel>`). Acquisition of one scan took 6.05s, with the
+scan to scan repeat time (:term:`TR`) set arbitrarily to 7s.
 
 
 To run this example, you must launch IPython via ``ipython
@@ -45,7 +45,7 @@ To run this example, you must launch IPython via ``ipython
 # .. note:: In this tutorial, we load the data using a data downloading
 #           function. To input your own data, you will need to provide
 #           a list of paths to your own files in the ``subject_data`` variable.
-#           These should abide to the Brain Imaging Data Structure (BIDS)
+#           These should abide to the Brain Imaging Data Structure (:term:`BIDS`)
 #           organization.
 
 from nilearn.datasets import fetch_spm_auditory
@@ -59,7 +59,7 @@ plot_img(subject_data.func[0])
 plot_anat(subject_data.anat)
 
 ###############################################################################
-# Next, we concatenate all the 3D EPI image into a single 4D image,
+# Next, we concatenate all the 3D :term:`EPI` image into a single 4D image,
 # then we average them in order to create a background
 # image that will be used to display the activations:
 
@@ -104,7 +104,7 @@ fmri_glm = FirstLevelModel(t_r=7,
                            high_pass=.01)
 
 ###############################################################################
-# Now that we have specified the model, we can run it on the fMRI image
+# Now that we have specified the model, we can run it on the :term:`fMRI` image
 fmri_glm = fmri_glm.fit(fmri_img, events)
 
 ###############################################################################
@@ -147,14 +147,14 @@ plt.show()
 # Detecting voxels with significant effects
 # -----------------------------------------
 #
-# To access the estimated coefficients (Betas of the GLM model), we
-# created contrast with a single '1' in each of the columns: The role
-# of the contrast is to select some columns of the model --and
+# To access the estimated coefficients (Betas of the :term:`GLM` model), we
+# created :term:`contrast` with a single '1' in each of the columns: The role
+# of the :term:`contrast` is to select some columns of the model --and
 # potentially weight them-- to study the associated statistics. So in
 # a nutshell, a contrast is a weighted combination of the estimated
 # effects.  Here we can define canonical contrasts that just consider
 # the two effects in isolation ---let's call them "conditions"---
-# then a contrast that makes the difference between these conditions.
+# then a :term:`contrast` that makes the difference between these conditions.
 
 from numpy import array
 conditions = {
@@ -166,19 +166,19 @@ conditions = {
 
 ###############################################################################
 # We can then compare the two conditions 'active' and 'rest' by
-# defining the corresponding contrast:
+# defining the corresponding :term:`contrast`:
 
 active_minus_rest = conditions['active'] - conditions['rest']
 
 ###############################################################################
-# Let's look at it: plot the coefficients of the contrast, indexed by
+# Let's look at it: plot the coefficients of the :term:`contrast`, indexed by
 # the names of the columns of the design matrix.
 
 from nilearn.plotting import plot_contrast_matrix
 plot_contrast_matrix(active_minus_rest, design_matrix=design_matrix)
 
 ###############################################################################
-# Below, we compute the estimated effect. It is in BOLD signal unit,
+# Below, we compute the estimated effect. It is in :term:`BOLD` signal unit,
 # but has no statistical guarantees, because it does not take into
 # account the associated variance.
 
@@ -214,9 +214,9 @@ plt.show()
 # statistical validity of the procedure: here we used an arbitrary
 # threshold of 3.0 but the threshold should provide some guarantees on
 # the risk of false detections (aka type-1 errors in statistics).
-# One suggestion is to control the false positive rate (fpr, denoted by
+# One suggestion is to control the false positive rate (:term:`fpr<FPR correction>`, denoted by
 # alpha) at a certain level, e.g. 0.001: this means that there is 0.1% chance
-# of declaring an inactive voxel, active.
+# of declaring an inactive :term:`voxel`, active.
 
 from nilearn.glm import threshold_stats_img
 _, threshold = threshold_stats_img(z_map, alpha=.001, height_control='fpr')

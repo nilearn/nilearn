@@ -158,7 +158,7 @@ Here is how signals are generated:
   turn used to generate signals.
 
 The hardest part is generating sparse symmetric positive definite
-matrices, while controling the sparsity level. With the present
+matrices, while controlling the sparsity level. With the present
 scheme, only the location of zeros in the *square root* of the
 precision matrices can be specified. Therefore the final sparsity
 level depends not only on the initial sparsity level, but also on the
@@ -388,7 +388,7 @@ smallest (and not the other way).
 
 The usefulness of this scheme depends on several things. First, using
 warm restart does not gives exactly the same result as running
-independant optimizations, because optimization paths are not the
+independent optimizations, because optimization paths are not the
 same. This is not an issue for cross-validation, since there are many
 other larger sources of fluctuations. It has been checked that in
 practice, the selected value does not change. Second, using warm

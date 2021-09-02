@@ -19,6 +19,7 @@ import json
 
 import requests
 
+from .._utils import fill_doc
 
 _REQUESTS_TIMEOUT = (15.1, 61)
 
@@ -116,6 +117,7 @@ def _chunk_report_(bytes_so_far, total_size, initial_size, t0):
                _format_time(time_remaining)))
 
 
+@fill_doc
 def _chunk_read_(response, local_file, chunk_size=8192, report_hook=None,
                  initial_size=0, total_size=None, verbose=1):
     """Download a file chunk by chunk and show advancement
@@ -140,9 +142,7 @@ def _chunk_read_(response, local_file, chunk_size=8192, report_hook=None,
 
     total_size : int, optional
         Expected final size of download (None means it is unknown).
-
-    verbose : int, optional
-        Verbosity level (0 means no message). Default=1.
+    %(verbose)s
 
     Returns
     -------
@@ -181,6 +181,7 @@ def _chunk_read_(response, local_file, chunk_size=8192, report_hook=None,
     return
 
 
+@fill_doc
 def get_data_dirs(data_dir=None):
     """Returns the directories in which nilearn looks for data.
 
@@ -189,9 +190,7 @@ def get_data_dirs(data_dir=None):
 
     Parameters
     ----------
-    data_dir : string, optional
-        Path of the data directory. Used to force data storage in a specified
-        location. Default: None
+    %(data_dir)s
 
     Returns
     -------
@@ -217,7 +216,7 @@ def get_data_dirs(data_dir=None):
 
     # Check data_dir which force storage in a specific location
     if data_dir is not None:
-        paths.extend(data_dir.split(os.pathsep))
+        paths.extend(str(data_dir).split(os.pathsep))
 
     # If data_dir has not been specified, then we crawl default locations
     if data_dir is None:
@@ -233,6 +232,7 @@ def get_data_dirs(data_dir=None):
     return paths
 
 
+@fill_doc
 def _get_dataset_dir(dataset_name, data_dir=None, default_paths=None,
                      verbose=1):
     """Creates if necessary and returns data directory of given dataset.
@@ -241,17 +241,11 @@ def _get_dataset_dir(dataset_name, data_dir=None, default_paths=None,
     ----------
     dataset_name : string
         The unique name of the dataset.
-
-    data_dir : string, optional
-        Path of the data directory. Used to force data storage in a specified
-        location. Default: None
-
+    %(data_dir)s
     default_paths : list of string, optional
         Default system paths in which the dataset may already have been
         installed by a third party software. They will be checked first.
-
-    verbose : int, optional
-        Verbosity level (0 means no message). Default=1.
+    %(verbose)s
 
     Returns
     -------
@@ -274,7 +268,10 @@ def _get_dataset_dir(dataset_name, data_dir=None, default_paths=None,
     # Search possible data-specific system paths
     if default_paths is not None:
         for default_path in default_paths:
-            paths.extend([(d, True) for d in default_path.split(os.pathsep)])
+            paths.extend([
+                (d, True)
+                for d in str(default_path).split(os.pathsep)]
+            )
 
     paths.extend([(d, False) for d in get_data_dirs(data_dir=data_dir)])
 
@@ -313,6 +310,7 @@ def _get_dataset_dir(dataset_name, data_dir=None, default_paths=None,
                   'directories, but:' + ''.join(errors))
 
 
+@fill_doc
 def _uncompress_file(file_, delete_archive=True, verbose=1):
     """Uncompress files contained in a data_set.
 
@@ -324,9 +322,7 @@ def _uncompress_file(file_, delete_archive=True, verbose=1):
     delete_archive : bool, optional
         Wheteher or not to delete archive once it is uncompressed.
         Default=True.
-
-    verbose : int, optional
-        Verbosity level (0 means no message). Default=1.
+    %(verbose)s
 
     Notes
     -----
@@ -487,6 +483,7 @@ class _NaiveFTPAdapter(requests.adapters.BaseAdapter):
         pass
 
 
+@fill_doc
 def _fetch_file(url, data_dir, resume=True, overwrite=False,
                 md5sum=None, username=None, password=None,
                 verbose=1, session=None):
@@ -494,17 +491,9 @@ def _fetch_file(url, data_dir, resume=True, overwrite=False,
 
     Parameters
     ----------
-    url : string
-        Contains the url of the file to be downloaded.
-
-    data_dir : string
-        Path of the data directory. Used for data storage in the specified
-        location.
-
-    resume : bool, optional
-        If true, try to resume partially downloaded files.
-        Default=True.
-
+    %(url)s
+    %(data_dir)s
+    %(resume)s
     overwrite : bool, optional
         If true and file already exists, delete it. Default=False.
 
@@ -516,10 +505,7 @@ def _fetch_file(url, data_dir, resume=True, overwrite=False,
 
     password : string, optional
         Password used for basic HTTP authentication.
-
-    verbose : int, optional
-        Verbosity level (0 means no message). Default=1.
-
+    %(verbose)s
     session : requests.Session, optional
         Session to use to send requests.
 
@@ -681,6 +667,7 @@ def movetree(src, dst):
         raise Exception(errors)
 
 
+@fill_doc
 def _fetch_files(data_dir, files, resume=True, verbose=1, session=None):
     """Load requested dataset, downloading it if needed or requested.
 
@@ -693,10 +680,7 @@ def _fetch_files(data_dir, files, resume=True, verbose=1, session=None):
 
     Parameters
     ----------
-    data_dir : string
-        Path of the data directory. Used for data storage in a specified
-        location.
-
+    %(data_dir)s
     files : list of (string, string, dict)
         List of files and their corresponding url with dictionary that contains
         options regarding the files. Eg. (file_path, url, opt). If a file_path
@@ -707,13 +691,8 @@ def _fetch_files(data_dir, files, resume=True, verbose=1, session=None):
             * 'uncompress' to indicate that the file is an archive
             * 'md5sum' to check the md5 sum of the file
             * 'overwrite' if the file should be re-downloaded even if it exists
-
-    resume : bool, optional
-        If true, try resuming download if possible. Default=True.
-
-    verbose : int, optional
-        Verbosity level (0 means no message). Default=1.
-
+    %(resume)s
+    %(verbose)s
     session : `requests.Session`, optional
         Session to use to send requests.
 
@@ -779,7 +758,7 @@ def _fetch_files(data_dir, files, resume=True, verbose=1, session=None):
                                   verbose=verbose, md5sum=md5sum,
                                   username=opts.get('username', None),
                                   password=opts.get('password', None),
-                                  overwrite=overwrite)
+                                  session=session, overwrite=overwrite)
             if 'move' in opts:
                 # XXX: here, move is supposed to be a dir, it can be a name
                 move = os.path.join(temp_dir, opts['move'])
@@ -796,7 +775,7 @@ def _fetch_files(data_dir, files, resume=True, verbose=1, session=None):
 
         if (abort is None and not os.path.exists(target_file) and not
                 os.path.exists(temp_target_file)):
-            warnings.warn('An error occured while fetching %s' % file_)
+            warnings.warn('An error occurred while fetching %s' % file_)
             abort = ("Dataset has been downloaded but requested file was "
                      "not provided:\nURL: %s\n"
                      "Target file: %s\nDownloaded: %s" %
@@ -853,13 +832,14 @@ def _tree(path, pattern=None, dictionary=False):
     return dirs
 
 
+@fill_doc
 def make_fresh_openneuro_dataset_urls_index(
         data_dir=None,
         dataset_version='ds000030_R1.0.4',
         verbose=1,
         ):
     """ONLY intended for Nilearn developers, not general users.
-    Creates a fresh, updated OpenNeuro BIDS dataset index from AWS,
+    Creates a fresh, updated OpenNeuro :term:`BIDS` dataset index from AWS,
     ready for upload to osf.io .
 
     Crawls the server where OpenNeuro dataset is stored
@@ -887,16 +867,11 @@ def make_fresh_openneuro_dataset_urls_index(
 
     Parameters
     ----------
-    data_dir : string, optional
-        Path to store the downloaded dataset.
-        If None downloads to user's Desktop.
-
+    %(data_dir)s
     dataset_version : string, optional
         Dataset version name. Assumes it is of the form [name]_[version].
         Default is `ds000030_R1.0.4`.
-
-    verbose : int, optional
-        Verbosity level (0 means no message). Default=1.
+    %(verbose)s
 
     Returns
     -------

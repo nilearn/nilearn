@@ -37,6 +37,7 @@ shutil.copy(
 # absolute, like shown here.
 sys.path.insert(0, os.path.abspath('sphinxext'))
 import sphinx_gallery
+from github_link import make_linkcode_resolve
 
 # We also add the directory just above to enable local imports of nilearn
 sys.path.insert(0, os.path.abspath('..'))
@@ -51,7 +52,10 @@ extensions = [
               'sphinx.ext.autosummary',
               'sphinx.ext.imgmath',
               'sphinx.ext.intersphinx',
+              'sphinxcontrib.bibtex',
               'numpydoc',
+              'sphinx.ext.linkcode',
+              'sphinx_copybutton'
               ]
 
 autosummary_generate = True
@@ -88,9 +92,15 @@ plot_gallery = 'True'
 # The master toctree document.
 master_doc = 'index'
 
+# sphinxcontrib-bibtex
+bibtex_bibfiles = ['./references.bib', './soft_references.bib']
+bibtex_style = 'unsrt'
+bibtex_reference_style = 'author_year'
+bibtex_footbibliography_header = ''
+
 # General information about the project.
 project = u'Nilearn'
-copyright = u'The nilearn developers 2010-2020'
+copyright = u'The nilearn developers 2010-2021'
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
@@ -225,6 +235,8 @@ html_show_sourcelink = False
 # Output file base name for HTML help builder.
 htmlhelp_basename = 'PythonScientic'
 
+# Sphinx copybutton config
+copybutton_prompt_text = ">>> "
 
 # -- Options for LaTeX output ------------------------------------------------
 
@@ -290,18 +302,19 @@ latex_show_urls = 'footnote'
 
 trim_doctests_flags = True
 
-_python_doc_base = 'https://docs.python.org/3.6'
+_python_doc_base = 'https://docs.python.org/3.8'
 
 # Example configuration for intersphinx: refer to the Python standard library.
 intersphinx_mapping = {
     'python': (_python_doc_base, None),
-    'numpy': ('https://docs.scipy.org/doc/numpy', None),
-    'scipy': ('https://docs.scipy.org/doc/scipy/reference', None),
+    'numpy': ('https://numpy.org/doc/stable/', None),
+    'scipy': ('http://scipy.github.io/devdocs/', None),
     'matplotlib': ('https://matplotlib.org/', None),
     'sklearn': ('https://scikit-learn.org/stable/', None),
     'nibabel': ('https://nipy.org/nibabel', None),
     'pandas': ('https://pandas.pydata.org/pandas-docs/stable/', None),
     'nistats': ('https://nistats.github.io', None),
+    'joblib': ('https://joblib.readthedocs.io/en/latest/', None),
 }
 
 extlinks = {
@@ -322,7 +335,7 @@ sphinx_gallery_conf = {
         'org': 'nilearn',
         'repo': 'nilearn.github.io',
         'binderhub_url': 'https://mybinder.org',
-        'branch': 'master',
+        'branch': 'main',
         'dependencies': ['../requirements-build-docs.txt',
                          'binder/requirements.txt'],
         'notebooks_dir': 'examples'
@@ -340,10 +353,16 @@ def touch_example_backreferences(app, what, name, obj, options, lines):
         # touch file
         open(examples_path, 'w').close()
 
-# Add the 'copybutton' javascript, to hide/show the prompt in code
-# examples
 
 
 def setup(app):
-    app.add_javascript('copybutton.js')
     app.connect('autodoc-process-docstring', touch_example_backreferences)
+
+
+
+# The following is used by sphinx.ext.linkcode to provide links to github
+linkcode_resolve = make_linkcode_resolve('nilearn',
+                                         'https://github.com/nilearn/'
+                                         'nilearn/blob/{revision}/'
+                                         '{package}/{path}#L{lineno}')
+

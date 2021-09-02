@@ -130,7 +130,7 @@ def coord_transform(x, y, z, affine):
         >>> niimg = datasets.load_mni152_template()
         >>> # Find the MNI coordinates of the voxel (50, 50, 50)
         >>> image.coord_transform(50, 50, 50, niimg.affine)
-        (-10.0, -26.0, 28.0)
+        (2.0, -34.0, 28.0)
 
     """
     squeeze = (not hasattr(x, '__iter__'))
@@ -396,7 +396,7 @@ def resample_img(img, target_affine=None, target_shape=None,
     **Handling non-native endian in given Nifti images**
     This function automatically changes the byte-ordering information
     in the image dtype to new byte order. From non-native to native, which
-    implies that if the given image has non-native endianess then the output
+    implies that if the given image has non-native endianness then the output
     data in Nifti image will have native dtype. This is only the case when
     if the given target_affine (transformation matrix) is diagonal and
     homogenous.
@@ -445,7 +445,11 @@ def resample_img(img, target_affine=None, target_shape=None,
         if copy and not input_img_is_string:
             img = _utils.copy_img(img)
         return img
-    if target_affine is affine and target_shape is shape:
+    if (
+        np.shape(target_affine) == np.shape(affine)
+        and np.allclose(target_affine, affine)
+        and np.array_equal(target_shape, shape)
+    ):
         return img
     if target_affine is not None:
         target_affine = np.asarray(target_affine)
@@ -531,11 +535,11 @@ def resample_img(img, target_affine=None, target_shape=None,
 
     # Since the release of 0.17, resampling nifti images have some issues
     # when affine is passed as 1D array and if data is of non-native
-    # endianess.
+    # endianness.
     # See issue https://github.com/nilearn/nilearn/issues/1445.
     # If affine is passed as 1D, scipy uses _nd_image.zoom_shift rather
     # than _geometric_transform (2D) where _geometric_transform is able
-    # to swap byte order in scipy later than 0.15 for nonnative endianess.
+    # to swap byte order in scipy later than 0.15 for nonnative endianness.
 
     # We convert to 'native' order to not have any issues either with
     # 'little' or 'big' endian data dtypes (non-native endians).

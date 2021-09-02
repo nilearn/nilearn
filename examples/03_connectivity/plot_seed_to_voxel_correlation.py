@@ -178,7 +178,7 @@ print("Seed-to-voxel correlation Fisher-z transformed: min = %.3f; max = %.3f"
          )
       )
 
-# Finally, we can tranform the correlation array back to a Nifti image
+# Finally, we can transform the correlation array back to a Nifti image
 # object, that we can save.
 seed_to_voxel_correlations_fisher_z_img = brain_masker.inverse_transform(
     seed_to_voxel_correlations_fisher_z.T)

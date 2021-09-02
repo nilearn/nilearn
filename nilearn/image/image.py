@@ -476,7 +476,7 @@ def _compute_mean(imgs, target_affine=None,
     mean_data = _safe_get_data(imgs)
     affine = imgs.affine
     # Free memory ASAP
-    imgs = None
+    del imgs
     if mean_data.ndim not in (3, 4):
         raise ValueError('Computation expects 3D or 4D '
                          'images, but %i dimensions were given (%s)'
@@ -649,24 +649,24 @@ def index_img(imgs, index):
      >>> joint_mni_image = concat_imgs([datasets.load_mni152_template(),
      ...                                datasets.load_mni152_template()])
      >>> print(joint_mni_image.shape)
-     (91, 109, 91, 2)
+     (99, 117, 95, 2)
 
     We can now select one slice from the last dimension of this 4D-image::
 
      >>> single_mni_image = index_img(joint_mni_image, 1)
      >>> print(single_mni_image.shape)
-     (91, 109, 91)
+     (99, 117, 95)
 
     We can also select multiple frames using the `slice` constructor::
 
      >>> five_mni_images = concat_imgs([datasets.load_mni152_template()] * 5)
      >>> print(five_mni_images.shape)
-     (91, 109, 91, 5)
+     (99, 117, 95, 5)
 
      >>> first_three_images = index_img(five_mni_images,
      ...                                slice(0, 3))
      >>> print(first_three_images.shape)
-     (91, 109, 91, 3)
+     (99, 117, 95, 3)
 
     """
     imgs = check_niimg_4d(imgs)
@@ -732,7 +732,6 @@ def new_img_like(ref_niimg, data, affine=None, copy_header=False):
         is_str = isinstance(ref_niimg, str)
         has_get_data = hasattr(ref_niimg, 'get_data')
         has_get_fdata = hasattr(ref_niimg, 'get_fdata')
-        has_iter = hasattr(ref_niimg, '__iter__')
         has_affine = hasattr(ref_niimg, 'affine')
     if not ((has_get_data or has_get_fdata) and has_affine):
         if is_str:
@@ -932,6 +931,59 @@ def math_img(formula, **imgs):
     return new_img_like(niimg, result, niimg.affine)
 
 
+def binarize_img(img, threshold=0, mask_img=None):
+    """Binarize an image such that its values are either 0 or 1.
+
+    .. versionadded:: 0.8.1
+
+    Parameters
+    ----------
+    img : a 3D/4D Niimg-like object
+        Image which should be binarized.
+
+    threshold : :obj:`float` or :obj:`str`
+        If float, we threshold the image based on image intensities meaning
+        voxels which have intensities greater than this value will be kept.
+        The given value should be within the range of minimum and
+        maximum intensity of the input image.
+        If string, it should finish with percent sign e.g. "80%" and we
+        threshold based on the score obtained using this percentile on
+        the image data. The voxels which have intensities greater than
+        this score will be kept. The given string should be
+        within the range of "0%" to "100%".
+
+    mask_img : Niimg-like object, default None, optional
+        Mask image applied to mask the input data.
+        If None, no masking will be applied.
+
+    Returns
+    -------
+    :class:`~nibabel.nifti1.Nifti1Image`
+        Binarized version of the given input image. Output dtype is int.
+
+    See Also
+    --------
+    nilearn.image.threshold_img : To simply threshold but not binarize images.
+
+    Examples
+    --------
+    Let's load an image using nilearn datasets module::
+
+     >>> from nilearn import datasets
+     >>> anatomical_image = datasets.load_mni152_template()
+
+    Now we binarize it, generating a pseudo brainmask::
+
+     >>> from nilearn.image import binarize_img
+     >>> img = binarize_img(anatomical_image)
+
+    """
+    return math_img(
+        "img.astype(bool).astype(int)",
+        img=threshold_img(img, threshold, mask_img=mask_img)
+    )
+
+
 def clean_img(imgs, sessions=None, detrend=True, standardize=True,
               confounds=None, low_pass=None, high_pass=None, t_r=None,
               ensure_finite=False, mask_img=None):
@@ -1013,21 +1065,14 @@ def clean_img(imgs, sessions=None, detrend=True, standardize=True,
     Notes
     -----
     Confounds removal is based on a projection on the orthogonal
-    of the signal space [1]_.
+    of the signal space [:footcite:`friston1994statistical`].
 
     Orthogonalization between temporal filters and confound removal is based on
-    suggestions in [2]_.
+    suggestions in [:footcite:`Lindquist407676`].
 
     References
     ----------
-    .. [1] Friston, K. J., A. P. Holmes, K. J. Worsley, J.-P. Poline,
-       C. D. Frith, et R. S. J. Frackowiak. "Statistical Parametric Maps
-       in Functional Imaging: A General Linear Approach". Human Brain
-       Mapping 2, no 4 (1994): 189-210. <http://dx.doi.org/10.1002/hbm.460020402>
-
-    .. [2] Lindquist, M., Geuter, S., Wager, T., & Caffo, B. (2018).
-       Modular preprocessing pipelines can reintroduce artifacts into fMRI data.
-       bioRxiv, 407676. <http://dx.doi.org/10.1101/407676>
+    .. footbibliography::
 
     See Also
     --------

@@ -3,11 +3,13 @@ Visualizing 3D stat maps in a Brainsprite viewer
 """
 import os
 import json
+import copy
 import warnings
 from io import BytesIO
 from base64 import b64encode
 
 import numpy as np
+import matplotlib
 from matplotlib.image import imsave
 
 from nibabel.affines import apply_affine
@@ -18,11 +20,13 @@ from ..plotting import cm
 from ..plotting.find_cuts import find_xyz_cut_coords
 from ..plotting.img_plotting import _load_anat
 from nilearn.plotting.html_document import HTMLDocument
+from .._utils import fill_doc
 from .._utils.niimg_conversions import check_niimg_3d
 from .._utils.param_validation import check_threshold
 from .._utils.extmath import fast_abs_percentile
 from .._utils.niimg import _safe_get_data
 from ..datasets import load_mni152_template
+from ..masking import compute_brain_mask
 
 
 def _data_to_sprite(data):
@@ -307,8 +311,22 @@ def _json_view_size(params):
     return width_view, height_view
 
 
-def _json_view_data(bg_img, stat_map_img, mask_img, bg_min, bg_max, colors,
-                    cmap, colorbar):
+def _get_bg_mask_and_cmap(bg_img, black_bg):
+    """Helper function of _json_view_data."""
+    bg_mask = _safe_get_data(compute_brain_mask(bg_img),
+                             ensure_finite=True)
+    bg_mask = np.logical_not(bg_mask).astype(float)
+    bg_mask[bg_mask == 1] = np.nan
+    bg_cmap = copy.copy(matplotlib.cm.get_cmap('gray'))
+    if black_bg:
+        bg_cmap.set_bad('black')
+    else:
+        bg_cmap.set_bad('white')
+    return bg_mask, bg_cmap
+
+
+def _json_view_data(bg_img, stat_map_img, mask_img, bg_min, bg_max, black_bg,
+                    colors, cmap, colorbar):
     """Create a json-like viewer object, and populate with base64 data.
     Returns: json_view
 
@@ -319,8 +337,9 @@ def _json_view_data(bg_img, stat_map_img, mask_img, bg_min, bg_max, colors,
 
     # Create a base64 sprite for the background
     bg_sprite = BytesIO()
-    bg_data = _safe_get_data(bg_img, ensure_finite=True)
-    _save_sprite(bg_data, bg_sprite, bg_max, bg_min, None, 'gray', 'png')
+    bg_data = _safe_get_data(bg_img, ensure_finite=True).astype(float)
+    bg_mask, bg_cmap = _get_bg_mask_and_cmap(bg_img, black_bg)
+    _save_sprite(bg_data, bg_sprite, bg_max, bg_min, bg_mask, bg_cmap, 'png')
     json_view['bg_base64'] = _bytesIO_to_base64(bg_sprite)
 
     # Create a base64 sprite for the stat map
@@ -396,6 +415,7 @@ def _get_cut_slices(stat_map_img, cut_coords=None, threshold=None):
     return cut_slices
 
 
+@fill_doc
 def view_img(stat_map_img, bg_img='MNI152',
              cut_coords=None,
              colorbar=True,
@@ -421,10 +441,7 @@ def view_img(stat_map_img, bg_img='MNI152',
         See http://nilearn.github.io/manipulating_images/input_output.html
         The statistical map image. Can be either a 3D volume or a 4D volume
         with exactly one time point.
-
-    bg_img : Niimg-like object, optional
-        See http://nilearn.github.io/manipulating_images/input_output.html
-        The background image that the stat map will be plotted on top of.
+    %(bg_img)s
         If nothing is specified, the MNI152 template will be used.
         To turn off background image, just pass "bg_img=False".
         Default='MNI152'.
@@ -436,13 +453,10 @@ def view_img(stat_map_img, bg_img='MNI152',
 
     colorbar : boolean, optional
         If True, display a colorbar on top of the plots. Default=True.
-
-    title : string or None, optional
-        The title displayed on the figure (or None: no title).
-
+    %(title)s
     threshold : string, number or None, optional
         If None is given, the image is not thresholded.
-        If a string of the form "90%" is given, use the 90-th percentile of
+        If a string of the form "90%%" is given, use the 90-th percentile of
         the absolute value in the image.
         If a number is given, it is used to threshold the image:
         values below the threshold (in absolute value) are plotted
@@ -452,35 +466,22 @@ def view_img(stat_map_img, bg_img='MNI152',
     annotate : boolean, optional
         If annotate is True, current cuts are added to the viewer.
         Default=True.
-
-    draw_cross : boolean, optional
-        If draw_cross is True, a cross is drawn on the plot to
-        indicate the cuts. Default=True.
-
+    %(draw_cross)s
     black_bg : boolean or 'auto', optional
         If True, the background of the image is set to be black.
         Otherwise, a white background is used.
         If set to auto, an educated guess is made to find if the background
         is white or black.
         Default='auto'.
-
-    cmap : matplotlib colormap, optional
-        The colormap for specified image. Default=cm.cold_hot.
-
+    %(cmap)s
+        Default=`plt.cm.cold_hot`.
     symmetric_cmap : bool, optional
         True: make colormap symmetric (ranging from -vmax to vmax).
         False: the colormap will go from the minimum of the volume to vmax.
         Set it to False if you are plotting a positive volume, e.g. an atlas
         or an anatomical image. Default=True.
-
-    dim : float, 'auto', optional
-        Dimming factor applied to background image. By default, automatic
-        heuristics are applied based upon the background image intensity.
-        Accepted float values, where a typical scan is between -2 and 2
-        (-2 = increase constrast; 2 = decrease contrast), but larger values
-        can be used for a more pronounced effect. 0 means no dimming.
+    %(dim)s
         Default='auto'.
-
     vmax : float, or None, optional
         max value for mapping colors.
         If vmax is None and symmetric_cmap is True, vmax is the max
@@ -494,13 +495,8 @@ def view_img(stat_map_img, bg_img='MNI152',
         cannot be chosen.
         If `symmetric_cmap` is `False`, `vmin` defaults to the min of the
         image, or 0 when a threshold is used.
-
-    resampling_interpolation : string, optional
-        The interpolation method for resampling.
-        Can be 'continuous', 'linear', or 'nearest'.
-        See nilearn.image.resample_img
+    %(resampling_interpolation)s
         Default='continuous'.
-
     opacity : float in [0,1], optional
         The level of opacity of the overlay (0: transparent, 1: opaque).
         Default=1.
@@ -542,7 +538,7 @@ def view_img(stat_map_img, bg_img='MNI152',
 
     # Now create a json-like object for the viewer, and converts in html
     json_view = _json_view_data(bg_img, stat_map_img, mask_img, bg_min, bg_max,
-                                colors, cmap, colorbar)
+                                black_bg, colors, cmap, colorbar)
 
     json_view['params'] = _json_view_params(
         stat_map_img.shape, stat_map_img.affine, colors['vmin'],
