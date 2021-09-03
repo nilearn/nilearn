@@ -13,14 +13,15 @@ How to help?
   and feel free to open an issue to discuss it.
 
 * Want to contribute code ? Thank you very much!
+
   * For new features, please be sure to create an issue first, to discuss
-    whether it can be included and  its specifications.
-  * If you have time to help dealing with known issues check
+    whether it can be included and its specifications.
+  * To help dealing with known issues check,
     `Good first issues <https://github.com/nilearn/nilearn/labels/Good%20first%20issue>`_
     to get started, `known bugs <https://github.com/nilearn/nilearn/labels/Bug>`_
     or `proposed enhancements <https://github.com/nilearn/nilearn/labels/Enhancement>`_.
-  * In any case, before sending code, be sure to **follow the :ref:`Contribution Guidelines`**.
-  * Section :ref:`Setting up your environment` will get you ready for contributing.
+  * In any case, before sending code, be sure to **follow the `Contribution Guidelines`_**.
+  * Section `Setting up your environment`_ will get you ready for contributing.
 
 * If you think documentation can be improved, you can directly send proposed
   improvements in `a pull request <https://github.com/nilearn/nilearn/pulls>`_.
@@ -28,7 +29,6 @@ How to help?
 
 How do we decide what codes goes in?
 =====================================
-
 Scope of the project
 ---------------------
 
@@ -77,7 +77,7 @@ Discussions are public, held on issues and pull requests
 in Github.
 In case a consensus does not emerge easily, the decisions are made by the
 core-contributors, ie people with write access to the repository, as listed
-:ref:`here <core_devs>`
+:ref:`here <core_devs>`.
 
 How to contribute to nilearn
 =============================
@@ -102,7 +102,7 @@ choices.
 
 Contribution Guidelines
 ------------------------
-To set-up your contribution environment see : :ref:`Setting up your environment`
+To set-up your contribution environment see : `Setting up your environment`_
 We ask every contributor to respect common guidelines. Those are inspired from
 `scikit-learn
 <https://scikit-learn.org/stable/developers/contributing.html#contributing-code>`_
@@ -202,9 +202,13 @@ If you want to make changes to the example tutorials, please do the following :
 
 1. First, ensure that you have installed sphinx and sphinx-gallery. You can
 install the requirements using ``nilearn/requirements-build-docs.txt``.
+
 2. Fork the Nilearn repository and clone your fork.
+
 3. Then go to ``nilearn/examples``
+
 4. Make your changes using `reStructuredText files <https://www.sphinx-doc.org/en/2.0/usage/restructuredtext/basics.html>`_
+
 5. You can now go to `nilearn/doc` and build the examples locally::
 
       make html-strict
@@ -214,7 +218,9 @@ install the requirements using ``nilearn/requirements-build-docs.txt``.
       python3 -m sphinx -b html -d _build/doctrees . _build/html
 
 6. Visually review the output in ``nilearn/doc/_build/html/auto_examples/``. If all looks well and there were no errors, commit and push the changes.
+
 7. You can now open a Pull Request from Nilearn's Pull Request page.
+
 8. Request the CI builds the full documentation from your branch::
 
       git commit --allow-empty -m "[circle full] request full build"
