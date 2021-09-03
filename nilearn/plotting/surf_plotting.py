@@ -15,7 +15,6 @@ from matplotlib.colors import Normalize, LinearSegmentedColormap
 from mpl_toolkits.mplot3d import Axes3D  # noqa
 from nilearn import image
 from nilearn.plotting.cm import cold_hot
-from nilearn.plotting.html_surface import _get_vertexcolor
 from nilearn.plotting.img_plotting import (_get_colorbar_and_data_ranges,
                                            _crop_colorbar)
 from nilearn.surface import (load_surf_data,
@@ -257,9 +256,9 @@ def _get_intensity_and_colorscale_plotly(data, vmin, vmax, cmap,
     threshold_plus = norm(np.abs(threshold))
     threshold_minus = norm(-np.abs(threshold))
     # Rescale bg_data between threshold values
-    bg_intensity = (bg_norm(bg_data) *
-                    (threshold_plus - threshold_minus) +
-                    threshold_minus)
+    bg_intensity = (bg_norm(bg_data)
+                    * (threshold_plus - threshold_minus)
+                    + threshold_minus)
     idx = np.argwhere((intensity > threshold_minus)
                       & (intensity < threshold_plus)).flatten()
     intensity[idx] = bg_intensity[idx]
@@ -324,7 +323,7 @@ def _plot_surf_plotly(coords, faces, surf_map=None, bg_map=None,
             bg_data = np.ones(coords.shape[0])
         vmin, vmax = _get_asymmetric_bounds(bg_data)
         intensity, colorscale = _get_intensity_and_colorscale_plotly(
-                bg_data, vmin, vmax, 'Greys'
+            bg_data, vmin, vmax, 'Greys'
         )
     mesh_3d = go.Mesh3d(x=x, y=y, z=z, i=i, j=j, k=k,
                         intensity=intensity,
