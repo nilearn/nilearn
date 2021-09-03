@@ -145,7 +145,7 @@ def _get_cmap(cmap, vmin, vmax, threshold=None):
     return our_cmap, norm
 
 
-def _colorscale_plotly(cmap):
+def _colorscale_plotly(cmap, vmin=0, vmax=1):
     """Helper function for plot_surf with plotly engine.
 
     This function returns the colorscale for a given already
@@ -155,7 +155,7 @@ def _colorscale_plotly(cmap):
         See _get_cmap to configure the cmap.
 
     """
-    x = np.linspace(0, 1, 100)
+    x = np.linspace(vmin, vmax, 100)
     rgb = cmap(x, bytes=True)[:, :3]
     rgb = np.array(rgb, dtype=int)
     colors = []
@@ -190,7 +190,7 @@ def _get_bounds(data, vmin, vmax, threshold,
             return _get_asymmetric_bounds(data, vmin, vmax)
 
 
-def _get_asymmetric_bounds(data, vmin, vmax):
+def _get_asymmetric_bounds(data, vmin=None, vmax=None):
     vmin = np.nanmin(data) if vmin is None else vmin
     vmax = np.nanmax(data) if vmax is None else vmax
     return vmin, vmax
@@ -233,19 +233,47 @@ def _configure_title_plotly(title, font_size):
             "yanchor": "top"}
 
 
-def _get_colors(data, vmin, vmax, threshold, cmap, symmetric_cmap):
+def _get_intensity_and_colorscale_plotly(data, vmin, vmax, cmap,
+                                         bg_data=None, threshold=None,
+                                         symmetric_cmap=False):
     """Helper function for _plot_surf_plotly.
 
-    Returns colors, ranges, and cmap.
+    This function returns the intensity and colorscale used by Mesh3d.
+    If there is no background or if there is no thresholding, then the
+    intensity is simply the surface data and the colorscale is computed
+    thanks to the cmap provided.
+    If there is a background image and some thresholding, the colorscale
+    will be adapted between -threshold and +threshold to use Greys and the
+    intensity values for vertices being thresholded will be computed from
+    the background image.
     """
-    vmin, vmax = _get_bounds(
-        data, vmin, vmax, threshold,
-        symmetric_cmap=symmetric_cmap,
-        enforce_symmetric_cmap=False
-    )
     our_cmap, norm = _get_cmap(cmap, vmin, vmax, threshold)
-    colors = _colorscale_plotly(our_cmap)
-    return vmin, vmax, colors, our_cmap, norm
+    map_colorscale = _colorscale_plotly(our_cmap)
+    if bg_data is None or threshold is None:
+        return data, map_colorscale
+    bg_min, bg_max = _get_asymmetric_bounds(bg_data)
+    bg_cmap, bg_norm = _get_cmap('Greys', bg_min, bg_max)
+    intensity = norm(data)
+    threshold_plus = norm(np.abs(threshold))
+    threshold_minus = norm(-np.abs(threshold))
+    # Rescale bg_data between threshold values
+    bg_intensity = (bg_norm(bg_data) *
+                    (threshold_plus - threshold_minus) +
+                    threshold_minus)
+    idx = np.argwhere((intensity > threshold_minus)
+                      & (intensity < threshold_plus)).flatten()
+    intensity[idx] = bg_intensity[idx]
+    # Rescale intensity between vmin and vmax to get correct
+    # values on the colorbar
+    intensity *= (vmax - vmin)
+    intensity += vmin
+    bg_colorscale = _colorscale_plotly(bg_cmap,
+                                       vmin=threshold_minus,
+                                       vmax=threshold_plus)
+    colorscale = [_ for _ in map_colorscale if _[0] < threshold_minus]
+    colorscale += bg_colorscale
+    colorscale += [_ for _ in map_colorscale if _[0] > threshold_plus]
+    return intensity, colorscale
 
 
 def _plot_surf_plotly(coords, faces, surf_map=None, bg_map=None,
@@ -275,7 +303,6 @@ def _plot_surf_plotly(coords, faces, surf_map=None, bg_map=None,
     i, j, k = faces.T
     if cmap is None:
         cmap = cold_hot
-    vertexcolor = None
     bg_data = None
     if bg_map is not None:
         bg_data = load_surf_data(bg_map)
@@ -284,39 +311,26 @@ def _plot_surf_plotly(coords, faces, surf_map=None, bg_map=None,
                              'of vertices as the mesh.')
     if surf_map is not None:
         _check_surf_map(surf_map, coords.shape[0])
-        vmin, vmax, colors, our_cmap, norm = _get_colors(
-            surf_map, vmin, vmax, threshold, cmap, symmetric_cmap=False
+        vmin, vmax = _get_bounds(
+            surf_map, vmin, vmax, threshold,
+            symmetric_cmap=False,
+            enforce_symmetric_cmap=False
         )
-        if threshold is not None:
-            # ISSUE:
-            # I don't see how to get around using vertexcolor in
-            # this case. When using vertexcolor instead of intensity
-            # it seems like the colorbar cannot be displayed...
-            vertexcolor = _get_vertexcolor(
-                surf_map, our_cmap, norm, threshold, bg_map
-            )
-            mesh_3d = go.Mesh3d(x=x, y=y, z=z, i=i, j=j, k=k,
-                                vertexcolor=vertexcolor,
-                                showscale=colorbar)
-        else:
-            mesh_3d = go.Mesh3d(x=x, y=y, z=z, i=i, j=j, k=k,
-                                intensity=surf_map,
-                                colorscale=colors,
-                                showscale=colorbar,
-                                cmin=vmin, cmax=vmax)
+        intensity, colorscale = _get_intensity_and_colorscale_plotly(
+            surf_map, vmin, vmax, cmap, bg_data, threshold
+        )
     else:
-        if bg_data is not None:
-            bg_vmin, bg_vmax, colors, _, _ = _get_colors(
-                bg_data, None, None, None, 'Greys',
-                symmetric_cmap=False
-            )
-            mesh_3d = go.Mesh3d(x=x, y=y, z=z, i=i, j=j, k=k,
-                                intensity=bg_data,
-                                colorscale=colors,
-                                showscale=colorbar)
-        else:
-            mesh_3d = go.Mesh3d(x=x, y=y, z=z, i=i, j=j, k=k,
-                                vertexcolor=None)
+        if bg_data is None:
+            bg_data = np.ones(coords.shape[0])
+        vmin, vmax = _get_asymmetric_bounds(bg_data)
+        intensity, colorscale = _get_intensity_and_colorscale_plotly(
+                bg_data, vmin, vmax, 'Greys'
+        )
+    mesh_3d = go.Mesh3d(x=x, y=y, z=z, i=i, j=j, k=k,
+                        intensity=intensity,
+                        colorscale=colorscale,
+                        showscale=colorbar,
+                        cmin=vmin, cmax=vmax)
     cameras_view = _set_view_plot_surf_plotly(hemi, view)
     fig = go.Figure(data=[mesh_3d])
     fig.update_layout(scene_camera=CAMERAS[cameras_view],
