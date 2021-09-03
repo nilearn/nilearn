@@ -110,7 +110,7 @@ and ensure Nilearn remains simple to understand, efficient and maintainable.
 For example tests need to run quickly in order not to burden the development process.
 To keep continuous integration efficient with our limited infrastructure, running
 all the examples must lead to downloading a limited amount of data (gigabytes)
-and execute in a reasonable amount of time (a few hours). Those guidelines will
+and execute in a reasonable amount of time (less than an hour). Those guidelines will
 hence be enforced during the reviewing process.
 
 
@@ -119,31 +119,31 @@ hence be enforced during the reviewing process.
 +====================+=============+====================================================+
 |                    |             | - Clear name                                       |
 |                    |             | - Link issue through mention :"Closes #XXXX"       |
-| PR Structure       |    Any      | - Clearly outline goals and changes proposed       |
+|    PR Structure    |    Any      | - Clearly outline goals and changes proposed       |
 |                    |             | - Doesn't include "unrelated" code change          |
 |                    |             | - Add entry in "doc/whats_new.rst"                 |
 +--------------------+-------------+----------------------------------------------------+
 |                    |             | - Variables, functions, arguments have clear names |
 |                    |             | - Easy to read, PEP8                               |
-|:ref:`Coding Style` |    Any      | - Public functions have docstring (numpydoc format)|
+|   `Coding Style`_  |    Any      | - Public functions have docstring (numpydoc format)|
 |                    |             | - Low redundancy                                   |
 |                    |             | - No new dependency                                |
 |                    |             | - Backward compatibility                           |
 +--------------------+-------------+----------------------------------------------------+
 |                    |             | - Test type is adapted to behavior                 |
 |                    |             | - Tests pass continuous integration                |
-|                    |  Bugfixes   | - Doesn't decrease coverage                        |
-|:ref:`Tests`        | New features| - Fast, using small mocked data                    |
+|                    |  Bugfixes   | - Coverage doesn't decrease                        |
+|      `Tests`_      | New features| - Fast, using small mocked data                    |
 |                    |             | - Atomic (one per function) and seeded             |
 |                    |             | - For Bugfixes: non-regression test                |
 +--------------------+-------------+----------------------------------------------------+
 |                    |             | - Clearly showcase benefits                        |
-|    Examples        | New features| - Run in less than a minute                        |
+|      Examples      | New features| - Run in less than a minute                        |
 |                    |             | - Use light data (generated or from Nilearn)       |
 |                    |             | - Renders well after build                         |
 +--------------------+-------------+----------------------------------------------------+
 |                    |             | - Simple and didactic                              |
-|:ref:`Documentation`|    Any      | - Links to relevant examples                       |
+|  `Documentation`_  |    Any      | - Links to relevant examples                       |
 |                    |             | - Renders well after build                         |
 |                    |             | - Doesn't include code                             |
 +--------------------+-------------+----------------------------------------------------+
@@ -160,8 +160,8 @@ code, using `numpydoc formatting <https://numpydoc.readthedocs.io/en/latest/form
 They must summarize what the function does and document every parameter.
 
 
-Test
------
+Tests
+------
 When fixing a bug, the first step is to write a minimal test that fails because
 of it, and then write the bugfix to make this test pass. For new code you should
 have roughly one test_function per function covering every line and
@@ -195,8 +195,7 @@ colorful boxes and figures.
 Examples take a hands-on approach focused on a generic usecase from which users
 will be able to adapt code to solve their own problems. They include plain text
 for explanations, python code and its output and most importantly
-figures to depict its results. Examples should run fast
-
+figures to depict its results. Each example should take only a few seconds to run.
 
 To build our documentation, we are using `sphinx <https://www.sphinx-doc.org/en/master/usage/quickstart.html>`_ for the main documentation and `sphinx-gallery <https://sphinx-gallery.github.io/stable/index.html>`_ for the example tutorials.
 If you want to make changes to the example tutorials, please do the following :
@@ -242,7 +241,7 @@ Here are the key steps you need to go through to copy the repo before contributi
 
 2. (optional but highly recommended) setup a conda environment to work on and activate it::
 
-      conda create -n nilearn python=3.9
+      conda create -n nilearn
       conda activate nilearn
 
 3. install the forked version of `nilearn`::
