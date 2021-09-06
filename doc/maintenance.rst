@@ -1,3 +1,5 @@
+.. _maintenance_process:
+
 ============================
 Nilearn maintenance process
 ============================

@@ -75,10 +75,12 @@ Who makes decisions
 We strongly aim to be a community oriented project where decisions are
 made based on consensus according to the criteria described above.
 Discussions are public, held on issues and pull requests
-in Github.
-In case a consensus does not emerge easily, the decisions are made by the
-core-contributors, ie people with write access to the repository, as listed
-:ref:`here <core_devs>`.
+in Github. All modifications of the codebase are ultimately checked during a
+reviewing process, where maintainers or contributors make sure they respect the
+:ref:`contribution_guidelines`. To be merged, a pull request usually needs to be
+accepted by two maintainers. In case a consensus does not emerge easily,
+the decisions are made by the core-contributors, ie people with write access
+to the repository, as listed :ref:`here <core_devs>`.
 
 How to contribute to nilearn
 =============================
@@ -121,7 +123,7 @@ you to quickly get familiar with the tools we use for development and deployment
 +====================+=============+====================================================+
 |                    |             | - Clear name                                       |
 |                    |             | - Link issue through mention :"Closes #XXXX"       |
-|    PR Structure    |    Any      | - Clearly outline goals and changes proposed       |
+|  `PR Structure`_   |    Any      | - Clearly outline goals and changes proposed       |
 |                    |             | - Doesn't include "unrelated" code change          |
 |                    |             | - Add entry in "doc/whats_new.rst"                 |
 +--------------------+-------------+----------------------------------------------------+
@@ -150,6 +152,23 @@ you to quickly get familiar with the tools we use for development and deployment
 |                    |             | - Doesn't include code                             |
 +--------------------+-------------+----------------------------------------------------+
 
+PR Structure
+-------------
+
+A new pull request must have a clear scope, conveyed through its name, a
+reference to the issue it targets (through the exact mention "Closes #XXXX")
+as well as a synthetic summary of its goals and main steps. When working on
+big contributions, we advise contributors to split them in several PRs when
+possible. This has the benefit to make code changes clearer, easier to make and
+to review and overall smoothen the whole process. No changes unrelated to the PR
+should be included.
+
+When relevant, PR names should also include tags if they fall in various
+categories. If the authors feels he still has work to do before a first round
+of review, he can include the [WIP] tag or conversely, the [MRG] tag to
+highlight this PR is ready for review. Other tags can describe the PR content :
+[FIX] for a bugfix, [DOC] for a change in documentation or examples, [ENH] for
+a new feature and [MAINT] for maintenance changes.
 
 Coding Style
 -------------
@@ -374,3 +393,9 @@ returned by the ``request_mocker`` pytest fixture, defined in
 ``nilearn.datasets._testing``. The docstrings of this module and the ``Sender``
 class it contains provide information on how to write a test using this fixture.
 Existing tests can also serve as examples.
+
+Maintenance
+=================
+
+More information about the project organization, conventions, and maintenance
+process can be found there : :ref:`maintenance_process`.
