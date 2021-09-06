@@ -70,18 +70,46 @@ def get_html_template(template_name):
 def colorscale(cmap, values, threshold=None, symmetric_cmap=True,
                vmax=None, vmin=None):
     """Normalize a cmap, put it in plotly format, get threshold and range."""
-    from .surf_plotting import _get_bounds, _get_cmap, _colorscale_plotly
+    cmap = mpl_cm.get_cmap(cmap)
+    abs_values = np.abs(values)
+    if not symmetric_cmap and (values.min() < 0):
+        warnings.warn('you have specified symmetric_cmap=False '
+                      'but the map contains negative values; '
+                      'setting symmetric_cmap to True')
+        symmetric_cmap = True
+    if symmetric_cmap and vmin is not None:
+        warnings.warn('vmin cannot be chosen when cmap is symmetric')
+        vmin = None
+    if threshold is not None:
+        if vmin is not None:
+            warnings.warn('choosing both vmin and a threshold is not allowed; '
+                          'setting vmin to 0')
+        vmin = 0
+    if vmax is None:
+        vmax = abs_values.max()
+    # cast to float to avoid TypeError if vmax is a numpy boolean
+    vmax = float(vmax)
+    if symmetric_cmap:
+        vmin = - vmax
+    if vmin is None:
+        vmin = values.min()
+    norm = mpl.colors.Normalize(vmin=vmin, vmax=vmax)
+    cmaplist = [cmap(i) for i in range(cmap.N)]
     abs_threshold = None
     if threshold is not None:
         abs_threshold = check_threshold(threshold, values, fast_abs_percentile)
-    vmin, vmax = _get_bounds(
-        values, vmin, vmax, threshold, symmetric_cmap,
-        enforce_symmetric_cmap=True
-    )
-    if vmin == -vmax:
-        symmetric_cmap = True
-    our_cmap, norm = _get_cmap(cmap, vmin, vmax, abs_threshold)
-    colors = _colorscale_plotly(our_cmap)
+        istart = int(norm(-abs_threshold, clip=True) * (cmap.N - 1))
+        istop = int(norm(abs_threshold, clip=True) * (cmap.N - 1))
+        for i in range(istart, istop):
+            cmaplist[i] = (0.5, 0.5, 0.5, 1.)  # just an average gray color
+    our_cmap = mpl.colors.LinearSegmentedColormap.from_list(
+        'Custom cmap', cmaplist, cmap.N)
+    x = np.linspace(0, 1, 100)
+    rgb = our_cmap(x, bytes=True)[:, :3]
+    rgb = np.array(rgb, dtype=int)
+    colors = []
+    for i, col in zip(x, rgb):
+        colors.append([np.round(i, 3), "rgb({}, {}, {})".format(*col)])
     return {
         'colors': colors, 'vmin': vmin, 'vmax': vmax, 'cmap': our_cmap,
         'norm': norm, 'abs_threshold': abs_threshold,
