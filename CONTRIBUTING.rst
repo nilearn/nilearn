@@ -49,7 +49,7 @@ weigh their benefits (i.e., new features, ease of use) with their cost (i.e.,
 complexity of the code, runtime of the examples). As a rule of thumb:
 
 * To be accepted, new features must be **in the scope of the project** and
-  correspond to an established practice (typically as used in scientific
+  correspond to an **established practice** (typically as used in scientific
   publications)
 
 * It must have a concrete use case, illustrated with a **simple example** in the
@@ -60,13 +60,13 @@ complexity of the code, runtime of the examples). As a rule of thumb:
 
 * Features introducing new dependencies will generally not be accepted.
 
-* Downloaders for new atlases are welcomed if they comes with an example.
+* Downloaders for new atlases are welcome if they comes with an example.
 
 * Downloaders for new datasets are usually discouraged. We will consider adding
   fetchers only for light datasets which are needed to demo and teach features.
 
-Exhaustive criteria used in the review process are detailed in the contribution
-guide below. Be sure to read and follow them so that your code can be accepted quickly.
+Exhaustive criteria used in the review process are detailed in the **contribution
+guide below**. Be sure to read and follow them so that your code can be accepted quickly.
 
 
 Who makes decisions
@@ -99,6 +99,7 @@ you first open an `issue <https://github.com/nilearn/nilearn/issues>`_ before
 sending a :ref:`pull request` to discuss in advance scope and potential design
 choices.
 
+.. _contribution_guidelines:
 
 Contribution Guidelines
 ------------------------
@@ -251,7 +252,7 @@ Here are the key steps you need to go through to contribute code to `nilearn`:
 3. implement and commit your changes on this branch (don't forget to write tests!)
 
 4. run the tests locally (to go faster, only run tests which are relevant to what
-  you work on with, for example)::
+   you work on with, for example)::
 
       pytest -v nilearn/plotting/tests/test_surf_plotting.py
 
@@ -260,7 +261,7 @@ Here are the key steps you need to go through to contribute code to `nilearn`:
       git push
 
 6. in github, open a pull request from your online fork to the main repo
-  (most likely from `your_fork:your_branch` to `nilearn:master`).
+   (most likely from `your_fork:your_branch` to `nilearn:master`).
 
 7. check that all continuous integration tests pass
 
@@ -270,16 +271,17 @@ For more details about the Fork Clone Push worksflow, read `here <https://guides
 Building documentation
 ----------------------
 
+If you wish to build documentation:
+
 1. First, ensure that you have installed sphinx and sphinx-gallery. When in your
-  fork top folder, you can install the required packages using::
+   fork top folder, you can install the required packages using::
 
       pip install -r requirements-build-docs.txt
 
-2. Then go to ``nilearn/examples``
+2. Then go to ``nilearn/examples`` or ``nilearn/doc`` and make needed changes
+   using `reStructuredText files <https://www.sphinx-doc.org/en/2.0/usage/restructuredtext/basics.html>`_
 
-3. Make your changes using `reStructuredText files <https://www.sphinx-doc.org/en/2.0/usage/restructuredtext/basics.html>`_
-
-4. You can now go to `nilearn/doc` and build the examples locally::
+3. You can now go to `nilearn/doc` and build the examples locally::
 
       make html-strict
 
@@ -291,12 +293,12 @@ Building documentation
 
       make html-noplot
 
-5. Visually review the output in ``nilearn/doc/_build/html/auto_examples/``.
-  If all looks well and there were no errors, commit and push the changes.
+4. Visually review the output in ``nilearn/doc/_build/html/auto_examples/``.
+   If all looks well and there were no errors, commit and push the changes.
 
-6. You can now open a Pull Request from Nilearn's Pull Request page.
+5. You can now open a Pull Request from Nilearn's Pull Request page.
 
-7. Request the CI builds the full documentation from your branch::
+6. Request the CI builds the full documentation from your branch::
 
       git commit --allow-empty -m "[circle full] request full build"
 
