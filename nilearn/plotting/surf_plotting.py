@@ -206,23 +206,22 @@ def _get_intensity_and_colorscale_plotly(data, vmin, vmax, cmap,
         return data, map_colorscale
     bg_min, bg_max = _get_bounds(bg_data)
     bg_cmap, bg_norm = _get_cmap('Greys', bg_min, bg_max)
-    intensity = norm(data)
     threshold_plus = norm(np.abs(threshold))
     threshold_minus = norm(-np.abs(threshold))
     # Rescale bg_data between threshold values
-    bg_intensity = (bg_norm(bg_data)
-                    * (threshold_plus - threshold_minus)
-                    + threshold_minus)
-    idx = np.argwhere((intensity > threshold_minus)
-                      & (intensity < threshold_plus)).flatten()
-    intensity[idx] = bg_intensity[idx]
+    bg_intensity = _inverse_rescale(
+        bg_norm(bg_data), threshold_minus, threshold_plus
+    )
+    intensity, idx, _, _ = _threshold_and_rescale(
+        data, threshold, vmin, vmax
+    )
+    intensity[~idx] = bg_intensity[~idx]
     # Rescale intensity between vmin and vmax to get correct
     # values on the colorbar
-    intensity *= (vmax - vmin)
-    intensity += vmin
-    bg_colorscale = _colorscale_plotly(bg_cmap,
-                                       vmin=threshold_minus,
-                                       vmax=threshold_plus)
+    intensity = _inverse_rescale(intensity, vmin, vmax)
+    bg_colorscale = _colorscale_plotly(
+        bg_cmap, vmin=threshold_minus, vmax=threshold_plus
+    )
     colorscale = [_ for _ in map_colorscale if _[0] < threshold_minus]
     colorscale += bg_colorscale
     colorscale += [_ for _ in map_colorscale if _[0] > threshold_plus]
@@ -436,7 +435,7 @@ def _threshold_and_rescale(data, threshold, vmin, vmax):
 def _threshold(data, threshold):
     # If no thresholding and nans, filter them out
     return (np.logical_not(np.isnan(data)) if threshold is None
-            else  np.abs(data) >= threshold)
+            else np.abs(data) >= threshold)
 
 
 def _rescale(data, vmin, vmax):
@@ -446,6 +445,12 @@ def _rescale(data, vmin, vmax):
     data_copy -= vmin
     data_copy /= (vmax - vmin)
     return data_copy, vmin, vmax
+
+
+def _inverse_rescale(data, vmin, vmax):
+    data_copy = np.copy(data)
+    data_copy *= (vmax - vmin)
+    return data_copy + vmin
 
 
 def _plot_surf_matplotlib(coords, faces, surf_map=None, bg_map=None,
