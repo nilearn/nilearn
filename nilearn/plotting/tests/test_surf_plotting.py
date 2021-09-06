@@ -100,6 +100,17 @@ def test_configure_title_plotly():
     assert config["font"]["family"] == "Courier New, monospace"
 
 
+@pytest.mark.parametrize("data,expected",
+                         [(np.linspace(0, 1, 100), (0, 1)),
+                          (np.linspace(-.7, -.01, 40), (-.7, -.01))])
+def test_get_bounds(data, expected):
+    from nilearn.plotting.surf_plotting import _get_bounds
+    assert _get_bounds(data) == expected
+    assert _get_bounds(data, vmin=.2) == (.2, expected[1])
+    assert _get_bounds(data, vmax=.8) == (expected[0], .8)
+    assert _get_bounds(data, vmin=.1, vmax=.8) == (.1, .8)
+
+
 def test_plot_surf_engine_error():
     mesh = generate_surf()
     with pytest.raises(ValueError,

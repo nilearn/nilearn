@@ -163,54 +163,10 @@ def _colorscale_plotly(cmap, vmin=0, vmax=1):
     return colors
 
 
-def _get_bounds(data, vmin, vmax, threshold,
-                symmetric_cmap, enforce_symmetric_cmap=False):
-    """Helper function for colorbar settings.
-
-    If enforce_symmetric_cmap is set to True, the
-    colorbar will range from -vmax to vmax.
-    """
-    if enforce_symmetric_cmap:
-        if not symmetric_cmap:
-            # If all data is positive or negative and
-            # symmetric_cbar is False, then range from vmin to vmax
-            if np.nanmin(data) >= 0 or np.nanmax(data) <= 0:
-                return _get_asymmetric_bounds(data, vmin, vmax)
-            else:
-                warnings.warn('you have specified symmetric_cmap=False '
-                              'but the map contains both negative and '
-                              'and positive values; forcing the colorbar '
-                              'to be symmetric.')
-        return _get_symmetric_bounds(data, vmin, vmax, threshold)
-    else:
-        if symmetric_cmap:
-            return _get_symmetric_bounds(data, vmin, vmax, threshold)
-        else:
-            return _get_asymmetric_bounds(data, vmin, vmax)
-
-
-def _get_asymmetric_bounds(data, vmin=None, vmax=None):
+def _get_bounds(data, vmin=None, vmax=None):
+    """Helper function returning the data bounds."""
     vmin = np.nanmin(data) if vmin is None else vmin
     vmax = np.nanmax(data) if vmax is None else vmax
-    return vmin, vmax
-
-
-def _get_symmetric_bounds(data, vmin, vmax, threshold):
-    abs_values = np.abs(data)
-    if vmin is not None:
-        warnings.warn('vmin cannot be chosen when cmap is symmetric')
-        vmin = None
-    if threshold is not None:
-        if vmin is not None:
-            warnings.warn('choosing both vmin and a threshold is not allowed; '
-                          'setting vmin to 0')
-            vmin = 0
-    if vmax is None:
-        vmax = np.nanmax(abs_values)
-    vmax = float(vmax)
-    vmin = - vmax
-    if vmin is None:
-        vmin = np.nanmin(data)
     return vmin, vmax
 
 
@@ -233,8 +189,7 @@ def _configure_title_plotly(title, font_size):
 
 
 def _get_intensity_and_colorscale_plotly(data, vmin, vmax, cmap,
-                                         bg_data=None, threshold=None,
-                                         symmetric_cmap=False):
+                                         bg_data=None, threshold=None):
     """Helper function for _plot_surf_plotly.
 
     This function returns the intensity and colorscale used by Mesh3d.
@@ -250,7 +205,7 @@ def _get_intensity_and_colorscale_plotly(data, vmin, vmax, cmap,
     map_colorscale = _colorscale_plotly(our_cmap)
     if bg_data is None or threshold is None:
         return data, map_colorscale
-    bg_min, bg_max = _get_asymmetric_bounds(bg_data)
+    bg_min, bg_max = _get_bounds(bg_data)
     bg_cmap, bg_norm = _get_cmap('Greys', bg_min, bg_max)
     intensity = norm(data)
     threshold_plus = norm(np.abs(threshold))
@@ -278,8 +233,9 @@ def _get_intensity_and_colorscale_plotly(data, vmin, vmax, cmap,
 def _plot_surf_plotly(coords, faces, surf_map=None, bg_map=None,
                       hemi='left', view='lateral', cmap=None,
                       colorbar=False, threshold=None, vmin=None,
-                      vmax=None, title=None, font_size=15,
-                      output_file=None):
+                      vmax=None, cbar_vmin=None, cbar_vmax=None,
+                      cbar_tick_format="",
+                      title=None, font_size=15, output_file=None):
     """Helper function for plot_surf.
 
     .. versionadded:: 0.8.1
@@ -310,21 +266,21 @@ def _plot_surf_plotly(coords, faces, surf_map=None, bg_map=None,
                              'of vertices as the mesh.')
     if surf_map is not None:
         _check_surf_map(surf_map, coords.shape[0])
-        vmin, vmax = _get_bounds(
-            surf_map, vmin, vmax, threshold,
-            symmetric_cmap=False,
-            enforce_symmetric_cmap=False
-        )
+        vmin, vmax = _get_bounds(surf_map, vmin, vmax)
         intensity, colorscale = _get_intensity_and_colorscale_plotly(
             surf_map, vmin, vmax, cmap, bg_data, threshold
         )
     else:
         if bg_data is None:
             bg_data = np.ones(coords.shape[0])
-        vmin, vmax = _get_asymmetric_bounds(bg_data)
+        vmin, vmax = _get_bounds(bg_data, vmin=None, vmax=None)
         intensity, colorscale = _get_intensity_and_colorscale_plotly(
             bg_data, vmin, vmax, 'Greys'
         )
+    # cbar cropping not implemented for now...
+    cbar_vmin = vmin if cbar_vmin is None else cbar_vmin
+    cbar_vmax = vmax if cbar_vmax is None else cbar_vmax
+
     mesh_3d = go.Mesh3d(x=x, y=y, z=z, i=i, j=j, k=k,
                         intensity=intensity,
                         colorscale=colorscale,
@@ -332,6 +288,9 @@ def _plot_surf_plotly(coords, faces, surf_map=None, bg_map=None,
                         cmin=vmin, cmax=vmax)
     cameras_view = _set_view_plot_surf_plotly(hemi, view)
     fig = go.Figure(data=[mesh_3d])
+    fig.update_traces(colorbar_tickformat=cbar_tick_format,
+                      colorbar_outlinewidth=1,
+                      selector=dict(type="mesh3d"))
     fig.update_layout(scene_camera=CAMERAS[cameras_view],
                       title=_configure_title_plotly(title, font_size),
                       **LAYOUT)
@@ -736,8 +695,9 @@ def plot_surf(surf_mesh, surf_map=None, bg_map=None,
     elif engine == 'plotly':
         fig = _plot_surf_plotly(
             coords, faces, surf_map=surf_map, bg_map=bg_map, view=view,
-            hemi=hemi, cmap=cmap, colorbar=colorbar,
-            threshold=threshold, vmin=vmin, vmax=vmax, title=title,
+            hemi=hemi, cmap=cmap, colorbar=colorbar, threshold=threshold,
+            vmin=vmin, vmax=vmax, cbar_vmin=cbar_vmin, cbar_vmax=cbar_vmax,
+            cbar_tick_format=cbar_tick_format, title=title,
             font_size=font_size, output_file=output_file)
     else:
         raise ValueError(f"Unknown plotting engine {engine}. "
