@@ -33,20 +33,23 @@ Scope of the project
 ---------------------
 
 Nilearn is an Open-source Python package for visualizing and analyzing human
-brain MRI data. It provides statistical and machine-learning tools for brain
-mapping, connectivity estimation and predictive modelling. It brings
-visualization tools with instructive documentation & open community.
+brain MRI data.
+It provides statistical and machine-learning tools for brain mapping,
+connectivity estimation and predictive modelling.
+It brings visualization tools with instructive documentation & open community.
 
-Nilearn targets ease of use, but as Python code. In other words, we will
-not add graphical user interfaces, but we want our code to be as easy to
-understand as possible, with easy prototyping and debugging, even for
-beginners in Python.
+Nilearn targets ease of use, but as Python code.
+In other words, we will not add graphical user interfaces, but we want our
+code to be as easy to understand as possible, with easy prototyping and
+debugging, even for beginners in Python.
 
 We are parsimonious in the way we add features to the project, as it
-puts on weight. To assess new features, our main concern is their usefulness
-to a number of our users. To make Nilearn high-quality and sustainable we also
-weigh their benefits (i.e., new features, ease of use) with their cost (i.e.,
-complexity of the code, runtime of the examples). As a rule of thumb:
+puts on weight.
+To assess new features, our main concern is their usefulness to a number of
+our users.
+To make Nilearn high-quality and sustainable we also weigh their benefits
+(i.e., new features, ease of use) with their cost (i.e., complexity of the code,
+runtime of the examples). As a rule of thumb:
 
 * To be accepted, new features must be **in the scope of the project** and
   correspond to an **established practice** (typically as used in scientific
@@ -66,7 +69,8 @@ complexity of the code, runtime of the examples). As a rule of thumb:
   fetchers only for light datasets which are needed to demo and teach features.
 
 Exhaustive criteria used in the review process are detailed in the **contribution
-guide below**. Be sure to read and follow them so that your code can be accepted quickly.
+guide below**.
+Be sure to read and follow them so that your code can be accepted quickly.
 
 
 Who makes decisions
@@ -74,23 +78,25 @@ Who makes decisions
 
 We strongly aim to be a community oriented project where decisions are
 made based on consensus according to the criteria described above.
-Discussions are public, held on issues and pull requests
-in Github. All modifications of the codebase are ultimately checked during a
-reviewing process, where maintainers or contributors make sure they respect the
-:ref:`contribution_guidelines`. To be merged, a pull request usually needs to be
-accepted by two maintainers. In case a consensus does not emerge easily,
-the decisions are made by the core-contributors, ie people with write access
-to the repository, as listed :ref:`here <core_devs>`.
+Discussions are public, held on issues and pull requests in Github.
+All modifications of the codebase are ultimately checked during a reviewing
+process, where maintainers or contributors make sure they respect the
+:ref:`contribution_guidelines`.
+To be merged, a pull request usually needs to be accepted by two maintainers.
+In case a consensus does not emerge easily, the decisions are made by the
+core-contributors, ie people with write access to the repository, as
+listed :ref:`here <core_devs>`.
 
 How to contribute to nilearn
 =============================
 
 This project, hosted on https://github.com/nilearn/nilearn, is a community
-effort, and everyone is welcome to contribute. We value very much your feedback
-and opinion on features that should be improved or added. All discussions
-are public and hold on relevant issues or pull requests. To discuss your matter,
-please answer a relevant `issue <https://github.com/nilearn/nilearn/issues>`_
-or open a new one.
+effort, and everyone is welcome to contribute.
+We value very much your feedback and opinion on features that should be
+improved or added.
+All discussions are public and hold on relevant issues or pull requests.
+To discuss your matter, please answer a relevant
+`issue <https://github.com/nilearn/nilearn/issues>`_ or open a new one.
 
 The best way to contribute and to help the project is to start working on known
 issues such as `good first issues <https://github.com/nilearn/nilearn/labels/Good%20first%20issue>`_,
@@ -107,16 +113,18 @@ Contribution Guidelines
 ------------------------
 
 When modifying the codebase, we ask every contributor to respect common
-guidelines. Those are inspired from `scikit-learn
+guidelines.
+Those are inspired from `scikit-learn
 <https://scikit-learn.org/stable/developers/contributing.html#contributing-code>`_
 and ensure Nilearn remains simple to understand, efficient and maintainable.
 For example code need to be tested and those tests need to run quickly in order
-not to burden the development process. To keep continuous integration efficient
-with our limited infrastructure, running all the examples must lead to
-downloading a limited amount of data (gigabytes) and execute in a reasonable
-amount of time (less than an hour). Those guidelines will hence be enforced
-during the reviewing process. Section `Setting up your environment`_ will help
-you to quickly get familiar with the tools we use for development and deployment.
+not to burden the development process.
+To keep continuous integration efficient with our limited infrastructure,
+running all the examples must lead to downloading a limited amount of data
+(gigabytes) and execute in a reasonable amount of time (less than an hour).
+Those guidelines will hence be enforced during the reviewing process.
+Section `Setting up your environment`_ will help you to quickly get familiar
+with the tools we use for development and deployment.
 
 +--------------------+-------------+----------------------------------------------------+
 |                    | Which PR ?  |        Guidelines                                  |
@@ -157,18 +165,21 @@ PR Structure
 
 A new pull request must have a clear scope, conveyed through its name, a
 reference to the issue it targets (through the exact mention "Closes #XXXX")
-as well as a synthetic summary of its goals and main steps. When working on
-big contributions, we advise contributors to split them in several PRs when
-possible. This has the benefit to make code changes clearer, easier to make and
-to review and overall smoothen the whole process. No changes unrelated to the PR
-should be included.
+as well as a synthetic summary of its goals and main steps.
+When working on big contributions, we advise contributors to split them in
+several PRs when possible.
+This has the benefit to make code changes clearer, easier to make and to review
+and overall smoothen the whole process.
+No changes unrelated to the PR should be included.
 
 When relevant, PR names should also include tags if they fall in various
-categories. If the authors feels he still has work to do before a first round
-of review, he can include the [WIP] tag or conversely, the [MRG] tag to
-highlight this PR is ready for review. Other tags can describe the PR content :
-[FIX] for a bugfix, [DOC] for a change in documentation or examples, [ENH] for
-a new feature and [MAINT] for maintenance changes.
+categories.
+If the authors feels he still has work to do before a first round of review, he
+can include the [WIP] tag or conversely, the [MRG] tag to highlight this PR is
+ready for review.
+Other tags can describe the PR content : [FIX] for a bugfix, [DOC] for a
+change in documentation or examples, [ENH] for a new feature and [MAINT] for
+maintenance changes.
 
 Coding Style
 -------------
@@ -184,15 +195,15 @@ They must summarize what the function does and document every parameter.
 Tests
 ------
 When fixing a bug, the first step is to write a minimal test that fails because
-of it, and then write the bugfix to make this test pass. For new code you should
-have roughly one test_function per function covering every line and
-testing the logic of the function. They should run on small mocked data,
-cover a representative range of parameters.
+of it, and then write the bugfix to make this test pass.
+For new code you should have roughly one test_function per function covering
+every line and testing the logic of the function.
+They should run on small mocked data, cover a representative range of parameters.
 
-Tests must be seeded to avoid random failures. For objects using random seeds
-(e.g. scikit-learn estimators), pass either a  `np.random.RandomState` or
-an `int` as the seed. When your test use random numbers,  those must be
-generated through::
+Tests must be seeded to avoid random failures.
+For objects using random seeds (e.g. scikit-learn estimators), pass either
+a  `np.random.RandomState` or an `int` as the seed.
+When your test use random numbers,  those must be generated through::
 
       rng = np.random.RandomState(0)
       my_number = rng.normal()
@@ -208,15 +219,17 @@ Documentation
 
 Documentation must be understandable by people from different background.
 The “narrative” documentation should be an introduction to the concepts of
-the library. It includes very little code and should first
-help the user figure out which parts of the library he needs and then how to
-use it. It must be full of links, of easily-understandable titles,
-colorful boxes and figures.
+the library.
+It includes very little code and should first help the user figure out which
+parts of the library he needs and then how to use it.
+It must be full of links, of easily-understandable titles, colorful boxes and
+figures.
 
 Examples take a hands-on approach focused on a generic usecase from which users
-will be able to adapt code to solve their own problems. They include plain text
-for explanations, python code and its output and most importantly
-figures to depict its results. Each example should take only a few seconds to run.
+will be able to adapt code to solve their own problems.
+They include plain text for explanations, python code and its output and
+most importantly figures to depict its results.
+Each example should take only a few seconds to run.
 
 To build our documentation, we are using
 `sphinx <https://www.sphinx-doc.org/en/master/usage/quickstart.html>`_ for the
