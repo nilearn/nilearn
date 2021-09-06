@@ -263,10 +263,10 @@ you work on with, for example)::
 
 7. check that all continuous integration tests pass
 
-For more details about the Fork Clone Push worksflow, read here <https://guides.github.com/activities/forking/>_
+For more details about the Fork Clone Push worksflow, read `here <https://guides.github.com/activities/forking/>`_.
 
 
-Changing Documentation
+Building documentation
 ----------------------
 
 1. First, ensure that you have installed sphinx and sphinx-gallery. When in your
@@ -305,6 +305,28 @@ to reduce building time. To do so, use the ``filename_pattern``::
 
 Additional cases
 =================
+
+How to contribute an atlas
+---------------------------
+
+We want atlases in nilearn to be internally consistent. Specifically,
+your atlas object should have three attributes (as with the existing
+atlases):
+
+- ``description`` (bytes): A text description of the atlas. This should be
+  brief but thorough, describing the source (paper), relevant information
+  related to its construction (modality, dataset, method), and, if there is
+  more than one map, a description of each map.
+- ``labels`` (list): a list of string labels corresponding to each atlas
+  label, in the same (numerical) order as the atlas labels
+- ``maps`` (list or string): the path to the nifti image, or a list of paths
+
+In addition, the atlas will need to be called by a fetcher. For example, see `here <https://github.com/nilearn/nilearn/blob/master/nilearn/datasets/atlas.py>`__.
+
+Finally, as with other features, please provide a test for your atlas.
+Examples can be found `here
+<https://github.com/nilearn/nilearn/blob/master/nilearn/datasets/tests/test_atlas.py>`__
+
 
 How to contribute a dataset fetcher
 ------------------------------------
@@ -348,25 +370,3 @@ returned by the ``request_mocker`` pytest fixture, defined in
 ``nilearn.datasets._testing``. The docstrings of this module and the ``Sender``
 class it contains provide information on how to write a test using this fixture.
 Existing tests can also serve as examples.
-
-
-How to contribute an atlas
----------------------------
-
-We want atlases in nilearn to be internally consistent. Specifically,
-your atlas object should have three attributes (as with the existing
-atlases):
-
-- ``description`` (bytes): A text description of the atlas. This should be
-  brief but thorough, describing the source (paper), relevant information
-  related to its construction (modality, dataset, method), and, if there is
-  more than one map, a description of each map.
-- ``labels`` (list): a list of string labels corresponding to each atlas
-  label, in the same (numerical) order as the atlas labels
-- ``maps`` (list or string): the path to the nifti image, or a list of paths
-
-In addition, the atlas will need to be called by a fetcher. For example, see `here <https://github.com/nilearn/nilearn/blob/master/nilearn/datasets/atlas.py>`__.
-
-Finally, as with other features, please provide a test for your atlas.
-Examples can be found `here
-<https://github.com/nilearn/nilearn/blob/master/nilearn/datasets/tests/test_atlas.py>`__

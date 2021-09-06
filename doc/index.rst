@@ -8,7 +8,7 @@
     Nilearn enables **approachable and versatile analyses of brain
     volumes**. It provides statistical and machine-learning tools, with
     **instructive documentation & open community**.
-    
+
     It supports general linear model (GLM) based analysis and leverages the `scikit-learn <http://scikit-learn.org>`__ Python toolbox
     for multivariate statistics with applications such as predictive modelling,
     classification, decoding, or connectivity analysis.
@@ -107,6 +107,7 @@
    auto_examples/index.rst
    whats_new.rst
    development.rst
+   maintenance.rst
    glossary.rst
 
 Nilearn is part of the `NiPy ecosystem <http://nipy.org>`_.
