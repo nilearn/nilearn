@@ -3,7 +3,6 @@ Functions for surface visualization.
 Only matplotlib is required.
 """
 import itertools
-import warnings
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -430,23 +429,23 @@ def _threshold_and_rescale(data, threshold, vmin, vmax):
 
     This function thresholds and rescales the provided data.
     """
+    data_copy, vmin, vmax = _rescale(data, vmin, vmax)
+    return data_copy, _threshold(data, threshold), vmin, vmax
+
+
+def _threshold(data, threshold):
+    # If no thresholding and nans, filter them out
+    return (np.logical_not(np.isnan(data)) if threshold is None
+            else  np.abs(data) >= threshold)
+
+
+def _rescale(data, vmin, vmax):
     data_copy = np.copy(data)
     # if no vmin/vmax are passed figure them out from data
-    if vmin is None:
-        vmin = np.nanmin(data_copy)
-    if vmax is None:
-        vmax = np.nanmax(data_copy)
-    # treshold if indicated
-    if threshold is None:
-        # If no thresholding and nans, filter them out
-        kept_indices = np.where(
-            np.logical_not(
-                np.isnan(data_copy)))[0]
-    else:
-        kept_indices = np.where(np.abs(data_copy) >= threshold)[0]
+    vmin, vmax = _get_bounds(data_copy, vmin, vmax)
     data_copy -= vmin
     data_copy /= (vmax - vmin)
-    return data_copy, kept_indices, vmin, vmax
+    return data_copy, vmin, vmax
 
 
 def _plot_surf_matplotlib(coords, faces, surf_map=None, bg_map=None,
