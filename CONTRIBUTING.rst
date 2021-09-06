@@ -16,11 +16,11 @@ How to help?
 
   * For new features, please be sure to create an issue first, to discuss
     whether it can be included and its specifications.
-  * To help dealing with known issues check,
-    `Good first issues <https://github.com/nilearn/nilearn/labels/Good%20first%20issue>`_
+  * To help dealing with known issues, please check
+    `good first issues <https://github.com/nilearn/nilearn/labels/Good%20first%20issue>`_
     to get started, `known bugs <https://github.com/nilearn/nilearn/labels/Bug>`_
     or `proposed enhancements <https://github.com/nilearn/nilearn/labels/Enhancement>`_.
-  * In any case, before sending code, be sure to **follow the `Contribution Guidelines`_**.
+  * In any case, before sending code, be sure to **follow the** `Contribution Guidelines`_.
   * Section `Setting up your environment`_ will get you ready for contributing.
 
 * If you think documentation can be improved, you can directly send proposed
@@ -90,10 +90,9 @@ please answer a relevant `issue <https://github.com/nilearn/nilearn/issues>`_
 or open a new one.
 
 The best way to contribute and to help the project is to start working on known
-issues such as `Good first issues <https://github.com/nilearn/nilearn/labels/Good%20first%20issue>`_ ,
+issues such as `good first issues <https://github.com/nilearn/nilearn/labels/Good%20first%20issue>`_,
 `known bugs <https://github.com/nilearn/nilearn/labels/Bug>`_ or
 `proposed enhancements <https://github.com/nilearn/nilearn/labels/Enhancement>`_.
-
 If an issue does not already exist for a potential contribution, we ask that
 you first open an `issue <https://github.com/nilearn/nilearn/issues>`_ before
 sending a :ref:`pull request` to discuss in advance scope and potential design
@@ -102,17 +101,18 @@ choices.
 
 Contribution Guidelines
 ------------------------
-To set-up your contribution environment see : `Setting up your environment`_
-We ask every contributor to respect common guidelines. Those are inspired from
-`scikit-learn
+
+When modifying the codebase, we ask every contributor to respect common
+guidelines. Those are inspired from `scikit-learn
 <https://scikit-learn.org/stable/developers/contributing.html#contributing-code>`_
 and ensure Nilearn remains simple to understand, efficient and maintainable.
-For example tests need to run quickly in order not to burden the development process.
-To keep continuous integration efficient with our limited infrastructure, running
-all the examples must lead to downloading a limited amount of data (gigabytes)
-and execute in a reasonable amount of time (less than an hour). Those guidelines will
-hence be enforced during the reviewing process.
-
+For example code need to be tested and those tests need to run quickly in order
+not to burden the development process. To keep continuous integration efficient
+with our limited infrastructure, running all the examples must lead to
+downloading a limited amount of data (gigabytes) and execute in a reasonable
+amount of time (less than an hour). Those guidelines will hence be enforced
+during the reviewing process. Section `Setting up your environment`_ will help
+you to quickly get familiar with the tools we use for development and deployment.
 
 +--------------------+-------------+----------------------------------------------------+
 |                    | Which PR ?  |        Guidelines                                  |
@@ -130,7 +130,7 @@ hence be enforced during the reviewing process.
 |                    |             | - No new dependency                                |
 |                    |             | - Backward compatibility                           |
 +--------------------+-------------+----------------------------------------------------+
-|                    |             | - Test type is adapted to behavior                 |
+|                    |             | - Test type is adapted to function behavior        |
 |                    |             | - Tests pass continuous integration                |
 |                    |  Bugfixes   | - Coverage doesn't decrease                        |
 |      `Tests`_      | New features| - Fast, using small mocked data                    |
@@ -187,7 +187,7 @@ Documentation
 
 Documentation must be understandable by people from different background.
 The “narrative” documentation should be an introduction to the concepts of
-the library, it includes very little code. The documentation should first
+the library. It includes very little code and should first
 help the user figure out which parts of the library he needs and then how to
 use it. It must be full of links, of easily-understandable titles,
 colorful boxes and figures.
@@ -197,39 +197,12 @@ will be able to adapt code to solve their own problems. They include plain text
 for explanations, python code and its output and most importantly
 figures to depict its results. Each example should take only a few seconds to run.
 
-To build our documentation, we are using `sphinx <https://www.sphinx-doc.org/en/master/usage/quickstart.html>`_ for the main documentation and `sphinx-gallery <https://sphinx-gallery.github.io/stable/index.html>`_ for the example tutorials.
-If you want to make changes to the example tutorials, please do the following :
-
-1. First, ensure that you have installed sphinx and sphinx-gallery. You can
-install the requirements using ``nilearn/requirements-build-docs.txt``.
-
-2. Fork the Nilearn repository and clone your fork.
-
-3. Then go to ``nilearn/examples``
-
-4. Make your changes using `reStructuredText files <https://www.sphinx-doc.org/en/2.0/usage/restructuredtext/basics.html>`_
-
-5. You can now go to `nilearn/doc` and build the examples locally::
-
-      make html-strict
-
-   or, if you do not have make install (for instance under Windows)::
-
-      python3 -m sphinx -b html -d _build/doctrees . _build/html
-
-6. Visually review the output in ``nilearn/doc/_build/html/auto_examples/``. If all looks well and there were no errors, commit and push the changes.
-
-7. You can now open a Pull Request from Nilearn's Pull Request page.
-
-8. Request the CI builds the full documentation from your branch::
-
-      git commit --allow-empty -m "[circle full] request full build"
-
-TIPS : When generating documentation locally, you can build only specific files
-to reduce building time. To do so, use the ``filename_pattern``::
-
-      python3 -m sphinx -D sphinx_gallery_conf.filename_pattern=plot_decoding_tutorial.py -b html -d _build/doctrees . _build/html
-
+To build our documentation, we are using
+`sphinx <https://www.sphinx-doc.org/en/master/usage/quickstart.html>`_ for the
+main documentation and
+`sphinx-gallery <https://sphinx-gallery.github.io/stable/index.html>`_ for the
+example tutorials. If you want to work on those, check out next section to
+learn how to use those tools to build documentation.
 
 .. _git_repo:
 
@@ -255,6 +228,7 @@ Here are the key steps you need to go through to copy the repo before contributi
       pip install . -e
 
 4. install development dependencies::
+
       pip install -r requirements-dev.txt
 
 5. check that all tests pass with (this can take a while)::
@@ -268,11 +242,13 @@ Contributing
 Here are the key steps you need to go through to contribute code to `nilearn`:
 
 1. open or join an already existing issue explaining what you want to work on
+
 2. on your fork, create a new branch from master::
 
       git checkout -b your_branch
 
 3. implement and commit your changes on this branch (don't forget to write tests!)
+
 4. run the tests locally (to go faster, only run tests which are relevant to what
 you work on with, for example)::
 
@@ -288,6 +264,44 @@ you work on with, for example)::
 7. check that all continuous integration tests pass
 
 For more details about the Fork Clone Push worksflow, read here <https://guides.github.com/activities/forking/>_
+
+
+Changing Documentation
+----------------------
+
+1. First, ensure that you have installed sphinx and sphinx-gallery. When in your
+fork top folder, you can install the required packages using::
+
+      pip install -r requirements-build-docs.txt
+
+2. Then go to ``nilearn/examples``
+
+3. Make your changes using `reStructuredText files <https://www.sphinx-doc.org/en/2.0/usage/restructuredtext/basics.html>`_
+
+4. You can now go to `nilearn/doc` and build the examples locally::
+
+      make html-strict
+
+   or, if you do not have make install (for instance under Windows)::
+
+      python3 -m sphinx -b html -d _build/doctrees . _build/html
+
+   if you don't need the plots, a quicker option is::
+
+      make html-noplot
+
+5. Visually review the output in ``nilearn/doc/_build/html/auto_examples/``. If all looks well and there were no errors, commit and push the changes.
+
+6. You can now open a Pull Request from Nilearn's Pull Request page.
+
+7. Request the CI builds the full documentation from your branch::
+
+      git commit --allow-empty -m "[circle full] request full build"
+
+TIPS : When generating documentation locally, you can build only specific files
+to reduce building time. To do so, use the ``filename_pattern``::
+
+      python3 -m sphinx -D sphinx_gallery_conf.filename_pattern=plot_decoding_tutorial.py -b html -d _build/doctrees . _build/html
 
 Additional cases
 =================
