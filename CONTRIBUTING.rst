@@ -52,10 +52,11 @@ complexity of the code, runtime of the examples). As a rule of thumb:
   correspond to an established practice (typically as used in scientific
   publications)
 
-* It must have a concrete use case, illustrated with a simple example in the
+* It must have a concrete use case, illustrated with a **simple example** in the
   Nilearn documentation to teach it easily to end-users.
 
-* It must be thoroughly tested, and respect coding conventions of the existing codebase.
+* It must be **thoroughly tested**, and respect **coding conventions** of the
+  existing codebase.
 
 * Features introducing new dependencies will generally not be accepted.
 
@@ -138,7 +139,7 @@ you to quickly get familiar with the tools we use for development and deployment
 |                    |             | - For Bugfixes: non-regression test                |
 +--------------------+-------------+----------------------------------------------------+
 |                    |             | - Clearly showcase benefits                        |
-|      Examples      | New features| - Run in less than a minute                        |
+|      Examples      | New features| - Run in a few seconds                             |
 |                    |             | - Use light data (generated or from Nilearn)       |
 |                    |             | - Renders well after build                         |
 +--------------------+-------------+----------------------------------------------------+
@@ -250,7 +251,7 @@ Here are the key steps you need to go through to contribute code to `nilearn`:
 3. implement and commit your changes on this branch (don't forget to write tests!)
 
 4. run the tests locally (to go faster, only run tests which are relevant to what
-you work on with, for example)::
+  you work on with, for example)::
 
       pytest -v nilearn/plotting/tests/test_surf_plotting.py
 
@@ -259,7 +260,7 @@ you work on with, for example)::
       git push
 
 6. in github, open a pull request from your online fork to the main repo
-(most likely from `your_fork:your_branch` to `nilearn:master`).
+  (most likely from `your_fork:your_branch` to `nilearn:master`).
 
 7. check that all continuous integration tests pass
 
@@ -270,7 +271,7 @@ Building documentation
 ----------------------
 
 1. First, ensure that you have installed sphinx and sphinx-gallery. When in your
-fork top folder, you can install the required packages using::
+  fork top folder, you can install the required packages using::
 
       pip install -r requirements-build-docs.txt
 
@@ -290,7 +291,8 @@ fork top folder, you can install the required packages using::
 
       make html-noplot
 
-5. Visually review the output in ``nilearn/doc/_build/html/auto_examples/``. If all looks well and there were no errors, commit and push the changes.
+5. Visually review the output in ``nilearn/doc/_build/html/auto_examples/``.
+  If all looks well and there were no errors, commit and push the changes.
 
 6. You can now open a Pull Request from Nilearn's Pull Request page.
 
