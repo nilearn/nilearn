@@ -31,10 +31,9 @@ Pull Requests
 ---------------
 
 We welcome pull requests from all community members, if they follow the
-contributing guidelines. Those are inspired from scikit learn conventions.
-More details on their process are available here in the
-`scikit-learn guide to contributing code
-<https://scikit-learn.org/stable/developers/contributing.html#contributing-code>`_.
+:ref:`contribution_guidelines` inspired from scikit learn conventions. (More
+details on their process are available `here
+<https://scikit-learn.org/stable/developers/contributing.html#contributing-code>`_)
 
 
 How to make a release?
