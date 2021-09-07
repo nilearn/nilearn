@@ -6,7 +6,7 @@ How to help?
 
 * If you have a usage question : create a question on `neurostars <https://neurostars.org/tag/nilearn>`_ with tag nilearn
 
-* You think you discovered a bug ? Create `an issue <https://github.com/nilearn/nilearn/issues>`_
+* You think you discovered a bug ? Create `an issue <https://github.com/nilearn/nilearn/issues/new/choose>`_
   including a minimal runnable example to showcase it (using Nilearn data) as well as your OS and Nilearn version.
 
 * If you have ideas for new features, check if it is in the scope of the project
