@@ -145,10 +145,6 @@ def test_parcellations_transform_multi_nifti_images(method,
     assert signals[2].shape == (test_image_2.shape[3], n_parcel)
     assert len(signals) == len(fmri_imgs)
 
-    parcellator = Parcellations(method='hierarchical_kmeans', n_parcels=5,
-                                mask=mask_img)
-    parcellator.fit(fmri_imgs)
-
 
 
 def test_check_parameters_transform(test_image_2):

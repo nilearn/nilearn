@@ -1,8 +1,10 @@
+from nilearn.input_data import NiftiMasker
 import numpy as np
 from numpy.testing import assert_array_almost_equal
 from nilearn._utils.data_gen import generate_fake_fmri
-from nilearn.regions.hierarchical_kmeans_clustering import _hierarchical_k_means, HierarchicalKMeans
-from nilearn.input_data import NiftiMasker
+from nilearn.regions.hierarchical_kmeans_clustering import (
+    _hierarchical_k_means,
+    HierarchicalKMeans)
 
 
 def test_hierarchical_k_means():
