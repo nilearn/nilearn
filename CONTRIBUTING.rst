@@ -293,7 +293,7 @@ Here are the key steps you need to go through to contribute code to `nilearn`:
       git push
 
 6. in github, open a pull request from your online fork to the main repo
-   (most likely from `your_fork:your_branch` to `nilearn:master`).
+   (most likely from `your_fork:your_branch` to `nilearn:main`).
 
 7. check that all continuous integration tests pass
 
