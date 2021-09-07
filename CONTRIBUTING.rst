@@ -4,30 +4,30 @@
 How to help?
 =============
 
-* If you have a usage question : create a question on `neurostars <https://neurostars.org/tag/nilearn>`_ with tag nilearn
+* If you have a usage question : create a topic on `neurostars <https://neurostars.org/tag/nilearn>`_ with the nilearn tag
 
 * You think you discovered a bug ? Create `an issue <https://github.com/nilearn/nilearn/issues/new/choose>`_
   including a minimal runnable example to showcase it (using Nilearn data) as well as your OS and Nilearn version.
 
-* If you have ideas for new features, check if it is in the scope of the project
+* If you have an idea for a new feature, check if it is in the scope of the project
   and feel free to open an issue to discuss it.
 
 * Want to contribute code ? Thank you very much!
 
   * For new features, please be sure to create an issue first, to discuss
     whether it can be included and its specifications.
-  * To help dealing with known issues, please check
+  * To help with known issues, please check
     `good first issues <https://github.com/nilearn/nilearn/labels/Good%20first%20issue>`_
     to get started, `known bugs <https://github.com/nilearn/nilearn/labels/Bug>`_
     or `proposed enhancements <https://github.com/nilearn/nilearn/labels/Enhancement>`_.
   * In any case, before sending code, be sure to **follow the** `Contribution Guidelines`_.
-  * Section `Setting up your environment`_ will get you ready for contributing.
+  * The section `Setting up your environment`_ will get you ready to contribute.
 
 * If you think documentation can be improved, you can directly send proposed
   improvements in `a pull request <https://github.com/nilearn/nilearn/pulls>`_.
 
 
-How do we decide what codes goes in?
+How do we decide what code goes in?
 =====================================
 Scope of the project
 ---------------------
@@ -53,7 +53,7 @@ runtime of the examples). As a rule of thumb:
 
 * To be accepted, new features must be **in the scope of the project** and
   correspond to an **established practice** (typically as used in scientific
-  publications)
+  publications).
 
 * It must have a concrete use case, illustrated with a **simple example** in the
   Nilearn documentation to teach it easily to end-users.
@@ -84,7 +84,7 @@ process, where maintainers or contributors make sure they respect the
 :ref:`contribution_guidelines`.
 To be merged, a pull request usually needs to be accepted by two maintainers.
 In case a consensus does not emerge easily, the decisions are made by the
-core-contributors, ie people with write access to the repository, as
+core contributors, i.e., people with write access to the repository, as
 listed :ref:`here <core_devs>`.
 
 How to contribute to nilearn
@@ -94,8 +94,8 @@ This project, hosted on https://github.com/nilearn/nilearn, is a community
 effort, and everyone is welcome to contribute.
 We value very much your feedback and opinion on features that should be
 improved or added.
-All discussions are public and hold on relevant issues or pull requests.
-To discuss your matter, please answer a relevant
+All discussions are public and held on relevant issues or pull requests.
+To discuss your matter, please comment on a relevant
 `issue <https://github.com/nilearn/nilearn/issues>`_ or open a new one.
 
 The best way to contribute and to help the project is to start working on known
@@ -104,8 +104,8 @@ issues such as `good first issues <https://github.com/nilearn/nilearn/labels/Goo
 `proposed enhancements <https://github.com/nilearn/nilearn/labels/Enhancement>`_.
 If an issue does not already exist for a potential contribution, we ask that
 you first open an `issue <https://github.com/nilearn/nilearn/issues>`_ before
-sending a :ref:`pull request` to discuss in advance scope and potential design
-choices.
+sending a :ref:`pull request` to discuss scope and potential design choices
+in advance.
 
 .. _contribution_guidelines:
 
@@ -117,13 +117,13 @@ guidelines.
 Those are inspired from `scikit-learn
 <https://scikit-learn.org/stable/developers/contributing.html#contributing-code>`_
 and ensure Nilearn remains simple to understand, efficient and maintainable.
-For example code need to be tested and those tests need to run quickly in order
+For example, code needs to be tested and those tests need to run quickly in order
 not to burden the development process.
 To keep continuous integration efficient with our limited infrastructure,
 running all the examples must lead to downloading a limited amount of data
 (gigabytes) and execute in a reasonable amount of time (less than an hour).
 Those guidelines will hence be enforced during the reviewing process.
-Section `Setting up your environment`_ will help you to quickly get familiar
+The section `Setting up your environment`_ will help you to quickly get familiar
 with the tools we use for development and deployment.
 
 +--------------------+-------------+----------------------------------------------------+
@@ -164,12 +164,12 @@ PR Structure
 -------------
 
 A new pull request must have a clear scope, conveyed through its name, a
-reference to the issue it targets (through the exact mention "Closes #XXXX")
-as well as a synthetic summary of its goals and main steps.
-When working on big contributions, we advise contributors to split them in
+reference to the issue it targets (through the exact mention "Closes #XXXX"),
+and a synthetic summary of its goals and main steps.
+When working on big contributions, we advise contributors to split them into
 several PRs when possible.
-This has the benefit to make code changes clearer, easier to make and to review
-and overall smoothen the whole process.
+This has the benefit of making code changes clearer, making PRs easier to review,
+and overall smoothening the whole process.
 No changes unrelated to the PR should be included.
 
 When relevant, PR names should also include tags if they fall in various
@@ -185,7 +185,8 @@ Coding Style
 -------------
 
 The main conventions we follow are : line length < 80, spaces around operators,
-variable names, function names are underscore separated (a_nice_function),
+variable names, function names are underscore separated (e.g., ``a_nice_function``) and as short as possible,
+public functions exposed in their parent module's init file, private function names preceded with a "_",
 classes in CamelCase, 2 empty lines between functions or classes.
 Each function and class must come with a “docstring” at the top of the function
 code, using `numpydoc formatting <https://numpydoc.readthedocs.io/en/latest/format.html>`_.
@@ -217,7 +218,7 @@ To do quicker checks it's possible to run only a subset of tests::
 Documentation
 ---------------
 
-Documentation must be understandable by people from different background.
+Documentation must be understandable by people from different backgrounds.
 The “narrative” documentation should be an introduction to the concepts of
 the library.
 It includes very little code and should first help the user figure out which
@@ -252,7 +253,7 @@ Here are the key steps you need to go through to copy the repo before contributi
 
       git clone git@github.com:<your_username>/nilearn.git
 
-2. (optional but highly recommended) setup a conda environment to work on and activate it::
+2. (optional but highly recommended) set up a conda environment to work on and activate it::
 
       conda create -n nilearn
       conda activate nilearn
@@ -277,7 +278,7 @@ Here are the key steps you need to go through to contribute code to `nilearn`:
 
 1. open or join an already existing issue explaining what you want to work on
 
-2. on your fork, create a new branch from master::
+2. on your fork, create a new branch from main::
 
       git checkout -b your_branch
 
@@ -357,11 +358,11 @@ atlases):
   label, in the same (numerical) order as the atlas labels
 - ``maps`` (list or string): the path to the nifti image, or a list of paths
 
-In addition, the atlas will need to be called by a fetcher. For example, see `here <https://github.com/nilearn/nilearn/blob/master/nilearn/datasets/atlas.py>`__.
+In addition, the atlas will need to be called by a fetcher. For example, see `here <https://github.com/nilearn/nilearn/blob/main/nilearn/datasets/atlas.py>`__.
 
 Finally, as with other features, please provide a test for your atlas.
 Examples can be found `here
-<https://github.com/nilearn/nilearn/blob/master/nilearn/datasets/tests/test_atlas.py>`__
+<https://github.com/nilearn/nilearn/blob/main/nilearn/datasets/tests/test_atlas.py>`__
 
 
 How to contribute a dataset fetcher
@@ -371,7 +372,7 @@ The ``nilearn.datasets`` package provides functions to download some
 neuroimaging datasets, such as :func:`nilearn.datasets.fetch_haxby` or
 :func:`nilearn.datasets.fetch_atlas_harvard_oxford`. The goal is not to provide a comprehensive
 collection of downloaders for the most widely used datasets, and this would be
-outside the scope of this project. Rather, this package downloads data that is
+outside the scope of this project. Rather, this module provides data downloading utilities that are
 required to showcase nilearn features in the example gallery.
 
 Downloading data takes time and large datasets slow down the build of the
@@ -388,7 +389,7 @@ downloaders could be used instead.
 
 
 To add a new fetcher, ``nilearn.datasets.utils`` provides some helper functions,
-such as ``get_dataset_dir`` to find a directory where the dataset is or will be
+such as ``_get_dataset_dir`` to find a directory where the dataset is or will be
 stored according to the user's configuration, or ``_fetch_files`` to load files
 from the disk or download them if they are missing.
 
