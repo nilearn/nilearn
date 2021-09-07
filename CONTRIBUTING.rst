@@ -369,7 +369,7 @@ How to contribute a dataset fetcher
 
 The ``nilearn.datasets`` package provides functions to download some
 neuroimaging datasets, such as ``fetch_haxby`` or
-``fetch_atlas_harvard_oxford``. The goal is not to provide a comprehensive
+:func:`nilearn.datasets.fetch_atlas_harvard_oxford`. The goal is not to provide a comprehensive
 collection of downloaders for the most widely used datasets, and this would be
 outside the scope of this project. Rather, this package downloads data that is
 required to showcase nilearn features in the example gallery.
