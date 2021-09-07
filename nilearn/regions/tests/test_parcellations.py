@@ -63,7 +63,7 @@ def test_parcellations_fit_on_single_nifti_image(method, n_parcel, test_image):
     # Test object returns attribute masker_
     assert parcellator.masker_ is not None
     assert parcellator.mask_img_ is not None
-    if method not in ['kmeans', 'rena']:
+    if method not in ['kmeans', 'rena', 'hierarchical_kmeans']:
         # Test that object returns attribute connectivity_
         # only for AgglomerativeClustering methods
         assert parcellator.connectivity_ is not None
@@ -206,7 +206,7 @@ def test_fit_transform(method, n_parcel, test_image_2):
     parcellator = Parcellations(method=method, n_parcels=n_parcel)
     signals = parcellator.fit_transform(fmri_imgs)
     assert parcellator.labels_img_ is not None
-    if method not in ['kmeans', 'rena']:
+    if method not in ['kmeans', 'rena', 'hierarchical_kmeans']:
         assert parcellator.connectivity_ is not None
     assert parcellator.masker_ is not None
     # fit_transform with confounds

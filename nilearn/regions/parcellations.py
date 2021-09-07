@@ -132,9 +132,8 @@ class Parcellations(MultiPCA):
 
     Parameters
     ----------
-    method : :obj:`str`,
-        {'kmeans', 'ward', 'complete', 'average', 'rena', 'hierarchical_kmeans'}
-
+    method: :obj:`str`, {'kmeans', 'ward', 'complete', 'average', 'rena',
+        'hierarchical_kmeans'}
         A method to choose between for brain parcellations.
         For a small number of parcels, kmeans is usually advisable.
         For a large number of parcellations (several hundreds, or thousands),
