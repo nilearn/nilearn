@@ -174,9 +174,9 @@ No changes unrelated to the PR should be included.
 
 When relevant, PR names should also include tags if they fall in various
 categories.
-If the authors feels he still has work to do before a first round of review, he
-can include the [WIP] tag or conversely, the [MRG] tag to highlight this PR is
-ready for review.
+When opening a PR, the authors should include the [WIP] tag in its name, or use
+github draft mode. When ready for review, they should switch the tag to [MRG] or
+can switch it back to normal mode.
 Other tags can describe the PR content : [FIX] for a bugfix, [DOC] for a
 change in documentation or examples, [ENH] for a new feature and [MAINT] for
 maintenance changes.
