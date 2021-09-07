@@ -148,7 +148,7 @@ def _optimize_scrub(fd_outliers, n_scans):
     return fd_outliers
 
 
-def _get_file_raw(nii_file):
+def _get_file_name(nii_file):
     """Get the name of the raw confound file."""
     if isinstance(nii_file, list):  # catch gifti
         nii_file = nii_file[0]
@@ -175,10 +175,10 @@ def _get_file_raw(nii_file):
         return confounds_raw[0]
 
 
-def _get_json(confounds_raw, flag_acompcor):
+def _get_json(confounds_raw_path, flag_acompcor):
     """Load json data companion to the confounds tsv file."""
     # Load JSON file
-    confounds_json = confounds_raw.replace("tsv", "json")
+    confounds_json = confounds_raw_path.replace("tsv", "json")
     try:
         with open(confounds_json, "rb") as f:
             confounds_json = json.load(f)
@@ -187,10 +187,21 @@ def _get_json(confounds_raw, flag_acompcor):
             raise ValueError(
                 (
                     f"Could not find a json file {confounds_json}."
-                    "This is necessary for anat compcor"
+                    "This is necessary for anatomical CompCor."
+                    "The CompCor component is only supported for fMRIprep "
+                    "version >= 1.4.0."
                 )
             )
     return confounds_json
+
+
+def _get_file_raw(confounds_raw_path):
+    """Load raw confounds as a pandas DataFrame and check if the version
+    of fMRIprep (>=1.2.0) is supported based on header format (to-do)."""
+    confounds_raw = pd.read_csv(
+        confounds_raw_path, delimiter="\t", encoding="utf-8"
+    )
+    return confounds_raw
 
 
 def _ext_validator(image_file, ext):
@@ -220,13 +231,11 @@ def _check_images(image_file, flag_full_aroma):
 
 
 def _confounds_to_df(image_file, flag_acompcor, flag_full_aroma):
-    """Load raw confounds as a pandas DataFrame."""
+    """Load raw confounds and associated metadata."""
     _check_images(image_file, flag_full_aroma)
-    confounds_raw = _get_file_raw(image_file)
-    confounds_json = _get_json(confounds_raw, flag_acompcor)
-    confounds_raw = pd.read_csv(
-        confounds_raw, delimiter="\t", encoding="utf-8"
-    )
+    confounds_raw_path = _get_file_name(image_file)
+    confounds_json = _get_json(confounds_raw_path, flag_acompcor)
+    confounds_raw = _get_file_raw(confounds_raw_path)
     return confounds_raw, confounds_json
 
 

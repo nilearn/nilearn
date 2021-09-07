@@ -49,10 +49,18 @@ class Confounds:
     """
     Confounds from fmriprep
 
+    To enable easy confound variables loading from fMRIprep outputs, Confounds
+    provides a interface that groups subsets of confound variables into noise
+    components and their parameters. It is possible to fine-tune a subset of
+    noise components and their parameters through Confounds.
+
+    The implementation will only support fMRIPrep output from the 1.2.x series.
+    The `compcor` noise component requires 1.4.x series or above.
+
     Parameters
     ----------
     strategy : list of strings
-        The type of noise confounds to include.
+        The type of noise components to include.
         "motion" head motion estimates.
         "high_pass" discrete cosines covering low frequencies.
         "wm_csf" confounds derived from white matter and cerebrospinal fluid.
@@ -107,6 +115,7 @@ class Confounds:
         frame.
 
     compcor : string, optional
+        Require fmriprep >= v:1.4.0.
         Type of confounds extracted from a component based noise correction
         method
         "anat" noise components calculated using anatomical compcor
@@ -143,18 +152,19 @@ class Confounds:
         The confounds loaded using the specified model. The columns of the
         dataframe contains the labels.
 
-    `sample_mask_` : list of int
+    `sample_mask_` : None or list of int
         The index of the niimgs along time/fourth dimension.
+        When no volumns require removal, the value is None.
         This list includes indices for valid volumes for subsequent analysis.
         This attribute should be passed to parameter `sample_mask` of
         nilearn.NiftiMasker.
-        Volumnes are removed if flagges as following:
+        Volumns are removed if flagged as following:
             - Non-steady-state volumes (if present)
             - Motion outliers detected by scrubbing
 
     Notes
     -----
-    The predefined strategies implemented in this class are
+    The noise components implemented in this class are
     adapted from (Ciric et al. 2017). Band-pass filter is replaced
     by high-pass filter. Low-pass filters can be implemented, e.g., through
     nilearn maskers. Scrubbing is implemented by introducing regressors in the
@@ -222,7 +232,8 @@ class Confounds:
             The columns contains the labels of the regressors.
 
         sample_mask : list or list of list
-            Index of time point to be preserved in the analysis
+            Index of time point to be preserved in the analysis.
+            When no volumns require removal, the value is None.
         """
         return self._parse(img_files)
 
