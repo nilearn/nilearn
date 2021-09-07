@@ -23,6 +23,7 @@ image                   --- Set of functions defining mathematical operations
                             working on Niimg-like objects
 input_data              --- includes scikit-learn tranformers and tools to
                             preprocess neuro-imaging data
+load_confounds          --- Load fMRIPrep generated confounds by selected noise components.
 masking                 --- Utilities to compute and operate on brain masks
 mass_univariate         --- Defines a Massively Univariate Linear Model
                             estimated with OLS and permutation test
@@ -106,5 +107,6 @@ CHECK_CACHE_VERSION = True
 
 # list all submodules available in nilearn and version
 __all__ = ['datasets', 'decoding', 'decomposition', 'connectome',
-           'image', 'input_data', 'masking', 'mass_univariate', 'plotting',
-           'regions', 'signal', 'surface', '__version__']
+           'image', 'input_data', 'load_confounds', 'masking',
+           'mass_univariate', 'plotting', 'regions', 'signal', 'surface',
+           '__version__']
