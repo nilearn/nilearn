@@ -15,7 +15,7 @@ import re
 from sklearn.utils import Bunch
 
 from .utils import _get_dataset_dir, _fetch_files, _get_dataset_descr
-from .._utils import check_niimg
+from .._utils import check_niimg, fill_doc
 from ..image import new_img_like, get_data, reorder_img
 
 _TALAIRACH_LEVELS = ['hemisphere', 'lobe', 'gyrus', 'tissue', 'ba']
