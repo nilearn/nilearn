@@ -187,7 +187,7 @@ Coding Style
 The main conventions we follow are : line length < 80, spaces around operators,
 variable names, function names are underscore separated (a_nice_function),
 classes in CamelCase, 2 empty lines between functions or classes.
-Each function and class must come with “docstrings” at the top of the function
+Each function and class must come with a “docstring” at the top of the function
 code, using `numpydoc formatting <https://numpydoc.readthedocs.io/en/latest/format.html>`_.
 They must summarize what the function does and document every parameter.
 
