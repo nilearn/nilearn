@@ -4,12 +4,12 @@
 How to help?
 =============
 
-* If you have a usage question : create a question on `neurostars <https://neurostars.org/>`_ with tag nilearn
+* If you have a usage question : create a question on `neurostars <https://neurostars.org/tag/nilearn>`_ with tag nilearn
 
-* You think you discovered a bug ? Create `an issue <https://github.com/nilearn/nilearn/issues>`_
+* You think you discovered a bug ? Create `an issue <https://github.com/nilearn/nilearn/issues/new/choose>`_
   including a minimal runnable example to showcase it (using Nilearn data) as well as your OS and Nilearn version.
 
-* If you have ideas for new features, check it's in the scope of the project
+* If you have ideas for new features, check if it is in the scope of the project
   and feel free to open an issue to discuss it.
 
 * Want to contribute code ? Thank you very much!
@@ -293,11 +293,11 @@ Here are the key steps you need to go through to contribute code to `nilearn`:
       git push
 
 6. in github, open a pull request from your online fork to the main repo
-   (most likely from `your_fork:your_branch` to `nilearn:master`).
+   (most likely from `your_fork:your_branch` to `nilearn:main`).
 
 7. check that all continuous integration tests pass
 
-For more details about the Fork Clone Push worksflow, read `here <https://guides.github.com/activities/forking/>`_.
+For more details about the Fork Clone Push workflows, read `here <https://guides.github.com/activities/forking/>`_.
 
 
 Building documentation
@@ -368,8 +368,8 @@ How to contribute a dataset fetcher
 ------------------------------------
 
 The ``nilearn.datasets`` package provides functions to download some
-neuroimaging datasets, such as ``fetch_haxby`` or
-``fetch_atlas_harvard_oxford``. The goal is not to provide a comprehensive
+neuroimaging datasets, such as :func:`nilearn.datasets.fetch_haxby` or
+:func:`nilearn.datasets.fetch_atlas_harvard_oxford`. The goal is not to provide a comprehensive
 collection of downloaders for the most widely used datasets, and this would be
 outside the scope of this project. Rather, this package downloads data that is
 required to showcase nilearn features in the example gallery.
