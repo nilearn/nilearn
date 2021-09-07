@@ -23,7 +23,7 @@ where the samples could be different time points, and the features derived
 from different voxels (e.g., restrict analysis to the ventral visual stream),
 regions of interest (e.g., extract local signals from spheres/cubes), or
 pre-specified networks (e.g., look at data from all voxels of a set of
-network nodes). Think of masker objects as swiss-army knifes for shaping
+network nodes). Think of masker objects as swiss-army knives for shaping
 the raw neuroimaging data in 3D space into the units of observation
 relevant for the research questions at hand.
 
@@ -43,7 +43,7 @@ relevant for the research questions at hand.
 
 
 "masker" objects (found in modules :mod:`nilearn.input_data`)
-simplify these "data folding" steps that often preceed the
+simplify these "data folding" steps that often precede the
 statistical analysis.
 
 Note that the masker objects may not cover all the image transformations
@@ -165,14 +165,16 @@ The `mask_strategy` argument controls how the mask is computed:
 
 * `background`: detects a continuous background
 * `epi`: suitable for EPI images
-* `template`: uses an MNI grey-matter template
+* `whole-brain-template`: uses an MNI whole-brain template
+* `gm-template`: uses an MNI grey-matter template
+* `wm-template`: uses an MNI white-matter template
 
 Extra mask parameters: opening, cutoff...
 ..........................................
 
 The underlying function is :func:`nilearn.masking.compute_epi_mask`
 called using the `mask_args` argument of the :class:`NiftiMasker`.
-Controling these arguments set the fine aspects of the mask. See the
+Controlling these arguments set the fine aspects of the mask. See the
 functions documentation, or :doc:`the NiftiMasker example
 <../auto_examples/06_manipulating_images/plot_mask_computation>`.
 
@@ -390,7 +392,7 @@ some explanation. The voxels that correspond to the brain or a region
 of interest in an fMRI image do not fill the entire image.
 Consequently, in the labels image, there must be a label value that corresponds
 to "outside" the brain (for which no signal should be extracted).
-By default, this label is set to zero in nilearn (refered to as "background").
+By default, this label is set to zero in nilearn (referred to as "background").
 Should some non-zero value encoding be necessary, it is possible
 to change the background value with the `background_label` keyword.
 

@@ -107,6 +107,4 @@ CHECK_CACHE_VERSION = True
 # list all submodules available in nilearn and version
 __all__ = ['datasets', 'decoding', 'decomposition', 'connectome',
            'image', 'input_data', 'masking', 'mass_univariate', 'plotting',
-           'regions', 'signal', 'stats', 'surface',
-           'parcellations', '__version__']
-
+           'regions', 'signal', 'surface', '__version__']

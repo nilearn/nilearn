@@ -143,9 +143,10 @@ def cluster_level_inference(stat_img, mask_img=None,
 
     References
     ----------
-    .. [1] Rosenblatt JD, Finos L, Weeda WD, Solari A, Goeman JJ. All-Resolutions
-       Inference for brain imaging. Neuroimage. 2018 Nov 1;181:786-796. doi:
-       10.1016/j.neuroimage.2018.07.060
+    .. [1] Rosenblatt JD, Finos L, Weeda WD, Solari A, Goeman JJ.
+        All-Resolutions Inference for brain imaging.
+        Neuroimage. 2018 Nov 1;181:786-796.
+        doi: 10.1016/j.neuroimage.2018.07.060
 
     """
 

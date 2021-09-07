@@ -289,13 +289,20 @@ def test_joblib_cache():
             shutil.rmtree(cachedir, ignore_errors=True)
 
 
-def test_mask_init_errors():
-    # Errors that are caught in init
+def test_mask_strategy_errors():
+    # Error with unknown mask_strategy
     mask = NiftiMasker(mask_strategy='oops')
     with pytest.raises(
             ValueError,
             match="Unknown value of mask_strategy 'oops'"):
         mask.fit()
+    # Warning with deprecated 'template' strategy
+    img = np.random.RandomState(42).uniform(size=(9, 9, 5))
+    img = Nifti1Image(img, np.eye(4))
+    mask = NiftiMasker(mask_strategy='template')
+    with pytest.warns(UserWarning,
+                      match="Masking strategy 'template' is deprecated."):
+        mask.fit(img)
 
 
 def test_compute_epi_mask():
@@ -341,28 +348,34 @@ def test_compute_epi_mask():
                              get_data(mask4)[3:12, 3:12])
 
 
-def test_compute_brain_mask():
+def _get_random_img(shape):
+    img = np.random.RandomState(42).uniform(size=shape)
+    return Nifti1Image(img, np.eye(4))
+
+
+@pytest.fixture
+def expected_mask(mask_args):
+    mask = np.zeros((9, 9, 5))
+    if mask_args == dict():
+        return mask
+    else:
+        mask[2:7, 2:7, 2] = 1
+        return mask
+
+
+@pytest.mark.parametrize('strategy',
+                         [f'{p}-template' for p in
+                          ['whole-brain', 'gm', 'wm']])
+@pytest.mark.parametrize('mask_args',
+                         [dict(), dict(threshold=0.)])
+def test_compute_brain_mask(strategy, mask_args, expected_mask):
     # Check masker for template masking strategy
-
-    img = np.random.RandomState(42).uniform(size=(9, 9, 5))
-    img = Nifti1Image(img, np.eye(4))
-
-    masker = NiftiMasker(mask_strategy='template')
-
+    img = _get_random_img((9, 9, 5))
+    masker = NiftiMasker(mask_strategy=strategy,
+                         mask_args=mask_args)
     masker.fit(img)
-    mask1 = masker.mask_img_
-
-    masker2 = NiftiMasker(mask_strategy='template',
-                          mask_args=dict(threshold=0.))
-
-    masker2.fit(img)
-    mask2 = masker2.mask_img_
-
-    mask_ref = np.zeros((9, 9, 5))
-    np.testing.assert_array_equal(get_data(mask1), mask_ref)
-
-    mask_ref[2:7, 2:7, 2] = 1
-    np.testing.assert_array_equal(get_data(mask2), mask_ref)
+    np.testing.assert_array_equal(get_data(masker.mask_img_),
+                                  expected_mask)
 
 
 def test_filter_and_mask_error():

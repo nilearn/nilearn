@@ -33,6 +33,13 @@ Important links
 - Official source code repo: https://github.com/nilearn/nilearn/
 - HTML documentation (stable release): http://nilearn.github.io/
 
+Office Hours
+============
+
+The nilearn team organizes regular online office hours to answer questions, discuss feature requests, or have any Nilearn-related discussions. We try to maintain a frequency of *one hour every two weeks*, usually on Mondays, and make sure that at least one member of the core-developer team is available. These events are held on our on `Discord server <https://discord.gg/bMBhb7w>`_ and are fully open, anyone is welcome to join!
+
+You can check when the next office hours will be held on the Nilearn's website `landing page <https://nilearn.github.io/>`_.
+
 Dependencies
 ============
 
@@ -49,6 +56,9 @@ The required dependencies to use the software are:
 
 If you are using nilearn plotting functionalities or running the
 examples, matplotlib >= 1.5.1 is required.
+
+Some plotting functions in Nilearn support both matplotlib and plotly as plotting engines.
+In order to use the plotly engine in these functions, you will need to install both plotly and kaleido, which can both be installed with pip and anaconda. 
 
 If you want to run the tests, you need pytest >= 3.9 and pytest-cov for coverage reporting.
 

@@ -45,8 +45,7 @@ def _check_second_level_input(second_level_input, design_matrix,
             models_input = enumerate(second_level_input)
             for model_idx, first_level in models_input:
                 if (first_level.labels_ is None
-                    or first_level.results_ is None
-                    ):
+                        or first_level.results_ is None):
                     raise ValueError(
                         'Model %s at index %i has not been fit yet'
                         '' % (first_level.subject_label, model_idx))
@@ -82,7 +81,8 @@ def _check_second_level_input(second_level_input, design_matrix,
                                  ' columns subject_label, map_name and'
                                  ' effects_map_path')
         # Make sure subject_label contain strings
-        if not all([isinstance(_, str) for _ in second_level_input['subject_label'].tolist()]):
+        if not all([isinstance(_, str) for _ in
+                    second_level_input['subject_label'].tolist()]):
             raise ValueError('subject_label column must contain only strings')
     elif isinstance(second_level_input, (str, Nifti1Image)):
         if design_matrix is None:
@@ -115,7 +115,8 @@ def _check_confounds(confounds):
                              ' one called "subject_label" and the other'
                              ' with a given confound')
         # Make sure subject_label contain strings
-        if not all([isinstance(_, str) for _ in confounds['subject_label'].tolist()]):
+        if not all([isinstance(_, str) for _ in
+                    confounds['subject_label'].tolist()]):
             raise ValueError('subject_label column must contain only strings')
 
 

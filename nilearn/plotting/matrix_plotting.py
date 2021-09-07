@@ -8,6 +8,7 @@ import matplotlib.pyplot as plt
 import matplotlib.patches as mpatches
 from matplotlib.tight_layout import get_renderer
 from matplotlib.colorbar import make_axes
+from .._utils import fill_doc
 with warnings.catch_warnings():
     warnings.simplefilter("ignore", FutureWarning)
     from nilearn.glm.contrasts import expression_to_contrast_vector
@@ -36,6 +37,7 @@ def fit_axes(ax):
         ax.set_position(new_position)
 
 
+@fill_doc
 def plot_matrix(mat, title=None, labels=None, figure=None, axes=None,
                 colorbar=True, cmap=plt.cm.RdBu_r, tri='full',
                 auto_fit=True, grid=False, reorder=False, **kwargs):
@@ -45,10 +47,7 @@ def plot_matrix(mat, title=None, labels=None, figure=None, axes=None,
     ----------
     mat : 2-D numpy array
         Matrix to be plotted.
-
-    title : string or None, optional
-        A text to add in the upper left corner.
-
+    %(title)s
     labels : list, ndarray of strings, empty list, False, or None, optional
         The label of each row and column. Needs to be the same
         length as rows/columns of mat. If False, None, or an
@@ -63,13 +62,10 @@ def plot_matrix(mat, title=None, labels=None, figure=None, axes=None,
     axes : None or Axes, optional
         Axes instance to be plotted on. Creates a new one if None.
         Specifying both axes and figure is not allowed.
-
-    colorbar : boolean, optional
-        If True, an integrated colorbar is added. Default=True.
-
-    cmap : matplotlib colormap, optional
-        The colormap for the matrix. Default=plt.cm.RdBu_r.
-
+    %(colorbar)s
+        Default=True.
+    %(cmap)s
+        Default=`plt.cm.RdBu_r`.
     tri : {'full', 'lower', 'diag'}, optional
         Which triangular part of the matrix to plot:
         'lower' is the lower part, 'diag' is the lower including
@@ -239,6 +235,7 @@ def plot_matrix(mat, title=None, labels=None, figure=None, axes=None,
     return display
 
 
+@fill_doc
 def plot_contrast_matrix(contrast_def, design_matrix, colorbar=False, ax=None,
                          output_file=None):
     """Creates plot for contrast definition.
@@ -259,17 +256,11 @@ def plot_contrast_matrix(contrast_def, design_matrix, colorbar=False, ax=None,
 
     design_matrix : pandas DataFrame
         Design matrix to use.
-
-    colorbar : Boolean, optional
-        Include a colorbar in the contrast matrix plot. Default=False.
-
+    %(colorbar)s
+        Default=False.
     ax : matplotlib Axes object, optional
         Axis on which to plot the figure. If None, a new figure will be created.
-
-    output_file : string or None, optional
-        The name of an image file to export the plot to. Valid extensions
-        are .png, .pdf, .svg. If output_file is not None, the plot
-        is saved to a file, and the display is closed.
+    %(output_file)s
 
     Returns
     -------
@@ -313,6 +304,7 @@ def plot_contrast_matrix(contrast_def, design_matrix, colorbar=False, ax=None,
     return ax
 
 
+@fill_doc
 def plot_design_matrix(design_matrix, rescale=True, ax=None, output_file=None):
     """Plot a design matrix provided as a DataFrame
 
@@ -327,11 +319,7 @@ def plot_design_matrix(design_matrix, rescale=True, ax=None, output_file=None):
 
     ax : axis handle, optional
         Handle to axis onto which we will draw design matrix.
-
-    output_file : string or None, optional
-        The name of an image file to export the plot to. Valid extensions
-        are .png, .pdf, .svg. If output_file is not None, the plot
-        is saved to a file, and the display is closed.
+    %(output_file)s
 
     Returns
     -------
@@ -372,6 +360,7 @@ def plot_design_matrix(design_matrix, rescale=True, ax=None, output_file=None):
     return ax
 
 
+@fill_doc
 def plot_event(model_event, cmap=None, output_file=None, **fig_kwargs):
     """Creates plot for event visualization.
 
@@ -382,15 +371,8 @@ def plot_event(model_event, cmap=None, output_file=None, **fig_kwargs):
         ``event_type`` with event name, ``onset`` and ``duration``.
         The `pandas.DataFrame` can also be obtained from
         :func:`nilearn.glm.first_level.first_level_from_bids`.
-
-    cmap : str or matplotlib.cmap, optional
-        The colormap used to label different events.
-
-    output_file : string or None, optional
-        The name of an image file to export the plot to. Valid extensions
-        are .png, .pdf, .svg. If output_file is not None, the plot
-        is saved to a file, and the display is closed.
-
+    %(cmap)s
+    %(output_file)s
     **fig_kwargs : extra keyword arguments, optional
         Extra arguments passed to matplotlib.pyplot.subplots.
 
@@ -410,8 +392,6 @@ def plot_event(model_event, cmap=None, output_file=None, **fig_kwargs):
         cmap = plt.cm.tab20
     elif isinstance(cmap, str):
         cmap = plt.get_cmap(cmap)
-    else:
-        cmap = cmap
 
     event_labels = pd.concat(event['trial_type'] for event in model_event)
     event_labels = np.unique(event_labels)

@@ -28,7 +28,7 @@ from . import cm, glass_brain
 from .edge_detect import _edge_map
 from .find_cuts import find_xyz_cut_coords, find_cut_slices
 from .. import _utils
-from ..image import new_img_like, load_img
+from ..image import new_img_like
 from ..image.resampling import (get_bounds, reorder_img, coord_transform,
                                 get_mask_bounds)
 from nilearn.image import get_data
@@ -976,7 +976,7 @@ class BaseSlicer(object):
             self._colorbar_ax, ticks=ticks, norm=norm,
             orientation='vertical', cmap=our_cmap, boundaries=bounds,
             spacing='proportional', format='%.2g')
-        self._cbar.patch.set_facecolor(self._brain_color)
+        self._cbar.ax.set_facecolor(self._brain_color)
 
         self._colorbar_ax.yaxis.tick_left()
         tick_color = 'w' if self._black_bg else 'k'
@@ -1217,7 +1217,7 @@ class OrthoSlicer(BaseSlicer):
     _axes_class = CutAxes
 
     @classmethod
-    def find_cut_coords(self, img=None, threshold=None, cut_coords=None):
+    def find_cut_coords(cls, img=None, threshold=None, cut_coords=None):
         "Instantiate the slicer and find cut coordinates"
         if cut_coords is None:
             if img is None or img is False:
@@ -1226,7 +1226,7 @@ class OrthoSlicer(BaseSlicer):
                 cut_coords = find_xyz_cut_coords(
                     img, activation_threshold=threshold)
             cut_coords = [cut_coords['xyz'.find(c)]
-                          for c in sorted(self._cut_displayed)]
+                          for c in sorted(cls._cut_displayed)]
         return cut_coords
 
     def _init_axes(self, **kwargs):
@@ -1290,7 +1290,7 @@ class OrthoSlicer(BaseSlicer):
             bounds = display_ax.get_object_bounds()
             if not bounds:
                 # This happens if the call to _map_show was not
-                # succesful. As it happens asyncroniously (during a
+                # successful. As it happens asynchronously (during a
                 # refresh of the figure) we capture the problem and
                 # ignore it: it only adds a non informative traceback
                 bounds = [0, 1, 0, 1]
@@ -1394,7 +1394,7 @@ class TiledSlicer(BaseSlicer):
     _default_figsize = [2.0, 6.0]
 
     @classmethod
-    def find_cut_coords(self, img=None, threshold=None, cut_coords=None):
+    def find_cut_coords(cls, img=None, threshold=None, cut_coords=None):
         """Instantiate the slicer and find cut coordinates.
 
         Parameters
@@ -1423,11 +1423,11 @@ class TiledSlicer(BaseSlicer):
                 cut_coords = find_xyz_cut_coords(
                     img, activation_threshold=threshold)
             cut_coords = [cut_coords['xyz'.find(c)]
-                          for c in sorted(self._cut_displayed)]
+                          for c in sorted(cls._cut_displayed)]
 
         return cut_coords
 
-    def _find_inital_axes_coord(self, index):
+    def _find_initial_axes_coord(self, index):
         """Find coordinates for initial axes placement for xyz cuts.
 
         Parameters
@@ -1480,7 +1480,7 @@ class TiledSlicer(BaseSlicer):
         self.axes = dict()
         for index, direction in enumerate(self._cut_displayed):
             fh = self.frame_axes.get_figure()
-            axes_coords = self._find_inital_axes_coord(index)
+            axes_coords = self._find_initial_axes_coord(index)
             ax = fh.add_axes(axes_coords, aspect='equal')
 
             if LooseVersion(matplotlib.__version__) >= LooseVersion("1.6"):
@@ -1545,7 +1545,7 @@ class TiledSlicer(BaseSlicer):
 
     def _find_axes_coord(self, rel_width_dict, rel_height_dict,
                          rect_x0, rect_y0, rect_x1, rect_y1):
-        """"Find coordinates for inital axes placement for xyz cuts.
+        """"Find coordinates for initial axes placement for xyz cuts.
 
         Parameters
         ----------
@@ -1621,7 +1621,7 @@ class TiledSlicer(BaseSlicer):
             bounds = display_ax.get_object_bounds()
             if not bounds:
                 # This happens if the call to _map_show was not
-                # succesful. As it happens asyncroniously (during a
+                # successful. As it happens asynchronously (during a
                 # refresh of the figure) we capture the problem and
                 # ignore it: it only adds a non informative traceback
                 bounds = [0, 1, 0, 1]
@@ -1867,7 +1867,7 @@ class MosaicSlicer(BaseSlicer):
     _default_figsize = [11.1, 7.2]
 
     @classmethod
-    def find_cut_coords(self, img=None, threshold=None, cut_coords=None):
+    def find_cut_coords(cls, img=None, threshold=None, cut_coords=None):
         """Instantiate the slicer and find cut coordinates for mosaic plotting.
 
         Parameters
@@ -1897,19 +1897,20 @@ class MosaicSlicer(BaseSlicer):
         if (not isinstance(cut_coords, collections.abc.Sequence) and
                 isinstance(cut_coords, numbers.Number)):
             cut_coords = [cut_coords] * 3
-            cut_coords = self._find_cut_coords(img, cut_coords,
-                                               self._cut_displayed)
+            cut_coords = cls._find_cut_coords(img, cut_coords,
+                                              cls._cut_displayed)
         else:
-            if len(cut_coords) != len(self._cut_displayed):
+            if len(cut_coords) != len(cls._cut_displayed):
                 raise ValueError('The number cut_coords passed does not'
                                  ' match the display_mode. Mosaic plotting '
                                  'expects tuple of length 3.' )
             cut_coords = [cut_coords['xyz'.find(c)]
-                for c in sorted(self._cut_displayed)]
-            cut_coords = self._find_cut_coords(img, cut_coords,
-                                               self._cut_displayed)
+                          for c in sorted(cls._cut_displayed)]
+            cut_coords = cls._find_cut_coords(img, cut_coords,
+                                              cls._cut_displayed)
         return cut_coords
 
+    @staticmethod
     def _find_cut_coords(img, cut_coords, cut_displayed):
         """ Find slicing positions along a given axis.
 

@@ -6,6 +6,7 @@ import matplotlib as mpl
 from matplotlib import cm as mpl_cm
 
 from nilearn._utils.niimg_conversions import check_niimg_3d
+from nilearn._utils import fill_doc
 from nilearn import surface
 from nilearn import datasets
 from nilearn.plotting.html_document import HTMLDocument
@@ -125,6 +126,7 @@ def _fill_html_template(info, embed_js=True):
     return SurfaceView(as_html)
 
 
+@fill_doc
 def view_img_on_surf(stat_map_img, surf_mesh='fsaverage5',
                      threshold=None, cmap=cm.cold_hot,
                      black_bg=False, vmax=None, vmin=None, symmetric_cmap=True,
@@ -138,20 +140,21 @@ def view_img_on_surf(stat_map_img, surf_mesh='fsaverage5',
         See http://nilearn.github.io/manipulating_images/input_output.html
 
     surf_mesh : str or dict, optional.
-        if 'fsaverage5', use fsaverage5 mesh from nilearn.datasets
-        if 'fsaverage', use fsaverage mesh from nilearn.datasets
-        if a dictionary, it should have the same structure as those returned by
+        If a string, it should be one of the following values:
+        %(fsaverage_options)s
+        If a dictionary, it should have the same structure as those returned by
         nilearn.datasets.fetch_surf_fsaverage, i.e. keys should be 'infl_left',
         'pial_left', 'sulc_left', 'infl_right', 'pial_right', and 'sulc_right',
         containing inflated and pial meshes, and sulcal depth values for left
-        and right hemispheres. Default='fsaverage5'.
+        and right hemispheres.
+        Default='fsaverage5'.
 
     threshold : str, number or None, optional
         If None, no thresholding.
         If it is a number only values of amplitude greater
         than threshold will be shown.
         If it is a string it must finish with a percent sign,
-        e.g. "25.3%", and only values of amplitude above the
+        e.g. "25.3%%", and only values of amplitude above the
         given percentile will be shown.
 
     cmap : str or matplotlib colormap, optional

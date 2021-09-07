@@ -1,5 +1,5 @@
 """
-This module is for hemodynamic reponse function (hrf) specification.
+This module is for hemodynamic response function (hrf) specification.
 Here we provide for SPM, Glover hrfs and finite timpulse response (FIR) models.
 This module closely follows SPM implementation
 

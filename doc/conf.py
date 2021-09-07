@@ -55,6 +55,7 @@ extensions = [
               'sphinxcontrib.bibtex',
               'numpydoc',
               'sphinx.ext.linkcode',
+              'sphinx_copybutton'
               ]
 
 autosummary_generate = True
@@ -234,6 +235,8 @@ html_show_sourcelink = False
 # Output file base name for HTML help builder.
 htmlhelp_basename = 'PythonScientic'
 
+# Sphinx copybutton config
+copybutton_prompt_text = ">>> "
 
 # -- Options for LaTeX output ------------------------------------------------
 
@@ -304,13 +307,14 @@ _python_doc_base = 'https://docs.python.org/3.8'
 # Example configuration for intersphinx: refer to the Python standard library.
 intersphinx_mapping = {
     'python': (_python_doc_base, None),
-    'numpy': ('https://docs.scipy.org/doc/numpy', None),
-    'scipy': ('https://docs.scipy.org/doc/scipy/reference', None),
+    'numpy': ('https://numpy.org/doc/stable/', None),
+    'scipy': ('http://scipy.github.io/devdocs/', None),
     'matplotlib': ('https://matplotlib.org/', None),
     'sklearn': ('https://scikit-learn.org/stable/', None),
     'nibabel': ('https://nipy.org/nibabel', None),
     'pandas': ('https://pandas.pydata.org/pandas-docs/stable/', None),
     'nistats': ('https://nistats.github.io', None),
+    'joblib': ('https://joblib.readthedocs.io/en/latest/', None),
 }
 
 extlinks = {
@@ -349,12 +353,9 @@ def touch_example_backreferences(app, what, name, obj, options, lines):
         # touch file
         open(examples_path, 'w').close()
 
-# Add the 'copybutton' javascript, to hide/show the prompt in code
-# examples
 
 
 def setup(app):
-    app.add_js_file('copybutton.js')
     app.connect('autodoc-process-docstring', touch_example_backreferences)
 
 

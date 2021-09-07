@@ -84,13 +84,13 @@ def test_threshold_stats_img():
         None, None, threshold=3.0, height_control=None,
         cluster_threshold=0)
     assert threshold == 3.0
-    assert th_map == None  # noqa:E711
+    assert th_map == None  # noqa: E711
 
     th_map, threshold = threshold_stats_img(
         None, None, alpha=0.05, height_control='fpr',
         cluster_threshold=0)
     assert (threshold > 1.64)
-    assert th_map == None  # noqa:E711
+    assert th_map == None  # noqa: E711
 
     with pytest.raises(ValueError):
         threshold_stats_img(None, None, alpha=0.05, height_control='fdr')

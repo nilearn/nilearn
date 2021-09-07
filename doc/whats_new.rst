@@ -14,6 +14,14 @@ NEW
   MNI152 template.
 - :func:`nilearn.datasets.load_mni152_wm_mask` loads mask from the white-matter
   MNI152 template.
+- :func:`nilearn.image.binarize_img` binarizes images into 0 and 1.
+- :class:`nilearn.input_data.NiftiMasker`,
+  :class:`nilearn.input_data.MultiNiftiMasker`, and objects relying on such maskers
+  (:class:`nilearn.decoding.Decoder` or :class:`nilearn.decomposition.CanICA`
+  for example) can now use new options for the argument `mask_strategy`:
+  `whole-brain-template` for whole-brain template (same as previous option
+  `template`), `gm-template` for grey-matter template, and `wm-template`
+  for white-matter template.
 
 Fixes
 -----
@@ -26,6 +34,9 @@ Fixes
 - Fix colorbar of :func:`nilearn.plotting.view_img` which was not visible for some
   combinations of `black_bg` and `bg_img` parameters.
   (See issue `#2874 <https://github.com/nilearn/nilearn/issues/2874>`_).
+- Fix missing title with :func:`nilearn.plotting.plot_surf` and
+  deriving functions.
+  (See issue `#2941 <https://github.com/nilearn/nilearn/issues/2941>`_).
 
 Enhancements
 ------------
@@ -47,9 +58,19 @@ Enhancements
   whole-brain, 1mm-resolution, MNI152 T1 template instead of the averaged,
   whole-brain, 2mm-resolution MNI152 T1 template; it also accepts as input the
   grey-matter and white-matter ICBM152 1mm-resolution templates dated from 2009.
+- Common parts of docstrings across Nilearn can now be filled automatically using
+  the decorator `nilearn._utils.fill_doc`. This can be applied to common function
+  parameters or common lists of options for example. The standard parts are defined
+  in a single location (`nilearn._utils.docs.py`) which makes them easier to
+  maintain and update. (See `#2875 <https://github.com/nilearn/nilearn/pull/2875>`_)
+- The `data_dir` argument can now be either a `pathlib.Path` or a string. This
+  extension affects datasets and atlas fetchers.
 
 Changes
 -------
+
+- The version of the script `jquery.min.js` was bumped from 3.3.1 to 3.6.0 due
+  to potential vulnerability issues with versions < 3.5.0.
 
 .. _v0.8.0:
 
@@ -1492,7 +1513,7 @@ Bug fix
     - Fix plotting issues when non-finite values are present in background
       anatomical image.
 
-    - A workaround to handle non-native endianess in the Nifti images passed
+    - A workaround to handle non-native endianness in the Nifti images passed
       to resampling the image.
 
 Enhancements
@@ -1989,7 +2010,7 @@ Bug fixes
    - Fixed bug to control the behaviour when cut_coords=0. in function
      :func:`nilearn.plotting.plot_stat_map` in :mod:`nilearn.plotting`.
      See issue # 784.
-   - Fixed bug in :func:`nilearn.image.copy_img` occured while caching
+   - Fixed bug in :func:`nilearn.image.copy_img` occurred while caching
      the Nifti images. See issue # 793.
    - Fixed bug causing an IndexError in fast_abs_percentile. See issue # 875
 

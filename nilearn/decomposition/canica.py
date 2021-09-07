@@ -16,8 +16,10 @@ from joblib import Memory, delayed, Parallel
 from sklearn.utils import check_random_state
 
 from .multi_pca import MultiPCA
+from nilearn._utils import fill_doc
 
 
+@fill_doc
 class CanICA(MultiPCA):
     """Perform Canonical Independent Component Analysis [1]_ [2]_.
 
@@ -91,15 +93,15 @@ class CanICA(MultiPCA):
         This parameter is passed to signal.clean. Please see the related
         documentation for details
 
-    mask_strategy : {'epi', 'background', or 'template'}, optional
-        The strategy used to compute the mask: use 'background' if your
-        images present a clear homogeneous background, 'epi' if they
-        are raw EPI images, or you could use 'template' which will
-        extract the gray matter part of your data by resampling the MNI152
-        brain mask for your data's field of view.
-        Depending on this value, the mask will be computed from
-        masking.compute_background_mask, masking.compute_epi_mask or
-        masking.compute_brain_mask. Default='epi'.
+    %(mask_strategy)s
+
+        .. note::
+             Depending on this value, the mask will be computed from
+             :func:`nilearn.masking.compute_background_mask`,
+             :func:`nilearn.masking.compute_epi_mask`, or
+             :func:`nilearn.masking.compute_brain_mask`.
+
+        Default='epi'.
 
     mask_args : dict, optional
         If mask is None, these are additional parameters passed to
@@ -199,7 +201,7 @@ class CanICA(MultiPCA):
 
     def _unmix_components(self, components):
         """Core function of CanICA than rotate components_ to maximize
-        independance"""
+        independence"""
         random_state = check_random_state(self.random_state)
 
         seeds = random_state.randint(np.iinfo(np.int32).max, size=self.n_init)

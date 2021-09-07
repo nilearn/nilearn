@@ -16,7 +16,7 @@ from unittest.mock import MagicMock
 from tempfile import mkdtemp, mkstemp
 
 try:
-    import boto3  # noqa:F401
+    import boto3  # noqa: F401
 
 except ImportError:
     BOTO_INSTALLED = False
@@ -37,7 +37,8 @@ currdir = os.path.dirname(os.path.abspath(__file__))
 datadir = os.path.join(currdir, 'data')
 
 
-def test_get_dataset_dir(tmp_path):
+@pytest.mark.parametrize("should_cast_path_to_string", [False, True])
+def test_get_dataset_dir(should_cast_path_to_string, tmp_path):
     # testing folder creation under different environments, enforcing
     # a custom clean install
     os.environ.pop('NILEARN_DATA', None)
@@ -63,11 +64,13 @@ def test_get_dataset_dir(tmp_path):
     assert os.path.exists(data_dir)
     shutil.rmtree(data_dir)
 
-    expected_base_dir = str(tmp_path / 'env_data')
-    expected_dataset_dir = os.path.join(expected_base_dir, 'test')
+    expected_base_dir = tmp_path / 'env_data'
+    expected_dataset_dir = expected_base_dir / 'test'
+    if should_cast_path_to_string:
+        expected_dataset_dir = str(expected_dataset_dir)
     data_dir = datasets.utils._get_dataset_dir(
         'test', default_paths=[expected_dataset_dir], verbose=0)
-    assert data_dir == os.path.join(expected_base_dir, 'test')
+    assert data_dir == str(expected_dataset_dir)
     assert os.path.exists(data_dir)
     shutil.rmtree(data_dir)
 
@@ -281,7 +284,12 @@ def test_uncompress():
             shutil.rmtree(dtemp)
 
 
-def test_fetch_file_overwrite(tmp_path, request_mocker):
+@pytest.mark.parametrize("should_cast_path_to_string", [False, True])
+def test_fetch_file_overwrite(should_cast_path_to_string,
+                              tmp_path, request_mocker):
+    if should_cast_path_to_string:
+        tmp_path = str(tmp_path)
+
     # overwrite non-exiting file.
     fil = datasets.utils._fetch_file(url='http://foo/', data_dir=str(tmp_path),
                                      verbose=0, overwrite=True)
@@ -313,7 +321,12 @@ def test_fetch_file_overwrite(tmp_path, request_mocker):
         assert fp.read() == ''
 
 
-def test_fetch_files_use_session(tmp_path, request_mocker):
+@pytest.mark.parametrize("should_cast_path_to_string", [False, True])
+def test_fetch_files_use_session(should_cast_path_to_string,
+                                 tmp_path, request_mocker):
+    if should_cast_path_to_string:
+        tmp_path = str(tmp_path)
+
     # regression test for https://github.com/nilearn/nilearn/issues/2863
     session = MagicMock()
     datasets.utils._fetch_files(
@@ -327,7 +340,12 @@ def test_fetch_files_use_session(tmp_path, request_mocker):
     assert session.send.call_count == 2
 
 
-def test_fetch_files_overwrite(tmp_path, request_mocker):
+@pytest.mark.parametrize("should_cast_path_to_string", [False, True])
+def test_fetch_files_overwrite(should_cast_path_to_string,
+                               tmp_path, request_mocker):
+    if should_cast_path_to_string:
+        tmp_path = str(tmp_path)
+
     # overwrite non-exiting file.
     files = ('1.txt', 'http://foo/1.txt')
     fil = datasets.utils._fetch_files(data_dir=str(tmp_path), verbose=0,

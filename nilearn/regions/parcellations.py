@@ -13,6 +13,7 @@ from ..decomposition.multi_pca import MultiPCA
 from ..input_data import NiftiLabelsMasker
 from .._utils.niimg import _safe_get_data
 from .._utils.niimg_conversions import _iter_check_niimg
+from .._utils import fill_doc
 
 
 def _estimator_fit(data, estimator, method=None):
@@ -110,8 +111,10 @@ def _labels_masker_extraction(img, masker, confound):
     return signals
 
 
+@fill_doc
 class Parcellations(MultiPCA):
-    """Learn parcellations on fMRI images.
+    """Learn :term:`parcellations<parcellation>`
+    on :term:`fMRI` images.
 
     Five different types of clustering methods can be used:
     kmeans, ward, complete, average and rena.
@@ -125,21 +128,19 @@ class Parcellations(MultiPCA):
 
     Parameters
     ----------
-    method : str, {'kmeans', 'ward', 'complete', 'average', 'rena'}
+    method : :obj:`str`, {'kmeans', 'ward', 'complete', 'average', 'rena'}
         A method to choose between for brain parcellations.
         For a small number of parcels, kmeans is usually advisable.
         For a large number of parcellations (several hundreds, or thousands),
         ward and rena are the best options. Ward will give higher quality
         parcels, but with increased computation time. ReNA is most useful as a
         fast data-reduction step, typically dividing the signal size by ten.
+    %(n_parcels)s
+    %(random_state)s
+        Default=0.
 
-    n_parcels : int, optional
-        Number of parcellations to divide the brain data into. Default=50.
-
-    random_state : int or RandomState, optional
-        Pseudo number generator state used for random sampling. Default=0.
-
-    mask : Niimg-like object or NiftiMasker, MultiNiftiMasker instance, optional
+    mask : Niimg-like object or :class:`nilearn.input_data.NiftiMasker`,\
+ :class:`nilearn.input_data.MultiNiftiMasker`, optional
         Mask/Masker used for masking the data.
         If mask image if provided, it will be used in the MultiNiftiMasker.
         If an instance of MultiNiftiMasker is provided, then this instance
@@ -147,95 +148,89 @@ class Parcellations(MultiPCA):
         masker parameters.
         If None, mask will be automatically computed by a MultiNiftiMasker
         with default parameters.
-
-    smoothing_fwhm : float, optional
-        If smoothing_fwhm is not None, it gives the full-width half maximum in
-        millimeters of the spatial smoothing to apply to the signal.
+    %(smoothing_fwhm)s
         Default=4.0.
+    %(standardize_false)s
+    %(detrend)s
 
-    standardize : boolean, optional
-        If standardize is True, the time-series are centered and normed:
-        their mean is put to 0 and their variance to 1 in the time dimension.
+        .. note::
+            This parameter is passed to :func:`nilearn.signal.clean`.
+            Please see the related documentation for details.
+
         Default=False.
+    %(low_pass)s
 
-    detrend : boolean, optional
-        Whether to detrend signals or not.
-        This parameter is passed to signal.clean. Please see the related
-        documentation for details. Default=False.
+        .. note::
+            This parameter is passed to :func:`nilearn.signal.clean`.
+            Please see the related documentation for details.
 
-    low_pass : None or float, optional
-        This parameter is passed to signal.clean. Please see the related
-        documentation for details.
+    %(high_pass)s
 
-    high_pass : None or float, optional
-        This parameter is passed to signal.clean. Please see the related
-        documentation for details.
+        .. note::
+            This parameter is passed to :func:`nilearn.signal.clean`.
+            Please see the related documentation for details.
 
-    t_r : float, optional
-        This parameter is passed to signal.clean. Please see the related
-        documentation for details.
+    %(t_r)s
 
-    target_affine : 3x3 or 4x4 matrix, optional
-        This parameter is passed to image.resample_img. Please see the
-        related documentation for details. The given affine will be
-        considered as same for all given list of images.
+        .. note::
+            This parameter is passed to :func:`nilearn.signal.clean`.
+            Please see the related documentation for details.
 
-    target_shape : 3-tuple of integers, optional
-        This parameter is passed to image.resample_img. Please see the
-        related documentation for details.
+    %(target_affine)s
 
-    mask_strategy: {'epi', 'background', or 'template'}, optional
-        The strategy used to compute the mask: use 'background' if your
-        images present a clear homogeneous background, 'epi' if they
-        are raw EPI images, or you could use 'template' which will
-        extract the gray matter part of your data by resampling the MNI152
-        brain mask for your data's field of view.
-        Depending on this value, the mask will be computed from
-        masking.compute_background_mask, masking.compute_epi_mask or
-        masking.compute_brain_mask. Default='epi'.
+        .. note::
+            This parameter is passed to :func:`nilearn.image.resample_img`.
+            Please see the related documentation for details.
 
-    mask_args : dict, optional
+        .. note::
+            The given affine will be considered as same for all
+            given list of images.
+
+    %(target_shape)s
+
+        .. note::
+            This parameter is passed to :func:`nilearn.image.resample_img`.
+            Please see the related documentation for details.
+
+    %(mask_strategy)s
+
+        .. note::
+             Depending on this value, the mask will be computed from
+             :func:`nilearn.masking.compute_background_mask`,
+             :func:`nilearn.masking.compute_epi_mask`, or
+             :func:`nilearn.masking.compute_brain_mask`.
+
+        Default='epi'.
+
+    mask_args : :obj:`dict`, optional
         If mask is None, these are additional parameters passed to
         masking.compute_background_mask or masking.compute_epi_mask
         to fine-tune mask computation. Please see the related documentation
         for details.
 
-    scaling : bool, optional
+    scaling : :obj:`bool`, optional
         Used only when the method selected is 'rena'. If scaling is True, each
         cluster is scaled by the square root of its size, preserving the
         l2-norm of the image. Default=False.
 
-    n_iter : int, optional
+    n_iter : :obj:`int`, optional
         Used only when the method selected is 'rena'. Number of iterations of
         the recursive neighbor agglomeration. Default=10.
-
-    memory : instance of joblib.Memory or str, optional
-        Used to cache the masking process.
-        By default, no caching is done. If a string is given, it is the
-        path to the caching directory.
-
-    memory_level : integer, optional
-        Rough estimator of the amount of memory used by caching. Higher value
-        means more memory for caching. Default=0.
-
-    n_jobs : integer, optional
-        The number of CPUs to use to do the computation. -1 means
-        'all CPUs', -2 'all CPUs but one', and so on.
-        Default=1.
-
-    verbose : integer, optional
-        Indicate the level of verbosity. By default, nothing is printed.
-        Default=0.
+    %(memory)s
+    %(memory_level)s
+    %(n_jobs)s
+    %(verbose0)s
 
     Attributes
     ----------
-    `labels_img_` : Nifti1Image
+    `labels_img_` : :class:`nibabel.nifti1.Nifti1Image`
         Labels image to each parcellation learned on fmri images.
 
-    `masker_` : instance of NiftiMasker or MultiNiftiMasker
+    `masker_` : :class:`nilearn.input_data.NiftiMasker` or\
+ :class:`nilearn.input_data.MultiNiftiMasker`
         The masker used to mask the data.
 
-    `connectivity_` : numpy.ndarray
+    `connectivity_` : :class:`numpy.ndarray`
         Voxel-to-voxel connectivity matrix computed from a mask.
         Note that this attribute is only seen if selected methods are
         Agglomerative Clustering type, 'ward', 'complete', 'average'.
@@ -293,15 +288,15 @@ class Parcellations(MultiPCA):
 
         Parameters
         ----------
-        data : ndarray
+        data : :class:`numpy.ndarray`
             Shape (n_samples, n_features)
 
         Returns
         -------
-        labels : numpy.ndarray
+        labels : :class:`numpy.ndarray`
             Labels to each cluster in the brain.
 
-        connectivity : numpy.ndarray
+        connectivity : :class:`numpy.ndarray`
             Voxel-to-voxel connectivity matrix computed from a mask.
             Note that, this attribute is returned only for selected methods
             such as 'ward', 'complete', 'average'.
@@ -393,24 +388,29 @@ class Parcellations(MultiPCA):
             raise ValueError("Object has no labels_img_ attribute. "
                              "Ensure that fit() is called before transform.")
 
+    @fill_doc
     def transform(self, imgs, confounds=None):
-        """Extract signals from parcellations learned on fmri images.
+        """Extract signals from :term:`parcellations<parcellation>` learned
+        on :term:`fMRI` images.
 
         Parameters
         ----------
-        imgs : List of Nifti-like images
-            See http://nilearn.github.io/manipulating_images/input_output.html.
+        %(imgs)s
             Images to process.
 
-        confounds : List of CSV files, arrays-like or pandas DataFrame, optional
+        confounds : :obj:`list` of CSV files, arrays-like,\
+ or :class:`pandas.DataFrame`, optional
             Each file or numpy array in a list should have shape
             (number of scans, number of confounds)
-            This parameter is passed to signal.clean. Please see the related
-            documentation for details. Must be of same length of imgs.
+            Must be of same length as imgs.
+
+            .. note::
+                This parameter is passed to :func:`nilearn.signal.clean`.
+                Please see the related documentation for details.
 
         Returns
         -------
-        region_signals : List of or 2D numpy.ndarray
+        region_signals : :obj:`list` of or 2D :class:`numpy.ndarray`
             Signals extracted for each label for each image.
             Example, for single image shape will be
             (number of scans, number of labels)
@@ -446,27 +446,34 @@ class Parcellations(MultiPCA):
         else:
             return region_signals
 
+    @fill_doc
     def fit_transform(self, imgs, confounds=None):
-        """Fit the images to parcellations and then transform them.
+        """Fit the images to :term:`parcellations<parcellation>` and
+        then transform them.
 
         Parameters
         ----------
-        imgs : List of Nifti-like images
-            See http://nilearn.github.io/manipulating_images/input_output.html.
+        %(imgs)s
             Images for process for fit as well for transform to signals.
 
-        confounds : List of CSV files, arrays-like or pandas DataFrame, optional
+        confounds : :obj:`list` of CSV files, arrays-like or\
+ :class:`pandas.DataFrame`, optional
             Each file or numpy array in a list should have shape
             (number of scans, number of confounds).
-            This parameter is passed to signal.clean. Given confounds
-            should have same length as images if given as a list.
+            Given confounds should have same length as images if
+            given as a list.
 
-            Note: same confounds will used for cleaning signals before
-            learning parcellations.
+            .. note::
+                This parameter is passed to :func:`nilearn.signal.clean`.
+                Please see the related documentation for details.
+
+            .. note::
+                Confounds will be used for cleaning signals before
+                learning parcellations.
 
         Returns
         -------
-        region_signals : List of or 2D numpy.ndarray
+        region_signals : :obj:`list` of or 2D :class:`numpy.ndarray`
             Signals extracted for each label for each image.
             Example, for single image shape will be
             (number of scans, number of labels)
@@ -474,20 +481,21 @@ class Parcellations(MultiPCA):
         """
         return self.fit(imgs, confounds=confounds).transform(imgs, confounds)
 
+    @fill_doc
     def inverse_transform(self, signals):
-        """Transform signals extracted from parcellations back to brain
-        images.
+        """Transform signals extracted from :term:`parcellations<parcellation>`
+        back to brain images.
 
         Uses `labels_img_` (parcellations) built at fit() level.
 
         Parameters
         ----------
-        signals : List of 2D numpy.ndarray
+        signals : :obj:`list` of 2D :class:`numpy.ndarray`
             Each 2D array with shape (number of scans, number of regions).
 
         Returns
         -------
-        imgs : List of or Nifti-like image
+        %(imgs)s
             Brain image(s).
 
         """

@@ -190,7 +190,7 @@ def _detrend(signals, inplace=False, type="linear", n_batches=10):
     Notes
     -----
 
-    If a signal of lenght 1 is given, it is returned unchanged.
+    If a signal of length 1 is given, it is returned unchanged.
 
     """
     signals = as_float_array(signals, copy=not inplace)

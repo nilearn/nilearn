@@ -354,7 +354,7 @@ def test_sym_matrix_to_vec():
     syms = vec_to_sym_matrix(vecs)
     assert_array_almost_equal(sym_matrix_to_vec(syms), vecs)
 
-    # multiple matrices case when diagonal is given seperately
+    # multiple matrices case when diagonal is given separately
     diagonals = np.asarray([diagonal, 3. * diagonal, -diagonal])
     syms = vec_to_sym_matrix(vecs, diagonal=diagonals)
     assert_array_almost_equal(sym_matrix_to_vec(syms, discard_diagonal=True),
@@ -379,7 +379,7 @@ def test_vec_to_sym_matrix():
                     [1., 1., sqrt(2)]])
     assert_array_almost_equal(vec_to_sym_matrix(vec), sym)
 
-    # Check output value is correct with seperate diagonal
+    # Check output value is correct with separate diagonal
     vec = np.ones(3, )
     diagonal = np.ones(3)
     assert_array_almost_equal(vec_to_sym_matrix(vec, diagonal=diagonal), sym)

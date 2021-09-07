@@ -6,6 +6,7 @@ Transformer used to apply basic transformations on MRI data.
 
 import warnings
 from copy import copy as copy_object
+from functools import partial
 
 from joblib import Memory
 
@@ -13,7 +14,7 @@ from .base_masker import BaseMasker, filter_and_extract
 from .. import _utils
 from .. import image
 from .. import masking
-from .._utils import CacheMixin
+from .._utils import CacheMixin, fill_doc
 from .._utils.class_inspect import get_params
 from .._utils.helpers import remove_parameters, rename_parameters
 from .._utils.niimg import img_data_dtype
@@ -30,6 +31,32 @@ class _ExtractionFunctor(object):
     def __call__(self, imgs):
         return(masking.apply_mask(imgs, self.mask_img_,
                                   dtype=img_data_dtype(imgs)), imgs.affine)
+
+
+def _get_mask_strategy(strategy):
+    """Helper function returning the mask computing method based
+    on a provided strategy.
+    """
+    if strategy == 'background':
+        return masking.compute_background_mask
+    elif strategy == 'epi':
+        return masking.compute_epi_mask
+    elif strategy == 'whole-brain-template':
+        return partial(masking.compute_brain_mask, mask_type='whole-brain')
+    elif strategy == 'gm-template':
+        return partial(masking.compute_brain_mask, mask_type='gm')
+    elif strategy == 'wm-template':
+        return partial(masking.compute_brain_mask, mask_type='wm')
+    elif strategy == 'template':
+        warnings.warn("Masking strategy 'template' is deprecated."
+                      "Please use 'whole-brain-template' instead.")
+        return partial(masking.compute_brain_mask, mask_type='whole-brain')
+    else:
+        raise ValueError("Unknown value of mask_strategy '%s'. "
+                         "Acceptable values are 'background', "
+                         "'epi', 'whole-brain-template', "
+                         "'gm-template', and "
+                         "'wm-template'." % strategy)
 
 
 def filter_and_mask(imgs, mask_img_, parameters,
@@ -85,6 +112,7 @@ def filter_and_mask(imgs, mask_img_, parameters,
     return data
 
 
+@fill_doc
 class NiftiMasker(BaseMasker, CacheMixin):
     """Applying a mask to extract time-series from Niimg-like objects.
 
@@ -158,16 +186,15 @@ class NiftiMasker(BaseMasker, CacheMixin):
     target_shape : 3-tuple of integers, optional
         This parameter is passed to image.resample_img. Please see the
         related documentation for details.
+    %(mask_strategy)s
 
-    mask_strategy : {'background', 'epi' or 'template'}, optional
-        The strategy used to compute the mask: use 'background' if your
-        images present a clear homogeneous background, 'epi' if they
-        are raw EPI images, or you could use 'template' which will
-        extract the gray matter part of your data by resampling the MNI152
-        brain mask for your data's field of view.
-        Depending on this value, the mask will be computed from
-        masking.compute_background_mask, masking.compute_epi_mask or
-        masking.compute_brain_mask. Default='background'.
+            .. note::
+                Depending on this value, the mask will be computed from
+                :func:`nilearn.masking.compute_background_mask`,
+                :func:`nilearn.masking.compute_epi_mask`, or
+                :func:`nilearn.masking.compute_brain_mask`.
+
+        Default is 'background'.
 
     mask_args : dict, optional
         If mask is None, these are additional parameters passed to
@@ -301,6 +328,7 @@ class NiftiMasker(BaseMasker, CacheMixin):
         """
         try:
             from nilearn import plotting
+            import matplotlib.pyplot as plt
         except ImportError:
             with warnings.catch_warnings():
                 mpl_unavail_msg = ('Matplotlib is not imported! '
@@ -335,6 +363,7 @@ class NiftiMasker(BaseMasker, CacheMixin):
         init_display = plotting.plot_img(img,
                                          black_bg=False,
                                          cmap='CMRmap_r')
+        plt.close()
         if mask is not None:
             init_display.add_contours(mask, levels=[.5], colors='g',
                                       linewidths=2.5)
@@ -358,6 +387,7 @@ class NiftiMasker(BaseMasker, CacheMixin):
             final_display = plotting.plot_img(resampl_img,
                                               black_bg=False,
                                               cmap='CMRmap_r')
+            plt.close()
             final_display.add_contours(resampl_mask, levels=[.5],
                                        colors='g', linewidths=2.5)
 
@@ -392,16 +422,7 @@ class NiftiMasker(BaseMasker, CacheMixin):
         if self.mask_img is None:
             mask_args = (self.mask_args if self.mask_args is not None
                          else {})
-            if self.mask_strategy == 'background':
-                compute_mask = masking.compute_background_mask
-            elif self.mask_strategy == 'epi':
-                compute_mask = masking.compute_epi_mask
-            elif self.mask_strategy == 'template':
-                compute_mask = masking.compute_brain_mask
-            else:
-                raise ValueError("Unknown value of mask_strategy '%s'. "
-                                 "Acceptable values are 'background', "
-                                 "'epi' and 'template'." % self.mask_strategy)
+            compute_mask = _get_mask_strategy(self.mask_strategy)
             if self.verbose > 0:
                 print("[%s.fit] Computing the mask" % self.__class__.__name__)
             self.mask_img_ = self._cache(compute_mask, ignore=['verbose'])(

@@ -24,12 +24,13 @@ from sklearn.exceptions import ConvergenceWarning
 from .. import masking
 from ..image.resampling import coord_transform
 from ..input_data.nifti_spheres_masker import _apply_mask_and_get_affinity
-from .._utils import check_niimg_4d
+from .._utils import check_niimg_4d, fill_doc
 from sklearn.model_selection import cross_val_score
 
 ESTIMATOR_CATALOG = dict(svc=svm.LinearSVC, svr=svm.SVR)
 
 
+@fill_doc
 def search_light(X, y, estimator, A, groups=None, scoring=None,
                  cv=None, n_jobs=-1, verbose=0):
     """Function for computing a search_light
@@ -51,7 +52,9 @@ def search_light(X, y, estimator, A, groups=None, scoring=None,
 
     groups : array-like, optional
         group label for each sample for cross validation. default None
-        NOTE: will have no effect for scikit learn < 0.18
+
+        .. note::
+            This will have no effect for scikit learn < 0.18
 
     scoring : string or callable, optional
         The scoring strategy to use. See the scikit-learn documentation
@@ -64,13 +67,8 @@ def search_light(X, y, estimator, A, groups=None, scoring=None,
         A cross-validation generator. If None, a 3-fold cross
         validation is used or 3-fold stratified cross-validation
         when y is supplied.
-
-    n_jobs : int, optional
-        The number of CPUs to use to do the computation. -1 means
-        'all CPUs'.
-
-    verbose : int, optional
-        The verbosity level. Defaut is 0
+    %(n_jobs_all)s
+    %(verbose0)s
 
     Returns
     -------
@@ -89,6 +87,7 @@ def search_light(X, y, estimator, A, groups=None, scoring=None,
     return np.concatenate(scores)
 
 
+@fill_doc
 class GroupIterator(object):
     """Group iterator
 
@@ -99,10 +98,8 @@ class GroupIterator(object):
     ----------
     n_features : int
         Total number of features
+    %(n_jobs)s
 
-    n_jobs : int, optional
-        The number of CPUs to use to do the computation. -1 means
-        'all CPUs'. Defaut is 1
     """
     def __init__(self, n_features, n_jobs=1):
         self.n_features = n_features
@@ -195,6 +192,7 @@ def _group_iter_search_light(list_rows, estimator, X, y, groups,
 ##############################################################################
 # Class for search_light #####################################################
 ##############################################################################
+@fill_doc
 class SearchLight(BaseEstimator):
     """Implement search_light analysis using an arbitrary type of classifier.
 
@@ -214,11 +212,7 @@ class SearchLight(BaseEstimator):
 
     estimator : 'svr', 'svc', or an estimator object implementing 'fit'
         The object to use to fit the data
-
-    n_jobs : int, optional. Default is -1.
-        The number of CPUs to use to do the computation. -1 means
-        'all CPUs'.
-
+    %(n_jobs)s
     scoring : string or callable, optional
         The scoring strategy to use. See the scikit-learn documentation
         If callable, takes as arguments the fitted estimator, the
@@ -229,9 +223,7 @@ class SearchLight(BaseEstimator):
         A cross-validation generator. If None, a 3-fold cross
         validation is used or 3-fold stratified cross-validation
         when y is supplied.
-
-    verbose : int, optional
-        Verbosity level. Defaut is False
+    %(verbose0)s
 
     Notes
     ------

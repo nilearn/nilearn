@@ -161,29 +161,42 @@ def test_shelving():
         shutil.rmtree(cachedir, ignore_errors=True)
 
 
-def test_compute_multi_gray_matter_mask():
+def _get_random_imgs(shape, length):
     rng = np.random.RandomState(42)
+    return [Nifti1Image(rng.uniform(size=shape), np.eye(4))] * length
 
-    # Check mask is correctly is correctly calculated
-    imgs = [Nifti1Image(rng.uniform(size=(9, 9, 5)), np.eye(4)),
-            Nifti1Image(rng.uniform(size=(9, 9, 5)), np.eye(4))]
 
-    masker = MultiNiftiMasker(mask_strategy='template',
+def test_mask_strategy_errors():
+    # Error with unknown mask_strategy
+    imgs = _get_random_imgs((9, 9, 5), 2)
+    mask = MultiNiftiMasker(mask_strategy='foo')
+    with pytest.raises(ValueError,
+                       match="Unknown value of mask_strategy 'foo'"):
+        mask.fit(imgs)
+    # Warning with deprecated 'template' strategy
+    mask = MultiNiftiMasker(mask_strategy='template')
+    with pytest.warns(UserWarning,
+                      match="Masking strategy 'template' is deprecated."):
+        mask.fit(imgs)
+
+
+@pytest.mark.parametrize('strategy',
+                         [f'{p}-template' for p in
+                          ['whole-brain', 'gm', 'wm']])
+def test_compute_multi_gray_matter_mask(strategy):
+    imgs = _get_random_imgs((9, 9, 5), 2)
+    masker = MultiNiftiMasker(mask_strategy=strategy,
                               mask_args={'opening': 1})
     masker.fit(imgs)
-
     # Check that the order of the images does not change the output
-    masker2 = MultiNiftiMasker(mask_strategy='template',
+    masker2 = MultiNiftiMasker(mask_strategy=strategy,
                                mask_args={'opening': 1})
     masker2.fit(imgs[::-1])
-
-    mask = masker.mask_img_
-    mask2 = masker2.mask_img_
-
     mask_ref = np.zeros((9, 9, 5), dtype='int8')
-
-    np.testing.assert_array_equal(get_data(mask), mask_ref)
-    np.testing.assert_array_equal(get_data(mask2), mask_ref)
+    np.testing.assert_array_equal(get_data(masker.mask_img_),
+                                  mask_ref)
+    np.testing.assert_array_equal(get_data(masker2.mask_img_),
+                                  mask_ref)
 
 
 def test_dtype():

@@ -118,10 +118,10 @@ def test_z_score_opposite_contrast():
         c1 = np.array([1] + [0] * (design_matrix.shape[1] - 1))
         c2 = np.array([0] + [1] + [0] * (design_matrix.shape[1] - 2))
         contrasts = {'seed1 - seed2': c1 - c2, 'seed2 - seed1': c2 - c1}
-        fmri_glm = FirstLevelModel(t_r=2., 
-                                   noise_model='ar1', 
-                                   standardize=False, 
-                                   hrf_model='spm', 
+        fmri_glm = FirstLevelModel(t_r=2.,
+                                   noise_model='ar1',
+                                   standardize=False,
+                                   hrf_model='spm',
                                    drift_model='cosine')
         fmri_glm.fit(fmri, design_matrices=design_matrix)
         z_map_seed1_vs_seed2 = fmri_glm.compute_contrast(
@@ -222,7 +222,7 @@ def test_img_table_checks():
     with pytest.raises(ValueError):
         _check_and_load_tables(['.csv', '.csv'], "")
     with pytest.raises(TypeError):
-        _check_and_load_tables([[], pd.DataFrame()], "") # np.array([0]), 
+        _check_and_load_tables([[], pd.DataFrame()], "")  # np.array([0]),
     with pytest.raises(ValueError):
         _check_and_load_tables(['.csv', pd.DataFrame()], "")
     # check high level wrapper keeps behavior
@@ -271,18 +271,20 @@ def test_get_bids_files():
         assert len(selection) == 1
         # 80 counfonds (4 runs per ses & sub), testing `fmriprep` >= 20.2 path
         selection = get_bids_files(os.path.join(bids_path, 'derivatives'),
-                file_tag='desc-confounds_timeseries')
+                                   file_tag='desc-confounds_timeseries')
         assert len(selection) == 80
 
     with InTemporaryDirectory():
         bids_path = create_fake_bids_dataset(n_sub=10, n_ses=2,
                                              tasks=['localizer', 'main'],
                                              n_runs=[1, 3],
-                                             confounds_tag="desc-confounds_regressors")
+                                             confounds_tag="desc-confounds_"
+                                                           "regressors")
         # 80 counfonds (4 runs per ses & sub), testing `fmriprep` >= 20.2 path
         selection = get_bids_files(os.path.join(bids_path, 'derivatives'),
-                file_tag='desc-confounds_regressors')
+                                   file_tag='desc-confounds_regressors')
         assert len(selection) == 80
+
 
 def test_parse_bids_filename():
     fields = ['sub', 'ses', 'task', 'lolo']

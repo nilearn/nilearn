@@ -144,7 +144,7 @@ def run_glm(Y, X, noise_model='ar1', bins=100, n_jobs=1, verbose=0):
 
     """
     acceptable_noise_models = ['ols', 'arN']
-    if ((noise_model[:2] != 'ar') and (noise_model is not 'ols')):
+    if ((noise_model[:2] != 'ar') and (noise_model != 'ols')):
         raise ValueError(
             "Acceptable noise models are {0}. You provided "
             "'noise_model={1}'".format(acceptable_noise_models,
@@ -179,8 +179,7 @@ def run_glm(Y, X, noise_model='ar1', bins=100, n_jobs=1, verbose=0):
         # Either bin the AR1 coefs or cluster ARN coefs
         if ar_order == 1:
             for idx in range(len(ar_coef_)):
-                ar_coef_[idx] = (ar_coef_[idx] * bins).astype(int) \
-                                * 1. / bins
+                ar_coef_[idx] = (ar_coef_[idx] * bins).astype(int) * 1. / bins
             labels = np.array([str(val) for val in ar_coef_])
         else:  # AR(N>1) case
             n_clusters = np.min([bins, Y.shape[1]])
@@ -235,8 +234,9 @@ class FirstLevelModel(BaseGLM):
         expressed as a percentage of the t_r (time repetition), so it can have
         values between 0. and 1. Default=0.
 
-    hrf_model : {'glover', 'spm', 'spm + derivative', 'spm + derivative + dispersion',
-        'glover + derivative', 'glover + derivative + dispersion', 'fir', None}, optional
+    hrf_model : {'glover', 'spm', 'spm + derivative', \
+            'spm + derivative + dispersion', 'glover + derivative', \
+            'glover + derivative + dispersion', 'fir', None}, optional
         String that specifies the hemodynamic response function.
         Default='glover'.
 
@@ -408,7 +408,8 @@ class FirstLevelModel(BaseGLM):
             Data on which the GLM will be fitted. If this is a list,
             the affine is considered the same for all.
 
-        events : pandas Dataframe or string or list of pandas DataFrames or strings, optional
+        events : pandas Dataframe or string or list of pandas DataFrames \
+                 or strings, optional
             fMRI events used to build design matrices. One events object
             expected per run_img. Ignored in case designs is not None.
             If string, then a path to a csv file is expected.
@@ -421,7 +422,8 @@ class FirstLevelModel(BaseGLM):
             respective run_img. Ignored in case designs is not None.
             If string, then a path to a csv file is expected.
 
-        design_matrices : pandas DataFrame or list of pandas DataFrames, optional
+        design_matrices : pandas DataFrame or \
+                          list of pandas DataFrames, optional
             Design matrices that will be used to fit the GLM. If given it
             takes precedence over events and confounds.
 
@@ -437,8 +439,12 @@ class FirstLevelModel(BaseGLM):
         self.masker_ = None
 
         # Raise a warning if both design_matrices and confounds are provided
-        if design_matrices is not None and (confounds is not None or events is not None):
-            warn('If design matrices are supplied, confounds and events will be ignored.')
+        if design_matrices is not None and \
+                (confounds is not None or events is not None):
+            warn(
+                'If design matrices are supplied, '
+                'confounds and events will be ignored.'
+            )
         # Local import to prevent circular imports
         from nilearn.input_data import NiftiMasker  # noqa
 
@@ -621,12 +627,12 @@ class FirstLevelModel(BaseGLM):
             with operators +-`*`/.
 
         stat_type : {'t', 'F'}, optional
-            type of the contrast
+            Type of the contrast.
 
         output_type : str, optional
             Type of the output map. Can be 'z_score', 'stat', 'p_value',
             'effect_size', 'effect_variance' or 'all'.
-            Default='z-score'.
+            Default='z_score'.
 
         Returns
         -------
@@ -652,7 +658,7 @@ class FirstLevelModel(BaseGLM):
             warn('One contrast given, assuming it for all %d runs' % n_runs)
             con_vals = con_vals * n_runs
         elif n_contrasts != n_runs:
-            raise ValueError('%n contrasts given, while there are %n runs' %
+            raise ValueError('%d contrasts given, while there are %d runs' %
                              (n_contrasts, n_runs))
 
         # Translate formulas to vectors
@@ -913,7 +919,7 @@ def first_level_from_bids(dataset_path, task_label, space_label=None,
         img_specs = get_bids_files(derivatives_path, modality_folder='func',
                                    file_tag='bold', file_type='json',
                                    filters=filters)
-        # If we dont find the parameter information in the derivatives folder
+        # If we don't find the parameter information in the derivatives folder
         # we try to search in the raw data folder
         if not img_specs:
             img_specs = get_bids_files(dataset_path, modality_folder='func',

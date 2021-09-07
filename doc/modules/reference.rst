@@ -180,6 +180,7 @@ the :ref:`user guide <user_guide>` for more information and usage examples.
    :toctree: generated/
    :template: function.rst
 
+   binarize_img
    clean_img
    concat_imgs
    coord_transform

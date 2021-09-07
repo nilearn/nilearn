@@ -11,7 +11,7 @@ from matplotlib import gridspec
 from matplotlib.colorbar import make_axes
 from matplotlib.cm import ScalarMappable, get_cmap
 from matplotlib.colors import Normalize, LinearSegmentedColormap
-from mpl_toolkits.mplot3d import Axes3D
+from mpl_toolkits.mplot3d import Axes3D  # noqa
 from nilearn import image
 from nilearn.plotting.img_plotting import (_get_colorbar_and_data_ranges,
                                            _crop_colorbar)
@@ -19,7 +19,7 @@ from nilearn.surface import (load_surf_data,
                              load_surf_mesh,
                              vol_to_surf)
 from nilearn.surface.surface import _check_mesh
-from nilearn._utils import check_niimg_3d
+from nilearn._utils import check_niimg_3d, fill_doc
 
 from matplotlib.colors import to_rgba
 from matplotlib.patches import Patch
@@ -29,6 +29,7 @@ VALID_VIEWS = "anterior", "posterior", "medial", "lateral", "dorsal", "ventral"
 VALID_HEMISPHERES = "left", "right"
 
 
+@fill_doc
 def plot_surf(surf_mesh, surf_map=None, bg_map=None,
               hemi='left', view='lateral', cmap=None, colorbar=False,
               avg_method='mean', threshold=None, alpha='auto',
@@ -60,34 +61,13 @@ def plot_surf(surf_mesh, surf_map=None, bg_map=None,
         Background image to be plotted on the mesh underneath the
         surf_data in greyscale, most likely a sulcal depth map for
         realistic shading.
-
-    hemi : {'left', 'right'}, optional
-        Hemisphere to display. Default='left'.
-
-    view : {'lateral', 'medial', 'dorsal', 'ventral', 'anterior', 'posterior'}, optional
-        View of the surface that is rendered. Default='lateral'.
-
-    cmap : matplotlib colormap, str or colormap object, optional
-        To use for plotting of the stat_map. Either a string
-        which is a name of a matplotlib colormap, or a matplotlib
-        colormap object. If None, matplotlib default will be chosen.
-
-    colorbar : bool, optional
-        If True, a colorbar of surf_map is displayed. Default=False.
-
-    avg_method : {'mean', 'median', 'min', 'max', custom function}, optional
-        How to average vertex values to derive the face value,
-        mean results in smooth, median in sharp boundaries,
-        min or max for sparse matrices.
-        You can also pass a custom function which will be
-        executed though `numpy.apply_along_axis`.
-        Here is an example of a custom function:
-
-        .. code-block:: python
-
-            def custom_function(vertices):
-                return vertices[0] * vertices[1] * vertices[2]
-
+    %(hemi)s
+    %(view)s
+    %(cmap)s
+        If None, matplotlib default will be chosen.
+    %(colorbar)s
+        Default=False.
+    %(avg_method)s
         Default='mean'.
 
     threshold : a number or None, default is None.
@@ -100,52 +80,26 @@ def plot_surf(surf_mesh, surf_map=None, bg_map=None,
         If 'auto' is chosen, alpha will default to .5 when no bg_map
         is passed and to 1 if a bg_map is passed.
         Default='auto'.
-
-    bg_on_data : bool, optional
-        If True, and a bg_map is specified, the surf_data data is multiplied
-        by the background image, so that e.g. sulcal depth is visible beneath
-        the surf_data.
-        NOTE: that this non-uniformly changes the surf_data values according
-        to e.g the sulcal depth.
+    %(bg_on_data)s
         Default=False.
-
-    darkness : float between 0 and 1, optional
-        Specifying the darkness of the background image.
-        1 indicates that the original values of the background are used.
-        .5 indicates the background values are reduced by half before being
-        applied. Default=1.
-
-    vmin, vmax : float, float, optional
-        Lower / upper bound to plot surf_data values.
-        If None, the values will be set to min/max of the data.
-        Default values are None.
-
+    %(darkness)s
+        Default=1.
+    %(vmin)s
+    %(vmax)s
     cbar_vmin, cbar_vmax : float, float, optional
         Lower / upper bounds for the colorbar.
         If None, the values will be set from the data.
         Default values are None.
-
-    cbar_tick_format : str, optional
-        Controls how to format the tick labels of the colorbar.
-        Ex: use "%i" to display as integers.
-        Default='%.2g' for scientific notation.
-
-    title : str, optional
-        Figure title.
-
-    output_file : str, or None, optional
-        The name of an image file to export plot to. Valid extensions
-        are .png, .pdf, .svg. If output_file is not None, the plot
-        is saved to a file, and the display is closed.
-
+    %(cbar_tick_format)s
+        Default='%%.2g' for scientific notation.
+    %(title)s
+    %(output_file)s
     axes : instance of matplotlib axes, None, optional
         The axes instance to plot to. The projection must be '3d' (e.g.,
         `figure, axes = plt.subplots(subplot_kw={'projection': '3d'})`,
         where axes should be passed.).
         If None, a new axes is created.
-
-    figure : instance of matplotlib figure, None, optional
-        The figure instance to plot to. If None, a new figure is created.
+    %(figure)s
 
     See Also
     --------
@@ -357,7 +311,6 @@ def plot_surf(surf_mesh, surf_map=None, bg_map=None,
             # in this case, we reduce the number of ticks
             if cbar_tick_format == "%i" and vmax - vmin < nb_ticks:
                 ticks = np.arange(vmin, vmax + 1)
-                nb_ticks = len(ticks)
             else:
                 ticks = np.linspace(vmin, vmax, nb_ticks)
             bounds = np.linspace(vmin, vmax, our_cmap.N)
@@ -385,7 +338,7 @@ def plot_surf(surf_mesh, surf_map=None, bg_map=None,
         p3dcollec.set_facecolors(face_colors)
 
     if title is not None:
-        axes.set_title(title, position=(.5, .95))
+        plt.suptitle(title, x=.5, y=.95)
 
     # save figure if output file is given
     if output_file is not None:
@@ -422,6 +375,7 @@ def _get_faces_on_edge(faces, parc_idx):
     return np.logical_and(faces_outside_edge > 0, verts_per_face < 3)
 
 
+@fill_doc
 def plot_surf_contours(surf_mesh, roi_map, axes=None, figure=None, levels=None,
                        labels=None, colors=None, legend=False, cmap='tab20',
                        title=None, output_file=None, **kwargs):
@@ -450,11 +404,7 @@ def plot_surf_contours(surf_mesh, roi_map, axes=None, figure=None, levels=None,
         `figure, axes = plt.subplots(subplot_kw={'projection': '3d'})`,
         where axes should be passed.).
         If None, uses axes from figure if available, else creates new axes.
-
-    figure : instance of matplotlib figure, None, optional
-        The figure instance to plot to.
-        If None, uses figure of axes if available, else creates a new figure.
-
+    %(figure)s
     levels : list of integers, or None, optional
         A list of indices of the regions that are to be outlined.
         Every index needs to correspond to one index in roi_map.
@@ -470,19 +420,10 @@ def plot_surf_contours(surf_mesh, roi_map, axes=None, figure=None, levels=None,
 
     legend : boolean,  optional
         Whether to plot a legend of region's labels. Default=False.
-
-    cmap : matplotlib colormap, str or colormap object, optional
-        To use for plotting of the contours. Either a string
-        which is a name of a matplotlib colormap, or a matplotlib
-        colormap object. Default='tab20'.
-
-    title : str, optional
-        Figure title.
-
-    output_file : str, or None, optional
-        The name of an image file to export plot to. Valid extensions
-        are .png, .pdf, .svg. If output_file is not None, the plot
-        is saved to a file, and the display is closed.
+    %(cmap)s
+        Default='tab20'.
+    %(title)s
+    %(output_file)s
 
     See Also
     --------
@@ -546,10 +487,15 @@ def plot_surf_contours(surf_mesh, roi_map, axes=None, figure=None, levels=None,
         if label and legend:
             patch_list.append(Patch(color=color, label=label))
     # plot legend only if indicated and labels provided
+    pos_title_x = .5
     if legend and np.any([lbl is not None for lbl in labels]):
         figure.legend(handles=patch_list)
+        # if legends, then move title to the left
+        pos_title_x = .3
+    if title is None and hasattr(figure._suptitle, "_text"):
+        title = figure._suptitle._text
     if title:
-        figure.suptitle(title)
+        figure.suptitle(title, x=pos_title_x, y=.95)
     # save figure if output file is given
     if output_file is not None:
         figure.savefig(output_file)
@@ -558,6 +504,7 @@ def plot_surf_contours(surf_mesh, roi_map, axes=None, figure=None, levels=None,
         return figure
 
 
+@fill_doc
 def plot_surf_stat_map(surf_mesh, stat_map, bg_map=None,
                        hemi='left', view='lateral', threshold=None,
                        alpha='auto', vmax=None, cmap='cold_hot',
@@ -590,26 +537,19 @@ def plot_surf_stat_map(surf_mesh, stat_map, bg_map=None,
         Background image to be plotted on the mesh underneath the
         stat_map in greyscale, most likely a sulcal depth map for
         realistic shading.
-
-    hemi : {'left', 'right'}, optional
-        Hemispere to display. Default='left'.
-
-    view : {'lateral', 'medial', 'dorsal', 'ventral', 'anterior', 'posterior'}, optional
-        View of the surface that is rendered. Default='lateral'.
-
+    %(hemi)s
+    %(view)s
     threshold : a number or None, optional
         If None is given, the image is not thresholded.
         If a number is given, it is used to threshold the image,
         values below the threshold (in absolute value) are plotted
         as transparent.
+    %(cmap)s
+    %(colorbar)s
 
-    cmap : matplotlib colormap in str or colormap object, optional
-        To use for plotting of the stat_map. Either a string
-        which is a name of a matplotlib colormap, or a matplotlib
-        colormap object. Default='cold_hot'.
+        .. note::
+            This function uses a symmetric colorbar for the statistical map.
 
-    colorbar : bool, optional
-        If True, a symmetric colorbar of the statistical map is displayed.
         Default=True.
 
     alpha : float or 'auto', optional
@@ -617,47 +557,21 @@ def plot_surf_stat_map(surf_mesh, stat_map, bg_map=None,
         If 'auto' is chosen, alpha will default to .5 when no bg_map is
         passed and to 1 if a bg_map is passed.
         Default='auto'.
-
-    vmax : float, optional
-        Upper bound for plotting of stat_map values.
-
-    symmetric_cbar : bool or 'auto', optional
-        Specifies whether the colorbar should range from -vmax to vmax
-        or from vmin to vmax. Setting to 'auto' will select the latter
-        if the range of the whole image is either positive or negative.
-        Note: The colormap will always range from -vmax to vmax.
+    %(vmax)s
+    %(symmetric_cbar)s
         Default='auto'.
-
-    bg_on_data : bool, optional
-        If True, and a bg_map is specified, the stat_map data is multiplied
-        by the background image, so that e.g. sulcal depth is visible beneath
-        the stat_map.
-        NOTE: that this non-uniformly changes the stat_map values according
-        to e.g the sulcal depth.
+    %(bg_on_data)s
         Default=False.
-
-    darkness : float between 0 and 1, optional
-        Specifying the darkness of the background image. 1 indicates that the
-        original values of the background are used. .5 indicates the
-        background values are reduced by half before being applied.
+    %(darkness)s
         Default=1.
-
-    title : str, optional
-        Figure title.
-
-    output_file : str, optional
-        The name of an image file to export plot to. Valid extensions
-        are .png, .pdf, .svg. If output_file is not None, the plot
-        is saved to a file, and the display is closed.
-
+    %(title)s
+    %(output_file)s
     axes : instance of matplotlib axes, None, optional
         The axes instance to plot to. The projection must be '3d' (e.g.,
         `figure, axes = plt.subplots(subplot_kw={'projection': '3d'})`,
         where axes should be passed.).
         If None, a new axes is created.
-
-    figure : instance of matplotlib figure, None, optional
-        The figure instance to plot to. If None, a new figure is created.
+    %(figure)s
 
     See Also
     --------
@@ -766,6 +680,7 @@ def _colorbar_from_array(array, vmax, threshold, kwargs,
     return sm
 
 
+@fill_doc
 def plot_img_on_surf(stat_map, surf_mesh='fsaverage5', mask_img=None,
                      hemispheres=['left', 'right'],
                      inflate=False,
@@ -811,35 +726,19 @@ def plot_img_on_surf(stat_map, surf_mesh='fsaverage5', mask_img=None,
         display mode. Order is preserved, and left and right hemispheres
         are shown on the left and right sides of the figure.
         Default=['lateral', 'medial'].
+    %(hemispheres)s
+    %(output_file)s
+    %(title)s
+    %(colorbar)s
 
-    hemispheres : list of strings, optional
-        Hemispheres to display. Default=['left', 'right'].
+        .. note::
+            This function uses a symmetric colorbar for the statistical map.
 
-    output_file : str, optional
-        The name of an image file to export plot to. Valid extensions
-        are: *.png*, *.pdf*, *.svg*. If output_file is not None,
-        the plot is saved to a file, and the display is closed. Return
-        value is None.
-
-    title : str, optional
-        Place a title on the upper center of the figure.
-
-    colorbar : bool, optional
-        If *True*, a symmetric colorbar of the statistical map is displayed.
         Default=True.
-
-    vmax : float, optional
-        Upper bound for plotting of stat_map values.
-
-    threshold : float, optional
-        If None is given, the image is not thresholded.
-        If a number is given, it is used to threshold the image,
-        values below the threshold (in absolute value) are plotted
-        as transparent.
-
-    cmap : str, optional
-        The name of a matplotlib or nilearn colormap. Default='cold_hot'.
-
+    %(vmax)s
+    %(threshold)s
+    %(cmap)s
+        Default='cold_hot'.
     kwargs : dict, optional
         keyword arguments passed to plot_surf_stat_map.
 
@@ -925,6 +824,7 @@ def plot_img_on_surf(stat_map, surf_mesh='fsaverage5', mask_img=None,
         return fig, axes
 
 
+@fill_doc
 def plot_surf_roi(surf_mesh, roi_map, bg_map=None,
                   hemi='left', view='lateral', threshold=1e-14,
                   alpha='auto', vmin=None, vmax=None, cmap='gist_ncar',
@@ -952,67 +852,36 @@ def plot_surf_roi(surf_mesh, roi_map, bg_map=None,
         a Numpy array with a value for each vertex of the surf_mesh.
         The value at each vertex one inside the ROI and zero inside ROI, or an
         integer giving the label number for atlases.
-
-    hemi : {'left', 'right'}, optional
-        Hemisphere to display. Default='left'.
-
+    %(hemi)s
     bg_map : Surface data object (to be defined), optional
         Background image to be plotted on the mesh underneath the
         stat_map in greyscale, most likely a sulcal depth map for
         realistic shading.
-
-    view : {'lateral', 'medial', 'dorsal', 'ventral', 'anterior', 'posterior'}, optional
-        View of the surface that is rendered. Default='lateral'.
-
+    %(view)s
     threshold : a number or None, optional
         Threshold regions that are labelled 0.
         If you want to use 0 as a label, set threshold to None.
         Default=1e-14.
-
-    cmap : matplotlib colormap str or colormap object, optional
-        To use for plotting of the rois. Either a string which is a name
-        of a matplotlib colormap, or a matplotlib colormap object.
+    %(cmap)s
         Default='gist_ncar'.
-
-    cbar_tick_format : str, optional
-        Controls how to format the tick labels of the colorbar.
-        Ex: use "%.2g" to display using scientific notation.
-        Default='%i' for integers.
-
+    %(cbar_tick_format)s
+        Default='%%i' for integers.
     alpha : float or 'auto', optional
         Alpha level of the mesh (not the stat_map). If default,
         alpha will default to .5 when no bg_map is passed
         and to 1 if a bg_map is passed.
         Default='auto'.
-
-    bg_on_data : bool, optional
-        If True, and a bg_map is specified, the stat_map data is multiplied
-        by the background image, so that e.g. sulcal depth is visible beneath
-        the stat_map. Beware that this non-uniformly changes the stat_map
-        values according to e.g the sulcal depth.
+    %(bg_on_data)s
         Default=False.
-
-    darkness : float between 0 and 1, optional
-        Specifying the darkness of the background image. 1 indicates that the
-        original values of the background are used. .5 indicates the background
-        values are reduced by half before being applied.
+    %(darkness)s
         Default=1.
-
-    title : str, optional
-        Figure title.
-
-    output_file : str, or None, optional
-        The name of an image file to export plot to. Valid extensions
-        are .png, .pdf, .svg. If output_file is not None, the plot
-        is saved to a file, and the display is closed.
-
+    %(title)s
+    %(output_file)s
     axes : Axes instance or None, optional
         The axes instance to plot to. The projection must be '3d' (e.g.,
         `plt.subplots(subplot_kw={'projection': '3d'})`).
         If None, a new axes is created.
-
-    figure : Figure instance or None, optional
-        The figure to plot to. If None, a new figure is created.
+    %(figure)s
 
     See Also
     --------
