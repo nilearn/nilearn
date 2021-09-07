@@ -155,7 +155,7 @@ def _get_file_raw(nii_file):
     suffix = "_space-" + nii_file.split("space-")[1]
     # fmriprep has changed the file suffix between v20.1.1 and v20.2.0 with
     # respect to BEP 012.
-    # cf. https://neurostars.org/t/naming-change-confounds-regressors-to-confounds-timeseries/17637
+    # cf. https://neurostars.org/t/naming-change-confounds-regressors-to-confounds-timeseries/17637 # noqa
     # Check file with new naming scheme exists or replace,
     # for backward compatibility.
     confounds_raw_candidates = [

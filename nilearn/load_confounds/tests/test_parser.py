@@ -1,6 +1,5 @@
 import os
 import re
-import pandas as pd
 import numpy as np
 from scipy.stats import pearsonr
 from sklearn.preprocessing import scale
@@ -281,7 +280,8 @@ def test_motion():
             f"{param}_derivative1_power2" not in conf_power2.confounds_.columns
         )
 
-        # Use a 6 params + derivatives + power2 + power2d derivatives motion model
+        # Use a 6 params + derivatives + power2 + power2d derivatives motion
+        # model
         assert f"{param}" in conf_full.confounds_.columns
         assert f"{param}_derivative1" in conf_full.confounds_.columns
         assert f"{param}_power2" in conf_full.confounds_.columns
