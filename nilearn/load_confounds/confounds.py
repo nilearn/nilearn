@@ -19,7 +19,10 @@ img_file_patterns = {
 }
 
 img_file_error = {
-    "aroma": "Input must be ~desc-smoothAROMAnonaggr_bold for full ICA-AROMA strategy.",
+    "aroma": (
+        "Input must be ~desc-smoothAROMAnonaggr_bold for full ICA-AROMA"
+        " strategy."
+    ),
     "nii.gz": "Invalid file type for the selected method.",
     "dtseries.nii": "Invalid file type for the selected method.",
     "func.gii": "need fMRIprep output with extension func.gii",
@@ -28,10 +31,9 @@ img_file_error = {
 
 def _check_params(confounds_raw, params):
     """Check that specified parameters can be found in the confounds."""
-    not_found_params = []
-    for par in params:
-        if not par in confounds_raw.columns:
-            not_found_params.append(par)
+    not_found_params = [
+        par for par in params if par not in confounds_raw.columns
+    ]
     if not_found_params:
         raise MissingConfound(params=not_found_params)
     return None
@@ -97,7 +99,10 @@ def _pca_motion(confounds_motion, n_components):
     n_available = confounds_motion.shape[1]
     if n_components > n_available:
         raise ValueError(
-            f"User requested n_motion={n_components} motion components, but found only {n_available}."
+            (
+                f"User requested n_motion={n_components} motion components, "
+                f"but found only {n_available}."
+            )
         )
     confounds_motion = confounds_motion.dropna()
     confounds_motion_std = scale(
@@ -105,7 +110,9 @@ def _pca_motion(confounds_motion, n_components):
     )
     pca = PCA(n_components=n_components)
     motion_pca = pd.DataFrame(pca.fit_transform(confounds_motion_std))
-    motion_pca.columns = ["motion_pca_" + str(col + 1) for col in motion_pca.columns]
+    motion_pca.columns = [
+        "motion_pca_" + str(col + 1) for col in motion_pca.columns
+    ]
     return motion_pca
 
 
@@ -116,9 +123,12 @@ def _optimize_scrub(fd_outliers, n_scans):
     Power, Jonathan D., et al. "Methods to detect, characterize, and remove
     motion artifact in resting state fMRI." Neuroimage 84 (2014): 320-341.
     """
-    # Start by checking if the beginning continuous segment is fewer than 5 volumes
+    # Start by checking if the beginning continuous segment is fewer than
+    # 5 volumes
     if fd_outliers[0] < 5:
-        fd_outliers = np.asarray(list(range(fd_outliers[0])) + list(fd_outliers))
+        fd_outliers = np.asarray(
+            list(range(fd_outliers[0])) + list(fd_outliers)
+        )
     # Do the same for the ending segment of scans
     if n_scans - (fd_outliers[-1] + 1) < 5:
         fd_outliers = np.asarray(
@@ -131,7 +141,8 @@ def _optimize_scrub(fd_outliers, n_scans):
     )[0]
     for ind in short_segments_inds:
         fd_outliers = np.asarray(
-            list(fd_outliers) + list(range(fd_outliers[ind] + 1, fd_outliers[ind + 1]))
+            list(fd_outliers)
+            + list(range(fd_outliers[ind] + 1, fd_outliers[ind + 1]))
         )
     fd_outliers = np.sort(np.unique(fd_outliers))
     return fd_outliers
@@ -142,21 +153,19 @@ def _get_file_raw(nii_file):
     if isinstance(nii_file, list):  # catch gifti
         nii_file = nii_file[0]
     suffix = "_space-" + nii_file.split("space-")[1]
-    # fmriprep has changed the file suffix between v20.1.1 and v20.2.0 with respect to BEP 012.
+    # fmriprep has changed the file suffix between v20.1.1 and v20.2.0 with
+    # respect to BEP 012.
     # cf. https://neurostars.org/t/naming-change-confounds-regressors-to-confounds-timeseries/17637
-    # Check file with new naming scheme exists or replace, for backward compatibility.
+    # Check file with new naming scheme exists or replace,
+    # for backward compatibility.
     confounds_raw_candidates = [
-        nii_file.replace(
-            suffix,
-            "_desc-confounds_timeseries.tsv",
-        ),
-        nii_file.replace(
-            suffix,
-            "_desc-confounds_regressors.tsv",
-        ),
+        nii_file.replace(suffix, "_desc-confounds_timeseries.tsv"),
+        nii_file.replace(suffix, "_desc-confounds_regressors.tsv"),
     ]
 
-    confounds_raw = [cr for cr in confounds_raw_candidates if os.path.exists(cr)]
+    confounds_raw = [
+        cr for cr in confounds_raw_candidates if os.path.exists(cr)
+    ]
 
     if not confounds_raw:
         raise ValueError("Could not find associated confound file.")
@@ -176,7 +185,10 @@ def _get_json(confounds_raw, flag_acompcor):
     except OSError:
         if flag_acompcor:
             raise ValueError(
-                f"Could not find a json file {confounds_json}. This is necessary for anat compcor"
+                (
+                    f"Could not find a json file {confounds_json}."
+                    "This is necessary for anat compcor"
+                )
             )
     return confounds_json
 
@@ -212,7 +224,9 @@ def _confounds_to_df(image_file, flag_acompcor, flag_full_aroma):
     _check_images(image_file, flag_full_aroma)
     confounds_raw = _get_file_raw(image_file)
     confounds_json = _get_json(confounds_raw, flag_acompcor)
-    confounds_raw = pd.read_csv(confounds_raw, delimiter="\t", encoding="utf-8")
+    confounds_raw = pd.read_csv(
+        confounds_raw, delimiter="\t", encoding="utf-8"
+    )
     return confounds_raw, confounds_json
 
 
@@ -262,7 +276,7 @@ def _demean_confounds(confounds, sample_mask):
     """Demean the confounds. The mean is calculated on non-outlier values."""
     confound_cols = confounds.columns
     if sample_mask is None:
-        confounds= scale(confounds, axis=0, with_std=False)
+        confounds = scale(confounds, axis=0, with_std=False)
     else:  # calculate the mean without outliers.
         confounds_mean = confounds.iloc[sample_mask, :].mean(axis=0)
         confounds -= confounds_mean
@@ -281,5 +295,5 @@ class MissingConfound(Exception):
 
     def __init__(self, params=None, keywords=None):
         """Default values are empty lists."""
-        self.params = params if params else []
-        self.keywords = keywords if keywords else []
+        self.params = params or []
+        self.keywords = keywords or []

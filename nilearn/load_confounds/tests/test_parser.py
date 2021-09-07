@@ -20,7 +20,8 @@ file_no_none_steady = os.path.join(
 
 
 def _simu_img(demean=True):
-    """Simulate an nifti image based on confound file with some parts confounds and some parts noise."""
+    """Simulate an nifti image based on confound file with some parts confounds
+    and some parts noise."""
     # set the size of the image matrix
     nx = 5
     ny = 5
@@ -28,14 +29,16 @@ def _simu_img(demean=True):
     # as we will stack slices with confounds on top of slices with noise
     nz = 2
     # Load a simple 6 parameters motion models as confounds
-    confounds, _ = lc.Confounds(strategy=["motion"], motion="basic", demean=demean).load(
-        file_confounds
-    )
+    confounds, _ = lc.Confounds(
+        strategy=["motion"], motion="basic", demean=demean
+    ).load(file_confounds)
     X = confounds.values
-    # the first row is non-steady state, replace it with the imput from the second row
+    # the first row is non-steady state, replace it with the imput from the
+    # second row
     non_steady = X[0, :]
     X[0, :] = X[1, :]
-    # repeat X in length (axis = 0) three times to increase the degree of freedom
+    # repeat X in length (axis = 0) three times to increase
+    # the degree of freedom
     X = np.tile(X, (3, 1))
     # put non-steady state volume back at the first sample
     X[0, :] = non_steady
@@ -104,7 +107,9 @@ def _regression(confounds, sample_mask):
     confounds = np.tile(confounds, (3, 1))  # matching L29 (_simu_img)
 
     # Do the regression
-    masker = NiftiMasker(mask_img=mask_conf, standardize=True, sample_mask=sample_mask)
+    masker = NiftiMasker(
+        mask_img=mask_conf, standardize=True, sample_mask=sample_mask
+    )
     tseries_clean = masker.fit_transform(img, confounds)
     assert tseries_clean.shape[0] == confounds.shape[0]
 
@@ -113,7 +118,9 @@ def _regression(confounds, sample_mask):
 def test_nilearn_regress():
     """Try regressing out all motion types in nilearn."""
     # Regress full motion
-    confounds, _ = lc.Confounds(strategy=["motion"], motion="full").load(file_confounds)
+    confounds, _ = lc.Confounds(strategy=["motion"], motion="full").load(
+        file_confounds
+    )
     sample_mask = None  # not testing sample mask here
     _regression(confounds, sample_mask)
 
@@ -122,26 +129,32 @@ def test_nilearn_regress():
     _regression(confounds, sample_mask)
 
     # Regress wm_csf
-    confounds, _ = lc.Confounds(strategy=["wm_csf"], wm_csf="full").load(file_confounds)
-    _regression(confounds, sample_mask)
-    # Regress global
-    confounds, _ = lc.Confounds(strategy=["global"], global_signal="full").load(
+    confounds, _ = lc.Confounds(strategy=["wm_csf"], wm_csf="full").load(
         file_confounds
     )
+    _regression(confounds, sample_mask)
+    # Regress global
+    confounds, _ = lc.Confounds(
+        strategy=["global"], global_signal="full"
+    ).load(file_confounds)
     _regression(confounds, sample_mask)
 
     # Regress AnatCompCor
-    confounds, _ = lc.Confounds(strategy=["compcor"], compcor="anat").load(file_confounds)
+    confounds, _ = lc.Confounds(strategy=["compcor"], compcor="anat").load(
+        file_confounds
+    )
     _regression(confounds, sample_mask)
 
     # Regress TempCompCor
-    confounds, _ = lc.Confounds(strategy=["compcor"], compcor="temp").load(file_confounds)
+    confounds, _ = lc.Confounds(strategy=["compcor"], compcor="temp").load(
+        file_confounds
+    )
     _regression(confounds, sample_mask)
 
     # Regress ICA-AROMA
-    confounds, _ = lc.Confounds(strategy=["ica_aroma"], ica_aroma="basic").load(
-        file_confounds
-    )
+    confounds, _ = lc.Confounds(
+        strategy=["ica_aroma"], ica_aroma="basic"
+    ).load(file_confounds)
     _regression(confounds, sample_mask)
 
 
@@ -215,7 +228,8 @@ def test_confounds2df():
 
 
 def test_sanitize_strategy():
-    """Check that flawed strategy options generate meaningful error messages."""
+    """Check that flawed strategy options generate meaningful error
+    messages."""
     with pytest.raises(ValueError):
         lc.Confounds(strategy="string")
 
@@ -246,19 +260,26 @@ def test_motion():
         assert f"{param}" in conf_basic.confounds_.columns
         assert f"{param}_derivative1" not in conf_basic.confounds_.columns
         assert f"{param}_power2" not in conf_basic.confounds_.columns
-        assert f"{param}_derivative1_power2" not in conf_basic.confounds_.columns
+        assert (
+            f"{param}_derivative1_power2" not in conf_basic.confounds_.columns
+        )
 
         # Use a 6 params + derivatives motion model
         assert f"{param}" in conf_derivatives.confounds_.columns
         assert f"{param}_derivative1" in conf_derivatives.confounds_.columns
         assert f"{param}_power2" not in conf_derivatives.confounds_.columns
-        assert f"{param}_derivative1_power2" not in conf_derivatives.confounds_.columns
+        assert (
+            f"{param}_derivative1_power2"
+            not in conf_derivatives.confounds_.columns
+        )
 
         # Use a 6 params + power2 motion model
         assert f"{param}" in conf_power2.confounds_.columns
         assert f"{param}_derivative1" not in conf_power2.confounds_.columns
         assert f"{param}_power2" in conf_power2.confounds_.columns
-        assert f"{param}_derivative1_power2" not in conf_power2.confounds_.columns
+        assert (
+            f"{param}_derivative1_power2" not in conf_power2.confounds_.columns
+        )
 
         # Use a 6 params + derivatives + power2 + power2d derivatives motion model
         assert f"{param}" in conf_full.confounds_.columns
@@ -295,7 +316,9 @@ def test_n_motion():
 def test_not_found_exception():
 
     conf = lc.Confounds(
-        strategy=["high_pass", "motion", "global"], global_signal="full", motion="full"
+        strategy=["high_pass", "motion", "global"],
+        global_signal="full",
+        motion="full",
     )
 
     missing_params = ["trans_y", "trans_x_derivative1", "rot_z_power2"]
@@ -339,7 +362,8 @@ def test_not_found_exception():
     # Aggressive ICA-AROMA strategy requires
     # default nifti
     aroma_nii = os.path.join(
-        path_data, "test_space-MNI152NLin2009cAsym_desc-smoothAROMAnonaggr_bold.nii.gz"
+        path_data,
+        "test_space-MNI152NLin2009cAsym_desc-smoothAROMAnonaggr_bold.nii.gz",
     )
     with pytest.raises(ValueError) as exc_info:
         conf.load(aroma_nii)
@@ -363,13 +387,17 @@ def test_load_non_nifti():
         conf.load(tsv)
 
     # cifti file should be supported
-    cifti = os.path.join(path_data, "test_space-fsLR_den-91k_bold.dtseries.nii")
+    cifti = os.path.join(
+        path_data, "test_space-fsLR_den-91k_bold.dtseries.nii"
+    )
     conf.load(cifti)
     assert conf.confounds_.size != 0
 
     # gifti support
     gifti = [
-        os.path.join(path_data, f"test_space-fsaverage5_hemi-{hemi}_bold.func.gii")
+        os.path.join(
+            path_data, f"test_space-fsaverage5_hemi-{hemi}_bold.func.gii"
+        )
         for hemi in ["L", "R"]
     ]
     conf.load(gifti)
@@ -389,7 +417,8 @@ def test_invalid_filetype():
 
     # nifti with no associated confound file
     no_confound = os.path.join(
-        path_data, "noconfound_space-MNI152NLin2009cAsym_desc-preproc_bold.nii.gz"
+        path_data,
+        "noconfound_space-MNI152NLin2009cAsym_desc-preproc_bold.nii.gz",
     )
     with pytest.raises(ValueError):
         conf.load(no_confound)
@@ -398,7 +427,8 @@ def test_invalid_filetype():
 def test_ica_aroma():
     """Test ICA AROMA related file input."""
     aroma_nii = os.path.join(
-        path_data, "test_space-MNI152NLin2009cAsym_desc-smoothAROMAnonaggr_bold.nii.gz"
+        path_data,
+        "test_space-MNI152NLin2009cAsym_desc-smoothAROMAnonaggr_bold.nii.gz",
     )
     # Agressive strategy
     conf = lc.Confounds(strategy=["ica_aroma"], ica_aroma="basic")
@@ -423,7 +453,9 @@ def test_sample_mask():
     """Test load method and sample mask."""
     # create a version with srub_mask not applied;
     # This is not recommanded
-    conf = lc.Confounds(strategy=["motion", "scrub"], scrub="full", fd_thresh=0.15)
+    conf = lc.Confounds(
+        strategy=["motion", "scrub"], scrub="full", fd_thresh=0.15
+    )
     reg, mask = conf.load(file_confounds)
 
     # the current test data has 6 time points marked as motion outliers,

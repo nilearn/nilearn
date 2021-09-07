@@ -22,12 +22,11 @@ all_confounds = [
 
 def _sanitize_strategy(strategy):
     """Defines the supported denoising strategies."""
-    if isinstance(strategy, list):
-        for conf in strategy:
-            if not conf in all_confounds:
-                raise ValueError(f"{conf} is not a supported type of confounds.")
-    else:
+    if not isinstance(strategy, list):
         raise ValueError("strategy needs to be a list of strings")
+    for conf in strategy:
+        if conf not in all_confounds:
+            raise ValueError(f"{conf} is not a supported type of confounds.")
     # add non steady state if not present
     if "non_steady_state" not in strategy:
         strategy.append("non_steady_state")
@@ -66,13 +65,15 @@ class Confounds:
         "basic" translation/rotation (6 parameters)
         "power2" translation/rotation + quadratic terms (12 parameters)
         "derivatives" translation/rotation + derivatives (12 parameters)
-        "full" translation/rotation + derivatives + quadratic terms + power2d derivatives (24 parameters)
+        "full" translation/rotation + derivatives + quadratic terms + power2d
+               derivatives (24 parameters)
 
     n_motion : float
         Number of pca components to keep from head motion estimates.
-        If the parameters is strictly comprised between 0 and 1, a principal component
-        analysis is applied to the motion parameters, and the number of extracted
-        components is set to exceed `n_motion` percent of the parameters variance.
+        If the parameters is strictly comprised between 0 and 1, a principal
+        component analysis is applied to the motion parameters, and the number
+        of extracted components is set to exceed `n_motion` percent of the
+        parameters variance.
         If the n_components = 0, then no PCA is performed.
 
     fd_thresh : float, optional
@@ -82,40 +83,47 @@ class Confounds:
         Standardized DVARS threshold for scrub (default = 3)
 
     wm_csf : string, optional
-        Type of confounds extracted from masks of white matter and cerebrospinal fluids.
+        Type of confounds extracted from masks of white matter and
+        cerebrospinal fluids.
         "basic" the averages in each mask (2 parameters)
         "power2" averages and quadratic terms (4 parameters)
         "derivatives" averages and derivatives (4 parameters)
-        "full" averages + derivatives + quadratic terms + power2d derivatives (8 parameters)
+        "full" averages + derivatives + quadratic terms
+               + power2d derivatives (8 parameters)
 
     global_signal : string, optional
         Type of confounds extracted from the global signal.
         "basic" just the global signal (1 parameter)
         "power2" global signal and quadratic term (2 parameters)
         "derivatives" global signal and derivative (2 parameters)
-        "full" global signal + derivatives + quadratic terms + power2d derivatives (4 parameters)
+        "full" global signal + derivatives + quadratic terms
+               + power2d derivatives (4 parameters)
 
     scrub : string, optional
         Type of scrub of frames with excessive motion (Power et al. 2014)
         "basic" remove time frames based on excessive FD and DVARS
         "full" also remove time windows which are too short after scrubbing.
-        one-hot encoding vectors are added as regressors for each scrubbed frame.
+        one-hot encoding vectors are added as regressors for each scrubbed
+        frame.
 
     compcor : string, optional
-        Type of confounds extracted from a component based noise correction method
+        Type of confounds extracted from a component based noise correction
+        method
         "anat" noise components calculated using anatomical compcor
         "temp" noise components calculated using temporal compcor
         "full" noise components calculated using both temporal and anatomical
 
     n_compcor : int or "auto", optional
-        The number of noise components to be extracted. For acompcor_combined=False,
-        and/or compcor="full", this is the number of components per mask.
-        Default is "auto": select all components (50% variance explained by fMRIPrep defaults)
+        The number of noise components to be extracted.
+        For acompcor_combined=False, and/or compcor="full", this is the number
+        of components per mask.
+        Default is "auto": select all components
+        (50% variance explained by fMRIPrep defaults)
 
     acompcor_combined: boolean, optional
-        If true, use components generated from the combined white matter and csf
-        masks. Otherwise, components are generated from each mask separately and then
-        concatenated.
+        If true, use components generated from the combined white matter and
+        csf masks. Otherwise, components are generated from each mask
+        separately and then concatenated.
 
     ica_aroma : None or string, optional
         None: default, not using ICA-AROMA related strategy
@@ -125,20 +133,21 @@ class Confounds:
     demean : boolean, optional
         If True, the confounds are standardized to a zero mean (over time).
         This step is critical if the confounds are regressed out of time series
-        using nilearn with no or zscore standardization, but should be turned off
-        with "spc" normalization.
+        using nilearn with no or zscore standardization, but should be turned
+        off with "spc" normalization.
 
 
     Attributes
     ----------
     `confounds_` : pandas.DataFrame
-        The confounds loaded using the specified model. The columns of the dataframe
-        contains the labels.
+        The confounds loaded using the specified model. The columns of the
+        dataframe contains the labels.
 
     `sample_mask_` : list of int
         The index of the niimgs along time/fourth dimension.
         This list includes indices for valid volumes for subsequent analysis.
-        This attribute should be passed to parameter `sample_mask` of nilearn.NiftiMasker.
+        This attribute should be passed to parameter `sample_mask` of
+        nilearn.NiftiMasker.
         Volumnes are removed if flagges as following:
             - Non-steady-state volumes (if present)
             - Motion outliers detected by scrubbing
@@ -150,8 +159,8 @@ class Confounds:
     by high-pass filter. Low-pass filters can be implemented, e.g., through
     nilearn maskers. Scrubbing is implemented by introducing regressors in the
     confounds, rather than eliminating time points. Other aspects of the
-    preprocessing listed in Ciric et al. (2017) are controlled through fMRIprep,
-    e.g. distortion correction.
+    preprocessing listed in Ciric et al. (2017) are controlled through
+    fMRIprep, e.g. distortion correction.
 
     References
     ----------
@@ -201,13 +210,14 @@ class Confounds:
         img_files : path to processed image files, optionally as a list.
             Processed nii.gz/dtseries.nii/func.gii file from fmriprep.
             `nii.gz` or `dtseries.nii`: path to files, optionally as a list.
-            `func.gii`: list of a pair of paths to files, optionally as a list of lists.
-            The companion tsv will be automatically detected.
+            `func.gii`: list of a pair of paths to files, optionally as a list
+            of lists. The companion tsv will be automatically detected.
 
         Returns
         -------
         confounds :  pandas.DataFrame or list of pandas.DataFrame
-            A reduced version of fMRIprep confounds based on selected strategy and flags.
+            A reduced version of fMRIprep confounds based on selected strategy
+            and flags.
             An intercept is automatically added to the list of confounds.
             The columns contains the labels of the regressors.
 
@@ -240,13 +250,16 @@ class Confounds:
         self.sample_mask_ = sample_mask_out
         return confounds_out, sample_mask_out
 
-
     def _load_single(self, confounds_raw):
         """Load a single confounds file from fmriprep."""
         # Convert tsv file to pandas dataframe
         # check if relevant imaging files are present according to the strategy
-        flag_acompcor = ("compcor" in self.strategy) and (self.compcor == "anat")
-        flag_full_aroma = ("ica_aroma" in self.strategy) and (self.ica_aroma == "full")
+        flag_acompcor = ("compcor" in self.strategy) and (
+            self.compcor == "anat"
+        )
+        flag_full_aroma = ("ica_aroma" in self.strategy) and (
+            self.ica_aroma == "full"
+        )
         confounds_raw, self.json_ = cf._confounds_to_df(
             confounds_raw, flag_acompcor, flag_full_aroma
         )
@@ -258,15 +271,15 @@ class Confounds:
             confounds = pd.concat([confounds, loaded_confounds], axis=1)
 
         _check_error(self.missing_confounds_, self.missing_keys_)
-        sample_mask, confounds= cf._prepare_output(
-            confounds, self.demean
-        )
+        sample_mask, confounds = cf._prepare_output(confounds, self.demean)
         return sample_mask, confounds
 
     def _load_confound(self, confounds_raw, confound):
         """Load a single type of confound."""
         try:
-            loaded_confounds = getattr(self, f"_load_{confound}")(confounds_raw)
+            loaded_confounds = getattr(self, f"_load_{confound}")(
+                confounds_raw
+            )
         except cf.MissingConfound as exception:
             self.missing_confounds_ += exception.params
             self.missing_keys_ += exception.keywords
@@ -276,7 +289,8 @@ class Confounds:
     def _load_motion(self, confounds_raw):
         """Load the motion regressors."""
         motion_params = cf._add_suffix(
-            ["trans_x", "trans_y", "trans_z", "rot_x", "rot_y", "rot_z"], self.motion
+            ["trans_x", "trans_y", "trans_z", "rot_x", "rot_y", "rot_z"],
+            self.motion,
         )
         cf._check_params(confounds_raw, motion_params)
         confounds_motion = confounds_raw[motion_params]
@@ -316,7 +330,9 @@ class Confounds:
     def _load_ica_aroma(self, confounds_raw):
         """Load the ICA-AROMA regressors."""
         if self.ica_aroma is None:
-            raise ValueError("Please select an option when using ICA-AROMA strategy")
+            raise ValueError(
+                "Please select an option when using ICA-AROMA strategy"
+            )
         if self.ica_aroma == "full":
             return pd.DataFrame()
         if self.ica_aroma == "basic":
@@ -324,13 +340,16 @@ class Confounds:
             return confounds_raw[ica_aroma_params]
 
     def _load_scrub(self, confounds_raw):
-        """Perform basic scrub - Remove volumes if framewise displacement exceeds threshold."""
+        """Perform basic scrub - Remove volumes if framewise displacement
+        exceeds threshold."""
         n_scans = len(confounds_raw)
         # Get indices of fd outliers
         fd_outliers = np.where(
             confounds_raw["framewise_displacement"] > self.fd_thresh
         )[0]
-        dvars_outliers = np.where(confounds_raw["std_dvars"] > self.std_dvars_thresh)[0]
+        dvars_outliers = np.where(
+            confounds_raw["std_dvars"] > self.std_dvars_thresh
+        )[0]
         combined_outliers = np.sort(
             np.unique(np.concatenate((fd_outliers, dvars_outliers)))
         )

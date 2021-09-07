@@ -2,6 +2,4 @@
 from .parser import Confounds
 
 
-__all__ = [
-    "Confounds",
-]
+__all__ = ["Confounds"]

@@ -11,9 +11,12 @@ def _find_compcor(confounds_json, compcor, n_compcor, acompcor_combined):
 
     collector = []
     for prefix in prefix_set:
-        # all possible compcor confounds in order, mixing different types of mask
+        # all possible compcor confounds in order, mixing different
+        # types of mask
         all_compcor_name = [
-            comp for comp in confounds_json.keys() if f"{prefix}_comp_cor" in comp
+            comp
+            for comp in confounds_json.keys()
+            if f"{prefix}_comp_cor" in comp
         ]
         # filter by prefix first (anat vs temp)
         compcor_cols_filt = _prefix_confound_filter(prefix, all_compcor_name)
@@ -32,7 +35,8 @@ def _find_compcor(confounds_json, compcor, n_compcor, acompcor_combined):
 
 def _select_compcor(compcor_cols, n_compcor):
     """Retain a specified number of compcor components."""
-    # only select if not "auto", or less components are requested than there actually is
+    # only select if not "auto", or less components are requested than there
+    # actually is
     if (n_compcor != "auto") and (n_compcor < len(compcor_cols)):
         compcor_cols = compcor_cols[0:n_compcor]
     return compcor_cols
@@ -46,7 +50,10 @@ def _check_compcor_method(compcor, acompcor_combined):
     anat_mask = anat_masker[acompcor_combined]
     if ("a" in prefix_set) and (anat_mask is None):
         raise ValueError(
-            f"acompcor_combined must set to True or False. Got {acompcor_combined}"
+            (
+                "acompcor_combined must set to True or False. "
+                f"Got {acompcor_combined}"
+            )
         )
     return prefix_set, anat_mask
 
@@ -63,11 +70,11 @@ def _acompcor_mask(confounds_json, anat_mask, compcor_cols_filt, n_compcor):
 
 def _json_mask(compcor_cols_filt, confounds_json, mask):
     """Extract anat compcor components from a given mask."""
-    cols = []
-    for compcor_col in compcor_cols_filt:
-        if confounds_json[compcor_col]["Mask"] in mask:
-            cols.append(compcor_col)
-    return cols
+    return [
+        compcor_col
+        for compcor_col in compcor_cols_filt
+        if confounds_json[compcor_col]["Mask"] in mask
+    ]
 
 
 def _prefix_confound_filter(prefix, all_compcor_name):
