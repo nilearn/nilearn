@@ -9,7 +9,7 @@ How to help?
 * You think you discovered a bug ? Create `an issue <https://github.com/nilearn/nilearn/issues>`_
   including a minimal runnable example to showcase it (using Nilearn data) as well as your OS and Nilearn version.
 
-* If you have ideas for new features, check it's in the scope of the project
+* If you have ideas for new features, check if it is in the scope of the project
   and feel free to open an issue to discuss it.
 
 * Want to contribute code ? Thank you very much!
