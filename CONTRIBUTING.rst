@@ -379,7 +379,7 @@ Examples can be found `here
 How to contribute a dataset fetcher
 ------------------------------------
 
-The ``nilearn.datasets`` package provides functions to download some
+The :mod:`nilearn.datasets` module provides functions to download some
 neuroimaging datasets, such as :func:`nilearn.datasets.fetch_haxby` or
 :func:`nilearn.datasets.fetch_atlas_harvard_oxford`. The goal is not to provide a comprehensive
 collection of downloaders for the most widely used datasets, and this would be
