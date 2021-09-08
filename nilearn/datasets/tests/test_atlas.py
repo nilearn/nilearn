@@ -175,41 +175,14 @@ def test_fetch_atlas_harvard_oxford(tmp_path, request_mocker):
     atlas_data[:, :2, :] = 1
 
     # Create a left map
-    atlas_data[:5, 3:5, :] = 2
+    atlas_data[:, 3, :] = 2
+    atlas_data[:5, 4, :] = 2
 
     # Create a right map, with one voxel on the left side
-    atlas_data[5:, 7:9, :] = 3
+    atlas_data[5:, 7, :] = 3
     atlas_data[4, 7, 0] = 3
-
-    # Testing with Subcortical atlas
-    with open(os.path.join(ho_dir,
-                           'HarvardOxford-Subcortical.xml'), 'w') as dummy:
-        dummy.write("<?xml version='1.0' encoding='us-ascii'?>\n"
-                    "<data>\n"
-                    '<label index="0" x="48" y="94" z="35">R1</label>\n'
-                    '<label index="1" x="25" y="70" z="32">R2</label>\n'
-                    '<label index="2" x="33" y="73" z="63">R3</label>\n'
-                    "</data>")
-        dummy.close()
-
-    # when symmetric_split=False (by default), then atlas fetcher should
-    # have maps as string and n_labels=4 with background.
-    # Since, we relay on xml file to retrieve labels.
-    target_atlas_fname = 'HarvardOxford-sub-maxprob-thr25-1mm.nii.gz'
-    target_atlas_nii = os.path.join(nifti_dir, target_atlas_fname)
-
-    nibabel.Nifti1Image(atlas_data, np.eye(4) * 3).to_filename(
-        target_atlas_nii)
-    ho_wo = atlas.fetch_atlas_harvard_oxford('sub-maxprob-thr25-1mm',
-                                             data_dir=str(tmp_path))
-
-    assert isinstance(ho_wo.maps, nibabel.Nifti1Image)
-    assert isinstance(ho_wo.labels, list)
-    assert ho_wo.labels[0] == "Background"
-    assert ho_wo.labels[1] == "R1"
-    assert ho_wo.labels[2] == "R2"
-    assert ho_wo.labels[3] == "R3"
-
+    atlas_data[:, 8, :] = 3
+    
     # Testing with Cortical atlas with no cort-maxprob
     with open(os.path.join(ho_dir,
               'HarvardOxford-Cortical.xml'), 'w') as dummy:
@@ -230,14 +203,14 @@ def test_fetch_atlas_harvard_oxford(tmp_path, request_mocker):
 
     nibabel.Nifti1Image(atlas_data, np.eye(4) * 3).to_filename(
         target_atlas_nii)
-    ho_wo_symm = atlas.fetch_atlas_harvard_oxford('cort-prob-1mm',
-                                                  data_dir=str(tmp_path))
-    assert isinstance(ho_wo_symm.maps, nibabel.Nifti1Image)
-    assert isinstance(ho_wo_symm.labels, list)
-    assert ho_wo_symm.labels[0] == "Background"
-    assert ho_wo_symm.labels[1] == "R1"
-    assert ho_wo_symm.labels[2] == "R2"
-    assert ho_wo_symm.labels[3] == "R3"
+    ho_wo = atlas.fetch_atlas_harvard_oxford('cort-prob-1mm',
+                                             data_dir=str(tmp_path))
+    assert isinstance(ho_wo.maps, nibabel.Nifti1Image)
+    assert isinstance(ho_wo.labels, list)
+    assert ho_wo.labels[0] == "Background"
+    assert ho_wo.labels[1] == "R1"
+    assert ho_wo.labels[2] == "R2"
+    assert ho_wo.labels[3] == "R3"
 
     # This section tests with lateralized version. In other words,
     # symmetric_split=True
@@ -250,6 +223,36 @@ def test_fetch_atlas_harvard_oxford(tmp_path, request_mocker):
     # So, we test the fetcher with symmetric_split=True by creating a new
     # dummy local file and fetch them and test the output variables
     # accordingly.
+
+    # Testing with Subcortical atlas
+    with open(os.path.join(ho_dir,
+                           'HarvardOxford-Subcortical.xml'), 'w') as dummy1:
+        dummy1.write("<?xml version='1.0' encoding='us-ascii'?>\n"
+                    "<data>\n"
+                    '<label index="0" x="48" y="94" z="35">R1</label>\n'
+                    '<label index="1" x="64" y="69" z="32">R2</label>\n'
+                    '<label index="2" x="33" y="73" z="63">R3</label>\n'
+                    "</data>")
+        dummy1.close()
+
+    target_atlas_fname = 'HarvardOxford-sub-maxprob-thr0-1mm.nii.gz'
+    target_atlas_nii = os.path.join(nifti_dir, target_atlas_fname)
+
+    nibabel.Nifti1Image(atlas_data, np.eye(4) * 3).to_filename(
+        target_atlas_nii)
+    ho_wo_symm = atlas.fetch_atlas_harvard_oxford('sub-maxprob-thr0-1mm',
+                                                  data_dir=str(tmp_path),
+                                                  symmetric_split=True)
+    assert isinstance(ho_wo_symm.maps, nibabel.Nifti1Image)
+    assert isinstance(ho_wo_symm.labels, list)
+    assert ho_wo_symm.labels[0] == "Background"
+    assert ho_wo_symm.labels[1] == "Right R1"
+    assert ho_wo_symm.labels[2] == "Left R1"
+    assert ho_wo_symm.labels[3] == "Right R2"
+    assert ho_wo_symm.labels[4] == "Left R2"
+    assert ho_wo_symm.labels[5] == "Right R3"
+    assert ho_wo_symm.labels[6] == "Left R3"
+
     with open(os.path.join(ho_dir,
                            'HarvardOxford-Cortical-Lateralized.xml'),
               'w') as dummy2:
@@ -297,8 +300,14 @@ def test_fetch_atlas_juelich(tmp_path, request_mocker):
     with pytest.raises(ValueError, match='Invalid atlas name'):
         atlas.fetch_atlas_juelich(atlas_name='not_inside')
 
+    # Choose a probabilistic atlas with symmetric split
+    with pytest.raises(ValueError, match='Region splitting'):
+        atlas.fetch_atlas_juelich('prob-1mm',
+                                  data_dir=str(tmp_path),
+                                  symmetric_split=True)
+
     # specify existing atlas item
-    target_atlas = 'maxprob-thr0-1mm'
+    target_atlas = 'prob-1mm'
     target_atlas_fname = 'Juelich-{}.nii.gz'.format(target_atlas)
     ho_dir = str(tmp_path / 'fsl' / 'data' / 'atlases')
     os.makedirs(ho_dir)
@@ -369,7 +378,7 @@ def test_fetch_atlas_juelich(tmp_path, request_mocker):
     nifti_target_split = os.path.join(nifti_dir, split_atlas_fname)
     nibabel.Nifti1Image(atlas_data, np.eye(4) * 3).to_filename(
         nifti_target_split)
-    ho = atlas.fetch_atlas_juelich(atlas_name=target_atlas,
+    ho = atlas.fetch_atlas_juelich(atlas_name="maxprob-thr0-1mm",
                                    data_dir=str(tmp_path),
                                    symmetric_split=True)
 
