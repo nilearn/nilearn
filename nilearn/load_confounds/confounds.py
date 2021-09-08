@@ -111,7 +111,8 @@ def _pca_motion(confounds_motion, n_components):
 
 
 def _get_file_name(nii_file):
-    """Get the name of the raw confound file."""
+    """Construct the name of the raw confound file from fMRIprep-processed
+    functional data."""
     if isinstance(nii_file, list):  # catch gifti
         nii_file = nii_file[0]
     suffix = "_space-" + nii_file.split("space-")[1]
@@ -130,7 +131,11 @@ def _get_file_name(nii_file):
     ]
 
     if not confounds_raw:
-        raise ValueError("Could not find associated confound file.")
+        raise ValueError(
+            ("Could not find associated confound file. "
+             "The functional derivatives should exist under the same parent "
+             "directory.")
+        )
     elif len(confounds_raw) != 1:
         raise ValueError("Found more than one confound file.")
     else:
@@ -148,7 +153,7 @@ def _get_json(confounds_raw_path, flag_acompcor):
         if flag_acompcor:
             raise ValueError(
                 (
-                    f"Could not find a json file {confounds_json}."
+                    f"Could not find associated json file {confounds_json}."
                     "This is necessary for anatomical CompCor."
                     "The CompCor component is only supported for fMRIprep "
                     "version >= 1.4.0."

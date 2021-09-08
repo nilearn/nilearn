@@ -291,8 +291,7 @@ class Confounds:
             confounds = pd.concat([confounds, loaded_confounds], axis=1)
 
         _check_error(self.missing_confounds_, self.missing_keys_)
-        sample_mask, confounds = cf._prepare_output(confounds, self.demean)
-        return sample_mask, confounds
+        return cf._prepare_output(confounds, self.demean)
 
     def _load_confound(self, confounds_raw, confound):
         """Load a single type of confound."""
@@ -364,21 +363,23 @@ class Confounds:
         exceeds threshold."""
         n_scans = len(confounds_raw)
         # Get indices of fd outliers
-        fd_outliers = np.where(
+        fd_outliers_index = np.where(
             confounds_raw["framewise_displacement"] > self.fd_thresh
         )[0]
-        dvars_outliers = np.where(
+        dvars_outliers_index = np.where(
             confounds_raw["std_dvars"] > self.std_dvars_thresh
         )[0]
-        combined_outliers = np.sort(
-            np.unique(np.concatenate((fd_outliers, dvars_outliers)))
+        motion_outliers_index = np.sort(
+            np.unique(np.concatenate((fd_outliers_index,
+                                      dvars_outliers_index)))
         )
         # Do full scrubbing if desired, and motion outliers were detected
-        if self.scrub == "full" and len(combined_outliers) > 0:
-            combined_outliers = _optimize_scrub(combined_outliers, n_scans)
+        if self.scrub == "full" and len(motion_outliers_index) > 0:
+            motion_outliers_index = _optimize_scrub(motion_outliers_index,
+                                                    n_scans)
         # Make one-hot encoded motion outlier regressors
         motion_outlier_regressors = pd.DataFrame(
-            np.transpose(np.eye(n_scans)[combined_outliers]).astype(int)
+            np.transpose(np.eye(n_scans)[motion_outliers_index]).astype(int)
         )
         column_names = [
             "motion_outlier_" + str(num)
