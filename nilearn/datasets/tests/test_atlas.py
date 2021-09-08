@@ -182,7 +182,7 @@ def test_fetch_atlas_harvard_oxford(tmp_path, request_mocker):
     atlas_data[5:, 7, :] = 3
     atlas_data[4, 7, 0] = 3
     atlas_data[:, 8, :] = 3
-    
+
     # Testing with Cortical atlas with no cort-maxprob
     with open(os.path.join(ho_dir,
               'HarvardOxford-Cortical.xml'), 'w') as dummy:
@@ -343,15 +343,15 @@ def test_fetch_atlas_juelich(tmp_path, request_mocker):
     # when symmetric_split=False (by default), then atlas fetcher should
     # have maps as string and n_labels=4 with background.
     # Since, we relay on xml file to retrieve labels.
-    ho_wo = atlas.fetch_atlas_juelich(atlas_name=target_atlas,
-                                           data_dir=str(tmp_path))
-    assert isinstance(ho_wo.maps, nibabel.Nifti1Image)
-    assert isinstance(ho_wo.labels, np.ndarray)
-    assert len(ho_wo.labels) == 4
-    assert ho_wo.labels[0] == "Background"
-    assert ho_wo.labels[1] == "R1"
-    assert ho_wo.labels[2] == "R2"
-    assert ho_wo.labels[3] == "R3"
+    ho = atlas.fetch_atlas_juelich(atlas_name=target_atlas,
+                                   data_dir=str(tmp_path))
+    assert isinstance(ho.maps, nibabel.Nifti1Image)
+    assert isinstance(ho.labels, np.ndarray)
+    assert len(ho.labels) == 4
+    assert ho.labels[0] == "Background"
+    assert ho.labels[1] == "R1"
+    assert ho.labels[2] == "R2"
+    assert ho.labels[3] == "R3"
 
     split_atlas_fname = 'Juelich-maxprob-thr0-1mm.nii.gz'
     nifti_target_split = os.path.join(nifti_dir, split_atlas_fname)
@@ -371,7 +371,7 @@ def test_fetch_atlas_juelich(tmp_path, request_mocker):
     # have maps as string and n_labels=4 with background.
     # Since, we relay on xml file to retrieve labels.
     ho_wo = atlas.fetch_atlas_juelich(atlas_name="maxprob-thr0-1mm",
-                                           data_dir=str(tmp_path))
+                                      data_dir=str(tmp_path))
     assert isinstance(ho_wo.maps, nibabel.Nifti1Image)
     assert isinstance(ho_wo.labels, np.ndarray)
     assert len(ho_wo.labels) == 4
@@ -403,8 +403,8 @@ def test_fetch_atlas_juelich(tmp_path, request_mocker):
     # Create dummy image files too with maxprob specified for symmetric split.
 
     ho_symm = atlas.fetch_atlas_juelich(atlas_name="maxprob-thr0-1mm",
-                                   data_dir=str(tmp_path),
-                                   symmetric_split=True)
+                                        data_dir=str(tmp_path),
+                                        symmetric_split=True)
 
     assert isinstance(ho_symm.maps, nibabel.Nifti1Image)
     assert isinstance(ho_symm.labels, list)
