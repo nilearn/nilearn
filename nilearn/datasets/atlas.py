@@ -433,7 +433,8 @@ def fetch_atlas_juelich(atlas_name, data_dir=None,
     new_atlas_niimg = new_img_like(atlas_niimg,
                                    new_atlas_data,
                                    atlas_niimg.affine)
-    return Bunch(filename=atlas_img, maps=new_atlas_niimg, labels=new_names)
+    return Bunch(filename=atlas_img, maps=new_atlas_niimg,
+                 labels=list(new_names))
 
 
 def _get_atlas_data_and_labels(atlas_source, atlas_name, symmetric_split=False,
@@ -575,11 +576,11 @@ def _compute_symmetric_split(source, atlas_niimg, names):
             new_atlas[atlas_data == label] = new_label
             new_names.append(name)
             continue
-        new_atlas[right_atlas == label] = new_label
-        new_names.append('Right ' + name)
-        new_label += 1
         new_atlas[left_atlas == label] = new_label
         new_names.append('Left ' + name)
+        new_label += 1
+        new_atlas[right_atlas == label] = new_label
+        new_names.append('Right ' + name)
     return new_atlas, new_names
 
 
