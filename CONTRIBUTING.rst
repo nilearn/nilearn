@@ -348,7 +348,8 @@ If you wish to build documentation:
     When generating documentation locally, you can build only specific files
     to reduce building time. To do so, use the ``filename_pattern``::
 
-       python3 -m sphinx -D sphinx_gallery_conf.filename_pattern=plot_decoding_tutorial.py -b html -d _build/doctrees . _build/html
+       python3 -m sphinx -D sphinx_gallery_conf.filename_pattern=\\
+       plot_decoding_tutorial.py -b html -d _build/doctrees . _build/html
 
 
 Additional cases
