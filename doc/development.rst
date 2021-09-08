@@ -204,7 +204,7 @@ We also need to write a "Highlights" section promoting the most important additi
 
     HIGHLIGHTS
     ----------
-    
+
     - Nilearn now includes functionality A
     - ...
 
@@ -219,23 +219,23 @@ Next, we need to bump the version number of Nilearn by updating the file `nilear
 to be:
 
 .. code-block:: python
-   
+
     __version__ = x.y.z
 
 
 We also need to update the website news section by editing the file `nilearn/doc/themes/nilearn/layout.html`. The news section typically contains links to the last 3 releases that should look like:
 
 .. code-block:: html
-    
+
     <h4> News </h4>
         <ul>
-            <li><p><strong>November 2020</strong>: 
+            <li><p><strong>November 2020</strong>:
                 <a href="whats_new.html#v0-7-0">Nilearn 0.7.0 released</a>
             </p></li>
-            <li><p><strong>February 2020</strong>: 
+            <li><p><strong>February 2020</strong>:
                 <a href="whats_new.html#v0-6-2">Nilearn 0.6.2 released</a>
             </p></li>
-            <li><p><strong>January 2020</strong>: 
+            <li><p><strong>January 2020</strong>:
                 <a href="whats_new.html#v0-6-1">Nilearn 0.6.1 released</a>
             </p></li>
         </ul>
@@ -248,7 +248,7 @@ In addition, we can have a look at `MANIFEST.in` to check that all additional fi
 Add these changes and submit a PR:
 
 .. code:: bash
-    
+
     git add doc/whats_new.rst nilearn/version.py
     git commit -m "REL x.y.z"
     git push origin REL-x.y.z
@@ -270,35 +270,35 @@ Build the distributions and upload them to Pypi
 First of all we should make sure we don't include files that shouldn't be present:
 
 .. code-block:: bash
-    
+
     git checkout x.y.z
 
 
 If the workspace contains a `dist` folder, make sure to clean it:
 
 .. code-block:: bash
-    
+
     rm -r dist
 
 
 In order to build the binary wheel files, we need to install `wheel <https://pypi.org/project/wheel/>`_:
 
 .. code-block:: bash
-    
+
     pip install wheel
 
 
 And, in order to upload to `Pypi`, we will use `twine <https://pypi.org/project/twine/>`_ that you can also install with `pip`:
 
 .. code-block:: bash
-    
+
     pip install twine
 
 
 Build the source and binary distributions:
 
 .. code-block:: bash
-    
+
     python setup.py sdist bdist_wheel
 
 
@@ -306,18 +306,18 @@ This should add two files to the `dist` subfolder:
 
 - one for the source distribution that should look like `PACKAGENAME-VERSION.tar.gz`
 - one for the built distribution that should look like `PACKAGENAME-PACKAGEVERSION-PYTHONVERSION-PYTHONCVERSION-PLATFORM.whl`
-  
+
 Optionally, we can run some basic checks with `twine`:
 
 .. code-block:: bash
-    
+
     twine check dist/*
 
 
 We are now ready to upload to `Pypi`. Note that you will need to have an account on Pypi (you can create one `here <https://pypi.org/account/register/>`_), and be added to the maintainers of `Nilearn <https://pypi.org/project/nilearn/>`_. If you satisfy these conditions, you should be able to run:
 
 .. code-block:: bash
-    
+
     twine upload dist/*
 
 
@@ -332,7 +332,7 @@ Build and deploy the documentation
 We now need to update the documentation:
 
 .. code-block:: bash
-    
+
     cd doc
     make install
 
@@ -345,14 +345,14 @@ Post-release
 At this point, the release has been made. We can now update the file `nilearn/version.py` and update the version number by increasing the patch number and appending `.dev`:
 
 .. code-block:: python
-    
+
     __version__ = x.y.(z+1).dev
 
 
 We can also update the file `doc/whats_new.rst` by adding a title and the usual `New`, `Enhancements`, and `Bug Fixes` sections for the version currently under development:
 
 .. code-block:: RST
-    
+
     x.y.z+1.dev
     =========
 
@@ -370,4 +370,3 @@ We can also update the file `doc/whats_new.rst` by adding a title and the usual 
     x.y.z
     =====
     ...
-

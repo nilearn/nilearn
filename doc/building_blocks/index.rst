@@ -16,4 +16,3 @@ terms of data processing.
 
    manual_pipeline.rst
    neurovault.rst
-

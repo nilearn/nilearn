@@ -115,4 +115,3 @@ view
 
 # uncomment this to open the plot in a web browser:
 # view.open_in_browser()
-

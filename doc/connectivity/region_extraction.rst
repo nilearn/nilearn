@@ -178,7 +178,7 @@ color.
 .. |dmn| image:: ../auto_examples/03_connectivity/images/sphx_glr_plot_extract_regions_dictlearning_maps_005.png
    :target: ../auto_examples/03_connectivity/plot_extract_regions_dictlearning_maps.html
    :scale: 50
-    
+
 .. |dmn_reg| image:: ../auto_examples/03_connectivity/images/sphx_glr_plot_extract_regions_dictlearning_maps_006.png
    :target: ../auto_examples/03_connectivity/plot_extract_regions_dictlearning_maps.html
    :scale: 50
