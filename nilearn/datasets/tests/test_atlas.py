@@ -228,11 +228,11 @@ def test_fetch_atlas_harvard_oxford(tmp_path, request_mocker):
     with open(os.path.join(ho_dir,
                            'HarvardOxford-Subcortical.xml'), 'w') as dummy1:
         dummy1.write("<?xml version='1.0' encoding='us-ascii'?>\n"
-                    "<data>\n"
-                    '<label index="0" x="48" y="94" z="35">R1</label>\n'
-                    '<label index="1" x="64" y="69" z="32">R2</label>\n'
-                    '<label index="2" x="33" y="73" z="63">R3</label>\n'
-                    "</data>")
+                     "<data>\n"
+                     '<label index="0" x="48" y="94" z="35">R1</label>\n'
+                     '<label index="1" x="64" y="69" z="32">R2</label>\n'
+                     '<label index="2" x="33" y="73" z="63">R3</label>\n'
+                     "</data>")
         dummy1.close()
 
     target_atlas_fname = 'HarvardOxford-sub-maxprob-thr0-1mm.nii.gz'
@@ -343,15 +343,42 @@ def test_fetch_atlas_juelich(tmp_path, request_mocker):
     # when symmetric_split=False (by default), then atlas fetcher should
     # have maps as string and n_labels=4 with background.
     # Since, we relay on xml file to retrieve labels.
-    ho_wo_symm = atlas.fetch_atlas_juelich(atlas_name=target_atlas,
+    ho_wo = atlas.fetch_atlas_juelich(atlas_name=target_atlas,
                                            data_dir=str(tmp_path))
-    assert isinstance(ho_wo_symm.maps, nibabel.Nifti1Image)
-    assert isinstance(ho_wo_symm.labels, np.ndarray)
-    assert len(ho_wo_symm.labels) == 4
-    assert ho_wo_symm.labels[0] == "Background"
-    assert ho_wo_symm.labels[1] == "R1"
-    assert ho_wo_symm.labels[2] == "R2"
-    assert ho_wo_symm.labels[3] == "R3"
+    assert isinstance(ho_wo.maps, nibabel.Nifti1Image)
+    assert isinstance(ho_wo.labels, np.ndarray)
+    assert len(ho_wo.labels) == 4
+    assert ho_wo.labels[0] == "Background"
+    assert ho_wo.labels[1] == "R1"
+    assert ho_wo.labels[2] == "R2"
+    assert ho_wo.labels[3] == "R3"
+
+    split_atlas_fname = 'Juelich-maxprob-thr0-1mm.nii.gz'
+    nifti_target_split = os.path.join(nifti_dir, split_atlas_fname)
+    nibabel.Nifti1Image(atlas_data, np.eye(4) * 3).to_filename(
+        nifti_target_split)
+
+    with open(os.path.join(ho_dir, 'Juelich.xml'), 'w') as dummy:
+        dummy.write("<?xml version='1.0' encoding='us-ascii'?>\n"
+                    "<data>\n"
+                    '<label index="0" x="125" y="75" z="107">R1</label>\n'
+                    '<label index="1" x="53" y="78" z="108">R2</label>\n'
+                    '<label index="2" x="135" y="89" z="109">R3</label>\n'
+                    "</data>")
+        dummy.close()
+
+    # when symmetric_split=False (by default), then atlas fetcher should
+    # have maps as string and n_labels=4 with background.
+    # Since, we relay on xml file to retrieve labels.
+    ho_wo = atlas.fetch_atlas_juelich(atlas_name="maxprob-thr0-1mm",
+                                           data_dir=str(tmp_path))
+    assert isinstance(ho_wo.maps, nibabel.Nifti1Image)
+    assert isinstance(ho_wo.labels, np.ndarray)
+    assert len(ho_wo.labels) == 4
+    assert ho_wo.labels[0] == "Background"
+    assert ho_wo.labels[1] == "R1"
+    assert ho_wo.labels[2] == "R2"
+    assert ho_wo.labels[3] == "R3"
 
     # This section tests with lateralized version. In other words,
     # symmetric_split=True
@@ -374,24 +401,21 @@ def test_fetch_atlas_juelich(tmp_path, request_mocker):
     # in the labels.
 
     # Create dummy image files too with maxprob specified for symmetric split.
-    split_atlas_fname = 'Juelich-maxprob-thr0-1mm.nii.gz'
-    nifti_target_split = os.path.join(nifti_dir, split_atlas_fname)
-    nibabel.Nifti1Image(atlas_data, np.eye(4) * 3).to_filename(
-        nifti_target_split)
-    ho = atlas.fetch_atlas_juelich(atlas_name="maxprob-thr0-1mm",
+
+    ho_symm = atlas.fetch_atlas_juelich(atlas_name="maxprob-thr0-1mm",
                                    data_dir=str(tmp_path),
                                    symmetric_split=True)
 
-    assert isinstance(ho.maps, nibabel.Nifti1Image)
-    assert isinstance(ho.labels, list)
-    assert len(ho.labels) == 7
-    assert ho.labels[0] == "Background"
-    assert ho.labels[1] == "Right R1"
-    assert ho.labels[2] == "Left R1"
-    assert ho.labels[3] == "Right R2"
-    assert ho.labels[4] == "Left R2"
-    assert ho.labels[5] == "Right R3"
-    assert ho.labels[6] == "Left R3"
+    assert isinstance(ho_symm.maps, nibabel.Nifti1Image)
+    assert isinstance(ho_symm.labels, list)
+    assert len(ho_symm.labels) == 7
+    assert ho_symm.labels[0] == "Background"
+    assert ho_symm.labels[1] == "Right R1"
+    assert ho_symm.labels[2] == "Left R1"
+    assert ho_symm.labels[3] == "Right R2"
+    assert ho_symm.labels[4] == "Left R2"
+    assert ho_symm.labels[5] == "Right R3"
+    assert ho_symm.labels[6] == "Left R3"
 
 
 def test_fetch_atlas_craddock_2012(tmp_path, request_mocker):
