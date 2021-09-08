@@ -47,7 +47,7 @@ def _check_error(missing_confounds, missing_keys):
 
 class Confounds:
     """
-    Confounds from fmriprep
+    Use confounds from fmriprep
 
     To enable easy confound variables loading from fMRIprep outputs, Confounds
     provides a interface that groups subsets of confound variables into noise
@@ -76,7 +76,8 @@ class Confounds:
         "full" translation/rotation + derivatives + quadratic terms + power2d
                derivatives (24 parameters)
 
-    n_motion : float
+    n_motion_components : float
+``` (prefer more explcii names)
         Number of pca components to keep from head motion estimates.
         If the parameters is strictly comprised between 0 and 1, a principal
         component analysis is applied to the motion parameters, and the number
@@ -84,10 +85,10 @@ class Confounds:
         parameters variance.
         If the n_components = 0, then no PCA is performed.
 
-    fd_thresh : float, optional
+    fd_threshold : float, optional
         Framewise displacement threshold for scrub (default = 0.2 mm)
 
-    std_dvars_thresh : float, optional
+    std_dvars_threshold : float, optional
         Standardized DVARS threshold for scrub (default = 3)
 
     wm_csf : string, optional
@@ -115,7 +116,8 @@ class Confounds:
         frame.
 
     compcor : string, optional
-        Require fmriprep >= v:1.4.0.
+        .. warning::
+                Require fmriprep >= v:1.4.0.
         Type of confounds extracted from a component based noise correction
         method
         "anat" noise components calculated using anatomical compcor
