@@ -469,15 +469,9 @@ class SimpleRegressionResults(LikelihoodModelResults):
         The only difference is that the whitened Y and residual values
         are stored for a regression model.
         """
-        self.theta = results.theta
-        self.cov = results.cov
-        self.dispersion = results.dispersion
-        self.nuisance = results.nuisance
-
-        self.df_total = results.Y.shape[0]
-        self.df_model = results.model.df_model
-        # put this as a parameter of LikelihoodModel
-        self.df_residuals = self.df_total - self.df_model
+        LikelihoodModelResults.__init__(self, results.theta, results.Y,
+                                        results.model, results.cov,
+                                        results.dispersion, results.nuisance)
 
     def logL(self, Y):
         """
