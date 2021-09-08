@@ -264,7 +264,7 @@ def _outlier_to_sample_mask(outlier_flag):
     if outlier_flag.size == 0:  # Do not supply sample mask
         return None  # consistency with nilearn sample_mask
     outlier_flag = outlier_flag.sum(axis=1).values
-    return np.where(outlier_flag == 0)[0].tolist()
+    return np.where(outlier_flag == 0)[0]
 
 
 def _prepare_output(confounds, demean):

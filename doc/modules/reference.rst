@@ -227,6 +227,25 @@ the :ref:`user guide <user_guide>` for more information and usage examples.
    NiftiMapsMasker
    NiftiSpheresMasker
 
+ .. _load_confounds_ref:
+
+ :mod:`nilearn.load_confonds`: Load fMRIPrep generated confounds
+ ===============================================================
+
+ .. automodule:: nilearn.load_confounds
+     :no-members:
+     :no-inherited-members:
+
+ **Classes**:
+
+ .. currentmodule:: nilearn.load_confounds
+
+ .. autosummary::
+     :toctree: generated/
+     :template: class.rst
+
+     Confounds
+
 .. _masking_ref:
 
 :mod:`nilearn.masking`: Data Masking Utilities

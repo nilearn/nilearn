@@ -65,6 +65,7 @@ class Confounds:
         "high_pass" discrete cosines covering low frequencies.
         "wm_csf" confounds derived from white matter and cerebrospinal fluid.
         "global" confounds derived from the global signal.
+        "compcor" confounds derived from CompCor.
         "ica_aroma" confounds derived from ICA-AROMA.
         "scrub" regressors for Power 2014 scrubbing approach.
 
@@ -154,12 +155,13 @@ class Confounds:
         The confounds loaded using the specified model. The columns of the
         dataframe contains the labels.
 
-    `sample_mask_` : None or list of int
-        The index of the niimgs along time/fourth dimension.
+    `sample_mask_` : None, numpy.ndarray, or list of
         When no volumns require removal, the value is None.
-        This list includes indices for valid volumes for subsequent analysis.
+        Otherwise, shape: (number of scans - number of volumes removed, )
+        The index of the niimgs along time/fourth dimension for valid volumes
+        for subsequent analysis.
         This attribute should be passed to parameter `sample_mask` of
-        nilearn.NiftiMasker.
+        nilearn.NiftiMasker or nilearn.signal.clean.
         Volumns are removed if flagged as following:
             - Non-steady-state volumes (if present)
             - Motion outliers detected by scrubbing
