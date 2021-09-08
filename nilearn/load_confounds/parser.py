@@ -6,6 +6,8 @@ import numpy as np
 import pandas as pd
 from . import confounds as cf
 from .compcor import _find_compcor
+from .scrub import _optimize_scrub
+
 
 # Global variables listing the admissible types of noise components
 all_confounds = [
@@ -77,20 +79,23 @@ class Confounds:
         "full" translation/rotation + derivatives + quadratic terms + power2d
                derivatives (24 parameters)
 
-    n_motion_components : float
-``` (prefer more explcii names)
+    n_motion_components_components : float
         Number of pca components to keep from head motion estimates.
         If the parameters is strictly comprised between 0 and 1, a principal
         component analysis is applied to the motion parameters, and the number
-        of extracted components is set to exceed `n_motion` percent of the
-        parameters variance.
-        If the n_components = 0, then no PCA is performed.
+        of extracted components is set to exceed `n_motion_components` percent
+        of the parameters variance.
+        If the n_motion_components_components = 0, then no PCA is performed.
 
     fd_threshold : float, optional
         Framewise displacement threshold for scrub (default = 0.2 mm)
 
     std_dvars_threshold : float, optional
-        Standardized DVARS threshold for scrub (default = 3)
+        Standardized DVARS threshold for scrub (default = 3).
+        DVARs is defined as root mean squared intensity difference of volume N
+        to volume N+1 (Power et al. 2012). D referring to temporal derivative
+        of timecourses, VARS referring to root mean squared variance over
+        voxels.
 
     wm_csf : string, optional
         Type of confounds extracted from masks of white matter and
@@ -188,7 +193,7 @@ class Confounds:
         self,
         strategy=["motion", "high_pass", "wm_csf"],
         motion="full",
-        n_motion=0,
+        n_motion_components=0,
         scrub="full",
         fd_thresh=0.2,
         std_dvars_thresh=3,
@@ -203,7 +208,7 @@ class Confounds:
         """Default parameters."""
         self.strategy = _sanitize_strategy(strategy)
         self.motion = motion
-        self.n_motion = n_motion
+        self.n_motion_components = n_motion_components
         self.scrub = scrub
         self.fd_thresh = fd_thresh
         self.std_dvars_thresh = std_dvars_thresh
@@ -311,9 +316,9 @@ class Confounds:
         confounds_motion = confounds_raw[motion_params]
 
         # Optionally apply PCA reduction
-        if self.n_motion > 0:
+        if self.n_motion_components > 0:
             confounds_motion = cf._pca_motion(
-                confounds_motion, n_components=self.n_motion
+                confounds_motion, n_components=self.n_motion_components
             )
         return confounds_motion
 
@@ -370,7 +375,7 @@ class Confounds:
         )
         # Do full scrubbing if desired, and motion outliers were detected
         if self.scrub == "full" and len(combined_outliers) > 0:
-            combined_outliers = cf._optimize_scrub(combined_outliers, n_scans)
+            combined_outliers = _optimize_scrub(combined_outliers, n_scans)
         # Make one-hot encoded motion outlier regressors
         motion_outlier_regressors = pd.DataFrame(
             np.transpose(np.eye(n_scans)[combined_outliers]).astype(int)

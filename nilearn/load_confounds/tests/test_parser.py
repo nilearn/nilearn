@@ -299,17 +299,20 @@ def test_n_compcor():
 
 def test_n_motion():
 
-    conf = lc.Confounds(strategy=["motion"], motion="full", n_motion=0.2)
+    conf = lc.Confounds(strategy=["motion"], motion="full",
+                        n_motion_components=0.2)
     conf.load(file_confounds)
     assert "motion_pca_1" in conf.confounds_.columns
     assert "motion_pca_2" not in conf.confounds_.columns
 
-    conf = lc.Confounds(strategy=["motion"], motion="full", n_motion=0.95)
+    conf = lc.Confounds(strategy=["motion"], motion="full",
+                        n_motion_components=0.95)
     conf.load(file_confounds)
     assert "motion_pca_6" in conf.confounds_.columns
 
     with pytest.raises(ValueError):
-        conf = lc.Confounds(strategy=["motion"], motion="full", n_motion=50)
+        conf = lc.Confounds(strategy=["motion"], motion="full",
+                            n_motion_components=50)
         conf.load(file_confounds)
 
 
