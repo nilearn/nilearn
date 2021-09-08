@@ -28,7 +28,8 @@ How to help?
 
 
 How do we decide what code goes in?
-=====================================
+====================================
+
 Scope of the project
 ---------------------
 
@@ -126,39 +127,42 @@ Those guidelines will hence be enforced during the reviewing process.
 The section `Setting up your environment`_ will help you to quickly get familiar
 with the tools we use for development and deployment.
 
-+--------------------+-------------+----------------------------------------------------+
-|                    | Which PR ?  |        Guidelines                                  |
-+====================+=============+====================================================+
-|                    |             | - Clear name                                       |
-|                    |             | - Link issue through mention :"Closes #XXXX"       |
-|  `PR Structure`_   |    Any      | - Clearly outline goals and changes proposed       |
-|                    |             | - Doesn't include "unrelated" code change          |
-|                    |             | - Add entry in "doc/whats_new.rst"                 |
-+--------------------+-------------+----------------------------------------------------+
-|                    |             | - Variables, functions, arguments have clear names |
-|                    |             | - Easy to read, PEP8                               |
-|   `Coding Style`_  |    Any      | - Public functions have docstring (numpydoc format)|
-|                    |             | - Low redundancy                                   |
-|                    |             | - No new dependency                                |
-|                    |             | - Backward compatibility                           |
-+--------------------+-------------+----------------------------------------------------+
-|                    |             | - Test type is adapted to function behavior        |
-|                    |             | - Tests pass continuous integration                |
-|                    |  Bugfixes   | - Coverage doesn't decrease                        |
-|      `Tests`_      | New features| - Fast, using small mocked data                    |
-|                    |             | - Atomic (one per function) and seeded             |
-|                    |             | - For Bugfixes: non-regression test                |
-+--------------------+-------------+----------------------------------------------------+
-|                    |             | - Clearly showcase benefits                        |
-|      Examples      | New features| - Run in a few seconds                             |
-|                    |             | - Use light data (generated or from Nilearn)       |
-|                    |             | - Renders well after build                         |
-+--------------------+-------------+----------------------------------------------------+
-|                    |             | - Simple and didactic                              |
-|  `Documentation`_  |    Any      | - Links to relevant examples                       |
-|                    |             | - Renders well after build                         |
-|                    |             | - Doesn't include code                             |
-+--------------------+-------------+----------------------------------------------------+
++--------------------+-------------+-----------------------------------------------------+
+|                    | Which PR ?  |        Guidelines                                   |
++====================+=============+=====================================================+
+|                    |             | - Clear name                                        |
+|                    |             | - Link issue through mention :"Closes #XXXX"        |
+|  `PR Structure`_   |    Any      | - Clearly outline goals and changes proposed        |
+|                    |             | - Doesn't include "unrelated" code change           |
+|                    |             | - Add entry in "doc/whats_new.rst"                  |
++--------------------+-------------+-----------------------------------------------------+
+|                    |             | - Variables, functions, arguments have clear names  |
+|                    |             | - Easy to read, PEP8_                               |
+|   `Coding Style`_  |    Any      | - Public functions have docstring (numpydoc_ format)|
+|                    |             | - Low redundancy                                    |
+|                    |             | - No new dependency                                 |
+|                    |             | - Backward compatibility                            |
++--------------------+-------------+-----------------------------------------------------+
+|                    |             | - Test type is adapted to function behavior         |
+|                    |             | - Tests pass continuous integration                 |
+|                    |  Bugfixes   | - Coverage doesn't decrease                         |
+|      `Tests`_      | New features| - Fast, using small mocked data                     |
+|                    |             | - Atomic (one per function) and seeded              |
+|                    |             | - For Bugfixes: non-regression test                 |
++--------------------+-------------+-----------------------------------------------------+
+|                    |             | - Clearly showcase benefits                         |
+|      Examples      | New features| - Run in a few seconds                              |
+|                    |             | - Use light data (generated or from Nilearn)        |
+|                    |             | - Renders well after build                          |
++--------------------+-------------+-----------------------------------------------------+
+|                    |             | - Simple and didactic                               |
+|  `Documentation`_  |    Any      | - Links to relevant examples                        |
+|                    |             | - Renders well after build                          |
+|                    |             | - Doesn't include code                              |
++--------------------+-------------+-----------------------------------------------------+
+
+.. _PEP8: https://www.python.org/dev/peps/pep-0008/
+.. _numpydoc: https://numpydoc.readthedocs.io/en/latest/format.html
 
 PR Structure
 -------------
@@ -184,12 +188,15 @@ maintenance changes.
 Coding Style
 -------------
 
-The main conventions we follow are : line length < 80, spaces around operators,
-variable names, function names are underscore separated (e.g., ``a_nice_function``) and as short as possible,
-public functions exposed in their parent module's init file, private function names preceded with a "_",
+Nilearn codebase follow PEP8_ styling.
+The main conventions we enforce are : line length < 80, spaces around operators,
+meaningful variable names, function names are underscore separated
+(e.g., ``a_nice_function``) and as short as possible,
+public functions exposed in their parent module's init file,
+private function names preceded with a "_" and very explicit,
 classes in CamelCase, 2 empty lines between functions or classes.
 Each function and class must come with a “docstring” at the top of the function
-code, using `numpydoc formatting <https://numpydoc.readthedocs.io/en/latest/format.html>`_.
+code, using numpydoc_ formatting.
 They must summarize what the function does and document every parameter.
 
 
@@ -204,10 +211,12 @@ They should run on small mocked data, cover a representative range of parameters
 Tests must be seeded to avoid random failures.
 For objects using random seeds (e.g. scikit-learn estimators), pass either
 a  `np.random.RandomState` or an `int` as the seed.
-When your test use random numbers,  those must be generated through::
+When your test use random numbers,  those must be generated through:
 
-      rng = np.random.RandomState(0)
-      my_number = rng.normal()
+.. code-block:: python
+
+    rng = np.random.RandomState(0)
+    my_number = rng.normal()
 
 To check your changes worked and didn't break anything run `pytest nilearn`.
 To do quicker checks it's possible to run only a subset of tests::
@@ -335,10 +344,12 @@ If you wish to build documentation:
 
       git commit --allow-empty -m "[circle full] request full build"
 
-TIPS : When generating documentation locally, you can build only specific files
-to reduce building time. To do so, use the ``filename_pattern``::
+.. tip::
+    When generating documentation locally, you can build only specific files
+    to reduce building time. To do so, use the ``filename_pattern``::
 
-      python3 -m sphinx -D sphinx_gallery_conf.filename_pattern=plot_decoding_tutorial.py -b html -d _build/doctrees . _build/html
+       python3 -m sphinx -D sphinx_gallery_conf.filename_pattern=plot_decoding_tutorial.py -b html -d _build/doctrees . _build/html
+
 
 Additional cases
 =================
