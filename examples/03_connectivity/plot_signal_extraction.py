@@ -27,7 +27,7 @@ documentation <parcellation_time_series>` for more.
 
 ##############################################################################
 # Retrieve the atlas and the data
-# --------------------------------
+# -------------------------------
 from nilearn import datasets
 
 dataset = datasets.fetch_atlas_harvard_oxford('cort-maxprob-thr25-2mm')
@@ -44,7 +44,7 @@ reduced_confounfs = data.confounds[0]  # This is a preselected set of confounds
 
 ##############################################################################
 # Extract signals on a parcellation defined by labels
-# -----------------------------------------------------
+# ---------------------------------------------------
 # Using the NiftiLabelsMasker
 from nilearn.input_data import NiftiLabelsMasker
 masker = NiftiLabelsMasker(labels_img=atlas_filename, standardize=True,
@@ -57,7 +57,7 @@ time_series = masker.fit_transform(fmri_filenames, confounds=reduced_confounfs)
 
 ##############################################################################
 # Compute and display a correlation matrix
-# -----------------------------------------
+# ----------------------------------------
 from nilearn.connectome import ConnectivityMeasure
 correlation_measure = ConnectivityMeasure(kind='correlation')
 correlation_matrix = correlation_measure.fit_transform([time_series])[0]
@@ -76,7 +76,7 @@ plotting.plot_matrix(correlation_matrix, figure=(10, 8), labels=labels[1:],
 
 ##############################################################################
 # Load confounds from file using a flexible strategy with load_confounds
-# -----------------------------------------------------
+# ----------------------------------------------------------------------
 # The :mod:`nilearn.load_confounds` module can be used to create
 # a :class:`nilearn.load_confounds.Confounds` class with flexible
 # parameters. We create a :class:`nilearn.load_confounds.Confounds` class
@@ -152,9 +152,8 @@ plotting.plot_matrix(correlation_matrix, figure=(10, 8), labels=labels[1:],
                      reorder=True)
 
 ###############################################################################
-# Extract signals and compute a connectivity matrix without confounds, to
-# stress the importance of confounds.
-# --------------------------------------------------------------------
+# Extract signals and compute a connectivity matrix without confounds
+# -------------------------------------------------------------------
 
 time_series = masker.fit_transform(fmri_filenames)
 # Note how we did not specify confounds above. This is bad!
