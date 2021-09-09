@@ -229,8 +229,8 @@ the :ref:`user guide <user_guide>` for more information and usage examples.
 
  .. _load_confounds_ref:
 
- :mod:`nilearn.load_confonds`: Load fMRIPrep generated confounds
- ===============================================================
+ :mod:`nilearn.load_confounds`: Load fMRIPrep generated confounds
+ ================================================================
 
  .. automodule:: nilearn.load_confounds
      :no-members:
