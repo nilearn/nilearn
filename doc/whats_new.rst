@@ -3,7 +3,8 @@
 
 NEW
 ---
-
+- New atlas fetcher
+  :func:`nilearn.datasets.fetch_atlas_juelich` to download Juelich atlas from FSL.
 - :func:`nilearn.datasets.load_mni152_gm_template` takes the skullstripped
   1mm-resolution version of the grey-matter MNI152 template and re-samples it
   using a different resolution, if specified.
