@@ -10,5 +10,5 @@ from .parser import Confounds
 
 __all__ = ["Confounds"]
 
-warn('The nilearn.koad_confounds module is experimental. '
+warn('The nilearn.load_confounds module is experimental. '
      'It may change in any future release of Nilearn.', FutureWarning)
