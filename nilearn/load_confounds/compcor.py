@@ -1,8 +1,12 @@
 """Helper function for _load_compcor."""
 
 
-prefix_compcor = {"temporal_anat": ["t", "a"], "temporal": ["t"], "anat": ["a"]}
-anat_masker = {"combined": ["combined"], "separated": ["WM", "CSF"], None: None}
+prefix_compcor = {"temporal_anat": ["t", "a"],
+                  "temporal": ["t"],
+                  "anat": ["a"]}
+anat_masker = {"combined": ["combined"],
+               "separated": ["WM", "CSF"],
+               None: None}
 
 
 def _find_compcor(confounds_json, compcor, n_compcor):
