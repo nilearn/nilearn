@@ -30,19 +30,6 @@ def is_installing():
     return install_commands.intersection(set(sys.argv))
 
 
-def list_required_packages():
-    required_packages = []
-    required_packages_orig = ['%s>=%s' % (mod, meta['min_version'])
-                              for mod, meta
-                              in _VERSION_GLOBALS['REQUIRED_MODULE_METADATA']
-                              ]
-    for package in required_packages_orig:
-        if package.startswith('sklearn'):
-            package = package.replace('sklearn', 'scikit-learn')
-        required_packages.append(package)
-    return required_packages
-
-
 # Make sources available using relative paths from this file's directory.
 os.chdir(os.path.dirname(os.path.abspath(__file__)))
 
@@ -112,6 +99,4 @@ if __name__ == "__main__":
               'nilearn.glm.tests': ['*.nii.gz', '*.npz'],
               'nilearn.reporting.glm_reporter_templates': ['*.html'],
           },
-          install_requires=list_required_packages(),
-          python_requires='>=3.6',
           )
