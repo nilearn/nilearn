@@ -11,7 +11,7 @@ import json
 import re
 
 from .scrub import _extract_outlier_regressors
-from .._utils.load_confounds import _flag_single_gifti
+from .._utils.load_confounds import _flag_single_gifti, _is_camel_case
 
 
 img_file_patterns = {
@@ -163,9 +163,27 @@ def _get_file_raw(confounds_raw_path):
     confounds_raw = pd.read_csv(
         confounds_raw_path, delimiter="\t", encoding="utf-8"
     )
-    # To-do
+
     # check if the version of fMRIprep (>=1.2.0) is supported based on
-    # header format.
+    # header format. 1.0.x and 1.1.x series uses camel case
+    if any(_is_camel_case(col_name) for col_name in confounds_raw.columns):
+        raise ValueError("The confound file contains header in camel case."
+                         "This is likely the output from 1.0.x and 1.1.x "
+                         "series. We only support fmriprep outputs >= 1.2.0."
+                         f"{confounds_raw.columns}")
+
+    # even old version with no header will have the first row as header
+    try:
+        too_old = float(confounds_raw.columns[0])
+    except ValueError:
+        too_old = False
+
+    if too_old:
+        bad_file = pd.read_csv(confounds_raw_path, delimiter="\t",
+                               encoding="utf-8", header=None)
+        raise ValueError("The confound file contains no header."
+                         "Is this an old version fMRIprep output?"
+                         f"{bad_file.head()}")
     return confounds_raw
 
 

@@ -1,20 +1,22 @@
 import os
 import re
 import numpy as np
+import pandas as pd
 from scipy.stats import pearsonr
 from sklearn.preprocessing import scale
 import pytest
 from nibabel import Nifti1Image
 from nilearn.input_data import NiftiMasker
 from nilearn.load_confounds import parser as lc
-
+from nilearn._utils.load_confounds import to_camel_case
 
 path_data = os.path.join(os.path.dirname(lc.__file__), "data")
 file_confounds = os.path.join(
     path_data, "test_space-MNI152NLin2009cAsym_desc-preproc_bold.nii.gz"
 )
 file_no_none_steady = os.path.join(
-    path_data, "nonss_space-MNI152NLin2009cAsym_desc-preproc_bold.nii.gz"
+    path_data,
+    "no_nonsteady_space-MNI152NLin2009cAsym_desc-preproc_bold.nii.gz"
 )
 
 
@@ -324,23 +326,31 @@ def test_n_motion():
         conf.load(file_confounds)
 
 
-def test_not_found_exception():
+def test_not_found_exception(tmp_path):
+    missing_params = ["trans_y", "trans_x_derivative1", "rot_z_power2"]
+    missing_keywords = ["cosine"]
+
+    # Create invalid file in temporary dir
+    file_missing_confounds, bad_conf = _create_empty_filepath(tmp_path)
+    leagal_confounds = _get_leagal_confound()
+    cosine = [col_name
+              for col_name in leagal_confounds.columns
+              if "cosine" in col_name]
+    aroma = [col_name
+             for col_name in leagal_confounds.columns
+             if "aroma" in col_name]
+
+    missing_confounds = leagal_confounds.drop(
+        columns=missing_params + cosine + aroma)
+    missing_confounds.to_csv(bad_conf, sep="\t", index=False)
 
     conf = lc.Confounds(
         strategy=["high_pass", "motion", "global"],
         global_signal="full",
         motion="full",
     )
-
-    missing_params = ["trans_y", "trans_x_derivative1", "rot_z_power2"]
-    missing_keywords = ["cosine"]
-
-    file_missing_confounds = os.path.join(
-        path_data, "missing_space-MNI152NLin2009cAsym_desc-preproc_bold.nii.gz"
-    )
-
     with pytest.raises(ValueError) as exc_info:
-        conf.load(file_missing_confounds)
+        conf.load(str(file_missing_confounds))
     assert f"{missing_params}" in exc_info.value.args[0]
     assert f"{missing_keywords}" in exc_info.value.args[0]
 
@@ -348,7 +358,7 @@ def test_not_found_exception():
     # missing for that example dataset
     with pytest.raises(ValueError):
         conf = lc.Confounds(strategy=["compcor"], compcor="anat_combined")
-        conf.load(file_missing_confounds)
+        conf.load(str(file_missing_confounds))
 
     # catch invalid compcor option
     with pytest.raises(KeyError):
@@ -360,7 +370,7 @@ def test_not_found_exception():
     # correct nifti but missing noise regressor
     with pytest.raises(ValueError) as exc_info:
         conf = lc.Confounds(strategy=["ica_aroma"], ica_aroma="basic")
-        conf.load(file_missing_confounds)
+        conf.load(str(file_missing_confounds))
     assert "aroma" in exc_info.value.args[0]
 
     # Aggressive ICA-AROMA strategy requires
@@ -377,7 +387,7 @@ def test_not_found_exception():
     # desc-smoothAROMAnonaggr nifti file
     with pytest.raises(ValueError) as exc_info:
         conf = lc.Confounds(strategy=["ica_aroma"], ica_aroma="full")
-        conf.load(file_missing_confounds)
+        conf.load(str(file_missing_confounds))
     assert "desc-smoothAROMAnonaggr_bold" in exc_info.value.args[0]
 
 
@@ -408,24 +418,54 @@ def test_load_non_nifti():
     assert conf.confounds_.size != 0
 
 
-def test_invalid_filetype():
+def _create_empty_filepath(base_path):
+    """Create empty fake files in temporary directory."""
+    nii_root = "_space-MNI152NLin2009cAsym_desc-preproc_bold.nii.gz"
+    confounds_root = "_desc-confounds_regressors.tsv"
+    bad_nii = "badfile" + nii_root
+    bad_conf = "badfile" + confounds_root
+    bad_nii = base_path / bad_nii
+    bad_nii.touch()
+    bad_conf = base_path / bad_conf
+    bad_conf.touch()
+    return bad_nii, bad_conf
+
+
+def _get_leagal_confound():
+    return pd.read_csv(
+        os.path.join(path_data, "test_desc-confounds_regressors.tsv"),
+        delimiter="\t", encoding="utf-8")
+
+
+def test_invalid_filetype(tmp_path):
     """Invalid file types/associated files for load method."""
-    # invalid fmriprep version: contain confound files before and after v20.2.0
+
+    # invalid fmriprep version: confound file with no header (<1.0)
     conf = lc.Confounds()
+    bad_nii, bad_conf = _create_empty_filepath(tmp_path)
+    fake_confounds = np.random.rand(30, 20)
+    np.savetxt(bad_conf, fake_confounds, delimiter="\t")
+    with pytest.raises(ValueError) as error_log:
+        conf.load(str(bad_nii))
+    assert "The confound file contains no header." in str(error_log.value)
 
-    invalid_ver = os.path.join(
-        path_data, "invalid_space-MNI152NLin2009cAsym_desc-preproc_bold.nii.gz"
-    )
-    with pytest.raises(ValueError):
-        conf.load(invalid_ver)
+    # invalid fmriprep version: old camel case header (<1.2)
+    leagal_confounds = _get_leagal_confound()
+    camel_confounds = leagal_confounds.copy()
+    camel_confounds.columns = [to_camel_case(col_name)
+                               for col_name in leagal_confounds.columns]
+    camel_confounds.to_csv(bad_conf, sep="\t", index=False)
+    with pytest.raises(ValueError) as error_log:
+        conf.load(str(bad_nii))
+    assert "contains header in camel case." in str(error_log.value)
 
-    # nifti with no associated confound file
-    no_confound = os.path.join(
-        path_data,
-        "noconfound_space-MNI152NLin2009cAsym_desc-preproc_bold.nii.gz",
-    )
+    # create a empty nifti file with no associated confound file
+    # We only need the path to check this
+    no_conf = "no_confound_space-MNI152NLin2009cAsym_desc-preproc_bold.nii.gz"
+    no_confound = tmp_path / no_conf
+    no_confound.touch()
     with pytest.raises(ValueError):
-        conf.load(no_confound)
+        conf.load(str(no_confound))
 
 
 def test_ica_aroma():
