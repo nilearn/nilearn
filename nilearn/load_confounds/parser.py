@@ -79,13 +79,13 @@ class Confounds:
         "full" translation/rotation + derivatives + quadratic terms + power2d
                derivatives (24 parameters)
 
-    n_motion_components_components : float
+    n_motion_components : float
         Number of pca components to keep from head motion estimates.
         If the parameters is strictly comprised between 0 and 1, a principal
         component analysis is applied to the motion parameters, and the number
         of extracted components is set to exceed `n_motion_components` percent
         of the parameters variance.
-        If the n_motion_components_components = 0, then no PCA is performed.
+        If the n_motion_components = 0, then no PCA is performed.
 
     fd_threshold : float, optional
         Framewise displacement threshold for scrub (default = 0.2 mm)
@@ -166,7 +166,7 @@ class Confounds:
         The index of the niimgs along time/fourth dimension for valid volumes
         for subsequent analysis.
         This attribute should be passed to parameter `sample_mask` of
-        nilearn.NiftiMasker or nilearn.signal.clean.
+        :class:`nilearn.input_data.NiftiMasker` or :func:`nilearn.signal.clean`.
         Volumns are removed if flagged as following:
             - Non-steady-state volumes (if present)
             - Motion outliers detected by scrubbing
