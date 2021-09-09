@@ -8,10 +8,10 @@ a correlation matrix.
 We also show the importance of defining good confounds signals: the
 first correlation matrix is computed after regressing out simple
 confounds signals: movement regressors, white matter and CSF signals, ...
-The second one demonstrated the functionality of the :mod:`nilearn.load_confounds` module to
-select sensible confound variables from fMRIprep outputs.The third one is
-without any confounds: all regions are connected to each other.
-
+The second one demonstrated the functionality of the
+:mod:`nilearn.load_confounds` module to select sensible confound variables
+from fMRIprep outputs. The third one is without any confounds: all regions
+are connected to each other.
 
 One reference that discusses the importance of confounds is `Varoquaux and
 Craddock, Learning and comparing functional connectomes across subjects,
@@ -79,10 +79,11 @@ plotting.plot_matrix(correlation_matrix, figure=(10, 8), labels=labels[1:],
 # -----------------------------------------------------
 # The :mod:`nilearn.load_confounds` module can be used to create
 # a :class:`nilearn.load_confounds.Confounds` class with flexible
-# parameters. We create a :class:`nilearn.load_confounds.Confounds` class which specifies strategies and
-# optional parameters. Then the :func:`nilearn.load_confounds.Confounds.load` method selects the relevant columns from
-# the TSV file. Let's try a strategy similar to Params9 from Ciric et al. 2017,
-# and some of its variations:
+# parameters. We create a :class:`nilearn.load_confounds.Confounds` class
+# which specifies strategies and optional parameters. Then the
+# :func:`nilearn.load_confounds.Confounds.load` method selects the relevant
+# columns from the TSV file. Let's try a strategy similar to Params9 from
+# Ciric et al. 2017, and some of its variations:
 
 from nilearn.load_confounds import Confounds
 params9 = Confounds(strategy=["high_pass", "motion", "wm_csf", "global"],
@@ -151,7 +152,8 @@ plotting.plot_matrix(correlation_matrix, figure=(10, 8), labels=labels[1:],
                      reorder=True)
 
 ###############################################################################
-# Same thing without confounds, to stress the importance of confounds
+# Extract signals and compute a connectivity matrix without confounds, to
+# stress the importance of confounds.
 # --------------------------------------------------------------------
 
 time_series = masker.fit_transform(fmri_filenames)

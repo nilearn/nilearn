@@ -145,7 +145,7 @@ def test_nilearn_regress():
     _regression(confounds, sample_mask)
 
     # Regress TempCompCor
-    confounds, _ = lc.Confounds(strategy=["compcor"], compcor="temp").load(
+    confounds, _ = lc.Confounds(strategy=["compcor"], compcor="temporal").load(
         file_confounds
     )
     _regression(confounds, sample_mask)
@@ -304,6 +304,12 @@ def test_n_motion():
     conf.load(file_confounds)
     assert "motion_pca_1" in conf.confounds_.columns
     assert "motion_pca_2" not in conf.confounds_.columns
+
+    conf = lc.Confounds(strategy=["motion"], motion="full",
+                        n_motion_components=2)
+    conf.load(file_confounds)
+    assert "motion_pca_1" in conf.confounds_.columns
+    assert "motion_pca_3" not in conf.confounds_.columns
 
     conf = lc.Confounds(strategy=["motion"], motion="full",
                         n_motion_components=0.95)

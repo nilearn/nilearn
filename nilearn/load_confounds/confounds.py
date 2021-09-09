@@ -71,10 +71,7 @@ def _sanitize_confounds(img_files):
 
 
 def _add_suffix(params, model):
-    """
-    Add suffixes to a list of parameters.
-    Suffixes includes derivatives, power2 and full
-    """
+    """Add derivative suffixes to a list of parameters."""
     params_full = params.copy()
     suffix = {
         "basic": {},
@@ -111,8 +108,7 @@ def _pca_motion(confounds_motion, n_components):
 
 
 def _get_file_name(nii_file):
-    """Construct the name of the raw confound file from fMRIprep-processed
-    functional data."""
+    """Construct the raw confound file name from processed functional data."""
     if isinstance(nii_file, list):  # catch gifti
         nii_file = nii_file[0]
     suffix = "_space-" + nii_file.split("space-")[1]
@@ -163,11 +159,13 @@ def _get_json(confounds_raw_path, flag_acompcor):
 
 
 def _get_file_raw(confounds_raw_path):
-    """Load raw confounds as a pandas DataFrame and check if the version
-    of fMRIprep (>=1.2.0) is supported based on header format (to-do)."""
+    """Load raw confounds as a pandas DataFrame."""
     confounds_raw = pd.read_csv(
         confounds_raw_path, delimiter="\t", encoding="utf-8"
     )
+    # To-do
+    # check if the version of fMRIprep (>=1.2.0) is supported based on
+    # header format.
     return confounds_raw
 
 
@@ -238,10 +236,12 @@ class MissingConfound(Exception):
     Parameters
     ----------
         params : list of missing params
+            Default values are empty lists.
         keywords: list of missing keywords
+            Default values are empty lists.
     """
 
     def __init__(self, params=None, keywords=None):
-        """Default values are empty lists."""
+        """Set missing parameters and keywords."""
         self.params = params or []
         self.keywords = keywords or []

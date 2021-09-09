@@ -1,12 +1,12 @@
 """Helper function for _load_compcor."""
 
 
-prefix_compcor = {"full": ["t", "a"], "temp": ["t"], "anat": ["a"]}
+prefix_compcor = {"full": ["t", "a"], "temporal": ["t"], "anat": ["a"]}
 anat_masker = {True: ["combined"], False: ["WM", "CSF"], None: None}
 
 
 def _find_compcor(confounds_json, compcor, n_compcor, acompcor_combined):
-    """Builds list for the number of compcor components."""
+    """Build list for the number of compcor components."""
     prefix_set, anat_mask = _check_compcor_method(compcor, acompcor_combined)
 
     collector = []
@@ -18,7 +18,7 @@ def _find_compcor(confounds_json, compcor, n_compcor, acompcor_combined):
             for comp in confounds_json.keys()
             if f"{prefix}_comp_cor" in comp
         ]
-        # filter by prefix first (anat vs temp)
+        # filter by prefix first (anat vs temporal)
         compcor_cols_filt = _prefix_confound_filter(prefix, all_compcor_name)
         if prefix == "a":
             # apply acompor mask option if relevant, and select top components

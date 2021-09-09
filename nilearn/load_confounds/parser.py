@@ -23,7 +23,7 @@ all_confounds = [
 
 
 def _sanitize_strategy(strategy):
-    """Defines the supported denoising strategies."""
+    """Define the supported denoising strategies."""
     if not isinstance(strategy, list):
         raise ValueError("strategy needs to be a list of strings")
     for conf in strategy:
@@ -49,7 +49,7 @@ def _check_error(missing_confounds, missing_keys):
 
 class Confounds:
     """
-    Use confounds from fmriprep
+    Use confounds from fmriprep.
 
     To enable easy confound variables loading from fMRIprep outputs, Confounds
     provides a interface that groups subsets of confound variables into noise
@@ -61,31 +61,38 @@ class Confounds:
 
     Parameters
     ----------
-    strategy : list of strings
+    strategy : list of strings, default ["motion", "high_pass", "wm_csf"]
         The type of noise components to include.
-        "motion" head motion estimates.
-        "high_pass" discrete cosines covering low frequencies.
-        "wm_csf" confounds derived from white matter and cerebrospinal fluid.
-        "global" confounds derived from the global signal.
-        "compcor" confounds derived from CompCor.
-        "ica_aroma" confounds derived from ICA-AROMA.
-        "scrub" regressors for Power 2014 scrubbing approach.
 
-    motion : string, optional
+        - "motion":  head motion estimates.
+        - "high_pass" discrete cosines covering low frequencies.
+        - "wm_csf" confounds derived from white matter and cerebrospinal fluid.
+        - "global" confounds derived from the global signal.
+        - "compcor" confounds derived from CompCor.
+        - "ica_aroma" confounds derived from ICA-AROMA.
+        - "scrub" regressors for Power 2014 scrubbing approach.
+
+        For each supplied strategy, associated parameters will be applied.
+        Otherwise, any values suppled to the parameters are ignored.
+
+    motion : {'basic', 'power2', 'derivatives', 'full'}, optional
         Type of confounds extracted from head motion estimates.
-        "basic" translation/rotation (6 parameters)
-        "power2" translation/rotation + quadratic terms (12 parameters)
-        "derivatives" translation/rotation + derivatives (12 parameters)
-        "full" translation/rotation + derivatives + quadratic terms + power2d
-               derivatives (24 parameters)
 
-    n_motion_components : float
+        - "basic" translation/rotation (6 parameters)
+        - "power2" translation/rotation + quadratic terms (12 parameters)
+        - "derivatives" translation/rotation + derivatives (12 parameters)
+        - "full" translation/rotation + derivatives + quadratic terms + power2d
+          derivatives (24 parameters)
+
+    n_motion_components : int or float, default 0
         Number of pca components to keep from head motion estimates.
+        The default is 0. No PCA is performed.
+        When an integer is applied, the number should not exceed the number of
+        motion parameters availible.
         If the parameters is strictly comprised between 0 and 1, a principal
         component analysis is applied to the motion parameters, and the number
         of extracted components is set to exceed `n_motion_components` percent
         of the parameters variance.
-        If the n_motion_components = 0, then no PCA is performed.
 
     fd_threshold : float, optional
         Framewise displacement threshold for scrub (default = 0.2 mm)
@@ -97,57 +104,66 @@ class Confounds:
         of timecourses, VARS referring to root mean squared variance over
         voxels.
 
-    wm_csf : string, optional
+    wm_csf : {'basic', 'power2', 'derivatives', 'full'}, optional
         Type of confounds extracted from masks of white matter and
         cerebrospinal fluids.
-        "basic" the averages in each mask (2 parameters)
-        "power2" averages and quadratic terms (4 parameters)
-        "derivatives" averages and derivatives (4 parameters)
-        "full" averages + derivatives + quadratic terms
-               + power2d derivatives (8 parameters)
 
-    global_signal : string, optional
+        - "basic" the averages in each mask (2 parameters)
+        - "power2" averages and quadratic terms (4 parameters)
+        - "derivatives" averages and derivatives (4 parameters)
+        - "full" averages + derivatives + quadratic terms + power2d derivatives
+          (8 parameters)
+
+    global_signal : {'basic', 'power2', 'derivatives', 'full'}, optional
         Type of confounds extracted from the global signal.
-        "basic" just the global signal (1 parameter)
-        "power2" global signal and quadratic term (2 parameters)
-        "derivatives" global signal and derivative (2 parameters)
-        "full" global signal + derivatives + quadratic terms
-               + power2d derivatives (4 parameters)
 
-    scrub : string, optional
+        - "basic" just the global signal (1 parameter)
+        - "power2" global signal and quadratic term (2 parameters)
+        - "derivatives" global signal and derivative (2 parameters)
+        - "full" global signal + derivatives + quadratic terms + power2d
+          derivatives (4 parameters)
+
+    scrub : {'full', 'basic'}, optional
         Type of scrub of frames with excessive motion (Power et al. 2014)
-        "basic" remove time frames based on excessive FD and DVARS
-        "full" also remove time windows which are too short after scrubbing.
-        one-hot encoding vectors are added as regressors for each scrubbed
+
+        - "basic" remove time frames based on excessive framewise displacement
+          and DVARS.
+        - "full" also remove continuous segments containing fewer than 5
+          volumes.
+
+        One-hot encoding vectors are added as regressors for each scrubbed
         frame.
 
-    compcor : string, optional
+    compcor : {'anat', 'temporal', 'full'}, optional
         .. warning::
-                Require fmriprep >= v:1.4.0.
-        Type of confounds extracted from a component based noise correction
-        method
-        "anat" noise components calculated using anatomical compcor
-        "temp" noise components calculated using temporal compcor
-        "full" noise components calculated using both temporal and anatomical
+            Require fmriprep >= v:1.4.0.
 
-    n_compcor : int or "auto", optional
+        Type of confounds extracted from a component based noise correction
+        method.
+
+        - "anat" noise components calculated using anatomical compcor
+        - "temporal" noise components calculated using temporal compcor
+        - "full" noise components calculated using both temporal and anatomical
+
+    n_compcor : "auto" or int, default "auto", optional
         The number of noise components to be extracted.
         For acompcor_combined=False, and/or compcor="full", this is the number
         of components per mask.
-        Default is "auto": select all components
-        (50% variance explained by fMRIPrep defaults)
+        "auto": select all components (50% variance explained by fMRIPrep
+        defaults)
 
-    acompcor_combined: boolean, optional
+    acompcor_combined: boolean, default True
         If true, use components generated from the combined white matter and
         csf masks. Otherwise, components are generated from each mask
         separately and then concatenated.
 
-    ica_aroma : None or string, optional
-        None: default, not using ICA-AROMA related strategy
-        "basic": use noise IC only.
-        "full": use fMRIprep output `~desc-smoothAROMAnonaggr_bold.nii.gz` .
+    ica_aroma : {None, 'basic, 'full'}
 
-    demean : boolean, optional
+        - None: default, not using ICA-AROMA related strategy
+        - "basic": use noise IC only.
+        - "full": use fMRIprep output `~desc-smoothAROMAnonaggr_bold.nii.gz`.
+
+    demean : boolean, default True
         If True, the confounds are standardized to a zero mean (over time).
         This step is critical if the confounds are regressed out of time series
         using nilearn with no or zscore standardization, but should be turned
@@ -166,10 +182,12 @@ class Confounds:
         The index of the niimgs along time/fourth dimension for valid volumes
         for subsequent analysis.
         This attribute should be passed to parameter `sample_mask` of
-        :class:`nilearn.input_data.NiftiMasker` or :func:`nilearn.signal.clean`.
+        :class:`nilearn.input_data.NiftiMasker` or
+        :func:`nilearn.signal.clean`.
         Volumns are removed if flagged as following:
-            - Non-steady-state volumes (if present)
-            - Motion outliers detected by scrubbing
+
+        - Non-steady-state volumes (if present)
+        - Motion outliers detected by scrubbing
 
     Notes
     -----
@@ -183,10 +201,10 @@ class Confounds:
 
     References
     ----------
-    Ciric et al., 2017 "Benchmarking of participant-level confound regression
-    strategies for the control of motion artifact in studies of functional
-    connectivity" Neuroimage 154: 174-87
-    https://doi.org/10.1016/j.neuroimage.2017.03.020
+    .. [1] Ciric et al., 2017 "Benchmarking of participant-level confound
+       regression strategies for the control of motion artifact in studies of
+       functional connectivity" Neuroimage 154: 174-87
+       `<https://doi.org/10.1016/j.neuroimage.2017.03.020>`_
     """
 
     def __init__(
@@ -205,7 +223,7 @@ class Confounds:
         ica_aroma=None,
         demean=True,
     ):
-        """Default parameters."""
+        """Set parameters."""
         self.strategy = _sanitize_strategy(strategy)
         self.motion = motion
         self.n_motion_components = n_motion_components
@@ -222,7 +240,7 @@ class Confounds:
 
     def load(self, img_files):
         """
-        Load fMRIprep confounds and sample mask
+        Load fMRIprep confounds and sample mask.
 
         Parameters
         ----------
@@ -359,8 +377,7 @@ class Confounds:
             return confounds_raw[ica_aroma_params]
 
     def _load_scrub(self, confounds_raw):
-        """Perform basic scrub - Remove volumes if framewise displacement
-        exceeds threshold."""
+        """Remove volumes if FD and/or DVARS exceeds threshold."""
         n_scans = len(confounds_raw)
         # Get indices of fd outliers
         fd_outliers_index = np.where(

@@ -1,7 +1,8 @@
-""" Misc utilities for the library
+""" Misc utilities for the library.
 
 Authors: load_confounds team
 """
+
 
 def _flag_single_gifti(img_files):
     """Test if the paired input files are giftis."""

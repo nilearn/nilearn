@@ -4,13 +4,7 @@ import pandas as pd
 
 
 def _optimize_scrub(motion_outliers_index, n_scans):
-    """
-    Perform optimized scrub. After scrub volumes, further remove
-    continuous segments containing fewer than 5 volumes.
-
-    Power, Jonathan D., et al. "Methods to detect, characterize, and remove
-    motion artifact in resting state fMRI." Neuroimage 84 (2014): 320-341.
-    """
+    """Remove continuous segments containing fewer than 5 volumes."""
     # Start by checking if the beginning continuous segment is fewer than
     # 5 volumes
     if motion_outliers_index[0] < 5:
@@ -39,8 +33,7 @@ def _optimize_scrub(motion_outliers_index, n_scans):
 
 
 def _extract_outlier_regressors(confounds):
-    """After all noise components aggrigated, separate confounds variables and
-    outlier regressors."""
+    """Separate outlier regressors from other confounds variables."""
     outlier_cols, confounds_cols = _get_outlier_cols(confounds.columns)
     if outlier_cols:
         outliers = confounds.loc[:, outlier_cols]
