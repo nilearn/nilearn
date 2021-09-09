@@ -8,4 +8,4 @@ conda install -n testenv -yq nibabel python-kaleido sphinx-gallery sphinxcontrib
 conda install -c plotly plotly
 source activate testenv
 python -m pip install --user --upgrade --progress-bar off pip setuptools
-python -m pip install .
+python -m pip install .[test]
