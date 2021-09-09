@@ -1,13 +1,13 @@
 """Helper function for _load_compcor."""
 
 
-prefix_compcor = {"full": ["t", "a"], "temporal": ["t"], "anat": ["a"]}
-anat_masker = {True: ["combined"], False: ["WM", "CSF"], None: None}
+prefix_compcor = {"temporal_anat": ["t", "a"], "temporal": ["t"], "anat": ["a"]}
+anat_masker = {"combined": ["combined"], "separated": ["WM", "CSF"], None: None}
 
 
-def _find_compcor(confounds_json, compcor, n_compcor, acompcor_combined):
+def _find_compcor(confounds_json, compcor, n_compcor):
     """Build list for the number of compcor components."""
-    prefix_set, anat_mask = _check_compcor_method(compcor, acompcor_combined)
+    prefix_set, anat_mask = _check_compcor_method(compcor)
 
     collector = []
     for prefix in prefix_set:
@@ -42,19 +42,19 @@ def _select_compcor(compcor_cols, n_compcor):
     return compcor_cols
 
 
-def _check_compcor_method(compcor, acompcor_combined):
+def _check_compcor_method(compcor):
     """Load compcor options and check if method is acceptable."""
+    compcor_type = compcor.split("_")
+    if len(compcor_type) > 1:
+        compcor_type = "_".join(compcor_type[:-1])
+        anat_mask_type = compcor.split("_")[-1:][0]
+    else:
+        compcor_type = compcor_type[0]
+        anat_mask_type = None
     # get relevant prefix from compcor strategy
-    prefix_set = prefix_compcor[compcor]
+    prefix_set = prefix_compcor[compcor_type]
     # get relevant compcore mask
-    anat_mask = anat_masker[acompcor_combined]
-    if ("a" in prefix_set) and (anat_mask is None):
-        raise ValueError(
-            (
-                "acompcor_combined must set to True or False. "
-                f"Got {acompcor_combined}"
-            )
-        )
+    anat_mask = anat_masker[anat_mask_type]
     return prefix_set, anat_mask
 
 

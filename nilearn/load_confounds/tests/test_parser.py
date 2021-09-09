@@ -139,11 +139,12 @@ def test_nilearn_regress():
     _regression(confounds, sample_mask)
 
     # Regress AnatCompCor
-    confounds, _ = lc.Confounds(strategy=["compcor"], compcor="anat").load(
-        file_confounds
-    )
+    confounds, _ = lc.Confounds(strategy=["compcor"],
+                                compcor="anat_combined").load(file_confounds)
     _regression(confounds, sample_mask)
-
+    confounds, _ = lc.Confounds(strategy=["compcor"],
+                                compcor="anat_separated").load(file_confounds)
+    _regression(confounds, sample_mask)
     # Regress TempCompCor
     confounds, _ = lc.Confounds(strategy=["compcor"], compcor="temporal").load(
         file_confounds
@@ -290,7 +291,8 @@ def test_motion():
 
 def test_n_compcor():
 
-    conf = lc.Confounds(strategy=["compcor"], compcor="anat", n_compcor=2)
+    conf = lc.Confounds(strategy=["compcor"], compcor="anat_combined",
+                        n_compcor=2)
     conf.load(file_confounds)
     assert "a_comp_cor_00" in conf.confounds_.columns
     assert "a_comp_cor_01" in conf.confounds_.columns
@@ -345,19 +347,12 @@ def test_not_found_exception():
     # loading anat compcor should also raise an error, because the json file is
     # missing for that example dataset
     with pytest.raises(ValueError):
-        conf = lc.Confounds(strategy=["compcor"], compcor="anat")
+        conf = lc.Confounds(strategy=["compcor"], compcor="anat_combined")
         conf.load(file_missing_confounds)
 
     # catch invalid compcor option
     with pytest.raises(KeyError):
         conf = lc.Confounds(strategy=["compcor"], compcor="blah")
-        conf.load(file_confounds)
-
-    # catch invalid compcor option
-    with pytest.raises(ValueError):
-        conf = lc.Confounds(
-            strategy=["compcor"], compcor="full", acompcor_combined=None
-        )
         conf.load(file_confounds)
 
     # Aggressive ICA-AROMA strategy requires

@@ -73,9 +73,9 @@ class Confounds:
         - "scrub" regressors for Power 2014 scrubbing approach.
 
         For each supplied strategy, associated parameters will be applied.
-        Otherwise, any values suppled to the parameters are ignored.
+        Otherwise, any values supplied to the parameters are ignored.
 
-    motion : {'basic', 'power2', 'derivatives', 'full'}, optional
+    motion : {'basic', 'power2', 'derivatives', 'full'}
         Type of confounds extracted from head motion estimates.
 
         - "basic" translation/rotation (6 parameters)
@@ -94,17 +94,17 @@ class Confounds:
         of extracted components is set to exceed `n_motion_components` percent
         of the parameters variance.
 
-    fd_threshold : float, optional
+    fd_threshold : float, default 0.2
         Framewise displacement threshold for scrub (default = 0.2 mm)
 
-    std_dvars_threshold : float, optional
+    std_dvars_threshold : float, default 3
         Standardized DVARS threshold for scrub (default = 3).
         DVARs is defined as root mean squared intensity difference of volume N
         to volume N+1 (Power et al. 2012). D referring to temporal derivative
         of timecourses, VARS referring to root mean squared variance over
         voxels.
 
-    wm_csf : {'basic', 'power2', 'derivatives', 'full'}, optional
+    wm_csf : {'basic', 'power2', 'derivatives', 'full'}
         Type of confounds extracted from masks of white matter and
         cerebrospinal fluids.
 
@@ -114,7 +114,7 @@ class Confounds:
         - "full" averages + derivatives + quadratic terms + power2d derivatives
           (8 parameters)
 
-    global_signal : {'basic', 'power2', 'derivatives', 'full'}, optional
+    global_signal : {'basic', 'power2', 'derivatives', 'full'}
         Type of confounds extracted from the global signal.
 
         - "basic" just the global signal (1 parameter)
@@ -123,7 +123,7 @@ class Confounds:
         - "full" global signal + derivatives + quadratic terms + power2d
           derivatives (4 parameters)
 
-    scrub : {'full', 'basic'}, optional
+    scrub : {'full', 'basic'}
         Type of scrub of frames with excessive motion (Power et al. 2014)
 
         - "basic" remove time frames based on excessive framewise displacement
@@ -134,33 +134,35 @@ class Confounds:
         One-hot encoding vectors are added as regressors for each scrubbed
         frame.
 
-    compcor : {'anat', 'temporal', 'full'}, optional
+    compcor : {'anat_combined', 'anat_separated', 'temporal',
+    'temporal_anat_combined', 'temporal_anat_separated'}
+
         .. warning::
             Require fmriprep >= v:1.4.0.
 
         Type of confounds extracted from a component based noise correction
         method.
 
-        - "anat" noise components calculated using anatomical compcor
+        - "anat_combined" noise components calculated using a white matter and
+          CSF combined anatomical mask
+        - "anat_separated" noise components calculated using white matter mask
+          and CSF mask compcor separately; two set of scores are concatenated
         - "temporal" noise components calculated using temporal compcor
-        - "full" noise components calculated using both temporal and anatomical
+        - "temporal_anat_combined" components of "temporal" and "anat_combined"
+        - "temporal_anat_separated" components of "temporal" and
+          "anat_separated"
 
-    n_compcor : "auto" or int, default "auto", optional
+    n_compcor : "auto" or int, default "auto"
         The number of noise components to be extracted.
         For acompcor_combined=False, and/or compcor="full", this is the number
         of components per mask.
         "auto": select all components (50% variance explained by fMRIPrep
         defaults)
 
-    acompcor_combined: boolean, default True
-        If true, use components generated from the combined white matter and
-        csf masks. Otherwise, components are generated from each mask
-        separately and then concatenated.
-
     ica_aroma : {None, 'basic, 'full'}
 
         - None: default, not using ICA-AROMA related strategy
-        - "basic": use noise IC only.
+        - "basic": use noise independent components only.
         - "full": use fMRIprep output `~desc-smoothAROMAnonaggr_bold.nii.gz`.
 
     demean : boolean, default True
@@ -201,10 +203,9 @@ class Confounds:
 
     References
     ----------
-    .. [1] Ciric et al., 2017 "Benchmarking of participant-level confound
-       regression strategies for the control of motion artifact in studies of
-       functional connectivity" Neuroimage 154: 174-87
-       `<https://doi.org/10.1016/j.neuroimage.2017.03.020>`_
+    Ciric et al., 2017 "Benchmarking of participant-level confound regression
+    strategies for the control of motion artifact in studies of functional
+    connectivity" Neuroimage 154: 174-87
     """
 
     def __init__(
@@ -217,8 +218,7 @@ class Confounds:
         std_dvars_thresh=3,
         wm_csf="basic",
         global_signal="basic",
-        compcor="anat",
-        acompcor_combined=True,
+        compcor="anat_combined",
         n_compcor="auto",
         ica_aroma=None,
         demean=True,
@@ -233,7 +233,6 @@ class Confounds:
         self.wm_csf = wm_csf
         self.global_signal = global_signal
         self.compcor = compcor
-        self.acompcor_combined = acompcor_combined
         self.n_compcor = n_compcor
         self.ica_aroma = ica_aroma
         self.demean = demean
@@ -252,13 +251,13 @@ class Confounds:
 
         Returns
         -------
-        confounds :  pandas.DataFrame or list of pandas.DataFrame
+        confounds : pandas.DataFrame, or list of
             A reduced version of fMRIprep confounds based on selected strategy
             and flags.
             An intercept is automatically added to the list of confounds.
             The columns contains the labels of the regressors.
 
-        sample_mask : list or list of list
+        sample_mask : None, numpy.ndarray, or list of
             Index of time point to be preserved in the analysis.
             When no volumns require removal, the value is None.
         """
@@ -293,7 +292,7 @@ class Confounds:
         # Convert tsv file to pandas dataframe
         # check if relevant imaging files are present according to the strategy
         flag_acompcor = ("compcor" in self.strategy) and (
-            self.compcor == "anat"
+            "anat" in self.compcor
         )
         flag_full_aroma = ("ica_aroma" in self.strategy) and (
             self.ica_aroma == "full"
@@ -358,9 +357,7 @@ class Confounds:
 
     def _load_compcor(self, confounds_raw):
         """Load compcor regressors."""
-        compcor_cols = _find_compcor(
-            self.json_, self.compcor, self.n_compcor, self.acompcor_combined
-        )
+        compcor_cols = _find_compcor(self.json_, self.compcor, self.n_compcor)
         cf._check_params(confounds_raw, compcor_cols)
         return confounds_raw[compcor_cols]
 
