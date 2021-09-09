@@ -28,12 +28,11 @@ jobs:
 
   - script: |
       python -m pip install --upgrade pip
-      pip install --prefer-binary -r requirements-dev.txt
       pip install pytest-azurepipelines codecov
     displayName: 'Install dependencies'
 
   - script: |
-      pip install .
+      pip install --prefer-binary .[dev]
       python -m pytest --pyargs nilearn --cov-report=xml --cov=nilearn --cov-append --junitxml=test-results.xml
     displayName: 'test'
 
