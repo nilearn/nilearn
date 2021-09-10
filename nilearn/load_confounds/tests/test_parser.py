@@ -10,6 +10,8 @@ from nilearn.input_data import NiftiMasker
 from nilearn.load_confounds import parser as lc
 from nilearn._utils.load_confounds import to_camel_case
 
+from .utils import create_empty_filepath, get_leagal_confound
+
 path_data = os.path.join(os.path.dirname(lc.__file__), "data")
 file_confounds = os.path.join(
     path_data, "test_space-MNI152NLin2009cAsym_desc-preproc_bold.nii.gz"
@@ -20,9 +22,10 @@ file_no_none_steady = os.path.join(
 )
 
 
-def _simu_img(demean=True):
+def _simu_img(tmp_path, demean=True):
     """Simulate an nifti image based on confound file with some parts confounds
     and some parts noise."""
+    file_nii, _ = create_empty_filepath(tmp_path, copy_testdata=True)
     # set the size of the image matrix
     nx = 5
     ny = 5
@@ -32,7 +35,7 @@ def _simu_img(demean=True):
     # Load a simple 6 parameters motion models as confounds
     confounds, _ = lc.Confounds(
         strategy=["motion"], motion="basic", demean=demean
-    ).load(file_confounds)
+    ).load(file_nii)
     X = confounds.values
     # the first row is non-steady state, replace it with the imput from the
     # second row
@@ -101,10 +104,10 @@ def _corr_tseries(tseries1, tseries2):
     return corr
 
 
-def _regression(confounds, sample_mask):
+def _regression(confounds, sample_mask, tmp_path):
     """Simple regression with nilearn."""
     # Simulate data
-    img, mask_conf, _, _ = _simu_img(demean=True)
+    img, mask_conf, _, _ = _simu_img(tmp_path, demean=True)
     confounds = np.tile(confounds, (3, 1))  # matching L29 (_simu_img)
 
     # Do the regression
@@ -124,19 +127,19 @@ def _regression(confounds, sample_mask):
                           ("compcor", {"compcor": "anat_separated"}),
                           ("compcor", {"compcor": "temporal"}),
                           ("ica_aroma", {"ica_aroma": "basic"})])
-def test_nilearn_regress(strategy, param):
+def test_nilearn_regress(tmp_path, strategy, param):
     """Try regressing out all motion types in nilearn."""
     confounds, _ = lc.Confounds(strategy=[strategy], **param).load(
         file_confounds
     )
-    _regression(confounds, None)
+    _regression(confounds, None, tmp_path)
 
 
 @pytest.mark.filterwarnings("ignore")
-def test_nilearn_standardize_false():
+def test_nilearn_standardize_false(tmp_path):
     """Test removing confounds in nilearn with no standardization."""
     # Simulate data
-    img, mask_conf, mask_rand, X = _simu_img(demean=True)
+    img, mask_conf, mask_rand, X = _simu_img(tmp_path, demean=True)
 
     # Check that most variance is removed
     # in voxels composed of pure confounds
@@ -150,11 +153,11 @@ def test_nilearn_standardize_false():
 
 
 @pytest.mark.filterwarnings("ignore")
-def test_nilearn_standardize_zscore():
+def test_nilearn_standardize_zscore(tmp_path):
     """Test removing confounds in nilearn with zscore standardization."""
     # Simulate data
 
-    img, mask_conf, mask_rand, X = _simu_img(demean=True)
+    img, mask_conf, mask_rand, X = _simu_img(tmp_path, demean=True)
 
     # We now load the time series with vs without confounds
     # in voxels composed of pure confounds
@@ -173,12 +176,12 @@ def test_nilearn_standardize_zscore():
     assert corr.mean() > 0.8
 
 
-def test_nilearn_standardize_psc():
+def test_nilearn_standardize_psc(tmp_path):
     """Test removing confounds in nilearn with psc standardization."""
     # Similar test to test_nilearn_standardize_zscore, but with psc
     # Simulate data
 
-    img, mask_conf, mask_rand, X = _simu_img(demean=False)
+    img, mask_conf, mask_rand, X = _simu_img(tmp_path, demean=False)
 
     # Areas with confound
     tseries_raw, tseries_clean = _denoise(img, mask_conf, X, None, "psc")
@@ -191,13 +194,11 @@ def test_nilearn_standardize_psc():
     assert corr.mean() > 0.8
 
 
-def test_confounds2df():
+def test_confounds2df(tmp_path):
     """Check auto-detect of confonds from an fMRI nii image."""
     conf = lc.Confounds()
-    file_confounds_nii = os.path.join(
-        path_data, "test_space-MNI152NLin2009cAsym_desc-preproc_bold.nii.gz"
-    )
-    conf.load(file_confounds_nii)
+    img_nii, _ = create_empty_filepath(tmp_path, copy_testdata=True)
+    conf.load(img_nii)
     assert "trans_x" in conf.confounds_.columns
 
 
@@ -231,9 +232,10 @@ def expected_suffixes(motion):
 @pytest.mark.parametrize('param',
                          ["trans_x", "trans_y", "trans_z",
                           "rot_x", "rot_y", "rot_z"])
-def test_motion(motion, param, expected_suffixes):
+def test_motion(tmp_path, motion, param, expected_suffixes):
+    img_nii, _ = create_empty_filepath(tmp_path, copy_testdata=True)
     conf = lc.Confounds(strategy=["motion"], motion=motion)
-    conf.load(file_confounds)
+    conf.load(img_nii)
     for suff in SUFFIXES:
         if suff in expected_suffixes:
             assert f"{param}{suff}" in conf.confounds_.columns
@@ -241,10 +243,12 @@ def test_motion(motion, param, expected_suffixes):
             assert f"{param}{suff}" not in conf.confounds_.columns
 
 
-def test_n_compcor():
+def test_n_compcor(tmp_path):
+    img_nii, _ = create_empty_filepath(tmp_path, copy_testdata=True,
+                                       copy_json=True)
     conf = lc.Confounds(strategy=["compcor"], compcor="anat_combined",
                         n_compcor=2)
-    conf.load(file_confounds)
+    conf.load(img_nii)
     assert "a_comp_cor_00" in conf.confounds_.columns
     assert "a_comp_cor_01" in conf.confounds_.columns
     assert "a_comp_cor_02" not in conf.confounds_.columns
@@ -260,14 +264,16 @@ def expected_components(n_comp):
 
 
 @pytest.mark.parametrize('n_comp', [.2, 2, .95, 50])
-def test_n_motion(n_comp, expected_components):
+def test_n_motion(tmp_path, n_comp, expected_components):
+    img_nii, _ = create_empty_filepath(tmp_path, copy_testdata=True,
+                                       copy_json=True)
     conf = lc.Confounds(strategy=["motion"], motion="full",
                         n_motion_components=n_comp)
     if n_comp == 50:
         with pytest.raises(ValueError):
-            conf.load(file_confounds)
+            conf.load(img_nii)
     else:
-        conf.load(file_confounds)
+        conf.load(img_nii)
         for i in range(1, 12):
             if i in expected_components:
                 assert f"motion_pca_{i}" in conf.confounds_.columns
@@ -280,26 +286,26 @@ def test_not_found_exception(tmp_path):
     missing_keywords = ["cosine"]
 
     # Create invalid file in temporary dir
-    file_missing_confounds, bad_conf = _create_empty_filepath(tmp_path)
-    leagal_confounds = _get_leagal_confound()
+    img_missing_confounds, bad_conf = create_empty_filepath(tmp_path,
+                                                            copy_testdata=True,
+                                                            copy_json=False)
+    leagal_confounds = pd.read_csv(bad_conf, delimiter="\t", encoding="utf-8")
     cosine = [col_name
               for col_name in leagal_confounds.columns
               if "cosine" in col_name]
     aroma = [col_name
              for col_name in leagal_confounds.columns
              if "aroma" in col_name]
-
     missing_confounds = leagal_confounds.drop(
         columns=missing_params + cosine + aroma)
     missing_confounds.to_csv(bad_conf, sep="\t", index=False)
-
     conf = lc.Confounds(
         strategy=["high_pass", "motion", "global"],
         global_signal="full",
         motion="full",
     )
     with pytest.raises(ValueError) as exc_info:
-        conf.load(str(file_missing_confounds))
+        conf.load(img_missing_confounds)
     assert f"{missing_params}" in exc_info.value.args[0]
     assert f"{missing_keywords}" in exc_info.value.args[0]
 
@@ -307,7 +313,7 @@ def test_not_found_exception(tmp_path):
     # missing for that example dataset
     with pytest.raises(ValueError):
         conf = lc.Confounds(strategy=["compcor"], compcor="anat_combined")
-        conf.load(str(file_missing_confounds))
+        conf.load(img_missing_confounds)
 
     # catch invalid compcor option
     with pytest.raises(KeyError):
@@ -319,15 +325,13 @@ def test_not_found_exception(tmp_path):
     # correct nifti but missing noise regressor
     with pytest.raises(ValueError) as exc_info:
         conf = lc.Confounds(strategy=["ica_aroma"], ica_aroma="basic")
-        conf.load(str(file_missing_confounds))
+        conf.load(img_missing_confounds)
     assert "aroma" in exc_info.value.args[0]
 
     # Aggressive ICA-AROMA strategy requires
     # default nifti
-    aroma_nii = os.path.join(
-        path_data,
-        "test_space-MNI152NLin2009cAsym_desc-smoothAROMAnonaggr_bold.nii.gz",
-    )
+    aroma_nii, _ = create_empty_filepath(tmp_path, image_type="icaaroma",
+                                         suffix="aroma")
     with pytest.raises(ValueError) as exc_info:
         conf.load(aroma_nii)
     assert "Invalid file type" in exc_info.value.args[0]
@@ -336,55 +340,32 @@ def test_not_found_exception(tmp_path):
     # desc-smoothAROMAnonaggr nifti file
     with pytest.raises(ValueError) as exc_info:
         conf = lc.Confounds(strategy=["ica_aroma"], ica_aroma="full")
-        conf.load(str(file_missing_confounds))
+        conf.load(img_missing_confounds)
     assert "desc-smoothAROMAnonaggr_bold" in exc_info.value.args[0]
 
 
-def test_load_non_nifti():
+def test_load_non_nifti(tmp_path):
     """Test non-nifti and invalid file type as input."""
     conf = lc.Confounds()
 
     # tsv file - unsupported input
-    tsv = os.path.join(path_data, "test_desc-confounds_regressors.tsv")
+    _, tsv = create_empty_filepath(tmp_path, copy_testdata=True,
+                                   copy_json=True)
+
     with pytest.raises(ValueError):
-        conf.load(tsv)
+        conf.load(str(tsv))
 
     # cifti file should be supported
-    cifti = os.path.join(
-        path_data, "test_space-fsLR_den-91k_bold.dtseries.nii"
-    )
+    cifti, _ = create_empty_filepath(tmp_path, image_type="cifti",
+                                     copy_testdata=True, copy_json=True)
     conf.load(cifti)
     assert conf.confounds_.size != 0
 
     # gifti support
-    gifti = [
-        os.path.join(
-            path_data, f"test_space-fsaverage5_hemi-{hemi}_bold.func.gii"
-        )
-        for hemi in ["L", "R"]
-    ]
+    gifti, _ = create_empty_filepath(tmp_path, image_type="gifti",
+                                     copy_testdata=True, copy_json=True)
     conf.load(gifti)
     assert conf.confounds_.size != 0
-
-
-def _create_empty_filepath(base_path):
-    """Create empty fake files in temporary directory."""
-    nii_root = "_space-MNI152NLin2009cAsym_desc-preproc_bold.nii.gz"
-    confounds_root = "_desc-confounds_regressors.tsv"
-    bad_nii = "badfile" + nii_root
-    bad_conf = "badfile" + confounds_root
-    bad_nii = base_path / bad_nii
-    bad_nii.touch()
-    bad_conf = base_path / bad_conf
-    bad_conf.touch()
-    return bad_nii, bad_conf
-
-
-def _get_leagal_confound():
-    """Load the valid confound file for manipulation. """
-    return pd.read_csv(
-        os.path.join(path_data, "test_desc-confounds_regressors.tsv"),
-        delimiter="\t", encoding="utf-8")
 
 
 def test_invalid_filetype(tmp_path):
@@ -392,7 +373,7 @@ def test_invalid_filetype(tmp_path):
 
     # invalid fmriprep version: confound file with no header (<1.0)
     conf = lc.Confounds()
-    bad_nii, bad_conf = _create_empty_filepath(tmp_path)
+    bad_nii, bad_conf = create_empty_filepath(tmp_path)
     fake_confounds = np.random.rand(30, 20)
     np.savetxt(bad_conf, fake_confounds, delimiter="\t")
     with pytest.raises(ValueError) as error_log:
@@ -400,7 +381,7 @@ def test_invalid_filetype(tmp_path):
     assert "The confound file contains no header." in str(error_log.value)
 
     # invalid fmriprep version: old camel case header (<1.2)
-    leagal_confounds = _get_leagal_confound()
+    leagal_confounds, _ = get_leagal_confound()
     camel_confounds = leagal_confounds.copy()
     camel_confounds.columns = [to_camel_case(col_name)
                                for col_name in leagal_confounds.columns]
@@ -418,15 +399,15 @@ def test_invalid_filetype(tmp_path):
         conf.load(str(no_confound))
 
 
-def test_ica_aroma():
+def test_ica_aroma(tmp_path):
     """Test ICA AROMA related file input."""
-    aroma_nii = os.path.join(
-        path_data,
-        "test_space-MNI152NLin2009cAsym_desc-smoothAROMAnonaggr_bold.nii.gz",
-    )
+    aroma_nii, _ = create_empty_filepath(tmp_path, image_type="icaaroma",
+                                         copy_testdata=True)
+    regular_nii, _ = create_empty_filepath(tmp_path, image_type="regular",
+                                           copy_testdata=True)
     # Agressive strategy
     conf = lc.Confounds(strategy=["ica_aroma"], ica_aroma="basic")
-    conf.load(file_confounds)
+    conf.load(regular_nii)
     for col_name in conf.confounds_.columns:
         # only aroma and non-steady state columns will be present
         assert re.match("(?:aroma_motion_+|non_steady_state+)", col_name)
@@ -439,18 +420,20 @@ def test_ica_aroma():
     # invalid combination of strategy and option
     with pytest.raises(ValueError) as exc_info:
         conf = lc.Confounds(strategy=["ica_aroma"], ica_aroma=None)
-        conf.load(file_confounds)
+        conf.load(regular_nii)
     assert "ICA-AROMA strategy" in exc_info.value.args[0]
 
 
-def test_sample_mask():
+def test_sample_mask(tmp_path):
     """Test load method and sample mask."""
+    regular_nii, regular_conf = create_empty_filepath(
+        tmp_path, image_type="regular", copy_testdata=True)
     # create a version with srub_mask not applied;
     # This is not recommanded
     conf = lc.Confounds(
         strategy=["motion", "scrub"], scrub="full", fd_thresh=0.15
     )
-    reg, mask = conf.load(file_confounds)
+    reg, mask = conf.load(regular_nii)
 
     # the current test data has 6 time points marked as motion outliers,
     # and one nonsteady state (overlap with the first motion outlier)
@@ -461,10 +444,12 @@ def test_sample_mask():
 
     # non steady state will always be removed
     conf = lc.Confounds(strategy=["motion"])
-    reg, mask = conf.load(file_confounds)
+    reg, mask = conf.load(regular_nii)
     assert reg.shape[0] - len(mask) == 1
 
     # When no non-steady state volumes are present
+    conf_data, _ = get_leagal_confound(non_steady_state=False)
+    conf_data.to_csv(regular_conf, sep="\t", index=False)
     conf = lc.Confounds(strategy=["motion"])
     reg, mask = conf.load(file_no_none_steady)
     assert mask is None
