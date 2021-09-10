@@ -10,7 +10,7 @@ from nilearn.input_data import NiftiMasker
 from nilearn.load_confounds import parser as lc
 from nilearn._utils.load_confounds import to_camel_case
 
-from .utils import create_empty_filepath, get_leagal_confound
+from .utils import create_tmp_filepath, get_leagal_confound
 
 path_data = os.path.join(os.path.dirname(lc.__file__), "data")
 file_confounds = os.path.join(
@@ -25,7 +25,7 @@ file_no_none_steady = os.path.join(
 def _simu_img(tmp_path, demean=True):
     """Simulate an nifti image based on confound file with some parts confounds
     and some parts noise."""
-    file_nii, _ = create_empty_filepath(tmp_path, copy_testdata=True)
+    file_nii, _ = create_tmp_filepath(tmp_path, copy_testdata=True)
     # set the size of the image matrix
     nx = 5
     ny = 5
@@ -197,7 +197,7 @@ def test_nilearn_standardize_psc(tmp_path):
 def test_confounds2df(tmp_path):
     """Check auto-detect of confonds from an fMRI nii image."""
     conf = lc.Confounds()
-    img_nii, _ = create_empty_filepath(tmp_path, copy_testdata=True)
+    img_nii, _ = create_tmp_filepath(tmp_path, copy_testdata=True)
     conf.load(img_nii)
     assert "trans_x" in conf.confounds_.columns
 
@@ -233,7 +233,7 @@ def expected_suffixes(motion):
                          ["trans_x", "trans_y", "trans_z",
                           "rot_x", "rot_y", "rot_z"])
 def test_motion(tmp_path, motion, param, expected_suffixes):
-    img_nii, _ = create_empty_filepath(tmp_path, copy_testdata=True)
+    img_nii, _ = create_tmp_filepath(tmp_path, copy_testdata=True)
     conf = lc.Confounds(strategy=["motion"], motion=motion)
     conf.load(img_nii)
     for suff in SUFFIXES:
@@ -244,7 +244,7 @@ def test_motion(tmp_path, motion, param, expected_suffixes):
 
 
 def test_n_compcor(tmp_path):
-    img_nii, _ = create_empty_filepath(tmp_path, copy_testdata=True,
+    img_nii, _ = create_tmp_filepath(tmp_path, copy_testdata=True,
                                        copy_json=True)
     conf = lc.Confounds(strategy=["compcor"], compcor="anat_combined",
                         n_compcor=2)
@@ -265,7 +265,7 @@ def expected_components(n_comp):
 
 @pytest.mark.parametrize('n_comp', [.2, 2, .95, 50])
 def test_n_motion(tmp_path, n_comp, expected_components):
-    img_nii, _ = create_empty_filepath(tmp_path, copy_testdata=True,
+    img_nii, _ = create_tmp_filepath(tmp_path, copy_testdata=True,
                                        copy_json=True)
     conf = lc.Confounds(strategy=["motion"], motion="full",
                         n_motion_components=n_comp)
@@ -286,7 +286,7 @@ def test_not_found_exception(tmp_path):
     missing_keywords = ["cosine"]
 
     # Create invalid file in temporary dir
-    img_missing_confounds, bad_conf = create_empty_filepath(tmp_path,
+    img_missing_confounds, bad_conf = create_tmp_filepath(tmp_path,
                                                             copy_testdata=True,
                                                             copy_json=False)
     leagal_confounds = pd.read_csv(bad_conf, delimiter="\t", encoding="utf-8")
@@ -330,7 +330,7 @@ def test_not_found_exception(tmp_path):
 
     # Aggressive ICA-AROMA strategy requires
     # default nifti
-    aroma_nii, _ = create_empty_filepath(tmp_path, image_type="icaaroma",
+    aroma_nii, _ = create_tmp_filepath(tmp_path, image_type="icaaroma",
                                          suffix="aroma")
     with pytest.raises(ValueError) as exc_info:
         conf.load(aroma_nii)
@@ -349,20 +349,20 @@ def test_load_non_nifti(tmp_path):
     conf = lc.Confounds()
 
     # tsv file - unsupported input
-    _, tsv = create_empty_filepath(tmp_path, copy_testdata=True,
+    _, tsv = create_tmp_filepath(tmp_path, copy_testdata=True,
                                    copy_json=True)
 
     with pytest.raises(ValueError):
         conf.load(str(tsv))
 
     # cifti file should be supported
-    cifti, _ = create_empty_filepath(tmp_path, image_type="cifti",
+    cifti, _ = create_tmp_filepath(tmp_path, image_type="cifti",
                                      copy_testdata=True, copy_json=True)
     conf.load(cifti)
     assert conf.confounds_.size != 0
 
     # gifti support
-    gifti, _ = create_empty_filepath(tmp_path, image_type="gifti",
+    gifti, _ = create_tmp_filepath(tmp_path, image_type="gifti",
                                      copy_testdata=True, copy_json=True)
     conf.load(gifti)
     assert conf.confounds_.size != 0
@@ -373,7 +373,7 @@ def test_invalid_filetype(tmp_path):
 
     # invalid fmriprep version: confound file with no header (<1.0)
     conf = lc.Confounds()
-    bad_nii, bad_conf = create_empty_filepath(tmp_path)
+    bad_nii, bad_conf = create_tmp_filepath(tmp_path)
     fake_confounds = np.random.rand(30, 20)
     np.savetxt(bad_conf, fake_confounds, delimiter="\t")
     with pytest.raises(ValueError) as error_log:
@@ -401,9 +401,9 @@ def test_invalid_filetype(tmp_path):
 
 def test_ica_aroma(tmp_path):
     """Test ICA AROMA related file input."""
-    aroma_nii, _ = create_empty_filepath(tmp_path, image_type="icaaroma",
+    aroma_nii, _ = create_tmp_filepath(tmp_path, image_type="icaaroma",
                                          copy_testdata=True)
-    regular_nii, _ = create_empty_filepath(tmp_path, image_type="regular",
+    regular_nii, _ = create_tmp_filepath(tmp_path, image_type="regular",
                                            copy_testdata=True)
     # Agressive strategy
     conf = lc.Confounds(strategy=["ica_aroma"], ica_aroma="basic")
@@ -426,7 +426,7 @@ def test_ica_aroma(tmp_path):
 
 def test_sample_mask(tmp_path):
     """Test load method and sample mask."""
-    regular_nii, regular_conf = create_empty_filepath(
+    regular_nii, regular_conf = create_tmp_filepath(
         tmp_path, image_type="regular", copy_testdata=True)
     # create a version with srub_mask not applied;
     # This is not recommanded

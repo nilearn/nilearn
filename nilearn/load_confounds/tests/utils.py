@@ -1,3 +1,4 @@
+"""Utility functions for testing load_confounds"""
 import os
 import json
 import pandas as pd
@@ -18,6 +19,7 @@ img_file_patterns = {
 
 
 def get_testdata_path(non_steady_state=True):
+    """Get file path for the confound regressors."""
     path_data = os.path.join(os.path.dirname(lc.__file__), "data")
     if non_steady_state:
         return [os.path.join(path_data, filename)
@@ -28,7 +30,7 @@ def get_testdata_path(non_steady_state=True):
                              "test_desc-confounds_regressors.json"]]
 
 
-def create_empty_filepath(base_path, image_type="regular", suffix="test",
+def create_tmp_filepath(base_path, image_type="regular", suffix="test",
                           copy_testdata=False, copy_json=False):
     """Create test files in temporary directory."""
     # confound files
