@@ -58,7 +58,7 @@ def _linkcode_resolve(domain, info, package, url_fmt, revision):
             fn = None
     if not fn:
         return
-    
+
     # Don't include filenames from outside this package's tree
     if os.path.dirname(__import__(package).__file__) not in fn:
         return

@@ -114,7 +114,7 @@ different heuristics to find cutting coordinates.
                      |hack|
                      Plotting network nodes (markers)
 
-                     Function for automatic plotting of network nodes (markers) 
+                     Function for automatic plotting of network nodes (markers)
                      and color coding them according to provided nodal measure
                      (i.e. connection strength) as demonstrated in
                      **Example:** :ref:`sphx_glr_auto_examples_03_connectivity_plot_atlas_comparison.py`

@@ -282,8 +282,8 @@ the number of total errors. It is not always a sensible metric,
 especially in the case of very imbalanced classes, as in such situations
 choosing the dominant class can achieve a low number of errors.
 
-Other metrics, such as the :term:`AUC` (Area Under the Curve, for the 
-:term:`ROC`: the Receiver Operating Characteristic), can be used through the 
+Other metrics, such as the :term:`AUC` (Area Under the Curve, for the
+:term:`ROC`: the Receiver Operating Characteristic), can be used through the
 `scoring` argument of :class:`nilearn.decoding.Decoder`.
 
 .. seealso::

@@ -114,7 +114,7 @@ commands:
                     - ~/nilearn_data/neurovault           # ~ 13 MB
                     - ~/nilearn_data/pauli_2017           # ~  1 MB
                     - ~/nilearn_data/yeo_2011             # ~  3 MB
-      
+
             - save_cache:
                 key: v1-adhd-{{ checksum "week_num" }}
                 paths:
@@ -208,7 +208,7 @@ commands:
 jobs:
 
   build_docs:
-    
+
     docker:
       - image: circleci/python:3.8
 

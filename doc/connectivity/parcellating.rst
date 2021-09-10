@@ -28,7 +28,7 @@ Clustering is commonly applied to resting-state data, but any brain
 functional data will give rise of a functional parcellation, capturing
 intrinsic brain architecture in the case of resting-state data.
 In the examples, we use naturalistic stimuli-based movie watching
-brain development data downloaded with the function 
+brain development data downloaded with the function
 :func:`fetch_development_fmri` (see :ref:`loading_data`).
 
 Applying clustering
@@ -154,5 +154,3 @@ approximated.
    All the steps discussed in this section can be seen implemented in
    :ref:`a full code example
    <sphx_glr_auto_examples_03_connectivity_plot_data_driven_parcellations.py>`.
-
-

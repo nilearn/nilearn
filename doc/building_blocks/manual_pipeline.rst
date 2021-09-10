@@ -60,7 +60,7 @@ presenting different category of pictures to the subject (face, cat, ...)
 and the goal of this experiment is to predict which category is presented
 to the subjects from the brain activation.
 
-These conditions are presented as string into a CSV file. The `pandas 
+These conditions are presented as string into a CSV file. The `pandas
 <http://pandas.pydata.org/>`__ function
 `read_csv` is very useful to load this kind of data.
 

@@ -56,7 +56,7 @@ Some other past or present contributors are:
 * Michel, V.
 * Pedregosa, F.
 * Perez, M.
-  
+
 Funding
 .......
 

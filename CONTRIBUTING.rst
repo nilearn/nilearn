@@ -62,7 +62,7 @@ You can check out the latest sources with the command::
 or if you have write privileges::
 
     git clone git@github.com:nilearn/nilearn.git
-    
+
 Installing the latest code
 ---------------------------
 
