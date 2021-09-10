@@ -47,7 +47,7 @@ Two masks are used with :class:`SearchLight`:
 - *process_mask_img* is a subset of the brain mask and defines the boundaries
   of where the searchlight scans the volume. Often times we are interested in
   only performing a searchlight within a specific area of the brain (e.g.,
-  frontal cortex). If no *process_mask_img* is set, then :class:`nilearn.decoding.SearchLight
+  frontal cortex). If no *process_mask_img* is set, then :class:`nilearn.decoding.SearchLight`
   defaults to performing a searchlight over the whole brain.
 
 *mask_img* ensures that only :term:`voxels<voxel>` with useable signals are included in the
