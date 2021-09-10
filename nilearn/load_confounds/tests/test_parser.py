@@ -116,48 +116,20 @@ def _regression(confounds, sample_mask):
 
 
 @pytest.mark.filterwarnings("ignore")
-def test_nilearn_regress():
+@pytest.mark.parametrize('strategy,param',
+                         [("motion", {}), ("high_pass", {}),
+                          ("wm_csf", {"wm_csf": "full"}),
+                          ("global", {"global_signal": "full"}),
+                          ("compcor", {}),
+                          ("compcor", {"compcor": "anat_separated"}),
+                          ("compcor", {"compcor": "temporal"}),
+                          ("ica_aroma", {"ica_aroma": "basic"})])
+def test_nilearn_regress(strategy, param):
     """Try regressing out all motion types in nilearn."""
-    # Regress full motion
-    confounds, _ = lc.Confounds(strategy=["motion"], motion="full").load(
+    confounds, _ = lc.Confounds(strategy=[strategy], **param).load(
         file_confounds
     )
-    sample_mask = None  # not testing sample mask here
-    _regression(confounds, sample_mask)
-
-    # Regress high_pass
-    confounds, _ = lc.Confounds(strategy=["high_pass"]).load(file_confounds)
-    _regression(confounds, sample_mask)
-
-    # Regress wm_csf
-    confounds, _ = lc.Confounds(strategy=["wm_csf"], wm_csf="full").load(
-        file_confounds
-    )
-    _regression(confounds, sample_mask)
-    # Regress global
-    confounds, _ = lc.Confounds(
-        strategy=["global"], global_signal="full"
-    ).load(file_confounds)
-    _regression(confounds, sample_mask)
-
-    # Regress AnatCompCor
-    confounds, _ = lc.Confounds(strategy=["compcor"],
-                                compcor="anat_combined").load(file_confounds)
-    _regression(confounds, sample_mask)
-    confounds, _ = lc.Confounds(strategy=["compcor"],
-                                compcor="anat_separated").load(file_confounds)
-    _regression(confounds, sample_mask)
-    # Regress TempCompCor
-    confounds, _ = lc.Confounds(strategy=["compcor"], compcor="temporal").load(
-        file_confounds
-    )
-    _regression(confounds, sample_mask)
-
-    # Regress ICA-AROMA
-    confounds, _ = lc.Confounds(
-        strategy=["ica_aroma"], ica_aroma="basic"
-    ).load(file_confounds)
-    _regression(confounds, sample_mask)
+    _regression(confounds, None)
 
 
 @pytest.mark.filterwarnings("ignore")
@@ -229,70 +201,47 @@ def test_confounds2df():
     assert "trans_x" in conf.confounds_.columns
 
 
-def test_sanitize_strategy():
+@pytest.mark.parametrize('strategy',
+                         ["string", "error", [0], "motion"])
+def test_sanitize_strategy(strategy):
     """Check that flawed strategy options generate meaningful error
     messages."""
-    with pytest.raises(ValueError):
-        lc.Confounds(strategy="string")
-
-    with pytest.raises(ValueError):
-        lc.Confounds(strategy=["error"])
-
-    with pytest.raises(ValueError):
-        lc.Confounds(strategy=[0])
-
-    conf = lc.Confounds(strategy=["motion"])
-    assert "non_steady_state" in conf.strategy
+    if strategy == "motion":
+        conf = lc.Confounds(strategy=[strategy])
+        assert "non_steady_state" in conf.strategy
+    else:
+        with pytest.raises(ValueError):
+            lc.Confounds(strategy=[strategy])
 
 
-def test_motion():
+SUFFIXES = np.array(["", "_derivative1", "_power2", "_derivative1_power2"])
 
-    conf_basic = lc.Confounds(strategy=["motion"], motion="basic")
-    conf_basic.load(file_confounds)
-    conf_derivatives = lc.Confounds(strategy=["motion"], motion="derivatives")
-    conf_derivatives.load(file_confounds)
-    conf_power2 = lc.Confounds(strategy=["motion"], motion="power2")
-    conf_power2.load(file_confounds)
-    conf_full = lc.Confounds(strategy=["motion"], motion="full")
-    conf_full.load(file_confounds)
 
-    params = ["trans_x", "trans_y", "trans_z", "rot_x", "rot_y", "rot_z"]
-    for param in params:
-        # Basic 6 params motion model
-        assert f"{param}" in conf_basic.confounds_.columns
-        assert f"{param}_derivative1" not in conf_basic.confounds_.columns
-        assert f"{param}_power2" not in conf_basic.confounds_.columns
-        assert (
-            f"{param}_derivative1_power2" not in conf_basic.confounds_.columns
-        )
+@pytest.fixture
+def expected_suffixes(motion):
+    expectation = {"basic": slice(1),
+                   "derivatives": slice(2),
+                   "power2": np.array([True, False, True, False]),
+                   "full": slice(4)}
+    return SUFFIXES[expectation[motion]]
 
-        # Use a 6 params + derivatives motion model
-        assert f"{param}" in conf_derivatives.confounds_.columns
-        assert f"{param}_derivative1" in conf_derivatives.confounds_.columns
-        assert f"{param}_power2" not in conf_derivatives.confounds_.columns
-        assert (
-            f"{param}_derivative1_power2"
-            not in conf_derivatives.confounds_.columns
-        )
 
-        # Use a 6 params + power2 motion model
-        assert f"{param}" in conf_power2.confounds_.columns
-        assert f"{param}_derivative1" not in conf_power2.confounds_.columns
-        assert f"{param}_power2" in conf_power2.confounds_.columns
-        assert (
-            f"{param}_derivative1_power2" not in conf_power2.confounds_.columns
-        )
-
-        # Use a 6 params + derivatives + power2 + power2d derivatives motion
-        # model
-        assert f"{param}" in conf_full.confounds_.columns
-        assert f"{param}_derivative1" in conf_full.confounds_.columns
-        assert f"{param}_power2" in conf_full.confounds_.columns
-        assert f"{param}_derivative1_power2" in conf_full.confounds_.columns
+@pytest.mark.parametrize('motion',
+                         ["basic", "derivatives", "power2", "full"])
+@pytest.mark.parametrize('param',
+                         ["trans_x", "trans_y", "trans_z",
+                          "rot_x", "rot_y", "rot_z"])
+def test_motion(motion, param, expected_suffixes):
+    conf = lc.Confounds(strategy=["motion"], motion=motion)
+    conf.load(file_confounds)
+    for suff in SUFFIXES:
+        if suff in expected_suffixes:
+            assert f"{param}{suff}" in conf.confounds_.columns
+        else:
+            assert f"{param}{suff}" not in conf.confounds_.columns
 
 
 def test_n_compcor():
-
     conf = lc.Confounds(strategy=["compcor"], compcor="anat_combined",
                         n_compcor=2)
     conf.load(file_confounds)
@@ -301,29 +250,29 @@ def test_n_compcor():
     assert "a_comp_cor_02" not in conf.confounds_.columns
 
 
-def test_n_motion():
+@pytest.fixture
+def expected_components(n_comp):
+    if n_comp == 2:
+        return range(1, 3)
+    if n_comp == .95:
+        return range(1, 12)
+    return [1]
 
+
+@pytest.mark.parametrize('n_comp', [.2, 2, .95, 50])
+def test_n_motion(n_comp, expected_components):
     conf = lc.Confounds(strategy=["motion"], motion="full",
-                        n_motion_components=0.2)
-    conf.load(file_confounds)
-    assert "motion_pca_1" in conf.confounds_.columns
-    assert "motion_pca_2" not in conf.confounds_.columns
-
-    conf = lc.Confounds(strategy=["motion"], motion="full",
-                        n_motion_components=2)
-    conf.load(file_confounds)
-    assert "motion_pca_1" in conf.confounds_.columns
-    assert "motion_pca_3" not in conf.confounds_.columns
-
-    conf = lc.Confounds(strategy=["motion"], motion="full",
-                        n_motion_components=0.95)
-    conf.load(file_confounds)
-    assert "motion_pca_6" in conf.confounds_.columns
-
-    with pytest.raises(ValueError):
-        conf = lc.Confounds(strategy=["motion"], motion="full",
-                            n_motion_components=50)
+                        n_motion_components=n_comp)
+    if n_comp == 50:
+        with pytest.raises(ValueError):
+            conf.load(file_confounds)
+    else:
         conf.load(file_confounds)
+        for i in range(1, 12):
+            if i in expected_components:
+                assert f"motion_pca_{i}" in conf.confounds_.columns
+            else:
+                assert f"motion_pca_{i}" not in conf.confounds_.columns
 
 
 def test_not_found_exception(tmp_path):

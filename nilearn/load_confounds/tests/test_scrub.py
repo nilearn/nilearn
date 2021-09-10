@@ -1,46 +1,24 @@
 import numpy as np
 import pandas as pd
+import pytest
 
 from nilearn.load_confounds import scrub
 
 from pandas.testing import assert_frame_equal
 
 
-def test_optimize_scrub():
-    n_scans = 100
-    original_motion_outliers_index = [3, 11, 13, 80, 97]
-    expected_optimal = np.array([0, 1, 2, 3, 11, 12, 13, 80, 97, 98, 99])
+@pytest.mark.parametrize("original_motion_outliers_index,expected_optimal",
+                         [([3, 11, 13, 80, 97],
+                           np.array([0, 1, 2, 3, 11, 12, 13, 80, 97, 98, 99])),
+                          ([11, 13, 16, 44, 50, 80],  # Middle volumes only
+                           np.array([11, 12, 13, 14, 15, 16, 44, 50, 80])),
+                          ([4], np.array([0, 1, 2, 3, 4])), # head volumes only
+                          ([96], np.array([96, 97, 98, 99])), # tail volumes only
+                          ([5], np.array([5]))]) # no optimisation needed
+def test_optimize_scrub(original_motion_outliers_index, expected_optimal):
     optimised_index = scrub._optimize_scrub(
-        original_motion_outliers_index, n_scans)
-    assert np.array_equal(optimised_index, expected_optimal) is True
-
-    # Middle volumes only
-    original_motion_outliers_index = [11, 13, 16, 44, 50, 80]
-    expected_optimal = np.array([11, 12, 13, 14, 15, 16, 44, 50, 80])
-    optimised_index = scrub._optimize_scrub(
-        original_motion_outliers_index, n_scans)
-    assert np.array_equal(optimised_index, expected_optimal) is True
-
-    # head volumes only
-    original_motion_outliers_index = [4]
-    expected_optimal = np.array([0, 1, 2, 3, 4])
-    optimised_index = scrub._optimize_scrub(
-        original_motion_outliers_index, n_scans)
-    assert np.array_equal(optimised_index, expected_optimal) is True
-
-    # tail volumes only
-    original_motion_outliers_index = [96]
-    expected_optimal = np.array([96, 97, 98, 99])
-    optimised_index = scrub._optimize_scrub(
-        original_motion_outliers_index, n_scans)
-    assert np.array_equal(optimised_index, expected_optimal) is True
-
-    # no optimisation needed
-    original_motion_outliers_index = [5]
-    expected_optimal = np.array([5])
-    optimised_index = scrub._optimize_scrub(
-        original_motion_outliers_index, n_scans)
-    assert np.array_equal(optimised_index, expected_optimal) is True
+        original_motion_outliers_index, 100)
+    assert np.array_equal(optimised_index, expected_optimal)
 
 
 def test_get_outlier_cols():
