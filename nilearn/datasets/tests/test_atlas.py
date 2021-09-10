@@ -238,6 +238,7 @@ def atlas_data():
                           ("HarvardOxford", "-Cortical-Lateralized",
                            "cortl-maxprob-thr0-1mm", True, True),
                           ("Juelich", "", "prob-1mm", False, False),
+                          ("Juelich", "", "maxprob-thr0-1mm", False, False),
                           ("Juelich", "", "maxprob-thr0-1mm", False, True)])
 def test_fetch_atlas_fsl(name, label_fname, fname, is_symm, split,
                          atlas_data, fsl_fetcher, tmp_path, request_mocker):
