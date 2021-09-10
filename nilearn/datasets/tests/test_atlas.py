@@ -194,177 +194,64 @@ def _test_result_xml(res, is_symm):
         assert res.labels[6] == "Right R3"
 
 
-def test_fetch_atlas_harvard_oxford(tmp_path, request_mocker):
+@pytest.fixture
+def fsl_fetcher(name):
+    if name == "Juelich":
+        return atlas.fetch_atlas_juelich
+    return atlas.fetch_atlas_harvard_oxford
 
+
+@pytest.mark.parametrize('name,prob',
+                         [("HarvardOxford", "cortl-prob-1mm"),
+                          ("Juelich", "prob-1mm")])
+def test_fetch_atlas_fsl_errors(name, prob, fsl_fetcher,
+                                tmp_path, request_mocker):
     # specify non-existing atlas item
     with pytest.raises(ValueError, match='Invalid atlas name'):
-        atlas.fetch_atlas_harvard_oxford('not_inside')
-
-    # specify existing atlas item
-    ho_dir = str(tmp_path / 'fsl' / 'data' / 'atlases')
-    os.makedirs(ho_dir)
-    nifti_dir = os.path.join(ho_dir, 'HarvardOxford')
-    os.makedirs(nifti_dir)
-
+        fsl_fetcher('not_inside')
     # Choose a probabilistic atlas with symmetric split
     with pytest.raises(ValueError, match='Region splitting'):
-        atlas.fetch_atlas_harvard_oxford('cortl-prob-1mm',
-                                         data_dir=str(tmp_path),
-                                         symmetric_split=True)
+        fsl_fetcher(prob, data_dir=str(tmp_path), symmetric_split=True)
 
+
+@pytest.fixture
+def atlas_data():
     # Create false atlas
     atlas_data = np.zeros((10, 10, 10), dtype=int)
-
     # Create an interhemispheric map
     atlas_data[:, :2, :] = 1
-
     # Create a left map
     atlas_data[5:, 7:9, :] = 3
     atlas_data[5:, 3, :] = 2
-
     # Create a right map, with one voxel on the left side
     atlas_data[:5:, 3:5, :] = 2
     atlas_data[:5, 8, :] = 3
     atlas_data[4, 7, 0] = 3
-
-    # Testing with Cortical atlas with no cort-maxprob
-    _write_to_xml(ho_dir, "HarvardOxford-Cortical", is_symm=False)
-
-    # when symmetric_split=False (by default), then atlas fetcher should
-    # have n_labels=4 with background.
-    # Since, we relay on xml file to retrieve labels.
-
-    target_atlas_fname = 'HarvardOxford-cort-prob-1mm.nii.gz'
-    target_atlas_nii = os.path.join(nifti_dir, target_atlas_fname)
-
-    nibabel.Nifti1Image(atlas_data, np.eye(4) * 3).to_filename(
-        target_atlas_nii)
-    ho_wo = atlas.fetch_atlas_harvard_oxford('cort-prob-1mm',
-                                             data_dir=str(tmp_path))
-    _test_result_xml(ho_wo, is_symm=False)
-
-    # This section tests with lateralized version. In other words,
-    # symmetric_split=True
-
-    # Dummy xml file for lateralized control of cortical atlas images
-    # shipped with FSL 5.0. Atlases are already lateralized in this version
-    # for cortical type atlases denoted with maxprob but not full prob and but
-    # not also with subcortical.
-
-    # So, we test the fetcher with symmetric_split=True by creating a new
-    # dummy local file and fetch them and test the output variables
-    # accordingly.
-
-    # Testing with Subcortical atlas
-    _write_to_xml(ho_dir, "HarvardOxford-Subcortical", is_symm=False)
-
-    target_atlas_fname = 'HarvardOxford-sub-maxprob-thr0-1mm.nii.gz'
-    target_atlas_nii = os.path.join(nifti_dir, target_atlas_fname)
-
-    nibabel.Nifti1Image(atlas_data, np.eye(4) * 3).to_filename(
-        target_atlas_nii)
-    ho_wo_symm = atlas.fetch_atlas_harvard_oxford('sub-maxprob-thr0-1mm',
-                                                  data_dir=str(tmp_path),
-                                                  symmetric_split=True)
-
-    _test_result_xml(ho_wo_symm, is_symm=True)
-
-    _write_to_xml(ho_dir, "HarvardOxford-Cortical-Lateralized", is_symm=True)
-
-    # Here, with symmetric_split=True, atlas maps are returned as nibabel Nifti
-    # image but not string. Now, with symmetric split number of labels
-    # should be more than without split and contain Left and Right tags
-    # in the labels.
-
-    # Create dummy image files too with cortl specified for symmetric split.
-    split_atlas_fname = 'HarvardOxford-cortl-maxprob-thr0-1mm.nii.gz'
-    nifti_target_split = os.path.join(nifti_dir, split_atlas_fname)
-
-    nibabel.Nifti1Image(atlas_data, np.eye(4) * 3).to_filename(
-        nifti_target_split)
-    ho_symm = atlas.fetch_atlas_harvard_oxford('cort-maxprob-thr0-1mm',
-                                               data_dir=str(tmp_path),
-                                               symmetric_split=True)
-
-    _test_result_xml(ho_symm, is_symm=True)
+    return atlas_data
 
 
-def test_fetch_atlas_juelich(tmp_path, request_mocker):
-
-    # specify non-existing atlas item in Juelich
-    with pytest.raises(ValueError, match='Invalid atlas name'):
-        atlas.fetch_atlas_juelich(atlas_name='not_inside')
-
-    # Choose a probabilistic atlas with symmetric split
-    with pytest.raises(ValueError, match='Region splitting'):
-        atlas.fetch_atlas_juelich('prob-1mm',
-                                  data_dir=str(tmp_path),
-                                  symmetric_split=True)
-
-    # specify existing atlas item
-    target_atlas_fname = 'Juelich-prob-1mm.nii.gz'
+@pytest.mark.parametrize('name,label_fname,fname,is_symm,split',
+                         [("HarvardOxford", "-Cortical",
+                           "cort-prob-1mm", False, False),
+                          ("HarvardOxford", "-Subcortical",
+                           "sub-maxprob-thr0-1mm", False, True),
+                          ("HarvardOxford", "-Cortical-Lateralized",
+                           "cortl-maxprob-thr0-1mm", True, True),
+                          ("Juelich", "", "prob-1mm", False, False),
+                          ("Juelich", "", "maxprob-thr0-1mm", False, True)])
+def test_fetch_atlas_fsl(name, label_fname, fname, is_symm, split,
+                         atlas_data, fsl_fetcher, tmp_path, request_mocker):
     ho_dir = str(tmp_path / 'fsl' / 'data' / 'atlases')
     os.makedirs(ho_dir)
-    nifti_dir = os.path.join(ho_dir, 'Juelich')
+    nifti_dir = os.path.join(ho_dir, name)
     os.makedirs(nifti_dir)
-
+    _write_to_xml(ho_dir, f"{name}{label_fname}", is_symm=is_symm)
+    target_atlas_fname = f'{name}-{fname}.nii.gz'
     target_atlas_nii = os.path.join(nifti_dir, target_atlas_fname)
-
-    # Create false atlas
-    atlas_data = np.zeros((10, 10, 10), dtype=int)
-
-    # Create interhemispheric maps
-    atlas_data[:, :2, :] = 1
-
-    atlas_data[:5, 3:5, :] = 2
-    atlas_data[5:, 3:5, :] = 2
-
-    atlas_data[:5, 7:9, :] = 3
-    atlas_data[5:, 7:9, :] = 3
-
     nibabel.Nifti1Image(atlas_data, np.eye(4) * 3).to_filename(
         target_atlas_nii)
-
-    _write_to_xml(ho_dir, "Juelich", is_symm=False)
-
-    # when symmetric_split=False (by default), then atlas fetcher should
-    # have maps as string and n_labels=4 with background.
-    # Since, we relay on xml file to retrieve labels.
-    ho = atlas.fetch_atlas_juelich(atlas_name="prob-1mm",
-                                   data_dir=str(tmp_path))
-    _test_result_xml(ho, is_symm=False)
-
-    split_atlas_fname = 'Juelich-maxprob-thr0-1mm.nii.gz'
-    nifti_target_split = os.path.join(nifti_dir, split_atlas_fname)
-    nibabel.Nifti1Image(atlas_data, np.eye(4) * 3).to_filename(
-        nifti_target_split)
-
-    # when symmetric_split=False (by default), then atlas fetcher should
-    # have maps as string and n_labels=4 with background.
-    # Since, we relay on xml file to retrieve labels.
-    ho_wo = atlas.fetch_atlas_juelich(atlas_name="maxprob-thr0-1mm",
-                                      data_dir=str(tmp_path))
-    _test_result_xml(ho_wo, is_symm=False)
-
-    # This section tests with lateralized version. In other words,
-    # symmetric_split=True
-
-    # We test the fetcher with symmetric_split=True by creating a new
-    # dummy local file and fetch them and test the output variables
-    # accordingly.
-
-    # Here, with symmetric_split=True, atlas maps are returned as nibabel Nifti
-    # image but not string. Now, with symmetric split number of labels
-    # should be more than without split and contain Left and Right tags
-    # in the labels.
-
-    # Create dummy image files too with maxprob specified for symmetric split.
-
-    ho_symm = atlas.fetch_atlas_juelich(atlas_name="maxprob-thr0-1mm",
-                                        data_dir=str(tmp_path),
-                                        symmetric_split=True)
-
-    _test_result_xml(ho_symm, is_symm=True)
+    ho_wo = fsl_fetcher(fname, data_dir=str(tmp_path), symmetric_split=split)
+    _test_result_xml(ho_wo, is_symm=is_symm or split)
 
 
 def test_fetch_atlas_craddock_2012(tmp_path, request_mocker):
