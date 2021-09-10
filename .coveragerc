@@ -8,3 +8,4 @@ omit =
     */nilearn/conftest.py
     */nilearn/version.py
     */nilearn/datasets/data/convert_templates.py
+    */nilearn/plotting/glass_brain_files/svg_to_json_converter.py

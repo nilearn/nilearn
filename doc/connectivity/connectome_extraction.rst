@@ -168,7 +168,7 @@ group analysis only on the non zero coefficients.
    first 5 subjects of the brain development dataset downloaded with
    :func:`nilearn.datasets.fetch_development_fmri`
 
-   **Hint:** The example above works through the solution for the ADHD dataset. 
+   **Hint:** The example above works through the solution for the ADHD dataset.
    adhd.
 
 

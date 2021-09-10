@@ -365,4 +365,3 @@ linkcode_resolve = make_linkcode_resolve('nilearn',
                                          'https://github.com/nilearn/'
                                          'nilearn/blob/{revision}/'
                                          '{package}/{path}#L{lineno}')
-
