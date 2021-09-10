@@ -68,7 +68,7 @@ Installing the latest code
 
 In order to ensure that any code changes are reflected in your installation, navigate to your cloned Nilearn base directory and install using the following command::
 
-    pip install -e .
+    pip install -e .[dev]
 
 
 Coding guidelines
