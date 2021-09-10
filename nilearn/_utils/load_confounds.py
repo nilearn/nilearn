@@ -17,6 +17,7 @@ def _is_camel_case(s):
     "Check if the given string is in camel case."
     return s != s.lower() and s != s.upper() and "_" not in s
 
+
 def to_camel_case(snake_str):
     """Convert camel to snake case."""
     components = snake_str.split('_')

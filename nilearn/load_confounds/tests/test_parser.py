@@ -381,6 +381,7 @@ def _create_empty_filepath(base_path):
 
 
 def _get_leagal_confound():
+    """Load the valid confound file for manipulation. """
     return pd.read_csv(
         os.path.join(path_data, "test_desc-confounds_regressors.tsv"),
         delimiter="\t", encoding="utf-8")

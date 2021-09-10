@@ -10,11 +10,11 @@ from pandas.testing import assert_frame_equal
 @pytest.mark.parametrize("original_motion_outliers_index,expected_optimal",
                          [([3, 11, 13, 80, 97],
                            np.array([0, 1, 2, 3, 11, 12, 13, 80, 97, 98, 99])),
-                          ([11, 13, 16, 44, 50, 80],  # Middle volumes only
+                          ([11, 13, 16, 44, 50, 80],  # middle volumes
                            np.array([11, 12, 13, 14, 15, 16, 44, 50, 80])),
-                          ([4], np.array([0, 1, 2, 3, 4])), # head volumes only
-                          ([96], np.array([96, 97, 98, 99])), # tail volumes only
-                          ([5], np.array([5]))]) # no optimisation needed
+                          ([4], np.array([0, 1, 2, 3, 4])),  # head volumes
+                          ([96], np.array([96, 97, 98, 99])),  # tail volumes
+                          ([5], np.array([5]))])  # no optimisation needed
 def test_optimize_scrub(original_motion_outliers_index, expected_optimal):
     optimised_index = scrub._optimize_scrub(
         original_motion_outliers_index, 100)
