@@ -6,15 +6,13 @@ from nilearn.load_confounds import parser as lc
 
 
 img_file_patterns = {
-    "icaaroma":
-        "_space-MNI152NLin2009cAsym_desc-smoothAROMAnonaggr_bold.nii.gz",
-    "regular":
-        "_space-MNI152NLin2009cAsym_desc-preproc_bold.nii.gz",
-    "cifti":
-        "_space-fsLR_den-91k_bold.dtseries.nii",
-    "gifti":
-        ("_space-fsaverage5_hemi-L_bold.func.gii",
-         "_space-fsaverage5_hemi-R_bold.func.gii"),
+    "icaaroma": "_space-MNI152NLin2009cAsym_desc-smoothAROMAnonaggr_bold.nii.gz",
+    "regular": "_space-MNI152NLin2009cAsym_desc-preproc_bold.nii.gz",
+    "cifti": "_space-fsLR_den-91k_bold.dtseries.nii",
+    "gifti": (
+        "_space-fsaverage5_hemi-L_bold.func.gii",
+        "_space-fsaverage5_hemi-R_bold.func.gii",
+    ),
 }
 
 
@@ -22,22 +20,36 @@ def get_testdata_path(non_steady_state=True):
     """Get file path for the confound regressors."""
     path_data = os.path.join(os.path.dirname(lc.__file__), "data")
     if non_steady_state:
-        return [os.path.join(path_data, filename)
-                for filename in ["test_desc-confounds_regressors.tsv",
-                                 "test_desc-confounds_regressors.json"]]
-    return [os.path.join(path_data, filename)
-            for filename in ["no_nonsteady_desc-confounds_regressors.tsv",
-                             "test_desc-confounds_regressors.json"]]
+        return [
+            os.path.join(path_data, filename)
+            for filename in [
+                "test_desc-confounds_regressors.tsv",
+                "test_desc-confounds_regressors.json",
+            ]
+        ]
+    else:
+        return [
+            os.path.join(path_data, filename)
+            for filename in [
+                "no_nonsteady_desc-confounds_regressors.tsv",
+                "test_desc-confounds_regressors.json",
+            ]
+        ]
 
 
-def create_tmp_filepath(base_path, image_type="regular", suffix="test",
-                          copy_testdata=False, copy_json=False):
+def create_tmp_filepath(
+    base_path,
+    image_type="regular",
+    suffix="test",
+    copy_confounds=False,
+    copy_json=False,
+):
     """Create test files in temporary directory."""
     # confound files
     confounds_root = "_desc-confounds_regressors.tsv"
     tmp_conf = base_path / (suffix + confounds_root)
 
-    if copy_testdata:
+    if copy_confounds:
         conf, meta = get_leagal_confound()
         conf.to_csv(tmp_conf, sep="\t", index=False)
     else:
@@ -54,14 +66,14 @@ def create_tmp_filepath(base_path, image_type="regular", suffix="test",
     # convert path object to string as nibabel do strings
     img_root = img_file_patterns[image_type]
     if type(img_root) is str:
-        tmp_img = (suffix + img_root)
+        tmp_img = suffix + img_root
         tmp_img = base_path / tmp_img
         tmp_img.touch()
         tmp_img = str(tmp_img)
     else:
         tmp_img = []
         for root in img_root:
-            tmp_gii = (suffix + root)
+            tmp_gii = suffix + root
             tmp_gii = base_path / tmp_gii
             tmp_gii.touch()
             tmp_img.append(str(tmp_gii))
@@ -69,8 +81,8 @@ def create_tmp_filepath(base_path, image_type="regular", suffix="test",
 
 
 def get_leagal_confound(non_steady_state=True):
-    """Load the valid confound files for manipulation. """
-    conf, meta = get_testdata_path(non_steady_state=True)
+    """Load the valid confound files for manipulation."""
+    conf, meta = get_testdata_path(non_steady_state=non_steady_state)
     conf = pd.read_csv(conf, delimiter="\t", encoding="utf-8")
     with open(meta, "r") as file:
         meta = json.load(file)
