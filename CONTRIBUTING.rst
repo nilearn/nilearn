@@ -70,6 +70,9 @@ In order to ensure that any code changes are reflected in your installation, nav
 
     pip install -e .[dev]
 
+This installs your local version of Nilearn, along with all dependencies necessary for developers (hence the ``[dev]`` tag).
+For more information about the dependency installation options, see ``setup.cfg``.
+The installed version will also reflect any changes you make to your code.
 
 Coding guidelines
 ------------------
