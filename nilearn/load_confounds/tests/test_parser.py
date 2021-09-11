@@ -1,4 +1,3 @@
-import os
 import re
 import numpy as np
 import pandas as pd
@@ -125,10 +124,10 @@ def _regression(confounds, sample_mask, tmp_path):
 )
 def test_nilearn_regress(tmp_path, strategy, param):
     """Try regressing out all motion types in nilearn."""
-    img_nii, _ = create_tmp_filepath(tmp_path, copy_confounds=True, copy_json=True)
-    confounds, _ = lc.Confounds(strategy=[strategy], **param).load(
-        img_nii
+    img_nii, _ = create_tmp_filepath(
+        tmp_path, copy_confounds=True, copy_json=True
     )
+    confounds, _ = lc.Confounds(strategy=[strategy], **param).load(img_nii)
     _regression(confounds, None, tmp_path)
 
 

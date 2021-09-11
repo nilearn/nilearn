@@ -6,9 +6,12 @@ from nilearn.load_confounds import parser as lc
 
 
 img_file_patterns = {
-    "icaaroma": "_space-MNI152NLin2009cAsym_desc-smoothAROMAnonaggr_bold.nii.gz",
-    "regular": "_space-MNI152NLin2009cAsym_desc-preproc_bold.nii.gz",
-    "cifti": "_space-fsLR_den-91k_bold.dtseries.nii",
+    "icaaroma":
+        "_space-MNI152NLin2009cAsym_desc-smoothAROMAnonaggr_bold.nii.gz",
+    "regular":
+        "_space-MNI152NLin2009cAsym_desc-preproc_bold.nii.gz",
+    "cifti":
+        "_space-fsLR_den-91k_bold.dtseries.nii",
     "gifti": (
         "_space-fsaverage5_hemi-L_bold.func.gii",
         "_space-fsaverage5_hemi-R_bold.func.gii",
