@@ -680,7 +680,6 @@ def group_sparse_scores(precisions, n_samples, emp_covs, alpha,
             # duality gap.
             A[..., k].flat[::A.shape[0] + 1] = 0
 
-        alpha_max = np.sqrt((A ** 2).sum(axis=-1)).max()
         dual_obj = 0  # dual objective
         for k in range(n_subjects):
             B = emp_covs[..., k] + A[..., k] / n_samples[k]
