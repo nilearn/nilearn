@@ -2059,7 +2059,6 @@ def patch_openneuro_dataset(file_list):
             if old in name:
                 if not os.path.exists(name.replace(old, rep[old])):
                     os.symlink(name, name.replace(old, rep[old]))
-                name = name.replace(old, rep[old])
 
 
 @fill_doc
