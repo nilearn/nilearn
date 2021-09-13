@@ -7,7 +7,6 @@ If there is other information that would be helpful to include, please don't hes
 Please make sure your pull request also follows the 
 [contribution guidelines](https://nilearn.github.io/development.html#contribution-guidelines) that
 will be enforced during the review process.
-https://nilearn.github.io/development.html#contribution-guidelines
 -->
 
 <!-- Please indicate after the # which issue you're closing with this PR.
