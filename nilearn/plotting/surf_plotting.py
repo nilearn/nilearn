@@ -438,7 +438,7 @@ def _threshold(data, threshold):
             else np.abs(data) >= threshold)
 
 
-def _rescale(data, vmin, vmax):
+def _rescale(data, vmin=None, vmax=None):
     data_copy = np.copy(data)
     # if no vmin/vmax are passed figure them out from data
     vmin, vmax = _get_bounds(data_copy, vmin, vmax)
@@ -447,7 +447,7 @@ def _rescale(data, vmin, vmax):
     return data_copy, vmin, vmax
 
 
-def _inverse_rescale(data, vmin, vmax):
+def _inverse_rescale(data, vmin=None, vmax=None):
     data_copy = np.copy(data)
     data_copy *= (vmax - vmin)
     return data_copy + vmin
