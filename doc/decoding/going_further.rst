@@ -115,9 +115,9 @@ The feature selection step can also be tuned. For example we could use a more
 sophisticated scheme, such as `Recursive Feature Elimination (RFE)
 <http://scikit-learn.org/stable/modules/feature_selection.html#recursive-feature-elimination>`_
 or add some `a clustering step <https://scikit-learn.org/stable/modules/clustering.html>`_
-before feature selection. This always amount to creating 
-`a pipeline <https://scikit-learn.org/stable/modules/compose.html>`_ that will 
-link those steps together and apply a sensible cross-validation scheme to it. 
+before feature selection. This always amount to creating
+`a pipeline <https://scikit-learn.org/stable/modules/compose.html>`_ that will
+link those steps together and apply a sensible cross-validation scheme to it.
 Scikit-learn usually takes care of the rest for us.
 
 .. seealso::

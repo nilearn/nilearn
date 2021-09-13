@@ -24,7 +24,7 @@ different split of the training data. For each split:
 
 Then this ensemble model is used for prediction, usually yielding better and more stable predictions than a unique model at no extra-cost. Also, the resulting coefficient maps obtained tend to be more structured.
 
-There are two object to apply :term:`FREM` in Nilearn: 
+There are two object to apply :term:`FREM` in Nilearn:
 
   * :class:`nilearn.decoding.FREMClassifier` to predict categories
 

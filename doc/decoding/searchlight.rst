@@ -17,41 +17,41 @@ Principle of the Searchlight
 ============================
 
 :class:`SearchLight` analysis was introduced in [:footcite:t:`Kriegeskorte3863`], and consists of scanning the brain with a *searchlight*.
-Briefly, a ball of given radius is scanned across the brain volume and the prediction accuracy of a classifier trained on the corresponding :term:`voxels<voxel>` is measured. 
+Briefly, a ball of given radius is scanned across the brain volume and the prediction accuracy of a classifier trained on the corresponding :term:`voxels<voxel>` is measured.
 
 Searchlights are also not limited to :term:`classification`; :term:`regression` (e.g., [:footcite:t:`KAHNT2011549`]) and representational similarity analysis (e.g., [:footcite:t:`Clarke4766`]) are other uses of searchlights.
 Currently, only :term:`classification` and :term:`regression` are supported in nilearn.
 
 .. topic:: **Further Reading**
-    
+
     For a critical review on searchlights, see [:footcite:t:`ETZEL2013261`].
 
 
 Preparing the data
 ==================
 
-:class:`SearchLight` requires a series of brain volumes as input, `X`, each with 
+:class:`SearchLight` requires a series of brain volumes as input, `X`, each with
 a corresponding label, `y`. The number of brain volumes therefore correspond to
 the number of samples used for decoding.
 
 Masking
 -------
 
-One of the main elements that distinguish :class:`SearchLight` from other 
-algorithms is the notion of structuring element that scans the entire volume. 
+One of the main elements that distinguish :class:`SearchLight` from other
+algorithms is the notion of structuring element that scans the entire volume.
 This has an impact on the masking procedure.
 
 Two masks are used with :class:`SearchLight`:
 
 - *mask_img* is the anatomical mask
-- *process_mask_img* is a subset of the brain mask and defines the boundaries 
+- *process_mask_img* is a subset of the brain mask and defines the boundaries
   of where the searchlight scans the volume. Often times we are interested in
-  only performing a searchlight within a specific area of the brain (e.g., 
-  frontal cortex). If no *process_mask_img* is set, then :class:`nilearn.decoding.SearchLight` 
-  defaults to performing a searchlight over the whole brain.  
+  only performing a searchlight within a specific area of the brain (e.g.,
+  frontal cortex). If no *process_mask_img* is set, then :class:`nilearn.decoding.SearchLight`
+  defaults to performing a searchlight over the whole brain.
 
-*mask_img* ensures that only :term:`voxels<voxel>` with useable signals are included in the 
-searchlight. This could be a full-brain mask or a gray-matter mask. 
+*mask_img* ensures that only :term:`voxels<voxel>` with useable signals are included in the
+searchlight. This could be a full-brain mask or a gray-matter mask.
 
 
 Setting up the searchlight
@@ -63,9 +63,9 @@ Classifier
 The classifier used by default by :class:`SearchLight` is LinearSVC with C=1 but
 this can be customized easily by passing an estimator parameter to the
 Searchlight. See scikit-learn documentation for `other classifiers
-<http://scikit-learn.org/stable/supervised_learning.html>`_. You can 
+<http://scikit-learn.org/stable/supervised_learning.html>`_. You can
 also pass scikit-learn `Pipelines <https://scikit-learn.org/stable/modules/compose.html>`_
-to the :class:`SearchLight` in order to combine estimators and preprocessing steps 
+to the :class:`SearchLight` in order to combine estimators and preprocessing steps
 (e.g., feature scaling) for your searchlight.
 
 Score function
@@ -78,40 +78,40 @@ detailed in the `scikit-learn documentation
 Cross validation
 ----------------
 
-:class:`SearchLight` will iterate on the volume and give a score to each :term:`voxel`. 
+:class:`SearchLight` will iterate on the volume and give a score to each :term:`voxel`.
 This score is computed by running a classifier on selected :term:`voxels<voxel>`.
 In order to make this score as accurate as possible (and avoid overfitting),
 cross-validation is used.
 
 Cross-validation can be defined using the "cv" argument. As it
-is computationally costly, *K*-Fold cross validation with *K* = 3 is set as the 
-default. A `scikit-learn cross-validation generator 
-<https://scikit-learn.org/stable/modules/classes.html#splitter-classes>`_ can also 
-be passed to set a specific type of cross-validation. 
+is computationally costly, *K*-Fold cross validation with *K* = 3 is set as the
+default. A `scikit-learn cross-validation generator
+<https://scikit-learn.org/stable/modules/classes.html#splitter-classes>`_ can also
+be passed to set a specific type of cross-validation.
 
-Leave-one-run-out cross-validation (LOROCV) is a common approach for searchlights. 
-This approach is a specific use-case of grouped cross-validation, where the 
+Leave-one-run-out cross-validation (LOROCV) is a common approach for searchlights.
+This approach is a specific use-case of grouped cross-validation, where the
 cross-validation folds are determined by the acquisition runs. The held-out fold
-in a given iteration of cross-validation consist of data from a separate run, 
-which keeps training and validation sets properly independent. For this reason, 
-LOROCV is often recommended. This can be performed by using `LeaveOneGroupOut 
+in a given iteration of cross-validation consist of data from a separate run,
+which keeps training and validation sets properly independent. For this reason,
+LOROCV is often recommended. This can be performed by using `LeaveOneGroupOut
 <https://scikit-learn.org/stable/modules/generated/sklearn.model_selection.LeaveOneGroupOut.html>`_,
-and then setting the group/run labels when fitting the estimator. 
+and then setting the group/run labels when fitting the estimator.
 
 Sphere radius
 -------------
 
-An important parameter is the radius of the sphere that will run through 
-the data. The sphere size determines the number of voxels/features to use 
-for :term:`classification` (i.e. more :term:`voxels<voxel>` are included with larger spheres). 
+An important parameter is the radius of the sphere that will run through
+the data. The sphere size determines the number of voxels/features to use
+for :term:`classification` (i.e. more :term:`voxels<voxel>` are included with larger spheres).
 
 .. note::
 
-    :class:`SearchLight` defines sphere radius in milimeters; the number 
+    :class:`SearchLight` defines sphere radius in milimeters; the number
     of :term:`voxels<voxel>` included in the sphere will therefore depend on the
-    :term:`voxel` size. 
+    :term:`voxel` size.
 
-    For reference, [:footcite:t:`Kriegeskorte3863`] use a 4mm radius because it yielded 
+    For reference, [:footcite:t:`Kriegeskorte3863`] use a 4mm radius because it yielded
     the best detection performance in their simulation of 2mm isovoxel data.
 	
 Visualization
@@ -120,13 +120,13 @@ Visualization
 Searchlight
 -----------
 
-The results of the searchlight can be found in the `scores_` attribute of the 
-:class:`SearchLight` object after fitting it to the data. Below is a 
-visualization of the results from :ref:`Searchlight analysis of face 
+The results of the searchlight can be found in the `scores_` attribute of the
+:class:`SearchLight` object after fitting it to the data. Below is a
+visualization of the results from :ref:`Searchlight analysis of face
 vs house recognition <sphx_glr_auto_examples_02_decoding_plot_haxby_searchlight.py>`.
-The searchlight was restriced to a slice in the back of the brain. Within 
-this slice, we can see that a cluster of :term:`voxels<voxel>` in visual cortex 
-contains information to distinguish pictures showed to the volunteers, 
+The searchlight was restriced to a slice in the back of the brain. Within
+this slice, we can see that a cluster of :term:`voxels<voxel>` in visual cortex
+contains information to distinguish pictures showed to the volunteers,
 which was the expected result.
 
 .. figure:: ../auto_examples/02_decoding/images/sphx_glr_plot_haxby_searchlight_001.png

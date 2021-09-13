@@ -1,5 +1,5 @@
 name: 'PEP8'
- 
+
 on:
   push:
     branches:
@@ -7,7 +7,7 @@ on:
   pull_request:
     branches:
       - '*'
- 
+
 jobs:
   check_skip:
     runs-on: ubuntu-latest
@@ -22,7 +22,7 @@ jobs:
         with:
           commit-filter: '[skip ci];[ci skip];[skip github]'
           commit-filter-separator: ';'
- 
+
   pep8:
     needs: check_skip
     if: ${{ needs.check_skip.outputs.skip == 'false' }}
@@ -44,4 +44,3 @@ jobs:
       - shell: bash {0}
         run: ./build_tools/flake8_diff.sh
         name: 'Run Flake8 diff'
-

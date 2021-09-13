@@ -3,7 +3,9 @@
 
 NEW
 ---
-
+- :ref:`development_process` has been reworked. It now provides insights on
+  nilearn organization as a project as well as more explicit
+  :ref:`contribution_guidelines`.
 - :func:`nilearn.datasets.load_mni152_gm_template` takes the skullstripped
   1mm-resolution version of the grey-matter MNI152 template and re-samples it
   using a different resolution, if specified.
@@ -129,7 +131,7 @@ NEW
 Fixes
 -----
 
-- Convert references in signal.py, atlas.py, func.py, neurovault.py, and struct.py 
+- Convert references in signal.py, atlas.py, func.py, neurovault.py, and struct.py
   to use footcite / footbibliography.
 - Fix detrending and temporal filtering order for confounders
   in :func:`nilearn.signal.clean`, so that these operations are applied
