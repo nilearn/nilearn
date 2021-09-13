@@ -176,7 +176,7 @@ def get_clusters_table(stat_img, stat_threshold, cluster_threshold=None,
         cluster_threshold=cluster_threshold,
         two_sided=two_sided,
         mask_img=None,
-        copy=cluster_threshold != 0,
+        copy=True,
     )
     stat_map = get_data(stat_img)
 
