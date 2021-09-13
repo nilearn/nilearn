@@ -412,8 +412,6 @@ def test_ica_aroma(tmp_path):
         conf.load(regular_nii)
     assert "ICA-AROMA strategy" in exc_info.value.args[0]
 
-    # use aroma strategy but no aroma related stuff present
-
 
 def test_sample_mask(tmp_path):
     """Test load method and sample mask."""
