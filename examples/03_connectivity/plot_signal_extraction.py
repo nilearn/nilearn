@@ -82,20 +82,20 @@ plotting.plot_matrix(correlation_matrix, figure=(10, 8), labels=labels[1:],
 # parameters. We create a :class:`nilearn.load_confounds.Confounds` class
 # which specifies strategies and optional parameters. Then the
 # :func:`nilearn.load_confounds.Confounds.load` method selects the relevant
-# columns from the TSV file. Let's try a strategy similar to Params9 from
-# Ciric et al. 2017, and some of its variations:
+# columns from the TSV file. Let's try a minimal strategy removing motion
+# and global signal, and some of its variations:
 
 from nilearn.load_confounds import Confounds
-params9 = Confounds(strategy=["high_pass", "motion", "wm_csf", "global"],
+minimal = Confounds(strategy=["high_pass", "motion", "wm_csf", "global"],
                     motion="basic", wm_csf="basic", global_signal="basic")
 
-confounds_params9, sample_mask = params9.load(fmri_filenames)
+confounds_minimal, sample_mask = minimal.load(fmri_filenames)
 
-print("The shape of the confounds matrix is:", confounds_params9.shape)
-print(confounds_params9.columns)
+print("The shape of the confounds matrix is:", confounds_minimal.shape)
+print(confounds_minimal.columns)
 
 time_series = masker.fit_transform(fmri_filenames,
-                                   confounds=confounds_params9,
+                                   confounds=confounds_minimal,
                                    sample_mask=sample_mask)
 
 correlation_matrix = correlation_measure.fit_transform([time_series])[0]
@@ -104,19 +104,19 @@ correlation_matrix = correlation_measure.fit_transform([time_series])[0]
 np.fill_diagonal(correlation_matrix, 0)
 
 plotting.plot_matrix(correlation_matrix, figure=(10, 8), labels=labels[1:],
-                     vmax=0.8, vmin=-0.8, title='Params9', reorder=True)
+                     vmax=0.8, vmin=-0.8, title='Minimal', reorder=True)
 
 # Now let's create a set with motion scrubbing
-params9scrub = Confounds(strategy=["high_pass", "motion", "wm_csf", "scrub"],
+minimal_scrub = Confounds(strategy=["high_pass", "motion", "wm_csf", "scrub"],
                          motion="basic", wm_csf="basic", scrub="full")
 
-confounds_params9scrub, sample_mask = params9scrub.load(fmri_filenames)
+confounds_minimal_scrub, sample_mask = minimal_scrub.load(fmri_filenames)
 
-print("The shape of the confounds matrix is:", confounds_params9scrub.shape)
-print(confounds_params9scrub.columns)
+print("The shape of the confounds matrix is:", confounds_minimal_scrub.shape)
+print(confounds_minimal_scrub.columns)
 
 time_series = masker.fit_transform(fmri_filenames,
-                                   confounds=confounds_params9scrub,
+                                   confounds=confounds_minimal_scrub,
                                    sample_mask=sample_mask)
 
 correlation_matrix = correlation_measure.fit_transform([time_series])[0]
@@ -125,21 +125,21 @@ correlation_matrix = correlation_measure.fit_transform([time_series])[0]
 np.fill_diagonal(correlation_matrix, 0)
 
 plotting.plot_matrix(correlation_matrix, figure=(10, 8), labels=labels[1:],
-                     vmax=0.8, vmin=-0.8, title='Params9Scrub',
+                     vmax=0.8, vmin=-0.8, title='Minimal and Scrubbing',
                      reorder=True)
 
 # Now let's create a set of confounds without global signal
-params9_no_gsr = Confounds(strategy=["high_pass", "motion", "wm_csf"],
+minimal_no_gsr = Confounds(strategy=["high_pass", "motion", "wm_csf"],
                            motion="basic", wm_csf="basic")
 
-confounds_params9_no_gsr, sample_mask = params9_no_gsr.load(fmri_filenames)
+confounds_minimal_no_gsr, sample_mask = minimal_no_gsr.load(fmri_filenames)
 
 print("The shape of the confounds matrix is:",
-      confounds_params9_no_gsr.shape)
-print(confounds_params9_no_gsr.columns)
+      confounds_minimal_no_gsr.shape)
+print(confounds_minimal_no_gsr.columns)
 
 time_series = masker.fit_transform(fmri_filenames,
-                                   confounds=confounds_params9_no_gsr,
+                                   confounds=confounds_minimal_no_gsr,
                                    sample_mask=sample_mask)
 
 correlation_matrix = correlation_measure.fit_transform([time_series])[0]
@@ -148,7 +148,7 @@ correlation_matrix = correlation_measure.fit_transform([time_series])[0]
 np.fill_diagonal(correlation_matrix, 0)
 
 plotting.plot_matrix(correlation_matrix, figure=(10, 8), labels=labels[1:],
-                     vmax=0.8, vmin=-0.8, title='Params9 - no GSR',
+                     vmax=0.8, vmin=-0.8, title='Minimal - no GSR',
                      reorder=True)
 
 ###############################################################################
