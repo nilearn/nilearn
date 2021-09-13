@@ -302,6 +302,10 @@ def fetch_atlas_harvard_oxford(atlas_name, data_dir=None,
 
         - "labels": string list, labels of the regions in the atlas.
 
+    See also
+    --------
+    nilearn.datasets.fetch_atlas_juelich
+
     """
     atlases = ["cort-maxprob-thr0-1mm", "cort-maxprob-thr0-2mm",
                "cort-maxprob-thr25-1mm", "cort-maxprob-thr25-2mm",
@@ -353,6 +357,7 @@ def fetch_atlas_juelich(atlas_name, data_dir=None,
     This function can also load Juelich atlas from your local directory
     specified by your FSL installed path given in `data_dir` argument.
     See documentation for details.
+
     .. versionadded:: 0.8.1
 
     Parameters
@@ -398,6 +403,10 @@ def fetch_atlas_juelich(atlas_name, data_dir=None,
           requested.
 
         - "labels": string list, labels of the regions in the atlas.
+
+    See also
+    --------
+    nilearn.datasets.fetch_atlas_harvard_oxford
 
     """
     atlases = ["maxprob-thr0-1mm", "maxprob-thr0-2mm",
