@@ -4,8 +4,9 @@ It's designed to capture information we've found to be useful in reviewing pull 
 
 If there is other information that would be helpful to include, please don't hesitate to add it!
 
-See here for more information on what is expected for pull requests:
-https://github.com/nilearn/nilearn/blob/main/CONTRIBUTING.rst#pull-requests
+Please make sure your pull request also follows the contribution guidelines that
+will be enforced during the review process.
+https://nilearn.github.io/development.html#contribution-guidelines
 -->
 
 <!-- Please indicate after the # which issue you're closing with this PR.
