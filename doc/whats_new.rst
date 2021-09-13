@@ -69,6 +69,9 @@ Enhancements
 Changes
 -------
 
+- The version of the script `jquery.min.js` was bumped from 3.3.1 to 3.6.0 due
+  to potential vulnerability issues with versions < 3.5.0.
+
 .. _v0.8.0:
 
 0.8.0
@@ -126,7 +129,7 @@ NEW
 Fixes
 -----
 
-- Convert references in signal.py, atlas.py, func.py, neurovault.py, and struct.py 
+- Convert references in signal.py, atlas.py, func.py, neurovault.py, and struct.py
   to use footcite / footbibliography.
 - Fix detrending and temporal filtering order for confounders
   in :func:`nilearn.signal.clean`, so that these operations are applied

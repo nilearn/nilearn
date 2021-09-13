@@ -8,7 +8,7 @@ Extracting functional brain networks: ICA and related
 
    This page demonstrates the use of multi-subject decompositions models
    to extract brain-networks from :term:`fMRI` data in a data-driven way.
-   Specifically, we will apply Independent Component Analysis (:term:`ICA`), which 
+   Specifically, we will apply Independent Component Analysis (:term:`ICA`), which
    implements a multivariate random effects model across subjects. We will
    then compare :term:`ICA` to a newer technique, based on dictionary learning.
 
@@ -27,8 +27,8 @@ Multi-subject ICA: CanICA
 Objective
 ----------
 :term:`ICA` is a useful approach for finding independent sources from :term:`fMRI`
-images. :term:`ICA` and similar techniques can be therefore used to define 
-regions or networks that share similar :term:`BOLD` signal across time. The 
+images. :term:`ICA` and similar techniques can be therefore used to define
+regions or networks that share similar :term:`BOLD` signal across time. The
 :term:`CanICA` incorporates information both within-subjects and across subjects
 to arrive at consensus components.
 
@@ -37,7 +37,7 @@ to arrive at consensus components.
    Nilearn provides easy-to-analyze data to explore functional connectivity and resting: the
    `brain development dataset <https://osf.io/5hju4/files/>`_, which
    has been preprocessed using `FMRIPrep and Nilearn <https://osf.io/wjtyq/>`_
-   We use nilearn functions to fetch data from Internet and get the 
+   We use nilearn functions to fetch data from Internet and get the
    filenames (:ref:`more on data loading <loading_data>`).
 
 
@@ -50,8 +50,8 @@ As with every object in nilearn, we give its parameters at construction,
 and then fit it on the data. For examples of this process, see
 here: :ref:`sphx_glr_auto_examples_03_connectivity_plot_compare_decomposition.py`
 
-Once an :term:`ICA` object has been fit to an :term:`fMRI` dataset, the individual 
-components can be accessed as a 4D Nifti object using the 
+Once an :term:`ICA` object has been fit to an :term:`fMRI` dataset, the individual
+components can be accessed as a 4D Nifti object using the
 ``components_img_`` attribute.
 
 Visualizing results
@@ -112,8 +112,8 @@ good extracted maps.
     * Arthur Mensch et al. `Compressed online dictionary learning for fast resting-state fMRI decomposition <https://hal.archives-ouvertes.fr/hal-01271033/>`_,
       ISBI 2016, Lecture Notes in Computer Science
 
-:class:`DictLearning` is a ready-to-use class with the same interface as 
-:class:`CanICA`. Sparsity of output map is controlled by a parameter alpha: using 
+:class:`DictLearning` is a ready-to-use class with the same interface as
+:class:`CanICA`. Sparsity of output map is controlled by a parameter alpha: using
 a larger alpha yields sparser maps.
 
 We can fit both estimators to compare them. 4D plotting (using
@@ -157,8 +157,6 @@ atlases have been shown to outperform :term:`ICA` in a variety of classification
 
 .. seealso::
 
-   Learn how to extract fMRI data from regions created with 
+   Learn how to extract fMRI data from regions created with
    dictionary learning with this example:
    :ref:`sphx_glr_auto_examples_03_connectivity_plot_extract_regions_dictlearning_maps.py`
-
-

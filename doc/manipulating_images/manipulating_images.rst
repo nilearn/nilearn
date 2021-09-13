@@ -36,9 +36,9 @@ loading the data into a data matrix, most are also integrated in the
 * Cleaning signals (e.g., linear detrending, standardization,
   confound removal, low/high pass filtering):
   :func:`nilearn.image.clean_img`
-  
+
   .. seealso::
-     
+
      To apply this cleaning on signal matrices rather than images:
      :func:`nilearn.signal.clean`
 
@@ -234,7 +234,7 @@ ROI mask:
    better representation of voxels of interest.
 
  * **Mask intersection and dilation**: Post-processing the results with
-   simple morphological operations, mask intersection and dilation. 
+   simple morphological operations, mask intersection and dilation.
 
    * we can use another mask, such as a grey-matter mask, to select
      only the voxels which are common in both masks.

@@ -37,8 +37,5 @@
         list-style-type: circle;
 	font-weight: normal;
         }
- 
+
   </style>
-
-
-
