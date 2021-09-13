@@ -77,11 +77,10 @@ def _tseries_std(img, mask_img, confounds, sample_mask, standardize):
 
 def _denoise(img, mask_img, confounds, sample_mask, standardize):
     """Extract time series with and without confounds."""
-    masker = NiftiMasker(
-        mask_img=mask_img, standardize=standardize, sample_mask=sample_mask
-    )
+    masker = NiftiMasker(mask_img=mask_img, standardize=standardize)
     tseries_raw = masker.fit_transform(img)
-    tseries_clean = masker.fit_transform(img, confounds=confounds)
+    tseries_clean = masker.fit_transform(img, confounds=confounds,
+                                         sample_mask=sample_mask)
     return tseries_raw, tseries_clean
 
 
@@ -100,10 +99,9 @@ def _regression(confounds, sample_mask, tmp_path):
     confounds = np.tile(confounds, (3, 1))  # matching L29 (_simu_img)
 
     # Do the regression
-    masker = NiftiMasker(
-        mask_img=mask_conf, standardize=True, sample_mask=sample_mask
-    )
-    tseries_clean = masker.fit_transform(img, confounds)
+    masker = NiftiMasker(mask_img=mask_conf, standardize=True)
+    tseries_clean = masker.fit_transform(img, confounds=confounds,
+                                         sample_mask=sample_mask)
     assert tseries_clean.shape[0] == confounds.shape[0]
 
 
