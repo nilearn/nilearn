@@ -210,7 +210,6 @@ def multiple_fast_inverse(a):
         raise ValueError('a must have shape (n_samples, n_dim, n_dim)')
     from scipy.linalg.lapack import get_lapack_funcs
     a1, n = a[0], a.shape[0]
-    getrf, getri = get_lapack_funcs(('getrf', 'getri'), (a1,))
     getrf, getri, getri_lwork = get_lapack_funcs(
         ('getrf', 'getri', 'getri_lwork'), (a1,))
     for i in range(n):
