@@ -28,12 +28,12 @@ def test_add_js_lib():
     cdn = js_plotting_utils.add_js_lib(html, embed_js=False)
     assert "decodeBase64" in cdn
     assert _normalize_ws("""<script
-    src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js">
+    src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js">
     </script>
     <script src="https://cdn.plot.ly/plotly-gl3d-latest.min.js"></script>
     """) in _normalize_ws(cdn)
     inline = _normalize_ws(js_plotting_utils.add_js_lib(html, embed_js=True))
-    assert _normalize_ws("""/*! jQuery v3.3.1 | (c) JS Foundation and other
+    assert _normalize_ws("""/*! jQuery v3.6.0 | (c) OpenJS Foundation and other
                             contributors | jquery.org/license */""") in inline
     assert _normalize_ws("""**
                             * plotly.js (gl3d - minified)""") in inline

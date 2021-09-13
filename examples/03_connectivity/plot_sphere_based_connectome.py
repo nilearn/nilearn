@@ -152,11 +152,11 @@ view
 ##########################################################################
 # Extract signals on spheres from an atlas
 # ----------------------------------------
-# 
+#
 # Next, instead of supplying our own coordinates, we will use coordinates
 # generated at the center of mass of regions from two different atlases.
 # This time, we'll use a different correlation measure.
-# 
+#
 # First we fetch the coordinates of the Power atlas
 
 power = datasets.fetch_coords_power_2011()
@@ -256,8 +256,8 @@ plotting.plot_connectome(matrix, coords, title='Power correlation graph',
 # aggregating edge strength from the graph would help. Use the function
 # `nilearn.plotting.plot_markers` to visualize this information.
 
-# calculate normalized, absolute strength for each node 
-node_strength = np.sum(np.abs(matrix), axis=0) 
+# calculate normalized, absolute strength for each node
+node_strength = np.sum(np.abs(matrix), axis=0)
 node_strength /= np.max(node_strength)
 
 plotting.plot_markers(
@@ -279,11 +279,11 @@ positive_edges = np.clip(matrix, 0, matrix.max())
 negative_edges = np.clip(matrix, matrix.min(), 0)
 
 # calculate strength for positive edges
-node_strength_positive = np.sum(np.abs(positive_edges), axis=0) 
+node_strength_positive = np.sum(np.abs(positive_edges), axis=0)
 node_strength_positive /= np.max(node_strength_positive)
 
 # calculate strength for negative edges
-node_strength_negative = np.sum(np.abs(negative_edges), axis=0) 
+node_strength_negative = np.sum(np.abs(negative_edges), axis=0)
 node_strength_negative /= np.max(node_strength_negative)
 
 # plot nodes' strength for positive edges
@@ -333,8 +333,8 @@ plotting.plot_connectome(matrix, coords, title='Dosenbach correlation graph',
                          edge_threshold="99.7%", node_size=20, colorbar=True)
 
 
-# calculate average strength for each node 
-node_strength = np.sum(np.abs(matrix), axis=0) 
+# calculate average strength for each node
+node_strength = np.sum(np.abs(matrix), axis=0)
 node_strength /= np.max(node_strength)
 
 plotting.plot_markers(
@@ -348,9 +348,9 @@ positive_edges = np.clip(matrix, 0, matrix.max())
 negative_edges = np.clip(matrix, matrix.min(), 0)
 
 # calculate strength for positive and edges
-node_strength_positive = np.sum(np.abs(positive_edges), axis=0) 
+node_strength_positive = np.sum(np.abs(positive_edges), axis=0)
 node_strength_positive /= np.max(node_strength_positive)
-node_strength_negative = np.sum(np.abs(negative_edges), axis=0) 
+node_strength_negative = np.sum(np.abs(negative_edges), axis=0)
 node_strength_negative /= np.max(node_strength_negative)
 
 # plot nodes' strength for positive edges

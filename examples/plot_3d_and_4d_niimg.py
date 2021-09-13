@@ -86,9 +86,9 @@ for img in image.iter_img(rsn):
 # ---------------------------------------------
 #
 # If we want to plot selected volumes in this 4D file, we can use index_img
-# with the `slice` constructor to select the desired volumes. 
-# 
-# Afterwards, we'll use iter_img to loop through them following the same 
+# with the `slice` constructor to select the desired volumes.
+#
+# Afterwards, we'll use iter_img to loop through them following the same
 # formula as before.
 selected_volumes = image.index_img(rsn, slice(3, 5))
 

@@ -134,4 +134,3 @@ def test_reorder_labels():
 
     labels = _random_walker(data, labels)
     assert data.shape == labels.shape
-

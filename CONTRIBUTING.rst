@@ -278,7 +278,7 @@ Here are the key steps you need to go through to copy the repo before contributi
 5. check that all tests pass with (this can take a while)::
 
       pytest nilearn
-
+ 
 
 Contributing
 ------------
@@ -348,7 +348,8 @@ If you wish to build documentation:
     When generating documentation locally, you can build only specific files
     to reduce building time. To do so, use the ``filename_pattern``::
 
-       python3 -m sphinx -D sphinx_gallery_conf.filename_pattern=plot_decoding_tutorial.py -b html -d _build/doctrees . _build/html
+       python3 -m sphinx -D sphinx_gallery_conf.filename_pattern=\\
+       plot_decoding_tutorial.py -b html -d _build/doctrees . _build/html
 
 
 Additional cases
@@ -379,7 +380,7 @@ Examples can be found `here
 How to contribute a dataset fetcher
 ------------------------------------
 
-The ``nilearn.datasets`` package provides functions to download some
+The :mod:`nilearn.datasets` module provides functions to download some
 neuroimaging datasets, such as :func:`nilearn.datasets.fetch_haxby` or
 :func:`nilearn.datasets.fetch_atlas_harvard_oxford`. The goal is not to provide a comprehensive
 collection of downloaders for the most widely used datasets, and this would be
