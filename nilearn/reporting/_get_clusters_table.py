@@ -163,6 +163,8 @@ def get_clusters_table(stat_img, stat_threshold, cluster_threshold=None,
 
     """
     cols = ['Cluster ID', 'X', 'Y', 'Z', 'Peak Stat', 'Cluster Size (mm3)']
+    # Replace None with 0
+    cluster_threshold = 0 if cluster_threshold is None else cluster_threshold
 
     # check that stat_img is niimg-like object and 3D
     stat_img = check_niimg_3d(stat_img)
@@ -174,7 +176,7 @@ def get_clusters_table(stat_img, stat_threshold, cluster_threshold=None,
         cluster_threshold=cluster_threshold,
         two_sided=two_sided,
         mask_img=None,
-        copy=cluster_threshold is not None,
+        copy=cluster_threshold != 0,
     )
     stat_map = get_data(stat_img)
 
