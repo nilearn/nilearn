@@ -881,7 +881,7 @@ def threshold_img(
         conn_mat[1, :, 1] = 1
         conn_mat[:, 1, 1] = 1
 
-        for i_vol in img_data.shape[3]:
+        for i_vol in range(img_data.shape[3]):
             vol_data = img_data[..., i_vol]
             for sign in np.sign(vol_data):
                 # Binarize using one-sided cluster-defining threshold
