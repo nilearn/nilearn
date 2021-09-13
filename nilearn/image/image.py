@@ -775,14 +775,21 @@ def new_img_like(ref_niimg, data, affine=None, copy_header=False):
     return klass(data, affine, header=header)
 
 
-def threshold_img(img, threshold, cluster_threshold=0, mask_img=None, copy=True):
+def threshold_img(
+    img,
+    threshold,
+    cluster_threshold=0,
+    two_sided=True,
+    mask_img=None,
+    copy=True,
+):
     """Threshold the given input image, mostly statistical or atlas images.
 
     Thresholding can be done based on direct image intensities or selection
     threshold with given percentile.
 
     .. versionchanged:: 0.8.1
-        New ``cluster_threshold`` parameter added.
+        New ``cluster_threshold`` and ``two_sided`` parameters added.
 
     .. versionadded:: 0.2
 
@@ -805,6 +812,11 @@ def threshold_img(img, threshold, cluster_threshold=0, mask_img=None, copy=True)
         Cluster size threshold, in voxels. In the returned thresholded map,
         sets of connected voxels (``clusters``) with size smaller
         than this number will be removed. Default=0.
+
+    two_sided : :obj:`bool`, optional
+        Whether the thresholding should yield both positive and negative
+        part of the maps.
+        Default=True.
 
     mask_img : Niimg-like object, default None, optional
         Mask image applied to mask the input data.
@@ -850,22 +862,25 @@ def threshold_img(img, threshold, cluster_threshold=0, mask_img=None, copy=True)
                                            percentile_func=scoreatpercentile,
                                            name='threshold')
 
-    # Apply two-sided threshold
-    img_data[np.abs(img_data) < cutoff_threshold] = 0.
-
-    # Define array for 6-connectivity, aka NN1 or "faces"
-    conn_mat = np.zeros((3, 3, 3), int)
-    conn_mat[1, 1, :] = 1
-    conn_mat[1, :, 1] = 1
-    conn_mat[:, 1, 1] = 1
+    # Apply threshold
+    if two_sided:
+        img_data[np.abs(img_data) < cutoff_threshold] = 0.
+    else:
+        img_data[img_data < cutoff_threshold] = 0.
 
     # Expand to 4D to support both 3D and 4D
-    reduce_to_3d = img_data.ndim == 3
-    if reduce_to_3d:
+    expand_to_4d = img_data.ndim == 3
+    if expand_to_4d:
         img_data = img_data[:, :, :, None]
 
     # Perform cluster thresholding, if requested
     if cluster_threshold > 0:
+        # Define array for 6-connectivity, aka NN1 or "faces"
+        conn_mat = np.zeros((3, 3, 3), int)
+        conn_mat[1, 1, :] = 1
+        conn_mat[1, :, 1] = 1
+        conn_mat[:, 1, 1] = 1
+
         for i_vol in img_data.shape[3]:
             vol_data = img_data[..., i_vol]
             for sign in np.sign(vol_data):
@@ -881,7 +896,8 @@ def threshold_img(img, threshold, cluster_threshold=0, mask_img=None, copy=True)
 
             img_data[..., i_vol] = vol_data
 
-    if reduce_to_3d:
+    if expand_to_4d:
+        # Reduce back to 3D
         img_data = img_data[:, :, :, 0]
 
     # Reconstitute img object
