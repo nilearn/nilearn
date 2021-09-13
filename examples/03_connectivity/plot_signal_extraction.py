@@ -108,7 +108,7 @@ plotting.plot_matrix(correlation_matrix, figure=(10, 8), labels=labels[1:],
 
 # Now let's create a set with motion scrubbing
 minimal_scrub = Confounds(strategy=["high_pass", "motion", "wm_csf", "scrub"],
-                         motion="basic", wm_csf="basic", scrub="full")
+                          motion="basic", wm_csf="basic", scrub="full")
 
 confounds_minimal_scrub, sample_mask = minimal_scrub.load(fmri_filenames)
 
