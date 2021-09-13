@@ -84,16 +84,6 @@ class Confounds:
         - "full" translation/rotation + derivatives + quadratic terms + power2d
           derivatives (24 parameters)
 
-    n_motion_components : int or float, default 0
-        Number of pca components to keep from head motion estimates.
-        The default is 0. No PCA is performed.
-        When an integer is applied, the number should not exceed the number of
-        motion parameters availible.
-        If the parameters is strictly comprised between 0 and 1, a principal
-        component analysis is applied to the motion parameters, and the number
-        of extracted components is set to exceed `n_motion_components` percent
-        of the parameters variance.
-
     fd_threshold : float, default 0.2
         Framewise displacement threshold for scrub (default = 0.2 mm)
 
@@ -159,11 +149,10 @@ class Confounds:
         "auto": select all components (50% variance explained by fMRIPrep
         defaults)
 
-    ica_aroma : {None, 'basic, 'full'}
+    ica_aroma : {'full', 'basic'}
 
-        - None: default, not using ICA-AROMA related strategy
-        - "basic": use noise independent components only.
         - "full": use fMRIprep output `~desc-smoothAROMAnonaggr_bold.nii.gz`.
+        - "basic": use noise independent components only.
 
     demean : boolean, default True
         If True, the confounds are standardized to a zero mean (over time).
@@ -212,7 +201,6 @@ class Confounds:
         self,
         strategy=["motion", "high_pass", "wm_csf"],
         motion="full",
-        n_motion_components=0,
         scrub="full",
         fd_thresh=0.2,
         std_dvars_thresh=3,
@@ -220,13 +208,12 @@ class Confounds:
         global_signal="basic",
         compcor="anat_combined",
         n_compcor="auto",
-        ica_aroma=None,
+        ica_aroma="full",
         demean=True,
     ):
         """Set parameters."""
         self.strategy = _sanitize_strategy(strategy)
         self.motion = motion
-        self.n_motion_components = n_motion_components
         self.scrub = scrub
         self.fd_thresh = fd_thresh
         self.std_dvars_thresh = std_dvars_thresh
@@ -329,14 +316,7 @@ class Confounds:
             self.motion,
         )
         cf._check_params(confounds_raw, motion_params)
-        confounds_motion = confounds_raw[motion_params]
-
-        # Optionally apply PCA reduction
-        if self.n_motion_components > 0:
-            confounds_motion = cf._pca_motion(
-                confounds_motion, n_components=self.n_motion_components
-            )
-        return confounds_motion
+        return confounds_raw[motion_params]
 
     def _load_high_pass(self, confounds_raw):
         """Load the high pass filter regressors."""
@@ -363,15 +343,16 @@ class Confounds:
 
     def _load_ica_aroma(self, confounds_raw):
         """Load the ICA-AROMA regressors."""
-        if self.ica_aroma is None:
-            raise ValueError(
-                "Please select an option when using ICA-AROMA strategy"
-            )
         if self.ica_aroma == "full":
             return pd.DataFrame()
-        if self.ica_aroma == "basic":
+        elif self.ica_aroma == "basic":
             ica_aroma_params = cf._find_confounds(confounds_raw, ["aroma"])
             return confounds_raw[ica_aroma_params]
+        else:
+            raise ValueError(
+                "Please select an option when using ICA-AROMA strategy."
+                f"Current input: {self.ica_aroma}"
+            )
 
     def _load_scrub(self, confounds_raw):
         """Remove volumes if FD and/or DVARS exceeds threshold."""

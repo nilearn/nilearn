@@ -6,6 +6,10 @@ Authors: load_confounds team
 
 def _flag_single_gifti(img_files):
     """Test if the paired input files are giftis."""
+    # Possibly two gifti; if file is not correct, will be caught
+    if isinstance(img_files[0], list):
+        return False
+
     flag_single_gifti = []  # gifti in pairs
     for img in img_files:
         ext = ".".join(img.split(".")[-2:])

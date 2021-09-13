@@ -4,7 +4,6 @@ Authors: load_confounds team
 """
 import numpy as np
 import pandas as pd
-from sklearn.decomposition import PCA
 from sklearn.preprocessing import scale
 import os
 import json
@@ -60,11 +59,13 @@ def _sanitize_confounds(img_files):
     """Make sure the inputs are in the correct format."""
     # we want to support loading a single set of confounds, instead of a list
     # so we hack it
+    if len(img_files) == 1:
+        return img_files, True
+    # gifti has to be passed as pair
     if isinstance(img_files, list) and len(img_files) == 2:
         flag_single = _flag_single_gifti(img_files)
     else:  # single file
         flag_single = isinstance(img_files, str)
-
     if flag_single:
         img_files = [img_files]
     return img_files, flag_single
@@ -83,28 +84,6 @@ def _add_suffix(params, model):
         for suff in suffix[model]:
             params_full.append(f"{par}_{suff}")
     return params_full
-
-
-def _pca_motion(confounds_motion, n_components):
-    """Reduce the motion paramaters using PCA."""
-    n_available = confounds_motion.shape[1]
-    if n_components > n_available:
-        raise ValueError(
-            (
-                f"User requested n_motion={n_components} motion components, "
-                f"but found only {n_available}."
-            )
-        )
-    confounds_motion = confounds_motion.dropna()
-    confounds_motion_std = scale(
-        confounds_motion, axis=0, with_mean=True, with_std=True
-    )
-    pca = PCA(n_components=n_components)
-    motion_pca = pd.DataFrame(pca.fit_transform(confounds_motion_std))
-    motion_pca.columns = [
-        "motion_pca_" + str(col + 1) for col in motion_pca.columns
-    ]
-    return motion_pca
 
 
 def _get_file_name(nii_file):
