@@ -85,11 +85,11 @@ plotting.plot_matrix(correlation_matrix, figure=(10, 8), labels=labels[1:],
 # columns from the TSV file. Let's try a minimal strategy removing motion
 # and global signal, and some of its variations:
 
-from nilearn.load_confounds import Confounds
-minimal = Confounds(strategy=["high_pass", "motion", "wm_csf", "global"],
-                    motion="basic", wm_csf="basic", global_signal="basic")
-
-confounds_minimal, sample_mask = minimal.load(fmri_filenames)
+from nilearn.load_confounds import load_confounds
+confounds_minimal, sample_mask = load_confounds(
+      fmri_filenames, 
+      strategy=["high_pass", "motion", "wm_csf", "global"],
+      motion="basic", wm_csf="basic", global_signal="basic")
 
 print("The shape of the confounds matrix is:", confounds_minimal.shape)
 print(confounds_minimal.columns)
@@ -107,10 +107,10 @@ plotting.plot_matrix(correlation_matrix, figure=(10, 8), labels=labels[1:],
                      vmax=0.8, vmin=-0.8, title='Minimal', reorder=True)
 
 # Now let's create a set with motion scrubbing
-minimal_scrub = Confounds(strategy=["high_pass", "motion", "wm_csf", "scrub"],
-                          motion="basic", wm_csf="basic", scrub="full")
-
-confounds_minimal_scrub, sample_mask = minimal_scrub.load(fmri_filenames)
+confounds_minimal_scrub, sample_mask = load_confounds(
+      fmri_filenames, 
+      strategy=["high_pass", "motion", "wm_csf", "scrub"],
+      motion="basic", wm_csf="basic", scrub="full")
 
 print("The shape of the confounds matrix is:", confounds_minimal_scrub.shape)
 print(confounds_minimal_scrub.columns)
@@ -129,11 +129,10 @@ plotting.plot_matrix(correlation_matrix, figure=(10, 8), labels=labels[1:],
                      reorder=True)
 
 # Now let's create a set of confounds without global signal
-minimal_no_gsr = Confounds(strategy=["high_pass", "motion", "wm_csf"],
-                           motion="basic", wm_csf="basic")
-
-confounds_minimal_no_gsr, sample_mask = minimal_no_gsr.load(fmri_filenames)
-
+confounds_minimal_no_gsr, sample_mask = load_confounds(
+      fmri_filenames, 
+      strategy=["high_pass", "motion", "wm_csf"], 
+      motion="basic", wm_csf="basic")
 print("The shape of the confounds matrix is:",
       confounds_minimal_no_gsr.shape)
 print(confounds_minimal_no_gsr.columns)

@@ -2,11 +2,14 @@
 
 Authors: load_confounds team
 """
-import numpy as np
 import pandas as pd
-from . import confounds as cf
-from .compcor import _find_compcor
-from .scrub import _optimize_scrub
+from .confounds import (
+    _sanitize_confounds,
+    _confounds_to_df,
+    _prepare_output,
+    MissingConfound,
+)
+from . import components
 
 
 # Global variables listing the admissible types of noise components
@@ -20,6 +23,20 @@ all_confounds = [
     "scrub",
     "non_steady_state",
 ]
+
+default_parameters = {
+    "strategy": ["motion", "high_pass", "wm_csf"], 
+    "motion": "full",
+    "scrub": "full",
+    "fd_thresh": 0.2,
+    "std_dvars_thresh": 3,
+    "wm_csf": "basic",
+    "global_signal": "basic",
+    "compcor": "anat_combined",
+    "n_compcor": "auto",
+    "ica_aroma": "full",
+    "demean": True,
+}
 
 
 def _sanitize_strategy(strategy):
@@ -35,19 +52,21 @@ def _sanitize_strategy(strategy):
     return strategy
 
 
-def _check_error(missing_confounds, missing_keys):
+def _check_error(missing):
     """Consolidate a single error message across multiple missing confounds."""
-    if missing_confounds or missing_keys:
+    if missing["confounds"] or missing["keywords"]:
         error_msg = (
-            "The following keys or parameters are missing: "
-            + f" {missing_confounds}"
-            + f" {missing_keys}"
+            "The following keywords or parameters are missing: "
+            + f" {missing['confounds']}"
+            + f" {missing['keywords']}"
             + ". You may want to try a different denoising strategy."
         )
         raise ValueError(error_msg)
 
 
-class Confounds:
+def load_confounds(
+    img_files, **kargs
+):
     """
     Use confounds from fmriprep.
 
@@ -61,6 +80,12 @@ class Confounds:
 
     Parameters
     ----------
+    img_files : path to processed image files, optionally as a list.
+        Processed nii.gz/dtseries.nii/func.gii file from fmriprep.
+        `nii.gz` or `dtseries.nii`: path to files, optionally as a list.
+        `func.gii`: list of a pair of paths to files, optionally as a list
+        of lists. The companion tsv will be automatically detected.
+
     strategy : list of strings, default ["motion", "high_pass", "wm_csf"]
         The type of noise components to include.
 
@@ -161,13 +186,15 @@ class Confounds:
         off with "spc" normalization.
 
 
-    Attributes
-    ----------
-    `confounds_` : pandas.DataFrame
-        The confounds loaded using the specified model. The columns of the
-        dataframe contains the labels.
+    Returns
+    -------
+    confounds : pandas.DataFrame, or list of
+        A reduced version of fMRIprep confounds based on selected strategy
+        and flags.
+        An intercept is automatically added to the list of confounds.
+        The columns contains the labels of the regressors.
 
-    `sample_mask_` : None, numpy.ndarray, or list of
+    sample_mask : None, numpy.ndarray, or list of
         When no volumns require removal, the value is None.
         Otherwise, shape: (number of scans - number of volumes removed, )
         The index of the niimgs along time/fourth dimension for valid volumes
@@ -196,197 +223,70 @@ class Confounds:
     strategies for the control of motion artifact in studies of functional
     connectivity" Neuroimage 154: 174-87
     """
+    # update the confound strategy parameters
+    confound_parameters = default_parameters.copy()
 
-    def __init__(
-        self,
-        strategy=["motion", "high_pass", "wm_csf"],
-        motion="full",
-        scrub="full",
-        fd_thresh=0.2,
-        std_dvars_thresh=3,
-        wm_csf="basic",
-        global_signal="basic",
-        compcor="anat_combined",
-        n_compcor="auto",
-        ica_aroma="full",
-        demean=True,
-    ):
-        """Set parameters."""
-        self.strategy = _sanitize_strategy(strategy)
-        self.motion = motion
-        self.scrub = scrub
-        self.fd_thresh = fd_thresh
-        self.std_dvars_thresh = std_dvars_thresh
-        self.wm_csf = wm_csf
-        self.global_signal = global_signal
-        self.compcor = compcor
-        self.n_compcor = n_compcor
-        self.ica_aroma = ica_aroma
-        self.demean = demean
+    for key in confound_parameters:
+        if kargs.get(key):
+            confound_parameters[key] = kargs.get(key)
 
-    def load(self, img_files):
-        """
-        Load fMRIprep confounds and sample mask.
+    sanitized_strategy = _sanitize_strategy(confound_parameters["strategy"])
+    confound_parameters.update({"strategy": sanitized_strategy})
 
-        Parameters
-        ----------
-        img_files : path to processed image files, optionally as a list.
-            Processed nii.gz/dtseries.nii/func.gii file from fmriprep.
-            `nii.gz` or `dtseries.nii`: path to files, optionally as a list.
-            `func.gii`: list of a pair of paths to files, optionally as a list
-            of lists. The companion tsv will be automatically detected.
+    # load confounds per image provided 
+    img_files, flag_single = _sanitize_confounds(img_files)
+    confounds_out = []
+    sample_mask_out = []
+    for file in img_files:
+        current_file_param = confound_parameters.copy()
+        sample_mask, conf = _load_single(file, current_file_param)
+        confounds_out.append(conf)
+        sample_mask_out.append(sample_mask)
 
-        Returns
-        -------
-        confounds : pandas.DataFrame, or list of
-            A reduced version of fMRIprep confounds based on selected strategy
-            and flags.
-            An intercept is automatically added to the list of confounds.
-            The columns contains the labels of the regressors.
+    # If a single input was provided,
+    # send back a single output instead of a list
+    if flag_single:
+        confounds_out = confounds_out[0]
+        sample_mask_out = sample_mask_out[0]
+    return confounds_out, sample_mask_out
 
-        sample_mask : None, numpy.ndarray, or list of
-            Index of time point to be preserved in the analysis.
-            When no volumns require removal, the value is None.
-        """
-        return self._parse(img_files)
 
-    def _parse(self, img_files):
-        """Parse input image, find confound files and scrubbing etc."""
-        img_files, flag_single = cf._sanitize_confounds(img_files)
-
-        confounds_out = []
-        sample_mask_out = []
-        self.missing_confounds_ = []
-        self.missing_keys_ = []
-
-        for file in img_files:
-            sample_mask, conf = self._load_single(file)
-            confounds_out.append(conf)
-            sample_mask_out.append(sample_mask)
-
-        # If a single input was provided,
-        # send back a single output instead of a list
-        if flag_single:
-            confounds_out = confounds_out[0]
-            sample_mask_out = sample_mask_out[0]
-
-        self.confounds_ = confounds_out
-        self.sample_mask_ = sample_mask_out
-        return confounds_out, sample_mask_out
-
-    def _load_single(self, confounds_raw):
-        """Load a single confounds file from fmriprep."""
-        # Convert tsv file to pandas dataframe
-        # check if relevant imaging files are present according to the strategy
-        flag_acompcor = ("compcor" in self.strategy) and (
-            "anat" in self.compcor
+def _load_single(confounds_raw, current_file_param):
+    """Load confounds for a single image file."""
+    strategy = current_file_param.get("strategy")
+    # Convert tsv file to pandas dataframe
+    # check if relevant imaging files are present according to the strategy
+    flag_acompcor = ("compcor" in strategy) and (
+        "anat" in current_file_param.get("compcor")
+    )
+    flag_full_aroma = ("ica_aroma" in strategy) and (
+        current_file_param.get("ica_aroma") == "full"
+    )
+    confounds_raw, meta_json = _confounds_to_df(
+        confounds_raw, flag_acompcor, flag_full_aroma
+    )
+    current_file_param["meta_json"] = meta_json
+    
+    confounds = pd.DataFrame()
+    missing = {"confounds": [], "keywords": []}
+    for component in strategy:
+        loaded_confounds, missing = _load_noise_component(
+            confounds_raw, component, missing, current_file_param
         )
-        flag_full_aroma = ("ica_aroma" in self.strategy) and (
-            self.ica_aroma == "full"
+        confounds = pd.concat([confounds, loaded_confounds], axis=1)
+
+    _check_error(missing)  # raise any missing
+    return _prepare_output(confounds, current_file_param.get("demean"))
+
+
+def _load_noise_component(confounds_raw, component, missing, current_file_param):
+    """Load confound of a single noise component."""
+    try:
+        loaded_confounds = getattr(components, f"_load_{component}")(
+            confounds_raw, **current_file_param
         )
-        confounds_raw, self.json_ = cf._confounds_to_df(
-            confounds_raw, flag_acompcor, flag_full_aroma
-        )
-
-        confounds = pd.DataFrame()
-
-        for confound in self.strategy:
-            loaded_confounds = self._load_confound(confounds_raw, confound)
-            confounds = pd.concat([confounds, loaded_confounds], axis=1)
-
-        _check_error(self.missing_confounds_, self.missing_keys_)
-        return cf._prepare_output(confounds, self.demean)
-
-    def _load_confound(self, confounds_raw, confound):
-        """Load a single type of confound."""
-        try:
-            loaded_confounds = getattr(self, f"_load_{confound}")(
-                confounds_raw
-            )
-        except cf.MissingConfound as exception:
-            self.missing_confounds_ += exception.params
-            self.missing_keys_ += exception.keywords
-            loaded_confounds = pd.DataFrame()
-        return loaded_confounds
-
-    def _load_motion(self, confounds_raw):
-        """Load the motion regressors."""
-        motion_params = cf._add_suffix(
-            ["trans_x", "trans_y", "trans_z", "rot_x", "rot_y", "rot_z"],
-            self.motion,
-        )
-        cf._check_params(confounds_raw, motion_params)
-        return confounds_raw[motion_params]
-
-    def _load_high_pass(self, confounds_raw):
-        """Load the high pass filter regressors."""
-        high_pass_params = cf._find_confounds(confounds_raw, ["cosine"])
-        return confounds_raw[high_pass_params]
-
-    def _load_wm_csf(self, confounds_raw):
-        """Load the regressors derived from the white matter and CSF masks."""
-        wm_csf_params = cf._add_suffix(["csf", "white_matter"], self.wm_csf)
-        cf._check_params(confounds_raw, wm_csf_params)
-        return confounds_raw[wm_csf_params]
-
-    def _load_global(self, confounds_raw):
-        """Load the regressors derived from the global signal."""
-        global_params = cf._add_suffix(["global_signal"], self.global_signal)
-        cf._check_params(confounds_raw, global_params)
-        return confounds_raw[global_params]
-
-    def _load_compcor(self, confounds_raw):
-        """Load compcor regressors."""
-        compcor_cols = _find_compcor(self.json_, self.compcor, self.n_compcor)
-        cf._check_params(confounds_raw, compcor_cols)
-        return confounds_raw[compcor_cols]
-
-    def _load_ica_aroma(self, confounds_raw):
-        """Load the ICA-AROMA regressors."""
-        if self.ica_aroma == "full":
-            return pd.DataFrame()
-        elif self.ica_aroma == "basic":
-            ica_aroma_params = cf._find_confounds(confounds_raw, ["aroma"])
-            return confounds_raw[ica_aroma_params]
-        else:
-            raise ValueError(
-                "Please select an option when using ICA-AROMA strategy."
-                f"Current input: {self.ica_aroma}"
-            )
-
-    def _load_scrub(self, confounds_raw):
-        """Remove volumes if FD and/or DVARS exceeds threshold."""
-        n_scans = len(confounds_raw)
-        # Get indices of fd outliers
-        fd_outliers_index = np.where(
-            confounds_raw["framewise_displacement"] > self.fd_thresh
-        )[0]
-        dvars_outliers_index = np.where(
-            confounds_raw["std_dvars"] > self.std_dvars_thresh
-        )[0]
-        motion_outliers_index = np.sort(
-            np.unique(np.concatenate((fd_outliers_index,
-                                      dvars_outliers_index)))
-        )
-        # Do full scrubbing if desired, and motion outliers were detected
-        if self.scrub == "full" and len(motion_outliers_index) > 0:
-            motion_outliers_index = _optimize_scrub(motion_outliers_index,
-                                                    n_scans)
-        # Make one-hot encoded motion outlier regressors
-        motion_outlier_regressors = pd.DataFrame(
-            np.transpose(np.eye(n_scans)[motion_outliers_index]).astype(int)
-        )
-        column_names = [
-            "motion_outlier_" + str(num)
-            for num in range(np.shape(motion_outlier_regressors)[1])
-        ]
-        motion_outlier_regressors.columns = column_names
-        return motion_outlier_regressors
-
-    def _load_non_steady_state(self, confounds_raw):
-        """Find non steady state regressors."""
-        nss_outliers = cf._find_confounds(confounds_raw, ["non_steady_state"])
-        if nss_outliers:
-            return confounds_raw[nss_outliers]
-        else:
-            return pd.DataFrame()
+    except MissingConfound as exception:
+        missing["confounds"] += exception.params
+        missing["keywords"] += exception.keywords
+        loaded_confounds = pd.DataFrame()
+    return loaded_confounds, missing

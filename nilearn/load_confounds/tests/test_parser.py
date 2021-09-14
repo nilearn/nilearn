@@ -6,7 +6,8 @@ from sklearn.preprocessing import scale
 import pytest
 from nibabel import Nifti1Image
 from nilearn.input_data import NiftiMasker
-from nilearn.load_confounds import parser as lc
+from nilearn.load_confounds import parser
+
 from nilearn._utils.load_confounds import to_camel_case
 
 from .utils import create_tmp_filepath, get_leagal_confound
@@ -23,9 +24,9 @@ def _simu_img(tmp_path, demean=True):
     # as we will stack slices with confounds on top of slices with noise
     nz = 2
     # Load a simple 6 parameters motion models as confounds
-    confounds, _ = lc.Confounds(
-        strategy=["motion"], motion="basic", demean=demean
-    ).load(file_nii)
+    confounds, _ = parser.load_confounds(
+        file_nii, strategy=["motion"], motion="basic", demean=demean
+    )
     X = confounds.values
     # the first row is non-steady state, replace it with the imput from the
     # second row
@@ -79,8 +80,9 @@ def _denoise(img, mask_img, confounds, sample_mask, standardize):
     """Extract time series with and without confounds."""
     masker = NiftiMasker(mask_img=mask_img, standardize=standardize)
     tseries_raw = masker.fit_transform(img)
-    tseries_clean = masker.fit_transform(img, confounds=confounds,
-                                         sample_mask=sample_mask)
+    tseries_clean = masker.fit_transform(
+        img, confounds=confounds, sample_mask=sample_mask
+    )
     return tseries_raw, tseries_clean
 
 
@@ -100,8 +102,9 @@ def _regression(confounds, sample_mask, tmp_path):
 
     # Do the regression
     masker = NiftiMasker(mask_img=mask_conf, standardize=True)
-    tseries_clean = masker.fit_transform(img, confounds=confounds,
-                                         sample_mask=sample_mask)
+    tseries_clean = masker.fit_transform(
+        img, confounds=confounds, sample_mask=sample_mask
+    )
     assert tseries_clean.shape[0] == confounds.shape[0]
 
 
@@ -124,7 +127,7 @@ def test_nilearn_regress(tmp_path, strategy, param):
     img_nii, _ = create_tmp_filepath(
         tmp_path, copy_confounds=True, copy_json=True
     )
-    confounds, _ = lc.Confounds(strategy=[strategy], **param).load(img_nii)
+    confounds, _ = parser.load_confounds(img_nii, strategy=[strategy], **param)
     _regression(confounds, None, tmp_path)
 
 
@@ -189,22 +192,22 @@ def test_nilearn_standardize_psc(tmp_path):
 
 def test_confounds2df(tmp_path):
     """Check auto-detect of confonds from an fMRI nii image."""
-    conf = lc.Confounds()
     img_nii, _ = create_tmp_filepath(tmp_path, copy_confounds=True)
-    conf.load(img_nii)
-    assert "trans_x" in conf.confounds_.columns
+    confounds, _ = parser.load_confounds(img_nii)
+    assert "trans_x" in confounds.columns
 
 
 @pytest.mark.parametrize("strategy", [["string"], "error", [0], "motion"])
-def test_sanitize_strategy(strategy):
+def test_sanitize_strategy(tmp_path, strategy):
     """Check that flawed strategy options generate meaningful error
     messages."""
+    img_nii, _ = create_tmp_filepath(tmp_path, copy_confounds=True)
     if strategy == "motion":
-        conf = lc.Confounds(strategy=[strategy])
-        assert "non_steady_state" in conf.strategy
+        checked_strategy = parser._sanitize_strategy(strategy=[strategy])
+        assert "non_steady_state" in checked_strategy
     else:
         with pytest.raises(ValueError):
-            lc.Confounds(strategy=strategy)
+            parser._sanitize_strategy(strategy=strategy)
 
 
 SUFFIXES = np.array(["", "_derivative1", "_power2", "_derivative1_power2"])
@@ -227,26 +230,26 @@ def expected_suffixes(motion):
 )
 def test_motion(tmp_path, motion, param, expected_suffixes):
     img_nii, _ = create_tmp_filepath(tmp_path, copy_confounds=True)
-    conf = lc.Confounds(strategy=["motion"], motion=motion)
-    conf.load(img_nii)
+    conf, _ = parser.load_confounds(
+        img_nii, strategy=["motion"], motion=motion
+    )
     for suff in SUFFIXES:
         if suff in expected_suffixes:
-            assert f"{param}{suff}" in conf.confounds_.columns
+            assert f"{param}{suff}" in conf.columns
         else:
-            assert f"{param}{suff}" not in conf.confounds_.columns
+            assert f"{param}{suff}" not in conf.columns
 
 
 def test_n_compcor(tmp_path):
     img_nii, _ = create_tmp_filepath(
         tmp_path, copy_confounds=True, copy_json=True
     )
-    conf = lc.Confounds(
-        strategy=["compcor"], compcor="anat_combined", n_compcor=2
+    conf, _ = parser.load_confounds(
+        img_nii, strategy=["compcor"], compcor="anat_combined", n_compcor=2
     )
-    conf.load(img_nii)
-    assert "a_comp_cor_00" in conf.confounds_.columns
-    assert "a_comp_cor_01" in conf.confounds_.columns
-    assert "a_comp_cor_02" not in conf.confounds_.columns
+    assert "a_comp_cor_00" in conf.columns
+    assert "a_comp_cor_01" in conf.columns
+    assert "a_comp_cor_02" not in conf.columns
 
 
 def test_not_found_exception(tmp_path):
@@ -272,33 +275,39 @@ def test_not_found_exception(tmp_path):
         columns=missing_params + cosine + aroma
     )
     missing_confounds.to_csv(bad_conf, sep="\t", index=False)
-    conf = lc.Confounds(
-        strategy=["high_pass", "motion", "global"],
-        global_signal="full",
-        motion="full",
-    )
+
     with pytest.raises(ValueError) as exc_info:
-        conf.load(img_missing_confounds)
+        parser.load_confounds(
+            img_missing_confounds,
+            strategy=["high_pass", "motion", "global"],
+            global_signal="full",
+            motion="full",
+        )
     assert f"{missing_params}" in exc_info.value.args[0]
     assert f"{missing_keywords}" in exc_info.value.args[0]
 
     # loading anat compcor should also raise an error, because the json file is
     # missing for that example dataset
     with pytest.raises(ValueError):
-        conf = lc.Confounds(strategy=["compcor"], compcor="anat_combined")
-        conf.load(img_missing_confounds)
+        parser.load_confounds(
+            img_missing_confounds,
+            strategy=["compcor"],
+            compcor="anat_combined",
+        )
 
     # catch invalid compcor option
     with pytest.raises(KeyError):
-        conf = lc.Confounds(strategy=["compcor"], compcor="blah")
-        conf.load(img_missing_confounds)
+        parser.load_confounds(
+            img_missing_confounds, strategy=["compcor"], compcor="blah"
+        )
 
     # Aggressive ICA-AROMA strategy requires
     # default nifti and noise ICs in confound file
     # correct nifti but missing noise regressor
     with pytest.raises(ValueError) as exc_info:
-        conf = lc.Confounds(strategy=["ica_aroma"], ica_aroma="basic")
-        conf.load(img_missing_confounds)
+        parser.load_confounds(
+            img_missing_confounds, strategy=["ica_aroma"], ica_aroma="basic"
+        )
     assert "aroma" in exc_info.value.args[0]
 
     # Aggressive ICA-AROMA strategy requires
@@ -307,53 +316,54 @@ def test_not_found_exception(tmp_path):
         tmp_path, image_type="icaaroma", suffix="aroma"
     )
     with pytest.raises(ValueError) as exc_info:
-        conf.load(aroma_nii)
+        parser.load_confounds(
+            aroma_nii, strategy=["ica_aroma"], ica_aroma="basic"
+        )
     assert "Invalid file type" in exc_info.value.args[0]
 
     # non aggressive ICA-AROMA strategy requires
     # desc-smoothAROMAnonaggr nifti file
     with pytest.raises(ValueError) as exc_info:
-        conf = lc.Confounds(strategy=["ica_aroma"], ica_aroma="full")
-        conf.load(img_missing_confounds)
+        parser.load_confounds(
+            img_missing_confounds, strategy=["ica_aroma"], ica_aroma="full"
+        )
     assert "desc-smoothAROMAnonaggr_bold" in exc_info.value.args[0]
 
 
 def test_load_non_nifti(tmp_path):
     """Test non-nifti and invalid file type as input."""
-    conf = lc.Confounds()
-
     # tsv file - unsupported input
     _, tsv = create_tmp_filepath(tmp_path, copy_confounds=True, copy_json=True)
 
     with pytest.raises(ValueError):
-        conf.load(str(tsv))
+        parser.load_confounds(str(tsv))
 
     # cifti file should be supported
     cifti, _ = create_tmp_filepath(
         tmp_path, image_type="cifti", copy_confounds=True, copy_json=True
     )
-    conf.load(cifti)
-    assert conf.confounds_.size != 0
+    conf, _ = parser.load_confounds(cifti)
+    assert conf.size != 0
 
     # gifti support
     gifti, _ = create_tmp_filepath(
         tmp_path, image_type="gifti", copy_confounds=True, copy_json=True
     )
-    conf.load(gifti)
-    assert conf.confounds_.size != 0
+    conf, _ = parser.load_confounds(gifti)
+    assert conf.size != 0
 
 
 def test_invalid_filetype(tmp_path):
     """Invalid file types/associated files for load method."""
     bad_nii, bad_conf = create_tmp_filepath(tmp_path, copy_confounds=True)
-    conf = lc.Confounds()
+    conf, _ = parser.load_confounds(bad_nii)
 
     # more than one legal filename for confounds
     add_conf = "test_desc-confounds_timeseries.tsv"
     leagal_confounds, _ = get_leagal_confound()
     leagal_confounds.to_csv(tmp_path / add_conf, sep="\t", index=False)
     with pytest.raises(ValueError) as info:
-        conf.load(bad_nii)
+        parser.load_confounds(bad_nii)
     assert "more than one" in str(info.value)
     (tmp_path / add_conf).unlink()  # Remove for the rest of the tests to run
 
@@ -361,7 +371,7 @@ def test_invalid_filetype(tmp_path):
     fake_confounds = np.random.rand(30, 20)
     np.savetxt(bad_conf, fake_confounds, delimiter="\t")
     with pytest.raises(ValueError) as error_log:
-        conf.load(str(bad_nii))
+        parser.load_confounds(bad_nii)
     assert "The confound file contains no header." in str(error_log.value)
 
     # invalid fmriprep version: old camel case header (<1.2)
@@ -372,7 +382,7 @@ def test_invalid_filetype(tmp_path):
     ]
     camel_confounds.to_csv(bad_conf, sep="\t", index=False)
     with pytest.raises(ValueError) as error_log:
-        conf.load(str(bad_nii))
+        parser.load_confounds(bad_nii)
     assert "contains header in camel case." in str(error_log.value)
 
     # create a empty nifti file with no associated confound file
@@ -381,7 +391,7 @@ def test_invalid_filetype(tmp_path):
     no_confound = tmp_path / no_conf
     no_confound.touch()
     with pytest.raises(ValueError):
-        conf.load(str(no_confound))
+        parser.load_confounds(bad_nii)
 
 
 def test_ica_aroma(tmp_path):
@@ -393,22 +403,25 @@ def test_ica_aroma(tmp_path):
         tmp_path, image_type="regular", copy_confounds=True
     )
     # Agressive strategy
-    conf = lc.Confounds(strategy=["ica_aroma"], ica_aroma="basic")
-    conf.load(regular_nii)
-    for col_name in conf.confounds_.columns:
+    conf, _ = parser.load_confounds(
+        regular_nii, strategy=["ica_aroma"], ica_aroma="basic"
+    )
+    for col_name in conf.columns:
         # only aroma and non-steady state columns will be present
         assert re.match("(?:aroma_motion_+|non_steady_state+)", col_name)
 
     # Non-agressive strategy
-    conf = lc.Confounds(strategy=["ica_aroma"], ica_aroma="full")
-    conf.load(aroma_nii)
-    assert conf.confounds_.size == 0
+    conf, _ = parser.load_confounds(
+        aroma_nii, strategy=["ica_aroma"], ica_aroma="full"
+    )
+    assert conf.size == 0
 
     # invalid combination of strategy and option
     with pytest.raises(ValueError) as exc_info:
-        conf = lc.Confounds(strategy=["ica_aroma"], ica_aroma=None)
-        conf.load(regular_nii)
-    assert "ICA-AROMA strategy" in exc_info.value.args[0]
+        conf, _ = parser.load_confounds(
+            regular_nii, strategy=["ica_aroma"], ica_aroma="invalid"
+        )
+    assert "Current input: invalid" in exc_info.value.args[0]
 
 
 def test_sample_mask(tmp_path):
@@ -418,10 +431,9 @@ def test_sample_mask(tmp_path):
     )
     # create a version with srub_mask not applied;
     # This is not recommanded
-    conf = lc.Confounds(
-        strategy=["motion", "scrub"], scrub="full", fd_thresh=0.15
+    reg, mask = parser.load_confounds(
+        regular_nii, strategy=["motion", "scrub"], scrub="full", fd_thresh=0.15
     )
-    reg, mask = conf.load(regular_nii)
 
     # the current test data has 6 time points marked as motion outliers,
     # and one nonsteady state (overlap with the first motion outlier)
@@ -431,28 +443,24 @@ def test_sample_mask(tmp_path):
     assert reg.shape[0] == 30
 
     # non steady state will always be removed
-    conf = lc.Confounds(strategy=["motion"])
-    reg, mask = conf.load(regular_nii)
+    reg, mask = parser.load_confounds(regular_nii, strategy=["motion"])
     assert reg.shape[0] - len(mask) == 1
 
     # When no non-steady state volumes are present
     conf_data, _ = get_leagal_confound(non_steady_state=False)
     conf_data.to_csv(regular_conf, sep="\t", index=False)  # save to tmp
-    conf = lc.Confounds(strategy=["motion"])
-    reg, mask = conf.load(regular_nii)
+    reg, mask = parser.load_confounds(regular_nii, strategy=["motion"])
     assert mask is None
 
     # When no volumes needs removing (very liberal motion threshould)
-    conf = lc.Confounds(
-        strategy=["motion", "scrub"], scrub="basic", fd_thresh=4
+    reg, mask = parser.load_confounds(
+        regular_nii, strategy=["motion", "scrub"], scrub="basic", fd_thresh=4
     )
-    reg, mask = conf.load(regular_nii)
     assert mask is None
 
 
 @pytest.mark.parametrize(
-    "image_type",
-    ["regular", "icaaroma", "gifti", "cifti"],
+    "image_type", ["regular", "icaaroma", "gifti", "cifti"]
 )
 def test_inputs(tmp_path, image_type):
     """Test multiple images as input."""
@@ -460,14 +468,16 @@ def test_inputs(tmp_path, image_type):
     files = []
     for i in range(2):  # gifti edge case
         nii, _ = create_tmp_filepath(
-            tmp_path, suffix=f"img{i+1}", image_type=image_type,
-            copy_confounds=True, copy_json=True
+            tmp_path,
+            suffix=f"img{i+1}",
+            image_type=image_type,
+            copy_confounds=True,
+            copy_json=True,
         )
         files.append(nii)
 
     if image_type == "icaaroma":
-        conf = lc.Confounds(strategy=["ica_aroma"])
+        conf, _ = parser.load_confounds(files, strategy=["ica_aroma"])
     else:
-        conf = lc.Confounds()
-    conf.load(files)
-    assert len(conf.confounds_) == 2
+        conf, _ = parser.load_confounds(files)
+    assert len(conf) == 2

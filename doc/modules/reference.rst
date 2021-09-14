@@ -236,7 +236,7 @@ the :ref:`user guide <user_guide>` for more information and usage examples.
    :no-members:
    :no-inherited-members:
 
-**Classes**:
+**Functions**:
 
 .. currentmodule:: nilearn.load_confounds
 
@@ -244,7 +244,7 @@ the :ref:`user guide <user_guide>` for more information and usage examples.
    :toctree: generated/
    :template: class.rst
 
-   Confounds
+   load_confounds
 
 .. _masking_ref:
 
