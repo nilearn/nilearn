@@ -127,39 +127,39 @@ Those guidelines will hence be enforced during the reviewing process.
 The section `Setting up your environment`_ will help you to quickly get familiar
 with the tools we use for development and deployment.
 
-+--------------------+-------------+-----------------------------------------------------+
-|                    | Which PR ?  |        Guidelines                                   |
-+====================+=============+=====================================================+
-|                    |             | - Clear name                                        |
-|                    |             | - Link issue through mention :"Closes #XXXX"        |
-|  `PR Structure`_   |    Any      | - Clearly outline goals and changes proposed        |
-|                    |             | - Doesn't include "unrelated" code change           |
-|                    |             | - Add entry in "doc/whats_new.rst"                  |
-+--------------------+-------------+-----------------------------------------------------+
-|                    |             | - Variables, functions, arguments have clear names  |
-|                    |             | - Easy to read, PEP8_                               |
-|   `Coding Style`_  |    Any      | - Public functions have docstring (numpydoc_ format)|
-|                    |             | - Low redundancy                                    |
-|                    |             | - No new dependency                                 |
-|                    |             | - Backward compatibility                            |
-+--------------------+-------------+-----------------------------------------------------+
-|                    |             | - Test type is adapted to function behavior         |
-|                    |             | - Tests pass continuous integration                 |
-|                    |  Bugfixes   | - Coverage doesn't decrease                         |
-|      `Tests`_      | New features| - Fast, using small mocked data                     |
-|                    |             | - Atomic (one per function) and seeded              |
-|                    |             | - For Bugfixes: non-regression test                 |
-+--------------------+-------------+-----------------------------------------------------+
-|                    |             | - Clearly showcase benefits                         |
-|      Examples      | New features| - Run in a few seconds                              |
-|                    |             | - Use light data (generated or from Nilearn)        |
-|                    |             | - Renders well after build                          |
-+--------------------+-------------+-----------------------------------------------------+
-|                    |             | - Simple and didactic                               |
-|  `Documentation`_  |    Any      | - Links to relevant examples                        |
-|                    |             | - Renders well after build                          |
-|                    |             | - Doesn't include code                              |
-+--------------------+-------------+-----------------------------------------------------+
++--------------------+---------------+-----------------------------------------------------+
+|                    | Which PR ?    |        Guidelines                                   |
++====================+===============+=====================================================+
+|                    |               | - Clear name                                        |
+|                    |               | - Link issue through mention :"Closes #XXXX"        |
+|  `PR Structure`_   |    Any        | - Clearly outline goals and changes proposed        |
+|                    |               | - Doesn't include "unrelated" code change           |
+|                    |               | - Add entry in "doc/whats_new.rst"                  |
++--------------------+---------------+-----------------------------------------------------+
+|                    |               | - Variables, functions, arguments have clear names  |
+|                    |               | - Easy to read, PEP8_                               |
+|   `Coding Style`_  |    Any        | - Public functions have docstring (numpydoc_ format)|
+|                    |               | - Low redundancy                                    |
+|                    |               | - No new dependency                                 |
+|                    |               | - Backward compatibility                            |
++--------------------+---------------+-----------------------------------------------------+
+|                    |               | - Test type is adapted to function behavior         |
+|                    |               | - Tests pass continuous integration                 |
+|                    | - Bugfixes    | - Coverage doesn't decrease                         |
+|      `Tests`_      | - New features| - Fast, using small mocked data                     |
+|                    |               | - Atomic (one per function) and seeded              |
+|                    |               | - For Bugfixes: non-regression test                 |
++--------------------+---------------+-----------------------------------------------------+
+|                    |               | - Clearly showcase benefits                         |
+|      Examples      | New features  | - Run in a few seconds                              |
+|                    |               | - Use light data (generated or from Nilearn)        |
+|                    |               | - Renders well after build                          |
++--------------------+---------------+-----------------------------------------------------+
+|                    |               | - Simple and didactic                               |
+|  `Documentation`_  |    Any        | - Links to relevant examples                        |
+|                    |               | - Renders well after build                          |
+|                    |               | - Doesn't include code                              |
++--------------------+---------------+-----------------------------------------------------+
 
 .. _PEP8: https://www.python.org/dev/peps/pep-0008/
 .. _numpydoc: https://numpydoc.readthedocs.io/en/latest/format.html
@@ -202,6 +202,7 @@ They must summarize what the function does and document every parameter.
 
 Tests
 ------
+
 When fixing a bug, the first step is to write a minimal test that fails because
 of it, and then write the bugfix to make this test pass.
 For new code you should have roughly one test_function per function covering
