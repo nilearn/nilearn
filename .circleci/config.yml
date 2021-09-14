@@ -309,12 +309,14 @@ jobs:
       - save_data_cache
 
   deploy:
+
     docker:
       - image: circleci/python:3.9
+
     steps:
       - add_ssh_keys:
           fingerprints:
-              - "53:9f:4a:b1:56:9d:76:33:7a:e8:2e:a1:fe:41:81:34"
+            - "53:9f:4a:b1:56:9d:76:33:7a:e8:2e:a1:fe:41:81:34"
       - attach_workspace:
           at: /tmp/_build
       - run:
@@ -358,7 +360,7 @@ workflows:
 
       - deploy:
           requires:
-              -build_docs
+              - build_docs
           filters:
             branches:
               only:
