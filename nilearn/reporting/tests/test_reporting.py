@@ -117,6 +117,12 @@ def test_get_clusters_table(tmp_path):
     )
     assert len(cluster_table) == 2
 
+    # Test that nans are handled correctly (No numpy axis errors are raised)
+    data[data == 0] = np.nan
+    stat_img_nans = nib.Nifti1Image(data, affine=np.eye(4))
+    cluster_table = get_clusters_table(stat_img_nans, 1e-2, 0, two_sided=False)
+    assert len(cluster_table) == 1
+
 
 def test_get_clusters_table_not_modifying_stat_image():
     shape = (9, 10, 11)
