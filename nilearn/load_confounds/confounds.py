@@ -110,7 +110,7 @@ def _get_file_name(nii_file):
             ("Could not find associated confound file. "
              "The functional derivatives should exist under the same parent "
              "directory."
-            )
+             )
         )
     elif len(confounds_raw) != 1:
         raise ValueError("Found more than one confound file.")

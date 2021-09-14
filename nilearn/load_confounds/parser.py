@@ -238,8 +238,7 @@ def load_confounds(
     confounds_out = []
     sample_mask_out = []
     for file in img_files:
-        current_file_param = confound_parameters.copy()
-        sample_mask, conf = _load_single(file, current_file_param)
+        sample_mask, conf = _load_single(file, confound_parameters)
         confounds_out.append(conf)
         sample_mask_out.append(sample_mask)
 
@@ -251,39 +250,40 @@ def load_confounds(
     return confounds_out, sample_mask_out
 
 
-def _load_single(confounds_raw, current_file_param):
+def _load_single(confounds_raw, confound_parameters):
     """Load confounds for a single image file."""
-    strategy = current_file_param.get("strategy")
+    current_param = confound_parameters.copy()  # put metadata in the dict
+    strategy = current_param.get("strategy")
     # Convert tsv file to pandas dataframe
     # check if relevant imaging files are present according to the strategy
     flag_acompcor = ("compcor" in strategy) and (
-        "anat" in current_file_param.get("compcor")
+        "anat" in current_param.get("compcor")
     )
     flag_full_aroma = ("ica_aroma" in strategy) and (
-        current_file_param.get("ica_aroma") == "full"
+        current_param.get("ica_aroma") == "full"
     )
     confounds_raw, meta_json = _confounds_to_df(
         confounds_raw, flag_acompcor, flag_full_aroma
     )
-    current_file_param["meta_json"] = meta_json
+    current_param["meta_json"] = meta_json
 
     confounds = pd.DataFrame()
     missing = {"confounds": [], "keywords": []}
     for component in strategy:
         loaded_confounds, missing = _load_noise_component(
-            confounds_raw, component, missing, current_file_param
+            confounds_raw, component, missing, current_param
         )
         confounds = pd.concat([confounds, loaded_confounds], axis=1)
 
     _check_error(missing)  # raise any missing
-    return _prepare_output(confounds, current_file_param.get("demean"))
+    return _prepare_output(confounds, current_param.get("demean"))
 
 
-def _load_noise_component(confounds_raw, component, missing, current_file_param):
+def _load_noise_component(confounds_raw, component, missing, current_param):
     """Load confound of a single noise component."""
     try:
         loaded_confounds = getattr(components, f"_load_{component}")(
-            confounds_raw, **current_file_param
+            confounds_raw, **current_param
         )
     except MissingConfound as exception:
         missing["confounds"] += exception.params
