@@ -593,7 +593,10 @@ def test_threshold_img_with_cluster_threshold():
         cluster_threshold=5,
         copy=True,
     )
-    assert np.array_equal(np.unique(thr_img.get_fdata()), np.array([-4, -1, 0, 1, 4]))
+    assert np.array_equal(
+        np.unique(thr_img.get_fdata()),
+        np.array([-4, -1, 0, 1, 4]),
+    )
 
     # Now we disable two_sided again to get clusters with values > 0.5 and
     # cluster sizes > 5
@@ -629,7 +632,8 @@ def test_threshold_img_copy():
 
 
 def test_isnan_threshold_img_data():
-    """Check that threshold_img converges properly when input image has nans."""
+    """Check that threshold_img converges properly when input image has nans.
+    """
     shape = (10, 10, 10)
     maps, _ = data_gen.generate_maps(shape, n_regions=2)
     data = get_data(maps)
