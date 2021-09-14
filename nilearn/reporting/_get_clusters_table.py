@@ -12,9 +12,10 @@ import pandas as pd
 import nibabel as nib
 from scipy import ndimage
 
-from nilearn.image import get_data, threshold_img
+from nilearn.image import threshold_img
 from nilearn.image.resampling import coord_transform
 from nilearn._utils import check_niimg_3d
+from nilearn._utils.niimg import _safe_get_data
 
 
 def _local_max(data, affine, min_distance):
@@ -178,7 +179,11 @@ def get_clusters_table(stat_img, stat_threshold, cluster_threshold=None,
         mask_img=None,
         copy=True,
     )
-    stat_map = get_data(stat_img)
+
+    # If cluster threshold is used, there is chance that stat_map will be
+    # modified, therefore copy is needed
+    stat_map = _safe_get_data(stat_img, ensure_finite=True,
+                              copy_data=(cluster_threshold is not None))
 
     # Define array for 6-connectivity, aka NN1 or "faces"
     conn_mat = np.zeros((3, 3, 3), int)
