@@ -64,9 +64,7 @@ def _check_error(missing):
         raise ValueError(error_msg)
 
 
-def load_confounds(
-    img_files, **kargs
-):
+def load_confounds(img_files, **kargs):
     """
     Use confounds from fmriprep.
 

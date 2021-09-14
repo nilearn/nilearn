@@ -242,7 +242,7 @@ the :ref:`user guide <user_guide>` for more information and usage examples.
 
 .. autosummary::
    :toctree: generated/
-   :template: class.rst
+   :template: function.rst
 
    load_confounds
 
