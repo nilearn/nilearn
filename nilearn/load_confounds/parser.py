@@ -25,7 +25,7 @@ all_confounds = [
 ]
 
 default_parameters = {
-    "strategy": ["motion", "high_pass", "wm_csf"], 
+    "strategy": ["motion", "high_pass", "wm_csf"],
     "motion": "full",
     "scrub": "full",
     "fd_thresh": 0.2,
@@ -233,7 +233,7 @@ def load_confounds(
     sanitized_strategy = _sanitize_strategy(confound_parameters["strategy"])
     confound_parameters.update({"strategy": sanitized_strategy})
 
-    # load confounds per image provided 
+    # load confounds per image provided
     img_files, flag_single = _sanitize_confounds(img_files)
     confounds_out = []
     sample_mask_out = []
@@ -266,7 +266,7 @@ def _load_single(confounds_raw, current_file_param):
         confounds_raw, flag_acompcor, flag_full_aroma
     )
     current_file_param["meta_json"] = meta_json
-    
+
     confounds = pd.DataFrame()
     missing = {"confounds": [], "keywords": []}
     for component in strategy:

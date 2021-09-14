@@ -87,7 +87,7 @@ plotting.plot_matrix(correlation_matrix, figure=(10, 8), labels=labels[1:],
 
 from nilearn.load_confounds import load_confounds
 confounds_minimal, sample_mask = load_confounds(
-      fmri_filenames, 
+      fmri_filenames,
       strategy=["high_pass", "motion", "wm_csf", "global"],
       motion="basic", wm_csf="basic", global_signal="basic")
 
@@ -108,7 +108,7 @@ plotting.plot_matrix(correlation_matrix, figure=(10, 8), labels=labels[1:],
 
 # Now let's create a set with motion scrubbing
 confounds_minimal_scrub, sample_mask = load_confounds(
-      fmri_filenames, 
+      fmri_filenames,
       strategy=["high_pass", "motion", "wm_csf", "scrub"],
       motion="basic", wm_csf="basic", scrub="full")
 
@@ -130,8 +130,8 @@ plotting.plot_matrix(correlation_matrix, figure=(10, 8), labels=labels[1:],
 
 # Now let's create a set of confounds without global signal
 confounds_minimal_no_gsr, sample_mask = load_confounds(
-      fmri_filenames, 
-      strategy=["high_pass", "motion", "wm_csf"], 
+      fmri_filenames,
+      strategy=["high_pass", "motion", "wm_csf"],
       motion="basic", wm_csf="basic")
 print("The shape of the confounds matrix is:",
       confounds_minimal_no_gsr.shape)
