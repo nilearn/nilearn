@@ -179,7 +179,7 @@ Optionally, we can run some basic checks with `twine`:
     twine check dist/*
 
 
-We are now ready to upload to `Pypi`. Note that you will need to have an account on Pypi (you can create one `here <https://pypi.org/account/register/>`_), and be added to the maintainers of `Nilearn <https://pypi.org/project/nilearn/>`_. If you satisfy these conditions, you should be able to run:
+We are now ready to upload to `Pypi`. Note that you will need to have an `account on Pypi <https://pypi.org/account/register/>`_, and be added to the maintainers of `Nilearn <https://pypi.org/project/nilearn/>`_. If you satisfy these conditions, you should be able to run:
 
 .. code-block:: bash
 
