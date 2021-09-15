@@ -59,7 +59,11 @@ def test_parcellations_fit_on_single_nifti_image(method, n_parcel, test_image):
     parcellator = Parcellations(method=method, n_parcels=n_parcel)
     parcellator.fit(test_image)
     # Test that object returns attribute labels_img_
-    assert parcellator.labels_img_ is not None
+    labels_img = parcellator.labels_img_
+    assert labels_img is not None
+    # After inverse_transform, shape must match with
+    # original input data
+    assert labels_img.shape == test_image.shape[:3]
     # Test object returns attribute masker_
     assert parcellator.masker_ is not None
     assert parcellator.mask_img_ is not None
@@ -67,11 +71,6 @@ def test_parcellations_fit_on_single_nifti_image(method, n_parcel, test_image):
         # Test that object returns attribute connectivity_
         # only for AgglomerativeClustering methods
         assert parcellator.connectivity_ is not None
-        labels_img = parcellator.labels_img_
-        assert parcellator.labels_img_ is not None
-        # After inverse_transform, shape must match with
-        # original input data
-        assert labels_img.shape == test_image.shape[:3]
 
 
 def test_parcellations_warnings(test_empty_image):
