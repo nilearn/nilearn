@@ -24,18 +24,14 @@ all_confounds = [
     "non_steady_state",
 ]
 
-default_parameters = {
-    "strategy": ["motion", "high_pass", "wm_csf"],
-    "motion": "full",
-    "scrub": "full",
-    "fd_thresh": 0.2,
-    "std_dvars_thresh": 3,
-    "wm_csf": "basic",
-    "global_signal": "basic",
-    "compcor": "anat_combined",
-    "n_compcor": "auto",
-    "ica_aroma": "full",
-    "demean": True,
+# extra parameters needed for each noise component
+component_parameters = {
+    "motion": ["motion"],
+    "wm_csf": ["wm_csf"],
+    "global": ["global_signal"],
+    "compcor": ["meta_json", "compcor", "n_compcor"],
+    "ica_aroma": ["ica_aroma"],
+    "scrub": ["scrub", "fd_thresh", "std_dvars_thresh"],
 }
 
 
@@ -64,7 +60,15 @@ def _check_error(missing):
         raise ValueError(error_msg)
 
 
-def load_confounds(img_files, **kargs):
+def load_confounds(img_files,
+                   strategy=["motion", "high_pass", "wm_csf"],
+                   motion="full",
+                   scrub="full", fd_thresh=0.2, std_dvars_thresh=3,
+                   wm_csf="basic",
+                   global_signal="basic",
+                   compcor="anat_combined", n_compcor="auto",
+                   ica_aroma="full",
+                   demean=True):
     """
     Use confounds from fmriprep.
 
@@ -221,22 +225,32 @@ def load_confounds(img_files, **kargs):
     strategies for the control of motion artifact in studies of functional
     connectivity" Neuroimage 154: 174-87
     """
-    # update the confound strategy parameters
-    confound_parameters = default_parameters.copy()
+    # # update the confound strategy parameters
+    # confound_parameters = default_parameters.copy()
 
-    for key in confound_parameters:
-        if kargs.get(key):
-            confound_parameters[key] = kargs.get(key)
+    # for key in confound_parameters:
+    #     if kargs.get(key):
+    #         confound_parameters[key] = kargs.get(key)
 
-    sanitized_strategy = _sanitize_strategy(confound_parameters["strategy"])
-    confound_parameters.update({"strategy": sanitized_strategy})
+    strategy = _sanitize_strategy(strategy)
 
     # load confounds per image provided
     img_files, flag_single = _sanitize_confounds(img_files)
     confounds_out = []
     sample_mask_out = []
     for file in img_files:
-        sample_mask, conf = _load_single(file, confound_parameters)
+        sample_mask, conf = _load_single(file,
+                                         strategy,
+                                         demean,
+                                         motion=motion,
+                                         scrub=scrub,
+                                         fd_thresh=fd_thresh,
+                                         std_dvars_thresh=std_dvars_thresh,
+                                         wm_csf=wm_csf,
+                                         global_signal=global_signal,
+                                         compcor=compcor,
+                                         n_compcor=n_compcor,
+                                         ica_aroma=ica_aroma)
         confounds_out.append(conf)
         sample_mask_out.append(sample_mask)
 
@@ -248,41 +262,42 @@ def load_confounds(img_files, **kargs):
     return confounds_out, sample_mask_out
 
 
-def _load_single(confounds_raw, confound_parameters):
+def _load_single(confounds_raw, strategy, demean, **kargs):
     """Load confounds for a single image file."""
-    current_param = confound_parameters.copy()  # put metadata in the dict
-    strategy = current_param.get("strategy")
     # Convert tsv file to pandas dataframe
     # check if relevant imaging files are present according to the strategy
     flag_acompcor = ("compcor" in strategy) and (
-        "anat" in current_param.get("compcor")
+        "anat" in kargs.get("compcor")
     )
     flag_full_aroma = ("ica_aroma" in strategy) and (
-        current_param.get("ica_aroma") == "full"
+        kargs.get("ica_aroma") == "full"
     )
     confounds_raw, meta_json = _confounds_to_df(
         confounds_raw, flag_acompcor, flag_full_aroma
     )
-    current_param["meta_json"] = meta_json
 
     confounds = pd.DataFrame()
     missing = {"confounds": [], "keywords": []}
     for component in strategy:
         loaded_confounds, missing = _load_noise_component(
-            confounds_raw, component, missing, current_param
-        )
+            confounds_raw, component, missing, meta_json=meta_json, **kargs)
         confounds = pd.concat([confounds, loaded_confounds], axis=1)
 
     _check_error(missing)  # raise any missing
-    return _prepare_output(confounds, current_param.get("demean"))
+    return _prepare_output(confounds, demean)
 
 
-def _load_noise_component(confounds_raw, component, missing, current_param):
+def _load_noise_component(confounds_raw, component, missing, **kargs):
     """Load confound of a single noise component."""
     try:
-        loaded_confounds = getattr(components, f"_load_{component}")(
-            confounds_raw, **current_param
-        )
+        need_params = component_parameters.get(component)
+        if need_params:
+            params = {param: kargs.get(param) for param in need_params}
+            loaded_confounds = getattr(components, f"_load_{component}")(
+                confounds_raw, **params)
+        else:
+            loaded_confounds = getattr(components, f"_load_{component}")(
+                confounds_raw)
     except MissingConfound as exception:
         missing["confounds"] += exception.params
         missing["keywords"] += exception.keywords

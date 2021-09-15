@@ -6,74 +6,74 @@ from .compcor import _find_compcor
 from .scrub import _optimize_scrub
 
 
-def _load_motion(confounds_raw, **kargs):
+def _load_motion(confounds_raw, motion):
     """Load the motion regressors."""
     motion_params = _add_suffix(
         ["trans_x", "trans_y", "trans_z", "rot_x", "rot_y", "rot_z"],
-        kargs.get("motion"),
+        motion,
     )
     _check_params(confounds_raw, motion_params)
     return confounds_raw[motion_params]
 
 
-def _load_high_pass(confounds_raw, **kargs):
+def _load_high_pass(confounds_raw):
     """Load the high pass filter regressors."""
     high_pass_params = _find_confounds(confounds_raw, ["cosine"])
     return confounds_raw[high_pass_params]
 
 
-def _load_wm_csf(confounds_raw, **kargs):
+def _load_wm_csf(confounds_raw, wm_csf):
     """Load the regressors derived from the white matter and CSF masks."""
-    wm_csf_params = _add_suffix(["csf", "white_matter"], kargs.get("wm_csf"))
+    wm_csf_params = _add_suffix(["csf", "white_matter"], wm_csf)
     _check_params(confounds_raw, wm_csf_params)
     return confounds_raw[wm_csf_params]
 
 
-def _load_global(confounds_raw, **kargs):
+def _load_global(confounds_raw, global_signal):
     """Load the regressors derived from the global signal."""
-    global_params = _add_suffix(["global_signal"], kargs.get("global_signal"))
+    global_params = _add_suffix(["global_signal"], global_signal)
     _check_params(confounds_raw, global_params)
     return confounds_raw[global_params]
 
 
-def _load_compcor(confounds_raw, **kargs):
+def _load_compcor(confounds_raw, meta_json, compcor, n_compcor):
     """Load compcor regressors."""
     compcor_cols = _find_compcor(
-        kargs.get("meta_json"), kargs.get("compcor"), kargs.get("n_compcor")
+        meta_json, compcor, n_compcor
     )
     _check_params(confounds_raw, compcor_cols)
     return confounds_raw[compcor_cols]
 
 
-def _load_ica_aroma(confounds_raw, **kargs):
+def _load_ica_aroma(confounds_raw, ica_aroma):
     """Load the ICA-AROMA regressors."""
-    if kargs.get("ica_aroma") == "full":
+    if ica_aroma == "full":
         return pd.DataFrame()
-    elif kargs.get("ica_aroma") == "basic":
+    elif ica_aroma == "basic":
         ica_aroma_params = _find_confounds(confounds_raw, ["aroma"])
         return confounds_raw[ica_aroma_params]
     else:
         raise ValueError(
             "Please select an option when using ICA-AROMA strategy."
-            f"Current input: {kargs.get('ica_aroma')}"
+            f"Current input: {ica_aroma}"
         )
 
 
-def _load_scrub(confounds_raw, **kargs):
+def _load_scrub(confounds_raw, scrub, fd_thresh, std_dvars_thresh):
     """Remove volumes if FD and/or DVARS exceeds threshold."""
     n_scans = len(confounds_raw)
     # Get indices of fd outliers
     fd_outliers_index = np.where(
-        confounds_raw["framewise_displacement"] > kargs.get("fd_thresh")
+        confounds_raw["framewise_displacement"] > fd_thresh
     )[0]
     dvars_outliers_index = np.where(
-        confounds_raw["std_dvars"] > kargs.get("std_dvars_thresh")
+        confounds_raw["std_dvars"] > std_dvars_thresh
     )[0]
     motion_outliers_index = np.sort(
         np.unique(np.concatenate((fd_outliers_index, dvars_outliers_index)))
     )
     # Do full scrubbing if desired, and motion outliers were detected
-    if kargs.get("scrub") == "full" and len(motion_outliers_index) > 0:
+    if scrub == "full" and len(motion_outliers_index) > 0:
         motion_outliers_index = _optimize_scrub(motion_outliers_index, n_scans)
     # Make one-hot encoded motion outlier regressors
     motion_outlier_regressors = pd.DataFrame(
@@ -87,7 +87,7 @@ def _load_scrub(confounds_raw, **kargs):
     return motion_outlier_regressors
 
 
-def _load_non_steady_state(confounds_raw, **kargs):
+def _load_non_steady_state(confounds_raw):
     """Find non steady state regressors."""
     nss_outliers = _find_confounds(confounds_raw, ["non_steady_state"])
     if nss_outliers:

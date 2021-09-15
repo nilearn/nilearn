@@ -253,13 +253,14 @@ def test_n_compcor(tmp_path):
 
 
 def test_not_found_exception(tmp_path):
-    missing_params = ["trans_y", "trans_x_derivative1", "rot_z_power2"]
-    missing_keywords = ["cosine"]
-
-    # Create invalid file in temporary dir
+    """Check various file or parameter missing scenrio."""
+    # Create invalid confound file in temporary dir
     img_missing_confounds, bad_conf = create_tmp_filepath(
         tmp_path, copy_confounds=True, copy_json=False
     )
+    missing_params = ["trans_y", "trans_x_derivative1", "rot_z_power2"]
+    missing_keywords = ["cosine"]
+
     leagal_confounds = pd.read_csv(bad_conf, delimiter="\t", encoding="utf-8")
     cosine = [
         col_name
@@ -328,6 +329,12 @@ def test_not_found_exception(tmp_path):
             img_missing_confounds, strategy=["ica_aroma"], ica_aroma="full"
         )
     assert "desc-smoothAROMAnonaggr_bold" in exc_info.value.args[0]
+
+    # no confound files along the image file
+    (tmp_path / bad_conf).unlink()
+    with pytest.raises(ValueError) as exc_info:
+        parser.load_confounds(img_missing_confounds)
+    assert "Could not find associated confound file." in exc_info.value.args[0]
 
 
 def test_load_non_nifti(tmp_path):
@@ -429,12 +436,10 @@ def test_sample_mask(tmp_path):
     regular_nii, regular_conf = create_tmp_filepath(
         tmp_path, image_type="regular", copy_confounds=True
     )
-    # create a version with srub_mask not applied;
-    # This is not recommanded
+
     reg, mask = parser.load_confounds(
         regular_nii, strategy=["motion", "scrub"], scrub="full", fd_thresh=0.15
     )
-
     # the current test data has 6 time points marked as motion outliers,
     # and one nonsteady state (overlap with the first motion outlier)
     # 2 time points removed due to the "full" srubbing strategy
