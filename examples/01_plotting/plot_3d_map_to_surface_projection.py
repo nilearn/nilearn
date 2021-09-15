@@ -91,7 +91,7 @@ plotting.show()
 # --------------------------------
 #
 # `fetch_surf_fsaverage` takes a "mesh" argument which specifies
-# wether to fetch the low-resolution fsaverage5 mesh, or the high-resolution
+# whether to fetch the low-resolution fsaverage5 mesh, or the high-resolution
 # fsaverage mesh. using mesh="fsaverage" will result in more memory usage and
 # computation time, but finer visualizations.
 

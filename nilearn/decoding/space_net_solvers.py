@@ -430,7 +430,7 @@ def tvl1_solver(X, y, alpha, l1_ratio, mask, loss=None, max_iter=100,
     alpha : float
         Constant that scales the overall regularization term. Defaults to 1.0.
 
-    l1_ratio : float in the interval [0, 1]; optinal (default .5)
+    l1_ratio : float in the interval [0, 1]; optional (default .5)
         Constant that mixes L1 and TV penalization.
         l1_ratio == 0 : just smooth. l1_ratio == 1 : just lasso.
         Defaults to 0.5.

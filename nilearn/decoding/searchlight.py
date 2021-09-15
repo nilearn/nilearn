@@ -59,7 +59,7 @@ def search_light(X, y, estimator, A, groups=None, scoring=None,
     scoring : string or callable, optional
         The scoring strategy to use. See the scikit-learn documentation
         for possible values.
-        If callable, it taks as arguments the fitted estimator, the
+        If callable, it takes as arguments the fitted estimator, the
         test data (X_test) and the test target (y_test) if y is
         not None.
 
@@ -152,7 +152,7 @@ def _group_iter_search_light(list_rows, estimator, X, y, groups,
         Total number of voxels, used for display
 
     verbose : int, optional
-        The verbosity level. Defaut is 0
+        The verbosity level. Default is 0
 
     Returns
     -------

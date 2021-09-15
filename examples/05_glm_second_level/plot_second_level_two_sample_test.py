@@ -126,7 +126,7 @@ plotting.show()
 ##########################################################################
 # Together, this makes the z_scores from the paired test larger.
 # We threshold the second level contrast and plot it.
-threshold = 3.1  # correponds to  p < .001, uncorrected
+threshold = 3.1  # corresponds to  p < .001, uncorrected
 display = plotting.plot_glass_brain(
     stat_maps_unpaired['z_score'], threshold=threshold, colorbar=True, plot_abs=False,
     title='vertical vs horizontal (unc p<0.001)', vmin=0, vmax=6)

@@ -3,7 +3,7 @@ Connectivity structure estimation on simulated data
 ===================================================
 
 This example shows a comparison of graph lasso and group-sparse covariance
-estimation of connectivity structre for a synthetic dataset.
+estimation of connectivity structure for a synthetic dataset.
 
 """
 

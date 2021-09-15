@@ -24,7 +24,7 @@ about the plotting data and associated meta-data.
 #
 # Nilearn comes with set of functions that download public data from Internet
 #
-# Let us first see where the data will be downloded and stored on our disk:
+# Let us first see where the data will be downloaded and stored on our disk:
 #
 from nilearn import datasets
 print('Datasets shipped with nilearn are stored in: %r' % datasets.get_data_dirs())
@@ -35,7 +35,7 @@ print('Datasets shipped with nilearn are stored in: %r' % datasets.get_data_dirs
 
 motor_images = datasets.fetch_neurovault_motor_task()
 stat_img = motor_images.images[0]
-# stat_img is just the name of the file that we downloded
+# stat_img is just the name of the file that we downloaded
 stat_img
 
 ###############################################################################
@@ -119,7 +119,7 @@ display.add_contours(stat_img, levels=[3.], colors='r')
 display.title('"stat_img" on glass brain with threshold')
 
 ###############################################################################
-# Plotting with same demonstration but inlcudes now filled=True
+# Plotting with same demonstration but includes now filled=True
 display = plotting.plot_glass_brain(None)
 display.add_contours(stat_img, filled=True, levels=[3.], colors='r')
 display.title('Same demonstration but using fillings inside contours')
@@ -198,7 +198,7 @@ display.title('Contours with sign of activations with threshold')
 # Unlike in previous plot, here we specify each sign at a time. We call negative
 # values display first followed by positive values display.
 
-# First, we fetch our display object with same parametes used as above
+# First, we fetch our display object with same parameters used as above
 display = plotting.plot_glass_brain(None, plot_abs=False, display_mode='lzry')
 
 # Second, we plot negative sign of activation with levels given as negative

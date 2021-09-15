@@ -50,7 +50,7 @@ Two masks are used with :class:`SearchLight`:
   frontal cortex). If no *process_mask_img* is set, then :class:`nilearn.decoding.SearchLight`
   defaults to performing a searchlight over the whole brain.
 
-*mask_img* ensures that only :term:`voxels<voxel>` with useable signals are included in the
+*mask_img* ensures that only :term:`voxels<voxel>` with usable signals are included in the
 searchlight. This could be a full-brain mask or a gray-matter mask.
 
 
@@ -107,7 +107,7 @@ for :term:`classification` (i.e. more :term:`voxels<voxel>` are included with la
 
 .. note::
 
-    :class:`SearchLight` defines sphere radius in milimeters; the number
+    :class:`SearchLight` defines sphere radius in millimeters; the number
     of :term:`voxels<voxel>` included in the sphere will therefore depend on the
     :term:`voxel` size.
 
@@ -124,7 +124,7 @@ The results of the searchlight can be found in the `scores_` attribute of the
 :class:`SearchLight` object after fitting it to the data. Below is a
 visualization of the results from :ref:`Searchlight analysis of face
 vs house recognition <sphx_glr_auto_examples_02_decoding_plot_haxby_searchlight.py>`.
-The searchlight was restriced to a slice in the back of the brain. Within
+The searchlight was restricted to a slice in the back of the brain. Within
 this slice, we can see that a cluster of :term:`voxels<voxel>` in visual cortex
 contains information to distinguish pictures showed to the volunteers,
 which was the expected result.

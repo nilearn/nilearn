@@ -100,7 +100,7 @@ print('Computing contrasts...')
 for index, (contrast_id, contrast_val) in enumerate(contrasts.items()):
     print('  Contrast % 2i out of %i: %s' % (
         index + 1, len(contrasts), contrast_id))
-    # Estimate the contasts. Note that the model implictly computes a fixed
+    # Estimate the contasts. Note that the model implicitly computes a fixed
     # effect across the two sessions
     z_map = fmri_glm.compute_contrast(
         contrast_val, output_type='z_score')

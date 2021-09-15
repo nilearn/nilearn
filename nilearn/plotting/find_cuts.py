@@ -168,7 +168,7 @@ def find_xyz_cut_coords(img, mask_img=None, activation_threshold=None):
 
 
 def _get_auto_mask_bounds(img):
-    """ Compute the bounds of the data with an automaticaly computed mask
+    """ Compute the bounds of the data with an automatically computed mask
     """
     data = _safe_get_data(img)
     affine = img.affine
@@ -242,7 +242,7 @@ def find_cut_slices(img, direction='z', n_cuts=7, spacing='auto'):
         Number of cuts in the plot. Default=7.
 
     spacing : 'auto' or int, optional
-        Minimum spacing between cuts (in voxels, not milimeters)
+        Minimum spacing between cuts (in voxels, not millimeters)
         if 'auto', the spacing is .5 / n_cuts * img_length.
         Default='auto'.
 

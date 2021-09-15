@@ -82,7 +82,7 @@ for sample_points in [line_sample_points, ball_sample_points]:
 ######################################################################
 # Adjust the sample locations
 ######################################################################
-# For "line" and nested surfaces, the depth parameter allows ajusting the
+# For "line" and nested surfaces, the depth parameter allows adjusting the
 # position of samples along the line
 
 nested_sample_points = surface._sample_locations_between_surfaces(

@@ -94,7 +94,7 @@ def demo_plot_roi(**kwargs):
     """
     mni_affine = MNI152TEMPLATE.get_affine()
     data = np.zeros((91, 109, 91))
-    # Color a asymetric rectangle around Broca area:
+    # Color a asymmetric rectangle around Broca area:
     x, y, z = -52, 10, 22
     x_map, y_map, z_map = coord_transform(x, y, z,
                                           np.linalg.inv(mni_affine))
@@ -1253,7 +1253,7 @@ def test_add_markers_using_plot_glass_brain():
     fig.add_markers(coords)
     fig.close()
 
-    # Add a single marker in right hemishpere such that no marker
+    # Add a single marker in right hemisphere such that no marker
     # should appear in the left hemisphere when plotting
     display = plotting.plot_glass_brain(None, display_mode='lyrz')
     display.add_markers([[20, 20, 20]])

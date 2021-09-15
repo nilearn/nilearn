@@ -131,7 +131,7 @@ def run_glm(Y, X, noise_model='ar1', bins=100, n_jobs=1, verbose=0):
         'all CPUs'. Default=1.
 
     verbose : int, optional
-        The verbosity level. Defaut=0.
+        The verbosity level. Default=0.
 
     Returns
     -------
@@ -164,7 +164,7 @@ def run_glm(Y, X, noise_model='ar1', bins=100, n_jobs=1, verbose=0):
 
         err_msg = ('AR order must be a positive integer specified as arN, '
                    'where N is an integer. E.g. ar3. '
-                   'You provied {0}.'.format(noise_model))
+                   'You provided {0}.'.format(noise_model))
         try:
             ar_order = int(noise_model[2:])
         except ValueError:
@@ -251,7 +251,7 @@ class FirstLevelModel(BaseGLM):
         Default=0.01.
 
     drift_order : int, optional
-        This parameter specifices the order of the drift model (in case it is
+        This parameter specifies the order of the drift model (in case it is
         polynomial) for the design matrices. Default=1.
 
     fir_delays : array of shape(n_onsets) or list, optional
@@ -415,7 +415,7 @@ class FirstLevelModel(BaseGLM):
             If string, then a path to a csv file is expected.
 
         confounds : pandas Dataframe, numpy array or string or
-            list of pandas DataFrames, numpy arays or strings, optional
+            list of pandas DataFrames, numpy arrays or strings, optional
             Each column in a DataFrame corresponds to a confound variable
             to be included in the regression model of the respective run_img.
             The number of rows must match the number of volumes in the
@@ -502,7 +502,7 @@ class FirstLevelModel(BaseGLM):
                         continue
                     if getattr(self.masker_, param_name) is not None:
                         warn('Parameter %s of the masker'
-                             ' overriden' % param_name)
+                             ' overridden' % param_name)
                     setattr(self.masker_, param_name, our_param)
                 self.masker_.fit(run_imgs[0])
             else:
