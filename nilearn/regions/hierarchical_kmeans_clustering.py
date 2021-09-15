@@ -30,7 +30,7 @@ def _hierarchical_k_means(X, n_clusters, init="k-means++", batch_size=1000,
 
     init : {'k-means++', 'random' or an ndarray}
         Method for initialization, defaults to 'k-means++':
-        'k-means++' : selects initial cluster centers for k-mean
+        'k-means++' : selects initial cluster centers for k-means
         clustering in a smart way to speed up convergence. See section
         Notes in k_init for more details.
         'random': choose k observations (rows) at random from data for
@@ -96,7 +96,7 @@ class HierarchicalKMeans(BaseEstimator, ClusterMixin, TransformerMixin):
 
     init : {'k-means++', 'random' or an ndarray}
         Method for initialization, defaults to 'k-means++':
-        'k-means++' : selects initial cluster centers for k-mean
+        'k-means++' : selects initial cluster centers for k-means
         clustering in a smart way to speed up convergence. See section
         Notes in k_init for more details.
         'random': choose k observations (rows) at random from data for

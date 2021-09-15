@@ -199,8 +199,8 @@ kmeans_labels_img.to_filename('kmeans_parcellation.nii.gz')
 # As the number of images from which we try to cluster grows,
 # voxels display more and more specific activity patterns causing
 # KMeans clusters to be very unbalanced with a few big clusters and
-# many voxels left almost alone. Hierarchical Kmeans algorithm is
-# tailored to enfore more balanced clusteingsself. To do this,
+# many voxels left as singletons. Hierarchical Kmeans algorithm is
+# tailored to enfore more balanced clusteings. To do this,
 # Hierarchical Kmeans does a first Kmeans clustering in square root
 # of n parcels. In a second step it clusters voxels inside each
 # of these parcels in m pieces with m adapted to the size of
@@ -236,7 +236,7 @@ hkmeans_labels_img.to_filename('hkmeans_parcellation.nii.gz')
 ###########################################################################
 # Compare Hierarchical Kmeans clusters with those from Kmeans
 # ...........................................................
-# To compare those, we'll first count how many voxels is contained in
+# To compare those, we'll first count how many voxels are contained in
 # each of the 50 clusters for both algorithm and compare those sizes
 # distribution. Hierarchical KMeans should give clusters closer to
 # average (600 here) than KMeans.
