@@ -16,7 +16,8 @@ def _remove_empty_labels(labels):
 
 
 def _hierarchical_k_means(X, n_clusters, init="k-means++", batch_size=1000,
-                          n_init=10, max_no_improvement=10, verbose=0, random_state=0):
+                          n_init=10, max_no_improvement=10, verbose=0,
+                          random_state=0):
     """ Use a recursive k-means to cluster X. First clustering in sqrt(n_clusters)
     parcels, and Kmeans a second time on each parcel. s
 
@@ -64,9 +65,10 @@ def _hierarchical_k_means(X, n_clusters, init="k-means++", batch_size=1000,
     """
 
     n_big_clusters = int(np.sqrt(n_clusters))
-    mbk = MiniBatchKMeans(init=init, n_clusters=n_big_clusters, batch_size=batch_size,
-                          n_init=n_init, max_no_improvement=max_no_improvement, verbose=verbose,
-                          random_state=random_state).fit(X)
+    mbk = MiniBatchKMeans(init=init, n_clusters=n_big_clusters,
+                          batch_size=batch_size, n_init=n_init,
+                          max_no_improvement=max_no_improvement,
+                          verbose=verbose, random_state=random_state).fit(X)
     coarse_labels = mbk.labels_
     fine_labels = np.zeros_like(coarse_labels)
     q = 0
@@ -75,9 +77,10 @@ def _hierarchical_k_means(X, n_clusters, init="k-means++", batch_size=1000,
             n_clusters * np.sum(coarse_labels == i) * 1. / X.shape[0])
         n_small_clusters = np.maximum(1, n_small_clusters)
         mbk = MiniBatchKMeans(init=init, n_clusters=n_small_clusters,
-                              batch_size=batch_size, n_init=n_init,
-                              max_no_improvement=max_no_improvement, verbose=verbose,
-                              random_state=random_state).fit(X[coarse_labels == i])
+                              batch_size=batch_size, random_state=random_state,
+                              max_no_improvement=max_no_improvement,
+                              verbose=verbose,
+                              n_init=n_init,).fit(X[coarse_labels == i])
         fine_labels[coarse_labels == i] = q + mbk.labels_
         q += n_small_clusters
 
@@ -141,7 +144,8 @@ class HierarchicalKMeans(BaseEstimator, ClusterMixin, TransformerMixin):
     """
 
     def __init__(self, n_clusters, init="k-means++", batch_size=1000,
-                 n_init=10, max_no_improvement=10, verbose=0, random_state=0, scaling=False):
+                 n_init=10, max_no_improvement=10, verbose=0, random_state=0,
+                 scaling=False):
         self.n_clusters = n_clusters
         self.init = init
         self.batch_size = batch_size
@@ -178,8 +182,10 @@ class HierarchicalKMeans(BaseEstimator, ClusterMixin, TransformerMixin):
             warnings.warn("n_clusters should be at most the number of "
                           "features. Taking n_clusters = %s instead."
                           % str(n_features))
-        self.labels_ = _hierarchical_k_means(X, self.n_clusters, self.init, self.batch_size,
-                                             self.n_init, self.max_no_improvement, self.verbose, self.random_state)
+        self.labels_ = _hierarchical_k_means(X, self.n_clusters, self.init,
+                                             self.batch_size, self.n_init,
+                                             self.max_no_improvement,
+                                             self.verbose, self.random_state)
         sizes = np.bincount(self.labels_)
         sizes = sizes[sizes > 0]
         self.sizes_ = sizes
