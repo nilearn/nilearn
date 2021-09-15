@@ -200,7 +200,7 @@ class HierarchicalKMeans(BaseEstimator, ClusterMixin, TransformerMixin):
             Data reduced with agglomerated signal for each cluster
         """
 
-        #check_is_fitted(self, "labels_")
+        check_is_fitted(self, "labels_")
         unique_labels = np.unique(self.labels_)
 
         mean_cluster = []
@@ -210,7 +210,8 @@ class HierarchicalKMeans(BaseEstimator, ClusterMixin, TransformerMixin):
         X_red = np.array(mean_cluster)
 
         if self.scaling:
-            X_red = X_red * np.sqrt(self.sizes_)
+            X_red = np.multiply(X_red, np.asarray(
+                [np.sqrt(self.sizes_)] * X_red.shape[1]).T)
 
         return X_red
 
@@ -234,7 +235,8 @@ class HierarchicalKMeans(BaseEstimator, ClusterMixin, TransformerMixin):
         _, inverse = np.unique(self.labels_, return_inverse=True)
 
         if self.scaling:
-            X_red = X_red / np.sqrt(self.sizes_)
+            X_red = np.divide(X_red, np.asarray(
+                [np.sqrt(self.sizes_)] * X_red.shape[1]).T)
         X_inv = X_red[inverse, ...]
 
         return X_inv
