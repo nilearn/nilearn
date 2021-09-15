@@ -3,6 +3,8 @@
 
 NEW
 ---
+- New atlas fetcher
+  :func:`nilearn.datasets.fetch_atlas_juelich` to download Juelich atlas from FSL.
 - :ref:`development_process` has been reworked. It now provides insights on
   nilearn organization as a project as well as more explicit
   :ref:`contribution_guidelines`.
