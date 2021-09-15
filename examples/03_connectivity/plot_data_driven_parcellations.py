@@ -44,6 +44,14 @@ in the documentation section :ref:`parcellating_brain`.
 #
 # We download one subject of the movie watching dataset from Internet
 
+from matplotlib import patches, ticker
+import matplotlib.pyplot as plt
+from nilearn.image import get_data
+import numpy as np
+from nilearn.image import mean_img, index_img
+from nilearn import plotting
+import time
+from nilearn.regions import Parcellations
 from nilearn import datasets
 dataset = datasets.fetch_development_fmri(n_subjects=1)
 
@@ -59,11 +67,9 @@ print('First subject functional nifti image (4D) is at: %s' %
 # Transforming list of images to data matrix and build brain parcellations,
 # all can be done at once using `Parcellations` object.
 
-from nilearn.regions import Parcellations
 
 # Computing ward for the first time, will be long... This can be seen by
 # measuring using time
-import time
 start = time.time()
 
 # Agglomerative Clustering: ward
@@ -103,8 +109,6 @@ ward_labels_img = ward.labels_img_
 # with the following code:
 ward_labels_img.to_filename('ward_parcellation.nii.gz')
 
-from nilearn import plotting
-from nilearn.image import mean_img, index_img
 
 first_plot = plotting.plot_roi(ward_labels_img, title="Ward parcellation",
                                display_mode='xz')
@@ -121,8 +125,6 @@ cut_coords = first_plot.cut_coords
 # clustering by averaging the signal on each parcel.
 
 # Grab number of voxels from attribute mask image (mask_img_).
-import numpy as np
-from nilearn.image import get_data
 original_voxels = np.sum(get_data(ward.mask_img_))
 
 # Compute mean over time on the functional image to use the mean
@@ -201,11 +203,10 @@ kmeans_labels_img.to_filename('kmeans_parcellation.nii.gz')
 # KMeans clusters to be very unbalanced with a few big clusters and
 # many voxels left as singletons. Hierarchical Kmeans algorithm is
 # tailored to enfore more balanced clusteings. To do this,
-# Hierarchical Kmeans does a first Kmeans clustering in square root
-# of n parcels. In a second step it clusters voxels inside each
+# Hierarchical Kmeans does a first Kmeans clustering in square root of n
+# parcels. In a second step, it clusters voxels inside each
 # of these parcels in m pieces with m adapted to the size of
-# the cluster and  in order to have in the end n clusters
-# as balanced as possible.
+# the cluster in order to have n balanced clusters in the end.
 #
 # This object uses method='hierarchical_kmeans' for Hierarchical KMeans
 # clustering and 10mm smoothing and standardization to compare
@@ -241,7 +242,8 @@ hkmeans_labels_img.to_filename('hkmeans_parcellation.nii.gz')
 # distribution. Hierarchical KMeans should give clusters closer to
 # average (600 here) than KMeans.
 #
-# First count how many voxels have each label (except 0 which is the background).
+# First count how many voxels have each label (except 0 which is the
+# background).
 
 kmeans_labels, kmeans_counts = np.unique(
     get_data(kmeans_labels_img), return_counts=True)
@@ -260,8 +262,6 @@ print("... each cluster should contain {} voxels".format(voxel_ratio))
 #
 # You can just skip the plotting code, the important part is the figure
 
-import matplotlib.pyplot as plt
-from matplotlib import patches, ticker
 
 bins = np.concatenate([np.linspace(0, 500, 11), np.linspace(
     600, 2000, 15), np.linspace(3000, 10000, 8)])
@@ -284,8 +284,8 @@ fig.legend(handles, labels, loc=(.5, .8))
 ###########################################################################
 # As we can see, half of the 50 KMeans clusters contain less than
 # 100 voxels whereas three contain several thousands voxels
-# (almost 10000 for the biggest). On the opposite Hierarchical KMeans
-# give clusters that are better balanced.
+# Hierarchical KMeans yield better balanced clusters, with a significant
+# proportion of them containing hundreds to thousands of voxels.
 #
 
 ###########################################################################
