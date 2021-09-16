@@ -1,4 +1,4 @@
-"""Helper functions for scrubbing and sampl_mask related functions."""
+"""Helper functions for _load_scrub and sample_mask functions."""
 import numpy as np
 import pandas as pd
 

@@ -1,4 +1,4 @@
-"""Helper functions for the manipulation of confounds.
+"""Helper functions for the manipulation of fmriprep output confounds.
 
 Authors: load_confounds team
 """
@@ -9,8 +9,8 @@ import os
 import json
 import re
 
-from nilearn.input_data.confounds_scrub import _extract_outlier_regressors
-from .._utils.load_confounds import _flag_single_gifti, _is_camel_case
+from .fmriprep_confounds_scrub import _extract_outlier_regressors
+from .._utils.fmriprep_confounds import _flag_single_gifti, _is_camel_case
 
 
 img_file_patterns = {

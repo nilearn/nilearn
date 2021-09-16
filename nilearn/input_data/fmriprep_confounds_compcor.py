@@ -41,7 +41,7 @@ def _select_compcor(compcor_cols, n_compcor):
     """Retain a specified number of compcor components."""
     # only select if not "auto", or less components are requested than there
     # actually is
-    if (n_compcor != "auto") and (n_compcor < len(compcor_cols)):
+    if (n_compcor != "all") and (n_compcor < len(compcor_cols)):
         compcor_cols = compcor_cols[0:n_compcor]
     return compcor_cols
 
@@ -57,7 +57,7 @@ def _check_compcor_method(compcor):
         anat_mask_type = None
     # get relevant prefix from compcor strategy
     prefix_set = prefix_compcor[compcor_type]
-    # get relevant compcore mask
+    # get relevant compcor mask
     anat_mask = anat_masker[anat_mask_type]
     return prefix_set, anat_mask
 

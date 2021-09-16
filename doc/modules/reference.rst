@@ -233,7 +233,7 @@ the :ref:`user guide <user_guide>` for more information and usage examples.
    :toctree: generated/
    :template: function.rst
 
-   load_confounds
+   fmriprep_confounds
 
 .. _masking_ref:
 

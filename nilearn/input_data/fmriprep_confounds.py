@@ -3,13 +3,9 @@
 Authors: load_confounds team
 """
 import pandas as pd
-from .confounds_utils import (
-    _sanitize_confounds,
-    _confounds_to_df,
-    _prepare_output,
-    MissingConfound,
-)
-from . import confounds_components as components
+from .fmriprep_confounds_utils import (_sanitize_confounds, _confounds_to_df,
+                                       _prepare_output, MissingConfound)
+from . import fmriprep_confounds_components as components
 
 
 # Global variables listing the admissible types of noise components
@@ -63,33 +59,41 @@ def _check_error(missing):
         raise ValueError(error_msg)
 
 
-def load_confounds(img_files,
-                   strategy=["motion", "high_pass", "wm_csf"],
-                   motion="full",
-                   scrub="full", fd_thresh=0.2, std_dvars_thresh=3,
-                   wm_csf="basic",
-                   global_signal="basic",
-                   compcor="anat_combined", n_compcor="auto",
-                   ica_aroma="full",
-                   demean=True):
+def fmriprep_confounds(img_files,
+                       strategy=["motion", "high_pass", "wm_csf"],
+                       motion="full",
+                       scrub="full", fd_thresh=0.2, std_dvars_thresh=3,
+                       wm_csf="basic",
+                       global_signal="basic",
+                       compcor="anat_combined", n_compcor="all",
+                       ica_aroma="full",
+                       demean=True):
     """
     Use confounds from fmriprep.
 
-    To enable easy confound variables loading from fMRIprep outputs, Confounds
-    provides a interface that groups subsets of confound variables into noise
-    components and their parameters. It is possible to fine-tune a subset of
-    noise components and their parameters through Confounds.
+    To enable easy confound variables loading from fMRIprep outputs,
+    `fmriprep_confounds` provides an interface that groups subsets of confound
+    variables into noise components and their parameters. It is possible to
+    fine-tune a subset of noise components and their parameters through this
+    function.
 
-    The implementation will only support fMRIPrep output from the 1.2.x series.
-    The `compcor` noise component requires 1.4.x series or above.
+    The implementation will only support fMRIPrep functional derivative
+    directory from the 1.2.x series. The `compcor` noise component requires
+    1.4.x series or above.
 
     Parameters
     ----------
     img_files : path to processed image files, optionally as a list.
-        Processed nii.gz/dtseries.nii/func.gii file from fmriprep.
-        `nii.gz` or `dtseries.nii`: path to files, optionally as a list.
-        `func.gii`: list of a pair of paths to files, optionally as a list
-        of lists. The companion tsv will be automatically detected.
+        Processed nii.gz/dtseries.nii/func.gii file reside in a fmriprep
+        generated functional derivative directory (i.e.The associated confound
+        files should be in the same directory as the image file). As long as
+        the image file, confound related tsv and json are in the same
+        directory with BIDS-complied names, `fmriprep_confounds` can retreive
+        the relevant files correctly.
+
+        - `nii.gz` or `dtseries.nii`: path to files, optionally as a list.
+        - `func.gii`: list of a pair of paths to files, optionally as a list
+        of lists.
 
     strategy : list of strings, default ["motion", "high_pass", "wm_csf"]
         The type of noise components to include.
@@ -172,11 +176,11 @@ def load_confounds(img_files,
         - "temporal_anat_separated" components of "temporal" and
           "anat_separated"
 
-    n_compcor : "auto" or int, default "auto"
+    n_compcor : "all" or int, default "all"
         The number of noise components to be extracted.
         For acompcor_combined=False, and/or compcor="full", this is the number
         of components per mask.
-        "auto": select all components (50% variance explained by fMRIPrep
+        "all": select all components (50% variance explained by fMRIPrep
         defaults)
 
     ica_aroma : {'full', 'basic'}
@@ -186,9 +190,10 @@ def load_confounds(img_files,
 
     demean : boolean, default True
         If True, the confounds are standardized to a zero mean (over time).
-        This step is critical if the confounds are regressed out of time series
-        using nilearn with no or zscore standardization, but should be turned
-        off with "spc" normalization.
+        This step is critical if the confounds are regressed out of timeseries
+        using nilearn.signal.clean with `standardize=False` or
+        `standardize='zscore'`, but should be turned off with
+        `standardize='psc'`.
 
 
     Returns
