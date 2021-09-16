@@ -39,10 +39,10 @@ def _hierarchical_k_means(X, n_clusters, init="k-means++", batch_size=1000,
         If an ndarray is passed, it should be of shape (n_clusters, n_features)
         and gives the initial centers.
 
-    batch_size : int, optional, default: 100
+    batch_size : int, optional, default: 1000
         Size of the mini batches. (Kmeans performed through MiniBatchKMeans)
 
-    n_init : int, default=3
+    n_init : int, default=10
         Number of random initializations that are tried.
         In contrast to KMeans, the algorithm is only run once, using the
         best of the ``n_init`` initializations as measured by inertia.
@@ -99,18 +99,21 @@ class HierarchicalKMeans(BaseEstimator, ClusterMixin, TransformerMixin):
 
     init : {'k-means++', 'random' or an ndarray}
         Method for initialization, defaults to 'k-means++':
-        'k-means++' : selects initial cluster centers for k-means
-        clustering in a smart way to speed up convergence. See section
-        Notes in k_init for more details.
-        'random': choose k observations (rows) at random from data for
-        the initial centroids.
-        If an ndarray is passed, it should be of shape (n_clusters, n_features)
-        and gives the initial centers.
 
-    batch_size : int, optional, default: 100
+        * 'k-means++' : selects initial cluster centers for k-means
+          clustering in a smart way to speed up convergence. See section
+          Notes in k_init for more details.
+
+        * 'random': choose k observations (rows) at random from data for
+          the initial centroids.
+
+        * If an ndarray is passed, it should be of shape (n_clusters, n_features)
+          and gives the initial centers.
+
+    batch_size : int, optional, default: 1000
         Size of the mini batches. (Kmeans performed through MiniBatchKMeans)
 
-    n_init : int, default=3
+    n_init : int, default=10
         Number of random initializations that are tried.
         In contrast to KMeans, the algorithm is only run once, using the
         best of the ``n_init`` initializations as measured by inertia.
