@@ -202,8 +202,8 @@ kmeans_labels_img.to_filename('kmeans_parcellation.nii.gz')
 # voxels display more and more specific activity patterns causing
 # KMeans clusters to be very unbalanced with a few big clusters and
 # many voxels left as singletons. Hierarchical Kmeans algorithm is
-# tailored to enfore more balanced clusteings. To do this,
-# Hierarchical Kmeans does a first Kmeans clustering in square root of n
+# tailored to enforce more balanced clusteings. To do this,
+# Hierarchical Kmeans does a first Kmeans clustering in square root of n_parcels
 # parcels. In a second step, it clusters voxels inside each
 # of these parcels in m pieces with m adapted to the size of
 # the cluster in order to have n balanced clusters in the end.
