@@ -53,7 +53,7 @@ Applying clustering
     :class:`nilearn.regions.Parcellations` as well as two algorithms
     tailored to more specific usecases:
 
-    * ReNA is a quicker alternative to Ward with a small loss of precision, it is
+    * :class:`nilearn.regions.ReNA` is a quicker alternative to Ward with a small loss of precision, it is
       ideal to downsize the number of voxels by 10 quickly.
 
     * Hierarchical KMeans is useful to obtain a small number of clusters after

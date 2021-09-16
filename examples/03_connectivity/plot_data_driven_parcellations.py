@@ -202,7 +202,7 @@ kmeans_labels_img.to_filename('kmeans_parcellation.nii.gz')
 # voxels display more and more specific activity patterns causing
 # KMeans clusters to be very unbalanced with a few big clusters and
 # many voxels left as singletons. Hierarchical Kmeans algorithm is
-# tailored to enforce more balanced clusteings. To do this,
+# tailored to enforce more balanced clusterings. To do this,
 # Hierarchical Kmeans does a first Kmeans clustering in square root of n_parcels
 # parcels. In a second step, it clusters voxels inside each
 # of these parcels in m pieces with m adapted to the size of
@@ -230,7 +230,7 @@ plotting.plot_roi(hkmeans_labels_img, mean_func_img,
                   title="Hierarchical KMeans parcellation",
                   display_mode='xz', cut_coords=display.cut_coords)
 
-# kmeans_labels_img is a Nifti1Image object, it can be saved to file with
+# kmeans_labels_img is a :class:`nibabel.nifti1.Nifti1Image` object, it can be saved to file with
 # the following code:
 hkmeans_labels_img.to_filename('hkmeans_parcellation.nii.gz')
 
@@ -238,7 +238,7 @@ hkmeans_labels_img.to_filename('hkmeans_parcellation.nii.gz')
 # Compare Hierarchical Kmeans clusters with those from Kmeans
 # ...........................................................
 # To compare those, we'll first count how many voxels are contained in
-# each of the 50 clusters for both algorithm and compare those sizes
+# each of the 50 clusters for both algorithms and compare those sizes
 # distribution. Hierarchical KMeans should give clusters closer to
 # average (600 here) than KMeans.
 #
@@ -258,7 +258,7 @@ voxel_ratio = np.round(np.sum(kmeans_counts[1:]) / 50)
 print("... each cluster should contain {} voxels".format(voxel_ratio))
 
 ###########################################################################
-# Let's plot clusters sizes distributions for both algorithm
+# Let's plot clusters sizes distributions for both algorithms
 #
 # You can just skip the plotting code, the important part is the figure
 
