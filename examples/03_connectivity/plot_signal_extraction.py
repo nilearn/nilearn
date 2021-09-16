@@ -143,7 +143,7 @@ confounds_scrub, sample_mask = load_confounds(
     motion="basic", wm_csf="basic",
     scrub="full", fd_thresh=0.2, std_dvars_thresh=3)
 
-print("After scrubbing, {} out of {} volumes remaines".format(
+print("After scrubbing, {} out of {} volumes remains".format(
     sample_mask.shape[0], confounds_scrub.shape[0]))
 print("The shape of the confounds matrix is:", confounds_simple.shape)
 print(confounds_scrub.columns)
@@ -164,7 +164,7 @@ plotting.plot_matrix(correlation_matrix, figure=(10, 8), labels=labels[1:],
 ##############################################################################
 # The impact of global signal removal
 # -----------------------------------
-# Global signal removes the grand mean from yout signal. The benifit is that
+# Global signal removes the grand mean from yout signal. The benefit is that
 # it can remove impacts of physiological artifacts with minimal impact on the
 # degree of freedom. The downside is that one cannot get insight into variance
 # explained by certain source of noise. Now let's add global signal to the
