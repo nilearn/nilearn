@@ -8,8 +8,8 @@ a correlation matrix.
 We also show the importance of defining good confounds signals: the
 first correlation matrix is computed after regressing out simple
 confounds signals: movement regressors, white matter and CSF signals, ...
-The second one demonstrated the functionality of the
-:mod:`nilearn.load_confounds` module to select sensible confound variables
+The second one demonstrated the functionality of
+:func:`nilearn.input_data.load_confounds` to select sensible confound variables
 from fMRIprep outputs. The third one is without any confounds: all regions
 are connected to each other.
 
