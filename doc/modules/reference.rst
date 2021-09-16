@@ -211,7 +211,8 @@ the :ref:`user guide <user_guide>` for more information and usage examples.
    :no-members:
    :no-inherited-members:
 
-**User guide:** See the :ref:`nifti_masker` section for further details.
+**User guide:** See the :ref:`nifti_masker` and :ref:`confound_parser`
+   section for further details.
 
 **Classes**:
 
