@@ -660,7 +660,7 @@ def fetch_localizer_contrasts(contrasts, n_subjects=None, get_tmaps=False,
     def _is_valid_path(path, index, verbose):
         if path not in index:
             if verbose > 0:
-                print("Skiping path '{0}'...".format(path))
+                print("Skipping path '{0}'...".format(path))
             return False
         return True
 
@@ -2180,7 +2180,7 @@ def _download_spm_auditory_data(data_dir, subject_dir, subject_id):
 
 def _prepare_downloaded_spm_auditory_data(subject_dir):
     """ Uncompresses downloaded spm_auditory dataset and organizes
-    the data into apprpriate directories.
+    the data into appropriate directories.
 
     Parameters
     ----------

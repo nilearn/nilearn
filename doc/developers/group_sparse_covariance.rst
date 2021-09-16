@@ -376,7 +376,7 @@ Warm restart
 ------------
 
 During each step of the grid search, a set of regularization
-parameters has to been tested. The straighforward strategy consists of
+parameters has to been tested. The straightforward strategy consists of
 running independently each fit, each optimization being started with
 basically the same initial value (diagonal matrices). Execution time
 can be reduced by running all optimizations sequentially, and using
@@ -422,7 +422,7 @@ finding a maximum. But since only the location of the maximum (not its
 value) is of interest, any curve that peaks at the same location than
 the log-likelihood can be used.
 
-Implicitely, the curve whose maximum is sought is supposed to be
+Implicitly, the curve whose maximum is sought is supposed to be
 obtained after convergence for any value of alpha. This is never the
 case in practice: a stopping criterion has to be used. In the present
 implementation, the variation criterion gives results that seem to be

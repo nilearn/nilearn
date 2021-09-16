@@ -238,7 +238,7 @@ def test_decoder_dummy_classifier():
     assert model.scoring == accuracy_scorer
     assert model.score(X, y) == accuracy_score(y, y_pred)
 
-    # An error should be raise when trying to compute the score whithout having
+    # An error should be raise when trying to compute the score without having
     # called fit first.
     model = Decoder(estimator='dummy_classifier', mask=mask)
     with pytest.raises(

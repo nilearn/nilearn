@@ -172,7 +172,7 @@ cut_coords : None, a :obj:`tuple` of :obj:`float`, or :obj:`int`, optional
           be a 3-tuple: ``(x, y, z)``
         - For ``display_mode == 'x'``, 'y', or 'z', then these are
           the coordinates of each cut in the corresponding direction.
-        - If ``None`` is given, the cuts are calculated automaticaly.
+        - If ``None`` is given, the cuts are calculated automatically.
         - If ``display_mode`` is 'mosaic', and the number of cuts is the same
           for all directions, ``cut_coords`` can be specified as an integer.
           It can also be a length 3 tuple specifying the number of cuts for
@@ -204,7 +204,7 @@ extractor : {'local_regions', 'connected_components'}, optional
 
         - 'local_regions': each component/region is extracted based on
           their maximum peak value to define a seed marker and then using
-          random walker segementation algorithm on these markers for region
+          random walker segmentation algorithm on these markers for region
           separation.
 
     Default='local_regions'."""

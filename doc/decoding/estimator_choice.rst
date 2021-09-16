@@ -135,7 +135,7 @@ In :class:`nilearn.decoding.DecoderRegressor` you can use some of these objects 
 
 .. note::
 
-   * **There is no free lunch**: no estimator will work uniformely better
+   * **There is no free lunch**: no estimator will work uniformly better
      in every situation.
 
    * The SVC-l2 is fairly insensitive to the choice of the regularization

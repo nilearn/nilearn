@@ -123,7 +123,7 @@ for color, mask_name in zip('rgb', mask_names):
 
     tick_position = tick_position + .2
 
-plt.ylabel('Classification accurancy (AUC score)')
+plt.ylabel('Classification accuracy (AUC score)')
 plt.xlabel('Visual stimuli category')
 plt.ylim(0.3, 1)
 plt.legend(loc='lower right')

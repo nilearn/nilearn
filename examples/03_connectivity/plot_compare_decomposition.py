@@ -53,7 +53,7 @@ canica = CanICA(n_components=20,
 canica.fit(func_filenames)
 
 # Retrieve the independent components in brain space. Directly
-# accesible through attribute `components_img_`.
+# accessible through attribute `components_img_`.
 canica_components_img = canica.components_img_
 # components_img is a Nifti Image object, and can be saved to a file with
 # the following line:

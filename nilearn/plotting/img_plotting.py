@@ -721,10 +721,10 @@ def plot_prob_atlas(maps_img, bg_img=MNI152TEMPLATE, view_type='auto',
         By default view_type == 'auto', means maps will be displayed
         automatically using any one of the three view types. The automatic
         selection of view type depends on the total number of maps.
-        If view_type == 'contours', maps are overlayed as contours
-        If view_type == 'filled_contours', maps are overlayed as contours
+        If view_type == 'contours', maps are overlaid as contours
+        If view_type == 'filled_contours', maps are overlaid as contours
         along with color fillings inside the contours.
-        If view_type == 'continuous', maps are overlayed as continuous
+        If view_type == 'continuous', maps are overlaid as continuous
         colors irrespective of the number maps.
         Default='auto'.
 

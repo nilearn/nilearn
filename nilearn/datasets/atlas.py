@@ -1311,7 +1311,7 @@ def _separate_talairach_levels(atlas_img, labels, verbose=1):
     the next one the lobe, then gyrus, tissue, and ba. Background is 0.
     The labels contain
     [('level name', ['labels', 'for', 'this', 'level' ...]), ...],
-    where the levels are in the order mentionned above.
+    where the levels are in the order mentioned above.
 
     The label '*' is replaced by 'Background' for clarity.
 
@@ -1356,7 +1356,7 @@ def _get_talairach_all_levels(data_dir=None, verbose=1):
 
     The labels json file contains
     [['level name', ['labels', 'for', 'this', 'level' ...]], ...],
-    where the levels are in the order mentionned above.
+    where the levels are in the order mentioned above.
 
     """
     data_dir = _get_dataset_dir(

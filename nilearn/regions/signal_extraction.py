@@ -50,7 +50,7 @@ def img_to_signals_labels(imgs, labels_img, mask_img=None,
 
     strategy : :obj:`str`, optional
         The name of a valid function to reduce the region with.
-        Must be one of: sum, mean, median, mininum, maximum, variance,
+        Must be one of: sum, mean, median, minimum, maximum, variance,
         standard_deviation. Default='mean'.
 
     Returns

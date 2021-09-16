@@ -309,7 +309,7 @@ class SecondLevelModel(BaseGLM):
                             DataFrame or list of Niimg-like objects.
 
             Giving FirstLevelModel objects will allow to easily compute
-            the second level contast of arbitrary first level contrasts thanks
+            the second level contrast of arbitrary first level contrasts thanks
             to the first_level_contrast argument of the compute_contrast
             method. Effect size images will be computed for each model to
             contrast at the second level.
@@ -412,7 +412,7 @@ class SecondLevelModel(BaseGLM):
                 if our_param is None:
                     continue
                 if getattr(self.masker_, param_name) is not None:
-                    warn('Parameter %s of the masker overriden' % param_name)
+                    warn('Parameter %s of the masker overridden' % param_name)
                 setattr(self.masker_, param_name, our_param)
         self.masker_.fit(sample_map)
 
@@ -538,7 +538,7 @@ def non_parametric_inference(second_level_input, confounds=None,
                              two_sided_test=False, random_state=None,
                              n_jobs=1, verbose=0):
     """Generate p-values corresponding to the contrasts provided
-    based on permutation testing. This fuction reuses the 'permuted_ols'
+    based on permutation testing. This function reuses the 'permuted_ols'
     function Nilearn.
 
     Parameters
@@ -650,7 +650,7 @@ def non_parametric_inference(second_level_input, confounds=None,
         masker = clone(mask)
         if smoothing_fwhm is not None:
             if getattr(masker, 'smoothing_fwhm') is not None:
-                warn('Parameter smoothing_fwhm of the masker overriden')
+                warn('Parameter smoothing_fwhm of the masker overridden')
                 setattr(masker, 'smoothing_fwhm', smoothing_fwhm)
     masker.fit(sample_map)
 

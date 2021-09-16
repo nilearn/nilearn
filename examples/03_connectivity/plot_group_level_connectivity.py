@@ -42,7 +42,7 @@ masker = input_data.NiftiMapsMasker(
     low_pass=.1, high_pass=.01, memory='nilearn_cache', memory_level=1).fit()
 
 ###############################################################################
-# Then we compute region signals and extract useful phenotypic informations.
+# Then we compute region signals and extract useful phenotypic information.
 children = []
 pooled_subjects = []
 groups = []  # child or adult
