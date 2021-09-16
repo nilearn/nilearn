@@ -173,7 +173,7 @@ def _get_file_raw(confounds_raw_path):
 
 
 def _ext_validator(image_file, ext):
-    """Check image is valid based on extention."""
+    """Check image is valid based on extension."""
     try:
         valid_img = all(
             bool(re.search(img_file_patterns[ext], img)) for img in image_file

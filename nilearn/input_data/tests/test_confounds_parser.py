@@ -29,7 +29,7 @@ def _simu_img(tmp_path, demean=True):
         file_nii, strategy=["motion"], motion="basic", demean=demean
     )
     X = confounds.values
-    # the first row is non-steady state, replace it with the imput from the
+    # the first row is non-steady state, replace it with the input from the
     # second row
     non_steady = X[0, :]
     X[0, :] = X[1, :]
@@ -410,7 +410,7 @@ def test_ica_aroma(tmp_path):
     regular_nii, _ = create_tmp_filepath(
         tmp_path, image_type="regular", copy_confounds=True
     )
-    # Agressive strategy
+    # Aggressive strategy
     conf, _ = load_confounds(
         regular_nii, strategy=["ica_aroma"], ica_aroma="basic"
     )
@@ -418,7 +418,7 @@ def test_ica_aroma(tmp_path):
         # only aroma and non-steady state columns will be present
         assert re.match("(?:aroma_motion_+|non_steady_state+)", col_name)
 
-    # Non-agressive strategy
+    # Non-aggressive strategy
     conf, _ = load_confounds(
         aroma_nii, strategy=["ica_aroma"], ica_aroma="full"
     )
