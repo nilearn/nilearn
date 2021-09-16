@@ -25,19 +25,13 @@ def _simu_img(tmp_path, demean=True):
     # as we will stack slices with confounds on top of slices with noise
     nz = 2
     # Load a simple 6 parameters motion models as confounds
+    # detrend set to False just for generating signal closed to the original
+    # state
     confounds, _ = fmriprep_confounds(
-        file_nii, strategy=["motion"], motion="basic", demean=demean
+        file_nii, strategy=["motion"], motion="basic", demean=False
     )
-    X = confounds.values
-    # the first row is non-steady state, replace it with the input from the
-    # second row
-    non_steady = X[0, :]
-    X[0, :] = X[1, :]
-    # repeat X in length (axis = 0) three times to increase
-    # the degree of freedom
-    X = np.tile(X, (3, 1))
-    # put non-steady state volume back at the first sample
-    X[0, :] = non_steady
+
+    X = _handle_non_steady(confounds)
     # the number of time points is based on the example confound file
     nt = X.shape[0]
     # initialize an empty 4D volume
@@ -65,7 +59,26 @@ def _simu_img(tmp_path, demean=True):
     img = Nifti1Image(vol, np.eye(4))
     mask_conf = Nifti1Image(vol_conf, np.eye(4))
     mask_rand = Nifti1Image(vol_rand, np.eye(4))
-    return img, mask_conf, mask_rand, X
+
+    # generate the assoicated confounds for testing
+    confounds, _ = fmriprep_confounds(
+        file_nii, strategy=["motion"], motion="basic", demean=demean)
+    return img, mask_conf, mask_rand, _handle_non_steady(confounds)
+
+
+def _handle_non_steady(confounds):
+    """Simulate non steady state volume correctly."""
+    X = confounds.values
+    # the first row is non-steady state, replace it with the input from the
+    # second row
+    non_steady = X[0, :]
+    X[0, :] = X[1, :]
+    # repeat X in length (axis = 0) three times to increase
+    # the degree of freedom
+    X = np.tile(X, (3, 1))
+    # put non-steady state volume back at the first sample
+    X[0, :] = non_steady
+    return X
 
 
 def _tseries_std(img, mask_img, confounds, sample_mask, standardize):
