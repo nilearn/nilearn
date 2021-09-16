@@ -3,13 +3,13 @@
 Authors: load_confounds team
 """
 import pandas as pd
-from .confounds import (
+from .confounds_utils import (
     _sanitize_confounds,
     _confounds_to_df,
     _prepare_output,
     MissingConfound,
 )
-from . import components
+from . import confounds_components as components
 
 
 # Global variables listing the admissible types of noise components

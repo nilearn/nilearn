@@ -9,7 +9,7 @@ import os
 import json
 import re
 
-from .scrub import _extract_outlier_regressors
+from nilearn.input_data.confounds_scrub import _extract_outlier_regressors
 from .._utils.load_confounds import _flag_single_gifti, _is_camel_case
 
 

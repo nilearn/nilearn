@@ -2,7 +2,9 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from nilearn.load_confounds import scrub
+from nilearn.input_data.confounds_scrub import (_optimize_scrub,
+                                                _get_outlier_cols,
+                                                _extract_outlier_regressors)
 
 from pandas.testing import assert_frame_equal
 
@@ -24,7 +26,7 @@ from pandas.testing import assert_frame_equal
     ],
 )  # no optimisation needed
 def test_optimize_scrub(original_motion_outliers_index, expected_optimal):
-    optimised_index = scrub._optimize_scrub(
+    optimised_index = _optimize_scrub(
         original_motion_outliers_index, 100
     )
     assert np.array_equal(optimised_index, expected_optimal)
@@ -35,7 +37,7 @@ def test_get_outlier_cols():
     non_steady_state = [f"non_steady_state_outlier{i:02d}" for i in range(3)]
     col_names += non_steady_state
     col_names = pd.Index(col_names)
-    outlier_cols, confounds_cols = scrub._get_outlier_cols(col_names)
+    outlier_cols, confounds_cols = _get_outlier_cols(col_names)
     assert confounds_cols == ["confound_regressor"]
     assert outlier_cols == non_steady_state
 
@@ -61,7 +63,7 @@ def test_extract_outlier_regressors():
 
     # non-steady only
     non_steady_conf = pd.concat([fake_confounds, non_steady_vol], axis=1)
-    sample_mask, confounds, outliers = scrub._extract_outlier_regressors(
+    sample_mask, confounds, outliers = _extract_outlier_regressors(
         non_steady_conf
     )
     assert np.array_equal(sample_mask, np.arange(n_scans)[3:]) is True
@@ -71,7 +73,7 @@ def test_extract_outlier_regressors():
     # scrub only
     srub_conf = pd.concat([fake_confounds, scrub_vol], axis=1)
     make_mask = np.delete(np.arange(n_scans), idx_scrubbed)
-    sample_mask, confounds, outliers = scrub._extract_outlier_regressors(
+    sample_mask, confounds, outliers = _extract_outlier_regressors(
         srub_conf
     )
     assert np.array_equal(sample_mask, make_mask) is True
@@ -87,7 +89,7 @@ def test_extract_outlier_regressors():
     )
     make_outliers = make_outliers.drop(columns="non_steady_state_outlier02")
 
-    sample_mask, confounds, outliers = scrub._extract_outlier_regressors(
+    sample_mask, confounds, outliers = _extract_outlier_regressors(
         all_conf
     )
     assert len(sample_mask) == 44

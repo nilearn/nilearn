@@ -1,9 +1,9 @@
 import numpy as np
 import pandas as pd
 
-from .confounds import _add_suffix, _check_params, _find_confounds
-from .compcor import _find_compcor
-from .scrub import _optimize_scrub
+from .confounds_utils import _add_suffix, _check_params, _find_confounds
+from .confounds_compcor import _find_compcor
+from .confounds_scrub import _optimize_scrub
 
 
 def _load_motion(confounds_raw, motion):

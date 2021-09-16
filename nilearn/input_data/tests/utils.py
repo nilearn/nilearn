@@ -2,7 +2,7 @@
 import os
 import json
 import pandas as pd
-from nilearn.load_confounds import parser as lc
+from nilearn.input_data import confounds_parser
 
 
 img_file_patterns = {
@@ -21,7 +21,7 @@ img_file_patterns = {
 
 def get_testdata_path(non_steady_state=True):
     """Get file path for the confound regressors."""
-    path_data = os.path.join(os.path.dirname(lc.__file__), "data")
+    path_data = os.path.join(os.path.dirname(confounds_parser.__file__), "data")
     if non_steady_state:
         return [
             os.path.join(path_data, filename)

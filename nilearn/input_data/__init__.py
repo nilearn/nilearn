@@ -7,6 +7,7 @@ from .multi_nifti_masker import MultiNiftiMasker
 from .nifti_labels_masker import NiftiLabelsMasker
 from .nifti_maps_masker import NiftiMapsMasker
 from .nifti_spheres_masker import NiftiSpheresMasker
+from .confounds_parser import load_confounds
 
 __all__ = ['NiftiMasker', 'MultiNiftiMasker', 'NiftiLabelsMasker',
-           'NiftiMapsMasker', 'NiftiSpheresMasker']
+           'NiftiMapsMasker', 'NiftiSpheresMasker', 'load_confounds']
