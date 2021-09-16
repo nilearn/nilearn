@@ -45,6 +45,9 @@ def _sanitize_strategy(strategy):
     # add non steady state if not present
     if "non_steady_state" not in strategy:
         strategy.append("non_steady_state")
+    # high pass filtering must be present if using fmriprep compcor outputs
+    if "compcor" in strategy and "high_pass" not in strategy:
+        strategy.append("high_pass")
     return strategy
 
 
@@ -225,13 +228,6 @@ def load_confounds(img_files,
     strategies for the control of motion artifact in studies of functional
     connectivity" Neuroimage 154: 174-87
     """
-    # # update the confound strategy parameters
-    # confound_parameters = default_parameters.copy()
-
-    # for key in confound_parameters:
-    #     if kargs.get(key):
-    #         confound_parameters[key] = kargs.get(key)
-
     strategy = _sanitize_strategy(strategy)
 
     # load confounds per image provided
