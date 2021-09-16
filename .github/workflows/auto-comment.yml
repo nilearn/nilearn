@@ -16,7 +16,7 @@ jobs:
             in its title, or leave it as a github draft.
 
 
-            Please make sure it is compliant with our contributing guidelines.
+            Please make sure it is compliant with our [contributing guidelines](https://nilearn.github.io/development.html#contribution-guidelines).
             In particular, be sure it checks the boxes listed below.
 
             - [ ] PR has an interpretable title.
