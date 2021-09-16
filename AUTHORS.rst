@@ -21,7 +21,9 @@ Core developers
 The nilearn core developers are:
 
 * Alexandre Gramfort
+* Alexis Thual
 * Bertrand Thirion
+* Binh Nguyen
 * Elizabeth DuPre
 * Gael Varoquaux
 * Jerome Dockes
@@ -29,9 +31,8 @@ The nilearn core developers are:
 * KamalakerDadi
 * Kshitij Chawla
 * Nicolas Gensollen
-* Binh Nguyen
-* Thomas Bazeille
 * Taylor Salo
+* Thomas Bazeille
 
 Other contributors
 ..................
