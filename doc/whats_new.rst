@@ -1,5 +1,23 @@
-0.8.1.dev
-=========
+.. _v0.8.1:
+
+0.8.1
+=====
+**Released September 2021**
+
+HIGHLIGHTS
+----------
+
+- New atlas fetcher
+  :func:`nilearn.datasets.fetch_atlas_juelich` to download Juelich atlas from FSL.
+- New grey and white-matter template and mask loading functions:
+  :func:`nilearn.datasets.load_mni152_gm_template`,
+  :func:`nilearn.datasets.load_mni152_wm_template`,
+  :func:`nilearn.datasets.load_mni152_gm_mask`, and
+  :func:`nilearn.datasets.load_mni152_wm_mask`
+- :ref:`development_process` has been reworked. It now provides insights on
+  nilearn organization as a project as well as more explicit
+  :ref:`contribution_guidelines`.
+- :func:`nilearn.image.binarize_img` binarizes images into 0 and 1.
 
 NEW
 ---
