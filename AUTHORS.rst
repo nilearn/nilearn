@@ -28,7 +28,7 @@ The nilearn core developers are:
 * Gael Varoquaux
 * Jerome Dockes
 * Julia Huntenburg
-* KamalakerDadi
+* Kamalaker Dadi
 * Kshitij Chawla
 * Nicolas Gensollen
 * Taylor Salo
