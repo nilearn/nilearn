@@ -203,8 +203,8 @@ kmeans_labels_img.to_filename('kmeans_parcellation.nii.gz')
 # KMeans clusters to be very unbalanced with a few big clusters and
 # many voxels left as singletons. Hierarchical Kmeans algorithm is
 # tailored to enforce more balanced clusterings. To do this,
-# Hierarchical Kmeans does a first Kmeans clustering in square root of n_parcels
-# parcels. In a second step, it clusters voxels inside each
+# Hierarchical Kmeans does a first Kmeans clustering in square root of
+# n_parcels. In a second step, it clusters voxels inside each
 # of these parcels in m pieces with m adapted to the size of
 # the cluster in order to have n balanced clusters in the end.
 #
@@ -230,8 +230,8 @@ plotting.plot_roi(hkmeans_labels_img, mean_func_img,
                   title="Hierarchical KMeans parcellation",
                   display_mode='xz', cut_coords=display.cut_coords)
 
-# kmeans_labels_img is a :class:`nibabel.nifti1.Nifti1Image` object, it can be saved to file with
-# the following code:
+# kmeans_labels_img is a :class:`nibabel.nifti1.Nifti1Image` object, it can be
+# saved to file with the following code:
 hkmeans_labels_img.to_filename('hkmeans_parcellation.nii.gz')
 
 ###########################################################################
