@@ -23,7 +23,7 @@ def _hierarchical_k_means(X, n_clusters, init="k-means++", batch_size=1000,
 
     Parameters
     ----------
-    X: nd array (n_samples, n_features)
+    X: ndarray (n_samples, n_features)
         Data to cluster
 
     n_clusters: int,
