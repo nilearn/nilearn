@@ -190,11 +190,6 @@ def fmriprep_confounds(img_files,
 
     demean : boolean, default True
         If True, the confounds are standardized to a zero mean (over time).
-        This step is critical if the confounds are regressed out of timeseries
-        using :func:`nilearn.signal.clean` with `standardize=False` or
-        `standardize='zscore'`, but should be turned off with
-        `standardize='psc'`.
-
 
     Returns
     -------
@@ -219,13 +214,11 @@ def fmriprep_confounds(img_files,
 
     Notes
     -----
-    The noise components implemented in this class are
-    adapted from :footcite:`Ciric2017`. Band-pass filter is replaced
-    by high-pass filter. Low-pass filters can be implemented, e.g., through
-    nilearn maskers. Scrubbing is implemented by introducing regressors in the
-    confounds, rather than eliminating time points. Other aspects of the
-    preprocessing listed in :footcite:`Ciric2017` are controlled through
-    fMRIprep, e.g. distortion correction.
+    The noise components implemented in this class are adapted from
+    :footcite:`Ciric2017`. Band-pass filter is replaced by high-pass filter.
+    Low-pass filters can be implemented, e.g., through `NifitMaskers`. Other
+    aspects of the preprocessing listed in :footcite:`Ciric2017` are controlled
+    through fMRIprep, e.g. distortion correction.
 
     References
     -----------
