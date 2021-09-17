@@ -279,7 +279,7 @@ Here are the key steps you need to go through to copy the repo before contributi
 5. check that all tests pass with (this can take a while)::
 
       pytest nilearn
- 
+
 
 Contributing
 ------------

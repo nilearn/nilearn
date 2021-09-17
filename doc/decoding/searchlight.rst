@@ -113,7 +113,7 @@ for :term:`classification` (i.e. more :term:`voxels<voxel>` are included with la
 
     For reference, [:footcite:t:`Kriegeskorte3863`] use a 4mm radius because it yielded
     the best detection performance in their simulation of 2mm isovoxel data.
-	
+
 Visualization
 =============
 
