@@ -219,8 +219,7 @@ class HierarchicalKMeans(BaseEstimator, ClusterMixin, TransformerMixin):
         X_red = np.array(mean_cluster)
 
         if self.scaling:
-            X_red = np.multiply(X_red, np.asarray(
-                [np.sqrt(self.sizes_)] * X_red.shape[1]).T)
+            X_red = X_red * np.sqrt(self.sizes_[:, np.newaxis])
 
         return X_red
 
@@ -244,8 +243,7 @@ class HierarchicalKMeans(BaseEstimator, ClusterMixin, TransformerMixin):
         _, inverse = np.unique(self.labels_, return_inverse=True)
 
         if self.scaling:
-            X_red = np.divide(X_red, np.asarray(
-                [np.sqrt(self.sizes_)] * X_red.shape[1]).T)
+            X_red = X_red / np.sqrt(self.sizes_[:, np.newaxis])
         X_inv = X_red[inverse, ...]
 
         return X_inv
