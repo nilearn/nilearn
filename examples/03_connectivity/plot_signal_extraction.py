@@ -8,10 +8,12 @@ a correlation matrix.
 We also show the importance of defining good confounds signals: the
 first correlation matrix is computed after regressing out simple
 confounds signals: movement regressors, white matter and CSF signals, ...
-The second one demonstrated the functionality of
-:func:`nilearn.input_data.fmriprep_confounds` to select sensible confound
-variables from fMRIprep outputs. The third one is without any confounds: all
-regions are connected to each other.
+The second one is without any confounds: all regions are connected to each
+other. Finally we demonstrated the functionality of
+:func:`nilearn.input_data.fmriprep_confounds` to flexibly select confound
+variables from fMRIprep outputs while following some implementation guildline
+of fMRIprep confounds documentation
+`<https://fmriprep.org/en/stable/outputs.html#confounds>`_.
 
 One reference that discusses the importance of confounds is `Varoquaux and
 Craddock, Learning and comparing functional connectomes across subjects,
