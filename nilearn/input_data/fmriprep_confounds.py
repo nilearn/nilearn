@@ -102,9 +102,9 @@ def fmriprep_confounds(img_files,
         - "high_pass" discrete cosines covering low frequencies.
         - "wm_csf" confounds derived from white matter and cerebrospinal fluid.
         - "global" confounds derived from the global signal.
-        - "compcor" confounds derived from CompCor.
-        - "ica_aroma" confounds derived from ICA-AROMA.
-        - "scrub" regressors for Power 2014 scrubbing approach.
+        - "compcor" confounds derived from CompCor :footcite:`BEHZADI200790`.
+        - "ica_aroma" confounds derived from ICA-AROMA :footcite:`Pruim2015`.
+        - "scrub" regressors for :footcite:`Power2014` scrubbing approach.
 
         For each supplied strategy, associated parameters will be applied.
         Otherwise, any values supplied to the parameters are ignored.
@@ -124,7 +124,7 @@ def fmriprep_confounds(img_files,
     std_dvars_threshold : float, default 3
         Standardized DVARS threshold for scrub (default = 3).
         DVARs is defined as root mean squared intensity difference of volume N
-        to volume N+1 (Power et al. 2012). D referring to temporal derivative
+        to volume N+1 :footcite:`Power2012`. D referring to temporal derivative
         of timecourses, VARS referring to root mean squared variance over
         voxels.
 
@@ -148,7 +148,7 @@ def fmriprep_confounds(img_files,
           derivatives (4 parameters)
 
     scrub : {'full', 'basic'}
-        Type of scrub of frames with excessive motion (Power et al. 2014)
+        Type of scrub of frames with excessive motion :footcite:`Power2014`
 
         - "basic" remove time frames based on excessive framewise displacement
           and DVARS.
@@ -165,7 +165,7 @@ def fmriprep_confounds(img_files,
             Require fmriprep >= v:1.4.0.
 
         Type of confounds extracted from a component based noise correction
-        method.
+        method :footcite:`BEHZADI200790`.
 
         - "anat_combined" noise components calculated using a white matter and
           CSF combined anatomical mask
@@ -220,18 +220,17 @@ def fmriprep_confounds(img_files,
     Notes
     -----
     The noise components implemented in this class are
-    adapted from (Ciric et al. 2017). Band-pass filter is replaced
+    adapted from :footcite:`Ciric2017`. Band-pass filter is replaced
     by high-pass filter. Low-pass filters can be implemented, e.g., through
     nilearn maskers. Scrubbing is implemented by introducing regressors in the
     confounds, rather than eliminating time points. Other aspects of the
-    preprocessing listed in Ciric et al. (2017) are controlled through
+    preprocessing listed in :footcite:`Ciric2017` are controlled through
     fMRIprep, e.g. distortion correction.
 
     References
-    ----------
-    Ciric et al., 2017 "Benchmarking of participant-level confound regression
-    strategies for the control of motion artifact in studies of functional
-    connectivity" Neuroimage 154: 174-87
+    -----------
+    .. footbibliography::
+
     """
     strategy = _sanitize_strategy(strategy)
 

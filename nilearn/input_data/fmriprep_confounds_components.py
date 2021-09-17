@@ -1,3 +1,4 @@
+"""Functions to noise components based on selected strategey."""
 import numpy as np
 import pandas as pd
 
