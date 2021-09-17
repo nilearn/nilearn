@@ -32,6 +32,7 @@ def _simu_img(tmp_path, demean=True):
     )
 
     X = _handle_non_steady(confounds)
+    X = X.values
     # the number of time points is based on the example confound file
     nt = X.shape[0]
     # initialize an empty 4D volume
@@ -64,8 +65,7 @@ def _simu_img(tmp_path, demean=True):
     test_confounds, _ = fmriprep_confounds(
         file_nii, strategy=["motion"], motion="basic", demean=demean)
     # match how we extend the length to increase the degree of freedom
-    conf_values = _handle_non_steady(test_confounds)
-    test_confounds = pd.DataFrame(conf_values, columns=test_confounds.columns)
+    test_confounds = _handle_non_steady(test_confounds)
     return img, mask_conf, mask_rand, test_confounds
 
 
@@ -80,8 +80,8 @@ def _handle_non_steady(confounds):
     # the degree of freedom
     X = np.tile(X, (3, 1))
     # put non-steady state volume back at the first sample
-    # return the extended confounds as ndarray for the ease of simulation
     X[0, :] = non_steady
+    X = pd.DataFrame(X, columns=confounds.columns)
     return X
 
 
@@ -116,7 +116,7 @@ def _regression(confounds, sample_mask, tmp_path):
     """Simple regression with NiftiMasker."""
     # Simulate data
     img, mask_conf, _, _ = _simu_img(tmp_path, demean=True)
-    confounds = np.tile(confounds, (3, 1))  # matching L29 (_simu_img)
+    confounds = _handle_non_steady(confounds)
 
     # Do the regression
     masker = NiftiMasker(mask_img=mask_conf, standardize=True)
@@ -180,7 +180,6 @@ def test_nilearn_standardize_zscore(tmp_path):
     tseries_raw, tseries_clean = _denoise(img, mask_conf, X, None, "zscore")
     corr = _corr_tseries(tseries_raw, tseries_clean)
     assert corr.mean() < 0.2
-    print(corr.mean())
 
     # We now load the time series with zscore standardization
     # with vs without confounds in voxels where the signal is uncorrelated
@@ -189,7 +188,6 @@ def test_nilearn_standardize_zscore(tmp_path):
     tseries_raw, tseries_clean = _denoise(img, mask_rand, X, None, "zscore")
     corr = _corr_tseries(tseries_raw, tseries_clean)
     assert corr.mean() > 0.8
-    print(corr.mean())
 
 
 def test_nilearn_standardize_psc(tmp_path):
@@ -203,13 +201,11 @@ def test_nilearn_standardize_psc(tmp_path):
     tseries_raw, tseries_clean = _denoise(img, mask_conf, X, None, "psc")
     corr = _corr_tseries(tseries_raw, tseries_clean)
     assert corr.mean() < 0.2
-    print(corr.mean())
 
     # Areas with random noise
     tseries_raw, tseries_clean = _denoise(img, mask_rand, X, None, "psc")
     corr = _corr_tseries(tseries_raw, tseries_clean)
     assert corr.mean() > 0.8
-    print(corr.mean())
 
 
 def test_confounds2df(tmp_path):
