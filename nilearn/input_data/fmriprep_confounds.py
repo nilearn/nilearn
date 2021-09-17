@@ -88,12 +88,12 @@ def fmriprep_confounds(img_files,
         generated functional derivative directory (i.e.The associated confound
         files should be in the same directory as the image file). As long as
         the image file, confound related tsv and json are in the same
-        directory with BIDS-complied names, `fmriprep_confounds` can retreive
+        directory with BIDS-complied names, `fmriprep_confounds` can retrieve
         the relevant files correctly.
 
         - `nii.gz` or `dtseries.nii`: path to files, optionally as a list.
         - `func.gii`: list of a pair of paths to files, optionally as a list
-        of lists.
+          of lists.
 
     strategy : list of strings, default ["motion", "high_pass", "wm_csf"]
         The type of noise components to include.
@@ -170,7 +170,7 @@ def fmriprep_confounds(img_files,
         - "anat_combined" noise components calculated using a white matter and
           CSF combined anatomical mask
         - "anat_separated" noise components calculated using white matter mask
-          and CSF mask compcor separately; two set of scores are concatenated
+          and CSF mask compcor separately; two sets of scores are concatenated
         - "temporal" noise components calculated using temporal compcor
         - "temporal_anat_combined" components of "temporal" and "anat_combined"
         - "temporal_anat_separated" components of "temporal" and
@@ -191,7 +191,7 @@ def fmriprep_confounds(img_files,
     demean : boolean, default True
         If True, the confounds are standardized to a zero mean (over time).
         This step is critical if the confounds are regressed out of timeseries
-        using nilearn.signal.clean with `standardize=False` or
+        using :func:`nilearn.signal.clean` with `standardize=False` or
         `standardize='zscore'`, but should be turned off with
         `standardize='psc'`.
 
