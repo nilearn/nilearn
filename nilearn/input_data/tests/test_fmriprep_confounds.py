@@ -9,7 +9,7 @@ from nilearn.input_data import NiftiMasker
 from nilearn.input_data import fmriprep_confounds
 from ..fmriprep_confounds import _sanitize_strategy
 
-from nilearn._utils.fmriprep_confounds import to_camel_case
+from nilearn._utils.fmriprep_confounds import _to_camel_case
 
 from .utils import create_tmp_filepath, get_leagal_confound
 
@@ -109,7 +109,7 @@ def _corr_tseries(tseries1, tseries2):
 
 
 def _regression(confounds, sample_mask, tmp_path):
-    """Simple regression with nilearn."""
+    """Simple regression with NiftiMasker."""
     # Simulate data
     img, mask_conf, _, _ = _simu_img(tmp_path, demean=True)
     confounds = np.tile(confounds, (3, 1))  # matching L29 (_simu_img)
@@ -399,7 +399,7 @@ def test_invalid_filetype(tmp_path):
     leagal_confounds, _ = get_leagal_confound()
     camel_confounds = leagal_confounds.copy()
     camel_confounds.columns = [
-        to_camel_case(col_name) for col_name in leagal_confounds.columns
+        _to_camel_case(col_name) for col_name in leagal_confounds.columns
     ]
     camel_confounds.to_csv(bad_conf, sep="\t", index=False)
     with pytest.raises(ValueError) as error_log:

@@ -22,7 +22,7 @@ def _is_camel_case(s):
     return s != s.lower() and s != s.upper() and "_" not in s
 
 
-def to_camel_case(snake_str):
+def _to_camel_case(snake_str):
     """Convert camel to snake case."""
     components = snake_str.split('_')
     return components[0] + ''.join(x.title() for x in components)
