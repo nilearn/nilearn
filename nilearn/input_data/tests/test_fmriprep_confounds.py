@@ -60,7 +60,7 @@ def _simu_img(tmp_path, demean=True):
     mask_conf = Nifti1Image(vol_conf, np.eye(4))
     mask_rand = Nifti1Image(vol_rand, np.eye(4))
 
-    # generate the assoicated confounds for testing
+    # generate the associated confounds for testing
     confounds, _ = fmriprep_confounds(
         file_nii, strategy=["motion"], motion="basic", demean=demean)
     return img, mask_conf, mask_rand, _handle_non_steady(confounds)
@@ -137,7 +137,7 @@ def _regression(confounds, sample_mask, tmp_path):
     ],
 )
 def test_nilearn_regress(tmp_path, strategy, param):
-    """Try regressing out all motion types in nilearn."""
+    """Try regressing out all motion types."""
     img_nii, _ = create_tmp_filepath(
         tmp_path, copy_confounds=True, copy_json=True
     )
@@ -147,7 +147,7 @@ def test_nilearn_regress(tmp_path, strategy, param):
 
 @pytest.mark.filterwarnings("ignore")
 def test_nilearn_standardize_false(tmp_path):
-    """Test removing confounds in nilearn with no standardization."""
+    """Test removing confounds with no standardization."""
     # Simulate data
     img, mask_conf, mask_rand, X = _simu_img(tmp_path, demean=True)
 
@@ -164,7 +164,7 @@ def test_nilearn_standardize_false(tmp_path):
 
 @pytest.mark.filterwarnings("ignore")
 def test_nilearn_standardize_zscore(tmp_path):
-    """Test removing confounds in nilearn with zscore standardization."""
+    """Test removing confounds with zscore standardization."""
     # Simulate data
 
     img, mask_conf, mask_rand, X = _simu_img(tmp_path, demean=True)
@@ -187,7 +187,7 @@ def test_nilearn_standardize_zscore(tmp_path):
 
 
 def test_nilearn_standardize_psc(tmp_path):
-    """Test removing confounds in nilearn with psc standardization."""
+    """Test removing confounds with psc standardization."""
     # Similar test to test_nilearn_standardize_zscore, but with psc
     # Simulate data
 
@@ -267,7 +267,7 @@ def test_n_compcor(tmp_path):
 
 
 def test_not_found_exception(tmp_path):
-    """Check various file or parameter missing scenrio."""
+    """Check various file or parameter missing scenario."""
     # Create invalid confound file in temporary dir
     img_missing_confounds, bad_conf = create_tmp_filepath(
         tmp_path, copy_confounds=True, copy_json=False

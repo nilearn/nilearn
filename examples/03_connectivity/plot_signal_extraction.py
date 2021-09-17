@@ -167,7 +167,7 @@ plotting.plot_matrix(correlation_matrix, figure=(10, 8), labels=labels[1:],
 # Global signal removes the grand mean from your signal. The benefit is that
 # it can remove impacts of physiological artifacts with minimal impact on the
 # degree of freedom. The downside is that one cannot get insight into variance
-# explained by certain source of noise. Now let's add global signal to the
+# explained by certain sources of noise. Now let's add global signal to the
 # simple strategy and see its impact.
 
 confounds_minimal_no_gsr, sample_mask = fmriprep_confounds(
