@@ -107,8 +107,8 @@ class HierarchicalKMeans(BaseEstimator, ClusterMixin, TransformerMixin):
         * 'random': choose k observations (rows) at random from data for
           the initial centroids.
 
-        * If an ndarray is passed, it should be of shape (n_clusters, n_features)
-          and gives the initial centers.
+        * If an ndarray is passed, it should be of shape (n_clusters,
+          n_features) and gives the initial centers.
 
     batch_size : int, optional, default: 1000
         Size of the mini batches. (Kmeans performed through MiniBatchKMeans)
