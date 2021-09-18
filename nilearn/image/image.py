@@ -890,7 +890,9 @@ def threshold_img(
 
     See also
     --------
-    nilearn.glm.threshold_stats_img
+    nilearn.glm.threshold_stats_img :
+        Threshold a statistical image using the alpha value, optionally with
+        false positive control.
 
     """
     from . import resampling

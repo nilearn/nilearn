@@ -242,7 +242,9 @@ def threshold_stats_img(stat_img=None, mask_img=None, alpha=.001, threshold=3.,
 
     See also
     --------
-    nilearn.image.threshold_img
+    nilearn.image.threshold_img :
+        Apply an explicit voxel-level (and optionally cluster-level) threshold
+        without correction.
 
     """
     height_control_methods = ['fpr', 'fdr', 'bonferroni',
