@@ -911,13 +911,12 @@ def threshold_img(
         # Set as 0 for the values which are outside of the mask
         img_data[mask_data == 0.] = 0.
 
-    if threshold is None:
-        raise ValueError("The input parameter 'threshold' is empty. "
-                         "Please give either a float value or a string as e.g. '90%'.")
-    else:
-        cutoff_threshold = check_threshold(threshold, img_data,
-                                           percentile_func=scoreatpercentile,
-                                           name='threshold')
+    cutoff_threshold = check_threshold(
+        threshold,
+        img_data,
+        percentile_func=scoreatpercentile,
+        name='threshold',
+    )
 
     # Apply threshold
     if two_sided:
