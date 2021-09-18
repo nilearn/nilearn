@@ -514,8 +514,10 @@ def test_validity_threshold_value_in_threshold_img():
     maps, _ = data_gen.generate_maps(shape, n_regions=2)
 
     # testing to raise same error when threshold=None case
-    with pytest.raises(ValueError,
-                       match="The input parameter 'threshold' is empty. "):
+    with pytest.raises(
+        TypeError,
+        match="threshold should be either a number or a string",
+    ):
         threshold_img(maps, threshold=None)
 
     invalid_threshold_values = ['90t%', 's%', 't', '0.1']
