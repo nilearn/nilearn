@@ -943,9 +943,9 @@ def threshold_img(
         img_data = img_data[:, :, :, 0]
 
     # Reconstitute img object
-    threshold_img = new_img_like(img, img_data, affine)
+    thresholded_img = new_img_like(img, img_data, affine)
 
-    return threshold_img
+    return thresholded_img
 
 
 def math_img(formula, **imgs):
