@@ -11,7 +11,6 @@ import shutil
 from distutils.version import LooseVersion
 
 import nibabel
-import sklearn
 
 from joblib import Memory
 

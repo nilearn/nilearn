@@ -25,7 +25,6 @@ import numpy as np
 
 import matplotlib
 from matplotlib import pyplot as plt
-from mpl_toolkits.mplot3d import Axes3D
 
 from nilearn.surface import surface
 from nilearn.plotting import show
