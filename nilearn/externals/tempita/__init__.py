@@ -29,8 +29,10 @@ can use ``__name='tmpl.html'`` to set the name of the template.
 
 If there are syntax errors ``TemplateError`` will be raised.
 """
+import os
 import re
 import sys
+import tokenize
 try:
     from urllib.parse import quote as url_quote
     from io import StringIO
@@ -39,8 +41,6 @@ except ImportError:
     from urllib import quote as url_quote
     from cStringIO import StringIO
     from cgi import escape as html_escape
-import os
-import tokenize
 from ._looper import looper
 from .compat3 import (
     PY3, bytes, basestring_, next, is_unicode, coerce_text, iteritems)
@@ -1241,10 +1241,8 @@ strings.
 
 
 def fill_command(args=None):
-    import sys
     import optparse
     import pkg_resources
-    import os
     if args is None:
         args = sys.argv[1:]
     dist = pkg_resources.get_distribution('Paste')
