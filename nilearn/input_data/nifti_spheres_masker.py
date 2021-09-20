@@ -65,7 +65,7 @@ def _apply_mask_and_get_affinity(seeds, niimg, radius, allow_overlap,
     # Compute world coordinates of all in-mask voxels.
     if niimg is None:
         mask, affine = masking._load_mask_img(mask_img)
-        # Get coordinate for alle voxels inside of mask
+        # Get coordinate for all voxels inside of mask
         mask_coords = np.asarray(np.nonzero(mask)).T.tolist()
         X = None
 

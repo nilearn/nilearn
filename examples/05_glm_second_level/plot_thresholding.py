@@ -2,7 +2,7 @@
 Statistical testing of a second-level analysis
 ==============================================
 
-Perform a one-sample t-test on a bunch of images (a.k.a. second-level analyis
+Perform a one-sample t-test on a bunch of images (a.k.a. second-level analysis
 in fMRI) and threshold the resulting statistical map.
 
 This example is based on the so-called localizer dataset.

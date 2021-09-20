@@ -71,7 +71,7 @@ def _make_3d_edges(vertices, is_mask):
 
     is_mask : boolean
         If is_mask is true, it returns the mask of edges.
-        Retruns 1 if the edge is contained in the mask, 0 otherwise.
+        Returns 1 if the edge is contained in the mask, 0 otherwise.
 
     Returns
     -------
@@ -186,7 +186,7 @@ def _nn_connectivity(connectivity, threshold=1e-7):
         Sparse matrix representation of the weighted adjacency graph.
 
     threshold : float in the close interval [0, 1], optional
-        The treshold is setted to handle eccentricities.
+        The threshold is set to handle eccentricities.
         Default=1e-7.
 
     Returns
@@ -234,7 +234,7 @@ def _reduce_data_and_connectivity(X, labels, n_components, connectivity,
         Training data.
 
     labels : ndarray
-        Containts the label assignation for each voxel.
+        Contains the label assignation for each voxel.
 
     n_components : int
         The number of clusters in the current iteration.
@@ -243,7 +243,7 @@ def _reduce_data_and_connectivity(X, labels, n_components, connectivity,
         Sparse matrix representation of the weighted adjacency graph.
 
     threshold : float in the close interval [0, 1], optional
-        The treshold is setted to handle eccentricities.
+        The threshold is set to handle eccentricities.
         Default=1e-7.
 
     Returns
@@ -300,7 +300,7 @@ def nearest_neighbor_grouping(X, connectivity, n_clusters, threshold=1e-7):
         The number of clusters to find.
 
     threshold : :obj:`float` in the close interval [0, 1], optional
-        The treshold is setted to handle eccentricities.
+        The threshold is set to handle eccentricities.
         Default=1e-7.
 
     Returns
@@ -314,7 +314,7 @@ def nearest_neighbor_grouping(X, connectivity, n_clusters, threshold=1e-7):
         It contains the clusters assignation.
 
     """
-    # Nearest neighbor conenctivity
+    # Nearest neighbor connectivity
     nn_connectivity = _nn_connectivity(connectivity, threshold)
     n_features = connectivity.shape[0]
     n_components = n_features - (nn_connectivity + nn_connectivity.T).nnz / 2
@@ -369,7 +369,7 @@ def recursive_neighbor_agglomeration(X, mask_img, n_clusters,
         Number of iterations. Default=10.
 
     threshold : :obj:`float` in the close interval [0, 1], optional
-        The treshold is setted to handle eccentricities.
+        The threshold is set to handle eccentricities.
         Default=1e-7.
 
     verbose : :obj:`int`, optional

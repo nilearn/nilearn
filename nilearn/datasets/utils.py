@@ -320,7 +320,7 @@ def _uncompress_file(file_, delete_archive=True, verbose=1):
         Path of file to be uncompressed.
 
     delete_archive : bool, optional
-        Wheteher or not to delete archive once it is uncompressed.
+        Whether or not to delete archive once it is uncompressed.
         Default=True.
     %(verbose)s
 
@@ -351,13 +351,13 @@ def _uncompress_file(file_, delete_archive=True, verbose=1):
             if ext == '.tgz':
                 filename = filename + '.tar'
             elif ext == '':
-                # For gzip file, we rely on the assumption that there is an extenstion
+                # We rely on the assumption that gzip files have an extension
                 shutil.move(file_, file_ + '.gz')
                 file_ = file_ + '.gz'
             with gzip.open(file_) as gz:
                 with open(filename, 'wb') as out:
                     shutil.copyfileobj(gz, out, 8192)
-            # If file is .tar.gz, this will be handle in the next case
+            # If file is .tar.gz, this will be handled in the next case
             if delete_archive:
                 os.remove(file_)
             file_ = filename
@@ -672,7 +672,7 @@ def _fetch_files(data_dir, files, resume=True, verbose=1, session=None):
     """Load requested dataset, downloading it if needed or requested.
 
     This function retrieves files from the hard drive or download them from
-    the given urls. Note to developpers: All the files will be first
+    the given urls. Note to developers: All the files will be first
     downloaded in a sandbox and, if everything goes well, they will be moved
     into the folder of the dataset. This prevents corrupting previously
     downloaded data. In case of a big dataset, do not hesitate to make several

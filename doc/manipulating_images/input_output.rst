@@ -182,7 +182,7 @@ research. Three main components are:
     locations of the brain:
     ``affine = img.affine``
 :header:
-    low-level informations about the data (slice duration, etc.):
+    low-level information about the data (slice duration, etc.):
     ``header = img.header``
 
 If you need to load the data without using nilearn, read the nibabel_

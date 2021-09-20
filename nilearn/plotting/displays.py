@@ -905,7 +905,7 @@ class BaseSlicer(object):
                 # plot. Hence, no point to do imshow(). Moreover, we see
                 # problem came up with matplotlib 2.1.0 (issue #9280) when
                 # data is completely masked or with numpy < 1.14
-                # (issue #4595). This work aroung can be removed when bumping
+                # (issue #4595). This work around can be removed when bumping
                 # matplotlib version above 2.1.0
                 im = display_ax.draw_2d(data_2d, data_bounds, bounding_box,
                                         type=type, **kwargs)

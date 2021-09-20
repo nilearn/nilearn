@@ -275,7 +275,7 @@ class _BaseDecoder(LinearRegression, CacheMixin):
         The percentage of brain volume that will be kept with respect to a full
         MNI template. In particular, if it is lower than 100, a univariate
         feature selection based on the Anova F-value for the input data will be
-        perfomed. A float according to a percentile of the highest
+        performed. A float according to a percentile of the highest
         scores. Default: 20.
 
     scoring: str, callable or None, optional. Default None

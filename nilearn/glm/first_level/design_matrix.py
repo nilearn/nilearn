@@ -219,7 +219,7 @@ def _convolve_regressors(events, hrf_model, frame_times, fir_delays=[0],
         if 'spm + derivative + dispersion' or
             'glover + derivative + dispersion',
             a third name is used, i.e. '#name_dispersion'
-        if 'fir', the regressos are numbered accoding to '#name_#delay'
+        if 'fir', the regressos are numbered according to '#name_#delay'
 
     """
     regressor_names = []

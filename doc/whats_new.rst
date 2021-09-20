@@ -1,8 +1,43 @@
-0.8.1.dev
+0.8.2.dev
 =========
 
 NEW
 ---
+
+Fixes
+-----
+
+Enhancements
+------------
+
+Changes
+-------
+
+.. _v0.8.1:
+
+0.8.1
+=====
+**Released September 2021**
+
+HIGHLIGHTS
+----------
+
+- New atlas fetcher
+  :func:`nilearn.datasets.fetch_atlas_juelich` to download Juelich atlas from FSL.
+- New grey and white-matter template and mask loading functions:
+  :func:`nilearn.datasets.load_mni152_gm_template`,
+  :func:`nilearn.datasets.load_mni152_wm_template`,
+  :func:`nilearn.datasets.load_mni152_gm_mask`, and
+  :func:`nilearn.datasets.load_mni152_wm_mask`
+- :ref:`development_process` has been reworked. It now provides insights on
+  nilearn organization as a project as well as more explicit
+  :ref:`contribution_guidelines`.
+- :func:`nilearn.image.binarize_img` binarizes images into 0 and 1.
+
+NEW
+---
+- New atlas fetcher
+  :func:`nilearn.datasets.fetch_atlas_juelich` to download Juelich atlas from FSL.
 - :ref:`development_process` has been reworked. It now provides insights on
   nilearn organization as a project as well as more explicit
   :ref:`contribution_guidelines`.
@@ -167,7 +202,7 @@ Enhancements
   to provide a single color for all nodes, or one color per node.
   It defaults to `auto` which colors markers according to the viridis colormap.
 - Refactor :func:`nilearn.signal.clean` to clarify the data flow.
-  Replace `sessions` with `runs` to matchin BIDS semantics and deprecate `sessions` in 0.9.0.
+  Replace `sessions` with `runs` to matching BIDS semantics and deprecate `sessions` in 0.9.0.
   Add argument `filter` and allow a selection of signal filtering strategies:
   * "butterwoth" (butterworth filter)
   * "cosine" (discrete cosine transformation)
@@ -383,7 +418,7 @@ NEW
   :func:`nilearn.plotting.plot_connectome_strength`.
 - New plotting function
   :func:`nilearn.plotting.plot_surf_contours` plots the contours of regions of
-  interest on the surface, optionally overlayed on top of a statistical map.
+  interest on the surface, optionally overlaid on top of a statistical map.
 - The position annotation on the plot methods now implements the `decimals` option
   to enable annotation of a slice coordinate position with the float.
 - New example in
@@ -452,7 +487,7 @@ Fixes
 Changes
 -------
 
-- Atlas `nilearn.datasets.fetch_nyu_rest` has been deprecated and wil be removed in Nilearn 0.8.0 .
+- Atlas `nilearn.datasets.fetch_nyu_rest` has been deprecated and will be removed in Nilearn 0.8.0 .
 
 Contributors
 ------------
@@ -505,7 +540,7 @@ HIGHLIGHTS
 
  | **Python2 and 3.4 are no longer supported. We recommend upgrading to Python 3.6 minimum.**
  |
- | **Support for Python3.5 wil be removed in the 0.7.x release.**
+ | **Support for Python3.5 will be removed in the 0.7.x release.**
  | Users with a Python3.5 environment will be warned at their first Nilearn import.
  |
  | **joblib is now a dependency**
@@ -596,7 +631,7 @@ NEW
     Instead of `coord` and `color`, use `marker_coords` and `marker_color` respectively.
 
 
-- **Support for Python3.5 wil be removed in the 0.7.x release.**
+- **Support for Python3.5 will be removed in the 0.7.x release.**
   Users with a Python3.5 environment will be warned
   at their first Nilearn import.
 
@@ -885,7 +920,7 @@ The following people contributed to this release::
 
 NEW
 ---
-- **Support for Python2 & Python3.4 wil be removed in the next release.**
+- **Support for Python2 & Python3.4 will be removed in the next release.**
   We recommend Python 3.6 and up.
   Users with a Python2 or Python3.4 environment will be warned
   at their first Nilearn import.
@@ -907,7 +942,7 @@ Changes
 - :func:`nilearn.plotting.view_connectome` parameter names are consistent with plot_connectome:
 
   - coords is now node_coord
-  - marker_size is noe node_size
+  - marker_size is now node_size
   - cmap is now edge_cmap
   - threshold is now edge_threshold
 
@@ -1322,7 +1357,7 @@ Bug fixes
 0.4.1
 =====
 
-This bug fix release is focussed on few bug fixes and minor developments.
+This bug fix release is focused on few bug fixes and minor developments.
 
 Enhancements
 ------------
@@ -1442,7 +1477,7 @@ Changes
       issues with recent SciPy version 1.0.0.
 
     - "dim" factor range is slightly increased to -2 to 2 from -1 to 1.
-      Range exceeding -1 meaning more increase in constrast should be
+      Range exceeding -1 meaning more increase in contrast should be
       cautiously set.
 
     - New 'anterior' and 'posterior' view added to the plot_surf family views
@@ -1560,7 +1595,7 @@ Changelog
       Nifti1Image as an input for argument `img`.
 
     - Helper functions `_get_mask_volume` and `_adjust_screening_percentile`
-      are now moved to param_validation file in utilties module to be used in
+      are now moved to param_validation file in utilities module to be used in
       common with Decoder object.
 
 Bug fix
@@ -1605,7 +1640,7 @@ Highlights
 
 * **Dropped support for Python 2.6**
 
-* Minimum required version of NiBabel is now 1.2.0, to support loading annoted
+* Minimum required version of NiBabel is now 1.2.0, to support loading annotated
   data with freesurfer.
 
 Changelog
@@ -1850,7 +1885,7 @@ New features
     - The path given to the "memory" argument of object now have their
       "~" expanded to the homedir
 
-    - Display object created by plotting now uniformely expose an
+    - Display object created by plotting now uniformly expose an
       "add_markers" method.
 
     - plotting plot_connectome with colorbar is now implemented in function

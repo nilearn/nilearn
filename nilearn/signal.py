@@ -645,7 +645,7 @@ def _sanitize_inputs(signals, runs, confounds, sample_mask, ensure_finite):
 
 
 def _sanitize_confounds(n_time, n_runs, confounds):
-    """Check confounds are the correct type. When passing mutiple runs, ensure the
+    """Check confounds are the correct type. When passing multiple runs, ensure the
     number of runs matches the sets of confound regressors.
     """
     if confounds is None:
@@ -775,7 +775,7 @@ def _sanitize_confound_dtype(n_signal, confound):
 
 
 def _check_filter_parameters(filter, low_pass, high_pass, t_r):
-    """Check all filter related parameters are set correcly."""
+    """Check all filter related parameters are set correctly."""
     if not filter:
         if any(isinstance(item, float) for item in [low_pass, high_pass]):
             warnings.warn(

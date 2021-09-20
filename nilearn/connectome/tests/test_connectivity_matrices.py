@@ -196,7 +196,7 @@ def random_spd(p, eig_min, cond, random_state=0):
 
     Returns
     -------
-    ouput : numpy.ndarray, shape (p, p)
+    output : numpy.ndarray, shape (p, p)
         A symmetric positive definite matrix with the given minimal eigenvalue
         and condition number.
     """
@@ -293,7 +293,7 @@ def test_geometric_mean_properties():
     assert grad_norm[-1] > tol
 
     # Evaluate convergence. A warning is printed if tolerance is not reached
-    for p in [.5, 1.]:  # proportion of badly conditionned matrices
+    for p in [.5, 1.]:  # proportion of badly conditioned matrices
         spds = []
         for k in range(int(p * n_matrices)):
             spds.append(random_spd(n_features, eig_min=1e-2, cond=1e6,

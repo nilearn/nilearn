@@ -217,7 +217,7 @@ def test_high_level_glm_with_paths():
         # Provide a masker as mask_img
         masker = NiftiMasker(mask)
         with pytest.warns(UserWarning,
-                          match="Parameter memory of the masker overriden"):
+                          match="Parameter memory of the masker overridden"):
             SecondLevelModel(mask_img=masker,
                              verbose=1).fit(Y, design_matrix=X)
 
@@ -260,7 +260,7 @@ def test_high_level_non_parametric_inference_with_paths():
         masker = NiftiMasker(mask, smoothing_fwhm=2.0)
         with pytest.warns(UserWarning,
                           match="Parameter smoothing_fwhm "
-                                "of the masker overriden"):
+                                "of the masker overridden"):
             non_parametric_inference(Y, design_matrix=X,
                                      second_level_contrast=c1,
                                      smoothing_fwhm=3.0,
