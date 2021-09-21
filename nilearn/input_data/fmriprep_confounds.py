@@ -190,6 +190,8 @@ def fmriprep_confounds(img_files,
 
     demean : boolean, default True
         If True, the confounds are standardized to a zero mean (over time).
+        When `sample_mask` is not None, the mean is calculated on retained
+        volumes.
 
     Returns
     -------

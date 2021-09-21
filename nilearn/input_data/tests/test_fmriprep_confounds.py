@@ -14,7 +14,7 @@ from nilearn._utils.fmriprep_confounds import _to_camel_case
 from .utils import create_tmp_filepath, get_leagal_confound
 
 
-def _simu_img(tmp_path, demean=True):
+def _simu_img(tmp_path, demean=False):
     """Simulate an nifti image based on confound file with some parts confounds
     and some parts noise."""
     file_nii, _ = create_tmp_filepath(tmp_path, copy_confounds=True)
@@ -25,10 +25,10 @@ def _simu_img(tmp_path, demean=True):
     # as we will stack slices with confounds on top of slices with noise
     nz = 2
     # Load a simple 6 parameters motion models as confounds
-    # detrend set to False just for simulating signal based on the original
+    # demean set to False just for simulating signal based on the original
     # state
     confounds, _ = fmriprep_confounds(
-        file_nii, strategy=["motion"], motion="basic", demean=demean
+        file_nii, strategy=["motion"], motion="basic", demean=False
     )
 
     X = _handle_non_steady(confounds)
@@ -66,7 +66,8 @@ def _simu_img(tmp_path, demean=True):
         file_nii, strategy=["motion"], motion="basic", demean=demean)
     # match how we extend the length to increase the degree of freedom
     test_confounds = _handle_non_steady(test_confounds)
-    return img, mask_conf, mask_rand, test_confounds
+    sample_mask = np.arange(test_confounds.shape[0])[1:]
+    return img, mask_conf, mask_rand, test_confounds, sample_mask
 
 
 def _handle_non_steady(confounds):
@@ -85,45 +86,18 @@ def _handle_non_steady(confounds):
     return X
 
 
-def _tseries_std(img, mask_img, confounds, sample_mask, standardize):
-    """Get the std of time series in a mask."""
-    masker = NiftiMasker(
-        mask_img=mask_img, standardize=standardize, sample_mask=sample_mask
-    )
-    tseries = masker.fit_transform(img, confounds=confounds)
-    return tseries.std(axis=0)
-
-
-def _denoise(img, mask_img, confounds, sample_mask, standardize):
-    """Extract time series with and without confounds."""
-    masker = NiftiMasker(mask_img=mask_img, standardize=standardize)
-    tseries_raw = masker.fit_transform(img)
-    tseries_clean = masker.fit_transform(
-        img, confounds=confounds, sample_mask=sample_mask
-    )
-    return tseries_raw, tseries_clean
-
-
-def _corr_tseries(tseries1, tseries2):
-    """Compute the correlation between two sets of time series."""
-    corr = np.zeros(tseries1.shape[1])
-    for ind in range(tseries1.shape[1]):
-        corr[ind], _ = pearsonr(tseries1[:, ind], tseries2[:, ind])
-    return corr
-
-
 def _regression(confounds, sample_mask, tmp_path):
     """Simple regression with NiftiMasker."""
     # Simulate data
-    img, mask_conf, _, _ = _simu_img(tmp_path, demean=True)
+    img, mask_conf, _, _, _ = _simu_img(tmp_path)
     confounds = _handle_non_steady(confounds)
-
+    sample_mask = np.arange(confounds.shape[0])[1:]
     # Do the regression
     masker = NiftiMasker(mask_img=mask_conf, standardize=True)
     tseries_clean = masker.fit_transform(
         img, confounds=confounds, sample_mask=sample_mask
     )
-    assert tseries_clean.shape[0] == confounds.shape[0]
+    assert tseries_clean.shape[0] == sample_mask.shape[0]
 
 
 @pytest.mark.filterwarnings("ignore")
@@ -145,39 +119,85 @@ def test_nilearn_regress(tmp_path, strategy, param):
     img_nii, _ = create_tmp_filepath(
         tmp_path, copy_confounds=True, copy_json=True
     )
-    confounds, _ = fmriprep_confounds(img_nii, strategy=[strategy], **param)
-    _regression(confounds, None, tmp_path)
+    confounds, sample_mask = fmriprep_confounds(img_nii,
+                                                strategy=[strategy], **param)
+    _regression(confounds, sample_mask, tmp_path)
+
+
+def _tseries_std(img, mask_img, confounds, sample_mask,
+                 standardize_signal, standardize_confounds):
+    """Get the std of time series in a mask."""
+    masker = NiftiMasker(
+        mask_img=mask_img,
+        standardize=standardize_signal,
+        standardize_confounds=standardize_confounds
+    )
+    tseries = masker.fit_transform(img,
+                                   confounds=confounds,
+                                   sample_mask=sample_mask)
+    return tseries.std(axis=0)
+
+
+def _denoise(img, mask_img, confounds, sample_mask,
+             standardize_signal, standardize_confounds):
+    """Extract time series with and without confounds."""
+    masker = NiftiMasker(mask_img=mask_img,
+                         standardize=standardize_signal,
+                         standardize_confounds=standardize_confounds)
+    tseries_raw = masker.fit_transform(img, sample_mask=sample_mask)
+    tseries_clean = masker.fit_transform(
+        img, confounds=confounds, sample_mask=sample_mask
+    )
+    return tseries_raw, tseries_clean
+
+
+def _corr_tseries(tseries1, tseries2):
+    """Compute the correlation between two sets of time series."""
+    corr = np.zeros(tseries1.shape[1])
+    for ind in range(tseries1.shape[1]):
+        corr[ind], _ = pearsonr(tseries1[:, ind], tseries2[:, ind])
+    return corr
 
 
 @pytest.mark.filterwarnings("ignore")
-def test_nilearn_standardize_false(tmp_path):
+@pytest.mark.parametrize("demean", [True, False])
+def test_nilearn_standardize_false(tmp_path, demean):
     """Test removing confounds with no standardization."""
     # Simulate data
-    img, mask_conf, mask_rand, X = _simu_img(tmp_path, demean=True)
+    (img, mask_conf, mask_rand,
+     confounds, sample_mask) = _simu_img(tmp_path, demean=demean)
 
     # Check that most variance is removed
     # in voxels composed of pure confounds
-    tseries_std = _tseries_std(img, mask_conf, X, None, False)
+    tseries_std = _tseries_std(img, mask_conf, confounds, sample_mask,
+                               standardize_signal=False,
+                               standardize_confounds=True)
     assert np.mean(tseries_std < 0.0001)
 
     # Check that most variance is preserved
     # in voxels composed of random noise
-    tseries_std = _tseries_std(img, mask_rand, X, None, False)
+    tseries_std = _tseries_std(img, mask_rand, confounds, sample_mask,
+                               standardize_signal=False,
+                               standardize_confounds=True)
     assert np.mean(tseries_std > 0.9)
 
 
 @pytest.mark.filterwarnings("ignore")
-def test_nilearn_standardize_zscore(tmp_path):
-    """Test removing confounds with zscore standardization."""
-    # Simulate data
-
-    img, mask_conf, mask_rand, X = _simu_img(tmp_path, demean=True)
+@pytest.mark.parametrize("demean", [True, False])
+@pytest.mark.parametrize("standardize_signal", ["zscore", "psc", False])
+@pytest.mark.parametrize("standardize_confounds", [True, False])
+def test_nilearn_standardize(tmp_path, standardize_signal, standardize_confounds, demean):
+    """Test removing confounds with all combinations of standardization."""
+    (img, mask_conf, mask_rand,
+     confounds, mask )= _simu_img(tmp_path, demean=demean)
 
     # We now load the time series with vs without confounds
     # in voxels composed of pure confounds
     # the correlation before and after denoising should be very low
     # as most of the variance is removed by denoising
-    tseries_raw, tseries_clean = _denoise(img, mask_conf, X, None, "zscore")
+    tseries_raw, tseries_clean = _denoise(img, mask_conf, confounds, mask,
+                                          standardize_signal,
+                                          standardize_confounds)
     corr = _corr_tseries(tseries_raw, tseries_clean)
     assert corr.mean() < 0.2
 
@@ -185,25 +205,9 @@ def test_nilearn_standardize_zscore(tmp_path):
     # with vs without confounds in voxels where the signal is uncorrelated
     # with confounds. The correlation before and after denoising should be very
     # high as very little of the variance is removed by denoising
-    tseries_raw, tseries_clean = _denoise(img, mask_rand, X, None, "zscore")
-    corr = _corr_tseries(tseries_raw, tseries_clean)
-    assert corr.mean() > 0.8
-
-
-def test_nilearn_standardize_psc(tmp_path):
-    """Test removing confounds with psc standardization."""
-    # Similar test to test_nilearn_standardize_zscore, but with psc
-    # Simulate data
-
-    img, mask_conf, mask_rand, X = _simu_img(tmp_path, demean=False)
-
-    # Areas with confound
-    tseries_raw, tseries_clean = _denoise(img, mask_conf, X, None, "psc")
-    corr = _corr_tseries(tseries_raw, tseries_clean)
-    assert corr.mean() < 0.2
-
-    # Areas with random noise
-    tseries_raw, tseries_clean = _denoise(img, mask_rand, X, None, "psc")
+    tseries_raw, tseries_clean = _denoise(img, mask_rand, confounds, mask,
+                                          standardize_signal,
+                                          standardize_confounds)
     corr = _corr_tseries(tseries_raw, tseries_clean)
     assert corr.mean() > 0.8
 
@@ -258,16 +262,18 @@ def test_motion(tmp_path, motion, param, expected_suffixes):
             assert f"{param}{suff}" not in conf.columns
 
 
-def test_n_compcor(tmp_path):
+@pytest.mark.parametrize("compcor,n_compcor,test_keyword,test_n",
+                         [("anat_combined", 2, "a_comp_cor_", 2),
+                          ("anat_combined", "all", "a_comp_cor_", 57),
+                          ("temporal", "all", "t_comp_cor_",6)])
+def test_n_compcor(tmp_path, compcor, n_compcor, test_keyword, test_n):
     img_nii, _ = create_tmp_filepath(
         tmp_path, copy_confounds=True, copy_json=True
     )
     conf, _ = fmriprep_confounds(
-        img_nii, strategy=["compcor"], compcor="anat_combined", n_compcor=2
+        img_nii, strategy=["compcor"], compcor=compcor, n_compcor=n_compcor
     )
-    assert "a_comp_cor_00" in conf.columns
-    assert "a_comp_cor_01" in conf.columns
-    assert "a_comp_cor_02" not in conf.columns
+    assert sum(True for col in conf.columns if test_keyword in col) == test_n
 
 
 def test_not_found_exception(tmp_path):

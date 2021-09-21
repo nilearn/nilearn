@@ -39,7 +39,7 @@ def _find_compcor(confounds_json, compcor, n_compcor):
 
 def _select_compcor(compcor_cols, n_compcor):
     """Retain a specified number of compcor components."""
-    # only select if not "auto", or less components are requested than there
+    # only select if not "all", or less components are requested than there
     # actually is
     if (n_compcor != "all") and (n_compcor < len(compcor_cols)):
         compcor_cols = compcor_cols[0:n_compcor]
