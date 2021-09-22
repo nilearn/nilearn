@@ -29,8 +29,6 @@ can use ``__name='tmpl.html'`` to set the name of the template.
 
 If there are syntax errors ``TemplateError`` will be raised.
 """
-from __future__ import absolute_import, division, print_function
-
 import re
 import sys
 try:

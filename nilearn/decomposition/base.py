@@ -2,7 +2,6 @@
 Base class for decomposition estimators, utilities for masking and dimension
 reduction of group data
 """
-from __future__ import division
 from math import ceil
 import itertools
 import glob
