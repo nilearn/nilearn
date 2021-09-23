@@ -19,6 +19,8 @@ def test_adjust_small_clusters():
         list_round = _adjust_small_clusters(list, n_clusters)
         assert(np.all(list_round != 0))
         assert(np.sum(list_round) == n_clusters)
+        for a in list_round:
+            assert(isinstance(a, (int, np.integer)))
 
 
 def test_hierarchical_k_means():
