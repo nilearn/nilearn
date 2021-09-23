@@ -10,12 +10,14 @@ import pytest
 
 def test_adjust_small_clusters():
     test_lists = [[2.4, 2.6], [2.7, 3.0, 3.3], [
-        10 / 3, 10 / 3, 10 / 3], [11 / 3, 11 / 3, 11 / 3]]
+        10 / 3, 10 / 3, 10 / 3], [1 / 3, 11 / 3, 11 / 3, 10 / 3]]
     n_clusters_list = [5, 9, 10, 11]
 
     for list, n_clusters in zip(test_lists, n_clusters_list):
+        list = np.asarray(list)
         assert(np.sum(list) == n_clusters)
         list_round = _adjust_small_clusters(list, n_clusters)
+        assert(np.all(list_round != 0))
         assert(np.sum(list_round) == n_clusters)
 
 
