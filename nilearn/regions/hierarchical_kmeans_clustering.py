@@ -23,7 +23,7 @@ def _adjust_small_clusters(array, n_clusters):
     array_round = np.round(array).astype(int)
     array_round = np.maximum(array_round, np.ones(array.size))
     if np.sum(array_round) == n_clusters:
-        return array_round
+        return array_round.astype(int)
     elif np.sum(array_round) < n_clusters:
         while np.sum(array_round) != n_clusters:
             idx = np.argmax(array - array_round)
