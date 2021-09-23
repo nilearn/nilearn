@@ -14,7 +14,7 @@ from nilearn._utils.fmriprep_confounds import _to_camel_case
 from .utils import create_tmp_filepath, get_leagal_confound
 
 
-def _simu_img(tmp_path, demean=False):
+def _simu_img(tmp_path, demean):
     """Simulate an nifti image based on confound file with some parts confounds
     and some parts noise."""
     file_nii, _ = create_tmp_filepath(tmp_path, copy_confounds=True)
@@ -125,12 +125,14 @@ def test_nilearn_regress(tmp_path, strategy, param):
 
 
 def _tseries_std(img, mask_img, confounds, sample_mask,
-                 standardize_signal, standardize_confounds):
+                 standardize_signal=False, standardize_confounds=True,
+                 detrend=False):
     """Get the std of time series in a mask."""
     masker = NiftiMasker(
         mask_img=mask_img,
         standardize=standardize_signal,
-        standardize_confounds=standardize_confounds
+        standardize_confounds=standardize_confounds,
+        detrend=detrend
     )
     tseries = masker.fit_transform(img,
                                    confounds=confounds,
@@ -139,11 +141,13 @@ def _tseries_std(img, mask_img, confounds, sample_mask,
 
 
 def _denoise(img, mask_img, confounds, sample_mask,
-             standardize_signal, standardize_confounds):
+             standardize_signal=False, standardize_confounds=True,
+             detrend=False):
     """Extract time series with and without confounds."""
     masker = NiftiMasker(mask_img=mask_img,
                          standardize=standardize_signal,
-                         standardize_confounds=standardize_confounds)
+                         standardize_confounds=standardize_confounds,
+                         detrend=detrend)
     tseries_raw = masker.fit_transform(img, sample_mask=sample_mask)
     tseries_clean = masker.fit_transform(
         img, confounds=confounds, sample_mask=sample_mask
@@ -160,44 +164,47 @@ def _corr_tseries(tseries1, tseries2):
 
 
 @pytest.mark.filterwarnings("ignore")
-@pytest.mark.parametrize("demean", [True, False])
-def test_nilearn_standardize_false(tmp_path, demean):
+def test_nilearn_standardize_false(tmp_path):
     """Test removing confounds with no standardization."""
-    # Simulate data
+    # niftimasker default:
+    # standardize=False, standardize_confounds=True, detrend=False
+
+    # Simulate data; set demean to False as standardize_confounds=True
     (img, mask_conf, mask_rand,
-     confounds, sample_mask) = _simu_img(tmp_path, demean=demean)
+     confounds, sample_mask) = _simu_img(tmp_path, demean=False)
 
     # Check that most variance is removed
     # in voxels composed of pure confounds
     tseries_std = _tseries_std(img, mask_conf, confounds, sample_mask,
                                standardize_signal=False,
-                               standardize_confounds=True)
+                               standardize_confounds=True,
+                               detrend=False)
     assert np.mean(tseries_std < 0.0001)
 
     # Check that most variance is preserved
     # in voxels composed of random noise
     tseries_std = _tseries_std(img, mask_rand, confounds, sample_mask,
                                standardize_signal=False,
-                               standardize_confounds=True)
+                               standardize_confounds=True,
+                               detrend=False)
     assert np.mean(tseries_std > 0.9)
 
 
 @pytest.mark.filterwarnings("ignore")
-@pytest.mark.parametrize("demean", [True, False])
-@pytest.mark.parametrize("standardize_signal", ["zscore", "psc", False])
-@pytest.mark.parametrize("standardize_confounds", [True, False])
-def test_nilearn_standardize(tmp_path, standardize_signal, standardize_confounds, demean):
-    """Test removing confounds with all combinations of standardization."""
-    (img, mask_conf, mask_rand,
-     confounds, mask )= _simu_img(tmp_path, demean=demean)
+@pytest.mark.parametrize("standardize_signal", ["zscore", "psc"])
+def test_nilearn_standardize(tmp_path, standardize_signal):
+    """Test removing confounds with with the default of signal.clean."""
+    # demean is set to False as standardize_confounds is default to True
+    (img, mask_conf, mask_rand, confounds, mask) = _simu_img(tmp_path,
+                                                             demean=False)
 
     # We now load the time series with vs without confounds
     # in voxels composed of pure confounds
     # the correlation before and after denoising should be very low
     # as most of the variance is removed by denoising
     tseries_raw, tseries_clean = _denoise(img, mask_conf, confounds, mask,
-                                          standardize_signal,
-                                          standardize_confounds)
+                                          standardize_signal=standardize_signal
+                                          )
     corr = _corr_tseries(tseries_raw, tseries_clean)
     assert corr.mean() < 0.2
 
@@ -206,8 +213,8 @@ def test_nilearn_standardize(tmp_path, standardize_signal, standardize_confounds
     # with confounds. The correlation before and after denoising should be very
     # high as very little of the variance is removed by denoising
     tseries_raw, tseries_clean = _denoise(img, mask_rand, confounds, mask,
-                                          standardize_signal,
-                                          standardize_confounds)
+                                          standardize_signal=standardize_signal
+                                          )
     corr = _corr_tseries(tseries_raw, tseries_clean)
     assert corr.mean() > 0.8
 
@@ -265,7 +272,7 @@ def test_motion(tmp_path, motion, param, expected_suffixes):
 @pytest.mark.parametrize("compcor,n_compcor,test_keyword,test_n",
                          [("anat_combined", 2, "a_comp_cor_", 2),
                           ("anat_combined", "all", "a_comp_cor_", 57),
-                          ("temporal", "all", "t_comp_cor_",6)])
+                          ("temporal", "all", "t_comp_cor_", 6)])
 def test_n_compcor(tmp_path, compcor, n_compcor, test_keyword, test_n):
     img_nii, _ = create_tmp_filepath(
         tmp_path, copy_confounds=True, copy_json=True

@@ -67,7 +67,7 @@ def fmriprep_confounds(img_files,
                        global_signal="basic",
                        compcor="anat_combined", n_compcor="all",
                        ica_aroma="full",
-                       demean=True):
+                       demean=False):
     """
     Use confounds from fmriprep.
 
@@ -190,6 +190,10 @@ def fmriprep_confounds(img_files,
 
     demean : boolean, default True
         If True, the confounds are standardized to a zero mean (over time).
+        When using `Niftimasker` with default paramters, the recommanded
+        option is True.
+        When using `signal.clean` with default paramters, the recommanded
+        option is False.
         When `sample_mask` is not None, the mean is calculated on retained
         volumes.
 
