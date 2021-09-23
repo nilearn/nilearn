@@ -1,7 +1,7 @@
 name: Auto Comment
 on: [pull_request]
 permissions:
-  pull-requests: read|write
+  pull-requests: write
 
 jobs:
   run:
