@@ -558,8 +558,9 @@ def create_fake_bids_dataset(base_dir='', n_sub=10, n_ses=2,
 
     confounds_tag : string (filename suffix), optional
         If generating confounds, what path should they have? Defaults to
-        `desc-confounds_timeseries` as in :term:`fMRIPrep` >= 20.2 but can be other
-        values (e.g. "desc-confounds_regressors" as in :term:`fMRIPrep` < 20.2)
+        `desc-confounds_timeseries` as in :term:`fMRIPrep` >= 20.2
+        but can be other values (e.g. "desc-confounds_regressors" as
+        in :term:`fMRIPrep` < 20.2).
         Default="desc-confounds_timeseries".
 
     no_session : bool, optional
