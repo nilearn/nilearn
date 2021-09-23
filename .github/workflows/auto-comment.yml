@@ -1,5 +1,8 @@
 name: Auto Comment
 on: [pull_request]
+permissions:
+  pull-requests: read|write
+
 jobs:
   run:
     runs-on: ubuntu-latest
