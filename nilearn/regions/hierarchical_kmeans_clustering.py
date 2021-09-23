@@ -95,8 +95,8 @@ def _hierarchical_k_means(X, n_clusters, init="k-means++", batch_size=1000,
     coarse_labels = mbk.labels_
     fine_labels = np.zeros_like(coarse_labels)
     q = 0
-    exact_clusters = np.asarray([n_clusters * np.sum(coarse_labels == i) * 1. / X.shape[0]
-                                 for i in range(n_big_clusters)])
+    exact_clusters = np.asarray([n_clusters * np.sum(coarse_labels == i) * 1.
+                                 / X.shape[0] for i in range(n_big_clusters)])
 
     adjusted_clusters = _adjust_small_clusters(exact_clusters, n_clusters)
     for i, n_small_clusters in enumerate(adjusted_clusters):
