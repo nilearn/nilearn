@@ -1678,7 +1678,7 @@ def fetch_development_fmri(n_subjects=None, reduce_confounds=True,
         6 anatomical compcor parameters. This selection only serves the
         purpose of having realistic examples. Depending on your research
         question, other confounds might be more appropriate.
-        If False, returns all fmriprep confounds.
+        If False, returns all :term:`fMRIPrep` confounds.
         Default=True.
     %(data_dir)s
     %(resume)s
