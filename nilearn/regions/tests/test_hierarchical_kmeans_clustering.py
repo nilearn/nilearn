@@ -3,9 +3,20 @@ import numpy as np
 from numpy.testing import assert_array_almost_equal
 from nilearn._utils.data_gen import generate_fake_fmri
 from nilearn.regions.hierarchical_kmeans_clustering import (
-    _hierarchical_k_means,
+    _hierarchical_k_means, _adjust_small_clusters,
     HierarchicalKMeans)
 import pytest
+
+
+def test_adjust_small_clusters():
+    test_lists = [[2.4, 2.6], [2.7, 3.0, 3.3], [
+        10 / 3, 10 / 3, 10 / 3], [11 / 3, 11 / 3, 11 / 3]]
+    n_clusters_list = [5, 9, 10, 11]
+
+    for list, n_clusters in zip(test_lists, n_clusters_list):
+        assert(np.sum(list) == n_clusters)
+        list_round = _adjust_small_clusters(list, n_clusters)
+        assert(np.sum(list_round) == n_clusters)
 
 
 def test_hierarchical_k_means():

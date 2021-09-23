@@ -15,6 +15,25 @@ def _remove_empty_labels(labels):
     return inverse_vals[labels]
 
 
+def _adjust_small_clusters(list, n_clusters):
+    '''Takes a list of floats summing to n_clusters and try to round it while
+    enforcing rounded list still sum to n_clusters
+    '''
+    list_round = np.round(list).astype(int)
+    if np.sum(list_round) == n_clusters:
+        return list_round
+    elif np.sum(list_round) < n_clusters:
+        while np.sum(list_round) != n_clusters:
+            idx = np.argmax(list - list_round)
+            list_round[idx] += 1
+        return list_round.astype(int)
+    elif np.sum(list_round) > n_clusters:
+        while np.sum(list_round) != n_clusters:
+            idx = np.argmin(list - list_round)
+            list_round[idx] -= 1
+        return list_round.astype(int)
+
+
 def _hierarchical_k_means(X, n_clusters, init="k-means++", batch_size=1000,
                           n_init=10, max_no_improvement=10, verbose=0,
                           random_state=0):
@@ -72,10 +91,10 @@ def _hierarchical_k_means(X, n_clusters, init="k-means++", batch_size=1000,
     coarse_labels = mbk.labels_
     fine_labels = np.zeros_like(coarse_labels)
     q = 0
-    for i in range(n_big_clusters):
-        n_small_clusters = int(
-            n_clusters * np.sum(coarse_labels == i) * 1. / X.shape[0])
-        n_small_clusters = np.maximum(1, n_small_clusters)
+    exact_clusters = [
+        n_clusters * np.sum(coarse_labels == i) * 1. / X.shape[0] for i in range(n_big_clusters)]
+    adjusted_clusters = _adjust_small_clusters(exact_clusters, n_clusters)
+    for i, n_small_clusters in enumerate(adjusted_clusters):
         mbk = MiniBatchKMeans(init=init, n_clusters=n_small_clusters,
                               batch_size=batch_size, random_state=random_state,
                               max_no_improvement=max_no_improvement,
