@@ -89,7 +89,7 @@ def _handle_non_steady(confounds):
 def _regression(confounds, sample_mask, tmp_path):
     """Simple regression with NiftiMasker."""
     # Simulate data
-    img, mask_conf, _, _, _ = _simu_img(tmp_path)
+    img, mask_conf, _, _, _ = _simu_img(tmp_path, demean=False)
     confounds = _handle_non_steady(confounds)
     sample_mask = np.arange(confounds.shape[0])[1:]
     # Do the regression
