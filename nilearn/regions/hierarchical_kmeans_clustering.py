@@ -15,23 +15,27 @@ def _remove_empty_labels(labels):
     return inverse_vals[labels]
 
 
-def _adjust_small_clusters(list, n_clusters):
-    '''Takes a list of floats summing to n_clusters and try to round it while
-    enforcing rounded list still sum to n_clusters
+def _adjust_small_clusters(array, n_clusters):
+    '''Takes a ndarray of floats summing to n_clusters and try to round it while
+    enforcing rounded array still sum to n_clusters
     '''
-    list_round = np.round(list).astype(int)
-    if np.sum(list_round) == n_clusters:
-        return list_round
-    elif np.sum(list_round) < n_clusters:
-        while np.sum(list_round) != n_clusters:
-            idx = np.argmax(list - list_round)
-            list_round[idx] += 1
-        return list_round.astype(int)
-    elif np.sum(list_round) > n_clusters:
-        while np.sum(list_round) != n_clusters:
-            idx = np.argmin(list - list_round)
-            list_round[idx] -= 1
-        return list_round.astype(int)
+
+    array_round = np.round(array).astype(int)
+    array_round = np.maximum(array_round, np.ones(array.size))
+    if np.sum(array_round) == n_clusters:
+        return array_round
+    elif np.sum(array_round) < n_clusters:
+        while np.sum(array_round) != n_clusters:
+            idx = np.argmax(array - array_round)
+            array_round[idx] += 1
+        return array_round.astype(int)
+    elif np.sum(array_round) > n_clusters:
+        while np.sum(array_round) != n_clusters:
+            mask = array_round != np.ones(array.size)
+            idx = np.argmin(array[mask] - array_round[mask])
+            parent_idx = np.arange(array_round.shape[0])[mask][idx]
+            array_round[parent_idx] -= 1
+        return array_round.astype(int)
 
 
 def _hierarchical_k_means(X, n_clusters, init="k-means++", batch_size=1000,
@@ -91,8 +95,9 @@ def _hierarchical_k_means(X, n_clusters, init="k-means++", batch_size=1000,
     coarse_labels = mbk.labels_
     fine_labels = np.zeros_like(coarse_labels)
     q = 0
-    exact_clusters = [
-        n_clusters * np.sum(coarse_labels == i) * 1. / X.shape[0] for i in range(n_big_clusters)]
+    exact_clusters = np.asarray([n_clusters * np.sum(coarse_labels == i) * 1. / X.shape[0]
+                                 for i in range(n_big_clusters)])
+
     adjusted_clusters = _adjust_small_clusters(exact_clusters, n_clusters)
     for i, n_small_clusters in enumerate(adjusted_clusters):
         mbk = MiniBatchKMeans(init=init, n_clusters=n_small_clusters,
