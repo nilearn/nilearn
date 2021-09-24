@@ -12,9 +12,10 @@ import pandas as pd
 import nibabel as nib
 from scipy import ndimage
 
-from nilearn._utils.niimg import _safe_get_data
+from nilearn.image import threshold_img
 from nilearn.image.resampling import coord_transform
 from nilearn._utils import check_niimg_3d
+from nilearn._utils.niimg import _safe_get_data
 
 
 def _local_max(data, affine, min_distance):
@@ -163,9 +164,22 @@ def get_clusters_table(stat_img, stat_threshold, cluster_threshold=None,
 
     """
     cols = ['Cluster ID', 'X', 'Y', 'Z', 'Peak Stat', 'Cluster Size (mm3)']
+    # Replace None with 0
+    cluster_threshold = 0 if cluster_threshold is None else cluster_threshold
 
     # check that stat_img is niimg-like object and 3D
     stat_img = check_niimg_3d(stat_img)
+
+    # Apply threshold(s) to image
+    stat_img = threshold_img(
+        img=stat_img,
+        threshold=stat_threshold,
+        cluster_threshold=cluster_threshold,
+        two_sided=two_sided,
+        mask_img=None,
+        copy=True,
+    )
+
     # If cluster threshold is used, there is chance that stat_map will be
     # modified, therefore copy is needed
     stat_map = _safe_get_data(stat_img, ensure_finite=True,
@@ -195,26 +209,6 @@ def get_clusters_table(stat_img, stat_threshold, cluster_threshold=None,
                 'Attention: No clusters with stat {0} than {1}'.format(
                     'higher' if sign == 1 else 'lower',
                     stat_threshold * sign,
-                )
-            )
-            continue
-
-        # Extract connected components above cluster size threshold
-        label_map = ndimage.measurements.label(binarized, conn_mat)[0]
-        clust_ids = sorted(list(np.unique(label_map)[1:]))
-        for c_val in clust_ids:
-            if cluster_threshold is not None and np.sum(
-                    label_map == c_val) < cluster_threshold:
-                temp_stat_map[label_map == c_val] = 0
-                binarized[label_map == c_val] = 0
-
-        # If the cluster threshold is too high simply return an empty dataframe
-        # this checks for stats higher than threshold after small clusters
-        # were removed from temp_stat_map
-        if np.sum(temp_stat_map > stat_threshold) == 0:
-            warnings.warn(
-                'Attention: No clusters with more than {0} voxels'.format(
-                    cluster_threshold,
                 )
             )
             continue

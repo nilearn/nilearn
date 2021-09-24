@@ -45,11 +45,27 @@ second_level_model = SecondLevelModel().fit(
 z_map = second_level_model.compute_contrast(output_type='z_score')
 
 #########################################################################
-# Threshold the resulting map:
+# Threshold the resulting map without multiple comparisons correction,
+# |z| > 3.29 (equivalent to p < 0.001), cluster size > 10 voxels.
+from nilearn.image import threshold_img
+thresholded_map = threshold_img(
+    z_map,
+    threshold=3.29,
+    cluster_threshold=10,
+    two_sided=True,
+)
+
+#########################################################################
+# This is equivalent to thresholding a z-statistic image with a
 # false positive rate < .001, cluster size > 10 voxels.
 from nilearn.glm import threshold_stats_img
 thresholded_map1, threshold1 = threshold_stats_img(
-    z_map, alpha=.001, height_control='fpr', cluster_threshold=10)
+    z_map,
+    alpha=.001,
+    height_control='fpr',
+    cluster_threshold=10,
+    two_sided=True,
+)
 
 #########################################################################
 # Now use FDR <.05 (False Discovery Rate) and no cluster-level threshold.

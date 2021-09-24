@@ -10,6 +10,14 @@ Fixes
 Enhancements
 ------------
 
+- :func:`nilearn.image.threshold_img` accepts new parameters `cluster_threshold`
+  and `two_sided`.
+  `cluster_threshold` applies a cluster-size threshold (in voxels).
+  `two_sided`, which is `True` by default, separately thresholds both positive
+  and negative values in the map, as was done previously.
+  When `two_sided` is `False`, only values greater than or equal to the threshold
+  are retained.
+
 Changes
 -------
 
