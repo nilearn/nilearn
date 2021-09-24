@@ -41,6 +41,12 @@ If you wish to add a missing term, please `create a new issue`_ or
         `Decoding`_ consists in predicting, from brain images, the conditions
         associated to trial.
 
+    Dictionary learning
+        `Dictionary learning`_ (or sparse coding) is a representation learning
+        method aiming at finding a sparse representation of the input data as
+        a linear combination of basic element called atoms. These atoms
+        composed the dictionary. Atoms are not required to be orthogonal.
+
     EEG
         `Electroencephalography`_ is a monitoring method to record electrical
         activity of the brain.
@@ -258,6 +264,9 @@ If you wish to add a missing term, please `create a new issue`_ or
 
 .. _`Decoding`:
     https://nilearn.github.io/decoding/decoding_intro.html
+
+.. _`Dictionary learning`:
+    https://en.wikipedia.org/wiki/Sparse_dictionary_learning
 
 .. _`Electroencephalography`:
     https://en.wikipedia.org/wiki/Electroencephalography
