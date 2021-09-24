@@ -77,9 +77,9 @@ def _handle_non_steady(confounds):
     # second row
     non_steady = X[0, :]
     X[0, :] = X[1, :]
-    # repeat X in length (axis = 0) three times to increase
+    # repeat X in length (axis = 0) five times to increase
     # the degree of freedom
-    X = np.tile(X, (3, 1))
+    X = np.tile(X, (5, 1))
     # put non-steady state volume back at the first sample
     X[0, :] = non_steady
     X = pd.DataFrame(X, columns=confounds.columns)
@@ -204,7 +204,7 @@ def test_nilearn_standardize(tmp_path, standardize_signal):
                                           standardize_signal=standardize_signal
                                           )
     corr = _corr_tseries(tseries_raw, tseries_clean)
-    assert corr.mean() < 0.2
+    assert abs(corr.mean()) < 0.2  # check absolute value
 
     # We now load the time series with zscore standardization
     # with vs without confounds in voxels where the signal is uncorrelated
