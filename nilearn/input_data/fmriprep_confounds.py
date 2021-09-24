@@ -69,22 +69,22 @@ def fmriprep_confounds(img_files,
                        ica_aroma="full",
                        demean=False):
     """
-    Use confounds from fmriprep.
+    Use confounds from :term:`fMRIPrep`.
 
-    To enable easy confound variables loading from fMRIprep outputs,
+    To enable easy confound variables loading from :term:`fMRIPrep` outputs,
     `fmriprep_confounds` provides an interface that groups subsets of confound
     variables into noise components and their parameters. It is possible to
     fine-tune a subset of noise components and their parameters through this
     function.
 
-    The implementation will only support fMRIPrep functional derivative
+    The implementation will only support :term:`fMRIPrep` functional derivative
     directory from the 1.2.x series. The `compcor` noise component requires
     1.4.x series or above.
 
     Parameters
     ----------
     img_files : path to processed image files, optionally as a list.
-        Processed nii.gz/dtseries.nii/func.gii file reside in a fmriprep
+        Processed nii.gz/dtseries.nii/func.gii file reside in a :term:`fMRIPrep`
         generated functional derivative directory (i.e.The associated confound
         files should be in the same directory as the image file). As long as
         the image file, confound related tsv and json are in the same
@@ -190,9 +190,9 @@ def fmriprep_confounds(img_files,
 
     demean : boolean, default True
         If True, the confounds are standardized to a zero mean (over time).
-        When using `Niftimasker` with default parameters, the recommended
+        When using :class:`nilearn.input_data.Niftimasker` with default parameters, the recommended
         option is True.
-        When using `signal.clean` with default parameters, the recommended
+        When using :func:`nilearn.signal.clean` with default parameters, the recommended
         option is False.
         When `sample_mask` is not None, the mean is calculated on retained
         volumes.
@@ -200,7 +200,7 @@ def fmriprep_confounds(img_files,
     Returns
     -------
     confounds : pandas.DataFrame, or list of
-        A reduced version of fMRIprep confounds based on selected strategy
+        A reduced version of :term:`fMRIPrep` confounds based on selected strategy
         and flags.
         An intercept is automatically added to the list of confounds.
         The columns contains the labels of the regressors.
@@ -224,7 +224,7 @@ def fmriprep_confounds(img_files,
     :footcite:`Ciric2017`. Band-pass filter is replaced by high-pass filter.
     Low-pass filters can be implemented, e.g., through `NifitMaskers`. Other
     aspects of the preprocessing listed in :footcite:`Ciric2017` are controlled
-    through fMRIprep, e.g. distortion correction.
+    through :term:`fMRIPrep`, e.g. distortion correction.
 
     References
     -----------
