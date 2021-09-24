@@ -67,7 +67,7 @@ def fmriprep_confounds(img_files,
                        global_signal="basic",
                        compcor="anat_combined", n_compcor="all",
                        ica_aroma="full",
-                       demean=False):
+                       demean=True):
     """
     Use confounds from :term:`fMRIPrep`.
 
@@ -84,12 +84,12 @@ def fmriprep_confounds(img_files,
     Parameters
     ----------
     img_files : path to processed image files, optionally as a list.
-        Processed nii.gz/dtseries.nii/func.gii file reside in a :term:`fMRIPrep`
-        generated functional derivative directory (i.e.The associated confound
-        files should be in the same directory as the image file). As long as
-        the image file, confound related tsv and json are in the same
-        directory with BIDS-complied names, `fmriprep_confounds` can retrieve
-        the relevant files correctly.
+        Processed nii.gz/dtseries.nii/func.gii file reside in a
+        :term:`fMRIPrep` generated functional derivative directory (i.e.The
+        associated confound files should be in the same directory as the image
+        file). As long as the image file, confound related tsv and json are in
+        the same directory with BIDS-complied names, `fmriprep_confounds` can
+        retrieve the relevant files correctly.
 
         - `nii.gz` or `dtseries.nii`: path to files, optionally as a list.
         - `func.gii`: list of a pair of paths to files, optionally as a list
@@ -190,18 +190,18 @@ def fmriprep_confounds(img_files,
 
     demean : boolean, default True
         If True, the confounds are standardized to a zero mean (over time).
-        When using :class:`nilearn.input_data.Niftimasker` with default parameters, the recommended
-        option is True.
-        When using :func:`nilearn.signal.clean` with default parameters, the recommended
-        option is False.
+        When using :class:`nilearn.input_data.Niftimasker` with default
+        parameters, the recommended option is True.
+        When using :func:`nilearn.signal.clean` with default parameters, the
+        recommended option is False.
         When `sample_mask` is not None, the mean is calculated on retained
         volumes.
 
     Returns
     -------
     confounds : pandas.DataFrame, or list of
-        A reduced version of :term:`fMRIPrep` confounds based on selected strategy
-        and flags.
+        A reduced version of :term:`fMRIPrep` confounds based on selected
+        strategy and flags.
         An intercept is automatically added to the list of confounds.
         The columns contains the labels of the regressors.
 

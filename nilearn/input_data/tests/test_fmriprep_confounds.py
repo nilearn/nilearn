@@ -86,18 +86,17 @@ def _handle_non_steady(confounds):
     return X
 
 
-def _regression(confounds, sample_mask, tmp_path):
+def _regression(confounds, tmp_path):
     """Simple regression with NiftiMasker."""
     # Simulate data
     img, mask_conf, _, _, _ = _simu_img(tmp_path, demean=False)
     confounds = _handle_non_steady(confounds)
-    sample_mask = np.arange(confounds.shape[0])[1:]
     # Do the regression
     masker = NiftiMasker(mask_img=mask_conf, standardize=True)
     tseries_clean = masker.fit_transform(
-        img, confounds=confounds, sample_mask=sample_mask
+        img, confounds=confounds, sample_mask=None
     )
-    assert tseries_clean.shape[0] == sample_mask.shape[0]
+    assert tseries_clean.shape[0] == confounds.shape[0]
 
 
 @pytest.mark.filterwarnings("ignore")
@@ -115,13 +114,12 @@ def _regression(confounds, sample_mask, tmp_path):
     ],
 )
 def test_nilearn_regress(tmp_path, strategy, param):
-    """Try regressing out all motion types."""
+    """Try regressing out all motion types without sample mask."""
     img_nii, _ = create_tmp_filepath(
         tmp_path, copy_confounds=True, copy_json=True
     )
-    confounds, sample_mask = fmriprep_confounds(img_nii,
-                                                strategy=[strategy], **param)
-    _regression(confounds, sample_mask, tmp_path)
+    confounds, _ = fmriprep_confounds(img_nii, strategy=[strategy], **param)
+    _regression(confounds, tmp_path)
 
 
 def _tseries_std(img, mask_img, confounds, sample_mask,
