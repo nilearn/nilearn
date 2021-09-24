@@ -40,11 +40,11 @@ dataset.
 
 .. currentmodule:: nilearn.decomposition
 
-Brain maps using Dictionary Learning
-====================================
+Brain maps using :term:`Dictionary learning`
+============================================
 
 Here, we use object :class:`DictLearning`, a multi subject model to decompose multi
-subjects fMRI datasets into functionally defined maps. We do this by setting
+subjects :term:`fMRI` datasets into functionally defined maps. We do this by setting
 the parameters and calling the object fit on the filenames of datasets without
 necessarily converting each file to Nifti1Image object.
 
@@ -55,8 +55,8 @@ necessarily converting each file to Nifti1Image object.
 
 .. currentmodule:: nilearn.plotting
 
-Visualization of Dictionary Learning maps
-=========================================
+Visualization of :term:`Dictionary learning` maps
+=================================================
 
 Showing maps stored in components_img using nilearn plotting utilities.
 Here, we use :func:`plot_prob_atlas` for easy visualization of 4D atlas maps
@@ -73,8 +73,8 @@ color and colors are random and automatically picked.
 
 .. currentmodule:: nilearn.regions
 
-Region Extraction with Dictionary Learning maps
-===============================================
+Region Extraction with :term:`Dictionary learning` maps
+=======================================================
 
 We use object :class:`RegionExtractor` for extracting brain connected regions
 from dictionary maps into separated brain activation regions with automatic

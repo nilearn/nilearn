@@ -36,7 +36,8 @@ def _compute_loadings(components, data):
 @fill_doc
 class DictLearning(BaseDecomposition):
     """Perform a map learning algorithm based on spatial component sparsity,
-    over a CanICA initialization [1]_.  This yields more stable maps than CanICA.
+    over a :term:`CanICA` initialization [1]_.
+    This yields more stable maps than :term:`CanICA`.
 
      .. versionadded:: 0.2
 
