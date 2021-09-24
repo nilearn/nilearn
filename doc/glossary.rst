@@ -77,7 +77,7 @@ If you wish to add a missing term, please `create a new issue`_ or
         protocols with minimal user input. It performs basic processing
         steps (coregistration, normalization, unwarping, noise component
         extraction, segmentation, skullstripping etc.) providing outputs,
-        often called confounds or nuissance parameters, that can be easily
+        often called confounds or nuisance parameters, that can be easily
         submitted to a variety of group level analyses, including task-based
         or resting-state :term:`fMRI`, graph theory measures, surface or
         volume-based statistics, etc.
