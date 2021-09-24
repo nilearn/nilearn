@@ -550,7 +550,7 @@ def create_fake_bids_dataset(base_dir='', n_sub=10, n_ses=2,
     with_derivatives : bool, optional
         In the case derivatives are included, they come with two spaces and
         descriptions. Spaces are 'MNI' and 'T1w'. Descriptions are 'preproc'
-        and 'fmriprep'. Only space 'T1w' include both descriptions.
+        and :term:`fMRIPrep`. Only space 'T1w' include both descriptions.
         Default=True.
 
     with_confounds : bool, optional
@@ -558,8 +558,9 @@ def create_fake_bids_dataset(base_dir='', n_sub=10, n_ses=2,
 
     confounds_tag : string (filename suffix), optional
         If generating confounds, what path should they have? Defaults to
-        `desc-confounds_timeseries` as in `fmriprep` >= 20.2 but can be other
-        values (e.g. "desc-confounds_regressors" as in `fmriprep` < 20.2)
+        `desc-confounds_timeseries` as in :term:`fMRIPrep` >= 20.2
+        but can be other values (e.g. "desc-confounds_regressors" as
+        in :term:`fMRIPrep` < 20.2).
         Default="desc-confounds_timeseries".
 
     no_session : bool, optional
