@@ -76,10 +76,11 @@ If you wish to add a missing term, please `create a new issue`_ or
         to provide an interface robust to variations in scan acquisition
         protocols with minimal user input. It performs basic processing
         steps (coregistration, normalization, unwarping, noise component
-        extraction, segmentation, skullstripping etc.) providing outputs
-        that can be easily submitted to a variety of group level analyses,
-        including task-based or resting-state :term:`fMRI`, graph theory
-        measures, surface or volume-based statistics, etc.
+        extraction, segmentation, skullstripping etc.) providing outputs,
+        often called confounds or nuissance parameters, that can be easily
+        submitted to a variety of group level analyses, including task-based
+        or resting-state :term:`fMRI`, graph theory measures, surface or
+        volume-based statistics, etc.
 
     FPR correction
         False positive rate correction. This refers to the methods employed to
