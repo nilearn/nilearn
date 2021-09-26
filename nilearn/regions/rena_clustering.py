@@ -9,8 +9,7 @@ import warnings
 from scipy.sparse import csgraph, coo_matrix, dia_matrix
 from joblib import Memory
 
-from sklearn.base import TransformerMixin, ClusterMixin
-from sklearn.base import BaseEstimator
+from sklearn.base import BaseEstimator, TransformerMixin, ClusterMixin
 from sklearn.utils.validation import check_is_fitted
 from sklearn.utils import check_array
 from nilearn.masking import _unmask_from_to_3d_array
@@ -467,6 +466,9 @@ class ReNA(BaseEstimator, ClusterMixin, TransformerMixin):
         self.memory = memory
         self.memory_level = memory_level
         self.verbose = verbose
+
+    def _more_tags(self):
+        return BaseEstimator._more_tags()
 
     def fit(self, X, y=None):
         """Compute clustering of the data.
