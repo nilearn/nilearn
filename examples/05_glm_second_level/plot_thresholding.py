@@ -46,7 +46,7 @@ z_map = second_level_model.compute_contrast(output_type='z_score')
 
 #########################################################################
 # Threshold the resulting map without multiple comparisons correction,
-# |z| > 3.29 (equivalent to p < 0.001), cluster size > 10 voxels.
+# abs(z) > 3.29 (equivalent to p < 0.001), cluster size > 10 voxels.
 from nilearn.image import threshold_img
 thresholded_map = threshold_img(
     z_map,
