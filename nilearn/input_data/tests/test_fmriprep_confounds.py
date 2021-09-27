@@ -189,7 +189,7 @@ def test_nilearn_standardize_false(tmp_path):
 
 
 @pytest.mark.filterwarnings("ignore")
-@pytest.mark.parametrize("standardize_signal", ["zscore", "psc", False])
+@pytest.mark.parametrize("standardize_signal", ["zscore", "psc"])
 @pytest.mark.parametrize("standardize_confounds,detrend", [(True, False),
                                                            (False, True),
                                                            (True, True)])
