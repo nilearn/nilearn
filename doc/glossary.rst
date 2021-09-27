@@ -44,8 +44,10 @@ If you wish to add a missing term, please `create a new issue`_ or
     Dictionary learning
         `Dictionary learning`_ (or sparse coding) is a representation learning
         method aiming at finding a sparse representation of the input data as
-        a linear combination of basic element called atoms. These atoms
-        composed the dictionary. Atoms are not required to be orthogonal.
+        a linear combination of basic elements called atoms. The identification
+        of these atoms composing the dictionary relies on a sparsity principle:
+        maximally sparse representations of the dataset are sought for. Atoms
+        are not required to be orthogonal.
 
     EEG
         `Electroencephalography`_ is a monitoring method to record electrical
