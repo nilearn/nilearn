@@ -37,6 +37,7 @@ def test_all_functions():
 
 def test_all_classes():
     from nilearn import input_data
-    assert((set([_[0] for _ in all_classes(modules_to_consider=["input_data"])])
-            - set(["BaseMasker"])) == set(input_data.__all__))
-
+    assert(
+        (set([_[0] for _ in all_classes(modules_to_consider=["input_data"])])
+         - set(["BaseMasker"])) == set(input_data.__all__)
+    )
