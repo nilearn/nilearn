@@ -1,3 +1,4 @@
+import sys
 import re
 import numpy as np
 import pandas as pd
@@ -40,17 +41,24 @@ def _simu_img(tmp_path, demean):
     vol_conf = np.zeros([nx, ny, 2 * nz])
     vol_rand = np.zeros([nx, ny, 2 * nz])
 
-    # create a random mixture of confounds
-    # standardized to zero mean and unit variance
-    randome_state = np.random.default_rng(0)
-    beta = randome_state.random((nx * ny * nz, X.shape[1]))
+    # create random noise and a random mixture of confounds standardized
+    # to zero mean and unit variance
+    if sys.version_info < (3, 7):  # fall back to random state for 3.6
+        np.random.RandomState(42)
+        beta = np.random.rand(nx * ny * nz, X.shape[1])
+        tseries_rand = scale(np.random.rand(nx * ny * nz, nt), axis=1)
+    else:
+        randome_state = np.random.default_rng(0)
+        beta = randome_state.random((nx * ny * nz, X.shape[1]))
+        tseries_rand = scale(randome_state.random((nx * ny * nz, nt)), axis=1)
+    # create the confound mixture
     tseries_conf = scale(np.matmul(beta, X.transpose()), axis=1)
-    # fill the first half of the 4D data with the mixture
+
+    # fill the first half of the 4D data with the random mixture
     vol[:, :, 0:nz, :] = tseries_conf.reshape(nx, ny, nz, nt)
     vol_conf[:, :, 0:nz] = 1
 
     # create random noise in the second half of the 4D data
-    tseries_rand = scale(randome_state.random((nx * ny * nz, nt)), axis=1)
     vol[:, :, range(nz, 2 * nz), :] = tseries_rand.reshape(nx, ny, nz, nt)
     vol_rand[:, :, range(nz, 2 * nz)] = 1
 
@@ -211,7 +219,6 @@ def test_nilearn_standardize(tmp_path, standardize_signal,
         detrend=detrend)
     corr = _corr_tseries(tseries_raw, tseries_clean)
     assert np.absolute(np.mean(corr)) < 0.2
-    print(np.absolute(np.mean(corr)))
 
     # We now load the time series with zscore standardization
     # with vs without confounds in voxels where the signal is uncorrelated
