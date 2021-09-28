@@ -80,7 +80,8 @@ def fmriprep_confounds(img_files,
     The implementation will only support :term:`fMRIPrep` functional derivative
     directory from the 1.2.x series. The `compcor` noise component requires
     1.4.x series or above.
-
+    .. versionadded:: 0.8.2
+    
     Parameters
     ----------
     img_files : path to processed image files, optionally as a list.
