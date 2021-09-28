@@ -43,6 +43,9 @@ def _load_mask_img(mask_img, allow_empty=False):
     -------
     mask: numpy.ndarray
         boolean version of the mask
+
+    mask_affine: None or (4,4) array-like
+        affine of the mask
     """
     mask_img = _utils.check_niimg_3d(mask_img)
     mask = _safe_get_data(mask_img, ensure_finite=True)
