@@ -4,7 +4,7 @@
 NEW
 ---
 
-- New function :func:`nilearn.input_data.fmriprep_confounds` to laod confound variables easily 
+- New function :func:`nilearn.input_data.fmriprep_confounds` to load confound variables easily 
   from :term:`fMRIPrep` outputs. 
 
 Fixes
