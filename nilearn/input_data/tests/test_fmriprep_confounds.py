@@ -42,14 +42,15 @@ def _simu_img(tmp_path, demean):
 
     # create a random mixture of confounds
     # standardized to zero mean and unit variance
-    beta = np.random.rand(nx * ny * nz, X.shape[1])
+    randome_state = np.random.default_rng(0)
+    beta = randome_state.random((nx * ny * nz, X.shape[1]))
     tseries_conf = scale(np.matmul(beta, X.transpose()), axis=1)
     # fill the first half of the 4D data with the mixture
     vol[:, :, 0:nz, :] = tseries_conf.reshape(nx, ny, nz, nt)
     vol_conf[:, :, 0:nz] = 1
 
     # create random noise in the second half of the 4D data
-    tseries_rand = scale(np.random.randn(nx * ny * nz, nt), axis=1)
+    tseries_rand = scale(randome_state.random((nx * ny * nz, nt)), axis=1)
     vol[:, :, range(nz, 2 * nz), :] = tseries_rand.reshape(nx, ny, nz, nt)
     vol_rand[:, :, range(nz, 2 * nz)] = 1
 
@@ -77,9 +78,9 @@ def _handle_non_steady(confounds):
     # second row
     non_steady = X[0, :]
     X[0, :] = X[1, :]
-    # repeat X in length (axis = 0) five times to increase
-    # the degree of freedom
-    X = np.tile(X, (5, 1))
+    # repeat X in length (axis = 0) 10 times to increase
+    # the degree of freedom for numerical stability
+    X = np.tile(X, (10, 1))
     # put non-steady state volume back at the first sample
     X[0, :] = non_steady
     X = pd.DataFrame(X, columns=confounds.columns)
@@ -209,7 +210,8 @@ def test_nilearn_standardize(tmp_path, standardize_signal,
         standardize_confounds=standardize_confounds,
         detrend=detrend)
     corr = _corr_tseries(tseries_raw, tseries_clean)
-    assert abs(np.mean(corr)) < 0.2
+    assert np.absolute(np.mean(corr)) < 0.2
+    print(np.absolute(np.mean(corr)))
 
     # We now load the time series with zscore standardization
     # with vs without confounds in voxels where the signal is uncorrelated
