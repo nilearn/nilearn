@@ -192,7 +192,7 @@ def fmriprep_confounds(img_files,
 
     demean : boolean, default True
         If True, the confounds are standardized to a zero mean (over time).
-        When using :class:`nilearn.input_data.Niftimasker` with default
+        When using :class:`nilearn.input_data.NiftiMasker` with default
         parameters, the recommended option is True.
         When using :func:`nilearn.signal.clean` with default parameters, the
         recommended option is False.
