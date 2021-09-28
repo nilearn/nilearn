@@ -291,7 +291,7 @@ class BaseMasker(BaseEstimator, TransformerMixin, CacheMixin):
         # internal structures of the header: remove the memmaped array
         try:
             img._header._structarr = np.array(img._header._structarr).copy()
-        except:
+        except Exception:
             pass
         return img
 
