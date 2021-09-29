@@ -160,7 +160,7 @@ def fmriprep_confounds(img_files,
         One-hot encoding vectors are added as regressors for each scrubbed
         frame.
 
-    compcor : {'anat_combined', 'anat_separated', 'temporal',
+    compcor : {'anat_combined', 'anat_separated', 'temporal',\
     'temporal_anat_combined', 'temporal_anat_separated'}
 
         .. warning::
