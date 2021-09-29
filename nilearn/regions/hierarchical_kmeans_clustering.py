@@ -17,7 +17,8 @@ def _remove_empty_labels(labels):
 
 def _adjust_small_clusters(array, n_clusters):
     '''Takes a ndarray of floats summing to n_clusters and try to round it while
-    enforcing rounded array still sum to n_clusters
+    enforcing rounded array still sum to n_clusters and every element is at
+    least 1.
     '''
 
     array_round = np.round(array).astype(int)
@@ -31,6 +32,7 @@ def _adjust_small_clusters(array, n_clusters):
         return array_round.astype(int)
     elif np.sum(array_round) > n_clusters:
         while np.sum(array_round) != n_clusters:
+            # prevent element rounded to 1 to be decreased in edge cases
             mask = array_round != np.ones(array.size)
             idx = np.argmin(array[mask] - array_round[mask])
             parent_idx = np.arange(array_round.shape[0])[mask][idx]
@@ -113,7 +115,7 @@ def _hierarchical_k_means(X, n_clusters, init="k-means++", batch_size=1000,
 
 class HierarchicalKMeans(BaseEstimator, ClusterMixin, TransformerMixin):
     """Hierarchical KMeans:
-    First cluster the samples into big clusters. Then cluster the samples
+    First clusterize the samples into big clusters. Then clusterize the samples
     inside these big clusters into smaller ones.
 
     Parameters
@@ -155,7 +157,9 @@ class HierarchicalKMeans(BaseEstimator, ClusterMixin, TransformerMixin):
 
     scaling: bool, optional (default False)
         If scaling is True, each cluster is scaled by the square root of its
-        size, preserving the l2-norm of the image.
+        size during transform(), preserving the l2-norm of the image.
+        inverse_transform() will apply inversed scaling to yield an image with
+        same l2-norm as input.
 
     verbose: int, optional (default 0)
         Verbosity level.
