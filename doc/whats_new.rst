@@ -4,6 +4,11 @@
 NEW
 ---
 
+- Functions `nilearn._utils.all_functions` and `nilearn._utils.all_classes`
+  can list all functions and classes from Nilearn. Filtering by modules and
+  restricting to public or private objects is possible.
+  See `#2991 <https://github.com/nilearn/nilearn/pull/2991>`_.
+
 Fixes
 -----
 
