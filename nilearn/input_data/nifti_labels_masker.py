@@ -367,7 +367,8 @@ class NiftiLabelsMasker(BaseMasker, CacheMixin):
                 raise ValueError("Invalid value for resampling_target: " +
                                  str(self.resampling_target))
 
-            mask_data, mask_affine = masking._load_mask_img(self.mask_img_)
+            # Just check that the mask is valid
+            masking._load_mask_img(self.mask_img_)
 
         if not hasattr(self,
                        '_resampled_labels_img_'):
