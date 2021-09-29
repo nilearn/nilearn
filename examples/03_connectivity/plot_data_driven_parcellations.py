@@ -232,7 +232,7 @@ plotting.plot_roi(hkmeans_labels_img, mean_func_img,
 
 # kmeans_labels_img is a :class:`nibabel.nifti1.Nifti1Image` object, it can be
 # saved to file with the following code:
-hkmeans_labels_img.to_filename('hkmeans_parcellation.nii.gz')
+hkmeans_labels_img.to_filename('hierarchical_kmeans_parcellation.nii.gz')
 
 ###########################################################################
 # Compare Hierarchical Kmeans clusters with those from Kmeans
