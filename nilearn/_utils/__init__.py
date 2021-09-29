@@ -22,12 +22,6 @@ from .cache_mixin import CacheMixin
 from .logger import _compose_err_msg
 from nilearn._utils.helpers import rename_parameters, remove_parameters
 
-__all__ = ['check_niimg', 'check_niimg_3d', 'concat_niimgs', 'check_niimg_4d',
-           '_repr_niimgs', 'copy_img', 'load_niimg',
-           'as_ndarray', 'CacheMixin', '_compose_err_msg', 'rename_parameters',
-           'remove_parameters', 'fill_doc',
-           ]
-
 
 def all_modules(modules_to_ignore=None, modules_to_consider=None):
     """Get a list of all modules from nilearn.
@@ -212,3 +206,10 @@ def all_classes(return_private=False,
             ]
         all_classes.extend(classes)
     return all_classes
+
+
+__all__ = ['check_niimg', 'check_niimg_3d', 'concat_niimgs', 'check_niimg_4d',
+           '_repr_niimgs', 'copy_img', 'load_niimg',
+           'as_ndarray', 'CacheMixin', '_compose_err_msg', 'rename_parameters',
+           'remove_parameters', 'fill_doc', 'all_functions', 'all_classes'
+           ]
