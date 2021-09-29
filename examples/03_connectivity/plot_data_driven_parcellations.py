@@ -186,7 +186,7 @@ print("KMeans clusters: %.2fs" % (time.time() - start))
 # Grab parcellations of brain image stored in attribute `labels_img_`
 kmeans_labels_img = kmeans.labels_img_
 
-display = plotting.plot_roi(kmeans_labels_img, mean_func_img,
+plotting.plot_roi(kmeans_labels_img, mean_func_img,
                             title="KMeans parcellation",
                             display_mode='xz')
 
