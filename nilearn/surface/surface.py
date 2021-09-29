@@ -99,7 +99,6 @@ def _vertex_outer_normals(mesh):
     rule) points outwards.
 
     """
-    vertices, faces = load_surf_mesh(mesh)
     vertex_faces = _surrounding_faces(mesh)
     face_normals = _face_outer_normals(mesh)
     normals = vertex_faces.dot(face_normals)

@@ -175,7 +175,6 @@ def _get_auto_mask_bounds(img):
     if hasattr(data, 'mask'):
         # Masked array
         mask = np.logical_not(data.mask)
-        data = np.asarray(data)
     else:
         # The mask will be anything that is fairly different
         # from the values in the corners
