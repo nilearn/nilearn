@@ -152,8 +152,9 @@ def connected_regions(maps_img, min_region_size=1350,
     %(extract_type)s
     %(smoothing_fwhm)s
         Use this parameter to smooth an image to extract most sparser regions.
-        This parameter is passed `_smooth_array` and exists only for extract_type
-        'local_regions'. Default=6.
+        This parameter is passed `_smooth_array` and exists only for
+        extract_type 'local_regions'.
+        Default=6.
 
     mask_img : Niimg-like object, optional
         If given, mask image is applied to input data.
