@@ -250,6 +250,44 @@ To loop over each individual volume of a 4D image, use :func:`image.iter_img`::
 
    More tutorials can be found :ref:`here <tutorial_examples>`
 
+
+.. topic:: **The Nilearn API**
+
+    Nilearn provides a list of functions and classes to the users that
+    form the *public API*. These objects are organized into *modules*, each
+    serving a specific purpose. For example, all plotting utilities can be
+    found in the plotting module :mod:`nilearn.plotting`, while all utilities
+    related to image manipulations can be found in the :mod:`nilearn.image`
+    module.
+
+    To quickly learn about the *public API* of Nilearn you can either browse
+    through the :ref:`reference <reference>` page. Alternatively, you can list
+    functions and classes using ``nilearn._utils.all_functions`` and
+    ``nilearn._utils.all_classes``.
+
+    List all public functions from the :mod:`nilearn.image` module:
+
+    ::
+
+        >>> from nilearn._utils import all_functions
+        >>> [name for name, func in all_functions(modules_to_consider=["image"])]
+        ['binarize_img', 'clean_img', 'crop_img', 'get_data', 'high_variance_confounds',
+        'index_img', 'iter_img', 'largest_connected_component_img', 'load_img',
+        'math_img', 'mean_img', 'new_img_like', 'smooth_img', 'swap_img_hemispheres',
+        'threshold_img', 'coord_transform', 'from_matrix_vector', 'get_bounds',
+        'get_mask_bounds', 'reorder_img', 'resample_img', 'resample_to_img', 'to_matrix_vector']
+
+
+    List all public classes from the :mod:`nilearn.surface` and
+    :mod:`nilearn.input_data` modules:
+
+    ::
+
+        >>> from nilearn._utils import all_classes
+        >>> [name for name, cls in all_classes(modules_to_consider=["surface", "input_data"])]
+        ['BaseMasker', 'MultiNiftiMasker', 'NiftiLabelsMasker', 'NiftiMapsMasker',
+        'NiftiMasker', 'NiftiSpheresMasker', 'Mesh', 'Surface']
+
 ____
 
 Now, if you want out-of-the-box methods to process neuroimaging data, jump
