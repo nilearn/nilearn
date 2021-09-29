@@ -10,18 +10,18 @@ from nilearn.plotting import img_plotting, glass_brain, show
 if __name__ == '__main__':
     # plotting anat for coarse alignment
     bg_img, _, _, _ = img_plotting._load_anat()
-    display = img_plotting.plot_glass_brain(bg_img, threshold=0, black_bg=True,
-                                            title='anat', alpha=1)
-    display = img_plotting.plot_glass_brain(bg_img, threshold=0, black_bg=True,
-                                            title='anat', alpha=1,
-                                            display_mode='ortho')
-    display = img_plotting.plot_glass_brain(bg_img, threshold=0,
-                                            title='anat', alpha=1)
+    img_plotting.plot_glass_brain(bg_img, threshold=0, black_bg=True,
+                                  title='anat', alpha=1)
+    img_plotting.plot_glass_brain(bg_img, threshold=0, black_bg=True,
+                                  title='anat', alpha=1,
+                                  display_mode='ortho')
+    img_plotting.plot_glass_brain(bg_img, threshold=0,
+                                  title='anat', alpha=1)
 
     # checking hemispheres plotting
-    display = img_plotting.plot_glass_brain(bg_img, threshold=0, black_bg=True,
-                                            title='anat', alpha=1,
-                                            display_mode='lyrz')
+    img_plotting.plot_glass_brain(bg_img, threshold=0, black_bg=True,
+                                  title='anat', alpha=1,
+                                  display_mode='lyrz')
 
     # plotting slices for finer alignment
     # e.g. parieto-occipital sulcus
