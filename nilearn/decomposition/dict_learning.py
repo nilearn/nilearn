@@ -82,10 +82,8 @@ class DictLearning(BaseDecomposition):
 
     random_state : int or RandomState, optional
         Pseudo number generator state used for random sampling.
-
-    smoothing_fwhm : float, optional
-        If smoothing_fwhm is not None, it gives the size in millimeters of the
-        spatial smoothing to apply to the signal. Default=4mm.
+    %(smoothing_fwhm)s
+        Default=4mm.
 
     standardize : boolean, optional
         If standardize is True, the time-series are centered and normed:

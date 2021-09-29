@@ -8,6 +8,7 @@ from joblib import Memory
 from .. import _utils
 from .._utils import logger, CacheMixin
 from .._utils.class_inspect import get_params
+from .._utils import fill_doc
 from .._utils.niimg_conversions import _check_same_fov
 from .. import image
 from .base_masker import filter_and_extract, BaseMasker
@@ -30,12 +31,14 @@ class _ExtractionFunctor(object):
             mask_img=self._resampled_mask_img_)
 
 
+@fill_doc
 class NiftiMapsMasker(BaseMasker, CacheMixin):
     """Class for masking of Niimg-like objects.
 
     NiftiMapsMasker is useful when data from overlapping volumes should be
-    extracted (contrarily to NiftiLabelsMasker). Use case: Summarize brain
-    signals from large-scale networks obtained by prior PCA or ICA.
+    extracted (contrarily to :class:`nilearn.input_data.NiftiLabelsMasker`).
+    Use case: Summarize brain signals from large-scale networks obtained by
+    prior PCA or :term:`ICA`.
 
     Note that, Inf or NaN present in the given input images are automatically
     put to zero rather than considered as missing data.
@@ -54,11 +57,7 @@ class NiftiMapsMasker(BaseMasker, CacheMixin):
     allow_overlap : boolean, optional
         If False, an error is raised if the maps overlaps (ie at least two
         maps have a non-zero value for the same voxel). Default=True.
-
-    smoothing_fwhm : float, optional
-        If smoothing_fwhm is not None, it gives the full-width half maximum in
-        millimeters of the spatial smoothing to apply to the signal.
-
+    %(smoothing_fwhm)s
     standardize : {False, True, 'zscore', 'psc'}, optional
         Strategy to standardize the signal.
         'zscore': the signal is z-scored. Timeseries are shifted

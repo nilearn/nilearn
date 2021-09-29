@@ -149,12 +149,11 @@ def connected_regions(maps_img, min_region_size=1350,
         Minimum volume in mm3 for a region to be kept. For example, if the voxel
         size is 3x3x3 mm then the volume of the voxel is 27mm^3.
         Default=1350mm^3, which means we take minimum size of 1350 / 27 = 50 voxels.
-
     %(extract_type)s
-    smoothing_fwhm : :obj:`float`, optional
-        To smooth an image to extract most sparser regions. This parameter
-        is passed `_smooth_array` and exists only for extract_type 'local_regions'.
-        Default=6.
+    %(smoothing_fwhm)s
+        Use this parameter to smooth an image to extract most sparser regions.
+        This parameter is passed `_smooth_array` and exists only for extract_type
+        'local_regions'. Default=6.
 
     mask_img : Niimg-like object, optional
         If given, mask image is applied to input data.
@@ -289,12 +288,11 @@ class RegionExtractor(NiftiMapsMasker):
         parameter indicates that we keep only those voxels which have
         intensities more than this value.
         Default='ratio_n_voxels'.
-
     %(extractor)s
-    smoothing_fwhm : :obj:`float`, optional
-        To smooth an image to extract most sparser regions. This parameter
-        is passed to `connected_regions` and exists only for extractor
-        'local_regions'. Please set this parameter according to maps
+    %(smoothing_fwhm)s
+        Use this parameter to smooth an image to extract most sparser regions.
+        This parameter is passed to `connected_regions` and exists only for
+        extractor 'local_regions'. Please set this parameter according to maps
         resolution, otherwise extraction will fail.
         Default=6mm.
     %(standardize_false)s

@@ -9,7 +9,10 @@ from joblib import Memory
 
 from .. import _utils
 from .._utils.niimg import _safe_get_data
-from .._utils import logger, CacheMixin, _compose_err_msg
+from .._utils import(logger,
+                     CacheMixin,
+                     _compose_err_msg,
+                     fill_doc)
 from .._utils.class_inspect import get_params
 from .._utils.niimg_conversions import _check_same_fov
 from .. import masking
@@ -37,13 +40,14 @@ class _ExtractionFunctor(object):
             mask_img=self.mask_img)
 
 
+@fill_doc
 class NiftiLabelsMasker(BaseMasker, CacheMixin):
     """Class for masking of Niimg-like objects.
 
     NiftiLabelsMasker is useful when data from non-overlapping volumes should
-    be extracted (contrarily to NiftiMapsMasker). Use case: Summarize brain
-    signals from clusters that were obtained by prior K-means or Ward
-    clustering.
+    be extracted (contrarily to :class:`nilearn.input_data.NiftiMapsMasker`).
+    Use case: Summarize brain signals from clusters that were obtained by prior
+    K-means or Ward clustering.
 
     Parameters
     ----------
@@ -66,11 +70,7 @@ class NiftiLabelsMasker(BaseMasker, CacheMixin):
     mask_img : Niimg-like object, optional
         See http://nilearn.github.io/manipulating_images/input_output.html
         Mask to apply to regions before extracting signals.
-
-    smoothing_fwhm : float, optional
-        If smoothing_fwhm is not None, it gives the full-width half maximum in
-        millimeters of the spatial smoothing to apply to the signal.
-
+    %(smoothing_fwhm)s
     standardize : {False, True, 'zscore', 'psc'}, optional
         Strategy to standardize the signal.
         'zscore': the signal is z-scored. Timeseries are shifted

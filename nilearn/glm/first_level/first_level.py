@@ -273,11 +273,7 @@ class FirstLevelModel(BaseGLM):
     target_shape : 3-tuple of integers, optional
         This parameter is passed to nilearn.image.resample_img.
         Please see the related documentation for details.
-
-    smoothing_fwhm : float, optional
-        If smoothing_fwhm is not None, it gives the size in millimeters of
-        the spatial smoothing to apply to the signal.
-
+    %(smoothing_fwhm)s
     memory : string, optional
         Path to the directory used to cache the masking process and the glm
         fit. By default, no caching is done.

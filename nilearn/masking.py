@@ -13,6 +13,7 @@ from joblib import Parallel, delayed
 from sklearn.utils import deprecated
 from . import _utils
 from .image import get_data, new_img_like, resampling
+from ._utils import fill_doc
 from ._utils.cache_mixin import cache
 from ._utils.ndimage import largest_connected_component, get_border_data
 from ._utils.niimg import _safe_get_data
@@ -742,6 +743,7 @@ def compute_multi_brain_mask(target_imgs, threshold=.5, connected=True,
 # Time series extraction
 #
 
+@fill_doc
 def apply_mask(imgs, mask_img, dtype='f',
                smoothing_fwhm=None, ensure_finite=True):
     """Extract signals from images using specified mask.
@@ -762,10 +764,11 @@ def apply_mask(imgs, mask_img, dtype='f',
         The dtype of the output, if 'f', any float output is acceptable
         and if the data is stored on the disk as floats the data type
         will not be changed.
+    %(smoothing_fwhm)s
 
-    smoothing_fwhm: float
-        (optional) Gives the size of the spatial smoothing to apply to
-        the signal, in voxels. Implies ensure_finite=True.
+        .. note::
+
+            Implies ensure_finite=True.
 
     ensure_finite : :obj:`bool`
         If ensure_finite is True, the non-finite values (NaNs and
