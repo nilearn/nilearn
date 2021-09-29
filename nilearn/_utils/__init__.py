@@ -45,6 +45,11 @@ def all_modules(modules_to_ignore=None, modules_to_consider=None):
         List of modules to exclude from the listing.
         Default=None.
 
+        .. note::
+
+            This function will ignore ``tests``,
+            ``externals``, and ``data`` by default.
+
     modules_to_consider : List/Set of :obj:`str` or None
         List of modules to include in the listing.
         Default=None.
@@ -111,6 +116,11 @@ def all_functions(return_private=False,
         List of modules to exclude from the listing.
         Default=None.
 
+        .. note::
+
+            This function will not list functions from
+            ``tests``, ``externals``, and ``data`` by default.
+
     modules_to_consider : List/Set of :obj:`str` or None
         List of modules to consider for the listing.
         Default=None.
@@ -165,6 +175,11 @@ def all_classes(return_private=False,
     modules_to_ignore : List/Set of :obj:`str` or None
         List of modules to exclude from the listing.
         Default=None.
+
+        .. note::
+
+            This function will not list classes from
+            ``tests``, ``externals``, and ``data`` by default.
 
     modules_to_consider : List/Set of :obj:`str` or None
         List of modules to consider for the listing.
