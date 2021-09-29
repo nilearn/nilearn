@@ -113,7 +113,7 @@ def _hierarchical_k_means(X, n_clusters, init="k-means++", batch_size=1000,
 
 class HierarchicalKMeans(BaseEstimator, ClusterMixin, TransformerMixin):
     """Hierarchical KMeans:
-    First clusterize the samples into big clusters. Then clusterize the samples
+    First cluster the samples into big clusters. Then cluster the samples
     inside these big clusters into smaller ones.
 
     Parameters
