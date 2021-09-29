@@ -219,9 +219,9 @@ To loop over each individual volume of a 4D image, use :func:`image.iter_img`::
    :class: green
 
    Want to sharpen your skills with nilearn?
-   Compute the mean EPI for first subject of the brain development
+   Compute the mean :term:`EPI` for first subject of the brain development
    dataset downloaded with :func:`nilearn.datasets.fetch_development_fmri` and
-   smooth it with an FWHM varying from 0mm to 20mm in increments of 5mm
+   smooth it with an :term:`FWHM` varying from 0mm to 20mm in increments of 5mm
 
    **Hints:**
 
