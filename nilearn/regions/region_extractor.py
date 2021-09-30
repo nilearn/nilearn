@@ -152,8 +152,12 @@ def connected_regions(maps_img, min_region_size=1350,
     %(extract_type)s
     %(smoothing_fwhm)s
         Use this parameter to smooth an image to extract most sparser regions.
-        This parameter is passed `_smooth_array` and exists only for
-        extract_type 'local_regions'.
+
+        .. note::
+
+            This parameter is passed to `nilearn.image.image._smooth_array`.
+            It will be used only if ``extract_type='local_regions'``.
+
         Default=6.
 
     mask_img : Niimg-like object, optional
@@ -292,9 +296,18 @@ class RegionExtractor(NiftiMapsMasker):
     %(extractor)s
     %(smoothing_fwhm)s
         Use this parameter to smooth an image to extract most sparser regions.
-        This parameter is passed to `connected_regions` and exists only for
-        extractor 'local_regions'. Please set this parameter according to maps
-        resolution, otherwise extraction will fail.
+
+        .. note::
+
+            This parameter is passed to
+            :func:`nilearn.regions.connected_regions`.
+            It will be used only if ``extractor='local_regions'``.
+
+        .. note::
+
+            Please set this parameter according to maps resolution,
+            otherwise extraction will fail.
+
         Default=6mm.
     %(standardize_false)s
 

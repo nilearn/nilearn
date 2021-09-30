@@ -137,9 +137,8 @@ If you wish to add a missing term, please `create a new issue`_ or
     
     FWHM
         `FWHM`_ stands for "full width at half maximum". In a distribution, it
-        refers to the difference between the two values of the independent
-        variable at which the dependent variable is equal to half of its
-        maximum value.
+        refers to the width of a filter, expressed as the diameter of the area
+        on which the filter value is above half its maximal value.
 
     GLM
         General Linear Model. This is the name of the models traditionally fit
