@@ -149,7 +149,7 @@ clfs = []
 n_clfs = y_train.shape[1]
 for i in range(y_train.shape[1]):
     sys.stderr.write("Training classifiers %03d/%d... \r" % (i + 1, n_clfs))
-    clf = Pipeline([('selection', SelectKBest(f_classif, 500)),
+    clf = Pipeline([('selection', SelectKBest(f_classif, k=500)),
                     ('clf', OMP(n_nonzero_coefs=10))])
     clf.fit(X_train, y_train[:, i])
     clfs.append(clf)

@@ -215,7 +215,7 @@ print("ANOVA + LDA classification accuracy: %.4f / Chance Level: %.4f" %
 # Import it and define your fancy objects
 from sklearn.feature_selection import RFE
 svc = SVC()
-rfe = RFE(SVC(kernel='linear', C=1.), 50, step=0.25)
+rfe = RFE(SVC(kernel='linear', C=1.), n_features_to_select=50, step=0.25)
 
 # Create a new pipeline, composing the two classifiers `rfe` and `svc`
 
