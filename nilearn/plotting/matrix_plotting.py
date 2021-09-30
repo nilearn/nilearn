@@ -40,7 +40,7 @@ def _fit_axes(ax):
         ax.set_position(new_position)
 
 
-def _sanitize_inputs_plot_matrix(mat_shape, tri, labels, reorder, figure, axes): #noqa
+def _sanitize_inputs_plot_matrix(mat_shape, tri, labels, reorder, figure, axes):  # noqa
     """Helper function for plot_matrix.
 
     This function makes sure the inputs to plot_matrix are valid.
@@ -55,9 +55,10 @@ def _sanitize_inputs_plot_matrix(mat_shape, tri, labels, reorder, figure, axes):
 def _sanitize_figure_and_axes(figure, axes):
     """Helper function for plot_matrix."""
     if axes is not None and figure is not None:
-        raise ValueError("Parameters figure and axes cannot be specified "
-            "together. You gave 'figure=%s, axes=%s'"
-            % (figure, axes))
+        raise ValueError(
+            "Parameters figure and axes cannot be specified "
+            "together. You gave 'figure=%s, axes=%s'" % (figure, axes)
+        )
     if figure is not None:
         if isinstance(figure, plt.Figure):
             fig = figure
@@ -161,24 +162,20 @@ def _configure_axis(axes, labels):
             label.set_rotation(10)
 
 
-def _configure_grid(axes, grid, tri):
+def _configure_grid(axes, grid, tri, size):
     """Helper function for plot_matrix."""
-    size = len(mat)
     # Different grids for different layouts
     if tri == 'lower':
         for i in range(size):
             # Correct for weird mis-sizing
             i = 1.001 * i
-            axes.plot([i + 0.5, i + 0.5], [size - 0.5, i + 0.5],
-                        color='grey')
-            axes.plot([i + 0.5, -0.5], [i + 0.5, i + 0.5],
-                        color='grey')
+            axes.plot([i + 0.5, i + 0.5], [size - 0.5, i + 0.5], color='grey')
+            axes.plot([i + 0.5, -0.5], [i + 0.5, i + 0.5], color='grey')
     elif tri == 'diag':
         for i in range(size):
             # Correct for weird mis-sizing
             i = 1.001 * i
-            axes.plot([i + 0.5, i + 0.5], [size - 0.5, i - 0.5],
-                        color='grey')
+            axes.plot([i + 0.5, i + 0.5], [size - 0.5, i - 0.5], color='grey')
             axes.plot([i + 0.5, -0.5], [i - 0.5, i - 0.5], color='grey')
     else:
         for i in range(size):
@@ -278,7 +275,7 @@ def plot_matrix(mat, title=None, labels=None, figure=None, axes=None,
     ymin, ymax = axes.get_ylim()
     _configure_axis(axes, labels)
     if grid is not False:
-        _configure_grid(axes, grid, tri)
+        _configure_grid(axes, grid, tri, len(mat))
     axes.set_ylim(ymin, ymax)
     if auto_fit:
         if labels:
