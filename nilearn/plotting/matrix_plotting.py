@@ -15,8 +15,11 @@ with warnings.catch_warnings():
     from nilearn.glm.first_level import check_design_matrix
 
 
-def fit_axes(ax):
-    """ Redimension the given axes to have labels fitting.
+def _fit_axes(ax):
+    """Helper function for plot_matrix.
+
+    This function redimensions the given axes to have
+    labels fitting.
     """
     fig = ax.get_figure()
     renderer = get_renderer(fig)
@@ -35,6 +38,154 @@ def fit_axes(ax):
         new_position = ax.get_position()
         new_position.y0 = 1.1 * xlabel_height  # pad a little
         ax.set_position(new_position)
+
+
+def _sanitize_inputs_plot_matrix(mat_shape, tri, labels, reorder, figure, axes): #noqa
+    """Helper function for plot_matrix.
+
+    This function makes sure the inputs to plot_matrix are valid.
+    """
+    _sanitize_tri(tri)
+    labels = _sanitize_labels(mat_shape, labels)
+    reorder = _sanitize_reorder(reorder)
+    fig, axes, own_fig = _sanitize_figure_and_axes(figure, axes)
+    return labels, reorder, fig, axes, own_fig
+
+
+def _sanitize_figure_and_axes(figure, axes):
+    """Helper function for plot_matrix."""
+    if axes is not None and figure is not None:
+        raise ValueError("Parameters figure and axes cannot be specified "
+            "together. You gave 'figure=%s, axes=%s'"
+            % (figure, axes))
+    if figure is not None:
+        if isinstance(figure, plt.Figure):
+            fig = figure
+        else:
+            fig = plt.figure(figsize=figure)
+        axes = plt.gca()
+        own_fig = True
+    else:
+        if axes is None:
+            fig, axes = plt.subplots(1, 1, figsize=(7, 5))
+            own_fig = True
+        else:
+            fig = axes.figure
+            own_fig = False
+    return fig, axes, own_fig
+
+
+def _sanitize_labels(mat_shape, labels):
+    """Helper function for plot_matrix."""
+    # we need a list so an empty one will be cast to False
+    if isinstance(labels, np.ndarray):
+        labels = labels.tolist()
+    if labels and len(labels) != mat_shape[0]:
+        raise ValueError("Length of labels unequal to length of matrix.")
+    return labels
+
+
+def _sanitize_tri(tri):
+    """Helper function for plot_matrix."""
+    VALID_TRI_VALUES = set(["full", "lower", "diag"])
+    if tri not in VALID_TRI_VALUES:
+        raise ValueError("Parameter tri needs to be "
+                         "one of {}.".format(VALID_TRI_VALUES))
+
+
+def _sanitize_reorder(reorder):
+    """Helper function for plot_matrix."""
+    VALID_REORDER_ARGS = set([True, False, 'single', 'complete', 'average'])
+    if reorder not in VALID_REORDER_ARGS:
+        raise ValueError("Parameter reorder needs to be "
+                         "one of {}.".format(VALID_REORDER_ARGS))
+    reorder = 'average' if reorder is True else reorder
+    return reorder
+
+
+def _reorder_matrix(mat, labels, reorder):
+    """Helper function for plot_matrix.
+
+    This function reorder the provided matrix.
+    """
+    if not labels:
+        raise ValueError("Labels are needed to show the reordering.")
+    try:
+        from scipy.cluster.hierarchy import (linkage,
+                                             optimal_leaf_ordering,
+                                             leaves_list)
+    except ImportError:
+        raise ImportError("A scipy version of at least 1.0 is needed for "
+                          "ordering the matrix with optimal_leaf_ordering.")
+    linkage_matrix = linkage(mat, method=reorder)
+    ordered_linkage = optimal_leaf_ordering(linkage_matrix, mat)
+    index = leaves_list(ordered_linkage)
+    # make sure labels is an ndarray and copy it
+    labels = np.array(labels).copy()
+    mat = mat.copy()
+    # and reorder labels and matrix
+    labels = labels[index].tolist()
+    mat = mat[index, :][:, index]
+    return mat, labels
+
+
+def _mask_matrix(mat, tri):
+    """Helper function for plot_matrix.
+
+    This function masks the matrix depending on the provided
+    value of ``tri``.
+    """
+    if tri == 'lower':
+        mask = np.tri(mat.shape[0], k=-1, dtype=bool) ^ True
+    else:
+        mask = np.tri(mat.shape[0], dtype=bool) ^ True
+    return np.ma.masked_array(mat, mask)
+
+
+def _configure_axis(axes, labels):
+    """Helper function for plot_matrix."""
+    if not labels:
+        axes.xaxis.set_major_formatter(plt.NullFormatter())
+        axes.yaxis.set_major_formatter(plt.NullFormatter())
+    else:
+        axes.set_xticks(np.arange(len(labels)))
+        axes.set_xticklabels(labels, size='x-small')
+        for label in axes.get_xticklabels():
+            label.set_ha('right')
+            label.set_rotation(50)
+        axes.set_yticks(np.arange(len(labels)))
+        axes.set_yticklabels(labels, size='x-small')
+        for label in axes.get_yticklabels():
+            label.set_ha('right')
+            label.set_va('top')
+            label.set_rotation(10)
+
+
+def _configure_grid(axes, grid, tri):
+    """Helper function for plot_matrix."""
+    size = len(mat)
+    # Different grids for different layouts
+    if tri == 'lower':
+        for i in range(size):
+            # Correct for weird mis-sizing
+            i = 1.001 * i
+            axes.plot([i + 0.5, i + 0.5], [size - 0.5, i + 0.5],
+                        color='grey')
+            axes.plot([i + 0.5, -0.5], [i + 0.5, i + 0.5],
+                        color='grey')
+    elif tri == 'diag':
+        for i in range(size):
+            # Correct for weird mis-sizing
+            i = 1.001 * i
+            axes.plot([i + 0.5, i + 0.5], [size - 0.5, i - 0.5],
+                        color='grey')
+            axes.plot([i + 0.5, -0.5], [i - 0.5, i - 0.5], color='grey')
+    else:
+        for i in range(size):
+            # Correct for weird mis-sizing
+            i = 1.001 * i
+            axes.plot([i + 0.5, i + 0.5], [size - 0.5, -0.5], color='grey')
+            axes.plot([size - 0.5, -0.5], [i + 0.5, i + 0.5], color='grey')
 
 
 @fill_doc
@@ -98,127 +249,37 @@ def plot_matrix(mat, title=None, labels=None, figure=None, axes=None,
 
     Returns
     -------
-    display : instance of matplotlib
         Axes image.
 
     """
-    # we need a list so an empty one will be cast to False
-    if isinstance(labels, np.ndarray):
-        labels = labels.tolist()
-    if labels and len(labels) != mat.shape[0]:
-        raise ValueError("Length of labels unequal to length of matrix.")
-
+    labels, reorder, fig, axes, own_fig = _sanitize_inputs_plot_matrix(
+        mat.shape, tri, labels, reorder, figure, axes
+    )
     if reorder:
-        if not labels:
-            raise ValueError("Labels are needed to show the reordering.")
-        try:
-            from scipy.cluster.hierarchy import (linkage, optimal_leaf_ordering,
-                                                 leaves_list)
-        except ImportError:
-            raise ImportError("A scipy version of at least 1.0 is needed "
-                              "for ordering the matrix with "
-                              "optimal_leaf_ordering.")
-        valid_reorder_args = [True, 'single', 'complete', 'average']
-        if reorder not in valid_reorder_args:
-            raise ValueError("Parameter reorder needs to be "
-                             "one of {}.".format(valid_reorder_args))
-        if reorder is True:
-            reorder = 'average'
-        linkage_matrix = linkage(mat, method=reorder)
-        ordered_linkage = optimal_leaf_ordering(linkage_matrix, mat)
-        index = leaves_list(ordered_linkage)
-        # make sure labels is an ndarray and copy it
-        labels = np.array(labels).copy()
-        mat = mat.copy()
-        # and reorder labels and matrix
-        labels = labels[index].tolist()
-        mat = mat[index, :][:, index]
-
-    if tri == 'lower':
-        mask = np.tri(mat.shape[0], k=-1, dtype=bool) ^ True
-        mat = np.ma.masked_array(mat, mask)
-    elif tri == 'diag':
-        mask = np.tri(mat.shape[0], dtype=bool) ^ True
-        mat = np.ma.masked_array(mat, mask)
-    if axes is not None and figure is not None:
-        raise ValueError("Parameters figure and axes cannot be specified "
-            "together. You gave 'figure=%s, axes=%s'"
-            % (figure, axes))
-    if figure is not None:
-        if isinstance(figure, plt.Figure):
-            fig = figure
-        else:
-            fig = plt.figure(figsize=figure)
-        axes = plt.gca()
-        own_fig = True
-    else:
-        if axes is None:
-            fig, axes = plt.subplots(1, 1, figsize=(7, 5))
-            own_fig = True
-        else:
-            fig = axes.figure
-            own_fig = False
+        mat, labels = _reorder_matrix(mat, labels, reorder)
+    if tri != "full":
+        mat = _mask_matrix(mat, tri)
     display = axes.imshow(mat, aspect='equal', interpolation='nearest',
                         cmap=cmap, **kwargs)
     axes.set_autoscale_on(False)
     ymin, ymax = axes.get_ylim()
-    if not labels:
-        axes.xaxis.set_major_formatter(plt.NullFormatter())
-        axes.yaxis.set_major_formatter(plt.NullFormatter())
-    else:
-        axes.set_xticks(np.arange(len(labels)))
-        axes.set_xticklabels(labels, size='x-small')
-        for label in axes.get_xticklabels():
-            label.set_ha('right')
-            label.set_rotation(50)
-        axes.set_yticks(np.arange(len(labels)))
-        axes.set_yticklabels(labels, size='x-small')
-        for label in axes.get_yticklabels():
-            label.set_ha('right')
-            label.set_va('top')
-            label.set_rotation(10)
-
+    _configure_axis(axes, labels)
     if grid is not False:
-        size = len(mat)
-        # Different grids for different layouts
-        if tri == 'lower':
-            for i in range(size):
-                # Correct for weird mis-sizing
-                i = 1.001 * i
-                axes.plot([i + 0.5, i + 0.5], [size - 0.5, i + 0.5],
-                          color='grey')
-                axes.plot([i + 0.5, -0.5], [i + 0.5, i + 0.5],
-                          color='grey')
-        elif tri == 'diag':
-            for i in range(size):
-                # Correct for weird mis-sizing
-                i = 1.001 * i
-                axes.plot([i + 0.5, i + 0.5], [size - 0.5, i - 0.5],
-                          color='grey')
-                axes.plot([i + 0.5, -0.5], [i - 0.5, i - 0.5], color='grey')
-        else:
-            for i in range(size):
-                # Correct for weird mis-sizing
-                i = 1.001 * i
-                axes.plot([i + 0.5, i + 0.5], [size - 0.5, -0.5], color='grey')
-                axes.plot([size - 0.5, -0.5], [i + 0.5, i + 0.5], color='grey')
-
+        _configure_grid(axes, grid, tri)
     axes.set_ylim(ymin, ymax)
-
     if auto_fit:
         if labels:
-            fit_axes(axes)
+            _fit_axes(axes)
         elif own_fig:
             plt.tight_layout(pad=.1,
                              rect=((0, 0, .95, 1) if colorbar
                                    else (0, 0, 1, 1)))
-
     if colorbar:
         cax, kw = make_axes(axes, location='right', fraction=0.05, shrink=0.8,
                             pad=.0)
         fig.colorbar(mappable=display, cax=cax)
         # make some room
-        fig.subplots_adjust(right=0.8)
+        fig.subplots_adjust(right=0.78)
         # change current axis back to matrix
         plt.sca(axes)
 
@@ -231,7 +292,6 @@ def plot_matrix(mat, title=None, labels=None, figure=None, axes=None,
                   verticalalignment='top',
                   transform=axes.transAxes,
                   size=size)
-
     return display
 
 
