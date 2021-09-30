@@ -196,34 +196,46 @@ def plot_matrix(mat, title=None, labels=None, figure=None, axes=None,
 
     Parameters
     ----------
-    mat : 2-D numpy array
+    mat : 2-D :class:`numpy.ndarray`
         Matrix to be plotted.
     %(title)s
-    labels : list, ndarray of strings, empty list, False, or None, optional
+    labels : :obj:`list`, or :class:`numpy.ndarray` of :obj:`str`,\
+    or False, or None, optional
         The label of each row and column. Needs to be the same
         length as rows/columns of mat. If False, None, or an
         empty list, no labels are plotted.
 
-    figure : figure instance, figsize tuple, or None, optional
+    figure : :class:`matplotlib.figure.Figure`, figsize :obj:`tuple`,\
+    or None, optional
         Sets the figure used. This argument can be either an existing
         figure, or a pair (width, height) that gives the size of a
         newly-created figure.
-        Specifying both axes and figure is not allowed.
 
-    axes : None or Axes, optional
+        .. note::
+
+            Specifying both axes and figure is not allowed.
+
+    axes : None or :class:`matplotlib.axes.Axes`, optional
         Axes instance to be plotted on. Creates a new one if None.
-        Specifying both axes and figure is not allowed.
+
+        .. note::
+
+            Specifying both axes and figure is not allowed.
+
     %(colorbar)s
         Default=True.
     %(cmap)s
         Default=`plt.cm.RdBu_r`.
     tri : {'full', 'lower', 'diag'}, optional
         Which triangular part of the matrix to plot:
-        'lower' is the lower part, 'diag' is the lower including
-        diagonal, and 'full' is the full matrix.
+
+            - 'lower': Plot the lower part
+            - 'diag': Plot the lower part with the diagonal
+            - 'full': Plot the full matrix
+
         Default='full'.
 
-    auto_fit : boolean, optional
+    auto_fit : :obj:`bool`, optional
         If auto_fit is True, the axes are dimensioned to give room
         for the labels. This assumes that the labels are resting
         against the bottom and left edges of the figure.
@@ -233,7 +245,7 @@ def plot_matrix(mat, title=None, labels=None, figure=None, axes=None,
         If not False, a grid is plotted to separate rows and columns
         using the given color. Default=False.
 
-    reorder : boolean or {'single', 'complete', 'average'}, optional
+    reorder : :obj:`bool` or {'single', 'complete', 'average'}, optional
         If not False, reorders the matrix into blocks of clusters.
         Accepted linkage options for the clustering are 'single',
         'complete', and 'average'. True defaults to average linkage.
@@ -249,6 +261,7 @@ def plot_matrix(mat, title=None, labels=None, figure=None, axes=None,
 
     Returns
     -------
+    display : :class:`matplotlib.axes.Axes`
         Axes image.
 
     """
@@ -302,29 +315,30 @@ def plot_contrast_matrix(contrast_def, design_matrix, colorbar=False, ax=None,
 
     Parameters
     ----------
-    contrast_def : str or array of shape (n_col) or list of (string or
-                   array of shape (n_col))
+    contrast_def : :obj:`str` or :class:`numpy.ndarray` of shape (n_col),\
+    or :obj:`list` of :obj:`str`, or :class:`numpy.ndarray` of shape (n_col)
 
         where ``n_col`` is the number of columns of the design matrix, (one
         array per run). If only one array is provided when there are several
         runs, it will be assumed that the same contrast is desired for all
         runs. The string can be a formula compatible with
-        `pandas.DataFrame.eval`. Basically one can use the name of the
+        :func:`pandas.DataFrame.eval`. Basically one can use the name of the
         conditions as they appear in the design matrix of the fitted model
         combined with operators +- and combined with numbers with operators
         +-`*`/.
 
-    design_matrix : pandas DataFrame
+    design_matrix : :class:`pandas.DataFrame`
         Design matrix to use.
     %(colorbar)s
         Default=False.
-    ax : matplotlib Axes object, optional
+    ax : :class:`matplotlib.axes.Axes`, optional
         Axis on which to plot the figure. If None, a new figure will be created.
     %(output_file)s
 
     Returns
     -------
-    Plot Axes object
+    ax : :class:`matplotlib.axes.Axes`
+        Figure object.
 
     """
     design_column_names = design_matrix.columns.tolist()
@@ -366,25 +380,25 @@ def plot_contrast_matrix(contrast_def, design_matrix, colorbar=False, ax=None,
 
 @fill_doc
 def plot_design_matrix(design_matrix, rescale=True, ax=None, output_file=None):
-    """Plot a design matrix provided as a DataFrame
+    """Plot a design matrix provided as a :class:`pandas.DataFrame`.
 
     Parameters
     ----------
-    design matrix : pandas DataFrame,
+    design matrix : :class:`pandas.DataFrame`
         Describes a design matrix.
 
-    rescale : bool, optional
+    rescale : :obj:`bool`, optional
         Rescale columns magnitude for visualization or not.
         Default=True.
 
-    ax : axis handle, optional
-        Handle to axis onto which we will draw design matrix.
+    ax : :class:`matplotlib.axes.Axes`, optional
+        Handle to axes onto which we will draw the design matrix.
     %(output_file)s
 
     Returns
     -------
-    ax: axis handle
-        The axis used for plotting.
+    ax : :class:`matplotlib.axes.Axes`
+        The axes used for plotting.
 
     """
     # normalize the values per column for better visualization
@@ -426,19 +440,25 @@ def plot_event(model_event, cmap=None, output_file=None, **fig_kwargs):
 
     Parameters
     ----------
-    model_event : pandas DataFrame or list of pandas DataFrame
-        The `pandas.DataFrame` must have three columns
+    model_event : :class:`pandas.DataFrame` or :obj:`list`\
+    of :class:`pandas.DataFrame`
+        The :class:`pandas.DataFrame` must have three columns:
         ``event_type`` with event name, ``onset`` and ``duration``.
-        The `pandas.DataFrame` can also be obtained from
-        :func:`nilearn.glm.first_level.first_level_from_bids`.
+
+        .. note::
+
+            The :class:`pandas.DataFrame` can also be obtained
+            from :func:`nilearn.glm.first_level.first_level_from_bids`.
+
     %(cmap)s
     %(output_file)s
     **fig_kwargs : extra keyword arguments, optional
-        Extra arguments passed to matplotlib.pyplot.subplots.
+        Extra arguments passed to :func:`matplotlib.pyplot.subplots`.
 
     Returns
     -------
-    Plot Figure object
+    figure : :class:`matplotlib.figure.Figure`
+        Plot Figure object.
 
     """
     if isinstance(model_event, pd.DataFrame):
