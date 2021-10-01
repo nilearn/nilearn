@@ -137,7 +137,8 @@ class HierarchicalKMeans(BaseEstimator, ClusterMixin, TransformerMixin):
           n_features) and gives the initial centers.
 
     batch_size : int, optional, default: 1000
-        Size of the mini batches. (Kmeans performed through MiniBatchKMeans)
+        Size of the mini batches. (Kmeans performed through
+        :class:`sklearn.cluster.MiniBatchKMeans`)
 
     n_init : int, default=10
         Number of random initializations that are tried.
