@@ -44,7 +44,7 @@ def _hierarchical_k_means(X, n_clusters, init="k-means++", batch_size=1000,
                           n_init=10, max_no_improvement=10, verbose=0,
                           random_state=0):
     """ Use a recursive k-means to cluster X. First clustering in sqrt(n_clusters)
-    parcels, and Kmeans a second time on each parcel. s
+    parcels, and Kmeans a second time on each parcel.
 
     Parameters
     ----------
