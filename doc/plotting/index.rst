@@ -114,7 +114,7 @@ different heuristics to find cutting coordinates.
                      |hack|
                      Plotting network nodes (markers)
 
-                     Function for automatic plotting of network nodes (markers) 
+                     Function for automatic plotting of network nodes (markers)
                      and color coding them according to provided nodal measure
                      (i.e. connection strength) as demonstrated in
                      **Example:** :ref:`sphx_glr_auto_examples_03_connectivity_plot_atlas_comparison.py`
@@ -223,27 +223,27 @@ Different display modes
 |plot_y_small|     `display_mode='y', cut_coords=1`
                    |hack|
                    Cutting in the y direction, with only 1 cut, that is
-                   automatically positionned
+                   automatically positioned
 
 |plot_z_small|     `display_mode='z', cut_coords=1, colorbar=False`
                    |hack|
                    Cutting in the z direction, with only 1 cut, that is
-                   automatically positionned
+                   automatically positioned
 
 |plot_xz|          `display_mode='xz', cut_coords=[36, 60]`
                    |hack|
                    Cutting in the x and z direction, with cuts manually
-                   positionned
+                   positioned
 
 |plot_yx|          `display_mode='yx', cut_coords=[-27, 36]`
                    |hack|
                    Cutting in the y and x direction, with cuts manually
-                   positionned
+                   positioned
 
 |plot_yz|          `display_mode='yz', cut_coords=[-27, 60]`
                    |hack|
                    Cutting in the y and z direction, with cuts manually
-                   positionned
+                   positioned
 
 |plot_tiled|       `display_mode='tiled', cut_coords=[36, -27, 60]`
                    |hack|

@@ -43,12 +43,12 @@ def test_high_level_glm_one_session():
             fmri_data[0], design_matrices=design_matrices[0])
 
     # Give a fitted NiftiMasker with a None mask_img_ attribute
-    # and check that the masker parameters are overriden by the
+    # and check that the masker parameters are overridden by the
     # FirstLevelModel parameters
     masker.fit()
     masker.mask_img_ = None
     with pytest.warns(UserWarning,
-                      match="Parameter memory of the masker overriden"):
+                      match="Parameter memory of the masker overridden"):
         FirstLevelModel(mask_img=masker).fit(
             fmri_data[0], design_matrices=design_matrices[0])
 
@@ -591,7 +591,7 @@ def test_first_level_contrast_computation():
         model.compute_contrast(c2, 't', 'p_value')
         model.compute_contrast(c2, None, 'effect_size')
         model.compute_contrast(c2, None, 'effect_variance')
-        # formula should work (passing varible name directly)
+        # formula should work (passing variable name directly)
         model.compute_contrast('c0')
         model.compute_contrast('c1')
         model.compute_contrast('c2')

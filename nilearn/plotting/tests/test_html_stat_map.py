@@ -154,13 +154,15 @@ def test_mask_stat_map():
     img, data = _simulate_img()
 
     # Try not to threshold anything
-    mask_img, img, data_t, thre = html_stat_map._mask_stat_map(img,
-                                                               threshold=None)
+    mask_img, img, data_t, thresh = html_stat_map._mask_stat_map(
+        img, threshold=None
+    )
     assert np.max(get_data(mask_img)) == 0
 
     # Now threshold at zero
-    mask_img, img, data_t, thre = html_stat_map._mask_stat_map(img,
-                                                               threshold=0)
+    mask_img, img, data_t, thresh = html_stat_map._mask_stat_map(
+        img, threshold=0
+    )
     assert np.min((data == 0) == get_data(mask_img))
 
 

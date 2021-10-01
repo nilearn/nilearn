@@ -25,7 +25,6 @@ import numpy as np
 
 import matplotlib
 from matplotlib import pyplot as plt
-from mpl_toolkits.mplot3d import Axes3D
 
 from nilearn.surface import surface
 from nilearn.plotting import show
@@ -82,7 +81,7 @@ for sample_points in [line_sample_points, ball_sample_points]:
 ######################################################################
 # Adjust the sample locations
 ######################################################################
-# For "line" and nested surfaces, the depth parameter allows ajusting the
+# For "line" and nested surfaces, the depth parameter allows adjusting the
 # position of samples along the line
 
 nested_sample_points = surface._sample_locations_between_surfaces(

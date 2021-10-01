@@ -469,8 +469,7 @@ def path_scores(solver, X, y, mask, alphas, l1_ratios, train, test,
         best_w = w_
 
     if len(best_w) == n_features:
-        if Xmean is None:
-            Xmean = np.zeros(n_features)
+        # TODO: do something with Xmean
         best_w = np.append(best_w, 0.)
 
     all_test_scores = np.array(all_test_scores)
@@ -764,7 +763,7 @@ class BaseSpaceNet(LinearRegression, CacheMixin):
                          multi_output=True, y_numeric=not self.is_classif)
 
         if not self.is_classif and np.all(np.diff(y) == 0.):
-            raise ValueError("The given input y must have atleast 2 targets"
+            raise ValueError("The given input y must have at least 2 targets"
                              " to do regression analysis. You provided only"
                              " one target {0}".format(np.unique(y)))
 

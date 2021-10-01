@@ -660,7 +660,7 @@ def fetch_localizer_contrasts(contrasts, n_subjects=None, get_tmaps=False,
     def _is_valid_path(path, index, verbose):
         if path not in index:
             if verbose > 0:
-                print("Skiping path '{0}'...".format(path))
+                print("Skipping path '{0}'...".format(path))
             return False
         return True
 
@@ -1678,7 +1678,7 @@ def fetch_development_fmri(n_subjects=None, reduce_confounds=True,
         6 anatomical compcor parameters. This selection only serves the
         purpose of having realistic examples. Depending on your research
         question, other confounds might be more appropriate.
-        If False, returns all fmriprep confounds.
+        If False, returns all :term:`fMRIPrep` confounds.
         Default=True.
     %(data_dir)s
     %(resume)s
@@ -2059,7 +2059,6 @@ def patch_openneuro_dataset(file_list):
             if old in name:
                 if not os.path.exists(name.replace(old, rep[old])):
                     os.symlink(name, name.replace(old, rep[old]))
-                name = name.replace(old, rep[old])
 
 
 @fill_doc
@@ -2173,7 +2172,7 @@ def _download_spm_auditory_data(data_dir, subject_dir, subject_id):
     _fetch_file(url, subject_dir)
     try:
         _uncompress_file(archive_path)
-    except:  # noqa: E722
+    except Exception:
         print('Archive corrupted, trying to download it again.')
         return fetch_spm_auditory(data_dir=data_dir, data_name='',
                                   subject_id=subject_id)
@@ -2181,7 +2180,7 @@ def _download_spm_auditory_data(data_dir, subject_dir, subject_id):
 
 def _prepare_downloaded_spm_auditory_data(subject_dir):
     """ Uncompresses downloaded spm_auditory dataset and organizes
-    the data into apprpriate directories.
+    the data into appropriate directories.
 
     Parameters
     ----------
@@ -2424,7 +2423,7 @@ def _download_data_spm_multimodal(data_dir, subject_dir, subject_id):
         _fetch_file(url, subject_dir)
         try:
             _uncompress_file(archive_path)
-        except:  # noqa: E722
+        except Exception:
             print('Archive corrupted, trying to download it again.')
             return fetch_spm_multimodal_fmri(data_dir=data_dir,
                                              data_name='',
@@ -2559,7 +2558,7 @@ def fetch_fiac_first_level(data_dir=None, verbose=1):
     _fetch_file(url, data_dir)
     try:
         _uncompress_file(archive_path)
-    except:  # noqa: E722
+    except Exception:
         print('Archive corrupted, trying to download it again.')
         return fetch_fiac_first_level(data_dir=data_dir)
 

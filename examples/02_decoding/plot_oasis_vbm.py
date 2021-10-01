@@ -85,7 +85,6 @@ gm_maps_masked = nifti_masker.fit_transform(gm_imgs_train)
 from sklearn.feature_selection import VarianceThreshold
 variance_threshold = VarianceThreshold(threshold=.01)
 gm_maps_thresholded = variance_threshold.fit_transform(gm_maps_masked)
-gm_maps_masked = variance_threshold.inverse_transform(gm_maps_thresholded)
 
 # Then we convert the data back to the mask image in order to use it for
 # decoding process

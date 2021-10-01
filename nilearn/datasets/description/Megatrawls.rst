@@ -33,7 +33,7 @@ Stephen Smith et al, HCP beta-release of the Functional Connectivity MegaTrawl.
 April 2015 "HCP500-MegaTrawl" release.
 https://db.humanconnectome.org/megatrawl/
 
-                        
+
 Disclaimer
 ----------
 IMPORTANT: This is open access data. You must agree to Terms and conditions

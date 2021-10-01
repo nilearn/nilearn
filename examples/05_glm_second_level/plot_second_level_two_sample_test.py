@@ -9,16 +9,16 @@ More specifically:
 
 1. A sample of n=16 visual activity fMRIs are downloaded.
 
-2. An unpaired, two-sample t-test is applied to the brain maps in order to 
+2. An unpaired, two-sample t-test is applied to the brain maps in order to
 see the effect of the contrast difference across subjects.
 
-3. A paired, two-sample t-test is applied to the brain maps in order to see 
+3. A paired, two-sample t-test is applied to the brain maps in order to see
 the effect of the contrast difference across subjects, considering subject intercepts
 
-The contrast is between responses to retinotopically distinct 
-vertical versus horizontal checkerboards. At the individual level, 
-these stimuli are sometimes used to map the borders of primary visual areas. 
-At the group level, such a mapping is not possible. Yet, we may 
+The contrast is between responses to retinotopically distinct
+vertical versus horizontal checkerboards. At the individual level,
+these stimuli are sometimes used to map the borders of primary visual areas.
+At the group level, such a mapping is not possible. Yet, we may
 observe some significant effects in these areas.
 
 """
@@ -39,7 +39,7 @@ sample_vertical = fetch_localizer_contrasts(
 sample_horizontal = fetch_localizer_contrasts(
     ["horizontal checkerboard"], n_subjects, get_tmaps=True)
 
-# Implicitly, there is a one-to-one correspondence between the two samples: 
+# Implicitly, there is a one-to-one correspondence between the two samples:
 # the first image of both samples comes from subject S1, the second from subject S2 etc.
 
 ##########################################################################
@@ -55,7 +55,7 @@ import numpy as np
 condition_effect = np.hstack(([1] * n_subjects, [- 1] * n_subjects))
 
 ##########################################################################
-# The design matrix for the unpaired test doesn't need any more columns 
+# The design matrix for the unpaired test doesn't need any more columns
 # For the paired test, we include an intercept for each subject.
 subject_effect = np.vstack((np.eye(n_subjects), np.eye(n_subjects)))
 subjects = [f'S{i:02d}' for i in range(1, n_subjects + 1)]
@@ -89,12 +89,12 @@ second_level_model_unpaired = SecondLevelModel().fit(
     second_level_input, design_matrix=unpaired_design_matrix)
 
 second_level_model_paired = SecondLevelModel().fit(
-    second_level_input, design_matrix=paired_design_matrix)    
+    second_level_input, design_matrix=paired_design_matrix)
 
 ##########################################################################
 # Estimating the contrast is simple. To do so, we provide the column
-# name of the design matrix. The argument 'output_type' is set to return all 
-# available outputs so that we can compare differences in the effect size, 
+# name of the design matrix. The argument 'output_type' is set to return all
+# available outputs so that we can compare differences in the effect size,
 # variance, and z-score.
 stat_maps_unpaired = second_level_model_unpaired.compute_contrast(
                                                     'vertical vs horizontal',
@@ -108,8 +108,8 @@ stat_maps_paired = second_level_model_paired.compute_contrast(
 # Plot the results
 # ---------------------------
 # The two effect_size images are essentially identical
-(stat_maps_unpaired['effect_size'].get_fdata() - 
-    stat_maps_paired['effect_size'].get_fdata()).max() 
+(stat_maps_unpaired['effect_size'].get_fdata()
+    - stat_maps_paired['effect_size'].get_fdata()).max()
 
 ##########################################################################
 # But the variance in the unpaired image is larger.
@@ -126,7 +126,7 @@ plotting.show()
 ##########################################################################
 # Together, this makes the z_scores from the paired test larger.
 # We threshold the second level contrast and plot it.
-threshold = 3.1  # correponds to  p < .001, uncorrected
+threshold = 3.1  # corresponds to  p < .001, uncorrected
 display = plotting.plot_glass_brain(
     stat_maps_unpaired['z_score'], threshold=threshold, colorbar=True, plot_abs=False,
     title='vertical vs horizontal (unc p<0.001)', vmin=0, vmax=6)
@@ -139,4 +139,4 @@ plotting.show()
 
 ##########################################################################
 # Unsurprisingly, we see activity in the primary visual cortex, both positive
-# and negative. 
+# and negative.

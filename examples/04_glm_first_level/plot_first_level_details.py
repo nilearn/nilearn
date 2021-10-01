@@ -343,7 +343,7 @@ plot_contrast(first_level_model)
 plt.show()
 
 #########################################################################
-# Not a huge effect. For the sake of simplicity and readibility, we
+# Not a huge effect. For the sake of simplicity and readability, we
 # can drop that one.
 
 #########################################################################

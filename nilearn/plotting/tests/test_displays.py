@@ -128,7 +128,7 @@ def test_demo_ortho_projector():
 def test_contour_fillings_levels_in_add_contours():
     oslicer = OrthoSlicer(cut_coords=(0, 0, 0))
     img = load_mni152_template()
-    # levels should be atleast 2
+    # levels should be at least 2
     # If single levels are passed then we force upper level to be inf
     oslicer.add_contours(img, filled=True, colors='r',
                          alpha=0.2, levels=[0.])

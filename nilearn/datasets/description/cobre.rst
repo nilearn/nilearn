@@ -37,7 +37,7 @@ motion for each subject, see the confounding variable called 'scrub' in
 'fmri_XXXXXXX.tsv.gz'. Also, after removing these time frames there may not be
 enough usable data. We recommend a minimum number of 60 time frames. A fairly
 large number of confounds have been made available as part of the release: slow
-time drifts, motion paramaters, frame displacement, scrubbing, average WM/Vent
+time drifts, motion parameters, frame displacement, scrubbing, average WM/Vent
 signal, COMPCOR, global signal.
 We strongly recommend regression of slow time drifts.
 Everything else is optional.

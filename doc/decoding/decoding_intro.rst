@@ -232,7 +232,7 @@ use 4 folds to `fit` your estimator, and 1 to `predict` and measure the errors
 made by your estimators. You repeat this for every combination of folds, and get
 5 prediction "scores", one for each fold.
 
-During the `fit`, :class:`nilearn.decoding.Decoder` object implicitely used a
+During the `fit`, :class:`nilearn.decoding.Decoder` object implicitly used a
 cross-validation: Stratified K-fold by default. You can easily inspect
 the prediction "score" it got in each fold.
 
@@ -282,8 +282,8 @@ the number of total errors. It is not always a sensible metric,
 especially in the case of very imbalanced classes, as in such situations
 choosing the dominant class can achieve a low number of errors.
 
-Other metrics, such as the :term:`AUC` (Area Under the Curve, for the 
-:term:`ROC`: the Receiver Operating Characteristic), can be used through the 
+Other metrics, such as the :term:`AUC` (Area Under the Curve, for the
+:term:`ROC`: the Receiver Operating Characteristic), can be used through the
 `scoring` argument of :class:`nilearn.decoding.Decoder`.
 
 .. seealso::

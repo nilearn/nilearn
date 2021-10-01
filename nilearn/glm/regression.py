@@ -453,7 +453,7 @@ class RegressionResults(LikelihoodModelResults):
 
 class SimpleRegressionResults(LikelihoodModelResults):
     """This class contains only information of the model fit necessary
-    for contast computation.
+    for contrast computation.
 
     Its intended to save memory when details of the model are unnecessary.
 

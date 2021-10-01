@@ -15,7 +15,7 @@ function :func:`nilearn.image.threshold_img` and extract objects using a functio
 """
 
 ################################################################################
-# Fetching t-statistic image of localizer constrasts by loading from datasets
+# Fetching t-statistic image of localizer contrasts by loading from datasets
 # utilities
 from nilearn import datasets
 

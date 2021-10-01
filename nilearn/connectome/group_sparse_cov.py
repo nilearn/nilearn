@@ -680,7 +680,6 @@ def group_sparse_scores(precisions, n_samples, emp_covs, alpha,
             # duality gap.
             A[..., k].flat[::A.shape[0] + 1] = 0
 
-        alpha_max = np.sqrt((A ** 2).sum(axis=-1)).max()
         dual_obj = 0  # dual objective
         for k in range(n_subjects):
             B = emp_covs[..., k] + A[..., k] / n_samples[k]
@@ -1005,7 +1004,7 @@ class GroupSparseCovarianceCV(BaseEstimator, CacheMixin):
             #   value of alpha.
             precisions_list, scores = list(zip(*this_path))
             # now scores[i][j] is the score for the i-th folding, j-th value of
-            # alpha (analoguous for precisions_list)
+            # alpha (analogous for precisions_list)
             precisions_list = list(zip(*precisions_list))
             scores = [np.mean(sc) for sc in zip(*scores)]
             # scores[i] is the mean score obtained for the i-th value of alpha.

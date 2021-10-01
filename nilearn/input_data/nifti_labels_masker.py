@@ -58,7 +58,7 @@ class NiftiLabelsMasker(BaseMasker, CacheMixin):
 
     background_label : number, optional
         Label used in labels_img to represent background.
-        Warning: This value must be consisent with label values and
+        Warning: This value must be consistent with label values and
         image provided.
         Default=0.
 
@@ -136,7 +136,7 @@ class NiftiLabelsMasker(BaseMasker, CacheMixin):
 
     strategy : str, optional
         The name of a valid function to reduce the region with.
-        Must be one of: sum, mean, median, mininum, maximum, variance,
+        Must be one of: sum, mean, median, minimum, maximum, variance,
         standard_deviation. Default='mean'.
 
     reports : boolean, optional
@@ -367,7 +367,8 @@ class NiftiLabelsMasker(BaseMasker, CacheMixin):
                 raise ValueError("Invalid value for resampling_target: " +
                                  str(self.resampling_target))
 
-            mask_data, mask_affine = masking._load_mask_img(self.mask_img_)
+            # Just check that the mask is valid
+            masking._load_mask_img(self.mask_img_)
 
         if not hasattr(self,
                        '_resampled_labels_img_'):

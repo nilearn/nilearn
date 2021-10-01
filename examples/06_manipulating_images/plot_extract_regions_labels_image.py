@@ -9,7 +9,7 @@ to assign each spatially-separated region of the atlas a unique label.
 Indeed, often in a given atlas of labels, the same label (number) may
 be used in different connected regions, for instance a region in each
 hemisphere. If we want to operate on regions and not networks (for
-instance in signal extration), it is useful to assign a different
+instance in signal extraction), it is useful to assign a different
 label to each region. We end up with a new atlas that has more labels,
 but each one points to a single region.
 

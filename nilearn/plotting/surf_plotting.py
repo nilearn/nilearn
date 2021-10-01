@@ -282,7 +282,7 @@ def plot_surf(surf_mesh, surf_map=None, bg_map=None,
         if vmax is None:
             vmax = np.nanmax(surf_map_faces)
 
-        # treshold if indicated
+        # threshold if indicated
         if threshold is None:
             # If no thresholding and nans, filter them out
             kept_indices = np.where(
@@ -802,7 +802,7 @@ def plot_img_on_surf(stat_map, surf_mesh='fsaverage5', mask_img=None,
         # ax.set_facecolor("#e0e0e0")
         # We increase this value to better position the camera of the
         # 3D projection plot. The default value makes meshes look too small.
-        ax.dist = 7 
+        ax.dist = 7
 
     if colorbar:
         sm = _colorbar_from_array(image.get_data(stat_map),

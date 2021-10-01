@@ -51,7 +51,7 @@ from nilearn import plotting
 ########################################
 # Visualizing in - 'sagittal', 'coronal' and 'axial' with given coordinates
 # -------------------------------------------------------------------------
-# The first argument is a path to the filename of a constrast map,
+# The first argument is a path to the filename of a contrast map,
 # optional argument `display_mode` is given as string 'ortho' to visualize
 # the map in three specific directions xyz and the optional `cut_coords`
 # argument, is here a list of integers denotes coordinates of each slice
