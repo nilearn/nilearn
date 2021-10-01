@@ -10,7 +10,7 @@ import warnings
 def _remove_empty_labels(labels):
     '''Remove empty values label values from labels list'''
     vals = np.unique(labels)
-    inverse_vals = - np.ones(labels.max() + 1).astype(int)
+    inverse_vals = - np.ones(labels.max() + 1).astype(np.int)
     inverse_vals[vals] = np.arange(len(vals))
     return inverse_vals[labels]
 
@@ -23,12 +23,13 @@ def _adjust_small_clusters(array, n_clusters):
 
     array_round = np.round(array).astype(int)
     array_round = np.maximum(array_round, np.ones(array.size))
-    if np.sum(array_round) == n_clusters:
-        return array_round.astype(int)
-    elif np.sum(array_round) < n_clusters:
+
+    if np.sum(array_round) < n_clusters:
         while np.sum(array_round) != n_clusters:
             idx = np.argmax(array - array_round)
             array_round[idx] += 1
+        return array_round.astype(int)
+    elif np.sum(array_round) == n_clusters:
         return array_round.astype(int)
     elif np.sum(array_round) > n_clusters:
         while np.sum(array_round) != n_clusters:
@@ -40,11 +41,11 @@ def _adjust_small_clusters(array, n_clusters):
         return array_round.astype(int)
 
 
-def _hierarchical_k_means(X, n_clusters, init="k-means++", batch_size=1000,
-                          n_init=10, max_no_improvement=10, verbose=0,
-                          random_state=0):
+def hierarchical_k_means(X, n_clusters, init="k-means++", batch_size=1000,
+                         n_init=10, max_no_improvement=10, verbose=0,
+                         random_state=0):
     """ Use a recursive k-means to cluster X. First clustering in sqrt(n_clusters)
-    parcels, and Kmeans a second time on each parcel.
+    parcels, and Kmeans a second time on each parcel. s
 
     Parameters
     ----------
@@ -81,7 +82,6 @@ def _hierarchical_k_means(X, n_clusters, init="k-means++", batch_size=1000,
     random_state : int, RandomState instance or None (default)
         Determines random number generation for centroid initialization and
         random reassignment. Use an int to make the randomness deterministic.
-        See :term:`Glossary <random_state>`.
 
     Returns
     -------
@@ -117,7 +117,6 @@ class HierarchicalKMeans(BaseEstimator, ClusterMixin, TransformerMixin):
     """Hierarchical KMeans:
     First clusterize the samples into big clusters. Then clusterize the samples
     inside these big clusters into smaller ones.
-    .. versionadded:: 0.8.2
 
     Parameters
     ----------
@@ -138,8 +137,7 @@ class HierarchicalKMeans(BaseEstimator, ClusterMixin, TransformerMixin):
           n_features) and gives the initial centers.
 
     batch_size : int, optional, default: 1000
-        Size of the mini batches. (Kmeans performed through
-        :class:`sklearn.cluster.MiniBatchKMeans`)
+        Size of the mini batches. (Kmeans performed through MiniBatchKMeans)
 
     n_init : int, default=10
         Number of random initializations that are tried.
@@ -155,7 +153,6 @@ class HierarchicalKMeans(BaseEstimator, ClusterMixin, TransformerMixin):
     random_state : int, RandomState instance or None (default)
         Determines random number generation for centroid initialization and
         random reassignment. Use an int to make the randomness deterministic.
-        See :term:`Glossary <random_state>`.
 
     scaling: bool, optional (default False)
         If scaling is True, each cluster is scaled by the square root of its
@@ -215,10 +212,10 @@ class HierarchicalKMeans(BaseEstimator, ClusterMixin, TransformerMixin):
             warnings.warn("n_clusters should be at most the number of "
                           "features. Taking n_clusters = %s instead."
                           % str(n_features))
-        self.labels_ = _hierarchical_k_means(X, self.n_clusters, self.init,
-                                             self.batch_size, self.n_init,
-                                             self.max_no_improvement,
-                                             self.verbose, self.random_state)
+        self.labels_ = hierarchical_k_means(X, self.n_clusters, self.init,
+                                            self.batch_size, self.n_init,
+                                            self.max_no_improvement,
+                                            self.verbose, self.random_state)
         sizes = np.bincount(self.labels_)
         sizes = sizes[sizes > 0]
         self.sizes_ = sizes
