@@ -3,10 +3,9 @@ Functions for surface manipulation.
 """
 import os
 import warnings
-import collections
 import gzip
 from distutils.version import LooseVersion
-from collections import namedtuple
+from collections import (namedtuple, Mapping)
 
 
 import numpy as np
@@ -959,7 +958,7 @@ def _check_mesh(mesh):
     """
     if isinstance(mesh, str):
         return datasets.fetch_surf_fsaverage(mesh)
-    if not isinstance(mesh, collections.Mapping):
+    if not isinstance(mesh, Mapping):
         raise TypeError("The mesh should be a str or a dictionary, "
                         "you provided: {}.".format(type(mesh).__name__))
     missing = {'pial_left', 'pial_right', 'sulc_left', 'sulc_right',

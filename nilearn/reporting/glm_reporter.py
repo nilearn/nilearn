@@ -620,11 +620,11 @@ def _mask_to_svg(mask_img, bg_img):
 
     """
     if mask_img:
-        mask_plot = plot_roi(roi_img=mask_img,  # noqa: F841
-                             bg_img=bg_img,
-                             display_mode='z',
-                             cmap='Set1',
-                             )
+        plot_roi(roi_img=mask_img,
+                 bg_img=bg_img,
+                 display_mode='z',
+                 cmap='Set1',
+                 )
         mask_plot_svg = _plot_to_svg(plt.gcf())
         # prevents sphinx-gallery & jupyter from scraping & inserting plots
         plt.close()
@@ -899,7 +899,7 @@ def _stat_map_to_svg(stat_img,
         raise ValueError('Invalid plot type provided. Acceptable options are'
                          "'slice' or 'glass'.")
     with pd.option_context('display.precision', 2):
-        stat_map_plot = _add_params_to_plot(table_details, stat_map_plot)
+        _add_params_to_plot(table_details, stat_map_plot)
     fig = plt.gcf()
     stat_map_svg = _plot_to_svg(fig)
     # prevents sphinx-gallery & jupyter from scraping & inserting plots
@@ -933,10 +933,10 @@ def _add_params_to_plot(table_details, stat_map_plot):
                                  wrap=True,
                                  )
     fig = list(stat_map_plot.axes.values())[0].ax.figure
-    fig = _resize_plot_inches(plot=fig,
-                              width_change=.2,
-                              height_change=1,
-                              )
+    _resize_plot_inches(plot=fig,
+                        width_change=.2,
+                        height_change=1,
+                        )
     if stat_map_plot._black_bg:
         suptitle_text.set_color('w')
     return stat_map_plot
