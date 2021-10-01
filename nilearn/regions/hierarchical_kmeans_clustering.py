@@ -117,6 +117,7 @@ class HierarchicalKMeans(BaseEstimator, ClusterMixin, TransformerMixin):
     """Hierarchical KMeans:
     First clusterize the samples into big clusters. Then clusterize the samples
     inside these big clusters into smaller ones.
+    .. versionadded:: 0.8.2
 
     Parameters
     ----------
