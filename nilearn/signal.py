@@ -837,6 +837,6 @@ def _check_signal_parameters(detrend, standardize_confounds):
                       "and/or standarize confounds. You provided detrend={0}, "
                       "standardize_confounds={1}. If confounds were not "
                       "standardized or demeaned before passing to signal.clean"
-                      " signal will not be correcly cleaned. ".format(
+                      " signal will not be correctly cleaned. ".format(
                           detrend, standardize_confounds)
                       )
