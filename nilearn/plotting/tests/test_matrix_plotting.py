@@ -145,6 +145,11 @@ def test_matrix_plotting_set_title(mat, labels, title):
     plt.close()
 
 
+@pytest.mark.parametrize("tri", VALID_TRI_VALUES)
+def test_matrix_plotting_grid(mat, labels, tri):
+    plot_matrix(mat, labels=labels, grid=True, tri=tri)
+
+
 def test_matrix_plotting_reorder(mat, labels):
     from itertools import permutations
     # test if reordering with default linkage works
