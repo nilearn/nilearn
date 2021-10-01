@@ -55,7 +55,8 @@ extensions = [
               'sphinxcontrib.bibtex',
               'numpydoc',
               'sphinx.ext.linkcode',
-              'sphinx_copybutton'
+              'sphinx_copybutton',
+              'sphinxext.opengraph',
               ]
 
 autosummary_generate = True
@@ -365,3 +366,9 @@ linkcode_resolve = make_linkcode_resolve('nilearn',
                                          'https://github.com/nilearn/'
                                          'nilearn/blob/{revision}/'
                                          '{package}/{path}#L{lineno}')
+
+# -- sphinxext.opengraph configuration -------------------------------------
+ogp_site_url = "https://nilearn.github.io/"
+ogp_image = "https://nilearn.github.io/_static/nilearn-logo.png"
+ogp_use_first_image = True
+ogp_site_name = "Nilearn"
