@@ -319,7 +319,7 @@ def plot_contrast_matrix(contrast_def, design_matrix, colorbar=False, ax=None,
         array per run). If only one array is provided when there are several
         runs, it will be assumed that the same contrast is desired for all
         runs. The string can be a formula compatible with
-        :func:`pandas.DataFrame.eval`. Basically one can use the name of the
+        :meth:`pandas.DataFrame.eval`. Basically one can use the name of the
         conditions as they appear in the design matrix of the fitted model
         combined with operators +- and combined with numbers with operators
         +-`*`/.
