@@ -4,7 +4,6 @@ import pytest
 
 import numpy as np
 import pandas as pd
-import scipy
 from nibabel.tmpdirs import InTemporaryDirectory
 import matplotlib as mpl
 import matplotlib.pyplot as plt
@@ -22,7 +21,7 @@ from nilearn.plotting.matrix_plotting import (
 @pytest.mark.parametrize("fig,axes",
                          [("foo", "bar"),
                           (1, 2),
-                           plt.subplots(1, 1, figsize=(7, 5))])
+                          plt.subplots(1, 1, figsize=(7, 5))])
 def test_sanitize_figure_and_axes_error(fig, axes):
     from ..matrix_plotting import _sanitize_figure_and_axes
     with pytest.raises(ValueError,
@@ -78,7 +77,7 @@ VALID_REORDER_VALUES = set([True, False, 'single', 'complete', 'average'])
 @pytest.mark.parametrize("reorder", VALID_REORDER_VALUES)
 def test_sanitize_reorder(reorder):
     from ..matrix_plotting import _sanitize_reorder
-    if reorder != True:
+    if reorder != True:  # noqa
         assert _sanitize_reorder(reorder) == reorder
     else:
         assert _sanitize_reorder(reorder) == 'average'
@@ -88,8 +87,8 @@ def test_sanitize_reorder(reorder):
 def test_sanitize_reorder_error(reorder):
     from ..matrix_plotting import _sanitize_reorder
     with pytest.raises(ValueError,
-                        match=("Parameter reorder needs to be "
-                               f"one of {VALID_REORDER_VALUES}")):
+                       match=("Parameter reorder needs to be "
+                              f"one of {VALID_REORDER_VALUES}")):
         _sanitize_reorder(reorder)
 
 
@@ -106,7 +105,8 @@ def labels():
 @pytest.mark.parametrize("matrix,lab,reorder",
                          [(np.zeros((10, 10)), [0, 1, 2], False),
                           (np.zeros((10, 10)), None, True),
-                          (np.zeros((10, 10)), [str(i) for i in range(10)], ' ')])
+                          (np.zeros((10, 10)),
+                           [str(i) for i in range(10)], ' ')])
 def test_matrix_plotting_errors(matrix, lab, reorder):
     with pytest.raises(ValueError):
         plot_matrix(matrix, labels=lab, reorder=reorder)
@@ -157,8 +157,8 @@ def test_matrix_plotting_reorder(mat, labels):
     reordered_labels = [int(lbl.get_text())
                         for lbl in ax.axes.get_xticklabels()]
     # block order does not matter
-    assert(
-        reordered_labels[:3] == idx or reordered_labels[-3:] == idx,
+    assert(  # noqa
+        (reordered_labels[:3] == idx or reordered_labels[-3:] == idx),
         'Clustering does not find block structure.'
     )
     plt.close()
