@@ -98,6 +98,62 @@ low_pass : :obj:`float` or None, optional
     If None, no low-pass filtering will be performed.
     Default=None."""
 
+# lower_cutoff
+docdict['lower_cutoff'] = """
+lower_cutoff : :obj:`float`, optional
+    Lower fraction of the histogram to be discarded."""
+
+# upper_cutoff
+docdict['upper_cutoff'] = """
+upper_cutoff : :obj:`float`, optional
+    Upper fraction of the histogram to be discarded."""
+
+# connected
+docdict['connected'] = """
+connected : :obj:`bool`, optional
+    If connected is True, only the largest connect component is kept."""
+
+# border_size
+docdict['border_size'] = """
+border_size : :obj:`int`, optional
+    The size, in :term:`voxel` of the border used on the side of
+    the image to determine the value of the background."""
+
+# opening
+docdict['opening'] = """
+opening : :obj:`bool` or :obj:`int`, optional
+
+    - If opening is True, a morphological opening is performed, to keep
+      only large structures. This step is useful to remove parts of
+      the skull that might have been included.
+    - If opening is an integer `n`, it is performed via `n`
+      `erosions <https://en.wikipedia.org/wiki/Erosion_%28morphology%29>`_
+      (see :func:`scipy.ndimage.binary_erosion`).
+      After estimation of the largest connected constituent, 2`n` closing
+      operations are performed followed by `n` erosions. This corresponds
+      to 1 opening operation of order `n` followed by a closing operator
+      of order `n`.
+
+    .. note::
+
+        Turning off opening (``opening=False``) will also prevent
+        any smoothing applied to the image during the mask computation.
+
+"""
+
+# mask_type
+docdict['mask_type'] = """
+mask_type : {'whole-brain', 'gm', 'wm'}, optional
+    Type of mask to be computed:
+
+        - 'whole-brain': Computes the whole-brain mask.
+        - 'gm': Computes the grey-matter mask.
+        - 'wm': Computes the white-matter mask.
+
+    Default = 'whole-brain'.
+
+"""
+
 # High pass
 docdict['high_pass'] = """
 high_pass : :obj:`float`, optional
