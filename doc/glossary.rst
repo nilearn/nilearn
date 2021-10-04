@@ -174,6 +174,10 @@ If you wish to add a missing term, please `create a new issue`_ or
         That is, a ball of given radius is scanned across the brain volume and the
         prediction accuracy of a classifier trained on the corresponding voxels is measured.
 
+    SNR
+        `SNR`_ stands for "Signal to Noise Ratio" and is a measure comparing the level
+        of a given signal to the level of the background noise.
+
     SpaceNet
         `SpaceNet`_ is a decoder implementing spatial penalties which improve brain
         decoding power as well as decoder maps.
@@ -311,6 +315,9 @@ If you wish to add a missing term, please `create a new issue`_ or
 
 .. _`Searchlight analysis`:
     https://nilearn.github.io/decoding/searchlight.html
+
+.. _`SNR`:
+    https://en.wikipedia.org/wiki/Signal-to-noise_ratio
 
 .. _`software`:
     https://www.fil.ion.ucl.ac.uk/spm/software/
