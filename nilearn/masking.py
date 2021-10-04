@@ -176,7 +176,7 @@ def _post_process_mask(mask, affine, opening=2, connected=True,
                        warning_msg=""):
     """Helper function for mask computing functions.
 
-    Performs opening and keep only larget connected component is
+    Performs opening and keep only largest connected component is
     ``connected=True``.
     """
     if opening:
