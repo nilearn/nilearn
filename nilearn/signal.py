@@ -529,6 +529,10 @@ def clean(signals, runs=None, detrend=True, standardize='zscore',
     --------
         nilearn.image.clean_img
     """
+    # Raise warning for some parameter combinations when confounds present
+    if confounds is not None:
+        _check_signal_parameters(detrend, standardize_confounds)
+
     # Read confounds and signals
     signals, runs, confounds = _sanitize_inputs(
         signals, runs, confounds, sample_mask, ensure_finite
@@ -824,3 +828,15 @@ def _sanitize_signals(signals, ensure_finite):
         if mask.any():
             signals[mask] = 0
     return _ensure_float(signals)
+
+
+def _check_signal_parameters(detrend, standardize_confounds):
+    """Raise warning if the combination is illogical"""
+    if not detrend and not standardize_confounds:
+        warnings.warn("When confounds are provided, one must perform detrend "
+                      "and/or standarize confounds. You provided detrend={0}, "
+                      "standardize_confounds={1}. If confounds were not "
+                      "standardized or demeaned before passing to signal.clean"
+                      " signal will not be correctly cleaned. ".format(
+                          detrend, standardize_confounds)
+                      )

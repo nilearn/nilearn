@@ -18,6 +18,12 @@ Enhancements
   When `two_sided` is `False`, only values greater than or equal to the threshold
   are retained.
 
+- :func:`nilearn.signal.clean` raises a warning when the user sets 
+  parameters `detrend` and `standardize_confound` to False.
+  The user is suggested to set one of
+  those options to `True`, or standardize/demean the confounds before using the 
+  function.
+
 Changes
 -------
 
