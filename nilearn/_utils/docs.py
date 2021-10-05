@@ -122,22 +122,26 @@ border_size : :obj:`int`, optional
 # opening
 docdict['opening'] = """
 opening : :obj:`bool` or :obj:`int`, optional
+    This parameter determines whether a morphological
+    :term:`opening<Opening>` is performed, to keep only large structures.
+    This step is useful to remove parts of the skull that might have been
+    included. ``opening`` can be:
 
-    - If opening is True, a morphological opening is performed, to keep
-      only large structures. This step is useful to remove parts of
-      the skull that might have been included.
-    - If opening is an integer `n`, it is performed via `n`
-      `erosions <https://en.wikipedia.org/wiki/Erosion_%28morphology%29>`_
-      (see :func:`scipy.ndimage.binary_erosion`).
-      After estimation of the largest connected constituent, 2`n` closing
-      operations are performed followed by `n` erosions. This corresponds
-      to 1 opening operation of order `n` followed by a closing operator
-      of order `n`.
+        - A boolean : If False, no :term:`opening<Opening>` is performed.
+          If True, it is equivalent to ``opening=1``.
+        - An integer `n`: The :term:`opening<Opening>` is performed via `n`
+          :term:`erosions<Erosion>` (see :func:`scipy.ndimage.binary_erosion`).
+          The largest connected component is then estimated if ``connected`` is
+          set to True, and 2`n` :term:`dilation<Dilation>` operations are
+          performed (see :func:`scipy.ndimage.binary_dilation`) followed by
+          `n` :term:`erosions<Erosion>`. This corresponds to 1
+          :term:`opening<Opening>` operation of order `n` followed by a
+          :term:`closing<Closing>` operator of order `n`.
 
     .. note::
 
-        Turning off opening (``opening=False``) will also prevent
-        any smoothing applied to the image during the mask computation.
+        Turning off :term:`opening<Opening>` (``opening=False``) will also
+        prevent any smoothing applied to the image during the mask computation.
 
 """
 
