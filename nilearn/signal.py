@@ -302,7 +302,7 @@ def butterworth(signals, sampling_rate, low_pass=None, high_pass=None,
         <https://en.wikipedia.org/wiki/Butterworth_filter>`_.
         When filtering signals, the filter has a decay to avoid ringing.
         Increasing the order sharpens this decay. Be aware that very high
-        orders could lead to numerical instability.
+        orders can lead to numerical instability.
         Default=5.
 
     copy : :obj:`bool`, optional
