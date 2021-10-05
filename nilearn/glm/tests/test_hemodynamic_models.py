@@ -240,6 +240,7 @@ def test_hkernel():
     with pytest.raises(ValueError,
                        match="Could not process custom HRF model provided."):
         _hrf_kernel(lambda x: np.ones(int(x)), tr)
+        _hrf_kernel(lambda x, y, z: x + y + z, tr)
         _hrf_kernel([lambda x: np.ones(int(x))] * 2, tr)
     h = _hrf_kernel(lambda tr, ov: np.ones(int(tr * ov)), tr)
     assert len(h) == 1
