@@ -67,6 +67,19 @@ standardize : :obj:`bool`, optional.
 docdict['standardize'] = standardize.format('True')
 docdict['standardize_false'] = standardize.format('False')
 
+# standardize_confounds
+docdict['standardize_confounds'] = """
+standardize_confounds : :obj:`bool`, optional
+    If set to True, the confounds are z-scored: their mean is put
+    to 0 and their variance to 1 in the time dimension.
+    Default=True."""
+
+# ensure_finite
+docdict['ensure_finite'] = """
+ensure_finite : :obj:`bool`, optional
+    If True, the non-finite values (NANs and infs) found in the data
+    will be replaced by zeros."""
+
 # detrend
 docdict['detrend'] = """
 detrend : :obj:`bool`, optional
@@ -94,15 +107,15 @@ target_shape : :obj:`tuple` or :obj:`list`, optional.
 # Low_pass
 docdict['low_pass'] = """
 low_pass : :obj:`float` or None, optional
-    Low cutoff frequency in Hertz.
-    If None, no low-pass filtering will be performed.
-    Default=None."""
+    Low cutoff frequency in Hertz. If specified, signals above this
+    frequency will be filtered out. If None, no low-pass filtering
+    will be performed. Default=None."""
 
 # High pass
 docdict['high_pass'] = """
 high_pass : :obj:`float`, optional
-    High cutoff frequency in Hertz.
-    Default=None."""
+    High cutoff frequency in Hertz. If specified, signals below this
+    frequency will be filtered out. Default=None."""
 
 # t_r
 docdict['t_r'] = """
