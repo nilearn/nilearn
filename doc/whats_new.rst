@@ -17,12 +17,19 @@ Enhancements
   and negative values in the map, as was done previously.
   When `two_sided` is `False`, only values greater than or equal to the threshold
   are retained.
-
 - :func:`nilearn.signal.clean` raises a warning when the user sets 
   parameters `detrend` and `standardize_confound` to False.
   The user is suggested to set one of
   those options to `True`, or standardize/demean the confounds before using the 
   function.
+- It is now possible to provide custom :term:`HRF` models to
+  :class:`nilearn.glm.first_level.FirstLevelModel`. The custom model should be
+  defined as a function, or a list of functions, implementing the same API as
+  Nilearn's usual models (see :func:`nilearn.glm.first_level.spm_hrf` for
+  example). The example
+  :ref:`sphx_glr_auto_examples_04_glm_first_level_plot_hrf.py` was
+  also modified to demo how to define custom :term:`HRF` models.
+  (See issue `#2940 <https://github.com/nilearn/nilearn/issues/2940>`_). 
 
 Changes
 -------
