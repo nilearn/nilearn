@@ -312,7 +312,7 @@ def butterworth(signals, sampling_rate, low_pass=None, high_pass=None,
     Returns
     -------
     filtered_signals : :class:`numpy.ndarray`
-        Signals filtered according to the parameters.
+        Signals filtered according to the given parameters.
     """
     if low_pass is None and high_pass is None:
         if copy:
