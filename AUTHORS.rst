@@ -20,19 +20,20 @@ Core developers
 
 The nilearn core developers are:
 
-* Alexandre Gramfort
-* Alexis Thual
-* Bertrand Thirion
-* Binh Nguyen
-* Elizabeth DuPre
-* Gael Varoquaux
-* Jerome Dockes
-* Julia Huntenburg
-* Kamalaker Dadi
-* Kshitij Chawla
-* Nicolas Gensollen
-* Taylor Salo
-* Thomas Bazeille
+* `Alexandre Gramfort <http://alexandre.gramfort.net/>`_
+* `Alexis Thual <https://github.com/alexisthual>`_
+* `Bertrand Thirion <https://pages.saclay.inria.fr/bertrand.thirion/>`_
+* `Binh Nguyen <https://www.imo.universite-paris-saclay.fr/~tbnguyen/>`_
+* `Elizabeth DuPre <https://elizabeth-dupre.com/#/>`_
+* `Gael Varoquaux <http://gael-varoquaux.info/>`_
+* `Hao-Ting Wang <https://wanghaoting.com/>`_
+* `Jerome Dockes <https://jeromedockes.github.io/>`_
+* `Julia Huntenburg <https://github.com/juhuntenburg>`_
+* `Kamalaker Dadi <https://github.com/KamalakerDadi>`_
+* `Kshitij Chawla <https://github.com/kchawla-pi>`_
+* `Nicolas Gensollen <https://nicolasgensollen.github.io/>`_
+* `Taylor Salo <https://tsalo.github.io/>`_
+* `Thomas Bazeille <https://github.com/thomasbazeille>`_
 
 Other contributors
 ..................
