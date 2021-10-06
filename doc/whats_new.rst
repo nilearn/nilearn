@@ -7,6 +7,12 @@ NEW
 Fixes
 -----
 
+- When a label image with non integer values was provided to the
+  :class:`nilearn.input_data.NiftiLabelsMasker`, its `generate_report`
+  method was raising an ``IndexError``.
+  (See issue `#3007 <https://github.com/nilearn/nilearn/issues/3007>`_ and
+  fix `#3009 <https://github.com/nilearn/nilearn/pull/3009>`_).
+
 Enhancements
 ------------
 
