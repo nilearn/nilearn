@@ -8,6 +8,7 @@ import warnings
 from joblib import Memory
 
 from .. import _utils
+from .._utils.niimg import _safe_get_data
 from .._utils import logger, CacheMixin, _compose_err_msg
 from .._utils.class_inspect import get_params
 from .._utils.niimg_conversions import _check_same_fov
@@ -440,11 +441,25 @@ class NiftiLabelsMasker(BaseMasker, CacheMixin):
             if not _check_same_fov(imgs_, self._resampled_labels_img_):
                 if self.verbose > 0:
                     print("Resampling labels")
+                labels_before_resampling = set(
+                    np.unique(_safe_get_data(self._resampled_labels_img_))
+                )
                 self._resampled_labels_img_ = self._cache(
                     image.resample_img, func_memory_level=2)(
                         self.labels_img_, interpolation="nearest",
                         target_shape=imgs_.shape[:3],
                         target_affine=imgs_.affine)
+                labels_after_resampling = set(
+                    np.unique(_safe_get_data(self._resampled_labels_img_))
+                )
+                labels_diff = labels_before_resampling - labels_after_resampling
+                if len(labels_diff) > 0:
+                    warnings.warn("After resampling the label image to the "
+                                  "data image, the following labels were "
+                                  f"removed: {labels_diff}. "
+                                  "Label image only contains "
+                                  f"{len(labels_after_resampling)} labels "
+                                  "(including background).")
             if self.mask_img is not None and not _check_same_fov(
                     imgs_, self._resampled_mask_img):
                 if self.verbose > 0:
