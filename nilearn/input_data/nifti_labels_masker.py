@@ -452,7 +452,9 @@ class NiftiLabelsMasker(BaseMasker, CacheMixin):
                 labels_after_resampling = set(
                     np.unique(_safe_get_data(self._resampled_labels_img_))
                 )
-                labels_diff = labels_before_resampling - labels_after_resampling
+                labels_diff = labels_before_resampling.difference(
+                    labels_after_resampling
+                )
                 if len(labels_diff) > 0:
                     warnings.warn("After resampling the label image to the "
                                   "data image, the following labels were "
