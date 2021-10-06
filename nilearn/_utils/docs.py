@@ -111,6 +111,66 @@ low_pass : :obj:`float` or None, optional
     frequency will be filtered out. If None, no low-pass filtering
     will be performed. Default=None."""
 
+# lower_cutoff
+docdict['lower_cutoff'] = """
+lower_cutoff : :obj:`float`, optional
+    Lower fraction of the histogram to be discarded."""
+
+# upper_cutoff
+docdict['upper_cutoff'] = """
+upper_cutoff : :obj:`float`, optional
+    Upper fraction of the histogram to be discarded."""
+
+# connected
+docdict['connected'] = """
+connected : :obj:`bool`, optional
+    If connected is True, only the largest connect component is kept."""
+
+# border_size
+docdict['border_size'] = """
+border_size : :obj:`int`, optional
+    The size, in :term:`voxel` of the border used on the side of
+    the image to determine the value of the background."""
+
+# opening
+docdict['opening'] = """
+opening : :obj:`bool` or :obj:`int`, optional
+    This parameter determines whether a morphological
+    :term:`opening<Opening>` is performed, to keep only large structures.
+    This step is useful to remove parts of the skull that might have been
+    included. ``opening`` can be:
+
+        - A boolean : If False, no :term:`opening<Opening>` is performed.
+          If True, it is equivalent to ``opening=1``.
+        - An integer `n`: The :term:`opening<Opening>` is performed via `n`
+          :term:`erosions<Erosion>` (see :func:`scipy.ndimage.binary_erosion`).
+          The largest connected component is then estimated if ``connected`` is
+          set to True, and 2`n` :term:`dilation<Dilation>` operations are
+          performed (see :func:`scipy.ndimage.binary_dilation`) followed by
+          `n` :term:`erosions<Erosion>`. This corresponds to 1
+          :term:`opening<Opening>` operation of order `n` followed by a
+          :term:`closing<Closing>` operator of order `n`.
+
+    .. note::
+
+        Turning off :term:`opening<Opening>` (``opening=False``) will also
+        prevent any smoothing applied to the image during the mask computation.
+
+"""
+
+# mask_type
+docdict['mask_type'] = """
+mask_type : {'whole-brain', 'gm', 'wm'}, optional
+    Type of mask to be computed:
+
+        - 'whole-brain': Computes the whole-brain mask.
+        - 'gm': Computes the grey-matter mask.
+        - 'wm': Computes the white-matter mask.
+
+    Default = 'whole-brain'.
+
+"""
+
 # High pass
 docdict['high_pass'] = """
 high_pass : :obj:`float`, optional

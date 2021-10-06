@@ -32,6 +32,12 @@ If you wish to add a missing term, please `create a new issue`_ or
     CanICA
         `Canonical independent component analysis`_.
 
+    Closing
+        `Closing`_ is, together with :term:`opening<Opening>`, one of the basic
+        operations of `mathematical morphology`_. The closing of a binary image
+        by a structuring element is defined as the :term:`erosion<Erosion>` of
+        the :term:`dilation<Dilation>` of that set.
+
     contrast
         A `contrast`_ is a linear combination of variables (parameters or
         statistics) whose coefficients add up to zero, allowing comparison
@@ -49,6 +55,13 @@ If you wish to add a missing term, please `create a new issue`_ or
         maximally sparse representations of the dataset are sought for. Atoms
         are not required to be orthogonal.
 
+    Dilation
+        `Dilation`_ is, with :term:`erosion<Erosion>` one of the fundamental
+        operations of `mathematical morphology`_ from which other operations
+        like :term:`opening<Opening>` or :term:`closing<Closing>` are based.
+        Dilation uses a structuring element for probing and expanding the
+        shapes contained in the input image.
+
     EEG
         `Electroencephalography`_ is a monitoring method to record electrical
         activity of the brain.
@@ -56,6 +69,13 @@ If you wish to add a missing term, please `create a new issue`_ or
     EPI
         Echo-Planar Imaging. This is the type of sequence used to acquire
         functional or diffusion MRI data.
+
+    Erosion
+        `Erosion`_ is, with :term:`dilation<Dilation>`, one of the fundamental
+        operations in `mathematical morphology`_ from which other operations
+        like :term:`opening<Opening>` or :term:`closing<Closing>` are based.
+        Erosion uses a structuring element for probing and reducing the shapes
+        contained in the input image.
 
     FDR correction
         `False discovery rate`_ controlling procedures are designed to control
@@ -145,6 +165,12 @@ If you wish to add a missing term, please `create a new issue`_ or
     Neurovault
         `Neurovault`_ is a public repository of unthresholded statistical maps,
         parcellations, and atlases of the human brain.
+
+    Opening
+        `Opening`_ is, together with :term:`closing<Closing>`, one of the basic
+        operations of `mathematical morphology`_. It is defined as the
+        :term:`dilation<Dilation>` of the :term:`erosion<Erosion>` of a set by a
+        structuring element.
 
     parcellation
         Act of dividing the brain into smaller regions, i.e. parcels. Parcellations
@@ -265,6 +291,9 @@ If you wish to add a missing term, please `create a new issue`_ or
 .. _`Canonical independent component analysis`:
     https://arxiv.org/abs/1006.2300
 
+.. _`Closing`:
+    https://en.wikipedia.org/wiki/Closing_(morphology)
+
 .. _`contrast`:
     https://en.wikipedia.org/wiki/Contrast_(statistics)
 
@@ -274,8 +303,14 @@ If you wish to add a missing term, please `create a new issue`_ or
 .. _`Dictionary learning`:
     https://en.wikipedia.org/wiki/Sparse_dictionary_learning
 
+.. _`Dilation`:
+    https://en.wikipedia.org/wiki/Dilation_(morphology)
+
 .. _`Electroencephalography`:
     https://en.wikipedia.org/wiki/Electroencephalography
+
+.. _`Erosion`:
+    https://en.wikipedia.org/wiki/Erosion_(morphology)
 
 .. _`False discovery rate`:
     https://en.wikipedia.org/wiki/False_discovery_rate
@@ -298,8 +333,14 @@ If you wish to add a missing term, please `create a new issue`_ or
 .. _`Magnetoencephalography`:
     https://en.wikipedia.org/wiki/Magnetoencephalography
 
+.. _`mathematical morphology`:
+    https://en.wikipedia.org/wiki/Mathematical_morphology
+
 .. _`Neurovault`:
     https://www.neurovault.org/
+
+.. _`Opening`:
+    https://en.wikipedia.org/wiki/Opening_(morphology)
 
 .. _`Predictive modelling`:
     https://en.wikipedia.org/wiki/Predictive_modelling
