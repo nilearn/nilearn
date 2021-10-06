@@ -39,6 +39,7 @@ from warnings import warn
 import numpy as np
 import pandas as pd
 
+from nilearn._utils import fill_doc
 from nilearn._utils.glm import full_rank
 from nilearn.glm.first_level.experimental_paradigm import check_events
 from nilearn.glm.first_level.hemodynamic_models import (_orthogonalize,
@@ -248,6 +249,7 @@ def _convolve_regressors(events, hrf_model, frame_times, fir_delays=[0],
 ######################################################################
 
 
+@fill_doc
 def make_first_level_design_matrix(
         frame_times, events=None, hrf_model='glover',
         drift_model='cosine', high_pass=.01, drift_order=1, fir_delays=[0],
@@ -280,13 +282,7 @@ def make_first_level_design_matrix(
         For the others keys a warning will be displayed.
         Particular attention should be given to the 'trial_type' key
         which defines the different conditions in the experimental paradigm.
-
-    hrf_model : {'glover', 'spm', 'spm + derivative', \
-            'spm + derivative + dispersion', 'glover + derivative', \
-            'glover + derivative + dispersion', \
-            'fir', None}, optional
-        Specifies the hemodynamic response function. Default='glover'.
-
+    %(hrf_model)s
     drift_model : {'cosine', 'polynomial', None}, optional
         Specifies the desired drift model. Default='cosine'.
 
@@ -309,7 +305,7 @@ def make_first_level_design_matrix(
 
     add_reg_names : list of (n_add_reg,) strings, optional
         If None, while add_regs was provided, these will be termed
-        'reg_%i', i = 0..n_add_reg - 1
+        'reg_i', i = 0..n_add_reg - 1
         If add_regs is a DataFrame, the corresponding column names are used
         and add_reg_names is ignored.
 

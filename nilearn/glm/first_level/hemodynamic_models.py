@@ -10,7 +10,9 @@ import warnings
 
 import numpy as np
 from scipy.stats import gamma
+from collections.abc import Iterable
 
+from nilearn._utils import fill_doc
 
 def _gamma_difference_hrf(tr, oversampling=50, time_length=32., onset=0.,
                           delay=6, undershoot=16., dispersion=1.,
@@ -411,8 +413,8 @@ def _hrf_kernel(hrf_model, tr, oversampling=50, fir_delays=None):
 
     Parameters
     ----------
-    hrf_model : string or None,
-        identifier of the hrf model
+    hrf_model : string, function, list of functions, or None,
+        HRF model to be used.
 
     tr : float
         the repetition time in seconds
@@ -435,6 +437,8 @@ def _hrf_kernel(hrf_model, tr, oversampling=50, fir_delays=None):
         'fir',
         'glover', 'glover + derivative', 'glover + derivative + dispersion',
         None]
+    error_msg = ("Could not process custom HRF model provided. "
+                 "Please refer to the related documentation.")
     if hrf_model == 'spm':
         hkernel = [spm_hrf(tr, oversampling)]
     elif hrf_model == 'spm + derivative':
@@ -457,14 +461,28 @@ def _hrf_kernel(hrf_model, tr, oversampling=50, fir_delays=None):
         hkernel = [np.hstack((np.zeros((f) * oversampling),
                               np.ones(oversampling) * 1. / oversampling))
                    for f in fir_delays]
+    elif callable(hrf_model):
+        try:
+            hkernel = [hrf_model(tr, oversampling)]
+        except TypeError:
+            raise ValueError(error_msg)
+    elif(isinstance(hrf_model, Iterable)
+         and all([callable(_) for _ in hrf_model])):
+        try:
+            hkernel = [model(tr, oversampling) for model in hrf_model]
+        except TypeError:
+            raise ValueError(error_msg)
     elif hrf_model is None:
         hkernel = [np.hstack((1, np.zeros(oversampling - 1)))]
     else:
-        raise ValueError('"{0}" is not a known hrf model. Use one of {1}'.
-                         format(hrf_model, acceptable_hrfs))
+        raise ValueError('"{0}" is not a known hrf model. '
+                         'Use either a custom model or '
+                         'one of {1}'.format(hrf_model,
+                                             acceptable_hrfs))
     return hkernel
 
 
+@fill_doc
 def compute_regressor(exp_condition, hrf_model, frame_times, con_id='cond',
                       oversampling=50, fir_delays=None, min_onset=-24):
     """ This is the main function to convolve regressors with hrf model
@@ -474,11 +492,7 @@ def compute_regressor(exp_condition, hrf_model, frame_times, con_id='cond',
     exp_condition : array-like of shape (3, n_events)
         yields description of events for this condition as a
         (onsets, durations, amplitudes) triplet
-
-    hrf_model : {'spm', 'spm + derivative', 'spm + derivative + dispersion',
-        'glover', 'glover + derivative', 'fir', None}
-        Name of the hrf model to be used
-
+    %(hrf_model)s
     frame_times : array of shape (n_scans)
         the desired sampling times
 
@@ -503,26 +517,6 @@ def compute_regressor(exp_condition, hrf_model, frame_times, con_id='cond',
 
     reg_names : list of strings
         Corresponding regressor names.
-
-    Notes
-    -----
-    The different hemodynamic models can be understood as follows:
-     - 'spm': this is the hrf model used in SPM
-     - 'spm + derivative': SPM model plus its time derivative (2 regressors)
-     - 'spm + time + dispersion': idem, plus dispersion derivative
-                                (3 regressors)
-     - 'glover': this one corresponds to the Glover hrf
-     - 'glover + derivative': the Glover hrf + time derivative (2 regressors)
-     - 'glover + derivative + dispersion': idem + dispersion derivative
-                                        (3 regressors)
-    'fir': list or array,
-        finite impulse response basis, a set of delayed dirac models.
-
-    It is expected that spm standard and Glover model would not yield
-    large differences in most cases.
-
-    In case of glover and spm models, the derived regressors are
-    orthogonalized wrt the main one.
 
     """
     # fir_delays should be integers
