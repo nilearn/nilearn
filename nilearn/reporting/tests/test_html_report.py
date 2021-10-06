@@ -4,7 +4,7 @@ from collections import Counter
 import numpy as np
 from nilearn import input_data
 from nilearn._utils import data_gen
-from nilearn.image import get_data
+from nilearn.image import get_data, new_img_like
 from numpy.testing import assert_almost_equal
 
 # Note: html output by nilearn view_* functions
@@ -72,6 +72,14 @@ def test_nifti_labels_masker_report():
     labels_img = data_gen.generate_labeled_regions(shape,
                                                    affine=affine,
                                                    n_regions=n_regions)
+    labels_img_floats = new_img_like(
+        labels_img, get_data(labels_img).astype(float)
+    )
+    masker = input_data.NiftiLabelsMasker(labels_img_floats,
+                                          labels=labels)
+    masker.fit()
+    masker.generate_report()
+
     # Check that providing incorrect labels raises an error
     masker = input_data.NiftiLabelsMasker(labels_img,
                                           labels=labels[:-1])
