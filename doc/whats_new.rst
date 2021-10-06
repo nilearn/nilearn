@@ -30,6 +30,9 @@ Enhancements
   :ref:`sphx_glr_auto_examples_04_glm_first_level_plot_hrf.py` was
   also modified to demo how to define custom :term:`HRF` models.
   (See issue `#2940 <https://github.com/nilearn/nilearn/issues/2940>`_). 
+- :class:`nilearn.input_data.NiftiLabelsMasker` now gives a warning when some
+  labels are removed from the label image at transform time due to resampling
+  of the label image to the data image.
 
 Changes
 -------
