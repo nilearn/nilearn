@@ -18,7 +18,7 @@ If you are interested in contributing to the Nilearn project, we thank you very 
 Report bugs or discuss enhancement ideas
 ----------------------------------------
 
-First of all, if you feel like parts of the documentation are unclear, or if you wish nilearn had a certain feature which would facilitate your work, it is definitely worth opening a discussion around it.
+First of all, if you feel like parts of the documentation are unclear, or if you wish that nilearn had a certain feature, which would facilitate your work, it is definitely worth opening a discussion around it.
 
     * If you think you discovered a bug, please create `an issue <https://github.com/nilearn/nilearn/issues/new/choose>`_ including a minimal runnable example to showcase it (using Nilearn data) as well as your OS and Nilearn version.
 
