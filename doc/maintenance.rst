@@ -57,8 +57,8 @@ We also try to quantify the **estimated impact** on the project:
 
 Finally, we also indicate the **priority level** of the issue:
 
-	- |priority: high| The task is urgent and needs to be adressed asap.
-	- |priority: medium| The task has an average priority level, it should be adressed over the next months.
+	- |priority: high| The task is urgent and needs to be addressed asap.
+	- |priority: medium| The task has an average priority level, it should be addressed over the next months.
 	- |priority: low| The task is not urgent and can be delayed.
 
 Some issues are much easier and can serve as good starting project for
