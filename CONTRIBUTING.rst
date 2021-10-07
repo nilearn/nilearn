@@ -1,34 +1,75 @@
 .. _contributing:
 
 
-How to help?
-=============
+How to get help?
+================
 
-* If you have a usage question : create a topic on `neurostars <https://neurostars.org/tag/nilearn>`_ with the nilearn tag
+If you have issues when using Nilearn, or if you have questions on how to use it, you shouldn't hesitate to reach out to the team. Asking questions or reporting issues is always valuable because it will help other users having the same problem down the road. In a way, asking usage questions contributes to the whole project, so don't hold on a burning question.
 
-* You think you discovered a bug ? Create `an issue <https://github.com/nilearn/nilearn/issues/new/choose>`_
-  including a minimal runnable example to showcase it (using Nilearn data) as well as your OS and Nilearn version.
+There are currently three ways to interact with the Nilearn team: in an "indirect way" through the `neurostars`_ forum or through `github`_, and "in person" over our `discord`_ server where it is possible to talk to members of the team and share screens. Note that we are only available on `discord`_ during the "office hours" that we organize in a regular basis, usually every two Mondays from 4pm to 5pm UTC. You can check the date for the next event on the landing page of this website, or on this `github issue <https://github.com/nilearn/nilearn/issues/2882>`_. You can of course reach out to us anytime on `neurostars`_ or `github`_.
 
-* If you have an idea for a new feature, check if it is in the scope of the project
-  and feel free to open an issue to discuss it.
+If you have a usage question, we would appreciate that you either ask it during office hours, or create a topic on `neurostars <https://neurostars.org/tag/nilearn>`_ with the "nilearn" tag instead of opening an issue on `github`_. Indeed, we try to rely on `github`_ for bug reports, feature requests, and documentation only.
 
-* Want to contribute code ? Thank you very much!
+How to help the project?
+========================
 
-  * For new features, please be sure to create an issue first, to discuss
-    whether it can be included and its specifications.
-  * To help with known issues, please check
-    `good first issues <https://github.com/nilearn/nilearn/labels/Good%20first%20issue>`_
-    to get started, `known bugs <https://github.com/nilearn/nilearn/labels/Bug>`_
-    or `proposed enhancements <https://github.com/nilearn/nilearn/labels/Enhancement>`_.
-  * In any case, before sending code, be sure to **follow the** `Contribution Guidelines`_.
-  * The section `Setting up your environment`_ will get you ready to contribute.
+If you are interested in contributing to the Nilearn project, we thank you very much. Note that there are multiple ways to help us, and not all of them require to write code.
 
-* If you think documentation can be improved, you can directly send proposed
-  improvements in `a pull request <https://github.com/nilearn/nilearn/pulls>`_.
+Report bugs or discuss enhancement ideas
+----------------------------------------
 
+First of all, if you feel like parts of the documentation are unclear, or if you wish nilearn had a certain feature which would facilitate your work, it is definitely worth opening a discussion around it.
+
+    * If you think you discovered a bug, please create `an issue <https://github.com/nilearn/nilearn/issues/new/choose>`_ including a minimal runnable example to showcase it (using Nilearn data) as well as your OS and Nilearn version.
+
+    * If you have an idea for a new feature, check if it is in the :ref:`nilearn_scope` and feel free to open `an issue <https://github.com/nilearn/nilearn/issues/new/choose>`_ to discuss it.
+
+    * If you think documentation can be improved, you can directly send proposed improvements through `pull requests`_.
+
+If you prefer to chat about your idea or request first, you can always join one of the office hours on `discord`_ and talk with :ref:`core_devs`.
+
+Answer questions
+----------------
+
+Another way to help the project is to answer questions on `neurostars`_, or comment on `github issues <https://github.com/nilearn/nilearn/issues>`_.
+Some issues are used to gather user opinions on various questions, and any input from the community is valuable to us.
+
+Review Pull Requests
+--------------------
+
+Any addition to the Nilearn's code base has to be reviewed and approved by several persons including at least two :ref:`core_devs`.
+This can put a heavy burden on :ref:`core_devs` when a lot of `pull requests`_ are opened at the same time.
+Community members are more than welcome to help us review `pull requests`_.
+Keep in mind that the more people review `pull requests`_, the less likely we are to introduce bugs in the code base.
+
+Join the triage team
+--------------------
+
+The :ref:`triage` is composed of community members who have permission on `github`_ to label and close `issues <https://github.com/nilearn/nilearn/issues>`_.
+Their work is crucial to improve the communication in the project and limit the crowding of the issue tracker.
+The :ref:`issue_labels` and :ref:`closing_policy` of the project is defined in more details in the :ref:`issues` section, and is a must-read for anyone wishing to join the team.
+
+Any contributor may become a member of the Nilearn :ref:`triage`.
+If you are interested in joining the :ref:`triage`, you can contact one of the :ref:`core_devs`.
+
+Contribute code
+---------------
+
+If you want to contribute code:
+
+    * For new features, please be sure to create `an issue <https://github.com/nilearn/nilearn/issues>`_ first, to discuss whether it can be included and its specifications.
+    * To help with known issues, please check `good first issues <https://github.com/nilearn/nilearn/labels/Good%20first%20issue>`_ to get started, `known bugs <https://github.com/nilearn/nilearn/labels/Bug>`_, or `proposed enhancements <https://github.com/nilearn/nilearn/labels/Enhancement>`_.
+    * In any case, before sending code, be sure to **follow the** `Contribution Guidelines`_.
+    * The section `Setting up your environment`_ will get you ready to contribute.
+
+Please refer to the :ref:`contributing_code` section for more detailed information.
 
 How do we decide what code goes in?
 ====================================
+
+If you are interested in contributing code to Nilearn, please read the following sections which explain the :ref:`nilearn_scope`, :ref:`nilearn_governance`, as well as :ref:`contributing_code`.
+
+.. _nilearn_scope:
 
 Scope of the project
 ---------------------
@@ -73,6 +114,7 @@ Exhaustive criteria used in the review process are detailed in the **contributio
 guide below**.
 Be sure to read and follow them so that your code can be accepted quickly.
 
+.. _nilearn_governance:
 
 Who makes decisions
 --------------------
@@ -87,6 +129,8 @@ To be merged, a pull request usually needs to be accepted by two maintainers.
 In case a consensus does not emerge easily, the decisions are made by the
 core contributors, i.e., people with write access to the repository, as
 listed :ref:`here <core_devs>`.
+
+.. _contributing_code:
 
 How to contribute to nilearn
 =============================
@@ -426,3 +470,15 @@ Maintenance
 
 More information about the project organization, conventions, and maintenance
 process can be found there : :ref:`maintenance_process`.
+
+.. _`discord`:
+    https://discord.gg/bMBhb7w
+
+.. _`github`:
+    https://github.com/nilearn/nilearn
+
+.. _`neurostars`:
+    https://neurostars.org/tag/nilearn
+
+.. _`pull requests`:
+    https://github.com/nilearn/nilearn/pulls
