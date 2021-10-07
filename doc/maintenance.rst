@@ -77,7 +77,7 @@ Other labels can be used to describe further the topic of the issue:
 	- |Installation| The issue describes a problem with the installation of Nilearn.
 	- |Maintenance| This issue is related to maintenance work.
 	- |Plotting| The issue is related to plotting functionalities.
-	- |testing| The issue is related to testing.
+	- |Testing| The issue is related to testing.
 	- |Usage| This issue is a usage question and should have been posted on `neurostars <https://neurostars.org/>`_.
 
 Finally, we use the following labels to indicate how the work on the issue
@@ -112,7 +112,7 @@ is going:
 .. |priority: medium| image:: https://img.shields.io/badge/-priority:%20medium-FBCA04.svg
 .. |priority: low| image:: https://img.shields.io/badge/-priority:%20low-c5def5.svg
 .. |stalled| image:: https://img.shields.io/badge/-stalled-c2e0c6.svg
-.. |testing| image:: https://img.shields.io/badge/-testing-50bac4.svg
+.. |Testing| image:: https://img.shields.io/badge/-Testing-50bac4.svg
 .. |Usage| image:: https://img.shields.io/badge/-Usage-e99695.svg
 
 .. _closing_policy:

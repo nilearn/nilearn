@@ -6,7 +6,7 @@ How to get help?
 
 If you have issues when using Nilearn, or if you have questions on how to use it, please don't hesitate to reach out to the team. Asking questions or reporting issues is always valuable because it will help other users having the same problem. This means that asking usage questions contributes to the whole project. So, please don't hold onto a burning question!
 
-There are currently three ways to interact with the Nilearn team: in an "indirect way" through the `neurostars`_ forum or through `github`_, and "in person" over our `discord`_ server where it is possible to talk to members of the team and share screens. Note that we are only available on `discord`_ during the "office hours" that we organize on a regular basis, usually every two Mondays from 4pm to 5pm UTC. You can check the date for the next event on the landing page of this website, or on this `github issue <https://github.com/nilearn/nilearn/issues/2882>`_. You can of course reach out to us anytime on `neurostars`_ or `github`_.
+There are currently three ways to interact with the Nilearn team: in an "indirect way" through the `neurostars`_ forum or through `github`_, and "in person" over our `discord`_ server where it is possible to talk to members of the team and share screens. Note that we are only available on `discord`_ during the "office hours" that we organize on a regular basis, usually every other Monday from 4pm to 5pm UTC. You can check the date for the next event on the landing page of this website, or on this `github issue <https://github.com/nilearn/nilearn/issues/2882>`_. You can of course reach out to us anytime on `neurostars`_ or `github`_.
 
 If you have a usage question, we would appreciate it if you either ask it during office hours, or create a topic on `neurostars <https://neurostars.org/tag/nilearn>`_ with the "nilearn" tag, instead of opening an issue on `github`_. Indeed, we try to rely on `github`_ for bug reports, feature requests, and documentation only.
 
@@ -20,7 +20,7 @@ Report bugs or discuss enhancement ideas
 
 First of all, if you feel like parts of the documentation are unclear, or if you wish that nilearn had a certain feature, which would facilitate your work, it is definitely worth opening a discussion around it.
 
-    * If you think you discovered a bug, please create `an issue <https://github.com/nilearn/nilearn/issues/new/choose>`_ including a minimal runnable example to showcase it (using Nilearn data) as well as your OS and Nilearn version.
+    * If you think you have discovered a bug, please create `an issue <https://github.com/nilearn/nilearn/issues/new/choose>`_ including a `minimal runnable example <https://stackoverflow.com/help/minimal-reproducible-example>`_ to showcase it (using Nilearn data) as well as your OS and Nilearn version.
 
     * If you have an idea for a new feature, check if it is in the :ref:`nilearn_scope` and feel free to open `an issue <https://github.com/nilearn/nilearn/issues/new/choose>`_ to discuss it.
 
@@ -47,7 +47,7 @@ Join the triage team
 
 The :ref:`triage` is composed of community members who have permission on `github`_ to label and close `issues <https://github.com/nilearn/nilearn/issues>`_.
 Their work is crucial to improve the communication in the project and limit the crowding of the issue tracker.
-The :ref:`issue_labels` and :ref:`closing_policy` of the project is defined in more details in the :ref:`issues` section, and is a must-read for anyone wishing to join the team.
+The :ref:`issue_labels` and :ref:`closing_policy` of the project is defined in more details in the :ref:`maintenance_process` page, and is a must-read for anyone wishing to join the team.
 
 Any contributor may become a member of the Nilearn :ref:`triage`.
 If you are interested in joining the :ref:`triage`, you can contact one of the :ref:`core_devs`.
