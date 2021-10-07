@@ -35,6 +35,15 @@ The nilearn core developers are:
 * `Taylor Salo <https://tsalo.github.io/>`_
 * `Thomas Bazeille <https://github.com/thomasbazeille>`_
 
+.. _triage:
+
+Triage team
+...........
+
+The nilearn triage team is composed of:
+
+* `Peer Herholz <https://peerherholz.github.io/>`_
+
 Other contributors
 ..................
 
