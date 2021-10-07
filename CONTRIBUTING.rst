@@ -20,9 +20,9 @@ Report bugs or discuss enhancement ideas
 
 First of all, if you feel like parts of the documentation are unclear, or if you wish that nilearn had a certain feature, which would facilitate your work, it is definitely worth opening a discussion around it.
 
-    * If you think you have discovered a bug, please create `an issue <https://github.com/nilearn/nilearn/issues/new/choose>`_ including a `minimal runnable example <https://stackoverflow.com/help/minimal-reproducible-example>`_ to showcase it (using Nilearn data) as well as your OS and Nilearn version.
+    * If you think you have discovered a bug, please create an `issue`_ including a `minimal runnable example <https://stackoverflow.com/help/minimal-reproducible-example>`_ to showcase it (using Nilearn data) as well as your OS and Nilearn version.
 
-    * If you have an idea for a new feature, check if it is in the :ref:`nilearn_scope` and feel free to open `an issue <https://github.com/nilearn/nilearn/issues/new/choose>`_ to discuss it.
+    * If you have an idea for a new feature, check if it is in the :ref:`nilearn_scope` and feel free to open an `issue`_ to discuss it.
 
     * If you think documentation can be improved, you can directly send proposed improvements through `pull requests`_.
 
@@ -57,7 +57,7 @@ Contribute code
 
 If you want to contribute code:
 
-    * For new features, please be sure to create `an issue <https://github.com/nilearn/nilearn/issues>`_ first, to discuss whether it can be included and its specifications.
+    * For new features, please be sure to create an `issue <https://github.com/nilearn/nilearn/issues>`_ first, to discuss whether it can be included and its specifications.
     * To help with known issues, please check `good first issues <https://github.com/nilearn/nilearn/labels/Good%20first%20issue>`_ to get started, `known bugs <https://github.com/nilearn/nilearn/labels/Bug>`_, or `proposed enhancements <https://github.com/nilearn/nilearn/labels/Enhancement>`_.
     * In any case, before sending code, be sure to **follow the** `Contribution Guidelines`_.
     * The section `Setting up your environment`_ will get you ready to contribute.
@@ -476,6 +476,9 @@ process can be found there : :ref:`maintenance_process`.
 
 .. _`github`:
     https://github.com/nilearn/nilearn
+
+.. _`issue`:
+    https://github.com/nilearn/nilearn/issues/new/choose
 
 .. _`neurostars`:
     https://neurostars.org/tag/nilearn
