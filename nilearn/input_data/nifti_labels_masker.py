@@ -9,10 +9,10 @@ from joblib import Memory
 
 from .. import _utils
 from .._utils.niimg import _safe_get_data
-from .._utils import(logger,
-                     CacheMixin,
-                     _compose_err_msg,
-                     fill_doc)
+from .._utils import (logger,
+                      CacheMixin,
+                      _compose_err_msg,
+                      fill_doc)
 from .._utils.class_inspect import get_params
 from .._utils.niimg_conversions import _check_same_fov
 from .. import masking
