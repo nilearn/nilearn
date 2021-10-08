@@ -12,7 +12,7 @@ TV-L1, Graph-Net, etc.)
 # License: simplified BSD
 
 import warnings
-import numbers
+import collections
 import time
 import sys
 from functools import partial
@@ -313,9 +313,10 @@ def path_scores(solver, X, y, mask, alphas, l1_ratios, train, test,
     test : array or list of integers
         List of indices for the test samples.
 
-    l1_ratio : float in the interval [0, 1]; optional (default .5)
+    l1_ratios : float or list of floats in the interval [0, 1];
+    optional (default .5)
         Constant that mixes L1 and TV (resp. Graph-Net) penalization.
-        l1_ratio == 0: just smooth. l1_ratio == 1: just lasso.
+        l1_ratios == 0: just smooth. l1_ratios == 1: just lasso.
 
     eps : float, optional (default 1e-3)
         Length of the path. For example, ``eps=1e-3`` means that
@@ -382,7 +383,7 @@ def path_scores(solver, X, y, mask, alphas, l1_ratios, train, test,
         copy=False)
 
     # misc
-    if isinstance(l1_ratios, numbers.Number):
+    if not isinstance(l1_ratios, collections.abc.Iterable):
         l1_ratios = [l1_ratios]
     l1_ratios = sorted(l1_ratios)[::-1]  # from large to small l1_ratios
     best_score = -np.inf
@@ -501,7 +502,7 @@ class BaseSpaceNet(LinearRegression, CacheMixin):
     l1_ratios : float or list of floats in the interval [0, 1];
     optional (default .5)
         Constant that mixes L1 and spatial prior terms in penalization.
-        l1_ratio == 1 corresponds to pure LASSO. The larger the value of this
+        l1_ratios == 1 corresponds to pure LASSO. The larger the value of this
         parameter, the sparser the estimated weights map. If list is provided,
         then the best value will be selected by cross-validation.
 
@@ -681,7 +682,7 @@ class BaseSpaceNet(LinearRegression, CacheMixin):
         """Makes sure parameters are sane"""
         if self.l1_ratios is not None:
             l1_ratios = self.l1_ratios
-            if isinstance(l1_ratios, numbers.Number):
+            if not isinstance(l1_ratios, collections.abc.Iterable):
                 l1_ratios = [l1_ratios]
             for l1_ratio in l1_ratios:
                 if not 0 <= l1_ratio <= 1.:
@@ -776,11 +777,12 @@ class BaseSpaceNet(LinearRegression, CacheMixin):
         n_samples, _ = X.shape
         y = np.array(y).copy()
         l1_ratios = self.l1_ratios
-        if isinstance(l1_ratios, numbers.Number):
+        if not isinstance(l1_ratios, collections.abc.Iterable):
             l1_ratios = [l1_ratios]
         alphas = self.alphas
-        if isinstance(alphas, numbers.Number):
-            alphas = [alphas]
+        if alphas is not None:
+            if not isinstance(alphas, collections.abc.Iterable):
+                alphas = [alphas]
         if self.loss is not None:
             loss = self.loss
         elif self.is_classif:
@@ -971,9 +973,10 @@ class SpaceNetClassifier(BaseSpaceNet):
     loss : string, optional (default "logistic")
         Loss to be used in the classifier. Must be one of "mse", or "logistic".
 
-    l1_ratios : float or list of floats in the interval [0, 1]; optional (default .5)
+    l1_ratios : float or list of floats in the interval [0, 1];
+    optional (default .5)
         Constant that mixes L1 and spatial prior terms in penalization.
-        l1_ratio == 1 corresponds to pure LASSO. The larger the value of this
+        l1_ratios == 1 corresponds to pure LASSO. The larger the value of this
         parameter, the sparser the estimated weights map. If list is provided,
         then the best value will be selected by cross-validation.
 
@@ -1177,9 +1180,10 @@ class SpaceNetRegressor(BaseSpaceNet):
     penalty : string, optional (default 'graph-net')
         Penalty to used in the model. Can be 'graph-net' or 'tv-l1'.
 
-    l1_ratios : float or list of floats in the interval [0, 1]; optional (default .5)
+    l1_ratios : float or list of floats in the interval [0, 1];
+    optional (default .5)
         Constant that mixes L1 and spatial prior terms in penalization.
-        l1_ratio == 1 corresponds to pure LASSO. The larger the value of this
+        l1_ratios == 1 corresponds to pure LASSO. The larger the value of this
         parameter, the sparser the estimated weights map. If list is provided,
         then the best value will be selected by cross-validation.
 
