@@ -13,8 +13,6 @@ Project Organization
 
 This section describes how the project is organized.
 
-.. _issues:
-
 Issues
 ------
 
