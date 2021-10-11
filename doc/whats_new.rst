@@ -15,7 +15,7 @@ Fixes
 - :func:`nilearn.plotting.plot_markers` did not work when the `display_mode`
   parameter included `l` and `r` and an the parameter `node_size` was provided
   an array-like
-  (See issue `#3012 <https://github.com/nilearn/nilearn/issues/3012>_`) and fix
+  (See issue `#3012 <https://github.com/nilearn/nilearn/issues/3012>`_) and fix
   `#3013 <https://github.com/nilearn/nilearn/pull/3013>`_).
 
 Enhancements
