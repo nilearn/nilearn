@@ -79,7 +79,7 @@ plotting.plot_matrix(correlation_matrix, figure=(10, 8), labels=labels[1:],
 
 ##############################################################################
 # Extract signals and compute a connectivity matrix without confounds removal
-# -------------------------------------------------------------------
+# ---------------------------------------------------------------------------
 # After covering the basic of signal extraction and functional connectivity
 # matrix presentation, let's look into the impact of confounds to :term:`fMRI`
 # signal and functional connectivity. Firstly let's find out what a functional

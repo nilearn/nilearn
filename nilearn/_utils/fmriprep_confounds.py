@@ -1,6 +1,6 @@
-""" Misc utilities for the library.
+""" Misc utilities for function nilearn.input_data.fmriprep_confounds.
 
-Authors: load_confounds team
+Author: Hao-Ting Wang
 """
 
 

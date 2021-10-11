@@ -3,16 +3,16 @@ import numpy as np
 import pandas as pd
 
 
-def _optimize_scrub(motion_outliers_index, n_scans):
-    """Remove continuous segments containing fewer than 5 volumes."""
+def _optimize_scrub(motion_outliers_index, n_scans, scrub=5):
+    """Remove continuous segments with fewer than a minimal segment length."""
     # Start by checking if the beginning continuous segment is fewer than
-    # 5 volumes
-    if motion_outliers_index[0] < 5:
+    # a minimal segment length (default to 5)
+    if motion_outliers_index[0] < scrub:
         motion_outliers_index = np.asarray(
             list(range(motion_outliers_index[0])) + list(motion_outliers_index)
         )
     # Do the same for the ending segment of scans
-    if n_scans - (motion_outliers_index[-1] + 1) < 5:
+    if n_scans - (motion_outliers_index[-1] + 1) < scrub:
         motion_outliers_index = np.asarray(
             list(motion_outliers_index)
             + list(range(motion_outliers_index[-1], n_scans))
@@ -20,8 +20,8 @@ def _optimize_scrub(motion_outliers_index, n_scans):
     # Now do everything in between
     fd_outlier_ind_diffs = np.diff(motion_outliers_index)
     short_segments_inds = np.where(
-        np.logical_and(fd_outlier_ind_diffs > 1, fd_outlier_ind_diffs < 6)
-    )[0]
+        np.logical_and(fd_outlier_ind_diffs > 1,
+                       fd_outlier_ind_diffs < (scrub + 1)))[0]
     for ind in short_segments_inds:
         motion_outliers_index = np.asarray(
             list(motion_outliers_index)

@@ -75,9 +75,11 @@ def _load_scrub(confounds_raw, scrub, fd_thresh, std_dvars_thresh):
     motion_outliers_index = np.sort(
         np.unique(np.concatenate((fd_outliers_index, dvars_outliers_index)))
     )
-    # Do full scrubbing if desired, and motion outliers were detected
-    if scrub == "full" and len(motion_outliers_index) > 0:
-        motion_outliers_index = _optimize_scrub(motion_outliers_index, n_scans)
+    # when motion outliers were detected, remove segments with too few
+    # timeframes if desired
+    if scrub > 0 and len(motion_outliers_index) > 0:
+        motion_outliers_index = _optimize_scrub(motion_outliers_index, n_scans,
+                                                scrub)
     # Make one-hot encoded motion outlier regressors
     motion_outlier_regressors = pd.DataFrame(
         np.transpose(np.eye(n_scans)[motion_outliers_index]).astype(int)

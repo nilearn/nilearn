@@ -1,7 +1,4 @@
-"""Helper functions for the manipulation of fmriprep output confounds.
-
-Authors: load_confounds team
-"""
+"""Helper functions for the manipulation of fmriprep output confounds."""
 import numpy as np
 import pandas as pd
 from sklearn.preprocessing import scale

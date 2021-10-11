@@ -483,11 +483,12 @@ def test_sample_mask(tmp_path):
     )
 
     reg, mask = fmriprep_confounds(
-        regular_nii, strategy=["motion", "scrub"], scrub="full", fd_thresh=0.15
+        regular_nii, strategy=["motion", "scrub"], scrub=5, fd_thresh=0.15
     )
     # the current test data has 6 time points marked as motion outliers,
     # and one nonsteady state (overlap with the first motion outlier)
-    # 2 time points removed due to the "full" srubbing strategy
+    # 2 time points removed due to the "full" srubbing strategy (remove segment
+    # shorter than 5 volumes)
     assert reg.shape[0] - len(mask) == 8
     # nilearn requires unmasked confound regressors
     assert reg.shape[0] == 30
@@ -504,7 +505,7 @@ def test_sample_mask(tmp_path):
 
     # When no volumes needs removing (very liberal motion threshould)
     reg, mask = fmriprep_confounds(
-        regular_nii, strategy=["motion", "scrub"], scrub="basic", fd_thresh=4
+        regular_nii, strategy=["motion", "scrub"], scrub=0, fd_thresh=4
     )
     assert mask is None
 
