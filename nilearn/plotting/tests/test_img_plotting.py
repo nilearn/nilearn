@@ -1479,6 +1479,10 @@ def test_plot_markers(tmpdir):
     plt.close()
     plot_markers(*args, node_size=np.array([10, 20, 30, 40]), **kwargs)
     plt.close()
+    plot_markers(
+           *args, display_mode="lyrz", node_size=np.array([10, 20, 30, 40])
+       )
+    plt.close()
 
     # Different options for cmap related arguments
     plot_markers(*args, node_cmap='RdBu', node_vmin=0, **kwargs)
