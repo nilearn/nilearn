@@ -231,13 +231,14 @@ Smoothing
 
 :class:`NiftiMasker` can apply Gaussian spatial smoothing to the
 neuroimaging data, useful to fight noise or for inter-individual
-differences in neuroanatomy. It is achieved by specifying the full-width
-half maximum (FWHM; in millimeter scale) with the `smoothing_fwhm`
-parameter. Anisotropic filtering is also possible by passing 3 scalars
-``(x, y, z)``, the FWHM along the x, y, and z direction.
+differences in neuroanatomy. It is achieved by specifying the
+:term:`full-width half maximum<FWHM>` (:term:`FWHM`; in millimeter
+scale) with the `smoothing_fwhm` parameter. Anisotropic filtering
+is also possible by passing 3 scalars ``(x, y, z)``, the
+:term:`FWHM` along the x, y, and z direction.
 
-The underlying function handles properly non-cubic voxels by scaling the
-given widths appropriately.
+The underlying function handles properly non-cubic :term:`voxels<voxel>`
+by scaling the given widths appropriately.
 
 .. seealso::
 

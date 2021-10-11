@@ -66,11 +66,7 @@ class MultiNiftiMasker(NiftiMasker, CacheMixin):
         Mask of the data. If not given, a mask is computed in the fit step.
         Optional parameters can be set using mask_args and mask_strategy to
         fine tune the mask extraction.
-
-    smoothing_fwhm : float, optional
-        If smoothing_fwhm is not None, it gives the size in millimeters of
-        the spatial smoothing to apply to the signal.
-
+    %(smoothing_fwhm)s
     standardize : {False, True, 'zscore', 'psc'}, optional
         Strategy to standardize the signal.
         'zscore': the signal is z-scored. Timeseries are shifted

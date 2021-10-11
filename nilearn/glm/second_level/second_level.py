@@ -18,6 +18,7 @@ from joblib import Memory
 from nibabel import Nifti1Image
 from sklearn.base import clone
 
+from nilearn._utils import fill_doc
 from nilearn._utils.niimg_conversions import check_niimg
 from nilearn.input_data import NiftiMasker
 from nilearn.glm.contrasts import (compute_contrast,
@@ -222,6 +223,7 @@ def _infer_effect_maps(second_level_input, contrast_def):
     return effect_maps
 
 
+@fill_doc
 class SecondLevelModel(BaseGLM):
     """ Implementation of the General Linear Model for multiple subject
     fMRI data
@@ -242,11 +244,7 @@ class SecondLevelModel(BaseGLM):
     target_shape : 3-tuple of integers, optional
         This parameter is passed to :func:`nilearn.image.resample_img`.
         Please see the related documentation for details.
-
-    smoothing_fwhm : float, optional
-        If smoothing_fwhm is not None, it gives the size in millimeters of the
-        spatial smoothing to apply to the signal.
-
+    %(smoothing_fwhm)s
     memory : string, optional
         Path to the directory used to cache the masking process and the glm
         fit. By default, no caching is done. Creates instance of joblib.Memory.
@@ -531,6 +529,7 @@ class SecondLevelModel(BaseGLM):
         return outputs if output_type == 'all' else output
 
 
+@fill_doc
 def non_parametric_inference(second_level_input, confounds=None,
                              design_matrix=None, second_level_contrast=None,
                              mask=None, smoothing_fwhm=None,
@@ -585,11 +584,7 @@ def non_parametric_inference(second_level_input, confounds=None,
         it will be computed automatically by a MultiNiftiMasker with default
         parameters. Automatic mask computation assumes first level imgs have
         already been masked.
-
-    smoothing_fwhm : float, optional
-        If smoothing_fwhm is not None, it gives the size in millimeters of the
-        spatial smoothing to apply to the signal.
-
+    %(smoothing_fwhm)s
     model_intercept : bool, optional
       If True, a constant column is added to the confounding variates
       unless the tested variate is already the intercept.

@@ -134,6 +134,11 @@ If you wish to add a missing term, please `create a new issue`_ or
         `Family-wise error rate`_ is the probability of making one or more
         false discoveries, or type I errors when performing multiple
         hypotheses tests.
+    
+    FWHM
+        `FWHM`_ stands for "full width at half maximum". In a distribution, it
+        refers to the width of a filter, expressed as the diameter of the area
+        on which the filter value is above half its maximal value.
 
     GLM
         General Linear Model. This is the name of the models traditionally fit
@@ -326,6 +331,9 @@ If you wish to add a missing term, please `create a new issue`_ or
 
 .. _`functional connectome`:
     https://nilearn.github.io/connectivity/functional_connectomes.html
+
+.. _`FWHM`:
+    https://en.wikipedia.org/wiki/Full_width_at_half_maximum    
 
 .. _`Independent component analysis`:
     https://en.wikipedia.org/wiki/Independent_component_analysis

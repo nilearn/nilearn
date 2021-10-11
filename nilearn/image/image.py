@@ -17,8 +17,12 @@ from scipy import ndimage
 from scipy.stats import scoreatpercentile
 
 from .. import signal
-from .._utils import (_repr_niimgs, as_ndarray, check_niimg, check_niimg_3d,
-                      check_niimg_4d)
+from .._utils import (_repr_niimgs,
+                      as_ndarray,
+                      check_niimg,
+                      check_niimg_3d,
+                      check_niimg_4d,
+                      fill_doc)
 from .._utils.niimg import _get_data, _safe_get_data
 from .._utils.niimg_conversions import _check_same_fov, _index_img
 from .._utils.param_validation import check_threshold
@@ -161,6 +165,7 @@ def _fast_smooth_array(arr):
     return smoothed_arr
 
 
+@fill_doc
 def _smooth_array(arr, affine, fwhm=None, ensure_finite=True, copy=True):
     """Smooth images by applying a Gaussian filter.
 
@@ -176,20 +181,7 @@ def _smooth_array(arr, affine, fwhm=None, ensure_finite=True, copy=True):
         (4, 4) matrix, giving affine transformation for image. (3, 3) matrices
         are also accepted (only these coefficients are used).
         If `fwhm='fast'`, the affine is not used and can be None.
-
-    fwhm : scalar, :class:`numpy.ndarray`/:obj:`tuple`/:obj:`list`, 'fast' or None, optional
-        Smoothing strength, as a full-width at half maximum, in millimeters.
-        If a nonzero scalar is given, width is identical in all 3 directions.
-        A :class:`numpy.ndarray`, :obj:`tuple`, or :obj:`list` must have 3 elements,
-        giving the FWHM along each axis.
-        If any of the elements is zero or None, smoothing is not performed
-        along that axis.
-        If  `fwhm='fast'`, a fast smoothing will be performed with a filter
-        [0.2, 1, 0.2] in each direction and a normalisation
-        to preserve the local average value.
-        If fwhm is None, no filtering is performed (useful when just removal
-        of non-finite values is needed).
-
+    %(fwhm)s
     ensure_finite : :obj:`bool`, optional
         If True, replace every non-finite values (like NaNs) by zero before
         filtering. Default=True.
@@ -241,6 +233,7 @@ def _smooth_array(arr, affine, fwhm=None, ensure_finite=True, copy=True):
     return arr
 
 
+@fill_doc
 def smooth_img(imgs, fwhm):
     """Smooth images by applying a Gaussian filter.
 
@@ -253,21 +246,7 @@ def smooth_img(imgs, fwhm):
         Image(s) to smooth (see
         http://nilearn.github.io/manipulating_images/input_output.html
         for a detailed description of the valid input types).
-
-    fwhm : scalar, :class:`numpy.ndarray`, 'fast' or None
-        Smoothing strength, as a Full-Width at Half Maximum (FWHM), in
-        millimeters.
-        If a scalar is given, width is identical on all three
-        directions. A :class:`numpy.ndarray` must have 3 elements, giving the FWHM
-        along each axis.
-        If `fwhm='fast'`, a fast smoothing will be performed with
-        a filter [0.2, 1, 0.2] in each direction and a normalisation
-        to preserve the scale.
-        If `fwhm` is None, no filtering is performed (useful when just removal
-        of non-finite values is needed).
-
-        In corner case situations, `fwhm` is simply kept to None when `fwhm` is
-        specified as `fwhm=0`.
+    %(fwhm)s
 
     Returns
     -------

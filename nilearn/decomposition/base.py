@@ -251,11 +251,7 @@ class BaseDecomposition(BaseEstimator, CacheMixin, TransformerMixin):
         Mask to be used on data. If an instance of masker is passed,
         then its mask will be used. If no mask is given, it will be computed
         automatically by a MultiNiftiMasker with default parameters.
-
-    smoothing_fwhm : float, optional
-        If smoothing_fwhm is not None, it gives the size in millimeters of the
-        spatial smoothing to apply to the signal.
-
+    %(smoothing_fwhm)s
     standardize : boolean, optional
         If standardize is True, the time-series are centered and normed:
         their mean is put to 0 and their variance to 1 in the time dimension.

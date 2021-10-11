@@ -54,8 +54,33 @@ url : :obj:`str`, optional
 docdict['smoothing_fwhm'] = """
 smoothing_fwhm : :obj:`float`, optional.
     If ``smoothing_fwhm`` is not ``None``, it gives
-    the full-width at half maximum in millimeters
+    the :term:`full-width at half maximum<FWHM>` in millimeters
     of the spatial smoothing to apply to the signal."""
+
+# fwhm
+docdict['fwhm'] = """
+fwhm : scalar, :class:`numpy.ndarray`, or :obj:`tuple`, or :obj:`list`,\
+or 'fast' or None, optional
+    Smoothing strength, as a :term:`full-width at half maximum<FWHM>`,
+    in millimeters:
+
+        - If a nonzero scalar is given, width is identical in all 3 directions.
+        - If a :class:`numpy.ndarray`, :obj:`tuple`, or :obj:`list` is given,
+          it must have 3 elements, giving the :term:`FWHM` along each axis.
+          If any of the elements is zero or None, smoothing is not performed
+          along that axis.
+        - If `fwhm='fast'`, a fast smoothing will be performed with a filter
+          [0.2, 1, 0.2] in each direction and a normalisation to preserve the
+          local average value.
+        - If ``fwhm`` is None, no filtering is performed (useful when just
+          removal of non-finite values is needed).
+
+    .. note::
+
+        In corner case situations, `fwhm` is simply kept to None when `fwhm`
+        is specified as `fwhm=0`.
+
+"""
 
 # Standardize
 standardize = """
