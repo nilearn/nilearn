@@ -26,11 +26,15 @@ from pandas.testing import assert_frame_equal
     ],
 )  # no optimisation needed
 def test_optimize_scrub(original_motion_outliers_index, expected_optimal):
-    optimised_index = _optimize_scrub(original_motion_outliers_index, 100)
+    """Check the segment removal is acting correctly."""
+    # simulated labels with 100 time frames and remove any segment under
+    # 5 volumes
+    optimised_index = _optimize_scrub(original_motion_outliers_index, 100, 5)
     assert np.array_equal(optimised_index, expected_optimal)
 
 
 def test_get_outlier_cols():
+    """Check the non-steady state columns are deteched."""
     col_names = ["confound_regressor"]
     non_steady_state = [f"non_steady_state_outlier{i:02d}" for i in range(3)]
     col_names += non_steady_state
@@ -41,6 +45,7 @@ def test_get_outlier_cols():
 
 
 def test_extract_outlier_regressors():
+    """Check outlier regressors of different types."""
     # Create a fake confound dataframe
     n_scans = 50
     fake_confounds = pd.DataFrame(
