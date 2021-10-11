@@ -8,7 +8,7 @@ from distutils.version import LooseVersion
 import matplotlib
 import matplotlib.pyplot as plt
 from matplotlib.patches import FancyArrow
-import nibabel
+from nibabel import Nifti1Image
 import numpy as np
 import pytest
 
@@ -31,7 +31,7 @@ from nilearn.plotting.img_plotting import (MNI152TEMPLATE, plot_anat, plot_img,
                                            _get_colorbar_and_data_ranges)
 from nilearn import plotting
 
-mni_affine = np.array([[-2.,    0.,    0.,   90.],
+MNI_AFFINE = np.array([[-2.,    0.,    0.,   90.],
                        [0.,    2.,    0., -126.],
                        [0.,    0.,    2.,  -72.],
                        [0.,    0.,    0.,    1.]])
@@ -39,46 +39,38 @@ mni_affine = np.array([[-2.,    0.,    0.,   90.],
 
 @pytest.fixture()
 def testdata_3d():
-    """A random 3D image for testing figures.
-    """
+    """A random 3D image for testing figures."""
     data_positive = np.zeros((7, 7, 3))
     rng = np.random.RandomState(42)
     data_rng = rng.uniform(size=(7, 7, 3))
     data_positive[1:-1, 2:-1, 1:] = data_rng[1:-1, 2:-1, 1:]
-    img_3d = nibabel.Nifti1Image(data_positive, mni_affine)
-    data = {
-        'img': img_3d,
-    }
-    return data
+    img_3d = Nifti1Image(data_positive, MNI_AFFINE)
+    return {'img': img_3d}
 
 
 @pytest.fixture()
 def testdata_4d():
-    """Random 4D images for testing figures for multivolume data.
-    """
+    """Random 4D images for testing figures for multivolume data."""
     rng = np.random.RandomState(42)
-    img_4d = nibabel.Nifti1Image(rng.uniform(size=(7, 7, 3, 10)), mni_affine)
-    img_4d_long = nibabel.Nifti1Image(
-        rng.uniform(size=(7, 7, 3, 1777)), mni_affine
-    )
-    img_mask = nibabel.Nifti1Image(np.ones((7, 7, 3), int), mni_affine)
+    img_4d = Nifti1Image(rng.uniform(size=(7, 7, 3, 10)), MNI_AFFINE)
+    img_4d_long = Nifti1Image(rng.uniform(size=(7, 7, 3, 1777)), MNI_AFFINE)
+    img_mask = Nifti1Image(np.ones((7, 7, 3), int), MNI_AFFINE)
     atlas = np.ones((7, 7, 3), int)
     atlas[2:5, :, :] = 2
     atlas[5:8, :, :] = 3
-    img_atlas = nibabel.Nifti1Image(atlas, mni_affine)
+    img_atlas = Nifti1Image(atlas, MNI_AFFINE)
     atlas_labels = {
         "gm": 1,
         "wm": 2,
         "csf": 3,
     }
-    data = {
+    return ({
         'img_4d': img_4d,
         'img_4d_long': img_4d_long,
         'img_mask': img_mask,
         'img_atlas': img_atlas,
         'atlas_labels': atlas_labels,
-    }
-    return data
+    })
 
 
 def test_mni152template_is_reordered():
@@ -90,27 +82,37 @@ def test_mni152template_is_reordered():
 
 
 def demo_plot_roi(**kwargs):
-    """ Demo plotting an ROI
-    """
-    mni_affine = MNI152TEMPLATE.get_affine()
+    """ Demo plotting an ROI"""
     data = np.zeros((91, 109, 91))
     # Color a asymmetric rectangle around Broca area:
     x, y, z = -52, 10, 22
     x_map, y_map, z_map = coord_transform(x, y, z,
-                                          np.linalg.inv(mni_affine))
+                                          np.linalg.inv(MNI_AFFINE))
     data[int(x_map) - 5:int(x_map) + 5, int(y_map) - 3:int(y_map) + 3,
          int(z_map) - 10:int(z_map) + 10] = 1
-    img = nibabel.Nifti1Image(data, mni_affine)
+    img = Nifti1Image(data, MNI_AFFINE)
     return plot_roi(img, title="Broca's area", **kwargs)
 
 
-def test_plot_roi_view_types():
+@pytest.mark.parametrize('view_type', ['contours', 'continuous'])
+@pytest.mark.parametrize('black_bg', [True, False])
+@pytest.mark.parametrize('threshold', [.5, .2])
+@pytest.mark.parametrize('alpha', [.7, .1])
+def test_plot_roi_view_types(view_type, black_bg, threshold, alpha):
     # This is only a smoke test contours rois
-    demo_plot_roi(view_type='contours')
-    # This is only a smoke test contours rois
-    demo_plot_roi(view_type='continuous')
+    kwargs = dict()
+    if view_type == 'contours':
+        kwargs["linewidth"] = 2.
+    demo_plot_roi(view_type=view_type,
+                  black_bg=black_bg,
+                  threshold=threshold,
+                  alpha=alpha,
+                  **kwargs)
+    plt.close()
 
-    # Test error message for invalid view_type
+
+def test_plot_roi_view_type_error():
+    """Test error message for invalid view_type."""
     with pytest.raises(ValueError,
                        match='Unknown view type:'
                        ):
@@ -118,87 +120,66 @@ def test_plot_roi_view_types():
     plt.close()
 
 
-def test_plot_roi_contours():
-    display = plot_roi(None)
-    data = np.zeros((91, 109, 91))
-    x, y, z = -52, 10, 22
-    x_map, y_map, z_map = coord_transform(x, y, z,
-                                          np.linalg.inv(mni_affine))
-    data[int(x_map) - 5:int(x_map) + 5, int(y_map) - 3:int(y_map) + 3,
-         int(z_map) - 10:int(z_map) + 10] = 1
-    img = nibabel.Nifti1Image(data, mni_affine)
-    plot_roi(img, cmap='RdBu', alpha=0.1, view_type='contours',
-             linewidths=2.)
-    plt.close()
-
-
-def test_demo_plot_roi(tmpdir):
-    # This is only a smoke test
-    demo_plot_roi()
-    # Test the black background code path
-    demo_plot_roi(black_bg=True)
-    # Test whether the function accepts a threshold argument
-    demo_plot_roi(threshold=0.2)
-
-    # Save execution time and memory
-    plt.close()
+def test_demo_plot_roi_output_file(tmpdir):
     filename = str(tmpdir.join('test.png'))
     with open(filename, 'wb') as fp:
         out = demo_plot_roi(output_file=fp)
     assert out is None
 
 
-def test_plot_anat(testdata_3d, tmpdir):
-    img = testdata_3d['img']
-
-    # Test saving with empty plot
-    z_slicer = plot_anat(anat_img=False, display_mode='z')
+@pytest.mark.parametrize("anat_img", [False, MNI152TEMPLATE])
+@pytest.mark.parametrize("display_mode", ['z', 'ortho'])
+def test_plot_anat_MNI(anat_img, display_mode, tmpdir):
+    slicer = plot_anat(anat_img=anat_img, display_mode=display_mode)
     filename = str(tmpdir.join('test.png'))
-    z_slicer.savefig(filename)
-
-    z_slicer = plot_anat(display_mode='z')
-    z_slicer.savefig(filename)
-
-    ortho_slicer = plot_anat(img, dim='auto')
-    ortho_slicer.savefig(filename)
-
-    # Save execution time and memory
+    slicer.savefig(filename)
     plt.close()
 
 
-def test_plot_functions(testdata_3d, testdata_4d, tmpdir):
-    img_3d = testdata_3d['img']
+def test_plot_anat_3d_img(testdata_3d, tmpdir):
+    filename = str(tmpdir.join('test.png'))
+    slicer = plot_anat(testdata_3d['img'], dim='auto')
+    slicer.savefig(filename)
+    plt.close()
+
+
+@pytest.mark.parametrize("plot_func",
+                         [plot_anat, plot_img, plot_stat_map,
+                          plot_epi, plot_roi, plot_glass_brain])
+def test_plot_functions_3d_default_params(plot_func, testdata_3d, tmpdir):
+    filename = str(tmpdir.join('temp.png'))
+    plot_func(testdata_3d['img'], output_file=filename)
+    plt.close()
+
+
+@pytest.mark.parametrize("plot_func", [plot_carpet])
+def test_plot_functions_4d_default_params(plot_func, testdata_4d, tmpdir):
+    # smoke-test for 4D plotting functions with default arguments
+    filename = str(tmpdir.join('temp.png'))
     img_4d = testdata_4d['img_4d']
     img_4d_mask = testdata_4d['img_mask']
-
-    # smoke-test for 3D plotting functions with default arguments
-    filename = str(tmpdir.join('temp.png'))
-    for plot_func in [plot_anat, plot_img, plot_stat_map, plot_epi,
-                      plot_glass_brain]:
-        plot_func(img_3d, output_file=filename)
-
-    # smoke-test for 4D plotting functions with default arguments
-    for plot_func in [plot_carpet]:
-        plot_func(img_4d, mask_img=img_4d_mask, output_file=filename)
-
-    # test for bad input arguments (cf. #510)
-    ax = plt.subplot(111, rasterized=True)
-    plot_stat_map(img_3d, symmetric_cbar=True,
-                  output_file=filename,
-                  axes=ax, vmax=np.nan)
+    plot_func(testdata_4d['img_4d'],
+              mask_img=testdata_4d['img_mask'],
+              output_file=filename)
     plt.close()
 
 
-def test_plot_functions_mosaic_mode(testdata_3d):
-    img_3d = testdata_3d['img']
+def test_plot_stat_map_bad_input(testdata_3d, tmpdir):
+    # test for bad input arguments (cf. #510)
+    filename = str(tmpdir.join('temp.png'))
+    ax = plt.subplot(111, rasterized=True)
+    plot_stat_map(testdata_3d['img'], symmetric_cbar=True,
+                  output_file=filename, axes=ax, vmax=np.nan)
+    plt.close()
 
-    # smoke-test for 3D plotting functions with display_mode='mosaic'
-    for cut_coords in [None, 5, (5, 4, 3)]:
-        for plot_func in [plot_anat, plot_img, plot_stat_map, plot_epi,
-                          plot_roi]:
-            plot_func(img_3d, display_mode='mosaic',
-                      title='mosaic mode', cut_coords=cut_coords)
 
+@pytest.mark.parametrize("plot_func",
+                         [plot_anat, plot_img, plot_stat_map,
+                          plot_epi, plot_roi])
+@pytest.mark.parametrize("cut_coords", [None, 5, (5, 4, 3)])
+def test_plot_functions_mosaic_mode(plot_func, cut_coords, testdata_3d):
+    plot_func(testdata_3d['img'], display_mode='mosaic',
+              title='mosaic mode', cut_coords=cut_coords)
     plt.close()
 
 
@@ -226,9 +207,7 @@ def test_plot_stat_map(testdata_3d):
     plot_stat_map(img, cut_coords=(80, -120, -60))
 
     # Smoke test coordinate finder, with and without mask
-    masked_img = nibabel.Nifti1Image(
-        np.ma.masked_equal(get_data(img), 0),
-        mni_affine)
+    masked_img = Nifti1Image(np.ma.masked_equal(get_data(img), 0), MNI_AFFINE)
     plot_stat_map(masked_img, display_mode='x')
     plot_stat_map(img, display_mode='y', cut_coords=2)
 
@@ -238,12 +217,12 @@ def test_plot_stat_map(testdata_3d):
     # regression test #510
     data = np.zeros((91, 109, 91))
     aff = np.eye(4)
-    new_img = nibabel.Nifti1Image(data, aff)
+    new_img = Nifti1Image(data, aff)
     plot_stat_map(new_img, threshold=1000, colorbar=True)
 
     rng = np.random.RandomState(42)
     data = rng.standard_normal(size=(91, 109, 91))
-    new_img = nibabel.Nifti1Image(data, aff)
+    new_img = Nifti1Image(data, aff)
     plot_stat_map(new_img, threshold=1000, colorbar=True)
 
     # Save execution time and memory
@@ -260,7 +239,7 @@ def test_plot_stat_map_threshold_for_affine_with_rotation(testdata_3d):
                        [-1., -3., 0., -2.],
                        [0., 0., 3., 3.],
                        [0., 0., 0., 1.]])
-    img = nibabel.Nifti1Image(data, affine)
+    img = Nifti1Image(data, affine)
     display = plot_stat_map(img, bg_img=None, threshold=1.,
                             display_mode='z', cut_coords=1)
     # Next two lines retrieve the numpy array from the plot
@@ -268,24 +247,30 @@ def test_plot_stat_map_threshold_for_affine_with_rotation(testdata_3d):
     plotted_array = ax.images[0].get_array()
     # Given the high threshold the array should be partly masked
     assert plotted_array.mask.any()
-
     # Save execution time and memory
     plt.close()
 
 
-def test_plot_stat_map_threshold_for_uint8(testdata_3d):
+@pytest.mark.parametrize("plot_func", [plot_stat_map, plot_glass_brain])
+def test_plot_threshold_for_uint8(plot_func, testdata_3d):
     # mask was applied in [-threshold, threshold] which is problematic
     # for uint8 data. See https://github.com/nilearn/nilearn/issues/611
     # for more details
     data = 10 * np.ones((10, 10, 10), dtype='uint8')
     # Having a zero minimum value is important to reproduce
     # https://github.com/nilearn/nilearn/issues/762
-    data[0, 0, 0] = 0
+    if plot_func == plot_stat_map:
+        data[0, 0, 0] = 0
+    else:
+        data[0, 0] = 0
     affine = np.eye(4)
-    img = nibabel.Nifti1Image(data, affine)
+    img = Nifti1Image(data, affine)
     threshold = np.array(5, dtype='uint8')
-    display = plot_stat_map(img, bg_img=None, threshold=threshold,
-                            display_mode='z', cut_coords=[0])
+    kwargs = {"threshold": threshold, "display_mode": "z"}
+    if plot_func == plot_stat_map:
+        kwargs["bg_img"] = None
+        kwargs["cut_coords"] = [0]
+    display = plot_func(img, colorbar=True, **kwargs)
     # Next two lines retrieve the numpy array from the plot
     ax = list(display.axes.values())[0].ax
     plotted_array = ax.images[0].get_array()
@@ -294,33 +279,6 @@ def test_plot_stat_map_threshold_for_uint8(testdata_3d):
     # Make sure that the value masked is in the corner. Note that the
     # axis orientation seem to be flipped, hence (0, 0) -> (-1, 0)
     assert plotted_array.mask[-1, 0]
-
-    # Save execution time and memory
-    plt.close()
-
-
-def test_plot_glass_brain_threshold_for_uint8(testdata_3d):
-    # mask was applied in [-threshold, threshold] which is problematic
-    # for uint8 data. See https://github.com/nilearn/nilearn/issues/611
-    # for more details
-    data = 10 * np.ones((10, 10, 10), dtype='uint8')
-    # Having a zero minimum value is important to reproduce
-    # https://github.com/nilearn/nilearn/issues/762
-    data[0, 0] = 0
-    affine = np.eye(4)
-    img = nibabel.Nifti1Image(data, affine)
-    threshold = np.array(5, dtype='uint8')
-    display = plot_glass_brain(img, threshold=threshold,
-                               display_mode='z', colorbar=True)
-    # Next two lines retrieve the numpy array from the plot
-    ax = list(display.axes.values())[0].ax
-    plotted_array = ax.images[0].get_array()
-    # Make sure that there is one value masked
-    assert plotted_array.mask.sum() == 1
-    # Make sure that the value masked is in the corner. Note that the
-    # axis orientation seem to be flipped, hence (0, 0) -> (-1, 0)
-    assert plotted_array.mask[-1, 0]
-
     # Save execution time and memory
     plt.close()
 
@@ -410,26 +368,20 @@ def test_plot_carpet_with_atlas(testdata_4d):
     plt.close(display)
 
 
-def test_save_plot(testdata_3d, tmpdir):
-    img = testdata_3d['img']
-
-    kwargs_list = [{}, {'display_mode': 'x', 'cut_coords': 3}]
-
+@pytest.mark.parametrize("params",
+                         [{},
+                          {'display_mode': 'x', 'cut_coords': 3}])
+def test_save_plot_stat_map(params, testdata_3d, tmpdir):
     filename = str(tmpdir.join('test.png'))
-    for kwargs in kwargs_list:
-        display = plot_stat_map(img, output_file=filename, **kwargs)
-        assert display is None
-
-        display = plot_stat_map(img, **kwargs)
-        display.savefig(filename)
-
-        # Save execution time and memory
-        plt.close()
+    display = plot_stat_map(testdata_3d['img'], output_file=filename, **params)
+    assert display is None
+    display = plot_stat_map(testdata_3d['img'], **params)
+    display.savefig(filename)
+    plt.close()
 
 
 def test_display_methods(testdata_3d):
     img = testdata_3d['img']
-
     display = plot_img(img)
     display.add_overlay(img, threshold=0)
     display.add_edges(img, color='c')
@@ -449,7 +401,14 @@ def test_plot_with_axes_or_figure(testdata_3d):
     plt.close()
 
 
-def test_plot_stat_map_colorbar_variations(testdata_3d):
+@pytest.mark.parametrize("params",
+                         [{},
+                          {"symmetric_cbar": True},
+                          {"symmetric_cbar": False},
+                          {"symmetric_cbar": False, "vmax": 10},
+                          {"symmetric_cbar": True, "vmax": 10},
+                          {"colorbar": False}])
+def test_plot_stat_map_colorbar_variations(params, testdata_3d):
     # This is only a smoke test
     img_positive = testdata_3d['img']
     data_positive = get_data(img_positive)
@@ -458,18 +417,11 @@ def test_plot_stat_map_colorbar_variations(testdata_3d):
     data_heterogeneous = data_positive * rng.standard_normal(
         size=data_positive.shape
     )
-    img_negative = nibabel.Nifti1Image(data_negative, mni_affine)
-    img_heterogeneous = nibabel.Nifti1Image(data_heterogeneous, mni_affine)
-
+    img_negative = Nifti1Image(data_negative, MNI_AFFINE)
+    img_heterogeneous = Nifti1Image(data_heterogeneous, MNI_AFFINE)
     for img in [img_positive, img_negative, img_heterogeneous]:
-        for func in [plot_stat_map,
-                     partial(plot_stat_map, symmetric_cbar=True),
-                     partial(plot_stat_map, symmetric_cbar=False),
-                     partial(plot_stat_map, symmetric_cbar=False, vmax=10),
-                     partial(plot_stat_map, symmetric_cbar=True, vmax=10),
-                     partial(plot_stat_map, colorbar=False)]:
-            func(img, cut_coords=(80, -120, -60))
-            plt.close()
+        plot_stat_map(img, cut_coords=(80, -120, -60), **params)
+        plt.close()
 
 
 def test_plot_empty_slice(testdata_3d):
@@ -477,10 +429,8 @@ def test_plot_empty_slice(testdata_3d):
     # threshold
     # This is only a smoke test
     data = np.zeros((20, 20, 20))
-    img = nibabel.Nifti1Image(data, mni_affine)
+    img = Nifti1Image(data, MNI_AFFINE)
     plot_img(img, display_mode='y', threshold=1)
-
-    # Save execution time and memory
     plt.close()
 
 
@@ -490,56 +440,46 @@ def test_plot_img_invalid(testdata_3d):
     pytest.raises(Exception, plot_anat, display_mode='zzz')
 
 
-def test_plot_img_with_auto_cut_coords(testdata_3d):
+@pytest.mark.parametrize("display_mode", ["x", "y", "z"])
+def test_plot_img_with_auto_cut_coords(display_mode, testdata_3d):
     data = np.zeros((20, 20, 20))
     data[3:-3, 3:-3, 3:-3] = 1
-    img = nibabel.Nifti1Image(data, np.eye(4))
-
-    for display_mode in 'xyz':
-        plot_img(img, cut_coords=None, display_mode=display_mode,
-                 black_bg=True)
-
-        # Save execution time and memory
-        plt.close()
+    img = Nifti1Image(data, np.eye(4))
+    plot_img(img, cut_coords=None, display_mode=display_mode, black_bg=True)
+    plt.close()
 
 
-def test_plot_img_with_resampling(testdata_3d):
-    data = get_data(testdata_3d['img'])
+def _testdata_3d_for_resampling(img, binary):
+    data = get_data(img)
+    if binary:
+        data[data > 0] = 1
+        data[data < 0] = 0
     affine = np.array([[1., -1.,  0.,  0.],
                        [1.,  1.,  0.,  0.],
                        [0.,  0.,  1.,  0.],
                        [0.,  0.,  0.,  1.]])
-    img = nibabel.Nifti1Image(data, affine)
-    assert not _utils.niimg._is_binary_niimg(img)
+    return Nifti1Image(data, affine)
+
+
+@pytest.mark.parametrize("binary_img", [True, False])
+def test_plot_img_with_resampling(binary_img, testdata_3d):
+    img = _testdata_3d_for_resampling(testdata_3d['img'], binary_img)
+    if binary_img:
+        assert _utils.niimg._is_binary_niimg(img)
+    else:
+        assert not _utils.niimg._is_binary_niimg(img)
     display = plot_img(img)
     display.add_overlay(img)
     display.add_contours(img, contours=2, linewidth=4,
                          colors=['limegreen', 'yellow'])
     display.add_edges(img, color='c')
-
-    # Save execution time and memory
-    plt.close()
-
-def test_plot_binary_img_with_resampling(testdata_3d):
-    data = get_data(testdata_3d['img'])
-    data[data > 0] = 1
-    data[data < 0] = 0
-    affine = np.array([[1., -1.,  0.,  0.],
-                       [1.,  1.,  0.,  0.],
-                       [0.,  0.,  1.,  0.],
-                       [0.,  0.,  0.,  1.]])
-    img = nibabel.Nifti1Image(data, affine)
-    assert _utils.niimg._is_binary_niimg(img)
-    display = plot_img(img)
-    display.add_overlay(img)
-    display.add_contours(img)
     plt.close()
 
 
 def test_plot_noncurrent_axes():
     """Regression test for Issue #450"""
     rng = np.random.RandomState(42)
-    maps_img = nibabel.Nifti1Image(rng.random_sample((10, 10, 10)), np.eye(4))
+    maps_img = Nifti1Image(rng.random_sample((10, 10, 10)), np.eye(4))
     fh1 = plt.figure()
     fh2 = plt.figure()
     ax1 = fh1.add_subplot(1, 1, 1)
@@ -557,53 +497,114 @@ def test_plot_noncurrent_axes():
     plt.close()
 
 
-def test_plot_connectome(tmpdir):
-    node_color = ['green', 'blue', 'k', 'cyan']
+@pytest.fixture
+def plot_connectome_adjacency():
     # symmetric up to 1e-3 relative tolerance
-    adjacency_matrix = np.array([[1., -2., 0.3, 0.],
-                                 [-2.002, 1, 0., 0.],
-                                 [0.3, 0., 1., 0.],
-                                 [0., 0., 0., 1.]])
+    return np.array([[1., -2., 0.3, 0.],
+                     [-2.002, 1, 0., 0.],
+                     [0.3, 0., 1., 0.],
+                     [0., 0., 0., 1.]])
+
+
+@pytest.fixture
+def plot_connectome_non_symmetric_matrix():
+    return np.array([[1., -2., 0.3, 0.2],
+                     [0.1, 1, 1.1, 0.1],
+                     [0.01, 2.3, 1., 3.1],
+                     [0.6, 0.03, 1.2, 1.]])
+
+
+@pytest.fixture
+def plot_connectome_base_params():
+    return dict(edge_threshold=0.38,
+                title='threshold=0.38',
+                node_size=10)
+
+
+@pytest.mark.parametrize("node_color",
+                         [['green', 'blue', 'k', 'cyan'],
+                          np.array(['red']),
+                          ['red'],
+                          'green'])
+@pytest.mark.parametrize("display_mode", ["ortho", "lzry"])
+def test_plot_connectome_node_colors(node_color,
+                                     display_mode,
+                                     plot_connectome_adjacency,
+                                     plot_connectome_base_params,
+                                     tmpdir):
     node_coords = np.arange(3 * 4).reshape(4, 3)
-
-    args = adjacency_matrix, node_coords
-    kwargs = dict(edge_threshold=0.38,
-                  title='threshold=0.38',
-                  node_size=10, node_color=node_color)
-    plot_connectome(*args, **kwargs)
-    plt.close()
-
-    # Unique node color
-    node_color = np.array(['red'])
-    kwargs = dict(edge_threshold=0.38,
-                  title='threshold=0.38',
-                  node_size=10, node_color=node_color)
-    plot_connectome(*args, **kwargs)
-    plt.close()
-
-    node_color = 'green'
-    kwargs = dict(edge_threshold=0.38,
-                  title='threshold=0.38',
-                  node_size=10)
-    plot_connectome(*args, node_color=node_color, **kwargs)
+    plot_connectome(plot_connectome_adjacency, node_coords,
+                    node_color=node_color, display_mode=display_mode,
+                    **plot_connectome_base_params)
     plt.close()
 
 
+@pytest.mark.parametrize("display_mode",
+                         ['ortho', 'x', 'y', 'z', 'xz', 'yx', 'yz',
+                          'l', 'r', 'lr', 'lzr', 'lyr', 'lzry', 'lyrz'])
+def test_plot_connectome_display_mode(display_mode,
+                                      plot_connectome_adjacency,
+                                      plot_connectome_base_params):
+    node_coords = np.arange(3 * 4).reshape(4, 3)
+    plot_connectome(plot_connectome_adjacency, node_coords,
+                    display_mode=display_mode, **plot_connectome_base_params)
+    plt.close()
+
+
+@pytest.mark.parametrize("plot_func", [plot_connectome, plot_connectome_strength])
+def test_plot_connectome_masked_array_sparse_matrix(plot_func,
+                                                    plot_connectome_adjacency,
+                                                    plot_connectome_base_params):
+    node_coords = np.arange(3 * 4).reshape(4, 3)
+    if plot_func == plot_connectome_strength:
+        plot_connectome_base_params.pop("edge_threshold")
+    masked_adjacency_matrix = np.ma.masked_array(
+        plot_connectome_adjacency, np.abs(plot_connectome_adjacency) < 0.5)
+    plot_func(
+        masked_adjacency_matrix, node_coords, **plot_connectome_base_params
+    )
+    sparse_adjacency_matrix = sparse.coo_matrix(plot_connectome_adjacency)
+    plot_func(
+        sparse_adjacency_matrix, node_coords, **plot_connectome_base_params
+    )
+    plt.close()
+
+
+@pytest.mark.parametrize("plot_func", [plot_connectome, plot_connectome_strength])
+def test_plot_connectome_with_nans(plot_func, plot_connectome_base_params):
+    nan_adjacency_matrix = np.array([[1., np.nan, 0.],
+                                     [np.nan, 1., 2.],
+                                     [np.nan, 2., 1.]])
+    node_coords = np.arange(3 * 3).reshape(3, 3)
+    if plot_func == plot_connectome_strength:
+        plot_connectome_base_params.pop("edge_threshold")
+    if plot_func == plot_connectome:
+        plot_connectome_base_params["node_color"] = np.array(
+            ['green', 'blue', 'k']
+        )
+    plot_func(nan_adjacency_matrix, node_coords,
+              **plot_connectome_base_params)
+    plt.close()
+
+
+def test_plot_connectome(plot_connectome_adjacency,
+                         plot_connectome_base_params, tmpdir):
+    node_coords = np.arange(3 * 4).reshape(4, 3)
+    args = plot_connectome_adjacency, node_coords
     # used to speed-up tests for the next plots
-    kwargs['display_mode'] = 'x'
+    plot_connectome_base_params['display_mode'] = 'x'
 
     # node_coords not an array but a list of tuples
-    plot_connectome(adjacency_matrix,
+    plot_connectome(plot_connectome_adjacency,
                     [tuple(each) for each in node_coords],
-                    **kwargs)
+                    **plot_connectome_base_params)
     # saving to file
     filename = str(tmpdir.join('temp.png'))
-    display = plot_connectome(*args, output_file=filename, **kwargs)
+    display = plot_connectome(*args, output_file=filename,
+                              **plot_connectome_base_params)
     assert display is None
     assert os.path.isfile(filename)
     assert os.path.getsize(filename) > 0
-    plt.close()
-
     # with node_kwargs, edge_kwargs and edge_cmap arguments
     plot_connectome(*args,
                     edge_threshold='70%',
@@ -611,62 +612,21 @@ def test_plot_connectome(tmpdir):
                     node_color=np.zeros((4, 3)),
                     edge_cmap='RdBu',
                     colorbar=True,
-                    node_kwargs={
-                        'marker': 'v'},
-                    edge_kwargs={
-                        'linewidth': 4})
-    plt.close()
-
-    # masked array support
-    masked_adjacency_matrix = np.ma.masked_array(
-        adjacency_matrix, np.abs(adjacency_matrix) < 0.5)
-    plot_connectome(masked_adjacency_matrix, node_coords,
-                    **kwargs)
-    plt.close()
-
-    # sparse matrix support
-    sparse_adjacency_matrix = sparse.coo_matrix(adjacency_matrix)
-    plot_connectome(sparse_adjacency_matrix, node_coords,
-                    **kwargs)
-    plt.close()
-
-    # NaN matrix support
-    # Node colors specified as a numpy array rather than a list
-    node_color = np.array(['green', 'blue', 'k'])
-    # Overriding 'node_color' for 3  elements of size 3.
-    kwargs['node_color'] = node_color
-    nan_adjacency_matrix = np.array([[1., np.nan, 0.],
-                                     [np.nan, 1., 2.],
-                                     [np.nan, 2., 1.]])
-    nan_node_coords = np.arange(3 * 3).reshape(3, 3)
-    plot_connectome(nan_adjacency_matrix, nan_node_coords, **kwargs)
-    plt.close()
+                    node_kwargs={'marker': 'v'},
+                    edge_kwargs={'linewidth': 4})
 
     # smoke-test where there is no edge to draw, e.g. when
     # edge_threshold is too high
     plot_connectome(*args, edge_threshold=1e12)
-    plt.close()
 
     # with colorbar=True
     plot_connectome(*args, colorbar=True)
     plt.close()
 
-    # smoke-test with hemispheric saggital cuts
-    plot_connectome(*args, display_mode='lzry')
-    plt.close()
 
-    # test node_color as a string with display_mode='lzry'
-    plot_connectome(*args, node_color='red', display_mode='lzry')
-    plt.close()
-    plot_connectome(*args, node_color=['red'], display_mode='lzry')
-    plt.close()
-
-    # Non symmetric matrix
-    adjacency_matrix = np.array([[1., -2., 0.3, 0.2],
-                                 [0.1, 1, 1.1, 0.1],
-                                 [0.01, 2.3, 1., 3.1],
-                                 [0.6, 0.03, 1.2, 1.]])
-    ax = plot_connectome(adjacency_matrix,
+def test_plot_connectome_non_symmetric(plot_connectome_non_symmetric_matrix):
+    node_coords = np.arange(3 * 4).reshape(4, 3)
+    ax = plot_connectome(plot_connectome_non_symmetric_matrix,
                          node_coords,
                          display_mode='ortho')
     # No thresholding was performed, we should get
@@ -674,13 +634,13 @@ def test_plot_connectome(tmpdir):
     for direction in ['x', 'y', 'z']:
         assert(len([patch for patch in ax.axes[direction].ax.patches
              if isinstance(patch, FancyArrow)]) ==
-                    np.prod(adjacency_matrix.shape))
+                    np.prod(plot_connectome_non_symmetric_matrix.shape))
 
     # Set a few elements of adjacency matrix to zero
-    adjacency_matrix[1, 0] = 0.0
-    adjacency_matrix[2, 3] = 0.0
+    plot_connectome_non_symmetric_matrix[1, 0] = 0.0
+    plot_connectome_non_symmetric_matrix[2, 3] = 0.0
     # Plot with different display mode
-    ax = plot_connectome(adjacency_matrix,
+    ax = plot_connectome(plot_connectome_non_symmetric_matrix,
                          node_coords,
                          display_mode='lzry')
     # No edge in direction 'l' because of node coords
@@ -689,18 +649,22 @@ def test_plot_connectome(tmpdir):
     for direction in ['z', 'r', 'y']:
         assert(len([patch for patch in ax.axes[direction].ax.patches
              if isinstance(patch, FancyArrow)]) ==
-                    np.prod(adjacency_matrix.shape) - 2)
+                    np.prod(plot_connectome_non_symmetric_matrix.shape) - 2)
 
-    # Edge thresholding
+
+def plot_connectome_edge_thresholding(plot_connectome_non_symmetric_matrix):
     # Case 1: Threshold is a number
     thresh = 1.1
-    ax = plot_connectome(adjacency_matrix,
+    ax = plot_connectome(plot_connectome_non_symmetric_matrix,
                          node_coords,
                          edge_threshold=thresh)
     for direction in ['x', 'y', 'z']:
         assert(len([patch for patch in ax.axes[direction].ax.patches
              if isinstance(patch, FancyArrow)]) ==
-                    np.sum(np.abs(adjacency_matrix) >= thresh))
+                    np.sum(
+                        np.abs(plot_connectome_non_symmetric_matrix) >= thresh
+                    )
+               )
     # Case 2: Threshold is a percentage
     thresh = 80
     ax = plot_connectome(adjacency_matrix,
@@ -711,8 +675,11 @@ def test_plot_connectome(tmpdir):
              if isinstance(patch, FancyArrow)]) ==
                np.sum(np.abs(adjacency_matrix) >=
                     np.percentile(np.abs(
-                        adjacency_matrix.ravel()), thresh)))
+                        plot_connectome_non_symmetric_matrix.ravel()), thresh))
+               )
 
+
+#HERE
 
 def test_plot_connectome_exceptions():
     node_coords = np.arange(2 * 3).reshape((2, 3))
@@ -808,32 +775,24 @@ def test_singleton_ax_dim():
     for axis, direction in enumerate("xyz"):
         shape = [5, 6, 7]
         shape[axis] = 1
-        img = nibabel.Nifti1Image(np.ones(shape), np.eye(4))
+        img = Nifti1Image(np.ones(shape), np.eye(4))
         plot_stat_map(img, None, display_mode=direction)
         plt.close()
 
 
-def test_plot_prob_atlas():
+@pytest.mark.parametrize("params",
+                         [{"view_type": 'contours'},
+                          {"view_type": 'filled_contours', "threshold": .2},
+                          {"view_type": "continuous"},
+                          {"view_type": 'filled_contours', "colorbar": True},
+                          {"threshold": None}])
+def test_plot_prob_atlas(params):
     affine = np.eye(4)
     shape = (6, 8, 10, 5)
     rng = np.random.RandomState(42)
     data_rng = rng.normal(size=shape)
-    img = nibabel.Nifti1Image(data_rng, affine)
-    # Testing the 4D plot prob atlas with contours
-    plot_prob_atlas(img, view_type='contours')
-    plt.close()
-    # Testing the 4D plot prob atlas with contours
-    plot_prob_atlas(img, view_type='filled_contours',
-                    threshold=0.2)
-    plt.close()
-    # Testing the 4D plot prob atlas with contours
-    plot_prob_atlas(img, view_type='continuous')
-    plt.close()
-    # Testing the 4D plot prob atlas with colormap
-    plot_prob_atlas(img, view_type='filled_contours', colorbar=True)
-    plt.close()
-    # threshold=None
-    plot_prob_atlas(img, threshold=None)
+    img = Nifti1Image(data_rng, affine)
+    plot_prob_atlas(img, **params)
     plt.close()
 
 
@@ -1118,53 +1077,31 @@ def test_get_colorbar_and_data_ranges_masked_array():
     assert cbar_vmax == None
 
 
-def test_invalid_in_display_mode_cut_coords_all_plots(testdata_3d):
-    img = testdata_3d['img']
-    for plot_func in [plot_img, plot_anat, plot_roi, plot_epi,
-                      plot_stat_map, plot_prob_atlas, plot_glass_brain]:
-        with pytest.raises(ValueError,
-                           match="The input given for display_mode='ortho' "
-                                 "needs to "
-                                 "be a list of 3d world coordinates."
-                           ):
-            plot_func(img, display_mode='ortho', cut_coords=2)
+@pytest.fixture
+def expected_error_message(display_mode, cut_coords):
+    if display_mode == 'ortho' or (display_mode == 'tiled' and cut_coords == 2):
+        return (f"The input given for display_mode='{display_mode}' needs to "
+                "be a list of 3d world coordinates.")
+    return "The number cut_coords passed does not match the display_mode"
 
 
-def test_invalid_in_display_mode_tiled_cut_coords_single_all_plots(testdata_3d):
-    img = testdata_3d['img']
-
-    for plot_func in [plot_img, plot_anat, plot_roi, plot_epi,
-                      plot_stat_map, plot_prob_atlas]:
-        with pytest.raises(ValueError,
-                           match="The input given for display_mode='tiled' "
-                                 "needs to "
-                                 "be a list of 3d world coordinates."
-                           ):
-            plot_func(img, display_mode='tiled', cut_coords=2)
-
-
-def test_invalid_in_display_mode_tiled_cut_coords_all_plots(testdata_3d):
-    img = testdata_3d['img']
-
-    for plot_func in [plot_img, plot_anat, plot_roi, plot_epi,
-                      plot_stat_map, plot_prob_atlas]:
-        with pytest.raises(ValueError,
-                           match="The number cut_coords passed does not "
-                                 "match the display_mode"
-                           ):
-            plot_func(img, display_mode='tiled', cut_coords=(2, 2))
-
-
-def test_invalid_in_display_mode_mosaic_cut_coords_all_plots(testdata_3d):
-    img = testdata_3d['img']
-
-    for plot_func in [plot_img, plot_anat, plot_roi, plot_epi,
-                      plot_stat_map, plot_prob_atlas]:
-        with pytest.raises(ValueError,
-                           match="The number cut_coords passed does not "
-                                 "match the display_mode"
-                           ):
-            plot_func(img, display_mode='mosaic', cut_coords=(2, 2))
+@pytest.mark.parametrize("plot_func",
+                         [plot_img, plot_anat, plot_roi, plot_epi,
+                          plot_stat_map, plot_prob_atlas, plot_glass_brain])
+@pytest.mark.parametrize("display_mode,cut_coords",
+                         [('ortho', 2), ('tiled', 2),
+                          ('tiled', (2, 2)), ('mosaic', (2, 2))])
+def test_invalid_cut_coords_with_display_mode(plot_func,
+                                              display_mode,
+                                              cut_coords,
+                                              testdata_3d,
+                                              expected_error_message):
+    if plot_func == plot_glass_brain and display_mode != 'ortho':
+        return
+    with pytest.raises(ValueError, match=expected_error_message):
+        plot_func(testdata_3d['img'],
+                  display_mode=display_mode,
+                  cut_coords=cut_coords)
 
 
 def test_outlier_cut_coords():
@@ -1184,60 +1121,50 @@ def test_outlier_cut_coords():
     data[int(x_map) - 1:int(x_map) + 1,
          int(y_map) - 1:int(y_map) + 1,
          int(z_map) - 1:int(z_map) + 1] = 1
-    img = nibabel.Nifti1Image(data, affine)
+    img = Nifti1Image(data, affine)
     cuts = find_cut_slices(img, n_cuts=20, direction='z')
 
     plot_stat_map(img, display_mode='z', cut_coords=cuts[-4:],
                   bg_img=bg_img)
 
 
-def test_plot_stat_map_with_nans(testdata_3d):
+@pytest.mark.parametrize("plot_func",
+                         [plot_epi, plot_stat_map, plot_glass_brain])
+def test_plot_with_nans(plot_func, testdata_3d):
     img = testdata_3d['img']
     data = get_data(img)
-
     data[6, 5, 1] = np.nan
     data[1, 5, 2] = np.nan
     data[1, 3, 2] = np.nan
     data[6, 5, 2] = np.inf
-
-    img = nibabel.Nifti1Image(data, mni_affine)
-    plot_epi(img)
-    plot_stat_map(img)
-    plot_glass_brain(img)
+    img = Nifti1Image(data, MNI_AFFINE)
+    plot_func(img)
 
 
-def test_plotting_functions_with_cmaps():
+@pytest.mark.parametrize("plot_func",
+                         [plot_roi, plot_stat_map, plot_glass_brain])
+@pytest.mark.parametrize("cmap",
+                         ['Paired', 'Set1', 'Set2', 'Set3', 'viridis'])
+def test_plotting_functions_with_cmaps(plot_func, cmap):
     img = load_mni152_template()
-    cmaps = ['Paired', 'Set1', 'Set2', 'Set3']
-    for cmap in cmaps:
-        plot_roi(img, cmap=cmap, colorbar=True)
-        plot_stat_map(img, cmap=cmap, colorbar=True)
-        plot_glass_brain(img, cmap=cmap, colorbar=True)
-
-    if LooseVersion(matplotlib.__version__) >= LooseVersion('2.0.0'):
-        plot_stat_map(img, cmap='viridis', colorbar=True)
-
+    plot_func(img, cmap=cmap, colorbar=True)
     plt.close()
 
 
-def test_plotting_functions_with_nans_in_bg_img(testdata_3d):
+@pytest.mark.parametrize("plot_func",
+                         [plot_anat, plot_roi, plot_stat_map])
+def test_plotting_functions_with_nans_in_bg_img(plot_func, testdata_3d):
     bg_img = testdata_3d['img']
     bg_data = get_data(bg_img)
-
     bg_data[6, 5, 1] = np.nan
     bg_data[1, 5, 2] = np.nan
     bg_data[1, 3, 2] = np.nan
     bg_data[6, 5, 2] = np.inf
-
-    bg_img = nibabel.Nifti1Image(bg_data, mni_affine)
-    plot_anat(bg_img)
-    # test with plot_roi passing background image which contains nans values
-    # in it
-    roi_img = testdata_3d['img']
-    plot_roi(roi_img=roi_img, bg_img=bg_img)
-    stat_map_img = testdata_3d['img']
-    plot_stat_map(stat_map_img=stat_map_img, bg_img=bg_img)
-
+    bg_img = Nifti1Image(bg_data, MNI_AFFINE)
+    if plot_func == plot_anat:
+        plot_func(bg_img)
+    else:
+        plot_func(testdata_3d['img'], bg_img=bg_img)
     plt.close()
 
 
@@ -1275,11 +1202,13 @@ def test_add_markers_using_plot_glass_brain():
         assert display.axes[d].ax.collections[0].get_offsets().data.shape == (2, 2)
 
 
-def test_plotting_functions_with_display_mode_tiled(testdata_3d):
+@pytest.mark.parametrize("plot_func", [plot_stat_map, plot_anat, plot_img])
+def test_plotting_functions_with_display_mode_tiled(plot_func, testdata_3d):
     img = testdata_3d['img']
-    plot_stat_map(img, display_mode='tiled')
-    plot_anat(display_mode='tiled')
-    plot_img(img, display_mode='tiled')
+    if plot_func == plot_anat:
+        plot_func(display_mode='tiled')
+    else:
+        plot_func(img, display_mode='tiled')
     plt.close()
 
 
@@ -1295,28 +1224,25 @@ def test_display_methods_with_display_mode_tiled(testdata_3d):
 def test_plot_glass_brain_colorbar_having_nans(testdata_3d):
     img = testdata_3d['img']
     data = get_data(img)
-
     data[6, 5, 2] = np.inf
-    img = nibabel.Nifti1Image(data, np.eye(4))
+    img = Nifti1Image(data, np.eye(4))
     plot_glass_brain(img, colorbar=True)
     plt.close()
 
 
-def test_plot_glass_brain_display_modes_without_img():
+@pytest.mark.parametrize("display_mode", ['lr', 'lzry'])
+def test_plot_glass_brain_display_modes_without_img(display_mode):
     # Smoke test for work around from PR #1888
-    fig = plot_glass_brain(None, display_mode='lr')
-    fig = plot_glass_brain(None, display_mode='lzry')
-    fig.close()
+    plot_glass_brain(None, display_mode=display_mode)
+    plt.close()
 
 
-def test_plot_glass_brain_with_completely_masked_img():
+@pytest.mark.parametrize("display_mode", ['lr', 'lzry'])
+def test_plot_glass_brain_with_completely_masked_img(display_mode):
     # Smoke test for PR #1888 with display modes having 'l'
     data = np.zeros((10, 20, 30))
-    affine = np.eye(4)
-
-    img = nibabel.Nifti1Image(data, affine)
-    plot_glass_brain(img, display_mode='lzry')
-    plot_glass_brain(img, display_mode='lr')
+    img = Nifti1Image(data, np.eye(4))
+    plot_glass_brain(img, display_mode=display_mode)
     plt.close()
 
 
@@ -1355,30 +1281,6 @@ def test_connectome_strength(tmpdir):
     plot_connectome_strength(*args, node_size=10, cmap='RdBu')
     plt.close()
     plot_connectome_strength(*args, node_size=10, cmap=plt.cm.RdBu)
-    plt.close()
-
-    # masked array support
-    masked_adjacency_matrix = np.ma.masked_array(
-        adjacency_matrix, np.abs(adjacency_matrix) < 0.5
-    )
-    plot_connectome_strength(
-        masked_adjacency_matrix, node_coords, **kwargs
-    )
-    plt.close()
-
-    # sparse matrix support
-    sparse_adjacency_matrix = sparse.coo_matrix(adjacency_matrix)
-    plot_connectome_strength(
-        sparse_adjacency_matrix, node_coords, **kwargs
-    )
-    plt.close()
-
-    # NaN matrix support
-    nan_adjacency_matrix = np.array([[1., np.nan, 0.],
-                                     [np.nan, 1., 2.],
-                                     [np.nan, 2., 1.]])
-    nan_node_coords = np.arange(3 * 3).reshape(3, 3)
-    plot_connectome_strength(nan_adjacency_matrix, nan_node_coords, **kwargs)
     plt.close()
 
     # smoke-test with hemispheric sagital cuts
@@ -1434,119 +1336,106 @@ def test_plot_connectome_strength_exceptions():
                                  **kwargs)
 
 
-def test_plot_markers(tmpdir):
-    # Minimal usage
+@pytest.fixture
+def plot_markers_coords():
+    return np.array([[39 ,   6, -32],
+                     [29 ,  40,   1],
+                     [-20, -74,  35],
+                     [-29, -59, -37]])
+
+
+@pytest.mark.parametrize("node_values",
+                         [[1, 2, 3, 4],
+                          np.array([1, 2, 3, 4]),
+                          np.array([1, 2, 3, 4])[:, np.newaxis],
+                          np.array([1, 2, 3, 4])[np.newaxis, :],
+                          (1, 1, 1, 1)])
+def test_plot_markers_node_values(node_values, plot_markers_coords):
+    plot_markers(node_values, plot_markers_coords, display_mode='x')
+    plt.close()
+
+
+@pytest.mark.parametrize("node_size",
+                         [10,
+                          [10, 20, 30, 40],
+                          np.array([10, 20, 30, 40])])
+def test_plot_markers_node_sizes(node_size, plot_markers_coords):
     node_values = [1, 2, 3, 4]
-    node_coords = np.array([[39 ,   6, -32],
-                            [29 ,  40,   1],
-                            [-20, -74,  35],
-                            [-29, -59, -37]])
-    args = node_values, node_coords
-    plot_markers(*args)
+    plot_markers(node_values, plot_markers_coords,
+                 node_size=node_size, display_mode='x')
     plt.close()
 
-    # Speed-up subsequent tests
-    kwargs = {'display_mode': 'x'}
 
-    # node_values is an array
-    plot_markers(np.array(node_values), node_coords, **kwargs)
-    plt.close()
-    plot_markers(np.array(node_values)[:, np.newaxis], node_coords, **kwargs)
-    plt.close()
-    plot_markers(np.array(node_values)[np.newaxis, :], node_coords, **kwargs)
-    plt.close()
-
-    # all node_values are equal
-    plot_markers((1, 1, 1, 1), node_coords, **kwargs)
+@pytest.mark.parametrize("cmap,vmin,vmax",
+                         [('RdBu', 0, None),
+                          (matplotlib.cm.get_cmap('jet'), None, 5),
+                          (plt.cm.viridis_r, 2, 3)])
+def test_plot_markers_cmap(cmap, vmin, vmax, plot_markers_coords):
+    node_values = [1, 2, 3, 4]
+    plot_markers(node_values, plot_markers_coords,
+                 node_cmap=cmap, node_vmin=vmin,
+                 node_vmax=vmax, display_mode='x')
     plt.close()
 
+
+@pytest.mark.parametrize("threshold", [-100, 2.5])
+def test_plot_markers_threshold(threshold, plot_markers_coords):
+    node_values = [1, 2, 3, 4]
+    plot_markers(node_values, plot_markers_coords,
+                 node_threshold=threshold, display_mode='x')
+    plt.close()
+
+
+def test_plot_markers(plot_markers_coords, tmpdir):
+    node_values = [1, 2, 3, 4]
+    args = node_values, plot_markers_coords
     # node_coords not an array but a list of tuples
-    plot_markers(node_values, [tuple(coord) for coord in node_coords], **kwargs)
-    plt.close()
-
+    plot_markers(node_values,
+                 [tuple(coord) for coord in plot_markers_coords],
+                 display_mode='x')
     # Saving to file
     filename = str(tmpdir.join('test.png'))
-    display = plot_markers(*args, output_file=filename, **kwargs)
+    display = plot_markers(*args, output_file=filename, display_mode='x')
     assert display is None
     assert (os.path.isfile(filename) and  # noqa: W504
                 os.path.getsize(filename) > 0)
-    plt.close()
-
-    # Different options for node_size
-    plot_markers(*args, node_size=10, **kwargs)
-    plt.close()
-    plot_markers(*args, node_size=[10, 20, 30, 40], **kwargs)
-    plt.close()
-    plot_markers(*args, node_size=np.array([10, 20, 30, 40]), **kwargs)
-    plt.close()
-    node_sizes = np.array([10, 20, 30, 40])
-    display = plot_markers(*args, display_mode="lyrz", node_size=node_sizes)
-    for d, axes in display.axes.items():
-        display_sizes = axes.ax.collections[0].get_sizes()
-        if d == 'l':
-            expected_sizes = node_sizes[-2:]
-        elif d == 'r':
-            expected_sizes = node_sizes[:-2]
-        else:
-            expected_sizes = node_sizes
-        assert np.all(display_sizes == expected_sizes)
-    plt.close()
-
-
-    # Different options for cmap related arguments
-    plot_markers(*args, node_cmap='RdBu', node_vmin=0, **kwargs)
-    plt.close()
-    plot_markers(*args, node_cmap=matplotlib.cm.get_cmap('jet'),
-                 node_vmax=5, **kwargs)
-    plt.close()
-    plot_markers(*args, node_vmin=2, node_vmax=3, **kwargs)
-    plt.close()
-
-    # Node threshold support
-    plot_markers(*args, node_threshold=-100, **kwargs)
-    plt.close()
-    plot_markers(*args, node_threshold=2.5, **kwargs)
-    plt.close()
-
     # node_kwargs working and does not interfere with alpha
     node_kwargs = dict(marker='s')
-    plot_markers(*args, alpha=.1, node_kwargs=node_kwargs, **kwargs)
+    plot_markers(*args, alpha=.1, node_kwargs=node_kwargs, display_mode='x')
     plt.close()
 
 
-def test_plot_markers_exceptions():
-    node_coords = np.array([[39 ,   6, -32],
-                            [29 ,  40,   1],
-                            [-20, -74,  35],
-                            [-29, -59, -37]])
-
+@pytest.mark.parametrize("matrix",
+                         [[1, 2, 3, 4, 5],
+                          [1, 2, 3],
+                          np.random.RandomState(42).random_sample((4, 4))])
+def test_plot_markers_dimension_mismatch(matrix, plot_markers_coords):
     # # Used to speed-up tests because the glass brain is always plotted
     kwargs = {'display_mode': 'x'}
-
     # node_values length mismatch with node_coords
     with pytest.raises(ValueError, match="Dimension mismatch"):
-        plot_markers([1, 2, 3, 4, 5], node_coords, **kwargs)
-    with pytest.raises(ValueError, match="Dimension mismatch"):
-        plot_markers([1, 2, 3], node_coords, **kwargs)
+        plot_markers(matrix, plot_markers_coords, **kwargs)
 
-    # node_values incorrect shape
-    adjacency_matrix = np.random.RandomState(42).random_sample((4, 4))
-    with pytest.raises(ValueError, match="Dimension mismatch"):
-        plot_markers(adjacency_matrix, node_coords, **kwargs)
 
+@pytest.mark.parametrize("vmin,vmax", [(5, None), (None, 0)])
+def test_plot_markers_bound_error(vmin, vmax, plot_markers_coords):
+    with pytest.raises(ValueError):
+        plot_markers([1, 2, 2, 4], plot_markers_coords, node_vmin=vmin,
+                     node_vmax=vmax, display_mode='x')
+
+
+def test_plot_markers_errors(plot_markers_coords):
     # node_values is wrong type
     with pytest.raises(TypeError):
-        plot_markers(['1', '2', '3', '4'], node_coords, **kwargs)
-
-    # incorrect vmin anord vmax bounds for node cmap
-    with pytest.raises(ValueError):
-        plot_markers([1, 2, 2, 4], node_coords, node_vmin=5, **kwargs)
-    with pytest.raises(ValueError):
-        plot_markers([1, 2, 2, 4], node_coords, node_vmax=0, **kwargs)
-
+        plot_markers(['1', '2', '3', '4'],
+                     plot_markers_coords,
+                     display_mode='x')
     # node_threshold higher than max node_value
-    with pytest.raises(ValueError, match="Provided 'node_threshold' value"):
-        plot_markers([1, 2, 2, 4], node_coords, node_threshold=5, **kwargs)
+    with pytest.raises(ValueError,
+                       match="Provided 'node_threshold' value"):
+        plot_markers([1, 2, 2, 4], plot_markers_coords,
+                     node_threshold=5, display_mode='x')
+
 
 def test_plot_connectome_strength_deprecation_warning():
     with pytest.deprecated_call():
