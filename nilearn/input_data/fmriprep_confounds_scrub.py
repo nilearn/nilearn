@@ -3,7 +3,7 @@ import numpy as np
 import pandas as pd
 
 
-def _optimize_scrub(motion_outliers_index, n_scans, scrub=5):
+def _optimize_scrub(motion_outliers_index, n_scans, scrub):
     """Remove continuous segments with fewer than a minimal segment length."""
     # Start by checking if the beginning continuous segment is fewer than
     # a minimal segment length (default to 5)
