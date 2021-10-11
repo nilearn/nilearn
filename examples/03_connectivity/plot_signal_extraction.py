@@ -78,7 +78,7 @@ plotting.plot_matrix(correlation_matrix, figure=(10, 8), labels=labels[1:],
                      reorder=True)
 
 ##############################################################################
-# Extract signals and compute a connectivity matrix without confounds
+# Extract signals and compute a connectivity matrix without confounds removal
 # -------------------------------------------------------------------
 # After covering the basic of signal extraction and functional connectivity
 # matrix presentation, let's look into the impact of confounds to :term:`fMRI`
@@ -132,7 +132,7 @@ plotting.plot_matrix(correlation_matrix, figure=(10, 8), labels=labels[1:],
 # Motion-based scrubbing
 # ----------------------
 # With a scrubbing-based strategy, `fmriprep_confounds` returns a `sample_mask`
-# that remove the index of volumes exceeding the framewise displacement and
+# that removes the index of volumes exceeding the framewise displacement and
 # standardised DVARS threshold, and all the continuous segment with less than
 # five volumes. Before applying scrubbing, it's important to access the
 # percentage of volumns scrubbed. Scrubbing is not a suitable strategy for
@@ -169,7 +169,7 @@ plotting.plot_matrix(correlation_matrix, figure=(10, 8), labels=labels[1:],
 # -----------------------------------
 # Global signal removes the grand mean from your signal. The benefit is that
 # it can remove impacts of physiological artifacts with minimal impact on the
-# degree of freedom. The downside is that one cannot get insight into variance
+# degrees of freedom. The downside is that one cannot get insight into variance
 # explained by certain sources of noise. Now let's add global signal to the
 # simple strategy and see its impact.
 
