@@ -195,3 +195,78 @@ plotting.plot_matrix(correlation_matrix, figure=(10, 8), labels=labels[1:],
                      reorder=True)
 
 plotting.show()
+
+##############################################################################
+# Using predefined strategies
+# ---------------------------
+# Instead of customising the strategy through
+# :func:`nilearn.input_data.fmriprep_confounds`, one can use the predefined
+# strategy with :func:`nilearn.input_data.fmriprep_confounds_strategy`. Based
+# on the confound variables generated through :term:`fMRIPrep`, and past
+# benchmarks studies (:footcite:`Ciric2017`, :footcite:`Parker2018`), we
+# provide four preset strategies: `simple`, `scrubbing`, `compcor`, and
+# `ica_aroma`.
+#   - `simple`: high pass filtering, basic motion, basic white matter, basic
+#     csf, and optionally global signal. This approach is commonly
+#     used in resting state functional connectivity, described in
+#     :footcite:`Fox2005`. With the global signal option, this approach is
+#     can remove confounds without compromising the temporal degree of freedom.
+#   - `scrubbing` high pass filtering, fully expanded motion, white matter, and
+#     csf parameters, scrubbing high motion volumes
+#     (framewise displacement > 0.2 mm, standardized DVARS threshold > 3),
+#     and optionally global signal. This approach can reliably remove the
+#     impact of high motion volumes in functional connectome, however, it
+#     might not be suitable with subjects with high motion (more than 50%
+#     timeseries flagged as high motion). One should adjust the threshould
+#     based on the property of the dataset, or remove high motion subject from
+#     the dataset.
+#   - `compcor` high pass filtering, fully expanded motion partameters, and
+#     anatomical compcor components with combined white matter and csf mask
+#     that expalins 50% of the variance. Compcor can suffer from loss of
+#     temporal degree of freedome when using variance explains as the noise
+#     component estimation. CompCor has the advantage of removing
+#     physiological noise without requiring external monitoring of
+#     physiological fluctuations (:footcite:`BEHZADI200790`). However the
+#     conclusion was drawn from comparing with an approach that explicitly
+#     remove physiological signal, rather than explicitly modelling. Thus
+#     compcor might not be a suitable approach for researcher who wants
+#     explicit description of the source of confounds.
+#   - `ica_aroma`: applicable to :term:`fMRIPrep` outputs generated with
+#     `--use-aroma`, suffixed with `desc-smoothAROMAnonaggr_bold` only.
+#     The regressors contain high pass filtering, white matter, csf, and
+#     optionally global signal. The :term:`fMRIPrep` generated
+#     `desc-smoothAROMAnonaggr_bold` image requires confounds removal to
+#     complete the procedure described in the original approach in
+#     :footcite:`Pruim2015`. ICA-AROMA increases the run time of
+#     :term:`fMRIPrep`, however, the strategy performs well in various
+#     benchmarks (:footcite:`Ciric2017`, :footcite:`Parker2018`).
+# The following examples shows how to use the `simple` strategy.
+
+from nilearn.input_data import fmriprep_confounds_strategy
+
+# use default parameters
+confounds, sample_mask = fmriprep_confounds_strategy(fmri_filenames,
+                                                     denoise_strategy="simple")
+
+# add optional parameter global siganl
+confounds, sample_mask = fmriprep_confounds_strategy(fmri_filenames,
+                                                     denoise_strategy="simple",
+                                                     global_signal="basic")
+
+# overwrite default parameters
+confounds, sample_mask = fmriprep_confounds_strategy(fmri_filenames,
+                                                     denoise_strategy="simple",
+                                                     motion="full",
+                                                     wm_csf="full")
+
+
+confounds, sample_mask = fmriprep_confounds_strategy(
+    fmri_filenames, denoise_strategy="scrubbing")
+
+# the following options are not applicable to the expample dataset:
+
+# confounds, sample_mask = fmriprep_confounds_strategy(
+#     fmri_filenames, denoise_strategy="compcor")
+
+# confounds, sample_mask = fmriprep_confounds_strategy(
+#     fmri_filenames, denoise_strategy="ica_aroma")
