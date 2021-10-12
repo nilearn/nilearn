@@ -21,8 +21,9 @@ connectome              --- Set of tools for computing functional connectivity m
                             and for sparse multi-subjects learning of Gaussian graphical models
 image                   --- Set of functions defining mathematical operations
                             working on Niimg-like objects
-input_data              --- includes scikit-learn tranformers and tools to
-                            preprocess neuro-imaging data
+input_data              --- Includes scikit-learn transformers and tools to
+                            preprocess neuro-imaging data and access fMRIPrep
+                            generated confounds.
 masking                 --- Utilities to compute and operate on brain masks
 mass_univariate         --- Defines a Massively Univariate Linear Model
                             estimated with OLS and permutation test

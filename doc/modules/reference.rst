@@ -227,6 +227,14 @@ the :ref:`user guide <user_guide>` for more information and usage examples.
    NiftiMapsMasker
    NiftiSpheresMasker
 
+**Functions**:
+
+.. autosummary::
+   :toctree: generated/
+   :template: function.rst
+
+   fmriprep_confounds
+
 .. _masking_ref:
 
 :mod:`nilearn.masking`: Data Masking Utilities

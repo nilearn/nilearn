@@ -70,6 +70,22 @@
 }
 
 
+@article{Ciric2017,
+	title = {Benchmarking of participant-level confound regression strategies for the control of motion artifact in studies of functional connectivity},
+	volume = {154},
+	issn = {10959572},
+	doi = {10.1016/j.neuroimage.2017.03.020},
+	abstract = {Since initial reports regarding the impact of motion artifact on measures of functional connectivity, there has been a proliferation of participant-level confound regression methods to limit its impact. However, many of the most commonly used techniques have not been systematically evaluated using a broad range of outcome measures. Here, we provide a systematic evaluation of 14 participant-level confound regression methods in 393 youths. Specifically, we compare methods according to four benchmarks, including the residual relationship between motion and connectivity, distance-dependent effects of motion on connectivity, network identifiability, and additional degrees of freedom lost in confound regression. Our results delineate two clear trade-offs among methods. First, methods that include global signal regression minimize the relationship between connectivity and motion, but result in distance-dependent artifact. In contrast, censoring methods mitigate both motion artifact and distance-dependence, but use additional degrees of freedom. Importantly, less effective de-noising methods are also unable to identify modular network structure in the connectome. Taken together, these results emphasize the heterogeneous efficacy of existing methods, and suggest that different confound regression strategies may be appropriate in the context of specific scientific goals.},
+	pages = {174--187},
+	number = {1},
+	journal = {NeuroImage},
+	author = {Ciric, Rastko and Wolf, Daniel H. and Power, Jonathan D. and Roalf, David R. and Baum, Graham L. and Ruparel, Kosha and Shinohara, Russell T. and Elliott, Mark A. and Eickhoff, Simon B. and Davatzikos, Christos and Gur, Ruben C. and Gur, Raquel E. and Bassett, Danielle S. and Satterthwaite, Theodore D.},
+	year = {2017},
+	pmid = {28302591},
+	keywords = {{fMRI}, Functional connectivity, \#nosource, Artifact, Confound, Motion, Noise},
+}
+
+
 @article {Clarke4766,
 	author = {Clarke, Alex and Tyler, Lorraine K.},
 	title = {Object-Specific Semantic Coding in Human Perirhinal Cortex},
@@ -763,6 +779,56 @@ The dominant view that perceptual learning is accompanied by changes in early se
 	doi={10.1016/j.neuron.2011.09.006},
 	url={https://doi.org/10.1016/j.neuron.2011.09.006}
 }
+
+
+@article{Power2012,
+	title = {Spurious but systematic correlations in functional connectivity {MRI} networks arise from subject motion},
+	volume = {59},
+	issn = {10538119},
+	url = {http://www.ncbi.nlm.nih.gov/pubmed/22019881 http://www.pubmedcentral.nih.gov/articlerender.fcgi?artid=PMC3254728},
+	doi = {10.1016/j.neuroimage.2011.10.018},
+	abstract = {Here, we demonstrate that subject motion produces substantial changes in the timecourses of resting state functional connectivity {MRI} (rs-{fcMRI}) data despite compensatory spatial registration and regression of motion estimates from the data. These changes cause systematic but spurious correlation structures throughout the brain. Specifically, many long-distance correlations are decreased by subject motion, whereas many short-distance correlations are increased. These changes in rs-{fcMRI} correlations do not arise from, nor are they adequately countered by, some common functional connectivity processing steps. Two indices of data quality are proposed, and a simple method to reduce motion-related effects in rs-{fcMRI} analyses is demonstrated that should be flexibly implementable across a variety of software platforms. We demonstrate how application of this technique impacts our own data, modifying previous conclusions about brain development. These results suggest the need for greater care in dealing with subject motion, and the need to critically revisit previous rs-{fcMRI} work that may not have adequately controlled for effects of transient subject movements. © 2011 Elsevier Inc.},
+	pages = {2142--2154},
+	number = {3},
+	journal = {NeuroImage},
+	author = {Power, Jonathan D. and Barnes, Kelly A. and Snyder, Abraham Z. and Schlaggar, Bradley L. and Petersen, Steven E.},
+	year = {2012},
+	pmid = {22019881},
+	keywords = {{FMRI}, Resting state, Artifact, Motion, Noise, Movement, {FcMRI}, Network},
+}
+
+
+@article{Power2014,
+	title = {Methods to detect, characterize, and remove motion artifact in resting state {fMRI}},
+	volume = {84},
+	issn = {10538119},
+	url = {http://www.sciencedirect.com/science/article/pii/S1053811913009117},
+	doi = {10.1016/j.neuroimage.2013.08.048},
+	abstract = {Head motion systematically alters correlations in resting state functional connectivity {fMRI} ({RSFC}). In this report we examine impact of motion on signal intensity and {RSFC} correlations. We find that motion-induced signal changes (1) are often complex and variable waveforms, (2) are often shared across nearly all brain voxels, and (3) often persist more than 10. s after motion ceases. These signal changes, both during and after motion, increase observed {RSFC} correlations in a distance-dependent manner. Motion-related signal changes are not removed by a variety of motion-based regressors, but are effectively reduced by global signal regression. We link several measures of data quality to motion, changes in signal intensity, and changes in {RSFC} correlations. We demonstrate that improvements in data quality measures during processing may represent cosmetic improvements rather than true correction of the data. We demonstrate a within-subject, censoring-based artifact removal strategy based on volume censoring that reduces group differences due to motion to chance levels. We note conditions under which group-level regressions do and do not correct motion-related effects. © 2013 Elsevier Inc.},
+	pages = {320--341},
+	journal = {NeuroImage},
+	author = {Power, Jonathan D. and Mitra, Anish and Laumann, Timothy O. and Snyder, Abraham Z. and Schlaggar, Bradley L. and Petersen, Steven E.},
+	year = {2014},
+	pmid = {23994314},
+	keywords = {Functional connectivity, \#nosource, Resting state, Artifact, Motion, Movement, {MRI}},
+}
+
+
+@article{Pruim2015,
+	title = {{ICA}-{AROMA}: A robust {ICA}-based strategy for removing motion artifacts from {fMRI} data},
+	volume = {112},
+	issn = {1095-9572},
+	doi = {10.1016/j.neuroimage.2015.02.064},
+	shorttitle = {{ICA}-{AROMA}},
+	abstract = {Head motion during functional {MRI} ({fMRI}) scanning can induce spurious findings and/or harm detection of true effects. Solutions have been proposed, including deleting ('scrubbing') or regressing out ('spike regression') motion volumes from {fMRI} time-series. These strategies remove motion-induced signal variations at the cost of destroying the autocorrelation structure of the {fMRI} time-series and reducing temporal degrees of freedom. {ICA}-based {fMRI} denoising strategies overcome these drawbacks but typically require re-training of a classifier, needing manual labeling of derived components (e.g. {ICA}-{FIX}; Salimi-Khorshidi et al. (2014)). Here, we propose an {ICA}-based strategy for Automatic Removal of Motion Artifacts ({ICA}-{AROMA}) that uses a small (n=4), but robust set of theoretically motivated temporal and spatial features. Our strategy does not require classifier re-training, retains the data's autocorrelation structure and largely preserves temporal degrees of freedom. We describe {ICA}-{AROMA}, its implementation, and initial validation. {ICA}-{AROMA} identified motion components with high accuracy and robustness as illustrated by leave-N-out cross-validation. We additionally validated {ICA}-{AROMA} in resting-state (100 participants) and task-based {fMRI} data (118 participants). Our approach removed (motion-related) spurious noise from both {rfMRI} and task-based {fMRI} data to larger extent than regression using 24 motion parameters or spike regression. Furthermore, {ICA}-{AROMA} increased sensitivity to group-level activation. Our results show that {ICA}-{AROMA} effectively reduces motion-induced signal variations in {fMRI} data, is applicable across datasets without requiring classifier re-training, and preserves the temporal characteristics of the {fMRI} data.},
+	pages = {267--277},
+	journal = {Neuroimage},
+	author = {Pruim, Raimon H. R. and Mennes, Maarten and van Rooij, Daan and Llera, Alberto and Buitelaar, Jan K. and Beckmann, Christian F.},
+	year = {2015},
+	pmid = {25770991},
+	keywords = {Algorithms, Artifact, Artifacts, Artificial Intelligence, Cerebrospinal Fluid, Connectivity, Functional {MRI}, Humans, Image Processing, Computer-Assisted, Independent component analysis, Magnetic Resonance Imaging, Motion, Principal Component Analysis, Reproducibility of Results, Rest, Resting state},
+}
+
 
 @article{reilly2009cerebellum,
     author = {O'Reilly, Jill X. and Beckmann, Christian F. and Tomassini, Valentina and Ramnani, Narender and Johansen-Berg, Heidi},
