@@ -1479,9 +1479,10 @@ def test_plot_markers(tmpdir):
     plt.close()
     plot_markers(*args, node_size=np.array([10, 20, 30, 40]), **kwargs)
     plt.close()
-    plot_markers(
-        *args, display_mode="lyrz", node_size=np.array([10, 20, 30, 40])
-    )
+    node_sizes = np.array([10, 20, 30, 40])
+    display = plot_markers(*args, display_mode="lyrz", node_size=node_sizes)
+    for d, axes in display.axes.items():
+        assert np.all(axes.ax.collections[0].get_sizes() == node_sizes)
     plt.close()
 
     # Different options for cmap related arguments
