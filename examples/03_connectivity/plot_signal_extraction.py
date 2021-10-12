@@ -253,15 +253,17 @@ confounds, sample_mask = fmriprep_confounds_strategy(fmri_filenames,
                                                      denoise_strategy="simple",
                                                      global_signal="basic")
 
-# overwrite default parameters
-confounds, sample_mask = fmriprep_confounds_strategy(fmri_filenames,
-                                                     denoise_strategy="simple",
-                                                     motion="full",
-                                                     wm_csf="full")
+# overwrite default parameters - cannot be executed correctly as the example
+# file doesn't contain the expanded parameters
+# confounds, sample_mask = fmriprep_confounds_strategy(fmri_filenames,
+#                                                      denoise_strategy="simple",
+#                                                      motion="full",
+#                                                      wm_csf="full")
 
-
-confounds, sample_mask = fmriprep_confounds_strategy(
-    fmri_filenames, denoise_strategy="scrubbing")
+# cannot be executed correctly as the example file doesn't contain the expanded
+# parameters
+# confounds, sample_mask = fmriprep_confounds_strategy(
+#     fmri_filenames, denoise_strategy="scrubbing")
 
 # the following options are not applicable to the expample dataset:
 
