@@ -21,7 +21,7 @@ preset_strategies = {
         "wm_csf": "basic",
         "global_signal": None,
         "demean": True
-        },
+    },
     "scrubbing": {
         "strategy":
             ["high_pass", "non_steady_state", "motion", "wm_csf", "scrub"],
@@ -32,7 +32,7 @@ preset_strategies = {
         "std_dvars_thresh": 3,
         "global_signal": None,
         "demean": True
-        },
+    },
     "compcor": {
         "strategy":
             ["high_pass", "non_steady_state", "motion", "compcor"],
@@ -40,7 +40,7 @@ preset_strategies = {
         "n_compcor": "all",
         "compcor": "anat_combined",
         "demean": True
-        },
+    },
     "ica_aroma": {
         "strategy":
             ["high_pass", "non_steady_state", "wm_csf", "ica_aroma"],
@@ -48,11 +48,12 @@ preset_strategies = {
         "ica_aroma": "full",
         "global_signal": None,
         "demean": True
-        }
+    }
 }
 
 
-def fmriprep_confounds_strategy(img_files, denoise_strategy="simple", **kwargs):
+def fmriprep_confounds_strategy(img_files, denoise_strategy="simple",
+                                **kwargs):
     """
     Use preset strategy to load confounds from :term:`fMRIPrep`.
 
@@ -198,7 +199,7 @@ def _update_user_inputs(kwargs, default_parameters, check_parameters):
         if key == "global_signal":
             if isinstance(value, str):
                 parameters["strategy"].append("global")
-            else: # remove global signal if not updated
+            else:  # remove global signal if not updated
                 parameters.pop("global_signal", None)
     # collect remaining parameters in kwargs that are not needed
     not_needed = list(kwargs.keys())

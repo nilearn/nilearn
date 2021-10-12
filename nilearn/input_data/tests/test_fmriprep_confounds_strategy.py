@@ -149,6 +149,6 @@ def test_irrelevant_input(tmp_path):
                                       copy_confounds=True, copy_json=True)
     warning_message = (r"parameters accepted: \['motion', 'wm_csf', "
                        "'global_signal', 'demean']")
-    with pytest.warns(UserWarning, match=warning_message) as records:
+    with pytest.warns(UserWarning, match=warning_message):
         fmriprep_confounds_strategy(
             file_nii, denoise_strategy="simple", ica_aroma="full")
