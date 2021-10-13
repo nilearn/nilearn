@@ -265,7 +265,7 @@ def test_plot_connectome_exception_wrong_edge_threshold(adjacency, node_coords):
 @pytest.mark.parametrize("threshold", ['0.1', '10', '10.2.3%', 'asdf%'])
 def test_plot_connectome_exception_wrong_edge_threshold_format(
         threshold, adjacency, node_coords):
-    """Tests that a ValueError is raised when edge_threshold is an uncorrectly
+    """Tests that a ValueError is raised when edge_threshold is an incorrectly
     formatted string.
     """
     with pytest.raises(ValueError,

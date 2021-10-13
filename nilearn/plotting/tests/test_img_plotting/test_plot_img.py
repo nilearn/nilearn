@@ -1,6 +1,4 @@
-"""
-Tests for :func:`nilearn.plotting.plot_img`.
-"""
+"""Tests for :func:`nilearn.plotting.plot_img`."""
 
 import pytest
 import numpy as np
@@ -9,22 +7,26 @@ from nibabel import Nifti1Image
 from nilearn.plotting import plot_img
 from nilearn.image import get_data
 from nilearn._utils.niimg import _is_binary_niimg
-from .testing_utils import MNI_AFFINE, testdata_3d
+from .testing_utils import MNI_AFFINE, testdata_3d  # noqa:F401
 
 
 def _testdata_3d_for_resampling(img, binary):
+    """Returns testing data for resampling tests.
+    Data can be binarize or not.
+    """
     data = get_data(img)
     if binary:
         data[data > 0] = 1
         data[data < 0] = 0
-    affine = np.array([[1., -1.,  0.,  0.],
-                       [1.,  1.,  0.,  0.],
-                       [0.,  0.,  1.,  0.],
-                       [0.,  0.,  0.,  1.]])
+    affine = np.array([[1., -1., 0., 0.],
+                       [1., 1., 0., 0.],
+                       [0., 0., 1., 0.],
+                       [0., 0., 0., 1.]])
     return Nifti1Image(data, affine)
 
 
-def test_display_methods(testdata_3d):
+def test_display_methods(testdata_3d):  # noqa:F811
+    """Tests display methods."""
     img = testdata_3d['img']
     display = plot_img(img)
     display.add_overlay(img, threshold=0)
@@ -33,7 +35,8 @@ def test_display_methods(testdata_3d):
                          colors=['limegreen', 'yellow'])
 
 
-def test_plot_with_axes_or_figure(testdata_3d):
+def test_plot_with_axes_or_figure(testdata_3d):  # noqa:F811
+    """Smoke tests for plot_img with providing figure or Axes."""
     img = testdata_3d['img']
     figure = plt.figure()
     plot_img(img, figure=figure)
@@ -42,19 +45,18 @@ def test_plot_with_axes_or_figure(testdata_3d):
     plt.close()
 
 
-def test_plot_empty_slice(testdata_3d):
+def test_plot_empty_slice(testdata_3d):  # noqa:F811
     """Test that things don't crash when we give a map with
-    nothing above threshold.
-    This is only a smoke test.
+    nothing above threshold. This is only a smoke test.
     """
-    data = np.zeros((20, 20, 20))
-    img = Nifti1Image(data, MNI_AFFINE)
+    img = Nifti1Image(np.zeros((20, 20, 20)), MNI_AFFINE)
     plot_img(img, display_mode='y', threshold=1)
     plt.close()
 
 
 @pytest.mark.parametrize("display_mode", ["x", "y", "z"])
-def test_plot_img_with_auto_cut_coords(display_mode, testdata_3d):
+def test_plot_img_with_auto_cut_coords(display_mode, testdata_3d):  # noqa
+    """Smoke test for plot_img with cut_coords set in auto mode."""
     data = np.zeros((20, 20, 20))
     data[3:-3, 3:-3, 3:-3] = 1
     img = Nifti1Image(data, np.eye(4))
@@ -63,7 +65,8 @@ def test_plot_img_with_auto_cut_coords(display_mode, testdata_3d):
 
 
 @pytest.mark.parametrize("binary_img", [True, False])
-def test_plot_img_with_resampling(binary_img, testdata_3d):
+def test_plot_img_with_resampling(binary_img, testdata_3d):  # noqa:F811
+    """Tests for plot_img with resampling of the data image."""
     img = _testdata_3d_for_resampling(testdata_3d['img'], binary_img)
     if binary_img:
         assert _is_binary_niimg(img)
@@ -71,16 +74,19 @@ def test_plot_img_with_resampling(binary_img, testdata_3d):
         assert not _is_binary_niimg(img)
     display = plot_img(img)
     display.add_overlay(img)
-    display.add_contours(img, contours=2, linewidth=4,
-                         colors=['limegreen', 'yellow'])
+    display.add_contours(
+        img, contours=2, linewidth=4, colors=['limegreen', 'yellow']
+    )
     display.add_edges(img, color='c')
     plt.close()
 
 
-def test_display_methods_with_display_mode_tiled(testdata_3d):
+def test_display_methods_with_display_mode_tiled(testdata_3d):  # noqa:F811
+    """Smoke tests for display methods with tiled display mode."""
     img = testdata_3d['img']
     display = plot_img(img, display_mode='tiled')
     display.add_overlay(img, threshold=0)
     display.add_edges(img, color='c')
     display.add_contours(img, contours=2, linewidth=4,
                          colors=['limegreen', 'yellow'])
+

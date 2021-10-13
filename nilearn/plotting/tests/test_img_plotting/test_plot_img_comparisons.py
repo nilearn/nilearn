@@ -1,11 +1,8 @@
-"""
-Tests for :func:`nilearn.plotting.plot_img_comparison`.
-"""
+"""Tests for :func:`nilearn.plotting.plot_img_comparison`."""
 
 import pytest
 import numpy as np
 import matplotlib.pyplot as plt
-from nibabel import Nifti1Image
 from nilearn._utils.data_gen import generate_fake_fmri
 from nilearn.image import iter_img
 from nilearn.input_data import NiftiMasker
@@ -13,6 +10,7 @@ from nilearn.plotting import plot_img_comparison
 
 
 def test_plot_img_comparison():
+    """Tests for plot_img_comparision."""
     fig, axes = plt.subplots(2, 1)
     axes = axes.ravel()
     kwargs = {"shape": (3, 2, 4), "length": 5}
@@ -48,3 +46,4 @@ def test_plot_img_comparison():
         target_images, query_images, masker, plot_hist=False
     )
     assert np.allclose(correlations, correlations_1)
+
