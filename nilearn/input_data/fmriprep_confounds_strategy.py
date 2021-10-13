@@ -97,7 +97,7 @@ def fmriprep_confounds_strategy(img_files, denoise_strategy="simple",
           Additional parameters: motion, wm_csf, scrub, fd_thresh,
           std_dvars_thresh, global_signal, demean
         - 'compcor': Load confounds using the CompCor strategy from
-          :footcite:`BEHZADI200790`.Default with full motion parameters,
+          :footcite:`BEHZADI200790`. Default with full motion parameters,
           high pass filter, and anatomical compcor with combined mask.
           Additional parameters: motion, n_compcor, compcor, demean
         - 'ica_aroma': Load confounds for non-aggresive ICA-AROMA strategy
@@ -120,7 +120,7 @@ def fmriprep_confounds_strategy(img_files, denoise_strategy="simple",
         The columns contains the labels of the regressors.
 
     sample_mask : None, numpy.ndarray, or list of
-        When no volumns require removal, the value is None.
+        When no volume requires removal, the value is None.
         Otherwise, shape: (number of scans - number of volumes removed, )
         The index of the niimgs along time/fourth dimension for valid volumes
         for subsequent analysis.
