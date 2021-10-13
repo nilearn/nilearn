@@ -1,14 +1,12 @@
-"""
-Tests for :func:`nilearn.plotting.plot_carpet`.
-"""
+"""Tests for :func:`nilearn.plotting.plot_carpet`."""
 
 import numpy as np
 import matplotlib.pyplot as plt
 from nilearn.plotting import plot_carpet
-from .testing_utils import testdata_4d
+from .testing_utils import testdata_4d  # noqa:F401
 
 
-def test_plot_carpet(testdata_4d):
+def test_plot_carpet(testdata_4d):  # noqa:F811
     """Check contents of plot_carpet figure against data in image."""
     img_4d = testdata_4d['img_4d']
     img_4d_long = testdata_4d['img_4d_long']
@@ -17,7 +15,9 @@ def test_plot_carpet(testdata_4d):
     # Next two lines retrieve the numpy array from the plot
     ax = display.axes[0]
     plotted_array = ax.images[0].get_array()
-    assert plotted_array.shape == (np.prod(img_4d.shape[:-1]), img_4d.shape[-1])
+    assert(
+        plotted_array.shape == (np.prod(img_4d.shape[:-1]), img_4d.shape[-1])
+    )
     # Make sure that the values in the figure match the values in the image
     np.testing.assert_almost_equal(
         plotted_array.sum(),
@@ -34,12 +34,13 @@ def test_plot_carpet(testdata_4d):
     ax = display.axes[0]
     plotted_array = ax.images[0].get_array()
     # Check size
-    n_items = (np.prod(img_4d_long.shape[:-1]) * np.ceil(img_4d_long.shape[-1] / 4))
+    n_items = (np.prod(img_4d_long.shape[:-1])
+               * np.ceil(img_4d_long.shape[-1] / 4))
     assert plotted_array.size == n_items
     plt.close(display)
 
 
-def test_plot_carpet_with_atlas(testdata_4d):
+def test_plot_carpet_with_atlas(testdata_4d):  # noqa:F811
     """Test plot_carpet when using an atlas."""
     img_4d = testdata_4d['img_4d']
     mask_img = testdata_4d['img_atlas']

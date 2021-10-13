@@ -1,16 +1,14 @@
-"""
-Utilities for testing image plotting functions.
-"""
+"""Utilities for testing image plotting functions."""
 
 import numpy as np
 import pytest
 from nibabel import Nifti1Image
 
 
-MNI_AFFINE = np.array([[-2.,    0.,    0.,   90.],
-                       [0.,    2.,    0., -126.],
-                       [0.,    0.,    2.,  -72.],
-                       [0.,    0.,    0.,    1.]])
+MNI_AFFINE = np.array([[-2., 0., 0., 90.],
+                       [0., 2., 0., -126.],
+                       [0., 0., 2., -72.],
+                       [0., 0., 0., 1.]])
 
 
 @pytest.fixture()
@@ -47,3 +45,4 @@ def testdata_4d():
         'img_atlas': img_atlas,
         'atlas_labels': atlas_labels,
     })
+
