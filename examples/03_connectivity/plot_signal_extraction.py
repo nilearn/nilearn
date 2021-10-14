@@ -217,10 +217,10 @@ plotting.show()
 #     and optionally global signal. This approach can reliably remove the
 #     impact of high motion volumes in functional connectome, however, it
 #     might not be suitable with subjects with high motion (more than 50%
-#     timeseries flagged as high motion). One should adjust the threshould
+#     timeseries flagged as high motion). One should adjust the threshold
 #     based on the characteristics of the dataset, or remove high motion subjects from
 #     the dataset.
-#   - `compcor` high pass filtering, fully expanded motion partameters, and
+#   - `compcor` high pass filtering, fully expanded motion parameters, and
 #     anatomical compcor components with combined white matter and csf mask
 #     that fits 50% of the variance. Compcor can suffer from loss of
 #     temporal degrees of freedom when using explained variance as the noise

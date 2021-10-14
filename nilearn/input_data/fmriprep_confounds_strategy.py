@@ -69,7 +69,7 @@ def fmriprep_confounds_strategy(img_files, denoise_strategy="simple",
         :term:`fMRIPrep` generated functional derivative directory (i.e.The
         associated confound files should be in the same directory as the image
         file). As long as the image file, confound related tsv and json are in
-        the same directory with BIDS-complied names, `fmriprep_confounds` can
+        the same directory with BIDS-compliant names, :func:`nilearn.input_data.fmriprep_confounds` can
         retrieve the relevant files correctly.
 
         - `nii.gz` or `dtseries.nii`: path to files, optionally as a list.
