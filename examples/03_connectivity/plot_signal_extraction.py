@@ -210,16 +210,17 @@ plotting.show()
 #     csf, and optionally global signal. This approach is commonly
 #     used in resting state functional connectivity, described in
 #     :footcite:`Fox2005`. With the global signal option, this approach
-#     can remove confounds without compromising the temporal degrees of freedom.
-#   - `scrubbing` high pass filtering, fully expanded motion, white matter, and
-#     csf parameters, scrubbing high motion volumes
+#     can remove confounds without compromising the temporal degrees of
+#     freedom.
+#   - `scrubbing` high pass filtering, fully expanded motion, white matter,
+#     and csf parameters, scrubbing high motion volumes
 #     (framewise displacement > 0.2 mm, standardized DVARS threshold > 3),
 #     and optionally global signal. This approach can reliably remove the
 #     impact of high motion volumes in functional connectome, however, it
 #     might not be suitable with subjects with high motion (more than 50%
 #     timeseries flagged as high motion). One should adjust the threshold
-#     based on the characteristics of the dataset, or remove high motion subjects from
-#     the dataset.
+#     based on the characteristics of the dataset, or remove high motion
+#     subjects from the dataset.
 #   - `compcor` high pass filtering, fully expanded motion parameters, and
 #     anatomical compcor components with combined white matter and csf mask
 #     that fits 50% of the variance. Compcor can suffer from loss of
