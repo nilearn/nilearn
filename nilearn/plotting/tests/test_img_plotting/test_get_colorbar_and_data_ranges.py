@@ -8,248 +8,124 @@ import numpy as np
 from nilearn.plotting.img_plotting import _get_colorbar_and_data_ranges
 
 
-@pytest.fixture
-def data():
-    """Data with positive and negative range.""" 
-    return np.array([[-.5, 1., np.nan],
-                     [0., np.nan, -.2],
-                     [1.5, 2.5, 3.]])
+data_pos_neg = np.array([[-.5, 1., np.nan],
+                         [0., np.nan, -.2],
+                         [1.5, 2.5, 3.]])
 
 
-@pytest.fixture
-def data_pos():
-    """Data with positive range."""
-    return np.array([[0, 1., np.nan],
+data_pos = np.array([[0, 1., np.nan],
                      [0., np.nan, 0],
                      [1.5, 2.5, 3.]])
 
 
-@pytest.fixture
-def data_neg():
-    """Data with negative range."""
-    return np.array([[-.5, 0, np.nan],
+data_neg = np.array([[-.5, 0, np.nan],
                      [0., np.nan, -.2],
                      [0, 0, 0]])
 
 
-def test_get_colorbar_and_data_ranges_with_vmin(data):
+data_masked = np.ma.masked_greater(data_pos_neg, 2.)
+
+
+def test_get_colorbar_and_data_ranges_with_vmin():
+    """Tests for _get_colorbar_and_data_ranges.
+
+    Tests that a ValueError is raised when vmin and
+    symmetric_cbar are both provided.
+    """
     with pytest.raises(ValueError,
                        match='does not accept a "vmin" argument'):
-        _get_colorbar_and_data_ranges(data, vmax=None, symmetric_cbar=True,
-                                      kwargs={'vmin': 1.})
+        _get_colorbar_and_data_ranges(
+            data_pos_neg, vmax=None, symmetric_cbar=True, kwargs={'vmin': 1.}
+        )
 
 
-def test_get_colorbar_and_data_ranges_pos_neg(data):
-    # Reasonable additional arguments that would end up being passed
-    # to imshow in a real plotting use case
+def _expected_results_pos_neg(symmetric_cbar, vmax, data):
+    """Helper function for expected_results.
+
+    Return the expected `cbar_vmin`, `cbar_vmax`, `vmin`,
+    and `vmax` for general case.
+    """
+    data_max = np.nanmax(data)
+    if symmetric_cbar:
+        if vmax is None:
+            return (None, None, -data_max, data_max)
+        else:
+            return (None, None, -2, 2)
+    else:
+        if vmax is None:
+            return (np.nanmin(data), data_max, -data_max, data_max)
+        else:
+            return (np.nanmin(data), data_max, -2, 2)
+
+
+def _expected_results_pos(symmetric_cbar, vmax, data):
+    """Helper function for expected_results.
+
+    Return the expected `cbar_vmin`, `cbar_vmax`, `vmin`,
+    and `vmax` for positive data.
+    """
+    data_max = np.nanmax(data)
+    if symmetric_cbar == True:  # noqa:E712
+        if vmax is None:
+            return (None, None, -data_max, data_max)
+        else:
+            return (None, None, -2, 2)
+    else:
+        if vmax is None:
+            return (0, None, -data_max, data_max)
+        else:
+            return (0, None, -2, 2)
+
+
+def _expected_results_neg(symmetric_cbar, vmax, data):
+    """Helper function for expected_results.
+
+    Return the expected `cbar_vmin`, `cbar_vmax`, `vmin`,
+    and `vmax` for negative data.
+    """
+    data_min = np.nanmin(data)
+    if symmetric_cbar == True:  # noqa:E712
+        if vmax is None:
+            return (None, None, data_min, -data_min)
+        else:
+            return (None, None, -2, 2)
+    else:
+        if vmax is None:
+            return (None, 0, data_min, -data_min)
+        else:
+            return (None, 0, -2, 2)
+
+
+@pytest.fixture
+def expected_results(case, data, symmetric_cbar, vmax):
+    """Fixture to retrieve expected results."""
+    expected = {"pos_neg": _expected_results_pos_neg,
+                "pos": _expected_results_pos,
+                "neg": _expected_results_neg,
+                "masked": _expected_results_pos_neg}
+    return expected[case](symmetric_cbar, vmax, data)
+
+
+@pytest.mark.parametrize("case,data",
+                         [("pos_neg", data_pos_neg),
+                          ("pos", data_pos),
+                          ("neg", data_neg),
+                          ("masked", data_masked)])
+@pytest.mark.parametrize("symmetric_cbar", [True, False, 'auto'])
+@pytest.mark.parametrize("vmax", [None, 2])
+def test_get_colorbar_and_data_ranges(case, data, symmetric_cbar, vmax,
+                                      expected_results):
+    """Tests for _get_colorbar_and_data_ranges.
+
+    Tests values of `vmin`, `vmax`, `cbar_vmin`, and `cbar_vmax` with:
+
+        - data having both positive and negatives values.
+        - data having only negative values.
+        - data having only positive values.
+        - masked data.
+    """
     kwargs = {'aspect': 'auto', 'alpha': 0.9}
-
-    # symmetric_cbar set to True
-    cbar_vmin, cbar_vmax, vmin, vmax = _get_colorbar_and_data_ranges(
-        data, vmax=None, symmetric_cbar=True, kwargs=kwargs
+    assert(_get_colorbar_and_data_ranges(
+        data, vmax=vmax, symmetric_cbar=symmetric_cbar, kwargs=kwargs)
+        == expected_results
     )
-    assert vmin == -np.nanmax(data)
-    assert vmax == np.nanmax(data)
-    assert cbar_vmin == None
-    assert cbar_vmax == None
-    # same case if vmax has been set
-    cbar_vmin, cbar_vmax, vmin, vmax = _get_colorbar_and_data_ranges(
-        data, vmax=2, symmetric_cbar=True, kwargs=kwargs
-    )
-    assert vmin == -2
-    assert vmax == 2
-    assert cbar_vmin == None
-    assert cbar_vmax == None
-    # symmetric_cbar is set to False
-    cbar_vmin, cbar_vmax, vmin, vmax = _get_colorbar_and_data_ranges(
-        data, vmax=None, symmetric_cbar=False, kwargs=kwargs
-    )
-    assert vmin == -np.nanmax(data)
-    assert vmax == np.nanmax(data)
-    assert cbar_vmin == np.nanmin(data)
-    assert cbar_vmax == np.nanmax(data)
-    # same case if vmax has been set
-    cbar_vmin, cbar_vmax, vmin, vmax = _get_colorbar_and_data_ranges(
-        data, vmax=2, symmetric_cbar=False, kwargs=kwargs
-    )
-    assert vmin == -2
-    assert vmax == 2
-    assert cbar_vmin == np.nanmin(data)
-    assert cbar_vmax == np.nanmax(data)
-    # symmetric_cbar is set to 'auto', same behaviours as True for this case
-    cbar_vmin, cbar_vmax, vmin, vmax = _get_colorbar_and_data_ranges(
-        data, vmax=None, symmetric_cbar='auto', kwargs=kwargs
-    )
-    assert vmin == -np.nanmax(data)
-    assert vmax == np.nanmax(data)
-    assert cbar_vmin == None
-    assert cbar_vmax == None
-    # same case if vmax has been set
-    cbar_vmin, cbar_vmax, vmin, vmax = _get_colorbar_and_data_ranges(
-        data, vmax=2, symmetric_cbar='auto', kwargs=kwargs
-    )
-    assert vmin == -2
-    assert vmax == 2
-    assert cbar_vmin == None
-    assert cbar_vmax == None
-
-
-def test_get_colorbar_and_data_ranges_pos(data_pos):
-    # symmetric_cbar set to True
-    cbar_vmin, cbar_vmax, vmin, vmax = _get_colorbar_and_data_ranges(
-        data_pos, vmax=None, symmetric_cbar=True, kwargs={}
-    )
-    assert vmin == -np.nanmax(data_pos)
-    assert vmax == np.nanmax(data_pos)
-    assert cbar_vmin == None
-    assert cbar_vmax == None
-    # same case if vmax has been set
-    cbar_vmin, cbar_vmax, vmin, vmax = _get_colorbar_and_data_ranges(
-        data_pos, vmax=2, symmetric_cbar=True, kwargs={}
-    )
-    assert vmin == -2
-    assert vmax == 2
-    assert cbar_vmin == None
-    assert cbar_vmax == None
-    # symmetric_cbar is set to False
-    cbar_vmin, cbar_vmax, vmin, vmax = _get_colorbar_and_data_ranges(
-        data_pos, vmax=None, symmetric_cbar=False, kwargs={}
-    )
-    assert vmin == -np.nanmax(data_pos)
-    assert vmax == np.nanmax(data_pos)
-    assert cbar_vmin == 0
-    assert cbar_vmax == None
-    # same case if vmax has been set
-    cbar_vmin, cbar_vmax, vmin, vmax = _get_colorbar_and_data_ranges(
-        data_pos, vmax=2, symmetric_cbar=False, kwargs={}
-    )
-    assert vmin == -2
-    assert vmax == 2
-    assert cbar_vmin == 0
-    assert cbar_vmax == None
-    # symmetric_cbar is set to 'auto', same behaviour as false in this case
-    cbar_vmin, cbar_vmax, vmin, vmax = _get_colorbar_and_data_ranges(
-        data_pos, vmax=None, symmetric_cbar='auto', kwargs={}
-    )
-    assert vmin == -np.nanmax(data_pos)
-    assert vmax == np.nanmax(data_pos)
-    assert cbar_vmin == 0
-    assert cbar_vmax == None
-    # same case if vmax has been set
-    cbar_vmin, cbar_vmax, vmin, vmax = _get_colorbar_and_data_ranges(
-        data_pos, vmax=2, symmetric_cbar='auto', kwargs={}
-    )
-    assert vmin == -2
-    assert vmax == 2
-    assert cbar_vmin == 0
-    assert cbar_vmax == None
-
-
-def test_get_colorbar_and_data_ranges_neg(data_neg):
-    # symmetric_cbar set to True
-    cbar_vmin, cbar_vmax, vmin, vmax = _get_colorbar_and_data_ranges(
-        data_neg, vmax=None, symmetric_cbar=True, kwargs={}
-    )
-    assert vmin == np.nanmin(data_neg)
-    assert vmax == -np.nanmin(data_neg)
-    assert cbar_vmin == None
-    assert cbar_vmax == None
-    # same case if vmax has been set
-    cbar_vmin, cbar_vmax, vmin, vmax = _get_colorbar_and_data_ranges(
-        data_neg, vmax=2, symmetric_cbar=True, kwargs={}
-    )
-    assert vmin == -2
-    assert vmax == 2
-    assert cbar_vmin == None
-    assert cbar_vmax == None
-    # symmetric_cbar is set to False
-    cbar_vmin, cbar_vmax, vmin, vmax = _get_colorbar_and_data_ranges(
-        data_neg, vmax=None, symmetric_cbar=False, kwargs={}
-    )
-    assert vmin == np.nanmin(data_neg)
-    assert vmax == -np.nanmin(data_neg)
-    assert cbar_vmin == None
-    assert cbar_vmax == 0
-    # same case if vmax has been set
-    cbar_vmin, cbar_vmax, vmin, vmax = _get_colorbar_and_data_ranges(
-        data_neg, vmax=2, symmetric_cbar=False, kwargs={}
-    )
-    assert vmin == -2
-    assert vmax == 2
-    assert cbar_vmin == None
-    assert cbar_vmax == 0
-    # symmetric_cbar is set to 'auto', same behaviour as False in this case
-    cbar_vmin, cbar_vmax, vmin, vmax = _get_colorbar_and_data_ranges(
-        data_neg, vmax=None, symmetric_cbar='auto', kwargs={}
-    )
-    assert vmin == np.nanmin(data_neg)
-    assert vmax == -np.nanmin(data_neg)
-    assert cbar_vmin == None
-    assert cbar_vmax == 0
-    # same case if vmax has been set
-    cbar_vmin, cbar_vmax, vmin, vmax = _get_colorbar_and_data_ranges(
-        data_neg, vmax=2, symmetric_cbar='auto', kwargs={}
-    )
-    assert vmin == -2
-    assert vmax == 2
-    assert cbar_vmin == None
-    assert cbar_vmax == 0
-
-
-def test_get_colorbar_and_data_ranges_masked_array(data):
-    masked_data = np.ma.masked_greater(data, 2.)
-    # Easier to fill masked values with NaN to test against later on
-    filled_data = masked_data.filled(np.nan)
-
-    # Reasonable additional arguments that would end up being passed
-    # to imshow in a real plotting use case
-    kwargs = {'aspect': 'auto', 'alpha': 0.9}
-
-    # symmetric_cbar set to True
-    cbar_vmin, cbar_vmax, vmin, vmax = _get_colorbar_and_data_ranges(
-        masked_data, vmax=None, symmetric_cbar=True, kwargs=kwargs
-    )
-    assert vmin == -np.nanmax(filled_data)
-    assert vmax == np.nanmax(filled_data)
-    assert cbar_vmin == None
-    assert cbar_vmax == None
-    # same case if vmax has been set
-    cbar_vmin, cbar_vmax, vmin, vmax = _get_colorbar_and_data_ranges(
-        masked_data, vmax=2, symmetric_cbar=True, kwargs=kwargs
-    )
-    assert vmin == -2
-    assert vmax == 2
-    assert cbar_vmin == None
-    assert cbar_vmax == None
-    # symmetric_cbar is set to False
-    cbar_vmin, cbar_vmax, vmin, vmax = _get_colorbar_and_data_ranges(
-        masked_data, vmax=None, symmetric_cbar=False, kwargs=kwargs
-    )
-    assert vmin == -np.nanmax(filled_data)
-    assert vmax == np.nanmax(filled_data)
-    assert cbar_vmin == np.nanmin(filled_data)
-    assert cbar_vmax == np.nanmax(filled_data)
-    # same case if vmax has been set
-    cbar_vmin, cbar_vmax, vmin, vmax = _get_colorbar_and_data_ranges(
-        masked_data, vmax=2, symmetric_cbar=False, kwargs=kwargs
-    )
-    assert vmin == -2
-    assert vmax == 2
-    assert cbar_vmin == np.nanmin(filled_data)
-    assert cbar_vmax == np.nanmax(filled_data)
-    # symmetric_cbar is set to 'auto', same behaviours as True for this case
-    cbar_vmin, cbar_vmax, vmin, vmax = _get_colorbar_and_data_ranges(
-        masked_data, vmax=None, symmetric_cbar='auto', kwargs=kwargs
-    )
-    assert vmin == -np.nanmax(filled_data)
-    assert vmax == np.nanmax(filled_data)
-    assert cbar_vmin == None
-    assert cbar_vmax == None
-    # same case if vmax has been set
-    cbar_vmin, cbar_vmax, vmin, vmax = _get_colorbar_and_data_ranges(
-        masked_data, vmax=2, symmetric_cbar='auto', kwargs=kwargs
-    )
-    assert vmin == -2
-    assert vmax == 2
-    assert cbar_vmin == None
-    assert cbar_vmax == None
