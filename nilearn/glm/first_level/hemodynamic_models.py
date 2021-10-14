@@ -378,14 +378,16 @@ def _orthogonalize(X):
 
 def _regressor_names(con_name, hrf_model, fir_delays=None):
     """ Returns a list of regressor names, computed from con-name and hrf type
+    when this information is explicitely given. If hrf_model is
+    a custom function or a list of custom functions, return their name.
 
     Parameters
     ----------
     con_name : string
         identifier of the condition
 
-    hrf_model : string or None,
-       hrf model chosen
+    hrf_model : string, function, list of functions, or None,
+        HRF model to be used.
 
     fir_delays : 1D array_like, optional
         Delays (in scans) used in case of an FIR model
@@ -405,6 +407,17 @@ def _regressor_names(con_name, hrf_model, fir_delays=None):
         return [con_name, con_name + "_derivative", con_name + "_dispersion"]
     elif hrf_model == 'fir':
         return [con_name + "_delay_%d" % i for i in fir_delays]
+    elif callable(hrf_model):
+        return [f"{con_name} {hrf_model.__name__}"]
+    elif (isinstance(hrf_model, Iterable)
+          and all([callable(_) for _ in hrf_model])):
+        return [f"{con_name} {model.__name__}" for model in hrf_model]
+    # Handle some default cases
+    else:
+        if isinstance(hrf_model, Iterable):
+            return [f"{con_name} {i}" for i in range(len(hrf_model))]
+        else:
+            return [con_name]
 
 
 def _hrf_kernel(hrf_model, tr, oversampling=50, fir_delays=None):
