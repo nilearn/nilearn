@@ -162,7 +162,13 @@ def fmriprep_confounds_strategy(img_files, denoise_strategy="simple",
     .. footbibliography::
 
     """
-    default_parameters = preset_strategies[denoise_strategy].copy()
+    default_parameters = preset_strategies.get(denoise_strategy, False)
+    if not default_parameters:
+        raise KeyError(f"Provided strategy '{denoise_strategy}' is not a "
+                       "preset strategy. Valid strategy: "
+                       f"{preset_strategies.keys()}"
+                       )
+
     check_parameters = list(default_parameters.keys())
     check_parameters.remove("strategy")
     # ICA-AROMA only accept the non-aggressive strategy

@@ -144,7 +144,7 @@ def test_strategy_ica_aroma(tmp_path):
 
 
 def test_irrelevant_input(tmp_path):
-    """Check invalid input raising correct warning message."""
+    """Check invalid input raising correct warning or error message."""
     file_nii, _ = create_tmp_filepath(tmp_path, image_type="regular",
                                       copy_confounds=True, copy_json=True)
     warning_message = (r"parameters accepted: \['motion', 'wm_csf', "
@@ -152,3 +152,8 @@ def test_irrelevant_input(tmp_path):
     with pytest.warns(UserWarning, match=warning_message):
         fmriprep_confounds_strategy(
             file_nii, denoise_strategy="simple", ica_aroma="full")
+
+    # invalid strategy
+    with pytest.raises(KeyError, match="blah"):
+        fmriprep_confounds_strategy(
+            file_nii, denoise_strategy="blah")
