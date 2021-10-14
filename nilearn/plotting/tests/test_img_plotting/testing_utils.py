@@ -45,4 +45,3 @@ def testdata_4d():
         'img_atlas': img_atlas,
         'atlas_labels': atlas_labels,
     })
-

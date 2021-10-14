@@ -89,4 +89,3 @@ def test_display_methods_with_display_mode_tiled(testdata_3d):  # noqa:F811
     display.add_edges(img, color='c')
     display.add_contours(img, contours=2, linewidth=4,
                          colors=['limegreen', 'yellow'])
-

@@ -100,4 +100,3 @@ def test_plot_glass_brain_with_completely_masked_img(display_mode):
     img = Nifti1Image(np.zeros((10, 20, 30)), np.eye(4))
     plot_glass_brain(img, display_mode=display_mode)
     plt.close()
-

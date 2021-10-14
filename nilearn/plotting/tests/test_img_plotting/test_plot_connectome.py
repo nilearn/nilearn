@@ -201,7 +201,7 @@ def plot_connectome_edge_thresholding(node_coords, non_symmetric_matrix):
                          edge_threshold=thresh)
     for direction in ['x', 'y', 'z']:
         assert(len([patch for patch in ax.axes[direction].ax.patches
-             if isinstance(patch, FancyArrow)])
+                    if isinstance(patch, FancyArrow)])
                == np.sum(np.abs(non_symmetric_matrix) >= thresh)
                )
     # Case 2: Threshold is a percentage
@@ -211,7 +211,7 @@ def plot_connectome_edge_thresholding(node_coords, non_symmetric_matrix):
                          edge_threshold="{}%".format(thresh))
     for direction in ['x', 'y', 'z']:
         assert(len([patch for patch in ax.axes[direction].ax.patches
-             if isinstance(patch, FancyArrow)])
+                    if isinstance(patch, FancyArrow)])
                == np.sum(np.abs(non_symmetric_matrix)
                          >= np.percentile(np.abs(
                              non_symmetric_matrix.ravel()), thresh))
@@ -269,7 +269,8 @@ def test_plot_connectome_exception_wrong_edge_threshold_format(
     formatted string.
     """
     with pytest.raises(ValueError,
-                       match='should be a number followed by the percent sign'):
+                       match=("should be a number followed "
+                              "by the percent sign")):
         plot_connectome(
             adjacency, node_coords, edge_threshold=threshold, display_mode='x'
         )
@@ -309,7 +310,7 @@ def expected_error_node_kwargs(node_kwargs):
 
 @pytest.mark.parametrize("node_kwargs", [{'s': 50}, {'c': 'blue'}])
 def test_plot_connectome_exceptions_providing_node_info_with_kwargs(
-    node_kwargs, adjacency, node_coords, expected_error_node_kwargs):
+        node_kwargs, adjacency, node_coords, expected_error_node_kwargs):
     """Tests that an error is raised when specifying node parameters
     via node_kwargs in plot_connectome.
     """
@@ -372,4 +373,3 @@ def test_plot_connectome_strength_deprecation_warning(node_coords, adjacency):
     """
     with pytest.deprecated_call():
         plot_connectome_strength(adjacency, node_coords)
-

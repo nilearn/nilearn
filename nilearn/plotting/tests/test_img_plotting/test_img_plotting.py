@@ -168,4 +168,3 @@ def test_plotting_functions_with_display_mode_tiled(plot_func, testdata_3d):  # 
     else:
         plot_func(testdata_3d['img'], display_mode='tiled')
     plt.close()
-

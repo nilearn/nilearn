@@ -151,4 +151,3 @@ def test_outlier_cut_coords():
 def test_plotting_functions_with_dim_invalid_input(testdata_3d):  # noqa:F811
     """Test whether error raises with bad error to input."""
     pytest.raises(ValueError, plot_stat_map, testdata_3d['img'], dim='-10')
-

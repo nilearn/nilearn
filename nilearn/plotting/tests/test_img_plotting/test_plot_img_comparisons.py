@@ -46,4 +46,3 @@ def test_plot_img_comparison():
         target_images, query_images, masker, plot_hist=False
     )
     assert np.allclose(correlations, correlations_1)
-

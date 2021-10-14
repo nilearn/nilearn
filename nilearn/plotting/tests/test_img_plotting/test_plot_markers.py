@@ -74,12 +74,11 @@ def test_plot_markers_saving_to_file(coords, tmpdir):
         [1, 2, 3, 4], coords, output_file=filename, display_mode='x'
     )
     assert display is None
-    assert (os.path.isfile(filename) and  # noqa: W504
-                os.path.getsize(filename) > 0)
+    assert (os.path.isfile(filename) and os.path.getsize(filename) > 0)
     plt.close()
 
 
-def test_plot_markers_node_kwargs(coords):    
+def test_plot_markers_node_kwargs(coords):
     """Smoke test for plot_markers testing that node_kwargs is working
     and does not interfere with alpha.
     """
