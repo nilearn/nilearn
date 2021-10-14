@@ -40,9 +40,7 @@ The nilearn core developers are:
 Triage team
 ...........
 
-The nilearn triage team is composed of:
-
-* `Peer Herholz <https://peerherholz.github.io/>`_
+The triage team is responsible for helping to review and prioritize issues related to Nilearn development, as described in the :ref:`maintenance_process`. We are actively looking for more contributors to join the team. You can indicate your interest by contacting one of the Nilearn :ref:`core_devs`.
 
 Other contributors
 ..................
