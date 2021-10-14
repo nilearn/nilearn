@@ -1,6 +1,4 @@
-"""
-Tests for :func:`nilearn.plotting.plot_roi`.
-"""
+"""Tests for :func:`nilearn.plotting.plot_roi`."""
 
 import pytest
 import numpy as np
@@ -12,9 +10,9 @@ from .testing_utils import MNI_AFFINE
 
 
 def demo_plot_roi(**kwargs):
-    """Demo plotting an ROI"""
+    """Demo plotting an ROI."""
     data = np.zeros((91, 109, 91))
-    # Color a asymmetric rectangle around Broca area:
+    # Color a asymmetric rectangle around Broca area.
     x, y, z = -52, 10, 22
     x_map, y_map, z_map = coord_transform(x, y, z,
                                           np.linalg.inv(MNI_AFFINE))
@@ -29,6 +27,11 @@ def demo_plot_roi(**kwargs):
 @pytest.mark.parametrize('threshold', [.5, .2])
 @pytest.mark.parametrize('alpha', [.7, .1])
 def test_plot_roi_view_types(view_type, black_bg, threshold, alpha):
+    """Smoke-test for plot_roi.
+
+    Tests different combinations of parameters `view_type`, `black_bg`,
+    `threshold`, and `alpha`.
+    """
     kwargs = dict()
     if view_type == 'contours':
         kwargs["linewidth"] = 2.
@@ -42,10 +45,10 @@ def test_plot_roi_view_type_error():
     with pytest.raises(ValueError,
                        match='Unknown view type:'):
         demo_plot_roi(view_type='flled')
-    plt.close()
 
 
 def test_demo_plot_roi_output_file(tmpdir):
+    """Tests plot_roi file saving capabilities."""
     filename = str(tmpdir.join('test.png'))
     with open(filename, 'wb') as fp:
         out = demo_plot_roi(output_file=fp)

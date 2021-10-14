@@ -38,8 +38,10 @@ def test_save_plot_stat_map(params, testdata_3d, tmpdir):  # noqa:F811
                           ('y', 2), ('yx', None)])
 def test_plot_stat_map_cut_coords_and_display_mode(display_mode, cut_coords,
                                                    testdata_3d):  # noqa:F811
-    """Tests for plot_stat_map with different cut coordinate values
-    and different display modes.
+    """Smoke-tests for plot_stat_map.
+
+    Tests different combinations of parameters `cut_coords`
+    and `display_mode`.
     """
     plot_stat_map(
         testdata_3d['img'], display_mode=display_mode, cut_coords=cut_coords
@@ -67,7 +69,9 @@ def test_plot_stat_map_threshold(data):
 
 
 def test_plot_stat_map_threshold_for_affine_with_rotation():
-    """Threshold was not being applied when affine has a rotation.
+    """Tests for plot_stat_map with thresholding and resampling.
+
+    Threshold was not being applied when affine has a rotation.
     See https://github.com/nilearn/nilearn/issues/599 for more details.
     """
     rng = np.random.RandomState(42)

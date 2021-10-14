@@ -1,6 +1,4 @@
-"""
-Tests for :func:`nilearn.plotting.plot_markers`.
-"""
+"""Tests for :func:`nilearn.plotting.plot_markers`."""
 
 import os
 import pytest
@@ -12,9 +10,10 @@ from nilearn.plotting import plot_markers
 
 @pytest.fixture
 def coords():
-    return np.array([[39 ,   6, -32],
-                     [29 ,  40,   1],
-                     [-20, -74,  35],
+    """Node coordinates for testing."""
+    return np.array([[39, 6, -32],
+                     [29, 40, 1],
+                     [-20, -74, 35],
                      [-29, -59, -37]])
 
 
@@ -25,6 +24,7 @@ def coords():
                           np.array([1, 2, 3, 4])[np.newaxis, :],
                           (1, 1, 1, 1)])
 def test_plot_markers_node_values(node_values, coords):
+    """Smoke test for plot_markers with different node values."""
     plot_markers(node_values, coords, display_mode='x')
     plt.close()
 
@@ -34,6 +34,7 @@ def test_plot_markers_node_values(node_values, coords):
                           [10, 20, 30, 40],
                           np.array([10, 20, 30, 40])])
 def test_plot_markers_node_sizes(node_size, coords):
+    """Smoke test for plot_markers with different node sizes."""
     plot_markers([1, 2, 3, 4], coords, node_size=node_size, display_mode='x')
     plt.close()
 
@@ -43,6 +44,7 @@ def test_plot_markers_node_sizes(node_size, coords):
                           (matplotlib.cm.get_cmap('jet'), None, 5),
                           (plt.cm.viridis_r, 2, 3)])
 def test_plot_markers_cmap(cmap, vmin, vmax, coords):
+    """Smoke test for plot_markers with different cmaps."""
     plot_markers([1, 2, 3, 4], coords, node_cmap=cmap, node_vmin=vmin,
                  node_vmax=vmax, display_mode='x')
     plt.close()
@@ -50,26 +52,42 @@ def test_plot_markers_cmap(cmap, vmin, vmax, coords):
 
 @pytest.mark.parametrize("threshold", [-100, 2.5])
 def test_plot_markers_threshold(threshold, coords):
+    """Smoke test for plot_markers with different threshold values."""
     plot_markers([1, 2, 3, 4], coords, node_threshold=threshold,
                  display_mode='x')
     plt.close()
 
 
-def test_plot_markers(coords, tmpdir):
-    node_values = [1, 2, 3, 4]
-    args = node_values, coords
-    # node_coords not an array but a list of tuples
-    plot_markers(node_values, [tuple(coord) for coord in coords],
+def test_plot_markers_tuple_node_coords(coords):
+    """Smoke test for plot_markers with node coordinates passed as a list
+    of tuples.
+    """
+    plot_markers([1, 2, 3, 4], [tuple(coord) for coord in coords],
                  display_mode='x')
-    # Saving to file
+    plt.close()
+
+
+def test_plot_markers_saving_to_file(coords, tmpdir):
+    """Smoke test for plot_markers and file saving."""
     filename = str(tmpdir.join('test.png'))
-    display = plot_markers(*args, output_file=filename, display_mode='x')
+    display = plot_markers(
+        [1, 2, 3, 4], coords, output_file=filename, display_mode='x'
+    )
     assert display is None
     assert (os.path.isfile(filename) and  # noqa: W504
                 os.path.getsize(filename) > 0)
-    # node_kwargs working and does not interfere with alpha
+    plt.close()
+
+
+def test_plot_markers_node_kwargs(coords):    
+    """Smoke test for plot_markers testing that node_kwargs is working
+    and does not interfere with alpha.
+    """
     node_kwargs = dict(marker='s')
-    plot_markers(*args, alpha=.1, node_kwargs=node_kwargs, display_mode='x')
+    plot_markers(
+        [1, 2, 3, 4], coords, alpha=.1,
+        node_kwargs=node_kwargs, display_mode='x'
+    )
     plt.close()
 
 
@@ -78,23 +96,33 @@ def test_plot_markers(coords, tmpdir):
                           [1, 2, 3],
                           np.random.RandomState(42).random_sample((4, 4))])
 def test_plot_markers_dimension_mismatch(matrix, coords):
-    # node_values length mismatch with node_coords
+    """Tests that an error is raised in plot_markers when the length of
+    node_values mismatches with node_coords.
+    """
     with pytest.raises(ValueError, match="Dimension mismatch"):
         plot_markers(matrix, coords, display_mode='x')
 
 
 @pytest.mark.parametrize("vmin,vmax", [(5, None), (None, 0)])
 def test_plot_markers_bound_error(vmin, vmax, coords):
+    """Tests that a ValueError is raised when vmin and vmax
+    have inconsistent values.
+    """
     with pytest.raises(ValueError):
         plot_markers([1, 2, 2, 4], coords, node_vmin=vmin,
                      node_vmax=vmax, display_mode='x')
 
 
-def test_plot_markers_errors(coords):
-    # node_values is wrong type
+def test_plot_markers_node_values_errors(coords):
+    """Tests that a TypeError is raised when node_values is wrong type."""
     with pytest.raises(TypeError):
         plot_markers(['1', '2', '3', '4'], coords, display_mode='x')
-    # node_threshold higher than max node_value
+
+
+def test_plot_markers_threshold_errors(coords):
+    """Tests that a ValueError is raised when node_threshold is
+    higher than the max node_value.
+    """
     with pytest.raises(ValueError,
                        match="Provided 'node_threshold' value"):
         plot_markers([1, 2, 2, 4], coords, node_threshold=5, display_mode='x')
