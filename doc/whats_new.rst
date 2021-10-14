@@ -47,6 +47,10 @@ Enhancements
 - :class:`nilearn.input_data.NiftiLabelsMasker` now gives a warning when some
   labels are removed from the label image at transform time due to resampling
   of the label image to the data image.
+- Tests from `nilearn/plotting/tests/test_img_plotting.py` have been refactored
+  and reorganized in separate files in new folder
+  `nilearn/plotting/tests/test_img_plotting/`.
+  (See PR `#3015 <https://github.com/nilearn/nilearn/pull/3015/files>`_)
 
 Changes
 -------
