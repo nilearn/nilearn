@@ -127,9 +127,6 @@ def _get_cmap(cmap, vmin, vmax, threshold=None):
     This function returns the colormap.
     """
     our_cmap = get_cmap(cmap)
-    if vmin is None or vmax is None:
-        raise ValueError("vmin and vmax cannot be None. "
-                         "Use _get_bounds to compute them.")
     norm = Normalize(vmin=vmin, vmax=vmax)
     cmaplist = [our_cmap(i) for i in range(our_cmap.N)]
     if threshold is not None:
