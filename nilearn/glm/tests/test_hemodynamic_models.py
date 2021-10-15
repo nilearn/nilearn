@@ -212,7 +212,11 @@ def test_names():
 
     assert _regressor_names(name, custom_rf) == \
         [f"{name} {custom_rf.__name__}"]
+    assert _regressor_names(name, [custom_rf]) == \
+        [f"{name} {custom_rf.__name__}"]
     assert _regressor_names(name, lambda tr, ov: np.ones(int(tr * ov))) == \
+        [f"{name} <lambda>"]
+    assert _regressor_names(name, [lambda tr, ov: np.ones(int(tr * ov))]) == \
         [f"{name} <lambda>"]
 
 
