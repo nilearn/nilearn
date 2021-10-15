@@ -89,15 +89,14 @@ def test_configure_title_plotly():
     from nilearn.plotting.surf_plotting import _configure_title_plotly
     assert _configure_title_plotly(None, None) == dict()
     assert _configure_title_plotly(None, 22) == dict()
-    config = _configure_title_plotly("Test Title", 22)
+    config = _configure_title_plotly("Test Title", 22, color="green")
     assert config["text"] == "Test Title"
     assert config["x"] == 0.5
     assert config["y"] == 0.96
     assert config["xanchor"] == "center"
     assert config["yanchor"] == "top"
     assert config["font"]["size"] == 22
-    assert config["font"]["color"] == "RebeccaPurple"
-    assert config["font"]["family"] == "Courier New, monospace"
+    assert config["font"]["color"] == "green"
 
 
 @pytest.mark.parametrize("data,expected",
