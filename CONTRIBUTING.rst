@@ -37,7 +37,7 @@ Some `issues`_ are used to gather user opinions on various questions, and any in
 Review Pull Requests
 --------------------
 
-Any addition to the Nilearn's code base has to be reviewed and approved by several persons including at least two :ref:`core_devs`.
+Any addition to the Nilearn's code base has to be reviewed and approved by several people including at least two :ref:`core_devs`.
 This can put a heavy burden on :ref:`core_devs` when a lot of `pull requests`_ are opened at the same time.
 Community members are more than welcome to help us review `pull requests`_.
 Keep in mind that the more people review `pull requests`_, the less likely we are to introduce bugs in the code base.
