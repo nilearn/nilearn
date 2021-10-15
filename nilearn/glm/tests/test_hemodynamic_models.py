@@ -189,20 +189,20 @@ def test_names():
     """ Test the regressor naming function
     """
     name = 'con'
-    assert _regressor_names(name, 'spm') == ['con']
+    assert _regressor_names(name, 'spm') == [name]
     assert _regressor_names(
-        name, 'spm + derivative') == ['con', 'con_derivative']
+        name, 'spm + derivative') == [name, f'{name}_derivative']
     assert _regressor_names(
-        name, 'spm + derivative + dispersion') == ['con',
-                                                   'con_derivative',
-                                                   'con_dispersion']
-    assert _regressor_names(name, 'glover') == ['con']
+        name, 'spm + derivative + dispersion') == [name,
+                                                   f'{name}_derivative',
+                                                   f'{name}_dispersion']
+    assert _regressor_names(name, 'glover') == [name]
     assert _regressor_names(
-        name, 'glover + derivative') == ['con', 'con_derivative']
+        name, 'glover + derivative') == [name, f'{name}_derivative']
     assert _regressor_names(
-        name, 'glover + derivative + dispersion') == ['con',
-                                                      'con_derivative',
-                                                      'con_dispersion']
+        name, 'glover + derivative + dispersion') == [name,
+                                                      f'{name}_derivative',
+                                                      f'{name}_dispersion']
 
     assert _regressor_names(name, None) == [name]
     assert _regressor_names(name, [None, None]) == [f"{name} 0", f"{name} 1"]
