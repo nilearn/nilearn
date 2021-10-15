@@ -1482,8 +1482,16 @@ def test_plot_markers(tmpdir):
     node_sizes = np.array([10, 20, 30, 40])
     display = plot_markers(*args, display_mode="lyrz", node_size=node_sizes)
     for d, axes in display.axes.items():
-        assert np.all(axes.ax.collections[0].get_sizes() == node_sizes)
+        display_sizes = axes.ax.collections[0].get_sizes()
+        if d == 'l':
+            expected_sizes = node_sizes[-2:]
+        elif d == 'r':
+            expected_sizes = node_sizes[:-2]
+        else:
+            expected_sizes = node_sizes
+        assert np.all(display_sizes == expected_sizes)
     plt.close()
+
 
     # Different options for cmap related arguments
     plot_markers(*args, node_cmap='RdBu', node_vmin=0, **kwargs)
