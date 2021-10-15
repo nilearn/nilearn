@@ -6,6 +6,13 @@ NEW
 
 - New function :func:`nilearn.input_data.fmriprep_confounds` to load confound variables easily 
   from :term:`fMRIPrep` outputs. 
+- Surface plotting functions like :func:`nilearn.plotting.plot_surf_stat_map`
+  now have an `engine` parameter, defaulting to "matplotlib", but which can be
+  set to "plotly". If plotly and kaleido are installed, this will generate an
+  interactive plot of the surface map using plotly instead of matplotlib.
+  Note that this functionality is still experimental, and that some capabilities
+  supported by our matplotlib engine are not yet supported by the plotly engine. 
+  (See PR `#2902 <https://github.com/nilearn/nilearn/pull/2902>`_).
 
 Fixes
 -----
