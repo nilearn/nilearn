@@ -8,7 +8,7 @@ If you have issues when using Nilearn, or if you have questions on how to use it
 
 There are currently three ways to interact with the Nilearn team: through the `neurostars`_ forum, our `github`_ issues, and through our weekly `office hours <https://github.com/nilearn/nilearn/issues/2882>`_, usually **every Monday from 4pm to 5pm UTC**. 
 
-If you have a *usage question*, that is if you need help troubleshooting scripts using Nilearn, we would appreciate it if you either ask it during office hours, or create a topic on `neurostars <https://neurostars.org/tag/nilearn>`_ with the "nilearn" tag, instead of opening an issue on `github`_. Indeed, we try to rely on `github`_ for bug reports, feature requests, and documentation only.
+If you have a *usage question*, that is if you need help troubleshooting scripts using Nilearn, we would appreciate it if you either ask it during office hours or create a topic on `neurostars <https://neurostars.org/tag/nilearn>`_ with the "nilearn" tag instead of opening an issue on `github`_. We use our `github`_ issue board for bug reports, feature requests, and documentation changes only.
 
 How to help the project?
 ========================
