@@ -1,6 +1,5 @@
 """
 Functions for surface visualization.
-Only matplotlib is required.
 """
 import itertools
 
@@ -21,6 +20,8 @@ from nilearn.surface import (load_surf_data,
                              vol_to_surf)
 from nilearn.surface.surface import _check_mesh
 from nilearn._utils import check_niimg_3d, fill_doc
+from nilearn.plotting.js_plotting_utils import colorscale
+from nilearn.plotting.html_surface import _get_vertexcolor
 
 from matplotlib.colors import to_rgba
 from matplotlib.patches import Patch
@@ -121,52 +122,7 @@ def _set_view_plot_surf_plotly(hemi, view):
     return view
 
 
-def _get_cmap(cmap, vmin, vmax, threshold=None):
-    """Helper function for plot_surf.
-
-    This function returns the colormap.
-    """
-    our_cmap = get_cmap(cmap)
-    norm = Normalize(vmin=vmin, vmax=vmax)
-    cmaplist = [our_cmap(i) for i in range(our_cmap.N)]
-    if threshold is not None:
-        # set colors to grey for absolute values < threshold
-        istart = int(norm(-threshold, clip=True) * (our_cmap.N - 1))
-        istop = int(norm(threshold, clip=True) * (our_cmap.N - 1))
-        for i in range(istart, istop):
-            cmaplist[i] = (0.5, 0.5, 0.5, 1.)
-    our_cmap = LinearSegmentedColormap.from_list(
-        'Custom cmap', cmaplist, our_cmap.N)
-    return our_cmap, norm
-
-
-def _colorscale_plotly(cmap, vmin=0, vmax=1):
-    """Helper function for plot_surf with plotly engine.
-
-    This function returns the colorscale for a given already
-    configured cmap.
-
-    .. note::
-        See _get_cmap to configure the cmap.
-
-    """
-    x = np.linspace(vmin, vmax, 100)
-    rgb = cmap(x, bytes=True)[:, :3]
-    rgb = np.array(rgb, dtype=int)
-    colors = []
-    for i, col in zip(x, rgb):
-        colors.append([np.round(i, 3), "rgb({}, {}, {})".format(*col)])
-    return colors
-
-
-def _get_bounds(data, vmin=None, vmax=None):
-    """Helper function returning the data bounds."""
-    vmin = np.nanmin(data) if vmin is None else vmin
-    vmax = np.nanmax(data) if vmax is None else vmax
-    return vmin, vmax
-
-
-def _configure_title_plotly(title, font_size):
+def _configure_title_plotly(title, font_size, color="black"):
     """Helper function for plot_surf with plotly engine.
 
     This function configures the title if provided.
@@ -174,9 +130,8 @@ def _configure_title_plotly(title, font_size):
     if title is None:
         return dict()
     return {"text": title,
-            "font": {"family": "Courier New, monospace",
-                     "size": font_size,
-                     "color": "RebeccaPurple",
+            "font": {"size": font_size,
+                     "color": color,
                      },
             "y": 0.96,
             "x": 0.5,
@@ -184,56 +139,43 @@ def _configure_title_plotly(title, font_size):
             "yanchor": "top"}
 
 
-def _get_intensity_and_colorscale_plotly(data, vmin, vmax, cmap,
-                                         bg_data=None, threshold=None):
+def _get_cbar_plotly(colorscale, vmin, vmax, cbar_tick_format,
+                     fontsize=25, color="black", height=0.5):
     """Helper function for _plot_surf_plotly.
 
-    This function returns the intensity and colorscale used by Mesh3d.
-    If there is no background or if there is no thresholding, then the
-    intensity is simply the surface data and the colorscale is computed
-    thanks to the cmap provided.
-    If there is a background image and some thresholding, the colorscale
-    will be adapted between -threshold and +threshold to use Greys and the
-    intensity values for vertices being thresholded will be computed from
-    the background image.
+    This function configures the colorbar.
     """
-    our_cmap, norm = _get_cmap(cmap, vmin, vmax, threshold)
-    map_colorscale = _colorscale_plotly(our_cmap)
-    if bg_data is None or threshold is None:
-        return data, map_colorscale
-    bg_min, bg_max = _get_bounds(bg_data)
-    bg_cmap, bg_norm = _get_cmap('Greys', bg_min, bg_max)
-    threshold_plus = norm(np.abs(threshold))
-    threshold_minus = norm(-np.abs(threshold))
-    # Rescale bg_data between threshold values
-    bg_intensity = _inverse_rescale(
-        bg_norm(bg_data), threshold_minus, threshold_plus
-    )
-    intensity, idx, _, _ = _threshold_and_rescale(
-        data, threshold, vmin, vmax
-    )
-    intensity[~idx] = bg_intensity[~idx]
-    # Rescale intensity between vmin and vmax to get correct
-    # values on the colorbar
-    intensity = _inverse_rescale(intensity, vmin, vmax)
-    bg_colorscale = _colorscale_plotly(
-        bg_cmap, vmin=threshold_minus, vmax=threshold_plus
-    )
-    colorscale = [_ for _ in map_colorscale if _[0] < threshold_minus]
-    colorscale += bg_colorscale
-    colorscale += [_ for _ in map_colorscale if _[0] > threshold_plus]
-    return intensity, colorscale
+    dummy = {
+        "opacity": 0,
+        "colorbar": {
+            "tickfont": {"size": fontsize, "color": color},
+            "tickformat": cbar_tick_format,
+            "len": height,
+        },
+        "type": "mesh3d",
+        "colorscale": colorscale,
+        "x": [1, 0, 0],
+        "y": [0, 1, 0],
+        "z": [0, 0, 1],
+        "i": [0],
+        "j": [1],
+        "k": [2],
+        "intensity": [0.0],
+        "cmin": vmin,
+        "cmax": vmax,
+    }
+    return dummy
 
 
 def _plot_surf_plotly(coords, faces, surf_map=None, bg_map=None,
                       hemi='left', view='lateral', cmap=None,
                       colorbar=False, threshold=None, vmin=None,
                       vmax=None, cbar_vmin=None, cbar_vmax=None,
-                      cbar_tick_format="",
+                      cbar_tick_format=".1f",
                       title=None, font_size=15, output_file=None):
     """Helper function for plot_surf.
 
-    .. versionadded:: 0.8.1
+    .. versionadded:: 0.8.2
 
     This function handles surface plotting when the selected
     engine is plotly.
@@ -261,31 +203,31 @@ def _plot_surf_plotly(coords, faces, surf_map=None, bg_map=None,
                              'of vertices as the mesh.')
     if surf_map is not None:
         _check_surf_map(surf_map, coords.shape[0])
-        vmin, vmax = _get_bounds(surf_map, vmin, vmax)
-        intensity, colorscale = _get_intensity_and_colorscale_plotly(
-            surf_map, vmin, vmax, cmap, bg_data, threshold
+        colors = colorscale(
+            cold_hot, surf_map, threshold, vmax=vmax, vmin=vmin
+        )
+        vertexcolor = _get_vertexcolor(
+            surf_map, colors["cmap"], colors["norm"],
+            colors["abs_threshold"], bg_data
         )
     else:
         if bg_data is None:
-            bg_data = np.ones(coords.shape[0])
-        vmin, vmax = _get_bounds(bg_data, vmin=None, vmax=None)
-        intensity, colorscale = _get_intensity_and_colorscale_plotly(
-            bg_data, vmin, vmax, 'Greys'
+            bg_data = np.zeros(coords.shape[0])
+        colors = colorscale('Greys', bg_data)
+        vertexcolor = _get_vertexcolor(
+            bg_data, colors["cmap"], colors["norm"],
+            colors["abs_threshold"]
         )
-    # cbar cropping not implemented for now...
-    cbar_vmin = vmin if cbar_vmin is None else cbar_vmin
-    cbar_vmax = vmax if cbar_vmax is None else cbar_vmax
-
-    mesh_3d = go.Mesh3d(x=x, y=y, z=z, i=i, j=j, k=k,
-                        intensity=intensity,
-                        colorscale=colorscale,
-                        showscale=colorbar,
-                        cmin=vmin, cmax=vmax)
+    mesh_3d = go.Mesh3d(x=x, y=y, z=z, i=i, j=j, k=k, vertexcolor=vertexcolor)
+    fig_data = [mesh_3d]
+    if colorbar:
+        dummy = _get_cbar_plotly(
+            colors["colors"], float(colors["vmin"]), float(colors["vmax"]),
+            cbar_tick_format
+        )
+        fig_data.append(dummy)
     cameras_view = _set_view_plot_surf_plotly(hemi, view)
-    fig = go.Figure(data=[mesh_3d])
-    fig.update_traces(colorbar_tickformat=cbar_tick_format,
-                      colorbar_outlinewidth=1,
-                      selector=dict(type="mesh3d"))
+    fig = go.Figure(data=fig_data)
     fig.update_layout(scene_camera=CAMERAS[cameras_view],
                       title=_configure_title_plotly(title, font_size),
                       **LAYOUT)
@@ -391,6 +333,25 @@ def _get_ticks_matplotlib(vmin, vmax, cbar_tick_format):
     return ticks
 
 
+def _get_cmap_matplotlib(cmap, vmin, vmax, threshold=None):
+    """Helper function for plot_surf with matplotlib engine.
+
+    This function returns the colormap.
+    """
+    our_cmap = get_cmap(cmap)
+    norm = Normalize(vmin=vmin, vmax=vmax)
+    cmaplist = [our_cmap(i) for i in range(our_cmap.N)]
+    if threshold is not None:
+        # set colors to grey for absolute values < threshold
+        istart = int(norm(-threshold, clip=True) * (our_cmap.N - 1))
+        istop = int(norm(threshold, clip=True) * (our_cmap.N - 1))
+        for i in range(istart, istop):
+            cmaplist[i] = (0.5, 0.5, 0.5, 1.)
+    our_cmap = LinearSegmentedColormap.from_list(
+        'Custom cmap', cmaplist, our_cmap.N)
+    return our_cmap, norm
+
+
 def _compute_facecolors_matplotlib(bg_map, faces, n_vertices,
                                    darkness, alpha):
     """Helper function for plot_surf with matplotlib engine.
@@ -430,12 +391,14 @@ def _threshold_and_rescale(data, threshold, vmin, vmax):
 
 
 def _threshold(data, threshold):
+    """Thresholds the data."""
     # If no thresholding and nans, filter them out
     return (np.logical_not(np.isnan(data)) if threshold is None
             else np.abs(data) >= threshold)
 
 
 def _rescale(data, vmin=None, vmax=None):
+    """Rescales the data."""
     data_copy = np.copy(data)
     # if no vmin/vmax are passed figure them out from data
     vmin, vmax = _get_bounds(data_copy, vmin, vmax)
@@ -444,10 +407,11 @@ def _rescale(data, vmin=None, vmax=None):
     return data_copy, vmin, vmax
 
 
-def _inverse_rescale(data, vmin=None, vmax=None):
-    data_copy = np.copy(data)
-    data_copy *= (vmax - vmin)
-    return data_copy + vmin
+def _get_bounds(data, vmin=None, vmax=None):
+    """Helper function returning the data bounds."""
+    vmin = np.nanmin(data) if vmin is None else vmin
+    vmax = np.nanmax(data) if vmax is None else vmax
+    return vmin, vmax
 
 
 def _plot_surf_matplotlib(coords, faces, surf_map=None, bg_map=None,
@@ -522,7 +486,7 @@ def _plot_surf_matplotlib(coords, faces, surf_map=None, bg_map=None,
 
         if colorbar:
             ticks = _get_ticks_matplotlib(vmin, vmax, cbar_tick_format)
-            our_cmap, norm = _get_cmap(cmap, vmin, vmax, threshold)
+            our_cmap, norm = _get_cmap_matplotlib(cmap, vmin, vmax, threshold)
             bounds = np.linspace(vmin, vmax, our_cmap.N)
             # we need to create a proxy mappable
             proxy_mappable = ScalarMappable(cmap=our_cmap, norm=norm)
@@ -585,7 +549,7 @@ def plot_surf(surf_mesh, surf_map=None, bg_map=None,
     %(view)s
     engine : {'matplotlib', 'plotly'}, optional
 
-        .. versionadded:: 0.8.1
+        .. versionadded:: 0.8.2
 
         Selects which plotting engine will be used by plot_surf.
         Currently, only matplotlib and plotly are supported.
@@ -644,10 +608,6 @@ def plot_surf(surf_mesh, surf_map=None, bg_map=None,
 
     %(cbar_tick_format)s
         Default='%%.2g' for scientific notation.
-
-        .. note::
-            This option is currently only implemented for the
-            matplotlib engine.
 
     %(title)s
     font_size : :obj:`int`, optional
@@ -901,7 +861,7 @@ def plot_surf_stat_map(surf_mesh, stat_map, bg_map=None,
     %(view)s
     engine : {'matplotlib', 'plotly'}, optional
 
-        .. versionadded:: 0.8.1
+        .. versionadded:: 0.8.2
 
         Selects which plotting engine will be used by plot_surf.
         Currently, only matplotlib and plotly are supported.
@@ -1254,7 +1214,7 @@ def plot_surf_roi(surf_mesh, roi_map, bg_map=None,
     %(view)s
     engine : {'matplotlib', 'plotly'}, optional
 
-        .. versionadded:: 0.8.1
+        .. versionadded:: 0.8.2
 
         Selects which plotting engine will be used by plot_surf.
         Currently, only matplotlib and plotly are supported.
