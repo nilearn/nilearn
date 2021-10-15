@@ -143,23 +143,24 @@ def _mask_matrix(mat, tri):
     return np.ma.masked_array(mat, mask)
 
 
-def _configure_axis(axes, labels):
+def _configure_axis(axes, labels, label_size,
+                    x_label_rotation, y_label_rotation):
     """Helper function for plot_matrix."""
     if not labels:
         axes.xaxis.set_major_formatter(plt.NullFormatter())
         axes.yaxis.set_major_formatter(plt.NullFormatter())
     else:
         axes.set_xticks(np.arange(len(labels)))
-        axes.set_xticklabels(labels, size='x-small')
+        axes.set_xticklabels(labels, size=label_size)
         for label in axes.get_xticklabels():
             label.set_ha('right')
-            label.set_rotation(50)
+            label.set_rotation(x_label_rotation)
         axes.set_yticks(np.arange(len(labels)))
-        axes.set_yticklabels(labels, size='x-small')
+        axes.set_yticklabels(labels, size=label_size)
         for label in axes.get_yticklabels():
             label.set_ha('right')
             label.set_va('top')
-            label.set_rotation(10)
+            label.set_rotation(y_label_rotation)
 
 
 def _configure_grid(axes, grid, tri, size):
@@ -273,7 +274,8 @@ def plot_matrix(mat, title=None, labels=None, figure=None, axes=None,
                         cmap=cmap, **kwargs)
     axes.set_autoscale_on(False)
     ymin, ymax = axes.get_ylim()
-    _configure_axis(axes, labels)
+    _configure_axis(axes, labels, label_size="x-small",
+                    x_label_rotation=50, y_label_rotation=10)
     if grid is not False:
         _configure_grid(axes, grid, tri, len(mat))
     axes.set_ylim(ymin, ymax)
