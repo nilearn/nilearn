@@ -83,14 +83,14 @@ def fmriprep_confounds_strategy(img_files, denoise_strategy="simple",
         additional parameters, please refer to
         :func:`nilearn.input_data.fmriprep_confounds`.
 
-        - 'simple': Load confounds for a simple denosing strategy commonly
+        - 'simple': Load confounds for a simple denoising strategy commonly
           used in resting state functional connectivity, described in
           :footcite:`Fox2005`. Default as: full motion parameters,
           full WM/CSF signals, and  high pass filter, with an option to
           extract global signal confounds.
           Additional parameters: motion, wm_csf, global_signal, demean
         - 'srubbing': Load confounds for scrubbing describbed in
-          :footcite:`Power2012`.Default as: full motion parameters,
+          :footcite:`Power2012`. Default as: full motion parameters,
           full WM/CSF signals, remove segment smaller than 5 continuous
           volumes (see docstring of
           :func:`nilearn.input_data.fmriprep_confounds`),
@@ -128,7 +128,7 @@ def fmriprep_confounds_strategy(img_files, denoise_strategy="simple",
         This attribute should be passed to parameter `sample_mask` of
         :class:`nilearn.input_data.NiftiMasker` or
         :func:`nilearn.signal.clean`.
-        Volumns are removed if flagged as following:
+        Volumes are removed if flagged as following:
 
         - Non-steady-state volumes (if present)
         - Motion outliers detected by scrubbing
@@ -137,7 +137,7 @@ def fmriprep_confounds_strategy(img_files, denoise_strategy="simple",
     -----
     ICA-AROMA is implemented in two steps in :footcite:`Pruim2015`:
 
-    1. A non-aggressive denoising immediately after ICA classification.
+    1. A non-aggressive denoising immediately after :term:`ICA` classification.
       A linear regression estimates signals with all independent
       components as predictors. A partial regression is then applied to
       remove variance associated with noise independent components.
