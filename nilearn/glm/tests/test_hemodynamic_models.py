@@ -204,6 +204,17 @@ def test_names():
                                                       'con_derivative',
                                                       'con_dispersion']
 
+    assert _regressor_names(name, None) == [name]
+    assert _regressor_names(name, [None, None]) == [f"{name} 0", f"{name} 1"]
+
+    def custom_rf(tr, ov):
+        return np.ones(int(tr * ov))
+
+    assert _regressor_names(name, custom_rf) == \
+        [f"{name} {custom_rf.__name__}"]
+    assert _regressor_names(name, lambda tr, ov: np.ones(int(tr * ov))) == \
+        [f"{name} <lambda>"]
+
 
 def test_hkernel():
     """ test the hrf computation
