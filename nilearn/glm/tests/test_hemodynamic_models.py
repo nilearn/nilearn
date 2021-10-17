@@ -206,6 +206,9 @@ def test_names():
 
     assert _regressor_names(name, None) == [name]
     assert _regressor_names(name, [None, None]) == [f"{name} 0", f"{name} 1"]
+    assert _regressor_names(name, "typo") == [name]
+    assert _regressor_names(name, ["typo", "typo"]) == \
+        [f"{name} 0", f"{name} 1"]
 
     def custom_rf(tr, ov):
         return np.ones(int(tr * ov))
@@ -218,6 +221,13 @@ def test_names():
         [f"{name} <lambda>"]
     assert _regressor_names(name, [lambda tr, ov: np.ones(int(tr * ov))]) == \
         [f"{name} <lambda>"]
+
+    with pytest.raises(ValueError,
+                       match="Computed regressor names are not unique"):
+        _regressor_names(name, [
+            lambda tr, ov: np.ones(int(tr * ov)),
+            lambda tr, ov: np.ones(int(tr * ov))
+        ])
 
 
 def test_hkernel():
