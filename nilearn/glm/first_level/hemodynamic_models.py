@@ -385,10 +385,7 @@ def _regressor_names(con_name, hrf_model, fir_delays=None):
     ----------
     con_name : string
         identifier of the condition
-
-    hrf_model : string, function, list of functions, or None,
-        HRF model to be used.
-
+    %(hrf_model)s
     fir_delays : 1D array_like, optional
         Delays (in scans) used in case of an FIR model
 
