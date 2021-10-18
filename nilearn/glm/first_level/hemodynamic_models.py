@@ -376,6 +376,7 @@ def _orthogonalize(X):
     return X
 
 
+@fill_doc
 def _regressor_names(con_name, hrf_model, fir_delays=None):
     """ Returns a list of regressor names, computed from con-name and hrf type
     when this information is explicitly given. If hrf_model is
