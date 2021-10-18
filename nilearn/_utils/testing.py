@@ -48,6 +48,11 @@ except ImportError:
     memory_usage = memory_used = None
 
 
+def is_64bit() -> bool:
+    """Returns True if python is run on 64bits."""
+    return sys.maxsize > 2**32
+
+
 def check_deprecation(func, match=None):
     @functools.wraps(func)
     def wrapped(*args, **kwargs):
