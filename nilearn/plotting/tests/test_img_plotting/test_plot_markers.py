@@ -44,24 +44,24 @@ def test_plot_markers_node_sizes(node_size, coords):
                           [10, 20, 30, 40],
                           np.array([10, 20, 30, 40])])
 def test_plot_markers_node_sizes_lyrz_display(node_size, coords):
-     """Tests for plot_markers and 'lyrz' display mode.
+    """Tests for plot_markers and 'lyrz' display mode.
 
-     Tests that markers are plotted with the requested size
-     with display_mode='lyrz'. (See issue #3012 and PR #3013).
-     """
-     display = plot_markers(
-         [1, 2, 3, 4], coords, display_mode="lyrz", node_size=node_size
-     )
-     for d, axes in display.axes.items():
-         display_sizes = axes.ax.collections[0].get_sizes()
-         if d == 'l':
-             expected_sizes = node_size[-2:]
-         elif d == 'r':
-             expected_sizes = node_size[:-2]
-         else:
-             expected_sizes = node_size
-         assert np.all(display_sizes == expected_sizes)
-     plt.close()
+    Tests that markers are plotted with the requested size
+    with display_mode='lyrz'. (See issue #3012 and PR #3013).
+    """
+    display = plot_markers(
+        [1, 2, 3, 4], coords, display_mode="lyrz", node_size=node_size
+    )
+    for d, axes in display.axes.items():
+        display_sizes = axes.ax.collections[0].get_sizes()
+        if d == 'l':
+            expected_sizes = node_size[-2:]
+        elif d == 'r':
+            expected_sizes = node_size[:-2]
+        else:
+            expected_sizes = node_size
+        assert np.all(display_sizes == expected_sizes)
+    plt.close()
 
 
 @pytest.mark.parametrize("cmap,vmin,vmax",
