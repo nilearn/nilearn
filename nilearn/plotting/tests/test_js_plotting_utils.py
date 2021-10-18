@@ -26,7 +26,7 @@ def _normalize_ws(text):
 
 def test_add_js_lib():
     """Tests for function add_js_lib.
-    
+
     Checks that the html page contains the javascript code.
     """
     html = get_html_template('surface_plot_template.html')
@@ -73,9 +73,9 @@ def expected_abs_threshold(threshold):
     """Returns the expected absolute threshold."""
     expected = {'0%': 1.5, '50%': 7.55, '99%': 13}
     return expected[threshold] if threshold in expected else abs(threshold)
-    
 
-@pytest.mark.parametrize("threshold", ['0%', '50%','99%', .5, 7.25])
+
+@pytest.mark.parametrize("threshold", ['0%', '50%', '99%', .5, 7.25])
 def test_colorscale_threshold(threshold, expected_abs_threshold):
     """Test colorscale with different threshold values."""
     colors = colorscale('jet', np.linspace(-13, -1.5, 20), threshold=threshold)
@@ -129,7 +129,9 @@ def test_colorscale_asymmetric_cmap(values, vmax, vmin, threshold,
     assert (min(values) < 0) | (not colors['symmetric_cmap'])
     assert colors['cmap'].N == 256
     assert (int(colors['vmin']), int(colors['vmax'])) == expected_vmin_vmax
-    assert (colors['norm'].vmax, colors['norm'].vmin) == expected_vmin_vmax[::-1]
+    assert(
+        (colors['norm'].vmax, colors['norm'].vmin) == expected_vmin_vmax[::-1]
+    )
 
 
 @pytest.mark.parametrize("dtype", ['<f4', '<i4', '>f4', '>i4'])
@@ -243,9 +245,9 @@ def _check_open_in_browser(html):
 def test_to_color_strings(colors):
     """Tests for function to_color_strings with different color inputs."""
     if len(colors) == 3:
-        expected = ['#0000ff', '#ff0000', '#7f7f7f'] 
+        expected = ['#0000ff', '#ff0000', '#7f7f7f']
     else:
-        expected =  ['#ff0000', '#008000', '#000000', '#ffffff'] 
+        expected = ['#ff0000', '#008000', '#000000', '#ffffff']
     assert to_color_strings(colors) == expected
 
 
