@@ -834,6 +834,11 @@ def test_first_level_predictions_r_square():
     lambda tr, ov: np.ones(int(tr * ov))
 ])
 def test_first_level_hrf_model(hrf_model):
+    """
+    Test to ensure that FirstLevelModel runs flawlessly
+    with different values of hrf_model. In particular, one checks that it runs
+    without raising errors when given a custom response function.
+    """
     shapes, rk = [(10, 10, 10, 25)], 3
     mask, fmri_data, _ =\
         generate_fake_fmri_data_and_design(shapes, rk)
