@@ -426,7 +426,7 @@ def _regressor_names(con_name, hrf_model, fir_delays=None):
         raise ValueError(f"Computed regressor names are not unique: {names}")
 
     # Remove any non-word character
-    names = [re.sub("[^a-zA-Z0-9_]+", "", name) for name in names]
+    names = [re.sub("[^a-zA-Z0-9_]+", "", str(name)) for name in names]
 
     # Check that all names look like proper pandas.DataFrame column names
     if not all([name.isidentifier() for name in names]):
