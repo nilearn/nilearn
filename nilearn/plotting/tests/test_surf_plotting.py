@@ -118,7 +118,7 @@ def test_plot_surf_engine_error():
 
 
 @pytest.mark.parametrize("engine", ["matplotlib", "plotly"])
-def test_plot_surf(engine):
+def test_plot_surf(engine, tmp_path):
     mesh = generate_surf()
     rng = np.random.RandomState(42)
     bg = rng.standard_normal(size=mesh[0].shape[0])
@@ -129,7 +129,8 @@ def test_plot_surf(engine):
     # Plot mesh with background
     plot_surf(mesh, bg_map=bg, engine=engine)
     plot_surf(mesh, bg_map=bg, darkness=0.5, engine=engine)
-    plot_surf(mesh, bg_map=bg, alpha=0.5, engine=engine)
+    plot_surf(mesh, bg_map=bg, alpha=0.5,
+              output_file=tmp_path / 'tmp.png', engine=engine)
 
     # Plot different views
     plot_surf(mesh, bg_map=bg, hemi='right', engine=engine)
@@ -270,6 +271,13 @@ def test_plot_surf_avg_method_errors():
                   surf_map=rng.standard_normal(
                       size=mesh[0].shape[0]),
                   avg_method=custom_avg_function,
+                  engine='matplotlib'
+                  )
+
+        plot_surf(mesh,
+                  surf_map=rng.standard_normal(
+                      size=mesh[0].shape[0]),
+                  avg_method="foo",
                   engine='matplotlib'
                   )
 

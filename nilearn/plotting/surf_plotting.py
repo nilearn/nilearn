@@ -189,8 +189,9 @@ def _plot_surf_plotly(coords, faces, surf_map=None, bg_map=None,
         import plotly.graph_objects as go
         import kaleido  # noqa: F401
     except ImportError:
-        raise ImportError("Using engine='plotly' requires that "
-                          "plotly and kaleido are installed.")
+        msg = ("Using engine='plotly' requires that "
+               "plotly and kaleido are installed.")
+        raise ImportError(msg)  # noqa
     x, y, z = coords.T
     i, j, k = faces.T
     if cmap is None:
