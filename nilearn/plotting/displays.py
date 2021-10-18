@@ -1053,6 +1053,7 @@ class BaseSlicer(object):
             xdata, ydata = marker_coords_2d.T
 	        # Allow markers only in their respective hemisphere when appropriate
             marker_color_ = marker_color
+            marker_size_ = marker_size
             if direction in ('lr'):
                 if (not isinstance(marker_color, str) and
 	            not isinstance(marker_color, np.ndarray)):
@@ -1067,6 +1068,9 @@ class BaseSlicer(object):
                 if (not isinstance(marker_color, str) and
                         len(marker_color) != 1):
                     marker_color_ = marker_color_[relevant_coords]
+                if not isinstance(marker_size, numbers.Number):
+                    marker_size_ = np.asarray(marker_size_)[relevant_coords]
+
             # Check if coord has integer represents a cut in direction
             # to follow the heuristic. If no foreground image is given
             # coordinate is empty or None. This case is valid for plotting
@@ -1078,7 +1082,7 @@ class BaseSlicer(object):
                 mask = np.abs(third_d - coord) <= 2.
                 xdata = xdata[mask]
                 ydata = ydata[mask]
-            display_ax.ax.scatter(xdata, ydata, s=marker_size,
+            display_ax.ax.scatter(xdata, ydata, s=marker_size_,
                                   c=marker_color_, **kwargs)
 
     def annotate(self, left_right=True, positions=True, scalebar=False,

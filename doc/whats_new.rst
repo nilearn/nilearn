@@ -15,6 +15,11 @@ Fixes
   method was raising an ``IndexError``.
   (See issue `#3007 <https://github.com/nilearn/nilearn/issues/3007>`_ and
   fix `#3009 <https://github.com/nilearn/nilearn/pull/3009>`_).
+- :func:`nilearn.plotting.plot_markers` did not work when the `display_mode`
+  parameter included `l` and `r` and the parameter `node_size` was provided
+  as an array.
+  (See issue `#3012 <https://github.com/nilearn/nilearn/issues/3012>`_) and fix
+  `#3013 <https://github.com/nilearn/nilearn/pull/3013>`_).
 
 Enhancements
 ------------
