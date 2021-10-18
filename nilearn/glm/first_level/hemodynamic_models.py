@@ -411,14 +411,14 @@ def _regressor_names(con_name, hrf_model, fir_delays=None):
         names = [con_name + "_delay_%d" % i for i in fir_delays]
     # Handle callables
     elif callable(hrf_model):
-        names = [f"{con_name} {hrf_model.__name__}"]
+        names = [f"{con_name}_{hrf_model.__name__}"]
     elif (isinstance(hrf_model, Iterable)
           and all([callable(_) for _ in hrf_model])):
-        names = [f"{con_name} {model.__name__}" for model in hrf_model]
+        names = [f"{con_name}_{model.__name__}" for model in hrf_model]
     # Handle some default cases
     else:
         if isinstance(hrf_model, Iterable) and not isinstance(hrf_model, str):
-            names = [f"{con_name} {i}" for i in range(len(hrf_model))]
+            names = [f"{con_name}_{i}" for i in range(len(hrf_model))]
 
     # Check that all names within the list are different
     if len(np.unique(names)) != len(names):
