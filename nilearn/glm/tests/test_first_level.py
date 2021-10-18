@@ -835,9 +835,10 @@ def test_first_level_predictions_r_square():
 ])
 def test_first_level_hrf_model(hrf_model):
     """
-    Test to ensure that FirstLevelModel runs flawlessly
-    with different values of hrf_model. In particular, one checks that it runs
+    Ensure that FirstLevelModel runs without raising errors
+    for different values of hrf_model. In particular, one checks that it runs
     without raising errors when given a custom response function.
+    Also ensure that it computes contrasts without raising errors.
     """
     shapes, rk = [(10, 10, 10, 25)], 3
     mask, fmri_data, _ =\
@@ -850,3 +851,6 @@ def test_first_level_hrf_model(hrf_model):
                             hrf_model=hrf_model)
 
     model.fit(fmri_data, events)
+
+    columns = model.design_matrices_[0].columns
+    model.compute_contrast(f"{columns[0]}-{columns[1]}")

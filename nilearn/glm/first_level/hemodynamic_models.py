@@ -6,6 +6,7 @@ This module closely follows SPM implementation
 Author: Bertrand Thirion, 2011--2018
 """
 
+import re
 import warnings
 
 import numpy as np
@@ -423,6 +424,14 @@ def _regressor_names(con_name, hrf_model, fir_delays=None):
     # Check that all names within the list are different
     if len(np.unique(names)) != len(names):
         raise ValueError(f"Computed regressor names are not unique: {names}")
+
+    # Remove any non-word character
+    names = [re.sub("[^a-zA-Z0-9_]+", "", name) for name in names]
+
+    # Check that all names look like proper pandas.DataFrame column names
+    if not all([name.isidentifier() for name in names]):
+        raise ValueError("At least one regressor name can't be used "
+                         f"as a column identifier: {names}")
 
     return names
 
