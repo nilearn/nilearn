@@ -4,7 +4,7 @@ import pytest
 
 
 with warnings.catch_warnings(record=True):
-    from nilearn import(
+    from nilearn import (
         _py36_deprecation_warning, _python_deprecation_warnings
     )
 
