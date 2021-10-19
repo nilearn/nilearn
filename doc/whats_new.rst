@@ -53,10 +53,10 @@ Changes
 
 - :func:`nilearn.glm.first_level.compute_regressor` will now raise an exception if
   parameter `cond_id` is not a string which could be used to name a python variable.
-  For instance, number strings will no longer be accepted as valid condition names.
+  For instance, number strings (ex: "1") will no longer be accepted as valid condition names.
   In particular, this will also impact
-  :func:`nilearn.glm.first_level.make_first_level_design_matrix`
-  and :class:`nilearn.glm.FirstLevelModel`, for which proper condition names
+  :func:`nilearn.glm.first_level.make_first_level_design_matrix` and
+  :class:`nilearn.glm.first_level.FirstLevelModel`, for which proper condition names
   will also be needed (see PR `#3025 https://github.com/nilearn/nilearn/pull/3025`_).
 
 .. _v0.8.1:
