@@ -226,6 +226,10 @@ def fmriprep_confounds(img_files,
     aspects of the preprocessing listed in :footcite:`Ciric2017` are controlled
     through :term:`fMRIPrep`, e.g. distortion correction.
 
+    See Also
+    --------
+    :func:nilearn.input_data.fmriprep_confounds_strategy
+
     References
     -----------
     .. footbibliography::

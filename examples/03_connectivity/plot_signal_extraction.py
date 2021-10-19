@@ -253,3 +253,8 @@ confounds, sample_mask = fmriprep_confounds_strategy(fmri_filenames,
 confounds, sample_mask = fmriprep_confounds_strategy(fmri_filenames,
                                                      denoise_strategy="simple",
                                                      global_signal="basic")
+
+References
+==========
+
+ .. footbibliography::

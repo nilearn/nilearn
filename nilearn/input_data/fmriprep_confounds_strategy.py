@@ -158,6 +158,10 @@ def fmriprep_confounds_strategy(img_files, denoise_strategy="simple",
     please see notebook 5.
     `<https://github.com/nipreps/fmriprep-notebooks/>`_
 
+    See Also
+    --------
+    :func:nilearn.input_data.fmriprep_confounds
+
     References
     -----------
     .. footbibliography::

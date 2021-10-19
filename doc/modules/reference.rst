@@ -234,6 +234,7 @@ the :ref:`user guide <user_guide>` for more information and usage examples.
    :template: function.rst
 
    fmriprep_confounds
+   fmriprep_confounds_strategy
 
 .. _masking_ref:
 

@@ -1,15 +1,17 @@
 import re
+from _pytest.mark import deselect_by_keyword
 import pytest
 import pandas as pd
-from ..fmriprep_confounds_strategy import fmriprep_confounds_strategy
-from .utils import create_tmp_filepath
+from nilearn.input_data import fmriprep_confounds_strategy
+from nilearn.input_data.fmriprep_confounds_strategy import preset_strategies
+from nilearn.input_data.tests.utils import create_tmp_filepath
 
 
 @pytest.mark.parametrize("denoise_strategy,image_type",
                          [("simple", "regular"),
                           ("scrubbing", "regular"),
                           ("compcor", "regular"),
-                          ("ica_aroma", "icaaroma")])
+                          ("ica_aroma", "ica_aroma")])
 def test_fmriprep_confounds_strategy(tmp_path, denoise_strategy, image_type):
     """Smoke test with no extra inputs."""
     file_nii, _ = create_tmp_filepath(tmp_path, image_type=image_type,
@@ -17,6 +19,42 @@ def test_fmriprep_confounds_strategy(tmp_path, denoise_strategy, image_type):
     confounds, _ = fmriprep_confounds_strategy(
         file_nii, denoise_strategy=denoise_strategy)
     assert isinstance(confounds, pd.DataFrame)
+
+
+@pytest.mark.parametrize("denoise_strategy",
+                         [("simple"),
+                          ("scrubbing"),
+                          ("compcor"),
+                          ("ica_aroma")])
+def test_strategies(tmp_path, denoise_strategy, image_type, variable_check):
+    """Check user specified input for simple strategy."""
+
+    if denoise_strategy == "ica_aroma":
+        file_nii, _ = create_tmp_filepath(tmp_path, image_type=denoise_strategy,
+                                        copy_confounds=True, copy_json=True)
+    else:
+        file_nii, _ = create_tmp_filepath(tmp_path, image_type="regular",
+                                        copy_confounds=True, copy_json=True)
+    confounds, _ = fmriprep_confounds_strategy(
+        file_nii, denoise_strategy=denoise_strategy)
+
+    # Check that all fixed name model categories have been successfully loaded
+    list_check = _get_headers(denoise_strategy)
+    for col in confounds.columns:
+        # Check that all possible names exists
+        checker = [re.match(keyword, col) is not None
+                   for keyword in list_check]
+        assert sum(checker) == 1
+
+
+def _get_headers(denoise_strategy):
+    default_params = preset_strategies[denoise_strategy]
+    high_pass = ["cosine+"]
+    motion = ["trans_[xyz]$", "rot_[xyz]$",]
+    wm_csf = ["csf$", "white_matter$",]
+    global_signal = ["global_signal$"]
+    compcor = ["a_comp_cor_+"]
+
 
 
 def test_strategy_simple(tmp_path):
@@ -123,7 +161,7 @@ def test_strategy_compcor(tmp_path):
 
 def test_strategy_ica_aroma(tmp_path):
     """Check user specified input for ica_aroma strategy."""
-    file_nii, _ = create_tmp_filepath(tmp_path, image_type="icaaroma",
+    file_nii, _ = create_tmp_filepath(tmp_path, image_type="ica_aroma",
                                       copy_confounds=True, copy_json=True)
     confounds, _ = fmriprep_confounds_strategy(
         file_nii, denoise_strategy="ica_aroma")
