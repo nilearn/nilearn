@@ -143,7 +143,10 @@ def _get_cbar_plotly(colorscale, vmin, vmax, cbar_tick_format,
                      fontsize=25, color="black", height=0.5):
     """Helper function for _plot_surf_plotly.
 
-    This function configures the colorbar.
+    This function configures the colorbar and creates a small
+    invisible plot that uses the appropriate cmap to trigger
+    the generation of the colorbar. This dummy plot has then to
+    be added to the figure.
     """
     dummy = {
         "opacity": 0,
@@ -169,10 +172,11 @@ def _get_cbar_plotly(colorscale, vmin, vmax, cbar_tick_format,
 
 def _plot_surf_plotly(coords, faces, surf_map=None, bg_map=None,
                       hemi='left', view='lateral', cmap=None,
-                      colorbar=False, threshold=None, vmin=None,
-                      vmax=None, cbar_vmin=None, cbar_vmax=None,
-                      cbar_tick_format=".1f",
-                      title=None, font_size=15, output_file=None):
+                      symmetric_cmap=True, colorbar=False,
+                      threshold=None, vmin=None, vmax=None,
+                      cbar_vmin=None, cbar_vmax=None,
+                      cbar_tick_format=".1f", title=None,
+                      title_font_size=18, output_file=None):
     """Helper function for plot_surf.
 
     .. versionadded:: 0.8.2
@@ -184,13 +188,15 @@ def _plot_surf_plotly(coords, faces, surf_map=None, bg_map=None,
         This function assumes that plotly and kaleido are
         installed.
 
+    .. warning::
+        This function is new and experimental. Please report
+        bugs that you may encounter.
+
     """
     try:
         import plotly.graph_objects as go
-        import kaleido  # noqa: F401
     except ImportError:
-        msg = ("Using engine='plotly' requires that "
-               "plotly and kaleido are installed.")
+        msg = "Using engine='plotly' requires that ``plotly`` is installed."
         raise ImportError(msg)  # noqa
     x, y, z = coords.T
     i, j, k = faces.T
@@ -205,7 +211,8 @@ def _plot_surf_plotly(coords, faces, surf_map=None, bg_map=None,
     if surf_map is not None:
         _check_surf_map(surf_map, coords.shape[0])
         colors = colorscale(
-            cold_hot, surf_map, threshold, vmax=vmax, vmin=vmin
+            cmap, surf_map, threshold, vmax=vmax, vmin=vmin,
+            symmetric_cmap=symmetric_cmap
         )
         vertexcolor = _get_vertexcolor(
             surf_map, colors["cmap"], colors["norm"],
@@ -214,7 +221,7 @@ def _plot_surf_plotly(coords, faces, surf_map=None, bg_map=None,
     else:
         if bg_data is None:
             bg_data = np.zeros(coords.shape[0])
-        colors = colorscale('Greys', bg_data)
+        colors = colorscale('Greys', bg_data, symmetric_cmap=False)
         vertexcolor = _get_vertexcolor(
             bg_data, colors["cmap"], colors["norm"],
             colors["abs_threshold"]
@@ -230,9 +237,15 @@ def _plot_surf_plotly(coords, faces, surf_map=None, bg_map=None,
     cameras_view = _set_view_plot_surf_plotly(hemi, view)
     fig = go.Figure(data=fig_data)
     fig.update_layout(scene_camera=CAMERAS[cameras_view],
-                      title=_configure_title_plotly(title, font_size),
+                      title=_configure_title_plotly(title, title_font_size),
                       **LAYOUT)
     if output_file is not None:
+        try:
+            import kaleido  # noqa: F401
+        except ImportError:
+            msg = ("Saving figures to file with engine='plotly' requires "
+                   "that ``kaleido`` is installed.")
+            raise ImportError(msg)  # noqa
         fig.write_image(output_file)
     return fig
 
@@ -421,7 +434,7 @@ def _plot_surf_matplotlib(coords, faces, surf_map=None, bg_map=None,
                           alpha='auto', bg_on_data=False, darkness=1,
                           vmin=None, vmax=None, cbar_vmin=None,
                           cbar_vmax=None, cbar_tick_format='%.2g',
-                          title=None, font_size=15, output_file=None,
+                          title=None, title_font_size=18, output_file=None,
                           axes=None, figure=None, **kwargs):
     """Helper function for plot_surf.
 
@@ -503,7 +516,7 @@ def _plot_surf_matplotlib(coords, faces, surf_map=None, bg_map=None,
         p3dcollec.set_facecolors(face_colors)
 
     if title is not None:
-        figure.suptitle(title, x=.5, y=.95, fontsize=font_size)
+        figure.suptitle(title, x=.5, y=.95, fontsize=title_font_size)
 
     # save figure if output file is given
     if output_file is not None:
@@ -516,10 +529,11 @@ def _plot_surf_matplotlib(coords, faces, surf_map=None, bg_map=None,
 @fill_doc
 def plot_surf(surf_mesh, surf_map=None, bg_map=None,
               hemi='left', view='lateral', engine='matplotlib',
-              cmap=None, colorbar=False, avg_method='mean', threshold=None,
-              alpha='auto', bg_on_data=False, darkness=1, vmin=None, vmax=None,
+              cmap=None, symmetric_cmap=True, colorbar=False,
+              avg_method='mean', threshold=None, alpha='auto',
+              bg_on_data=False, darkness=1, vmin=None, vmax=None,
               cbar_vmin=None, cbar_vmax=None, cbar_tick_format="auto",
-              title=None, font_size=15, output_file=None, axes=None,
+              title=None, title_font_size=18, output_file=None, axes=None,
               figure=None, **kwargs):
     """Plotting of surfaces with optional background and data
 
@@ -552,23 +566,42 @@ def plot_surf(surf_mesh, surf_map=None, bg_map=None,
 
         .. versionadded:: 0.8.2
 
-        Selects which plotting engine will be used by plot_surf.
-        Currently, only matplotlib and plotly are supported.
+        Selects which plotting engine will be used by ``plot_surf``.
+        Currently, only ``matplotlib`` and ``plotly`` are supported.
 
         .. note::
-            To use 'plotly' and save figures to disk you should
-            have both `plotly` and `kaleido` installed.
+            To use the ``plotly`` engine, you need to
+            have ``plotly`` installed.
+            
+        .. note::
+            To be able to save figures to disk with the
+            ``plotly`` engine, you need to have
+            ``kaleido`` installed.
+
+        .. warning::
+            The ``plotly`` engine is new and experimental.
+            Please report bugs that you may encounter.
 
         Default='matplotlib'.
     %(cmap)s
         If None, matplotlib default will be chosen.
+    symmetric_cmap : :obj:`bool`, optional
+        Whether to use a symmetric colormap or not.
+
+        .. note::
+            This option is currently only implemented for
+            the ``plotly`` engine.
+
+        .. versionadded:: 0.8.2
+
+        Default=True.
     %(colorbar)s
         Default=False.
     %(avg_method)s
 
         .. note::
             This option is currently only implemented for the
-            matplotlib engine.
+            ``matplotlib`` engine.
 
         Default='mean'.
 
@@ -585,7 +618,7 @@ def plot_surf(surf_mesh, surf_map=None, bg_map=None,
 
         .. note::
             This option is currently only implemented for the
-            matplotlib engine.
+            ``matplotlib`` engine.
 
     %(bg_on_data)s
         Default=False.
@@ -594,7 +627,7 @@ def plot_surf(surf_mesh, surf_map=None, bg_map=None,
 
         .. note::
             This option is currently only implemented for the
-            matplotlib engine.
+            ``matplotlib`` engine.
 
     %(vmin)s
     %(vmax)s
@@ -605,17 +638,21 @@ def plot_surf(surf_mesh, surf_map=None, bg_map=None,
 
         .. note::
             This option is currently only implemented for the
-            matplotlib engine.
+            ``matplotlib`` engine.
 
     %(cbar_tick_format)s
         Default="auto" which will select:
 
-            - '%%.2g' (scientific notation) whith matplotlib engine.
-            - '.1f' (rounded floats) with plotly engine.
+            - '%%.2g' (scientific notation) with ``matplotlib`` engine.
+            - '.1f' (rounded floats) with ``plotly`` engine.
 
     %(title)s
-    font_size : :obj:`int`, optional
-        Size for the title font. Default=15.
+    title_font_size : :obj:`int`, optional
+        Size of the title font.
+
+        .. versionadded:: 0.8.2
+
+        Default=18.
     %(output_file)s
     axes : instance of matplotlib axes, None, optional
         The axes instance to plot to. The projection must be '3d' (e.g.,
@@ -625,13 +662,13 @@ def plot_surf(surf_mesh, surf_map=None, bg_map=None,
 
         .. note::
             This option is currently only implemented for the
-            matplotlib engine.
+            ``matplotlib`` engine.
 
     %(figure)s
 
         .. note::
             This option is currently only implemented for the
-            matplotlib engine.
+            ``matplotlib`` engine.
 
     See Also
     --------
@@ -657,17 +694,18 @@ def plot_surf(surf_mesh, surf_map=None, bg_map=None,
             threshold=threshold, alpha=alpha, bg_on_data=bg_on_data,
             darkness=darkness, vmin=vmin, vmax=vmax, cbar_vmin=cbar_vmin,
             cbar_vmax=cbar_vmax, cbar_tick_format=cbar_tick_format,
-            title=title, font_size=font_size, output_file=output_file,
-            axes=axes, figure=figure, **kwargs)
+            title=title, title_font_size=title_font_size,
+            output_file=output_file, axes=axes, figure=figure, **kwargs)
     elif engine == 'plotly':
         if cbar_tick_format == "auto":
             cbar_tick_format = ".1f"
         fig = _plot_surf_plotly(
             coords, faces, surf_map=surf_map, bg_map=bg_map, view=view,
-            hemi=hemi, cmap=cmap, colorbar=colorbar, threshold=threshold,
-            vmin=vmin, vmax=vmax, cbar_vmin=cbar_vmin, cbar_vmax=cbar_vmax,
+            hemi=hemi, cmap=cmap, symmetric_cmap=symmetric_cmap,
+            colorbar=colorbar, threshold=threshold, vmin=vmin,
+            vmax=vmax, cbar_vmin=cbar_vmin, cbar_vmax=cbar_vmax,
             cbar_tick_format=cbar_tick_format, title=title,
-            font_size=font_size, output_file=output_file)
+            title_font_size=title_font_size, output_file=output_file)
     else:
         raise ValueError(f"Unknown plotting engine {engine}. "
                          "Please use either 'matplotlib' or "
@@ -837,8 +875,8 @@ def plot_surf_stat_map(surf_mesh, stat_map, bg_map=None,
                        threshold=None, alpha='auto', vmax=None,
                        cmap='cold_hot', colorbar=True,
                        symmetric_cbar="auto", bg_on_data=False,
-                       darkness=1, title=None, output_file=None, axes=None,
-                       figure=None, **kwargs):
+                       darkness=1, title=None, title_font_size=18,
+                       output_file=None, axes=None, figure=None, **kwargs):
     """Plotting a stats map on a surface mesh with optional background
 
     .. versionadded:: 0.3
@@ -871,12 +909,20 @@ def plot_surf_stat_map(surf_mesh, stat_map, bg_map=None,
 
         .. versionadded:: 0.8.2
 
-        Selects which plotting engine will be used by plot_surf.
-        Currently, only matplotlib and plotly are supported.
+        Selects which plotting engine will be used by ``plot_surf_stat_map``.
+        Currently, only ``matplotlib`` and ``plotly`` are supported.
 
         .. note::
-            To use 'plotly' and save figures to disk you should
-            have both `plotly` and `kaleido` installed.
+            To use the ``plotly`` engine you need to
+            have ``plotly`` installed.
+
+        .. note::
+            To be able to save figures to disk with the ``plotly``
+            engine you need to have ``kaleido`` installed.
+
+        .. warning::
+            The ``plotly`` engine is new and experimental.
+            Please report bugs that you may encounter.
 
         Default='matplotlib'.
 
@@ -901,7 +947,7 @@ def plot_surf_stat_map(surf_mesh, stat_map, bg_map=None,
 
         .. note::
             This option is currently only implemented for the
-            matplotlib engine.
+            ``matplotlib`` engine.
 
     %(vmax)s
     %(symmetric_cbar)s
@@ -913,9 +959,15 @@ def plot_surf_stat_map(surf_mesh, stat_map, bg_map=None,
 
         .. note::
             This option is currently only implemented for the
-            matplotlib engine.
+            ``matplotlib`` engine.
 
     %(title)s
+    title_font_size : :obj:`int`, optional
+        Size of the title font.
+
+        .. versionadded:: 0.8.2
+
+        Default=18.
     %(output_file)s
     axes : instance of matplotlib axes, None, optional
         The axes instance to plot to. The projection must be '3d' (e.g.,
@@ -925,13 +977,13 @@ def plot_surf_stat_map(surf_mesh, stat_map, bg_map=None,
 
         .. note::
             This option is currently only implemented for the
-            matplotlib engine.
+            ``matplotlib`` engine.
 
     %(figure)s
 
         .. note::
             This option is currently only implemented for the
-            matplotlib engine.
+            ``matplotlib`` engine.
 
     See Also
     --------
@@ -953,11 +1005,12 @@ def plot_surf_stat_map(surf_mesh, stat_map, bg_map=None,
     display = plot_surf(
         surf_mesh, surf_map=loaded_stat_map, bg_map=bg_map, hemi=hemi, view=view,
         engine=engine, avg_method='mean', threshold=threshold,
-        cmap=cmap, colorbar=colorbar, alpha=alpha, bg_on_data=bg_on_data,
-        darkness=darkness, vmax=vmax, vmin=vmin, title=title,
-        output_file=output_file, axes=axes, figure=figure,
-        cbar_vmin=cbar_vmin, cbar_vmax=cbar_vmax, **kwargs)
-
+        cmap=cmap, symmetric_cmap=True, colorbar=colorbar, alpha=alpha,
+        bg_on_data=bg_on_data, darkness=darkness, vmax=vmax, vmin=vmin,
+        title=title, title_font_size=title_font_size, output_file=output_file,
+        axes=axes, figure=figure, cbar_vmin=cbar_vmin,
+        cbar_vmax=cbar_vmax, **kwargs
+    )
     return display
 
 
@@ -1191,7 +1244,8 @@ def plot_surf_roi(surf_mesh, roi_map, bg_map=None,
                   threshold=1e-14, alpha='auto', vmin=None, vmax=None,
                   cmap='gist_ncar', cbar_tick_format="%i",
                   bg_on_data=False, darkness=1, title=None,
-                  output_file=None, axes=None, figure=None, **kwargs):
+                  title_font_size=18, output_file=None, axes=None,
+                  figure=None, **kwargs):
     """ Plotting ROI on a surface mesh with optional background
 
     .. versionadded:: 0.3
@@ -1224,12 +1278,20 @@ def plot_surf_roi(surf_mesh, roi_map, bg_map=None,
 
         .. versionadded:: 0.8.2
 
-        Selects which plotting engine will be used by plot_surf.
-        Currently, only matplotlib and plotly are supported.
+        Selects which plotting engine will be used by ``plot_surf_roi``.
+        Currently, only ``matplotlib`` and ``plotly`` are supported.
 
         .. note::
-            To use 'plotly' and save figures to disk you should
-            have both `plotly` and `kaleido` installed.
+            To use the ``plotly`` engine you need to have
+            ``plotly`` installed.
+
+        .. note::
+            To be able to save figures to disk with ``plotly`` engine
+            you need to have ``kaleido`` installed.
+
+        .. warning::
+            The ``plotly`` engine is new and experimental.
+            Please report bugs that you may encounter.
 
         Default='matplotlib'.
 
@@ -1244,7 +1306,7 @@ def plot_surf_roi(surf_mesh, roi_map, bg_map=None,
 
         .. note::
             This option is currently only implemented for the
-            matplotlib engine.
+            ``matplotlib`` engine.
 
     alpha : float or 'auto', optional
         Alpha level of the mesh (not the stat_map). If default,
@@ -1254,7 +1316,7 @@ def plot_surf_roi(surf_mesh, roi_map, bg_map=None,
 
         .. note::
             This option is currently only implemented for the
-            matplotlib engine.
+            ``matplotlib`` engine.
 
     %(bg_on_data)s
         Default=False.
@@ -1263,9 +1325,15 @@ def plot_surf_roi(surf_mesh, roi_map, bg_map=None,
 
         .. note::
             This option is currently only implemented for the
-            matplotlib engine.
+            ``matplotlib`` engine.
 
     %(title)s
+    title_font_size : :obj:`int`, optional
+        Size of the title font.
+
+        .. versionadded:: 0.8.2
+
+        Default=18.
     %(output_file)s
     axes : Axes instance or None, optional
         The axes instance to plot to. The projection must be '3d' (e.g.,
@@ -1274,13 +1342,13 @@ def plot_surf_roi(surf_mesh, roi_map, bg_map=None,
 
         .. note::
             This option is currently only implemented for the
-            matplotlib engine.
+            ``matplotlib`` engine.
 
     %(figure)s
 
         .. note::
             This option is currently only implemented for the
-            matplotlib engine.
+            ``matplotlib`` engine.
 
     See Also
     --------
@@ -1316,10 +1384,12 @@ def plot_surf_roi(surf_mesh, roi_map, bg_map=None,
     display = plot_surf(mesh, surf_map=roi, bg_map=bg_map,
                         hemi=hemi, view=view, engine=engine,
                         avg_method='median', threshold=threshold,
-                        cmap=cmap, cbar_tick_format=cbar_tick_format,
+                        cmap=cmap, symmetric_cmap=False,
+                        cbar_tick_format=cbar_tick_format,
                         alpha=alpha, bg_on_data=bg_on_data,
                         darkness=darkness, vmin=vmin, vmax=vmax,
-                        title=title, output_file=output_file,
-                        axes=axes, figure=figure, **kwargs)
+                        title=title, title_font_size=title_font_size,
+                        output_file=output_file, axes=axes,
+                        figure=figure, **kwargs)
 
     return display
