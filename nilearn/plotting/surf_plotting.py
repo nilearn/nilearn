@@ -518,7 +518,7 @@ def plot_surf(surf_mesh, surf_map=None, bg_map=None,
               hemi='left', view='lateral', engine='matplotlib',
               cmap=None, colorbar=False, avg_method='mean', threshold=None,
               alpha='auto', bg_on_data=False, darkness=1, vmin=None, vmax=None,
-              cbar_vmin=None, cbar_vmax=None, cbar_tick_format='%.2g',
+              cbar_vmin=None, cbar_vmax=None, cbar_tick_format="auto",
               title=None, font_size=15, output_file=None, axes=None,
               figure=None, **kwargs):
     """Plotting of surfaces with optional background and data
@@ -608,7 +608,10 @@ def plot_surf(surf_mesh, surf_map=None, bg_map=None,
             matplotlib engine.
 
     %(cbar_tick_format)s
-        Default='%%.2g' for scientific notation.
+        Default="auto" which will select:
+
+            - '%%.2g' (scientific notation) whith matplotlib engine.
+            - '.1f' (rounded floats) with plotly engine.
 
     %(title)s
     font_size : :obj:`int`, optional
@@ -646,6 +649,8 @@ def plot_surf(surf_mesh, surf_map=None, bg_map=None,
     """
     coords, faces = load_surf_mesh(surf_mesh)
     if engine == 'matplotlib':
+        if cbar_tick_format == "auto":
+            cbar_tick_format = '%.2g'
         fig = _plot_surf_matplotlib(
             coords, faces, surf_map=surf_map, bg_map=bg_map, hemi=hemi,
             view=view, cmap=cmap, colorbar=colorbar, avg_method=avg_method,
@@ -655,6 +660,8 @@ def plot_surf(surf_mesh, surf_map=None, bg_map=None,
             title=title, font_size=font_size, output_file=output_file,
             axes=axes, figure=figure, **kwargs)
     elif engine == 'plotly':
+        if cbar_tick_format == "auto":
+            cbar_tick_format = ".1f"
         fig = _plot_surf_plotly(
             coords, faces, surf_map=surf_map, bg_map=bg_map, view=view,
             hemi=hemi, cmap=cmap, colorbar=colorbar, threshold=threshold,
