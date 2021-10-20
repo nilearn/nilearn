@@ -160,7 +160,7 @@ def fmriprep_confounds_strategy(img_files, denoise_strategy="simple",
 
     See Also
     --------
-    :func:nilearn.input_data.fmriprep_confounds
+    :func:`nilearn.input_data.fmriprep_confounds`
 
     References
     -----------

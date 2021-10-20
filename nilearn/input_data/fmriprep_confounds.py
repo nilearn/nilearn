@@ -228,7 +228,7 @@ def fmriprep_confounds(img_files,
 
     See Also
     --------
-    :func:nilearn.input_data.fmriprep_confounds_strategy
+    :func:`nilearn.input_data.fmriprep_confounds_strategy`
 
     References
     -----------
