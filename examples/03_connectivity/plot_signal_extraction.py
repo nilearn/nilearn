@@ -244,13 +244,15 @@ plotting.plot_matrix(correlation_matrix, figure=(10, 8), labels=labels[1:],
 #     time of :term:`fMRIPrep`, however, the strategy performs well in various
 #     benchmarks (:footcite:`Ciric2017`, :footcite:`Parker2018`).
 #
-# The following examples shows how to use the `simple` strategy.
+# The following examples shows how to use the `simple` strategy and overwrite
+# the motion default to basic.
 
 from nilearn.input_data import fmriprep_confounds_strategy
 
 # use default parameters
 confounds, sample_mask = fmriprep_confounds_strategy(fmri_filenames,
-                                                     denoise_strategy="simple")
+                                                     denoise_strategy="simple",
+                                                     motion="basic")
 
 time_series = masker.fit_transform(fmri_filenames,
                                    confounds=confounds,
@@ -268,6 +270,7 @@ plotting.plot_matrix(correlation_matrix, figure=(10, 8), labels=labels[1:],
 # add optional parameter global siganl
 confounds, sample_mask = fmriprep_confounds_strategy(fmri_filenames,
                                                      denoise_strategy="simple",
+                                                     motion="basic",
                                                      global_signal="basic")
 time_series = masker.fit_transform(fmri_filenames,
                                    confounds=confounds,
