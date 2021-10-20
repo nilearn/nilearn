@@ -58,6 +58,12 @@ NEW
   through the spatial maps with a previous and next button. The users can filter the maps
   they wish to display by passing an integer, or a list of integers to
   :meth:`~nilearn.maskers.NiftiMapsMasker.generate_report`.
+- New function :func:`nilearn.input_data.fmriprep_confounds` to load confound
+  variables easily from :term:`fMRIPrep` outputs.
+- New class :class:`nilearn.regions.HierarchicalKMeans` which yields more
+  balanced clusters than `KMeans`. It is also callable through
+  :class:`nilearn.regions.Parcellations` using `method`=`hierarchical_kmeans`
+
 
 Fixes
 -----
@@ -113,7 +119,11 @@ Enhancements
   :ref:`sphx_glr_auto_examples_04_glm_first_level_plot_hrf.py` was
   also modified to demo how to define custom :term:`HRF` models.
   (See issue `#2940 <https://github.com/nilearn/nilearn/issues/2940>`_).
+<<<<<<< HEAD
 - :class:`nilearn.maskers.NiftiLabelsMasker` now gives a warning when some
+=======
+- :class:`nilearn.input_data.NiftiLabelsMasker` now gives a warning when some
+>>>>>>> "add whats_new"
   labels are removed from the label image at transform time due to resampling
   of the label image to the data image.
 - Function :func:`~nilearn.glm.second_level.non_parametric_inference` now accepts
