@@ -529,7 +529,7 @@ def _plot_surf_matplotlib(coords, faces, surf_map=None, bg_map=None,
 @fill_doc
 def plot_surf(surf_mesh, surf_map=None, bg_map=None,
               hemi='left', view='lateral', engine='matplotlib',
-              cmap=None, symmetric_cmap=True, colorbar=False,
+              cmap=None, symmetric_cmap=False, colorbar=False,
               avg_method='mean', threshold=None, alpha='auto',
               bg_on_data=False, darkness=1, vmin=None, vmax=None,
               cbar_vmin=None, cbar_vmax=None, cbar_tick_format="auto",
@@ -572,7 +572,7 @@ def plot_surf(surf_mesh, surf_map=None, bg_map=None,
         .. note::
             To use the ``plotly`` engine, you need to
             have ``plotly`` installed.
-            
+
         .. note::
             To be able to save figures to disk with the
             ``plotly`` engine, you need to have
@@ -594,7 +594,7 @@ def plot_surf(surf_mesh, surf_map=None, bg_map=None,
 
         .. versionadded:: 0.8.2
 
-        Default=True.
+        Default=False.
     %(colorbar)s
         Default=False.
     %(avg_method)s
@@ -645,6 +645,8 @@ def plot_surf(surf_mesh, surf_map=None, bg_map=None,
 
             - '%%.2g' (scientific notation) with ``matplotlib`` engine.
             - '.1f' (rounded floats) with ``plotly`` engine.
+
+        .. versionadded:: 0.7.1
 
     %(title)s
     title_font_size : :obj:`int`, optional
@@ -874,9 +876,10 @@ def plot_surf_stat_map(surf_mesh, stat_map, bg_map=None,
                        hemi='left', view='lateral', engine='matplotlib',
                        threshold=None, alpha='auto', vmax=None,
                        cmap='cold_hot', colorbar=True,
-                       symmetric_cbar="auto", bg_on_data=False,
-                       darkness=1, title=None, title_font_size=18,
-                       output_file=None, axes=None, figure=None, **kwargs):
+                       symmetric_cbar="auto", cbar_tick_format="auto",
+                       bg_on_data=False, darkness=1, title=None,
+                       title_font_size=18, output_file=None, axes=None,
+                       figure=None, **kwargs):
     """Plotting a stats map on a surface mesh with optional background
 
     .. versionadded:: 0.3
@@ -932,6 +935,14 @@ def plot_surf_stat_map(surf_mesh, stat_map, bg_map=None,
         values below the threshold (in absolute value) are plotted
         as transparent.
     %(cmap)s
+    %(cbar_tick_format)s
+        Default="auto" which will select:
+
+            - '%%.2g' (scientific notation) with ``matplotlib`` engine.
+            - '.1f' (rounded floats) with ``plotly`` engine.
+
+        .. versionadded:: 0.7.1
+
     %(colorbar)s
 
         .. note::
@@ -985,6 +996,9 @@ def plot_surf_stat_map(surf_mesh, stat_map, bg_map=None,
             This option is currently only implemented for the
             ``matplotlib`` engine.
 
+    kwargs : dict, optional
+        Keyword arguments passed to :func:`nilearn.plotting.plot_surf`.
+
     See Also
     --------
     nilearn.datasets.fetch_surf_fsaverage: For surface data object to be
@@ -1003,9 +1017,10 @@ def plot_surf_stat_map(surf_mesh, stat_map, bg_map=None,
         loaded_stat_map, vmax, symmetric_cbar, kwargs)
 
     display = plot_surf(
-        surf_mesh, surf_map=loaded_stat_map, bg_map=bg_map, hemi=hemi, view=view,
-        engine=engine, avg_method='mean', threshold=threshold,
-        cmap=cmap, symmetric_cmap=True, colorbar=colorbar, alpha=alpha,
+        surf_mesh, surf_map=loaded_stat_map, bg_map=bg_map, hemi=hemi,
+        view=view, engine=engine, avg_method='mean', threshold=threshold,
+        cmap=cmap, symmetric_cmap=True, colorbar=colorbar,
+        cbar_tick_format=cbar_tick_format, alpha=alpha,
         bg_on_data=bg_on_data, darkness=darkness, vmax=vmax, vmin=vmin,
         title=title, title_font_size=title_font_size, output_file=output_file,
         axes=axes, figure=figure, cbar_vmin=cbar_vmin,
@@ -1242,7 +1257,7 @@ def plot_img_on_surf(stat_map, surf_mesh='fsaverage5', mask_img=None,
 def plot_surf_roi(surf_mesh, roi_map, bg_map=None,
                   hemi='left', view='lateral', engine='matplotlib',
                   threshold=1e-14, alpha='auto', vmin=None, vmax=None,
-                  cmap='gist_ncar', cbar_tick_format="%i",
+                  cmap='gist_ncar', cbar_tick_format="auto",
                   bg_on_data=False, darkness=1, title=None,
                   title_font_size=18, output_file=None, axes=None,
                   figure=None, **kwargs):
@@ -1302,11 +1317,12 @@ def plot_surf_roi(surf_mesh, roi_map, bg_map=None,
     %(cmap)s
         Default='gist_ncar'.
     %(cbar_tick_format)s
-        Default='%%i' for integers.
+        Default="auto" which defaults to integers format:
 
-        .. note::
-            This option is currently only implemented for the
-            ``matplotlib`` engine.
+            - "%%i" for ``matplotlib`` engine.
+            - "." for ``plotly`` engine.
+
+        .. versionadded:: 0.7.1
 
     alpha : float or 'auto', optional
         Alpha level of the mesh (not the stat_map). If default,
@@ -1350,6 +1366,9 @@ def plot_surf_roi(surf_mesh, roi_map, bg_map=None,
             This option is currently only implemented for the
             ``matplotlib`` engine.
 
+    kwargs : dict, optional
+        Keyword arguments passed to :func:`nilearn.plotting.plot_surf`.
+
     See Also
     --------
     nilearn.datasets.fetch_surf_fsaverage: For surface data object to be
@@ -1381,6 +1400,8 @@ def plot_surf_roi(surf_mesh, roi_map, bg_map=None,
                          'roi_map = np.zeros(n_vertices)\n'
                          'roi_map[roi_idx] = 1')
 
+    if cbar_tick_format == "auto":
+        cbar_tick_format = "." if engine == "plotly" else "%i"
     display = plot_surf(mesh, surf_map=roi, bg_map=bg_map,
                         hemi=hemi, view=view, engine=engine,
                         avg_method='median', threshold=threshold,
