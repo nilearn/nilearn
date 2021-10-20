@@ -17,7 +17,7 @@ preset_strategies = {
     "simple": {
         "strategy":
             ["high_pass", "non_steady_state", "motion", "wm_csf"],
-        "motion": "basic",
+        "motion": "full",
         "wm_csf": "basic",
         "global_signal": None,
         "demean": True
@@ -86,7 +86,7 @@ def fmriprep_confounds_strategy(img_files, denoise_strategy="simple",
         - 'simple': Load confounds for a simple denoising strategy commonly
           used in resting state functional connectivity, described in
           :footcite:`Fox2005`. Default as: full motion parameters,
-          full WM/CSF signals, and  high pass filter, with an option to
+          basic WM/CSF signals, and  high pass filter, with an option to
           extract global signal confounds.
           Additional parameters: motion, wm_csf, global_signal, demean
         - 'srubbing': Load confounds for scrubbing describbed in
