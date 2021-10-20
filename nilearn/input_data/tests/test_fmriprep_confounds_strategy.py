@@ -21,20 +21,15 @@ def test_fmriprep_confounds_strategy(tmp_path, denoise_strategy, image_type):
     assert isinstance(confounds, pd.DataFrame)
 
 
-@pytest.mark.parametrize("denoise_strategy",
-                         [("simple"),
-                          ("scrubbing"),
-                          ("compcor"),
-                          ("ica_aroma")])
-def test_strategies(tmp_path, denoise_strategy, image_type, variable_check):
-    """Check user specified input for simple strategy."""
-
-    if denoise_strategy == "ica_aroma":
-        file_nii, _ = create_tmp_filepath(tmp_path, image_type=denoise_strategy,
-                                        copy_confounds=True, copy_json=True)
-    else:
-        file_nii, _ = create_tmp_filepath(tmp_path, image_type="regular",
-                                        copy_confounds=True, copy_json=True)
+@pytest.mark.parametrize("denoise_strategy,image_type",
+                         [("simple", "regular"),
+                          ("scrubbing", "regular"),
+                          ("compcor", "regular"),
+                          ("ica_aroma", "ica_aroma")])
+def test_strategies(tmp_path, denoise_strategy, image_type):
+    """Check defaults setting of each preset strategy."""
+    file_nii, _ = create_tmp_filepath(tmp_path, image_type=image_type,
+                                      copy_confounds=True, copy_json=True)
     confounds, _ = fmriprep_confounds_strategy(
         file_nii, denoise_strategy=denoise_strategy)
 
@@ -47,42 +42,31 @@ def test_strategies(tmp_path, denoise_strategy, image_type, variable_check):
         assert sum(checker) == 1
 
 
+patterns = {
+    'high_pass': ["cosine+"],
+    'motion': ["trans_[xyz]$", "rot_[xyz]$",],
+    'wm_csf': ["csf$", "white_matter$",],
+    'global': ["global_signal$"],
+    'global_signal': ["global_signal$"],
+    'compcor': ["a_comp_cor_+"],
+}
+
+
 def _get_headers(denoise_strategy):
-    default_params = preset_strategies[denoise_strategy]
-    high_pass = ["cosine+"]
-    motion = ["trans_[xyz]$", "rot_[xyz]$",]
-    wm_csf = ["csf$", "white_matter$",]
-    global_signal = ["global_signal$"]
-    compcor = ["a_comp_cor_+"]
+    """Retreive the relevant header pattern for each strategy to check."""
+    default_params = preset_strategies[denoise_strategy].copy()
 
+    list_check = []
+    noise_components = default_params.pop("strategy")
+    for strategy in noise_components:
+        if strategy in patterns:
+            list_check += patterns[strategy]
 
-
-def test_strategy_simple(tmp_path):
-    """Check user specified input for simple strategy."""
-    file_nii, _ = create_tmp_filepath(tmp_path, image_type="regular",
-                                      copy_confounds=True, copy_json=True)
-    confounds, _ = fmriprep_confounds_strategy(
-        file_nii, denoise_strategy="simple",
-        motion="full", global_signal="basic")
-
-    # Check that all fixed name model categories have been successfully loaded
-    list_check = [
-        "trans_[xyz]$",
-        "rot_[xyz]$",
-        "trans_[xyz]_+",
-        "rot_[xyz]_+",
-        "csf$",
-        "white_matter$",
-        "csf_+",
-        "white_matter_+",
-        "global_signal$",
-        "cosine+"
-    ]
-    for col in confounds.columns:
-        # Check that all possible names exists
-        checker = [re.match(keyword, col) is not None
-                   for keyword in list_check]
-        assert sum(checker) == 1
+    for key, value in default_params.items():
+        if key in ['motion', "wm_csf", "global_signal"] and value != "basic":
+            for item in patterns[key]:
+                list_check.append(item.replace("$", "_+"))
+    return list_check
 
 
 def test_strategy_scrubbing(tmp_path):
@@ -91,24 +75,6 @@ def test_strategy_scrubbing(tmp_path):
                                       copy_confounds=True, copy_json=True)
     confounds, sample_mask = fmriprep_confounds_strategy(
         file_nii, denoise_strategy="scrubbing", fd_thresh=0.15)
-    # Check that all fixed name model categories have been successfully loaded
-    list_check = [
-        "trans_[xyz]$",
-        "rot_[xyz]$",
-        "trans_[xyz]_+",
-        "rot_[xyz]_+",
-        "csf$",
-        "white_matter$",
-        "csf_+",
-        "white_matter_+",
-        "global_signal$",
-        "cosine+"
-    ]
-    for col in confounds.columns:
-        # Check that all possible names exists
-        checker = [re.match(keyword, col) is not None
-                   for keyword in list_check]
-        assert sum(checker) == 1
 
     # out of 30 vols, should have 6 motion outliers from scrubbing,
     # and 2 vol removed by srubbing strategy "full"
@@ -139,46 +105,11 @@ def test_strategy_compcor(tmp_path):
                                       copy_confounds=True, copy_json=True)
     confounds, _ = fmriprep_confounds_strategy(
         file_nii, denoise_strategy="compcor")
-    list_check = [
-        "trans_[xyz]$",
-        "rot_[xyz]$",
-        "trans_[xyz]_+",
-        "rot_[xyz]_+",
-        "cosine+",
-        "a_comp_cor_+",
-    ]
-    for col in confounds.columns:
-        # Check that all possible names exists
-        checker = [re.match(keyword, col) is not None
-                   for keyword in list_check]
-        assert sum(checker) == 1
     compcor_col_str_anat = "".join(confounds.columns)
     assert "t_comp_cor_" not in compcor_col_str_anat
     assert (
         "a_comp_cor_57" not in compcor_col_str_anat
     )  # this one comes from the white matter mask
-
-
-def test_strategy_ica_aroma(tmp_path):
-    """Check user specified input for ica_aroma strategy."""
-    file_nii, _ = create_tmp_filepath(tmp_path, image_type="ica_aroma",
-                                      copy_confounds=True, copy_json=True)
-    confounds, _ = fmriprep_confounds_strategy(
-        file_nii, denoise_strategy="ica_aroma")
-
-    # Check that all fixed name model categories have been successfully loaded
-    list_check = [
-        "csf$",
-        "white_matter$",
-        "csf_+",
-        "white_matter_+",
-        "cosine+"
-    ]
-    for col in confounds.columns:
-        # Check that all possible names exists
-        checker = [re.match(keyword, col) is not None
-                   for keyword in list_check]
-        assert sum(checker) == 1
 
 
 def test_irrelevant_input(tmp_path):
