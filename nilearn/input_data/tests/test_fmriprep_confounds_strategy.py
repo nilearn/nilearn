@@ -44,8 +44,8 @@ def test_strategies(tmp_path, denoise_strategy, image_type):
 
 patterns = {
     'high_pass': ["cosine+"],
-    'motion': ["trans_[xyz]$", "rot_[xyz]$",],
-    'wm_csf': ["csf$", "white_matter$",],
+    'motion': ["trans_[xyz]$", "rot_[xyz]$"],
+    'wm_csf': ["csf$", "white_matter$"],
     'global': ["global_signal$"],
     'global_signal': ["global_signal$"],
     'compcor': ["a_comp_cor_+"],
@@ -53,7 +53,7 @@ patterns = {
 
 
 def _get_headers(denoise_strategy):
-    """Retreive the relevant header pattern for each strategy to check."""
+    """Retrieve the relevant header pattern for each strategy to check."""
     default_params = preset_strategies[denoise_strategy].copy()
 
     list_check = []

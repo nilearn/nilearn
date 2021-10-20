@@ -103,7 +103,8 @@ plotting.plot_matrix(correlation_matrix, figure=(10, 8), labels=labels[1:],
 # :term:`fMRIPrep`. :func:`nilearn.input_data.fmriprep_confounds` ensures
 # two things:
 # 1. The correct regressors are selected with provided strategy, and
-# 2. Volumes such as non-steady-state volumes are masked out correctly.
+# 2. Volumes such as non-steady-state and/or high motion volumes are masked
+#    out correctly.
 # Let's try a simple strategy removing motion, white matter signal,
 # cerebrospinal fluid signal with high-pass filtering.
 
@@ -194,8 +195,6 @@ plotting.plot_matrix(correlation_matrix, figure=(10, 8), labels=labels[1:],
                      title='Motion, WM, CSF, GSR',
                      reorder=True)
 
-plotting.show()
-
 ##############################################################################
 # Using predefined strategies
 # ---------------------------
@@ -203,44 +202,48 @@ plotting.show()
 # :func:`nilearn.input_data.fmriprep_confounds`, one can use a predefined
 # strategy with :func:`nilearn.input_data.fmriprep_confounds_strategy`. Based
 # on the confound variables generated through :term:`fMRIPrep`, and past
-# benchmarks studies (:footcite:`Ciric2017`, :footcite:`Parker2018`), we
-# provide four preset strategies: `simple`, `scrubbing`, `compcor`, and
-# `ica_aroma`.
-#   - `simple`: high pass filtering, basic motion, basic white matter, basic
-#     csf, and optionally global signal. This approach is commonly
-#     used in resting state functional connectivity, described in
-#     :footcite:`Fox2005`. With the global signal option, this approach
-#     can remove confounds without compromising the temporal degrees of
-#     freedom.
-#   - `scrubbing` high pass filtering, fully expanded motion, white matter,
-#     and csf parameters, scrubbing high motion volumes
-#     (framewise displacement > 0.2 mm, standardized DVARS threshold > 3),
-#     and optionally global signal. This approach can reliably remove the
+# benchmarks studies (:footcite:`Ciric2017`, :footcite:`Parker2018`), the
+# following table details the default options of each preset strategies:
+#
+# +-----------+-----------+--------+--------+---------------+-------+-----------+------------------+---------------+-----------+-----------+--------+
+# | strategy  | high_pass | motion | wm_csf | global_signal | scrub | fd_thresh | std_dvars_thresh | compcor       | n_compcor | ica_aroma | demean |
+# +-----------+-----------+--------+--------+---------------+-------+-----------+------------------+---------------+-----------+-----------+--------+
+# | simple    | True      | basic  | basic  | optional      | N/A   | N/A       | N/A              | N/A           | N/A       | N/A       | True   |
+# +-----------+-----------+--------+--------+---------------+-------+-----------+------------------+---------------+-----------+-----------+--------+
+# | scrubbing | True      | full   | full   | optional      | 5     | 0.2       | 3                | N/A           | N/A       | N/A       | True   |
+# +-----------+-----------+--------+--------+---------------+-------+-----------+------------------+---------------+-----------+-----------+--------+
+# | compcor   | True      | full   | N/A    | N/A           | N/A   | N/A       | N/A              | anat_combined | all       | N/A       | True   |
+# +-----------+-----------+--------+--------+---------------+-------+-----------+------------------+---------------+-----------+-----------+--------+
+# | ica_aroma | True      | N/A    | basic  | optional      | N/A   | N/A       | N/A              | N/A           | N/A       | full      | True   |
+# +-----------+-----------+--------+--------+---------------+-------+-----------+------------------+---------------+-----------+-----------+--------+
+#
+#   - `simple`: This approach is commonly used in resting state functional
+#     connectivity, described in :footcite:`Fox2005`. With the global signal
+#     regression, this approach can remove confounds without compromising the
+#     temporal degrees of freedom.
+#   - `scrubbing` : This approach can reliably remove the
 #     impact of high motion volumes in functional connectome, however, it
 #     might not be suitable with subjects with high motion (more than 50%
 #     timeseries flagged as high motion). One should adjust the threshold
 #     based on the characteristics of the dataset, or remove high motion
 #     subjects from the dataset.
-#   - `compcor` high pass filtering, fully expanded motion parameters, and
-#     anatomical compcor components with combined white matter and csf mask
-#     that fits 50% of the variance. Compcor can suffer from loss of
-#     temporal degrees of freedom when using explained variance as the noise
-#     component estimation. CompCor has the advantage of removing
-#     physiological noise without requiring external monitoring of
-#     physiological fluctuations (:footcite:`BEHZADI200790`). However the
-#     conclusion was drawn from comparing with an approach that explicitly
-#     removes physiological signal, rather than explicitly modelling. Thus
-#     compcor might not be a suitable approach for researchers who want
-#     explicit description of the source of confounds.
+#   - `compcor` : Compcor can suffer from loss of temporal degrees of freedom
+#     when using explained variance as the noise component estimation. CompCor
+#     has the advantage of removing physiological noise without requiring
+#     external monitoring of physiological fluctuations
+#     (:footcite:`BEHZADI200790`). However the conclusion was drawn from
+#     comparing with an approach that explicitly removes physiological signal,
+#     rather than explicitly modelling. Thus compcor might not be a suitable
+#     approach for researchers who want explicit description of the source of
+#     confounds.
 #   - `ica_aroma`: applicable to :term:`fMRIPrep` outputs generated with
 #     `--use-aroma`, suffixed with `desc-smoothAROMAnonaggr_bold` only.
-#     The regressors contain high pass filtering, white matter, csf, and
-#     optionally global signal. The :term:`fMRIPrep` generated
-#     `desc-smoothAROMAnonaggr_bold` image requires confounds removal to
-#     complete the procedure described in the original approach in
-#     :footcite:`Pruim2015`. ICA-AROMA increases the run time of
-#     :term:`fMRIPrep`, however, the strategy performs well in various
+#     The :term:`fMRIPrep` generated `desc-smoothAROMAnonaggr_bold` image
+#     requires confounds removal to complete the procedure described in the
+#     original approach in :footcite:`Pruim2015`. ICA-AROMA increases the run
+#     time of :term:`fMRIPrep`, however, the strategy performs well in various
 #     benchmarks (:footcite:`Ciric2017`, :footcite:`Parker2018`).
+#
 # The following examples shows how to use the `simple` strategy.
 
 from nilearn.input_data import fmriprep_confounds_strategy
@@ -249,12 +252,40 @@ from nilearn.input_data import fmriprep_confounds_strategy
 confounds, sample_mask = fmriprep_confounds_strategy(fmri_filenames,
                                                      denoise_strategy="simple")
 
+time_series = masker.fit_transform(fmri_filenames,
+                                   confounds=confounds,
+                                   sample_mask=sample_mask)
+
+correlation_matrix = correlation_measure.fit_transform([time_series])[0]
+
+np.fill_diagonal(correlation_matrix, 0)
+
+plotting.plot_matrix(correlation_matrix, figure=(10, 8), labels=labels[1:],
+                     vmax=0.8, vmin=-0.8,
+                     title='simple',
+                     reorder=True)
+
 # add optional parameter global siganl
 confounds, sample_mask = fmriprep_confounds_strategy(fmri_filenames,
                                                      denoise_strategy="simple",
                                                      global_signal="basic")
+time_series = masker.fit_transform(fmri_filenames,
+                                   confounds=confounds,
+                                   sample_mask=sample_mask)
 
-References
-==========
+correlation_matrix = correlation_measure.fit_transform([time_series])[0]
 
- .. footbibliography::
+np.fill_diagonal(correlation_matrix, 0)
+
+plotting.plot_matrix(correlation_matrix, figure=(10, 8), labels=labels[1:],
+                     vmax=0.8, vmin=-0.8,
+                     title='simple with global signal',
+                     reorder=True)
+
+plotting.show()
+
+##############################################################################
+# References
+# ==========
+#
+#  .. footbibliography::
