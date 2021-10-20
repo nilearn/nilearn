@@ -1,5 +1,4 @@
 import re
-from _pytest.mark import deselect_by_keyword
 import pytest
 import pandas as pd
 from nilearn.input_data import fmriprep_confounds_strategy
