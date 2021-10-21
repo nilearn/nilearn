@@ -233,13 +233,25 @@ def generate_report(estimator):
 
 class HTMLReport(HTMLDocument):
     """A report written as HTML.
-    Methods such as save_as_html(), open_in_browser()
-    are inherited from HTMLDocument
+
+    Methods such as ``save_as_html``, or ``open_in_browser``
+    are inherited from ``HTMLDocument``.
 
     """
     def __init__(self, head_tpl, body, head_values={}):
-        """The head_tpl is meant for display as a full page, eg writing on
-        disk. The body is used for embedding in an existing page.
+        """Constructor the ``HTMLReport`` class.
+
+        Parameters
+        ----------
+        head_tpl : Template
+            This is meant for display as a full page, eg writing on disk.
+
+        body : :obj:`str`
+            This parameter is used for embedding in an existing page.
+
+        head_values : :obj:`dict`, optional
+            Additional substitutions in ``head_tpl``.
+            Default={}.
 
         """
         html = head_tpl.safe_substitute(body=body, **head_values)
@@ -248,8 +260,8 @@ class HTMLReport(HTMLDocument):
         self.body = body
 
     def _repr_html_(self):
-        """
-        Used by the Jupyter notebook.
+        """Method used by the Jupyter notebook.
+
         Users normally won't call this method explicitly.
         """
         return self.body

@@ -426,19 +426,20 @@ def make_second_level_design_matrix(subjects_label, confounds=None):
 
     Parameters
     ----------
-    subjects_label : list of str
+    subjects_label : :obj:`list` of :obj:`str`
         Contain subject labels to extract confounders in the right order,
         corresponding with the images, to create the design matrix.
 
-    confounds : pandas DataFrame, optional
-        If given, contains at least two columns, 'subject_label' and one
+    confounds : :class:`pandas.DataFrame` or ``None``, optional
+        If given, contains at least two columns, ``subject_label`` and one
         confound. The subjects list determines the rows to extract from
-        confounds thanks to its 'subject_label' column. All subjects must
+        confounds thanks to its ``subject_label`` column. All subjects must
         have confounds specified. There should be only one row per subject.
+        Default=``None``.
 
     Returns
     -------
-    design_matrix : pandas DataFrame
+    design_matrix : :class:`pandas.DataFrame`
         The second level design matrix.
 
     """
