@@ -7,8 +7,15 @@ NEW
 - **Support for Python 3.6 is deprecated and will be removed in release 0.10.**
   Users with a Python 3.6 environment will be warned at their first Nilearn
   import and encouraged to update to more recent versions of Python.
-- New function :func:`nilearn.input_data.fmriprep_confounds` to load confound variables easily 
-  from :term:`fMRIPrep` outputs. 
+- New function :func:`nilearn.input_data.fmriprep_confounds` to load confound variables easily
+  from :term:`fMRIPrep` outputs.
+- Surface plotting functions like :func:`nilearn.plotting.plot_surf_stat_map`
+  now have an `engine` parameter, defaulting to "matplotlib", but which can be
+  set to "plotly". If plotly and kaleido are installed, this will generate an
+  interactive plot of the surface map using plotly instead of matplotlib.
+  Note that this functionality is still experimental, and that some capabilities
+  supported by our matplotlib engine are not yet supported by the plotly engine.
+  (See PR `#2902 <https://github.com/nilearn/nilearn/pull/2902>`_).
 
 Fixes
 -----
@@ -34,10 +41,10 @@ Enhancements
   and negative values in the map, as was done previously.
   When `two_sided` is `False`, only values greater than or equal to the threshold
   are retained.
-- :func:`nilearn.signal.clean` raises a warning when the user sets 
+- :func:`nilearn.signal.clean` raises a warning when the user sets
   parameters `detrend` and `standardize_confound` to False.
   The user is suggested to set one of
-  those options to `True`, or standardize/demean the confounds before using the 
+  those options to `True`, or standardize/demean the confounds before using the
   function.
 - It is now possible to provide custom :term:`HRF` models to
   :class:`nilearn.glm.first_level.FirstLevelModel`. The custom model should be
@@ -46,7 +53,7 @@ Enhancements
   example). The example
   :ref:`sphx_glr_auto_examples_04_glm_first_level_plot_hrf.py` was
   also modified to demo how to define custom :term:`HRF` models.
-  (See issue `#2940 <https://github.com/nilearn/nilearn/issues/2940>`_). 
+  (See issue `#2940 <https://github.com/nilearn/nilearn/issues/2940>`_).
 - :class:`nilearn.input_data.NiftiLabelsMasker` now gives a warning when some
   labels are removed from the label image at transform time due to resampling
   of the label image to the data image.
@@ -57,6 +64,14 @@ Enhancements
 
 Changes
 -------
+
+- :func:`nilearn.glm.first_level.compute_regressor` will now raise an exception if
+  parameter `cond_id` is not a string which could be used to name a python variable.
+  For instance, number strings (ex: "1") will no longer be accepted as valid condition names.
+  In particular, this will also impact
+  :func:`nilearn.glm.first_level.make_first_level_design_matrix` and
+  :class:`nilearn.glm.first_level.FirstLevelModel`, for which proper condition names
+  will also be needed (see PR `#3025 <https://github.com/nilearn/nilearn/pull/3025>`_).
 
 .. _v0.8.1:
 

@@ -3,13 +3,14 @@ import re
 import base64
 import webbrowser
 import tempfile
-
 import numpy as np
-import matplotlib
 import pytest
 
-from nilearn.plotting import js_plotting_utils
-from nilearn import surface
+from nilearn.plotting.js_plotting_utils import (
+    colorscale, get_html_template, add_js_lib, encode,
+    decode, mesh_to_plotly, to_color_strings
+)
+from nilearn.surface import load_surf_mesh
 from nilearn.datasets import fetch_surf_fsaverage
 
 try:
@@ -24,15 +25,19 @@ def _normalize_ws(text):
 
 
 def test_add_js_lib():
-    html = js_plotting_utils.get_html_template('surface_plot_template.html')
-    cdn = js_plotting_utils.add_js_lib(html, embed_js=False)
+    """Tests for function add_js_lib.
+
+    Checks that the html page contains the javascript code.
+    """
+    html = get_html_template('surface_plot_template.html')
+    cdn = add_js_lib(html, embed_js=False)
     assert "decodeBase64" in cdn
     assert _normalize_ws("""<script
     src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js">
     </script>
     <script src="https://cdn.plot.ly/plotly-gl3d-latest.min.js"></script>
     """) in _normalize_ws(cdn)
-    inline = _normalize_ws(js_plotting_utils.add_js_lib(html, embed_js=True))
+    inline = _normalize_ws(add_js_lib(html, embed_js=True))
     assert _normalize_ws("""/*! jQuery v3.6.0 | (c) OpenJS Foundation and other
                             contributors | jquery.org/license */""") in inline
     assert _normalize_ws("""**
@@ -41,6 +46,7 @@ def test_add_js_lib():
 
 
 def check_colors(colors):
+    """Performs several checks on colors obtained from function colorscale."""
     assert len(colors) == 100
     val, cstring = zip(*colors)
     assert np.allclose(np.linspace(0, 1, 100), val, atol=1e-3)
@@ -52,169 +58,108 @@ def check_colors(colors):
 
 
 def test_colorscale_no_threshold():
-    cmap = 'jet'
+    """Test colorscale with no thresholding."""
     values = np.linspace(-13, -1.5, 20)
-    threshold = None
-    colors = js_plotting_utils.colorscale(cmap, values, threshold)
+    colors = colorscale('jet', values, None)
     check_colors(colors['colors'])
     assert (colors['vmin'], colors['vmax']) == (-13, 13)
     assert colors['cmap'].N == 256
     assert (colors['norm'].vmax, colors['norm'].vmin) == (13, -13)
     assert colors['abs_threshold'] is None
-    colors = js_plotting_utils.colorscale(cmap, values > 0, .5)
 
 
-def test_colorscale_threshold_0():
-    cmap = 'jet'
-    values = np.linspace(-13, -1.5, 20)
-    threshold = '0%'
-    colors = js_plotting_utils.colorscale(cmap, values, threshold)
-    check_colors(colors['colors'])
-    assert (colors['vmin'], colors['vmax']) == (-13, 13)
-    assert colors['cmap'].N == 256
-    assert (colors['norm'].vmax, colors['norm'].vmin) == (13, -13)
-    assert colors['abs_threshold'] == 1.5
-    assert colors['symmetric_cmap']
+@pytest.fixture
+def expected_abs_threshold(threshold):
+    """Returns the expected absolute threshold."""
+    expected = {'0%': 1.5, '50%': 7.55, '99%': 13}
+    return expected[threshold] if threshold in expected else abs(threshold)
 
 
-def test_colorscale_threshold_99():
-    cmap = 'jet'
-    values = np.linspace(-13, -1.5, 20)
-    threshold = '99%'
-    colors = js_plotting_utils.colorscale(cmap, values, threshold)
-    check_colors(colors['colors'])
-    assert (colors['vmin'], colors['vmax']) == (-13, 13)
-    assert colors['cmap'].N == 256
-    assert (colors['norm'].vmax, colors['norm'].vmin) == (13, -13)
-    assert colors['abs_threshold'] == 13
-    assert colors['symmetric_cmap']
-
-
-def test_colorscale_threshold_50():
-    cmap = 'jet'
-    values = np.linspace(-13, -1.5, 20)
-    threshold = '50%'
-    colors = js_plotting_utils.colorscale(cmap, values, threshold)
-    val, cstring = check_colors(colors['colors'])
+@pytest.mark.parametrize("threshold", ['0%', '50%', '99%', .5, 7.25])
+def test_colorscale_threshold(threshold, expected_abs_threshold):
+    """Test colorscale with different threshold values."""
+    colors = colorscale('jet', np.linspace(-13, -1.5, 20), threshold=threshold)
+    _, cstring = check_colors(colors['colors'])
     assert cstring[50] == 'rgb(127, 127, 127)'
     assert (colors['vmin'], colors['vmax']) == (-13, 13)
     assert colors['cmap'].N == 256
     assert (colors['norm'].vmax, colors['norm'].vmin) == (13, -13)
-    assert np.allclose(colors['abs_threshold'], 7.55, 2)
+    assert np.allclose(colors['abs_threshold'], expected_abs_threshold, 2)
     assert colors['symmetric_cmap']
 
 
-def test_colorscale_absolute_threshold():
-    cmap = 'jet'
-    values = np.linspace(-13, -1.5, 20)
-    threshold = 7.25
-    colors = js_plotting_utils.colorscale(cmap, values, threshold)
-    val, cstring = check_colors(colors['colors'])
-    assert cstring[50] == 'rgb(127, 127, 127)'
-    assert (colors['vmin'], colors['vmax']) == (-13, 13)
-    assert colors['cmap'].N == 256
-    assert (colors['norm'].vmax, colors['norm'].vmin) == (13, -13)
-    assert np.allclose(colors['abs_threshold'], 7.25)
-    assert colors['symmetric_cmap']
-
-
-def test_colorscale_asymmetric_cmap():
-    cmap = 'jet'
-    values = np.arange(15)
-    colors = js_plotting_utils.colorscale(cmap, values, symmetric_cmap=False)
-    assert (colors['vmin'], colors['vmax']) == (0, 14)
-    assert colors['cmap'].N == 256
-    assert (colors['norm'].vmax, colors['norm'].vmin) == (14, 0)
-    assert not colors['symmetric_cmap']
-    values = np.arange(15) + 3
-    colors = js_plotting_utils.colorscale(cmap, values, symmetric_cmap=False)
-    assert (colors['vmin'], colors['vmax']) == (3, 17)
-    assert (colors['norm'].vmax, colors['norm'].vmin) == (17, 3)
-
-
-def test_colorscale_vmin_vmax():
-    cmap = 'jet'
-    values = np.arange(15)
-    colors = js_plotting_utils.colorscale(cmap, values, vmax=7)
-    assert (colors['vmin'], colors['vmax']) == (-7, 7)
-    assert colors['cmap'].N == 256
-    assert (colors['norm'].vmax, colors['norm'].vmin) == (7, -7)
-    assert colors['symmetric_cmap']
-    colors = js_plotting_utils.colorscale(
-        cmap, values, vmax=7, vmin=-5)
+@pytest.mark.parametrize("vmin,vmax", [(None, 7), (-5, 7)])
+def test_colorscale_symmetric_cmap(vmin, vmax):
+    """Test colorscale with symmetric cmap and positive values."""
+    colors = colorscale('jet', np.arange(15), vmin=vmin, vmax=vmax)
     assert (colors['vmin'], colors['vmax']) == (-7, 7)
     assert colors['cmap'].N == 256
     assert (colors['norm'].vmax, colors['norm'].vmin) == (7, -7)
     assert colors['symmetric_cmap']
 
 
-def test_colorscale_asymmetric_cmap_vmax():
-    cmap = 'jet'
-    values = np.arange(15)
-    colors = js_plotting_utils.colorscale(cmap, values, vmax=7,
-                                          symmetric_cmap=False)
-    assert (colors['vmin'], colors['vmax']) == (0, 7)
+@pytest.fixture
+def expected_vmin_vmax(values, vmax, vmin, threshold):
+    """Returns expected vmin and vmax."""
+    if threshold is None:
+        if vmax is None:
+            return (min(values), max(values))
+        if min(values) < 0:
+            return (-vmax, vmax)
+        return (min(values), vmax) if vmin is None else (vmin, vmax)
+    else:
+        return (0, vmax)
+
+
+@pytest.mark.parametrize("values,vmax,vmin,threshold",
+                         [(np.arange(15), None, None, None),
+                          (np.arange(15), 7, None, None),
+                          (np.arange(15), 7, -5, None),
+                          (np.arange(15) + 3, 7, None, None),
+                          (np.arange(15) + 3, None, None, None),
+                          (np.arange(15) + 3, 7, 1, None),
+                          (np.arange(15) + 3, 10, 6, 5),
+                          (np.arange(15) + 3, 10, None, 5),
+                          (np.linspace(-15, 4), 7, None, None)])
+def test_colorscale_asymmetric_cmap(values, vmax, vmin, threshold,
+                                    expected_vmin_vmax):
+    """Test colorscale with asymmetric cmap."""
+    colors = colorscale('jet', values, vmax=vmax, vmin=vmin,
+                        threshold=threshold, symmetric_cmap=False)
+    assert (min(values) < 0) | (not colors['symmetric_cmap'])
     assert colors['cmap'].N == 256
-    assert (colors['norm'].vmax, colors['norm'].vmin) == (7, 0)
-    assert not colors['symmetric_cmap']
-    values = np.arange(15) + 3
-    colors = js_plotting_utils.colorscale(cmap, values, vmax=7,
-                                          symmetric_cmap=False)
-    assert (colors['vmin'], colors['vmax']) == (3, 7)
-    assert (colors['norm'].vmax, colors['norm'].vmin) == (7, 3)
-    colors = js_plotting_utils.colorscale(
-        cmap, values, vmax=7, symmetric_cmap=False, vmin=1)
-    assert (colors['vmin'], colors['vmax']) == (1, 7)
-    assert (colors['norm'].vmax, colors['norm'].vmin) == (7, 1)
-    colors = js_plotting_utils.colorscale(
-        cmap, values, vmax=10, symmetric_cmap=False, vmin=6, threshold=5)
-    assert (colors['vmin'], colors['vmax']) == (0, 10)
-    assert (colors['norm'].vmax, colors['norm'].vmin) == (10, 0)
-    colors = js_plotting_utils.colorscale(
-        cmap, values, vmax=10, symmetric_cmap=False, vmin=None, threshold=5)
-    assert (colors['vmin'], colors['vmax']) == (0, 10)
-    assert (colors['norm'].vmax, colors['norm'].vmin) == (10, 0)
+    assert (int(colors['vmin']), int(colors['vmax'])) == expected_vmin_vmax
+    assert(
+        (colors['norm'].vmax, colors['norm'].vmin) == expected_vmin_vmax[::-1]
+    )
 
 
-def test_colorscale_asymmetric_cmap_negative_values():
-    cmap = 'jet'
-    values = np.linspace(-15, 4)
-    with pytest.warns(UserWarning):
-        js_plotting_utils.colorscale(cmap,
-                                     values, symmetric_cmap=False)
-
-    colors = js_plotting_utils.colorscale(cmap, values, vmax=7,
-                                          symmetric_cmap=False)
-    assert (colors['vmin'], colors['vmax']) == (-7, 7)
-    assert colors['cmap'].N == 256
-    assert (colors['norm'].vmax, colors['norm'].vmin) == (7, -7)
-    assert colors['symmetric_cmap']
+@pytest.mark.parametrize("dtype", ['<f4', '<i4', '>f4', '>i4'])
+def test_encode(dtype):
+    """Test base64 encoding/decoding for different dtypes."""
+    a = np.arange(10, dtype=dtype)
+    encoded = encode(a)
+    decoded = base64.b64decode(encoded.encode('utf-8'))
+    b = np.frombuffer(decoded, dtype=dtype)
+    assert np.allclose(decode(encoded, dtype=dtype), b)
+    assert np.allclose(a, b)
 
 
-def test_encode():
-    for dtype in ['<f4', '<i4', '>f4', '>i4']:
-        a = np.arange(10, dtype=dtype)
-        encoded = js_plotting_utils.encode(a)
-        decoded = base64.b64decode(encoded.encode('utf-8'))
-        b = np.frombuffer(decoded, dtype=dtype)
-        assert np.allclose(js_plotting_utils.decode(encoded, dtype=dtype), b)
-        assert np.allclose(a, b)
-
-
-def test_mesh_to_plotly():
+@pytest.mark.parametrize("hemi", ['left', 'right'])
+def test_mesh_to_plotly(hemi):
+    """Tests for function mesh_to_plotly."""
     fsaverage = fetch_surf_fsaverage()
-    coord, triangles = surface.load_surf_mesh(fsaverage['pial_left'])
-    plotly = js_plotting_utils.mesh_to_plotly(fsaverage['pial_left'])
+    coord, triangles = load_surf_mesh(fsaverage[f'pial_{hemi}'])
+    plotly = mesh_to_plotly(fsaverage[f'pial_{hemi}'])
     for i, key in enumerate(['_x', '_y', '_z']):
-        assert np.allclose(
-            js_plotting_utils.decode(plotly[key], '<f4'), coord[:, i])
+        assert np.allclose(decode(plotly[key], '<f4'), coord[:, i])
     for i, key in enumerate(['_i', '_j', '_k']):
-        assert np.allclose(
-            js_plotting_utils.decode(plotly[key], '<i4'), triangles[:, i])
+        assert np.allclose(decode(plotly[key], '<i4'), triangles[:, i])
 
 
 def check_html(html, check_selects=True, plot_div_id='surface-plot',
                title=None):
+    """Performs several checks on raw HTML code."""
     fd, tmpfile = tempfile.mkstemp()
     try:
         os.close(fd)
@@ -290,35 +235,23 @@ def _check_open_in_browser(html):
             pass
 
 
-def test_to_color_strings():
-    colors = [[0, 0, 1], [1, 0, 0], [.5, .5, .5]]
-    as_str = js_plotting_utils.to_color_strings(colors)
-    assert as_str == ['#0000ff', '#ff0000', '#7f7f7f']
-
-    colors = [[0, 0, 1, 1], [1, 0, 0, 1], [.5, .5, .5, 0]]
-    as_str = js_plotting_utils.to_color_strings(colors)
-    assert as_str == ['#0000ff', '#ff0000', '#7f7f7f']
-
-    colors = ['#0000ff', '#ff0000', '#7f7f7f']
-    as_str = js_plotting_utils.to_color_strings(colors)
-    assert as_str == ['#0000ff', '#ff0000', '#7f7f7f']
-
-    colors = [[0, 0, 1, 1], [1, 0, 0, 1], [.5, .5, .5, 0]]
-    as_str = js_plotting_utils.to_color_strings(colors)
-    assert as_str == ['#0000ff', '#ff0000', '#7f7f7f']
-
-    colors = ['r', 'green', 'black', 'white']
-    as_str = js_plotting_utils.to_color_strings(colors)
-    assert as_str == ['#ff0000', '#008000', '#000000', '#ffffff']
-
-    if matplotlib.__version__ < '2':
-        return
-
-    colors = ['#0000ffff', '#ff0000ab', '#7f7f7f00']
-    as_str = js_plotting_utils.to_color_strings(colors)
-    assert as_str == ['#0000ff', '#ff0000', '#7f7f7f']
+@pytest.mark.parametrize("colors",
+                         [[[0, 0, 1], [1, 0, 0], [.5, .5, .5]],
+                          [[0, 0, 1, 1], [1, 0, 0, 1], [.5, .5, .5, 0]],
+                          ['#0000ff', '#ff0000', '#7f7f7f'],
+                          [[0, 0, 1, 1], [1, 0, 0, 1], [.5, .5, .5, 0]],
+                          ['r', 'green', 'black', 'white'],
+                          ['#0000ffff', '#ff0000ab', '#7f7f7f00']])
+def test_to_color_strings(colors):
+    """Tests for function to_color_strings with different color inputs."""
+    if len(colors) == 3:
+        expected = ['#0000ff', '#ff0000', '#7f7f7f']
+    else:
+        expected = ['#ff0000', '#008000', '#000000', '#ffffff']
+    assert to_color_strings(colors) == expected
 
 
 def test_import_html_document_from_js_plotting():
+    """Smoke test importing HTMLDocument from js_plotting_utils."""
     from nilearn.plotting.js_plotting_utils import (
         HTMLDocument, set_max_img_views_before_warning)  #noqa

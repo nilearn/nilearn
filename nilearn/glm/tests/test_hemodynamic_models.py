@@ -205,22 +205,22 @@ def test_names():
                                                       f'{name}_dispersion']
 
     assert _regressor_names(name, None) == [name]
-    assert _regressor_names(name, [None, None]) == [f"{name} 0", f"{name} 1"]
+    assert _regressor_names(name, [None, None]) == [f"{name}_0", f"{name}_1"]
     assert _regressor_names(name, "typo") == [name]
     assert _regressor_names(name, ["typo", "typo"]) == \
-        [f"{name} 0", f"{name} 1"]
+        [f"{name}_0", f"{name}_1"]
 
     def custom_rf(tr, ov):
         return np.ones(int(tr * ov))
 
     assert _regressor_names(name, custom_rf) == \
-        [f"{name} {custom_rf.__name__}"]
+        [f"{name}_{custom_rf.__name__}"]
     assert _regressor_names(name, [custom_rf]) == \
-        [f"{name} {custom_rf.__name__}"]
+        [f"{name}_{custom_rf.__name__}"]
     assert _regressor_names(name, lambda tr, ov: np.ones(int(tr * ov))) == \
-        [f"{name} <lambda>"]
+        [f"{name}_lambda"]
     assert _regressor_names(name, [lambda tr, ov: np.ones(int(tr * ov))]) == \
-        [f"{name} <lambda>"]
+        [f"{name}_lambda"]
 
     with pytest.raises(ValueError,
                        match="Computed regressor names are not unique"):
