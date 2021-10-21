@@ -4,6 +4,9 @@
 NEW
 ---
 
+- **Support for Python 3.6 is deprecated and will be removed in release 0.10.**
+  Users with a Python 3.6 environment will be warned at their first Nilearn
+  import and encouraged to update to more recent versions of Python.
 - New function :func:`nilearn.input_data.fmriprep_confounds` to load confound variables easily
   from :term:`fMRIPrep` outputs.
 - Surface plotting functions like :func:`nilearn.plotting.plot_surf_stat_map`
