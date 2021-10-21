@@ -6,6 +6,7 @@ This module closely follows SPM implementation
 Author: Bertrand Thirion, 2011--2018
 """
 
+import re
 import warnings
 
 import numpy as np
@@ -411,18 +412,28 @@ def _regressor_names(con_name, hrf_model, fir_delays=None):
         names = [con_name + "_delay_%d" % i for i in fir_delays]
     # Handle callables
     elif callable(hrf_model):
-        names = [f"{con_name} {hrf_model.__name__}"]
+        names = [f"{con_name}_{hrf_model.__name__}"]
     elif (isinstance(hrf_model, Iterable)
           and all([callable(_) for _ in hrf_model])):
-        names = [f"{con_name} {model.__name__}" for model in hrf_model]
+        names = [f"{con_name}_{model.__name__}" for model in hrf_model]
     # Handle some default cases
     else:
         if isinstance(hrf_model, Iterable) and not isinstance(hrf_model, str):
-            names = [f"{con_name} {i}" for i in range(len(hrf_model))]
+            names = [f"{con_name}_{i}" for i in range(len(hrf_model))]
 
     # Check that all names within the list are different
     if len(np.unique(names)) != len(names):
         raise ValueError(f"Computed regressor names are not unique: {names}")
+
+    # Replace spaces with underscores
+    names = [re.sub(" +", "_", str(name)) for name in names]
+    # Remove any non-word character
+    names = [re.sub("[^a-zA-Z0-9_]+", "", str(name)) for name in names]
+
+    # Check that all names look like proper pandas.DataFrame column names
+    if not all([name.isidentifier() for name in names]):
+        raise ValueError("At least one regressor name can't be used "
+                         f"as a column identifier: {names}")
 
     return names
 
