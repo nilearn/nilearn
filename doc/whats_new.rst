@@ -68,7 +68,7 @@ Changes
   In particular, this will also impact
   :func:`nilearn.glm.first_level.make_first_level_design_matrix` and
   :class:`nilearn.glm.first_level.FirstLevelModel`, for which proper condition names
-  will also be needed (see PR `#3025 https://github.com/nilearn/nilearn/pull/3025`_).
+  will also be needed (see PR `#3025 <https://github.com/nilearn/nilearn/pull/3025>`_).
 
 .. _v0.8.1:
 
