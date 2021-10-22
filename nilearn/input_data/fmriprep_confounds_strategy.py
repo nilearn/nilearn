@@ -79,38 +79,44 @@ def fmriprep_confounds_strategy(img_files, denoise_strategy="simple",
 
     denoise_strategy : {'simple', 'srubbing', 'compcor', 'ica_aroma'}
         Name of preset denoising strategies. Each strategy has a set of
-        associated configurable parameters. For the documentation on
-        additional parameters, please refer to
-        :func:`nilearn.input_data.fmriprep_confounds`.
+        associated configurable parameters. For customiseable parameters,
+        please see the table in Notes.
 
         - 'simple': Load confounds for a simple denoising strategy commonly
           used in resting state functional connectivity, described in
-          :footcite:`Fox2005`. Default as: full motion parameters,
-          basic WM/CSF signals, and  high pass filter, with an option to
-          extract global signal confounds.
-          Additional parameters: motion, wm_csf, global_signal, demean
+          :footcite:`Fox2005`. With the global signal regression, this approach
+          can remove confounds without compromising the temporal degrees of
+          freedom.
         - 'srubbing': Load confounds for scrubbing describbed in
-          :footcite:`Power2012`. Default as: full motion parameters,
-          full WM/CSF signals, remove segment smaller than 5 continuous
-          volumes (see docstring of
-          :func:`nilearn.input_data.fmriprep_confounds`),
-          high pass filter, with an option to extract global signal confounds.
-          Additional parameters: motion, wm_csf, scrub, fd_thresh,
-          std_dvars_thresh, global_signal, demean
+          :footcite:`Power2012`. This approach can reliably remove the
+          impact of high motion volumes in functional connectome, however, it
+          might not be suitable with subjects with high motion (more than 50%
+          timeseries flagged as high motion). One should adjust the threshold
+          based on the characteristics of the dataset, or remove high motion
+          subjects from the dataset.
         - 'compcor': Load confounds using the CompCor strategy from
-          :footcite:`BEHZADI200790`. Default with full motion parameters,
-          high pass filter, and anatomical compcor with combined mask.
-          Additional parameters: motion, n_compcor, compcor, demean
+          :footcite:`BEHZADI200790`. CompCor estimates noise through principal
+          component analysis on regions that are unlikely to contain signal.
+          Thus it might not be a suitable approach for researchers who want
+          explicit description of the source of noise. Empirically, Compcor
+          has shown similar effect of removing physiological noise as methods
+          that explicitly model and remove physiology signals.Compcor can
+          suffer from loss of temporal degrees of freedom when using explained
+          variance as the noise component estimation as the number of compcor
+          component can be really high. Please refer to :term:`fMRIPrep`
+          documentation for more details.
         - 'ica_aroma': Load confounds for non-aggresive ICA-AROMA strategy
           described in :footcite:`Pruim2015`. The strategy requires
           :term:`fMRIPrep` outputs generated with `--use-aroma` suffixed with
-          `desc-smoothAROMAnonaggr_bold`. See notes for more details about
-          this option.
-          Additional parameters: wm_csf, global_signal, demean
+          `desc-smoothAROMAnonaggr_bold`. ICA-AROMA increases the run time of
+          :term:`fMRIPrep`, however, the strategy performs well in various
+          benchmarks (:footcite:`Ciric2017`, :footcite:`Parker2018`).
+          See Notes for more details about this option.
 
     Other keyword arguments:
-        See additional parameters associated with denoise_strategy and refer
-        to the documentation of :func:`nilearn.input_data.fmriprep_confounds`
+        See additional parameters associated with `denoise_strategy` in
+        Notes and refer to the documentation of
+        :func:`nilearn.input_data.fmriprep_confounds`.
 
     Returns
     -------
@@ -135,28 +141,45 @@ def fmriprep_confounds_strategy(img_files, denoise_strategy="simple",
 
     Notes
     -----
-    ICA-AROMA is implemented in two steps in :footcite:`Pruim2015`:
+    1. The following table details the default options of each preset
+       strategies. Parameters with `*` denote customisable parameters. Please see
+       :func:`nilearn.input_data.fmriprep_confounds`.
 
-    1. A non-aggressive denoising immediately after :term:`ICA` classification.
-      A linear regression estimates signals with all independent
-      components as predictors. A partial regression is then applied to
-      remove variance associated with noise independent components.
-      :term:`fMRIPrep` performs this step and generates files in
-      `MNI152NLin6Asym` template, suffixed with
-      `desc-smoothAROMAnonaggr_bold`.
+        +-----------+-----------+--------+--------+---------------+-------+-----------+------------------+----------------+-----------+-----------+--------+ # noqa
+        | strategy  | high_pass | motion | wm_csf | global_signal | scrub | fd_thresh | std_dvars_thresh | compcor        | n_compcor | ica_aroma | demean | # noqa
+        +===========+===========+========+========+===============+=======+===========+==================+================+===========+===========+========+ # noqa
+        | simple    | True      | full*  | basic* | None*         | N/A   | N/A       | N/A              | N/A            | N/A       | N/A       | True*  | # noqa
+        +-----------+-----------+--------+--------+---------------+-------+-----------+------------------+----------------+-----------+-----------+--------+ # noqa
+        | scrubbing | True      | full*  | full   | None*         | 5*    | 0.2*      | 3*               | N/A            | N/A       | N/A       | True*  | # noqa
+        +-----------+-----------+--------+--------+---------------+-------+-----------+------------------+----------------+-----------+-----------+--------+ # noqa
+        | compcor   | True      | full*  | N/A    | N/A           | N/A   | N/A       | N/A              | anat_combined* | all*      | N/A       | True*  | # noqa
+        +-----------+-----------+--------+--------+---------------+-------+-----------+------------------+----------------+-----------+-----------+--------+ # noqa
+        | ica_aroma | True      | N/A    | basic* | None*         | N/A   | N/A       | N/A              | N/A            | N/A       | full      | True*  | # noqa
+        +-----------+-----------+--------+--------+---------------+-------+-----------+------------------+----------------+-----------+-----------+--------+ # noqa
 
-      One can produce `desc-smoothAROMAnonaggr_bold` in other spatial
-      templates, please refer to :term:`fMRIPrep` documentation on ICA-AROMA
-      `<https://fmriprep.org/en/latest/workflows.html#ica-aroma>`_
+    2. ICA-AROMA is implemented in two steps in :footcite:`Pruim2015`:
 
-    2. Confound regression step (mean signals from WM and CSF).
-      Confound regressors generated by this function with
-      `denoise_strategy="ica_aroma"`.
+        i. A non-aggressive denoising immediately after :term:`ICA`
+        classification.
+        A linear regression estimates signals with all independent
+        components as predictors. A partial regression is then applied to
+        remove variance associated with noise independent components.
+        :term:`fMRIPrep` performs this step and generates files in
+        `MNI152NLin6Asym` template, suffixed with
+        `desc-smoothAROMAnonaggr_bold`.
 
-    For more discussion regarding choosing the nuisance regressors before or
-    after denoising with ICA-AROMA has a detriment on outcome measures,
-    please see notebook 5.
-    `<https://github.com/nipreps/fmriprep-notebooks/>`_
+        One can produce `desc-smoothAROMAnonaggr_bold` in other spatial
+        templates, please refer to :term:`fMRIPrep` documentation on ICA-AROMA
+        `<https://fmriprep.org/en/latest/workflows.html#ica-aroma>`_
+
+        ii. Confound regression step (mean signals from WM and CSF).
+        Confound regressors generated by this function with
+        `denoise_strategy="ica_aroma"`.
+
+        For more discussion regarding choosing the nuisance regressors before
+        or after denoising with ICA-AROMA has a detriment on outcome measures,
+        please see notebook 5.
+        `<https://github.com/nipreps/fmriprep-notebooks/>`_
 
     See Also
     --------

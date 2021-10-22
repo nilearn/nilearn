@@ -202,48 +202,8 @@ plotting.plot_matrix(correlation_matrix, figure=(10, 8), labels=labels[1:],
 # :func:`nilearn.input_data.fmriprep_confounds`, one can use a predefined
 # strategy with :func:`nilearn.input_data.fmriprep_confounds_strategy`. Based
 # on the confound variables generated through :term:`fMRIPrep`, and past
-# benchmarks studies (:footcite:`Ciric2017`, :footcite:`Parker2018`), the
-# following table details the default options of each preset strategies:
-#
-# +-----------+-----------+--------+--------+---------------+-------+-----------+------------------+---------------+-----------+-----------+--------+ # noqa
-# | strategy  | high_pass | motion | wm_csf | global_signal | scrub | fd_thresh | std_dvars_thresh | compcor       | n_compcor | ica_aroma | demean | # noqa
-# +===========+===========+========+========+===============+=======+===========+==================+===============+===========+===========+========+ # noqa
-# | simple    | True      | full   | basic  | optional      | N/A   | N/A       | N/A              | N/A           | N/A       | N/A       | True   | # noqa
-# +-----------+-----------+--------+--------+---------------+-------+-----------+------------------+---------------+-----------+-----------+--------+ # noqa
-# | scrubbing | True      | full   | full   | optional      | 5     | 0.2       | 3                | N/A           | N/A       | N/A       | True   | # noqa
-# +-----------+-----------+--------+--------+---------------+-------+-----------+------------------+---------------+-----------+-----------+--------+ # noqa
-# | compcor   | True      | full   | N/A    | N/A           | N/A   | N/A       | N/A              | anat_combined | all       | N/A       | True   | # noqa
-# +-----------+-----------+--------+--------+---------------+-------+-----------+------------------+---------------+-----------+-----------+--------+ # noqa
-# | ica_aroma | True      | N/A    | basic  | optional      | N/A   | N/A       | N/A              | N/A           | N/A       | full      | True   | # noqa
-# +-----------+-----------+--------+--------+---------------+-------+-----------+------------------+---------------+-----------+-----------+--------+ # noqa
-#
-#   - `simple`: This approach is commonly used in resting state functional
-#     connectivity, described in :footcite:`Fox2005`. With the global signal
-#     regression, this approach can remove confounds without compromising the
-#     temporal degrees of freedom.
-#   - `scrubbing` : This approach can reliably remove the
-#     impact of high motion volumes in functional connectome, however, it
-#     might not be suitable with subjects with high motion (more than 50%
-#     timeseries flagged as high motion). One should adjust the threshold
-#     based on the characteristics of the dataset, or remove high motion
-#     subjects from the dataset.
-#   - `compcor` : Compcor can suffer from loss of temporal degrees of freedom
-#     when using explained variance as the noise component estimation. CompCor
-#     has the advantage of removing physiological noise without requiring
-#     external monitoring of physiological fluctuations
-#     (:footcite:`BEHZADI200790`). However the conclusion was drawn from
-#     comparing with an approach that explicitly removes physiological signal,
-#     rather than explicitly modelling. Thus compcor might not be a suitable
-#     approach for researchers who want explicit description of the source of
-#     confounds.
-#   - `ica_aroma`: applicable to :term:`fMRIPrep` outputs generated with
-#     `--use-aroma`, suffixed with `desc-smoothAROMAnonaggr_bold` only.
-#     The :term:`fMRIPrep` generated `desc-smoothAROMAnonaggr_bold` image
-#     requires confounds removal to complete the procedure described in the
-#     original approach in :footcite:`Pruim2015`. ICA-AROMA increases the run
-#     time of :term:`fMRIPrep`, however, the strategy performs well in various
-#     benchmarks (:footcite:`Ciric2017`, :footcite:`Parker2018`).
-#
+# benchmarks studies (:footcite:`Ciric2017`, :footcite:`Parker2018`): `simple`,
+# `scrubbing`, `compcor`, `ica_aroma`.
 # The following examples shows how to use the `simple` strategy and overwrite
 # the motion default to basic.
 
