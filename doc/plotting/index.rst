@@ -463,17 +463,34 @@ interactive mode is available:
 3D Plots of statistical maps or atlases on the cortical surface
 ---------------------------------------------------------------
 
-For 3D surface plots of statistical maps or surface atlases, you can use either:
+For 3D surface plots of statistical maps or surface atlases, you have different options
+depending on what you want to do and the packages you have installed.
 
-    - :func:`view_img_on_surf`: takes as input a volume statistical map and projects it
-      on the cortical surface before making a 3D plot.
-    - :func:`view_surf`: takes as input a surface map and a cortical mesh and produces
-      a 3D plot on the cortical surface.
-    - :func:`plot_surf`, :func:`plot_surf_stat_map`, or :func:`plot_surf_roi`: By default
+    - If you have `plotly`_ installed: Since Nilearn ``0.8.2``, it is possible to use
+      `plotly`_ as the plotting engine in most surface plotting functions of Nilearn like
+      :func:`plot_surf`, :func:`plot_surf_stat_map`, or :func:`plot_surf_roi`. By default
       these functions use `matplotlib`_ as the plotting engine which results in
-      non-interactive plots. Since Nilearn 0.8.2, it is possible to use `plotly`_ as
-      the plotting engine to make interactive versions of these plots.
-      Note that this option requires to have `plotly`_ installed.
+      non-interactive plots. By setting ``engine='plotly'``, an interactive version of
+      these plots will be automatically opened in your web browser. In addition, if you
+      have `kaleido`_ installed, you can save the plots automatically to png files.
+      Finally, the `plotly`_ figure returned can be further customized in order to make
+      more elaborate plots.
+
+    - If you don't have `plotly`_:
+
+        - If you don't need to save the plots to png and want to interactively visualize
+          the surface, you can rely on `view` functions:
+
+            - :func:`view_img_on_surf` which takes as input a volume statistical map and
+              projects it on the cortical surface before making a 3D interactive plot.
+
+            - :func:`view_surf` which takes as input a surface map and a cortical mesh
+              and produces a 3D interactive plot on the cortical surface.
+
+        - The last option is to rely on surface plotting functions (:func:`plot_surf`,
+          :func:`plot_surf_stat_map`, :func:`plot_surf_roi`...) with the default
+          `matplotlib`_ plotting engine. In this case, you will be able to save to png
+          but you will lose the interactivity of the plots.
 
 :func:`view_img_on_surf`: Surface plot using a 3D statistical map
 .................................................................
@@ -601,6 +618,8 @@ Finally, you can also save the viewer as a stand-alone html file::
 
     >>> html_view.save_as_html('viewer.html') # doctest: +SKIP
 
+.. _`kaleido`:
+    https://pypi.org/project/kaleido/
 
 .. _`matplotlib`:
     https://matplotlib.org/
