@@ -74,7 +74,7 @@ np.fill_diagonal(correlation_matrix, 0)
 # first label
 # matrices are ordered for block-like representation
 plotting.plot_matrix(correlation_matrix, figure=(10, 8), labels=labels[1:],
-                     vmax=0.8, vmin=-0.8, title="Preset",
+                     vmax=0.8, vmin=-0.8, title="Confounds",
                      reorder=True)
 
 ##############################################################################
