@@ -577,9 +577,9 @@ class SecondLevelModel(BaseGLM):
             raise ValueError('The model has not been fit yet')
 
         if result_as_time_series:
-            voxelwise_attribute = np.zeros((self.design_matrix_.shape[0],
-                                            len(self.labels_))
-                                            )
+            voxelwise_attribute = np.zeros(
+                (self.design_matrix_.shape[0], len(self.labels_))
+            )
         else:
             voxelwise_attribute = np.zeros((1, len(self.labels_)))
 

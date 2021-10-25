@@ -14,6 +14,7 @@ from nibabel import (load,
 from nibabel.tmpdirs import InTemporaryDirectory
 from numpy.testing import (assert_almost_equal,
                            assert_array_equal,
+                           assert_array_almost_equal,
                            )
 
 from nilearn._utils.data_gen import (write_fake_fmri_data_and_design,
@@ -446,6 +447,49 @@ def test_second_level_glm_computation():
         # Delete objects attached to files to avoid WindowsError when deleting
         # temporary directory (in Windows)
         del func_img, FUNCFILE, model, X, Y
+
+
+def test_second_level_residuals_errors():
+    """Tests that an error is raised when trying to access
+    residuals attribute before fitting the model, before
+    computing a contrast, and when not setting
+    ``minimize_memory`` to ``True``.
+    """
+    msg = "To access voxelwise attributes"
+    with InTemporaryDirectory():
+        shapes = ((7, 8, 9, 1),)
+        mask, FUNCFILE, _ = write_fake_fmri_data_and_design(shapes)
+        model = SecondLevelModel(mask_img=mask)
+        with pytest.raises(ValueError, match=msg):
+            model.residuals
+        func_img = load(FUNCFILE[0])
+        Y = [func_img] * 4
+        X = pd.DataFrame([[1]] * 4, columns=['intercept'])
+        model.fit(Y, design_matrix=X)
+        with pytest.raises(ValueError, match=msg):
+            model.residuals
+        model.compute_contrast()
+        with pytest.raises(ValueError, match=msg):
+            model.residuals
+        with pytest.raises(ValueError, match="attribute must be one of"):
+            model._get_voxelwise_model_attribute("foo", True)
+
+
+def test_second_level_residuals():
+    """Tests residuals computation for SecondLevelModel."""
+    with InTemporaryDirectory():
+        shapes = ((7, 8, 9, 1),)
+        mask, FUNCFILE, _ = write_fake_fmri_data_and_design(shapes)
+        model = SecondLevelModel(mask_img=mask, minimize_memory=False)
+        func_img = load(FUNCFILE[0])
+        Y = [func_img] * 4
+        X = pd.DataFrame([[1]] * 4, columns=['intercept'])
+        model.fit(Y, design_matrix=X)
+        model.compute_contrast()
+        assert isinstance(model.residuals, Nifti1Image)
+        assert model.residuals.shape == (7, 8, 9, 4)
+        mean_residuals = model.masker_.transform(model.residuals).mean(0)
+        assert_array_almost_equal(mean_residuals, 0)
 
 
 def test_non_parametric_inference_permutation_computation():
