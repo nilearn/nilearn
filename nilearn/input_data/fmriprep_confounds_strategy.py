@@ -142,20 +142,25 @@ def fmriprep_confounds_strategy(img_files, denoise_strategy="simple",
     Notes
     -----
     1. The following table details the default options of each preset
-       strategies. Parameters with `*` denote customisable parameters. Please see
-       :func:`nilearn.input_data.fmriprep_confounds`.
+       strategies. Parameters with `*` denote customisable parameters. Please
+       see :func:`nilearn.input_data.fmriprep_confounds`.
 
-        +-----------+-----------+--------+--------+---------------+-------+-----------+------------------+----------------+-----------+-----------+--------+ # noqa
-        | strategy  | high_pass | motion | wm_csf | global_signal | scrub | fd_thresh | std_dvars_thresh | compcor        | n_compcor | ica_aroma | demean | # noqa
-        +===========+===========+========+========+===============+=======+===========+==================+================+===========+===========+========+ # noqa
-        | simple    | True      | full*  | basic* | None*         | N/A   | N/A       | N/A              | N/A            | N/A       | N/A       | True*  | # noqa
-        +-----------+-----------+--------+--------+---------------+-------+-----------+------------------+----------------+-----------+-----------+--------+ # noqa
-        | scrubbing | True      | full*  | full   | None*         | 5*    | 0.2*      | 3*               | N/A            | N/A       | N/A       | True*  | # noqa
-        +-----------+-----------+--------+--------+---------------+-------+-----------+------------------+----------------+-----------+-----------+--------+ # noqa
-        | compcor   | True      | full*  | N/A    | N/A           | N/A   | N/A       | N/A              | anat_combined* | all*      | N/A       | True*  | # noqa
-        +-----------+-----------+--------+--------+---------------+-------+-----------+------------------+----------------+-----------+-----------+--------+ # noqa
-        | ica_aroma | True      | N/A    | basic* | None*         | N/A   | N/A       | N/A              | N/A            | N/A       | full      | True*  | # noqa
-        +-----------+-----------+--------+--------+---------------+-------+-----------+------------------+----------------+-----------+-----------+--------+ # noqa
+        ========= ========= ====== ====== ============= ===== ========= \
+        ================ ============== ========= ========= ======
+        strategy  high_pass motion wm_csf global_signal scrub fd_thresh \
+        std_dvars_thresh compcor        n_compcor ica_aroma demean
+        ========= ========= ====== ====== ============= ===== ========= \
+        ================ ============== ========= ========= ======
+        simple    True      full*  basic* None*         N/A   N/A       \
+        N/A              N/A            N/A       N/A       True*
+        scrubbing True      full*  full   None*         5*    0.2*      \
+        3*               N/A            N/A       N/A       True*
+        compcor   True      full*  N/A    N/A           N/A   N/A       \
+        N/A              anat_combined* all*      N/A       True*
+        ica_aroma True      N/A    basic* None*         N/A   N/A       \
+        N/A              N/A            N/A       full      True*
+        ========= ========= ====== ====== ============= ===== ========= \
+        ================ ============== ========= ========= ======
 
     2. ICA-AROMA is implemented in two steps in :footcite:`Pruim2015`:
 
