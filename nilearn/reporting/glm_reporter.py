@@ -225,7 +225,7 @@ def make_glm_report(model,
             # check that mask_img is a niiimg-like object
             check_niimg(model.mask_img)
             mask_img = model.mask_img
-        except:
+        except Exception:
             mask_img = model.masker_.mask_img_
 
     mask_plot_html_code = _mask_to_svg(mask_img=mask_img,
