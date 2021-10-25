@@ -40,6 +40,8 @@ with warnings.catch_warnings():
 
 from nilearn.reporting._get_clusters_table import get_clusters_table
 from nilearn.reporting.utils import figure_to_svg_quoted
+from nilearn.input_data import NiftiMasker
+from nilearn._utils import check_niimg
 
 
 HTML_TEMPLATE_ROOT_PATH = os.path.join(os.path.dirname(__file__),
@@ -214,7 +216,18 @@ def make_glm_report(model,
                                                    )
     statistical_maps = _make_stat_maps(model, contrasts)
     html_design_matrices = _dmtx_to_svg_url(design_matrices)
-    mask_img = model.mask_img or model.masker_.mask_img_
+
+    # Select mask_img to use for plotting
+    if isinstance(model.mask_img, NiftiMasker):
+        mask_img = model.masker_.mask_img_
+    else:
+        try:
+            # check that mask_img is a niiimg-like object
+            check_niimg(model.mask_img)
+            mask_img = model.mask_img
+        except:
+            mask_img = model.masker_.mask_img_
+
     mask_plot_html_code = _mask_to_svg(mask_img=mask_img,
                                        bg_img=bg_img,
                                        )
