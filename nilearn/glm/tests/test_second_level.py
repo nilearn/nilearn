@@ -455,24 +455,26 @@ def test_second_level_residuals_errors():
     computing a contrast, and when not setting
     ``minimize_memory`` to ``True``.
     """
-    msg = "To access voxelwise attributes"
     with InTemporaryDirectory():
         shapes = ((7, 8, 9, 1),)
         mask, FUNCFILE, _ = write_fake_fmri_data_and_design(shapes)
-        model = SecondLevelModel(mask_img=mask)
-        with pytest.raises(ValueError, match=msg):
+        model = SecondLevelModel(mask_img=mask, minimize_memory=False)
+        with pytest.raises(ValueError, match="The model has no results."):
             model.residuals
         func_img = load(FUNCFILE[0])
         Y = [func_img] * 4
         X = pd.DataFrame([[1]] * 4, columns=['intercept'])
         model.fit(Y, design_matrix=X)
-        with pytest.raises(ValueError, match=msg):
-            model.residuals
-        model.compute_contrast()
-        with pytest.raises(ValueError, match=msg):
+        with pytest.raises(ValueError, match="The model has no results."):
             model.residuals
         with pytest.raises(ValueError, match="attribute must be one of"):
             model._get_voxelwise_model_attribute("foo", True)
+        model = SecondLevelModel(mask_img=mask, minimize_memory=True)
+        model.fit(Y, design_matrix=X)
+        model.compute_contrast()
+        with pytest.raises(ValueError,
+                           match="To access voxelwise attributes"):
+            model.residuals
 
 
 def test_second_level_residuals():

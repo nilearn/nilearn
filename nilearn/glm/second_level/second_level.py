@@ -293,6 +293,8 @@ class SecondLevelModel(BaseGLM):
         self.minimize_memory = minimize_memory
         self.second_level_input_ = None
         self.confounds_ = None
+        self.labels_ = None
+        self.results_ = None
 
     def fit(self, second_level_input, confounds=None, design_matrix=None):
         """ Fit the second-level GLM
@@ -574,7 +576,10 @@ class SecondLevelModel(BaseGLM):
                 'when initializing the `SecondLevelModel`-object.')
 
         if self.labels_ is None or self.results_ is None:
-            raise ValueError('The model has not been fit yet')
+            raise ValueError("The model has no results. This could be "
+                             "because the model has not been fitted yet "
+                             "or because no contrast has been computed "
+                             "already.")
 
         if result_as_time_series:
             voxelwise_attribute = np.zeros(
@@ -585,9 +590,9 @@ class SecondLevelModel(BaseGLM):
 
         for label_ in self.results_:
             label_mask = self.labels_ == label_
-            voxelwise_attribute[:, label_mask] = getattr(self.results_[label_],
-                                                        attribute)
-
+            voxelwise_attribute[:, label_mask] = getattr(
+                self.results_[label_], attribute
+            )
         return self.masker_.inverse_transform(voxelwise_attribute)
 
 
