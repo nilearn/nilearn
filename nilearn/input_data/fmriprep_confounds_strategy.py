@@ -100,7 +100,7 @@ def fmriprep_confounds_strategy(img_files, denoise_strategy="simple",
           Thus it might not be a suitable approach for researchers who want
           explicit description of the source of noise. Empirically, Compcor
           has shown similar effect of removing physiological noise as methods
-          that explicitly model and remove physiology signals.Compcor can
+          that explicitly model and remove physiology signals. Compcor can
           suffer from loss of temporal degrees of freedom when using explained
           variance as the noise component estimation as the number of compcor
           component can be really high. Please refer to :term:`fMRIPrep`
