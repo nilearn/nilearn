@@ -495,7 +495,7 @@ class ReNA(BaseEstimator, ClusterMixin, TransformerMixin):
                              % type(self.mask_img))
 
         if self.memory is None or isinstance(self.memory, str):
-            self.memory_ = Memory(cachedir=self.memory,
+            self.memory_ = Memory(location=self.memory,
                                   verbose=max(0, self.verbose - 1))
         else:
             self.memory_ = self.memory
