@@ -26,7 +26,7 @@ from nilearn.glm.contrasts import (compute_contrast,
 from nilearn.glm.first_level import FirstLevelModel, run_glm
 from nilearn.glm.first_level.design_matrix import \
     make_second_level_design_matrix
-from nilearn.glm.regression import SimpleRegressionResults
+from nilearn.glm.regression import RegressionResults, SimpleRegressionResults
 from nilearn.image import mean_img
 from nilearn.mass_univariate import permuted_ols
 from nilearn.glm._base import BaseGLM
@@ -527,6 +527,68 @@ class SecondLevelModel(BaseGLM):
             outputs[output_type_] = output
 
         return outputs if output_type == 'all' else output
+
+    def _get_voxelwise_model_attribute(self, attribute,
+                                       result_as_time_series):
+        """Transform RegressionResults instances within a dictionary
+        (whose keys represent the autoregressive coefficient under the 'ar1'
+        noise model or only 0.0 under 'ols' noise_model and values are the
+        RegressionResults instances) into input nifti space.
+
+        Parameters
+        ----------
+        attribute : str
+            an attribute of a RegressionResults instance.
+            possible values include: resid, norm_resid, predicted,
+            SSE, r_square, MSE.
+
+        result_as_time_series : bool
+            whether the RegressionResult attribute has a value
+            per timepoint of the input nifti image.
+
+        Returns
+        -------
+        output : list
+            A list of Nifti1Image(s).
+
+        """
+        # check if valid attribute is being accessed.
+        all_attributes = dict(vars(RegressionResults)).keys()
+        possible_attributes = [prop
+                               for prop in all_attributes
+                               if '__' not in prop
+                               ]
+        if attribute not in possible_attributes:
+            msg = ("attribute must be one of: "
+                   "{attr}".format(attr=possible_attributes)
+                   )
+            raise ValueError(msg)
+
+        if self.minimize_memory:
+            raise ValueError(
+                'To access voxelwise attributes like '
+                'R-squared, residuals, and predictions, '
+                'the `SecondLevelModel`-object needs to store '
+                'there attributes. '
+                'To do so, set `minimize_memory` to `False` '
+                'when initializing the `SecondLevelModel`-object.')
+
+        if self.labels_ is None or self.results_ is None:
+            raise ValueError('The model has not been fit yet')
+
+        if result_as_time_series:
+            voxelwise_attribute = np.zeros((self.design_matrix_.shape[0],
+                                            len(self.labels_))
+                                            )
+        else:
+            voxelwise_attribute = np.zeros((1, len(self.labels_)))
+
+        for label_ in self.results_:
+            label_mask = self.labels_ == label_
+            voxelwise_attribute[:, label_mask] = getattr(self.results_[label_],
+                                                        attribute)
+
+        return self.masker_.inverse_transform(voxelwise_attribute)
 
 
 @fill_doc
