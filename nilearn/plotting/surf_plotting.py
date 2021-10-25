@@ -103,7 +103,6 @@ LAYOUT = {
 }
 
 
-
 class SurfaceFigure:
     """Implementation of a unifying interface for surface figures.
 
@@ -155,10 +154,10 @@ class PlotlySurfaceFigure(SurfaceFigure):
 
     @classmethod
     def init_with_figure(cls, figure, output_file=None):
-        """Instanciate with a Plotly figure."""
+        """Instantiate with a Plotly figure."""
         import plotly.graph_objects as go
         if isinstance(figure, go.Figure):
-            return cls(output_file=output_file, figure = figure)
+            return cls(output_file=output_file, figure=figure)
         else:
             raise TypeError("`PlotlySurfaceFigure` accepts only "
                             "plotly figure objects.")
@@ -198,7 +197,7 @@ class MatplotlibSurfaceFigure(SurfaceFigure):
 
     @classmethod
     def init_with_figure(cls, figure, output_file=None):
-        """Instanciate with a Matplotlib figure."""
+        """Instantiate with a Matplotlib figure."""
         if isinstance(figure, plt.Figure):
             return cls(output_file=output_file, figure=figure)
         else:
