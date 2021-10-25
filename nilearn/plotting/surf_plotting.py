@@ -103,6 +103,130 @@ LAYOUT = {
 }
 
 
+
+class SurfaceFigure:
+    """Implementation of a unifying interface for surface figures.
+
+    Parameters
+    ----------
+    output_file : :obj:`str` or ``None``, optional
+        Path to output file.
+
+    figure : Matplotlib or Plotly figure instance or ``None``, optional
+        Figure.
+    """
+    def __init__(self, output_file=None, figure=None):
+        self.output_file = output_file
+        self.figure = figure
+
+    def show(self):
+        """Show the figure."""
+        raise NotImplementedError
+
+    def savefig(self, output_file=None):
+        """Saves the figure to file.
+
+        Parameters
+        ----------
+        output_file : :obj:`str` or ``None``, optional
+            Path to output file.
+        """
+        if output_file is None:
+            if self.output_file is None:
+                raise ValueError("You must provide an output file "
+                                 "name to save the figure.")
+        else:
+            self.output_file = output_file
+
+
+class PlotlySurfaceFigure(SurfaceFigure):
+    """Implementation of a surface figure obtained with `plotly` engine.
+
+    Parameters
+    ----------
+    output_file : :ob:`str` or ``None``, optional
+        Output file path.
+
+    figure : Plotly figure instance or ``None``, optional
+        Figure.
+    """
+    def __init__(self, output_file=None, figure=None):
+        super().__init__(output_file=output_file, figure=figure)
+
+    @classmethod
+    def init_with_figure(cls, figure, output_file=None):
+        """Instanciate with a Plotly figure."""
+        import plotly.graph_objects as go
+        if isinstance(figure, go.Figure):
+            return cls(output_file=output_file, figure = figure)
+        else:
+            raise TypeError("`PlotlySurfaceFigure` accepts only "
+                            "plotly figure objects.")
+
+    def show(self):
+        """Show the figure."""
+        if self.figure is not None:
+            self.figure.show()
+            return self.figure
+
+    def savefig(self, output_file=None):
+        """Saves the figure to file.
+
+        Parameters
+        ----------
+        output_file : :obj:`str` or ``None``, optional
+            Path to output file.
+        """
+        super().savefig(output_file=output_file)
+        if self.figure is not None:
+            self.figure.write_image(self.output_file)
+
+
+class MatplotlibSurfaceFigure(SurfaceFigure):
+    """Implementation of a surface figure obtained with `matplotlib` engine.
+
+    Parameters
+    ----------
+    output_file : :ob:`str` or ``None``, optional
+        Output file path.
+
+    figure : Matplotlib figure instance or ``None``, optional
+        Figure.
+    """
+    def __init__(self, output_file=None, figure=None):
+        super().__init__(output_file=output_file, figure=figure)
+
+    @classmethod
+    def init_with_figure(cls, figure, output_file=None):
+        """Instanciate with a Matplotlib figure."""
+        if isinstance(figure, plt.Figure):
+            return cls(output_file=output_file, figure=figure)
+        else:
+            raise TypeError("`MatplotlibSurfaceFigure` accepts only "
+                            "matplotlib figure objects.")
+
+    def show(self):
+        """Shows the figure."""
+        if self.figure is not None:
+            plt.show()
+            return self.figure
+
+    def savefig(self, output_file=None):
+        """Saves the figure to file.
+
+        Parameters
+        ----------
+        output_file : :obj:`str` or ``None``, optional
+            Path to output file.
+        """
+        super().savefig(output_file=output_file)
+        self.figure.savefig(self.output_file)
+
+    def close(self):
+        """Close the figure."""
+        plt.close(self.figure.number)
+
+
 def _set_view_plot_surf_plotly(hemi, view):
     """Helper function for plot_surf with plotly engine.
 
@@ -246,8 +370,12 @@ def _plot_surf_plotly(coords, faces, surf_map=None, bg_map=None,
             msg = ("Saving figures to file with engine='plotly' requires "
                    "that ``kaleido`` is installed.")
             raise ImportError(msg)  # noqa
-        fig.write_image(output_file)
-    return fig
+    plotly_figure = PlotlySurfaceFigure.init_with_figure(
+        fig, output_file=output_file
+    )
+    if output_file is not None:
+        plotly_figure.savefig()
+    return plotly_figure
 
 
 def _set_view_plot_surf_matplotlib(hemi, view):
@@ -516,13 +644,15 @@ def _plot_surf_matplotlib(coords, faces, surf_map=None, bg_map=None,
 
     if title is not None:
         figure.suptitle(title, x=.5, y=.95, fontsize=title_font_size)
-
+    matplotlib_figure = MatplotlibSurfaceFigure.init_with_figure(
+        figure, output_file=output_file
+    )
     # save figure if output file is given
     if output_file is not None:
-        figure.savefig(output_file)
-        plt.close(figure)
+        matplotlib_figure.savefig()
+        matplotlib_figure.close()
     else:
-        return figure
+        return matplotlib_figure
 
 
 @fill_doc
