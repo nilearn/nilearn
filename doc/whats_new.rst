@@ -72,6 +72,11 @@ Changes
   :func:`nilearn.glm.first_level.make_first_level_design_matrix` and
   :class:`nilearn.glm.first_level.FirstLevelModel`, for which proper condition names
   will also be needed (see PR `#3025 <https://github.com/nilearn/nilearn/pull/3025>`_).
+- Replace parameter `sessions` with `runs` in :func:`nilearn.image.clean_img` as this
+  replacement was already made for :func:`nilearn.signal.clean` in
+  `#2821 <https://github.com/nilearn/nilearn/pull/2821>`_ in order to match BIDS
+  semantics. The use of `sessions` in :func:`nilearn.image.clean_img` is deprecated and
+  will be removed in 0.10.0.
 
 .. _v0.8.1:
 
