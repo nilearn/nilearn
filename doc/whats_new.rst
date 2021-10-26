@@ -6,6 +6,9 @@ NEW
 
 - New function :func:`nilearn.input_data.fmriprep_confounds` to load confound variables easily 
   from :term:`fMRIPrep` outputs. 
+- New function :func:`nilearn.input_data.fmriprep_confounds_strategy` to load confound variables 
+  from :term:`fMRIPrep` outputs using four preset strategies: ``simple``, ``scrubbing``, 
+  ``compcor``, ``ica_aroma``.
 
 Fixes
 -----
