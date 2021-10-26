@@ -223,6 +223,55 @@ def _infer_effect_maps(second_level_input, contrast_def):
     return effect_maps
 
 
+def _process_second_level_input(second_level_input):
+    """Helper function to process second_level_input."""
+    if isinstance(second_level_input, pd.DataFrame):
+        return _process_second_level_input_as_dataframe(second_level_input)
+    elif(hasattr(second_level_input, "__iter__")
+    and isinstance(second_level_input[0], FirstLevelModel)):
+        return _process_second_level_input_as_firstlevelmodels(
+            second_level_input
+        )
+    else:
+        return mean_img(second_level_input), None
+
+
+def _process_second_level_input_as_dataframe(second_level_input):
+    """Helper function to process second_level_input provided
+    as a pandas DataFrame.
+    """
+    sample_map = second_level_input['effects_map_path'][0]
+    labels = second_level_input['subject_label']
+    subjects_label = labels.values.tolist()
+    return sample_map, subjects_label
+
+
+def _sort_input_dataframe(second_level_input):
+    """This function sorts the pandas dataframe by subject_label to
+    avoid inconsistencies with the design matrix row order when
+    automatically extracting maps.
+    """
+    columns = second_level_input.columns.tolist()
+    column_index = columns.index('subject_label')
+    sorted_matrix = sorted(
+        second_level_input.values, key=lambda x: x[column_index]
+    )
+    return pd.DataFrame(sorted_matrix, columns=columns)
+
+
+def _process_second_level_input_as_firstlevelmodels(second_level_input):
+    """Helper function to process second_level_input provided
+    as a list of FirstLevelModel objects.
+    """
+    sample_model = second_level_input[0]
+    sample_condition = sample_model.design_matrices_[0].columns[0]
+    sample_map = sample_model.compute_contrast(
+        sample_condition, output_type='effect_size'
+    )
+    labels = [model.subject_label for model in second_level_input]
+    return sample_map, labels
+
+
 @fill_doc
 class SecondLevelModel(BaseGLM):
     """ Implementation of the General Linear Model for multiple subject
@@ -350,42 +399,19 @@ class SecondLevelModel(BaseGLM):
         # check design matrix
         _check_design_matrix(design_matrix)
 
-        # sort a pandas dataframe by subject_label to avoid inconsistencies
-        # with the design matrix row order when automatically extracting maps
         if isinstance(second_level_input, pd.DataFrame):
-            columns = second_level_input.columns.tolist()
-            column_index = columns.index('subject_label')
-            sorted_matrix = sorted(
-                second_level_input.values, key=lambda x: x[column_index])
-            sorted_input = pd.DataFrame(sorted_matrix, columns=columns)
-            second_level_input = sorted_input
-
+            second_level_input = _sort_input_dataframe(second_level_input)
         self.second_level_input_ = second_level_input
         self.confounds_ = confounds
+        sample_map, subjects_label = _process_second_level_input(
+            second_level_input
+        )
 
         # Report progress
         t0 = time.time()
         if self.verbose > 0:
             sys.stderr.write("Fitting second level model. "
                              "Take a deep breath\r")
-
-        # Select sample map for masker fit and get subjects_label for design
-        if isinstance(second_level_input, pd.DataFrame):
-            sample_map = second_level_input['effects_map_path'][0]
-            labels = second_level_input['subject_label']
-            subjects_label = labels.values.tolist()
-        elif isinstance(second_level_input, Nifti1Image):
-            sample_map = mean_img(second_level_input)
-        elif isinstance(second_level_input[0], FirstLevelModel):
-            sample_model = second_level_input[0]
-            sample_condition = sample_model.design_matrices_[0].columns[0]
-            sample_map = sample_model.compute_contrast(
-                sample_condition, output_type='effect_size')
-            labels = [model.subject_label for model in second_level_input]
-            subjects_label = labels
-        else:
-            # In this case design matrix had to be provided
-            sample_map = mean_img(second_level_input)
 
         # Create and set design matrix, if not given
         if design_matrix is None:
