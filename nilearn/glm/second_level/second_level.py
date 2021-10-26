@@ -649,17 +649,19 @@ def non_parametric_inference(second_level_input, confounds=None,
 
     """
     _check_second_level_input(second_level_input, design_matrix,
-                              flm_object=False, df_object=False)
+                              flm_object=False, df_object=True)
     _check_confounds(confounds)
     _check_design_matrix(design_matrix)
 
+    if isinstance(second_level_input, pd.DataFrame):
+        second_level_input = _sort_input_dataframe(second_level_input)
+    sample_map, _ = _process_second_level_input(
+        second_level_input
+    )
     # Report progress
     t0 = time.time()
     if verbose > 0:
         sys.stderr.write("Fitting second level model...")
-
-    # Select sample map for masker fit and get subjects_label for design
-    sample_map = mean_img(second_level_input)
 
     # Learn the mask. Assume the first level imgs have been masked.
     if not isinstance(mask, NiftiMasker):
