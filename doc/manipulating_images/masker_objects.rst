@@ -202,11 +202,6 @@ preparation::
          standardize=False, standardize_confounds=True, t_r=None,
          target_affine=None, target_shape=None, verbose=0)
 
-.. note::
-
-    From scikit-learn 0.20, the argument `cachedir` is deprecated in
-    favour of `location`. Hence `cachedir` might not be seen as here.
-
 The meaning of each parameter is described in the documentation of
 :class:`NiftiMasker` (click on the name :class:`NiftiMasker`), here we
 comment on the most important.
