@@ -32,7 +32,7 @@ def test_rena_clustering():
     assert 10 == rena.n_clusters_
     assert X.shape == X_compress.shape
 
-    memory = Memory(cachedir=None)
+    memory = Memory(location=None)
     rena = ReNA(mask_img, n_clusters=-2, memory=memory)
     pytest.raises(ValueError, rena.fit, X)
 
