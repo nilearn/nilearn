@@ -228,7 +228,7 @@ def _process_second_level_input(second_level_input):
     if isinstance(second_level_input, pd.DataFrame):
         return _process_second_level_input_as_dataframe(second_level_input)
     elif(hasattr(second_level_input, "__iter__")
-    and isinstance(second_level_input[0], FirstLevelModel)):
+         and isinstance(second_level_input[0], FirstLevelModel)):
         return _process_second_level_input_as_firstlevelmodels(
             second_level_input
         )
