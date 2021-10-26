@@ -397,9 +397,6 @@ def test_fmri_inputs_for_non_parametric_inference():
         # test list of less than two niimgs
         with pytest.raises(ValueError):
             non_parametric_inference([FUNCFILE])
-        # test dataframe
-        with pytest.raises(ValueError):
-            non_parametric_inference(niidf)
         # test niimgs requirements
         with pytest.raises(ValueError):
             non_parametric_inference(niimgs)
