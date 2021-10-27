@@ -22,6 +22,7 @@ from nibabel import Nifti1Image
 from sklearn.base import clone
 from sklearn.cluster import KMeans
 
+from ancpbids import all_of, entity, eq
 from nilearn._utils import fill_doc
 from nilearn._utils.glm import (_check_events_file_uses_tab_separators,
                                 _check_run_tables, get_bids_files,
@@ -818,6 +819,8 @@ def first_level_from_bids(dataset_path, task_label, space_label=None,
         Items for the FirstLevelModel fit function of their respective model.
 
     """
+    import ancpbids
+    import ancpbids.model as schema
     # check arguments
     img_filters = img_filters if img_filters else []
     if not isinstance(dataset_path, str):
@@ -853,6 +856,9 @@ def first_level_from_bids(dataset_path, task_label, space_label=None,
     if not os.path.exists(derivatives_path):
         raise ValueError('derivatives folder does not exist in given dataset')
 
+    layout = ancpbids.BIDSLayout(dataset_path, scope='raw')
+    layout_derivative = ancpbids.BIDSLayout(derivatives_path, scope='raw')
+
     # Get acq specs for models. RepetitionTime and SliceTimingReference.
     # Throw warning if no bold.json is found
     if t_r is not None:
@@ -860,47 +866,39 @@ def first_level_from_bids(dataset_path, task_label, space_label=None,
         warn('slice_time_ref is %d percent of the repetition '
              'time' % slice_time_ref)
     else:
-        filters = [('task', task_label)]
+        filters = {'task': task_label}
         for img_filter in img_filters:
             if img_filter[0] in ['acq', 'rec', 'run']:
-                filters.append(img_filter)
+                filters[img_filters[0]] = img_filters[1]
 
-        img_specs = get_bids_files(derivatives_path, modality_folder='func',
-                                   file_tag='bold', file_type='json',
-                                   filters=filters)
+        metadata = layout_derivative.get_metadata(suffix=schema.SuffixEnum.bold.name, **filters)
         # If we don't find the parameter information in the derivatives folder
         # we try to search in the raw data folder
-        if not img_specs:
-            img_specs = get_bids_files(dataset_path, modality_folder='func',
-                                       file_tag='bold', file_type='json',
-                                       filters=filters)
-        if not img_specs:
+        if not metadata:
+            metadata = layout.get_metadata(suffix=schema.SuffixEnum.bold.name, **filters)
+        if not metadata:
             warn('No bold.json found in derivatives folder or '
                  'in dataset folder. t_r can not be inferred and will need to'
                  ' be set manually in the list of models, otherwise their fit'
                  ' will throw an exception')
         else:
-            specs = json.load(open(img_specs[0], 'r'))
-            if 'RepetitionTime' in specs:
-                t_r = float(specs['RepetitionTime'])
+            if 'RepetitionTime' in metadata:
+                t_r = float(metadata['RepetitionTime'])
             else:
-                warn('RepetitionTime not found in file %s. t_r can not be '
+                warn('RepetitionTime not found in any metadata file within dataset. t_r can not be '
                      'inferred and will need to be set manually in the '
                      'list of models. Otherwise their fit will throw an '
-                     ' exception' % img_specs[0])
-            if 'SliceTimingRef' in specs:
-                slice_time_ref = float(specs['SliceTimingRef'])
+                     ' exception')
+            if 'SliceTimingRef' in metadata:
+                slice_time_ref = float(metadata['SliceTimingRef'])
             else:
-                warn('SliceTimingRef not found in file %s. It will be assumed'
+                warn('SliceTimingRef not found in any metadata file within dataset. It will be assumed'
                      ' that the slice timing reference is 0.0 percent of the '
                      'repetition time. If it is not the case it will need to '
-                     'be set manually in the generated list of models' %
-                     img_specs[0])
+                     'be set manually in the generated list of models')
 
-    # Infer subjects in dataset
-    sub_folders = glob.glob(os.path.join(derivatives_path, 'sub-*/'))
-    sub_labels = [os.path.basename(s[:-1]).split('-')[1] for s in sub_folders]
-    sub_labels = sorted(list(set(sub_labels)))
+    # Get subjects in dataset
+    sub_labels = layout.get_subjects()
 
     # Build fit_kwargs dictionaries to pass to their respective models fit
     # Events and confounds files must match number of imgs (runs)
@@ -929,9 +927,8 @@ def first_level_from_bids(dataset_path, task_label, space_label=None,
         else:
             filters = [('task', task_label),
                        ('space', space_label)] + img_filters
-        imgs = get_bids_files(derivatives_path, modality_folder='func',
-                              file_tag='bold', file_type='nii*',
-                              sub_label=sub_label, filters=filters)
+        filters = {i[0]: i[1] for i in filters}
+        imgs = layout_derivative.get(suffix=schema.SuffixEnum.bold.name, subject=sub_label, **filters)
         # If there is more than one file for the same (ses, run), likely we
         # have an issue of underspecification of filters.
         run_check_list = []
@@ -939,26 +936,24 @@ def first_level_from_bids(dataset_path, task_label, space_label=None,
         # as well as the ses field if more than one session is present.
         if len(imgs) > 1:
             for img in imgs:
-                img_dict = parse_bids_filename(img)
                 if (
-                    '_ses-' in img_dict['file_basename']
-                    and '_run-' in img_dict['file_basename']
+                    img.has_entity(schema.EntityEnum.session.entity_)
+                    and img.has_entity(schema.EntityEnum.run.entity_)
                 ):
-                    if (img_dict['ses'], img_dict['run']) in run_check_list:
+                    entity = (img.get_entity(schema.EntityEnum.session.entity_), img.get_entity(schema.EntityEnum.run.entity_))
+                    if entity in run_check_list:
                         raise ValueError(
                             'More than one nifti image found '
                             'for the same run %s and session %s. '
                             'Please verify that the '
                             'desc_label and space_label labels '
                             'corresponding to the BIDS spec '
-                            'were correctly specified.' %
-                            (img_dict['run'], img_dict['ses']))
+                            'were correctly specified.' % entity)
                     else:
-                        run_check_list.append((img_dict['ses'],
-                                               img_dict['run']))
+                        run_check_list.append(entity)
 
-                elif '_ses-' in img_dict['file_basename']:
-                    if img_dict['ses'] in run_check_list:
+                elif img.has_entity(schema.EntityEnum.session.entity_):
+                    if img.get_entity(schema.EntityEnum.session.entity_) in run_check_list:
                         raise ValueError(
                             'More than one nifti image '
                             'found for the same ses %s, while '
@@ -967,12 +962,12 @@ def first_level_from_bids(dataset_path, task_label, space_label=None,
                             'space_label labels '
                             'corresponding to the BIDS spec '
                             'were correctly specified.' %
-                            img_dict['ses'])
+                            img.get_entity(schema.EntityEnum.session.entity_))
                     else:
-                        run_check_list.append(img_dict['ses'])
+                        run_check_list.append(img.get_entity(schema.EntityEnum.session.entity_))
 
-                elif '_run-' in img_dict['file_basename']:
-                    if img_dict['run'] in run_check_list:
+                elif img.has_entity(schema.EntityEnum.run.entity_):
+                    if img.get_entity(schema.EntityEnum.run.entity_) in run_check_list:
                         raise ValueError(
                             'More than one nifti image '
                             'found for the same run %s. '
@@ -980,21 +975,20 @@ def first_level_from_bids(dataset_path, task_label, space_label=None,
                             'space_label labels '
                             'corresponding to the BIDS spec '
                             'were correctly specified.' %
-                            img_dict['run'])
+                            img.get_entity(schema.EntityEnum.run.entity_))
                     else:
-                        run_check_list.append(img_dict['run'])
-        models_run_imgs.append(imgs)
+                        run_check_list.append(img.get_entity(schema.EntityEnum.run.entity_))
+        img_paths = list(map(lambda a: a.get_relative_path(), imgs))
+        models_run_imgs.append(img_paths)
 
         # Get events and extra confounds
         filters = [('task', task_label)]
         for img_filter in img_filters:
             if img_filter[0] in ['acq', 'rec', 'run']:
                 filters.append(img_filter)
-
         # Get events files
-        events = get_bids_files(dataset_path, modality_folder='func',
-                                file_tag='events', file_type='tsv',
-                                sub_label=sub_label, filters=filters)
+        filters = {i[0]: i[1] for i in filters}
+        events = layout.get(return_type='filenames', suffix=schema.SuffixEnum.events.name, extension='tsv', subject=sub_label, **filters)
         if events:
             if len(events) != len(imgs):
                 raise ValueError('%d events.tsv files found for %d bold '
@@ -1009,10 +1003,7 @@ def first_level_from_bids(dataset_path, task_label, space_label=None,
 
         # Get confounds. If not found it will be assumed there are none.
         # If there are confounds, they are assumed to be present for all runs.
-        confounds = get_bids_files(derivatives_path, modality_folder='func',
-                                   file_tag='desc-confounds*',
-                                   file_type='tsv', sub_label=sub_label,
-                                   filters=filters)
+        confounds = layout_derivative.get(return_type='filenames', suffix='timeseries', extension='tsv', desc='confounds', subject=sub_label, **filters)
 
         if confounds:
             if len(confounds) != len(imgs):

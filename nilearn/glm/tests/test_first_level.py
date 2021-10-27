@@ -675,12 +675,17 @@ def test_first_level_from_bids():
         # file per img. An one per image or None. Case when one is missing
         confound_files = get_bids_files(os.path.join(bids_path, 'derivatives'),
                                         file_tag='desc-confounds_timeseries')
+        import ancpbids
+        layout = ancpbids.BIDSLayout(os.path.join(bids_path, 'derivatives'))
+        confound_files = layout.get(return_type='filenames', suffix='timeseries', desc='confounds')
         os.remove(confound_files[-1])
         with pytest.raises(ValueError):
             first_level_from_bids(
                 bids_path, 'main', 'MNI')
         # test issues with event files
         events_files = get_bids_files(bids_path, file_tag='events')
+        layout = ancpbids.BIDSLayout(bids_path)
+        events_files = layout.get(return_type='filenames', suffix='events')
         os.remove(events_files[0])
         # one file missing
         with pytest.raises(ValueError):
