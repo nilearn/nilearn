@@ -70,6 +70,43 @@ def test_set_view_plot_surf_matplotlib(hemi, view, expected_view_matplotlib):
            == expected_view_matplotlib)
 
 
+def test_surface_figure():
+    from nilearn.plotting.surf_plotting import SurfaceFigure
+    s = SurfaceFigure()
+    assert s.output_file is None
+    assert s.figure is None
+    with pytest.raises(NotImplementedError):
+        s.show()
+    with pytest.raises(ValueError, match="You must provide an output file"):
+        s._check_output_file()
+    s._check_output_file("foo.png")
+    assert s.output_file == "foo.png"
+    s = SurfaceFigure(output_file="bar.png")
+    assert s.output_file == "bar.png"
+
+
+def test_plotly_surface_figure():
+    from nilearn.plotting.surf_plotting import PlotlySurfaceFigure
+    ps = PlotlySurfaceFigure()
+    assert ps.output_file is None
+    assert ps.figure is None
+    ps.show()
+    with pytest.raises(ValueError, match="You must provide an output file"):
+        ps.savefig()
+    ps.savefig('foo.png')
+
+
+def test_matplotlib_surface_figure():
+    from nilearn.plotting.surf_plotting import MatplotlibSurfaceFigure
+    ms = MatplotlibSurfaceFigure()
+    assert ms.output_file is None
+    assert ms.figure is None
+    ms.show()
+    with pytest.raises(ValueError, match="You must provide an output file"):
+        ms.savefig()
+    ms.savefig('foo.png')
+
+
 def test_set_view_plot_surf_errors():
     from nilearn.plotting.surf_plotting import (_set_view_plot_surf_matplotlib,
                                                 _set_view_plot_surf_plotly)
