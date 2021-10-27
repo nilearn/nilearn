@@ -148,9 +148,9 @@ def test_plot_surf(engine, tmp_path):
     display = plot_surf(mesh, bg_map=bg, title='Test title',
                         engine=engine)
     if engine == 'matplotlib':
-        assert display._suptitle._text == 'Test title'
-        assert display._suptitle._x == .5
-        assert display._suptitle._y == .95
+        assert display.figure._suptitle._text == 'Test title'
+        assert display.figure._suptitle._x == .5
+        assert display.figure._suptitle._y == .95
 
 
 def test_plot_surf_avg_method():
@@ -181,7 +181,7 @@ def test_plot_surf_avg_method():
         cmap = plt.cm.get_cmap(plt.rcParamsDefault['image.cmap'])
         assert_array_equal(
             cmap(agg_faces),
-            display._axstack.as_list()[0].collections[0]._facecolors
+            display.figure._axstack.as_list()[0].collections[0]._facecolors
         )
     ## Try custom avg_method
     def custom_avg_function(vertices):
@@ -323,9 +323,9 @@ def test_plot_surf_stat_map(engine):
     # Plot with title
     display = plot_surf_stat_map(mesh, stat_map=data, bg_map=bg,
                                  title="Stat map title")
-    assert display._suptitle._text == "Stat map title"
-    assert display._suptitle._x == .5
-    assert display._suptitle._y == .95
+    assert display.figure._suptitle._text == "Stat map title"
+    assert display.figure._suptitle._x == .5
+    assert display.figure._suptitle._y == .95
 
     # Apply threshold
     plot_surf_stat_map(mesh, stat_map=data, bg_map=bg,
@@ -366,23 +366,23 @@ def test_plot_surf_stat_map_matplotlib_specific():
         plot_surf_stat_map(mesh, stat_map=data, ax=ax, colorbar=True)
 
     fig = plot_surf_stat_map(mesh, stat_map=data, colorbar=False)
-    assert len(fig.axes) == 1
+    assert len(fig.figure.axes) == 1
 
     # symmetric_cbar
     fig = plot_surf_stat_map(
         mesh, stat_map=data, colorbar=True, symmetric_cbar=True)
-    fig.canvas.draw()
-    assert len(fig.axes) == 2
-    yticklabels = fig.axes[1].get_yticklabels()
+    fig.figure.canvas.draw()
+    assert len(fig.figure.axes) == 2
+    yticklabels = fig.figure.axes[1].get_yticklabels()
     first, last = yticklabels[0].get_text(), yticklabels[-1].get_text()
     assert float(first) == - float(last)
 
     # no symmetric_cbar
     fig = plot_surf_stat_map(
         mesh, stat_map=data, colorbar=True, symmetric_cbar=False)
-    fig.canvas.draw()
-    assert len(fig.axes) == 2
-    yticklabels = fig.axes[1].get_yticklabels()
+    fig.figure.canvas.draw()
+    assert len(fig.figure.axes) == 2
+    yticklabels = fig.figure.axes[1].get_yticklabels()
     first, last = yticklabels[0].get_text(), yticklabels[-1].get_text()
     assert float(first) != - float(last)
 
@@ -390,11 +390,11 @@ def test_plot_surf_stat_map_matplotlib_specific():
     # Add nan values in the texture
     data[2] = np.nan
     # Plot the surface stat map
-    ax = plot_surf_stat_map(mesh, stat_map=data)
+    fig = plot_surf_stat_map(mesh, stat_map=data)
     # Check that the resulting plot facecolors contain no transparent faces
     # (last column equals zero) even though the texture contains nan values
     assert(mesh[1].shape[0] ==
-            ((ax._axstack.as_list()[0].collections[0]._facecolors[:, 3]) != 0).sum())
+            ((fig.figure._axstack.as_list()[0].collections[0]._facecolors[:, 3]) != 0).sum())  # noqa
 
     # Save execution time and memory
     plt.close()
@@ -455,8 +455,8 @@ def test_plot_surf_roi_matplotlib_specific():
     img = plot_surf_roi(mesh, roi_map=roi_map, vmin=1.2,
                         vmax=8.9, colorbar=True,
                         engine='matplotlib')
-    img.canvas.draw()
-    cbar = img.axes[-1]
+    img.figure.canvas.draw()
+    cbar = img.figure.axes[-1]
     cbar_vmin = float(cbar.get_yticklabels()[0].get_text())
     cbar_vmax = float(cbar.get_yticklabels()[-1].get_text())
     assert cbar_vmin == 1.0
@@ -465,8 +465,8 @@ def test_plot_surf_roi_matplotlib_specific():
                          vmax=8.9, colorbar=True,
                          cbar_tick_format="%.2g",
                          engine='matplotlib')
-    img2.canvas.draw()
-    cbar = img2.axes[-1]
+    img2.figure.canvas.draw()
+    cbar = img2.figure.axes[-1]
     cbar_vmin = float(cbar.get_yticklabels()[0].get_text())
     cbar_vmax = float(cbar.get_yticklabels()[-1].get_text())
     assert cbar_vmin == 1.2
@@ -492,7 +492,7 @@ def test_plot_surf_roi_matplotlib_specific():
     # Check that the resulting plot facecolors contain no transparent faces
     # (last column equals zero) even though the texture contains nan values
     assert(mesh[1].shape[0] ==
-           ((img._axstack.as_list()[0].collections[0]._facecolors[:, 3]) != 0).sum())
+           ((img.figure._axstack.as_list()[0].collections[0]._facecolors[:, 3]) != 0).sum())
     # Save execution time and memory
     plt.close()
 
@@ -620,12 +620,12 @@ def test_plot_img_on_surf_title():
     fig, axes = plot_img_on_surf(
         nii, hemispheres=['right'], views=['lateral']
     )
-    assert fig._suptitle is None, "Created title without title kwarg."
+    assert fig.figure._suptitle is None, "Created title without title kwarg."
     fig, axes = plot_img_on_surf(
         nii, hemispheres=['right'], views=['lateral'], title=title
     )
-    assert fig._suptitle is not None, "Title not created."
-    assert fig._suptitle.get_text() == title, "Title text not assigned."
+    assert fig.figure._suptitle is not None, "Title not created."
+    assert fig.figure._suptitle.get_text() == title, "Title text not assigned."
 
 
 def test_plot_img_on_surf_output_file(tmp_path):
@@ -661,18 +661,18 @@ def test_plot_surf_contours():
     plot_surf_contours(mesh, parcellation, axes=axes)
     plot_surf_contours(mesh, parcellation, figure=fig)
     fig = plot_surf(mesh)
-    plot_surf_contours(mesh, parcellation, figure=fig)
+    plot_surf_contours(mesh, parcellation, figure=fig.figure)
     display = plot_surf_contours(mesh, parcellation, levels=[1, 2],
                                  labels=['1', '2'], colors=['r', 'g'],
                                  legend=True, title='title',
-                                 figure=fig)
+                                 figure=fig.figure)
     assert display._suptitle._text == 'title'
     assert display._suptitle._x == .3
     assert display._suptitle._y == .95
     fig = plot_surf(mesh, title='title 2')
     display = plot_surf_contours(mesh, parcellation, levels=[1, 2],
                                  labels=['1', '2'], colors=['r', 'g'],
-                                 legend=True, figure=fig)
+                                 legend=True, figure=fig.figure)
     assert display._suptitle._text == 'title 2'
     assert display._suptitle._x == .3
     assert display._suptitle._y == .95

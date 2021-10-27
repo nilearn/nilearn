@@ -934,7 +934,7 @@ def plot_surf_contours(surf_mesh, roi_map, axes=None, figure=None, levels=None,
 
     """
     if figure is None and axes is None:
-        figure = plot_surf(surf_mesh, **kwargs)
+        figure = plot_surf(surf_mesh, **kwargs).figure
         axes = figure.axes[0]
     if figure is None:
         figure = axes.get_figure()
@@ -986,7 +986,7 @@ def plot_surf_contours(surf_mesh, roi_map, axes=None, figure=None, levels=None,
     # plot legend only if indicated and labels provided
     pos_title_x = .5
     if legend and np.any([lbl is not None for lbl in labels]):
-        figure.legend(handles=patch_list)
+        figure.figure.legend(handles=patch_list)
         # if legends, then move title to the left
         pos_title_x = .3
     if title is None and hasattr(figure._suptitle, "_text"):
