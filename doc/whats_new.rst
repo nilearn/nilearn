@@ -61,6 +61,12 @@ Enhancements
   and reorganized in separate files in new folder
   `nilearn/plotting/tests/test_img_plotting/`.
   (See PR `#3015 <https://github.com/nilearn/nilearn/pull/3015/files>`_)
+- Once a :class:`~nilearn.glm.second_level.SecondLevelModel` has been fitted and
+  contrasts have been computed, it is now possible to access the ``residuals``,
+  ``predicted``, and ``r_square`` model attributes like it was already possible
+  for :class:`~nilearn.glm.first_level.FirstLevelModel`.
+  (See FR `#3027 <https://github.com/nilearn/nilearn/issues/3027>`_
+  and PR `#3033 <https://github.com/nilearn/nilearn/pull/3033>`_)
 
 Changes
 -------
