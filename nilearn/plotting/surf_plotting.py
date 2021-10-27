@@ -122,8 +122,9 @@ class SurfaceFigure:
         """Show the figure."""
         raise NotImplementedError
 
-    def savefig(self, output_file=None):
-        """Saves the figure to file.
+    def _check_output_file(self, output_file=None):
+        """If an output file is provided, set it as
+        the new default output file.
 
         Parameters
         ----------
@@ -176,7 +177,7 @@ class PlotlySurfaceFigure(SurfaceFigure):
         output_file : :obj:`str` or ``None``, optional
             Path to output file.
         """
-        super().savefig(output_file=output_file)
+        self._check_output_file(output_file=output_file)
         if self.figure is not None:
             self.figure.write_image(self.output_file)
 
@@ -218,8 +219,9 @@ class MatplotlibSurfaceFigure(SurfaceFigure):
         output_file : :obj:`str` or ``None``, optional
             Path to output file.
         """
-        super().savefig(output_file=output_file)
-        self.figure.savefig(self.output_file)
+        self._check_output_file(output_file=output_file)
+        if self.figure is not None:
+            self.figure.savefig(self.output_file)
 
     def close(self):
         """Close the figure."""
