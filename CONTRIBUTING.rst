@@ -29,7 +29,6 @@ We welcome open discussion around improvements---both to the documentation as we
 
     * If you think documentation can be improved, you can directly send proposed improvements through `pull requests`_.
 
-If you prefer to chat about your idea or request first, you can always join one of the office hours on `discord`_ and talk with :ref:`core_devs`.
 
 Answer questions
 ----------------
