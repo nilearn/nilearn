@@ -50,7 +50,7 @@ Join the triage team
 
 The :ref:`triage` is composed of community members who have permission on `github`_ to label and close `issues`_.
 Their work is crucial to improve the communication in the project and limit the crowding of the issue tracker.
-The :ref:`issue_labels` and :ref:`closing_policy` of the project is defined in more details in the :ref:`maintenance_process` page, and is a must-read for anyone wishing to join the team.
+The :ref:`issue_labels` and :ref:`closing_policy` of the project is defined in more details in the :ref:`maintenance_process` page.
 
 Any contributor may become a member of the Nilearn :ref:`triage`.
 If you are interested in joining the :ref:`triage`, you can contact one of the :ref:`core_devs`.
