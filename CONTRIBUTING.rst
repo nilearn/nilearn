@@ -62,10 +62,9 @@ If you want to contribute code:
 
     * For new features, please be sure to create a `new issue`_ first, to discuss whether it can be included and its specifications.
     * To help with known `issues`_, please check `good first issues <https://github.com/nilearn/nilearn/labels/Good%20first%20issue>`_ to get started, `known bugs <https://github.com/nilearn/nilearn/labels/Bug>`_, or `proposed enhancements <https://github.com/nilearn/nilearn/labels/Enhancement>`_.
-    * In any case, before sending code, be sure to **follow the** `Contribution Guidelines`_.
-    * The section `Setting up your environment`_ will get you ready to contribute.
 
-Please refer to the :ref:`contributing_code` section for more detailed information.
+Please see the :ref:`contributing_code` section for more detailed information, including 
+instructions for  `Setting up your environment`_ and a description of the `Contribution Guidelines`_.
 
 How do we decide what code goes in?
 ====================================
