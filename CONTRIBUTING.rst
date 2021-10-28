@@ -18,7 +18,7 @@ If you are interested in contributing to the Nilearn project, we thank you very 
 Report bugs or discuss enhancement ideas
 ----------------------------------------
 
-First of all, if you feel like parts of the documentation are unclear, or if you wish that nilearn had a certain feature, which would facilitate your work, it is definitely worth opening a discussion around it.
+We welcome open discussion around improvements---both to the documentation as well as to the code base---through our GitHub issue board!
 
     * If you think you have discovered a bug, please create an `new issue`_ including a `minimal runnable example <https://stackoverflow.com/help/minimal-reproducible-example>`_ to showcase it (using Nilearn data) as well as your OS and Nilearn version.
 
