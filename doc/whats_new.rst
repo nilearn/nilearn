@@ -57,6 +57,11 @@ Enhancements
 - :class:`nilearn.input_data.NiftiLabelsMasker` now gives a warning when some
   labels are removed from the label image at transform time due to resampling
   of the label image to the data image.
+- Function :func:`~nilearn.glm.second_level.non_parametric_inference` now accepts
+  :class:`~pandas.DataFrame` as possible values for its ``second_level_input``
+  parameter. Note that a new parameter ``first_level_contrast`` has been added
+  to this function to enable this feature.
+  (See PR `#3042 <https://github.com/nilearn/nilearn/pull/3042>`_).
 - Tests from `nilearn/plotting/tests/test_img_plotting.py` have been refactored
   and reorganized in separate files in new folder
   `nilearn/plotting/tests/test_img_plotting/`.
