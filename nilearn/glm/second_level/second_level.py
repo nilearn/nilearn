@@ -558,6 +558,7 @@ class SecondLevelModel(BaseGLM):
 @fill_doc
 def non_parametric_inference(second_level_input, confounds=None,
                              design_matrix=None, second_level_contrast=None,
+                             first_level_contrast=None,
                              mask=None, smoothing_fwhm=None,
                              model_intercept=True, n_perm=10000,
                              two_sided_test=False, random_state=None,
@@ -603,6 +604,13 @@ def non_parametric_inference(second_level_input, confounds=None,
         column, in which case the only possible contrast array((1)) is
         applied; when the design matrix has multiple columns, an error is
         raised.
+
+    first_level_contrast : str, optional
+        In case a pandas DataFrame was provided as second_level_input this
+        is the map name to extract from the pandas dataframe map_name column.
+        It has to be a 't' contrast.
+
+        .. versionadded:: 0.8.2
 
     mask : Niimg-like, NiftiMasker or MultiNiftiMasker object, optional
         Mask to be used on data. If an instance of masker is passed,
@@ -684,9 +692,8 @@ def non_parametric_inference(second_level_input, confounds=None,
 
     # Check and obtain the contrast
     contrast = _get_contrast(second_level_contrast, design_matrix)
-
     # Get effect_maps
-    effect_maps = _infer_effect_maps(second_level_input, None)
+    effect_maps = _infer_effect_maps(second_level_input, first_level_contrast)
 
     # Check design matrix and effect maps agree on number of rows
     _check_effect_maps(effect_maps, design_matrix)
