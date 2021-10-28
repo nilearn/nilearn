@@ -286,21 +286,27 @@ def test_high_level_non_parametric_inference_with_paths():
         shapes = ((7, 8, 9, 1),)
         mask, FUNCFILE, _ = write_fake_fmri_data_and_design(shapes)
         FUNCFILE = FUNCFILE[0]
+        df_input = pd.DataFrame({'subject_label': [f'sub-{i}' for i in range(4)],
+                                 'effects_map_path': [FUNCFILE] * 4,
+                                 'map_name': [FUNCFILE] * 4})
         func_img = load(FUNCFILE)
         Y = [func_img] * 4
         X = pd.DataFrame([[1]] * 4, columns=['intercept'])
         c1 = np.eye(len(X.columns))[0]
-        neg_log_pvals_img = non_parametric_inference(Y, design_matrix=X,
-                                                     second_level_contrast=c1,
-                                                     mask=mask, n_perm=n_perm,
-                                                     verbose=1)  # For coverage
-        neg_log_pvals = get_data(neg_log_pvals_img)
+        neg_log_pvals_imgs = [
+            non_parametric_inference(
+                second_level_input, design_matrix=X, second_level_contrast=c1,
+                first_level_contrast=FUNCFILE, mask=mask, n_perm=n_perm, verbose=1
+            ) for second_level_input in [Y, df_input]
+        ]
+        assert all([isinstance(img, Nifti1Image) for img in neg_log_pvals_imgs])
+        for img in neg_log_pvals_imgs:
+            assert_array_equal(img.affine, load(mask).affine)
+        neg_log_pvals_list = [get_data(i) for i in neg_log_pvals_imgs]
+        for neg_log_pvals in neg_log_pvals_list:
+            assert np.all(neg_log_pvals <= - np.log10(1.0 / (n_perm + 1)))
+            assert np.all(0 <= neg_log_pvals)
 
-        assert isinstance(neg_log_pvals_img, Nifti1Image)
-        assert_array_equal(neg_log_pvals_img.affine, load(mask).affine)
-
-        assert np.all(neg_log_pvals <= - np.log10(1.0 / (n_perm + 1)))
-        assert np.all(0 <= neg_log_pvals)
         masker = NiftiMasker(mask, smoothing_fwhm=2.0)
         with pytest.warns(UserWarning,
                           match="Parameter smoothing_fwhm "
@@ -311,7 +317,7 @@ def test_high_level_non_parametric_inference_with_paths():
                                      mask=masker, n_perm=n_perm)
         # Delete objects attached to files to avoid WindowsError when deleting
         # temporary directory
-        del X, Y, FUNCFILE, func_img, neg_log_pvals_img
+        del X, Y, FUNCFILE, func_img, neg_log_pvals_imgs
 
 
 def test_fmri_inputs():
