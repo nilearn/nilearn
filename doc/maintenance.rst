@@ -55,7 +55,7 @@ We also try to quantify the **estimated impact** of the proposed change on the p
 
 Finally, we also indicate the **priority level** of the issue:
 
-	- |priority: high| The task is urgent and needs to be addressed asap.
+	- |priority: high| The task is urgent and needs to be addressed as soon as possible.
 	- |priority: medium| The task has an average priority level, it should be addressed over the next months.
 	- |priority: low| The task is not urgent and can be delayed.
 
