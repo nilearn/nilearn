@@ -47,7 +47,7 @@ of work** required to solve each issue:
 	- |effort: medium| The issue is likely to require a decent amount of work (in between a few hours and a couple days).
 	- |effort: low| The issue is likely to require a small amount of work (less than a few hours).
 
-We also try to quantify the **estimated impact** on the project:
+We also try to quantify the **estimated impact** of the proposed change on the project:
 
 	- |impact: high| Solving this issue will have a high impact on the project.
 	- |impact: medium| Solving this issue will have a decent impact on the project.
