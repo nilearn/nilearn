@@ -31,6 +31,7 @@ FUNCFILE = os.path.join(BASEDIR, 'functional.nii.gz')
 
 @pytest.fixture
 def input_df():
+    """Input DataFrame for testing."""
     return pd.DataFrame({'effects_map_path': ["foo.nii", "bar.nii", "baz.nii"],
                          'subject_label': ["foo", "bar", "baz"]})
 
@@ -50,8 +51,9 @@ def test_sort_input_dataframe(input_df):
     from nilearn.glm.second_level.second_level import _sort_input_dataframe
     output_df = _sort_input_dataframe(input_df)
     assert output_df['subject_label'].values.tolist() == ["bar", "baz", "foo"]
-    assert(output_df['effects_map_path'].values.tolist()
-           == ["bar.nii", "baz.nii", "foo.nii"]
+    assert(
+        output_df['effects_map_path'].values.tolist()
+        == ["bar.nii", "baz.nii", "foo.nii"]
     )
 
 
@@ -286,9 +288,11 @@ def test_high_level_non_parametric_inference_with_paths():
         shapes = ((7, 8, 9, 1),)
         mask, FUNCFILE, _ = write_fake_fmri_data_and_design(shapes)
         FUNCFILE = FUNCFILE[0]
-        df_input = pd.DataFrame({'subject_label': [f'sub-{i}' for i in range(4)],
-                                 'effects_map_path': [FUNCFILE] * 4,
-                                 'map_name': [FUNCFILE] * 4})
+        df_input = pd.DataFrame(
+            {'subject_label': [f'sub-{i}' for i in range(4)],
+             'effects_map_path': [FUNCFILE] * 4,
+             'map_name': [FUNCFILE] * 4}
+        )
         func_img = load(FUNCFILE)
         Y = [func_img] * 4
         X = pd.DataFrame([[1]] * 4, columns=['intercept'])
@@ -296,10 +300,13 @@ def test_high_level_non_parametric_inference_with_paths():
         neg_log_pvals_imgs = [
             non_parametric_inference(
                 second_level_input, design_matrix=X, second_level_contrast=c1,
-                first_level_contrast=FUNCFILE, mask=mask, n_perm=n_perm, verbose=1
+                first_level_contrast=FUNCFILE, mask=mask,
+                n_perm=n_perm, verbose=1
             ) for second_level_input in [Y, df_input]
         ]
-        assert all([isinstance(img, Nifti1Image) for img in neg_log_pvals_imgs])
+        assert all(
+            [isinstance(img, Nifti1Image) for img in neg_log_pvals_imgs]
+        )
         for img in neg_log_pvals_imgs:
             assert_array_equal(img.affine, load(mask).affine)
         neg_log_pvals_list = [get_data(i) for i in neg_log_pvals_imgs]
