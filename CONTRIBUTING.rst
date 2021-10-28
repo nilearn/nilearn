@@ -69,7 +69,7 @@ instructions for  `Setting up your environment`_ and a description of the `Contr
 How do we decide what code goes in?
 ====================================
 
-If you are interested in contributing code to Nilearn, please read the following sections which explain the :ref:`nilearn_scope`, :ref:`nilearn_governance`, as well as :ref:`contributing_code`.
+The following sections explain the :ref:`nilearn_scope` and :ref:`nilearn_governance`, which jointly determine whether potential contributions will be accepted into the project.
 
 .. _nilearn_scope:
 
