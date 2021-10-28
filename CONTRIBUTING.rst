@@ -23,7 +23,7 @@ Report bugs or discuss enhancement ideas
 
 We welcome open discussion around improvements---both to the documentation as well as to the code base---through our GitHub issue board!
 
-    * If you think you have discovered a bug, please create an `new issue`_ including a `minimal runnable example <https://stackoverflow.com/help/minimal-reproducible-example>`_ to showcase it (using Nilearn data) as well as your OS and Nilearn version.
+    * If you think you have discovered a bug, please start by searching through the existing `issues`_ to make sure it has not already been reported. If the bug has not been reported yet,  create an `new issue`_ including a `minimal runnable example <https://stackoverflow.com/help/minimal-reproducible-example>`_ to showcase it (using Nilearn data) as well as your OS and Nilearn version.
 
     * If you have an idea for a new feature, check if it is in the :ref:`nilearn_scope` and feel free to open a `new issue`_ to discuss it.
 
@@ -52,7 +52,7 @@ The :ref:`triage` is composed of community members who have permission on `githu
 Their work is crucial to improve the communication in the project and limit the crowding of the issue tracker.
 The :ref:`issue_labels` and :ref:`closing_policy` of the project is defined in more details in the :ref:`maintenance_process` page.
 
-Any contributor may become a member of the Nilearn :ref:`triage`.
+Any community member may become a member of the Nilearn :ref:`triage`.
 If you are interested in joining the :ref:`triage`, please read the :ref:`maintenance_process` page and contact one of the :ref:`core_devs` to express your interest!
 
 Contribute code
