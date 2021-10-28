@@ -4,7 +4,7 @@
 How to get help?
 ================
 
-If you have issues when using Nilearn, or if you have questions on how to use it, please don't hesitate to reach out. Asking questions or reporting issues is always valuable because it will help other users having the same problem. This means that asking usage questions contributes to the whole project. So, please don't hold onto a burning question!
+If you have issues when using Nilearn, or if you have questions on how to use it, please don't hesitate to reach out!
 
 There are currently three ways to interact with the Nilearn team: through the `neurostars`_ forum, our `github`_ issues, and through our weekly `office hours <https://github.com/nilearn/nilearn/issues/2882>`_, usually **every Monday from 4pm to 5pm UTC**. 
 
