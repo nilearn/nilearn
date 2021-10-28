@@ -29,6 +29,52 @@ BASEDIR = os.path.dirname(os.path.abspath(__file__))
 FUNCFILE = os.path.join(BASEDIR, 'functional.nii.gz')
 
 
+@pytest.fixture
+def input_df():
+    return pd.DataFrame({'effects_map_path': ["foo.nii", "bar.nii", "baz.nii"],
+                         'subject_label': ["foo", "bar", "baz"]})
+
+
+def test_process_second_level_input_as_dataframe(input_df):
+    """Unit tests for function _process_second_level_input_as_dataframe()."""
+    from nilearn.glm.second_level.second_level import _process_second_level_input_as_dataframe  # noqa
+    sample_map, subjects_label = _process_second_level_input_as_dataframe(
+        input_df
+    )
+    assert sample_map == "foo.nii"
+    assert subjects_label == ["foo", "bar", "baz"]
+
+
+def test_sort_input_dataframe(input_df):
+    """Unit tests for function _sort_input_dataframe()."""
+    from nilearn.glm.second_level.second_level import _sort_input_dataframe
+    output_df = _sort_input_dataframe(input_df)
+    assert output_df['subject_label'].values.tolist() == ["bar", "baz", "foo"]
+    assert(output_df['effects_map_path'].values.tolist()
+           == ["bar.nii", "baz.nii", "foo.nii"]
+    )
+
+
+def test_process_second_level_input_as_firstlevelmodels():
+    """Unit tests for function
+    _process_second_level_input_as_firstlevelmodels().
+    """
+    from nilearn.glm.second_level.second_level import _process_second_level_input_as_firstlevelmodels  # noqa
+    shapes, rk = [(7, 8, 9, 15)], 3
+    mask, fmri_data, design_matrices = \
+        generate_fake_fmri_data_and_design(shapes, rk)
+    list_of_flm = [
+        FirstLevelModel(mask_img=mask, subject_label=f"sub-{i}").fit(
+            fmri_data[0], design_matrices=design_matrices[0]
+        ) for i in range(3)
+    ]
+    sample_map, subjects_label =\
+        _process_second_level_input_as_firstlevelmodels(list_of_flm)
+    assert subjects_label == [f"sub-{i}" for i in range(3)]
+    assert isinstance(sample_map, Nifti1Image)
+    assert sample_map.shape == (7, 8, 9)
+
+
 def test_check_second_level_input():
     from nilearn.glm.second_level.second_level import _check_second_level_input
     with pytest.raises(ValueError,
