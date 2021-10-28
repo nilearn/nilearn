@@ -53,7 +53,7 @@ Their work is crucial to improve the communication in the project and limit the 
 The :ref:`issue_labels` and :ref:`closing_policy` of the project is defined in more details in the :ref:`maintenance_process` page.
 
 Any contributor may become a member of the Nilearn :ref:`triage`.
-If you are interested in joining the :ref:`triage`, you can contact one of the :ref:`core_devs`.
+If you are interested in joining the :ref:`triage`, please read the :ref:`maintenance_process` page and contact one of the :ref:`core_devs` to express your interest!
 
 Contribute code
 ---------------
