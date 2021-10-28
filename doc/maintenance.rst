@@ -59,10 +59,10 @@ Finally, we also indicate the **priority level** of the issue:
 	- |priority: medium| The task is important but not urgent and should be addressed over the next few months.
 	- |priority: low| The task is not urgent and can be delayed.
 
-Some issues are much easier and can serve as good starting project for
+Some issues---particular those which are low effort and low to medium priority---can serve as good starting project for
 new contributors. We label these issues with the |Good first issue| label
 which can be seen as an equivalent to a "very low effort" label. Because of
-this, good first issues do not require an effort label.
+this, good first issues do not require a separate effort label.
 
 Other labels can be used to describe further the topic of the issue:
 
