@@ -484,7 +484,7 @@ process can be found there : :ref:`maintenance_process`.
 .. _`neurostars`:
     https://neurostars.org/tag/nilearn
 
- .. _`new issue`:
+.. _`new issue`:
     https://github.com/nilearn/nilearn/issues/new/choose
 
 .. _`pull requests`:
