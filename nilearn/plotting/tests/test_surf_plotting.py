@@ -21,6 +21,7 @@ from nilearn.plotting.surf_plotting import VALID_HEMISPHERES, VALID_VIEWS
 
 try:
     import plotly.graph_objects as go  # noqa: F841
+    from nilearn.plotting.displays import PlotlySurfaceFigure  # noqa: F841
 except ImportError:
     PLOTLY_INSTALLED = False
 else:
@@ -87,7 +88,7 @@ def test_set_view_plot_surf_matplotlib(hemi, view, expected_view_matplotlib):
 
 
 def test_surface_figure():
-    from nilearn.plotting.surf_plotting import SurfaceFigure
+    from nilearn.plotting.displays import SurfaceFigure
     s = SurfaceFigure()
     assert s.output_file is None
     assert s.figure is None
@@ -104,7 +105,6 @@ def test_surface_figure():
 @pytest.mark.skipif(not PLOTLY_INSTALLED,
                     reason='Plotly is not installed; required for this test.')
 def test_plotly_surface_figure():
-    from nilearn.plotting.surf_plotting import PlotlySurfaceFigure
     ps = PlotlySurfaceFigure()
     assert ps.output_file is None
     assert ps.figure is None
@@ -119,7 +119,6 @@ def test_plotly_surface_figure():
                             "required for this test."))
 @pytest.mark.parametrize("renderer", ['png', 'jpeg', 'svg'])
 def test_plotly_show(renderer):
-    from nilearn.plotting.surf_plotting import PlotlySurfaceFigure
     ps = PlotlySurfaceFigure.init_with_figure(go.Figure())
     assert ps.output_file is None
     assert ps.figure is not None
@@ -133,7 +132,6 @@ def test_plotly_show(renderer):
 @pytest.mark.skipif(not PLOTLY_INSTALLED,
                     reason='Plotly is not installed; required for this test.')
 def test_plotly_savefig(tmpdir):
-    from nilearn.plotting.surf_plotting import PlotlySurfaceFigure
     ps = PlotlySurfaceFigure.init_with_figure(
         go.Figure(), output_file=str(tmpdir / "foo.png")
     )
@@ -147,7 +145,6 @@ def test_plotly_savefig(tmpdir):
                     reason='Plotly is not installed; required for this test.')
 @pytest.mark.parametrize("input_obj", ["foo", Figure(), ["foo", "bar"]])
 def test_instantiation_error_plotly_surface_figure(input_obj):
-    from nilearn.plotting.surf_plotting import PlotlySurfaceFigure
     with pytest.raises(TypeError,
                        match=("`PlotlySurfaceFigure` accepts only "
                               "plotly figure objects.")):

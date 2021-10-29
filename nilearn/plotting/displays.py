@@ -2357,3 +2357,98 @@ def get_slicer(display_mode):
 def get_projector(display_mode):
     "Internal function to retrieve a projector"
     return get_create_display_fun(display_mode, PROJECTORS)
+
+
+class SurfaceFigure:
+    """Abstract class for surface figures.
+
+    Parameters
+    ----------
+    output_file : :obj:`str` or ``None``, optional
+        Path to output file.
+
+    figure : Figure instance or ``None``, optional
+        Figure to be wrapped.
+    """
+    def __init__(self, output_file=None, figure=None):
+        self.output_file = output_file
+        self.figure = figure
+
+    def show(self):
+        """Show the figure."""
+        raise NotImplementedError
+
+    def _check_output_file(self, output_file=None):
+        """If an output file is provided, set it as
+        the new default output file.
+
+        Parameters
+        ----------
+        output_file : :obj:`str` or ``None``, optional
+            Path to output file.
+        """
+        if output_file is None:
+            if self.output_file is None:
+                raise ValueError("You must provide an output file "
+                                 "name to save the figure.")
+        else:
+            self.output_file = output_file
+
+
+class PlotlySurfaceFigure(SurfaceFigure):
+    """Implementation of a surface figure obtained with `plotly` engine.
+
+    Parameters
+    ----------
+    output_file : :obj:`str` or ``None``, optional
+        Output file path.
+
+    figure : Plotly figure instance or ``None``, optional
+        Figure.
+    """
+    def __init__(self, output_file=None, figure=None):
+        super().__init__(output_file=output_file, figure=figure)
+
+    @classmethod
+    def init_with_figure(cls, figure, output_file=None):
+        """Instantiate with a Plotly figure.
+
+        Parameters
+        ----------
+        figure : Plotly figure instance
+            Figure to be used.
+
+        output_file : :obj:`str` or ``None``, optional
+            Output file path.
+        """
+        import plotly.graph_objects as go
+        if isinstance(figure, go.Figure):
+            return cls(output_file=output_file, figure=figure)
+        else:
+            raise TypeError("`PlotlySurfaceFigure` accepts only "
+                            "plotly figure objects.")
+
+    def show(self, renderer="browser"):
+        """Show the figure.
+
+        Parameters
+        ----------
+        renderer : :obj:`str`, optional
+            Plotly renderer to be used.
+            Default='browser'.
+        """
+        if self.figure is not None:
+            self.figure.show(renderer=renderer)
+            return self.figure
+
+    def savefig(self, output_file=None):
+        """Saves the figure to file.
+
+        Parameters
+        ----------
+        output_file : :obj:`str` or ``None``, optional
+            Path to output file.
+        """
+        self._check_output_file(output_file=output_file)
+        if self.figure is not None:
+            self.figure.write_image(self.output_file)

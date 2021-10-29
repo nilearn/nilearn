@@ -103,92 +103,6 @@ LAYOUT = {
 }
 
 
-class SurfaceFigure:
-    """Abstract class for surface figures.
-
-    Parameters
-    ----------
-    output_file : :obj:`str` or ``None``, optional
-        Path to output file.
-
-    figure : Figure instance or ``None``, optional
-        Figure to be wrapped.
-    """
-    def __init__(self, output_file=None, figure=None):
-        self.output_file = output_file
-        self.figure = figure
-
-    def show(self):
-        """Show the figure."""
-        raise NotImplementedError
-
-    def _check_output_file(self, output_file=None):
-        """If an output file is provided, set it as
-        the new default output file.
-
-        Parameters
-        ----------
-        output_file : :obj:`str` or ``None``, optional
-            Path to output file.
-        """
-        if output_file is None:
-            if self.output_file is None:
-                raise ValueError("You must provide an output file "
-                                 "name to save the figure.")
-        else:
-            self.output_file = output_file
-
-
-class PlotlySurfaceFigure(SurfaceFigure):
-    """Implementation of a surface figure obtained with `plotly` engine.
-
-    Parameters
-    ----------
-    output_file : :ob:`str` or ``None``, optional
-        Output file path.
-
-    figure : Plotly figure instance or ``None``, optional
-        Figure.
-    """
-    def __init__(self, output_file=None, figure=None):
-        super().__init__(output_file=output_file, figure=figure)
-
-    @classmethod
-    def init_with_figure(cls, figure, output_file=None):
-        """Instantiate with a Plotly figure."""
-        import plotly.graph_objects as go
-        if isinstance(figure, go.Figure):
-            return cls(output_file=output_file, figure=figure)
-        else:
-            raise TypeError("`PlotlySurfaceFigure` accepts only "
-                            "plotly figure objects.")
-
-    def show(self, renderer="browser"):
-        """Show the figure.
-
-        Parameters
-        ----------
-        renderer : :obj`str`, optional
-            Plotly renderer to be used.
-            Default='browser'.
-        """
-        if self.figure is not None:
-            self.figure.show(renderer=renderer)
-            return self.figure
-
-    def savefig(self, output_file=None):
-        """Saves the figure to file.
-
-        Parameters
-        ----------
-        output_file : :obj:`str` or ``None``, optional
-            Path to output file.
-        """
-        self._check_output_file(output_file=output_file)
-        if self.figure is not None:
-            self.figure.write_image(self.output_file)
-
-
 def _set_view_plot_surf_plotly(hemi, view):
     """Helper function for plot_surf with plotly engine.
 
@@ -281,6 +195,7 @@ def _plot_surf_plotly(coords, faces, surf_map=None, bg_map=None,
     """
     try:
         import plotly.graph_objects as go
+        from nilearn.plotting.displays import PlotlySurfaceFigure
     except ImportError:
         msg = "Using engine='plotly' requires that ``plotly`` is installed."
         raise ImportError(msg)  # noqa
@@ -760,13 +675,14 @@ def plot_surf(surf_mesh, surf_map=None, bg_map=None,
             This option is currently only implemented for the
             ``matplotlib`` engine.
 
-    Return
-    ------
-    fig : :class:`~matplotlib.figure.Figure` or :class:`~nilearn.plotting.surf_plotting.PlotlySurfaceFigure`
-        The surface figure. If ``engine='matplotlib'`` than a
+    Returns
+    -------
+    fig : :class:`~matplotlib.figure.Figure` or\
+    :class:`~nilearn.plotting.displays.PlotlySurfaceFigure`
+        The surface figure. If ``engine='matplotlib'`` then a
         :class:`~matplotlib.figure.Figure` is returned.
         If ``engine='plotly'``, then a
-        :class:`~nilearn.plotting.surf_plotting.PlotlySurfaceFigure`
+        :class:`~nilearn.plotting.displays.PlotlySurfaceFigure`
         is returned
 
     See Also
