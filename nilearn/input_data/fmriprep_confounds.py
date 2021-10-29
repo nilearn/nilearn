@@ -242,18 +242,16 @@ def fmriprep_confounds(img_files,
     confounds_out = []
     sample_mask_out = []
     for file in img_files:
-        sample_mask, conf = _load_single(file,
-                                         strategy,
-                                         demean,
-                                         motion=motion,
-                                         scrub=scrub,
-                                         fd_threshold=fd_threshold,
-                                         std_dvars_threshold=std_dvars_threshold,
-                                         wm_csf=wm_csf,
-                                         global_signal=global_signal,
-                                         compcor=compcor,
-                                         n_compcor=n_compcor,
-                                         ica_aroma=ica_aroma)
+        sample_mask, conf = _load_single(
+            file, strategy, demean,
+            motion=motion,
+            scrub=scrub,
+            fd_threshold=fd_threshold,
+            std_dvars_threshold=std_dvars_threshold,
+            wm_csf=wm_csf,
+            global_signal=global_signal,
+            compcor=compcor, n_compcor=n_compcor,
+            ica_aroma=ica_aroma)
         confounds_out.append(conf)
         sample_mask_out.append(sample_mask)
 
