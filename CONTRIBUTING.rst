@@ -27,8 +27,7 @@ We welcome open discussion around improvements---both to the documentation as we
 
     * If you have an idea for a new feature, check if it is in the :ref:`nilearn_scope` and feel free to open a `new issue`_ to discuss it.
 
-    * If you think documentation can be improved, you can directly send proposed improvements through `pull requests`_.
-
+    * If you think the documentation can be improved, please open a `new issue`_ to discuss what you would like to change! This helps to confirm that your proposed improvements don't overlap with any ongoing work.
 
 Answer questions
 ----------------
