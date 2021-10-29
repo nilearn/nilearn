@@ -104,15 +104,15 @@ LAYOUT = {
 
 
 class SurfaceFigure:
-    """Implementation of a unifying interface for surface figures.
+    """Abstract class for surface figures.
 
     Parameters
     ----------
     output_file : :obj:`str` or ``None``, optional
         Path to output file.
 
-    figure : Matplotlib or Plotly figure instance or ``None``, optional
-        Figure.
+    figure : Figure instance or ``None``, optional
+        Figure to be wrapped.
     """
     def __init__(self, output_file=None, figure=None):
         self.output_file = output_file
@@ -163,10 +163,17 @@ class PlotlySurfaceFigure(SurfaceFigure):
             raise TypeError("`PlotlySurfaceFigure` accepts only "
                             "plotly figure objects.")
 
-    def show(self):
-        """Show the figure."""
+    def show(self, renderer="browser"):
+        """Show the figure.
+
+        Parameters
+        ----------
+        renderer : :obj`str`, optional
+            Plotly renderer to be used.
+            Default='browser'.
+        """
         if self.figure is not None:
-            self.figure.show()
+            self.figure.show(renderer=renderer)
             return self.figure
 
     def savefig(self, output_file=None):
@@ -180,52 +187,6 @@ class PlotlySurfaceFigure(SurfaceFigure):
         self._check_output_file(output_file=output_file)
         if self.figure is not None:
             self.figure.write_image(self.output_file)
-
-
-class MatplotlibSurfaceFigure(SurfaceFigure):
-    """Implementation of a surface figure obtained with `matplotlib` engine.
-
-    Parameters
-    ----------
-    output_file : :ob:`str` or ``None``, optional
-        Output file path.
-
-    figure : Matplotlib figure instance or ``None``, optional
-        Figure.
-    """
-    def __init__(self, output_file=None, figure=None):
-        super().__init__(output_file=output_file, figure=figure)
-
-    @classmethod
-    def init_with_figure(cls, figure, output_file=None):
-        """Instantiate with a Matplotlib figure."""
-        if isinstance(figure, plt.Figure):
-            return cls(output_file=output_file, figure=figure)
-        else:
-            raise TypeError("`MatplotlibSurfaceFigure` accepts only "
-                            "matplotlib figure objects.")
-
-    def show(self):
-        """Shows the figure."""
-        if self.figure is not None:
-            plt.show()
-            return self.figure
-
-    def savefig(self, output_file=None):
-        """Saves the figure to file.
-
-        Parameters
-        ----------
-        output_file : :obj:`str` or ``None``, optional
-            Path to output file.
-        """
-        self._check_output_file(output_file=output_file)
-        if self.figure is not None:
-            self.figure.savefig(self.output_file)
-
-    def close(self):
-        """Close the figure."""
-        plt.close(self.figure.number)
 
 
 def _set_view_plot_surf_plotly(hemi, view):
@@ -645,15 +606,12 @@ def _plot_surf_matplotlib(coords, faces, surf_map=None, bg_map=None,
 
     if title is not None:
         figure.suptitle(title, x=.5, y=.95, fontsize=title_font_size)
-    matplotlib_figure = MatplotlibSurfaceFigure.init_with_figure(
-        figure, output_file=output_file
-    )
     # save figure if output file is given
     if output_file is not None:
-        matplotlib_figure.savefig()
-        matplotlib_figure.close()
+        figure.savefig(output_file)
+        plt.close()
     else:
-        return matplotlib_figure
+        return figure
 
 
 @fill_doc
@@ -802,6 +760,15 @@ def plot_surf(surf_mesh, surf_map=None, bg_map=None,
             This option is currently only implemented for the
             ``matplotlib`` engine.
 
+    Return
+    ------
+    fig : :class:`~matplotlib.figure.Figure` or :class:`~nilearn.plotting.surf_plotting.PlotlySurfaceFigure`
+        The surface figure. If ``engine='matplotlib'`` than a
+        :class:`~matplotlib.figure.Figure` is returned.
+        If ``engine='plotly'``, then a
+        :class:`~nilearn.plotting.surf_plotting.PlotlySurfaceFigure`
+        is returned
+
     See Also
     --------
     nilearn.datasets.fetch_surf_fsaverage : For surface data object to be
@@ -934,7 +901,7 @@ def plot_surf_contours(surf_mesh, roi_map, axes=None, figure=None, levels=None,
 
     """
     if figure is None and axes is None:
-        figure = plot_surf(surf_mesh, **kwargs).figure
+        figure = plot_surf(surf_mesh, **kwargs)
         axes = figure.axes[0]
     if figure is None:
         figure = axes.get_figure()
@@ -986,7 +953,7 @@ def plot_surf_contours(surf_mesh, roi_map, axes=None, figure=None, levels=None,
     # plot legend only if indicated and labels provided
     pos_title_x = .5
     if legend and np.any([lbl is not None for lbl in labels]):
-        figure.figure.legend(handles=patch_list)
+        figure.legend(handles=patch_list)
         # if legends, then move title to the left
         pos_title_x = .3
     if title is None and hasattr(figure._suptitle, "_text"):
