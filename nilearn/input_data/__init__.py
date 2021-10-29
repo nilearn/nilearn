@@ -8,6 +8,9 @@ from .nifti_labels_masker import NiftiLabelsMasker
 from .nifti_maps_masker import NiftiMapsMasker
 from .nifti_spheres_masker import NiftiSpheresMasker
 from .fmriprep_confounds import fmriprep_confounds
+from .fmriprep_confounds_strategy import fmriprep_confounds_strategy
+
 
 __all__ = ['NiftiMasker', 'MultiNiftiMasker', 'NiftiLabelsMasker',
-           'NiftiMapsMasker', 'NiftiSpheresMasker', 'fmriprep_confounds']
+           'NiftiMapsMasker', 'NiftiSpheresMasker',
+           'fmriprep_confounds', 'fmriprep_confounds_strategy']

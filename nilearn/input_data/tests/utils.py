@@ -6,7 +6,7 @@ from nilearn.input_data import fmriprep_confounds_utils
 
 
 img_file_patterns = {
-    "icaaroma":
+    "ica_aroma":
         "_space-MNI152NLin2009cAsym_desc-smoothAROMAnonaggr_bold.nii.gz",
     "regular":
         "_space-MNI152NLin2009cAsym_desc-preproc_bold.nii.gz",

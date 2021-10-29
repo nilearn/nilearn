@@ -359,7 +359,7 @@ def test_not_found_exception(tmp_path):
     # Aggressive ICA-AROMA strategy requires
     # default nifti
     aroma_nii, _ = create_tmp_filepath(
-        tmp_path, image_type="icaaroma", suffix="aroma"
+        tmp_path, image_type="ica_aroma", suffix="aroma"
     )
     with pytest.raises(ValueError) as exc_info:
         fmriprep_confounds(
@@ -449,7 +449,7 @@ def test_invalid_filetype(tmp_path):
 def test_ica_aroma(tmp_path):
     """Test ICA AROMA related file input."""
     aroma_nii, _ = create_tmp_filepath(
-        tmp_path, image_type="icaaroma", copy_confounds=True
+        tmp_path, image_type="ica_aroma", copy_confounds=True
     )
     regular_nii, _ = create_tmp_filepath(
         tmp_path, image_type="regular", copy_confounds=True
@@ -511,7 +511,7 @@ def test_sample_mask(tmp_path):
 
 
 @pytest.mark.parametrize(
-    "image_type", ["regular", "icaaroma", "gifti", "cifti"]
+    "image_type", ["regular", "ica_aroma", "gifti", "cifti"]
 )
 def test_inputs(tmp_path, image_type):
     """Test multiple images as input."""
@@ -527,7 +527,7 @@ def test_inputs(tmp_path, image_type):
         )
         files.append(nii)
 
-    if image_type == "icaaroma":
+    if image_type == "ica_aroma":
         conf, _ = fmriprep_confounds(files, strategy=["ica_aroma"])
     else:
         conf, _ = fmriprep_confounds(files)

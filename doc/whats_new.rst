@@ -9,6 +9,9 @@ NEW
   import and encouraged to update to more recent versions of Python.
 - New function :func:`nilearn.input_data.fmriprep_confounds` to load confound variables easily
   from :term:`fMRIPrep` outputs.
+- New function :func:`nilearn.input_data.fmriprep_confounds_strategy` to load confound variables 
+  from :term:`fMRIPrep` outputs using four preset strategies: ``simple``, ``scrubbing``, 
+  ``compcor``, ``ica_aroma``.
 - Surface plotting functions like :func:`nilearn.plotting.plot_surf_stat_map`
   now have an `engine` parameter, defaulting to "matplotlib", but which can be
   set to "plotly". If plotly and kaleido are installed, this will generate an
