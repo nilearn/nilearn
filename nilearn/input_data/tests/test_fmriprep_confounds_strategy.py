@@ -73,7 +73,7 @@ def test_strategy_scrubbing(tmp_path):
     file_nii, _ = create_tmp_filepath(tmp_path, image_type="regular",
                                       copy_confounds=True, copy_json=True)
     confounds, sample_mask = fmriprep_confounds_strategy(
-        file_nii, denoise_strategy="scrubbing", fd_thresh=0.15)
+        file_nii, denoise_strategy="scrubbing", fd_threshold=0.15)
 
     # out of 30 vols, should have 6 motion outliers from scrubbing,
     # and 2 vol removed by srubbing strategy "full"
@@ -84,7 +84,7 @@ def test_strategy_scrubbing(tmp_path):
     # this should not produce an error
     confounds, sample_mask = fmriprep_confounds_strategy(
         file_nii, denoise_strategy="scrubbing",
-        fd_thresh=1, std_dvars_thresh=5)
+        fd_threshold=1, std_dvars_threshold=5)
     assert len(sample_mask) == 29  # only non-steady volumes removed
 
     # maker sure global signal works

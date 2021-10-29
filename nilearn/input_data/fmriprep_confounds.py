@@ -28,7 +28,7 @@ component_parameters = {
     "global": ["global_signal"],
     "compcor": ["meta_json", "compcor", "n_compcor"],
     "ica_aroma": ["ica_aroma"],
-    "scrub": ["scrub", "fd_thresh", "std_dvars_thresh"],
+    "scrub": ["scrub", "fd_threshold", "std_dvars_threshold"],
 }
 
 
@@ -63,7 +63,7 @@ def _check_error(missing):
 def fmriprep_confounds(img_files,
                        strategy=["motion", "high_pass", "wm_csf"],
                        motion="full",
-                       scrub=5, fd_thresh=0.2, std_dvars_thresh=3,
+                       scrub=5, fd_threshold=0.2, std_dvars_threshold=3,
                        wm_csf="basic",
                        global_signal="basic",
                        compcor="anat_combined", n_compcor="all",
@@ -247,8 +247,8 @@ def fmriprep_confounds(img_files,
                                          demean,
                                          motion=motion,
                                          scrub=scrub,
-                                         fd_thresh=fd_thresh,
-                                         std_dvars_thresh=std_dvars_thresh,
+                                         fd_threshold=fd_threshold,
+                                         std_dvars_threshold=std_dvars_threshold,
                                          wm_csf=wm_csf,
                                          global_signal=global_signal,
                                          compcor=compcor,

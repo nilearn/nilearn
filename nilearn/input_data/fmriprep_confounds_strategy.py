@@ -28,8 +28,8 @@ preset_strategies = {
         "motion": "full",
         "wm_csf": "full",
         "scrub": 5,
-        "fd_thresh": 0.2,
-        "std_dvars_thresh": 3,
+        "fd_threshold": 0.2,
+        "std_dvars_threshold": 3,
         "global_signal": None,
         "demean": True
     },
@@ -145,22 +145,22 @@ def fmriprep_confounds_strategy(img_files, denoise_strategy="simple",
        strategies. Parameters with `*` denote customisable parameters. Please
        see :func:`nilearn.input_data.fmriprep_confounds`.
 
-        ========= ========= ====== ====== ============= ===== ========= \
-        ================ ============== ========= ========= ======
-        strategy  high_pass motion wm_csf global_signal scrub fd_thresh \
-        std_dvars_thresh compcor        n_compcor ica_aroma demean
-        ========= ========= ====== ====== ============= ===== ========= \
-        ================ ============== ========= ========= ======
-        simple    True      full*  basic* None*         N/A   N/A       \
-        N/A              N/A            N/A       N/A       True*
-        scrubbing True      full*  full   None*         5*    0.2*      \
-        3*               N/A            N/A       N/A       True*
-        compcor   True      full*  N/A    N/A           N/A   N/A       \
-        N/A              anat_combined* all*      N/A       True*
-        ica_aroma True      N/A    basic* None*         N/A   N/A       \
-        N/A              N/A            N/A       full      True*
-        ========= ========= ====== ====== ============= ===== ========= \
-        ================ ============== ========= ========= ======
+        ========= ========= ====== ====== ============= ===== ============ \
+        ==================== ============== ========= ========= ======
+        strategy  high_pass motion wm_csf global_signal scrub fd_threshold  \
+        std_dvars_threshold compcor        n_compcor ica_aroma demean
+        ========= ========= ====== ====== ============= ===== ============  \
+        =================== ============== ========= ========= ======
+        simple    True      full*  basic* None*         N/A   N/A           \
+        N/A                 N/A            N/A       N/A       True*
+        scrubbing True      full*  full   None*         5*    0.2*          \
+        3*                  N/A            N/A       N/A       True*
+        compcor   True      full*  N/A    N/A           N/A   N/A           \
+        N/A                 anat_combined* all*      N/A       True*
+        ica_aroma True      N/A    basic* None*         N/A   N/A           \
+        N/A                 N/A            N/A       full      True*
+        ========= ========= ====== ====== ============= ===== ============  \
+        =================== ============== ========= ========= ======
 
     2. ICA-AROMA is implemented in two steps in :footcite:`Pruim2015`:
 
