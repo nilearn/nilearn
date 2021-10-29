@@ -6,9 +6,8 @@ import matplotlib.pyplot as plt
 import pytest
 import re
 import tempfile
-import io
 import os
-from contextlib import redirect_stdout
+import unittest.mock as mock
 
 from nilearn.plotting.img_plotting import MNI152TEMPLATE
 from nilearn.plotting.surf_plotting import (plot_surf, plot_surf_stat_map,
@@ -26,6 +25,13 @@ except ImportError:
     PLOTLY_INSTALLED = False
 else:
     PLOTLY_INSTALLED = True
+
+try:
+    import IPython.display  # noqa: F841
+except ImportError:
+    IPYTHON_INSTALLED = False
+else:
+    IPYTHON_INSTALLED = True
 
 EXPECTED_CAMERAS_PLOTLY = {"left": {"anterior": "anterior",
                                     "posterior": "posterior",
@@ -108,18 +114,20 @@ def test_plotly_surface_figure():
     ps.savefig('foo.png')
 
 
-@pytest.mark.skipif(not PLOTLY_INSTALLED,
-                    reason='Plotly is not installed; required for this test.')
+@pytest.mark.skipif(not PLOTLY_INSTALLED or not IPYTHON_INSTALLED,
+                    reason=("Plotly and/or Ipython is not installed; "
+                            "required for this test."))
 @pytest.mark.parametrize("renderer", ['png', 'jpeg', 'svg'])
 def test_plotly_show(renderer):
     from nilearn.plotting.surf_plotting import PlotlySurfaceFigure
     ps = PlotlySurfaceFigure.init_with_figure(go.Figure())
     assert ps.output_file is None
     assert ps.figure is not None
-    with redirect_stdout(io.StringIO()) as f:
+    with mock.patch("IPython.display.display") as mock_display:
         ps.show(renderer=renderer)
-    output = f.getvalue()
-    assert output is not None
+    assert len(mock_display.call_args.args) == 1
+    key = 'svg+xml' if renderer == 'svg' else renderer
+    assert f'image/{key}' in mock_display.call_args.args[0]
 
 
 @pytest.mark.skipif(not PLOTLY_INSTALLED,
