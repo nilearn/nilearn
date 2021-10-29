@@ -28,7 +28,7 @@ else:
     PLOTLY_INSTALLED = True
 
 try:
-    import IPython.display  # noqa: F841
+    import IPython.display  # noqa
 except ImportError:
     IPYTHON_INSTALLED = False
 else:
