@@ -41,7 +41,8 @@ Review Pull Requests
 Any addition to the Nilearn's code base has to be reviewed and approved by several people including at least two :ref:`core_devs`.
 This can put a heavy burden on :ref:`core_devs` when a lot of `pull requests`_ are opened at the same time.
 We welcome help in reviewing `pull requests`_ from any community member.
-We do not expect community members to be experts in all changes included in a given `pull request`_, and we encourage you to concentrate on those code changes that you feel comfortable with.
+We do not expect community members to be experts in all changes included in
+`pull requests`_, and we encourage you to concentrate on those code changes that you feel comfortable with.
 As always, more eyes on a code change means that the code is more likely to work in a wide variety of contexts!
 
 Join the triage team
