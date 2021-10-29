@@ -9,23 +9,121 @@ Nilearn maintenance process
     :local:
 
 Project Organization
-======================
+====================
+
+This section describes how the project is organized.
 
 Issues
-------------------
+------
 
-Nilearn uses issues for tracking bugs, requesting potential features, and
-holding project discussions.
+Nilearn uses `issues <https://github.com/nilearn/nilearn/issues>`_ for
+tracking bugs, requesting potential features, and holding project discussions.
 
-Core developers can assign labels on issues, such as:
+.. _issue_labels:
 
-- |Discussion| These issues discuss ongoing discussions on the project where community feedback is requested.
-- |Enhancement| These issues discuss potential enhancements or additions to the project.
-- |Bug| These issues detail known bugs in the Nilearn code base.
+Labels
+......
 
-.. |Discussion| image:: https://img.shields.io/badge/-Discussion-bfe5bf.svg
-.. |Enhancement| image:: https://img.shields.io/badge/-Enhancement-fbca04.svg
+`Labels <https://github.com/nilearn/nilearn/labels>`_ are useful to
+quickly sort `issues <https://github.com/nilearn/nilearn/issues>`_
+and easily find what you are looking for in the issue tracker.
+
+When `creating an issue
+<https://github.com/nilearn/nilearn/issues/new/choose>`_, the user
+is responsible for a very basic labeling categorizing the issue:
+
+	- |Bug| for bug reports.
+	- |Documentation| for documentation related questions or requests.
+	- |Enhancement| for feature requests.
+
+First of all, the user might have mislabeled the issue, in which case a member
+of the :ref:`core_devs` team or :ref:`triage` needs to correct the labels.
+
+In addition to these basic labels, we have many more labels which describes
+in more detail a given issue. First, we try to describe the **estimated amount
+of work** required to solve each issue:
+
+	- |effort: high| The issue is likely to require a serious amount of work (more than a couple of days).
+	- |effort: medium| The issue is likely to require a decent amount of work (in between a few hours and a couple days).
+	- |effort: low| The issue is likely to require a small amount of work (less than a few hours).
+
+We also try to quantify the **estimated impact** of the proposed change on the project:
+
+	- |impact: high| Solving this issue will have a high impact on the project.
+	- |impact: medium| Solving this issue will have a decent impact on the project.
+	- |impact: low| Solving this issue will have a small impact on the project.
+
+Finally, we also indicate the **priority level** of the issue:
+
+	- |priority: high| The task is urgent and needs to be addressed as soon as possible.
+	- |priority: medium| The task is important but not urgent and should be addressed over the next few months.
+	- |priority: low| The task is not urgent and can be delayed.
+
+Some issues---particular those which are low effort and low to medium priority---can serve as good starting project for
+new contributors. We label these issues with the |Good first issue| label
+which can be seen as an equivalent to a "very low effort" label. Because of
+this, good first issues do not require a separate effort label.
+
+Other labels can be used to describe further the topic of the issue:
+
+	- |API| This issue is related to the Nilearn's API.
+	- |code quality| This issue tackles code quality (code refactoring, PEP8...).
+	- |Datasets| This issue is related to datasets or the :mod:`nilearn.datasets` module.
+	- |Discussion| This issue is used to hold a general discussion on a specific topic where community feedback is desired (no need to specify effort, priority, or impact here).
+	- |GLM| This issue is related to the :mod:`nilearn.glm` module.
+	- |Infrastructure| This issue describes a problem with the project's infrastructure (CI/CD...).
+	- |Installation| The issue describes a problem with the installation of Nilearn.
+	- |Maintenance| This issue is related to maintenance work.
+	- |Plotting| The issue is related to plotting functionalities.
+	- |Testing| The issue is related to testing.
+	- |Usage| This issue is a usage question and should have been posted on `neurostars <https://neurostars.org/>`_.
+
+Finally, we use the following labels to indicate how the work on the issue
+is going:
+
+	- |in progress| Can be used to indicate that this issue is currently being investigated.
+	- |next-release| Commonly used for tagging PRs, this can be used to indicate that this issue should be solved before the next release.
+	- |stalled| This issue is currently stalled and has no recent activity. Use this label before closing due to inactivity.
+
+.. |API| image:: https://img.shields.io/badge/-API-fef2c0.svg
 .. |Bug| image:: https://img.shields.io/badge/-Bug-fc2929.svg
+.. |code quality| image:: https://img.shields.io/badge/-code%20quality-09ef5a.svg
+.. |Datasets| image:: https://img.shields.io/badge/-Datasets-fad8c7.svg
+.. |Discussion| image:: https://img.shields.io/badge/-Discussion-bfe5bf.svg
+.. |Documentation| image:: https://img.shields.io/badge/-Documentation-5319e7.svg
+.. |effort: high| image:: https://img.shields.io/badge/-effort:%20high-e26051.svg
+.. |effort: medium| image:: https://img.shields.io/badge/-effort:%20medium-ddad1a.svg
+.. |effort: low| image:: https://img.shields.io/badge/-effort:%20low-77c940.svg
+.. |Enhancement| image:: https://img.shields.io/badge/-Enhancement-fbca04.svg
+.. |GLM| image:: https://img.shields.io/badge/-GLM-fce1c4.svg
+.. |Good first issue| image:: https://img.shields.io/badge/-Good%20first%20issue-c7def8.svg
+.. |impact: high| image:: https://img.shields.io/badge/-impact:%20high-1f1dc1.svg
+.. |impact: medium| image:: https://img.shields.io/badge/-impact:%20medium-bac1fc.svg
+.. |impact: low| image:: https://img.shields.io/badge/-impact:%20low-75eae6.svg
+.. |in progress| image:: https://img.shields.io/badge/-in%20progress-ededed.svg
+.. |Infrastructure| image:: https://img.shields.io/badge/-Infrastructure-0052cc.svg
+.. |Installation| image:: https://img.shields.io/badge/-Installation-ba7030.svg
+.. |Maintenance| image:: https://img.shields.io/badge/-Maintenance-fc918f.svg
+.. |next-release| image:: https://img.shields.io/badge/-next--release-55c11f.svg
+.. |Plotting| image:: https://img.shields.io/badge/-Plotting-5319e7.svg
+.. |priority: high| image:: https://img.shields.io/badge/-priority:%20high-9e2409.svg
+.. |priority: medium| image:: https://img.shields.io/badge/-priority:%20medium-FBCA04.svg
+.. |priority: low| image:: https://img.shields.io/badge/-priority:%20low-c5def5.svg
+.. |stalled| image:: https://img.shields.io/badge/-stalled-c2e0c6.svg
+.. |Testing| image:: https://img.shields.io/badge/-Testing-50bac4.svg
+.. |Usage| image:: https://img.shields.io/badge/-Usage-e99695.svg
+
+.. _closing_policy:
+
+Closing policy
+..............
+
+Usually we expect the issue's author to close the issue, but there are several
+possible reasons for a community member to close an issue:
+
+	- The issue has been solved: kindly asked the author whether the issue can be closed. In the absence of reply, close the issue after two weeks.
+	- The issue is a usage question: label the issue with |Usage| and kindly redirect the author to `neurostars <https://neurostars.org/>`_. Close the issue afterwards.
+	- The issue has no recent activity (no messages in the last three months): ping the author to see if the issue is still relevant. In the absence of reply, label the issue with |stalled| and close it after 2 weeks.
 
 .. _pull request:
 

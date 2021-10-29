@@ -49,6 +49,12 @@ Enhancements
   The user is suggested to set one of
   those options to `True`, or standardize/demean the confounds before using the
   function.
+- The :doc:`contributing documentation</development>` and
+  :doc:`maintenance</maintenance>` pages were improved, especially towards ways
+  of contributing to the project which do not require to write code.
+  The roles of the :ref:`triage` were defined more clearly with sections on issue
+  :ref:`issue_labels` and issue :ref:`closing_policy`.
+  (See PR `#3010 <https://github.com/nilearn/nilearn/pull/3010>`_).
 - It is now possible to provide custom :term:`HRF` models to
   :class:`nilearn.glm.first_level.FirstLevelModel`. The custom model should be
   defined as a function, or a list of functions, implementing the same API as
