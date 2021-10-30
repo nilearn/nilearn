@@ -61,7 +61,7 @@ def _check_error(missing):
 
 
 def fmriprep_confounds(img_files,
-                       strategy=["motion", "high_pass", "wm_csf"],
+                       strategy=None,
                        motion="full",
                        scrub=5, fd_threshold=0.2, std_dvars_threshold=3,
                        wm_csf="basic",
@@ -235,6 +235,8 @@ def fmriprep_confounds(img_files,
     .. footbibliography::
 
     """
+    if strategy is None:
+        strategy = ["motion", "high_pass", "wm_csf"]
     strategy = _sanitize_strategy(strategy)
 
     # load confounds per image provided
