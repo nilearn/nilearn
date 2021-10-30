@@ -160,7 +160,7 @@ def fmriprep_confounds_strategy(img_files, denoise_strategy="simple",
         ica_aroma True      N/A    basic* None*         N/A   N/A          \
         N/A                 N/A            N/A       full      True*
         ========= ========= ====== ====== ============= ===== ============ \
-        ================== ============== ========= ========= ======
+        =================== ============== ========= ========= ======
 
     2. ICA-AROMA is implemented in two steps in :footcite:`Pruim2015`:
 
