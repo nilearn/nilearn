@@ -146,21 +146,21 @@ def fmriprep_confounds_strategy(img_files, denoise_strategy="simple",
        see :func:`nilearn.input_data.fmriprep_confounds`.
 
         ========= ========= ====== ====== ============= ===== ============ \
-        ==================== ============== ========= ========= ======
-        strategy  high_pass motion wm_csf global_signal scrub fd_threshold  \
+        =================== ============== ========= ========= ======
+        strategy  high_pass motion wm_csf global_signal scrub fd_threshold \
         std_dvars_threshold compcor        n_compcor ica_aroma demean
-        ========= ========= ====== ====== ============= ===== ============  \
+        ========= ========= ====== ====== ============= ===== ============ \
         =================== ============== ========= ========= ======
-        simple    True      full*  basic* None*         N/A   N/A           \
+        simple    True      full*  basic* None*         N/A   N/A          \
         N/A                 N/A            N/A       N/A       True*
-        scrubbing True      full*  full   None*         5*    0.2*          \
+        scrubbing True      full*  full   None*         5*    0.2*         \
         3*                  N/A            N/A       N/A       True*
-        compcor   True      full*  N/A    N/A           N/A   N/A           \
+        compcor   True      full*  N/A    N/A           N/A   N/A          \
         N/A                 anat_combined* all*      N/A       True*
-        ica_aroma True      N/A    basic* None*         N/A   N/A           \
+        ica_aroma True      N/A    basic* None*         N/A   N/A          \
         N/A                 N/A            N/A       full      True*
-        ========= ========= ====== ====== ============= ===== ============  \
-        =================== ============== ========= ========= ======
+        ========= ========= ====== ====== ============= ===== ============ \
+        ================== ============== ========= ========= ======
 
     2. ICA-AROMA is implemented in two steps in :footcite:`Pruim2015`:
 
