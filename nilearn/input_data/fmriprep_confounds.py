@@ -37,7 +37,7 @@ def _check_strategy(strategy):
     """Ensure the denoising strategies are valid."""
     if (not isinstance(strategy, tuple)) and (not isinstance(strategy, list)):
         raise ValueError("strategy needs to be a tuple or list of strings"
-                         f"{type(strategy)}")
+                         f" A {type(strategy)} was provided instead.")
     for conf in strategy:
         if conf == "non_steady_state":
             warnings.warn("Non-steady state volumes are always detected. It "
