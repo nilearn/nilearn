@@ -129,7 +129,7 @@ def fmriprep_confounds(img_files,
 
         There are two additional noise components with no optional parameters.
 
-        - "non_steady_state" denotes volumes collected before the fMRI scanner
+        - "non_steady_state" denotes volumes collected before the :term:`fMRI` scanner
           has reached a stable state.
         - "high_pass" discrete cosines covering low frequencies.
 
