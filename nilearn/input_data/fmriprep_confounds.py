@@ -122,7 +122,7 @@ def fmriprep_confounds(img_files,
 
         For each component above, associated parameters will be applied if
         present. Otherwise, any values supplied to the parameters are ignored.
-        For example, if `strategy=('motion', 'global_signal')` will allow user
+        For example, `strategy=('motion', 'global_signal')` will allow users
         to supply input to associated parameter `motion` and `global_signal`;
         if user pass `wm_csf` parameter, it will not be applied as it's not
         part of the `strategy`.
