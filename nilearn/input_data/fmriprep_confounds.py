@@ -131,7 +131,7 @@ def fmriprep_confounds(img_files,
 
         - "non_steady_state" denotes volumes collected before the :term:`fMRI` scanner
           has reached a stable state.
-        - "high_pass" discrete cosines covering low frequencies.
+        - "high_pass" add discrete cosines transformation basis regressors to handle low-frequency signal drifts.
 
         Non-steady-state volume will always be checked. There's no need to
         supply this componenet to the strategy.
