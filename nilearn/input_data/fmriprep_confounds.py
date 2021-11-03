@@ -124,7 +124,7 @@ def fmriprep_confounds(img_files,
         present. Otherwise, any values supplied to the parameters are ignored.
         For example, `strategy=('motion', 'global_signal')` will allow users
         to supply input to associated parameter `motion` and `global_signal`;
-        if user pass `wm_csf` parameter, it will not be applied as it's not
+        if users pass `wm_csf` parameter, it will not be applied as it is not
         part of the `strategy`.
 
         There are two additional noise components with no optional parameters.
