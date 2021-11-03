@@ -387,7 +387,7 @@ def test_not_found_exception(tmp_path):
 def test_non_steady_state(tmp_path):
     """Warn when 'non_steady_state' is in strategy."""
     # supplying 'non_steady_state' in strategy is not necessary
-    # check warning is correcly raised
+    # check warning is correctly raised
     img, conf = create_tmp_filepath(
         tmp_path, copy_confounds=True
     )
