@@ -133,7 +133,7 @@ def fmriprep_confounds(img_files,
           has reached a stable state.
         - "high_pass" add discrete cosines transformation basis regressors to handle low-frequency signal drifts.
 
-        Non-steady-state volume will always be checked. There's no need to
+        Non-steady-state volumes will always be checked. There's no need to
         supply this componenet to the strategy.
 
     motion : {'basic', 'power2', 'derivatives', 'full'}
