@@ -240,13 +240,17 @@ def test_confounds2df(tmp_path):
     assert "trans_x" in confounds.columns
 
 
-@pytest.mark.parametrize("strategy",
-                         [("string", ), "error", (0, ), ("compcor", )])
-def test_check_strategy(strategy):
+@pytest.mark.parametrize("strategy,message",
+                         [(["string", ], "not a supported type of confounds."),
+                          ("error", "tuple or list of strings"),
+                          ((0, ), "not a supported type of confounds."),
+                          (("compcor", ), "high_pass")])
+def test_check_strategy(strategy, message):
     """Check that flawed strategy options generate meaningful error
     messages."""
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError) as exc_info:
         _check_strategy(strategy=strategy)
+    assert message in exc_info.value.args[0]
 
 
 SUFFIXES = np.array(["", "_derivative1", "_power2", "_derivative1_power2"])

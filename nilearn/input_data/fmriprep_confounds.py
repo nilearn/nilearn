@@ -35,8 +35,8 @@ component_parameters = {
 
 def _check_strategy(strategy):
     """Ensure the denoising strategies are valid."""
-    if not isinstance(strategy, tuple):
-        raise ValueError("strategy needs to be a tuple of strings"
+    if (not isinstance(strategy, tuple)) and (not isinstance(strategy, list)):
+        raise ValueError("strategy needs to be a tuple or list of strings"
                          f"{type(strategy)}")
     for conf in strategy:
         if conf == "non_steady_state":
@@ -103,7 +103,8 @@ def fmriprep_confounds(img_files,
         - `func.gii`: list of a pair of paths to files, optionally as a list
           of lists.
 
-    strategy : tuple of strings, default ("motion", "high_pass", "wm_csf")
+    strategy : tuple or list of strings.
+        Default ("motion", "high_pass", "wm_csf")
         The type of noise components to include.
 
         - "motion":  head motion estimates. Associated parameter: `motion`
