@@ -17,7 +17,7 @@ New
 
 - Function :func:`~plotting.plot_connectome` now plots connectome with colorbars.
 
-- New function :func:`~image.resample_to_img` to resample one imgage on another one (just resampling / interpolation, no coregistration).
+- New function :func:`~image.resample_to_img` to resample one image on another one (just resampling / interpolation, no coregistration).
 
 Changes
 -------
