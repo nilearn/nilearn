@@ -1,0 +1,55 @@
+
+.. currentmodule:: nilearn
+
+.. include:: names.rst
+
+0.4.1
+=====
+
+This bug fix release is focused on few bug fixes and minor developments.
+
+Enhancements
+------------
+
+    - :class:`nilearn.decomposition.CanICA` and
+      :class:`nilearn.decomposition.DictLearning` has new attribute
+      `components_img_` providing directly the components learned as
+      a Nifti image. This avoids the step of unmasking the attribute
+      `components_` which is true for older versions.
+
+    - New object :class:`nilearn.regions.Parcellations` for learning brain
+      parcellations on fmri data.
+
+    - Add optional reordering of the matrix using a argument `reorder`
+      with :func:`nilearn.plotting.plot_matrix`.
+
+      .. note::
+        This feature is usable only if SciPy version is >= 1.0.0
+
+Changes
+-------
+
+    - Using output attribute `components_` which is an extracted components
+      in :class:`nilearn.decomposition.CanICA` and
+      :class:`nilearn.decomposition.DictLearning` is deprecated and will
+      be removed in next two releases. Use `components_img_` instead.
+
+Bug fixes
+---------
+
+    - Fix issues using :func:`nilearn.plotting.plot_connectome` when string is
+      passed in `node_color` with display modes left and right hemispheric cuts
+      in the glass brain.
+
+    - Fix bug while plotting only coordinates using add_markers on glass brain.
+      See issue #1595
+
+    - Fix issues with estimators in decomposition module when input images are
+      given in glob patterns.
+
+    - Fix bug loading Nifti2Images.
+
+    - Fix bug while adjusting contrast of the background template while using
+      :func:`nilearn.plotting.plot_prob_atlas`
+
+    - Fix colormap bug with recent matplotlib 2.2.0

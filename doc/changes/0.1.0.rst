@@ -1,0 +1,42 @@
+
+.. currentmodule:: nilearn
+
+.. include:: names.rst
+
+0.1.0
+=====
+
+Changelog
+---------
+
+First release of nilearn.
+
+Contributors (from ``git shortlog -ns 0.1``):
+
+    * `Gael Varoquaux`_ (600)
+    * `Alexandre Abraham`_ (483)
+    * `Loic Estève`_ (302)
+    * `Philippe Gervais`_ (254)
+    * Virgile Fritsch (122)
+    * Michael Eickenberg (83)
+    * Jean Kossaifi (59)
+    * Jaques Grobler (57)
+    * Danilo Bzdok (46)
+    * Chris Filo Gorgolewski (35)
+    * Ronald Phlypo (28)
+    * Ben Cipollini (25)
+    * `Bertrand Thirion`_ (15)
+    * `Alexandre Gramfort`_ (13)
+    * Fabian Pedregosa (12)
+    * Yannick Schwartz (11)
+    * `Mehdi Rahim`_ (9)
+    * Óscar Nájera (7)
+    * Elvis Dohmatob (6)
+    * Konstantin Shmelkov (4)
+    * Jason Gors (3)
+    * Salma Bougacha (3)
+    * Alexandre Savio (1)
+    * Jan Margeta (1)
+    * Matthias Ekman (1)
+    * Michael Waskom (1)
+    * Vincent Michel (1)

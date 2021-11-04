@@ -1,0 +1,118 @@
+
+.. currentmodule:: nilearn
+
+.. include:: names.rst
+
+0.4.0
+=====
+
+**Highlights**:
+
+    - :func:`nilearn.surface.vol_to_surf` to project volume data to the
+      surface.
+
+    - :func:`nilearn.plotting.plot_matrix` to display matrices, eg connectomes
+
+Enhancements
+-------------
+
+    - New function :func:`nilearn.surface.vol_to_surf` to project a 3d or
+      4d brain volume on the cortical surface.
+
+    - New matrix plotting function, eg to display connectome matrices:
+      :func:`nilearn.plotting.plot_matrix`
+
+    - Expose :func:`nilearn.image.coord_transform` for end users. Useful
+      to transform coordinates (x, y, z) from one image space to
+      another space.
+
+    - :func:`nilearn.image.resample_img` now takes a linear resampling
+      option (implemented by Joe Necus)
+
+    - :func:`nilearn.datasets.fetch_atlas_talairach` to fetch the Talairach
+      atlas (http://talairach.org)
+
+    - Enhancing new surface plotting functions, added new parameters
+      "axes" and "figure" to accept user-specified instances in
+      :func:`nilearn.plotting.plot_surf` and
+      :func:`nilearn.plotting.plot_surf_stat_map` and
+      :func:`nilearn.plotting.plot_surf_roi`
+
+    - :class:`nilearn.decoding.SearchLight` has new parameter "groups" to
+      do LeaveOneGroupOut type cv with new scikit-learn module model selection.
+
+    - Enhancing the glass brain plotting in back view 'y' direction.
+
+    - New parameter "resampling_interpolation" is added in most used
+      plotting functions to have user control for faster visualizations.
+
+    - Upgraded to Sphinx-Gallery 0.1.11
+
+Bug fixes
+----------
+
+    - Dimming factor applied to background image in plotting
+      functions with "dim" parameter will no longer accepts as
+      string ('-1'). An error will be raised.
+
+    - Fixed issues with matplotlib 2.1.0.
+
+    - Fixed issues with SciPy 1.0.0.
+
+Changes
+---------
+
+    - **Backward incompatible change**: :func:`nilearn.plotting.find_xyz_cut_coords`
+      now takes a `mask_img` argument which is a niimg, rather than a `mask`
+      argument, which used to be a numpy array.
+
+    - The minimum required version for scipy is now 0.14
+
+    - Dropped support for Nibabel older than 2.0.2.
+
+    - :func:`nilearn.image.smooth_img` no longer accepts smoothing
+      parameter fwhm as 0. Behavior is changed in according to the
+      issues with recent SciPy version 1.0.0.
+
+    - "dim" factor range is slightly increased to -2 to 2 from -1 to 1.
+      Range exceeding -1 meaning more increase in contrast should be
+      cautiously set.
+
+    - New 'anterior' and 'posterior' view added to the plot_surf family views
+
+    - Using argument `anat_img` for placing background image in
+      :func:`nilearn.plotting.plot_prob_atlas` is deprecated. Use argument
+      `bg_img` instead.
+
+    - The examples now use pandas for the behavioral information.
+
+Contributors
+-------------
+
+The following people contributed to this release::
+
+   127  Jerome Dockes
+    62  Gael Varoquaux
+    36  Kamalakar Daddy
+    11  Jeff Chiang
+     9  Elizabeth DuPre
+     9  Jona Sassenhagen
+     7  Sylvain Lan
+     6  J Necus
+     5  Pierre-Olivier Quirion
+     3  AnaLu
+     3  Jean Remi King
+     3  MADHYASTHA Meghana
+     3  Salma Bougacha
+     3  sfvnMAC
+     2  Eric Larson
+     2  Horea Christian
+     2  Moritz Boos
+     1  Alex Rothberg
+     1  Bertrand Thirion
+     1  Christophe Bedetti
+     1  John Griffiths
+     1  Mehdi Rahim
+     1  Sylvain LANNUZEL
+     1  Yaroslav Halchenko
+     1  clfs

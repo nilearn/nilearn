@@ -1,0 +1,29 @@
+
+.. currentmodule:: nilearn
+
+.. include:: names.rst
+
+0.1.4
+=====
+
+Highlights
+----------
+
+- New class :class:`nilearn.input_data.NiftiSpheresMasker` which extracts signals from balls specified by their coordinates.
+
+- Obey Debian packaging rules.
+
+- Add the Destrieux 2009 and Power 2011 atlas.
+
+- Better caching in maskers.
+
+
+Contributors (from ``git shortlog -ns 0.1.3..0.1.4``):
+
+    * `Alexandre Abraham`_ (141)
+    * `Gael Varoquaux`_ (15)
+    * `Loic Estève`_ (10)
+    * Arthur Mensch (2)
+    * Danilo Bzdok (2)
+    * Michael Hanke (2)
+    * `Mehdi Rahim`_ (1)
