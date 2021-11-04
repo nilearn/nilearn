@@ -1,5 +1,7 @@
 .. -*- mode: rst -*-
 
+.. include:: changes/names.rst
+
 People
 ------
 
@@ -20,20 +22,20 @@ Core developers
 
 The nilearn core developers are:
 
-* `Alexandre Gramfort <http://alexandre.gramfort.net/>`_
-* `Alexis Thual <https://github.com/alexisthual>`_
-* `Bertrand Thirion <https://pages.saclay.inria.fr/bertrand.thirion/>`_
-* `Binh Nguyen <https://www.imo.universite-paris-saclay.fr/~tbnguyen/>`_
-* `Elizabeth DuPre <https://elizabeth-dupre.com/#/>`_
-* `Gael Varoquaux <http://gael-varoquaux.info/>`_
-* `Hao-Ting Wang <https://wanghaoting.com/>`_
-* `Jerome Dockes <https://jeromedockes.github.io/>`_
-* `Julia Huntenburg <https://github.com/juhuntenburg>`_
-* `Kamalaker Dadi <https://github.com/KamalakerDadi>`_
-* `Kshitij Chawla <https://github.com/kchawla-pi>`_
-* `Nicolas Gensollen <https://nicolasgensollen.github.io/>`_
-* `Taylor Salo <https://tsalo.github.io/>`_
-* `Thomas Bazeille <https://github.com/thomasbazeille>`_
+* `Alexandre Gramfort`_
+* `Alexis Thual`_
+* `Bertrand Thirion`_
+* `Binh Nguyen`_
+* `Elizabeth DuPre`_
+* `Gael Varoquaux`_
+* `Hao-Ting Wang`_
+* `Jerome Dockes`_
+* `Julia Huntenburg`_
+* `Kamalakar Reddy Daddy`_
+* `Kshitij Chawla`_
+* `Nicolas Gensollen`_
+* `Taylor Salo`_
+* `Thomas Bazeille`_
 
 .. _triage:
 
@@ -69,8 +71,8 @@ Some other past or present contributors are:
 Funding
 .......
 
-Alexandre Abraham, Gael Varoquaux, Kamalakar Reddy Daddy, Loïc Estève,
-Mehdi Rahim, Philippe Gervais were paid by the `NiConnect
+`Alexandre Abraham`_, `Gael Varoquaux`_, `Kamalakar Reddy Daddy`_, `Loic Estève`_,
+`Mehdi Rahim`_, `Philippe Gervais`_ were paid by the `NiConnect
 <https://team.inria.fr/parietal/18-2/spatial_patterns/niconnect>`_
 project, funded by the French `Investissement d'Avenir
 <http://www.gouvernement.fr/investissements-d-avenir-cgi>`_.
