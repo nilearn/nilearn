@@ -82,7 +82,7 @@ The following people contributed to this release:
     * `Franz Liem`_ (22)
     * `Jerome Dockes`_ (16)
     * `Gael Varoquaux`_ (11)
-    * Salma Bougacha (8)
+    * `Salma Bougacha`_ (8)
     * himanshupathak21061998 (7)
     * `Elizabeth DuPre`_ (2)
     * `Eric Larson`_ (1)

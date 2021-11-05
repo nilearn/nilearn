@@ -20,5 +20,5 @@ Contributors (from ``git shortlog -ns 0.1..0.1.1``):
     * `Loic Estève`_ (81)
     * `Alexandre Abraham`_ (18)
     * `Danilo Bzdok`_ (18)
-    * Ben Cipollini (14)
+    * `Ben Cipollini`_ (14)
     * `Gael Varoquaux`_ (2)

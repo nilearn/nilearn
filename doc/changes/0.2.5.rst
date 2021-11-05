@@ -68,10 +68,10 @@ Contributors (from ``git shortlog -ns 0.2.4..0.2.5``):
 
     * `Gael Varoquaux`_ (55)
     * `Alexandre Abraham`_ (39)
-    * Martin Perez-Guevara (26)
+    * `Martin Perez-Guevara`_ (26)
     * `Kamalakar Reddy Daddy`_ (20)
-    * amadeuskanaan (8)
-    * Alexandre Abadie (3)
+    * `Amadeus Kanaan`_ (8)
+    * `Alexandre Abadie`_ (3)
     * `Arthur Mensch`_ (3)
     * `Elvis Dohmatob`_ (3)
     * `Loic Estève`_ (3)

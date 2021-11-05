@@ -195,7 +195,7 @@ The following people contributed to this release:
     * MADHYASTHA Meghana (3)
     * `Simon Steinkamp`_ (3)
     * `Jerome-Alexis Chevalier`_ (3)
-    * salma (3)
+    * `Salma Bougacha`_ (3)
     * sfvnMAC (3)
     * Akshay (2)
     * `Daniel Gomez`_ (2)
