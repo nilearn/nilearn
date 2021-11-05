@@ -1,6 +1,8 @@
 
 0.2.1
-======
+=====
+
+**Released December 2015**
 
 Changelog
 ---------

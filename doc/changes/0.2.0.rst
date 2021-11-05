@@ -6,6 +6,8 @@
 0.2.0
 =====
 
+**Released December 2015**
+
 Changelog
 ---------
 
@@ -62,7 +64,7 @@ Contributors
 
 Contributors (from ``git shortlog -ns 0.1.4..0.2.0``):
 
-    * Elvis Dohmatob (822)
+    * `Elvis Dohmatob`_ (822)
     * `Gael Varoquaux`_ (142)
     * `Alexandre Abraham`_ (119)
     * `Loic Estève`_ (90)
@@ -70,18 +72,18 @@ Contributors (from ``git shortlog -ns 0.1.4..0.2.0``):
     * Alexandre Abadie (65)
     * Chris Filo Gorgolewski (43)
     * Salma BOUGACHA (39)
-    * Danilo Bzdok (29)
+    * `Danilo Bzdok`_ (29)
     * Martin Perez-Guevara (20)
     * `Mehdi Rahim`_ (19)
     * Óscar Nájera (19)
     * martin (17)
-    * Arthur Mensch (8)
+    * `Arthur Mensch`_ (8)
     * Ben Cipollini (8)
     * ainafp (4)
-    * juhuntenburg (4)
+    * `Julia Huntenburg`_ (4)
     * Martin_Perez_Guevara (2)
     * Michael Hanke (2)
-    * arokem (2)
+    * `Ariel Rokem`_ (2)
     * `Bertrand Thirion`_ (1)
-    * Dimitri Papadopoulos Orfano (1)
+    * `Dimitri Papadopoulos Orfano`_ (1)
   

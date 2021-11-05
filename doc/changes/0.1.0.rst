@@ -6,6 +6,8 @@
 0.1.0
 =====
 
+**Released February 2015**
+
 Changelog
 ---------
 
@@ -17,11 +19,11 @@ Contributors (from ``git shortlog -ns 0.1``):
     * `Alexandre Abraham`_ (483)
     * `Loic Estève`_ (302)
     * `Philippe Gervais`_ (254)
-    * Virgile Fritsch (122)
+    * `Virgile Fritsch`_ (122)
     * Michael Eickenberg (83)
     * Jean Kossaifi (59)
     * Jaques Grobler (57)
-    * Danilo Bzdok (46)
+    * `Danilo Bzdok`_ (46)
     * Chris Filo Gorgolewski (35)
     * Ronald Phlypo (28)
     * Ben Cipollini (25)
@@ -31,7 +33,7 @@ Contributors (from ``git shortlog -ns 0.1``):
     * Yannick Schwartz (11)
     * `Mehdi Rahim`_ (9)
     * Óscar Nájera (7)
-    * Elvis Dohmatob (6)
+    * `Elvis Dohmatob`_ (6)
     * Konstantin Shmelkov (4)
     * Jason Gors (3)
     * Salma Bougacha (3)

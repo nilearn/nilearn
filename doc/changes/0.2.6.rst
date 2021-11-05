@@ -6,6 +6,8 @@
 0.2.6
 =====
 
+**Released September 2016**
+
 This release enhances usage of several functions by fine tuning their parameters.
 It allows to select which Haxby subject to fetch.
 It also refactors documentation to make it easier to understand.

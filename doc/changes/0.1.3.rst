@@ -6,6 +6,8 @@
 0.1.3
 =====
 
+**Released May 2015**
+
 Changelog
 ---------
 
@@ -47,11 +49,11 @@ Contributors (from ``git shortlog -ns 0.1.2..0.1.3``):
     * `Loic Estève`_ (67)
     * `Gael Varoquaux`_ (57)
     * Ben Cipollini (44)
-    * Danilo Bzdok (37)
-    * Elvis Dohmatob (20)
+    * `Danilo Bzdok`_ (37)
+    * `Elvis Dohmatob`_ (20)
     * Óscar Nájera (14)
     * Salma BOUGACHA (9)
     * `Alexandre Gramfort`_ (8)
     * `Kamalakar Reddy Daddy`_ (7)
-    * Demian Wassermann (3)
+    * `Demian Wassermann`_ (3)
     * `Bertrand Thirion`_ (1)

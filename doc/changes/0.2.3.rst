@@ -6,6 +6,8 @@
 0.2.3
 =====
 
+**Released February 2016**
+
 Changelog
 ---------
 

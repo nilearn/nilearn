@@ -6,6 +6,8 @@
 0.2.4
 =====
 
+**Released April 2016**
+
 The ``0.2.4`` is a small release focused on documentation for teaching.
 
 New

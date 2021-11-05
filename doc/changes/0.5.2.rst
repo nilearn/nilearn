@@ -13,9 +13,9 @@ NEW
 
 .. warning::
 
- | This is the **last** release supporting Python2 and 3.4 .
- | The lowest Python version supported is now Python3.5.
- | We recommend switching to Python3.6 .
+    This is the **last** release supporting Python2 and ``3.4``.
+    The lowest Python version supported is now Python ``3.5``.
+    We recommend switching to Python ``3.6``.
 
 Fixes
 -----

@@ -6,6 +6,8 @@
 0.2.5.1
 =======
 
+**Released August 2016**
+
 This is a bugfix release.
 The new minimum required version of ``scikit-learn`` is ``0.14.1``.
 
@@ -33,6 +35,8 @@ Fixes
 
 0.2.5
 =====
+
+**Released June 2016**
 
 The ``0.2.5`` release includes plotting for connectomes and glass brain with
 hemisphere-specific projection, as well as more didactic examples and
@@ -68,12 +72,12 @@ Contributors (from ``git shortlog -ns 0.2.4..0.2.5``):
     * `Kamalakar Reddy Daddy`_ (20)
     * amadeuskanaan (8)
     * Alexandre Abadie (3)
-    * Arthur Mensch (3)
-    * Elvis Dohmatob (3)
+    * `Arthur Mensch`_ (3)
+    * `Elvis Dohmatob`_ (3)
     * `Loic Estève`_ (3)
     * `Jerome Dockes`_ (2)
     * Alexandre M. S (1)
     * `Bertrand Thirion`_ (1)
     * Ivan Gonzalez (1)
-    * robbisg (1)
+    * `Roberto Guidotti`_ (1)
   

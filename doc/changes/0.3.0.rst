@@ -4,7 +4,9 @@
 .. include:: names.rst
 
 0.3.0
-======
+=====
+
+**Released April 2017**
 
 In addition, more details of this release are listed below.
 Please checkout in **0.3.0 beta** release section for minimum version
@@ -37,6 +39,8 @@ Enhancements
 
 0.3.0 beta
 ===========
+
+**Released February 2017**
 
 To install the beta version, use::
 

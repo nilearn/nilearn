@@ -6,6 +6,8 @@
 0.3.1
 =====
 
+**Released June 2017**
+
 This is a minor release for BrainHack.
 
 Highlights
@@ -32,7 +34,7 @@ Fixes
 Enhancements
 ------------
 
-- New functions :func:`~datasets.fetch_neurovault` and :func:`~datasets.fetch_neurovault_ids` help you download statistical maps from the `Neurovault<http://neurovault.org>`_ platform.
+- New functions :func:`~datasets.fetch_neurovault` and :func:`~datasets.fetch_neurovault_ids` help you download statistical maps from the `Neurovault <http://neurovault.org>`_ platform.
 
 - New function :func:`~connectome.vec_to_sym_matrix` reshapes vectors to symmetric matrices. It acts as the reverse of function :func:`~connectome.sym_matrix_to_vec`.
 
