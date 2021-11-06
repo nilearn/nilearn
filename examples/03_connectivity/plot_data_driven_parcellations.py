@@ -212,7 +212,8 @@ kmeans_labels_img.to_filename('kmeans_parcellation.nii.gz')
 #       https://hal.archives-ouvertes.fr/hal-01366651/
 start = time.time()
 rena = Parcellations(method='rena', n_parcels=5000, standardize=False,
-                     smoothing_fwhm=2., scaling=True)
+                     smoothing_fwhm=2., scaling=True, memory='nilearn_cache',
+                     memory_level=1, verbose=1)
 
 rena.fit_transform(dataset.func)
 print("ReNA 5000 clusters: %.2fs" % (time.time() - start))
