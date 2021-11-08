@@ -272,10 +272,10 @@ class NiftiMapsMasker(BaseMasker, CacheMixin):
                     image.index_img(
                         maps_image, i)) for i in maps_to_be_displayed]
                 displays = [plotting.plot_img(img,
-                                              cut_coords=cut_coords[component],
+                                              cut_coords=cut_coords[idx],
                                               black_bg=False,
                                               cmap='CMRmap_r')
-                            for component in maps_to_be_displayed]
+                            for idx, component in enumerate(maps_to_be_displayed)]
                 for i, d in enumerate(displays):
                     d.add_overlay(image.index_img(maps_image, i),
                                   cmap=plotting.cm.black_blue)
