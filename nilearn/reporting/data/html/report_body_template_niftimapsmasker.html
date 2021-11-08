@@ -225,8 +225,9 @@ div.nilearn_report .image:hover .overlay {
         <div class="pure-u-1 pure-u-md-2-3">
             <div class="image">
                 <script>
-                    current_map = 0;
-                    number_maps = {{number_of_maps}};
+                    current_map_idx = 0;
+                    displayed_maps = {{displayed_maps}};
+                    number_maps = {{len(displayed_maps)}};
                 </script>
 
                 <div align="center" class="buttonContainer">
@@ -244,7 +245,7 @@ div.nilearn_report .image:hover .overlay {
                 <img id="map0" class="pure-img show" width="100%"    
                     src="data:image/svg+xml;base64,{{content[0]}}" alt="image"/>
 
-                {{for map in range(1, number_of_maps)}}
+                {{for map in range(1, len(displayed_maps))}}
                     <img id="map{{map}}" class="pure-img hide" width="100%" 
                         src="data:image/svg+xml;base64,{{content[map]}}" alt="image"/>
                 {{endfor}}
@@ -259,8 +260,13 @@ div.nilearn_report .image:hover .overlay {
             {{endif}}
             {{if number_of_maps}}
                 <p class="elem-desc">
-                    The masker has <b>{{number_of_maps}}</b> spatial maps.
+                    The masker has <b>{{number_of_maps}}</b> spatial maps in total.
                 </p>
+                {{if len(displayed_maps) != number_of_maps}}
+                    <p>
+                        Only <b>{{len(displayed_maps)}}</b> spatial maps are shown in this report.
+                    </p>
+                {{endif}}
             {{endif}}
             <p></p>
             <p></p>
@@ -293,26 +299,26 @@ div.nilearn_report .image:hover .overlay {
     </div>
 </div>
 <script>
-    document.getElementById("comp").innerHTML=current_map;
+    document.getElementById("comp").innerHTML=displayed_maps[current_map_idx];
 
     function displayNextMap() {
-        document.getElementById('map' + current_map).classList.replace("show", "hide");
-        current_map = current_map + 1;
-        if (current_map >= number_maps){
-            current_map = 0;
+        document.getElementById('map' + current_map_idx).classList.replace("show", "hide");
+        current_map_idx = current_map_idx + 1;
+        if (current_map_idx >= number_maps){
+            current_map_idx = 0;
         }
-        document.getElementById('map' + current_map).classList.replace("hide", "show");
-        document.getElementById("comp").innerHTML=current_map;
+        document.getElementById('map' + current_map_idx).classList.replace("hide", "show");
+        document.getElementById("comp").innerHTML=displayed_maps[current_map_idx];
     }
 
     function displayPreviousMap() {
-        document.getElementById('map' + current_map).classList.replace("show", "hide");
-        current_map = current_map - 1;
-        if (current_map < 0){
-            current_map = number_maps - 1;
+        document.getElementById('map' + current_map_idx).classList.replace("show", "hide");
+        current_map_idx = current_map_idx - 1;
+        if (current_map_idx < 0){
+            current_map_idx = number_maps - 1;
         }
-        document.getElementById('map' + current_map).classList.replace("hide", "show");
-        document.getElementById("comp").innerHTML=current_map;
+        document.getElementById('map' + current_map_idx).classList.replace("hide", "show");
+        document.getElementById("comp").innerHTML=displayed_maps[current_map_idx];
     }
 </script>
 
