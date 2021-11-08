@@ -20,7 +20,7 @@ Changes
 Fixes
 -----
 
-- Fix bug with input repetition time (:term:`TR`) which had no effect in signal cleaning (fixed by `Pradeep Raamana`_).
+- Fix bug with input repetition time (:term:`TR`) which had no effect in signal cleaning (fixed by `Pradeep Reddy Raamana`_).
 
 - Fix issues with signal extraction on list of 3D images in :class:`~regions.Parcellations`.
 
