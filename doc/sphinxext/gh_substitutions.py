@@ -8,7 +8,7 @@ from docutils.parsers.rst.roles import set_classes
 # https://github.com/mne-tools/mne-python/blob/main/doc/sphinxext/gh_substitutions.py
 
 
-def gh_role(name, rawtext, text, lineno, inliner, options={}, content=[]):
+def _gh_role(name, rawtext, text, lineno, inliner, options={}, content=[]):
     """Link to a GitHub issue."""
     try:
         # issue/PR mode (issues/PR-num will redirect to pull/PR-num)
@@ -26,5 +26,5 @@ def gh_role(name, rawtext, text, lineno, inliner, options={}, content=[]):
 
 
 def setup(app):
-    app.add_role('gh', gh_role)
+    app.add_role('gh', _gh_role)
     return
