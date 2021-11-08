@@ -13,7 +13,7 @@ and the `scikit-learn <http://scikit-learn.org/>`_ but grew much further.
 An up-to-date list of contributors can be seen in on `GitHub
 <https://github.com/nilearn/nilearn/graphs/contributors>`_
 
-Additional credit goes to M. Hanke and Y. Halchenko for data and packaging.
+Additional credit goes to `Michael Hanke`_ and `Yaroslav Halchenko`_ for data and packaging.
 
 .. _core_devs:
 
@@ -31,8 +31,6 @@ The nilearn core developers are:
 * `Hao-Ting Wang`_
 * `Jerome Dockes`_
 * `Julia Huntenburg`_
-* `Kamalakar Reddy Daddy`_
-* `Kshitij Chawla`_
 * `Nicolas Gensollen`_
 * `Taylor Salo`_
 * `Thomas Bazeille`_
@@ -49,24 +47,26 @@ Other contributors
 
 Some other past or present contributors are:
 
-* Abadie, A.
-* Abraham, A.
-* Bellec, P.
-* Bougacha, S.
-* Bzdok, D.
-* Chevalier, J.A.
-* Cipollini., B.
-* Dohmatob, E.
-* Eickenberg, M.
-* Esteve, L.
-* Fritsch, V.
-* Gervais, P.
-* Hoyos Idrobo, A.
-* Gorgolewski, C.F.
-* Kossaifi, J.
-* Michel, V.
-* Pedregosa, F.
-* Perez, M.
+* `Alexandre Abadie`_
+* `Alexandre Abraham`_
+* `Andrés Hoyos Idrobo`_
+* `Ben Cipollini`_
+* `Chris Gorgolewski`_
+* `Danilo Bzdok`_
+* `Elvis Dohmatob`_
+* `Fabian Pedregosa`_
+* `Jean Kossaifi`_
+* `Jerome-Alexis Chevalier`_
+* `Kamalakar Reddy Daddy`_
+* `Kshitij Chawla`_
+* `Loic Estève`_
+* `Martin Perez-Guevara`_
+* `Michael Eickenberg`_
+* `Philippe Gervais`_
+* `Pierre Bellec`_
+* `Salma Bougacha`_
+* `Vincent Michel`_
+* `Virgile Fritsch`_
 
 Funding
 .......

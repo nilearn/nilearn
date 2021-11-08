@@ -186,4 +186,6 @@
 
 .. _Virgile Fritsch: https://github.com/VirgileFritsch
 
+.. _Yaroslav Halchenko: https://github.com/yarikoptic
+
 .. _Zvi Baratz: https://github.com/ZviBaratz
