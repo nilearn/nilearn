@@ -77,6 +77,11 @@ Funding
 project, funded by the French `Investissement d'Avenir
 <http://www.gouvernement.fr/investissements-d-avenir-cgi>`_.
 
+`Kshitij Chawla`_ was paid by `INRIA <https://www.inria.fr/en>`_.
+
+`Nicolas Gensollen`_ is paid by the `Human Brain Project <https://www.humanbrainproject.eu/en/>`_
+|HBP logo|.
+
 NiLearn is also supported by `DigiCosme <https://digicosme.lri.fr>`_
 |digicosme logo| and `DataIA <https://dataia.eu/en>`_ |dataia_logo|.
 
@@ -97,11 +102,12 @@ We suggest that you read and cite the paper. Thank you.
 Citing scikit-learn
 -------------------
 
-A huge amount of work goes into scikit-learn, upon which nilearn relies heavily.
+A huge amount of work goes into `scikit-learn <http://scikit-learn.org/>`_,
+upon which nilearn relies heavily.
 Researchers who invest their time in developing and maintaining the package
 deserve recognition with citations.
-In addition, the Parietal team needs citations to the paper in order to
-justify paying a software engineer on the project.
+In addition, the `Parietal team <https://team.inria.fr/parietal/>`_ needs citations
+to the paper in order to justify paying a software engineer on the project.
 To guarantee the future of the toolkit, if you use it, please cite it.
 
 See the scikit-learn documentation on `how to cite
@@ -115,3 +121,7 @@ See the scikit-learn documentation on `how to cite
 .. |dataia_logo| image:: logos/dataia.png
     :height: 25
     :alt: DataIA Logo
+
+.. |HBP logo| image:: logos/hbp-logo.png
+    :height: 25
+    :alt: HBP Logo
