@@ -220,7 +220,7 @@ class NiftiMapsMasker(BaseMasker, CacheMixin):
            and not isinstance(displayed_maps, (list, np.ndarray))):
             raise TypeError("Parameter ``displayed_maps`` of "
                             "``generate_report()`` should be a "
-                            "list or array. You provded a "
+                            "list or array. You provided a "
                             f"{type(displayed_maps)}")
         self.displayed_maps = displayed_maps
         return generate_report(self)
@@ -256,8 +256,8 @@ class NiftiMapsMasker(BaseMasker, CacheMixin):
                 if max(self.displayed_maps) > n_maps:
                     raise ValueError("Report cannot display the "
                                      "following maps "
-                                    f"{self.displayed_maps} because "
-                                    f"masker only has {n_maps} maps.")
+                                     f"{self.displayed_maps} because "
+                                     f"masker only has {n_maps} maps.")
                 maps_to_be_displayed = self.displayed_maps
             self._report_content['number_of_maps'] = n_maps
             self._report_content['displayed_maps'] = maps_to_be_displayed
@@ -285,8 +285,10 @@ class NiftiMapsMasker(BaseMasker, CacheMixin):
                        "Plotting only spatial maps for reporting.")
                 warnings.warn(msg)
                 self._report_content['warning_message'] = msg
-                displays = [plotting.plot_stat_map(image.index_img(
-                    maps_image, component)) for component in maps_to_be_displayed]
+                displays = [
+                    plotting.plot_stat_map(
+                        image.index_img(maps_image, component)
+                    ) for component in maps_to_be_displayed]
                 return displays
         else:
             return [None]
