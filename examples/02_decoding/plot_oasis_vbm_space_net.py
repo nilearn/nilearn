@@ -71,12 +71,12 @@ import matplotlib.pyplot as plt
 plt.figure()
 plt.suptitle("graph-net: Mean Absolute Error %.2f years" % mse)
 linewidth = 3
-ax1 = plt.subplot('211')
+ax1 = plt.subplot(211)
 ax1.plot(age_test, label="True age", linewidth=linewidth)
 ax1.plot(y_pred, '--', c="g", label="Predicted age", linewidth=linewidth)
 ax1.set_ylabel("age")
 plt.legend(loc="best")
-ax2 = plt.subplot("212")
+ax2 = plt.subplot(212)
 ax2.plot(age_test - y_pred, label="True age - predicted age",
          linewidth=linewidth)
 ax2.set_xlabel("subject")
