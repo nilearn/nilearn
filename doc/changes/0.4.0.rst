@@ -56,7 +56,7 @@ Changes
 
 - Dropped support for ``Nibabel`` older than ``2.0.2``.
 
-- Function :func:`~image.smooth_img` no longer accepts smoothing parameter :term:`fwhm<FWHM>`` as 0. Behavior is changed in according to the issues with recent ``SciPy`` version ``1.0.0``.
+- Function :func:`~image.smooth_img` no longer accepts smoothing parameter :term:`FWHM` as 0. Behavior is changed in according to the issues with recent ``SciPy`` version ``1.0.0``.
 
 - ``dim`` factor range is slightly increased to -2 to 2 from -1 to 1. Range exceeding -1 meaning more increase in contrast should be cautiously set.
 

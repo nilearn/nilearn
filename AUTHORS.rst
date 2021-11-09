@@ -73,7 +73,7 @@ Funding
 
 `Alexandre Abraham`_, `Gael Varoquaux`_, `Kamalakar Reddy Daddy`_, `Loic Estève`_,
 `Mehdi Rahim`_, `Philippe Gervais`_ were paid by the `NiConnect
-<https://team.inria.fr/parietal/18-2/spatial_patterns/niconnect>`_
+<https://team.inria.fr/parietal/research/spatial_patterns/niconnect/>`_
 project, funded by the French `Investissement d'Avenir
 <http://www.gouvernement.fr/investissements-d-avenir-cgi>`_.
 
