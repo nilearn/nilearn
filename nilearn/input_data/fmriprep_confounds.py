@@ -28,7 +28,7 @@ component_parameters = {
     "global": ["global_signal"],
     "compcor": ["meta_json", "compcor", "n_compcor"],
     "ica_aroma": ["ica_aroma"],
-    "scrub": ["scrub", "fd_thresh", "std_dvars_thresh"],
+    "scrub": ["scrub", "fd_threshold", "std_dvars_threshold"],
 }
 
 
@@ -63,7 +63,7 @@ def _check_error(missing):
 def fmriprep_confounds(img_files,
                        strategy=["motion", "high_pass", "wm_csf"],
                        motion="full",
-                       scrub=5, fd_thresh=0.2, std_dvars_thresh=3,
+                       scrub=5, fd_threshold=0.2, std_dvars_threshold=3,
                        wm_csf="basic",
                        global_signal="basic",
                        compcor="anat_combined", n_compcor="all",
@@ -226,6 +226,10 @@ def fmriprep_confounds(img_files,
     aspects of the preprocessing listed in :footcite:`Ciric2017` are controlled
     through :term:`fMRIPrep`, e.g. distortion correction.
 
+    See Also
+    --------
+    :func:`nilearn.input_data.fmriprep_confounds_strategy`
+
     References
     -----------
     .. footbibliography::
@@ -238,18 +242,16 @@ def fmriprep_confounds(img_files,
     confounds_out = []
     sample_mask_out = []
     for file in img_files:
-        sample_mask, conf = _load_single(file,
-                                         strategy,
-                                         demean,
-                                         motion=motion,
-                                         scrub=scrub,
-                                         fd_thresh=fd_thresh,
-                                         std_dvars_thresh=std_dvars_thresh,
-                                         wm_csf=wm_csf,
-                                         global_signal=global_signal,
-                                         compcor=compcor,
-                                         n_compcor=n_compcor,
-                                         ica_aroma=ica_aroma)
+        sample_mask, conf = _load_single(
+            file, strategy, demean,
+            motion=motion,
+            scrub=scrub,
+            fd_threshold=fd_threshold,
+            std_dvars_threshold=std_dvars_threshold,
+            wm_csf=wm_csf,
+            global_signal=global_signal,
+            compcor=compcor, n_compcor=n_compcor,
+            ica_aroma=ica_aroma)
         confounds_out.append(conf)
         sample_mask_out.append(sample_mask)
 

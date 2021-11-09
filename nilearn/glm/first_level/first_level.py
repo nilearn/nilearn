@@ -19,7 +19,6 @@ import numpy as np
 import pandas as pd
 from joblib import Memory, Parallel, delayed
 from nibabel import Nifti1Image
-from nibabel.onetime import auto_attr
 from sklearn.base import clone
 from sklearn.cluster import KMeans
 
@@ -754,49 +753,6 @@ class FirstLevelModel(BaseGLM):
             output.append(self.masker_.inverse_transform(voxelwise_attribute))
 
         return output
-
-    @auto_attr
-    def residuals(self):
-        """Transform voxelwise residuals to the same shape
-        as the input Nifti1Image(s)
-
-        Returns
-        -------
-        output : list
-            A list of Nifti1Image(s).
-
-        """
-        return self._get_voxelwise_model_attribute('resid',
-                                                   result_as_time_series=True)
-
-    @auto_attr
-    def predicted(self):
-        """Transform voxelwise predicted values to the same shape
-        as the input Nifti1Image(s)
-
-        Returns
-        -------
-        output : list
-            A list of Nifti1Image(s).
-
-        """
-        return self._get_voxelwise_model_attribute('predicted',
-                                                   result_as_time_series=True)
-
-    @auto_attr
-    def r_square(self):
-        """Transform voxelwise r-squared values to the same shape
-        as the input Nifti1Image(s)
-
-        Returns
-        -------
-        output : list
-            A list of Nifti1Image(s).
-
-        """
-        return self._get_voxelwise_model_attribute('r_square',
-                                                   result_as_time_series=False
-                                                   )
 
 
 def first_level_from_bids(dataset_path, task_label, space_label=None,

@@ -26,6 +26,7 @@ from .._utils import (_repr_niimgs,
 from .._utils.niimg import _get_data, _safe_get_data
 from .._utils.niimg_conversions import _check_same_fov, _index_img
 from .._utils.param_validation import check_threshold
+from .._utils.helpers import rename_parameters
 
 
 def get_data(img):
@@ -1064,7 +1065,8 @@ def binarize_img(img, threshold=0, mask_img=None):
     )
 
 
-def clean_img(imgs, sessions=None, detrend=True, standardize=True,
+@rename_parameters({'sessions': 'runs'}, '0.10.0')
+def clean_img(imgs, runs=None, detrend=True, standardize=True,
               confounds=None, low_pass=None, high_pass=None, t_r=None,
               ensure_finite=False, mask_img=None):
     """Improve SNR on masked fMRI signals.
@@ -1096,9 +1098,16 @@ def clean_img(imgs, sessions=None, detrend=True, standardize=True,
         http://nilearn.github.io/manipulating_images/input_output.html
         for a detailed description of the valid input types).
 
-    sessions : :class:`numpy.ndarray`, optional
-        Add a session level to the cleaning process. Each session will be
+    runs : :class:`numpy.ndarray`, optional
+        Add a run level to the cleaning process. Each run will be
         cleaned independently. Must be a 1D array of n_samples elements.
+
+        .. warning::
+
+            'runs' replaces 'sessions' after release 0.10.0.
+            Using 'session' will result in an error after release 0.10.0.
+
+        Default=``None``.
 
     detrend : :obj:`bool`, optional
         If detrending should be applied on timeseries (before confound removal).
@@ -1184,7 +1193,7 @@ def clean_img(imgs, sessions=None, detrend=True, standardize=True,
 
     # Clean signal
     data = signal.clean(
-        signals, sessions=sessions, detrend=detrend, standardize=standardize,
+        signals, runs=runs, detrend=detrend, standardize=standardize,
         confounds=confounds, low_pass=low_pass, high_pass=high_pass, t_r=t_r,
         ensure_finite=ensure_finite)
 

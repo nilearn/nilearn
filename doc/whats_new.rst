@@ -9,6 +9,9 @@ NEW
   import and encouraged to update to more recent versions of Python.
 - New function :func:`nilearn.input_data.fmriprep_confounds` to load confound variables easily
   from :term:`fMRIPrep` outputs.
+- New function :func:`nilearn.input_data.fmriprep_confounds_strategy` to load confound variables 
+  from :term:`fMRIPrep` outputs using four preset strategies: ``simple``, ``scrubbing``, 
+  ``compcor``, ``ica_aroma``.
 - Surface plotting functions like :func:`nilearn.plotting.plot_surf_stat_map`
   now have an `engine` parameter, defaulting to "matplotlib", but which can be
   set to "plotly". If plotly and kaleido are installed, this will generate an
@@ -46,6 +49,12 @@ Enhancements
   The user is suggested to set one of
   those options to `True`, or standardize/demean the confounds before using the
   function.
+- The :doc:`contributing documentation</development>` and
+  :doc:`maintenance</maintenance>` pages were improved, especially towards ways
+  of contributing to the project which do not require to write code.
+  The roles of the :ref:`triage` were defined more clearly with sections on issue
+  :ref:`issue_labels` and issue :ref:`closing_policy`.
+  (See PR `#3010 <https://github.com/nilearn/nilearn/pull/3010>`_).
 - It is now possible to provide custom :term:`HRF` models to
   :class:`nilearn.glm.first_level.FirstLevelModel`. The custom model should be
   defined as a function, or a list of functions, implementing the same API as
@@ -61,6 +70,12 @@ Enhancements
   and reorganized in separate files in new folder
   `nilearn/plotting/tests/test_img_plotting/`.
   (See PR `#3015 <https://github.com/nilearn/nilearn/pull/3015/files>`_)
+- Once a :class:`~nilearn.glm.second_level.SecondLevelModel` has been fitted and
+  contrasts have been computed, it is now possible to access the ``residuals``,
+  ``predicted``, and ``r_square`` model attributes like it was already possible
+  for :class:`~nilearn.glm.first_level.FirstLevelModel`.
+  (See FR `#3027 <https://github.com/nilearn/nilearn/issues/3027>`_
+  and PR `#3033 <https://github.com/nilearn/nilearn/pull/3033>`_)
 
 Changes
 -------
@@ -72,6 +87,11 @@ Changes
   :func:`nilearn.glm.first_level.make_first_level_design_matrix` and
   :class:`nilearn.glm.first_level.FirstLevelModel`, for which proper condition names
   will also be needed (see PR `#3025 <https://github.com/nilearn/nilearn/pull/3025>`_).
+- Replace parameter `sessions` with `runs` in :func:`nilearn.image.clean_img` as this
+  replacement was already made for :func:`nilearn.signal.clean` in
+  `#2821 <https://github.com/nilearn/nilearn/pull/2821>`_ in order to match BIDS
+  semantics. The use of `sessions` in :func:`nilearn.image.clean_img` is deprecated and
+  will be removed in 0.10.0.
 
 .. _v0.8.1:
 
