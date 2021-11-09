@@ -64,7 +64,7 @@ ENHANCEMENTS
 
 - Dataset fetchers are now  more reliable, less verbose.
 
-- :meth:`decoding.Searchlight.fit` now accepts 4D niimgs.
+- The :meth:`~decoding.SearchLight.fit` method now accepts 4D niimgs.
 
 - Anaconda link in the installation documentation updated.
 
