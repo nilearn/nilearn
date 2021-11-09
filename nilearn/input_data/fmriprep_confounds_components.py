@@ -62,15 +62,15 @@ def _load_ica_aroma(confounds_raw, ica_aroma):
         )
 
 
-def _load_scrub(confounds_raw, scrub, fd_thresh, std_dvars_thresh):
+def _load_scrub(confounds_raw, scrub, fd_threshold, std_dvars_threshold):
     """Remove volumes if FD and/or DVARS exceeds threshold."""
     n_scans = len(confounds_raw)
     # Get indices of fd outliers
     fd_outliers_index = np.where(
-        confounds_raw["framewise_displacement"] > fd_thresh
+        confounds_raw["framewise_displacement"] > fd_threshold
     )[0]
     dvars_outliers_index = np.where(
-        confounds_raw["std_dvars"] > std_dvars_thresh
+        confounds_raw["std_dvars"] > std_dvars_threshold
     )[0]
     motion_outliers_index = np.sort(
         np.unique(np.concatenate((fd_outliers_index, dvars_outliers_index)))
