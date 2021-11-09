@@ -247,9 +247,7 @@ def _plot_surf_plotly(coords, faces, surf_map=None, bg_map=None,
             msg = ("Saving figures to file with engine='plotly' requires "
                    "that ``kaleido`` is installed.")
             raise ImportError(msg)  # noqa
-    plotly_figure = PlotlySurfaceFigure.init_with_figure(
-        fig, output_file=output_file
-    )
+    plotly_figure = PlotlySurfaceFigure(figure=fig, output_file=output_file)
     if output_file is not None:
         plotly_figure.savefig()
     return plotly_figure
