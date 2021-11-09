@@ -9,8 +9,8 @@ NEW
   import and encouraged to update to more recent versions of Python.
 - New function :func:`nilearn.input_data.fmriprep_confounds` to load confound variables easily
   from :term:`fMRIPrep` outputs.
-- New function :func:`nilearn.input_data.fmriprep_confounds_strategy` to load confound variables 
-  from :term:`fMRIPrep` outputs using four preset strategies: ``simple``, ``scrubbing``, 
+- New function :func:`nilearn.input_data.fmriprep_confounds_strategy` to load confound variables
+  from :term:`fMRIPrep` outputs using four preset strategies: ``simple``, ``scrubbing``,
   ``compcor``, ``ica_aroma``.
 - Surface plotting functions like :func:`nilearn.plotting.plot_surf_stat_map`
   now have an `engine` parameter, defaulting to "matplotlib", but which can be
@@ -33,6 +33,11 @@ Fixes
   as an array.
   (See issue `#3012 <https://github.com/nilearn/nilearn/issues/3012>`_) and fix
   `#3013 <https://github.com/nilearn/nilearn/pull/3013>`_).
+- :func:`nilearn.glm.first_level.FirstLevelModel.generate_report` threw a `TypeError`
+  when `FirstLevelModel` was instanciated with `mask_img` being a `NiftiMasker`.
+  :func:`nilearn.reporting.make_glm_report` was fixed accordingly.
+  (See issue `#3034 <https://github.com/nilearn/nilearn/issues/3034>`_) and fix
+  `#3035 <https://github.com/nilearn/nilearn/pull/3035>`_).
 
 Enhancements
 ------------
