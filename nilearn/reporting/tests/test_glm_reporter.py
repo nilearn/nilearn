@@ -318,4 +318,4 @@ def test_masking_first_level_model():
         # So flake8 doesn't complain about not using variable (F841)
         report_iframe
 
-        del mask, flm, fmri_data
+        del mask, flm, fmri_data, masker
