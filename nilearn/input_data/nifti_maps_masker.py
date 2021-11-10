@@ -175,6 +175,7 @@ class NiftiMapsMasker(BaseMasker, CacheMixin):
         self.verbose = verbose
 
         self.reports = reports
+        self.report_id = -1
         self._report_content = dict()
         self._report_content['description'] = (
             'This reports shows the spatial maps provided to the mask.')
@@ -190,7 +191,7 @@ class NiftiMapsMasker(BaseMasker, CacheMixin):
                 "has been provided.\nSet resampling_target to something else"
                 " or provide a mask.")
 
-    def generate_report(self, displayed_maps=None):
+    def generate_report(self, displayed_maps=10):
         """Generate an HTML report for the current ``NiftiMapsMasker`` object.
 
         .. note::
@@ -198,17 +199,40 @@ class NiftiMapsMasker(BaseMasker, CacheMixin):
 
         Parameters
         ----------
-        displayed_maps : :obj:`list`, :class:`~numpy.ndarray`\
-        or ``None``, optional
-            List/array of indices of maps to be displayed.
-            For example:
+        displayed_maps : :obj:`int`, or :obj:`list`,\
+        or :class:`~numpy.ndarray`, or "all", optional
+            Indicates which maps will be displayed in the HTML report.
 
-            .. code-block:: python
+                - If "all": All maps will be displayed in the report.
 
-                masker.generate_report([6, 3, 12])
+                .. code-block:: python
 
-            will generate a report with maps 6, 3, and 12, displayed in this
-            specific order.
+                    masker.generate_report("all")
+
+                .. warning:
+                    If there are too many maps, this might be time and
+                    memory consuming, and will result in very heavy
+                    reports.
+
+                - If a :obj:`list` or :class:`~numpy.ndarray`: This indicates
+                  the indices of the maps to be displayed in the report. For
+                  example, the following code will generate a report with maps
+                  6, 3, and 12, displayed in this specific order:
+
+                .. code-block:: python
+
+                    masker.generate_report([6, 3, 12])
+
+                - If an :obj:`int`: This will only display the first n maps,
+                  n being the value of the parameter. By default, the report
+                  will only contain the first 10 maps. Example to display the
+                  first 16 maps:
+
+                .. code-block:: python
+
+                    masker.generate_report(16)
+
+            Default=10.
 
         Returns
         -------
@@ -216,13 +240,14 @@ class NiftiMapsMasker(BaseMasker, CacheMixin):
             HTML report for the masker.
         """
         from nilearn.reporting.html_report import generate_report
-        if(displayed_maps is not None
-           and not isinstance(displayed_maps, (list, np.ndarray))):
+        if(displayed_maps != "all"
+           and not isinstance(displayed_maps, (list, np.ndarray, int))):
             raise TypeError("Parameter ``displayed_maps`` of "
-                            "``generate_report()`` should be a "
-                            "list or array. You provided a "
+                            "``generate_report()`` should be either 'all' or "
+                            "an int, or a list/array of ints. You provided a "
                             f"{type(displayed_maps)}")
         self.displayed_maps = displayed_maps
+        self.report_id += 1
         return generate_report(self)
 
     def _reporting(self):
@@ -233,6 +258,7 @@ class NiftiMapsMasker(BaseMasker, CacheMixin):
             A list of all displays to be rendered.
 
         """
+        from nilearn.reporting.html_report import _embed_img
         try:
             from nilearn import plotting
         except ImportError:
@@ -252,16 +278,27 @@ class NiftiMapsMasker(BaseMasker, CacheMixin):
         if maps_image is not None:
             n_maps = image.get_data(maps_image).shape[-1]
             maps_to_be_displayed = range(n_maps)
-            if self.displayed_maps is not None:
+            if isinstance(self.displayed_maps, int):
+                if n_maps < self.displayed_maps:
+                    msg = ("`generate_report()` received "
+                           f"{self.displayed_maps} to be displayed. "
+                           f"But masker only has {n_maps} maps."
+                           f"Setting number of displayed maps to {n_maps}.")
+                    warnings.warn(category=UserWarning, message=msg)
+                    self.displayed_maps = n_maps
+                maps_to_be_displayed = range(self.displayed_maps)
+            elif isinstance(self.displayed_maps, (list, np.ndarray)):
                 if max(self.displayed_maps) > n_maps:
                     raise ValueError("Report cannot display the "
                                      "following maps "
                                      f"{self.displayed_maps} because "
                                      f"masker only has {n_maps} maps.")
                 maps_to_be_displayed = self.displayed_maps
+            self._report_content['report_id'] = self.report_id
             self._report_content['number_of_maps'] = n_maps
-            self._report_content['displayed_maps'] = maps_to_be_displayed
+            self._report_content['displayed_maps'] = list(maps_to_be_displayed)
             img = self._reporting_data['img']
+            embeded_images = []
             if img is not None:
                 dim = image.load_img(img).shape
                 if len(dim) == 4:
@@ -271,25 +308,30 @@ class NiftiMapsMasker(BaseMasker, CacheMixin):
                 cut_coords = [plotting.find_xyz_cut_coords(
                     image.index_img(
                         maps_image, i)) for i in maps_to_be_displayed]
-                displays = [plotting.plot_img(img,
-                                              cut_coords=cut_coords[idx],
-                                              black_bg=False,
-                                              cmap='CMRmap_r')
-                            for idx, component in enumerate(maps_to_be_displayed)]
-                for i, d in enumerate(displays):
-                    d.add_overlay(image.index_img(maps_image, i),
-                                  cmap=plotting.cm.black_blue)
-                return displays
+                for idx, component in enumerate(maps_to_be_displayed):
+                    display = plotting.plot_img(
+                        img, cut_coords=cut_coords[idx],
+                        black_bg=False, cmap='CMRmap_r'
+                    )
+                    display.add_overlay(
+                        image.index_img(maps_image, idx),
+                        cmap=plotting.cm.black_blue
+                    )
+                    embeded_images.append(_embed_img(display))
+                    display.close()
+                return embeded_images
             else:
                 msg = ("No image provided to fit in NiftiMapsMasker. "
                        "Plotting only spatial maps for reporting.")
                 warnings.warn(msg)
                 self._report_content['warning_message'] = msg
-                displays = [
-                    plotting.plot_stat_map(
+                for component in maps_to_be_displayed:
+                    display = plotting.plot_stat_map(
                         image.index_img(maps_image, component)
-                    ) for component in maps_to_be_displayed]
-                return displays
+                    )
+                    embeded_images.append(_embed_img(display))
+                    display.close()
+                return embeded_images
         else:
             return [None]
 
