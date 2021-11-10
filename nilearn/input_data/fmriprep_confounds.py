@@ -121,7 +121,8 @@ def fmriprep_confounds(img_files,
           Associated parameter: `scrub`, `fd_threshold`, `std_dvars_threshold`
 
         For each component above, associated parameters will be applied if
-        present. Otherwise, any values supplied to the parameters are ignored.
+        specified. If associated parameters are not specified, any values
+        supplied to the parameters are ignored.
         For example, `strategy=('motion', 'global_signal')` will allow users
         to supply input to associated parameter `motion` and `global_signal`;
         if users pass `wm_csf` parameter, it will not be applied as it is not
