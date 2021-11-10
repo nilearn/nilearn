@@ -3,6 +3,7 @@
 Authors: Pierre Bellec, François Paugam, Hanad Sharmarke, Hao-Ting Wang,
 Michael W. Weiss, Steven Meisler, Thibault Piront.
 """
+import warnings
 import pandas as pd
 from .fmriprep_confounds_utils import (_sanitize_confounds, _confounds_to_df,
                                        _prepare_output, MissingConfound)
@@ -14,38 +15,42 @@ all_confounds = [
     "motion",
     "high_pass",
     "wm_csf",
-    "global",
+    "global_signal",
     "compcor",
     "ica_aroma",
     "scrub",
-    "non_steady_state",
+    "non_steady_state"
 ]
 
 # extra parameters needed for each noise component
 component_parameters = {
     "motion": ["motion"],
     "wm_csf": ["wm_csf"],
-    "global": ["global_signal"],
+    "global_signal": ["global_signal"],
     "compcor": ["meta_json", "compcor", "n_compcor"],
     "ica_aroma": ["ica_aroma"],
     "scrub": ["scrub", "fd_threshold", "std_dvars_threshold"],
 }
 
 
-def _sanitize_strategy(strategy):
-    """Define the supported denoising strategies."""
-    if not isinstance(strategy, list):
-        raise ValueError("strategy needs to be a list of strings")
+def _check_strategy(strategy):
+    """Ensure the denoising strategies are valid."""
+    if (not isinstance(strategy, tuple)) and (not isinstance(strategy, list)):
+        raise ValueError("strategy needs to be a tuple or list of strings"
+                         f" A {type(strategy)} was provided instead.")
     for conf in strategy:
+        if conf == "non_steady_state":
+            warnings.warn("Non-steady state volumes are always detected. It "
+                          "doesn't need to be supplied as part of the "
+                          "strategy. Supplying non_steady_state in strategy "
+                          "will not have additional effect.")
         if conf not in all_confounds:
             raise ValueError(f"{conf} is not a supported type of confounds.")
-    # add non steady state if not present
-    if "non_steady_state" not in strategy:
-        strategy.append("non_steady_state")
+
     # high pass filtering must be present if using fmriprep compcor outputs
-    if "compcor" in strategy and "high_pass" not in strategy:
-        strategy.append("high_pass")
-    return strategy
+    if ("compcor" in strategy) and ("high_pass" not in strategy):
+        raise ValueError("When using compcor, `high_pass` must be included in "
+                         f"strategy. Current strategy: '{strategy}'")
 
 
 def _check_error(missing):
@@ -61,7 +66,7 @@ def _check_error(missing):
 
 
 def fmriprep_confounds(img_files,
-                       strategy=["motion", "high_pass", "wm_csf"],
+                       strategy=("motion", "high_pass", "wm_csf"),
                        motion="full",
                        scrub=5, fd_threshold=0.2, std_dvars_threshold=3,
                        wm_csf="basic",
@@ -98,19 +103,40 @@ def fmriprep_confounds(img_files,
         - `func.gii`: list of a pair of paths to files, optionally as a list
           of lists.
 
-    strategy : list of strings, default ["motion", "high_pass", "wm_csf"]
+    strategy : tuple or list of strings.
+        Default ("motion", "high_pass", "wm_csf")
         The type of noise components to include.
 
-        - "motion":  head motion estimates.
-        - "high_pass" discrete cosines covering low frequencies.
+        - "motion":  head motion estimates. Associated parameter: `motion`
         - "wm_csf" confounds derived from white matter and cerebrospinal fluid.
-        - "global" confounds derived from the global signal.
+          Associated parameter: `wm_csf`
+        - "global_signal" confounds derived from the global signal.
+          Associated parameter: `global_signal`
         - "compcor" confounds derived from CompCor :footcite:`BEHZADI200790`.
+          When using this noise component, "high_pass" must also be applied.
+          Associated parameter: `compcor`, `n_compcor`
         - "ica_aroma" confounds derived from ICA-AROMA :footcite:`Pruim2015`.
+          Associated parameter: `ica_aroma`
         - "scrub" regressors for :footcite:`Power2014` scrubbing approach.
+          Associated parameter: `scrub`, `fd_threshold`, `std_dvars_threshold`
 
-        For each supplied strategy, associated parameters will be applied.
-        Otherwise, any values supplied to the parameters are ignored.
+        For each component above, associated parameters will be applied if
+        specified. If associated parameters are not specified, any values
+        supplied to the parameters are ignored.
+        For example, `strategy=('motion', 'global_signal')` will allow users
+        to supply input to associated parameter `motion` and `global_signal`;
+        if users pass `wm_csf` parameter, it will not be applied as it is not
+        part of the `strategy`.
+
+        There are two additional noise components with no optional parameters.
+
+        - "non_steady_state" denotes volumes collected before
+          the :term:`fMRI` scanner has reached a stable state.
+        - "high_pass" adds discrete cosines transformation
+          basis regressors to handle low-frequency signal drifts.
+
+        Non-steady-state volumes will always be checked. There's no need to
+        supply this component to the strategy.
 
     motion : {'basic', 'power2', 'derivatives', 'full'}
         Type of confounds extracted from head motion estimates.
@@ -120,16 +146,6 @@ def fmriprep_confounds(img_files,
         - "derivatives" translation/rotation + derivatives (12 parameters)
         - "full" translation/rotation + derivatives + quadratic terms + power2d
           derivatives (24 parameters)
-
-    fd_threshold : float, default 0.2
-        Framewise displacement threshold for scrub (default = 0.2 mm)
-
-    std_dvars_threshold : float, default 3
-        Standardized DVARS threshold for scrub (default = 3).
-        DVARs is defined as root mean squared intensity difference of volume N
-        to volume N+1 :footcite:`Power2012`. D referring to temporal derivative
-        of timecourses, VARS referring to root mean squared variance over
-        voxels.
 
     wm_csf : {'basic', 'power2', 'derivatives', 'full'}
         Type of confounds extracted from masks of white matter and
@@ -157,6 +173,16 @@ def fmriprep_confounds(img_files,
         is 0, temove time frames based on excessive framewise displacement and
         DVARS only. One-hot encoding vectors are added as regressors for each
         scrubbed frame.
+
+    fd_threshold : float, default 0.2
+        Framewise displacement threshold for scrub (default = 0.2 mm)
+
+    std_dvars_threshold : float, default 3
+        Standardized DVARS threshold for scrub (default = 3).
+        DVARs is defined as root mean squared intensity difference of volume N
+        to volume N+1 :footcite:`Power2012`. D referring to temporal derivative
+        of timecourses, VARS referring to root mean squared variance over
+        voxels.
 
     compcor : {'anat_combined', 'anat_separated', 'temporal',\
     'temporal_anat_combined', 'temporal_anat_separated'}
@@ -235,7 +261,7 @@ def fmriprep_confounds(img_files,
     .. footbibliography::
 
     """
-    strategy = _sanitize_strategy(strategy)
+    _check_strategy(strategy)
 
     # load confounds per image provided
     img_files, flag_single = _sanitize_confounds(img_files)
@@ -277,11 +303,16 @@ def _load_single(confounds_raw, strategy, demean, **kargs):
         confounds_raw, flag_acompcor, flag_full_aroma
     )
 
-    confounds = pd.DataFrame()
     missing = {"confounds": [], "keywords": []}
+    # always check non steady state volumes are loaded
+    confounds, missing = _load_noise_component(confounds_raw,
+                                               "non_steady_state",
+                                               missing, meta_json=meta_json,
+                                               **kargs)
     for component in strategy:
         loaded_confounds, missing = _load_noise_component(
-            confounds_raw, component, missing, meta_json=meta_json, **kargs)
+            confounds_raw, component, missing, meta_json=meta_json,
+            **kargs)
         confounds = pd.concat([confounds, loaded_confounds], axis=1)
 
     _check_error(missing)  # raise any missing
