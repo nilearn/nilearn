@@ -166,7 +166,7 @@ def mask_and_reduce(masker, imgs,
         # We'll let _mask_and_reduce_single decide on the number of
         # samples based on the reduction_ratio
         n_samples = None
-
+    print("Call _mask_and_reduce_single")
     data_list = Parallel(n_jobs=n_jobs)(
         delayed(_mask_and_reduce_single)(
             masker,
@@ -189,12 +189,14 @@ def mask_and_reduce(masker, imgs,
                     dtype=dtype)
 
     current_position = 0
+    print("before loop")
     for i, next_position in enumerate(np.cumsum(subject_n_samples)):
         data[current_position:next_position] = data_list[i]
         current_position = next_position
         # Clear memory as fast as possible: remove the reference on
         # the corresponding block of data
         data_list[i] = None
+    print("after loop")
     return data
 
 
@@ -206,10 +208,12 @@ def _mask_and_reduce_single(masker,
                             memory_level=0,
                             random_state=None):
     """Utility function for multiprocessing from MaskReducer"""
+    print("Transform")
     this_data = masker.transform(img, confound)
     # Now get rid of the img as fast as possible, to free a
     # reference count on it, and possibly free the corresponding
     # data
+    print("Delete img")
     del img
     random_state = check_random_state(random_state)
 
@@ -219,14 +223,16 @@ def _mask_and_reduce_single(masker,
         n_samples = min(n_samples, data_n_samples)
     else:
         n_samples = int(ceil(data_n_samples * reduction_ratio))
-
+    print("Call fast_svd")
     U, S, V = cache(fast_svd, memory,
                     memory_level=memory_level,
                     func_memory_level=3)(this_data.T,
                                          n_samples,
                                          random_state=random_state)
+    print("return")
     U = U.T.copy()
     U = U * S[:, np.newaxis]
+    print("return U")
     return U
 
 
@@ -417,8 +423,9 @@ class BaseDecomposition(BaseEstimator, CacheMixin, TransformerMixin):
             memory=self.memory,
             memory_level=max(0, self.memory_level + 1),
             n_jobs=self.n_jobs)
+        print("Calling raw_fit")
         self._raw_fit(data)
-
+        print("Inverse transforming...")
         # Create and fit NiftiMapsMasker for transform
         # and inverse_transform
         self.nifti_maps_masker_ = NiftiMapsMasker(
@@ -427,7 +434,7 @@ class BaseDecomposition(BaseEstimator, CacheMixin, TransformerMixin):
             resampling_target='maps')
 
         self.nifti_maps_masker_.fit()
-
+        print("return")
         return self
 
     def _check_components_(self):

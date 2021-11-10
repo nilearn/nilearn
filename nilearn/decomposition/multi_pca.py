@@ -174,6 +174,7 @@ class MultiPCA(BaseDecomposition):
             S = np.sqrt(np.sum(data ** 2, axis=1))
             S[S == 0] = 1
             data /= S[:, np.newaxis]
+        print("Calling randomized_svd")
         components_, self.variance_, _ = self._cache(
             randomized_svd, func_memory_level=2)(
             data.T, n_components=self.n_components,
@@ -182,7 +183,9 @@ class MultiPCA(BaseDecomposition):
         if self.do_cca:
             data *= S[:, np.newaxis]
         self.components_ = components_.T
+        print("End randomized_svd")
         if hasattr(self, "masker_"):
+            print("Calling inverse_transform")
             self.components_img_ = self.masker_.inverse_transform(
                 components_.T)
         return components_

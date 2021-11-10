@@ -45,6 +45,7 @@ def _estimator_fit(data, estimator, method=None):
                     memory=estimator.memory,
                     memory_level=estimator.memory_level,
                     verbose=estimator.verbose)
+        print("Calling ReNA.fit")
         rena.fit(data)
         labels_ = rena.labels_
 
@@ -324,6 +325,7 @@ class Parcellations(MultiPCA):
         except Exception:
             pass
 
+        print("Calling MultiPCA raw fit")
         components = MultiPCA._raw_fit(self, data)
 
         mask_img_ = self.masker_.mask_img_
@@ -341,11 +343,13 @@ class Parcellations(MultiPCA):
                                  func_memory_level=1)(components.T, kmeans)
 
         elif self.method == 'rena':
+            print("ReNA")
             rena = ReNA(mask_img_, n_clusters=self.n_parcels,
                         scaling=self.scaling, n_iter=self.n_iter,
                         memory=self.memory, memory_level=self.memory_level,
                         verbose=max(0, self.verbose - 1))
             method = 'rena'
+            print("Computing labels...")
             labels = \
                 self._cache(_estimator_fit, func_memory_level=1)(components.T,
                                                                  rena, method)
