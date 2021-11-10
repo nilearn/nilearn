@@ -51,7 +51,7 @@ def _embed_img(display):
     """
     if display is None:  # no image to display
         return None
-    # If already embeded, simply return as is
+    # If already embedded, simply return as is
     if isinstance(display, str):
         return display
     return figure_to_svg_base64(display.frame_axes.figure)
