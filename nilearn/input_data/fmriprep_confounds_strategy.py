@@ -28,8 +28,8 @@ preset_strategies = {
         "motion": "full",
         "wm_csf": "full",
         "scrub": 5,
-        "fd_threshold": 0.2,
-        "std_dvars_threshold": 3,
+        "fd_thresh": 0.2,
+        "std_dvars_thresh": 3,
         "global_signal": None,
         "demean": True
     },
