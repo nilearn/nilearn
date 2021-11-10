@@ -179,7 +179,7 @@ plotting.plot_matrix(correlation_matrix, figure=(10, 8), labels=labels[1:],
 
 confounds_minimal_no_gsr, sample_mask = fmriprep_confounds(
     fmri_filenames,
-    strategy=["high_pass", "motion", "wm_csf", "global"],
+    strategy=["high_pass", "motion", "wm_csf", "global_signal"],
     motion="basic", wm_csf="basic", global_signal="basic")
 print("The shape of the confounds matrix is:",
       confounds_minimal_no_gsr.shape)
