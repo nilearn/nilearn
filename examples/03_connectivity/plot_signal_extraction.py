@@ -148,7 +148,7 @@ confounds_scrub, sample_mask = fmriprep_confounds(
     fmri_filenames,
     strategy=["high_pass", "motion", "wm_csf", "scrub"],
     motion="basic", wm_csf="basic",
-    scrub=5, fd_thresh=0.2, std_dvars_thresh=3)
+    scrub=5, fd_threshold=0.2, std_dvars_threshold=3)
 
 print("After scrubbing, {} out of {} volumes remains".format(
     sample_mask.shape[0], confounds_scrub.shape[0]))
