@@ -2,8 +2,8 @@ import pytest
 from nibabel import Nifti1Image
 from collections import Counter
 import numpy as np
-from nilearn import input_data
-from nilearn._utils import data_gen
+from nilearn.input_data import NiftiMasker, NiftiLabelsMasker, NiftiMapsMasker
+from nilearn._utils.data_gen import generate_labeled_regions, generate_maps
 from nilearn.image import get_data, new_img_like
 from numpy.testing import assert_almost_equal
 
@@ -13,53 +13,111 @@ from numpy.testing import assert_almost_equal
 
 
 def _check_html(html_view):
-    """ Check the presence of some expected code in the html viewer
-    """
+    """Check the presence of some expected code in the html viewer."""
     assert "Parameters" in str(html_view)
     assert "data:image/svg+xml;base64," in str(html_view)
     assert html_view._repr_html_() == html_view.body
 
 
-def test_3d_reports():
-    # Dummy 3D data
+@pytest.fixture
+def data_img_3d():
+    """Dummy 3D data for testing."""
     data = np.zeros((9, 9, 9))
     data[3:-3, 3:-3, 3:-3] = 10
-    data_img_3d = Nifti1Image(data, np.eye(4))
+    return Nifti1Image(data, np.eye(4))
 
-    # Dummy mask
-    mask = np.zeros((9, 9, 9))
-    mask[4:-4, 4:-4, 4:-4] = True
-    mask_img_3d = Nifti1Image(data, np.eye(4))
 
-    # test .fit method
-    mask = input_data.NiftiMasker()
-    mask.fit(data_img_3d)
-    html = mask.generate_report()
+@pytest.fixture
+def mask():
+    """Dummy mask for testing."""
+    data = np.zeros((10, 10, 10), dtype=int)
+    data[3:7, 3:7, 3:7] = 1
+    return Nifti1Image(data, np.eye(4))
+
+
+@pytest.fixture
+def input_parameters(masker_class, data_img_3d):
+    n_regions = 9
+    shape = (13, 11, 12)
+    affine = np.diag([2, 2, 2, 1])
+    if masker_class == NiftiMasker:
+        return {"mask_img": data_img_3d}
+    if masker_class == NiftiLabelsMasker:
+        label_img = generate_labeled_regions(
+            shape, n_regions=n_regions, affine=affine
+        )
+        return {"labels_img": label_img}
+    elif masker_class == NiftiMapsMasker:
+        label_img, _ = generate_maps(
+            shape, n_regions=n_regions, affine=affine
+        )
+        return {"maps_img": label_img}
+
+
+@pytest.mark.parametrize("masker_class",
+                         [NiftiMasker, NiftiLabelsMasker, NiftiMapsMasker])
+def test_report_empty_fit(masker_class, input_parameters):
+    """Test minimal report generation."""
+    masker = masker_class(**input_parameters)
+    masker.fit()
+    _check_html(masker.generate_report())
+
+
+@pytest.mark.parametrize("masker_class",
+                         [NiftiMasker, NiftiLabelsMasker, NiftiMapsMasker])
+def test_empty_report(masker_class, input_parameters):
+    """Test with reports set to False."""
+    masker = masker_class(**input_parameters, reports=False)
+    masker.fit()
+    assert masker._reporting_data is None
+    assert masker._reporting() == [None]
+    with pytest.warns(UserWarning,
+                      match=("Report generation not enabled ! "
+                             "No visual outputs will be created.")):
+        masker.generate_report()
+
+
+@pytest.mark.parametrize("masker_class", [NiftiMasker, NiftiLabelsMasker])
+def test_reports_after_fit_3d_data(masker_class, input_parameters, data_img_3d):  # noqa
+    """Tests report generation after fitting on 3D data."""
+    masker = masker_class(**input_parameters)
+    masker.fit(data_img_3d)
+    html = masker.generate_report()
     _check_html(html)
 
-    # check providing mask to init
-    masker = input_data.NiftiMasker(mask_img=mask_img_3d)
+
+@pytest.mark.parametrize("masker_class", [NiftiMasker, NiftiLabelsMasker])
+def test_reports_after_fit_3d_data_with_mask(masker_class, input_parameters, data_img_3d, mask):  # noqa
+    """Tests report generation after fitting on 3D data with mask_img."""
+    if "mask_img" in input_parameters:
+        masker = masker_class(mask_img=mask)
+    else:
+        masker = masker_class(**input_parameters, mask_img=mask)
     masker.fit(data_img_3d)
     assert masker._report_content['warning_message'] is None
     html = masker.generate_report()
     _check_html(html)
 
-    # check providing mask to init and no images to .fit
-    masker = input_data.NiftiMasker(mask_img=mask_img_3d)
+
+@pytest.mark.parametrize("masker_class", [NiftiMasker, NiftiLabelsMasker])
+def test_warning_in_report_after_empty_fit(masker_class, input_parameters, mask):  # noqa
+    """Tests that a warning is both given and written in the report if
+    no images were provided to fit.
+    """
+    if "mask_img" in input_parameters:
+        masker = masker_class(mask_img=mask)
+    else:
+        masker = masker_class(**input_parameters, mask_img=mask)
     assert masker._report_content['warning_message'] is None
     masker.fit()
-    warn_message = ("No image provided to fit in NiftiMasker. "
-                    "Setting image to mask for reporting.")
+    warn_message = f"No image provided to fit in {masker_class.__name__}."
     with pytest.warns(UserWarning, match=warn_message):
         html = masker.generate_report()
-    assert masker._report_content['warning_message'] == warn_message
+    assert warn_message in masker._report_content['warning_message']
     _check_html(html)
 
 
-def test_nifti_labels_masker_report():
-    data = np.zeros((9, 9, 9))
-    data[3:-3, 3:-3, 3:-3] = 10
-    data_img_3d = Nifti1Image(data, np.eye(4))
+def test_nifti_labels_masker_report(data_img_3d, mask):
     shape = (13, 11, 12)
     affine = np.diag([2, 2, 2, 1])
     n_regions = 9
@@ -69,26 +127,23 @@ def test_nifti_labels_masker_report():
                         'region name',
                         'size (in mm^3)',
                         'relative size (in %)']
-    labels_img = data_gen.generate_labeled_regions(shape,
-                                                   affine=affine,
-                                                   n_regions=n_regions)
+    labels_img = generate_labeled_regions(
+        shape, affine=affine, n_regions=n_regions
+    )
     labels_img_floats = new_img_like(
         labels_img, get_data(labels_img).astype(float)
     )
-    masker = input_data.NiftiLabelsMasker(labels_img_floats,
-                                          labels=labels)
+    masker = NiftiLabelsMasker(labels_img_floats, labels=labels)
     masker.fit()
     masker.generate_report()
 
     # Check that providing incorrect labels raises an error
-    masker = input_data.NiftiLabelsMasker(labels_img,
-                                          labels=labels[:-1])
+    masker = NiftiLabelsMasker(labels_img, labels=labels[:-1])
     masker.fit()
     with pytest.raises(ValueError,
                        match="Mismatch between the number of provided labels"):
         masker.generate_report()
-    masker = input_data.NiftiLabelsMasker(labels_img,
-                                          labels=labels)
+    masker = NiftiLabelsMasker(labels_img, labels=labels)
     masker.fit()
     # Check that a warning is given when generating the report
     # since no image was provided to fit
@@ -102,8 +157,7 @@ def test_nifti_labels_masker_report():
     for d in ['x', 'y', 'z']:
         assert len(display[0].axes[d].ax.collections) == 0
 
-    masker = input_data.NiftiLabelsMasker(labels_img,
-                                          labels=labels)
+    masker = NiftiLabelsMasker(labels_img, labels=labels)
     masker.fit(data_img_3d)
 
     display = masker._reporting()
@@ -111,13 +165,7 @@ def test_nifti_labels_masker_report():
         assert len(display[0].axes[d].ax.collections) > 0
         assert len(display[0].axes[d].ax.collections) <= n_regions
 
-    mask = np.zeros((10, 10, 10), dtype=int)
-    mask[3:7, 3:7, 3:7] = 1
-    mask_img = Nifti1Image(mask, np.eye(4))
-
-    masker = input_data.NiftiLabelsMasker(labels_img,
-                                          labels=labels,
-                                          mask_img=mask_img)
+    masker = NiftiLabelsMasker(labels_img, labels=labels, mask_img=mask)
     masker.fit(data_img_3d)
     report = masker.generate_report()
     assert masker._reporting_data is not None
@@ -150,7 +198,7 @@ def test_nifti_labels_masker_report():
 
     # Check that region labels are no displayed in the report
     # when they were not provided by the user.
-    masker = input_data.NiftiLabelsMasker(labels_img)
+    masker = NiftiLabelsMasker(labels_img)
     masker.fit()
     report = masker.generate_report()
     for col in EXPECTED_COLUMNS:
@@ -161,7 +209,7 @@ def test_nifti_labels_masker_report():
             assert len(masker._report_content['summary'][col]) == n_regions
 
 
-def test_4d_reports():
+def test_4d_reports(mask):
     # Dummy 4D data
     data = np.zeros((10, 10, 10, 3), dtype=int)
     data[..., 0] = 1
@@ -169,62 +217,27 @@ def test_4d_reports():
     data[..., 2] = 3
     data_img_4d = Nifti1Image(data, np.eye(4))
 
-    # Dummy mask
-    mask = np.zeros((10, 10, 10), dtype=int)
-    mask[3:7, 3:7, 3:7] = 1
-    mask_img = Nifti1Image(mask, np.eye(4))
-
     # test .fit method
-    mask = input_data.NiftiMasker(mask_strategy='epi')
-    mask.fit(data_img_4d)
-    assert mask._report_content['warning_message'] is None
-    html = mask.generate_report()
+    masker = NiftiMasker(mask_strategy='epi')
+    masker.fit(data_img_4d)
+    assert masker._report_content['warning_message'] is None
+    html = masker.generate_report()
     _check_html(html)
 
     # test .fit_transform method
-    masker = input_data.NiftiMasker(mask_img=mask_img, standardize=True)
+    masker = NiftiMasker(mask_img=mask, standardize=True)
     masker.fit_transform(data_img_4d)
-    assert mask._report_content['warning_message'] is None
+    assert masker._report_content['warning_message'] is None
     html = masker.generate_report()
     _check_html(html)
 
 
-def test_empty_report():
-    # Data for NiftiMasker
-    data = np.zeros((9, 9, 9))
-    data[3:-3, 3:-3, 3:-3] = 10
-    data_img_3d = Nifti1Image(data, np.eye(4))
-    # Data for NiftiLabelsMasker
-    shape = (13, 11, 12)
-    affine = np.diag([2, 2, 2, 1])
-    n_regions = 9
-    labels_img = data_gen.generate_labeled_regions(shape,
-                                                   affine=affine,
-                                                   n_regions=n_regions)
-    # turn off reporting
-    maskers = [input_data.NiftiMasker(reports=False),
-               input_data.NiftiLabelsMasker(labels_img, reports=False)]
-    for masker in maskers:
-        masker.fit(data_img_3d)
-        assert masker._reporting_data is None
-        assert masker._reporting() == [None]
-        with pytest.warns(UserWarning,
-                          match=("Report generation not enabled ! "
-                                 "No visual outputs will be created.")):
-            masker.generate_report()
-
-
-def test_overlaid_report():
+def test_overlaid_report(data_img_3d):
     pytest.importorskip('matplotlib')
 
-    # Dummy 3D data
-    data = np.zeros((9, 9, 9))
-    data[3:-3, 3:-3, 3:-3] = 10
-    data_img_3d = Nifti1Image(data, np.eye(4))
-
-    mask = input_data.NiftiMasker(target_affine=np.eye(3) * 8)
-    html = mask.generate_report()
+    masker = NiftiMasker(target_affine=np.eye(3) * 8)
+    html = masker.generate_report()
     assert "Please `fit` the object" in str(html)
-    mask.fit(data_img_3d)
-    html = mask.generate_report()
+    masker.fit(data_img_3d)
+    html = masker.generate_report()
     assert '<div class="overlay">' in str(html)
