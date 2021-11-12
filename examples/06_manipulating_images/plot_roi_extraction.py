@@ -230,7 +230,7 @@ from nilearn.plotting import plot_roi, show
 # values in data type boolean should be converted to int data type at the same
 # time. Otherwise, an error will be raised
 bin_p_values_and_vt_img = new_img_like(fmri_img,
-                                       bin_p_values_and_vt.astype(np.int))
+                                       bin_p_values_and_vt.astype(int))
 # Visualizing goes here with background as computed mean of functional images
 plot_roi(bin_p_values_and_vt_img, mean_img, cut_coords=cut_coords,
          title='Intersection with ventral temporal mask')
@@ -254,7 +254,7 @@ dil_bin_p_values_and_vt = ndimage.binary_dilation(bin_p_values_and_vt)
 # varies with data specific
 dil_bin_p_values_and_vt_img = new_img_like(
     fmri_img,
-    dil_bin_p_values_and_vt.astype(np.int))
+    dil_bin_p_values_and_vt.astype(int))
 # Visualization goes here without 'L', 'R' annotation and coordinates being the
 # same
 plot_roi(dil_bin_p_values_and_vt_img, mean_img,
@@ -272,9 +272,9 @@ plot_roi(dil_bin_p_values_and_vt_img, mean_img,
 # integer label to each one of them.
 labels, n_labels = ndimage.label(dil_bin_p_values_and_vt)
 # we take first roi data with labels assigned as integer 1
-first_roi_data = (labels == 5).astype(np.int)
+first_roi_data = (labels == 5).astype(int)
 # Similarly, second roi data is assigned as integer 2
-second_roi_data = (labels == 3).astype(np.int)
+second_roi_data = (labels == 3).astype(int)
 # Visualizing the connected components
 # First, we create a Nifti image type from first roi data in a array
 first_roi_img = new_img_like(fmri_img, first_roi_data)
