@@ -198,14 +198,6 @@ div.nilearn_report .image:hover .overlay {
   background-color: #2980B9;
 }
 
-.show {
-    display: block;
-}
-
-.hide {
-    display: none;
-}
-
 .buttonContainer {
    float: left;
    width: 33%; 
@@ -242,12 +234,14 @@ div.nilearn_report .image:hover .overlay {
                     <button onclick="displayNextMap()" class="btn">Next Map</button>
                 </div>
 
-                <img id="map0" class="pure-img show" width="100%"    
-                    src="data:image/svg+xml;base64,{{content[0]}}" alt="image"/>
+                <img id="map0" class="pure-img" width="100%"
+                    src="data:image/svg+xml;base64,{{content[0]}}"
+                    style="display:block;" alt="image"/>
 
                 {{for map in range(1, len(displayed_maps))}}
-                    <img id="map{{map}}" class="pure-img hide" width="100%" 
-                        src="data:image/svg+xml;base64,{{content[map]}}" alt="image"/>
+                    <img id="map{{map}}" class="pure-img" width="100%"
+                        src="data:image/svg+xml;base64,{{content[map]}}"
+                        style="display:none;" alt="image"/>
                 {{endfor}}
             </div>
         </div>
@@ -302,22 +296,22 @@ div.nilearn_report .image:hover .overlay {
     document.getElementById("comp").innerHTML=displayed_maps[current_map_idx];
 
     function displayNextMap() {
-        document.getElementById('map' + current_map_idx).classList.replace("show", "hide");
+        document.getElementById('map' + current_map_idx).style["display"] = "none";
         current_map_idx = current_map_idx + 1;
         if (current_map_idx >= number_maps){
             current_map_idx = 0;
         }
-        document.getElementById('map' + current_map_idx).classList.replace("hide", "show");
+        document.getElementById('map' + current_map_idx).style["display"] = "block";
         document.getElementById("comp").innerHTML=displayed_maps[current_map_idx];
     }
 
     function displayPreviousMap() {
-        document.getElementById('map' + current_map_idx).classList.replace("show", "hide");
+        document.getElementById('map' + current_map_idx).style["display"] = "none";
         current_map_idx = current_map_idx - 1;
         if (current_map_idx < 0){
             current_map_idx = number_maps - 1;
         }
-        document.getElementById('map' + current_map_idx).classList.replace("hide", "show");
+        document.getElementById('map' + current_map_idx).style["display"] = "block";
         document.getElementById("comp").innerHTML=displayed_maps[current_map_idx];
     }
 </script>
