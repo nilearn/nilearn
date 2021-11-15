@@ -2,9 +2,9 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from ..fmriprep_confounds_scrub import (_optimize_scrub,
-                                        _get_outlier_cols,
-                                        _extract_outlier_regressors)
+from nilearn.interfaces.fmriprep.load_confounds_scrub import (
+    _optimize_scrub, _get_outlier_cols, _extract_outlier_regressors
+)
 
 from pandas.testing import assert_frame_equal
 

@@ -1,5 +1,7 @@
 import pytest
-from ..fmriprep_confounds_utils import _sanitize_confounds
+from nilearn.interfaces.fmriprep.load_confounds_utils import (
+    _sanitize_confounds
+)
 
 
 @pytest.mark.parametrize(

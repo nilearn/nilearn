@@ -6,8 +6,10 @@ import os
 import json
 import re
 
-from .fmriprep_confounds_scrub import _extract_outlier_regressors
-from .._utils.fmriprep_confounds import _flag_single_gifti, _is_camel_case
+from .load_confounds_scrub import _extract_outlier_regressors
+from nilearn._utils.fmriprep_confounds import (
+    _flag_single_gifti, _is_camel_case
+)
 
 
 img_file_patterns = {

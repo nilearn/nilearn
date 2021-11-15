@@ -2,7 +2,7 @@
 import os
 import json
 import pandas as pd
-from nilearn.input_data import fmriprep_confounds_utils
+from nilearn.interfaces.fmriprep import load_confounds_utils
 
 
 img_file_patterns = {
@@ -22,7 +22,7 @@ img_file_patterns = {
 def get_testdata_path(non_steady_state=True):
     """Get file path for the confound regressors."""
     path_data = os.path.join(os.path.dirname(
-        fmriprep_confounds_utils.__file__), "data")
+        load_confounds_utils.__file__), "data")
     if non_steady_state:
         return [
             os.path.join(path_data, filename)

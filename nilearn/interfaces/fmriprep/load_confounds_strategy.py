@@ -3,13 +3,13 @@
 Authors: Hao-Ting Wang, Pierre Bellec
 """
 import warnings
-from . import fmriprep_confounds
+from . import load_confounds
 
 # defining a preset strategy with python dictionary:
 # key:
 #   name for the strategy
 # value:
-#   a dictionary containing the parameters from `fmriprep_confounds`
+#   a dictionary containing the parameters from `load_confounds`
 #   and associated values.
 #   compulsory:
 #       strategy (as the value defines the other relevant parameters)
@@ -52,12 +52,11 @@ preset_strategies = {
 }
 
 
-def fmriprep_confounds_strategy(img_files, denoise_strategy="simple",
-                                **kwargs):
+def load_confounds_strategy(img_files, denoise_strategy="simple", **kwargs):
     """
     Use preset strategy to load confounds from :term:`fMRIPrep`.
 
-    `fmriprep_confounds_strategy` provides an interface to select confounds
+    `load_confounds_strategy` provides an interface to select confounds
     based on past literature with limited parameters for user customisation.
 
     .. versionadded:: 0.8.2
@@ -70,8 +69,8 @@ def fmriprep_confounds_strategy(img_files, denoise_strategy="simple",
         associated confound files should be in the same directory as the image
         file). As long as the image file, confound related tsv and json are in
         the same directory with BIDS-compliant names,
-        :func:`nilearn.input_data.fmriprep_confounds` can retrieve the relevant
-        files correctly.
+        :func:`nilearn.interfaces.fmriprep.load_confounds` can retrieve the
+        relevant files correctly.
 
         - `nii.gz` or `dtseries.nii`: path to files, optionally as a list.
         - `func.gii`: list of a pair of paths to files, optionally as a list
@@ -116,7 +115,7 @@ def fmriprep_confounds_strategy(img_files, denoise_strategy="simple",
     Other keyword arguments:
         See additional parameters associated with `denoise_strategy` in
         Notes and refer to the documentation of
-        :func:`nilearn.input_data.fmriprep_confounds`.
+        :func:`nilearn.interfaces.fmriprep.load_confounds`.
 
     Returns
     -------
@@ -143,7 +142,7 @@ def fmriprep_confounds_strategy(img_files, denoise_strategy="simple",
     -----
     1. The following table details the default options of each preset
        strategies. Parameters with `*` denote customisable parameters. Please
-       see :func:`nilearn.input_data.fmriprep_confounds`.
+       see :func:`nilearn.interfaces.fmriprep.load_confounds`.
 
         ========= ========= ====== ====== ============= ===== ============ \
         =================== ============== ========= ========= ======
@@ -188,7 +187,7 @@ def fmriprep_confounds_strategy(img_files, denoise_strategy="simple",
 
     See Also
     --------
-    :func:`nilearn.input_data.fmriprep_confounds`
+    :func:`nilearn.interfaces.fmriprep.load_confounds`
 
     References
     -----------
@@ -219,7 +218,7 @@ def fmriprep_confounds_strategy(img_files, denoise_strategy="simple",
                       f"selected strategy '{denoise_strategy}': {not_needed}; "
                       f"parameters accepted: {check_parameters}"
                       )
-    return fmriprep_confounds(img_files, **user_parameters)
+    return load_confounds(img_files, **user_parameters)
 
 
 def _update_user_inputs(kwargs, default_parameters, check_parameters):
