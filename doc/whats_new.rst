@@ -33,8 +33,9 @@ Fixes
   as an array.
   (See issue `#3012 <https://github.com/nilearn/nilearn/issues/3012>`_) and fix
   `#3013 <https://github.com/nilearn/nilearn/pull/3013>`_).
-- :func:`nilearn.glm.first_level.FirstLevelModel.generate_report` threw a `TypeError`
-  when `FirstLevelModel` was instantiated with `mask_img` being a `NiftiMasker`.
+- :meth:`nilearn.glm.first_level.FirstLevelModel.generate_report` threw a `TypeError`
+  when `FirstLevelModel` was instantiated with `mask_img`
+  being a :class:`~nilearn.input_data.NiftiMasker`.
   :func:`nilearn.reporting.make_glm_report` was fixed accordingly.
   (See issue `#3034 <https://github.com/nilearn/nilearn/issues/3034>`_) and fix
   `#3035 <https://github.com/nilearn/nilearn/pull/3035>`_).
