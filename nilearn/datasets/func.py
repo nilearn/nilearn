@@ -18,9 +18,9 @@ import nibabel
 import pandas as pd
 from scipy.io import loadmat
 try:
+    from scipy.io.matlab import MatReadError
+except ImportError:  # SciPy < 1.8
     from scipy.io.matlab.miobase import MatReadError
-except ImportError:
-    from scipy.io._matlab.miobase import MatReadError
 from sklearn.utils import Bunch, deprecated
 
 from .utils import (_get_dataset_dir, _fetch_files, _get_dataset_descr,
