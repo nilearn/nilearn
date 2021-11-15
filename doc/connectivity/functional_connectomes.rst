@@ -88,11 +88,13 @@ obtain time series that capture well the functional interactions between
 regions, regressing out noise sources is very important
 `[Varoquaux & Craddock 2013] <https://hal.inria.fr/hal-00812911/>`_.
 For data processed by :term:`fMRIPrep`,
-:func:`fmriprep_confounds` and
-:func:`fmriprep_confounds_strategy` can help you retrieve
-confound variables. :func:`fmriprep_confounds_strategy` selects confounds based
-on past literature with limited parameters for customisation. For more freedoms
-of confounds selection, :func:`fmriprep_confounds` groups confound variables as
+:func:`~nilearn.interfaces.fmriprep.load_confounds` and
+:func:`~nilearn.interfaces.fmriprep.load_confounds_strategy` can help you
+retrieve confound variables.
+:func:`~nilearn.interfaces.fmriprep.load_confounds_strategy` selects confounds
+based on past literature with limited parameters for customisation.
+For more freedoms of confounds selection,
+:func:`~nilearn.interfaces.fmriprep.load_confounds` groups confound variables as
 sets of noise components and one can fine tune each of the parameters.
 
 .. image:: ../auto_examples/03_connectivity/images/sphx_glr_plot_signal_extraction_001.png
@@ -120,13 +122,13 @@ sets of noise components and one can fine tune each of the parameters.
    * Inspect the '.keys()' of the object returned by
      :func:`nilearn.datasets.fetch_development_fmri`.
 
-   * Use :func:`fmriprep_confounds` to get a set of
+   * Use :func:`~nilearn.interfaces.fmriprep.load_confounds` to get a set of
      confounds of your choice. (Note: CompCor and ICA-AROMA related options are
      not applicable to the brain development dataset).
 
-   * Use :func:`fmriprep_confounds_strategy` to get a set of
-     confounds. (Note: only ``simple`` and ``scrubbing`` are applicable to the
-     brain development dataset).
+   * Use :func:`~nilearn.interfaces.fmriprep.load_confounds_strategy` to get a
+     set of confounds. (Note: only ``simple`` and ``scrubbing`` are applicable
+     to the brain development dataset).
 
    * :class:`nilearn.connectome.ConnectivityMeasure` can be used to compute
      a correlation matrix (check the shape of your matrices).

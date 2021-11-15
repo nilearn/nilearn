@@ -269,9 +269,11 @@ properties, before conversion to voxel signals.
   * More complex confounds, measured during the acquision, can be removed
     by passing them to :meth:`NiftiMasker.transform`. If the dataset
     provides a confounds file, just pass its path to the masker. For
-    :term:`fMRIPrep` outputs, one can use :func:`fmriprep_confounds` or
-    :func:`fmriprep_confounds_strategy` to select confound variables with some
-    basic sanity check based on :term:`fMRIPrep` documentation.
+    :term:`fMRIPrep` outputs, one can use
+    :func:`~nilearn.interfaces.fmriprep.load_confounds` or
+    :func:`~nilearn.interfaces.fmriprep.load_confounds_strategy` to select
+    confound variables with some basic sanity check based on
+    :term:`fMRIPrep` documentation.
 
 .. topic:: **Exercise**
    :class: green
@@ -284,8 +286,9 @@ properties, before conversion to voxel signals.
 
 .. note::
 
-   Please see the usage example of :func:`fmriprep_confounds` and
-   :func:`fmriprep_confounds_strategy` in
+   Please see the usage example of
+   :func:`~nilearn.interfaces.fmriprep.load_confounds` and
+   :func:`~nilearn.interfaces.fmriprep.load_confounds_strategy` in
    :doc:`plot_signal_extraction.py <../auto_examples/03_connectivity/plot_signal_extraction>`.
 
 .. seealso::
