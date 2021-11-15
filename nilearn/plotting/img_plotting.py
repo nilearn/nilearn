@@ -910,7 +910,7 @@ def plot_stat_map(stat_map_img, bg_img=MNI152TEMPLATE, cut_coords=None,
     %(cmap)s
 
         .. note::
-            The ccolormap *must* be symmetrical.
+            The colormap *must* be symmetrical.
 
         Default=`plt.cm.cold_hot`.
     %(symmetric_cbar)s
