@@ -207,6 +207,10 @@ the :ref:`user guide <user_guide>` for more information and usage examples.
 :mod:`nilearn.interfaces`: Loading components from interfaces
 =============================================================
 
+.. automodule:: nilearn.interfaces
+   :no-members:
+   :no-inherited-members:
+
 :mod:`nilearn.interfaces.fmriprep`
 ----------------------------------
 
