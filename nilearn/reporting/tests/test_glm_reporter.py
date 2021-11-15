@@ -16,6 +16,7 @@ from nilearn.glm.first_level.design_matrix import (
 from nilearn.glm.first_level import FirstLevelModel
 from nilearn.reporting import glm_reporter as glmr
 from nilearn.glm.second_level import SecondLevelModel
+from nilearn.input_data import NiftiMasker
 
 try:
     import matplotlib as mpl  # noqa: F841
@@ -289,3 +290,32 @@ def test_plot_contrasts():
     contrast_plots = glmr._plot_contrasts(contrast,  # noqa: F841
                                           [dmtx],
                                           )
+
+
+def test_masking_first_level_model():
+    """
+    Checks that using NiftiMasker when instantiating
+    FirstLevelModel doesn't raise Error when calling
+    generate_report().
+    """
+    with InTemporaryDirectory():
+        shapes, rk = ((7, 8, 7, 15), (7, 8, 7, 16)), 3
+        mask, fmri_data, design_matrices =\
+            write_fake_fmri_data_and_design(shapes, rk)
+        masker = NiftiMasker(mask_img=mask)
+        masker.fit(fmri_data)
+        flm = FirstLevelModel(mask_img=masker).fit(
+            fmri_data, design_matrices=design_matrices
+        )
+        contrast = np.eye(3)[1]
+
+        report_flm = flm.generate_report(
+            contrast, plot_type='glass', height_control=None,
+            min_distance=15, alpha=0.001, threshold=2.78
+        )
+
+        report_iframe = report_flm.get_iframe()
+        # So flake8 doesn't complain about not using variable (F841)
+        report_iframe
+
+        del mask, flm, fmri_data, masker
