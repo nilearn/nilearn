@@ -32,7 +32,7 @@ def _load_wm_csf(confounds_raw, wm_csf):
     return confounds_raw[wm_csf_params]
 
 
-def _load_global(confounds_raw, global_signal):
+def _load_global_signal(confounds_raw, global_signal):
     """Load the regressors derived from the global signal."""
     global_params = _add_suffix(["global_signal"], global_signal)
     _check_params(confounds_raw, global_params)

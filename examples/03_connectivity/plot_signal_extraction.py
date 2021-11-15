@@ -148,7 +148,7 @@ confounds_scrub, sample_mask = fmriprep_confounds(
     fmri_filenames,
     strategy=["high_pass", "motion", "wm_csf", "scrub"],
     motion="basic", wm_csf="basic",
-    scrub=5, fd_thresh=0.2, std_dvars_thresh=3)
+    scrub=5, fd_threshold=0.2, std_dvars_threshold=3)
 
 print("After scrubbing, {} out of {} volumes remains".format(
     sample_mask.shape[0], confounds_scrub.shape[0]))
@@ -179,7 +179,7 @@ plotting.plot_matrix(correlation_matrix, figure=(10, 8), labels=labels[1:],
 
 confounds_minimal_no_gsr, sample_mask = fmriprep_confounds(
     fmri_filenames,
-    strategy=["high_pass", "motion", "wm_csf", "global"],
+    strategy=["high_pass", "motion", "wm_csf", "global_signal"],
     motion="basic", wm_csf="basic", global_signal="basic")
 print("The shape of the confounds matrix is:",
       confounds_minimal_no_gsr.shape)

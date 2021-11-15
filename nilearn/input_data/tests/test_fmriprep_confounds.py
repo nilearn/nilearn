@@ -8,7 +8,7 @@ import pytest
 from nibabel import Nifti1Image
 from nilearn.input_data import NiftiMasker
 from nilearn.input_data import fmriprep_confounds
-from ..fmriprep_confounds import _sanitize_strategy
+from ..fmriprep_confounds import _check_strategy
 
 from nilearn._utils.fmriprep_confounds import _to_camel_case
 
@@ -29,7 +29,7 @@ def _simu_img(tmp_path, demean):
     # demean set to False just for simulating signal based on the original
     # state
     confounds, _ = fmriprep_confounds(
-        file_nii, strategy=["motion"], motion="basic", demean=False
+        file_nii, strategy=("motion", ), motion="basic", demean=False
     )
 
     X = _handle_non_steady(confounds)
@@ -72,7 +72,7 @@ def _simu_img(tmp_path, demean):
 
     # generate the associated confounds for testing
     test_confounds, _ = fmriprep_confounds(
-        file_nii, strategy=["motion"], motion="basic", demean=demean)
+        file_nii, strategy=("motion",), motion="basic", demean=demean)
     # match how we extend the length to increase the degree of freedom
     test_confounds = _handle_non_steady(test_confounds)
     sample_mask = np.arange(test_confounds.shape[0])[1:]
@@ -110,24 +110,24 @@ def _regression(confounds, tmp_path):
 
 @pytest.mark.filterwarnings("ignore")
 @pytest.mark.parametrize(
-    "strategy,param",
+    "test_strategy,param",
     [
-        ("motion", {}),
-        ("high_pass", {}),
-        ("wm_csf", {"wm_csf": "full"}),
-        ("global", {"global_signal": "full"}),
-        ("compcor", {}),
-        ("compcor", {"compcor": "anat_separated"}),
-        ("compcor", {"compcor": "temporal"}),
-        ("ica_aroma", {"ica_aroma": "basic"}),
+        (("motion", ), {}),
+        (("high_pass", ), {}),
+        (("wm_csf", ), {"wm_csf": "full"}),
+        (("global_signal", ), {"global_signal": "full"}),
+        (("high_pass", "compcor", ), {}),
+        (("high_pass", "compcor", ), {"compcor": "anat_separated"}),
+        (("high_pass", "compcor", ), {"compcor": "temporal"}),
+        (("ica_aroma", ), {"ica_aroma": "basic"}),
     ],
 )
-def test_nilearn_regress(tmp_path, strategy, param):
+def test_nilearn_regress(tmp_path, test_strategy, param):
     """Try regressing out all motion types without sample mask."""
     img_nii, _ = create_tmp_filepath(
         tmp_path, copy_confounds=True, copy_json=True
     )
-    confounds, _ = fmriprep_confounds(img_nii, strategy=[strategy], **param)
+    confounds, _ = fmriprep_confounds(img_nii, strategy=test_strategy, **param)
     _regression(confounds, tmp_path)
 
 
@@ -240,17 +240,17 @@ def test_confounds2df(tmp_path):
     assert "trans_x" in confounds.columns
 
 
-@pytest.mark.parametrize("strategy", [["string"], "error", [0], "motion"])
-def test_sanitize_strategy(tmp_path, strategy):
+@pytest.mark.parametrize("strategy,message",
+                         [(["string", ], "not a supported type of confounds."),
+                          ("error", "tuple or list of strings"),
+                          ((0, ), "not a supported type of confounds."),
+                          (("compcor", ), "high_pass")])
+def test_check_strategy(strategy, message):
     """Check that flawed strategy options generate meaningful error
     messages."""
-    img_nii, _ = create_tmp_filepath(tmp_path, copy_confounds=True)
-    if strategy == "motion":
-        checked_strategy = _sanitize_strategy(strategy=[strategy])
-        assert "non_steady_state" in checked_strategy
-    else:
-        with pytest.raises(ValueError):
-            _sanitize_strategy(strategy=strategy)
+    with pytest.raises(ValueError) as exc_info:
+        _check_strategy(strategy=strategy)
+    assert message in exc_info.value.args[0]
 
 
 SUFFIXES = np.array(["", "_derivative1", "_power2", "_derivative1_power2"])
@@ -274,7 +274,7 @@ def expected_suffixes(motion):
 def test_motion(tmp_path, motion, param, expected_suffixes):
     img_nii, _ = create_tmp_filepath(tmp_path, copy_confounds=True)
     conf, _ = fmriprep_confounds(
-        img_nii, strategy=["motion"], motion=motion
+        img_nii, strategy=("motion", ), motion=motion
     )
     for suff in SUFFIXES:
         if suff in expected_suffixes:
@@ -292,7 +292,8 @@ def test_n_compcor(tmp_path, compcor, n_compcor, test_keyword, test_n):
         tmp_path, copy_confounds=True, copy_json=True
     )
     conf, _ = fmriprep_confounds(
-        img_nii, strategy=["compcor"], compcor=compcor, n_compcor=n_compcor
+        img_nii, strategy=("high_pass", "compcor", ), compcor=compcor,
+        n_compcor=n_compcor
     )
     assert sum(True for col in conf.columns if test_keyword in col) == test_n
 
@@ -325,7 +326,7 @@ def test_not_found_exception(tmp_path):
     with pytest.raises(ValueError) as exc_info:
         fmriprep_confounds(
             img_missing_confounds,
-            strategy=["high_pass", "motion", "global"],
+            strategy=("high_pass", "motion", "global_signal", ),
             global_signal="full",
             motion="full",
         )
@@ -337,14 +338,15 @@ def test_not_found_exception(tmp_path):
     with pytest.raises(ValueError):
         fmriprep_confounds(
             img_missing_confounds,
-            strategy=["compcor"],
+            strategy=("high_pass", "compcor"),
             compcor="anat_combined",
         )
 
     # catch invalid compcor option
     with pytest.raises(KeyError):
         fmriprep_confounds(
-            img_missing_confounds, strategy=["compcor"], compcor="blah"
+            img_missing_confounds, strategy=("high_pass", "compcor"),
+            compcor="blah"
         )
 
     # Aggressive ICA-AROMA strategy requires
@@ -352,7 +354,7 @@ def test_not_found_exception(tmp_path):
     # correct nifti but missing noise regressor
     with pytest.raises(ValueError) as exc_info:
         fmriprep_confounds(
-            img_missing_confounds, strategy=["ica_aroma"], ica_aroma="basic"
+            img_missing_confounds, strategy=("ica_aroma", ), ica_aroma="basic"
         )
     assert "aroma" in exc_info.value.args[0]
 
@@ -363,7 +365,7 @@ def test_not_found_exception(tmp_path):
     )
     with pytest.raises(ValueError) as exc_info:
         fmriprep_confounds(
-            aroma_nii, strategy=["ica_aroma"], ica_aroma="basic"
+            aroma_nii, strategy=("ica_aroma", ), ica_aroma="basic"
         )
     assert "Invalid file type" in exc_info.value.args[0]
 
@@ -371,7 +373,7 @@ def test_not_found_exception(tmp_path):
     # desc-smoothAROMAnonaggr nifti file
     with pytest.raises(ValueError) as exc_info:
         fmriprep_confounds(
-            img_missing_confounds, strategy=["ica_aroma"], ica_aroma="full"
+            img_missing_confounds, strategy=("ica_aroma", ), ica_aroma="full"
         )
     assert "desc-smoothAROMAnonaggr_bold" in exc_info.value.args[0]
 
@@ -380,6 +382,18 @@ def test_not_found_exception(tmp_path):
     with pytest.raises(ValueError) as exc_info:
         fmriprep_confounds(img_missing_confounds)
     assert "Could not find associated confound file." in exc_info.value.args[0]
+
+
+def test_non_steady_state(tmp_path):
+    """Warn when 'non_steady_state' is in strategy."""
+    # supplying 'non_steady_state' in strategy is not necessary
+    # check warning is correctly raised
+    img, conf = create_tmp_filepath(
+        tmp_path, copy_confounds=True
+    )
+    warning_message = (r"Non-steady state")
+    with pytest.warns(UserWarning, match=warning_message):
+        fmriprep_confounds(img, strategy=('non_steady_state', 'motion'))
 
 
 def test_load_non_nifti(tmp_path):
@@ -456,7 +470,7 @@ def test_ica_aroma(tmp_path):
     )
     # Aggressive strategy
     conf, _ = fmriprep_confounds(
-        regular_nii, strategy=["ica_aroma"], ica_aroma="basic"
+        regular_nii, strategy=("ica_aroma", ), ica_aroma="basic"
     )
     for col_name in conf.columns:
         # only aroma and non-steady state columns will be present
@@ -464,14 +478,14 @@ def test_ica_aroma(tmp_path):
 
     # Non-aggressive strategy
     conf, _ = fmriprep_confounds(
-        aroma_nii, strategy=["ica_aroma"], ica_aroma="full"
+        aroma_nii, strategy=("ica_aroma", ), ica_aroma="full"
     )
     assert conf.size == 0
 
     # invalid combination of strategy and option
     with pytest.raises(ValueError) as exc_info:
         conf, _ = fmriprep_confounds(
-            regular_nii, strategy=["ica_aroma"], ica_aroma="invalid"
+            regular_nii, strategy=("ica_aroma", ), ica_aroma="invalid"
         )
     assert "Current input: invalid" in exc_info.value.args[0]
 
@@ -483,7 +497,7 @@ def test_sample_mask(tmp_path):
     )
 
     reg, mask = fmriprep_confounds(
-        regular_nii, strategy=["motion", "scrub"], scrub=5, fd_threshold=0.15
+        regular_nii, strategy=("motion", "scrub"), scrub=5, fd_threshold=0.15
     )
     # the current test data has 6 time points marked as motion outliers,
     # and one nonsteady state (overlap with the first motion outlier)
@@ -494,18 +508,18 @@ def test_sample_mask(tmp_path):
     assert reg.shape[0] == 30
 
     # non steady state will always be removed
-    reg, mask = fmriprep_confounds(regular_nii, strategy=["motion"])
+    reg, mask = fmriprep_confounds(regular_nii, strategy=("motion", ))
     assert reg.shape[0] - len(mask) == 1
 
     # When no non-steady state volumes are present
     conf_data, _ = get_leagal_confound(non_steady_state=False)
     conf_data.to_csv(regular_conf, sep="\t", index=False)  # save to tmp
-    reg, mask = fmriprep_confounds(regular_nii, strategy=["motion"])
+    reg, mask = fmriprep_confounds(regular_nii, strategy=("motion", ))
     assert mask is None
 
     # When no volumes needs removing (very liberal motion threshould)
     reg, mask = fmriprep_confounds(
-        regular_nii, strategy=["motion", "scrub"], scrub=0, fd_threshold=4
+        regular_nii, strategy=("motion", "scrub"), scrub=0, fd_threshold=4
     )
     assert mask is None
 
@@ -528,7 +542,7 @@ def test_inputs(tmp_path, image_type):
         files.append(nii)
 
     if image_type == "ica_aroma":
-        conf, _ = fmriprep_confounds(files, strategy=["ica_aroma"])
+        conf, _ = fmriprep_confounds(files, strategy=("ica_aroma", ))
     else:
         conf, _ = fmriprep_confounds(files)
     assert len(conf) == 2
