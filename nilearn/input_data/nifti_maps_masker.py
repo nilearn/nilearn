@@ -264,7 +264,7 @@ class NiftiMapsMasker(BaseMasker, CacheMixin):
         except ImportError:
             with warnings.catch_warnings():
                 mpl_unavail_msg = ('Matplotlib is not imported! '
-                                   'No reports will be generated.')
+                                   'No report will be generated.')
                 warnings.filterwarnings('always', message=mpl_unavail_msg)
                 warnings.warn(category=ImportWarning,
                               message=mpl_unavail_msg)

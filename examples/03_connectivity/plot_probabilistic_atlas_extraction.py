@@ -51,7 +51,8 @@ time_series = masker.transform(data.func[0],
 # You can pass the indices of the spatial maps you want to include in the
 # report in the order you want them to appear.
 # Here, we only include maps 2, 6, 7, 16, and 21 in the report:
-masker.generate_report(displayed_maps=[2, 6, 7, 16, 21])
+report = masker.generate_report(displayed_maps=[2, 6, 7, 16, 21])
+report
 
 ############################################################################
 # `time_series` is now a 2D matrix, of shape (number of time points x
