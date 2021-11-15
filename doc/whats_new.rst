@@ -7,11 +7,19 @@ NEW
 - **Support for Python 3.6 is deprecated and will be removed in release 0.10.**
   Users with a Python 3.6 environment will be warned at their first Nilearn
   import and encouraged to update to more recent versions of Python.
-- New function :func:`nilearn.input_data.fmriprep_confounds` to load confound variables easily
-  from :term:`fMRIPrep` outputs.
-- New function :func:`nilearn.input_data.fmriprep_confounds_strategy` to load confound variables
-  from :term:`fMRIPrep` outputs using four preset strategies: ``simple``, ``scrubbing``,
-  ``compcor``, ``ica_aroma``.
+- New module :mod:`nilearn.interfaces` to implement loading and saving utilities
+  with various interfaces (fmriprep, bids...).
+  (See PR `#3061 <https://github.com/nilearn/nilearn/pull/3061>`_).
+- New submodule :mod:`nilearn.interfaces.fmriprep` to implement loading utilities
+  for :term:`fMRIPrep`.
+  (See PR `#3061 <https://github.com/nilearn/nilearn/pull/3061>`_).
+- New function :func:`nilearn.interfaces.fmriprep.load_confounds` to load confound
+  variables easily from :term:`fMRIPrep` outputs.
+  (See PR `#2946 <https://github.com/nilearn/nilearn/pull/2946>`_).
+- New function :func:`nilearn.interfaces.fmriprep.load_confounds_strategy` to load
+  confound variables from :term:`fMRIPrep` outputs using four preset strategies:
+  ``simple``, ``scrubbing``, ``compcor``, and ``ica_aroma``.
+  (See PR `#3016 <https://github.com/nilearn/nilearn/pull/3016>`_).
 - Surface plotting functions like :func:`nilearn.plotting.plot_surf_stat_map`
   now have an `engine` parameter, defaulting to "matplotlib", but which can be
   set to "plotly". If plotly and kaleido are installed, this will generate an
