@@ -223,6 +223,55 @@ def _infer_effect_maps(second_level_input, contrast_def):
     return effect_maps
 
 
+def _process_second_level_input(second_level_input):
+    """Helper function to process second_level_input."""
+    if isinstance(second_level_input, pd.DataFrame):
+        return _process_second_level_input_as_dataframe(second_level_input)
+    elif(hasattr(second_level_input, "__iter__")
+         and isinstance(second_level_input[0], FirstLevelModel)):
+        return _process_second_level_input_as_firstlevelmodels(
+            second_level_input
+        )
+    else:
+        return mean_img(second_level_input), None
+
+
+def _process_second_level_input_as_dataframe(second_level_input):
+    """Helper function to process second_level_input provided
+    as a pandas DataFrame.
+    """
+    sample_map = second_level_input['effects_map_path'][0]
+    labels = second_level_input['subject_label']
+    subjects_label = labels.values.tolist()
+    return sample_map, subjects_label
+
+
+def _sort_input_dataframe(second_level_input):
+    """This function sorts the pandas dataframe by subject_label to
+    avoid inconsistencies with the design matrix row order when
+    automatically extracting maps.
+    """
+    columns = second_level_input.columns.tolist()
+    column_index = columns.index('subject_label')
+    sorted_matrix = sorted(
+        second_level_input.values, key=lambda x: x[column_index]
+    )
+    return pd.DataFrame(sorted_matrix, columns=columns)
+
+
+def _process_second_level_input_as_firstlevelmodels(second_level_input):
+    """Helper function to process second_level_input provided
+    as a list of FirstLevelModel objects.
+    """
+    sample_model = second_level_input[0]
+    sample_condition = sample_model.design_matrices_[0].columns[0]
+    sample_map = sample_model.compute_contrast(
+        sample_condition, output_type='effect_size'
+    )
+    labels = [model.subject_label for model in second_level_input]
+    return sample_map, labels
+
+
 @fill_doc
 class SecondLevelModel(BaseGLM):
     """ Implementation of the General Linear Model for multiple subject
@@ -352,42 +401,19 @@ class SecondLevelModel(BaseGLM):
         # check design matrix
         _check_design_matrix(design_matrix)
 
-        # sort a pandas dataframe by subject_label to avoid inconsistencies
-        # with the design matrix row order when automatically extracting maps
         if isinstance(second_level_input, pd.DataFrame):
-            columns = second_level_input.columns.tolist()
-            column_index = columns.index('subject_label')
-            sorted_matrix = sorted(
-                second_level_input.values, key=lambda x: x[column_index])
-            sorted_input = pd.DataFrame(sorted_matrix, columns=columns)
-            second_level_input = sorted_input
-
+            second_level_input = _sort_input_dataframe(second_level_input)
         self.second_level_input_ = second_level_input
         self.confounds_ = confounds
+        sample_map, subjects_label = _process_second_level_input(
+            second_level_input
+        )
 
         # Report progress
         t0 = time.time()
         if self.verbose > 0:
             sys.stderr.write("Fitting second level model. "
                              "Take a deep breath\r")
-
-        # Select sample map for masker fit and get subjects_label for design
-        if isinstance(second_level_input, pd.DataFrame):
-            sample_map = second_level_input['effects_map_path'][0]
-            labels = second_level_input['subject_label']
-            subjects_label = labels.values.tolist()
-        elif isinstance(second_level_input, Nifti1Image):
-            sample_map = mean_img(second_level_input)
-        elif isinstance(second_level_input[0], FirstLevelModel):
-            sample_model = second_level_input[0]
-            sample_condition = sample_model.design_matrices_[0].columns[0]
-            sample_map = sample_model.compute_contrast(
-                sample_condition, output_type='effect_size')
-            labels = [model.subject_label for model in second_level_input]
-            subjects_label = labels
-        else:
-            # In this case design matrix had to be provided
-            sample_map = mean_img(second_level_input)
 
         # Create and set design matrix, if not given
         if design_matrix is None:
@@ -599,6 +625,7 @@ class SecondLevelModel(BaseGLM):
 @fill_doc
 def non_parametric_inference(second_level_input, confounds=None,
                              design_matrix=None, second_level_contrast=None,
+                             first_level_contrast=None,
                              mask=None, smoothing_fwhm=None,
                              model_intercept=True, n_perm=10000,
                              two_sided_test=False, random_state=None,
@@ -645,6 +672,13 @@ def non_parametric_inference(second_level_input, confounds=None,
         applied; when the design matrix has multiple columns, an error is
         raised.
 
+    first_level_contrast : str, optional
+        In case a pandas DataFrame was provided as second_level_input this
+        is the map name to extract from the pandas dataframe map_name column.
+        It has to be a 't' contrast.
+
+        .. versionadded:: 0.8.2
+
     mask : Niimg-like, NiftiMasker or MultiNiftiMasker object, optional
         Mask to be used on data. If an instance of masker is passed,
         then its mask will be used. If no mask is given,
@@ -690,17 +724,19 @@ def non_parametric_inference(second_level_input, confounds=None,
 
     """
     _check_second_level_input(second_level_input, design_matrix,
-                              flm_object=False, df_object=False)
+                              flm_object=False, df_object=True)
     _check_confounds(confounds)
     _check_design_matrix(design_matrix)
 
+    if isinstance(second_level_input, pd.DataFrame):
+        second_level_input = _sort_input_dataframe(second_level_input)
+    sample_map, _ = _process_second_level_input(
+        second_level_input
+    )
     # Report progress
     t0 = time.time()
     if verbose > 0:
         sys.stderr.write("Fitting second level model...")
-
-    # Select sample map for masker fit and get subjects_label for design
-    sample_map = mean_img(second_level_input)
 
     # Learn the mask. Assume the first level imgs have been masked.
     if not isinstance(mask, NiftiMasker):
@@ -723,9 +759,8 @@ def non_parametric_inference(second_level_input, confounds=None,
 
     # Check and obtain the contrast
     contrast = _get_contrast(second_level_contrast, design_matrix)
-
     # Get effect_maps
-    effect_maps = _infer_effect_maps(second_level_input, None)
+    effect_maps = _infer_effect_maps(second_level_input, first_level_contrast)
 
     # Check design matrix and effect maps agree on number of rows
     _check_effect_maps(effect_maps, design_matrix)

@@ -30,6 +30,54 @@ BASEDIR = os.path.dirname(os.path.abspath(__file__))
 FUNCFILE = os.path.join(BASEDIR, 'functional.nii.gz')
 
 
+@pytest.fixture
+def input_df():
+    """Input DataFrame for testing."""
+    return pd.DataFrame({'effects_map_path': ["foo.nii", "bar.nii", "baz.nii"],
+                         'subject_label': ["foo", "bar", "baz"]})
+
+
+def test_process_second_level_input_as_dataframe(input_df):
+    """Unit tests for function _process_second_level_input_as_dataframe()."""
+    from nilearn.glm.second_level.second_level import _process_second_level_input_as_dataframe  # noqa
+    sample_map, subjects_label = _process_second_level_input_as_dataframe(
+        input_df
+    )
+    assert sample_map == "foo.nii"
+    assert subjects_label == ["foo", "bar", "baz"]
+
+
+def test_sort_input_dataframe(input_df):
+    """Unit tests for function _sort_input_dataframe()."""
+    from nilearn.glm.second_level.second_level import _sort_input_dataframe
+    output_df = _sort_input_dataframe(input_df)
+    assert output_df['subject_label'].values.tolist() == ["bar", "baz", "foo"]
+    assert(
+        output_df['effects_map_path'].values.tolist()
+        == ["bar.nii", "baz.nii", "foo.nii"]
+    )
+
+
+def test_process_second_level_input_as_firstlevelmodels():
+    """Unit tests for function
+    _process_second_level_input_as_firstlevelmodels().
+    """
+    from nilearn.glm.second_level.second_level import _process_second_level_input_as_firstlevelmodels  # noqa
+    shapes, rk = [(7, 8, 9, 15)], 3
+    mask, fmri_data, design_matrices = \
+        generate_fake_fmri_data_and_design(shapes, rk)
+    list_of_flm = [
+        FirstLevelModel(mask_img=mask, subject_label=f"sub-{i}").fit(
+            fmri_data[0], design_matrices=design_matrices[0]
+        ) for i in range(3)
+    ]
+    sample_map, subjects_label =\
+        _process_second_level_input_as_firstlevelmodels(list_of_flm)
+    assert subjects_label == [f"sub-{i}" for i in range(3)]
+    assert isinstance(sample_map, Nifti1Image)
+    assert sample_map.shape == (7, 8, 9)
+
+
 def test_check_second_level_input():
     from nilearn.glm.second_level.second_level import _check_second_level_input
     with pytest.raises(ValueError,
@@ -241,21 +289,32 @@ def test_high_level_non_parametric_inference_with_paths():
         shapes = ((7, 8, 9, 1),)
         mask, FUNCFILE, _ = write_fake_fmri_data_and_design(shapes)
         FUNCFILE = FUNCFILE[0]
+        df_input = pd.DataFrame(
+            {'subject_label': [f'sub-{i}' for i in range(4)],
+             'effects_map_path': [FUNCFILE] * 4,
+             'map_name': [FUNCFILE] * 4}
+        )
         func_img = load(FUNCFILE)
         Y = [func_img] * 4
         X = pd.DataFrame([[1]] * 4, columns=['intercept'])
         c1 = np.eye(len(X.columns))[0]
-        neg_log_pvals_img = non_parametric_inference(Y, design_matrix=X,
-                                                     second_level_contrast=c1,
-                                                     mask=mask, n_perm=n_perm,
-                                                     verbose=1)  # For coverage
-        neg_log_pvals = get_data(neg_log_pvals_img)
+        neg_log_pvals_imgs = [
+            non_parametric_inference(
+                second_level_input, design_matrix=X, second_level_contrast=c1,
+                first_level_contrast=FUNCFILE, mask=mask,
+                n_perm=n_perm, verbose=1
+            ) for second_level_input in [Y, df_input]
+        ]
+        assert all(
+            [isinstance(img, Nifti1Image) for img in neg_log_pvals_imgs]
+        )
+        for img in neg_log_pvals_imgs:
+            assert_array_equal(img.affine, load(mask).affine)
+        neg_log_pvals_list = [get_data(i) for i in neg_log_pvals_imgs]
+        for neg_log_pvals in neg_log_pvals_list:
+            assert np.all(neg_log_pvals <= - np.log10(1.0 / (n_perm + 1)))
+            assert np.all(0 <= neg_log_pvals)
 
-        assert isinstance(neg_log_pvals_img, Nifti1Image)
-        assert_array_equal(neg_log_pvals_img.affine, load(mask).affine)
-
-        assert np.all(neg_log_pvals <= - np.log10(1.0 / (n_perm + 1)))
-        assert np.all(0 <= neg_log_pvals)
         masker = NiftiMasker(mask, smoothing_fwhm=2.0)
         with pytest.warns(UserWarning,
                           match="Parameter smoothing_fwhm "
@@ -266,7 +325,7 @@ def test_high_level_non_parametric_inference_with_paths():
                                      mask=masker, n_perm=n_perm)
         # Delete objects attached to files to avoid WindowsError when deleting
         # temporary directory
-        del X, Y, FUNCFILE, func_img, neg_log_pvals_img
+        del X, Y, FUNCFILE, func_img, neg_log_pvals_imgs
 
 
 def test_fmri_inputs():
@@ -398,9 +457,6 @@ def test_fmri_inputs_for_non_parametric_inference():
         # test list of less than two niimgs
         with pytest.raises(ValueError):
             non_parametric_inference([FUNCFILE])
-        # test dataframe
-        with pytest.raises(ValueError):
-            non_parametric_inference(niidf)
         # test niimgs requirements
         with pytest.raises(ValueError):
             non_parametric_inference(niimgs)
