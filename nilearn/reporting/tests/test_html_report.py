@@ -40,13 +40,15 @@ def input_parameters(masker_class, data_img_3d):
     n_regions = 9
     shape = (13, 11, 12)
     affine = np.diag([2, 2, 2, 1])
+    labels = ["background"]
+    labels += [f"region_{i}" for i in range(1, n_regions + 1)]
     if masker_class == NiftiMasker:
         return {"mask_img": data_img_3d}
     if masker_class == NiftiLabelsMasker:
-        label_img = generate_labeled_regions(
+        labels_img = generate_labeled_regions(
             shape, n_regions=n_regions, affine=affine
         )
-        return {"labels_img": label_img}
+        return {"labels_img": labels_img, "labels": labels}
     elif masker_class == NiftiMapsMasker:
         label_img, _ = generate_maps(
             shape, n_regions=n_regions, affine=affine
@@ -89,25 +91,20 @@ def test_reports_after_fit_3d_data(masker_class, input_parameters, data_img_3d):
 @pytest.mark.parametrize("masker_class", [NiftiMasker, NiftiLabelsMasker])
 def test_reports_after_fit_3d_data_with_mask(masker_class, input_parameters, data_img_3d, mask):  # noqa
     """Tests report generation after fitting on 3D data with mask_img."""
-    if "mask_img" in input_parameters:
-        masker = masker_class(mask_img=mask)
-    else:
-        masker = masker_class(**input_parameters, mask_img=mask)
+    input_parameters["mask_img"] = mask
+    masker = masker_class(**input_parameters)
     masker.fit(data_img_3d)
     assert masker._report_content['warning_message'] is None
     html = masker.generate_report()
     _check_html(html)
 
 
-@pytest.mark.parametrize("masker_class", [NiftiMasker, NiftiLabelsMasker])
-def test_warning_in_report_after_empty_fit(masker_class, input_parameters, mask):  # noqa
+@pytest.mark.parametrize("masker_class", [NiftiMasker, NiftiLabelsMasker, NiftiMapsMasker])
+def test_warning_in_report_after_empty_fit(masker_class, input_parameters):  # noqa
     """Tests that a warning is both given and written in the report if
     no images were provided to fit.
     """
-    if "mask_img" in input_parameters:
-        masker = masker_class(mask_img=mask)
-    else:
-        masker = masker_class(**input_parameters, mask_img=mask)
+    masker = masker_class(**input_parameters)
     assert masker._report_content['warning_message'] is None
     masker.fit()
     warn_message = f"No image provided to fit in {masker_class.__name__}."
