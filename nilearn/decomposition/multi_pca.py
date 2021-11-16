@@ -175,8 +175,7 @@ class MultiPCA(BaseDecomposition):
             S[S == 0] = 1
             data /= S[:, np.newaxis]
         print("Calling randomized_svd")
-        components_, self.variance_, _ = self._cache(
-            randomized_svd, func_memory_level=2)(
+        components_, self.variance_, _ = randomized_svd(
             data.T, n_components=self.n_components,
             transpose=True,
             random_state=self.random_state, n_iter=3)
