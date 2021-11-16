@@ -99,7 +99,8 @@ def test_reports_after_fit_3d_data_with_mask(masker_class, input_parameters, dat
     _check_html(html)
 
 
-@pytest.mark.parametrize("masker_class", [NiftiMasker, NiftiLabelsMasker, NiftiMapsMasker])
+@pytest.mark.parametrize("masker_class",
+                         [NiftiMasker, NiftiLabelsMasker, NiftiMapsMasker])
 def test_warning_in_report_after_empty_fit(masker_class, input_parameters):  # noqa
     """Tests that a warning is both given and written in the report if
     no images were provided to fit.
