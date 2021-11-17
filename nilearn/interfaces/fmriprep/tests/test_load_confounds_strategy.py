@@ -1,9 +1,11 @@
 import re
 import pytest
 import pandas as pd
-from nilearn.input_data import fmriprep_confounds_strategy
-from nilearn.input_data.fmriprep_confounds_strategy import preset_strategies
-from nilearn.input_data.tests.utils import create_tmp_filepath
+from nilearn.interfaces.fmriprep import load_confounds_strategy
+from nilearn.interfaces.fmriprep.load_confounds_strategy import (
+    preset_strategies
+)
+from nilearn.interfaces.fmriprep.tests.utils import create_tmp_filepath
 
 
 @pytest.mark.parametrize("denoise_strategy,image_type",
@@ -11,12 +13,14 @@ from nilearn.input_data.tests.utils import create_tmp_filepath
                           ("scrubbing", "regular"),
                           ("compcor", "regular"),
                           ("ica_aroma", "ica_aroma")])
-def test_fmriprep_confounds_strategy(tmp_path, denoise_strategy, image_type):
+def test_load_confounds_strategy(tmp_path, denoise_strategy, image_type):
     """Smoke test with no extra inputs."""
-    file_nii, _ = create_tmp_filepath(tmp_path, image_type=image_type,
-                                      copy_confounds=True, copy_json=True)
-    confounds, _ = fmriprep_confounds_strategy(
-        file_nii, denoise_strategy=denoise_strategy)
+    file_nii, _ = create_tmp_filepath(
+        tmp_path, image_type=image_type, copy_confounds=True, copy_json=True
+    )
+    confounds, _ = load_confounds_strategy(
+        file_nii, denoise_strategy=denoise_strategy
+    )
     assert isinstance(confounds, pd.DataFrame)
 
 
@@ -27,11 +31,12 @@ def test_fmriprep_confounds_strategy(tmp_path, denoise_strategy, image_type):
                           ("ica_aroma", "ica_aroma")])
 def test_strategies(tmp_path, denoise_strategy, image_type):
     """Check defaults setting of each preset strategy."""
-    file_nii, _ = create_tmp_filepath(tmp_path, image_type=image_type,
-                                      copy_confounds=True, copy_json=True)
-    confounds, _ = fmriprep_confounds_strategy(
-        file_nii, denoise_strategy=denoise_strategy)
-
+    file_nii, _ = create_tmp_filepath(
+        tmp_path, image_type=image_type, copy_confounds=True, copy_json=True
+    )
+    confounds, _ = load_confounds_strategy(
+        file_nii, denoise_strategy=denoise_strategy
+    )
     # Check that all fixed name model categories have been successfully loaded
     list_check = _get_headers(denoise_strategy)
     for col in confounds.columns:
@@ -70,11 +75,12 @@ def _get_headers(denoise_strategy):
 
 def test_strategy_scrubbing(tmp_path):
     """Check user specified input for scrubbing strategy."""
-    file_nii, _ = create_tmp_filepath(tmp_path, image_type="regular",
-                                      copy_confounds=True, copy_json=True)
-    confounds, sample_mask = fmriprep_confounds_strategy(
-        file_nii, denoise_strategy="scrubbing", fd_threshold=0.15)
-
+    file_nii, _ = create_tmp_filepath(
+        tmp_path, image_type="regular", copy_confounds=True, copy_json=True
+    )
+    confounds, sample_mask = load_confounds_strategy(
+        file_nii, denoise_strategy="scrubbing", fd_threshold=0.15
+    )
     # out of 30 vols, should have 6 motion outliers from scrubbing,
     # and 2 vol removed by srubbing strategy "full"
     assert len(sample_mask) == 22
@@ -82,14 +88,16 @@ def test_strategy_scrubbing(tmp_path):
     assert confounds.shape[0] == 30
     # also load confounds with very liberal scrubbing thresholds
     # this should not produce an error
-    confounds, sample_mask = fmriprep_confounds_strategy(
+    confounds, sample_mask = load_confounds_strategy(
         file_nii, denoise_strategy="scrubbing",
-        fd_threshold=1, std_dvars_threshold=5)
+        fd_threshold=1, std_dvars_threshold=5
+    )
     assert len(sample_mask) == 29  # only non-steady volumes removed
 
     # maker sure global signal works
-    confounds, sample_mask = fmriprep_confounds_strategy(
-        file_nii, denoise_strategy="scrubbing", global_signal="full")
+    confounds, sample_mask = load_confounds_strategy(
+        file_nii, denoise_strategy="scrubbing", global_signal="full"
+    )
     for check in ["global_signal",
                   "global_signal_derivative1",
                   "global_signal_power2",
@@ -100,10 +108,12 @@ def test_strategy_scrubbing(tmp_path):
 
 def test_strategy_compcor(tmp_path):
     """Check user specified input for compcor strategy."""
-    file_nii, _ = create_tmp_filepath(tmp_path, image_type="regular",
-                                      copy_confounds=True, copy_json=True)
-    confounds, _ = fmriprep_confounds_strategy(
-        file_nii, denoise_strategy="compcor")
+    file_nii, _ = create_tmp_filepath(
+        tmp_path, image_type="regular", copy_confounds=True, copy_json=True
+    )
+    confounds, _ = load_confounds_strategy(
+        file_nii, denoise_strategy="compcor"
+    )
     compcor_col_str_anat = "".join(confounds.columns)
     assert "t_comp_cor_" not in compcor_col_str_anat
     assert (
@@ -113,15 +123,15 @@ def test_strategy_compcor(tmp_path):
 
 def test_irrelevant_input(tmp_path):
     """Check invalid input raising correct warning or error message."""
-    file_nii, _ = create_tmp_filepath(tmp_path, image_type="regular",
-                                      copy_confounds=True, copy_json=True)
+    file_nii, _ = create_tmp_filepath(
+        tmp_path, image_type="regular", copy_confounds=True, copy_json=True
+    )
     warning_message = (r"parameters accepted: \['motion', 'wm_csf', "
                        "'global_signal', 'demean']")
     with pytest.warns(UserWarning, match=warning_message):
-        fmriprep_confounds_strategy(
-            file_nii, denoise_strategy="simple", ica_aroma="full")
-
+        load_confounds_strategy(
+            file_nii, denoise_strategy="simple", ica_aroma="full"
+        )
     # invalid strategy
     with pytest.raises(KeyError, match="blah"):
-        fmriprep_confounds_strategy(
-            file_nii, denoise_strategy="blah")
+        load_confounds_strategy(file_nii, denoise_strategy="blah")

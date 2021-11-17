@@ -202,6 +202,33 @@ the :ref:`user guide <user_guide>` for more information and usage examples.
    swap_img_hemispheres
    threshold_img
 
+.. _interfaces_ref:
+
+:mod:`nilearn.interfaces`: Loading components from interfaces
+=============================================================
+
+.. automodule:: nilearn.interfaces
+   :no-members:
+   :no-inherited-members:
+
+:mod:`nilearn.interfaces.fmriprep`
+----------------------------------
+
+.. automodule:: nilearn.interfaces.fmriprep
+   :no-members:
+   :no-inherited-members:
+
+**Functions**:
+
+.. currentmodule:: nilearn.interfaces.fmriprep
+
+.. autosummary::
+   :toctree: generated/
+   :template: function.rst
+
+   load_confounds
+   load_confounds_strategy
+
 .. _io_ref:
 
 :mod:`nilearn.input_data`: Loading and Processing Files Easily
@@ -226,15 +253,6 @@ the :ref:`user guide <user_guide>` for more information and usage examples.
    NiftiLabelsMasker
    NiftiMapsMasker
    NiftiSpheresMasker
-
-**Functions**:
-
-.. autosummary::
-   :toctree: generated/
-   :template: function.rst
-
-   fmriprep_confounds
-   fmriprep_confounds_strategy
 
 .. _masking_ref:
 

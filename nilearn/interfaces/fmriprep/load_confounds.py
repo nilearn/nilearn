@@ -5,9 +5,9 @@ Michael W. Weiss, Steven Meisler, Thibault Piront.
 """
 import warnings
 import pandas as pd
-from .fmriprep_confounds_utils import (_sanitize_confounds, _confounds_to_df,
-                                       _prepare_output, MissingConfound)
-from . import fmriprep_confounds_components as components
+from .load_confounds_utils import (_sanitize_confounds, _confounds_to_df,
+                                   _prepare_output, MissingConfound)
+from . import load_confounds_components as components
 
 
 # Global variables listing the admissible types of noise components
@@ -65,20 +65,20 @@ def _check_error(missing):
         raise ValueError(error_msg)
 
 
-def fmriprep_confounds(img_files,
-                       strategy=("motion", "high_pass", "wm_csf"),
-                       motion="full",
-                       scrub=5, fd_threshold=0.2, std_dvars_threshold=3,
-                       wm_csf="basic",
-                       global_signal="basic",
-                       compcor="anat_combined", n_compcor="all",
-                       ica_aroma="full",
-                       demean=True):
+def load_confounds(img_files,
+                   strategy=("motion", "high_pass", "wm_csf"),
+                   motion="full",
+                   scrub=5, fd_threshold=0.2, std_dvars_threshold=3,
+                   wm_csf="basic",
+                   global_signal="basic",
+                   compcor="anat_combined", n_compcor="all",
+                   ica_aroma="full",
+                   demean=True):
     """
     Use confounds from :term:`fMRIPrep`.
 
     To enable easy confound variables loading from :term:`fMRIPrep` outputs,
-    `fmriprep_confounds` provides an interface that groups subsets of confound
+    `load_confounds` provides an interface that groups subsets of confound
     variables into noise components and their parameters. It is possible to
     fine-tune a subset of noise components and their parameters through this
     function.
@@ -96,7 +96,7 @@ def fmriprep_confounds(img_files,
         :term:`fMRIPrep` generated functional derivative directory (i.e.The
         associated confound files should be in the same directory as the image
         file). As long as the image file, confound related tsv and json are in
-        the same directory with BIDS-complied names, `fmriprep_confounds` can
+        the same directory with BIDS-complied names, `load_confounds` can
         retrieve the relevant files correctly.
 
         - `nii.gz` or `dtseries.nii`: path to files, optionally as a list.
@@ -206,12 +206,13 @@ def fmriprep_confounds(img_files,
         The number of noise components to be extracted.
         For acompcor_combined=False, and/or compcor="full", this is the number
         of components per mask.
-        "all": select all components (50% variance explained by fMRIPrep
-        defaults)
+        "all": select all components (50% variance explained by
+        :term:`fMRIPrep` defaults)
 
     ica_aroma : {'full', 'basic'}
 
-        - "full": use fMRIprep output `~desc-smoothAROMAnonaggr_bold.nii.gz`.
+        - "full": use :term:`fMRIPrep` output
+          `~desc-smoothAROMAnonaggr_bold.nii.gz`.
         - "basic": use noise independent components only.
 
     demean : boolean, default True
@@ -254,7 +255,7 @@ def fmriprep_confounds(img_files,
 
     See Also
     --------
-    :func:`nilearn.input_data.fmriprep_confounds_strategy`
+    :func:`nilearn.interfaces.fmriprep.load_confounds_strategy`
 
     References
     -----------
