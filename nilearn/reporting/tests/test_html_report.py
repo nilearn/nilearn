@@ -136,7 +136,7 @@ def test_warning_in_report_after_empty_fit(masker_class, input_parameters):  # n
 
 @pytest.mark.parametrize("displayed_maps", ["foo", '1', {"foo": "bar"}])
 def test_nifti_maps_masker_report_displayed_maps_errors(
-    niftimapsmasker_inputs, displayed_maps):
+        niftimapsmasker_inputs, displayed_maps):
     """Tests that a TypeError is raised when the argument `displayed_maps`
     of `generate_report()` is not valid.
     """
@@ -149,7 +149,7 @@ def test_nifti_maps_masker_report_displayed_maps_errors(
 
 @pytest.mark.parametrize("displayed_maps", [[2, 5, 10], [0, 66, 1, 260]])
 def test_nifti_maps_masker_report_maps_number_errors(
-    niftimapsmasker_inputs, displayed_maps):
+        niftimapsmasker_inputs, displayed_maps):
     """Tests that a ValueError is raised when the argument `displayed_maps`
     contains invalid map numbers.
     """
@@ -162,7 +162,7 @@ def test_nifti_maps_masker_report_maps_number_errors(
 
 @pytest.mark.parametrize("displayed_maps", [1, 6, 9, 12, 'all'])
 def test_nifti_maps_masker_report_integer_and_all_displayed_maps(
-    niftimapsmasker_inputs, displayed_maps):
+        niftimapsmasker_inputs, displayed_maps):
     """Tests NiftiMapsMasker reporting with no image provided to fit
     and displayed_maps provided as an integer or as 'all'.
     """
@@ -178,8 +178,8 @@ def test_nifti_maps_masker_report_integer_and_all_displayed_maps(
     assert masker._report_content['report_id'] == 0
     assert masker._report_content['number_of_maps'] == 9
     assert(
-        masker._report_content['displayed_maps'] ==\
-        list(range(expected_n_maps))
+        masker._report_content['displayed_maps']
+        == list(range(expected_n_maps))
     )
     msg = ("No image provided to fit in NiftiMapsMasker. "
            "Plotting only spatial maps for reporting.")
