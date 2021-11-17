@@ -3,6 +3,7 @@ from nibabel import Nifti1Image
 from collections import Counter
 import numpy as np
 from nilearn.input_data import NiftiMasker, NiftiLabelsMasker, NiftiMapsMasker
+from nilearn._utils import as_ndarray
 from nilearn._utils.data_gen import generate_labeled_regions, generate_maps
 from nilearn.image import get_data, new_img_like
 from numpy.testing import assert_almost_equal
@@ -33,6 +34,24 @@ def mask():
     data = np.zeros((10, 10, 10), dtype=int)
     data[3:7, 3:7, 3:7] = 1
     return Nifti1Image(data, np.eye(4))
+
+
+@pytest.fixture
+def niftimapsmasker_inputs():
+    n_regions = 9
+    shape = (13, 11, 12)
+    affine = np.diag([2, 2, 2, 1])
+    label_img, _ = generate_maps(
+        shape, n_regions=n_regions, affine=affine
+    )
+    return {"maps_img": label_img}
+
+
+def generate_random_img(shape, length=1, affine=np.eye(4),
+                        rand_gen=np.random.RandomState(0)):
+    data = rand_gen.standard_normal(size=(shape + (length,)))
+    return Nifti1Image(data, affine), Nifti1Image(
+        as_ndarray(data[..., 0] > 0.2, dtype=np.int8), affine)
 
 
 @pytest.fixture
@@ -113,6 +132,71 @@ def test_warning_in_report_after_empty_fit(masker_class, input_parameters):  # n
         html = masker.generate_report()
     assert warn_message in masker._report_content['warning_message']
     _check_html(html)
+
+
+@pytest.mark.parametrize("displayed_maps", ["foo", '1', {"foo": "bar"}])
+def test_nifti_maps_masker_report_displayed_maps_errors(
+    niftimapsmasker_inputs, displayed_maps):
+    """Tests that a TypeError is raised when the argument `displayed_maps`
+    of `generate_report()` is not valid.
+    """
+    masker = NiftiMapsMasker(**niftimapsmasker_inputs)
+    masker.fit()
+    with pytest.raises(TypeError,
+                       match=("Parameter ``displayed_maps``")):
+        masker.generate_report(displayed_maps)
+
+
+@pytest.mark.parametrize("displayed_maps", [[2, 5, 10], [0, 66, 1, 260]])
+def test_nifti_maps_masker_report_maps_number_errors(
+    niftimapsmasker_inputs, displayed_maps):
+    """Tests that a ValueError is raised when the argument `displayed_maps`
+    contains invalid map numbers.
+    """
+    masker = NiftiMapsMasker(**niftimapsmasker_inputs)
+    masker.fit()
+    with pytest.raises(ValueError,
+                       match="Report cannot display the following maps"):
+        masker.generate_report(displayed_maps)
+
+
+@pytest.mark.parametrize("displayed_maps", [1, 6, 9, 12, 'all'])
+def test_nifti_maps_masker_report_integer_and_all_displayed_maps(
+    niftimapsmasker_inputs, displayed_maps):
+    """Tests NiftiMapsMasker reporting with no image provided to fit
+    and displayed_maps provided as an integer or as 'all'.
+    """
+    masker = NiftiMapsMasker(**niftimapsmasker_inputs)
+    masker.fit()
+    expected_n_maps = 9 if displayed_maps == 'all' else min(9, displayed_maps)
+    if displayed_maps != 'all' and displayed_maps > 9:
+        with pytest.warns(UserWarning,
+                          match="masker only has 9 maps."):
+            html = masker.generate_report(displayed_maps)
+    else:
+        html = masker.generate_report(displayed_maps)
+    assert masker._report_content['report_id'] == 0
+    assert masker._report_content['number_of_maps'] == 9
+    assert(
+        masker._report_content['displayed_maps'] ==\
+        list(range(expected_n_maps))
+    )
+    msg = ("No image provided to fit in NiftiMapsMasker. "
+           "Plotting only spatial maps for reporting.")
+    assert masker._report_content['warning_message'] == msg
+    assert html.body.count("<img") == expected_n_maps
+
+
+def test_nifti_maps_masker_report_image_in_fit(niftimapsmasker_inputs):
+    """"""
+    masker = NiftiMapsMasker(**niftimapsmasker_inputs)
+    image, _ = generate_random_img((13, 11, 12), affine=np.eye(4), length=3)
+    masker.fit(image)
+    html = masker.generate_report(2)
+    assert masker._report_content['report_id'] == 0
+    assert masker._report_content['number_of_maps'] == 9
+    assert masker._report_content['warning_message'] is None
+    assert html.body.count("<img") == 2
 
 
 def test_nifti_labels_masker_report(data_img_3d, mask):
