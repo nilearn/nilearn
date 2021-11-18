@@ -34,7 +34,7 @@ Cross-validation with scikit-learn
 -----------------------------------
 
 To perform cross-validation using a scikit-learn estimator, you should first
-mask the data using a :class:`nilearn.input_data.NiftiMasker`: to extract
+mask the data using a :class:`nilearn.maskers.NiftiMasker`: to extract
 only the :term:`voxels<voxel>` inside the mask of interest, and transform 4D input :term:`fMRI`
 data to 2D arrays (shape (n_timepoints, n_voxels)) that estimators can work on.
 
