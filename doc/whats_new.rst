@@ -7,6 +7,10 @@ NEW
 - **Support for Python 3.6 is deprecated and will be removed in release 0.10.**
   Users with a Python 3.6 environment will be warned at their first Nilearn
   import and encouraged to update to more recent versions of Python.
+- Masker objects like :class:`~nilearn.maskers.NiftiMasker` now belong to the
+  new module :mod:`nilearn.maskers`. The old import style, through the module
+  ``input_data``, still works but has been deprecated.
+  (See PR `#3065 <https://github.com/nilearn/nilearn/pull/3065>`_).
 - New module :mod:`nilearn.interfaces` to implement loading and saving utilities
   with various interfaces (fmriprep, bids...).
   (See PR `#3061 <https://github.com/nilearn/nilearn/pull/3061>`_).
