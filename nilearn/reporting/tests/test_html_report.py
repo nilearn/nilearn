@@ -160,6 +160,29 @@ def test_nifti_maps_masker_report_maps_number_errors(
         masker.generate_report(displayed_maps)
 
 
+@pytest.mark.parametrize("displayed_maps",
+                         [[2, 5, 6],
+                          np.array([0, 3, 4, 5])])
+def test_nifti_maps_masker_report_list_and_arrays_maps_number(
+        niftimapsmasker_inputs, displayed_maps):
+    """Tests report generation for NiftiMapsMasker with displayed_maps
+    passed as a list of a Numpy arrays.
+    """
+    masker = NiftiMapsMasker(**niftimapsmasker_inputs)
+    masker.fit()
+    html = masker.generate_report(displayed_maps)
+    assert masker._report_content['report_id'] == 0
+    assert masker._report_content['number_of_maps'] == 9
+    assert(
+        masker._report_content['displayed_maps']
+        == list(displayed_maps)
+    )
+    msg = ("No image provided to fit in NiftiMapsMasker. "
+           "Plotting only spatial maps for reporting.")
+    assert masker._report_content['warning_message'] == msg
+    assert html.body.count("<img") == len(displayed_maps)
+
+
 @pytest.mark.parametrize("displayed_maps", [1, 6, 9, 12, 'all'])
 def test_nifti_maps_masker_report_integer_and_all_displayed_maps(
         niftimapsmasker_inputs, displayed_maps):
