@@ -11,7 +11,7 @@ import numpy as np
 from scipy.ndimage import label
 from scipy.stats import norm
 
-from nilearn.input_data import NiftiMasker
+from nilearn.maskers import NiftiMasker
 from nilearn.image import get_data, math_img, threshold_img
 
 

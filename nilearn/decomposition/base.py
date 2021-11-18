@@ -19,8 +19,8 @@ from .._utils import fill_doc
 from .._utils.cache_mixin import CacheMixin, cache
 from .._utils.niimg import _safe_get_data
 from .._utils.niimg_conversions import _resolve_globbing
-from ..input_data import NiftiMapsMasker
-from ..input_data.masker_validation import check_embedded_nifti_masker
+from nilearn.maskers import NiftiMapsMasker
+from nilearn.maskers.masker_validation import check_embedded_nifti_masker
 from ..signal import _row_sum_of_squares
 
 

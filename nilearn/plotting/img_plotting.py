@@ -38,7 +38,7 @@ from .._utils.param_validation import check_threshold
 from .._utils.ndimage import get_border_data
 from ..datasets import load_mni152_template
 from ..image import new_img_like, iter_img, get_data, math_img, resample_to_img
-from ..input_data import NiftiMasker
+from nilearn.maskers import NiftiMasker
 from nilearn.image.resampling import reorder_img
 from ..masking import compute_epi_mask, apply_mask
 from nilearn.plotting.displays import get_slicer, get_projector

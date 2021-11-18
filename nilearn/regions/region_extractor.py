@@ -12,7 +12,7 @@ from scipy.stats import scoreatpercentile
 from joblib import Memory
 
 from .. import masking
-from ..input_data import NiftiMapsMasker
+from nilearn.maskers import NiftiMapsMasker
 from .._utils import (check_niimg, check_niimg_3d,
                       check_niimg_4d, fill_doc)
 from ..image import new_img_like, resample_img
@@ -313,7 +313,7 @@ class RegionExtractor(NiftiMapsMasker):
 
         .. note::
             Recommended to set to True if signals are not already standardized.
-            Passed to :class:`nilearn.input_data.NiftiMapsMasker`.
+            Passed to :class:`~nilearn.maskers.NiftiMapsMasker`.
 
     %(detrend)s
 

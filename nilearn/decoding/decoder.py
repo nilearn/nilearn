@@ -21,7 +21,7 @@ from joblib import Parallel, delayed
 from nilearn._utils import CacheMixin, fill_doc
 from nilearn._utils.cache_mixin import _check_memory
 from nilearn._utils.param_validation import check_feature_screening
-from nilearn.input_data.masker_validation import check_embedded_nifti_masker
+from nilearn.maskers.masker_validation import check_embedded_nifti_masker
 from nilearn.regions.rena_clustering import ReNA
 from sklearn import clone
 from sklearn.dummy import DummyClassifier, DummyRegressor

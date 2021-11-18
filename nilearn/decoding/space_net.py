@@ -26,7 +26,7 @@ from sklearn.feature_selection import (SelectPercentile, f_regression,
 from joblib import Memory, Parallel, delayed
 from sklearn.preprocessing import LabelBinarizer
 from sklearn.metrics import accuracy_score
-from ..input_data.masker_validation import check_embedded_nifti_masker
+from nilearn.maskers.masker_validation import check_embedded_nifti_masker
 from .._utils.param_validation import _adjust_screening_percentile
 from .._utils import fill_doc
 from sklearn.utils import check_X_y

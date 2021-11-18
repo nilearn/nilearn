@@ -40,7 +40,7 @@ with warnings.catch_warnings():
 
 from nilearn.reporting._get_clusters_table import get_clusters_table
 from nilearn.reporting.utils import figure_to_svg_quoted
-from nilearn.input_data import NiftiMasker
+from nilearn.maskers import NiftiMasker
 from nilearn._utils import check_niimg
 
 
