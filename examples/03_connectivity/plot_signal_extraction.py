@@ -48,7 +48,7 @@ reduced_confounds = data.confounds[0]  # This is a preselected set of confounds
 # Extract signals on a parcellation defined by labels
 # ---------------------------------------------------
 # Using the NiftiLabelsMasker
-from nilearn.input_data import NiftiLabelsMasker
+from nilearn.maskers import NiftiLabelsMasker
 masker = NiftiLabelsMasker(labels_img=atlas_filename, standardize=True,
                            memory='nilearn_cache', verbose=5)
 

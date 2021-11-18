@@ -293,7 +293,7 @@ plot_roi(second_roi_img, mean_img, title='Connected components: second ROI')
 # Use the new ROIs, to extract data maps in both ROIs
 
 # We extract data from ROIs using nilearn's NiftiLabelsMasker
-from nilearn.input_data import NiftiLabelsMasker
+from nilearn.maskers import NiftiLabelsMasker
 
 # Before data extraction, we convert an array labels to Nifti like image. All
 # inputs to NiftiLabelsMasker must be Nifti-like images or filename to Nifti

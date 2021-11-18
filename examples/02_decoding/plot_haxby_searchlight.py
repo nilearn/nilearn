@@ -84,7 +84,7 @@ searchlight.fit(fmri_img, y)
 #########################################################################
 # F-scores computation
 # ----------------------
-from nilearn.input_data import NiftiMasker
+from nilearn.maskers import NiftiMasker
 
 # For decoding, standardizing is often very important
 nifti_masker = NiftiMasker(mask_img=mask_img, sessions=session,

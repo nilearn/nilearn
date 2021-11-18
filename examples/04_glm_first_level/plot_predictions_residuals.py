@@ -68,7 +68,7 @@ plotting.plot_stat_map(z_map, bg_img=mean_img, threshold=3.1)
 # Extract the largest clusters
 # ----------------------------
 from nilearn.reporting import get_clusters_table
-from nilearn import input_data
+from nilearn.maskers import NiftiSpheresMasker
 
 table = get_clusters_table(z_map, stat_threshold=3.1,
                            cluster_threshold=20).set_index('Cluster ID', drop=True)
@@ -78,7 +78,7 @@ table.head()
 coords = table.loc[range(1, 7), ['X', 'Y', 'Z']].values
 
 # extract time series from each coordinate
-masker = input_data.NiftiSpheresMasker(coords)
+masker = NiftiSpheresMasker(coords)
 real_timeseries = masker.fit_transform(fmri_img)
 predicted_timeseries = masker.fit_transform(fmri_glm.predicted[0])
 
