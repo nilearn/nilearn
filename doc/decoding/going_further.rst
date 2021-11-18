@@ -105,7 +105,7 @@ Using any other model in the pipeline
 -------------------------------------
 
 :term:`Anova<ANOVA>` - :term:`SVM` is a good baseline that will give reasonable results
-in common settings. However it may be interesting for you to to explore the
+in common settings. However it may be interesting for you to explore the
 `wide variety of supervised learning algorithms in the scikit-learn
 <http://scikit-learn.org/stable/supervised_learning.html>`_. These can readily
 replace the :term:`SVM` in your pipeline and might be better fitted

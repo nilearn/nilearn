@@ -2192,7 +2192,7 @@ class OrthoProjector(OrthoSlicer):
             if len(node_color) != node_coords_shape[0]:
                 raise ValueError(
                     "Mismatch between the number of nodes ({0}) "
-                    "and and the number of node colors ({1})."
+                    "and the number of node colors ({1})."
                     .format(node_coords_shape[0], len(node_color)))
 
         if node_coords_shape[0] != adjacency_matrix_shape[0]:

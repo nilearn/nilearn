@@ -1005,7 +1005,7 @@ class SpaceNetClassifier(BaseSpaceNet):
     %(t_r)s
     screening_percentile : float in the interval [0, 100]; Optional (default 20)
         Percentile value for ANOVA univariate feature selection. A value of
-        100 means 'keep all features'. This percentile is is expressed
+        100 means 'keep all features'. This percentile is expressed
         w.r.t the volume of a standard (MNI152) brain, and so is corrected
         at runtime by premultiplying it with the ratio of the volume of the
         mask of the data and volume of a standard brain.  If '100' is given,
@@ -1212,7 +1212,7 @@ class SpaceNetRegressor(BaseSpaceNet):
     %(t_r)s
     screening_percentile : float in the interval [0, 100]; Optional (default 20)
         Percentile value for ANOVA univariate feature selection. A value of
-        100 means 'keep all features'. This percentile is is expressed
+        100 means 'keep all features'. This percentile is expressed
         w.r.t the volume of a standard (MNI152) brain, and so is corrected
         at runtime to correspond to the volume of the user-supplied mask
         (which is typically smaller).

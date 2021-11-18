@@ -85,7 +85,7 @@ def _get_mpl_patches(json_content, transform=None,
 
 
 def _get_json_and_transform(direction):
-    """Returns the json filename and and an affine transform, which has
+    """Returns the json filename and an affine transform, which has
     been tweaked by hand to fit the MNI template
     """
     direction_to_view_name = {'x': 'side',
