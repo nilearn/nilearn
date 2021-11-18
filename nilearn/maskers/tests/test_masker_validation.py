@@ -5,8 +5,8 @@ import pytest
 from sklearn.base import BaseEstimator
 from joblib import Memory
 
-from nilearn.input_data.masker_validation import check_embedded_nifti_masker
-from nilearn.input_data import MultiNiftiMasker, NiftiMasker
+from nilearn.maskers.masker_validation import check_embedded_nifti_masker
+from nilearn.maskers import MultiNiftiMasker, NiftiMasker
 
 
 class OwningClass(BaseEstimator):

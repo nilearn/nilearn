@@ -277,7 +277,7 @@ class NiftiSpheresMasker(BaseMasker, CacheMixin):
 
     See also
     --------
-    nilearn.input_data.NiftiMasker
+    nilearn.maskers.NiftiMasker
 
     """
     # memory and memory_level are used by CacheMixin.

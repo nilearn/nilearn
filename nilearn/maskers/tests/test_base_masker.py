@@ -6,7 +6,7 @@ import numpy as np
 from numpy.testing import assert_array_almost_equal
 import nibabel
 
-from nilearn.input_data.nifti_masker import filter_and_mask
+from nilearn.maskers.nifti_masker import filter_and_mask
 from nilearn import image
 
 

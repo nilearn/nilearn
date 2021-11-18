@@ -45,7 +45,7 @@ class NiftiLabelsMasker(BaseMasker, CacheMixin):
     """Class for masking of Niimg-like objects.
 
     NiftiLabelsMasker is useful when data from non-overlapping volumes should
-    be extracted (contrarily to :class:`nilearn.input_data.NiftiMapsMasker`).
+    be extracted (contrarily to :class:`nilearn.maskers.NiftiMapsMasker`).
     Use case: Summarize brain signals from clusters that were obtained by prior
     K-means or Ward clustering.
 
@@ -146,7 +146,7 @@ class NiftiLabelsMasker(BaseMasker, CacheMixin):
 
     See also
     --------
-    nilearn.input_data.NiftiMasker
+    nilearn.maskers.NiftiMasker
 
     """
     # memory and memory_level are used by CacheMixin.

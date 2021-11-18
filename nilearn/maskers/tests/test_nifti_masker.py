@@ -23,7 +23,8 @@ from nilearn._utils import data_gen
 from nilearn._utils.class_inspect import get_params
 from nilearn._utils.exceptions import DimensionError
 from nilearn.image import index_img
-from nilearn.input_data.nifti_masker import NiftiMasker, filter_and_mask
+from nilearn.maskers import NiftiMasker
+from nilearn.maskers.nifti_masker import filter_and_mask
 from nilearn.image import get_data
 
 

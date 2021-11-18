@@ -1,5 +1,5 @@
 """
-Transformer used to apply basic transformations on MRI data.
+Transformer used to apply basic transformations on :term:`fMRI` data.
 """
 # Author: Gael Varoquaux, Alexandre Abraham
 # License: simplified BSD
@@ -124,8 +124,7 @@ def filter_and_extract(imgs, extraction_function,
 
 
 class BaseMasker(BaseEstimator, TransformerMixin, CacheMixin):
-    """Base class for NiftiMaskers
-    """
+    """Base class for NiftiMaskers."""
 
     @abc.abstractmethod
     def transform_single_imgs(self, imgs, confounds=None, sample_mask=None,
