@@ -16,7 +16,7 @@ from nilearn.glm.first_level.design_matrix import (
 from nilearn.glm.first_level import FirstLevelModel
 from nilearn.reporting import glm_reporter as glmr
 from nilearn.glm.second_level import SecondLevelModel
-from nilearn.input_data import NiftiMasker
+from nilearn.maskers import NiftiMasker
 
 try:
     import matplotlib as mpl  # noqa: F841

@@ -5,7 +5,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from nilearn._utils.data_gen import generate_fake_fmri
 from nilearn.image import iter_img
-from nilearn.input_data import NiftiMasker
+from nilearn.maskers import NiftiMasker
 from nilearn.plotting import plot_img_comparison
 
 

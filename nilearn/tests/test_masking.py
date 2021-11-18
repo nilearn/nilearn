@@ -26,7 +26,7 @@ from nilearn.masking import (compute_epi_mask, compute_multi_epi_mask,
 from nilearn._utils.testing import write_tmp_imgs
 from nilearn._utils.exceptions import DimensionError
 from nilearn._utils import data_gen
-from nilearn.input_data import NiftiMasker
+from nilearn.maskers import NiftiMasker
 
 np_version = (np.version.full_version if hasattr(np.version, 'full_version')
               else np.version.short_version)
