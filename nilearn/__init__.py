@@ -23,8 +23,8 @@ image                   --- Set of functions defining mathematical operations
                             working on Niimg-like objects
 maskers                 --- Includes scikit-learn transformers.
 masking                 --- Utilities to compute and operate on brain masks
-interfaces              --- Includes tools to preprocess neuro-imaging data from various
-                            common interfaces like fMRIPrep.
+interfaces              --- Includes tools to preprocess neuro-imaging data
+                            from various common interfaces like fMRIPrep.
 mass_univariate         --- Defines a Massively Univariate Linear Model
                             estimated with OLS and permutation test
 plotting                --- Plotting code for nilearn

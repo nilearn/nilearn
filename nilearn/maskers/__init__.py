@@ -10,4 +10,3 @@ from .nifti_spheres_masker import NiftiSpheresMasker
 
 __all__ = ['NiftiMasker', 'MultiNiftiMasker', 'NiftiLabelsMasker',
            'NiftiMapsMasker', 'NiftiSpheresMasker']
-
