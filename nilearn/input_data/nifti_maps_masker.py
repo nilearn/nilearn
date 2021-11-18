@@ -259,17 +259,7 @@ class NiftiMapsMasker(BaseMasker, CacheMixin):
 
         """
         from nilearn.reporting.html_report import _embed_img
-        try:
-            from nilearn import plotting
-        except ImportError:
-            with warnings.catch_warnings():
-                mpl_unavail_msg = ('Matplotlib is not imported! '
-                                   'No report will be generated.')
-                warnings.filterwarnings('always', message=mpl_unavail_msg)
-                warnings.warn(category=ImportWarning,
-                              message=mpl_unavail_msg)
-                return [None]
-
+        from nilearn import plotting
         if self._reporting_data is not None:
             maps_image = self._reporting_data['maps_image']
         else:
