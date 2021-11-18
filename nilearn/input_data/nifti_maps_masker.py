@@ -236,7 +236,7 @@ class NiftiMapsMasker(BaseMasker, CacheMixin):
 
         Returns
         -------
-        report : :class:`~nilearn.reporting.html_report.HTMLReport`
+        report : `nilearn.reporting.html_report.HTMLReport`
             HTML report for the masker.
         """
         from nilearn.reporting.html_report import generate_report

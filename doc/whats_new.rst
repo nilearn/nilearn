@@ -33,6 +33,12 @@ NEW
   similar interface to the :class:`~matplotlib.figure.Figure` returned with the
   `matplotlib` engine.
   (See PR `#3036 <https://github.com/nilearn/nilearn/pull/3036>`_).
+- :class:`~nilearn.input_data.NiftiMapsMasker` can now generate HTML reports in the same
+  way as :class:`~nilearn.input_data.NiftiMasker` and
+  :class:`~nilearn.input_data.NiftiLabelsMasker`. The report enables the users to browse
+  through the spatial maps with a previous and next button. The users can filter the maps
+  they wish to display by passing an integer, or a list of integers to
+  :meth:`~nilearn.input_data.NiftiMapsMasker.generate_report`.
 
 Fixes
 -----
