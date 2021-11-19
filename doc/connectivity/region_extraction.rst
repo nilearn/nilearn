@@ -50,7 +50,7 @@ necessarily converting each file to :class:`~nibabel.nifti1.Nifti1Image` object.
 
 
 .. literalinclude:: ../../examples/03_connectivity/plot_extract_regions_dictlearning_maps.py
-    :start-after: # object and fit the model to the functional datasets
+    :start-after: # functional datasets
     :end-before: # Visualization of functional networks
 
 .. currentmodule:: nilearn.plotting
@@ -95,7 +95,7 @@ units to adapt well to the resolution of the image. Please see the documentation
 :func:`nilearn.regions.connected_regions` for more details.
 
 .. literalinclude:: ../../examples/03_connectivity/plot_extract_regions_dictlearning_maps.py
-    :start-after: # maps, less the threshold means that more intense non-voxels will be survived.
+    :start-after: # more intense non-voxels will be survived.
     :end-before: # Visualization of region extraction results
 
 .. currentmodule:: nilearn.plotting
@@ -175,7 +175,7 @@ validate that regions are nicely separated identified by each extracted region i
 color.
 
 .. literalinclude:: ../../examples/03_connectivity/plot_extract_regions_dictlearning_maps.py
-    :start-after: # First, we plot a network of index=4 without region extraction
+    :start-after: # First, we plot a network of `index=4` without
 
 .. |dmn| image:: ../auto_examples/03_connectivity/images/sphx_glr_plot_extract_regions_dictlearning_maps_005.png
    :target: ../auto_examples/03_connectivity/plot_extract_regions_dictlearning_maps.html
