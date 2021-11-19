@@ -36,7 +36,7 @@ Important links
 Office Hours
 ============
 
-The nilearn team organizes regular online office hours to answer questions, discuss feature requests, or have any Nilearn-related discussions. We try to maintain a frequency of *one hour every two weeks*, usually on Mondays, and make sure that at least one member of the core-developer team is available. These events are held on our on `Discord server <https://discord.gg/bMBhb7w>`_ and are fully open, anyone is welcome to join!
+The nilearn team organizes regular online office hours to answer questions, discuss feature requests, or have any Nilearn-related discussions. Nilearn office hours occurs *every Friday from 4pm to 5pm UTC*, and we make sure that at least one member of the core-developer team is available. These events are held on our on `Discord server <https://discord.gg/bMBhb7w>`_ and are fully open, anyone is welcome to join!
 
 You can check when the next office hours will be held on the Nilearn's website `landing page <https://nilearn.github.io/>`_.
 
