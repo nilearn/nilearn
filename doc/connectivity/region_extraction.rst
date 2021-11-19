@@ -129,7 +129,7 @@ selecting parameter as ``kind='correlation'`` as initialized in the object.
 
 The first step to do is to extract subject specific time series signals using
 functional data stored in ``func_filenames`` and the second step is to call
-:meth:`ConnectivityMeasure.fit_tranform` on the time series signals.
+:meth:`ConnectivityMeasure.fit_transform` on the time series signals.
 Here, for each subject we have time series signals of ``shape=(168, n_regions_extracted)``
 where 168 is the length of time series and ``n_regions_extracted`` is the number of
 extracted regions. Likewise, we have a total of 20 subject specific time series signals.

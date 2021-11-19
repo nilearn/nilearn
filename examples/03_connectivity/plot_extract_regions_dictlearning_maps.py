@@ -37,7 +37,7 @@ confounds = rest_dataset.confounds
 # ------------------------------------------------------------
 #
 # Import :class:`~nilearn.decomposition.DictLearning` from the
-# :mod:`~nilearn.decomposition` module, instanciate the object, and
+# :mod:`~nilearn.decomposition` module, instantiate the object, and
 # :meth:`~nilearn.decomposition.DictLearning.fit` the model to the
 # functional datasets
 from nilearn.decomposition import DictLearning
@@ -96,8 +96,8 @@ plotting.plot_prob_atlas(regions_extracted_img, view_type='filled_contours',
 # First we need to do subjects timeseries signals extraction and then estimating
 # correlation matrices on those signals.
 # To extract timeseries signals, we call
-# :meth:`~nilearn.regions.RegionExtractor.transform` onto each subject functional
-# data stored in ``func_filenames``.
+# :meth:`~nilearn.regions.RegionExtractor.transform` onto each subject
+# functional data stored in ``func_filenames``.
 # To estimate correlation matrices we import connectome utilities from nilearn.
 from nilearn.connectome import ConnectivityMeasure
 
@@ -138,7 +138,8 @@ plotting.plot_connectome(mean_correlations, coords_connectome,
 # Plot regions extracted for only one specific network
 # ----------------------------------------------------
 #
-# First, we plot a network of ``index=4`` without region extraction (left plot).
+# First, we plot a network of ``index=4`` without
+# region extraction (left plot).
 from nilearn import image
 
 img = image.index_img(components_img, 4)
