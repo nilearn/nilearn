@@ -1385,7 +1385,7 @@ def fetch_cobre(n_subjects=10, data_dir=None, url=None, verbose=1):
         func.append(f)
         con.append(c)
 
-    # Fetch the the complementary files
+    # Fetch the complementary files
     keys_con = "keys_confounds.json"
     keys_phen = "keys_phenotypic_data.json"
 
