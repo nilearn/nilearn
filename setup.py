@@ -1,8 +1,5 @@
 #! /usr/bin/env python
 
-descr = """A set of python modules for neuroimaging..."""
-
-import sys
 import os
 
 from setuptools import setup, find_packages
@@ -24,12 +21,6 @@ def load_version():
     return globals_dict
 
 
-def is_installing():
-    # Allow command-lines such as "python setup.py build install"
-    install_commands = set(['install', 'develop'])
-    return install_commands.intersection(set(sys.argv))
-
-
 # Make sources available using relative paths from this file's directory.
 os.chdir(os.path.dirname(os.path.abspath(__file__)))
 
@@ -47,10 +38,6 @@ VERSION = _VERSION_GLOBALS['__version__']
 
 
 if __name__ == "__main__":
-    if is_installing():
-        module_check_fn = _VERSION_GLOBALS['_check_module_dependencies']
-        module_check_fn(is_nilearn_installing=True)
-
     setup(name=DISTNAME,
           maintainer=MAINTAINER,
           maintainer_email=MAINTAINER_EMAIL,

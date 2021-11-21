@@ -39,7 +39,7 @@ import warnings
 
 from distutils.version import LooseVersion
 
-from .version import _check_module_dependencies, __version__
+from .version import __version__
 
 # Workaround issue discovered in intel-openmp 2019.5:
 # https://github.com/ContinuumIO/anaconda-issues/issues/11294
@@ -62,16 +62,13 @@ def _nibabel_deprecation_warnings():
     """Give a deprecation warning is the version of
     Nibabel is < 3.0.0.
     """
-    # Nibabel should be installed or we would
-    # have had an error when calling
-    # _check_module_dependencies
+    # Nibabel should be installed
     dist = pkg_resources.get_distribution('nibabel')
     nib_version = LooseVersion(dist.version)
     if nib_version < '3.0':
         _nibabel2_deprecation_warning()
 
 
-_check_module_dependencies()
 _nibabel_deprecation_warnings()
 
 # Temporary work around to address formatting issues in doc tests
