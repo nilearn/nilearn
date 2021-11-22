@@ -7,8 +7,8 @@ Region Extraction for better brain parcellations
 .. topic:: **Page summary**
 
    This section shows how to use :class:`~nilearn.regions.RegionExtractor`
-   to extract brain connected regions/components into a separate brain
-   activation region and also shows how to learn functional connectivity
+   to extract connected regions/components into a separate brain
+    region and also shows how to learn functional connectivity
    interactions between each separate region.
 
 .. contents:: **Contents**
