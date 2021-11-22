@@ -323,10 +323,16 @@ def test_fetch_coords_seitzman_2018(request_mocker):
 
 def _destrieux_data():
     data = {"destrieux2009.rst": "readme"}
+    atlas = np.random.randint(0, 10, (10, 10, 10))
+    atlas_img = nibabel.Nifti1Image(atlas, np.eye(4))
+    # Create 11 labels. The fetcher should be able to remove
+    # the extra label ('10') not present in the atlas image
+    labels = "\n".join([f"{l},label {l}" for l in range(11)])
+    labels = "index,name\n" + labels
     for lat in ["_lateralized", ""]:
         lat_data = {
-            "destrieux2009_rois_labels{}.csv".format(lat): "name,index",
-            "destrieux2009_rois{}.nii.gz".format(lat): "",
+            "destrieux2009_rois_labels{}.csv".format(lat): labels,
+            "destrieux2009_rois{}.nii.gz".format(lat): atlas_img,
         }
         data.update(lat_data)
     return dict_to_archive(data)
@@ -340,13 +346,18 @@ def test_fetch_atlas_destrieux_2009(tmp_path, request_mocker):
     assert request_mocker.url_count == 1
     assert bunch['maps'] == str(tmp_path / 'destrieux_2009'
                                 / 'destrieux2009_rois_lateralized.nii.gz')
-
+    labels_img = set(np.unique(get_data(bunch.maps)))
+    labels = set([l.index for l in bunch.labels])
+    assert labels_img == labels
     bunch = atlas.fetch_atlas_destrieux_2009(
         lateralized=False, data_dir=tmp_path, verbose=0)
 
     assert request_mocker.url_count == 1
     assert bunch['maps'] == str(tmp_path / 'destrieux_2009'
                                 / 'destrieux2009_rois.nii.gz')
+    labels_img = set(np.unique(get_data(bunch.maps)))
+    labels = set([l.index for l in bunch.labels])
+    assert labels_img == labels
 
 
 def test_fetch_atlas_msdl(tmp_path, request_mocker):
