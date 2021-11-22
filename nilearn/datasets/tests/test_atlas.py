@@ -321,13 +321,13 @@ def test_fetch_coords_seitzman_2018(request_mocker):
     assert np.any(bunch.networks != np.sort(bunch.networks))
 
 
-def _destrieux_data():
+def _destrieux_data(n_labels=10):
     data = {"destrieux2009.rst": "readme"}
     atlas = np.random.randint(0, 10, (10, 10, 10))
     atlas_img = nibabel.Nifti1Image(atlas, np.eye(4))
     # Create 11 labels. The fetcher should be able to remove
     # the extra label ('10') not present in the atlas image
-    labels = "\n".join([f"{idx},label {idx}" for idx in range(11)])
+    labels = "\n".join([f"{idx},label {idx}" for idx in range(n_labels)])
     labels = "index,name\n" + labels
     for lat in ["_lateralized", ""]:
         lat_data = {
@@ -338,23 +338,20 @@ def _destrieux_data():
     return dict_to_archive(data)
 
 
-def test_fetch_atlas_destrieux_2009(tmp_path, request_mocker):
-    request_mocker.url_mapping["*destrieux2009.tgz"] = _destrieux_data()
-    bunch = atlas.fetch_atlas_destrieux_2009(data_dir=tmp_path,
-                                             verbose=0)
-
-    assert request_mocker.url_count == 1
-    assert bunch['maps'] == str(tmp_path / 'destrieux_2009'
-                                / 'destrieux2009_rois_lateralized.nii.gz')
-    labels_img = set(np.unique(get_data(bunch.maps)))
-    labels = set([label.index for label in bunch.labels])
-    assert labels_img == labels
+@pytest.mark.parametrize("n_labels", [10, 11])
+@pytest.mark.parametrize("lateralized", [True, False])
+def test_fetch_atlas_destrieux_2009(tmp_path, request_mocker, n_labels, lateralized):  # noqa
+    request_mocker.url_mapping["*destrieux2009.tgz"] = _destrieux_data(
+        n_labels=n_labels
+    )
     bunch = atlas.fetch_atlas_destrieux_2009(
-        lateralized=False, data_dir=tmp_path, verbose=0)
-
+        lateralized=lateralized, data_dir=tmp_path, verbose=0
+    )
     assert request_mocker.url_count == 1
-    assert bunch['maps'] == str(tmp_path / 'destrieux_2009'
-                                / 'destrieux2009_rois.nii.gz')
+    name = '_lateralized' if lateralized else ""
+    assert bunch['maps'] == str(
+        tmp_path / 'destrieux_2009' / f'destrieux2009_rois{name}.nii.gz'
+    )
     labels_img = set(np.unique(get_data(bunch.maps)))
     labels = set([label.index for label in bunch.labels])
     assert labels_img == labels
