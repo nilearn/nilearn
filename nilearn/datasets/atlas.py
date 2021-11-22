@@ -181,6 +181,20 @@ def fetch_atlas_craddock_2012(data_dir=None, url=None, resume=True, verbose=1):
     return Bunch(**params)
 
 
+def _clean_labels(image, labels):
+    """Helper function removing labels that do not appear in the image."""
+    labels_in_img = set(np.unique(get_data(image)))
+    labels_set = set([label.index for label in labels])
+    diff = labels_set.difference(labels_in_img)
+    if len(diff) == 0:
+        return labels
+    cleaned_labels = np.array(
+        [label for label in labels if label.index not in diff],
+        dtype=[('index', '<i8'), ('name', 'S27')]
+    )
+    return cleaned_labels.view(np.recarray)
+
+
 @fill_doc
 def fetch_atlas_destrieux_2009(lateralized=True, data_dir=None, url=None,
                                resume=True, verbose=1):
@@ -236,6 +250,7 @@ def fetch_atlas_destrieux_2009(lateralized=True, data_dir=None, url=None,
     with open(files_[2], 'r') as rst_file:
         params['description'] = rst_file.read()
 
+    params['labels'] = _clean_labels(params['maps'], params['labels'])
     return Bunch(**params)
 
 
