@@ -327,7 +327,7 @@ def _destrieux_data():
     atlas_img = nibabel.Nifti1Image(atlas, np.eye(4))
     # Create 11 labels. The fetcher should be able to remove
     # the extra label ('10') not present in the atlas image
-    labels = "\n".join([f"{l},label {l}" for l in range(11)])
+    labels = "\n".join([f"{idx},label {idx}" for idx in range(11)])
     labels = "index,name\n" + labels
     for lat in ["_lateralized", ""]:
         lat_data = {
@@ -347,7 +347,7 @@ def test_fetch_atlas_destrieux_2009(tmp_path, request_mocker):
     assert bunch['maps'] == str(tmp_path / 'destrieux_2009'
                                 / 'destrieux2009_rois_lateralized.nii.gz')
     labels_img = set(np.unique(get_data(bunch.maps)))
-    labels = set([l.index for l in bunch.labels])
+    labels = set([label.index for label in bunch.labels])
     assert labels_img == labels
     bunch = atlas.fetch_atlas_destrieux_2009(
         lateralized=False, data_dir=tmp_path, verbose=0)
@@ -356,7 +356,7 @@ def test_fetch_atlas_destrieux_2009(tmp_path, request_mocker):
     assert bunch['maps'] == str(tmp_path / 'destrieux_2009'
                                 / 'destrieux2009_rois.nii.gz')
     labels_img = set(np.unique(get_data(bunch.maps)))
-    labels = set([l.index for l in bunch.labels])
+    labels = set([label.index for label in bunch.labels])
     assert labels_img == labels
 
 
