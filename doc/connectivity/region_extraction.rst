@@ -8,7 +8,7 @@ Region Extraction for better brain parcellations
 
    This section shows how to use :class:`~nilearn.regions.RegionExtractor`
    to extract connected regions/components into a separate brain
-    region and also shows how to learn functional connectivity
+   region and also shows how to learn functional connectivity
    interactions between each separate region.
 
 .. contents:: **Contents**
@@ -175,7 +175,7 @@ validate that regions are nicely separated identified by each extracted region i
 color.
 
 .. literalinclude:: ../../examples/03_connectivity/plot_extract_regions_dictlearning_maps.py
-    :start-after: # First, we plot a network of `index=4` without
+    :start-after: # region extraction (left plot).
 
 .. |dmn| image:: ../auto_examples/03_connectivity/images/sphx_glr_plot_extract_regions_dictlearning_maps_005.png
    :target: ../auto_examples/03_connectivity/plot_extract_regions_dictlearning_maps.html
