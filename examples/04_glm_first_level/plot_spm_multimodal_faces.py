@@ -41,9 +41,14 @@ hrf_model = 'spm + derivative'  # The hemodynamic response function is the SPM c
 # Resample the images.
 #
 # This is achieved by the concat_imgs function of Nilearn.
+import warnings
 from nilearn.image import concat_imgs, resample_img, mean_img
-fmri_img = [concat_imgs(subject_data.func1, auto_resample=True),
-            concat_imgs(subject_data.func2, auto_resample=True)]
+
+# Avoid getting too many warnings due to resampling
+with warnings.catch_warnings():
+    warnings.simplefilter("ignore")
+    fmri_img = [concat_imgs(subject_data.func1, auto_resample=True),
+                concat_imgs(subject_data.func2, auto_resample=True)]
 affine, shape = fmri_img[0].affine, fmri_img[0].shape
 print('Resampling the second image (this takes time)...')
 fmri_img[1] = resample_img(fmri_img[1], affine, shape[:3])
