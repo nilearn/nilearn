@@ -322,11 +322,13 @@ def test_fetch_coords_seitzman_2018(request_mocker):
 
 
 def _destrieux_data(n_labels=10):
+    """Function mocking the download of the destrieux atlas.
+    Parameter `n_labels` controls the number of labels in the
+    CSV file. The number of labels in the image is 10.
+    """
     data = {"destrieux2009.rst": "readme"}
     atlas = np.random.randint(0, 10, (10, 10, 10))
     atlas_img = nibabel.Nifti1Image(atlas, np.eye(4))
-    # Create 11 labels. The fetcher should be able to remove
-    # the extra label ('10') not present in the atlas image
     labels = "\n".join([f"{idx},label {idx}" for idx in range(n_labels)])
     labels = "index,name\n" + labels
     for lat in ["_lateralized", ""]:
@@ -341,6 +343,11 @@ def _destrieux_data(n_labels=10):
 @pytest.mark.parametrize("n_labels", [10, 11])
 @pytest.mark.parametrize("lateralized", [True, False])
 def test_fetch_atlas_destrieux_2009(tmp_path, request_mocker, n_labels, lateralized):  # noqa
+    """Tests for function `fetch_atlas_destrieux_2009`.
+    The atlas is fetched with different combinations of `lateralized`
+    and `n_labels`. In the case `n_labels=11`, the fetcher should be able
+    to remove the extra label ('10') not present in the atlas image.
+    """
     request_mocker.url_mapping["*destrieux2009.tgz"] = _destrieux_data(
         n_labels=n_labels
     )
