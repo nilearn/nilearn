@@ -13,7 +13,7 @@ from .projectors import(
 )
 
 from .slicers import(
-    OrthoSlicer, TiledSlicer, MosaicSlicer,
+    OrthoSlicer, TiledSlicer, MosaicSlicer, BaseSlicer,
     XZSlicer, YZSlicer, YXSlicer, XSlicer, YSlicer,
     ZSlicer, get_slicer,
 )
@@ -23,6 +23,6 @@ __all__ = ["BaseAxes", "CutAxes", "GlassBrainAxes",
            "YXProjector", "XProjector", "YProjector", "ZProjector",
            "LZRYProjector", "LYRZProjector", "LYRProjector",
            "LZRProjector", "LRProjector", "LProjector", "RProjector",
-           "OrthoSlicer", "TiledSlicer", "MosaicSlicer",
+           "OrthoSlicer", "TiledSlicer", "MosaicSlicer", "BaseSlicer",
            "XZSlicer", "YZSlicer", "YXSlicer", "XSlicer", "YSlicer",
            "ZSlicer", "get_projector", "get_slicer"]
