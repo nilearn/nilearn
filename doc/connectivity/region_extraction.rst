@@ -151,7 +151,7 @@ Left image is the correlations in a matrix form and right image is the
 connectivity relations to brain regions plotted using :func:`plot_connectome`
 
 .. literalinclude:: ../../examples/03_connectivity/plot_extract_regions_dictlearning_maps.py
-    :start-after: # Plot resulting connectomes
+    :start-after: # connectome relations.
     :end-before: ################################################################################
 
 .. |matrix| image:: ../auto_examples/03_connectivity/images/sphx_glr_plot_extract_regions_dictlearning_maps_003.png
@@ -169,17 +169,21 @@ Validating results
 
 Showing only one specific network regions before and after region extraction.
 
-Left image displays the regions of one specific functional network without region extraction
-and right image displays the regions split apart after region extraction. Here, we can
+The first image displays the regions of one specific functional network without region extraction
+and the second image displays the regions split apart after region extraction. Here, we can
 validate that regions are nicely separated identified by each extracted region in different
 color.
 
 .. literalinclude:: ../../examples/03_connectivity/plot_extract_regions_dictlearning_maps.py
     :start-after: # region extraction (left plot).
+    :end-before: ################################################################################
 
 .. |dmn| image:: ../auto_examples/03_connectivity/images/sphx_glr_plot_extract_regions_dictlearning_maps_005.png
    :target: ../auto_examples/03_connectivity/plot_extract_regions_dictlearning_maps.html
    :scale: 50
+
+.. literalinclude:: ../../examples/03_connectivity/plot_extract_regions_dictlearning_maps.py
+    :start-after: # network given as 4.
 
 .. |dmn_reg| image:: ../auto_examples/03_connectivity/images/sphx_glr_plot_extract_regions_dictlearning_maps_006.png
    :target: ../auto_examples/03_connectivity/plot_extract_regions_dictlearning_maps.html

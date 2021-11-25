@@ -120,6 +120,11 @@ mean_correlations = np.mean(correlations, axis=0).reshape(n_regions_extracted,
 ###############################################################################
 # Plot resulting connectomes
 # --------------------------
+#
+# First we plot the mean of correlation matrices with
+# :func:`~nilearn.plotting.plot_matrix`, and we use
+# :func:`~nilearn.plotting.plot_connectome` to plot the
+# connectome relations.
 
 title = 'Correlation between %d regions' % n_regions_extracted
 
