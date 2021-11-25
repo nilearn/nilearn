@@ -17,7 +17,7 @@ from nilearn.plotting.glass_brain import plot_brain_schematics
 @fill_doc
 class BaseAxes(object):
     """An MPL axis-like object that displays a 2D view of 3D volumes.
-    
+
     Parameters
     ----------
     %(ax)s
@@ -97,14 +97,14 @@ class BaseAxes(object):
 
     def draw_left_right(self, size, bg_color, **kwargs):
         """Draw the annotation "L" for left, and "R" for right.
-        
+
         Parameters
         ----------
         size : :obj:`float`, optional
             Size of the text areas.
-        
+
         bg_color : matplotlib color: :obj:`str` or (r, g, b) value
-            The background color for both text areas. 
+            The background color for both text areas.
 
         """
         if self.direction in 'xlr':
@@ -230,7 +230,7 @@ class BaseAxes(object):
 @fill_doc
 class CutAxes(BaseAxes):
     """An MPL axis-like object that displays a cut of 3D volumes.
-    
+
     Parameters
     ----------
     %(ax)s
@@ -273,19 +273,19 @@ class CutAxes(BaseAxes):
 
     def draw_position(self, size, bg_color, decimals=False, **kwargs):
         """Draw coordinates.
-        
+
         Parameters
         ----------
         size : :obj:`float`, optional
             Size of the text area.
-        
+
         bg_color : matplotlib color: :obj:`str` or (r, g, b) value
             The background color for text area.
 
         decimals : :obj:`bool` or :obj:`str`, optional
             Formatting string for the coordinates.
             If set to ``False``, integer formatting will be used.
-            Default=False. 
+            Default=False.
 
         """
         if decimals:
@@ -572,7 +572,7 @@ class GlassBrainAxes(BaseAxes):
                                        dx, dy,
                                        length_includes_head=True,
                                        width=linewidth,
-                                       head_width=3*linewidth,
+                                       head_width=3 * linewidth,
                                        **this_kwargs)
                 self.ax.add_patch(arrow)
             # Otherwise a line

@@ -96,7 +96,7 @@ class BaseSlicer(object):
                          black_bg=False, leave_space=False, colorbar=False,
                          brain_color=(0.5, 0.5, 0.5), **kwargs):
         """Initialize the slicer with an image.
-        
+
         Parameters
         ----------
         %(img)s
@@ -232,8 +232,8 @@ class BaseSlicer(object):
                 - If ``None`` is given, the maps are not thresholded.
                 - If a number is given, it is used to threshold the maps:
                   values below the threshold (in absolute value) are
-                  plotted as transparent. 
-              
+                  plotted as transparent.
+
             Default=1e-6.
 
         colorbar : :obj:`bool`, optional
@@ -279,7 +279,7 @@ class BaseSlicer(object):
                 - If a number is given, it is used to threshold the maps,
                   values below the threshold (in absolute value) are plotted
                   as transparent.
-                  
+
             Default=1e-6.
 
         filled : :obj:`bool`, optional
@@ -706,7 +706,7 @@ class OrthoSlicer(BaseSlicer):
     @classmethod
     def find_cut_coords(cls, img=None, threshold=None, cut_coords=None):
         """Instantiate the slicer and find cut coordinates.
-        
+
         Parameters
         ----------
         %(img)s
@@ -717,9 +717,9 @@ class OrthoSlicer(BaseSlicer):
                 - If a number is given, it is used to threshold the maps,
                   values below the threshold (in absolute value) are plotted
                   as transparent.
-                  
+
             Default=None.
-        
+
         cut_coords : 3 :obj:`tuple` of :obj:`int`
             The cut position, in world space.
         """
@@ -1212,7 +1212,7 @@ class BaseStackedSlicer(BaseSlicer):
     @classmethod
     def find_cut_coords(cls, img=None, threshold=None, cut_coords=None):
         """Instantiate the slicer and find cut coordinates.
-        
+
         Parameters
         ----------
         img : 3D :class:`~nibabel.nifti1.Nifti1Image`
@@ -1569,7 +1569,7 @@ class MosaicSlicer(BaseSlicer):
         cut_coords : 3-:obj:`tuple` of :obj:`float`, optional
             The position of the cross to draw. If ``None`` is passed, the
             ``OrthoSlicer``'s cut coordinates are used.
-        
+
         kwargs : :obj:`dict`
             Extra keyword arguments are passed to function
             :func:`matplotlib.pyplot.axhline`.
@@ -1590,7 +1590,7 @@ SLICERS = dict(ortho=OrthoSlicer,
 
 def get_slicer(display_mode):
     """Retrieve a slicer from a given display mode.
-    
+
     Parameters
     ----------
     display_mode : :obj:`str`
@@ -1607,14 +1607,14 @@ def get_slicer(display_mode):
             - "xz"
             - "yz"
             - "yx"
-    
+
     Returns
     -------
     slicer : An instance of one of the subclasses of\
     :class:`~nilearn.plotting.displays.BaseSlicer`
 
         The slicer corresponding to the requested display mode:
-        
+
             - "ortho": Returns an
               :class:`~nilearn.plotting.displays.OrthoSlicer`.
             - "tiled": Returns a
@@ -1650,16 +1650,6 @@ def _get_create_display_fun(display_mode, class_dict):
                    'Valid options are {1}').format(
                         display_mode, sorted(class_dict.keys()))
         raise ValueError(message)
-
-
-def get_slicer(display_mode):
-    "Internal function to retrieve a slicer"
-    return get_create_display_fun(display_mode, SLICERS)
-
-
-def get_projector(display_mode):
-    "Internal function to retrieve a projector"
-    return get_create_display_fun(display_mode, PROJECTORS)
 
 
 class SurfaceFigure:

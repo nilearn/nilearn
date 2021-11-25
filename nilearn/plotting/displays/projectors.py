@@ -9,7 +9,7 @@ from matplotlib import cm as mpl_cm
 
 from nilearn.plotting import cm
 from nilearn._utils.param_validation import check_threshold
-from nilearn.plotting.displays.slicers import(
+from nilearn.plotting.displays.slicers import (
     OrthoSlicer, _get_create_display_fun
 )
 from nilearn.plotting.displays.axes import GlassBrainAxes
@@ -110,8 +110,8 @@ class OrthoProjector(OrthoSlicer):
                              "to specify node colors")
 
         adjacency_matrix_shape = adjacency_matrix.shape
-        if (len(adjacency_matrix_shape) != 2 or
-                adjacency_matrix_shape[0] != adjacency_matrix_shape[1]):
+        if (len(adjacency_matrix_shape) != 2
+                or adjacency_matrix_shape[0] != adjacency_matrix_shape[1]):
             raise ValueError(
                 "'adjacency_matrix' is supposed to have shape (n, n)."
                 ' Its shape was {0}'.format(adjacency_matrix_shape))
@@ -192,10 +192,12 @@ class OrthoProjector(OrthoSlicer):
             ax._add_markers(node_coords, node_color, node_size, **node_kwargs)
             if line_coords:
                 ax._add_lines(line_coords, adjacency_matrix_values, edge_cmap,
-                              vmin=edge_vmin, vmax=edge_vmax, directed=(not symmetric),
+                              vmin=edge_vmin, vmax=edge_vmax,
+                              directed=(not symmetric),
                               **edge_kwargs)
             # To obtain the brain left view, we simply invert the x axis
-            if ax.direction == 'l' and not (ax.ax.get_xlim()[0] > ax.ax.get_xlim()[1]):
+            if(ax.direction == 'l'
+               and not (ax.ax.get_xlim()[0] > ax.ax.get_xlim()[1])):
                 ax.ax.invert_xaxis()
 
         if colorbar:
@@ -293,20 +295,20 @@ PROJECTORS = dict(ortho=OrthoProjector,
 
 def get_projector(display_mode):
     """Retrieve a projector from a given display mode.
-    
+
     Parameters
     ----------
     display_mode : {"ortho", "xz", "yz", "yx", "x", "y",\
     "z", "lzry", "lyrz", "lyr", "lzr", "lr", "l", "r"}
         The desired display mode.
-    
+
     Returns
     -------
     projector : :class:`~nilearn.plotting.displays.OrthoProjector`\
     or instance of derived classes
 
         The projector corresponding to the requested display mode:
-        
+
             - "ortho": Returns an
               :class:`~nilearn.plotting.displays.OrthoProjector`.
             - "xz": Returns a
@@ -335,6 +337,6 @@ def get_projector(display_mode):
               :class:`~nilearn.plotting.displays.LProjector`.
             - "z": Returns a
               :class:`~nilearn.plotting.displays.RProjector`.
-    
+
     """
     return _get_create_display_fun(display_mode, PROJECTORS)

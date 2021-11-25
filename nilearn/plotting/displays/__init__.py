@@ -4,7 +4,7 @@ Bl
 
 from .axes import BaseAxes, CutAxes, GlassBrainAxes
 
-from .projectors import(
+from .projectors import (
     OrthoProjector, XZProjector, YZProjector,
     YXProjector, XProjector, YProjector, ZProjector,
     LZRYProjector, LYRZProjector, LYRProjector,
@@ -12,7 +12,7 @@ from .projectors import(
     get_projector,
 )
 
-from .slicers import(
+from .slicers import (
     OrthoSlicer, TiledSlicer, MosaicSlicer, BaseSlicer,
     XZSlicer, YZSlicer, YXSlicer, XSlicer, YSlicer,
     ZSlicer, get_slicer,
