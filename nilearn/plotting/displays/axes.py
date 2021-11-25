@@ -1,5 +1,6 @@
 
 import numbers
+from nilearn._utils.docs import fill_doc
 import numpy as np
 
 import matplotlib.pyplot as plt
@@ -13,24 +14,21 @@ from nilearn.image import coord_transform
 from nilearn.plotting.glass_brain import plot_brain_schematics
 
 
+@fill_doc
 class BaseAxes(object):
-    """An MPL axis-like object that displays a 2D view of 3D volumes."""
+    """An MPL axis-like object that displays a 2D view of 3D volumes.
+    
+    Parameters
+    ----------
+    %(ax)s
+    direction : {'x', 'y', 'z'}
+        The directions of the view.
+
+    coord : :obj:`float`
+        The coordinate along the direction of the cut.
+    """
 
     def __init__(self, ax, direction, coord):
-        """An MPL axis-like object that displays a cut of 3D volumes.
-
-        Parameters
-        ----------
-        ax : A MPL axes instance
-            The axes in which the plots will be drawn.
-
-        direction : {'x', 'y', 'z'}
-            The directions of the view.
-
-        coord : float
-            The coordinate along the direction of the cut.
-
-        """
         self.ax = ax
         self.direction = direction
         self.coord = coord
@@ -42,9 +40,7 @@ class BaseAxes(object):
                                   "in derived classes'")
 
     def add_object_bounds(self, bounds):
-        """Ensures that axes get rescaled when adding object bounds
-
-        """
+        """Ensures that axes get rescaled when adding object bounds."""
         old_object_bounds = self.get_object_bounds()
         self._object_bounds.append(bounds)
         new_object_bounds = self.get_object_bounds()
@@ -54,7 +50,7 @@ class BaseAxes(object):
 
     def draw_2d(self, data_2d, data_bounds, bounding_box,
                 type='imshow', **kwargs):
-        # kwargs messaging
+        """Draw 2D."""
         kwargs['origin'] = 'upper'
 
         if self.direction == 'y':
@@ -84,12 +80,10 @@ class BaseAxes(object):
         # inverted when direction is left
         if self.direction == 'l' and not (ax.get_xlim()[0] > ax.get_xlim()[1]):
             ax.invert_xaxis()
-
         return im
 
     def get_object_bounds(self):
-        """ Return the bounds of the objects on this axes.
-        """
+        """Return the bounds of the objects on this axes."""
         if len(self._object_bounds) == 0:
             # Nothing plotted yet
             return -.01, .01, -.01, .01
@@ -102,6 +96,17 @@ class BaseAxes(object):
         return xmin, xmax, ymin, ymax
 
     def draw_left_right(self, size, bg_color, **kwargs):
+        """Draw the annotation "L" for left, and "R" for right.
+        
+        Parameters
+        ----------
+        size : :obj:`float`, optional
+            Size of the text areas.
+        
+        bg_color : matplotlib color: :obj:`str` or (r, g, b) value
+            The background color for both text areas. 
+
+        """
         if self.direction in 'xlr':
             return
         ax = self.ax
@@ -126,61 +131,64 @@ class BaseAxes(object):
                        fontproperties=None, frameon=False, loc=4, pad=.1,
                        borderpad=.5, sep=5, size_vertical=0, label_top=False,
                        color='black', fontsize=None, **kwargs):
-        """ Adds a scale bar annotation to the display
+        """Adds a scale bar annotation to the display.
 
         Parameters
         ----------
-        bgcolor : matplotlib color: str or (r, g, b) value
+        bg_color : matplotlib color: :obj:`str` or (r, g, b) value
             The background color of the scale bar annotation.
 
-        size : float, optional
+        size : :obj:`float`, optional
             Horizontal length of the scale bar, given in `units`.
             Default=5.0.
 
-        units : str, optional
+        units : :obj:`str`, optional
             Physical units of the scale bar (`'cm'` or `'mm'`).
             Default='cm'.
 
-        fontproperties : ``matplotlib.font_manager.FontProperties`` or dict, optional
+        fontproperties : :class:`~matplotlib.font_manager.FontProperties`\
+        or :obj:`dict`, optional
             Font properties for the label text.
 
-        frameon : Boolean, optional
+        frameon : :obj:`bool`, optional
             Whether the scale bar is plotted with a border. Default=False.
 
-        loc : int, optional
+        loc : :obj:`int`, optional
             Location of this scale bar. Valid location codes are documented
             `here <https://matplotlib.org/mpl_toolkits/axes_grid/\
             api/anchored_artists_api.html#mpl_toolkits.axes_grid1.\
             anchored_artists.AnchoredSizeBar>`__.
             Default=4.
 
-        pad : int of float, optional
+        pad : :obj:`int` or :obj:`float`, optional
             Padding around the label and scale bar, in fraction of the font
             size. Default=0.1.
 
-        borderpad : int or float, optional
+        borderpad : :obj:`int` or :obj:`float`, optional
             Border padding, in fraction of the font size. Default=0.5.
 
-        sep : int or float, optional
+        sep : :obj:`int` or :obj:`float`, optional
             Separation between the label and the scale bar, in points.
             Default=5.
 
-        size_vertical : int or float, optional
-            Vertical length of the size bar, given in `units`. Default=0.
+        size_vertical : :obj:`int` or :obj:`float`, optional
+            Vertical length of the size bar, given in `units`.
+            Default=0.
 
-        label_top : bool, optional
-            If True, the label will be over the scale bar. Default=False.
+        label_top : :obj:`bool`, optional
+            If ``True``, the label will be over the scale bar.
+            Default=False.
 
-        color : str, optional
+        color : :obj:`str`, optional
             Color for the scale bar and label. Default='black'.
 
-        fontsize : int, optional
+        fontsize : :obj:`int`, optional
             Label font size (overwrites the size passed in through the
             ``fontproperties`` argument).
 
         **kwargs :
             Keyworded arguments to pass to
-            ``matplotlib.offsetbox.AnchoredOffsetbox``.
+            :class:`~matplotlib.offsetbox.AnchoredOffsetbox`.
 
         """
         axis = self.ax
@@ -212,22 +220,36 @@ class BaseAxes(object):
         axis.add_artist(anchor_size_bar)
 
     def draw_position(self, size, bg_color, **kwargs):
+        """``draw_position`` is not implemented in base class and
+        should be implemented in derived classes.
+        """
         raise NotImplementedError("'draw_position' should be implemented "
                                   "in derived classes")
 
 
+@fill_doc
 class CutAxes(BaseAxes):
-    """ An MPL axis-like object that displays a cut of 3D volumes
+    """An MPL axis-like object that displays a cut of 3D volumes.
+    
+    Parameters
+    ----------
+    %(ax)s
+    direction : {'x', 'y', 'z'}
+        The directions of the view.
+
+    coord : :obj:`float`
+        The coordinate along the direction of the cut.
     """
+
     def transform_to_2d(self, data, affine):
-        """ Cut the 3D volume into a 2D slice
+        """Cut the 3D volume into a 2D slice.
 
         Parameters
         ----------
-        data : 3D ndarray
+        data : 3D :class:`~numpy.ndarray`
             The 3D volume to cut.
 
-        affine : 4x4 ndarray
+        affine : 4x4 :class:`~numpy.ndarray`
             The affine of the volume.
 
         """
@@ -250,6 +272,22 @@ class CutAxes(BaseAxes):
         return cut
 
     def draw_position(self, size, bg_color, decimals=False, **kwargs):
+        """Draw coordinates.
+        
+        Parameters
+        ----------
+        size : :obj:`float`, optional
+            Size of the text area.
+        
+        bg_color : matplotlib color: :obj:`str` or (r, g, b) value
+            The background color for text area.
+
+        decimals : :obj:`bool` or :obj:`str`, optional
+            Formatting string for the coordinates.
+            If set to ``False``, integer formatting will be used.
+            Default=False. 
+
+        """
         if decimals:
             text = '%s=%.{}f'.format(decimals)
             coord = float(self.coord)
@@ -268,8 +306,7 @@ class CutAxes(BaseAxes):
 
 
 def _get_index_from_direction(direction):
-    """Returns numerical index from direction
-    """
+    """Returns numerical index from direction."""
     directions = ['x', 'y', 'z']
     try:
         # l and r are subcases of x
@@ -286,21 +323,32 @@ def _get_index_from_direction(direction):
 
 
 def _coords_3d_to_2d(coords_3d, direction, return_direction=False):
-    """Project 3d coordinates into 2d ones given the direction of a cut
-    """
+    """Project 3d coordinates into 2d ones given the direction of a cut."""
     index = _get_index_from_direction(direction)
     dimensions = [0, 1, 2]
     dimensions.pop(index)
-
     if return_direction:
         return coords_3d[:, dimensions], coords_3d[:, index]
-
     return coords_3d[:, dimensions]
 
 
+@fill_doc
 class GlassBrainAxes(BaseAxes):
     """An MPL axis-like object that displays a 2D projection of 3D
     volumes with a schematic view of the brain.
+
+    Parameters
+    ----------
+    %(ax)s
+    direction : {'x', 'y', 'z'}
+        The directions of the view.
+
+    coord : :obj:`float`
+        The coordinate along the direction of the cut.
+
+    plot_abs : :obj:`bool`, optional
+        ??.
+        Default=True.
 
     """
     def __init__(self, ax, direction, coord, plot_abs=True, **kwargs):
@@ -311,15 +359,15 @@ class GlassBrainAxes(BaseAxes):
             self.add_object_bounds(object_bounds)
 
     def transform_to_2d(self, data, affine):
-        """ Returns the maximum of the absolute value of the 3D volume
+        """Returns the maximum of the absolute value of the 3D volume
         along an axis.
 
         Parameters
         ----------
-        data : 3D ndarray
+        data : 3D :class:`numpy.ndarray`
             The 3D volume.
 
-        affine : 4x4 ndarray
+        affine : 4x4 :class:`numpy.ndarray`
             The affine of the volume.
 
         """
@@ -329,7 +377,6 @@ class GlassBrainAxes(BaseAxes):
             max_axis = '.yz'.index(self.direction)
 
         # set unselected brain hemisphere activations to 0
-
         if self.direction == 'l':
             x_center, _, _, _ = np.dot(np.linalg.inv(affine),
                                        np.array([0, 0, 0, 1]))
@@ -365,7 +412,6 @@ class GlassBrainAxes(BaseAxes):
 
         # This work around can be removed bumping matplotlib > 2.1.0. See #1815
         # in nilearn for the invention of this work around
-
         if self.direction == 'l' and data_selection.min() is np.ma.masked and \
                 not (self.ax.get_xlim()[0] > self.ax.get_xlim()[1]):
             self.ax.invert_xaxis()
@@ -373,8 +419,9 @@ class GlassBrainAxes(BaseAxes):
         return np.rot90(maximum_intensity_data)
 
     def draw_position(self, size, bg_color, **kwargs):
-        # It does not make sense to draw crosses for the position of
-        # the cuts since we are taking the max along one axis
+        """Not implemented as it does not make sense to draw crosses for
+        the position of the cuts since we are taking the max along one axis.
+        """
         pass
 
     def _add_markers(self, marker_coords, marker_color, marker_size, **kwargs):
@@ -382,7 +429,6 @@ class GlassBrainAxes(BaseAxes):
 
         In the case of 'l' and 'r' directions (for hemispheric projections),
         markers in the coordinate x == 0 are included in both hemispheres.
-
         """
         marker_coords_2d = _coords_3d_to_2d(marker_coords, self.direction)
         xdata, ydata = marker_coords_2d.T
@@ -427,28 +473,29 @@ class GlassBrainAxes(BaseAxes):
 
         Parameters
         ----------
-        line_coords : list of numpy arrays of shape (2, 3)
-            3d coordinates of lines start points and end points.
+        line_coords : :obj:`list` of :class:`numpy.ndarray` of shape (2, 3)
+            3D coordinates of lines start points and end points.
 
         line_values : array_like
             Values of the lines.
 
-        cmap : colormap
-            Colormap used to map line_values to a color.
+        cmap : :class:`~matplotlib.colors.Colormap`
+            Colormap used to map ``line_values`` to a color.
 
-        vmin, vmax : float, optional
-            If not None, either or both of these values will be used to
-            as the minimum and maximum values to color lines. If None are
+        vmin, vmax : :obj:`float`, optional
+            If not ``None``, either or both of these values will be used to
+            as the minimum and maximum values to color lines. If ``None`` are
             supplied the maximum absolute value within the given threshold
             will be used as minimum (multiplied by -1) and maximum
             coloring levels.
 
-        directed : boolean, optional
-            Add arrows instead of lines if set to True. Use this when plotting
-            directed graphs for example. Default=False.
+        directed : :obj:`bool`, optional
+            Add arrows instead of lines if set to ``True``.
+            Use this when plotting directed graphs for example.
+            Default=False.
 
-        kwargs : dict
-            Additional arguments to pass to matplotlib Line2D.
+        kwargs : :obj:`dict`
+            Additional arguments to pass to :class:`~matplotlib.lines.Line2D`.
 
         """
         # colormap for colorbar
