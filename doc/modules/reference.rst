@@ -433,6 +433,7 @@ the :ref:`user guide <user_guide>` for more information and usage examples.
    BaseAxes
    CutAxes
    GlassBrainAxes
+   BaseSlicer
    OrthoSlicer
    PlotlySurfaceFigure
    TiledSlicer
