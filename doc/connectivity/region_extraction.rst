@@ -67,9 +67,11 @@ color and colors are random and automatically picked.
     :start-after: # Show networks using plotting utilities
     :end-before: ################################################################################
 
-.. image:: ../auto_examples/03_connectivity/images/sphx_glr_plot_extract_regions_dictlearning_maps_001.png
+.. |dict-maps| image:: ../auto_examples/03_connectivity/images/sphx_glr_plot_extract_regions_dictlearning_maps_001.png
     :target: ../auto_examples/03_connectivity/plot_extract_regions_dictlearning_maps.html
-    :scale: 60
+    :scale: 80
+
+.. centered:: |dict-maps|
 
 .. currentmodule:: nilearn.regions
 
@@ -92,7 +94,7 @@ the maps data.
 The parameter ``min_region_size=1350 mm^3`` is to keep the minimum number of extracted
 regions. We control the small spurious regions size by thresholding in :term:`voxel`
 units to adapt well to the resolution of the image. Please see the documentation of
-:func:`nilearn.regions.connected_regions` for more details.
+:func:`~nilearn.regions.connected_regions` for more details.
 
 .. literalinclude:: ../../examples/03_connectivity/plot_extract_regions_dictlearning_maps.py
     :start-after: # more intense non-voxels will be survived.
@@ -103,7 +105,7 @@ units to adapt well to the resolution of the image. Please see the documentation
 Visualization of Region Extraction results
 ==========================================
 
-Showing region extraction results. The same :func:`plot_prob_atlas` is used
+Showing region extraction results. The same function :func:`plot_prob_atlas` is used
 for visualizing extracted regions on a standard template. Each extracted brain
 region is assigned a color and as you can see that visual cortex area is extracted
 quite nicely into each hemisphere.
@@ -112,9 +114,11 @@ quite nicely into each hemisphere.
     :start-after: # Visualization of region extraction results
     :end-before: ################################################################################
 
-.. image:: ../auto_examples/03_connectivity/images/sphx_glr_plot_extract_regions_dictlearning_maps_002.png
+.. |dict| image:: ../auto_examples/03_connectivity/images/sphx_glr_plot_extract_regions_dictlearning_maps_002.png
     :target: ../auto_examples/03_connectivity/plot_extract_regions_dictlearning_maps.html
-    :scale: 60
+    :scale: 80
+
+.. centered:: |dict|
 
 .. currentmodule:: nilearn.connectome
 
@@ -167,12 +171,7 @@ connectivity relations to brain regions plotted using :func:`plot_connectome`
 Validating results
 ==================
 
-Showing only one specific network regions before and after region extraction.
-
-The first image displays the regions of one specific functional network without region extraction
-and the second image displays the regions split apart after region extraction. Here, we can
-validate that regions are nicely separated identified by each extracted region in different
-color.
+Showing only one specific network regions before and after region extraction. The first image displays the regions of one specific functional network without region extraction. 
 
 .. literalinclude:: ../../examples/03_connectivity/plot_extract_regions_dictlearning_maps.py
     :start-after: # region extraction (left plot).
@@ -180,16 +179,22 @@ color.
 
 .. |dmn| image:: ../auto_examples/03_connectivity/images/sphx_glr_plot_extract_regions_dictlearning_maps_005.png
    :target: ../auto_examples/03_connectivity/plot_extract_regions_dictlearning_maps.html
-   :scale: 50
+   :scale: 80
+
+.. centered:: |dmn|
+
+The second image displays the regions split apart after region extraction. Here, we can
+validate that regions are nicely separated identified by each extracted region in different
+color.
 
 .. literalinclude:: ../../examples/03_connectivity/plot_extract_regions_dictlearning_maps.py
     :start-after: # network given as 4.
 
 .. |dmn_reg| image:: ../auto_examples/03_connectivity/images/sphx_glr_plot_extract_regions_dictlearning_maps_006.png
    :target: ../auto_examples/03_connectivity/plot_extract_regions_dictlearning_maps.html
-   :scale: 50
+   :scale: 80
 
-.. centered:: |dmn| |dmn_reg|
+.. centered:: |dmn_reg|
 
 .. seealso::
 
