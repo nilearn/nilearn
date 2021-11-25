@@ -1,15 +1,15 @@
 .. _region_extraction:
 
-===================================================================
+================================================
 Region Extraction for better brain parcellations
-===================================================================
+================================================
 
 .. topic:: **Page summary**
 
-   This section shows how to use Region Extractor to extract brain connected
-   regions/components into a separate brain activation region and also
-   shows how to learn functional connectivity interactions between each
-   separate region.
+   This section shows how to use :class:`~nilearn.regions.RegionExtractor`
+   to extract connected regions/components into a separate brain
+   region and also shows how to learn functional connectivity
+   interactions between each separate region.
 
 .. contents:: **Contents**
     :local:
@@ -45,12 +45,12 @@ Brain maps using :term:`Dictionary learning`
 
 Here, we use object :class:`DictLearning`, a multi subject model to decompose multi
 subjects :term:`fMRI` datasets into functionally defined maps. We do this by setting
-the parameters and calling the object fit on the filenames of datasets without
-necessarily converting each file to Nifti1Image object.
+the parameters and calling :meth:`DictLearning.fit` on the filenames of datasets without
+necessarily converting each file to :class:`~nibabel.nifti1.Nifti1Image` object.
 
 
 .. literalinclude:: ../../examples/03_connectivity/plot_extract_regions_dictlearning_maps.py
-    :start-after: # object and fit the model to the functional datasets
+    :start-after: # functional datasets
     :end-before: # Visualization of functional networks
 
 .. currentmodule:: nilearn.plotting
@@ -58,7 +58,7 @@ necessarily converting each file to Nifti1Image object.
 Visualization of :term:`Dictionary learning` maps
 =================================================
 
-Showing maps stored in components_img using nilearn plotting utilities.
+Showing maps stored in ``components_img`` using nilearn plotting utilities.
 Here, we use :func:`plot_prob_atlas` for easy visualization of 4D atlas maps
 onto the anatomical standard template. Each map is displayed in different
 color and colors are random and automatically picked.
@@ -67,9 +67,11 @@ color and colors are random and automatically picked.
     :start-after: # Show networks using plotting utilities
     :end-before: ################################################################################
 
-.. image:: ../auto_examples/03_connectivity/images/sphx_glr_plot_extract_regions_dictlearning_maps_001.png
+.. |dict-maps| image:: ../auto_examples/03_connectivity/images/sphx_glr_plot_extract_regions_dictlearning_maps_001.png
     :target: ../auto_examples/03_connectivity/plot_extract_regions_dictlearning_maps.html
-    :scale: 60
+    :scale: 80
+
+.. centered:: |dict-maps|
 
 .. currentmodule:: nilearn.regions
 
@@ -78,23 +80,24 @@ Region Extraction with :term:`Dictionary learning` maps
 
 We use object :class:`RegionExtractor` for extracting brain connected regions
 from dictionary maps into separated brain activation regions with automatic
-thresholding strategy selected as thresholding_strategy='ratio_n_voxels'. We use
-thresholding strategy to first get foreground information present in the maps and
-then followed by robust region extraction on foreground information using
-Random Walker algorithm selected as extractor='local_regions'.
+thresholding strategy selected as ``thresholding_strategy='ratio_n_voxels'``.
+We use thresholding strategy to first get foreground information present in the
+maps and then followed by robust region extraction on foreground information using
+Random Walker algorithm selected as ``extractor='local_regions'``.
 
-Here, we control foreground extraction using parameter threshold=.5, which
-represents the expected proportion of voxels included in the regions
+Here, we control foreground extraction using parameter ``threshold=.5``, which
+represents the expected proportion of :term:`voxels<voxel>` included in the regions
 (i.e. with a non-zero value in one of the maps). If you need to keep more
-proportion of voxels then threshold should be tweaked according to the maps data.
+proportion of :term:`voxels<voxel>` then threshold should be tweaked according to
+the maps data.
 
-The parameter min_region_size=1350 mm^3 is to keep the minimum number of extracted
-regions. We control the small spurious regions size by thresholding in voxel units
-to adapt well to the resolution of the image. Please see the documentation of
-nilearn.regions.connected_regions for more details.
+The parameter ``min_region_size=1350 mm^3`` is to keep the minimum number of extracted
+regions. We control the small spurious regions size by thresholding in :term:`voxel`
+units to adapt well to the resolution of the image. Please see the documentation of
+:func:`~nilearn.regions.connected_regions` for more details.
 
 .. literalinclude:: ../../examples/03_connectivity/plot_extract_regions_dictlearning_maps.py
-    :start-after: # maps, less the threshold means that more intense non-voxels will be survived.
+    :start-after: # more intense non-voxels will be survived.
     :end-before: # Visualization of region extraction results
 
 .. currentmodule:: nilearn.plotting
@@ -102,7 +105,7 @@ nilearn.regions.connected_regions for more details.
 Visualization of Region Extraction results
 ==========================================
 
-Showing region extraction results. The same :func:`plot_prob_atlas` is used
+Showing region extraction results. The same function :func:`plot_prob_atlas` is used
 for visualizing extracted regions on a standard template. Each extracted brain
 region is assigned a color and as you can see that visual cortex area is extracted
 quite nicely into each hemisphere.
@@ -111,9 +114,11 @@ quite nicely into each hemisphere.
     :start-after: # Visualization of region extraction results
     :end-before: ################################################################################
 
-.. image:: ../auto_examples/03_connectivity/images/sphx_glr_plot_extract_regions_dictlearning_maps_002.png
+.. |dict| image:: ../auto_examples/03_connectivity/images/sphx_glr_plot_extract_regions_dictlearning_maps_002.png
     :target: ../auto_examples/03_connectivity/plot_extract_regions_dictlearning_maps.html
-    :scale: 60
+    :scale: 80
+
+.. centered:: |dict|
 
 .. currentmodule:: nilearn.connectome
 
@@ -124,12 +129,13 @@ Here, we use the object called :class:`ConnectivityMeasure` to compute
 functional connectivity measured between each extracted brain regions. Many different
 kinds of measures exists in nilearn such as "correlation", "partial correlation", "tangent",
 "covariance", "precision". But, here we show how to compute only correlations by
-selecting parameter as kind='correlation' as initialized in the object.
+selecting parameter as ``kind='correlation'`` as initialized in the object.
 
 The first step to do is to extract subject specific time series signals using
-functional data stored in func_filenames and the second step is to call fit_tranform()
-on the time series signals. Here, for each subject we have time series signals of
-shape=(176, 23) where 176 is the length of time series and 23 is the number of
+functional data stored in ``func_filenames`` and the second step is to call
+:meth:`ConnectivityMeasure.fit_transform` on the time series signals.
+Here, for each subject we have time series signals of ``shape=(168, n_regions_extracted)``
+where 168 is the length of time series and ``n_regions_extracted`` is the number of
 extracted regions. Likewise, we have a total of 20 subject specific time series signals.
 The third step, we compute the mean correlation across all subjects.
 
@@ -149,7 +155,7 @@ Left image is the correlations in a matrix form and right image is the
 connectivity relations to brain regions plotted using :func:`plot_connectome`
 
 .. literalinclude:: ../../examples/03_connectivity/plot_extract_regions_dictlearning_maps.py
-    :start-after: # Plot resulting connectomes
+    :start-after: # connectome relations.
     :end-before: ################################################################################
 
 .. |matrix| image:: ../auto_examples/03_connectivity/images/sphx_glr_plot_extract_regions_dictlearning_maps_003.png
@@ -165,25 +171,30 @@ connectivity relations to brain regions plotted using :func:`plot_connectome`
 Validating results
 ==================
 
-Showing only one specific network regions before and after region extraction.
+Showing only one specific network regions before and after region extraction. The first image displays the regions of one specific functional network without region extraction. 
 
-Left image displays the regions of one specific functional network without region extraction
-and right image displays the regions split apart after region extraction. Here, we can
+.. literalinclude:: ../../examples/03_connectivity/plot_extract_regions_dictlearning_maps.py
+    :start-after: # region extraction (left plot).
+    :end-before: ################################################################################
+
+.. |dmn| image:: ../auto_examples/03_connectivity/images/sphx_glr_plot_extract_regions_dictlearning_maps_005.png
+   :target: ../auto_examples/03_connectivity/plot_extract_regions_dictlearning_maps.html
+   :scale: 80
+
+.. centered:: |dmn|
+
+The second image displays the regions split apart after region extraction. Here, we can
 validate that regions are nicely separated identified by each extracted region in different
 color.
 
 .. literalinclude:: ../../examples/03_connectivity/plot_extract_regions_dictlearning_maps.py
-    :start-after: # First, we plot a network of index=4 without region extraction
-
-.. |dmn| image:: ../auto_examples/03_connectivity/images/sphx_glr_plot_extract_regions_dictlearning_maps_005.png
-   :target: ../auto_examples/03_connectivity/plot_extract_regions_dictlearning_maps.html
-   :scale: 50
+    :start-after: # network given as 4.
 
 .. |dmn_reg| image:: ../auto_examples/03_connectivity/images/sphx_glr_plot_extract_regions_dictlearning_maps_006.png
    :target: ../auto_examples/03_connectivity/plot_extract_regions_dictlearning_maps.html
-   :scale: 50
+   :scale: 80
 
-.. centered:: |dmn| |dmn_reg|
+.. centered:: |dmn_reg|
 
 .. seealso::
 
