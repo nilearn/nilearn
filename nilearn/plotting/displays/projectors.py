@@ -38,18 +38,18 @@ class OrthoProjector(OrthoSlicer):
                   edge_threshold=None,
                   edge_kwargs=None, node_kwargs=None, colorbar=False,
                   ):
-        """Plot undirected graph on each of the axes
+        """Plot undirected graph on each of the axes.
 
         Parameters
         ----------
-        adjacency_matrix : numpy array of shape (n, n)
+        adjacency_matrix : :class:`numpy.ndarray` of shape ``(n, n)``
             Represents the edges strengths of the graph.
             The matrix can be symmetric which will result in
             an undirected graph, or not symmetric which will
             result in a directed graph.
 
-        node_coords : numpy array_like of shape (n, 3)
-            3d coordinates of the graph nodes in world space.
+        node_coords : :class:`numpy.ndarray` of shape ``(n, 3)``
+            3D coordinates of the graph nodes in world space.
 
         node_color : color or sequence of colors, optional
             Color(s) of the nodes. Default='auto'.
@@ -57,31 +57,32 @@ class OrthoProjector(OrthoSlicer):
         node_size : scalar or array_like, optional
             Size(s) of the nodes in points^2. Default=50.
 
-        edge_cmap : colormap, optional
+        edge_cmap : :class:`~matplotlib.colors.Colormap`, optional
             Colormap used for representing the strength of the edges.
             Default=cm.bwr.
 
-        edge_vmin, edge_vmax : float, optional
-            If not None, either or both of these values will be used to
-            as the minimum and maximum values to color edges. If None are
-            supplied the maximum absolute value within the given threshold
-            will be used as minimum (multiplied by -1) and maximum
-            coloring levels.
+        edge_vmin, edge_vmax : :obj:`float`, optional
+            - If not ``None``, either or both of these values will be used
+              to as the minimum and maximum values to color edges.
+            - If ``None`` are supplied, the maximum absolute value within the
+              given threshold will be used as minimum (multiplied by -1) and
+              maximum coloring levels.
 
-        edge_threshold : str or number, optional
-            If it is a number only the edges with a value greater than
-            edge_threshold will be shown.
-            If it is a string it must finish with a percent sign,
-            e.g. "25.3%", and only the edges with a abs(value) above
-            the given percentile will be shown.
+        edge_threshold : :obj:`str` or :obj:`int` or :obj:`float`, optional
+            - If it is a number only the edges with a value greater than
+              ``edge_threshold`` will be shown.
+            - If it is a string it must finish with a percent sign,
+              e.g. "25.3%", and only the edges with a abs(value) above
+              the given percentile will be shown.
 
-        edge_kwargs : dict, optional
-            Will be passed as kwargs for each edge matlotlib Line2D.
+        edge_kwargs : :obj:`dict`, optional
+            Will be passed as kwargs for each edge
+            :class:`~matlotlib.lines.Line2D`.
 
-        node_kwargs : dict
-            Will be passed as kwargs to the plt.scatter call that plots all
-            the nodes in one go.
-
+        node_kwargs : :obj:`dict`
+            Will be passed as kwargs to the function
+            :func:`~matplotlib.pyplot.scatter` which plots all the
+            nodes at one.
         """
         # set defaults
         if edge_kwargs is None:
@@ -291,5 +292,49 @@ PROJECTORS = dict(ortho=OrthoProjector,
 
 
 def get_projector(display_mode):
-    "Internal function to retrieve a projector"
+    """Retrieve a projector from a given display mode.
+    
+    Parameters
+    ----------
+    display_mode : {"ortho", "xz", "yz", "yx", "x", "y",\
+    "z", "lzry", "lyrz", "lyr", "lzr", "lr", "l", "r"}
+        The desired display mode.
+    
+    Returns
+    -------
+    projector : :class:`~nilearn.plotting.displays.OrthoProjector`\
+    or instance of derived classes
+
+        The projector corresponding to the requested display mode:
+        
+            - "ortho": Returns an
+              :class:`~nilearn.plotting.displays.OrthoProjector`.
+            - "xz": Returns a
+              :class:`~nilearn.plotting.displays.XZProjector`.
+            - "yz": Returns a
+              :class:`~nilearn.plotting.displays.YZProjector`.
+            - "yx": Returns a
+              :class:`~nilearn.plotting.displays.YXProjector`.
+            - "x": Returns a
+              :class:`~nilearn.plotting.displays.XProjector`.
+            - "y": Returns a
+              :class:`~nilearn.plotting.displays.YProjector`.
+            - "z": Returns a
+              :class:`~nilearn.plotting.displays.ZProjector`.
+            - "lzry": Returns a
+              :class:`~nilearn.plotting.displays.LZRYProjector`.
+            - "lyrz": Returns a
+              :class:`~nilearn.plotting.displays.LYRZProjector`.
+            - "lyr": Returns a
+              :class:`~nilearn.plotting.displays.LYRProjector`.
+            - "lzr": Returns a
+              :class:`~nilearn.plotting.displays.LZRProjector`.
+            - "lr": Returns a
+              :class:`~nilearn.plotting.displays.LRProjector`.
+            - "l": Returns a
+              :class:`~nilearn.plotting.displays.LProjector`.
+            - "z": Returns a
+              :class:`~nilearn.plotting.displays.RProjector`.
+    
+    """
     return _get_create_display_fun(display_mode, PROJECTORS)
