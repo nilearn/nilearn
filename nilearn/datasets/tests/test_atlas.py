@@ -342,7 +342,9 @@ def _destrieux_data(n_labels=10):
 
 @pytest.mark.parametrize("n_labels", [10, 11])
 @pytest.mark.parametrize("lateralized", [True, False])
-def test_fetch_atlas_destrieux_2009(tmp_path, request_mocker, n_labels, lateralized):  # noqa
+@pytest.mark.parametrize("clean_labels", [True, False])
+def test_fetch_atlas_destrieux_2009(tmp_path, request_mocker, n_labels,
+                                    lateralized, clean_labels):
     """Tests for function `fetch_atlas_destrieux_2009`.
     The atlas is fetched with different combinations of `lateralized`
     and `n_labels`. In the case `n_labels=11`, the fetcher should be able
@@ -352,7 +354,8 @@ def test_fetch_atlas_destrieux_2009(tmp_path, request_mocker, n_labels, laterali
         n_labels=n_labels
     )
     bunch = atlas.fetch_atlas_destrieux_2009(
-        lateralized=lateralized, data_dir=tmp_path, verbose=0
+        lateralized=lateralized, data_dir=tmp_path,
+        verbose=0, clean_labels=clean_labels
     )
     assert request_mocker.url_count == 1
     name = '_lateralized' if lateralized else ""
@@ -361,7 +364,10 @@ def test_fetch_atlas_destrieux_2009(tmp_path, request_mocker, n_labels, laterali
     )
     labels_img = set(np.unique(get_data(bunch.maps)))
     labels = set([label.index for label in bunch.labels])
-    assert labels_img == labels
+    if clean_labels:
+        assert labels_img == labels
+    else:
+        assert labels_img.issubset(labels)
 
 
 def test_fetch_atlas_msdl(tmp_path, request_mocker):
