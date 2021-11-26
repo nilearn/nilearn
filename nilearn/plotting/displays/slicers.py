@@ -89,8 +89,8 @@ class BaseSlicer(object):
         # subclassing
         raise NotImplementedError
 
-    @fill_doc
     @classmethod
+    @fill_doc
     def init_with_figure(cls, img, threshold=None,
                          cut_coords=None, figure=None, axes=None,
                          black_bg=False, leave_space=False, colorbar=False,

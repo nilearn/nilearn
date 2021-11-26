@@ -1,5 +1,8 @@
 """
-Bl
+Display objects and utilities.
+
+These objects are returned by plotting functions
+from the :mod:`~nilearn.plotting` module.
 """
 
 from .axes import BaseAxes, CutAxes, GlassBrainAxes
