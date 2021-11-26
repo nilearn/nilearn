@@ -195,6 +195,7 @@ def _plot_surf_plotly(coords, faces, surf_map=None, bg_map=None,
     """
     try:
         import plotly.graph_objects as go
+        from nilearn.plotting.displays import PlotlySurfaceFigure
     except ImportError:
         msg = "Using engine='plotly' requires that ``plotly`` is installed."
         raise ImportError(msg)  # noqa
@@ -246,8 +247,10 @@ def _plot_surf_plotly(coords, faces, surf_map=None, bg_map=None,
             msg = ("Saving figures to file with engine='plotly' requires "
                    "that ``kaleido`` is installed.")
             raise ImportError(msg)  # noqa
-        fig.write_image(output_file)
-    return fig
+    plotly_figure = PlotlySurfaceFigure(figure=fig, output_file=output_file)
+    if output_file is not None:
+        plotly_figure.savefig()
+    return plotly_figure
 
 
 def _set_view_plot_surf_matplotlib(hemi, view):
@@ -516,11 +519,10 @@ def _plot_surf_matplotlib(coords, faces, surf_map=None, bg_map=None,
 
     if title is not None:
         figure.suptitle(title, x=.5, y=.95, fontsize=title_font_size)
-
     # save figure if output file is given
     if output_file is not None:
         figure.savefig(output_file)
-        plt.close(figure)
+        plt.close()
     else:
         return figure
 
@@ -670,6 +672,16 @@ def plot_surf(surf_mesh, surf_map=None, bg_map=None,
         .. note::
             This option is currently only implemented for the
             ``matplotlib`` engine.
+
+    Returns
+    -------
+    fig : :class:`~matplotlib.figure.Figure` or\
+    :class:`~nilearn.plotting.displays.PlotlySurfaceFigure`
+        The surface figure. If ``engine='matplotlib'`` then a
+        :class:`~matplotlib.figure.Figure` is returned.
+        If ``engine='plotly'``, then a
+        :class:`~nilearn.plotting.displays.PlotlySurfaceFigure`
+        is returned
 
     See Also
     --------

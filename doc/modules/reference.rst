@@ -398,6 +398,7 @@ the :ref:`user guide <user_guide>` for more information and usage examples.
    :template: class.rst
 
    OrthoSlicer
+   PlotlySurfaceFigure
 
 
 .. _signal_ref:

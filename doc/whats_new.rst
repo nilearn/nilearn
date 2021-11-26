@@ -27,6 +27,12 @@ NEW
   Note that this functionality is still experimental, and that some capabilities
   supported by our matplotlib engine are not yet supported by the plotly engine.
   (See PR `#2902 <https://github.com/nilearn/nilearn/pull/2902>`_).
+- When using the `plotly` engine, surface plotting functions derived from
+  :func:`~nilearn.plotting.plot_surf` return a new display object, a
+  :class:`~nilearn.plotting.displays.PlotlySurfaceFigure`, which provides a
+  similar interface to the :class:`~matplotlib.figure.Figure` returned with the
+  `matplotlib` engine.
+  (See PR `#3036 <https://github.com/nilearn/nilearn/pull/3036>`_).
 
 Fixes
 -----

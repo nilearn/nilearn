@@ -2,10 +2,11 @@
 Making a surface plot of a 3D statistical map
 =============================================
 
-project a 3D statistical map onto a cortical mesh using
-:func:`nilearn.surface.vol_to_surf`. Display a surface plot of the projected
-map using :func:`nilearn.plotting.plot_surf_stat_map` and adding contours of
-regions of interest using :func:`nilearn.plotting.plot_surf_contours`.
+In this example, we will project a 3D statistical map onto a cortical mesh
+using :func:`~nilearn.surface.vol_to_surf`, display a surface plot of the
+projected map using :func:`~nilearn.plotting.plot_surf_stat_map` with
+different plotting engines, and add contours of regions of interest using
+:func:`~nilearn.plotting.plot_surf_contours`.
 
 """
 
@@ -36,12 +37,58 @@ texture = surface.vol_to_surf(stat_img, fsaverage.pial_right)
 ##############################################################################
 # Plot the result
 # ---------------
+#
+# You can visualize the texture on the surface using the function
+# :func:`~nilearn.plotting.plot_surf_stat_map` which uses ``matplotlib``
+# as the default plotting engine:
 
 from nilearn import plotting
 
-plotting.plot_surf_stat_map(fsaverage.infl_right, texture, hemi='right',
-                            title='Surface right hemisphere', colorbar=True,
-                            threshold=1., bg_map=fsaverage.sulc_right)
+fig = plotting.plot_surf_stat_map(
+    fsaverage.infl_right, texture, hemi='right',
+    title='Surface right hemisphere', colorbar=True,
+    threshold=1., bg_map=fsaverage.sulc_right
+)
+fig.show()
+
+##############################################################################
+# Interactive plotting with Plotly
+# --------------------------------
+#
+# If you have a recent version of Nilearn (>=0.8.2), and if you have
+# ``plotly`` installed, you can easily configure
+# :func:`~nilearn.plotting.plot_surf_stat_map` to use ``plotly`` instead
+# of ``matplotlib``:
+
+engine = 'plotly'
+# If plotly is not installed, use matplotlib
+try:
+    import plotly.graph_objects as go  # noqa
+except ImportError:
+    engine = 'matplotlib'
+
+print(f"Using plotting engine {engine}.")
+
+fig = plotting.plot_surf_stat_map(
+    fsaverage.infl_right, texture, hemi='right',
+    title='Surface right hemisphere', colorbar=True,
+    threshold=1., bg_map=fsaverage.sulc_right,
+    engine=engine  # Specify the plotting engine here
+)
+fig.show()  # Display the figure as with matplotlib figures
+
+##############################################################################
+# When using ``matplolib`` as the plotting engine, a standard
+# :class:`matplotlib.figure.Figure` is returned. With ``plotly`` as the
+# plotting engine, a custom
+# :class:`~nilearn.plotting.displays.PlotlySurfaceFigure` is returned which
+# provides a similar API to the :class:`~matplotlib.figure.Figure`.
+# For example, you can save a static version of the figure to file (this
+# option requires to have ``kaleido`` installed):
+
+# Save the figure as we would do with a matplotlib figure
+# Uncomment the following line to save the previous figure to file
+# fig.savefig("right_hemisphere.png")
 
 ##############################################################################
 # Plot 3D image for comparison
@@ -90,10 +137,10 @@ plotting.show()
 # Plot with higher-resolution mesh
 # --------------------------------
 #
-# `fetch_surf_fsaverage` takes a "mesh" argument which specifies
-# whether to fetch the low-resolution fsaverage5 mesh, or the high-resolution
-# fsaverage mesh. using mesh="fsaverage" will result in more memory usage and
-# computation time, but finer visualizations.
+# :func:`~nilearn.datasets.fetch_surf_fsaverage` takes a ``mesh`` argument
+# which specifies whether to fetch the low-resolution ``fsaverage5`` mesh, or
+# the high-resolution fsaverage mesh. Using ``mesh="fsaverage"`` will result
+# in more memory usage and computation time, but finer visualizations.
 
 big_fsaverage = datasets.fetch_surf_fsaverage('fsaverage')
 big_texture = surface.vol_to_surf(stat_img, big_fsaverage.pial_right)
@@ -108,11 +155,11 @@ plotting.plot_surf_stat_map(big_fsaverage.infl_right,
 # Plot multiple views of the 3D volume on a surface
 # -------------------------------------------------
 #
-# *plot_img_on_surf* takes a statistical map and projects it onto a surface.
-# It supports multiple choices of orientations, and can plot either one or both
-# hemispheres. If no *surf_mesh* is given, *plot_img_on_surf* projects the
-# images onto `FreeSurfer <https://surfer.nmr.mgh.harvard.edu/>`_\'s
-# fsaverage5.
+# :func:`~nilearn.plotting.plot_img_on_surf` takes a statistical map and
+# projects it onto a surface. It supports multiple choices of orientations,
+# and can plot either one or both hemispheres. If no ``surf_mesh`` is given,
+# :func:`~nilearn.plotting.plot_img_on_surf` projects the images onto
+# `FreeSurfer <https://surfer.nmr.mgh.harvard.edu/>`_\'s fsaverage5.
 
 plotting.plot_img_on_surf(stat_img,
                           views=['lateral', 'medial'],
@@ -123,6 +170,7 @@ plotting.show()
 ##############################################################################
 # 3D visualization in a web browser
 # ---------------------------------
+#
 # An alternative to :func:`nilearn.plotting.plot_surf_stat_map` is to use
 # :func:`nilearn.plotting.view_surf` or
 # :func:`nilearn.plotting.view_img_on_surf` that give more interactive
@@ -142,7 +190,8 @@ view
 # view.open_in_browser()
 
 ##############################################################################
-# We don't need to do the projection ourselves, we can use view_img_on_surf:
+# We don't need to do the projection ourselves, we can use
+# :func:`~nilearn.plotting.view_img_on_surf`:
 
 view = plotting.view_img_on_surf(stat_img, threshold='90%')
 # view.open_in_browser()
@@ -152,6 +201,7 @@ view
 ##############################################################################
 # Impact of plot parameters on visualization
 # ------------------------------------------
+#
 # You can specify arguments to be passed on to the function
 # :func:`nilearn.surface.vol_to_surf` using `vol_to_surf_kwargs`. This allows
 # fine-grained control of how the input 3D image is resampled and interpolated -
