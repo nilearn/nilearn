@@ -77,7 +77,7 @@ class OrthoProjector(OrthoSlicer):
 
         edge_kwargs : :obj:`dict`, optional
             Will be passed as kwargs for each edge
-            :class:`~matlotlib.lines.Line2D`.
+            :class:`~matplotlib.lines.Line2D`.
 
         node_kwargs : :obj:`dict`
             Will be passed as kwargs to the function
