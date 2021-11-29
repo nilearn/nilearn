@@ -21,6 +21,8 @@ from .slicers import (
     ZSlicer, get_slicer,
 )
 
+from .figures import SurfaceFigure, PlotlySurfaceFigure
+
 __all__ = ["BaseAxes", "CutAxes", "GlassBrainAxes",
            "OrthoProjector", "XZProjector", "YZProjector",
            "YXProjector", "XProjector", "YProjector", "ZProjector",
@@ -28,4 +30,5 @@ __all__ = ["BaseAxes", "CutAxes", "GlassBrainAxes",
            "LZRProjector", "LRProjector", "LProjector", "RProjector",
            "OrthoSlicer", "TiledSlicer", "MosaicSlicer", "BaseSlicer",
            "XZSlicer", "YZSlicer", "YXSlicer", "XSlicer", "YSlicer",
-           "ZSlicer", "get_projector", "get_slicer"]
+           "ZSlicer", "get_projector", "get_slicer", "SurfaceFigure",
+           "PlotlySurfaceFigure"]
