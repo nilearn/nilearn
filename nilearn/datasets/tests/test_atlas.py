@@ -370,6 +370,19 @@ def test_fetch_atlas_destrieux_2009(tmp_path, request_mocker, n_labels,
         assert labels_img.issubset(labels)
 
 
+def test_fetch_atlas_destrieux_2009_warning_clean_labels(request_mocker):
+    """Tests that ``fetch_atlas_destrieux_2009`` gives a FutureWarning
+    when ``clean_labels`` isn't specified explicitely.
+    """
+    request_mocker.url_mapping["*destrieux2009.tgz"] = _destrieux_data()
+    with pytest.warns(FutureWarning,
+                      match=("Default value for parameter `clean_labels` "
+                             "will change from ``False`` to ``True`` "
+                             "in Nilearn 0.10.")):
+        bunch = atlas.fetch_atlas_destrieux_2009()
+    assert request_mocker.url_count == 1
+
+
 def test_fetch_atlas_msdl(tmp_path, request_mocker):
     labels = pd.DataFrame(
         {"x": [1.5, 1.2], "y": [1.5, 1.3],
