@@ -98,4 +98,3 @@ class PlotlySurfaceFigure(SurfaceFigure):
         self._check_output_file(output_file=output_file)
         if self.figure is not None:
             self.figure.write_image(self.output_file)
-
