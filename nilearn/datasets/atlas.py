@@ -197,7 +197,7 @@ def _clean_labels(image, labels):
 
 @fill_doc
 def fetch_atlas_destrieux_2009(lateralized=True, data_dir=None, url=None,
-                               resume=True, verbose=1, clean_labels=False):
+                               resume=True, verbose=1, clean_labels=None):
     """Download and load the Destrieux cortical atlas (dated 2009).
 
     See :footcite:`Fischl2004Automatically`,
@@ -239,6 +239,11 @@ def fetch_atlas_destrieux_2009(lateralized=True, data_dir=None, url=None,
     .. footbibliography::
 
     """
+    if clean_labels is None:
+        warnings.warn("Default value for parameter `clean_labels` will "
+                      "change from ``False`` to ``True`` in Nilearn 0.10.",
+                      category=FutureWarning)
+        clean_labels = False
     if url is None:
         url = "https://www.nitrc.org/frs/download.php/11942/"
 
