@@ -41,9 +41,18 @@ print('First subject resting-state nifti image (4D) is located at: %s' %
 from nilearn.input_data import NiftiMapsMasker
 masker = NiftiMapsMasker(maps_img=atlas_filename, standardize=True,
                          memory='nilearn_cache', verbose=5)
+masker.fit(data.func[0])
+time_series = masker.transform(data.func[0],
+                               confounds=data.confounds)
 
-time_series = masker.fit_transform(data.func[0],
-                                   confounds=data.confounds)
+############################################################################
+# We can generate an HTML report and visualize the components of the
+# :class:`~nilearn.input_data.NiftiMapsMasker`.
+# You can pass the indices of the spatial maps you want to include in the
+# report in the order you want them to appear.
+# Here, we only include maps 2, 6, 7, 16, and 21 in the report:
+report = masker.generate_report(displayed_maps=[2, 6, 7, 16, 21])
+report
 
 ############################################################################
 # `time_series` is now a 2D matrix, of shape (number of time points x

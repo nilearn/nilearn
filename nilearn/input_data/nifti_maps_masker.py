@@ -3,6 +3,7 @@ Transformer for computing ROI signals.
 """
 
 import numpy as np
+import warnings
 from joblib import Memory
 
 from .. import _utils
@@ -121,6 +122,10 @@ class NiftiMapsMasker(BaseMasker, CacheMixin):
         Indicate the level of verbosity. By default, nothing is printed.
         Default=0.
 
+    reports : boolean, optional
+        If set to True, data is saved in order to produce a report.
+        Default=True.
+
     Notes
     -----
     If resampling_target is set to "maps", every 3D image processed by
@@ -141,7 +146,7 @@ class NiftiMapsMasker(BaseMasker, CacheMixin):
                  detrend=False, low_pass=None, high_pass=None, t_r=None,
                  dtype=None, resampling_target="data",
                  memory=Memory(location=None, verbose=0), memory_level=0,
-                 verbose=0):
+                 verbose=0, reports=True):
         self.maps_img = maps_img
         self.mask_img = mask_img
 
@@ -169,6 +174,13 @@ class NiftiMapsMasker(BaseMasker, CacheMixin):
         self.memory_level = memory_level
         self.verbose = verbose
 
+        self.reports = reports
+        self.report_id = -1
+        self._report_content = dict()
+        self._report_content['description'] = (
+            'This reports shows the spatial maps provided to the mask.')
+        self._report_content['warning_message'] = None
+
         if resampling_target not in ("mask", "maps", "data", None):
             raise ValueError("invalid value for 'resampling_target'"
                              " parameter: " + str(resampling_target))
@@ -179,7 +191,141 @@ class NiftiMapsMasker(BaseMasker, CacheMixin):
                 "has been provided.\nSet resampling_target to something else"
                 " or provide a mask.")
 
-    def fit(self, X=None, y=None):
+    def generate_report(self, displayed_maps=10):
+        """Generate an HTML report for the current ``NiftiMapsMasker`` object.
+
+        .. note::
+            This functionality requires to have ``Matplotlib`` installed.
+
+        Parameters
+        ----------
+        displayed_maps : :obj:`int`, or :obj:`list`,\
+        or :class:`~numpy.ndarray`, or "all", optional
+            Indicates which maps will be displayed in the HTML report.
+
+                - If "all": All maps will be displayed in the report.
+
+                .. code-block:: python
+
+                    masker.generate_report("all")
+
+                .. warning:
+                    If there are too many maps, this might be time and
+                    memory consuming, and will result in very heavy
+                    reports.
+
+                - If a :obj:`list` or :class:`~numpy.ndarray`: This indicates
+                  the indices of the maps to be displayed in the report. For
+                  example, the following code will generate a report with maps
+                  6, 3, and 12, displayed in this specific order:
+
+                .. code-block:: python
+
+                    masker.generate_report([6, 3, 12])
+
+                - If an :obj:`int`: This will only display the first n maps,
+                  n being the value of the parameter. By default, the report
+                  will only contain the first 10 maps. Example to display the
+                  first 16 maps:
+
+                .. code-block:: python
+
+                    masker.generate_report(16)
+
+            Default=10.
+
+        Returns
+        -------
+        report : `nilearn.reporting.html_report.HTMLReport`
+            HTML report for the masker.
+        """
+        from nilearn.reporting.html_report import generate_report
+        if(displayed_maps != "all"
+           and not isinstance(displayed_maps, (list, np.ndarray, int))):
+            raise TypeError("Parameter ``displayed_maps`` of "
+                            "``generate_report()`` should be either 'all' or "
+                            "an int, or a list/array of ints. You provided a "
+                            f"{type(displayed_maps)}")
+        self.displayed_maps = displayed_maps
+        self.report_id += 1
+        return generate_report(self)
+
+    def _reporting(self):
+        """
+        Returns
+        -------
+        displays : list
+            A list of all displays to be rendered.
+
+        """
+        from nilearn.reporting.html_report import _embed_img
+        from nilearn import plotting
+        if self._reporting_data is not None:
+            maps_image = self._reporting_data['maps_image']
+        else:
+            maps_image = None
+
+        if maps_image is not None:
+            n_maps = image.get_data(maps_image).shape[-1]
+            maps_to_be_displayed = range(n_maps)
+            if isinstance(self.displayed_maps, int):
+                if n_maps < self.displayed_maps:
+                    msg = ("`generate_report()` received "
+                           f"{self.displayed_maps} to be displayed. "
+                           f"But masker only has {n_maps} maps."
+                           f"Setting number of displayed maps to {n_maps}.")
+                    warnings.warn(category=UserWarning, message=msg)
+                    self.displayed_maps = n_maps
+                maps_to_be_displayed = range(self.displayed_maps)
+            elif isinstance(self.displayed_maps, (list, np.ndarray)):
+                if max(self.displayed_maps) > n_maps:
+                    raise ValueError("Report cannot display the "
+                                     "following maps "
+                                     f"{self.displayed_maps} because "
+                                     f"masker only has {n_maps} maps.")
+                maps_to_be_displayed = self.displayed_maps
+            self._report_content['report_id'] = self.report_id
+            self._report_content['number_of_maps'] = n_maps
+            self._report_content['displayed_maps'] = list(maps_to_be_displayed)
+            img = self._reporting_data['img']
+            embeded_images = []
+            if img is not None:
+                dim = image.load_img(img).shape
+                if len(dim) == 4:
+                    # compute middle image from 4D series for plotting
+                    img = image.index_img(img, dim[-1] // 2)
+                # Find the cut coordinates
+                cut_coords = [plotting.find_xyz_cut_coords(
+                    image.index_img(
+                        maps_image, i)) for i in maps_to_be_displayed]
+                for idx, component in enumerate(maps_to_be_displayed):
+                    display = plotting.plot_img(
+                        img, cut_coords=cut_coords[idx],
+                        black_bg=False, cmap='CMRmap_r'
+                    )
+                    display.add_overlay(
+                        image.index_img(maps_image, idx),
+                        cmap=plotting.cm.black_blue
+                    )
+                    embeded_images.append(_embed_img(display))
+                    display.close()
+                return embeded_images
+            else:
+                msg = ("No image provided to fit in NiftiMapsMasker. "
+                       "Plotting only spatial maps for reporting.")
+                warnings.warn(msg)
+                self._report_content['warning_message'] = msg
+                for component in maps_to_be_displayed:
+                    display = plotting.plot_stat_map(
+                        image.index_img(maps_image, component)
+                    )
+                    embeded_images.append(_embed_img(display))
+                    display.close()
+                return embeded_images
+        else:
+            return [None]
+
+    def fit(self, imgs=None, y=None):
         """Prepare signal extraction from regions.
 
         All parameters are unused, they are for scikit-learn compatibility.
@@ -227,6 +373,13 @@ class NiftiMapsMasker(BaseMasker, CacheMixin):
                 target_shape=self.maps_img_.shape[:3],
                 interpolation="nearest",
                 copy=True)
+
+        if self.reports:
+            self._reporting_data = {'maps_image': self.maps_img_,
+                                    'mask': self.mask_img_,
+                                    'img': imgs}
+        else:
+            self._reporting_data = None
 
         return self
 
