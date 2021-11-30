@@ -354,7 +354,7 @@ display.annotate(scalebar=True, scale_size=25, scale_units='mm')
 # Finally, we can save a plot to file in two different ways:
 #
 # First, we can save the contrast maps plotted with the function
-# :func:`nilearn.plotting.plot_stat_map` using the inbuilt parameter
+# :func:`nilearn.plotting.plot_stat_map` using the built-in parameter
 # ``output_file``. We provide the filename and the file extension as
 # a string (supported extensions are .png, .pdf, .svg).
 
