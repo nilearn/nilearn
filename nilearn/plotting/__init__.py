@@ -2,9 +2,8 @@
 Plotting code for nilearn
 """
 # Original Authors: Chris Filo Gorgolewski, Gael Varoquaux
-import os
-import sys
 import importlib
+import warnings
 
 
 ###############################################################################
@@ -29,13 +28,16 @@ def _set_mpl_backend():
                                           OPTIONAL_MATPLOTLIB_MIN_VERSION)
         current_backend = matplotlib.get_backend().lower()
 
-        if 'inline' in current_backend or 'nbagg' in current_backend:
-            return
-        # Set the backend to a non-interactive one for unices without X
-        # (see gh-2560)
-        if (sys.platform not in ('darwin', 'win32') and
-                'DISPLAY' not in os.environ):
+        try:
+            matplotlib.use(current_backend)
+        except:
+            # If matplotlib.use throws an error, it means the desired backend
+            # is not compatible with the machine. We set it to default `agg`
+            warnings.warn('Matplotlib backend has been set to `agg` by Nilearn'
+                          'due to incompatibility between current backend and'
+                          'the machine.')
             matplotlib.use('Agg')
+
 
 
 _set_mpl_backend()
