@@ -59,6 +59,9 @@ Fixes
   :func:`nilearn.reporting.make_glm_report` was fixed accordingly.
   (See issue `#3034 <https://github.com/nilearn/nilearn/issues/3034>`_) and fix
   `#3035 <https://github.com/nilearn/nilearn/pull/3035>`_).
+- :func:`~nilearn.datasets.fetch_atlas_destrieux_2009` now returns only labels
+  present in the maps images.
+  (See PR `#3070 <https://github.com/nilearn/nilearn/pull/3070>`_).
 
 Enhancements
 ------------

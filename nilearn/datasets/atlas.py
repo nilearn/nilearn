@@ -181,27 +181,54 @@ def fetch_atlas_craddock_2012(data_dir=None, url=None, resume=True, verbose=1):
     return Bunch(**params)
 
 
+def _clean_labels(image, labels):
+    """Helper function removing labels that do not appear in the image."""
+    labels_in_img = set(np.unique(get_data(image)))
+    labels_set = set([label.index for label in labels])
+    diff = labels_set.difference(labels_in_img)
+    if len(diff) == 0:
+        return labels
+    cleaned_labels = np.array(
+        [label for label in labels if label.index not in diff],
+        dtype=[('index', '<i8'), ('name', 'S27')]
+    )
+    return cleaned_labels.view(np.recarray)
+
+
 @fill_doc
 def fetch_atlas_destrieux_2009(lateralized=True, data_dir=None, url=None,
-                               resume=True, verbose=1):
-    """Download and load the Destrieux cortical atlas (dated 2009)
+                               resume=True, verbose=1, clean_labels=None):
+    """Download and load the Destrieux cortical atlas (dated 2009).
 
-    see :footcite:`Fischl2004Automatically`,
+    See :footcite:`Fischl2004Automatically`,
     and :footcite:`Destrieux2009sulcal`.
+
+    .. note::
+
+        Some labels from the list of labels might not be present in the
+        atlas image, which can be an issue in some specific cases. In order
+        to clean the list of labels and keep only the ones present in the
+        image, use ``clean_labels=True``.
 
     Parameters
     ----------
-    lateralized : boolean, optional
+    lateralized : :obj:`bool`, optional
         If True, returns an atlas with distinct regions for right and left
         hemispheres. Default=True.
     %(data_dir)s
     %(url)s
     %(resume)s
     %(verbose)s
+    clean_labels : :obj:`bool`, optional
+        If set to ``True``, labels which do not appear in the image will
+        be removed from the list of labels.
+        Default=False.
+
+        .. versionadded:: 0.8.2
 
     Returns
     -------
-    data : sklearn.datasets.base.Bunch
+    data : :func:`sklearn.utils.Bunch`
         Dictionary-like object, contains:
 
         - Cortical ROIs, lateralized or not (maps)
@@ -212,6 +239,11 @@ def fetch_atlas_destrieux_2009(lateralized=True, data_dir=None, url=None,
     .. footbibliography::
 
     """
+    if clean_labels is None:
+        warnings.warn("Default value for parameter `clean_labels` will "
+                      "change from ``False`` to ``True`` in Nilearn 0.10.",
+                      category=FutureWarning)
+        clean_labels = False
     if url is None:
         url = "https://www.nitrc.org/frs/download.php/11942/"
 
@@ -236,6 +268,8 @@ def fetch_atlas_destrieux_2009(lateralized=True, data_dir=None, url=None,
     with open(files_[2], 'r') as rst_file:
         params['description'] = rst_file.read()
 
+    if clean_labels:
+        params['labels'] = _clean_labels(params['maps'], params['labels'])
     return Bunch(**params)
 
 
