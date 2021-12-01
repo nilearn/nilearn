@@ -18,11 +18,11 @@ from nilearn.datasets import load_mni152_template
 
 
 SLICER_KEYS = [
-    'ortho', 'tiled', 'x', 'y', 'z', 'yx', 'yz', 'mosaic'
+    'ortho', 'tiled', 'x', 'y', 'z', 'yx', 'yz', 'mosaic', 'xz'
 ]
 SLICERS = [
     OrthoSlicer, TiledSlicer, XSlicer, YSlicer, ZSlicer,
-    YXSlicer, YZSlicer, MosaicSlicer
+    YXSlicer, YZSlicer, MosaicSlicer, XZSlicer
 ]
 PROJECTOR_KEYS = [
     'ortho', 'xz', 'yz', 'yx', 'lyrz', 'lyr', 'lzr', 'lr', 'l', 'r'
@@ -43,10 +43,14 @@ def img():
 @pytest.fixture
 def cut_coords(name):
     """Selects appropriate cut coords."""
-    if name == 'mosaic': return 3
-    if name in ['yx', 'yz', 'xz']: return (0,) * 2
-    if name in ['lyrz', 'lyr', 'lzr']: return (0,)
-    if name in ['lr', 'l']: return (0,) * 4
+    if name == 'mosaic':
+        return 3
+    if name in ['yx', 'yz', 'xz']:
+        return (0,) * 2
+    if name in ['lyrz', 'lyr', 'lzr']:
+        return (0,)
+    if name in ['lr', 'l']:
+        return (0,) * 4
     return (0,) * 3
 
 
@@ -55,7 +59,7 @@ def cut_coords(name):
                              SLICER_KEYS + PROJECTOR_KEYS))
 def test_display_basics(display, name, img, cut_coords):
     """Basic smoke tests for all displays (slicers + projectors).
-    Each object is instanciated, ``add_overlay``, ``title``,
+    Each object is instantiated, ``add_overlay``, ``title``,
     and ``close`` are then called.
     """
     display = display(cut_coords=cut_coords)
@@ -68,10 +72,11 @@ def test_display_basics(display, name, img, cut_coords):
 
 
 @pytest.mark.parametrize("slicer",
-                         [XSlicer, YSlicer, ZSlicer, YXSlicer, YZSlicer])
+                         [XSlicer, YSlicer, ZSlicer,
+                          YXSlicer, YZSlicer, XZSlicer])
 def test_stacked_slicer(slicer, img, tmp_path):
     """Tests for saving to file with stacked slicers."""
-    cut_coords = (3, 3) if slicer in [YXSlicer, YZSlicer] else 3
+    cut_coords = 3 if slicer in [XSlicer, YSlicer, ZSlicer] else (3, 3)
     slicer = slicer.init_with_figure(img=img, cut_coords=cut_coords)
     slicer.add_overlay(img, cmap=plt.cm.gray)
     # Forcing a layout here, to test the locator code
