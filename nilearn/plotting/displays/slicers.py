@@ -684,10 +684,25 @@ class BaseSlicer(object):
 
 class OrthoSlicer(BaseSlicer):
     """A class to create 3 linked axes for plotting orthogonal
-    cuts of 3D maps.
+    cuts of 3D maps. This visualization mode can be activated
+    from Nilearn plotting functions, like
+    :func:`~nilearn.plotting.plot_img`, by setting
+    ``display_mode='ortho'``:
+
+     .. code-block:: python
+
+         from nilearn.datasets import load_mni152_template
+         from nilearn.plotting import plot_img
+         img = load_mni152_template()
+         # display is an instance of the OrthoSlicer class
+         display = plot_img(img, display_mode='ortho')
+
 
     Attributes
     ----------
+    cut_coords : :obj:`list`
+        The cut coordinates.
+
     axes : :obj:`dict` of :class:`~matplotlib.axes.Axes`
         The 3 axes used to plot each view.
 
@@ -698,6 +713,14 @@ class OrthoSlicer(BaseSlicer):
     -----
     The extent of the different axes are adjusted to fit the data
     best in the viewing area.
+
+    See Also
+    --------
+    nilearn.plotting.displays.MosaicSlicer : Three cuts are performed \
+    along multiple rows and columns.
+    nilearn.plotting.displays.TiledSlicer : Three cuts are performed \
+    and arranged in a 2x2 grid.
+
     """
     _cut_displayed = 'yxz'
     _axes_class = CutAxes
@@ -873,9 +896,23 @@ class OrthoSlicer(BaseSlicer):
 class TiledSlicer(BaseSlicer):
     """A class to create 3 axes for plotting orthogonal
     cuts of 3D maps, organized in a 2x2 grid.
+    This visualization mode can be activated from Nilearn plotting functions,
+    like :func:`~nilearn.plotting.plot_img`, by setting
+    ``display_mode='tiled'``:
+
+    .. code-block:: python
+
+        from nilearn.datasets import load_mni152_template
+        from nilearn.plotting import plot_img
+        img = load_mni152_template()
+        # display is an instance of the TiledSlicer class
+        display = plot_img(img, display_mode='tiled')
 
     Attributes
     ----------
+    cut_coords : :obj:`list`
+        The cut coordinates.
+
     axes : :obj:`dict` of :class:`~matplotlib.axes.Axes`
         The 3 axes used to plot each view.
 
@@ -886,6 +923,14 @@ class TiledSlicer(BaseSlicer):
     -----
     The extent of the different axes are adjusted to fit the data
     best in the viewing area.
+
+    See Also
+    --------
+    nilearn.plotting.displays.MosaicSlicer : Three cuts are performed \
+    along multiple rows and columns.
+    nilearn.plotting.displays.OrthoSlicer : Three cuts are performed \
+       and arranged in a 2x2 grid.
+
     """
     _cut_displayed = 'yxz'
     _axes_class = CutAxes
@@ -1330,49 +1375,247 @@ class BaseStackedSlicer(BaseSlicer):
 
 
 class XSlicer(BaseStackedSlicer):
-    """XSlicer class."""
+    """The ``XSlicer`` class enables sagittal visualization with
+    plotting functions of Nilearn like
+    :func:`nilearn.plotting.plot_img`. This visualization mode
+    can be activated by setting ``display_mode='x'``:
+
+    .. code-block:: python
+
+        from nilearn.datasets import load_mni152_template
+        from nilearn.plotting import plot_img
+        img = load_mni152_template()
+        # display is an instance of the XSlicer class
+        display = plot_img(img, display_mode='x')
+
+    Attributes
+    ----------
+    cut_coords : 1D :class:`~numpy.ndarray`
+        The cut coordinates.
+
+    axes : :obj:`dict` of :class:`~nilearn.plotting.displays.CutAxes`
+        The axes used for plotting.
+
+    frame_axes : :class:`~matplotlib.axes.Axes`
+        The axes framing the whole set of views.
+
+    See Also
+    --------
+    nilearn.plotting.displays.YSlicer : Coronal view
+    nilearn.plotting.displays.ZSlicer : Axial view
+
+    """
     _direction = 'x'
     _default_figsize = [2.6, 2.3]
 
 
 class YSlicer(BaseStackedSlicer):
-    """YSlicer class."""
+    """The ``YSlicer`` class enables coronal visualization with
+    plotting functions of Nilearn like
+    :func:`nilearn.plotting.plot_img`. This visualization mode
+    can be activated by setting ``display_mode='y'``:
+
+    .. code-block:: python
+
+        from nilearn.datasets import load_mni152_template
+        from nilearn.plotting import plot_img
+        img = load_mni152_template()
+        # display is an instance of the YSlicer class
+        display = plot_img(img, display_mode='y')
+
+    Attributes
+    ----------
+    cut_coords : 1D :class:`~numpy.ndarray`
+        The cut coordinates.
+
+    axes : :obj:`dict` of :class:`~nilearn.plotting.displays.CutAxes`
+        The axes used for plotting.
+
+    frame_axes : :class:`~matplotlib.axes.Axes`
+        The axes framing the whole set of views.
+
+    See Also
+    --------
+    nilearn.plotting.displays.XSlicer : Sagittal view
+    nilearn.plotting.displays.ZSlicer : Axial view
+
+    """
     _direction = 'y'
     _default_figsize = [2.2, 2.3]
 
 
 class ZSlicer(BaseStackedSlicer):
-    """ZSlicer class."""
+    """The ``ZSlicer`` class enables axial visualization with
+    plotting functions of Nilearn like
+    :func:`nilearn.plotting.plot_img`. This visualization mode
+    can be activated by setting ``display_mode='z'``:
+
+    .. code-block:: python
+
+        from nilearn.datasets import load_mni152_template
+        from nilearn.plotting import plot_img
+        img = load_mni152_template()
+        # display is an instance of the ZSlicer class
+        display = plot_img(img, display_mode='z')
+
+    Attributes
+    ----------
+    cut_coords : 1D :class:`~numpy.ndarray`
+        The cut coordinates.
+
+    axes : :obj:`dict` of :class:`~nilearn.plotting.displays.CutAxes`
+        The axes used for plotting.
+
+    frame_axes : :class:`~matplotlib.axes.Axes`
+        The axes framing the whole set of views.
+
+    See Also
+    --------
+    nilearn.plotting.displays.XSlicer : Sagittal view
+    nilearn.plotting.displays.YSlicer : Coronal view
+
+    """
     _direction = 'z'
     _default_figsize = [2.2, 2.3]
 
 
 class XZSlicer(OrthoSlicer):
-    """XZSlicer class."""
+    """The ``XZSlicer`` class enables to combine sagittal and axial views
+    on the same figure with plotting functions of Nilearn like
+    :func:`nilearn.plotting.plot_img`. This visualization mode
+    can be activated by setting ``display_mode='xz'``:
+
+    .. code-block:: python
+
+        from nilearn.datasets import load_mni152_template
+        from nilearn.plotting import plot_img
+        img = load_mni152_template()
+        # display is an instance of the XZSlicer class
+        display = plot_img(img, display_mode='xz')
+
+    Attributes
+    ----------
+    cut_coords : :obj:`list` of :obj:`float`
+        The cut coordinates.
+
+    axes : :obj:`dict` of :class:`~nilearn.plotting.displays.CutAxes`
+        The axes used for plotting in each direction ('x' and 'z' here).
+
+    frame_axes : :class:`~matplotlib.axes.Axes`
+        The axes framing the whole set of views.
+
+    See Also
+    --------
+    nilearn.plotting.displays.YXSlicer : Coronal + Sagittal views
+    nilearn.plotting.displays.YZSlicer : Coronal + Axial views
+
+    """
     _cut_displayed = 'xz'
 
 
 class YXSlicer(OrthoSlicer):
-    """YXSlicer class."""
+    """The ``YXSlicer`` class enables to combine coronal and sagittal views
+    on the same figure with plotting functions of Nilearn like
+    :func:`nilearn.plotting.plot_img`. This visualization mode
+    can be activated by setting ``display_mode='yx'``:
+
+    .. code-block:: python
+
+        from nilearn.datasets import load_mni152_template
+        from nilearn.plotting import plot_img
+        img = load_mni152_template()
+        # display is an instance of the YXSlicer class
+        display = plot_img(img, display_mode='yx')
+
+    Attributes
+    ----------
+    cut_coords : :obj:`list` of :obj:`float`
+        The cut coordinates.
+
+    axes : :obj:`dict` of :class:`~nilearn.plotting.displays.CutAxes`
+        The axes used for plotting in each direction ('x' and 'y' here).
+
+    frame_axes : :class:`~matplotlib.axes.Axes`
+        The axes framing the whole set of views.
+
+    See Also
+    --------
+    nilearn.plotting.displays.XZSlicer : Sagittal + Axial views
+    nilearn.plotting.displays.YZSlicer : Coronal + Axial views
+
+    """
     _cut_displayed = 'yx'
 
 
 class YZSlicer(OrthoSlicer):
-    """YZSlicer class."""
+    """The ``YZSlicer`` class enables to combine coronal and axial views
+    on the same figure with plotting functions of Nilearn like
+    :func:`nilearn.plotting.plot_img`. This visualization mode
+    can be activated by setting ``display_mode='yz'``:
+
+    .. code-block:: python
+
+        from nilearn.datasets import load_mni152_template
+        from nilearn.plotting import plot_img
+        img = load_mni152_template()
+        # display is an instance of the YZSlicer class
+        display = plot_img(img, display_mode='yz')
+
+    Attributes
+    ----------
+    cut_coords : :obj:`list` of :obj:`float`
+        The cut coordinates.
+
+    axes : :obj:`dict` of :class:`~nilearn.plotting.displays.CutAxes`
+        The axes used for plotting in each direction ('y' and 'z' here).
+
+    frame_axes : :class:`~matplotlib.axes.Axes`
+        The axes framing the whole set of views.
+
+    See Also
+    --------
+    nilearn.plotting.displays.XZSlicer : Sagittal + Axial views
+    nilearn.plotting.displays.YXSlicer : Coronal + Sagittal views
+
+    """
     _cut_displayed = 'yz'
 
 
 class MosaicSlicer(BaseSlicer):
     """A class to create 3 :class:`~matplotlib.axes.Axes` for
     plotting cuts of 3D maps, in multiple rows and columns.
+    This visualization mode can be activated from Nilearn plotting
+    functions, like :func:`~nilearn.plotting.plot_img`, by setting
+    ``display_mode='mosaic'``.
+
+    .. code-block:: python
+
+        from nilearn.datasets import load_mni152_template
+        from nilearn.plotting import plot_img
+        img = load_mni152_template()
+        # display is an instance of the MosaicSlicer class
+        display = plot_img(img, display_mode='mosaic')
 
     Attributes
     ----------
+    cut_coords : :obj:`dict` <:obj:`str`: 1D :class:`~numpy.ndarray`>
+        The cut coordinates in a dictionary. The keys are the directions
+        ('x', 'y', 'z'), and the values are arrays holding the cut
+        coordinates.
+
     axes : :obj:`dict` of :class:`~matplotlib.axes.Axes`
         The 3 axes used to plot multiple views.
 
     frame_axes : :class:`~matplotlib.axes.Axes`
         The axes framing the whole set of views.
+
+    See Also
+    --------
+    nilearn.plotting.displays.TiledSlicer : Three cuts are performed \
+    in orthogonal directions.
+    nilearn.plotting.displays.OrthoSlicer : Three cuts are performed \
+    and arranged in a 2x2 grid.
+
     """
     _cut_displayed = 'yxz'
     _axes_class = CutAxes
@@ -1604,9 +1847,9 @@ def get_slicer(display_mode):
             - "x": Sagittal
             - "y": Coronal
             - "z": Axial
-            - "xz"
-            - "yz"
-            - "yx"
+            - "xz": Sagittal + Axial
+            - "yz": Coronal + Axial
+            - "yx": Coronal + Sagittal
 
     Returns
     -------
