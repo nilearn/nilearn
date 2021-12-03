@@ -141,7 +141,7 @@ plot_glass_brain(
 # Demo glass brain plotting with contours and with fillings
 # ---------------------------------------------------------
 #
-# The display objects retuned by :func:`~nilearn.plotting.plot_glass_brain`
+# The display objects returned by :func:`~nilearn.plotting.plot_glass_brain`
 # all inherit from the :class:`~nilearn.plotting.displays.OrthoProjector`
 # and enable further customisation of the figures.
 #
@@ -186,7 +186,7 @@ display.title('"stat_img" on glass brain with threshold')
 
 
 ###############################################################################
-# Plotting with same demonstration but fille the contours (by setting
+# Plotting with same demonstration but fill the contours (by setting
 # ``filled=True``).
 
 display = plot_glass_brain(None, display_mode='lzry')
@@ -261,7 +261,7 @@ display.title(
 ##############################################################################
 # Displaying both signs (positive and negative) of activations with threshold
 # meaning thresholding by adding an argument ``levels`` in method
-# :meth:`~nilearn.ploting.displays.OrthoProjector.add_contours`.
+# :meth:`~nilearn.plotting.displays.OrthoProjector.add_contours`.
 #
 # We give two values through the argument ``levels`` which corresponds to the
 # thresholds of the contour we want to draw: One is positive and the other one
