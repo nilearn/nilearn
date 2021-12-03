@@ -29,15 +29,16 @@ def _set_mpl_backend():
         current_backend = matplotlib.get_backend().lower()
 
         try:
+            # Making sure the current backend is usable by matplotlib
             matplotlib.use(current_backend)
         except:
-            # If matplotlib.use throws an error, it means the desired backend
-            # is not compatible with the machine. We set it to default `agg`
-            warnings.warn('Matplotlib backend has been set to `agg` by Nilearn'
-                          'due to incompatibility between current backend and'
-                          'the machine.')
-            matplotlib.use('Agg')
+            # If not, switching to default agg backend
+            matplotlib.use("Agg")
+        new_backend = matplotlib.get_backend().lower()
 
+        if new_backend != current_backend:
+            # Matplotlib backend has been changed, let's warn the user
+            warnings.warn(f"Backend changed to {new_backend}...")
 
 
 _set_mpl_backend()
