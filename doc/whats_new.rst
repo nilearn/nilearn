@@ -110,6 +110,9 @@ Enhancements
   for :class:`~nilearn.glm.first_level.FirstLevelModel`.
   (See FR `#3027 <https://github.com/nilearn/nilearn/issues/3027>`_
   and PR `#3033 <https://github.com/nilearn/nilearn/pull/3033>`_)
+- Importing :mod:`nilearn.plotting` will now raise a warning if the matplotlib
+  backend has been changed from its original value, instead of silently modifying
+  it.
 
 Changes
 -------
