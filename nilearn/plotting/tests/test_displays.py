@@ -51,8 +51,19 @@ def test_base_axes_exceptions():
         axes.draw_2d(None, None, None)
 
 
+def test_cut_axes_exception():
+    """Tests for exceptions raised by class ``CutAxes``."""
+    from nilearn.plotting.displays import CutAxes
+    axes = CutAxes(None, 'foo', 2)
+    assert axes.direction == 'foo'
+    assert axes.coord == 2
+    with pytest.raises(ValueError,
+                       match="Invalid value for direction"):
+        axes.transform_to_2d(None, np.eye(4))
+
+
 def test_get_index_from_direction_exception():
-    """Tests that a ValueError is raised when an unvalid direction
+    """Tests that a ValueError is raised when an invalid direction
     is given to function ``_get_index_from_direction``.
     """
     from nilearn.plotting.displays.axes import _get_index_from_direction
@@ -273,7 +284,8 @@ def test_annotations():
     orthoslicer.annotate(size=10, left_right=True, positions=False)
     orthoslicer.annotate(
         size=12, left_right=False, positions=False,
-        scalebar=True, scale_size=2.5, scale_units='cm', scale_loc=3
+        scalebar=True, scale_size=2.5, scale_units='cm', scale_loc=3,
+        frameon=True
     )
     orthoslicer.close()
 
