@@ -31,7 +31,7 @@ def _set_mpl_backend():
         try:
             # Making sure the current backend is usable by matplotlib
             matplotlib.use(current_backend)
-        except:
+        except Exception:
             # If not, switching to default agg backend
             matplotlib.use("Agg")
         new_backend = matplotlib.get_backend().lower()
