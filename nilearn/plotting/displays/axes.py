@@ -254,6 +254,9 @@ class CutAxes(BaseAxes):
 
         """
         coords = [0, 0, 0]
+        if self.direction not in ['x', 'y', 'z']:
+            raise ValueError('Invalid value for direction %s' %
+                             self.direction)
         coords['xyz'.index(self.direction)] = self.coord
         x_map, y_map, z_map = [int(np.round(c)) for c in
                                coord_transform(coords[0],
@@ -266,9 +269,6 @@ class CutAxes(BaseAxes):
             cut = np.rot90(data[x_map, :, :])
         elif self.direction == 'z':
             cut = np.rot90(data[:, :, z_map])
-        else:
-            raise ValueError('Invalid value for direction %s' %
-                             self.direction)
         return cut
 
     def draw_position(self, size, bg_color, decimals=False, **kwargs):
