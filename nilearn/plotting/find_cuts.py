@@ -429,6 +429,7 @@ def find_parcellation_cut_coords(labels_img, background_label=0, return_label_na
     unique_labels = np.unique(labels_data)
     unique_labels = np.delete(unique_labels, background_label)
 
+    
     # Loop over parcellation labels, grab center of mass and dump into coords
     # list
     coord_list = []
