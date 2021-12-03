@@ -12,7 +12,7 @@ from nilearn.plotting.displays import (
     OrthoSlicer, XSlicer, YSlicer, ZSlicer, XZSlicer, YXSlicer, YZSlicer,
     OrthoProjector, TiledSlicer, MosaicSlicer, LZRYProjector, LYRZProjector,
     XZProjector, YZProjector, YXProjector, XProjector, YProjector, ZProjector,
-    LYRProjector, LZRProjector, LRProjector, LProjector, RProjector
+    LYRProjector, LZRProjector, LRProjector, LProjector, RProjector, BaseAxes
 )
 from nilearn.datasets import load_mni152_template
 
@@ -32,6 +32,33 @@ PROJECTORS = [
     YProjector, ZProjector, LZRYProjector, LYRZProjector, LYRProjector,
     LZRProjector, LRProjector, LProjector, RProjector
 ]
+
+
+def test_base_axes_exceptions():
+    """Tests for exceptions raised by class ``BaseAxes``."""
+    axes = BaseAxes(None, 'foo', 3)
+    # Constructor doesn't raise for invalid direction
+    assert axes.direction == 'foo'
+    assert axes.coord == 3
+    with pytest.raises(NotImplementedError,
+                       match="'transform_to_2d' needs to be"):
+        axes.transform_to_2d(None, None)
+    with pytest.raises(NotImplementedError,
+                       match="'draw_position' should be"):
+        axes.draw_position(None, None)
+    with pytest.raises(ValueError,
+                       match="Invalid value for direction"):
+        axes.draw_2d(None, None, None)
+
+
+def test_get_index_from_direction_exception():
+    """Tests that a ValueError is raised when an unvalid direction
+    is given to function ``_get_index_from_direction``.
+    """
+    from nilearn.plotting.displays.axes import _get_index_from_direction
+    with pytest.raises(ValueError,
+                       match="foo is not a valid direction."):
+        _get_index_from_direction("foo")
 
 
 @pytest.fixture
@@ -92,6 +119,8 @@ def test_slicer_save_to_file(slicer, img, tmp_path):
         img=img, cut_coords=cut_coords, colorbar=True
     )
     slicer.add_overlay(img, cmap=plt.cm.gray, colorbar=True)
+    assert slicer.brain_color == (0.5, 0.5, 0.5)
+    assert not slicer.black_bg
     # Forcing a layout here, to test the locator code
     slicer.savefig(tmp_path / "out.png")
     slicer.close()
