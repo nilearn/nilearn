@@ -276,7 +276,7 @@ def fetch_atlas_destrieux_2009(lateralized=True, data_dir=None, url=None,
 @fill_doc
 def fetch_atlas_harvard_oxford(atlas_name, data_dir=None,
                                symmetric_split=False,
-                               resume=True, verbose=1):
+                               resume=True, verbose=1, clean_labels=None):
     """Load Harvard-Oxford parcellations from FSL.
 
     This function downloads Harvard Oxford atlas packaged from FSL 5.0
@@ -288,7 +288,7 @@ def fetch_atlas_harvard_oxford(atlas_name, data_dir=None,
 
     Parameters
     ----------
-    atlas_name : string
+    atlas_name : :obj:`str`
         Name of atlas to load. Can be:
         cort-maxprob-thr0-1mm, cort-maxprob-thr0-2mm,
         cort-maxprob-thr25-1mm, cort-maxprob-thr25-2mm,
@@ -303,7 +303,7 @@ def fetch_atlas_harvard_oxford(atlas_name, data_dir=None,
         sub-maxprob-thr50-1mm, sub-maxprob-thr50-2mm,
         sub-prob-1mm, sub-prob-2mm
 
-    data_dir : string, optional
+    data_dir : :obj:`str`, optional
         Path of data directory where data will be stored. Optionally,
         it can also be a FSL installation directory (which is dependent
         on your installation).
@@ -312,8 +312,8 @@ def fetch_atlas_harvard_oxford(atlas_name, data_dir=None,
         from your installed directory. Since we mimic same root directory
         as FSL to load it easily from your installation.
 
-    symmetric_split : bool, optional
-        If True, lateralized atlases of cort or sub with maxprob will be
+    symmetric_split : :obj:`bool`, optional
+        If ``True``, lateralized atlases of cort or sub with maxprob will be
         returned. For subcortical types (sub-maxprob), we split every
         symmetric region in left and right parts. Effectively doubles the
         number of regions.
@@ -324,17 +324,23 @@ def fetch_atlas_harvard_oxford(atlas_name, data_dir=None,
         Default=False.
     %(resume)s
     %(verbose)s
+    clean_labels : :obj:`bool`, optional
+        If set to ``True``, labels which do not appear in the image will
+        be removed from the list of labels.
+        Default=False.
+
+        .. versionadded:: 0.8.2
 
     Returns
     -------
-    data : sklearn.datasets.base.Bunch
+    data : :func:`sklearn.utils.Bunch`
         Dictionary-like object, keys are:
 
-        - "maps": nibabel.Nifti1Image, 4D maps if a probabilistic atlas is
-          requested and 3D labels if a maximum probabilistic atlas was
-          requested.
-
-        - "labels": string list, labels of the regions in the atlas.
+        - "maps": :class:`~nibabel.nifti1.Nifti1Image`, 4D maps if a
+          probabilistic atlas is requested, and 3D labels if a maximum
+          probabilistic atlas was requested.
+        - "labels": :obj:`list` of :obj:`str`, labels of the regions
+          in the atlas.
 
     See also
     --------
@@ -353,6 +359,11 @@ def fetch_atlas_harvard_oxford(atlas_name, data_dir=None,
                "sub-maxprob-thr25-1mm", "sub-maxprob-thr25-2mm",
                "sub-maxprob-thr50-1mm", "sub-maxprob-thr50-2mm",
                "sub-prob-1mm", "sub-prob-2mm"]
+    if clean_labels is None:
+        warnings.warn("Default value for parameter `clean_labels` will "
+                      "change from ``False`` to ``True`` in Nilearn 0.10.",
+                      category=FutureWarning)
+        clean_labels = False
     if atlas_name not in atlases:
         raise ValueError("Invalid atlas name: {0}. Please choose "
                          "an atlas among:\n{1}".
@@ -369,7 +380,11 @@ def fetch_atlas_harvard_oxford(atlas_name, data_dir=None,
         resume=resume,
         verbose=verbose)
     atlas_niimg = check_niimg(atlas_img)
+    label_idx_to_names = {k:v for k,v in enumerate(names)}
     if not symmetric_split or is_lateralized:
+        if not is_probabilistic and clean_labels:
+            valid_idx = np.unique(get_data(atlas_niimg))
+            names = [label_idx_to_names[i] for i in valid_idx]
         return Bunch(filename=atlas_img, maps=atlas_niimg, labels=names)
     new_atlas_data, new_names = _compute_symmetric_split("HarvardOxford",
                                                          atlas_niimg,
@@ -377,6 +392,10 @@ def fetch_atlas_harvard_oxford(atlas_name, data_dir=None,
     new_atlas_niimg = new_img_like(atlas_niimg,
                                    new_atlas_data,
                                    atlas_niimg.affine)
+    label_idx_to_names = {k:v for k,v in enumerate(new_names)}
+    if not is_probabilistic and clean_labels:
+        valid_idx = np.unique(get_data(new_atlas_niimg))
+        new_names = [label_idx_to_names[i] for i in valid_idx]
     return Bunch(filename=atlas_img, maps=new_atlas_niimg, labels=new_names)
 
 

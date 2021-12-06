@@ -274,8 +274,10 @@ def test_atlas_harvard_oxford(atlas_data, tmp_path, request_mocker):
     nibabel.Nifti1Image(atlas_data, np.eye(4) * 3).to_filename(
         target_atlas_nii)
     bunch = atlas.fetch_atlas_harvard_oxford(
-        "cortl-maxprob-thr50-1mm", data_dir=str(tmp_path)
+        "cortl-maxprob-thr50-1mm", data_dir=str(tmp_path),
+        clean_labels=True
     )
+    assert len(bunch.labels) == len(np.unique(get_data(bunch.maps)))
     assert set(range(len(bunch.labels))) == set(np.unique(get_data(bunch.maps)))
 
 
