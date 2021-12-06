@@ -255,6 +255,30 @@ def test_fetch_atlas_fsl(name, label_fname, fname, is_symm, split,
     _test_result_xml(ho_wo, is_symm=is_symm or split)
 
 
+def test_atlas_harvard_oxford(atlas_data, tmp_path, request_mocker):
+    ho_dir = str(tmp_path / 'fsl' / 'data' / 'atlases')
+    os.makedirs(ho_dir)
+    nifti_dir = os.path.join(ho_dir, 'HarvardOxford')
+    os.makedirs(nifti_dir)
+    filename = "HarvardOxford-Cortical-Lateralized.xml"
+    with open(os.path.join(ho_dir, filename), 'w') as dm:
+        dm.write("<?xml version='1.0' encoding='us-ascii'?>\n"
+                 "<data>\n"
+                 '<label index="0" x="48" y="94" z="35">R1</label>\n'
+                 '<label index="1" x="25" y="70" z="32">R2</label>\n'
+                 '<label index="2" x="33" y="73" z="63">R3</label>\n'
+                 '<label index="3" x="47" y="75" z="66">R4</label>\n'
+                 "</data>")
+    target_atlas_fname = "HarvardOxford-cortl-maxprob-thr50-1mm.nii.gz"
+    target_atlas_nii = os.path.join(nifti_dir, target_atlas_fname)
+    nibabel.Nifti1Image(atlas_data, np.eye(4) * 3).to_filename(
+        target_atlas_nii)
+    bunch = atlas.fetch_atlas_harvard_oxford(
+        "cortl-maxprob-thr50-1mm", data_dir=str(tmp_path)
+    )
+    assert set(range(len(bunch.labels))) == set(np.unique(get_data(bunch.maps)))
+
+
 def test_fetch_atlas_craddock_2012(tmp_path, request_mocker):
     local_archive = Path(
         __file__).parent / "data" / "craddock_2011_parcellations.tar.gz"
