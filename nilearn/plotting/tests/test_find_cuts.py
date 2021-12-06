@@ -234,7 +234,7 @@ def test_find_parcellation_cut_coords():
     x_map_c, y_map_c, z_map_c = (50, 50, 50)
     # Defining 3 parcellations
     data[x_map_a - 10:x_map_a + 10,
-         y_map_a - 10:y_map_a + 10, 
+         y_map_a - 10:y_map_a + 10,
          z_map_a - 10: z_map_a + 10] = 2301
     data[x_map_b - 10:x_map_b + 10,
          y_map_b - 10:y_map_b + 10,
