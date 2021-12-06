@@ -380,7 +380,7 @@ def fetch_atlas_harvard_oxford(atlas_name, data_dir=None,
         resume=resume,
         verbose=verbose)
     atlas_niimg = check_niimg(atlas_img)
-    label_idx_to_names = {k:v for k,v in enumerate(names)}
+    label_idx_to_names = {k: v for k, v in enumerate(names)}
     if not symmetric_split or is_lateralized:
         if not is_probabilistic and clean_labels:
             valid_idx = np.unique(get_data(atlas_niimg))
@@ -392,7 +392,7 @@ def fetch_atlas_harvard_oxford(atlas_name, data_dir=None,
     new_atlas_niimg = new_img_like(atlas_niimg,
                                    new_atlas_data,
                                    atlas_niimg.affine)
-    label_idx_to_names = {k:v for k,v in enumerate(new_names)}
+    label_idx_to_names = {k: v for k, v in enumerate(new_names)}
     if not is_probabilistic and clean_labels:
         valid_idx = np.unique(get_data(new_atlas_niimg))
         new_names = [label_idx_to_names[i] for i in valid_idx]

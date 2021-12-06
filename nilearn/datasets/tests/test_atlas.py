@@ -278,7 +278,9 @@ def test_atlas_harvard_oxford(atlas_data, tmp_path, request_mocker):
         clean_labels=True
     )
     assert len(bunch.labels) == len(np.unique(get_data(bunch.maps)))
-    assert set(range(len(bunch.labels))) == set(np.unique(get_data(bunch.maps)))
+    assert(
+        set(range(len(bunch.labels))) == set(np.unique(get_data(bunch.maps)))
+    )
 
 
 def test_fetch_atlas_craddock_2012(tmp_path, request_mocker):
