@@ -230,7 +230,7 @@ the :ref:`user guide <user_guide>` for more information and usage examples.
 
 .. _maskers_ref:
 
-:mod:`nilearn.maskers`: Loading and Processing fMRI data Easily
+:mod:`nilearn.maskers`: Loading and Processing fMRI Data Easily
 ===============================================================
 
 .. automodule:: nilearn.maskers
