@@ -347,7 +347,7 @@ Enhancements
   Add argument `filter` and allow a selection of signal filtering strategies:
   * "butterwoth" (butterworth filter)
   * "cosine" (discrete cosine transformation)
-      * `False` (no filtering)
+  * `False` (no filtering)
 - Change the default strategy for Dummy Classifier from 'prior' to
   'stratified' (https://github.com/nilearn/nilearn/pull/2826/).
 - :class:`nilearn.glm.first_level.run_glm` now allows auto regressive noise
