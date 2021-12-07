@@ -633,7 +633,7 @@ def _get_dataset_descr(ds_name):
         descr = ''
 
     if descr == '':
-        print("Warning: Could not find dataset description.")
+        warnings.warn("Could not find dataset description.")
 
     if isinstance(descr, bytes):
         descr = descr.decode('utf-8')
