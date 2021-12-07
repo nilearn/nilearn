@@ -95,7 +95,6 @@ the :ref:`user guide <user_guide>` for more information and usage examples.
    fetch_atlas_schaefer_2018
    fetch_oasis_vbm
    fetch_megatrawls_netmats
-   fetch_cobre
    fetch_neurovault
    fetch_neurovault_ids
    fetch_neurovault_auditory_computation_task
