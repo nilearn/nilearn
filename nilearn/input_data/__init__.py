@@ -1,6 +1,6 @@
 """
 The :mod:`nilearn.input_data` module used to include masker objects.
-It is deprecated since release 0.8.2 in favor of the
+It is deprecated since release 0.9.0 in favor of the
 :mod:`~nilearn.maskers` module.
 
 Please consider updating your code:
@@ -24,7 +24,7 @@ from nilearn.maskers import (
     NiftiMapsMasker, NiftiSpheresMasker
 )
 
-warnings.warn("The module 'input_data' is deprecated since 0.8.2. "
+warnings.warn("The module 'input_data' is deprecated since 0.9.0. "
               "Please import maskers from the 'maskers' module.")
 
 
