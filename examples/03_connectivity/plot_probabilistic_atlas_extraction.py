@@ -47,7 +47,7 @@ time_series = masker.transform(data.func[0],
 
 ############################################################################
 # We can generate an HTML report and visualize the components of the
-# :class:`~nilearn.input_data.NiftiMapsMasker`.
+# :class:`~nilearn.maskers.NiftiMapsMasker`.
 # You can pass the indices of the spatial maps you want to include in the
 # report in the order you want them to appear.
 # Here, we only include maps 2, 6, 7, 16, and 21 in the report:
