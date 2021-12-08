@@ -433,45 +433,6 @@ def _cobre_data(ids):
     return gzip.compress(csv.to_csv(index=False, sep="\t").encode("utf-8"))
 
 
-def test_fetch_cobre(tmp_path, request_mocker):
-    metadata, ids = _cobre_metadata()
-    request_mocker.url_mapping["*phenotypic_data.tsv.gz"] = _cobre_data(ids)
-    request_mocker.url_mapping["*articles/4197885"] = metadata
-
-    # All subjects
-    cobre_data = check_deprecation(
-        func.fetch_cobre, "'fetch_cobre' has been deprecated")(
-            n_subjects=None, data_dir=tmp_path)
-
-    phenotypic_names = ['func', 'confounds', 'phenotypic', 'description',
-                        'desc_con', 'desc_phenotypic']
-
-    # test length of functional filenames to max 146
-    assert len(cobre_data.func) == 146
-    # test length of corresponding confounds files of same length to max 146
-    assert len(cobre_data.confounds) == 146
-    # test return type variables
-    assert sorted(cobre_data) == sorted(phenotypic_names)
-    # test functional filenames in a list
-    assert isinstance(cobre_data.func, list)
-    # test confounds files in a list
-    assert isinstance(cobre_data.confounds, list)
-    assert isinstance(cobre_data.func[0], str)
-    # returned phenotypic data will be an array
-    assert isinstance(cobre_data.phenotypic, np.recarray)
-
-    # Fetch only 30 subjects
-    data_30_subjects = func.fetch_cobre(n_subjects=30,
-                                        data_dir=tmp_path)
-    assert len(data_30_subjects.func) == 30
-    assert len(data_30_subjects.confounds) == 30
-
-    # Test more than maximum subjects
-    test_150_subjects = func.fetch_cobre(n_subjects=150,
-                                         data_dir=tmp_path)
-    assert len(test_150_subjects.func) == 146
-
-
 def test_fetch_surf_nki_enhanced(tmp_path, request_mocker, verbose=0):
 
     ids = np.asarray(['A00028185', 'A00035827', 'A00037511', 'A00039431',

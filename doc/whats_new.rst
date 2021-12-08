@@ -117,6 +117,8 @@ Enhancements
 Changes
 -------
 
+- Deprecated function ``nilearn.datasets.fetch_cobre`` has been removed.
+  (See PR `#3081 <https://github.com/nilearn/nilearn/pull/3081>`_).
 - :func:`nilearn.glm.first_level.compute_regressor` will now raise an exception if
   parameter `cond_id` is not a string which could be used to name a python variable.
   For instance, number strings (ex: "1") will no longer be accepted as valid condition names.
@@ -569,7 +571,7 @@ Fixes
 Changes
 -------
 
-- :func:`nilearn.datasets.fetch_cobre` has been deprecated and will be
+- Function ``nilearn.datasets.fetch_cobre`` has been deprecated and will be
   removed in release 0.9 .
 - :func:`nilearn.plotting.plot_connectome_strength` has been deprecated and will
   be removed in release 0.9 .
@@ -1827,7 +1829,7 @@ Enhancements
     - Add fetcher for Allen et al. 2011 RSN atlas in
       :func:`nilearn.datasets.fetch_atlas_allen_2011`.
 
-    - A function :func:`nilearn.datasets.fetch_cobre` is now updated to new
+    - A function ``nilearn.datasets.fetch_cobre`` is now updated to new
       light release of COBRE data (schizophrenia)
 
     - A new example to show how to extract regions on labels image in example
@@ -2035,7 +2037,7 @@ New features
     - Mathematical formulas based on numpy functions can be applied on an
       image or a list of images using :func:`nilearn.image.math_img`.
     - Downloader for COBRE datasets of 146 rest fMRI subjects with
-      :func:`nilearn.datasets.fetch_cobre`
+      function ``nilearn.datasets.fetch_cobre``.
     - Downloader for Dosenbach atlas
       :func:`nilearn.datasets.fetch_coords_dosenbach_2010`
     - Fetcher for multiscale functional brain parcellations (BASC)
