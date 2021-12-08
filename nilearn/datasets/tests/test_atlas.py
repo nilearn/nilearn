@@ -255,12 +255,18 @@ def test_fetch_atlas_fsl(name, label_fname, fname, is_symm, split,
     _test_result_xml(ho_wo, is_symm=is_symm or split)
 
 
-def test_atlas_harvard_oxford(atlas_data, tmp_path, request_mocker):
+@pytest.mark.parametrize("atlas_name,split",
+                         [("cortl-maxprob-thr50-1mm", False),
+                          ("sub-maxprob-thr50-1mm", True)])
+def test_atlas_harvard_oxford(atlas_name, split, atlas_data,
+                              tmp_path, request_mocker):
     ho_dir = str(tmp_path / 'fsl' / 'data' / 'atlases')
     os.makedirs(ho_dir)
     nifti_dir = os.path.join(ho_dir, 'HarvardOxford')
     os.makedirs(nifti_dir)
     filename = "HarvardOxford-Cortical-Lateralized.xml"
+    if atlas_name == "sub-maxprob-thr50-1mm":
+        filename = "HarvardOxford-Subcortical.xml"
     with open(os.path.join(ho_dir, filename), 'w') as dm:
         dm.write("<?xml version='1.0' encoding='us-ascii'?>\n"
                  "<data>\n"
@@ -270,12 +276,14 @@ def test_atlas_harvard_oxford(atlas_data, tmp_path, request_mocker):
                  '<label index="3" x="47" y="75" z="66">R4</label>\n'
                  "</data>")
     target_atlas_fname = "HarvardOxford-cortl-maxprob-thr50-1mm.nii.gz"
+    if atlas_name == "sub-maxprob-thr50-1mm":
+        target_atlas_fname = "HarvardOxford-sub-maxprob-thr50-1mm.nii.gz"
     target_atlas_nii = os.path.join(nifti_dir, target_atlas_fname)
     nibabel.Nifti1Image(atlas_data, np.eye(4) * 3).to_filename(
         target_atlas_nii)
     bunch = atlas.fetch_atlas_harvard_oxford(
-        "cortl-maxprob-thr50-1mm", data_dir=str(tmp_path),
-        clean_labels=True
+        atlas_name, data_dir=str(tmp_path),
+        symmetric_split=split, clean_labels=True
     )
     assert len(bunch.labels) == len(np.unique(get_data(bunch.maps)))
     assert(
