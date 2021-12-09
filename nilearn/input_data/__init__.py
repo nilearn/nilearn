@@ -14,7 +14,7 @@ becomes:
     from nilearn.maskers import NiftiMasker
 
 Note that all imports that used to work will continue to do so with
-a simple warning.
+a simple warning at least until release 0.13.0.
 """
 import warnings
 
@@ -24,8 +24,10 @@ from nilearn.maskers import (
     NiftiMapsMasker, NiftiSpheresMasker
 )
 
-warnings.warn("The module 'input_data' is deprecated since 0.9.0. "
-              "Please import maskers from the 'maskers' module.")
+warnings.warn("The module 'input_data' is deprecated since 0.9.0, "
+              "Importing maskers from 'input_data' will be possible "
+              "at least until release 0.13.0. Please import maskers "
+              "from the 'maskers' module instead.")
 
 
 __all__ = ['NiftiMasker', 'MultiNiftiMasker', 'NiftiLabelsMasker',
