@@ -63,7 +63,7 @@ Fixes
   present in the maps images.
   (See PR `#3070 <https://github.com/nilearn/nilearn/pull/3070>`_).
 - :func:`nilearn/plotting/tests/test_find_cuts.py` now returns coordinates and labels having the same order with it of the input labels index
-  (See PR `#3076 <https://github.com/nilearn/nilearn/issues/3076>`_).
+  (See PR `#3078 <https://github.com/nilearn/nilearn/issues/3078>`_).
 
 Enhancements
 ------------
