@@ -62,6 +62,8 @@ Fixes
 - :func:`~nilearn.datasets.fetch_atlas_destrieux_2009` now returns only labels
   present in the maps images.
   (See PR `#3070 <https://github.com/nilearn/nilearn/pull/3070>`_).
+- :func:`nilearn/plotting/tests/test_find_cuts.py` now returns coordinates and labels having the same order with it of the input labels index
+  (See PR `#3076 <https://github.com/nilearn/nilearn/issues/3076>`_).
 
 Enhancements
 ------------
@@ -110,6 +112,9 @@ Enhancements
   for :class:`~nilearn.glm.first_level.FirstLevelModel`.
   (See FR `#3027 <https://github.com/nilearn/nilearn/issues/3027>`_
   and PR `#3033 <https://github.com/nilearn/nilearn/pull/3033>`_)
+- Importing :mod:`nilearn.plotting` will now raise a warning if the matplotlib
+  backend has been changed from its original value, instead of silently modifying
+  it.
 
 Changes
 -------
