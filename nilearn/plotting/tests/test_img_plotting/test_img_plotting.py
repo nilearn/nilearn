@@ -52,7 +52,7 @@ def test_plot_functions_3d_default_params(plot_func, testdata_3d, tmpdir):  # no
 
 @pytest.mark.parametrize("plot_func", PLOTTING_FUNCS_3D)
 @pytest.mark.parametrize("cbar_tick_format", ["%f", "%i"])
-def test_cbar_tick_format(plot_func, testdata_3d, cbar_tick_format, tmpdir):
+def test_cbar_tick_format(plot_func, testdata_3d, cbar_tick_format, tmpdir):  # noqa
     """Test different colorbar tick format with 3D plotting functions."""
     filename = str(tmpdir.join('temp.png'))
     plot_func(
