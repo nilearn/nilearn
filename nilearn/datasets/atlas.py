@@ -27,7 +27,7 @@ def fetch_atlas_difumo(dimension=64, resolution_mm=2, data_dir=None, resume=True
 
     Dictionaries of Functional Modes, or “DiFuMo”, can serve as atlases to extract
     functional signals with different dimensionalities (64, 128, 256, 512, and 1024).
-    These modes are optimized to represent well raw BOLD timeseries,
+    These modes are optimized to represent well raw :term:`BOLD` timeseries,
     over a with range of experimental conditions.
     See :footcite:`DADI2020117126`.
 
@@ -45,12 +45,12 @@ def fetch_atlas_difumo(dimension=64, resolution_mm=2, data_dir=None, resume=True
 
     Parameters
     ----------
-    dimension : int, optional
+    dimension : :obj:`int`, optional
         Number of dimensions in the dictionary. Valid resolutions
         available are {64, 128, 256, 512, 1024}.
         Default=64.
 
-    resolution_mm : int, optional
+    resolution_mm : :obj:`int`, optional
         The resolution in mm of the atlas to fetch. Valid options
         available are {2, 3}. Default=2mm.
     %(data_dir)s
@@ -59,12 +59,18 @@ def fetch_atlas_difumo(dimension=64, resolution_mm=2, data_dir=None, resume=True
 
     Returns
     -------
-    data : sklearn.datasets.base.Bunch
+    data : :func:`sklearn.utils.Bunch`
         Dictionary-like object, the interest attributes are :
 
-        - 'maps': str, 4D path to nifti file containing regions definition.
-        - 'labels': Numpy recarray containing the labels of the regions.
-        - 'description': str, general description of the dataset.
+        - 'maps': :obj:`str`, 4D path to nifti file containing regions
+          definition. The shape of the image is
+          ``(104, 123, 104, dimension)`` where ``dimension`` is the
+          requested dimension of the atlas.
+        - 'labels': :class:`numpy.recarray` containing the labels of
+          the regions. The length of the label array corresponds to the
+          number of dimensions requested. ``data.labels[i]`` is the label
+          corresponding to maps ``i``.
+        - 'description': :obj:`str`, general description of the dataset.
 
     References
     ----------
@@ -123,9 +129,10 @@ def fetch_atlas_difumo(dimension=64, resolution_mm=2, data_dir=None, resume=True
 
 @fill_doc
 def fetch_atlas_craddock_2012(data_dir=None, url=None, resume=True, verbose=1):
-    """Download and return file names for the Craddock 2012 parcellation
+    """Download and return file names for the Craddock 2012 parcellation.
 
-    The provided images are in MNI152 space.
+    The provided images are in MNI152 space. All images are 4D with
+    shapes equal to ``(47, 56, 46, 43)``.
 
     See :footcite:`CreativeCommons` for the licence.
 
@@ -141,11 +148,20 @@ def fetch_atlas_craddock_2012(data_dir=None, url=None, resume=True, verbose=1):
 
     Returns
     -------
-    data : sklearn.datasets.base.Bunch
+    data : :func:`sklearn.utils.Bunch`
         Dictionary-like object, keys are:
-        scorr_mean, tcorr_mean,
-        scorr_2level, tcorr_2level,
-        random
+
+            - 'scorr_mean': obj:`str`, path to nifti file containing the
+              group-mean parcellation when emphasizing spatial homogeneity.
+            - 'tcorr_mean': obj:`str`, path to nifti file containing the
+              group-mean parcellation when emphasizing temporal homogeneity.
+            - 'scorr_2level': obj:`str`, path to nifti file containing the
+              parcellation obtained when emphasizing spatial homogeneity.
+            - 'tcorr_2level': obj:`str`, path to nifti file containing the
+              parcellation obtained when emphasizing temporal homogeneity.
+            - 'random': obj:`str`, path to nifti file containing the
+              parcellation obtained with random clustering.
+            - 'description': :obj:`str`, general description of the dataset.
 
     References
     ----------
@@ -616,15 +632,21 @@ def fetch_atlas_msdl(data_dir=None, url=None, resume=True, verbose=1):
 
     Returns
     -------
-    data : sklearn.datasets.base.Bunch
+    data : :func:`sklearn.utils.Bunch`
         Dictionary-like object, the interest attributes are :
 
-        - 'maps': str, path to nifti file containing regions definition.
-        - 'labels': string list containing the labels of the regions.
-        - 'region_coords': tuple list (x, y, z) containing coordinates
-          of each region in MNI space.
-        - 'networks': string list containing names of the networks.
-        - 'description': description about the atlas.
+        - 'maps': :obj:`str`, path to nifti file containing the probabilist
+          atlas image (shape is equal to ``(40, 48, 35, 39)``).
+        - 'labels': :obj:`list` of :obj:`str`, list containing the labels
+          of the regions. There are 39 labels such that ``data.labels[i]``
+          corresponds to map ``i``.
+        - 'region_coords': :obj:`list` of length-3 :obj:`tuple`,
+          ``data.region_coords[i]`` contains the coordinates ``(x, y, z)``
+          of region ``i`` in :term:`MNI` space.
+        - 'networks': :obj:`list` of :obj:`str`, list containing the names
+          of the networks. There are 39 network names such that
+          ``data.networks[i]`` is the network name of region ``i``.
+        - 'description': :obj:`str`, description of the atlas.
 
     References
     ----------
@@ -657,15 +679,18 @@ def fetch_atlas_msdl(data_dir=None, url=None, resume=True, verbose=1):
 
 
 def fetch_coords_power_2011():
-    """Download and load the Power et al. brain atlas composed of 264 ROIs
+    """Download and load the Power et al. brain atlas composed of 264 ROIs.
 
     See :footcite:`Power2011Functional`.
 
     Returns
     -------
-    data : sklearn.datasets.base.Bunch
+    data : :func:`sklearn.utils.Bunch`
         Dictionary-like object, contains:
-        - "rois": coordinates of 264 ROIs in MNI space
+
+            - 'rois': :class:`numpy.recarray`, rec array containing the
+              coordinates of 264 ROIs in :term:`MNI` space.
+            - 'description': :obj:`str`, description of the atlas.
 
 
     References
@@ -685,14 +710,14 @@ def fetch_coords_power_2011():
 @fill_doc
 def fetch_atlas_smith_2009(data_dir=None, mirror='origin', url=None,
                            resume=True, verbose=1):
-    """Download and load the Smith ICA and BrainMap atlas (dated 2009).
+    """Download and load the Smith :term:`ICA` and BrainMap atlas (2009).
 
     See :footcite:`Smith200913040` and :footcite:`Laird2011behavioral`.
 
     Parameters
     ----------
     %(data_dir)s
-    mirror : string, optional
+    mirror : :obj:`str`, optional
         By default, the dataset is downloaded from the original website of the
         atlas. Specifying "nitrc" will force download from a mirror, with
         potentially higher bandwidth. Default='origin'.
@@ -702,22 +727,30 @@ def fetch_atlas_smith_2009(data_dir=None, mirror='origin', url=None,
 
     Returns
     -------
-    data : sklearn.datasets.base.Bunch
+    data : :func:`sklearn.utils.Bunch`
         Dictionary-like object, contains:
 
-        - 20-dimensional ICA, Resting-FMRI components:
-
-          - all 20 components (rsn20)
-          - 10 well-matched maps from these, as shown in PNAS paper (rsn10)
-
-        - 20-dimensional ICA, BrainMap components:
-
-          - all 20 components (bm20)
-          - 10 well-matched maps from these, as shown in PNAS paper (bm10)
-
-        - 70-dimensional ICA, Resting-FMRI components (rsn70)
-
-        - 70-dimensional ICA, BrainMap components (bm70)
+            - 'rsn20': :obj:`str`, path to nifti file containing the
+              20-dimensional :term:`ICA`, resting-:term:`fMRI` components.
+              The shape of the image is ``(91, 109, 91, 20)``.
+            - 'rsn10': :obj:`str`, path to nifti file containing the
+              10 well-matched maps from the 20 maps obtained as for 'rsn20',
+              as shown in :footcite:`Smith200913040`. The shape of the
+              image is ``(91, 109, 91, 10)``.
+            - 'bm20': :obj:`str`, path to nifti file containing the
+              20-dimensional :term:`ICA`, BrainMap components.
+              The shape of the image is ``(91, 109, 91, 20)``.
+            - 'bm10': :obj:`str`, path to nifti file containing the
+              10 well-matched maps from the 20 maps obtained as for 'bm20',
+              as shown in :footcite:`Smith200913040`. The shape of the
+              image is ``(91, 109, 91, 10)``.
+            - 'rsn70': :obj:`str`, path to nifti file containing the
+              70-dimensional :term:`ICA``, resting-:term:`fMRI` components.
+              The shape of the image is ``(91, 109, 91, 70)``.
+            - 'bm70': :obj:`str`, path to nifti file containing the
+              70-dimensional :term:`ICA`, BrainMap components.
+              The shape of the image is ``(91, 109, 91, 70)``.
+            - 'description': :obj:`str`, description of the atlas.
 
     References
     ----------
@@ -778,7 +811,10 @@ def fetch_atlas_smith_2009(data_dir=None, mirror='origin', url=None,
 def fetch_atlas_yeo_2011(data_dir=None, url=None, resume=True, verbose=1):
     """Download and return file names for the Yeo 2011 parcellation.
 
-    The provided images are in MNI152 space.
+    The provided images are in MNI152 space and have shapes equal to
+    ``(256, 256, 256, 1)``. They contain consecutive integers values
+    from 0 (background) to either 7 or 17 depending on the atlas version
+    considered.
 
     For more information on this dataset's structure,
     see :footcite:`CorticalParcellation_Yeo2011`,
@@ -793,18 +829,31 @@ def fetch_atlas_yeo_2011(data_dir=None, url=None, resume=True, verbose=1):
 
     Returns
     -------
-    data : sklearn.datasets.base.Bunch
+    data : :func:`sklearn.utils.Bunch`
         Dictionary-like object, keys are:
 
-        - "thin_7", "thick_7": 7-region parcellations,
-          fitted to resp. thin and thick template cortex segmentations.
-
-        - "thin_17", "thick_17": 17-region parcellations.
-
-        - "colors_7", "colors_17": colormaps (text files) for 7- and 17-region
-          parcellation respectively.
-
-        - "anat": anatomy image.
+            - 'thin_7': :obj:`str`, path to nifti file containing the
+              7 regions parcellation fitted to thin template cortex
+              segmentations.
+            - 'thick_7': :obj:`str`, path to nifti file containing the
+              7 region parcellation fitted to thick template cortex
+              segmentations.
+            - 'thin_17': :obj:`str`, path to nifti file containing the
+              17 region parcellation fitted to thin template cortex
+              segmentations.
+            - 'thick_17': :obj:`str`, path to nifti file containing the
+              17 region parcellation fitted to thick template cortex
+              segmentations.
+            - 'colors_7': :obj:`str`, path to colormaps text file for
+              7 region parcellation. This file maps :term:`voxel` integer
+              values from ``data.thin_7`` and ``data.tick_7`` to network
+              names.
+            - 'colors_17': :obj:`str`, path to colormaps text file for
+              17 region parcellation. This file maps :term:`voxel` integer
+              values from ``data.thin_17`` and ``data.tick_17`` to network
+              names.
+            - 'anat': :obj:`str`, path to nifti file containing the anatomy
+              image.
 
     References
     ----------
