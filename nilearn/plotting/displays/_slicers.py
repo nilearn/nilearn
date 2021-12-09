@@ -20,7 +20,7 @@ from nilearn.plotting.edge_detect import _edge_map
 from nilearn.image.resampling import get_bounds, get_mask_bounds
 from nilearn.image import reorder_img, new_img_like, get_data
 from nilearn._utils.niimg import _is_binary_niimg, _safe_get_data
-from nilearn.plotting.displays.axes import _coords_3d_to_2d
+from nilearn.plotting.displays._axes import _coords_3d_to_2d
 
 
 class BaseSlicer(object):

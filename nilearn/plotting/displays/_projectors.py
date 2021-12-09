@@ -9,10 +9,10 @@ from matplotlib import cm as mpl_cm
 
 from nilearn.plotting import cm
 from nilearn._utils.param_validation import check_threshold
-from nilearn.plotting.displays.slicers import (
+from nilearn.plotting.displays._slicers import (
     OrthoSlicer, _get_create_display_fun
 )
-from nilearn.plotting.displays.axes import GlassBrainAxes
+from nilearn.plotting.displays._axes import GlassBrainAxes
 
 
 class OrthoProjector(OrthoSlicer):

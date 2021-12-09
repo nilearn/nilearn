@@ -85,7 +85,7 @@ def test_get_index_from_direction_exception():
     """Tests that a ValueError is raised when an invalid direction
     is given to function ``_get_index_from_direction``.
     """
-    from nilearn.plotting.displays.axes import _get_index_from_direction
+    from nilearn.plotting.displays._axes import _get_index_from_direction
     with pytest.raises(ValueError,
                        match="foo is not a valid direction."):
         _get_index_from_direction("foo")
