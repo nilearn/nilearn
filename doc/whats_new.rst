@@ -122,6 +122,8 @@ Changes
 
 - Deprecated function ``nilearn.datasets.fetch_cobre`` has been removed.
   (See PR `#3081 <https://github.com/nilearn/nilearn/pull/3081>`_).
+- Deprecated function ``nilearn.plotting.plot_connectome_strength`` has been removed.
+  (See PR `#3082 <https://github.com/nilearn/nilearn/pull/3082>`_).
 - :func:`nilearn.glm.first_level.compute_regressor` will now raise an exception if
   parameter `cond_id` is not a string which could be used to name a python variable.
   For instance, number strings (ex: "1") will no longer be accepted as valid condition names.
@@ -536,8 +538,8 @@ NEW
   :func:`nilearn.plotting.plot_surf_stat_map` in a single figure.
 - :func:`nilearn.plotting.plot_markers` shows network nodes (markers) on a glass
   brain template and color code them according to provided nodal measure (i.e.
-  connection strength). This function will replace
-  :func:`nilearn.plotting.plot_connectome_strength`.
+  connection strength). This function will replace function
+  ``nilearn.plotting.plot_connectome_strength``.
 - New plotting function
   :func:`nilearn.plotting.plot_surf_contours` plots the contours of regions of
   interest on the surface, optionally overlaid on top of a statistical map.
@@ -576,7 +578,7 @@ Changes
 
 - Function ``nilearn.datasets.fetch_cobre`` has been deprecated and will be
   removed in release 0.9 .
-- :func:`nilearn.plotting.plot_connectome_strength` has been deprecated and will
+- Function ``nilearn.plotting.plot_connectome_strength`` has been deprecated and will
   be removed in release 0.9 .
 
 - :class:`nilearn.connectome.ConnectivityMeasure` can now remove
@@ -693,7 +695,7 @@ NEW
   clusters.
   :class:`nilearn.regions.ReNA`
 - Plot connectome strength
-  Use :func:`nilearn.plotting.plot_connectome_strength` to plot the strength of a
+  Use function ``nilearn.plotting.plot_connectome_strength`` to plot the strength of a
   connectome on a glass brain.  Strength is absolute sum of the edges at a node.
 - Optimization to image resampling
 - New brain development fMRI dataset fetcher
@@ -884,7 +886,7 @@ NEW
   clusters.
   :class:`nilearn.regions.ReNA`
 - Plot connectome strength
-  Use :func:`nilearn.plotting.plot_connectome_strength` to plot the strength of a
+  Use function ``nilearn.plotting.plot_connectome_strength`` to plot the strength of a
   connectome on a glass brain.  Strength is absolute sum of the edges at a node.
 - Optimization to image resampling
   :func:`nilearn.image.resample_img` has been optimized to pad rather than

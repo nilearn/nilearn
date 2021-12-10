@@ -368,7 +368,6 @@ the :ref:`user guide <user_guide>` for more information and usage examples.
    plot_stat_map
    plot_glass_brain
    plot_connectome
-   plot_connectome_strength
    plot_markers
    plot_prob_atlas
    plot_carpet

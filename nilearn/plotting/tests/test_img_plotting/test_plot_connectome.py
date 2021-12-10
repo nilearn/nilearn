@@ -1,6 +1,5 @@
 """
-Tests for :func:`nilearn.plotting.plot_connectome` and
-deprecated :func:`nilearn.plotting.plot_connectome_strength`.
+Tests for :func:`nilearn.plotting.plot_connectome`.
 """
 
 import os
@@ -9,10 +8,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from scipy import sparse
 from matplotlib.patches import FancyArrow
-from nilearn.plotting import plot_connectome, plot_connectome_strength
-
-
-PLOTTING_FUNCS = set([plot_connectome, plot_connectome_strength])
+from nilearn.plotting import plot_connectome
 
 
 @pytest.fixture
@@ -74,48 +70,37 @@ def test_plot_connectome_display_mode(display_mode, node_coords,
     plt.close()
 
 
-@pytest.mark.parametrize("plot_func", PLOTTING_FUNCS)
-def test_plot_connectome_masked_array_sparse_matrix(plot_func, node_coords,
+def test_plot_connectome_masked_array_sparse_matrix(node_coords,
                                                     adjacency, base_params):
-    """Smoke tests for plot_connectome and plot_connectome_strength
-    with masked arrays and sparse matrices as inputs.
+    """Smoke tests for plot_connectome with masked arrays and sparse
+    matrices as inputs.
     """
-    if plot_func == plot_connectome_strength:
-        base_params.pop("edge_threshold")
     masked_adjacency_matrix = np.ma.masked_array(
         adjacency, np.abs(adjacency) < 0.5)
-    plot_func(masked_adjacency_matrix, node_coords, **base_params)
+    plot_connectome(masked_adjacency_matrix, node_coords, **base_params)
     sparse_adjacency_matrix = sparse.coo_matrix(adjacency)
-    plot_func(sparse_adjacency_matrix, node_coords, **base_params)
+    plot_connectome(sparse_adjacency_matrix, node_coords, **base_params)
     plt.close()
 
 
-@pytest.mark.parametrize("plot_func", PLOTTING_FUNCS)
-def test_plot_connectome_with_nans(plot_func, adjacency,
-                                   node_coords, base_params):
-    """Smoke test for plot_connectome and plot_connectome_strengh
-    with nans in the adjacency matrix.
-    """
+def test_plot_connectome_with_nans(adjacency, node_coords, base_params):
+    """Smoke test for plot_connectome with nans in the adjacency matrix."""
     adjacency[0, 1] = np.nan
     adjacency[1, 0] = np.nan
-    if plot_func == plot_connectome_strength:
-        base_params.pop("edge_threshold")
-    if plot_func == plot_connectome:
-        base_params["node_color"] = np.array(['green', 'blue', 'k', 'yellow'])
-    plot_func(adjacency, node_coords, **base_params)
+    base_params["node_color"] = np.array(['green', 'blue', 'k', 'yellow'])
+    plot_connectome(adjacency, node_coords, **base_params)
     plt.close()
 
 
-@pytest.mark.parametrize("plot_func", PLOTTING_FUNCS)
-def test_plot_connectome_tuple_node_coords(plot_func, adjacency, node_coords,
+def test_plot_connectome_tuple_node_coords(adjacency, node_coords,
                                            base_params, tmpdir):
-    """Smoke test for plot_connectome and plot_connectome_strength where
-    node_coords is not provided an array but as a list of tuples.
+    """Smoke test for plot_connectome where node_coords is not provided
+    as an array but as a list of tuples.
     """
-    if plot_func == plot_connectome_strength:
-        base_params.pop("edge_threshold")
-    plot_func(adjacency, [tuple(each) for each in node_coords],
-              display_mode='x', **base_params)
+    plot_connectome(
+        adjacency, [tuple(each) for each in node_coords],
+        display_mode='x', **base_params
+    )
     plt.close()
 
 
@@ -128,15 +113,11 @@ def test_plot_connectome_colorbar(colorbar, adjacency, node_coords):
     plt.close()
 
 
-@pytest.mark.parametrize("plot_func", PLOTTING_FUNCS)
-def test_plot_connectome_to_file(plot_func, adjacency, node_coords,
-                                 base_params, tmpdir):
+def test_plot_connectome_to_file(adjacency, node_coords, base_params, tmpdir):
     """Smoke test for plot_connectome and saving to file."""
     base_params['display_mode'] = 'x'
-    if plot_func == plot_connectome_strength:
-        base_params.pop("edge_threshold")
     filename = str(tmpdir.join('temp.png'))
-    display = plot_func(
+    display = plot_connectome(
         adjacency, node_coords, output_file=filename, **base_params
     )
     assert display is None
@@ -276,8 +257,7 @@ def test_plot_connectome_exception_wrong_edge_threshold_format(
         )
 
 
-@pytest.mark.parametrize("plot_func", PLOTTING_FUNCS)
-def test_plot_connectome_wrong_shapes(plot_func):
+def test_plot_connectome_wrong_shapes():
     """Tests that ValueErrors are raised when wrong shapes for node_coords
     or adjacency_matrix are given.
     """
@@ -288,15 +268,15 @@ def test_plot_connectome_wrong_shapes(plot_func):
     with pytest.raises(ValueError,
                        match=r'supposed to have shape \(n, n\).+\(1L?, 2L?\)'
                        ):
-        plot_func(adjacency_matrix[:1, :], node_coords, **kwargs)
+        plot_connectome(adjacency_matrix[:1, :], node_coords, **kwargs)
 
     with pytest.raises(ValueError, match=r'shape \(2L?, 3L?\).+\(2L?,\)'):
-        plot_func(adjacency_matrix, node_coords[:, 2], **kwargs)
+        plot_connectome(adjacency_matrix, node_coords[:, 2], **kwargs)
 
     wrong_adjacency_matrix = np.zeros((3, 3))
     with pytest.raises(ValueError,
                        match=r'Shape mismatch.+\(3L?, 3L?\).+\(2L?, 3L?\)'):
-        plot_func(wrong_adjacency_matrix, node_coords, **kwargs)
+        plot_connectome(wrong_adjacency_matrix, node_coords, **kwargs)
 
 
 @pytest.fixture
@@ -320,56 +300,3 @@ def test_plot_connectome_exceptions_providing_node_info_with_kwargs(
             adjacency, node_coords, node_kwargs=node_kwargs, display_mode='x'
         )
 
-
-def test_connectome_strength(node_coords, adjacency, tmpdir):
-    """Smoke tests for plot_connectome_strength."""
-    args = adjacency, node_coords
-    kwargs = dict()
-    plot_connectome_strength(*args, **kwargs)
-    plt.close()
-    # passing node args
-    plot_connectome_strength(*args, node_size=10, cmap='RdBu')
-    plt.close()
-    plot_connectome_strength(*args, node_size=10, cmap=plt.cm.RdBu)
-    plt.close()
-    # smoke-test with hemispheric sagital cuts
-    plot_connectome_strength(*args, display_mode='lzry')
-    plt.close()
-
-
-def test_plot_connectome_strength_exceptions_non_symmetric_adjacency():
-    """Tests that warning messages are given when the adjacency matrix ends
-    up being non symmetric in plot_connectome_strength.
-    """
-    node_coords = np.arange(2 * 3).reshape((2, 3))
-
-    # Used to speed-up tests because the glass brain is always plotted
-    # before any error occurs
-    kwargs = {'display_mode': 'x'}
-
-    # adjacency_matrix is not symmetric
-    non_symmetric_adjacency_matrix = np.array([[1., 2],
-                                               [0.4, 1.]])
-    with pytest.raises(ValueError,
-                       match='should be symmetric'):
-        plot_connectome_strength(
-            non_symmetric_adjacency_matrix, node_coords, **kwargs
-        )
-    adjacency_matrix = np.array([[1., 2.],
-                                 [2., 1.]])
-    # adjacency_matrix mask is not symmetric
-    masked_adjacency_matrix = np.ma.masked_array(
-        adjacency_matrix, [[False, True], [False, False]])
-
-    with pytest.raises(ValueError, match='non symmetric mask'):
-        plot_connectome_strength(
-            masked_adjacency_matrix, node_coords, **kwargs
-        )
-
-
-def test_plot_connectome_strength_deprecation_warning(node_coords, adjacency):
-    """Tests that a deprecation warning is given when
-    using plot_connectome_strength.
-    """
-    with pytest.deprecated_call():
-        plot_connectome_strength(adjacency, node_coords)

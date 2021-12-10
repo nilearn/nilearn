@@ -47,8 +47,8 @@ _set_mpl_backend()
 from . import cm
 from .img_plotting import (
     plot_img, plot_anat, plot_epi, plot_roi, plot_stat_map,
-    plot_glass_brain, plot_connectome, plot_connectome_strength,
-    plot_markers, plot_prob_atlas, plot_carpet, plot_img_comparison, show)
+    plot_glass_brain, plot_connectome, plot_markers, plot_prob_atlas,
+    plot_carpet, plot_img_comparison, show)
 from .find_cuts import find_xyz_cut_coords, find_cut_slices, \
     find_parcellation_cut_coords, find_probabilistic_atlas_cut_coords
 from .matrix_plotting import (plot_matrix, plot_contrast_matrix,
@@ -71,5 +71,4 @@ __all__ = ['cm', 'plot_img', 'plot_anat', 'plot_epi',
            'find_parcellation_cut_coords',
            'find_probabilistic_atlas_cut_coords',
            'plot_surf', 'plot_surf_stat_map', 'plot_surf_roi',
-           'plot_img_on_surf', 'plot_connectome_strength', 'plot_carpet',
-           'plot_surf_contours']
+           'plot_img_on_surf', 'plot_carpet', 'plot_surf_contours']
