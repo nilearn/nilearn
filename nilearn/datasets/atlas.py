@@ -226,8 +226,14 @@ def fetch_atlas_destrieux_2009(lateralized=True, data_dir=None, url=None,
     data : :func:`sklearn.utils.Bunch`
         Dictionary-like object, contains:
 
-        - Cortical ROIs, lateralized or not (maps)
-        - Labels of the ROIs (labels)
+            - 'maps': :obj:`str`, path to nifti file containing the
+              :class:`~nibabel.nifti1.Nifti1Image` defining the cortical
+              ROIs, lateralized or not. The image has shape ``(76, 93, 76)``,
+              and contains integer values which can be interpreted as the
+              indices in the list of labels.
+            - 'labels': :class:`numpy.recarray`, rec array containing the
+              names of the ROIs.
+            - 'description': :obj:`str`, description of the atlas.
 
     References
     ----------
@@ -274,35 +280,43 @@ def fetch_atlas_harvard_oxford(atlas_name, data_dir=None,
     specified by your FSL installed path given in `data_dir` argument.
     See documentation for details.
 
+    .. note::
+
+        For atlases 'cort-prob-1mm', 'cort-prob-2mm', 'cortl-prob-1mm',
+        'cortl-prob-2mm', 'sub-prob-1mm', and 'sub-prob-2mm', the returned
+        atlas is probabilistic and the :class:`~nibabel.nifti1.Nifti1Image`
+        returned is 4D, with shape ``(182, 218, 182, 48)``.
+        For deterministic atlases, the :class:`~nibabel.nifti1.Nifti1Image`
+        returned is 3D, with shape ``(182, 218, 182)`` and 48 regions
+        (+ background).
+
     Parameters
     ----------
-    atlas_name : string
+    atlas_name : :obj:`str`
         Name of atlas to load. Can be:
-        cort-maxprob-thr0-1mm, cort-maxprob-thr0-2mm,
-        cort-maxprob-thr25-1mm, cort-maxprob-thr25-2mm,
-        cort-maxprob-thr50-1mm, cort-maxprob-thr50-2mm,
-        cort-prob-1mm, cort-prob-2mm,
-        cortl-maxprob-thr0-1mm, cortl-maxprob-thr0-2mm,
-        cortl-maxprob-thr25-1mm, cortl-maxprob-thr25-2mm,
-        cortl-maxprob-thr50-1mm, cortl-maxprob-thr50-2mm,
-        cortl-prob-1mm, cortl-prob-2mm,
-        sub-maxprob-thr0-1mm, sub-maxprob-thr0-2mm,
-        sub-maxprob-thr25-1mm, sub-maxprob-thr25-2mm,
-        sub-maxprob-thr50-1mm, sub-maxprob-thr50-2mm,
-        sub-prob-1mm, sub-prob-2mm
-
-    data_dir : string, optional
-        Path of data directory where data will be stored. Optionally,
-        it can also be a FSL installation directory (which is dependent
-        on your installation).
-        Example, if FSL is installed in /usr/share/fsl/ then
-        specifying as '/usr/share/' can get you Harvard Oxford atlas
-        from your installed directory. Since we mimic same root directory
+        "cort-maxprob-thr0-1mm", "cort-maxprob-thr0-2mm",
+        "cort-maxprob-thr25-1mm", "cort-maxprob-thr25-2mm",
+        "cort-maxprob-thr50-1mm", "cort-maxprob-thr50-2mm",
+        "cort-prob-1mm", "cort-prob-2mm",
+        "cortl-maxprob-thr0-1mm", "cortl-maxprob-thr0-2mm",
+        "cortl-maxprob-thr25-1mm", "cortl-maxprob-thr25-2mm",
+        "cortl-maxprob-thr50-1mm", "cortl-maxprob-thr50-2mm",
+        "cortl-prob-1mm", "cortl-prob-2mm",
+        "sub-maxprob-thr0-1mm", "sub-maxprob-thr0-2mm",
+        "sub-maxprob-thr25-1mm", "sub-maxprob-thr25-2mm",
+        "sub-maxprob-thr50-1mm", "sub-maxprob-thr50-2mm",
+        "sub-prob-1mm", "sub-prob-2mm".
+    %(data_dir)s
+        Optionally, it can also be a FSL installation directory (which is
+        dependent on your installation).
+        Example, if FSL is installed in ``/usr/share/fsl/`` then
+        specifying as '/usr/share/' can get you the Harvard Oxford atlas
+        from your installed directory. Since we mimic the same root directory
         as FSL to load it easily from your installation.
 
-    symmetric_split : bool, optional
-        If True, lateralized atlases of cort or sub with maxprob will be
-        returned. For subcortical types (sub-maxprob), we split every
+    symmetric_split : :obj:`bool`, optional
+        If ``True``, lateralized atlases of cort or sub with maxprob will be
+        returned. For subcortical types (``sub-maxprob``), we split every
         symmetric region in left and right parts. Effectively doubles the
         number of regions.
 
@@ -315,14 +329,22 @@ def fetch_atlas_harvard_oxford(atlas_name, data_dir=None,
 
     Returns
     -------
-    data : sklearn.datasets.base.Bunch
+    data : :func:`sklearn.utils.Bunch`
         Dictionary-like object, keys are:
 
-        - "maps": nibabel.Nifti1Image, 4D maps if a probabilistic atlas is
-          requested and 3D labels if a maximum probabilistic atlas was
-          requested.
+            - 'maps': :class:`~nibabel.nifti1.Nifti1Image`, 4D maps if a
+              probabilistic atlas is requested, and 3D labels if a maximum
+              probabilistic atlas was requested.
 
-        - "labels": string list, labels of the regions in the atlas.
+                .. note::
+
+                    For some atlases, it can be the case that some regions
+                    are no longer present. In this case, the integers in the
+                    3D parcellation image might not be consecutive.
+
+            - 'labels': :obj:`list` of :obj:`str`, list of labels for the
+              regions in the atlas.
+            - 'filename': Same as 'maps'.
 
     See also
     --------
@@ -368,6 +390,7 @@ def fetch_atlas_harvard_oxford(atlas_name, data_dir=None,
     return Bunch(filename=atlas_img, maps=new_atlas_niimg, labels=new_names)
 
 
+@fill_doc
 def fetch_atlas_juelich(atlas_name, data_dir=None,
                         symmetric_split=False,
                         resume=True, verbose=1):
@@ -382,49 +405,62 @@ def fetch_atlas_juelich(atlas_name, data_dir=None,
 
     .. versionadded:: 0.8.1
 
+    .. note::
+
+        For atlases 'prob-1mm', and 'prob-2mm', the returned atlas is
+        probabilistic and the :class:`~nibabel.nifti1.Nifti1Image`
+        returned is 4D, with shape ``(182, 218, 182, 62)``.
+        For deterministic atlases, the :class:`~nibabel.nifti1.Nifti1Image`
+        returned is 3D, with shape ``(182, 218, 182)`` and 62 regions
+        (+ background).
+
     Parameters
     ----------
-    atlas_name : string
+    atlas_name : :obj:`str`
         Name of atlas to load. Can be:
-        maxprob-thr0-1mm,  maxprob-thr0-2mm,
-        maxprob-thr25-1mm, maxprob-thr25-2mm,
-        maxprob-thr50-1mm, maxprob-thr50-2mm,
-        prob-1mm,          prob-2mm
-
-    data_dir : string, optional
-        Path of data directory where data will be stored. Optionally,
-        it can also be a FSL installation directory (which is dependent
-        on your installation).
-        Example, if FSL is installed in /usr/share/fsl/ then
+        "maxprob-thr0-1mm", "maxprob-thr0-2mm",
+        "maxprob-thr25-1mm", "maxprob-thr25-2mm",
+        "maxprob-thr50-1mm", "maxprob-thr50-2mm",
+        "prob-1mm", "prob-2mm".
+    %(data_dir)s
+        Optionally, it can also be a FSL installation directory (which is
+        dependent on your installation).
+        Example, if FSL is installed in ``/usr/share/fsl/``, then
         specifying as '/usr/share/' can get you Juelich atlas
         from your installed directory. Since we mimic same root directory
         as FSL to load it easily from your installation.
 
-    symmetric_split : bool, optional
-        If True, lateralized atlases of cort or sub with maxprob will be
-        returned. For subcortical types (sub-maxprob), we split every
+    symmetric_split : :obj:`bool`, optional
+        If ``True``, lateralized atlases of cort or sub with maxprob will be
+        returned. For subcortical types (``sub-maxprob``), we split every
         symmetric region in left and right parts. Effectively doubles the
         number of regions.
-        NOTE Not implemented for full probabilistic atlas (*-prob-* atlases).
+
+        .. note::
+            Not implemented for full probabilistic atlas (*-prob-* atlases).
+
         Default=False.
-
-    resume : bool, optional
-        Whether to resumed download of a partly-downloaded file.
-        Default=True.
-
-    verbose : int, optional
-        Verbosity level (0 means no message). Default=1.
+    %(resume)s
+    %(verbose)s
 
     Returns
     -------
-    data : sklearn.datasets.base.Bunch
+    data : :func:`sklearn.utils.Bunch`
         Dictionary-like object, keys are:
 
-        - "maps": nibabel.Nifti1Image, 4D maps if a probabilistic atlas is
-          requested and 3D labels if a maximum probabilistic atlas was
-          requested.
+            - 'maps': :class:`~nibabel.nifti1.Nifti1Image`, 4D maps if a
+              probabilistic atlas is requested, and 3D labels if a maximum
+              probabilistic atlas was requested.
 
-        - "labels": string list, labels of the regions in the atlas.
+                .. note::
+
+                    For some atlases, it can be the case that some regions
+                    are no longer present. In this case, the integers in the
+                    3D parcellation image might not be consecutive.
+
+            - 'labels': :obj:`list` of :obj:`str`, list of labels for the
+              regions in the atlas.
+            - 'filename': Same as 'maps'.
 
     See also
     --------
