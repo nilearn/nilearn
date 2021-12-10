@@ -62,8 +62,9 @@ Fixes
 - :func:`~nilearn.datasets.fetch_atlas_destrieux_2009` now returns only labels
   present in the maps images.
   (See PR `#3070 <https://github.com/nilearn/nilearn/pull/3070>`_).
-- :func:`nilearn/plotting/tests/test_find_cuts.py` now returns coordinates and labels having the same order with it of the input labels index
-  (See PR `#3078 <https://github.com/nilearn/nilearn/issues/3078>`_).
+- Function :func:`~nilearn.plotting.find_parcellation_cut_coords` now returns
+  coordinates and labels having the same order as the one of the input labels
+  index (See PR `#3078 <https://github.com/nilearn/nilearn/issues/3078>`_).
 
 Enhancements
 ------------
