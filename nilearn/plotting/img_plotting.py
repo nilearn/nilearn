@@ -630,7 +630,7 @@ def plot_roi(roi_img, bg_img=MNI152TEMPLATE, cut_coords=None,
              output_file=None, display_mode='ortho', figure=None, axes=None,
              title=None, annotate=True, draw_cross=True, black_bg='auto',
              threshold=0.5, alpha=0.7, cmap=plt.cm.gist_ncar, dim='auto',
-             colorbar=False, cbar_tick_format="%.2g", vmin=None, vmax=None,
+             colorbar=False, cbar_tick_format="%i", vmin=None, vmax=None,
              resampling_interpolation='nearest', view_type='continuous',
              linewidths=2.5, **kwargs):
     """Plot cuts of an ROI/mask image (by default 3 cuts: Frontal, Axial, and
@@ -670,8 +670,8 @@ def plot_roi(roi_img, bg_img=MNI152TEMPLATE, cut_coords=None,
         Default=False.
     cbar_tick_format: str, optional
         Controls how to format the tick labels of the colorbar.
-        Ex: use "%%i" to display as integers.
-        Default is '%%.2g' for scientific notation.
+        Ex: use "%%.2g" to use scientific notation.
+        Default is '%%i' to display as integers.
     %(vmin)s
     %(vmax)s
     %(resampling_interpolation)s
