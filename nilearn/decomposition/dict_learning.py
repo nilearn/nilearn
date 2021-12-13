@@ -7,8 +7,6 @@ constitutes output maps
 # Author: Arthur Mensch
 # License: BSD 3 clause
 
-from __future__ import division
-
 import warnings
 
 import numpy as np
@@ -38,7 +36,8 @@ def _compute_loadings(components, data):
 @fill_doc
 class DictLearning(BaseDecomposition):
     """Perform a map learning algorithm based on spatial component sparsity,
-    over a CanICA initialization [1]_.  This yields more stable maps than CanICA.
+    over a :term:`CanICA` initialization [1]_.
+    This yields more stable maps than :term:`CanICA`.
 
      .. versionadded:: 0.2
 
@@ -83,10 +82,8 @@ class DictLearning(BaseDecomposition):
 
     random_state : int or RandomState, optional
         Pseudo number generator state used for random sampling.
-
-    smoothing_fwhm : float, optional
-        If smoothing_fwhm is not None, it gives the size in millimeters of the
-        spatial smoothing to apply to the signal. Default=4mm.
+    %(smoothing_fwhm)s
+        Default=4mm.
 
     standardize : boolean, optional
         If standardize is True, the time-series are centered and normed:
@@ -238,7 +235,7 @@ class DictLearning(BaseDecomposition):
             self.components_init_, data)
 
     def _raw_fit(self, data):
-        """Helper function that direcly process unmasked data
+        """Helper function that directly process unmasked data
 
         Parameters
         ----------

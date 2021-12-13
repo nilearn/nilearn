@@ -43,12 +43,12 @@ def test_high_level_glm_one_session():
             fmri_data[0], design_matrices=design_matrices[0])
 
     # Give a fitted NiftiMasker with a None mask_img_ attribute
-    # and check that the masker parameters are overriden by the
+    # and check that the masker parameters are overridden by the
     # FirstLevelModel parameters
     masker.fit()
     masker.mask_img_ = None
     with pytest.warns(UserWarning,
-                      match="Parameter memory of the masker overriden"):
+                      match="Parameter memory of the masker overridden"):
         FirstLevelModel(mask_img=masker).fit(
             fmri_data[0], design_matrices=design_matrices[0])
 
@@ -470,8 +470,12 @@ def test_fmri_inputs():
         del fi, func_img, mask, d, des, FUNCFILE, _
 
 
-def basic_paradigm():
-    conditions = ['c0', 'c0', 'c0', 'c1', 'c1', 'c1', 'c2', 'c2', 'c2']
+def basic_paradigm(condition_names_have_spaces=False):
+    if condition_names_have_spaces:
+        conditions = ['c 0', 'c 0', 'c 0', 'c 1', 'c 1', 'c 1',
+                      'c 2', 'c 2', 'c 2']
+    else:
+        conditions = ['c0', 'c0', 'c0', 'c1', 'c1', 'c1', 'c2', 'c2', 'c2']
     onsets = [30, 70, 100, 10, 30, 90, 30, 40, 60]
     durations = 1 * np.ones(9)
     events = pd.DataFrame({'trial_type': conditions,
@@ -591,7 +595,7 @@ def test_first_level_contrast_computation():
         model.compute_contrast(c2, 't', 'p_value')
         model.compute_contrast(c2, None, 'effect_size')
         model.compute_contrast(c2, None, 'effect_variance')
-        # formula should work (passing varible name directly)
+        # formula should work (passing variable name directly)
         model.compute_contrast('c0')
         model.compute_contrast('c1')
         model.compute_contrast('c2')
@@ -825,3 +829,37 @@ def test_first_level_predictions_r_square():
 
     r_square_2d = model.masker_.transform(r_square_3d)
     assert_array_less(0., r_square_2d)
+
+
+@pytest.mark.parametrize("hrf_model", [
+    "spm",
+    "spm + derivative",
+    "glover",
+    lambda tr, ov: np.ones(int(tr * ov))
+])
+@pytest.mark.parametrize("spaces", [
+    False,
+    True
+])
+def test_first_level_hrf_model(hrf_model, spaces):
+    """
+    Ensure that FirstLevelModel runs without raising errors
+    for different values of hrf_model. In particular, one checks that it runs
+    without raising errors when given a custom response function.
+    Also ensure that it computes contrasts without raising errors,
+    even when event (ie condition) names have spaces.
+    """
+    shapes, rk = [(10, 10, 10, 25)], 3
+    mask, fmri_data, _ =\
+        generate_fake_fmri_data_and_design(shapes, rk)
+
+    events = basic_paradigm(condition_names_have_spaces=spaces)
+
+    model = FirstLevelModel(t_r=2.0,
+                            mask_img=mask,
+                            hrf_model=hrf_model)
+
+    model.fit(fmri_data, events)
+
+    columns = model.design_matrices_[0].columns
+    model.compute_contrast(f"{columns[0]}-{columns[1]}")

@@ -29,11 +29,7 @@ class MultiPCA(BaseDecomposition):
 
     random_state : int or RandomState, optional
         Pseudo number generator state used for random sampling.
-
-    smoothing_fwhm : float, optional
-        If smoothing_fwhm is not None, it gives the size in millimeters of the
-        spatial smoothing to apply to the signal.
-
+    %(smoothing_fwhm)s
     mask : Niimg-like object, instance of NiftiMasker or MultiNiftiMasker, optional
         Mask to be used on data. If an instance of masker is passed,
         then its mask will be used. If no mask is given,

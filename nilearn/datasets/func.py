@@ -17,7 +17,10 @@ from io import BytesIO
 import nibabel
 import pandas as pd
 from scipy.io import loadmat
-from scipy.io.matlab.miobase import MatReadError
+try:
+    from scipy.io.matlab import MatReadError
+except ImportError:  # SciPy < 1.8
+    from scipy.io.matlab.miobase import MatReadError
 from sklearn.utils import Bunch, deprecated
 
 from .utils import (_get_dataset_dir, _fetch_files, _get_dataset_descr,
@@ -660,7 +663,7 @@ def fetch_localizer_contrasts(contrasts, n_subjects=None, get_tmaps=False,
     def _is_valid_path(path, index, verbose):
         if path not in index:
             if verbose > 0:
-                print("Skiping path '{0}'...".format(path))
+                print("Skipping path '{0}'...".format(path))
             return False
         return True
 
@@ -1233,177 +1236,6 @@ def fetch_megatrawls_netmats(dimensionality=100, timeseries='eigen_regression',
 
 
 @fill_doc
-@deprecated("'fetch_cobre' has been deprecated and will be removed "
-            "in release 0.9 . "
-            "Please consider using a different datasets or downloading it "
-            "with a different tool than nilearn.")
-def fetch_cobre(n_subjects=10, data_dir=None, url=None, verbose=1):
-    """Fetch COBRE datasets preprocessed using NIAK 0.17 under CentOS
-    version 6.3 with Octave version 4.0.2 and the Minc toolkit version 0.3.18.
-
-    Downloads and returns COBRE preprocessed resting state fMRI datasets,
-    covariates and phenotypic information such as demographic, clinical
-    variables, measure of frame displacement FD (an average FD for all the time
-    frames left after censoring).
-
-    Each subject `fmri_XXXXXXX.nii.gz` is a 3D+t nifti volume (150 volumes).
-    WARNING: no confounds were actually regressed from the data, so it can be
-    done interactively by the user who will be able to explore different
-    analytical paths easily.
-
-    For each subject, there is `fmri_XXXXXXX.tsv` files which contains the
-    covariates such as motion parameters, mean CSF signal that should to be
-    regressed out of the functional data.
-
-    `keys_confounds.json`: a json file, that describes each variable mentioned
-    in the files `fmri_XXXXXXX.tsv.gz`. It also contains a list of time frames
-    that have been removed from the time series by censoring for high motion.
-
-    `phenotypic_data.tsv` contains the data of clinical variables that
-    explained in `keys_phenotypic_data.json`
-
-    .. versionadded:: 0.3
-
-    Warnings
-    --------
-    'fetch_cobre' has been deprecated and will be removed in release 0.9.
-
-    Parameters
-    ----------
-    n_subjects : int, optional
-        The number of subjects to load from maximum of 146 subjects.
-        By default, 10 subjects will be loaded. If n_subjects=None,
-        all subjects will be loaded. Default=10.
-    %(data_dir)s
-    %(url)s
-    %(verbose)s
-
-    Returns
-    -------
-    data : Bunch
-        Dictionary-like object, the attributes are:
-
-        - 'func': string list
-            Paths to Nifti images.
-        - 'confounds': string list
-            Paths to .tsv files of each subject, confounds.
-        - 'phenotypic': numpy.recarray
-            Contains data of clinical variables, sex, age, FD.
-        - 'description': data description of the release and references.
-        - 'desc_con': str
-            description of the confounds variables
-        - 'desc_phenotypic': str
-            description of the phenotypic variables.
-
-    Notes
-    -----
-    See `more information about datasets structure
-    <https://figshare.com/articles/COBRE_preprocessed_with_NIAK_0_17_-_lightweight_release/4197885>`_
-
-    """
-    if url is None:
-        # Here we use the file that provides URL for all others
-        url = 'https://api.figshare.com/v2/articles/4197885'
-    dataset_name = 'cobre'
-    data_dir = _get_dataset_dir(dataset_name, data_dir=data_dir,
-                                verbose=verbose)
-    fdescr = _get_dataset_descr(dataset_name)
-
-    # First, fetch the file that references all individual URLs
-    files = _fetch_files(data_dir, [("4197885", url, {})],
-                         verbose=verbose)[0]
-
-    files = json.load(open(files, 'r'))
-    files = files['files']
-    # Index files by name
-    files_ = {}
-    for f in files:
-        files_[f['name']] = f
-    files = files_
-
-    # Fetch the phenotypic file and load it
-    csv_name_gz = 'phenotypic_data.tsv.gz'
-    csv_name = os.path.splitext(csv_name_gz)[0]
-    csv_file_phen = _fetch_files(
-        data_dir, [(csv_name, files[csv_name_gz]['download_url'],
-                    {'md5': files[csv_name_gz].get('md5', None),
-                     'move': csv_name_gz,
-                     'uncompress': True})],
-        verbose=verbose)[0]
-
-    # Load file in filename to numpy arrays
-    names = ['ID', 'Current Age', 'Gender', 'Handedness', 'Subject Type',
-             'Diagnosis', 'Frames OK', 'FD', 'FD Scrubbed']
-
-    csv_array_phen = np.recfromcsv(csv_file_phen, names=names,
-                                   skip_header=True, delimiter='\t')
-
-    # Check number of subjects
-    max_subjects = len(csv_array_phen)
-    if n_subjects is None:
-        n_subjects = max_subjects
-
-    if n_subjects > max_subjects:
-        warnings.warn('Warning: there are only %d subjects' % max_subjects)
-        n_subjects = max_subjects
-
-    sz_count = list(csv_array_phen['subject_type']).count(b'Patient')
-    ct_count = list(csv_array_phen['subject_type']).count(b'Control')
-
-    n_sz = np.round(float(n_subjects) / max_subjects * sz_count).astype(int)
-    n_ct = np.round(float(n_subjects) / max_subjects * ct_count).astype(int)
-
-    # First, restrict the csv files to the adequate number of subjects
-    sz_ids = csv_array_phen[csv_array_phen['subject_type'] ==
-                            b'Patient']['id'][:n_sz]
-    ct_ids = csv_array_phen[csv_array_phen['subject_type'] ==
-                            b'Control']['id'][:n_ct]
-    ids = np.hstack([sz_ids, ct_ids])
-    csv_array_phen = csv_array_phen[np.in1d(csv_array_phen['id'], ids)]
-
-    # Call fetch_files once per subject.
-
-    func = []
-    con = []
-    for i in ids:
-        f = 'fmri_00' + str(i) + '.nii.gz'
-        c_gz = 'fmri_00' + str(i) + '.tsv.gz'
-        c = os.path.splitext(c_gz)[0]
-
-        f, c = _fetch_files(
-            data_dir,
-            [(f, files[f]['download_url'], {'md5': files[f].get('md5', None),
-                                            'move': f}),
-             (c, files[c_gz]['download_url'],
-              {'md5': files[c_gz].get('md5', None),
-               'move': c_gz, 'uncompress': True})
-             ],
-            verbose=verbose)
-        func.append(f)
-        con.append(c)
-
-    # Fetch the the complementary files
-    keys_con = "keys_confounds.json"
-    keys_phen = "keys_phenotypic_data.json"
-
-    csv_keys_con, csv_keys_phen = _fetch_files(
-        data_dir,
-        [(keys_con, files[keys_con]['download_url'],
-          {'md5': files[keys_con].get('md5', None), 'move': keys_con}),
-         (keys_phen, files[keys_phen]['download_url'],
-         {'md5': files[keys_phen].get('md5', None), 'move': keys_phen})
-         ],
-        verbose=verbose)
-
-    files_keys_con = open(csv_keys_con, 'r').read()
-    files_keys_phen = open(csv_keys_phen, 'r').read()
-
-    return Bunch(func=func, confounds=con, phenotypic=csv_array_phen,
-                 description=fdescr, desc_con=files_keys_con,
-                 desc_phenotypic=files_keys_phen)
-
-
-@fill_doc
 def fetch_surf_nki_enhanced(n_subjects=10, data_dir=None,
                             url=None, resume=True, verbose=1):
     """Download and load the NKI enhanced resting-state dataset,
@@ -1678,7 +1510,7 @@ def fetch_development_fmri(n_subjects=None, reduce_confounds=True,
         6 anatomical compcor parameters. This selection only serves the
         purpose of having realistic examples. Depending on your research
         question, other confounds might be more appropriate.
-        If False, returns all fmriprep confounds.
+        If False, returns all :term:`fMRIPrep` confounds.
         Default=True.
     %(data_dir)s
     %(resume)s
@@ -2172,7 +2004,7 @@ def _download_spm_auditory_data(data_dir, subject_dir, subject_id):
     _fetch_file(url, subject_dir)
     try:
         _uncompress_file(archive_path)
-    except:  # noqa: E722
+    except Exception:
         print('Archive corrupted, trying to download it again.')
         return fetch_spm_auditory(data_dir=data_dir, data_name='',
                                   subject_id=subject_id)
@@ -2180,7 +2012,7 @@ def _download_spm_auditory_data(data_dir, subject_dir, subject_id):
 
 def _prepare_downloaded_spm_auditory_data(subject_dir):
     """ Uncompresses downloaded spm_auditory dataset and organizes
-    the data into apprpriate directories.
+    the data into appropriate directories.
 
     Parameters
     ----------
@@ -2423,7 +2255,7 @@ def _download_data_spm_multimodal(data_dir, subject_dir, subject_id):
         _fetch_file(url, subject_dir)
         try:
             _uncompress_file(archive_path)
-        except:  # noqa: E722
+        except Exception:
             print('Archive corrupted, trying to download it again.')
             return fetch_spm_multimodal_fmri(data_dir=data_dir,
                                              data_name='',
@@ -2558,7 +2390,7 @@ def fetch_fiac_first_level(data_dir=None, verbose=1):
     _fetch_file(url, data_dir)
     try:
         _uncompress_file(archive_path)
-    except:  # noqa: E722
+    except Exception:
         print('Archive corrupted, trying to download it again.')
         return fetch_fiac_first_level(data_dir=data_dir)
 

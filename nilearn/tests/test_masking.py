@@ -222,17 +222,6 @@ def test_compute_brain_mask():
         compute_brain_mask(img, verbose=1, mask_type='foo')
 
 
-def test_deprecation_warning_compute_gray_matter_mask():
-    img = Nifti1Image(np.ones((9, 9, 9)), np.eye(4))
-    if distutils.version.LooseVersion(sklearn.__version__) < '0.22':
-        with pytest.deprecated_call():
-            masking.compute_gray_matter_mask(img)
-    else:
-        with pytest.warns(FutureWarning,
-                          match="renamed to 'compute_brain_mask'"):
-            masking.compute_gray_matter_mask(img)
-
-
 def test_apply_mask():
     """ Test smoothing of timeseries extraction
     """

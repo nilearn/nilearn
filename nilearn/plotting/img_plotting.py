@@ -721,10 +721,10 @@ def plot_prob_atlas(maps_img, bg_img=MNI152TEMPLATE, view_type='auto',
         By default view_type == 'auto', means maps will be displayed
         automatically using any one of the three view types. The automatic
         selection of view type depends on the total number of maps.
-        If view_type == 'contours', maps are overlayed as contours
-        If view_type == 'filled_contours', maps are overlayed as contours
+        If view_type == 'contours', maps are overlaid as contours
+        If view_type == 'filled_contours', maps are overlaid as contours
         along with color fillings inside the contours.
-        If view_type == 'continuous', maps are overlayed as continuous
+        If view_type == 'continuous', maps are overlaid as continuous
         colors irrespective of the number maps.
         Default='auto'.
 
@@ -910,7 +910,7 @@ def plot_stat_map(stat_map_img, bg_img=MNI152TEMPLATE, cut_coords=None,
     %(cmap)s
 
         .. note::
-            The ccolormap *must* be symmetrical.
+            The colormap *must* be symmetrical.
 
         Default=`plt.cm.cold_hot`.
     %(symmetric_cbar)s
@@ -1168,142 +1168,6 @@ def plot_connectome(adjacency_matrix, node_coords,
                       edge_threshold=edge_threshold,
                       edge_kwargs=edge_kwargs, node_kwargs=node_kwargs,
                       colorbar=colorbar)
-
-    if output_file is not None:
-        display.savefig(output_file)
-        display.close()
-        display = None
-
-    return display
-
-
-@fill_doc
-def plot_connectome_strength(adjacency_matrix, node_coords, node_size="auto",
-                             cmap=None, output_file=None, display_mode="ortho",
-                             figure=None, axes=None, title=None):
-    """Plot connectome strength on top of the brain glass schematics.
-
-    The strength of a connection is define as the sum of absolute values of
-    the edges arriving to a node.
-
-    Parameters
-    ----------
-    adjacency_matrix : numpy array of shape (n, n)
-        Represents the link strengths of the graph. Assumed to be
-        a symmetric matrix.
-
-    node_coords : numpy array_like of shape (n, 3)
-        3d coordinates of the graph nodes in world space.
-
-    node_size : 'auto' or scalar, optional
-        Size(s) of the nodes in points^2. By default the size of the node is
-        inversely propertionnal to the number of nodes.
-        Default='auto'.
-
-    cmap : str or colormap, optional
-        Colormap used to represent the strength of a node.
-    %(output_file)s
-
-    display_mode : string, optional
-        Choose the direction of the cuts: 'x' - sagittal, 'y' - coronal,
-        'z' - axial, 'l' - sagittal left hemisphere only,
-        'r' - sagittal right hemisphere only, 'ortho' - three cuts are
-        performed in orthogonal directions. Possible values are: 'ortho',
-        'x', 'y', 'z', 'xz', 'yx', 'yz', 'l', 'r', 'lr', 'lzr', 'lyr',
-        'lzry', 'lyrz'. Default='ortho'.
-    %(figure)s
-    %(axes)s
-    %(title)s
-
-    Notes
-    -----
-    The plotted image should in MNI space for this function to work properly.
-
-    This function is deprecated and will be removed in the 0.9.0 release. Use
-    plot_markers instead.
-
-    """
-    dep_msg = ("This function is deprecated and will be "
-               "removed in the 0.9.0 release. Use plot_markers instead.")
-    warnings.warn(dep_msg, DeprecationWarning)
-
-    # input validation
-    if cmap is None:
-        cmap = plt.cm.viridis_r
-    elif isinstance(cmap, str):
-        cmap = plt.get_cmap(cmap)
-
-    node_size = (1 / len(node_coords) * 1e4
-                 if node_size == 'auto' else node_size)
-
-    node_coords = np.asarray(node_coords)
-
-    if sparse.issparse(adjacency_matrix):
-        adjacency_matrix = adjacency_matrix.toarray()
-
-    adjacency_matrix = np.nan_to_num(adjacency_matrix)
-
-    adjacency_matrix_shape = adjacency_matrix.shape
-    if (len(adjacency_matrix_shape) != 2 or  # noqa: W504
-            adjacency_matrix_shape[0] != adjacency_matrix_shape[1]):
-        raise ValueError(
-            "'adjacency_matrix' is supposed to have shape (n, n)."
-            ' Its shape was {0}'.format(adjacency_matrix_shape))
-
-    node_coords_shape = node_coords.shape
-    if len(node_coords_shape) != 2 or node_coords_shape[1] != 3:
-        message = (
-            "Invalid shape for 'node_coords'. You passed an "
-            "'adjacency_matrix' of shape {0} therefore "
-            "'node_coords' should be a array with shape ({0[0]}, 3) "
-            "while its shape was {1}").format(adjacency_matrix_shape,
-                                              node_coords_shape)
-
-        raise ValueError(message)
-
-    if node_coords_shape[0] != adjacency_matrix_shape[0]:
-        raise ValueError(
-            "Shape mismatch between 'adjacency_matrix' "
-            "and 'node_coords'"
-            "'adjacency_matrix' shape is {0}, 'node_coords' shape is {1}"
-            .format(adjacency_matrix_shape, node_coords_shape))
-
-    if not np.allclose(adjacency_matrix, adjacency_matrix.T, rtol=1e-3):
-        raise ValueError("'adjacency_matrix' should be symmetric")
-
-    # For a masked array, masked values are replaced with zeros
-    if hasattr(adjacency_matrix, 'mask'):
-        if not (adjacency_matrix.mask == adjacency_matrix.mask.T).all():
-            raise ValueError(
-                "'adjacency_matrix' was masked with a non symmetric mask")
-        adjacency_matrix = adjacency_matrix.filled(0)
-
-    # plotting
-    region_strength = np.sum(np.abs(adjacency_matrix), axis=0)
-    region_strength /= np.sum(region_strength)
-
-    region_idx_sorted = np.argsort(region_strength)[::-1]
-    strength_sorted = region_strength[region_idx_sorted]
-    coords_sorted = node_coords[region_idx_sorted]
-
-    display = plot_glass_brain(
-        None, display_mode=display_mode, figure=figure, axes=axes, title=title
-    )
-
-    for coord, region in zip(coords_sorted, strength_sorted):
-        color = list(
-            cmap((region - strength_sorted.min()) / strength_sorted.max())
-        )
-        # reduce alpha for the least strong regions
-        color[-1] = (
-            (region - strength_sorted.min()) *  # noqa: W504
-            (1 / (strength_sorted.max() - strength_sorted.min()))
-        )
-        # make color to be a 2D array
-        color = [color]
-        display.add_markers(
-            [coord], marker_color=color, marker_size=node_size
-        )
 
     if output_file is not None:
         display.savefig(output_file)

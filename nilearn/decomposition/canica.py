@@ -33,10 +33,8 @@ class CanICA(MultiPCA):
 
     n_components : int, optional
         Number of components to extract. Default=20.
-
-    smoothing_fwhm : float, optional
-        If smoothing_fwhm is not None, it gives the size in millimeters of the
-        spatial smoothing to apply to the signal. Default=6mm.
+    %(smoothing_fwhm)s
+        Default=6mm.
 
     do_cca : boolean, optional
         Indicate if a Canonical Correlation Analysis must be run after the

@@ -12,7 +12,7 @@ from scipy import sparse
 
 from ..image.resampling import coord_transform
 from .._utils.niimg_conversions import _safe_get_data
-from .._utils import CacheMixin, logger
+from .._utils import CacheMixin, logger, fill_doc
 from .._utils.niimg import img_data_dtype
 from .._utils.niimg_conversions import check_niimg_4d, check_niimg_3d
 from .._utils.class_inspect import get_params
@@ -65,7 +65,7 @@ def _apply_mask_and_get_affinity(seeds, niimg, radius, allow_overlap,
     # Compute world coordinates of all in-mask voxels.
     if niimg is None:
         mask, affine = masking._load_mask_img(mask_img)
-        # Get coordinate for alle voxels inside of mask
+        # Get coordinate for all voxels inside of mask
         mask_coords = np.asarray(np.nonzero(mask)).T.tolist()
         X = None
 
@@ -193,6 +193,7 @@ class _ExtractionFunctor(object):
         return signals, None
 
 
+@fill_doc
 class NiftiSpheresMasker(BaseMasker, CacheMixin):
     """Class for masking of Niimg-like objects using seeds.
 
@@ -217,11 +218,7 @@ class NiftiSpheresMasker(BaseMasker, CacheMixin):
     allow_overlap : boolean, optional
         If False, an error is raised if the maps overlaps (ie at least two
         maps have a non-zero value for the same voxel). Default=False.
-
-    smoothing_fwhm : float, optional
-        If smoothing_fwhm is not None, it gives the full-width half maximum in
-        millimeters of the spatial smoothing to apply to the signal.
-
+    %(smoothing_fwhm)s
     standardize : {False, True, 'zscore', 'psc'}, optional
         Strategy to standardize the signal.
         'zscore': the signal is z-scored. Timeseries are shifted

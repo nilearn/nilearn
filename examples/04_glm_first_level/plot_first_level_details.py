@@ -343,7 +343,7 @@ plot_contrast(first_level_model)
 plt.show()
 
 #########################################################################
-# Not a huge effect. For the sake of simplicity and readibility, we
+# Not a huge effect. For the sake of simplicity and readability, we
 # can drop that one.
 
 #########################################################################
@@ -446,8 +446,8 @@ plt.show()
 # decrease the noise level in images, and reduce the discrepancy
 # between individuals. The drawback is that it biases the shape and
 # position of activation. Here, we simply illustrate the statistical
-# gains.  We use a mild smoothing of 5mm full-width at half maximum
-# (fwhm).
+# gains.  We use a mild smoothing of 5mm
+# :term:`full-width at half maximum<FWHM>` (:term:`FWHM`).
 
 first_level_model = FirstLevelModel(
     t_r, hrf_model='spm + derivative', smoothing_fwhm=5,

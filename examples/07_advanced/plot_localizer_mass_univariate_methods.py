@@ -9,10 +9,11 @@ dataset and seek association between the contrast values and a variate
 that measures the speed of pseudo-word reading. No confounding variate
 is included in the model.
 
-1. A standard Anova is performed. Data smoothed at 5 voxels FWHM are used.
+1. A standard :term:`ANOVA` is performed. Data smoothed at 5
+   :term:`voxels<voxel>` :term:`FWHM` are used.
 
-2. A permuted Ordinary Least Squares algorithm is run at each voxel. Data
-   smoothed at 5 voxels FWHM are used.
+2. A permuted Ordinary Least Squares algorithm is run at each :term:`voxel`.
+   Data smoothed at 5 :term:`voxels<voxel>` :term:`FWHM` are used.
 
 
 """

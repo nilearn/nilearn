@@ -148,7 +148,7 @@ class Contrast(object):
 
     The current implementation is meant to be simple,
     and could be enhanced in the future on the computational side
-    (high-dimensional F constrasts may lead to memory breakage).
+    (high-dimensional F contrasts may lead to memory breakage).
 
     """
     def __init__(self, effect, variance, dim=None, dof=DEF_DOFMAX,

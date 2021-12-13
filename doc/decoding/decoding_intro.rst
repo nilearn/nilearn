@@ -232,7 +232,7 @@ use 4 folds to `fit` your estimator, and 1 to `predict` and measure the errors
 made by your estimators. You repeat this for every combination of folds, and get
 5 prediction "scores", one for each fold.
 
-During the `fit`, :class:`nilearn.decoding.Decoder` object implicitely used a
+During the `fit`, :class:`nilearn.decoding.Decoder` object implicitly used a
 cross-validation: Stratified K-fold by default. You can easily inspect
 the prediction "score" it got in each fold.
 

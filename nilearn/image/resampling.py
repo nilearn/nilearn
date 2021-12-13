@@ -341,7 +341,7 @@ def resample_img(img, target_affine=None, target_shape=None,
         under min(img) are clipped to min(img) and max(img). Note that
         0 is added as an image value for clipping, and it is the padding
         value when extrapolating out of field of view.
-        If False no clip is preformed.
+        If False no clip is performed.
         Default=True.
 
     fill_value : float, optional
@@ -399,7 +399,7 @@ def resample_img(img, target_affine=None, target_shape=None,
     implies that if the given image has non-native endianness then the output
     data in Nifti image will have native dtype. This is only the case when
     if the given target_affine (transformation matrix) is diagonal and
-    homogenous.
+    homogeneous.
 
     """
     from .image import new_img_like  # avoid circular imports
@@ -646,7 +646,7 @@ def resample_to_img(source_img, target_img,
         Fortran ordering. Default="F".
 
     clip : bool, optional
-        If False (default) no clip is preformed.
+        If False (default) no clip is performed.
         If True all resampled image values above max(img) and under min(img) are
         clipped to min(img) and max(img). Default=False.
 

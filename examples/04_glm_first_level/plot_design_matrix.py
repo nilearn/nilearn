@@ -21,7 +21,7 @@ except ImportError:
 import numpy as np
 tr = 1.0  # repetition time is 1 second
 n_scans = 128  # the acquisition comprises 128 scans
-frame_times = np.arange(n_scans) * tr  # here are the correspoding frame times
+frame_times = np.arange(n_scans) * tr  # here are the corresponding frame times
 
 #########################################################################
 # Then we define parameters related to the experimental design.

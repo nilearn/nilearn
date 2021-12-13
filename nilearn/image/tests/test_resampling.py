@@ -790,6 +790,8 @@ def test_coord_transform_trivial():
     assert x.shape == x_.shape
 
 
+@pytest.mark.skipif(not testing.is_64bit(),
+                    reason='This test only runs on 64bits machines.')
 @pytest.mark.skipif(os.environ.get('APPVEYOR') == 'True',
                     reason='This test too slow (7-8 minutes) on AppVeyor')
 @pytest.mark.skipif((os.environ.get('TRAVIS') == 'true'

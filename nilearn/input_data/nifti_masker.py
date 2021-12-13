@@ -117,8 +117,8 @@ class NiftiMasker(BaseMasker, CacheMixin):
     """Applying a mask to extract time-series from Niimg-like objects.
 
     NiftiMasker is useful when preprocessing (detrending, standardization,
-    resampling, etc.) of in-mask voxels is necessary. Use case: working with
-    time series of resting-state or task maps.
+    resampling, etc.) of in-mask :term:`voxels<voxel>` is necessary.
+    Use case: working with time series of resting-state or task maps.
 
     Parameters
     ----------
@@ -136,11 +136,7 @@ class NiftiMasker(BaseMasker, CacheMixin):
         detrended independently. Must be a 1D array of n_samples elements.
         'runs' replaces 'sessions' after release 0.9.0.
         Using 'session' will result in an error after release 0.9.0.
-
-    smoothing_fwhm : float, optional
-        If smoothing_fwhm is not None, it gives the full-width half maximum in
-        millimeters of the spatial smoothing to apply to the signal.
-
+    %(smoothing_fwhm)s
     standardize : {False, True, 'zscore', 'psc'}, optional
         Strategy to standardize the signal.
         'zscore': the signal is z-scored. Timeseries are shifted

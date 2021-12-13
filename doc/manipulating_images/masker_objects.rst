@@ -202,11 +202,6 @@ preparation::
          standardize=False, standardize_confounds=True, t_r=None,
          target_affine=None, target_shape=None, verbose=0)
 
-.. note::
-
-    From scikit-learn 0.20, the argument `cachedir` is deprecated in
-    favour of `location`. Hence `cachedir` might not be seen as here.
-
 The meaning of each parameter is described in the documentation of
 :class:`NiftiMasker` (click on the name :class:`NiftiMasker`), here we
 comment on the most important.
@@ -231,13 +226,14 @@ Smoothing
 
 :class:`NiftiMasker` can apply Gaussian spatial smoothing to the
 neuroimaging data, useful to fight noise or for inter-individual
-differences in neuroanatomy. It is achieved by specifying the full-width
-half maximum (FWHM; in millimeter scale) with the `smoothing_fwhm`
-parameter. Anisotropic filtering is also possible by passing 3 scalars
-``(x, y, z)``, the FWHM along the x, y, and z direction.
+differences in neuroanatomy. It is achieved by specifying the
+:term:`full-width half maximum<FWHM>` (:term:`FWHM`; in millimeter
+scale) with the `smoothing_fwhm` parameter. Anisotropic filtering
+is also possible by passing 3 scalars ``(x, y, z)``, the
+:term:`FWHM` along the x, y, and z direction.
 
-The underlying function handles properly non-cubic voxels by scaling the
-given widths appropriately.
+The underlying function handles properly non-cubic :term:`voxels<voxel>`
+by scaling the given widths appropriately.
 
 .. seealso::
 
@@ -272,7 +268,12 @@ properties, before conversion to voxel signals.
 
   * More complex confounds, measured during the acquision, can be removed
     by passing them to :meth:`NiftiMasker.transform`. If the dataset
-    provides a confounds file, just pass its path to the masker.
+    provides a confounds file, just pass its path to the masker. For
+    :term:`fMRIPrep` outputs, one can use
+    :func:`~nilearn.interfaces.fmriprep.load_confounds` or
+    :func:`~nilearn.interfaces.fmriprep.load_confounds_strategy` to select
+    confound variables with some basic sanity check based on
+    :term:`fMRIPrep` documentation.
 
 .. topic:: **Exercise**
    :class: green
@@ -283,6 +284,12 @@ properties, before conversion to voxel signals.
    Try to enable detrending and run the script:
    does it have a big impact on the result?
 
+.. note::
+
+   Please see the usage example of
+   :func:`~nilearn.interfaces.fmriprep.load_confounds` and
+   :func:`~nilearn.interfaces.fmriprep.load_confounds_strategy` in
+   :doc:`plot_signal_extraction.py <../auto_examples/03_connectivity/plot_signal_extraction>`.
 
 .. seealso::
 

@@ -2,25 +2,37 @@
 Plotting code for nilearn
 """
 # Original Authors: Chris Filo Gorgolewski, Gael Varoquaux
-import os
-import sys
+import importlib
+import warnings
 
 
 ###############################################################################
 # Make sure that we don't get DISPLAY problems when running without X on
 # unices
 def _set_mpl_backend():
-    import matplotlib
+    # We are doing local imports here to avoid polluting our namespace
+    try:
+        import matplotlib
+    except ImportError:
+        if importlib.util.find_spec("pytest") is not None:
+            from .._utils.testing import skip_if_running_tests
+            # No need to fail when running tests
+            skip_if_running_tests('matplotlib not installed')
+        raise
+    else:
+        current_backend = matplotlib.get_backend().lower()
 
-    current_backend = matplotlib.get_backend().lower()
+        try:
+            # Making sure the current backend is usable by matplotlib
+            matplotlib.use(current_backend)
+        except Exception:
+            # If not, switching to default agg backend
+            matplotlib.use("Agg")
+        new_backend = matplotlib.get_backend().lower()
 
-    if 'inline' in current_backend or 'nbagg' in current_backend:
-        return
-    # Set the backend to a non-interactive one for unices without X
-    # (see gh-2560)
-    if (sys.platform not in ('darwin', 'win32') and
-            'DISPLAY' not in os.environ):
-        matplotlib.use('Agg')
+        if new_backend != current_backend:
+            # Matplotlib backend has been changed, let's warn the user
+            warnings.warn(f"Backend changed to {new_backend}...")
 
 
 _set_mpl_backend()
@@ -29,8 +41,8 @@ _set_mpl_backend()
 from . import cm
 from .img_plotting import (
     plot_img, plot_anat, plot_epi, plot_roi, plot_stat_map,
-    plot_glass_brain, plot_connectome, plot_connectome_strength,
-    plot_markers, plot_prob_atlas, plot_carpet, plot_img_comparison, show)
+    plot_glass_brain, plot_connectome, plot_markers, plot_prob_atlas,
+    plot_carpet, plot_img_comparison, show)
 from .find_cuts import find_xyz_cut_coords, find_cut_slices, \
     find_parcellation_cut_coords, find_probabilistic_atlas_cut_coords
 from .matrix_plotting import (plot_matrix, plot_contrast_matrix,
@@ -53,5 +65,4 @@ __all__ = ['cm', 'plot_img', 'plot_anat', 'plot_epi',
            'find_parcellation_cut_coords',
            'find_probabilistic_atlas_cut_coords',
            'plot_surf', 'plot_surf_stat_map', 'plot_surf_roi',
-           'plot_img_on_surf', 'plot_connectome_strength', 'plot_carpet',
-           'plot_surf_contours']
+           'plot_img_on_surf', 'plot_carpet', 'plot_surf_contours']

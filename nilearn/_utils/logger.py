@@ -67,7 +67,6 @@ def log(msg, verbose=1, object_classes=(BaseEstimator, ),
 
         if object_frame is None:  # no object found: use stack_level
             if stack_level >= len(stack):
-                stack_level = -1
                 func_name = '<top_level>'
             else:
                 object_frame, _, _, func_name = stack[stack_level][:4]
