@@ -69,7 +69,47 @@ def _nibabel_deprecation_warnings():
         _nibabel2_deprecation_warning()
 
 
+def _check_dependencies():
+    """Check that all required dependencies have compatible versions installed.
+
+    This does not cover extra requirement groups.
+    """
+    package = pkg_resources.working_set.by_key['nilearn']
+    for req in package.requires():
+        package_name = req.project_name
+
+        # First check if the package is installed
+        try:
+            __import__(package_name)
+        except ImportError as exc:
+            user_friendly_info = (
+                f'Module "{package_name}" could not be found. '
+                'See http://nilearn.github.io/introduction.html#installation '
+                'for installation information.'
+            )
+            exc.args += (user_friendly_info,)
+            # Necessary for Python 3 because the repr/str of ImportError
+            # objects was changed in Python 3
+            if hasattr(exc, 'msg'):
+                exc.msg += '. ' + user_friendly_info
+            raise
+
+        # Now check if the version is compatible with nilearn's requirements
+        dist = pkg_resources.get_distribution(package_name)
+        if dist.version not in req.specifier:
+            msg = (
+                f'{package_name} version installed ({dist.version}) is '
+                f'outside requirements ({req.specifier})'
+            )
+            warnings.warn(
+                message=msg,
+                category=ImportWarning,
+                stacklevel=3,
+            )
+
+
 _nibabel_deprecation_warnings()
+_check_dependencies()
 
 # Temporary work around to address formatting issues in doc tests
 # with NumPy 1.14. NumPy had made more consistent str/repr formatting
