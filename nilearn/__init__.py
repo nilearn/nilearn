@@ -91,13 +91,18 @@ def _check_dependencies():
 
     This does not cover extra requirement groups.
     """
+    NAME_REPLACEMENTS = {
+        "scikit-learn": "sklearn",
+    }
+
     package = pkg_resources.working_set.by_key['nilearn']
     for req in package.requires():
         package_name = req.project_name
+        import_name = NAME_REPLACEMENTS.get(package_name, package_name)
 
         # First check if the package is installed
         try:
-            __import__(package_name)
+            __import__(import_name)
         except ImportError as exc:
             user_friendly_info = (
                 f'Module "{package_name}" could not be found. '
