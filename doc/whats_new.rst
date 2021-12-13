@@ -124,6 +124,8 @@ Changes
   (See PR `#3081 <https://github.com/nilearn/nilearn/pull/3081>`_).
 - Deprecated function ``nilearn.plotting.plot_connectome_strength`` has been removed.
   (See PR `#3082 <https://github.com/nilearn/nilearn/pull/3082>`_).
+- Deprecated function ``nilearn.masking.compute_gray_matter_mask`` has been removed.
+  (See PR `#3090 <https://github.com/nilearn/nilearn/pull/3090>`_).
 - :func:`nilearn.glm.first_level.compute_regressor` will now raise an exception if
   parameter `cond_id` is not a string which could be used to name a python variable.
   For instance, number strings (ex: "1") will no longer be accepted as valid condition names.

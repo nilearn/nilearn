@@ -512,45 +512,6 @@ def compute_multi_background_mask(data_imgs, border_size=2, upper_cutoff=0.85,
     return mask
 
 
-@deprecated("Function 'compute_gray_matter_mask' has been renamed to "
-            "'compute_brain_mask' and 'compute_gray_matter_mask' will be "
-            "removed in release 0.9.0.")
-@_utils.fill_doc
-def compute_gray_matter_mask(target_img, threshold=.5,
-                             connected=True, opening=2, memory=None,
-                             verbose=0):
-    """Compute a mask corresponding to the gray matter part of the brain.
-    The gray matter part is calculated through the resampling of MNI152
-    template gray matter mask onto the target image.
-
-    Parameters
-    ----------
-    target_img : Niimg-like object
-        See http://nilearn.github.io/manipulating_images/input_output.html
-        Images used to compute the mask. 3D and 4D images are accepted.
-        Only the shape and affine of ``target_img`` will be used here.
-
-    threshold : :obj:`float`, optional
-        The value under which the MNI template is cut off.
-        Default=0.5.
-    %(connected)s
-        Default is True
-    %(opening)s
-        Default=2.
-    %(memory)s
-    %(verbose0)s
-
-    Returns
-    -------
-    mask : :class:`nibabel.nifti1.Nifti1Image`
-        The brain mask (3D image).
-    """
-    return compute_brain_mask(target_img=target_img, threshold=threshold,
-                              connected=connected, opening=opening,
-                              memory=memory, verbose=verbose,
-                              mask_type='whole-brain')
-
-
 @_utils.fill_doc
 def compute_brain_mask(target_img, threshold=.5, connected=True, opening=2,
                        memory=None, verbose=0, mask_type='whole-brain'):
