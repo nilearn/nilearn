@@ -437,7 +437,7 @@ def fetch_atlas_juelich(atlas_name, data_dir=None,
         number of regions.
 
         .. note::
-            Not implemented for full probabilistic atlas (*-prob-* atlases).
+            Not implemented for full probabilistic atlas (``*-prob-*`` atlases).
 
         Default=False.
     %(resume)s
