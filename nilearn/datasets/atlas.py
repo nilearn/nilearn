@@ -957,7 +957,7 @@ def fetch_atlas_aal(version='SPM12', data_dir=None, url=None, resume=True,
         For example, to get the name of the region corresponding to label
         5021 in the image, you should do:
 
-        .. code-block::python
+        .. code-block:: python
 
             # This should print 'Lingual_L'
             data.labels[data.indices.index('5021')]
