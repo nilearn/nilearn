@@ -1155,7 +1155,7 @@ def fetch_coords_dosenbach_2010(ordered_regions=True):
         - 'rois': :class:`numpy.recarray`, rec array with the coordinates
           of the 160 ROIs in :term:`MNI` space.
         - 'labels': :class:`numpy.ndarray` of :obj:`str`, list of label
-          names for the 160 ROI.
+          names for the 160 ROIs.
         - 'networks': :class:`numpy.ndarray` of :obj:`str`, list of network
           names for the 160 ROI.
         - 'description': :obj:`str`, description of the dataset.
