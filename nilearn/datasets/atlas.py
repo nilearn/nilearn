@@ -69,7 +69,7 @@ def fetch_atlas_difumo(dimension=64, resolution_mm=2, data_dir=None, resume=True
         - 'labels': :class:`numpy.recarray` containing the labels of
           the regions. The length of the label array corresponds to the
           number of dimensions requested. ``data.labels[i]`` is the label
-          corresponding to map ``i``.
+          corresponding to volume ``i`` in the 'maps' image.
         - 'description': :obj:`str`, general description of the dataset.
 
     References
