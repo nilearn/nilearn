@@ -1,18 +1,20 @@
 """
-Regions extraction using Dictionary Learning and functional connectomes
-=======================================================================
+Regions extraction using :term:`Dictionary learning` and functional connectomes
+===============================================================================
 
 This example shows how to use :class:`nilearn.regions.RegionExtractor`
 to extract spatially constrained brain regions from whole brain maps decomposed
-using dictionary learning and use them to build a functional connectome.
+using :term:`Dictionary learning` and use them to build
+a :term:`functional connectome`.
 
 We used 20 movie-watching functional datasets from
 :func:`nilearn.datasets.fetch_development_fmri` and
 :class:`nilearn.decomposition.DictLearning` for set of brain atlas maps.
 
 This example can also be inspired to apply the same steps to even regions extraction
-using ICA maps. In that case, idea would be to replace dictionary learning to canonical
-ICA decomposition using :class:`nilearn.decomposition.CanICA`
+using :term:`ICA` maps. In that case, idea would be to replace
+:term:`Dictionary learning` to canonical :term:`ICA` decomposition
+using :class:`nilearn.decomposition.CanICA`
 
 Please see the related documentation of :class:`nilearn.regions.RegionExtractor`
 for more details.
@@ -21,7 +23,7 @@ for more details.
 
 ################################################################################
 # Fetch brain development functional datasets
-# ------------------------------------------------------------
+# -------------------------------------------
 #
 # We use nilearn's datasets downloading utilities
 from nilearn import datasets
@@ -31,11 +33,13 @@ func_filenames = rest_dataset.func
 confounds = rest_dataset.confounds
 
 ################################################################################
-# Extract functional networks with DictionaryLearning
-# -----------------------------------------------------------------------
-
-# Import dictionary learning algorithm from decomposition module and call the
-# object and fit the model to the functional datasets
+# Extract functional networks with :term:`Dictionary learning`
+# ------------------------------------------------------------
+#
+# Import :class:`~nilearn.decomposition.DictLearning` from the
+# :mod:`~nilearn.decomposition` module, instantiate the object, and
+# :meth:`~nilearn.decomposition.DictLearning.fit` the model to the
+# functional datasets
 from nilearn.decomposition import DictLearning
 
 # Initialize DictLearning object
@@ -56,11 +60,13 @@ plotting.plot_prob_atlas(components_img, view_type='filled_contours',
 
 ################################################################################
 # Extract regions from networks
-# ------------------------------
-
-# Import Region Extractor algorithm from regions module
-# threshold=0.5 indicates that we keep nominal of amount nonzero voxels across all
-# maps, less the threshold means that more intense non-voxels will be survived.
+# -----------------------------
+#
+# Import :class:`~nilearn.regions.RegionExtractor` from the
+# :mod:`~nilearn.regions` module.
+# ``threshold=0.5`` indicates that we keep nominal of amount nonzero
+# :term:`voxels<voxel>` across all maps, less the threshold means that
+# more intense non-voxels will be survived.
 from nilearn.regions import RegionExtractor
 
 extractor = RegionExtractor(components_img, threshold=0.5,
@@ -85,13 +91,14 @@ plotting.plot_prob_atlas(regions_extracted_img, view_type='filled_contours',
 
 ################################################################################
 # Compute correlation coefficients
-# ---------------------------------
-
+# --------------------------------
+#
 # First we need to do subjects timeseries signals extraction and then estimating
 # correlation matrices on those signals.
-# To extract timeseries signals, we call transform() from RegionExtractor object
-# onto each subject functional data stored in func_filenames.
-# To estimate correlation matrices we import connectome utilities from nilearn
+# To extract timeseries signals, we call
+# :meth:`~nilearn.regions.RegionExtractor.transform` onto each subject
+# functional data stored in ``func_filenames``.
+# To estimate correlation matrices we import connectome utilities from nilearn.
 from nilearn.connectome import ConnectivityMeasure
 
 correlations = []
@@ -112,7 +119,12 @@ mean_correlations = np.mean(correlations, axis=0).reshape(n_regions_extracted,
 
 ###############################################################################
 # Plot resulting connectomes
-# ----------------------------
+# --------------------------
+#
+# First we plot the mean of correlation matrices with
+# :func:`~nilearn.plotting.plot_matrix`, and we use
+# :func:`~nilearn.plotting.plot_connectome` to plot the
+# connectome relations.
 
 title = 'Correlation between %d regions' % n_regions_extracted
 
@@ -130,8 +142,9 @@ plotting.plot_connectome(mean_correlations, coords_connectome,
 ################################################################################
 # Plot regions extracted for only one specific network
 # ----------------------------------------------------
-
-# First, we plot a network of index=4 without region extraction (left plot)
+#
+# First, we plot a network of ``index=4`` without
+# region extraction (left plot).
 from nilearn import image
 
 img = image.index_img(components_img, 4)
@@ -143,7 +156,7 @@ display = plotting.plot_stat_map(img, cut_coords=coords, colorbar=False,
 # Now, we plot (right side) same network after region extraction to show that
 # connected regions are nicely separated.
 # Each brain extracted region is identified as separate color.
-
+#
 # For this, we take the indices of the all regions extracted related to original
 # network given as 4.
 regions_indices_of_map3 = np.where(np.array(regions_index) == 4)

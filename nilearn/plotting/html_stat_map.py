@@ -449,7 +449,7 @@ def view_img(stat_map_img, bg_img='MNI152',
     cut_coords : None, or a tuple of floats
         The MNI coordinates of the point where the cut is performed
         as a 3-tuple: (x, y, z). If None is given, the cuts are calculated
-        automaticaly.
+        automatically.
 
     colorbar : boolean, optional
         If True, display a colorbar on top of the plots. Default=True.

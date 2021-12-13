@@ -3,7 +3,7 @@ Massively univariate analysis of face vs house recognition
 ==========================================================
 
 A permuted Ordinary Least Squares algorithm is run at each voxel in
-order to detemine whether or not it behaves differently under a "face
+order to determine whether or not it behaves differently under a "face
 viewing" condition and a "house viewing" condition.
 We consider the mean image per session and per condition.
 Otherwise, the observations cannot be exchanged at random because

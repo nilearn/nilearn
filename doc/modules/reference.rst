@@ -66,6 +66,7 @@ the :ref:`user guide <user_guide>` for more information and usage examples.
    fetch_atlas_craddock_2012
    fetch_atlas_destrieux_2009
    fetch_atlas_harvard_oxford
+   fetch_atlas_juelich
    fetch_atlas_msdl
    fetch_atlas_difumo
    fetch_coords_power_2011
@@ -94,7 +95,6 @@ the :ref:`user guide <user_guide>` for more information and usage examples.
    fetch_atlas_schaefer_2018
    fetch_oasis_vbm
    fetch_megatrawls_netmats
-   fetch_cobre
    fetch_neurovault
    fetch_neurovault_ids
    fetch_neurovault_auditory_computation_task
@@ -200,6 +200,33 @@ the :ref:`user guide <user_guide>` for more information and usage examples.
    smooth_img
    swap_img_hemispheres
    threshold_img
+
+.. _interfaces_ref:
+
+:mod:`nilearn.interfaces`: Loading components from interfaces
+=============================================================
+
+.. automodule:: nilearn.interfaces
+   :no-members:
+   :no-inherited-members:
+
+:mod:`nilearn.interfaces.fmriprep`
+----------------------------------
+
+.. automodule:: nilearn.interfaces.fmriprep
+   :no-members:
+   :no-inherited-members:
+
+**Functions**:
+
+.. currentmodule:: nilearn.interfaces.fmriprep
+
+.. autosummary::
+   :toctree: generated/
+   :template: function.rst
+
+   load_confounds
+   load_confounds_strategy
 
 .. _io_ref:
 
@@ -341,7 +368,6 @@ the :ref:`user guide <user_guide>` for more information and usage examples.
    plot_stat_map
    plot_glass_brain
    plot_connectome
-   plot_connectome_strength
    plot_markers
    plot_prob_atlas
    plot_carpet
@@ -370,6 +396,7 @@ the :ref:`user guide <user_guide>` for more information and usage examples.
    :template: class.rst
 
    OrthoSlicer
+   PlotlySurfaceFigure
 
 
 .. _signal_ref:
@@ -392,6 +419,7 @@ the :ref:`user guide <user_guide>` for more information and usage examples.
    :toctree: generated/
    :template: function.rst
 
+   butterworth
    clean
    high_variance_confounds
 

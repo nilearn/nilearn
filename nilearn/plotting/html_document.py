@@ -89,7 +89,7 @@ class HTMLDocument(object):
         """
         Used by the Jupyter notebook.
 
-        Users normally won't call this method explicitely.
+        Users normally won't call this method explicitly.
         """
         return self.get_iframe()
 

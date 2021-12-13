@@ -168,14 +168,13 @@ def find_xyz_cut_coords(img, mask_img=None, activation_threshold=None):
 
 
 def _get_auto_mask_bounds(img):
-    """ Compute the bounds of the data with an automaticaly computed mask
+    """ Compute the bounds of the data with an automatically computed mask
     """
     data = _safe_get_data(img)
     affine = img.affine
     if hasattr(data, 'mask'):
         # Masked array
         mask = np.logical_not(data.mask)
-        data = np.asarray(data)
     else:
         # The mask will be anything that is fairly different
         # from the values in the corners
@@ -242,7 +241,7 @@ def find_cut_slices(img, direction='z', n_cuts=7, spacing='auto'):
         Number of cuts in the plot. Default=7.
 
     spacing : 'auto' or int, optional
-        Minimum spacing between cuts (in voxels, not milimeters)
+        Minimum spacing between cuts (in voxels, not millimeters)
         if 'auto', the spacing is .5 / n_cuts * img_length.
         Default='auto'.
 
@@ -427,7 +426,8 @@ def find_parcellation_cut_coords(labels_img, background_label=0, return_label_na
     labels_affine = labels_img.affine
 
     # Grab number of unique values in 3d image
-    unique_labels = set(np.unique(labels_data)) - set([background_label])
+    unique_labels = np.unique(labels_data)
+    unique_labels = np.delete(unique_labels, background_label)
 
     # Loop over parcellation labels, grab center of mass and dump into coords
     # list

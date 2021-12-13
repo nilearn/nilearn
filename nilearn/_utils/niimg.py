@@ -235,7 +235,7 @@ def _repr_niimgs(niimgs, shorten=True):
                    (niimgs.__class__.__name__,
                     repr(niimgs.shape),
                     repr(niimgs.affine))
-    except:
+    except Exception:
         pass
     return _short_repr(repr(niimgs), shorten=shorten)
 

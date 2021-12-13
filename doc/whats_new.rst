@@ -1,8 +1,169 @@
-0.8.1.dev
+0.8.2.dev
 =========
 
 NEW
 ---
+
+- **Support for Python 3.6 is deprecated and will be removed in release 0.10.**
+  Users with a Python 3.6 environment will be warned at their first Nilearn
+  import and encouraged to update to more recent versions of Python.
+- New module :mod:`nilearn.interfaces` to implement loading and saving utilities
+  with various interfaces (fmriprep, bids...).
+  (See PR `#3061 <https://github.com/nilearn/nilearn/pull/3061>`_).
+- New submodule :mod:`nilearn.interfaces.fmriprep` to implement loading utilities
+  for :term:`fMRIPrep`.
+  (See PR `#3061 <https://github.com/nilearn/nilearn/pull/3061>`_).
+- New function :func:`nilearn.interfaces.fmriprep.load_confounds` to load confound
+  variables easily from :term:`fMRIPrep` outputs.
+  (See PR `#2946 <https://github.com/nilearn/nilearn/pull/2946>`_).
+- New function :func:`nilearn.interfaces.fmriprep.load_confounds_strategy` to load
+  confound variables from :term:`fMRIPrep` outputs using four preset strategies:
+  ``simple``, ``scrubbing``, ``compcor``, and ``ica_aroma``.
+  (See PR `#3016 <https://github.com/nilearn/nilearn/pull/3016>`_).
+- Surface plotting functions like :func:`nilearn.plotting.plot_surf_stat_map`
+  now have an `engine` parameter, defaulting to "matplotlib", but which can be
+  set to "plotly". If plotly and kaleido are installed, this will generate an
+  interactive plot of the surface map using plotly instead of matplotlib.
+  Note that this functionality is still experimental, and that some capabilities
+  supported by our matplotlib engine are not yet supported by the plotly engine.
+  (See PR `#2902 <https://github.com/nilearn/nilearn/pull/2902>`_).
+- When using the `plotly` engine, surface plotting functions derived from
+  :func:`~nilearn.plotting.plot_surf` return a new display object, a
+  :class:`~nilearn.plotting.displays.PlotlySurfaceFigure`, which provides a
+  similar interface to the :class:`~matplotlib.figure.Figure` returned with the
+  `matplotlib` engine.
+  (See PR `#3036 <https://github.com/nilearn/nilearn/pull/3036>`_).
+- :class:`~nilearn.input_data.NiftiMapsMasker` can now generate HTML reports in the same
+  way as :class:`~nilearn.input_data.NiftiMasker` and
+  :class:`~nilearn.input_data.NiftiLabelsMasker`. The report enables the users to browse
+  through the spatial maps with a previous and next button. The users can filter the maps
+  they wish to display by passing an integer, or a list of integers to
+  :meth:`~nilearn.input_data.NiftiMapsMasker.generate_report`.
+
+Fixes
+-----
+
+- When a label image with non integer values was provided to the
+  :class:`nilearn.input_data.NiftiLabelsMasker`, its `generate_report`
+  method was raising an ``IndexError``.
+  (See issue `#3007 <https://github.com/nilearn/nilearn/issues/3007>`_ and
+  fix `#3009 <https://github.com/nilearn/nilearn/pull/3009>`_).
+- :func:`nilearn.plotting.plot_markers` did not work when the `display_mode`
+  parameter included `l` and `r` and the parameter `node_size` was provided
+  as an array.
+  (See issue `#3012 <https://github.com/nilearn/nilearn/issues/3012>`_) and fix
+  `#3013 <https://github.com/nilearn/nilearn/pull/3013>`_).
+- :meth:`nilearn.glm.first_level.FirstLevelModel.generate_report` threw a `TypeError`
+  when `FirstLevelModel` was instantiated with `mask_img`
+  being a :class:`~nilearn.input_data.NiftiMasker`.
+  :func:`nilearn.reporting.make_glm_report` was fixed accordingly.
+  (See issue `#3034 <https://github.com/nilearn/nilearn/issues/3034>`_) and fix
+  `#3035 <https://github.com/nilearn/nilearn/pull/3035>`_).
+- :func:`~nilearn.datasets.fetch_atlas_destrieux_2009` now returns only labels
+  present in the maps images.
+  (See PR `#3070 <https://github.com/nilearn/nilearn/pull/3070>`_).
+- Function :func:`~nilearn.plotting.find_parcellation_cut_coords` now returns
+  coordinates and labels having the same order as the one of the input labels
+  index (See PR `#3078 <https://github.com/nilearn/nilearn/issues/3078>`_).
+
+Enhancements
+------------
+
+- :func:`nilearn.image.threshold_img` accepts new parameters `cluster_threshold`
+  and `two_sided`.
+  `cluster_threshold` applies a cluster-size threshold (in voxels).
+  `two_sided`, which is `True` by default, separately thresholds both positive
+  and negative values in the map, as was done previously.
+  When `two_sided` is `False`, only values greater than or equal to the threshold
+  are retained.
+- :func:`nilearn.signal.clean` raises a warning when the user sets
+  parameters `detrend` and `standardize_confound` to False.
+  The user is suggested to set one of
+  those options to `True`, or standardize/demean the confounds before using the
+  function.
+- The :doc:`contributing documentation</development>` and
+  :doc:`maintenance</maintenance>` pages were improved, especially towards ways
+  of contributing to the project which do not require to write code.
+  The roles of the :ref:`triage` were defined more clearly with sections on issue
+  :ref:`issue_labels` and issue :ref:`closing_policy`.
+  (See PR `#3010 <https://github.com/nilearn/nilearn/pull/3010>`_).
+- It is now possible to provide custom :term:`HRF` models to
+  :class:`nilearn.glm.first_level.FirstLevelModel`. The custom model should be
+  defined as a function, or a list of functions, implementing the same API as
+  Nilearn's usual models (see :func:`nilearn.glm.first_level.spm_hrf` for
+  example). The example
+  :ref:`sphx_glr_auto_examples_04_glm_first_level_plot_hrf.py` was
+  also modified to demo how to define custom :term:`HRF` models.
+  (See issue `#2940 <https://github.com/nilearn/nilearn/issues/2940>`_).
+- :class:`nilearn.input_data.NiftiLabelsMasker` now gives a warning when some
+  labels are removed from the label image at transform time due to resampling
+  of the label image to the data image.
+- Function :func:`~nilearn.glm.second_level.non_parametric_inference` now accepts
+  :class:`~pandas.DataFrame` as possible values for its ``second_level_input``
+  parameter. Note that a new parameter ``first_level_contrast`` has been added
+  to this function to enable this feature.
+  (See PR `#3042 <https://github.com/nilearn/nilearn/pull/3042>`_).
+- Tests from `nilearn/plotting/tests/test_img_plotting.py` have been refactored
+  and reorganized in separate files in new folder
+  `nilearn/plotting/tests/test_img_plotting/`.
+  (See PR `#3015 <https://github.com/nilearn/nilearn/pull/3015/files>`_)
+- Once a :class:`~nilearn.glm.second_level.SecondLevelModel` has been fitted and
+  contrasts have been computed, it is now possible to access the ``residuals``,
+  ``predicted``, and ``r_square`` model attributes like it was already possible
+  for :class:`~nilearn.glm.first_level.FirstLevelModel`.
+  (See FR `#3027 <https://github.com/nilearn/nilearn/issues/3027>`_
+  and PR `#3033 <https://github.com/nilearn/nilearn/pull/3033>`_)
+- Importing :mod:`nilearn.plotting` will now raise a warning if the matplotlib
+  backend has been changed from its original value, instead of silently modifying
+  it.
+
+Changes
+-------
+
+- Deprecated function ``nilearn.datasets.fetch_cobre`` has been removed.
+  (See PR `#3081 <https://github.com/nilearn/nilearn/pull/3081>`_).
+- Deprecated function ``nilearn.plotting.plot_connectome_strength`` has been removed.
+  (See PR `#3082 <https://github.com/nilearn/nilearn/pull/3082>`_).
+- Deprecated function ``nilearn.masking.compute_gray_matter_mask`` has been removed.
+  (See PR `#3090 <https://github.com/nilearn/nilearn/pull/3090>`_).
+- :func:`nilearn.glm.first_level.compute_regressor` will now raise an exception if
+  parameter `cond_id` is not a string which could be used to name a python variable.
+  For instance, number strings (ex: "1") will no longer be accepted as valid condition names.
+  In particular, this will also impact
+  :func:`nilearn.glm.first_level.make_first_level_design_matrix` and
+  :class:`nilearn.glm.first_level.FirstLevelModel`, for which proper condition names
+  will also be needed (see PR `#3025 <https://github.com/nilearn/nilearn/pull/3025>`_).
+- Replace parameter `sessions` with `runs` in :func:`nilearn.image.clean_img` as this
+  replacement was already made for :func:`nilearn.signal.clean` in
+  `#2821 <https://github.com/nilearn/nilearn/pull/2821>`_ in order to match BIDS
+  semantics. The use of `sessions` in :func:`nilearn.image.clean_img` is deprecated and
+  will be removed in 0.10.0.
+
+.. _v0.8.1:
+
+0.8.1
+=====
+**Released September 2021**
+
+HIGHLIGHTS
+----------
+
+- New atlas fetcher
+  :func:`nilearn.datasets.fetch_atlas_juelich` to download Juelich atlas from FSL.
+- New grey and white-matter template and mask loading functions:
+  :func:`nilearn.datasets.load_mni152_gm_template`,
+  :func:`nilearn.datasets.load_mni152_wm_template`,
+  :func:`nilearn.datasets.load_mni152_gm_mask`, and
+  :func:`nilearn.datasets.load_mni152_wm_mask`
+- :ref:`development_process` has been reworked. It now provides insights on
+  nilearn organization as a project as well as more explicit
+  :ref:`contribution_guidelines`.
+- :func:`nilearn.image.binarize_img` binarizes images into 0 and 1.
+
+NEW
+---
+- New atlas fetcher
+  :func:`nilearn.datasets.fetch_atlas_juelich` to download Juelich atlas from FSL.
 - :ref:`development_process` has been reworked. It now provides insights on
   nilearn organization as a project as well as more explicit
   :ref:`contribution_guidelines`.
@@ -167,7 +328,7 @@ Enhancements
   to provide a single color for all nodes, or one color per node.
   It defaults to `auto` which colors markers according to the viridis colormap.
 - Refactor :func:`nilearn.signal.clean` to clarify the data flow.
-  Replace `sessions` with `runs` to matchin BIDS semantics and deprecate `sessions` in 0.9.0.
+  Replace `sessions` with `runs` to matching BIDS semantics and deprecate `sessions` in 0.9.0.
   Add argument `filter` and allow a selection of signal filtering strategies:
   * "butterwoth" (butterworth filter)
   * "cosine" (discrete cosine transformation)
@@ -379,11 +540,11 @@ NEW
   :func:`nilearn.plotting.plot_surf_stat_map` in a single figure.
 - :func:`nilearn.plotting.plot_markers` shows network nodes (markers) on a glass
   brain template and color code them according to provided nodal measure (i.e.
-  connection strength). This function will replace
-  :func:`nilearn.plotting.plot_connectome_strength`.
+  connection strength). This function will replace function
+  ``nilearn.plotting.plot_connectome_strength``.
 - New plotting function
   :func:`nilearn.plotting.plot_surf_contours` plots the contours of regions of
-  interest on the surface, optionally overlayed on top of a statistical map.
+  interest on the surface, optionally overlaid on top of a statistical map.
 - The position annotation on the plot methods now implements the `decimals` option
   to enable annotation of a slice coordinate position with the float.
 - New example in
@@ -417,9 +578,9 @@ Fixes
 Changes
 -------
 
-- :func:`nilearn.datasets.fetch_cobre` has been deprecated and will be
+- Function ``nilearn.datasets.fetch_cobre`` has been deprecated and will be
   removed in release 0.9 .
-- :func:`nilearn.plotting.plot_connectome_strength` has been deprecated and will
+- Function ``nilearn.plotting.plot_connectome_strength`` has been deprecated and will
   be removed in release 0.9 .
 
 - :class:`nilearn.connectome.ConnectivityMeasure` can now remove
@@ -452,7 +613,7 @@ Fixes
 Changes
 -------
 
-- Atlas `nilearn.datasets.fetch_nyu_rest` has been deprecated and wil be removed in Nilearn 0.8.0 .
+- Atlas `nilearn.datasets.fetch_nyu_rest` has been deprecated and will be removed in Nilearn 0.8.0 .
 
 Contributors
 ------------
@@ -505,7 +666,7 @@ HIGHLIGHTS
 
  | **Python2 and 3.4 are no longer supported. We recommend upgrading to Python 3.6 minimum.**
  |
- | **Support for Python3.5 wil be removed in the 0.7.x release.**
+ | **Support for Python3.5 will be removed in the 0.7.x release.**
  | Users with a Python3.5 environment will be warned at their first Nilearn import.
  |
  | **joblib is now a dependency**
@@ -536,7 +697,7 @@ NEW
   clusters.
   :class:`nilearn.regions.ReNA`
 - Plot connectome strength
-  Use :func:`nilearn.plotting.plot_connectome_strength` to plot the strength of a
+  Use function ``nilearn.plotting.plot_connectome_strength`` to plot the strength of a
   connectome on a glass brain.  Strength is absolute sum of the edges at a node.
 - Optimization to image resampling
 - New brain development fMRI dataset fetcher
@@ -596,7 +757,7 @@ NEW
     Instead of `coord` and `color`, use `marker_coords` and `marker_color` respectively.
 
 
-- **Support for Python3.5 wil be removed in the 0.7.x release.**
+- **Support for Python3.5 will be removed in the 0.7.x release.**
   Users with a Python3.5 environment will be warned
   at their first Nilearn import.
 
@@ -727,7 +888,7 @@ NEW
   clusters.
   :class:`nilearn.regions.ReNA`
 - Plot connectome strength
-  Use :func:`nilearn.plotting.plot_connectome_strength` to plot the strength of a
+  Use function ``nilearn.plotting.plot_connectome_strength`` to plot the strength of a
   connectome on a glass brain.  Strength is absolute sum of the edges at a node.
 - Optimization to image resampling
   :func:`nilearn.image.resample_img` has been optimized to pad rather than
@@ -885,7 +1046,7 @@ The following people contributed to this release::
 
 NEW
 ---
-- **Support for Python2 & Python3.4 wil be removed in the next release.**
+- **Support for Python2 & Python3.4 will be removed in the next release.**
   We recommend Python 3.6 and up.
   Users with a Python2 or Python3.4 environment will be warned
   at their first Nilearn import.
@@ -907,7 +1068,7 @@ Changes
 - :func:`nilearn.plotting.view_connectome` parameter names are consistent with plot_connectome:
 
   - coords is now node_coord
-  - marker_size is noe node_size
+  - marker_size is now node_size
   - cmap is now edge_cmap
   - threshold is now edge_threshold
 
@@ -1322,7 +1483,7 @@ Bug fixes
 0.4.1
 =====
 
-This bug fix release is focussed on few bug fixes and minor developments.
+This bug fix release is focused on few bug fixes and minor developments.
 
 Enhancements
 ------------
@@ -1442,7 +1603,7 @@ Changes
       issues with recent SciPy version 1.0.0.
 
     - "dim" factor range is slightly increased to -2 to 2 from -1 to 1.
-      Range exceeding -1 meaning more increase in constrast should be
+      Range exceeding -1 meaning more increase in contrast should be
       cautiously set.
 
     - New 'anterior' and 'posterior' view added to the plot_surf family views
@@ -1560,7 +1721,7 @@ Changelog
       Nifti1Image as an input for argument `img`.
 
     - Helper functions `_get_mask_volume` and `_adjust_screening_percentile`
-      are now moved to param_validation file in utilties module to be used in
+      are now moved to param_validation file in utilities module to be used in
       common with Decoder object.
 
 Bug fix
@@ -1605,7 +1766,7 @@ Highlights
 
 * **Dropped support for Python 2.6**
 
-* Minimum required version of NiBabel is now 1.2.0, to support loading annoted
+* Minimum required version of NiBabel is now 1.2.0, to support loading annotated
   data with freesurfer.
 
 Changelog
@@ -1675,7 +1836,7 @@ Enhancements
     - Add fetcher for Allen et al. 2011 RSN atlas in
       :func:`nilearn.datasets.fetch_atlas_allen_2011`.
 
-    - A function :func:`nilearn.datasets.fetch_cobre` is now updated to new
+    - A function ``nilearn.datasets.fetch_cobre`` is now updated to new
       light release of COBRE data (schizophrenia)
 
     - A new example to show how to extract regions on labels image in example
@@ -1850,7 +2011,7 @@ New features
     - The path given to the "memory" argument of object now have their
       "~" expanded to the homedir
 
-    - Display object created by plotting now uniformely expose an
+    - Display object created by plotting now uniformly expose an
       "add_markers" method.
 
     - plotting plot_connectome with colorbar is now implemented in function
@@ -1883,7 +2044,7 @@ New features
     - Mathematical formulas based on numpy functions can be applied on an
       image or a list of images using :func:`nilearn.image.math_img`.
     - Downloader for COBRE datasets of 146 rest fMRI subjects with
-      :func:`nilearn.datasets.fetch_cobre`
+      function ``nilearn.datasets.fetch_cobre``.
     - Downloader for Dosenbach atlas
       :func:`nilearn.datasets.fetch_coords_dosenbach_2010`
     - Fetcher for multiscale functional brain parcellations (BASC)

@@ -122,7 +122,7 @@ class Parcellations(MultiPCA):
     ward, complete, average are used within in Agglomerative Clustering and
     rena will call ReNA.
     kmeans, ward, complete, average are leveraged from scikit-learn.
-    rena is buit into nilearn.
+    rena is built into nilearn.
 
     .. versionadded:: 0.4.1
 

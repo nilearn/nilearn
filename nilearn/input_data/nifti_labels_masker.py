@@ -8,7 +8,11 @@ import warnings
 from joblib import Memory
 
 from .. import _utils
-from .._utils import logger, CacheMixin, _compose_err_msg
+from .._utils.niimg import _safe_get_data
+from .._utils import (logger,
+                      CacheMixin,
+                      _compose_err_msg,
+                      fill_doc)
 from .._utils.class_inspect import get_params
 from .._utils.niimg_conversions import _check_same_fov
 from .. import masking
@@ -36,13 +40,14 @@ class _ExtractionFunctor(object):
             mask_img=self.mask_img)
 
 
+@fill_doc
 class NiftiLabelsMasker(BaseMasker, CacheMixin):
     """Class for masking of Niimg-like objects.
 
     NiftiLabelsMasker is useful when data from non-overlapping volumes should
-    be extracted (contrarily to NiftiMapsMasker). Use case: Summarize brain
-    signals from clusters that were obtained by prior K-means or Ward
-    clustering.
+    be extracted (contrarily to :class:`nilearn.input_data.NiftiMapsMasker`).
+    Use case: Summarize brain signals from clusters that were obtained by prior
+    K-means or Ward clustering.
 
     Parameters
     ----------
@@ -58,18 +63,14 @@ class NiftiLabelsMasker(BaseMasker, CacheMixin):
 
     background_label : number, optional
         Label used in labels_img to represent background.
-        Warning: This value must be consisent with label values and
+        Warning: This value must be consistent with label values and
         image provided.
         Default=0.
 
     mask_img : Niimg-like object, optional
         See http://nilearn.github.io/manipulating_images/input_output.html
         Mask to apply to regions before extracting signals.
-
-    smoothing_fwhm : float, optional
-        If smoothing_fwhm is not None, it gives the full-width half maximum in
-        millimeters of the spatial smoothing to apply to the signal.
-
+    %(smoothing_fwhm)s
     standardize : {False, True, 'zscore', 'psc'}, optional
         Strategy to standardize the signal.
         'zscore': the signal is z-scored. Timeseries are shifted
@@ -136,7 +137,7 @@ class NiftiLabelsMasker(BaseMasker, CacheMixin):
 
     strategy : str, optional
         The name of a valid function to reduce the region with.
-        Must be one of: sum, mean, median, mininum, maximum, variance,
+        Must be one of: sum, mean, median, minimum, maximum, variance,
         standard_deviation. Default='mean'.
 
     reports : boolean, optional
@@ -242,8 +243,9 @@ class NiftiLabelsMasker(BaseMasker, CacheMixin):
             # previously fitted with no func image and is re-fitted
             if 'warning_message' in self._report_content:
                 self._report_content['warning_message'] = None
+            labels_image = image.load_img(labels_image, dtype=int)
             labels_image_data = image.get_data(labels_image)
-            labels_image_affine = image.load_img(labels_image).affine
+            labels_image_affine = labels_image.affine
             # Number of regions excluding the background
             number_of_regions = np.sum(np.unique(labels_image_data)
                                        != self.background_label)
@@ -367,7 +369,8 @@ class NiftiLabelsMasker(BaseMasker, CacheMixin):
                 raise ValueError("Invalid value for resampling_target: " +
                                  str(self.resampling_target))
 
-            mask_data, mask_affine = masking._load_mask_img(self.mask_img_)
+            # Just check that the mask is valid
+            masking._load_mask_img(self.mask_img_)
 
         if not hasattr(self,
                        '_resampled_labels_img_'):
@@ -439,11 +442,27 @@ class NiftiLabelsMasker(BaseMasker, CacheMixin):
             if not _check_same_fov(imgs_, self._resampled_labels_img_):
                 if self.verbose > 0:
                     print("Resampling labels")
+                labels_before_resampling = set(
+                    np.unique(_safe_get_data(self._resampled_labels_img_))
+                )
                 self._resampled_labels_img_ = self._cache(
                     image.resample_img, func_memory_level=2)(
                         self.labels_img_, interpolation="nearest",
                         target_shape=imgs_.shape[:3],
                         target_affine=imgs_.affine)
+                labels_after_resampling = set(
+                    np.unique(_safe_get_data(self._resampled_labels_img_))
+                )
+                labels_diff = labels_before_resampling.difference(
+                    labels_after_resampling
+                )
+                if len(labels_diff) > 0:
+                    warnings.warn("After resampling the label image to the "
+                                  "data image, the following labels were "
+                                  f"removed: {labels_diff}. "
+                                  "Label image only contains "
+                                  f"{len(labels_after_resampling)} labels "
+                                  "(including background).")
             if self.mask_img is not None and not _check_same_fov(
                     imgs_, self._resampled_mask_img):
                 if self.verbose > 0:

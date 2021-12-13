@@ -64,7 +64,19 @@ div.content {
     padding-bottom: 10px;
 }
 
+.devel-alert-banner {
+    background-color: #e74c3c;
+    border-color: #e74c3c;
+    color: #ffffff;
+    padding: 0.2em;
+}
 
+.stable-banner {
+    background-color: #008000;
+    border-color: #e74c3c;
+    color: #ffffff;
+    padding: 0.2em;
+}
 
 div.topic {
     background-color: #eee;
@@ -529,6 +541,7 @@ div.bodywrapper h1 {
 
 div.sphinxsidebar {
     margin: 0;
+    margin-top: 50px;
     padding: 0 15px 15px 0;
     min-width: 226px;
     width: 17%;

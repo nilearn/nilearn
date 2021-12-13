@@ -241,9 +241,9 @@ def test_get_bids_files():
         bids_path = create_fake_bids_dataset(n_sub=10, n_ses=2,
                                              tasks=['localizer', 'main'],
                                              n_runs=[1, 3])
-        # For each possible possible option of file selection we check
-        # that we recover the appropriate amount of files, as included
-        # in the fake bids dataset.
+        # For each possible option of file selection we check that we
+        # recover the appropriate amount of files, as included in the
+        # fake bids dataset.
 
         # 250 files in total related to subject images. Top level files like
         # README not included

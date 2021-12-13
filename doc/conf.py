@@ -55,7 +55,8 @@ extensions = [
               'sphinxcontrib.bibtex',
               'numpydoc',
               'sphinx.ext.linkcode',
-              'sphinx_copybutton'
+              'sphinx_copybutton',
+              'sphinxext.opengraph',
               ]
 
 autosummary_generate = True
@@ -87,7 +88,7 @@ source_suffix = '.rst'
 #source_encoding = 'utf-8'
 
 # Generate the plots for the gallery
-plot_gallery = 'True'
+plot_gallery = True
 
 # The master toctree document.
 master_doc = 'index'
@@ -229,6 +230,11 @@ html_show_sourcelink = False
 # base URL from which the finished HTML is served.
 #html_use_opensearch = ''
 
+# variables to pass to HTML templating engine
+build_dev_html = bool(int(os.environ.get('BUILD_DEV_HTML', False)))
+
+html_context = {'build_dev_html': build_dev_html}
+
 # If nonempty, this is the file name suffix for HTML files (e.g. ".xhtml").
 #html_file_suffix = ''
 
@@ -331,6 +337,7 @@ sphinx_gallery_conf = {
     'gallery_dirs': 'auto_examples',
     # Ignore the function signature leftover by joblib
     'ignore_pattern': 'func_code\.py',
+    'show_memory': not sys.platform.startswith('win'),
     'binder': {
         'org': 'nilearn',
         'repo': 'nilearn.github.io',
@@ -364,3 +371,9 @@ linkcode_resolve = make_linkcode_resolve('nilearn',
                                          'https://github.com/nilearn/'
                                          'nilearn/blob/{revision}/'
                                          '{package}/{path}#L{lineno}')
+
+# -- sphinxext.opengraph configuration -------------------------------------
+ogp_site_url = "https://nilearn.github.io/"
+ogp_image = "https://nilearn.github.io/_static/nilearn-logo.png"
+ogp_use_first_image = True
+ogp_site_name = "Nilearn"

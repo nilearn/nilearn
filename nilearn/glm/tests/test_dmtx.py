@@ -256,7 +256,12 @@ def test_design_matrix6():
 
 
 def test_design_matrix7():
-    # idem test_design_matrix1, but odd experimental paradigm
+    """
+    idem test_design_matrix1, but odd experimental paradigm;
+    code should raise an exception as condition names are not valid
+    pandas.DataFrame column names (and hence the computed design matrix
+    won't be able to call pd.eval when computing contrasts for instance).
+    """
     tr = 1.0
     frame_times = np.linspace(0, 127 * tr, 128)
     conditions = [0, 0, 0, 1, 1, 1, 3, 3, 3]
@@ -267,9 +272,13 @@ def test_design_matrix7():
                            'onset': onsets,
                            'duration': durations})
     hrf_model = 'glover'
-    X, names = design_matrix_light(frame_times, events, hrf_model=hrf_model,
-                                   drift_model='polynomial', drift_order=3)
-    assert len(names) == 7
+
+    with pytest.raises(
+        ValueError,
+        match="At least one regressor name can't be used"
+    ):
+        design_matrix_light(frame_times, events, hrf_model=hrf_model,
+                            drift_model='polynomial', drift_order=3)
 
 
 def test_design_matrix8():

@@ -25,6 +25,17 @@
 <div class=related-wrapper>
     {{relbar()}}
 </div>
+{% if build_dev_html %}
+<div class="devel-alert-banner">
+This is documentation for the <em>unstable development version</em> of Nilearn,
+the current stable version is available <a href="https://nilearn.github.io/stable/index.html">here</a>.
+</div>
+{% else %}
+<div class="stable-banner">
+This is the <em>stable</em> documentation for the latest release of Nilearn,
+the current development version is available <a href="https://nilearn.github.io/dev/index.html">here</a>.
+</div>
+{% endif %}
 {% endblock %}
 
 {% block rootrellink %}
@@ -263,11 +274,11 @@ $(function () {
 
 <h4> News </h4>
   <ul>
+      <li><p><strong>September 2021</strong>: <a href="whats_new.html#v0-8-1">Nilearn 0.8.1 released</a>
+      </p></li>
       <li><p><strong>June 2021</strong>: <a href="whats_new.html#v0-8-0">Nilearn 0.8.0 released</a>
       </p></li>
       <li><p><strong>March 2021</strong>: <a href="whats_new.html#v0-7-1">Nilearn 0.7.1 released</a>
-      </p></li>
-      <li><p><strong>November 2020</strong>: <a href="whats_new.html#v0-7-0">Nilearn 0.7.0 released</a>
       </p></li>
   </ul>
   <ul>

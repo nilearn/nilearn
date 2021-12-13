@@ -97,11 +97,11 @@ def test_downloader(tmp_path, request_mocker):
 
     # To test this feature, we do as follow:
     # - create the data dir with a file that has a specific content
-    # - try to download the dataset but make it fail on purpose (by requesting a
-    #   file that is not in the archive)
+    # - try to download the dataset but make it fail
+    #   on purpose (by requesting a file that is not in the archive)
     # - check that the previously created file is untouched :
-    #   - if sandboxing is faulty, the file would be replaced by the file of the
-    #     archive
+    #   - if sandboxing is faulty, the file would be replaced
+    #     by the file of the archive
     #   - if sandboxing works, the file must be untouched.
 
     local_archive = Path(
@@ -143,104 +143,116 @@ def test_downloader(tmp_path, request_mocker):
     assert stuff == ''
 
 
-def test_fail_fetch_atlas_harvard_oxford(tmp_path, request_mocker):
+def test_fetch_atlas_source(tmp_path, request_mocker):
+
+    # specify non-existing atlas source
+    with pytest.raises(ValueError, match='Atlas source'):
+        atlas._get_atlas_data_and_labels('new_source', 'not_inside')
+
+
+def _write_to_xml(ho_dir, filename, is_symm):
+    with open(os.path.join(ho_dir, filename + '.xml'), 'w') as dm:
+        if(not is_symm):
+            dm.write("<?xml version='1.0' encoding='us-ascii'?>\n"
+                     "<data>\n"
+                     '<label index="0" x="48" y="94" z="35">R1</label>\n'
+                     '<label index="1" x="25" y="70" z="32">R2</label>\n'
+                     '<label index="2" x="33" y="73" z="63">R3</label>\n'
+                     "</data>")
+        else:
+            dm.write("<?xml version='1.0' encoding='us-ascii'?>\n"
+                     "<data>\n"
+                     '<label index="0" x="63" y="86" z="49">Left R1</label>\n'
+                     '<label index="1" x="21" y="86" z="33">Right R1</label>\n'
+                     '<label index="2" x="64" y="69" z="32">Left R2</label>\n'
+                     '<label index="3" x="26" y="70" z="32">Right R2</label>\n'
+                     '<label index="4" x="47" y="75" z="66">Left R3</label>\n'
+                     '<label index="5" x="43" y="80" z="61">Right R3</label>\n'
+                     "</data>")
+        dm.close()
+
+
+def _test_result_xml(res, is_symm):
+    if not is_symm:
+        assert isinstance(res.maps, nibabel.Nifti1Image)
+        assert isinstance(res.labels, list)
+        assert len(res.labels) == 4
+        assert res.labels[0] == "Background"
+        assert res.labels[1] == "R1"
+        assert res.labels[2] == "R2"
+        assert res.labels[3] == "R3"
+    else:
+        assert isinstance(res.maps, nibabel.Nifti1Image)
+        assert isinstance(res.labels, list)
+        assert len(res.labels) == 7
+        assert res.labels[0] == "Background"
+        assert res.labels[1] == "Left R1"
+        assert res.labels[2] == "Right R1"
+        assert res.labels[3] == "Left R2"
+        assert res.labels[4] == "Right R2"
+        assert res.labels[5] == "Left R3"
+        assert res.labels[6] == "Right R3"
+
+
+@pytest.fixture
+def fsl_fetcher(name):
+    if name == "Juelich":
+        return atlas.fetch_atlas_juelich
+    return atlas.fetch_atlas_harvard_oxford
+
+
+@pytest.mark.parametrize('name,prob',
+                         [("HarvardOxford", "cortl-prob-1mm"),
+                          ("Juelich", "prob-1mm")])
+def test_fetch_atlas_fsl_errors(name, prob, fsl_fetcher,
+                                tmp_path, request_mocker):
     # specify non-existing atlas item
     with pytest.raises(ValueError, match='Invalid atlas name'):
-        atlas.fetch_atlas_harvard_oxford('not_inside')
+        fsl_fetcher('not_inside')
+    # Choose a probabilistic atlas with symmetric split
+    with pytest.raises(ValueError, match='Region splitting'):
+        fsl_fetcher(prob, data_dir=str(tmp_path), symmetric_split=True)
 
-    # specify existing atlas item
-    target_atlas = 'cort-maxprob-thr0-1mm'
-    target_atlas_fname = 'HarvardOxford-' + target_atlas + '.nii.gz'
-    ho_dir = str(tmp_path / 'fsl' / 'data' / 'atlases')
-    os.makedirs(ho_dir)
-    nifti_dir = os.path.join(ho_dir, 'HarvardOxford')
-    os.makedirs(nifti_dir)
 
-    target_atlas_nii = os.path.join(nifti_dir, target_atlas_fname)
-
+@pytest.fixture
+def atlas_data():
     # Create false atlas
     atlas_data = np.zeros((10, 10, 10), dtype=int)
-
     # Create an interhemispheric map
     atlas_data[:, :2, :] = 1
-
     # Create a left map
-    atlas_data[:5, 3:5, :] = 2
-
-    # Create a right map, with one voxel on the left side
     atlas_data[5:, 7:9, :] = 3
+    atlas_data[5:, 3, :] = 2
+    # Create a right map, with one voxel on the left side
+    atlas_data[:5:, 3:5, :] = 2
+    atlas_data[:5, 8, :] = 3
     atlas_data[4, 7, 0] = 3
+    return atlas_data
 
+
+@pytest.mark.parametrize('name,label_fname,fname,is_symm,split',
+                         [("HarvardOxford", "-Cortical",
+                           "cort-prob-1mm", False, False),
+                          ("HarvardOxford", "-Subcortical",
+                           "sub-maxprob-thr0-1mm", False, True),
+                          ("HarvardOxford", "-Cortical-Lateralized",
+                           "cortl-maxprob-thr0-1mm", True, True),
+                          ("Juelich", "", "prob-1mm", False, False),
+                          ("Juelich", "", "maxprob-thr0-1mm", False, False),
+                          ("Juelich", "", "maxprob-thr0-1mm", False, True)])
+def test_fetch_atlas_fsl(name, label_fname, fname, is_symm, split,
+                         atlas_data, fsl_fetcher, tmp_path, request_mocker):
+    ho_dir = str(tmp_path / 'fsl' / 'data' / 'atlases')
+    os.makedirs(ho_dir)
+    nifti_dir = os.path.join(ho_dir, name)
+    os.makedirs(nifti_dir)
+    _write_to_xml(ho_dir, f"{name}{label_fname}", is_symm=is_symm)
+    target_atlas_fname = f'{name}-{fname}.nii.gz'
+    target_atlas_nii = os.path.join(nifti_dir, target_atlas_fname)
     nibabel.Nifti1Image(atlas_data, np.eye(4) * 3).to_filename(
         target_atlas_nii)
-
-    dummy = open(os.path.join(ho_dir, 'HarvardOxford-Cortical.xml'), 'w')
-    dummy.write("<?xml version='1.0' encoding='us-ascii'?>\n"
-                "<data>\n"
-                '<label index="0" x="48" y="94" z="35">R1</label>\n'
-                '<label index="1" x="25" y="70" z="32">R2</label>\n'
-                '<label index="2" x="33" y="73" z="63">R3</label>\n'
-                "</data>")
-    dummy.close()
-
-    # when symmetric_split=False (by default), then atlas fetcher should
-    # have maps as string and n_labels=4 with background. Since, we relay on xml
-    # file to retrieve labels.
-    ho_wo_symm = atlas.fetch_atlas_harvard_oxford(target_atlas,
-                                                  data_dir=tmp_path)
-    assert isinstance(ho_wo_symm.maps, str)
-    assert isinstance(ho_wo_symm.labels, list)
-    assert ho_wo_symm.labels[0] == "Background"
-    assert ho_wo_symm.labels[1] == "R1"
-    assert ho_wo_symm.labels[2] == "R2"
-    assert ho_wo_symm.labels[3] == "R3"
-
-    # This section tests with lateralized version. In other words,
-    # symmetric_split=True
-
-    # Dummy xml file for lateralized control of cortical atlas images
-    # shipped with FSL 5.0. Atlases are already lateralized in this version
-    # for cortical type atlases denoted with maxprob but not full prob and but
-    # not also with subcortical.
-
-    # So, we test the fetcher with symmetric_split=True by creating a new
-    # dummy local file and fetch them and test the output variables
-    # accordingly.
-    dummy2 = open(os.path.join(ho_dir, 'HarvardOxford-Cortical-Lateralized.xml'), 'w')
-    dummy2.write("<?xml version='1.0' encoding='us-ascii'?>\n"
-                 "<data>\n"
-                 '<label index="0" x="63" y="86" z="49">Left R1</label>\n'
-                 '<label index="1" x="21" y="86" z="33">Right R1</label>\n'
-                 '<label index="2" x="64" y="69" z="32">Left R2</label>\n'
-                 '<label index="3" x="26" y="70" z="32">Right R2</label>\n'
-                 '<label index="4" x="47" y="75" z="66">Left R3</label>\n'
-                 '<label index="5" x="43" y="80" z="61">Right R3</label>\n'
-                 "</data>")
-    dummy2.close()
-
-    # Here, with symmetric_split=True, atlas maps are returned as nibabel Nifti
-    # image but not string. Now, with symmetric split number of labels should be
-    # more than without split and contain Left and Right tags in the labels.
-
-    # Create dummy image files too with cortl specified for symmetric split.
-    split_atlas_fname = 'HarvardOxford-' + 'cortl-maxprob-thr0-1mm' + '.nii.gz'
-    nifti_target_split = os.path.join(nifti_dir, split_atlas_fname)
-    nibabel.Nifti1Image(atlas_data, np.eye(4) * 3).to_filename(
-        nifti_target_split)
-    ho = atlas.fetch_atlas_harvard_oxford(target_atlas,
-                                          data_dir=tmp_path,
-                                          symmetric_split=True)
-
-    assert isinstance(ho.maps, nibabel.Nifti1Image)
-    assert isinstance(ho.labels, list)
-    assert len(ho.labels) == 7
-    assert ho.labels[0] == "Background"
-    assert ho.labels[1] == "Left R1"
-    assert ho.labels[2] == "Right R1"
-    assert ho.labels[3] == "Left R2"
-    assert ho.labels[4] == "Right R2"
-    assert ho.labels[5] == "Left R3"
-    assert ho.labels[6] == "Right R3"
+    ho_wo = fsl_fetcher(fname, data_dir=str(tmp_path), symmetric_split=split)
+    _test_result_xml(ho_wo, is_symm=is_symm or split)
 
 
 def test_fetch_atlas_craddock_2012(tmp_path, request_mocker):
@@ -309,32 +321,66 @@ def test_fetch_coords_seitzman_2018(request_mocker):
     assert np.any(bunch.networks != np.sort(bunch.networks))
 
 
-def _destrieux_data():
+def _destrieux_data(n_labels=10):
+    """Function mocking the download of the destrieux atlas.
+    Parameter `n_labels` controls the number of labels in the
+    CSV file. The number of labels in the image is 10.
+    """
     data = {"destrieux2009.rst": "readme"}
+    atlas = np.random.randint(0, 10, (10, 10, 10))
+    atlas_img = nibabel.Nifti1Image(atlas, np.eye(4))
+    labels = "\n".join([f"{idx},label {idx}" for idx in range(n_labels)])
+    labels = "index,name\n" + labels
     for lat in ["_lateralized", ""]:
         lat_data = {
-            "destrieux2009_rois_labels{}.csv".format(lat): "name,index",
-            "destrieux2009_rois{}.nii.gz".format(lat): "",
+            "destrieux2009_rois_labels{}.csv".format(lat): labels,
+            "destrieux2009_rois{}.nii.gz".format(lat): atlas_img,
         }
         data.update(lat_data)
     return dict_to_archive(data)
 
 
-def test_fetch_atlas_destrieux_2009(tmp_path, request_mocker):
-    request_mocker.url_mapping["*destrieux2009.tgz"] = _destrieux_data()
-    bunch = atlas.fetch_atlas_destrieux_2009(data_dir=tmp_path,
-                                             verbose=0)
-
-    assert request_mocker.url_count == 1
-    assert bunch['maps'] == str(tmp_path / 'destrieux_2009'
-                                / 'destrieux2009_rois_lateralized.nii.gz')
-
+@pytest.mark.parametrize("n_labels", [10, 11])
+@pytest.mark.parametrize("lateralized", [True, False])
+@pytest.mark.parametrize("clean_labels", [True, False])
+def test_fetch_atlas_destrieux_2009(tmp_path, request_mocker, n_labels,
+                                    lateralized, clean_labels):
+    """Tests for function `fetch_atlas_destrieux_2009`.
+    The atlas is fetched with different combinations of `lateralized`
+    and `n_labels`. In the case `n_labels=11`, the fetcher should be able
+    to remove the extra label ('10') not present in the atlas image.
+    """
+    request_mocker.url_mapping["*destrieux2009.tgz"] = _destrieux_data(
+        n_labels=n_labels
+    )
     bunch = atlas.fetch_atlas_destrieux_2009(
-        lateralized=False, data_dir=tmp_path, verbose=0)
-
+        lateralized=lateralized, data_dir=tmp_path,
+        verbose=0, clean_labels=clean_labels
+    )
     assert request_mocker.url_count == 1
-    assert bunch['maps'] == str(tmp_path / 'destrieux_2009'
-                                / 'destrieux2009_rois.nii.gz')
+    name = '_lateralized' if lateralized else ""
+    assert bunch['maps'] == str(
+        tmp_path / 'destrieux_2009' / f'destrieux2009_rois{name}.nii.gz'
+    )
+    labels_img = set(np.unique(get_data(bunch.maps)))
+    labels = set([label.index for label in bunch.labels])
+    if clean_labels:
+        assert labels_img == labels
+    else:
+        assert labels_img.issubset(labels)
+
+
+def test_fetch_atlas_destrieux_2009_warning_clean_labels(request_mocker):
+    """Tests that ``fetch_atlas_destrieux_2009`` gives a FutureWarning
+    when ``clean_labels`` isn't specified explicitly.
+    """
+    request_mocker.url_mapping["*destrieux2009.tgz"] = _destrieux_data()
+    with pytest.warns(FutureWarning,
+                      match=("Default value for parameter `clean_labels` "
+                             "will change from ``False`` to ``True`` "
+                             "in Nilearn 0.10.")):
+        atlas.fetch_atlas_destrieux_2009()
+    assert request_mocker.url_count == 1
 
 
 def test_fetch_atlas_msdl(tmp_path, request_mocker):
@@ -370,17 +416,17 @@ def test_fetch_atlas_yeo_2011(tmp_path, request_mocker):
 
 
 def test_fetch_atlas_difumo(tmp_path, request_mocker):
-    resolutions = [2, 3] # Valid resolution values
-    dimensions = [64, 128, 256, 512, 1024] # Valid dimension values
-    dimension_urls =  ['pqu9r','wjvd5','3vrct','9b76y','34792']
-    url_mapping = {k:v for k,v in zip(dimensions, dimension_urls)}
+    resolutions = [2, 3]  # Valid resolution values
+    dimensions = [64, 128, 256, 512, 1024]  # Valid dimension values
+    dimension_urls = ['pqu9r', 'wjvd5', '3vrct', '9b76y', '34792']
+    url_mapping = {k: v for k, v in zip(dimensions, dimension_urls)}
     url_count = 1
 
     for dim in dimensions:
         url_count += 1
         url = "*osf.io/{0}/*".format(url_mapping[dim])
         labels = pd.DataFrame(
-            {"Component":  [_ for _ in range(1,dim+1)],
+            {"Component": [_ for _ in range(1, dim + 1)],
              "Difumo_names": ["" for _ in range(dim)],
              "Yeo_networks7": ["" for _ in range(dim)],
              "Yeo_networks17": ["" for _ in range(dim)],
@@ -514,8 +560,7 @@ def test_fetch_atlas_surf_destrieux(tmp_path, request_mocker, verbose=0):
         nibabel.freesurfer.write_annot(
                 os.path.join(data_dir,
                              '%s.aparc.a2009s.annot' % hemi),
-                np.arange(4), np.zeros((4, 5)), 5 * ['a'],
-                )
+                np.arange(4), np.zeros((4, 5)), 5 * ['a'],)
 
     bunch = atlas.fetch_atlas_surf_destrieux(data_dir=tmp_path, verbose=0)
     # Our mock annots have 4 labels
@@ -623,8 +668,8 @@ def test_fetch_atlas_schaefer_2018(tmp_path, request_mocker):
         assert isinstance(data.labels, np.ndarray)
         assert len(data.labels) == n_rois
         assert data.labels[0].astype(str).startswith("{}Networks".
-                                              format(yeo_networks))
+                                                     format(yeo_networks))
         img = nibabel.load(data.maps)
         assert img.header.get_zooms()[0] == resolution_mm
         assert np.array_equal(np.unique(img.dataobj),
-                                   np.arange(n_rois+1))
+                              np.arange(n_rois + 1))

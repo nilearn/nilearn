@@ -32,6 +32,12 @@ If you wish to add a missing term, please `create a new issue`_ or
     CanICA
         `Canonical independent component analysis`_.
 
+    Closing
+        `Closing`_ is, together with :term:`opening<Opening>`, one of the basic
+        operations of `mathematical morphology`_. The closing of a binary image
+        by a structuring element is defined as the :term:`erosion<Erosion>` of
+        the :term:`dilation<Dilation>` of that set.
+
     contrast
         A `contrast`_ is a linear combination of variables (parameters or
         statistics) whose coefficients add up to zero, allowing comparison
@@ -41,6 +47,21 @@ If you wish to add a missing term, please `create a new issue`_ or
         `Decoding`_ consists in predicting, from brain images, the conditions
         associated to trial.
 
+    Dictionary learning
+        `Dictionary learning`_ (or sparse coding) is a representation learning
+        method aiming at finding a sparse representation of the input data as
+        a linear combination of basic elements called atoms. The identification
+        of these atoms composing the dictionary relies on a sparsity principle:
+        maximally sparse representations of the dataset are sought for. Atoms
+        are not required to be orthogonal.
+
+    Dilation
+        `Dilation`_ is, with :term:`erosion<Erosion>` one of the fundamental
+        operations of `mathematical morphology`_ from which other operations
+        like :term:`opening<Opening>` or :term:`closing<Closing>` are based.
+        Dilation uses a structuring element for probing and expanding the
+        shapes contained in the input image.
+
     EEG
         `Electroencephalography`_ is a monitoring method to record electrical
         activity of the brain.
@@ -48,6 +69,13 @@ If you wish to add a missing term, please `create a new issue`_ or
     EPI
         Echo-Planar Imaging. This is the type of sequence used to acquire
         functional or diffusion MRI data.
+
+    Erosion
+        `Erosion`_ is, with :term:`dilation<Dilation>`, one of the fundamental
+        operations in `mathematical morphology`_ from which other operations
+        like :term:`opening<Opening>` or :term:`closing<Closing>` are based.
+        Erosion uses a structuring element for probing and reducing the shapes
+        contained in the input image.
 
     FDR correction
         `False discovery rate`_ controlling procedures are designed to control
@@ -70,6 +98,17 @@ If you wish to add a missing term, please `create a new issue`_ or
         affect the local magnetic field in different ways.
         The signal picked up by the MRI scanner is sensitive to these
         modifications of the local magnetic field.
+
+    fMRIPrep
+        `fMRIPrep`_ is a :term:`fMRI` data preprocessing pipeline designed
+        to provide an interface robust to variations in scan acquisition
+        protocols with minimal user input. It performs basic processing
+        steps (coregistration, normalization, unwarping, noise component
+        extraction, segmentation, skullstripping etc.) providing outputs,
+        often called confounds or nuisance parameters, that can be easily
+        submitted to a variety of group level analyses, including task-based
+        or resting-state :term:`fMRI`, graph theory measures, surface or
+        volume-based statistics, etc.
 
     FPR correction
         False positive rate correction. This refers to the methods employed to
@@ -95,6 +134,11 @@ If you wish to add a missing term, please `create a new issue`_ or
         `Family-wise error rate`_ is the probability of making one or more
         false discoveries, or type I errors when performing multiple
         hypotheses tests.
+    
+    FWHM
+        `FWHM`_ stands for "full width at half maximum". In a distribution, it
+        refers to the width of a filter, expressed as the diameter of the area
+        on which the filter value is above half its maximal value.
 
     GLM
         General Linear Model. This is the name of the models traditionally fit
@@ -127,6 +171,12 @@ If you wish to add a missing term, please `create a new issue`_ or
         `Neurovault`_ is a public repository of unthresholded statistical maps,
         parcellations, and atlases of the human brain.
 
+    Opening
+        `Opening`_ is, together with :term:`closing<Closing>`, one of the basic
+        operations of `mathematical morphology`_. It is defined as the
+        :term:`dilation<Dilation>` of the :term:`erosion<Erosion>` of a set by a
+        structuring element.
+
     parcellation
         Act of dividing the brain into smaller regions, i.e. parcels. Parcellations
         can be defined by many different criteria including anatomical or functional
@@ -154,6 +204,10 @@ If you wish to add a missing term, please `create a new issue`_ or
         `Searchlight analysis`_ consists of scanning the brain with a searchlight.
         That is, a ball of given radius is scanned across the brain volume and the
         prediction accuracy of a classifier trained on the corresponding voxels is measured.
+
+    SNR
+        `SNR`_ stands for "Signal to Noise Ratio" and is a measure comparing the level
+        of a given signal to the level of the background noise.
 
     SpaceNet
         `SpaceNet`_ is a decoder implementing spatial penalties which improve brain
@@ -242,14 +296,26 @@ If you wish to add a missing term, please `create a new issue`_ or
 .. _`Canonical independent component analysis`:
     https://arxiv.org/abs/1006.2300
 
+.. _`Closing`:
+    https://en.wikipedia.org/wiki/Closing_(morphology)
+
 .. _`contrast`:
     https://en.wikipedia.org/wiki/Contrast_(statistics)
 
 .. _`Decoding`:
     https://nilearn.github.io/decoding/decoding_intro.html
 
+.. _`Dictionary learning`:
+    https://en.wikipedia.org/wiki/Sparse_dictionary_learning
+
+.. _`Dilation`:
+    https://en.wikipedia.org/wiki/Dilation_(morphology)
+
 .. _`Electroencephalography`:
     https://en.wikipedia.org/wiki/Electroencephalography
+
+.. _`Erosion`:
+    https://en.wikipedia.org/wiki/Erosion_(morphology)
 
 .. _`False discovery rate`:
     https://en.wikipedia.org/wiki/False_discovery_rate
@@ -257,11 +323,17 @@ If you wish to add a missing term, please `create a new issue`_ or
 .. _`Family-wise error rate`:
     https://en.wikipedia.org/wiki/Family-wise_error_rate
 
+.. _`fMRIPrep`:
+    https://fmriprep.org/en/stable/
+
 .. _`FREM`:
     https://www.sciencedirect.com/science/article/abs/pii/S1053811917308182
 
 .. _`functional connectome`:
     https://nilearn.github.io/connectivity/functional_connectomes.html
+
+.. _`FWHM`:
+    https://en.wikipedia.org/wiki/Full_width_at_half_maximum    
 
 .. _`Independent component analysis`:
     https://en.wikipedia.org/wiki/Independent_component_analysis
@@ -269,8 +341,14 @@ If you wish to add a missing term, please `create a new issue`_ or
 .. _`Magnetoencephalography`:
     https://en.wikipedia.org/wiki/Magnetoencephalography
 
+.. _`mathematical morphology`:
+    https://en.wikipedia.org/wiki/Mathematical_morphology
+
 .. _`Neurovault`:
     https://www.neurovault.org/
+
+.. _`Opening`:
+    https://en.wikipedia.org/wiki/Opening_(morphology)
 
 .. _`Predictive modelling`:
     https://en.wikipedia.org/wiki/Predictive_modelling
@@ -286,6 +364,9 @@ If you wish to add a missing term, please `create a new issue`_ or
 
 .. _`Searchlight analysis`:
     https://nilearn.github.io/decoding/searchlight.html
+
+.. _`SNR`:
+    https://en.wikipedia.org/wiki/Signal-to-noise_ratio
 
 .. _`software`:
     https://www.fil.ion.ucl.ac.uk/spm/software/

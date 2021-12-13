@@ -96,7 +96,7 @@ plt.title('Prediction: accuracy score')
 ##############################################################################
 # Plot a confusion matrix
 # ------------------------
-# We fit on the the first 10 sessions and plot a confusion matrix on the
+# We fit on the first 10 sessions and plot a confusion matrix on the
 # last 2 sessions
 from sklearn.metrics import confusion_matrix
 from nilearn.plotting import plot_matrix, show

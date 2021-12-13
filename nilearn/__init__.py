@@ -21,8 +21,9 @@ connectome              --- Set of tools for computing functional connectivity m
                             and for sparse multi-subjects learning of Gaussian graphical models
 image                   --- Set of functions defining mathematical operations
                             working on Niimg-like objects
-input_data              --- includes scikit-learn tranformers and tools to
-                            preprocess neuro-imaging data
+input_data              --- Includes scikit-learn transformers and tools to
+                            preprocess neuro-imaging data and access fMRIPrep
+                            generated confounds.
 masking                 --- Utilities to compute and operate on brain masks
 mass_univariate         --- Defines a Massively Univariate Linear Model
                             estimated with OLS and permutation test
@@ -34,6 +35,7 @@ signal                  --- Set of preprocessing functions for time series
 
 import gzip
 import os
+import sys
 import pkg_resources
 import warnings
 
@@ -46,6 +48,21 @@ from .version import __version__
 #
 # see also https://github.com/scikit-learn/scikit-learn/pull/15020
 os.environ.setdefault("KMP_INIT_AT_FORK", "FALSE")
+
+
+def _py36_deprecation_warning():
+    py36_warning = ("Python 3.6 support is deprecated and will be removed in "
+                    "release 0.10 of Nilearn. Consider switching to "
+                    "Python 3.8 or 3.9.")
+    warnings.filterwarnings('once', message=py36_warning)
+    warnings.warn(message=py36_warning,
+                  category=FutureWarning,
+                  stacklevel=3)
+
+
+def _python_deprecation_warnings():
+    if sys.version_info.major == 3 and sys.version_info.minor == 6:
+        _py36_deprecation_warning()
 
 
 def _nibabel2_deprecation_warning():
@@ -108,8 +125,10 @@ def _check_dependencies():
             )
 
 
+_python_deprecation_warnings()
 _nibabel_deprecation_warnings()
 _check_dependencies()
+
 
 # Temporary work around to address formatting issues in doc tests
 # with NumPy 1.14. NumPy had made more consistent str/repr formatting

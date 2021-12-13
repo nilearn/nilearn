@@ -111,7 +111,7 @@ def _check_events_file_uses_tab_separators(events_files):
             The following errors are not being handled here,
             as they are handled elsewhere in the calling code.
             Handling them here will beak the calling code,
-            and refactoring that is not straighforward.
+            and refactoring that is not straightforward.
             '''
         except TypeError:  # events is Pandas dataframe.
             pass

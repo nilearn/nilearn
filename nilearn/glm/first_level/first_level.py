@@ -19,10 +19,10 @@ import numpy as np
 import pandas as pd
 from joblib import Memory, Parallel, delayed
 from nibabel import Nifti1Image
-from nibabel.onetime import auto_attr
 from sklearn.base import clone
 from sklearn.cluster import KMeans
 
+from nilearn._utils import fill_doc
 from nilearn._utils.glm import (_check_events_file_uses_tab_separators,
                                 _check_run_tables, get_bids_files,
                                 parse_bids_filename)
@@ -131,7 +131,7 @@ def run_glm(Y, X, noise_model='ar1', bins=100, n_jobs=1, verbose=0):
         'all CPUs'. Default=1.
 
     verbose : int, optional
-        The verbosity level. Defaut=0.
+        The verbosity level. Default=0.
 
     Returns
     -------
@@ -164,7 +164,7 @@ def run_glm(Y, X, noise_model='ar1', bins=100, n_jobs=1, verbose=0):
 
         err_msg = ('AR order must be a positive integer specified as arN, '
                    'where N is an integer. E.g. ar3. '
-                   'You provied {0}.'.format(noise_model))
+                   'You provided {0}.'.format(noise_model))
         try:
             ar_order = int(noise_model[2:])
         except ValueError:
@@ -216,6 +216,7 @@ def run_glm(Y, X, noise_model='ar1', bins=100, n_jobs=1, verbose=0):
     return labels, results
 
 
+@fill_doc
 class FirstLevelModel(BaseGLM):
     """ Implementation of the General Linear Model
     for single session fMRI data.
@@ -225,7 +226,7 @@ class FirstLevelModel(BaseGLM):
     t_r : float
         This parameter indicates repetition times of the experimental runs.
         In seconds. It is necessary to correctly consider times in the design
-        matrix. This parameter is also passed to nilearn.signal.clean.
+        matrix. This parameter is also passed to :func:`nilearn.signal.clean`.
         Please see the related documentation for details.
 
     slice_time_ref : float, optional
@@ -233,13 +234,8 @@ class FirstLevelModel(BaseGLM):
         slice timing preprocessing step of the experimental runs. It is
         expressed as a percentage of the t_r (time repetition), so it can have
         values between 0. and 1. Default=0.
-
-    hrf_model : {'glover', 'spm', 'spm + derivative', \
-            'spm + derivative + dispersion', 'glover + derivative', \
-            'glover + derivative + dispersion', 'fir', None}, optional
-        String that specifies the hemodynamic response function.
+    %(hrf_model)s
         Default='glover'.
-
     drift_model : string, optional
         This parameter specifies the desired drift model for the design
         matrices. It can be 'polynomial', 'cosine' or None.
@@ -251,7 +247,7 @@ class FirstLevelModel(BaseGLM):
         Default=0.01.
 
     drift_order : int, optional
-        This parameter specifices the order of the drift model (in case it is
+        This parameter specifies the order of the drift model (in case it is
         polynomial) for the design matrices. Default=1.
 
     fir_delays : array of shape(n_onsets) or list, optional
@@ -276,11 +272,7 @@ class FirstLevelModel(BaseGLM):
     target_shape : 3-tuple of integers, optional
         This parameter is passed to nilearn.image.resample_img.
         Please see the related documentation for details.
-
-    smoothing_fwhm : float, optional
-        If smoothing_fwhm is not None, it gives the size in millimeters of
-        the spatial smoothing to apply to the signal.
-
+    %(smoothing_fwhm)s
     memory : string, optional
         Path to the directory used to cache the masking process and the glm
         fit. By default, no caching is done.
@@ -415,7 +407,7 @@ class FirstLevelModel(BaseGLM):
             If string, then a path to a csv file is expected.
 
         confounds : pandas Dataframe, numpy array or string or
-            list of pandas DataFrames, numpy arays or strings, optional
+            list of pandas DataFrames, numpy arrays or strings, optional
             Each column in a DataFrame corresponds to a confound variable
             to be included in the regression model of the respective run_img.
             The number of rows must match the number of volumes in the
@@ -502,7 +494,7 @@ class FirstLevelModel(BaseGLM):
                         continue
                     if getattr(self.masker_, param_name) is not None:
                         warn('Parameter %s of the masker'
-                             ' overriden' % param_name)
+                             ' overridden' % param_name)
                     setattr(self.masker_, param_name, our_param)
                 self.masker_.fit(run_imgs[0])
             else:
@@ -761,49 +753,6 @@ class FirstLevelModel(BaseGLM):
             output.append(self.masker_.inverse_transform(voxelwise_attribute))
 
         return output
-
-    @auto_attr
-    def residuals(self):
-        """Transform voxelwise residuals to the same shape
-        as the input Nifti1Image(s)
-
-        Returns
-        -------
-        output : list
-            A list of Nifti1Image(s).
-
-        """
-        return self._get_voxelwise_model_attribute('resid',
-                                                   result_as_time_series=True)
-
-    @auto_attr
-    def predicted(self):
-        """Transform voxelwise predicted values to the same shape
-        as the input Nifti1Image(s)
-
-        Returns
-        -------
-        output : list
-            A list of Nifti1Image(s).
-
-        """
-        return self._get_voxelwise_model_attribute('predicted',
-                                                   result_as_time_series=True)
-
-    @auto_attr
-    def r_square(self):
-        """Transform voxelwise r-squared values to the same shape
-        as the input Nifti1Image(s)
-
-        Returns
-        -------
-        output : list
-            A list of Nifti1Image(s).
-
-        """
-        return self._get_voxelwise_model_attribute('r_square',
-                                                   result_as_time_series=False
-                                                   )
 
 
 def first_level_from_bids(dataset_path, task_label, space_label=None,

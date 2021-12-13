@@ -54,8 +54,33 @@ url : :obj:`str`, optional
 docdict['smoothing_fwhm'] = """
 smoothing_fwhm : :obj:`float`, optional.
     If ``smoothing_fwhm`` is not ``None``, it gives
-    the full-width at half maximum in millimeters
+    the :term:`full-width at half maximum<FWHM>` in millimeters
     of the spatial smoothing to apply to the signal."""
+
+# fwhm
+docdict['fwhm'] = """
+fwhm : scalar, :class:`numpy.ndarray`, or :obj:`tuple`, or :obj:`list`,\
+or 'fast' or None, optional
+    Smoothing strength, as a :term:`full-width at half maximum<FWHM>`,
+    in millimeters:
+
+        - If a nonzero scalar is given, width is identical in all 3 directions.
+        - If a :class:`numpy.ndarray`, :obj:`tuple`, or :obj:`list` is given,
+          it must have 3 elements, giving the :term:`FWHM` along each axis.
+          If any of the elements is zero or None, smoothing is not performed
+          along that axis.
+        - If `fwhm='fast'`, a fast smoothing will be performed with a filter
+          [0.2, 1, 0.2] in each direction and a normalisation to preserve the
+          local average value.
+        - If ``fwhm`` is None, no filtering is performed (useful when just
+          removal of non-finite values is needed).
+
+    .. note::
+
+        In corner case situations, `fwhm` is simply kept to None when `fwhm`
+        is specified as `fwhm=0`.
+
+"""
 
 # Standardize
 standardize = """
@@ -66,6 +91,19 @@ standardize : :obj:`bool`, optional.
     Default={}."""
 docdict['standardize'] = standardize.format('True')
 docdict['standardize_false'] = standardize.format('False')
+
+# standardize_confounds
+docdict['standardize_confounds'] = """
+standardize_confounds : :obj:`bool`, optional
+    If set to True, the confounds are z-scored: their mean is put
+    to 0 and their variance to 1 in the time dimension.
+    Default=True."""
+
+# ensure_finite
+docdict['ensure_finite'] = """
+ensure_finite : :obj:`bool`, optional
+    If True, the non-finite values (NANs and infs) found in the data
+    will be replaced by zeros."""
 
 # detrend
 docdict['detrend'] = """
@@ -94,15 +132,75 @@ target_shape : :obj:`tuple` or :obj:`list`, optional.
 # Low_pass
 docdict['low_pass'] = """
 low_pass : :obj:`float` or None, optional
-    Low cutoff frequency in Hertz.
-    If None, no low-pass filtering will be performed.
-    Default=None."""
+    Low cutoff frequency in Hertz. If specified, signals above this
+    frequency will be filtered out. If None, no low-pass filtering
+    will be performed. Default=None."""
+
+# lower_cutoff
+docdict['lower_cutoff'] = """
+lower_cutoff : :obj:`float`, optional
+    Lower fraction of the histogram to be discarded."""
+
+# upper_cutoff
+docdict['upper_cutoff'] = """
+upper_cutoff : :obj:`float`, optional
+    Upper fraction of the histogram to be discarded."""
+
+# connected
+docdict['connected'] = """
+connected : :obj:`bool`, optional
+    If connected is True, only the largest connect component is kept."""
+
+# border_size
+docdict['border_size'] = """
+border_size : :obj:`int`, optional
+    The size, in :term:`voxel` of the border used on the side of
+    the image to determine the value of the background."""
+
+# opening
+docdict['opening'] = """
+opening : :obj:`bool` or :obj:`int`, optional
+    This parameter determines whether a morphological
+    :term:`opening<Opening>` is performed, to keep only large structures.
+    This step is useful to remove parts of the skull that might have been
+    included. ``opening`` can be:
+
+        - A boolean : If False, no :term:`opening<Opening>` is performed.
+          If True, it is equivalent to ``opening=1``.
+        - An integer `n`: The :term:`opening<Opening>` is performed via `n`
+          :term:`erosions<Erosion>` (see :func:`scipy.ndimage.binary_erosion`).
+          The largest connected component is then estimated if ``connected`` is
+          set to True, and 2`n` :term:`dilation<Dilation>` operations are
+          performed (see :func:`scipy.ndimage.binary_dilation`) followed by
+          `n` :term:`erosions<Erosion>`. This corresponds to 1
+          :term:`opening<Opening>` operation of order `n` followed by a
+          :term:`closing<Closing>` operator of order `n`.
+
+    .. note::
+
+        Turning off :term:`opening<Opening>` (``opening=False``) will also
+        prevent any smoothing applied to the image during the mask computation.
+
+"""
+
+# mask_type
+docdict['mask_type'] = """
+mask_type : {'whole-brain', 'gm', 'wm'}, optional
+    Type of mask to be computed:
+
+        - 'whole-brain': Computes the whole-brain mask.
+        - 'gm': Computes the grey-matter mask.
+        - 'wm': Computes the white-matter mask.
+
+    Default = 'whole-brain'.
+
+"""
 
 # High pass
 docdict['high_pass'] = """
 high_pass : :obj:`float`, optional
-    High cutoff frequency in Hertz.
-    Default=None."""
+    High cutoff frequency in Hertz. If specified, signals below this
+    frequency will be filtered out. Default=None."""
 
 # t_r
 docdict['t_r'] = """
@@ -172,7 +270,7 @@ cut_coords : None, a :obj:`tuple` of :obj:`float`, or :obj:`int`, optional
           be a 3-tuple: ``(x, y, z)``
         - For ``display_mode == 'x'``, 'y', or 'z', then these are
           the coordinates of each cut in the corresponding direction.
-        - If ``None`` is given, the cuts are calculated automaticaly.
+        - If ``None`` is given, the cuts are calculated automatically.
         - If ``display_mode`` is 'mosaic', and the number of cuts is the same
           for all directions, ``cut_coords`` can be specified as an integer.
           It can also be a length 3 tuple specifying the number of cuts for
@@ -204,7 +302,7 @@ extractor : {'local_regions', 'connected_components'}, optional
 
         - 'local_regions': each component/region is extracted based on
           their maximum peak value to define a seed marker and then using
-          random walker segementation algorithm on these markers for region
+          random walker segmentation algorithm on these markers for region
           separation.
 
     Default='local_regions'."""
@@ -431,6 +529,54 @@ linewidths : :obj:`float`, optional
     Set the boundary thickness of the contours.
     Only reflects when ``view_type=contours``."""
 
+# hrf_model
+docdict['hrf_model'] = """
+hrf_model : :obj:`str`, function, list of functions, or None
+    This parameter defines the :term:`HRF` model to be used.
+    It can be a string if you are passing the name of a model
+    implemented in Nilearn.
+    Valid names are:
+
+        - 'spm': This is the :term:`HRF` model used in :term:`SPM`.
+          See :func:`nilearn.glm.first_level.spm_hrf`.
+        - 'spm + derivative': SPM model plus its time derivative.
+          This gives 2 regressors.
+          See :func:`nilearn.glm.first_level.spm_hrf`, and
+          :func:`nilearn.glm.first_level.spm_time_derivative`.
+        - 'spm + derivative + dispersion': Idem, plus dispersion
+          derivative. This gives 3 regressors.
+          See :func:`nilearn.glm.first_level.spm_hrf`,
+          :func:`nilearn.glm.first_level.spm_time_derivative`,
+          and :func:`nilearn.glm.first_level.spm_dispersion_derivative`.
+        - 'glover': This corresponds to the Glover :term:`HRF`.
+          See :func:`nilearn.glm.first_level.glover_hrf`.
+        - 'glover + derivative': The Glover :term:`HRF` + time
+          derivative. This gives 2 regressors.
+          See :func:`nilearn.glm.first_level.glover_hrf`, and
+          :func:`nilearn.glm.first_level.glover_time_derivative`.
+        - 'glover + derivative + dispersion': Idem, plus dispersion
+          derivative. This gives 3 regressors.
+          See :func:`nilearn.glm.first_level.glover_hrf`,
+          :func:`nilearn.glm.first_level.glover_time_derivative`, and
+          :func:`nilearn.glm.first_level.glover_dispersion_derivative`.
+        - 'fir': Finite impulse response basis. This is a set of
+          delayed dirac models.
+
+    It can also be a custom model. In this case, a function should
+    be provided for each regressor. Each function should behave as the
+    other models implemented within Nilearn. That is, it should take
+    both `t_r` and `oversampling` as inputs and return a sample numpy
+    array of appropriate shape.
+
+    .. note::
+        It is expected that `spm` standard and `glover` models would
+        not yield large differences in most cases.
+
+    .. note::
+        In case of `glover` and `spm` models, the derived regressors
+        are orthogonalized wrt the main one.
+
+"""
 # fsaverage options
 docdict['fsaverage_options'] = """
 

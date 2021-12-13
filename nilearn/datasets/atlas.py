@@ -11,11 +11,12 @@ import shutil
 import nibabel as nb
 import numpy as np
 from numpy.lib import recfunctions
+import re
 from sklearn.utils import Bunch
 
 from .utils import _get_dataset_dir, _fetch_files, _get_dataset_descr
 from .._utils import check_niimg, fill_doc
-from ..image import new_img_like, get_data
+from ..image import new_img_like, get_data, reorder_img
 
 _TALAIRACH_LEVELS = ['hemisphere', 'lobe', 'gyrus', 'tissue', 'ba']
 
@@ -180,27 +181,54 @@ def fetch_atlas_craddock_2012(data_dir=None, url=None, resume=True, verbose=1):
     return Bunch(**params)
 
 
+def _clean_labels(image, labels):
+    """Helper function removing labels that do not appear in the image."""
+    labels_in_img = set(np.unique(get_data(image)))
+    labels_set = set([label.index for label in labels])
+    diff = labels_set.difference(labels_in_img)
+    if len(diff) == 0:
+        return labels
+    cleaned_labels = np.array(
+        [label for label in labels if label.index not in diff],
+        dtype=[('index', '<i8'), ('name', 'S27')]
+    )
+    return cleaned_labels.view(np.recarray)
+
+
 @fill_doc
 def fetch_atlas_destrieux_2009(lateralized=True, data_dir=None, url=None,
-                               resume=True, verbose=1):
-    """Download and load the Destrieux cortical atlas (dated 2009)
+                               resume=True, verbose=1, clean_labels=None):
+    """Download and load the Destrieux cortical atlas (dated 2009).
 
-    see :footcite:`Fischl2004Automatically`,
+    See :footcite:`Fischl2004Automatically`,
     and :footcite:`Destrieux2009sulcal`.
+
+    .. note::
+
+        Some labels from the list of labels might not be present in the
+        atlas image, which can be an issue in some specific cases. In order
+        to clean the list of labels and keep only the ones present in the
+        image, use ``clean_labels=True``.
 
     Parameters
     ----------
-    lateralized : boolean, optional
+    lateralized : :obj:`bool`, optional
         If True, returns an atlas with distinct regions for right and left
         hemispheres. Default=True.
     %(data_dir)s
     %(url)s
     %(resume)s
     %(verbose)s
+    clean_labels : :obj:`bool`, optional
+        If set to ``True``, labels which do not appear in the image will
+        be removed from the list of labels.
+        Default=False.
+
+        .. versionadded:: 0.8.2
 
     Returns
     -------
-    data : sklearn.datasets.base.Bunch
+    data : :func:`sklearn.utils.Bunch`
         Dictionary-like object, contains:
 
         - Cortical ROIs, lateralized or not (maps)
@@ -211,6 +239,11 @@ def fetch_atlas_destrieux_2009(lateralized=True, data_dir=None, url=None,
     .. footbibliography::
 
     """
+    if clean_labels is None:
+        warnings.warn("Default value for parameter `clean_labels` will "
+                      "change from ``False`` to ``True`` in Nilearn 0.10.",
+                      category=FutureWarning)
+        clean_labels = False
     if url is None:
         url = "https://www.nitrc.org/frs/download.php/11942/"
 
@@ -235,6 +268,8 @@ def fetch_atlas_destrieux_2009(lateralized=True, data_dir=None, url=None,
     with open(files_[2], 'r') as rst_file:
         params['description'] = rst_file.read()
 
+    if clean_labels:
+        params['labels'] = _clean_labels(params['maps'], params['labels'])
     return Bunch(**params)
 
 
@@ -255,13 +290,17 @@ def fetch_atlas_harvard_oxford(atlas_name, data_dir=None,
     ----------
     atlas_name : string
         Name of atlas to load. Can be:
-        cort-maxprob-thr0-1mm,  cort-maxprob-thr0-2mm,
+        cort-maxprob-thr0-1mm, cort-maxprob-thr0-2mm,
         cort-maxprob-thr25-1mm, cort-maxprob-thr25-2mm,
         cort-maxprob-thr50-1mm, cort-maxprob-thr50-2mm,
-        sub-maxprob-thr0-1mm,  sub-maxprob-thr0-2mm,
+        cort-prob-1mm, cort-prob-2mm,
+        cortl-maxprob-thr0-1mm, cortl-maxprob-thr0-2mm,
+        cortl-maxprob-thr25-1mm, cortl-maxprob-thr25-2mm,
+        cortl-maxprob-thr50-1mm, cortl-maxprob-thr50-2mm,
+        cortl-prob-1mm, cortl-prob-2mm,
+        sub-maxprob-thr0-1mm, sub-maxprob-thr0-2mm,
         sub-maxprob-thr25-1mm, sub-maxprob-thr25-2mm,
         sub-maxprob-thr50-1mm, sub-maxprob-thr50-2mm,
-        cort-prob-1mm, cort-prob-2mm,
         sub-prob-1mm, sub-prob-2mm
 
     data_dir : string, optional
@@ -297,85 +336,277 @@ def fetch_atlas_harvard_oxford(atlas_name, data_dir=None,
 
         - "labels": string list, labels of the regions in the atlas.
 
+    See also
+    --------
+    nilearn.datasets.fetch_atlas_juelich
+
     """
-    atlas_items = ("cort-maxprob-thr0-1mm", "cort-maxprob-thr0-2mm",
-                   "cort-maxprob-thr25-1mm", "cort-maxprob-thr25-2mm",
-                   "cort-maxprob-thr50-1mm", "cort-maxprob-thr50-2mm",
-                   "sub-maxprob-thr0-1mm", "sub-maxprob-thr0-2mm",
-                   "sub-maxprob-thr25-1mm", "sub-maxprob-thr25-2mm",
-                   "sub-maxprob-thr50-1mm", "sub-maxprob-thr50-2mm",
-                   "cort-prob-1mm", "cort-prob-2mm",
-                   "sub-prob-1mm", "sub-prob-2mm")
-    if atlas_name not in atlas_items:
-        raise ValueError("Invalid atlas name: {0}. Please chose an atlas "
-                         "among:\n{1}".format(
-                             atlas_name, '\n'.join(atlas_items)))
+    atlases = ["cort-maxprob-thr0-1mm", "cort-maxprob-thr0-2mm",
+               "cort-maxprob-thr25-1mm", "cort-maxprob-thr25-2mm",
+               "cort-maxprob-thr50-1mm", "cort-maxprob-thr50-2mm",
+               "cort-prob-1mm", "cort-prob-2mm",
+               "cortl-maxprob-thr0-1mm", "cortl-maxprob-thr0-2mm",
+               "cortl-maxprob-thr25-1mm", "cortl-maxprob-thr25-2mm",
+               "cortl-maxprob-thr50-1mm", "cortl-maxprob-thr50-2mm",
+               "cortl-prob-1mm", "cortl-prob-2mm",
+               "sub-maxprob-thr0-1mm", "sub-maxprob-thr0-2mm",
+               "sub-maxprob-thr25-1mm", "sub-maxprob-thr25-2mm",
+               "sub-maxprob-thr50-1mm", "sub-maxprob-thr50-2mm",
+               "sub-prob-1mm", "sub-prob-2mm"]
+    if atlas_name not in atlases:
+        raise ValueError("Invalid atlas name: {0}. Please choose "
+                         "an atlas among:\n{1}".
+                         format(atlas_name, '\n'.join(atlases)))
+    is_probabilistic = "-prob-" in atlas_name
+    if is_probabilistic and symmetric_split:
+        raise ValueError("Region splitting not supported for probabilistic "
+                         "atlases")
+    atlas_img, names, is_lateralized = _get_atlas_data_and_labels(
+        "HarvardOxford",
+        atlas_name,
+        symmetric_split=symmetric_split,
+        data_dir=data_dir,
+        resume=resume,
+        verbose=verbose)
+    atlas_niimg = check_niimg(atlas_img)
+    if not symmetric_split or is_lateralized:
+        return Bunch(filename=atlas_img, maps=atlas_niimg, labels=names)
+    new_atlas_data, new_names = _compute_symmetric_split("HarvardOxford",
+                                                         atlas_niimg,
+                                                         names)
+    new_atlas_niimg = new_img_like(atlas_niimg,
+                                   new_atlas_data,
+                                   atlas_niimg.affine)
+    return Bunch(filename=atlas_img, maps=new_atlas_niimg, labels=new_names)
 
-    url = 'http://www.nitrc.org/frs/download.php/9902/HarvardOxford.tgz'
 
+def fetch_atlas_juelich(atlas_name, data_dir=None,
+                        symmetric_split=False,
+                        resume=True, verbose=1):
+    """Load Juelich parcellations from FSL.
+
+    This function downloads Juelich atlas packaged from FSL 5.0
+    and stores atlases in NILEARN_DATA folder in home directory.
+
+    This function can also load Juelich atlas from your local directory
+    specified by your FSL installed path given in `data_dir` argument.
+    See documentation for details.
+
+    .. versionadded:: 0.8.1
+
+    Parameters
+    ----------
+    atlas_name : string
+        Name of atlas to load. Can be:
+        maxprob-thr0-1mm,  maxprob-thr0-2mm,
+        maxprob-thr25-1mm, maxprob-thr25-2mm,
+        maxprob-thr50-1mm, maxprob-thr50-2mm,
+        prob-1mm,          prob-2mm
+
+    data_dir : string, optional
+        Path of data directory where data will be stored. Optionally,
+        it can also be a FSL installation directory (which is dependent
+        on your installation).
+        Example, if FSL is installed in /usr/share/fsl/ then
+        specifying as '/usr/share/' can get you Juelich atlas
+        from your installed directory. Since we mimic same root directory
+        as FSL to load it easily from your installation.
+
+    symmetric_split : bool, optional
+        If True, lateralized atlases of cort or sub with maxprob will be
+        returned. For subcortical types (sub-maxprob), we split every
+        symmetric region in left and right parts. Effectively doubles the
+        number of regions.
+        NOTE Not implemented for full probabilistic atlas (*-prob-* atlases).
+        Default=False.
+
+    resume : bool, optional
+        Whether to resumed download of a partly-downloaded file.
+        Default=True.
+
+    verbose : int, optional
+        Verbosity level (0 means no message). Default=1.
+
+    Returns
+    -------
+    data : sklearn.datasets.base.Bunch
+        Dictionary-like object, keys are:
+
+        - "maps": nibabel.Nifti1Image, 4D maps if a probabilistic atlas is
+          requested and 3D labels if a maximum probabilistic atlas was
+          requested.
+
+        - "labels": string list, labels of the regions in the atlas.
+
+    See also
+    --------
+    nilearn.datasets.fetch_atlas_harvard_oxford
+
+    """
+    atlases = ["maxprob-thr0-1mm", "maxprob-thr0-2mm",
+               "maxprob-thr25-1mm", "maxprob-thr25-2mm",
+               "maxprob-thr50-1mm", "maxprob-thr50-2mm",
+               "prob-1mm", "prob-2mm"]
+    if atlas_name not in atlases:
+        raise ValueError("Invalid atlas name: {0}. Please choose "
+                         "an atlas among:\n{1}".
+                         format(atlas_name, '\n'.join(atlases)))
+    is_probabilistic = atlas_name.startswith("prob-")
+    if is_probabilistic and symmetric_split:
+        raise ValueError("Region splitting not supported for probabilistic "
+                         "atlases")
+    atlas_img, names, _ = _get_atlas_data_and_labels("Juelich",
+                                                     atlas_name,
+                                                     data_dir=data_dir,
+                                                     resume=resume,
+                                                     verbose=verbose)
+    atlas_niimg = check_niimg(atlas_img)
+    atlas_data = get_data(atlas_niimg)
+
+    if is_probabilistic:
+        new_atlas_data, new_names = _merge_probabilistic_maps_juelich(
+            atlas_data, names)
+    elif symmetric_split:
+        new_atlas_data, new_names = _compute_symmetric_split("Juelich",
+                                                             atlas_niimg,
+                                                             names)
+    else:
+        new_atlas_data, new_names = _merge_labels_juelich(atlas_data, names)
+
+    new_atlas_niimg = new_img_like(atlas_niimg,
+                                   new_atlas_data,
+                                   atlas_niimg.affine)
+    return Bunch(filename=atlas_img, maps=new_atlas_niimg,
+                 labels=list(new_names))
+
+
+def _get_atlas_data_and_labels(atlas_source, atlas_name, symmetric_split=False,
+                               data_dir=None, resume=True, verbose=1):
+    """Helper function for both fetch_atlas_juelich and fetch_atlas_harvard_oxford.
+    This function downloads the atlas image and labels.
+    """
+    if atlas_source == "Juelich":
+        url = 'https://www.nitrc.org/frs/download.php/12096/Juelich.tgz'
+    elif atlas_source == "HarvardOxford":
+        url = 'http://www.nitrc.org/frs/download.php/9902/HarvardOxford.tgz'
+    else:
+        raise ValueError("Atlas source {} is not valid.".format(
+            atlas_source))
     # For practical reasons, we mimic the FSL data directory here.
-    dataset_name = 'fsl'
-    data_dir = _get_dataset_dir(dataset_name, data_dir=data_dir,
+    data_dir = _get_dataset_dir('fsl', data_dir=data_dir,
                                 verbose=verbose)
     opts = {'uncompress': True}
     root = os.path.join('data', 'atlases')
 
-    if atlas_name[0] == 'c':
-        if 'cort-maxprob' in atlas_name and symmetric_split:
-            split_name = atlas_name.split('cort')
-            atlas_name = 'cortl' + split_name[1]
+    if atlas_source == 'HarvardOxford':
+        if symmetric_split:
+            atlas_name = atlas_name.replace("cort-max", "cortl-max")
+
+        if atlas_name.startswith("sub-"):
+            label_file = 'HarvardOxford-Subcortical.xml'
+            is_lateralized = False
+        elif atlas_name.startswith("cortl"):
             label_file = 'HarvardOxford-Cortical-Lateralized.xml'
-            lateralized = True
+            is_lateralized = True
         else:
             label_file = 'HarvardOxford-Cortical.xml'
-            lateralized = False
+            is_lateralized = False
     else:
-        label_file = 'HarvardOxford-Subcortical.xml'
-        lateralized = False
+        label_file = "Juelich.xml"
+        is_lateralized = False
     label_file = os.path.join(root, label_file)
-
-    atlas_file = os.path.join(root, 'HarvardOxford',
-                              'HarvardOxford-' + atlas_name + '.nii.gz')
-
+    atlas_file = os.path.join(root, atlas_source,
+                              '{}-{}.nii.gz'.format(atlas_source,
+                                                    atlas_name))
     atlas_img, label_file = _fetch_files(
         data_dir,
-        [(atlas_file, url, opts), (label_file, url, opts)],
+        [(atlas_file, url, opts),
+         (label_file, url, opts)],
         resume=resume, verbose=verbose)
-
+    # Reorder image to have positive affine diagonal
+    atlas_img = reorder_img(atlas_img)
     names = {}
     from xml.etree import ElementTree
     names[0] = 'Background'
-    for label in ElementTree.parse(label_file).findall('.//label'):
-        names[int(label.get('index')) + 1] = label.text
-    names = list(names.values())
+    for n, label in enumerate(
+            ElementTree.parse(label_file).findall('.//label')):
+        new_idx = int(label.get('index')) + 1
+        if new_idx in names:
+            raise ValueError(
+                f"Duplicate index {new_idx} for labels "
+                f"'{names[new_idx]}', and '{label.text}'")
+        names[new_idx] = label.text
+    # The label indices should range from 0 to nlabel + 1
+    assert list(names.keys()) == list(range(n + 2))
+    names = [item[1] for item in sorted(names.items())]
+    return atlas_img, names, is_lateralized
 
-    if not symmetric_split:
-        return Bunch(maps=atlas_img, labels=names)
 
-    if atlas_name in ("cort-prob-1mm", "cort-prob-2mm",
-                      "sub-prob-1mm", "sub-prob-2mm"):
-        raise ValueError("Region splitting not supported for probabilistic "
-                         "atlases")
+def _merge_probabilistic_maps_juelich(atlas_data, names):
+    """Helper function for fetch_atlas_juelich.
+    This function handles probabilistic juelich atlases
+    when symmetric_split=False. In this situation, we need
+    to merge labels and maps corresponding to left and right
+    regions.
+    """
+    new_names = np.unique([re.sub(r" (L|R)$", "", name) for name in names])
+    new_name_to_idx = {k: v - 1 for v, k in enumerate(new_names)}
+    new_atlas_data = np.zeros((*atlas_data.shape[:3],
+                               len(new_names) - 1))
+    for i, name in enumerate(names):
+        if name != "Background":
+            new_name = re.sub(r" (L|R)$", "", name)
+            new_atlas_data[..., new_name_to_idx[new_name]] += (
+                atlas_data[..., i - 1])
+    return new_atlas_data, new_names
 
-    atlas_img = check_niimg(atlas_img)
-    if lateralized:
-        return Bunch(maps=atlas_img, labels=names)
 
-    atlas = get_data(atlas_img)
+def _merge_labels_juelich(atlas_data, names):
+    """Helper function for fetch_atlas_juelich.
+    This function handles 3D atlases when symmetric_split=False.
+    In this case, we need to merge the labels corresponding to
+    left and right regions.
+    """
+    new_names = np.unique([re.sub(r" (L|R)$", "", name) for name in names])
+    new_names_dict = {k: v for v, k in enumerate(new_names)}
+    new_atlas_data = atlas_data.copy()
+    for label, name in enumerate(names):
+        new_name = re.sub(r" (L|R)$", "", name)
+        new_atlas_data[atlas_data == label] = new_names_dict[new_name]
+    return new_atlas_data, new_names
 
-    labels = np.unique(atlas)
+
+def _compute_symmetric_split(source, atlas_niimg, names):
+    """Helper function for both fetch_atlas_juelich and
+    fetch_atlas_harvard_oxford.
+    This function handles 3D atlases when symmetric_split=True.
+    """
+    # The atlas_niimg should have been passed to
+    # reorder_img such that the affine's diagonal
+    # should be positive. This is important to
+    # correctly split left and right hemispheres.
+    assert atlas_niimg.affine[0, 0] > 0
+    atlas_data = get_data(atlas_niimg)
+    labels = np.unique(atlas_data)
     # Build a mask of both halves of the brain
-    middle_ind = (atlas.shape[0] - 1) // 2
-    # Put zeros on the median plane
-    atlas[middle_ind, ...] = 0
+    middle_ind = (atlas_data.shape[0]) // 2
     # Split every zone crossing the median plane into two parts.
-    left_atlas = atlas.copy()
-    left_atlas[middle_ind:, ...] = 0
-    right_atlas = atlas.copy()
-    right_atlas[:middle_ind, ...] = 0
+    left_atlas = atlas_data.copy()
+    left_atlas[middle_ind:] = 0
+    right_atlas = atlas_data.copy()
+    right_atlas[:middle_ind] = 0
+
+    if source == "Juelich":
+        for idx, name in enumerate(names):
+            if name.endswith('L'):
+                names[idx] = re.sub(r" L$", "", name)
+                names[idx] = "Left " + name
+            if name.endswith('R'):
+                names[idx] = re.sub(r" R$", "", name)
+                names[idx] = "Right " + name
 
     new_label = 0
-    new_atlas = atlas.copy()
+    new_atlas = atlas_data.copy()
     # Assumes that the background label is zero.
     new_names = [names[0]]
     for label, name in zip(labels[1:], names[1:]):
@@ -383,19 +614,17 @@ def fetch_atlas_harvard_oxford(atlas_name, data_dir=None,
         left_elements = (left_atlas == label).sum()
         right_elements = (right_atlas == label).sum()
         n_elements = float(left_elements + right_elements)
-        if (left_elements / n_elements < 0.05 or
-                right_elements / n_elements < 0.05):
-            new_atlas[atlas == label] = new_label
+        if (left_elements / n_elements < 0.05
+                or right_elements / n_elements < 0.05):
+            new_atlas[atlas_data == label] = new_label
             new_names.append(name)
             continue
-        new_atlas[right_atlas == label] = new_label
-        new_names.append(name + ', left part')
-        new_label += 1
         new_atlas[left_atlas == label] = new_label
-        new_names.append(name + ', right part')
-
-    atlas_img = new_img_like(atlas_img, new_atlas, atlas_img.affine)
-    return Bunch(maps=atlas_img, labels=new_names)
+        new_names.append('Left ' + name)
+        new_label += 1
+        new_atlas[right_atlas == label] = new_label
+        new_names.append('Right ' + name)
+    return new_atlas, new_names
 
 
 @fill_doc
@@ -1116,7 +1345,7 @@ def _separate_talairach_levels(atlas_img, labels, verbose=1):
     the next one the lobe, then gyrus, tissue, and ba. Background is 0.
     The labels contain
     [('level name', ['labels', 'for', 'this', 'level' ...]), ...],
-    where the levels are in the order mentionned above.
+    where the levels are in the order mentioned above.
 
     The label '*' is replaced by 'Background' for clarity.
 
@@ -1161,7 +1390,7 @@ def _get_talairach_all_levels(data_dir=None, verbose=1):
 
     The labels json file contains
     [['level name', ['labels', 'for', 'this', 'level' ...]], ...],
-    where the levels are in the order mentionned above.
+    where the levels are in the order mentioned above.
 
     """
     data_dir = _get_dataset_dir(
