@@ -62,7 +62,7 @@ def fetch_atlas_difumo(dimension=64, resolution_mm=2, data_dir=None, resume=True
     data : :func:`sklearn.utils.Bunch`
         Dictionary-like object, the interest attributes are :
 
-        - 'maps': :obj:`str`, 4D path to nifti file containing regions
+        - 'maps': :obj:`str`, path to 4D nifti file containing regions
           definition. The shape of the image is
           ``(104, 123, 104, dimension)`` where ``dimension`` is the
           requested dimension of the atlas.
