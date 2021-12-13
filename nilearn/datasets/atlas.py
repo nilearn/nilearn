@@ -983,7 +983,10 @@ def fetch_atlas_aal(version='SPM12', data_dir=None, url=None, resume=True,
             - 'labels': :obj:`list` of :obj:`str`, list of the names of the
               regions. This list has 116 names as 'Background' (label 0) is
               not included in this list.
-            - 'indices': :obj:`list` of :obj:`str`, ???
+            - 'indices': :obj:`list` of :obj:`str`, indices mapping 'labels' to values in the 'maps' image.
+              Since the values in the 'maps' image are not consecutive, the location of a label in the
+              'labels' list does not necessary match the associated value in the image.
+              Use the 'indices' list to identify the appropriate image value for a given label.
             - 'description': :obj:`str`, description of the atlas.
 
     References
