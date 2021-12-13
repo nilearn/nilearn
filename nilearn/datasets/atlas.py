@@ -1698,7 +1698,7 @@ def fetch_atlas_schaefer_2018(n_rois=400, yeo_networks=7, resolution_mm=1,
               ``(182, 218, 182)``). The values are consecutive integers
               between 0 and ``n_rois`` which can be interpreted as indices
               in the list of labels.
-            - 'labels': :class:`numpy.ndarray`, array containing the ROI
+            - 'labels': :class:`numpy.ndarray` of :obj:`str`, array containing the ROI
               labels including Yeo-network annotation.
 
                 .. note::
