@@ -437,7 +437,8 @@ def fetch_atlas_juelich(atlas_name, data_dir=None,
         number of regions.
 
         .. note::
-            Not implemented for full probabilistic atlas (``*-prob-*`` atlases).
+            Not implemented for full probabilistic atlas
+            (``*-prob-*`` atlases).
 
         Default=False.
     %(resume)s
@@ -983,10 +984,12 @@ def fetch_atlas_aal(version='SPM12', data_dir=None, url=None, resume=True,
             - 'labels': :obj:`list` of :obj:`str`, list of the names of the
               regions. This list has 116 names as 'Background' (label 0) is
               not included in this list.
-            - 'indices': :obj:`list` of :obj:`str`, indices mapping 'labels' to values in the 'maps' image.
-              Since the values in the 'maps' image are not consecutive, the location of a label in the
-              'labels' list does not necessary match the associated value in the image.
-              Use the 'indices' list to identify the appropriate image value for a given label.
+            - 'indices': :obj:`list` of :obj:`str`, indices mapping 'labels'
+              to values in the 'maps' image.
+              Since the values in the 'maps' image are not consecutive, the
+              location of a label in the 'labels' list does not necessary
+              match the associated value in the image. Use the 'indices' list
+              to identify the appropriate image value for a given label.
             - 'description': :obj:`str`, description of the atlas.
 
     References
@@ -1698,8 +1701,8 @@ def fetch_atlas_schaefer_2018(n_rois=400, yeo_networks=7, resolution_mm=1,
               ``(182, 218, 182)``). The values are consecutive integers
               between 0 and ``n_rois`` which can be interpreted as indices
               in the list of labels.
-            - 'labels': :class:`numpy.ndarray` of :obj:`str`, array containing the ROI
-              labels including Yeo-network annotation.
+            - 'labels': :class:`numpy.ndarray` of :obj:`str`, array
+              containing the ROI labels including Yeo-network annotation.
 
                 .. note::
                     The list does not have 'Background' by default.
