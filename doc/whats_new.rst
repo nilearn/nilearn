@@ -138,6 +138,14 @@ Changes
   `#2821 <https://github.com/nilearn/nilearn/pull/2821>`_ in order to match BIDS
   semantics. The use of `sessions` in :func:`nilearn.image.clean_img` is deprecated and
   will be removed in 0.10.0.
+- Display objects have been reorganized. For example, Slicers (like the
+  :class:`~nilearn.plotting.displays.OrthoSlicer`) are all in file
+  `nilearn/plotting/displays/_slicers.py`, and Projectors (like the
+  :class:`~nilearn.plotting.displays.OrthoProjector`) are all in file
+  `nilearn/plotting/displays/_projectors.py`. All display objects have been added to
+  the public API, and examples have been improved to show how to use these objects
+  to customize figures obtained with plotting functions.
+  (See PR `#3073 <https://github.com/nilearn/nilearn/pull/3073>`_).
 
 .. _v0.8.1:
 

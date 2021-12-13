@@ -30,6 +30,11 @@ verbose : :obj:`int`, optional
 docdict['verbose'] = verbose.format(1)
 docdict['verbose0'] = verbose.format(0)
 
+# ax
+docdict['ax'] = """
+ax : :class:`~matplotlib.axes.Axes`
+    The matplotlib axes in which the plots will be drawn."""
+
 # Resume
 docdict['resume'] = """
 resume : :obj:`bool`, optional
@@ -314,7 +319,7 @@ display_mode : {'ortho', 'tiled', 'mosaic','x',\
 'y', 'z', 'yx', 'xz', 'yz'}, optional
     Choose the direction of the cuts:
 
-        - 'x': sagittal
+        - 'x': sagital
         - 'y': coronal
         - 'z': axial
         - 'ortho': three cuts are performed in orthogonal
