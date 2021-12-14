@@ -443,7 +443,6 @@ def _ensure_float(data):
     return data
 
 
-@rename_parameters({'sessions': 'runs'}, '0.9.0')
 @fill_doc
 def clean(signals, runs=None, detrend=True, standardize='zscore',
           sample_mask=None, confounds=None, standardize_confounds=True,
@@ -478,12 +477,6 @@ def clean(signals, runs=None, detrend=True, standardize='zscore',
     runs : :class:`numpy.ndarray`, optional
         Add a run level to the cleaning process. Each run will be
         cleaned independently. Must be a 1D array of n_samples elements.
-
-        .. warning::
-
-            'runs' replaces 'sessions' after release 0.9.0.
-            Using 'session' will result in an error after release 0.9.0.
-
         Default is None.
 
     confounds : :class:`numpy.ndarray`, :obj:`str`,\
