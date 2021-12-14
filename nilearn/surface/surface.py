@@ -4,7 +4,8 @@ Functions for surface manipulation.
 import os
 import warnings
 import gzip
-from collections import (namedtuple, Mapping)
+from collections import namedtuple
+from collections.abc import Mapping
 
 import numpy as np
 from scipy import sparse, interpolate
