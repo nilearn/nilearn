@@ -1103,7 +1103,7 @@ def fetch_atlas_aal(version='SPM12', data_dir=None, url=None, resume=True,
             filenames = [(os.path.join('aal', 'atlas', f), url, opts)
                          for f in basenames]
         else:
-            url = f"http://www.gin.cnrs.fr/wp-content/uploads/aal_for_{version}.zip"
+            url = f"http://www.gin.cnrs.fr/wp-content/uploads/aal_for_{version}.zip"  # noqa
             basenames = ("ROI_MNI_V4.nii", "ROI_MNI_V4.txt")
             filenames = [(os.path.join(f'aal_for_{version}', f), url, opts)
                          for f in basenames]
