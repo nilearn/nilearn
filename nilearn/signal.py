@@ -862,9 +862,10 @@ def _check_signal_parameters(detrend, standardize_confounds):
     """Raise warning if the combination is illogical"""
     if not detrend and not standardize_confounds:
         warnings.warn("When confounds are provided, one must perform detrend "
-                      "and/or standarize confounds. You provided detrend={0}, "
-                      "standardize_confounds={1}. If confounds were not "
-                      "standardized or demeaned before passing to signal.clean"
-                      " signal will not be correctly cleaned. ".format(
+                      "and/or standardize confounds. You provided "
+                      "detrend={0}, standardize_confounds={1}. If confounds "
+                      "were not standardized or demeaned before passing to "
+                      "signal.clean signal will not be correctly "
+                      "cleaned. ".format(
                           detrend, standardize_confounds)
                       )

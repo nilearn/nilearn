@@ -506,7 +506,7 @@ def test_clean_confounds():
     # Test without standardizing that constant parts of confounds are
     # accounted for
     # passing standardize_confounds=False, detrend=False should raise warning
-    warning_message = r"must perform detrend and/or standarize confounds"
+    warning_message = r"must perform detrend and/or standardize confounds"
     with pytest.warns(UserWarning, match=warning_message):
         np.testing.assert_almost_equal(
             nisignal.clean(np.ones((20, 2)),
