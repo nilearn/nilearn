@@ -449,7 +449,7 @@ def aal_archive_root(version):
                           ('SPM12', 'gztar', 'AAL_files')])
 def test_fetch_atlas_aal(version, archive_format, url_key, aal_archive_root,
                          tmp_path, request_mocker):
-    metadata = ""
+    metadata = "A\tB\tC\n"
     if version == 'SPM12':
         metadata = (b"<?xml version='1.0' encoding='us-ascii'?>"
                     b"<metadata></metadata>")
