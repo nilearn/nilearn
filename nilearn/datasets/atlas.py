@@ -332,19 +332,25 @@ def fetch_atlas_harvard_oxford(atlas_name, data_dir=None,
     data : :func:`sklearn.utils.Bunch`
         Dictionary-like object, keys are:
 
-            - 'maps': :class:`~nibabel.nifti1.Nifti1Image`, 4D maps if a
-              probabilistic atlas is requested, and 3D labels if a maximum
-              probabilistic atlas was requested.
+            - 'maps': :obj:`str`, path to nifti file containing the
+              atlas :class:`~nibabel.nifti1.Nifti1Image`. It is a 4D image
+              if a probabilistic atlas is requested, and a 3D image if a
+              maximum probability atlas is requested. In the latter case,
+              the image contains integer values which can be interpreted as
+              the indices in the list of labels.
 
                 .. note::
 
                     For some atlases, it can be the case that some regions
-                    are no longer present. In this case, the integers in the
-                    3D parcellation image might not be consecutive.
+                    are empty. In this case, no :term:`voxels<voxel>` in the
+                    map are assigned to these regions. So the number of
+                    unique values in the map can be strictly smaller than the
+                    number of region names in ``labels``.
 
             - 'labels': :obj:`list` of :obj:`str`, list of labels for the
               regions in the atlas.
-            - 'filename': Same as 'maps'.
+            - 'filename': Same as 'maps', kept for backward
+              compatibility only.
 
     See also
     --------
@@ -449,19 +455,24 @@ def fetch_atlas_juelich(atlas_name, data_dir=None,
     data : :func:`sklearn.utils.Bunch`
         Dictionary-like object, keys are:
 
-            - 'maps': :class:`~nibabel.nifti1.Nifti1Image`, 4D maps if a
-              probabilistic atlas is requested, and 3D labels if a maximum
-              probabilistic atlas was requested.
+            - 'maps': :class:`~nibabel.nifti1.Nifti1Image`. It is a 4D image
+              if a probabilistic atlas is requested, and a 3D image if a
+              maximum probability atlas is requested. In the latter case,
+              the image contains integer values which can be interpreted as
+              the indices in the list of labels.
 
                 .. note::
 
                     For some atlases, it can be the case that some regions
-                    are no longer present. In this case, the integers in the
-                    3D parcellation image might not be consecutive.
+                    are empty. In this case, no :term:`voxels<voxel>` in the
+                    map are assigned to these regions. So the number of
+                    unique values in the map can be strictly smaller than the
+                    number of region names in ``labels``.
 
             - 'labels': :obj:`list` of :obj:`str`, list of labels for the
               regions in the atlas.
-            - 'filename': Same as 'maps'.
+            - 'filename': Same as 'maps', kept for backward
+              compatibility only.
 
     See also
     --------
@@ -871,16 +882,20 @@ def fetch_atlas_yeo_2011(data_dir=None, url=None, resume=True, verbose=1):
 
             - 'thin_7': :obj:`str`, path to nifti file containing the
               7 regions parcellation fitted to thin template cortex
-              segmentations.
+              segmentations. The image contains integer values which can be
+              interpreted as the indices in ``colors_7``.
             - 'thick_7': :obj:`str`, path to nifti file containing the
               7 region parcellation fitted to thick template cortex
-              segmentations.
+              segmentations. The image contains integer values which can be
+              interpreted as the indices in ``colors_7``.
             - 'thin_17': :obj:`str`, path to nifti file containing the
               17 region parcellation fitted to thin template cortex
-              segmentations.
+              segmentations. The image contains integer values which can be
+              interpreted as the indices in ``colors_17``.
             - 'thick_17': :obj:`str`, path to nifti file containing the
               17 region parcellation fitted to thick template cortex
-              segmentations.
+              segmentations. The image contains integer values which can be
+              interpreted as the indices in ``colors_17``.
             - 'colors_7': :obj:`str`, path to colormaps text file for
               7 region parcellation. This file maps :term:`voxel` integer
               values from ``data.thin_7`` and ``data.tick_7`` to network
@@ -954,14 +969,24 @@ def fetch_atlas_aal(version='SPM12', data_dir=None, url=None, resume=True,
         defining the parcellation. However, these values are not consecutive
         integers from 0 to 116 as is usually the case in Nilearn.
         Therefore, these values shouldn't be interpreted as indices for the
-        list of label names.
-        For example, to get the name of the region corresponding to label
-        5021 in the image, you should do:
+        list of label names. In addition, the region IDs are provided as
+        strings, so it is necessary to cast them to integers when indexing.
 
-        .. code-block:: python
+    For example, to get the name of the region corresponding to the region
+    ID 5021 in the image, you should do:
 
-            # This should print 'Lingual_L'
-            data.labels[data.indices.index('5021')]
+    .. code-block:: python
+
+        # This should print 'Lingual_L'
+        data.labels[data.indices.index('5021')]
+
+    Conversely, to get the region ID corresponding to the label
+    "Precentral_L", you should do:
+
+    .. code-block:: python
+
+        # This should print '2001'
+        data.indices[data.labels.index('Precentral_L')]
 
     Parameters
     ----------
@@ -980,16 +1005,21 @@ def fetch_atlas_aal(version='SPM12', data_dir=None, url=None, resume=True,
 
             - 'maps': :obj:`str`, path to nifti file containing the
               regions. The image has shape ``(91, 109, 91)`` and contains
-              117 unique integer values defining the parcellation.
+              117 unique integer values defining the parcellation. Please
+              refer to the main description to see how to link labels to
+              regions IDs.
             - 'labels': :obj:`list` of :obj:`str`, list of the names of the
               regions. This list has 116 names as 'Background' (label 0) is
-              not included in this list.
+              not included in this list. Please refer to the main description
+              to see how to link labels to regions IDs.
             - 'indices': :obj:`list` of :obj:`str`, indices mapping 'labels'
-              to values in the 'maps' image.
-              Since the values in the 'maps' image are not consecutive, the
-              location of a label in the 'labels' list does not necessary
-              match the associated value in the image. Use the 'indices' list
-              to identify the appropriate image value for a given label.
+              to values in the 'maps' image. This list has 116 elements.
+              Since the values in the 'maps' image do not correspond to
+              indices in ``labels``, but rather to values in ``indices``, the
+              location of a label in the ``labels`` list does not necessary
+              match the associated value in the image. Use the ``indices``
+              list to identify the appropriate image value for a given label
+              (See main description above).
             - 'description': :obj:`str`, description of the atlas.
 
     References
@@ -1305,9 +1335,8 @@ def fetch_atlas_allen_2011(data_dir=None, url=None, resume=True, verbose=1):
 
             .. code-block:: python
 
-                idx = [x[0] for x in data.rsn_indices].index('Visual')
                 # Should return [46, 64, 67, 48, 39, 59]
-                data.rsn_indices[idx][1]
+                dict(data.rsn_indices)["Visual"]
 
         - 'comps': :obj:`str`, path to nifti file containing the
           aggregate :term:`ICA` components.
@@ -1558,7 +1587,7 @@ def fetch_atlas_talairach(level_name, data_dir=None, verbose=1):
               values from 0 to the number of regions, which are indices
               in the list of labels.
             - 'labels': :obj:`list` of :obj:`str`. List of region names.
-              The list starts with 'Background' (label 0 in the image).
+              The list starts with 'Background' (region ID 0 in the image).
             - 'description': :obj:`str`, a short description of the atlas
               and some references.
 
