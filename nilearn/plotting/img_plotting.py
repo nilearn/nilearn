@@ -20,7 +20,6 @@ from distutils.version import LooseVersion
 # delayed, so that the part module can be used without them).
 import numpy as np
 from scipy import ndimage
-from scipy import sparse
 from scipy import stats
 from nibabel.spatialimages import SpatialImage
 
