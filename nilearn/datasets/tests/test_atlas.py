@@ -452,7 +452,8 @@ def test_fetch_atlas_aal(version, archive_format, url_key, aal_archive_root,
     metadata = "A\tB\tC\n"
     if version == 'SPM12':
         metadata = (b"<?xml version='1.0' encoding='us-ascii'?>"
-                    b"<metadata></metadata>")
+                    b"<metadata><label><index>1</index>"
+                    b"<name>A</name></label></metadata>")
     label_file = "AAL.xml" if version == 'SPM12' else "ROI_MNI_V4.txt"
     atlas_file = "AAL.nii" if version == 'SPM12' else "ROI_MNI_V4.nii"
     aal_data = dict_to_archive(
