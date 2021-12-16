@@ -1641,10 +1641,25 @@ def fetch_atlas_pauli_2017(version='prob', data_dir=None, verbose=1):
               list contains 16 values for both probabilitic and deterministic
               versions.
 
-                .. note::
+                .. warning::
                     For the deterministic version, 'Background' is not
-                    included in the list of labels and should be added
-                    manually if needed.
+                    included in the list of labels. To have proper indexing,
+                    you should either manually add 'Background' to the list of
+                    labels:
+
+                    .. code-block:: python
+
+                        # Prepend background label
+                        data.labels.insert(0, 'Background')
+
+                    Or be carefull that the indexing should be offset by one:
+
+                    .. code-block:: python
+
+                        # Get region ID of label 'NAC' when 'background' was
+                        # not added to the list of labels:
+                        # idx_nac should be equal to 3:
+                        idx_nac = data.labels.index('NAC') + 1
 
             - 'description': :obj:`str`, short description of the atlas and
               some references.
