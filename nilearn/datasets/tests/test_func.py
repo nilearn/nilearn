@@ -214,8 +214,9 @@ def test_fetch_localizer_contrasts(tmp_path, request_mocker, localizer_mocker):
         verbose=1)
     assert len(dataset2['ext_vars']) == 3
     assert len(dataset2.cmaps) == 3
-    assert (list(dataset2['ext_vars']['participant_id'].values) ==
-                 ['S02', 'S03', 'S05'])
+    assert (list(dataset2['ext_vars']['participant_id'].values) == ['S02',
+                                                                    'S03',
+                                                                    'S05'])
 
 
 def test_fetch_localizer_calculation_task(tmp_path, request_mocker,
