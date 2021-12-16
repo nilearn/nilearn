@@ -63,7 +63,7 @@ fig.show()
 engine = 'plotly'
 # If plotly is not installed, use matplotlib
 try:
-    import plotly.graph_objects as go  # noqa
+    import plotly.graph_objects as go  # noqa: F401
 except ImportError:
     engine = 'matplotlib'
 

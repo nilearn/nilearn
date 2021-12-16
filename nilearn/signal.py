@@ -16,7 +16,6 @@ from sklearn.utils import gen_even_slices, as_float_array
 
 from ._utils.numpy_conversions import csv_to_array, as_ndarray
 from ._utils import fill_doc
-from ._utils.helpers import rename_parameters
 
 
 availiable_filters = ['butterworth',
