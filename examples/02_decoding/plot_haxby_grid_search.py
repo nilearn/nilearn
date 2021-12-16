@@ -77,7 +77,7 @@ decoder = Decoder(estimator='svc', cv=5, mask=mask_img,
                   screening_percentile=2)
 
 ###########################################################################
-# Fit the Decoder and predict the reponses
+# Fit the Decoder and predict the responses
 # -------------------------------------------------
 # As a complete pipeline by itself, decoder will perform cross-validation
 # for the estimator, in this case Support Vector Machine. We can output the
@@ -89,7 +89,7 @@ decoder = Decoder(estimator='svc', cv=5, mask=mask_img,
 decoder.fit(fmri_niimgs, y)
 for i, (param, cv_score) in enumerate(zip(decoder.cv_params_['shoe']['C'],
                                           decoder.cv_scores_['shoe'])):
-    
+
     print("Fold %d | Best SVM parameter: %.1f with score: %.3f" % (i + 1,
           param, cv_score))
 # Output the prediction with Decoder
@@ -142,7 +142,7 @@ for train, test in cv.split(session):
     nested_cv_scores.append(np.max(val_scores))
 
 print("Nested CV score: %.4f" % np.mean(nested_cv_scores))
-    
+
 ###########################################################################
 # Plot the prediction scores using matplotlib
 # ---------------------------------------------

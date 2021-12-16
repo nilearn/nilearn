@@ -6,7 +6,6 @@ from scipy import linalg
 
 from sklearn.base import BaseEstimator, TransformerMixin, clone
 from sklearn.covariance import LedoitWolf
-from sklearn.utils import deprecated
 from .. import signal
 from .._utils.extmath import is_spd
 
@@ -199,38 +198,6 @@ def _geometric_mean(matrices, init=None, max_iter=10, tol=1e-7):
     return gmean
 
 
-@deprecated("Function 'sym_to_vec' has been renamed to "
-            "'sym_matrix_to_vec' and will be removed in 0.8")
-def sym_to_vec(symmetric, discard_diagonal=False):
-    """Return the flattened lower triangular part of an array.
-    If diagonal is kept, diagonal elements are divided by sqrt(2) to conserve
-    the norm.
-
-    Acts on the last two dimensions of the array if not 2-dimensional.
-
-    .. versionadded:: 0.2
-
-    Parameters
-    ----------
-    symmetric : numpy.ndarray, shape (..., n_features, n_features)
-        Input array.
-
-    discard_diagonal : boolean, optional
-        If True, the values of the diagonal are not returned.
-        Default=False.
-
-    Returns
-    -------
-    output : numpy.ndarray
-        The output flattened lower triangular part of symmetric. Shape is
-        (..., n_features * (n_features + 1) / 2) if discard_diagonal is False
-        and (..., (n_features - 1) * n_features / 2) otherwise.
-
-    """
-    return sym_matrix_to_vec(symmetric=symmetric,
-                             discard_diagonal=discard_diagonal)
-
-
 def sym_matrix_to_vec(symmetric, discard_diagonal=False):
     """Return the flattened lower triangular part of an array.
 
@@ -283,7 +250,7 @@ def vec_to_sym_matrix(vec, diagonal=None):
     ----------
     vec : numpy.ndarray or list of numpy arrays, shape \
         (..., n_columns * (n_columns + 1) /2) or
-        (..., (n_columns - 1) * n_columns / 2) if diagonal is given seperately.
+        (..., (n_columns - 1) * n_columns / 2) if diagonal is given separately.
         The input array.
 
     diagonal : numpy.ndarray, shape (..., n_columns), optional
@@ -360,7 +327,7 @@ def cov_to_corr(covariance):
     Returns
     -------
     correlation : 2D numpy.ndarray
-        The ouput correlation matrix.
+        The output correlation matrix.
 
     """
     diagonal = np.atleast_2d(1. / np.sqrt(np.diag(covariance)))
@@ -382,7 +349,7 @@ def prec_to_partial(precision):
     Returns
     -------
     partial_correlation : 2D numpy.ndarray
-        The 2D ouput partial correlation matrix.
+        The 2D output partial correlation matrix.
 
     """
     partial_correlation = -cov_to_corr(precision)

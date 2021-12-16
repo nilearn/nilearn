@@ -34,6 +34,6 @@ def test_prox_tvl1_approximates_prox_l1_for_lasso(size=15, random_state=42,
             # use exact closed-form soft shrinkage formula for prox_l1
             b = _prox_l1(z.copy(), weight)[-1].ravel()
 
-            # results shoud be close in l-infinity norm
+            # results should be close in l-infinity norm
             np.testing.assert_almost_equal(np.abs(a - b).max(),
                                            0., decimal=decimal)

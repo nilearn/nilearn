@@ -235,13 +235,13 @@ def _repr_niimgs(niimgs, shorten=True):
                    (niimgs.__class__.__name__,
                     repr(niimgs.shape),
                     repr(niimgs.affine))
-    except:
+    except Exception:
         pass
     return _short_repr(repr(niimgs), shorten=shorten)
 
 
 def _short_repr(niimg_rep, shorten=True, truncate=20):
-    """Gives a shorten version on niimg representation
+    """Gives a shorter version of niimg representation
     """
     # Make sure truncate has a reasonable value
     truncate = max(truncate, 10)
@@ -263,7 +263,6 @@ def _short_repr(niimg_rep, shorten=True, truncate=20):
                     rep = str(Path("...", rep))
                     break
         return rep
-    return niimg_rep
 
 
 def img_data_dtype(niimg):

@@ -129,7 +129,7 @@ class SVGToJSONConverter(object):
         result = {'metadata': metadata,
                   'paths': paths}
 
-        return json.dumps(result, indent=2)
+        return json.dumps(result, indent=2, separators=(',', ': '))
 
     def save_json(self, filename):
         json_content = self.to_json()

@@ -56,7 +56,7 @@ pipe = Pipeline(
      ('classifier', GridSearchCV(LinearSVC(), {'C': [.1, 1., 10.]}, cv=5))])
 
 param_grid = [
-    {'classifier': [DummyClassifier('most_frequent')]},
+    {'classifier': [DummyClassifier(strategy='most_frequent')]},
     {'connectivity__kind': kinds}
 ]
 

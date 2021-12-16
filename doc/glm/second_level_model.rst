@@ -31,8 +31,8 @@ fits the model is :func:`nilearn.glm.second_level.SecondLevelModel.fit`.
 
 Some examples to get you going with second level models are provided below::
   * General design matrix setup: :ref:`sphx_glr_auto_examples_05_glm_second_level_plot_second_level_design_matrix.py`
-  * One-sample testing, unpaired: :ref:`sphx_glr_auto_examples_05_glm_second_level_plot_second_level_one_sample_test.py`
-  * One-sample testing, paired: :ref:`sphx_glr_auto_examples_05_glm_second_level_plot_second_level_paired_sample_test.py`
+  * One-sample testing: :ref:`sphx_glr_auto_examples_05_glm_second_level_plot_second_level_one_sample_test.py`
+  * Two-sample testing, unpaired and paired: :ref:`sphx_glr_auto_examples_05_glm_second_level_plot_second_level_two_sample_test.py`
   * Complex contrast: :ref:`sphx_glr_auto_examples_05_glm_second_level_plot_second_level_association_test.py`
 
 

@@ -158,7 +158,7 @@ Here is how signals are generated:
   turn used to generate signals.
 
 The hardest part is generating sparse symmetric positive definite
-matrices, while controling the sparsity level. With the present
+matrices, while controlling the sparsity level. With the present
 scheme, only the location of zeros in the *square root* of the
 precision matrices can be specified. Therefore the final sparsity
 level depends not only on the initial sparsity level, but also on the
@@ -376,7 +376,7 @@ Warm restart
 ------------
 
 During each step of the grid search, a set of regularization
-parameters has to been tested. The straighforward strategy consists of
+parameters has to been tested. The straightforward strategy consists of
 running independently each fit, each optimization being started with
 basically the same initial value (diagonal matrices). Execution time
 can be reduced by running all optimizations sequentially, and using
@@ -388,7 +388,7 @@ smallest (and not the other way).
 
 The usefulness of this scheme depends on several things. First, using
 warm restart does not gives exactly the same result as running
-independant optimizations, because optimization paths are not the
+independent optimizations, because optimization paths are not the
 same. This is not an issue for cross-validation, since there are many
 other larger sources of fluctuations. It has been checked that in
 practice, the selected value does not change. Second, using warm
@@ -422,7 +422,7 @@ finding a maximum. But since only the location of the maximum (not its
 value) is of interest, any curve that peaks at the same location than
 the log-likelihood can be used.
 
-Implicitely, the curve whose maximum is sought is supposed to be
+Implicitly, the curve whose maximum is sought is supposed to be
 obtained after convergence for any value of alpha. This is never the
 case in practice: a stopping criterion has to be used. In the present
 implementation, the variation criterion gives results that seem to be

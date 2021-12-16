@@ -85,9 +85,10 @@ fmri_masked = masker.fit_transform(fmri_niimgs)
 # the function :func:`sklearn.model_selection.cross_val_score` that computes
 # for you the score for the different folds of cross-validation.
 from sklearn.model_selection import cross_val_score
-cv_scores = cross_val_score(svc, fmri_masked, conditions, cv=5)
-
 # Here `cv=5` stipulates a 5-fold cross-validation
+cv_scores = cross_val_score(svc, fmri_masked, conditions, cv=5)
+print("SVC accuracy: {:.3f}".format(cv_scores.mean()))
+
 
 ###########################################################################
 # Tuning cross-validation parameters
@@ -105,7 +106,8 @@ from sklearn.model_selection import LeaveOneGroupOut
 cv = LeaveOneGroupOut()
 cv_scores = cross_val_score(svc, fmri_masked, conditions, cv=cv,
                             scoring='roc_auc', groups=session_label, n_jobs=-1)
-print("SVC accuracy: {:.3f}".format(cv_scores.mean()))
+print("SVC accuracy (tuned parameters): {:.3f}".format(cv_scores.mean()))
+
 ###########################################################################
 # Measuring the chance level
 # ------------------------------------
@@ -130,7 +132,6 @@ from sklearn.model_selection import permutation_test_score
 null_cv_scores = permutation_test_score(
     svc, fmri_masked, conditions, cv=cv, groups=session_label)[1]
 print("Permutation test score: {:.3f}".format(null_cv_scores.mean()))
-
 
 ###########################################################################
 # Decoding without a mask: Anova-SVM in scikit-lean
@@ -214,7 +215,7 @@ print("ANOVA + LDA classification accuracy: %.4f / Chance Level: %.4f" %
 # Import it and define your fancy objects
 from sklearn.feature_selection import RFE
 svc = SVC()
-rfe = RFE(SVC(kernel='linear', C=1.), 50, step=0.25)
+rfe = RFE(SVC(kernel='linear', C=1.), n_features_to_select=50, step=0.25)
 
 # Create a new pipeline, composing the two classifiers `rfe` and `svc`
 

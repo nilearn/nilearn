@@ -48,6 +48,11 @@ except ImportError:
     memory_usage = memory_used = None
 
 
+def is_64bit() -> bool:
+    """Returns True if python is run on 64bits."""
+    return sys.maxsize > 2**32
+
+
 def check_deprecation(func, match=None):
     @functools.wraps(func)
     def wrapped(*args, **kwargs):
@@ -161,9 +166,10 @@ def write_tmp_imgs(*imgs, **kwargs):
             with warnings.catch_warnings():
                 warnings.simplefilter("ignore", RuntimeWarning)
                 for img in imgs:
-                    filename = tempfile.mktemp(prefix=prefix,
-                                               suffix=suffix,
-                                               dir=None)
+                    fd, filename = tempfile.mkstemp(prefix=prefix,
+                                                    suffix=suffix,
+                                                    dir=None)
+                    os.close(fd)
                     filenames.append(filename)
                     img.to_filename(filename)
                     del img
@@ -176,9 +182,23 @@ def write_tmp_imgs(*imgs, **kwargs):
                     else:
                         yield filenames
         finally:
+            failures = []
             # Ensure all created files are removed
             for filename in filenames:
-                os.remove(filename)
+                try:
+                    os.remove(filename)
+                except FileNotFoundError:
+                    # ok, file already removed
+                    pass
+                except OSError as e:
+                    # problem eg permission, or open file descriptor
+                    failures.append(e)
+            if failures:
+                raise OSError(
+                    "The following files could not be removed:\n".format(
+                        "\n".join(str(e) for e in failures)
+                    )
+                )
     else:  # No-op
         if len(imgs) == 1:
             yield imgs[0]

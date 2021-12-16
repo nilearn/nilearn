@@ -35,7 +35,7 @@ def _read_events_table(table):
     Returns
     -------
     loaded : pandas.Dataframe object
-        Pandas Dataframe witht e events data.
+        Pandas Dataframe with e events data.
 
     """
     try:
@@ -111,7 +111,7 @@ def _check_events_file_uses_tab_separators(events_files):
             The following errors are not being handled here,
             as they are handled elsewhere in the calling code.
             Handling them here will beak the calling code,
-            and refactoring that is not straighforward.
+            and refactoring that is not straightforward.
             '''
         except TypeError:  # events is Pandas dataframe.
             pass
@@ -210,7 +210,6 @@ def multiple_fast_inverse(a):
         raise ValueError('a must have shape (n_samples, n_dim, n_dim)')
     from scipy.linalg.lapack import get_lapack_funcs
     a1, n = a[0], a.shape[0]
-    getrf, getri = get_lapack_funcs(('getrf', 'getri'), (a1,))
     getrf, getri, getri_lwork = get_lapack_funcs(
         ('getrf', 'getri', 'getri_lwork'), (a1,))
     for i in range(n):

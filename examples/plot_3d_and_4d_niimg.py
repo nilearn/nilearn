@@ -44,7 +44,7 @@ plotting.plot_stat_map(tmap_filename, threshold=3)
 # -----------------------------------
 #
 # We can download resting-state networks from the Smith 2009 study on
-# correspondance between rest and task
+# correspondence between rest and task
 rsn = datasets.fetch_atlas_smith_2009()['rsn10']
 rsn
 
@@ -86,9 +86,9 @@ for img in image.iter_img(rsn):
 # ---------------------------------------------
 #
 # If we want to plot selected volumes in this 4D file, we can use index_img
-# with the `slice` constructor to select the desired volumes. 
-# 
-# Afterwards, we'll use iter_img to loop through them following the same 
+# with the `slice` constructor to select the desired volumes.
+#
+# Afterwards, we'll use iter_img to loop through them following the same
 # formula as before.
 selected_volumes = image.index_img(rsn, slice(3, 5))
 

@@ -104,7 +104,7 @@ def as_ndarray(arr, copy=False, dtype=None, order='K'):
                 # Changing order while reading through a memmap is incredibly
                 # inefficient.
                 ret = np.array(arr, copy=True)
-                ret = _asarray(arr, dtype=dtype, order=order)
+                ret = _asarray(ret, dtype=dtype, order=order)
 
     elif isinstance(arr, np.ndarray):
         ret = _asarray(arr, dtype=dtype, order=order)

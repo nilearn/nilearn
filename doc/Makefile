@@ -73,13 +73,13 @@ html-strict:	sym_links
 	@echo "Build finished. The HTML pages are in $(BUILDDIR)/html."
 
 html-modified-examples-only: 	sym_links
-	$(SPHINXBUILD) -D sphinx_gallery_conf.filename_pattern=$(PATTERN) -D sphinx_gallery_conf.run_stale_examples=True -b html $(ALLSPHINXOPTS) $(BUILDDIR)/html
+	BUILD_DEV_HTML=1 $(SPHINXBUILD) -D sphinx_gallery_conf.filename_pattern=$(PATTERN) -D sphinx_gallery_conf.run_stale_examples=True -b html $(ALLSPHINXOPTS) $(BUILDDIR)/html
 	touch $(BUILDDIR)/html/.nojekyll
 	@echo
 	@echo "Build finished. The HTML pages are in $(BUILDDIR)/html."
 
 html-noplot:
-	$(SPHINXBUILD) -D plot_gallery=0 -b html $(ALLSPHINXOPTS) $(BUILDDIR)/html
+	BUILD_DEV_HTML=1 $(SPHINXBUILD) -D plot_gallery=0 -b html $(ALLSPHINXOPTS) $(BUILDDIR)/html
 	touch $(BUILDDIR)/html/.nojekyll
 	@echo
 	@echo "Build finished. The HTML pages are in $(BUILDDIR)/html."
@@ -162,7 +162,7 @@ pdf: latex
 check:
 	rm -rf _build/doctrees
 	rm -rf $(BUILDDIR)/html/_images
-	$(SPHINXBUILD) -W -T -n -b html $(ALLSPHINXOPTS) $(BUILDDIR)/html
+	BUILD_DEV_HTML=1 $(SPHINXBUILD) -W -T -n -b html $(ALLSPHINXOPTS) $(BUILDDIR)/html
 
 install:
 	rm -rf _build/doctrees _build/nilearn.github.io
@@ -172,7 +172,7 @@ install:
 	# --no-checkout just fetches the root folder without content
 	# --depth 1 is a speed optimization since we don't need the
 	# history prior to the last commit
-	git clone --no-checkout --depth 1 https://github.com/nilearn/nilearn.github.io.git _build/nilearn.github.io
+	git clone --no-checkout --depth 1 git@github.com:nilearn/nilearn.github.io.git _build/nilearn.github.io
 	touch _build/nilearn.github.io/.nojekyll
 	make html
 	cd _build/ && \

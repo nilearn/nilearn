@@ -435,4 +435,3 @@ def test_img_to_signals_labels_non_float_type(target_dtype):
     timeseries_float = masker.transform(fake_fmri_img_orig)
     assert np.sum(timeseries_int) != 0
     assert np.allclose(timeseries_int, timeseries_float)
-

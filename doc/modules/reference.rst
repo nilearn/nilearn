@@ -66,6 +66,7 @@ the :ref:`user guide <user_guide>` for more information and usage examples.
    fetch_atlas_craddock_2012
    fetch_atlas_destrieux_2009
    fetch_atlas_harvard_oxford
+   fetch_atlas_juelich
    fetch_atlas_msdl
    fetch_atlas_difumo
    fetch_coords_power_2011
@@ -87,7 +88,6 @@ the :ref:`user guide <user_guide>` for more information and usage examples.
    fetch_localizer_contrasts
    fetch_localizer_calculation_task
    fetch_miyawaki2008
-   fetch_nyu_rest
    fetch_surf_nki_enhanced
    fetch_surf_fsaverage
    fetch_atlas_surf_destrieux
@@ -95,14 +95,17 @@ the :ref:`user guide <user_guide>` for more information and usage examples.
    fetch_atlas_schaefer_2018
    fetch_oasis_vbm
    fetch_megatrawls_netmats
-   fetch_cobre
    fetch_neurovault
    fetch_neurovault_ids
    fetch_neurovault_auditory_computation_task
    fetch_neurovault_motor_task
    get_data_dirs
    load_mni152_template
+   load_mni152_gm_template
+   load_mni152_wm_template
    load_mni152_brain_mask
+   load_mni152_gm_mask
+   load_mni152_wm_mask
    fetch_language_localizer_demo_dataset
    fetch_bids_langloc_dataset
    fetch_openneuro_dataset_index
@@ -176,6 +179,7 @@ the :ref:`user guide <user_guide>` for more information and usage examples.
    :toctree: generated/
    :template: function.rst
 
+   binarize_img
    clean_img
    concat_imgs
    coord_transform
@@ -196,6 +200,33 @@ the :ref:`user guide <user_guide>` for more information and usage examples.
    smooth_img
    swap_img_hemispheres
    threshold_img
+
+.. _interfaces_ref:
+
+:mod:`nilearn.interfaces`: Loading components from interfaces
+=============================================================
+
+.. automodule:: nilearn.interfaces
+   :no-members:
+   :no-inherited-members:
+
+:mod:`nilearn.interfaces.fmriprep`
+----------------------------------
+
+.. automodule:: nilearn.interfaces.fmriprep
+   :no-members:
+   :no-inherited-members:
+
+**Functions**:
+
+.. currentmodule:: nilearn.interfaces.fmriprep
+
+.. autosummary::
+   :toctree: generated/
+   :template: function.rst
+
+   load_confounds
+   load_confounds_strategy
 
 .. _io_ref:
 
@@ -244,7 +275,7 @@ the :ref:`user guide <user_guide>` for more information and usage examples.
    compute_epi_mask
    compute_multi_epi_mask
    compute_brain_mask
-   compute_multi_gray_matter_mask
+   compute_multi_brain_mask
    compute_background_mask
    compute_multi_background_mask
    intersect_masks
@@ -337,7 +368,6 @@ the :ref:`user guide <user_guide>` for more information and usage examples.
    plot_stat_map
    plot_glass_brain
    plot_connectome
-   plot_connectome_strength
    plot_markers
    plot_prob_atlas
    plot_carpet
@@ -357,6 +387,26 @@ the :ref:`user guide <user_guide>` for more information and usage examples.
    view_img
    show
 
+:mod:`nilearn.plotting.displays`: Interacting with figures
+----------------------------------------------------------
+
+.. automodule:: nilearn.plotting.displays
+   :no-members:
+   :no-inherited-members:
+
+.. No relevant user manual section yet.
+
+**Functions**:
+
+.. currentmodule:: nilearn.plotting.displays
+
+.. autosummary::
+   :toctree: generated/
+   :template: function.rst
+
+    get_projector
+    get_slicer
+
 **Classes**:
 
 .. currentmodule:: nilearn.plotting.displays
@@ -365,7 +415,35 @@ the :ref:`user guide <user_guide>` for more information and usage examples.
    :toctree: generated/
    :template: class.rst
 
+   OrthoProjector
+   XZProjector
+   YZProjector
+   YXProjector
+   XProjector
+   YProjector
+   ZProjector
+   LZRYProjector
+   LYRZProjector
+   LYRProjector
+   LZRProjector
+   LRProjector
+   LProjector
+   RProjector
+   BaseAxes
+   CutAxes
+   GlassBrainAxes
+   BaseSlicer
    OrthoSlicer
+   PlotlySurfaceFigure
+   TiledSlicer
+   MosaicSlicer
+   XZSlicer
+   YZSlicer
+   YXSlicer
+   XSlicer
+   YSlicer
+   ZSlicer
+
 
 
 .. _signal_ref:
@@ -388,6 +466,7 @@ the :ref:`user guide <user_guide>` for more information and usage examples.
    :toctree: generated/
    :template: function.rst
 
+   butterworth
    clean
    high_variance_confounds
 

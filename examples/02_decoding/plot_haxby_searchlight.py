@@ -49,7 +49,7 @@ import numpy as np
 mask_img = load_img(haxby_dataset.mask)
 
 # .astype() makes a copy.
-process_mask = get_data(mask_img).astype(np.int)
+process_mask = get_data(mask_img).astype(int)
 picked_slice = 29
 process_mask[..., (picked_slice + 1):] = 0
 process_mask[..., :picked_slice] = 0

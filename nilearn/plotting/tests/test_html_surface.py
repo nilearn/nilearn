@@ -35,7 +35,7 @@ def test_check_mesh():
     mesh = html_surface._check_mesh('fsaverage5')
     assert mesh is html_surface._check_mesh(mesh)
     with pytest.raises(ValueError):
-        html_surface._check_mesh('fsaverage3')
+        html_surface._check_mesh('fsaverage2')
     mesh.pop('pial_left')
     with pytest.raises(ValueError):
         html_surface._check_mesh(mesh)

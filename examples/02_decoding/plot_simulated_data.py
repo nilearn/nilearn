@@ -42,6 +42,8 @@ from sklearn import linear_model, svm
 from sklearn.utils import check_random_state
 from sklearn.model_selection import KFold
 from sklearn.feature_selection import f_regression
+from sklearn.preprocessing import StandardScaler
+from sklearn.pipeline import make_pipeline
 
 import nibabel
 
@@ -154,8 +156,12 @@ plot_slices(coefs, title="Ground truth")
 # that stands for `cross-validation`: in the list of possible `alpha`
 # values that they are given, they choose the best by cross-validation.
 
+bayesian_ridge = make_pipeline(
+    StandardScaler(), linear_model.BayesianRidge()
+)
+
 estimators = [
-    ('bayesian_ridge', linear_model.BayesianRidge(normalize=True)),
+    ('bayesian_ridge', bayesian_ridge),
     ('enet_cv', linear_model.ElasticNetCV(alphas=[5, 1, 0.5, 0.1],
                                           l1_ratio=0.05)),
     ('ridge_cv', linear_model.RidgeCV(alphas=[100, 10, 1, 0.1], cv=5)),
@@ -191,12 +197,14 @@ for name, estimator in estimators:
     elapsed_time = time() - t1
 
     if name != 'searchlight':
-        coefs = estimator.coef_
+        if name == 'bayesian_ridge':
+            coefs = estimator.named_steps['bayesianridge'].coef_
+        else:
+            coefs = estimator.coef_
         coefs = np.reshape(coefs, [size, size, size])
         score = estimator.score(X_test, y_test)
         title = '%s: prediction score %.3f, training time: %.2fs' % (
-            estimator.__class__.__name__, score,
-            elapsed_time)
+            name, score, elapsed_time)
 
     else:  # Searchlight
         coefs = estimator.scores_

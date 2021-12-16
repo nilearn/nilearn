@@ -199,7 +199,8 @@ def report_slm_oasis():  # pragma: no cover
                                interpolation='nearest',
                                )
     design_matrix = _make_design_matrix_slm_oasis(oasis_dataset, n_subjects)
-    second_level_model = SecondLevelModel(smoothing_fwhm=2.0, mask=mask_img)
+    second_level_model = SecondLevelModel(smoothing_fwhm=2.0,
+                                          mask_img=mask_img)
     second_level_model.fit(oasis_dataset.gray_matter_maps,
                            design_matrix=design_matrix)
 

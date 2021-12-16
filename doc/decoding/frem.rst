@@ -4,14 +4,10 @@
 FREM: fast ensembling of regularized models for robust decoding
 ================================================================
 
-:term:`FREM` uses an implicit spatial regularization through fast clustering and
-aggregates a high number of estimators trained on various splits of the
-training set, thus returning a very robust decoder at a lower computational
-cost than other spatially regularized methods. Its performance compared to usual classifiers was studied on several datasets
-in this article: `Hoyos-Idrobo et al. 2017 <https:https://hal.archives-ouvertes.fr/hal-01615015>`_.
+:term:`FREM` uses an implicit spatial regularization through fast clustering and aggregates a high number of estimators trained on various splits of the training set, thus returning a very robust decoder at a lower computational cost than other spatially regularized methods. Its performance compared to usual classifiers was studied on several datasets in [:footcite:t:`HOYOSIDROBO2018160`].
 
 FREM pipeline
-=====================
+=============
 
 :term:`FREM` pipeline averages the coefficients of many models, each trained on a
 different split of the training data. For each split:
@@ -26,15 +22,15 @@ different split of the training data. For each split:
 
   * find the best hyper-parameter and memorize the coefficients of this model
 
-Then this ensemble model is used for prediction, usually yielding better and
-more stable predictions than a unique model at no extra-cost. Also, the
-resulting coefficient maps obtained tend to be more structured.
+Then this ensemble model is used for prediction, usually yielding better and more stable predictions than a unique model at no extra-cost. Also, the resulting coefficient maps obtained tend to be more structured.
 
-There are two object to apply :term:`FREM` in Nilearn: 
-:class:`nilearn.decoding.FREMClassifier` to predict categories, and
-:class:`nilearn.decoding.FREMRegressor` to predict continuous values (age, gain / loss...).
-They can use different type of models (l2-SVM, l1-SVM, Logistic, Ridge) through
-the parameter 'estimator'.
+There are two object to apply :term:`FREM` in Nilearn:
+
+  * :class:`nilearn.decoding.FREMClassifier` to predict categories
+
+  * :class:`nilearn.decoding.FREMRegressor` to predict continuous values (age, gain / loss...)
+
+They can use different type of models (l2-SVM, l1-SVM, Logistic, Ridge) through the parameter 'estimator'.
 
 
 Empirical comparisons
@@ -74,3 +70,8 @@ Spatial regularization of decoding maps on mixed gambles study
     * :ref:`SpaceNet <space_net>`, a method promoting sparsity that can also
       give good brain decoding power and improved decoder maps when sparsity
       is important.
+
+References
+==========
+
+.. footbibliography::
