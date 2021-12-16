@@ -238,7 +238,8 @@ def fetch_atlas_destrieux_2009(lateralized=True, data_dir=None, url=None,
     files_ = _fetch_files(data_dir, files, resume=resume,
                           verbose=verbose)
 
-    params = dict(maps=files_[1], labels=pd.read_csv(files_[0], index_col=0).to_records())
+    params = dict(maps=files_[1],
+                  labels=pd.read_csv(files_[0], index_col=0).to_records())
 
     with open(files_[2], 'r') as rst_file:
         params['description'] = rst_file.read()
