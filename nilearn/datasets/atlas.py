@@ -1652,7 +1652,7 @@ def fetch_atlas_pauli_2017(version='prob', data_dir=None, verbose=1):
                         # Prepend background label
                         data.labels.insert(0, 'Background')
 
-                    Or be carefull that the indexing should be offset by one:
+                    Or be careful that the indexing should be offset by one:
 
                     .. code-block:: python
 
