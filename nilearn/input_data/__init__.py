@@ -16,16 +16,13 @@ becomes:
 Note that all imports that used to work will continue to do so with
 a simple warning at least until release 0.13.0.
 """
-import sys
-import warnings
 
-from nilearn import maskers  # noqa:F401
+from .nifti_masker import NiftiMasker
+from .nifti_spheres_masker import NiftiSpheresMasker
+from .nifti_maps_masker import NiftiMapsMasker
+from .nifti_labels_masker import NiftiLabelsMasker
+from .multi_nifti_masker import MultiNiftiMasker
 
-warnings.warn("The module 'input_data' is deprecated since 0.9.0, "
-              "Importing maskers from 'input_data' will be possible "
-              "at least until release 0.13.0. Please import maskers "
-              "from the 'maskers' module instead.",
-              FutureWarning)
-
-sys.modules[__name__] = sys.modules['nilearn.maskers']
+__all__ = ['NiftiMasker', 'NiftiSpheresMasker', 'NiftiMapsMasker',
+           'NiftiLabelsMasker', 'MultiNiftiMasker']
 
