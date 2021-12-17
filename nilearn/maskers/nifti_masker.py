@@ -10,7 +10,7 @@ from functools import partial
 
 from joblib import Memory
 
-from .base_masker import BaseMasker, filter_and_extract
+from .base_masker import BaseMasker, _filter_and_extract
 from .. import _utils
 from .. import image
 from .. import masking
@@ -94,7 +94,7 @@ def filter_and_mask(imgs, mask_img_, parameters,
         parameters['target_shape'] = mask_img_.shape
         parameters['target_affine'] = mask_img_.affine
 
-    data, affine = filter_and_extract(imgs, _ExtractionFunctor(mask_img_),
+    data, affine = _filter_and_extract(imgs, _ExtractionFunctor(mask_img_),
                                       parameters,
                                       memory_level=memory_level,
                                       memory=memory,

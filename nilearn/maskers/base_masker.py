@@ -21,7 +21,7 @@ from .._utils.class_inspect import enclosing_scope_name
 from nilearn.image import high_variance_confounds
 
 
-def filter_and_extract(imgs, extraction_function,
+def _filter_and_extract(imgs, extraction_function,
                        parameters,
                        memory_level=0, memory=Memory(location=None),
                        verbose=0,

@@ -18,7 +18,7 @@ from .._utils.niimg_conversions import check_niimg_4d, check_niimg_3d
 from .._utils.class_inspect import get_params
 from .. import image
 from .. import masking
-from .base_masker import filter_and_extract, BaseMasker
+from .base_masker import _filter_and_extract, BaseMasker
 
 
 def _apply_mask_and_get_affinity(seeds, niimg, radius, allow_overlap,
@@ -398,7 +398,7 @@ class NiftiSpheresMasker(BaseMasker, CacheMixin):
         params = get_params(NiftiSpheresMasker, self)
 
         signals, _ = self._cache(
-                filter_and_extract,
+                _filter_and_extract,
                 ignore=['verbose', 'memory', 'memory_level'])(
             # Images
             imgs, _ExtractionFunctor(self.seeds_, self.radius, self.mask_img,

@@ -12,7 +12,7 @@ from .._utils.class_inspect import get_params
 from .._utils import fill_doc
 from .._utils.niimg_conversions import _check_same_fov
 from .. import image
-from .base_masker import filter_and_extract, BaseMasker
+from .base_masker import _filter_and_extract, BaseMasker
 from nilearn.image import get_data
 
 
@@ -498,7 +498,7 @@ class NiftiMapsMasker(BaseMasker, CacheMixin):
         params['target_affine'] = target_affine
 
         region_signals, labels_ = self._cache(
-            filter_and_extract, ignore=['verbose', 'memory', 'memory_level'])(
+            _filter_and_extract, ignore=['verbose', 'memory', 'memory_level'])(
                 # Images
                 imgs, _ExtractionFunctor(self._resampled_maps_img_,
                                          self._resampled_mask_img_),
