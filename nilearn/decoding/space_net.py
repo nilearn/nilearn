@@ -26,7 +26,7 @@ from sklearn.feature_selection import (SelectPercentile, f_regression,
 from joblib import Memory, Parallel, delayed
 from sklearn.preprocessing import LabelBinarizer
 from sklearn.metrics import accuracy_score
-from nilearn.maskers.masker_validation import check_embedded_nifti_masker
+from nilearn.maskers._masker_validation import _check_embedded_nifti_masker
 from .._utils.param_validation import _adjust_screening_percentile
 from .._utils import fill_doc
 from sklearn.utils import check_X_y
@@ -757,7 +757,7 @@ class BaseSpaceNet(LinearRegression, CacheMixin):
             tic = time.time()
 
         # nifti masking
-        self.masker_ = check_embedded_nifti_masker(self, multi_subject=False)
+        self.masker_ = _check_embedded_nifti_masker(self, multi_subject=False)
         X = self.masker_.fit_transform(X)
 
         X, y = check_X_y(X, y, ['csr', 'csc', 'coo'], dtype=float,

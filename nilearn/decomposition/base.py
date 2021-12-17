@@ -20,7 +20,7 @@ from .._utils.cache_mixin import CacheMixin, cache
 from .._utils.niimg import _safe_get_data
 from .._utils.niimg_conversions import _resolve_globbing
 from nilearn.maskers import NiftiMapsMasker
-from nilearn.maskers.masker_validation import check_embedded_nifti_masker
+from nilearn.maskers._masker_validation import _check_embedded_nifti_masker
 from ..signal import _row_sum_of_squares
 
 
@@ -396,7 +396,7 @@ class BaseDecomposition(BaseEstimator, CacheMixin, TransformerMixin):
             # it early and raise a helpful message
             raise ValueError('Need one or more Niimg-like objects as input, '
                              'an empty list was given.')
-        self.masker_ = check_embedded_nifti_masker(self)
+        self.masker_ = _check_embedded_nifti_masker(self)
 
         # Avoid warning with imgs != None
         # if masker_ has been provided a mask_img
