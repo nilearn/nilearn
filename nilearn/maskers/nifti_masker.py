@@ -59,7 +59,7 @@ def _get_mask_strategy(strategy):
                          "'wm-template'." % strategy)
 
 
-def filter_and_mask(imgs, mask_img_, parameters,
+def _filter_and_mask(imgs, mask_img_, parameters,
                     memory_level=0, memory=Memory(location=None),
                     verbose=0,
                     confounds=None,
@@ -511,7 +511,7 @@ class NiftiMasker(BaseMasker, CacheMixin):
             else:
                 sample_mask = self._sample_mask
 
-        data = self._cache(filter_and_mask,
+        data = self._cache(_filter_and_mask,
                            ignore=['verbose', 'memory', 'memory_level',
                                    'copy'],
                            shelve=self._shelving)(

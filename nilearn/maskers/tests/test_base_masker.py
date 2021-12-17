@@ -6,7 +6,7 @@ import numpy as np
 from numpy.testing import assert_array_almost_equal
 import nibabel
 
-from nilearn.maskers.nifti_masker import filter_and_mask
+from nilearn.maskers.nifti_masker import _filter_and_mask
 from nilearn import image
 
 
@@ -42,9 +42,9 @@ def test_cropping_code_paths():
                   }
 
     # Now do the two maskings
-    out_data_uncropped = filter_and_mask(
+    out_data_uncropped = _filter_and_mask(
         img, mask_img, parameters)
-    out_data_cropped = filter_and_mask(
+    out_data_cropped = _filter_and_mask(
         img, cropped_mask_img, parameters)
 
     assert_array_almost_equal(out_data_cropped, out_data_uncropped)

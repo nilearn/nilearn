@@ -17,7 +17,7 @@ from .. import masking
 from .._utils import CacheMixin, fill_doc
 from .._utils.class_inspect import get_params
 from .._utils.niimg_conversions import _iter_check_niimg
-from .nifti_masker import NiftiMasker, filter_and_mask
+from .nifti_masker import NiftiMasker, _filter_and_mask
 from nilearn.image import get_data
 
 
@@ -328,7 +328,7 @@ class MultiNiftiMasker(NiftiMasker, CacheMixin):
                             ignore=['mask_img', 'mask_args', 'mask_strategy',
                                     'copy'])
 
-        func = self._cache(filter_and_mask,
+        func = self._cache(_filter_and_mask,
                            ignore=['verbose', 'memory', 'memory_level',
                                    'copy'],
                            shelve=self._shelving)
