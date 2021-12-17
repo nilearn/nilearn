@@ -48,10 +48,12 @@ The required dependencies to use the software are:
 * setuptools
 * Numpy >= 1.16
 * SciPy >= 1.2
-* Scikit-learn >= 0.21
+* Scikit-learn >= 0.22
 * Joblib >= 0.12
 * Nibabel >= 2.5
 * Pandas >= 0.24
+
+For a comprehensive list of dependencies, see the file ``nilearn/setup.cfg``.
 
 If you are using nilearn plotting functionalities or running the
 examples, matplotlib >= 1.5.1 is required.
