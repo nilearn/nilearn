@@ -7,5 +7,5 @@ if [ ! -z "$MIN_REQUIREMENTS" ]; then
     pip install --progress-bar off --upgrade -e .[min,test]
 else
     # Install the newest supported versions of required and testing-related dependencies
-    pip install --progress-bar off --upgrade -e .[plotting,test]
+    pip install --progress-bar off --upgrade -e .[plotting,plotly,test]
 fi

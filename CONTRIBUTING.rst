@@ -63,7 +63,7 @@ If you want to contribute code:
     * For new features, please be sure to create a `new issue`_ first, to discuss whether it can be included and its specifications.
     * To help with known `issues`_, please check `good first issues <https://github.com/nilearn/nilearn/labels/Good%20first%20issue>`_ to get started, `known bugs <https://github.com/nilearn/nilearn/labels/Bug>`_, or `proposed enhancements <https://github.com/nilearn/nilearn/labels/Enhancement>`_.
 
-Please see the :ref:`contributing_code` section for more detailed information, including 
+Please see the :ref:`contributing_code` section for more detailed information, including
 instructions for  `Setting up your environment`_ and a description of the `Contribution Guidelines`_.
 
 How do we decide what code goes in?
@@ -364,7 +364,7 @@ If you wish to build documentation:
 1. First, ensure that you have installed sphinx and sphinx-gallery. When in your
    fork top folder, you can install the required packages using::
 
-      pip install -r requirements-build-docs.txt
+      pip install .[doc]
 
 2. Then go to ``nilearn/examples`` or ``nilearn/doc`` and make needed changes
    using `reStructuredText files <https://www.sphinx-doc.org/en/2.0/usage/restructuredtext/basics.html>`_

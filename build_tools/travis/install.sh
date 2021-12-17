@@ -25,4 +25,4 @@ source activate testenv
 python -m pip install --user --upgrade --progress-bar off pip setuptools
 # Install the local version of the library, along with both standard and testing-related dependencies
 # See setup.cfg for dependency group options
-python -m pip install .[plotting,test]
+python -m pip install .[plotting,plotly,test]
