@@ -20,6 +20,12 @@ def _set_mpl_backend():
             skip_if_running_tests('matplotlib not installed')
         raise
     else:
+        from ..version import (_import_module_with_version_check,
+                               OPTIONAL_MATPLOTLIB_MIN_VERSION)
+        # When matplotlib was successfully imported we need to check
+        # that the version is greater that the minimum required one
+        _import_module_with_version_check('matplotlib',
+                                          OPTIONAL_MATPLOTLIB_MIN_VERSION)
         current_backend = matplotlib.get_backend().lower()
 
         try:
