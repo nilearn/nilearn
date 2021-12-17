@@ -185,7 +185,10 @@ class _ExtractionFunctor(object):
         n_seeds = len(self.seeds_)
         imgs = check_niimg_4d(imgs, dtype=self.dtype)
 
-        signals = np.empty((imgs.shape[3], n_seeds), dtype=img_data_dtype(imgs))
+        signals = np.empty(
+            (imgs.shape[3], n_seeds),
+            dtype=img_data_dtype(imgs)
+        )
         for i, sphere in enumerate(_iter_signals_from_spheres(
                 self.seeds_, imgs, self.radius, self.allow_overlap,
                 mask_img=self.mask_img)):
@@ -283,11 +286,11 @@ class NiftiSpheresMasker(BaseMasker, CacheMixin):
     # memory and memory_level are used by CacheMixin.
 
     def __init__(self, seeds, radius=None, mask_img=None, allow_overlap=False,
-                 smoothing_fwhm=None, standardize=False, standardize_confounds=True,
-                 high_variance_confounds=False, detrend=False, low_pass=None,
-                 high_pass=None, t_r=None, dtype=None,
-                 memory=Memory(location=None, verbose=0), memory_level=1,
-                 verbose=0):
+                 smoothing_fwhm=None, standardize=False,
+                 standardize_confounds=True, high_variance_confounds=False,
+                 detrend=False, low_pass=None, high_pass=None, t_r=None,
+                 dtype=None, memory=Memory(location=None, verbose=0),
+                 memory_level=1, verbose=0):
         self.seeds = seeds
         self.mask_img = mask_img
         self.radius = radius
@@ -325,9 +328,9 @@ class NiftiSpheresMasker(BaseMasker, CacheMixin):
                  "native space.\n")
 
         if not hasattr(self.seeds, '__iter__'):
-            raise ValueError(error + "Given seed list is of type: " +
-                             type(self.seeds))
-
+            raise ValueError(
+                error + "Given seed list is of type: " + type(self.seeds)
+            )
         self.seeds_ = []
         # Check seeds and convert them to lists if needed
         for i, seed in enumerate(self.seeds):
@@ -398,22 +401,24 @@ class NiftiSpheresMasker(BaseMasker, CacheMixin):
         params = get_params(NiftiSpheresMasker, self)
 
         signals, _ = self._cache(
-                _filter_and_extract,
-                ignore=['verbose', 'memory', 'memory_level'])(
-            # Images
-            imgs, _ExtractionFunctor(self.seeds_, self.radius, self.mask_img,
-                                     self.allow_overlap, self.dtype),
-            # Pre-processing
-            params,
-            confounds=confounds,
-            sample_mask=sample_mask,
-            dtype=self.dtype,
-            # Caching
-            memory=self.memory,
-            memory_level=self.memory_level,
-            # kwargs
-            verbose=self.verbose)
-
+            _filter_and_extract,
+            ignore=['verbose', 'memory', 'memory_level'])(
+                imgs,
+                _ExtractionFunctor(
+                    self.seeds_, self.radius, self.mask_img,
+                    self.allow_overlap, self.dtype
+                ),
+                # Pre-processing
+                params,
+                confounds=confounds,
+                sample_mask=sample_mask,
+                dtype=self.dtype,
+                # Caching
+                memory=self.memory,
+                memory_level=self.memory_level,
+                # kwargs
+                verbose=self.verbose
+        )
         return signals
 
     def inverse_transform(self, region_signals):

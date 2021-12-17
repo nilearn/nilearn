@@ -328,10 +328,12 @@ class NiftiMasker(BaseMasker, CacheMixin):
         except ImportError:
             with warnings.catch_warnings():
                 mpl_unavail_msg = ('Matplotlib is not imported! '
-                                'No reports will be generated.')
+                                   'No reports will be generated.')
                 warnings.filterwarnings('always', message=mpl_unavail_msg)
-                warnings.warn(category=ImportWarning,
-                            message=mpl_unavail_msg)
+                warnings.warn(
+                    category=ImportWarning,
+                    message=mpl_unavail_msg
+                )
                 return [None]
 
         # Handle the edge case where this function is
@@ -457,8 +459,9 @@ class NiftiMasker(BaseMasker, CacheMixin):
                         copy=False, interpolation='nearest')
                 else:  # imgs not provided to fit
                     resampl_imgs = None
-                self._reporting_data['transform'] = [resampl_imgs, self.mask_img_]
-
+                self._reporting_data['transform'] = [
+                    resampl_imgs, self.mask_img_
+                ]
         return self
 
     def transform_single_imgs(self, imgs, confounds=None, sample_mask=None,

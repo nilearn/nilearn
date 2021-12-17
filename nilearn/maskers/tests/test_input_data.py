@@ -1,6 +1,7 @@
 
 import pytest
 
+
 def test_import_from_input_data_with_warning():
     """Tests that importing maskers from deprecated module ``input_data``
     still works.
@@ -17,10 +18,7 @@ def test_import_from_input_data_with_warning():
     assert masker1 is masker2
     assert masker1.__module__ == 'nilearn.maskers.nifti_maps_masker'
     assert masker2.__module__ == 'nilearn.maskers.nifti_maps_masker'
-    from nilearn.input_data.nifti_masker import filter_and_mask as f1
-    from nilearn.maskers.nifti_masker import filter_and_mask as f2
-    assert f1 == f2
     # Importing privates doesn't work
     with pytest.raises(ImportError):
-        from nilearn.input_data.nifti_masker import _get_mask_strategy
-    from nilearn.maskers.nifti_masker import _get_mask_strategy
+        from nilearn.input_data.nifti_masker import _filter_and_mask  # noqa
+    from nilearn.maskers.nifti_masker import _filter_and_mask  # noqa
