@@ -86,7 +86,7 @@ def _import_module_with_version_check(
     module_version = getattr(module, '__version__', '0.0.0')
 
     version_too_old = (not LooseVersion(module_version) >=
-                    LooseVersion(minimum_version))
+                       LooseVersion(minimum_version))
 
     if version_too_old:
         message = (
