@@ -247,6 +247,7 @@ the :ref:`user guide <user_guide>` for more information and usage examples.
    :toctree: generated/
    :template: class.rst
 
+   BaseMasker
    NiftiMasker
    MultiNiftiMasker
    NiftiLabelsMasker
