@@ -117,6 +117,8 @@ Enhancements
 Changes
 -------
 
+- Nibabel 2.x is no longer supported. Please consider upgrading to Nibabel >= 3.0.
+  (See PR `#3106 <https://github.com/nilearn/nilearn/pull/3106>`_).
 - Deprecated function ``nilearn.datasets.fetch_cobre`` has been removed.
   (See PR `#3081 <https://github.com/nilearn/nilearn/pull/3081>`_).
 - Deprecated function ``nilearn.plotting.plot_connectome_strength`` has been removed.
