@@ -119,7 +119,7 @@ def test_hommel():
     assert(_compute_hommel_value(z, .399) == 4)
     assert(_compute_hommel_value(z, .401) == 3)
     assert(_compute_hommel_value(z, .899) == 3)
-    assert(_compute_hommel_value(z, .901) == 0)    
+    assert(_compute_hommel_value(z, .901) == 0)
 
 
 def test_all_resolution_inference():
