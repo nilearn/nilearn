@@ -109,7 +109,7 @@ def test_hommel():
     # For these, we take the example in  Meijer et al. 2017
     # 'A shortcut for Hommel's procedure in linearithmic time'
     # and check that we obtain the same values
-    z = norm.isf([1.e-8, .01,.08,.1,.5,.7, .9])
+    z = norm.isf([1.e-8, .01, .08, .1, .5, .7, .9])
     assert(_compute_hommel_value(z, 1.e-9) == 7)
     assert(_compute_hommel_value(z, 1.e-7) == 6)
     assert(_compute_hommel_value(z, .059) == 6)
@@ -120,7 +120,7 @@ def test_hommel():
     assert(_compute_hommel_value(z, .401) == 3)
     assert(_compute_hommel_value(z, .899) == 3)
     assert(_compute_hommel_value(z, .901) == 0)    
-    
+
 
 def test_all_resolution_inference():
     shape = (9, 10, 11)
