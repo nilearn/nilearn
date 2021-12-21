@@ -103,7 +103,7 @@ def test_threshold_stats_img():
     with pytest.raises(ValueError):
         threshold_stats_img(None, None, alpha=0.05, height_control='plop')
 
-        
+
 def test_hommel():
     # Check that the computation of Hommel value
     # For these, we take the example in  Meijer et al. 2017
