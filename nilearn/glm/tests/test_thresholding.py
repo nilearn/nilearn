@@ -110,16 +110,16 @@ def test_hommel():
     # 'A shortcut for Hommel's procedure in linearithmic time'
     # and check that we obtain the same values
     z = norm.isf([1.e-8, .01, .08, .1, .5, .7, .9])
-    assert(_compute_hommel_value(z, 1.e-9) == 7)
-    assert(_compute_hommel_value(z, 1.e-7) == 6)
-    assert(_compute_hommel_value(z, .059) == 6)
-    assert(_compute_hommel_value(z, .061) == 5)
-    assert(_compute_hommel_value(z, .249) == 5)
-    assert(_compute_hommel_value(z, .251) == 4)
-    assert(_compute_hommel_value(z, .399) == 4)
-    assert(_compute_hommel_value(z, .401) == 3)
-    assert(_compute_hommel_value(z, .899) == 3)
-    assert(_compute_hommel_value(z, .901) == 0)
+    assert _compute_hommel_value(z, 1.e-9) == 7
+    assert _compute_hommel_value(z, 1.e-7) == 6
+    assert _compute_hommel_value(z, .059) == 6
+    assert _compute_hommel_value(z, .061) == 5
+    assert _compute_hommel_value(z, .249) == 5
+    assert _compute_hommel_value(z, .251) == 4
+    assert _compute_hommel_value(z, .399) == 4
+    assert _compute_hommel_value(z, .401) == 3
+    assert _compute_hommel_value(z, .899) == 3
+    assert _compute_hommel_value(z, .901) == 0
 
 
 def test_all_resolution_inference():
