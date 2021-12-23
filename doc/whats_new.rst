@@ -321,6 +321,7 @@ Fixes
   gridspec (https://github.com/nilearn/nilearn/pull/2798).
 - Fix inconsistency in prediction values of Dummy Classifier for Decoder
   object (https://github.com/nilearn/nilearn/issues/2767).
+- Convert reference in regions/region_extractor.py to use footcite / footbibliography.
 
 Enhancements
 ------------
