@@ -31,7 +31,7 @@ def _compute_hommel_value(z_vals, alpha, verbose=False):
         return 0
     slopes = (alpha - p_vals[: - 1]) / np.arange(n_samples - 1, 0, -1)
     slope = np.max(slopes)
-    hommel_value = np.trunc(n_samples + (alpha - slope * n_samples) / slope)
+    hommel_value = np.trunc(alpha / slope)
     if verbose:
         try:
             from matplotlib import pyplot as plt
