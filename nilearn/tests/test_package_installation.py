@@ -1,6 +1,6 @@
-from distutils.version import LooseVersion
-
-from nilearn.version import REQUIRED_MODULE_METADATA
+from nilearn.version import (
+    REQUIRED_MODULE_METADATA, _compare_version
+)
 
 
 def test_required_package_installation():
@@ -9,7 +9,7 @@ def test_required_package_installation():
         min_version = package_specs[1]['min_version']
         imported_package = __import__(package)
         installed_version = imported_package.__version__
-        assert LooseVersion(installed_version) >= LooseVersion(min_version)
+        assert _compare_version(installed_version, '>=', min_version)
         print(package, 'min:', min_version, 'installed:', installed_version)
 
 

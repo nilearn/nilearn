@@ -5,7 +5,7 @@ Brain schematics plotting for glass brain functionality
 import json
 import os
 
-from distutils.version import LooseVersion
+from nilearn.version import _compare_version
 
 import matplotlib
 from matplotlib.path import Path
@@ -166,7 +166,7 @@ def plot_brain_schematics(ax, direction, **kwargs):
         Useful for the caller to be able to set axes limits.
 
     """
-    if LooseVersion(matplotlib.__version__) >= LooseVersion("2.0"):
+    if _compare_version(matplotlib.__version__, '>=', "2.0"):
         get_axis_bg_color = ax.get_facecolor()
     else:
         get_axis_bg_color = ax.get_axis_bgcolor()
