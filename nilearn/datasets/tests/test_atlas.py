@@ -321,15 +321,12 @@ def test_fetch_coords_seitzman_2018(request_mocker):
     assert np.any(bunch.networks != np.sort(bunch.networks))
 
 
-def _destrieux_data(n_labels=10):
-    """Function mocking the download of the destrieux atlas.
-    Parameter `n_labels` controls the number of labels in the
-    CSV file. The number of labels in the image is 10.
-    """
+def _destrieux_data():
+    """Function mocking the download of the destrieux atlas."""
     data = {"destrieux2009.rst": "readme"}
     atlas = np.random.randint(0, 10, (10, 10, 10))
     atlas_img = nibabel.Nifti1Image(atlas, np.eye(4))
-    labels = "\n".join([f"{idx},label {idx}" for idx in range(n_labels)])
+    labels = "\n".join([f"{idx},label {idx}" for idx in range(10)])
     labels = "index,name\n" + labels
     for lat in ["_lateralized", ""]:
         lat_data = {
@@ -340,22 +337,14 @@ def _destrieux_data(n_labels=10):
     return dict_to_archive(data)
 
 
-@pytest.mark.parametrize("n_labels", [10, 11])
 @pytest.mark.parametrize("lateralized", [True, False])
-@pytest.mark.parametrize("clean_labels", [True, False])
-def test_fetch_atlas_destrieux_2009(tmp_path, request_mocker, n_labels,
-                                    lateralized, clean_labels):
+def test_fetch_atlas_destrieux_2009(tmp_path, request_mocker, lateralized):
     """Tests for function `fetch_atlas_destrieux_2009`.
-    The atlas is fetched with different combinations of `lateralized`
-    and `n_labels`. In the case `n_labels=11`, the fetcher should be able
-    to remove the extra label ('10') not present in the atlas image.
+    The atlas is fetched with different values for `lateralized`.
     """
-    request_mocker.url_mapping["*destrieux2009.tgz"] = _destrieux_data(
-        n_labels=n_labels
-    )
+    request_mocker.url_mapping["*destrieux2009.tgz"] = _destrieux_data()
     bunch = atlas.fetch_atlas_destrieux_2009(
-        lateralized=lateralized, data_dir=tmp_path,
-        verbose=0, clean_labels=clean_labels
+        lateralized=lateralized, data_dir=tmp_path, verbose=0
     )
     assert request_mocker.url_count == 1
     name = '_lateralized' if lateralized else ""
@@ -364,23 +353,7 @@ def test_fetch_atlas_destrieux_2009(tmp_path, request_mocker, n_labels,
     )
     labels_img = set(np.unique(get_data(bunch.maps)))
     labels = set([label.index for label in bunch.labels])
-    if clean_labels:
-        assert labels_img == labels
-    else:
-        assert labels_img.issubset(labels)
-
-
-def test_fetch_atlas_destrieux_2009_warning_clean_labels(request_mocker):
-    """Tests that ``fetch_atlas_destrieux_2009`` gives a FutureWarning
-    when ``clean_labels`` isn't specified explicitly.
-    """
-    request_mocker.url_mapping["*destrieux2009.tgz"] = _destrieux_data()
-    with pytest.warns(FutureWarning,
-                      match=("Default value for parameter `clean_labels` "
-                             "will change from ``False`` to ``True`` "
-                             "in Nilearn 0.10.")):
-        atlas.fetch_atlas_destrieux_2009()
-    assert request_mocker.url_count == 1
+    assert labels_img.issubset(labels)
 
 
 def test_fetch_atlas_msdl(tmp_path, request_mocker):

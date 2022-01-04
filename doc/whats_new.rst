@@ -59,9 +59,6 @@ Fixes
   :func:`nilearn.reporting.make_glm_report` was fixed accordingly.
   (See issue `#3034 <https://github.com/nilearn/nilearn/issues/3034>`_) and fix
   `#3035 <https://github.com/nilearn/nilearn/pull/3035>`_).
-- :func:`~nilearn.datasets.fetch_atlas_destrieux_2009` now returns only labels
-  present in the maps images.
-  (See PR `#3070 <https://github.com/nilearn/nilearn/pull/3070>`_).
 - Function :func:`~nilearn.plotting.find_parcellation_cut_coords` now returns
   coordinates and labels having the same order as the one of the input labels
   index (See PR `#3078 <https://github.com/nilearn/nilearn/issues/3078>`_).
@@ -120,12 +117,17 @@ Enhancements
 Changes
 -------
 
+- Nibabel 2.x is no longer supported. Please consider upgrading to Nibabel >= 3.0.
+  (See PR `#3106 <https://github.com/nilearn/nilearn/pull/3106>`_).
 - Deprecated function ``nilearn.datasets.fetch_cobre`` has been removed.
   (See PR `#3081 <https://github.com/nilearn/nilearn/pull/3081>`_).
 - Deprecated function ``nilearn.plotting.plot_connectome_strength`` has been removed.
   (See PR `#3082 <https://github.com/nilearn/nilearn/pull/3082>`_).
 - Deprecated function ``nilearn.masking.compute_gray_matter_mask`` has been removed.
   (See PR `#3090 <https://github.com/nilearn/nilearn/pull/3090>`_).
+- Deprecated parameter ``sessions`` of function :func:`~nilearn.signal.clean`
+  has been removed. Use ``runs`` instead.
+  (See PR `#3093 <https://github.com/nilearn/nilearn/pull/3093>`_).
 - :func:`nilearn.glm.first_level.compute_regressor` will now raise an exception if
   parameter `cond_id` is not a string which could be used to name a python variable.
   For instance, number strings (ex: "1") will no longer be accepted as valid condition names.
@@ -138,6 +140,14 @@ Changes
   `#2821 <https://github.com/nilearn/nilearn/pull/2821>`_ in order to match BIDS
   semantics. The use of `sessions` in :func:`nilearn.image.clean_img` is deprecated and
   will be removed in 0.10.0.
+- Display objects have been reorganized. For example, Slicers (like the
+  :class:`~nilearn.plotting.displays.OrthoSlicer`) are all in file
+  `nilearn/plotting/displays/_slicers.py`, and Projectors (like the
+  :class:`~nilearn.plotting.displays.OrthoProjector`) are all in file
+  `nilearn/plotting/displays/_projectors.py`. All display objects have been added to
+  the public API, and examples have been improved to show how to use these objects
+  to customize figures obtained with plotting functions.
+  (See PR `#3073 <https://github.com/nilearn/nilearn/pull/3073>`_).
 
 .. _v0.8.1:
 

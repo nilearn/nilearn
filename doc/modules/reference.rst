@@ -387,6 +387,26 @@ the :ref:`user guide <user_guide>` for more information and usage examples.
    view_img
    show
 
+:mod:`nilearn.plotting.displays`: Interacting with figures
+----------------------------------------------------------
+
+.. automodule:: nilearn.plotting.displays
+   :no-members:
+   :no-inherited-members:
+
+.. No relevant user manual section yet.
+
+**Functions**:
+
+.. currentmodule:: nilearn.plotting.displays
+
+.. autosummary::
+   :toctree: generated/
+   :template: function.rst
+
+    get_projector
+    get_slicer
+
 **Classes**:
 
 .. currentmodule:: nilearn.plotting.displays
@@ -395,8 +415,35 @@ the :ref:`user guide <user_guide>` for more information and usage examples.
    :toctree: generated/
    :template: class.rst
 
+   OrthoProjector
+   XZProjector
+   YZProjector
+   YXProjector
+   XProjector
+   YProjector
+   ZProjector
+   LZRYProjector
+   LYRZProjector
+   LYRProjector
+   LZRProjector
+   LRProjector
+   LProjector
+   RProjector
+   BaseAxes
+   CutAxes
+   GlassBrainAxes
+   BaseSlicer
    OrthoSlicer
    PlotlySurfaceFigure
+   TiledSlicer
+   MosaicSlicer
+   XZSlicer
+   YZSlicer
+   YXSlicer
+   XSlicer
+   YSlicer
+   ZSlicer
+
 
 
 .. _signal_ref:

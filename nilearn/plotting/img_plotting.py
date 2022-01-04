@@ -20,7 +20,6 @@ from distutils.version import LooseVersion
 # delayed, so that the part module can be used without them).
 import numpy as np
 from scipy import ndimage
-from scipy import sparse
 from scipy import stats
 from nibabel.spatialimages import SpatialImage
 
@@ -42,7 +41,7 @@ from ..image import new_img_like, iter_img, get_data, math_img, resample_to_img
 from ..input_data import NiftiMasker
 from nilearn.image.resampling import reorder_img
 from ..masking import compute_epi_mask, apply_mask
-from .displays import get_slicer, get_projector
+from nilearn.plotting.displays import get_slicer, get_projector
 from . import cm
 
 

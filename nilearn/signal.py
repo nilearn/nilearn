@@ -16,7 +16,6 @@ from sklearn.utils import gen_even_slices, as_float_array
 
 from ._utils.numpy_conversions import csv_to_array, as_ndarray
 from ._utils import fill_doc
-from ._utils.helpers import rename_parameters
 
 
 availiable_filters = ['butterworth',
@@ -443,7 +442,6 @@ def _ensure_float(data):
     return data
 
 
-@rename_parameters({'sessions': 'runs'}, '0.9.0')
 @fill_doc
 def clean(signals, runs=None, detrend=True, standardize='zscore',
           sample_mask=None, confounds=None, standardize_confounds=True,
@@ -478,12 +476,6 @@ def clean(signals, runs=None, detrend=True, standardize='zscore',
     runs : :class:`numpy.ndarray`, optional
         Add a run level to the cleaning process. Each run will be
         cleaned independently. Must be a 1D array of n_samples elements.
-
-        .. warning::
-
-            'runs' replaces 'sessions' after release 0.9.0.
-            Using 'session' will result in an error after release 0.9.0.
-
         Default is None.
 
     confounds : :class:`numpy.ndarray`, :obj:`str`,\
@@ -649,18 +641,18 @@ def _process_runs(signals, runs, detrend, standardize, confounds,
     if len(runs) != len(signals):
         raise ValueError(
             (
-                'The length of the session vector (%i) '
+                'The length of the run vector (%i) '
                 'does not match the length of the signals (%i)'
             ) % (len(runs), len(signals))
         )
     for run in np.unique(runs):
-        session_confounds = None
+        run_confounds = None
         if confounds is not None:
-            session_confounds = confounds[runs == run]
+            run_confounds = confounds[runs == run]
         signals[runs == run, :] = \
             clean(signals[runs == run],
                   detrend=detrend, standardize=standardize,
-                  confounds=session_confounds, low_pass=low_pass,
+                  confounds=run_confounds, low_pass=low_pass,
                   high_pass=high_pass, t_r=t_r)
     return signals
 
@@ -769,7 +761,7 @@ def _sanitize_runs(n_time, runs):
     if runs is not None and len(runs) != n_time:
         raise ValueError(
             (
-                "The length of the session vector (%i) "
+                "The length of the run vector (%i) "
                 "does not match the length of the signals (%i)"
             )
             % (len(runs), n_time)
@@ -869,9 +861,10 @@ def _check_signal_parameters(detrend, standardize_confounds):
     """Raise warning if the combination is illogical"""
     if not detrend and not standardize_confounds:
         warnings.warn("When confounds are provided, one must perform detrend "
-                      "and/or standarize confounds. You provided detrend={0}, "
-                      "standardize_confounds={1}. If confounds were not "
-                      "standardized or demeaned before passing to signal.clean"
-                      " signal will not be correctly cleaned. ".format(
+                      "and/or standardize confounds. You provided "
+                      "detrend={0}, standardize_confounds={1}. If confounds "
+                      "were not standardized or demeaned before passing to "
+                      "signal.clean signal will not be correctly "
+                      "cleaned. ".format(
                           detrend, standardize_confounds)
                       )

@@ -165,7 +165,7 @@ jobs:
     displayName: 'Test that required package are installed'
 
 
-- job: 'test_expeceted_to_fail_installation_on_linux'
+- job: 'test_expected_to_fail_installation_on_linux'
   pool:
     vmImage: 'ubuntu-18.04'
   strategy:

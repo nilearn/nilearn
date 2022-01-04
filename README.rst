@@ -50,7 +50,7 @@ The required dependencies to use the software are:
 * SciPy >= 1.2
 * Scikit-learn >= 0.22
 * Joblib >= 0.12
-* Nibabel >= 2.5
+* Nibabel >= 3.0
 * Pandas >= 0.24
 
 For a comprehensive list of dependencies, see the file ``nilearn/setup.cfg``.

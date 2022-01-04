@@ -21,7 +21,7 @@ try:
     from scipy.io.matlab import MatReadError
 except ImportError:  # SciPy < 1.8
     from scipy.io.matlab.miobase import MatReadError
-from sklearn.utils import Bunch, deprecated
+from sklearn.utils import Bunch
 
 from .utils import (_get_dataset_dir, _fetch_files, _get_dataset_descr,
                     _read_md5_sum_file, _tree, _filter_columns, _fetch_file, _uncompress_file)
