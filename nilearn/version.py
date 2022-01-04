@@ -102,6 +102,41 @@ def _import_module_with_version_check(
     return module
 
 
+def _compare_version(version_a, operator, version_b):
+    """Compare two version strings via a user-specified operator.
+
+    ``distutils`` has been deprecated since Python 3.10 and is scheduled
+    for removal from the standard library with the release of Python 3.12.
+    For version comparisons, we use setuptools's `parse_version` if available.
+
+    Note : function borrowed from the MNE team.
+
+    Parameters
+    ----------
+    version_a : :obj:`str`
+        First version string.
+
+    operator : {'==', '>', '<', '>=', '<='}
+        Operator to compare ``version_a`` and ``version_b`` in the form of
+        ``version_a operator version_b``.
+
+    version_b : :obj:`str`
+        Second version string.
+
+    Returns
+    -------
+    result : :obj:`bool`
+        The result of the version comparison.
+
+    """
+    try:
+        from pkg_resources import parse_version as parse
+    except ImportError:
+        from distutils.version import LooseVersion as parse
+
+    return eval(f'parse("{version_a}") {operator} parse("{version_b}")')
+
+
 def _check_module_dependencies(is_nilearn_installing=False):
     """Throw an exception if nilearn dependencies are not installed.
 
