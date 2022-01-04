@@ -131,7 +131,7 @@ def load_niimg(niimg, dtype=None):
                         " not compatible with nibabel format:\n"
                         + _repr_niimgs(niimg, shorten=True))
 
-    dtype = _get_target_dtype(_get_data(niimg).dtype, dtype)
+    dtype = _get_target_dtype(niimg.dataobj.dtype, dtype)
 
     if dtype is not None:
         # Copyheader and set dtype in header if header exists
