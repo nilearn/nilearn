@@ -128,11 +128,12 @@ def _compare_version(version_a, operator, version_b):
 
     """
     try:
-        from pkg_resources import parse_version as parse
+        from pkg_resources import parse_version as parse  # noqa:F401
     except ImportError:
-        from distutils.version import LooseVersion as parse
-
-    return eval(f'parse("{version_a}") {operator} parse("{version_b}")')
+        from distutils.version import LooseVersion as parse  # noqa:F401
+    return eval(
+        'parse("{0}") {1} parse("{2}")'.format(version_a, operator, version_b)
+    )
 
 
 def _check_module_dependencies(is_nilearn_installing=False):
