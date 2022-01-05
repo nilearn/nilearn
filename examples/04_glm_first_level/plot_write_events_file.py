@@ -18,8 +18,9 @@ BMC Neurosci 8, 91 (2007). https://doi.org/10.1186/1471-2202-8-91
 print(__doc__)
 
 #########################################################################
-# Define the onset times in seconds. Those are typically extracted
-# from the stimulation software used.
+# Define the onset times in seconds. These are typically extracted from
+# the stimulation software used, but we will use hardcoded values in this
+# example.
 import numpy as np
 
 onsets = np.array([
@@ -36,7 +37,7 @@ onsets = np.array([
 #########################################################################
 # Associated trial types: these are numbered between 0 and 9, hence
 # corresponding to 10 different conditions.
-trial_idx = np.array([
+trial_type_idx = np.array([
     7, 7, 0, 2, 9, 4, 9, 3, 5, 9, 1, 6, 8, 8, 6, 6, 8, 0, 3, 4, 5, 8, 6,
     2, 9, 1, 6, 5, 9, 1, 7, 8, 6, 6, 1, 2, 9, 0, 7, 1, 8, 2, 7, 8, 3, 6,
     0, 0, 6, 8, 7, 7, 1, 1, 1, 5, 5, 0, 7, 0, 4, 2, 7, 9, 8, 0, 6, 3, 3,
@@ -59,10 +60,10 @@ condition_ids = [
     'auditory sentence',
 ]
 
-trial_types = [condition_ids[i] for i in trial_idx]
+trial_types = [condition_ids[i] for i in trial_type_idx]
 
 #########################################################################
-# We also define a duration (required by BIDS conventions).
+# We must also define a duration (required by BIDS conventions).
 # In this case, all trials lasted one second.
 durations = np.ones_like(onsets)
 
@@ -70,9 +71,15 @@ durations = np.ones_like(onsets)
 # Form a pandas DataFrame from this information.
 import pandas as pd
 
-events = pd.DataFrame({'trial_type': trial_types,
-                       'onset': onsets,
-                       'duration': durations})
+events = pd.DataFrame({
+    'trial_type': trial_types,
+    'onset': onsets,
+    'duration': durations,
+})
+
+#########################################################################
+# Take a look at the new DataFrame
+events
 
 #########################################################################
 # Export them to a tsv file.
