@@ -26,6 +26,8 @@ __version__ = '0.8.2.dev'
 _NILEARN_INSTALL_MSG = 'See %s for installation information.' % (
     'http://nilearn.github.io/introduction.html#installation')
 
+import operator
+
 # This is a tuple to preserve order, so that dependencies are checked
 #   in some meaningful order (more => less 'core').
 REQUIRED_MODULE_METADATA = (
@@ -100,6 +102,16 @@ def _import_module_with_version_check(
     return module
 
 
+VERSION_OPERATORS = {
+    "==": operator.eq,
+    "!=": operator.ne,
+    ">": operator.gt,
+    ">=": operator.ge,
+    "<": operator.lt,
+    "<=": operator.le,
+}
+
+
 def _compare_version(version_a, operator, version_b):
     """Compare two version strings via a user-specified operator.
 
@@ -107,14 +119,15 @@ def _compare_version(version_a, operator, version_b):
     for removal from the standard library with the release of Python 3.12.
     For version comparisons, we use setuptools's `parse_version` if available.
 
-    Note : function borrowed from the MNE team.
+    Note: This function is inspired from MNE-Python.
+    See https://github.com/mne-tools/mne-python/blob/main/mne/fixes.py
 
     Parameters
     ----------
     version_a : :obj:`str`
         First version string.
 
-    operator : {'==', '>', '<', '>=', '<='}
+    operator : {'==', '!=','>', '<', '>=', '<='}
         Operator to compare ``version_a`` and ``version_b`` in the form of
         ``version_a operator version_b``.
 
@@ -131,9 +144,12 @@ def _compare_version(version_a, operator, version_b):
         from pkg_resources import parse_version as parse  # noqa:F401
     except ImportError:
         from distutils.version import LooseVersion as parse  # noqa:F401
-    return eval(
-        'parse("{0}") {1} parse("{2}")'.format(version_a, operator, version_b)
-    )
+    if operator not in VERSION_OPERATORS:
+        raise ValueError(
+            "'_compare_version' received an unexpected "
+            "operator {0}.".format(operator)
+        )
+    return VERSION_OPERATORS[operator](parse(version_a), parse(version_b))
 
 
 def _check_module_dependencies(is_nilearn_installing=False):
