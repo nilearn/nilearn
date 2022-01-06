@@ -20,7 +20,7 @@ from nilearn.plotting.matrix_plotting import (
 
 def test_matrix_plotting():
     from numpy import zeros, array
-    from distutils.version import LooseVersion
+    from nilearn.version import _compare_version
     mat = zeros((10, 10))
     labels = [str(i) for i in range(10)]
     ax = plot_matrix(mat, labels=labels, title='foo')
@@ -45,7 +45,7 @@ def test_matrix_plotting():
     pytest.raises(ValueError, plot_matrix, mat, labels=[0, 1, 2])
 
     import scipy
-    if LooseVersion(scipy.__version__) >= LooseVersion('1.0.0'):
+    if _compare_version(scipy.__version__, '>=', '1.0.0'):
         # test if a ValueError is raised when reorder=True without labels
         pytest.raises(ValueError, plot_matrix, mat, labels=None, reorder=True)
         # test if a ValueError is raised when reorder argument is wrong

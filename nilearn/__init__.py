@@ -39,9 +39,9 @@ import sys
 import pkg_resources
 import warnings
 
-from distutils.version import LooseVersion
-
-from .version import _check_module_dependencies, __version__
+from .version import (
+    _check_module_dependencies, __version__, _compare_version
+)
 
 # Workaround issue discovered in intel-openmp 2019.5:
 # https://github.com/ContinuumIO/anaconda-issues/issues/11294
@@ -73,7 +73,7 @@ _python_deprecation_warnings()
 # with NumPy 1.14. NumPy had made more consistent str/repr formatting
 # of numpy arrays. Hence we print the options to old versions.
 import numpy as np
-if LooseVersion(np.__version__) >= LooseVersion("1.14"):
+if _compare_version(np.__version__, '>=', "1.14"):
     # See issue #1600 in nilearn for reason to add try and except
     try:
         from ._utils.testing import are_tests_running
