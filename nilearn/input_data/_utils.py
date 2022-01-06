@@ -14,4 +14,3 @@ def _deprecation_warning(deprecated_path, correct_path):
     )
     if not getattr(sys, '_is_pytest_session', False):
         warnings.warn(message, FutureWarning)
-

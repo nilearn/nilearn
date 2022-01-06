@@ -59,13 +59,12 @@ def _get_mask_strategy(strategy):
                          "'wm-template'." % strategy)
 
 
-def _filter_and_mask(imgs, mask_img_, parameters,
-                    memory_level=0, memory=Memory(location=None),
-                    verbose=0,
-                    confounds=None,
-                    sample_mask=None,
-                    copy=True,
-                    dtype=None):
+def _filter_and_mask(
+    imgs, mask_img_, parameters,
+    memory_level=0, memory=Memory(location=None),
+    verbose=0, confounds=None, sample_mask=None,
+    copy=True, dtype=None
+):
     """Extract representative time series using given mask.
 
     Parameters
@@ -94,16 +93,17 @@ def _filter_and_mask(imgs, mask_img_, parameters,
         parameters['target_shape'] = mask_img_.shape
         parameters['target_affine'] = mask_img_.affine
 
-    data, affine = _filter_and_extract(imgs, _ExtractionFunctor(mask_img_),
-                                      parameters,
-                                      memory_level=memory_level,
-                                      memory=memory,
-                                      verbose=verbose,
-                                      confounds=confounds,
-                                      sample_mask=sample_mask,
-                                      copy=copy,
-                                      dtype=dtype)
-
+    data, affine = _filter_and_extract(
+        imgs, _ExtractionFunctor(mask_img_),
+        parameters,
+        memory_level=memory_level,
+        memory=memory,
+        verbose=verbose,
+        confounds=confounds,
+        sample_mask=sample_mask,
+        copy=copy,
+        dtype=dtype
+    )
     # For _later_: missing value removal or imputing of missing data
     # (i.e. we want to get rid of NaNs, if smoothing must be done
     # earlier)
@@ -126,10 +126,12 @@ class NiftiMasker(BaseMasker, CacheMixin):
         See http://nilearn.github.io/manipulating_images/input_output.html
         Mask for the data. If not given, a mask is computed in the fit step.
         Optional parameters (mask_args and mask_strategy) can be set to
-        fine tune the mask extraction. If the mask and the images have different
-        resolutions, the images are resampled to the mask resolution. If target_shape
-        and/or target_affine are provided, the mask is resampled first.
-        After this, the images are resampled to the resampled mask.
+        fine tune the mask extraction.
+        If the mask and the images have different resolutions, the images
+        are resampled to the mask resolution.
+        If target_shape and/or target_affine are provided, the mask is
+        resampled first. After this, the images are resampled to the
+        resampled mask.
 
     runs : numpy array, optional
         Add a run level to the preprocessing. Each run will be

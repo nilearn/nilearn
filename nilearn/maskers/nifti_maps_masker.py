@@ -336,7 +336,9 @@ class NiftiMapsMasker(BaseMasker, CacheMixin):
                    _utils._repr_niimgs(self.maps_img,
                                        shorten=(not self.verbose)),
                    verbose=self.verbose)
-        self.maps_img_ = _utils.check_niimg(self.maps_img, dtype=self.dtype, atleast_4d=True)
+        self.maps_img_ = _utils.check_niimg(
+            self.maps_img, dtype=self.dtype, atleast_4d=True
+        )
         self.maps_img_ = image.clean_img(self.maps_img_, detrend=False,
                                          standardize=False,
                                          ensure_finite=True)

@@ -21,14 +21,12 @@ from .._utils.class_inspect import enclosing_scope_name
 from nilearn.image import high_variance_confounds
 
 
-def _filter_and_extract(imgs, extraction_function,
-                       parameters,
-                       memory_level=0, memory=Memory(location=None),
-                       verbose=0,
-                       confounds=None,
-                       sample_mask=None,
-                       copy=True,
-                       dtype=None):
+def _filter_and_extract(
+    imgs, extraction_function, parameters,
+    memory_level=0, memory=Memory(location=None),
+    verbose=0, confounds=None, sample_mask=None,
+    copy=True, dtype=None
+):
     """Extract representative time series using given function.
 
     Parameters
