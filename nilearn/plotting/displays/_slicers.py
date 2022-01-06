@@ -11,8 +11,7 @@ from matplotlib.colors import LinearSegmentedColormap, ListedColormap
 from matplotlib.colorbar import ColorbarBase
 from matplotlib.transforms import Bbox
 
-from distutils.version import LooseVersion
-
+from nilearn.version import _compare_version
 from nilearn._utils import check_niimg_3d
 from nilearn.plotting.find_cuts import find_xyz_cut_coords, find_cut_slices
 from nilearn.plotting.displays import CutAxes
@@ -431,7 +430,7 @@ class BaseSlicer(object):
                          height - (self._colorbar_margin['top'] +
                                    self._colorbar_margin['bottom'])]
         self._colorbar_ax = figure.add_axes(lt_wid_top_ht)
-        if LooseVersion(matplotlib.__version__) >= LooseVersion("1.6"):
+        if _compare_version(matplotlib.__version__, '>=', "1.6"):
             self._colorbar_ax.set_facecolor('w')
         else:
             self._colorbar_ax.set_axis_bgcolor('w')
@@ -769,7 +768,7 @@ class OrthoSlicer(BaseSlicer):
             fh = self.frame_axes.get_figure()
             ax = fh.add_axes([0.3 * index * (x1 - x0) + x0, y0,
                               .3 * (x1 - x0), y1 - y0], aspect='equal')
-            if LooseVersion(matplotlib.__version__) >= LooseVersion("1.6"):
+            if _compare_version(matplotlib.__version__, '>=', "1.6"):
                 ax.set_facecolor(facecolor)
             else:
                 ax.set_axis_bgcolor(facecolor)
@@ -1023,7 +1022,7 @@ class TiledSlicer(BaseSlicer):
             axes_coords = self._find_initial_axes_coord(index)
             ax = fh.add_axes(axes_coords, aspect='equal')
 
-            if LooseVersion(matplotlib.__version__) >= LooseVersion("1.6"):
+            if _compare_version(matplotlib.__version__, '>=', "1.6"):
                 ax.set_facecolor(facecolor)
             else:
                 ax.set_axis_bgcolor(facecolor)

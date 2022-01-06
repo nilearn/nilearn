@@ -16,7 +16,7 @@ import sys
 import os
 import shutil
 import sphinx
-from distutils.version import LooseVersion
+from nilearn.version import _compare_version
 
 # jquery is included in plotting package data because it is needed for
 # interactive plots. It is also needed by the documentation, so we copy
@@ -280,7 +280,7 @@ latex_elements = {
   'printindex': '',
 }
 
-if LooseVersion(sphinx.__version__) < LooseVersion('1.5'):
+if _compare_version(sphinx.__version__, '<', '1.5'):
     latex_preamble = r"""
     \usepackage{amsmath}\usepackage{amsfonts}\usepackage{bm}\usepackage{morefloats}
     \let\oldfootnote\footnote
@@ -295,7 +295,7 @@ else:
 
 
 # If false, no module index is generated.
-if LooseVersion(sphinx.__version__) < LooseVersion('1.5'):
+if _compare_version(sphinx.__version__, '<', '1.5'):
     latex_use_modindex = False
 
 latex_domain_indices = False
