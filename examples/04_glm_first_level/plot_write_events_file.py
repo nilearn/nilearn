@@ -2,7 +2,7 @@
 Generate an events.tsv file for the NeuroSpin localizer task
 ============================================================
 
-Create a BIDS-compatible events.tsv file from onset/trial-type information.
+Create a :term:`BIDS`-compatible events.tsv file from onset/trial-type information.
 
 The protocol described is the so-called "ARCHI Standard" functional localizer
 task.
@@ -63,7 +63,7 @@ condition_ids = [
 trial_types = [condition_ids[i] for i in trial_type_idx]
 
 #########################################################################
-# We must also define a duration (required by BIDS conventions).
+# We must also define a duration (required by :term:`BIDS` conventions).
 # In this case, all trials lasted one second.
 durations = np.ones_like(onsets)
 
@@ -88,7 +88,7 @@ events.to_csv(tsvfile, sep='\t', index=False)
 print(f'The event information has been saved to {tsvfile}')
 
 #########################################################################
-# Optionally, the events can be visualized using the plot_event function.
+# Optionally, the events can be visualized using the :func:`~nilearn.plotting.plot_event` function.
 import matplotlib.pyplot as plt
 from nilearn.plotting import plot_event
 
