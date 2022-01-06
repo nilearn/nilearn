@@ -140,6 +140,12 @@ def _compare_version(version_a, operator, version_b):
         The result of the version comparison.
 
     """
+    # TODO:
+    # The setuptools doc encourages the use of importlib.metadata instead
+    # of pkg_resources. However, importlib.metadata is only part of the stdlib
+    # for Python >= 3.8. When Nilearn will only support Python >= 3.8,
+    # please consider changing the following line to:
+    # from importlib.metadata import version as parse
     try:
         from pkg_resources import parse_version as parse  # noqa:F401
     except ImportError:
