@@ -62,6 +62,8 @@ Fixes
 - Function :func:`~nilearn.plotting.find_parcellation_cut_coords` now returns
   coordinates and labels having the same order as the one of the input labels
   index (See PR `#3078 <https://github.com/nilearn/nilearn/issues/3078>`_).
+- Convert reference in `nilearn/regions/region_extractor.py` to use footcite / footbibliography.
+  (See issue `#2787 <https://github.com/nilearn/nilearn/issues/2787>`_ and PR `#3111 <https://github.com/nilearn/nilearn/pull/3111>`_).
 
 Enhancements
 ------------

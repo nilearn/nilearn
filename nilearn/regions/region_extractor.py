@@ -253,7 +253,7 @@ class RegionExtractor(NiftiMapsMasker):
     Particularly, to show that each decomposed brain maps can be
     used to focus on a target specific Regions of Interest analysis.
 
-    See [1]_.
+    See :footcite:`abraham:hal-01093944`.
 
     .. versionadded:: 0.2
 
@@ -353,9 +353,7 @@ class RegionExtractor(NiftiMapsMasker):
 
     References
     ----------
-    .. [1] Abraham et al. "Region segmentation for sparse decompositions:
-       better brain parcellations from rest fMRI", Sparsity Techniques in
-       Medical Imaging, Sep 2014, Boston, United States. pp.8
+    .. footbibliography::
 
     See Also
     --------
