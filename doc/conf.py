@@ -315,7 +315,7 @@ intersphinx_mapping = {
     'python': (_python_doc_base, None),
     'numpy': ('https://numpy.org/doc/stable/', None),
     'scipy': ('http://scipy.github.io/devdocs/', None),
-    'matplotlib': ('https://matplotlib.org/', None),
+    'matplotlib': ('https://matplotlib.org/stable/', None),
     'sklearn': ('https://scikit-learn.org/stable/', None),
     'nibabel': ('https://nipy.org/nibabel', None),
     'pandas': ('https://pandas.pydata.org/pandas-docs/stable/', None),
