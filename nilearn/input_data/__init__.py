@@ -17,6 +17,16 @@ Note that all imports that used to work will continue to do so with
 a simple warning at least until release 0.13.0.
 """
 
+import warnings
+
+message = (
+    "The import path 'nilearn.input_data' is deprecated in version 0.9. "
+    "Importing from 'nilearn.input_data' will be possible at least until "
+    "release 0.13.0. Please import from 'nilearn.maskers' instead."
+)
+warnings.warn(message, FutureWarning)
+
+
 from .base_masker import BaseMasker
 from .nifti_masker import NiftiMasker
 from .nifti_spheres_masker import NiftiSpheresMasker
