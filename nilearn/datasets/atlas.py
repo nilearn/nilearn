@@ -1748,8 +1748,28 @@ def fetch_atlas_schaefer_2018(n_rois=400, yeo_networks=7, resolution_mm=1,
             - 'labels': :class:`numpy.ndarray` of :obj:`str`, array
               containing the ROI labels including Yeo-network annotation.
 
-                .. note::
-                    The list does not have 'Background' by default.
+                .. warning::
+                    The list of labels does not contain 'Background' by
+                    default. To have proper indexing, you should either
+                    manually add 'Background' to the list of labels:
+
+                    .. code-block:: python
+
+                        # Prepend background label
+                        data.labels = np.insert(data.labels, 0, 'Background')
+
+                    Or be careful that the indexing should be offset by one:
+
+                    .. code-block:: python
+
+                        # Get region ID of label '7Networks_LH_Vis_3' when
+                        # 'Background' was not added to the list of labels:
+                        # idx should be equal to 3:
+                        idx = np.where(
+                            data.labels == b'7Networks_LH_Vis_3'
+                        )[0] + 1
+
+
 
             - 'description': :obj:`str`, short description of the atlas
               and some references.
