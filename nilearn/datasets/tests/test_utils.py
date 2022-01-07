@@ -38,39 +38,17 @@ from nilearn.datasets import utils
 currdir = os.path.dirname(os.path.abspath(__file__))
 datadir = os.path.join(currdir, 'data')
 
-DS_LENGTHS = {"aal_SPM12": 1263,
-              "ABIDE_pcp": 1161,
-              "adhd": 869,
-              "allen_rsn_2011": 964,
-              "basc_multiscale_2015": 7289,
-              "brainomics_localizer": 1102,
-              "cobre": 4605,
-              "craddock_2012": 1380,
-              "destrieux_surface": 945,
-              "development_fmri": 1384,
-              "difumo_atlases": 1542,
-              "dosenbach_2010": 533,
-              "fsaverage3": 1364,
-              "fsaverage4": 1364,
-              "fsaverage5": 1364,
-              "fsaverage5_sphere": 427,
-              "fsaverage6": 1364,
-              "fsaverage": 1362,
-              "haxby2001": 1446,
-              "icbm152_2009": 1606,
-              "Megatrawls": 2830,
-              "miyawaki2008": 1080,
-              "msdl_atlas": 985,
-              "neurovault": 1553,
-              "nki_enhanced_surface": 738,
-              "nyu_rest": 1030,
-              "oasis1": 1175,
-              "pauli_2017": 702,
-              "power_2011": 266,
-              "schaefer_2018": 1353,
-              "smith_2009": 1473,
-              "talairach_atlas": 714,
-              "yeo_2011": 1240}
+DATASET_NAMES = set([
+    "aal_SPM12", "ABIDE_pcp", "adhd", "allen_rsn_2011",
+    "basc_multiscale_2015", "brainomics_localizer", "cobre", "craddock_2012",
+    "destrieux_surface", "development_fmri", "difumo_atlases",
+    "dosenbach_2010", "fsaverage3", "fsaverage4", "fsaverage5",
+    "fsaverage5_sphere", "fsaverage6", "fsaverage", "haxby2001",
+    "icbm152_2009", "Megatrawls", "miyawaki2008", "msdl_atlas",
+    "neurovault", "nki_enhanced_surface", "nyu_rest", "oasis1",
+    "pauli_2017", "power_2011", "schaefer_2018", "smith_2009",
+    "talairach_atlas", "yeo_2011"
+])
 
 
 def test_get_dataset_descr_warning():
@@ -83,21 +61,12 @@ def test_get_dataset_descr_warning():
     assert descr == ""
 
 
-@pytest.fixture
-def expected_length(name):
-    if name in DS_LENGTHS:
-        return DS_LENGTHS[name]
-    return -1
-
-
-@pytest.mark.parametrize("name", list(DS_LENGTHS.keys()))
-def test_get_dataset_descr(name, expected_length):
-    """Test function ``_get_dataset_descr()``.
-    Make sure descriptions have expected lengths.
-    """
+@pytest.mark.parametrize("name", DATASET_NAMES)
+def test_get_dataset_descr(name):
+    """Test function ``_get_dataset_descr()``."""
     descr = _get_dataset_descr(name)
     assert isinstance(descr, str)
-    assert len(descr) == expected_length
+    assert len(descr) > 0
 
 
 @pytest.mark.parametrize("should_cast_path_to_string", [False, True])
