@@ -107,7 +107,7 @@ def _sanitize_reorder(reorder):
 def _reorder_matrix(mat, labels, reorder):
     """Helper function for plot_matrix.
 
-    This function reorder the provided matrix.
+    This function reorders the provided matrix.
     """
     if not labels:
         raise ValueError("Labels are needed to show the reordering.")
