@@ -150,6 +150,9 @@ Changes
   the public API, and examples have been improved to show how to use these objects
   to customize figures obtained with plotting functions.
   (See PR `#3073 <https://github.com/nilearn/nilearn/pull/3073>`_).
+- Descriptions of datasets retrieved with fetchers from :mod:`nilearn.datasets` are
+  now python strings rather than `bytes`. Therefore, decoding the descriptions is no
+  longer necessary.
 
 .. _v0.8.1:
 

@@ -28,13 +28,45 @@ import pytest
 import requests
 
 from nilearn import datasets
-from nilearn.datasets.utils import (_get_dataset_dir,
-                                    make_fresh_openneuro_dataset_urls_index)
+from nilearn.datasets.utils import (
+    _get_dataset_dir, _get_dataset_descr,
+    make_fresh_openneuro_dataset_urls_index
+)
 from nilearn.datasets import utils
 
 
 currdir = os.path.dirname(os.path.abspath(__file__))
 datadir = os.path.join(currdir, 'data')
+
+DATASET_NAMES = set([
+    "aal_SPM12", "ABIDE_pcp", "adhd", "allen_rsn_2011",
+    "basc_multiscale_2015", "brainomics_localizer", "cobre", "craddock_2012",
+    "destrieux_surface", "development_fmri", "difumo_atlases",
+    "dosenbach_2010", "fsaverage3", "fsaverage4", "fsaverage5",
+    "fsaverage5_sphere", "fsaverage6", "fsaverage", "haxby2001",
+    "icbm152_2009", "Megatrawls", "miyawaki2008", "msdl_atlas",
+    "neurovault", "nki_enhanced_surface", "nyu_rest", "oasis1",
+    "pauli_2017", "power_2011", "schaefer_2018", "smith_2009",
+    "talairach_atlas", "yeo_2011"
+])
+
+
+def test_get_dataset_descr_warning():
+    """Tests that function ``_get_dataset_descr()`` gives a warning
+    when no description is available.
+    """
+    with pytest.warns(UserWarning,
+                      match="Could not find dataset description."):
+        descr = _get_dataset_descr("")
+    assert descr == ""
+
+
+@pytest.mark.parametrize("name", DATASET_NAMES)
+def test_get_dataset_descr(name):
+    """Test function ``_get_dataset_descr()``."""
+    descr = _get_dataset_descr(name)
+    assert isinstance(descr, str)
+    assert len(descr) > 0
 
 
 @pytest.mark.parametrize("should_cast_path_to_string", [False, True])

@@ -1607,7 +1607,7 @@ def fetch_atlas_talairach(level_name, data_dir=None, verbose=1):
     level_data = (get_data(atlas_img) >> 8 * position) & 255
     atlas_img = new_img_like(atlas_img, data=level_data)
     description = _get_dataset_descr(
-        'talairach_atlas').decode('utf-8').format(level_name)
+        'talairach_atlas').format(level_name)
     return Bunch(maps=atlas_img, labels=labels, description=description)
 
 
