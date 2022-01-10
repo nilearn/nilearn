@@ -23,7 +23,7 @@ development_dataset = datasets.fetch_development_fmri(n_subjects=60)
 
 ###############################################################################
 # We use probabilistic regions of interest (ROIs) from the MSDL atlas.
-from nilearn.input_data import NiftiMapsMasker
+from nilearn.maskers import NiftiMapsMasker
 
 msdl_data = datasets.fetch_atlas_msdl()
 msdl_coords = msdl_data.region_coords

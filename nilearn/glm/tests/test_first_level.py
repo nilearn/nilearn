@@ -24,7 +24,7 @@ from nilearn.glm.first_level.design_matrix import (
 from nilearn.glm.first_level.first_level import _yule_walker
 from nilearn.image import get_data
 from nilearn.glm.regression import ARModel, OLSModel
-from nilearn.input_data import NiftiMasker
+from nilearn.maskers import NiftiMasker
 
 BASEDIR = os.path.dirname(os.path.abspath(__file__))
 FUNCFILE = os.path.join(BASEDIR, 'functional.nii.gz')

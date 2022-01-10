@@ -19,7 +19,7 @@ from nilearn.glm.first_level.design_matrix import \
     make_first_level_design_matrix
 from nilearn.glm.second_level import SecondLevelModel
 from nilearn.image import resample_to_img
-from nilearn.input_data import NiftiSpheresMasker
+from nilearn.maskers import NiftiSpheresMasker
 from nilearn.reporting import make_glm_report
 
 REPORTS_DIR = 'generated_glm_reports'

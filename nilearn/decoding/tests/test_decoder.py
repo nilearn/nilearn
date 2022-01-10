@@ -18,7 +18,7 @@ from nilearn.decoding.decoder import (Decoder, DecoderRegressor,
                                       _BaseDecoder, _check_estimator,
                                       _check_param_grid, _parallel_fit)
 from nilearn.decoding.tests.test_same_api import to_niimgs
-from nilearn.input_data import NiftiMasker
+from nilearn.maskers import NiftiMasker
 from sklearn.datasets import load_iris, make_classification, make_regression
 from sklearn.dummy import DummyClassifier, DummyRegressor
 from sklearn.ensemble import RandomForestClassifier

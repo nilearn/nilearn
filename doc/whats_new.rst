@@ -7,6 +7,10 @@ NEW
 - **Support for Python 3.6 is deprecated and will be removed in release 0.10.**
   Users with a Python 3.6 environment will be warned at their first Nilearn
   import and encouraged to update to more recent versions of Python.
+- Masker objects like :class:`~nilearn.maskers.NiftiMasker` now belong to the
+  new module :mod:`nilearn.maskers`. The old import style, through the module
+  ``input_data``, still works but has been deprecated.
+  (See PR `#3065 <https://github.com/nilearn/nilearn/pull/3065>`_).
 - New module :mod:`nilearn.interfaces` to implement loading and saving utilities
   with various interfaces (fmriprep, bids...).
   (See PR `#3061 <https://github.com/nilearn/nilearn/pull/3061>`_).
@@ -33,18 +37,18 @@ NEW
   similar interface to the :class:`~matplotlib.figure.Figure` returned with the
   `matplotlib` engine.
   (See PR `#3036 <https://github.com/nilearn/nilearn/pull/3036>`_).
-- :class:`~nilearn.input_data.NiftiMapsMasker` can now generate HTML reports in the same
-  way as :class:`~nilearn.input_data.NiftiMasker` and
-  :class:`~nilearn.input_data.NiftiLabelsMasker`. The report enables the users to browse
+- :class:`~nilearn.maskers.NiftiMapsMasker` can now generate HTML reports in the same
+  way as :class:`~nilearn.maskers.NiftiMasker` and
+  :class:`~nilearn.maskers.NiftiLabelsMasker`. The report enables the users to browse
   through the spatial maps with a previous and next button. The users can filter the maps
   they wish to display by passing an integer, or a list of integers to
-  :meth:`~nilearn.input_data.NiftiMapsMasker.generate_report`.
+  :meth:`~nilearn.maskers.NiftiMapsMasker.generate_report`.
 
 Fixes
 -----
 
 - When a label image with non integer values was provided to the
-  :class:`nilearn.input_data.NiftiLabelsMasker`, its `generate_report`
+  :class:`nilearn.maskers.NiftiLabelsMasker`, its `generate_report`
   method was raising an ``IndexError``.
   (See issue `#3007 <https://github.com/nilearn/nilearn/issues/3007>`_ and
   fix `#3009 <https://github.com/nilearn/nilearn/pull/3009>`_).
@@ -55,7 +59,7 @@ Fixes
   `#3013 <https://github.com/nilearn/nilearn/pull/3013>`_).
 - :meth:`nilearn.glm.first_level.FirstLevelModel.generate_report` threw a `TypeError`
   when `FirstLevelModel` was instantiated with `mask_img`
-  being a :class:`~nilearn.input_data.NiftiMasker`.
+  being a :class:`~nilearn.maskers.NiftiMasker`.
   :func:`nilearn.reporting.make_glm_report` was fixed accordingly.
   (See issue `#3034 <https://github.com/nilearn/nilearn/issues/3034>`_) and fix
   `#3035 <https://github.com/nilearn/nilearn/pull/3035>`_).
@@ -94,7 +98,7 @@ Enhancements
   :ref:`sphx_glr_auto_examples_04_glm_first_level_plot_hrf.py` was
   also modified to demo how to define custom :term:`HRF` models.
   (See issue `#2940 <https://github.com/nilearn/nilearn/issues/2940>`_).
-- :class:`nilearn.input_data.NiftiLabelsMasker` now gives a warning when some
+- :class:`nilearn.maskers.NiftiLabelsMasker` now gives a warning when some
   labels are removed from the label image at transform time due to resampling
   of the label image to the data image.
 - Function :func:`~nilearn.glm.second_level.non_parametric_inference` now accepts
@@ -193,8 +197,8 @@ NEW
 - :func:`nilearn.datasets.load_mni152_wm_mask` loads mask from the white-matter
   MNI152 template.
 - :func:`nilearn.image.binarize_img` binarizes images into 0 and 1.
-- :class:`nilearn.input_data.NiftiMasker`,
-  :class:`nilearn.input_data.MultiNiftiMasker`, and objects relying on such maskers
+- :class:`nilearn.maskers.NiftiMasker`,
+  :class:`nilearn.maskers.MultiNiftiMasker`, and objects relying on such maskers
   (:class:`nilearn.decoding.Decoder` or :class:`nilearn.decomposition.CanICA`
   for example) can now use new options for the argument `mask_strategy`:
   `whole-brain-template` for whole-brain template (same as previous option
@@ -274,11 +278,11 @@ HIGHLIGHTS
  | - Nibabel -- v2.5
  | - Pandas -- v0.24
 
-- :class:`nilearn.input_data.NiftiLabelsMasker` can now generate HTML reports in the same
-  way as :class:`nilearn.input_data.NiftiMasker`.
+- :class:`nilearn.maskers.NiftiLabelsMasker` can now generate HTML reports in the same
+  way as :class:`nilearn.maskers.NiftiMasker`.
 - :func:`nilearn.signal.clean` accepts new parameter `sample_mask`.
   shape: (number of scans - number of volumes removed, )
-- All inherent classes of `nilearn.input_data.BaseMasker` can use parameter `sample_mask`
+- All inherent classes of `nilearn.maskers.BaseMasker` can use parameter `sample_mask`
   for sub-sample masking.
 - Fetcher :func:`nilearn.datasets.fetch_surf_fsaverage` now accepts `fsaverage3`,
   `fsaverage4` and `fsaverage6` as values for parameter `mesh`, so that
@@ -296,10 +300,10 @@ NEW
   Masks the niimgs along time/fourth dimension to perform scrubbing (remove
   volumes with high motion) and/or non-steady-state volumes. Masking is applied
   before signal cleaning.
-- All inherent classes of `nilearn.input_data.BaseMasker` can use
+- All inherent classes of `nilearn.maskers.BaseMasker` can use
   parameter `sample_mask` for sub-sample masking.
-- :class:`nilearn.input_data.NiftiLabelsMasker` can now generate HTML reports in the same
-  way as :class:`nilearn.input_data.NiftiMasker`. The report shows the regions defined by
+- :class:`nilearn.maskers.NiftiLabelsMasker` can now generate HTML reports in the same
+  way as :class:`nilearn.maskers.NiftiMasker`. The report shows the regions defined by
   the provided label image and provide summary statistics on each region (name, volume...).
   If a functional image was provided to fit, the middle image is plotted with the regions
   overlaid as contours. Finally, if a mask is provided, its contours are shown in green.
@@ -352,8 +356,8 @@ Enhancements
   'stratified' (https://github.com/nilearn/nilearn/pull/2826/).
 - :class:`nilearn.glm.first_level.run_glm` now allows auto regressive noise
   models of order greater than one.
-- Moves parameter `sample_mask` from :class:`nilearn.input_data.NiftiMasker`
-  to method `transform` in base class `nilearn.input_data.BaseMasker`.
+- Moves parameter `sample_mask` from :class:`nilearn.maskers.NiftiMasker`
+  to method `transform` in base class `nilearn.maskers.BaseMasker`.
 - Fetcher :func:`nilearn.datasets.fetch_surf_fsaverage` now accepts
   `fsaverage3`, `fsaverage4` and `fsaverage6` as values for parameter `mesh`, so that
   all resolutions of fsaverage from 3 to 7 are now available.
@@ -380,7 +384,7 @@ Changes
   has been removed.
 - Fetcher `nilearn.datasets.fetch_nyu_rest` is deprecated since release 0.6.2 and
   has been removed.
-- :class:`nilearn.input_data.NiftiMasker` replaces `sessions` with `runs` and
+- :class:`nilearn.maskers.NiftiMasker` replaces `sessions` with `runs` and
   deprecates attribute `sessions` in 0.9.0. Match the relevant change in
   :func:`nilearn.signal.clean`.
 
@@ -456,14 +460,14 @@ Enhancements
   When an atlas is used, a colorbar is added to the figure,
   optionally with labels corresponding to the different values in the atlas.
 
-- :class:`nilearn.input_data.NiftiMasker`, :class:`nilearn.input_data.NiftiLabelsMasker`,
-  :class:`nilearn.input_data.MultiNiftiMasker`, :class:`nilearn.input_data.NiftiMapsMasker`,
-  and :class:`nilearn.input_data.NiftiSpheresMasker` can now compute high variance confounds
+- :class:`nilearn.maskers.NiftiMasker`, :class:`nilearn.maskers.NiftiLabelsMasker`,
+  :class:`nilearn.maskers.MultiNiftiMasker`, :class:`nilearn.maskers.NiftiMapsMasker`,
+  and :class:`nilearn.maskers.NiftiSpheresMasker` can now compute high variance confounds
   on the images provided to `transform` and regress them out automatically. This behaviour is
   controlled through the `high_variance_confounds` boolean parameter of these maskers which
   default to False.
 
-- :class:`nilearn.input_data.NiftiLabelsMasker` now automatically replaces NaNs in input data
+- :class:`nilearn.maskers.NiftiLabelsMasker` now automatically replaces NaNs in input data
   with zeros, to match the behavior of other maskers.
 
 - :func:`nilearn.datasets.fetch_neurovault` now implements a `resample` boolean argument to either
@@ -574,7 +578,7 @@ NEW
 Fixes
 -----
 
-- :class:`nilearn.input_data.NiftiLabelsMasker` no longer ignores its `mask_img`
+- :class:`nilearn.maskers.NiftiLabelsMasker` no longer ignores its `mask_img`
 - :func:`nilearn.masking.compute_brain_mask` has replaced
   nilearn.masking.compute_gray_matter_mask. Features remained the same but
   some corrections regarding its description were made in the docstring.
@@ -616,7 +620,7 @@ ENHANCEMENTS
 
 - Generated documentation now includes Binder links to launch examples interactively
   in the browser
-- :class:`nilearn.input_data.NiftiSpheresMasker` now has an inverse transform,
+- :class:`nilearn.maskers.NiftiSpheresMasker` now has an inverse transform,
   projecting spheres to the corresponding mask_img.
 
 Fixes
@@ -694,7 +698,7 @@ HIGHLIGHTS
 NEW
 ---
 
-- A new method for :class:`nilearn.input_data.NiftiMasker` instances
+- A new method for :class:`nilearn.maskers.NiftiMasker` instances
   for generating reports viewable in a web browser, Jupyter Notebook, or VSCode.
 
 - A new function :func:`nilearn.image.get_data` to replace the deprecated
@@ -729,10 +733,10 @@ ENHANCEMENTS
   disabling the colorbar, and setting its height and the fontsize of its ticklabels.
 
 - Rework of the standardize-options of :func:`nilearn.signal.clean` and the various Maskers
-  in `nilearn.input_data`. You can now set `standardize` to `zscore` or `psc`. `psc` stands
+  in `nilearn.maskers`. You can now set `standardize` to `zscore` or `psc`. `psc` stands
   for `Percent Signal Change`, which can be a meaningful metric for BOLD.
 
-- Class :class:`nilearn.input_data.NiftiLabelsMasker` now accepts an optional
+- Class :class:`nilearn.maskers.NiftiLabelsMasker` now accepts an optional
   `strategy` parameter which allows it to change the function used to reduce
   values within each labelled ROI. Available functions include mean, median,
   minimum, maximum, standard_deviation and variance.
@@ -752,7 +756,7 @@ CHANGES
 FIXES
 -----
 
-- :class:`nilearn.input_data.NiftiLabelsMasker` no longer truncates region means to their integral part
+- :class:`nilearn.maskers.NiftiLabelsMasker` no longer truncates region means to their integral part
   when input images are of integer type.
 - The arg `version='det'` in :func:`nilearn.datasets.fetch_atlas_pauli_2017` now  works as expected.
 - `pip install nilearn` now installs the necessary dependencies.
@@ -782,7 +786,7 @@ Changes
 - Add a warning to :class:`nilearn.regions.Parcellations`
   if the generated number of parcels does not match the requested number
   of parcels.
-- Class :class:`nilearn.input_data.NiftiLabelsMasker` now accepts an optional
+- Class :class:`nilearn.maskers.NiftiLabelsMasker` now accepts an optional
   `strategy` parameter which allows it to change the function used to reduce
   values within each labelled ROI. Available functions include mean, median,
   minimum, maximum, standard_deviation and variance.
@@ -791,14 +795,14 @@ Changes
 Fixes
 -----
 
-- :class:`nilearn.input_data.NiftiLabelsMasker` no longer truncates region means to their integral part
+- :class:`nilearn.maskers.NiftiLabelsMasker` no longer truncates region means to their integral part
   when input images are of integer type.
 - :func: `nilearn.image.smooth_image` no longer fails if `fwhm` is a `numpy.ndarray`.
 - `pip install nilearn` now installs the necessary dependencies.
 - :func:`nilearn.image.new_img_like` no longer attempts to copy non-iterable headers. (PR #2212)
 - Nilearn no longer raises ImportError for nose when Matplotlib is not installed.
 - The arg `version='det'` in :func:`nilearn.datasets.fetch_atlas_pauli_2017` now  works as expected.
-- :func:`nilearn.input_data.NiftiLabelsMasker.inverse_transform` now works without the need to call
+- :func:`nilearn.maskers.NiftiLabelsMasker.inverse_transform` now works without the need to call
   transform first.
 
 Contributors
@@ -892,7 +896,7 @@ NEW
  | - Scikit-learn -- v0.19
  | - Scipy -- v0.19
 
-- A new method for :class:`nilearn.input_data.NiftiMasker` instances
+- A new method for :class:`nilearn.maskers.NiftiMasker` instances
   for generating reports viewable in a web browser, Jupyter Notebook, or VSCode.
 
 - joblib is now a dependency
@@ -908,7 +912,7 @@ NEW
 - Optimization to image resampling
   :func:`nilearn.image.resample_img` has been optimized to pad rather than
   resample images in the special case when there is only a translation
-  between two spaces. This is a common case in :class:`nilearn.input_data.NiftiMasker`
+  between two spaces. This is a common case in :class:`nilearn.maskers.NiftiMasker`
   when using the `mask_strategy="template"` option for brains in MNI space.
 - New brain development fMRI dataset fetcher
   :func:`nilearn.datasets.fetch_development_fmri` can be used to download
@@ -948,7 +952,7 @@ Changes
   and :func:`nilearn.plotting.view_connectome` can now display a title.
 
 - Rework of the standardize-options of :func:`nilearn.signal.clean` and the various Maskers
-  in `nilearn.input_data`. You can now set `standardize` to `zscore` or `psc`. `psc` stands
+  in `nilearn.maskers`. You can now set `standardize` to `zscore` or `psc`. `psc` stands
   for `Percent Signal Change`, which can be a meaningful metric for BOLD.
 
 - :func:`nilearn.plotting.plot_img` now has explicit keyword arguments `bg_img`,
@@ -2101,7 +2105,7 @@ Bug fixes
    - Fix matplotlib backend choice on Mac OS X.
    - :func:`nilearn.plotting.find_xyz_cut_coords` raises a meaningful error
      when 4D data is provided instead of 3D.
-   - :class:`nilearn.input_data.NiftiSpheresMasker` handles radius smaller than
+   - :class:`nilearn.maskers.NiftiSpheresMasker` handles radius smaller than
      the size of a voxel
    - :class:`nilearn.regions.RegionExtractor` handles data containing Nans.
    - Confound regression does not force systematically the normalization of
@@ -2181,7 +2185,7 @@ Enhancements
    - Making website a bit elaborated & modernise by using sphinx-gallery.
    - Documentation enhancement by integrating sphinx-gallery notebook style
      examples.
-   - Documentation about :class:`nilearn.input_data.NiftiSpheresMasker`.
+   - Documentation about :class:`nilearn.maskers.NiftiSpheresMasker`.
 
 Bug fixes
 .........

@@ -131,7 +131,7 @@ def load_confounds_strategy(img_files, denoise_strategy="simple", **kwargs):
         The index of the niimgs along time/fourth dimension for valid volumes
         for subsequent analysis.
         This attribute should be passed to parameter `sample_mask` of
-        :class:`nilearn.input_data.NiftiMasker` or
+        :class:`nilearn.maskers.NiftiMasker` or
         :func:`nilearn.signal.clean`.
         Volumes are removed if flagged as following:
 

@@ -10,7 +10,7 @@ We use the `MSDL atlas
 of functional regions in movie-watching.
 
 The key to extract signals is to use the
-:class:`nilearn.input_data.NiftiMapsMasker` that can transform nifti
+:class:`nilearn.maskers.NiftiMapsMasker` that can transform nifti
 objects to time series using a probabilistic atlas.
 
 As the MSDL atlas comes with (x, y, z) MNI coordinates for the different
@@ -38,7 +38,7 @@ print('First subject resting-state nifti image (4D) is located at: %s' %
 ############################################################################
 # Extract the time series
 # ------------------------
-from nilearn.input_data import NiftiMapsMasker
+from nilearn.maskers import NiftiMapsMasker
 masker = NiftiMapsMasker(maps_img=atlas_filename, standardize=True,
                          memory='nilearn_cache', verbose=5)
 masker.fit(data.func[0])
@@ -47,7 +47,7 @@ time_series = masker.transform(data.func[0],
 
 ############################################################################
 # We can generate an HTML report and visualize the components of the
-# :class:`~nilearn.input_data.NiftiMapsMasker`.
+# :class:`~nilearn.maskers.NiftiMapsMasker`.
 # You can pass the indices of the spatial maps you want to include in the
 # report in the order you want them to appear.
 # Here, we only include maps 2, 6, 7, 16, and 21 in the report:

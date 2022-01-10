@@ -23,7 +23,8 @@ from nilearn._utils import data_gen
 from nilearn._utils.class_inspect import get_params
 from nilearn._utils.exceptions import DimensionError
 from nilearn.image import index_img
-from nilearn.input_data.nifti_masker import NiftiMasker, filter_and_mask
+from nilearn.maskers import NiftiMasker
+from nilearn.maskers.nifti_masker import _filter_and_mask
 from nilearn.image import get_data
 
 
@@ -394,7 +395,7 @@ def test_filter_and_mask_error():
             match="Input data has incompatible dimensionality: "
                   "Expected dimension is 3D and you provided "
                   "a 4D image."):
-        filter_and_mask(data_img, mask_img, params)
+        _filter_and_mask(data_img, mask_img, params)
 
 
 def test_filter_and_mask():
@@ -408,7 +409,7 @@ def test_filter_and_mask():
     params = get_params(NiftiMasker, masker)
 
     # Test return_affine = False
-    data = filter_and_mask(data_img, mask_img, params)
+    data = _filter_and_mask(data_img, mask_img, params)
     assert data.shape == (5, 24000)
 
 

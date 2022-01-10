@@ -30,7 +30,7 @@ print('First subject functional nifti image (4D) is located at: %s' %
       func_filename)
 
 # Load nilearn NiftiMasker, the practical masking and unmasking tool
-from nilearn.input_data import NiftiMasker
+from nilearn.maskers import NiftiMasker
 
 # load labels
 import pandas as pd

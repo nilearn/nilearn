@@ -63,18 +63,18 @@ Plotting can then be done as::
 Extracting signals on a parcellation
 ------------------------------------
 
-.. currentmodule:: nilearn.input_data
+.. currentmodule:: nilearn.maskers
 
 To extract signal on the parcellation, the easiest option is to use the
-:class:`nilearn.input_data.NiftiLabelsMasker`. As any "maskers" in
+:class:`NiftiLabelsMasker`. As any "maskers" in
 nilearn, it is a processing object that is created by specifying all
 the important parameters, but not the data::
 
-    from nilearn.input_data import NiftiLabelsMasker
+    from nilearn.maskers import NiftiLabelsMasker
     masker = NiftiLabelsMasker(labels_img=atlas_filename, standardize=True)
 
 The Nifti data can then be turned to time-series by calling the
-:class:`NiftiLabelsMasker` `fit_transform` method, that takes either
+:meth:`NiftiLabelsMasker.fit_transform` method, that takes either
 filenames or `NiftiImage objects
 <http://nipy.org/nibabel/nibabel_images.html>`_::
 
@@ -167,14 +167,14 @@ of these maps, which requires accessing them with
 Extracting signals from a probabilistic atlas
 ---------------------------------------------
 
-.. currentmodule:: nilearn.input_data
+.. currentmodule:: nilearn.maskers
 
 As with extraction of signals on a parcellation, extracting signals from
 a probabilistic atlas can be done with a "masker" object:  the
-:class:`nilearn.input_data.NiftiMapsMasker`. It is created by
+:class:`NiftiMapsMasker`. It is created by
 specifying the important parameters, in particular the atlas::
 
-    from nilearn.input_data import NiftiMapsMasker
+    from nilearn.maskers import NiftiMapsMasker
     masker = NiftiMapsMasker(maps_img=atlas_filename, standardize=True)
 
 The `fit_transform` method turns filenames or `NiftiImage objects
@@ -222,7 +222,7 @@ We can display it with the :func:`nilearn.plotting.plot_connectome`
 function that take the matrix, and coordinates of the nodes in MNI space.
 In the case of the MSDL atlas
 (:func:`nilearn.datasets.fetch_atlas_msdl`), the CSV file readily comes
-with MNI coordinates for each region (see for instance example:
+with :term:`MNI` coordinates for each region (see for instance example:
 :ref:`sphx_glr_auto_examples_03_connectivity_plot_probabilistic_atlas_extraction.py`).
 
 .. image:: ../auto_examples/03_connectivity/images/sphx_glr_plot_probabilistic_atlas_extraction_002.png

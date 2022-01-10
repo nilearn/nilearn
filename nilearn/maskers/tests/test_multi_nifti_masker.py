@@ -15,7 +15,7 @@ from joblib import Memory
 
 from nilearn._utils.exceptions import DimensionError
 from nilearn._utils.testing import write_tmp_imgs
-from nilearn.input_data.multi_nifti_masker import MultiNiftiMasker
+from nilearn.maskers import MultiNiftiMasker
 from nilearn.image import get_data
 
 

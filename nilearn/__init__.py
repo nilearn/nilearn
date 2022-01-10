@@ -21,10 +21,10 @@ connectome              --- Set of tools for computing functional connectivity m
                             and for sparse multi-subjects learning of Gaussian graphical models
 image                   --- Set of functions defining mathematical operations
                             working on Niimg-like objects
-input_data              --- Includes scikit-learn transformers and tools to
-                            preprocess neuro-imaging data and access fMRIPrep
-                            generated confounds.
+maskers                 --- Includes scikit-learn transformers.
 masking                 --- Utilities to compute and operate on brain masks
+interfaces              --- Includes tools to preprocess neuro-imaging data
+                            from various common interfaces like fMRIPrep.
 mass_univariate         --- Defines a Massively Univariate Linear Model
                             estimated with OLS and permutation test
 plotting                --- Plotting code for nilearn
@@ -101,5 +101,5 @@ CHECK_CACHE_VERSION = True
 
 # list all submodules available in nilearn and version
 __all__ = ['datasets', 'decoding', 'decomposition', 'connectome',
-           'image', 'input_data', 'masking', 'mass_univariate', 'plotting',
-           'regions', 'signal', 'surface', '__version__']
+           'image', 'maskers', 'masking', 'interfaces', 'mass_univariate',
+           'plotting', 'regions', 'signal', 'surface', '__version__']

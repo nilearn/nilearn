@@ -7,7 +7,7 @@ except ImportError:
     from joblib import Memory
 from nilearn._utils.data_gen import generate_fake_fmri
 from nilearn.regions.rena_clustering import ReNA
-from nilearn.input_data import NiftiMasker
+from nilearn.maskers import NiftiMasker
 from nilearn.image import get_data
 
 
