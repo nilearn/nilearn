@@ -215,16 +215,17 @@ jobs:
     steps:
       - restore_cache:
           keys:
-              - source-cache
+              - source-cache-v2
       - checkout
       - run:
           name: Complete checkout
           command: |
-              git remote rm upstream
-              git remote add upstream git@github.com:nilearn/nilearn.git
+              if ! git remote -v | grep upstream; then
+                git remote add upstream git@github.com:nilearn/nilearn.git
+              fi
               git fetch upstream
       - save_cache:
-          key: source-cache
+          key: source-cache-v2
           paths:
               - ".git"
       - run:
