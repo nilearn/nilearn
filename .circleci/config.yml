@@ -220,9 +220,8 @@ jobs:
       - run:
           name: Complete checkout
           command: |
-              if ! git remote -v | grep upstream; then
-                  git remote add upstream git@github.com:nilearn/nilearn.git
-              fi
+              git remote rm upstream
+              git remote add upstream git@github.com:nilearn/nilearn.git
               git fetch upstream
       - save_cache:
           key: source-cache
